@@ -1,0 +1,26 @@
+title: "非機能要件"
+requirements:
+  - name: 配布ファイル 1 つのサイズ
+    english_name: dist_file_size
+    category: 性能
+    external_constraint: jsDelivr の GitHub エンドポイントは 1 ファイル 20MB までを配る
+    source_kind: 実行基盤の制限
+    source: https://github.com/jsdelivr/jsdelivr#restrictions
+    value: '20'
+    unit: MB 以下
+    rationale: 外部の上限をそのまま使う。上限より小さい目標は、配布物に機能が入る工程で決める。
+    overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確かめる時点はビルドの直後で、版のタグを打つ前。
+  - name: 対応ブラウザ
+    english_name: supported_browsers
+    category: 動作環境
+    external_constraint: 未確定
+    source_kind: 未確定
+    value: 未確定
+    rationale: 配布物の JavaScript の形式とビルドの出力先の版で決まる。単一ユースケース設計で決める。
+  - name: 通信
+    english_name: network
+    category: 動作環境
+    external_constraint: 未確定
+    source_kind: 未確定
+    value: 未確定
+    rationale: 配布物を CDN から読むため、使う側のページにネットワークが要る。読めないときの扱いは単一ユースケース設計で決める。
