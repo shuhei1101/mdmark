@@ -1,2 +1,5 @@
 # mdmark
+
 Markdown 文書の表示（拡張記法・図・差分・部品）を各アプリで共通に使うライブラリ
+
+ドキュメント: https://shuhei1101.github.io/mdmark/
