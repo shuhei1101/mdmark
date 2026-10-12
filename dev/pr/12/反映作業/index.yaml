@@ -1,0 +1,14 @@
+Pages の配信の設定:
+  説明: リポジトリの GitHub Pages を、master ブランチの /docs から配信する設定にする（今は未設定）
+  タグ: [リポジトリの設定]
+  実行者: tester
+  時期: master へ入った後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: GitHub の API の GET /repos/shuhei1101/mdmark/pages が返す source が branch master・path /docs で、https://shuhei1101.github.io/mdmark/ が 200 を返す
+  状態: "-"
