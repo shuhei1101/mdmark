@@ -1,0 +1,58 @@
+title: "アーキテクチャ図"
+overview:
+  direction: LR
+  nodes:
+    - id: dev
+      label: 開発者
+      kind: actor
+    - id: lib
+      label: ライブラリ本体
+      kind: system
+    - id: repo
+      label: GitHub のリポジトリ
+      kind: external
+    - id: cdn
+      label: jsDelivr
+      kind: external
+    - id: page
+      label: 使う側のページ
+      kind: actor
+  edges:
+    - from: dev
+      to: lib
+      label: ビルド
+    - from: lib
+      to: repo
+      label: タグ
+    - from: repo
+      to: cdn
+      label: 配布物
+    - from: cdn
+      to: page
+      label: HTTPS
+  subgraphs:
+    - id: mdmark
+      label: mdmark
+      nodes:
+        - lib
+repository:
+  style: モノレポ
+  repositories:
+    - name: shuhei1101/mdmark
+subsystems:
+  - name: ライブラリ本体
+    scope: lib
+    role: Markdown の表示に使う JavaScript と CSS をビルドして配る
+    runtime: TypeScript 7
+    runs_on: 使う側のページを開いたブラウザ
+    status: planned
+lead: mdmark の配布物が、開発者のビルドから使う側のページへ届くまでの全体構成。
+external_systems:
+  - name: jsDelivr
+    purpose: GitHub のリポジトリの版のタグが指す配布物を、使う側のページへ配る
+    direction: 受信のみ
+    protocol: HTTPS
+    cost: 無料。1 ファイル 20MB まで
+    status: planned
+    notes:
+      事前確認: 要。版のタグを打った後に、タグを固定した URL が配布物を返すことを確かめる。ライブラリ本体は実行時に jsDelivr を呼ばないため、起動時と処理ごとの確認は持たない。
