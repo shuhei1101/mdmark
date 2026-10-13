@@ -1,0 +1,5 @@
+dev/generated/
+node_modules/
+.vitest/
+test-results/
+playwright-report/

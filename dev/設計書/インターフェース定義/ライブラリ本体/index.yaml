@@ -1,0 +1,6 @@
+summary: ライブラリ本体の公開関数とビルドの操作
+items:
+  - page: 版を返す.ts.yaml
+    summary: 使う側のページが、読み込んだ配布物の版を取る
+  - page: 配布物をビルドする.ts.yaml
+    summary: 版を埋めた dist/index.js と dist/index.css をビルドする

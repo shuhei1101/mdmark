@@ -1,0 +1,43 @@
+title: "vitest"
+kind: "フレームワーク"
+version:
+  current: 5.0.4
+  latest: 5.0.4
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 完全一致。`@vitest/browser-playwright` を同じ 5.0.4、`playwright` を E2E と同じ版で並べる（peer が `*`）
+catalogs:
+  - name: 設定
+    version: 5.0.4
+    entries:
+      - name: test.projects
+        kind: 設定
+        purpose: 単体（`unit`）と結合（`integration`）を分ける
+      - name: test.browser
+        kind: 設定
+        purpose: 結合テストを `playwright()` の Chromium で動かす
+  - name: コマンド
+    version: 5.0.4
+    entries:
+      - name: vitest run --project {名前}
+        kind: コマンド
+        purpose: 種別ごとにテストを 1 回流す（結合は `'integration*'`）
+lead: TypeScript をビルドせずに実行するテストランナー。`@vitest/browser-playwright` を併せると、テストを Playwright で動かす実ブラウザの中で実行する。
+purl: pkg:npm/vitest@5.0.4
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: vitest-dev/vitest
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: "`projects` で `unit`（environment: node）と `integration`（browser: Chromium）を分け、`vitest run --project unit` と `--project 'integration*'` でそれぞれ流れた。結合では祖先から継承した CSS 変数の計算値を `getComputedStyle` で読めた"
+license: MIT（商用利用可）
+docs_url: https://vitest.dev/guide/browser
+selection:
+  candidates: Vitest（単体は Node、結合はブラウザモード）・Web Test Runner 1.0.0 を比べた。Node 組み込み（DOM が無い）と Jest（TypeScript 7 に ts-jest が未対応、jsdom は計算値が空）は外した。
+  decision: 単体と結合を 1 つのランナーで種別ごとに流せ、実ブラウザで CSS 変数の計算値を確かめられる。happy-dom は継承した変数と `calc()` を読めず使わない。
+  consequences: 結合テストのブラウザは Chromium にし、Firefox は E2E で確かめる。
+install: |-
+  ```bash
+  npm i -D -E vitest@5.0.4 @vitest/browser-playwright@5.0.4 playwright@1.64.0
+  ```

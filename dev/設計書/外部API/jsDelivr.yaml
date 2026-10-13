@@ -1,0 +1,54 @@
+title: "jsDelivr"
+version:
+  api_version: 版なし（URL に版を持たない）
+  checked_on: '2026-10-13'
+auth:
+  method: なし
+endpoints:
+  - name: GET /gh/{user}/{repo}@{version}/{file}
+    method: GET
+    path: /gh/{user}/{repo}@{version}/{file}
+    summary: GitHub のリポジトリの、版のタグが指す commit のファイルを返す
+    idempotent: true
+    description: 版にはタグ・commit・ブランチ・semver の範囲を指定できる。タグと commit の指定は中身が変わらず無期限にキャッシュされ、ブランチは 12 時間、版の範囲と `latest` は 7 日キャッシュされる。1 ファイル 20MB を超えるファイルは配らない。
+    request:
+      - name: user
+        type: string
+        required: true
+        location: path
+        description: GitHub のユーザー名
+        example: shuhei1101
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: リポジトリ名
+        example: mdmark
+      - name: version
+        type: string
+        required: true
+        location: path
+        description: 版のタグ
+        example: v0.1.0
+      - name: file
+        type: string
+        required: true
+        location: path
+        description: リポジトリの直下からのファイルのパス
+        example: dist/index.js
+    request_example: GET /gh/shuhei1101/mdmark@v0.1.0/dist/index.js
+    status_codes:
+      - code: '200'
+        condition: ファイルがある
+      - code: '404'
+        condition: タグかファイルが無い
+lead: npm と GitHub の公開リポジトリのファイルを配る無料の CDN。
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: '`GET /gh/shuhei1101/mdmark@480d928/README.md` が 200、同じ commit の無いファイル `dist/index.js` と、打っていないタグ `@v9.9.9` が 404 を返すことを確かめた'
+base_urls:
+  - env: 本番
+    url: https://cdn.jsdelivr.net
+official_url: https://www.jsdelivr.com/
+docs_url: https://github.com/jsdelivr/jsdelivr

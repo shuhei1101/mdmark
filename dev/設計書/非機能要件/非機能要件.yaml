@@ -1,0 +1,28 @@
+title: "非機能要件"
+requirements:
+  - name: 配布ファイル 1 つのサイズ
+    english_name: dist_file_size
+    category: 性能
+    external_constraint: jsDelivr の GitHub エンドポイントは 1 ファイル 20MB までを配る
+    source_kind: 実行基盤の制限
+    source: https://github.com/jsdelivr/jsdelivr#restrictions
+    value: '20'
+    unit: MB 以下
+    rationale: 外部の上限をそのまま使う。上限より小さい目標は、配布物に機能が入る工程で決める。
+    overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確かめる時点はビルドの直後で、版のタグを打つ前。
+  - name: 対応ブラウザ
+    english_name: supported_browsers
+    category: 動作環境
+    external_constraint: 制限なし
+    source_kind: 制限なし
+    value: Chrome 94 以降・Firefox 93 以降・Safari 16.4 以降（この版をビルドの target に書く）
+    rationale: ES2022 のクラスの構文（フィールド・非公開メソッド・静的初期化ブロック）を書き換えずに出すため。部品は custom element のクラスで書き、クラスのフィールドと非公開メンバーを使う。版の境目は、静的初期化ブロックを持つ最初の版（Chrome 94・Firefox 93・Safari 16.4）。トップレベル await は Safari 16.4 で部分対応のため使わない
+    measurement: E2E を Playwright 同梱の Chromium・Firefox で流す。Safari 16.4 はビルドの対象には入れるが、動作は確かめていない
+  - name: 通信
+    english_name: network
+    category: 動作環境
+    external_constraint: 配布物を jsDelivr から HTTPS で読む
+    source_kind: 実行基盤の制限
+    value: jsDelivr へ HTTPS で届くことを前提にする。オフラインは対象外
+    rationale: 配布物を CDN から読む形で配り、オフラインで開ける必要は無いと決めている
+    overflow: 読めないときはページの本文だけを表示し、ブラウザが読めなかった旨をコンソールに出す

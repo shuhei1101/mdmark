@@ -1,0 +1,127 @@
+title: "開発コマンド"
+categories:
+  - name: 環境構築（クローン直後）
+    prerequisites:
+      - Node.js v24
+      - 取り込み後の追従（pull 後）の `npm ci` を流してある
+    commands: |-
+      結合テストと E2E テストが使う Chromium と Firefox を入れる。
+
+      ```bash
+      npx playwright install chromium firefox
+      ```
+    effects: '`~/.cache/ms-playwright` に Chromium と Firefox（合わせて数百 MB）をダウンロードする。一度入れれば、どの作業ツリーからも使える'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: コマンドが終了コード 0 で終わり、続けて `npm run test:integration` のブラウザテストと `npm run test:e2e` の Chromium・Firefox が通ることを確かめた
+  - name: 取り込み後の追従（pull 後）
+    prerequisites:
+      - Node.js v24
+    commands: |-
+      ```bash
+      npm ci
+      ```
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: '`npm ci` が終了コード 0 で終わり、脆弱性 0 件を確かめた'
+  - name: 依存の追加・更新・削除
+    commands: |-
+      版を完全一致で固定して追加・更新する。
+
+      ```bash
+      npm i -D -E {パッケージ}@{版}
+      ```
+
+      外す。
+
+      ```bash
+      npm uninstall {パッケージ}
+      ```
+    effects: '`package.json` と `package-lock.json` を書き換える'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: 追加は vitest・esbuild・typescript・@biomejs/biome・@types/node で、外すのは作業ツリーの控えで `@types/node` を外し、`package.json` から消えることを確かめた
+  - name: 起動・停止
+    commands: 未確定
+  - name: テスト
+    refs:
+      - dev/設計書/テスト/テスト実行方法#
+  - name: 静的検査
+    commands: |-
+      lint と整形（Biome）。
+
+      ```bash
+      npm run lint
+      ```
+
+      型検査（TypeScript）。
+
+      ```bash
+      npm run typecheck
+      ```
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: どちらも違反・型エラー 0 件で終わることを確かめた
+  - name: ビルド・生成
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    commands: |-
+      `version.ini` の版を埋めて `dist/` に配布物を書く。
+
+      ```bash
+      npm run build
+      ```
+
+      渡した版を埋めて書く。
+
+      ```bash
+      npm run build -- --version v{版}
+      ```
+    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 20MB を超えると、終了コード 1 で終わり `dist/` は残らない'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: '`version.ini` の版と `--version v0.0.1` で `dist/index.js` と `dist/index.css` に版が入り、前回の `dist/` がある状態で `--version 1.2` と `version.ini` の欠けを流して、どちらも `dist/` が残らないことを確かめた'
+  - name: 取り込み前の検査
+    commands: 未確定
+  - name: 管理作業
+    prerequisites:
+      - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で流す
+      - release は `version.ini` を打つ版へ更新した後、hotfix は打つ版を決めた後
+    commands: |-
+      版のタグが指す commit に配布物を入れる（release と hotfix で、master へマージする前に流す）。
+
+      1. 依存を lock どおりに入れる
+
+      ```bash
+      npm ci
+      ```
+
+      2. 打つ版を埋めてビルドする
+
+      ```bash
+      npm run build -- --version v{版}
+      ```
+
+      3. `dist/` に差分があるかを確かめる（出力が空なら手順 4 を飛ばす）
+
+      ```bash
+      git status --porcelain dist
+      ```
+
+      4. `dist/` を commit して対象のブランチへ push する
+
+      ```bash
+      git add dist
+      git commit -m "v{版} の配布物を入れる"
+      git push origin {対象のブランチ}
+      ```
+    effects: 対象のブランチへ `dist/` の commit を push する。`dist/` が変わらなければ commit は要らない
+    verification:
+      state: 未確認
+      detail: 手順 1・2・3（`npm ci`、`npm run build -- --version v{版}`、`git status --porcelain dist` が `?? dist/` を出す）は確かめた。手順 4 は対象のブランチへ push して外へ書き込むため走らせていない

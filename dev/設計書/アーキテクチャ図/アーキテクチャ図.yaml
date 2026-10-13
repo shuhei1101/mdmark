@@ -1,0 +1,73 @@
+title: "アーキテクチャ図"
+overview:
+  direction: LR
+  nodes:
+    - id: dev
+      label: 開発者
+      kind: actor
+    - id: lib
+      label: ライブラリ本体
+      kind: system
+    - id: repo
+      label: GitHub のリポジトリ
+      kind: external
+    - id: cdn
+      label: jsDelivr
+      kind: external
+    - id: page
+      label: 使う側のページ
+      kind: actor
+  edges:
+    - from: dev
+      to: lib
+      label: ビルド
+    - from: lib
+      to: repo
+      label: タグ
+    - from: repo
+      to: cdn
+      label: 配布物
+    - from: cdn
+      to: page
+      label: HTTPS
+  subgraphs:
+    - id: mdmark
+      label: mdmark
+      nodes:
+        - lib
+repository:
+  style: モノレポ
+  repositories:
+    - name: shuhei1101/mdmark
+  layout: |-
+    | 場所 | 役割 | 使う側への届き方 | 作る Issue |
+    | --- | --- | --- | --- |
+    | `src/` | TypeScript と CSS の本体 | ビルドして `dist/` | この土台 |
+    | `dist/` | 配布物の JavaScript と CSS（release と hotfix でだけ commit する） | jsDelivr から版のタグを固定した URL で読む | この土台 |
+    | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
+    | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
+    | `templates/` | 使う側へ置く雛形（theme.css ・差分のアダプターのサンプル） | CLI の init が置く | #9 |
+    | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI | #3・#5・#6 |
+    | `migrations/{版}/` | 版ごとの移行の手順とスクリプト | 版を上げるコマンド | #10 |
+    | `guide/` | 使い方集 | プラグインと MCP | #11 |
+    | `plugin/` | Claude Code のプラグイン（SessionStart・MCP） | プラグインのマーケットプレイス | #11 |
+
+    この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。
+subsystems:
+  - name: ライブラリ本体
+    scope: lib
+    role: Markdown の表示に使う JavaScript と CSS をビルドして配る
+    runtime: TypeScript 7
+    runs_on: 使う側のページを開いたブラウザ
+    status: planned
+lead: mdmark の配布物が、開発者のビルドから使う側のページへ届くまでの全体構成。
+external_systems:
+  - name: jsDelivr
+    purpose: GitHub のリポジトリの版のタグが指す配布物を、使う側のページへ配る
+    direction: 受信のみ
+    protocol: HTTPS
+    detail: dev/設計書/外部API/jsDelivr#
+    cost: 無料。1 ファイル 20MB まで
+    status: planned
+    notes:
+      事前確認: 否。ライブラリ本体は実行時に jsDelivr を呼ばない。
