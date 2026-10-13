@@ -173,3 +173,5 @@ functions:
         condition: 100 バイトと 201 バイト、上限 200
         mock: なし
         expected: 201 バイトの 1 件
+test_files:
+  - tests/unit/scripts/build.test.ts

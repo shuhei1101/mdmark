@@ -9,7 +9,19 @@ layers:
   - name: 結合テスト（バック）
     run_all: 未確定
   - name: 単体テスト（フロント）
-    run_all: 未確定
+    description: Vitest の `unit` プロジェクト（Node）で流す
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    run_all: |-
+      ```bash
+      npm run test:unit
+      ```
+    run_one:
+      label: ファイル
+      command: |-
+        ```bash
+        npx vitest run --project unit {テストファイルパス}
+        ```
   - name: 単体テスト（バック）
     run_all: 未確定
   - name: 外部疎通テスト
