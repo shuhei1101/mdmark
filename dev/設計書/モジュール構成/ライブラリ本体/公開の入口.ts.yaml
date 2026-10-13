@@ -1,0 +1,33 @@
+title: "ライブラリ本体 / 公開の入口"
+lead: 配布物の入口の JavaScript と CSS。描く機能は持たず、版を返す公開関数だけを持つ。
+directory: |-
+  ```tree
+  src/
+  ├── index.ts   # 公開関数 version()
+  └── index.css  # 部品の CSS を入れる層 mdmark の宣言
+  ```
+functions:
+  - name: version
+    title: 版を返す
+    container: src/index.ts
+    kind: 関数
+    scope: public
+    summary: ビルドで埋めた版を返す
+    description: 'ビルドが識別子 `__MDMARK_VERSION__` を版の文字列に置き換える。ソースでは `declare const __MDMARK_VERSION__: string` で宣言する。'
+    returns:
+      type: string
+      description: '`v{MAJOR}.{MINOR}.{PATCH}` の版'
+    unit_tests:
+      - name: test_version
+        case: 正常
+        summary: 埋めた版を返す
+        condition: '`__MDMARK_VERSION__` に `v9.9.9` を置く'
+        mock: '`globalThis.__MDMARK_VERSION__` に値を置いてから読み込む'
+        expected: '`v9.9.9` を返す'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts#
+styles:
+  - name: index
+    title: 入口の CSS
+    container: src/index.css
+    summary: 部品の CSS を入れる層 `mdmark` を宣言する。版の CSS 変数 `--mdmark-version` はビルドが先頭に `:root` の宣言として差し込む

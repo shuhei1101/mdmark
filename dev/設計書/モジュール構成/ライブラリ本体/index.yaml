@@ -1,0 +1,6 @@
+summary: ライブラリ本体の公開の入口とビルドのスクリプト
+items:
+  - page: 公開の入口.ts.yaml
+    summary: 配布物の入口の JavaScript（version()）と CSS
+  - page: ビルド.ts.yaml
+    summary: 版を決めて検査し、esbuild で dist/ を書き、サイズを検査する

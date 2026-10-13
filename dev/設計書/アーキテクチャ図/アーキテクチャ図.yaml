@@ -39,6 +39,20 @@ repository:
   style: モノレポ
   repositories:
     - name: shuhei1101/mdmark
+  layout: |-
+    | 場所 | 役割 | 使う側への届き方 | 作る Issue |
+    | --- | --- | --- | --- |
+    | `src/` | TypeScript と CSS の本体 | ビルドして `dist/` | この土台 |
+    | `dist/` | 配布物の JavaScript と CSS（release と hotfix でだけ commit する） | jsDelivr から版のタグを固定した URL で読む | この土台 |
+    | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
+    | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
+    | `templates/` | 使う側へ置く雛形（theme.css ・差分のアダプターのサンプル） | CLI の init が置く | #9 |
+    | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI | #3・#5・#6 |
+    | `migrations/{版}/` | 版ごとの移行の手順とスクリプト | 版を上げるコマンド | #10 |
+    | `guide/` | 使い方集 | プラグインと MCP | #11 |
+    | `plugin/` | Claude Code のプラグイン（SessionStart・MCP） | プラグインのマーケットプレイス | #11 |
+
+    この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。
 subsystems:
   - name: ライブラリ本体
     scope: lib
