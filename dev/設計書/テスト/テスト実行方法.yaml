@@ -5,7 +5,19 @@ layers:
   - name: E2E テスト
     run_all: 未確定
   - name: 結合テスト（フロント）
-    run_all: 未確定
+    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す）と `integration-browser`（ビルドした配布物を Chromium で読む）の 2 つで流す
+    prerequisites:
+      - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
+    run_all: |-
+      ```bash
+      npm run test:integration
+      ```
+    run_one:
+      label: ファイル
+      command: |-
+        ```bash
+        npx vitest run --project 'integration*' {テストファイルパス}
+        ```
   - name: 結合テスト（バック）
     run_all: 未確定
   - name: 単体テスト（フロント）

@@ -112,3 +112,4 @@ constraints:
   - item: 出力の対象のブラウザ
     constraint: Chrome 94・Firefox 93・Safari 16.4
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+test_file: tests/integration/lib/build.test.ts

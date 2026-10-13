@@ -1,7 +1,20 @@
 title: "開発コマンド"
 categories:
   - name: 環境構築（クローン直後）
-    commands: 未確定
+    prerequisites:
+      - Node.js v24
+      - 取り込み後の追従（pull 後）の `npm ci` を流してある
+    commands: |-
+      結合テストが使う Chromium を入れる。
+
+      ```bash
+      npx playwright install chromium
+      ```
+    effects: '`~/.cache/ms-playwright` に Chromium（約 190MB）をダウンロードする。一度入れれば、どの作業ツリーからも使える'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: 新しい版の Chromium をダウンロードして終了し、続けて `npm run test:integration` のブラウザテストが通ることを確かめた
   - name: 取り込み後の追従（pull 後）
     prerequisites:
       - Node.js v24
