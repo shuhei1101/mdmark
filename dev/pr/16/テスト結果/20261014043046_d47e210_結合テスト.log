@@ -6,8 +6,8 @@ $ npm run test:integration
 
  RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-mount-render-foundation
 
-4:11:24 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-gO9lEr/dist/index.js
+4:31:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-uUaFqS/dist/index.js
 2  |  `:qt(e.children):Bt(e)?qt(e.children):ve(e)?e.data:""}function bt(e){return Array.isArray(e)?e.map(bt).join(""):ue(e)...
 3  |  `||w==="\f"||w==="\r"}function n(w){var x,C=w.exec(e.substring(v));if(C)return x=C[0],v+=x.length,x}for(var r=e.lengt...
 4  |  ...44\u3002</p></div>`}var Ds="data-mdmark-drawn",ys=e=>import(e);async function Yn(e){let{root:t,libraries:n,isCurre...
@@ -18,12 +18,12 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-gO9lEr/dist/index.js
+  File: /tmp/mdmark-integration-dist-uUaFqS/dist/index.js
 
- Test Files  2 passed (2)
-      Tests  5 passed (5)
-   Start at  04:11:23
-   Duration  6.92s (tests 90%, worker 5%, import 4%, transform 2%)
+ Test Files  6 passed (6)
+      Tests  26 passed (26)
+   Start at  04:30:57
+   Duration  33.03s (tests 63%, import 21%, transform 10%, worker 6%)
 
 
 exit=0
