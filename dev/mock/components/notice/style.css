@@ -8,6 +8,14 @@
   margin-inline: auto;
 }
 
+/* カタログの題（モック専用の見出し） */
+.catalog-title {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: var(--mdmark-color-text);
+  font-size: 20px;
+}
+
 /* 状態の名前（モック専用の見出し）: mdmark の外に置く */
 .catalog-label {
   margin: 0 0 8px;
