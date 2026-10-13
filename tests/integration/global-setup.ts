@@ -1,4 +1,4 @@
-import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { TestProject } from "vitest/node";
@@ -23,6 +23,12 @@ export default async function setup(project: TestProject) {
     recursive: true,
   });
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
+  // 束ねる依存（markdown-it など）を作業ツリーの node_modules から引く
+  await symlink(
+    resolve(import.meta.dirname, "../../node_modules"),
+    join(root, "node_modules"),
+    "dir",
+  );
   const code = await main([], { root, maxBytes: MAX_BYTES });
   if (code !== 0) {
     throw new Error("結合テスト用の配布物をビルドできなかった");
