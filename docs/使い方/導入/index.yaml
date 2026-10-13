@@ -1,0 +1,4 @@
+summary: mdmark を使うページへ組み込む手順
+items:
+  - page: 配布物を読み込む.md
+    summary: 版を固定した URL で JavaScript と CSS を読み込む
