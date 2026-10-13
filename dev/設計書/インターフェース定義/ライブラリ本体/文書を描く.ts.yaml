@@ -386,7 +386,7 @@ constraints:
     notes: 印の名前は `code` 要素で囲む。設定の `libraries` で足した印は図の印として扱う
   - item: テーマ
     constraint: mdmark の CSS は `@layer mdmark` に入る。使う側は層の外の CSS と `--mdmark-` の変数で上書きする。mdmark は使う側の `theme.css` を読まない（使う側のページが `<link>` で読む）
-    notes: '`theme.css` の読み込み方は要件.md の `未確定`（推奨 A）'
+    notes: '層の外で読むことが上書きの条件で、ページの `<link>` なら使う側がその条件を直に満たせ、`render` の出力にも同じ書き方で当たる'
   - item: 対応ブラウザ
     constraint: Chrome 99・Firefox 97・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
