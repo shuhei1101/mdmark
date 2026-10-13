@@ -240,6 +240,12 @@ functions:
         condition: '`isCurrent` が `false` を返す。読み込みは拒否する'
         mock: '`importModule` が拒否する。`console.error` を見張る'
         expected: 要素が読み込み中の枠のままで、`console.error` が呼ばれない
+      - name: test_load_libraries_when_draw_removes_slot
+        case: 正常
+        summary: '`draw` が印の場所を取り除いてから例外を投げても、知らせの枠に替えず拒否しない'
+        condition: '`test-lib` の印の場所 1 つ'
+        mock: '`importModule` が、引数の要素を `remove()` してから例外を投げる `draw` を持つモジュールを返す。`console.error` を見張る'
+        expected: 戻りの Promise が解決し、`root` の中に知らせの枠が無い。`console.error` が 1 回呼ばれる
   - name: attachPrint
     title: 印刷の前後で折り畳みを開く
     container: src/print.ts

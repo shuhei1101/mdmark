@@ -188,6 +188,12 @@ functions:
         condition: 情報文字列 `ts` のコードブロックと、情報文字列の無いコードブロック
         mock: なし
         expected: '`<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">` と `<pre tabindex="0" aria-label="コード">`'
+      - name: test_create_parser_when_info_has_quote
+        case: 正常
+        summary: 情報文字列に `"` があっても、コードブロックの読み上げの名前が途中で切れない
+        condition: 情報文字列 `ts"x` のコードブロック
+        mock: なし
+        expected: '`aria-label="コード: ts&quot;x"`'
   - name: takeMarks
     title: 印を拾って置き換える
     container: src/render/marks.ts
