@@ -77,6 +77,7 @@ functions:
       - '#functions[findTooLargeOutputs]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#
+    description: ファイルの末尾で、`import.meta.main` が `true`（`node scripts/build.ts` で入口として実行された）ときだけ `main(process.argv.slice(2))` を呼び、戻り値を `process.exitCode` に入れる。単体テストが import したときは呼ばない。
   - name: resolveVersion
     title: 埋める版を決める
     container: scripts/build.ts

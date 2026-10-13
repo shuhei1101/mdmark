@@ -4,7 +4,7 @@ directory: |-
   ```tree
   src/
   ├── index.ts   # 公開関数 version()
-  └── index.css  # 部品の CSS を入れる層 mdmark の宣言
+  └── index.css  # 入口の CSS（今は中身を持たない）
   ```
 functions:
   - name: version
@@ -30,4 +30,4 @@ styles:
   - name: index
     title: 入口の CSS
     container: src/index.css
-    summary: 部品の CSS を入れる層 `mdmark` を宣言する。版の CSS 変数 `--mdmark-version` はビルドが先頭に `:root` の宣言として差し込む
+    summary: 入口の CSS。今は中身を持たず、版の CSS 変数 `--mdmark-version` はビルドが先頭に `:root` の宣言として差し込む
