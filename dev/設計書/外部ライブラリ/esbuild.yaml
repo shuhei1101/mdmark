@@ -1,0 +1,66 @@
+title: "esbuild"
+kind: "ライブラリ"
+version:
+  current: 0.28.2
+  latest: 0.28.2
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 完全一致（0.x はマイナー版で破壊的変更が入る）
+catalogs:
+  - name: API
+    version: 0.28.2
+    entries:
+      - name: build
+        kind: 関数
+        purpose: TS と CSS を ES モジュールの JS と CSS に束ねて `dist/` に書く
+        params:
+          - name: entryPoints
+            type: string[]
+            required: true
+            description: 入口のファイル
+          - name: outdir
+            type: string
+            description: 出力先のフォルダ
+          - name: bundle
+            type: boolean
+            default: 'false'
+            description: import を束ねる
+          - name: format
+            type: "'esm' | 'iife' | 'cjs'"
+            description: 出力のモジュールの形式
+          - name: target
+            type: string[]
+            description: 出力の対象（`chrome94` など）。JS と CSS の両方に効く
+          - name: define
+            type: Record<string, string>
+            description: 識別子を式で置き換える（JS だけ）
+          - name: banner
+            type: '{ js?: string; css?: string }'
+            description: 出力の先頭に入れる文字列
+          - name: metafile
+            type: boolean
+            default: 'false'
+            description: 入出力の情報（出力の `bytes` を含む）を返す
+        returns:
+          - name: metafile.outputs[].bytes
+            type: number
+            description: 出力ファイルのバイト数
+lead: JavaScript・TypeScript・CSS を束ねて変換するバンドラー。型の検査はしない。
+purl: pkg:npm/esbuild@0.28.2
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: evanw/esbuild
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: '`build()` に TS と CSS の入口を渡し、`format: esm`・`define`・`banner.css`・`target: [chrome94, firefox93, safari16.4]`・`metafile` で `dist/index.js` と `dist/index.css` が出た。`banner.css` は CSS の先頭に入り、`lab()` は 16 進の色に、入れ子は展開された。クラスの非公開メンバーと静的初期化ブロックは書き換えずに残った。`metafile.outputs[].bytes` でサイズを取れた'
+license: MIT（商用利用可）
+docs_url: https://esbuild.github.io/api/
+selection:
+  candidates: esbuild・Vite 8.3.4 のライブラリモードを比べた。tsc のみ（束ねない・CSS と define が無い）と Rolldown・tsdown（CSS の束ねが外された・experimental）は外した。
+  decision: TS と CSS の 2 つの入口・版の埋め込み・JS と CSS への target・出力サイズの取得を、`build()` 1 つで満たす。Vite は CSS の入口・出力名・空白の詰めに未確認の設定が残る。
+  consequences: 型の検査は `tsc --noEmit` を別に流す。CSS の版の変数は `define` では埋まらないため `banner.css` で埋める。
+install: |-
+  ```bash
+  npm i -D -E esbuild@0.28.2
+  ```

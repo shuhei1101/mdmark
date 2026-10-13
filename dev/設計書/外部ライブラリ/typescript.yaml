@@ -1,0 +1,30 @@
+title: "typescript"
+kind: "CLI"
+version:
+  current: 7.0.2
+  latest: 7.0.2
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 完全一致
+catalogs:
+  - name: コマンド
+    version: 7.0.2
+    entries:
+      - name: tsc --noEmit
+        kind: コマンド
+        purpose: 型を検査する（変換は esbuild が行う）
+lead: TypeScript の型検査と変換を行うコンパイラ（`tsc`）。
+purl: pkg:npm/typescript@7.0.2
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: microsoft/typescript-go
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: '`tsc --noEmit` を strict・target es2022・moduleResolution bundler で流し、クラスの非公開メンバー・静的初期化ブロック・`declare const` を含むコードの型エラーが 0 件'
+license: Apache-2.0（商用利用可）
+docs_url: https://www.typescriptlang.org/docs/
+install: |-
+  ```bash
+  npm i -D -E typescript@7.0.2
+  ```
