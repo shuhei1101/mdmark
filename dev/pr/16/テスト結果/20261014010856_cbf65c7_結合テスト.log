@@ -1,0 +1,30 @@
+$ npm run test:integration
+
+> test:integration
+> vitest run --project 'integration*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-mount-render-foundation
+
+1:09:11 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-arU49t/dist/index.js
+2  |  `:qt(e.children):Bt(e)?qt(e.children):ve(e)?e.data:""}function bt(e){return Array.isArray(e)?e.map(bt).join(""):ue(e)...
+3  |  `||w==="\f"||w==="\r"}function n(w){var x,C=w.exec(e.substring(v));if(C)return x=C[0],v+=x.length,x}for(var r=e.lengt...
+4  |  ...44\u3002</p></div>`}var Ds="data-mdmark-drawn",ys=e=>import(e);async function Yn(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+5  |  `,"	"],Ms=["{","}","|","\\","^","`"].concat(Fs),Ns=["'"].concat(Ms),Qn=["%","/","?",";","#"].concat(Ns),er=["/","?","...
+6  |  `};xe.fence=function(e,t,n,r,i){let s=e[t],o=s.info?Pe(s.info).trim():"",a="",u="";if(o){let h=o.split(/(\s+)/g);a=h[...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-arU49t/dist/index.js
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  01:09:09
+   Duration  4.84s (tests 85%, worker 7%, import 6%, transform 3%)
+
+
+exit=0
+

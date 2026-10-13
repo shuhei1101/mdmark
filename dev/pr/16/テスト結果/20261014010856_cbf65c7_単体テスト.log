@@ -1,0 +1,17 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-mount-render-foundation
+
+
+ Test Files  15 passed (15)
+      Tests  71 passed (71)
+   Start at  01:09:00
+   Duration  3.75s (tests 58%, transform 18%, import 16%, worker 8%)
+
+
+exit=0
+
