@@ -130,7 +130,7 @@ constraints:
   - item: 印の場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`'
   - item: 残す要素・属性
-    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` を足す。`input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけ。`style` 属性は残さない。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（文書に書いた同じ属性は描くときの値で置き換える）
+    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` を足す。`input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけ。`style` 属性は残さない。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で書いた `pre`・`table` は、書いた `aria-label` を残し、`tabindex` は `0` にする）
     notes: dev/設計書/外部ライブラリ/sanitize-html
   - item: URL のスキーム
     constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す'
