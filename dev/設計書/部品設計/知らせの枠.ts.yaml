@@ -1,0 +1,61 @@
+title: "知らせの枠"
+implementation: "src/parts/notice.ts#renderNotice"
+story: "Parts/Notice"
+states:
+  - name: Figure
+    description: 図の印の外部ライブラリを読めない。題が `この図を表示できません`
+    args:
+      - name: name
+        value: chart
+      - name: figure
+        value: 'true'
+  - name: Block
+    description: 図でない印の外部ライブラリを読めない。題が `この箇所を表示できません`
+    args:
+      - name: name
+        value: tabs
+      - name: figure
+        value: 'false'
+  - name: LongName
+    description: 印の名前が長く、枠の幅を超える。名前が枠の中で折り返す
+    args:
+      - name: name
+        value: sequence-diagram-with-very-long-component-name
+      - name: figure
+        value: 'true'
+lead: 外部ライブラリを読めない印の場所に置く枠。何が起きたかを題に、印の名前と直し方を本文に出す。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
+args:
+  - name: name
+    type: 文字列
+    required: true
+    description: 読めなかった印の名前。本文の `code` に入れる（HTML として特別な文字はエスケープする）
+  - name: figure
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 図の印か。題を `この図を表示できません`（true）か `この箇所を表示できません`（false）にする
+css_properties:
+  - name: --mdmark-color-notice-bg
+    syntax: <color>
+    default: '#fff8c5（ダーク #2a2110）'
+    description: 枠の地の色
+  - name: --mdmark-color-notice-border
+    syntax: <color>
+    default: '#9a6700（ダーク #bb8009）'
+    description: 枠の線の色
+  - name: --mdmark-color-notice-text
+    syntax: <color>
+    default: '#1f2328（ダーク #f0f6fc）'
+    description: 枠の文字の色
+  - name: --mdmark-radius
+    syntax: <length>
+    default: 6px
+    description: 枠の角丸
+accessibility:
+  - 枠は `role="status"` を持ち、読み上げが題と本文を読む
+  - 題は `strong`（class `mdmark-notice-title`）、本文は `p` で、色に頼らず文言で伝える
+  - 印の名前は長くても枠の中で折り返し、横スクロールを出さない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[知らせの枠]
+notes:
+  出力: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{題}</strong><p>表示に使うライブラリ（<code>{name}</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>`。文言は確認ログの決定（知らせの枠の文言）。モックは `dev/mock/components/notice/`'
