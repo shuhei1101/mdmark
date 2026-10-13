@@ -11,8 +11,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import { expect, type Page } from "@playwright/test";
-import { main } from "../../scripts/build.ts";
+import type { Page } from "@playwright/test";
 import type { MdmarkConfig } from "../../src/index.ts";
 
 const execFileAsync = promisify(execFile);
@@ -25,8 +24,6 @@ const PAGE_URL = "https://app.example.test/";
 export const LIB_URL = "https://libs.example.test/test-lib.js";
 // 配布物を埋めてビルドする版
 const BUILT_VERSION = "v0.0.1";
-// 配布ファイル 1 つの上限（jsDelivr の 20MB）
-const MAX_BYTES = 20 * 1024 * 1024;
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 外部ライブラリの代役: `draw` で印の場所の文字を `drawn:` と引数を `,` で結んだものにする
@@ -73,18 +70,22 @@ type MdmarkWindow = Window & {
   handle?: { update: (markdown: string) => void; destroy: () => void };
 };
 
-/** `v0.0.1` を埋めてビルドした作業ツリーを作り、その場所を返す */
+/** `v0.0.1` を埋めてビルドした作業ツリーを作り、その場所を返す。ビルドは入口 `node scripts/build.ts` を流し、配布ファイルの上限は既定のままにする */
 export async function buildDistRoot(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-e2e-dist-"));
+  await cp(join(REPO_ROOT, "scripts"), join(root, "scripts"), {
+    recursive: true,
+  });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   await symlink(
     join(REPO_ROOT, "node_modules"),
     join(root, "node_modules"),
     "dir",
   );
-  await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
-  const code = await main([], { root, maxBytes: MAX_BYTES });
-  expect(code).toBe(0);
+  // 失敗（上限の超過を含む）すると例外になる
+  await execFileAsync(process.execPath, ["scripts/build.ts"], { cwd: root });
   return root;
 }
 

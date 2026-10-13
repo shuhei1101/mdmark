@@ -1,22 +1,12 @@
-import {
-  cp,
-  mkdtemp,
-  readFile,
-  rm,
-  symlink,
-  writeFile,
-} from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { expect, type Page, test } from "@playwright/test";
-import { main } from "../../../scripts/build.ts";
+import { buildDistRoot, removeDistRoot } from "../dist-page.ts";
 
 // jsDelivr の GitHub エンドポイントの、版のタグまでの URL
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
 // ページを返す架空のオリジン
 const PAGE_URL = "https://app.example.test/";
-// 配布ファイル 1 つの上限（jsDelivr の 20MB）
-const MAX_BYTES = 20 * 1024 * 1024;
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -60,26 +50,11 @@ async function routeAll(
 
 test.beforeAll(async () => {
   // `v0.0.1` を埋めてビルドした作業ツリーを用意する
-  builtRoot = await mkdtemp(join(tmpdir(), "mdmark-e2e-dist-"));
-  await cp(
-    resolve(import.meta.dirname, "../../../src"),
-    join(builtRoot, "src"),
-    {
-      recursive: true,
-    },
-  );
-  await symlink(
-    resolve(import.meta.dirname, "../../../node_modules"),
-    join(builtRoot, "node_modules"),
-    "dir",
-  );
-  await writeFile(join(builtRoot, "version.ini"), "v0.0.1\n");
-  const code = await main([], { root: builtRoot, maxBytes: MAX_BYTES });
-  expect(code).toBe(0);
+  builtRoot = await buildDistRoot();
 });
 
 test.afterAll(async () => {
-  await rm(builtRoot, { recursive: true, force: true });
+  await removeDistRoot(builtRoot);
 });
 
 // 版を固定した URL で配布物を読み、公開関数と CSS 変数が同じ版になる（正常シナリオ）

@@ -55,6 +55,7 @@ test("test_normal", async ({ page }) => {
     .evaluate((link) => getComputedStyle(link, "::after").content);
   expect(urlSuffix).toContain("https://example.com/page");
   await expect(doc.locator("table")).toHaveCSS("break-inside", "avoid");
+  await expect(doc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 });
 
 // 印刷を終えると、印刷の前の開閉に戻る（正常シナリオ（印刷を終える））
