@@ -1,4 +1,6 @@
 summary: 概要・コアコンセプト・変更履歴
 items:
+  - page: コアコンセプト/
+    summary: 文書を描く仕組みなど、使う前に知っておく考え方
   - page: 変更履歴.md
     summary: 版ごとの変更の一覧
