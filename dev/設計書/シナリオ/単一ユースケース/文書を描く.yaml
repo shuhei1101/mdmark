@@ -121,3 +121,4 @@ preconditions:
   - 描く先の要素がページにある
 success_guarantee: 描く先の要素の中に、Markdown を HTML にした本文が出る。文書に書いたスクリプトは実行されない。
 minimal_guarantee: 未知の印や描けない箇所があっても、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/文書を描く.spec.ts

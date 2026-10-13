@@ -99,3 +99,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
 success_guarantee: 文書の印で足した機能はオン、外した機能はオフになり、印に書かない機能は設定のとおりになる。
 minimal_guarantee: 知らない機能名を印に書いても、本文は描かれる。
+test_file: tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts

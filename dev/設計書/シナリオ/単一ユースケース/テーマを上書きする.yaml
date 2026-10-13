@@ -74,3 +74,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
 success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。
 minimal_guarantee: 使う側が CSS を書かなくても、既定の見た目で文書が描かれる。
+test_file: tests/e2e/単一ユースケース/テーマを上書きする.spec.ts

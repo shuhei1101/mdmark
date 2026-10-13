@@ -48,3 +48,4 @@ trigger: 使う側の処理が、Markdown を HTML 文字列にする公開関�
 preconditions:
   - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
 success_guarantee: ページで描くのと同じ本文の HTML 文字列が返る。文字列にスクリプトは含まれない。
+test_file: tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts

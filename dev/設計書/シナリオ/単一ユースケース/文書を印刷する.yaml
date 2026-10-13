@@ -21,7 +21,7 @@ scenarios:
         B-->>U: 印刷の出力
     expected:
       - 折り畳み（`details`）が開いている
-      - 描く先の要素の地の色の計算値が、明るい配色の `--mdmark-color-bg` の値
+      - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、地の色は外れる
       - リンクの後ろに URL の文字が出ている
       - '表に改ページを避ける指定（`break-inside: avoid`）が当たっている'
     test: test_normal
@@ -56,3 +56,4 @@ preconditions:
   - 設定の `features.print` が `true`（既定）
 success_guarantee: 印刷の出力で、折り畳みの中身・リンクの URL が読め、配色は明るい配色になる。
 minimal_guarantee: 印刷を終えた後、画面の折り畳みは印刷の前の開閉に戻る。
+test_file: tests/e2e/単一ユースケース/文書を印刷する.spec.ts

@@ -83,3 +83,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
 success_guarantee: 文書が使う外部ライブラリだけが読み込まれ、印の場所に描かれる。
 minimal_guarantee: 外部ライブラリを読めなくても、その場所に知らせの枠が出て、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts
