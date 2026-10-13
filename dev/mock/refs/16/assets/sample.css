@@ -283,6 +283,16 @@ body {
   }
 }
 
+/* 操作列の採用マーク: 採用したスタイルのタブに添える */
+.mock-badge {
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #1f883d;
+  color: #ffffff;
+  font-size: 12px;
+}
+
 /* 使う側のページの本文の領域: 文書を中央に置く */
 .host {
   padding: clamp(20px, 5vw, 48px) clamp(16px, 5vw, 48px) 64px;

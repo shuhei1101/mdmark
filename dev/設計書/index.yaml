@@ -18,3 +18,5 @@ items:
     summary: 採用済みの外部 API のリファレンス
   - page: 外部ライブラリ/
     summary: 採用済みの外部ライブラリ / 外部ツールのリファレンス
+  - page: デザイン方針.md
+    summary: mdmark が描く文書の既定の見た目に通すデザインの方向性
