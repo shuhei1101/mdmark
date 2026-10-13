@@ -6,6 +6,4 @@ stories:
         id: embed
     args:
       name: chart
-      args:
-        - a
-        - b
+      args: a,b

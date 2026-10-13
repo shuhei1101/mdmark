@@ -164,6 +164,9 @@ const html = render("# 見出し\n\n本文");
 | `--mdmark-heading-weight` | `600` | 見出しの太さ |
 | `--mdmark-heading-rule-width` | `1px` | 見出し 1・見出し 2 の下の線の太さ。`0` にすると線が出ない |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ |
+| `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
+| `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
+| `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |
 
 <!-- /table -->
 
