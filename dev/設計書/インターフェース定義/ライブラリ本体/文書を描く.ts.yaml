@@ -344,7 +344,7 @@ request:
     description: 印の名前から外部ライブラリのモジュールの URL を引く対応表。mdmark が持つ既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は足す
     constraints: URL はページの `document.baseURI` を基準に解決する
     example: '{ "test-lib": "/fixtures/test-lib.js" }'
-    notes: 無い名前を足せるかは要件.md の `未確定`（推奨 A）
+    notes: '無い名前を足せることは確認ログの決定（推奨案 A）。#6 の `registerComponent()` との棲み分けは #6 が決める'
 request_example: |-
   ```json
   {
