@@ -100,12 +100,26 @@ body {
       break-inside: avoid;
     }
 
-    /* 表とコードブロック: 横スクロールをやめて折り返し、影を外す */
+    /* 表とコードブロック: 横スクロールをやめて紙の幅で折り返し、影を外す */
     :where(pre, table) {
       display: table;
       width: 100%;
+      table-layout: fixed;
       background: none;
+    }
+
+    /* コードブロックの中のコード: 長い行を折り返す */
+    pre code {
       white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    /* 表のセルと、その中のコード: 列の最小幅を外して折り返す */
+    :where(th, td),
+    :where(th, td) code {
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     /* 見出し: 直後で改ページしない */
@@ -114,15 +128,15 @@ body {
     }
   }
 
-  /* 使う側のページの本文の領域: 紙の余白に任せる */
-  .host {
-    padding: 0;
-  }
 }
 
-/* 紙に出すとき: モック専用の操作列を出さない */
+/* 紙に出すとき: モック専用の操作列を出さず、本文の領域の余白を紙の余白に任せる */
 @media print {
   .mock-bar {
     display: none;
+  }
+
+  .host {
+    padding: 0;
   }
 }
