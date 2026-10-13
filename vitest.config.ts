@@ -16,7 +16,8 @@ export default defineConfig({
         test: {
           name: "integration-node",
           environment: "node",
-          include: ["tests/integration/lib/build.test.ts"],
+          include: ["tests/integration/**/*.test.ts"],
+          exclude: ["tests/integration/**/*.browser.test.ts"],
         },
       },
       {
@@ -24,7 +25,7 @@ export default defineConfig({
         server: { fs: { allow: [tmpdir(), "."] } },
         test: {
           name: "integration-browser",
-          include: ["tests/integration/lib/version.test.ts"],
+          include: ["tests/integration/**/*.browser.test.ts"],
           globalSetup: ["tests/integration/global-setup.ts"],
           browser: {
             enabled: true,

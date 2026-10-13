@@ -34,4 +34,4 @@ response:
 exceptions:
   - name: なし（正常終了）
     condition: 常に埋めた版を返す
-test_file: tests/integration/lib/version.test.ts
+test_file: tests/integration/lib/version.browser.test.ts
