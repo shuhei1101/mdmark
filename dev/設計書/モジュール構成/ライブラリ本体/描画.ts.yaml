@@ -260,7 +260,7 @@ functions:
         summary: 許した要素の許した class だけを残し、`role` は `status` だけを残す
         condition: '`<code class="language-ts evil">`・`<div class="mdmark-embed other" data-mdmark-slot="x" role="status">`・`<p class="x">`・`<div class="mdmark-embed" role="alert">`'
         mock: なし
-        expected: '`class="language-ts"` と `class="mdmark-embed"`。`data-mdmark-slot` と `role="status"` は残る。`<p>` は class を持たず、`role="alert"` は落ちる'
+        expected: '`class="language-ts"` と `class="mdmark-embed"`。`data-mdmark-slot` と `role="status"` は残る。`<p>` は class を持たず、`role="alert"` が無い（値の無い `role` 属性は残る）'
       - name: test_sanitize_when_tabindex
         case: 正常
         summary: 文書に書いた `tabindex` を 0 にする
