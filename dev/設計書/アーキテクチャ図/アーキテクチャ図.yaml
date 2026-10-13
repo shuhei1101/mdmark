@@ -52,7 +52,17 @@ external_systems:
     purpose: GitHub のリポジトリの版のタグが指す配布物を、使う側のページへ配る
     direction: 受信のみ
     protocol: HTTPS
+    detail: dev/設計書/外部API/jsDelivr#
     cost: 無料。1 ファイル 20MB まで
     status: planned
     notes:
       事前確認: 否。ライブラリ本体は実行時に jsDelivr を呼ばない。
+  - name: GitHub Actions
+    purpose: release と hotfix のブランチで配布物をビルドし、`dist/` を commit する
+    direction: 双方向
+    protocol: ワークフロー（YAML）
+    detail: dev/設計書/外部ライブラリ/GitHubActions#
+    cost: 公開リポジトリは無料。対象のブランチへ commit を push する
+    status: planned
+    notes:
+      事前確認: 否。ビルドが失敗すれば commit せずにジョブが失敗し、費用もかからない。

@@ -1,0 +1,96 @@
+title: "公開する版の配布物を入れる"
+entry:
+  kind: trigger
+  value: GitHub Actions のワークフロー（`release/v*` への push、master へ向けた `hotfix/**` の PR の更新）
+flows:
+  - name: 正常系（release）
+    summary: '`release/v0.1.0` への push で、`v0.1.0` を埋めた `dist/` を commit する'
+    setup:
+      - name: release ブランチ
+        description: '`version.ini` を `v0.1.0` に上げた `release/v0.1.0`'
+      - name: Mock
+        description: GitHub Actions を、ワークフローのスクリプトを手元の git リポジトリで動かす形に差し替える
+        notes: push 先は手元の bare リポジトリ
+    flow: |-
+      sequenceDiagram
+        participant G as GitHub
+        participant W as ワークフロー
+        participant B as ビルド
+        G->>W: release/v0.1.0 への push
+        W->>B: npm run build -- --version v0.1.0
+        B-->>W: dist/
+        W->>G: dist/ を commit して push
+    expected:
+      - '`release/v0.1.0` の先頭の commit の `dist/index.js` の `version()` が `v0.1.0` を返す'
+    test: test_normal_when_release
+  - name: 正常系（hotfix）
+    summary: master へ向けた `hotfix/**` の PR で、打つタグの値を埋めた `dist/` を commit する
+    setup:
+      - name: hotfix の PR
+        description: master の直前のタグが `v0.1.0` で、`type:bug` の Issue を起点にする hotfix の PR
+        notes: 打つタグは PATCH を上げた `v0.1.1`
+      - name: Mock
+        description: GitHub Actions を、ワークフローのスクリプトを手元の git リポジトリで動かす形に差し替える
+    flow: |-
+      sequenceDiagram
+        participant G as GitHub
+        participant W as ワークフロー
+        participant B as ビルド
+        G->>W: hotfix の PR の更新
+        W->>G: master の直前のタグと起点 Issue の type を読む
+        W->>W: 打つタグ v0.1.1 を求める
+        W->>B: npm run build -- --version v0.1.1
+        B-->>W: dist/
+        W->>G: dist/ を hotfix ブランチへ commit して push
+    expected:
+      - hotfix ブランチの先頭の commit の `dist/index.js` の `version()` が `v0.1.1` を返す
+    test: test_normal_when_hotfix
+  - name: 正常系（配布物が変わらない）
+    summary: ビルドした `dist/` が既に commit されているものと同じなら commit しない
+    setup:
+      - name: release ブランチ
+        description: '`v0.1.0` を埋めた `dist/` を既に commit した `release/v0.1.0`'
+      - name: Mock
+        description: GitHub Actions を、ワークフローのスクリプトを手元の git リポジトリで動かす形に差し替える
+    flow: |-
+      sequenceDiagram
+        participant G as GitHub
+        participant W as ワークフロー
+        participant B as ビルド
+        G->>W: release/v0.1.0 への push
+        W->>B: npm run build -- --version v0.1.0
+        B-->>W: dist/
+        W->>W: 差分が無いので commit しない
+    expected:
+      - '`release/v0.1.0` に commit が増えていない'
+    test: test_normal_when_dist_unchanged
+  - name: 異常系（ビルドが失敗する・ジョブの失敗）
+    summary: ビルドが失敗すると commit せずにジョブを失敗させる
+    setup:
+      - name: release ブランチ
+        description: 配布ファイルが上限を超える `release/v0.1.0`
+      - name: Mock
+        description: 配布ファイルの上限を 1 バイトに差し替える
+    flow: |-
+      sequenceDiagram
+        participant G as GitHub
+        participant W as ワークフロー
+        participant B as ビルド
+        G->>W: release/v0.1.0 への push
+        W->>B: npm run build -- --version v0.1.0
+        B-->>W: 終了コード 1
+        W-->>G: ジョブを失敗にする
+    expected:
+      - ジョブが失敗で終わる
+      - '`release/v0.1.0` に commit が増えていない'
+    test: test_error_when_build_failed
+lead: 版のタグが指す commit に配布物が入るように、release と hotfix のブランチで打つ版を埋めてビルドし、`dist/` をそのブランチへ commit する。
+permissions: 'リポジトリの中身への書き込み（`contents: write`）'
+idempotent: true
+side_effects: 対象のブランチへ `dist/` の commit を push する
+exclusivity: 同じブランチのジョブは 1 つずつ動かし、後から来たものを残す（`concurrency` をブランチ名で分ける）
+exceptions:
+  - name: なし（正常終了）
+    condition: '`dist/` を commit したか、変わらず commit が要らなかった'
+  - name: ジョブの失敗
+    condition: ビルドが終了コード 1 で終わった

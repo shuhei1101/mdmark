@@ -1,0 +1,114 @@
+title: "配布物をビルドする"
+entry:
+  kind: operation
+  value: '`npm run build [-- --version v{MAJOR}.{MINOR}.{PATCH}]`（CLI）'
+flows:
+  - name: 正常系
+    summary: '`version.ini` の版を埋めてビルドする'
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`version.ini` が `v0.0.0` の作業ツリー'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as ファイル
+        D->>B: npm run build
+        B->>F: version.ini を読む
+        B->>F: v0.0.0 を埋めた dist/index.js と index.css を書く
+        B-->>D: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` と `dist/index.css` がある'
+      - '`dist/index.js` の `version()` が `v0.0.0` を返す'
+    test: test_normal
+  - name: 正常系（版を指定する）
+    summary: '`--version` で渡した版を埋めてビルドする'
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`version.ini` が `v0.0.0` の作業ツリー'
+        notes: '`--version v0.0.1`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as ファイル
+        D->>B: npm run build -- --version v0.0.1
+        B->>F: v0.0.1 を埋めた dist/index.js と index.css を書く
+        B-->>D: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` の `version()` が `v0.0.1` を返す'
+    test: test_normal_when_version_given
+  - name: 異常系（版の書式が違う・終了コード 1）
+    summary: 書式に合わない版を渡すと、配布物を書かずに終わる
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`dist/` が無い作業ツリー'
+        notes: '`--version 1.2`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        D->>B: npm run build -- --version 1.2
+        B-->>D: 書式 v{MAJOR}.{MINOR}.{PATCH} を示して終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` が無い'
+      - 標準エラーに `v{MAJOR}.{MINOR}.{PATCH}` が出る
+    test: test_error_when_version_format_invalid
+  - name: 異常系（配布ファイルが上限を超える・終了コード 1）
+    summary: 上限を超えた配布ファイルがあると、書いた配布物を消して終わる
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`dist/` が無い作業ツリー'
+      - name: Mock
+        description: 配布ファイルの上限を 1 バイトに差し替える
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as ファイル
+        D->>B: npm run build
+        B->>F: dist/ を書く
+        B->>F: サイズを数え、dist/ を消す
+        B-->>D: 超えたファイル名とサイズを示して終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` が無い'
+      - 標準エラーに超えたファイル名とサイズが出る
+    test: test_error_when_dist_file_too_large
+lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` にビルドする。'
+idempotent: true
+side_effects: '`dist/` を書き換える'
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する#
+request:
+  - name: --version
+    type: string
+    required: false
+    default: なし（`version.ini` の先頭行を埋める）
+    location: argument
+    description: 埋める版
+    constraints: '`^v\d+\.\d+\.\d+$`'
+    example: v0.0.1
+exceptions:
+  - name: なし（正常終了）
+    condition: 配布物を書いて終了コード 0
+  - name: 版の書式の誤り（終了コード 1）
+    condition: 埋める版が `v{MAJOR}.{MINOR}.{PATCH}` に合わない
+  - name: 配布ファイルの上限超過（終了コード 1）
+    condition: '`dist/` のファイルが 1 つでも上限を超える'
+constraints:
+  - item: 配布ファイル 1 つのサイズ
+    constraint: 20MB 以下
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
+  - item: 出力の対象のブラウザ
+    constraint: Chrome 94・Firefox 93・Safari 16.4
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
