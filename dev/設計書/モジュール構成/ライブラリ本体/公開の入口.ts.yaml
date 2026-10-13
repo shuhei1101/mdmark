@@ -58,7 +58,7 @@ styles:
         value: '`min-height: 12rem`・`--mdmark-color-border` の破線・角丸 `--mdmark-radius`・文字を中央に `--mdmark-color-muted` で置く'
       - class_name: .mdmark .mdmark-notice
         target: 知らせの枠
-        value: '地 `--mdmark-color-notice-bg`・左の線 `--mdmark-color-notice-border`・文字 `--mdmark-color-notice-text`・角丸 `--mdmark-radius`。題（`.mdmark-notice-title`）は太字のブロック、`code` は折り返す'
+        value: '地 `--mdmark-color-notice-bg`・1px の線（4 辺）`--mdmark-color-notice-border`・文字 `--mdmark-color-notice-text`・角丸 `--mdmark-radius`。題（`.mdmark-notice-title`）は太字のブロック、`code` は折り返す'
       - class_name: '@media print .mdmark'
         target: 印刷のとき
         value: '地と余白を外して紙の幅いっぱいにする。`a[href^="http"]::after` で URL を併記する。表・コードブロック・図・読み込み中の枠・知らせの枠を改ページで切らない。表とコードブロックの横スクロールと影をやめて紙の幅に収め、長い行を折り返す。`h1`〜`h3` の直後で改ページしない'
