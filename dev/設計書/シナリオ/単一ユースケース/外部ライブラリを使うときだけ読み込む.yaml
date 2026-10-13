@@ -9,7 +9,7 @@ scenarios:
         description: 段落の間にテスト用の印を持つ文書
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。外部ライブラリの代役は、関数を 1 つ持つモジュールを返し、受けた要求を数える
-        notes: テスト用の印を対応表へどう載せるかはインターフェース定義設計で決める
+        notes: テスト用の印は、設定の `libraries` で対応表に足す
     flow: |-
       sequenceDiagram
         actor U as 利用者

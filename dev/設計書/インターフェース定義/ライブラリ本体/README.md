@@ -8,3 +8,5 @@
 | --- | --- |
 | [版を返す.ts](./版を返す.ts.yaml) | 使う側のページが、読み込んだ配布物の版を取る |
 | [配布物をビルドする.ts](./配布物をビルドする.ts.yaml) | 版を埋めた dist/index.js と dist/index.css をビルドする |
+| [文書を描く.ts](./文書を描く.ts.yaml) | 使う側のページが、要素の中に Markdown を文書として描く（mount） |
+| [文書をHTML文字列にする.ts](./文書をHTML文字列にする.ts.yaml) | 画面を持たずに Markdown を HTML 文字列にする（render） |
