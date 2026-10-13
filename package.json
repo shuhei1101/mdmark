@@ -7,10 +7,13 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "build": "node scripts/build.ts",
-    "test:integration": "vitest run --project 'integration*'"
+    "test:integration": "vitest run --project 'integration*'",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.64.0",
     "@types/node": "24.19.2",
     "@vitest/browser-playwright": "5.0.4",
     "esbuild": "0.28.2",

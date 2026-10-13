@@ -11,5 +11,11 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["scripts", "src", "tests", "vitest.config.ts"]
+  "include": [
+    "playwright.config.ts",
+    "scripts",
+    "src",
+    "tests",
+    "vitest.config.ts"
+  ]
 }
