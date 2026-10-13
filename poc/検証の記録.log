@@ -1,0 +1,54 @@
+実行日時: 2026-10-13 19:06:15 JST
+Node v24.14.0
+
+$ node poc/build.ts
+dist/index.js 527664 バイト
+dist/index.min.js 236982 バイト
+
+$ node poc/bcd.ts
+| 機能 | キー | Chrome | Firefox | Safari |
+| --- | --- | --- | --- | --- |
+| @layer | css.at-rules.layer | 99 | 97 | 15.4 |
+| 動的 import() | javascript.operators.import | 63 | 67 | 11.1 |
+| import map | html.elements.script.type.importmap | 89 | 108 | 16.4 |
+| モジュールを読んだ後に足した import map | html.elements.script.type.importmap.multiple_import_maps | 133 | 150 | 18.4 |
+| 対応ブラウザの下限 | - | 94 | 93 | 16.4 |
+
+$ node poc/show.ts
+{
+  "html": "\n<p>段落。 続き。</p>\n\n<p><a href=\"#\">属性のリンク</a></p>\n<p><a>生のリンク</a></p>\n<p>[記法のリンク](javascript:window.__flag='markdown')</p>\n<pre><code>const x = 1;\n</code></pre>\n<details>\n<summary>折り畳み</summary>\n<p>中の文。</p>\n</details>\n",
+  "marks": [
+    {
+      "name": "features",
+      "args": [
+        "+a",
+        "-b"
+      ]
+    },
+    {
+      "name": "unknown",
+      "args": [
+        "1"
+      ]
+    }
+  ]
+}
+
+$ npx playwright test -c poc/playwright.config.ts
+
+Running 12 tests using 2 workers
+
+  ✓   1 [chromium] › poc/tests/poc.spec.ts:127:1 › render_when_node_and_browser (115ms)
+  ✓   3 [chromium] › poc/tests/poc.spec.ts:154:1 › render_when_markdown_has_scripts (153ms)
+  ✓   4 [chromium] › poc/tests/poc.spec.ts:172:1 › mount_when_markdown_has_no_library_mark (62ms)
+  ✓   5 [chromium] › poc/tests/poc.spec.ts:186:1 › mount_when_markdown_has_library_mark (78ms)
+  ✓   6 [chromium] › poc/tests/poc.spec.ts:201:1 › mount_when_library_not_found (100ms)
+  ✓   7 [chromium] › poc/tests/poc.spec.ts:219:1 › layer_when_outside_rule_has_lower_specificity (88ms)
+  ✓   2 [firefox] › poc/tests/poc.spec.ts:127:1 › render_when_node_and_browser (762ms)
+  ✓   8 [firefox] › poc/tests/poc.spec.ts:154:1 › render_when_markdown_has_scripts (424ms)
+  ✓   9 [firefox] › poc/tests/poc.spec.ts:172:1 › mount_when_markdown_has_no_library_mark (173ms)
+  ✓  10 [firefox] › poc/tests/poc.spec.ts:186:1 › mount_when_markdown_has_library_mark (203ms)
+  ✓  11 [firefox] › poc/tests/poc.spec.ts:201:1 › mount_when_library_not_found (196ms)
+  ✓  12 [firefox] › poc/tests/poc.spec.ts:219:1 › layer_when_outside_rule_has_lower_specificity (215ms)
+
+  12 passed (4.8s)
