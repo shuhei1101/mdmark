@@ -1,0 +1,5 @@
+@layer mdmark {
+	:root {
+		--mdmark-color-text: #1f2328;
+	}
+}

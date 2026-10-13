@@ -1,0 +1,296 @@
+v24.14.0
+$ npm ci
+
+added 47 packages, and audited 48 packages in 5s
+
+14 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit=0
+$ npm run lint
+
+> lint
+> biome check .
+
+biome.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1 1 │   {
+    2   │ - ··"files":·{·"includes":·["src/**",·"tests/**",·"scripts/**",·"*.json",·"*.ts"]·}
+      2 │ + → "files":·{
+      3 │ + → → "includes":·["src/**",·"tests/**",·"scripts/**",·"*.json",·"*.ts"]
+      4 │ + → }
+    3 5 │   }
+    4 6 │   
+  
+
+package.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1  1 │   {
+     2    │ - ··"name":·"mdmark",
+     3    │ - ··"private":·true,
+     4    │ - ··"type":·"module",
+     5    │ - ··"scripts":·{
+     6    │ - ····"lint":·"biome·check·.",
+     7    │ - ····"typecheck":·"tsc·--noEmit",
+     8    │ - ····"build":·"node·scripts/build.mjs",
+     9    │ - ····"test:unit":·"vitest·run·tests/unit",
+    10    │ - ····"test:e2e":·"playwright·test"
+    11    │ - ··},
+    12    │ - ··"devDependencies":·{
+    13    │ - ····"@biomejs/biome":·"2.5.15",
+    14    │ - ····"@playwright/test":·"1.64.0",
+    15    │ - ····"esbuild":·"0.28.2",
+    16    │ - ····"typescript":·"7.0.2",
+    17    │ - ····"vitest":·"5.0.4"
+    18    │ - ··}
+        2 │ + → "name":·"mdmark",
+        3 │ + → "private":·true,
+        4 │ + → "type":·"module",
+        5 │ + → "scripts":·{
+        6 │ + → → "lint":·"biome·check·.",
+        7 │ + → → "typecheck":·"tsc·--noEmit",
+        8 │ + → → "build":·"node·scripts/build.mjs",
+        9 │ + → → "test:unit":·"vitest·run·tests/unit",
+       10 │ + → → "test:e2e":·"playwright·test"
+       11 │ + → },
+       12 │ + → "devDependencies":·{
+       13 │ + → → "@biomejs/biome":·"2.5.15",
+       14 │ + → → "@playwright/test":·"1.64.0",
+       15 │ + → → "esbuild":·"0.28.2",
+       16 │ + → → "typescript":·"7.0.2",
+       17 │ + → → "vitest":·"5.0.4"
+       18 │ + → }
+    19 19 │   }
+    20 20 │   
+  
+
+playwright.config.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    2  2 │   
+    3  3 │   export default defineConfig({
+    4    │ - ··testDir:·"tests/e2e",
+    5    │ - ··use:·{·baseURL:·"http://127.0.0.1:4173"·},
+    6    │ - ··webServer:·{·command:·"npx·--yes·http-server·-p·4173·-s·.",·url:·"http://127.0.0.1:4173/tests/e2e/index.html"·},
+    7    │ - ··projects:·[{·name:·"chromium",·use:·{·browserName:·"chromium"·}·}],
+       4 │ + → testDir:·"tests/e2e",
+       5 │ + → use:·{·baseURL:·"http://127.0.0.1:4173"·},
+       6 │ + → webServer:·{
+       7 │ + → → command:·"npx·--yes·http-server·-p·4173·-s·.",
+       8 │ + → → url:·"http://127.0.0.1:4173/tests/e2e/index.html",
+       9 │ + → },
+      10 │ + → projects:·[{·name:·"chromium",·use:·{·browserName:·"chromium"·}·}],
+    8 11 │   });
+    9 12 │   
+  
+
+scripts/build.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     4  4 │   const version = process.argv[2];
+     5  5 │   if (!version) {
+     6    │ - ··throw·new·Error("埋める版を引数で渡してください（例:·node·scripts/build.mjs·v0.0.0）");
+        6 │ + → throw·new·Error(
+        7 │ + → → "埋める版を引数で渡してください（例:·node·scripts/build.mjs·v0.0.0）",
+        8 │ + → );
+     7  9 │   }
+     8 10 │   
+     9 11 │   await build({
+    10    │ - ··entryPoints:·["src/index.ts",·"src/index.css"],
+    11    │ - ··outdir:·"dist",
+    12    │ - ··bundle:·true,
+    13    │ - ··format:·"esm",
+    14    │ - ··define:·{·__MDMARK_VERSION__:·JSON.stringify(version)·},
+       12 │ + → entryPoints:·["src/index.ts",·"src/index.css"],
+       13 │ + → outdir:·"dist",
+       14 │ + → bundle:·true,
+       15 │ + → format:·"esm",
+       16 │ + → define:·{·__MDMARK_VERSION__:·JSON.stringify(version)·},
+    15 17 │   });
+    16 18 │   
+  
+
+src/index.css format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1 1 │   @layer mdmark {
+    2   │ - ··:root·{
+    3   │ - ····--mdmark-color-text:·#1f2328;
+    4   │ - ··}
+      2 │ + → :root·{
+      3 │ + → → --mdmark-color-text:·#1f2328;
+      4 │ + → }
+    5 5 │   }
+    6 6 │   
+  
+
+src/index.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    3 3 │   /** 配布物に埋めた版の文字列を返す。 */
+    4 4 │   export function version(): string {
+    5   │ - ··return·__MDMARK_VERSION__;
+      5 │ + → return·__MDMARK_VERSION__;
+    6 6 │   }
+    7 7 │   
+  
+
+tests/e2e/index.html:6:3 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    4 │ <script type="module">
+    5 │   import { version } from "/dist/index.js";
+  > 6 │   document.body.dataset.version = version();
+      │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    7 │ </script>
+    8 │ 
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+    1 1 │   
+    2 2 │     import { version } from "/dist/index.js";
+      3 │ + 
+    3 4 │     document.body.dataset.version = version();
+    4 5 │   
+  
+
+tests/e2e/version.spec.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    2  2 │   
+    3  3 │   test("配布物を読んだページで版を返す", async ({ page }) => {
+    4    │ - ··await·page.goto("/tests/e2e/index.html");
+    5    │ - ··await·expect(page.locator("body")).toHaveAttribute("data-version",·"v0.0.0-poc");
+       4 │ + → await·page.goto("/tests/e2e/index.html");
+       5 │ + → await·expect(page.locator("body")).toHaveAttribute(
+       6 │ + → → "data-version",
+       7 │ + → → "v0.0.0-poc",
+       8 │ + → );
+    6  9 │   });
+    7 10 │   
+  
+
+tests/unit/index.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    2 2 │   
+    3 3 │   test("version は埋めた版を返す", async () => {
+    4   │ - ··(globalThis·as·Record<string,·unknown>).__MDMARK_VERSION__·=·"v9.9.9";
+    5   │ - ··const·{·version·}·=·await·import("../../src/index");
+    6   │ - ··expect(version()).toBe("v9.9.9");
+      4 │ + → (globalThis·as·Record<string,·unknown>).__MDMARK_VERSION__·=·"v9.9.9";
+      5 │ + → const·{·version·}·=·await·import("../../src/index");
+      6 │ + → expect(version()).toBe("v9.9.9");
+    7 7 │   });
+    8 8 │   
+  
+
+tsconfig.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1  1 │   {
+     2    │ - ··"compilerOptions":·{
+     3    │ - ····"target":·"ES2022",
+     4    │ - ····"module":·"ESNext",
+     5    │ - ····"moduleResolution":·"Bundler",
+     6    │ - ····"strict":·true,
+     7    │ - ····"noEmit":·true,
+     8    │ - ····"skipLibCheck":·true,
+     9    │ - ····"lib":·["ES2022",·"DOM"],
+    10    │ - ····"types":·[]
+    11    │ - ··},
+    12    │ - ··"include":·["src",·"tests"]
+        2 │ + → "compilerOptions":·{
+        3 │ + → → "target":·"ES2022",
+        4 │ + → → "module":·"ESNext",
+        5 │ + → → "moduleResolution":·"Bundler",
+        6 │ + → → "strict":·true,
+        7 │ + → → "noEmit":·true,
+        8 │ + → → "skipLibCheck":·true,
+        9 │ + → → "lib":·["ES2022",·"DOM"],
+       10 │ + → → "types":·[]
+       11 │ + → },
+       12 │ + → "include":·["src",·"tests"]
+    13 13 │   }
+    14 14 │   
+  
+
+Checked 10 files in 171ms. No fixes applied.
+Found 10 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+exit=1
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0
+$ npm run build -- v0.0.0-poc
+
+> build
+> node scripts/build.mjs v0.0.0-poc
+
+exit=0
+index.css
+index.js
+$ npm run test:unit
+
+> test:unit
+> vitest run tests/unit
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/poc-project-toolchain
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  10:46:49
+   Duration  870ms (import 43%, transform 30%, worker 16%, tests 10%)
+
+exit=0
+$ npx playwright install chromium
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+FFmpeg (playwright ffmpeg v1013) downloaded to /home/shuhei2441/.cache/ms-playwright/ffmpeg-1013
+$ npm run test:e2e
+
+> test:e2e
+> playwright test
+
+[WebServer] npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/version.spec.ts:3:1 › 配布物を読んだページで版を返す (125ms)
+
+  1 passed (2.3m)
+exit=0
+$ npm run lint（整形の後）
+
+> lint
+> biome check .
+
+Checked 10 files in 176ms. No fixes applied.
+exit=0
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0
