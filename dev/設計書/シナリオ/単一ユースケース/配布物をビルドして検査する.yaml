@@ -1,0 +1,98 @@
+title: "配布物をビルドして検査する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: クローンした直後の作業ツリー
+        description: '`node_modules/` と `dist/` が無い作業ツリー'
+        notes: '`version.ini` の先頭行は `v0.0.0`'
+      - name: Mock
+        description: 差し替える依存は無い（npm レジストリから実際に入れる）
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant N as npm
+        participant B as ビルド
+        participant F as dist/
+        D->>N: npm ci
+        N-->>D: 依存を入れた
+        D->>N: npm run lint / typecheck
+        N-->>D: 違反 0 件・型エラー 0 件
+        D->>B: npm run build
+        B->>B: version.ini の版を読む
+        B->>F: 版を埋めた JS と CSS を書く
+        B-->>D: 終了コード 0
+        D->>N: npm test
+        N-->>D: 全件 pass
+    expected:
+      - '`dist/index.js` と `dist/index.css` がある'
+      - '`dist/index.js` の公開関数が `v0.0.0` を返す'
+      - lint の違反と型エラーが 0 件
+    test: test_normal
+  - name: 正常シナリオ（版を指定してビルドする）
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`npm ci` を流した作業ツリー'
+        notes: '`version.ini` は `v0.0.0`、指定する版は `v0.0.1`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as dist/
+        D->>B: npm run build -- --version v0.0.1
+        B->>F: v0.0.1 を埋めた JS と CSS を書く
+        B-->>D: 終了コード 0
+    expected:
+      - '`dist/index.js` の公開関数が `v0.0.1` を返す'
+    test: test_normal_when_version_given
+    notes:
+      使いどころ: 版のタグが `version.ini` と合わない hotfix で、打つタグの値を渡してビルドする。
+  - name: 異常シナリオ（版の書式が違う）
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`npm ci` を流した作業ツリー'
+        notes: 指定する版は `1.2`（`v` と 3 桁が無い）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        D->>B: npm run build -- --version 1.2
+        B-->>D: 版の書式が違う旨を出し、終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` に配布物が書かれていない'
+      - 出力に `v{MAJOR}.{MINOR}.{PATCH}` の書式が示される
+    test: test_error_when_version_format_invalid
+  - name: 異常シナリオ（配布ファイルが上限を超える）
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`npm ci` を流した作業ツリー'
+      - name: Mock
+        description: 配布ファイルの上限をテスト用に小さく差し替える
+        notes: 上限を 1 バイトにして、必ず超えるようにする
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as dist/
+        D->>B: npm run build
+        B->>B: 配布ファイルのサイズを数える
+        B->>F: 書いた配布物を消す
+        B-->>D: 超えたファイルとサイズを出し、終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` に配布物が残っていない'
+      - 出力に超えたファイル名とサイズが出る
+    test: test_error_when_dist_file_too_large
+lead: 開発者が、クローンしたリポジトリで依存の導入・lint・型検査・ビルド・テストを順に流し、版を埋めた配布物を `dist/` に得る。
+issue: 2
+primary_actor: mdmark の開発者
+trigger: リポジトリをクローンした直後か、変更を commit する前
+preconditions:
+  - Node.js v24 が入っている
+  - リポジトリの直下に `version.ini` がある
+success_guarantee: '`dist/` に ES モジュールの JavaScript と CSS が 1 つずつあり、JavaScript の公開関数がビルドで埋めた版を返す。'
+minimal_guarantee: ビルドが失敗したときは `dist/` に配布物を残さず、終了コード 0 以外で終わり、足りないものを出す。

@@ -1,0 +1,53 @@
+title: "版を固定して配布物を読み込む"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 配布物を読むページ
+        description: '`dist/index.js` を `<script type="module">` で読み、`dist/index.css` を `<link>` で読む HTML'
+        notes: ビルドで埋める版は `v0.0.1`
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の配信に差し替える
+        notes: '`/gh/shuhei1101/mdmark@v0.0.1/dist/{ファイル}` への要求に、作業ツリーの `dist/{ファイル}` を返す'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant C as jsDelivr
+        U->>P: ページを開く
+        P->>C: @v0.0.1/dist/index.css と index.js を要求
+        C-->>P: CSS と JavaScript
+        P->>P: 公開関数を呼ぶ
+        P-->>U: 版 v0.0.1 を表示
+    expected:
+      - 公開関数が `v0.0.1` を返す
+      - ページのルート要素に mdmark の CSS 変数が当たっている
+    test: test_normal
+  - name: 異常シナリオ（配布物を読めない）
+    setup:
+      - name: 配布物を読むページ
+        description: 正常シナリオと同じ HTML。本文に段落を 1 つ持つ
+        notes: ページが読む版は、打っていない `v9.9.9`
+      - name: Mock
+        description: jsDelivr を、どの要求にも 404 を返す手元の配信に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant C as jsDelivr
+        U->>P: ページを開く
+        P->>C: @v9.9.9/dist/index.css と index.js を要求
+        C-->>P: 404
+        P-->>U: 本文だけを表示し、コンソールに読めなかった旨が出る
+    expected:
+      - ページの本文の段落が表示されている
+      - ブラウザのコンソールに `index.js` を読めなかったエラーが出る
+    test: test_error_when_dist_not_found
+lead: 使う側のページが、版のタグを固定した URL で mdmark の JavaScript と CSS を読み、公開関数を呼ぶ。サーバーの言語によらず、ページに書いたタグだけで使える。
+issue: 2
+primary_actor: mdmark を使うアプリのページ
+trigger: 利用者が、mdmark を読むページをブラウザで開く
+preconditions:
+  - 読む版のタグが指す commit に `dist/` が入っている
+  - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js` と `index.css` を読む記述を持つ
+success_guarantee: ページに CSS が当たり、JavaScript の公開関数がページに書いたタグと同じ版を返す。
+minimal_guarantee: 配布物を読めなかったときも、ページの本文はそのまま表示され、読めなかったことがブラウザのコンソールに出る。
