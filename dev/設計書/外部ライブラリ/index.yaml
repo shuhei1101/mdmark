@@ -14,3 +14,5 @@ items:
     summary: GitHub Flavored Markdown をトークンに解析し、HTML 文字列にする
   - page: sanitize-html.yaml
     summary: 描く前の HTML からスクリプトと許可していない要素・属性を落とす
+  - page: Storybook.yaml
+    summary: UI の部品を状態ごとのストーリーとして並べる（サーバー描画）
