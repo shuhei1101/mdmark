@@ -36,7 +36,13 @@ categories:
       npm run build -- --version v{版}
       ```
 
-      3. `dist/` を commit して対象のブランチへ push する
+      3. `dist/` に差分があるかを確かめる（出力が空なら手順 4 を飛ばす）
+
+      ```bash
+      git status --porcelain dist
+      ```
+
+      4. `dist/` を commit して対象のブランチへ push する
 
       ```bash
       git add dist
