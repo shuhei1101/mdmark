@@ -20,7 +20,7 @@ scenarios:
         P-->>U: 版 v0.0.1 を表示
     expected:
       - 公開関数が `v0.0.1` を返す
-      - ページのルート要素に mdmark の CSS 変数が当たっている
+      - ページのルート要素の CSS 変数 `--mdmark-version` の計算値が `"v0.0.1"`
     test: test_normal
   - name: 異常シナリオ（配布物を読めない）
     setup:
