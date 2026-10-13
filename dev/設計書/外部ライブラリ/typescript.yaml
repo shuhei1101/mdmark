@@ -26,5 +26,7 @@ license: Apache-2.0（商用利用可）
 docs_url: https://www.typescriptlang.org/docs/
 install: |-
   ```bash
-  npm i -D -E typescript@7.0.2
+  npm i -D -E typescript@7.0.2 @types/node@24.19.2
   ```
+
+  `@types/node` は `scripts/` とテストが使う `node:fs` などの型。版は Node.js v24 に合わせる。
