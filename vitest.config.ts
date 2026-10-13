@@ -10,6 +10,20 @@ export default defineConfig({
           name: "unit",
           environment: "node",
           include: ["tests/unit/**/*.test.ts"],
+          exclude: ["tests/unit/**/*.browser.test.ts"],
+        },
+      },
+      {
+        // DOM を使う単体テストは Chromium の中で流す
+        test: {
+          name: "unit-browser",
+          include: ["tests/unit/**/*.browser.test.ts"],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{ browser: "chromium" }],
+          },
         },
       },
       {

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:unit": "vitest run --project unit",
+    "test:unit": "vitest run --project 'unit*'",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "build": "node scripts/build.ts",

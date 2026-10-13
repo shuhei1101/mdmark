@@ -1,7 +1,15 @@
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Metafile } from "esbuild";
 import { afterEach, expect, test, vi } from "vitest";
 
 /** ビルドのスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -30,6 +38,37 @@ async function createRoot(versionIni: string): Promise<string> {
   await writeFile(join(root, "src", "index.css"), "/* entry */\n");
   await writeFile(join(root, "version.ini"), versionIni);
   return root;
+}
+
+/** 一時フォルダの node_modules にパッケージを置く（licenseText があれば直下の LICENSE に書く） */
+async function createPackage(
+  root: string,
+  name: string,
+  options: { version: string; license: string; licenseText?: string },
+): Promise<void> {
+  const dir = join(root, "node_modules", name);
+  await mkdir(dir, { recursive: true });
+  await writeFile(
+    join(dir, "package.json"),
+    JSON.stringify({
+      name,
+      version: options.version,
+      license: options.license,
+    }),
+  );
+  if (options.licenseText !== undefined) {
+    await writeFile(join(dir, "LICENSE"), options.licenseText);
+  }
+}
+
+/** 入力のパスだけを持つ esbuild の metafile を作る */
+function createMetafile(inputPaths: string[]): Metafile {
+  return {
+    inputs: Object.fromEntries(
+      inputPaths.map((path) => [path, { bytes: 1, imports: [] }]),
+    ),
+    outputs: {},
+  };
 }
 
 /** 前回のビルドの dist/index.js を置く */
@@ -184,7 +223,7 @@ test("test_resolve_version_when_format_invalid", async () => {
   );
 });
 
-// 版を埋めた JS と CSS を 1 つずつ書く（正常系）
+// 版を埋めた JS と CSS とライセンスのファイルを 1 つずつ書く（正常系）
 test("test_build_dist", async () => {
   // 準備
   const { buildDist } = await loadBuild();
@@ -193,14 +232,103 @@ test("test_build_dist", async () => {
   const outputs = await buildDist("v0.0.1", root);
   // 検証
   const paths = Object.keys(outputs).sort();
-  expect(paths).toHaveLength(2);
-  expect(paths[0]).toMatch(/dist\/index\.css$/);
-  expect(paths[1]).toMatch(/dist\/index\.js$/);
+  expect(paths).toHaveLength(3);
+  expect(paths[0]).toMatch(/dist\/THIRD_PARTY_LICENSES\.txt$/);
+  expect(paths[1]).toMatch(/dist\/index\.css$/);
+  expect(paths[2]).toMatch(/dist\/index\.js$/);
   expect(await readFile(join(root, "dist", "index.js"), "utf8")).toContain(
     '"v0.0.1"',
   );
   const css = await readFile(join(root, "dist", "index.css"), "utf8");
   expect(css.slice(0, 100)).toContain('--mdmark-version:"v0.0.1"');
+});
+
+// CSS の入れ子を展開する（正常系）
+test("test_build_dist_when_nested_css", async () => {
+  // 準備
+  const { buildDist } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await writeFile(join(root, "src", "index.css"), ".a { .b { color: red } }\n");
+  // 実行
+  await buildDist("v0.0.1", root);
+  // 検証
+  const css = await readFile(join(root, "dist", "index.css"), "utf8");
+  expect(css).toContain(".a .b{color:red}");
+  expect(css).not.toMatch(/\.a\s*\{[^}]*\.b\s*\{/);
+});
+
+// postcss の import を差し替え、配布物に postcss を含めない（正常系）
+test("test_build_dist_when_postcss_imported", async () => {
+  // 準備
+  const { buildDist } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await writeFile(
+    join(root, "src", "index.ts"),
+    'import { parse } from "postcss";\nexport { parse };\n',
+  );
+  await symlink(
+    join(process.cwd(), "node_modules"),
+    join(root, "node_modules"),
+    "dir",
+  );
+  // 実行
+  await buildDist("v0.0.1", root);
+  // 検証
+  const js = await readFile(join(root, "dist", "index.js"), "utf8");
+  expect(js).not.toContain("CssSyntaxError");
+});
+
+// 束ねたパッケージごとに名前・版・ライセンス・本文を書く（正常系）
+test("test_write_third_party_licenses", async () => {
+  // 準備
+  const { writeThirdPartyLicenses } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await mkdir(join(root, "dist"));
+  await createPackage(root, "b", {
+    version: "4.5.6",
+    license: "ISC",
+    licenseText: "Copyright B holder",
+  });
+  await createPackage(root, "@s/a", {
+    version: "1.2.3",
+    license: "MIT",
+    licenseText: "Copyright A holder",
+  });
+  const metafile = createMetafile([
+    "node_modules/b/index.js",
+    "node_modules/@s/a/lib/x.js",
+    "node_modules/@s/a/lib/y.js",
+    "src/index.ts",
+  ]);
+  // 実行
+  await writeThirdPartyLicenses({ metafile, root });
+  // 検証
+  const text = await readFile(
+    join(root, "dist", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  for (const expected of ["@s/a", "1.2.3", "MIT", "4.5.6", "ISC"]) {
+    expect(text).toContain(expected);
+  }
+  expect(text.split("Copyright A holder")).toHaveLength(2);
+  expect(text.split("Copyright B holder")).toHaveLength(2);
+  expect(text.indexOf("Copyright A holder")).toBeLessThan(
+    text.indexOf("Copyright B holder"),
+  );
+});
+
+// ライセンスの本文が無いパッケージを拒む（異常系）
+test("test_write_third_party_licenses_when_license_missing", async () => {
+  // 準備
+  const { writeThirdPartyLicenses } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await mkdir(join(root, "dist"));
+  await createPackage(root, "b", { version: "4.5.6", license: "ISC" });
+  const metafile = createMetafile(["node_modules/b/index.js"]);
+  // 実行・検証
+  await expect(writeThirdPartyLicenses({ metafile, root })).rejects.toThrow(
+    "ライセンスの本文が無い: b",
+  );
 });
 
 // 上限以下なら空を返す（正常系）
