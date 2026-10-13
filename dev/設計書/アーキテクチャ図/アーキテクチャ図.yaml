@@ -57,12 +57,3 @@ external_systems:
     status: planned
     notes:
       事前確認: 否。ライブラリ本体は実行時に jsDelivr を呼ばない。
-  - name: GitHub Actions
-    purpose: release と hotfix のブランチで配布物をビルドし、`dist/` を commit する
-    direction: 双方向
-    protocol: ワークフロー（YAML）
-    detail: dev/設計書/外部ライブラリ/GitHubActions#
-    cost: 公開リポジトリは無料。対象のブランチへ commit を push する
-    status: planned
-    notes:
-      事前確認: 否。ビルドが失敗すれば commit せずにジョブが失敗し、費用もかからない。

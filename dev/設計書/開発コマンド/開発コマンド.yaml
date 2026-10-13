@@ -18,4 +18,32 @@ categories:
   - name: 取り込み前の検査
     commands: 未確定
   - name: 管理作業
-    commands: 未確定
+    prerequisites:
+      - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で流す
+      - release は `version.ini` を打つ版へ更新した後、hotfix は打つ版を決めた後
+    commands: |-
+      版のタグが指す commit に配布物を入れる（release と hotfix で、master へマージする前に流す）。
+
+      1. 依存を lock どおりに入れる
+
+      ```bash
+      npm ci
+      ```
+
+      2. 打つ版を埋めてビルドする
+
+      ```bash
+      npm run build -- --version v{版}
+      ```
+
+      3. `dist/` を commit して対象のブランチへ push する
+
+      ```bash
+      git add dist
+      git commit -m "v{版} の配布物を入れる"
+      git push origin {対象のブランチ}
+      ```
+    effects: 対象のブランチへ `dist/` の commit を push する。`dist/` が変わらなければ commit は要らない
+    verification:
+      state: 未確認
+      detail: ビルドのコマンドは実装の段で作る。実装の後に確かめる

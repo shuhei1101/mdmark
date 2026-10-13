@@ -6,4 +6,3 @@
 
 | ページ | 概要 |
 | --- | --- |
-| [GitHubActions](./GitHubActions.yaml) | release と hotfix のブランチでのビルドと dist/ の commit |

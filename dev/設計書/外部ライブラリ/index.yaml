@@ -1,4 +1,2 @@
 summary: 採用済みの外部ライブラリ / 外部ツールのリファレンス
-items:
-  - page: GitHubActions.yaml
-    summary: release と hotfix のブランチでのビルドと dist/ の commit
+items: []
