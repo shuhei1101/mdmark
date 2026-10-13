@@ -139,11 +139,23 @@
       max-width: 100%;
       border-collapse: collapse;
       overflow-x: auto;
+      overflow-wrap: normal;
       font-variant-numeric: tabular-nums;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 表の中のコード: 語の途中で折り返さない */
+      code {
+        white-space: nowrap;
+      }
     }
 
-    /* 表のセル: 縦の罫線は太さ 0 のスタイルでは出ない */
+    /* 表のセル: 縦の罫線は太さ 0 のスタイルでは出ない。狭い幅でも列を数文字より細くしない */
     :where(th, td) {
+      min-width: 6em;
       padding: 0.45em 0.9em;
       border-block: 1px solid var(--mdmark-color-border);
       border-inline: var(--mdmark-table-rule-inline) solid var(--mdmark-color-border);
@@ -154,6 +166,7 @@
     th {
       background: var(--mdmark-color-surface);
       font-weight: 600;
+      white-space: nowrap;
     }
 
     /* 引用: 面の色と字下げで本文と分ける */
