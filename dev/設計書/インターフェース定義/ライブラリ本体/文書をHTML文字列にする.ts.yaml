@@ -55,7 +55,7 @@ flows:
       - name: 配布物を読んだ Node の処理
         description: 正常系と同じ
       - name: 印とスクリプトを書いた Markdown
-        description: '`<!-- features: +a -b -->`・`<!-- unknown: 1 -->`・`script` 要素・`onclick` 属性を持つリンク・`javascript:` の URL のリンク・`style="position:fixed"` を持つ段落・`details` と `summary` を持つ文書'
+        description: '`<!-- features: +a -b -->`・`<!-- unknown: 1 -->`・`script` 要素・`onclick` 属性を持つリンク・`javascript:` の URL のリンク・`style="position:fixed"` を持つ段落・`<input type="text" value="x">`・`details` と `summary` を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -69,6 +69,7 @@ flows:
     expected:
       - 文字列に `<!--`・`features`・`unknown` が無い
       - 文字列に `<script`・`onclick`・`javascript:`・`style=` が無い
+      - 文書に書いた `<input type="text">` が `<input type="checkbox" disabled>` になり、`value` を持たない
       - '`<details>` と `<summary>` が残る'
       - '`script` 要素の中の文字が本文に出ない'
     test: test_normal_when_marks_and_scripts
@@ -129,7 +130,7 @@ constraints:
   - item: 印の場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`'
   - item: 残す要素・属性
-    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input`（`type="checkbox"`・`disabled`・`checked` だけ）を足す。class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけ。`style` 属性は残さない
+    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` を足す。`input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけ。`style` 属性は残さない
     notes: dev/設計書/外部ライブラリ/sanitize-html
   - item: URL のスキーム
     constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す'

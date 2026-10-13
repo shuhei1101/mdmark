@@ -257,9 +257,10 @@ flows:
     summary: 使う側のページが層の外に書いた CSS と変数の上書きが、mdmark の CSS に勝つ
     setup:
       - name: 配布物を読んだページ
-        description: '正常系と同じ。加えて、層の外に `.mdmark p { color: rgb(1, 2, 3) }` と `.mdmark { --mdmark-color-link: rgb(4, 5, 6) }` を書いた `style` 要素を持つ'
-      - name: 段落とリンクを持つ Markdown
-        description: 段落と、リンクを持つ段落と、リストを持つ文書
+        description: '正常系と同じ。加えて、層の外に `a { text-decoration-line: none }` と `.mdmark { --mdmark-color-link: rgb(4, 5, 6) }` を書いた `style` 要素を持つ'
+        notes: 層の外の `a`（詳細度 0,0,1）を、層の中の `.mdmark a`（詳細度 0,1,1）の下線と競わせる
+      - name: リンクを持つ Markdown
+        description: リンクを持つ段落を持つ文書
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -270,9 +271,8 @@ flows:
         M->>P: el の中に本文を描く
         P->>P: 層の外の規則が層の中の規則に勝つ
     expected:
-      - '`p` の `color` の計算値が `rgb(1, 2, 3)`'
-      - '`a` の `color` の計算値が `rgb(4, 5, 6)`'
-      - '`li` の `color` の計算値が、層の中の `--mdmark-color-fg` の値'
+      - '`a` の `text-decoration-line` の計算値が `none`（詳細度の低い層の外の規則が勝つ）'
+      - '`a` の `color` の計算値が `rgb(4, 5, 6)`（変数の上書きが当たる）'
     test: test_normal_when_theme_overridden
   - name: 異常系（外部ライブラリを読めない・知らせの枠）
     summary: 外部ライブラリを読めない印の場所だけを知らせの枠にし、ほかは描く
@@ -300,6 +300,7 @@ flows:
       - 知らせの枠の本文が `表示に使うライブラリ（test-lib）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。`
       - 印の前後の段落がある
       - '`mount` が例外を投げない'
+      - '`console.error` が 1 回呼ばれ、引数に印の名前 `test-lib`・URL・元のエラーを含む'
     test: test_error_when_library_not_found
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
@@ -343,6 +344,7 @@ request:
     description: 印の名前から外部ライブラリのモジュールの URL を引く対応表。mdmark が持つ既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は足す
     constraints: URL はページの `document.baseURI` を基準に解決する
     example: '{ "test-lib": "/fixtures/test-lib.js" }'
+    notes: 無い名前を足せるかは要件.md の `未確定`（推奨 A）
 request_example: |-
   ```json
   {
@@ -367,7 +369,7 @@ exceptions:
     condition: Markdown を描き、戻り値を返す
   - name: なし（知らせの枠）
     condition: 外部ライブラリのモジュールを読めない、またはモジュールの `draw` が例外を投げる
-    notes: 例外を投げず、その印の場所だけを知らせの枠に替える
+    notes: 例外を投げず、その印の場所だけを知らせの枠に替える。印の名前・URL・元のエラーを `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
