@@ -51,3 +51,4 @@ preconditions:
   - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js` と `index.css` を読む記述を持つ
 success_guarantee: ページに CSS が当たり、JavaScript の公開関数がページに書いたタグと同じ版を返す。
 minimal_guarantee: 配布物を読めなかったときも、ページの本文はそのまま表示され、読めなかったことがブラウザのコンソールに出る。
+test_file: tests/e2e/単一ユースケース/版を固定して配布物を読み込む.spec.ts

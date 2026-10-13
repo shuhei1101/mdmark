@@ -98,3 +98,4 @@ preconditions:
   - リポジトリの直下に `version.ini` がある
 success_guarantee: '`dist/` に ES モジュールの JavaScript と CSS が 1 つずつあり、JavaScript の公開関数がビルドで埋めた版を返す。'
 minimal_guarantee: ビルドが失敗したときは `dist/` に配布物を残さず、終了コード 0 以外で終わり、足りないものを出す。
+test_file: tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts
