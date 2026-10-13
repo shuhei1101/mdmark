@@ -46,6 +46,8 @@ export async function buildDist(
     define: { __MDMARK_VERSION__: JSON.stringify(version) },
     banner: { css: `:root{--mdmark-version:"${version}"}` },
     metafile: true,
+    // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す
+    logLevel: "silent",
   });
   return Object.fromEntries(
     Object.entries(result.metafile.outputs).map(([path, output]) => [
