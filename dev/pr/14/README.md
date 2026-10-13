@@ -1,0 +1,1 @@
+# PoC: TypeScript 7 上で esbuild・Vitest・Playwright・Biome が揃って動くか
