@@ -1,0 +1,15 @@
+$ npm run test:integration
+
+> test:integration
+> vitest run --project 'integration*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-project-bootstrap
+
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  18:17:58
+   Duration  1.75s (tests 57%, worker 20%, import 15%, transform 7%)
+
+exit=0
