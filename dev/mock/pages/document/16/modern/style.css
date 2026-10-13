@@ -104,6 +104,7 @@ body {
     :where(pre, table) {
       display: table;
       width: 100%;
+      box-sizing: border-box;
       table-layout: fixed;
       background: none;
     }
