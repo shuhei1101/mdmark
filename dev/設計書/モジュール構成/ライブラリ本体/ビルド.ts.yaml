@@ -32,8 +32,8 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: 版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す
-    side_effects: '`dist/` を書き換える。失敗したときは `dist/` を消し、標準エラーに理由を出す'
+    summary: 前回の `dist/` を消してから、版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す
+    side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過）は `dist/` を残さず、標準エラーに理由を出す'
     args:
       - name: argv
         type: string[]
@@ -45,7 +45,7 @@ functions:
         description: 作業ツリーの場所と配布ファイルの上限（テストで差し替える）
     returns:
       type: Promise<0 | 1>
-      description: 成功は 0、版の書式の誤りと上限超過は 1
+      description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過は 1
     unit_tests:
       - name: test_main
         case: 正常
@@ -61,10 +61,22 @@ functions:
         expected: 0 を返し、`dist/index.js` に `v0.0.1` が埋まる
       - name: test_main_when_version_format_invalid
         case: 異常
-        summary: 版の書式が違うと書かずに終わる
+        summary: 版の書式が違うと前回の `dist/` を残さずに終わる
         condition: '`--version 1.2`'
-        mock: 一時フォルダに `src/` と `version.ini` を置く
+        mock: 一時フォルダに `src/` と `version.ini` と、前回のビルドの `dist/index.js` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーに `v{MAJOR}.{MINOR}.{PATCH}` が出る
+      - name: test_main_when_version_ini_missing
+        case: 異常
+        summary: '`version.ini` を読めないと前回の `dist/` を残さずに終わる'
+        condition: '`--version` 無し、`version.ini` が無い'
+        mock: 一時フォルダに `src/` と、前回のビルドの `dist/index.js` を置く（`version.ini` は置かない）
+        expected: 1 を返し、`dist/` が無く、標準エラーに `version.ini` が出る
+      - name: test_main_when_build_fails
+        case: 異常
+        summary: esbuild が失敗すると前回の `dist/` を残さずに終わる
+        condition: '`src/index.ts` に構文エラーがある'
+        mock: 一時フォルダに構文エラーのある `src/index.ts` と `version.ini` と、前回のビルドの `dist/index.js` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーに `src/index.ts` が出る
       - name: test_main_when_dist_file_too_large
         case: 異常
         summary: 上限を超えると `dist/` を消して終わる
