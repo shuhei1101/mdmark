@@ -36,6 +36,7 @@ test("test_resolve_config_when_libraries_given", async () => {
       "test-lib": "/fixtures/test-lib.js",
       "Bad Name": "/x.js",
       num: 1,
+      constructor: "/c.js",
     },
   } as unknown as MdmarkConfig;
   // 実行
@@ -43,6 +44,7 @@ test("test_resolve_config_when_libraries_given", async () => {
   // 検証
   expect(resolved.libraries).toEqual({
     "test-lib": { url: "/fixtures/test-lib.js", figure: true },
+    constructor: { url: "/c.js", figure: true },
   });
 });
 

@@ -97,7 +97,7 @@ test("test_load_libraries_when_unknown_slot", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
   const root = createRoot(
-    '<div class="mdmark-embed" data-mdmark-slot="zzz"></div>',
+    '<div class="mdmark-embed" data-mdmark-slot="zzz"></div><div class="mdmark-embed" data-mdmark-slot="constructor"></div>',
   );
   const importModule = vi.fn<ImportModule>();
   const errorSpy = spyConsoleError();

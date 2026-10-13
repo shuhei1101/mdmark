@@ -5,6 +5,7 @@ import type {
 } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
+import { escapeHtml } from "../parts/escape.ts";
 import { takeMarks } from "./marks.ts";
 
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
@@ -130,7 +131,10 @@ export function createParser(): MarkdownItParser {
     const language = tokens[index]?.info.trim().split(/\s+/)[0] ?? "";
     const label = language ? `コード: ${language}` : "コード";
     const html = renderFence?.(tokens, index, options, env, self) ?? "";
-    return html.replace("<pre>", `<pre tabindex="0" aria-label="${label}">`);
+    return html.replace(
+      "<pre>",
+      `<pre tabindex="0" aria-label="${escapeHtml(label)}">`,
+    );
   };
   return parser;
 }

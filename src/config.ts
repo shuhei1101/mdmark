@@ -57,7 +57,9 @@ export function resolveConfig(options: {
       continue;
     }
     // 既定にある名前は URL だけを置き換え、無い名前は図の印として足す
-    const existing = libraries[name];
+    const existing = Object.hasOwn(libraries, name)
+      ? libraries[name]
+      : undefined;
     libraries[name] = existing ? { ...existing, url } : { url, figure: true };
   }
   return { features, libraries };

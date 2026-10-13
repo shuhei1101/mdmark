@@ -34,8 +34,10 @@ export async function loadLibraries(options: {
   await Promise.all(
     slots.map(async (slot) => {
       const name = slot.getAttribute("data-mdmark-slot") ?? "";
-      const entry = libraries[name];
       // 対応表に無い名前は、文書に生の HTML で書かれた要素なので取り除く
+      const entry = Object.hasOwn(libraries, name)
+        ? libraries[name]
+        : undefined;
       if (!entry) {
         slot.remove();
         return;
@@ -66,7 +68,10 @@ export async function loadLibraries(options: {
           return;
         }
         console.error("外部ライブラリを読み込めない", name, url, error);
-        slot.outerHTML = renderNotice({ name, figure: entry.figure });
+        // `draw` が要素を取り除いていたら、替える先が無い
+        if (slot.isConnected) {
+          slot.outerHTML = renderNotice({ name, figure: entry.figure });
+        }
       }
     }),
   );
