@@ -3,7 +3,7 @@ $ npm run lint
 > lint
 > biome check .
 
-Checked 60 files in 1284ms. No fixes applied.
+Checked 60 files in 3s. No fixes applied.
 
 exit=0
 
