@@ -1,0 +1,43 @@
+title: "設定: ライブラリ本体"
+lead: 使う側が `mdmark.config.yaml` に書き、使う側のサーバーが読んだオブジェクトを `mount`・`render` の `opts.config` に渡す設定のキー。この一覧はライブラリ本体が読むキーだけを持ち、JSON Schema は `schemas/mdmark.config.schema.json` に置く。
+files:
+  - file: mdmark.config.yaml
+    manages: 機能のオン・オフの既定と、外部ライブラリの対応表
+    notes: 使う側のリポジトリに置く。mdmark はブラウザで YAML を読まず、使う側のサーバーが読んだオブジェクトを受け取る
+  - file: schemas/mdmark.config.schema.json
+    manages: '`mdmark.config.yaml` のうちこの一覧のキーの JSON Schema（draft 2020-12）'
+    notes: 他の Issue が足すキー（`index`・`build`・`version` など）を拒まないよう、最上位の `additionalProperties` は許す
+settings:
+  - key: features
+    title: 機能のオン・オフ
+    file: mdmark.config.yaml
+    type: Record<string, boolean>
+    required: false
+    default: '`{ print: true }`'
+    description: '機能ごとのオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
+    allowed: 値は真偽値。知らない機能名と真偽値でない値は無視する
+    reload: reload
+    implementation: src/config.ts#resolveConfig
+  - key: features.print
+    title: 印刷の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 印刷の前に閉じた折り畳みを開き、印刷の後に戻す
+    reload: reload
+    implementation: src/print.ts#attachPrint
+  - key: libraries
+    title: 外部ライブラリの対応表
+    file: mdmark.config.yaml
+    type: Record<string, string>
+    required: false
+    default: '`{}`'
+    description: 印の名前から外部ライブラリのモジュールの URL を引く。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は足す
+    allowed: キーは英小文字で始まり英小文字・数字・`-` だけを持つ印の名前。値は URL（相対 URL はページの `document.baseURI` を基準に解決する）。文字列でない値は無視する
+    reload: reload
+    implementation: src/config.ts#resolveConfig
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.libraries]
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

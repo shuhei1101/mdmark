@@ -24,3 +24,5 @@ items:
     summary: 文書の中に mdmark が置く UI の部品の引数・状態（Storybook のストーリーの元）
   - page: 画面設計/
     summary: mdmark が描く画面の要素と、使う部品へ渡す値
+  - page: 設定/
+    summary: 使う側が渡す設定のキー・既定・許す値

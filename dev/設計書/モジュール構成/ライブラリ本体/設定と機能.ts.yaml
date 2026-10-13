@@ -1,0 +1,158 @@
+title: "ライブラリ本体 / 設定と機能"
+lead: 使う側が渡す設定に既定を当てる処理と、設定の `features` に文書の `features` の印を重ねて機能のオン・オフを決める処理。どちらも DOM に頼らず、ブラウザと Node で動く。
+directory: |-
+  ```tree
+  src/
+  ├── config.ts    # 設定の型・既定・既定を当てる resolveConfig
+  └── features.ts  # 文書の印を重ねる resolveFeatures
+  schemas/
+  └── mdmark.config.schema.json  # 設定の JSON Schema
+  ```
+data_models:
+  - name: MdmarkConfig
+    title: 設定
+    container: src/config.ts
+    usecase: 共通
+    role: DTO
+    summary: 使う側が `opts.config` に渡す設定（公開の型）。他のキーを持っていても読まない
+    properties:
+      - name: features
+        type: Record<string, boolean> | undefined
+        description: 機能のオン・オフの既定
+      - name: libraries
+        type: Record<string, string> | undefined
+        description: 印の名前からモジュールの URL を引く対応表
+  - name: LibraryEntry
+    title: 対応表の行
+    container: src/config.ts
+    usecase: 共通
+    summary: 印 1 つのモジュールの URL と、図の印か
+    properties:
+      - name: url
+        type: string
+        description: モジュールの URL
+      - name: figure
+        type: boolean
+        description: 図の印か。知らせの枠の題を分ける。設定の `libraries` で足した行は `true`
+  - name: ResolvedConfig
+    title: 既定を当てた設定
+    container: src/config.ts
+    usecase: 共通
+    summary: 全てのキーに値を持つ、内部で使う設定
+    properties:
+      - name: features
+        type: Record<string, boolean>
+        description: '`DEFAULT_FEATURES` に設定の `features` を重ねたもの。キーは `DEFAULT_FEATURES` のキーだけ'
+      - name: libraries
+        type: Record<string, LibraryEntry>
+        description: '`DEFAULT_LIBRARIES` に設定の `libraries` を重ねたもの'
+constants:
+  - name: DEFAULT_FEATURES
+    title: 機能の既定
+    container: src/config.ts
+    summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
+    value: '{ print: true }'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[features.print]
+  - name: DEFAULT_LIBRARIES
+    title: 既定の対応表
+    container: src/config.ts
+    summary: 印の名前から `LibraryEntry` を引く既定の対応表。この Issue では空で、外部ライブラリを使う機能を作る Issue（#6）が版を固定した URL の行を足す
+    value: '{}'
+  - name: MARK_NAME_PATTERN
+    title: 印の名前の書式
+    container: src/config.ts
+    summary: 印の名前と設定の `libraries` のキーが合うべき書式
+    value: /^[a-z][a-z0-9-]*$/
+functions:
+  - name: resolveConfig
+    title: 設定に既定を当てる
+    container: src/config.ts
+    kind: 関数
+    scope: public
+    summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。渡されたオブジェクトは書き換えない'
+    args:
+      - name: config
+        type: MdmarkConfig | undefined
+        required: false
+        description: 使う側の設定
+      - name: defaultLibraries
+        type: Record<string, LibraryEntry>
+        required: false
+        default: DEFAULT_LIBRARIES
+        description: 既定の対応表（単体テストで差し替える）
+    returns:
+      type: ResolvedConfig
+      description: 既定を当てた設定
+    unit_tests:
+      - name: test_resolve_config
+        case: 正常
+        summary: 設定が無ければ既定を返す
+        condition: '`config` が `undefined`'
+        mock: なし
+        expected: '`{ features: { print: true }, libraries: {} }`'
+      - name: test_resolve_config_when_features_given
+        case: 正常
+        summary: 知っている機能の真偽値だけを置き換える
+        condition: '`{ features: { print: false, unknown: true, other: "yes" } }`'
+        mock: なし
+        expected: '`features` が `{ print: false }`'
+      - name: test_resolve_config_when_libraries_given
+        case: 正常
+        summary: 書式に合う名前と文字列の URL だけを足す
+        condition: '`{ libraries: { "test-lib": "/fixtures/test-lib.js", "Bad Name": "/x.js", "num": 1 } }`'
+        mock: なし
+        expected: '`libraries` が `{ "test-lib": { url: "/fixtures/test-lib.js", figure: true } }`'
+      - name: test_resolve_config_when_default_library_overridden
+        case: 正常
+        summary: 既定の行は URL だけを置き換え、`figure` は既定のまま
+        condition: '`defaultLibraries` が `{ block: { url: "https://a/x.js", figure: false } }`、`config` が `{ libraries: { block: "/y.js" } }`'
+        mock: なし
+        expected: '`libraries.block` が `{ url: "/y.js", figure: false }`'
+  - name: resolveFeatures
+    title: 文書の印で機能のオン・オフを決める
+    container: src/features.ts
+    kind: 関数
+    scope: public
+    summary: 設定の `features` に、文書の `features` の印の引数（`+名前`・`-名前`）を書いた順に重ねる
+    description: 既定に無い名前と、`+`・`-` で始まらない引数は無視する。同じ名前が何度も出たら後のものが勝つ。機能を作る Issue は、この戻り値を読んで機能を出すかを決める
+    args:
+      - name: defaults
+        type: Record<string, boolean>
+        required: true
+        description: 既定を当てた設定の `features`
+      - name: args
+        type: string[]
+        required: true
+        description: 文書の `features` の印の引数を、書いた順に並べたもの
+    returns:
+      type: Record<string, boolean>
+      description: 決まったオン・オフ（`defaults` は書き換えない）
+    unit_tests:
+      - name: test_resolve_features
+        case: 正常
+        summary: 印が無ければ設定のまま
+        condition: '`defaults` が `{ print: true }`、`args` が `[]`'
+        mock: なし
+        expected: '`{ print: true }`'
+      - name: test_resolve_features_when_disabled
+        case: 正常
+        summary: '`-名前` でオフにする'
+        condition: '`defaults` が `{ print: true }`、`args` が `["-print"]`'
+        mock: なし
+        expected: '`{ print: false }`'
+      - name: test_resolve_features_when_enabled
+        case: 正常
+        summary: '`+名前` でオンにし、知らない名前と符号の無い引数を無視する'
+        condition: '`defaults` が `{ print: false }`、`args` が `["+print", "+unknown", "print"]`'
+        mock: なし
+        expected: '`{ print: true }`'
+      - name: test_resolve_features_when_repeated
+        case: 正常
+        summary: 同じ名前は後のものが勝つ
+        condition: '`defaults` が `{ print: true }`、`args` が `["-print", "+print"]`'
+        mock: なし
+        expected: '`{ print: true }`'
+notes:
+  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
