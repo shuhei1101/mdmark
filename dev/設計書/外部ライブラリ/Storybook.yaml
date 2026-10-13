@@ -1,0 +1,91 @@
+title: "Storybook"
+kind: "ライブラリ"
+version:
+  current: '`storybook==10.6.2` / `@storybook/server-webpack5==10.6.2` / `@storybook/server==10.6.2`'
+  latest: 10.6.2
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 3 パッケージを完全一致で固定する（10.6.2 より前は未公開の勧告 2 件の修正前）。`overrides` で `webpack-dev-middleware` を `^7.4.6` に引き上げる
+catalogs:
+  - name: コマンド
+    version: '`storybook==10.6.2`'
+    entries:
+      - name: storybook dev
+        kind: コマンド
+        purpose: 開発サーバーを立ててストーリーを配信する
+        description: '`--ci --no-open --host 127.0.0.1 -p {ポート}` で起こす。`storybook build` の出力には中継が無いため、撮影と結合テストは `storybook dev` に向ける'
+  - name: ファイル
+    version: '`storybook==10.6.2`'
+    entries:
+      - name: .storybook/main.js
+        kind: 設定ファイル
+        purpose: framework（`@storybook/server-webpack5`）とストーリーの場所を決める
+        description: webpack に TS の loader が無いため `.js` で書く。`typescript.check` は有効にしない（TypeScript 7 に従来の JS API が無い）
+      - name: .storybook/preview.js
+        kind: 設定ファイル
+        purpose: 全ストーリーに共通の `parameters.server` を決める
+      - name: .storybook/middleware.cjs
+        kind: 設定ファイル
+        purpose: 開発サーバーに経路を足す（描画の口への中継）
+        description: '`{configDir}/middleware.{js,mjs,cjs}` を開発サーバーが読み、router を受け取る。`package.json` が `"type": "module"` なので `.cjs` にする'
+      - name: '*.stories.yaml'
+        kind: ストーリー
+        purpose: サーバー描画のストーリーを YAML で書く
+        description: '`title`・`stories[].name`・`stories[].parameters.server.id`・`stories[].args` を持つ。id は `title` と `name` を整えたもの（`Parts/Notice` と `Error` → `parts-notice--error`）。`name` は英数字で書く'
+  - name: API
+    version: '`@storybook/server==10.6.2`'
+    entries:
+      - name: parameters.server.url
+        kind: パラメータ
+        purpose: ストーリーの HTML を取りに行く先
+        description: '`new URL` で組み立てるため絶対 URL が要る（`${window.location.origin}/render`）。`globals`・`params`・`args` を合わせたクエリを付ける'
+      - name: parameters.server.fetchStoryHtml
+        kind: パラメータ
+        purpose: ストーリーの HTML の取り方を差し替える
+        description: 既定の取り方は応答の `ok` を見ず、404・500 の本文もストーリーとして描く。失敗の応答を例外にする取り方に差し替える
+        params:
+          - name: url
+            type: string
+            required: true
+            description: '`parameters.server.url`'
+          - name: path
+            type: string
+            required: true
+            description: '`parameters.server.id`'
+          - name: params
+            type: Record<string, unknown>
+            required: true
+            description: '`args` と `globals` を合わせた値'
+        returns:
+          - name: '-'
+            type: Promise<string>
+            description: '`#storybook-root` に入れる HTML'
+      - name: /index.json
+        kind: エンドポイント
+        purpose: ストーリーの索引
+      - name: iframe.html?id={ストーリーの id}
+        kind: エンドポイント
+        purpose: ストーリーを単独で開くプレビュー
+        description: 描いた HTML は `#storybook-root` に入る
+lead: UI の部品を状態ごとのストーリーとして並べ、ブラウザで開いて確かめる開発サーバー。サーバー描画（`@storybook/server-webpack5`）は、ストーリーの HTML を外のサーバーから取って表示する。
+purl: pkg:npm/storybook@10.6.2
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: storybookjs/storybook
+license: MIT（商用利用可）
+official_url: https://storybook.js.org/
+docs_url: https://storybook.js.org/docs
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: 作業ツリーの外の作業場所で 3 パッケージの 10.6.2 を入れ、`overrides` で `webpack-dev-middleware` が 7.4.6 に上がることを `npm ls` で確かめた。Node 24 で TS を直接動かす描画の口と `.storybook/middleware.cjs` の中継を立て、`storybook dev --ci` の `/index.json` に YAML のストーリー（`parts-notice--error`）が載り、`/render/notice` が描画の口の HTML を、無い部品が 404 を返すこと、Playwright で開いた `iframe.html?id=parts-notice--error` の `#storybook-root` にその HTML が入ることを確かめた
+selection:
+  candidates: '`@storybook/server-webpack5`・`@storybook/html-vite`・`@storybook/web-components-vite`（いずれも 10.6.2）・`storybook-html-rsbuild` 3.6.1 を比べた。'
+  decision: 判定フローチャート『Storybookの描画の方式』の R3（部品を Node で描く描画の口）に合い、AI Monitor の Storybook の配信と同じ形で立てられる。html-vite はフローチャートの結果から外れ、Vitest 5 への対応が途中で TypeScript 7 も未対応と表明されている。web-components-vite は lit が要り、rsbuild は非公式で 3 つ目のバンドラーになる。
+  consequences: 描画の口を `scripts/` に Node の HTTP サーバーとして置き、`src/` の部品の関数を型の除去で直接読む。`fetchStoryHtml` で失敗の応答を例外にする。`webpack-dev-middleware` は `overrides` で 7.4.6 以上にして GHSA-g84c-rxfj-3j2c を外す（Storybook 10.6.2 が引く 6 系に修正版が無い）。
+install: |-
+  ```bash
+  npm i -D -E storybook@10.6.2 @storybook/server-webpack5@10.6.2 @storybook/server@10.6.2
+  ```
+
+  `package.json` に `"overrides": { "webpack-dev-middleware": "^7.4.6" }` を足す。

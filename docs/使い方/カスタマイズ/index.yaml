@@ -1,0 +1,9 @@
+summary: "見た目と機能を使う側で変える手順"
+docs_index: true
+items:
+  - page: テーマを上書きする.md
+    summary: CSS 変数と層の外の CSS で、描いた文書の見た目を変える
+  - page: 機能をオン・オフする.md
+    summary: 設定の `features` と文書の印で、機能のオン・オフを切り替える
+  - page: 印刷する.md
+    summary: 印刷・PDF にしたときの文書の見え方

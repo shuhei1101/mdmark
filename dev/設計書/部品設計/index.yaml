@@ -1,0 +1,7 @@
+summary: "文書の中に mdmark が置く UI の部品の引数・状態（Storybook のストーリーの元）"
+docs_index: true
+items:
+  - page: 知らせの枠.ts.yaml
+    summary: 外部ライブラリを読めない印の場所に置く枠
+  - page: 読み込み中の枠.ts.yaml
+    summary: 外部ライブラリを読み込んでいる間に図の高さを取っておく枠

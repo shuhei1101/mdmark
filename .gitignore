@@ -3,3 +3,4 @@ node_modules/
 .vitest/
 test-results/
 playwright-report/
+debug-storybook.log

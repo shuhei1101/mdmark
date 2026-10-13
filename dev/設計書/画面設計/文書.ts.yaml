@@ -1,0 +1,76 @@
+title: "文書"
+elements:
+  - name: 描く先の要素
+    id: mdmark-root
+    kind: container
+    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）
+    visible_when: 常時
+    source: 文書を描く.request.el
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+  - name: コードブロック
+    id: code-block
+    kind: region
+    position: 描く先の要素
+    description: 'Markdown のコードブロック。狭い幅ではブロックの中で横スクロールし、続きがある側の端に影を出す。印刷では折り返す。読み上げの名前（`aria-label`）は `コード: {言語の識別子}`（言語が無ければ `コード`）'
+    visible_when: 文書にコードブロックがあるとき
+    tab_order: 0
+    reason: キーボードで横スクロールできるように `tabindex="0"` を付ける。読み上げの名前は情報文字列をそのまま使い、言語名への対応表は持たない（モックの `TypeScript` は `ts` になる）
+  - name: 表
+    id: table
+    kind: table
+    position: 描く先の要素
+    description: 'Markdown の表。列が多いときは表の中で横スクロールし、続きがある側の端に影を出す。紙の幅が 40rem 以下の印刷では、行ごとの「列名: 値」の並びに積む。読み上げの名前（`aria-label`）は `表: {直前の見出しの文字}`（直前に見出しが無ければ `表`）'
+    visible_when: 文書に表があるとき
+    tab_order: 0
+    sorting: 並べ替え・絞り込みは無い
+  - name: 表のセル
+    id: table-cell
+    kind: label
+    position: 描く先の要素 > 表
+    description: '`td` は同じ列の見出しの文字を `data-label` に持ち、狭い紙の印刷で列名として出す。列の揃えは Markdown の `:--`・`:-:`・`--:` に従い、class `mdmark-align-{left,center,right}` で当てる'
+    visible_when: 常時
+  - name: 折り畳み
+    id: details
+    kind: details
+    position: 描く先の要素
+    description: 文書に書いた `details` と `summary`。開閉は文書に書いたとおり（`open` の有無）で始まる。印刷の機能がオンのとき、印刷の前に開き、印刷の後に開いたものだけを閉じ直す
+    visible_when: 文書に `details` があるとき
+    initial_state: 活性
+    action: '`summary` を押すと開閉する（ブラウザの振る舞い）'
+  - name: タスクのチェックボックス
+    id: task-checkbox
+    kind: input
+    position: 描く先の要素 > リストの項目
+    description: '`- [ ]` と `- [x]` の項目の頭に置くチェックボックス。表示だけで操作できない'
+    type: 真偽値
+    io: 表示
+    visible_when: 文書にタスクリストがあるとき
+    initial_state: 非活性
+    initial_value: '`[x]` なら `checked`'
+  - name: 外部ライブラリの印の場所
+    id: embed
+    kind: region
+    component: dev/設計書/部品設計/読み込み中の枠.ts#
+    args:
+      - name: name
+        value: 印の名前
+      - name: args
+        value: 印の引数
+    position: 描く先の要素
+    description: 対応表にある印の場所。読み込み中の枠を置き、読んだモジュールの `draw` がこの要素に描く
+    visible_when: 文書に対応表にある印があるとき
+  - name: 知らせの枠
+    id: notice
+    kind: label
+    component: dev/設計書/部品設計/知らせの枠.ts#
+    args:
+      - name: name
+        value: 印の名前
+    position: 描く先の要素
+    description: 外部ライブラリを読めない、または `draw` が例外を投げた印の場所を置き換える
+    visible_when: 外部ライブラリを読めないとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（知らせの枠）]
+mock: dev/mock/pages/document/16/modern/
+lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリの印の場所）を持つ。

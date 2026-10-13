@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / modern | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・横スクロールの影） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で app.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 印刷の前後の折り畳みの開閉と、モックの「印刷の見え方」の切り替え -->
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-preview-toggle]: app.js が印刷の規則を画面にも当て、折り畳みを開いて明るい配色にする（モックだけの仕組み） -->
+    <div class="mock-bar-group">
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">16</a> / modern
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書 -->
+    <article class="mdmark">
+      <h1>配布物を読み込んで文書を描く</h1>
+      <p>mdmark は、使う側のページが渡した Markdown をブラウザで文書として描きます。見た目の値は <code>--mdmark-</code> で始まる CSS 変数で配り、<a href="https://github.com/shuhei1101/mdmark/blob/develop/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/API.md">API リファレンス</a>に一覧があります。</p>
+
+      <!-- リスト -->
+      <h2>導入の流れ</h2>
+      <ol>
+        <li>配布物の <code>index.js</code> と <code>index.css</code> をページで読み込む</li>
+        <li>描く先の要素を用意する</li>
+        <li><code>mount</code> に要素と Markdown を渡す
+          <ul>
+            <li>本文だけを差し替えるときは <code>update</code> を呼ぶ</li>
+            <li>片付けるときは <code>destroy</code> を呼ぶ</li>
+          </ul>
+        </li>
+      </ol>
+
+      <!-- コードブロック: 長い行は枠の中で横スクロールする -->
+      <h2>文書を描く</h2>
+      <pre tabindex="0" aria-label="コード: TypeScript"><code class="language-ts">import { mount } from "https://cdn.example.com/mdmark@0.2.0/dist/index.js";
+
+const view = mount(document.querySelector("#doc"), { markdown: "# はじめに\n\n本文を書きます。", config: { features: { table: true, print: true }, libraries: {} } });
+
+view.update("# 書き直した本文");</code></pre>
+
+      <!-- 表: 列が多いときは表の中で横スクロールする -->
+      <h2>テーマの変数</h2>
+      <table tabindex="0" aria-label="表: テーマの変数">
+        <thead>
+          <tr>
+            <th>変数</th>
+            <th>役割</th>
+            <th style="text-align: right">明るい配色</th>
+            <th style="text-align: right">ダーク</th>
+            <th>上書きの例</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="変数"><code>--mdmark-color-link</code></td>
+            <td data-label="役割">リンクの色</td>
+            <td data-label="明るい配色" style="text-align: right">#0969da</td>
+            <td data-label="ダーク" style="text-align: right">#4493f8</td>
+            <td data-label="上書きの例"><code>.mdmark { --mdmark-color-link: red; }</code></td>
+          </tr>
+          <tr>
+            <td data-label="変数"><code>--mdmark-font-size</code></td>
+            <td data-label="役割">本文の文字の大きさ</td>
+            <td data-label="明るい配色" style="text-align: right">1rem</td>
+            <td data-label="ダーク" style="text-align: right">1rem</td>
+            <td data-label="上書きの例"><code>.mdmark { --mdmark-font-size: 1.125rem; }</code></td>
+          </tr>
+          <tr>
+            <td data-label="変数"><code>--mdmark-padding</code></td>
+            <td data-label="役割">描く先の要素の内側の余白</td>
+            <td data-label="明るい配色" style="text-align: right">1.5rem</td>
+            <td data-label="ダーク" style="text-align: right">1.5rem</td>
+            <td data-label="上書きの例"><code>.mdmark { --mdmark-padding: 0; }</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 引用 -->
+      <blockquote>
+        <p>使う側が層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝ちます。</p>
+      </blockquote>
+
+      <!-- 折り畳み: 印刷では開く -->
+      <h3>対応ブラウザ</h3>
+      <details>
+        <summary>下限の版を見る</summary>
+        <ul>
+          <li>Chrome 99</li>
+          <li>Firefox 97</li>
+          <li>Safari 16.4</li>
+        </ul>
+      </details>
+
+      <!-- 外部ライブラリの印: 読み込み中 -->
+      <h2>月ごとの利用者数</h2>
+      <p>図は、文書が使うときだけ外部ライブラリを読み込んで描きます。</p>
+      <div class="mdmark-embed" role="status">図を読み込んでいます</div>
+
+      <!-- 外部ライブラリの印: 読み込めなかった（異常シナリオ） -->
+      <h2>売上の推移</h2>
+      <p>四半期ごとの売上を図で示します。</p>
+      <div class="mdmark-notice" role="status">
+        <strong class="mdmark-notice-title">この図を表示できません</strong>
+        <p>表示に使うライブラリ（<code>chart</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+      </div>
+      <p>読み込めなかった箇所のほかは、そのまま描かれます。</p>
+    </article>
+  </main>
+</body>
+</html>

@@ -58,7 +58,7 @@ subsystems:
     scope: lib
     role: Markdown の表示に使う JavaScript と CSS をビルドして配る
     runtime: TypeScript 7
-    runs_on: 使う側のページを開いたブラウザ
+    runs_on: 使う側のページを開いたブラウザ（`mount`・`render`）と、使う側の Node の処理（`render`）
     status: planned
 lead: mdmark の配布物が、開発者のビルドから使う側のページへ届くまでの全体構成。
 external_systems:
@@ -71,3 +71,13 @@ external_systems:
     status: planned
     notes:
       事前確認: 否。ライブラリ本体は実行時に jsDelivr を呼ばない。
+  - name: 外部ライブラリのモジュール
+    purpose: 文書に印があるときだけ、対応表（既定と設定の `libraries`）の URL から ES モジュールを読み、印の場所に描かせる
+    direction: 受信のみ
+    protocol: ブラウザの動的 `import()`（HTTPS。URL はページの `document.baseURI` を基準に解決する）
+    cost: 無料。印の無い文書では要求が 0 件
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[外部ライブラリの読み込み]
+    notes:
+      事前確認: 否。この Issue の既定の対応表は空で、読む先は使う側が設定で渡す。結合テストは手元の開発サーバーが配る代役のモジュールで確かめる。既定の対応表に外部の配信元を載せる Issue（#6）が、その配信元の事前確認を決める

@@ -46,7 +46,26 @@ categories:
       date: '2026-10-13'
       detail: 追加は vitest・esbuild・typescript・@biomejs/biome・@types/node で、外すのは作業ツリーの控えで `@types/node` を外し、`package.json` から消えることを確かめた
   - name: 起動・停止
-    commands: 未確定
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    commands: |-
+      Storybook で部品を見る。
+
+      1. 描画の口を立てる（`Ctrl+C` で止める）
+
+      ```bash
+      RENDER_PORT={描画の口のポート} npm run storybook:render
+      ```
+
+      2. 別の端末で Storybook を立てる（`Ctrl+C` で止める）
+
+      ```bash
+      RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} npm run storybook -- --host 127.0.0.1 --exact-port -p {ポート}
+      ```
+    verification:
+      state: 済
+      date: '2026-10-14'
+      detail: '`RENDER_PORT=46501 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46501 npm run storybook -- --host 127.0.0.1 --exact-port -p 46502` を立て、`/index.json` に 4 つのストーリー（`parts-notice--figure` など）が載り、`/render/notice` が部品の HTML を、無い部品が 404 を返すことを確かめた。Playwright で開いた `iframe.html?id=` の 4 つのストーリーが、`#storybook-root` にエラー無く描かれた。2 つのプロセスを `kill` で止めると待受が閉じた'
   - name: テスト
     refs:
       - dev/設計書/テスト/テスト実行方法#
@@ -82,11 +101,11 @@ categories:
       ```bash
       npm run build -- --version v{版}
       ```
-    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 20MB を超えると、終了コード 1 で終わり `dist/` は残らない'
+    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 256KB を超えると、終了コード 1 で終わり `dist/` は残らない'
     verification:
       state: 済
-      date: '2026-10-13'
-      detail: '`version.ini` の版と `--version v0.0.1` で `dist/index.js` と `dist/index.css` に版が入り、前回の `dist/` がある状態で `--version 1.2` と `version.ini` の欠けを流して、どちらも `dist/` が残らないことを確かめた'
+      date: '2026-10-14'
+      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`（185KB）・`index.css`・`THIRD_PARTY_LICENSES.txt` が書かれることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないことは、単体テストで確かめた'
   - name: 取り込み前の検査
     commands: 未確定
   - name: 管理作業

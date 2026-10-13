@@ -1,0 +1,5 @@
+summary: "文書を描く仕組みなど、使う前に知っておく考え方"
+docs_index: true
+items:
+  - page: 文書を描く仕組み.md
+    summary: Markdown と設定を渡してから描かれるまでの流れと、テーマの層・機能のオン・オフの優先順

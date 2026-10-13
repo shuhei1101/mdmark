@@ -1,0 +1,42 @@
+title: "読み込み中の枠"
+implementation: "src/parts/embed.ts#renderEmbed"
+story: "Parts/Embed"
+states:
+  - name: Loading
+    description: 外部ライブラリを読み込んでいる間。図の高さを先に取り、破線の枠に `図を読み込んでいます` を出す
+    args:
+      - name: name
+        value: chart
+      - name: args
+        value: a,b
+lead: 外部ライブラリの印の場所に置き、読み込んだモジュールが描くまで図の高さを先に取っておく枠。印の名前と引数を属性で持ち、`mount` がその要素を描く場所としてモジュールに渡す。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
+args:
+  - name: name
+    type: 文字列
+    required: true
+    description: 印の名前。`data-mdmark-slot` に入れる
+  - name: args
+    type: 配列
+    required: false
+    default: '[]'
+    description: 印の引数。空白で結んで `data-mdmark-args` に入れる
+css_properties:
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#d1d9e0（ダーク #3d444d）'
+    description: 破線の色
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: '`図を読み込んでいます` の文字の色'
+  - name: --mdmark-radius
+    syntax: <length>
+    default: 6px
+    description: 枠の角丸
+accessibility:
+  - 枠は `role="status"` を持ち、読み込み中であることを文言で伝える
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[印の場所の要素]
+notes:
+  出力: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{args を空白で結んだもの}" role="status">図を読み込んでいます</div>`。高さは 12rem。文言と高さは確認ログの決定（外部ライブラリを読み込んでいる間の見え方）。モックは `dev/mock/components/notice/` の「読み込み中」'
+test_file: tests/integration/lib/embed.story.test.ts

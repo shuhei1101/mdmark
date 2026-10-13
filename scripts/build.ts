@@ -1,18 +1,48 @@
-import { readFileSync, rmSync } from "node:fs";
+import {
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
-import { build } from "esbuild";
+import { build, type Metafile, type Plugin } from "esbuild";
 
 // 埋める版が合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// jsDelivr が配る 1 ファイルの上限（20MB）
-const MAX_DIST_FILE_BYTES = 20 * 1024 * 1024;
+// 配布ファイル 1 つの上限（非機能要件の 256KB）
+const MAX_DIST_FILE_BYTES = 256 * 1024;
+// 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
+const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // esbuild の target に渡すブラウザの版
-const BROWSER_TARGETS = ["chrome94", "firefox93", "safari16.4"];
+const BROWSER_TARGETS = ["chrome99", "firefox97", "safari16.4"];
 // 版を渡す引数の名前
 const VERSION_OPTION = "--version";
+// 束ねたパッケージの入力のパスにある、依存の置き場所
+const NODE_MODULES_SEGMENT = "node_modules/";
+// パッケージの直下にあるライセンスのファイル名
+const LICENSE_FILE_PATTERN = /^licen[sc]e/i;
+// 差し替えた postcss を置く esbuild の名前空間
+const STUB_NAMESPACE = "stub";
 
 /** 版の書式が違うときに投げる */
 export class VersionFormatError extends Error {}
+
+/** `postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える esbuild のプラグイン */
+const postcssStubPlugin: Plugin = {
+  name: "stub-postcss",
+  setup(pluginBuild) {
+    pluginBuild.onResolve({ filter: /^postcss$/ }, () => ({
+      path: "postcss",
+      namespace: STUB_NAMESPACE,
+    }));
+    pluginBuild.onLoad({ filter: /.*/, namespace: STUB_NAMESPACE }, () => ({
+      contents:
+        'module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }',
+      loader: "js",
+    }));
+  },
+};
 
 /** `--version` があればその値、無ければ `version.ini` の先頭行を返し、書式を検査する */
 export function resolveVersion(argv: string[], root: string): string {
@@ -31,7 +61,49 @@ export function resolveVersion(argv: string[], root: string): string {
   return version;
 }
 
-/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ねる */
+/** esbuild の `metafile` の入力から束ねたパッケージの名前を、名前の順に返す */
+function listBundledPackages(metafile: Metafile): string[] {
+  const names = new Set<string>();
+  for (const path of Object.keys(metafile.inputs)) {
+    const index = path.lastIndexOf(NODE_MODULES_SEGMENT);
+    if (index < 0) {
+      continue;
+    }
+    // `@scope/name` か `name` の部分を取り出す
+    const [first, second] = path
+      .slice(index + NODE_MODULES_SEGMENT.length)
+      .split("/");
+    names.add(first?.startsWith("@") ? `${first}/${second}` : (first ?? ""));
+  }
+  return [...names].sort();
+}
+
+/** 束ねたパッケージごとに名前・版・ライセンス・ライセンスの本文を、`dist/` の `LICENSES_FILE` に書く */
+export async function writeThirdPartyLicenses(options: {
+  /** esbuild の出力 */
+  metafile: Metafile;
+  /** 作業ツリーの場所 */
+  root: string;
+}): Promise<void> {
+  const { metafile, root } = options;
+  const blocks = listBundledPackages(metafile).map((name) => {
+    const dir = join(root, "node_modules", name);
+    const pkg: { version: string; license: string } = JSON.parse(
+      readFileSync(join(dir, "package.json"), "utf8"),
+    );
+    const licenseFile = readdirSync(dir).find((file) =>
+      LICENSE_FILE_PATTERN.test(file),
+    );
+    if (!licenseFile) {
+      throw new Error(`ライセンスの本文が無い: ${name}`);
+    }
+    const text = readFileSync(join(dir, licenseFile), "utf8");
+    return `${name} ${pkg.version} (${pkg.license})\n\n${text}`;
+  });
+  writeFileSync(join(root, "dist", LICENSES_FILE), blocks.join("\n\n"));
+}
+
+/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、束ねた依存のライセンスを書く */
 export async function buildDist(
   version: string,
   root: string,
@@ -42,19 +114,26 @@ export async function buildDist(
     outdir: "dist",
     bundle: true,
     format: "esm",
+    minify: true,
     target: BROWSER_TARGETS,
+    plugins: [postcssStubPlugin],
     define: { __MDMARK_VERSION__: JSON.stringify(version) },
     banner: { css: `:root{--mdmark-version:"${version}"}` },
     metafile: true,
     // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す
     logLevel: "silent",
   });
-  return Object.fromEntries(
+  await writeThirdPartyLicenses({ metafile: result.metafile, root });
+  const outputs = Object.fromEntries(
     Object.entries(result.metafile.outputs).map(([path, output]) => [
       path,
       output.bytes,
     ]),
   );
+  outputs[`dist/${LICENSES_FILE}`] = statSync(
+    join(root, "dist", LICENSES_FILE),
+  ).size;
+  return outputs;
 }
 
 /** 出力ファイルのうち上限を超えたものを返す */

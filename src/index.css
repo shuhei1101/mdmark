@@ -1,0 +1,425 @@
+/* mdmark の層: 使う側が層の外に書いた CSS は、詳細度によらず層の中の CSS に勝つ */
+@layer mdmark {
+  /* 見た目の値: 配色によらない値と、明るい配色の値 */
+  :root {
+    --mdmark-font-body:
+      system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP",
+      "Yu Gothic UI", Meiryo, sans-serif;
+    --mdmark-font-heading: var(--mdmark-font-body);
+    --mdmark-font-mono:
+      ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --mdmark-font-size: 1rem;
+    --mdmark-line-height: 1.75;
+    --mdmark-content-width: 46rem;
+    --mdmark-space: 1rem;
+    --mdmark-padding: 1.5rem;
+    --mdmark-radius: 6px;
+    --mdmark-heading-weight: 600;
+    --mdmark-heading-rule-width: 1px;
+    --mdmark-table-rule-inline: 1px;
+    --mdmark-color-bg: #ffffff;
+    --mdmark-color-text: #1f2328;
+    --mdmark-color-heading: #1f2328;
+    --mdmark-color-muted: #59636e;
+    --mdmark-color-link: #0969da;
+    --mdmark-color-border: #d1d9e0;
+    --mdmark-color-surface: #f6f8fa;
+    --mdmark-color-scroll-shadow: rgb(31 35 40 / 0.22);
+    --mdmark-color-notice-bg: #fff8c5;
+    --mdmark-color-notice-border: #9a6700;
+    --mdmark-color-notice-text: #1f2328;
+    color-scheme: light;
+  }
+
+  /* ダークの配色の値: 画面で OS の設定がダークのときだけ当て、印刷では明るい配色のままにする */
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --mdmark-color-bg: #0d1117;
+      --mdmark-color-text: #f0f6fc;
+      --mdmark-color-heading: #f0f6fc;
+      --mdmark-color-muted: #9198a1;
+      --mdmark-color-link: #4493f8;
+      --mdmark-color-border: #3d444d;
+      --mdmark-color-surface: #151b23;
+      --mdmark-color-scroll-shadow: rgb(145 152 161 / 0.5);
+      --mdmark-color-notice-bg: #2a2110;
+      --mdmark-color-notice-border: #bb8009;
+      --mdmark-color-notice-text: #f0f6fc;
+      color-scheme: dark;
+    }
+  }
+
+  /* 描く先の要素: 行の長さ・文字・行間と、地の色・内側の余白・角丸（枠と影は付けない） */
+  .mdmark {
+    max-width: var(--mdmark-content-width);
+    padding: var(--mdmark-padding);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+    font-size: var(--mdmark-font-size);
+    line-height: var(--mdmark-line-height);
+    overflow-wrap: anywhere;
+
+    /* ブロック要素: ブラウザ既定の余白を消し、間隔は下の規則で付ける */
+    :where(h1, h2, h3, p, ul, ol, pre, table, blockquote, details, hr) {
+      margin: 0;
+    }
+
+    /* リストの項目・引用・折り畳みの中のブロック同士の間隔 */
+    :where(li, blockquote, details) > * + * {
+      margin-block-start: calc(var(--mdmark-space) / 2);
+    }
+
+    /* ブロック同士の間隔 */
+    > * + * {
+      margin-block-start: var(--mdmark-space);
+    }
+
+    /* 見出し共通: 書体・色・太さ */
+    :where(h1, h2, h3) {
+      color: var(--mdmark-color-heading);
+      font-family: var(--mdmark-font-heading);
+      font-weight: var(--mdmark-heading-weight);
+      line-height: 1.3;
+    }
+
+    /* 見出し 1: 文書の題。下に区切り線（太さ 0 のときは出ない） */
+    h1 {
+      padding-block-end: 0.3em;
+      border-block-end: var(--mdmark-heading-rule-width) solid
+        var(--mdmark-color-border);
+      font-size: 1.9em;
+
+      /* 見出しの前に置く記号（変数に値があるときだけ出る） */
+      &::before {
+        color: var(--mdmark-color-muted);
+        content: var(--mdmark-h1-marker, "");
+      }
+    }
+
+    /* 見出し 2: 節。上の余白を下より広く取る */
+    h2 {
+      margin-block-start: calc(var(--mdmark-space) * 2.25);
+      padding-block-end: 0.3em;
+      border-block-end: var(--mdmark-heading-rule-width) solid
+        var(--mdmark-color-border);
+      font-size: 1.45em;
+
+      /* 見出しの前に置く記号 */
+      &::before {
+        color: var(--mdmark-color-muted);
+        content: var(--mdmark-h2-marker, "");
+      }
+    }
+
+    /* 見出し 3: 項 */
+    h3 {
+      margin-block-start: calc(var(--mdmark-space) * 1.75);
+      font-size: 1.15em;
+
+      /* 見出しの前に置く記号 */
+      &::before {
+        color: var(--mdmark-color-muted);
+        content: var(--mdmark-h3-marker, "");
+      }
+    }
+
+    /* リンク: 色と下線の両方で示す */
+    a {
+      color: var(--mdmark-color-link);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 箇条書き・番号付きリストの字下げ */
+    :where(ul, ol) {
+      padding-inline-start: 1.6em;
+    }
+
+    /* 入れ子のリスト: 親の項目との間隔を詰める */
+    li > :where(ul, ol) {
+      margin-block-start: 0.25em;
+    }
+
+    /* リストの項目同士の間隔 */
+    li + li {
+      margin-block-start: 0.25em;
+    }
+
+    /* 文中のコード */
+    code {
+      padding: 0.15em 0.35em;
+      border-radius: calc(var(--mdmark-radius) / 2);
+      background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.9em;
+    }
+
+    /* コードブロック: はみ出す行は枠の中で横スクロールする */
+    pre {
+      padding: calc(var(--mdmark-space) * 0.75) var(--mdmark-space);
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      line-height: 1.55;
+      overflow-x: auto;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* コードブロックの中のコード: 文中のコードの面と余白を外す */
+      code {
+        padding: 0;
+        background: none;
+        font-size: 0.875em;
+        overflow-wrap: normal;
+      }
+    }
+
+    /* 表: 幅に収まらないときは表の中で横スクロールする */
+    table {
+      display: block;
+      width: max-content;
+      max-width: 100%;
+      border-collapse: collapse;
+      overflow-x: auto;
+      overflow-wrap: normal;
+      font-variant-numeric: tabular-nums;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 表の中のコード: 語の途中で折り返さない */
+      code {
+        white-space: nowrap;
+      }
+    }
+
+    /* 表のセル: 縦の罫線は太さ 0 のときは出ない。狭い幅でも列を数文字より細くしない */
+    :where(th, td) {
+      min-width: 6em;
+      padding: 0.45em 0.9em;
+      border-block: 1px solid var(--mdmark-color-border);
+      border-inline: var(--mdmark-table-rule-inline) solid
+        var(--mdmark-color-border);
+      text-align: start;
+    }
+
+    /* 表の見出し行 */
+    th {
+      background: var(--mdmark-color-surface);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* 表の列の揃え: Markdown の列の指定に従う */
+    :is(th, td).mdmark-align-left {
+      text-align: left;
+    }
+
+    :is(th, td).mdmark-align-center {
+      text-align: center;
+    }
+
+    :is(th, td).mdmark-align-right {
+      text-align: right;
+    }
+
+    /* 横スクロールする表とコードブロック: 続きがある側の端に影を出す（中身と動く面と、端に留まる影の重ね合わせ） */
+    :is(pre, table) {
+      background:
+        linear-gradient(to right, var(--mdmark-color-surface) 30%, transparent)
+        left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-surface) 30%, transparent)
+        right / 2.5em 100% no-repeat local,
+        radial-gradient(
+          farthest-side at 0 50%,
+          var(--mdmark-color-scroll-shadow),
+          transparent
+        )
+        left / 0.9em 100% no-repeat scroll,
+        radial-gradient(
+          farthest-side at 100% 50%,
+          var(--mdmark-color-scroll-shadow),
+          transparent
+        )
+        right / 0.9em 100% no-repeat scroll,
+        var(--mdmark-color-surface);
+    }
+
+    /* 表の見出し行・セル: 横スクロールの影が透けるよう、地を透明にする（見出し行の面の色より後に当てる） */
+    :is(th, td) {
+      background: transparent;
+    }
+
+    /* 表の見出し行: 本文のセルと太さで分ける */
+    thead th {
+      border-block-end-width: 2px;
+    }
+
+    /* 引用: 面の色と字下げで本文と分ける */
+    blockquote {
+      padding: calc(var(--mdmark-space) * 0.6) var(--mdmark-space);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 区切り線 */
+    hr {
+      margin-block: calc(var(--mdmark-space) * 1.75);
+      border: 0;
+      border-block-start: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 折り畳み */
+    details {
+      padding: 0.55em 0.9em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 折り畳みの見出し */
+    summary {
+      font-weight: 600;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 読み込み中の枠: 外部ライブラリが描くまで、図の高さを先に確保する */
+    .mdmark-embed:not([data-mdmark-drawn]) {
+      display: grid;
+      place-items: center;
+      min-height: 12rem;
+      border: 1px dashed var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 知らせの枠: 外部ライブラリを読めない箇所に出す */
+    .mdmark-notice {
+      padding: 0.65em 0.95em;
+      border: 1px solid var(--mdmark-color-notice-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-notice-bg);
+      color: var(--mdmark-color-notice-text);
+    }
+
+    /* 知らせの枠の題: 何が起きたか */
+    .mdmark-notice-title {
+      display: block;
+      font-weight: 700;
+    }
+
+    /* 知らせの枠の本文: 何が起きたかの後に直し方を続ける */
+    .mdmark-notice p {
+      margin: 0.25em 0 0;
+    }
+
+    /* 知らせの枠の中の識別子（印の名前）: 長くても枠の中で折り返す */
+    .mdmark-notice code {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  /* 印刷のとき: 紙の幅いっぱいに使い、ダークの配色を外し、図表を切らず、リンクの URL を併記する */
+  @media print {
+    /* 描く先の要素: 地の色と余白を外す */
+    .mdmark {
+      max-width: none;
+      padding: 0;
+      background: none;
+
+      /* リンク: 後ろに URL を併記する */
+      a[href^="http"]::after {
+        color: var(--mdmark-color-muted);
+        content: " (" attr(href) ")";
+        overflow-wrap: anywhere;
+      }
+
+      /* 図表・コードブロック・読み込み中の枠・知らせの枠: 改ページで切らない */
+      :is(table, pre, figure, .mdmark-embed, .mdmark-notice) {
+        break-inside: avoid;
+      }
+
+      /* 表とコードブロック: 横スクロールをやめて紙の幅に収め、影を外す */
+      :is(pre, table) {
+        display: table;
+        width: 100%;
+        box-sizing: border-box;
+        background: none;
+      }
+
+      /* コードブロックの中のコード: 長い行を折り返す */
+      pre code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      /* 表のセルと、その中のコード: 列の最小幅を外し、語の切れ目で折り返す */
+      :is(th, td),
+      :is(th, td) code {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: break-word;
+      }
+
+      /* 見出し: 直後で改ページしない */
+      :is(h1, h2, h3) {
+        break-after: avoid;
+      }
+    }
+  }
+
+  /* 紙の幅が 40rem 以下のとき: 表を行ごとの「列名: 値」の並びに積み、列が細く折れないようにする */
+  @media print and (max-width: 40rem) {
+    .mdmark {
+      /* 表の部品: 表の組みをやめて縦に積む */
+      :is(table, tbody, tr, td) {
+        display: block;
+      }
+
+      /* 見出し行: 各セルの前に列名を出すので隠す */
+      thead {
+        display: none;
+      }
+
+      /* 行: 行ごとに区切り線で分ける */
+      tr {
+        padding-block: 0.4em;
+        border-block-end: 1px solid var(--mdmark-color-border);
+      }
+
+      /* セル: 罫線を外し、値の寄せを列の揃えの class より強い指定で左に戻す */
+      td,
+      td[class] {
+        padding: 0.15em 0;
+        border: 0;
+        text-align: start;
+      }
+
+      /* セルの前の列名（data-label は描くときに見出し行から写す） */
+      td::before {
+        display: block;
+        color: var(--mdmark-color-muted);
+        content: attr(data-label);
+        font-size: 0.85em;
+        font-weight: 600;
+      }
+    }
+  }
+}

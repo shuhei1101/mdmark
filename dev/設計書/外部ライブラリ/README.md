@@ -4,6 +4,8 @@
 
 ## 目次
 
+<!-- table: data -->
+
 | ページ | 概要 |
 | --- | --- |
 | [esbuild](./esbuild.yaml) | TS と CSS を配布物の ES モジュールの JS と CSS に束ねる |
@@ -11,3 +13,8 @@
 | [playwright](./playwright.yaml) | E2E のブラウザ操作と、結合テストのブラウザの起動 |
 | [biome](./biome.yaml) | lint と整形の検査 |
 | [typescript](./typescript.yaml) | 型の検査 |
+| [markdown-it](./markdown-it.yaml) | GitHub Flavored Markdown をトークンに解析し、HTML 文字列にする |
+| [sanitize-html](./sanitize-html.yaml) | 描く前の HTML からスクリプトと許可していない要素・属性を落とす |
+| [Storybook](./Storybook.yaml) | UI の部品を状態ごとのストーリーとして並べる（サーバー描画） |
+
+<!-- /table -->

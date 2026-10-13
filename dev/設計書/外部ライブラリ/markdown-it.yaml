@@ -1,0 +1,107 @@
+title: "markdown-it"
+kind: "ライブラリ"
+version:
+  current: 15.0.2
+  latest: 15.0.2
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 完全一致（15.0.1・15.0.2 で計算量の DoS を直したため、それより前の版にしない）。依存は lockfile で固定する
+catalogs:
+  - name: API
+    version: 15.0.2
+    entries:
+      - name: MarkdownIt
+        kind: クラス
+        purpose: 解析器を作る
+        params:
+          - name: options.html
+            type: boolean
+            default: 'false'
+            description: Markdown の中の生の HTML を通す
+          - name: options.linkify
+            type: boolean
+            default: 'false'
+            description: スキームの付いた URL を自動でリンクにする（www. 始まりは拾わない）
+      - name: parse
+        kind: メソッド
+        purpose: Markdown をトークン列にする
+        params:
+          - name: src
+            type: string
+            required: true
+            description: Markdown
+          - name: env
+            type: object
+            required: true
+            description: ルールの間で受け渡す値
+        returns:
+          - name: '-'
+            type: Token[]
+            description: ブロックのトークン列。行内は `inline` トークンの `children`
+      - name: renderer.render
+        kind: メソッド
+        purpose: トークン列を HTML 文字列にする
+        params:
+          - name: tokens
+            type: Token[]
+            required: true
+            description: '`parse` の戻り値'
+          - name: options
+            type: Options
+            required: true
+            description: 解析器の `options`
+          - name: env
+            type: object
+            required: true
+            description: '`parse` に渡した値'
+        returns:
+          - name: '-'
+            type: string
+            description: HTML 文字列
+      - name: core.ruler.after
+        kind: メソッド
+        purpose: 解析の後段にトークンを書き換えるルールを足す
+        params:
+          - name: afterName
+            type: string
+            required: true
+            description: この名前のルールの後に足す（`inline` など）
+          - name: ruleName
+            type: string
+            required: true
+            description: 足すルールの名前
+          - name: fn
+            type: '(state: StateCore) => void'
+            required: true
+            description: '`state.tokens` を書き換える関数'
+      - name: Token.attrSet
+        kind: メソッド
+        purpose: トークンが描く要素に属性を付ける
+        params:
+          - name: name
+            type: string
+            required: true
+            description: 属性名
+          - name: value
+            type: string
+            required: true
+            description: 値
+lead: CommonMark に沿って Markdown をトークン列に解析し、HTML 文字列へ描くパーサー。トークンを書き換えるルールとプラグインで拡張できる。
+purl: pkg:npm/markdown-it@15.0.2
+dependency_scope: 必須
+adoption: 採用
+upstream: markdown-it/markdown-it
+license: MIT（商用利用可）。依存の entities・linkify-it などは MIT か BSD 系で、束ねた配布物に著作権表示を残す
+docs_url: https://markdown-it.github.io/markdown-it/
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: 'PoC #17 で `new MarkdownIt({ html: true })` の `parse()` と `renderer.render()` を Chromium・Firefox・Node で実行し、出力が一致した。`html_block` / `html_inline` のトークンから HTML コメントの印を拾って取り除けた。ライブラリ選定の調査で、`core.ruler.after("inline", …)` に足したルールで `td_open` に `attrSet("data-label", …)` を付けられること、タスクリストと www の自動リンクを自前のルールで足せること、取り消し線が `<s>` で出ることを Node 24 で確かめた'
+selection:
+  candidates: markdown-it 15.0.2・marked 18.1.1・micromark 4.0.x + micromark-extension-gfm・remark（unified 一式）を比べた。
+  decision: '実ブラウザと Node で同じ出力を返すことを PoC #17 で確かめたのは markdown-it だけで、印をトークンの段で拾える。marked は最も小さいが実ブラウザでの確認が無く、patch の版でも出力が変わる。micromark と remark は `browser` 条件で DOM 版の文字参照のデコーダが入り、拡張も書きにくい。'
+  consequences: 'タスクリスト・www の自動リンク・取り消し線の `<del>` は自前のコアルールで足す。生の HTML を通す（`html: true`）ため、出力は sanitize-html にかけてから描く。'
+install: |-
+  ```bash
+  npm i -E markdown-it@15.0.2
+  ```

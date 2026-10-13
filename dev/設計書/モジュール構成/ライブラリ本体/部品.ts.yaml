@@ -1,0 +1,118 @@
+title: "ライブラリ本体 / 部品"
+lead: 文書の中に mdmark が置く UI の部品を HTML 文字列で返す関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
+directory: |-
+  ```tree
+  src/parts/
+  ├── escape.ts             # HTML の特別な文字をエスケープする escapeHtml
+  ├── notice.ts             # 知らせの枠の renderNotice
+  ├── notice.stories.yaml   # 知らせの枠のストーリー（Figure・Block・LongName）
+  ├── embed.ts              # 読み込み中の枠の renderEmbed
+  └── embed.stories.yaml    # 読み込み中の枠のストーリー（Loading）
+  ```
+constants:
+  - name: LOADING_TEXT
+    title: 読み込み中の文言
+    container: src/parts/embed.ts
+    summary: 読み込み中の枠に出す文字
+    value: '"図を読み込んでいます"'
+  - name: NOTICE_TITLES
+    title: 知らせの枠の題
+    container: src/parts/notice.ts
+    summary: 図の印かどうかで分ける題
+    value: '{ figure: "この図を表示できません", block: "この箇所を表示できません" }'
+functions:
+  - name: escapeHtml
+    title: HTML の特別な文字をエスケープする
+    container: src/parts/escape.ts
+    kind: 関数
+    scope: public
+    summary: "`&`・`<`・`>`・`\"`・`'` を文字参照にする"
+    args:
+      - name: text
+        type: string
+        required: true
+        description: エスケープする文字列
+    returns:
+      type: string
+      description: 要素の中身にも属性の値にも置ける文字列
+    unit_tests:
+      - name: test_escape_html
+        case: 正常
+        summary: 特別な文字を全て文字参照にする
+        condition: "`<a href=\"x\">'&'</a>`"
+        mock: なし
+        expected: '`&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;`'
+  - name: renderNotice
+    title: 知らせの枠を描く
+    container: src/parts/notice.ts
+    kind: 関数
+    scope: public
+    summary: 部品設計『知らせの枠』の HTML を返す
+    args:
+      - name: options
+        type: '{ name: string; figure?: boolean }'
+        required: true
+        description: 印の名前と、図の印か（既定 `true`）
+    returns:
+      type: string
+      description: '`<div class="mdmark-notice" role="status">` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    refs:
+      - dev/設計書/部品設計/知らせの枠.ts#
+    unit_tests:
+      - name: test_render_notice
+        case: 正常
+        summary: 図の印の題と、印の名前を入れた本文を返す
+        condition: '`{ name: "chart" }`'
+        mock: なし
+        expected: 題が `この図を表示できません`、本文に `<code>chart</code>` と直し方が入る
+      - name: test_render_notice_when_block
+        case: 正常
+        summary: 図でない印の題を返す
+        condition: '`{ name: "tabs", figure: false }`'
+        mock: なし
+        expected: 題が `この箇所を表示できません`
+      - name: test_render_notice_when_name_has_html
+        case: 正常
+        summary: 印の名前をエスケープする
+        condition: '`{ name: "<b>x</b>" }`'
+        mock: なし
+        expected: '`<code>&lt;b&gt;x&lt;/b&gt;</code>`'
+  - name: renderEmbed
+    title: 読み込み中の枠を描く
+    container: src/parts/embed.ts
+    kind: 関数
+    scope: public
+    summary: 部品設計『読み込み中の枠』の HTML を返す
+    args:
+      - name: options
+        type: '{ name: string; args?: string[] }'
+        required: true
+        description: 印の名前と引数（既定 `[]`）
+    returns:
+      type: string
+      description: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{args}" role="status">図を読み込んでいます</div>`'
+    callees:
+      - '#functions[escapeHtml]'
+    refs:
+      - dev/設計書/部品設計/読み込み中の枠.ts#
+    unit_tests:
+      - name: test_render_embed
+        case: 正常
+        summary: 印の名前と引数を属性に持つ枠を返す
+        condition: '`{ name: "chart", args: ["a", "b"] }`'
+        mock: なし
+        expected: '`data-mdmark-slot="chart"`・`data-mdmark-args="a b"`・`role="status"`・文字 `図を読み込んでいます`'
+      - name: test_render_embed_when_args_have_quote
+        case: 正常
+        summary: 引数をエスケープする
+        condition: '`{ name: "chart", args: ["\"><script>"] }`'
+        mock: なし
+        expected: '`data-mdmark-args="&quot;&gt;&lt;script&gt;"`'
+notes:
+  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（`notice` か `embed`）・`stories[].args` を持つ。配列の引数は `a,b` の 1 つの文字列で書く（Storybook の server は配列を JSON の文字列で送るため。戻し方は『部品の描画』）'
+test_files:
+  - tests/unit/src/parts/escape.test.ts
+  - tests/unit/src/parts/notice.test.ts
+  - tests/unit/src/parts/embed.test.ts

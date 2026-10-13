@@ -1,0 +1,5 @@
+summary: "使う側が渡す設定のキー・既定・許す値"
+docs_index: true
+items:
+  - page: ライブラリ本体.yaml
+    summary: mdmark.config.yaml のうちライブラリ本体が読むキー（features・libraries）

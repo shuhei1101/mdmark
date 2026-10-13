@@ -3,7 +3,7 @@ lead: '`npm run build` が実行するビルドのスクリプト。版を決め
 directory: |-
   ```tree
   scripts/
-  └── build.ts  # 版の決定と検査・esbuild の呼び出し・サイズの検査
+  └── build.ts  # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
   ```
 constants:
   - name: VERSION_PATTERN
@@ -14,15 +14,26 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: jsDelivr が配る 1 ファイルの上限（20MB）
-    value: 20 * 1024 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（256KB）
+    value: 256 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
+  - name: LICENSES_FILE
+    title: ライセンスの書き出し先
+    container: scripts/build.ts
+    summary: 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
+    value: '"THIRD_PARTY_LICENSES.txt"'
+  - name: postcssStubPlugin
+    title: postcss の差し替え
+    container: scripts/build.ts
+    summary: 'esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える'
+    value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返す'
+    reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
   - name: BROWSER_TARGETS
     title: 出力の対象のブラウザ
     container: scripts/build.ts
     summary: esbuild の `target` に渡すブラウザの版
-    value: '["chrome94", "firefox93", "safari16.4"]'
+    value: '["chrome99", "firefox97", "safari16.4"]'
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
 functions:
@@ -136,8 +147,8 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ねる
-    description: '`format: esm`・`bundle: true`・`target: BROWSER_TARGETS`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。'
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、束ねた依存のライセンスを書く
+    description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
       - name: version
@@ -148,14 +159,62 @@ functions:
         description: 作業ツリーの場所
     returns:
       type: Promise<Record<string, number>>
-      description: 出力ファイルのパスとバイト数
+      description: 出力ファイルのパスとバイト数（ライセンスのファイルを含む）
+    callees:
+      - '#functions[writeThirdPartyLicenses]'
     unit_tests:
       - name: test_build_dist
         case: 正常
         summary: 版を埋めた JS と CSS を 1 つずつ書く
         condition: 版 `v0.0.1`
         mock: 一時フォルダに `src/index.ts` と `src/index.css` を置く
-        expected: 戻り値が `dist/index.js` と `dist/index.css` の 2 件。JS に `"v0.0.1"`、CSS の先頭に `--mdmark-version:"v0.0.1"` が入る
+        expected: 戻り値が `dist/index.js` と `dist/index.css` と `dist/THIRD_PARTY_LICENSES.txt` の 3 件。JS に `"v0.0.1"`、CSS の先頭に `--mdmark-version:"v0.0.1"` が入る
+      - name: test_build_dist_when_nested_css
+        case: 正常
+        summary: CSS の入れ子を展開する
+        condition: '`src/index.css` が `.a { .b { color: red } }`'
+        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置く
+        expected: '`dist/index.css` に `.a .b{color:red}` が入り、入れ子が残らない'
+      - name: test_build_dist_when_postcss_imported
+        case: 正常
+        summary: postcss の import を差し替え、配布物に postcss を含めない
+        condition: '`src/index.ts` が `import { parse } from "postcss"` を持ち、`parse` を export する'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` を使う
+        expected: '`dist/index.js` に postcss の本体（`CssSyntaxError`）が無い'
+  - name: writeThirdPartyLicenses
+    title: 束ねた依存のライセンスを書く
+    container: scripts/build.ts
+    kind: 関数
+    scope: internal
+    summary: esbuild の `metafile` の入力から束ねたパッケージを拾い、名前の順にパッケージ名・版・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書く
+    description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読む。束ねたパッケージが無いときも空のファイルを書く
+    side_effects: '`dist/` に `LICENSES_FILE` を書く'
+    args:
+      - name: options
+        type: '{ metafile: Metafile; root: string }'
+        required: true
+        description: '`metafile` は esbuild の出力、`root` は作業ツリーの場所'
+    returns:
+      type: Promise<void>
+      description: 書き終えたら解決する
+    exceptions:
+      - name: Error
+        condition: 束ねたパッケージの直下に `LICENSE*` が無い
+        message: 'ライセンスの本文が無い: {パッケージ名}'
+    unit_tests:
+      - name: test_write_third_party_licenses
+        case: 正常
+        summary: 束ねたパッケージごとに名前・版・ライセンス・本文を書く
+        condition: '`metafile` の入力が `node_modules/b/index.js`・`node_modules/@s/a/lib/x.js`・`node_modules/@s/a/lib/y.js`・`src/index.ts`'
+        mock: 一時フォルダに 2 つのパッケージの `package.json` と `LICENSE` を置く
+        expected: '`@s/a` と `b` の 2 件が名前の順に 1 回ずつ並ぶ'
+      - name: test_write_third_party_licenses_when_license_missing
+        case: 異常
+        summary: ライセンスの本文が無いパッケージを拒む
+        condition: '`node_modules/b/` に `LICENSE*` が無い'
+        mock: 一時フォルダに `package.json` だけを置く
+        expected: '`Error` を投げ、メッセージに `b` が入る'
+        exception: 束ねたパッケージの直下に `LICENSE*` が無い
   - name: findTooLargeOutputs
     title: 上限を超えた配布ファイルを拾う
     container: scripts/build.ts

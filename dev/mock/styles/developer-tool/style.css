@@ -1,0 +1,48 @@
+/* 開発者ツール: 小さめの文字と詰めた余白。見出しは等幅で、前に # を置く */
+
+/* 明るい配色の値と、配色によらない値 */
+:root {
+  --mdmark-font-body: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+  --mdmark-font-heading: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", monospace;
+  --mdmark-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --mdmark-font-size: 0.875rem;
+  --mdmark-line-height: 1.6;
+  --mdmark-content-width: 56rem;
+  --mdmark-space: 0.75rem;
+  --mdmark-radius: 4px;
+  --mdmark-heading-weight: 700;
+  --mdmark-heading-rule-width: 0px;
+  --mdmark-table-rule-inline: 1px;
+  --mdmark-h1-marker: "# ";
+  --mdmark-h2-marker: "## ";
+  --mdmark-h3-marker: "### ";
+  --mdmark-color-bg: #fafafa;
+  --mdmark-color-text: #1b1f24;
+  --mdmark-color-heading: #1b1f24;
+  --mdmark-color-muted: #5c6570;
+  --mdmark-color-link: #0f6e6e;
+  --mdmark-color-border: #d4d7dc;
+  --mdmark-color-surface: #eff0f2;
+  --mdmark-color-notice-bg: #fdf0ee;
+  --mdmark-color-notice-border: #b3391f;
+  --mdmark-color-notice-text: #1b1f24;
+  color-scheme: light;
+}
+
+/* ダークの配色の値。画面のときだけ当て、印刷では明るい配色に戻す */
+@media screen {
+  /* ダークを選んだページ */
+  :root[data-scheme="dark"] {
+    --mdmark-color-bg: #16181d;
+    --mdmark-color-text: #e3e6ea;
+    --mdmark-color-heading: #f2f4f6;
+    --mdmark-color-muted: #9aa3ad;
+    --mdmark-color-link: #5fc9c0;
+    --mdmark-color-border: #3a3f48;
+    --mdmark-color-surface: #1f2229;
+    --mdmark-color-notice-bg: #2b1d1b;
+    --mdmark-color-notice-border: #d9634c;
+    --mdmark-color-notice-text: #e3e6ea;
+    color-scheme: dark;
+  }
+}

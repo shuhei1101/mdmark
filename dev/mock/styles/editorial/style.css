@@ -1,0 +1,45 @@
+/* エディトリアル: 白地に墨色の本文と臙脂のリンク。見出しは明朝、行は短く行間は広い */
+
+/* 明るい配色の値と、配色によらない値 */
+:root {
+  --mdmark-font-body: "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --mdmark-font-heading: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", Georgia, serif;
+  --mdmark-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --mdmark-font-size: 1.0625rem;
+  --mdmark-line-height: 1.9;
+  --mdmark-content-width: 40rem;
+  --mdmark-space: 1.25rem;
+  --mdmark-radius: 2px;
+  --mdmark-heading-weight: 600;
+  --mdmark-heading-rule-width: 0px;
+  --mdmark-table-rule-inline: 0px;
+  --mdmark-color-bg: #ffffff;
+  --mdmark-color-text: #2a2622;
+  --mdmark-color-heading: #1c1916;
+  --mdmark-color-muted: #6b635a;
+  --mdmark-color-link: #8a3b12;
+  --mdmark-color-border: #d9d0c1;
+  --mdmark-color-surface: #f5f3ef;
+  --mdmark-color-notice-bg: #f7ead9;
+  --mdmark-color-notice-border: #9c5a1f;
+  --mdmark-color-notice-text: #2a2622;
+  color-scheme: light;
+}
+
+/* ダークの配色の値。画面のときだけ当て、印刷では明るい配色に戻す */
+@media screen {
+  /* ダークを選んだページ */
+  :root[data-scheme="dark"] {
+    --mdmark-color-bg: #1c1a17;
+    --mdmark-color-text: #ebe5da;
+    --mdmark-color-heading: #f6f1e7;
+    --mdmark-color-muted: #a69d8f;
+    --mdmark-color-link: #e0a070;
+    --mdmark-color-border: #453f36;
+    --mdmark-color-surface: #26231f;
+    --mdmark-color-notice-bg: #33291c;
+    --mdmark-color-notice-border: #c08a4e;
+    --mdmark-color-notice-text: #ebe5da;
+    color-scheme: dark;
+  }
+}

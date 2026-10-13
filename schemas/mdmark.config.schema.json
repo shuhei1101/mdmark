@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mdmark.config.yaml",
+  "description": "mdmark の設定のうち、ライブラリ本体が読むキー。他のキーは拒まない。",
+  "type": "object",
+  "properties": {
+    "features": {
+      "title": "機能のオン・オフ",
+      "description": "機能ごとのオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする。",
+      "type": "object",
+      "properties": {
+        "print": {
+          "title": "印刷の機能",
+          "description": "印刷の前に閉じた折り畳みを開き、印刷の後に戻す。",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "default": {
+        "print": true
+      }
+    },
+    "libraries": {
+      "title": "外部ライブラリの対応表",
+      "description": "印の名前から外部ライブラリのモジュールの URL を引く。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は足す。相対 URL はページの `document.baseURI` を基準に解決する。",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    }
+  },
+  "additionalProperties": true
+}

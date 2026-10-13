@@ -4,3 +4,15 @@ items:
     summary: 開発者が依存の導入・lint・型検査・ビルド・テストを流し、版を埋めた配布物を得る
   - page: 版を固定して配布物を読み込む.yaml
     summary: 使う側のページが版のタグを固定した URL で配布物を読み、公開関数を呼ぶ
+  - page: 文書を描く.yaml
+    summary: 使う側のページが要素と Markdown を渡して文書を描き、本文の差し替えと片付けをする
+  - page: 文書をHTML文字列にする.yaml
+    summary: 使う側の処理が画面を持たずに Markdown を HTML 文字列にする
+  - page: テーマを上書きする.yaml
+    summary: 使う側が自分の CSS で描いた文書の見た目を変える
+  - page: 機能のオン・オフを文書で上書きする.yaml
+    summary: 設定の features を既定にし、文書の印でその文書だけ機能をオン・オフする
+  - page: 外部ライブラリを使うときだけ読み込む.yaml
+    summary: 文書に印があるときだけ外部ライブラリを読み、読めない箇所に知らせの枠を出す
+  - page: 文書を印刷する.yaml
+    summary: 印刷・PDF で折り畳みを開き、ダークを解除し、リンクの URL を併記して出す

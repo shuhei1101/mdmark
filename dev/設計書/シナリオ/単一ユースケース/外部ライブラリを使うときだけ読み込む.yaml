@@ -1,0 +1,86 @@
+title: "外部ライブラリを使うときだけ読み込む"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+        notes: 設定の `libraries` で、テスト用の印の読み込み先を手元の代役の URL へ向ける
+      - name: 外部ライブラリの印を持つ Markdown
+        description: 段落の間にテスト用の印を持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。外部ライブラリの代役は、関数を 1 つ持つモジュールを返し、受けた要求を数える
+        notes: テスト用の印は、設定の `libraries` で対応表に足す
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 外部ライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 印から対応表のモジュールの URL を引く
+        M->>X: モジュールを要求
+        X-->>M: モジュール
+        M-->>P: 印の場所に外部ライブラリが描く
+        P-->>U: 文書を表示
+    expected:
+      - 外部ライブラリの代役への要求が 1 件
+      - 印の場所に、代役のモジュールが描いた中身がある
+      - 印の前後の段落が描かれている
+    test: test_normal
+  - name: 正常シナリオ（印が無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 印の無い Markdown
+        description: 段落だけを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 外部ライブラリを読まずに本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 外部ライブラリの代役への要求が 0 件
+      - 段落が描かれている
+    test: test_normal_when_no_mark
+  - name: 異常シナリオ（外部ライブラリを読めない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 外部ライブラリの印を持つ Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 外部ライブラリの代役が 404 を返す。ほかは正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 外部ライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: モジュールを要求
+        X-->>M: 404
+        M-->>P: 印の場所に知らせの枠、ほかは本文を描く
+        P-->>U: 知らせの枠と本文を表示
+    expected:
+      - 印の場所に知らせの枠がある
+      - 印の前後の段落が描かれている
+    test: test_error_when_library_not_found
+lead: mdmark が、文書に外部ライブラリを使う印があるときだけ、版を固定した URL からそのモジュールを読み込む。読めない箇所には知らせの枠を出し、ほかの本文は描く。
+issue: 3
+primary_actor: mdmark を使うアプリのページ
+stakeholders:
+  - name: 文書を読む人
+    interest: 外部ライブラリを使わない文書は、余計な読み込みを待たずに表示される
+  - name: 使う側のアプリの開発者
+    interest: 外部ライブラリの読み込み先を設定の `libraries` で差し替えられる
+trigger: 使う側のページが、外部ライブラリを使う印を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+success_guarantee: 文書が使う外部ライブラリだけが読み込まれ、印の場所に描かれる。
+minimal_guarantee: 外部ライブラリを読めなくても、その場所に知らせの枠が出て、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts
