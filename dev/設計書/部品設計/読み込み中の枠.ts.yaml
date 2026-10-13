@@ -39,3 +39,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[印の場所の要素]
 notes:
   出力: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{args を空白で結んだもの}" role="status">図を読み込んでいます</div>`。高さは 12rem。文言と高さは確認ログの決定（外部ライブラリを読み込んでいる間の見え方）。モックは `dev/mock/components/notice/` の「読み込み中」'
+test_file: tests/integration/lib/embed.story.test.ts

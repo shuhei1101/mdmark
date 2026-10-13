@@ -59,3 +59,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[知らせの枠]
 notes:
   出力: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{題}</strong><p>表示に使うライブラリ（<code>{name}</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>`。文言は確認ログの決定（知らせの枠の文言）。モックは `dev/mock/components/notice/`'
+test_file: tests/integration/lib/notice.story.test.ts

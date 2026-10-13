@@ -141,3 +141,4 @@ constraints:
     notes: '狭い紙幅の印刷で、表を行ごとの「列名: 値」の並びに積むため（確認ログの決定）'
   - item: 入力の大きさ
     constraint: 制限なし
+test_file: tests/integration/lib/render.test.ts

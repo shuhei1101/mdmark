@@ -390,3 +390,4 @@ constraints:
   - item: 対応ブラウザ
     constraint: Chrome 99・Firefox 97・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
+test_file: tests/integration/lib/mount.browser.test.ts
