@@ -5,7 +5,8 @@
   "scripts": {
     "test:unit": "vitest run --project unit",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "build": "node scripts/build.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
