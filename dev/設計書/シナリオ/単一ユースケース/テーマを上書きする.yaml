@@ -1,0 +1,76 @@
+title: "テーマを上書きする"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 上書きの CSS を読むページ
+        description: mdmark の CSS の後に、使う側の CSS を読み、文書を描く HTML
+        notes: '使う側の CSS は `--mdmark-color-link` を赤（`rgb(255, 0, 0)`）にし、詳細度の低い `p { color: rgb(0, 128, 0) }` を持つ'
+      - name: 見本の Markdown
+        description: 段落とリンクを持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: 文書を描かせる
+        M-->>P: 層の中の CSS が当たった本文
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: 上書きした見た目で表示
+    expected:
+      - リンクの色の計算値が `rgb(255, 0, 0)`
+      - 段落の色の計算値が `rgb(0, 128, 0)`
+    test: test_normal
+  - name: 正常シナリオ（上書きしない）
+    setup:
+      - name: mdmark だけを読むページ
+        description: mdmark の CSS だけを読み、文書を描く HTML
+        notes: '配色は明るい配色（`prefers-color-scheme: light`）'
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 文書を描かせる
+        M-->>P: 既定の値が当たった本文
+        P-->>U: 既定の見た目で表示
+    expected:
+      - リンクの色の計算値が、デザイン方針の modern の明るい配色の `--mdmark-color-link` の値
+    test: test_normal_when_not_overridden
+  - name: 正常シナリオ（ダークの配色）
+    setup:
+      - name: mdmark だけを読むページ
+        description: 正常シナリオ（上書きしない）と同じ
+        notes: '配色はダーク（`prefers-color-scheme: dark`）'
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 文書を描かせる
+        M-->>P: ダークの値が当たった本文
+        P-->>U: ダークの見た目で表示
+    expected:
+      - 本文の地の色の計算値が、デザイン方針の modern のダークの `--mdmark-color-bg` の値
+    test: test_normal_when_dark
+lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（modern）で描かれる。
+issue: 3
+primary_actor: mdmark を使うアプリの開発者
+stakeholders:
+  - name: 文書を読む人
+    interest: アプリの見た目に合った文書を読める
+trigger: 使う側のページが、mdmark の CSS と自分の CSS を読んで文書を描く
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。
+minimal_guarantee: 使う側が CSS を書かなくても、既定の見た目で文書が描かれる。

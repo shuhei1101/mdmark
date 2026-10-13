@@ -1,0 +1,50 @@
+title: "文書をHTML文字列にする"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読む Node のスクリプト。DOM を持たない
+      - name: 見本の Markdown
+        description: '見出し・段落・リスト・表・コードブロック・リンク・折り畳み（`details`）・`<!-- features: +a -b -->`・`script` 要素を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い（手元の `dist/` を読む）
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: Markdown を渡して HTML 文字列にさせる
+        M->>M: Markdown を解析し、印を拾う
+        M->>M: スクリプトを落とす
+        M-->>C: HTML 文字列
+    expected:
+      - 見出し・段落・リスト・表・コードブロック・リンク・折り畳みの要素を持つ HTML 文字列が返る
+      - 文字列に `script` 要素と印の文字（`<!--`）が無い
+    test: test_normal
+  - name: 正常シナリオ（ブラウザで呼ぶ）
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` を読む HTML
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: Markdown を渡して HTML 文字列にさせる
+        M-->>P: HTML 文字列
+    expected:
+      - ブラウザで返った HTML 文字列が、正常シナリオで Node が返した文字列と一致する
+      - ページの描く先の要素は変わらない（画面に描かない）
+    test: test_normal_when_in_browser
+lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返す。
+issue: 3
+primary_actor: mdmark で HTML を書き出す使う側の処理
+stakeholders:
+  - name: 書き出し・ビルドの CLI の開発者
+    interest: ブラウザを起動せずに、ページで描くのと同じ本文の HTML を得られる
+trigger: 使う側の処理が、Markdown を HTML 文字列にする公開関数を呼ぶ
+preconditions:
+  - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
+success_guarantee: ページで描くのと同じ本文の HTML 文字列が返る。文字列にスクリプトは含まれない。
