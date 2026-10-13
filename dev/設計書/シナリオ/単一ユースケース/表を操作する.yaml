@@ -89,7 +89,7 @@ scenarios:
         U->>P: 折り畳みの見出しを押す
         P-->>U: 開いた表
     expected:
-      - 描いた直後、表が閉じた折り畳みの中にあり、見出しに表の行数が出ている
+      - 描いた直後、表が閉じた折り畳みの中にあり、表の行が表示されていない
       - 見出しを押した後、表の 3 行が表示されている
     test: test_normal_when_closed
   - name: 正常シナリオ（機能を外す）
@@ -155,6 +155,27 @@ scenarios:
       - 範囲の始まりに、`<!-- /table -->` が無いことを書いた書き方の知らせがある
       - 2 つの表の両方に並べ替えのボタンがある
     test: test_error_when_range_end_missing
+  - name: 異常シナリオ（知らない機能・キー）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない機能とキーを書いた Markdown
+        description: '`<!-- table: data +unknown size=2 -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない機能とキーを当てない
+        M-->>P: 書き方の知らせと、data の機能を付けた表を描く
+        P-->>U: 書き方の知らせと表を表示
+    expected:
+      - 表の上に、`+unknown` が使えない機能であることと `size=` が使えないキーであることを、使えるものと一緒に書いた書き方の知らせがある
+      - 表にピン止めと並べ替えのボタンがある
+    test: test_error_when_unknown_feature_or_key
 lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。'
 issue: 4
 primary_actor: 文書を読む人
@@ -167,3 +188,4 @@ preconditions:
   - 表の機能（`table`）がオン（既定）
 success_guarantee: 表の種類と `+機能`・`-機能` で決まった機能だけが表に付き、操作の結果が表の行と読み上げの属性に出る。
 minimal_guarantee: 表の印に読めない指定があっても、表は描かれ、読めた指定だけが当たり、範囲の上に書き方の知らせが出る。
+test_file: tests/e2e/単一ユースケース/表を操作する.spec.ts

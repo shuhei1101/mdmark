@@ -73,3 +73,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
   - 目次と見出しのアンカーの機能（`toc`・`anchors`）がオン（既定）
 success_guarantee: 全ての見出しが GitHub と同じ ID を持ち、目次と見出しのリンクがその ID を指す。
+test_file: tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts

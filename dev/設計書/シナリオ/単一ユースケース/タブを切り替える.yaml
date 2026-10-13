@@ -78,3 +78,4 @@ preconditions:
   - タブの機能（`tabs`）がオン（既定）
 success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。
 minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の知らせが出る。
+test_file: tests/e2e/単一ユースケース/タブを切り替える.spec.ts

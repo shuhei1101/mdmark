@@ -80,3 +80,4 @@ preconditions:
   - 図表の番号の機能（`figures`）がオン（既定）
 success_guarantee: 印を付けた図と表に、文書の頭から種類ごとに数えた番号が付き、参照のリンクがその番号と図表への移動を持つ。
 minimal_guarantee: 切れた参照や重なった ID があっても、本文は描かれ、書き方の知らせが出る。
+test_file: tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts

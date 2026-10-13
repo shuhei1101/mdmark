@@ -110,3 +110,4 @@ preconditions:
   - 拡張のモジュールは、使う側が TypeScript か JavaScript で書き、JavaScript として配っている
 success_guarantee: 文書に拡張の印があるときだけモジュールが 1 回読まれ、印の場所に描かれる。
 minimal_guarantee: モジュールを読めない、または引数が Schema に合わない印の場所には枠が出て、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts

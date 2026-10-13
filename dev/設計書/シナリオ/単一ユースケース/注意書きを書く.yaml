@@ -27,7 +27,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 閉じた注意書きを持つ Markdown
-        description: '`> [!WARNING]- 古い版の書き方` の 1 行目と、本文の段落を持つ引用の文書'
+        description: 1 行目が `> [!WARNING]-` で、本文の段落を持つ引用の文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -40,7 +40,7 @@ scenarios:
         U->>P: 注意書きの題を押す
         P-->>U: 開いた注意書き
     expected:
-      - 描いた直後、注意書きは閉じていて、題に `古い版の書き方` が出ている
+      - 描いた直後、注意書きは閉じていて、題に `WARNING` の種類の題が出ている
       - 題を押した後、本文の段落が表示されている
     test: test_normal_when_collapsed
   - name: 正常シナリオ（知らない種類）
@@ -76,3 +76,4 @@ preconditions:
   - 注意書きの機能（`callout`）がオン（既定）
 success_guarantee: 注意書きが種類ごとの題・色・アイコンを持つ枠になり、GitHub で読んでも同じ種類の注意書きとして読める。
 minimal_guarantee: 知らない種類を書いても、注意書きは `NOTE` の枠で描かれ、中身は読める。
+test_file: tests/e2e/単一ユースケース/注意書きを書く.spec.ts

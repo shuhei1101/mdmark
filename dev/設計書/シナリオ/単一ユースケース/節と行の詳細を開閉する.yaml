@@ -123,3 +123,4 @@ preconditions:
   - 節の開閉と行の詳細の機能（`sections`・`row-details`）がオン（既定）
 success_guarantee: 節と行の詳細が印のとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
 minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれ、書き方の知らせが出る。
+test_file: tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts
