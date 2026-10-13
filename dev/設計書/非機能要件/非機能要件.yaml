@@ -17,7 +17,7 @@ requirements:
     source_kind: 制限なし
     value: Chrome 94 以降・Firefox 93 以降・Safari 16.4 以降（この版をビルドの target に書く）
     rationale: ES2022 のクラスの構文（フィールド・非公開メソッド・静的初期化ブロック）を書き換えずに出すため。部品は custom element のクラスで書き、クラスのフィールドと非公開メンバーを使う。版の境目は、静的初期化ブロックを持つ最初の版（Chrome 94・Firefox 93・Safari 16.4）。トップレベル await は Safari 16.4 で部分対応のため使わない
-    measurement: E2E を Playwright 同梱の Chromium・Firefox・WebKit で流す
+    measurement: E2E を Playwright 同梱の Chromium・Firefox で流す。Safari 16.4 はビルドの対象には入れるが、動作は確かめていない
   - name: 通信
     english_name: network
     category: 動作環境

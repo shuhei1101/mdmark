@@ -36,7 +36,7 @@ docs_url: https://vitest.dev/guide/browser
 selection:
   candidates: Vitest（単体は Node、結合はブラウザモード）・Web Test Runner 1.0.0 を比べた。Node 組み込み（DOM が無い）と Jest（TypeScript 7 に ts-jest が未対応、jsdom は計算値が空）は外した。
   decision: 単体と結合を 1 つのランナーで種別ごとに流せ、実ブラウザで CSS 変数の計算値を確かめられる。happy-dom は継承した変数と `calc()` を読めず使わない。
-  consequences: 結合テストのブラウザは Chromium にし、Firefox・WebKit は E2E で確かめる。
+  consequences: 結合テストのブラウザは Chromium にし、Firefox は E2E で確かめる。
 install: |-
   ```bash
   npm i -D -E vitest@5.0.4 @vitest/browser-playwright@5.0.4 playwright@1.64.0

@@ -3,7 +3,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: クローンした直後の作業ツリー
-        description: '`node_modules/` と `dist/` が無く、E2E が使うブラウザ（Chromium・Firefox・WebKit）も入っていない作業ツリー'
+        description: '`node_modules/` と `dist/` が無く、E2E が使うブラウザ（Chromium・Firefox）も入っていない作業ツリー'
         notes: '`version.ini` の先頭行は `v0.0.0`'
       - name: Mock
         description: 差し替える依存は無い（npm レジストリとブラウザの配布元から実際に入れる）
@@ -16,7 +16,7 @@ scenarios:
         D->>N: npm ci
         N-->>D: 依存を入れた
         D->>N: E2E のブラウザを入れる
-        N-->>D: Chromium・Firefox・WebKit を入れた
+        N-->>D: Chromium・Firefox を入れた
         D->>N: npm run lint / typecheck
         N-->>D: 違反 0 件・型エラー 0 件
         D->>B: npm run build
