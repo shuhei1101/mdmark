@@ -1,0 +1,70 @@
+title: "sanitize-html"
+kind: "ライブラリ"
+version:
+  current: 2.18.0
+  latest: 2.18.0
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 完全一致（2.18.0 より前の版には 2026 年の勧告がある）。依存は lockfile で固定する
+catalogs:
+  - name: API
+    version: 2.18.0
+    entries:
+      - name: sanitizeHtml
+        kind: 関数
+        purpose: HTML 文字列から許可していない要素・属性・URL のスキームを落とす
+        params:
+          - name: dirty
+            type: string
+            required: true
+            description: 落とす前の HTML
+          - name: options.allowedTags
+            type: string[]
+            description: 残す要素名。完全一致で、前方一致は書けない
+            notes: 既定は `sanitizeHtml.defaults.allowedTags`（`details`・`summary`・`img` を含まない）
+          - name: options.allowedAttributes
+            type: Record<string, string[]>
+            description: 要素ごとに残す属性名。`*` は全ての要素
+          - name: options.allowedClasses
+            type: Record<string, string[]>
+            description: 要素ごとに残す class。`language-*` のように末尾の `*` で前方一致を書ける
+          - name: options.allowedSchemes
+            type: string[]
+            description: '`href`・`src` に許す URL のスキーム。`javascript:` は入れない'
+          - name: options.parseStyleAttributes
+            type: boolean
+            default: 'true'
+            description: '`style` 属性を postcss で解析して `allowedStyles` で絞るか'
+            notes: '`false` のとき `allowedStyles` で絞らない。`style` を許可すると宣言が全て素通りする'
+          - name: options.transformTags
+            type: 'Record<string, (tagName: string, attribs: Record<string, string>) => { tagName: string; attribs: Record<string, string> }>'
+            description: 落とす前に要素名と属性を書き換える。`*` は全ての要素
+        returns:
+          - name: '-'
+            type: string
+            description: 落とした後の HTML。許可していない要素は要素だけが落ち、中の文字は残る（`script`・`style` は中身ごと落ちる）。HTML コメントは落ちる
+lead: 許可する要素・属性・URL のスキームを列挙し、HTML 文字列からそれ以外を落とすサニタイザー。DOM を使わず htmlparser2 で HTML を読む。
+purl: pkg:npm/sanitize-html@2.18.0
+dependency_scope: 必須
+adoption: 採用
+upstream: apostrophecms/apostrophe
+license: MIT（商用利用可）。依存の entities・domhandler・domutils などは BSD-2-Clause で、束ねた配布物に著作権表示を残す
+docs_url: https://github.com/apostrophecms/apostrophe/tree/main/packages/sanitize-html#readme
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: 'PoC #17 で markdown-it の出力を `sanitizeHtml(html, { allowedTags: [...defaults.allowedTags, "details", "summary"] })` にかけ、`script` 要素・`onclick` 属性・`javascript:` の `href` が落ち、`details` が残ることを Chromium・Firefox・Node で確かめた。ライブラリ選定の調査とレビューで、`allowedClasses` の `language-*` で言語の class だけが残ること、`parseStyleAttributes: false` のとき `allowedStyles` で絞らず `style` が素通りすること、`transformTags` で `text-align` を class に移せること、postcss を空の部品に差し替えても `parseStyleAttributes: false` なら呼ばれないことを Node 24 で確かめた'
+selection:
+  candidates: sanitize-html 2.18.0・hast-util-sanitize 5.0.2（+ hast-util-from-html・hast-util-to-html）・xss 1.0.15・ultrahtml 1.7.0 を比べた。DOMPurify は Node で DOM が要るため外した。
+  decision: XSS を落とせ、勧告への修正が出続けている。xss は既定の URL 検査が `data:image/svg+xml` を通し修正が未リリース、ultrahtml は設定しても XSS が通る。hast-util-sanitize は markdown-it の出力を HTML として解析し直すことになり、得るものが無い。
+  consequences: 'ビルドで postcss を空の部品に差し替え、`parseStyleAttributes: false` にする。`style` 属性は許可せず、列の揃えは `transformTags` で `text-align` の値だけを `mdmark-align-*` の class に移す。`mdmark-*` の要素名は許可を列挙で持つ。'
+install: |-
+  ```bash
+  npm i -E sanitize-html@2.18.0
+  npm i -D -E @types/sanitize-html@2.16.2
+  ```
+notes:
+  制約: |-
+    - 許可する要素名は完全一致の列挙で、前方一致や正規表現は書けない
+    - postcss を差し替えたまま `allowedStyles` を渡すと例外になる
+    - CommonJS で配布され、ESM 専用の htmlparser2 を `require` する。esbuild で束ねた配布物では問題にならない

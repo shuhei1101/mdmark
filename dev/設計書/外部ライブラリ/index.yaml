@@ -10,3 +10,7 @@ items:
     summary: lint と整形の検査
   - page: typescript.yaml
     summary: 型の検査
+  - page: markdown-it.yaml
+    summary: GitHub Flavored Markdown をトークンに解析し、HTML 文字列にする
+  - page: sanitize-html.yaml
+    summary: 描く前の HTML からスクリプトと許可していない要素・属性を落とす
