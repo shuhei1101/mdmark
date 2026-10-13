@@ -69,7 +69,7 @@ export async function loadLibraries(options: {
         }
         console.error("外部ライブラリを読み込めない", name, url, error);
         // `draw` が要素を取り除いていたら、替える先が無い
-        if (slot.isConnected) {
+        if (root.contains(slot)) {
           slot.outerHTML = renderNotice({ name, figure: entry.figure });
         }
       }
