@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>notice | mdmark の部品のモック</title>
+  <!-- 本文の規則と知らせの枠・印の場所の規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- カタログの並べ方 -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <!-- 読み込み中: 印の場所に図の高さを先に確保する -->
+      <section aria-labelledby="state-loading">
+        <h2 class="catalog-label" id="state-loading">読み込み中</h2>
+        <article class="mdmark">
+          <div class="mdmark-embed" role="status">図を読み込んでいます</div>
+        </article>
+      </section>
+
+      <!-- 読み込めない: 印の場所に知らせの枠を出す -->
+      <section aria-labelledby="state-error">
+        <h2 class="catalog-label" id="state-error">読み込めない</h2>
+        <article class="mdmark">
+          <p>四半期ごとの売上を図で示します。</p>
+          <div class="mdmark-notice" role="status">
+            <strong class="mdmark-notice-title">この図を表示できません</strong>
+            <p>表示に使うライブラリ（<code>chart</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+          </div>
+          <p>読み込めなかった箇所のほかは、そのまま描かれます。</p>
+        </article>
+      </section>
+
+      <!-- 長文: 長い印の名前と、設定で上書きした長い URL -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長文（長い印の名前と URL）</h2>
+        <article class="mdmark">
+          <div class="mdmark-notice" role="status">
+            <strong class="mdmark-notice-title">この図を表示できません</strong>
+            <p>表示に使うライブラリ（<code>sequence-diagram-with-very-long-component-name</code>）を読み込めませんでした。読み込み先（<code>https://cdn.example.com/very/long/path/to/the/library/module/that/does/not/exist/index.js</code>）が設定の <code>libraries</code> で正しいかを確かめてください。</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 狭い場所: 箇条書きの中に印を置いたとき -->
+      <section aria-labelledby="state-nested">
+        <h2 class="catalog-label" id="state-nested">リストの中</h2>
+        <article class="mdmark">
+          <ul>
+            <li>月ごとの推移
+              <div class="mdmark-notice" role="status">
+                <strong class="mdmark-notice-title">この図を表示できません</strong>
+                <p>表示に使うライブラリ（<code>chart</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+              </div>
+            </li>
+          </ul>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

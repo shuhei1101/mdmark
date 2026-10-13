@@ -1,0 +1,128 @@
+/* 描いた文書のモック: 使う側のページの中に描いた文書と、印刷・知らせの枠・横スクロールの見え方 */
+
+/* 使う側のページの地の色（mdmark の変数と別。境目の見え方を確かめるための仮の色） */
+:root {
+  --host-bg: #eef1f4;
+  --host-text: #1f2328;
+  --host-border: #d1d9e0;
+}
+
+/* 使う側のページがダークのときの地の色 */
+:root[data-scheme="dark"] {
+  --host-bg: #1c2128;
+  --host-text: #e6edf3;
+  --host-border: #3d444d;
+}
+
+/* ページ全体: 使う側のページの地を敷く */
+body {
+  background: var(--host-bg);
+  color: var(--host-text);
+}
+
+/* 使う側のページのトップバー（mdmark の外） */
+.host-bar {
+  padding: 12px 16px;
+  border-block-end: 1px solid var(--host-border);
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* パンくず: モックの階層を遡るリンク列 */
+.mock-breadcrumb {
+  max-width: calc(var(--mdmark-content-width) + var(--mdmark-padding) * 2);
+  margin: 0 auto 12px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+
+  a {
+    color: inherit;
+  }
+}
+
+/* mdmark の層: 描く先の要素の地と余白、横スクロールの影 */
+@layer mdmark {
+  /* 描く先の要素: 地の色と内側の余白。枠と影は付けない */
+  .mdmark {
+    padding: var(--mdmark-padding);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+
+    /* 横スクロールする領域: 続きがある側の端に影を出す（影は中身と一緒に動く面と、端に留まる面の重ね合わせ） */
+    :where(pre, table) {
+      background:
+        linear-gradient(to right, var(--mdmark-color-surface) 30%, transparent) left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-surface) 30%, transparent) right / 2.5em 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.18), transparent) left / 0.9em 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.18), transparent) right / 0.9em 100% no-repeat scroll,
+        var(--mdmark-color-surface);
+    }
+
+    /* 表の見出し行・セル: 横スクロールの影が透けるよう、地を透明にする */
+    :where(th, td) {
+      background: transparent;
+    }
+
+    /* 表の見出し行: 本文のセルと太さで分ける */
+    thead th {
+      border-block-end-width: 2px;
+    }
+  }
+}
+
+/* 印刷（beforeprint で付く data-preview と、モックの「印刷の見え方」で付く同じ印に当てる） */
+:root[data-preview="print"] {
+  /* 使う側のページの地: 紙の白 */
+  --host-bg: #ffffff;
+
+  /* 使う側のトップバーとパンくずを出さない */
+  .host-bar,
+  .mock-breadcrumb {
+    display: none;
+  }
+
+  /* 描く先の要素: 紙の幅いっぱいに使い、地の色と余白を外す */
+  .mdmark {
+    max-width: none;
+    padding: 0;
+    background: none;
+
+    /* リンク: 後ろに URL を併記する */
+    a[href^="http"]::after {
+      color: var(--mdmark-color-muted);
+      content: " (" attr(href) ")";
+      overflow-wrap: anywhere;
+    }
+
+    /* 図表・コードブロック・知らせの枠: 改ページで切らない */
+    :where(table, pre, figure, .mdmark-embed, .mdmark-notice) {
+      break-inside: avoid;
+    }
+
+    /* 表とコードブロック: 横スクロールをやめて折り返し、影を外す */
+    :where(pre, table) {
+      display: table;
+      width: 100%;
+      background: none;
+      white-space: pre-wrap;
+    }
+
+    /* 見出し: 直後で改ページしない */
+    :where(h1, h2, h3) {
+      break-after: avoid;
+    }
+  }
+
+  /* 使う側のページの本文の領域: 紙の余白に任せる */
+  .host {
+    padding: 0;
+  }
+}
+
+/* 紙に出すとき: モック専用の操作列を出さない */
+@media print {
+  .mock-bar {
+    display: none;
+  }
+}

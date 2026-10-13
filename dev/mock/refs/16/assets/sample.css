@@ -216,6 +216,26 @@
       display: block;
       font-weight: 700;
     }
+
+    /* 外部ライブラリの印の場所（読み込み中・描いた後）: 図の高さを先に確保する */
+    .mdmark-embed {
+      display: grid;
+      place-items: center;
+      min-height: 12rem;
+      border: 1px dashed var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 知らせの枠の本文: 何が起きたかの後に直し方を続ける */
+    .mdmark-notice p {
+      margin: 0.25em 0 0;
+    }
+
+    /* 知らせの枠の中の識別子（印の名前・URL）: 長くても枠の中で折り返す */
+    .mdmark-notice code {
+      overflow-wrap: anywhere;
+    }
   }
 }
 
