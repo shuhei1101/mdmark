@@ -1,0 +1,275 @@
+title: "ライブラリ本体 / 描く"
+lead: 使う側のページの要素に文書を描き、描き直しと片付けを受け持つ処理。文書の印にある外部ライブラリのモジュールを読んで印の場所に描かせ、印刷の前後で折り畳みを開いて戻す。ブラウザでだけ動く。
+directory: |-
+  ```tree
+  src/
+  ├── mount.ts      # 公開関数 mount と、描いた要素の控え
+  ├── libraries.ts  # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries
+  └── print.ts      # 印刷の前後で折り畳みを開いて戻す attachPrint
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      ```mermaid
+      classDiagram
+        direction LR
+        class 文書を要素に描く
+        class 描いた要素の操作
+        class 印の場所に外部ライブラリを描かせる
+        class 印刷の前後で折り畳みを開く
+        文書を要素に描く --> 描いた要素の操作 : 返す
+        文書を要素に描く --> 印の場所に外部ライブラリを描かせる : 描くたびに呼ぶ
+        文書を要素に描く --> 印刷の前後で折り畳みを開く : 1 回だけ付ける
+      ```
+data_models:
+  - name: MountOptions
+    title: 描く設定
+    container: src/mount.ts
+    usecase: 使う側のページが文書を描く
+    role: DTO
+    summary: '`mount` の第 2 引数（公開の型）'
+    properties:
+      - name: markdown
+        type: string
+        description: 描く Markdown
+      - name: config
+        type: MdmarkConfig | undefined
+        description: 使う側の設定。省いたキーには既定を当てる
+  - name: MountHandle
+    title: 描いた要素の操作
+    container: src/mount.ts
+    usecase: 使う側のページが文書を描く
+    summary: '`mount` の戻り値（公開の型）'
+    properties:
+      - name: update
+        type: '(markdown: string) => void'
+        description: 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない
+      - name: destroy
+        type: () => void
+        description: 要素の中を空にして class `mdmark` を外し、印刷の受け取りを外す。2 回目以降は何もしない
+  - name: LibraryModule
+    title: 外部ライブラリのモジュール
+    container: src/libraries.ts
+    usecase: 文書が使う外部ライブラリだけを読み込む
+    summary: '`import()` で読んだモジュールが名前付きで export する形'
+    properties:
+      - name: draw
+        type: '(slot: HTMLElement, args: string[]) => void | Promise<void>'
+        description: 印の場所の要素と、印の引数を受けて描く
+function_types:
+  - name: ImportModule
+    title: モジュールを読む
+    container: src/libraries.ts
+    summary: URL のモジュールを読む関数。既定は `(url) => import(url)` で、単体テストで差し替える
+    args:
+      - name: url
+        type: string
+        description: 解決済みの URL
+    returns:
+      type: Promise<LibraryModule>
+      description: 読んだモジュール
+constants:
+  - name: mounted
+    title: 描いた要素の控え
+    container: src/mount.ts
+    summary: 描いた要素からその `MountHandle` を引く。同じ要素への `mount` が前の描画を片付けるのに使う
+    value: new WeakMap<HTMLElement, MountHandle>()
+  - name: ROOT_CLASS
+    title: 描く先の class
+    container: src/mount.ts
+    summary: 描く先の要素に付ける class。本文の CSS はこの class の下に当たる
+    value: '"mdmark"'
+  - name: DRAWN_ATTRIBUTE
+    title: 描き終えた印
+    container: src/libraries.ts
+    summary: モジュールが描き終えた印の場所に付ける属性。読み込み中の破線と高さを外すのに使う
+    value: '"data-mdmark-drawn"'
+functions:
+  - name: mount
+    title: 文書を要素に描く
+    container: src/mount.ts
+    kind: 関数
+    scope: public
+    summary: 公開関数。要素の中に文書を描き、外部ライブラリの印を描かせ、印刷の受け取りを付けて `MountHandle` を返す
+    side_effects: '`el` の中身と class を書き換え、`window` に `beforeprint`・`afterprint` の受け取りを付ける。`mounted` に `el` を控える'
+    args:
+      - name: el
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
+      - name: opts
+        type: MountOptions
+        required: true
+        description: Markdown と設定
+    args_example: |-
+      ```ts
+      const handle = mount(document.querySelector("#doc"), { markdown: "# 見出し", config });
+      handle.update("# 次の見出し");
+      handle.destroy();
+      ```
+    returns:
+      type: MountHandle
+      description: 描き直しと片付けの関数
+    process: |-
+      1. `mounted` に `el` があれば、その `destroy` を呼ぶ
+      2. 設定に既定を当てる（設定に既定を当てる）
+      3. 描く世代を 0、片付けた印を `false` にする
+      4. 文書を描く。描くたびに次を行う
+         - 世代を 1 進める
+         - 本文の HTML と機能のオン・オフを得て（文書を描く）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
+         - 機能のオン・オフを控える
+         - 印の場所に外部ライブラリを描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
+      5. 印刷の受け取りを付ける（印刷の前後で折り畳みを開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
+      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す
+      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
+      8. `mounted` に `el` と戻り値を控えて返す
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
+      - '#functions[loadLibraries]'
+      - '#functions[attachPrint]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+    unit_tests:
+      - name: test_mount
+        case: 正常
+        summary: 要素に本文を描き、class を付ける
+        condition: '`# 見出し` を描く'
+        mock: なし
+        expected: '`el` が class `mdmark` を持ち、中に `<h1>見出し</h1>` がある。戻り値が `update` と `destroy` を持つ'
+      - name: test_mount_when_updated
+        case: 正常
+        summary: '`update` で本文だけを描き直す'
+        condition: '`# A` を描いた後、`update("# B")`'
+        mock: なし
+        expected: '`el` の中が `<h1>B</h1>` だけで、class `mdmark` を持ったまま'
+      - name: test_mount_when_destroyed
+        case: 正常
+        summary: '`destroy` で片付け、その後の `update` と 2 回目の `destroy` は何もしない'
+        condition: '`destroy` の後に `update("# B")` と `destroy()`'
+        mock: なし
+        expected: '`el` の中が空で class `mdmark` を持たない。例外が出ない'
+      - name: test_mount_when_remounted
+        case: 正常
+        summary: 同じ要素へもう一度描くと、前の描画を片付けてから描く
+        condition: '`mount(el, A)` の後に `mount(el, B)`、続けて 1 回目の戻り値の `update("# C")`'
+        mock: なし
+        expected: '`el` の中が B の本文のまま'
+      - name: test_mount_when_print_disabled_by_mark
+        case: 正常
+        summary: 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない
+        condition: '`<!-- features: -print -->` と閉じた `details`。設定の `features` は省く'
+        mock: なし
+        expected: '`beforeprint` を送った後も `details` が `open` を持たない'
+      - name: test_mount_when_updated_with_print_mark
+        case: 正常
+        summary: '`update` で描き直した文書の印が印刷の機能に効く'
+        condition: '印の無い文書を描いた後、`<!-- features: -print -->` と閉じた `details` に `update`'
+        mock: なし
+        expected: '`beforeprint` を送った後も `details` が `open` を持たない'
+  - name: loadLibraries
+    title: 印の場所に外部ライブラリを描かせる
+    container: src/libraries.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: 要素の中の印の場所ごとに、対応表のモジュールを読んで `draw` を呼ぶ。読めない・描けない印の場所は知らせの枠に替える
+    description: 同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。`import()` 自体がモジュールを URL ごとに 1 回しか評価しないため、`update` で描き直しても要求は増えない。印の場所が無ければ何も読まない
+    side_effects: 印の場所の要素の属性を書き換え、失敗した場所を知らせの枠に置き換える。失敗を `console.error` に出す
+    args:
+      - name: options
+        type: '{ root: HTMLElement; libraries: Record<string, LibraryEntry>; isCurrent: () => boolean; importModule?: ImportModule }'
+        required: true
+        description: '`root` は描いた要素、`libraries` は既定を当てた対応表、`isCurrent` は描いた文書がまだ今のものか、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）'
+    returns:
+      type: Promise<void>
+      description: 全ての印の場所を描き終えるか知らせの枠に替えたら解決する。失敗しても拒否しない
+    process: |-
+      1. `root` の中の `[data-mdmark-slot]` の要素を全て拾う
+      2. 拾った要素ごとに並行して次を行う
+         - `data-mdmark-slot` の名前で対応表の行を引き、行の `url` を `document.baseURI` を基準に解決する
+         - 名前ごとに 1 回だけモジュールを読む（モジュールを読む）
+         - `data-mdmark-args` を空白で区切った引数で、モジュールの `draw` を呼んで待つ
+         - 待った後に `isCurrent()` が `false` なら何もしない
+         - 描けたら、要素から `role` を外し `DRAWN_ATTRIBUTE` を付ける
+         - 読めない・`draw` が無い・`draw` が例外を投げたときは、要素を知らせの枠に置き換える（知らせの枠を描く）。題は行の `figure` で分ける
+           - `[error]` 外部ライブラリを読み込めない（印の名前・URL・元のエラーを `console.error` の引数に並べる）
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+    unit_tests:
+      - name: test_load_libraries
+        case: 正常
+        summary: 印の場所ごとに `draw` を呼び、描けた場所の読み込み中の印を外す
+        condition: '`renderEmbed` の要素が `test-lib`（引数 `a b`）と `test-lib`（引数無し）の 2 つ。対応表は `{ "test-lib": { url: "/fixtures/test-lib.js", figure: true } }`'
+        mock: '`importModule` が `draw` を持つモジュールを返す'
+        expected: '`importModule` が 1 回、`location.origin` + `/fixtures/test-lib.js` で呼ばれる。`draw` が `(1 つ目の要素, ["a", "b"])` と `(2 つ目の要素, [])` で呼ばれる。2 つの要素が `role` を持たず `data-mdmark-drawn` を持つ'
+      - name: test_load_libraries_when_no_slot
+        case: 正常
+        summary: 印の場所が無ければ何も読まない
+        condition: 段落だけの要素
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれない'
+      - name: test_load_libraries_when_import_fails
+        case: 正常
+        summary: 読めない印の場所を知らせの枠に替え、エラーを出す
+        condition: '`test-lib` の印の場所 1 つ。対応表の `figure` は `true`'
+        mock: '`importModule` が `new Error("404")` で拒否する。`console.error` を見張る'
+        expected: '要素が `renderNotice({ name: "test-lib", figure: true })` の HTML に替わる。`console.error` が 1 回、引数に `test-lib`・URL・`Error("404")` を含めて呼ばれる。戻りの Promise は解決する'
+      - name: test_load_libraries_when_draw_throws
+        case: 正常
+        summary: '`draw` が例外を投げた印の場所を知らせの枠に替える'
+        condition: '`test-lib` の印の場所 1 つ。対応表の `figure` は `false`'
+        mock: '`importModule` が、例外を投げる `draw` を持つモジュールを返す'
+        expected: '要素が `renderNotice({ name: "test-lib", figure: false })` の HTML に替わる'
+      - name: test_load_libraries_when_draw_missing
+        case: 正常
+        summary: '`draw` を export しないモジュールの印の場所を知らせの枠に替える'
+        condition: '`test-lib` の印の場所 1 つ'
+        mock: '`importModule` が空のモジュールを返す'
+        expected: 要素が知らせの枠に替わり、`console.error` が 1 回呼ばれる
+      - name: test_load_libraries_when_stale
+        case: 正常
+        summary: 描き直した後に読み終えた古い印の場所には手を付けない
+        condition: '`isCurrent` が `false` を返す。読み込みは拒否する'
+        mock: '`importModule` が拒否する。`console.error` を見張る'
+        expected: 要素が読み込み中の枠のままで、`console.error` が呼ばれない
+  - name: attachPrint
+    title: 印刷の前後で折り畳みを開く
+    container: src/print.ts
+    kind: 関数
+    scope: internal
+    summary: '`beforeprint` で要素の中の閉じた `details` を開き、`afterprint` で開いたものだけを閉じ直す受け取りを `window` に付け、外す関数を返す'
+    side_effects: '`window` に受け取りを付ける。`details` の `open` を書き換える'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; isEnabled: () => boolean }'
+        required: true
+        description: '`root` は描いた要素、`isEnabled` は印刷の機能がオンか（印刷のたびに読む）'
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    process: |-
+      1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、`root` の中の `open` を持たない `details` を全て開き、開いたものを控える
+      2. `afterprint` を受けたとき、控えた `details` の `open` を外し、控えを空にする
+      3. 外す関数は、2 つの受け取りを `window` から外す
+    unit_tests:
+      - name: test_attach_print
+        case: 正常
+        summary: 印刷の前に閉じた折り畳みを開き、後に開いたものだけを閉じ直す
+        condition: 閉じた `details` と開いた `details`。`isEnabled` は `true`
+        mock: なし
+        expected: '`beforeprint` の後に 2 つとも `open` を持ち、`afterprint` の後に初めに閉じていた方だけが `open` を持たない'
+      - name: test_attach_print_when_disabled
+        case: 正常
+        summary: 印刷の機能がオフなら開かない
+        condition: 閉じた `details`。`isEnabled` は `false`
+        mock: なし
+        expected: '`beforeprint` の後も `open` を持たない'
+      - name: test_attach_print_when_detached
+        case: 正常
+        summary: 外した後は受け取らない
+        condition: 外す関数を呼んだ後に `beforeprint` を送る
+        mock: なし
+        expected: '`details` が `open` を持たない'
+notes:
+  単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,print}.browser.test.ts` に置き、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く

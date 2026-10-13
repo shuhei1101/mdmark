@@ -73,15 +73,10 @@ functions:
     summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
     description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。渡されたオブジェクトは書き換えない'
     args:
-      - name: config
-        type: MdmarkConfig | undefined
-        required: false
-        description: 使う側の設定
-      - name: defaultLibraries
-        type: Record<string, LibraryEntry>
-        required: false
-        default: DEFAULT_LIBRARIES
-        description: 既定の対応表（単体テストで差し替える）
+      - name: options
+        type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
+        required: true
+        description: '`config` は使う側の設定、`defaultLibraries` は既定の対応表（既定 `DEFAULT_LIBRARIES`。単体テストで差し替える）'
     returns:
       type: ResolvedConfig
       description: 既定を当てた設定
@@ -118,14 +113,10 @@ functions:
     summary: 設定の `features` に、文書の `features` の印の引数（`+名前`・`-名前`）を書いた順に重ねる
     description: 既定に無い名前と、`+`・`-` で始まらない引数は無視する。同じ名前が何度も出たら後のものが勝つ。機能を作る Issue は、この戻り値を読んで機能を出すかを決める
     args:
-      - name: defaults
-        type: Record<string, boolean>
+      - name: options
+        type: '{ defaults: Record<string, boolean>; args: string[] }'
         required: true
-        description: 既定を当てた設定の `features`
-      - name: args
-        type: string[]
-        required: true
-        description: 文書の `features` の印の引数を、書いた順に並べたもの
+        description: '`defaults` は既定を当てた設定の `features`、`args` は文書の `features` の印の引数を書いた順に並べたもの'
     returns:
       type: Record<string, boolean>
       description: 決まったオン・オフ（`defaults` は書き換えない）

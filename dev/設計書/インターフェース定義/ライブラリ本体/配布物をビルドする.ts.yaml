@@ -17,12 +17,13 @@ flows:
         participant F as ファイル
         D->>B: npm run build
         B->>F: version.ini を読む
-        B->>F: v0.0.0 を埋めた dist/index.js と index.css を書く
+        B->>F: v0.0.0 を埋めた dist/index.js と index.css と、束ねた依存の THIRD_PARTY_LICENSES.txt を書く
         B-->>D: 終了コード 0
     expected:
       - 終了コードが 0
       - '`dist/index.js` と `dist/index.css` がある'
       - '`dist/index.js` の `version()` が `v0.0.0` を返す'
+      - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it` と `sanitize-html` の名前とライセンスの本文がある'
     test: test_normal
   - name: 正常系（版を指定する）
     summary: '`--version` で渡した版を埋めてビルドする'
@@ -107,9 +108,9 @@ exceptions:
     condition: '`dist/` のファイルが 1 つでも上限を超える'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 20MB 以下
+    constraint: 256KB 以下（262144 バイト）
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
-    constraint: Chrome 94・Firefox 93・Safari 16.4
+    constraint: Chrome 99・Firefox 97・Safari 16.4
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
 test_file: tests/integration/lib/build.test.ts

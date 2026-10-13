@@ -36,9 +36,9 @@ layers:
   - name: 結合テスト（バック）
     run_all: 未確定
   - name: 単体テスト（フロント）
-    description: Vitest の `unit` プロジェクト（Node）で流す
+    description: Vitest の `unit` プロジェクト（Node）と、DOM を使う `*.browser.test.ts` を流す `unit-browser` プロジェクト（Chromium）で流す
     prerequisites:
-      - '`npm ci` で依存を入れてある'
+      - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
     run_all: |-
       ```bash
       npm run test:unit
@@ -47,7 +47,7 @@ layers:
       label: ファイル
       command: |-
         ```bash
-        npx vitest run --project unit {テストファイルパス}
+        npx vitest run --project 'unit*' {テストファイルパス}
         ```
     notes:
       単体と結合を続けて流す: |-

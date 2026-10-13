@@ -46,7 +46,25 @@ categories:
       date: '2026-10-13'
       detail: 追加は vitest・esbuild・typescript・@biomejs/biome・@types/node で、外すのは作業ツリーの控えで `@types/node` を外し、`package.json` から消えることを確かめた
   - name: 起動・停止
-    commands: 未確定
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    commands: |-
+      Storybook で部品を見る。
+
+      1. 描画の口を立てる（`Ctrl+C` で止める）
+
+      ```bash
+      RENDER_PORT={描画の口のポート} npm run storybook:render
+      ```
+
+      2. 別の端末で Storybook を立てる（`Ctrl+C` で止める）
+
+      ```bash
+      RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} npm run storybook -- --host 127.0.0.1 --exact-port -p {ポート}
+      ```
+    verification:
+      state: 未確認
+      detail: 実装の前。作業ツリーの外の最小の構成で、描画の口と Storybook を立てて `/index.json` にストーリーが載り、`/render` の中継で部品の HTML が出ることは確かめた
   - name: テスト
     refs:
       - dev/設計書/テスト/テスト実行方法#
@@ -82,7 +100,7 @@ categories:
       ```bash
       npm run build -- --version v{版}
       ```
-    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 20MB を超えると、終了コード 1 で終わり `dist/` は残らない'
+    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 256KB を超えると、終了コード 1 で終わり `dist/` は残らない'
     verification:
       state: 済
       date: '2026-10-13'

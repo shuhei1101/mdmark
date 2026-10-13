@@ -100,7 +100,7 @@ functions:
     unit_tests:
       - name: test_render_embed
         case: 正常
-        summary: 印の名前と引数を属性に持つ枚を返す
+        summary: 印の名前と引数を属性に持つ枠を返す
         condition: '`{ name: "chart", args: ["a", "b"] }`'
         mock: なし
         expected: '`data-mdmark-slot="chart"`・`data-mdmark-args="a b"`・`role="status"`・文字 `図を読み込んでいます`'

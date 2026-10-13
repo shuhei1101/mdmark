@@ -117,14 +117,10 @@ functions:
     summary: 解析器で Markdown を HTML にし、`sanitize` をかけ、拾った `features` の印を `resolveFeatures` で重ねた結果と一緒に返す
     description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す'
     args:
-      - name: markdown
-        type: string
+      - name: options
+        type: '{ markdown: string; config: ResolvedConfig }'
         required: true
-        description: Markdown
-      - name: config
-        type: ResolvedConfig
-        required: true
-        description: 既定を当てた設定
+        description: '`markdown` は Markdown、`config` は既定を当てた設定'
     returns:
       type: RenderedDocument
       description: 本文の HTML と機能のオン・オフ
