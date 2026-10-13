@@ -1,0 +1,45 @@
+/* モダン: 白地に灰の面と青のリンク。見出しの下に細い区切り線 */
+
+/* 明るい配色の値と、配色によらない値 */
+:root {
+  --mdmark-font-body: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+  --mdmark-font-heading: var(--mdmark-font-body);
+  --mdmark-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --mdmark-font-size: 1rem;
+  --mdmark-line-height: 1.75;
+  --mdmark-content-width: 46rem;
+  --mdmark-space: 1rem;
+  --mdmark-radius: 6px;
+  --mdmark-heading-weight: 600;
+  --mdmark-heading-rule-width: 1px;
+  --mdmark-table-rule-inline: 1px;
+  --mdmark-color-bg: #ffffff;
+  --mdmark-color-text: #1f2328;
+  --mdmark-color-heading: #1f2328;
+  --mdmark-color-muted: #59636e;
+  --mdmark-color-link: #0969da;
+  --mdmark-color-border: #d1d9e0;
+  --mdmark-color-surface: #f6f8fa;
+  --mdmark-color-notice-bg: #fff8c5;
+  --mdmark-color-notice-border: #9a6700;
+  --mdmark-color-notice-text: #1f2328;
+  color-scheme: light;
+}
+
+/* ダークの配色の値。画面のときだけ当て、印刷では明るい配色に戻す */
+@media screen {
+  /* ダークを選んだページ */
+  :root[data-scheme="dark"] {
+    --mdmark-color-bg: #0d1117;
+    --mdmark-color-text: #f0f6fc;
+    --mdmark-color-heading: #f0f6fc;
+    --mdmark-color-muted: #9198a1;
+    --mdmark-color-link: #4493f8;
+    --mdmark-color-border: #3d444d;
+    --mdmark-color-surface: #151b23;
+    --mdmark-color-notice-bg: #2a2110;
+    --mdmark-color-notice-border: #bb8009;
+    --mdmark-color-notice-text: #f0f6fc;
+    color-scheme: dark;
+  }
+}
