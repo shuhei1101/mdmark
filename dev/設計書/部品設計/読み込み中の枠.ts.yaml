@@ -8,7 +8,7 @@ states:
       - name: name
         value: chart
       - name: args
-        value: '["a", "b"]'
+        value: a,b
 lead: 外部ライブラリの印の場所に置き、読み込んだモジュールが描くまで図の高さを先に取っておく枠。印の名前と引数を属性で持ち、`mount` がその要素を描く場所としてモジュールに渡す。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
 args:
   - name: name

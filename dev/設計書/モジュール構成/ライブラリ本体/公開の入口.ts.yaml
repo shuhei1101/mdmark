@@ -40,7 +40,7 @@ styles:
     values:
       - class_name: ':root'
         target: 変数の既定
-        value: '`--mdmark-font-body`・`--mdmark-font-heading`・`--mdmark-font-mono`・`--mdmark-font-size`（`1rem`）・`--mdmark-line-height`（`1.75`）・`--mdmark-content-width`（`46rem`）・`--mdmark-space`（`1rem`）・`--mdmark-padding`（`1.5rem`）・`--mdmark-radius`（`6px`）・`--mdmark-heading-weight`・`--mdmark-heading-rule-width`・`--mdmark-table-rule-inline` と、`--mdmark-color-`（`bg`・`text`・`heading`・`muted`・`link`・`border`・`surface`・`scroll-shadow`・`notice-bg`・`notice-border`・`notice-text`）。値は `dev/mock/assets/style.css` の `:root`'
+        value: '`--mdmark-font-body`・`--mdmark-font-heading`・`--mdmark-font-mono`・`--mdmark-font-size`（`1rem`）・`--mdmark-line-height`（`1.75`）・`--mdmark-content-width`（`46rem`）・`--mdmark-space`（`1rem`）・`--mdmark-padding`（`1.5rem`）・`--mdmark-radius`（`6px`）・`--mdmark-heading-weight`・`--mdmark-heading-rule-width`・`--mdmark-table-rule-inline`・`--mdmark-h1-marker`・`--mdmark-h2-marker`・`--mdmark-h3-marker`（見出しの前の記号。既定は持たず、規則の側で空の文字列に落とす）と、`--mdmark-color-`（`bg`・`text`・`heading`・`muted`・`link`・`border`・`surface`・`scroll-shadow`・`notice-bg`・`notice-border`・`notice-text`）。値は `dev/mock/assets/style.css` の `:root`'
       - class_name: ':root'
         target: ダークの配色（画面で OS の設定がダークのとき）
         value: '`--mdmark-color-` の 11 個をダークの値にし、`color-scheme: dark`。値は `dev/mock/assets/style.css` の `:root[data-scheme="dark"]`'
