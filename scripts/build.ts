@@ -65,7 +65,7 @@ export function findTooLargeOutputs(
     .map(([path, bytes]) => ({ path, bytes }));
 }
 
-/** 版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す */
+/** 前回の `dist/` を消してから、版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す */
 export async function main(
   argv: string[],
   options: { root: string; maxBytes: number } = {
@@ -74,29 +74,26 @@ export async function main(
   },
 ): Promise<0 | 1> {
   const { root, maxBytes } = options;
-  let version: string;
+  const distDir = join(root, "dist");
+  // 失敗したときに前回の配布物が残らないよう、最初に消す
+  rmSync(distDir, { recursive: true, force: true });
   try {
-    version = resolveVersion(argv, root);
-  } catch (error) {
-    if (error instanceof VersionFormatError) {
-      console.error(error.message);
-      return 1;
+    const version = resolveVersion(argv, root);
+    const outputs = await buildDist(version, root);
+    const tooLarge = findTooLargeOutputs(outputs, maxBytes);
+    if (tooLarge.length === 0) {
+      return 0;
     }
-    throw error;
-  }
-  const outputs = await buildDist(version, root);
-  const tooLarge = findTooLargeOutputs(outputs, maxBytes);
-  if (tooLarge.length > 0) {
-    // 上限を超えた配布物を残さない
-    rmSync(join(root, "dist"), { recursive: true, force: true });
     for (const { path, bytes } of tooLarge) {
       console.error(
         `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
       );
     }
-    return 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
   }
-  return 0;
+  rmSync(distDir, { recursive: true, force: true });
+  return 1;
 }
 
 // `node scripts/build.ts` で入口として実行されたときだけ流す
