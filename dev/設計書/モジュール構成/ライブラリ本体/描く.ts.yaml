@@ -193,7 +193,7 @@ functions:
          - `data-mdmark-args` を空白で区切った引数で、モジュールの `draw` を呼んで待つ
          - 待った後に `isCurrent()` が `false` なら何もしない
          - 描けたら、要素から `role` を外し `DRAWN_ATTRIBUTE` を付ける
-         - 読めない・`draw` が無い・`draw` が例外を投げたときは、要素を知らせの枠に置き換える（知らせの枠を描く）。題は行の `figure` で分ける
+         - 読めない・`draw` が無い・`draw` が例外を投げたときは、要素を知らせの枠に置き換える（知らせの枠を描く）。題は行の `figure` で分ける。`draw` が要素を `root` から取り除いていたら置き換えない
            - `[error]` 外部ライブラリを読み込めない（印の名前・URL・元のエラーを `console.error` の引数に並べる）
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]

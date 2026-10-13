@@ -147,7 +147,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ タスクリスト → www の自動リンク → 取り消し線の `del` → 表の属性。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付ける。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ タスクリスト → www の自動リンク → 取り消し線の `del` → 表の属性。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
