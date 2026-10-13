@@ -10,16 +10,19 @@ catalogs:
       - name: on.push.branches
         kind: 設定
         purpose: '`release/v*` への push でジョブを動かす'
+      - name: on.push.tags
+        kind: 設定
+        purpose: '`v*` のタグの push で、タグと配布物の版を照合するジョブを動かす'
       - name: on.pull_request.branches
         kind: 設定
         purpose: master へ向けた PR の更新でジョブを動かす
-      - name: permissions.contents
+      - name: permissions
         kind: 設定
-        purpose: '`write` で、ジョブから `dist/` を commit して push できるようにする'
+        purpose: '`contents: write` で `dist/` を commit して push し、`pull-requests: read`・`issues: read` で hotfix の起点 Issue のラベルを読む'
 lead: GitHub のリポジトリのイベントをきっかけに、ワークフローのジョブを GitHub のランナーで動かす CI のサービス（GitHub Actions）。
 adoption: 採用
 dependency_scope: 開発のみ
 verification:
   state: 未確認
-  detail: ワークフローをまだ置いていない
+  detail: ワークフローへリポジトリの書き込みの権限を与えるかをユーザーへ確かめている途中で、決着するまで書き込むワークフローをリポジトリに置かない。採ると決まったら、検証用のブランチに最小のワークフローを置いて確かめる
 docs_url: https://docs.github.com/actions

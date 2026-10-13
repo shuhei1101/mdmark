@@ -44,8 +44,9 @@ endpoints:
         condition: タグかファイルが無い
 lead: npm と GitHub の公開リポジトリのファイルを配る無料の CDN。
 verification:
-  state: 未確認
-  detail: 版のタグをまだ打っておらず、mdmark の配布物を読んでいない
+  state: 済
+  date: '2026-10-13'
+  detail: '`GET /gh/shuhei1101/mdmark@480d928/README.md` が 200、同じ commit の無いファイル `dist/index.js` と、打っていないタグ `@v9.9.9` が 404 を返すことを確かめた'
 base_urls:
   - env: 本番
     url: https://cdn.jsdelivr.net
