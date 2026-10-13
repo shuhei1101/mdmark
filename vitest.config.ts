@@ -1,6 +1,7 @@
 import { tmpdir } from "node:os";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+import { fixturesPlugin } from "./tests/integration/fixtures-plugin.ts";
 
 export default defineConfig({
   test: {
@@ -31,12 +32,28 @@ export default defineConfig({
           name: "integration-node",
           environment: "node",
           include: ["tests/integration/**/*.test.ts"],
-          exclude: ["tests/integration/**/*.browser.test.ts"],
+          exclude: [
+            "tests/integration/**/*.browser.test.ts",
+            "tests/integration/**/*.story.test.ts",
+          ],
+          globalSetup: ["tests/integration/global-setup.ts"],
+        },
+      },
+      {
+        // 部品のストーリーを Playwright で開くため、Storybook の開発サーバーを立てる
+        test: {
+          name: "integration-storybook",
+          environment: "node",
+          include: ["tests/integration/**/*.story.test.ts"],
+          globalSetup: ["tests/integration/storybook-setup.ts"],
+          testTimeout: 60_000,
         },
       },
       {
         // ビルドした配布物を一時フォルダから配るため、開発サーバーの配信を許す
         server: { fs: { allow: [tmpdir(), "."] } },
+        // 外部ライブラリの代役のモジュールを配る
+        plugins: [fixturesPlugin()],
         test: {
           name: "integration-browser",
           include: ["tests/integration/**/*.browser.test.ts"],

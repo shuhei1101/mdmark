@@ -214,3 +214,29 @@ test("test_load_libraries_when_stale", async () => {
   expect(root.innerHTML).toBe(normalize(renderEmbed({ name: "test-lib" })));
   expect(errorSpy).not.toHaveBeenCalled();
 });
+
+// draw が印の場所を取り除いてから例外を投げても、知らせの枠に替えず拒否しない（正常系）
+test("test_load_libraries_when_draw_removes_slot", async () => {
+  // 準備
+  const { loadLibraries: load } = await loadLibraries();
+  const { renderEmbed } = await loadEmbed();
+  const root = createRoot(renderEmbed({ name: "test-lib" }));
+  const importModule = vi.fn<ImportModule>(async () => ({
+    draw: (slot) => {
+      slot.remove();
+      throw new Error("描けない");
+    },
+  }));
+  const errorSpy = spyConsoleError();
+  // 実行
+  const loaded = load({
+    root,
+    libraries: TEST_LIB,
+    isCurrent: () => true,
+    importModule,
+  });
+  // 検証
+  await expect(loaded).resolves.toBeUndefined();
+  expect(root.querySelector(".mdmark-notice")).toBeNull();
+  expect(errorSpy).toHaveBeenCalledTimes(1);
+});

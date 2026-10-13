@@ -82,3 +82,13 @@ test("test_create_parser_when_code_block", async () => {
   );
   expect(html).toContain('<pre tabindex="0" aria-label="コード">');
 });
+
+// 情報文字列に " があっても、コードブロックの読み上げの名前が途中で切れない（正常系）
+test("test_create_parser_when_info_has_quote", async () => {
+  // 準備
+  const markdown = '```ts"x\nconst a = 1;\n```\n';
+  // 実行
+  const html = await parse(markdown);
+  // 検証
+  expect(html).toContain('aria-label="コード: ts&quot;x"');
+});
