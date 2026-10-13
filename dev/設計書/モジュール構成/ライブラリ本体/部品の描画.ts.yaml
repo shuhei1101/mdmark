@@ -161,3 +161,5 @@ notes:
   起動: '描画の口を `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で立て、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で立てる'
   依存: '`storybook`・`@storybook/server-webpack5`・`@storybook/server` を `10.6.2` で開発の依存に足す。`package.json` の `overrides` で `webpack-dev-middleware` を `^7.4.6` にする（Storybook の開発サーバーが引く版の脆弱性 GHSA-g84c-rxfj-3j2c を避ける）。どれも配布物には入らない'
   単体テストの場所: '`renderPart`・`createRenderServer`・`main` は `tests/unit/scripts/storybook-render.test.ts`（`unit` プロジェクト）。`.storybook/` の中は Storybook を立てて確かめる'
+test_files:
+  - tests/unit/scripts/storybook-render.test.ts

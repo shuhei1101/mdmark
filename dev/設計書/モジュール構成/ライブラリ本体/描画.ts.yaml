@@ -267,3 +267,8 @@ functions:
         condition: '`<table tabindex="5">`'
         mock: なし
         expected: '`<table tabindex="0">`'
+test_files:
+  - tests/unit/src/render/index.test.ts
+  - tests/unit/src/render/parser.test.ts
+  - tests/unit/src/render/marks.test.ts
+  - tests/unit/src/render/sanitize.test.ts

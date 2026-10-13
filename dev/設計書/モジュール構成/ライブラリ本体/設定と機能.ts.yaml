@@ -147,3 +147,6 @@ functions:
         expected: '`{ print: true }`'
 notes:
   設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
+test_files:
+  - tests/unit/src/config.test.ts
+  - tests/unit/src/features.test.ts

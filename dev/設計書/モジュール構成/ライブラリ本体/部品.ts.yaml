@@ -112,3 +112,7 @@ functions:
         expected: '`data-mdmark-args="&quot;&gt;&lt;script&gt;"`'
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（`notice` か `embed`）・`stories[].args` を持つ。`args` の配列は描画の口に `a,b` の 1 つの文字列で届く（戻し方は『部品の描画』）'
+test_files:
+  - tests/unit/src/parts/escape.test.ts
+  - tests/unit/src/parts/notice.test.ts
+  - tests/unit/src/parts/embed.test.ts
