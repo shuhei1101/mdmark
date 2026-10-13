@@ -32,6 +32,12 @@ async function createRoot(versionIni: string): Promise<string> {
   return root;
 }
 
+/** 前回のビルドの dist/index.js を置く */
+async function createPreviousDist(root: string): Promise<void> {
+  await mkdir(join(root, "dist"));
+  await writeFile(join(root, "dist", "index.js"), "// 前回のビルド\n");
+}
+
 /** 標準エラーへの出力を集め、集めた文字列を返す関数を返す */
 function captureStderr(): () => string {
   const chunks: string[] = [];
@@ -85,11 +91,12 @@ test("test_main_when_version_given", async () => {
   );
 });
 
-// 版の書式が違うと dist/ を書かずに終わる（異常系）
+// 版の書式が違うと前回の dist/ を残さずに終わる（異常系）
 test("test_main_when_version_format_invalid", async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createRoot("v0.0.0\n");
+  await createPreviousDist(root);
   const stderr = captureStderr();
   // 実行
   const code = await main(["--version", "1.2"], { root, maxBytes: MAX_BYTES });
@@ -97,6 +104,38 @@ test("test_main_when_version_format_invalid", async () => {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(stderr()).toContain("v{MAJOR}.{MINOR}.{PATCH}");
+});
+
+// version.ini を読めないと前回の dist/ を残さずに終わる（異常系）
+test("test_main_when_version_ini_missing", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await rm(join(root, "version.ini"));
+  await createPreviousDist(root);
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], { root, maxBytes: MAX_BYTES });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr()).toContain("version.ini");
+});
+
+// esbuild が失敗すると前回の dist/ を残さずに終わる（異常系）
+test("test_main_when_build_fails", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await writeFile(join(root, "src", "index.ts"), "export const = ;\n");
+  await createPreviousDist(root);
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], { root, maxBytes: MAX_BYTES });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr()).toContain("src/index.ts");
 });
 
 // 上限を超えると dist/ を消して終わる（異常系）
