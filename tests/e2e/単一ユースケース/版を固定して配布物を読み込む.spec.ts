@@ -1,4 +1,11 @@
-import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  cp,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { expect, type Page, test } from "@playwright/test";
@@ -60,6 +67,11 @@ test.beforeAll(async () => {
     {
       recursive: true,
     },
+  );
+  await symlink(
+    resolve(import.meta.dirname, "../../../node_modules"),
+    join(builtRoot, "node_modules"),
+    "dir",
   );
   await writeFile(join(builtRoot, "version.ini"), "v0.0.1\n");
   const code = await main([], { root: builtRoot, maxBytes: MAX_BYTES });
