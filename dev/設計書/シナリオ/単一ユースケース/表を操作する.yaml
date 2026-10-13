@@ -1,0 +1,169 @@
+title: "表を操作する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 並べ替えの表を持つ Markdown
+        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、数値の列を持つ 3 行の表を囲んだ文書'
+        notes: 数値の列の値は上から `10`・`2`・`33`
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: data の種類の機能を付けた表を描く
+        U->>P: 数値の列の見出しの並べ替えを押す
+        P-->>U: 昇順に並べ替えた表
+        U->>P: もう一度押す
+        P-->>U: 降順に並べ替えた表
+    expected:
+      - 1 回押した後、数値の列が上から `2`・`10`・`33` の順（数値として比べる）で、見出しの `aria-sort` が `ascending`
+      - 2 回押した後、数値の列が上から `33`・`10`・`2` の順で、見出しの `aria-sort` が `descending`
+      - 表の前後に印の文字が出ていない
+    test: test_normal
+  - name: 正常シナリオ（絞り込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 絞り込みの表を持つ Markdown
+        description: '`<!-- table: data +filter -->` 〜 `<!-- /table -->` で、名前の列に `りんご`・`みかん`・`りんご飴` を持つ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 絞り込みの欄を持つ表を描く
+        U->>P: 絞り込みの欄に「りんご」を入れる
+        P-->>U: 一致する行だけの表
+    expected:
+      - '`りんご`・`りんご飴` の行が表示され、`みかん` の行が表示されていない'
+      - 絞り込みの欄を空にすると 3 行とも表示される
+    test: test_normal_when_filtered
+  - name: 正常シナリオ（ピン止めする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の大きさは、表が横にも縦にもスクロールする大きさ
+      - name: 列の多い表を持つ Markdown
+        description: 10 列 30 行の表を持ち、表の印で囲まない文書（既定の種類）
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: ピン止めだけを付けた表を描く
+        U->>P: 先頭の列のピン止めを押す
+        U->>P: 表を横と縦にスクロールする
+        P-->>U: 先頭の列と見出し行が見えたままの表
+    expected:
+      - 横にスクロールした後も、先頭の列が表の左端に見えている
+      - 縦にスクロールした後も、見出し行が表の上端に見えている
+      - ピン止めのボタンの `aria-pressed` が `true`
+      - 並べ替えのボタンが無い（既定の種類はピン止めだけ）
+    test: test_normal_when_pinned
+  - name: 正常シナリオ（閉じた表）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じた表を持つ Markdown
+        description: '`<!-- table: data closed -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表を閉じた折り畳みに入れて描く
+        U->>P: 折り畳みの見出しを押す
+        P-->>U: 開いた表
+    expected:
+      - 描いた直後、表が閉じた折り畳みの中にあり、見出しに表の行数が出ている
+      - 見出しを押した後、表の 3 行が表示されている
+    test: test_normal_when_closed
+  - name: 正常シナリオ（機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 機能を外した表を持つ Markdown
+        description: '`<!-- table: data -sort -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 並べ替えを外した表を描く
+        P-->>U: 表を表示
+    expected:
+      - 表の見出しに並べ替えのボタンが無い
+      - 表の見出しにピン止めのボタンがある
+    test: test_normal_when_feature_removed
+  - name: 異常シナリオ（知らない種類）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない種類を書いた Markdown
+        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で表を囲み、表の後に段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない種類を既定の種類に読み替える
+        M-->>P: 書き方の知らせと、既定の種類に +sort を当てた表を描く
+        P-->>U: 書き方の知らせと表を表示
+    expected:
+      - 表の上に、`unknown` が使えない種類であることと使える種類を書いた書き方の知らせがある
+      - 表にピン止めと並べ替えのボタンがある
+      - 表の後の段落が描かれている
+    test: test_error_when_unknown_kind
+  - name: 異常シナリオ（閉じの印が無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じの印の無い Markdown
+        description: '`<!-- table: data -->` の後に表を 2 つ持ち、`<!-- /table -->` を持たない文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 印から文書の終わりまでを範囲にする
+        M-->>P: 書き方の知らせと、2 つの表に data の機能を付けて描く
+        P-->>U: 書き方の知らせと表を表示
+    expected:
+      - 範囲の始まりに、`<!-- /table -->` が無いことを書いた書き方の知らせがある
+      - 2 つの表の両方に並べ替えのボタンがある
+    test: test_error_when_range_end_missing
+lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。'
+issue: 4
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: 表ごとに付ける機能を印で選べ、印に対応しない表示（GitHub など）でも表がそのまま読める
+trigger: 読む人が、表の印を持つ文書を描いたページで表を操作する
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
+  - 表の機能（`table`）がオン（既定）
+success_guarantee: 表の種類と `+機能`・`-機能` で決まった機能だけが表に付き、操作の結果が表の行と読み上げの属性に出る。
+minimal_guarantee: 表の印に読めない指定があっても、表は描かれ、読めた指定だけが当たり、範囲の上に書き方の知らせが出る。

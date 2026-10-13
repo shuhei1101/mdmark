@@ -1,0 +1,78 @@
+title: "注意書きを書く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 5 種の注意書きを持つ Markdown
+        description: '`> [!NOTE]`・`> [!TIP]`・`> [!IMPORTANT]`・`> [!WARNING]`・`> [!CAUTION]` の引用を 1 つずつ持ち、それぞれの 2 行目に本文の段落を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 引用の 1 行目の種類を読む
+        M-->>P: 種類ごとの注意書きの枠を描く
+        P-->>U: 注意書きを表示
+    expected:
+      - 5 つの引用が、class `markdown-alert` と種類ごとの class（`markdown-alert-note` など）を持つ枠になっている
+      - 各枠に種類ごとの題とアイコンがあり、題の文字で種類が分かる
+      - 各枠に本文の段落があり、`[!NOTE]` などの種類の文字が本文に出ていない
+    test: test_normal
+  - name: 正常シナリオ（閉じた注意書き）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じた注意書きを持つ Markdown
+        description: '`> [!WARNING]- 古い版の書き方` の 1 行目と、本文の段落を持つ引用の文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 閉じた折り畳みの注意書きを描く
+        U->>P: 注意書きの題を押す
+        P-->>U: 開いた注意書き
+    expected:
+      - 描いた直後、注意書きは閉じていて、題に `古い版の書き方` が出ている
+      - 題を押した後、本文の段落が表示されている
+    test: test_normal_when_collapsed
+  - name: 正常シナリオ（知らない種類）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない種類の注意書きを持つ Markdown
+        description: '`> [!FAQ]` の引用を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない種類を NOTE に読み替える
+        M-->>P: NOTE の注意書きの枠を描く
+        P-->>U: 注意書きを表示
+    expected:
+      - 引用が class `markdown-alert-note` の枠になっている
+      - 枠に本文の段落がある
+    test: test_normal_when_unknown_kind
+lead: 文書を書く人が GitHub と同じ `> [!NOTE]` などの引用で注意書きを書くと、mdmark が種類ごとの題・色・アイコンを持つ枠に描く。末尾に `-` を付けた注意書きは閉じた折り畳みにする。
+issue: 4
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 注意・補足・ヒントを本文と見分けて読め、色が分からなくても種類が分かる
+trigger: 使う側のページが、注意書きを持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 注意書きの機能（`callout`）がオン（既定）
+success_guarantee: 注意書きが種類ごとの題・色・アイコンを持つ枠になり、GitHub で読んでも同じ種類の注意書きとして読める。
+minimal_guarantee: 知らない種類を書いても、注意書きは `NOTE` の枠で描かれ、中身は読める。

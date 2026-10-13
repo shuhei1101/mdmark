@@ -1,0 +1,82 @@
+title: "図と表に番号を付けて参照する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 図表の印を持つ Markdown
+        description: '`<!-- fig: arch -->` の後に画像 1 つの段落、`<!-- fig: flow -->` の後に画像 1 つの段落、`<!-- fig: list -->` の後に表を持ち、本文に `[図](#fig-flow)` と `[表](#fig-list)` のリンクを持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。画像は手元の応答で返す
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 文書の頭から図と表を別々に数える
+        M-->>P: 番号を付けた図表と、番号にした参照を描く
+        U->>P: 参照の「図 2」を押す
+        P-->>U: 2 つ目の図へ移る
+    expected:
+      - 1 つ目の画像に `図 1`、2 つ目の画像に `図 2`、表に `表 1` の番号が付いている
+      - 図表の要素が ID `fig-arch`・`fig-flow`・`fig-list` を持つ
+      - 本文のリンクの文字が `図 2` と `表 1` になっている
+      - '`図 2` のリンクを押した後、URL の末尾が `#fig-flow` で、2 つ目の画像が画面に入っている'
+    test: test_normal
+  - name: 異常シナリオ（切れた参照）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 無い ID を指す Markdown
+        description: '`<!-- fig: arch -->` の後に画像を持ち、本文に `[図](#fig-missing)` のリンクを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 参照先の ID が文書に無い
+        M-->>P: リンクの文字をそのままにし、書き方の知らせを付けて描く
+        P-->>U: 書き方の知らせと本文を表示
+    expected:
+      - リンクの文字が `図` のまま
+      - リンクのある段落の上に、`fig-missing` の図表が無いことを書いた書き方の知らせがある
+      - '`図 1` の番号は画像に付いている'
+    test: test_error_when_reference_missing
+  - name: 異常シナリオ（同じ ID を 2 回書く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 同じ ID を 2 回書いた Markdown
+        description: '`<!-- fig: arch -->` の後に画像を持つ段落を 2 つ持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 2 つ目の ID が 1 つ目と同じ
+        M-->>P: 1 つ目にだけ ID を付け、両方に番号を付けて描く
+        P-->>U: 書き方の知らせと図を表示
+    expected:
+      - 両方の画像に `図 1`・`図 2` の番号が付いている
+      - ID `fig-arch` を持つ要素は 1 つ目の図だけ
+      - 2 つ目の図の上に、`arch` が他の図表と重なっていることを書いた書き方の知らせがある
+    test: test_error_when_id_duplicated
+lead: '文書を書く人が図・表の直前に `<!-- fig: ID -->` を書くと、mdmark が種類ごとの通し番号（`図 1`・`表 1`）を付け、本文の `#fig-ID` へのリンクの文字をその番号にする。'
+issue: 4
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 「図 2 を参照」の番号から図へ移れ、図を足し引きしても番号がずれない
+trigger: 使う側のページが、図表の番号の印を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 図表の番号の機能（`figures`）がオン（既定）
+success_guarantee: 印を付けた図と表に、文書の頭から種類ごとに数えた番号が付き、参照のリンクがその番号と図表への移動を持つ。
+minimal_guarantee: 切れた参照や重なった ID があっても、本文は描かれ、書き方の知らせが出る。

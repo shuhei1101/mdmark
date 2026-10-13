@@ -44,6 +44,31 @@ scenarios:
       - 印刷の前に閉じていた折り畳みが閉じている
       - 印刷の前に開いていた折り畳みが開いている
     test: test_normal_when_print_finished
+  - name: 正常シナリオ（記法を開いて出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+      - name: 閉じた記法を持つ Markdown
+        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、`<!-- row-detail: 1 -->` の行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書きを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: タブの全ての中身と閉じた記法を開く
+        B-->>U: 印刷の出力
+        B->>M: 印刷の後のイベント
+        M->>M: 印刷の前の表示に戻す
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、タブの 2 つの中身がタブ名を題にして縦に並んで表示されている
+      - 印刷の前のイベントの後、閉じた節・行の詳細・閉じた表・閉じた注意書きの中身が表示されている
+      - 印刷の後のイベントの後、印刷の前に選んでいたタブだけが表示され、閉じていた記法が閉じている
+    test: test_normal_when_syntax_expanded
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

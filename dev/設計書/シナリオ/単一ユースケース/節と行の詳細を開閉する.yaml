@@ -1,0 +1,125 @@
+title: "節と行の詳細を開閉する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 閉じた節を持つ Markdown
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 概要の節を開き、補足の節を閉じて描く
+        U->>P: 「補足」の見出しの開閉を押す
+        P-->>U: 補足の節を開いて表示
+        U->>P: 「概要」の見出しの開閉を押す
+        P-->>U: 概要の節を閉じる
+    expected:
+      - 描いた直後、`概要` の段落が表示され、`補足` の段落が表示されていない
+      - '`補足` の開閉を押した後、`補足` の段落が表示され、ボタンの `aria-expanded` が `true`'
+      - '`概要` の開閉を押した後、`概要` の段落が表示されず、ボタンの `aria-expanded` が `false`'
+      - 本文に印の文字が出ていない
+    test: test_normal
+  - name: 正常シナリオ（閉じた節の中へ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: ページの URL の末尾に `#注意` を付けて開く
+      - name: 閉じた節の中に見出しを持つ Markdown
+        description: '`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: #注意 付きの URL を開く
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 移る先を含む補足の節を開いて移る
+        P-->>U: 「注意」の見出しを表示
+    expected:
+      - '`補足` の節が開いていて、`注意` の見出しが画面に入っている'
+    test: test_normal_when_fragment_in_closed_section
+  - name: 正常シナリオ（行の詳細）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 行の詳細を持つ Markdown
+        description: '3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落とリストを持つ文書'
+        notes: 行の位置は見出し行を除いて 1 から数える
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 2 行目に開閉のボタンを付け、詳細を閉じて描く
+        U->>P: 2 行目の開閉を押す
+        P-->>U: 2 行目の下に詳細を表示
+    expected:
+      - 描いた直後、詳細の段落が表示されていない。開閉のボタンは 2 行目にだけある
+      - 開閉を押した後、表の 2 行目の直後に詳細の段落とリストを持つ行があり、ボタンの `aria-expanded` が `true`
+      - 表の後に詳細の段落が残っていない
+    test: test_normal_when_row_detail
+  - name: 異常シナリオ（知らない開閉の指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない指定を書いた Markdown
+        description: '`## 補足` とその直後の `<!-- section: hidden -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 書き方の知らせと、開いた節を描く
+        P-->>U: 書き方の知らせと節を表示
+    expected:
+      - 見出しの下に、`hidden` が使えない値であることと `closed`・`open` を書いた書き方の知らせがある
+      - '`補足` の段落が表示されている'
+    test: test_error_when_unknown_section_value
+  - name: 異常シナリオ（行の位置が表に無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 範囲外の行を指す Markdown
+        description: '3 行の表と、その直後の `<!-- row-detail: 5 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 5 行目が表に無い
+        M-->>P: 書き方の知らせと、表の後に詳細を本文として描く
+        P-->>U: 書き方の知らせと表と段落を表示
+    expected:
+      - 表の後に、表が 3 行で 5 行目が無いことを書いた書き方の知らせがある
+      - 表の後に詳細の段落が表示されている
+      - 表の行に開閉のボタンが無い
+    test: test_error_when_row_out_of_range
+lead: '読む人が、見出し（h2〜h4）の節と、表の行の下に出す行の詳細を開閉する。文書を書く人は見出しの直後の `<!-- section: closed -->` で節を閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を書く。'
+issue: 4
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: 読み飛ばしてよい節と、行に収まらない詳しい内容を畳んでおけ、GitHub では普通の節として読める
+trigger: 読む人が、見出しか表の行の開閉のボタンを押す
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
+  - 節の開閉と行の詳細の機能（`sections`・`row-details`）がオン（既定）
+success_guarantee: 節と行の詳細が印のとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
+minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれ、書き方の知らせが出る。

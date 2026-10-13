@@ -1,0 +1,80 @@
+title: "タブを切り替える"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: タブの範囲を持つ Markdown
+        description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` で、`### macOS`・`### Windows` の 2 つの見出しと、それぞれの下の段落を囲んだ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 見出しをタブ名にしたタブを描く
+        P-->>U: 1 つ目のタブの中身を表示
+        U->>P: Windows のタブを押す
+        P-->>U: 2 つ目のタブの中身を表示
+    expected:
+      - 描いた直後、`macOS` のタブの `aria-selected` が `true` で、`macOS` の段落だけが表示されている
+      - '`Windows` のタブを押した後、`Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている'
+      - タブ名にした見出しは本文の見出しとして残っていない
+    test: test_normal
+  - name: 正常シナリオ（キーボードで切り替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: タブの範囲を持つ Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: タブを描く
+        U->>P: 1 つ目のタブにフォーカスして右矢印キーを押す
+        P-->>U: 2 つ目のタブを選んで中身を表示
+    expected:
+      - '`Windows` のタブにフォーカスがあり、`aria-selected` が `true`'
+      - '`Windows` の段落だけが表示されている'
+    test: test_normal_when_keyboard
+  - name: 異常シナリオ（見出しの無い範囲）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 見出しの無いタブの範囲を持つ Markdown
+        description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` で段落だけを囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: タブ名にする見出しが無い
+        M-->>P: 書き方の知らせと、範囲の中身をそのまま描く
+        P-->>U: 書き方の知らせと段落を表示
+    expected:
+      - 範囲の上に、タブ名にする見出しが無いことを書いた書き方の知らせがある
+      - 範囲の中の段落が表示されている
+      - タブの並び（`role="tablist"`）が無い
+    test: test_error_when_no_heading
+lead: 文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。
+issue: 4
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: OS・言語ごとなど並列の内容を見出しで書くだけでタブにでき、GitHub では見出しの節として読める
+trigger: 読む人が、タブの印を持つ文書を描いたページでタブを選ぶ
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
+  - タブの機能（`tabs`）がオン（既定）
+success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。
+minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の知らせが出る。

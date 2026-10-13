@@ -1,0 +1,75 @@
+title: "ステップ・ファイルツリー・バッジで本文を組む"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 3 つの部品を持つ Markdown
+        description: '`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ 3 項目の番号付きリスト、`src/` の下に `index.ts` と `parts/` を持つ罫線を書いた言語 `tree` のコードブロック、行内のコード `` `badge:v0.1.0` `` を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 手順・ファイルツリー・バッジを描く
+        P-->>U: 文書を表示
+    expected:
+      - 番号付きリストが手順になり、3 つの項目に 1〜3 の番号が出ている
+      - コードブロックが入れ子のツリーになり、`src/` と `parts/` がフォルダ、`index.ts` がファイルとして出ている
+      - 行内のコードが、文言 `v0.1.0` の札になっている（`badge:` の頭は出ていない）
+    test: test_normal
+  - name: 正常シナリオ（バッジの書き方を見せる）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 打ち消したバッジを持つ Markdown
+        description: 行内のコード `` `badge\:v0.1.0` `` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 打ち消しの \ を外した行内のコードを描く
+        P-->>U: 文書を表示
+    expected:
+      - 行内のコードが `badge:v0.1.0` の文字のまま出ていて、札になっていない
+    test: test_normal_when_badge_escaped
+  - name: 異常シナリオ（ファイルツリーに読めない行がある）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない行を持つファイルツリーの Markdown
+        description: 上の行より 2 段深い項目を持つ言語 `tree` のコードブロックの文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 罫線の段を読めない行がある
+        M-->>P: 書き方の知らせと、元のコードブロックを描く
+        P-->>U: 書き方の知らせとコードブロックを表示
+    expected:
+      - コードブロックの上に、読めない行の行番号を書いた書き方の知らせがある
+      - コードブロックが元の罫線の文字のまま出ている
+    test: test_error_when_tree_line_invalid
+lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。
+issue: 4
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 手順の順番・フォルダの入れ子・状態や版の札を見て取れる
+trigger: 使う側のページが、ステップ・ファイルツリー・バッジを持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - ステップ・ファイルツリー・バッジの機能（`steps`・`tree`・`badge`）がオン（既定）
+success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。GitHub ではリスト・コードブロック・行内のコードとして読める。
+minimal_guarantee: 読めない書き方の部品は、書いたとおりのリスト・コードブロックで描かれ、上に書き方の知らせが出る。

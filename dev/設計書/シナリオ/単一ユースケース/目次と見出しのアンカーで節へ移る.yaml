@@ -1,0 +1,75 @@
+title: "目次と見出しのアンカーで節へ移る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 目次の印を持つ Markdown
+        description: 先頭に `<!-- toc -->` を持ち、`## 導入`・`### 前提`・`## 使い方` の見出しとそれぞれの段落を持つ、画面より長い文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 見出しに ID とリンクを付け、印の場所に目次を描く
+        U->>P: 目次の「使い方」を押す
+        P-->>U: 「使い方」の見出しへ移る
+    expected:
+      - 印の場所に、`導入`・`前提`・`使い方` を見出しの階層どおりに入れ子にした目次があり、各項目が `#導入`・`#前提`・`#使い方` を指す
+      - 目次の `使い方` を押した後、URL の末尾が `#使い方` で、`使い方` の見出しが画面に入っている
+      - 各見出しに、見出しの ID を指すリンクがある
+    test: test_normal
+  - name: 正常シナリオ（GitHub と同じ規則の ID）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 記号と同じ文字の見出しを持つ Markdown
+        description: '`## Hello, World!`・`## 使い方`・`## 使い方` の見出しを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: GitHub と同じ規則で見出しに ID を付けて描く
+        P-->>U: 文書を表示
+    expected:
+      - 見出しの ID が上から `hello-world`・`使い方`・`使い方-1`
+    test: test_normal_when_github_ids
+  - name: 正常シナリオ（URL に節の ID を付けて開く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: ページの URL の末尾に `#使い方` を付けて開く
+      - name: 目次の印を持つ Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: #使い方 付きの URL を開く
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 描いた後に URL の ID の見出しへ移る
+        P-->>U: 「使い方」の見出しを表示
+    expected:
+      - 描いた後、`使い方` の見出しが画面に入っている
+    test: test_normal_when_opened_with_fragment
+lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所に見出しの目次を置く。読む人は目次や見出しのリンクから節へ移り、節の URL を人へ渡す。
+issue: 4
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: GitHub で書いた `#見出し` へのリンクが、mdmark で描いた文書でも同じ節を指す
+trigger: 読む人が、文書の目次か見出しのリンクを押す
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
+  - 目次と見出しのアンカーの機能（`toc`・`anchors`）がオン（既定）
+success_guarantee: 全ての見出しが GitHub と同じ ID を持ち、目次と見出しのリンクがその ID を指す。
