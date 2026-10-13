@@ -21,7 +21,7 @@ scenarios:
         B-->>U: 印刷の出力
     expected:
       - 折り畳み（`details`）が開いている
-      - 本文の地の色の計算値が、明るい配色の `--mdmark-color-bg` の値
+      - 描く先の要素の地の色の計算値が、明るい配色の `--mdmark-color-bg` の値
       - リンクの後ろに URL の文字が出ている
       - '表に改ページを避ける指定（`break-inside: avoid`）が当たっている'
     test: test_normal

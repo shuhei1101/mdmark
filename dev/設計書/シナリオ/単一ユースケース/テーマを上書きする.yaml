@@ -4,7 +4,7 @@ scenarios:
     setup:
       - name: 上書きの CSS を読むページ
         description: mdmark の CSS の後に、使う側の CSS を読み、文書を描く HTML
-        notes: '使う側の CSS は `--mdmark-color-link` を赤（`rgb(255, 0, 0)`）にし、詳細度の低い `p { color: rgb(0, 128, 0) }` を持つ'
+        notes: '使う側の CSS は `--mdmark-color-link` を赤（`rgb(255, 0, 0)`）にし、詳細度の低い `a { text-decoration: none }` を持つ。mdmark の CSS はリンクに詳細度の高いセレクタで下線を当てている'
       - name: 見本の Markdown
         description: 段落とリンクを持つ文書
       - name: Mock
@@ -21,7 +21,7 @@ scenarios:
         P-->>U: 上書きした見た目で表示
     expected:
       - リンクの色の計算値が `rgb(255, 0, 0)`
-      - 段落の色の計算値が `rgb(0, 128, 0)`
+      - リンクの `text-decoration-line` の計算値が `none`
     test: test_normal
   - name: 正常シナリオ（上書きしない）
     setup:
@@ -61,7 +61,7 @@ scenarios:
         M-->>P: ダークの値が当たった本文
         P-->>U: ダークの見た目で表示
     expected:
-      - 本文の地の色の計算値が、デザイン方針の modern のダークの `--mdmark-color-bg` の値
+      - 描く先の要素の地の色の計算値が、デザイン方針の modern のダークの `--mdmark-color-bg` の値
     test: test_normal_when_dark
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（modern）で描かれる。
 issue: 3
