@@ -83,10 +83,10 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 書き方の知らせと、開いた節を描く
-        P-->>U: 書き方の知らせと節を表示
+        M-->>P: 書き方の警告と、開いた節を描く
+        P-->>U: 書き方の警告と節を表示
     expected:
-      - 見出しの下に、`hidden` が使えない値であることと `closed`・`open` を書いた書き方の知らせがある
+      - 見出しの下に、`hidden` が使えない値であることと `closed`・`open` を書いた書き方の警告がある
       - '`補足` の段落が表示されている'
     test: test_error_when_unknown_section_value
   - name: 異常シナリオ（行の位置が表に無い）
@@ -104,10 +104,10 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
         M->>M: 5 行目が表に無い
-        M-->>P: 書き方の知らせと、表の後に詳細を本文として描く
-        P-->>U: 書き方の知らせと表と段落を表示
+        M-->>P: 書き方の警告と、表の後に詳細を本文として描く
+        P-->>U: 書き方の警告と表と段落を表示
     expected:
-      - 表の後に、表が 3 行で 5 行目が無いことを書いた書き方の知らせがある
+      - 表の後に、表が 3 行で 5 行目が無いことを書いた書き方の警告がある
       - 表の後に詳細の段落が表示されている
       - 表の行に開閉のボタンが無い
     test: test_error_when_row_out_of_range
@@ -122,5 +122,5 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
   - 節の開閉と行の詳細の機能（`sections`・`row-details`）がオン（既定）
 success_guarantee: 節と行の詳細が印のとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
-minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれ、書き方の知らせが出る。
+minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれ、書き方の警告が出る。
 test_file: tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts

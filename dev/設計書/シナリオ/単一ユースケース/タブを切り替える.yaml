@@ -59,10 +59,10 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
         M->>M: タブ名にする見出しが無い
-        M-->>P: 書き方の知らせと、範囲の中身をそのまま描く
-        P-->>U: 書き方の知らせと段落を表示
+        M-->>P: 書き方の警告と、範囲の中身をそのまま描く
+        P-->>U: 書き方の警告と段落を表示
     expected:
-      - 範囲の上に、タブ名にする見出しが無いことを書いた書き方の知らせがある
+      - 範囲の上に、タブ名にする見出しが無いことを書いた書き方の警告がある
       - 範囲の中の段落が表示されている
       - タブの並び（`role="tablist"`）が無い
     test: test_error_when_no_heading
@@ -77,5 +77,5 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
   - タブの機能（`tabs`）がオン（既定）
 success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。
-minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の知らせが出る。
+minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の警告が出る。
 test_file: tests/e2e/単一ユースケース/タブを切り替える.spec.ts
