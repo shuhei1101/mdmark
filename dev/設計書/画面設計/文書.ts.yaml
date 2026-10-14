@@ -20,10 +20,24 @@ elements:
     id: table
     kind: table
     position: 描く先の要素
-    description: 'Markdown の表。列が多いときは表の中で横スクロールし、続きがある側の端に影を出す。紙の幅が 40rem 以下の印刷では、行ごとの「列名: 値」の並びに積む。読み上げの名前（`aria-label`）は `表: {直前の見出しの文字}`（直前に見出しが無ければ `表`）'
+    description: 'Markdown の表。表の印で囲んだ表はその種類、囲まない表は既定の種類の表の部品にする。列が多いときは表の中で横スクロールし、続きがある側の端に影を出す。紙の幅が 40rem 以下の印刷では、行ごとの「列名: 値」の並びに積む。読み上げの名前（`aria-label`）は `表: {直前の見出しの文字}`（直前に見出しが無ければ `表`）。`table` の機能がオフのときは部品を使わず今の表を描く'
     visible_when: 文書に表があるとき
     tab_order: 0
-    sorting: 並べ替え・絞り込みは無い
+    sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（昇順 → 降順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み、既定の種類はピン止めだけ、`plain` は無し。既定の並びは書いた順
+    component: dev/設計書/部品設計/表.ts#
+    args:
+      - name: kind
+        value: 表の印の種類（囲まない表と知らない種類は `default`）
+      - name: features
+        value: 種類の機能に印の `+機能`・`-機能` を当てたもの
+      - name: columns
+        value: 表の見出し行のセル
+      - name: rows
+        value: 表の本文の行のセル
+      - name: filters
+        value: 印の `filter=列名:種類,…`（列名を列の位置に読み替える）
+      - name: collapse
+        value: 印の `closed`・`open`（無ければ `none`）
   - name: 表のセル
     id: table-cell
     kind: label
@@ -58,7 +72,7 @@ elements:
       - name: args
         value: 印の引数
     position: 描く先の要素
-    description: 対応表にある印の場所。読み込み中の枠を置き、読んだモジュールの `draw` がこの要素に描く
+    description: 対応表にある印と、`registerExtension` で登録した拡張の印の場所。読み込み中の枠を置き、読んだモジュールの `draw` がこの要素に描く
     visible_when: 文書に対応表にある印があるとき
   - name: 知らせの枠
     id: notice
@@ -66,11 +80,172 @@ elements:
     component: dev/設計書/部品設計/知らせの枠.ts#
     args:
       - name: name
-        value: 印の名前
+        value: 印の名前（拡張は拡張の `name`）
+      - name: source
+        value: 対応表の印は `library`、拡張の印は `extension`
     position: 描く先の要素
     description: 外部ライブラリを読めない、または `draw` が例外を投げた印の場所を置き換える
     visible_when: 外部ライブラリを読めないとき
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（知らせの枠）]
-mock: dev/mock/pages/document/16/modern/
-lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリの印の場所）を持つ。
+  - name: 見出しと節
+    id: section
+    kind: heading
+    component: dev/設計書/部品設計/節.ts#
+    args:
+      - name: level
+        value: 見出しの階層（2〜4）
+      - name: id
+        value: GitHub と同じ規則の見出しの ID
+      - name: title
+        value: 見出しの中身
+    position: 描く先の要素
+    description: h2〜h4 の見出しとその節。`anchors` がオンのとき見出しに ID へのアンカーを、`sections` がオンのとき開閉のボタンを付ける。h1・h5・h6 は ID とアンカーだけを付ける
+    visible_when: 文書に見出しがあるとき
+    initial_value: '開いた状態。見出しの直後に `<!-- section: closed -->` がある節は閉じた状態'
+    action: 開閉のボタンで節を開閉する。URL の `#ID` が閉じた節の中を指すときはその節を開く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+    status: planned
+  - name: 目次
+    id: toc
+    kind: nav
+    component: dev/設計書/部品設計/目次.ts#
+    args:
+      - name: headings
+        value: 文書の h2・h3 の階層・ID・文字
+    position: 描く先の要素
+    description: '`<!-- toc -->` の場所に置く目次'
+    visible_when: 文書に `<!-- toc -->` があり、`toc` がオンのとき
+    action: 項目を押すとその見出しへ移る（ページ内のリンク）
+    status: planned
+  - name: 注意書き
+    id: callout
+    kind: region
+    component: dev/設計書/部品設計/注意書き.ts#
+    args:
+      - name: kind
+        value: 引用の 1 行目の種類（知らない種類は `note`）
+      - name: collapsed
+        value: 種類の末尾に `-` があるか
+    slots:
+      - name: default
+        value: 引用の 2 行目からの本文
+    position: 描く先の要素
+    description: 1 行目が `[!NOTE]` などの引用
+    visible_when: 文書に注意書きの引用があり、`callout` がオンのとき
+    initial_value: 閉じた注意書きは閉じた状態
+    status: planned
+  - name: タブ
+    id: tabs
+    kind: tabs
+    component: dev/設計書/部品設計/タブ.ts#
+    args:
+      - name: titles
+        value: 範囲で最初に出る見出しの階層の見出しの文字
+    slots:
+      - name: default
+        value: 区切りの見出しから次の見出しの前までの中身
+    position: 描く先の要素
+    description: '`<!-- tabs -->` の範囲'
+    visible_when: 文書にタブの範囲があり、`tabs` がオンのとき
+    initial_value: 1 つ目のタブを選んだ状態
+    action: タブを押すか矢印キーで中身を切り替える
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
+    status: planned
+  - name: ステップ
+    id: steps
+    kind: list
+    component: dev/設計書/部品設計/ステップ.ts#
+    args:
+      - name: items
+        value: 範囲の最初の番号付きリストの項目
+    position: 描く先の要素
+    description: '`<!-- steps -->` の範囲の番号付きリスト'
+    visible_when: 文書にステップの範囲があり、`steps` がオンのとき
+    status: planned
+  - name: ファイルツリー
+    id: file-tree
+    kind: tree
+    component: dev/設計書/部品設計/ファイルツリー.ts#
+    args:
+      - name: nodes
+        value: 言語 `tree` のコードブロックの罫線を読んだ項目
+    position: 描く先の要素
+    description: 言語 `tree` のコードブロック
+    visible_when: 文書に言語 `tree` のコードブロックがあり、`tree` がオンで、全ての行を読めたとき
+    status: planned
+  - name: バッジ
+    id: badge
+    kind: label
+    component: dev/設計書/部品設計/バッジ.ts#
+    args:
+      - name: label
+        value: 行内のコードから頭の `badge:` を外した文言
+    position: 描く先の要素 > 段落・表のセル
+    description: 頭に `badge:` を付けた行内のコード
+    visible_when: 文書にその行内のコードがあり、`badge` がオンのとき
+    status: planned
+  - name: 行の詳細
+    id: row-detail
+    kind: row
+    component: dev/設計書/部品設計/行の詳細.ts#
+    args:
+      - name: row
+        value: 印の行の位置
+      - name: columns
+        value: 表の列の数
+      - name: label
+        value: その行の先頭のセルの文字
+    slots:
+      - name: default
+        value: '`<!-- row-detail -->` の範囲の中身'
+    position: 描く先の要素 > 表
+    description: '表の直後の `<!-- row-detail: 行の位置 -->` の範囲'
+    visible_when: 文書に行の詳細の範囲があり、`row-details` がオンで、行の位置が表にあるとき
+    initial_value: 閉じた状態
+    action: 行の開閉のボタンで開閉する
+    status: planned
+  - name: 図表の番号
+    id: figure
+    kind: figure
+    component: dev/設計書/部品設計/図表の番号.ts#
+    args:
+      - name: kind
+        value: 印の直後が画像の段落なら `image`、表なら `table`
+      - name: id
+        value: 印の ID
+      - name: number
+        value: 文書の頭から種類ごとに数えた番号
+    slots:
+      - name: default
+        value: 印の直後の画像か表
+    position: 描く先の要素
+    description: '`<!-- fig: ID -->` の直後の図と表'
+    visible_when: 文書に `fig` の印があり、`figures` がオンのとき
+    status: planned
+  - name: 図表へのリンク
+    id: figure-ref
+    kind: link
+    position: 描く先の要素 > 段落
+    description: 本文の `#fig-ID` へのリンク。文字をその図表の `図 {番号}`・`表 {番号}` に替える
+    visible_when: 文書に `#fig-ID` へのリンクがあり、`figures` がオンのとき
+    action: 押すとその図表へ移る
+    status: planned
+  - name: 書き方の警告
+    id: syntax-warning
+    kind: label
+    component: dev/設計書/部品設計/書き方の警告.ts#
+    args:
+      - name: message
+        value: 誤りごとの本文（エラーの文言）
+    position: 描く先の要素
+    description: 記法の印や拡張の引数に読めない指定がある箇所の前に置き、読めた指定で描いた本文はそのまま出す
+    visible_when: 書き手の誤りがあるとき
+    error_message: '`mark` はその印の文字。知らない種類: `{mark} の種類 {種類} は使えません。使える種類は {種類の並び} です。既定の種類に {当てた指定} を当てて描いています。` / 知らない機能・キー: `{mark} の読めない指定を当てずに描いています。` と、項目 `+{機能}: 使えない機能です。使える機能は {並び} です`・`{キー}=: 使えないキーです。使えるキーは {並び} です` / 知らない絞り込みの種類: `{mark} の絞り込みの種類 {種類} は使えません。使える種類は select・text・date です。{列名}の列には絞り込みを付けずに描いています。` / 表に無い列名: `{mark} の列名 {列名} は表にありません。表の見出しの文字で書いてください。` / closed と open: `{mark} の closed と open は同時に書けません。どちらか 1 つにしてください。closed を当てて描いています。` / 閉じの印が無い: `{mark} の閉じの印 <!-- /{名前} --> がありません。範囲の終わりに閉じの印を書いてください。印から文書の終わりまでを範囲にして描いています。` / タブ名の見出しが無い: `<!-- tabs --> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（### macOS など）を書いてください。範囲の中身はそのまま描いています。` / 番号付きリストが無い: `<!-- steps --> の範囲に、手順にする番号付きリストがありません。手順を 1. から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。` / 知らない開閉の指定: `{mark} の {値} は使えません。使える値は closed・open です。この節は開いた状態で描いています。` / 表に無い行: `{mark} の {n} 行目がありません。表は {m} 行です。行の位置を 1〜{m} で書いてください。詳細は表の後の本文として描いています。` / 切れた参照: `リンク先の #fig-{ID} の図表がありません。<!-- fig: {ID} --> を図か表の直前に書くか、リンク先を直してください。` / 重なった ID: `{mark} の ID {ID} は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。` / 読めないファイルツリー: `ファイルツリーの {n} 行目が、上の行より {k} 段深く書かれていて読めません。罫線の段を 1 段ずつ深くしてください。コードブロックのまま描いています。` / 拡張の引数: `{mark} の引数が、拡張 {name} の決まりに合いません。直してから読み込み直してください。` と、issue ごとの項目（拡張を登録するの制約「引数の検査」）。文中の印・ID・値は行内のコードにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[書き手の誤り]
+    status: planned
+mock: dev/mock/pages/document/19/modern/
+lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。
