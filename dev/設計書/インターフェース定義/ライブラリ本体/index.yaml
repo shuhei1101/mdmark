@@ -8,3 +8,5 @@ items:
     summary: 使う側のページが、要素の中に Markdown を文書として描く（mount）
   - page: 文書をHTML文字列にする.ts.yaml
     summary: 画面を持たずに Markdown を HTML 文字列にする（render）
+  - page: 拡張を登録する.ts.yaml
+    summary: 使う側が、自分の印とその印を描くモジュールの読み方を登録する（registerExtension）

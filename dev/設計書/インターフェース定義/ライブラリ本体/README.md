@@ -10,3 +10,4 @@
 | [配布物をビルドする.ts](./配布物をビルドする.ts.yaml) | 版を埋めた dist/index.js と dist/index.css をビルドする |
 | [文書を描く.ts](./文書を描く.ts.yaml) | 使う側のページが、要素の中に Markdown を文書として描く（mount） |
 | [文書をHTML文字列にする.ts](./文書をHTML文字列にする.ts.yaml) | 画面を持たずに Markdown を HTML 文字列にする（render） |
+| [拡張を登録する.ts](./拡張を登録する.ts.yaml) | 使う側が、自分の印とその印を描くモジュールの読み方を登録する（registerExtension） |
