@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>steps | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">ステップ</h1>
+
+      <!-- 3 つの手順 -->
+      <section aria-labelledby="state-basic">
+        <h2 class="catalog-label" id="state-basic">3 つの手順</h2>
+        <article class="mdmark">
+<ol class="mdmark-steps">
+  <li>配布物を読み込む</li>
+  <li>描く先の要素を用意する</li>
+  <li><code>mount</code> に要素と Markdown を渡す</li>
+</ol>
+        </article>
+      </section>
+
+      <!-- 手順の中にコードと入れ子のリスト（入れ子の番号付きリストはステップにしない） -->
+      <section aria-labelledby="state-rich">
+        <h2 class="catalog-label" id="state-rich">手順の中にコードと入れ子のリスト（入れ子の番号付きリストはステップにしない）</h2>
+        <article class="mdmark">
+<ol class="mdmark-steps">
+  <li>配布物を読み込む
+  <pre tabindex="0" aria-label="コード: html"><code>&lt;link rel="stylesheet" href="dist/index.css"&gt;</code></pre></li>
+  <li>描く先の要素を用意する
+  <ol><li>要素に ID を付ける</li><li>高さを決める</li></ol></li>
+  <li><code>mount</code> に要素と Markdown を渡す</li>
+</ol>
+        </article>
+      </section>
+
+      <!-- 長文 -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長文</h2>
+        <article class="mdmark">
+<ol class="mdmark-steps">
+  <li>使う側のページで、版を固定した URL から配布物の JavaScript と CSS の両方を読み込み、読み込みが終わってから次の手順へ進む</li>
+  <li>描く先の要素を用意する</li>
+</ol>
+        </article>
+      </section>
+
+      <!-- 番号付きリストが無い（異常シナリオ） -->
+      <section aria-labelledby="state-no-list">
+        <h2 class="catalog-label" id="state-no-list">番号付きリストが無い（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- steps --&gt;</code> の範囲に、手順にする番号付きリストがありません。手順を <code>1.</code> から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。</p>
+</div>
+<ul><li>配布物を読み込む</li><li>描く先の要素を用意する</li></ul>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

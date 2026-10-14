@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>table | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">表</h1>
+
+      <!-- data の種類（並べ替え・ピン止め。並べていない） -->
+      <section aria-labelledby="state-data">
+        <h2 class="catalog-label" id="state-data">data の種類（並べ替え・ピン止め。並べていない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: data の種類">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">記法<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">機能名<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">増分（KB）<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="記法">表の操作</td><td data-label="機能名"><code>table</code></td><td class="mdmark-align-right" data-label="増分（KB）">6.2</td></tr>
+      <tr><td data-label="記法">注意書き</td><td data-label="機能名"><code>callout</code></td><td class="mdmark-align-right" data-label="増分（KB）">1.4</td></tr>
+      <tr><td data-label="記法">タブ</td><td data-label="機能名"><code>tabs</code></td><td class="mdmark-align-right" data-label="増分（KB）">2.1</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 並べ替えた（昇順） -->
+      <section aria-labelledby="state-asc">
+        <h2 class="catalog-label" id="state-asc">並べ替えた（昇順）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 昇順">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">記法<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">機能名<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th class="mdmark-align-right" aria-sort="ascending"><span class="mdmark-th"><button class="mdmark-sort" type="button">増分（KB）<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3.5M4.5 7 8 3.5 11.5 7"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="記法">注意書き</td><td data-label="機能名"><code>callout</code></td><td class="mdmark-align-right" data-label="増分（KB）">1.4</td></tr>
+      <tr><td data-label="記法">タブ</td><td data-label="機能名"><code>tabs</code></td><td class="mdmark-align-right" data-label="増分（KB）">2.1</td></tr>
+      <tr><td data-label="記法">表の操作</td><td data-label="機能名"><code>table</code></td><td class="mdmark-align-right" data-label="増分（KB）">6.2</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 並べ替えた（降順） -->
+      <section aria-labelledby="state-desc">
+        <h2 class="catalog-label" id="state-desc">並べ替えた（降順）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 降順">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">記法<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">機能名<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th class="mdmark-align-right" aria-sort="descending"><span class="mdmark-th"><button class="mdmark-sort" type="button">増分（KB）<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v9.5M4.5 9 8 12.5 11.5 9"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="記法">表の操作</td><td data-label="機能名"><code>table</code></td><td class="mdmark-align-right" data-label="増分（KB）">6.2</td></tr>
+      <tr><td data-label="記法">タブ</td><td data-label="機能名"><code>tabs</code></td><td class="mdmark-align-right" data-label="増分（KB）">2.1</td></tr>
+      <tr><td data-label="記法">注意書き</td><td data-label="機能名"><code>callout</code></td><td class="mdmark-align-right" data-label="増分（KB）">1.4</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 絞り込みの欄（+filter） -->
+      <section aria-labelledby="state-filter">
+        <h2 class="catalog-label" id="state-filter">絞り込みの欄（+filter）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-filter">
+    <label for="filter-a">絞り込み</label>
+    <input id="filter-a" type="search" autocomplete="off">
+  </div>
+  <table tabindex="0" aria-label="表: 絞り込み">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="名前">りんご</td><td class="mdmark-align-right" data-label="数">3</td></tr>
+      <tr><td data-label="名前">みかん</td><td class="mdmark-align-right" data-label="数">5</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td class="mdmark-align-right" data-label="数">1</td></tr>
+      <tr class="mdmark-table-empty" hidden><td colspan="2">一致する行がありません</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 絞り込んだ（「りんご」） -->
+      <section aria-labelledby="state-filtered">
+        <h2 class="catalog-label" id="state-filtered">絞り込んだ（「りんご」）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-filter">
+    <label for="filter-b">絞り込み</label>
+    <input id="filter-b" type="search" autocomplete="off" value="りんご">
+  </div>
+  <table tabindex="0" aria-label="表: 絞り込んだ">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="名前">りんご</td><td class="mdmark-align-right" data-label="数">3</td></tr>
+      <tr hidden><td data-label="名前">みかん</td><td class="mdmark-align-right" data-label="数">5</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td class="mdmark-align-right" data-label="数">1</td></tr>
+      <tr class="mdmark-table-empty" hidden><td colspan="2">一致する行がありません</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 絞り込んで一致する行が無い -->
+      <section aria-labelledby="state-empty">
+        <h2 class="catalog-label" id="state-empty">絞り込んで一致する行が無い</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-filter">
+    <label for="filter-c">絞り込み</label>
+    <input id="filter-c" type="search" autocomplete="off" value="ぶどう">
+  </div>
+  <table tabindex="0" aria-label="表: 一致なし">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr hidden><td data-label="名前">りんご</td><td class="mdmark-align-right" data-label="数">3</td></tr>
+      <tr hidden><td data-label="名前">みかん</td><td class="mdmark-align-right" data-label="数">5</td></tr>
+      <tr hidden><td data-label="名前">りんご飴</td><td class="mdmark-align-right" data-label="数">1</td></tr>
+      <tr class="mdmark-table-empty"><td colspan="2">一致する行がありません</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 既定の種類（はみ出す表にピン止め） -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">既定の種類（はみ出す表にピン止め）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 既定の種類">
+    <thead><tr><th><span class="mdmark-th">文書<button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right">行数</th><th class="mdmark-align-right">表</th><th class="mdmark-align-right">図</th><th class="mdmark-align-right">Chrome</th><th class="mdmark-align-right">Edge</th><th class="mdmark-align-right">Firefox</th><th class="mdmark-align-right">Safari</th><th class="mdmark-align-right">iOS Safari</th><th class="mdmark-align-right">Android Chrome</th></tr></thead>
+    <tbody>
+      <tr><td data-label="文書">導入の手順 1</td><td class="mdmark-align-right" data-label="行数">128</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">17</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">16</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">16</td></tr>
+      <tr><td data-label="文書">API リファレンス 1</td><td class="mdmark-align-right" data-label="行数">573</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">55</td><td class="mdmark-align-right" data-label="Edge">62</td><td class="mdmark-align-right" data-label="Firefox">61</td><td class="mdmark-align-right" data-label="Safari">70</td><td class="mdmark-align-right" data-label="iOS Safari">58</td><td class="mdmark-align-right" data-label="Android Chrome">53</td></tr>
+      <tr><td data-label="文書">設定の一覧 1</td><td class="mdmark-align-right" data-label="行数">454</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">52</td><td class="mdmark-align-right" data-label="Edge">35</td><td class="mdmark-align-right" data-label="Firefox">36</td><td class="mdmark-align-right" data-label="Safari">34</td><td class="mdmark-align-right" data-label="iOS Safari">46</td><td class="mdmark-align-right" data-label="Android Chrome">43</td></tr>
+      <tr><td data-label="文書">用語集 1</td><td class="mdmark-align-right" data-label="行数">851</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">4</td><td class="mdmark-align-right" data-label="Chrome">123</td><td class="mdmark-align-right" data-label="Edge">119</td><td class="mdmark-align-right" data-label="Firefox">116</td><td class="mdmark-align-right" data-label="Safari">124</td><td class="mdmark-align-right" data-label="iOS Safari">89</td><td class="mdmark-align-right" data-label="Android Chrome">104</td></tr>
+      <tr><td data-label="文書">変更履歴 1</td><td class="mdmark-align-right" data-label="行数">260</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">31</td><td class="mdmark-align-right" data-label="Edge">40</td><td class="mdmark-align-right" data-label="Firefox">30</td><td class="mdmark-align-right" data-label="Safari">41</td><td class="mdmark-align-right" data-label="iOS Safari">28</td><td class="mdmark-align-right" data-label="Android Chrome">37</td></tr>
+      <tr><td data-label="文書">設計方針 1</td><td class="mdmark-align-right" data-label="行数">1,022</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">154</td><td class="mdmark-align-right" data-label="Edge">133</td><td class="mdmark-align-right" data-label="Firefox">128</td><td class="mdmark-align-right" data-label="Safari">136</td><td class="mdmark-align-right" data-label="iOS Safari">112</td><td class="mdmark-align-right" data-label="Android Chrome">101</td></tr>
+      <tr><td data-label="文書">画面設計 1</td><td class="mdmark-align-right" data-label="行数">227</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">17</td><td class="mdmark-align-right" data-label="Edge">23</td><td class="mdmark-align-right" data-label="Firefox">18</td><td class="mdmark-align-right" data-label="Safari">17</td><td class="mdmark-align-right" data-label="iOS Safari">19</td><td class="mdmark-align-right" data-label="Android Chrome">20</td></tr>
+      <tr><td data-label="文書">非機能要件 1</td><td class="mdmark-align-right" data-label="行数">390</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">37</td><td class="mdmark-align-right" data-label="Firefox">41</td><td class="mdmark-align-right" data-label="Safari">52</td><td class="mdmark-align-right" data-label="iOS Safari">53</td><td class="mdmark-align-right" data-label="Android Chrome">38</td></tr>
+      <tr><td data-label="文書">テストの手順 1</td><td class="mdmark-align-right" data-label="行数">176</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">26</td><td class="mdmark-align-right" data-label="Edge">18</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">17</td><td class="mdmark-align-right" data-label="iOS Safari">17</td><td class="mdmark-align-right" data-label="Android Chrome">21</td></tr>
+      <tr><td data-label="文書">運用の手順 1</td><td class="mdmark-align-right" data-label="行数">996</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">4</td><td class="mdmark-align-right" data-label="Chrome">143</td><td class="mdmark-align-right" data-label="Edge">181</td><td class="mdmark-align-right" data-label="Firefox">168</td><td class="mdmark-align-right" data-label="Safari">140</td><td class="mdmark-align-right" data-label="iOS Safari">177</td><td class="mdmark-align-right" data-label="Android Chrome">121</td></tr>
+      <tr><td data-label="文書">導入の手順 2</td><td class="mdmark-align-right" data-label="行数">827</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">132</td><td class="mdmark-align-right" data-label="Edge">113</td><td class="mdmark-align-right" data-label="Firefox">114</td><td class="mdmark-align-right" data-label="Safari">134</td><td class="mdmark-align-right" data-label="iOS Safari">94</td><td class="mdmark-align-right" data-label="Android Chrome">110</td></tr>
+      <tr><td data-label="文書">API リファレンス 2</td><td class="mdmark-align-right" data-label="行数">166</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">12</td><td class="mdmark-align-right" data-label="Firefox">14</td><td class="mdmark-align-right" data-label="Safari">15</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">19</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- ピン止めした（先頭の列と見出し行を留める） -->
+      <section aria-labelledby="state-pinned">
+        <h2 class="catalog-label" id="state-pinned">ピン止めした（先頭の列と見出し行を留める）</h2>
+        <article class="mdmark">
+<div class="mdmark-table is-pinned" data-kind="default">
+  <table tabindex="0" aria-label="表: ピン止めした">
+    <thead><tr><th><span class="mdmark-th">文書<button class="mdmark-pin" type="button" aria-pressed="true" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right">行数</th><th class="mdmark-align-right">表</th><th class="mdmark-align-right">図</th><th class="mdmark-align-right">Chrome</th><th class="mdmark-align-right">Edge</th><th class="mdmark-align-right">Firefox</th><th class="mdmark-align-right">Safari</th><th class="mdmark-align-right">iOS Safari</th><th class="mdmark-align-right">Android Chrome</th></tr></thead>
+    <tbody>
+      <tr><td data-label="文書">導入の手順 1</td><td class="mdmark-align-right" data-label="行数">128</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">17</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">16</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">16</td></tr>
+      <tr><td data-label="文書">API リファレンス 1</td><td class="mdmark-align-right" data-label="行数">573</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">55</td><td class="mdmark-align-right" data-label="Edge">62</td><td class="mdmark-align-right" data-label="Firefox">61</td><td class="mdmark-align-right" data-label="Safari">70</td><td class="mdmark-align-right" data-label="iOS Safari">58</td><td class="mdmark-align-right" data-label="Android Chrome">53</td></tr>
+      <tr><td data-label="文書">設定の一覧 1</td><td class="mdmark-align-right" data-label="行数">454</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">52</td><td class="mdmark-align-right" data-label="Edge">35</td><td class="mdmark-align-right" data-label="Firefox">36</td><td class="mdmark-align-right" data-label="Safari">34</td><td class="mdmark-align-right" data-label="iOS Safari">46</td><td class="mdmark-align-right" data-label="Android Chrome">43</td></tr>
+      <tr><td data-label="文書">用語集 1</td><td class="mdmark-align-right" data-label="行数">851</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">4</td><td class="mdmark-align-right" data-label="Chrome">123</td><td class="mdmark-align-right" data-label="Edge">119</td><td class="mdmark-align-right" data-label="Firefox">116</td><td class="mdmark-align-right" data-label="Safari">124</td><td class="mdmark-align-right" data-label="iOS Safari">89</td><td class="mdmark-align-right" data-label="Android Chrome">104</td></tr>
+      <tr><td data-label="文書">変更履歴 1</td><td class="mdmark-align-right" data-label="行数">260</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">31</td><td class="mdmark-align-right" data-label="Edge">40</td><td class="mdmark-align-right" data-label="Firefox">30</td><td class="mdmark-align-right" data-label="Safari">41</td><td class="mdmark-align-right" data-label="iOS Safari">28</td><td class="mdmark-align-right" data-label="Android Chrome">37</td></tr>
+      <tr><td data-label="文書">設計方針 1</td><td class="mdmark-align-right" data-label="行数">1,022</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">154</td><td class="mdmark-align-right" data-label="Edge">133</td><td class="mdmark-align-right" data-label="Firefox">128</td><td class="mdmark-align-right" data-label="Safari">136</td><td class="mdmark-align-right" data-label="iOS Safari">112</td><td class="mdmark-align-right" data-label="Android Chrome">101</td></tr>
+      <tr><td data-label="文書">画面設計 1</td><td class="mdmark-align-right" data-label="行数">227</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">17</td><td class="mdmark-align-right" data-label="Edge">23</td><td class="mdmark-align-right" data-label="Firefox">18</td><td class="mdmark-align-right" data-label="Safari">17</td><td class="mdmark-align-right" data-label="iOS Safari">19</td><td class="mdmark-align-right" data-label="Android Chrome">20</td></tr>
+      <tr><td data-label="文書">非機能要件 1</td><td class="mdmark-align-right" data-label="行数">390</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">37</td><td class="mdmark-align-right" data-label="Firefox">41</td><td class="mdmark-align-right" data-label="Safari">52</td><td class="mdmark-align-right" data-label="iOS Safari">53</td><td class="mdmark-align-right" data-label="Android Chrome">38</td></tr>
+      <tr><td data-label="文書">テストの手順 1</td><td class="mdmark-align-right" data-label="行数">176</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">26</td><td class="mdmark-align-right" data-label="Edge">18</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">17</td><td class="mdmark-align-right" data-label="iOS Safari">17</td><td class="mdmark-align-right" data-label="Android Chrome">21</td></tr>
+      <tr><td data-label="文書">運用の手順 1</td><td class="mdmark-align-right" data-label="行数">996</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">4</td><td class="mdmark-align-right" data-label="Chrome">143</td><td class="mdmark-align-right" data-label="Edge">181</td><td class="mdmark-align-right" data-label="Firefox">168</td><td class="mdmark-align-right" data-label="Safari">140</td><td class="mdmark-align-right" data-label="iOS Safari">177</td><td class="mdmark-align-right" data-label="Android Chrome">121</td></tr>
+      <tr><td data-label="文書">導入の手順 2</td><td class="mdmark-align-right" data-label="行数">827</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">132</td><td class="mdmark-align-right" data-label="Edge">113</td><td class="mdmark-align-right" data-label="Firefox">114</td><td class="mdmark-align-right" data-label="Safari">134</td><td class="mdmark-align-right" data-label="iOS Safari">94</td><td class="mdmark-align-right" data-label="Android Chrome">110</td></tr>
+      <tr><td data-label="文書">API リファレンス 2</td><td class="mdmark-align-right" data-label="行数">166</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">12</td><td class="mdmark-align-right" data-label="Firefox">14</td><td class="mdmark-align-right" data-label="Safari">15</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">19</td></tr>
+      <tr><td data-label="文書">設定の一覧 2</td><td class="mdmark-align-right" data-label="行数">1,090</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">175</td><td class="mdmark-align-right" data-label="Edge">192</td><td class="mdmark-align-right" data-label="Firefox">168</td><td class="mdmark-align-right" data-label="Safari">171</td><td class="mdmark-align-right" data-label="iOS Safari">141</td><td class="mdmark-align-right" data-label="Android Chrome">158</td></tr>
+      <tr><td data-label="文書">用語集 2</td><td class="mdmark-align-right" data-label="行数">919</td><td class="mdmark-align-right" data-label="表">0</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">157</td><td class="mdmark-align-right" data-label="Edge">111</td><td class="mdmark-align-right" data-label="Firefox">131</td><td class="mdmark-align-right" data-label="Safari">162</td><td class="mdmark-align-right" data-label="iOS Safari">135</td><td class="mdmark-align-right" data-label="Android Chrome">158</td></tr>
+      <tr><td data-label="文書">変更履歴 2</td><td class="mdmark-align-right" data-label="行数">573</td><td class="mdmark-align-right" data-label="表">11</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">87</td><td class="mdmark-align-right" data-label="Edge">73</td><td class="mdmark-align-right" data-label="Firefox">67</td><td class="mdmark-align-right" data-label="Safari">93</td><td class="mdmark-align-right" data-label="iOS Safari">73</td><td class="mdmark-align-right" data-label="Android Chrome">88</td></tr>
+      <tr><td data-label="文書">設計方針 2</td><td class="mdmark-align-right" data-label="行数">1,123</td><td class="mdmark-align-right" data-label="表">9</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">160</td><td class="mdmark-align-right" data-label="Edge">108</td><td class="mdmark-align-right" data-label="Firefox">131</td><td class="mdmark-align-right" data-label="Safari">132</td><td class="mdmark-align-right" data-label="iOS Safari">150</td><td class="mdmark-align-right" data-label="Android Chrome">105</td></tr>
+      <tr><td data-label="文書">画面設計 2</td><td class="mdmark-align-right" data-label="行数">576</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">48</td><td class="mdmark-align-right" data-label="Edge">52</td><td class="mdmark-align-right" data-label="Firefox">62</td><td class="mdmark-align-right" data-label="Safari">69</td><td class="mdmark-align-right" data-label="iOS Safari">50</td><td class="mdmark-align-right" data-label="Android Chrome">65</td></tr>
+      <tr><td data-label="文書">非機能要件 2</td><td class="mdmark-align-right" data-label="行数">226</td><td class="mdmark-align-right" data-label="表">9</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">26</td><td class="mdmark-align-right" data-label="Edge">37</td><td class="mdmark-align-right" data-label="Firefox">36</td><td class="mdmark-align-right" data-label="Safari">29</td><td class="mdmark-align-right" data-label="iOS Safari">37</td><td class="mdmark-align-right" data-label="Android Chrome">39</td></tr>
+      <tr><td data-label="文書">テストの手順 2</td><td class="mdmark-align-right" data-label="行数">607</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">73</td><td class="mdmark-align-right" data-label="Firefox">51</td><td class="mdmark-align-right" data-label="Safari">68</td><td class="mdmark-align-right" data-label="iOS Safari">57</td><td class="mdmark-align-right" data-label="Android Chrome">60</td></tr>
+      <tr><td data-label="文書">運用の手順 2</td><td class="mdmark-align-right" data-label="行数">500</td><td class="mdmark-align-right" data-label="表">12</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">62</td><td class="mdmark-align-right" data-label="Edge">50</td><td class="mdmark-align-right" data-label="Firefox">53</td><td class="mdmark-align-right" data-label="Safari">69</td><td class="mdmark-align-right" data-label="iOS Safari">49</td><td class="mdmark-align-right" data-label="Android Chrome">55</td></tr>
+      <tr><td data-label="文書">導入の手順 3</td><td class="mdmark-align-right" data-label="行数">662</td><td class="mdmark-align-right" data-label="表">12</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">53</td><td class="mdmark-align-right" data-label="Firefox">49</td><td class="mdmark-align-right" data-label="Safari">51</td><td class="mdmark-align-right" data-label="iOS Safari">63</td><td class="mdmark-align-right" data-label="Android Chrome">62</td></tr>
+      <tr><td data-label="文書">API リファレンス 3</td><td class="mdmark-align-right" data-label="行数">967</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">94</td><td class="mdmark-align-right" data-label="Edge">97</td><td class="mdmark-align-right" data-label="Firefox">93</td><td class="mdmark-align-right" data-label="Safari">73</td><td class="mdmark-align-right" data-label="iOS Safari">86</td><td class="mdmark-align-right" data-label="Android Chrome">96</td></tr>
+      <tr><td data-label="文書">設定の一覧 3</td><td class="mdmark-align-right" data-label="行数">1,133</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">132</td><td class="mdmark-align-right" data-label="Edge">118</td><td class="mdmark-align-right" data-label="Firefox">107</td><td class="mdmark-align-right" data-label="Safari">114</td><td class="mdmark-align-right" data-label="iOS Safari">125</td><td class="mdmark-align-right" data-label="Android Chrome">124</td></tr>
+      <tr><td data-label="文書">用語集 3</td><td class="mdmark-align-right" data-label="行数">44</td><td class="mdmark-align-right" data-label="表">1</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">5</td><td class="mdmark-align-right" data-label="Edge">5</td><td class="mdmark-align-right" data-label="Firefox">6</td><td class="mdmark-align-right" data-label="Safari">5</td><td class="mdmark-align-right" data-label="iOS Safari">6</td><td class="mdmark-align-right" data-label="Android Chrome">7</td></tr>
+      <tr><td data-label="文書">変更履歴 3</td><td class="mdmark-align-right" data-label="行数">325</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">24</td><td class="mdmark-align-right" data-label="Edge">33</td><td class="mdmark-align-right" data-label="Firefox">39</td><td class="mdmark-align-right" data-label="Safari">38</td><td class="mdmark-align-right" data-label="iOS Safari">39</td><td class="mdmark-align-right" data-label="Android Chrome">27</td></tr>
+      <tr><td data-label="文書">設計方針 3</td><td class="mdmark-align-right" data-label="行数">409</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">45</td><td class="mdmark-align-right" data-label="Edge">46</td><td class="mdmark-align-right" data-label="Firefox">63</td><td class="mdmark-align-right" data-label="Safari">71</td><td class="mdmark-align-right" data-label="iOS Safari">59</td><td class="mdmark-align-right" data-label="Android Chrome">46</td></tr>
+      <tr><td data-label="文書">画面設計 3</td><td class="mdmark-align-right" data-label="行数">112</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">11</td><td class="mdmark-align-right" data-label="Edge">10</td><td class="mdmark-align-right" data-label="Firefox">10</td><td class="mdmark-align-right" data-label="Safari">13</td><td class="mdmark-align-right" data-label="iOS Safari">9</td><td class="mdmark-align-right" data-label="Android Chrome">11</td></tr>
+      <tr><td data-label="文書">非機能要件 3</td><td class="mdmark-align-right" data-label="行数">129</td><td class="mdmark-align-right" data-label="表">2</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">16</td><td class="mdmark-align-right" data-label="Edge">15</td><td class="mdmark-align-right" data-label="Firefox">13</td><td class="mdmark-align-right" data-label="Safari">16</td><td class="mdmark-align-right" data-label="iOS Safari">12</td><td class="mdmark-align-right" data-label="Android Chrome">18</td></tr>
+      <tr><td data-label="文書">テストの手順 3</td><td class="mdmark-align-right" data-label="行数">467</td><td class="mdmark-align-right" data-label="表">2</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">48</td><td class="mdmark-align-right" data-label="Edge">41</td><td class="mdmark-align-right" data-label="Firefox">33</td><td class="mdmark-align-right" data-label="Safari">44</td><td class="mdmark-align-right" data-label="iOS Safari">50</td><td class="mdmark-align-right" data-label="Android Chrome">33</td></tr>
+      <tr><td data-label="文書">運用の手順 3</td><td class="mdmark-align-right" data-label="行数">1,034</td><td class="mdmark-align-right" data-label="表">9</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">92</td><td class="mdmark-align-right" data-label="Edge">116</td><td class="mdmark-align-right" data-label="Firefox">91</td><td class="mdmark-align-right" data-label="Safari">111</td><td class="mdmark-align-right" data-label="iOS Safari">124</td><td class="mdmark-align-right" data-label="Android Chrome">92</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 既定の種類（はみ出さない表はピン止めを出さない） -->
+      <section aria-labelledby="state-default-small">
+        <h2 class="catalog-label" id="state-default-small">既定の種類（はみ出さない表はピン止めを出さない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: はみ出さない表">
+    <thead><tr><th><span class="mdmark-th">名前<button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right">値</th></tr></thead>
+    <tbody>
+      <tr><td data-label="名前">幅</td><td class="mdmark-align-right" data-label="値">640</td></tr>
+      <tr><td data-label="名前">高さ</td><td class="mdmark-align-right" data-label="値">480</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- plain の種類（機能を付けず、縦の罫線と見出し行の面を外す） -->
+      <section aria-labelledby="state-plain">
+        <h2 class="catalog-label" id="state-plain">plain の種類（機能を付けず、縦の罫線と見出し行の面を外す）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="plain">
+  <table tabindex="0" aria-label="表: plain の種類">
+    <thead><tr><th>用語</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td data-label="用語">印</td><td data-label="意味">HTML コメントで書く記法の目印</td></tr>
+      <tr><td data-label="用語">範囲の印</td><td data-label="意味">閉じの印と対で、間の Markdown を囲む印</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 閉じた表（closed） -->
+      <section aria-labelledby="state-closed">
+        <h2 class="catalog-label" id="state-closed">閉じた表（closed）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <details class="mdmark-table-details">
+    <summary>表（3 行）</summary>
+  <table tabindex="0" aria-label="表: 閉じた表">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">版<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">日付<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="版">v0.1.0</td><td data-label="日付">2026-10-10</td></tr>
+      <tr><td data-label="版">v0.2.0</td><td data-label="日付">2026-11-04</td></tr>
+      <tr><td data-label="版">v0.2.1</td><td data-label="日付">2026-11-12</td></tr>
+    </tbody>
+  </table>
+  </details>
+</div>
+        </article>
+      </section>
+
+      <!-- 機能を外した表（data -sort） -->
+      <section aria-labelledby="state-removed">
+        <h2 class="catalog-label" id="state-removed">機能を外した表（data -sort）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 機能を外した表">
+    <thead><tr><th><span class="mdmark-th">記法<button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th>機能名</th><th class="mdmark-align-right">増分（KB）</th></tr></thead>
+    <tbody>
+      <tr><td data-label="記法">表の操作</td><td data-label="機能名"><code>table</code></td><td class="mdmark-align-right" data-label="増分（KB）">6.2</td></tr>
+      <tr><td data-label="記法">注意書き</td><td data-label="機能名"><code>callout</code></td><td class="mdmark-align-right" data-label="増分（KB）">1.4</td></tr>
+      <tr><td data-label="記法">タブ</td><td data-label="機能名"><code>tabs</code></td><td class="mdmark-align-right" data-label="増分（KB）">2.1</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 長文（長い列名と値） -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長文（長い列名と値）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 長文">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">とても長い列名を持つ見出しのセル<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">値<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="とても長い列名を持つ見出しのセル">https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.2.0/dist/index.js</td><td class="mdmark-align-right" data-label="値">1,234,567</td></tr>
+      <tr><td data-label="とても長い列名を持つ見出しのセル">短い値</td><td class="mdmark-align-right" data-label="値">0</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

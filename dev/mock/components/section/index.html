@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>section | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">見出しのアンカーと節の開閉</h1>
+
+      <!-- 開いた節（見出しを指すとアンカーが出る） -->
+      <section aria-labelledby="state-open">
+        <h2 class="catalog-label" id="state-open">開いた節（見出しを指すとアンカーが出る）</h2>
+        <article class="mdmark">
+<h2 class="mdmark-heading" id="概要"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-概要">概要<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#概要" aria-label="「概要」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-概要">
+<p>節の中身です。見出しの文字を押すと閉じます。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 閉じた節（section: closed） -->
+      <section aria-labelledby="state-closed">
+        <h2 class="catalog-label" id="state-closed">閉じた節（section: closed）</h2>
+        <article class="mdmark">
+<h2 class="mdmark-heading" id="補足-closed"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-補足-closed">補足<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#補足-closed" aria-label="「補足」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-補足-closed" hidden="until-found">
+<p>閉じた節の中身です。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- h3・h4 の節 -->
+      <section aria-labelledby="state-levels">
+        <h2 class="catalog-label" id="state-levels">h3・h4 の節</h2>
+        <article class="mdmark">
+<h3 class="mdmark-heading" id="前提"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-前提">前提<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-前提">
+<p>h3 の節です。</p>
+<h4 class="mdmark-heading" id="対応ブラウザ"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-対応ブラウザ">対応ブラウザ<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#対応ブラウザ" aria-label="「対応ブラウザ」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h4>
+<div class="mdmark-section-body" id="section-対応ブラウザ">
+<p>h4 の節です。</p>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- 長い見出し（折り返す） -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長い見出し（折り返す）</h2>
+        <article class="mdmark">
+<h2 class="mdmark-heading" id="long-heading"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-long-heading">使う側のページで版を固定した URL から配布物を読み込み、要素に文書を描くまでの手順<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#long-heading" aria-label="「使う側のページで版を固定した URL から配布物を読み込み、要素に文書を描くまでの手順」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-long-heading">
+<p>節の中身です。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 知らない開閉の指定（異常シナリオ） -->
+      <section aria-labelledby="state-error">
+        <h2 class="catalog-label" id="state-error">知らない開閉の指定（異常シナリオ）</h2>
+        <article class="mdmark">
+<h2 class="mdmark-heading" id="補足-error"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-補足-error">補足<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#補足-error" aria-label="「補足」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-補足-error">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- section: hidden --&gt;</code> の <code>hidden</code> は使えません。使える値は <code>closed</code>・<code>open</code> です。この節は開いた状態で描いています。</p>
+</div>
+<p>節の中身はそのまま読めます。</p>
+</div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

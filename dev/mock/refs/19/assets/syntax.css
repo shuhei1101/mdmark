@@ -1,0 +1,724 @@
+/* 拡張記法の表示: 表の操作・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・見出しのアンカー・節の開閉・行の詳細・図表の番号・書き方の警告。
+   本文の規則（refs/16/assets/sample.css）と採用スタイルの変数（assets/style.css）の後に読む */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* 操作部品に共通のアイコン: 文字と上下中央に揃え、線の太さを揃える */
+    .mdmark-icon {
+      flex: none;
+      width: 1em;
+      height: 1em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: -0.125em;
+    }
+
+    /* 文書の中の小さな操作ボタン（ピン止め・行の詳細の開閉・見出しのアンカー）: 高さを揃え、地を透明にする */
+    :is(.mdmark-pin, .mdmark-row-toggle, .mdmark-anchor) {
+      display: inline-grid;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font: inherit;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* ---------- 表 ---------- */
+
+    /* 表のセルの揃え（実装の CSS と同じ class。refs/16 の土台が持たないのでここで当てる） */
+    :is(th, td).mdmark-align-center {
+      text-align: center;
+    }
+
+    /* 右揃えのセル: 数値の列 */
+    :is(th, td).mdmark-align-right {
+      text-align: end;
+
+      /* 右揃えの見出し: 列名と並べ替えのアイコンを右へ寄せる */
+      .mdmark-th {
+        justify-content: flex-end;
+      }
+    }
+
+    /* 表の入れ物: 絞り込みの欄・書き方の警告と表をまとめる */
+    .mdmark-table {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: calc(var(--mdmark-space) / 2);
+      justify-items: start;
+    }
+
+    /* 絞り込みの欄: ラベルを常に見せ、入力欄を横に並べる */
+    .mdmark-table-filter {
+      display: flex;
+      justify-self: stretch;
+      flex-wrap: wrap;
+      gap: 0.25em 0.6em;
+      align-items: center;
+      font-size: 0.875em;
+
+      label {
+        color: var(--mdmark-color-muted);
+        font-weight: 600;
+      }
+
+      /* 入力欄: 操作部品の高さに揃え、狭い幅では残りの幅いっぱいに使う */
+      input {
+        flex: 1 1 14em;
+        box-sizing: border-box;
+        min-width: 0;
+        max-width: 20em;
+        height: 2rem;
+        padding: 0 0.6em;
+        border: 1px solid var(--mdmark-color-border);
+        border-radius: calc(var(--mdmark-radius) - 2px);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+        font: inherit;
+
+        &:focus-visible {
+          border-color: var(--mdmark-color-link);
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 0;
+        }
+      }
+    }
+
+    /* 見出しのセルの中身: 列名（並べ替えのボタン）とピン止めのボタンを横に並べる */
+    .mdmark-th {
+      display: flex;
+      gap: 0.35em;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* 並べ替えのボタン: 列名そのものを押せるようにし、向きのアイコンを後ろに置く */
+    .mdmark-sort {
+      display: inline-flex;
+      gap: 0.35em;
+      align-items: center;
+      margin: -0.2em -0.35em;
+      padding: 0.2em 0.35em;
+      border: 0;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: 600;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 0;
+      }
+
+      /* 並べ替えの向きのアイコン: 並べていない列は上下の両方を薄く出す */
+      .mdmark-icon {
+        color: var(--mdmark-color-muted);
+      }
+    }
+
+    /* 並べ替えた列: 向きのアイコンを本文の色にして、並べた列だと分かるようにする */
+    th[aria-sort] .mdmark-sort .mdmark-icon {
+      color: var(--mdmark-color-text);
+    }
+
+    /* ピン止めのボタン: 押した後は面の色と塗ったピンで、押す前と見分ける */
+    .mdmark-pin {
+      width: 1.5rem;
+      height: 1.5rem;
+
+      &[aria-pressed="true"] {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+
+        .mdmark-icon {
+          fill: currentColor;
+        }
+      }
+
+      /* 表がはみ出さないとき: 押しても何も変わらないので出さない（hidden を描く処理が付け外しする） */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* plain の種類: 表と見出し行の面・縦の罫線を外し、行の区切りの線だけにする */
+    .mdmark-table[data-kind="plain"] {
+      table {
+        background: none;
+      }
+
+      :is(th, td) {
+        border-inline: 0;
+      }
+
+      th {
+        background: transparent;
+      }
+    }
+
+    /* ピン止めした表: 高さを抑えて表の中で縦にもスクロールし、見出し行と先頭の列を留める */
+    .mdmark-table.is-pinned table {
+      max-height: var(--mdmark-table-max-height);
+      overflow-y: auto;
+
+      /* 見出し行: 表の上端に留める */
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--mdmark-color-surface);
+      }
+
+      /* 先頭の列: 表の左端に留め、後ろのセルが透けないよう表と同じ面の色を敷く */
+      :is(th, td):first-child {
+        position: sticky;
+        left: 0;
+        background: var(--mdmark-color-surface);
+        box-shadow: inset -1px 0 var(--mdmark-color-border);
+      }
+
+      /* 左上のセル: 見出し行と先頭の列の両方に重なるので前に出す */
+      thead th:first-child {
+        z-index: 2;
+        background: var(--mdmark-color-surface);
+      }
+    }
+
+    /* 絞り込みで一致する行が無いときの行 */
+    .mdmark-table-empty td {
+      color: var(--mdmark-color-muted);
+      text-align: center;
+    }
+
+    /* 閉じた表の折り畳み: 表の最小の幅で広がらず、描く先の幅に収めて中の表を横スクロールさせる */
+    .mdmark-table-details {
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    /* 開いた閉じた表の見出し: 中の表との間を空ける */
+    .mdmark-table-details[open] > summary {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+
+    /* ---------- 行の詳細 ---------- */
+
+    /* 行の詳細を持つ先頭のセル: 開閉のボタンと値を横に並べる */
+    .mdmark-row-head {
+      display: flex;
+      gap: 0.35em;
+      align-items: center;
+    }
+
+    /* 行の詳細の開閉のボタン: 閉じているときは右向き、開いているときは下向きの印 */
+    .mdmark-row-toggle {
+      margin-inline-start: -0.4em;
+
+      .mdmark-icon {
+        transform: rotate(-90deg);
+      }
+
+      &[aria-expanded="true"] .mdmark-icon {
+        transform: none;
+      }
+    }
+
+    /* 行の詳細の行: 表の幅いっぱいのセルに Markdown を描き、本文の地の色で表の行（面の色）と分ける */
+    .mdmark-row-detail > td {
+      background: var(--mdmark-color-bg);
+      white-space: normal;
+
+      /* 詳細の中身: 表が横にスクロールしても見えている幅に収め、左端に留める（幅は描く処理が表の見えている幅を変数に入れる） */
+      > * {
+        position: sticky;
+        left: 0.9em;
+        box-sizing: border-box;
+        max-width: calc(var(--mdmark-table-visible-width, 100%) - 1.8em);
+      }
+
+      > * + * {
+        margin-block-start: calc(var(--mdmark-space) / 2);
+      }
+    }
+
+    /* ---------- 注意書き ---------- */
+
+    /* 注意書きの枠: 種類の色の線で囲む（地は本文と同じ） */
+    .markdown-alert {
+      --mdmark-callout-color: var(--mdmark-color-callout-note);
+      padding: calc(var(--mdmark-space) * 0.6) var(--mdmark-space);
+      border: 1px solid var(--mdmark-callout-color);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 種類ごとの色 */
+    .markdown-alert-tip {
+      --mdmark-callout-color: var(--mdmark-color-callout-tip);
+    }
+
+    /* 重要の色 */
+    .markdown-alert-important {
+      --mdmark-callout-color: var(--mdmark-color-callout-important);
+    }
+
+    /* 警告の色 */
+    .markdown-alert-warning {
+      --mdmark-callout-color: var(--mdmark-color-callout-warning);
+    }
+
+    /* 注意の色 */
+    .markdown-alert-caution {
+      --mdmark-callout-color: var(--mdmark-color-callout-caution);
+    }
+
+    /* 注意書きの題: アイコンと題の文字を種類の色で出す（色が分からなくても文字で種類が分かる） */
+    .markdown-alert-title {
+      display: flex;
+      gap: 0.45em;
+      align-items: center;
+      margin: 0;
+      color: var(--mdmark-callout-color);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* 閉じた注意書きの題: 開閉の印を後ろに置き、題の行全体を押せるようにする */
+    details.markdown-alert > summary.markdown-alert-title {
+      list-style: none;
+      cursor: pointer;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 開閉の印: 閉じているときは右向き */
+      .mdmark-disclosure {
+        margin-inline-start: auto;
+        color: var(--mdmark-color-muted);
+        transform: rotate(-90deg);
+      }
+    }
+
+    /* 開いた注意書きの開閉の印: 下向き */
+    details.markdown-alert[open] > summary .mdmark-disclosure {
+      transform: none;
+    }
+
+    /* 注意書きの本文: 題との間を詰め、本文の色で読ませる */
+    .markdown-alert > :not(.markdown-alert-title) {
+      color: var(--mdmark-color-text);
+    }
+
+    /* ---------- タブ ---------- */
+
+    /* タブの入れ物: 線で囲み、タブの並びと中身をひとまとまりにする */
+    .mdmark-tabs {
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* タブの並び: 面の色を敷き、収まらないタブは折り返す */
+    .mdmark-tablist {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25em;
+      padding: 0.35em 0.35em 0;
+      border-block-end: 1px solid var(--mdmark-color-border);
+      border-start-start-radius: calc(var(--mdmark-radius) - 1px);
+      border-start-end-radius: calc(var(--mdmark-radius) - 1px);
+      background: var(--mdmark-color-surface);
+    }
+
+    /* タブ: 選んでいないタブは控えめな文字 */
+    [role="tab"] {
+      margin-block-end: -1px;
+      min-height: 2.25rem;
+      padding: 0 0.9em;
+      border: 1px solid transparent;
+      border-start-start-radius: calc(var(--mdmark-radius) - 2px);
+      border-start-end-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font: inherit;
+      font-size: 0.9375em;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* 選んだタブ: 線で囲んで中身の地とつなげ、形と地の色でも選んだタブだと分かるようにする */
+      &[aria-selected="true"] {
+        border-color: var(--mdmark-color-border);
+        border-block-end-color: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-heading);
+      }
+    }
+
+    /* タブの中身 */
+    [role="tabpanel"] {
+      padding: calc(var(--mdmark-space) * 0.75) var(--mdmark-space);
+
+      > * + * {
+        margin-block-start: var(--mdmark-space);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+    }
+
+    /* タブの中身の題: 画面ではタブ名が題を兼ねるので出さず、スクリプト無し・印刷のときだけ出す */
+    .mdmark-tab-title {
+      display: none;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* ---------- ステップ ---------- */
+
+    /* ステップ: 番号を丸で囲み、次の番号までを縦線でつなぐ */
+    .mdmark-steps {
+      padding-inline-start: 0;
+      list-style: none;
+      counter-reset: mdmark-step;
+
+      > li {
+        position: relative;
+        padding-inline-start: 2.6em;
+        padding-block-end: calc(var(--mdmark-space) * 0.75);
+        counter-increment: mdmark-step;
+
+        /* 丸で囲んだ番号 */
+        &::before {
+          position: absolute;
+          inset-block-start: 0.05em;
+          inset-inline-start: 0;
+          display: grid;
+          place-items: center;
+          width: 1.75em;
+          height: 1.75em;
+          box-sizing: border-box;
+          border: 1px solid var(--mdmark-color-border);
+          border-radius: 50%;
+          background: var(--mdmark-color-surface);
+          color: var(--mdmark-color-heading);
+          content: counter(mdmark-step);
+          font-size: 0.875em;
+          font-variant-numeric: tabular-nums;
+          font-weight: 600;
+          line-height: 1;
+        }
+
+        /* 番号と次の番号をつなぐ縦線 */
+        &:not(:last-child)::after {
+          position: absolute;
+          inset-block: 1.75em 0;
+          inset-inline-start: calc(0.875em - 0.5px);
+          border-inline-start: 1px solid var(--mdmark-color-border);
+          content: "";
+        }
+      }
+
+      /* 最後の手順: 下の余白を外す */
+      > li:last-child {
+        padding-block-end: 0;
+      }
+
+      /* 手順同士の間隔は下の余白で取るので、リストの項目の間隔を外す */
+      > li + li {
+        margin-block-start: 0;
+      }
+    }
+
+    /* ---------- ファイルツリー ---------- */
+
+    /* ファイルツリー: コードブロックと同じ面と線の中に、入れ子のリストで並べる */
+    .mdmark-tree {
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.75) var(--mdmark-space);
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.875em;
+      line-height: 1.6;
+      list-style: none;
+
+      /* 入れ子の段: 字下げし、段の線で親とつなぐ */
+      ul {
+        margin: 0 0 0 0.5em;
+        padding-inline-start: 1em;
+        border-inline-start: 1px solid var(--mdmark-color-border);
+        list-style: none;
+      }
+
+      /* 項目同士の間隔: 詰める */
+      li + li {
+        margin-block-start: 0;
+      }
+    }
+
+    /* ファイルツリーの項目名: アイコンと名前を横に並べる */
+    .mdmark-tree-name {
+      display: inline-flex;
+      gap: 0.45em;
+      align-items: center;
+    }
+
+    /* フォルダのアイコン: 本文の色で出す */
+    .mdmark-tree-folder > .mdmark-tree-name .mdmark-icon {
+      color: var(--mdmark-color-text);
+    }
+
+    /* ファイルのアイコン: 控えめな色で出す */
+    .mdmark-tree-file > .mdmark-tree-name .mdmark-icon {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* ---------- バッジ ---------- */
+
+    /* バッジ: 1 色の札。線で囲み、文中のコードと書体で見分ける */
+    .mdmark-badge {
+      display: inline-block;
+      padding: 0 0.6em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 999px;
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font-size: 0.8125em;
+      font-weight: 600;
+      line-height: 1.6;
+      white-space: nowrap;
+    }
+
+    /* ---------- 目次 ---------- */
+
+    /* 目次: 線で囲み、見出しの階層どおりに入れ子にする */
+    .mdmark-toc {
+      padding: calc(var(--mdmark-space) * 0.6) var(--mdmark-space);
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+
+      ul {
+        margin: 0;
+        padding-inline-start: 1.1em;
+        list-style: none;
+      }
+
+      /* 1 段目: 字下げを外す */
+      > ul {
+        padding-inline-start: 0;
+      }
+
+      /* 目次の項目同士の間隔 */
+      li + li,
+      li > ul {
+        margin-block-start: 0.15em;
+      }
+    }
+
+    /* 目次の題 */
+    .mdmark-toc-title {
+      margin: 0 0 0.35em;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* ---------- 見出しのアンカーと節の開閉 ---------- */
+
+    /* 節を持つ見出し: 開閉のボタンとアンカーを文字と横に並べる（間隔はアンカーの余白で取り、見出しの前の記号の擬似要素に隙間を作らない） */
+    .mdmark-heading {
+      display: flex;
+      align-items: center;
+    }
+
+    /* 節の開閉のボタン: 見出しの文字そのものを押せるようにし、開閉の印を後ろに置く */
+    .mdmark-section-toggle {
+      display: inline-flex;
+      gap: 0.35em;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+
+      &:focus-visible {
+        border-radius: calc(var(--mdmark-radius) / 2);
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 開閉の印: 見出しの文字より小さく控えめに出し、閉じているときは右向き */
+      .mdmark-icon {
+        width: 0.75em;
+        height: 0.75em;
+        color: var(--mdmark-color-muted);
+        transform: rotate(-90deg);
+      }
+
+      &[aria-expanded="true"] .mdmark-icon {
+        transform: none;
+      }
+    }
+
+    /* 見出しのアンカー: 見出しを指したとき・フォーカスしたときに出す */
+    .mdmark-anchor {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-inline-start: 0.25em;
+      font-size: 0.65em;
+      opacity: 0;
+
+      &:focus-visible {
+        opacity: 1;
+      }
+    }
+
+    /* 見出しを指したとき: アンカーを出す */
+    .mdmark-heading:hover .mdmark-anchor {
+      opacity: 1;
+    }
+
+    /* 節の中身: 見出しに続くブロックの間隔を本文と揃える（詳細度を上げず、見出しの上の広い余白を残す） */
+    :where(.mdmark-section-body) > * + * {
+      margin-block-start: var(--mdmark-space);
+    }
+
+    /* 節の中身の先頭: 見出しとの間隔は本文と同じ */
+    .mdmark-heading + .mdmark-section-body {
+      margin-block-start: var(--mdmark-space);
+
+      /* 閉じた節の中身: 見えない中身の分の間隔を残さない */
+      &[hidden] {
+        margin-block-start: 0;
+      }
+    }
+
+    /* ---------- 図表の番号 ---------- */
+
+    /* 図・表の入れ物: 番号の題と中身を縦に並べる */
+    .mdmark-figure {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.4em;
+      justify-items: start;
+      margin-inline: 0;
+      margin-block-end: 0;
+    }
+
+    /* 図の中の画像: 幅に収め、寸法を先に確保する */
+    .mdmark-figure img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 図表の番号の題: 番号を太字にし、画像の題を控えめな色で続ける */
+    .mdmark-figure-caption {
+      color: var(--mdmark-color-muted);
+      font-size: 0.875em;
+
+      b {
+        margin-inline-end: 0.6em;
+        color: var(--mdmark-color-heading);
+        font-weight: 600;
+      }
+    }
+
+    /* ---------- 書き方の警告 ---------- */
+
+    /* 書き方の警告: 書く人へ向けた枠。破線で囲み、本文の一部でないことを示す（知らせの枠の塗りと見分ける） */
+    .mdmark-syntax-warning {
+      padding: 0.55em 0.9em;
+      border: 1px dashed var(--mdmark-color-notice-border);
+      border-radius: var(--mdmark-radius);
+      color: var(--mdmark-color-text);
+      font-size: 0.875em;
+      line-height: 1.6;
+
+      /* 警告の文: 何が読めないかと直し方 */
+      p {
+        margin: 0.2em 0 0;
+      }
+
+      /* 警告の中の箇条書き: 読めない指定を 1 つずつ並べる */
+      ul {
+        margin: 0.2em 0 0;
+        padding-inline-start: 1.4em;
+      }
+
+      /* 警告の中の印・識別子: 長くても枠の中で折り返す */
+      code {
+        overflow-wrap: anywhere;
+      }
+    }
+
+    /* 書き方の警告の題: 警告のアイコンと文字 */
+    .mdmark-syntax-warning-title {
+      display: flex;
+      gap: 0.4em;
+      align-items: center;
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 700;
+
+      .mdmark-icon {
+        color: var(--mdmark-color-notice-border);
+      }
+    }
+  }
+
+  /* 指すことのできない端末（スマホ）: 見出しのアンカーを常に薄く出す */
+  @media (hover: none) {
+    .mdmark .mdmark-anchor {
+      opacity: 0.6;
+    }
+  }
+}

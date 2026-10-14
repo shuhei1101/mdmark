@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>toc | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">目次</h1>
+
+      <!-- h2 と h3 を入れ子にした目次 -->
+      <section aria-labelledby="state-nested">
+        <h2 class="catalog-label" id="state-nested">h2 と h3 を入れ子にした目次</h2>
+        <article class="mdmark">
+<nav class="mdmark-toc" aria-labelledby="toc-a">
+  <p class="mdmark-toc-title" id="toc-a">目次</p>
+  <ul><li><a href="#導入">導入</a><ul><li><a href="#前提">前提</a></li></ul></li><li><a href="#使い方">使い方</a></li></ul>
+</nav>
+        </article>
+      </section>
+
+      <!-- h2 だけ -->
+      <section aria-labelledby="state-flat">
+        <h2 class="catalog-label" id="state-flat">h2 だけ</h2>
+        <article class="mdmark">
+<nav class="mdmark-toc" aria-labelledby="toc-b">
+  <p class="mdmark-toc-title" id="toc-b">目次</p>
+  <ul><li><a href="#導入">導入</a></li><li><a href="#使い方">使い方</a></li><li><a href="#補足">補足</a></li></ul>
+</nav>
+        </article>
+      </section>
+
+      <!-- 長い見出し -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長い見出し</h2>
+        <article class="mdmark">
+<nav class="mdmark-toc" aria-labelledby="toc-c">
+  <p class="mdmark-toc-title" id="toc-c">目次</p>
+  <ul><li><a href="#long">使う側のページで版を固定した URL から配布物を読み込み、要素に文書を描くまでの手順</a><ul><li><a href="#long-2">読み込みに失敗したときに知らせの枠が出る箇所と、ほかの本文の扱い</a></li></ul></li></ul>
+</nav>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

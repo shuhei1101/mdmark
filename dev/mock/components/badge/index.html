@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>badge | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">バッジ</h1>
+
+      <!-- 文中 -->
+      <section aria-labelledby="state-inline">
+        <h2 class="catalog-label" id="state-inline">文中</h2>
+        <article class="mdmark">
+<p>対象の版は <span class="mdmark-badge">v0.2.0</span> で、状態は <span class="mdmark-badge">実装中</span> です。</p>
+        </article>
+      </section>
+
+      <!-- 表の中 -->
+      <section aria-labelledby="state-table">
+        <h2 class="catalog-label" id="state-table">表の中</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="plain">
+  <table tabindex="0" aria-label="表: バッジ">
+    <thead><tr><th>機能</th><th>状態</th></tr></thead>
+    <tbody>
+      <tr><td data-label="機能">タブ</td><td data-label="状態"><span class="mdmark-badge">実装済み</span></td></tr>
+      <tr><td data-label="機能">拡張</td><td data-label="状態"><span class="mdmark-badge">予定</span></td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 長い文言 -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長い文言</h2>
+        <article class="mdmark">
+<p><span class="mdmark-badge">非推奨（v1.0.0 で外す予定）</span> の機能は使わないでください。</p>
+        </article>
+      </section>
+
+      <!-- 打ち消したバッジ（書き方を見せる） -->
+      <section aria-labelledby="state-escaped">
+        <h2 class="catalog-label" id="state-escaped">打ち消したバッジ（書き方を見せる）</h2>
+        <article class="mdmark">
+<p>バッジは <code>badge:v0.1.0</code> のように書きます。</p>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

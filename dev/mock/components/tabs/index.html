@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>tabs | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">タブ</h1>
+
+      <!-- 1 つ目を選んだ -->
+      <section aria-labelledby="state-first">
+        <h2 class="catalog-label" id="state-first">1 つ目を選んだ</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-label="インストール">
+    <button class="mdmark-tab" type="button" role="tab" id="t1-tab-0" aria-selected="true" aria-controls="t1-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t1-tab-1" aria-selected="false" aria-controls="t1-panel-1" tabindex="-1">Windows</button>
+  </div>
+  <div role="tabpanel" id="t1-panel-0" aria-labelledby="t1-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="t1-panel-1" aria-labelledby="t1-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- 2 つ目を選んだ -->
+      <section aria-labelledby="state-second">
+        <h2 class="catalog-label" id="state-second">2 つ目を選んだ</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-label="インストール">
+    <button class="mdmark-tab" type="button" role="tab" id="t2-tab-0" aria-selected="false" aria-controls="t2-panel-0" tabindex="-1">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t2-tab-1" aria-selected="true" aria-controls="t2-panel-1" tabindex="0">Windows</button>
+  </div>
+  <div role="tabpanel" id="t2-panel-0" aria-labelledby="t2-tab-0" tabindex="0" hidden>
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="t2-panel-1" aria-labelledby="t2-tab-1" tabindex="0">
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- 多いタブ・長いタブ名（折り返して並べる） -->
+      <section aria-labelledby="state-many">
+        <h2 class="catalog-label" id="state-many">多いタブ・長いタブ名（折り返して並べる）</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-label="インストール">
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-0" aria-selected="true" aria-controls="t3-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-1" aria-selected="false" aria-controls="t3-panel-1" tabindex="-1">Windows（PowerShell）</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-2" aria-selected="false" aria-controls="t3-panel-2" tabindex="-1">Windows（WSL）</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-3" aria-selected="false" aria-controls="t3-panel-3" tabindex="-1">Ubuntu・Debian</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-4" aria-selected="false" aria-controls="t3-panel-4" tabindex="-1">Fedora・RHEL</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-5" aria-selected="false" aria-controls="t3-panel-5" tabindex="-1">Arch Linux</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3-tab-6" aria-selected="false" aria-controls="t3-panel-6" tabindex="-1">Docker</button>
+  </div>
+  <div role="tabpanel" id="t3-panel-0" aria-labelledby="t3-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3-panel-1" aria-labelledby="t3-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows（PowerShell）</p>
+    <p>winget で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3-panel-2" aria-labelledby="t3-tab-2" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows（WSL）</p>
+    <p>apt で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3-panel-3" aria-labelledby="t3-tab-3" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Ubuntu・Debian</p>
+    <p>apt で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3-panel-4" aria-labelledby="t3-tab-4" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Fedora・RHEL</p>
+    <p>dnf で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3-panel-5" aria-labelledby="t3-tab-5" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Arch Linux</p>
+    <p>pacman で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3-panel-6" aria-labelledby="t3-tab-6" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Docker</p>
+    <p>イメージを使います。</p>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- 中身にコードと表 -->
+      <section aria-labelledby="state-rich">
+        <h2 class="catalog-label" id="state-rich">中身にコードと表</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-label="読み込み方">
+    <button class="mdmark-tab" type="button" role="tab" id="t4-tab-0" aria-selected="true" aria-controls="t4-panel-0" tabindex="0">npm</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t4-tab-1" aria-selected="false" aria-controls="t4-panel-1" tabindex="-1">CDN</button>
+  </div>
+  <div role="tabpanel" id="t4-panel-0" aria-labelledby="t4-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">npm</p>
+    <p>依存に足します。</p>
+    <pre tabindex="0" aria-label="コード: sh"><code>npm install @shuhei1101/mdmark</code></pre>
+  </div>
+  <div role="tabpanel" id="t4-panel-1" aria-labelledby="t4-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">CDN</p>
+    <p>版を固定した URL で読みます。</p>
+    <pre tabindex="0" aria-label="コード: html"><code>&lt;script type="module" src="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.2.0/dist/index.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- タブ名にする見出しが無い（異常シナリオ） -->
+      <section aria-labelledby="state-no-heading">
+        <h2 class="catalog-label" id="state-no-heading">タブ名にする見出しが無い（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を書いてください。範囲の中身はそのまま描いています。</p>
+</div>
+<p>macOS では Homebrew、Windows では winget で入れます。</p>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

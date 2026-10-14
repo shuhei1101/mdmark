@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="200" viewBox="0 0 560 200" font-family="system-ui, sans-serif" font-size="14">
+  <!-- 図の見本: 使う側のページ・mdmark・CDN の構成 -->
+  <rect width="560" height="200" fill="#ffffff"/>
+  <g fill="#f6f8fa" stroke="#59636e" stroke-width="1.5">
+    <rect x="20" y="70" width="140" height="60" rx="6"/>
+    <rect x="210" y="70" width="140" height="60" rx="6"/>
+    <rect x="400" y="70" width="140" height="60" rx="6"/>
+  </g>
+  <g fill="#1f2328" text-anchor="middle">
+    <text x="90" y="105">使う側のページ</text>
+    <text x="280" y="105">mdmark</text>
+    <text x="470" y="105">jsDelivr</text>
+  </g>
+  <g stroke="#59636e" stroke-width="1.5" fill="none">
+    <path d="M160 100h46m-8-6 8 6-8 6"/>
+    <path d="M350 100h46m-8-6 8 6-8 6"/>
+  </g>
+</svg>

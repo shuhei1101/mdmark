@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / modern（拡張記法） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・横スクロールの影） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法の規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- この画面の固有の規則（拡張が描いた見本） -->
+  <link rel="stylesheet" href="./page.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で app.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（表・タブ・節と行の詳細の開閉・印刷の前後の展開） -->
+  <script src="../../../../refs/19/assets/syntax.js" defer></script>
+  <!-- 印刷の前後と、モックの「印刷の見え方」の切り替え -->
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-preview-toggle]: app.js が印刷の規則を画面にも当て、タブの全ての中身と閉じた記法を開いて明るい配色にする（モックだけの仕組み） -->
+    <div class="mock-bar-group">
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">19</a> / modern
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書。見出しの節の中身は .mdmark-section-body に入れ、閉じた節は hidden="until-found" でページ内検索から開ける -->
+    <article class="mdmark">
+<h1 class="mdmark-heading" id="拡張記法で書いた設計書">拡張記法で書いた設計書<a class="mdmark-anchor" href="#拡張記法で書いた設計書" aria-label="「拡張記法で書いた設計書」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<p>この文書は mdmark の拡張記法の見本です。対象の版は <span class="mdmark-badge">v0.2.0</span> で、状態は <span class="mdmark-badge">実装中</span> です。</p>
+<!-- 目次の印（toc）の場所 -->
+<nav class="mdmark-toc" aria-labelledby="toc-title">
+  <p class="mdmark-toc-title" id="toc-title">目次</p>
+  <ul><li><a href="#導入">導入</a><ul><li><a href="#前提">前提</a></li></ul></li><li><a href="#インストール">インストール</a></li><li><a href="#ファイル構成">ファイル構成</a></li><li><a href="#表">表</a><ul><li><a href="#記法ごとの機能">記法ごとの機能</a></li><li><a href="#文書ごとの描く時間">文書ごとの描く時間</a></li><li><a href="#用語">用語</a></li><li><a href="#変更の履歴">変更の履歴</a></li><li><a href="#印の引数">印の引数</a></li></ul></li><li><a href="#注意書き">注意書き</a></li><li><a href="#図と表">図と表</a></li><li><a href="#拡張">拡張</a></li><li><a href="#補足">補足</a><ul><li><a href="#注意">注意</a></li></ul></li><li><a href="#書き方を誤った箇所">書き方を誤った箇所</a><ul><li><a href="#既定の開閉の誤り">既定の開閉の誤り</a></li></ul></li></ul>
+</nav>
+<h2 class="mdmark-heading" id="導入"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-導入">導入<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-導入">
+<p>印を書いた Markdown を <code>mount</code> に渡すと、記法ごとの表示と操作が付きます。</p>
+<ol class="mdmark-steps">
+  <li>配布物の <code>index.js</code> と <code>index.css</code> をページで読み込む</li>
+  <li>描く先の要素を用意し、<code>mount</code> に要素と Markdown を渡す</li>
+  <li>書いた印のとおりに、表の操作やタブが付いた文書が描かれる</li>
+</ol>
+<h3 class="mdmark-heading" id="前提"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-前提">前提<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-前提">
+<p>対応ブラウザは Chrome・Edge・Firefox・Safari の直近の版です。</p>
+</div>
+</div>
+<h2 class="mdmark-heading" id="インストール"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-インストール">インストール<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#インストール" aria-label="「インストール」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-インストール">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-labelledby="インストール">
+    <button class="mdmark-tab" type="button" role="tab" id="install-tab-0" aria-selected="true" aria-controls="install-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="install-tab-1" aria-selected="false" aria-controls="install-panel-1" tabindex="-1">Windows</button>
+    <button class="mdmark-tab" type="button" role="tab" id="install-tab-2" aria-selected="false" aria-controls="install-panel-2" tabindex="-1">Linux</button>
+  </div>
+  <div role="tabpanel" id="install-panel-0" aria-labelledby="install-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れてから、配布物を取得します。</p>
+    <pre tabindex="0" aria-label="コード: sh"><code class="language-sh">brew install node
+npm install @shuhei1101/mdmark</code></pre>
+  </div>
+  <div role="tabpanel" id="install-panel-1" aria-labelledby="install-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れてから、配布物を取得します。</p>
+    <pre tabindex="0" aria-label="コード: powershell"><code class="language-powershell">winget install OpenJS.NodeJS
+npm install @shuhei1101/mdmark</code></pre>
+  </div>
+  <div role="tabpanel" id="install-panel-2" aria-labelledby="install-tab-2" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Linux</p>
+    <p>ディストリビューションのパッケージマネージャで Node.js を入れてから、配布物を取得します。</p>
+    <pre tabindex="0" aria-label="コード: sh"><code class="language-sh">sudo apt install nodejs npm
+npm install @shuhei1101/mdmark</code></pre>
+  </div>
+</div>
+</div>
+<h2 class="mdmark-heading" id="ファイル構成"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-ファイル構成">ファイル構成<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#ファイル構成" aria-label="「ファイル構成」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-ファイル構成">
+<p>配布物と、記法を受け持つソースの置き場所です。</p>
+<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.75 3.25h4.5l1.5 1.5h6.5v8.5h-12.5z"/></svg>mdmark/</span><ul><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.75 3.25h4.5l1.5 1.5h6.5v8.5h-12.5z"/></svg>dist/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>index.js</span></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>index.css</span></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>index.d.ts</span></li></ul></li><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.75 3.25h4.5l1.5 1.5h6.5v8.5h-12.5z"/></svg>src/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>index.ts</span></li><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.75 3.25h4.5l1.5 1.5h6.5v8.5h-12.5z"/></svg>render/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>marks.ts</span></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>parser.ts</span></li></ul></li><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.75 3.25h4.5l1.5 1.5h6.5v8.5h-12.5z"/></svg>parts/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>notice.ts</span></li></ul></li></ul></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 1.75h5.5l3 3v9.5h-8.5z"/><path d="M9.25 1.75v3h3"/></svg>package.json</span></li></ul></li></ul>
+</div>
+<h2 class="mdmark-heading" id="表"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-表">表<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#表" aria-label="「表」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-表">
+<h3 class="mdmark-heading" id="記法ごとの機能"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-記法ごとの機能">記法ごとの機能<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#記法ごとの機能" aria-label="「記法ごとの機能」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-記法ごとの機能">
+<!-- table: data +filter -->
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-filter">
+    <label for="filter-features">絞り込み</label>
+    <input id="filter-features" type="search" autocomplete="off">
+  </div>
+  <table tabindex="0" aria-label="表: 記法ごとの機能">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">記法<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">機能名<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">配布物の増分（KB）<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">既定<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="記法">表の操作</td><td data-label="機能名"><code>table</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">6.2</td><td data-label="既定">オン</td></tr>
+      <tr><td data-label="記法">注意書き</td><td data-label="機能名"><code>callout</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">1.4</td><td data-label="既定">オン</td></tr>
+      <tr><td data-label="記法">タブ</td><td data-label="機能名"><code>tabs</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">2.1</td><td data-label="既定">オン</td></tr>
+      <tr><td data-label="記法">ステップ</td><td data-label="機能名"><code>steps</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">0.4</td><td data-label="既定">オン</td></tr>
+      <tr><td data-label="記法">ファイルツリー</td><td data-label="機能名"><code>tree</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">1.8</td><td data-label="既定">オン</td></tr>
+      <tr><td data-label="記法">目次</td><td data-label="機能名"><code>toc</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">0.9</td><td data-label="既定">オン</td></tr>
+      <tr><td data-label="記法">図表の番号</td><td data-label="機能名"><code>figures</code></td><td class="mdmark-align-right" data-label="配布物の増分（KB）">1.1</td><td data-label="既定">オン</td></tr>
+      <tr class="mdmark-table-empty" hidden><td colspan="4">一致する行がありません</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<h3 class="mdmark-heading" id="文書ごとの描く時間"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-文書ごとの描く時間">文書ごとの描く時間<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#文書ごとの描く時間" aria-label="「文書ごとの描く時間」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-文書ごとの描く時間">
+<p>印で囲まない表は既定の種類で、はみ出すときにピン止めが付きます。</p>
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 文書ごとの描く時間（ミリ秒）">
+    <thead><tr><th><span class="mdmark-th">文書<button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right">行数</th><th class="mdmark-align-right">表</th><th class="mdmark-align-right">図</th><th class="mdmark-align-right">Chrome</th><th class="mdmark-align-right">Edge</th><th class="mdmark-align-right">Firefox</th><th class="mdmark-align-right">Safari</th><th class="mdmark-align-right">iOS Safari</th><th class="mdmark-align-right">Android Chrome</th></tr></thead>
+    <tbody>
+      <tr><td data-label="文書">導入の手順 1</td><td class="mdmark-align-right" data-label="行数">128</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">17</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">16</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">16</td></tr>
+      <tr><td data-label="文書">API リファレンス 1</td><td class="mdmark-align-right" data-label="行数">573</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">55</td><td class="mdmark-align-right" data-label="Edge">62</td><td class="mdmark-align-right" data-label="Firefox">61</td><td class="mdmark-align-right" data-label="Safari">70</td><td class="mdmark-align-right" data-label="iOS Safari">58</td><td class="mdmark-align-right" data-label="Android Chrome">53</td></tr>
+      <tr><td data-label="文書">設定の一覧 1</td><td class="mdmark-align-right" data-label="行数">454</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">52</td><td class="mdmark-align-right" data-label="Edge">35</td><td class="mdmark-align-right" data-label="Firefox">36</td><td class="mdmark-align-right" data-label="Safari">34</td><td class="mdmark-align-right" data-label="iOS Safari">46</td><td class="mdmark-align-right" data-label="Android Chrome">43</td></tr>
+      <tr><td data-label="文書">用語集 1</td><td class="mdmark-align-right" data-label="行数">851</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">4</td><td class="mdmark-align-right" data-label="Chrome">123</td><td class="mdmark-align-right" data-label="Edge">119</td><td class="mdmark-align-right" data-label="Firefox">116</td><td class="mdmark-align-right" data-label="Safari">124</td><td class="mdmark-align-right" data-label="iOS Safari">89</td><td class="mdmark-align-right" data-label="Android Chrome">104</td></tr>
+      <tr><td data-label="文書">変更履歴 1</td><td class="mdmark-align-right" data-label="行数">260</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">31</td><td class="mdmark-align-right" data-label="Edge">40</td><td class="mdmark-align-right" data-label="Firefox">30</td><td class="mdmark-align-right" data-label="Safari">41</td><td class="mdmark-align-right" data-label="iOS Safari">28</td><td class="mdmark-align-right" data-label="Android Chrome">37</td></tr>
+      <tr><td data-label="文書">設計方針 1</td><td class="mdmark-align-right" data-label="行数">1,022</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">154</td><td class="mdmark-align-right" data-label="Edge">133</td><td class="mdmark-align-right" data-label="Firefox">128</td><td class="mdmark-align-right" data-label="Safari">136</td><td class="mdmark-align-right" data-label="iOS Safari">112</td><td class="mdmark-align-right" data-label="Android Chrome">101</td></tr>
+      <tr><td data-label="文書">画面設計 1</td><td class="mdmark-align-right" data-label="行数">227</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">17</td><td class="mdmark-align-right" data-label="Edge">23</td><td class="mdmark-align-right" data-label="Firefox">18</td><td class="mdmark-align-right" data-label="Safari">17</td><td class="mdmark-align-right" data-label="iOS Safari">19</td><td class="mdmark-align-right" data-label="Android Chrome">20</td></tr>
+      <tr><td data-label="文書">非機能要件 1</td><td class="mdmark-align-right" data-label="行数">390</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">37</td><td class="mdmark-align-right" data-label="Firefox">41</td><td class="mdmark-align-right" data-label="Safari">52</td><td class="mdmark-align-right" data-label="iOS Safari">53</td><td class="mdmark-align-right" data-label="Android Chrome">38</td></tr>
+      <tr><td data-label="文書">テストの手順 1</td><td class="mdmark-align-right" data-label="行数">176</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">26</td><td class="mdmark-align-right" data-label="Edge">18</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">17</td><td class="mdmark-align-right" data-label="iOS Safari">17</td><td class="mdmark-align-right" data-label="Android Chrome">21</td></tr>
+      <tr><td data-label="文書">運用の手順 1</td><td class="mdmark-align-right" data-label="行数">996</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">4</td><td class="mdmark-align-right" data-label="Chrome">143</td><td class="mdmark-align-right" data-label="Edge">181</td><td class="mdmark-align-right" data-label="Firefox">168</td><td class="mdmark-align-right" data-label="Safari">140</td><td class="mdmark-align-right" data-label="iOS Safari">177</td><td class="mdmark-align-right" data-label="Android Chrome">121</td></tr>
+      <tr><td data-label="文書">導入の手順 2</td><td class="mdmark-align-right" data-label="行数">827</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">132</td><td class="mdmark-align-right" data-label="Edge">113</td><td class="mdmark-align-right" data-label="Firefox">114</td><td class="mdmark-align-right" data-label="Safari">134</td><td class="mdmark-align-right" data-label="iOS Safari">94</td><td class="mdmark-align-right" data-label="Android Chrome">110</td></tr>
+      <tr><td data-label="文書">API リファレンス 2</td><td class="mdmark-align-right" data-label="行数">166</td><td class="mdmark-align-right" data-label="表">4</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">12</td><td class="mdmark-align-right" data-label="Firefox">14</td><td class="mdmark-align-right" data-label="Safari">15</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">19</td></tr>
+      <tr><td data-label="文書">設定の一覧 2</td><td class="mdmark-align-right" data-label="行数">1,090</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">175</td><td class="mdmark-align-right" data-label="Edge">192</td><td class="mdmark-align-right" data-label="Firefox">168</td><td class="mdmark-align-right" data-label="Safari">171</td><td class="mdmark-align-right" data-label="iOS Safari">141</td><td class="mdmark-align-right" data-label="Android Chrome">158</td></tr>
+      <tr><td data-label="文書">用語集 2</td><td class="mdmark-align-right" data-label="行数">919</td><td class="mdmark-align-right" data-label="表">0</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">157</td><td class="mdmark-align-right" data-label="Edge">111</td><td class="mdmark-align-right" data-label="Firefox">131</td><td class="mdmark-align-right" data-label="Safari">162</td><td class="mdmark-align-right" data-label="iOS Safari">135</td><td class="mdmark-align-right" data-label="Android Chrome">158</td></tr>
+      <tr><td data-label="文書">変更履歴 2</td><td class="mdmark-align-right" data-label="行数">573</td><td class="mdmark-align-right" data-label="表">11</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">87</td><td class="mdmark-align-right" data-label="Edge">73</td><td class="mdmark-align-right" data-label="Firefox">67</td><td class="mdmark-align-right" data-label="Safari">93</td><td class="mdmark-align-right" data-label="iOS Safari">73</td><td class="mdmark-align-right" data-label="Android Chrome">88</td></tr>
+      <tr><td data-label="文書">設計方針 2</td><td class="mdmark-align-right" data-label="行数">1,123</td><td class="mdmark-align-right" data-label="表">9</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">160</td><td class="mdmark-align-right" data-label="Edge">108</td><td class="mdmark-align-right" data-label="Firefox">131</td><td class="mdmark-align-right" data-label="Safari">132</td><td class="mdmark-align-right" data-label="iOS Safari">150</td><td class="mdmark-align-right" data-label="Android Chrome">105</td></tr>
+      <tr><td data-label="文書">画面設計 2</td><td class="mdmark-align-right" data-label="行数">576</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">48</td><td class="mdmark-align-right" data-label="Edge">52</td><td class="mdmark-align-right" data-label="Firefox">62</td><td class="mdmark-align-right" data-label="Safari">69</td><td class="mdmark-align-right" data-label="iOS Safari">50</td><td class="mdmark-align-right" data-label="Android Chrome">65</td></tr>
+      <tr><td data-label="文書">非機能要件 2</td><td class="mdmark-align-right" data-label="行数">226</td><td class="mdmark-align-right" data-label="表">9</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">26</td><td class="mdmark-align-right" data-label="Edge">37</td><td class="mdmark-align-right" data-label="Firefox">36</td><td class="mdmark-align-right" data-label="Safari">29</td><td class="mdmark-align-right" data-label="iOS Safari">37</td><td class="mdmark-align-right" data-label="Android Chrome">39</td></tr>
+      <tr><td data-label="文書">テストの手順 2</td><td class="mdmark-align-right" data-label="行数">607</td><td class="mdmark-align-right" data-label="表">3</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">73</td><td class="mdmark-align-right" data-label="Firefox">51</td><td class="mdmark-align-right" data-label="Safari">68</td><td class="mdmark-align-right" data-label="iOS Safari">57</td><td class="mdmark-align-right" data-label="Android Chrome">60</td></tr>
+      <tr><td data-label="文書">運用の手順 2</td><td class="mdmark-align-right" data-label="行数">500</td><td class="mdmark-align-right" data-label="表">12</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">62</td><td class="mdmark-align-right" data-label="Edge">50</td><td class="mdmark-align-right" data-label="Firefox">53</td><td class="mdmark-align-right" data-label="Safari">69</td><td class="mdmark-align-right" data-label="iOS Safari">49</td><td class="mdmark-align-right" data-label="Android Chrome">55</td></tr>
+      <tr><td data-label="文書">導入の手順 3</td><td class="mdmark-align-right" data-label="行数">662</td><td class="mdmark-align-right" data-label="表">12</td><td class="mdmark-align-right" data-label="図">3</td><td class="mdmark-align-right" data-label="Chrome">51</td><td class="mdmark-align-right" data-label="Edge">53</td><td class="mdmark-align-right" data-label="Firefox">49</td><td class="mdmark-align-right" data-label="Safari">51</td><td class="mdmark-align-right" data-label="iOS Safari">63</td><td class="mdmark-align-right" data-label="Android Chrome">62</td></tr>
+      <tr><td data-label="文書">API リファレンス 3</td><td class="mdmark-align-right" data-label="行数">967</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">94</td><td class="mdmark-align-right" data-label="Edge">97</td><td class="mdmark-align-right" data-label="Firefox">93</td><td class="mdmark-align-right" data-label="Safari">73</td><td class="mdmark-align-right" data-label="iOS Safari">86</td><td class="mdmark-align-right" data-label="Android Chrome">96</td></tr>
+      <tr><td data-label="文書">設定の一覧 3</td><td class="mdmark-align-right" data-label="行数">1,133</td><td class="mdmark-align-right" data-label="表">7</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">132</td><td class="mdmark-align-right" data-label="Edge">118</td><td class="mdmark-align-right" data-label="Firefox">107</td><td class="mdmark-align-right" data-label="Safari">114</td><td class="mdmark-align-right" data-label="iOS Safari">125</td><td class="mdmark-align-right" data-label="Android Chrome">124</td></tr>
+      <tr><td data-label="文書">用語集 3</td><td class="mdmark-align-right" data-label="行数">44</td><td class="mdmark-align-right" data-label="表">1</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">5</td><td class="mdmark-align-right" data-label="Edge">5</td><td class="mdmark-align-right" data-label="Firefox">6</td><td class="mdmark-align-right" data-label="Safari">5</td><td class="mdmark-align-right" data-label="iOS Safari">6</td><td class="mdmark-align-right" data-label="Android Chrome">7</td></tr>
+      <tr><td data-label="文書">変更履歴 3</td><td class="mdmark-align-right" data-label="行数">325</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">6</td><td class="mdmark-align-right" data-label="Chrome">24</td><td class="mdmark-align-right" data-label="Edge">33</td><td class="mdmark-align-right" data-label="Firefox">39</td><td class="mdmark-align-right" data-label="Safari">38</td><td class="mdmark-align-right" data-label="iOS Safari">39</td><td class="mdmark-align-right" data-label="Android Chrome">27</td></tr>
+      <tr><td data-label="文書">設計方針 3</td><td class="mdmark-align-right" data-label="行数">409</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">45</td><td class="mdmark-align-right" data-label="Edge">46</td><td class="mdmark-align-right" data-label="Firefox">63</td><td class="mdmark-align-right" data-label="Safari">71</td><td class="mdmark-align-right" data-label="iOS Safari">59</td><td class="mdmark-align-right" data-label="Android Chrome">46</td></tr>
+      <tr><td data-label="文書">画面設計 3</td><td class="mdmark-align-right" data-label="行数">112</td><td class="mdmark-align-right" data-label="表">6</td><td class="mdmark-align-right" data-label="図">5</td><td class="mdmark-align-right" data-label="Chrome">11</td><td class="mdmark-align-right" data-label="Edge">10</td><td class="mdmark-align-right" data-label="Firefox">10</td><td class="mdmark-align-right" data-label="Safari">13</td><td class="mdmark-align-right" data-label="iOS Safari">9</td><td class="mdmark-align-right" data-label="Android Chrome">11</td></tr>
+      <tr><td data-label="文書">非機能要件 3</td><td class="mdmark-align-right" data-label="行数">129</td><td class="mdmark-align-right" data-label="表">2</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">16</td><td class="mdmark-align-right" data-label="Edge">15</td><td class="mdmark-align-right" data-label="Firefox">13</td><td class="mdmark-align-right" data-label="Safari">16</td><td class="mdmark-align-right" data-label="iOS Safari">12</td><td class="mdmark-align-right" data-label="Android Chrome">18</td></tr>
+      <tr><td data-label="文書">テストの手順 3</td><td class="mdmark-align-right" data-label="行数">467</td><td class="mdmark-align-right" data-label="表">2</td><td class="mdmark-align-right" data-label="図">2</td><td class="mdmark-align-right" data-label="Chrome">48</td><td class="mdmark-align-right" data-label="Edge">41</td><td class="mdmark-align-right" data-label="Firefox">33</td><td class="mdmark-align-right" data-label="Safari">44</td><td class="mdmark-align-right" data-label="iOS Safari">50</td><td class="mdmark-align-right" data-label="Android Chrome">33</td></tr>
+      <tr><td data-label="文書">運用の手順 3</td><td class="mdmark-align-right" data-label="行数">1,034</td><td class="mdmark-align-right" data-label="表">9</td><td class="mdmark-align-right" data-label="図">1</td><td class="mdmark-align-right" data-label="Chrome">92</td><td class="mdmark-align-right" data-label="Edge">116</td><td class="mdmark-align-right" data-label="Firefox">91</td><td class="mdmark-align-right" data-label="Safari">111</td><td class="mdmark-align-right" data-label="iOS Safari">124</td><td class="mdmark-align-right" data-label="Android Chrome">92</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<h3 class="mdmark-heading" id="用語"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-用語">用語<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#用語" aria-label="「用語」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-用語">
+<!-- table: plain -->
+<div class="mdmark-table" data-kind="plain">
+  <table tabindex="0" aria-label="表: 用語">
+    <thead><tr><th>用語</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td data-label="用語">印</td><td data-label="意味">HTML コメントで書く、記法の始まりと終わりの目印</td></tr>
+      <tr><td data-label="用語">範囲の印</td><td data-label="意味"><code>&lt;!-- /名前 --&gt;</code> の閉じの印と対で、間の Markdown を囲む印</td></tr>
+      <tr><td data-label="用語">書き方の警告</td><td data-label="意味">読めない指定とその直し方を、書く人へ知らせる枠</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<h3 class="mdmark-heading" id="変更の履歴"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-変更の履歴">変更の履歴<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#変更の履歴" aria-label="「変更の履歴」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-変更の履歴">
+<!-- table: data closed -->
+<div class="mdmark-table" data-kind="data">
+  <details class="mdmark-table-details">
+    <summary>表（3 行）</summary>
+  <table tabindex="0" aria-label="表: 変更の履歴">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">版<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">日付<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">変更<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="版">v0.1.0</td><td data-label="日付">2026-10-10</td><td data-label="変更">文書を描く土台を入れた</td></tr>
+      <tr><td data-label="版">v0.2.0</td><td data-label="日付">2026-11-04</td><td data-label="変更">拡張記法を入れた</td></tr>
+      <tr><td data-label="版">v0.2.1</td><td data-label="日付">2026-11-12</td><td data-label="変更">印刷でタブを全て出すようにした</td></tr>
+    </tbody>
+  </table>
+  </details>
+</div>
+</div>
+<h3 class="mdmark-heading" id="印の引数"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-印の引数">印の引数<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#印の引数" aria-label="「印の引数」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-印の引数">
+<!-- 1 行目に行の詳細（row-detail: 1） -->
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 印の引数">
+    <thead><tr><th><span class="mdmark-th">印<button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th>囲む範囲</th><th>引数</th></tr></thead>
+    <tbody>
+      <tr><td data-label="印"><span class="mdmark-row-head"><button class="mdmark-row-toggle" type="button" aria-expanded="false" aria-controls="row-detail-marks-1" aria-label="「table」の詳細"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><code>table</code></span></td><td data-label="囲む範囲">あり</td><td data-label="引数">種類・<code>+機能</code>・<code>-機能</code>・<code>closed</code></td></tr>
+      <tr class="mdmark-row-detail" id="row-detail-marks-1" hidden><td colspan="3"><p>表の機能は次の 3 つで、<code>+機能</code>・<code>-機能</code> で種類の機能に足し引きします。</p>
+<ul><li><code>sort</code>: 列の並べ替え</li><li><code>pin</code>: 先頭の列と見出し行のピン止め</li><li><code>filter</code>: 列の値での絞り込み</li></ul></td></tr>
+      <tr><td data-label="印"><code>tabs</code></td><td data-label="囲む範囲">あり</td><td data-label="引数">なし</td></tr>
+      <tr><td data-label="印"><code>fig</code></td><td data-label="囲む範囲">なし</td><td data-label="引数">ID</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+</div>
+<h2 class="mdmark-heading" id="注意書き"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-注意書き">注意書き<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#注意書き" aria-label="「注意書き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-注意書き">
+<div class="markdown-alert markdown-alert-note">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.25v3.75"/><path d="M8 5h.01"/></svg>補足</p>
+  <p>印は HTML コメントなので、GitHub で読んでも画面に出ません。</p>
+</div>
+<div class="markdown-alert markdown-alert-tip">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.25h4"/><path d="M6.75 14.25h2.5"/><path d="M8 1.75a4.25 4.25 0 00-2.6 7.6c.5.4.85.95.85 1.6v.1h3.5v-.1c0-.65.35-1.2.85-1.6A4.25 4.25 0 008 1.75z"/></svg>ヒント</p>
+  <p>同じ種類の表が続くときは、範囲の印で表をまとめて囲めます。</p>
+</div>
+<div class="markdown-alert markdown-alert-important">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.25 2.75h11.5v8H8.75l-3 2.5v-2.5h-3.5z"/><path d="M8 5v2.75"/><path d="M8 9.25h.01"/></svg>重要</p>
+  <p>範囲の印は、閉じの印 <code>&lt;!-- /名前 --&gt;</code> と対で書きます。</p>
+</div>
+<div class="markdown-alert markdown-alert-warning">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>警告</p>
+  <p>見出しの無いタブの範囲はタブにならず、中身がそのまま描かれます。</p>
+</div>
+<div class="markdown-alert markdown-alert-caution">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 1.75h5l3.75 3.75v5l-3.75 3.75h-5L1.75 10.5v-5z"/><path d="M8 5v3.5"/><path d="M8 10.75h.01"/></svg>注意</p>
+  <p>文書に書いたスクリプトは実行されません。</p>
+</div>
+<details class="markdown-alert markdown-alert-warning">
+  <summary class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>警告<svg class="mdmark-icon mdmark-disclosure" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></summary>
+  <p>閉じた注意書きは、題を押すと開きます。長い補足を畳んでおくときに使います。</p>
+</details>
+</div>
+<h2 class="mdmark-heading" id="図と表"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-図と表">図と表<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#図と表" aria-label="「図と表」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-図と表">
+<figure class="mdmark-figure" id="fig-arch">
+  <img src="./images/arch.svg" alt="使う側のページが mdmark を読み、mdmark が jsDelivr から配られる構成" width="560" height="200">
+  <figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>
+</figure>
+<figure class="mdmark-figure" id="fig-flow">
+  <img src="./images/flow.svg" alt="Markdown から印を読み、HTML にして操作を付けるまでの流れ" width="560" height="160">
+  <figcaption class="mdmark-figure-caption"><b>図 2</b>描くまでの流れ</figcaption>
+</figure>
+<figure class="mdmark-figure" id="fig-list">
+  <figcaption class="mdmark-figure-caption"><b>表 1</b></figcaption>
+  <div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 描く処理の段">
+    <thead><tr><th><span class="mdmark-th">段<button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th>受け持つもの</th></tr></thead>
+    <tbody>
+      <tr><td data-label="段">印を読む</td><td data-label="受け持つもの">印の範囲と引数を決める</td></tr>
+      <tr><td data-label="段">HTML にする</td><td data-label="受け持つもの">記法ごとの HTML を出す</td></tr>
+      <tr><td data-label="段">操作を付ける</td><td data-label="受け持つもの">並べ替え・タブの切り替えを付ける</td></tr>
+    </tbody>
+  </table>
+</div>
+</figure>
+<p>描く処理の流れは <a href="#fig-flow">図 2</a> のとおりで、段ごとの受け持ちは <a href="#fig-list">表 1</a> にまとめています。</p>
+</div>
+<h2 class="mdmark-heading" id="拡張"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-拡張">拡張<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#拡張" aria-label="「拡張」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-拡張">
+<p>使う側が <code>registerExtension</code> で足した印 <code>greet</code> は、文書にあるときだけ読み込まれます。</p>
+<!-- 拡張の印の場所: 拡張のモジュールが描いた後 -->
+<div class="mdmark-embed mdmark-embed-drawn"><p class="greet">Hello, world</p></div>
+<!-- 拡張の印の場所: 読み込み中 -->
+<div class="mdmark-embed" role="status">図を読み込んでいます</div>
+<!-- 拡張のモジュールを読めない（異常シナリオ）: 知らせの枠 -->
+<div class="mdmark-notice" role="status">
+  <strong class="mdmark-notice-title">この図を表示できません</strong>
+  <p>表示に使う拡張（<code>greet</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+</div>
+<!-- 拡張の引数が Schema に合わない（異常シナリオ）: 書き方の警告 -->
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- greet: World 2 --&gt;</code> の引数が、拡張 <code>greet</code> の決まりに合いません。直してから読み込み直してください。</p>
+  <ul>
+    <li>1 つ目の <code>World</code>: 英小文字だけで書いてください</li>
+    <li>2 つ目の <code>2</code>: 引数は 1 つだけ書けます</li>
+  </ul>
+</div>
+<p>引数が合わない印のほかは、そのまま描かれます。</p>
+</div>
+<h2 class="mdmark-heading" id="補足"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-補足">補足<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#補足" aria-label="「補足」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-補足" hidden="until-found">
+<p>この節は <code>&lt;!-- section: closed --&gt;</code> で閉じた状態から始まります。</p>
+<h3 class="mdmark-heading" id="注意"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-注意">注意<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#注意" aria-label="「注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-注意">
+<p>閉じた節の中の見出しへのリンクを開くと、その節が開いてから移ります。</p>
+</div>
+</div>
+<h2 class="mdmark-heading" id="書き方を誤った箇所"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-書き方を誤った箇所">書き方を誤った箇所<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#書き方を誤った箇所" aria-label="「書き方を誤った箇所」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-書き方を誤った箇所">
+<p>読めない指定があっても本文は描かれ、その箇所に書き方の警告が出ます。</p>
+<!-- 表の印に知らない種類（異常シナリオ） -->
+<div class="mdmark-table" data-kind="default">
+  <div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- table: unknown +sort --&gt;</code> の種類 <code>unknown</code> は使えません。使える種類は <code>data</code>・<code>plain</code> です。既定の種類に <code>+sort</code> を当てて描いています。</p>
+</div>
+  <table tabindex="0" aria-label="表: 表の印の誤り">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">値<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="名前">幅</td><td class="mdmark-align-right" data-label="値">640</td></tr>
+      <tr><td data-label="名前">高さ</td><td class="mdmark-align-right" data-label="値">480</td></tr>
+    </tbody>
+  </table>
+</div>
+<!-- タブ名にする見出しの無いタブの範囲（異常シナリオ） -->
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を書いてください。範囲の中身はそのまま描いています。</p>
+</div>
+<p>macOS では Homebrew、Windows では winget で入れます。</p>
+<!-- 切れた参照（異常シナリオ） -->
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に書くか、リンク先を直してください。</p>
+</div>
+<p>詳しくは <a href="#fig-missing">図</a> を見てください。</p>
+<!-- 知らない開閉の指定（異常シナリオ） -->
+<h3 class="mdmark-heading" id="既定の開閉の誤り"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-既定の開閉の誤り">既定の開閉の誤り<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#既定の開閉の誤り" aria-label="「既定の開閉の誤り」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-既定の開閉の誤り">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- section: hidden --&gt;</code> の <code>hidden</code> は使えません。使える値は <code>closed</code>・<code>open</code> です。この節は開いた状態で描いています。</p>
+</div>
+<p>節の中身はそのまま読めます。</p>
+</div>
+</div>
+    </article>
+  </main>
+</body>
+</html>
