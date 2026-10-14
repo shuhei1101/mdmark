@@ -1,0 +1,59 @@
+title: "文書を印刷する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        notes: '配色はダーク（`prefers-color-scheme: dark`）'
+      - name: 見本の Markdown
+        description: 閉じた折り畳み（`details`）とリンクと表を持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 折り畳みを全て開く
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 印刷の出力
+    expected:
+      - 折り畳み（`details`）が開いている
+      - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、地の色は外れる
+      - リンクの後ろに URL の文字が出ている
+      - '表に改ページを避ける指定（`break-inside: avoid`）が当たっている'
+    test: test_normal
+  - name: 正常シナリオ（印刷を終える）
+    setup:
+      - name: 印刷中のページ
+        description: 正常シナリオで印刷の前のイベントを送った後のページ
+        notes: 印刷の前に開いていた折り畳みを 1 つ、閉じていた折り畳みを 1 つ持つ
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        B->>M: 印刷の後のイベント
+        M->>M: 印刷の前の開閉に戻す
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前に閉じていた折り畳みが閉じている
+      - 印刷の前に開いていた折り畳みが開いている
+    test: test_normal_when_print_finished
+lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
+issue: 3
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 印刷・PDF を受け取る人
+    interest: 紙・PDF でも、畳まれた中身とリンクの行き先が読める
+trigger: 読む人が、mdmark の描いた文書を開いたページでブラウザの印刷を始める
+preconditions:
+  - ページが mdmark で文書を描いている
+  - 設定の `features.print` が `true`（既定）
+success_guarantee: 印刷の出力で、折り畳みの中身・リンクの URL が読め、配色は明るい配色になる。
+minimal_guarantee: 印刷を終えた後、画面の折り畳みは印刷の前の開閉に戻る。
+test_file: tests/e2e/単一ユースケース/文書を印刷する.spec.ts

@@ -1,0 +1,280 @@
+title: "ライブラリ本体 / 描画"
+lead: Markdown を本文の HTML 文字列にする処理。markdown-it で解析し、トークンの段で印を拾い GitHub Flavored Markdown の不足と画面設計の属性を足し、sanitize-html で許可していない要素・属性・URL を落とす。DOM に頼らず、ブラウザと Node で同じ文字列を返す。
+directory: |-
+  ```tree
+  src/render/
+  ├── index.ts     # render と renderDocument
+  ├── parser.ts    # markdown-it の解析器と、足すコアルール
+  ├── marks.ts     # 印を拾って置き換えるコアルール
+  └── sanitize.ts  # sanitize-html の設定と sanitize
+  ```
+data_models:
+  - name: Mark
+    title: 印
+    container: src/render/marks.ts
+    usecase: 共通
+    summary: '文書から拾った `<!-- 名前: 引数 -->` 1 つ'
+    properties:
+      - name: name
+        type: string
+        description: 印の名前
+      - name: args
+        type: string[]
+        description: 空白で区切った引数
+  - name: RenderEnv
+    title: 解析の環境
+    container: src/render/parser.ts
+    summary: markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印
+    properties:
+      - name: libraries
+        type: Record<string, LibraryEntry>
+        description: 対応表（どの印を印の場所の要素にするか）
+      - name: featureArgs
+        type: string[]
+        description: '`features` の印の引数を書いた順に並べたもの（コアルールが足す）'
+  - name: RenderedDocument
+    title: 描いた文書
+    container: src/render/index.ts
+    summary: 本文の HTML と、文書の印で決まった機能のオン・オフ
+    properties:
+      - name: html
+        type: string
+        description: 本文の HTML 文字列
+      - name: features
+        type: Record<string, boolean>
+        description: '`resolveFeatures` が返したオン・オフ。`mount` と、機能を作る Issue が読む'
+constants:
+  - name: MARK_PATTERN
+    title: 印の書式
+    container: src/render/marks.ts
+    summary: 生の HTML の中の印を拾う正規表現
+    value: /<!--\s*([a-z][a-z0-9-]*):\s*(.*?)\s*-->/gs
+  - name: FEATURES_MARK
+    title: 機能の印の名前
+    container: src/render/marks.ts
+    summary: 機能のオン・オフを書く印の名前
+    value: '"features"'
+  - name: ALIGN_VALUES
+    title: 列の揃えの値
+    container: src/render/sanitize.ts
+    summary: class `mdmark-align-{値}` に移す `text-align` の値
+    value: '["left", "center", "right"]'
+  - name: SANITIZE_OPTIONS
+    title: 落とす設定
+    container: src/render/sanitize.ts
+    summary: sanitize-html に渡す設定
+    value: 下の entries
+    entries:
+      - key: allowedTags
+        value: 既定 + `img`・`del`・`details`・`summary`・`input`
+      - key: allowedAttributes
+        value: '`a`: `href`・`title` / `img`: `src`・`alt`・`title` / `details`: `open` / `input`: `type`・`disabled`・`checked` / `td`: `data-label` / `pre`・`table`: `tabindex`・`aria-label` / `div`: `data-mdmark-slot`・`data-mdmark-args`・`role`（値は `status` だけ）'
+      - key: allowedClasses
+        value: '`code`: `language-*` / `li`: `task-list-item` / `th`・`td`: `mdmark-align-*` / `div`: `mdmark-embed`。ここに無い要素は class を持てない（`allowedAttributes` に `class` を載せない）'
+      - key: allowedSchemes
+        value: '`http`・`https`・`mailto`（相対 URL は既定で許す）'
+      - key: parseStyleAttributes
+        value: '`false`（postcss を呼ばない）'
+      - key: transformTags
+        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
+functions:
+  - name: render
+    title: Markdown を HTML 文字列にする
+    container: src/render/index.ts
+    kind: 関数
+    scope: public
+    summary: 公開関数。設定に既定を当てて `renderDocument` を呼び、本文の HTML だけを返す
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: HTML にする Markdown
+      - name: opts
+        type: '{ config?: MdmarkConfig }'
+        required: false
+        default: '{}'
+        description: 設定
+    returns:
+      type: string
+      description: 本文の HTML 文字列
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
+      - '#functions[renderDocument]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#
+    unit_tests:
+      - name: test_render
+        case: 正常
+        summary: 設定を渡さなくても本文の HTML を返す
+        condition: '`# 見出し` だけの Markdown、`opts` 無し'
+        mock: なし
+        expected: '`<h1>見出し</h1>` を含む文字列'
+  - name: renderDocument
+    title: 文書を描く
+    container: src/render/index.ts
+    kind: 関数
+    scope: public
+    summary: 解析器で Markdown を HTML にし、`sanitize` をかけ、拾った `features` の印を `resolveFeatures` で重ねた結果と一緒に返す
+    description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す'
+    args:
+      - name: options
+        type: '{ markdown: string; config: ResolvedConfig }'
+        required: true
+        description: '`markdown` は Markdown、`config` は既定を当てた設定'
+    returns:
+      type: RenderedDocument
+      description: 本文の HTML と機能のオン・オフ
+    callees:
+      - '#functions[createParser]'
+      - '#functions[sanitize]'
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
+    unit_tests:
+      - name: test_render_document
+        case: 正常
+        summary: 機能の印を重ねたオン・オフを返し、印は本文に残さない
+        condition: '`<!-- features: -print -->` と段落。設定の `features` は `{ print: true }`'
+        mock: なし
+        expected: '`features` が `{ print: false }`、`html` に `<!--` が無い'
+      - name: test_render_document_when_same_input
+        case: 正常
+        summary: 同じ入力には同じ文字列を返す（解析器を使い回しても前の呼び出しの印が残らない）
+        condition: 印を持つ文書を 2 回描く
+        mock: なし
+        expected: 2 回の `html` と `features` が等しい
+  - name: createParser
+    title: 解析器を作る
+    container: src/render/parser.ts
+    kind: 関数
+    scope: internal
+    summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ タスクリスト → www の自動リンク → 取り消し線の `del` → 表の属性。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    returns:
+      type: MarkdownIt
+      description: 解析器
+    unit_tests:
+      - name: test_create_parser_when_task_list
+        case: 正常
+        summary: タスクリストの項目をチェックボックスにする
+        condition: '`- [x] 済み` と `- [ ] 未`'
+        mock: なし
+        expected: '`li` が class `task-list-item` を持ち、頭に `<input type="checkbox" disabled checked>` と `<input type="checkbox" disabled>` があり、`[x]`・`[ ]` の文字が残らない'
+      - name: test_create_parser_when_autolink
+        case: 正常
+        summary: www はリンクにし、スキームも www も無いドメインはリンクにしない
+        condition: '`www.example.com と example.com と https://example.org`'
+        mock: なし
+        expected: '`href="http://www.example.com"` と `href="https://example.org"` の 2 つだけがリンク'
+      - name: test_create_parser_when_strikethrough
+        case: 正常
+        summary: 取り消し線を `del` にする
+        condition: '`~~消す~~`'
+        mock: なし
+        expected: '`<del>消す</del>`（`<s>` が無い）'
+      - name: test_create_parser_when_table
+        case: 正常
+        summary: 表に読み上げの名前と `tabindex`、セルに列名を付ける
+        condition: '`## 変数` の後に、見出しが `**列A**` と `列B` の表'
+        mock: なし
+        expected: '`<table tabindex="0" aria-label="表: 変数">`、`td` が `data-label="列A"` と `data-label="列B"` を持つ'
+      - name: test_create_parser_when_table_without_heading
+        case: 正常
+        summary: 直前に見出しが無ければ読み上げの名前は `表`
+        condition: 見出しの無い文書の表
+        mock: なし
+        expected: '`aria-label="表"`'
+      - name: test_create_parser_when_code_block
+        case: 正常
+        summary: コードブロックの `pre` に読み上げの名前と `tabindex` を付ける
+        condition: 情報文字列 `ts` のコードブロックと、情報文字列の無いコードブロック
+        mock: なし
+        expected: '`<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">` と `<pre tabindex="0" aria-label="コード">`'
+      - name: test_create_parser_when_info_has_quote
+        case: 正常
+        summary: 情報文字列に `"` があっても、コードブロックの読み上げの名前が途中で切れない
+        condition: 情報文字列 `ts"x` のコードブロック
+        mock: なし
+        expected: '`aria-label="コード: ts&quot;x"`'
+  - name: takeMarks
+    title: 印を拾って置き換える
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`html_block`・`html_inline` のトークンの印を拾い、`features` は引数を `env.featureArgs` へ足し、対応表にある名前は `renderEmbed` の HTML に置き換え、それ以外は取り除く
+    description: コードブロックと行内のコードは `html_*` のトークンにならないため、中の印のような文字はそのまま残る
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態（`state.env` は `RenderEnv`）
+    side_effects: '`state.tokens` の中身と `state.env.featureArgs` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderEmbed]
+    unit_tests:
+      - name: test_take_marks
+        case: 正常
+        summary: 機能の印の引数を書いた順に拾い、本文から取り除く
+        condition: '行頭の `<!-- features: +a -b -->` と、文中の `<!-- features: +c -->`'
+        mock: なし
+        expected: '`env.featureArgs` が `["+a", "-b", "+c"]`、描いた HTML に印が無い'
+      - name: test_take_marks_when_library_mark
+        case: 正常
+        summary: 対応表にある印を印の場所の要素にする
+        condition: '`<!-- test-lib: a b -->`、対応表に `test-lib`'
+        mock: なし
+        expected: '`renderEmbed({ name: "test-lib", args: ["a", "b"] })` の HTML が入る'
+      - name: test_take_marks_when_unknown_mark
+        case: 正常
+        summary: 未知の印を取り除き、印でないコメントとコードの中はそのままにする
+        condition: '`<!-- unknown: 1 -->`・`<!-- ただのコメント -->`・コードブロックの中の `<!-- features: -print -->`'
+        mock: なし
+        expected: '`unknown` が消え、コードブロックの中は文字として残り、`env.featureArgs` は空'
+  - name: sanitize
+    title: 許可していないものを落とす
+    container: src/render/sanitize.ts
+    kind: 関数
+    scope: internal
+    summary: '`SANITIZE_OPTIONS` で sanitize-html を呼ぶ'
+    args:
+      - name: html
+        type: string
+        required: true
+        description: 解析器が描いた HTML
+    returns:
+      type: string
+      description: 落とした後の HTML
+    unit_tests:
+      - name: test_sanitize
+        case: 正常
+        summary: スクリプトと `style` を落とし、折り畳みを残す
+        condition: '`<script>`・`<a onclick="x" href="javascript:x">`・`<p style="position:fixed">`・`<details><summary>`'
+        mock: なし
+        expected: '`script`・`onclick`・`javascript:`・`style` が無く、`details` と `summary` が残る'
+      - name: test_sanitize_when_align
+        case: 正常
+        summary: 列の揃えを class に移す
+        condition: '`<td style="text-align:right">` と `<td style="text-align:justify;color:red">`'
+        mock: なし
+        expected: 前者が `class="mdmark-align-right"`、後者は class も `style` も持たない
+      - name: test_sanitize_when_input
+        case: 正常
+        summary: 入力欄を無効のチェックボックスに付け直す
+        condition: '`<input type="text" value="x">` と `<input type="checkbox" checked>`'
+        mock: なし
+        expected: '`<input type="checkbox" disabled />` と `<input type="checkbox" disabled checked />`'
+      - name: test_sanitize_when_classes
+        case: 正常
+        summary: 許した要素の許した class だけを残し、`role` は `status` だけを残す
+        condition: '`<code class="language-ts evil">`・`<div class="mdmark-embed other" data-mdmark-slot="x" role="status">`・`<p class="x">`・`<div class="mdmark-embed" role="alert">`'
+        mock: なし
+        expected: '`class="language-ts"` と `class="mdmark-embed"`。`data-mdmark-slot` と `role="status"` は残る。`<p>` は class を持たず、`role="alert"` が無い（値の無い `role` 属性は残る）'
+      - name: test_sanitize_when_tabindex
+        case: 正常
+        summary: 文書に書いた `tabindex` を 0 にする
+        condition: '`<table tabindex="5">`'
+        mock: なし
+        expected: '`<table tabindex="0">`'
+test_files:
+  - tests/unit/src/render/index.test.ts
+  - tests/unit/src/render/parser.test.ts
+  - tests/unit/src/render/marks.test.ts
+  - tests/unit/src/render/sanitize.test.ts

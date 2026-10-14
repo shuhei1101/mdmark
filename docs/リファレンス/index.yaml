@@ -1,0 +1,8 @@
+summary: 名前から引く一覧
+items:
+  - page: API.md
+    summary: 公開関数と CSS 変数の一覧
+  - page: 設定.md
+    summary: 設定のキーと既定の一覧
+  - page: 用語集.md
+    summary: 印・テーマ・機能・知らせの枠の用語の意味

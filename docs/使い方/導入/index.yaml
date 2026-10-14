@@ -1,0 +1,6 @@
+summary: mdmark を使うページへ組み込む手順
+items:
+  - page: 配布物を読み込む.md
+    summary: 版を固定した URL で JavaScript と CSS を読み込む
+  - page: 文書を描く.md
+    summary: 配布物を読んだページで `mount` を呼び、要素の中に Markdown を描く

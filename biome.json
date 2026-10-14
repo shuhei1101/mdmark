@@ -1,0 +1,20 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "files": {
+    "includes": [
+      "**",
+      "!dev",
+      "!docs",
+      "!dist",
+      "!node_modules",
+      "!package-lock.json",
+      "!test-results",
+      "!playwright-report",
+      "!.vitest"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2
+  }
+}

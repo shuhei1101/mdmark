@@ -1,0 +1,124 @@
+title: "文書を描く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、描く先の要素を 1 つ持つ HTML
+        notes: 設定は渡さない（既定を当てる）
+      - name: 見本の Markdown
+        description: 見出し・段落・リスト・表・コードブロック・リンクを持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: 要素と Markdown を渡して描かせる
+        M->>M: Markdown を解析し、印を拾う
+        M->>M: スクリプトを落とす
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 描く先の要素の中に、見出し・段落・リスト・表・コードブロック・リンクの要素がある
+      - リンクの要素の `href` が Markdown に書いた URL
+    test: test_normal
+  - name: 正常シナリオ（本文を差し替える）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオで見本の Markdown を描いた後のページ
+      - name: 差し替える Markdown
+        description: 見出しを 1 つだけ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 差し替える Markdown を渡す
+        M->>M: 本文だけを描き直す
+        M-->>P: 要素の中を新しい本文にする
+        P-->>U: 新しい文書を表示
+    expected:
+      - 描く先の要素の中が、差し替えた Markdown の見出しだけになる
+      - 前の本文の段落・表が残っていない
+    test: test_normal_when_updated
+  - name: 正常シナリオ（片付ける）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオで見本の Markdown を描いた後のページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 片付けさせる
+        M->>M: 描いたものとイベントを片付ける
+        M-->>P: 要素の中を空にする
+    expected:
+      - 描く先の要素の中が空になる
+      - 片付けた後に本文の差し替えを呼んでも、要素の中に何も描かれない
+    test: test_normal_when_destroyed
+  - name: 正常シナリオ（未知の印がある）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 未知の印を持つ Markdown
+        description: '段落の間に `<!-- unknown: 1 -->` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 要素と Markdown を渡して描かせる
+        M->>M: 未知の印を無視する
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 印の前後の段落を表示
+    expected:
+      - 印の前後の段落が描かれている
+      - 本文に印の文字（`<!--`・`unknown`）が出ていない
+    test: test_normal_when_unknown_mark
+  - name: 正常シナリオ（文書にスクリプトがある）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。スクリプトが実行されたら立つ旗を `window` で見られる
+      - name: スクリプトを書いた Markdown
+        description: '`script` 要素・`onclick` 属性を持つリンク・`javascript:` の URL のリンク・折り畳み（`details`）を持つ文書'
+        notes: どのスクリプトも、実行されたら `window` の旗を立てる
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 要素と Markdown を渡して描かせる
+        M->>M: script 要素・イベント属性・javascript: の URL を落とす
+        M-->>P: 要素の中に本文を描く
+        U->>P: リンクを押す
+        P-->>U: スクリプトは実行されない
+    expected:
+      - 描いた本文に `script` 要素・`onclick` 属性・`javascript:` の URL が無い
+      - リンクを押しても `window` の旗が立たない
+      - 折り畳み（`details`）は描かれている
+    test: test_normal_when_script_in_markdown
+lead: 使う側のページが、要素と Markdown と設定を mdmark に渡し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
+issue: 3
+primary_actor: mdmark を使うアプリのページ
+stakeholders:
+  - name: 文書を読む人
+    interest: Markdown の見出し・段落・リスト・表・コードブロック・リンクが文書として読める
+  - name: 使う側のアプリの開発者
+    interest: サーバーは Markdown と設定を渡すだけで、描く処理を自前で持たない
+trigger: 使う側のページが、配布物を読んだ後に文書を描く公開関数を呼ぶ
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 描く先の要素がページにある
+success_guarantee: 描く先の要素の中に、Markdown を HTML にした本文が出る。文書に書いたスクリプトは実行されない。
+minimal_guarantee: 未知の印や描けない箇所があっても、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/文書を描く.spec.ts

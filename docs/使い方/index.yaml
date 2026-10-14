@@ -1,0 +1,6 @@
+summary: 導入と使い方の手順
+items:
+  - page: 導入/
+    summary: mdmark を使うページへ組み込む手順
+  - page: カスタマイズ/
+    summary: 見た目と機能を使う側で変える手順

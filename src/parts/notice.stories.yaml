@@ -1,0 +1,23 @@
+title: Parts/Notice
+stories:
+  - name: Figure
+    parameters:
+      server:
+        id: notice
+    args:
+      name: chart
+      figure: true
+  - name: Block
+    parameters:
+      server:
+        id: notice
+    args:
+      name: tabs
+      figure: false
+  - name: LongName
+    parameters:
+      server:
+        id: notice
+    args:
+      name: sequence-diagram-with-very-long-component-name
+      figure: true

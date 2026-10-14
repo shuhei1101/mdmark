@@ -1,0 +1,64 @@
+title: "テスト実行方法"
+layers:
+  - name: 非機能要件テスト
+    run_all: 未確定
+  - name: E2E テスト
+    description: Playwright（`@playwright/test`）を Chromium と Firefox の 2 つのプロジェクトで流す。ブラウザを使わない『配布物をビルドして検査する』は Chromium のプロジェクトだけで流れ、Firefox の分は skip になる
+    prerequisites:
+      - '`npm ci` で依存を入れ、`npx playwright install chromium firefox` でブラウザを入れてある'
+      - 『配布物をビルドして検査する』が一時フォルダのクローンで `npm ci` を流すため、npm レジストリへの接続が要る
+    run_all: |-
+      ```bash
+      npm run test:e2e
+      ```
+    run_one:
+      label: シナリオ
+      command: |-
+        ```bash
+        npx playwright test {シナリオファイルパス}
+        ```
+    duration: 全件で数十秒（作業ツリーのクローンと `npm ci` を含む）
+    external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
+  - name: 結合テスト（フロント）
+    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す
+    prerequisites:
+      - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
+    run_all: |-
+      ```bash
+      npm run test:integration
+      ```
+    run_one:
+      label: ファイル
+      command: |-
+        ```bash
+        npx vitest run --project 'integration*' {テストファイルパス}
+        ```
+  - name: 結合テスト（バック）
+    run_all: 未確定
+  - name: 単体テスト（フロント）
+    description: Vitest の `unit` プロジェクト（Node）と、DOM を使う `*.browser.test.ts` を流す `unit-browser` プロジェクト（Chromium）で流す
+    prerequisites:
+      - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
+    run_all: |-
+      ```bash
+      npm run test:unit
+      ```
+    run_one:
+      label: ファイル
+      command: |-
+        ```bash
+        npx vitest run --project 'unit*' {テストファイルパス}
+        ```
+    notes:
+      単体と結合を続けて流す: |-
+        ```bash
+        npm test
+        ```
+
+        `npm run test:unit` のあとに `npm run test:integration` を流す。E2E は含まない。
+  - name: 単体テスト（バック）
+    run_all: 未確定
+  - name: 外部疎通テスト
+    run_all: 未確定
+  - name: lint
+    run_all: 未確定

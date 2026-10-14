@@ -1,0 +1,30 @@
+title: "biome"
+kind: "CLI"
+version:
+  current: 2.5.15
+  latest: 2.5.15
+  checked_on: '2026-10-13'
+  source: package.json
+  pinning: 完全一致
+catalogs:
+  - name: コマンド
+    version: 2.5.15
+    entries:
+      - name: biome check
+        kind: コマンド
+        purpose: lint と整形の違反を検査する（`--write` で直す）
+lead: JavaScript・TypeScript・CSS・JSON の lint と整形を 1 つで行うツール。
+purl: pkg:npm/%40biomejs/biome@2.5.15
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: biomejs/biome
+verification:
+  state: 済
+  date: '2026-10-13'
+  detail: 'PoC #14 で `biome check .` が整形の違反を出し、`biome check --write .` の後に 0 件になった'
+license: MIT または Apache-2.0（商用利用可）
+docs_url: https://biomejs.dev/reference/cli/
+install: |-
+  ```bash
+  npm i -D -E @biomejs/biome@2.5.15
+  ```

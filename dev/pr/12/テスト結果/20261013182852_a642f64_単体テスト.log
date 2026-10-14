@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project unit
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-project-bootstrap
+
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  18:28:55
+   Duration  829ms (import 39%, tests 35%, transform 21%, worker 5%)
+
+exit=0

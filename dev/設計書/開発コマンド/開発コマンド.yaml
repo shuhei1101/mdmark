@@ -1,0 +1,146 @@
+title: "開発コマンド"
+categories:
+  - name: 環境構築（クローン直後）
+    prerequisites:
+      - Node.js v24
+      - 取り込み後の追従（pull 後）の `npm ci` を流してある
+    commands: |-
+      結合テストと E2E テストが使う Chromium と Firefox を入れる。
+
+      ```bash
+      npx playwright install chromium firefox
+      ```
+    effects: '`~/.cache/ms-playwright` に Chromium と Firefox（合わせて数百 MB）をダウンロードする。一度入れれば、どの作業ツリーからも使える'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: コマンドが終了コード 0 で終わり、続けて `npm run test:integration` のブラウザテストと `npm run test:e2e` の Chromium・Firefox が通ることを確かめた
+  - name: 取り込み後の追従（pull 後）
+    prerequisites:
+      - Node.js v24
+    commands: |-
+      ```bash
+      npm ci
+      ```
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: '`npm ci` が終了コード 0 で終わり、脆弱性 0 件を確かめた'
+  - name: 依存の追加・更新・削除
+    commands: |-
+      版を完全一致で固定して追加・更新する。
+
+      ```bash
+      npm i -D -E {パッケージ}@{版}
+      ```
+
+      外す。
+
+      ```bash
+      npm uninstall {パッケージ}
+      ```
+    effects: '`package.json` と `package-lock.json` を書き換える'
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: 追加は vitest・esbuild・typescript・@biomejs/biome・@types/node で、外すのは作業ツリーの控えで `@types/node` を外し、`package.json` から消えることを確かめた
+  - name: 起動・停止
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    commands: |-
+      Storybook で部品を見る。
+
+      1. 描画の口を立てる（`Ctrl+C` で止める）
+
+      ```bash
+      RENDER_PORT={描画の口のポート} npm run storybook:render
+      ```
+
+      2. 別の端末で Storybook を立てる（`Ctrl+C` で止める）
+
+      ```bash
+      RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} npm run storybook -- --host 127.0.0.1 --exact-port -p {ポート}
+      ```
+    verification:
+      state: 済
+      date: '2026-10-14'
+      detail: '`RENDER_PORT=46501 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46501 npm run storybook -- --host 127.0.0.1 --exact-port -p 46502` を立て、`/index.json` に 4 つのストーリー（`parts-notice--figure` など）が載り、`/render/notice` が部品の HTML を、無い部品が 404 を返すことを確かめた。Playwright で開いた `iframe.html?id=` の 4 つのストーリーが、`#storybook-root` にエラー無く描かれた。2 つのプロセスを `kill` で止めると待受が閉じた'
+  - name: テスト
+    refs:
+      - dev/設計書/テスト/テスト実行方法#
+  - name: 静的検査
+    commands: |-
+      lint と整形（Biome）。
+
+      ```bash
+      npm run lint
+      ```
+
+      型検査（TypeScript）。
+
+      ```bash
+      npm run typecheck
+      ```
+    verification:
+      state: 済
+      date: '2026-10-13'
+      detail: どちらも違反・型エラー 0 件で終わることを確かめた
+  - name: ビルド・生成
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    commands: |-
+      `version.ini` の版を埋めて `dist/` に配布物を書く。
+
+      ```bash
+      npm run build
+      ```
+
+      渡した版を埋めて書く。
+
+      ```bash
+      npm run build -- --version v{版}
+      ```
+    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 256KB を超えると、終了コード 1 で終わり `dist/` は残らない'
+    verification:
+      state: 済
+      date: '2026-10-14'
+      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`（185KB）・`index.css`・`THIRD_PARTY_LICENSES.txt` が書かれることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないことは、単体テストで確かめた'
+  - name: 取り込み前の検査
+    commands: 未確定
+  - name: 管理作業
+    prerequisites:
+      - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で流す
+      - release は `version.ini` を打つ版へ更新した後、hotfix は打つ版を決めた後
+    commands: |-
+      版のタグが指す commit に配布物を入れる（release と hotfix で、master へマージする前に流す）。
+
+      1. 依存を lock どおりに入れる
+
+      ```bash
+      npm ci
+      ```
+
+      2. 打つ版を埋めてビルドする
+
+      ```bash
+      npm run build -- --version v{版}
+      ```
+
+      3. `dist/` に差分があるかを確かめる（出力が空なら手順 4 を飛ばす）
+
+      ```bash
+      git status --porcelain dist
+      ```
+
+      4. `dist/` を commit して対象のブランチへ push する
+
+      ```bash
+      git add dist
+      git commit -m "v{版} の配布物を入れる"
+      git push origin {対象のブランチ}
+      ```
+    effects: 対象のブランチへ `dist/` の commit を push する。`dist/` が変わらなければ commit は要らない
+    verification:
+      state: 未確認
+      detail: 手順 1・2・3（`npm ci`、`npm run build -- --version v{版}`、`git status --porcelain dist` が `?? dist/` を出す）は確かめた。手順 4 は対象のブランチへ push して外へ書き込むため走らせていない

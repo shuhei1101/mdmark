@@ -1,0 +1,144 @@
+title: "文書をHTML文字列にする"
+entry:
+  kind: operation
+  value: '`render(markdown, opts)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: DOM を使わずに Markdown を HTML 文字列にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: ビルドした `dist/index.js` を `import()` で読む。`document` を持たない
+      - name: 見本の Markdown
+        description: 見出し・段落・リスト・表（見出しが `列A`・`列B`、`列B` が右寄せ）・コードブロック（`ts`）・リンクを持つ文書
+        notes: '`opts` は渡さない'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: Markdown を解析し、印を拾う
+        M->>M: 許可していない要素・属性・URL を落とす
+        M-->>C: HTML 文字列
+    expected:
+      - '`<h1>`・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
+      - '`<td>` が同じ列の見出しの文言を `data-label`（`列A`・`列B`）に持つ'
+      - '`列B` の `<th>` と `<td>` が class `mdmark-align-right` を持ち、文字列に `style=` が無い'
+      - 文字列を描く先の要素（class `mdmark`）は含まない
+    test: test_normal
+  - name: 正常系（GitHub Flavored Markdown の拡張）
+    summary: タスクリスト・取り消し線・www の自動リンクを GitHub と同じ要素にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 拡張の記法を持つ Markdown
+        description: '`- [x] 済み` と `- [ ] 未` のリスト・`~~消す~~`・`www.example.com`・`example.com` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: タスクリスト・取り消し線・www の自動リンクの規則を当てる
+        M-->>C: HTML 文字列
+    expected:
+      - '`済み` の項目に `<input type="checkbox" disabled checked>` があり、`未` の項目の `input` は `checked` を持たない'
+      - タスクの `<li>` が class `task-list-item` を持つ
+      - '`~~消す~~` が `<del>消す</del>` になる'
+      - '`www.example.com` が `href="http://www.example.com"` のリンクになり、`example.com` はリンクにならない'
+    test: test_normal_when_gfm_extensions
+  - name: 正常系（印とスクリプトを落とす）
+    summary: 印のコメントと、文書に書いたスクリプト・`style` を出力から落とす
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 印とスクリプトを書いた Markdown
+        description: '`<!-- features: +a -b -->`・`<!-- unknown: 1 -->`・`script` 要素・`onclick` 属性を持つリンク・`javascript:` の URL のリンク・`style="position:fixed"` を持つ段落・`<input type="text" value="x">`・`details` と `summary` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 印を拾って取り除く
+        M->>M: script 要素・on で始まる属性・javascript: の URL・style 属性を落とす
+        M-->>C: HTML 文字列
+    expected:
+      - 文字列に `<!--`・`features`・`unknown` が無い
+      - 文字列に `<script`・`onclick`・`javascript:`・`style=` が無い
+      - 文書に書いた `<input type="text">` が `<input type="checkbox" disabled>` になり、`value` を持たない
+      - '`<details>` と `<summary>` が残る'
+      - '`script` 要素の中の文字が本文に出ない'
+    test: test_normal_when_marks_and_scripts
+  - name: 正常系（外部ライブラリの印）
+    summary: 外部ライブラリの印を、読み込み中の印の場所の要素に置き換える。モジュールは読まない
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 外部ライブラリの印を持つ Markdown
+        description: '段落の間に `<!-- test-lib: a b -->` を持つ文書'
+      - name: 設定
+        description: '`opts.config.libraries` に `{ "test-lib": "https://example.invalid/test-lib.js" }`'
+      - name: Mock
+        description: 差し替える依存は無い（`render` は URL を読まないため、存在しないホストを渡す）
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config })
+        M->>M: 対応表にある印を印の場所の要素に置き換える
+        M-->>C: HTML 文字列
+    expected:
+      - 印の位置に `<div class="mdmark-embed" data-mdmark-slot="test-lib" data-mdmark-args="a b" role="status">図を読み込んでいます</div>` がある
+      - 印の前後の段落がある
+      - 文字列に外部ライブラリの URL が無い
+    test: test_normal_when_library_mark
+lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
+idempotent: true
+side_effects: なし（外部ライブラリも読まない）
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+request:
+  - name: markdown
+    type: string
+    required: true
+    location: argument
+    description: HTML にする Markdown
+  - name: opts.config
+    type: MdmarkConfig
+    required: false
+    default: なし（全てのキーに既定を当てる）
+    location: argument
+    description: '`mount` の `opts.config` と同じ。この操作が読むのは `libraries` の名前（どの印を印の場所の要素にするか）だけ'
+response:
+  - name: '-'
+    type: string
+    description: 本文の HTML 文字列。描く先の要素は含まない。使う側が class `mdmark` の要素の中に置くと mdmark の CSS が当たる
+response_notes: 同じ `markdown` と `opts` には、ブラウザでも Node でも同じ文字列を返す。
+exceptions:
+  - name: なし（正常終了）
+    condition: 常に HTML 文字列を返す。未知の印と許可していない要素・属性は落とす
+constraints:
+  - item: 印の書式
+    constraint: '`<!-- {名前}: {引数} -->`。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は空白で区切る。コードブロックと行内のコードの中は印として扱わない'
+  - item: 印の扱い
+    constraint: '`features` の印は機能のオン・オフとして拾い、対応表にある名前の印は印の場所の要素に置き換え、それ以外は取り除く。どの印も出力にコメントとして残さない'
+  - item: 印の場所の要素
+    constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`'
+  - item: 残す要素・属性
+    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` を足す。`input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけ。`style` 属性は残さない。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で書いた `pre`・`table` は、書いた `aria-label` を残し、`tabindex` は `0` にする）
+    notes: dev/設計書/外部ライブラリ/sanitize-html
+  - item: URL のスキーム
+    constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す'
+  - item: 列の揃え
+    constraint: 表の列の揃えは `text-align` の値（`left`・`center`・`right`）だけを class `mdmark-align-{値}` に移す
+  - item: 表のセルの列名
+    constraint: '`td` に、同じ列の見出しの文字（タグを除いたもの）を `data-label` で写す'
+    notes: '狭い紙幅の印刷で、表を行ごとの「列名: 値」の並びに積むため（確認ログの決定）'
+  - item: 入力の大きさ
+    constraint: 制限なし
+test_file: tests/integration/lib/render.test.ts

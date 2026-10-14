@@ -1,0 +1,102 @@
+title: "機能のオン・オフを文書で上書きする"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+        notes: 設定の `features.print` は `true`
+      - name: 機能を外す Markdown
+        description: '先頭に `<!-- features: -print -->` を持ち、閉じた折り畳み（`details`）を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書の印を重ねる
+        M-->>P: 印刷の機能をオフにして本文を描く
+        U->>P: 印刷する
+        P-->>U: 折り畳みは閉じたまま
+    expected:
+      - 印刷の前のイベントの後も、折り畳み（`details`）が閉じている
+    test: test_normal
+  - name: 正常シナリオ（設定でオフにした機能を文書でオンにする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.print` は `false`
+      - name: 機能を足す Markdown
+        description: '先頭に `<!-- features: +print -->` を持ち、閉じた折り畳み（`details`）を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書の印を重ねる
+        M-->>P: 印刷の機能をオンにして本文を描く
+        U->>P: 印刷する
+        P-->>U: 折り畳みを開いて出す
+    expected:
+      - 印刷の前のイベントの後、折り畳み（`details`）が開いている
+    test: test_normal_when_enabled_by_mark
+  - name: 正常シナリオ（印の無い文書）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.print` は `false`
+      - name: 印の無い Markdown
+        description: 閉じた折り畳み（`details`）だけを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 設定のとおり印刷の機能をオフにして本文を描く
+        U->>P: 印刷する
+        P-->>U: 折り畳みは閉じたまま
+    expected:
+      - 印刷の前のイベントの後も、折り畳み（`details`）が閉じている
+    test: test_normal_when_no_mark
+  - name: 正常シナリオ（知らない機能名）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない機能名を書いた Markdown
+        description: '先頭に `<!-- features: +unknown -->` を持ち、段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない機能名を無視する
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 段落を表示
+    expected:
+      - 段落が描かれている
+      - 本文に印の文字が出ていない
+    test: test_normal_when_unknown_feature
+lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
+issue: 3
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 使う側のアプリの開発者
+    interest: 設定で決めた既定が、印の無い文書にそのまま当たる
+  - name: 機能を作る Issue
+    interest: 決まったオン・オフを読んで、機能を出すかを決められる
+trigger: 使う側のページが、設定と、印を持つ文書を渡して描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+success_guarantee: 文書の印で足した機能はオン、外した機能はオフになり、印に書かない機能は設定のとおりになる。
+minimal_guarantee: 知らない機能名を印に書いても、本文は描かれる。
+test_file: tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts

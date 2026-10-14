@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>editorial | mdmark のデザインスタイルの見本</title>
+  <!-- 見本の土台（本文の規則とモック専用の操作列） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- このスタイルの変数の値 -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: スタイルの候補のタブと配色の切り替え -->
+  <div class="mock-bar">
+    <nav aria-label="スタイルの候補">
+      <ul class="mock-bar-group">
+        <li><a class="mock-bar-item" href="../modern/index.html">modern<span class="mock-badge">採用</span></a></li>
+        <li><a class="mock-bar-item" href="../editorial/index.html" aria-current="page">editorial</a></li>
+        <li><a class="mock-bar-item" href="../developer-tool/index.html">developer-tool</a></li>
+      </ul>
+    </nav>
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- mdmark が描いた文書 -->
+    <article class="mdmark">
+      <h1>配布物を読み込んで文書を描く</h1>
+      <p>mdmark は、使う側のページが渡した Markdown をブラウザで文書として描きます。見た目の値は <code>--mdmark-</code> で始まる CSS 変数で配り、<a href="#theme">テーマの上書き</a>で変えられます。</p>
+
+      <!-- リスト -->
+      <h2>導入の流れ</h2>
+      <ol>
+        <li>配布物の <code>index.js</code> と <code>index.css</code> をページで読み込む</li>
+        <li>描く先の要素を用意する</li>
+        <li><code>mount</code> に要素と Markdown を渡す
+          <ul>
+            <li>本文だけを差し替えるときは <code>update</code> を呼ぶ</li>
+            <li>片付けるときは <code>destroy</code> を呼ぶ</li>
+          </ul>
+        </li>
+      </ol>
+
+      <!-- コードブロック -->
+      <h2>文書を描く</h2>
+      <p>描く先の要素と、Markdown と設定を渡します。</p>
+      <pre tabindex="0"><code class="language-ts">import { mount } from "./mdmark/index.js";
+
+const view = mount(document.querySelector("#doc"), {
+  markdown: "# はじめに\n\n本文を書きます。",
+  config: { features: { table: true } },
+});
+
+view.update("# 書き直した本文");</code></pre>
+
+      <!-- 表 -->
+      <h2 id="theme">テーマの上書き</h2>
+      <p>使う側のページの CSS で変数の値を書き換えます。</p>
+      <table tabindex="0">
+        <thead>
+          <tr>
+            <th>変数</th>
+            <th>役割</th>
+            <th style="text-align: right">既定の値</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--mdmark-font-size</code></td>
+            <td>本文の文字の大きさ</td>
+            <td style="text-align: right">1.0625rem</td>
+          </tr>
+          <tr>
+            <td><code>--mdmark-line-height</code></td>
+            <td>本文の行間</td>
+            <td style="text-align: right">1.9</td>
+          </tr>
+          <tr>
+            <td><code>--mdmark-radius</code></td>
+            <td>枠の角の丸み</td>
+            <td style="text-align: right">2px</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 引用 -->
+      <blockquote>
+        <p>使う側が層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝ちます。</p>
+      </blockquote>
+
+      <!-- 折り畳み -->
+      <h3>対応ブラウザ</h3>
+      <details>
+        <summary>下限の版を見る</summary>
+        <ul>
+          <li>Chrome 99</li>
+          <li>Firefox 97</li>
+          <li>Safari 16.4</li>
+        </ul>
+      </details>
+
+      <hr>
+
+      <!-- 知らせの枠: 外部ライブラリを読めなかった箇所 -->
+      <h2>売上の推移</h2>
+      <p>図は、文書が使うときだけ外部ライブラリを読み込んで描きます。</p>
+      <div class="mdmark-notice" role="status">
+        <strong class="mdmark-notice-title">この箇所を表示できません</strong>
+        図を描くライブラリを読み込めませんでした。通信の状態を確かめて、ページを読み込み直してください。
+      </div>
+      <p>読み込めなかった箇所のほかは、そのまま描かれます。</p>
+    </article>
+  </main>
+</body>
+</html>

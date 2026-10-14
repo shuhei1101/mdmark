@@ -1,0 +1,36 @@
+/* 知らせの枠のカタログ: 状態ごとの見本を縦に並べる */
+
+/* カタログ全体: 見本を縦に並べる */
+.catalog {
+  display: grid;
+  gap: 32px;
+  max-width: calc(var(--mdmark-content-width) + var(--mdmark-padding) * 2);
+  margin-inline: auto;
+}
+
+/* カタログの題（モック専用の見出し） */
+.catalog-title {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: var(--mdmark-color-text);
+  font-size: 20px;
+}
+
+/* 状態の名前（モック専用の見出し）: mdmark の外に置く */
+.catalog-label {
+  margin: 0 0 8px;
+  color: var(--mdmark-color-muted);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* mdmark の層: 見本ごとの描く先の要素に地と余白を当てる */
+@layer mdmark {
+  /* 描く先の要素 */
+  .mdmark {
+    padding: var(--mdmark-padding);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+  }
+}

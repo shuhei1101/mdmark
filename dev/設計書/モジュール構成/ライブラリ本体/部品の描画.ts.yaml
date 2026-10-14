@@ -1,0 +1,165 @@
+title: "ライブラリ本体 / 部品の描画"
+lead: Storybook のストーリーに部品の HTML を出す仕組み。部品の HTML を返す描画の口（Node の HTTP サーバー）と、Storybook の設定・描画の口への中継を持つ。配布物には入らない。
+directory: |-
+  ```tree
+  scripts/
+  └── storybook-render.ts  # 描画の口（部品の HTML と CSS を返す HTTP サーバー）
+  .storybook/
+  ├── main.js              # Storybook の設定（@storybook/server-webpack5・ストーリーの場所・許すホスト）
+  ├── preview.js           # ストーリーの HTML を描画の口から取る fetchStoryHtml
+  ├── preview-head.html    # 描画の口の CSS を読む link
+  └── middleware.cjs       # /render を描画の口へ中継する
+  ```
+constants:
+  - name: RENDER_HOST
+    title: 描画の口の待受アドレス
+    container: scripts/storybook-render.ts
+    summary: 描画の口を外へ出さないための待受アドレス
+    value: '"127.0.0.1"'
+  - name: storybookConfig
+    title: Storybook の設定
+    container: .storybook/main.js
+    summary: '`export default` する設定'
+    value: '`framework: { name: "@storybook/server-webpack5", options: {} }`・`stories: ["../src/**/*.stories.yaml"]`・`core: { disableTelemetry: true, allowedHosts }`。`allowedHosts` は環境変数 `STORYBOOK_ALLOWED_HOSTS` をカンマで区切ったもの（無ければ持たない）'
+  - name: parameters
+    title: ストーリーの既定の引数
+    container: .storybook/preview.js
+    summary: '`server.url` を `${window.location.origin}/render` にし、`server.fetchStoryHtml` を渡す'
+    value: '`{ server: { url, fetchStoryHtml } }`'
+functions:
+  - name: renderPart
+    title: 部品の HTML を返す
+    container: scripts/storybook-render.ts
+    kind: 関数
+    scope: internal
+    summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
+    description: 'ストーリーの引数は問い合わせの文字列で届くため戻す: `figure` は `"false"` のときだけ `false`、`args` はカンマで区切った配列（空の文字列は `[]`）'
+    args:
+      - name: options
+        type: '{ component: string; params: URLSearchParams }'
+        required: true
+        description: '`component` は部品の id（`notice` か `embed`）、`params` は問い合わせの引数'
+    returns:
+      type: string | undefined
+      description: '`<div class="mdmark">{部品の HTML}</div>`。知らない部品は `undefined`'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderEmbed]
+    unit_tests:
+      - name: test_render_part_when_notice
+        case: 正常
+        summary: 知らせの枠を引数どおりに描く
+        condition: '`component` が `notice`、`params` が `name=tabs&figure=false`'
+        mock: なし
+        expected: '`<div class="mdmark">` で包んだ `renderNotice({ name: "tabs", figure: false })`'
+      - name: test_render_part_when_embed
+        case: 正常
+        summary: カンマで結ばれた引数を配列に戻して読み込み中の枠を描く
+        condition: '`component` が `embed`、`params` が `name=chart&args=a,b`'
+        mock: なし
+        expected: '`<div class="mdmark">` で包んだ `renderEmbed({ name: "chart", args: ["a", "b"] })`'
+      - name: test_render_part_when_unknown
+        case: 正常
+        summary: 知らない部品は返さない
+        condition: '`component` が `missing`'
+        mock: なし
+        expected: '`undefined`'
+  - name: createRenderServer
+    title: 描画の口を作る
+    container: scripts/storybook-render.ts
+    kind: 関数
+    scope: internal
+    summary: '`GET /render/index.css` に `src/index.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側）'
+    args:
+      - name: options
+        type: '{ root: string }'
+        required: true
+        description: 作業ツリーの場所（`src/index.css` を読む）
+    returns:
+      type: http.Server
+      description: 待ち受けていないサーバー
+    process: |-
+      1. `/render/index.css` は、`src/index.css` を読んで `text/css; charset=utf-8` の 200 で返す
+      2. `/render/{部品の id}` は、部品の HTML を返す（部品の HTML を返す）
+         - HTML があれば `text/html; charset=utf-8` の 200 で返す
+         - 無ければ `知らない部品: {部品の id}` を 404 で返す
+      3. それ以外のパスは 404 で返す
+    callees:
+      - '#functions[renderPart]'
+    unit_tests:
+      - name: test_create_render_server
+        case: 正常
+        summary: 部品の HTML を 200 で返す
+        condition: '`GET /render/notice?name=chart&figure=true`'
+        mock: なし（`127.0.0.1:0` で待ち受けて要求する）
+        expected: 200、`Content-Type` が `text/html; charset=utf-8`、本文に `この図を表示できません`
+      - name: test_create_render_server_when_css
+        case: 正常
+        summary: 本文の CSS を返す
+        condition: '`GET /render/index.css`'
+        mock: 一時フォルダに `src/index.css` を置く
+        expected: 200、`Content-Type` が `text/css; charset=utf-8`、本文が置いた CSS
+      - name: test_create_render_server_when_unknown_part
+        case: 正常
+        summary: 知らない部品は 404 を返す
+        condition: '`GET /render/missing`'
+        mock: なし（`127.0.0.1:0` で待ち受けて要求する）
+        expected: 404、本文に `missing`
+  - name: main
+    title: 描画の口を立てる
+    container: scripts/storybook-render.ts
+    kind: 関数
+    scope: public
+    summary: 環境変数 `RENDER_PORT` のポートで、`RENDER_HOST` に描画の口を待ち受ける
+    description: ファイルの末尾で、`import.meta.main` が `true` のときだけ呼ぶ
+    process: |-
+      1. `RENDER_PORT` が 1〜65535 の整数でなければ、標準エラーに理由を出し、`process.exitCode` を 1 にして終わる
+      2. リポジトリの直下で描画の口を作り（描画の口を作る）、`RENDER_HOST` の `RENDER_PORT` で待ち受ける
+    callees:
+      - '#functions[createRenderServer]'
+    unit_tests:
+      - name: test_main_when_port_missing
+        case: 異常
+        summary: ポートが無ければ待ち受けずに終わる
+        condition: '`RENDER_PORT` が無い'
+        mock: '`process.env` から `RENDER_PORT` を消す'
+        expected: '`process.exitCode` が 1、標準エラーに `RENDER_PORT` が出る'
+  - name: fetchStoryHtml
+    title: ストーリーの HTML を取る
+    container: .storybook/preview.js
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: '`{url}/{id}?{引数}` を取り、200 でなければ状態コードと本文で例外を投げる'
+    reason: 既定の取り方は 404 の本文をそのままストーリーに出し、知らない部品を見逃す
+    args:
+      - name: url
+        type: string
+        description: '`server.url`'
+      - name: path
+        type: string
+        description: ストーリーの `server.id`
+      - name: params
+        type: Record<string, string>
+        description: ストーリーの引数
+    returns:
+      type: Promise<string>
+      description: 部品の HTML
+  - name: relayRender
+    title: 描画の口へ中継する
+    container: .storybook/middleware.cjs
+    kind: 関数
+    scope: public
+    summary: Storybook の開発サーバーの `/render` への要求を、環境変数 `RENDER_ORIGIN` の描画の口へそのまま中継する
+    description: '`module.exports` する関数で、Storybook が `router` を渡して呼ぶ。描画の口に届かないときは 502 とエラーの文字列を返す'
+    args:
+      - name: router
+        type: express.Router
+        description: Storybook の開発サーバーのルーター
+notes:
+  ストーリーの場所: '`src/parts/*.stories.yaml`（部品『部品』）。`preview-head.html` は `<link rel="stylesheet" href="/render/index.css">` を持ち、ストーリーに本文の CSS を当てる。CSS の入れ子はビルドを通さずに読むため、入れ子を解するブラウザで見る'
+  起動: '描画の口を `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で立て、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で立てる'
+  依存: '`storybook`・`@storybook/server-webpack5`・`@storybook/server` を `10.6.2` で開発の依存に足す。`package.json` の `overrides` で `webpack-dev-middleware` を `^7.4.6` にする（Storybook の開発サーバーが引く版の脆弱性 GHSA-g84c-rxfj-3j2c を避ける）。どれも配布物には入らない'
+  単体テストの場所: '`renderPart`・`createRenderServer`・`main` は `tests/unit/scripts/storybook-render.test.ts`（`unit` プロジェクト）。`.storybook/` の中は Storybook を立てて確かめる'
+test_files:
+  - tests/unit/scripts/storybook-render.test.ts

@@ -1,0 +1,248 @@
+title: "ライブラリ本体 / ビルド"
+lead: '`npm run build` が実行するビルドのスクリプト。版を決めて検査し、esbuild で `dist/` を書き、配布ファイルのサイズを検査する。Node.js v24 が型を消して `node scripts/build.ts` で直接実行する。'
+directory: |-
+  ```tree
+  scripts/
+  └── build.ts  # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  ```
+constants:
+  - name: VERSION_PATTERN
+    title: 版の書式
+    container: scripts/build.ts
+    summary: 埋める版が合うべき書式
+    value: /^v\d+\.\d+\.\d+$/
+  - name: MAX_DIST_FILE_BYTES
+    title: 配布ファイル 1 つの上限
+    container: scripts/build.ts
+    summary: 非機能要件の配布ファイル 1 つの上限（256KB）
+    value: 256 * 1024
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
+  - name: LICENSES_FILE
+    title: ライセンスの書き出し先
+    container: scripts/build.ts
+    summary: 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
+    value: '"THIRD_PARTY_LICENSES.txt"'
+  - name: postcssStubPlugin
+    title: postcss の差し替え
+    container: scripts/build.ts
+    summary: 'esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える'
+    value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返す'
+    reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
+  - name: BROWSER_TARGETS
+    title: 出力の対象のブラウザ
+    container: scripts/build.ts
+    summary: esbuild の `target` に渡すブラウザの版
+    value: '["chrome99", "firefox97", "safari16.4"]'
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+functions:
+  - name: main
+    title: ビルドを実行する
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 前回の `dist/` を消してから、版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す
+    side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過）は `dist/` を残さず、標準エラーに理由を出す'
+    args:
+      - name: argv
+        type: string[]
+        description: コマンドの引数（`--version v{版}` を持てる）
+      - name: options
+        type: '{ root: string; maxBytes: number }'
+        required: false
+        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`
+        description: 作業ツリーの場所と配布ファイルの上限（テストで差し替える）
+    returns:
+      type: Promise<0 | 1>
+      description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過は 1
+    unit_tests:
+      - name: test_main
+        case: 正常
+        summary: '`version.ini` の版でビルドする'
+        condition: '`--version` 無し、`version.ini` は `v0.0.0`'
+        mock: 一時フォルダに `src/` と `version.ini` を置く
+        expected: 0 を返し、`dist/index.js` に `v0.0.0` が埋まる
+      - name: test_main_when_version_given
+        case: 正常
+        summary: 渡した版でビルドする
+        condition: '`--version v0.0.1`'
+        mock: 一時フォルダに `src/` と `version.ini` を置く
+        expected: 0 を返し、`dist/index.js` に `v0.0.1` が埋まる
+      - name: test_main_when_version_format_invalid
+        case: 異常
+        summary: 版の書式が違うと前回の `dist/` を残さずに終わる
+        condition: '`--version 1.2`'
+        mock: 一時フォルダに `src/` と `version.ini` と、前回のビルドの `dist/index.js` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーに `v{MAJOR}.{MINOR}.{PATCH}` が出る
+      - name: test_main_when_version_ini_missing
+        case: 異常
+        summary: '`version.ini` を読めないと前回の `dist/` を残さずに終わる'
+        condition: '`--version` 無し、`version.ini` が無い'
+        mock: 一時フォルダに `src/` と、前回のビルドの `dist/index.js` を置く（`version.ini` は置かない）
+        expected: 1 を返し、`dist/` が無く、標準エラーに `version.ini` が出る
+      - name: test_main_when_build_fails
+        case: 異常
+        summary: esbuild が失敗すると前回の `dist/` を残さずに終わる
+        condition: '`src/index.ts` に構文エラーがある'
+        mock: 一時フォルダに構文エラーのある `src/index.ts` と `version.ini` と、前回のビルドの `dist/index.js` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーに `src/index.ts` が出る
+      - name: test_main_when_dist_file_too_large
+        case: 異常
+        summary: 上限を超えると `dist/` を消して終わる
+        condition: '`maxBytes` が 1'
+        mock: 一時フォルダに `src/` と `version.ini` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーにファイル名とサイズが出る
+    callees:
+      - '#functions[resolveVersion]'
+      - '#functions[buildDist]'
+      - '#functions[findTooLargeOutputs]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#
+    description: ファイルの末尾で、`import.meta.main` が `true`（`node scripts/build.ts` で入口として実行された）ときだけ `main(process.argv.slice(2))` を呼び、戻り値を `process.exitCode` に入れる。単体テストが import したときは呼ばない。
+  - name: resolveVersion
+    title: 埋める版を決める
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    summary: '`--version` があればその値、無ければ `version.ini` の先頭行を返し、書式を検査する'
+    args:
+      - name: argv
+        type: string[]
+        description: コマンドの引数
+      - name: root
+        type: string
+        description: '`version.ini` を置いたフォルダ'
+    returns:
+      type: string
+      description: 埋める版
+    exceptions:
+      - name: VersionFormatError
+        condition: 版が `VERSION_PATTERN` に合わない
+        message: '版の書式が違う: {版}（v{MAJOR}.{MINOR}.{PATCH}）'
+    unit_tests:
+      - name: test_resolve_version
+        case: 正常
+        summary: '`version.ini` の先頭行を返す'
+        condition: '`--version` 無し'
+        mock: 一時フォルダに `v0.0.0` と書いた `version.ini`
+        expected: '`v0.0.0`'
+      - name: test_resolve_version_when_version_given
+        case: 正常
+        summary: 渡した版を優先する
+        condition: '`--version v0.0.1`'
+        mock: 一時フォルダに `v0.0.0` と書いた `version.ini`
+        expected: '`v0.0.1`'
+      - name: test_resolve_version_when_format_invalid
+        case: 異常
+        summary: 書式の違う版を拒む
+        condition: '`--version 1.2`'
+        mock: なし
+        expected: '`VersionFormatError` を投げる'
+        exception: VersionFormatError
+  - name: buildDist
+    title: 配布物を書く
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、束ねた依存のライセンスを書く
+    description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
+    side_effects: '`dist/` を書き換える'
+    args:
+      - name: version
+        type: string
+        description: 埋める版
+      - name: root
+        type: string
+        description: 作業ツリーの場所
+    returns:
+      type: Promise<Record<string, number>>
+      description: 出力ファイルのパスとバイト数（ライセンスのファイルを含む）
+    callees:
+      - '#functions[writeThirdPartyLicenses]'
+    unit_tests:
+      - name: test_build_dist
+        case: 正常
+        summary: 版を埋めた JS と CSS を 1 つずつ書く
+        condition: 版 `v0.0.1`
+        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置く
+        expected: 戻り値が `dist/index.js` と `dist/index.css` と `dist/THIRD_PARTY_LICENSES.txt` の 3 件。JS に `"v0.0.1"`、CSS の先頭に `--mdmark-version:"v0.0.1"` が入る
+      - name: test_build_dist_when_nested_css
+        case: 正常
+        summary: CSS の入れ子を展開する
+        condition: '`src/index.css` が `.a { .b { color: red } }`'
+        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置く
+        expected: '`dist/index.css` に `.a .b{color:red}` が入り、入れ子が残らない'
+      - name: test_build_dist_when_postcss_imported
+        case: 正常
+        summary: postcss の import を差し替え、配布物に postcss を含めない
+        condition: '`src/index.ts` が `import { parse } from "postcss"` を持ち、`parse` を export する'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` を使う
+        expected: '`dist/index.js` に postcss の本体（`CssSyntaxError`）が無い'
+  - name: writeThirdPartyLicenses
+    title: 束ねた依存のライセンスを書く
+    container: scripts/build.ts
+    kind: 関数
+    scope: internal
+    summary: esbuild の `metafile` の入力から束ねたパッケージを拾い、名前の順にパッケージ名・版・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書く
+    description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読む。束ねたパッケージが無いときも空のファイルを書く
+    side_effects: '`dist/` に `LICENSES_FILE` を書く'
+    args:
+      - name: options
+        type: '{ metafile: Metafile; root: string }'
+        required: true
+        description: '`metafile` は esbuild の出力、`root` は作業ツリーの場所'
+    returns:
+      type: Promise<void>
+      description: 書き終えたら解決する
+    exceptions:
+      - name: Error
+        condition: 束ねたパッケージの直下に `LICENSE*` が無い
+        message: 'ライセンスの本文が無い: {パッケージ名}'
+    unit_tests:
+      - name: test_write_third_party_licenses
+        case: 正常
+        summary: 束ねたパッケージごとに名前・版・ライセンス・本文を書く
+        condition: '`metafile` の入力が `node_modules/b/index.js`・`node_modules/@s/a/lib/x.js`・`node_modules/@s/a/lib/y.js`・`src/index.ts`'
+        mock: 一時フォルダに 2 つのパッケージの `package.json` と `LICENSE` を置く
+        expected: '`@s/a` と `b` の 2 件が名前の順に 1 回ずつ並ぶ'
+      - name: test_write_third_party_licenses_when_license_missing
+        case: 異常
+        summary: ライセンスの本文が無いパッケージを拒む
+        condition: '`node_modules/b/` に `LICENSE*` が無い'
+        mock: 一時フォルダに `package.json` だけを置く
+        expected: '`Error` を投げ、メッセージに `b` が入る'
+        exception: 束ねたパッケージの直下に `LICENSE*` が無い
+  - name: findTooLargeOutputs
+    title: 上限を超えた配布ファイルを拾う
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    summary: 出力ファイルのうち上限を超えたものを返す
+    args:
+      - name: outputs
+        type: Record<string, number>
+        description: 出力ファイルのパスとバイト数
+      - name: maxBytes
+        type: number
+        description: 1 ファイルの上限
+    returns:
+      type: 'Array<{ path: string; bytes: number }>'
+      description: 上限を超えたファイル（無ければ空）
+    unit_tests:
+      - name: test_find_too_large_outputs
+        case: 正常
+        summary: 上限以下なら空を返す
+        condition: 100 バイトと 200 バイト、上限 200
+        mock: なし
+        expected: 空
+      - name: test_find_too_large_outputs_when_over_limit
+        case: 正常
+        summary: 上限を超えたファイルだけを返す
+        condition: 100 バイトと 201 バイト、上限 200
+        mock: なし
+        expected: 201 バイトの 1 件
+test_files:
+  - tests/unit/scripts/build.test.ts
