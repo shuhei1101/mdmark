@@ -91,7 +91,7 @@
     const predicates = [];
     for (const drawer of wrapper.querySelectorAll(".mdmark-filter-drawer")) {
       const predicate = filterPredicate(drawer);
-      const button = wrapper.querySelector(`[popovertarget="${drawer.id}"]`);
+      const button = wrapper.querySelector(`[aria-controls="${drawer.id}"]`);
       button.classList.toggle("is-active", predicate !== null);
       button.querySelector(".mdmark-visually-hidden").textContent = predicate ? "（絞り込み中）" : "";
       if (predicate) predicates.push({ index: Number(drawer.dataset.column), predicate });
@@ -134,6 +134,50 @@
     drawer.style.left = `${left}px`;
     drawer.style.top = `${top}px`;
   };
+
+  // 開いている絞り込みのドロワーと、それを開いたボタン（同時に開くのは 1 つだけ）
+  let openState = null;
+
+  /** ドロワーを閉じる。returnFocus が真なら、開いたボタンへフォーカスを戻す。 */
+  const closeDrawer = (returnFocus) => {
+    if (!openState) return;
+    const { drawer, button } = openState;
+    drawer.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+    if (returnFocus) button.focus();
+    openState = null;
+  };
+
+  /** ドロワーを開いてボタンの下に置き、最初の入力欄へフォーカスを移す。ほかのドロワーは閉じる。 */
+  const openDrawer = (drawer, button) => {
+    closeDrawer(false);
+    drawer.hidden = false;
+    button.setAttribute("aria-expanded", "true");
+    placeDrawer(drawer, button);
+    drawer.querySelector("input")?.focus({ preventScroll: true });
+    openState = { drawer, button };
+  };
+
+  // ドロワーの外を押したとき: 閉じる（開いたボタンを押したときは、ボタンのクリックが閉じる）
+  document.addEventListener("pointerdown", (event) => {
+    if (openState && !openState.drawer.contains(event.target) && !openState.button.contains(event.target)) closeDrawer(false);
+  });
+
+  // Esc: 閉じて、開いたボタンへフォーカスを戻す
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && openState) closeDrawer(true);
+  });
+
+  /** ドロワーの外がスクロールしたとき・画面の幅が変わったとき: ボタンに付いて動かし、ボタンが画面から出たら閉じる。 */
+  const followButton = (event) => {
+    // ドロワーの中のスクロール（候補の並び）では動かさない。画面の幅の変化は window から届く
+    if (!openState || (event.target instanceof Node && openState.drawer.contains(event.target))) return;
+    const rect = openState.button.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) closeDrawer(false);
+    else placeDrawer(openState.drawer, openState.button);
+  };
+  document.addEventListener("scroll", followButton, true);
+  window.addEventListener("resize", followButton);
 
   /** 先頭から count 列までを表の左端に留める（0 で外す）。押したピンのボタンを押された状態にする。 */
   const pinColumns = (wrapper, count) => {
@@ -189,13 +233,8 @@
       button.addEventListener("click", () => sortTable(table, button.closest("th")));
     }
     for (const drawer of wrapper.querySelectorAll(".mdmark-filter-drawer")) {
-      const button = wrapper.querySelector(`[popovertarget="${drawer.id}"]`);
-      // 開いたとき: ボタンの下に置き、最初の入力欄へフォーカスを移す
-      drawer.addEventListener("toggle", (event) => {
-        if (event.newState !== "open") return;
-        placeDrawer(drawer, button);
-        drawer.querySelector("input")?.focus();
-      });
+      const button = wrapper.querySelector(`[aria-controls="${drawer.id}"]`);
+      button.addEventListener("click", () => (drawer.hidden ? openDrawer(drawer, button) : closeDrawer(false)));
       drawer.querySelector(".mdmark-filter-search")?.addEventListener("input", (event) => narrowOptions(drawer, event.target.value));
       for (const input of drawer.querySelectorAll("input:not(.mdmark-filter-search)")) {
         input.addEventListener("input", () => applyFilters(wrapper));
