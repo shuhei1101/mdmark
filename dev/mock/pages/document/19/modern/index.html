@@ -191,7 +191,7 @@ npm install @shuhei1101/mdmark</code></pre>
 <!-- table: data closed -->
 <div class="mdmark-table" data-kind="data">
   <details class="mdmark-table-details">
-    <summary>表（3 行）</summary>
+    <summary>表を開く</summary>
   <table tabindex="0" aria-label="表: 変更の履歴">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">版<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="先頭の列と見出し行をピン止め" title="先頭の列と見出し行をピン止め"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">日付<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">変更<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></button></span></th></tr></thead>
     <tbody>
@@ -286,7 +286,7 @@ npm install @shuhei1101/mdmark</code></pre>
 </div>
 <!-- 拡張の引数が Schema に合わない（異常シナリオ）: 書き方の警告 -->
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
   <p><code>&lt;!-- greet: World 2 --&gt;</code> の引数が、拡張 <code>greet</code> の決まりに合いません。直してから読み込み直してください。</p>
   <ul>
     <li>1 つ目の <code>World</code>: 英小文字だけで書いてください</li>
@@ -309,7 +309,7 @@ npm install @shuhei1101/mdmark</code></pre>
 <!-- 表の印に知らない種類（異常シナリオ） -->
 <div class="mdmark-table" data-kind="default">
   <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
   <p><code>&lt;!-- table: unknown +sort --&gt;</code> の種類 <code>unknown</code> は使えません。使える種類は <code>data</code>・<code>plain</code> です。既定の種類に <code>+sort</code> を当てて描いています。</p>
 </div>
   <table tabindex="0" aria-label="表: 表の印の誤り">
@@ -322,13 +322,13 @@ npm install @shuhei1101/mdmark</code></pre>
 </div>
 <!-- タブ名にする見出しの無いタブの範囲（異常シナリオ） -->
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
   <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を書いてください。範囲の中身はそのまま描いています。</p>
 </div>
 <p>macOS では Homebrew、Windows では winget で入れます。</p>
 <!-- 切れた参照（異常シナリオ） -->
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
   <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に書くか、リンク先を直してください。</p>
 </div>
 <p>詳しくは <a href="#fig-missing">図</a> を見てください。</p>
@@ -336,7 +336,7 @@ npm install @shuhei1101/mdmark</code></pre>
 <h3 class="mdmark-heading" id="既定の開閉の誤り"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-既定の開閉の誤り">既定の開閉の誤り<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#既定の開閉の誤り" aria-label="「既定の開閉の誤り」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
 <div class="mdmark-section-body" id="section-既定の開閉の誤り">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
   <p><code>&lt;!-- section: hidden --&gt;</code> の <code>hidden</code> は使えません。使える値は <code>closed</code>・<code>open</code> です。この節は開いた状態で描いています。</p>
 </div>
 <p>節の中身はそのまま読めます。</p>
