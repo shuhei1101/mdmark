@@ -19,9 +19,28 @@
     .mdmark-table table {
       max-height: none;
 
+      /* セル: 留める指定と、描く処理が付けた列の最小の幅（style 属性）を外し、余白を詰めて列の多い表も紙の幅に収める */
       :is(th, td) {
         position: static;
+        min-width: 0 !important;
+        padding: 0.35em 0.5em;
+      }
+
+      /* ピン止めした列: 紙では横にスクロールしないので留めない */
+      :is(th, td).is-pinned-col {
+        position: static;
+      }
+
+      /* ピン止めした最後の列: 境目の線を外す */
+      td.is-pinned-edge {
         box-shadow: none;
+      }
+
+      /* 見出し行: ピン止めの境目の線を外し、上下の線だけを残す */
+      thead th.is-pinned-edge {
+        box-shadow:
+          inset 0 1px var(--mdmark-color-border),
+          inset 0 -2px var(--mdmark-color-border);
       }
     }
 
