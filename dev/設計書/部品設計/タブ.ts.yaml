@@ -1,0 +1,70 @@
+title: "タブ"
+implementation: "src/parts/tabs.ts#renderTabs"
+story: "Parts/Tabs"
+test_file: tests/integration/lib/tabs.story.test.ts
+states:
+  - name: First
+    description: 1 つ目のタブを選んだ
+    args:
+      - name: titles
+        value: '["macOS","Windows","Linux"]'
+      - name: selected
+        value: '0'
+  - name: Second
+    description: 2 つ目のタブを選んだ
+    args:
+      - name: titles
+        value: '["macOS","Windows","Linux"]'
+      - name: selected
+        value: '1'
+  - name: Many
+    description: タブが多く、タブ名が長い。タブの並びが折り返す
+    args:
+      - name: titles
+        value: '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]'
+      - name: selected
+        value: '0'
+  - name: Unmounted
+    description: '`render` が出した状態。全ての中身がタブ名を題にして縦に並ぶ（印刷もこの見え方）'
+    args:
+      - name: titles
+        value: '["macOS","Windows"]'
+lead: '`<!-- tabs -->` の範囲を見出しで区切った中身を、見出しの文字をタブ名にしたタブで切り替えて見せる。`render` は全ての中身を順に出し、`mount` がタブの並びを付ける。'
+args:
+  - name: titles
+    type: 配列
+    required: true
+    description: タブ名（区切りの見出しの文字）を並んだ順に
+  - name: selected
+    type: 整数
+    required: false
+    default: なし（タブの並びを付けず、全ての中身を順に出す）
+    description: 選んだタブの位置（0 から）。渡すと `role="tablist"` の並びを付け、選んだタブの中身だけを出す（`mount` が付けた状態）
+slots:
+  - name: default
+    description: タブごとの中身（区切りの見出しから次の見出しの前までの HTML）
+    passes: タブの位置
+events:
+  - name: タブを選ぶ
+    when: タブを押すか、タブにフォーカスがあるときに左右の矢印・Home・End を押す
+    value: 選んだタブの `aria-selected`
+    description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする'
+css_properties:
+  - name: --mdmark-color-link
+    syntax: <color>
+    default: '#0969da（ダーク #4493f8）'
+    description: 選んだタブの下線の色
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#d1d9e0（ダーク #3d444d）'
+    description: タブの並びの下の線と中身の枠の色
+accessibility:
+  - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
+  - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ
+  - 選んだタブは下線と文字の太さでも示し、色だけに頼らない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[タブ]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
+status: planned
+notes:
+  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>`。`selected` を渡すと頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を置き、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。モックは `dev/mock/components/tabs/`'

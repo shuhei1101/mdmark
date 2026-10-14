@@ -1,0 +1,37 @@
+title: "バッジ"
+implementation: "src/parts/badge.ts#renderBadge"
+story: "Parts/Badge"
+test_file: tests/integration/lib/badge.story.test.ts
+states:
+  - name: Inline
+    description: 文中の札
+    args:
+      - name: label
+        value: v0.2.0
+  - name: Long
+    description: 文言が長く行の幅を超える。札の中で折り返す
+    args:
+      - name: label
+        value: とても長い状態の名前で札の幅を超えるときの見え方を確かめる札
+lead: 頭に `badge:` を付けた行内のコードを、頭を外した文言の札にする。
+args:
+  - name: label
+    type: 文字列
+    required: true
+    description: 札の文言（HTML として特別な文字はエスケープする）
+css_properties:
+  - name: --mdmark-color-surface
+    syntax: <color>
+    default: '#f6f8fa（ダーク #151b23）'
+    description: 札の地の色
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#d1d9e0（ダーク #3d444d）'
+    description: 札の線の色
+accessibility:
+  - 札は文言をそのまま読み上げる `span` で、色だけで意味を持たせない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
+status: planned
+notes:
+  HTML: '`<span class="mdmark-badge">{label}</span>`。モックは `dev/mock/components/badge/`'

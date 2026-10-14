@@ -1,0 +1,111 @@
+title: "節"
+implementation: "src/parts/section.ts#renderSection"
+story: "Parts/Section"
+test_file: tests/integration/lib/section.story.test.ts
+states:
+  - name: Open
+    description: 開いた節。見出しを指すとアンカーが出る
+    args:
+      - name: level
+        value: '2'
+      - name: id
+        value: 概要
+      - name: title
+        value: 概要
+  - name: Closed
+    description: '閉じた節（`section: closed`）。中身が隠れ、開閉の印が閉じた向き'
+    args:
+      - name: level
+        value: '2'
+      - name: id
+        value: 補足
+      - name: title
+        value: 補足
+      - name: open
+        value: 'false'
+  - name: Level4
+    description: h4 の節
+    args:
+      - name: level
+        value: '4'
+      - name: id
+        value: 細目
+      - name: title
+        value: 細目
+  - name: LongTitle
+    description: 見出しが長く折り返す。開閉の印とアンカーが見出しの文字に重ならない
+    args:
+      - name: level
+        value: '2'
+      - name: id
+        value: long
+      - name: title
+        value: とても長い見出しで文書の幅を超えて折り返すときの開閉の印とアンカーの位置を確かめる
+  - name: Unmounted
+    description: '`render` が出した状態。開閉のボタンが無く、閉じた節の中身も読める'
+    args:
+      - name: level
+        value: '2'
+      - name: id
+        value: 補足
+      - name: title
+        value: 補足
+      - name: toggle
+        value: 'false'
+lead: h2〜h4 の見出しと、次の同じか上の階層の見出しまでの中身。見出しに ID へのアンカーと、中身を開閉するボタンを付ける。
+args:
+  - name: level
+    type: 整数
+    required: true
+    choices: 2〜4
+    description: 見出しの階層
+  - name: id
+    type: 文字列
+    required: true
+    description: 見出しの ID。中身の `id` を `section-{id}` にする
+  - name: title
+    type: 文字列
+    required: true
+    description: 見出しの中身の HTML
+  - name: open
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 中身が開いているか。`false` のとき中身を `hidden="until-found"` にする
+  - name: toggle
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 開閉のボタンを付けるか（`render` は `false` で出し、`mount` が付ける）
+  - name: anchor
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 見出しに ID へのアンカーを付けるか（`anchors` の機能）
+slots:
+  - name: default
+    description: 節の中身の HTML
+events:
+  - name: 開閉する
+    when: 開閉のボタンを押す、節の中を指す URL の `#ID` で開く、またはページ内検索が閉じた中身に当たる
+    value: ボタンの `aria-expanded`
+    description: '`mount` が中身の `hidden` を付け外しする'
+css_properties:
+  - name: --mdmark-color-heading
+    syntax: <color>
+    default: '#1f2328（ダーク #f0f6fc）'
+    description: 見出しと開閉のボタンの文字の色
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: 開閉の印とアンカーの色
+accessibility:
+  - 開閉のボタンは見出しの文字を読み上げの名前にし、`aria-expanded`・`aria-controls` で開閉の状態を示す
+  - 閉じた中身は `hidden="until-found"` で、ページ内検索から開ける
+  - アンカーは `「{見出しの文字}」へのリンク` を読み上げの名前に持つ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[節]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+status: planned
+notes:
+  HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}">{中身}</div>`。`toggle` が `false` のときは `button` を置かず見出しの文字をそのまま出す。モックは `dev/mock/components/section/`'

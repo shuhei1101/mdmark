@@ -1,0 +1,81 @@
+title: "書き方の警告"
+implementation: "src/parts/syntax-warning.ts#renderSyntaxWarning"
+story: "Parts/SyntaxWarning"
+test_file: tests/integration/lib/syntax-warning.story.test.ts
+states:
+  - name: UnknownKind
+    description: 表の印に知らない種類を書いた。本文だけを出す
+    args:
+      - name: mark
+        value: '<!-- table: unknown +sort -->'
+      - name: message
+        value: の種類 `unknown` は使えません。使える種類は `data`・`plain` です。既定の種類に `+sort` を当てて描いています。
+  - name: Items
+    description: 表の印に知らない機能とキーを書いた。本文の後に項目を並べる
+    args:
+      - name: mark
+        value: '<!-- table: data +unknown size=2 -->'
+      - name: message
+        value: の読めない指定を当てずに描いています。
+      - name: items
+        value: '[{"label":"+unknown","message":"使えない機能です。使える機能は `sort`・`pin`・`filter` です"},{"label":"size=","message":"使えないキーです。使えるキーは `filter=` です"}]'
+  - name: BrokenReference
+    description: 切れた図表の参照。印を持たず本文だけを出す
+    args:
+      - name: message
+        value: 'リンク先の `#fig-missing` の図表がありません。`<!-- fig: missing -->` を図か表の直前に書くか、リンク先を直してください。'
+  - name: ExtensionSchema
+    description: 拡張の引数が Schema に合わない。issue ごとの項目を並べる
+    args:
+      - name: mark
+        value: '<!-- greet: World 2 -->'
+      - name: message
+        value: の引数が、拡張 `greet` の決まりに合いません。直してから読み込み直してください。
+      - name: items
+        value: '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \"World\""},{"label":"2 つ目の 2","message":"Invalid length: Expected 1 but received 2"}]'
+  - name: LongMark
+    description: 印が长く枠の幅を超える。印が枠の中で折り返す
+    args:
+      - name: mark
+        value: '<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->'
+      - name: message
+        value: の絞り込みの種類 `range` は使えません。使える種類は `select`・`text`・`date` です。
+lead: 記法の印や拡張の引数に読めない指定がある箇所に置き、書く人へ読めない指定と直し方を知らせる枠。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
+args:
+  - name: mark
+    type: 文字列
+    required: false
+    default: '""'
+    description: '読めない指定を書いた印の文字（`<!-- table: unknown +sort -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空なら印を出さない'
+  - name: message
+    type: 文字列
+    required: true
+    description: 何が読めず、どう直し、どう描いたかの本文。行内のコードにする箇所は `` ` `` で囲む
+  - name: items
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 読めない指定が複数あるときの項目（`{ label, message }`）。本文の後の `ul` に、`label` を `code` にして並べる。空なら `ul` を出さない
+css_properties:
+  - name: --mdmark-color-notice-border
+    syntax: <color>
+    default: '#9a6700（ダーク #bb8009）'
+    description: 枠の破線と題のアイコンの色
+  - name: --mdmark-color-text
+    syntax: <color>
+    default: '#1f2328（ダーク #f0f6fc）'
+    description: 題と本文の文字の色
+  - name: --mdmark-radius
+    syntax: <length>
+    default: 6px
+    description: 枠の角丸
+accessibility:
+  - 枠は `role="note"` を持ち、題 `書き方の警告` の文言で知らせる（色とアイコンだけに頼らない）
+  - 題のアイコンは CSS で付け、読み上げに含めない
+  - 印は長くても枠の中で折り返し、横スクロールを出さない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[書き手の誤り]
+  - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#constraints[引数の検査]
+status: planned
+notes:
+  HTML: '`<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>{mark}</code>{message}</p><ul><li><code>{label}</code>: {message}</li></ul></div>`。呼び名は確認ログの決定（書き方を誤った箇所に出す枠の呼び名）。モックは `dev/mock/components/syntax-warning/`'

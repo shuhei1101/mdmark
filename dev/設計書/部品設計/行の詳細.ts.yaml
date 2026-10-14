@@ -1,0 +1,70 @@
+title: "行の詳細"
+implementation: "src/parts/row-detail.ts#renderRowDetail"
+story: "Parts/RowDetail"
+test_file: tests/integration/lib/row-detail.story.test.ts
+states:
+  - name: Closed
+    description: 閉じた行の詳細。開閉のボタンだけが見える
+    args:
+      - name: row
+        value: '1'
+      - name: columns
+        value: '3'
+      - name: label
+        value: table
+  - name: Open
+    description: 開いた行の詳細。行の下に詳細が表の幅いっぱいに出る
+    args:
+      - name: row
+        value: '1'
+      - name: columns
+        value: '3'
+      - name: label
+        value: table
+      - name: open
+        value: 'true'
+lead: '表の直後の `<!-- row-detail: 行の位置 -->` の中身を、その行の下に開閉して出す行。詳細を持つ行の先頭のセルに開閉のボタンを置く。'
+args:
+  - name: row
+    type: 整数
+    required: true
+    description: 詳細を持つ行の位置（見出し行を除いて 1 から）
+  - name: columns
+    type: 整数
+    required: true
+    description: 表の列の数。詳細のセルの `colspan` にする
+  - name: label
+    type: 文字列
+    required: true
+    description: 行の先頭のセルの文字。開閉のボタンの読み上げの名前 `「{label}」の詳細` に使う
+  - name: open
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 詳細が開いているか
+  - name: toggle
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 開閉のボタンを付けるか（`render` は `false` で出し、`mount` が付ける）
+slots:
+  - name: default
+    description: 詳細の中身の HTML
+events:
+  - name: 開閉する
+    when: 開閉のボタンを押す
+    value: ボタンの `aria-expanded`
+    description: '`mount` が詳細の行の `hidden` を付け外しする'
+css_properties:
+  - name: --mdmark-color-surface
+    syntax: <color>
+    default: '#f6f8fa（ダーク #151b23）'
+    description: 詳細の行の地の色
+accessibility:
+  - 開閉のボタンは `「{label}」の詳細` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[行の詳細]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+status: planned
+notes:
+  HTML: 詳細の行は `<tr class="mdmark-row-detail" data-row="{row}"><td colspan="{columns}">{中身}</td></tr>`。`toggle` のときは行の先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle" type="button" aria-expanded="{open}" aria-controls="…" aria-label="「{label}」の詳細"></button>{セルの中身}</span>` にし、閉じた詳細の行に `hidden` を付ける。モックは `dev/mock/components/row-detail/`
