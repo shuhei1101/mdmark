@@ -61,6 +61,27 @@ scenarios:
       - コードブロックの上に、読めない行の行番号を書いた書き方の警告がある
       - コードブロックが元の罫線の文字のまま出ている
     test: test_error_when_tree_line_invalid
+  - name: 異常シナリオ（番号付きリストの無いステップの範囲）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 番号付きリストの無いステップの範囲を持つ Markdown
+        description: '`<!-- steps -->` 〜 `<!-- /steps -->` で、番号の無いリストだけを囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 手順にする番号付きリストが無い
+        M-->>P: 書き方の警告と、範囲の中身をそのまま描く
+        P-->>U: 書き方の警告とリストを表示
+    expected:
+      - 範囲の上に、手順にする番号付きリストが無いことを書いた書き方の警告がある
+      - 範囲の中のリストが、書いたとおりの番号の無いリストで表示されている
+    test: test_error_when_steps_without_ordered_list
 lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。
 issue: 4
 primary_actor: 文書を書く人
