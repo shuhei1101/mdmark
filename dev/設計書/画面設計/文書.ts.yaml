@@ -84,8 +84,8 @@ elements:
       - name: source
         value: 対応表の印は `library`、拡張の印は `extension`
     position: 描く先の要素
-    description: 外部ライブラリを読めない、または `draw` が例外を投げた印の場所を置き換える
-    visible_when: 外部ライブラリを読めないとき
+    description: 外部ライブラリや拡張のモジュールを読めない、`draw` が例外を投げた、または拡張の `schema` の `validate` が失敗した印の場所を置き換える
+    visible_when: 外部ライブラリか拡張のモジュールを読めないときと、拡張の `validate` が失敗したとき
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（知らせの枠）]
   - name: 見出しと節

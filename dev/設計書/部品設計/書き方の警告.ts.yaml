@@ -32,9 +32,9 @@ states:
       - name: message
         value: の引数が、拡張 `greet` の決まりに合いません。直してから読み込み直してください。
       - name: items
-        value: '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \"World\""},{"label":"2 つ目の 2","message":"Invalid length: Expected 1 but received 2"}]'
+        value: '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \"World\""},{"label":"2 つ目の 2","message":"Invalid type: Expected never but received \"2\""}]'
   - name: LongMark
-    description: 印が长く枠の幅を超える。印が枠の中で折り返す
+    description: 印が長く枠の幅を超える。印が枠の中で折り返す
     args:
       - name: mark
         value: '<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->'

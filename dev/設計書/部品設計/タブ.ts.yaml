@@ -50,18 +50,22 @@ events:
     value: 選んだタブの `aria-selected`
     description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする'
 css_properties:
-  - name: --mdmark-color-link
-    syntax: <color>
-    default: '#0969da（ダーク #4493f8）'
-    description: 選んだタブの下線の色
   - name: --mdmark-color-border
     syntax: <color>
     default: '#d1d9e0（ダーク #3d444d）'
-    description: タブの並びの下の線と中身の枠の色
+    description: 選んだタブを囲む線と、中身の枠の線の色
+  - name: --mdmark-color-bg
+    syntax: <color>
+    default: '#ffffff（ダーク #0d1117）'
+    description: 選んだタブと中身の地の色
+  - name: --mdmark-color-heading
+    syntax: <color>
+    default: '#1f2328（ダーク #f0f6fc）'
+    description: 選んだタブの文字の色
 accessibility:
   - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
   - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ
-  - 選んだタブは下線と文字の太さでも示し、色だけに頼らない
+  - 選んだタブは線で囲んで中身の地とつなぎ、形と地の色でも示し、色だけに頼らない
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[タブ]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]

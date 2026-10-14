@@ -42,7 +42,7 @@ states:
       - name: title
         value: とても長い見出しで文書の幅を超えて折り返すときの開閉の印とアンカーの位置を確かめる
   - name: Unmounted
-    description: '`render` が出した状態。開閉のボタンが無く、閉じた節の中身も読める'
+    description: '`render` が閉じた節を出した状態。開閉のボタンが無く、中身が見えたまま `data-section="closed"` を持つ'
     args:
       - name: level
         value: '2'
@@ -51,6 +51,8 @@ states:
       - name: title
         value: 補足
       - name: toggle
+        value: 'false'
+      - name: open
         value: 'false'
 lead: h2〜h4 の見出しと、次の同じか上の階層の見出しまでの中身。見出しに ID へのアンカーと、中身を開閉するボタンを付ける。
 args:
@@ -71,7 +73,7 @@ args:
     type: 真偽値
     required: false
     default: 'true'
-    description: 中身が開いているか。`false` のとき中身を `hidden="until-found"` にする
+    description: 中身が開いているか。`toggle` が `true` で `open` が `false` のとき中身を `hidden="until-found"` にする。`toggle` が `false` のときは隠さず、`data-section` だけに写す
   - name: toggle
     type: 真偽値
     required: false
@@ -108,4 +110,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
 status: planned
 notes:
-  HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}">{中身}</div>`。`toggle` が `false` のときは `button` を置かず見出しの文字をそのまま出す。モックは `dev/mock/components/section/`'
+  HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}" data-section="{open なら open、そうでなければ closed}">{中身}</div>`。`toggle` が `false` のときは `button` を置かず見出しの文字をそのまま出す。モックは `dev/mock/components/section/`'
