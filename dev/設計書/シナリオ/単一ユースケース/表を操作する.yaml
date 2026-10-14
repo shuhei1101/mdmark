@@ -20,17 +20,21 @@ scenarios:
         P-->>U: 昇順に並べ替えた表
         U->>P: もう一度押す
         P-->>U: 降順に並べ替えた表
+        U->>P: もう一度押す
+        P-->>U: 元の並びに戻した表
     expected:
       - 1 回押した後、数値の列が上から `2`・`10`・`33` の順（数値として比べる）で、見出しの `aria-sort` が `ascending`
       - 2 回押した後、数値の列が上から `33`・`10`・`2` の順で、見出しの `aria-sort` が `descending`
+      - 3 回押した後、数値の列が上から `10`・`2`・`33`（元の並び）で、見出しの `aria-sort` が `none`
       - 表の前後に印の文字が出ていない
     test: test_normal
-  - name: 正常シナリオ（絞り込む）
+  - name: 正常シナリオ（列の値を選んで絞り込む）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
-      - name: 絞り込みの表を持つ Markdown
-        description: '`<!-- table: data +filter -->` 〜 `<!-- /table -->` で、名前の列に `りんご`・`みかん`・`りんご飴` を持つ表を囲んだ文書'
+      - name: 値で絞り込む列を持つ Markdown
+        description: '`<!-- table: data filter=名前 -->` 〜 `<!-- /table -->` で、名前の列に `りんご`・`みかん`・`りんご飴` を持つ表を囲んだ文書'
+        notes: '`filter=` に種類を書かない列は、値を選んで絞り込む（`select`）'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -39,13 +43,67 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 絞り込みの欄を持つ表を描く
-        U->>P: 絞り込みの欄に「りんご」を入れる
-        P-->>U: 一致する行だけの表
+        M-->>P: 名前の列の見出しに絞り込みのボタンを持つ表を描く
+        U->>P: 名前の列の絞り込みのボタンを押す
+        P-->>U: 列の値をチェックボックスで並べたドロワー
+        U->>P: 候補の検索欄に「りんご」を入れる
+        P-->>U: 「りんご」を含む候補だけのドロワー
+        U->>P: 「りんご」のチェックボックスを選ぶ
+        P-->>U: 選んだ値の行だけの表
     expected:
-      - '`りんご`・`りんご飴` の行が表示され、`みかん` の行が表示されていない'
-      - 絞り込みの欄を空にすると 3 行とも表示される
-    test: test_normal_when_filtered
+      - 絞り込みのボタンは名前の列の見出しにだけあり、ほかの列の見出しには無い
+      - ドロワーに `りんご`・`みかん`・`りんご飴` のチェックボックスが並ぶ
+      - 候補の検索欄に `りんご` を入れた後、ドロワーの候補が `りんご`・`りんご飴` だけになる
+      - '`りんご` を選んだ後、`りんご` の行だけが表示され、名前の列の絞り込みのボタンが絞り込み中であることを示す'
+      - チェックボックスを全て外すと 3 行とも表示される
+    test: test_normal_when_filtered_by_values
+  - name: 正常シナリオ（文字で絞り込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 文字で絞り込む列を持つ Markdown
+        description: '`<!-- table: data filter=説明:text -->` 〜 `<!-- /table -->` で、説明の列に `描画を速くする`・`印刷を直す`・`描画の崩れを直す` を持つ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 説明の列の見出しに絞り込みのボタンを持つ表を描く
+        U->>P: 説明の列の絞り込みのボタンを押す
+        P-->>U: 文字の入力欄
+        U->>P: 入力欄に「描画」を入れる
+        P-->>U: 説明に「描画」を含む行だけの表
+    expected:
+      - 絞り込みのボタンを押すと、チェックボックスではなく文字の入力欄が出る
+      - '`描画` を入れた後、`描画を速くする`・`描画の崩れを直す` の行が表示され、`印刷を直す` の行が表示されていない'
+    test: test_normal_when_filtered_by_text
+  - name: 正常シナリオ（日付で絞り込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 日付で絞り込む列を持つ Markdown
+        description: '`<!-- table: data filter=更新日:date -->` 〜 `<!-- /table -->` で、更新日の列に `2026-10-01`・`2026-10-10`・`2026-10-20` を持つ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 更新日の列の見出しに絞り込みのボタンを持つ表を描く
+        U->>P: 更新日の列の絞り込みのボタンを押す
+        P-->>U: 開始日と終了日の入力欄
+        U->>P: 開始日に 2026-10-05、終了日に 2026-10-15 を入れる
+        P-->>U: 期間に入る行だけの表
+    expected:
+      - 絞り込みのボタンを押すと、開始日と終了日の日付の入力欄が出る
+      - 期間を入れた後、`2026-10-10` の行だけが表示されている
+      - 開始日だけを入れたときは、その日以降の行が表示される
+    test: test_normal_when_filtered_by_date
   - name: 正常シナリオ（ピン止めする）
     setup:
       - name: mdmark を読むページ
@@ -61,14 +119,17 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: ピン止めだけを付けた表を描く
-        U->>P: 先頭の列のピン止めを押す
-        U->>P: 表を横と縦にスクロールする
-        P-->>U: 先頭の列と見出し行が見えたままの表
+        M-->>P: 列の見出しにピン止めのボタンを持つ表を描く
+        U->>P: 表を縦にスクロールする
+        P-->>U: 見出し行が上端に留まった表
+        U->>P: 2 列目のピン止めを押す
+        U->>P: 表を横にスクロールする
+        P-->>U: 1 列目と 2 列目が左端に留まった表
     expected:
-      - 横にスクロールした後も、先頭の列が表の左端に見えている
-      - 縦にスクロールした後も、見出し行が表の上端に見えている
-      - ピン止めのボタンの `aria-pressed` が `true`
+      - ピン止めを押す前から、縦にスクロールした後も見出し行が表の上端に見えている
+      - 表がはみ出しているため、各列の見出しにピン止めのボタンがある
+      - 2 列目のピン止めを押して横にスクロールした後、1 列目と 2 列目が表の左端に見えている
+      - 2 列目のピン止めのボタンの `aria-pressed` が `true`
       - 並べ替えのボタンが無い（既定の種類はピン止めだけ）
     test: test_normal_when_pinned
   - name: 正常シナリオ（閉じた表）
@@ -98,6 +159,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 機能を外した表を持つ Markdown
         description: '`<!-- table: data -sort -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+        notes: 表は 10 列 30 行で、描く先の要素からはみ出す大きさ（ピン止めのボタンは、はみ出す表にだけ出る）
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -118,6 +180,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 知らない種類を書いた Markdown
         description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で表を囲み、表の後に段落を持つ文書'
+        notes: 表は 10 列 30 行で、描く先の要素からはみ出す大きさ（ピン止めのボタンは、はみ出す表にだけ出る）
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -176,6 +239,27 @@ scenarios:
       - 表の上に、`+unknown` が使えない機能であることと `size=` が使えないキーであることを、使えるものと一緒に書いた書き方の警告がある
       - 表にピン止めと並べ替えのボタンがある
     test: test_error_when_unknown_feature_or_key
+  - name: 異常シナリオ（知らない絞り込みの種類）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない絞り込みの種類を書いた Markdown
+        description: '`<!-- table: data filter=名前:range,説明:text -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない絞り込みの種類を当てない
+        M-->>P: 書き方の警告と、説明の列だけに絞り込みのボタンを付けた表を描く
+        P-->>U: 書き方の警告と表を表示
+    expected:
+      - 表の上に、`range` が使えない絞り込みの種類であることと、使える種類（`select`・`text`・`date`）を書いた書き方の警告がある
+      - 説明の列の見出しに絞り込みのボタンがあり、名前の列の見出しには無い
+    test: test_error_when_unknown_filter_kind
 lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。'
 issue: 4
 primary_actor: 文書を読む人
