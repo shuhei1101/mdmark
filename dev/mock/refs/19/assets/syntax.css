@@ -263,11 +263,10 @@
       }
     }
 
-    /* 期間の入力欄: 開始日と終了日を横に並べ、狭い幅では縦に積む */
+    /* 期間の入力欄: 日付の入力欄はドロワーの幅に 2 つ並ばないので、開始日と終了日を縦に積む */
     .mdmark-filter-range {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-      gap: 0.5em;
+      gap: 0.6em;
     }
 
     /* 値の候補: チェックボックスを縦に並べる */
