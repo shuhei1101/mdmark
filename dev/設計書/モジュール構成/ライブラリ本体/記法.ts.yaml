@@ -108,7 +108,7 @@ functions:
     container: src/render/syntax/headings.ts
     kind: 関数
     scope: internal
-    summary: コアルール。全ての `heading_open` に `slugify` の ID と class `mdmark-heading` を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す
+    summary: コアルール。全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
     args:
       - name: state
         type: StateCore
@@ -135,7 +135,7 @@ functions:
     container: src/render/syntax/sections.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`sections` がオンなら h2〜h4 の後ろから次の同じか上の階層の見出しの前までを部品『節』の中身の要素（`toggle: false`）で囲む。見出しの直後の `section` の印で `data-section` を決め、知らない値は警告を差し込んで `open` にする'
+    summary: 'コアルール。`sections` がオンなら h2〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『節』の中身の要素（`toggle: false`）で囲む。見出しの直後の `section` の印で `data-section` を決め、知らない値は警告を差し込んで `open` にする'
     args:
       - name: state
         type: StateCore
@@ -158,6 +158,12 @@ functions:
         condition: '`<!-- section: hidden -->`'
         mock: なし
         expected: 節の中身の頭に書き方の警告、`data-section="open"`
+      - name: test_wrap_sections_when_feature_off
+        case: 正常
+        summary: sections がオフなら見出しに class を付けず、囲まない
+        condition: '`env.features.sections` が `false` で `## A`'
+        mock: なし
+        expected: '`mdmark-heading` と `mdmark-section-body` が無く、`id="a"` はある'
   - name: readTableSpec
     title: 表の印を読む
     container: src/render/syntax/tables.ts
