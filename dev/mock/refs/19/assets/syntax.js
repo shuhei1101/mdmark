@@ -1,4 +1,4 @@
-// 拡張記法の操作（実装の mount が付ける振る舞いのモック）: 表の並べ替え・絞り込み・ピン止め、タブ、節と行の詳細の開閉、
+// 拡張記法の操作（実装の mount が付ける振る舞いのモック）: 表の並べ替え・列ごとの絞り込み・ピン止め、タブ、節と行の詳細の開閉、
 // 移る先の節を開く処理と、印刷の前後の展開。モックの「印刷の見え方」からも呼べるよう window.mdmarkMockPrint に出す
 
 // sample.js と同じ大域に読むため、宣言をブロックに閉じる
@@ -21,34 +21,8 @@
     return next?.matches(".mdmark-row-detail") ? next : null;
   };
 
-  /** 列の値で行を並べ替え、見出しの aria-sort とアイコンを向きに合わせる。 */
-  const sortTable = (table, th) => {
-    const index = th.cellIndex;
-    const ascending = th.getAttribute("aria-sort") !== "ascending";
-    const rows = bodyRows(table);
-    const texts = rows.map((row) => row.cells[index].textContent.trim());
-    const numeric = texts.every((text) => toNumber(text) !== null);
-    const order = rows
-      .map((row, i) => ({ row, detail: detailRowOf(row), key: texts[i] }))
-      .sort((a, b) => {
-        const diff = numeric ? toNumber(a.key) - toNumber(b.key) : a.key.localeCompare(b.key, "ja");
-        return ascending ? diff : -diff;
-      });
-    // 行の詳細は親の行と一緒に動かす
-    const body = table.tBodies[0];
-    for (const { row, detail } of order) {
-      body.append(row);
-      if (detail) body.append(detail);
-    }
-    for (const other of th.parentElement.cells) {
-      if (other !== th) {
-        other.removeAttribute("aria-sort");
-        setSortIcon(other, "none");
-      }
-    }
-    th.setAttribute("aria-sort", ascending ? "ascending" : "descending");
-    setSortIcon(th, ascending ? "ascending" : "descending");
-  };
+  // 並べ替えの向きの順番（押すたびに次へ進み、最後の次は先頭へ戻る）
+  const SORT_CYCLE = ["none", "ascending", "descending"];
 
   // 並べ替えのアイコンの線（並べていない・昇順・降順）
   const SORT_ICON_PATHS = {
@@ -57,18 +31,74 @@
     descending: "M8 3v9.5M4.5 9 8 12.5 11.5 9",
   };
 
-  /** 見出しの並べ替えのアイコンを向きに合わせて描き直す。 */
-  const setSortIcon = (th, direction) => {
+  /** 見出しの並べ替えの向きを aria-sort とアイコンに当てる。 */
+  const setSortState = (th, direction) => {
+    if (direction === "none") th.removeAttribute("aria-sort");
+    else th.setAttribute("aria-sort", direction);
     const path = th.querySelector(".mdmark-sort path");
     if (path) path.setAttribute("d", SORT_ICON_PATHS[direction]);
   };
 
-  /** 絞り込みの文字を含む行だけを出し、1 行も無ければ一致なしの行を出す。 */
-  const filterTable = (table, query) => {
-    const needle = query.trim().toLowerCase();
+  /** 列の値で行を並べ替える。向きを昇順 → 降順 → 元の並びの順に進める。 */
+  const sortTable = (table, th) => {
+    const index = th.cellIndex;
+    const current = th.getAttribute("aria-sort") ?? "none";
+    const direction = SORT_CYCLE[(SORT_CYCLE.indexOf(current) + 1) % SORT_CYCLE.length];
+    const rows = bodyRows(table);
+    const texts = rows.map((row) => row.cells[index].textContent.trim());
+    const numeric = texts.every((text) => toNumber(text) !== null);
+    const order = rows
+      .map((row, i) => ({ row, detail: detailRowOf(row), key: texts[i], original: Number(row.dataset.order) }))
+      .sort((a, b) => {
+        // 元の並び: 描いたときの順番に戻す
+        if (direction === "none") return a.original - b.original;
+        const diff = numeric ? toNumber(a.key) - toNumber(b.key) : a.key.localeCompare(b.key, "ja");
+        return direction === "ascending" ? diff : -diff;
+      });
+    // 行の詳細と一致なしの行は、親の行と表の末尾に付けたまま動かす
+    const body = table.tBodies[0];
+    const empty = body.querySelector(".mdmark-table-empty");
+    for (const { row, detail } of order) {
+      body.append(row);
+      if (detail) body.append(detail);
+    }
+    if (empty) body.append(empty);
+    for (const other of th.parentElement.cells) {
+      if (other !== th) setSortState(other, "none");
+    }
+    setSortState(th, direction);
+  };
+
+  /** 列の絞り込みの条件から、行を出すかを決める関数を返す（条件が無ければ null）。 */
+  const filterPredicate = (drawer) => {
+    const kind = drawer.dataset.filterKind;
+    if (kind === "select") {
+      const checked = [...drawer.querySelectorAll(".mdmark-filter-options input:checked")].map((input) => input.value);
+      return checked.length ? (text) => checked.includes(text) : null;
+    }
+    if (kind === "text") {
+      const needle = drawer.querySelector("input").value.trim().toLowerCase();
+      return needle ? (text) => text.toLowerCase().includes(needle) : null;
+    }
+    // date: 開始日以降・終了日以前（片方だけでもよい）。日付は YYYY-MM-DD の文字のまま比べる
+    const [from, to] = [...drawer.querySelectorAll("input")].map((input) => input.value);
+    return from || to ? (text) => (!from || text >= from) && (!to || text <= to) : null;
+  };
+
+  /** 全ての列の絞り込みを当て、絞り込み中の列のボタンを示し、1 行も無ければ一致なしの行を出す。 */
+  const applyFilters = (wrapper) => {
+    const table = wrapper.querySelector("table");
+    const predicates = [];
+    for (const drawer of wrapper.querySelectorAll(".mdmark-filter-drawer")) {
+      const predicate = filterPredicate(drawer);
+      const button = wrapper.querySelector(`[popovertarget="${drawer.id}"]`);
+      button.classList.toggle("is-active", predicate !== null);
+      button.querySelector(".mdmark-visually-hidden").textContent = predicate ? "（絞り込み中）" : "";
+      if (predicate) predicates.push({ index: Number(drawer.dataset.column), predicate });
+    }
     let shown = 0;
     for (const row of bodyRows(table)) {
-      const match = needle === "" || row.textContent.toLowerCase().includes(needle);
+      const match = predicates.every(({ index, predicate }) => predicate(row.cells[index].textContent.trim()));
       row.hidden = !match;
       // 行の詳細の行は、親の行が隠れたら一緒に隠す。出すときは開閉の状態に戻す
       const detail = detailRowOf(row);
@@ -78,20 +108,65 @@
       }
       if (match) shown += 1;
     }
-    table.querySelector(".mdmark-table-empty").hidden = shown > 0;
+    const empty = table.querySelector(".mdmark-table-empty");
+    if (empty) empty.hidden = shown > 0;
   };
 
-  /** 表がはみ出すときだけピン止めのボタンを出す。 */
-  const updatePinVisibility = (wrapper) => {
-    const pin = wrapper.querySelector(".mdmark-pin");
-    if (!pin) return;
+  /** 値の候補を、検索欄の文字を含むものだけにする。 */
+  const narrowOptions = (drawer, query) => {
+    const needle = query.trim().toLowerCase();
+    let shown = 0;
+    for (const item of drawer.querySelectorAll(".mdmark-filter-options li")) {
+      const match = item.textContent.toLowerCase().includes(needle);
+      item.hidden = !match;
+      if (match) shown += 1;
+    }
+    drawer.querySelector(".mdmark-filter-none").hidden = shown > 0;
+  };
+
+  /** ドロワーを押した見出しのボタンの下に置き、画面の端からはみ出さないようにする。 */
+  const placeDrawer = (drawer, button) => {
+    const rect = button.getBoundingClientRect();
+    const gutter = 16;
+    const left = Math.min(Math.max(rect.right - drawer.offsetWidth, gutter), window.innerWidth - drawer.offsetWidth - gutter);
+    const below = rect.bottom + 4;
+    const top = below + drawer.offsetHeight > window.innerHeight - gutter ? Math.max(gutter, rect.top - drawer.offsetHeight - 4) : below;
+    drawer.style.left = `${left}px`;
+    drawer.style.top = `${top}px`;
+  };
+
+  /** 先頭から count 列までを表の左端に留める（0 で外す）。押したピンのボタンを押された状態にする。 */
+  const pinColumns = (wrapper, count) => {
     const table = wrapper.querySelector("table");
-    const pinned = wrapper.classList.contains("is-pinned");
-    // ピン止めした表の高さの上限（rem で書いた変数）を px にして、表がそれより高いかを比べる
-    const maxHeightRem = parseFloat(getComputedStyle(table).getPropertyValue("--mdmark-table-max-height"));
-    const tooTall = table.scrollHeight > maxHeightRem * parseFloat(getComputedStyle(document.documentElement).fontSize);
-    // ピン止めした後は押し直して戻せるよう、出したままにする
-    pin.hidden = !pinned && table.scrollWidth <= table.clientWidth && !tooTall;
+    const headCells = [...table.tHead.rows[0].cells];
+    // 留める列の左の位置: 前の列までの幅の合計
+    const lefts = [];
+    let left = 0;
+    for (const cell of headCells) {
+      lefts.push(left);
+      left += cell.offsetWidth;
+    }
+    for (const row of table.rows) {
+      // 行の詳細の行（1 つのセルが全ての列にまたがる）は留めない
+      if (row.matches(".mdmark-row-detail, .mdmark-table-empty")) continue;
+      [...row.cells].forEach((cell, i) => {
+        const pinned = i < count;
+        cell.classList.toggle("is-pinned-col", pinned);
+        cell.classList.toggle("is-pinned-edge", pinned && i === count - 1);
+        cell.style.left = pinned ? `${lefts[i]}px` : "";
+      });
+    }
+    headCells.forEach((cell, i) => {
+      cell.querySelector(".mdmark-pin")?.setAttribute("aria-pressed", String(i === count - 1));
+    });
+    wrapper.dataset.pinned = String(count);
+  };
+
+  /** 表が横にはみ出すときだけピン止めのボタンを出す（留めている間は戻せるよう出したまま）。 */
+  const updatePinVisibility = (wrapper) => {
+    const table = wrapper.querySelector("table");
+    const overflow = table.scrollWidth > table.clientWidth || Number(wrapper.dataset.pinned ?? 0) > 0;
+    for (const pin of wrapper.querySelectorAll(".mdmark-pin")) pin.hidden = !overflow;
   };
 
   /** 行の詳細を持つ表に、表の見えている幅を変数で渡す（詳細の中身をその幅に収める）。 */
@@ -103,24 +178,53 @@
 
   for (const wrapper of document.querySelectorAll(".mdmark-table")) {
     const table = wrapper.querySelector("table");
+    // 元の並びに戻すための描いたときの順番
+    bodyRows(table).forEach((row, i) => {
+      row.dataset.order = String(i);
+    });
+    // 絞り込み・並べ替えで列の幅が変わらないよう、描いたときの幅を最小の幅にする
+    for (const cell of table.tHead.rows[0].cells) cell.style.minWidth = `${cell.offsetWidth}px`;
     updateVisibleWidth(table);
     for (const button of wrapper.querySelectorAll(".mdmark-sort")) {
       button.addEventListener("click", () => sortTable(table, button.closest("th")));
     }
-    const input = wrapper.querySelector(".mdmark-table-filter input");
-    input?.addEventListener("input", () => filterTable(table, input.value));
-    const pin = wrapper.querySelector(".mdmark-pin");
-    pin?.addEventListener("click", () => {
-      const pinned = !wrapper.classList.contains("is-pinned");
-      wrapper.classList.toggle("is-pinned", pinned);
-      pin.setAttribute("aria-pressed", String(pinned));
-    });
+    for (const drawer of wrapper.querySelectorAll(".mdmark-filter-drawer")) {
+      const button = wrapper.querySelector(`[popovertarget="${drawer.id}"]`);
+      // 開いたとき: ボタンの下に置き、最初の入力欄へフォーカスを移す
+      drawer.addEventListener("toggle", (event) => {
+        if (event.newState !== "open") return;
+        placeDrawer(drawer, button);
+        drawer.querySelector("input")?.focus();
+      });
+      drawer.querySelector(".mdmark-filter-search")?.addEventListener("input", (event) => narrowOptions(drawer, event.target.value));
+      for (const input of drawer.querySelectorAll("input:not(.mdmark-filter-search)")) {
+        input.addEventListener("input", () => applyFilters(wrapper));
+      }
+      drawer.querySelector(".mdmark-filter-clear").addEventListener("click", () => {
+        for (const input of drawer.querySelectorAll("input")) {
+          if (input.type === "checkbox") input.checked = false;
+          else input.value = "";
+        }
+        narrowOptions(drawer, "");
+        applyFilters(wrapper);
+      });
+    }
+    // 押した列までを留める。押された状態のボタンを押し直すと外す
+    for (const pin of wrapper.querySelectorAll(".mdmark-pin")) {
+      pin.addEventListener("click", () => {
+        const count = pin.closest("th").cellIndex + 1;
+        pinColumns(wrapper, pin.getAttribute("aria-pressed") === "true" ? 0 : count);
+      });
+    }
+    if (wrapper.dataset.pinned) pinColumns(wrapper, Number(wrapper.dataset.pinned));
+    applyFilters(wrapper);
     updatePinVisibility(wrapper);
   }
   window.addEventListener("resize", () => {
     for (const wrapper of document.querySelectorAll(".mdmark-table")) {
       updatePinVisibility(wrapper);
       updateVisibleWidth(wrapper.querySelector("table"));
+      if (Number(wrapper.dataset.pinned ?? 0) > 0) pinColumns(wrapper, Number(wrapper.dataset.pinned));
     }
   });
 

@@ -17,8 +17,8 @@
       vertical-align: -0.125em;
     }
 
-    /* 文書の中の小さな操作ボタン（ピン止め・行の詳細の開閉・見出しのアンカー）: 高さを揃え、地を透明にする */
-    :is(.mdmark-pin, .mdmark-row-toggle, .mdmark-anchor) {
+    /* 文書の中の小さな操作ボタン（絞り込み・ピン止め・行の詳細の開閉・見出しのアンカー）: 高さを揃え、地を透明にする */
+    :is(.mdmark-filter, .mdmark-pin, .mdmark-row-toggle, .mdmark-anchor) {
       display: inline-grid;
       place-items: center;
       width: 1.75rem;
@@ -59,56 +59,47 @@
       }
     }
 
-    /* 表の入れ物: 絞り込みの欄・書き方の警告と表をまとめる */
+    /* 表の入れ物: 書き方の警告と表をまとめる */
     .mdmark-table {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: calc(var(--mdmark-space) / 2);
       justify-items: start;
-    }
 
-    /* 絞り込みの欄: ラベルを常に見せ、入力欄を横に並べる */
-    .mdmark-table-filter {
-      display: flex;
-      justify-self: stretch;
-      flex-wrap: wrap;
-      gap: 0.25em 0.6em;
-      align-items: center;
-      font-size: 0.875em;
-
-      label {
-        color: var(--mdmark-color-muted);
-        font-weight: 600;
+      /* 表: 高さを抑えて表の中で縦にもスクロールし、見出し行を上端に留める */
+      table {
+        max-height: var(--mdmark-table-max-height);
+        overflow: auto;
       }
 
-      /* 入力欄: 操作部品の高さに揃え、狭い幅では残りの幅いっぱいに使う */
-      input {
-        flex: 1 1 14em;
-        box-sizing: border-box;
-        min-width: 0;
-        max-width: 20em;
-        height: 2rem;
-        padding: 0 0.6em;
-        border: 1px solid var(--mdmark-color-border);
-        border-radius: calc(var(--mdmark-radius) - 2px);
-        background: var(--mdmark-color-bg);
-        color: var(--mdmark-color-text);
-        font: inherit;
-
-        &:focus-visible {
-          border-color: var(--mdmark-color-link);
-          outline: 2px solid var(--mdmark-color-link);
-          outline-offset: 0;
-        }
+      /* 見出し行: 本文の行（面の色）と見出しの色で分け、縦にスクロールしても上端に留める。
+         重ねた罫線は留まらず上に隙間ができるので、上の罫線を外し、上下の線を影で描く */
+      thead th {
+        position: sticky;
+        top: 0;
+        border-block-start: 0;
+        z-index: 1;
+        background: var(--mdmark-color-table-head);
+        box-shadow:
+          inset 0 1px var(--mdmark-color-border),
+          inset 0 -2px var(--mdmark-color-border);
+        color: var(--mdmark-color-heading);
       }
     }
 
-    /* 見出しのセルの中身: 列名（並べ替えのボタン）とピン止めのボタンを横に並べる */
+    /* 見出しのセルの中身: 列名（並べ替えのボタン）と、絞り込み・ピン止めのボタンを横に並べる */
     .mdmark-th {
       display: flex;
       gap: 0.35em;
       align-items: center;
       justify-content: space-between;
+    }
+
+    /* 見出しのセルの操作のまとまり: 絞り込みとピン止めのボタンを詰めて並べる */
+    .mdmark-th-tools {
+      display: inline-flex;
+      gap: 0.15em;
+      align-items: center;
     }
 
     /* 並べ替えのボタン: 列名そのものを押せるようにし、向きのアイコンを後ろに置く */
@@ -144,16 +135,17 @@
     }
 
     /* 並べ替えた列: 向きのアイコンを本文の色にして、並べた列だと分かるようにする */
-    th[aria-sort] .mdmark-sort .mdmark-icon {
+    th:is([aria-sort="ascending"], [aria-sort="descending"]) .mdmark-sort .mdmark-icon {
       color: var(--mdmark-color-text);
     }
 
-    /* ピン止めのボタン: 押した後は面の色と塗ったピンで、押す前と見分ける */
-    .mdmark-pin {
+    /* 絞り込み・ピン止めのボタン: 見出しの文字より小さい四角のボタン */
+    :is(.mdmark-filter, .mdmark-pin) {
       width: 1.5rem;
       height: 1.5rem;
 
-      &[aria-pressed="true"] {
+      /* 絞り込み中の列・押した後のピン: 本文の地と線と塗ったアイコンで、押す前と見分ける */
+      &:is(.is-active, [aria-pressed="true"]) {
         border-color: var(--mdmark-color-border);
         background: var(--mdmark-color-bg);
         color: var(--mdmark-color-text);
@@ -163,7 +155,7 @@
         }
       }
 
-      /* 表がはみ出さないとき: 押しても何も変わらないので出さない（hidden を描く処理が付け外しする） */
+      /* 表がはみ出さないときのピン止め: 押しても何も変わらないので出さない（hidden を描く処理が付け外しする） */
       &[hidden] {
         display: none;
       }
@@ -179,43 +171,161 @@
         border-inline: 0;
       }
 
-      th {
-        background: transparent;
+      thead th {
+        background: var(--mdmark-color-bg);
       }
     }
 
-    /* ピン止めした表: 高さを抑えて表の中で縦にもスクロールし、見出し行と先頭の列を留める */
-    .mdmark-table.is-pinned table {
-      max-height: var(--mdmark-table-max-height);
-      overflow-y: auto;
+    /* ピン止めした列: 表の左端に留め、後ろのセルが透けないよう表と同じ面の色を敷く（左の位置は描く処理が列の幅から入れる） */
+    .mdmark-table :is(th, td).is-pinned-col {
+      position: sticky;
+      background: var(--mdmark-color-surface);
+    }
 
-      /* 見出し行: 表の上端に留める */
-      thead th {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        background: var(--mdmark-color-surface);
-      }
+    /* ピン止めした列の見出し: 見出し行と左端の両方に留まるので前に出し、見出しの色を敷く */
+    .mdmark-table thead th.is-pinned-col {
+      z-index: 2;
+      background: var(--mdmark-color-table-head);
+    }
 
-      /* 先頭の列: 表の左端に留め、後ろのセルが透けないよう表と同じ面の色を敷く */
-      :is(th, td):first-child {
-        position: sticky;
-        left: 0;
-        background: var(--mdmark-color-surface);
-        box-shadow: inset -1px 0 var(--mdmark-color-border);
-      }
+    /* ピン止めした最後の列: 右の境目に線を引き、留めた列とスクロールする列を分ける */
+    .mdmark-table td.is-pinned-edge {
+      box-shadow: inset -2px 0 var(--mdmark-color-border);
+    }
 
-      /* 左上のセル: 見出し行と先頭の列の両方に重なるので前に出す */
-      thead th:first-child {
-        z-index: 2;
-        background: var(--mdmark-color-surface);
-      }
+    /* ピン止めした最後の列の見出し: 見出し行の上下の線に右の境目の線を足す */
+    .mdmark-table thead th.is-pinned-edge {
+      box-shadow:
+        inset 0 1px var(--mdmark-color-border),
+        inset 0 -2px var(--mdmark-color-border),
+        inset -2px 0 var(--mdmark-color-border);
     }
 
     /* 絞り込みで一致する行が無いときの行 */
     .mdmark-table-empty td {
       color: var(--mdmark-color-muted);
       text-align: center;
+    }
+
+    /* 絞り込みのドロワー: 押した見出しのボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
+    .mdmark-filter-drawer {
+      position: fixed;
+      inset: auto;
+      box-sizing: border-box;
+      width: min(18rem, calc(100vw - 32px));
+      max-height: min(24rem, calc(100vh - 32px));
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.75);
+      overflow: auto;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.875rem;
+      line-height: 1.5;
+
+      /* ドロワーの中のまとまり同士の間隔 */
+      > * + * {
+        margin-block-start: 0.6em;
+      }
+    }
+
+    /* ドロワーの題: どの列を絞り込むか */
+    .mdmark-filter-title {
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* ドロワーの入力欄: ラベルを上に常に出し、入力欄を幅いっぱいにする */
+    .mdmark-filter-field {
+      display: grid;
+      gap: 0.2em;
+      color: var(--mdmark-color-muted);
+
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        height: 2rem;
+        padding: 0 0.6em;
+        border: 1px solid var(--mdmark-color-border);
+        border-radius: calc(var(--mdmark-radius) - 2px);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+        font: inherit;
+
+        &:focus-visible {
+          border-color: var(--mdmark-color-link);
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 0;
+        }
+      }
+    }
+
+    /* 期間の入力欄: 開始日と終了日を横に並べ、狭い幅では縦に積む */
+    .mdmark-filter-range {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+      gap: 0.5em;
+    }
+
+    /* 値の候補: チェックボックスを縦に並べる */
+    .mdmark-filter-options {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      /* 候補 1 つ: チェックボックスと値を横に並べ、行全体を押せるようにする */
+      label {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        min-height: 1.75rem;
+        cursor: pointer;
+      }
+
+      /* チェックボックス: 差し色で選んだ状態を示す */
+      input {
+        accent-color: var(--mdmark-color-link);
+      }
+    }
+
+    /* 検索で一致する候補が無いとき */
+    .mdmark-filter-none {
+      margin: 0;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 絞り込みを外すボタン: 文字のボタン */
+    .mdmark-filter-clear {
+      min-height: 2rem;
+      padding: 0 0.75em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font: inherit;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-muted);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 読み上げにだけ出す文字（絞り込み中の知らせ） */
+    .mdmark-visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
 
     /* 閉じた表の折り畳み: 表の最小の幅で広がらず、描く先の幅に収めて中の表を横スクロールさせる */

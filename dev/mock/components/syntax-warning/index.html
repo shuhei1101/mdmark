@@ -53,8 +53,19 @@
   <p><code>&lt;!-- table: data +unknown size=2 --&gt;</code> の読めない指定を当てずに描いています。</p>
   <ul>
     <li><code>+unknown</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li>
-    <li><code>size=</code>: 使えないキーです。表の印はキーを持ちません</li>
+    <li><code>size=</code>: 使えないキーです。使えるキーは <code>filter=</code> です</li>
   </ul>
+</div>
+        </article>
+      </section>
+
+      <!-- 知らない絞り込みの種類（表） -->
+      <section aria-labelledby="state-unknown-filter">
+        <h2 class="catalog-label" id="state-unknown-filter">知らない絞り込みの種類（表）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- table: data filter=名前:range,説明:text --&gt;</code> の絞り込みの種類 <code>range</code> は使えません。使える種類は <code>select</code>・<code>text</code>・<code>date</code> です。名前の列には絞り込みを付けずに描いています。</p>
 </div>
         </article>
       </section>

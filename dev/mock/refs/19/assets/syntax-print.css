@@ -5,8 +5,8 @@
 /* mdmark の層: 印刷のときの拡張記法 */
 @layer mdmark {
   .mdmark {
-    /* 紙では押せない操作（ピン止め・絞り込み・行の詳細の開閉・見出しのアンカー・開閉の印）: 出さない */
-    :is(.mdmark-pin, .mdmark-table-filter, .mdmark-row-toggle, .mdmark-anchor, .mdmark-disclosure, .mdmark-section-toggle .mdmark-icon) {
+    /* 紙では押せない操作（絞り込み・ピン止め・行の詳細の開閉・見出しのアンカー・開閉の印）: 出さない */
+    :is(.mdmark-filter, .mdmark-filter-drawer, .mdmark-pin, .mdmark-row-toggle, .mdmark-anchor, .mdmark-disclosure, .mdmark-section-toggle .mdmark-icon) {
       display: none;
     }
 
@@ -15,8 +15,8 @@
       display: none;
     }
 
-    /* ピン止めした表: 高さの上限と留める指定を外し、全ての行を紙に出す */
-    .mdmark-table.is-pinned table {
+    /* 表: 高さの上限と、見出し行・ピン止めした列を留める指定を外し、全ての行を紙に出す */
+    .mdmark-table table {
       max-height: none;
 
       :is(th, td) {
