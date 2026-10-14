@@ -1,0 +1,495 @@
+title: "ライブラリ本体 / 記法"
+lead: 印と記法を HTML にする markdown-it のコアルール。記法ごとに 1 ファイルで、トークンの並びを書き換え、部品の HTML を差し込む。機能がオフの記法は何もしない。読めない指定は書き方の警告を差し込み、読めた指定で描く。
+directory: |-
+  ```tree
+  src/render/syntax/
+  ├── headings.ts     # 見出しの ID とアンカー
+  ├── sections.ts     # 節の囲み
+  ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性
+  ├── row-details.ts  # 行の詳細
+  ├── tabs.ts         # タブ
+  ├── steps.ts        # ステップ
+  ├── callouts.ts     # 注意書き
+  ├── tree.ts         # ファイルツリー
+  ├── badges.ts       # バッジ
+  ├── figures.ts      # 図表の番号と参照
+  ├── toc.ts          # 目次
+  └── warnings.ts     # 書き方の警告を差し込む助け
+  ```
+data_models:
+  - name: TableSpec
+    title: 表の指定
+    container: src/render/syntax/tables.ts
+    summary: 表の印を読んだ結果
+    properties:
+      - name: kind
+        type: '"default" | "data" | "plain"'
+        description: 種類。知らない種類は `default`
+      - name: features
+        type: Array<"sort" | "pin" | "filter">
+        description: 種類の機能に `+機能`・`-機能` を当てたもの
+      - name: filters
+        type: 'Array<{ column: number; kind: "select" | "text" | "date" }>'
+        description: 絞り込む列。表に無い列名・知らない種類は入れない
+      - name: collapse
+        type: '"none" | "closed" | "open"'
+        description: 折り畳み。`closed` と `open` を両方書いたら `closed`
+      - name: warnings
+        type: WarningItem[]
+        description: 読めなかった指定
+  - name: TreeNode
+    title: ツリーの項目
+    container: src/render/syntax/tree.ts
+    summary: 罫線を読んだ 1 項目（部品『ファイルツリー』の `nodes` の要素）
+    properties:
+      - name: name
+        type: string
+        description: 項目の名前
+      - name: children
+        type: TreeNode[] | undefined
+        description: 子の項目
+constants:
+  - name: TABLE_KINDS
+    title: 表の種類と機能
+    container: src/render/syntax/tables.ts
+    summary: 種類ごとの既定の機能
+    entries:
+      - key: default
+        value: '["pin"]'
+      - key: data
+        value: '["sort", "pin", "filter"]'
+      - key: plain
+        value: '[]'
+  - name: FILTER_KINDS
+    title: 絞り込みの種類
+    container: src/render/syntax/tables.ts
+    summary: '`filter=` に書ける種類。省いたときは先頭'
+    value: '["select", "text", "date"]'
+  - name: CALLOUT_KINDS
+    title: 注意書きの種類
+    container: src/render/syntax/callouts.ts
+    summary: 引用の 1 行目に書ける種類。知らない種類は `note`
+    value: '["note", "tip", "important", "warning", "caution"]'
+functions:
+  - name: slugify
+    title: 見出しの ID を作る
+    container: src/render/syntax/headings.ts
+    kind: 関数
+    scope: internal
+    summary: GitHub と同じ規則で見出しの文字から ID を作り、使用済みの ID には `-1`・`-2` を付ける
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 見出しの文字（タグを除いたもの）
+      - name: used
+        type: Map<string, number>
+        required: true
+        description: 文書の中で使った ID と回数
+    returns:
+      type: string
+      description: 見出しの ID
+    side_effects: '`used` を書き換える'
+    unit_tests:
+      - name: test_slugify
+        case: 正常
+        summary: 小文字にし、記号を落とし、空白を `-` にする
+        condition: '`Hello, World!` と `使い方`'
+        mock: なし
+        expected: '`hello-world` と `使い方`'
+      - name: test_slugify_when_duplicated
+        case: 正常
+        summary: 同じ ID の 2 つ目から番号を付ける
+        condition: '`使い方` を 3 回'
+        mock: なし
+        expected: '`使い方`・`使い方-1`・`使い方-2`'
+  - name: assignHeadingIds
+    title: 見出しに ID とアンカーを付ける
+    container: src/render/syntax/headings.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。全ての `heading_open` に `slugify` の ID と class `mdmark-heading` を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態（`state.env` は `RenderEnv`）
+    side_effects: '`state.tokens` と `env.headings` を書き換える'
+    callees:
+      - '#functions[slugify]'
+    unit_tests:
+      - name: test_assign_heading_ids
+        case: 正常
+        summary: 見出しに ID とアンカーを付ける
+        condition: '`# Hello, World!` と `## 使い方` を 2 つ'
+        mock: なし
+        expected: '`id` が `hello-world`・`使い方`・`使い方-1` で、各見出しに `<a class="mdmark-anchor" href="#{ID}" aria-label="「{文字}」へのリンク">`'
+      - name: test_assign_heading_ids_when_anchors_off
+        case: 正常
+        summary: anchors がオフでも ID は付け、アンカーは付けない
+        condition: '`env.features.anchors` が `false`'
+        mock: なし
+        expected: '`id` があり、`mdmark-anchor` が無い'
+  - name: wrapSections
+    title: 節を囲む
+    container: src/render/syntax/sections.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`sections` がオンなら h2〜h4 の後ろから次の同じか上の階層の見出しの前までを部品『節』の中身の要素（`toggle: false`）で囲む。見出しの直後の `section` の印で `data-section` を決め、知らない値は警告を差し込んで `open` にする'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSection]
+      - '#functions[pushWarning]'
+    unit_tests:
+      - name: test_wrap_sections
+        case: 正常
+        summary: h2 と h3 の節を入れ子に囲み、closed の節も中身を隠さない
+        condition: '`## A`・`### B`・直後に `<!-- section: closed -->` を持つ `## C`'
+        mock: なし
+        expected: '`section-a` の中に `section-b`、`section-c` が `data-section="closed"` を持ち `hidden` を持たない'
+      - name: test_wrap_sections_when_unknown_value
+        case: 正常
+        summary: 知らない開閉の指定は警告を差し込み、開いた節にする
+        condition: '`<!-- section: hidden -->`'
+        mock: なし
+        expected: 節の中身の頭に書き方の警告、`data-section="open"`
+  - name: readTableSpec
+    title: 表の印を読む
+    container: src/render/syntax/tables.ts
+    kind: 関数
+    scope: internal
+    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`
+    args:
+      - name: args
+        type: MdmarkMarkArgs | undefined
+        required: false
+        description: 表の印の引数（囲まない表は `undefined`）
+      - name: headers
+        type: string[]
+        required: true
+        description: 表の見出しの文字
+    returns:
+      type: TableSpec
+      description: 表の指定
+    unit_tests:
+      - name: test_read_table_spec
+        case: 正常
+        summary: 種類・機能・絞り込み・折り畳みを読む
+        condition: '`data -sort filter=名前,更新日:date closed` と見出し `名前`・`値`・`更新日`'
+        mock: なし
+        expected: '`kind` が `data`、`features` が `["pin", "filter"]`、`filters` が `[{0, select}, {2, date}]`、`collapse` が `closed`、`warnings` が空'
+      - name: test_read_table_spec_when_unknown
+        case: 正常
+        summary: 読めない指定を警告にし、読めた指定を当てる
+        condition: '`unknown +sort +foo size=2 filter=無い列,名前:range closed open`'
+        mock: なし
+        expected: '`kind` が `default`、`features` が `["pin", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `unknown`・`+foo`・`size=`・`無い列`・`range`・`closed と open` の項目'
+  - name: decorateTables
+    title: 表を表の部品にする
+    container: src/render/syntax/tables.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・折り畳み）に入れ、警告を囲みの頭に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む
+    description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[readTableSpec]'
+      - '#functions[pushWarning]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTable]
+    unit_tests:
+      - name: test_decorate_tables
+        case: 正常
+        summary: 表の印の表を指定どおりに囲み、囲まない表を default にする
+        condition: '`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` の表と、印の無い表'
+        mock: なし
+        expected: 1 つ目が `data-kind="data" data-features="sort pin filter" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin"`
+      - name: test_decorate_tables_when_range_not_closed
+        case: 正常
+        summary: 閉じの印が無いときは文書の終わりまでの表に当て、警告を差し込む
+        condition: '`<!-- table: data -->` の後に表が 2 つ'
+        mock: なし
+        expected: 2 つとも `data-kind="data"`、警告の本文に `<!-- /table -->`
+      - name: test_decorate_tables_when_feature_off
+        case: 正常
+        summary: table がオフなら今の表のまま
+        condition: '`env.features.table` が `false`'
+        mock: なし
+        expected: '`<table tabindex="0" aria-label="…">` があり、`mdmark-table` が無い'
+  - name: attachRowDetails
+    title: 行の詳細を表に入れる
+    container: src/render/syntax/row-details.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`row-details` がオンなら、表の直後の `row-detail` の範囲のトークンを、その行の直後の部品『行の詳細』の行（`toggle: false`）に移す。表に無い行は警告を差し込み、中身を表の後に残す'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderRowDetail]
+      - '#functions[pushWarning]'
+    unit_tests:
+      - name: test_attach_row_details
+        case: 正常
+        summary: 詳細を指定の行の直後に入れる
+        condition: '3 行の表の直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` に段落'
+        mock: なし
+        expected: 2 行目の直後に `<tr class="mdmark-row-detail" data-row="2"><td colspan="{列の数}">` と段落があり、表の後に段落が無い
+      - name: test_attach_row_details_when_row_missing
+        case: 正常
+        summary: 表に無い行は警告を差し込み、中身を表の後に残す
+        condition: '3 行の表と `<!-- row-detail: 5 -->`'
+        mock: なし
+        expected: 警告の本文に `5` と `3`、表の後に段落
+  - name: buildTabs
+    title: タブの範囲を区切る
+    container: src/render/syntax/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。区切りの見出しのトークンは取り除く。見出しが無ければ警告を差し込み、中身をそのまま残す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
+      - '#functions[pushWarning]'
+    unit_tests:
+      - name: test_build_tabs
+        case: 正常
+        summary: 見出しごとの中身に区切る
+        condition: '`### macOS` と段落、`### Windows` と段落を囲んだ範囲'
+        mock: なし
+        expected: '`mdmark-tabs` の中に `mdmark-tab-title` が `macOS`・`Windows` の 2 つの中身があり、`<h3` が無い'
+      - name: test_build_tabs_when_no_heading
+        case: 正常
+        summary: 見出しの無い範囲は警告と中身にする
+        condition: 段落だけを囲んだ範囲
+        mock: なし
+        expected: 警告と段落があり、`mdmark-tabs` が無い
+  - name: buildSteps
+    title: ステップにする
+    container: src/render/syntax/steps.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`steps` がオンなら、`steps` の範囲の最初の番号付きリスト（入れ子は除く）の `ol` に class `mdmark-steps` を付ける。無ければ警告を差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[pushWarning]'
+    unit_tests:
+      - name: test_build_steps
+        case: 正常
+        summary: 範囲の番号付きリストを手順にし、入れ子はそのまま
+        condition: 入れ子の番号付きリストを持つ 3 項目のリストを囲んだ範囲
+        mock: なし
+        expected: 外側の `ol` だけが class `mdmark-steps` を持つ
+      - name: test_build_steps_when_no_list
+        case: 正常
+        summary: 番号付きリストが無い範囲は警告を差し込む
+        condition: 番号の無いリストを囲んだ範囲
+        mock: なし
+        expected: 警告と `<ul>` があり、`mdmark-steps` が無い
+  - name: buildCallouts
+    title: 注意書きにする
+    container: src/render/syntax/callouts.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`callout` がオンなら、1 行目が `[!種類]`（末尾に `-` を許す）の引用を部品『注意書き』にし、種類の文字を本文から外す。知らない種類は `note`
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCallout]
+    unit_tests:
+      - name: test_build_callouts
+        case: 正常
+        summary: 5 種を種類ごとの枠にする
+        condition: '`[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用'
+        mock: なし
+        expected: それぞれ `markdown-alert-{種類}` と題 `補足`・`ヒント`・`重要`・`警告`・`注意`、本文に `[!` が無い
+      - name: test_build_callouts_when_collapsed_or_unknown
+        case: 正常
+        summary: 末尾の `-` は折り畳み、知らない種類は note
+        condition: '`[!WARNING]-` と `[!FAQ]` の引用'
+        mock: なし
+        expected: 1 つ目が `<details class="markdown-alert markdown-alert-warning">`、2 つ目が `markdown-alert-note`
+  - name: parseTree
+    title: 罫線のツリーを読む
+    container: src/render/syntax/tree.ts
+    kind: 関数
+    scope: internal
+    summary: 罫線（`├──`・`└──`・`│`）と字下げで書いた行を `TreeNode` の入れ子にする。上の行より 2 段以上深い行があれば、その行番号と段の差を返す
+    args:
+      - name: source
+        type: string
+        required: true
+        description: コードブロックの中身
+    returns:
+      type: '{ nodes: TreeNode[] } | { line: number; depth: number }'
+      description: 読めた項目か、読めない行
+    unit_tests:
+      - name: test_parse_tree
+        case: 正常
+        summary: 入れ子を読む
+        condition: '`mdmark/`・`├── src/`・`│   └── index.ts`・`└── package.json`'
+        mock: なし
+        expected: '`[{ name: "mdmark/", children: [{ name: "src/", children: [{ name: "index.ts" }] }, { name: "package.json" }] }]`'
+      - name: test_parse_tree_when_too_deep
+        case: 異常
+        summary: 2 段深い行を返す
+        condition: 3 行目が上の行より 2 段深い
+        mock: なし
+        expected: '`{ line: 3, depth: 2 }`'
+  - name: buildFileTrees
+    title: ファイルツリーにする
+    container: src/render/syntax/tree.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを `parseTree` で読み、部品『ファイルツリー』にする。読めなければ警告を差し込み、コードブロックのままにする
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[parseTree]'
+      - '#functions[pushWarning]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTree]
+    unit_tests:
+      - name: test_build_file_trees
+        case: 正常
+        summary: 読めるツリーを部品にし、読めないツリーは警告とコードブロックにする
+        condition: 読める `tree` のコードブロックと、3 行目が 2 段深いもの
+        mock: なし
+        expected: 1 つ目が `<ul class="mdmark-tree"`、2 つ目の前に警告（本文に `3 行目`）と `<pre`
+  - name: buildBadges
+    title: バッジにする
+    container: src/render/syntax/badges.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`badge` がオンなら、頭が `badge:` の `code_inline` を部品『バッジ』にし、頭が `badge\:` のものは `\` を外したコードにする
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderBadge]
+    unit_tests:
+      - name: test_build_badges
+        case: 正常
+        summary: 札にし、打ち消しはコードに戻す
+        condition: '`` `badge:v0.1.0` `` と `` `badge\:v0.1.0` ``'
+        mock: なし
+        expected: '`<span class="mdmark-badge">v0.1.0</span>` と `<code>badge:v0.1.0</code>`'
+  - name: numberFigures
+    title: 図表に番号を付ける
+    container: src/render/syntax/figures.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`figures` がオンなら、`fig` の印の直後の画像の段落と表を部品『図表の番号』で囲み、種類ごとに番号を付ける。`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID（2 つ目に ID を付けない）は警告を差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFigure]
+      - '#functions[pushWarning]'
+    unit_tests:
+      - name: test_number_figures
+        case: 正常
+        summary: 種類ごとに番号を付け、リンクの文字を番号にする
+        condition: '`fig: arch`（画像）・`fig: flow`（画像）・`fig: list`（表）と `[図](#fig-flow)`・`[表](#fig-list)`'
+        mock: なし
+        expected: '`図 1`・`図 2`・`表 1` の題と `id`、リンクの文字が `図 2`・`表 1`'
+      - name: test_number_figures_when_broken_or_duplicated
+        case: 正常
+        summary: 切れた参照と重なった ID を警告にする
+        condition: '`[図](#fig-missing)` と、`fig: arch` を 2 回'
+        mock: なし
+        expected: リンクの文字は `図` のままで警告があり、2 つ目の図は `図 2` で `id` を持たず、警告がある
+  - name: buildToc
+    title: 目次を置く
+    container: src/render/syntax/toc.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`toc` がオンなら、`toc` の印の場所に `env.headings` の h2・h3 の部品『目次』を置く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderToc]
+    unit_tests:
+      - name: test_build_toc
+        case: 正常
+        summary: h2 と h3 を入れ子にし、h4 は載せない
+        condition: '`<!-- toc -->` と `## 導入`・`### 前提`・`#### 細目`・`## 使い方`'
+        mock: なし
+        expected: 印の場所に `mdmark-toc` があり、`前提` が `導入` の入れ子で、`細目` が無い
+  - name: pushWarning
+    title: 書き方の警告を差し込む
+    container: src/render/syntax/warnings.ts
+    kind: 関数
+    scope: internal
+    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、指定の位置に差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+      - name: index
+        type: number
+        required: true
+        description: 差し込むトークンの位置
+      - name: warning
+        type: '{ mark?: string; message: string; items?: WarningItem[] }'
+        required: true
+        description: 部品へ渡す値（文言は画面設計『文書』の書き方の警告）
+    side_effects: '`state.tokens` に足す'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
+notes:
+  部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける
+  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 節 → 目次 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後
+test_files:
+  - tests/unit/src/render/syntax/headings.test.ts
+  - tests/unit/src/render/syntax/sections.test.ts
+  - tests/unit/src/render/syntax/tables.test.ts
+  - tests/unit/src/render/syntax/row-details.test.ts
+  - tests/unit/src/render/syntax/tabs.test.ts
+  - tests/unit/src/render/syntax/steps.test.ts
+  - tests/unit/src/render/syntax/callouts.test.ts
+  - tests/unit/src/render/syntax/tree.test.ts
+  - tests/unit/src/render/syntax/badges.test.ts
+  - tests/unit/src/render/syntax/figures.test.ts
+  - tests/unit/src/render/syntax/toc.test.ts

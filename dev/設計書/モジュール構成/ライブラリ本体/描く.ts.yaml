@@ -1,5 +1,5 @@
 title: "ライブラリ本体 / 描く"
-lead: 使う側のページの要素に文書を描き、描き直しと片付けを受け持つ処理。文書の印にある外部ライブラリのモジュールを読んで印の場所に描かせ、印刷の前後で折り畳みを開いて戻す。ブラウザでだけ動く。
+lead: 使う側のページの要素に文書を描き、描き直しと片付けを受け持つ処理。記法の操作を付け、文書の印にある外部ライブラリと拡張のモジュールを読んで印の場所に描かせ、印刷の前後で折り畳みと記法を開いて戻す。ブラウザでだけ動く。
 directory: |-
   ```tree
   src/
@@ -90,7 +90,7 @@ functions:
     container: src/mount.ts
     kind: 関数
     scope: public
-    summary: 公開関数。要素の中に文書を描き、外部ライブラリの印を描かせ、印刷の受け取りを付けて `MountHandle` を返す
+    summary: 公開関数。要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、印刷の受け取りを付けて `MountHandle` を返す
     side_effects: '`el` の中身と class を書き換え、`window` に `beforeprint`・`afterprint` の受け取りを付ける。`mounted` に `el` を控える'
     args:
       - name: el
@@ -113,19 +113,21 @@ functions:
     process: |-
       1. `mounted` に `el` があれば、その `destroy` を呼ぶ
       2. 設定に既定を当てる（設定に既定を当てる）
-      3. 描く世代を 0、片付けた印を `false` にする
+      3. 描く世代を 0、片付けた印を `false`、操作を外す関数を無しにする
       4. 文書を描く。描くたびに次を行う
-         - 世代を 1 進める
+         - 世代を 1 進め、前の操作を外す関数があれば呼ぶ
          - 本文の HTML と機能のオン・オフを得て（文書を描く）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
          - 機能のオン・オフを控える
-         - 印の場所に外部ライブラリを描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
-      5. 印刷の受け取りを付ける（印刷の前後で折り畳みを開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
+         - 記法の操作を付け（記法の操作を付ける）、外す関数を控える
+         - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
+      5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
       6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す
-      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
+      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作と印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
       8. `mounted` に `el` と戻り値を控えて返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachInteractions]
       - '#functions[loadLibraries]'
       - '#functions[attachPrint]'
     refs:
@@ -167,14 +169,20 @@ functions:
         condition: '印の無い文書を描いた後、`<!-- features: -print -->` と閉じた `details` に `update`'
         mock: なし
         expected: '`beforeprint` を送った後も `details` が `open` を持たない'
+      - name: test_mount_when_updated_with_syntax
+        case: 正常
+        summary: 描き直すと前の操作を外し、新しい本文に操作を付ける
+        condition: 表を描いて絞り込みのドロワーを開いた後、タブの文書に `update`
+        mock: '`document.removeEventListener` を数える関数で包む'
+        expected: '`pointerdown`・`keydown` が外れ、`role="tablist"` がある'
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts
     kind: 関数
     scope: internal
     is_async: true
-    summary: 要素の中の印の場所ごとに、対応表のモジュールを読んで `draw` を呼ぶ。読めない・描けない印の場所は知らせの枠に替える
-    description: 同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。`import()` 自体がモジュールを URL ごとに 1 回しか評価しないため、`update` で描き直しても要求は増えない。印の場所が無ければ何も読まない。読み込みと `draw` に時間の上限は置かず、返らないあいだは読み込み中の枠のまま
+    summary: 要素の中の印の場所ごとに、登録した拡張なら引数を検査して `load` で、対応表なら URL でモジュールを読んで `draw` を呼ぶ。引数が合わない場所は書き方の警告に、読めない・描けない・検査が失敗する場所は知らせの枠に替える
+    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `parseMarkArgs` の値を渡す（対応表のモジュールには今のまま引数の配列を渡す）。拡張の知らせの枠は `source: "extension"` で、名前は拡張の `name`。書き方の警告は `renderSyntaxWarning` に印の文字・拡張の名前・`validateMarkArgs` の項目を渡す。印の場所が無ければ何も読まない。読み込みと `draw` に時間の上限は置かない'
     side_effects: 印の場所の要素の属性を書き換え、失敗した場所を知らせの枠に置き換える。失敗を `console.error` に出す
     args:
       - name: options
@@ -197,6 +205,10 @@ functions:
            - `[error]` 外部ライブラリを読み込めない（印の名前・URL・元のエラーを `console.error` の引数に並べる）
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
+      - dev/設計書/モジュール構成/ライブラリ本体/拡張.ts#functions[extensionFor]
+      - dev/設計書/モジュール構成/ライブラリ本体/拡張.ts#functions[validateMarkArgs]
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[parseMarkArgs]
     unit_tests:
       - name: test_load_libraries
         case: 正常
@@ -246,12 +258,30 @@ functions:
         condition: '`test-lib` の印の場所 1 つ'
         mock: '`importModule` が、引数の要素を `remove()` してから例外を投げる `draw` を持つモジュールを返す。`console.error` を見張る'
         expected: 戻りの Promise が解決し、`root` の中に知らせの枠が無い。`console.error` が 1 回呼ばれる
+      - name: test_load_libraries_when_extension
+        case: 正常
+        summary: 拡張の印を load で読み、読み分けた引数で draw を呼ぶ
+        condition: '`greet` を登録し、`data-mdmark-slot="greet" data-mdmark-args="world lang=ja"` の場所を 2 つ'
+        mock: '`load` は `draw` を控えるモジュールを返す関数（呼ばれた回数を数える）'
+        expected: '`load` が 1 回、`draw` が 2 回で引数が `{ args: ["world"], keys: { lang: "ja" } }`'
+      - name: test_load_libraries_when_extension_args_invalid
+        case: 異常
+        summary: 引数が schema に合わない場所は書き方の警告にし、load しない
+        condition: 引数 1 つを英小文字で許す schema の `greet` と `World 2` の場所
+        mock: '`load` は呼ばれた回数を数える関数'
+        expected: 場所が `mdmark-syntax-warning` になり、`load` が 0 回
+      - name: test_load_libraries_when_extension_fails
+        case: 異常
+        summary: load の拒否と validate の拒否は拡張の知らせの枠にする
+        condition: '`load` が拒否される拡張と、`validate` が拒否される拡張の場所'
+        mock: '`console.error` を控える関数で包む'
+        expected: どちらも `mdmark-notice` で本文が `表示に使う拡張（…）` で始まり、`console.error` に拡張の名前と元のエラー
   - name: attachPrint
-    title: 印刷の前後で折り畳みを開く
+    title: 印刷の前後で折り畳みと記法を開く
     container: src/print.ts
     kind: 関数
     scope: internal
-    summary: '`beforeprint` で要素の中の閉じた `details` を開き、`afterprint` で開いたものだけを閉じ直す受け取りを `window` に付け、外す関数を返す'
+    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細を開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
     side_effects: '`window` に受け取りを付ける。`details` の `open` を書き換える'
     args:
       - name: options
@@ -262,8 +292,11 @@ functions:
       type: () => void
       description: 受け取りを外す関数
     process: |-
-      1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、`root` の中の `open` を持たない `details` を全て開き、開いたものを控える
-      2. `afterprint` を受けたとき、控えた `details` の `open` を外し、控えを空にする
+      1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、次を行い、変えたものを控える
+         - `open` を持たない `details` を開く
+         - `hidden` を持つ `mdmark-section-body`・`mdmark-row-detail` の `hidden` を外す
+         - `role="tabpanel"` の `hidden` を外し、`mdmark-tabs` に `data-printing` を付ける（印刷の CSS がタブの並びを隠し、タブ名の題を出す）
+      2. `afterprint` を受けたとき、控えたものを元に戻し（節は `hidden="until-found"`、行の詳細とタブの中身は `hidden`、`data-printing` を外す）、控えを空にする
       3. 外す関数は、2 つの受け取りを `window` から外す
     unit_tests:
       - name: test_attach_print
@@ -284,6 +317,12 @@ functions:
         condition: 外す関数を呼んだ後に `beforeprint` を送る
         mock: なし
         expected: '`details` が `open` を持たない'
+      - name: test_attach_print_when_syntax
+        case: 正常
+        summary: 印刷の前に閉じた節・行の詳細・タブの中身を出し、後に戻す
+        condition: 操作を付けた、閉じた節・閉じた行の詳細・2 つ目を選んだタブ
+        mock: なし
+        expected: '`beforeprint` の後にどれも `hidden` を持たず、`afterprint` の後に節が `hidden="until-found"`、行の詳細が `hidden`、1 つ目のタブの中身が `hidden`'
 notes:
   単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,print}.browser.test.ts` に置き、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
 test_files:

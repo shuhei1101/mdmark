@@ -33,18 +33,29 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: 'ストーリーの引数は問い合わせの文字列で届くため戻す: `figure` は `"false"` のときだけ `false`、`args` はカンマで区切った配列（空の文字列は `[]`）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。中身を持つ部品には部品ごとの見本の HTML を中身として渡す'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
         required: true
-        description: '`component` は部品の id（`notice` か `embed`）、`params` は問い合わせの引数'
+        description: '`component` は部品の id、`params` は問い合わせの引数'
     returns:
       type: string | undefined
       description: '`<div class="mdmark">{部品の HTML}</div>`。知らない部品は `undefined`'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderEmbed]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTable]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCallout]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSteps]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTree]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderBadge]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderToc]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSection]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderRowDetail]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFigure]
     unit_tests:
       - name: test_render_part_when_notice
         case: 正常
@@ -64,6 +75,12 @@ functions:
         condition: '`component` が `missing`'
         mock: なし
         expected: '`undefined`'
+      - name: test_render_part_when_json_args
+        case: 正常
+        summary: JSON の引数を戻して表を描く
+        condition: '`component` が `table`、`params` の `features` が `["sort"]`、`columns` が `["A"]`、`rows` が `[["1"]]`、`sort` が `{"column":0,"direction":"ascending"}`'
+        mock: なし
+        expected: '`<div class="mdmark">` で包んだ `renderTable({ features: ["sort"], columns: ["A"], rows: [["1"]], sort: { column: 0, direction: "ascending" } })`'
   - name: createRenderServer
     title: 描画の口を作る
     container: scripts/storybook-render.ts

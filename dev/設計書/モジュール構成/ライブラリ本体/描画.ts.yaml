@@ -5,33 +5,52 @@ directory: |-
   src/render/
   ├── index.ts     # render と renderDocument
   ├── parser.ts    # markdown-it の解析器と、足すコアルール
-  ├── marks.ts     # 印を拾って置き換えるコアルール
-  └── sanitize.ts  # sanitize-html の設定と sanitize
+  ├── marks.ts     # 印を読み、置き換えるコアルール
+  ├── sanitize.ts  # sanitize-html の設定と sanitize
+  └── syntax/      # 記法ごとのコアルール（『記法』）
   ```
 data_models:
   - name: Mark
     title: 印
     container: src/render/marks.ts
     usecase: 共通
-    summary: '文書から拾った `<!-- 名前: 引数 -->` 1 つ'
+    summary: 文書から拾った印 1 つ
     properties:
       - name: name
         type: string
         description: 印の名前
       - name: args
-        type: string[]
-        description: 空白で区切った引数
+        type: MdmarkMarkArgs
+        description: 読み分けた引数（`parseMarkArgs`）
+      - name: raw
+        type: string
+        description: 印の文字のまま（書き方の警告に出す）
+      - name: closing
+        type: boolean
+        description: 閉じの印（`<!-- /名前 -->`）か
   - name: RenderEnv
     title: 解析の環境
     container: src/render/parser.ts
-    summary: markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印
+    summary: markdown-it の `env` としてコアルールに渡す値と、コアルールが拾ったもの
     properties:
       - name: libraries
         type: Record<string, LibraryEntry>
         description: 対応表（どの印を印の場所の要素にするか）
+      - name: defaults
+        type: Record<string, boolean>
+        description: 設定の `features`
       - name: featureArgs
         type: string[]
         description: '`features` の印の引数を書いた順に並べたもの（コアルールが足す）'
+      - name: features
+        type: Record<string, boolean>
+        description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読む）'
+      - name: headings
+        type: 'Array<{ level: number; id: string; text: string }>'
+        description: 見出しの ID と文字（`assignHeadingIds` が足す）
+      - name: nonce
+        type: string
+        description: 描くごとに作る mdmark が出した要素の印（`markOwn`）の値
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts
@@ -47,8 +66,8 @@ constants:
   - name: MARK_PATTERN
     title: 印の書式
     container: src/render/marks.ts
-    summary: 生の HTML の中の印を拾う正規表現
-    value: /<!--\s*([a-z][a-z0-9-]*):\s*(.*?)\s*-->/gs
+    summary: '生の HTML の中の印（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を拾う正規表現'
+    value: /<!--\s*(\/)?([a-z][a-z0-9-]*)(?::\s*(.*?))?\s*-->/gs
   - name: FEATURES_MARK
     title: 機能の印の名前
     container: src/render/marks.ts
@@ -62,7 +81,7 @@ constants:
   - name: SANITIZE_OPTIONS
     title: 落とす設定
     container: src/render/sanitize.ts
-    summary: sanitize-html に渡す設定
+    summary: sanitize-html に渡す設定。記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries
     value: 下の entries
     entries:
       - key: allowedTags
@@ -77,6 +96,25 @@ constants:
         value: '`false`（postcss を呼ばない）'
       - key: transformTags
         value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
+  - name: SYNTAX_MARKS
+    title: 記法の印と機能
+    container: src/render/marks.ts
+    summary: 記法の印の名前から、その記法の機能の名前を引く
+    entries:
+      - key: table
+        value: table
+      - key: tabs
+        value: tabs
+      - key: steps
+        value: steps
+      - key: section
+        value: sections
+      - key: row-detail
+        value: row-details
+      - key: fig
+        value: figures
+      - key: toc
+        value: toc
 functions:
   - name: render
     title: Markdown を HTML 文字列にする
@@ -114,8 +152,8 @@ functions:
     container: src/render/index.ts
     kind: 関数
     scope: public
-    summary: 解析器で Markdown を HTML にし、`sanitize` をかけ、拾った `features` の印を `resolveFeatures` で重ねた結果と一緒に返す
-    description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す'
+    summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と一緒に返す
+    description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から外すため、同じ入力には同じ文字列を返す'
     args:
       - name: options
         type: '{ markdown: string; config: ResolvedConfig }'
@@ -141,13 +179,19 @@ functions:
         condition: 印を持つ文書を 2 回描く
         mock: なし
         expected: 2 回の `html` と `features` が等しい
+      - name: test_render_document_when_raw_html_imitates_syntax
+        case: 正常
+        summary: 生の HTML で書いた記法の class・data-*・id を落とし、記法が出したものは残す
+        condition: '`<div class="mdmark-tabs" data-kind="data"><p id="fig-x">偽り</p></div>` と `> [!NOTE]` の引用'
+        mock: なし
+        expected: '`偽り` の段落に class・`data-kind`・`id` が無く、注意書きが `markdown-alert-note` を持ち、出力に `data-mdmark-own` が無い'
   - name: createParser
     title: 解析器を作る
     container: src/render/parser.ts
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ タスクリスト → www の自動リンク → 取り消し線の `del` → 表の属性。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 節 → 目次 → タスクリスト → www の自動リンク → 残った印（`dropMarks`）。記法のコアルールは『記法』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -199,8 +243,8 @@ functions:
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`html_block`・`html_inline` のトークンの印を拾い、`features` は引数を `env.featureArgs` へ足し、対応表にある名前は `renderEmbed` の HTML に置き換え、それ以外は取り除く
-    description: コードブロックと行内のコードは `html_*` のトークンにならないため、中の印のような文字はそのまま残る
+    summary: コアルール。`html_block`・`html_inline` のトークンの印を拾い、`features` は引数を `env.featureArgs` へ足し、対応表と登録した拡張の名前は `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、印だけの `html_block` の記法の印は印のトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、それ以外は取り除く
+    description: コードブロックと行内のコードは `html_*` のトークンにならないため、中の印のような文字はそのまま残る。記法の印は機能のオン・オフによらず印のトークンにし、オフの記法の印は `dropMarks` が取り除く
     args:
       - name: state
         type: StateCore
@@ -209,6 +253,9 @@ functions:
     side_effects: '`state.tokens` の中身と `state.env.featureArgs` を書き換える'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderEmbed]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
+      - dev/設計書/モジュール構成/ライブラリ本体/拡張.ts#functions[extensionFor]
+      - '#functions[parseMarkArgs]'
     unit_tests:
       - name: test_take_marks
         case: 正常
@@ -228,17 +275,33 @@ functions:
         condition: '`<!-- unknown: 1 -->`・`<!-- ただのコメント -->`・コードブロックの中の `<!-- features: -print -->`'
         mock: なし
         expected: '`unknown` が消え、コードブロックの中は文字として残り、`env.featureArgs` は空'
+      - name: test_take_marks_when_syntax_mark
+        case: 正常
+        summary: 記法の印と閉じの印、コロンの無い印を印のトークンにする
+        condition: '行に `<!-- table: data -->`・`<!-- /table -->`・`<!-- tabs -->`'
+        mock: なし
+        expected: '印のトークンが 3 つで、`meta` が `{ name: "table", closing: false }`・`{ name: "table", closing: true }`・`{ name: "tabs", args: { args: [], keys: {} } }`'
+      - name: test_take_marks_when_extension_mark
+        case: 正常
+        summary: 登録した拡張の印を印の場所の要素にする
+        condition: '`greet` を登録し、`<!-- greet: world lang=ja -->`'
+        mock: なし（テストの前後で `resetExtensions`）
+        expected: '`renderEmbed({ name: "greet", args: ["world", "lang=ja"] })` の HTML が入る'
   - name: sanitize
     title: 許可していないものを落とす
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` で sanitize-html を呼ぶ'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
     args:
       - name: html
         type: string
         required: true
-        description: 解析器が描いた HTML
+        description: 解析器の出した HTML
+      - name: nonce
+        type: string
+        required: true
+        description: この描画の `env.nonce`
     returns:
       type: string
       description: 落とした後の HTML
@@ -273,6 +336,66 @@ functions:
         condition: '`<table tabindex="5">`'
         mock: なし
         expected: '`<table tabindex="0">`'
+  - name: parseMarkArgs
+    title: 印の引数を読み分ける
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: 引数の文字を空白で区切り、`キー=値` を `keys`（同じキーは後の値）、それ以外を書いた順に `args` に入れる
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 印の `:` の後ろの文字（無ければ空）
+    returns:
+      type: MdmarkMarkArgs
+      description: 読み分けた引数
+    unit_tests:
+      - name: test_parse_mark_args
+        case: 正常
+        summary: 種類・機能・キー・開閉を読み分ける
+        condition: '`data +sort -pin filter=名前:text closed`'
+        mock: なし
+        expected: '`{ args: ["data", "+sort", "-pin", "closed"], keys: { filter: "名前:text" } }`'
+      - name: test_parse_mark_args_when_empty
+        case: 正常
+        summary: 引数が無ければ空
+        condition: 空の文字
+        mock: なし
+        expected: '`{ args: [], keys: {} }`'
+  - name: resolveDocumentFeatures
+    title: 文書の機能を決める
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`takeMarks` の後に `resolveFeatures` で `env.defaults` に `env.featureArgs` を重ね、`env.features` に入れる
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`env.features` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
+  - name: dropMarks
+    title: 残った印を取り除く
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。最後に、記法が使わなかった印のトークン（オフの記法の印を含む）を取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    unit_tests:
+      - name: test_drop_marks
+        case: 正常
+        summary: オフの記法の印を取り除き、囲んだ Markdown は残す
+        condition: '`<!-- features: -tabs -->` と、段落を囲んだ `<!-- tabs -->` 〜 `<!-- /tabs -->`'
+        mock: なし
+        expected: 段落があり、印のトークンと `<!--` が無い
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts

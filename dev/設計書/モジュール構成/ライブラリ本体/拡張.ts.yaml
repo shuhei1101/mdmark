@@ -1,0 +1,223 @@
+title: "ライブラリ本体 / 拡張"
+lead: 使う側が `registerExtension` で足した印の登録表と、引数を Standard Schema で検査して書き方の警告の項目にする処理。登録表はページに 1 つで、`render` と `mount` が読む。
+directory: |-
+  ```tree
+  src/
+  ├── extensions.ts       # 拡張の登録表と registerExtension、引数の検査
+  └── standard-schema.ts  # Standard Schema の型（仕様の型を書き写したもの）
+  ```
+data_models:
+  - name: MdmarkMarkArgs
+    title: 印の引数
+    container: src/extensions.ts
+    usecase: 共通
+    summary: 印の引数を読み分けた値。拡張の `schema` と `draw` が受け取る（公開の型）
+    properties:
+      - name: args
+        type: string[]
+        description: '`キー=値` でない引数を書いた順に'
+      - name: keys
+        type: Record<string, string>
+        description: '`キー=値` の引数。同じキーは後に書いた値'
+  - name: MdmarkExtensionModule
+    title: 拡張のモジュール
+    container: src/extensions.ts
+    usecase: 拡張の登録
+    summary: '`load` が返すモジュールの形（公開の型）'
+    properties:
+      - name: draw
+        type: '(slot: HTMLElement, value: MdmarkMarkArgs) => void | Promise<void>'
+        description: 印の場所の要素に描く
+  - name: MdmarkExtension
+    title: 拡張
+    container: src/extensions.ts
+    usecase: 拡張の登録
+    summary: '`registerExtension` に渡す拡張（公開の型）'
+    properties:
+      - name: name
+        type: string
+        description: 拡張の名前。知らせの枠・書き方の警告・`console.error` に出す
+      - name: directive
+        type: string
+        description: 印の名前
+      - name: load
+        type: () => Promise<MdmarkExtensionModule>
+        description: モジュールを読む関数
+      - name: schema
+        type: StandardSchemaV1<MdmarkMarkArgs> | undefined
+        description: 引数を検査する Standard Schema
+  - name: WarningItem
+    title: 警告の項目
+    container: src/extensions.ts
+    usecase: 共通
+    summary: 書き方の警告に並べる 1 項目（部品『書き方の警告』の `items` の要素）
+    properties:
+      - name: label
+        type: string
+        description: 項目の頭に `code` で出す文字。空なら出さない
+      - name: message
+        type: string
+        description: 項目の本文
+  - name: StandardSchemaV1
+    title: Standard Schema
+    container: src/standard-schema.ts
+    usecase: 拡張の登録
+    summary: Standard Schema の仕様の型（`~standard` の `version`・`vendor`・`validate`、`Result`・`Issue`・`PathSegment`）を書き写したもの（公開の型）
+    description: 仕様は型を書き写すか `@standard-schema/spec` を入れる形で配られる。mdmark は依存を持たないため書き写す（https://standardschema.dev/）
+    properties:
+      - name: ~standard
+        type: StandardSchemaV1.Props<Input, Output>
+        description: '`version: 1`・`vendor`・`validate(value) => Result | Promise<Result>`'
+constants:
+  - name: RESERVED_DIRECTIVES
+    title: 拡張に使えない印の名前
+    container: src/extensions.ts
+    summary: '`features` と記法の印の名前（`ReadonlySet<string>`）'
+    value: '["features", "table", "tabs", "steps", "section", "row-detail", "fig", "toc"]'
+  - name: extensions
+    title: 拡張の登録表
+    container: src/extensions.ts
+    summary: '`directive` から拡張を引く `Map<string, MdmarkExtension>`。モジュールに 1 つ'
+    value: new Map()
+functions:
+  - name: registerExtension
+    title: 拡張を登録する
+    container: src/extensions.ts
+    kind: 関数
+    scope: public
+    summary: 拡張の形を確かめて登録表に足す公開関数
+    description: '`name` が空・`directive` が `MARK_NAME_PATTERN` に合わない・`load` が関数でない・`schema` が `~standard.validate` を持たないときは `TypeError`（メッセージに項目名）。`directive` が `RESERVED_DIRECTIVES` か登録済みのときは `Error`（メッセージに名前）。どちらも登録しない'
+    args:
+      - name: extension
+        type: MdmarkExtension
+        required: true
+        description: 登録する拡張
+    returns:
+      type: void
+      description: 戻り値は無い
+    side_effects: '`extensions` に足す'
+    unit_tests:
+      - name: test_register_extension
+        case: 正常
+        summary: 登録した拡張を `extensionFor` で引ける
+        condition: '`directive` が `greet` の拡張'
+        mock: なし（各テストの前に `resetExtensions`）
+        expected: '`extensionFor("greet")` が登録した拡張'
+      - name: test_register_extension_when_invalid
+        case: 異常
+        summary: 形の合わない拡張は TypeError で登録しない
+        condition: '`directive` が `Greet!`、`load` が文字列、`schema` が `{}` の 3 つ'
+        mock: なし
+        expected: どれも `TypeError`（メッセージに `directive`・`load`・`schema`）を投げ、`extensionFor` が `undefined`
+      - name: test_register_extension_when_directive_taken
+        case: 異常
+        summary: 記法の印と登録済みの名前は Error で登録しない
+        condition: '`directive` が `table` の拡張と、`greet` を 2 回'
+        mock: なし
+        expected: どちらも `Error`（メッセージに名前）を投げ、最初の `greet` が残る
+  - name: extensionFor
+    title: 拡張を引く
+    container: src/extensions.ts
+    kind: 関数
+    scope: internal
+    summary: '`directive` の拡張を返す。無ければ `undefined`'
+    args:
+      - name: directive
+        type: string
+        required: true
+        description: 印の名前
+    returns:
+      type: MdmarkExtension | undefined
+      description: 登録した拡張
+  - name: resetExtensions
+    title: 登録表を空にする
+    container: src/extensions.ts
+    kind: 関数
+    scope: internal
+    summary: 単体テストの前に登録表を空にする。公開の入口からは export しない
+    returns:
+      type: void
+      description: 戻り値は無い
+    side_effects: '`extensions` を空にする'
+  - name: validateMarkArgs
+    title: 引数を検査する
+    container: src/extensions.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: '`schema["~standard"].validate(value)` を待ち、合えば `[]`、合わなければ issue ごとの `WarningItem` を返す'
+    description: '`validate` の例外・拒否はそのまま投げる（呼ぶ側が知らせの枠にする）'
+    args:
+      - name: schema
+        type: StandardSchemaV1<MdmarkMarkArgs>
+        required: true
+        description: 拡張の `schema`
+      - name: value
+        type: MdmarkMarkArgs
+        required: true
+        description: 印の引数
+    returns:
+      type: Promise<WarningItem[]>
+      description: 合わない項目。合えば空
+    callees:
+      - '#functions[formatIssue]'
+    unit_tests:
+      - name: test_validate_mark_args
+        case: 正常
+        summary: 合う値は空を返す
+        condition: 'valibot 1.5.0 の `strictTuple` で英小文字 1 つを許す schema と `{ args: ["world"], keys: {} }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_validate_mark_args_when_invalid
+        case: 正常
+        summary: 合わない値は issue ごとの項目を返す
+        condition: '同じ schema と `{ args: ["World", "2"], keys: {} }`'
+        mock: なし
+        expected: ラベルが `1 つ目の World`・`2 つ目の 2` の 2 項目
+      - name: test_validate_mark_args_when_rejected
+        case: 異常
+        summary: validate の拒否を投げる
+        condition: '`validate` が `Promise.reject(new Error("boom"))` の schema'
+        mock: なし
+        expected: '`boom` のエラーで拒否される'
+  - name: formatIssue
+    title: issue を警告の項目にする
+    container: src/extensions.ts
+    kind: 関数
+    scope: internal
+    summary: issue の `path`（要素が `{ key }` なら `key` を読む）が `args` と位置に届けば `{位置+1} つ目の {値}`、`keys` とキーに届けば `{キー}=`、それ以外はラベル無しにし、`message` を本文にする
+    args:
+      - name: issue
+        type: StandardSchemaV1.Issue
+        required: true
+        description: validate の issue
+      - name: value
+        type: MdmarkMarkArgs
+        required: true
+        description: 検査した引数（位置の値を引く）
+    returns:
+      type: WarningItem
+      description: 警告の項目
+    unit_tests:
+      - name: test_format_issue
+        case: 正常
+        summary: 位置まで届く path を位置と値のラベルにする
+        condition: '`path` が `[{ key: "args" }, { key: 1 }]`、値の `args` が `["World", "2"]`'
+        mock: なし
+        expected: '`{ label: "2 つ目の 2", message }`'
+      - name: test_format_issue_when_key
+        case: 正常
+        summary: キーまで届く path を `{キー}=` にする
+        condition: '`path` が `["keys", "lang"]`'
+        mock: なし
+        expected: ラベルが `lang=`
+      - name: test_format_issue_when_no_position
+        case: 正常
+        summary: 位置を持たない issue はラベル無し
+        condition: '`path` が `["args"]` と、`path` が無い issue'
+        mock: なし
+        expected: どちらもラベルが空で、本文が `message`
+notes:
+  単体テストの依存: valibot 1.5.0 を開発用の依存に入れ、単体・結合テストの schema に使う。配布物には束ねない
+test_files:
+  - tests/unit/src/extensions.test.ts

@@ -147,7 +147,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、束ねた依存のライセンスを書く
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -162,6 +162,7 @@ functions:
       description: 出力ファイルのパスとバイト数（ライセンスのファイルを含む）
     callees:
       - '#functions[writeThirdPartyLicenses]'
+      - '#functions[emitDeclarations]'
     unit_tests:
       - name: test_build_dist
         case: 正常
@@ -244,5 +245,35 @@ functions:
         condition: 100 バイトと 201 バイト、上限 200
         mock: なし
         expected: 201 バイトの 1 件
+  - name: emitDeclarations
+    title: 型定義を書く
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 作業ツリーの `node_modules/.bin/tsc` を `--project tsconfig.dist.json` で子プロセスとして流し、`src/index.ts` から辿れる型定義を `dist/` に書く（`dist/index.d.ts` と、`src/` と同じ並びの `.d.ts`）
+    description: '`tsconfig.dist.json` は `tsconfig.json` を継いで `noEmit: false`・`declaration: true`・`emitDeclarationOnly: true`・`rootDir: "src"`・`outDir: "dist"`・`files: ["src/index.ts"]` にする。型定義の import は `.ts` のまま残るが、TypeScript 7.0.2 の `moduleResolution` が `bundler` と `nodenext` の使う側で型検査が通ることを確かめた（2026-10-14）。`tsc` が 0 以外で終われば、その出力を含む例外を投げる'
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの場所
+    returns:
+      type: Promise<void>
+      description: 書き終えたら解決する
+    side_effects: '`dist/` に `.d.ts` を書く'
+    unit_tests:
+      - name: test_emit_declarations
+        case: 正常
+        summary: 公開関数と拡張の型を持つ dist/index.d.ts を書き、使う側の型検査が通る
+        condition: 作業ツリーの `src/` を一時フォルダに写す
+        mock: なし（作業ツリーの `node_modules` を使う）
+        expected: '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension`・`MdmarkExtension`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、それを import したファイルが `--moduleResolution bundler` と `nodenext` の `tsc --noEmit` で型エラー 0 件'
+      - name: test_emit_declarations_when_type_error
+        case: 異常
+        summary: 型エラーがあれば例外を投げる
+        condition: '`src/index.ts` が `export const x: number = "a"` を持つ'
+        mock: なし
+        expected: メッセージに `tsc` のエラーを含む例外
 test_files:
   - tests/unit/scripts/build.test.ts

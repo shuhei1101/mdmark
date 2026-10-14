@@ -3,8 +3,8 @@ lead: 配布物の入口の JavaScript と CSS。JavaScript は公開関数と�
 directory: |-
   ```tree
   src/
-  ├── index.ts   # 公開関数 version()・mount()・render() と公開の型の export
-  └── index.css  # 描いた文書の CSS（@layer mdmark）
+  ├── index.ts   # 公開関数 version()・mount()・render()・registerExtension() と公開の型の export
+  └── index.css  # 描いた文書と記法の CSS（@layer mdmark）
   ```
 functions:
   - name: version
@@ -27,14 +27,14 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts#
 notes:
-  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）と `render`（`src/render/index.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle` を `export type` で出す。他の関数は export しない'
+  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
 styles:
   - name: index
     title: 入口の CSS
     container: src/index.css
     summary: 描いた文書の CSS。全ての規則を `@layer mdmark` に入れ、見た目の値を `--mdmark-` の CSS 変数で配る。版の CSS 変数 `--mdmark-version` はビルドが先頭に `:root` の宣言として差し込む
     description: |-
-      採用したモック（`dev/mock/pages/document/16/modern/`）の規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。モック専用の規則（`.mock-*`・`.host*`・`body`・`--host-*`）は写さない。
+      採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
 
       ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
     values:
@@ -65,6 +65,15 @@ styles:
       - class_name: '@media print and (max-width: 40rem) .mdmark'
         target: 狭い紙幅で印刷するとき
         value: '表を行ごとに縦に積み、見出し行を隠し、`td::before` に `attr(data-label)` で列名を出す。セルの揃えは列の揃えの class より強い指定で `start` に戻す'
+      - class_name: :root（記法）
+        target: 記法の変数の既定
+        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-table-max-height`（`28rem`）。値とダークの値は `dev/mock/assets/style.css`'
+      - class_name: .mdmark .mdmark-table ほか記法の class
+        target: 記法の部品
+        value: '部品設計（表・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・節・行の詳細・図表の番号・書き方の警告）の HTML に当てる規則。表は見出し行を `position: sticky` で上端に留め、高さを `--mdmark-table-max-height` に抑える。`plain` は縦の罫線と面を外す'
+      - class_name: '@media print の記法'
+        target: 印刷のときの記法
+        value: 表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行と列を留めず、表の高さの上限を外してセルの余白を詰める。`[data-printing]` のタブは全ての中身をタブ名を題にして縦に並べる
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

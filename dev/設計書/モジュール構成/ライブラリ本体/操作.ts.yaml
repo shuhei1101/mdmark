@@ -1,0 +1,240 @@
+title: "ライブラリ本体 / 操作"
+lead: '`mount` が描いた記法に操作を付け、外す処理。表の並べ替え・ピン止め・絞り込み、タブ、節と行の詳細の開閉を受け持ち、付ける関数はどれも外す関数を返す。ブラウザでだけ動く。'
+directory: |-
+  ```tree
+  src/interact/
+  ├── index.ts     # attachInteractions
+  ├── tables.ts    # 表の並べ替え・ピン止め・絞り込み
+  ├── tabs.ts      # タブの切り替え
+  └── sections.ts  # 節と行の詳細の開閉、URL の #ID で開く
+  ```
+data_models:
+  - name: FilterValue
+    title: 当てた絞り込み
+    container: src/interact/tables.ts
+    summary: 列 1 つに当てた絞り込み（部品『表』の `filterValues` の要素と同じ形）
+    properties:
+      - name: column
+        type: number
+        description: 列の位置
+      - name: values
+        type: string[] | undefined
+        description: '`select` の選んだ値'
+      - name: text
+        type: string | undefined
+        description: '`text` の含む文字'
+      - name: from
+        type: string | undefined
+        description: '`date` の開始日（`YYYY-MM-DD`）'
+      - name: to
+        type: string | undefined
+        description: '`date` の終了日（`YYYY-MM-DD`）'
+functions:
+  - name: attachInteractions
+    title: 記法の操作を付ける
+    container: src/interact/index.ts
+    kind: 関数
+    scope: internal
+    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、まとめて外す関数を返す
+    args:
+      - name: options
+        type: '{ root: HTMLElement; features: Record<string, boolean> }'
+        required: true
+        description: 描いた要素と文書で決まった機能のオン・オフ
+    returns:
+      type: () => void
+      description: 付けた操作を外す関数
+    callees:
+      - '#functions[attachTables]'
+      - '#functions[attachTabs]'
+      - '#functions[attachSections]'
+    unit_tests:
+      - name: test_attach_interactions
+        case: 正常
+        summary: オフの記法には操作を付けない
+        condition: タブと表を描いた要素、`features` の `tabs` が `false`
+        mock: なし
+        expected: '`role="tablist"` が無く、表の見出しにボタンがある'
+  - name: compareCells
+    title: セルを比べる
+    container: src/interact/tables.ts
+    kind: 関数
+    scope: internal
+    summary: 並べ替えの比較。両方が数値（`,` を除いて数になる）なら数の大きさ、それ以外は `Intl.Collator`（`ja`・数字を数として）の順で比べる
+    args:
+      - name: a
+        type: string
+        required: true
+        description: セルの文字
+      - name: b
+        type: string
+        required: true
+        description: セルの文字
+    returns:
+      type: number
+      description: '`a` が前なら負、後なら正、同じなら 0'
+    unit_tests:
+      - name: test_compare_cells
+        case: 正常
+        summary: 数値は数の大きさで比べる
+        condition: '`10` と `2`、`1,022` と `227`'
+        mock: なし
+        expected: どちらも正
+      - name: test_compare_cells_when_text
+        case: 正常
+        summary: 文字は辞書の順で比べる
+        condition: '`みかん` と `りんご`'
+        mock: なし
+        expected: 負
+  - name: matchesFilter
+    title: セルが絞り込みに合うか
+    container: src/interact/tables.ts
+    kind: 関数
+    scope: internal
+    summary: '`select` は選んだ値のどれかと等しい、`text` は大文字と小文字を区別せずに含む、`date` は開始日以降かつ終了日以前（片方だけも可。日付として読めないセルは合わない）。値が空の絞り込みは全てに合う'
+    args:
+      - name: cell
+        type: string
+        required: true
+        description: セルの文字
+      - name: kind
+        type: '"select" | "text" | "date"'
+        required: true
+        description: 絞り込みの種類
+      - name: value
+        type: FilterValue
+        required: true
+        description: 当てた絞り込み
+    returns:
+      type: boolean
+      description: 合うか
+    unit_tests:
+      - name: test_matches_filter
+        case: 正常
+        summary: 3 種類を判定する
+        condition: '`select` の `["りんご"]` と `りんご`・`りんご飴`、`text` の `描画` と `描画を速くする`、`date` の `2026-10-05`〜`2026-10-15` と `2026-10-10`・`2026-10-20`'
+        mock: なし
+        expected: '`りんご` が合い `りんご飴` が合わない、`描画を速くする` が合う、`2026-10-10` が合い `2026-10-20` が合わない'
+      - name: test_matches_filter_when_open_range
+        case: 正常
+        summary: 開始日だけのときはその日以降に合う
+        condition: '`date` の `from` だけ `2026-10-10` と `2026-10-01`・`2026-10-10`'
+        mock: なし
+        expected: '`2026-10-01` が合わず、`2026-10-10` が合う'
+  - name: attachTables
+    title: 表に操作を付ける
+    container: src/interact/tables.ts
+    kind: 関数
+    scope: internal
+    summary: 各 `mdmark-table` の `data-features`・`data-filter` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける
+    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数
+    side_effects: 表の DOM を書き換え、イベントと `ResizeObserver` を付ける
+    callees:
+      - '#functions[compareCells]'
+      - '#functions[matchesFilter]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableTools]
+    unit_tests:
+      - name: test_attach_tables_when_sorted
+        case: 正常
+        summary: 3 回の押下で昇順・降順・元の並びになる
+        condition: '`data` の表（値の列が `10`・`2`・`33`）の値の列の見出しを 3 回押す'
+        mock: なし
+        expected: '`2,10,33`・`33,10,2`・`10,2,33` の順で、`aria-sort` が `ascending`・`descending`・無し'
+      - name: test_attach_tables_when_filtered
+        case: 正常
+        summary: ドロワーで絞って外し、外の押下で閉じる
+        condition: '`data-filter="0:select"` の表でボタンを押し、`りんご` を選び、「絞り込みを外す」を押し、表の外を押す'
+        mock: なし
+        expected: 開いた後に候補の検索欄にフォーカス、選んだ後に 1 行だけ、外した後に全ての行とドロワーが開いたまま、外を押した後にドロワーが `hidden`
+      - name: test_attach_tables_when_escape
+        case: 正常
+        summary: Esc で閉じてボタンへフォーカスを戻す
+        condition: ドロワーを開いて Esc
+        mock: なし
+        expected: ドロワーが `hidden`、ボタンにフォーカス
+      - name: test_attach_tables_when_pinned
+        case: 正常
+        summary: はみ出す表だけピン止めのボタンを出し、押した列までを留める
+        condition: 幅 320px の要素に 10 列の表と 2 列の表、2 列目のピン止めを押す
+        mock: なし
+        expected: 10 列の表だけボタンが `hidden` を持たず、1・2 列目のセルが `sticky`
+      - name: test_attach_tables_when_detached
+        case: 正常
+        summary: 外すと document の受け取りが残らない
+        condition: ドロワーを開いたまま外す関数を呼ぶ
+        mock: '`document.removeEventListener` を数える関数で包む'
+        expected: '`pointerdown`・`keydown` が外れている'
+  - name: attachTabs
+    title: タブに操作を付ける
+    container: src/interact/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にして 1 つ目を選ぶ。押すと左右の矢印・Home・End で選ぶ
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: タブの並びを取り除き、中身を `render` の形に戻す関数
+    side_effects: タブの DOM を書き換え、イベントを付ける
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
+    unit_tests:
+      - name: test_attach_tabs
+        case: 正常
+        summary: 押すと矢印キーで切り替わる
+        condition: 3 つの中身のタブ、2 つ目を押し、右の矢印、End、Home
+        mock: なし
+        expected: 2 つ目・3 つ目・3 つ目・1 つ目の順に `aria-selected="true"` とフォーカスが移り、その中身だけが `hidden` を持たない
+  - name: attachSections
+    title: 節と行の詳細に開閉を付ける
+    container: src/interact/sections.ts
+    kind: 関数
+    scope: internal
+    summary: '`sections` がオンなら節の見出しを開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID` が閉じた節の中を指すとき（付けたときと `hashchange`）と `beforematch` でその節を開く'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean }'
+        required: true
+        description: 描いた要素と、節・行の詳細の機能
+    returns:
+      type: () => void
+      description: ボタン・`hashchange` の受け取りを外す関数
+    side_effects: 節・行の DOM を書き換え、`window` の `hashchange` を受け取る
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSection]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderRowDetail]
+    unit_tests:
+      - name: test_attach_sections
+        case: 正常
+        summary: 閉じた節を閉じ、押すと開く
+        condition: '`data-section="closed"` の節と開いた節'
+        mock: なし
+        expected: 閉じた節の中身が `hidden="until-found"`、押した後に `hidden` が無く `aria-expanded="true"`
+      - name: test_attach_sections_when_hash
+        case: 正常
+        summary: 閉じた節の中の ID への hashchange で開く
+        condition: 閉じた節の中の `### 注意`、`location.hash` を `#注意`
+        mock: なし
+        expected: 節の中身が `hidden` を持たない
+      - name: test_attach_sections_when_row_detail
+        case: 正常
+        summary: 行の詳細を閉じ、押すと開く
+        condition: 2 行目に詳細を持つ表
+        mock: なし
+        expected: ボタンは 2 行目にだけあり、押した後に詳細の行が `hidden` を持たない
+test_files:
+  - tests/unit/src/interact/index.browser.test.ts
+  - tests/unit/src/interact/tables.browser.test.ts
+  - tests/unit/src/interact/tabs.browser.test.ts
+  - tests/unit/src/interact/sections.browser.test.ts
