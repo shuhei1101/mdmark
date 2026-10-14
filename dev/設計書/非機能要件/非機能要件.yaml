@@ -18,6 +18,11 @@ requirements:
     value: Chrome 99 以降・Firefox 97 以降・Safari 16.4 以降（この版をビルドの target に書く）
     rationale: 使う側の CSS が詳細度によらず mdmark の CSS に勝つために `@layer` を使う。`@layer` を持つ最初の版（Chrome 99・Firefox 97・Safari 15.4）と、ES2022 のクラスの構文を書き換えずに出すための静的初期化ブロック（Safari 16.4）のうち、新しい方を各ブラウザの下限にする。外部ライブラリの読み込みは動的 `import()`（どの下限でも使える）で行い、import map は使わない。CSS の入れ子は下限で効かないため、ビルドが展開する。トップレベル await は Safari 16.4 で部分対応のため使わない
     measurement: E2E を Playwright 同梱の Chromium・Firefox で流す。Safari 16.4 はビルドの対象には入れるが、動作は確かめていない
+    verification:
+      device: WSL2 上の Playwright 同梱の Chromium・Firefox
+      version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
+      date: '2026-10-14'
+      result: 合格
   - name: 通信
     english_name: network
     category: 動作環境
