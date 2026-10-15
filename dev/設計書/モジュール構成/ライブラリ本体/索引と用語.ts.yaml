@@ -464,7 +464,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として足す
-    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
+    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
     args:
       - name: state
         type: StateCore
