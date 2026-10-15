@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>term-tooltip | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- この部品のモックの固有の規則（見本の高さ） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 用語のツールチップの操作 -->
+  <script src="../../refs/27/assets/glossary.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">用語のツールチップ</h1>
+
+      <!-- 通常: 下線の付いた用語。ポインターを乗せるかフォーカスすると開く -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">通常（ポインターを乗せるか Tab でフォーカスすると開く）</h2>
+        <article class="mdmark">
+<p>使う側のアプリは、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-default">ワークスペース</span><span class="mdmark-term-tip" id="tip-default" role="tooltip"><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span><span class="mdmark-term-tip-docs">この用語が出る文書: API、使い方</span></span></span>ごとに文書を置きます。詳しくは <a href="#state-default">置き場所の決まり</a> を見てください。</p>
+        </article>
+      </section>
+
+      <!-- 開いた: 意味だけ（ほかの文書に出ない用語） -->
+      <section aria-labelledby="state-open">
+        <h2 class="catalog-label" id="state-open">開いた（意味だけ）</h2>
+        <article class="mdmark catalog-tip-space">
+<p>どの文書から読まれているかは、末尾の<span class="mdmark-term-wrap is-open" data-mock-static><span class="mdmark-term" tabindex="0" aria-describedby="tip-open">バックリンク</span><span class="mdmark-term-tip" id="tip-open" role="tooltip"><span class="mdmark-term-tip-meaning">その文書を参照している文書</span></span></span>で確かめられます。</p>
+        </article>
+      </section>
+
+      <!-- 開いた: 意味と、用語が出る文書の題 -->
+      <section aria-labelledby="state-open-docs">
+        <h2 class="catalog-label" id="state-open-docs">開いた（意味と、用語が出る文書）</h2>
+        <article class="mdmark catalog-tip-space">
+<p>使う側のアプリは、<span class="mdmark-term-wrap is-open" data-mock-static><span class="mdmark-term" tabindex="0" aria-describedby="tip-open-docs">ワークスペース</span><span class="mdmark-term-tip" id="tip-open-docs" role="tooltip"><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span><span class="mdmark-term-tip-docs">この用語が出る文書: API、使い方</span></span></span>ごとに文書を置きます。</p>
+        </article>
+      </section>
+
+      <!-- 長文: 長い意味と多くの文書。上限の幅で折り返す -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長文（長い意味と多くの文書）</h2>
+        <article class="mdmark catalog-tip-space">
+<p>描く前に<span class="mdmark-term-wrap is-open" data-mock-static><span class="mdmark-term" tabindex="0" aria-describedby="tip-long">サニタイズ</span><span class="mdmark-term-tip" id="tip-long" role="tooltip"><span class="mdmark-term-tip-meaning">描く前の HTML から、スクリプトと許可していない要素・属性を落とすこと。文書に書いた script 要素・イベント属性・javascript: の URL を実行しないための処理で、索引に書いた題と意味にも当てる</span><span class="mdmark-term-tip-docs">この用語が出る文書: API、使い方、アーキテクチャ、設定の一覧、非機能要件、印刷する、テーマを上書きする</span></span></span>を通します。</p>
+        </article>
+      </section>
+
+      <!-- 上に開いた: 用語の下に収まらないとき -->
+      <section aria-labelledby="state-above">
+        <h2 class="catalog-label" id="state-above">上に開いた（下に収まらないとき）</h2>
+        <article class="mdmark catalog-tip-space-above">
+<p>本文の<span class="mdmark-term-wrap is-open is-above" data-mock-static><span class="mdmark-term" tabindex="0" aria-describedby="tip-above">印</span><span class="mdmark-term-tip" id="tip-above" role="tooltip"><span class="mdmark-term-tip-meaning">HTML コメントで書く指定</span><span class="mdmark-term-tip-docs">この用語が出る文書: 使い方</span></span></span>は描くときに読み取ります。</p>
+        </article>
+      </section>
+
+      <!-- 表のセルの中: 横にスクロールする表の枠で切れない -->
+      <section aria-labelledby="state-table">
+        <h2 class="catalog-label" id="state-table">表のセルの中（表の枠で切れない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 描く処理の段">
+    <thead><tr><th>段</th><th>受け持つもの</th></tr></thead>
+    <tbody>
+      <tr><td data-label="段">本文を描く</td><td data-label="受け持つもの">用語に下線を引き、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-table">被参照</span><span class="mdmark-term-tip" id="tip-table" role="tooltip"><span class="mdmark-term-tip-meaning">その文書を参照している文書</span></span></span>の一覧を置く</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 索引も用語集の表も無い文書: 下線を引かない（今の出力のまま） -->
+      <section aria-labelledby="state-none">
+        <h2 class="catalog-label" id="state-none">索引も用語集の表も無い文書（下線を引かない）</h2>
+        <article class="mdmark">
+<p>使う側のアプリは、ワークスペースごとに文書を置きます。</p>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,35 @@
+/* 用語と被参照の印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときの用語と被参照 */
+@layer mdmark {
+  .mdmark {
+    /* 下線の付いた用語: 紙では開けないので下線を外し、本文の文字として出す */
+    .mdmark-term {
+      text-decoration: none;
+      cursor: auto;
+    }
+
+    /* 意味のツールチップ: 開いていても紙に出さない */
+    .mdmark-term-wrap .mdmark-term-tip {
+      display: none !important;
+    }
+
+    /* 被参照の一覧のリンク: 文書の中の相対パスも後ろに併記する */
+    :is(.mdmark-backlinks, .mdmark-backlinks-compact) a::after {
+      color: var(--mdmark-color-muted);
+      content: " (" attr(href) ")";
+      overflow-wrap: anywhere;
+    }
+
+    /* 被参照の一覧: 改ページで切らない */
+    :is(.mdmark-backlinks, .mdmark-backlinks-compact) {
+      break-inside: avoid;
+    }
+
+    /* 被参照の件数の行: 紙では開閉できないので開閉の印を外す */
+    .mdmark-backlinks-compact > summary .mdmark-icon {
+      display: none;
+    }
+  }
+}
