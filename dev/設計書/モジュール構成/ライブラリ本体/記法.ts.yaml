@@ -14,7 +14,8 @@ directory: |-
   ├── badges.ts       # バッジ
   ├── figures.ts      # 図表の番号と参照
   ├── toc.ts          # 目次
-  └── warnings.ts     # 書き方の警告を差し込む助け
+  ├── warnings.ts     # 書き方の警告を差し込む助け
+  └── tokens.ts       # 記法のコアルールが共有するトークンの助け（印の読み取り・閉じの印の探索・機能の判定）
   ```
 data_models:
   - name: TableSpec
@@ -39,7 +40,7 @@ data_models:
         description: 読めなかった指定
   - name: TreeNode
     title: ツリーの項目
-    container: src/render/syntax/tree.ts
+    container: src/parts/tree.ts
     summary: 罫線を読んだ 1 項目（部品『ファイルツリー』の `nodes` の要素）
     properties:
       - name: name
@@ -62,12 +63,12 @@ constants:
         value: '[]'
   - name: FILTER_KINDS
     title: 絞り込みの種類
-    container: src/render/syntax/tables.ts
+    container: src/table-logic.ts
     summary: '`filter=` に書ける種類。省いたときは先頭'
     value: '["select", "text", "date"]'
   - name: CALLOUT_KINDS
     title: 注意書きの種類
-    container: src/render/syntax/callouts.ts
+    container: src/parts/callout.ts
     summary: 引用の 1 行目に書ける種類。知らない種類は `note`
     value: '["note", "tip", "important", "warning", "caution"]'
 functions:

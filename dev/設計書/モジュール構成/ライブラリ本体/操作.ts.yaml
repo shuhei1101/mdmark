@@ -2,16 +2,18 @@ title: "ライブラリ本体 / 操作"
 lead: '`mount` が描いた記法に操作を付け、外す処理。表の並べ替え・ピン止め・絞り込み、タブ、節と行の詳細の開閉を受け持ち、付ける関数はどれも外す関数を返す。ブラウザでだけ動く。'
 directory: |-
   ```tree
-  src/interact/
-  ├── index.ts     # attachInteractions
-  ├── tables.ts    # 表の並べ替え・ピン止め・絞り込み
-  ├── tabs.ts      # タブの切り替え
-  └── sections.ts  # 節と行の詳細の開閉、URL の #ID で開く
+  src/
+  ├── table-logic.ts  # 表の並べ替えの比べ方と絞り込みの当てはめ（部品の表と操作が使う）
+  └── interact/
+      ├── index.ts     # attachInteractions
+      ├── tables.ts    # 表の並べ替え・ピン止め・絞り込み
+      ├── tabs.ts      # タブの切り替え
+      └── sections.ts  # 節と行の詳細の開閉、URL の #ID で開く
   ```
 data_models:
   - name: FilterValue
     title: 当てた絞り込み
-    container: src/interact/tables.ts
+    container: src/table-logic.ts
     summary: 列 1 つに当てた絞り込み（部品『表』の `filterValues` の要素と同じ形）
     properties:
       - name: column
@@ -57,7 +59,7 @@ functions:
         expected: '`role="tablist"` が無く、表の見出しにボタンがある'
   - name: compareCells
     title: セルを比べる
-    container: src/interact/tables.ts
+    container: src/table-logic.ts
     kind: 関数
     scope: internal
     summary: 並べ替えの比較。両方が数値（`,` を除いて数になる）なら数の大きさ、それ以外は `Intl.Collator`（`ja`・数字を数として）の順で比べる
@@ -88,7 +90,7 @@ functions:
         expected: 負
   - name: matchesFilter
     title: セルが絞り込みに合うか
-    container: src/interact/tables.ts
+    container: src/table-logic.ts
     kind: 関数
     scope: internal
     summary: '`select` は選んだ値のどれかと等しい、`text` は大文字と小文字を区別せずに含む、`date` は開始日以降かつ終了日以前（片方だけも可。日付として読めないセルは合わない）。値が空の絞り込みは全てに合う'
