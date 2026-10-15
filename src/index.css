@@ -1466,6 +1466,11 @@
 
   /* 用語と被参照: 用語と文書の別名の破線の下線・用語と関連文書のツールチップ・参照している文書の一覧 */
   .mdmark {
+    /* 用語とツールチップの組: ツールチップを語の下に置く基準。スクリプトが動かないときもポインターとフォーカスで開く */
+    .mdmark-term-wrap {
+      position: relative;
+    }
+
     /* 下線の付いた用語と文書の別名: リンクの実線と見分ける破線の下線。色は本文のまま */
     .mdmark-term {
       border-radius: 2px;
@@ -1485,13 +1490,14 @@
       text-decoration-color: var(--mdmark-color-text);
     }
 
-    /* 用語と関連文書のツールチップ: 初めは出さない。画面に対して置き、スクリプトが動かないときは語の直後に、画面の左端から収まる幅で出す（スクリプトが動くときは語の位置を style で指す）。上の透明な線で語との間を空け、ポインターが語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
+    /* 用語と関連文書のツールチップ: 初めは出さない。上の透明な線で語との間を空け、ポインターが語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
     .mdmark-term-tip {
       display: none;
-      position: fixed;
+      position: absolute;
       z-index: 10;
       box-sizing: border-box;
-      inset-inline-start: 1rem;
+      inset-block-start: 100%;
+      inset-inline-start: 0;
       width: max-content;
       max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
       max-height: min(var(--mdmark-tooltip-max-height), 60vh);
@@ -1513,6 +1519,7 @@
 
     /* 語の上に開いたツールチップ（下に収まらないとき）: 透明な線を下に移す */
     .mdmark-term-wrap.is-above .mdmark-term-tip {
+      inset-block: auto 100%;
       border-block-start: 1px solid var(--mdmark-color-muted);
       border-block-end: 0.4em solid transparent;
     }
@@ -1594,6 +1601,23 @@
       margin: 0 0 0.35em;
       color: var(--mdmark-color-heading);
       font-weight: 600;
+    }
+  }
+
+  /* 狭い画面（語の位置から 22rem が収まらない幅。文書の幅 46rem + 余白 3rem + ツールチップ 22rem = 71rem 以下）: スクリプトが動かないときのツールチップを、語の位置ではなく描く先の要素の左端から出して画面に収める。本文と一緒にスクロールする。スクリプトが動くときは style が位置を指す */
+  @media (max-width: 71rem) {
+    .mdmark {
+      position: relative;
+
+      /* 用語とツールチップの組: 基準を外し、描く先の要素を基準にする */
+      .mdmark-term-wrap {
+        position: static;
+      }
+
+      /* ツールチップ: 描く先の要素の左端から、語の直後に出す */
+      .mdmark-term-tip {
+        inset-block-start: auto;
+      }
     }
   }
 
