@@ -277,3 +277,4 @@ test_files:
   - tests/unit/src/interact/tables.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
+  - tests/unit/src/interact/text.browser.test.ts

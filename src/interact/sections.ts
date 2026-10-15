@@ -1,3 +1,5 @@
+import { visibleText } from "./text.ts";
+
 /** 節の開閉を切り替える関数。節の中身の要素から引く */
 type SetOpen = (open: boolean) => void;
 
@@ -90,7 +92,7 @@ function attachRowDetails(root: HTMLElement): () => void {
     if (!cell) {
       continue;
     }
-    const label = cell.textContent?.trim() ?? "";
+    const label = visibleText(cell);
     const head = document.createElement("span");
     head.className = "mdmark-row-head";
     const button = document.createElement("button");

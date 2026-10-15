@@ -16,7 +16,7 @@ export type MountOptions = {
   index?: MdmarkIndex;
   /** 描く文書の索引の `id`。索引に無い `id` は省いたのと同じ */
   docId?: string;
-  /** `collectReferences` の戻り値。省くと関連文書の一覧と他の文書の用語集の表の用語を出さない */
+  /** `collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
   references?: MdmarkReferences;
 };
 

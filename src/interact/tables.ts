@@ -6,6 +6,7 @@ import {
   type FilterValue,
   matchesFilter,
 } from "../table-logic.ts";
+import { visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
 
@@ -71,8 +72,10 @@ function attachTable(
   const originalHeads = headCells.map((cell) => cell.innerHTML);
   const cleanups: Array<() => void> = [];
   /** 行の指定した列のセルの文字 */
-  const cellText = (row: HTMLTableRowElement, column: number): string =>
-    row.cells[column]?.textContent?.trim() ?? "";
+  const cellText = (row: HTMLTableRowElement, column: number): string => {
+    const cell = row.cells[column];
+    return cell ? visibleText(cell) : "";
+  };
 
   // ─── 見出しのボタンとドロワー ───
   const drawers = new Map<number, HTMLElement>();
@@ -85,7 +88,7 @@ function attachTable(
       const parts = renderTableTools({
         id,
         column,
-        label: cell.textContent?.trim() ?? "",
+        label: visibleText(cell),
         features,
         filter: kind && {
           kind,

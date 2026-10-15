@@ -72,6 +72,7 @@ export function render(
     config?: MdmarkConfig;
     index?: MdmarkIndex;
     docId?: string;
+    /** 省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
     references?: MdmarkReferences;
   } = {},
 ): string {
