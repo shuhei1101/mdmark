@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { cp, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -14,6 +14,8 @@ const execFileAsync = promisify(execFile);
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 // コマンドの出力が大きくなっても切れないようにする
 const MAX_BUFFER = 64 * 1024 * 1024;
+// シナリオのセットアップの `version.ini` の先頭行（リリースで作業ツリーの値が進んでも変わらない）
+const CLONE_VERSION = "v0.0.0";
 // クローンした直後には無い、コピーしないもの
 const NOT_IN_CLONE = [
   "node_modules/",
@@ -62,7 +64,7 @@ async function readBuiltVersion(): Promise<string> {
   return built.version();
 }
 
-/** クローンした直後の作業ツリー（node_modules/ と dist/ が無い写し）を一時フォルダに作る */
+/** クローンした直後の作業ツリー（node_modules/ と dist/ が無く、`version.ini` が `v0.0.0` の写し）を一時フォルダに作る */
 async function createClone(): Promise<string> {
   const { stdout } = await execFileAsync(
     "git",
@@ -82,6 +84,7 @@ async function createClone(): Promise<string> {
     await mkdir(dirname(join(clone, file)), { recursive: true });
     await cp(join(REPO_ROOT, file), join(clone, file));
   }
+  await writeFile(join(clone, "version.ini"), `${CLONE_VERSION}\n`);
   return clone;
 }
 
@@ -112,7 +115,7 @@ test("test_normal", async () => {
     expect(declarations, name).toContain(name);
   }
   expect(declarations).toContain("MdmarkExtension");
-  expect(await readBuiltVersion()).toBe("v0.0.0");
+  expect(await readBuiltVersion()).toBe(CLONE_VERSION);
   expect((await run("npm", ["test"])).code).toBe(0);
 });
 
