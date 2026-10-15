@@ -23,7 +23,9 @@ function tabStates(page: Page): Promise<Array<[string | null, string | null]>> {
 function panelHidden(page: Page): Promise<boolean[]> {
   return page
     .locator(".mdmark-tab-panel")
-    .evaluateAll((panels) => panels.map((panel) => panel.hidden));
+    .evaluateAll((panels) =>
+      panels.map((panel) => panel.hasAttribute("hidden")),
+    );
 }
 
 // 1 つ目のタブだけが選ばれ、その中身だけが見える（First）
