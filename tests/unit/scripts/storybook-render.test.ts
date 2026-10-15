@@ -14,6 +14,9 @@ const loadNotice = () => import("../../../src/parts/notice.ts");
 /** 読み込み中の枠の処理を読み込む */
 const loadEmbed = () => import("../../../src/parts/embed.ts");
 
+/** 表の処理を読み込む */
+const loadTable = () => import("../../../src/parts/table.ts");
+
 const servers: Server[] = [];
 const createdRoots: string[] = [];
 
@@ -94,6 +97,30 @@ test("test_render_part_when_embed", async () => {
   // 検証
   expect(html).toBe(
     `<div class="mdmark">${renderEmbed({ name: "chart", args: ["a", "b"] })}</div>`,
+  );
+});
+
+// JSON の引数を戻して表を描く（正常系）
+test("test_render_part_when_json_args", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const { renderTable } = await loadTable();
+  const params = new URLSearchParams({
+    features: '["sort"]',
+    columns: '["A"]',
+    rows: '[["1"]]',
+    sort: '{"column":0,"direction":"ascending"}',
+  });
+  // 実行
+  const html = renderPart({ component: "table", params });
+  // 検証
+  expect(html).toBe(
+    `<div class="mdmark">${renderTable({
+      features: ["sort"],
+      columns: ["A"],
+      rows: [["1"]],
+      sort: { column: 0, direction: "ascending" },
+    })}</div>`,
   );
 });
 

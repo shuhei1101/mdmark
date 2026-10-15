@@ -1,7 +1,46 @@
 import { afterEach, expect, test } from "vitest";
+import {
+  createRoot as createDocumentRoot,
+  removeRoots,
+} from "../helpers/dom.ts";
 
 /** 印刷の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPrint = () => import("../../../src/print.ts");
+
+/** 記法の操作を付ける処理を読み込む */
+const loadInteract = () => import("../../../src/interact/index.ts");
+
+// 詳細を持つ行の表、2 つの中身のタブ、閉じた節を持つ文書
+const SYNTAX_MARKDOWN = [
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| a | 1 |",
+  "",
+  "<!-- row-detail: 1 -->",
+  "",
+  "詳細",
+  "",
+  "<!-- /row-detail -->",
+  "",
+  "<!-- tabs -->",
+  "",
+  "### A",
+  "",
+  "a",
+  "",
+  "### B",
+  "",
+  "b",
+  "",
+  "<!-- /tabs -->",
+  "",
+  "## 閉じる",
+  "",
+  "<!-- section: closed -->",
+  "",
+  "本文",
+  "",
+].join("\n");
 
 // 閉じた折り畳みと、開いた折り畳みを 1 つずつ持つ HTML
 const DETAILS_HTML =
@@ -40,6 +79,7 @@ afterEach(() => {
   for (const detach of detachers.splice(0)) {
     detach();
   }
+  removeRoots();
 });
 
 // 印刷の前に閉じた折り畳みを開き、後に開いたものだけを閉じ直す（正常系）
@@ -80,4 +120,32 @@ test("test_attach_print_when_detached", async () => {
   window.dispatchEvent(new Event("beforeprint"));
   // 検証
   expect(findDetails(root, "closed").open).toBe(false);
+});
+
+// 印刷の前に閉じた節・行の詳細・タブの中身を出し、後に戻す（正常系）
+test("test_attach_print_when_syntax", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createDocumentRoot(SYNTAX_MARKDOWN);
+  detachers.push(attachInteractions({ root, features }));
+  root.querySelectorAll<HTMLElement>('[role="tab"]')[1].click();
+  await attachTracked(root, () => true);
+  const section = root.querySelector<HTMLElement>('[id="section-閉じる"]');
+  const detail = root.querySelector<HTMLElement>("tr.mdmark-row-detail");
+  const panels = [...root.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+  // 実行
+  window.dispatchEvent(new Event("beforeprint"));
+  // 検証
+  expect(section?.hasAttribute("hidden")).toBe(false);
+  expect(detail?.hasAttribute("hidden")).toBe(false);
+  for (const panel of panels) {
+    expect(panel.hasAttribute("hidden")).toBe(false);
+  }
+  // 実行
+  window.dispatchEvent(new Event("afterprint"));
+  // 検証
+  expect(section?.getAttribute("hidden")).toBe("until-found");
+  expect(detail?.hasAttribute("hidden")).toBe(true);
+  expect(panels[0].hasAttribute("hidden")).toBe(true);
+  expect(panels[1].hasAttribute("hidden")).toBe(false);
 });

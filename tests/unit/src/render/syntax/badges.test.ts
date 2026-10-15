@@ -1,0 +1,13 @@
+import { expect, test } from "vitest";
+import { renderDoc } from "../../../helpers/render.ts";
+
+// 札にし、打ち消しはコードに戻す（正常系）
+test("test_build_badges", () => {
+  // 準備
+  const markdown = "`badge:v0.1.0` と `badge\\:v0.1.0`\n";
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain('<span class="mdmark-badge">v0.1.0</span>');
+  expect(html).toContain("<code>badge:v0.1.0</code>");
+});

@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
-import type { RenderEnv } from "../../../../src/render/parser.ts";
+import { createEnv, featuresOff } from "../../helpers/env.ts";
 
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../src/render/parser.ts");
 
-/** 解析器で Markdown を HTML にする */
+/** 記法の機能を全てオフにした解析器で Markdown を HTML にする */
 async function parse(markdown: string): Promise<string> {
   const { createParser } = await loadParser();
-  const env: RenderEnv = { libraries: {}, featureArgs: [] };
+  const env = createEnv({ defaults: featuresOff() });
   return createParser().render(markdown, env);
 }
 

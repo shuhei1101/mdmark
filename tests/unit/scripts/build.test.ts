@@ -1,5 +1,8 @@
+import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import {
+  copyFile,
+  cp,
   mkdir,
   mkdtemp,
   readFile,
@@ -9,6 +12,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import type { Metafile } from "esbuild";
 import { afterEach, expect, test, vi } from "vitest";
 
@@ -37,6 +41,35 @@ async function createRoot(versionIni: string): Promise<string> {
   await writeFile(join(root, "src", "index.ts"), entryScript);
   await writeFile(join(root, "src", "index.css"), "/* entry */\n");
   await writeFile(join(root, "version.ini"), versionIni);
+  return root;
+}
+
+/** 作業ツリーの node_modules へのリンクと tsconfig を一時フォルダに置く（型定義を書く tsc を流せるようにする） */
+async function linkTooling(root: string): Promise<void> {
+  await symlink(
+    join(process.cwd(), "node_modules"),
+    join(root, "node_modules"),
+    "dir",
+  );
+  for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
+    if (existsSync(join(process.cwd(), name))) {
+      await copyFile(join(process.cwd(), name), join(root, name));
+    }
+  }
+}
+
+/** 型定義まで書けるビルドの一時フォルダを作る（src/ と version.ini に加えて tsc の道具を置く） */
+async function createBuildRoot(versionIni: string): Promise<string> {
+  const root = await createRoot(versionIni);
+  await linkTooling(root);
+  return root;
+}
+
+/** src/ を持たず tsc の道具だけを置いた一時フォルダを作る */
+async function createToolingRoot(): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), "mdmark-tooling-"));
+  createdRoots.push(root);
+  await linkTooling(root);
   return root;
 }
 
@@ -103,7 +136,7 @@ afterEach(async () => {
 test("test_main", async () => {
   // 準備
   const { main } = await loadBuild();
-  const root = await createRoot("v0.0.0\n");
+  const root = await createBuildRoot("v0.0.0\n");
   // 実行
   const code = await main([], { root, maxBytes: MAX_BYTES });
   // 検証
@@ -117,7 +150,7 @@ test("test_main", async () => {
 test("test_main_when_version_given", async () => {
   // 準備
   const { main } = await loadBuild();
-  const root = await createRoot("v0.0.0\n");
+  const root = await createBuildRoot("v0.0.0\n");
   // 実行
   const code = await main(["--version", "v0.0.1"], {
     root,
@@ -181,7 +214,7 @@ test("test_main_when_build_fails", async () => {
 test("test_main_when_dist_file_too_large", async () => {
   // 準備
   const { main } = await loadBuild();
-  const root = await createRoot("v0.0.0\n");
+  const root = await createBuildRoot("v0.0.0\n");
   const stderr = captureStderr();
   // 実行
   const code = await main([], { root, maxBytes: 1 });
@@ -227,7 +260,7 @@ test("test_resolve_version_when_format_invalid", async () => {
 test("test_build_dist", async () => {
   // 準備
   const { buildDist } = await loadBuild();
-  const root = await createRoot("v0.0.0\n");
+  const root = await createBuildRoot("v0.0.0\n");
   // 実行
   const outputs = await buildDist("v0.0.1", root);
   // 検証
@@ -247,7 +280,7 @@ test("test_build_dist", async () => {
 test("test_build_dist_when_nested_css", async () => {
   // 準備
   const { buildDist } = await loadBuild();
-  const root = await createRoot("v0.0.0\n");
+  const root = await createBuildRoot("v0.0.0\n");
   await writeFile(join(root, "src", "index.css"), ".a { .b { color: red } }\n");
   // 実行
   await buildDist("v0.0.1", root);
@@ -261,15 +294,10 @@ test("test_build_dist_when_nested_css", async () => {
 test("test_build_dist_when_postcss_imported", async () => {
   // 準備
   const { buildDist } = await loadBuild();
-  const root = await createRoot("v0.0.0\n");
+  const root = await createBuildRoot("v0.0.0\n");
   await writeFile(
     join(root, "src", "index.ts"),
     'import { parse } from "postcss";\nexport { parse };\n',
-  );
-  await symlink(
-    join(process.cwd(), "node_modules"),
-    join(root, "node_modules"),
-    "dir",
   );
   // 実行
   await buildDist("v0.0.1", root);
@@ -355,4 +383,94 @@ test("test_find_too_large_outputs_when_over_limit", async () => {
   );
   // 検証
   expect(tooLarge).toEqual([{ path: "dist/index.css", bytes: 201 }]);
+});
+
+const execFileAsync = promisify(execFile);
+
+// 公開の型を使う側のファイル
+const CONSUMER = [
+  'import { mount, registerExtension, render, version } from "./dist/index.js";',
+  'import type { MdmarkExtension, MdmarkMarkArgs, StandardSchemaV1 } from "./dist/index.js";',
+  "",
+  "const extension: MdmarkExtension = {",
+  '  name: "greet",',
+  '  directive: "greet",',
+  "  load: async () => ({",
+  "    draw: (slot: HTMLElement, value: MdmarkMarkArgs) => {",
+  '      slot.textContent = value.args[0] ?? "";',
+  "    },",
+  "  }),",
+  "};",
+  "registerExtension(extension);",
+  "",
+  'const handle = mount(document.body, { markdown: "# 見出し" });',
+  'handle.update("# 次の見出し");',
+  "handle.destroy();",
+  "export const html: string = render(version());",
+  "export type Schema = StandardSchemaV1<MdmarkMarkArgs>;",
+  "",
+].join("\n");
+
+// 公開関数と拡張の型を持つ dist/index.d.ts を書き、使う側の型検査が通る（正常系）
+test("test_emit_declarations", async () => {
+  // 準備
+  const { emitDeclarations } = await loadBuild();
+  const root = await createToolingRoot();
+  await cp(join(process.cwd(), "src"), join(root, "src"), { recursive: true });
+  // 実行
+  await emitDeclarations(root);
+  // 検証
+  const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
+  for (const name of [
+    "version",
+    "mount",
+    "render",
+    "registerExtension",
+    "MdmarkExtension",
+    "MdmarkMarkArgs",
+    "StandardSchemaV1",
+  ]) {
+    expect(declarations).toMatch(new RegExp(`export[^;]*\\b${name}\\b`));
+  }
+  await writeFile(join(root, "package.json"), '{"type":"module"}');
+  await writeFile(join(root, "consumer.ts"), CONSUMER);
+  for (const [module, moduleResolution] of [
+    ["esnext", "bundler"],
+    ["nodenext", "nodenext"],
+  ]) {
+    const config = join(root, `tsconfig.consumer-${moduleResolution}.json`);
+    await writeFile(
+      config,
+      JSON.stringify({
+        compilerOptions: {
+          target: "es2022",
+          module,
+          moduleResolution,
+          strict: true,
+          noEmit: true,
+          lib: ["es2022", "dom"],
+          types: [],
+        },
+        files: ["consumer.ts"],
+      }),
+    );
+    await execFileAsync(join(root, "node_modules", ".bin", "tsc"), [
+      "--project",
+      config,
+    ]);
+  }
+});
+
+// 型エラーがあれば例外を投げる（異常系）
+test("test_emit_declarations_when_type_error", async () => {
+  // 準備
+  const { emitDeclarations } = await loadBuild();
+  const root = await createToolingRoot();
+  await mkdir(join(root, "src"));
+  await writeFile(
+    join(root, "src", "index.ts"),
+    'export const x: number = "a";\n',
+  );
+  // 実行・検証
+  await expect(emitDeclarations(root)).rejects.toThrow("TS2322");
 });
