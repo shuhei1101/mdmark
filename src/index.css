@@ -1262,9 +1262,13 @@
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 3h11v8h-6l-3 2.5V11h-2zM8 5.5v2.6M8 9.5v.1'/%3E%3C/svg%3E");
     }
 
-    .markdown-alert-warning > .markdown-alert-title::before,
-    .mdmark-syntax-warning-title::before {
+    .markdown-alert-warning > .markdown-alert-title::before {
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.5 14 13H2zM8 6.5v3.2M8 11.4v.1'/%3E%3C/svg%3E");
+    }
+
+    /* 書き方の警告の題のアイコン: 注意書きの「警告」の三角と見分けるため、鉛筆にする */
+    .mdmark-syntax-warning-title::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.75 2.25l3 3-8.5 8.5H2.25v-3z'/%3E%3Cpath d='M9 4l3 3'/%3E%3C/svg%3E");
     }
 
     .markdown-alert-caution > .markdown-alert-title::before {
