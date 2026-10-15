@@ -66,6 +66,25 @@ flows:
       - '`backlinks.arch` が `["api", "guide"]` で、`broken` を含まない'
       - '`backlinks` に `broken` のキーが無い'
     test: test_normal_when_invalid_index
+  - name: 正常系（符号化して書いたリンク）
+    summary: パーセントエンコードで書いたリンクと `#`・`?` を持つリンクも、同じ文書への参照にする
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 符号化したリンクを持つ本文
+        description: 正常系の索引と本文のうち、`使い方/guide.md` の本文を `[構成](../%E8%A8%AD%E8%A8%88/arch.md?v=1#top)` に替えたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: href の ? と # 以降を除き、符号化を戻して解決する
+        M-->>C: { backlinks, glossary }
+    expected:
+      - '`backlinks.arch` が `["api", "guide"]`（正常系と同じ）'
+    test: test_normal_when_encoded_link
 lead: 使う側のサーバーや CLI（#9 の `mdmark build`）が、索引と全ての文書の本文を渡して、文書ごとの被参照と、用語集の表から入れた用語をまとめた参照の表を受け取る。`mount`・`render` はこの表を `opts.references` で受け取り、ほかの文書の本文を読まずに被参照とほかの文書の用語を描く。
 idempotent: true
 side_effects: なし（引数を書き換えず、ファイルとネットワークを読まない）
@@ -147,7 +166,8 @@ constraints:
   - item: 実行する環境
     constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
   - item: 本文のリンクの解決
-    constraint: 参照元の `path` のフォルダを基準に相対パスを解決し、索引の `path` と比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
+    constraint: リンクの `href` の `#` 以降と `?` 以降を除き、パーセントエンコードを戻してから（`decodeURI`。戻せないときはそのまま）、参照元の `path` のフォルダを基準に相対パスを解決し、索引の `path` と比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
+    notes: markdown-it 15.0.2 は `link_open` の `href` の ASCII 以外の文字を符号化する（`../設計/arch.md` → `../%E8%A8%AD%E8%A8%88/arch.md`）ため、戻してから比べる
   - item: 文書の別名の照合
     constraint: 用語のツールチップと同じ照合（語の区切りに揃う、コード・リンク・見出し・用語集の表の中を除く）を使う
     notes: 節ごとの最初の 1 回の制限は下線のもので、参照の有無には効かない
