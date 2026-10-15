@@ -21,7 +21,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-14'
+      date: '2026-10-16'
       result: 合格
   - name: 通信
     english_name: network
