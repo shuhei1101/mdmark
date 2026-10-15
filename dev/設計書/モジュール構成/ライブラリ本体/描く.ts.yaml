@@ -35,6 +35,15 @@ data_models:
       - name: config
         type: MdmarkConfig | undefined
         description: 使う側の設定。省いたキーには既定を当てる
+      - name: index
+        type: MdmarkIndex | undefined
+        description: 索引。省くと索引の用語と関連文書を出さない
+      - name: docId
+        type: string | undefined
+        description: 描く文書の索引の `id`。索引に無い `id` は省いたのと同じ
+      - name: references
+        type: MdmarkReferences | undefined
+        description: '`collectReferences` の戻り値。省くと関連文書の一覧と他の文書の用語集の表の用語を出さない'
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -100,7 +109,7 @@ functions:
       - name: opts
         type: MountOptions
         required: true
-        description: Markdown と設定
+        description: Markdown・設定・索引・描く文書の `id`・参照の表
     args_example: |-
       ```ts
       const handle = mount(document.querySelector("#doc"), { markdown: "# 見出し", config });
@@ -116,12 +125,12 @@ functions:
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数を無しにする
       4. 文書を描く。描くたびに次を行う
          - 世代を 1 進め、前の操作を外す関数があれば呼ぶ
-         - 本文の HTML と機能のオン・オフを得て（文書を描く）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
+         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
          - 機能のオン・オフを控える
          - 記法の操作を付け（記法の操作を付ける）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
-      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す
+      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（`index`・`docId`・`references` は最初に渡したもののまま）
       7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作と印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
       8. `mounted` に `el` と戻り値を控えて返す
     callees:

@@ -51,6 +51,21 @@ data_models:
       - name: nonce
         type: string
         description: 描くごとに作る mdmark が出した要素の印（`markOwn`）の値
+      - name: index
+        type: MdmarkIndex | undefined
+        description: '`normalizeIndex` で合う要素だけにした索引'
+      - name: docId
+        type: string | undefined
+        description: 描く文書の索引の `id`（索引に無ければ `undefined`）
+      - name: references
+        type: MdmarkReferences | undefined
+        description: 参照の表
+      - name: ownGlossary
+        type: MdmarkGlossaryEntry[]
+        description: 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す）
+      - name: termTips
+        type: 'Array<{ id: string; text: string; meaning?: string; docs?: Array<{ title: string; href: string; description?: string }> }>'
+        description: 下線を付けた用語のツールチップの中身（`termsRule` が足し、本文の末尾に書く）
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts
@@ -115,6 +130,8 @@ constants:
         value: figures
       - key: toc
         value: toc
+      - key: glossary
+        value: glossary
 functions:
   - name: render
     title: Markdown を HTML 文字列にする
@@ -128,10 +145,10 @@ functions:
         required: true
         description: HTML にする Markdown
       - name: opts
-        type: '{ config?: MdmarkConfig }'
+        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences }'
         required: false
         default: '{}'
-        description: 設定
+        description: 設定・索引・描く文書の `id`・参照の表
     returns:
       type: string
       description: 本文の HTML 文字列
@@ -156,9 +173,9 @@ functions:
     description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から外すため、同じ入力には同じ文字列を返す'
     args:
       - name: options
-        type: '{ markdown: string; config: ResolvedConfig }'
+        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences }'
         required: true
-        description: '`markdown` は Markdown、`config` は既定を当てた設定'
+        description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる）'
     returns:
       type: RenderedDocument
       description: 本文の HTML と機能のオン・オフ
@@ -166,6 +183,7 @@ functions:
       - '#functions[createParser]'
       - '#functions[sanitize]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
     unit_tests:
       - name: test_render_document
         case: 正常
@@ -191,7 +209,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 節 → 目次 → タスクリスト → www の自動リンク → 残った印（`dropMarks`）。記法のコアルールは『記法』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器

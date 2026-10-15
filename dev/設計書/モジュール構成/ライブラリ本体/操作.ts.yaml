@@ -37,7 +37,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼び、まとめて外す関数を返す
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean> }'
@@ -50,6 +50,7 @@ functions:
       - '#functions[attachTables]'
       - '#functions[attachTabs]'
       - '#functions[attachSections]'
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[attachTermTips]
     unit_tests:
       - name: test_attach_interactions
         case: 正常
