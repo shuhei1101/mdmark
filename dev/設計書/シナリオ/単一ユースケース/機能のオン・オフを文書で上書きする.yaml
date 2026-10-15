@@ -109,6 +109,31 @@ scenarios:
       - 引用が注意書きの枠（class `markdown-alert`）にならず、引用として描かれている
       - 本文に印の文字が出ていない
     test: test_normal_when_syntax_disabled
+  - name: 正常シナリオ（用語と被参照の機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く。ほかは正常シナリオと同じ
+        notes: 設定の `features` は `glossary`・`backlinks` を書かない（既定のオン）
+      - name: 用語と被参照を持つ索引
+        description: 用語 `ワークスペース` を持ち、ほかの文書の `related` が描く文書を指す索引
+      - name: 機能を外す Markdown
+        description: '先頭に `<!-- features: -glossary -backlinks -->` を持ち、段落に `ワークスペース` が出て、`<!-- glossary: term=用語 meaning=意味 -->` で囲んだ表を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: 設定の features に文書の印を重ねる
+        M-->>P: 下線と被参照の一覧を付けずに描く
+        P-->>U: 本文と表を表示
+    expected:
+      - '`ワークスペース` に下線が付いていない'
+      - 被参照の一覧が無い
+      - 用語集の表が普通の表として描かれ、本文に印の文字が出ていない
+    test: test_normal_when_glossary_disabled
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人

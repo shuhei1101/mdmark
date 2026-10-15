@@ -1,0 +1,93 @@
+title: "被参照を見る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く HTML
+      - name: 3 つの文書を持つ索引
+        description: 文書 `arch`（題 `アーキテクチャ`）・`api`（題 `API`、`related` に `arch`）・`guide`（題 `使い方`）を持つ索引
+      - name: ほかの文書の本文
+        description: '`guide` の本文が `arch` のパスへのリンクを持つ'
+      - name: 描く Markdown
+        description: '`arch` の本文。見出しと段落を持つ'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: arch を参照している文書を引く
+        M-->>P: 本文と被参照の一覧を描く
+        U->>P: 一覧の文書の題を押す
+        P-->>U: その文書へのリンクを開く
+    expected:
+      - 被参照の一覧に `API` と `使い方` が並び、`アーキテクチャ` 自身は並ばない
+      - 一覧の各行が、その文書のパスへのリンクを持つ
+      - 本文の見出しと段落が描かれている
+    test: test_normal
+  - name: 正常シナリオ（用語の被参照）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオの 3 つの文書と、用語 `ワークスペース` を持つ索引
+      - name: ほかの文書の本文
+        description: '`api` と `guide` の本文に `ワークスペース` が出る'
+      - name: 描く Markdown
+        description: '`arch` の本文。段落に `ワークスペース` が出る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: 用語が出る文書を引く
+        M-->>P: 用語に下線を引いて描く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: 意味と、用語が出る文書を表示
+    expected:
+      - '`ワークスペース` のツールチップに、意味と、用語が出る文書 `API`・`使い方` がある'
+    test: test_normal_when_term
+  - name: 正常シナリオ（参照されていない文書）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 3 つの文書を持つ索引
+        description: 正常シナリオと同じ
+      - name: 描く Markdown
+        description: どの文書からも参照されていない `guide` の本文
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M-->>P: 被参照の一覧を置かずに本文を描く
+        P-->>U: 本文を表示
+    expected:
+      - 被参照の一覧が無い
+      - 本文が描かれている
+    test: test_normal_when_not_referenced
+lead: 読む人が、描いた文書を参照している文書の一覧と、用語が出る文書を見る。被参照は保存せず、索引の `related`・本文の文書間のリンク・用語の出現から描くときに算出する。
+issue: 5
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: 参照される側の文書に、参照元を手で書き足さずに済む
+  - name: 使う側のアプリの開発者
+    interest: 被参照を保存して持たず、文書を書き換えると次に描くときから反映される
+trigger: 使う側のページが、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 被参照の機能（`backlinks`）がオン（既定）
+success_guarantee: 描いた文書に、その文書を `related`・本文のリンクで参照している文書が、題とその文書へのリンクで並ぶ。用語には、その用語が出る文書が並ぶ。
+minimal_guarantee: 参照されていない文書も、索引に無い文書も、本文は描かれる。
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#
+  - dev/設計書/シナリオ/単一ユースケース/文書を描く#
