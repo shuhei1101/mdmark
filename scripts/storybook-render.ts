@@ -47,6 +47,11 @@ function decodeValue(value: string): unknown {
 /** 部品の関数に渡す引数 */
 type PartArgs = Record<string, unknown>;
 
+/** 中身を持つ部品の中身: ストーリーの引数 `body` があればそれ、無ければ見本 */
+function bodyOf(args: PartArgs, sample: string): string {
+  return typeof args.body === "string" ? args.body : sample;
+}
+
 // 部品の id から、部品の関数を呼ぶ表
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "syntax-warning": (args) =>
@@ -61,7 +66,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       kind: args.kind as CalloutKind,
       collapsed: args.collapsed as boolean | undefined,
       open: args.open as boolean | undefined,
-      body: SAMPLE_BODY,
+      body: bodyOf(args, SAMPLE_BODY),
     }),
   tabs: (args) => {
     const titles = args.titles as string[];
@@ -83,7 +88,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: String(args.title),
       open: args.open as boolean | undefined,
       toggle: args.toggle as boolean | undefined,
-      body: SAMPLE_BODY,
+      body: bodyOf(args, SAMPLE_BODY),
     }),
   "row-detail": (args) => {
     const columns = Number(args.columns);
@@ -93,7 +98,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       columns,
       label: String(args.label),
       open: args.open as boolean | undefined,
-      body: SAMPLE_BODY,
+      body: bodyOf(args, SAMPLE_BODY),
     });
     const head = `<td><span class="mdmark-row-head">${toggle}${String(args.label)}</span></td>`;
     const cells = Array.from({ length: columns - 1 }, () => "<td>値</td>");
@@ -105,7 +110,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: args.id as string | undefined,
       number: Number(args.number),
       caption: args.caption as string | undefined,
-      body: args.kind === "table" ? SAMPLE_TABLE : SAMPLE_IMAGE,
+      body: bodyOf(args, args.kind === "table" ? SAMPLE_TABLE : SAMPLE_IMAGE),
     }),
 };
 
