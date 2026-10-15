@@ -150,7 +150,7 @@ settings:
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[termsRule]
   - key: features.backlinks
-    title: 関連文書の機能
+    title: 被参照の機能
     file: mdmark.config.yaml
     type: boolean
     required: false
