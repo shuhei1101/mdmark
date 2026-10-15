@@ -5,8 +5,8 @@ scenarios:
       - name: mdmark を読むページ
         description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引を渡さずに文書を描く HTML
       - name: 用語集の表を持つ Markdown
-        description: '`<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` 〜 `<!-- /glossary -->` で、用語 `印`（別名 `マーク・コメントの印`、意味 `HTML コメントで書く指定`）の行を持つ表を囲み、表の後の段落に `マーク` が出る文書'
-        notes: 別名のセルは「・」で区切る
+        description: '`<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` 〜 `<!-- /glossary -->` で、用語 `印`（別名 `マーク、オン・オフの印`、意味 `HTML コメントで書く指定`）の行を持つ表を囲み、表の後の段落に `マーク` が、別の節の段落に `オン・オフの印` が出る文書'
+        notes: 別名のセルは「、」で区切り、「・」では区切らない
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
     flow: |-
@@ -22,6 +22,7 @@ scenarios:
     expected:
       - 用語集の表が表として描かれ、表の中の語には下線が付いていない
       - 段落の `マーク` に破線の下線が付き、ポインターを乗せると `HTML コメントで書く指定` のツールチップが出る
+      - 別の節の `オン・オフの印` が 1 つの下線になり、`オン` だけの下線にはならない
       - 本文に印の文字（`<!--`・`glossary`）が出ていない
     test: test_normal
   - name: 正常シナリオ（索引に同じ語がある）
@@ -71,6 +72,31 @@ scenarios:
       - 表のあたりに、表に無い列名 `説明` と直し方を書いた書き方の警告がある
       - 本文の語に下線が付いていない
     test: test_error_when_unknown_column
+  - name: 正常シナリオ（ほかの文書の表）
+    setup:
+      - name: mdmark を読むページ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く。ほかは正常シナリオと同じ
+      - name: 2 つの文書を持つ索引
+        description: 文書 `glossary`（用語集のページ）と `guide` を持ち、`terms` を持たない索引
+      - name: ほかの文書の本文
+        description: '`glossary` の本文が、正常シナリオと同じ用語集の表だけを持つ'
+      - name: 描く Markdown
+        description: '`guide` の本文。用語集の表を持たず、段落に `マーク` が出る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: ほかの文書の表から入れた用語を照合する
+        M-->>P: 本文の用語に下線を引く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: 表の意味のツールチップを表示
+    expected:
+      - '`guide` の段落の `マーク` に破線の下線が付き、ポインターを乗せると `HTML コメントで書く指定` のツールチップが出る'
+    test: test_normal_when_other_document
 lead: '文書を書く人が本文の表を `<!-- glossary: term=列名 meaning=列名 aliases=列名 -->` 〜 `<!-- /glossary -->` で囲むと、mdmark がその表の用語・意味・別名の列から用語を入れ、本文に出たその語に意味のツールチップを付ける。'
 issue: 5
 primary_actor: 文書を書く人

@@ -5,11 +5,12 @@ scenarios:
       - name: mdmark を読むページ
         description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く HTML
       - name: 3 つの文書を持つ索引
-        description: 文書 `arch`（題 `アーキテクチャ`）・`api`（題 `API`、`related` に `arch`）・`guide`（題 `使い方`）を持つ索引
+        description: '`docs/index.yaml` に置く索引。文書 `arch`（`path` は `設計/arch.md`、題 `アーキテクチャ`）・`api`（`path` は `api.md`、題 `API`、`related` に `arch`）・`guide`（`path` は `使い方/guide.md`、題 `使い方`）を持つ'
+        notes: 3 つの文書を別のフォルダに置く
       - name: ほかの文書の本文
-        description: '`guide` の本文が `arch` のパスへのリンクを持つ'
+        description: '`guide` の本文が `../設計/arch.md` へのリンクを持つ'
       - name: 描く Markdown
-        description: '`arch` の本文。見出しと段落を持つ'
+        description: '`arch` の本文。見出しと、自分のパス `arch.md` へのリンクを持つ段落を持つ'
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
     flow: |-
@@ -18,13 +19,13 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
-        M->>M: arch を参照している文書を引く
+        M->>M: arch を参照している文書を引き、arch からの相対パスを求める
         M-->>P: 本文と被参照の一覧を描く
         U->>P: 一覧の文書の題を押す
         P-->>U: その文書へのリンクを開く
     expected:
-      - 被参照の一覧に `API` と `使い方` が並び、`アーキテクチャ` 自身は並ばない
-      - 一覧の各行が、その文書のパスへのリンクを持つ
+      - 被参照の一覧に `API` と `使い方` が並び、自分へのリンクを持つ `アーキテクチャ` 自身は並ばない
+      - '`API` のリンクの `href` が `../api.md`、`使い方` のリンクの `href` が `../使い方/guide.md`（描いた文書 `設計/arch.md` からの相対パス）'
       - 本文の見出しと段落が描かれている
     test: test_normal
   - name: 正常シナリオ（用語の被参照）
@@ -50,7 +51,8 @@ scenarios:
         U->>P: 下線の付いた語にポインターを乗せる
         P-->>U: 意味と、用語が出る文書を表示
     expected:
-      - '`ワークスペース` のツールチップに、意味と、用語が出る文書 `API`・`使い方` がある'
+      - '`ワークスペース` のツールチップに、意味と、用語が出る文書の題 `API`・`使い方` が文字で並ぶ'
+      - ツールチップの中にリンクが無い
     test: test_normal_when_term
   - name: 正常シナリオ（参照されていない文書）
     setup:
