@@ -134,6 +134,32 @@ scenarios:
       - 被参照の一覧が無い
       - 用語集の表が普通の表として描かれ、本文に印の文字が出ていない
     test: test_normal_when_glossary_disabled
+  - name: 正常シナリオ（被参照の機能だけを外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く。ほかは正常シナリオと同じ
+        notes: 設定の `features` は `glossary`・`backlinks` を書かない（既定のオン）
+      - name: 用語と別名を持つ索引
+        description: 用語 `索引` を持ち、文書 `api`（`aliases` に `公開関数`）と文書 `index-ref`（`aliases` に `索引`）を持ち、`api` の `related` が描く文書を指す索引
+      - name: 被参照を外す Markdown
+        description: '先頭に `<!-- features: -backlinks -->` を持ち、段落に `索引` と `公開関数` が出る文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: 設定の features に文書の印を重ねる
+        M-->>P: 用語にだけ下線を引き、関連文書を出さずに描く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: 用語の意味だけのツールチップを表示
+    expected:
+      - '`索引` に下線が付き、ツールチップに「用語」の意味だけがあり、「関連文書」の区分が無い'
+      - 文書の別名だけに一致する `公開関数` に下線が付いていない
+      - 文書の末尾に「関連文書」の一覧が無い
+    test: test_normal_when_backlinks_disabled
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人
