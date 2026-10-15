@@ -74,7 +74,7 @@ css_properties:
   - name: --mdmark-color-callout-note
     syntax: <color>
     default: '#0969da（ダーク #4493f8）'
-    description: '`note` の左の線・題・アイコンの色。`tip`（#1a7f37 / #3fb950）・`important`（#8250df / #ab7df8）・`warning`（#9a6700 / #d29922）・`caution`（#d1242f / #f85149）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
+    description: '`note` の枠の線・題・アイコンの色。`tip`（#1a7f37 / #3fb950）・`important`（#8250df / #ab7df8）・`warning`（#9a6700 / #d29922）・`caution`（#d1242f / #f85149）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
 accessibility:
   - 種類は題の文言（補足・ヒント・重要・警告・注意）で伝え、色だけに頼らない
   - アイコンは CSS で付け、読み上げに含めない

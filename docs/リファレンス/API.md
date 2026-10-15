@@ -253,11 +253,11 @@ registerExtension({
 | `--mdmark-color-notice-border` | `#9a6700` | `#bb8009` | 知らせの枠の線・書き方の警告の枠の破線 |
 | `--mdmark-color-notice-text` | `#1f2328` | `#f0f6fc` | 知らせの枠の文字・書き方の警告の文字 |
 | `--mdmark-color-table-head` | `#e6ebf0` | `#262c36` | 表の見出し行の面 |
-| `--mdmark-color-callout-note` | `#0969da` | `#4493f8` | 補足の注意書きの左の線・題・アイコン |
-| `--mdmark-color-callout-tip` | `#1a7f37` | `#3fb950` | ヒントの注意書きの左の線・題・アイコン |
-| `--mdmark-color-callout-important` | `#8250df` | `#ab7df8` | 重要の注意書きの左の線・題・アイコン |
-| `--mdmark-color-callout-warning` | `#9a6700` | `#d29922` | 警告の注意書きの左の線・題・アイコン |
-| `--mdmark-color-callout-caution` | `#d1242f` | `#f85149` | 注意の注意書きの左の線・題・アイコン |
+| `--mdmark-color-callout-note` | `#0969da` | `#4493f8` | 補足の注意書きの枠の線・題・アイコン |
+| `--mdmark-color-callout-tip` | `#1a7f37` | `#3fb950` | ヒントの注意書きの枠の線・題・アイコン |
+| `--mdmark-color-callout-important` | `#8250df` | `#ab7df8` | 重要の注意書きの枠の線・題・アイコン |
+| `--mdmark-color-callout-warning` | `#9a6700` | `#d29922` | 警告の注意書きの枠の線・題・アイコン |
+| `--mdmark-color-callout-caution` | `#d1242f` | `#f85149` | 注意の注意書きの枠の線・題・アイコン |
 
 <!-- /table -->
 
