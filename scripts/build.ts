@@ -1,3 +1,4 @@
+import { execFile } from "node:child_process";
 import {
   readdirSync,
   readFileSync,
@@ -6,6 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import { build, type Metafile, type Plugin } from "esbuild";
 
 // 埋める版が合うべき書式
@@ -22,8 +24,12 @@ const VERSION_OPTION = "--version";
 const NODE_MODULES_SEGMENT = "node_modules/";
 // パッケージの直下にあるライセンスのファイル名
 const LICENSE_FILE_PATTERN = /^licen[sc]e/i;
+// 型定義を書く tsc の設定
+const DECLARATION_TSCONFIG = "tsconfig.dist.json";
 // 差し替えた postcss を置く esbuild の名前空間
 const STUB_NAMESPACE = "stub";
+
+const execFileAsync = promisify(execFile);
 
 /** 版の書式が違うときに投げる */
 export class VersionFormatError extends Error {}
@@ -103,7 +109,24 @@ export async function writeThirdPartyLicenses(options: {
   writeFileSync(join(root, "dist", LICENSES_FILE), blocks.join("\n\n"));
 }
 
-/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、束ねた依存のライセンスを書く */
+/** 作業ツリーの `tsc` を流し、`src/index.ts` から辿れる型定義を `dist/` に書く。`tsc` が失敗したら、その出力を含む例外を投げる */
+export async function emitDeclarations(root: string): Promise<void> {
+  try {
+    await execFileAsync(
+      join(root, "node_modules", ".bin", "tsc"),
+      ["--project", DECLARATION_TSCONFIG],
+      { cwd: root },
+    );
+  } catch (error) {
+    const { stdout = "", stderr = "" } = error as {
+      stdout?: string;
+      stderr?: string;
+    };
+    throw new Error(`tsc が失敗した:\n${stdout}${stderr}`);
+  }
+}
+
+/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、型定義を書き、束ねた依存のライセンスを書く */
 export async function buildDist(
   version: string,
   root: string,
@@ -123,6 +146,7 @@ export async function buildDist(
     // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す
     logLevel: "silent",
   });
+  await emitDeclarations(root);
   await writeThirdPartyLicenses({ metafile: result.metafile, root });
   const outputs = Object.fromEntries(
     Object.entries(result.metafile.outputs).map(([path, output]) => [

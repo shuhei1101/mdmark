@@ -86,6 +86,29 @@ scenarios:
       - 段落が描かれている
       - 本文に印の文字が出ていない
     test: test_normal_when_unknown_feature
+  - name: 正常シナリオ（記法の機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は表・注意書きの機能を書かない（既定のオン）
+      - name: 記法の機能を外す Markdown
+        description: '先頭に `<!-- features: -table -callout -->` を持ち、`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ表と `> [!NOTE]` の引用を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書の印を重ねる
+        M-->>P: 表と注意書きを普通の Markdown として描く
+        P-->>U: 表と引用を表示
+    expected:
+      - 表に並べ替え・ピン止めのボタンが無い
+      - 引用が注意書きの枠（class `markdown-alert`）にならず、引用として描かれている
+      - 本文に印の文字が出ていない
+    test: test_normal_when_syntax_disabled
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人

@@ -21,3 +21,11 @@ stories:
     args:
       name: sequence-diagram-with-very-long-component-name
       figure: true
+  - name: Extension
+    parameters:
+      server:
+        id: notice
+    args:
+      name: greet
+      figure: true
+      source: extension

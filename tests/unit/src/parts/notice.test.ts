@@ -28,6 +28,18 @@ test("test_render_notice_when_block", async () => {
   expect(html).toBe(expectedNotice("この箇所を表示できません", "tabs"));
 });
 
+// 拡張を読めないときの本文を返す（正常系）
+test("test_render_notice_when_extension", async () => {
+  // 準備
+  const { renderNotice } = await loadNotice();
+  // 実行
+  const html = renderNotice({ name: "greet", source: "extension" });
+  // 検証
+  expect(html).toContain(
+    "<p>表示に使う拡張（<code>greet</code>）を読み込めませんでした。",
+  );
+});
+
 // 印の名前をエスケープする（正常系）
 test("test_render_notice_when_name_has_html", async () => {
   // 準備

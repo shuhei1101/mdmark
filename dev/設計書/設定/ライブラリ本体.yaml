@@ -13,7 +13,7 @@ settings:
     file: mdmark.config.yaml
     type: Record<string, boolean>
     required: false
-    default: '`{ print: true }`'
+    default: '全ての機能が `true`'
     description: '機能ごとのオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
     allowed: 値は真偽値。知らない機能名と真偽値でない値は無視する
     reload: reload
@@ -24,7 +24,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: 印刷の前に閉じた折り畳みを開き、印刷の後に戻す
+    description: 印刷の前に閉じた折り畳みと、タブ・閉じた節・行の詳細を開き、印刷の後に戻す
     reload: reload
     implementation: src/print.ts#attachPrint
   - key: libraries
@@ -39,5 +39,104 @@ settings:
     implementation: src/config.ts#resolveConfig
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.libraries]
+  - key: features.table
+    title: 表の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 表の印と、印で囲まない表に、種類ごとの並べ替え・ピン止め・絞り込みと開閉を付ける。オフのときは表の印を取り除いて普通の表を描く
+    reload: reload
+    status: planned
+  - key: features.callout
+    title: 注意書きの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 1 行目が `[!NOTE]` などの引用を、種類ごとの題・色・アイコンを持つ枠にする。オフのときは引用のまま描く
+    reload: reload
+    status: planned
+  - key: features.tabs
+    title: タブの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- tabs -->` の範囲を見出しで区切ったタブにする。オフのときは範囲の中身をそのまま描く'
+    reload: reload
+    status: planned
+  - key: features.steps
+    title: ステップの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- steps -->` の範囲の番号付きリストを手順にする。オフのときは番号付きリストのまま描く'
+    reload: reload
+    status: planned
+  - key: features.tree
+    title: ファイルツリーの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 言語 `tree` のコードブロックをフォルダとファイルのツリーにする。オフのときはコードブロックのまま描く
+    reload: reload
+    status: planned
+  - key: features.badge
+    title: バッジの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 頭に `badge:` を付けた行内のコードを札にする。オフのときは行内のコードのまま描く
+    reload: reload
+    status: planned
+  - key: features.toc
+    title: 目次の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- toc -->` の場所に h2〜h3 の目次を置く。オフのときは印を取り除く'
+    reload: reload
+    status: planned
+  - key: features.anchors
+    title: 見出しのアンカーの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 見出しに、見出しの ID へのリンクを付ける。オフのときもリンクを付けないだけで、見出しの ID は付ける
+    reload: reload
+    status: planned
+  - key: features.sections
+    title: 節の開閉の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: h2〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く
+    reload: reload
+    status: planned
+  - key: features.row-details
+    title: 行の詳細の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- row-detail -->` の範囲を表の行の下に開閉して出す。オフのときは範囲の中身を表の後の本文として描く'
+    reload: reload
+    status: planned
+  - key: features.figures
+    title: 図表の番号の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- fig -->` の直後の図と表に番号を付け、`#fig-ID` へのリンクの文字を番号にする。オフのときは印を取り除き、リンクの文字を変えない'
+    reload: reload
+    status: planned
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

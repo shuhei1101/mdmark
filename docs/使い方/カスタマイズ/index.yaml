@@ -5,5 +5,7 @@ items:
     summary: CSS 変数と層の外の CSS で、描いた文書の見た目を変える
   - page: 機能をオン・オフする.md
     summary: 設定の `features` と文書の印で、機能のオン・オフを切り替える
+  - page: 拡張を登録する.md
+    summary: "`registerExtension` で印を足す手順。TypeScript を推奨し、配る前に JavaScript へ変換する"
   - page: 印刷する.md
     summary: 印刷・PDF にしたときの文書の見え方

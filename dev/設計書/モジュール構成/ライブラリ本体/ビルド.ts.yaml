@@ -62,13 +62,13 @@ functions:
         case: 正常
         summary: '`version.ini` の版でビルドする'
         condition: '`--version` 無し、`version.ini` は `v0.0.0`'
-        mock: 一時フォルダに `src/` と `version.ini` を置く
+        mock: 一時フォルダに `src/` と `version.ini` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 0 を返し、`dist/index.js` に `v0.0.0` が埋まる
       - name: test_main_when_version_given
         case: 正常
         summary: 渡した版でビルドする
         condition: '`--version v0.0.1`'
-        mock: 一時フォルダに `src/` と `version.ini` を置く
+        mock: 一時フォルダに `src/` と `version.ini` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 0 を返し、`dist/index.js` に `v0.0.1` が埋まる
       - name: test_main_when_version_format_invalid
         case: 異常
@@ -92,7 +92,7 @@ functions:
         case: 異常
         summary: 上限を超えると `dist/` を消して終わる
         condition: '`maxBytes` が 1'
-        mock: 一時フォルダに `src/` と `version.ini` を置く
+        mock: 一時フォルダに `src/` と `version.ini` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーにファイル名とサイズが出る
     callees:
       - '#functions[resolveVersion]'
@@ -147,7 +147,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、束ねた依存のライセンスを書く
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -159,27 +159,28 @@ functions:
         description: 作業ツリーの場所
     returns:
       type: Promise<Record<string, number>>
-      description: 出力ファイルのパスとバイト数（ライセンスのファイルを含む）
+      description: 出力ファイルのパスとバイト数（esbuild の出力とライセンスのファイル。型定義は含まない）
     callees:
       - '#functions[writeThirdPartyLicenses]'
+      - '#functions[emitDeclarations]'
     unit_tests:
       - name: test_build_dist
         case: 正常
         summary: 版を埋めた JS と CSS を 1 つずつ書く
         condition: 版 `v0.0.1`
-        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置く
+        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 戻り値が `dist/index.js` と `dist/index.css` と `dist/THIRD_PARTY_LICENSES.txt` の 3 件。JS に `"v0.0.1"`、CSS の先頭に `--mdmark-version:"v0.0.1"` が入る
       - name: test_build_dist_when_nested_css
         case: 正常
         summary: CSS の入れ子を展開する
         condition: '`src/index.css` が `.a { .b { color: red } }`'
-        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置く
+        mock: 一時フォルダに `src/index.ts` と `src/index.css` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: '`dist/index.css` に `.a .b{color:red}` が入り、入れ子が残らない'
       - name: test_build_dist_when_postcss_imported
         case: 正常
         summary: postcss の import を差し替え、配布物に postcss を含めない
         condition: '`src/index.ts` が `import { parse } from "postcss"` を持ち、`parse` を export する'
-        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` を使う
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: '`dist/index.js` に postcss の本体（`CssSyntaxError`）が無い'
   - name: writeThirdPartyLicenses
     title: 束ねた依存のライセンスを書く
@@ -244,5 +245,35 @@ functions:
         condition: 100 バイトと 201 バイト、上限 200
         mock: なし
         expected: 201 バイトの 1 件
+  - name: emitDeclarations
+    title: 型定義を書く
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 作業ツリーの `node_modules/.bin/tsc` を `--project tsconfig.dist.json` で子プロセスとして流し、`src/index.ts` から辿れる型定義を `dist/` に書く（`dist/index.d.ts` と、`src/` と同じ並びの `.d.ts`）
+    description: 'リポジトリの直下に置く `tsconfig.dist.json` は `tsconfig.json` を継いで `noEmit: false`・`declaration: true`・`emitDeclarationOnly: true`・`rootDir: "src"`・`outDir: "dist"`・`files: ["src/index.ts"]` にする。型定義の import は `.ts` のまま残るが、TypeScript 7.0.2 の `moduleResolution` が `bundler` と `nodenext` の使う側で型検査が通ることを確かめた（2026-10-14）。`tsc` が 0 以外で終われば、その出力を含む例外を投げる'
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの場所
+    returns:
+      type: Promise<void>
+      description: 書き終えたら解決する
+    side_effects: '`dist/` に `.d.ts` を書く'
+    unit_tests:
+      - name: test_emit_declarations
+        case: 正常
+        summary: 公開関数と拡張の型を持つ dist/index.d.ts を書き、使う側の型検査が通る
+        condition: 作業ツリーの `src/` を一時フォルダに写す
+        mock: なし（作業ツリーの `node_modules` を使う）
+        expected: '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension`・`MdmarkExtension`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、それを import したファイルが `--moduleResolution bundler` と `nodenext` の `tsc --noEmit` で型エラー 0 件'
+      - name: test_emit_declarations_when_type_error
+        case: 異常
+        summary: 型エラーがあれば例外を投げる
+        condition: '`src/index.ts` が `export const x: number = "a"` を持つ'
+        mock: なし
+        expected: メッセージに `tsc` のエラーを含む例外
 test_files:
   - tests/unit/scripts/build.test.ts

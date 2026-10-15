@@ -12,7 +12,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Page } from "@playwright/test";
-import type { MdmarkConfig } from "../../src/index.ts";
+import type { MdmarkConfig, MdmarkExtension } from "../../src/index.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -22,6 +22,8 @@ const CDN_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
 const PAGE_URL = "https://app.example.test/";
 // 外部ライブラリの代役のモジュールを返す架空の URL
 export const LIB_URL = "https://libs.example.test/test-lib.js";
+// 拡張の代役のモジュールを返す架空の URL
+export const EXTENSION_URL = "https://libs.example.test/greet.js";
 // 配布物を埋めてビルドする版
 const BUILT_VERSION = "v0.0.1";
 // リポジトリの直下
@@ -29,6 +31,10 @@ const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 外部ライブラリの代役: `draw` で印の場所の文字を `drawn:` と引数を `,` で結んだものにする
 const TEST_LIB_SOURCE =
   'export function draw(slot, args) { slot.textContent = "drawn:" + args.join(","); }\n';
+
+// 拡張の代役: `draw` で印の場所の文字を `greet:` と引数を `,` で結んだものにする
+const EXTENSION_SOURCE =
+  'export function draw(slot, value) { slot.textContent = "greet:" + value.args.join(","); }\n';
 
 /** 見本の Markdown: 見出し・段落・リスト・表・コードブロック・リンク・折り畳み・機能の印・スクリプト */
 export const SAMPLE_MARKDOWN = [
@@ -66,6 +72,7 @@ type MdmarkWindow = Window & {
       opts: { markdown: string; config?: MdmarkConfig },
     ) => { update: (markdown: string) => void; destroy: () => void };
     render: (markdown: string, opts?: { config?: MdmarkConfig }) => string;
+    registerExtension: (extension: MdmarkExtension) => void;
   };
   handle?: { update: (markdown: string) => void; destroy: () => void };
 };
@@ -77,6 +84,9 @@ export async function buildDistRoot(): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
+    await cp(join(REPO_ROOT, name), join(root, name));
+  }
   await writeFile(join(root, "package.json"), '{"type":"module"}\n');
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   await symlink(
@@ -102,8 +112,8 @@ function pageHtml(hostCss: string): string {
     <link rel="stylesheet" href="${CDN_BASE}@${BUILT_VERSION}/dist/index.css">
     <style>${hostCss}</style>
     <script type="module">
-      import { mount, render } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
-      window.mdmark = { mount, render };
+      import { mount, render, registerExtension } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
+      window.mdmark = { mount, render, registerExtension };
     </script>
   </head>
   <body><div id="doc"></div></body>
@@ -114,7 +124,7 @@ function pageHtml(hostCss: string): string {
 export async function openPage(
   page: Page,
   root: string,
-  options: { hostCss?: string } = {},
+  options: { hostCss?: string; hash?: string } = {},
 ): Promise<void> {
   await page.route(PAGE_URL, (route) =>
     route.fulfill({
@@ -131,7 +141,7 @@ export async function openPage(
       headers: { "access-control-allow-origin": "*" },
     });
   });
-  await page.goto(PAGE_URL);
+  await page.goto(`${PAGE_URL}${options.hash ?? ""}`);
   await page.waitForFunction(() => "mdmark" in window);
 }
 
@@ -151,6 +161,76 @@ export async function routeLibrary(
     });
   });
   return () => requests;
+}
+
+/** 拡張の代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない */
+export async function routeExtension(
+  page: Page,
+  status: 200 | 404,
+): Promise<() => number> {
+  let requests = 0;
+  await page.route(EXTENSION_URL, (route) => {
+    requests += 1;
+    return route.fulfill({
+      status,
+      body: status === 200 ? EXTENSION_SOURCE : undefined,
+      contentType: "text/javascript",
+      headers: { "access-control-allow-origin": "*" },
+    });
+  });
+  return () => requests;
+}
+
+/** ページから、`greet` の印の拡張を登録する。`strict` が真なら引数を 1 つだけ、英小文字で許す schema を付ける */
+export async function registerGreet(
+  page: Page,
+  options: { strict?: boolean } = {},
+): Promise<void> {
+  await page.evaluate(
+    ({ url, strict }) => {
+      const w = window as MdmarkWindow;
+      if (!w.mdmark) {
+        throw new Error("mdmark が無い");
+      }
+      // モジュールの URL は手元の応答が返すため、バンドラーに解決させない
+      const importModule = new Function("u", "return import(u)") as (
+        u: string,
+      ) => Promise<{ draw: (slot: HTMLElement, value: unknown) => void }>;
+      w.mdmark.registerExtension({
+        name: "greet",
+        directive: "greet",
+        load: () => importModule(url),
+        schema: strict
+          ? {
+              "~standard": {
+                version: 1,
+                vendor: "e2e",
+                validate: (value) => {
+                  const { args } = value as { args: string[] };
+                  const issues = args.flatMap((arg, index) =>
+                    index === 0 && /^[a-z]+$/.test(arg)
+                      ? []
+                      : [
+                          {
+                            message:
+                              index === 0
+                                ? "英小文字だけで書いてください"
+                                : "引数は 1 つだけです",
+                            path: ["args", index],
+                          },
+                        ],
+                  );
+                  return issues.length > 0
+                    ? { issues }
+                    : { value: value as { args: string[] } };
+                },
+              },
+            }
+          : undefined,
+      } as MdmarkExtension);
+    },
+    { url: EXTENSION_URL, strict: options.strict ?? false },
+  );
 }
 
 /** ページから、描く先の要素に文書を描かせる（戻り値はページの `window.handle` に控える） */

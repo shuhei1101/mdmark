@@ -1,0 +1,38 @@
+title: Parts/SyntaxWarning
+stories:
+  - name: UnknownKind
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- table: unknown +sort -->'
+      message: の種類 `unknown` は使えません。使える種類は `data`・`plain` です。既定の種類に `+sort` を当てて描いています。
+  - name: Items
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- table: data +unknown size=2 -->'
+      message: の読めない指定を当てずに描いています。
+      items: '[{"label":"+unknown","message":"使えない機能です。使える機能は `sort`・`pin`・`filter` です"},{"label":"size=","message":"使えないキーです。使えるキーは `filter=` です"}]'
+  - name: BrokenReference
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      message: 'リンク先の `#fig-missing` の図表がありません。`<!-- fig: missing -->` を図か表の直前に書くか、リンク先を直してください。'
+  - name: ExtensionSchema
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- greet: World 2 -->'
+      message: の引数が、拡張 `greet` の決まりに合いません。直してから読み込み直してください。
+      items: '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \"World\""},{"label":"2 つ目の 2","message":"Invalid type: Expected never but received \"2\""}]'
+  - name: LongMark
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->'
+      message: の絞り込みの種類 `range` は使えません。使える種類は `select`・`text`・`date` です。

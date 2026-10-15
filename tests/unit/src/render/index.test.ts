@@ -18,7 +18,7 @@ test("test_render", async () => {
   // 実行
   const html = render("# 見出し");
   // 検証
-  expect(html).toContain("<h1>見出し</h1>");
+  expect(html).toMatch(/<h1[^>]*>見出し/);
 });
 
 // 機能の印を重ねたオン・オフを返し、印は本文に残さない（正常系）
@@ -51,4 +51,27 @@ test("test_render_document_when_same_input", async () => {
   // 検証
   expect(second.html).toBe(first.html);
   expect(second.features).toEqual(first.features);
+});
+
+// 生の HTML で書いた記法の class・data-*・id を落とし、記法が出したものは残す（正常系）
+test("test_render_document_when_raw_html_imitates_syntax", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const { resolveConfig } = await import("../../../../src/config.ts");
+  const markdown = [
+    '<div class="mdmark-tabs" data-kind="data"><p id="fig-x">偽り</p></div>',
+    "",
+    "> [!NOTE]",
+    "> 本物",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDocument({ markdown, config: resolveConfig({}) });
+  // 検証
+  expect(html).toContain("<p>偽り</p>");
+  expect(html).not.toContain("mdmark-tabs");
+  expect(html).not.toContain("data-kind");
+  expect(html).not.toContain('id="fig-x"');
+  expect(html).toContain("markdown-alert-note");
+  expect(html).not.toContain("data-mdmark-own");
 });

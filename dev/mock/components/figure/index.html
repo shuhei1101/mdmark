@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>figure | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">図表の番号</h1>
+
+      <!-- 図（画像の題あり） -->
+      <section aria-labelledby="state-image-title">
+        <h2 class="catalog-label" id="state-image-title">図（画像の題あり）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure" id="fig-arch">
+  <img src="../../pages/document/19/modern/images/arch.svg" alt="使う側のページが mdmark を読み、mdmark が jsDelivr から配られる構成" width="560" height="200">
+  <figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- 図（画像の題なし） -->
+      <section aria-labelledby="state-image">
+        <h2 class="catalog-label" id="state-image">図（画像の題なし）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure" id="fig-arch-b">
+  <img src="../../pages/document/19/modern/images/arch.svg" alt="使う側のページが mdmark を読み、mdmark が jsDelivr から配られる構成" width="560" height="200">
+  <figcaption class="mdmark-figure-caption"><b>図 1</b></figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- 表 -->
+      <section aria-labelledby="state-table">
+        <h2 class="catalog-label" id="state-table">表</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure" id="fig-list">
+  <figcaption class="mdmark-figure-caption"><b>表 1</b></figcaption>
+  <div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 描く処理の段">
+    <thead><tr><th><span class="mdmark-th"><span>段</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「段」の列までピン止め" title="「段」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></span></th><th><span class="mdmark-th"><span>受け持つもの</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「受け持つもの」の列までピン止め" title="「受け持つもの」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.75 1.75l4.5 4.5-1.75.75-2.75 2.75-.5 3-5.75-5.75 3-.5L9 3.5z"/><path d="M5.75 10.25 2 14"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="段">印を読む</td><td data-label="受け持つもの">印の範囲と引数を決める</td></tr>
+      <tr><td data-label="段">HTML にする</td><td data-label="受け持つもの">記法ごとの HTML を出す</td></tr>
+    </tbody>
+  </table>
+</div>
+</figure>
+        </article>
+      </section>
+
+      <!-- 番号にした参照のリンク -->
+      <section aria-labelledby="state-ref">
+        <h2 class="catalog-label" id="state-ref">番号にした参照のリンク</h2>
+        <article class="mdmark">
+<p>描く処理の流れは <a href="#fig-arch">図 1</a> のとおりで、段ごとの受け持ちは <a href="#fig-list">表 1</a> にまとめています。</p>
+        </article>
+      </section>
+
+      <!-- 切れた参照（異常シナリオ） -->
+      <section aria-labelledby="state-broken">
+        <h2 class="catalog-label" id="state-broken">切れた参照（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に書くか、リンク先を直してください。</p>
+</div>
+<p>詳しくは <a href="#fig-missing">図</a> を見てください。</p>
+        </article>
+      </section>
+
+      <!-- 同じ ID を 2 回書いた（異常シナリオ） -->
+      <section aria-labelledby="state-duplicate">
+        <h2 class="catalog-label" id="state-duplicate">同じ ID を 2 回書いた（異常シナリオ）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure">
+  <img src="../../pages/document/19/modern/images/arch.svg" alt="1 つ目の構成図" width="560" height="200">
+  <figcaption class="mdmark-figure-caption"><b>図 1</b></figcaption>
+</figure>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- fig: arch --&gt;</code> の ID <code>arch</code> は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。</p>
+</div>
+<figure class="mdmark-figure">
+  <img src="../../pages/document/19/modern/images/arch.svg" alt="2 つ目の構成図" width="560" height="200">
+  <figcaption class="mdmark-figure-caption"><b>図 2</b></figcaption>
+</figure>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

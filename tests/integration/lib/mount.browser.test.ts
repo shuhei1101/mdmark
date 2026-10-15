@@ -127,7 +127,9 @@ test("test_normal", async () => {
   for (const selector of ["h1", "p", "ul", "table", "pre > code.language-ts"]) {
     expect(el.querySelector(selector), selector).not.toBeNull();
   }
-  expect(find(el, "a").getAttribute("href")).toBe("https://example.com/page");
+  expect(find(el, 'a[href^="https"]').getAttribute("href")).toBe(
+    "https://example.com/page",
+  );
   const cells = [...el.querySelectorAll("td")];
   expect(cells.map((td) => td.getAttribute("data-label"))).toEqual([
     "列A",
@@ -148,7 +150,8 @@ test("test_normal_when_updated", async () => {
   // 実行
   handle.update("# 新しい見出し");
   // 検証
-  expect(el.innerHTML.trim()).toBe("<h1>新しい見出し</h1>");
+  expect(el.children).toHaveLength(1);
+  expect(find(el, "h1").textContent).toBe("新しい見出し");
   expect(el.classList.contains("mdmark")).toBe(true);
 });
 
@@ -359,4 +362,388 @@ test("test_error_when_library_not_found", async () => {
   expect(args).toContain("test-lib");
   expect(args).toContain(`${location.origin}${MISSING_LIB_PATH}`);
   expect(args.some((arg) => arg instanceof Error)).toBe(true);
+});
+
+/** 名前と値の 3 行を持つ、名前の列を絞り込む表の Markdown */
+const FILTER_TABLE_MARKDOWN = [
+  "<!-- table: data filter=名前 -->",
+  "",
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| りんご | 10 |",
+  "| みかん | 2 |",
+  "| りんご飴 | 33 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+/** 3 つのタブを持つ Markdown */
+const TABS_MARKDOWN = [
+  "<!-- tabs -->",
+  "",
+  "### macOS",
+  "",
+  "macOS の手順",
+  "",
+  "### Windows",
+  "",
+  "Windows の手順",
+  "",
+  "### Linux",
+  "",
+  "Linux の手順",
+  "",
+  "<!-- /tabs -->",
+  "",
+].join("\n");
+
+/** 表の本文の行の指定した列の文字を、上から並べて返す */
+function columnTexts(el: Element, column: number): string[] {
+  return [...el.querySelectorAll("tbody tr")]
+    .filter(
+      (row) =>
+        !row.classList.contains("mdmark-row-detail") &&
+        !row.classList.contains("mdmark-table-empty"),
+    )
+    .map((row) => row.querySelectorAll("td")[column]?.textContent ?? "");
+}
+
+/** 表の本文の行のうち、隠れていないものの数 */
+function visibleRows(el: Element): number {
+  return [...el.querySelectorAll<HTMLElement>("tbody tr")].filter(
+    (row) =>
+      !row.classList.contains("mdmark-row-detail") &&
+      !row.classList.contains("mdmark-table-empty") &&
+      !row.hidden,
+  ).length;
+}
+
+// 表の見出しで並べ替えを 3 状態で切り替え、絞り込みのドロワーで絞って外す（正常系）
+test("test_normal_when_table_sorted_and_filtered", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: FILTER_TABLE_MARKDOWN });
+  const valueHead = el.querySelectorAll("thead th")[1] as HTMLElement;
+  const sortButton = find<HTMLButtonElement>(valueHead, "button.mdmark-sort");
+  // 実行・検証: 値の列の見出しを 3 回押す
+  sortButton.click();
+  expect(columnTexts(el, 1)).toEqual(["2", "10", "33"]);
+  expect(valueHead.getAttribute("aria-sort")).toBe("ascending");
+  sortButton.click();
+  expect(columnTexts(el, 1)).toEqual(["33", "10", "2"]);
+  expect(valueHead.getAttribute("aria-sort")).toBe("descending");
+  sortButton.click();
+  expect(columnTexts(el, 1)).toEqual(["10", "2", "33"]);
+  expect(valueHead.hasAttribute("aria-sort")).toBe(false);
+  // 実行・検証: 名前の列の絞り込みのボタンを押す
+  const filterButtons =
+    el.querySelectorAll<HTMLButtonElement>(".mdmark-filter");
+  expect(filterButtons).toHaveLength(1);
+  const filterButton = filterButtons[0] as HTMLButtonElement;
+  expect(el.querySelectorAll("thead th")[0]?.contains(filterButton)).toBe(true);
+  filterButton.click();
+  const drawer = find<HTMLElement>(el, ".mdmark-filter-drawer");
+  expect(filterButton.getAttribute("aria-expanded")).toBe("true");
+  expect(drawer.hasAttribute("hidden")).toBe(false);
+  expect(document.activeElement).toBe(find(drawer, ".mdmark-filter-search"));
+  // 実行・検証: りんごを選ぶ
+  const apple = [...drawer.querySelectorAll("label")].find(
+    (label) => label.textContent?.trim() === "りんご",
+  )?.control as HTMLInputElement;
+  apple.click();
+  expect(visibleRows(el)).toBe(1);
+  expect(
+    columnTexts(el, 0).filter(
+      (_, i) => !el.querySelectorAll<HTMLElement>("tbody tr")[i]?.hidden,
+    ),
+  ).toEqual(["りんご"]);
+  // 実行・検証: 絞り込みを外す
+  const clear = [...drawer.querySelectorAll("button")].find((button) =>
+    button.textContent?.includes("絞り込みを外す"),
+  );
+  clear?.click();
+  for (const checkbox of drawer.querySelectorAll<HTMLInputElement>(
+    'input[type="checkbox"]',
+  )) {
+    expect(checkbox.checked).toBe(false);
+  }
+  expect(visibleRows(el)).toBe(3);
+  // 実行・検証: ドロワーの外を押す
+  document.body.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true }),
+  );
+  expect(drawer.hasAttribute("hidden")).toBe(true);
+  expect(filterButton.getAttribute("aria-expanded")).toBe("false");
+});
+
+// はみ出す表にだけピン止めのボタンを出し、押した列までを左端に留める（正常系）
+test("test_normal_when_table_pinned", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "320px";
+  const headers = Array.from({ length: 10 }, (_, i) => `列の名前${i + 1}`);
+  const wideRows = Array.from(
+    { length: 30 },
+    (_, row) =>
+      `| ${headers.map((_h, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+  );
+  const markdown = [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...wideRows,
+    "",
+    "| 用語 | 意味 |",
+    "| --- | --- |",
+    "| 印 | 目印 |",
+    "| 枠 | 囲み |",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const [wide, narrow] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ] as [HTMLElement, HTMLElement];
+  const widePins =
+    wide.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  // 実行・検証: はみ出す表の各列にだけボタンが出る
+  await vi.waitFor(() => {
+    expect(widePins).toHaveLength(10);
+    for (const pin of widePins) {
+      expect(pin.hasAttribute("hidden")).toBe(false);
+    }
+  });
+  for (const pin of narrow.querySelectorAll<HTMLButtonElement>(
+    "button.mdmark-pin",
+  )) {
+    expect(pin.hasAttribute("hidden")).toBe(true);
+  }
+  const firstRow = wide.querySelector("tbody tr") as HTMLElement;
+  const positions = () =>
+    [...firstRow.querySelectorAll("td")].map(
+      (cell) => getComputedStyle(cell).position,
+    );
+  const headPositions = () =>
+    [...wide.querySelectorAll("thead th")].map(
+      (cell) => getComputedStyle(cell).position,
+    );
+  // 実行・検証: 2 列目のピン止めを押す
+  const second = widePins[1] as HTMLButtonElement;
+  second.click();
+  expect(second.getAttribute("aria-pressed")).toBe("true");
+  expect(positions().slice(0, 3)).toEqual(["sticky", "sticky", "static"]);
+  expect(new Set(headPositions())).toEqual(new Set(["sticky"]));
+  // 実行・検証: もう一度押す
+  second.click();
+  expect(second.getAttribute("aria-pressed")).toBe("false");
+  expect(positions().slice(0, 2)).toEqual(["static", "static"]);
+  expect(new Set(headPositions())).toEqual(new Set(["sticky"]));
+});
+
+// タブの範囲にタブの並びを付け、押すか矢印キーで切り替える（正常系）
+test("test_normal_when_tabs_switched", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: TABS_MARKDOWN });
+  const tablist = find(el, '[role="tablist"]');
+  const tabs = [...tablist.querySelectorAll<HTMLElement>('[role="tab"]')];
+  const panels = [...el.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+  // 検証: 描いた直後
+  expect(tabs.map((tab) => tab.textContent)).toEqual([
+    "macOS",
+    "Windows",
+    "Linux",
+  ]);
+  expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
+  expect(panels.map((panel) => panel.hasAttribute("hidden"))).toEqual([
+    false,
+    true,
+    true,
+  ]);
+  // 実行・検証: Windows を押す
+  tabs[1]?.click();
+  expect(tabs[1]?.getAttribute("aria-selected")).toBe("true");
+  expect(panels.map((panel) => panel.hasAttribute("hidden"))).toEqual([
+    true,
+    false,
+    true,
+  ]);
+  expect(panels[1]?.textContent).toContain("Windows の手順");
+  // 実行・検証: 右の矢印キー
+  document.activeElement?.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+  );
+  expect(document.activeElement).toBe(tabs[2]);
+  expect(tabs[2]?.getAttribute("aria-selected")).toBe("true");
+});
+
+// 見出しで節を、行のボタンで行の詳細を開閉し、閉じた節の中への #ID でその節を開く（正常系）
+test("test_normal_when_sections_and_row_details_toggled", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "## 概要",
+    "",
+    "概要の段落",
+    "",
+    "## 補足",
+    "",
+    "<!-- section: closed -->",
+    "",
+    "補足の段落",
+    "",
+    "### 注意",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "| c | 3 |",
+    "",
+    "<!-- row-detail: 2 -->",
+    "",
+    "詳細の段落",
+    "",
+    "<!-- /row-detail -->",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const toggleOf = (id: string) =>
+    find<HTMLButtonElement>(el, `[aria-controls="section-${id}"]`);
+  const bodyOf = (id: string) => find<HTMLElement>(el, `[id="section-${id}"]`);
+  try {
+    // 検証: 描いた直後
+    expect(bodyOf("補足").getAttribute("hidden")).toBe("until-found");
+    expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("false");
+    // 実行・検証: 概要の開閉を押す
+    toggleOf("概要").click();
+    expect(bodyOf("概要").hasAttribute("hidden")).toBe(true);
+    expect(toggleOf("概要").getAttribute("aria-expanded")).toBe("false");
+    // 実行・検証: 2 行目の詳細のボタンを押す
+    const rowToggles = el.querySelectorAll<HTMLButtonElement>(
+      "button.mdmark-row-toggle",
+    );
+    expect(rowToggles).toHaveLength(1);
+    const rows = el.querySelectorAll("tbody tr:not(.mdmark-row-detail)");
+    expect(rows[1]?.contains(rowToggles[0] as Node)).toBe(true);
+    const detail = find<HTMLElement>(el, "tr.mdmark-row-detail");
+    expect(detail.hasAttribute("hidden")).toBe(true);
+    rowToggles[0]?.click();
+    expect(detail.hasAttribute("hidden")).toBe(false);
+    expect(rowToggles[0]?.getAttribute("aria-expanded")).toBe("true");
+    // 実行・検証: #注意 へ移る
+    location.hash = "#注意";
+    await vi.waitFor(() => {
+      expect(bodyOf("補足").hasAttribute("hidden")).toBe(false);
+    });
+    expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("true");
+  } finally {
+    history.replaceState(null, "", location.pathname);
+  }
+});
+
+// 印刷の前にタブの全ての中身と閉じた記法を開き、印刷の後に戻す（正常系）
+test("test_normal_when_printed_with_syntax", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "<!-- tabs -->",
+    "",
+    "### 一つ目",
+    "",
+    "一つ目の中身",
+    "",
+    "### 二つ目",
+    "",
+    "二つ目の中身",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- row-detail: 1 -->",
+    "",
+    "詳細の段落",
+    "",
+    "<!-- /row-detail -->",
+    "",
+    "<!-- table: data closed -->",
+    "",
+    "| 版 | 日付 |",
+    "| --- | --- |",
+    "| v1 | 2026-10-10 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "> [!NOTE]-",
+    "> 補足の本文",
+    "",
+    "## 閉じた節",
+    "",
+    "<!-- section: closed -->",
+    "",
+    "節の中身",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const tabs = [...el.querySelectorAll<HTMLElement>('[role="tab"]')];
+  tabs[1]?.click();
+  const panels = [...el.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+  const section = find<HTMLElement>(el, "[id^='section-']");
+  const detail = find<HTMLElement>(el, "tr.mdmark-row-detail");
+  const details = [
+    ...el.querySelectorAll<HTMLDetailsElement>(
+      "details.mdmark-table-details, details.markdown-alert",
+    ),
+  ];
+  expect(details).toHaveLength(2);
+  // 実行・検証: 印刷の前
+  sendPrintEvent("beforeprint");
+  for (const panel of panels) {
+    expect(panel.hasAttribute("hidden")).toBe(false);
+  }
+  expect(
+    [...el.querySelectorAll(".mdmark-tab-title")].map(
+      (title) => title.textContent,
+    ),
+  ).toEqual(["一つ目", "二つ目"]);
+  expect(section.hasAttribute("hidden")).toBe(false);
+  expect(detail.hasAttribute("hidden")).toBe(false);
+  for (const element of details) {
+    expect(element.open).toBe(true);
+  }
+  // 実行・検証: 印刷の後
+  sendPrintEvent("afterprint");
+  expect(panels.map((panel) => panel.hasAttribute("hidden"))).toEqual([
+    true,
+    false,
+  ]);
+  expect(section.getAttribute("hidden")).toBe("until-found");
+  expect(detail.hasAttribute("hidden")).toBe(true);
+  for (const element of details) {
+    expect(element.open).toBe(false);
+  }
+});
+
+// update の後も記法の操作が働き、destroy の後は document の受け取りが外れている（正常系）
+test("test_normal_when_updated_with_syntax", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: FILTER_TABLE_MARKDOWN });
+  find<HTMLButtonElement>(el, "button.mdmark-filter").click();
+  const removeSpy = vi.spyOn(document, "removeEventListener");
+  // 実行
+  handle.update(
+    "<!-- tabs -->\n\n### 一つ目\n\n一つ目の中身\n\n### 二つ目\n\n二つ目の中身\n\n<!-- /tabs -->\n",
+  );
+  // 検証
+  const types = removeSpy.mock.calls.map(([type]) => type);
+  expect(types).toContain("pointerdown");
+  expect(types).toContain("keydown");
+  const tabs = [...el.querySelectorAll<HTMLElement>('[role="tab"]')];
+  tabs[1]?.click();
+  expect(tabs[1]?.getAttribute("aria-selected")).toBe("true");
+  handle.destroy();
+  expect(() => window.dispatchEvent(new Event("hashchange"))).not.toThrow();
 });

@@ -1,0 +1,55 @@
+title: "valibot"
+kind: "ライブラリ"
+version:
+  current: 1.5.0
+  latest: 1.5.0
+  checked_on: '2026-10-14'
+  source: package.json
+  pinning: 完全一致（他の開発用の依存と同じ）
+catalogs:
+  - name: API
+    version: 1.5.0
+    entries:
+      - name: object
+        kind: 関数
+        purpose: 引数の値 `{ args, keys }` の schema を作る
+      - name: strictTuple
+        kind: 関数
+        purpose: 引数の数を限る（余る要素を issue にする）
+      - name: pipe
+        kind: 関数
+        purpose: 型と検査を重ねる
+      - name: string
+        kind: 関数
+        purpose: 文字列の schema
+      - name: regex
+        kind: 関数
+        purpose: 文字列の形を検査する
+      - name: record
+        kind: 関数
+        purpose: '`keys` の schema'
+      - name: ~standard.validate
+        kind: 関数
+        purpose: Standard Schema として検査し、`value` か `issues`（`message` と `path`）を返す
+lead: 値の形を関数の組み合わせで schema に書き、検査するライブラリ。schema は Standard Schema（`~standard.validate`）を実装する。
+purl: pkg:npm/valibot@1.5.0
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: open-circle/valibot
+verification:
+  state: 済
+  date: '2026-10-14'
+  detail: '`v.object({ args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]), keys: v.record(v.string(), v.string()) })` の `~standard.validate` に `{ args: ["World", "2"], keys: {} }` を渡すと、issue が 2 件返った。`message` は `Invalid format: Expected /^[a-z]+$/ but received "World"` と `Invalid type: Expected never but received "2"`、`path` は `key` が `args`・`0` と `args`・`1` の `{ key, … }` の並び。合う値には `value` を返した。`v.tuple` は余る要素を issue にせず落とした値を返す'
+license: MIT（商用利用可）
+docs_url: https://valibot.dev/api/
+used_in:
+  - tests/unit/src/extensions.test.ts
+  - tests/integration/lib/register-extension.browser.test.ts
+selection:
+  candidates: mdmark は拡張の引数の検査に Standard Schema を受け、検査ライブラリを配布物に束ねない（[ライブラリ選定](https://github.com/shuhei1101/mdmark/pull/19#discussion_r4269417402)）。テストで使う側の schema を作るのに valibot 1.5.0 と zod 4.6.7 を動かした
+  decision: '`strictTuple` で引数の数を限ったとき、余る引数も位置を持つ `path` で返すため、警告の項目の書き分けを確かめられる（zod の `z.tuple` の数の超過は `path` が `args` で止まる）'
+  consequences: 開発用の依存にだけ入れ、配布物には束ねない
+install: |-
+  ```bash
+  npm install --save-dev --save-exact valibot@1.5.0
+  ```

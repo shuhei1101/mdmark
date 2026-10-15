@@ -4,6 +4,22 @@ import type { MdmarkConfig } from "../../../src/config.ts";
 /** 設定の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadConfig = () => import("../../../src/config.ts");
 
+/** この版が知っている機能の既定（全てオン） */
+const DEFAULT_FEATURES = {
+  print: true,
+  table: true,
+  callout: true,
+  tabs: true,
+  steps: true,
+  tree: true,
+  badge: true,
+  toc: true,
+  anchors: true,
+  sections: true,
+  "row-details": true,
+  figures: true,
+};
+
 // 設定が無ければ既定を返す（正常系）
 test("test_resolve_config", async () => {
   // 準備
@@ -11,7 +27,7 @@ test("test_resolve_config", async () => {
   // 実行
   const resolved = resolveConfig({});
   // 検証
-  expect(resolved).toEqual({ features: { print: true }, libraries: {} });
+  expect(resolved).toEqual({ features: DEFAULT_FEATURES, libraries: {} });
 });
 
 // 知っている機能の真偽値だけを置き換える（正常系）
@@ -24,7 +40,7 @@ test("test_resolve_config_when_features_given", async () => {
   // 実行
   const resolved = resolveConfig({ config });
   // 検証
-  expect(resolved.features).toEqual({ print: false });
+  expect(resolved.features).toEqual({ ...DEFAULT_FEATURES, print: false });
 });
 
 // 書式に合う名前と文字列の URL だけを足す（正常系）

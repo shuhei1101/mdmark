@@ -16,3 +16,5 @@ items:
     summary: 描く前の HTML からスクリプトと許可していない要素・属性を落とす
   - page: Storybook.yaml
     summary: UI の部品を状態ごとのストーリーとして並べる（サーバー描画）
+  - page: valibot.yaml
+    summary: テストで拡張の引数の Standard Schema を作る（配布物に束ねない）

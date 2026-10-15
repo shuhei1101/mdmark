@@ -22,7 +22,7 @@ flows:
         M->>M: 許可していない要素・属性・URL を落とす
         M-->>C: HTML 文字列
     expected:
-      - '`<h1>`・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
+      - '`<h1 id="…">`・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
       - '`<td>` が同じ列の見出しの文言を `data-label`（`列A`・`列B`）に持つ'
       - '`列B` の `<th>` と `<td>` が class `mdmark-align-right` を持ち、文字列に `style=` が無い'
       - 文字列を描く先の要素（class `mdmark`）は含まない
@@ -96,6 +96,147 @@ flows:
       - 印の前後の段落がある
       - 文字列に外部ライブラリの URL が無い
     test: test_normal_when_library_mark
+  - name: 正常系（記法を持つ文書）
+    summary: 記法の印と書き方を、スクリプト無しで中身を読める HTML にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 記法を持つ Markdown
+        description: '`<!-- toc -->`、`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` で囲んだ 3 行の表（列は `名前`・`値`）、`### macOS`・`### Windows` を持つ `<!-- tabs -->` の範囲、`> [!WARNING]` と `> [!NOTE]-` の引用、番号付きリストを囲んだ `<!-- steps -->` の範囲、言語 `tree` のコードブロック（`src/` の下に `index.ts`）、`` `badge:v1` ``、直後に `<!-- section: closed -->` を持つ `## 補足`、直後に `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` を持つ 2 行の表、`<!-- fig: arch -->` の直後の title `全体の構成` の画像と `[図](#fig-arch)` のリンクを持つ文書'
+        notes: '`opts` は渡さない（記法の機能は既定でオン）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 印の範囲と引数を読む
+        M->>M: 記法ごとの HTML にする
+        M->>M: 許可していない要素・属性・URL を落とす
+        M-->>C: HTML 文字列
+    expected:
+      - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
+      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表を開く</summary>` を持つ
+      - タブの範囲が `<div class="mdmark-tabs">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
+      - '`[!WARNING]` の引用が `<div class="markdown-alert markdown-alert-warning">` と題 `警告` になり、文字列に `[!WARNING]` が無い'
+      - '`[!NOTE]-` の引用が `<details class="markdown-alert markdown-alert-note">` と `<summary class="markdown-alert-title">補足</summary>` になる'
+      - ステップの範囲の `ol` が class `mdmark-steps` を持つ
+      - ファイルツリーが `<ul class="mdmark-tree">` になり、`src/` が `mdmark-tree-folder`、`index.ts` が `mdmark-tree-file` の `li` になる
+      - '`<span class="mdmark-badge">v1</span>` があり、文字列に `badge:` が無い'
+      - '`補足` の後ろが `<div class="mdmark-section-body" id="section-補足" data-section="closed">` に入り、中身の段落が文字列にある'
+      - 2 行の表の 1 行目の直後に `<tr class="mdmark-row-detail" data-row="1"><td colspan="{列の数}">` と詳細の段落があり、表の後ろに詳細の段落が残っていない
+      - 画像が `<figure class="mdmark-figure" id="fig-arch">` に入り、`<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>` を持ち、リンクの文字が `図 1`
+      - 文字列に `<!--`・`<svg`・`<button` が無い
+    test: test_normal_when_syntax
+  - name: 正常系（見出しの ID）
+    summary: 見出しに GitHub と同じ規則の ID と、その ID へのリンクを付ける
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 見出しを持つ Markdown
+        description: '`# Hello, World!`・`## 使い方`・`## 使い方` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 見出しの文字から ID を作り、重なりに番号を付ける
+        M-->>C: HTML 文字列
+    expected:
+      - 見出しの `id` が上から `hello-world`・`使い方`・`使い方-1`
+      - 各見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` がある
+    test: test_normal_when_headings
+  - name: 正常系（記法の機能を外す）
+    summary: オフの記法は印を取り除き、書いた Markdown を普通の Markdown として描く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 記法を外す Markdown
+        description: '先頭に `<!-- features: -table -callout -anchors -->` を持ち、`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ表、`> [!WARNING]` の引用、`## 使い方` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 設定の features に文書の印を重ねる
+        M->>M: オフの記法の印を取り除き、普通の Markdown として描く
+        M-->>C: HTML 文字列
+    expected:
+      - '`<table` があり、文字列に `mdmark-table` が無い'
+      - '`<blockquote>` があり、文字列に `markdown-alert` が無い'
+      - 見出しが `id="使い方"` を持ち、文字列に `mdmark-anchor` が無い
+      - 文字列に `<!--` が無い
+    test: test_normal_when_syntax_features_disabled
+  - name: 正常系（書き方の誤り）
+    summary: 読めない指定の箇所に書き方の警告を置き、読めた指定で本文を描く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 書き方を誤った Markdown
+        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で囲んだ表、見出しの無い `<!-- tabs -->` 〜 `<!-- /tabs -->` の範囲、`[図](#fig-missing)` のリンク、文書の終わりまで閉じの印の無い `<!-- table: data -->` とその後の表を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 読めた指定だけを当てる
+        M->>M: 読めない指定の箇所に書き方の警告を置く
+        M-->>C: HTML 文字列
+    expected:
+      - '`<div class="mdmark-syntax-warning" role="note">` が 4 つあり、それぞれに題 `書き方の警告` がある'
+      - 1 つ目の表が `data-kind="default"` と `data-features="pin sort"` を持ち、警告の本文に `unknown` と使える種類 `data`・`plain` がある
+      - タブの範囲の段落があり、文字列に `mdmark-tabs` が無い
+      - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
+      - 閉じの印の無い表が `data-kind="data"` を持ち、警告の本文に `<!-- /table -->` がある
+    test: test_normal_when_syntax_errors
+  - name: 正常系（記法の要素を偽る生の HTML）
+    summary: 文書に生の HTML で書いた記法の class・`data-*`・`id` を落とす
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 生の HTML を書いた Markdown
+        description: '`<div class="mdmark-tabs" data-kind="data"><p id="fig-x" class="markdown-alert">偽り</p></div>` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 生の HTML から記法の class・data-*・id を落とす
+        M-->>C: HTML 文字列
+    expected:
+      - '`偽り` の段落がある'
+      - 文字列に `mdmark-tabs`・`data-kind`・`fig-x`・`markdown-alert` が無い
+    test: test_normal_when_raw_html_imitates_syntax
+  - name: 正常系（拡張の印）
+    summary: 登録した拡張の印を、読み込み中の印の場所の要素に置き換える。拡張のモジュールは読まない
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ。`registerExtension` で `directive` が `greet` の拡張を登録する
+      - name: 拡張の印を持つ Markdown
+        description: '段落の間に `<!-- greet: world lang=ja -->` を持つ文書'
+      - name: Mock
+        description: 拡張の `load` と `schema` の `validate` は、呼ばれた回数を数える関数に差し替える
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: registerExtension({ name, directive: "greet", load, schema })
+        C->>M: render(markdown)
+        M->>M: 拡張の印を印の場所の要素に置き換える
+        M-->>C: HTML 文字列
+    expected:
+      - 印の位置に `<div class="mdmark-embed" data-mdmark-slot="greet" data-mdmark-args="world lang=ja" role="status">図を読み込んでいます</div>` がある
+      - '`load` と `validate` が 1 回も呼ばれていない'
+    test: test_normal_when_extension_mark
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -113,7 +254,7 @@ request:
     required: false
     default: なし（全てのキーに既定を当てる）
     location: argument
-    description: '`mount` の `opts.config` と同じ。この操作が読むのは `libraries` の名前（どの印を印の場所の要素にするか）だけ'
+    description: '`mount` の `opts.config` と同じ。この操作が読むのは `features`（記法の機能のオン・オフ）と `libraries` の名前（どの印を印の場所の要素にするか）だけ'
 response:
   - name: '-'
     type: string
@@ -124,13 +265,13 @@ exceptions:
     condition: 常に HTML 文字列を返す。未知の印と許可していない要素・属性は落とす
 constraints:
   - item: 印の書式
-    constraint: '`<!-- {名前}: {引数} -->`。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は空白で区切る。コードブロックと行内のコードの中は印として扱わない'
+    constraint: '1 か所に付ける印は `<!-- {名前}: {引数} -->`、範囲を持つ印は `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。引数の無い印は `<!-- {名前} -->` と書ける。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は空白で区切り、種類・`+機能`・`-機能`・`キー=値`・`closed`・`open` に読み分ける。コードブロックと行内のコードの中は印として扱わない'
   - item: 印の扱い
-    constraint: '`features` の印は機能のオン・オフとして拾い、対応表にある名前の印は印の場所の要素に置き換え、それ以外は取り除く。どの印も出力にコメントとして残さない'
+    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。それ以外は取り除く。どの印も出力にコメントとして残さない'
   - item: 印の場所の要素
-    constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`'
+    constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`。登録した拡張の印も同じ要素にする。`render` は拡張の `load` も `schema` の検査も呼ばない'
   - item: 残す要素・属性
-    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` を足す。`input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけ。`style` 属性は残さない。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で書いた `pre`・`table` は、書いた `aria-label` を残し、`tabindex` は `0` にする）
+    constraint: sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` と、記法が使う `nav`・`figure`・`figcaption` を足す。`input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。文書に書いた生の HTML の class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけを残す。記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・`data-*`・`id` は、mdmark が記法から出した要素だけが持つ。`style` 属性は残さない。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で書いた `pre`・`table` は、書いた `aria-label` を残し、`tabindex` は `0` にする）。出力に `svg` を含めない（記法のアイコンは CSS で付ける）
     notes: dev/設計書/外部ライブラリ/sanitize-html
   - item: URL のスキーム
     constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す'
@@ -141,4 +282,25 @@ constraints:
     notes: '狭い紙幅の印刷で、表を行ごとの「列名: 値」の並びに積むため（確認ログの決定）'
   - item: 入力の大きさ
     constraint: 制限なし
+  - item: 表
+    constraint: 表の印で囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`、`data` は `sort`・`pin`・`filter`、`plain` は無し）に `+機能`・`-機能` を当てたものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
+  - item: 注意書き
+    constraint: 1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` と題 `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から外す。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にする。知らない種類は `note` として出す
+  - item: タブ
+    constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの文字}</p>` に替え、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）'
+  - item: ステップ・ファイルツリー・バッジ
+    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<ul class="mdmark-tree" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする'
+  - item: 見出しの ID とアンカー
+    constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を足す
+  - item: 目次
+    constraint: '`<!-- toc -->` の場所に `<nav class="mdmark-toc" aria-label="目次">` と題 `<p class="mdmark-toc-title">目次</p>` を置き、文書の h2〜h3 を階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクを並べる'
+  - item: 節
+    constraint: '`sections` がオンのとき、h2〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを `<div class="mdmark-section-body" id="section-{見出しの ID}" data-section="{open か closed}">` で囲む。見出しの直後の `<!-- section: closed -->` は `closed`、それ以外は `open`。中身は隠さずに出す（開閉は `mount` が付ける）'
+  - item: 行の詳細
+    constraint: '表の直後の `<!-- row-detail: {行の位置} -->` 〜 `<!-- /row-detail -->` の中身を、表の行の位置（見出し行を除いて 1 から）の行の直後に `<tr class="mdmark-row-detail" data-row="{行の位置}"><td colspan="{列の数}">…</td></tr>` で入れる。中身は隠さずに出す（開閉は `mount` が付ける）'
+  - item: 図と表の番号
+    constraint: '`<!-- fig: {ID} -->` の直後の画像の段落と表を `<figure class="mdmark-figure" id="fig-{ID}">` に入れ、文書の頭から種類ごとに数えた番号を付ける。画像は下に `<figcaption class="mdmark-figure-caption"><b>図 {番号}</b>{画像の title}</figcaption>`、表は上に `<figcaption class="mdmark-figure-caption"><b>表 {番号}</b></figcaption>` を置く。本文の `#fig-{ID}` へのリンクの文字を、その図表の `図 {番号}`・`表 {番号}` に替える'
+  - item: 書き手の誤り
+    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリーでは、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
+    notes: 本文の文言は画面設計『文書』
 test_file: tests/integration/lib/render.test.ts

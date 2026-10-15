@@ -1,0 +1,355 @@
+# 単体テスト作成の Red の確認。新規・変更したテストは実装が無いため fail する。この PR で変えていない既存のテストは pass している。
+# 失敗の詳細（Failed Suites / Failed Tests の節）は省いた。
+
+$ npm run test:unit -- --reporter=verbose
+
+
+> test:unit
+> vitest run --project 'unit*' --reporter=verbose
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions
+
+ × |unit| tests/unit/src/parts/table.test.ts > test_render_table 62ms
+   → Cannot find module '/src/parts/table.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/table.test.ts
+ × |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_closed 7ms
+   → Cannot find module '/src/parts/table.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/table.test.ts
+ × |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_filtered 7ms
+   → Cannot find module '/src/parts/table.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/table.test.ts
+ × |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools 9ms
+   → Cannot find module '/src/parts/table.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/table.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_register_extension 249ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_register_extension_when_invalid 37ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_register_extension_when_directive_taken 16ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_validate_mark_args 9ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_validate_mark_args_when_invalid 5ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_validate_mark_args_when_rejected 7ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_format_issue 8ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ × |unit| tests/unit/src/extensions.test.ts > test_format_issue_when_key 7ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main 443ms
+ × |unit| tests/unit/scripts/build.test.ts > test_emit_declarations 71ms
+   → emitDeclarations is not a function
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_version_given 13ms
+ × |unit| tests/unit/scripts/build.test.ts > test_emit_declarations_when_type_error 5ms
+   → emitDeclarations is not a function
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_version_format_invalid 5ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_version_ini_missing 4ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_build_fails 7ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_dist_file_too_large 11ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_resolve_version 3ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_resolve_version_when_version_given 3ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_resolve_version_when_format_invalid 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist 12ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist_when_nested_css 12ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist_when_postcss_imported 13ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_write_third_party_licenses 7ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_write_third_party_licenses_when_license_missing 4ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_find_too_large_outputs 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_find_too_large_outputs_when_over_limit 0ms
+11:29:24 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/tabs.ts" from "tests/unit/src/interact/tabs.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/interact/tabs.browser.test.ts:5:30
+  2  |  import { createRoot, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** タブの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadTabs = () => import("../../../../src/interact/tabs.ts");
+     |                                ^
+  5  |  const detachers = [];
+  6  |  /** 3 つの中身を持つタブの文書 */
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20404:20)
+11:29:24 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/index.ts" from "tests/unit/src/interact/index.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/interact/index.browser.test.ts:5:34
+  2  |  import { createRoot, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 操作を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadInteract = () => import("../../../../src/interact/index.ts");
+     |                                    ^
+  5  |  const detachers = [];
+  6  |  afterEach(() => {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20404:20)
+11:29:24 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/sections.ts" from "tests/unit/src/interact/sections.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/interact/sections.browser.test.ts:5:34
+  2  |  import { createRoot, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 節の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadSections = () => import("../../../../src/interact/sections.ts");
+     |                                    ^
+  5  |  const detachers = [];
+  6  |  /** 節の ID の中身の要素を返す */
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20404:20)
+11:29:24 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/tables.ts" from "tests/unit/src/interact/tables.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/interact/tables.browser.test.ts:5:32
+  2  |  import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 表の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadTables = () => import("../../../../src/interact/tables.ts");
+     |                                  ^
+  5  |  const detachers = [];
+  6  |  /** 名前と値の 3 行の data の表。`filter` を渡すと絞り込みの列を指定する */
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20404:20)
+ × |unit| tests/unit/src/extensions.test.ts > test_format_issue_when_no_position 458ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/extensions.test.ts
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_notice 609ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_embed 0ms
+11:29:24 PM [vite] Internal server error: Failed to resolve import "../../../src/extensions.ts" from "tests/unit/src/libraries.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/libraries.browser.test.ts:17:36
+  8  |  const loadNotice = () => import("../../../src/parts/notice.ts");
+  9  |  /** 拡張の処理を読み込む */
+  10 |  const loadExtensions = () => import("../../../src/extensions.ts");
+     |                                      ^
+  11 |  const cleanups = [];
+  12 |  /** 登録表を空にしてから拡張を登録し、後始末のために空にする関数を控える */
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 5)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20404:20)
+11:29:24 PM [vite] Internal server error: Failed to resolve import "../../../src/interact/index.ts" from "tests/unit/src/print.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/print.browser.test.ts:11:34
+  4  |  const loadPrint = () => import("../../../src/print.ts");
+  5  |  /** 記法の操作を付ける処理を読み込む */
+  6  |  const loadInteract = () => import("../../../src/interact/index.ts");
+     |                                    ^
+  7  |  // 詳細を持つ行の表、2 つの中身のタブ、閉じた節を持つ文書
+  8  |  const SYNTAX_MARKDOWN = [
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 3)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/node_modules/vite/dist/node/chunks/node.js:20404:20)
+ × |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools_when_date 464ms
+   → Cannot find module '/src/parts/table.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/table.test.ts
+ × |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_json_args 267ms
+   → Cannot find module '/src/parts/table.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/scripts/storybook-render.test.ts
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_unknown 0ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_create_render_server 22ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_create_render_server_when_css 9ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_create_render_server_when_unknown_part 8ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_main_when_port_missing 1ms
+ × |unit| tests/unit/src/parts/section.test.ts > test_render_section 675ms
+   → Cannot find module '/src/parts/section.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/section.test.ts
+ × |unit| tests/unit/src/parts/section.test.ts > test_render_section_when_unmounted 134ms
+   → Cannot find module '/src/parts/section.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/section.test.ts
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks 126ms
+ × |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_library_mark 12ms
+   → Cannot find module '/src/parts/own.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/marks.test.ts
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_unknown_mark 1ms
+ × |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_syntax_mark 5ms
+   → expected [] to match object [ …(3) ]
+ × |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_extension_mark 8ms
+   → Cannot find module '/src/extensions.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/marks.test.ts
+ × |unit| tests/unit/src/render/marks.test.ts > test_parse_mark_args 0ms
+   → parseMarkArgs is not a function
+ × |unit| tests/unit/src/render/marks.test.ts > test_parse_mark_args_when_empty 0ms
+   → parseMarkArgs is not a function
+ × |unit| tests/unit/src/render/marks.test.ts > test_drop_marks 3ms
+   → expected '\n<!-- tabs -->\n<p>段落</p>\n<!-- /tab…' not to contain '<!--'
+ × |unit| tests/unit/src/parts/callout.test.ts > test_render_callout 23ms
+   → Cannot find module '/src/parts/callout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/callout.test.ts
+ × |unit| tests/unit/src/parts/callout.test.ts > test_render_callout_when_collapsed 3ms
+   → Cannot find module '/src/parts/callout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/callout.test.ts
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount 1316ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_updated 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_destroyed 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_remounted 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_print_disabled_by_mark 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_updated_with_print_mark 1ms
+ × |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_updated_with_syntax 247ms
+   → expected [] to include 'pointerdown'
+ × |unit| tests/unit/src/parts/badge.test.ts > test_render_badge 45ms
+   → Cannot find module '/src/parts/badge.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/badge.test.ts
+ × |unit| tests/unit/src/parts/tree.test.ts > test_render_tree 22ms
+   → Cannot find module '/src/parts/tree.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/tree.test.ts
+ × |unit| tests/unit/src/parts/steps.test.ts > test_render_steps 22ms
+   → Cannot find module '/src/parts/steps.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/steps.test.ts
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render 2106ms
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render_document 2ms
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render_document_when_same_input 2ms
+ × |unit| tests/unit/src/render/index.test.ts > test_render_document_when_raw_html_imitates_syntax 5ms
+   → expected '<div><p>偽り</p></div>\n<blockquote>\n<…' to contain 'markdown-alert-note'
+ × |unit| tests/unit/src/parts/figure.test.ts > test_render_figure 29ms
+   → Cannot find module '/src/parts/figure.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/figure.test.ts
+ × |unit| tests/unit/src/parts/tabs.test.ts > test_render_tabs 22ms
+   → Cannot find module '/src/parts/tabs.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/tabs.test.ts
+ × |unit| tests/unit/src/parts/tabs.test.ts > test_render_tabs_when_selected 3ms
+   → Cannot find module '/src/parts/tabs.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/tabs.test.ts
+ × |unit| tests/unit/src/parts/syntax-warning.test.ts > test_render_syntax_warning 21ms
+   → Cannot find module '/src/parts/syntax-warning.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/syntax-warning.test.ts
+ × |unit| tests/unit/src/parts/syntax-warning.test.ts > test_render_syntax_warning_without_mark 2ms
+   → Cannot find module '/src/parts/syntax-warning.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/syntax-warning.test.ts
+ × |unit| tests/unit/src/parts/toc.test.ts > test_render_toc 26ms
+   → Cannot find module '/src/parts/toc.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/toc.test.ts
+ × |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec 91ms
+   → Cannot find module '/src/render/syntax/tables.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/syntax/tables.test.ts
+ × |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_unknown 2ms
+   → Cannot find module '/src/render/syntax/tables.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/syntax/tables.test.ts
+ × |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables 15ms
+   → expected '\n<table tabindex="0" aria-label="表">…' to contain 'data-kind="data" data-features="sort …'
+ × |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_range_not_closed 3ms
+   → expected [] to have a length of 2 but got +0
+ ✓ |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_feature_off 1ms
+ × |unit| tests/unit/src/render/syntax/headings.test.ts > test_slugify 25ms
+   → Cannot find module '/src/render/syntax/headings.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/syntax/headings.test.ts
+ × |unit| tests/unit/src/render/syntax/headings.test.ts > test_slugify_when_duplicated 5ms
+   → Cannot find module '/src/render/syntax/headings.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/syntax/headings.test.ts
+ × |unit| tests/unit/src/render/syntax/headings.test.ts > test_assign_heading_ids 10ms
+   → expected '<h1>Hello, World!</h1>\n<h2>使い方</h2>\…' to contain 'id="hello-world"'
+ × |unit| tests/unit/src/render/syntax/headings.test.ts > test_assign_heading_ids_when_anchors_off 1ms
+   → expected '<h2>使い方</h2>\n' to contain 'id="使い方"'
+ × |unit| tests/unit/src/parts/row-detail.test.ts > test_render_row_detail 38ms
+   → Cannot find module '/src/parts/row-detail.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/row-detail.test.ts
+ × |unit| tests/unit/src/render/syntax/tree.test.ts > test_parse_tree 27ms
+   → Cannot find module '/src/render/syntax/tree.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/syntax/tree.test.ts
+ × |unit| tests/unit/src/render/syntax/tree.test.ts > test_parse_tree_when_too_deep 2ms
+   → Cannot find module '/src/render/syntax/tree.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/render/syntax/tree.test.ts
+ × |unit| tests/unit/src/render/syntax/tree.test.ts > test_build_file_trees 6ms
+   → expected [] to have a length of 1 but got +0
+ × |unit| tests/unit/src/render/syntax/steps.test.ts > test_build_steps 12ms
+   → expected [ '<ol>', '<ol>' ] to deeply equal [ '<ol class="mdmark-steps">', '<ol>' ]
+ × |unit| tests/unit/src/render/syntax/steps.test.ts > test_build_steps_when_no_list 2ms
+   → expected '\n<ul>\n<li>一つ目</li>\n<li>二つ目</li>\n<…' to contain 'mdmark-syntax-warning'
+ × |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections 14ms
+   → 開始タグが無い: id="section-a"
+ × |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_unknown_value 1ms
+   → 開始タグが無い: id="section-a"
+ × |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_feature_off 2ms
+   → expected '<h2>A</h2>\n<p>本文A</p>\n' to contain 'id="a"'
+ × |unit| tests/unit/src/render/syntax/callouts.test.ts > test_build_callouts 14ms
+   → expected '<blockquote>\n<p>[!NOTE]\nNOTE の本文</p…' to contain 'markdown-alert-note'
+ × |unit| tests/unit/src/render/syntax/callouts.test.ts > test_build_callouts_when_collapsed_or_unknown 2ms
+   → expected '<blockquote>\n<p>[!WARNING]-\n折り畳み</p…' to contain '<details class="markdown-alert markdo…'
+ × |unit| tests/unit/src/render/syntax/figures.test.ts > test_number_figures 16ms
+   → expected '\n<p><img src="a.png" alt="構成" title=…' to contain '<b>図 1</b>全体の構成'
+ × |unit| tests/unit/src/render/syntax/figures.test.ts > test_number_figures_when_broken_or_duplicated 1ms
+   → expected 0 to be greater than or equal to 2
+ × |unit| tests/unit/src/render/syntax/row-details.test.ts > test_attach_row_details 15ms
+   → expected '<table tabindex="0" aria-label="表">\n…' to match /b<\/td>\s*<td[^>]*>…/td>\s*<td[^>]*>2<\
+ × |unit| tests/unit/src/render/syntax/row-details.test.ts > test_attach_row_details_when_row_missing 2ms
+   → 開始タグが無い: mdmark-syntax-warning
+ × |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs 14ms
+   → expected '\n<h3>macOS</h3>\n<p>macOS の手順</p>\n<…' to contain '<div class="mdmark-tabs">'
+ × |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs_when_no_heading 1ms
+   → expected '\n<p>段落だけ</p>\n\n' to contain 'mdmark-syntax-warning'
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice 8ms
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_block 0ms
+ × |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_extension 4ms
+   → expected '<div class="mdmark-notice" role="stat…' to contain '<p>表示に使う拡張（<code>greet</code>）を読み込めませ…'
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_name_has_html 0ms
+ × |unit| tests/unit/src/config.test.ts > test_resolve_config 10ms
+   → expected { features: { print: true }, …(1) } to deeply equal { …(2) }
+ × |unit| tests/unit/src/config.test.ts > test_resolve_config_when_features_given 4ms
+   → expected { print: false } to deeply equal { print: false, table: true, …(10) }
+ ✓ |unit| tests/unit/src/config.test.ts > test_resolve_config_when_libraries_given 0ms
+ ✓ |unit| tests/unit/src/config.test.ts > test_resolve_config_when_default_library_overridden 0ms
+ × |unit| tests/unit/src/parts/own.test.ts > test_mark_own 5ms
+   → Cannot find module '/src/parts/own.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions/tests/unit/src/parts/own.test.ts
+ × |unit| tests/unit/src/render/syntax/badges.test.ts > test_build_badges 12ms
+   → expected '<p><code>badge:v0.1.0</code> と <code>…' to contain '<span class="mdmark-badge">v0.1.0</sp…'
+ ✓ |unit| tests/unit/src/parts/embed.test.ts > test_render_embed 10ms
+ ✓ |unit| tests/unit/src/parts/embed.test.ts > test_render_embed_when_args_have_quote 0ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_task_list 381ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_autolink 15ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_strikethrough 1ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_table 2ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_table_without_heading 1ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_code_block 1ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_info_has_quote 0ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features 8ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features_when_disabled 0ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features_when_enabled 0ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features_when_repeated 0ms
+ × |unit| tests/unit/src/render/syntax/toc.test.ts > test_build_toc 12ms
+   → 開始タグが無い: mdmark-toc
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize 1405ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_align 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_input 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_classes 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_tabindex 0ms
+ ✓ |unit| tests/unit/src/index.test.ts > test_version 1811ms
+ ✓ |unit| tests/unit/src/parts/escape.test.ts > test_escape_html 5ms
+
+（Failed Suites / Failed Tests の節は省略）
+
+ Test Files  37 failed | 6 passed (43)
+      Tests  69 failed | 60 passed (129)
+   Start at  23:29:23
+   Duration  9.97s (import 49%, tests 31%, transform 13%, worker 7%)
+
+exit=1
+
+# libraries.browser.test.ts と print.browser.test.ts は、実装の無い src/extensions.ts と src/interact/index.ts を import するため、ファイル全体が import の解決で fail する。
+# この PR で変えていない既存のテストが pass することは、変更前（243770b）の 2 ファイルを一時ファイルに写して確かめた。
+
+$ npx vitest run --project 'unit-browser' --reporter=verbose tests/unit/src/head-libraries.browser.test.ts tests/unit/src/head-print.browser.test.ts
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions
+
+ ✓ |unit-browser (chromium)| tests/unit/src/head-print.browser.test.ts > test_attach_print 10ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-print.browser.test.ts > test_attach_print_when_disabled 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-print.browser.test.ts > test_attach_print_when_detached 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries 67ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_no_slot 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_unknown_slot 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_import_fails 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_draw_throws 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_draw_missing 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_stale 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/head-libraries.browser.test.ts > test_load_libraries_when_draw_removes_slot 1ms
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  23:29:03
+   Duration  753ms (worker 74%, tests 24%, import 2%)
+
+
+exit=0

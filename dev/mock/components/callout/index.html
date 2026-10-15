@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>callout | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">注意書き</h1>
+
+      <!-- 5 種 -->
+      <section aria-labelledby="state-kinds">
+        <h2 class="catalog-label" id="state-kinds">5 種</h2>
+        <article class="mdmark">
+<div class="markdown-alert markdown-alert-note">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.25v3.75"/><path d="M8 5h.01"/></svg>補足</p>
+  <p>印は HTML コメントなので、GitHub で読んでも画面に出ません。</p>
+</div>
+<div class="markdown-alert markdown-alert-tip">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.25h4"/><path d="M6.75 14.25h2.5"/><path d="M8 1.75a4.25 4.25 0 00-2.6 7.6c.5.4.85.95.85 1.6v.1h3.5v-.1c0-.65.35-1.2.85-1.6A4.25 4.25 0 008 1.75z"/></svg>ヒント</p>
+  <p>同じ種類の表が続くときは、範囲の印で表をまとめて囲めます。</p>
+</div>
+<div class="markdown-alert markdown-alert-important">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.25 2.75h11.5v8H8.75l-3 2.5v-2.5h-3.5z"/><path d="M8 5v2.75"/><path d="M8 9.25h.01"/></svg>重要</p>
+  <p>範囲の印は、閉じの印と対で書きます。</p>
+</div>
+<div class="markdown-alert markdown-alert-warning">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>警告</p>
+  <p>見出しの無いタブの範囲はタブにならず、中身がそのまま描かれます。</p>
+</div>
+<div class="markdown-alert markdown-alert-caution">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 1.75h5l3.75 3.75v5l-3.75 3.75h-5L1.75 10.5v-5z"/><path d="M8 5v3.5"/><path d="M8 10.75h.01"/></svg>注意</p>
+  <p>文書に書いたスクリプトは実行されません。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 閉じた注意書き（[!WARNING]-） -->
+      <section aria-labelledby="state-collapsed">
+        <h2 class="catalog-label" id="state-collapsed">閉じた注意書き（[!WARNING]-）</h2>
+        <article class="mdmark">
+<details class="markdown-alert markdown-alert-warning">
+  <summary class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>警告<svg class="mdmark-icon mdmark-disclosure" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></summary>
+  <p>閉じた注意書きは、題を押すと開きます。</p>
+</details>
+        </article>
+      </section>
+
+      <!-- 閉じた注意書きを開いた -->
+      <section aria-labelledby="state-opened">
+        <h2 class="catalog-label" id="state-opened">閉じた注意書きを開いた</h2>
+        <article class="mdmark">
+<details class="markdown-alert markdown-alert-warning" open>
+  <summary class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.25v3.25"/><path d="M8 11.25h.01"/></svg>警告<svg class="mdmark-icon mdmark-disclosure" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></summary>
+  <p>閉じた注意書きは、題を押すと開きます。</p>
+</details>
+        </article>
+      </section>
+
+      <!-- 知らない種類（[!FAQ] は補足として出す） -->
+      <section aria-labelledby="state-unknown">
+        <h2 class="catalog-label" id="state-unknown">知らない種類（[!FAQ] は補足として出す）</h2>
+        <article class="mdmark">
+<div class="markdown-alert markdown-alert-note">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.25v3.75"/><path d="M8 5h.01"/></svg>補足</p>
+  <p>よくある質問は、別のページにまとめています。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 長文（複数の段落とコード） -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長文（複数の段落とコード）</h2>
+        <article class="mdmark">
+<div class="markdown-alert markdown-alert-important">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.25 2.75h11.5v8H8.75l-3 2.5v-2.5h-3.5z"/><path d="M8 5v2.75"/><path d="M8 9.25h.01"/></svg>重要</p>
+  <p>範囲の印 <code>&lt;!-- table: data +filter --&gt;</code> は、閉じの印 <code>&lt;!-- /table --&gt;</code> と対で書きます。閉じの印が無いときは、印から文書の終わりまでを範囲にします。</p>
+  <p>範囲の中に表がいくつあっても、全ての表に同じ種類が当たります。</p>
+  <pre tabindex="0" aria-label="コード: md"><code>&lt;!-- table: data --&gt;
+| 名前 | 値 |
+&lt;!-- /table --&gt;</code></pre>
+</div>
+        </article>
+      </section>
+
+      <!-- リストの中 -->
+      <section aria-labelledby="state-nested">
+        <h2 class="catalog-label" id="state-nested">リストの中</h2>
+        <article class="mdmark">
+<ul>
+  <li>導入の前に読むこと
+<div class="markdown-alert markdown-alert-tip">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.25h4"/><path d="M6.75 14.25h2.5"/><path d="M8 1.75a4.25 4.25 0 00-2.6 7.6c.5.4.85.95.85 1.6v.1h3.5v-.1c0-.65.35-1.2.85-1.6A4.25 4.25 0 008 1.75z"/></svg>ヒント</p>
+  <p>配布物は版を固定した URL で読み込みます。</p>
+</div>
+  </li>
+</ul>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

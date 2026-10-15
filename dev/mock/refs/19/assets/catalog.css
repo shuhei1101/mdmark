@@ -1,0 +1,52 @@
+/* 拡張記法の部品のカタログ: 状態ごとの見本を縦に並べる */
+
+/* カタログ全体: 見本を縦に並べる（見本の中のコードブロックの長い行で列を広げない） */
+.catalog {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  max-width: calc(var(--mdmark-content-width) + var(--mdmark-padding) * 2);
+  margin-inline: auto;
+}
+
+/* カタログの題（モック専用の見出し） */
+.catalog-title {
+  margin: 0;
+  color: var(--mdmark-color-text);
+  font-family: system-ui, sans-serif;
+  font-size: 20px;
+}
+
+/* 状態の名前（モック専用の見出し）: mdmark の外に置く */
+.catalog-label {
+  margin: 0 0 8px;
+  color: var(--mdmark-color-muted);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* mdmark の層: 見本ごとの描く先の要素に地と余白を当てる */
+@layer mdmark {
+  /* 描く先の要素 */
+  .mdmark {
+    padding: var(--mdmark-padding);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+
+    /* 横スクロールする表とコードブロック: 実装の CSS と同じく、面の色を敷いて続きがある側の端に影を出す */
+    :is(pre, table) {
+      background:
+        linear-gradient(to right, var(--mdmark-color-surface) 30%, transparent) left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-surface) 30%, transparent) right / 2.5em 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, var(--mdmark-color-scroll-shadow), transparent) left / 0.9em 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, var(--mdmark-color-scroll-shadow), transparent) right / 0.9em 100% no-repeat scroll,
+        var(--mdmark-color-surface);
+    }
+
+    /* 表の見出し行・セル: 横スクロールの影が透けるよう、地を透明にする */
+    :is(th, td) {
+      background: transparent;
+    }
+  }
+}

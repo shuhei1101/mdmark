@@ -2,5 +2,7 @@ summary: 導入と使い方の手順
 items:
   - page: 導入/
     summary: mdmark を使うページへ組み込む手順
+  - page: 書く/
+    summary: Markdown に印と記法を書いて、表・注意書き・タブなどを付ける手順
   - page: カスタマイズ/
     summary: 見た目と機能を使う側で変える手順

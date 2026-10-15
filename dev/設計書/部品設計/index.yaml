@@ -5,3 +5,25 @@ items:
     summary: 外部ライブラリを読めない印の場所に置く枠
   - page: 読み込み中の枠.ts.yaml
     summary: 外部ライブラリを読み込んでいる間に図の高さを取っておく枠
+  - page: 書き方の警告.ts.yaml
+    summary: 記法の印や拡張の引数に読めない指定がある箇所に置く枠
+  - page: 表.ts.yaml
+    summary: 種類ごとの並べ替え・ピン止め・絞り込みを付けた表
+  - page: 注意書き.ts.yaml
+    summary: 種類ごとの題・色・アイコンを持つ注意書きの枠
+  - page: タブ.ts.yaml
+    summary: 見出しで区切った中身を切り替えるタブ
+  - page: ステップ.ts.yaml
+    summary: 番号と項目を線でつなぐ手順
+  - page: ファイルツリー.ts.yaml
+    summary: フォルダとファイルの入れ子のツリー
+  - page: バッジ.ts.yaml
+    summary: 行内の札
+  - page: 目次.ts.yaml
+    summary: h2〜h3 を入れ子にした目次
+  - page: 節.ts.yaml
+    summary: 見出しから開閉する節と見出しのアンカー
+  - page: 行の詳細.ts.yaml
+    summary: 表の行の下に開閉して出す詳細
+  - page: 図表の番号.ts.yaml
+    summary: 図と表に付ける通し番号の題

@@ -1,0 +1,291 @@
+title: "表"
+implementation: "src/parts/table.ts#renderTable"
+story: "Parts/Table"
+test_file: tests/integration/lib/table.story.test.ts
+states:
+  - name: Data
+    description: data の種類。並べていない（元の並び）
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["記法","機能名","増分（KB）"]'
+      - name: rows
+        value: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+  - name: SortedAscending
+    description: 増分の列で昇順に並べた
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["記法","機能名","増分（KB）"]'
+      - name: rows
+        value: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+      - name: sort
+        value: '{"column":2,"direction":"ascending"}'
+  - name: SortedDescending
+    description: 増分の列で降順に並べた
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["記法","機能名","増分（KB）"]'
+      - name: rows
+        value: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+      - name: sort
+        value: '{"column":2,"direction":"descending"}'
+  - name: FilterSelectOpen
+    description: 値を選ぶドロワーを開いた（候補の検索欄とチェックボックス）
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]'
+      - name: openFilter
+        value: '0'
+  - name: FilterTextOpen
+    description: 文字で絞るドロワーを開いて `描画` を入れた
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]'
+      - name: openFilter
+        value: '1'
+      - name: filterValues
+        value: '[{"column":1,"text":"描画"}]'
+  - name: FilterDateOpen
+    description: 日付で絞るドロワーを開いた（開始日と終了日を縦に並べる）
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]'
+      - name: openFilter
+        value: '2'
+  - name: Filtered
+    description: 名前の列を `りんご` で絞ってドロワーを閉じた。ボタンが絞り込み中の見た目
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"}]'
+      - name: filterValues
+        value: '[{"column":0,"values":["りんご"]}]'
+  - name: NoMatch
+    description: 絞り込みに一致する行が無い。`一致する行がありません` の行を出す
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","説明"]'
+      - name: rows
+        value: '[["りんご","描画を速くする"],["みかん","印刷を直す"]]'
+      - name: filters
+        value: '[{"column":1,"kind":"text"}]'
+      - name: filterValues
+        value: '[{"column":1,"text":"存在しない"}]'
+  - name: DefaultOverflow
+    description: 既定の種類で幅からはみ出す表。各列にピン止めのボタンが出て、見出し行が上端に留まる
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
+  - name: Pinned
+    description: 2 列目までピン止めした。留めた最後の列の右に境目の線がある
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '2'
+  - name: DefaultFits
+    description: 既定の種類で幅に収まる表。ピン止めのボタンを出さない
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["用語","意味"]'
+      - name: rows
+        value: '[["印","HTML コメントで書く目印"]]'
+  - name: Plain
+    description: plain の種類。機能を付けず、縦の罫線と面を外す
+    args:
+      - name: kind
+        value: plain
+      - name: features
+        value: '[]'
+      - name: columns
+        value: '["用語","意味"]'
+      - name: rows
+        value: '[["印","HTML コメントで書く目印"],["書き方の警告","読めない指定を知らせる枠"]]'
+  - name: Closed
+    description: 閉じた表（`closed`）。`表を開く` だけが見える
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["版","日付","変更"]'
+      - name: rows
+        value: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"]]'
+      - name: collapse
+        value: closed
+  - name: LongCells
+    description: 長い列名と値。セルの中で折り返し、見出しのボタンが文字に重ならない
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["とても長い列の名前で見出しの幅を超えるもの","値"]'
+      - name: rows
+        value: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確かめる","1"]]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"}]'
+lead: Markdown の表を囲み、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表の中で縦にスクロールしても上端に留める。
+args:
+  - name: kind
+    type: 列挙
+    required: false
+    default: default
+    choices: '`default`（ピン止め）・`data`（並べ替え・ピン止め・絞り込み）・`plain`（機能なし。縦の罫線と面を外す）'
+    description: 表の種類。`data-kind` に入れる
+  - name: features
+    type: 配列
+    required: true
+    description: 付ける機能（`sort`・`pin`・`filter` のうち）。種類の機能に `+機能`・`-機能` を当てたもの。`data-features` に空白で結んで入れる
+  - name: columns
+    type: 配列
+    required: true
+    description: 列の見出しの HTML
+  - name: rows
+    type: 配列
+    required: true
+    description: 行ごとのセルの HTML の配列
+  - name: filters
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    enabled_when: '`features` に `filter` を含むとき'
+    description: 絞り込みを付ける列（`{ column, kind }`。`kind` は `select`・`text`・`date`）。この列の見出しにだけ絞り込みのボタンとドロワーを置く
+  - name: collapse
+    type: 列挙
+    required: false
+    default: none
+    choices: '`none`・`closed`・`open`'
+    description: 表を折り畳みに入れるかと、既定の開閉
+  - name: sort
+    type: オブジェクト
+    required: false
+    default: なし（元の並び）
+    enabled_when: '`features` に `sort` を含むとき'
+    description: 並べ替えた列と向き（`{ column, direction }`。`direction` は `ascending`・`descending`）
+  - name: overflow
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`features` に `pin` を含むとき'
+    description: 表が幅からはみ出しているか。`true` のときだけピン止めのボタンを出す（`mount` が幅を測って決める）
+  - name: pinned
+    type: 整数
+    required: false
+    default: '0'
+    enabled_when: '`overflow` が `true` のとき'
+    description: 左端に留める列の数（0 は留めない）
+  - name: openFilter
+    type: 整数
+    required: false
+    default: なし（ドロワーを閉じる）
+    description: 開いた絞り込みのドロワーの列の位置
+  - name: filterValues
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 当てている絞り込み（`{ column, values }`・`{ column, text }`・`{ column, from, to }`）。当てた列のボタンを絞り込み中の見た目にし、合わない行に `hidden` を付ける。全ての行が合わないときは `一致する行がありません` の行を出す
+events:
+  - name: 並べ替える
+    when: 列の見出しのボタンを押す
+    value: 列の `th` の `aria-sort`
+    description: '`mount` が昇順 → 降順 → 元の並びの順に行を並べ替える'
+  - name: ピン止めする
+    when: 列のピン止めのボタンを押す
+    value: ボタンの `aria-pressed`
+    description: '`mount` が押した列までを左端に留める。押し直すと外す'
+  - name: 絞り込む
+    when: 絞り込みのボタンでドロワーを開き、値を選ぶか入れる。「絞り込みを外す」で戻す
+    value: ボタンの `aria-expanded` と、ドロワーの入力欄の値
+    description: '`mount` が列ごとの絞り込みを重ねて行に当てる'
+css_properties:
+  - name: --mdmark-color-table-head
+    syntax: <color>
+    default: '#e6ebf0（ダーク #262c36）'
+    description: 見出し行の地の色
+  - name: --mdmark-color-surface
+    syntax: <color>
+    default: '#f6f8fa（ダーク #151b23）'
+    description: 本文の行の地の色（面）
+  - name: --mdmark-table-max-height
+    syntax: <length>
+    default: 28rem
+    description: 表の高さの上限。超える表は表の中で縦にスクロールし、見出し行を上端に留める
+  - name: --mdmark-table-rule-inline
+    syntax: <length>
+    default: 1px
+    description: 縦の罫線の太さ（`plain` は 0）
+accessibility:
+  - 並べ替えのボタンは列名を読み上げの名前にし、並べた列の `th` は `aria-sort` で向きを示す
+  - 絞り込みのボタンは `「{列名}」で絞り込む` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
+  - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
+  - ピン止めのボタンは `「{列名}」の列までピン止め` を読み上げの名前に持ち、`aria-pressed` で状態を示す
+  - 表は `tabindex="0"` で、キーボードで縦横にスクロールできる
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+status: planned
+notes:
+  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>表を開く</summary>` に入れる。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「含む文字」の欄、`date` が「開始日」「終了日」の欄で、どれも題 `「{列名}」で絞り込む` と「絞り込みを外す」を持つ。表の見た目は確認ログの決定（拡張記法のモック・直した表のモック）。モックは `dev/mock/components/table/`'

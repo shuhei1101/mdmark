@@ -38,6 +38,28 @@ scenarios:
       - ブラウザで返った HTML 文字列が、正常シナリオで Node が返した文字列と一致する
       - ページの描く先の要素は変わらない（画面に描かない）
     test: test_normal_when_in_browser
+  - name: 正常シナリオ（記法を持つ文書）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 記法を持つ Markdown
+        description: '表の印で囲んだ表、2 つの中身を持つタブの範囲、`> [!WARNING]` の注意書き、`<!-- section: closed -->` の節、`<!-- fig: arch -->` の図と `[図](#fig-arch)` のリンク、`script` 要素を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: Markdown を渡して HTML 文字列にさせる
+        M->>M: 印と記法を読んで HTML にする
+        M->>M: スクリプトを落とす
+        M-->>C: HTML 文字列
+    expected:
+      - 文字列にタブの 2 つの中身と、閉じた節の中身がともにある
+      - 注意書きが class `markdown-alert markdown-alert-warning` の要素になっている
+      - 見出しが GitHub と同じ規則の ID を持ち、図に `図 1` の番号と、リンクの文字に `図 1` がある
+      - 文字列に `script` 要素と印の文字（`<!--`）が無い
+    test: test_normal_when_syntax
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返す。
 issue: 3
 primary_actor: mdmark で HTML を書き出す使う側の処理

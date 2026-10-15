@@ -3,11 +3,24 @@ lead: 文書の中に mdmark が置く UI の部品を HTML 文字列で返す�
 directory: |-
   ```tree
   src/parts/
-  ├── escape.ts             # HTML の特別な文字をエスケープする escapeHtml
-  ├── notice.ts             # 知らせの枠の renderNotice
-  ├── notice.stories.yaml   # 知らせの枠のストーリー（Figure・Block・LongName）
-  ├── embed.ts              # 読み込み中の枠の renderEmbed
-  └── embed.stories.yaml    # 読み込み中の枠のストーリー（Loading）
+  ├── escape.ts                    # HTML の特別な文字をエスケープする escapeHtml
+  ├── own.ts                       # mdmark が出した要素の印を付ける markOwn と SLOT_MARKER
+  ├── notice.ts                    # 知らせの枠の renderNotice
+  ├── notice.stories.yaml          # 知らせの枠のストーリー（Figure・Block・LongName・Extension）
+  ├── embed.ts                     # 読み込み中の枠の renderEmbed
+  ├── embed.stories.yaml           # 読み込み中の枠のストーリー（Loading）
+  ├── syntax-warning.ts            # 書き方の警告の renderSyntaxWarning
+  ├── table.ts                     # 表の renderTable と renderTableTools
+  ├── callout.ts                   # 注意書きの renderCallout
+  ├── tabs.ts                      # タブの renderTabs
+  ├── steps.ts                     # ステップの renderSteps
+  ├── tree.ts                      # ファイルツリーの renderTree
+  ├── badge.ts                     # バッジの renderBadge
+  ├── toc.ts                       # 目次の renderToc
+  ├── section.ts                   # 節の renderSection
+  ├── row-detail.ts                # 行の詳細の renderRowDetail
+  ├── figure.ts                    # 図表の番号の renderFigure
+  └── {部品}.stories.yaml         # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
   ```
 constants:
   - name: LOADING_TEXT
@@ -20,6 +33,11 @@ constants:
     container: src/parts/notice.ts
     summary: 図の印かどうかで分ける題
     value: '{ figure: "この図を表示できません", block: "この箇所を表示できません" }'
+  - name: SLOT_MARKER
+    title: 中身の差し込み口
+    container: src/parts/own.ts
+    summary: 中身を持つ部品に中身の代わりに渡し、記法がこの前後で HTML を分ける文字列。Markdown に現れない制御文字だけで作る
+    value: '"\u0000mdmark-slot\u0000"'
 functions:
   - name: escapeHtml
     title: HTML の特別な文字をエスケープする
@@ -50,9 +68,9 @@ functions:
     summary: 部品設計『知らせの枠』の HTML を返す
     args:
       - name: options
-        type: '{ name: string; figure?: boolean }'
+        type: '{ name: string; figure?: boolean; source?: "library" | "extension" }'
         required: true
-        description: 印の名前と、図の印か（既定 `true`）
+        description: 印の名前、図の印か（既定 `true`）、読めなかったもの（既定 `library`。`extension` は本文を `表示に使う拡張（…）` にする）
     returns:
       type: string
       description: '`<div class="mdmark-notice" role="status">` で始まる HTML'
@@ -79,6 +97,12 @@ functions:
         condition: '`{ name: "<b>x</b>" }`'
         mock: なし
         expected: '`<code>&lt;b&gt;x&lt;/b&gt;</code>`'
+      - name: test_render_notice_when_extension
+        case: 正常
+        summary: 拡張を読めないときの本文を返す
+        condition: '`{ name: "greet", source: "extension" }`'
+        mock: なし
+        expected: 本文が `表示に使う拡張（<code>greet</code>）を読み込めませんでした。` で始まる
   - name: renderEmbed
     title: 読み込み中の枠を描く
     container: src/parts/embed.ts
@@ -110,9 +134,357 @@ functions:
         condition: '`{ name: "chart", args: ["\"><script>"] }`'
         mock: なし
         expected: '`data-mdmark-args="&quot;&gt;&lt;script&gt;"`'
+  - name: markOwn
+    title: mdmark が出した要素に印を付ける
+    container: src/parts/own.ts
+    kind: 関数
+    scope: internal
+    summary: 部品の HTML の全ての開始タグに `data-mdmark-own="{nonce}"` を足す。描画の `sanitize` は、この属性を持つ要素にだけ記法の class・`data-*`・`id` を残し、属性は外す
+    description: 部品の HTML は文字をエスケープ済みで、文書の中身（`SLOT_MARKER` の位置）を含まないため、開始タグを `<{名前}` で見分けられる
+    args:
+      - name: html
+        type: string
+        required: true
+        description: 部品の HTML
+      - name: nonce
+        type: string
+        required: true
+        description: 描くごとに作る印の値
+    returns:
+      type: string
+      description: 印を付けた HTML
+    unit_tests:
+      - name: test_mark_own
+        case: 正常
+        summary: 全ての開始タグに印を付け、閉じタグと文字はそのまま
+        condition: '`<div class="a"><p>x &lt;y&gt;</p></div>` と nonce `n1`'
+        mock: なし
+        expected: '`<div data-mdmark-own="n1" class="a"><p data-mdmark-own="n1">x &lt;y&gt;</p></div>`'
+  - name: renderSyntaxWarning
+    title: 書き方の警告を描く
+    container: src/parts/syntax-warning.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『書き方の警告』の HTML を返す。`message`・項目の `` ` `` で囲んだ箇所を `code` にし、それ以外はエスケープする
+    args:
+      - name: options
+        type: '{ mark?: string; message: string; items?: WarningItem[] }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<div class="mdmark-syntax-warning" role="note">` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_syntax_warning
+        case: 正常
+        summary: 題・印・本文・項目を出し、印をエスケープする
+        condition: '`mark` が `<!-- table: data +x -->`、項目が 1 つ'
+        mock: なし
+        expected: '題 `書き方の警告`、`<code>&lt;!-- table: data +x --&gt;</code>`、`<ul>` に 1 項目'
+      - name: test_render_syntax_warning_without_mark
+        case: 正常
+        summary: 印と項目が無ければ本文だけ
+        condition: '`message` だけ'
+        mock: なし
+        expected: '`<code>` で始まらず、`<ul>` が無い'
+  - name: renderTable
+    title: 表を描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`）で操作を付けた後の見た目を作る
+    args:
+      - name: options
+        type: TableOptions
+        required: true
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を渡すと囲みだけを作る
+    returns:
+      type: string
+      description: '`<div class="mdmark-table"` で始まる HTML'
+    callees:
+      - '#functions[renderTableTools]'
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_table
+        case: 正常
+        summary: 囲みに種類・機能・絞り込みを属性で持たせる
+        condition: '`kind: data`、`features: [sort, pin, filter]`、`filters: [{0, select}]`、`body: SLOT_MARKER`'
+        mock: なし
+        expected: '`<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中に `SLOT_MARKER`'
+      - name: test_render_table_when_closed
+        case: 正常
+        summary: 閉じた表は折り畳みに入れる
+        condition: '`collapse: closed`'
+        mock: なし
+        expected: '`<details class="mdmark-table-details"><summary>表を開く</summary>` を持ち、`open` を持たない'
+      - name: test_render_table_when_filtered
+        case: 正常
+        summary: 当てた絞り込みに合わない行を隠し、一致する行が無ければ知らせの行を出す
+        condition: '`filterValues: [{ column: 1, text: "存在しない" }]`'
+        mock: なし
+        expected: 本文の行が全て `hidden` で、`一致する行がありません` の行が `hidden` を持たない
+  - name: renderTableTools
+    title: 表の見出しのボタンとドロワーを描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返す。`mount` が描いた表に足すのにも使う
+    args:
+      - name: options
+        type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean }'
+        required: true
+        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、当てている絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、この列までを留めているか
+    returns:
+      type: '{ header: string; drawer: string }'
+      description: 見出しの中身とドロワー（絞り込みが無ければ空）
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_table_tools
+        case: 正常
+        summary: 値を選ぶドロワーとボタンを返す
+        condition: '`features: [sort, pin, filter]`、`filter: { kind: select, values: ["りんご", "みかん"] }`、列名 `名前`'
+        mock: なし
+        expected: '`header` に `mdmark-sort`・`mdmark-filter`（`aria-label="「名前」で絞り込む"`）・`mdmark-pin`（`hidden`）、`drawer` に `hidden` の `mdmark-filter-drawer`・候補の検索欄・2 つのチェックボックス・`絞り込みを外す`'
+      - name: test_render_table_tools_when_date
+        case: 正常
+        summary: 日付のドロワーは開始日と終了日の欄を持つ
+        condition: '`filter: { kind: date }`'
+        mock: なし
+        expected: '`drawer` に `開始日`・`終了日` の `<input type="date">` がある'
+  - name: renderCallout
+    title: 注意書きを描く
+    container: src/parts/callout.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『注意書き』の HTML を返す
+    args:
+      - name: options
+        type: '{ kind: CalloutKind; collapsed?: boolean; open?: boolean; body: string }'
+        required: true
+        description: 種類・折り畳み・開閉・本文の HTML（`SLOT_MARKER` を渡せる）
+    returns:
+      type: string
+      description: 注意書きの HTML
+    unit_tests:
+      - name: test_render_callout
+        case: 正常
+        summary: 種類の class と題を出す
+        condition: '`kind: warning`'
+        mock: なし
+        expected: '`<div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">警告</p>`'
+      - name: test_render_callout_when_collapsed
+        case: 正常
+        summary: 折り畳みは details にする
+        condition: '`kind: note`、`collapsed: true`'
+        mock: なし
+        expected: '`<details class="markdown-alert markdown-alert-note"><summary class="markdown-alert-title">補足</summary>`'
+  - name: renderTabs
+    title: タブを描く
+    container: src/parts/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『タブ』の HTML を返す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする
+    args:
+      - name: options
+        type: '{ id: string; titles: string[]; panels: string[]; selected?: number }'
+        required: true
+        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を渡せる）、選んだタブ
+    returns:
+      type: string
+      description: '`<div class="mdmark-tabs">` で始まる HTML'
+    unit_tests:
+      - name: test_render_tabs
+        case: 正常
+        summary: selected が無ければ全ての中身を隠さずに出す
+        condition: '`titles: [macOS, Windows]`'
+        mock: なし
+        expected: '`mdmark-tab-title` が 2 つ、`role="tablist"` と `hidden` が無い'
+      - name: test_render_tabs_when_selected
+        case: 正常
+        summary: selected のタブだけを出す
+        condition: '`selected: 1`'
+        mock: なし
+        expected: '`role="tablist"` と 2 つの `role="tab"`、2 つ目が `aria-selected="true"` と `tabindex="0"`、1 つ目の `tabpanel` が `hidden`'
+  - name: renderSteps
+    title: ステップを描く
+    container: src/parts/steps.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ステップ』の HTML を返す（Storybook 用。`render` は `ol` に class を付けるだけ）
+    args:
+      - name: options
+        type: '{ items: string[]; start?: number }'
+        required: true
+        description: 項目の HTML と最初の番号
+    returns:
+      type: string
+      description: '`<ol class="mdmark-steps">` で始まる HTML'
+    unit_tests:
+      - name: test_render_steps
+        case: 正常
+        summary: 項目を並べ、start が 1 なら属性を省く
+        condition: 3 項目
+        mock: なし
+        expected: '`<ol class="mdmark-steps">` に `li` が 3 つ'
+  - name: renderTree
+    title: ファイルツリーを描く
+    container: src/parts/tree.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ファイルツリー』の HTML を返す
+    args:
+      - name: options
+        type: '{ nodes: TreeNode[] }'
+        required: true
+        description: 項目
+    returns:
+      type: string
+      description: '`<ul class="mdmark-tree"` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_tree
+        case: 正常
+        summary: フォルダとファイルを分け、名前をエスケープする
+        condition: '`src/` の子に `a<b>.ts`'
+        mock: なし
+        expected: '`src/` が `mdmark-tree-folder`、`a&lt;b&gt;.ts` が `mdmark-tree-file`'
+  - name: renderBadge
+    title: バッジを描く
+    container: src/parts/badge.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『バッジ』の HTML を返す
+    args:
+      - name: options
+        type: '{ label: string }'
+        required: true
+        description: 札の文言
+    returns:
+      type: string
+      description: '`<span class="mdmark-badge">` の HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_badge
+        case: 正常
+        summary: 文言をエスケープして札にする
+        condition: '`label: "<b>v1</b>"`'
+        mock: なし
+        expected: '`<span class="mdmark-badge">&lt;b&gt;v1&lt;/b&gt;</span>`'
+  - name: renderToc
+    title: 目次を描く
+    container: src/parts/toc.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『目次』の HTML を返す。h3 は直前の h2 の入れ子にする
+    args:
+      - name: options
+        type: '{ headings: Array<{ level: 2 | 3; id: string; text: string }> }'
+        required: true
+        description: h2・h3
+    returns:
+      type: string
+      description: '`<nav class="mdmark-toc" aria-label="目次">` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_toc
+        case: 正常
+        summary: h3 を直前の h2 の入れ子にする
+        condition: '`導入`（h2）・`前提`（h3）・`使い方`（h2）'
+        mock: なし
+        expected: '`導入` の `li` の中の `ul` に `#前提` のリンク'
+  - name: renderSection
+    title: 節を描く
+    container: src/parts/section.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『節』の HTML を返す。`toggle` が `false` のときは開閉のボタンを置かず中身を隠さない
+    args:
+      - name: options
+        type: '{ level: 2 | 3 | 4; id: string; title: string; open?: boolean; toggle?: boolean; anchor?: boolean; body: string }'
+        required: true
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）
+    returns:
+      type: string
+      description: 見出しと `mdmark-section-body` の HTML
+    unit_tests:
+      - name: test_render_section
+        case: 正常
+        summary: 閉じた節はボタンを aria-expanded=false にし、中身を hidden=until-found にする
+        condition: '`open: false`、`toggle: true`'
+        mock: なし
+        expected: '`aria-expanded="false"`、`data-section="closed" hidden="until-found"`'
+      - name: test_render_section_when_unmounted
+        case: 正常
+        summary: toggle が false なら中身を隠さず data-section だけに写す
+        condition: '`open: false`、`toggle: false`'
+        mock: なし
+        expected: '`<button` が無く、`data-section="closed"` で `hidden` が無い'
+  - name: renderRowDetail
+    title: 行の詳細を描く
+    container: src/parts/row-detail.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『行の詳細』の詳細の行と、`toggle` のときは行の先頭のセルの開閉のボタンの HTML を返す
+    args:
+      - name: options
+        type: '{ id: string; row: number; columns: number; label: string; open?: boolean; toggle?: boolean; body: string }'
+        required: true
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）
+    returns:
+      type: '{ row: string; toggle: string }'
+      description: 詳細の行と、開閉のボタン（`toggle` が `false` なら空）
+    unit_tests:
+      - name: test_render_row_detail
+        case: 正常
+        summary: 閉じた詳細の行とボタンを返す
+        condition: '`row: 1`、`columns: 3`、`label: table`'
+        mock: なし
+        expected: '`row` が `<tr class="mdmark-row-detail" data-row="1" … hidden><td colspan="3">`、`toggle` が `aria-expanded="false"` と `aria-label="「table」の詳細"`'
+  - name: renderFigure
+    title: 図表の番号を描く
+    container: src/parts/figure.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『図表の番号』の HTML を返す。画像は題を下、表は上に置く
+    args:
+      - name: options
+        type: '{ kind: "image" | "table"; id?: string; number: number; caption?: string; body: string }'
+        required: true
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）。`id` を省くと `id` を付けない（重なった ID）
+    returns:
+      type: string
+      description: '`<figure class="mdmark-figure"` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_figure
+        case: 正常
+        summary: 画像は題を下、表は題を上に置く
+        condition: '`kind: image`、`number: 1`、`caption: 全体の構成` と、`kind: table`、`number: 1`'
+        mock: なし
+        expected: 1 つ目は中身の後に `<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>`、2 つ目は中身の前に `<b>表 1</b>`
 notes:
-  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（`notice` か `embed`）・`stories[].args` を持つ。配列の引数は `a,b` の 1 つの文字列で書く（Storybook の server は配列を JSON の文字列で送るため。戻し方は『部品の描画』）'
+  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
+  印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
 test_files:
   - tests/unit/src/parts/escape.test.ts
   - tests/unit/src/parts/notice.test.ts
   - tests/unit/src/parts/embed.test.ts
+  - tests/unit/src/parts/own.test.ts
+  - tests/unit/src/parts/syntax-warning.test.ts
+  - tests/unit/src/parts/table.test.ts
+  - tests/unit/src/parts/callout.test.ts
+  - tests/unit/src/parts/tabs.test.ts
+  - tests/unit/src/parts/steps.test.ts
+  - tests/unit/src/parts/tree.test.ts
+  - tests/unit/src/parts/badge.test.ts
+  - tests/unit/src/parts/toc.test.ts
+  - tests/unit/src/parts/section.test.ts
+  - tests/unit/src/parts/row-detail.test.ts
+  - tests/unit/src/parts/figure.test.ts
