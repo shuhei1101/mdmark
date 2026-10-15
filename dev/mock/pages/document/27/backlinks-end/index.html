@@ -25,20 +25,14 @@
   <script src="../../../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（節の開閉・印刷の前後の展開） -->
   <script src="../../../../refs/19/assets/syntax.js" defer></script>
-  <!-- 用語のツールチップの操作 -->
+  <!-- 用語と関連文書のツールチップの操作 -->
   <script src="../../../../refs/27/assets/glossary.js" defer></script>
   <!-- 印刷の前後と、モックの「印刷の見え方」の切り替え -->
   <script src="./app.js" defer></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 被参照の見せ方の案・配色・印刷の見え方の切り替え -->
+  <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
   <div class="mock-bar">
-    <nav aria-label="被参照の見せ方の案">
-      <ul class="mock-bar-group">
-        <li><a class="mock-bar-item" href="../backlinks-count/index.html">題の下の件数と開閉</a></li>
-        <li><a class="mock-bar-item" href="../backlinks-end/index.html" aria-current="page">末尾の節</a></li>
-      </ul>
-    </nav>
     <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
@@ -61,23 +55,25 @@
     </nav>
 
     <!-- 描く先の要素: mdmark が描いた文書（索引の文書 arch、path は 設計/arch.md）。
-         用語は .mdmark-term-wrap に下線の語（.mdmark-term）と意味（.mdmark-term-tip）を並べ、render の HTML でもスクリプト無しで意味を読める -->
+         用語と文書の別名は .mdmark-term-wrap に下線の語（.mdmark-term）とツールチップ（.mdmark-term-tip）を並べ、render の HTML でもスクリプト無しで読める。
+         関連文書のリンクを持つツールチップは role="group" にし、語の aria-details で指す -->
     <article class="mdmark">
 <h1 class="mdmark-heading" id="アーキテクチャ">アーキテクチャ<a class="mdmark-anchor" href="#アーキテクチャ" aria-label="「アーキテクチャ」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
 <p>この文書は、使う側のアプリが文書を置いてから mdmark が描くまでの構成をまとめます。</p>
 <h2 class="mdmark-heading" id="構成"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-構成">構成<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#構成" aria-label="「構成」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-構成">
-<!-- 節で最初に出た用語だけに下線: 2 回目の「ワークスペース」と同じ用語の別名「WS」には付けない -->
-<p>使う側のアプリは、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-1">ワークスペース</span><span class="mdmark-term-tip" id="term-tip-1" role="tooltip"><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span><span class="mdmark-term-tip-docs">この用語が出る文書: API、使い方</span></span></span>ごとに文書と<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-7">索引</span><span class="mdmark-term-tip" id="term-tip-7" role="tooltip"><span class="mdmark-term-tip-meaning">文書と用語を並べた YAML のファイル</span><span class="mdmark-term-tip-docs">この用語が出る文書: API</span></span></span>を置きます。ワークスペースの中の索引は、使う側のサーバーが読んで mdmark に渡します。WS の外に置いた文書は索引に載りません。</p>
+<!-- 節で最初に出た用語だけに下線: 2 回目の「ワークスペース」と同じ用語の別名「WS」には付けない。
+     「索引」は用語と索引の文書の別名の両方に一致し、ツールチップに「用語」→「関連文書」の順で並べる -->
+<p>使う側のアプリは、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-1">ワークスペース</span><span class="mdmark-term-tip" id="term-tip-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>ごとに文書と<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-meaning-7" aria-details="term-tip-7">索引</span><span class="mdmark-term-tip" id="term-tip-7" role="group" aria-label="「索引」の用語と関連文書"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning" id="term-meaning-7">文書と用語を並べた YAML のファイル</span></span><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">関連文書</span><span class="mdmark-term-tip-docs" role="list"><span class="mdmark-term-tip-doc" role="listitem"><a href="../リファレンス/索引.md">索引のリファレンス</a><span class="mdmark-term-tip-doc-desc">索引のキー・型・必須・既定と、点検が返すずれの種類</span></span></span></span></span></span>を置きます。ワークスペースの中の索引は、使う側のサーバーが読んで mdmark に渡します。WS の外に置いた文書は索引に載りません。</p>
 <!-- 語の区切りに揃う「印」だけに下線: 「印刷」の中の「印」には付けない -->
-<p>本文の<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-2">印</span><span class="mdmark-term-tip" id="term-tip-2" role="tooltip"><span class="mdmark-term-tip-meaning">HTML コメントで書く指定</span><span class="mdmark-term-tip-docs">この用語が出る文書: 使い方</span></span></span>は描くときに読み取り、印刷の見え方にも使います。</p>
+<p>本文の<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-2">印</span><span class="mdmark-term-tip" id="term-tip-2" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">HTML コメントで書く指定</span></span></span></span>は描くときに読み取り、印刷の見え方にも使います。</p>
 <!-- 表のセルの中の用語: 表が横にスクロールしても、ツールチップは表の枠で切れない -->
 <div class="mdmark-table" data-kind="default">
   <table tabindex="0" aria-label="表: 描く処理の段">
     <thead><tr><th>段</th><th>受け持つもの</th></tr></thead>
     <tbody>
       <tr><td data-label="段">索引を受け取る</td><td data-label="受け持つもの">使う側のサーバーが読んだ索引と、描く文書の <code>id</code> を受け取る</td></tr>
-      <tr><td data-label="段">本文を描く</td><td data-label="受け持つもの">用語に下線を引き、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-3">被参照</span><span class="mdmark-term-tip" id="term-tip-3" role="tooltip"><span class="mdmark-term-tip-meaning">その文書を参照している文書</span></span></span>の一覧を末尾に置く</td></tr>
+      <tr><td data-label="段">本文を描く</td><td data-label="受け持つもの">用語に下線を引き、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-3">被参照</span><span class="mdmark-term-tip" id="term-tip-3" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">その文書を参照している文書</span></span></span></span>の一覧を末尾に置く</td></tr>
     </tbody>
   </table>
 </div>
@@ -88,11 +84,13 @@
 <h3 class="mdmark-heading" id="ワークスペースの外に置くもの"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-ワークスペースの外に置くもの">ワークスペースの外に置くもの<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#ワークスペースの外に置くもの" aria-label="「ワークスペースの外に置くもの」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h3>
 <div class="mdmark-section-body" id="section-ワークスペースの外に置くもの">
 <!-- 別の節では同じ用語にもう一度下線を付ける。行内のコードとリンクの中の用語には付けない -->
-<p>配布物は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-4">WS</span><span class="mdmark-term-tip" id="term-tip-4" role="tooltip"><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span><span class="mdmark-term-tip-docs">この用語が出る文書: API、使い方</span></span></span>の外に置きます。置き場所は設定の <code>ワークスペース</code> で変えられ、詳しくは <a href="../使い方/guide.md">ワークスペースの決まり</a> に書きました。</p>
+<p>配布物は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-4">WS</span><span class="mdmark-term-tip" id="term-tip-4" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>の外に置きます。置き場所は設定の <code>ワークスペース</code> で変えられ、詳しくは <a href="../使い方/guide.md">ワークスペースの決まり</a> に書きました。</p>
+<!-- 索引の文書の別名だけに一致した語: ツールチップは「関連文書」だけ。中のリンクへ Tab で移れる -->
+<p>配布物の <code>index.js</code> は <span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-details="term-tip-8">公開関数</span><span class="mdmark-term-tip" id="term-tip-8" role="group" aria-label="「公開関数」の関連文書"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">関連文書</span><span class="mdmark-term-tip-docs" role="list"><span class="mdmark-term-tip-doc" role="listitem"><a href="../api.md">API</a><span class="mdmark-term-tip-doc-desc">mount・render などの公開関数と引数の一覧</span></span></span></span></span></span>の <code>mount</code> と <code>render</code> を持ちます。</p>
 <!-- 注意書きの中の用語: 用語集の表から入れた用語 -->
 <div class="markdown-alert markdown-alert-note">
   <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.25v3.75"/><path d="M8 5h.01"/></svg>補足</p>
-  <p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-5">索引</span><span class="mdmark-term-tip" id="term-tip-5" role="tooltip"><span class="mdmark-term-tip-meaning">文書と用語を並べた YAML のファイル</span><span class="mdmark-term-tip-docs">この用語が出る文書: API</span></span></span>を渡さないページでも、この文書の用語集の表から入れた用語には下線が付きます。</p>
+  <p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-meaning-5" aria-details="term-tip-5">索引</span><span class="mdmark-term-tip" id="term-tip-5" role="group" aria-label="「索引」の用語と関連文書"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning" id="term-meaning-5">文書と用語を並べた YAML のファイル</span></span><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">関連文書</span><span class="mdmark-term-tip-docs" role="list"><span class="mdmark-term-tip-doc" role="listitem"><a href="../リファレンス/索引.md">索引のリファレンス</a><span class="mdmark-term-tip-doc-desc">索引のキー・型・必須・既定と、点検が返すずれの種類</span></span></span></span></span></span>を渡さないページでも、この文書の用語集の表から入れた用語には下線が付きます。</p>
 </div>
 </div>
 </div>
@@ -110,7 +108,7 @@
   </table>
 </div>
 <!-- 表から入れた用語の別名: 表の後の段落で下線が付く -->
-<p>どの文書から読まれているかは、末尾の<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-6">バックリンク</span><span class="mdmark-term-tip" id="term-tip-6" role="tooltip"><span class="mdmark-term-tip-meaning">その文書を参照している文書</span></span></span>で確かめられます。</p>
+<p>どの文書から読まれているかは、末尾の<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-6">バックリンク</span><span class="mdmark-term-tip" id="term-tip-6" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">その文書を参照している文書</span></span></span></span>で確かめられます。</p>
 </div>
 <h2 class="mdmark-heading" id="書き方を誤った箇所"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-書き方を誤った箇所">書き方を誤った箇所<svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><a class="mdmark-anchor" href="#書き方を誤った箇所" aria-label="「書き方を誤った箇所」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-書き方を誤った箇所">
@@ -131,9 +129,9 @@
 </div>
 <p>この表から用語を入れないので、本文のブランチには下線が付きません。</p>
 </div>
-<!-- 被参照の一覧（案 A: 文書の末尾の節）: この文書を参照している文書の題と、設計/arch.md から見た相対パスのリンク。参照されていない文書には置かない -->
+<!-- 被参照の一覧（文書の末尾の節）: この文書を参照している文書の題と、設計/arch.md から見た相対パスのリンク。参照されていない文書には置かない -->
 <nav class="mdmark-backlinks" aria-labelledby="backlinks-title">
-  <p class="mdmark-backlinks-title" id="backlinks-title">この文書を参照している文書</p>
+  <p class="mdmark-backlinks-title" id="backlinks-title">関連文書</p>
   <ul>
     <li><a href="../api.md">API</a></li>
     <li><a href="../使い方/guide.md">使い方</a></li>

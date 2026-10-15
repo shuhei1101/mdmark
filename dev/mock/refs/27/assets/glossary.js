@@ -1,5 +1,6 @@
-// 用語のツールチップの操作（実装の mount が付ける振る舞いのモック）: ポインターとフォーカスで開き、Esc で閉じ、
-// 親の枠で切れないよう画面に対して置き、下に収まらないときは用語の上に開く
+// 用語と関連文書のツールチップの操作（実装の mount が付ける振る舞いのモック）: ポインターとフォーカスで開き、Esc で閉じ、
+// 親の枠で切れないよう画面に対して置き、下に収まらないときは用語の上に開く。
+// 関連文書のリンクはツールチップの中で用語の直後に並ぶので、用語から Tab でリンクへ移れ、移っている間は開いたまま
 
 // sample.js・syntax.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -70,11 +71,12 @@
     wrap.addEventListener("focusout", () => closeLater(wrap));
   }
 
-  // Esc: 開いているツールチップを閉じる。フォーカスは用語に残す
+  // Esc: 開いているツールチップを閉じる。フォーカスは用語に残し、ツールチップの中のリンクにあったときは用語へ戻す
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     for (const wrap of wraps) {
       if (!wrap.classList.contains("is-open")) continue;
+      if (wrap.querySelector(".mdmark-term-tip").contains(document.activeElement)) wrap.querySelector(".mdmark-term").focus();
       close(wrap);
       wrap.classList.add("is-dismissed");
     }
