@@ -1,0 +1,19 @@
+title: Parts/RowDetail
+stories:
+  - name: Closed
+    parameters:
+      server:
+        id: row-detail
+    args:
+      row: 1
+      columns: 3
+      label: table
+  - name: Open
+    parameters:
+      server:
+        id: row-detail
+    args:
+      row: 1
+      columns: 3
+      label: table
+      open: true

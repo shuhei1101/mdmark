@@ -1,0 +1,53 @@
+title: Parts/Callout
+stories:
+  - name: Note
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: note
+  - name: Tip
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: tip
+  - name: Important
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: important
+  - name: Warning
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: warning
+  - name: Caution
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: caution
+  - name: Collapsed
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: warning
+      collapsed: true
+  - name: CollapsedOpened
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: warning
+      collapsed: true
+      open: true
+  - name: Long
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: note

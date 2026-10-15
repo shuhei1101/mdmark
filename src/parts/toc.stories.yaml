@@ -1,0 +1,20 @@
+title: Parts/Toc
+stories:
+  - name: Nested
+    parameters:
+      server:
+        id: toc
+    args:
+      headings: '[{"level":2,"id":"導入","text":"導入"},{"level":3,"id":"前提","text":"前提"},{"level":2,"id":"使い方","text":"使い方"}]'
+  - name: Flat
+    parameters:
+      server:
+        id: toc
+    args:
+      headings: '[{"level":2,"id":"導入","text":"導入"},{"level":2,"id":"使い方","text":"使い方"}]'
+  - name: LongHeading
+    parameters:
+      server:
+        id: toc
+    args:
+      headings: '[{"level":2,"id":"long","text":"とても長い見出しで目次の幅を超えて折り返すときの見え方を確かめるための見出し"}]'

@@ -1,0 +1,29 @@
+title: Parts/Tabs
+stories:
+  - name: First
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows","Linux"]'
+      selected: 0
+  - name: Second
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows","Linux"]'
+      selected: 1
+  - name: Many
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]'
+      selected: 0
+  - name: Unmounted
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows"]'

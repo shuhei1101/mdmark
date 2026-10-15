@@ -1,0 +1,45 @@
+title: Parts/Section
+stories:
+  - name: Open
+    parameters:
+      server:
+        id: section
+    args:
+      level: 2
+      id: 概要
+      title: 概要
+  - name: Closed
+    parameters:
+      server:
+        id: section
+    args:
+      level: 2
+      id: 補足
+      title: 補足
+      open: false
+  - name: Level4
+    parameters:
+      server:
+        id: section
+    args:
+      level: 4
+      id: 細目
+      title: 細目
+  - name: LongTitle
+    parameters:
+      server:
+        id: section
+    args:
+      level: 2
+      id: long
+      title: とても長い見出しで文書の幅を超えて折り返すときの開閉の印とアンカーの位置を確かめる
+  - name: Unmounted
+    parameters:
+      server:
+        id: section
+    args:
+      level: 2
+      id: 補足
+      title: 補足
+      toggle: false
+      open: false

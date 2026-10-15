@@ -1,0 +1,143 @@
+title: Parts/Table
+stories:
+  - name: Data
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["記法","機能名","増分（KB）"]'
+      rows: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+  - name: SortedAscending
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["記法","機能名","増分（KB）"]'
+      rows: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+      sort: '{"column":2,"direction":"ascending"}'
+  - name: SortedDescending
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["記法","機能名","増分（KB）"]'
+      rows: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+      sort: '{"column":2,"direction":"descending"}'
+  - name: FilterSelectOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      filters: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]'
+      openFilter: 0
+  - name: FilterTextOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      filters: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]'
+      openFilter: 1
+      filterValues: '[{"column":1,"text":"描画"}]'
+  - name: FilterDateOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      filters: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]'
+      openFilter: 2
+  - name: Filtered
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      filters: '[{"column":0,"kind":"select"}]'
+      filterValues: '[{"column":0,"values":["りんご"]}]'
+  - name: NoMatch
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","説明"]'
+      rows: '[["りんご","描画を速くする"],["みかん","印刷を直す"]]'
+      filters: '[{"column":1,"kind":"text"}]'
+      filterValues: '[{"column":1,"text":"存在しない"}]'
+  - name: DefaultOverflow
+    parameters:
+      server:
+        id: table
+    args:
+      features: '["pin"]'
+      columns: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      overflow: true
+  - name: Pinned
+    parameters:
+      server:
+        id: table
+    args:
+      features: '["pin"]'
+      columns: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      overflow: true
+      pinned: 2
+  - name: DefaultFits
+    parameters:
+      server:
+        id: table
+    args:
+      features: '["pin"]'
+      columns: '["用語","意味"]'
+      rows: '[["印","HTML コメントで書く目印"]]'
+  - name: Plain
+    parameters:
+      server:
+        id: table
+    args:
+      kind: plain
+      features: '[]'
+      columns: '["用語","意味"]'
+      rows: '[["印","HTML コメントで書く目印"],["書き方の警告","読めない指定を知らせる枠"]]'
+  - name: Closed
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["版","日付","変更"]'
+      rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"]]'
+      collapse: closed
+  - name: LongCells
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["とても長い列の名前で見出しの幅を超えるもの","値"]'
+      rows: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確かめる","1"]]'
+      filters: '[{"column":0,"kind":"select"}]'

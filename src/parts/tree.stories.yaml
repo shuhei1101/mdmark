@@ -1,0 +1,20 @@
+title: Parts/FileTree
+stories:
+  - name: Basic
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
+  - name: Deep
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"a/","children":[{"name":"b/","children":[{"name":"c/","children":[{"name":"d/","children":[{"name":"e.ts"}]}]}]}]}]'
+  - name: LongName
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts"}]}]'
