@@ -233,9 +233,9 @@ functions:
     summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返す。`mount` が描いた表に足すのにも使う
     args:
       - name: options
-        type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] } }'
+        type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean }'
         required: true
-        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）
+        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、当てている絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、この列までを留めているか
     returns:
       type: '{ header: string; drawer: string }'
       description: 見出しの中身とドロワー（絞り込みが無ければ空）
