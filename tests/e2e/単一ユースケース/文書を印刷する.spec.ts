@@ -76,3 +76,85 @@ test("test_normal_when_print_finished", async ({ page }) => {
   await expect(closed).not.toHaveAttribute("open", "");
   await expect(opened).toHaveAttribute("open", "");
 });
+
+// 印刷の前にタブの全ての中身と閉じた記法を開き、印刷の後に元の表示へ戻す（正常シナリオ（記法を開いて出す））
+test("test_normal_when_syntax_expanded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- tabs -->",
+      "",
+      "### macOS",
+      "",
+      "macOS の中身",
+      "",
+      "### Windows",
+      "",
+      "Windows の中身",
+      "",
+      "<!-- /tabs -->",
+      "",
+      "## 補足",
+      "<!-- section: closed -->",
+      "",
+      "閉じた節の中身",
+      "",
+      "| 名前 | 数 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+      "<!-- row-detail: 1 -->",
+      "",
+      "行の詳細の中身",
+      "",
+      "<!-- /row-detail -->",
+      "",
+      "<!-- table: data closed -->",
+      "",
+      "| 名前 |",
+      "| --- |",
+      "| 閉じた表の中身 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "> [!NOTE]-",
+      "> 閉じた注意書きの中身",
+      "",
+    ].join("\n"),
+  });
+  const doc = page.locator("#doc");
+  const hiddenTexts = [
+    "Windows の中身",
+    "閉じた節の中身",
+    "行の詳細の中身",
+    "閉じた表の中身",
+    "閉じた注意書きの中身",
+  ];
+  for (const text of hiddenTexts) {
+    await expect(doc.getByText(text), text).toBeHidden();
+  }
+  // 実行: 印刷の前
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 印刷の前のイベントの後
+  await expect(doc.locator(".mdmark-tab-title")).toHaveText([
+    "macOS",
+    "Windows",
+  ]);
+  for (const title of await doc.locator(".mdmark-tab-title").all()) {
+    await expect(title).toBeVisible();
+  }
+  await expect(doc.getByText("macOS の中身")).toBeVisible();
+  for (const text of hiddenTexts) {
+    await expect(doc.getByText(text), text).toBeVisible();
+  }
+  // 実行: 印刷の後
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証: 印刷の後のイベントの後
+  await expect(doc.getByText("macOS の中身")).toBeVisible();
+  for (const text of hiddenTexts) {
+    await expect(doc.getByText(text), text).toBeHidden();
+  }
+});

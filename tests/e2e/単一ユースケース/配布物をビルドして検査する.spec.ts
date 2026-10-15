@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { cp, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -107,6 +107,11 @@ test("test_normal", async () => {
   expect((await run("npm", ["run", "build"])).code).toBe(0);
   expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
   expect(existsSync(join(root, "dist", "index.css"))).toBe(true);
+  const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
+  for (const name of ["mount", "render", "version", "registerExtension"]) {
+    expect(declarations, name).toContain(name);
+  }
+  expect(declarations).toContain("MdmarkExtension");
   expect(await readBuiltVersion()).toBe("v0.0.0");
   expect((await run("npm", ["test"])).code).toBe(0);
 });
