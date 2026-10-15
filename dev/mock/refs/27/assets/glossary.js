@@ -8,21 +8,27 @@
   // ツールチップと画面の端との間に空ける幅（px）
   const VIEWPORT_MARGIN_PX = 16;
 
-  // [data-mock-static]: 部品のモックで開いた状態を見せるだけの用語。操作を付けない
+  // [data-mock-static]: 部品のモックで開いた状態を見せるだけの用語。操作を付けず、置く位置だけを当てる（[data-mock-side]: 置く向き）
   const wraps = [...document.querySelectorAll(".mdmark-term-wrap:not([data-mock-static])")];
+  const staticWraps = [...document.querySelectorAll(".mdmark-term-wrap[data-mock-static]")];
   const closeTimers = new Map();
 
-  /** ツールチップを用語の下（収まらなければ上）に、画面からはみ出さないよう置く。 */
+  /** ツールチップを用語の下（収まらなければ上）に、画面からはみ出さないよう置く。行をまたぐ用語は、下なら最後の行、上なら最初の行に付ける。 */
   const place = (wrap) => {
-    const term = wrap.querySelector(".mdmark-term");
+    const rects = wrap.querySelector(".mdmark-term").getClientRects();
+    const first = rects[0];
+    const last = rects[rects.length - 1];
     const tip = wrap.querySelector(".mdmark-term-tip");
-    const rect = term.getBoundingClientRect();
     tip.style.position = "fixed";
     const { width, height } = tip.getBoundingClientRect();
-    const above = rect.bottom + height > window.innerHeight && rect.top - height >= 0;
+    // 部品のモックの見本は、収まり方によらず書いた向き（data-mock-side="above" なら上、無ければ下）に置く
+    const above = wrap.hasAttribute("data-mock-static")
+      ? wrap.dataset.mockSide === "above"
+      : last.bottom + height > window.innerHeight && first.top - height >= 0;
     wrap.classList.toggle("is-above", above);
-    const left = Math.min(Math.max(rect.left, VIEWPORT_MARGIN_PX), window.innerWidth - width - VIEWPORT_MARGIN_PX);
-    tip.style.top = `${above ? rect.top - height : rect.bottom}px`;
+    const anchor = above ? first : last;
+    const left = Math.min(anchor.left, window.innerWidth - width - VIEWPORT_MARGIN_PX);
+    tip.style.top = `${above ? first.top - height : last.bottom}px`;
     tip.style.bottom = "auto";
     tip.style.left = `${Math.max(left, VIEWPORT_MARGIN_PX)}px`;
   };
@@ -76,10 +82,11 @@
 
   // 画面のスクロールと幅の変化: 開いているツールチップを用語に付いて動かす
   const placeOpen = () => {
-    for (const wrap of wraps) if (wrap.classList.contains("is-open")) place(wrap);
+    for (const wrap of [...wraps, ...staticWraps]) if (wrap.classList.contains("is-open")) place(wrap);
   };
   window.addEventListener("scroll", placeOpen, { capture: true, passive: true });
   window.addEventListener("resize", placeOpen);
+  placeOpen();
 
   // 印刷の前: 開いているツールチップを閉じる（紙には出さない）
   window.addEventListener("beforeprint", () => {

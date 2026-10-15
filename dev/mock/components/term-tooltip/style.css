@@ -9,3 +9,8 @@
 .catalog-tip-space-above {
   padding-block-start: 7rem;
 }
+
+/* 長い意味のツールチップを見せる見本: 狭い幅で折り返して高くなるツールチップの分の高さを取る */
+.catalog-tip-space-long {
+  padding-block-end: 16rem;
+}
