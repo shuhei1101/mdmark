@@ -1,5 +1,7 @@
 import { type MdmarkConfig, resolveConfig } from "./config.ts";
 import { attachInteractions } from "./interact/index.ts";
+import type { MdmarkIndex } from "./knowledge/index-shape.ts";
+import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
@@ -10,6 +12,12 @@ export type MountOptions = {
   markdown: string;
   /** 使う側の設定。省いたキーには既定を当てる */
   config?: MdmarkConfig;
+  /** 索引。省くと索引の用語と関連文書を出さない */
+  index?: MdmarkIndex;
+  /** 描く文書の索引の `id`。索引に無い `id` は省いたのと同じ */
+  docId?: string;
+  /** `collectReferences` の戻り値。省くと関連文書の一覧と他の文書の用語集の表の用語を出さない */
+  references?: MdmarkReferences;
 };
 
 /** `mount` の戻り値 */
@@ -47,7 +55,13 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     generation += 1;
     const current = generation;
     detachInteractions?.();
-    const rendered = renderDocument({ markdown, config });
+    const rendered = renderDocument({
+      markdown,
+      config,
+      index: opts.index,
+      docId: opts.docId,
+      references: opts.references,
+    });
     el.innerHTML = rendered.html;
     el.classList.add(ROOT_CLASS);
     features = rendered.features;

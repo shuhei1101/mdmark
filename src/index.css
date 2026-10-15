@@ -35,6 +35,9 @@
     --mdmark-color-callout-warning: #9a6700;
     --mdmark-color-callout-caution: #d1242f;
     --mdmark-table-max-height: 28rem;
+    --mdmark-color-term-underline: var(--mdmark-color-muted);
+    --mdmark-tooltip-max-width: 22rem;
+    --mdmark-tooltip-max-height: 18rem;
     color-scheme: light;
   }
 
@@ -1457,6 +1460,174 @@
         content: attr(data-label);
         font-size: 0.85em;
         font-weight: 600;
+      }
+    }
+  }
+
+  /* 用語と被参照: 用語と文書の別名の破線の下線・用語と関連文書のツールチップ・参照している文書の一覧 */
+  .mdmark {
+    /* 用語とツールチップの組: ツールチップを語の下に置く基準。スクリプトが動かないときもポインターとフォーカスで開く */
+    .mdmark-term-wrap {
+      position: relative;
+    }
+
+    /* 下線の付いた用語と文書の別名: リンクの実線と見分ける破線の下線。色は本文のまま */
+    .mdmark-term {
+      border-radius: 2px;
+      cursor: help;
+      text-decoration: underline dashed var(--mdmark-color-term-underline);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3em;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* ツールチップを開いている語: 下線を本文の色にして、どの語の意味かを示す */
+    .mdmark-term-wrap.is-open .mdmark-term {
+      text-decoration-color: var(--mdmark-color-text);
+    }
+
+    /* 用語と関連文書のツールチップ: 初めは出さない。上の透明な線で語との間を空け、ポインターが語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
+    .mdmark-term-tip {
+      display: none;
+      position: absolute;
+      z-index: 10;
+      box-sizing: border-box;
+      inset-block-start: 100%;
+      inset-inline-start: 0;
+      width: max-content;
+      max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
+      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5em 0.75em;
+      border: 1px solid var(--mdmark-color-muted);
+      border-block-start: 0.4em solid transparent;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg) padding-box;
+      color: var(--mdmark-color-text);
+      font-size: 0.875rem;
+      font-weight: normal;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+      text-align: start;
+      white-space: normal;
+    }
+
+    /* 語の上に開いたツールチップ（下に収まらないとき）: 透明な線を下に移す */
+    .mdmark-term-wrap.is-above .mdmark-term-tip {
+      inset-block: auto 100%;
+      border-block-start: 1px solid var(--mdmark-color-muted);
+      border-block-end: 0.4em solid transparent;
+    }
+
+    /* 語にポインターを乗せたかフォーカスしたときと、スクリプトが開いたとき: ツールチップを出す */
+    .mdmark-term-wrap:is(:hover, :focus-within) .mdmark-term-tip,
+    .mdmark-term-wrap.is-open .mdmark-term-tip {
+      display: block;
+    }
+
+    /* Esc で閉じたツールチップ: ポインターかフォーカスが語を離れるまで出さない */
+    .mdmark-term-wrap.is-dismissed .mdmark-term-tip {
+      display: none;
+    }
+
+    /* ツールチップの中の区分（用語・関連文書）: 2 つ目からは線で区切る */
+    .mdmark-term-tip-section {
+      display: block;
+
+      & + & {
+        margin-block-start: 0.5em;
+        padding-block-start: 0.5em;
+        border-block-start: 1px solid var(--mdmark-color-border);
+      }
+    }
+
+    /* 区分の見出し（「用語」「関連文書」）: 控えめな文字の太字 */
+    .mdmark-term-tip-heading {
+      display: block;
+      margin-block-end: 0.15em;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    /* ツールチップの意味の文 */
+    .mdmark-term-tip-meaning {
+      display: block;
+    }
+
+    /* 関連文書の並び: 文書ごとに題のリンクと説明を縦に積む */
+    .mdmark-term-tip-docs {
+      display: block;
+    }
+
+    /* 関連文書の 1 件 */
+    .mdmark-term-tip-doc {
+      display: block;
+
+      & + & {
+        margin-block-start: 0.4em;
+      }
+
+      a:focus-visible {
+        outline-offset: 1px;
+      }
+    }
+
+    /* 関連文書の説明（索引の description）: 題の下に控えめな文字で出す */
+    .mdmark-term-tip-doc-desc {
+      display: block;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 被参照の一覧（文書の末尾）: 本文と線で区切り、上の余白を節と同じに取る */
+    .mdmark-backlinks {
+      margin-block-start: calc(var(--mdmark-space) * 2.25);
+      padding-block-start: var(--mdmark-space);
+      border-block-start: 1px solid var(--mdmark-color-border);
+
+      ul {
+        margin: 0;
+        padding-inline-start: 1.2em;
+      }
+    }
+
+    /* 被参照の一覧の題 */
+    .mdmark-backlinks-title {
+      margin: 0 0 0.35em;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+  }
+
+  /* 印刷のとき（用語と被参照）: 下線とツールチップを出さず、被参照の一覧のリンクに相対パスを併記する */
+  @media print {
+    .mdmark {
+      /* 下線の付いた用語と文書の別名: 紙では開けないので下線を外し、本文の文字として出す */
+      .mdmark-term {
+        cursor: auto;
+        text-decoration: none;
+      }
+
+      /* 用語と関連文書のツールチップ: 開いていても紙に出さない */
+      .mdmark-term-wrap:is(:hover, :focus-within, .is-open) .mdmark-term-tip {
+        display: none;
+      }
+
+      /* 被参照の一覧のリンク: 後ろに相対パスを併記する */
+      .mdmark-backlinks a::after {
+        color: var(--mdmark-color-muted);
+        content: " (" attr(href) ")";
+        overflow-wrap: anywhere;
+      }
+
+      /* 被参照の一覧: 改ページで切らない */
+      .mdmark-backlinks {
+        break-inside: avoid;
       }
     }
   }
