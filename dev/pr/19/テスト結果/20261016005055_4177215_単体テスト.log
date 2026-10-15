@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-comment-mark-extensions
+
+
+ Test Files  43 passed (43)
+      Tests  158 passed (158)
+   Start at  00:51:03
+   Duration  18.29s (import 46%, tests 40%, transform 9%, worker 5%)
+
+exit=0
