@@ -253,3 +253,55 @@ test("test_attach_tables_when_detached", async () => {
   expect(types).toContain("pointerdown");
   expect(types).toContain("keydown");
 });
+
+// セルに用語の下線があっても、絞り込みの値の候補と見出しのボタンの名前にツールチップの文字を含めない（正常系）
+test("test_attach_tables_when_cell_has_term", async () => {
+  // 準備
+  const { mount } = await import("../../../../src/mount.ts");
+  const markdown = [
+    "<!-- table: data filter=名前 -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| 印 | 1 |",
+    "| 表 | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- glossary: term=用語 meaning=意味 -->",
+    "",
+    "| 用語 | 意味 |",
+    "| --- | --- |",
+    "| 印 | HTML コメントで書く指定 |",
+    "| 名前 | 見出しの文字 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  const root = document.createElement("div");
+  document.body.append(root);
+  // 実行
+  const handle = mount(root, { markdown });
+  // 検証
+  try {
+    const { drawer } = openDrawer(root);
+    const candidates = [...drawer.querySelectorAll("label")]
+      .filter(
+        (label) =>
+          label.control instanceof HTMLInputElement &&
+          label.control.type === "checkbox",
+      )
+      .map((label) => label.textContent);
+    expect(candidates).toEqual(["印", "表"]);
+    const buttons = [
+      ...root.querySelectorAll<HTMLElement>("thead th button.mdmark-filter"),
+    ];
+    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+      "「名前」で絞り込む",
+    ]);
+    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("印");
+  } finally {
+    handle.destroy();
+    root.remove();
+  }
+});
