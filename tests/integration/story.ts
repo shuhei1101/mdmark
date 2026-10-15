@@ -34,3 +34,12 @@ export function createBrowserHolder(): {
     },
   };
 }
+
+/** ページが横にはみ出しているか（横スクロールが出るか） */
+export function pageOverflows(page: Page): Promise<boolean> {
+  return page.evaluate(
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth,
+  );
+}
