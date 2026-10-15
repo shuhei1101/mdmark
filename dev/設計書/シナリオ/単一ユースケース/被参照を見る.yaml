@@ -24,36 +24,10 @@ scenarios:
         U->>P: 一覧の文書の題を押す
         P-->>U: その文書へのリンクを開く
     expected:
-      - 被参照の一覧に `API` と `使い方` が並び、自分へのリンクを持つ `アーキテクチャ` 自身は並ばない
+      - 文書の末尾に題「関連文書」の被参照の一覧があり、`API` と `使い方` が並び、自分へのリンクを持つ `アーキテクチャ` 自身は並ばない
       - '`API` のリンクの `href` が `../api.md`、`使い方` のリンクの `href` が `../使い方/guide.md`（描いた文書 `設計/arch.md` からの相対パス）'
       - 本文の見出しと段落が描かれている
     test: test_normal
-  - name: 正常シナリオ（用語の被参照）
-    setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ
-      - name: 用語を持つ索引
-        description: 正常シナリオの 3 つの文書と、用語 `ワークスペース` を持つ索引
-      - name: ほかの文書の本文
-        description: '`api` と `guide` の本文に `ワークスペース` が出る'
-      - name: 描く Markdown
-        description: '`arch` の本文。段落に `ワークスペース` が出る'
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 利用者
-        participant P as 使う側のページ
-        participant M as mdmark
-        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
-        M->>M: 用語が出る文書を引く
-        M-->>P: 用語に下線を引いて描く
-        U->>P: 下線の付いた語にポインターを乗せる
-        P-->>U: 意味と、用語が出る文書を表示
-    expected:
-      - '`ワークスペース` のツールチップに、意味と、用語が出る文書の題 `API`・`使い方` が文字で並ぶ'
-      - ツールチップの中にリンクが無い
-    test: test_normal_when_term
   - name: 正常シナリオ（参照されていない文書）
     setup:
       - name: mdmark を読むページ
@@ -76,7 +50,33 @@ scenarios:
       - 被参照の一覧が無い
       - 本文が描かれている
     test: test_normal_when_not_referenced
-lead: 読む人が、描いた文書を参照している文書の一覧と、用語が出る文書を見る。被参照は保存せず、索引の `related`・本文の文書間のリンク・用語の出現から描くときに算出する。
+  - name: 正常シナリオ（文書の別名）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 別名を持つ索引
+        description: 正常シナリオの 3 つの文書のうち `api` が `aliases` に `公開関数`、`description` に `mount と render の引数`を持ち、用語 `ワークスペース` を持つ索引。`guide` も `aliases` に `ワークスペース` を持つ
+      - name: 描く Markdown
+        description: '`arch` の本文。段落に `公開関数` と `ワークスペース` が出る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: 本文の語を用語と文書の別名に照合する
+        M-->>P: 一致した語に下線を引いて描く
+        U->>P: 下線の付いた語にフォーカスし、Tab でツールチップの中へ移る
+        P-->>U: 用語と関連文書を表示し、関連文書のリンクへフォーカスを移す
+    expected:
+      - '`公開関数` に破線の下線が付き、ツールチップの「関連文書」に `API` の題、`../api.md` へのリンク、`mount と render の引数` がある'
+      - '`ワークスペース` のツールチップに、「用語」の意味と「関連文書」の `使い方` がこの順で並ぶ'
+      - ツールチップに、用語が出る文書の一覧が無い
+      - キーボードでツールチップの中の `API` のリンクへフォーカスを移せる
+    test: test_normal_when_document_alias
+lead: 読む人が、描いた文書を参照している文書の一覧と、本文の語に別名が一致した文書を見る。被参照は保存せず、索引の `related`・本文の文書間のリンク・文書の別名の出現から描くときに算出する。
 issue: 5
 primary_actor: 文書を読む人
 stakeholders:
@@ -88,7 +88,7 @@ trigger: 使う側のページが、索引・描く文書の `id`・ほかの文
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 被参照の機能（`backlinks`）がオン（既定）
-success_guarantee: 描いた文書に、その文書を `related`・本文のリンクで参照している文書が、題とその文書へのリンクで並ぶ。用語には、その用語が出る文書が並ぶ。
+success_guarantee: 描いた文書の末尾に、その文書を `related`・本文のリンク・文書の別名で参照している文書が、「関連文書」の題で、題とその文書へのリンクで並ぶ。本文の語に別名が一致した文書は、その語のツールチップに並ぶ。
 minimal_guarantee: 参照されていない文書も、索引に無い文書も、本文は描かれる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#
