@@ -1,0 +1,44 @@
+title: "関連文書の一覧"
+implementation: "src/parts/backlinks.ts#renderBacklinks"
+story: "Parts/Backlinks"
+states:
+  - name: Two
+    description: 2 件の関連文書
+    args:
+      - name: id
+        value: backlinks-two
+      - name: docs
+        value: '[{"title":"API","href":"../api.md"},{"title":"使い方","href":"../使い方/guide.md"}]'
+  - name: One
+    description: 1 件の関連文書
+    args:
+      - name: id
+        value: backlinks-one
+      - name: docs
+        value: '[{"title":"API","href":"../api.md"}]'
+  - name: Long
+    description: 題が長い文書を含む 5 件。長い題は折り返す
+    args:
+      - name: id
+        value: backlinks-long
+      - name: docs
+        value: '[{"title":"API","href":"../api.md"},{"title":"使い方","href":"../使い方/guide.md"},{"title":"CSS 変数と層の外の CSS で、描いた文書の見た目を変える手順と、印刷のときの見え方の違い","href":"../使い方/カスタマイズ/テーマを上書きする.md"},{"title":"設定の一覧","href":"../リファレンス/設定.md"},{"title":"非機能要件","href":"../非機能要件.md"}]'
+lead: 描いた文書の末尾に、その文書を参照している文書を題「関連文書」のリンクの一覧として置く。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
+args:
+  - name: id
+    type: 文字列
+    required: true
+    description: 題の要素の `id`。一覧の `aria-labelledby` が指す
+  - name: docs
+    type: オブジェクトの配列
+    required: true
+    description: 並べる文書（`{ title, href }`）。並びの順に出す。空なら空文字を返す（一覧を置かない）
+accessibility:
+  - 一覧は `nav` で、題「関連文書」を `aria-labelledby` で読み上げ名にする
+  - 文書は `ul` の項目のリンクで、件数を読み上げで伝える
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[関連文書と被参照の一覧]
+status: planned
+notes:
+  出力の形: '`<nav class="mdmark-backlinks" aria-labelledby="{id}"><p class="mdmark-backlinks-title" id="{id}">関連文書</p><ul><li><a href="{href}">{title}</a></li>…</ul></nav>`。題の文言は確認ログの決定。モックは `dev/mock/components/backlinks/`'
+  印刷: 印刷では、一覧のリンクの後ろに `href`（描いた文書からの相対パス）を併記する。本文の相対リンクには併記しない（本文の印刷の出力を変えない）。索引から見たパスにする案もあったが、ユーザーが合意したモックの印刷の見え方と、リンクそのものの指し先に揃える

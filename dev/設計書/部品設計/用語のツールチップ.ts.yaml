@@ -1,0 +1,104 @@
+title: "用語のツールチップ"
+implementation: "src/parts/term-tip.ts#renderTermTip"
+story: "Parts/TermTip"
+states:
+  - name: TermOnly
+    description: 用語だけに一致した語。「用語」の意味だけを持つ `role="tooltip"` のツールチップを開いた
+    args:
+      - name: text
+        value: ワークスペース
+      - name: id
+        value: tip-term
+      - name: meaning
+        value: 話し合いの記録を置くフォルダ
+  - name: DocsOnly
+    description: 文書の別名だけに一致した語。「関連文書」だけを持つ `role="group"` のツールチップを開いた
+    args:
+      - name: text
+        value: 公開関数
+      - name: id
+        value: tip-docs
+      - name: docs
+        value: '[{"title":"API","href":"../api.md","description":"mount・render などの公開関数と引数の一覧"}]'
+  - name: Both
+    description: 用語にも文書の別名にも一致した語。「用語」→「関連文書」の順に並ぶ
+    args:
+      - name: text
+        value: 索引
+      - name: id
+        value: tip-both
+      - name: meaning
+        value: 文書と用語を並べた YAML のファイル
+      - name: docs
+        value: '[{"title":"索引のリファレンス","href":"../リファレンス/索引.md","description":"索引のキー・型・必須・既定と、点検が返すずれの種類"}]'
+  - name: ManyDocs
+    description: 関連文書が多く、高さの上限を超える。ツールチップの中をスクロールする（ストーリーの引数 `docs` に 7 件を渡す）
+    args:
+      - name: text
+        value: 設定
+      - name: id
+        value: tip-many
+      - name: meaning
+        value: mdmark.config.yaml に書く、機能のオン・オフと外部ライブラリの読み方
+  - name: LongMeaning
+    description: 意味が長く、幅の上限で折り返す
+    args:
+      - name: text
+        value: サニタイズ
+      - name: id
+        value: tip-long
+      - name: meaning
+        value: '描く前の HTML から、スクリプトと許可していない要素・属性を落とすこと。文書に書いた script 要素・イベント属性・javascript: の URL を実行しないための処理で、索引に書いた題と意味にも当てる'
+  - name: Closed
+    description: 開く前。破線の下線だけが出て、ツールチップは隠れている
+    args:
+      - name: text
+        value: ワークスペース
+      - name: id
+        value: tip-closed
+      - name: meaning
+        value: 話し合いの記録を置くフォルダ
+lead: 本文の用語と文書の別名に破線の下線を引き、隣に「用語」の意味と「関連文書」の並びを持つツールチップを置く。HTML 文字列を返し、ブラウザと Node で同じ出力になる。開閉と置き場所は `mount` の操作が付ける。
+args:
+  - name: text
+    type: 文字列
+    required: true
+    description: 下線を引く本文の語（HTML として特別な文字はエスケープする）
+  - name: id
+    type: 文字列
+    required: true
+    description: ツールチップの要素の `id`。語の `aria-describedby`・`aria-details` が指す。描くごとに文書の中で一意にする
+  - name: meaning
+    type: 文字列
+    default: '""'
+    description: 「用語」に出す意味。空なら「用語」の区分を出さない
+  - name: docs
+    type: オブジェクトの配列
+    default: '[]'
+    description: 「関連文書」に並べる文書（`{ title, href, description }`。`description` は任意）。空なら「関連文書」の区分を出さない。`meaning` も `docs` も空なら、下線もツールチップも出さず `text` をそのまま返す
+css_properties:
+  - name: --mdmark-color-term-underline
+    syntax: <color>
+    default: var(--mdmark-color-muted)
+    description: 語の破線の下線の色
+  - name: --mdmark-tooltip-max-width
+    syntax: <length>
+    default: 22rem
+    description: ツールチップの幅の上限（画面の幅から 2rem を引いた幅を超えない）
+  - name: --mdmark-tooltip-max-height
+    syntax: <length>
+    default: 18rem
+    description: ツールチップの高さの上限（画面の高さの 60% を超えない）。超える分はツールチップの中でスクロールする
+accessibility:
+  - 語は `tabindex="0"` でフォーカスでき、フォーカスの枠を出す
+  - 意味だけのツールチップは `role="tooltip"` で、語の `aria-describedby` が指す
+  - 関連文書を持つツールチップは `role="group"` と `aria-label`（「{語}」の用語と関連文書、または「{語}」の関連文書）で、語の `aria-details` が指す。意味も持つときは、語の `aria-describedby` が意味の要素を指す。ツールチップを語の直後に置き、語の次の Tab で中のリンクへ移れる
+  - 関連文書の並びは `role="list"`・`role="listitem"` で件数を伝える
+  - 用語であることは破線の下線の形でも示し、色だけに頼らない（リンクは実線）
+  - スクリプトが動かない HTML 文字列でも、語にポインターを乗せるかフォーカスすると CSS で開く
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ツールチップの操作]
+status: planned
+notes:
+  出力の形: '`<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="{id}-meaning" aria-details="{id}">{text}</span><span class="mdmark-term-tip" id="{id}" role="group" aria-label="「{text}」の用語と関連文書">…</span></span>`。区分は `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`（「用語」「関連文書」）を置き、意味は `mdmark-term-tip-meaning`、関連文書は `mdmark-term-tip-docs` の中の `mdmark-term-tip-doc`（題の `a` と `mdmark-term-tip-doc-desc`）。意味だけのときは `role="tooltip"` で `aria-details` を持たない。モックは `dev/mock/components/term-tooltip/`'
+  印刷: 印刷の CSS で下線とツールチップを外し、語を本文の文字として出す
