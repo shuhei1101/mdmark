@@ -983,7 +983,7 @@
       font-size: 0.8125em;
       font-weight: 600;
       line-height: 1.6;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
     }
 
     /* ---------- 目次 ---------- */
