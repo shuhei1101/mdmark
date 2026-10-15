@@ -43,7 +43,7 @@ data_models:
         description: 描く文書の索引の `id`。索引に無い `id` は省いたのと同じ
       - name: references
         type: MdmarkReferences | undefined
-        description: '`collectReferences` の戻り値。省くと関連文書の一覧と他の文書の用語集の表の用語を出さない'
+        description: '`collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない'
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
