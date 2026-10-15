@@ -23,7 +23,7 @@ scenarios:
       - name: 配布物を読む Node の処理
         description: 正常シナリオと同じ
       - name: ずれを持つ索引と文書
-        description: 索引が、一覧に無いパスの文書 `old`・`related` に索引に無い `id` の `gone` を持つ文書 `api`・同じ語 `ワークスペース` の用語 2 つを持ち、文書の一覧が索引に無い `new.md` を持ち、`api` の本文が用語集の表で索引と同じ語 `ワークスペース` を入れる
+        description: 索引が、一覧に無いパスの文書 `old`・`related` に索引に無い `id` の `gone` を持つ文書 `api`・文書 `guide`・同じ語 `ワークスペース` の用語 2 つを持ち、文書の一覧が索引に無い `new.md` を持つ。`api` の本文は用語集の表で索引と同じ語 `ワークスペース` と語 `印` を入れ、`guide` の本文も用語集の表で語 `印` を入れる
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -38,6 +38,7 @@ scenarios:
       - 索引に無い文書 `new.md` の行が、`new.md` のファイルを持つ
       - '`api` の `related` の切れた `id` `gone` の行が、その `related` の場所を持つ'
       - '`ワークスペース` の用語の重複が、索引の `terms` どうしの行と、索引と `api` の用語集の表の行で返る'
+      - '`印` の用語の重複が、`api` と `guide` の用語集の表どうしの行で返る'
       - 各行がずれの種類と、直す場所が分かる内容を持つ
     test: test_normal_when_drift
   - name: 正常シナリオ（Schema に合わない索引）
