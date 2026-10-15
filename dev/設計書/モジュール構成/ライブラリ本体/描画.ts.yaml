@@ -57,12 +57,15 @@ data_models:
       - name: docId
         type: string | undefined
         description: 描く文書の索引の `id`（索引に無ければ `undefined`）
-      - name: references
+      - name: mdmarkReferences
         type: MdmarkReferences | undefined
-        description: 参照の表
+        description: 参照の表（`render`・`mount` の `references`）。markdown-it が `env.references` にリンク参照定義を書くため、この名前にする
       - name: ownGlossary
         type: MdmarkGlossaryEntry[]
         description: 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す）
+      - name: glossaryLines
+        type: number[] | undefined
+        description: 用語集の表の用語ごとの文書の中の行番号（`ownGlossary` と同じ並び。`checkIndex` が `duplicate_term` の `where` に使う）
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts

@@ -132,7 +132,7 @@ constraints:
   - item: 文書の対応
     constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する
   - item: 用語の重複
-    constraint: 索引の `terms` どうし・索引の `terms` と用語集の表・用語集の表どうしで、語か別名が同じ文字のものを、重なり 1 組ごとに 1 つの `duplicate_term` にする。`file` と `where` は組の後の側（索引 → 索引の `docs` の順の文書で後に出た方）を指す。索引の側は `file` が `indexFile`、`where` が `terms[1].term` か `terms[1].aliases[0]`。用語集の表の側は `file` が文書のパス、`where` が表のその行の文書の中の行番号（`12 行目`。解析器のトークンの `map` の開始行 + 1）。`message` にもう片方の場所を書く
+    constraint: 索引の `terms` どうし・索引の `terms` と用語集の表・用語集の表どうしで、語か別名が同じ文字のものを、後に出た用語ごとに重なる先のうち最初の 1 つとの組で 1 つの `duplicate_term` にする（索引 → 索引の `docs` の順の文書の表の順で後と先を決める）。`file` と `where` は後に出た側を指す。索引の側は `file` が `indexFile`、`where` が `terms[1].term` か `terms[1].aliases[0]`。用語集の表の側は `file` が文書のパス、`where` が表のその行の文書の中の行番号（`12 行目`。解析器のトークンの `map` の開始行 + 1）。`message` に先の側の場所を書く
     notes: 用語集の表は `collectReferences` と同じ読み方で拾う
   - item: 上限
     constraint: 制限なし（渡された全ての文書を確かめる）
