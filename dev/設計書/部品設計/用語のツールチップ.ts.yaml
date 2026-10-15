@@ -32,7 +32,7 @@ states:
       - name: docs
         value: '[{"title":"索引のリファレンス","href":"../リファレンス/索引.md","description":"索引のキー・型・必須・既定と、点検が返すずれの種類"}]'
   - name: ManyDocs
-    description: 関連文書が多く、高さの上限を超える。ツールチップの中をスクロールする（ストーリーの引数 `docs` に 7 件を渡す）
+    description: 関連文書が 7 件あり、高さの上限を超える。ツールチップの中をスクロールする
     args:
       - name: text
         value: 設定
@@ -40,6 +40,8 @@ states:
         value: tip-many
       - name: meaning
         value: mdmark.config.yaml に書く、機能のオン・オフと外部ライブラリの読み方
+      - name: docs
+        value: '[{"title":"設定の一覧","href":"../リファレンス/設定.md","description":"設定のキーと既定の一覧"},{"title":"機能をオン・オフする","href":"../使い方/カスタマイズ/機能をオン・オフする.md","description":"設定の features と文書の印で、機能のオン・オフを切り替える"},{"title":"テーマを上書きする","href":"../使い方/カスタマイズ/テーマを上書きする.md","description":"CSS 変数と層の外の CSS で、描いた文書の見た目を変える"},{"title":"文書を描く","href":"../使い方/導入/文書を描く.md","description":"配布物を読んだページで mount を呼び、要素の中に Markdown を描く"},{"title":"文書を描く仕組み","href":"../はじめに/コアコンセプト/文書を描く仕組み.md","description":"Markdown と設定を渡してから描かれるまでの流れと、機能のオン・オフの優先順"},{"title":"印刷する","href":"../使い方/カスタマイズ/印刷する.md","description":"印刷・PDF にしたときの文書の見え方"},{"title":"非機能要件","href":"../非機能要件.md","description":"配布物のサイズと対応ブラウザの決定値"}]'
   - name: LongMeaning
     description: 意味が長く、幅の上限で折り返す
     args:

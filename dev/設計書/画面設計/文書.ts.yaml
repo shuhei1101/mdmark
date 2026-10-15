@@ -255,7 +255,7 @@ elements:
       - name: text
         value: 照合した本文の語
       - name: id
-        value: 描くごとに文書の中で一意な値（`mdmark-term-{通し番号}`）
+        value: '`render` は描くごとに文書の中で一意な値（`mdmark-term-{通し番号}`）。`mount` はページの中で一意な値（`mdmark-term-{mount の通し番号}-{通し番号}`）に振り直し、語の `aria-describedby`・`aria-details` も合わせて直す'
       - name: meaning
         value: 一致した用語の意味（索引の `terms[].meaning`、描く文書の用語集の表の意味の列、参照の表の `glossary[].meaning` の優先の順）。用語に一致しないときは空
       - name: docs
@@ -283,7 +283,7 @@ elements:
     component: dev/設計書/部品設計/関連文書の一覧.ts#
     args:
       - name: id
-        value: '`mdmark-backlinks-title`'
+        value: '`render` は `mdmark-backlinks-title`。`mount` はページの中で一意な値（`mdmark-backlinks-title-{mount の通し番号}`）に振り直し、一覧の `aria-labelledby` も合わせて直す'
       - name: docs
         value: '`opts.references.backlinks[opts.docId]`（無ければ索引の `related` に描く文書を持つ文書）の各文書の `title` と、描く文書の `path` から見た相対パス'
     position: 描く先の要素 > 本文の後

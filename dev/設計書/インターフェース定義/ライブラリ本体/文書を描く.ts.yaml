@@ -649,4 +649,7 @@ constraints:
     constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない
   - item: 索引の値の出し方
     constraint: 索引の題・意味・`description` は Markdown として解析せず、文字として出す。リンクの `href` は本文のリンクと同じ許可の検査を通す
+  - item: 用語と関連文書の一覧の id
+    constraint: 1 つのページに文書を 2 つ以上描いても重ならないよう、`mount` は用語の下線のツールチップと関連文書の一覧の題の `id` を、モジュールの通し番号でページの中で一意な値に振り直し、それを指す `aria-describedby`・`aria-details`・`aria-labelledby` も直す。`update` で振り直す。`render` の出力の `id` は文書の中で一意なまま
+    notes: タブの `mdmark-tabs-{n}`（`src/interact/tabs.ts` の `tabsCounter`）と同じ作り
 test_file: tests/integration/lib/mount.browser.test.ts
