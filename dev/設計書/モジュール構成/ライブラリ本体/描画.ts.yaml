@@ -63,9 +63,6 @@ data_models:
       - name: ownGlossary
         type: MdmarkGlossaryEntry[]
         description: 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す）
-      - name: termTips
-        type: 'Array<{ id: string; text: string; meaning?: string; docs?: Array<{ title: string; href: string; description?: string }> }>'
-        description: 下線を付けた用語のツールチップの中身（`termsRule` が足し、本文の末尾に書く）
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts

@@ -412,8 +412,8 @@ functions:
     container: src/render/syntax/terms.ts
     kind: 関数
     scope: internal
-    summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を用語の下線の要素に置き換える
-    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。下線の要素は `data-mdmark-term` に用語の番号を持ち、意味と関連文書は `env.termTips` に積んで本文の末尾に隠した `div` として書く。`glossary` と `backlinks` が両方オフのときは何もしない
+    summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を語とツールチップの組（`renderTermTip`）に置き換える
+    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。`glossary` と `backlinks` が両方オフのときは何もしない
     args:
       - name: state
         type: StateCore
@@ -426,19 +426,20 @@ functions:
       - '#functions[buildDictionary]'
       - '#functions[findWords]'
       - '#functions[relativeHref]'
+      - '#functions[renderTermTip]'
     unit_tests:
       - name: test_terms_rule
         case: 正常
         summary: 節ごとに最初の 1 回だけ下線を付ける
         condition: 索引の用語 `印` と、2 つの節にそれぞれ 2 回ずつ `印` が出る本文
         mock: なし
-        expected: '`data-mdmark-term` の要素が 2 つで、各節の最初の語'
+        expected: '`mdmark-term-wrap` の要素が 2 つで、各節の最初の語の位置にあり、語の直後にツールチップがある'
       - name: test_terms_rule_skips_code_and_links
         case: 正常
         summary: コード・リンク・見出し・用語集の表の中の語には付けない
         condition: '`印` が行内のコード・リンクの文字・見出し・用語集の表にだけ出る本文'
         mock: なし
-        expected: '`data-mdmark-term` の要素が無い'
+        expected: '`mdmark-term-wrap` の要素が無い'
       - name: test_terms_rule_prefers_longer
         case: 正常
         summary: 重なる語は長い方に付ける
@@ -463,7 +464,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として足す
-    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks` の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
+    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
     args:
       - name: state
         type: StateCore
@@ -493,7 +494,7 @@ functions:
     container: src/parts/term-tip.ts
     kind: 関数
     scope: internal
-    summary: 語・意味・関連文書から、部品設計『用語のツールチップ』の HTML を返す
+    summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
     description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` で見出し `用語`・`関連文書` を付ける。文字はエスケープする
     args:
       - name: props
@@ -502,7 +503,7 @@ functions:
         description: 部品設計の引数
     returns:
       type: string
-      description: ツールチップの HTML
+      description: 語とツールチップの組の HTML
     unit_tests:
       - name: test_render_term_tip
         case: 正常
@@ -523,10 +524,10 @@ functions:
     container: src/parts/backlinks.ts
     kind: 関数
     scope: internal
-    summary: 文書の題・リンク先・説明の並びから、部品設計『関連文書の一覧』の HTML を返す
+    summary: 題の要素の `id` と文書の題・リンク先の並びから、部品設計『関連文書の一覧』の HTML を返す。`docs` が空なら空文字
     args:
       - name: props
-        type: '{ docs: { title: string; href: string; description?: string }[] }'
+        type: '{ id: string; docs: { title: string; href: string }[] }'
         required: true
         description: 部品設計の引数
     returns:
@@ -538,7 +539,13 @@ functions:
         summary: 題 `関連文書` と項目を並びのとおりに返す
         condition: 部品設計『関連文書の一覧』の `Two` の引数
         mock: なし
-        expected: 見出しが `関連文書`、リンクが 2 つで並びが引数のとおり
+        expected: 題が `関連文書` で `id` が `backlinks-two`、`nav` の `aria-labelledby` が `backlinks-two` を指し、リンクが 2 つで並びが引数のとおり
+      - name: test_render_backlinks_when_empty
+        case: 正常
+        summary: 文書が無ければ空文字を返す
+        condition: '`docs` が `[]`'
+        mock: なし
+        expected: '`""`'
     refs:
       - dev/設計書/部品設計/関連文書の一覧.ts#
   - name: attachTermTips
@@ -547,7 +554,7 @@ functions:
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
-    description: 下線とツールチップの `id` をページで一意に振り直し、`aria-describedby`（意味だけ）か `aria-details`（関連文書あり）でつなぐ。ポインターを載せたとき・フォーカスしたときに開き、離れたとき・Esc で閉じる。関連文書のあるツールチップは Tab でリンクへ移れ、ツールチップから出たら閉じる。印刷の前は下線とツールチップを外す（`beforeprint` / `afterprint`）。返す関数で付けた操作を外す
+    description: 用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。ポインターを載せたとき・フォーカスしたときに開き、離れたとき・Esc で閉じる。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れ、ツールチップから出たら閉じる。印刷の前は下線とツールチップを外す（`beforeprint` / `afterprint`）。返す関数で付けた操作を外す
     args:
       - name: root
         type: HTMLElement
