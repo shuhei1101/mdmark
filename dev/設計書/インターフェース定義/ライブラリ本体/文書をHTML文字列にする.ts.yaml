@@ -237,6 +237,30 @@ flows:
       - 印の位置に `<div class="mdmark-embed" data-mdmark-slot="greet" data-mdmark-args="world lang=ja" role="status">図を読み込んでいます</div>` がある
       - '`load` と `validate` が 1 回も呼ばれていない'
     test: test_normal_when_extension_mark
+  - name: 正常系（索引と参照の表）
+    summary: 用語の意味・関連文書・末尾の関連文書の一覧を、スクリプト無しで読める HTML 文字列にする
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 索引と参照の表
+        description: '`mount` の「正常系（被参照の一覧）」と同じ索引と参照の表に、用語 `ワークスペース` を足したもの'
+        notes: '`opts.docId` は `arch`'
+      - name: 用語が出る Markdown
+        description: 段落に `ワークスペース` と `公開関数` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { index, docId, references })
+        M-->>C: HTML 文字列
+    expected:
+      - '`ワークスペース` と `公開関数` が class `mdmark-term` の要素で、その隣に意味 `話し合いの記録を置くフォルダ` と関連文書 `API` を持つ要素がある'
+      - 文字列の末尾に、題 `関連文書` の一覧がある
+      - 文字列に `script` 要素と印の文字（`<!--`）が無い
+      - Node とブラウザで同じ文字列を返す
+    test: test_normal_when_index
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -255,6 +279,24 @@ request:
     default: なし（全てのキーに既定を当てる）
     location: argument
     description: '`mount` の `opts.config` と同じ。この操作が読むのは `features`（記法の機能のオン・オフ）と `libraries` の名前（どの印を印の場所の要素にするか）だけ'
+  - name: opts.index
+    type: MdmarkIndex
+    required: false
+    default: なし
+    location: argument
+    description: '`mount` の `opts.index` と同じ'
+  - name: opts.docId
+    type: string
+    required: false
+    default: なし
+    location: argument
+    description: '`mount` の `opts.docId` と同じ'
+  - name: opts.references
+    type: MdmarkReferences
+    required: false
+    default: なし
+    location: argument
+    description: '`mount` の `opts.references` と同じ'
 response:
   - name: '-'
     type: string

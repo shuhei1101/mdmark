@@ -1,0 +1,141 @@
+title: "索引を点検する"
+entry:
+  kind: operation
+  value: '`checkIndex(input)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: ずれの無い索引と文書で空の一覧を返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、`checkIndex` を呼ぶ
+      - name: ずれの無い索引と文書
+        description: 文書 `arch`（`arch.md`）・`api`（`api.md`、`related` に `arch`）と用語 1 つを持つ索引と、`arch.md`・`api.md` だけの `documents`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: 索引の形・文書の対応・related・用語を確かめる
+        M-->>C: []
+    expected:
+      - 戻り値が `[]`
+    test: test_normal
+  - name: 正常系（ずれがある）
+    summary: 消えた文書・索引に無い文書・切れた `id`・用語の重複を返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ。`indexFile` に `docs/index.yaml` を渡す
+      - name: ずれを持つ索引と文書
+        description: 索引は `docs[0]` が `api`（`api.md`、`related` に `gone`）、`docs[1]` が `old`（`old.md`）、`docs[2]` が `guide`（`guide.md`）、`terms` に語 `ワークスペース` の用語 2 つ。`documents` は `api.md`・`guide.md`・`new.md` で、`api.md` の用語集の表が `ワークスペース` と `印`、`guide.md` の用語集の表が `印` を入れる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents, indexFile })
+        M->>M: 文書の対応・related・用語を確かめる
+        M-->>C: ずれの一覧
+    expected:
+      - '`{ file: "docs/index.yaml", where: "docs[1].path", kind: "missing_doc" }` の行がある'
+      - '`{ file: "new.md", where: "", kind: "orphan_doc" }` の行がある'
+      - '`{ file: "docs/index.yaml", where: "docs[0].related[0]", kind: "broken_ref" }` の行があり、`message` に `gone` がある'
+      - '`kind` が `duplicate_term` の行が 3 つ（索引の `terms` どうしの `ワークスペース`、索引と `api.md` の表の `ワークスペース`、`api.md` と `guide.md` の表の `印`）'
+      - 行の並びが `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term`
+    test: test_normal_when_drift
+  - name: 正常系（Schema に合わない索引）
+    summary: 合わないところごとに `schema` のずれを返し、例外を投げない
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: Schema に合わない索引
+        description: '`schema` を持たず、`docs[1]` が `path` を持たない索引。`documents` は `docs[0]` の文書だけ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: 索引の形を確かめる
+        M-->>C: schema のずれを持つ一覧
+    expected:
+      - 例外を投げない
+      - '`{ file: "index.yaml", where: "schema", kind: "schema" }` と `{ file: "index.yaml", where: "docs[1].path", kind: "schema" }` の行がある'
+      - '`docs[0]` の文書について、ほかの種類のずれが無い'
+    test: test_normal_when_invalid_schema
+lead: 使う側の処理（#9 の `mdmark check`・#11 の MCP の `check`）が、索引と、索引のフォルダにある文書の本文を渡して、索引と文書のずれの一覧を受け取る。ファイルを読むのは呼ぶ側で、mdmark は渡された値だけを確かめる。
+idempotent: true
+side_effects: なし（引数・索引・文書を書き換えない）
+request:
+  - name: input.index
+    type: unknown
+    required: true
+    location: argument
+    description: 使う側が索引の YAML を読んだ値。形を確かめる前の値をそのまま渡す
+    notes: 形は ER 図『索引』。合わないところを `schema` のずれで返す
+  - name: input.documents
+    type: Record<string, string>
+    required: true
+    location: argument
+    description: 索引のフォルダにある文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表
+    notes: どのファイルを文書として渡すか（拡張子・除外）は呼ぶ側が決める
+  - name: input.indexFile
+    type: string
+    required: false
+    default: '`index.yaml`'
+    location: argument
+    description: ずれの `file` に出す索引のファイルの名前
+    example: docs/index.yaml
+response:
+  - name: '[]'
+    type: MdmarkIndexIssue[]
+    description: ずれの一覧。ずれが無ければ空
+    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` の順、同じ種類の中は索引の並びとパスの順
+  - name: '[].file'
+    type: string
+    description: ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス
+    example: docs/index.yaml
+  - name: '[].where'
+    type: string
+    description: 索引のキーのパス（`docs[3].path`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
+    example: docs[3].path
+  - name: '[].kind'
+    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term'"
+    description: ずれの種類
+    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`duplicate_term` は用語の重複'
+  - name: '[].message'
+    type: string
+    description: ずれの内容と直し方。日本語の 1 文
+    example: '`設計/旧.md` が見つかりません。文書を戻すか、索引の `docs[3]` を消してください。'
+response_example: |-
+  ```json
+  [
+    { "file": "docs/index.yaml", "where": "docs[1].path", "kind": "missing_doc", "message": "`old.md` が見つかりません。文書を戻すか、索引の `docs[1]` を消してください。" },
+    { "file": "new.md", "where": "", "kind": "orphan_doc", "message": "`new.md` が索引にありません。索引の `docs` に足してください。" }
+  ]
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: ずれの一覧を返す（ずれが無ければ空）
+  - name: なし（Schema に合わない索引）
+    condition: '`index` が Schema に合わない'
+    notes: 例外を投げず、合わないところごとに `schema` のずれを返す。読めた文書・用語でほかのずれも確かめる
+constraints:
+  - item: 実行する環境
+    constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
+  - item: Schema の検査
+    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする'
+    notes: 検査の仕方（ライブラリを使うか）はモジュール構成設計で決める
+  - item: 文書の対応
+    constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する
+  - item: 用語の重複
+    constraint: 索引の `terms` どうし・索引の `terms` と用語集の表・用語集の表どうしで、語か別名が同じ文字のものを、重なり 1 組ごとに 1 つの `duplicate_term` にする
+    notes: 用語集の表は `collectReferences` と同じ読み方で拾う
+  - item: 上限
+    constraint: 制限なし（渡された全ての文書を確かめる）
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
+  - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#

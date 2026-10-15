@@ -1,0 +1,113 @@
+title: "ER 図: 索引"
+lead: 使う側が文書のメタデータと用語を書く YAML の索引。場所は設定の `index` で決め、使う側が読んだオブジェクトを `mount`・`render`・`collectReferences`・`checkIndex` に渡す。形は `schemas/mdmark.index.schema.json`（JSON Schema draft 2020-12）で縛る。
+overview: 'データストアは YAML の 1 ファイル。最上位は `schema`（索引の版。整数で今は `1`、必須）・`docs`（文書の並び、必須）・`terms`（用語の並び、任意）の 3 つのキーを持ち、ほかのキーは拒む。索引の版を上げる移行は #10 が持つ'
+er:
+  entities:
+    - name: 文書
+    - name: 用語
+  relations:
+    - from: 文書
+      to: 文書
+      cardinality: '}o--o{'
+      label: related
+tables:
+  - name: docs
+    title: 文書
+    datastore: YAML
+    summary: 索引に載せた文書 1 つのメタデータ
+    primary_key: id
+    scale: ~1000
+    access: 全件
+    columns:
+      - name: id
+        title: ID
+        type: string
+        not_null: true
+        primary_key: true
+        unique: true
+        check: 空でない
+        description: 文書の ID。索引の `docs` の中で一意
+        example: arch
+      - name: path
+        title: パス
+        type: string
+        not_null: true
+        unique: true
+        check: 空でない。区切りは `/`
+        description: 文書のパス。索引のファイルからの相対パス
+        example: 設計/arch.md
+      - name: title
+        title: 題
+        type: string
+        not_null: true
+        check: 空でない
+        description: 文書の題。関連文書のリンクの文字に出す
+        example: アーキテクチャ
+      - name: description
+        title: 概要
+        type: string
+        description: 1 文の概要。ツールチップの関連文書と MCP の `find_docs`（#11）に出す
+        example: 全体の構成と依存の向き
+      - name: aliases
+        title: 別名
+        type: array
+        default: '`[]`'
+        description: 本文での呼び名。本文に出たら、その語のツールチップの関連文書にこの文書を出し、被参照にも数える
+        example: '[構成図]'
+        notes: 要素は空でない文字列
+      - name: tags
+        title: タグ
+        type: array
+        default: '`[]`'
+        description: タグ。MCP の `find_docs`（#11）が絞り込みに使う
+        example: '[設計]'
+        notes: 要素は空でない文字列
+      - name: related
+        title: 関連する文書
+        type: array
+        default: '`[]`'
+        foreign_key:
+          table: docs.id
+        description: 関連する文書の `id`。この文書からその文書への参照として数える
+        example: '[api]'
+        notes: 索引に無い `id` は `checkIndex` が `broken_ref` で知らせる
+  - name: terms
+    title: 用語
+    datastore: YAML
+    summary: 索引に載せた用語 1 つ。本文に出たら意味のツールチップを付ける
+    primary_key: id
+    scale: ~1000
+    access: 全件
+    columns:
+      - name: id
+        title: ID
+        type: string
+        not_null: true
+        primary_key: true
+        unique: true
+        check: 空でない
+        description: 用語の ID。索引の `terms` の中で一意。節ごとに最初の 1 回を数える単位
+        example: workspace
+      - name: term
+        title: 用語
+        type: string
+        not_null: true
+        check: 空でない
+        description: 用語の語
+        example: ワークスペース
+      - name: aliases
+        title: 別名
+        type: array
+        default: '`[]`'
+        description: 別名。本文に出たら用語と同じツールチップを出す
+        example: '[WS]'
+        notes: 要素は空でない文字列
+      - name: meaning
+        title: 意味
+        type: string
+        not_null: true
+        check: 空でない
+        description: 意味。ツールチップの「用語」に出す
+        example: 話し合いの記録を置くフォルダ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#

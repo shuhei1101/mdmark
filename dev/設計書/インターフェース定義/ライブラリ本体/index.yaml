@@ -10,3 +10,7 @@ items:
     summary: 画面を持たずに Markdown を HTML 文字列にする（render）
   - page: 拡張を登録する.ts.yaml
     summary: 使う側が、自分の印とその印を描くモジュールの読み方を登録する（registerExtension）
+  - page: 参照の表を作る.ts.yaml
+    summary: 索引と全ての文書の本文から、被参照と用語集の表の用語をまとめた参照の表を作る（collectReferences）
+  - page: 索引を点検する.ts.yaml
+    summary: 索引と文書の本文から、索引と文書のずれの一覧を返す（checkIndex）
