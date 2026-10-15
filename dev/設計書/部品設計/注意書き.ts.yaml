@@ -45,7 +45,7 @@ states:
       - name: open
         value: 'true'
   - name: Long
-    description: 本文に複数の段落とコードブロックを持つ
+    description: 本文に複数の段落とコードブロックを持つ（ストーリーの引数 `body` に 2 つの段落とコードブロックの HTML を渡す）
     args:
       - name: kind
         value: note
