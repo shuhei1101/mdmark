@@ -61,4 +61,10 @@ layers:
   - name: 外部疎通テスト
     run_all: 未確定
   - name: lint
-    run_all: 未確定
+    description: Biome の check（lint と整形）と、tsc の型検査
+    prerequisites:
+      - '`npm ci` で依存を入れてある'
+    run_all: |-
+      ```bash
+      npm run lint && npm run typecheck
+      ```
