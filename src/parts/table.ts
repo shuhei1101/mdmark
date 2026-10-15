@@ -66,6 +66,10 @@ export type TableToolsOptions = {
   open?: boolean;
   /** 当てている絞り込み */
   value?: FilterValue | undefined;
+  /** ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決める） */
+  pinVisible?: boolean;
+  /** この列までを留めているか */
+  pinPressed?: boolean;
 };
 
 /** タグを除いた文字を取り出す */
@@ -102,7 +106,16 @@ export function renderTableTools(options: TableToolsOptions): {
   header: string;
   drawer: string;
 } {
-  const { id, column, label, features, filter, active = false } = options;
+  const {
+    id,
+    column,
+    label,
+    features,
+    filter,
+    active = false,
+    pinVisible = false,
+    pinPressed = false,
+  } = options;
   const open = options.open ?? false;
   const escapedLabel = escapeHtml(label);
   const controls = drawerId(id, column);
@@ -114,7 +127,7 @@ export function renderTableTools(options: TableToolsOptions): {
     ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="「${escapedLabel}」で絞り込む" aria-expanded="${open}" aria-controls="${escapeHtml(controls)}"><span class="mdmark-visually-hidden">${active ? "（絞り込み中）" : ""}</span></button>`
     : "";
   const pinButton = features.includes("pin")
-    ? `<button class="mdmark-pin" type="button" aria-label="「${escapedLabel}」までを左端に留める" aria-pressed="false" hidden></button>`
+    ? `<button class="mdmark-pin" type="button" aria-label="「${escapedLabel}」までを左端に留める" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>`
     : "";
   const tools =
     filterButton || pinButton
@@ -188,6 +201,8 @@ function renderTableBody(options: TableOptions, id: string): string {
         active: isActive(value),
         open: options.openFilter === index,
         value,
+        pinVisible: options.overflow === true,
+        pinPressed: pinned > 0 && index === pinned - 1,
       });
       drawers.push(tools.drawer);
       const sorted =
