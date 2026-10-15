@@ -585,3 +585,16 @@ constants:
     value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "string[]", required: false }, related: { type: "string[]", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false } } }'
     refs:
       - dev/設計書/ER図/索引#
+test_files:
+  - tests/unit/src/knowledge/index-shape.test.ts
+  - tests/unit/src/knowledge/paths.test.ts
+  - tests/unit/src/knowledge/dictionary.test.ts
+  - tests/unit/src/knowledge/dictionary.browser.test.ts
+  - tests/unit/src/knowledge/references.test.ts
+  - tests/unit/src/knowledge/check.test.ts
+  - tests/unit/src/render/syntax/glossary.test.ts
+  - tests/unit/src/render/syntax/terms.test.ts
+  - tests/unit/src/render/syntax/backlinks.test.ts
+  - tests/unit/src/parts/term-tip.test.ts
+  - tests/unit/src/parts/backlinks.test.ts
+  - tests/unit/src/interact/terms.browser.test.ts
