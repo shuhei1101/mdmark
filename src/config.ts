@@ -23,7 +23,20 @@ export type ResolvedConfig = {
 };
 
 /** この版が知っている機能とその既定 */
-export const DEFAULT_FEATURES: Record<string, boolean> = { print: true };
+export const DEFAULT_FEATURES: Record<string, boolean> = {
+  print: true,
+  table: true,
+  callout: true,
+  tabs: true,
+  steps: true,
+  tree: true,
+  badge: true,
+  toc: true,
+  anchors: true,
+  sections: true,
+  "row-details": true,
+  figures: true,
+};
 
 /** 印の名前から `LibraryEntry` を引く既定の対応表 */
 export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
