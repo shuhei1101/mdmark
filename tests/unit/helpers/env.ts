@@ -20,6 +20,7 @@ export function createEnv(overrides: Partial<RenderEnv> = {}): RenderEnv {
     features: {},
     headings: [],
     nonce: NONCE,
+    ownGlossary: [],
     ...overrides,
   };
 }
