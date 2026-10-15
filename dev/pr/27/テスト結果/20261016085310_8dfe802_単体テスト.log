@@ -7,8 +7,8 @@ $ npm run test:unit
  RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-metadata-index-glossary-backlinks
 
 
- Test Files  55 passed (55)
-      Tests  195 passed (195)
-   Start at  08:30:17
-   Duration  16.97s (import 49%, tests 36%, worker 8%, transform 7%)
+ Test Files  56 passed (56)
+      Tests  198 passed (198)
+   Start at  08:53:15
+   Duration  14.64s (import 44%, tests 35%, worker 14%, transform 7%)
 
