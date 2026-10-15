@@ -495,7 +495,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
-    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` で見出し `用語`・`関連文書` を付ける。文字はエスケープする
+    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。文字はエスケープする
     args:
       - name: props
         type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[] }'
@@ -510,7 +510,7 @@ functions:
         summary: 部品設計の状態ごとに HTML を返す
         condition: 部品設計『用語のツールチップ』の `TermOnly`・`DocsOnly`・`Both` の引数
         mock: なし
-        expected: '`role` と見出しが状態のとおり'
+        expected: '`role` が状態のとおりで、`TermOnly` は見出し `用語` だけ、`DocsOnly` は `関連文書` だけ、`Both` は `用語` → `関連文書` の順。どの状態も `hidden` を持たない'
       - name: test_render_term_tip_escapes
         case: 正常
         summary: 意味と題をエスケープする
@@ -554,7 +554,7 @@ functions:
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
-    description: 用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。ポインターを載せたとき・フォーカスしたときに開き、離れたとき・Esc で閉じる。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れ、ツールチップから出たら閉じる。印刷の前は下線とツールチップを外す（`beforeprint` / `afterprint`）。返す関数で付けた操作を外す
+    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、下に収まらないときは `is-above` も付けて画面に対して置く。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-above`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
     args:
       - name: root
         type: HTMLElement
@@ -568,14 +568,14 @@ functions:
       - name: test_attach_term_tips
         case: 正常
         summary: フォーカスで開き Esc で閉じる
-        condition: 用語の下線 1 つを持つ要素
-        mock: なし（jsdom）
-        expected: フォーカスで `hidden` が外れ、Esc で戻る
+        condition: 意味だけの用語の語とツールチップの組 1 つを持つ要素
+        mock: なし（Chromium）
+        expected: 付けた直後は `mdmark-term-wrap` が `is-open` を持たず、語のフォーカスで `is-open` を持ち、Esc で `is-open` が外れて `is-dismissed` を持ち、フォーカスは語に残る。外す関数の後はどの class も残らない
       - name: test_attach_term_tips_unique_ids
         case: 正常
         summary: 同じページに 2 回描いても `id` が重ならない
         condition: 同じ HTML を 2 つの要素に入れて両方に付ける
-        mock: なし（jsdom）
+        mock: なし（Chromium）
         expected: ページの `id` が全て一意で、`aria-describedby` が同じ要素の中のツールチップを指す
 constants:
   - name: INDEX_SHAPE
