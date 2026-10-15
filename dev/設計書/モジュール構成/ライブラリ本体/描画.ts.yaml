@@ -146,7 +146,7 @@ functions:
         summary: 設定を渡さなくても本文の HTML を返す
         condition: '`# 見出し` だけの Markdown、`opts` 無し'
         mock: なし
-        expected: '`<h1>見出し</h1>` を含む文字列'
+        expected: 文字が `見出し` の `h1` を含む文字列
   - name: renderDocument
     title: 文書を描く
     container: src/render/index.ts

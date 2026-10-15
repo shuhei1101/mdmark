@@ -138,13 +138,13 @@ functions:
         summary: 要素に本文を描き、class を付ける
         condition: '`# 見出し` を描く'
         mock: なし
-        expected: '`el` が class `mdmark` を持ち、中に `<h1>見出し</h1>` がある。戻り値が `update` と `destroy` を持つ'
+        expected: '`el` が class `mdmark` を持ち、中に文字が `見出し` の `h1` がある。戻り値が `update` と `destroy` を持つ'
       - name: test_mount_when_updated
         case: 正常
         summary: '`update` で本文だけを描き直す'
         condition: '`# A` を描いた後、`update("# B")`'
         mock: なし
-        expected: '`el` の中が `<h1>B</h1>` だけで、class `mdmark` を持ったまま'
+        expected: '`el` の子が文字 `B` の `h1` 1 つだけで、class `mdmark` を持ったまま'
       - name: test_mount_when_destroyed
         case: 正常
         summary: '`destroy` で片付け、その後の `update` と 2 回目の `destroy` は何もしない'
