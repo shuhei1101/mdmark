@@ -1,0 +1,19 @@
+/* 拡張記法を描いた文書のモックの固有の規則: 使う側の拡張が印の場所に描いた見本 */
+
+/* mdmark の層: 拡張が描いた後の印の場所 */
+@layer mdmark {
+  /* 拡張が描いた後の印の場所: 読み込み中の破線を外し、拡張が描いた中身の高さに合わせる */
+  .mdmark .mdmark-embed-drawn {
+    min-height: 0;
+    padding: var(--mdmark-space);
+    border-style: solid;
+    color: var(--mdmark-color-text);
+  }
+}
+
+/* 使う側の拡張（greet）が描いた中身: mdmark の層の外で、使う側の CSS として当てる */
+.greet {
+  margin: 0;
+  font-size: 1.25em;
+  font-weight: 600;
+}

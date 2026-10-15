@@ -1,0 +1,54 @@
+title: Parts/Callout
+stories:
+  - name: Note
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: note
+  - name: Tip
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: tip
+  - name: Important
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: important
+  - name: Warning
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: warning
+  - name: Caution
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: caution
+  - name: Collapsed
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: warning
+      collapsed: true
+  - name: CollapsedOpened
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: warning
+      collapsed: true
+      open: true
+  - name: Long
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: note
+      body: '<p>1 つ目の段落です。注意書きの中でも、本文と同じ間隔で段落が続きます。</p><p>2 つ目の段落です。長い文は枠の幅で折り返し、枠の中に収まります。長い文は枠の幅で折り返し、枠の中に収まります。</p><pre tabindex="0" aria-label="コード: ts"><code class="language-ts">const note = &quot;コードブロックも枠の中に収まる&quot;;</code></pre>'

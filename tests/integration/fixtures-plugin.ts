@@ -6,7 +6,13 @@ const TEST_LIB_SOURCE = `export function draw(slot, args) {
 }
 `;
 
-/** 結合テストの開発サーバーに、外部ライブラリの代役 `/fixtures/test-lib.js` と、404 を返す `/fixtures/missing.js` を足す */
+// 拡張のモジュールの代役: `draw(slot, value)` で `slot` の文字を `value` の JSON にする
+const GREET_SOURCE = `export function draw(slot, value) {
+  slot.textContent = JSON.stringify(value);
+}
+`;
+
+/** 結合テストの開発サーバーに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js` と、404 を返す `/fixtures/missing.js` を足す */
 export function fixturesPlugin(): Plugin {
   return {
     name: "mdmark-fixtures",
@@ -14,6 +20,10 @@ export function fixturesPlugin(): Plugin {
       server.middlewares.use("/fixtures/test-lib.js", (_request, response) => {
         response.setHeader("Content-Type", "text/javascript; charset=utf-8");
         response.end(TEST_LIB_SOURCE);
+      });
+      server.middlewares.use("/fixtures/greet.js", (_request, response) => {
+        response.setHeader("Content-Type", "text/javascript; charset=utf-8");
+        response.end(GREET_SOURCE);
       });
       server.middlewares.use("/fixtures/missing.js", (_request, response) => {
         response.statusCode = 404;

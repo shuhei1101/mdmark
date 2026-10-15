@@ -1,0 +1,83 @@
+/* 拡張記法の印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる。
+   折り畳み・節・行の詳細を開くのは印刷の前のスクリプト（syntax.js）が受け持つ */
+
+/* mdmark の層: 印刷のときの拡張記法 */
+@layer mdmark {
+  .mdmark {
+    /* 紙では押せない操作（絞り込み・ピン止め・行の詳細の開閉・見出しのアンカー・開閉の印）: 出さない */
+    :is(.mdmark-filter, .mdmark-filter-drawer, .mdmark-pin, .mdmark-row-toggle, .mdmark-anchor, .mdmark-disclosure, .mdmark-section-toggle .mdmark-icon) {
+      display: none;
+    }
+
+    /* 並べ替えのボタン: 向きのアイコンを外し、列名だけを出す */
+    .mdmark-sort .mdmark-icon {
+      display: none;
+    }
+
+    /* 表: 高さの上限と、見出し行・ピン止めした列を留める指定を外し、全ての行を紙に出す */
+    .mdmark-table table {
+      max-height: none;
+
+      /* セル: 留める指定と、描く処理が付けた列の最小の幅（style 属性）を外し、余白を詰めて列の多い表も紙の幅に収める */
+      :is(th, td) {
+        position: static;
+        min-width: 0 !important;
+        padding: 0.35em 0.5em;
+      }
+
+      /* ピン止めした列: 紙では横にスクロールしないので留めない */
+      :is(th, td).is-pinned-col {
+        position: static;
+      }
+
+      /* ピン止めした最後の列: 境目の線を外す */
+      td.is-pinned-edge {
+        box-shadow: none;
+      }
+
+      /* 見出し行: ピン止めの境目の線を外し、上下の線だけを残す */
+      thead th.is-pinned-edge {
+        box-shadow:
+          inset 0 1px var(--mdmark-color-border),
+          inset 0 -2px var(--mdmark-color-border);
+      }
+    }
+
+    /* 行の詳細の中身: 紙では表が横にスクロールしないので、見えている幅の上限と左端に留める指定を外す */
+    .mdmark-row-detail > td > * {
+      position: static;
+      max-width: none;
+    }
+
+    /* 閉じた表・閉じた注意書きの見出し: 開閉の印を外す */
+    :is(.mdmark-table-details, details.markdown-alert) > summary {
+      list-style: none;
+    }
+
+    /* タブの並び: 紙では選べないので出さない */
+    .mdmark-tablist {
+      display: none;
+    }
+
+    /* タブの中身: 選んでいない中身も全て縦に並べ、間を区切り線で分ける */
+    [role="tabpanel"] {
+      display: block;
+      padding: calc(var(--mdmark-space) * 0.75) var(--mdmark-space);
+
+      & + [role="tabpanel"] {
+        border-block-start: 1px solid var(--mdmark-color-border);
+      }
+    }
+
+    /* タブの中身の題: タブ名を題にして出す */
+    .mdmark-tab-title {
+      display: block;
+    }
+
+    /* 注意書き・タブ・ステップ・ファイルツリー・目次・書き方の警告: 改ページで切らない */
+    :is(.markdown-alert, .mdmark-steps > li, .mdmark-tree, .mdmark-toc, .mdmark-syntax-warning, .mdmark-figure) {
+      break-inside: avoid;
+    }
+  }
+}

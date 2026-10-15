@@ -11,7 +11,73 @@
       "properties": {
         "print": {
           "title": "印刷の機能",
-          "description": "印刷の前に閉じた折り畳みを開き、印刷の後に戻す。",
+          "description": "印刷の前に閉じた折り畳みと、タブ・閉じた節・行の詳細を開き、印刷の後に戻す。",
+          "type": "boolean",
+          "default": true
+        },
+        "table": {
+          "title": "表の機能",
+          "description": "表の印と、印で囲まない表に、種類ごとの並べ替え・ピン止め・絞り込みと開閉を付ける。オフのときは表の印を取り除いて普通の表を描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "callout": {
+          "title": "注意書きの機能",
+          "description": "1 行目が `[!NOTE]` などの引用を、種類ごとの題・色・アイコンを持つ枠にする。オフのときは引用のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "tabs": {
+          "title": "タブの機能",
+          "description": "`<!-- tabs -->` の範囲を見出しで区切ったタブにする。オフのときは範囲の中身をそのまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "steps": {
+          "title": "ステップの機能",
+          "description": "`<!-- steps -->` の範囲の番号付きリストを手順にする。オフのときは番号付きリストのまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "tree": {
+          "title": "ファイルツリーの機能",
+          "description": "言語 `tree` のコードブロックをフォルダとファイルのツリーにする。オフのときはコードブロックのまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "badge": {
+          "title": "バッジの機能",
+          "description": "頭に `badge:` を付けた行内のコードを札にする。オフのときは行内のコードのまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "toc": {
+          "title": "目次の機能",
+          "description": "`<!-- toc -->` の場所に h2〜h3 の目次を置く。オフのときは印を取り除く。",
+          "type": "boolean",
+          "default": true
+        },
+        "anchors": {
+          "title": "見出しのアンカーの機能",
+          "description": "見出しに、見出しの ID へのリンクを付ける。オフのときもリンクを付けないだけで、見出しの ID は付ける。",
+          "type": "boolean",
+          "default": true
+        },
+        "sections": {
+          "title": "節の開閉の機能",
+          "description": "h2〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く。",
+          "type": "boolean",
+          "default": true
+        },
+        "row-details": {
+          "title": "行の詳細の機能",
+          "description": "`<!-- row-detail -->` の範囲を表の行の下に開閉して出す。オフのときは範囲の中身を表の後の本文として描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "figures": {
+          "title": "図表の番号の機能",
+          "description": "`<!-- fig -->` の直後の図と表に番号を付け、`#fig-ID` へのリンクの文字を番号にする。オフのときは印を取り除き、リンクの文字を変えない。",
           "type": "boolean",
           "default": true
         }
@@ -20,7 +86,18 @@
         "type": "boolean"
       },
       "default": {
-        "print": true
+        "print": true,
+        "table": true,
+        "callout": true,
+        "tabs": true,
+        "steps": true,
+        "tree": true,
+        "badge": true,
+        "toc": true,
+        "anchors": true,
+        "sections": true,
+        "row-details": true,
+        "figures": true
       }
     },
     "libraries": {

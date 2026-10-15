@@ -1,0 +1,44 @@
+title: "ステップ"
+implementation: "src/parts/steps.ts#renderSteps"
+story: "Parts/Steps"
+test_file: tests/integration/lib/steps.story.test.ts
+states:
+  - name: Basic
+    description: 3 つの手順
+    args:
+      - name: items
+        value: '["配布物を読み込む","描く先の要素を用意する","mount を呼ぶ"]'
+  - name: Rich
+    description: 手順の中にコードブロックと入れ子のリストを持つ。入れ子の番号付きリストは手順にしない
+    args:
+      - name: items
+        value: '["<p>依存を入れる</p><pre><code>npm ci</code></pre>","<p>確かめる</p><ol><li>lint</li><li>型検査</li></ol>"]'
+  - name: Long
+    description: 項目の文が長く折り返す。線が項目の高さに合わせて伸びる
+    args:
+      - name: items
+        value: '["とても長い手順の説明で、画面の幅を超えて何行かに折り返すときに、番号と線の位置がずれないことを確かめる","短い手順"]'
+lead: '`<!-- steps -->` の範囲の番号付きリストを、番号と項目をつなぐ線を持つ手順にする。'
+args:
+  - name: items
+    type: 配列
+    required: true
+    description: 手順の項目の HTML。書いた順に `li` に入れる
+  - name: start
+    type: 整数
+    required: false
+    default: '1'
+    description: 最初の番号（Markdown の番号付きリストの始まりの番号）。`ol` の `start` に入れる
+css_properties:
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#d1d9e0（ダーク #3d444d）'
+    description: 番号の丸と、番号をつなぐ線の色
+accessibility:
+  - 手順は `ol` のままで、読み上げが項目の数と番号を読む
+  - 番号の丸と線は CSS で描き、読み上げに含めない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
+status: planned
+notes:
+  HTML: '`<ol class="mdmark-steps" start="{start}"><li>{項目}</li></ol>`（`start` が 1 のときは属性を省く）。モックは `dev/mock/components/steps/`'

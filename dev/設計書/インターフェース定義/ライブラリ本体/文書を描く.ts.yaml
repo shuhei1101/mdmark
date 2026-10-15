@@ -302,15 +302,181 @@ flows:
       - '`mount` が例外を投げない'
       - '`console.error` が 1 回呼ばれ、引数に印の名前 `test-lib`・URL・元のエラーを含む'
     test: test_error_when_library_not_found
+  - name: 正常系（表を並べ替えて絞り込む）
+    summary: 表の見出しで並べ替えを 3 状態で切り替え、絞り込みのドロワーで絞って外す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 表を持つ Markdown
+        description: '`<!-- table: data filter=名前 -->` 〜 `<!-- /table -->` で、列 `名前`・`値` に `りんご`/`10`・`みかん`/`2`・`りんご飴`/`33` の 3 行を持つ表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 並べ替えと絞り込みのボタンを付けた表を描く
+        P->>M: 値の列の見出しを 3 回押す
+        M->>P: 昇順・降順・元の並びに並べ替える
+        P->>M: 名前の列の絞り込みのボタンを押し、りんごを選ぶ
+        M->>P: りんごの行だけを出す
+        P->>M: 絞り込みを外すを押す
+        M->>P: 3 行を出す
+    expected:
+      - 1 回目の後、値の列が上から `2`・`10`・`33` で、値の列の `th` の `aria-sort` が `ascending`
+      - 2 回目の後、値の列が上から `33`・`10`・`2` で、`aria-sort` が `descending`
+      - 3 回目の後、値の列が上から `10`・`2`・`33` で、`th` が `aria-sort` を持たない
+      - 絞り込みのボタンは名前の列の見出しにだけある
+      - ボタンを押した後、ボタンの `aria-expanded` が `true` で、ドロワーが `hidden` を持たず、候補の検索欄にフォーカスがある
+      - '`りんご` を選んだ後、表に出ている行が `りんご` の 1 行だけ'
+      - 「絞り込みを外す」を押した後、チェックボックスが全て外れ、表に 3 行とも出ている
+      - ドロワーの外を押した後、ドロワーが `hidden` を持ち、ボタンの `aria-expanded` が `false`
+    test: test_normal_when_table_sorted_and_filtered
+  - name: 正常系（表をピン止めする）
+    summary: はみ出す表にだけピン止めのボタンを出し、押した列までを左端に留める
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 320px
+      - name: 表を持つ Markdown
+        description: 印で囲まない 10 列 30 行の表と、印で囲まない 2 列 2 行の表を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: はみ出す表の見出しにだけピン止めのボタンを出す
+        P->>M: 2 列目のピン止めを押す
+        M->>P: 1・2 列目を左端に留める
+        P->>M: 2 列目のピン止めをもう一度押す
+        M->>P: 留めを外す
+    expected:
+      - 10 列の表の各列の見出しに、`hidden` を持たないピン止めのボタンがある
+      - 2 列の表には、表示されたピン止めのボタンが無い
+      - 押した後、ボタンの `aria-pressed` が `true` で、1・2 列目のセルの `position` の計算値が `sticky`、3 列目は `sticky` でない
+      - もう一度押した後、`aria-pressed` が `false` で、1・2 列目のセルが `sticky` でない
+      - 見出し行の `th` の `position` の計算値が、ピン止めの前後とも `sticky`
+    test: test_normal_when_table_pinned
+  - name: 正常系（タブを切り替える）
+    summary: タブの範囲にタブの並びを付け、押すか矢印キーで切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: タブを持つ Markdown
+        description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` の中に `### macOS`・`### Windows`・`### Linux` とそれぞれの段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: タブの並びを付け、最初のタブを選ぶ
+        P->>M: Windows のタブを押す
+        M->>P: Windows の中身だけを出す
+        P->>M: 右の矢印キーを押す
+        M->>P: Linux のタブに移って選ぶ
+    expected:
+      - '`role="tablist"` の中に `macOS`・`Windows`・`Linux` の `role="tab"` がある'
+      - 描いた直後、`macOS` のタブの `aria-selected` が `true` で、ほかの `role="tabpanel"` が `hidden` を持つ
+      - '`Windows` を押した後、`Windows` の `aria-selected` が `true` で、`Windows` の段落だけが出ている'
+      - 右の矢印キーの後、`Linux` のタブにフォーカスがあり、`aria-selected` が `true`
+    test: test_normal_when_tabs_switched
+  - name: 正常系（節と行の詳細を開閉する）
+    summary: '見出しで節を、行のボタンで行の詳細を開閉し、閉じた節の中への #ID でその節を開く'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 節と行の詳細を持つ Markdown
+        description: '`## 概要` と段落、直後に `<!-- section: closed -->` を持つ `## 補足` と段落と `### 注意`、直後に `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` を持つ 3 行の表を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い。URL の変更は `location.hash` を `#注意` にして `hashchange` を起こす
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 節の開閉と行の詳細のボタンを付け、補足と行の詳細を閉じる
+        P->>M: 概要の開閉を押す
+        M->>P: 概要を閉じる
+        P->>M: 2 行目の詳細のボタンを押す
+        M->>P: 行の詳細を開く
+        P->>M: hashchange（#注意）
+        M->>P: 補足を開く
+    expected:
+      - 描いた直後、`補足` の `mdmark-section-body` が `hidden="until-found"` を持ち、開閉のボタンの `aria-expanded` が `false`
+      - '`概要` の開閉を押した後、`概要` の中身が `hidden` を持ち、ボタンの `aria-expanded` が `false`'
+      - 行の詳細のボタンは 2 行目にだけあり、押した後、`mdmark-row-detail` の行が `hidden` を持たず、ボタンの `aria-expanded` が `true`
+      - '`hashchange` の後、`補足` の中身が `hidden` を持たず、ボタンの `aria-expanded` が `true`'
+    test: test_normal_when_sections_and_row_details_toggled
+  - name: 正常系（印刷の前に記法を開く）
+    summary: 印刷の前にタブの全ての中身と閉じた記法を開き、印刷の後に戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 記法を持つ Markdown
+        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書きを持つ文書'
+        notes: '`opts.config` は渡さない。印刷の前に 2 つ目のタブを選んでおく'
+      - name: Mock
+        description: 印刷は `window` へ `beforeprint`・`afterprint` のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: beforeprint
+        M->>P: タブの全ての中身と閉じた記法を開く
+        P->>M: afterprint
+        M->>P: 開いたものを閉じ直し、選んでいたタブだけを出す
+    expected:
+      - '`beforeprint` の後、タブの 2 つの `role="tabpanel"` がともに `hidden` を持たず、それぞれのタブ名の題が出ている'
+      - '`beforeprint` の後、節の中身・行の詳細の行が `hidden` を持たず、表と注意書きの `details` が `open` を持つ'
+      - '`afterprint` の後、選んでいた 2 つ目のタブの中身だけが出ていて、節・行の詳細・表・注意書きが閉じている'
+    test: test_normal_when_printed_with_syntax
+  - name: 正常系（本文を差し替えて操作を付け直す）
+    summary: '`update` の後も記法の操作が働き、`destroy` の後は `document` の受け取りが外れている'
+    setup:
+      - name: 文書を描いた要素
+        description: 表を並べ替えて絞り込む正常系の Markdown を `mount` で描き、絞り込みのドロワーを開いた要素
+      - name: 差し替える Markdown
+        description: 2 つの中身を持つタブの範囲だけを持つ文書
+      - name: Mock
+        description: '`document.removeEventListener` を、外した受け取りを数える関数で包む'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: update(markdown)
+        M->>M: 前の本文の操作と document の受け取りを外す
+        M->>P: 新しい本文にタブの操作を付ける
+        P->>M: 2 つ目のタブを押す
+        M->>P: 2 つ目の中身だけを出す
+        P->>M: destroy()
+        M->>M: 操作と受け取りを外す
+    expected:
+      - '`update` の後、開いていたドロワーの `document` の `pointerdown`・`keydown` の受け取りが外れている'
+      - 2 つ目のタブを押した後、そのタブの `aria-selected` が `true`
+      - '`destroy` の後、`window` へ `hashchange` を送っても例外が出ない'
+    test: test_normal_when_updated_with_syntax
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換える。`window` の `beforeprint`・`afterprint` を受け取る。文書に外部ライブラリの印があるとき、そのモジュールを `import()` で読む'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
   - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
   - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む#
   - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+  - dev/設計書/シナリオ/単一ユースケース/表を操作する#
+  - dev/設計書/シナリオ/単一ユースケース/注意書きを書く#
+  - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#
+  - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#
+  - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る#
+  - dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する#
+  - dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する#
+  - dev/設計書/シナリオ/単一ユースケース/拡張を登録して印を足す#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -332,10 +498,10 @@ request:
   - name: opts.config.features
     type: Record<string, boolean>
     required: false
-    default: '`{ print: true }`'
+    default: '全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。この Issue の機能は `print`（印刷の前に折り畳みを開く）
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`anchors`・`sections`・`row-details`・`figures`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -358,11 +524,11 @@ request_example: |-
 response:
   - name: update
     type: '(markdown: string) => void'
-    description: 本文だけを描き直す。設定は `mount` に渡したものを使う
+    description: 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う
     notes: '`destroy` の後は何もしない'
   - name: destroy
     type: () => void
-    description: '`el` の中を空にして class `mdmark` を外し、`beforeprint`・`afterprint` の受け取りを外す'
+    description: '`el` の中を空にして class `mdmark` を外し、記法の操作と `beforeprint`・`afterprint`・`hashchange`・`document` の受け取りを外す'
     notes: 2 回目以降は何もしない
 exceptions:
   - name: なし（正常終了）
@@ -390,4 +556,15 @@ constraints:
   - item: 対応ブラウザ
     constraint: Chrome 99・Firefox 97・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
+  - item: 表の操作
+    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く'
+  - item: タブの操作
+    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ'
+  - item: 節と行の詳細の開閉
+    constraint: 節は見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じた節の `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じた節の中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じた節の中に当たったときは、その節を開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを置き、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
+  - item: 印刷で記法を開く
+    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きを含む）・閉じた節・行の詳細を開き、タブの全ての中身をタブ名を題にして縦に並べる。`afterprint` で、開いたものだけを閉じ直し、印刷の前に選んでいたタブだけを出す'
+  - item: 拡張の印
+    constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
+    notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
 test_file: tests/integration/lib/mount.browser.test.ts

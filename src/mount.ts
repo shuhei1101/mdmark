@@ -1,4 +1,5 @@
 import { type MdmarkConfig, resolveConfig } from "./config.ts";
+import { attachInteractions } from "./interact/index.ts";
 import { loadLibraries } from "./libraries.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
@@ -28,7 +29,7 @@ const PRINT_FEATURE = "print";
 /** 描いた要素から、その `MountHandle` を引く。同じ要素への `mount` が前の描画を片付けるのに使う */
 const mounted = new WeakMap<HTMLElement, MountHandle>();
 
-/** 要素の中に文書を描き、外部ライブラリの印を描かせ、印刷の受け取りを付けて、描き直しと片付けの関数を返す */
+/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、印刷の受け取りを付けて、描き直しと片付けの関数を返す */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
@@ -38,15 +39,19 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let destroyed = false;
   // 今の文書で決まった機能のオン・オフ
   let features = config.features;
+  // 今の文書に付けた記法の操作を外す関数
+  let detachInteractions: (() => void) | undefined;
 
   /** 文書を描く */
   const draw = (markdown: string): void => {
     generation += 1;
     const current = generation;
+    detachInteractions?.();
     const rendered = renderDocument({ markdown, config });
     el.innerHTML = rendered.html;
     el.classList.add(ROOT_CLASS);
     features = rendered.features;
+    detachInteractions = attachInteractions({ root: el, features });
     // 読み込みの完了は待たない
     void loadLibraries({
       root: el,
@@ -71,6 +76,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         return;
       }
       destroyed = true;
+      detachInteractions?.();
       detachPrint();
       el.innerHTML = "";
       el.classList.remove(ROOT_CLASS);

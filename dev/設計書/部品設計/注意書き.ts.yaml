@@ -1,0 +1,86 @@
+title: "注意書き"
+implementation: "src/parts/callout.ts#renderCallout"
+story: "Parts/Callout"
+test_file: tests/integration/lib/callout.story.test.ts
+states:
+  - name: Note
+    description: 補足の注意書き
+    args:
+      - name: kind
+        value: note
+  - name: Tip
+    description: ヒントの注意書き
+    args:
+      - name: kind
+        value: tip
+  - name: Important
+    description: 重要の注意書き
+    args:
+      - name: kind
+        value: important
+  - name: Warning
+    description: 警告の注意書き
+    args:
+      - name: kind
+        value: warning
+  - name: Caution
+    description: 注意の注意書き
+    args:
+      - name: kind
+        value: caution
+  - name: Collapsed
+    description: 閉じた注意書き。題だけが出て、題の末尾に開閉の印がある
+    args:
+      - name: kind
+        value: warning
+      - name: collapsed
+        value: 'true'
+  - name: CollapsedOpened
+    description: 閉じた注意書きを開いた
+    args:
+      - name: kind
+        value: warning
+      - name: collapsed
+        value: 'true'
+      - name: open
+        value: 'true'
+  - name: Long
+    description: 本文に複数の段落とコードブロックを持つ（ストーリーの引数 `body` に 2 つの段落とコードブロックの HTML を渡す）
+    args:
+      - name: kind
+        value: note
+lead: 1 行目が `[!NOTE]` などの引用を、種類ごとの題・色・アイコンを持つ枠にする。末尾に `-` を付けた種類は、題を押して開閉する折り畳みにする。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`note`（題 `補足`）・`tip`（`ヒント`）・`important`（`重要`）・`warning`（`警告`）・`caution`（`注意`）'
+    description: 注意書きの種類。題・色・アイコンを決める。知らない種類は呼ぶ側が `note` にして渡す
+  - name: collapsed
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 折り畳みにするか（`[!WARNING]-` のように末尾に `-` を付けたとき）
+  - name: open
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`collapsed` が `true` のとき'
+    description: 折り畳みを開いた状態で出すか
+slots:
+  - name: default
+    description: 注意書きの本文（引用の 2 行目からの Markdown を HTML にしたもの）
+css_properties:
+  - name: --mdmark-color-callout-note
+    syntax: <color>
+    default: '#0969da（ダーク #4493f8）'
+    description: '`note` の枠の線・題・アイコンの色。`tip`（#1a7f37 / #3fb950）・`important`（#8250df / #ab7df8）・`warning`（#9a6700 / #d29922）・`caution`（#d1242f / #f85149）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
+accessibility:
+  - 種類は題の文言（補足・ヒント・重要・警告・注意）で伝え、色だけに頼らない
+  - アイコンは CSS で付け、読み上げに含めない
+  - 閉じた注意書きは `details` と `summary` で、キーボードで開閉できる
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[注意書き]
+status: planned
+notes:
+  HTML: '`<div class="markdown-alert markdown-alert-{kind}"><p class="markdown-alert-title">{題}</p>{本文}</div>`。`collapsed` のときは `<details class="markdown-alert markdown-alert-{kind}"><summary class="markdown-alert-title">{題}</summary>{本文}</details>`。題の文言は確認ログの決定（注意書きの題の文言）。モックは `dev/mock/components/callout/`'

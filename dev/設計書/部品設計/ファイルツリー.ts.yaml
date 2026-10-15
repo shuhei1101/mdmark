@@ -1,0 +1,43 @@
+title: "ファイルツリー"
+implementation: "src/parts/tree.ts#renderTree"
+story: "Parts/FileTree"
+test_file: tests/integration/lib/tree.story.test.ts
+states:
+  - name: Basic
+    description: フォルダとファイル
+    args:
+      - name: nodes
+        value: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
+  - name: Deep
+    description: 5 段の深い入れ子
+    args:
+      - name: nodes
+        value: '[{"name":"a/","children":[{"name":"b/","children":[{"name":"c/","children":[{"name":"d/","children":[{"name":"e.ts"}]}]}]}]}]'
+  - name: LongName
+    description: 名前が長く幅を超える。名前が折り返し、横スクロールを出さない
+    args:
+      - name: nodes
+        value: '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts"}]}]'
+lead: 言語 `tree` のコードブロックに罫線で書いたフォルダ構成を、フォルダとファイルの入れ子のツリーにする。
+args:
+  - name: nodes
+    type: オブジェクトの配列
+    required: true
+    description: 罫線を読んだ項目（`{ name, children }`）。名前が `/` で終わるか `children` を持つ項目をフォルダ、それ以外をファイルにする
+css_properties:
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: フォルダとファイルのアイコンと、入れ子の線の色
+  - name: --mdmark-font-mono
+    syntax: <family-name>#
+    default: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace
+    description: 名前の書体
+accessibility:
+  - ツリーは `aria-label="ファイルツリー"` を持つ入れ子の `ul` で、読み上げが階層を読む
+  - フォルダとファイルは名前（フォルダは末尾の `/`）でも見分けられ、アイコンだけに頼らない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
+status: planned
+notes:
+  HTML: '`<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name">{name}</span><ul>…</ul></li><li class="mdmark-tree-file"><span class="mdmark-tree-name">{name}</span></li></ul>`。アイコンは CSS で付ける。読めない行があるときはこの部品を使わず、書き方の警告と元のコードブロックを出す。モックは `dev/mock/components/file-tree/`'

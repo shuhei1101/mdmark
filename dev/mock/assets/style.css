@@ -21,10 +21,17 @@
   --mdmark-color-link: #0969da;
   --mdmark-color-border: #d1d9e0;
   --mdmark-color-surface: #f6f8fa;
+  --mdmark-color-table-head: #e6ebf0;
   --mdmark-color-scroll-shadow: rgb(31 35 40 / 0.22);
   --mdmark-color-notice-bg: #fff8c5;
   --mdmark-color-notice-border: #9a6700;
   --mdmark-color-notice-text: #1f2328;
+  --mdmark-color-callout-note: #0969da;
+  --mdmark-color-callout-tip: #1a7f37;
+  --mdmark-color-callout-important: #8250df;
+  --mdmark-color-callout-warning: #9a6700;
+  --mdmark-color-callout-caution: #d1242f;
+  --mdmark-table-max-height: 28rem;
   color-scheme: light;
 }
 
@@ -39,10 +46,16 @@
     --mdmark-color-link: #4493f8;
     --mdmark-color-border: #3d444d;
     --mdmark-color-surface: #151b23;
+    --mdmark-color-table-head: #262c36;
     --mdmark-color-scroll-shadow: rgb(145 152 161 / 0.5);
     --mdmark-color-notice-bg: #2a2110;
     --mdmark-color-notice-border: #bb8009;
     --mdmark-color-notice-text: #f0f6fc;
+    --mdmark-color-callout-note: #4493f8;
+    --mdmark-color-callout-tip: #3fb950;
+    --mdmark-color-callout-important: #ab7df8;
+    --mdmark-color-callout-warning: #d29922;
+    --mdmark-color-callout-caution: #f85149;
     color-scheme: dark;
   }
 }

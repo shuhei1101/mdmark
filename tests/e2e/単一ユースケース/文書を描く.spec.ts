@@ -39,7 +39,7 @@ test("test_normal", async ({ page }) => {
   ]) {
     await expect(doc.locator(selector).first(), selector).toBeVisible();
   }
-  await expect(doc.locator("a").first()).toHaveAttribute(
+  await expect(doc.locator('a[href^="https"]').first()).toHaveAttribute(
     "href",
     "https://example.com/page",
   );

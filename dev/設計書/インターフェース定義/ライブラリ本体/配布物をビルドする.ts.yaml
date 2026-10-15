@@ -17,13 +17,14 @@ flows:
         participant F as ファイル
         D->>B: npm run build
         B->>F: version.ini を読む
-        B->>F: v0.0.0 を埋めた dist/index.js と index.css と、束ねた依存の THIRD_PARTY_LICENSES.txt を書く
+        B->>F: v0.0.0 を埋めた dist/index.js と index.css、型定義の dist/index.d.ts、束ねた依存の THIRD_PARTY_LICENSES.txt を書く
         B-->>D: 終了コード 0
     expected:
       - 終了コードが 0
       - '`dist/index.js` と `dist/index.css` がある'
       - '`dist/index.js` の `version()` が `v0.0.0` を返す'
       - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it` と `sanitize-html` の名前とライセンスの本文がある'
+      - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、`tsc --noEmit` で型エラーが 0 件'
     test: test_normal
   - name: 正常系（版を指定する）
     summary: '`--version` で渡した版を埋めてビルドする'
@@ -85,7 +86,7 @@ flows:
       - '`dist/` が無い'
       - 標準エラーに超えたファイル名とサイズが出る
     test: test_error_when_dist_file_too_large
-lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` にビルドする。'
+lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` にビルドする。'
 idempotent: true
 side_effects: '`dist/` を書き換える'
 callers:

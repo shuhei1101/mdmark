@@ -1,19 +1,39 @@
-import type {
-  MarkdownIt as MarkdownItParser,
-  StateCore,
-  Token,
-} from "markdown-it";
+import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
 import { escapeHtml } from "../parts/escape.ts";
-import { takeMarks } from "./marks.ts";
+import {
+  dropMarks,
+  MARK_TOKEN,
+  resolveDocumentFeatures,
+  takeMarks,
+} from "./marks.ts";
+import { buildBadges } from "./syntax/badges.ts";
+import { buildCallouts } from "./syntax/callouts.ts";
+import { numberFigures } from "./syntax/figures.ts";
+import { assignHeadingIds } from "./syntax/headings.ts";
+import { attachRowDetails } from "./syntax/row-details.ts";
+import { wrapSections } from "./syntax/sections.ts";
+import { buildSteps } from "./syntax/steps.ts";
+import { decorateTables } from "./syntax/tables.ts";
+import { buildTabs } from "./syntax/tabs.ts";
+import { buildToc } from "./syntax/toc.ts";
+import { buildFileTrees } from "./syntax/tree.ts";
 
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
 export type RenderEnv = {
   /** 対応表（どの印を印の場所の要素にするか） */
   libraries: Record<string, LibraryEntry>;
+  /** 設定の `features` */
+  defaults: Record<string, boolean>;
   /** `features` の印の引数を書いた順に並べたもの */
   featureArgs: string[];
+  /** `defaults` に `featureArgs` を重ねたもの */
+  features: Record<string, boolean>;
+  /** 見出しの ID と文字 */
+  headings: Array<{ level: number; id: string; text: string }>;
+  /** 描くごとに作る、mdmark が出した要素の印の値 */
+  nonce: string;
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -21,14 +41,6 @@ const EXPLICIT_LINK_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|www\.|[^@]*@)/i;
 
 /** タスクリストの項目の頭の `[ ]`・`[x]` */
 const TASK_MARKER_PATTERN = /^\[([ xX])\]\s+/;
-
-/** インライン要素の文字（タグを除いたもの）を集める */
-function textOf(token: Token): string {
-  return (token.children ?? [])
-    .filter((child) => child.type === "text" || child.type === "code_inline")
-    .map((child) => child.content)
-    .join("");
-}
 
 /** タスクリストの項目の頭をチェックボックスにする */
 function taskList(state: StateCore): void {
@@ -84,44 +96,35 @@ function revertFuzzyLinks(state: StateCore): void {
   }
 }
 
-/** 表に読み上げの名前と tabindex を付け、セルに同じ列の見出しの文字を写す */
-function decorateTables(state: StateCore): void {
-  const tokens = state.tokens;
-  let heading = "";
-  let headers: string[] = [];
-  let column = 0;
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const next = tokens[index + 1];
-    if (!token) {
-      continue;
-    }
-    if (token.type === "heading_open") {
-      heading = next ? textOf(next) : "";
-    } else if (token.type === "table_open") {
-      token.attrSet("tabindex", "0");
-      token.attrSet("aria-label", heading ? `表: ${heading}` : "表");
-      headers = [];
-    } else if (token.type === "tr_open") {
-      column = 0;
-    } else if (token.type === "th_open") {
-      headers.push(next ? textOf(next) : "");
-    } else if (token.type === "td_open") {
-      token.attrSet("data-label", headers[column] ?? "");
-      column += 1;
-    }
-  }
-}
-
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt({ html: true, linkify: true });
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  parser.core.ruler.push("mdmark_take_marks", takeMarks);
-  parser.core.ruler.push("mdmark_task_list", taskList);
-  parser.core.ruler.push("mdmark_revert_fuzzy_links", revertFuzzyLinks);
-  parser.core.ruler.push("mdmark_decorate_tables", decorateTables);
+  // 印 → 機能の重ね合わせ → 記法（見出し → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 節 → 目次）→ タスクリスト → www の自動リンク → 残った印
+  const rules: Array<[string, (state: StateCore) => void]> = [
+    ["mdmark_take_marks", takeMarks],
+    ["mdmark_resolve_features", resolveDocumentFeatures],
+    ["mdmark_assign_heading_ids", assignHeadingIds],
+    ["mdmark_attach_row_details", attachRowDetails],
+    ["mdmark_decorate_tables", decorateTables],
+    ["mdmark_build_tabs", buildTabs],
+    ["mdmark_build_steps", buildSteps],
+    ["mdmark_build_callouts", buildCallouts],
+    ["mdmark_build_file_trees", buildFileTrees],
+    ["mdmark_build_badges", buildBadges],
+    ["mdmark_number_figures", numberFigures],
+    ["mdmark_wrap_sections", wrapSections],
+    ["mdmark_build_toc", buildToc],
+    ["mdmark_task_list", taskList],
+    ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
+    ["mdmark_drop_marks", dropMarks],
+  ];
+  for (const [name, rule] of rules) {
+    parser.core.ruler.push(name, rule);
+  }
+  // 印のトークンは、残っていても何も出さない
+  parser.renderer.rules[MARK_TOKEN] = () => "";
   // 取り消し線: markdown-it の `<s>` を GitHub と同じ `<del>` にする
   parser.renderer.rules.s_open = () => "<del>";
   parser.renderer.rules.s_close = () => "</del>";

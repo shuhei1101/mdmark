@@ -4,6 +4,8 @@
 
 ## 目次
 
+<!-- table: data -->
+
 | ページ | 概要 |
 | --- | --- |
 | [公開の入口.ts](./公開の入口.ts.yaml) | 配布物の入口の JavaScript（version()・mount()・render()）と、描いた文書の CSS |
@@ -13,3 +15,8 @@
 | [部品.ts](./部品.ts.yaml) | 知らせの枠・読み込み中の枠の HTML を返す関数とストーリー |
 | [ビルド.ts](./ビルド.ts.yaml) | 版を決めて検査し、esbuild で dist/ を書き、サイズを検査する |
 | [部品の描画.ts](./部品の描画.ts.yaml) | Storybook のストーリーに部品の HTML を出す描画の口と Storybook の設定 |
+| [記法.ts](./記法.ts.yaml) | 印と記法を HTML にする markdown-it のコアルール |
+| [操作.ts](./操作.ts.yaml) | mount が描いた記法に付ける表・タブ・節と行の詳細の操作 |
+| [拡張.ts](./拡張.ts.yaml) | registerExtension の登録表と、Standard Schema での引数の検査 |
+
+<!-- /table -->

@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
 
 /** 描く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -6,6 +6,34 @@ const loadMount = () => import("../../../src/mount.ts");
 
 // 閉じた折り畳みを 1 つ持つ文書
 const DETAILS_MARKDOWN = "<details><summary>s</summary>b</details>\n";
+
+// 絞り込みを持つ表の文書
+const TABLE_MARKDOWN = [
+  "<!-- table: data filter=名前 -->",
+  "",
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| a | 1 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+// タブを持つ文書
+const TABS_MARKDOWN = [
+  "<!-- tabs -->",
+  "",
+  "### A",
+  "",
+  "a",
+  "",
+  "### B",
+  "",
+  "b",
+  "",
+  "<!-- /tabs -->",
+  "",
+].join("\n");
 
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
@@ -44,6 +72,7 @@ function sendBeforePrint(): void {
 }
 
 afterEach(() => {
+  vi.restoreAllMocks();
   for (const handle of handles.splice(0)) {
     handle.destroy();
   }
@@ -60,7 +89,7 @@ test("test_mount", async () => {
   const handle = await mountTracked(el, { markdown: "# 見出し" });
   // 検証
   expect(el.classList.contains("mdmark")).toBe(true);
-  expect(el.innerHTML).toContain("<h1>見出し</h1>");
+  expect(el.querySelector("h1")?.textContent).toBe("見出し");
   expect(typeof handle.update).toBe("function");
   expect(typeof handle.destroy).toBe("function");
 });
@@ -73,7 +102,8 @@ test("test_mount_when_updated", async () => {
   // 実行
   handle.update("# B");
   // 検証
-  expect(el.innerHTML.trim()).toBe("<h1>B</h1>");
+  expect(el.children).toHaveLength(1);
+  expect(el.querySelector("h1")?.textContent).toBe("B");
   expect(el.classList.contains("mdmark")).toBe(true);
 });
 
@@ -102,7 +132,8 @@ test("test_mount_when_remounted", async () => {
   // 実行
   first.update("# C");
   // 検証
-  expect(el.innerHTML.trim()).toBe("<h1>B</h1>");
+  expect(el.children).toHaveLength(1);
+  expect(el.querySelector("h1")?.textContent).toBe("B");
 });
 
 // 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない（正常系）
@@ -128,4 +159,20 @@ test("test_mount_when_updated_with_print_mark", async () => {
   sendBeforePrint();
   // 検証
   expect(findDetails(el).open).toBe(false);
+});
+
+// 描き直すと前の操作を外し、新しい本文に操作を付ける（正常系）
+test("test_mount_when_updated_with_syntax", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: TABLE_MARKDOWN });
+  el.querySelector<HTMLButtonElement>("button.mdmark-filter")?.click();
+  const removeSpy = vi.spyOn(document, "removeEventListener");
+  // 実行
+  handle.update(TABS_MARKDOWN);
+  // 検証
+  const types = removeSpy.mock.calls.map(([type]) => type);
+  expect(types).toContain("pointerdown");
+  expect(types).toContain("keydown");
+  expect(el.querySelector('[role="tablist"]')).not.toBeNull();
 });

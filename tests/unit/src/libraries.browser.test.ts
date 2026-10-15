@@ -1,5 +1,7 @@
+import * as v from "valibot";
 import { afterEach, expect, test, vi } from "vitest";
 import type { LibraryEntry } from "../../../src/config.ts";
+import type { MdmarkExtension } from "../../../src/extensions.ts";
 import type { ImportModule, LibraryModule } from "../../../src/libraries.ts";
 
 /** 読み込みの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -10,6 +12,19 @@ const loadEmbed = () => import("../../../src/parts/embed.ts");
 
 /** 知らせの枠の処理を読み込む */
 const loadNotice = () => import("../../../src/parts/notice.ts");
+
+/** 拡張の処理を読み込む */
+const loadExtensions = () => import("../../../src/extensions.ts");
+
+const cleanups: Array<() => void> = [];
+
+/** 登録表を空にしてから拡張を登録し、後始末のために空にする関数を控える */
+async function registerTracked(extension: MdmarkExtension): Promise<void> {
+  const { registerExtension, resetExtensions } = await loadExtensions();
+  resetExtensions();
+  registerExtension(extension);
+  cleanups.push(resetExtensions);
+}
 
 // 対応表の URL を解決した結果（ページの URL を基準にする）
 const MODULE_URL = `${location.origin}/fixtures/test-lib.js`;
@@ -43,6 +58,9 @@ function spyConsoleError() {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  for (const cleanup of cleanups.splice(0)) {
+    cleanup();
+  }
 });
 
 // 印の場所ごとに draw を呼び、描けた場所の読み込み中の印を外す（正常系）
@@ -239,4 +257,106 @@ test("test_load_libraries_when_draw_removes_slot", async () => {
   await expect(loaded).resolves.toBeUndefined();
   expect(root.querySelector(".mdmark-notice")).toBeNull();
   expect(errorSpy).toHaveBeenCalledTimes(1);
+});
+
+// 拡張の印を load で読み、読み分けた引数で draw を呼ぶ（正常系）
+test("test_load_libraries_when_extension", async () => {
+  // 準備
+  const { loadLibraries: load } = await loadLibraries();
+  const { renderEmbed } = await loadEmbed();
+  const draw = vi.fn();
+  const extensionLoad = vi.fn(async () => ({ draw }));
+  await registerTracked({
+    name: "greet",
+    directive: "greet",
+    load: extensionLoad,
+  });
+  const args = ["world", "lang=ja"];
+  const root = createRoot(
+    renderEmbed({ name: "greet", args }) + renderEmbed({ name: "greet", args }),
+  );
+  // 実行
+  await load({ root, libraries: {}, isCurrent: () => true });
+  // 検証
+  expect(extensionLoad).toHaveBeenCalledTimes(1);
+  expect(draw).toHaveBeenCalledTimes(2);
+  for (const slot of findSlots(root)) {
+    expect(draw).toHaveBeenCalledWith(slot, {
+      args: ["world"],
+      keys: { lang: "ja" },
+    });
+  }
+});
+
+// 引数が schema に合わない場所は書き方の警告にし、load しない（異常系）
+test("test_load_libraries_when_extension_args_invalid", async () => {
+  // 準備
+  const { loadLibraries: load } = await loadLibraries();
+  const { renderEmbed } = await loadEmbed();
+  const extensionLoad = vi.fn(async () => ({ draw: () => {} }));
+  await registerTracked({
+    name: "greet",
+    directive: "greet",
+    load: extensionLoad,
+    schema: v.object({
+      args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]),
+      keys: v.record(v.string(), v.string()),
+    }),
+  });
+  const root = createRoot(renderEmbed({ name: "greet", args: ["World", "2"] }));
+  // 実行
+  await load({ root, libraries: {}, isCurrent: () => true });
+  // 検証
+  expect(root.querySelector(".mdmark-syntax-warning")).not.toBeNull();
+  expect(extensionLoad).not.toHaveBeenCalled();
+});
+
+// load の拒否と validate の拒否は拡張の知らせの枠にする（異常系）
+test("test_load_libraries_when_extension_fails", async () => {
+  // 準備
+  const { loadLibraries: load } = await loadLibraries();
+  const { renderEmbed } = await loadEmbed();
+  const loadError = new Error("load failed");
+  const validateError = new Error("validate failed");
+  await registerTracked({
+    name: "greet",
+    directive: "greet",
+    load: async () => {
+      throw loadError;
+    },
+  });
+  const { registerExtension } = await loadExtensions();
+  registerExtension({
+    name: "checked",
+    directive: "checked",
+    load: async () => ({ draw: () => {} }),
+    schema: {
+      "~standard": {
+        version: 1,
+        vendor: "test",
+        validate: () => Promise.reject(validateError),
+      },
+    },
+  });
+  const root = createRoot(
+    renderEmbed({ name: "greet" }) + renderEmbed({ name: "checked" }),
+  );
+  const errorSpy = spyConsoleError();
+  // 実行
+  await load({ root, libraries: {}, isCurrent: () => true });
+  // 検証
+  const notices = [...root.querySelectorAll(".mdmark-notice")];
+  expect(notices).toHaveLength(2);
+  for (const notice of notices) {
+    expect(notice.querySelector("p")?.textContent).toMatch(/^表示に使う拡張（/);
+  }
+  const calls = errorSpy.mock.calls;
+  expect(
+    calls.some((args) => args.includes("greet") && args.includes(loadError)),
+  ).toBe(true);
+  expect(
+    calls.some(
+      (args) => args.includes("checked") && args.includes(validateError),
+    ),
+  ).toBe(true);
 });

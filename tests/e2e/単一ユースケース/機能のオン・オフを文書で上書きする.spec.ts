@@ -81,3 +81,38 @@ test("test_normal_when_unknown_feature", async ({ page }) => {
   expect(html).not.toContain("features");
   expect(html).not.toContain("unknown");
 });
+
+// 設定で既定のオンの表と注意書きを、文書の印でその文書だけ外し、普通の Markdown として描く（正常シナリオ（記法の機能を外す））
+test("test_normal_when_syntax_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- features: -table -callout -->",
+      "",
+      "<!-- table: data -->",
+      "",
+      "| 名前 | 数 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "> [!NOTE]",
+      "> 引用の本文",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("table")).toBeVisible();
+  await expect(doc.locator("button.mdmark-sort")).toHaveCount(0);
+  await expect(doc.locator("button.mdmark-pin")).toHaveCount(0);
+  await expect(doc.locator("blockquote")).toBeVisible();
+  await expect(doc.locator(".markdown-alert")).toHaveCount(0);
+  const html = await doc.innerHTML();
+  expect(html).not.toContain("<!--");
+  await expect(doc).not.toContainText("features:");
+  await expect(doc).not.toContainText("table:");
+});

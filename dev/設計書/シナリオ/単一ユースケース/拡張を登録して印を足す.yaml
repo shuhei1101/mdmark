@@ -1,0 +1,113 @@
+title: "拡張を登録して印を足す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 拡張を登録するページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、`registerExtension` で拡張を登録してから文書を描く HTML
+        notes: '`directive` は `greet`。`load` は手元の代役のモジュールを `import()` で読む'
+      - name: 拡張の印を持つ Markdown
+        description: '段落の間に `<!-- greet: world -->` を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。拡張の代役は、印の引数を印の場所に書くモジュールを返し、受けた要求を数える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension で拡張を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 拡張の印を印の場所に置き換える
+        M->>X: load でモジュールを読む
+        X-->>M: モジュール
+        M-->>P: 印の場所に拡張が描く
+        P-->>U: 文書を表示
+    expected:
+      - 拡張の代役への要求が 1 件
+      - 印の場所に `world` が描かれている
+      - 印の前後の段落が描かれている
+    test: test_normal
+  - name: 正常シナリオ（印が無い）
+    setup:
+      - name: 拡張を登録するページ
+        description: 正常シナリオと同じ
+      - name: 印の無い Markdown
+        description: 段落だけを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension で拡張を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 拡張を読まずに本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 拡張の代役への要求が 0 件
+      - 段落が描かれている
+    test: test_normal_when_no_mark
+  - name: 異常シナリオ（引数が Schema に合わない）
+    setup:
+      - name: 拡張を登録するページ
+        description: 正常シナリオと同じ
+        notes: '`schema` は引数を 1 つだけ、英小文字で許す'
+      - name: 合わない引数の印を持つ Markdown
+        description: '段落の間に `<!-- greet: World 2 -->` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension で拡張を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 印の引数を schema で確かめる
+        M-->>P: 印の場所に合わない項目を書いた枠、ほかは本文を描く
+        P-->>U: 枠と本文を表示
+    expected:
+      - 印の場所に、合わない引数を書いた枠がある
+      - 拡張の代役は印の場所に描いていない
+      - 印の前後の段落が描かれている
+    test: test_error_when_args_invalid
+  - name: 異常シナリオ（モジュールを読めない）
+    setup:
+      - name: 拡張を登録するページ
+        description: 正常シナリオと同じ
+      - name: 拡張の印を持つ Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 拡張の代役が 404 を返す。ほかは正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension で拡張を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: load でモジュールを読む
+        X-->>M: 404
+        M-->>P: 印の場所に知らせの枠、ほかは本文を描く
+        P-->>U: 知らせの枠と本文を表示
+    expected:
+      - 印の場所に知らせの枠があり、拡張の名前が書かれている
+      - 印の前後の段落が描かれている
+    test: test_error_when_module_not_found
+lead: 使う側が `registerExtension({ name, directive, load, schema })` で自分の印を足す。mdmark は文書にその印があるときだけ `load` でモジュールを読み、印の場所に描かせる。
+issue: 4
+primary_actor: 使う側のアプリの開発者
+stakeholders:
+  - name: 文書を書く人
+    interest: 使う側が足した印を mdmark の印と同じ書き方で使え、引数を誤るとその場で分かる
+  - name: 文書を読む人
+    interest: 拡張の印を使わない文書で、拡張のモジュールの読み込みを待たない
+trigger: 使う側のページが、拡張を登録してから文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 拡張のモジュールは、使う側が TypeScript か JavaScript で書き、JavaScript として配っている
+success_guarantee: 文書に拡張の印があるときだけモジュールが 1 回読まれ、印の場所に描かれる。
+minimal_guarantee: モジュールを読めない、または引数が Schema に合わない印の場所には枠が出て、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts

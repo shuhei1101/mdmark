@@ -1,0 +1,266 @@
+title: "拡張を登録する"
+entry:
+  kind: operation
+  value: '`registerExtension(extension)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: 拡張を登録し、文書の拡張の印の場所にモジュールで描かせる
+    setup:
+      - name: 配布物を読んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み、描く先の `div` を 1 つ持つページ
+      - name: 拡張
+        description: '`name` と `directive` が `greet`、`load` が `() => import("/fixtures/greet.js")` の拡張'
+        notes: '`schema` は渡さない'
+      - name: 拡張の印を持つ Markdown
+        description: '段落の間に `<!-- greet: world lang=ja -->` を 2 つ持つ文書'
+      - name: Mock
+        description: 拡張のモジュールの代役として、`draw(slot, value)` で `slot` の文字を `value` の JSON にするモジュールを、手元の開発サーバーが `/fixtures/greet.js` で配る。`load` は呼ばれた回数を数える関数で包む
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension({ name, directive, load })
+        P->>M: mount(el, { markdown })
+        M->>P: 印の場所に読み込み中の枠を描く
+        M->>X: load()
+        X-->>M: モジュール
+        M->>X: draw(印の場所の要素, { args, keys })
+        X->>P: 印の場所に描く
+    expected:
+      - '`load` が 1 回だけ呼ばれる'
+      - 2 つの印の場所の文字がどちらも `{"args":["world"],"keys":{"lang":"ja"}}`
+      - 印の前後の段落がある
+      - '`registerExtension` の戻り値が `undefined`'
+    test: test_normal
+  - name: 正常系（印が無い）
+    summary: 拡張の印が無い文書では拡張のモジュールを読まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: 正常系と同じ
+      - name: 印の無い Markdown
+        description: 段落だけを持つ文書
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ name, directive, load })
+        P->>M: mount(el, { markdown })
+        M->>P: el の中に本文を描く
+    expected:
+      - '`load` が 1 回も呼ばれていない'
+      - 段落がある
+    test: test_normal_when_no_mark
+  - name: 異常系（引数が Schema に合わない・書き方の警告）
+    summary: 引数が schema に合わない印の場所だけを書き方の警告にし、モジュールを読まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: 正常系の拡張に、引数を 1 つだけ英小文字で許す `schema` を足したもの
+        notes: '`schema` は valibot 1.5.0 の `v.object({ args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]), keys: v.record(v.string(), v.string()) })`。valibot は結合テストの開発用の依存に入れる'
+      - name: 合わない引数の印を持つ Markdown
+        description: '段落の間に `<!-- greet: World 2 -->` を持つ文書'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ name, directive, load, schema })
+        P->>M: mount(el, { markdown })
+        M->>M: schema["~standard"].validate({ args, keys })
+        M->>P: 印の場所を書き方の警告に替える
+    expected:
+      - 印の場所の要素が class `mdmark-syntax-warning` を持ち、題が `書き方の警告`
+      - '警告の本文に `<!-- greet: World 2 -->` と拡張の名前 `greet` があり、項目が 2 つで、`1 つ目の World:` と `2 つ目の 2:` で始まる'
+      - '`load` が 1 回も呼ばれていない'
+      - 印の前後の段落があり、`mount` が例外を投げない
+    test: test_error_when_args_invalid
+  - name: 異常系（モジュールを読めない・知らせの枠）
+    summary: 拡張のモジュールを読めない印の場所だけを知らせの枠にし、ほかは描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: '`load` が `() => import("/fixtures/missing.js")` のほかは正常系と同じ'
+      - name: 拡張の印を持つ Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: '`/fixtures/missing.js` は手元の開発サーバーが 404 を返す。`console.error` を、呼ばれた引数を控える関数で包む'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension({ name, directive, load })
+        P->>M: mount(el, { markdown })
+        M->>X: load()
+        X-->>M: 404
+        M->>P: 印の場所を知らせの枠に替える
+    expected:
+      - 印の場所の要素が class `mdmark-notice` と `role="status"` を持ち、題が `この図を表示できません`
+      - 知らせの枠の本文が `表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。`
+      - 印の前後の段落があり、`mount` が例外を投げない
+      - '`console.error` が呼ばれ、引数に `greet` と元のエラーを含む'
+    test: test_error_when_module_not_found
+  - name: 異常系（検査が失敗する・知らせの枠）
+    summary: '`schema` の `validate` が拒否される印の場所を知らせの枠にし、モジュールを読まない'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: 正常系の拡張に、`~standard.validate` が拒否される Promise を返す `schema` を足したもの
+        notes: '`schema` は `{ "~standard": { version: 1, vendor: "test", validate: () => Promise.reject(new Error("boom")) } }`'
+      - name: 拡張の印を持つ Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: '`console.error` を、呼ばれた引数を控える関数で包む。ほかは正常系と同じ'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ name, directive, load, schema })
+        P->>M: mount(el, { markdown })
+        M->>M: schema["~standard"].validate({ args, keys })
+        M-->>M: 拒否
+        M->>P: 印の場所を知らせの枠に替える
+    expected:
+      - 印の場所の要素が class `mdmark-notice` と `role="status"` を持ち、本文に `greet` がある
+      - '`load` が 1 回も呼ばれていない'
+      - '`console.error` が呼ばれ、引数に `greet` と `boom` のエラーを含む'
+      - 印の前後の段落があり、`mount` が例外を投げない
+    test: test_error_when_validate_fails
+  - name: 異常系（拡張の書式の誤り・TypeError）
+    summary: 書式に合わない拡張は登録せずに TypeError を投げる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 書式の誤った拡張
+        description: '`directive` が `Greet!` の拡張と、`schema` が `{}` の拡張'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ directive: "Greet!", ... })
+        M-->>P: TypeError
+        P->>M: registerExtension({ schema: {}, ... })
+        M-->>P: TypeError
+    expected:
+      - どちらの呼び出しも `TypeError` を投げ、メッセージに `directive`・`schema` を含む
+      - 'その後 `<!-- greet: world -->` を `mount` しても、印の場所が置かれない（未知の印として取り除かれる）'
+    test: test_error_when_extension_invalid
+  - name: 異常系（名前の重なり・Error）
+    summary: 記法の印や登録済みの拡張と同じ directive は登録せずに Error を投げる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。正常系の拡張を登録済み
+      - name: 名前の重なる拡張
+        description: '`directive` が `table` の拡張と、`directive` が `greet` の 2 つ目の拡張'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ directive: "table", ... })
+        M-->>P: Error
+        P->>M: registerExtension({ directive: "greet", ... })
+        M-->>P: Error
+    expected:
+      - どちらの呼び出しも `Error` を投げ、メッセージに重なった名前を含む
+      - 'その後 `<!-- greet: world -->` を `mount` すると、最初に登録した拡張の `load` が呼ばれる'
+    test: test_error_when_directive_taken
+lead: 使う側が、自分の印の名前と、その印を描くモジュールの読み方を mdmark へ登録する。`mount` は文書にその印があるときだけ、引数を検査してからモジュールを読んで描かせる。
+test_file: tests/integration/lib/register-extension.browser.test.ts
+idempotent: false
+side_effects: mdmark の中の拡張の登録表に足す。同じページの以降の `mount`・`update`・`render` に効く
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/拡張を登録して印を足す#
+exclusivity: 登録は同期で終わる。描いた後に登録した印は、次の `mount`・`update` から効く
+request:
+  - name: extension.name
+    type: string
+    required: true
+    location: argument
+    description: 拡張の名前。知らせの枠・書き方の警告・`console.error` に出す
+    constraints: 空でない
+    example: greet
+  - name: extension.directive
+    type: string
+    required: true
+    location: argument
+    description: '拡張の印の名前（`<!-- {directive}: {引数} -->`）'
+    constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と登録済みの拡張の `directive` は使えない
+    example: greet
+    notes: 設定の `libraries` に同じ名前があるときは、拡張を優先する
+  - name: extension.load
+    type: () => Promise<MdmarkExtensionModule>
+    required: true
+    location: argument
+    description: 拡張のモジュールを読む関数。文書に印があるときだけ、`mount`・`update` が描くごとに 1 回呼ぶ
+    example: () => import("/extensions/greet.js")
+  - name: extension.schema
+    type: StandardSchemaV1<MdmarkMarkArgs>
+    required: false
+    default: なし（引数を検査しない）
+    location: argument
+    description: 印の引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま渡せる
+request_example: |-
+  ```ts
+  import { registerExtension } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.2.0/dist/index.js";
+  import * as v from "valibot";
+
+  registerExtension({
+    name: "greet",
+    directive: "greet",
+    load: () => import("/extensions/greet.js"),
+    schema: v.object({
+      args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]),
+      keys: v.record(v.string(), v.string()),
+    }),
+  });
+  ```
+response:
+  - name: '-'
+    type: void
+    description: 戻り値は無い
+exceptions:
+  - name: なし（正常終了）
+    condition: 拡張を登録表に足す
+  - name: なし（書き方の警告）
+    condition: '`mount`・`update` で、印の引数が `schema` に合わない'
+    notes: 例外を投げず、その印の場所だけを書き方の警告に替える
+  - name: なし（知らせの枠）
+    condition: '`mount`・`update` で、`load` が拒否されるか `draw` が例外を投げる'
+    notes: 例外を投げず、その印の場所だけを知らせの枠に替える
+  - name: なし（知らせの枠・検査の失敗）
+    condition: '`mount`・`update` で、`schema` の `validate` が例外を投げるか拒否される'
+    notes: 例外を投げず、`load` を呼ばずに、その印の場所だけを知らせの枠に替える
+  - name: TypeError
+    condition: '`name` が空、`directive` が印の名前の書式に合わない、`load` が関数でない、または `schema` が `~standard` を持たない'
+    notes: 登録しない。メッセージに合わない項目の名前を含める
+  - name: Error（名前の重なり）
+    condition: '`directive` が `features`・記法の印、または登録済みの拡張の `directive` と同じ'
+    notes: 登録しない。メッセージに重なった名前を含める
+constraints:
+  - item: 印の引数の形
+    constraint: '`MdmarkMarkArgs` は `{ args: string[]; keys: Record<string, string> }`。印の引数を空白で区切り、`キー=値` を `keys` に、それ以外を書いた順に `args` に入れる。`schema` の検査と `draw` は同じ値を受け取る'
+  - item: 拡張のモジュールの形
+    constraint: '`draw(slot: HTMLElement, value: MdmarkMarkArgs): void | Promise<void>` を名前付きで export する。`slot` は印の場所の要素'
+  - item: 引数の検査
+    constraint: '`schema` を持つ拡張の印は、`mount`・`update` が `load` の前に `schema["~standard"].validate(value)` を呼んで待つ。結果が `issues` を持つときは `load` を呼ばず、印の場所を書き方の警告に替える。警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読む。`path` が `args` と位置まで届く issue は `{位置+1} つ目の {値}: {message}`、`keys` とキーまで届く issue は `{キー}=: {message}`、`path` が無いか `args`・`keys` で止まる issue は `{message}` だけの項目にする。`validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ知らせの枠に替え、`name` と元のエラーを `console.error` に出す。`render` は検査しない'
+    notes: 警告の文言は画面設計『文書』
+  - item: Standard Schema の確かめ
+    constraint: zod 4.6.7 と valibot 1.5.0 の schema の `~standard.validate` が、合わない値に `issues`（`message` と `path`）を、合う値に `value` を返すことを確かめた（2026-10-14）
+    notes: valibot の `tuple` は余る要素を許すため、引数の数を限るときは `strictTuple` を使う。valibot の `strictTuple` は余る引数にも位置を持つ `path` を返すが、zod の `z.tuple` の数の超過は `path` が `["args"]` で止まる。仕様は https://standardschema.dev/
+  - item: 読み込み
+    constraint: 同じ文書の同じ拡張の印は 1 回だけ `load` を呼ぶ。読み込みの間は外部ライブラリの印と同じ読み込み中の印の場所を置く。知らせの枠は題 `この図を表示できません`、本文 `表示に使う拡張（{name}）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。` で、`name` と元のエラーを `console.error` に出す
+  - item: 型の配布
+    constraint: '`registerExtension`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を `dist/index.d.ts` に書き出す。`StandardSchemaV1` は仕様の型を書き写し、mdmark は検査ライブラリに依存しない'

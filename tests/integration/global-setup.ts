@@ -1,4 +1,11 @@
-import { cp, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  cp,
+  mkdtemp,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { TestProject } from "vitest/node";
@@ -23,6 +30,13 @@ export default async function setup(project: TestProject) {
     recursive: true,
   });
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
+  // 型定義を書く `tsc` が読む設定
+  for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
+    await copyFile(
+      resolve(import.meta.dirname, "../..", name),
+      join(root, name),
+    );
+  }
   // 束ねる依存（markdown-it など）を作業ツリーの node_modules から引く
   await symlink(
     resolve(import.meta.dirname, "../../node_modules"),

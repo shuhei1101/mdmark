@@ -64,8 +64,8 @@ categories:
       ```
     verification:
       state: 済
-      date: '2026-10-14'
-      detail: '`RENDER_PORT=46501 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46501 npm run storybook -- --host 127.0.0.1 --exact-port -p 46502` を立て、`/index.json` に 4 つのストーリー（`parts-notice--figure` など）が載り、`/render/notice` が部品の HTML を、無い部品が 404 を返すことを確かめた。Playwright で開いた `iframe.html?id=` の 4 つのストーリーが、`#storybook-root` にエラー無く描かれた。2 つのプロセスを `kill` で止めると待受が閉じた'
+      date: '2026-10-16'
+      detail: '`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた'
   - name: テスト
     refs:
       - dev/設計書/テスト/テスト実行方法#
@@ -101,11 +101,11 @@ categories:
       ```bash
       npm run build -- --version v{版}
       ```
-    effects: '`dist/` を前回の分を消してから書き直す。版の書式が違う・`version.ini` を読めない・esbuild が失敗する・配布ファイルが 256KB を超えると、終了コード 1 で終わり `dist/` は残らない'
+    effects: '`dist/` を前回の分を消してから書き直す。`index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt` のほかに、`tsconfig.dist.json` で `tsc` を流して型定義（`index.d.ts` と、それが読み込む `.d.ts`）を書く。版の書式が違う・`version.ini` を読めない・esbuild か `tsc` が失敗する・配布ファイルが 256KB を超えると、終了コード 1 で終わり `dist/` は残らない'
     verification:
       state: 済
-      date: '2026-10-14'
-      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`（185KB）・`index.css`・`THIRD_PARTY_LICENSES.txt` が書かれることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないことは、単体テストで確かめた'
+      date: '2026-10-16'
+      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`（220KB）・`index.css`・`THIRD_PARTY_LICENSES.txt` と型定義（`index.d.ts` ほか）が書かれることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ることは、単体テストで確かめた'
   - name: 取り込み前の検査
     commands: 未確定
   - name: 管理作業

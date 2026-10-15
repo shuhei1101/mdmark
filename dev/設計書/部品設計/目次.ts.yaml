@@ -1,0 +1,43 @@
+title: "目次"
+implementation: "src/parts/toc.ts#renderToc"
+story: "Parts/Toc"
+test_file: tests/integration/lib/toc.story.test.ts
+states:
+  - name: Nested
+    description: h2 と h3 を入れ子にした目次
+    args:
+      - name: headings
+        value: '[{"level":2,"id":"導入","text":"導入"},{"level":3,"id":"前提","text":"前提"},{"level":2,"id":"使い方","text":"使い方"}]'
+  - name: Flat
+    description: h2 だけの目次
+    args:
+      - name: headings
+        value: '[{"level":2,"id":"導入","text":"導入"},{"level":2,"id":"使い方","text":"使い方"}]'
+  - name: LongHeading
+    description: 見出しが長く折り返す
+    args:
+      - name: headings
+        value: '[{"level":2,"id":"long","text":"とても長い見出しで目次の幅を超えて折り返すときの見え方を確かめるための見出し"}]'
+lead: '`<!-- toc -->` の場所に置き、文書の h2〜h3 を階層どおりに入れ子にした、各見出しへのリンクを並べる。'
+args:
+  - name: headings
+    type: オブジェクトの配列
+    required: true
+    description: 文書の頭からの h2・h3（`{ level, id, text }`）。h3 は直前の h2 の入れ子にする
+css_properties:
+  - name: --mdmark-color-link
+    syntax: <color>
+    default: '#0969da（ダーク #4493f8）'
+    description: 目次のリンクの色
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#d1d9e0（ダーク #3d444d）'
+    description: 目次の枠の線の色
+accessibility:
+  - 目次は `aria-label="目次"` を持つ `nav` で、ランドマークとして飛べる
+  - 入れ子の `ul` で見出しの階層を伝える
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[目次]
+status: planned
+notes:
+  HTML: '`<nav class="mdmark-toc" aria-label="目次"><p class="mdmark-toc-title">目次</p><ul><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav>`。モックは `dev/mock/components/toc/`'

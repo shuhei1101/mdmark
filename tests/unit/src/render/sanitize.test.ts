@@ -1,7 +1,13 @@
 import { expect, test } from "vitest";
 
 /** 落とす処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadSanitize = () => import("../../../../src/render/sanitize.ts");
+const loadSanitize = async () => {
+  const { sanitize } = await import("../../../../src/render/sanitize.ts");
+  return {
+    /** この描画の印の値を決めて落とす */
+    sanitize: (html: string) => sanitize(html, "test-nonce"),
+  };
+};
 
 // スクリプトと style を落とし、折り畳みを残す（正常系）
 test("test_sanitize", async () => {

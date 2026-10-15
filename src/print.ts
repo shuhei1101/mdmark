@@ -1,4 +1,18 @@
-/** 印刷の前に要素の中の閉じた折り畳みを開き、印刷の後に開いたものだけを閉じ直す受け取りを `window` に付け、外す関数を返す */
+/** 印刷の前に開いた折り畳み・節・行の詳細・タブの中身 */
+type Expanded = {
+  details: HTMLDetailsElement[];
+  sections: HTMLElement[];
+  rows: HTMLElement[];
+  panels: HTMLElement[];
+  tabs: HTMLElement[];
+};
+
+/** 何も開いていない状態 */
+function nothingExpanded(): Expanded {
+  return { details: [], sections: [], rows: [], panels: [], tabs: [] };
+}
+
+/** 印刷の前に、要素の中の閉じた折り畳み・閉じた節・行の詳細を開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、外す関数を返す */
 export function attachPrint(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -6,26 +20,57 @@ export function attachPrint(options: {
   isEnabled: () => boolean;
 }): () => void {
   const { root, isEnabled } = options;
-  // 印刷の前に開いた折り畳み
-  let opened: HTMLDetailsElement[] = [];
-  /** 印刷の前: 閉じた折り畳みを全て開く */
+  let expanded = nothingExpanded();
+  /** 印刷の前: 閉じたものを全て開き、開いた分を控える */
   const onBeforePrint = (): void => {
     if (!isEnabled()) {
       return;
     }
-    opened = [...root.querySelectorAll("details")].filter(
-      (details) => !details.open,
-    );
-    for (const details of opened) {
+    expanded = {
+      details: [...root.querySelectorAll("details")].filter(
+        (details) => !details.open,
+      ),
+      sections: [
+        ...root.querySelectorAll<HTMLElement>(".mdmark-section-body[hidden]"),
+      ],
+      rows: [
+        ...root.querySelectorAll<HTMLElement>(".mdmark-row-detail[hidden]"),
+      ],
+      panels: [
+        ...root.querySelectorAll<HTMLElement>('[role="tabpanel"][hidden]'),
+      ],
+      tabs: [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")],
+    };
+    for (const details of expanded.details) {
       details.open = true;
     }
+    for (const element of [
+      ...expanded.sections,
+      ...expanded.rows,
+      ...expanded.panels,
+    ]) {
+      element.removeAttribute("hidden");
+    }
+    // 印刷の CSS がタブの並びを隠し、タブ名を題にして中身を縦に並べる
+    for (const tabs of expanded.tabs) {
+      tabs.setAttribute("data-printing", "");
+    }
   };
-  /** 印刷の後: 印刷の前に開いたものだけを閉じ直す */
+  /** 印刷の後: 印刷の前に開いたものだけを戻す */
   const onAfterPrint = (): void => {
-    for (const details of opened) {
+    for (const details of expanded.details) {
       details.open = false;
     }
-    opened = [];
+    for (const section of expanded.sections) {
+      section.setAttribute("hidden", "until-found");
+    }
+    for (const element of [...expanded.rows, ...expanded.panels]) {
+      element.setAttribute("hidden", "");
+    }
+    for (const tabs of expanded.tabs) {
+      tabs.removeAttribute("data-printing");
+    }
+    expanded = nothingExpanded();
   };
   window.addEventListener("beforeprint", onBeforePrint);
   window.addEventListener("afterprint", onAfterPrint);

@@ -1,0 +1,27 @@
+title: Parts/Figure
+stories:
+  - name: ImageWithCaption
+    parameters:
+      server:
+        id: figure
+    args:
+      kind: image
+      id: arch
+      number: 1
+      caption: 全体の構成
+  - name: Image
+    parameters:
+      server:
+        id: figure
+    args:
+      kind: image
+      id: flow
+      number: 2
+  - name: Table
+    parameters:
+      server:
+        id: figure
+    args:
+      kind: table
+      id: list
+      number: 1

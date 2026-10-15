@@ -14,3 +14,9 @@ items:
     summary: 版を決めて検査し、esbuild で dist/ を書き、サイズを検査する
   - page: 部品の描画.ts.yaml
     summary: Storybook のストーリーに部品の HTML を出す描画の口と Storybook の設定
+  - page: 記法.ts.yaml
+    summary: 印と記法を HTML にする markdown-it のコアルール
+  - page: 操作.ts.yaml
+    summary: mount が描いた記法に付ける表・タブ・節と行の詳細の操作
+  - page: 拡張.ts.yaml
+    summary: registerExtension の登録表と、Standard Schema での引数の検査

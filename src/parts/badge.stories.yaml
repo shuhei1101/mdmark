@@ -1,0 +1,14 @@
+title: Parts/Badge
+stories:
+  - name: Inline
+    parameters:
+      server:
+        id: badge
+    args:
+      label: v0.2.0
+  - name: Long
+    parameters:
+      server:
+        id: badge
+    args:
+      label: とても長い状態の名前で札の幅を超えるときの見え方を確かめる札

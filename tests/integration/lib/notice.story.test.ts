@@ -62,3 +62,19 @@ test("test_long_name", async () => {
   expect(layout.codeOutside).toBe(false);
   expect(layout.pageOverflows).toBe(false);
 });
+
+// 拡張のモジュールを読めない知らせの枠は、本文が「表示に使う拡張（greet）」で始まる（Extension）
+test("test_extension", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-notice--extension");
+  // 検証
+  await expect(page.locator(".mdmark-notice-title").innerText()).resolves.toBe(
+    "この図を表示できません",
+  );
+  await expect(page.locator(".mdmark-notice p code").innerText()).resolves.toBe(
+    "greet",
+  );
+  await expect(page.locator(".mdmark-notice p").innerText()).resolves.toBe(
+    "表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。",
+  );
+});

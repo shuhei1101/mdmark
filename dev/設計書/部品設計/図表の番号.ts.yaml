@@ -1,0 +1,71 @@
+title: "図表の番号"
+implementation: "src/parts/figure.ts#renderFigure"
+story: "Parts/Figure"
+test_file: tests/integration/lib/figure.story.test.ts
+states:
+  - name: ImageWithCaption
+    description: 画像の title を持つ図
+    args:
+      - name: kind
+        value: image
+      - name: id
+        value: arch
+      - name: number
+        value: '1'
+      - name: caption
+        value: 全体の構成
+  - name: Image
+    description: 画像の title を持たない図。題は番号だけ
+    args:
+      - name: kind
+        value: image
+      - name: id
+        value: flow
+      - name: number
+        value: '2'
+  - name: Table
+    description: 表。題を表の上に置く
+    args:
+      - name: kind
+        value: table
+      - name: id
+        value: list
+      - name: number
+        value: '1'
+lead: '`<!-- fig: ID -->` の直後の図と表を囲み、種類ごとの通し番号の題を付ける。図は下に `図 1` と画像の title、表は上に `表 1` を置く。'
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`image`（題は `図 {番号}`、下に置く）・`table`（題は `表 {番号}`、上に置く）'
+    description: 囲むものの種類
+  - name: id
+    type: 文字列
+    required: true
+    description: 印に書いた ID。`figure` の `id` を `fig-{id}` にする
+  - name: number
+    type: 整数
+    required: true
+    description: 文書の頭から種類ごとに数えた番号
+  - name: caption
+    type: 文字列
+    required: false
+    default: '""'
+    enabled_when: '`kind` が `image` のとき'
+    description: 画像の title。番号の後ろに置く。空なら番号だけを出す
+slots:
+  - name: default
+    description: 囲む画像か表の HTML
+css_properties:
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: 題の文字の色
+accessibility:
+  - 題は `figcaption` で、読み上げが図表の名前として読む
+  - 画像の `alt` は文書に書いたまま残す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[図と表の番号]
+status: planned
+notes:
+  HTML: '`<figure class="mdmark-figure" id="fig-{id}">{画像}<figcaption class="mdmark-figure-caption"><b>図 {number}</b>{caption}</figcaption></figure>`。表は `figcaption`（`<b>表 {number}</b>`）を表の前に置く。題の形は確認ログの決定（図表の番号の題）。モックは `dev/mock/components/figure/`'
