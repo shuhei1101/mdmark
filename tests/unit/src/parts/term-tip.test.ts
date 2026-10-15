@@ -33,9 +33,10 @@ test("test_render_term_tip", async () => {
     docs: [API_DOC],
   });
   // 検証
-  // 意味だけ: role="tooltip" で、関連文書の区分を持たない
+  // 意味だけ: role="tooltip" で、見出し「用語」だけを持つ
   expect(findTag(termOnly, 'id="tip-term"')).toContain('role="tooltip"');
   expect(termOnly).toContain("話し合いの記録を置くフォルダ");
+  expect(termOnly).toContain(">用語<");
   expect(termOnly).not.toContain("関連文書");
   // 関連文書だけ: role="group" で、見出し「関連文書」とリンクを持ち、「用語」の見出しを持たない
   expect(findTag(docsOnly, 'id="tip-docs"')).toContain('role="group"');
@@ -48,6 +49,10 @@ test("test_render_term_tip", async () => {
   expect(both.indexOf(">用語<")).toBeGreaterThan(-1);
   expect(both.indexOf(">用語<")).toBeLessThan(both.indexOf(">関連文書<"));
   expect(both).toContain("文書と用語を並べた YAML のファイル");
+  // どの状態も hidden を持たない（開閉は CSS と attachTermTips が付ける class が決める）
+  for (const html of [termOnly, docsOnly, both]) {
+    expect(html).not.toMatch(/\shidden(?=[\s=>])/);
+  }
 });
 
 // 意味と題をエスケープする（正常系）

@@ -38,16 +38,21 @@ test("test_attach_term_tips", async () => {
   // 準備
   const { attachTermTips } = await loadTerms();
   const root = createRootFromHtml(await termHtml());
+  const wrap = root.querySelector<HTMLElement>(".mdmark-term-wrap");
   const term = root.querySelector<HTMLElement>(".mdmark-term");
-  const tip = root.querySelector<HTMLElement>(".mdmark-term-tip");
   // 実行・検証
-  detachers.push(attachTermTips(root));
-  expect(tip?.hidden).toBe(true);
+  const detach = attachTermTips(root);
+  expect(wrap?.classList.contains("is-open")).toBe(false);
   term?.focus();
-  expect(tip?.hidden).toBe(false);
+  expect(wrap?.classList.contains("is-open")).toBe(true);
   press("Escape");
-  expect(tip?.hidden).toBe(true);
+  expect(wrap?.classList.contains("is-open")).toBe(false);
+  expect(wrap?.classList.contains("is-dismissed")).toBe(true);
   expect(document.activeElement).toBe(term);
+  detach();
+  for (const name of ["is-open", "is-dismissed", "is-above"]) {
+    expect(wrap?.classList.contains(name)).toBe(false);
+  }
 });
 
 // 同じページに 2 回描いても id が重ならない（正常系）
