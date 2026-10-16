@@ -259,7 +259,7 @@ flows:
       - '`ワークスペース` と `公開関数` が class `mdmark-term` の要素で、その隣に意味 `話し合いの記録を置くフォルダ` と関連文書 `API` を持つ要素がある'
       - 文字列の末尾に、題 `関連文書` の一覧がある
       - 文字列に `script` 要素と印の文字（`<!--`）が無い
-      - Node とブラウザで同じ文字列を返す
+      - Node とブラウザで同じ文字列を返す。期待する HTML 文字列をテストの固定値にし、Node の `render` と、ブラウザ（Chromium）で配布物の `render` を呼んだ結果がどちらもその値と等しい
     test: test_normal_when_index
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
