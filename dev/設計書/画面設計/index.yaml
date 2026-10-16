@@ -3,3 +3,5 @@ docs_index: true
 items:
   - page: 文書.ts.yaml
     summary: 描く先の要素の中に描く文書と、mdmark が足す UI の項目
+  - page: まとめたHTML.ts.yaml
+    summary: mdmark build が書き出す 1 枚の HTML の文書の一覧・開いている文書・一覧のパネル

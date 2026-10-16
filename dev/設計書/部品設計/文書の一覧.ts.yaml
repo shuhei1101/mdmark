@@ -1,0 +1,71 @@
+title: "文書の一覧"
+implementation: "src/parts/doc-list.ts#renderDocList"
+story: "Parts/DocList"
+states:
+  - name: Grouped
+    description: フォルダの無い文書と、フォルダごとの見出しを持ち、開いている文書がある
+    args:
+      - name: docs
+        value: '[{"path":"README.md","title":"mdmark の文書"},{"path":"使い方/guide.md","title":"使い方"},{"path":"使い方/導入/配布物を読み込む.md","title":"配布物を読み込む"},{"path":"使い方/導入/文書を描く.md","title":"文書を描く"},{"path":"リファレンス/api.md","title":"API"}]'
+      - name: current
+        value: 使い方/guide.md
+  - name: Flat
+    description: フォルダの無い文書だけで、見出しを置かない
+    args:
+      - name: docs
+        value: '[{"path":"intro.md","title":"はじめに"},{"path":"steps.md","title":"手順"},{"path":"faq.md","title":"よくある質問"}]'
+      - name: current
+        value: intro.md
+  - name: LongText
+    description: 題とフォルダのパスが長く、一覧の幅で折り返す
+    args:
+      - name: docs
+        value: '[{"path":"使い方/カスタマイズ/テーマ/層の外の CSS/load.md","title":"版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで"}]'
+      - name: current
+        value: 使い方/カスタマイズ/テーマ/層の外の CSS/load.md
+  - name: Many
+    description: 文書が多く、置いた先（横の一覧・パネル）の中でスクロールする
+    args:
+      - name: docs
+        value: '[{"path":"README.md","title":"mdmark の文書"},{"path":"はじめに/概要.md","title":"概要"},{"path":"はじめに/仕組み.md","title":"文書を描く仕組み"},{"path":"はじめに/変更履歴.md","title":"変更履歴"},{"path":"使い方/書く/表.md","title":"表に機能を付ける"},{"path":"使い方/書く/部品.md","title":"本文を部品で組む"},{"path":"使い方/書く/図.md","title":"図と表に番号を付ける"},{"path":"使い方/カスタマイズ/テーマ.md","title":"テーマを上書きする"},{"path":"使い方/カスタマイズ/機能.md","title":"機能をオン・オフする"},{"path":"使い方/書き出す/雛形.md","title":"雛形を置く"},{"path":"使い方/書き出す/書き出す.md","title":"文書を書き出す"},{"path":"リファレンス/api.md","title":"API"},{"path":"リファレンス/cli.md","title":"CLI"},{"path":"リファレンス/設定.md","title":"設定"}]'
+      - name: current
+        value: 使い方/書く/部品.md
+lead: まとめた HTML に入れた文書を、フォルダの無い文書を先に、フォルダごとに 1 段の見出しでまとめたリンクの一覧にし、開いている文書の行を示す。
+args:
+  - name: docs
+    type: オブジェクトの配列
+    required: true
+    description: まとめた文書の `{ path, title }` の並び（`build.include` の並び）。`path` は設定ファイルのあるフォルダからの相対パス（区切りは `/`）、`title` は文書の題
+  - name: current
+    type: 文字列
+    required: false
+    default: なし（どの行も開いている文書として示さない）
+    description: 開いている文書の `path`
+css_properties:
+  - name: --mdmark-color-current-bg
+    syntax: <color>
+    default: '#ddf4ff（ダーク #121d2f）'
+    description: 開いている文書の行の背景
+  - name: --mdmark-color-link
+    syntax: <color>
+    default: '#0969da（ダーク #4493f8）'
+    description: 開いている文書の行の文字と、フォーカスの枠の色
+  - name: --mdmark-color-surface
+    syntax: <color>
+    default: '#f6f8fa（ダーク #151b23）'
+    description: ポインターを乗せた行の背景
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: フォルダの見出しの文字の色
+accessibility:
+  - 一覧は `aria-label="文書の一覧"` を持つ `nav` で、ランドマークとして飛べる
+  - 開いている文書のリンクに `aria-current="page"` を付け、背景と文字の色でも示す（太さは変えない）
+  - フォーカスしたリンクには `--mdmark-color-link` の 2px の枠を内側に出す
+  - 題とフォルダのパスは省かず一覧の幅で折り返し、横にはみ出さない
+status: planned
+introduced:
+  pr: 32
+notes:
+  並べ方: フォルダの無い文書を先に `docs` の並びで置き、続けてフォルダ（`path` の最後の `/` より前）ごとに、`docs` に最初に出た順で 1 段の見出しにフォルダのパスを書き、その下に `docs` の並びで文書を置く。フォルダの入れ子はツリーにしない（確認ログの決定）
+  書き出す HTML: '`<nav class="mdmark-doc-list" aria-label="文書の一覧"><div class="mdmark-doc-list-group"><p class="mdmark-doc-list-folder">{フォルダ}</p><ul><li><a href="#/{path}" data-doc-path="{path}">{title}</a></li></ul></div></nav>`。フォルダの無いまとまりは見出しを置かない。モックは `dev/mock/components/doc-list/`'
