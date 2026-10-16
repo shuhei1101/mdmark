@@ -198,6 +198,7 @@ test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
   // 検証
   await expect(term).toHaveCSS("text-decoration-line", "none");
   await expect(page.locator("#doc .mdmark-term-tip")).toBeHidden();
+  await expect(page.locator("#doc nav.mdmark-backlinks")).toBeVisible();
   const suffix = await page
     .locator("#doc nav.mdmark-backlinks a")
     .evaluate((link) => getComputedStyle(link, "::after").content);
