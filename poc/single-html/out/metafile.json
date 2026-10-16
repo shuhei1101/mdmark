@@ -1,0 +1,106 @@
+{
+  "inputs": {
+    "http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.4/+esm": {
+      "bytes": 8211,
+      "imports": [],
+      "format": "esm"
+    },
+    "http-url:https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm": {
+      "bytes": 200205,
+      "imports": [
+        {
+          "path": "http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.4/+esm",
+          "kind": "import-statement",
+          "original": "/npm/@kurkle/color@0.3.4/+esm"
+        }
+      ],
+      "format": "esm"
+    },
+    "http-url:https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/+esm": {
+      "bytes": 20821,
+      "imports": [],
+      "format": "esm"
+    },
+    "http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.2/+esm": {
+      "bytes": 8211,
+      "imports": [],
+      "format": "esm"
+    },
+    "http-url:https://cdn.jsdelivr.net/npm/chart.js@4.4.6/helpers/+esm": {
+      "bytes": 33098,
+      "imports": [
+        {
+          "path": "http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.2/+esm",
+          "kind": "import-statement",
+          "original": "/npm/@kurkle/color@0.3.2/+esm"
+        }
+      ],
+      "format": "esm"
+    },
+    "http-url:https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/+esm": {
+      "bytes": 15142,
+      "imports": [
+        {
+          "path": "http-url:https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/+esm",
+          "kind": "import-statement",
+          "original": "/npm/hammerjs@2.0.8/+esm"
+        },
+        {
+          "path": "http-url:https://cdn.jsdelivr.net/npm/chart.js@4.4.6/helpers/+esm",
+          "kind": "import-statement",
+          "original": "/npm/chart.js@4.4.6/helpers/+esm"
+        }
+      ],
+      "format": "esm"
+    },
+    "poc/single-html/chart-draw.js": {
+      "bytes": 739,
+      "imports": [
+        {
+          "path": "http-url:https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm",
+          "kind": "import-statement",
+          "original": "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm"
+        },
+        {
+          "path": "http-url:https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/+esm",
+          "kind": "import-statement",
+          "original": "https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/+esm"
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "chart-draw.js": {
+      "imports": [],
+      "exports": [
+        "draw"
+      ],
+      "entryPoint": "poc/single-html/chart-draw.js",
+      "inputs": {
+        "http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.4/+esm": {
+          "bytesInOutput": 7599
+        },
+        "http-url:https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm": {
+          "bytesInOutput": 196405
+        },
+        "http-url:https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/+esm": {
+          "bytesInOutput": 20645
+        },
+        "http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.2/+esm": {
+          "bytesInOutput": 7599
+        },
+        "http-url:https://cdn.jsdelivr.net/npm/chart.js@4.4.6/helpers/+esm": {
+          "bytesInOutput": 6634
+        },
+        "http-url:https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/+esm": {
+          "bytesInOutput": 14407
+        },
+        "poc/single-html/chart-draw.js": {
+          "bytesInOutput": 226
+        }
+      },
+      "bytes": 253535
+    }
+  }
+}

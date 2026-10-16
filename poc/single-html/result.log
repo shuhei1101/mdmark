@@ -1,0 +1,19 @@
+$ node poc/single-html/export.ts
+/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/poc-cli-single-html/poc/single-html/out/single-blob.html: 548910 バイト
+/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/poc-cli-single-html/poc/single-html/out/single-data.html: 548908 バイト
+束ねたモジュール: 253535 バイト
+束ねたモジュールに入ったファイル:
+  http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.4/+esm（8211 バイト）
+  http-url:https://cdn.jsdelivr.net/npm/chart.js@4.5.1/+esm（200205 バイト）
+  http-url:https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/+esm（20821 バイト）
+  http-url:https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.2/+esm（8211 バイト）
+  http-url:https://cdn.jsdelivr.net/npm/chart.js@4.4.6/helpers/+esm（33098 バイト）
+  http-url:https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/+esm（15142 バイト）
+  poc/single-html/chart-draw.js（739 バイト）
+束ねたモジュールに残った外部の import: 0 件
+
+$ node poc/single-html/check.ts
+{"browser":"chromium","variant":"blob","outsideRequests":[],"canvas":true,"notices":0,"sortButtons":2,"pinButtons":2,"errors":[]}
+{"browser":"chromium","variant":"data","outsideRequests":[],"canvas":true,"notices":0,"sortButtons":2,"pinButtons":2,"errors":[]}
+{"browser":"firefox","variant":"blob","outsideRequests":[],"canvas":true,"notices":0,"sortButtons":2,"pinButtons":2,"errors":[]}
+{"browser":"firefox","variant":"data","outsideRequests":[],"canvas":true,"notices":0,"sortButtons":2,"pinButtons":2,"errors":[]}
