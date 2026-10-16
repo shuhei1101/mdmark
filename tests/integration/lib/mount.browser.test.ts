@@ -5,6 +5,13 @@ import type {
   MdmarkReferences,
   MountHandle,
 } from "../../../src/index.ts";
+import {
+  DOC_ID,
+  EXPECTED_HTML,
+  INDEX,
+  MARKDOWN,
+  REFERENCES,
+} from "./index-render.ts";
 
 type Built = typeof import("../../../src/index.ts");
 
@@ -883,4 +890,18 @@ test("test_normal_when_backlinks", async () => {
     "API:../api.md",
     "使い方:../使い方/guide.md",
   ]);
+});
+
+// ブラウザで配布物の render を呼んでも、索引つきの出力が固定値と等しい（正常系）
+test("test_normal_when_index_in_browser", async () => {
+  // 準備
+  const { render } = await loadBuilt();
+  // 実行
+  const html = render(MARKDOWN, {
+    index: INDEX,
+    docId: DOC_ID,
+    references: REFERENCES,
+  });
+  // 検証
+  expect(html).toBe(EXPECTED_HTML);
 });
