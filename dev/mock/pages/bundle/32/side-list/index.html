@@ -91,8 +91,8 @@
       </nav>
     </aside>
 
-    <!-- 開いている文書の領域 -->
-    <div class="mdmark-bundle-main">
+    <!-- 開いている文書の領域: ページの主な内容のランドマーク -->
+    <main class="mdmark-bundle-main">
       <!-- 狭い幅の帯: 文書の一覧を開くボタンと、開いている文書の題（[data-bar-title]: app.js が書き換える） -->
       <div class="mdmark-bundle-bar">
         <!-- [data-panel-open]: app.js がパネルを開く -->
@@ -104,7 +104,7 @@
 
       <!-- 描く先の要素: 開いている文書。[data-doc-view]: app.js が文書を差し替える -->
       <article class="mdmark" data-doc-view></article>
-    </div>
+    </main>
   </div>
 
   <!-- 文書の一覧のパネル（狭い幅）: 背景の押下・Esc・閉じるボタン・文書を選ぶと閉じる。開閉は履歴に積まない -->
