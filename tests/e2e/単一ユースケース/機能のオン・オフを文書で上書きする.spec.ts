@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { MdmarkIndex } from "../../../src/index.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -115,4 +116,106 @@ test("test_normal_when_syntax_disabled", async ({ page }) => {
   expect(html).not.toContain("<!--");
   await expect(doc).not.toContainText("features:");
   await expect(doc).not.toContainText("table:");
+});
+
+// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+const INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+    { id: "api", path: "api.md", title: "API", related: ["arch"] },
+  ],
+  terms: [
+    {
+      id: "workspace",
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+    },
+  ],
+};
+
+// `api` の本文（`arch` を参照する側）
+const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
+
+// 文書の印で用語と被参照の機能を外すと、下線も被参照の一覧も付けず、用語集の表を普通の表として描く（正常シナリオ（用語と被参照の機能を外す））
+test("test_normal_when_glossary_disabled", async ({ page }) => {
+  // 準備
+  const markdown = [
+    "<!-- features: -glossary -backlinks -->",
+    "",
+    "ワークスペースを置く。",
+    "",
+    "<!-- glossary: term=用語 meaning=意味 -->",
+    "",
+    "| 用語 | 意味 |",
+    "| --- | --- |",
+    "| 印 | HTML コメントで書く指定 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown,
+    index: INDEX,
+    docId: "arch",
+    documents: DOCUMENTS,
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-term")).toHaveCount(0);
+  await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
+  await expect(doc.locator("table")).toBeVisible();
+  const html = await doc.innerHTML();
+  expect(html).not.toContain("<!--");
+  await expect(doc).not.toContainText("glossary:");
+});
+
+// 文書の印で被参照の機能だけを外すと、用語にだけ下線を引き、関連文書を出さない（正常シナリオ（被参照の機能だけを外す））
+test("test_normal_when_backlinks_disabled", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [
+      { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        aliases: ["公開関数"],
+        related: ["arch"],
+      },
+      {
+        id: "index-ref",
+        path: "索引.md",
+        title: "索引のリファレンス",
+        aliases: ["索引"],
+      },
+    ],
+    terms: [
+      {
+        id: "index",
+        term: "索引",
+        meaning: "文書と用語を並べた YAML のファイル",
+      },
+    ],
+  };
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "<!-- features: -backlinks -->\n\n索引と公開関数を読む。\n",
+    index,
+    docId: "arch",
+    documents: { ...DOCUMENTS, "索引.md": "# 索引\n" },
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  const terms = doc.locator(".mdmark-term");
+  await expect(terms).toHaveText(["索引"]);
+  await terms.hover();
+  const tip = doc.locator(".mdmark-term-tip");
+  await expect(tip).toContainText("文書と用語を並べた YAML のファイル");
+  await expect(tip.locator(".mdmark-term-tip-heading")).toHaveText(["用語"]);
+  await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
 });

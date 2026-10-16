@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { MdmarkIndex, MdmarkReferences } from "../../../src/index.ts";
 import {
   buildDistRoot,
   openPage,
@@ -105,6 +106,44 @@ test("test_normal_when_syntax", async () => {
   expect(html).toContain('id="hello-world"');
   expect(html).toContain("図 1");
   expect(html).toContain('<a href="#fig-arch">図 1</a>');
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
+});
+
+// 用語と被参照を持つ索引
+const INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+    { id: "api", path: "api.md", title: "API", related: ["arch"] },
+  ],
+  terms: [
+    {
+      id: "workspace",
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+    },
+  ],
+};
+
+// `api` が `arch` を参照している参照の表
+const REFERENCES: MdmarkReferences = {
+  backlinks: { arch: ["api"], api: [] },
+  glossary: [],
+};
+
+// 索引・文書の id・参照を渡すと、用語の意味と被参照の一覧を持つ HTML 文字列を返す（正常シナリオ（索引を渡す））
+test("test_normal_when_index", async () => {
+  // 準備・実行
+  const html = await renderInNode(builtRoot, "ワークスペースを置く。\n", {
+    index: INDEX,
+    docId: "arch",
+    references: REFERENCES,
+  });
+  // 検証
+  expect(html).toContain('class="mdmark-term"');
+  expect(html).toContain("話し合いの記録を置くフォルダ");
+  expect(html).toContain('<a href="../api.md">API</a>');
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
 });

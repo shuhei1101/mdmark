@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { MdmarkIndex } from "../../../src/index.ts";
 import {
   buildDistRoot,
   destroyDocument,
@@ -117,4 +118,45 @@ test("test_normal_when_script_in_markdown", async ({ page }) => {
     await page.evaluate(() => (window as unknown as { __ran: boolean }).__ran),
   ).toBe(false);
   await expect(doc.locator("details")).toBeVisible();
+});
+
+// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+const INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+    { id: "api", path: "api.md", title: "API", related: ["arch"] },
+  ],
+  terms: [
+    {
+      id: "workspace",
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+    },
+  ],
+};
+
+// `api` の本文（`arch` を参照する側）
+const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
+
+// 索引・文書の id・参照を渡すと用語に下線を引いて被参照の一覧を付け、本文を差し替えても同じ索引で描き直す（正常シナリオ（索引を渡す））
+test("test_normal_when_index", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: "ワークスペースを置く。\n",
+    index: INDEX,
+    docId: "arch",
+    documents: DOCUMENTS,
+  });
+  const doc = page.locator("#doc");
+  // 検証（描いた直後）
+  await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
+  await expect(doc.locator("nav.mdmark-backlinks a")).toHaveText(["API"]);
+  // 実行
+  await updateDocument(page, "別の段落にもワークスペースを書く。\n");
+  // 検証（差し替えた後）
+  await expect(doc.locator("p")).toContainText("別の段落");
+  await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
+  await expect(doc.locator("nav.mdmark-backlinks a")).toHaveText(["API"]);
 });

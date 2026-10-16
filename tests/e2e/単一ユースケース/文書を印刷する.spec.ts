@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { MdmarkIndex } from "../../../src/index.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -157,4 +158,48 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
   for (const text of hiddenTexts) {
     await expect(doc.getByText(text), text).toBeHidden();
   }
+});
+
+// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+const INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+    { id: "api", path: "api.md", title: "API", related: ["arch"] },
+  ],
+  terms: [
+    {
+      id: "workspace",
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+    },
+  ],
+};
+
+// `api` の本文（`arch` を参照する側）
+const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
+
+// 用語の下線を外してツールチップを出さず、被参照の一覧のリンクの後ろに相対パスを出して印刷する（正常シナリオ（用語と被参照））
+test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: "ワークスペースを置く。\n",
+    index: INDEX,
+    docId: "arch",
+    documents: DOCUMENTS,
+  });
+  const term = page.locator("#doc .mdmark-term");
+  await term.focus();
+  await expect(page.locator("#doc .mdmark-term-tip")).toBeVisible();
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  await expect(term).toHaveCSS("text-decoration-line", "none");
+  await expect(page.locator("#doc .mdmark-term-tip")).toBeHidden();
+  const suffix = await page
+    .locator("#doc nav.mdmark-backlinks a")
+    .evaluate((link) => getComputedStyle(link, "::after").content);
+  expect(suffix).toContain("../api.md");
 });

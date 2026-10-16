@@ -76,3 +76,4 @@ success_guarantee: 索引に無い文書・索引にあって消えた文書・`
 minimal_guarantee: Schema に合わない索引でも例外で止まらず、読めた範囲のずれと Schema のずれを返す。点検は索引と文書を書き換えない。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#
+test_file: tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts
