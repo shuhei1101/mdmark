@@ -1,0 +1,78 @@
+title: "複数の文書を1枚のHTMLにまとめる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本の文書群
+        description: 文書 3 つ（入口・用語集の表を持つ文書・Chart.js の印と画像を持つ文書）と、3 つと用語を載せた索引。入口から他の 2 つへリンクする
+      - name: build の設定
+        description: '`include` が 3 つに当たり、`glossary` が用語集の文書、`entry` が入口、`out` が出力のパス'
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as mdmark
+        participant F as build.out
+        W->>C: mdmark build
+        C->>C: 設定・索引・include の文書を読む
+        C->>M: collectReferences（索引・文書）
+        M-->>C: 参照の表
+        C->>F: 配布物・CSS・モジュール・画像・文書・参照の表を埋めた HTML を書く
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 出力に入れた文書の数として 3 が出る
+      - HTML を file:// で開くと、入口の文書が描かれ、文書の一覧に 3 つが並ぶ
+      - 用語集の文書の表の用語が、入口の文書の本文でもツールチップを出す
+      - 入口からリンクされた文書の末尾に、入口が関連文書（被参照）として出る
+      - 外への要求が 0 件
+    test: test_normal
+  - name: 正常シナリオ（1 枚に含まれない文書へのリンクがある）
+    setup:
+      - name: 外した文書を指す文書群
+        description: 正常シナリオの文書群に下書きの文書を 1 つ足し、`exclude` で外し、入口からその文書へリンクする
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as build.out
+        W->>C: mdmark build
+        C->>C: exclude に当たる文書を外す
+        C->>F: 3 つの文書を埋めた HTML を書く
+        C-->>W: 1 枚に含まれない文書へのリンクの警告・終了コード 0
+    expected:
+      - 終了コードが 0 で、入れた文書の数が 3
+      - 出力の警告に、入口の文書と 1 枚に含まれないリンク先が出る
+      - HTML の中で、そのリンクが書いたままの `href` で残る
+      - 文書の一覧に外した文書が無い
+    test: test_normal_when_link_outside_bundle
+  - name: 異常シナリオ（対象の文書が 0 件）
+    setup:
+      - name: 当たらない include
+        description: '`build.include` がどのファイルにも当たらない設定'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark build
+        C->>C: include に当たる文書が 0 件
+        C-->>W: 対象が 0 件であることと include の直し方・終了コード 0 以外
+    expected:
+      - 終了コードが 0 以外
+      - 出力に対象が 0 件であることと、設定の `build.include` を直すことが出る
+      - '`build.out` に HTML が書かれていない'
+    test: test_error_when_no_documents
+lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
+issue: 9
+primary_actor: 文書を書く人
+trigger: 文書を書く人が、複数の文書を行き来できる形でサーバー無しで配りたくなる
+preconditions:
+  - 文書を書く人の手元に Node 24 以降がある
+  - 設定ファイルに `build` がある
+success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に当たり `exclude` に当たらない文書が全て入る。索引があれば、文書をまたぐ被参照と用語のツールチップが効く。1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは書いたままの `href` で残る。'
+minimal_guarantee: 対象の文書が 0 件のときは HTML を書かず、原因と直し方の 1 文を出して 0 以外で終わる。CLI は文書と索引を書き換えない。

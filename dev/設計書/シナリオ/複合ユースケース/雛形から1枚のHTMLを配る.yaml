@@ -26,6 +26,11 @@ scenarios:
       - 文書間のリンクから別の文書へ移れる
       - 用語のツールチップ・被参照の一覧・Chart.js の図・相対パスで指した画像が描かれる
     test: test_normal
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/雛形を置く#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ]
   - name: 正常シナリオ（1 文書だけを書き出す）
     setup:
       - name: 空のフォルダ
@@ -43,6 +48,9 @@ scenarios:
       - '`mdmark export` が指定した出力に 1 枚の HTML を書き、終了コード 0 を返す'
       - 書き出した HTML だけを別の空のフォルダへ写して file:// で開くと、外への要求が 0 件で、文書・Chart.js の図・相対パスで指した画像が描かれる
     test: test_normal_when_single_document
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/雛形を置く#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ]
   - name: 異常シナリオ（点検でずれが見つかる）
     setup:
       - name: ずれを持つ文書群
@@ -65,6 +73,11 @@ scenarios:
       - ずれを直した索引での 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返す
       - その後の `mdmark build` が 1 枚の HTML を書く
     test: test_error_when_drift
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/雛形を置く#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（ずれがある）]
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ]
 lead: 文書を書く人が、サーバーを持たずに CLI で雛形を置き、文書と索引を書いて点検し、1 枚の HTML にまとめて配る。読む人は受け取った HTML を file:// で開き、外を読まずに文書を行き来する。
 issue: 9
 primary_actor: 文書を書く人

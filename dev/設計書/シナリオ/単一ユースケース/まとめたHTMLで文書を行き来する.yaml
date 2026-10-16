@@ -1,0 +1,100 @@
+title: "まとめたHTMLで文書を行き来する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: まとめた HTML
+        description: 文書 A（`entry`）・B・C をまとめた HTML。A は文書間のリンクを持たず、B は C へリンクし、目次の印と h2 を 2 つ持つ
+      - name: Mock
+        description: 差し替える依存は無い（HTML だけを空のフォルダへ写して file:// で開く）
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: URL の # を付けずに開く
+        P-->>R: A と文書の一覧（A が開いている）
+        R->>P: 一覧で B を選ぶ
+        P-->>R: B
+        R->>P: B の目次で 2 つ目の見出しを押す
+        P-->>R: B の 2 つ目の見出しへ移る
+        R->>P: B の C へのリンクを押す
+        P-->>R: C
+        R->>P: ブラウザの戻る
+        P-->>R: B
+        R->>P: ブラウザの戻る
+        P-->>R: A
+        R->>P: ブラウザの進む
+        P-->>R: B
+    expected:
+      - 開いたとき A が出て、文書の一覧で A が開いている文書として示される（`aria-current`）
+      - 一覧で B を選ぶと B が出て、URL が B を指す
+      - 目次のリンクで B の中の見出しへ移り、開いている文書は B のまま
+      - B のリンクで C が出る
+      - 戻るで B、もう一度戻るで A、進むで B が出る
+      - 外への要求が 0 件
+    test: test_normal
+  - name: 正常シナリオ（URL が文書と見出しを指す）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: URL の # で B の 2 つ目の見出しを指して開く
+        P-->>R: B の 2 つ目の見出し
+    expected:
+      - B が出て、2 つ目の見出しが画面に入っている
+      - 文書の一覧で B が開いている文書として示される
+    test: test_normal_when_url_points_heading
+  - name: 正常シナリオ（狭い幅で文書の一覧を開く）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオと同じ
+      - name: 狭い幅
+        description: 画面の幅 390px
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: 開く
+        P-->>R: A（文書の一覧は閉じている）
+        R->>P: 文書の一覧を開く
+        P-->>R: 文書の一覧のパネル
+        R->>P: パネルで B を選ぶ
+        P-->>R: パネルを閉じ、B
+        R->>P: ブラウザの戻る
+        P-->>R: A
+    expected:
+      - 開いたとき A が出て、文書の一覧は閉じている
+      - 一覧を開く操作でパネルが開き、B を選ぶとパネルが閉じて B が出る
+      - 戻るでパネルではなく A が出る（パネルの開閉が履歴に積まれていない）
+      - 横スクロールが出ない
+    test: test_normal_when_narrow
+  - name: 異常シナリオ（URL が 1 枚に無い文書を指す）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: URL の # で 1 枚に無い文書を指して開く
+        P-->>R: A
+    expected:
+      - A が出て、文書の一覧で A が開いている文書として示される
+      - ページに例外が出ない
+    test: test_error_when_url_points_missing_document
+lead: 読む人が `mdmark build` の 1 枚の HTML を file:// で開き、文書の一覧・文書間のリンク・ブラウザの戻ると進むで文書を行き来し、見出しのアンカーと目次で節へ移る。
+issue: 9
+primary_actor: 読む人
+trigger: 読む人が、受け取った 1 枚の HTML を開く
+preconditions:
+  - 読む人のブラウザが非機能要件『対応ブラウザ』の版以降
+success_guarantee: 開くと URL が指す文書（指していなければ `entry` の文書）が出る。文書を移るたびに履歴に積み、戻る・進むで見てきた順に行き来できる。一覧のパネルの開閉は履歴に積まない。外への要求は 0 件。
+minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読める状態にする。

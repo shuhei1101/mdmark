@@ -1,0 +1,67 @@
+title: "雛形を置く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 空のフォルダ
+        description: 置く先の作業のフォルダ。何も置いていない
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init
+        C->>F: 設定・theme.css・索引・TypeScript の拡張のビルドの雛形を書く
+        C-->>W: 置いたファイルの一覧・終了コード 0
+    expected:
+      - '`mdmark.config.yaml`・`theme.css`・索引の雛形・拡張のビルドの雛形（tsconfig とビルドのコマンド）がある'
+      - 置いた `mdmark.config.yaml` と索引が、設定と索引の JSON Schema に合う
+      - 出力に置いたファイルの一覧が出て、終了コードが 0
+    test: test_normal
+  - name: 正常シナリオ（JavaScript の雛形を置く）
+    setup:
+      - name: 空のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init（JavaScript を指定）
+        C->>F: 設定・theme.css・索引・JavaScript の拡張の雛形を書く
+        C-->>W: 置いたファイルの一覧・終了コード 0
+    expected:
+      - 拡張の雛形が JavaScript で、TypeScript の雛形と tsconfig が無い
+      - 設定・`theme.css`・索引の雛形は正常シナリオと同じ
+      - 終了コードが 0
+    test: test_normal_when_javascript
+  - name: 正常シナリオ（既にあるファイルがある）
+    setup:
+      - name: 設定を書いたフォルダ
+        description: 文書を書く人が中身を書いた `mdmark.config.yaml` だけがあるフォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init
+        C->>F: 無いファイルだけを書く
+        C-->>W: 置いたファイルと置かなかったファイルの一覧・終了コード 0
+    expected:
+      - '`mdmark.config.yaml` の中身が変わっていない'
+      - '`theme.css`・索引の雛形・拡張のビルドの雛形がある'
+      - 出力に置かなかったファイルとして `mdmark.config.yaml` が出て、終了コードが 0
+    test: test_normal_when_file_exists
+lead: 文書を書く人が `mdmark init` を流し、設定・使う側の CSS・索引・拡張のビルドの雛形をフォルダに置く。
+issue: 9
+primary_actor: 文書を書く人
+trigger: 文書を書く人が、mdmark で文書を書き出すフォルダを用意する
+preconditions:
+  - 文書を書く人の手元に Node 24 以降がある
+success_guarantee: 置く先のフォルダに `mdmark.config.yaml`・`theme.css`・索引の雛形・拡張のビルドの雛形があり、置いたファイルの一覧が出る。
+minimal_guarantee: 既にあるファイルは上書きせず、置かなかったファイルの一覧を出す。

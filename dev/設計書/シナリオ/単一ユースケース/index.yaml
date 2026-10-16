@@ -40,3 +40,13 @@ items:
     summary: 描いた文書を参照している文書と、用語が出る文書を見る
   - page: 索引と文書のずれを点検する.yaml
     summary: 使う側の処理が索引と文書を渡し、ずれの一覧を受け取る
+  - page: 雛形を置く.yaml
+    summary: 文書を書く人が `mdmark init` で設定・使う側の CSS・索引・拡張のビルドの雛形を置く
+  - page: 設定と索引を点検する.yaml
+    summary: 文書を書く人が `mdmark check` で設定と索引の形・索引と文書のずれ・書き出す対象を確かめる
+  - page: 文書をHTMLに書き出す.yaml
+    summary: 文書を書く人が `mdmark export` で 1 文書を、外を読まない 1 枚の HTML に書き出す
+  - page: 複数の文書を1枚のHTMLにまとめる.yaml
+    summary: 文書を書く人が `mdmark build` で、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる
+  - page: まとめたHTMLで文書を行き来する.yaml
+    summary: 読む人がまとめた HTML を file:// で開き、文書の一覧・リンク・戻ると進むで文書を行き来する
