@@ -1,4 +1,4 @@
-title: ""
+title: "文書をHTMLに書き出す"
 entry:
   kind: operation
   value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} export` で呼ぶ）'

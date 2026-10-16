@@ -1,4 +1,4 @@
-title: ""
+title: "雛形を置く"
 entry:
   kind: operation
   value: '`mdmark init [{置く先のフォルダ}] [--js]`（CLI。`npx github:shuhei1101/mdmark#v{版} init` で呼ぶ）'

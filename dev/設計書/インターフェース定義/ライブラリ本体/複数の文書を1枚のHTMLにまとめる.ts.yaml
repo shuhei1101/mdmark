@@ -1,4 +1,4 @@
-title: ""
+title: "複数の文書を1枚のHTMLにまとめる"
 entry:
   kind: operation
   value: '`mdmark build [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} build` で呼ぶ）'

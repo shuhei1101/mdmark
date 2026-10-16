@@ -1,4 +1,4 @@
-title: ""
+title: "設定と索引を点検する"
 entry:
   kind: operation
   value: '`mdmark check [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
