@@ -85,7 +85,7 @@
   });
 
   // closedby を持たないブラウザ: 背景の押下で閉じる
-  if (!("closedBy" in HTMLDialogElement.prototype)) {
+  if (typeof HTMLDialogElement !== "undefined" && !("closedBy" in HTMLDialogElement.prototype)) {
     panel.addEventListener("click", (event) => {
       if (event.target !== panel) return;
       const rect = panel.getBoundingClientRect();
@@ -95,7 +95,7 @@
   }
 
   // 広い幅に戻ったら、横の一覧が出るのでパネルを閉じる
-  window.matchMedia("(width >= 60rem)").addEventListener("change", (event) => {
+  window.matchMedia("(min-width: 60rem)").addEventListener("change", (event) => {
     if (event.matches && panel.open) panel.close();
   });
 
