@@ -6,8 +6,8 @@ $ npm run test:integration
 
  RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-metadata-index-glossary-backlinks
 
-9:06:03 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+9:17:49 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -18,9 +18,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js
-9:06:03 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js
+9:17:49 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -31,9 +31,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=1
-9:06:04 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=1
+9:17:49 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -44,9 +44,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=2
-9:06:04 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=2
+9:17:49 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -57,9 +57,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=3
-9:06:04 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=3
+9:17:49 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -70,9 +70,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=4
-9:06:04 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=4
+9:17:50 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -83,9 +83,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=5
-9:06:05 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=5
+9:17:50 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -96,9 +96,9 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=6
-9:06:05 AM [vite] (client) warning: 
-/tmp/mdmark-integration-dist-Uel74c/dist/index.js
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=6
+9:17:50 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-lB41y9/dist/index.js
 17 |  `}return r}render(e,t,n){let r="",i=this.rules;for(let s=0,o=e.length;s<o;s++){let a=e[s].type;a==="inline"?r+=this.r...
 18 |  `),t=t.replace(Mc,"\uFFFD"),e.src=t}function Lc(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
 19 |  ...44\u3002</p></div>`}var As="data-mdmark-drawn",Du=e=>import(e);async function vs(e){let{root:t,libraries:n,isCurre...
@@ -109,10 +109,10 @@ The above dynamic import cannot be analyzed by Vite.
 See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
 
   Plugin: vite:import-analysis
-  File: /tmp/mdmark-integration-dist-Uel74c/dist/index.js?test=7
+  File: /tmp/mdmark-integration-dist-lB41y9/dist/index.js?test=7
 
  Test Files  22 passed (22)
-      Tests  119 passed (119)
-   Start at  09:05:21
-   Duration  56.69s (tests 70%, import 20%, transform 8%, worker 2%)
+      Tests  120 passed (120)
+   Start at  09:17:02
+   Duration  61.66s (tests 71%, import 20%, transform 7%, worker 2%)
 
