@@ -1,10 +1,23 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, inject, test, vi } from "vitest";
-import type { MdmarkConfig, MdmarkExtension } from "../../../src/index.ts";
+import type {
+  MdmarkConfig,
+  MdmarkExtension,
+  MdmarkIndex,
+  MdmarkReferences,
+} from "../../../src/index.ts";
 
 type Built = {
-  render: (markdown: string, opts?: { config?: MdmarkConfig }) => string;
+  render: (
+    markdown: string,
+    opts?: {
+      config?: MdmarkConfig;
+      index?: MdmarkIndex;
+      docId?: string;
+      references?: MdmarkReferences;
+    },
+  ) => string;
   registerExtension: (extension: MdmarkExtension) => void;
 };
 
@@ -435,4 +448,48 @@ test("test_normal_when_extension_mark", async () => {
   );
   expect(load).not.toHaveBeenCalled();
   expect(validate).not.toHaveBeenCalled();
+});
+
+// 用語の意味・関連文書・末尾の関連文書の一覧を、スクリプト無しで読める HTML 文字列にする（正常系）
+test("test_normal_when_index", async () => {
+  // 準備
+  const render = await loadRender();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [
+      { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+      { id: "api", path: "api.md", title: "API", aliases: ["公開関数"] },
+      { id: "guide", path: "使い方/guide.md", title: "使い方" },
+    ],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+      },
+    ],
+  };
+  const references: MdmarkReferences = {
+    backlinks: { arch: ["api", "guide"], api: ["arch"], guide: [] },
+    glossary: [],
+  };
+  const markdown = "ワークスペースを置き、公開関数を使う。\n";
+  // 実行
+  const html = render(markdown, { index, docId: "arch", references });
+  // 検証
+  expect(typeof document).toBe("undefined");
+  expect(
+    startTags(html, "span").filter((tag) =>
+      tag.includes('class="mdmark-term"'),
+    ),
+  ).toHaveLength(2);
+  expect(html).toContain("話し合いの記録を置くフォルダ");
+  expect(html).toContain('<a href="../api.md">API</a>');
+  const list = html.slice(html.indexOf('<nav class="mdmark-backlinks"'));
+  expect(list).toContain("関連文書");
+  expect(list).toContain('href="../api.md"');
+  expect(list).toContain('href="../使い方/guide.md"');
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
+  expect(render(markdown, { index, docId: "arch", references })).toBe(html);
 });

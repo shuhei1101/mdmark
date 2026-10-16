@@ -139,3 +139,4 @@ constraints:
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
   - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+test_file: tests/integration/lib/check-index.test.ts

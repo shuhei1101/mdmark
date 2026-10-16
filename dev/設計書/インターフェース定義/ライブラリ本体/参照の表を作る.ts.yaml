@@ -178,3 +178,4 @@ constraints:
 refs:
   - dev/設計書/シナリオ/単一ユースケース/被参照を見る#
   - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#
+test_file: tests/integration/lib/collect-references.test.ts

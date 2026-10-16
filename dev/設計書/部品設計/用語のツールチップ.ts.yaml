@@ -104,3 +104,4 @@ status: planned
 notes:
   出力の形: '`<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="{id}-meaning" aria-details="{id}">{text}</span><span class="mdmark-term-tip" id="{id}" role="group" aria-label="「{text}」の用語と関連文書">…</span></span>`。区分は `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`（「用語」「関連文書」）を置き、意味は `mdmark-term-tip-meaning`、関連文書は `mdmark-term-tip-docs` の中の `mdmark-term-tip-doc`（題の `a` と `mdmark-term-tip-doc-desc`）。意味だけのときは `role="tooltip"` で `aria-details` を持たない。モックは `dev/mock/components/term-tooltip/`'
   印刷: 印刷の CSS で下線とツールチップを外し、語を本文の文字として出す
+test_file: tests/integration/lib/term-tip.story.test.ts
