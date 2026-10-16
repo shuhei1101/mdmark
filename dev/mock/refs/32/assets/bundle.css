@@ -1,0 +1,220 @@
+/* まとめた HTML の画面（bundle）と文書の一覧の部品（doc-list）の規則 */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  /* ---------- 文書の一覧 ---------- */
+
+  /* 文書の一覧: フォルダごとのまとまりを縦に並べる */
+  .mdmark-doc-list {
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+
+    /* 文書の並び: 記号を付けない */
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* 文書同士の間隔 */
+    li + li {
+      margin-block-start: 2px;
+    }
+
+    /* 文書のリンク: 行の全体を押せるようにする */
+    a {
+      display: block;
+      padding: 0.35em 0.65em;
+      border-radius: var(--mdmark-radius);
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* 開いている文書: 行の背景と文字の色で示す（太さは変えない） */
+      &[aria-current="page"] {
+        background: var(--mdmark-color-current-bg);
+        color: var(--mdmark-color-link);
+      }
+    }
+  }
+
+  /* フォルダのまとまり同士の間隔 */
+  .mdmark-doc-list-group + .mdmark-doc-list-group {
+    margin-block-start: calc(var(--mdmark-space) * 0.9);
+  }
+
+  /* フォルダの見出し: フォルダのパスを控えめな文字で書く */
+  .mdmark-doc-list-folder {
+    margin: 0 0 0.25em;
+    padding-inline: 0.65em;
+    color: var(--mdmark-color-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  /* ---------- まとめた HTML の画面 ---------- */
+
+  /* 画面全体: 左に文書の一覧、右に開いている文書 */
+  .mdmark-bundle {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr);
+    min-height: 100svh;
+    background: var(--mdmark-color-bg);
+  }
+
+  /* 横の文書の一覧: 文書を読み進めても画面に留める */
+  .mdmark-bundle-side {
+    position: sticky;
+    inset-block-start: 0;
+    height: 100svh;
+    padding: var(--mdmark-padding) calc(var(--mdmark-space) * 0.75);
+    border-inline-end: 1px solid var(--mdmark-color-border);
+    overflow-y: auto;
+  }
+
+  /* 開いている文書の領域 */
+  .mdmark-bundle-main {
+    min-width: 0;
+
+    /* 描いた文書: 領域の中央に寄せる */
+    .mdmark {
+      margin-inline: auto;
+      padding: var(--mdmark-padding);
+    }
+  }
+
+  /* 狭い幅の帯: 文書の一覧を開くボタンと、開いている文書の題 */
+  .mdmark-bundle-bar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    display: none;
+    gap: 0.75em;
+    align-items: center;
+    padding: 0.5rem var(--mdmark-space);
+    border-block-end: 1px solid var(--mdmark-color-border);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+  }
+
+  /* 帯の中の開いている文書の題: 1 行に収め、収まらない分は省く */
+  .mdmark-bundle-bar-title {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 帯とパネルのボタン: 高さを揃え、線で囲む */
+  .mdmark-bundle-button {
+    display: inline-flex;
+    flex: none;
+    gap: 0.4em;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0 0.75em;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    font: inherit;
+    font-size: 0.9375rem;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--mdmark-color-surface);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+
+    /* アイコンだけのボタン（閉じる）: 幅を高さに揃える */
+    &.is-icon {
+      justify-content: center;
+      width: 2.25rem;
+      padding: 0;
+    }
+
+    /* ボタンのアイコン: 線で描き、文字の色に合わせる */
+    svg {
+      width: 1em;
+      height: 1em;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-width: 1.5;
+    }
+  }
+
+  /* 文書の一覧のパネル: 左の端から重ねて開く */
+  .mdmark-bundle-panel {
+    inset-block: 0;
+    inset-inline: 0 auto;
+    width: min(20rem, 85vw);
+    max-width: none;
+    height: 100svh;
+    max-height: none;
+    margin: 0;
+    padding: var(--mdmark-space) calc(var(--mdmark-space) * 0.75);
+    border: 0;
+    border-inline-end: 1px solid var(--mdmark-color-border);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+
+    /* パネルの後ろ: 文書を暗くして、押すと閉じる面にする */
+    &::backdrop {
+      background: rgb(0 0 0 / 0.4);
+    }
+  }
+
+  /* パネルの頭: 題と閉じるボタン */
+  .mdmark-bundle-panel-head {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: calc(var(--mdmark-space) * 0.75);
+    font-family: var(--mdmark-font-body);
+  }
+
+  /* パネルの題 */
+  .mdmark-bundle-panel-title {
+    margin: 0;
+    color: var(--mdmark-color-heading);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  /* 狭い幅: 横の一覧を外し、帯のボタンからパネルで開く */
+  @media (width < 60rem) {
+    /* 画面全体: 文書だけの 1 列にする */
+    .mdmark-bundle {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* 横の文書の一覧: 出さない */
+    .mdmark-bundle-side {
+      display: none;
+    }
+
+    /* 狭い幅の帯: 出す */
+    .mdmark-bundle-bar {
+      display: flex;
+    }
+  }
+}

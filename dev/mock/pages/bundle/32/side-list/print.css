@@ -1,0 +1,25 @@
+/* まとめた HTML を紙に出すときの規則: 文書の一覧・帯・パネルを出さず、開いている文書だけを出す */
+
+/* mdmark の層: 画面の規則と同じ層に置く */
+@layer mdmark {
+  /* 画面全体: 並べをやめ、文書を紙の幅に流す */
+  .mdmark-bundle {
+    display: block;
+    min-height: 0;
+  }
+
+  /* 文書の一覧・狭い幅の帯・パネル: 出さない */
+  :is(.mdmark-bundle-side, .mdmark-bundle-bar, .mdmark-bundle-panel) {
+    display: none;
+  }
+
+  /* 開いている文書: 余白を紙の余白に任せる */
+  .mdmark-bundle-main .mdmark {
+    padding: 0;
+  }
+}
+
+/* モック専用の操作列とパンくず: 紙に出さない */
+:is(.mock-bar, .mock-breadcrumb) {
+  display: none;
+}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>bundle / side-list（まとめた HTML） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット）: 目次・見出しのアンカー・表 -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- 被参照の一覧の規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/27/assets/glossary.css">
+  <!-- まとめた HTML の画面と文書の一覧の規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/32/assets/bundle.css">
+  <!-- この画面の規則（モックのパンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で app.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/27/assets/glossary-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 文書の行き来・一覧のパネル・印刷の見え方 -->
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色・開き方の例・印刷の見え方 -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- 開き方の例: URL の # を付けない・文書と見出しを指す・1 枚に無い文書を指す -->
+    <div class="mock-bar-group" role="group" aria-label="開き方">
+      <a class="mock-bar-item" href="./index.html">URL を付けずに開く</a>
+      <a class="mock-bar-item" href="./index.html#/使い方/guide.md#描く">文書と見出しを指して開く</a>
+      <a class="mock-bar-item" href="./index.html#/下書き/メモ.md">1 枚に無い文書を指して開く</a>
+    </div>
+    <!-- [data-preview-toggle]: app.js が印刷の規則を画面にも当て、明るい配色にする（モックだけの仕組み） -->
+    <div class="mock-bar-group">
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+  </div>
+
+  <!-- パンくず -->
+  <nav class="mock-breadcrumb" aria-label="パンくず">
+    <a href="../../../index.md">pages</a> / <a href="../../index.md">bundle</a> / <a href="../index.md">32</a> / side-list
+  </nav>
+
+  <!-- まとめた HTML の画面: mdmark build が書き出す 1 枚の HTML の body の中身 -->
+  <div class="mdmark-bundle">
+    <!-- 横の文書の一覧（PC 幅）: フォルダの無い文書を先に、フォルダごとに 1 段の見出しでまとめる。[data-doc-list]: app.js がパネルへ写す元 -->
+    <aside class="mdmark-bundle-side">
+      <nav class="mdmark-doc-list" aria-label="文書の一覧" data-doc-list>
+        <div class="mdmark-doc-list-group">
+          <ul>
+            <li><a href="#/README.md" data-doc-path="README.md">mdmark の文書</a></li>
+          </ul>
+        </div>
+        <div class="mdmark-doc-list-group">
+          <p class="mdmark-doc-list-folder">はじめに</p>
+          <ul>
+            <li><a href="#/はじめに/変更履歴.md" data-doc-path="はじめに/変更履歴.md">変更履歴</a></li>
+          </ul>
+        </div>
+        <div class="mdmark-doc-list-group">
+          <p class="mdmark-doc-list-folder">使い方</p>
+          <ul>
+            <li><a href="#/使い方/guide.md" data-doc-path="使い方/guide.md">使い方</a></li>
+          </ul>
+        </div>
+        <div class="mdmark-doc-list-group">
+          <p class="mdmark-doc-list-folder">使い方/導入</p>
+          <ul>
+            <li><a href="#/使い方/導入/配布物を読み込む.md" data-doc-path="使い方/導入/配布物を読み込む.md">版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで</a></li>
+          </ul>
+        </div>
+        <div class="mdmark-doc-list-group">
+          <p class="mdmark-doc-list-folder">リファレンス</p>
+          <ul>
+            <li><a href="#/リファレンス/api.md" data-doc-path="リファレンス/api.md">API</a></li>
+            <li><a href="#/リファレンス/設定.md" data-doc-path="リファレンス/設定.md">設定</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- 開いている文書の領域 -->
+    <div class="mdmark-bundle-main">
+      <!-- 狭い幅の帯: 文書の一覧を開くボタンと、開いている文書の題（[data-bar-title]: app.js が書き換える） -->
+      <div class="mdmark-bundle-bar">
+        <!-- [data-panel-open]: app.js がパネルを開く -->
+        <button class="mdmark-bundle-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="doc-list-panel" data-panel-open>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.75 4h10.5"/><path d="M2.75 8h10.5"/><path d="M2.75 12h10.5"/></svg>文書の一覧
+        </button>
+        <span class="mdmark-bundle-bar-title" data-bar-title></span>
+      </div>
+
+      <!-- 描く先の要素: 開いている文書。[data-doc-view]: app.js が文書を差し替える -->
+      <article class="mdmark" data-doc-view></article>
+    </div>
+  </div>
+
+  <!-- 文書の一覧のパネル（狭い幅）: 背景の押下・Esc・閉じるボタン・文書を選ぶと閉じる。開閉は履歴に積まない -->
+  <dialog class="mdmark-bundle-panel" id="doc-list-panel" closedby="any" aria-labelledby="doc-list-panel-title">
+    <div class="mdmark-bundle-panel-head">
+      <p class="mdmark-bundle-panel-title" id="doc-list-panel-title">文書の一覧</p>
+      <!-- [data-panel-close]: app.js がパネルを閉じる -->
+      <button class="mdmark-bundle-button is-icon" type="button" aria-label="文書の一覧を閉じる" data-panel-close>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8"/><path d="M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <!-- [data-panel-body]: app.js が横の文書の一覧を写す -->
+    <div data-panel-body></div>
+  </dialog>
+
+  <!-- 埋めた文書: render の本文。文書間のリンク・見出しのアンカー・目次・関連文書のリンクは、1 枚の中の文書を指す #/{文書のパス}#{見出しの ID} に直してある。
+       1 枚に含まれない文書へのリンクは書いたままの href で残る。[data-doc-path]・[data-doc-title]: app.js が URL と照らし、帯とタブの題に使う -->
+
+  <!-- entry の文書: 文書間のリンクを持たない -->
+  <template data-doc-path="README.md" data-doc-title="mdmark の文書">
+<h1 class="mdmark-heading" id="mdmark-の文書">mdmark の文書<a class="mdmark-anchor" href="#/README.md#mdmark-の文書" aria-label="「mdmark の文書」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<p>この 1 枚の HTML には、mdmark の使い方と API の文書をまとめています。</p>
+<h2 class="mdmark-heading" id="まとめた文書">まとめた文書<a class="mdmark-anchor" href="#/README.md#まとめた文書" aria-label="「まとめた文書」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<p>文書は、はじめに・使い方・リファレンスの 3 つのフォルダに分かれます。</p>
+  </template>
+
+  <!-- 目次と h2 を 2 つ持ち、API の文書と 1 枚に無い文書へリンクする文書 -->
+  <template data-doc-path="使い方/guide.md" data-doc-title="使い方">
+<h1 class="mdmark-heading" id="使い方">使い方<a class="mdmark-anchor" href="#/使い方/guide.md#使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<nav class="mdmark-toc" aria-labelledby="toc-guide">
+  <p class="mdmark-toc-title" id="toc-guide">目次</p>
+  <ul><li><a href="#/使い方/guide.md#読み込む">読み込む</a></li><li><a href="#/使い方/guide.md#描く">描く</a></li></ul>
+</nav>
+<h2 class="mdmark-heading" id="読み込む">読み込む<a class="mdmark-anchor" href="#/使い方/guide.md#読み込む" aria-label="「読み込む」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<p>使う側のページは、版のタグを固定した URL で配布物の JavaScript と CSS を読み込みます。</p>
+<pre tabindex="0" aria-label="コード: html"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.3.0/dist/index.css"&gt;</code></pre>
+<!-- 1 枚に含まれない文書へのリンク: 書いたままの href で残る -->
+<p>読み込みの決まりは、まだ書きかけの <a href="../下書き/メモ.md">読み込みのメモ</a> にもまとめています。</p>
+<h2 class="mdmark-heading" id="描く">描く<a class="mdmark-anchor" href="#/使い方/guide.md#描く" aria-label="「描く」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h2>
+<p>配布物を読んだページで <code>mount</code> を呼ぶと、要素の中に文書を描きます。</p>
+<!-- 文書間のリンク: 1 枚の中の API の文書へ移る -->
+<p>引数の一覧は <a href="#/リファレンス/api.md">API</a> に書きました。</p>
+<p>描いた文書は、印の書き方に従って表やタブを付けます。</p>
+<p>描き終えた後に本文を差し替えるときも、同じ要素に <code>mount</code> を呼び直します。</p>
+<p>描く先の要素を片付けるときは、<code>mount</code> が返す関数を呼びます。</p>
+<p>片付けた後の要素には、何も残りません。</p>
+  </template>
+
+  <!-- 表と、使い方の文書からの関連文書を持つ文書 -->
+  <template data-doc-path="リファレンス/api.md" data-doc-title="API">
+<h1 class="mdmark-heading" id="api">API<a class="mdmark-anchor" href="#/リファレンス/api.md#api" aria-label="「API」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<p>配布物の公開関数の一覧です。</p>
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: API">
+    <thead><tr><th>関数</th><th>受け持つもの</th></tr></thead>
+    <tbody>
+      <tr><td data-label="関数"><code>mount</code></td><td data-label="受け持つもの">要素の中に文書を描く</td></tr>
+      <tr><td data-label="関数"><code>render</code></td><td data-label="受け持つもの">画面を持たずに Markdown を HTML 文字列にする</td></tr>
+      <tr><td data-label="関数"><code>version</code></td><td data-label="受け持つもの">読み込んだ配布物の版を返す</td></tr>
+    </tbody>
+  </table>
+</div>
+<!-- 関連文書のリンク: 1 枚の中の文書へ移る -->
+<nav class="mdmark-backlinks" aria-labelledby="backlinks-api">
+  <p class="mdmark-backlinks-title" id="backlinks-api">関連文書</p>
+  <ul>
+    <li><a href="#/使い方/guide.md">使い方</a></li>
+  </ul>
+</nav>
+  </template>
+
+  <!-- 題が長い文書 -->
+  <template data-doc-path="使い方/導入/配布物を読み込む.md" data-doc-title="版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで">
+<h1 class="mdmark-heading" id="版を固定した-url-で-javascript-と-css-を読み込み要素に文書を描くまで">版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで<a class="mdmark-anchor" href="#/使い方/導入/配布物を読み込む.md#版を固定した-url-で-javascript-と-css-を読み込み要素に文書を描くまで" aria-label="「版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<p>版のタグを固定した URL を使うと、配布物が後から変わりません。</p>
+  </template>
+
+  <!-- 設定の文書 -->
+  <template data-doc-path="リファレンス/設定.md" data-doc-title="設定">
+<h1 class="mdmark-heading" id="設定">設定<a class="mdmark-anchor" href="#/リファレンス/設定.md#設定" aria-label="「設定」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<p>設定ファイル <code>mdmark.config.yaml</code> のキーの一覧です。</p>
+  </template>
+
+  <!-- 変更履歴の文書 -->
+  <template data-doc-path="はじめに/変更履歴.md" data-doc-title="変更履歴">
+<h1 class="mdmark-heading" id="変更履歴">変更履歴<a class="mdmark-anchor" href="#/はじめに/変更履歴.md#変更履歴" aria-label="「変更履歴」へのリンク"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 9.25l2.5-2.5"/><path d="M7.25 4.75l1-1a2.47 2.47 0 013.5 3.5l-1 1"/><path d="M8.75 11.25l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"/></svg></a></h1>
+<p>版ごとの変更の一覧です。</p>
+  </template>
+</body>
+</html>

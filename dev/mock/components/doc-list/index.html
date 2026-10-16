@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>doc-list | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- カタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 文書の一覧の規則（#32 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/32/assets/bundle.css">
+  <!-- 見本の枠の規則 -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">文書の一覧</h1>
+
+      <!-- 開いている文書がある: 行の背景と文字の色で示し、aria-current="page" を付ける。フォルダの無い文書を先に、フォルダごとに 1 段の見出し -->
+      <section aria-labelledby="state-current">
+        <h2 class="catalog-label" id="state-current">開いている文書がある（フォルダごとに 1 段の見出しにパスを書く）</h2>
+        <div class="catalog-side">
+          <nav class="mdmark-doc-list" aria-label="文書の一覧（開いている文書がある）">
+            <div class="mdmark-doc-list-group">
+              <ul>
+                <li><a href="#state-current">mdmark の文書</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方</p>
+              <ul>
+                <li><a href="#state-current" aria-current="page">使い方</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方/導入</p>
+              <ul>
+                <li><a href="#state-current">配布物を読み込む</a></li>
+                <li><a href="#state-current">文書を描く</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">リファレンス</p>
+              <ul>
+                <li><a href="#state-current">API</a></li>
+                <li><a href="#state-current">設定</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- フォルダの無い文書だけ: 見出しを置かない -->
+      <section aria-labelledby="state-flat">
+        <h2 class="catalog-label" id="state-flat">フォルダの無い文書だけ</h2>
+        <div class="catalog-side">
+          <nav class="mdmark-doc-list" aria-label="文書の一覧（フォルダの無い文書だけ）">
+            <div class="mdmark-doc-list-group">
+              <ul>
+                <li><a href="#state-flat" aria-current="page">はじめに</a></li>
+                <li><a href="#state-flat">手順</a></li>
+                <li><a href="#state-flat">よくある質問</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- 題とフォルダのパスが長い: 一覧の幅で折り返し、横にはみ出さない -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">題とフォルダのパスが長い</h2>
+        <div class="catalog-side">
+          <nav class="mdmark-doc-list" aria-label="文書の一覧（題とフォルダのパスが長い）">
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方/カスタマイズ/テーマ/層の外の CSS</p>
+              <ul>
+                <li><a href="#state-long" aria-current="page">版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで</a></li>
+                <li><a href="#state-long">CSS 変数と層の外の CSS で、描いた文書の見た目を変える手順と、印刷のときの見え方の違い</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </section>
+
+      <!-- 文書が多い: 一覧の中でスクロールする。[tabindex="0"]: キーボードでスクロールできるようにする -->
+      <section aria-labelledby="state-many">
+        <h2 class="catalog-label" id="state-many">文書が多い（一覧の中でスクロールする）</h2>
+        <div class="catalog-side is-scroll" tabindex="0" aria-label="文書が多い一覧の見本">
+          <nav class="mdmark-doc-list" aria-label="文書の一覧（文書が多い）">
+            <div class="mdmark-doc-list-group">
+              <ul>
+                <li><a href="#state-many">mdmark の文書</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">はじめに</p>
+              <ul>
+                <li><a href="#state-many">概要</a></li>
+                <li><a href="#state-many">文書を描く仕組み</a></li>
+                <li><a href="#state-many">1 枚にまとめる仕組み</a></li>
+                <li><a href="#state-many">変更履歴</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方/導入</p>
+              <ul>
+                <li><a href="#state-many">配布物を読み込む</a></li>
+                <li><a href="#state-many">文書を描く</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方/書く</p>
+              <ul>
+                <li><a href="#state-many">表に機能を付ける</a></li>
+                <li><a href="#state-many" aria-current="page">本文を部品で組む</a></li>
+                <li><a href="#state-many">図と表に番号を付ける</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方/カスタマイズ</p>
+              <ul>
+                <li><a href="#state-many">テーマを上書きする</a></li>
+                <li><a href="#state-many">機能をオン・オフする</a></li>
+                <li><a href="#state-many">拡張を登録する</a></li>
+                <li><a href="#state-many">印刷する</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">使い方/書き出す</p>
+              <ul>
+                <li><a href="#state-many">雛形を置く</a></li>
+                <li><a href="#state-many">文書を書き出す</a></li>
+                <li><a href="#state-many">文書を 1 枚にまとめる</a></li>
+                <li><a href="#state-many">点検する</a></li>
+              </ul>
+            </div>
+            <div class="mdmark-doc-list-group">
+              <p class="mdmark-doc-list-folder">リファレンス</p>
+              <ul>
+                <li><a href="#state-many">API</a></li>
+                <li><a href="#state-many">CLI</a></li>
+                <li><a href="#state-many">記法</a></li>
+                <li><a href="#state-many">設定</a></li>
+                <li><a href="#state-many">用語集</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

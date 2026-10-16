@@ -1,0 +1,16 @@
+/* まとめた HTML のモックだけの規則 */
+
+/* パンくず: モックの階層を遡るリンク列。画面の帯と分けるため、文書の地の上に小さく置く */
+.mock-breadcrumb {
+  padding: 8px 16px;
+  border-block-end: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+
+  /* パンくずのリンク: 文字の色のまま下線で示す */
+  a {
+    color: inherit;
+  }
+}
