@@ -147,7 +147,7 @@ exceptions:
     notes: 標準エラーに、ファイルと読めない行と直し方を出す
 constraints:
   - item: 設定の点検
-    constraint: '`schemas/mdmark.config.schema.json` に合わないところごとに `schema` のずれにする。`build.glossary`・`build.entry` がまとめる文書に当たらないものも `schema` のずれにする。`theme`・`extensions` のファイルが無いものも `schema` のずれにする'
+    constraint: '`schemas/mdmark.config.schema.json` に合わないところごとに `schema` のずれにする。空の設定ファイル（読んだ値がオブジェクトでない）も `schema` のずれにする。`build.glossary`・`build.entry` がまとめる文書に当たらないものも `schema` のずれにする。`theme`・`extensions` のファイルが無いものも `schema` のずれにする'
   - item: 索引の点検
     constraint: 設定に `index` があるときだけ行う。索引のフォルダの下の拡張子 `.md` のファイルのうち `build.exclude` に当たらないものを文書として `checkIndex` に渡し、返ったずれをそのまま出す。索引のファイルを読めないときは、索引を指す `schema` のずれにする
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#

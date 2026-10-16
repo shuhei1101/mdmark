@@ -17,5 +17,6 @@
 | [sanitize-html](./sanitize-html.yaml) | 描く前の HTML からスクリプトと許可していない要素・属性を落とす |
 | [Storybook](./Storybook.yaml) | UI の部品を状態ごとのストーリーとして並べる（サーバー描画） |
 | [valibot](./valibot.yaml) | テストで拡張の引数の Standard Schema を作る（配布物に束ねない） |
+| [yaml](./yaml.yaml) | CLI が設定と索引の YAML を読む（配布物に束ねない） |
 
 <!-- /table -->

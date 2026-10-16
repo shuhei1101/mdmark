@@ -148,7 +148,7 @@ exceptions:
   - name: なし（正常終了）
     condition: '`build.out` に HTML を書いた（読めなかったものと 1 枚に含まれない文書へのリンクは警告に出す）。終了コード 0'
   - name: 設定ファイルの誤り（終了コード 1）
-    condition: 設定ファイルが無い・読めない・Schema に合わない、または `build` が無い
+    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）、または `build` が無い
     notes: 標準エラーに原因と直し方の 1 文を出す
   - name: 対象の文書が 0 件（終了コード 1）
     condition: '`build.include` に当たり `build.exclude` に当たらない文書が 0 件'
