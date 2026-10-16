@@ -26,3 +26,5 @@ items:
     summary: mdmark が描く画面の要素と、使う部品へ渡す値
   - page: 設定/
     summary: 使う側が渡す設定のキー・既定・許す値
+  - page: ER図/
+    summary: 使う側が書き mdmark が読むデータの形

@@ -1,0 +1,79 @@
+title: "索引と文書のずれを点検する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、点検の処理を呼ぶ
+      - name: ずれの無い索引と文書
+        description: 文書 `arch`・`api`（`related` に `arch`）と用語 1 つを持つ索引と、その 2 つのパスの文書だけの一覧・本文
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 索引の形と、索引と文書の対応を確かめる
+        M-->>C: 空のずれの一覧
+    expected:
+      - ずれの一覧が空
+    test: test_normal
+  - name: 正常シナリオ（ずれがある）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: ずれを持つ索引と文書
+        description: 索引が、一覧に無いパスの文書 `old`・`related` に索引に無い `id` の `gone` を持つ文書 `api`・文書 `guide`・同じ語 `ワークスペース` の用語 2 つを持ち、文書の一覧が索引に無い `new.md` を持つ。`api` の本文は用語集の表で索引と同じ語 `ワークスペース` と語 `印` を入れ、`guide` の本文も用語集の表で語 `印` を入れる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 索引と文書の対応・related・用語を確かめる
+        M-->>C: ずれの一覧
+    expected:
+      - 索引にあって消えた文書 `old` の行が、索引のファイルと `old` の場所を持つ
+      - 索引に無い文書 `new.md` の行が、`new.md` のファイルを持つ
+      - '`api` の `related` の切れた `id` `gone` の行が、その `related` の場所を持つ'
+      - '`ワークスペース` の用語の重複が、索引の `terms` どうしの行と、索引と `api` の用語集の表の行で返る'
+      - '`印` の用語の重複が、`api` と `guide` の用語集の表どうしの行で返る'
+      - 各行がずれの種類と、直す場所が分かる内容を持つ
+    test: test_normal_when_drift
+  - name: 正常シナリオ（Schema に合わない索引）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: Schema に合わない索引
+        description: '`schema` を持たず、2 つ目の文書が `path` を持たない索引。文書の一覧・本文は 1 つ目の文書だけ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 索引の形を Schema と確かめる
+        M-->>C: Schema のずれの行を持つ一覧
+    expected:
+      - 例外で止まらずに一覧が返る
+      - '`schema` の欠けと、2 つ目の文書の `path` の欠けが、それぞれの場所を持つ Schema のずれの行で返る'
+    test: test_normal_when_invalid_schema
+lead: 使う側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に渡し、索引と文書のずれの一覧を受け取る。
+issue: 5
+primary_actor: 使う側の処理
+stakeholders:
+  - name: 文書を書く人
+    interest: 文書を移した・消したときに、直す索引の場所が分かる
+  - name: CLI と MCP（#9・#11）
+    interest: ファイルを読んで渡すだけで、ずれを見つける処理を自前で持たない
+trigger: 使う側の処理が、読んだ索引と、索引のフォルダの文書のパスの一覧・本文を渡して点検させる
+preconditions:
+  - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
+  - 使う側の処理が索引の YAML と文書のファイルを読んでいる（mdmark はファイルを読まない）
+success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた `id`・用語の重複・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。
+minimal_guarantee: Schema に合わない索引でも例外で止まらず、読めた範囲のずれと Schema のずれを返す。点検は索引と文書を書き換えない。
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#
+test_file: tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts

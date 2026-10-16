@@ -21,6 +21,7 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   "row-detail": "row-details",
   fig: "figures",
   toc: "toc",
+  glossary: "glossary",
 };
 
 /** 印のトークンの type */

@@ -45,6 +45,7 @@ export const RESERVED_DIRECTIVES: ReadonlySet<string> = new Set([
   "row-detail",
   "fig",
   "toc",
+  "glossary",
 ]);
 
 /** 拡張の登録表: `directive` から拡張を引く。ページに 1 つ */

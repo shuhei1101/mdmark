@@ -83,3 +83,34 @@ test("test_long_mark", async () => {
   expect(lines).toBeGreaterThan(1);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 用語集の表の印に表に無い列名を書いたときは、列名と表の列を出す（GlossaryColumn）
+test("test_glossary_column", async () => {
+  // 準備・実行
+  const { page, warning } = await open("glossary-column");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    "<!-- glossary: term=用語 meaning=説明 -->",
+  );
+  const text = await warning.innerText();
+  expect(text).toContain("説明");
+  expect(text).toContain("この表からは用語を入れずに描いています");
+  await expect(warning.locator("ul").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 用語集の表の印に必須の meaning= を書いていないときは、指し方を出す（GlossaryMissingArg）
+test("test_glossary_missing_arg", async () => {
+  // 準備・実行
+  const { page, warning } = await open("glossary-missing-arg");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    "<!-- glossary: term=用語 -->",
+  );
+  const text = await warning.innerText();
+  expect(text).toContain("meaning=");
+  expect(text).toContain("この表からは用語を入れずに描いています");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

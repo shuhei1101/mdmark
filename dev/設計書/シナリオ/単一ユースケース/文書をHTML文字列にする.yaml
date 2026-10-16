@@ -60,6 +60,27 @@ scenarios:
       - 見出しが GitHub と同じ規則の ID を持ち、図に `図 1` の番号と、リンクの文字に `図 1` がある
       - 文字列に `script` 要素と印の文字（`<!--`）が無い
     test: test_normal_when_syntax
+  - name: 正常シナリオ（索引を渡す）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して HTML 文字列にする
+      - name: 用語と被参照を持つ索引
+        description: 用語 `ワークスペース`（意味 `話し合いの記録を置くフォルダ`）を持ち、文書 `api`（題 `API`）の `related` が描く文書を指す索引
+      - name: 用語が出る Markdown
+        description: 段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書の id・参照・Markdown を渡して HTML 文字列にさせる
+        M-->>C: 用語の意味と被参照の一覧を持つ HTML 文字列
+    expected:
+      - 文字列に、`ワークスペース` の下線の要素と、意味 `話し合いの記録を置くフォルダ` を持つ要素がある
+      - 文字列に、`API` へのリンクを持つ被参照の一覧がある
+      - 文字列に `script` 要素と印の文字（`<!--`）が無い
+    test: test_normal_when_index
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返す。
 issue: 3
 primary_actor: mdmark で HTML を書き出す使う側の処理

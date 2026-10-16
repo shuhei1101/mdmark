@@ -69,6 +69,30 @@ scenarios:
       - 印刷の前のイベントの後、閉じた節・行の詳細・閉じた表・閉じた注意書きの中身が表示されている
       - 印刷の後のイベントの後、印刷の前に選んでいたタブだけが表示され、閉じていた記法が閉じている
     test: test_normal_when_syntax_expanded
+  - name: 正常シナリオ（用語と被参照）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描いた HTML
+      - name: 用語と被参照を持つ索引
+        description: 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書を指す索引
+      - name: 用語が出る Markdown
+        description: 段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 下線の付いた語にフォーカスしてツールチップを出す
+        U->>B: 印刷を始める
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 印刷の出力
+    expected:
+      - '`ワークスペース` の下線が外れ、語は本文の文字として出ている'
+      - ツールチップが出ていない
+      - 被参照の一覧が出ていて、`API` のリンクの後ろに URL の文字が出ている
+    test: test_normal_when_glossary_and_backlinks
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

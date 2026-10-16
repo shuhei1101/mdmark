@@ -36,3 +36,17 @@ stories:
     args:
       mark: '<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->'
       message: の絞り込みの種類 `range` は使えません。使える種類は `select`・`text`・`date` です。
+  - name: GlossaryColumn
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- glossary: term=用語 meaning=説明 -->'
+      message: の `meaning=` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を直してください。この表からは用語を入れずに描いています。
+  - name: GlossaryMissingArg
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- glossary: term=用語 -->'
+      message: に `meaning=` がありません。意味の列を `meaning=列名` で指してください。この表からは用語を入れずに描いています。

@@ -173,6 +173,28 @@
         </article>
       </section>
 
+      <!-- 用語集の表に無い列名 -->
+      <section aria-labelledby="state-glossary-column">
+        <h2 class="catalog-label" id="state-glossary-column">用語集の表に無い列名</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- glossary: term=用語 meaning=説明 --&gt;</code> の <code>meaning=</code> の列 <code>説明</code> が表にありません。表の列は <code>用語</code>・<code>意味</code> です。列名を直してください。この表からは用語を入れずに描いています。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 用語集の印に必須の指定が無い -->
+      <section aria-labelledby="state-glossary-required">
+        <h2 class="catalog-label" id="state-glossary-required">用語集の印に必須の指定が無い</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- glossary: term=用語 --&gt;</code> に意味の列の指定 <code>meaning=</code> がありません。<code>meaning=列名</code> を書き足してください。この表からは用語を入れずに描いています。</p>
+</div>
+        </article>
+      </section>
+
       <!-- 長文（長い印） -->
       <section aria-labelledby="state-long">
         <h2 class="catalog-label" id="state-long">長文（長い印）</h2>

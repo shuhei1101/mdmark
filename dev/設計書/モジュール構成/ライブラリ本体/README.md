@@ -18,5 +18,6 @@
 | [記法.ts](./記法.ts.yaml) | 印と記法を HTML にする markdown-it のコアルール |
 | [操作.ts](./操作.ts.yaml) | mount が描いた記法に付ける表・タブ・節と行の詳細の操作 |
 | [拡張.ts](./拡張.ts.yaml) | registerExtension の登録表と、Standard Schema での引数の検査 |
+| [索引と用語.ts](./索引と用語.ts.yaml) | 索引の形の検査・参照の表・索引の点検と、用語集の表・用語の下線・関連文書の一覧・ツールチップの操作 |
 
 <!-- /table -->

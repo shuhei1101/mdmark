@@ -1,5 +1,17 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
-import type { MdmarkConfig, MountHandle } from "../../../src/index.ts";
+import { userEvent } from "vitest/browser";
+import type {
+  MdmarkIndex,
+  MdmarkReferences,
+  MountHandle,
+} from "../../../src/index.ts";
+import {
+  DOC_ID,
+  EXPECTED_HTML,
+  INDEX,
+  MARKDOWN,
+  REFERENCES,
+} from "./index-render.ts";
 
 type Built = typeof import("../../../src/index.ts");
 
@@ -51,7 +63,7 @@ function createElement(): HTMLElement {
 /** 要素に文書を描き、後始末のために戻り値を控える */
 async function mountTracked(
   el: HTMLElement,
-  opts: { markdown: string; config?: MdmarkConfig },
+  opts: Parameters<Built["mount"]>[1],
 ): Promise<MountHandle> {
   const { mount } = await loadBuilt();
   const handle = mount(el, opts);
@@ -746,4 +758,150 @@ test("test_normal_when_updated_with_syntax", async () => {
   expect(tabs[1]?.getAttribute("aria-selected")).toBe("true");
   handle.destroy();
   expect(() => window.dispatchEvent(new Event("hashchange"))).not.toThrow();
+});
+
+/** 索引: 用語 `索引` と、文書 `arch`・`api`（別名 `公開関数`）・`index-ref`（別名 `索引`） */
+const GLOSSARY_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+    {
+      id: "api",
+      path: "api.md",
+      title: "API",
+      description: "mount と render の引数",
+      aliases: ["公開関数"],
+    },
+    {
+      id: "index-ref",
+      path: "索引.md",
+      title: "索引のリファレンス",
+      aliases: ["索引"],
+    },
+  ],
+  terms: [
+    {
+      id: "index",
+      term: "索引",
+      meaning: "文書と用語を並べた YAML のファイル",
+    },
+  ],
+};
+
+/** ツールチップが開いているか（表示されているか） */
+function isOpen(tip: Element): boolean {
+  return getComputedStyle(tip).display !== "none";
+}
+
+// 索引の用語と文書の別名に下線を引き、ポインター・フォーカス・Tab・Esc でツールチップを操作する（正常系）
+test("test_normal_when_glossary", async () => {
+  // 準備
+  const el = createElement();
+  const markdown =
+    "## 節\n\n索引を読み、索引をもう一度書く。公開関数を使う。\n";
+  // 実行
+  await mountTracked(el, { markdown, index: GLOSSARY_INDEX, docId: "arch" });
+  // 検証
+  const terms = [...el.querySelectorAll<HTMLElement>(".mdmark-term")];
+  expect(terms.map((term) => term.textContent)).toEqual(["索引", "公開関数"]);
+  // 索引: 「用語」の意味と「関連文書」がこの順に並ぶ
+  const indexTip = find<HTMLElement>(el, ".mdmark-term-tip");
+  const headings = [...indexTip.querySelectorAll(".mdmark-term-tip-heading")];
+  expect(headings.map((heading) => heading.textContent)).toEqual([
+    "用語",
+    "関連文書",
+  ]);
+  expect(indexTip.textContent).toContain("文書と用語を並べた YAML のファイル");
+  const indexLink = find<HTMLAnchorElement>(indexTip, "a");
+  expect(indexLink.getAttribute("href")).toBe("../索引.md");
+  expect(indexLink.textContent).toBe("索引のリファレンス");
+  // 公開関数: フォーカスすると「関連文書」だけのツールチップが開き、Tab で中のリンクへ移る
+  const term = terms[1] as HTMLElement;
+  const apiTip = find<HTMLElement>(
+    term.closest(".mdmark-term-wrap") as HTMLElement,
+    ".mdmark-term-tip",
+  );
+  term.focus();
+  expect(isOpen(apiTip)).toBe(true);
+  expect(
+    [...apiTip.querySelectorAll(".mdmark-term-tip-heading")].map(
+      (heading) => heading.textContent,
+    ),
+  ).toEqual(["関連文書"]);
+  await userEvent.keyboard("{Tab}");
+  const apiLink = find<HTMLAnchorElement>(apiTip, "a");
+  expect(document.activeElement).toBe(apiLink);
+  expect(apiLink.getAttribute("href")).toBe("../api.md");
+  expect(isOpen(apiTip)).toBe(true);
+  // Esc: ツールチップが消え、フォーカスが語に戻る
+  await userEvent.keyboard("{Escape}");
+  expect(isOpen(apiTip)).toBe(false);
+  expect(document.activeElement).toBe(term);
+});
+
+/** 参照の表: `arch` を `api`・`guide` が参照している */
+const BACKLINKS_REFERENCES: MdmarkReferences = {
+  backlinks: { arch: ["api", "guide"], api: ["arch"], guide: [] },
+  glossary: [],
+};
+
+/** 索引: 3 つの文書 */
+const BACKLINKS_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
+    { id: "api", path: "api.md", title: "API" },
+    { id: "guide", path: "使い方/guide.md", title: "使い方" },
+  ],
+};
+
+// 参照の表から、文書の末尾に関連文書の一覧を置き、update の後も置き直す（正常系）
+test("test_normal_when_backlinks", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "本文の段落です。\n",
+    index: BACKLINKS_INDEX,
+    docId: "arch",
+    references: BACKLINKS_REFERENCES,
+  });
+  /** 末尾の一覧の題とリンクを返す */
+  const readList = (): { title: string; links: Array<string | null> } => {
+    const nav = el.lastElementChild as HTMLElement;
+    const titleId = nav.getAttribute("aria-labelledby") ?? "";
+    return {
+      title: document.getElementById(titleId)?.textContent ?? "",
+      links: [...nav.querySelectorAll("a")].map(
+        (link) => `${link.textContent}:${link.getAttribute("href")}`,
+      ),
+    };
+  };
+  // 検証（描いた直後）
+  expect(el.lastElementChild?.matches("nav.mdmark-backlinks")).toBe(true);
+  expect(readList()).toEqual({
+    title: "関連文書",
+    links: ["API:../api.md", "使い方:../使い方/guide.md"],
+  });
+  // 実行
+  handle.update("# 見出しだけ\n");
+  // 検証（update の後）
+  expect(el.querySelectorAll("nav.mdmark-backlinks")).toHaveLength(1);
+  expect(readList().links).toEqual([
+    "API:../api.md",
+    "使い方:../使い方/guide.md",
+  ]);
+});
+
+// ブラウザで配布物の render を呼んでも、索引つきの出力が固定値と等しい（正常系）
+test("test_normal_when_index_in_browser", async () => {
+  // 準備
+  const { render } = await loadBuilt();
+  // 実行
+  const html = render(MARKDOWN, {
+    index: INDEX,
+    docId: DOC_ID,
+    references: REFERENCES,
+  });
+  // 検証
+  expect(html).toBe(EXPECTED_HTML);
 });

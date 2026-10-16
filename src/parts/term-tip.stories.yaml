@@ -1,0 +1,57 @@
+title: Parts/TermTip
+stories:
+  - name: TermOnly
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: ワークスペース
+      id: tip-term
+      meaning: 話し合いの記録を置くフォルダ
+      open: true
+  - name: DocsOnly
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 公開関数
+      id: tip-docs
+      docs: '[{"title":"API","href":"../api.md","description":"mount・render などの公開関数と引数の一覧"}]'
+      open: true
+  - name: Both
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 索引
+      id: tip-both
+      meaning: 文書と用語を並べた YAML のファイル
+      docs: '[{"title":"索引のリファレンス","href":"../リファレンス/索引.md","description":"索引のキー・型・必須・既定と、点検が返すずれの種類"}]'
+      open: true
+  - name: ManyDocs
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 設定
+      id: tip-many
+      meaning: mdmark.config.yaml に書く、機能のオン・オフと外部ライブラリの読み方
+      docs: '[{"title":"設定の一覧","href":"../リファレンス/設定.md","description":"設定のキーと既定の一覧"},{"title":"機能をオン・オフする","href":"../使い方/カスタマイズ/機能をオン・オフする.md","description":"設定の features と文書の印で、機能のオン・オフを切り替える"},{"title":"テーマを上書きする","href":"../使い方/カスタマイズ/テーマを上書きする.md","description":"CSS 変数と層の外の CSS で、描いた文書の見た目を変える"},{"title":"文書を描く","href":"../使い方/導入/文書を描く.md","description":"配布物を読んだページで mount を呼び、要素の中に Markdown を描く"},{"title":"文書を描く仕組み","href":"../はじめに/コアコンセプト/文書を描く仕組み.md","description":"Markdown と設定を渡してから描かれるまでの流れと、機能のオン・オフの優先順"},{"title":"印刷する","href":"../使い方/カスタマイズ/印刷する.md","description":"印刷・PDF にしたときの文書の見え方"},{"title":"非機能要件","href":"../非機能要件.md","description":"配布物のサイズと対応ブラウザの決定値"}]'
+      open: true
+  - name: LongMeaning
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: サニタイズ
+      id: tip-long
+      meaning: '描く前の HTML から、スクリプトと許可していない要素・属性を落とすこと。文書に書いた script 要素・イベント属性・javascript: の URL を実行しないための処理で、索引に書いた題と意味にも当てる'
+      open: true
+  - name: Closed
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: ワークスペース
+      id: tip-closed
+      meaning: 話し合いの記録を置くフォルダ

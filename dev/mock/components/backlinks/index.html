@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>backlinks | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 被参照の一覧の規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">被参照の一覧</h1>
+
+      <!-- 文書の末尾の節（2 件） -->
+      <section aria-labelledby="state-end">
+        <h2 class="catalog-label" id="state-end">文書の末尾の節（2 件）</h2>
+        <article class="mdmark">
+<p>本文の最後の段落です。</p>
+<nav class="mdmark-backlinks" aria-labelledby="backlinks-end-title">
+  <p class="mdmark-backlinks-title" id="backlinks-end-title">関連文書</p>
+  <ul>
+    <li><a href="../api.md">API</a></li>
+    <li><a href="../使い方/guide.md">使い方</a></li>
+  </ul>
+</nav>
+        </article>
+      </section>
+
+      <!-- 1 件 -->
+      <section aria-labelledby="state-end-one">
+        <h2 class="catalog-label" id="state-end-one">文書の末尾の節（1 件）</h2>
+        <article class="mdmark">
+<p>本文の最後の段落です。</p>
+<nav class="mdmark-backlinks" aria-labelledby="backlinks-one-title">
+  <p class="mdmark-backlinks-title" id="backlinks-one-title">関連文書</p>
+  <ul>
+    <li><a href="../api.md">API</a></li>
+  </ul>
+</nav>
+        </article>
+      </section>
+
+      <!-- 長文（長い題と多くの文書） -->
+      <section aria-labelledby="state-end-long">
+        <h2 class="catalog-label" id="state-end-long">長文（長い題と多くの文書）</h2>
+        <article class="mdmark">
+<p>本文の最後の段落です。</p>
+<nav class="mdmark-backlinks" aria-labelledby="backlinks-long-title">
+  <p class="mdmark-backlinks-title" id="backlinks-long-title">関連文書</p>
+  <ul>
+    <li><a href="../api.md">API</a></li>
+    <li><a href="../使い方/guide.md">使い方</a></li>
+    <li><a href="../使い方/カスタマイズ/テーマを上書きする.md">CSS 変数と層の外の CSS で、描いた文書の見た目を変える手順と、印刷のときの見え方の違い</a></li>
+    <li><a href="../リファレンス/設定.md">設定の一覧</a></li>
+    <li><a href="../非機能要件.md">非機能要件</a></li>
+  </ul>
+</nav>
+        </article>
+      </section>
+
+      <!-- 参照されていない文書: 一覧を置かない -->
+      <section aria-labelledby="state-none">
+        <h2 class="catalog-label" id="state-none">参照されていない文書（一覧を置かない）</h2>
+        <article class="mdmark">
+<p>本文の最後の段落です。</p>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

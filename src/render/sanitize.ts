@@ -53,6 +53,11 @@ function dropSyntaxAttributes(
       if (tagName === "pre" || tagName === "table") {
         next[name] = value;
       }
+    } else if (name === "tabindex") {
+      // 語の `tabindex` は mdmark が出した要素だけが持つ
+      if (tagName === "pre" || tagName === "table") {
+        next[name] = value;
+      }
     } else if (name.startsWith("data-")) {
       const keep =
         (tagName === "td" && name === "data-label") ||
@@ -94,6 +99,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     input: ["type", "disabled", "checked"],
     pre: ["tabindex"],
     table: ["tabindex"],
+    span: ["tabindex"],
   },
   // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
   allowedClasses: {

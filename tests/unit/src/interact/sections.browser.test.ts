@@ -94,3 +94,44 @@ test("test_attach_sections_when_row_detail", async () => {
   toggles[0].click();
   expect(detail?.hasAttribute("hidden")).toBe(false);
 });
+
+// 行の詳細の開閉ボタンの名前にツールチップの文字を含めない（正常系）
+test("test_attach_sections_when_row_has_term", async () => {
+  // 準備
+  const { mount } = await import("../../../../src/mount.ts");
+  const markdown = [
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| 印 | 1 |",
+    "",
+    "<!-- row-detail: 1 -->",
+    "",
+    "詳細の段落",
+    "",
+    "<!-- /row-detail -->",
+    "",
+    "<!-- glossary: term=用語 meaning=意味 -->",
+    "",
+    "| 用語 | 意味 |",
+    "| --- | --- |",
+    "| 印 | HTML コメントで書く指定 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  const root = document.createElement("div");
+  document.body.append(root);
+  // 実行
+  const handle = mount(root, { markdown });
+  // 検証
+  try {
+    const toggle = root.querySelector<HTMLButtonElement>(
+      "button.mdmark-row-toggle",
+    );
+    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("印");
+    expect(toggle?.getAttribute("aria-label")).toBe("「印」の詳細");
+  } finally {
+    handle.destroy();
+    root.remove();
+  }
+});

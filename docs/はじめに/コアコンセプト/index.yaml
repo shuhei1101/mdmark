@@ -3,3 +3,5 @@ docs_index: true
 items:
   - page: 文書を描く仕組み.md
     summary: Markdown と設定を渡してから描かれるまでの流れと、テーマの層・機能のオン・オフの優先順
+  - page: 索引と被参照.md
+    summary: 索引を正にし、被参照を描くときに算出し、ずれを点検で見つける仕組み

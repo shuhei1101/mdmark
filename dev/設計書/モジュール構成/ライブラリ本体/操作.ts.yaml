@@ -37,7 +37,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼び、まとめて外す関数を返す
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean> }'
@@ -50,6 +50,7 @@ functions:
       - '#functions[attachTables]'
       - '#functions[attachTabs]'
       - '#functions[attachSections]'
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[attachTermTips]
     unit_tests:
       - name: test_attach_interactions
         case: 正常
@@ -143,6 +144,7 @@ functions:
       - '#functions[compareCells]'
       - '#functions[matchesFilter]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableTools]
+      - '#functions[visibleText]'
     unit_tests:
       - name: test_attach_tables_when_sorted
         case: 正常
@@ -174,6 +176,12 @@ functions:
         condition: ドロワーを開いたまま外す関数を呼ぶ
         mock: '`document.removeEventListener` を数える関数で包む'
         expected: '`pointerdown`・`keydown` が外れている'
+      - name: test_attach_tables_when_cell_has_term
+        case: 正常
+        summary: セルに用語の下線があっても、絞り込みの値の候補と見出しのボタンの名前にツールチップの文字を含めない
+        condition: '`<!-- table: data filter=名前 -->` の表（列 `名前`・`値`、行 `印`・`表`）と、`印`・`名前` を入れた用語集の表を `mount` で描く'
+        mock: なし
+        expected: 絞り込みの値の候補が `["印", "表"]`、見出しのボタンの名前が `名前` と `値`、`印` のセルに用語の下線が残る
   - name: attachTabs
     title: タブに操作を付ける
     container: src/interact/tabs.ts
@@ -216,6 +224,7 @@ functions:
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSection]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderRowDetail]
+      - '#functions[visibleText]'
     unit_tests:
       - name: test_attach_sections
         case: 正常
@@ -235,8 +244,37 @@ functions:
         condition: 2 行目に詳細を持つ表
         mock: なし
         expected: ボタンは 2 行目にだけあり、押した後に詳細の行が `hidden` を持たない
+      - name: test_attach_sections_when_row_has_term
+        case: 正常
+        summary: 行の詳細の開閉ボタンの名前にツールチップの文字を含めない
+        condition: 行の詳細を持つ表で、持ち主の行の 1 列目に用語 `印` の下線がある
+        mock: なし
+        expected: 開閉ボタンの読み上げの名前に `印` が入り、ツールチップの意味の文字が入らない
+  - name: visibleText
+    title: 要素の見える文字を読む
+    container: src/interact/text.ts
+    kind: 関数
+    scope: internal
+    summary: 要素の `textContent` から、用語のツールチップ（`.mdmark-term-tip`）の文字を除いて前後の空白を落とした文字を返す
+    description: 表の並べ替え・絞り込み・ピン止めのセルの値、見出しのボタンの名前、行の詳細の開閉ボタンの名前は、この関数で読む。要素は書き換えない
+    args:
+      - name: element
+        type: Element
+        required: true
+        description: 読む要素
+    returns:
+      type: string
+      description: ツールチップを除いた文字
+    unit_tests:
+      - name: test_visible_text
+        case: 正常
+        summary: ツールチップの文字を除く
+        condition: '`<td>本文の<span class="mdmark-term-wrap"><span class="mdmark-term">印</span><span class="mdmark-term-tip">用語HTML コメントで書く指定</span></span></td>`'
+        mock: なし（Chromium）
+        expected: '`本文の印`、`td` の中身が変わらない'
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
+  - tests/unit/src/interact/text.browser.test.ts

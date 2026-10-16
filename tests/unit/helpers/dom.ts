@@ -27,6 +27,16 @@ export function createRoot(markdown: string): {
   return { root, features };
 }
 
+/** HTML をそのまま入れた、描く先の要素をページに置く */
+export function createRootFromHtml(html: string): HTMLElement {
+  const root = document.createElement("div");
+  root.className = "mdmark";
+  root.innerHTML = html;
+  document.body.append(root);
+  roots.push(root);
+  return root;
+}
+
 /** 置いた要素を全て取り除く */
 export function removeRoots(): void {
   for (const root of roots.splice(0)) {
