@@ -25,6 +25,7 @@ flows:
       - '`dist/index.js` の `version()` が `v0.0.0` を返す'
       - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it` と `sanitize-html` の名前とライセンスの本文がある'
       - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、`tsc --noEmit` で型エラーが 0 件'
+      - '`dist/cli.js` があり、`node dist/cli.js init {一時フォルダ}` が終了コード 0 で雛形を置く'
     test: test_normal
   - name: 正常系（版を指定する）
     summary: '`--version` で渡した版を埋めてビルドする'
@@ -86,7 +87,7 @@ flows:
       - '`dist/` が無い'
       - 標準エラーに超えたファイル名とサイズが出る
     test: test_error_when_dist_file_too_large
-lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` にビルドする。'
+lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` にビルドする。'
 idempotent: true
 side_effects: '`dist/` を書き換える'
 callers:
@@ -109,9 +110,13 @@ exceptions:
     condition: '`dist/` のファイルが 1 つでも上限を超える'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 256KB 以下（262144 バイト）
+    constraint: 256KB 以下（262144 バイト）。使う側のページが読まない `dist/cli.js` は対象外
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
-    constraint: Chrome 99・Firefox 97・Safari 16.4
+    constraint: Chrome 99・Firefox 98・Safari 16.4
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+  - item: CLI の配布物
+    constraint: '`dist/cli.js` は Node 24 を target にし、先頭に `#!/usr/bin/env node` を置く。esbuild と YAML を読むライブラリは束ねず、`package.json` の `dependencies` から読む。`package.json` の `bin` の `mdmark` が `dist/cli.js` を指す'
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    notes: 書き出しに埋める `dist/index.js` と `dist/index.css` は、同じ版のものを `dist/cli.js` と同じフォルダから読む
 test_file: tests/integration/lib/build.test.ts

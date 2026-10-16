@@ -1,0 +1,203 @@
+title: ""
+entry:
+  kind: operation
+  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} export` で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: 設定・索引・外部ライブラリ・拡張・画像を埋めた HTML を書き出す
+    setup:
+      - name: 見本のフォルダ
+        description: '`theme`・`index`・`extensions`（印 `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）を書いた設定と、文書 `guide.md` と `api.md` を載せた索引。`guide.md` は表・用語集の表・`test-lib` の印・`greet` の印・相対パスの画像・`api.md` へのリンク・`script` 要素を持ち、`api.md` は `guide.md` へリンクする'
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール（書き出しがネットワークを読まない）。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as collectReferences
+        participant H as 出力の HTML
+        W->>C: mdmark export guide.md
+        C->>C: 設定・索引・索引の文書を読む
+        C->>M: 索引・文書
+        M-->>C: 参照の表
+        C->>C: test-lib と greet を束ね、画像を data: URL に替える
+        C->>H: guide.html を書く
+        C-->>W: 書き出した: guide.html・終了コード 0
+    expected:
+      - '終了コードが 0 で、標準出力が `書き出した: guide.html`、標準エラーが空'
+      - '`guide.html` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と `blob:`・`data:` のほかの要求が 0 件'
+      - 表に並べ替えのボタンが付き、用語集の表の用語にツールチップが出る
+      - '`test-lib` と `greet` の印が描かれ、知らせの枠が出ない'
+      - 画像の `naturalWidth` が 0 より大きい
+      - '`theme` の CSS の上書きが当たっている'
+      - 末尾の関連文書に `api.md` が出て、`api.md` へのリンクが書いたままの `href`
+      - '`script` 要素が実行されていない'
+    test: test_normal
+  - name: 正常系（読めない画像とモジュールがある）
+    summary: 読めないものを警告に出し、読めたものだけを埋めて書き出す
+    setup:
+      - name: 読めないものを指すフォルダ
+        description: '`libraries` の `test-lib` に無いファイルを書いた設定と、`test-lib` の印と無い画像 `img/missing.png` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export {文書}
+        C->>C: test-lib と画像を読めない
+        C->>H: 読めたものだけを埋めて書く
+        C-->>W: 警告 2 行・終了コード 0
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - 標準エラーに `img/missing.png` と `test-lib` の警告の行が出る
+      - file:// で開くと `test-lib` の印の場所に知らせの枠が出て、本文のほかの部分は描かれる
+      - 描き終えるまでに `img/missing.png` のほかの外への要求が 0 件
+    test: test_normal_when_unreadable_assets
+  - name: 異常系（設定ファイルが Schema に合わない・終了コード 1）
+    summary: 設定ファイルの誤りは、原因と `mdmark check` を示して終わる
+    setup:
+      - name: 形の違う設定
+        description: '`libraries` が文字列の設定を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark export {文書}
+        C->>C: 設定が Schema に合わない
+        C-->>W: 原因と mdmark check・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `libraries` と `mdmark check` が出る
+      - HTML が書かれていない
+    test: test_error_when_config_invalid
+  - name: 異常系（文書が無い・終了コード 1）
+    summary: 無い文書を渡すと、パスを示して終わる
+    setup:
+      - name: 見本のフォルダ
+        description: 正常系と同じ
+        notes: '`{文書}` に `missing.md`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark export missing.md
+        C-->>W: 文書が無いこと・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `missing.md` が出る
+      - HTML が書かれていない
+    test: test_error_when_document_missing
+  - name: 異常系（出力先へ書けない・終了コード 1）
+    summary: 出力のパスへ書けないと、パスと直し方を示して終わる
+    setup:
+      - name: 見本のフォルダ
+        description: 正常系と同じフォルダに、ファイル `blocked` を置く
+        notes: '`--out blocked/guide.html`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark export guide.md --out blocked/guide.html
+        C-->>W: 書けないパスと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `blocked/guide.html` と直し方が出る
+      - '`blocked` が変わっておらず、HTML がどこにも書かれていない'
+    test: test_error_when_output_unwritable
+lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
+idempotent: true
+side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#
+request:
+  - name: '{文書}'
+    type: string
+    required: true
+    location: argument
+    description: 書き出す Markdown のパス
+    example: docs/使い方/guide.md
+  - name: --out
+    type: string
+    required: false
+    default: 文書と同じフォルダの、拡張子を `.html` に替えたパス
+    location: argument
+    description: 書き出す HTML のパス
+    notes: 親のフォルダが無ければ作る
+  - name: --config
+    type: string
+    required: false
+    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+    notes: 探し方はインターフェース定義『設定と索引を点検する』と同じ
+response:
+  - name: 標準出力
+    type: string
+    description: '`書き出した: {出力のパス}` の 1 行'
+  - name: 標準エラー
+    type: string
+    description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
+    notes: 読めない画像・モジュール・拡張・`theme`、埋めずに残した絶対 URL の画像
+  - name: 終了コード
+    type: 0 | 1
+    description: 書き出したら（警告があっても）0、書き出せなかったら 1
+  - name: 出力の HTML
+    type: ファイル
+    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・束ねたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。開くと、埋めたモジュールを `blob:` URL に替えて設定の `libraries` に渡し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く
+response_example: |-
+  ```text
+  書き出した: docs/使い方/guide.html
+  ```
+
+  ```text
+  警告: docs/使い方/guide.md: 画像 `img/missing.png` を読めません。パスを直すか画像を置いてください。
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: HTML を書いた（読めなかったものは警告に出す）。終了コード 0
+  - name: 設定ファイルの誤り（終了コード 1）
+    condition: 設定ファイルが無い・読めない・Schema に合わない
+    notes: 標準エラーに原因と直し方の 1 文を出す。Schema に合わないときは `mdmark check` でどこが合わないかを確かめられることを書く
+  - name: 文書を読めない（終了コード 1）
+    condition: '`{文書}` のファイルが無い・読めない'
+    notes: 標準エラーにパスと直し方を出す
+  - name: 出力先へ書けない（終了コード 1）
+    condition: 出力のパスへ書けない（親がファイル・権限が無い）
+    notes: 標準エラーに書けなかったパスと直し方を出す。HTML はどこにも書かない
+constraints:
+  - item: 外部への要求
+    constraint: 開いてから描き終えるまでに、ページ自身と `blob:`・`data:` のほかへ要求しない
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
+  - item: 埋める外部ライブラリ
+    constraint: 文書に印がある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読む。URL ごとに、そのモジュールが import する先も含めて 1 つの ES モジュールに束ねる。相対パスの URL は設定ファイルのあるフォルダを基準に読む。届かない・束ねられないものは埋めず警告に出し、開いたときその印の場所に知らせの枠を出す
+    notes: 'PoC #35 で、束ねたモジュールを `blob:` URL で読めることを確かめた'
+  - item: 埋める拡張
+    constraint: 設定の `extensions` のモジュールを 1 つずつ ES モジュールに束ねて埋める（TypeScript は JavaScript に変える）。読めない・束ねられないものは埋めず警告に出す
+  - item: 埋める画像
+    constraint: 文書が相対パスで指す画像を、文書のフォルダを基準に読んで `data:` URL に替える。読めない画像は書いたまま残して警告に出す。絶対 URL の画像は読まずに書いたまま残し、開いたときに外へ要求することを警告に出す
+  - item: 使う側の CSS
+    constraint: 設定の `theme` の CSS を配布物の CSS の後に埋める。読めないときは埋めず警告に出す
+  - item: 索引と参照の表
+    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読んで `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に渡す。読めない索引の文書は飛ばして警告に出す
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+  - item: 文書間のリンク
+    constraint: 書いたままの `href` で残す。警告には出さない
+  - item: スクリプト
+    constraint: 文書に書いたスクリプトは `mount` のサニタイズで落とし、実行しない。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように書く
+  - item: 書き出した HTML のサイズ
+    constraint: 制限なし
+    notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には当てない'
+  - item: 動く Node の版
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+  - item: 開くブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]

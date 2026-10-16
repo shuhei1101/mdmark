@@ -1,0 +1,185 @@
+title: ""
+entry:
+  kind: operation
+  value: '`mdmark build [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} build` で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる
+    setup:
+      - name: 見本の文書群
+        description: 入口 `README.md`・用語集の表を持つ `用語集.md`・`test-lib` の印と画像を持つ `使い方/guide.md` と、3 つを載せた索引。`README.md` から他の 2 つへリンクし、本文に用語集の表の語を持つ
+      - name: build の設定
+        description: '`include: ["**/*.md"]`・`glossary: ["用語集.md"]`・`entry: README.md`・`out: dist/docs.html`'
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as collectReferences
+        participant H as build.out
+        W->>C: mdmark build
+        C->>C: 設定・索引・include の文書を読む
+        C->>M: 索引・文書
+        M-->>C: 参照の表
+        C->>H: 3 つの文書と参照の表を埋めた HTML を書く
+        C-->>W: 書き出した: dist/docs.html（文書 3 件）・終了コード 0
+    expected:
+      - '終了コードが 0 で、標準出力が `書き出した: dist/docs.html（文書 3 件）`、標準エラーが空'
+      - '`dist/docs.html` を file:// で開くと `README.md` が描かれ、文書の一覧に 3 つが並ぶ'
+      - '`README.md` の本文で `用語集.md` の表の用語がツールチップを出す'
+      - '`README.md` の `使い方/guide.md` へのリンクで `使い方/guide.md` が描かれ、その末尾の関連文書に `README.md` が出る'
+      - 描き終えるまでと文書を移った後に、ページ自身と `blob:`・`data:` のほかの要求が 0 件
+    test: test_normal
+  - name: 正常系（1 枚に含まれない文書へのリンクがある）
+    summary: 外した文書へのリンクを書いたまま残し、警告に出す
+    setup:
+      - name: 外した文書を指す文書群
+        description: '正常系の文書群に `下書き/メモ.md` を足し、`exclude: ["下書き/**"]` で外し、`README.md` からリンクする'
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as build.out
+        W->>C: mdmark build
+        C->>C: exclude に当たる文書を外す
+        C->>H: 3 つの文書を埋めた HTML を書く
+        C-->>W: リンクの警告・終了コード 0
+    expected:
+      - 終了コードが 0 で、標準出力の文書の件数が 3
+      - 標準エラーに `README.md` と `下書き/メモ.md` を含む警告の行がある
+      - HTML の中で、そのリンクが書いたままの `href` で残る
+      - 文書の一覧に `下書き/メモ.md` が無い
+    test: test_normal_when_link_outside_bundle
+  - name: 異常系（build が無い・終了コード 1）
+    summary: 設定に `build` が無いと、書き方を示して終わる
+    setup:
+      - name: build の無い設定
+        description: '`build` を持たない `mdmark.config.yaml` と文書を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark build
+        C->>C: 設定に build が無い
+        C-->>W: build の書き方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `build` が無いことと `build.include`・`build.out` を書くことが出る
+      - HTML が書かれていない
+    test: test_error_when_build_missing
+  - name: 異常系（対象の文書が 0 件・終了コード 1）
+    summary: '`build.include` がどの文書にも当たらないと、HTML を書かずに終わる'
+    setup:
+      - name: 当たらない include
+        description: '`build.include` がどのファイルにも当たらない設定'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark build
+        C->>C: include に当たる文書が 0 件
+        C-->>W: 対象が 0 件と include の直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに対象が 0 件であることと `build.include` が出る
+      - '`build.out` に HTML が書かれていない'
+    test: test_error_when_no_documents
+  - name: 異常系（出力先へ書けない・終了コード 1）
+    summary: '`build.out` へ書けないと、パスと直し方を示して終わる'
+    setup:
+      - name: 書けない out
+        description: 正常系の文書群にファイル `dist` を置き、`build.out` を `dist/docs.html` にしたもの
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark build
+        C-->>W: 書けないパスと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `dist/docs.html` と直し方が出る
+      - ファイル `dist` が変わっていない
+    test: test_error_when_output_unwritable
+lead: 文書を書く人が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが効き、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
+idempotent: true
+side_effects: '`build.out` に HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの URL の先を読む'
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#
+request:
+  - name: --config
+    type: string
+    required: false
+    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+    notes: まとめる文書と書き出す先は設定の `build` が持つ
+response:
+  - name: 標準出力
+    type: string
+    description: '`書き出した: {build.out}（文書 {件数} 件）` の 1 行'
+  - name: 標準エラー
+    type: string
+    description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
+    notes: インターフェース定義『文書をHTMLに書き出す』の警告に、まとめた HTML に含まれない文書へのリンク・`build.glossary` と `build.entry` がまとめる文書に当たらないことを足す
+  - name: 終了コード
+    type: 0 | 1
+    description: 書き出したら（警告があっても）0、書き出せなかったら 1
+  - name: 出力の HTML
+    type: ファイル
+    description: インターフェース定義『文書をHTMLに書き出す』と同じものを埋め、文書はまとめる全ての文書をパスで引ける形で埋める。開くと、文書の一覧と、URL が指す文書（指していなければ `build.entry`）を描く
+response_example: |-
+  ```text
+  書き出した: dist/docs.html（文書 3 件）
+  ```
+
+  ```text
+  警告: README.md: `下書き/メモ.md` へのリンクはまとめた HTML に含まれません。書いたままのリンクで残します。まとめるなら `build.include` に足してください。
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: '`build.out` に HTML を書いた（読めなかったものと 1 枚に含まれない文書へのリンクは警告に出す）。終了コード 0'
+  - name: 設定ファイルの誤り（終了コード 1）
+    condition: 設定ファイルが無い・読めない・Schema に合わない、または `build` が無い
+    notes: 標準エラーに原因と直し方の 1 文を出す
+  - name: 対象の文書が 0 件（終了コード 1）
+    condition: '`build.include` に当たり `build.exclude` に当たらない文書が 0 件'
+    notes: 標準エラーに、対象が 0 件であることと `build.include` を直すことを出す。HTML は書かない
+  - name: 出力先へ書けない（終了コード 1）
+    condition: '`build.out` へ書けない'
+    notes: 標準エラーに書けなかったパスと直し方を出す
+constraints:
+  - item: まとめる文書
+    constraint: '`build.include` の glob に当たり `build.exclude` に当たらない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[build.include]
+  - item: 文書間のリンク
+    constraint: まとめる文書への相対リンクは、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは書いたままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
+    notes: 1 枚の中の文書を指す URL の書き方は画面設計で決める
+  - item: 参照の表
+    constraint: 設定に `index` があるとき、索引と索引の `docs` の文書を `collectReferences` に渡して作った参照の表を埋め、索引にある文書はその `id` を `mount` の `docId` に渡す
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+  - item: 用語集の文書
+    constraint: '`build.glossary` の文書の用語集の表の用語を、まとめた全ての文書で効かせる（索引が無いときも）。まとめる文書に当たらないパスは飛ばして警告に出す'
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[build.glossary]
+  - item: 最初に開く文書
+    constraint: '`build.entry`。無いかまとめる文書に当たらないときは、まとめる文書の最初の 1 つ（当たらないときは警告に出す）'
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[build.entry]
+  - item: 埋めるもの
+    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリはまとめる文書のどれかに印があるものだけを、同じ URL は 1 つだけ埋める。画像はそれぞれの文書のフォルダを基準に読む
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+  - item: 外部への要求
+    constraint: 開いてから、文書を移っても、ページ自身と `blob:`・`data:` のほかへ要求しない
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
+  - item: 文書の数
+    constraint: 制限なし
+  - item: 動く Node の版
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
