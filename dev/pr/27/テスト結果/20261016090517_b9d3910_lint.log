@@ -3,7 +3,7 @@ $ npm run lint
 > lint
 > biome check .
 
-Checked 174 files in 1046ms. No fixes applied.
+Checked 178 files in 1366ms. No fixes applied.
 $ npm run typecheck
 
 > typecheck
