@@ -70,9 +70,11 @@
 
   // ---------- 文書の一覧のパネル（狭い幅） ----------
 
+  // パネルを開き、開いている文書の行へフォーカスを置く（Tab と矢印で前後の文書へ移れる）
   openButton.addEventListener("click", () => {
     panel.showModal();
     openButton.setAttribute("aria-expanded", "true");
+    panel.querySelector(".mdmark-doc-list a[aria-current]").focus();
   });
   panel.addEventListener("close", () => openButton.setAttribute("aria-expanded", "false"));
   panel.querySelector("[data-panel-close]").addEventListener("click", () => panel.close());

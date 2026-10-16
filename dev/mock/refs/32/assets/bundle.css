@@ -75,6 +75,7 @@
 
   /* 横の文書の一覧: 文書を読み進めても画面に留める */
   .mdmark-bundle-side {
+    box-sizing: border-box;
     position: sticky;
     inset-block-start: 0;
     height: 100svh;
@@ -163,6 +164,7 @@
 
   /* 文書の一覧のパネル: 左の端から重ねて開く */
   .mdmark-bundle-panel {
+    box-sizing: border-box;
     inset-block: 0;
     inset-inline: 0 auto;
     width: min(20rem, 85vw);
@@ -215,6 +217,11 @@
     /* 狭い幅の帯: 出す */
     .mdmark-bundle-bar {
       display: flex;
+    }
+
+    /* 見出しへ移ったとき: 上に留まる帯に隠れない位置で止める */
+    .mdmark-bundle-main .mdmark-heading {
+      scroll-margin-block-start: 4.5rem;
     }
   }
 }

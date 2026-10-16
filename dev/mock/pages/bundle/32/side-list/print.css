@@ -17,9 +17,14 @@
   .mdmark-bundle-main .mdmark {
     padding: 0;
   }
+
+  /* 関連文書のリンク: 1 枚の中の # ではなく、文書のパスを後ろに併記する */
+  .mdmark-bundle .mdmark-backlinks a[data-doc-path]::after {
+    content: " (" attr(data-doc-path) ")";
+  }
 }
 
-/* モック専用の操作列とパンくず: 紙に出さない */
-:is(.mock-bar, .mock-breadcrumb) {
+/* モックのパンくず: 紙に出さない */
+.mock-breadcrumb {
   display: none;
 }
