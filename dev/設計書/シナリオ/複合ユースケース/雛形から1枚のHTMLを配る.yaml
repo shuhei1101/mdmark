@@ -1,0 +1,73 @@
+title: ""
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 空のフォルダ
+        description: 文書を書く人の作業のフォルダ。何も置いていない
+      - name: 見本の文書群
+        description: 雛形を置いた後に書き足す文書 3 つ（入口・用語集の表を持つ文書・Chart.js の印を持つ文書）と、その 3 つと用語を載せた索引。文書どうしをリンクでつなぐ
+      - name: Mock
+        description: 外部ライブラリの印のモジュールは、URL の代わりに相対パスの手元のファイルを `libraries` に書く（書き出しがネットワークを読まない）
+    flow: |-
+      flowchart TD
+        A[雛形を置く] --> B[文書と索引を書き、設定の build を書く]
+        B --> C[設定と索引を点検する]
+        C -->|ずれ 0 件| D[複数の文書を 1 枚の HTML にまとめる]
+        D --> E[読む人がまとめた HTML で文書を行き来する]
+    expected:
+      - '`mdmark init` が設定・`theme.css`・索引・拡張のビルドの雛形を置く'
+      - '`mdmark check` がずれ 0 件で終了コード 0 を返す'
+      - '`mdmark build` が `build.out` に 1 枚の HTML を書き、終了コード 0 を返す'
+      - 書き出した HTML だけを別の空のフォルダへ写して file:// で開くと、外への要求が 0 件
+      - '`entry` の文書が描かれ、文書の一覧から 3 つの文書へ移れる'
+      - 用語のツールチップ・被参照の一覧・Chart.js の図が描かれる
+    test: test_normal
+  - name: 正常シナリオ（1 文書だけを書き出す）
+    setup:
+      - name: 雛形を置いたフォルダ
+        description: '`mdmark init` の後に、Chart.js の印を持つ文書 1 つを書いたフォルダ'
+      - name: Mock
+        description: 正常シナリオと同じく、外部ライブラリは手元のファイル
+    flow: |-
+      flowchart TD
+        A[雛形を置く] --> B[文書を 1 つ書く]
+        B --> C[1 文書を HTML に書き出す]
+        C --> D[読む人が書き出した HTML を開く]
+    expected:
+      - '`mdmark export` が指定した出力に 1 枚の HTML を書き、終了コード 0 を返す'
+      - 書き出した HTML だけを別の空のフォルダへ写して file:// で開くと、外への要求が 0 件で文書と図が描かれる
+    test: test_normal_when_single_document
+  - name: 異常シナリオ（点検でずれが見つかる）
+    setup:
+      - name: ずれを持つ文書群
+        description: 正常シナリオの文書群から 1 つの文書を消し、索引には残したもの
+      - name: Mock
+        description: 正常シナリオと同じく、外部ライブラリは手元のファイル
+    flow: |-
+      flowchart TD
+        A[雛形を置く] --> B[文書と索引を書く]
+        B --> C[設定と索引を点検する]
+        C -->|ずれあり| F[索引を直す]
+        F --> C
+        C -->|ずれ 0 件| D[複数の文書を 1 枚の HTML にまとめる]
+    expected:
+      - 1 回目の `mdmark check` が消えた文書の `missing_doc` を出し、終了コード 0 以外を返す
+      - 索引から消えた文書の行を消すと、2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返す
+      - その後の `mdmark build` が 1 枚の HTML を書く
+    test: test_error_when_drift
+lead: 文書を書く人が、サーバーを持たずに CLI で雛形を置き、文書と索引を書いて点検し、1 枚の HTML にまとめて配る。読む人は受け取った HTML を file:// で開き、外を読まずに文書を行き来する。
+issue: 9
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: サーバーを立てずに、手元の Markdown から配れる HTML を作れる
+  - name: 読む人
+    interest: CDN を読めない環境（OneDrive など Microsoft の環境）でも、受け取った 1 枚の HTML で文書と図を読める
+trigger: 文書を書く人が、Markdown の文書群をサーバー無しで配りたくなる
+preconditions:
+  - 文書を書く人の手元に Node 24 以降がある
+  - 文書を書く人の手元から、設定の `libraries` に書いた URL の先へ届く
+success_guarantee: '`build.out` に 1 枚の HTML ができ、読む人が file:// で開くと、外への要求 0 件で `entry` の文書が描かれ、文書の一覧と文書間のリンクで全ての文書へ移れ、用語のツールチップ・被参照・外部ライブラリの図が効く。'
+minimal_guarantee: 点検でずれが見つかったときは、ずれの一覧を出して終了コードを 0 以外にする。CLI は文書と索引を書き換えない。
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#

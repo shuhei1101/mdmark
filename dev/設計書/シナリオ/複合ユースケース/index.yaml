@@ -1,0 +1,5 @@
+summary: "単一ユースケースをつないだ業務の流れのシナリオ"
+docs_index: true
+items:
+  - page: 雛形から1枚のHTMLを配る.yaml
+    summary: 文書を書く人が CLI で雛形を置き、点検して 1 枚の HTML にまとめ、読む人が file:// で開いて文書を行き来する
