@@ -1,0 +1,18 @@
+$ npx playwright test "tests/e2e/単一ユースケース/文書を描く.spec.ts"
+
+Running 12 tests using 2 workers
+
+  ✓   2 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal (246ms)
+  ✓   3 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:50:1 › test_normal_when_updated (150ms)
+  ✓   4 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:64:1 › test_normal_when_destroyed (136ms)
+  ✓   5 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:76:1 › test_normal_when_unknown_mark (106ms)
+  ✓   6 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:92:1 › test_normal_when_script_in_markdown (168ms)
+  ✓   7 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:143:1 › test_normal_when_index (119ms)
+  ✓   1 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal (1.2s)
+  ✓   8 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:50:1 › test_normal_when_updated (270ms)
+  ✓   9 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:64:1 › test_normal_when_destroyed (263ms)
+  ✓  10 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:76:1 › test_normal_when_unknown_mark (247ms)
+  ✓  11 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:92:1 › test_normal_when_script_in_markdown (362ms)
+  ✓  12 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:143:1 › test_normal_when_index (251ms)
+
+  12 passed (6.0s)
