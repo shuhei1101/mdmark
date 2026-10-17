@@ -23,15 +23,6 @@
       container-type: inline-size;
     }
 
-    /* 狭い図の枠（スマホ幅の文書）: 凡例の文字と間隔を詰め、図より上に取る高さを抑える */
-    @container (width < 30rem) {
-      .mdmark-diagram-legend {
-        gap: 0.125rem 0.75rem;
-        font-size: 0.75rem;
-        line-height: 1.5;
-      }
-    }
-
     /* 図の題の行: 題と、範囲・更新日を折り返して並べる */
     .mdmark-diagram-head {
       display: flex;
@@ -52,7 +43,7 @@
       font-size: 0.8125rem;
     }
 
-    /* 凡例: 色・形・線・矢じりの見本と意味を横に並べ、幅に応じて折り返す */
+    /* 凡例: 表示の箱の下に、色・形・線・矢じりの見本と意味を横に並べ、幅に応じて折り返す */
     .mdmark-diagram-legend {
       display: flex;
       flex-wrap: wrap;
@@ -85,6 +76,15 @@
       text-decoration: underline dashed var(--mdmark-color-term-underline);
       text-decoration-thickness: 1px;
       text-underline-offset: 0.3em;
+    }
+
+    /* 狭い図の枠（スマホ幅の文書）: 凡例の文字と間隔を詰める */
+    @container (width < 30rem) {
+      .mdmark-diagram-legend {
+        gap: 0.125rem 0.75rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+      }
     }
 
     /* 表示の箱: 右上のボタンの帯と、図を動かして見る表示枠。ツールチップを箱に対して置く */

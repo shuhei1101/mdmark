@@ -334,10 +334,11 @@
     if (nodes.some((n) => n.io)) {
       items.push(item(`<svg class="mdmark-diagram-legend-sample" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:var(--mdmark-color-muted);stroke-width:2.25;stroke-linecap:round">${ICONS.info}</svg>`, "入力・処理・出力が出る箱"));
     }
-    const texts = [...nodes.map((n) => `${n.tag ?? ""}${n.sub ?? ""}`)].join("");
-    if (texts.includes("{{")) items.push(item("", '<span class="mdmark-diagram-legend-term">下線の語</span>（用語の意味が出る）'));
+    // 下線: 箱の中の用語（意味が出る）と、線のラベル（送るものの詳細が出る）を 1 項目にまとめる
+    const hasTerm = nodes.some((n) => `${n.tag ?? ""}${n.sub ?? ""}`.includes("{{"));
     const hasTip = def.kind === "flow" ? def.wires.some((w) => w.tip) : def.steps.some((s) => s.tip);
-    if (hasTip) items.push(item("", '<span class="mdmark-diagram-legend-term">下線のラベル</span>（送るものの詳細が出る）'));
+    const underline = hasTerm && hasTip ? "用語の意味・送るものの詳細が出る" : hasTerm ? "用語の意味が出る" : "送るものの詳細が出る";
+    if (hasTerm || hasTip) items.push(item("", `<span class="mdmark-diagram-legend-term">下線</span>（${underline}）`));
     return items;
   };
 
@@ -374,7 +375,6 @@
         <span class="mdmark-diagram-title">${esc(def.title)}</span>
         <span class="mdmark-diagram-meta">範囲: ${esc(def.scope)}・更新日: <time datetime="${def.updated}">${def.updated}</time></span>
       </figcaption>
-      <ul class="mdmark-diagram-legend" aria-label="凡例">${legendItems(def, fid).join("")}</ul>
       <div class="mdmark-diagram-box">
         ${toolsHtml(def.title)}
         <div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${fid}-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight">
@@ -382,6 +382,7 @@
         </div>
         ${tips.list.map((t) => `<div class="mdmark-diagram-tip" id="${t.id}" role="tooltip" data-tip-for="${esc(t.label)}" hidden>${t.html}</div>`).join("")}
       </div>
+      <ul class="mdmark-diagram-legend" aria-label="凡例">${legendItems(def, fid).join("")}</ul>
       <svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>${markerDefs(fid)}</defs></svg>`;
     const view = attachView(figure, body.width, body.height);
     attachTips(figure);
@@ -414,6 +415,10 @@
       button("fit").disabled = state.atFit;
       // 図の全体が見えている間は、移動のボタンは何も動かさないので出さない
       panGroup.hidden = state.width * scale <= viewport.clientWidth + 1 && state.height * scale <= viewport.clientHeight + 1;
+      // 押したボタンが押せなくなった・消えたときは、フォーカスを表示枠へ移して失わせない
+      if (figure.contains(document.activeElement) && (document.activeElement.disabled || panGroup.contains(document.activeElement) && panGroup.hidden)) {
+        viewport.focus({ preventScroll: true });
+      }
     };
 
     /** 開いたときの倍率（全体が収まる倍率）と位置に戻す。表示枠の高さを全体が収まる高さにする。 */
@@ -457,9 +462,9 @@
     };
     for (const [name, run] of Object.entries(actions)) button(name)?.addEventListener("click", run);
 
-    // キー: 図の中にフォーカスがあるとき、+・-・0 で拡大・縮小・戻す、矢印キーで動かす（動かせる向きがあるときだけ文書のスクロールを止める）
+    // キー: 表示の箱（右上のボタンと表示枠）にフォーカスがあるとき、+・-・0 で拡大・縮小・戻す、矢印キーで動かす（動かせる向きがあるときだけ文書のスクロールを止める）
     const keys = { "+": "in", "=": "in", "-": "out", 0: "fit", ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" };
-    viewport.addEventListener("keydown", (event) => {
+    figure.querySelector(".mdmark-diagram-box").addEventListener("keydown", (event) => {
       const name = keys[event.key];
       if (!name || event.ctrlKey || event.metaKey || event.altKey) return;
       if (name in { left: 1, right: 1, up: 1, down: 1 } && panGroup.hidden) return;
