@@ -88,11 +88,16 @@ test("test_normal_when_keyboard", async ({ page }) => {
     index: INDEX,
     docId: DOC_ID,
   });
-  // 実行
-  await page.keyboard.press("Tab");
-  // 検証
+  // 実行・検証
+  // 1 回目の Tab は `## 一つ目` の開閉のボタン、2 回目はそのアンカーのリンク、3 回目が最初の用語
+  const heading = page.locator("#doc h2").first();
   const term = page.locator("#doc .mdmark-term").first();
   const tip = page.locator("#doc .mdmark-term-tip").first();
+  await page.keyboard.press("Tab");
+  await expect(heading.locator("button.mdmark-section-toggle")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(heading.locator("a.mdmark-anchor")).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(term).toBeFocused();
   await expect(tip).toBeVisible();
   const describedBy = await term.getAttribute("aria-describedby");
