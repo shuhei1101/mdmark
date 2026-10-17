@@ -3,7 +3,7 @@ lead: '`mdmark upgrade` の処理。版の読み取りと比較、移行の手�
 directory: |-
   ```tree
   src/cli/
-  ├── versions.ts    # 版の書式・比較・パッケージの版の読み取り
+  ├── versions.ts    # 版の書式・比較・呼んだ CLI の版
   ├── migrations.ts  # 移行の手順の読み取り・形の検め・適用
   ├── backup.ts      # 当てる前の写しと写しからの戻し
   ├── changelog.ts   # 変更履歴の表から範囲の行を抽き出す
@@ -230,42 +230,6 @@ functions:
         condition: '`v0.10.0` と `v0.9.9`、`v1.0.0` と `v1.0.0`、`v0.3.0` と `v0.4.0`'
         mock: なし
         expected: 1・0・-1
-    status: planned
-    introduced:
-      pr: 39
-  - name: readPackageVersion
-    title: パッケージの版を読む
-    container: src/cli/versions.ts
-    usecase: 共通
-    summary: パッケージの直下の `version.ini` の先頭行を、呼んだ CLI の版として返す
-    kind: 関数
-    scope: public
-    is_async: true
-    args:
-      - name: packageDir
-        type: string
-        required: true
-        description: パッケージの直下
-    returns:
-      type: Promise<string>
-      description: 書式の合う版
-    exceptions:
-      - name: CliError
-        condition: '`version.ini` を読めない、または先頭行が `VERSION_PATTERN` に合わない'
-        message: mdmark の版を読めません（{パス}）。mdmark を入れ直してください。
-    unit_tests:
-      - name: test_read_package_version
-        case: 正常
-        summary: 先頭行の版を返す
-        condition: 中身 `v0.5.0\n` の `version.ini`
-        mock: 一時フォルダ
-        expected: '`v0.5.0`'
-      - name: test_read_package_version_when_invalid
-        case: 異常
-        summary: 書式の違う版は CliError
-        condition: 中身 `0.5` の `version.ini`
-        mock: 一時フォルダ
-        expected: '`CliError` を投げ、文に `入れ直して` が入る'
     status: planned
     introduced:
       pr: 39
@@ -790,16 +754,16 @@ functions:
     container: src/cli/upgrade.ts
     usecase: 版を上げる
     summary: 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える
-    description: 順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 目標の版（`readPackageVersion`）→ 手元の版（設定の `version`、無ければ `ask`）→ 比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ キーが無い `set_default` の `ask` を当てる順に聞く → 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep` → `collectCheckIssues` → ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる
+    description: 順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep` → `collectCheckIssues` → ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる
     kind: 関数
     scope: public
     is_async: true
     side_effects: 設定・索引・文書を書き換え、写しを置く
     args:
       - name: options
-        type: '{ config?: string | undefined; plan: boolean; yes: boolean; packageDir: string; now: Date }'
+        type: '{ config?: string | undefined; plan: boolean; yes: boolean; packageDir: string; cliVersion: string; now: Date }'
         required: true
-        description: '`--config`・`--plan`・`--yes`・パッケージの直下・今の時刻'
+        description: '`--config`・`--plan`・`--yes`・パッケージの直下（`migrations/` と変更履歴の基準）・目標の版（`cliVersion()`。テストで差し替える）・今の時刻'
       - name: io
         type: CliIo
         required: true
@@ -885,8 +849,13 @@ functions:
         condition: '`version` を持たない設定'
         mock: '`undefined` を返す `Prompter`'
         expected: '`CliError` を投げ、`.mdmark/` が無い'
+      - name: test_run_upgrade_when_plan_with_ask
+        case: 正常
+        summary: --plan では値を聞く手順があっても聞かない
+        condition: '`v0.5.0` が `ask` を持つ `set_default`、`plan: true`'
+        mock: 呼ばれたら失敗にする `Prompter`
+        expected: 0 を返し、`Prompter` が呼ばれない
     refs:
-      - '#functions[readPackageVersion]'
       - '#functions[loadMigrationVersions]'
       - '#functions[stepFiles]'
       - '#functions[applyStep]'
@@ -896,6 +865,28 @@ functions:
       - '#functions[writeConfigVersion]'
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[findConfigFile]
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectBuildDocuments]
+    status: planned
+    introduced:
+      pr: 39
+  - name: cliVersion
+    title: 呼んだ CLI の版
+    container: src/cli/versions.ts
+    usecase: 共通
+    summary: ビルドが `dist/cli.js` に埋めた `__MDMARK_VERSION__` を返す
+    description: ライブラリ本体の `version()` と同じ出所。hotfix のビルドは `version.ini` を上げず `--version` で打つタグの版を埋めるため、`version.ini` は読まない
+    kind: 関数
+    scope: public
+    is_async: false
+    returns:
+      type: string
+      description: 埋めた版（`v{MAJOR}.{MINOR}.{PATCH}`）
+    unit_tests:
+      - name: test_cli_version
+        case: 正常
+        summary: 埋めた版を返す
+        condition: '`__MDMARK_VERSION__` が `v0.5.0`'
+        mock: '`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`'
+        expected: '`v0.5.0`'
     status: planned
     introduced:
       pr: 39

@@ -109,7 +109,7 @@ functions:
     container: src/cli/main.ts
     usecase: 共通
     summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `readPackageVersion` の版を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
