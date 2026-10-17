@@ -910,6 +910,54 @@ functions:
     status: planned
     introduced:
       pr: 32
+  - name: readDistAssets
+    title: 配布物を読む
+    container: src/cli/export.ts
+    usecase: 共通
+    summary: '`dist/index.css` と `dist/viewer.js` を読み、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
+    description: '`dist/viewer.css` が無いときは足さずに続ける（それ以外の読めない理由はそのまま投げる）。`index.css` か `viewer.js` を読めなければ `CliError`'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ distDir: string; kind: "document" | "bundle" }'
+        required: true
+        description: '`dist/` の場所と書き出しの種類'
+    returns:
+      type: 'Promise<{ distCss: string; viewer: string }>'
+      description: 埋める CSS と起動の処理
+    exceptions:
+      - name: CliError
+        condition: '`index.css` か `viewer.js` を読めない'
+        message: 配布物を読めません（{理由}）。mdmark を入れ直してください。
+    status: planned
+    introduced:
+      pr: 32
+  - name: writeHtml
+    title: HTML を書く
+    container: src/cli/export.ts
+    usecase: 共通
+    summary: 親のフォルダを作って HTML を書く
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 出力のパスに HTML を書く
+    args:
+      - name: options
+        type: '{ file: string; display: string; html: string }'
+        required: true
+        description: 書く先の絶対パス・利用者に見せるパス・HTML
+    returns:
+      type: Promise<void>
+      description: 書いたら解決する
+    exceptions:
+      - name: CliError
+        condition: 書く先に書けない
+        message: '書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。'
+    status: planned
+    introduced:
+      pr: 32
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -918,6 +966,11 @@ constants:
     value: '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`（TypeScript だけ）・`extensions/example.js`（JavaScript だけ）・`tsconfig.json`（TypeScript だけ）・`package.json`（TypeScript だけ）'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts#constraints[置く雛形]
+  - name: CONFIG_FILE
+    title: 設定ファイルの名前
+    container: src/cli/config.ts
+    summary: 上へ探す設定ファイルの名前
+    value: '`mdmark.config.yaml`'
 test_files:
   - tests/unit/src/cli/main.test.ts
   - tests/unit/src/cli/config.test.ts
