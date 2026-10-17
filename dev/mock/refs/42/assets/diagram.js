@@ -504,14 +504,17 @@
       }
     });
 
-    // 幅が変わったとき: 全体が収まる倍率で見ていたなら、新しい幅で全体が収まる倍率に合わせ直す
-    window.addEventListener("resize", () => {
+    // 枠の幅が変わったとき（画面の幅・ページの縦のスクロールバーの出入り）: 全体が収まる倍率で見ていたなら、新しい幅で全体が収まる倍率に合わせ直す
+    let lastWidth = viewport.clientWidth;
+    new ResizeObserver(() => {
+      if (viewport.clientWidth === lastWidth) return;
+      lastWidth = viewport.clientWidth;
       if (state.atFit) reset();
       else {
         state.fit = fitScale();
         apply(Math.max(state.fit, state.scale));
       }
-    });
+    }).observe(viewport);
 
     reset();
 
@@ -607,8 +610,8 @@
       tip.addEventListener("pointerleave", closeLater);
     }
 
-    // Esc: 開いているツールチップを閉じ、フォーカスは持ち主に残す
-    figure.addEventListener("keydown", (event) => {
+    // Esc: 開いているツールチップを閉じ、フォーカスは持ち主に残す（ポインターで開いてフォーカスが図の外にあるときも閉じる）
+    document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && current && !pinned) close();
     });
 
