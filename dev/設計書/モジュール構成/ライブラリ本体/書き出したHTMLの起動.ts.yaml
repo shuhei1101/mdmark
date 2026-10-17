@@ -227,3 +227,9 @@ functions:
     status: planned
     introduced:
       pr: 32
+test_files:
+  - tests/unit/src/viewer/index.browser.test.ts
+  - tests/unit/src/viewer/modules.test.ts
+  - tests/unit/src/viewer/route.test.ts
+  - tests/unit/src/viewer/route.browser.test.ts
+  - tests/unit/src/viewer/bundle.browser.test.ts

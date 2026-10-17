@@ -918,3 +918,13 @@ constants:
     value: '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`（TypeScript だけ）・`extensions/example.js`（JavaScript だけ）・`tsconfig.json`（TypeScript だけ）・`package.json`（TypeScript だけ）'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts#constraints[置く雛形]
+test_files:
+  - tests/unit/src/cli/main.test.ts
+  - tests/unit/src/cli/config.test.ts
+  - tests/unit/src/cli/documents.test.ts
+  - tests/unit/src/cli/embed.test.ts
+  - tests/unit/src/cli/html.test.ts
+  - tests/unit/src/cli/init.test.ts
+  - tests/unit/src/cli/check.test.ts
+  - tests/unit/src/cli/export.test.ts
+  - tests/unit/src/cli/build.test.ts

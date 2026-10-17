@@ -37,7 +37,7 @@ MCP の `export_html`・`build_site`・`check` は [#11](https://github.com/shuh
 - [x] 画面設計
 - [x] モジュール構成設計
 - [x] ドキュメント修正
-- [ ] 単体テスト作成
+- [x] 単体テスト作成
 - [ ] 実装
 - [ ] 結合テスト作成
 - [ ] E2E テスト作成
