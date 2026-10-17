@@ -32,10 +32,11 @@ scenarios:
         participant C as mdmark CLI
         participant F as フォルダ
         W->>C: mdmark init（JavaScript を指定）
-        C->>F: 設定・theme.css・索引・JavaScript の拡張の雛形を書く
+        C->>F: 設定・theme.css・索引・JavaScript の拡張の雛形と、JavaScript を点検する tsconfig を書く
         C-->>W: 置いたファイルの一覧・終了コード 0
     expected:
-      - 拡張の雛形が JavaScript で、TypeScript の雛形と tsconfig が無い
+      - 拡張の雛形が `// @ts-check` と JSDoc で型を付けた JavaScript で、TypeScript の雛形が無い
+      - JavaScript を変換せずに配布物の型定義で点検する tsconfig を置く
       - 設定・`theme.css`・索引の雛形は正常シナリオと同じ
       - 終了コードが 0
     test: test_normal_when_javascript
