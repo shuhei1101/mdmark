@@ -17,7 +17,7 @@
     frame: '<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/>',
     zoomIn: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/>',
     zoomOut: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/>',
-    fit: '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
+    fit: '<path d="m15 15 6 6"/><path d="M15 19.8V15h4.8"/><path d="m9 15-6 6"/><path d="M9 19.8V15H4.2"/><path d="m15 9 6-6"/><path d="M15 4.2V9h4.8"/><path d="m9 9-6-6"/><path d="M9 4.2V9H4.2"/>',
     left: '<path d="m15 18-6-6 6-6"/>',
     up: '<path d="m18 15-6-6-6 6"/>',
     down: '<path d="m6 9 6 6 6-6"/>',
@@ -30,7 +30,10 @@
 
   // 箱の種類の既定の名前（定義の tag が無いときに種類の行に出す）と、凡例の並び
   const KIND_TAGS = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ", external: "外部" };
-  const KIND_LEGEND = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム（枠の外）" };
+  const KIND_LEGEND = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム" };
+
+  // システムの枠を持つ図で、外部のシステムの凡例に添える置き場所
+  const OUTSIDE_FRAME = "（枠の外）";
 
   // 線の種類の凡例の名前（定義に出る種類だけを凡例に載せる）
   const LINE_LEGEND = { flow: "処理の流れ", read: "読む", write: "書く", reply: "返す", loop: "戻る（ループ）" };
@@ -233,10 +236,11 @@
     const bandX = lastX + SEQ_HEAD_W / 2 + 40;
     const parts = [];
     const svg = [];
-    // 繰り返しの範囲の面と、右の帯を通って 1 へ戻る線。戻り先は線の上のラベルで示す
+    // 繰り返しの範囲の面と、右の帯を通って 1 の受け手の縦線へ戻る線。1 のラベルより上を通す
     if (def.loop) {
       svg.push(`<rect class="mdmark-diagram-loop-band" x="12" y="${rowY(0) - 30}" width="${bandX}" height="${lastY - rowY(0) + 48}" rx="8"/>`);
-      const loopWire = { id: `${fid}-loop`, line: "loop", points: [[col.get(def.steps.at(-1).to), lastY + 14], [bandX, lastY + 14], [bandX, rowY(0) - 14], [bandX - 24, rowY(0) - 14]] };
+      const backY = rowY(0) - 27;
+      const loopWire = { id: `${fid}-loop`, line: "loop", points: [[col.get(def.steps.at(-1).to), lastY + 14], [bandX, lastY + 14], [bandX, backY], [col.get(def.steps[0].to) + 2, backY]] };
       svg.push(wireSvg(fid, loopWire, wirePath(loopWire, [])));
       parts.push(labelHtml({ ...loopWire, label: def.loop.label }, bandX, (lastY + rowY(0)) / 2, tips));
     }
@@ -250,9 +254,9 @@
       parts.push(labelHtml(wire, (x1 + x2) / 2, y - 14, tips));
     });
     parts.unshift(`<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true">${svg.join("")}</svg>`);
-    for (const p of def.participants) {
-      parts.push(nodeHtml({ ...p, x: col.get(p.id) - SEQ_HEAD_W / 2, y: 16, w: SEQ_HEAD_W, h: SEQ_HEAD_H }, tips));
-    }
+    // 相手の名前の行: 別の層にし、縦に動かしても表示枠の上端に留める（attachView が位置を合わせる）
+    const heads = def.participants.map((p) => nodeHtml({ ...p, x: col.get(p.id) - SEQ_HEAD_W / 2, y: 16, w: SEQ_HEAD_W, h: SEQ_HEAD_H }, tips));
+    parts.push(`<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${16 + SEQ_HEAD_H + 8}px">${heads.join("")}</div>`);
     return { html: parts.join(""), width, height };
   };
 
@@ -322,7 +326,7 @@
     const kinds = Object.keys(KIND_LEGEND).filter((k) => nodes.some((n) => n.kind === k));
     const lines = new Set(def.kind === "sequence" ? def.steps.map((s) => (s.reply ? "reply" : "flow")) : def.wires.map((w) => w.line));
     if (def.loop) lines.add("loop");
-    const items = kinds.map((k) => item(kindSample(k), KIND_LEGEND[k]));
+    const items = kinds.map((k) => item(kindSample(k), k === "external" && def.frame ? KIND_LEGEND[k] + OUTSIDE_FRAME : KIND_LEGEND[k]));
     if (def.frame) {
       items.push(item('<svg class="mdmark-diagram-legend-sample" width="18" height="14" aria-hidden="true"><rect x="1" y="1" width="16" height="12" rx="4" fill="none" stroke="var(--mdmark-color-muted)" stroke-width="1.5"/></svg>', "システムの枠"));
       items.push(item('<svg class="mdmark-diagram-legend-sample" width="18" height="14" aria-hidden="true"><rect x="0" y="0" width="18" height="14" rx="2" fill="color-mix(in srgb, var(--mdmark-color-diagram-llm) 14%, var(--mdmark-color-bg))"/></svg>', "層の背景（層の箱の色）"));
@@ -399,6 +403,15 @@
     const button = (name) => figure.querySelector(`[data-tool="${name}"]`);
     const state = { scale: 1, fit: 1, atFit: true, width, height };
 
+    /** シーケンス図の相手の名前の行を、表示枠の上端に留める（図の座標で縦に動いた分だけ下げる）。 */
+    const heads = figure.querySelector(".mdmark-diagram-seq-heads");
+    const stickHeads = () => {
+      if (!heads) return;
+      heads.style.transform = `translateY(${viewport.scrollTop / state.scale}px)`;
+      heads.classList.toggle("is-stuck", viewport.scrollTop > 0);
+    };
+    viewport.addEventListener("scroll", stickHeads, { passive: true });
+
     /** 枠の幅に図の全体が収まる倍率。 */
     const fitScale = () => Math.min(1, viewport.clientWidth / state.width);
 
@@ -408,6 +421,7 @@
       stage.style.transform = `scale(${scale})`;
       sizer.style.width = `${state.width * scale}px`;
       sizer.style.height = `${state.height * scale}px`;
+      stickHeads();
       zoomText.value = `${Math.round(scale * 100)}%`;
       zoomText.textContent = zoomText.value;
       button("out").disabled = scale <= state.fit + ZOOM_EPSILON;

@@ -514,6 +514,19 @@
       stroke-dasharray: 4 4;
     }
 
+    /* 相手の名前の行: 縦に動かしても表示枠の上端に留まる層。下を流れるメッセージを地で隠す */
+    .mdmark-diagram-seq-heads {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: var(--mdmark-color-bg);
+
+      /* 縦に動かして下にメッセージが流れている間だけ、境目の線を引く */
+      &.is-stuck {
+        border-bottom: 1px solid var(--mdmark-color-border);
+      }
+    }
+
     /* 繰り返しの範囲: 戻りの線の帯を薄い面で示す */
     .mdmark-diagram-loop-band {
       fill: color-mix(in srgb, var(--mdmark-color-diagram-line) 6%, transparent);
