@@ -223,7 +223,7 @@ exceptions:
   - name: 出していない版の手順が残る（終了コード 1）
     condition: '比べる版が最新の版のタグより新しいビルド（release・hotfix のビルド）で、`migrations/next/` か `migrations/no-steps.yaml` の `version: next` の行が残っている'
   - name: 移行の手順の形の誤り（終了コード 1）
-    condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
+    condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
 constraints:
   - item: 配布ファイル 1 つのサイズ
     constraint: 256KB 以下（262144 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外

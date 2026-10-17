@@ -82,8 +82,9 @@ tables:
         title: スクリプト
         type: string
         description: '`call` が流すスクリプトのパス。`steps.yaml` のあるフォルダからの相対パス'
-        example: move-terms.ts
-        notes: '`call` で必須。拡張子は `.js` か `.ts`'
+        example: move-terms.mjs
+        notes: '`call` で必須。Node は `node_modules` の下の `.ts` の型を落とさず、`npx` が入れたパッケージの `.ts` は流れないため、TypeScript で書くときは JavaScript にしたものを置く'
+        check: 拡張子が `.js` か `.mjs`（`schemas/mdmark.steps.schema.json` の pattern で縛る）
       - name: files
         title: 書き換えるもの
         type: array
