@@ -1,0 +1,60 @@
+/* 1 文書を書き出した HTML のモック: 文書だけのページと、印刷・横スクロールの見え方 */
+
+/* ページ全体: 書き出した HTML は使う側のページを持たず、文書の地をそのまま敷く */
+body {
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+}
+
+/* パンくず: モックの階層を遡るリンク列 */
+.mock-breadcrumb {
+  max-width: calc(var(--mdmark-content-width) + var(--mdmark-padding) * 2);
+  margin: 0 auto 12px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+
+  a {
+    color: inherit;
+  }
+}
+
+/* mdmark の層: 描く先の要素の地と余白、横スクロールの影 */
+@layer mdmark {
+  /* 描く先の要素: 地の色と内側の余白。枠と影は付けない */
+  .mdmark {
+    padding: var(--mdmark-padding);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+
+    /* 横スクロールする領域: 続きがある側の端に影を出す（影は中身と一緒に動く面と、端に留まる面の重ね合わせ） */
+    :is(pre, table) {
+      background:
+        linear-gradient(to right, var(--mdmark-color-surface) 30%, transparent) left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-surface) 30%, transparent) right / 2.5em 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, var(--mdmark-color-scroll-shadow), transparent) left / 0.9em 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, var(--mdmark-color-scroll-shadow), transparent) right / 0.9em 100% no-repeat scroll,
+        var(--mdmark-color-surface);
+    }
+
+    /* 表の見出し行・セル: 横スクロールの影が透けるよう、地を透明にする（見出し行の面の色より後に当てる） */
+    :is(th, td) {
+      background: transparent;
+    }
+
+    /* 表の見出し行: 本文のセルと太さで分ける */
+    thead th {
+      border-block-end-width: 2px;
+    }
+  }
+}
+
+/* 紙に出すとき: モック専用の操作列を出さず、本文の領域の余白を紙の余白に任せる */
+@media print {
+  .mock-bar {
+    display: none;
+  }
+
+  .host {
+    padding: 0;
+  }
+}

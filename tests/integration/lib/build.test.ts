@@ -34,6 +34,10 @@ async function createWorkTree(versionIni: string): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI の `init` が写す雛形の正本
+  await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
+    recursive: true,
+  });
   await writeFile(join(root, "package.json"), '{"type":"module"}\n');
   await writeFile(join(root, "version.ini"), versionIni);
   // 型定義を書く `tsc` が読む設定
@@ -114,6 +118,19 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   ]) {
     expect(declarations).toMatch(new RegExp(`export[^;]*\\b${name}\\b`));
   }
+  // CLI と、書き出した HTML の起動の処理と画面の規則を書く
+  for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
+    expect(existsSync(join(root, "dist", name))).toBe(true);
+  }
+  const initTarget = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
+  createdRoots.push(initTarget);
+  const init = await execFileAsync(
+    process.execPath,
+    [join(root, "dist", "cli.js"), "init", initTarget],
+    { cwd: root },
+  );
+  expect(init.stdout).toContain("置いた: mdmark.config.yaml");
+  expect(existsSync(join(initTarget, "mdmark.config.yaml"))).toBe(true);
   await writeFile(
     join(root, "consumer.ts"),
     'import { mount, registerExtension, render, version } from "./dist/index.js";\nexport { mount, registerExtension, render, version };\n',

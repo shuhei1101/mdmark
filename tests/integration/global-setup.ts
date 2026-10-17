@@ -30,6 +30,15 @@ export default async function setup(project: TestProject) {
     recursive: true,
   });
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
+  // CLI が配布物と雛形を探す、パッケージの直下の印と雛形の正本
+  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await cp(
+    resolve(import.meta.dirname, "../../templates"),
+    join(root, "templates"),
+    {
+      recursive: true,
+    },
+  );
   // 型定義を書く `tsc` が読む設定
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await copyFile(

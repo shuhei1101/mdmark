@@ -39,6 +39,11 @@ catalogs:
           - name: options.transformTags
             type: 'Record<string, (tagName: string, attribs: Record<string, string>) => { tagName: string; attribs: Record<string, string> }>'
             description: 落とす前に要素名と属性を書き換える。`*` は全ての要素
+          - name: options.allowedSchemesByTag
+            type: Record<string, string[]>
+            required: false
+            description: 要素ごとに許す URL のスキーム。書いた要素では `allowedSchemes` の代わりに使われる
+            notes: '`data` を許すと形を問わず通るため、残す形は `transformTags` で絞る'
         returns:
           - name: '-'
             type: string

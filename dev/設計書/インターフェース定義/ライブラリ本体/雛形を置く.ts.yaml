@@ -1,0 +1,140 @@
+title: "雛形を置く"
+entry:
+  kind: operation
+  value: '`mdmark init [{置く先のフォルダ}] [--js]`（CLI。`npx github:shuhei1101/mdmark#v{版} init` で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: 空のフォルダに TypeScript の雛形を置く
+    setup:
+      - name: 空のフォルダ
+        description: 置く先の一時フォルダ。何も置いていない
+      - name: Mock
+        description: 差し替える依存は無い（CLI を子プロセスで流す）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init {フォルダ}
+        C->>F: 6 つの雛形を書く
+        C-->>W: 置いた 6 つの行・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`・`tsconfig.json`・`package.json` がある'
+      - '`mdmark.config.yaml` と `index.yaml` が設定と索引の JSON Schema に合う'
+      - 標準出力に `置いた:` の行が 6 つ、雛形の並びで出る
+    test: test_normal
+  - name: 正常系（JavaScript を指定する）
+    summary: '`--js` で JavaScript の拡張の雛形を置く'
+    setup:
+      - name: 空のフォルダ
+        description: 正常系と同じ
+        notes: '`--js`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init {フォルダ} --js
+        C->>F: 設定・theme.css・索引・extensions/example.js を書く
+        C-->>W: 置いた 4 つの行・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`extensions/example.js` があり、`extensions/example.ts`・`tsconfig.json`・`package.json` が無い'
+      - '`mdmark.config.yaml`・`theme.css`・`index.yaml` が正常系と同じ中身'
+    test: test_normal_when_javascript
+  - name: 正常系（既にあるファイルがある）
+    summary: 既にあるファイルを上書きせず、無いものだけを置く
+    setup:
+      - name: 設定を書いたフォルダ
+        description: 中身を書いた `mdmark.config.yaml` だけがあるフォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init {フォルダ}
+        C->>F: mdmark.config.yaml のほかの 5 つを書く
+        C-->>W: 置かなかった 1 つと置いた 5 つの行・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`mdmark.config.yaml` の中身が変わっていない'
+      - '標準出力に `置かなかった（既にある）: mdmark.config.yaml` と `置いた:` の行が 5 つ出る'
+    test: test_normal_when_file_exists
+  - name: 異常系（置く先に書けない・終了コード 1）
+    summary: 置く先のフォルダを作れないと、書けないパスを示して終わる
+    setup:
+      - name: ファイルを指す置く先
+        description: 置く先のフォルダのパスに、同じ名前のファイルがある
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark init {ファイルのパス}
+        C-->>W: 書けないパスと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに置く先のパスと直し方が出る
+      - 置く先のファイルが変わっていない
+    test: test_error_when_unwritable
+lead: 文書を書く人が、設定・使う側の CSS・索引・拡張の雛形をフォルダに置く。雛形の正本はリポジトリの `templates/` に置き、既にあるファイルは上書きしない。
+idempotent: true
+side_effects: 置く先のフォルダに、無い雛形のファイルとフォルダを書く
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/雛形を置く#
+request:
+  - name: '{置く先のフォルダ}'
+    type: string
+    required: false
+    default: '`.`（今のフォルダ）'
+    location: argument
+    description: 雛形を置くフォルダ
+    notes: 無ければ作る
+  - name: --js
+    type: boolean
+    required: false
+    default: false（TypeScript の拡張の雛形を置く）
+    location: argument
+    description: 拡張の雛形を JavaScript で置く
+    notes: '`tsconfig.json` と `package.json` を置かない'
+response:
+  - name: 標準出力
+    type: string
+    description: '置いたファイルの行（`置いた: {パス}`）と、既にあって置かなかったファイルの行（`置かなかった（既にある）: {パス}`）を、雛形の並びで 1 行ずつ出す'
+    notes: パスは置く先のフォルダからの相対パス
+  - name: 終了コード
+    type: 0 | 1
+    description: 置けたら（置かなかったファイルがあっても）0、書けなかったら 1
+response_example: |-
+  ```text
+  置かなかった（既にある）: mdmark.config.yaml
+  置いた: theme.css
+  置いた: index.yaml
+  置いた: extensions/example.ts
+  置いた: tsconfig.json
+  置いた: package.json
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 無い雛形を全て書いた（既にあるファイルは置かずに一覧に出す）。終了コード 0
+  - name: 書けない（終了コード 1）
+    condition: 置く先のフォルダを作れない、またはファイルを書けない
+    notes: 標準エラーに書けなかったパスと直し方の 1 文を出す。書けたファイルは残す
+constraints:
+  - item: 置く雛形
+    constraint: '`mdmark.config.yaml`（`index`・`theme`・`build` を書いた設定）・`theme.css`（CSS 変数を上書きする例）・`index.yaml`（文書と用語が 0 件の索引）・`extensions/example.ts`（`registerExtension` に渡す拡張を既定の export にする例）・`tsconfig.json`・`package.json`（拡張の型の検査と JavaScript への変換のコマンド）。`--js` のときは `extensions/example.js` を置き、`tsconfig.json` と `package.json` を置かない'
+    notes: 並びはこの順。中身の正本は `templates/`
+  - item: 上書き
+    constraint: 既にあるファイルは中身を読まず、置かずに一覧に出す。上書きの指定は持たない
+  - item: 置いた設定と索引の形
+    constraint: 置いた `mdmark.config.yaml` と `index.yaml` は、`schemas/mdmark.config.schema.json` と `schemas/mdmark.index.schema.json` に合う
+  - item: 動く Node の版
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+test_file: tests/integration/lib/init.test.ts

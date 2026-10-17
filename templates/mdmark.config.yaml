@@ -1,0 +1,16 @@
+# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く
+
+# 索引の YAML
+index: index.yaml
+
+# 書き出した HTML に埋める、使う側の CSS
+theme: theme.css
+
+# 書き出した HTML に埋める拡張のモジュール（使うときは次の行の # を外す）
+# extensions: [extensions/example.ts]
+
+# mdmark build がまとめる文書と、書き出す先
+build:
+  include: ["**/*.md"]
+  exclude: ["node_modules/**"]
+  out: dist/docs.html

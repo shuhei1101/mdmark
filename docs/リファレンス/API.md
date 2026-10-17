@@ -381,6 +381,7 @@ registerExtension({
 | `--mdmark-color-callout-important` | `#8250df` | `#ab7df8` | 重要の注意書きの枠の線・題・アイコン |
 | `--mdmark-color-callout-warning` | `#9a6700` | `#d29922` | 警告の注意書きの枠の線・題・アイコン |
 | `--mdmark-color-callout-caution` | `#d1242f` | `#f85149` | 注意の注意書きの枠の線・題・アイコン |
+| `--mdmark-color-current-bg` | `#ddf4ff` | `#121d2f` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景 |
 
 <!-- /table -->
 

@@ -22,3 +22,7 @@ items:
     summary: registerExtension の登録表と、Standard Schema での引数の検査
   - page: 索引と用語.ts.yaml
     summary: 索引の形の検査・参照の表・索引の点検と、用語集の表・用語の下線・関連文書の一覧・ツールチップの操作
+  - page: CLI.ts.yaml
+    summary: init・check・export・build の CLI と、設定・文書の読み取り・埋め込み・HTML の組み立て
+  - page: 書き出したHTMLの起動.ts.yaml
+    summary: 書き出した HTML を開いたときに埋めたモジュールを用意して描き、まとめた HTML で文書を行き来する処理

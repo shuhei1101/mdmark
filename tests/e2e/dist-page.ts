@@ -107,6 +107,10 @@ export async function buildDistRoot(): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI の `init` が写す雛形の正本
+  await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
+    recursive: true,
+  });
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await cp(join(REPO_ROOT, name), join(root, name));
   }

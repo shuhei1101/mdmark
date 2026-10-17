@@ -1,0 +1,5 @@
+/* 描いた文書の見た目を変える CSS 変数の例 */
+.mdmark {
+  --mdmark-content-width: 46rem;
+  --mdmark-radius: 6px;
+}

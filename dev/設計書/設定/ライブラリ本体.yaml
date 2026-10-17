@@ -1,9 +1,9 @@
 title: "設定: ライブラリ本体"
-lead: 使う側が `mdmark.config.yaml` に書き、使う側のサーバーが読んだオブジェクトを `mount`・`render` の `opts.config` に渡す設定のキー。この一覧はライブラリ本体が読むキーだけを持ち、JSON Schema は `schemas/mdmark.config.schema.json` に置く。
+lead: 使う側が `mdmark.config.yaml` に書く設定のキー。使う側のサーバーが読んだオブジェクトを `mount`・`render` の `opts.config` に渡すか、mdmark の CLI が読んで書き出しに使う。この一覧はライブラリ本体が読むキーだけを持ち、JSON Schema は `schemas/mdmark.config.schema.json` に置く。
 files:
   - file: mdmark.config.yaml
-    manages: 機能のオン・オフの既定と、外部ライブラリの対応表
-    notes: 使う側のリポジトリに置く。mdmark はブラウザで YAML を読まず、使う側のサーバーが読んだオブジェクトを受け取る
+    manages: 機能のオン・オフの既定、外部ライブラリの対応表、索引の場所、CLI の書き出しに埋める CSS と拡張、まとめる文書と書き出す先
+    notes: 使う側のリポジトリに置く（`mdmark init` が雛形を置く）。ブラウザの mdmark は YAML を読まず、使う側のサーバーか CLI が読んだオブジェクトを受け取る
   - file: schemas/mdmark.config.schema.json
     manages: '`mdmark.config.yaml` のうちこの一覧のキーの JSON Schema（draft 2020-12）'
     notes: 他の Issue が足すキー（`index`・`build`・`version` など）を拒まないよう、最上位の `additionalProperties` は許す
@@ -171,5 +171,102 @@ settings:
     status: planned
     refs:
       - dev/設計書/ER図/索引#
+  - key: theme
+    title: 使う側の CSS
+    file: mdmark.config.yaml
+    type: string
+    description: CLI が書き出す HTML に、配布物の CSS の後で埋める使う側の CSS のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない
+    missing: 使う側の CSS を埋めない
+    reload: reload
+    allowed: ファイルのパス。読めないときは書き出しを止めず警告に出す
+    status: planned
+    introduced:
+      pr: 32
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+  - key: extensions
+    title: 拡張のモジュール
+    file: mdmark.config.yaml
+    type: string[]
+    description: CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。各モジュールは `registerExtension` に渡す拡張を既定の export にする。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない
+    default: '[]'
+    missing: 拡張を埋めない（拡張の印は知らない印として取り除かれる）
+    reload: reload
+    allowed: TypeScript か JavaScript のファイルのパス。読めない・束ねられないものは書き出しを止めず警告に出す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#
+    status: planned
+    introduced:
+      pr: 32
+  - key: build
+    title: まとめる設定
+    file: mdmark.config.yaml
+    type: object
+    description: '`mdmark build` が 1 枚の HTML にまとめる文書と書き出す先。パスと glob は `mdmark.config.yaml` のあるフォルダからの相対。`mount`・`render`・`mdmark export` はこのキーを読まない'
+    missing: '`mdmark build` が設定に `build` が無いことを出して終了コード 1 で終わる'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 32
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+  - key: build.include
+    title: まとめる文書
+    file: mdmark.config.yaml
+    type: string[]
+    required: true
+    description: まとめる Markdown の glob の並び。当たった文書を、glob の並び・同じ glob の中はパスの順で並べる
+    missing: '`build` の形の誤りとして終了コード 1 で終わる（`mdmark check` は `schema` のずれにする）'
+    reload: reload
+    allowed: 1 つ以上。`**`・`*`・`?` を使える。当たるのは拡張子 `.md` のファイルだけ
+    status: planned
+    introduced:
+      pr: 32
+  - key: build.exclude
+    title: 外す文書
+    file: mdmark.config.yaml
+    type: string[]
+    default: '[]'
+    description: '`include` に当たった文書から外す glob の並び'
+    reload: reload
+    allowed: '`include` と同じ書き方'
+    status: planned
+    introduced:
+      pr: 32
+  - key: build.glossary
+    title: 用語集の文書
+    file: mdmark.config.yaml
+    type: string[]
+    default: '[]'
+    description: 用語集の表（`<!-- glossary -->`）の用語を、まとめた全ての文書で効かせる文書のパスの並び。索引が無いときも効く
+    missing: 索引に載った文書の用語集の表だけをまとめた全ての文書で効かせる（索引が無ければ、各文書の表はその文書の中だけで効く）
+    reload: reload
+    allowed: '`include` に当たる文書のパス。当たらないパスは `mdmark check` で `schema` のずれにし、`mdmark build` では警告に出す'
+    status: planned
+    introduced:
+      pr: 32
+  - key: build.entry
+    title: 最初に開く文書
+    file: mdmark.config.yaml
+    type: string
+    default: '`include` の並びで最初に当たった文書'
+    description: まとめた HTML を URL の `#` 無しで開いたときと、URL が 1 枚に無い文書を指すときに出す文書のパス
+    reload: reload
+    allowed: まとめる文書のパス。当たらないときは `mdmark check` で `schema` のずれにし、`mdmark build` では既定を当てて警告に出す
+    status: planned
+    introduced:
+      pr: 32
+  - key: build.out
+    title: 書き出す先
+    file: mdmark.config.yaml
+    type: string
+    required: true
+    description: まとめた HTML を書くパス。既にあれば上書きする
+    missing: '`build` の形の誤りとして終了コード 1 で終わる（`mdmark check` は `schema` のずれにする）'
+    reload: reload
+    allowed: 拡張子 `.html` のパス。親のフォルダが無ければ作る
+    status: planned
+    introduced:
+      pr: 32
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

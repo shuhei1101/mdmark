@@ -1,0 +1,110 @@
+title: "まとめたHTML"
+elements:
+  - name: 横の文書の一覧
+    id: bundle-side
+    kind: nav
+    component: dev/設計書/部品設計/文書の一覧.ts#
+    args:
+      - name: docs
+        value: まとめた文書の `{ path, title }`（`build.include` の並び。題は索引の `title`、無ければ文書の最初の h1、無ければファイル名）
+      - name: current
+        value: 開いている文書のパス
+    position: 画面の左
+    description: 幅 60rem 以上で画面の左に置き、文書を読み進めても画面に留め、一覧が長いときは一覧の中でスクロールする
+    visible_when: 画面の幅が 60rem 以上で、印刷でないとき
+    action: 文書を選ぶと URL の `#` がその文書を指し（履歴に積む）、開いている文書が替わる
+    status: planned
+    introduced:
+      pr: 32
+  - name: 狭い幅の帯
+    id: bundle-bar
+    kind: container
+    position: 開いている文書の上
+    description: 文書の一覧を開くボタンと開いている文書の題を並べ、文書を読み進めても画面の上に留める
+    visible_when: 画面の幅が 60rem 未満で、印刷でないとき
+    status: planned
+    introduced:
+      pr: 32
+  - name: 文書の一覧を開くボタン
+    id: bundle-panel-open
+    kind: button
+    position: 狭い幅の帯
+    description: 三本線のアイコンと文字を持つボタン。`aria-haspopup="dialog"`・`aria-controls` でパネルを指し、開閉を `aria-expanded` で示す
+    label: 文書の一覧
+    visible_when: 狭い幅の帯と同じ
+    tab_order: 1
+    action: 文書の一覧のパネルを開き、開いている文書の行へフォーカスを置く（履歴に積まない）
+    status: planned
+    introduced:
+      pr: 32
+  - name: 帯の題
+    id: bundle-bar-title
+    kind: label
+    position: 狭い幅の帯
+    description: 開いている文書の題。1 行に収め、収まらない分は `…` で省く
+    io: 表示
+    type: 文字列
+    visible_when: 狭い幅の帯と同じ
+    source: 開いている文書の題
+    status: planned
+    introduced:
+      pr: 32
+  - name: 開いている文書
+    id: bundle-document
+    kind: container
+    position: 画面の右（狭い幅では帯の下）
+    description: '`main` の中の描く先の要素。URL の `#/{文書のパス}`（見出しを指すときは `#/{文書のパス}#{見出しの ID}`）が指す文書を `mount` で描く。`#/` で始まらない URL と 1 枚に無い文書を指す URL は、`build.entry` の文書を描き URL をその文書に合わせる（履歴に積まない）。描いた文書のうち、まとめた文書への文書間のリンク・関連文書のリンクと、見出しのアンカー・目次のリンクは、この書き方の `href` に直す。含まれない文書へのリンクは書いたままの `href` で残す'
+    visible_when: 常時
+    initial_value: URL が指す文書（指していなければ `build.entry` の文書）
+    action: 文書を移ると、見出しを指していればその見出しへ、指していなければ文書の頭へ移り、フォーカスを文書の h1 へ移す（開いた直後は移さない）。ページの題を文書の題にする。開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に積まず今の項目を置き換える（戻るは文書の単位で戻る）
+    action_ref: dev/設計書/画面設計/文書.ts#
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+    reason: '`#/` で始まる `#` だけを文書の指定として扱い、文書のパスと GitHub と同じ見出しの ID をそのまま読めるようにする'
+    status: planned
+    introduced:
+      pr: 32
+  - name: 文書の一覧のパネル
+    id: bundle-panel
+    kind: dialog
+    position: 画面の左から重ねる
+    description: '`<dialog>` をモーダルで開き、背景を暗くする。題「文書の一覧」で `aria-labelledby` を持つ。開いた直後は閉じている'
+    label: 文書の一覧
+    visible_when: 文書の一覧を開くボタンで開いたとき
+    action: 文書を選ぶ・背景を押す・Esc・閉じるボタンで閉じ、フォーカスを開くボタンへ戻す。幅が 60rem 以上になったら閉じる。開閉は履歴に積まない
+    reason: 確認ログの決定（狭い幅は帯のボタンで一覧のパネルを重ねて開く、`<dialog>` のため Firefox の下限を 98 に上げる）
+    status: planned
+    introduced:
+      pr: 32
+  - name: パネルを閉じるボタン
+    id: bundle-panel-close
+    kind: button
+    position: 文書の一覧のパネル > 題の横
+    description: × のアイコンだけのボタン。読み上げの名前は `aria-label="文書の一覧を閉じる"`
+    visible_when: パネルを開いているとき
+    action: パネルを閉じる
+    status: planned
+    introduced:
+      pr: 32
+  - name: パネルの文書の一覧
+    id: bundle-panel-list
+    kind: nav
+    component: dev/設計書/部品設計/文書の一覧.ts#
+    args:
+      - name: docs
+        value: 横の文書の一覧と同じ
+      - name: current
+        value: 開いている文書のパス
+    position: 文書の一覧のパネル
+    description: 横の文書の一覧と同じ中身。パネルの中でスクロールする
+    visible_when: パネルを開いているとき
+    action: 文書を選ぶとパネルを閉じ、その文書へ移る（履歴に積む）
+    status: planned
+    introduced:
+      pr: 32
+mock: dev/mock/pages/bundle/32/side-list/
+lead: '`mdmark build` が書き出す 1 枚の HTML。文書の一覧と、開いている文書（画面設計『文書』）を並べ、URL の `#` で開く文書と見出しを指す。'
+notes:
+  印刷: 横の文書の一覧・狭い幅の帯・パネルを出さず、開いている文書だけを印刷する。関連文書のリンクには、`#/...` ではなく文書のパス（`使い方/guide.md`）を併記する
+  開いている文書の示し方: 文書の一覧の開いている行は、新しい CSS 変数 `--mdmark-color-current-bg`（明るい配色 `#ddf4ff`・ダーク `#121d2f`）の背景と `--mdmark-color-link` の文字で示す。ポインターを乗せた行の `--mdmark-color-surface` と見分け、太さは変えない
+  書き出す HTML: '`<div class="mdmark-bundle"><aside class="mdmark-bundle-side">{文書の一覧}</aside><main class="mdmark-bundle-main"><div class="mdmark-bundle-bar">…</div><article class="mdmark"></article></main></div><dialog class="mdmark-bundle-panel">…</dialog>`。規則は層 `mdmark` の中に置き、使う側の `theme` の CSS が勝つ'

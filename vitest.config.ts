@@ -12,6 +12,8 @@ export default defineConfig({
           environment: "node",
           include: ["tests/unit/**/*.test.ts"],
           exclude: ["tests/unit/**/*.browser.test.ts"],
+          // 全ファイルを並列に流すと、最初の import で CLI のビルドの負荷に重なり 5 秒を超えることがある
+          testTimeout: 30_000,
         },
       },
       {
@@ -31,6 +33,8 @@ export default defineConfig({
         test: {
           name: "integration-node",
           environment: "node",
+          // CLI を子プロセスで流し、書き出した HTML をブラウザで開くテストを含む
+          testTimeout: 60_000,
           include: ["tests/integration/**/*.test.ts"],
           exclude: [
             "tests/integration/**/*.browser.test.ts",

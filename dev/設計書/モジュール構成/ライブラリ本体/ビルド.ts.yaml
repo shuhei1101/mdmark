@@ -33,9 +33,19 @@ constants:
     title: 出力の対象のブラウザ
     container: scripts/build.ts
     summary: esbuild の `target` に渡すブラウザの版
-    value: '["chrome99", "firefox97", "safari16.4"]'
+    value: '["chrome99", "firefox98", "safari16.4"]'
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+  - name: UNSIZED_OUTPUTS
+    title: サイズを検めない配布ファイル
+    container: scripts/build.ts
+    summary: 使う側のページが jsDelivr から読まないため、配布ファイル 1 つの上限を当てない出力
+    value: '["dist/cli.js", "dist/viewer.js", "dist/viewer.css"]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[配布ファイル 1 つのサイズ]
+    status: planned
+    introduced:
+      pr: 32
 functions:
   - name: main
     title: ビルドを実行する
@@ -147,7 +157,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -163,6 +173,7 @@ functions:
     callees:
       - '#functions[writeThirdPartyLicenses]'
       - '#functions[emitDeclarations]'
+      - '#functions[assertNoScriptClose]'
     unit_tests:
       - name: test_build_dist
         case: 正常
@@ -182,6 +193,15 @@ functions:
         condition: '`src/index.ts` が `import { parse } from "postcss"` を持ち、`parse` を export する'
         mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: '`dist/index.js` に postcss の本体（`CssSyntaxError`）が無い'
+      - name: test_build_dist_when_cli_and_viewer
+        case: 正常
+        summary: CLI と起動の処理を束ねる
+        condition: 版 `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` がある
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` を束ねていない。`src/viewer/index.ts` の文字列 `"</script>"` が `dist/viewer.js` では `<\/script>` になっている
+    notes:
+      CLI と起動の処理の束ね方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・版の `define`）で、ライブラリ本体を含めて 1 つに束ねる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` で束ね、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読む。どちらも `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
+      起動の処理の script の閉じ: '`dist/viewer.js` は書き出した HTML の `<script type="module">` にそのまま置くため、書いた後に `assertNoScriptClose` で検める。esbuild は文字列・テンプレート文字列の `</script` を大文字と小文字によらず `<\/script` に替えるため（外部ライブラリ『esbuild』の動作確認）、この検査は esbuild の振る舞いが変わったときの備え'
   - name: writeThirdPartyLicenses
     title: 束ねた依存のライセンスを書く
     container: scripts/build.ts
@@ -221,7 +241,7 @@ functions:
     container: scripts/build.ts
     kind: 関数
     scope: public
-    summary: 出力ファイルのうち上限を超えたものを返す
+    summary: 出力ファイルのうち `UNSIZED_OUTPUTS` に無く上限を超えたものを返す
     args:
       - name: outputs
         type: Record<string, number>
@@ -245,6 +265,12 @@ functions:
         condition: 100 バイトと 201 バイト、上限 200
         mock: なし
         expected: 201 バイトの 1 件
+      - name: test_find_too_large_outputs_when_unsized
+        case: 正常
+        summary: CLI と起動の処理は上限を超えても返さない
+        condition: '`dist/cli.js` が 300 バイト、`dist/index.js` が 100 バイト、上限 200'
+        mock: なし
+        expected: 空
   - name: emitDeclarations
     title: 型定義を書く
     container: scripts/build.ts
@@ -275,5 +301,44 @@ functions:
         condition: '`src/index.ts` が `export const x: number = "a"` を持つ'
         mock: なし
         expected: メッセージに `tsc` のエラーを含む例外
+  - name: assertNoScriptClose
+    title: script を閉じる並びが無いことを検める
+    container: scripts/build.ts
+    summary: コードに `</script` の並び（大文字と小文字を区別しない）があれば例外を投げる
+    kind: 関数
+    scope: public
+    args:
+      - name: code
+        type: string
+        required: true
+        description: 検めるコード
+      - name: file
+        type: string
+        required: true
+        description: 例外のメッセージに出すファイル名
+    returns:
+      type: void
+      description: なし
+    exceptions:
+      - name: Error
+        condition: '`code` に `</script` の並び（大文字と小文字を区別しない）がある'
+        message: '{file} に </script の並びがあり、書き出した HTML の script 要素が閉じる'
+    unit_tests:
+      - name: test_assert_no_script_close
+        case: 正常
+        summary: esbuild が替えた形は通す
+        condition: '`code` が `const t="<\/SCRIPT>"`'
+        mock: なし
+        expected: 例外を投げない
+      - name: test_assert_no_script_close_when_found
+        case: 異常
+        summary: 大文字を含む </script の並びを拒む
+        condition: '`code` が `x</SCRIPT>y`、`file` が `dist/viewer.js`'
+        mock: なし
+        expected: '`Error` を投げ、メッセージに `dist/viewer.js` と `</script` が入る'
+        exception: Error
+    status: planned
+    introduced:
+      pr: 32
 test_files:
   - tests/unit/scripts/build.test.ts

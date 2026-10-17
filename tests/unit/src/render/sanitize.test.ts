@@ -87,3 +87,24 @@ test("test_sanitize_when_tabindex", async () => {
   // 検証
   expect(sanitized).toContain('<table tabindex="0">');
 });
+
+// 画像の種類と base64 の形の data: URL だけを画像の src に残す（正常系）
+test("test_sanitize_when_data_image", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const html = [
+    '<img src="data:image/png;base64,iVBORw0KGgo=">',
+    '<img src="data:text/html;base64,PHNjcmlwdD4=">',
+    '<img src="data:image/svg+xml,<svg/>">',
+    '<a href="data:image/png;base64,iVBORw0KGgo=">l</a>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  const images = sanitized.match(/<img[^>]*>/g) ?? [];
+  expect(images).toHaveLength(3);
+  expect(images[0]).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+  expect(images[1]).not.toContain("src=");
+  expect(images[2]).not.toContain("src=");
+  expect(sanitized).not.toContain("href=");
+});

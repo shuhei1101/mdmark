@@ -43,10 +43,10 @@ repository:
     | 場所 | 役割 | 使う側への届き方 | 作る Issue |
     | --- | --- | --- | --- |
     | `src/` | TypeScript と CSS の本体 | ビルドして `dist/` | この土台 |
-    | `dist/` | 配布物の JavaScript と CSS（release と hotfix でだけ commit する） | jsDelivr から版のタグを固定した URL で読む | この土台 |
+    | `dist/` | 配布物の JavaScript と CSS、CLI の `cli.js`（release と hotfix でだけ commit する） | jsDelivr から版のタグを固定した URL で読む。CLI は `npx github:shuhei1101/mdmark#v{版}` で入れる | この土台・#9 |
     | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
     | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
-    | `templates/` | 使う側へ置く雛形（theme.css ・差分のアダプターのサンプル） | CLI の init が置く | #9 |
+    | `templates/` | 使う側へ置く雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が置く | #9 |
     | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI | #3・#5・#6 |
     | `migrations/{版}/` | 版ごとの移行の手順とスクリプト | 版を上げるコマンド | #10 |
     | `guide/` | 使い方集 | プラグインと MCP | #11 |
@@ -56,9 +56,9 @@ repository:
 subsystems:
   - name: ライブラリ本体
     scope: lib
-    role: Markdown の表示に使う JavaScript と CSS をビルドして配る
+    role: Markdown の表示に使う JavaScript と CSS をビルドして配り、同じ版の CLI で文書を 1 枚の HTML に書き出す
     runtime: TypeScript 7
-    runs_on: 使う側のページを開いたブラウザ（`mount`・`render`）と、使う側の Node の処理（`render`）
+    runs_on: 使う側のページを開いたブラウザ（`mount`・`render`）と、使う側の Node の処理（`render`）と、文書を書く人の手元の Node 24（CLI の `dist/cli.js`。`npx github:shuhei1101/mdmark#v{版}` で入れ、実行時の依存の yaml と esbuild を `dependencies` から読む）
     status: planned
 lead: mdmark の配布物が、開発者のビルドから使う側のページへ届くまでの全体構成。
 external_systems:

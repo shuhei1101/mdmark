@@ -1,0 +1,102 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import {
+  expect,
+  linesOf,
+  openStandalone,
+  runCli,
+  test,
+  writeFiles,
+  writeSampleDocs,
+} from "../cli.ts";
+
+// 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常シナリオ）
+test("test_normal", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeSampleDocs(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(true);
+  expect(linesOf(result.stdout)).toEqual([
+    "書き出した: dist/docs.html（文書 3 件）",
+  ]);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await expect(page.locator("article.mdmark h1")).toContainText("入口");
+  await expect(
+    page.locator(".mdmark-bundle-side .mdmark-doc-list a"),
+  ).toHaveCount(3);
+  // 用語集の文書の表の用語が、入口の文書の本文でもツールチップを出す
+  const term = page.locator("article .mdmark-term").first();
+  await expect(term).toHaveText("印");
+  await term.hover();
+  await expect(page.locator("article .mdmark-term-tip").first()).toBeVisible();
+  // 入口からリンクされた文書の末尾に、入口が関連文書として出る
+  await page.locator('article p a[href="#/使い方/guide.md"]').click();
+  await expect(page.locator("article.mdmark h1")).toContainText("使い方");
+  await expect(page.locator(".mdmark-backlinks a")).toContainText(["入口"]);
+  expect(opened.externalRequests()).toEqual([]);
+});
+
+// 外した文書へのリンクを書いたまま残し、警告に出す（正常シナリオ（1 枚に含まれない文書へのリンクがある））
+test("test_normal_when_link_outside_bundle", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeSampleDocs(dir, {
+    buildLines: [
+      '  include: ["**/*.md"]',
+      '  exclude: ["node_modules/**", "dist/**", "下書き/**"]',
+      '  glossary: ["用語集.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+    ],
+    readme: "# 入口\n\n[メモ](下書き/メモ.md)\n",
+  });
+  await writeFiles(dir, { "下書き/メモ.md": "# メモ\n" });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual([
+    "書き出した: dist/docs.html（文書 3 件）",
+  ]);
+  expect(
+    linesOf(result.stderr).some(
+      (line) => line.includes("README.md") && line.includes("下書き/メモ.md"),
+    ),
+  ).toBe(true);
+  await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  const href = await page.locator("article p a").first().getAttribute("href");
+  expect(decodeURI(href ?? "")).toBe("下書き/メモ.md");
+  await expect(
+    page.locator(".mdmark-bundle-side .mdmark-doc-list a", { hasText: "メモ" }),
+  ).toHaveCount(0);
+});
+
+// build.include がどの文書にも当たらないと、HTML を書かずに終わる（異常シナリオ（対象の文書が 0 件））
+test("test_error_when_no_documents", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeSampleDocs(dir, {
+    buildLines: ['  include: ["nothing/**/*.md"]', "  out: dist/docs.html"],
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  expect(result.stderr).toContain("0 件");
+  expect(result.stderr).toContain("build.include");
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
+});
