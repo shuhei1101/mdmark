@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
   CLEAN_INDEX,
@@ -113,4 +114,18 @@ test("test_run_check_when_entry_outside", async () => {
       line.startsWith("mdmark.config.yaml:build.entry: schema:"),
     ),
   ).toBe(true);
+});
+
+// 設定の schema と索引の missing_doc をこの順に返す（正常系）
+test("test_collect_check_issues", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createCleanDir({
+    buildLines: ['  include: ["docs/*.md"]'],
+    extraDocs: "  - id: old\n    path: old.md\n    title: Old\n",
+  });
+  // 実行
+  const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"));
+  // 検証
+  expect(issues.map((issue) => issue.kind)).toEqual(["schema", "missing_doc"]);
 });

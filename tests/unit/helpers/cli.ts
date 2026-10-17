@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach } from "vitest";
 import type { ExportPayload } from "../../../src/cli/html.ts";
+import type { Prompter } from "../../../src/cli/prompt.ts";
 
 /** テストが渡す CLI の入出力 */
 export type TestIo = {
@@ -57,6 +58,27 @@ export function createIo(cwd: string): {
     },
     stdout,
     stderr,
+  };
+}
+
+/** 呼ばれたら失敗にする問い（問いが出ないはずの場面で渡す） */
+export const failingAsk: Prompter = async (question) => {
+  throw new Error(`問いが出ないはずの場面で問われました: ${question}`);
+};
+
+/** 決めた答えを問われた順に返す問いと、問われた文を貯める配列を作る */
+export function createAnswers(answers: Array<string | undefined>): {
+  ask: Prompter;
+  asked: string[];
+} {
+  const queue = [...answers];
+  const asked: string[] = [];
+  return {
+    ask: async (question) => {
+      asked.push(question);
+      return queue.shift();
+    },
+    asked,
   };
 }
 
