@@ -1,12 +1,12 @@
 title: "設定: ライブラリ本体"
-lead: 使う側が `mdmark.config.yaml` に書く設定のキー。使う側のサーバーが読んだオブジェクトを `mount`・`render` の `opts.config` に渡すか、mdmark の CLI が読んで書き出しに使う。この一覧はライブラリ本体が読むキーだけを持ち、JSON Schema は `schemas/mdmark.config.schema.json` に置く。
+lead: 使う側が `mdmark.config.yaml` に書く設定のキー。使う側のサーバーが読んだオブジェクトを `mount`・`render` の `opts.config` に渡すか、mdmark の CLI が読んで書き出しに使う。この一覧はライブラリ本体と CLI が読むキーを持ち、形の正を JSON Schema `schemas/mdmark.config.schema.json` に置く。
 files:
   - file: mdmark.config.yaml
     manages: 機能のオン・オフの既定、外部ライブラリの対応表、索引の場所、CLI の書き出しに埋める CSS と拡張、まとめる文書と書き出す先
     notes: 使う側のリポジトリに置く（`mdmark init` が雛形を置く）。ブラウザの mdmark は YAML を読まず、使う側のサーバーか CLI が読んだオブジェクトを受け取る
   - file: schemas/mdmark.config.schema.json
-    manages: '`mdmark.config.yaml` のうちこの一覧のキーの JSON Schema（draft 2020-12）'
-    notes: 他の Issue が足すキー（`index`・`build`・`version` など）を拒まないよう、最上位の `additionalProperties` は許す
+    manages: '`mdmark.config.yaml` のこの一覧の全てのキーの JSON Schema（draft 2020-12）。CLI の設定の検めと、配布物のビルドの移行の手順の点検がこの Schema を正にする'
+    notes: 他の Issue が足すキーを拒まないよう、最上位の `additionalProperties` は許す。形を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を置く
 settings:
   - key: features
     title: 機能のオン・オフ
@@ -268,5 +268,19 @@ settings:
     status: planned
     introduced:
       pr: 32
+  - key: version
+    title: 手元の版
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    description: この設定・索引・文書が合わせてある mdmark の版。`mdmark init` が呼んだ CLI の版を書き、`mdmark upgrade` が移行の手順を当てて点検が通った後に呼んだ CLI の版へ書き換える。`mount`・`render`・`export`・`build`・`check` は値で振る舞いを変えない
+    missing: '`mdmark upgrade` が利用者に手元の版を聞く（v0.3.0 までの `init` が置いた設定）'
+    reload: reload
+    allowed: '`^v\d+\.\d+\.\d+$`。合わないと `mdmark check` は `schema` のずれにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts#
+    status: planned
+    introduced:
+      pr: 39
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

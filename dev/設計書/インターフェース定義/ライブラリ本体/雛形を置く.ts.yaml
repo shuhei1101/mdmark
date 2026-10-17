@@ -22,6 +22,7 @@ flows:
       - 終了コードが 0
       - '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`・`tsconfig.json`・`package.json` がある'
       - '`mdmark.config.yaml` と `index.yaml` が設定と索引の JSON Schema に合う'
+      - '`mdmark.config.yaml` の `version` が、ビルドしたパッケージの `version.ini` の版'
       - 標準出力に `置いた:` の行が 6 つ、雛形の並びで出る
     test: test_normal
   - name: 正常系（JavaScript を指定する）
@@ -128,7 +129,7 @@ exceptions:
     notes: 標準エラーに書けなかったパスと直し方の 1 文を出す。書けたファイルは残す
 constraints:
   - item: 置く雛形
-    constraint: '`mdmark.config.yaml`（`index`・`theme`・`build` を書いた設定）・`theme.css`（CSS 変数を上書きする例）・`index.yaml`（文書と用語が 0 件の索引）・`extensions/example.ts`（`registerExtension` に渡す拡張を既定の export にする例）・`tsconfig.json`・`package.json`（拡張の型の検査と JavaScript への変換のコマンド）。`--js` のときは `extensions/example.js` を置き、`tsconfig.json` と `package.json` を置かない'
+    constraint: '`mdmark.config.yaml`（`version`・`index`・`theme`・`build` を書いた設定）・`theme.css`（CSS 変数を上書きする例）・`index.yaml`（文書と用語が 0 件の索引）・`extensions/example.ts`（`registerExtension` に渡す拡張を既定の export にする例）・`tsconfig.json`・`package.json`（拡張の型の検査と JavaScript への変換のコマンド）。`--js` のときは `extensions/example.js` を置き、`tsconfig.json` と `package.json` を置かない'
     notes: 並びはこの順。中身の正本は `templates/`
   - item: 上書き
     constraint: 既にあるファイルは中身を読まず、置かずに一覧に出す。上書きの指定は持たない
@@ -137,4 +138,7 @@ constraints:
   - item: 動く Node の版
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+  - item: 設定の版
+    constraint: 置く `mdmark.config.yaml` の `version` は、呼んだ CLI のパッケージの `version.ini` の版。`templates/mdmark.config.yaml` の `version` の値を置くときに置き換える
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[version]
 test_file: tests/integration/lib/init.test.ts

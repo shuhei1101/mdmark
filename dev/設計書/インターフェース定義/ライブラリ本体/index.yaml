@@ -22,3 +22,5 @@ items:
     summary: 文書を書く人が、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export）
   - page: 複数の文書を1枚のHTMLにまとめる.ts.yaml
     summary: 文書を書く人が、設定の build の文書を行き来できる 1 枚の HTML にまとめる（mdmark build）
+  - page: 版を上げる.ts.yaml
+    summary: 文書を書く人が、移行の手順を版の順に当てて設定の版を呼んだ CLI の版にする（mdmark upgrade）

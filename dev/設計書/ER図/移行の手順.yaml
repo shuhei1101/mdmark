@@ -1,0 +1,137 @@
+title: "ER 図: 移行の手順"
+lead: mdmark の開発者が版ごとに書き、`mdmark upgrade` が使う側の設定・索引・文書へ当てる移行の手順と、配布物のビルドが読む手順なしの一覧。どちらもリポジトリの `migrations/` に置き、版のタグのパッケージに入る。`steps.yaml` の形は `schemas/mdmark.steps.schema.json`（JSON Schema draft 2020-12）で縛る。
+tables:
+  - name: migrations/{版}/steps.yaml
+    title: 移行の手順
+    datastore: YAML
+    summary: 1 つの版で当てる移行の手順の並び。最上位は `steps`（手順の並び、必須）だけを持ち、この表の行は `steps` の要素 1 つ
+    scale: ~20
+    growth: 設定・索引の形か文書の印を変える版ごとに 1 ファイル
+    retention: 削除しない（古い版の利用者が当てる）
+    access: 全件
+    description: '`{版}` は `v{MAJOR}.{MINOR}.{PATCH}`。出していない版の手順は `migrations/next/steps.yaml` に置き、release で `version.ini` を上げる commit で `migrations/v{版}/` へ移す。版のフォルダが無い版は手順なしとして飛ばす。どの手順も、既に当たった後の状態に当てても結果が変わらない。'
+    columns:
+      - name: op
+        title: 種類
+        type: string
+        not_null: true
+        description: 手順の種類
+        enum_values: "'rename_key'（キーの名前を変える） / 'set_default'（無いキーを足す） / 'map_values'（値を読み替える） / 'replace_mark'（文書の印を書き換える） / 'call'（スクリプトで当てる）"
+        example: rename_key
+      - name: description
+        title: 説明
+        type: string
+        not_null: true
+        check: 空でない
+        description: 何をどう変えるかの 1 文。`--plan` と当てた手順の出力に出す
+        example: '`build.out` を `build.output` に改める'
+      - name: destructive
+        title: 壊す印
+        type: boolean
+        default: 'false'
+        description: 当てると値が失われる手順か。`true` の手順が 1 つでもあれば、`--yes` が無いとき当てる前に確かめる
+        example: 'false'
+      - name: file
+        title: 対象のファイル
+        type: string
+        description: '`rename_key`・`set_default`・`map_values` が書き換える YAML。`config` は設定ファイル、`index` は設定の `index` が指す索引'
+        enum_values: "'config' / 'index'"
+        example: config
+        notes: '`rename_key`・`set_default`・`map_values` で必須。`index` を指したのに設定に `index` が無ければ、その手順は何もしない'
+      - name: from
+        title: 元のキー・印
+        type: string
+        check: 空でない
+        description: '`rename_key` は元のキーのパス（`.` でつなぐ）、`replace_mark` は書き換える前の印の文字列'
+        example: build.out
+        notes: '`rename_key`・`replace_mark` で必須'
+      - name: to
+        title: 新しいキー・印
+        type: string
+        check: 空でない。`replace_mark` は `from` を含まない
+        description: '`rename_key` は新しいキーのパス、`replace_mark` は書き換えた後の印の文字列'
+        example: build.output
+        notes: '`rename_key`・`replace_mark` で必須'
+      - name: key
+        title: キー
+        type: string
+        check: 空でない
+        description: '`set_default`・`map_values` が扱うキーのパス（`.` でつなぐ）'
+        example: features.diff
+        notes: '`set_default`・`map_values` で必須'
+      - name: value
+        title: 足す値
+        type: string
+        description: '`set_default` が足す値。YAML の値としてそのまま書く'
+        example: 'true'
+        notes: '`set_default` で `value` か `ask` のどちらか 1 つを持つ'
+      - name: ask
+        title: 聞く問い
+        type: string
+        check: 空でない
+        description: '`set_default` が利用者に値を聞くときの問いの文。答えた 1 行を YAML の値として足す'
+        example: 書き出す HTML の題を入れてください
+        notes: キーが既にあれば聞かない
+      - name: mapping
+        title: 読み替えの表
+        type: object
+        description: '`map_values` の元の値から新しい値への表。表に無い値は変えない'
+        example: '{ "dist/docs.html": "dist/index.html" }'
+        notes: '`map_values` で必須。新しい値に元の値を置かない（当て直しても変わらないようにする）'
+      - name: script
+        title: スクリプト
+        type: string
+        description: '`call` が流すスクリプトのパス。`steps.yaml` のあるフォルダからの相対パス'
+        example: move-terms.ts
+        notes: '`call` で必須。拡張子は `.js` か `.ts`'
+      - name: files
+        title: 書き換えるもの
+        type: array
+        description: '`call` のスクリプトが書き換えうるもの。当てる前に写しを取る対象になる'
+        enum_values: "'config' / 'index' / 'documents'（設定の `build` の対象と索引の文書）"
+        example: '[index]'
+        notes: '`call` で必須'
+  - name: migrations/no-steps.yaml
+    title: 手順なしの一覧
+    datastore: YAML
+    summary: 設定・索引の JSON Schema を広げるだけで移行の手順が要らない変更の並び。最上位は `entries`（必須）だけを持ち、この表の行は `entries` の要素 1 つ
+    primary_key: (version, schema)
+    scale: ~100
+    growth: 広げるだけのスキーマの変更ごとに 1 行
+    retention: 削除しない
+    access: 全件
+    description: 配布物のビルドだけが読む。`mdmark upgrade` は読まない。
+    columns:
+      - name: version
+        title: 版
+        type: string
+        not_null: true
+        check: '`next` か `^v\d+\.\d+\.\d+$`'
+        description: その変更を出す版。出していない版は `next` と書き、release で `migrations/next/` を移す commit で `v{版}` に書き換える
+        example: next
+      - name: schema
+        title: Schema
+        type: string
+        not_null: true
+        description: 変えた JSON Schema のファイル名（`schemas/` の直下）
+        enum_values: "'mdmark.config.schema.json' / 'mdmark.index.schema.json'"
+        example: mdmark.config.schema.json
+      - name: sha256
+        title: SHA-256
+        type: string
+        not_null: true
+        check: 64 桁の小文字の 16 進数
+        description: 変えた後の Schema のファイルの SHA-256。ビルドの時点の Schema と合わなければ、その行は無いものとして扱う（載せた後に Schema を又変えた変更を通さない）
+        example: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+      - name: reason
+        title: 理由
+        type: string
+        not_null: true
+        check: 空でない
+        description: 手順が要らない理由。広げたキーと、古い設定・索引がそのまま新しい Schema に合うこと
+        example: 省いてよい `version` を足しただけで、古い設定も合う
+er:
+  entities:
+    - name: 移行の手順
+    - name: 手順なしの一覧
+  relations: []
