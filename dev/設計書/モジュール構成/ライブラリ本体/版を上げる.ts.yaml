@@ -893,3 +893,10 @@ functions:
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts#
   - dev/設計書/ER図/移行の手順#
+test_files:
+  - tests/unit/src/cli/versions.test.ts
+  - tests/unit/src/cli/migrations.test.ts
+  - tests/unit/src/cli/backup.test.ts
+  - tests/unit/src/cli/changelog.test.ts
+  - tests/unit/src/cli/prompt.test.ts
+  - tests/unit/src/cli/upgrade.test.ts

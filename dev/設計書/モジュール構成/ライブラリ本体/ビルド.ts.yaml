@@ -442,3 +442,4 @@ functions:
       pr: 39
 test_files:
   - tests/unit/scripts/build.test.ts
+  - tests/unit/scripts/migrations.test.ts
