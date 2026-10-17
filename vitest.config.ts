@@ -33,6 +33,8 @@ export default defineConfig({
         test: {
           name: "integration-node",
           environment: "node",
+          // CLI を子プロセスで流し、書き出した HTML をブラウザで開くテストを含む
+          testTimeout: 60_000,
           include: ["tests/integration/**/*.test.ts"],
           exclude: [
             "tests/integration/**/*.browser.test.ts",
