@@ -116,6 +116,27 @@ export function startBundle(
   };
 
   win.addEventListener("hashchange", () => route(false));
+  // 開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に積まず今の項目を置き換える（戻るで文書を行き来できる）
+  view.addEventListener("click", (event) => {
+    const link =
+      event.target instanceof Element ? event.target.closest("a") : null;
+    const href = link?.getAttribute("href");
+    const plain =
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey;
+    if (
+      href?.startsWith(`${DOC_HASH_PREFIX}${currentPath}#`) &&
+      plain &&
+      !event.defaultPrevented
+    ) {
+      event.preventDefault();
+      win.history.replaceState(null, "", href);
+      route(false);
+    }
+  });
   route(true);
 
   // パネルを開き、開いている文書の行へフォーカスを置く
