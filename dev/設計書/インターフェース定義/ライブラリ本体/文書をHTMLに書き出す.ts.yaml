@@ -201,3 +201,4 @@ constraints:
   - item: 開くブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+test_file: tests/integration/lib/export.test.ts
