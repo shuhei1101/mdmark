@@ -1,0 +1,64 @@
+title: "操作できる部品"
+implementation: "src/parts/param.ts#renderParam"
+story: "Parts/ParamControl"
+states:
+  - name: Default
+    description: 開いたとき。既定の値 5
+    notes:
+      定義: モックの `strength`（`dev/mock/refs/42/assets/samples.js` の `mdmarkMockParams`）
+  - name: Changed
+    description: 値を 8 に変えた。グラフが追従する
+    args:
+      - name: value
+        value: '8'
+  - name: Copied
+    description: 写した。ボタンのそばに写したことを出す
+    args:
+      - name: value
+        value: '8'
+      - name: copy
+        value: copied
+  - name: Failed
+    description: 写せなかった。書けなかったことと、選んで写せる JSON を出す
+    args:
+      - name: value
+        value: '8'
+      - name: copy
+        value: failed
+lead: スライダー・今の値を写すボタン・グラフを組み合わせた部品。スライダーの値でグラフを描き直し、今の値を JSON にしてクリップボードへ写す。
+args:
+  - name: definition
+    type: オブジェクト
+    required: true
+    description: 操作できる部品の定義（`MdmarkParamDefinition`。`title`・`knob`（`key`・`label`・`min`・`max`・`step`・`value`）・`chart`（グラフの題・軸）・`table`（スライダーの値ごとの点））
+  - name: value
+    type: 数値
+    default: 定義の `knob.value`
+    description: 今の値。グラフは今の値と既定の値の 2 つの系列を描く
+  - name: copy
+    type: 列挙
+    default: none
+    choices: '`none`・`copied`（写した）・`failed`（写せなかった）'
+    description: 写した結果の知らせ。`failed` のときは写すはずだった JSON を選んで写せる `pre` に出す
+events:
+  - name: 値を変える
+    when: スライダーを動かすか、フォーカスして矢印キーを押す
+    value: '`input` の `value`'
+    description: '`mount` が `output` とグラフを描き直す'
+  - name: 今の値を写す
+    when: 今の値を写すボタンを押す
+    value: '`{"{key}": {"name": "{label}", "value": {今の値}}}` の JSON'
+    description: '`mount` がクリップボードへ書き、結果を知らせる'
+uses:
+  - component: dev/設計書/部品設計/図の枠.ts#
+    how: グラフを題・凡例・右上のボタンつきで置く
+  - component: dev/設計書/部品設計/グラフ.ts#
+    how: 今の値と既定の値の系列を描く
+accessibility:
+  - 部品は `role="group"` で題を `aria-labelledby` で指す
+  - スライダーは `label` で名前を付け、今の値を `output` に出し、矢印キーでも動かせる
+  - 写した結果は `role="status"` に出し、色とアイコンと文言で伝える
+  - 写せなかった JSON の `pre` は `tabindex="0"` と `aria-label="写す JSON"` を持つ
+status: planned
+introduced:
+  pr: 42

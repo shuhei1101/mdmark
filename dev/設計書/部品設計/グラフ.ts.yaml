@@ -1,0 +1,29 @@
+title: "グラフ"
+implementation: "src/parts/diagram.ts#renderChart"
+story: "Parts/Chart"
+states:
+  - name: TwoSeries
+    description: 系列 2 つ・点 5 つずつ
+    notes:
+      定義: モックの `reply-time`
+  - name: FourSeries
+    description: 系列 4 つ。色と模様の組の全て
+    notes:
+      定義: モックの `reply-time-4`
+  - name: Invalid
+    description: 定義を読めない。図の代わりに書き方の警告を出す
+lead: 系列ごとの点を線で結ぶ折れ線のグラフ。系列は色と線の模様と点の形の組で分ける。
+args:
+  - name: definition
+    type: オブジェクト
+    required: true
+    description: グラフの定義（`MdmarkChartDefinition`。`x`（ラベルと目盛り）・`y`（ラベル・最小・最大・刻み）・`series`）。系列は 4 つまで
+uses:
+  - component: dev/設計書/部品設計/書き方の警告.ts#
+    how: 定義を読めないときに図の代わりに置く
+accessibility:
+  - グラフの svg は `role="img"` と、題名と系列ごとの値を並べた `aria-label` を持つ
+  - 系列は色だけでなく線の模様と点の形でも分ける
+status: planned
+introduced:
+  pr: 42

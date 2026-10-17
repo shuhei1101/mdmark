@@ -1,0 +1,27 @@
+title: "シーケンス図"
+implementation: "src/parts/diagram.ts#renderSequence"
+story: "Parts/SequenceDiagram"
+states:
+  - name: Default
+    description: 相手 5 つ・呼ぶと返すのメッセージ・繰り返しの戻り
+    notes:
+      定義: モックの `inquiry-seq`
+  - name: Invalid
+    description: 定義を読めない。図の代わりに書き方の警告を出す
+lead: 相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ並べる。繰り返しの戻りは右の帯を通る破線と戻り先のラベルにする。
+args:
+  - name: definition
+    type: オブジェクト
+    required: true
+    description: 'シーケンス図の定義（`MdmarkSequenceDefinition`。`participants`・`steps`・`loop`）。`steps` の `reply: true` は返す線にする'
+uses:
+  - component: dev/設計書/部品設計/書き方の警告.ts#
+    how: 定義を読めないときに図の代わりに置く
+  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+    how: 相手の箱の中の `{{語}}` の下線と意味
+accessibility:
+  - 相手の箱の色とアイコンはフロー図の箱の種類と同じ。拡大して下へ動かしても相手の行は表示する枠の上端に留める
+  - 呼ぶ線は実線と塗った矢じり、返す線は破線と開いた矢じりで分ける
+status: planned
+introduced:
+  pr: 42

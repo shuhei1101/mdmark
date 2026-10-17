@@ -1,0 +1,63 @@
+title: "図のツールチップ"
+implementation: "src/parts/diagram.ts#renderDiagramTip"
+story: "Parts/DiagramTooltip"
+states:
+  - name: Closed
+    description: 閉じている。`tip` を持つ線のラベルと `io` を持つ箱の印だけが見える
+    notes:
+      定義: モックの `inquiry`
+  - name: Wire
+    description: 線の入力の詳細を開いた。開いた線を太くする
+    args:
+      - name: kind
+        value: wire
+      - name: open
+        value: 'true'
+  - name: Io
+    description: 箱の入力・処理・出力を開いた
+    args:
+      - name: kind
+        value: io
+      - name: open
+        value: 'true'
+  - name: Term
+    description: 箱の中の用語を開いた。本文の用語と同じ破線の下線と見た目
+lead: 図の線のラベルと箱の印に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどの箱は入力・処理・出力を出す。箱の中の用語は用語のツールチップを使う。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力）'
+    description: ツールチップの種類
+  - name: label
+    type: 文字列
+    required: true
+    description: 持ち主の名前（線のラベル・箱の名前）。ツールチップの題に出す
+  - name: tip
+    type: 文字列
+    enabled_when: '`kind` が `wire` のとき'
+    description: 線の入力の詳細
+  - name: io
+    type: オブジェクト
+    enabled_when: '`kind` が `io` のとき'
+    description: 箱の `{ in, do, out }`。`入力`・`処理`・`出力` の見出しを付けて 3 行に出す
+  - name: open
+    type: 真偽値
+    default: 'false'
+    description: 開いているか。開いている線は太くする
+events:
+  - name: 開く・閉じる
+    when: 持ち主にポインターを乗せるかフォーカスする。外すか Esc を押す
+    value: ツールチップの `hidden`
+    description: '`mount` が 1 つだけ開き、ツールチップの上では閉じず、Esc で閉じてフォーカスを持ち主に残す'
+uses:
+  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+    how: 箱の中の用語の下線と意味はこの部品ではなく用語のツールチップで出す
+accessibility:
+  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・箱の印のボタン）は `aria-describedby` でそれを指す
+  - 箱の印のボタンは `aria-label="「{箱の名前}」の入力・処理・出力"` を持つ
+  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）
+  - 理解に必須のことは入れず、線と箱の要約だけで図を読めるようにする。印刷では出さない
+status: planned
+introduced:
+  pr: 42
