@@ -27,3 +27,20 @@ accessibility:
 status: planned
 introduced:
   pr: 42
+css_properties:
+  - name: --mdmark-color-series-1
+    syntax: <color>
+    default: '#0969da（ダーク #4493f8）'
+    description: 1 つ目の系列の色（実線・丸の点）
+  - name: --mdmark-color-series-2
+    syntax: <color>
+    default: '#bc4c00（ダーク #f0883e）'
+    description: 2 つ目の系列の色
+  - name: --mdmark-color-series-3
+    syntax: <color>
+    default: '#8250df（ダーク #ab7df8）'
+    description: 3 つ目の系列の色
+  - name: --mdmark-color-series-4
+    syntax: <color>
+    default: '#1b7c83（ダーク #39c5cf）'
+    description: 4 つ目の系列の色
