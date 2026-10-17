@@ -4,6 +4,7 @@ import { parse, YAMLParseError } from "yaml";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "../config.ts";
 import type { CheckIssue } from "./check.ts";
 import { CliError } from "./main.ts";
+import { VERSION_PATTERN } from "./versions.ts";
 
 /** `mdmark build` が読む設定の `build` */
 export type BuildConfig = {
@@ -21,6 +22,8 @@ export type BuildConfig = {
 
 /** `MdmarkConfig` に CLI だけが読むキーを足した設定 */
 export type CliConfig = MdmarkConfig & {
+  /** この設定・索引・文書が合わせてある mdmark の版 */
+  version?: string;
   /** 索引の YAML のパス */
   index?: string;
   /** 書き出しに埋める使う側の CSS のパス */
@@ -271,6 +274,19 @@ export function validateConfig(
         ),
       );
       delete config.libraries;
+    }
+  }
+
+  if (raw.version !== undefined) {
+    if (typeof raw.version !== "string" || !VERSION_PATTERN.test(raw.version)) {
+      issues.push(
+        schemaIssue(
+          file,
+          "version",
+          "`version` は v{MAJOR}.{MINOR}.{PATCH} の形で書いてください。",
+        ),
+      );
+      delete config.version;
     }
   }
 

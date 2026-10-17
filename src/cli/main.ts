@@ -5,6 +5,9 @@ import { runBuild } from "./build.ts";
 import { runCheck } from "./check.ts";
 import { runExport } from "./export.ts";
 import { runInit } from "./init.ts";
+import { createLinePrompter, type Prompter } from "./prompt.ts";
+import { runUpgrade } from "./upgrade.ts";
+import { cliVersion } from "./versions.ts";
 
 /** コマンドが使う今のフォルダと、標準出力・標準エラーへの書き出し */
 export type CliIo = {
@@ -26,6 +29,7 @@ const USAGE = [
   "  check [--config {設定ファイル}]",
   "  export {文書} [--out {出力}] [--config {設定ファイル}]",
   "  build [--config {設定ファイル}]",
+  "  upgrade [--plan] [--yes] [--config {設定ファイル}]",
 ];
 
 /** 雛形と配布物を置いたパッケージの直下を探す印のファイル */
@@ -56,8 +60,12 @@ function findPackageRoot(from: string): string {
   return dir;
 }
 
-/** 最初の引数のコマンド名で `init`・`check`・`export`・`build` を呼び分け、終了コードを返す */
-export async function main(argv: string[], io: CliIo): Promise<0 | 1> {
+/** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す */
+export async function main(
+  argv: string[],
+  io: CliIo,
+  ask: Prompter,
+): Promise<0 | 1> {
   try {
     const { values, positionals } = parseArgs({
       args: argv,
@@ -65,6 +73,8 @@ export async function main(argv: string[], io: CliIo): Promise<0 | 1> {
         out: { type: "string" },
         config: { type: "string" },
         js: { type: "boolean" },
+        plan: { type: "boolean" },
+        yes: { type: "boolean" },
       },
       allowPositionals: true,
     });
@@ -77,6 +87,7 @@ export async function main(argv: string[], io: CliIo): Promise<0 | 1> {
             dir: resolve(io.cwd, rest[0] ?? "."),
             js: values.js === true,
             templatesDir: join(root, "templates"),
+            version: cliVersion(),
           },
           io,
         );
@@ -102,6 +113,19 @@ export async function main(argv: string[], io: CliIo): Promise<0 | 1> {
           { config: values.config, distDir: join(root, "dist") },
           io,
         );
+      case "upgrade":
+        return await runUpgrade(
+          {
+            config: values.config,
+            plan: values.plan === true,
+            yes: values.yes === true,
+            packageDir: root,
+            cliVersion: cliVersion(),
+            now: new Date(),
+          },
+          io,
+          ask,
+        );
       default:
         throw new CliError(
           `知らないコマンドです: ${command ?? "（なし）"}\n${USAGE.join("\n")}`,
@@ -121,9 +145,16 @@ export async function main(argv: string[], io: CliIo): Promise<0 | 1> {
 
 // `node dist/cli.js` などで入口として実行されたときだけ流す
 if (import.meta.main) {
-  process.exitCode = await main(process.argv.slice(2), {
-    cwd: process.cwd(),
-    stdout: (line) => console.log(line),
-    stderr: (line) => console.error(line),
-  });
+  process.exitCode = await main(
+    process.argv.slice(2),
+    {
+      cwd: process.cwd(),
+      stdout: (line) => console.log(line),
+      stderr: (line) => console.error(line),
+    },
+    createLinePrompter({
+      input: process.stdin,
+      write: (line) => console.error(line),
+    }),
+  );
 }

@@ -31,6 +31,12 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
   { path: "package.json", source: "package.json", language: "ts" },
 ];
 
+/** 置く設定の雛形のパス */
+const CONFIG_TEMPLATE = "mdmark.config.yaml";
+
+/** 設定の雛形の `version` の行 */
+const VERSION_LINE_PATTERN = /^version: .*$/m;
+
 /** 失敗の理由を 1 行の文字にする */
 function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -45,17 +51,23 @@ export async function runInit(
     js: boolean;
     /** 雛形の正本のフォルダ */
     templatesDir: string;
+    /** 呼んだ CLI の版（置く設定の `version` に書く） */
+    version: string;
   },
   io: CliIo,
 ): Promise<0> {
-  const { dir, js, templatesDir } = options;
+  const { dir, js, templatesDir, version } = options;
   const wanted = js ? "js" : "ts";
   for (const template of TEMPLATE_FILES) {
     if (template.language !== undefined && template.language !== wanted) {
       continue;
     }
     const target = join(dir, template.path);
-    const content = await readFile(join(templatesDir, template.source), "utf8");
+    const source = await readFile(join(templatesDir, template.source), "utf8");
+    const content =
+      template.path === CONFIG_TEMPLATE
+        ? source.replace(VERSION_LINE_PATTERN, `version: ${version}`)
+        : source;
     try {
       await mkdir(dirname(target), { recursive: true });
     } catch (error) {

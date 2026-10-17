@@ -1,5 +1,8 @@
 # mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く
 
+# この設定・索引・文書が合わせてある mdmark の版（mdmark upgrade が書き換える）
+version: v0.0.0
+
 # 索引の YAML
 index: index.yaml
 

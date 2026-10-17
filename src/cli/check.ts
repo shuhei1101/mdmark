@@ -150,12 +150,8 @@ async function checkIndexFile(loaded: LoadedConfig): Promise<CheckIssue[]> {
   }));
 }
 
-/** 設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す */
-export async function runCheck(
-  options: { config?: string | undefined },
-  io: CliIo,
-): Promise<0 | 1> {
-  const path = await findConfigFile(io.cwd, options.config);
+/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれをこの並びで返す */
+export async function collectCheckIssues(path: string): Promise<CheckIssue[]> {
   const read = await loadConfig(path);
   const file = basename(path);
   const { config, issues: shapeIssues } = validateConfig(read.raw, file);
@@ -163,13 +159,22 @@ export async function runCheck(
   const referenced = await checkReferencedFiles(loaded, file);
   const build = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded);
-  const issues = [
+  return [
     ...shapeIssues,
     ...referenced,
     ...build.schema,
     ...build.noDocuments,
     ...indexIssues,
   ];
+}
+
+/** 設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す */
+export async function runCheck(
+  options: { config?: string | undefined },
+  io: CliIo,
+): Promise<0 | 1> {
+  const path = await findConfigFile(io.cwd, options.config);
+  const issues = await collectCheckIssues(path);
   for (const issue of issues) {
     const place =
       issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;
