@@ -38,4 +38,4 @@ GitHub Actions などの CI は無く、開発側の検査は `npm run build`・
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成
-- [ ] E2E テスト作成
+- [x] E2E テスト作成
