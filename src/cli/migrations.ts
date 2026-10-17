@@ -548,7 +548,7 @@ async function editYaml(
     throw new Error(`${path} を YAML として読めません（${reasonOf(first)}）`);
   }
   if (edit(doc)) {
-    await writeFile(path, String(doc));
+    await writeFile(path, doc.toString({ flowCollectionPadding: false }));
   }
 }
 

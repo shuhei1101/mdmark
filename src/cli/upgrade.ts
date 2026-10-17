@@ -84,7 +84,7 @@ export async function writeConfigVersion(
       `${basename(configPath)} がキーと値の形ではありません。設定のキーを書いてください。`,
     );
   }
-  await writeFile(configPath, String(doc));
+  await writeFile(configPath, doc.toString({ flowCollectionPadding: false }));
 }
 
 /** 手順を当てる設定・索引・文書の場所を作る（答えは当てる前に聞くため空） */
