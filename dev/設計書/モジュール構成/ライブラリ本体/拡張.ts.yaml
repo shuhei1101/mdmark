@@ -19,6 +19,9 @@ data_models:
       - name: keys
         type: Record<string, string>
         description: '`キー=値` の引数。同じキーは後に書いた値'
+      - name: definition
+        type: unknown
+        description: 印を範囲で書き、範囲に `json` のコードブロックを 1 つ置いたときの、その JSON を読んだ値。範囲が無い印では持たない。JSON として読めないときは `schema` も `load` も呼ばず書き方の警告にする（分類『図』の `parseDefinitionJson`）
   - name: MdmarkExtensionModule
     title: 拡張のモジュール
     container: src/extensions.ts

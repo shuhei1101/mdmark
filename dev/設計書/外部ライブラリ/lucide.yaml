@@ -120,4 +120,7 @@ official_url: https://lucide.dev/
 docs_url: https://lucide.dev/icons/
 verification:
   state: 未確認
-  detail: 'モック（PR #42）では図と記法のアイコンの形を手で写した。配布物への取り込み方はモジュール構成設計で決める'
+  detail: '`src/parts/icons.ts` が `lucide` から名前付きで import し、esbuild が使うアイコンだけを束ねる。`src/index.css` の記法のアイコンは形を写し、単体テストで一致を確かめる。実装で動かして確かめる'
+used_in:
+  - src/parts/icons.ts
+  - src/index.css
