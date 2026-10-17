@@ -1,0 +1,779 @@
+/* 図の部品と操作できる部品: 図の枠（題・範囲・更新日・凡例・右上のボタン）・フロー図・シーケンス図・グラフ・図のツールチップ・スライダーと今の値を写すボタン。
+   本文の規則（refs/16/assets/sample.css）・採用スタイルの変数（assets/style.css）・拡張記法の規則（refs/19/assets/syntax.css）・
+   用語のツールチップの規則（refs/27/assets/glossary.css）の後に読む */
+
+/* 図の変数の既定: 使う側が上書きする口。色は採用スタイルの変数（--mdmark-color-diagram-*・--mdmark-color-series-*）が持つ */
+:root {
+  --mdmark-diagram-lane-tint: 8%;
+  --mdmark-diagram-max-height: 36rem;
+}
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* ---------- 図の枠 ---------- */
+
+    /* 図の枠: 題・凡例・表示の箱を縦に並べる。拡大した図の幅で文書の幅を広げない */
+    .mdmark-diagram {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+      min-width: 0;
+      margin-inline: 0;
+      container-type: inline-size;
+    }
+
+    /* 狭い図の枠（スマホ幅の文書）: 凡例の文字と間隔を詰め、図より上に取る高さを抑える */
+    @container (width < 30rem) {
+      .mdmark-diagram-legend {
+        gap: 0.125rem 0.75rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+      }
+    }
+
+    /* 図の題の行: 題と、範囲・更新日を折り返して並べる */
+    .mdmark-diagram-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.15rem 1rem;
+      align-items: baseline;
+    }
+
+    /* 図の題 */
+    .mdmark-diagram-title {
+      color: var(--mdmark-color-heading);
+      font-weight: 700;
+    }
+
+    /* 図の範囲と更新日: 控えめな文字で題の後に置く */
+    .mdmark-diagram-meta {
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+    }
+
+    /* 凡例: 色・形・線・矢じりの見本と意味を横に並べ、幅に応じて折り返す */
+    .mdmark-diagram-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      line-height: 1.6;
+    }
+
+    /* 凡例の 1 項目: 見本と意味 */
+    .mdmark-diagram-legend-item {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      margin: 0;
+    }
+
+    /* 凡例の見本（箱・線・印の SVG） */
+    .mdmark-diagram-legend-sample {
+      flex: none;
+      overflow: visible;
+    }
+
+    /* 凡例の用語の見本: 本文の用語と同じ破線の下線 */
+    .mdmark-diagram-legend-term {
+      color: var(--mdmark-color-text);
+      text-decoration: underline dashed var(--mdmark-color-term-underline);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3em;
+    }
+
+    /* 表示の箱: 右上のボタンの帯と、図を動かして見る表示枠。ツールチップを箱に対して置く */
+    .mdmark-diagram-box {
+      position: relative;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+    }
+
+    /* 右上のボタンの帯: 移動と拡大・縮小のまとまりを右に寄せ、狭い幅では折り返す */
+    .mdmark-diagram-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      justify-content: flex-end;
+      padding: 0.375rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* ボタンのまとまり（移動・拡大と縮小）: 隙間なく並べる */
+    .mdmark-diagram-tools-group {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 図の操作のボタン: 高さを揃えた四角。アイコンだけで、読み上げの名前は aria-label が持つ */
+    .mdmark-diagram-tool {
+      display: inline-grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:active:not(:disabled) {
+        background: var(--mdmark-color-table-head);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 上限・下限の倍率に達したボタン: 隣の倍率の表示で理由が読める */
+      &:disabled {
+        color: var(--mdmark-color-muted);
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    /* 今の倍率: 縮小と拡大のボタンの間に、桁を揃えて出す */
+    .mdmark-diagram-zoom {
+      min-width: 3.25rem;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    /* 図のアイコン（24 の格子の線のアイコン。16px で線の太さを 1.5px に揃える） */
+    .mdmark-diagram-icon {
+      flex: none;
+      width: 1rem;
+      height: 1rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* 表示枠: 横は Shift＋ホイールとスクロールバー、縦はドラッグ・矢印キー・移動のボタンで動かす。
+       縦をスクロールさせないので、図の上のホイールは文書のスクロールになる。余白はつかんで動かす形、文字は選べない */
+    .mdmark-diagram-viewport {
+      position: relative;
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-height: var(--mdmark-diagram-max-height);
+      border-end-start-radius: var(--mdmark-radius);
+      border-end-end-radius: var(--mdmark-radius);
+      cursor: grab;
+      user-select: none;
+      touch-action: pan-y;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* ドラッグ中: つかんだ形にし、文字の上でも選ばせない */
+      &.is-dragging {
+        cursor: grabbing;
+
+        * {
+          user-select: none !important;
+        }
+      }
+    }
+
+    /* 拡大後の大きさを持つ台: 横のスクロールの幅を決める */
+    .mdmark-diagram-sizer {
+      position: relative;
+    }
+
+    /* 図の本体: 定義の座標のまま描き、倍率は transform で当てる */
+    .mdmark-diagram-stage {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      transform-origin: 0 0;
+    }
+
+    /* 文字の上: I の形にして選べるようにする（ドラッグを始めない） */
+    :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text) {
+      cursor: text;
+      user-select: text;
+    }
+
+    /* ---------- フロー図 ---------- */
+
+    /* システムの枠: 内側を囲む太めの線。外部のシステムは枠の外に置く */
+    .mdmark-diagram-frame {
+      position: absolute;
+      border: 1.5px solid var(--mdmark-color-muted);
+      border-radius: 12px;
+    }
+
+    /* システムの枠の題: 枠の左上に、アイコンと名前 */
+    .mdmark-diagram-frame-title {
+      position: absolute;
+      display: flex;
+      gap: 0.375rem;
+      align-items: center;
+      color: var(--mdmark-color-heading);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    /* 層の背景: その層の箱の色をうっすら敷く */
+    .mdmark-diagram-lane {
+      position: absolute;
+      background: color-mix(in srgb, var(--lane-color) var(--mdmark-diagram-lane-tint), var(--mdmark-color-bg));
+    }
+
+    /* 層の見出し: 層の左上に控えめな文字で */
+    .mdmark-diagram-lane-label {
+      position: absolute;
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    /* 種類ごとの色: 箱の線・種類の行・層の背景が読む */
+    :is(.mdmark-diagram-node, .mdmark-diagram-lane, .mdmark-diagram-legend-sample) {
+      &[data-kind="llm"] {
+        --node-color: var(--mdmark-color-diagram-llm);
+        --lane-color: var(--mdmark-color-diagram-llm);
+      }
+
+      &[data-kind="dm"] {
+        --node-color: var(--mdmark-color-diagram-dm);
+        --lane-color: var(--mdmark-color-diagram-dm);
+      }
+
+      &[data-kind="script"] {
+        --node-color: var(--mdmark-color-diagram-script);
+        --lane-color: var(--mdmark-color-diagram-script);
+      }
+
+      &[data-kind="mcp"] {
+        --node-color: var(--mdmark-color-diagram-mcp);
+        --lane-color: var(--mdmark-color-diagram-mcp);
+      }
+
+      &[data-kind="data"] {
+        --node-color: var(--mdmark-color-diagram-data);
+        --lane-color: var(--mdmark-color-diagram-data);
+      }
+
+      &[data-kind="external"] {
+        --node-color: var(--mdmark-color-diagram-external);
+        --lane-color: var(--mdmark-color-diagram-external);
+      }
+    }
+
+    /* 箱: 種類の色の線で囲み、地は文書の地にして層の背景から浮かせる */
+    .mdmark-diagram-node {
+      position: absolute;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6px 10px;
+      border: 1.5px solid var(--node-color);
+      border-radius: 8px;
+      background: var(--mdmark-color-bg);
+      line-height: 1.35;
+
+      /* データの箱: 下の角を大きく丸めて入れ物に見せる */
+      &[data-shape="db"] {
+        border-radius: 8px 8px 20px 20px;
+      }
+
+      /* ツールチップを持つ箱: 種類の行を右上の印と重ねない */
+      &.has-tip .mdmark-diagram-node-kind {
+        padding-inline-end: 22px;
+      }
+    }
+
+    /* 箱の種類の行: アイコンと種類の名前を種類の色で */
+    .mdmark-diagram-node-kind {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      color: var(--node-color);
+      font-size: 11px;
+      font-weight: 600;
+
+      .mdmark-diagram-icon {
+        width: 14px;
+        height: 14px;
+        stroke-width: 2.4;
+      }
+    }
+
+    /* 箱の名前 */
+    .mdmark-diagram-node-name {
+      color: var(--mdmark-color-heading);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* 箱の補足 */
+    .mdmark-diagram-node-sub {
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+    }
+
+    /* ツールチップのある箱の印: 右上に置く。押すかフォーカスで入力・処理・出力が出る */
+    .mdmark-diagram-info {
+      position: absolute;
+      inset-block-start: 3px;
+      inset-inline-end: 3px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--node-color);
+      cursor: pointer;
+
+      &:hover,
+      &[aria-expanded="true"] {
+        background: color-mix(in srgb, var(--node-color) 14%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      .mdmark-diagram-icon {
+        width: 15px;
+        height: 15px;
+      }
+    }
+
+    /* 箱の中の用語: 本文の用語と同じ破線の下線（.mdmark-term）。箱の小さな文字に合わせて下線を近づける */
+    .mdmark-diagram-node .mdmark-term {
+      text-underline-offset: 0.25em;
+      cursor: help;
+    }
+
+    /* 線の層: 箱の上に重ね、線そのものは押せない（ツールチップ用の太い透明の線だけが拾う） */
+    .mdmark-diagram-wires {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    /* 線: 種類ごとに色と模様（破線の間隔・太さ・矢じり）の組で分ける */
+    .mdmark-diagram-wire {
+      fill: none;
+      stroke: var(--wire-color);
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+
+      /* 処理の流れ: 実線・塗った矢じり */
+      &[data-line="flow"] {
+        --wire-color: var(--mdmark-color-diagram-line);
+      }
+
+      /* 読む: データの色の短い破線・開いた矢じり */
+      &[data-line="read"] {
+        --wire-color: var(--mdmark-color-diagram-data);
+        stroke-dasharray: 5 4;
+      }
+
+      /* 書く: 処理（MCP）の色の太い実線・塗った矢じり */
+      &[data-line="write"] {
+        --wire-color: var(--mdmark-color-diagram-mcp);
+        stroke-width: 3;
+      }
+
+      /* 返す（シーケンス図の返事）: 流れの色の短い破線・開いた矢じり */
+      &[data-line="reply"] {
+        --wire-color: var(--mdmark-color-diagram-line);
+        stroke-dasharray: 5 4;
+      }
+
+      /* 戻る（ループの戻り）: 流れの色の長い破線・開いた矢じり */
+      &[data-line="loop"] {
+        --wire-color: var(--mdmark-color-diagram-line);
+        stroke-dasharray: 10 5;
+      }
+
+      /* ツールチップを開いている線: 太くしてどの線の詳細かを示す */
+      &.is-active {
+        stroke-width: 3;
+      }
+
+      &[data-line="write"].is-active {
+        stroke-width: 4.5;
+      }
+    }
+
+    /* 矢じり: 線の種類ごとの色。処理の流れと書くは塗り、読むと戻るは線だけの開いた形 */
+    .mdmark-diagram-arrowhead {
+      &[data-line="flow"] {
+        fill: var(--mdmark-color-diagram-line);
+      }
+
+      &[data-line="write"] {
+        fill: var(--mdmark-color-diagram-mcp);
+      }
+
+      &[data-line="read"] {
+        fill: none;
+        stroke: var(--mdmark-color-diagram-data);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:is([data-line="loop"], [data-line="reply"]) {
+        fill: none;
+        stroke: var(--mdmark-color-diagram-line);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+
+    /* 線のツールチップを拾う太い透明の線 */
+    .mdmark-diagram-wire-hit {
+      fill: none;
+      stroke: transparent;
+      stroke-width: 14;
+      pointer-events: stroke;
+      cursor: help;
+    }
+
+    /* 線のラベル（入力の要約）: 線の上に地の色の札で置く */
+    .mdmark-diagram-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: 0 6px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: nowrap;
+
+      /* 詳細のツールチップを持つラベル: 本文の用語と同じ破線の下線で示し、フォーカスできる */
+      &.has-tip {
+        color: var(--mdmark-color-text);
+        text-decoration: underline dashed var(--mdmark-color-term-underline);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.25em;
+        cursor: help;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* 戻り先のラベル: 戻りの線と同じ破線の枠 */
+      &[data-line="loop"] {
+        border-style: dashed;
+        border-color: var(--mdmark-color-diagram-line);
+        color: var(--mdmark-color-text);
+      }
+    }
+
+    /* ---------- シーケンス図 ---------- */
+
+    /* 相手の下に引く縦の線（時刻の軸） */
+    .mdmark-diagram-lifeline {
+      stroke: var(--mdmark-color-border);
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+    }
+
+    /* 繰り返しの範囲: 戻りの線の帯を薄い面で示す */
+    .mdmark-diagram-loop-band {
+      fill: color-mix(in srgb, var(--mdmark-color-diagram-line) 6%, transparent);
+      stroke: none;
+    }
+
+    /* ---------- グラフ ---------- */
+
+    /* 軸の線 */
+    .mdmark-diagram-axis {
+      stroke: var(--mdmark-color-muted);
+      stroke-width: 1;
+    }
+
+    /* 目盛りの補助線 */
+    .mdmark-diagram-grid {
+      stroke: var(--mdmark-color-border);
+      stroke-width: 1;
+    }
+
+    /* 目盛りと軸の名前の文字 */
+    .mdmark-diagram-axis-text {
+      fill: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 系列の線: 色と線の模様の組で分ける（1 実線・2 破線・3 点線・4 一点鎖線） */
+    .mdmark-diagram-series {
+      fill: none;
+      stroke: var(--series-color);
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+
+      &[data-series="1"] {
+        --series-color: var(--mdmark-color-series-1);
+      }
+
+      &[data-series="2"] {
+        --series-color: var(--mdmark-color-series-2);
+        stroke-dasharray: 7 4;
+      }
+
+      &[data-series="3"] {
+        --series-color: var(--mdmark-color-series-3);
+        stroke-dasharray: 1 4;
+      }
+
+      &[data-series="4"] {
+        --series-color: var(--mdmark-color-series-4);
+        stroke-dasharray: 9 3 1 3;
+      }
+    }
+
+    /* 系列の点の印: 系列ごとの形（1 丸・2 四角・3 三角・4 菱形）を系列の色で塗る */
+    .mdmark-diagram-point {
+      fill: var(--series-color);
+      stroke: var(--mdmark-color-bg);
+      stroke-width: 1.5;
+    }
+
+    /* 系列ごとの点の色 */
+    g[data-series="1"] {
+      --series-color: var(--mdmark-color-series-1);
+    }
+
+    /* 系列 2 の点の色 */
+    g[data-series="2"] {
+      --series-color: var(--mdmark-color-series-2);
+    }
+
+    /* 系列 3 の点の色 */
+    g[data-series="3"] {
+      --series-color: var(--mdmark-color-series-3);
+    }
+
+    /* 系列 4 の点の色 */
+    g[data-series="4"] {
+      --series-color: var(--mdmark-color-series-4);
+    }
+
+    /* ---------- 図のツールチップ ---------- */
+
+    /* 図のツールチップ: 本文の用語のツールチップと同じ見た目。表示の箱に対して置き、拡大の倍率を受けない */
+    .mdmark-diagram-tip {
+      position: absolute;
+      z-index: 10;
+      box-sizing: border-box;
+      width: max-content;
+      max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
+      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5em 0.75em;
+      border: 1px solid var(--mdmark-color-muted);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 入力・処理・出力の並び: 見出しと中身を 2 列に揃える */
+    .mdmark-diagram-tip-io {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.15em 0.75em;
+      margin: 0;
+
+      dt {
+        color: var(--mdmark-color-muted);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.75;
+      }
+
+      dd {
+        margin: 0;
+      }
+    }
+
+    /* ---------- 操作できる部品 ---------- */
+
+    /* 操作できる部品: 値を変える区画・写すボタン・グラフを 1 つの枠にまとめる */
+    .mdmark-param {
+      display: grid;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 操作できる部品の題 */
+    .mdmark-param-title {
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 700;
+    }
+
+    /* 値を変える区画: スライダーを縦に積み、写すボタンを最後に置く。グラフより上に置く */
+    .mdmark-param-controls {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    /* スライダーの 1 行: 名前と今の値、下にスライダー */
+    .mdmark-param-knob {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.125rem 0.75rem;
+      align-items: baseline;
+      font-size: 0.875rem;
+
+      label {
+        color: var(--mdmark-color-text);
+        font-weight: 600;
+      }
+
+      /* 今の値: 桁を揃える */
+      output {
+        color: var(--mdmark-color-text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* 範囲の端の値: スライダーの下の両端に控えめに */
+      small {
+        color: var(--mdmark-color-muted);
+        font-size: 0.75rem;
+      }
+
+      input[type="range"] {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0;
+        accent-color: var(--mdmark-color-link);
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 4px;
+        }
+      }
+    }
+
+    /* スライダーの端の値の行: 下限を左、上限を右に */
+    .mdmark-param-range {
+      display: flex;
+      grid-column: 1 / -1;
+      justify-content: space-between;
+    }
+
+    /* 写すボタンと知らせの行: ボタンの右に知らせを出し、狭い幅では下へ折り返す */
+    .mdmark-param-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+    }
+
+    /* 今の値を写すボタン: 図の操作のボタンと同じ高さ。動詞で起きることを書く */
+    .mdmark-param-copy {
+      display: inline-flex;
+      gap: 0.375rem;
+      align-items: center;
+      height: 2rem;
+      padding: 0 0.75rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-table-head);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 写したか・写せなかったかの知らせ: アイコンと文で示し、色だけに頼らない */
+    .mdmark-param-status {
+      display: inline-flex;
+      gap: 0.375rem;
+      align-items: center;
+      min-height: 1.5rem;
+      margin: 0;
+      font-size: 0.875rem;
+
+      &:empty {
+        display: none;
+      }
+
+      &[data-state="copied"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-tip);
+      }
+
+      &[data-state="failed"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* 写せなかったときに出す JSON: 選んで写せる文字。押すと全体が選ばれる */
+    .mdmark-param-fallback {
+      margin: 0;
+      user-select: all;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / diagram-doc（図と固有の部品） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・トップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/27/assets/glossary.css">
+  <!-- 図の部品と操作できる部品の規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/42/assets/diagram.css">
+  <!-- 使う側の固有の CSS（mdmark の CSS の後に読む）。[data-team-css]: app.js が「別の場所の文書」で外す（モックだけの仕組み） -->
+  <link rel="stylesheet" href="./team.css" data-team-css>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 用語と関連文書のツールチップの操作（本文の用語） -->
+  <script src="../../../../refs/27/assets/glossary.js" defer></script>
+  <!-- 図の定義の見本と、図・操作できる部品を描いて操作を付けるスクリプト -->
+  <script src="../../../../refs/42/assets/samples.js" defer></script>
+  <script src="../../../../refs/42/assets/diagram.js" defer></script>
+  <!-- 使う側の固有の部品と、モックの「固有の定義を当てる場所」の切り替え -->
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色と、固有の定義を当てる場所の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-place-set]: app.js が固有の CSS と固有の部品を当てるか切り替える（here: 固有の定義を読んだ設定の文書、other: 別の設定の文書） -->
+    <div class="mock-bar-group" role="group" aria-label="固有の定義">
+      <button class="mock-bar-item" type="button" data-place-set="here" aria-pressed="true">固有の定義を当てる場所の文書</button>
+      <button class="mock-bar-item" type="button" data-place-set="other" aria-pressed="false">別の場所の文書</button>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">42</a> / diagram-doc
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書。図の部品と操作できる部品は、文書に書いた部品の定義（JSON）から描く。文書に書いた script は動かさない -->
+    <article class="mdmark">
+<h1 id="問い合わせ窓口の設計メモ">問い合わせ窓口の設計メモ</h1>
+<!-- 図の外の段落の用語: 図の箱の中と同じ用語に、同じ下線とツールチップ -->
+<p>問い合わせのメールを受け取り、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-1">意思決定モデル</span><span class="mdmark-term-tip" id="term-tip-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI</span></span></span></span>で返信の種類を分け、LLM が下書きを書いて返します。</p>
+
+<h2 id="構成">構成</h2>
+<!-- フロー図の部品: 枠と 3 層・外部のシステム・線の交差・ループの戻り。[data-mock-diagram]: diagram.js が samples.js の定義から描く -->
+<figure data-mock-diagram="inquiry"></figure>
+<p>答えの候補が無い問い合わせは、分類が担当者へ回す種類を選び、下書きを書かずに担当者のチャットへ流します。</p>
+
+<h2 id="1-通の流れ">1 通の流れ</h2>
+<!-- シーケンス図の部品 -->
+<figure data-mock-diagram="inquiry-seq"></figure>
+
+<h2 id="返信までの時間">返信までの時間</h2>
+<!-- グラフの部品 -->
+<figure data-mock-diagram="reply-time"></figure>
+
+<h2 id="返信の速さの見積もり">返信の速さの見積もり</h2>
+<p>返信の進みの見積もりは、反応の強さで変わります。</p>
+<!-- 操作できる部品: スライダー・グラフ・今の値を写すボタン。[data-mock-param]: diagram.js が samples.js の定義から描く -->
+<div data-mock-param="strength"></div>
+
+<h2 id="立ち上げの段取り">立ち上げの段取り</h2>
+<!-- 固有の部品の場所: 使う側が registerExtension で登録した部品が、定義の題と段取りを描く。
+     [data-team-extension]: app.js が「固有の定義を当てる場所の文書」でだけ描く。別の場所の文書では何も描かず、定義の JSON も出さない -->
+<div data-team-extension="milestones"></div>
+
+<h2 id="用語">用語</h2>
+<!-- 用語集の表: 図の中で意味を出す用語を、図の外にも置く -->
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 用語">
+    <thead><tr><th>用語</th><th>意味</th></tr></thead>
+    <tbody>
+      <tr><td data-label="用語">意思決定モデル</td><td data-label="意味">選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI</td></tr>
+      <tr><td data-label="用語">よくある質問</td><td data-label="意味">問い合わせの多い質問と、その答えをまとめた表</td></tr>
+    </tbody>
+  </table>
+</div>
+    </article>
+  </main>
+</body>
+</html>

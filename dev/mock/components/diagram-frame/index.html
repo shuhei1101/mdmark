@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>diagram-frame | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- この部品のモックの固有の規則（狭い枠の見本の幅） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">図の枠（題・凡例・拡大と縮小・移動）</h1>
+
+      <!-- 開いたとき: 全体が収まる倍率。図の全体が見えている間は移動のボタンを出さない。縮小と戻すは押しても変わらないので押せない -->
+      <section aria-labelledby="state-fit">
+        <h2 class="catalog-label" id="state-fit">開いたとき（全体が収まる倍率。移動のボタンは出さない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <!-- 拡大した: 図が枠からはみ出すと、拡大・縮小のボタンの左に移動のボタン（左・上・下・右）が出る -->
+      <section aria-labelledby="state-zoomed">
+        <h2 class="catalog-label" id="state-zoomed">拡大した（移動のボタンが出る。ドラッグ・矢印キー・Shift＋ホイールでも動く）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-zoom] [data-mock-scroll]: 開いたときの倍率と位置（図の座標）を変えて見せる（モックだけの指定） -->
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
+        </article>
+      </section>
+
+      <!-- 最大の倍率: 拡大のボタンは押せない（隣の倍率の表示で理由が読める） -->
+      <section aria-labelledby="state-max">
+        <h2 class="catalog-label" id="state-max">最大の倍率（拡大のボタンは押せない）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="3" data-mock-scroll="560,170"></figure>
+        </article>
+      </section>
+
+      <!-- 狭い枠: 凡例とボタンの帯を折り返す。開いたときは枠の幅に合わせて縮め、全体を見せる -->
+      <section aria-labelledby="state-narrow">
+        <h2 class="catalog-label" id="state-narrow">狭い枠（凡例とボタンの帯を折り返す）</h2>
+        <article class="mdmark catalog-narrow">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="0.6" data-mock-scroll="240,100"></figure>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

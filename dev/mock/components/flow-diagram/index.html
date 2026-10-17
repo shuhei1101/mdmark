@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>flow-diagram | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">フロー図</h1>
+
+      <!-- 通常: システムの枠の中に上から LLM・処理・データの 3 層。外部のシステムは枠の外。時系列は左から右、交差は 1 か所で横の線が飛び越え、ループの戻りは下の帯 -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">通常（枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻り）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く（実装では文書に書いた部品の定義を mount が読む） -->
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <!-- 長文: 題・箱の名前・補足が長いとき。題は折り返し、箱の中の文字は箱の幅で折り返す -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長い題と箱の名前（折り返す）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="long-names"></figure>
+        </article>
+      </section>
+
+      <!-- 定義を読めない: JSON として読めない部品の定義の場所に書き方の警告を出し、ほかの図と段落は描く -->
+      <section aria-labelledby="state-invalid">
+        <h2 class="catalog-label" id="state-invalid">定義を読めない（書き方の警告。ほかの図と段落は描く）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p>フロー図の部品の定義を JSON として読めません（12 行目の <code>"label": "本文",</code> の後に閉じの <code>}</code> がありません）。この図は描いていません。</p>
+</div>
+<p>受け取った問い合わせは、分類で返信の種類を決めてから下書きに回します。</p>
+          <figure data-mock-diagram="long-names"></figure>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

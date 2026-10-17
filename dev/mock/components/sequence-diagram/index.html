@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>sequence-diagram | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">シーケンス図</h1>
+
+      <!-- 通常: 相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ。呼ぶは実線、返すは短い破線。繰り返しの範囲を薄い面で囲み、右の帯の長い破線と戻り先のラベルで 1 へ戻す -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">通常（呼ぶ・返す・繰り返しの戻り）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
+          <figure data-mock-diagram="inquiry-seq"></figure>
+        </article>
+      </section>
+
+      <!-- 定義を読めない: 相手に無い id を指すメッセージ。書き方の警告を出し、この図は描かない -->
+      <section aria-labelledby="state-invalid">
+        <h2 class="catalog-label" id="state-invalid">定義を読めない（書き方の警告）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.75 2.25l3 3-8.5 8.5H2.25v-3z"/><path d="M9 4l3 3"/></svg>書き方の警告</p>
+  <p>シーケンス図の部品の定義を読めません。この図は描いていません。</p>
+  <ul>
+    <li><code>steps[2].to</code> の <code>reviewer</code> が <code>participants</code> にありません。使える相手は <code>mail</code>・<code>recv</code>・<code>classify</code>・<code>draft</code>・<code>mcp</code> です</li>
+    <li><code>steps[4]</code> に <code>label</code> がありません</li>
+  </ul>
+</div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
