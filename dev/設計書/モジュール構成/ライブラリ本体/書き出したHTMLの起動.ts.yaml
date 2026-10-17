@@ -59,7 +59,7 @@ functions:
     container: src/viewer/modules.ts
     usecase: 共通
     summary: 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた拡張を `import()` して既定の export を `registerExtension` で登録する
-    description: '`Blob` の `type` は `text/javascript`。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
+    description: '`Blob` の `type` は `text/javascript`。設定の `libraries` にあって埋められなかった外部ライブラリは、読むと例外を投げる `data:` URL に替える（印の場所は知らせの枠になり、ページの隣のファイルへ要求しない）。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
     kind: 関数
     scope: public
     is_async: true
@@ -77,7 +77,7 @@ functions:
         description: 差し替える依存（テスト用）
     returns:
       type: Promise<MdmarkConfig>
-      description: '`libraries` を `blob:` URL に替えた設定'
+      description: '`libraries` を、埋めたものは `blob:` URL、埋められなかったものは読むと例外を投げる `data:` URL に替えた設定'
     unit_tests:
       - name: test_prepare_modules
         case: 正常
