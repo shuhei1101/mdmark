@@ -1,0 +1,16 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-cli-upgrade-migrations
+
+
+ Test Files  78 passed (78)
+      Tests  322 passed (322)
+   Start at  18:05:52
+   Duration  26.63s (tests 43%, import 29%, worker 22%, transform 6%)
+
+
+exit=0
