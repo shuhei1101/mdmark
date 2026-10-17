@@ -10,7 +10,7 @@ flows:
         description: '`version: v0.3.0`・`legacy: 1`・`index`・`build` を書いたコメントつきの設定と、索引と、印 `<!-- note -->` を持つ文書 2 つの一時フォルダ'
         notes: '`legacy` は点検が拒まない最上位の知らないキーで、名前を変えても点検が通る'
       - name: Mock
-        description: ビルドしたパッケージを写した一時フォルダ（テスト用のパッケージ）の `version.ini` を `v0.5.0` に、`migrations/` と `docs/はじめに/変更履歴.md` をテスト用のものに差し替え、その `dist/cli.js` を子プロセスで流す
+        description: 作業ツリーを写した一時フォルダ（テスト用のパッケージ）の `migrations/` と `docs/はじめに/変更履歴.md` をテスト用のものに差し替え、`npm run build -- --version v0.5.0` で版を埋めた `dist/cli.js` を子プロセスで流す
         notes: '`v0.4.0` は `rename_key`（`file: config`・`legacy` → `renamed`）、`v0.5.0` は `replace_mark`（`<!-- note -->` → `<!-- callout -->`）。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
     flow: |-
       sequenceDiagram
@@ -58,7 +58,7 @@ flows:
       - name: 手元の版が古いフォルダ
         description: 正常系と同じ
       - name: Mock
-        description: 'テスト用のパッケージの `version.ini` を `v0.4.0` に、`v0.4.0` の手順を `set_default`（`file: config`・`key: title`・`ask`）に差し替える'
+        description: 'テスト用のパッケージを `--version v0.4.0` でビルドし、`v0.4.0` の手順を `set_default`（`file: config`・`key: title`・`ask`）に差し替える'
         notes: 標準入力に `設計の文書` を渡す
     flow: |-
       sequenceDiagram
@@ -419,8 +419,8 @@ exceptions:
     notes: '`mdmark check` と同じ文を出す'
 constraints:
   - item: 目標の版
-    constraint: 呼んだ CLI のパッケージの `version.ini` の先頭行。引数では受けない
-    notes: 引数で古い版を受けると、呼んだ CLI の形で点検して目標の版では正しい設定を戻してしまう
+    constraint: ビルドが呼んだ CLI（`dist/cli.js`）に埋めた版（ライブラリ本体の `version()` と同じ出所）。`version.ini` は読まない。引数では受けない
+    notes: hotfix のビルドは `version.ini` を上げず `--version` で打つタグの版を埋める。引数で古い版を受けると、呼んだ CLI の形で点検して目標の版では正しい設定を戻してしまう
   - item: 手元の版
     constraint: 設定の `version`。無ければ標準エラーに `手元の版（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出し、標準入力の 1 行を手元の版にする（`--plan` のときも聞く）
     decided_by: dev/設計書/設定/ライブラリ本体#settings[version]
@@ -432,7 +432,7 @@ constraints:
   - item: 手順の検め
     constraint: 当てる全ての版の `steps.yaml` を、問いと書き換えの前に `schemas/mdmark.steps.schema.json` で検める。1 つでも合わなければ何も書き換えない
   - item: 問いの順
-    constraint: 手元の版 → 値を聞く手順（当てる順。キーが既にある `set_default` は聞かない）→ 壊す手順の確かめ（`--yes` が無く壊す印の手順が 1 つ以上あるとき 1 回だけ）の順に、全て書き換えの前に聞く。確かめは `y` だけを承諾とする
+    constraint: 手元の版 → 値を聞く手順（当てる順。キーが既にある `set_default` は聞かない）→ 壊す手順の確かめ（`--yes` が無く壊す印の手順が 1 つ以上あるとき 1 回だけ）の順に、全て書き換えの前に聞く。`--plan` では手元の版だけを聞く。確かめは `y` だけを承諾とする
   - item: 写し
     constraint: 書き換えの前に、設定ファイルと、手順が書き換えうる全てのファイル（`file`・`files` が指すものと、`replace_mark` の対象の文書）を、設定ファイルのあるフォルダの `.mdmark/backup/{yyyymmddHHMMSS}/` へ、そのフォルダからの相対パスを保って写す。`.mdmark/.gitignore`（中身は `*`）が無ければ置く。当てた後も消さない
     notes: 日時は利用者の手元の時刻

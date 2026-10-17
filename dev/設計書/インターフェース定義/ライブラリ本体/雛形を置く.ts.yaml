@@ -22,7 +22,7 @@ flows:
       - 終了コードが 0
       - '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`・`tsconfig.json`・`package.json` がある'
       - '`mdmark.config.yaml` と `index.yaml` が設定と索引の JSON Schema に合う'
-      - '`mdmark.config.yaml` の `version` が、ビルドしたパッケージの `version.ini` の版'
+      - '`mdmark.config.yaml` の `version` が、ビルドした CLI に埋めた版'
       - 標準出力に `置いた:` の行が 6 つ、雛形の並びで出る
     test: test_normal
   - name: 正常系（JavaScript を指定する）
@@ -139,6 +139,6 @@ constraints:
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
   - item: 設定の版
-    constraint: 置く `mdmark.config.yaml` の `version` は、呼んだ CLI のパッケージの `version.ini` の版。`templates/mdmark.config.yaml` の `version` の値を置くときに置き換える
+    constraint: 置く `mdmark.config.yaml` の `version` は、ビルドが呼んだ CLI に埋めた版。`templates/mdmark.config.yaml` の `version` の値を置くときに置き換える
     decided_by: dev/設計書/設定/ライブラリ本体#settings[version]
 test_file: tests/integration/lib/init.test.ts
