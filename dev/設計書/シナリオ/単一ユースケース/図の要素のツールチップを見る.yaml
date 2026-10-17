@@ -1,0 +1,68 @@
+title: "図の要素のツールチップを見る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 図を描いたページ
+        description: 矢印 1 本に入力の詳細、LLM の箱 1 つに入力・処理・出力を持たせたフロー図を描いたページ
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 図
+        U->>D: 矢印にポインターを乗せる
+        D-->>U: 入力の詳細のツールチップ
+        U->>D: ツールチップの上へポインターを動かす
+        D-->>U: ツールチップを出したままにする
+        U->>D: LLM の箱にポインターを乗せる
+        D-->>U: 入力・処理・出力のツールチップ
+    expected:
+      - 矢印の上で、入力の詳細を書いた `role="tooltip"` の要素が出る
+      - ツールチップの上へポインターを動かしても消えない
+      - LLM の箱の上で、入力・処理・出力を書いたツールチップが出る
+      - ツールチップを持つ箱には印があり、持たない箱には無い
+    test: test_normal
+  - name: 正常シナリオ（キーボード）
+    setup:
+      - name: 図を描いたページ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 図
+        U->>D: Tab で矢印にフォーカスする
+        D-->>U: 入力の詳細のツールチップ
+        U->>D: Esc を押す
+        D-->>U: ツールチップを消し、フォーカスは矢印に残す
+    expected:
+      - フォーカスした矢印にツールチップが出て、矢印の `aria-describedby` がそのツールチップを指す
+      - Esc でツールチップが消え、フォーカスは矢印に残る
+    test: test_normal_when_keyboard
+  - name: 正常シナリオ（箱の中の用語）
+    setup:
+      - name: 用語を持つ図を描いたページ
+        description: 索引に載せた用語を箱の文字に含むフロー図と、図の外の段落に同じ用語を持つ文書を、索引を渡して描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 図
+        U->>D: 箱の中の用語にポインターを乗せる
+        D-->>U: 用語集の意味のツールチップ
+    expected:
+      - 箱の中の用語に点線の下線が引かれている
+      - 用語の上で、本文の用語と同じ見た目のツールチップに用語集の意味が出る
+      - 図の外の段落の同じ用語にも下線とツールチップがある
+    test: test_normal_when_term
+lead: 読む人が、図の矢印・箱・箱の中の用語にポインターを乗せるかフォーカスして、詳細をツールチップで読む。矢印は入力の詳細、LLM・スクリプトの箱は入力・処理・出力、用語は用語集の意味を出す。
+issue: 21
+primary_actor: 読む人
+trigger: 読む人が、図の矢印や箱に書いた要約より詳しく知りたくなる
+preconditions:
+  - 文書に図が描かれている（『図を描く』）
+  - 用語のツールチップを出すときは、索引か用語集の表に用語がある
+success_guarantee: ツールチップはホバーとフォーカスの両方で出て、Esc で消え、ツールチップの上に乗っても消えない（WCAG 1.4.13）。
+minimal_guarantee: ツールチップを出せない環境（タッチ・印刷）でも、箱と矢印の要約と図の外の用語集で図を読める。

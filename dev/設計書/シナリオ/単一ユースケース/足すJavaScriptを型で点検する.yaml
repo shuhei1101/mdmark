@@ -1,0 +1,53 @@
+title: "足すJavaScriptを型で点検する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 雛形を置いたフォルダ
+        description: '`mdmark init`（JavaScript を指定）で雛形を置き、配布物の型定義を置いたフォルダ'
+      - name: 型に合う固有の部品
+        description: '`// @ts-check` と JSDoc で配布物の拡張の型を付けた JavaScript の部品 1 つ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 使う側
+        participant T as tsc
+        participant F as フォルダ
+        W->>T: tsc --noEmit
+        T->>F: tsconfig と JavaScript と配布物の型定義を読む
+        T-->>W: 誤り 0 件・終了コード 0
+    expected:
+      - '`tsc --noEmit` が誤りを出さず、終了コード 0 を返す'
+      - フォルダに JavaScript の出力が増えていない
+    test: test_normal
+  - name: 異常シナリオ（型が合わない）
+    setup:
+      - name: 雛形を置いたフォルダ
+        description: 正常シナリオと同じ
+      - name: 型を誤った固有の部品
+        description: 正常シナリオの部品のうち 1 行で、`draw` に配布物の型に合わない値を渡すもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 使う側
+        participant T as tsc
+        participant F as フォルダ
+        W->>T: tsc --noEmit
+        T->>F: tsconfig と JavaScript と配布物の型定義を読む
+        T-->>W: 誤りのファイルと行・終了コード 0 以外
+    expected:
+      - '`tsc --noEmit` が、誤ったファイルの名前と行を含む誤りを出す'
+      - 終了コードが 0 以外
+      - 使う側の JavaScript は書き換わっていない
+    test: test_error_when_type_mismatch
+lead: 使う側が、変換を挟まずに書いた JavaScript（`// @ts-check` と JSDoc）の固有の部品を、配布物の型定義に対して `tsc --noEmit` で点検し、誤りを使う前に見つける。
+issue: 21
+primary_actor: 使う側（ワークスペースの持ち主と AI）
+trigger: 使う側が固有の部品を書き足した、または mdmark の版を上げた
+preconditions:
+  - '`mdmark init`（JavaScript を指定）で置いた tsconfig がある'
+  - 配布物と同じタグの `dist/` の型定義を置いている
+  - 手元に Node 24 以降と TypeScript がある
+success_guarantee: 型に合う JavaScript は誤り 0 件で通り、合わない JavaScript はファイルと行を出して落ちる。
+minimal_guarantee: 点検は使う側のファイルを書き換えず、JavaScript のファイルも出さない。
