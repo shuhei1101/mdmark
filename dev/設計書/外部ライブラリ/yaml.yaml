@@ -52,7 +52,7 @@ catalogs:
           pr: 32
       - name: parseDocument
         kind: 関数
-        purpose: YAML をコメントとキーの並びを保った Document として読む。読んだ Document を書き換えて `String(doc)` で文字に戻す
+        purpose: 'YAML をコメントとキーの並びを保った Document として読む。読んだ Document を書き換えて `doc.toString({ flowCollectionPadding: false })` で文字に戻す'
         params:
           - name: src
             type: string
@@ -62,7 +62,7 @@ catalogs:
           - name: '-'
             type: Document
             description: 読んだ Document。読めないところは投げずに `doc.errors` に入る。`hasIn`・`getIn`・`setIn`・`deleteIn`・`has`・`set`・`createPair` で読み書きし、`isMap`・`isSeq`・`isScalar` で節を判定する
-            notes: 値を同じ型のスカラーで書き換えると、コメントと書き方が残る。フロー形式の配列を書き戻すと中括弧の内側に空白が入る
+            notes: '値を同じ型のスカラーで書き換えると、コメントと書き方が残る。`String(doc)` はフロー形式の並びの内側に空白を入れる（`["**/*.md"]` が `[ "**/*.md" ]` になる）ため、書き戻しは `toString({ flowCollectionPadding: false })` で行う（2.9.1 で確かめた）'
         status: planned
         introduced:
           pr: 39

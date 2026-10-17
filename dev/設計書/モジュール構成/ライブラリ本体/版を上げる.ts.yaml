@@ -530,7 +530,7 @@ functions:
     container: src/cli/migrations.ts
     usecase: 版を上げる
     summary: 手順 1 つを当て先へ当てる
-    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ書き戻す。`file: index` で索引が無ければ何もしない。`set_default` の `ask` は `target.answers` の値を YAML の値として読んで足す。`replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き戻す。`call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで流す（シェルを通さない）'
+    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻す。`file: index` で索引が無ければ何もしない。`set_default` の `ask` は `target.answers` の値を YAML の値として読んで足す。`replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き戻す。`call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで流す（シェルを通さない）'
     kind: 関数
     scope: public
     is_async: true
@@ -572,6 +572,12 @@ functions:
         condition: '`process.exit(1)` する `.mjs` を流す `call`'
         mock: 一時フォルダのスクリプト
         expected: '`CliError` の文に版と手順の説明と終了コード 1 が入る'
+      - name: test_apply_step_keeps_flow_style
+        case: 正常
+        summary: 手順が触らないフロー形式の並びの書き方を残す
+        condition: '`legacy: 1` と `include: ["**/*.md"]` を持つ設定に `rename_key`（`legacy` → `renamed`）'
+        mock: 一時フォルダの設定
+        expected: '設定ファイルに `include: ["**/*.md"]` がそのまま残る'
     refs:
       - '#functions[renameKey]'
       - '#functions[setDefault]'
@@ -716,7 +722,7 @@ functions:
     container: src/cli/upgrade.ts
     usecase: 版を上げる
     summary: 設定ファイルの `version` を版にし、無ければ最上位の先頭に足す
-    description: '`parseDocument` で読み、コメントと他のキーの書き方を残して書き戻す'
+    description: '`parseDocument` で読み、コメントと他のキーの書き方を残して `doc.toString({ flowCollectionPadding: false })` で書き戻す'
     kind: 関数
     scope: internal
     is_async: true
@@ -737,9 +743,9 @@ functions:
       - name: test_write_config_version
         case: 正常
         summary: ある version を書き換え、コメントを残す
-        condition: 'コメントつきで `version: v0.3.0` を持つ設定、版 `v0.5.0`'
+        condition: 'コメントつきで `version: v0.3.0` とフロー形式の並び `include: ["**/*.md"]`（雛形と同じ書き方）を持つ設定、版 `v0.5.0`'
         mock: 一時フォルダ
-        expected: '`version: v0.5.0` になり、コメントと他の行が変わらない'
+        expected: '書き戻した文字列が、元の文字列の `version: v0.3.0` を `version: v0.5.0` にしたものと一致する（コメントと `["**/*.md"]` の書き方が残る）'
       - name: test_write_config_version_when_missing
         case: 正常
         summary: 無い version を先頭に足す
