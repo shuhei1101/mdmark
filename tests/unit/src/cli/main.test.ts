@@ -19,6 +19,7 @@ afterEach(() => {
 test("test_main", async () => {
   // 準備
   const { main } = await loadMain();
+  vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0");
   const dir = await createTempDir();
   const { io, stdout } = createIo(dir);
   // 実行
