@@ -134,7 +134,7 @@ functions:
         case: 正常
         summary: コマンド名で init を呼び、その終了コードを返す
         condition: '`["init", "{一時フォルダ}"]`'
-        mock: 出力を配列に貯める `CliIo`
+        mock: 出力を配列に貯める `CliIo`、`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`（`init` が `cliVersion()` を読むため）
         expected: 0 を返し、標準出力に `置いた:` の行がある
       - name: test_main_when_command_unknown
         case: 異常
