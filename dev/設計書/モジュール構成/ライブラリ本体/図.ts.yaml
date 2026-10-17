@@ -19,7 +19,7 @@ directory: |-
   ```
 notes:
   単体テストのファイル: 物理ファイルごとに `tests/unit/src/{同じパス}.test.ts`（`interact/` は `.browser.test.ts`）を置き、単体テスト作成の段で `test_files` に載せる
-  他の分類への変更: 記法のコアルールの順では `buildDiagrams` を図表の番号の前に置き、`fig` の印が図の部品に番号を付けられるようにする。`mount` の `attachInteractions` は `diagrams` がオンなら `attachDiagrams`・`attachParams` を呼ぶ。描画の sanitize は `data-mdmark-own` を持つ要素にだけ図の部品の要素と属性（インターフェース定義『文書をHTML文字列にする』の `残す要素・属性`）を許す。svg の描画の属性は `d`・`viewBox`・`width`・`height`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`cx`・`cy`・`r`・`rx`・`points`・`fill`・`stroke`・`stroke-width`・`stroke-dasharray`・`stroke-linecap`・`stroke-linejoin`・`marker-end`・`markerWidth`・`markerHeight`・`refX`・`refY`・`orient`・`transform`。記法の CSS のアイコン（`mask-image` の data URL）は lucide の形に置き換え、形が lucide@1.59.0 と一致することを `tests/unit/src/parts/icons.test.ts` で確かめる。拡張の印の `definition` は分類『拡張』の `MdmarkMarkArgs` に足す
+  他の分類への変更: 記法のコアルールの順では `buildDiagrams` を図表の番号の前に置き、`fig` の印が図の部品に番号を付けられるようにする。`mount` の `attachInteractions` は `diagrams` がオンなら `attachDiagrams`・`attachParams` を呼ぶ。描画の sanitize は `data-mdmark-own` を持つ要素にだけ図の部品の要素と属性（インターフェース定義『文書をHTML文字列にする』の `残す要素・属性`）を許す。svg の描画の属性は `d`・`viewBox`・`width`・`height`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`cx`・`cy`・`r`・`rx`・`ry`・`points`・`fill`・`stroke`・`stroke-width`・`stroke-dasharray`・`stroke-linecap`・`stroke-linejoin`・`marker-end`・`markerWidth`・`markerHeight`・`refX`・`refY`・`orient`・`transform`。記法の CSS のアイコン（`mask-image` の data URL）は lucide の形に置き換え、形が lucide@1.59.0 と一致することと、外部ライブラリ『lucide』の一覧のアイコンが使う要素と属性が全て sanitize の許可にあることを `tests/unit/src/parts/icons.test.ts` で確かめる。拡張の印の `definition` は分類『拡張』の `MdmarkMarkArgs` に足す
 data_models:
   - name: MdmarkFlowDefinition
     title: フロー図の定義
@@ -336,6 +336,12 @@ functions:
         condition: '`plus`'
         mock: なし
         expected: '`viewBox="0 0 24 24"` と lucide@1.59.0 の `plus` の `path` 2 つを持ち、`aria-hidden="true"`'
+      - name: test_icon_svg_when_sanitized
+        case: 正常
+        summary: 使うアイコンの要素と属性が sanitize で落ちない
+        condition: 外部ライブラリ『lucide』の一覧の全てのアイコンを `data-mdmark-own` を付けて描画の sanitize に通す
+        mock: なし
+        expected: どのアイコンも通す前と後で要素と属性が同じ（`database` の `ellipse` と `copy` の `ry` が残る）
   - name: renderDiagramFrame
     title: 図の枠を描く
     container: src/parts/diagram.ts
@@ -636,7 +642,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: 図の題・中身・凡例を写した `modal` の枠を `dialog` に入れて `root` の中に置き、`showModal()` で開き、拡大・縮小とツールチップを付ける。閉じるボタンか `cancel`（Esc）で閉じ、ツールチップを開いている間の `cancel` は取り消してツールチップだけを閉じる。閉じたら付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す
+    summary: 図の題・中身・凡例を写した `modal` の枠を `dialog` に入れて `root` の中に置き、`showModal()` で開き、拡大・縮小とツールチップを付ける。ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を起こさない。`cancel` を取り消す作りは、history-action activation を使い切ると 2 回目から取り消せないため使わない）。閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す
     args:
       - name: figure
         type: HTMLElement
@@ -655,15 +661,15 @@ functions:
       - name: test_open_diagram_dialog
         case: 正常
         summary: 開いて Esc で閉じ、フォーカスを戻す
-        condition: 全画面のボタンを押し、`dialog` へ `cancel` を送る
+        condition: 全画面のボタンを押し、ツールチップを開かずに Esc を押す（Playwright のキー操作）
         mock: なし
-        expected: 押した後に `dialog[open]` が 1 つあり、`cancel` の後に `dialog` が無く、フォーカスが全画面のボタン
+        expected: 押した後に `dialog[open]` が 1 つあり、Esc の後に `dialog` が無く、フォーカスが全画面のボタン
       - name: test_open_diagram_dialog_when_tip_open
         case: 正常
-        summary: ツールチップを開いている間の Esc はツールチップだけを閉じる
-        condition: モーダルの中でツールチップを開き、`cancel` を送る
+        summary: ツールチップを開いている間の Esc は何度でもツールチップだけを閉じる
+        condition: モーダルの中でツールチップ A にポインターを乗せて Esc、ツールチップ B にポインターを乗せて Esc（Playwright のキー操作）
         mock: なし
-        expected: ツールチップが `hidden` を持ち、`dialog` が `open` のまま
+        expected: どちらの Esc の後もツールチップが `hidden` を持ち、`dialog` が `open` のまま
   - name: attachDiagramTips
     title: 図のツールチップを付ける
     container: src/interact/diagram-tips.ts
