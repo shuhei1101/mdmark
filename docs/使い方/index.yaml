@@ -6,3 +6,5 @@ items:
     summary: Markdown に印と記法を書いて、表・注意書き・タブなどを付ける手順
   - page: カスタマイズ/
     summary: 見た目と機能を使う側で変える手順
+  - page: 書き出す/
+    summary: CLI で Markdown を、CDN を読まず 1 枚で完結する HTML に書き出す手順
