@@ -82,6 +82,12 @@ functions:
         condition: '`component` が `table`、`params` の `features` が `["sort"]`、`columns` が `["A"]`、`rows` が `[["1"]]`、`sort` が `{"column":0,"direction":"ascending"}`'
         mock: なし
         expected: '`<div class="mdmark">` で包んだ `renderTable({ features: ["sort"], columns: ["A"], rows: [["1"]], sort: { column: 0, direction: "ascending" } })`'
+      - name: test_render_part_when_doc_list
+        case: 正常
+        summary: JSON の引数を戻して文書の一覧を描く
+        condition: '`component` が `doc-list`、`params` の `docs` が `[{"path":"README.md","title":"入口"},{"path":"使い方/guide.md","title":"使い方"}]`、`current` が `使い方/guide.md`'
+        mock: なし
+        expected: '`<div class="mdmark">` で包んだ `renderDocList({ docs, current: "使い方/guide.md" })`'
   - name: createRenderServer
     title: 描画の口を作る
     container: scripts/storybook-render.ts
