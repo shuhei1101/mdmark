@@ -1,0 +1,1 @@
+# E2E『文書を描く』の test_normal_when_index で本文の段落だけを検証する
