@@ -101,20 +101,26 @@ async function createFixture(options?: {
   };
 }
 
-// ある version を書き換え、コメントを残す（正常系）
+// ある version を書き換え、コメントとフロー形式の並びを残す（正常系）
 test("test_write_config_version", async () => {
   // 準備
   const { writeConfigVersion } = await loadModule();
   const work = await createTempDir();
-  await writeFiles(work, {
-    "mdmark.config.yaml": "# 設定\nversion: v0.3.0\nlegacy: 1 # 古い\n",
-  });
+  const before = [
+    "# 設定",
+    "version: v0.3.0",
+    "legacy: 1 # 古い",
+    "build:",
+    '  include: ["**/*.md"]',
+    "",
+  ].join("\n");
+  await writeFiles(work, { "mdmark.config.yaml": before });
   const configPath = join(work, "mdmark.config.yaml");
   // 実行
   await writeConfigVersion(configPath, "v0.5.0");
   // 検証
   expect(await readFile(configPath, "utf8")).toBe(
-    "# 設定\nversion: v0.5.0\nlegacy: 1 # 古い\n",
+    before.replace("version: v0.3.0", "version: v0.5.0"),
   );
 });
 

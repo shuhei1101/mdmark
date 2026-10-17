@@ -462,6 +462,22 @@ test("test_apply_step", async () => {
   expect(config).toEqual({ renamed: 1, title: "題" });
 });
 
+// 手順が触らないフロー形式の並びの書き方を残す（正常系）
+test("test_apply_step_keeps_flow_style", async () => {
+  // 準備
+  const { applyStep } = await loadModule();
+  const { dir, target } = await createTarget(
+    'legacy: 1\nbuild:\n  include: ["**/*.md"]\n',
+  );
+  const version = createVersion([RENAME_STEP]);
+  // 実行
+  await applyStep({ step: RENAME_STEP, version, target });
+  // 検証
+  const text = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  expect(text).toContain('include: ["**/*.md"]');
+  expect(text).toContain("renamed: 1");
+});
+
 // ask の答えを YAML の値として足す（正常系）
 test("test_apply_step_when_asked", async () => {
   // 準備
