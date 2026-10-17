@@ -151,14 +151,15 @@
       padding: 0;
     }
 
-    /* ボタンのアイコン: 線で描き、文字の色に合わせる */
+    /* ボタンのアイコン（24 の格子。lucide の形）: 線で描き、文字の色に合わせる */
     svg {
       width: 1em;
       height: 1em;
       fill: none;
       stroke: currentColor;
       stroke-linecap: round;
-      stroke-width: 1.5;
+      stroke-linejoin: round;
+      stroke-width: 2.25;
     }
   }
 

@@ -15,9 +15,11 @@
     data: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
     external: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
     frame: '<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/>',
-    zoomIn: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/>',
-    zoomOut: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/>',
-    fit: '<path d="m15 15 6 6"/><path d="M15 19.8V15h4.8"/><path d="m9 15-6 6"/><path d="M9 19.8V15H4.2"/><path d="m15 9 6-6"/><path d="M15 4.2V9h4.8"/><path d="m9 9-6-6"/><path d="M9 4.2V9H4.2"/>',
+    zoomIn: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    zoomOut: '<path d="M5 12h14"/>',
+    fit: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+    fullscreen: '<path d="m15 15 6 6"/><path d="m15 9 6-6"/><path d="M21 16v5h-5"/><path d="M21 8V3h-5"/><path d="M3 16v5h5"/><path d="m3 21 6-6"/><path d="M3 8V3h5"/><path d="M9 9 3 3"/>',
+    close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     left: '<path d="m15 18-6-6 6-6"/>',
     up: '<path d="m18 15-6-6-6 6"/>',
     down: '<path d="m6 9 6 6 6-6"/>',
@@ -346,8 +348,8 @@
     return items;
   };
 
-  /** 右上のボタンの帯（移動・拡大と縮小）の HTML。 */
-  const toolsHtml = (title) => {
+  /** 右上のボタンの帯（移動・拡大と縮小・全画面）の HTML。モーダルの中では全画面のボタンの代わりに閉じるボタンを置く。 */
+  const toolsHtml = (title, modal) => {
     const tool = (name, label, iconName) => `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}">${icon(iconName)}</button>`;
     return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${esc(title)}」の表示">
       <div class="mdmark-diagram-tools-group" data-group="pan" hidden>
@@ -355,6 +357,9 @@
       </div>
       <div class="mdmark-diagram-tools-group" data-group="zoom">
         ${tool("out", "縮小", "zoomOut")}<output class="mdmark-diagram-zoom" aria-label="倍率">100%</output>${tool("in", "拡大", "zoomIn")}${tool("fit", "全体が収まる倍率に戻す", "fit")}
+      </div>
+      <div class="mdmark-diagram-tools-group" data-group="screen">
+        ${modal ? tool("close", "全画面を閉じる", "close") : tool("fullscreen", "全画面で開く", "fullscreen")}
       </div>
     </div>`;
   };
@@ -366,8 +371,8 @@
     return renderFlow(def, fid, tips);
   };
 
-  /** figure に図の部品を描き、操作を付ける。 */
-  const mountDiagram = (figure, def) => {
+  /** figure に図の部品を描き、操作を付ける。getDef は全画面で開くときの今の定義、modal はモーダルの中に描くか。 */
+  const mountDiagram = (figure, def, { getDef = () => def, modal = false } = {}) => {
     figureCount += 1;
     const fid = `mdmark-diagram-${figureCount}`;
     const tips = createTips(fid);
@@ -380,7 +385,7 @@
         <span class="mdmark-diagram-meta">範囲: ${esc(def.scope)}・更新日: <time datetime="${def.updated}">${def.updated}</time></span>
       </figcaption>
       <div class="mdmark-diagram-box">
-        ${toolsHtml(def.title)}
+        ${toolsHtml(def.title, modal)}
         <div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${fid}-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight">
           <div class="mdmark-diagram-sizer"><div class="mdmark-diagram-stage" style="width:${body.width}px;height:${body.height}px">${body.html}</div></div>
         </div>
@@ -388,13 +393,32 @@
       </div>
       <ul class="mdmark-diagram-legend" aria-label="凡例">${legendItems(def, fid).join("")}</ul>
       <svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>${markerDefs(fid)}</defs></svg>`;
-    const view = attachView(figure, body.width, body.height);
+    const view = attachView(figure, body.width, body.height, modal);
     attachTips(figure);
+    figure.querySelector('[data-tool="fullscreen"]')?.addEventListener("click", (event) => openFullscreen(getDef(), event.currentTarget));
     return { view, fid, tips };
   };
 
+  /** 図をモーダルに開く。閉じたら（閉じるボタン・Esc）モーダルを消し、全画面のボタンへフォーカスを戻す。 */
+  const openFullscreen = (def, opener) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "mdmark mdmark-diagram-dialog";
+    dialog.innerHTML = "<figure></figure>";
+    document.body.append(dialog);
+    dialog.showModal();
+    const figure = dialog.querySelector("figure");
+    mountDiagram(figure, def, { modal: true });
+    dialog.setAttribute("aria-labelledby", figure.querySelector(".mdmark-diagram-head").id);
+    figure.querySelector('[data-tool="close"]').addEventListener("click", () => dialog.close());
+    figure.querySelector(".mdmark-diagram-viewport").focus();
+    dialog.addEventListener("close", () => {
+      dialog.remove();
+      opener.focus();
+    });
+  };
+
   /** 倍率と位置の操作（右上のボタン・キー・ドラッグ・Shift＋ホイール）を付け、図の大きさを差し替える口を返す。 */
-  const attachView = (figure, width, height) => {
+  const attachView = (figure, width, height, modal) => {
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
     const sizer = figure.querySelector(".mdmark-diagram-sizer");
     const stage = figure.querySelector(".mdmark-diagram-stage");
@@ -412,8 +436,8 @@
     };
     viewport.addEventListener("scroll", stickHeads, { passive: true });
 
-    /** 枠の幅に図の全体が収まる倍率。 */
-    const fitScale = () => Math.min(1, viewport.clientWidth / state.width);
+    /** 枠に図の全体が収まる倍率。文書の中は幅だけ、モーダルの中は幅と高さで決める。 */
+    const fitScale = () => Math.min(1, viewport.clientWidth / state.width, modal ? viewport.clientHeight / state.height : 1);
 
     /** 倍率を当て、ボタンの有効・無効と移動のボタンの有無を合わせる。 */
     const apply = (scale) => {
@@ -435,11 +459,11 @@
       }
     };
 
-    /** 開いたときの倍率（全体が収まる倍率）と位置に戻す。表示枠の高さを全体が収まる高さにする。 */
+    /** 開いたときの倍率（全体が収まる倍率）と位置に戻す。文書の中では表示枠の高さを全体が収まる高さにする（モーダルの中はモーダルの高さに合わせる）。 */
     const reset = () => {
       state.fit = fitScale();
       state.atFit = true;
-      viewport.style.height = `${state.height * state.fit}px`;
+      if (!modal) viewport.style.height = `${state.height * state.fit}px`;
       apply(state.fit);
       viewport.scrollLeft = 0;
       viewport.scrollTop = 0;
@@ -518,11 +542,13 @@
       }
     });
 
-    // 枠の幅が変わったとき（画面の幅・ページの縦のスクロールバーの出入り）: 全体が収まる倍率で見ていたなら、新しい幅で全体が収まる倍率に合わせ直す
-    let lastWidth = viewport.clientWidth;
+    // 枠の大きさが変わったとき（画面の幅・ページの縦のスクロールバーの出入り・モーダルの高さ）: 全体が収まる倍率で見ていたなら、新しい大きさで全体が収まる倍率に合わせ直す。
+    // 文書の中では高さは reset が決めるので、幅の変化だけを見る
+    let lastSize = `${viewport.clientWidth}x${modal ? viewport.clientHeight : 0}`;
     new ResizeObserver(() => {
-      if (viewport.clientWidth === lastWidth) return;
-      lastWidth = viewport.clientWidth;
+      const size = `${viewport.clientWidth}x${modal ? viewport.clientHeight : 0}`;
+      if (size === lastSize) return;
+      lastSize = size;
       if (state.atFit) reset();
       else {
         state.fit = fitScale();
@@ -626,7 +652,10 @@
 
     // Esc: 開いているツールチップを閉じ、フォーカスは持ち主に残す（ポインターで開いてフォーカスが図の外にあるときも閉じる）
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && current && !pinned) close();
+      if (event.key !== "Escape" || !current || pinned) return;
+      // 全画面のモーダルの中では、ツールチップだけを閉じてモーダルは閉じない
+      event.preventDefault();
+      close();
     });
 
     // 図を動かしたとき・画面をスクロールしたとき: 開いているツールチップを持ち主に付いて動かす
@@ -688,7 +717,7 @@
       <figure></figure>`;
     const figure = root.querySelector("figure");
     const chartDef = () => ({ kind: "chart", ...def.chart, series: paramSeries(knob, value) });
-    const { view } = mountDiagram(figure, chartDef());
+    const { view } = mountDiagram(figure, chartDef(), { getDef: chartDef });
     const input = root.querySelector("input");
     const output = root.querySelector("output");
     const status = root.querySelector(".mdmark-param-status");

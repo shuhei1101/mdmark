@@ -789,4 +789,43 @@
       }
     }
   }
+
+  /* 全画面のモーダル: 画面の端から 16px 空けて図を広げる */
+  .mdmark-diagram-dialog {
+    box-sizing: border-box;
+    width: calc(100vw - 2rem);
+    max-width: none;
+    height: calc(100dvh - 2rem);
+    max-height: none;
+    padding: 1rem;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+
+    /* モーダルの後ろ: 文書を暗くして、図だけを見せる */
+    &::backdrop {
+      background: rgb(0 0 0 / 0.5);
+    }
+
+    /* モーダルの中の図の枠: 題と凡例の残りの高さを表示の箱に渡す */
+    .mdmark-diagram {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      height: 100%;
+      margin: 0;
+    }
+
+    /* モーダルの中の表示の箱: ボタンの帯の下を表示枠に渡す */
+    .mdmark-diagram-box {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    /* モーダルの中の表示枠: 箱の残りの高さを全て使う */
+    .mdmark-diagram-viewport {
+      flex: 1;
+      max-height: none;
+    }
+  }
 }
