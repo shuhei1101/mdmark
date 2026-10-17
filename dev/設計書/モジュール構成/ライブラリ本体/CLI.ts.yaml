@@ -596,7 +596,7 @@ functions:
     container: src/cli/html.ts
     usecase: 共通
     summary: 配布物の CSS・使う側の CSS・起動の処理（`dist/viewer.js`）・書き出しの中身を埋めた 1 枚の HTML を返す
-    description: '`<style>` に配布物の CSS、続けて使う側の CSS、`<script type="application/json" id="mdmark-payload">` に書き出しの中身、`<script type="module">` に起動の処理を置く。`kind` が `bundle` のときは画面設計『まとめたHTML』の骨組み、`document` のときは描く先の要素だけを `body` に置く。埋める文字列の `<` は `<` に替え、`</script>` で要素が閉じないようにする。ページの題は `entry` の文書の題'
+    description: '`<style>` に配布物の CSS、続けて使う側の CSS、`<script type="application/json" id="mdmark-payload">` に書き出しの中身、`<script type="module">` に起動の処理を置く。`kind` が `bundle` のときは画面設計『まとめたHTML』の骨組み、`document` のときは描く先の要素だけを `body` に置く。`#mdmark-payload` の JSON だけは、`JSON.stringify` した文字列の `<` を `<`（JSON の文字列のエスケープ）に替え、文書の `</script>` で要素が閉じないようにする。起動の処理（`dist/viewer.js`）は替えずに置く（`</script` の並びを持たないことは `buildDist` が検める）。ページの題は `entry` の文書の題'
     kind: 関数
     scope: public
     args:
@@ -629,6 +629,8 @@ functions:
     status: planned
     introduced:
       pr: 32
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts#functions[buildDist]
   - name: runInit
     title: 雛形を置く
     container: src/cli/init.ts

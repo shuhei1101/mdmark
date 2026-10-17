@@ -198,8 +198,20 @@ functions:
         condition: 版 `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` がある
         mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` を束ねていない
+      - name: test_build_dist_when_viewer_closes_script
+        case: 異常
+        summary: 起動の処理に </script の並びがあると失敗する
+        condition: '`src/viewer/index.ts` が文字列 `"</SCRIPT>"` を export する'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: '`Error` を投げ、メッセージに `dist/viewer.js` と `</script` が入る'
+        exception: Error
     notes:
       CLI と起動の処理の束ね方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・版の `define`）で、ライブラリ本体を含めて 1 つに束ねる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` で束ね、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読む。どちらも `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
+      起動の処理の script の閉じ: '`dist/viewer.js` は書き出した HTML の `<script type="module">` にそのまま置くため、`</script` の並び（大文字と小文字を区別しない）があれば、そのことを標準エラーに出してビルドを失敗させる（`main` は `dist/` を消して 1 を返す）'
+    exceptions:
+      - name: Error
+        condition: '`dist/viewer.js` に `</script` の並び（大文字と小文字を区別しない）がある'
+        message: dist/viewer.js に </script の並びがあり、書き出した HTML の script 要素が閉じる
   - name: writeThirdPartyLicenses
     title: 束ねた依存のライセンスを書く
     container: scripts/build.ts
