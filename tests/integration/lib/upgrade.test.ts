@@ -425,7 +425,7 @@ test("test_error_when_step_fails", async () => {
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("v0.5.0");
   expect(result.stderr).toContain("設定をスクリプトで直す");
-  expect(result.stderr).toContain("1");
+  expect(result.stderr).toContain("終了コード 1");
   const work = await readWork(dir);
   expect(work.config).toBe(OLD_CONFIG);
   expect(work.a).toBe(WORK_FILES["docs/a.md"]);

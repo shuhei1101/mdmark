@@ -241,3 +241,4 @@ minimal_guarantee: 手順の途中で失敗したとき・当てた後の点検�
 frequency: 版が上がるたびに 1 回
 refs:
   - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
+test_file: tests/e2e/単一ユースケース/版を上げる.spec.ts

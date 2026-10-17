@@ -29,6 +29,11 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   }
   const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
   expect(validateConfig(config, "mdmark.config.yaml").issues).toEqual([]);
+  // 置いた設定の version は、呼んだ CLI の版
+  const builtVersion = (
+    await readFile(join(builtRoot, "version.ini"), "utf8")
+  ).trim();
+  expect(config.version).toBe(builtVersion);
   const index = parse(await readFile(join(dir, "index.yaml"), "utf8"));
   expect(normalizeIndex(index).problems).toEqual([]);
   expect(linesOf(result.stdout)).toEqual(
