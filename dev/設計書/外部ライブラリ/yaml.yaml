@@ -50,6 +50,22 @@ catalogs:
         status: planned
         introduced:
           pr: 32
+      - name: parseDocument
+        kind: 関数
+        purpose: YAML をコメントとキーの並びを保った Document として読む。読んだ Document を書き換えて `String(doc)` で文字に戻す
+        params:
+          - name: src
+            type: string
+            required: true
+            description: YAML の文字列
+        returns:
+          - name: '-'
+            type: Document
+            description: 読んだ Document。読めないところは投げずに `doc.errors` に入る。`hasIn`・`getIn`・`setIn`・`deleteIn`・`has`・`set`・`createPair` で読み書きし、`isMap`・`isSeq`・`isScalar` で節を判定する
+            notes: 値を同じ型のスカラーで書き換えると、コメントと書き方が残る。フロー形式の配列を書き戻すと中括弧の内側に空白が入る
+        status: planned
+        introduced:
+          pr: 39
 lead: YAML 1.2 を読み書きするライブラリ。既定で core スキーマで読み、読めないときは行と列を持つ誤りを投げる。
 purl: pkg:npm/yaml@2.9.1
 dependency_scope: 必須
@@ -59,8 +75,8 @@ license: ISC（商用利用可）。実行時の依存は無い
 docs_url: https://eemeli.org/yaml/
 verification:
   state: 済
-  date: '2026-10-16'
-  detail: Node v24.14.0 の ESM から 2.9.1 を `import { parse, YAMLParseError } from "yaml"` で読み、`build` の入った設定をオブジェクトにできること、空の文字列が `null` を返すこと、閉じていない `[` が `YAMLParseError`（`BAD_INDENT`、`linePos` の開始が 3 行 1 列）、重なったキーが `DUPLICATE_KEY`（2 行 1 列）になることを確かめた。`017` は 17、`yes` は文字列、`0o17` は 15 で YAML 1.2 の core スキーマの読み方だった（reviewer の確認）
+  date: '2026-10-17'
+  detail: Node v24.14.0 の ESM から 2.9.1 を `import { parse, YAMLParseError } from "yaml"` で読、`build` の入った設定をオブジェクトにできること、空の文字列が `null` を返すこと、閉じていない `[` が `YAMLParseError`（`BAD_INDENT`、`linePos` の開始が 3 行 1 列）、重なったキーが `DUPLICATE_KEY`（2 行 1 列）になることを確かめた。`017` は 17、`yes` は文字列、`0o17` は 15 で YAML 1.2 の core スキーマの読み方だった（reviewer の確認）。`parseDocument` で読んだ Document のキーの名前を同じ位置で変え、コメントと並びを保って `String(doc)` で戻せること、`set` で既存のキーの値をコメントを残して書き換えられること、キーを先頭に足せること、フロー形式の配列を書き戻すと `[ "a" ]` と中括弧の内側に空白が入ることを確かめた
 selection:
   candidates: yaml 2.9.1・js-yaml 5.5.0・confbox 0.3.1・@std/yaml 1.3.0 を比べた。
   decision: 実行時の依存が 0 件で YAML 1.2 を読め、読めないときの行と列がそのまま取れる。js-yaml は CLI 用の argparse を引き、空の入力で例外を投げる。confbox は束ねた js-yaml の修正が再リリースまで届かない。@std/yaml は npmjs に無く、`.npmrc` を持たない使う側の npx で入らない。
