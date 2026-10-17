@@ -15,6 +15,10 @@ type ModuleDeps = {
 /** 埋めたコードのモジュールの種類 */
 const MODULE_TYPE = "text/javascript";
 
+/** 埋められなかった外部ライブラリの印の URL: 読むと例外を投げ、印の場所を知らせの枠にする（ページの隣のファイルへ要求を出さない） */
+const UNAVAILABLE_MODULE =
+  "data:text/javascript,throw%20new%20Error(%22not%20embedded%22)";
+
 /** 既定の依存: `URL.createObjectURL`・動的 `import()`・`registerExtension` */
 const defaultDeps: ModuleDeps = {
   createUrl: (code) =>
@@ -28,7 +32,10 @@ export async function prepareModules(
   payload: Pick<ExportPayload, "config" | "modules" | "extensions">,
   deps: ModuleDeps = defaultDeps,
 ): Promise<MdmarkConfig> {
-  const libraries = { ...payload.config.libraries };
+  const libraries: Record<string, string> = {};
+  for (const name of Object.keys(payload.config.libraries ?? {})) {
+    libraries[name] = UNAVAILABLE_MODULE;
+  }
   for (const [name, code] of Object.entries(payload.modules)) {
     libraries[name] = deps.createUrl(code);
   }
