@@ -76,3 +76,4 @@ preconditions:
   - 設定ファイルに `build` がある
 success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に当たり `exclude` に当たらない文書が全て入る。索引があれば、文書をまたぐ被参照と用語のツールチップが効く。1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは書いたままの `href` で残る。'
 minimal_guarantee: 対象の文書が 0 件のときは HTML を書かず、原因と直し方の 1 文を出して 0 以外で終わる。CLI は文書と索引を書き換えない。
+test_file: tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts

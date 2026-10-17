@@ -185,7 +185,7 @@ functions:
     container: src/viewer/bundle.ts
     usecase: まとめたHTMLで文書を行き来する
     summary: 横の一覧とパネルに `renderDocList` を置き、URL の `#` が指す文書を `mount` で描いて、`hashchange` で文書を行き来する
-    description: '文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）'
+    description: '文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）'
     kind: 関数
     scope: public
     side_effects: 画面と履歴を書き換える

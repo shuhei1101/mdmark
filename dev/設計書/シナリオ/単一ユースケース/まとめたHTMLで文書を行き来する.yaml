@@ -98,3 +98,4 @@ preconditions:
   - 読む人のブラウザが非機能要件『対応ブラウザ』の版以降
 success_guarantee: 開くと URL が指す文書（指していなければ `entry` の文書）が出る。文書を移るたびに履歴に積み、戻る・進むで見てきた順に行き来できる。一覧のパネルの開閉は履歴に積まない。外への要求は 0 件。
 minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読める状態にする。
+test_file: tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts

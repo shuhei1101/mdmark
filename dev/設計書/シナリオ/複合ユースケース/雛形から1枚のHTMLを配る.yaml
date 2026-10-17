@@ -94,3 +94,4 @@ success_guarantee: '`build.out` に 1 枚の HTML ができ、読む人が file:
 minimal_guarantee: 点検でずれが見つかったときは、ずれの一覧を出して終了コードを 0 以外にする。CLI は文書と索引を書き換えない。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
+test_file: tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts

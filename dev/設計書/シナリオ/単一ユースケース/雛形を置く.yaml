@@ -65,3 +65,4 @@ preconditions:
   - 文書を書く人の手元に Node 24 以降がある
 success_guarantee: 置く先のフォルダに `mdmark.config.yaml`・`theme.css`・索引の雛形・拡張のビルドの雛形があり、置いたファイルの一覧が出る。
 minimal_guarantee: 既にあるファイルは上書きせず、置かなかったファイルの一覧を出す。
+test_file: tests/e2e/単一ユースケース/雛形を置く.spec.ts
