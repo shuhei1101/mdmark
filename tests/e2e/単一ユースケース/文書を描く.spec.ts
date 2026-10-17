@@ -156,7 +156,9 @@ test("test_normal_when_index", async ({ page }) => {
   // 実行
   await updateDocument(page, "別の段落にもワークスペースを書く。\n");
   // 検証（差し替えた後）
-  await expect(doc.locator("p")).toContainText("別の段落");
+  await expect(doc.locator("p:not(nav.mdmark-backlinks p)")).toContainText(
+    "別の段落",
+  );
   await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
   await expect(doc.locator("nav.mdmark-backlinks a")).toHaveText(["API"]);
 });

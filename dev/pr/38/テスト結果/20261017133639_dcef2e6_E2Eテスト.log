@@ -1,0 +1,17 @@
+$ npx playwright test "tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts"
+
+
+Running 10 tests using 2 workers
+
+  ✓   1 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:52:1 › test_normal (295ms)
+  ✓   3 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:83:1 › test_normal_when_keyboard (183ms)
+  ✓   4 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:115:1 › test_normal_when_excluded_place (162ms)
+  ✓   5 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:139:1 › test_normal_when_no_index (176ms)
+  ✓   6 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:150:1 › test_error_when_invalid_index (152ms)
+  ✓   2 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:52:1 › test_normal (1.4s)
+  ✓   7 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:83:1 › test_normal_when_keyboard (317ms)
+  ✓   8 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:115:1 › test_normal_when_excluded_place (296ms)
+  ✓   9 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:139:1 › test_normal_when_no_index (266ms)
+  ✓  10 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:150:1 › test_error_when_invalid_index (310ms)
+
+  10 passed (7.4s)
