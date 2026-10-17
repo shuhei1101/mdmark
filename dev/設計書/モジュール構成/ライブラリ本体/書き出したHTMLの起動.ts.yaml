@@ -1,0 +1,229 @@
+title: "ライブラリ本体 / 書き出したHTMLの起動"
+lead: CLI が書き出した HTML に埋める起動の処理。ライブラリ本体と一緒に `dist/viewer.js` に束ね、開いたときに埋めた中身を読んで、埋めたモジュールを `blob:` URL に替え、拡張を登録して `mount` で描く。まとめた HTML では URL の `#` で文書を行き来する。
+directory: |-
+  ```tree
+  src/viewer/
+  ├── index.ts   # 入口。埋めた中身を読んで 1 文書かまとめた HTML を起動する
+  ├── modules.ts # 埋めたモジュールの blob: URL と拡張の登録
+  ├── route.ts   # URL の # の読み取りと、描いた文書のリンクの書き換え
+  ├── bundle.ts  # まとめた HTML の文書の行き来と一覧のパネル
+  └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）
+  ```
+constants:
+  - name: DOC_HASH_PREFIX
+    title: '文書を指す # の頭'
+    container: src/viewer/route.ts
+    summary: URL の `#` のうち、文書の指定として扱う頭
+    value: '"#/"'
+    refs:
+      - dev/設計書/画面設計/まとめたHTML.ts#elements[開いている文書]
+  - name: WIDE_QUERY
+    title: 横の一覧を出す幅
+    container: src/viewer/bundle.ts
+    summary: 横の文書の一覧を出し、パネルを閉じる幅のメディアクエリ（CSS の境と同じ値）
+    value: '"(min-width: 60rem)"'
+functions:
+  - name: startViewer
+    title: 書き出した HTML を起動する
+    container: src/viewer/index.ts
+    usecase: 共通
+    summary: '`#mdmark-payload` の JSON を読み、モジュールと拡張を用意してから、`kind` が `document` なら描く先の要素に `mount` で描き、`bundle` なら `startBundle` を呼ぶ'
+    description: '`src/viewer/index.ts` の末尾で `startViewer(document)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表を渡す'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: ページに文書を描き、拡張を登録する
+    args:
+      - name: doc
+        type: Document
+        required: true
+        description: ページの `document`
+    returns:
+      type: Promise<void>
+      description: 描き始めたら解決する
+    unit_tests:
+      - name: test_start_viewer
+        case: 正常
+        summary: document の中身を描く先の要素に描く
+        condition: '`kind: document`、文書が `# 題`'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に中身の `script` と `article.mdmark` を置く
+        expected: '`article` に `h1` の `題` が描かれる'
+    callees:
+      - '#functions[prepareModules]'
+      - '#functions[startBundle]'
+    status: planned
+    introduced:
+      pr: 32
+  - name: prepareModules
+    title: 埋めたモジュールを用意する
+    container: src/viewer/modules.ts
+    usecase: 共通
+    summary: 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた拡張を `import()` して既定の export を `registerExtension` で登録する
+    description: '`Blob` の `type` は `text/javascript`。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: '`blob:` URL を作り、拡張を登録する'
+    args:
+      - name: payload
+        type: Pick<ExportPayload, 'config' | 'modules' | 'extensions'>
+        required: true
+        description: 埋めた中身
+      - name: deps
+        type: '{ createUrl: (code: string) => string; importModule: (url: string) => Promise<{ default?: unknown }>; register: (ext: MdmarkExtension) => void }'
+        required: false
+        default: '`URL.createObjectURL`・動的 `import()`・`registerExtension`'
+        passing: injected
+        description: 差し替える依存（テスト用）
+    returns:
+      type: Promise<MdmarkConfig>
+      description: '`libraries` を `blob:` URL に替えた設定'
+    unit_tests:
+      - name: test_prepare_modules
+        case: 正常
+        summary: モジュールを URL に替え、拡張を登録する
+        condition: '`modules` に `chart`、`extensions` に 1 つ'
+        mock: '連番の URL を返す `createUrl`、`{ default: { name: "greet", ... } }` を返す `importModule`、呼ばれた拡張を貯める `register`'
+        expected: 戻り値の `libraries.chart` が `createUrl` の URL、`register` が `greet` で 1 回呼ばれる
+      - name: test_prepare_modules_when_extension_fails
+        case: 正常
+        summary: 読めない拡張を飛ばして続ける
+        condition: '`extensions` に 2 つで、1 つ目の `importModule` が例外を投げる'
+        mock: 1 つ目だけ例外を投げる `importModule`
+        expected: '`register` が 2 つ目で 1 回だけ呼ばれ、例外を投げない'
+    status: planned
+    introduced:
+      pr: 32
+  - name: resolveRoute
+    title: 'URL の # から開く文書を決める'
+    container: src/viewer/route.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: '`#/{文書のパス}` と `#/{文書のパス}#{見出しの ID}` を読み、`#/` で始まらないときと 1 枚に無い文書を指すときは `entry` を返す'
+    kind: 関数
+    scope: public
+    args:
+      - name: hash
+        type: string
+        required: true
+        description: '`location.hash`（パーセント符号化されたまま）'
+      - name: paths
+        type: ReadonlySet<string>
+        required: true
+        description: まとめた文書のパス
+      - name: entry
+        type: string
+        required: true
+        description: 最初に開く文書
+    returns:
+      type: '{ path: string; heading: string | null; missing: boolean }'
+      description: 開く文書・移る見出しの ID・1 枚に無い文書を指していたか
+    unit_tests:
+      - name: test_resolve_route
+        case: 正常
+        summary: 文書と見出しを読む
+        condition: '`#/%E4%BD%BF%E3%81%84%E6%96%B9/guide.md#%E6%8F%8F%E3%81%8F`（`#/使い方/guide.md#描く`）'
+        mock: なし
+        expected: '`{ path: "使い方/guide.md", heading: "描く", missing: false }`'
+      - name: test_resolve_route_when_no_hash
+        case: 正常
+        summary: '# が無いと entry'
+        condition: '`""`'
+        mock: なし
+        expected: '`{ path: entry, heading: null, missing: false }`'
+      - name: test_resolve_route_when_heading_only
+        case: 正常
+        summary: '#/ で始まらない # は文書の指定にしない'
+        condition: '`#描く`'
+        mock: なし
+        expected: '`{ path: entry, heading: null, missing: false }`'
+      - name: test_resolve_route_when_missing_document
+        case: 正常
+        summary: 1 枚に無い文書は entry で missing
+        condition: '`#/下書き/メモ.md`'
+        mock: なし
+        expected: '`{ path: entry, heading: null, missing: true }`'
+    status: planned
+    introduced:
+      pr: 32
+  - name: rewriteLinks
+    title: 描いた文書のリンクを 1 枚の中へ向ける
+    container: src/viewer/route.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 描いた文書のリンクのうち、まとめた文書への相対リンクを `#/{文書のパス}`（`#` 付きなら `#/{文書のパス}#{ID}`）に、`#{ID}` だけのリンクを `#/{描いた文書のパス}#{ID}` に書き換え、文書へのリンクに `data-doc-path` を付ける
+    description: 相対リンクは `resolveLink` で描いた文書のパスから解く。まとめた文書に無いリンク・スキームを持つリンクは書いたまま残す。印刷の規則は `data-doc-path` を関連文書のリンクの後ろに併記する
+    kind: 関数
+    scope: public
+    side_effects: '`root` の中の `a` の `href` と `data-doc-path` を書き換える'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+      - name: docPath
+        type: string
+        required: true
+        description: 描いた文書のパス
+      - name: paths
+        type: ReadonlySet<string>
+        required: true
+        description: まとめた文書のパス
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_rewrite_links
+        case: 正常
+        summary: 文書間のリンク・見出しのアンカー・含まれないリンクを書き分ける
+        condition: '`使い方/guide.md` に `../リファレンス/api.md#mount`・`#描く`・`../下書き/メモ.md`・`https://example.com/` のリンク、まとめた文書は `使い方/guide.md`・`リファレンス/api.md`'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に作った要素
+        expected: '`href` が順に `#/リファレンス/api.md#mount`・`#/使い方/guide.md#描く`・`../下書き/メモ.md`・`https://example.com/`、`data-doc-path` は 1 つ目だけが `リファレンス/api.md`'
+    status: planned
+    introduced:
+      pr: 32
+  - name: startBundle
+    title: まとめた HTML を起動する
+    container: src/viewer/bundle.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 横の一覧とパネルに `renderDocList` を置き、URL の `#` が指す文書を `mount` で描いて、`hashchange` で文書を行き来する
+    description: '文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）'
+    kind: 関数
+    scope: public
+    side_effects: 画面と履歴を書き換える
+    args:
+      - name: doc
+        type: Document
+        required: true
+        description: ページの `document`
+      - name: payload
+        type: ExportPayload
+        required: true
+        description: '埋めた中身（`kind: bundle`）'
+      - name: config
+        type: MdmarkConfig
+        required: true
+        description: '`prepareModules` が返した設定'
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_start_bundle
+        case: 正常
+        summary: URL が指す文書を描き、一覧で開いている文書を示す
+        condition: '`#/b.md`、文書は `a.md`（entry）と `b.md`'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に画面の骨組みを置く
+        expected: '`b.md` の本文が描かれ、横の一覧で `b.md` のリンクだけが `aria-current="page"`'
+      - name: test_start_bundle_when_missing_document
+        case: 正常
+        summary: 1 枚に無い文書を指すと entry を描き URL を合わせる
+        condition: '`#/下書き/メモ.md`'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に画面の骨組みを置く
+        expected: '`a.md` が描かれ、`location.hash` が `#/a.md`'
+    callees:
+      - '#functions[resolveRoute]'
+      - '#functions[rewriteLinks]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderDocList]
+    refs:
+      - dev/設計書/画面設計/まとめたHTML.ts#
+    status: planned
+    introduced:
+      pr: 32
