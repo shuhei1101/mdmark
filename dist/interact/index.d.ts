@@ -1,4 +1,4 @@
-/** 機能がオンの記法だけ操作を付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、まとめて外す関数を返す */
 export declare function attachInteractions(options: {
     /** 描いた要素 */
     root: HTMLElement;
