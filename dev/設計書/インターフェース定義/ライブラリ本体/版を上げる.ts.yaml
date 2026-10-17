@@ -460,3 +460,4 @@ constraints:
   - item: 動く Node の版
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+test_file: tests/integration/lib/upgrade.test.ts
