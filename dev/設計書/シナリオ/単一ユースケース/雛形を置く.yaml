@@ -17,6 +17,7 @@ scenarios:
     expected:
       - '`mdmark.config.yaml`・`theme.css`・索引の雛形・拡張のビルドの雛形（tsconfig とビルドのコマンド）がある'
       - 置いた `mdmark.config.yaml` と索引が、設定と索引の JSON Schema に合う
+      - 置いた `mdmark.config.yaml` の `version` が、呼んだ CLI の版
       - 出力に置いたファイルの一覧が出て、終了コードが 0
     test: test_normal
   - name: 正常シナリオ（JavaScript の雛形を置く）
