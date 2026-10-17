@@ -21,4 +21,4 @@ items:
   - page: yaml.yaml
     summary: CLI が設定と索引の YAML を読む（配布物に束ねない）
   - page: lucide.yaml
-    summary: 図のボタンと箱の種類のアイコンの形
+    summary: 図と記法のアイコンの形

@@ -229,6 +229,30 @@ flows:
       - '`load` が 1 回も呼ばれていない'
       - 印の前後の段落があり、`mount` が例外を投げない
     test: test_error_when_definition_invalid
+  - name: 正常系（図の部品と同じ名前）
+    summary: 図の部品の印と同じ `directive` の拡張を登録でき、その印を拡張に描かせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: '`directive` が `flow` のほかは正常系と同じ拡張'
+      - name: 印を持つ Markdown
+        description: '段落の間に `<!-- flow: world -->` を持つ文書'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension({ directive: "flow", ... })
+        P->>M: mount(el, { markdown })
+        M->>X: load()
+        M->>X: draw(印の場所の要素, { args, keys })
+    expected:
+      - '`registerExtension` が例外を投げない'
+      - 印の場所の文字が `{"args":["world"],"keys":{}}` で、`figure.mdmark-diagram` が無い
+    test: test_normal_when_directive_is_diagram_name
 lead: 使う側が、自分の印の名前と、その印を描くモジュールの読み方を mdmark へ登録する。`mount` は文書にその印があるときだけ、引数を検査してからモジュールを読んで描かせる。
 test_file: tests/integration/lib/register-extension.browser.test.ts
 idempotent: false
@@ -250,9 +274,9 @@ request:
     required: true
     location: argument
     description: '拡張の印の名前（`<!-- {directive}: {引数} -->`）'
-    constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）と登録済みの拡張の `directive` は使えない
+    constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と登録済みの拡張の `directive` は使えない
     example: greet
-    notes: 設定の `libraries` に同じ名前があるときは、拡張を優先する
+    notes: 設定の `libraries` や図の部品の印（`flow`・`sequence`・`chart`・`param`）と同じ名前のときは、拡張を優先する。v0.4.0 までにこの 4 つの名前で登録した拡張はそのまま動き、そのページではその名前の図の部品を描かない
   - name: extension.load
     type: () => Promise<MdmarkExtensionModule>
     required: true

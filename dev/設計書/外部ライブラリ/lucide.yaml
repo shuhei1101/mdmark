@@ -24,13 +24,100 @@ catalogs:
         purpose: 図を全画面のモーダルで開くボタン
       - name: x
         kind: アイコン
-        purpose: 全画面のモーダルを閉じるボタン
+        purpose: 全画面のモーダルと、まとめた HTML の文書の一覧のパネルを閉じるボタン
+      - name: chevron-left
+        kind: アイコン
+        purpose: 図の移動のボタン（左）
+      - name: chevron-right
+        kind: アイコン
+        purpose: 図の移動のボタン（右）
+      - name: chevron-up
+        kind: アイコン
+        purpose: 図の移動のボタン（上）
+      - name: chevron-down
+        kind: アイコン
+        purpose: 図の移動のボタン（下）と、節・行の詳細・閉じた注意書きの開閉
+      - name: bot
+        kind: アイコン
+        purpose: 図の箱の種類（LLM）
+      - name: split
+        kind: アイコン
+        purpose: 図の箱の種類（意思決定モデル）
+      - name: code-xml
+        kind: アイコン
+        purpose: 図の箱の種類（スクリプト）
+      - name: plug
+        kind: アイコン
+        purpose: 図の箱の種類（MCP）
+      - name: database
+        kind: アイコン
+        purpose: 図の箱の種類（データ）
+      - name: globe
+        kind: アイコン
+        purpose: 図の箱の種類（外部のシステム）
+      - name: server
+        kind: アイコン
+        purpose: 図のシステムの枠の題
+      - name: info
+        kind: アイコン
+        purpose: 図の入力・処理・出力が出る箱の印と、注意書き（補足）
+      - name: copy
+        kind: アイコン
+        purpose: 操作できる部品の今の値を写すボタン
+      - name: check
+        kind: アイコン
+        purpose: 写したことの知らせ
+      - name: circle-alert
+        kind: アイコン
+        purpose: 写せなかったことの知らせ
+      - name: lightbulb
+        kind: アイコン
+        purpose: 注意書き（ヒント）
+      - name: message-square-warning
+        kind: アイコン
+        purpose: 注意書き（重要）
+      - name: triangle-alert
+        kind: アイコン
+        purpose: 注意書き（警告）
+      - name: octagon-alert
+        kind: アイコン
+        purpose: 注意書き（注意）
+      - name: pencil
+        kind: アイコン
+        purpose: 書き方の警告の題
+      - name: pin
+        kind: アイコン
+        purpose: 表のピン止め
+      - name: chevrons-up-down
+        kind: アイコン
+        purpose: 表の並べ替え（並べていない）
+      - name: arrow-up
+        kind: アイコン
+        purpose: 表の並べ替え（昇順）
+      - name: arrow-down
+        kind: アイコン
+        purpose: 表の並べ替え（降順）
+      - name: funnel
+        kind: アイコン
+        purpose: 表の絞り込み
+      - name: link
+        kind: アイコン
+        purpose: 見出しのアンカー
+      - name: file
+        kind: アイコン
+        purpose: ファイルツリーのファイル
+      - name: folder
+        kind: アイコン
+        purpose: ファイルツリーのフォルダ
+      - name: menu
+        kind: アイコン
+        purpose: まとめた HTML の文書の一覧を開くボタン
 lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
 purl: pkg:npm/lucide@1.59.0
 upstream: lucide-icons/lucide
-license: ISC（商用利用可）。形を写した配布物に著作権表示とライセンスの本文を残す
+license: ISC（商用利用可）。Feather 由来のアイコンは MIT（Copyright (c) 2013-present Cole Bemis）。形を写した配布物に、ISC と MIT の両方の著作権表示とライセンスの本文を残す（https://unpkg.com/lucide@1.59.0/LICENSE）
 official_url: https://lucide.dev/
 docs_url: https://lucide.dev/icons/
 verification:
   state: 未確認
-  detail: 'モック（PR #42）では形を手で写した。配布物への取り込み方はモジュール構成設計で決める'
+  detail: 'モック（PR #42）では図と記法のアイコンの形を手で写した。配布物への取り込み方はモジュール構成設計で決める'
