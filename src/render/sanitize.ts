@@ -15,6 +15,10 @@ const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 /** 記法の class（`mdmark-` で始まるものと `markdown-alert*`） */
 const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert)/;
 
+/** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
+const DATA_IMAGE_PATTERN =
+  /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*$/;
+
 /** `tabindex` があれば 0 にする */
 function fixTabindex(
   tagName: string,
@@ -108,6 +112,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     li: ["task-list-item"],
   },
   allowedSchemes: ["http", "https", "mailto"],
+  // 画像の `src` だけ、`data:` URL も許す（種類は `transformTags` が絞る）
+  allowedSchemesByTag: { img: ["http", "https", "data"] },
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false,
 };
@@ -124,6 +130,14 @@ export function sanitize(html: string, nonce: string): string {
           ? { ...attribs }
           : dropSyntaxAttributes(tagName, attribs);
         delete next[OWN_ATTRIBUTE];
+        // 画像の `data:` URL は、画像の種類と base64 の形のものだけ残す
+        if (
+          tagName === "img" &&
+          next.src?.startsWith("data:") &&
+          !DATA_IMAGE_PATTERN.test(next.src)
+        ) {
+          delete next.src;
+        }
         const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
         if (align && ALIGN_VALUES.includes(align)) {
           next.class = [next.class, `mdmark-align-${align}`]

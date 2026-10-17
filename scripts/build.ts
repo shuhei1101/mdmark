@@ -1,5 +1,7 @@
 import { execFile } from "node:child_process";
 import {
+  chmodSync,
+  existsSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -17,7 +19,21 @@ const MAX_DIST_FILE_BYTES = 256 * 1024;
 // 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // esbuild の target に渡すブラウザの版
-const BROWSER_TARGETS = ["chrome99", "firefox97", "safari16.4"];
+const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
+// サイズを検めない配布ファイル（使う側のページが jsDelivr から読まない出力）
+const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
+// CLI を束ねる Node の target
+const NODE_TARGET = "node24";
+// CLI の先頭に置く行: 入口として実行できるようにし、束ねた CommonJS の依存の `require` を使えるようにする
+const CLI_BANNER = [
+  "#!/usr/bin/env node",
+  'import { createRequire as __createRequire } from "node:module";',
+  "const require = __createRequire(import.meta.url);",
+].join("\n");
+// CLI の実行時の依存: 束ねずに `package.json` の `dependencies` から読む
+const CLI_EXTERNALS = ["yaml", "esbuild"];
+// `script` 要素の中のコードに在ってはならない並び
+const SCRIPT_CLOSE_PATTERN = /<\/script/i;
 // 版を渡す引数の名前
 const VERSION_OPTION = "--version";
 // 束ねたパッケージの入力のパスにある、依存の置き場所
@@ -65,6 +81,15 @@ export function resolveVersion(argv: string[], root: string): string {
     );
   }
   return version;
+}
+
+/** コードに `</script` の並び（大文字と小文字を区別しない）があれば、書き出した HTML の `script` 要素が閉じるため例外を投げる */
+export function assertNoScriptClose(code: string, file: string): void {
+  if (SCRIPT_CLOSE_PATTERN.test(code)) {
+    throw new Error(
+      `${file} に </script の並びがあり、書き出した HTML の script 要素が閉じる`,
+    );
+  }
 }
 
 /** esbuild の `metafile` の入力から束ねたパッケージの名前を、名前の順に返す */
@@ -126,6 +151,76 @@ export async function emitDeclarations(root: string): Promise<void> {
   }
 }
 
+/** 書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に束ねる。ソースが無ければ何も書かない */
+async function buildViewer(
+  version: string,
+  root: string,
+): Promise<Record<string, number>> {
+  const entryPoints = [
+    { in: "src/viewer/index.ts", out: "viewer" },
+    { in: "src/viewer/viewer.css", out: "viewer" },
+  ].filter((entry) => existsSync(join(root, entry.in)));
+  if (entryPoints.length === 0) {
+    return {};
+  }
+  const result = await build({
+    absWorkingDir: root,
+    entryPoints,
+    outdir: "dist",
+    bundle: true,
+    format: "esm",
+    minify: true,
+    target: BROWSER_TARGETS,
+    plugins: [postcssStubPlugin],
+    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    metafile: true,
+    logLevel: "silent",
+  });
+  const viewerJs = join(root, "dist", "viewer.js");
+  if (existsSync(viewerJs)) {
+    assertNoScriptClose(readFileSync(viewerJs, "utf8"), "dist/viewer.js");
+  }
+  return Object.fromEntries(
+    Object.entries(result.metafile.outputs).map(([path, output]) => [
+      path,
+      output.bytes,
+    ]),
+  );
+}
+
+/** CLI の `src/cli/main.ts` を Node で動く `dist/cli.js` に束ねる（`yaml` と `esbuild` は束ねない）。ソースが無ければ何も書かない */
+async function buildCli(
+  version: string,
+  root: string,
+): Promise<Record<string, number>> {
+  if (!existsSync(join(root, "src", "cli", "main.ts"))) {
+    return {};
+  }
+  const result = await build({
+    absWorkingDir: root,
+    entryPoints: [{ in: "src/cli/main.ts", out: "cli" }],
+    outdir: "dist",
+    bundle: true,
+    format: "esm",
+    platform: "node",
+    target: NODE_TARGET,
+    banner: { js: CLI_BANNER },
+    external: CLI_EXTERNALS,
+    plugins: [postcssStubPlugin],
+    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    metafile: true,
+    logLevel: "silent",
+  });
+  // `npx` や `node_modules/.bin` から入口として実行できるようにする
+  chmodSync(join(root, "dist", "cli.js"), 0o755);
+  return Object.fromEntries(
+    Object.entries(result.metafile.outputs).map(([path, output]) => [
+      path,
+      output.bytes,
+    ]),
+  );
+}
+
 /** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、型定義を書き、束ねた依存のライセンスを書く */
 export async function buildDist(
   version: string,
@@ -154,19 +249,23 @@ export async function buildDist(
       output.bytes,
     ]),
   );
+  Object.assign(outputs, await buildViewer(version, root));
+  Object.assign(outputs, await buildCli(version, root));
   outputs[`dist/${LICENSES_FILE}`] = statSync(
     join(root, "dist", LICENSES_FILE),
   ).size;
   return outputs;
 }
 
-/** 出力ファイルのうち上限を超えたものを返す */
+/** 出力ファイルのうち `UNSIZED_OUTPUTS` に無く上限を超えたものを返す */
 export function findTooLargeOutputs(
   outputs: Record<string, number>,
   maxBytes: number,
 ): Array<{ path: string; bytes: number }> {
   return Object.entries(outputs)
-    .filter(([, bytes]) => bytes > maxBytes)
+    .filter(
+      ([path, bytes]) => !UNSIZED_OUTPUTS.includes(path) && bytes > maxBytes,
+    )
     .map(([path, bytes]) => ({ path, bytes }));
 }
 

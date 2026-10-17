@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach } from "vitest";
+import type { ExportPayload } from "../../../src/cli/html.ts";
 
 /** テストが渡す CLI の入出力 */
 export type TestIo = {
@@ -10,20 +11,8 @@ export type TestIo = {
   stderr: (line: string) => void;
 };
 
-/** 書き出した HTML に埋まる中身のうち、テストが読む項目 */
-export type PayloadView = {
-  kind: string;
-  config: { libraries?: Record<string, string> };
-  index?: unknown;
-  references?: {
-    backlinks: Record<string, string[]>;
-    glossary: { term: string; docId: string }[];
-  };
-  docs: { path: string; title: string; markdown: string; docId?: string }[];
-  entry: string;
-  modules: Record<string, string>;
-  extensions: string[];
-};
+/** 書き出した HTML に埋まる中身 */
+export type PayloadView = ExportPayload;
 
 /** テストごとに作った一時フォルダを消す。一時フォルダを作る関数を返す */
 export function useTempDirs(): () => Promise<string> {
