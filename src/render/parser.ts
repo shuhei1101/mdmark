@@ -1,6 +1,11 @@
 import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
+import type { MdmarkIndex } from "../knowledge/index-shape.ts";
+import type {
+  MdmarkGlossaryEntry,
+  MdmarkReferences,
+} from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
 import {
   dropMarks,
@@ -8,15 +13,18 @@ import {
   resolveDocumentFeatures,
   takeMarks,
 } from "./marks.ts";
+import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
 import { numberFigures } from "./syntax/figures.ts";
+import { glossaryRule } from "./syntax/glossary.ts";
 import { assignHeadingIds } from "./syntax/headings.ts";
 import { attachRowDetails } from "./syntax/row-details.ts";
 import { wrapSections } from "./syntax/sections.ts";
 import { buildSteps } from "./syntax/steps.ts";
 import { decorateTables } from "./syntax/tables.ts";
 import { buildTabs } from "./syntax/tabs.ts";
+import { termsRule } from "./syntax/terms.ts";
 import { buildToc } from "./syntax/toc.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
 
@@ -34,6 +42,16 @@ export type RenderEnv = {
   headings: Array<{ level: number; id: string; text: string }>;
   /** 描くごとに作る、mdmark が出した要素の印の値 */
   nonce: string;
+  /** `normalizeIndex` で合う要素だけにした索引 */
+  index?: MdmarkIndex | undefined;
+  /** 描く文書の索引の `id`（索引に無ければ `undefined`） */
+  docId?: string | undefined;
+  /** 参照の表（markdown-it が `env.references` にリンク参照定義を入れるため、別の名前にする） */
+  mdmarkReferences?: MdmarkReferences | undefined;
+  /** 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す） */
+  ownGlossary: MdmarkGlossaryEntry[];
+  /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
+  glossaryLines?: number[] | undefined;
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -101,11 +119,12 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt({ html: true, linkify: true });
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 節 → 目次）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
     ["mdmark_assign_heading_ids", assignHeadingIds],
+    ["mdmark_glossary", glossaryRule],
     ["mdmark_attach_row_details", attachRowDetails],
     ["mdmark_decorate_tables", decorateTables],
     ["mdmark_build_tabs", buildTabs],
@@ -114,8 +133,10 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_file_trees", buildFileTrees],
     ["mdmark_build_badges", buildBadges],
     ["mdmark_number_figures", numberFigures],
+    ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],
+    ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
     ["mdmark_drop_marks", dropMarks],

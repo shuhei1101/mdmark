@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { join, resolve } from "node:path";
 import type { WarningItem } from "../src/extensions.ts";
+import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
@@ -13,6 +14,7 @@ import { renderSteps } from "../src/parts/steps.ts";
 import { renderSyntaxWarning } from "../src/parts/syntax-warning.ts";
 import { renderTable, type TableOptions } from "../src/parts/table.ts";
 import { renderTabs } from "../src/parts/tabs.ts";
+import { renderTermTip, type TermTipDoc } from "../src/parts/term-tip.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 
@@ -59,6 +61,28 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       mark: args.mark as string | undefined,
       message: String(args.message ?? ""),
       items: args.items as WarningItem[] | undefined,
+    }),
+  "term-tip": (args) => {
+    const html = renderTermTip({
+      text: String(args.text ?? ""),
+      id: String(args.id ?? ""),
+      meaning: args.meaning as string | undefined,
+      docs: args.docs as TermTipDoc[] | undefined,
+    });
+    // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの下に余白を取る
+    const open = args.open === true;
+    const wrap = open
+      ? html.replace(
+          'class="mdmark-term-wrap"',
+          'class="mdmark-term-wrap is-open"',
+        )
+      : html;
+    return `<p style="padding-block-end:${open ? "22rem" : "0"}">本文の${wrap}を読む。</p>`;
+  },
+  backlinks: (args) =>
+    renderBacklinks({
+      id: String(args.id ?? ""),
+      docs: args.docs as Array<{ title: string; href: string }>,
     }),
   table: (args) => renderTable(args as TableOptions),
   callout: (args) =>

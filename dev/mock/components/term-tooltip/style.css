@@ -1,0 +1,21 @@
+/* 用語のツールチップの部品のモックの固有の規則: 開いた状態を見せる見本の下にツールチップの分の高さを取る */
+
+/* 開いたツールチップを見せる見本: 下に開くツールチップが次の見本に重ならない高さを取る */
+.catalog-tip-space {
+  padding-block-end: 7rem;
+}
+
+/* 上に開いたツールチップを見せる見本: 上に開くツールチップが見本の外に出ない高さを取る */
+.catalog-tip-space-above {
+  padding-block-start: 7rem;
+}
+
+/* 用語と関連文書の両方を見せる見本: 区分が 2 つ並ぶツールチップの分の高さを取る */
+.catalog-tip-space-both {
+  padding-block-end: 11rem;
+}
+
+/* 関連文書が多い見本: 高さの上限まで伸びたツールチップの分の高さを取る */
+.catalog-tip-space-long {
+  padding-block-end: 20rem;
+}

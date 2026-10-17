@@ -247,5 +247,52 @@ elements:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[書き手の誤り]
     status: planned
+  - name: 用語の下線
+    id: term
+    kind: tooltip
+    component: dev/設計書/部品設計/用語のツールチップ.ts#
+    args:
+      - name: text
+        value: 照合した本文の語
+      - name: id
+        value: '`render` は描くごとに文書の中で一意な値（`mdmark-term-{通し番号}`）。`mount` はページの中で一意な値（`mdmark-term-{mount の通し番号}-{通し番号}`）に振り直し、語の `aria-describedby`・`aria-details` も合わせて直す'
+      - name: meaning
+        value: 一致した用語の意味（索引の `terms[].meaning`、描く文書の用語集の表の意味の列、参照の表の `glossary[].meaning` の優先の順）。用語に一致しないときは空
+      - name: docs
+        value: 語に `aliases` が一致した索引の文書（描く文書自身を除く）の `title`・描く文書の `path` から見た相対パス・`description`。`backlinks` がオフのときは空
+    position: 描く先の要素 > 本文の文字
+    description: 本文に出た用語と文書の別名に破線の下線を引き、ポインターとフォーカスで「用語」「関連文書」のツールチップを出す。描いた直後はツールチップを閉じている
+    visible_when: 用語か文書の別名が本文に出て、`glossary`（文書の別名は `backlinks`）がオンのとき。用語は用語の `id`、文書の別名は文書の `id` ごとに、節で最初に出たところだけ。コード・リンク・見出し・用語集の表の中には置かない
+    action: ポインターを乗せるかフォーカスすると開き、ツールチップの上へ移っても開いたまま。Esc で閉じてフォーカスを語に戻す。関連文書のあるときは Tab で中のリンクへ移る。下に収まらなければ上に開く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[用語と文書の別名の下線]
+    status: planned
+  - name: 用語集の表
+    id: glossary-table
+    kind: table
+    position: 描く先の要素
+    description: '`<!-- glossary: term=列名 meaning=列名 aliases=列名 -->` 〜 `<!-- /glossary -->` で囲んだ表。表の機能を持つ普通の表として描き、中の語には下線を引かない'
+    visible_when: 文書に用語集の表の印があるとき（`glossary` がオフのときも表は描く）
+    error_message: '印の誤りは表の前の書き方の警告で知らせる。`mark` はその印の文字。表に無い列名: `{mark} の {引数}= の列 {列名} が表にありません。表の列は {列の並び} です。列名を直してください。この表からは用語を入れずに描いています。` / 必須の指定が無い: `{mark} に {引数}= がありません。{用語の列か意味の列}を {引数}=列名 で指してください。この表からは用語を入れずに描いています。`。文中の印・列名は行内のコードにする'
+    refs:
+      - dev/設計書/部品設計/書き方の警告.ts#states[GlossaryColumn]
+    status: planned
+  - name: 関連文書の一覧
+    id: backlinks
+    kind: nav
+    component: dev/設計書/部品設計/関連文書の一覧.ts#
+    args:
+      - name: id
+        value: '`render` は `mdmark-backlinks-title`。`mount` はページの中で一意な値（`mdmark-backlinks-title-{mount の通し番号}`）に振り直し、一覧の `aria-labelledby` も合わせて直す'
+      - name: docs
+        value: '`opts.references.backlinks[opts.docId]`（無ければ索引の `related` に描く文書を持つ文書）の各文書の `title` と、描く文書の `path` から見た相対パス'
+    position: 描く先の要素 > 本文の後
+    description: 描いた文書を参照している文書を、題「関連文書」のリンクの一覧で本文の後に置く
+    label: 関連文書
+    visible_when: '`opts.docId` を渡し、参照している文書が 1 つ以上あり、`backlinks` がオンのとき'
+    action: 題を押すとその文書へのリンクを開く。印刷ではリンクの後ろに相対パスを併記する
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[関連文書と被参照の一覧]
+    status: planned
 mock: dev/mock/pages/document/19/modern/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。

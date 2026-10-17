@@ -79,12 +79,18 @@ test("test_register_extension_when_directive_taken", async () => {
   const reserved = catchError(() =>
     registerExtension(createExtension({ name: "表", directive: "table" })),
   );
+  const reservedGlossary = catchError(() =>
+    registerExtension(
+      createExtension({ name: "用語集", directive: "glossary" }),
+    ),
+  );
   const duplicated = catchError(() =>
     registerExtension(createExtension({ name: "別の挨拶" })),
   );
   // 検証
   for (const [error, word] of [
     [reserved, "table"],
+    [reservedGlossary, "glossary"],
     [duplicated, "greet"],
   ] as const) {
     expect(error).toBeInstanceOf(Error);
@@ -93,6 +99,7 @@ test("test_register_extension_when_directive_taken", async () => {
   }
   expect(extensionFor("greet")).toBe(first);
   expect(extensionFor("table")).toBeUndefined();
+  expect(extensionFor("glossary")).toBeUndefined();
 });
 
 /** 関数が投げた例外を返す（投げなければ undefined） */

@@ -18,6 +18,8 @@ const DEFAULT_FEATURES = {
   sections: true,
   "row-details": true,
   figures: true,
+  glossary: true,
+  backlinks: true,
 };
 
 // 設定が無ければ既定を返す（正常系）

@@ -1,10 +1,30 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, inject, test, vi } from "vitest";
-import type { MdmarkConfig, MdmarkExtension } from "../../../src/index.ts";
+import type {
+  MdmarkConfig,
+  MdmarkExtension,
+  MdmarkIndex,
+  MdmarkReferences,
+} from "../../../src/index.ts";
+import {
+  DOC_ID,
+  EXPECTED_HTML,
+  INDEX,
+  MARKDOWN,
+  REFERENCES,
+} from "./index-render.ts";
 
 type Built = {
-  render: (markdown: string, opts?: { config?: MdmarkConfig }) => string;
+  render: (
+    markdown: string,
+    opts?: {
+      config?: MdmarkConfig;
+      index?: MdmarkIndex;
+      docId?: string;
+      references?: MdmarkReferences;
+    },
+  ) => string;
   registerExtension: (extension: MdmarkExtension) => void;
 };
 
@@ -435,4 +455,21 @@ test("test_normal_when_extension_mark", async () => {
   );
   expect(load).not.toHaveBeenCalled();
   expect(validate).not.toHaveBeenCalled();
+});
+
+// 用語の意味・関連文書・末尾の関連文書の一覧を、スクリプト無しで読める HTML 文字列にする（正常系）
+test("test_normal_when_index", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(MARKDOWN, {
+    index: INDEX,
+    docId: DOC_ID,
+    references: REFERENCES,
+  });
+  // 検証
+  expect(typeof document).toBe("undefined");
+  expect(html).toBe(EXPECTED_HTML);
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
 });

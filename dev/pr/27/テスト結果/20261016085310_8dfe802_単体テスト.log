@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-metadata-index-glossary-backlinks
+
+
+ Test Files  56 passed (56)
+      Tests  198 passed (198)
+   Start at  08:53:15
+   Duration  14.64s (import 44%, tests 35%, worker 14%, transform 7%)
+

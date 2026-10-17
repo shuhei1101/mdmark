@@ -1,0 +1,140 @@
+title: "用語の意味をツールチップで見る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引と描く文書の `id` を渡して文書を描く HTML
+      - name: 用語を持つ索引
+        description: 用語 `ワークスペース`（別名 `WS`、意味 `話し合いの記録を置くフォルダ`）と用語 `印`（意味 `HTML コメントで書く指定`）を持ち、描く文書を `docs` に持つ索引
+      - name: 用語が出る Markdown
+        description: 1 つ目の節の段落に `ワークスペース` が 2 回と `WS` が出て、2 つ目の節の段落に `WS` と `印刷` が出る文書
+        notes: '`印刷` は用語 `印` を含むが、語の区切りは `印刷` の 1 語'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を渡して描かせる
+        M->>M: 語の区切りに揃う用語の語と別名を照合する
+        M-->>P: 節ごとに用語を最初に出たところだけに下線を引いて描く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: 用語の意味のツールチップを表示
+    expected:
+      - 1 つ目の節では、最初の `ワークスペース` だけに破線の下線が付き、2 回目の `ワークスペース` と同じ用語の別名 `WS` には付いていない
+      - 2 つ目の節では `WS` に破線の下線が付いている
+      - '`印刷` の `印` には下線が付いていない'
+      - '`WS` にポインターを乗せると `話し合いの記録を置くフォルダ` のツールチップが出る'
+      - ツールチップの上へポインターを移しても、ツールチップが出たまま
+    test: test_normal
+  - name: 正常シナリオ（キーボードで読む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が出る Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を渡して描かせる
+        M-->>P: 用語に下線を引いて描く
+        U->>P: Tab で下線の付いた語へフォーカスを移す
+        P-->>U: 用語の意味のツールチップを表示
+        U->>P: Esc を押す
+        P-->>U: ツールチップを消す
+    expected:
+      - Tab で下線の付いた語にフォーカスが移る
+      - フォーカスした語の `aria-describedby` が、`role="tooltip"` を持つ意味の要素を指す
+      - Esc を押すとツールチップが消え、フォーカスは語に残る
+    test: test_normal_when_keyboard
+  - name: 正常シナリオ（下線を付けない場所）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が出る場所を分けた Markdown
+        description: 見出し・行内のコード・コードブロック・リンクの文字の中にだけ `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を渡して描かせる
+        M->>M: 見出し・コード・リンクの中を照合から外す
+        M-->>P: 下線を引かずに描く
+        P-->>U: 本文を表示
+    expected:
+      - 見出し・行内のコード・コードブロック・リンクの中の `ワークスペース` に下線が付いていない
+      - 本文の文字は Markdown のとおり
+    test: test_normal_when_excluded_place
+  - name: 正常シナリオ（索引を渡さない）
+    setup:
+      - name: mdmark を読むページ
+        description: 索引を渡さずに文書を描く。ほかは正常シナリオと同じ
+      - name: 用語が出る Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: Markdown だけを渡して描かせる
+        M-->>P: 下線を引かずに描く
+        P-->>U: 本文を表示
+    expected:
+      - '`ワークスペース` と `WS` に下線が付いていない'
+      - 段落が描かれている
+    test: test_normal_when_no_index
+  - name: 異常シナリオ（Schema に合わない索引）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: Schema に合わない索引
+        description: 用語 `ワークスペース` は正しく持ち、用語 `ブランチ` が `meaning` を持たない索引
+      - name: 2 つの用語が出る Markdown
+        description: 段落に `ワークスペース` と `ブランチ` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を渡して描かせる
+        M->>M: 形の合わない用語を除く
+        M-->>P: 読めた用語だけに下線を引いて描く
+        P-->>U: 本文を表示
+    expected:
+      - 段落が描かれている
+      - '`ワークスペース` に下線が付き、意味のツールチップが出る'
+      - '`ブランチ` に下線が付いていない'
+    test: test_error_when_invalid_index
+lead: 使う側が索引に書いた用語の語・別名が本文に出ると、mdmark が破線の下線を引き、読む人がポインターを乗せるかフォーカスすると意味のツールチップが出る。
+issue: 5
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: 用語の意味を本文に書き足さずに、索引に 1 度書けば全ての文書で引ける
+  - name: キーボードと読み上げで読む人
+    interest: ポインターを使わなくても、用語の意味を読める
+trigger: 使う側のページが、索引と描く文書の `id` を渡して文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 用語のツールチップの機能（`glossary`）がオン（既定）
+success_guarantee: 本文に出た用語の語・別名に破線の下線が付き、ポインターを乗せたときとフォーカスしたときに、その用語の意味のツールチップが出る。
+minimal_guarantee: 索引を渡さないときも、索引の一部が Schema に合わないときも、本文は描かれる。
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/文書を描く#
+test_file: tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts

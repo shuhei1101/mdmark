@@ -138,5 +138,38 @@ settings:
     description: '`<!-- fig -->` の直後の図と表に番号を付け、`#fig-ID` へのリンクの文字を番号にする。オフのときは印を取り除き、リンクの文字を変えない'
     reload: reload
     status: planned
+  - key: features.glossary
+    title: 用語の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[termsRule]
+  - key: features.backlinks
+    title: 被参照の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 文書の末尾に関連文書（被参照）の一覧を置き、索引の文書の `aliases` に一致した語のツールチップに関連文書を出す。オフの文書は参照の表で参照元にも参照先にもならない
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[backlinksRule]
+  - key: index
+    title: 索引の場所
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    description: 索引の YAML のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まず、使う側のサーバーが読んだ索引を `opts.index` に渡す。索引の文書の `path` はこの索引のファイルのあるフォルダからの相対パス
+    missing: 索引を使わない（使う側が `opts.index` を渡さなければ用語と関連文書を出さない）
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/ER図/索引#
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

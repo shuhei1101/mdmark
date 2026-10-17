@@ -51,7 +51,7 @@ constants:
     title: 機能の既定
     container: src/config.ts
     summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, glossary: true, backlinks: true }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -86,7 +86,7 @@ functions:
         summary: 設定が無ければ既定を返す
         condition: '`config` が `undefined`'
         mock: なし
-        expected: '`{ features: DEFAULT_FEATURES, libraries: {} }`（12 個の機能が全て `true`）'
+        expected: '`{ features: DEFAULT_FEATURES, libraries: {} }`（14 個の機能が全て `true`）'
       - name: test_resolve_config_when_features_given
         case: 正常
         summary: 知っている機能の真偽値だけを置き換える

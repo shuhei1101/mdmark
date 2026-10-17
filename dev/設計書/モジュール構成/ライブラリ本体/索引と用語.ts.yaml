@@ -1,0 +1,600 @@
+title: "ライブラリ本体 / 索引と用語"
+lead: 索引の形の検査・参照の表・索引の点検と、用語集の表の読み取り・用語と文書の別名の照合・ツールチップと関連文書の一覧の部品・ツールチップの操作。索引の処理は DOM に頼らず、Node とブラウザで同じ結果を返す。
+directory: |-
+  ```tree
+  src/
+  ├── knowledge/
+  │   ├── index-shape.ts   # 索引の型と形の検査（normalizeIndex）
+  │   ├── paths.ts         # 索引のパスの正規化・リンクの解決・相対パス
+  │   ├── dictionary.ts    # 用語と文書の別名の辞書と語の区切りでの照合
+  │   ├── references.ts    # 参照の表（collectReferences）
+  │   └── check.ts         # 索引の点検（checkIndex）
+  ├── render/syntax/
+  │   ├── glossary.ts      # glossary の印で囲んだ表の読み取り
+  │   ├── terms.ts         # 本文の用語と文書の別名に下線を引くコアルール
+  │   └── backlinks.ts     # 末尾の関連文書の一覧を置くコアルール
+  ├── parts/
+  │   ├── term-tip.ts      # 用語のツールチップの HTML
+  │   └── backlinks.ts     # 関連文書の一覧の HTML
+  └── interact/
+      └── terms.ts         # ツールチップの開閉・置き場所・id の振り直し
+  ```
+data_models:
+  - name: MdmarkIndex
+    title: 索引
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: 使う側が索引の YAML を読んだ値の型（公開の型）。形は ER 図『索引』
+    properties:
+      - name: schema
+        type: '1'
+        description: 索引の版
+      - name: docs
+        type: MdmarkIndexDoc[]
+        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意）
+      - name: terms
+        type: MdmarkIndexTerm[] | undefined
+        description: 用語（`id`・`term`・`meaning` が必須、`aliases` が任意）
+  - name: MdmarkReferences
+    title: 参照の表
+    container: src/knowledge/references.ts
+    role: DTO
+    summary: '`collectReferences` が返し、`mount`・`render` の `opts.references` が受け取る値（公開の型）'
+    properties:
+      - name: backlinks
+        type: Record<string, string[]>
+        description: 文書の `id` から、その文書を参照している文書の `id` の並び
+      - name: glossary
+        type: MdmarkGlossaryEntry[]
+        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`）
+  - name: MdmarkIndexIssue
+    title: 索引のずれ
+    container: src/knowledge/check.ts
+    role: DTO
+    summary: '`checkIndex` が返すずれ 1 件（公開の型）'
+    properties:
+      - name: file
+        type: string
+        description: ずれのあるファイル
+      - name: where
+        type: string
+        description: 索引のキーのパスか文書の行。ファイル全体は空文字
+      - name: kind
+        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "duplicate_term"'
+        description: ずれの種類
+      - name: message
+        type: string
+        description: ずれの内容と直し方
+  - name: Dictionary
+    title: 照合の辞書
+    container: src/knowledge/dictionary.ts
+    summary: 索引の用語・用語集の表の用語・文書の別名を、照合する語から引ける形にまとめたもの（内部の型）
+    properties:
+      - name: words
+        type: string[]
+        description: 照合する語。長い語から並べる
+      - name: terms
+        type: 'Map<string, { id: string; meaning: string }>'
+        description: 語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語
+      - name: docs
+        type: Map<string, MdmarkIndexDoc[]>
+        description: 語から、その語を `aliases` に持つ文書（索引の `docs` の順）
+  - name: MdmarkGlossaryEntry
+    title: 用語集の表の用語
+    container: src/knowledge/references.ts
+    role: DTO
+    summary: 用語集の表の 1 行から入れた用語（公開の型 `MdmarkReferences` の一部）
+    properties:
+      - name: term
+        type: string
+        description: 用語
+      - name: aliases
+        type: string[]
+        description: 別名
+      - name: meaning
+        type: string
+        description: 意味
+      - name: docId
+        type: string
+        description: 表を持つ文書の `id`
+functions:
+  - name: normalizeIndex
+    title: 索引の形を検査する
+    container: src/knowledge/index-shape.ts
+    kind: 関数
+    scope: internal
+    summary: 値を ER 図『索引』の形で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返す
+    description: 検査のライブラリを使わず、`INDEX_SHAPE` で TypeScript の検査を書く（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確かめる。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキーを合わない場所にする。重なった要素は先の 1 つを残す
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 索引の YAML を読んだ値
+    returns:
+      type: '{ index: MdmarkIndex; problems: Array<{ where: string; message: string }> }'
+      description: 合う要素だけの索引（最上位が壊れていれば `docs`・`terms` が空）と、合わない場所（`where` は `docs[1].path` の形）
+    unit_tests:
+      - name: test_normalize_index
+        case: 正常
+        summary: 合う索引をそのまま返し、合わない場所が無い
+        condition: ER 図『索引』の例の索引
+        mock: なし
+        expected: '`problems` が空で、`index` が入力と等しい'
+      - name: test_normalize_index_when_invalid_item
+        case: 異常
+        summary: 形の合わない文書・用語を除き、場所を返す
+        condition: '`schema` が無く、`docs[1]` が `path` を持たず、`terms[0]` が `meaning` を持たず、`docs[2].id` が `docs[0].id` と重なる'
+        mock: なし
+        expected: '`problems` の `where` が `schema`・`docs[1].path`・`docs[2].id`・`terms[0].meaning`、`index.docs` は `docs[0]` だけ、`index.terms` が空'
+      - name: test_normalize_index_when_not_object
+        case: 異常
+        summary: オブジェクトでない値でも例外を投げない
+        condition: '`null`・文字列・配列'
+        mock: なし
+        expected: '`index.docs` と `index.terms` が空で、`problems` に `where` が空文字の 1 件'
+      - name: test_normalize_index_matches_json_schema
+        case: 正常
+        summary: '`schemas/mdmark.index.schema.json` が `INDEX_SHAPE` と同じキー・型・必須を持つ'
+        condition: Schema の JSON を読み、最上位・`docs.items`・`terms.items` の `properties`・`required`・`additionalProperties` を取る
+        mock: なし
+        expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`
+    refs:
+      - dev/設計書/ER図/索引#
+  - name: resolveLink
+    title: 本文のリンクを索引のパスにする
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: internal
+    summary: 文書の `path` を基準に、本文のリンクの `href` を索引のファイルからのパスにする
+    description: '`#` 以降と `?` 以降を除き、`decodeURI` で戻し（戻せなければそのまま）、`.`・`..` を解いて `/` 区切りにする。スキームを持つ URL・`/` で始まるパス・`#` だけのリンク・索引のフォルダの外へ出るパスは `undefined`'
+    args:
+      - name: fromPath
+        type: string
+        required: true
+        description: リンクを持つ文書の `path`
+      - name: href
+        type: string
+        required: true
+        description: リンクの `href`（markdown-it が符号化したもの）
+    returns:
+      type: string | undefined
+      description: 索引のファイルからのパス
+    unit_tests:
+      - name: test_resolve_link
+        case: 正常
+        summary: 符号化・`?`・`#` を持つ相対リンクを解く
+        condition: '`fromPath` が `使い方/guide.md`、`href` が `../%E8%A8%AD%E8%A8%88/arch.md?v=1#top` と `./x.md`'
+        mock: なし
+        expected: '`設計/arch.md` と `使い方/x.md`'
+      - name: test_resolve_link_when_outside
+        case: 正常
+        summary: 索引の外・URL・`#` だけは参照にしない
+        condition: '`href` が `../../a.md`・`https://example.com/a.md`・`#top`・`/a.md`'
+        mock: なし
+        expected: どれも `undefined`
+  - name: relativeHref
+    title: 描く文書からの相対パスを作る
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: internal
+    summary: 描く文書の `path` から参照先の `path` を指す相対パスを作る。描く文書の `path` が無いときは参照先の `path` のまま
+    args:
+      - name: fromPath
+        type: string | undefined
+        required: true
+        description: 描く文書の `path`
+      - name: toPath
+        type: string
+        required: true
+        description: 参照先の `path`
+    returns:
+      type: string
+      description: 相対パス（`../api.md` の形。文字は符号化しない）
+    unit_tests:
+      - name: test_relative_href
+        case: 正常
+        summary: 別のフォルダの文書への相対パスを作る
+        condition: '`設計/arch.md` から `api.md`・`使い方/guide.md`・`設計/b.md`、`undefined` から `api.md`'
+        mock: なし
+        expected: '`../api.md`・`../使い方/guide.md`・`b.md`・`api.md`'
+  - name: buildDictionary
+    title: 照合の辞書を作る
+    container: src/knowledge/dictionary.ts
+    kind: 関数
+    scope: internal
+    summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
+    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語を入れない
+    args:
+      - name: options
+        type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; features: Record<string, boolean> }'
+        required: true
+        description: 索引・描く文書の `id`・描く文書の表の用語・参照の表・文書の機能
+    returns:
+      type: Dictionary
+      description: 照合の辞書
+    unit_tests:
+      - name: test_build_dictionary
+        case: 正常
+        summary: 同じ語は索引 → 描く文書の表 → ほかの文書の表の順で選ぶ
+        condition: 語 `印` を索引・描く文書の表・ほかの文書 2 つの表に持つ。語 `マーク` をほかの文書 2 つの表に持つ
+        mock: なし
+        expected: '`印` は索引の意味、`マーク` は索引の `docs` で先の文書の表の意味、`words` は長い語から'
+      - name: test_build_dictionary_when_backlinks_disabled
+        case: 正常
+        summary: '`backlinks` がオフなら文書の別名を入れない'
+        condition: 文書 `api` の別名 `公開関数`、`features.backlinks` が `false`
+        mock: なし
+        expected: '`docs` が空で、`words` に `公開関数` が無い'
+      - name: test_build_dictionary_excludes_self
+        case: 正常
+        summary: 描く文書自身の別名は入れない
+        condition: '`docId` が `api`、`api` の別名 `公開関数`'
+        mock: なし
+        expected: '`docs` に `公開関数` が無い'
+  - name: findWords
+    title: 語の区切りで語を照合する
+    container: src/knowledge/dictionary.ts
+    kind: 関数
+    scope: internal
+    summary: 文字列の中で、始まりと終わりが `Intl.Segmenter`（`ja`・`word`）の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に返す
+    description: '`Intl.Segmenter` はモジュールで 1 つだけ作る。区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。英字の語は大文字と小文字を区別する'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 照合する文字列（テキストのトークン 1 つの中身）
+      - name: words
+        type: string[]
+        required: true
+        description: 辞書の語（長い語から）
+    returns:
+      type: 'Array<{ start: number; end: number; word: string }>'
+      description: 一致した位置（頭から順）
+    unit_tests:
+      - name: test_find_words
+        case: 正常
+        summary: 語の区切りに揃う語だけを返す
+        condition: 語 `印`・`ワークスペース`・`WS`。文字列 `本文の印は印刷でも使う` と `ワークスペースにWSを置く`
+        mock: なし（Node と対応ブラウザの両方で流す）
+        expected: 1 つ目は `印` が 1 つ（`印刷` の `印` は入らない）、2 つ目は `ワークスペース` と `WS`
+      - name: test_find_words_prefers_longer
+        case: 正常
+        summary: 重なる語は長い語を選ぶ
+        condition: 語 `オン・オフの印` と `印`、文字列 `オン・オフの印を書く`
+        mock: なし
+        expected: '`オン・オフの印` が 1 つだけ'
+  - name: collectReferences
+    title: 参照の表を作る
+    container: src/knowledge/references.ts
+    kind: 関数
+    scope: public
+    summary: 索引と全ての文書の本文から、文書ごとの被参照と各文書の用語集の表の用語を返す
+    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む。コード・リンク・見出し・用語集の表の中は照合しない。`related` も参照に数える'
+    args:
+      - name: input
+        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
+        required: true
+        description: 索引・文書のパスから本文を引く表・設定
+    returns:
+      type: MdmarkReferences
+      description: 参照の表
+    callees:
+      - '#functions[normalizeIndex]'
+      - '#functions[resolveLink]'
+      - '#functions[findWords]'
+      - '#functions[readGlossaryTable]'
+    unit_tests:
+      - name: test_collect_references
+        case: 正常
+        summary: '`related`・本文のリンク・文書の別名から被参照を作る'
+        condition: インターフェース定義『参照の表を作る』のリクエスト例
+        mock: なし
+        expected: レスポンス例と等しく、引数が書き換わっていない
+      - name: test_collect_references_when_disabled
+        case: 正常
+        summary: '`backlinks` がオフの文書は参照元にも参照先にもならず、`glossary` がオフの文書の表は入れない'
+        condition: '`guide` の本文に `<!-- features: -backlinks -glossary -->` と用語集の表'
+        mock: なし
+        expected: '`backlinks.arch` に `guide` が無く、`glossary` が空'
+      - name: test_collect_references_ignores_code_and_headings
+        case: 正常
+        summary: コード・見出し・リンクの文字の中の別名は参照にしない
+        condition: '`arch` の本文の見出しと行内のコードにだけ `公開関数`'
+        mock: なし
+        expected: '`backlinks.api` が空'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+  - name: checkIndex
+    title: 索引を点検する
+    container: src/knowledge/check.ts
+    kind: 関数
+    scope: public
+    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term` のずれをこの順で返す
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。`message` は日本語の 1 文で、直す場所を書く'
+    args:
+      - name: input
+        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string }'
+        required: true
+        description: 索引の値・文書のパスから本文を引く表・索引のファイルの名前（既定 `index.yaml`）
+    returns:
+      type: MdmarkIndexIssue[]
+      description: ずれの一覧
+    callees:
+      - '#functions[normalizeIndex]'
+      - '#functions[readGlossaryTable]'
+    unit_tests:
+      - name: test_check_index
+        case: 正常
+        summary: ずれの無い索引で空を返す
+        condition: インターフェース定義『索引を点検する』の「正常系」の索引と文書
+        mock: なし
+        expected: '`[]`'
+      - name: test_check_index_when_drift
+        case: 正常
+        summary: 消えた文書・索引に無い文書・切れた `id`・用語の重複 3 種を返す
+        condition: 「正常系（ずれがある）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しい'
+      - name: test_check_index_when_invalid_schema
+        case: 異常
+        summary: Schema に合わない索引で例外を投げず `schema` のずれを返す
+        condition: '`schema` が無く `docs[1]` が `path` を持たない索引'
+        mock: なし
+        expected: '`where` が `schema` と `docs[1].path` の `schema` の行がある'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
+  - name: readGlossaryTable
+    title: 用語集の表を読む
+    container: src/render/syntax/glossary.ts
+    kind: 関数
+    scope: internal
+    summary: '`glossary` の印の範囲の中の表のトークンから、用語・意味・別名の列を読んで用語を返す'
+    description: 印の引数の `term=`・`meaning=`・`aliases=` で列の見出しの文字を指す。別名のセルは「、」と「,」で区切り、前後の空白を落とす。必須の引数が無いときと、表に無い列名のときは用語を返さず、書き方の警告の項目を返す。用語か意味が空の行は飛ばす
+    args:
+      - name: options
+        type: '{ args: MarkArgs; tokens: Token[]; docId: string }'
+        required: true
+        description: 印の引数・範囲の中のトークン・表を持つ文書の `id`（索引を渡さないときは空文字）
+    returns:
+      type: '{ entries: MdmarkGlossaryEntry[]; warning?: string }'
+      description: 用語と、書き方の警告の本文（画面設計『文書』の `用語集の表` のエラーの文言）
+    unit_tests:
+      - name: test_read_glossary_table
+        case: 正常
+        summary: 列を読み、別名を「、」「,」で区切る（「・」では区切らない）
+        condition: '`term=用語 aliases=別名 meaning=意味`、行 `印 | マーク、オン・オフの印 | HTML コメントで書く指定`'
+        mock: なし
+        expected: '`aliases` が `["マーク", "オン・オフの印"]`、`warning` が無い'
+      - name: test_read_glossary_table_when_unknown_column
+        case: 異常
+        summary: 表に無い列名では用語を返さず警告を返す
+        condition: '`term=用語 meaning=説明`、列が `用語`・`意味`'
+        mock: なし
+        expected: '`entries` が空、`warning` に `説明` と列の並び `用語`・`意味`'
+      - name: test_read_glossary_table_when_missing_arg
+        case: 異常
+        summary: 必須の `meaning=` が無ければ警告を返す
+        condition: '`term=用語`'
+        mock: なし
+        expected: '`entries` が空、`warning` に `meaning=`'
+  - name: glossaryRule
+    title: 用語集の表のコアルール
+    container: src/render/syntax/glossary.ts
+    kind: 関数
+    scope: internal
+    summary: '`glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す'
+    description: 表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`state.env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの並びと `env` を書き換える
+    callees:
+      - '#functions[readGlossaryTable]'
+    unit_tests:
+      - name: test_glossary_rule
+        case: 正常
+        summary: 印を取り除き表を残し、用語を `env` に足す
+        condition: シナリオ『表から用語集に用語を入れる』の正常シナリオの Markdown
+        mock: なし
+        expected: HTML に `table` があり `<!--` が無く、`env.ownGlossary` に `印` が 1 つ
+      - name: test_glossary_rule_when_disabled
+        case: 正常
+        summary: '`glossary` がオフなら用語を足さない'
+        condition: '同じ Markdown に `<!-- features: -glossary -->`'
+        mock: なし
+        expected: 表はあり、`env.ownGlossary` が空
+  - name: termsRule
+    title: 用語の下線のコアルール
+    container: src/render/syntax/terms.ts
+    kind: 関数
+    scope: internal
+    summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を語とツールチップの組（`renderTermTip`）に置き換える
+    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。`glossary` と `backlinks` が両方オフのときは何もしない
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`state.env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの並びと `env` を書き換える
+    callees:
+      - '#functions[buildDictionary]'
+      - '#functions[findWords]'
+      - '#functions[relativeHref]'
+      - '#functions[renderTermTip]'
+    unit_tests:
+      - name: test_terms_rule
+        case: 正常
+        summary: 節ごとに最初の 1 回だけ下線を付ける
+        condition: 索引の用語 `印` と、2 つの節にそれぞれ 2 回ずつ `印` が出る本文
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が 2 つで、各節の最初の語の位置にあり、語の直後にツールチップがある'
+      - name: test_terms_rule_skips_code_and_links
+        case: 正常
+        summary: コード・リンク・見出し・用語集の表の中の語には付けない
+        condition: '`印` が行内のコード・リンクの文字・見出し・用語集の表にだけ出る本文'
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が無い'
+      - name: test_terms_rule_prefers_longer
+        case: 正常
+        summary: 重なる語は長い方に付ける
+        condition: 用語 `機能` と `機能のオン・オフ`、本文 `機能のオン・オフを切り替える`
+        mock: なし
+        expected: 下線の語が `機能のオン・オフ` の 1 つ
+      - name: test_terms_rule_doc_aliases
+        case: 正常
+        summary: 文書の別名に当たった語に関連文書を付け、描く文書自身は除く
+        condition: '`docId` が `guide`、`api` と `guide` の `aliases` に `公開関数`、本文に `公開関数`'
+        mock: なし
+        expected: ツールチップの関連文書が `api` だけで、`href` が描く文書からの相対パス
+      - name: test_terms_rule_when_backlinks_off
+        case: 正常
+        summary: '`backlinks` がオフなら文書の別名では照合しない'
+        condition: '同じ入力に `<!-- features: -backlinks -->`'
+        mock: なし
+        expected: '`公開関数` に下線が無い'
+  - name: backlinksRule
+    title: 関連文書の一覧のコアルール
+    container: src/render/syntax/backlinks.ts
+    kind: 関数
+    scope: internal
+    summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として足す
+    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`state.env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの並びの末尾に一覧を足す
+    callees:
+      - '#functions[relativeHref]'
+      - '#functions[renderBacklinks]'
+    unit_tests:
+      - name: test_backlinks_rule
+        case: 正常
+        summary: 被参照を末尾の一覧に足す
+        condition: '`docId` が `arch`、`backlinks.arch` に `api`・`guide`'
+        mock: なし
+        expected: 末尾に題 `関連文書` の一覧があり、項目が `api`・`guide` の順
+      - name: test_backlinks_rule_when_empty
+        case: 正常
+        summary: 被参照が無ければ足さない
+        condition: '`backlinks.arch` が空'
+        mock: なし
+        expected: 一覧が無い
+  - name: renderTermTip
+    title: 用語のツールチップの HTML を返す
+    container: src/parts/term-tip.ts
+    kind: 関数
+    scope: internal
+    summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
+    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。文字はエスケープする
+    args:
+      - name: props
+        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[] }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: 語とツールチップの組の HTML
+    unit_tests:
+      - name: test_render_term_tip
+        case: 正常
+        summary: 部品設計の状態ごとに HTML を返す
+        condition: 部品設計『用語のツールチップ』の `TermOnly`・`DocsOnly`・`Both` の引数
+        mock: なし
+        expected: '`role` が状態のとおりで、`TermOnly` は見出し `用語` だけ、`DocsOnly` は `関連文書` だけ、`Both` は `用語` → `関連文書` の順。どの状態も `hidden` を持たない'
+      - name: test_render_term_tip_escapes
+        case: 正常
+        summary: 意味と題をエスケープする
+        condition: 意味に `<script>`
+        mock: なし
+        expected: '`&lt;script&gt;` になる'
+    refs:
+      - dev/設計書/部品設計/用語のツールチップ.ts#
+  - name: renderBacklinks
+    title: 関連文書の一覧の HTML を返す
+    container: src/parts/backlinks.ts
+    kind: 関数
+    scope: internal
+    summary: 題の要素の `id` と文書の題・リンク先の並びから、部品設計『関連文書の一覧』の HTML を返す。`docs` が空なら空文字
+    args:
+      - name: props
+        type: '{ id: string; docs: { title: string; href: string }[] }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: 一覧の HTML
+    unit_tests:
+      - name: test_render_backlinks
+        case: 正常
+        summary: 題 `関連文書` と項目を並びのとおりに返す
+        condition: 部品設計『関連文書の一覧』の `Two` の引数
+        mock: なし
+        expected: 題が `関連文書` で `id` が `backlinks-two`、`nav` の `aria-labelledby` が `backlinks-two` を指し、リンクが 2 つで並びが引数のとおり
+      - name: test_render_backlinks_when_empty
+        case: 正常
+        summary: 文書が無ければ空文字を返す
+        condition: '`docs` が `[]`'
+        mock: なし
+        expected: '`""`'
+    refs:
+      - dev/設計書/部品設計/関連文書の一覧.ts#
+  - name: attachTermTips
+    title: 用語のツールチップの操作を付ける
+    container: src/interact/terms.ts
+    kind: 関数
+    scope: internal
+    summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
+    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、下に収まらないときは `is-above` も付けて画面に対して置く。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-above`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+    returns:
+      type: () => void
+      description: 付けた操作を外す関数
+    side_effects: '`root` の中の要素の `id`・属性を書き換え、イベントを付ける'
+    unit_tests:
+      - name: test_attach_term_tips
+        case: 正常
+        summary: フォーカスで開き Esc で閉じる
+        condition: 意味だけの用語の語とツールチップの組 1 つを持つ要素
+        mock: なし（Chromium）
+        expected: 付けた直後は `mdmark-term-wrap` が `is-open` を持たず、語のフォーカスで `is-open` を持ち、Esc で `is-open` が外れて `is-dismissed` を持ち、フォーカスは語に残る。外す関数の後はどの class も残らない
+      - name: test_attach_term_tips_unique_ids
+        case: 正常
+        summary: 同じページに 2 回描いても `id` が重ならない
+        condition: 同じ HTML を 2 つの要素に入れて両方に付ける
+        mock: なし（Chromium）
+        expected: ページの `id` が全て一意で、`aria-describedby` が同じ要素の中のツールチップを指す
+constants:
+  - name: INDEX_SHAPE
+    title: 索引の形
+    container: src/knowledge/index-shape.ts
+    summary: 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`）と必須か。`normalizeIndex` がこれで検査する
+    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "string[]", required: false }, related: { type: "string[]", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false } } }'
+    refs:
+      - dev/設計書/ER図/索引#
+test_files:
+  - tests/unit/src/knowledge/index-shape.test.ts
+  - tests/unit/src/knowledge/paths.test.ts
+  - tests/unit/src/knowledge/dictionary.test.ts
+  - tests/unit/src/knowledge/dictionary.browser.test.ts
+  - tests/unit/src/knowledge/references.test.ts
+  - tests/unit/src/knowledge/check.test.ts
+  - tests/unit/src/render/syntax/glossary.test.ts
+  - tests/unit/src/render/syntax/terms.test.ts
+  - tests/unit/src/render/syntax/backlinks.test.ts
+  - tests/unit/src/parts/term-tip.test.ts
+  - tests/unit/src/parts/backlinks.test.ts
+  - tests/unit/src/interact/terms.browser.test.ts

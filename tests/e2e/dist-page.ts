@@ -12,7 +12,13 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Page } from "@playwright/test";
-import type { MdmarkConfig, MdmarkExtension } from "../../src/index.ts";
+import type {
+  MdmarkConfig,
+  MdmarkExtension,
+  MdmarkIndex,
+  MdmarkIndexIssue,
+  MdmarkReferences,
+} from "../../src/index.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -65,14 +71,31 @@ export const SAMPLE_MARKDOWN = [
 /** 描く先の要素の id */
 export const DOC_SELECTOR = "#doc";
 
+/** 索引を渡して描くときの引数 */
+export type IndexOptions = {
+  /** 索引 */
+  index?: MdmarkIndex;
+  /** 描く文書の索引の `id` */
+  docId?: string;
+  /** 参照の表 */
+  references?: MdmarkReferences;
+};
+
 type MdmarkWindow = Window & {
   mdmark?: {
     mount: (
       el: HTMLElement,
-      opts: { markdown: string; config?: MdmarkConfig },
+      opts: { markdown: string; config?: MdmarkConfig } & IndexOptions,
     ) => { update: (markdown: string) => void; destroy: () => void };
-    render: (markdown: string, opts?: { config?: MdmarkConfig }) => string;
+    render: (
+      markdown: string,
+      opts?: { config?: MdmarkConfig } & IndexOptions,
+    ) => string;
     registerExtension: (extension: MdmarkExtension) => void;
+    collectReferences: (input: {
+      index: MdmarkIndex;
+      documents: Record<string, string>;
+    }) => MdmarkReferences;
   };
   handle?: { update: (markdown: string) => void; destroy: () => void };
 };
@@ -112,8 +135,8 @@ function pageHtml(hostCss: string): string {
     <link rel="stylesheet" href="${CDN_BASE}@${BUILT_VERSION}/dist/index.css">
     <style>${hostCss}</style>
     <script type="module">
-      import { mount, render, registerExtension } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
-      window.mdmark = { mount, render, registerExtension };
+      import { mount, render, registerExtension, collectReferences } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
+      window.mdmark = { mount, render, registerExtension, collectReferences };
     </script>
   </head>
   <body><div id="doc"></div></body>
@@ -233,19 +256,37 @@ export async function registerGreet(
   );
 }
 
-/** ページから、描く先の要素に文書を描かせる（戻り値はページの `window.handle` に控える） */
+/** ページから、描く先の要素に文書を描かせる（戻り値はページの `window.handle` に控える）。`documents` を渡すと、ページで `collectReferences` を呼んで参照の表を作って渡す */
 export async function mountDocument(
   page: Page,
-  options: { markdown: string; config?: MdmarkConfig },
+  options: {
+    markdown: string;
+    config?: MdmarkConfig;
+    documents?: Record<string, string>;
+  } & IndexOptions,
 ): Promise<void> {
-  await page.evaluate(({ markdown, config }) => {
-    const w = window as MdmarkWindow;
-    const el = document.querySelector<HTMLElement>("#doc");
-    if (!w.mdmark || !el) {
-      throw new Error("mdmark か描く先の要素が無い");
-    }
-    w.handle = w.mdmark.mount(el, { markdown, config });
-  }, options);
+  await page.evaluate(
+    ({ markdown, config, index, docId, documents, references }) => {
+      const w = window as MdmarkWindow;
+      const el = document.querySelector<HTMLElement>("#doc");
+      if (!w.mdmark || !el) {
+        throw new Error("mdmark か描く先の要素が無い");
+      }
+      const refs =
+        references ??
+        (index && documents
+          ? w.mdmark.collectReferences({ index, documents })
+          : undefined);
+      w.handle = w.mdmark.mount(el, {
+        markdown,
+        config,
+        index,
+        docId,
+        references: refs,
+      });
+    },
+    options,
+  );
 }
 
 /** ページから、描いた文書の本文を差し替えさせる */
@@ -269,27 +310,53 @@ export async function destroyDocument(page: Page): Promise<void> {
 export async function renderInPage(
   page: Page,
   markdown: string,
+  options: IndexOptions = {},
 ): Promise<string> {
-  return page.evaluate((source) => {
-    const w = window as MdmarkWindow;
-    if (!w.mdmark) {
-      throw new Error("mdmark が無い");
-    }
-    return w.mdmark.render(source);
-  }, markdown);
+  return page.evaluate(
+    ({ source, opts }) => {
+      const w = window as MdmarkWindow;
+      if (!w.mdmark) {
+        throw new Error("mdmark が無い");
+      }
+      return w.mdmark.render(source, opts);
+    },
+    { source: markdown, opts: options },
+  );
 }
 
 /** 配布物を Node で読み（DOM を持たない別のプロセス）、Markdown を HTML 文字列にして返す */
 export async function renderInNode(
   root: string,
   markdown: string,
+  options: IndexOptions = {},
 ): Promise<string> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
-  const script = `import(${JSON.stringify(url)}).then((m) => process.stdout.write(m.render(process.env.MARKDOWN)))`;
+  const script = `import(${JSON.stringify(url)}).then((m) => process.stdout.write(m.render(process.env.MARKDOWN, JSON.parse(process.env.OPTIONS))))`;
   const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
-    env: { ...process.env, MARKDOWN: markdown },
+    env: {
+      ...process.env,
+      MARKDOWN: markdown,
+      OPTIONS: JSON.stringify(options),
+    },
   });
   return stdout;
+}
+
+/** 配布物を Node で読み（DOM を持たない別のプロセス）、索引と文書の本文から点検のずれの一覧を返す */
+export async function checkInNode(
+  root: string,
+  input: {
+    index: unknown;
+    documents: Record<string, string>;
+    indexFile?: string;
+  },
+): Promise<MdmarkIndexIssue[]> {
+  const url = pathToFileURL(join(root, "dist", "index.js")).href;
+  const script = `import(${JSON.stringify(url)}).then((m) => process.stdout.write(JSON.stringify(m.checkIndex(JSON.parse(process.env.INPUT)))))`;
+  const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
+    env: { ...process.env, INPUT: JSON.stringify(input) },
+  });
+  return JSON.parse(stdout);
 }
 
 /** 印刷の前後のイベントを送る */

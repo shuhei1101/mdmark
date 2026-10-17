@@ -12,6 +12,8 @@
 | [版を CSS 変数で読む](#版を-css-変数で読む) | `--mdmark-version` | 読み込んだ CSS の版を持つ |
 | [文書を描く](#文書を描く) | `mount(el, opts)` | 要素の中に Markdown を HTML として描く |
 | [文書を HTML 文字列にする](#文書を-html-文字列にする) | `render(markdown, opts)` | 画面を持たずに Markdown を HTML 文字列にする |
+| [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返す |
+| [索引を点検する](#索引を点検する) | `checkIndex(input)` | 索引と文書のずれの一覧を返す |
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 使う側が自分の印と、その印を描くモジュールの読み方を登録する |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 見た目の値を持つ変数。使う側が上書きする |
 
@@ -66,6 +68,9 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 描いた本文は `render` が返す HTML 文字列と同じ。
 表の並べ替え・タブの切り替えなど、記法の操作を付ける（書き方は [記法](./記法.md)）。
 文書に書いたスクリプト（`script` 要素・`on` で始まる属性・`javascript:` の URL）は落とし、実行しない。
+索引を渡すと、本文に出た用語と文書の別名に破線の下線を引き、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を置く。
+ツールチップの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
+書き方は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
 
 ### リクエスト
 
@@ -82,6 +87,9 @@ handle.destroy();
 | `el` | 必須 | 描く先の要素。class `mdmark` が付く |
 | `opts.markdown` | 必須 | 描く Markdown |
 | `opts.config` | 任意 | 使う側のサーバーが `mdmark.config.yaml` を読んだオブジェクト。省いたキーには既定を当てる。キーは [設定](./設定.md) |
+| `opts.index` | 任意 | 使う側のサーバーが、設定の `index` のパスの索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて使う。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
+| `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う |
+| `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 
 同じ要素へもう一度 `mount` を呼ぶと、前の描画を片付けてから描く。
 前の戻り値の `update` は何もしなくなる。
@@ -99,6 +107,9 @@ handle.destroy();
 外部ライブラリを読めない印の場所は、その場所だけを [知らせの枠](./用語集.md) に替え、ほかは描く。
 読めなかった印の名前・URL・元のエラーが `console.error` に出る。
 記法の印に読めない指定がある箇所は、読めた指定で描き、その箇所の前に [書き方の警告](./記法.md#書き方の警告) を置く。
+索引が Schema に合わないときも、用語集の表の列名が表に無いときも、本文の描画を止めない。
+合わない文書・用語の項目は除いて使い、用語集の表の誤りは、その箇所の書き方の警告で知らせる。
+1 つのページに文書を 2 つ以上描いても、ツールチップと被参照の一覧の `id` はページの中で重ならない。
 
 ## 文書を HTML 文字列にする
 
@@ -117,6 +128,9 @@ const html = render("# 見出し\n\n本文");
 | --- | --- | --- |
 | `markdown` | 必須 | HTML にする Markdown |
 | `opts.config` | 任意 | `mount` の `opts.config` と同じ。読むのは `features`（記法のオン・オフ）と `libraries` の名前（どの印を印の場所にするか）だけ |
+| `opts.index` | 任意 | `mount` の `opts.index` と同じ |
+| `opts.docId` | 任意 | `mount` の `opts.docId` と同じ |
+| `opts.references` | 任意 | `mount` の `opts.references` と同じ |
 
 ### レスポンス
 
@@ -127,6 +141,8 @@ const html = render("# 見出し\n\n本文");
 同じ引数には、ブラウザでも Node でも同じ文字列を返す。
 各記法の中身（全てのタブの中身・閉じた節の中身を含む）は、スクリプトを動かさなくても読める。
 並べ替え・タブの切り替えなどの操作は `mount` が付ける。
+用語の意味と関連文書、文書の末尾の被参照の一覧も、スクリプトを動かさなくても読める。
+ツールチップを開閉する操作は `mount` が付ける。
 
 ### エラー
 
@@ -134,6 +150,110 @@ const html = render("# 見出し\n\n本文");
 未知の印と、許可していない要素・属性は落とす。
 外部ライブラリは読まず、対応表にある印と登録した拡張の印は読み込み中の枠に置き換えて返す。
 記法の印に読めない指定がある箇所には、[書き方の警告](./記法.md#書き方の警告) を置く。
+索引が Schema に合わないときも、合わない文書・用語の項目を除いて文字列を返す。
+
+## 参照の表を作る
+
+索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語をまとめた参照の表を返す。
+使う側のサーバーなどがこの表を作り、`mount`・`render` の `opts.references` に渡す。
+引数を書き換えず、ファイルとネットワークを読まない。
+DOM に頼らず、Node とブラウザのどちらでも同じ結果を返す。
+
+### リクエスト
+
+```js
+import { collectReferences } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const references = collectReferences({
+  index,
+  documents: { "設計/arch.md": "# アーキテクチャ\n", "api.md": "# API\n" },
+});
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `input.index` | 必須 | 使う側が索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて作る |
+| `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。索引に無いパスの文書は無視する。索引にあって表に無い文書は、`related` だけで参照に入る |
+| `input.config` | 任意 | `mount` の `opts.config` と同じ。読むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`backlinks` がオフの文書を参照元にも参照先にもせず、`glossary` がオフの文書の表の用語を入れない |
+
+### レスポンス
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `backlinks` | `Record<string, string[]>` | 文書の `id` から、その文書を参照している文書の `id` の並びを引く表。並びは索引の `docs` の順で、重なりと自分自身は入らない。参照されていない文書は空の並び |
+| `glossary` | `{ term, aliases, meaning, docId }[]` | 各文書の用語集の表から入れた用語の並び。並びは索引の `docs` の順で、同じ文書の中は表の行の順。`aliases` は別名の列を「、」か「,」で区切ったもので、別名の列が無いときは空。`docId` はその表を持つ文書の `id` |
+
+参照は、次のどれかで数える。
+
+- 参照元の `related` に、参照先の `id` がある
+- 参照元の本文のリンクが、参照先の `path` を指す。リンクの `#` 以降と `?` 以降を除き、参照元の `path` のフォルダを基準に相対パスを解決して比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
+- 参照元の本文に、参照先の `aliases` が出る。コード・リンク・見出し・用語集の表の中は照合しない
+
+```json
+{
+  "backlinks": { "arch": ["api", "guide"], "api": ["arch"], "guide": [] },
+  "glossary": []
+}
+```
+
+全ての文書の本文を 1 回ずつ解析する。
+結果は使う側が持ち、文書を書き換えたときに作り直す。
+
+### エラー
+
+例外は投げない。
+索引の文書・用語の項目が Schema に合わないときは、合わない項目を除いて作る。
+合わないことを知るには、[`checkIndex`](#索引を点検する) を呼ぶ。
+
+## 索引を点検する
+
+索引と、索引のフォルダにある文書の本文から、索引と文書のずれの一覧を返す。
+ファイルを読むのは呼ぶ側で、mdmark は渡された値だけを確かめる。
+引数・索引・文書を書き換えない。
+DOM に頼らず、Node とブラウザのどちらでも同じ結果を返す。
+
+### リクエスト
+
+```js
+import { checkIndex } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `input.index` | 必須 | 使う側が索引の YAML を読んだ値。形を確かめる前の値をそのまま渡す |
+| `input.documents` | 必須 | 索引のフォルダにある文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。どのファイルを文書として渡すかは呼ぶ側が決める |
+| `input.indexFile` | 任意 | ずれの `file` に出す索引のファイルの名前。既定は `index.yaml` |
+
+### レスポンス
+
+ずれの一覧。ずれが無ければ空。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
+| `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'duplicate_term'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
+| `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
+
+並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` の順で、同じ種類の中は索引の並びとパスの順。
+
+```json
+[
+  { "file": "docs/index.yaml", "where": "docs[1].path", "kind": "missing_doc", "message": "`old.md` が見つかりません。文書を戻すか、索引の `docs[1]` を消してください。" },
+  { "file": "new.md", "where": "", "kind": "orphan_doc", "message": "`new.md` が索引にありません。索引の `docs` に足してください。" }
+]
+```
+
+索引の `docs[].path` と `documents` のキーは、`./` と重なった `/` を除いた文字列で比べる。
+大文字と小文字は区別する。
+渡された全ての文書を確かめ、上限は無い。
+
+### エラー
+
+例外は投げない。
+索引が Schema に合わないときは、合わないところごとに `schema` のずれを返し、読めた文書・用語でほかのずれも確かめる。
 
 ## 拡張を登録する
 
@@ -156,7 +276,7 @@ registerExtension({
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `extension.name` | 必須 | 拡張の名前。空にできない。知らせの枠・書き方の警告・`console.error` に出す |
-| `extension.directive` | 必須 | 拡張の印の名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と、登録済みの拡張の `directive` は使えない。設定の `libraries` に同じ名前があるときは、拡張を優先する |
+| `extension.directive` | 必須 | 拡張の印の名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`）と、登録済みの拡張の `directive` は使えない。設定の `libraries` に同じ名前があるときは、拡張を優先する |
 | `extension.load` | 必須 | 拡張のモジュールを読む関数。文書に印があるときだけ、`mount` と `update` が描くごとに 1 回呼ぶ。同じ文書の同じ拡張の印では 1 回だけ呼ぶ |
 | `extension.schema` | 任意 | 印の引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま渡せる。省くと検査しない |
 
@@ -229,6 +349,9 @@ registerExtension({
 | `--mdmark-heading-rule-width` | `1px` | 見出し 1・見出し 2 の下の線の太さ。`0` にすると線が出ない |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
 | `--mdmark-table-max-height` | `28rem` | 表の高さの上限。超える表は表の中で縦にスクロールし、見出し行を上端に留める |
+| `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
+| `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |
+| `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |

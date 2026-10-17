@@ -73,7 +73,7 @@ constants:
     title: 拡張に使えない印の名前
     container: src/extensions.ts
     summary: '`features` と記法の印の名前（`ReadonlySet<string>`）'
-    value: '["features", "table", "tabs", "steps", "section", "row-detail", "fig", "toc"]'
+    value: '["features", "table", "tabs", "steps", "section", "row-detail", "fig", "toc", "glossary"]'
   - name: extensions
     title: 拡張の登録表
     container: src/extensions.ts

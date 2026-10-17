@@ -1,8 +1,9 @@
 import { attachSections } from "./sections.ts";
 import { attachTables } from "./tables.ts";
 import { attachTabs } from "./tabs.ts";
+import { attachTermTips } from "./terms.ts";
 
-/** 機能がオンの記法だけ操作を付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、まとめて外す関数を返す */
 export function attachInteractions(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -21,6 +22,9 @@ export function attachInteractions(options: {
   const rowDetails = features["row-details"] === true;
   if (sections || rowDetails) {
     detachers.push(attachSections({ root, sections, rowDetails }));
+  }
+  if (features.glossary === true || features.backlinks === true) {
+    detachers.push(attachTermTips(root));
   }
   return () => {
     for (const detach of detachers.reverse()) {

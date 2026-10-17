@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mdmark の索引",
+  "description": "使う側が文書のメタデータと用語を書く YAML の索引。docs の id と path、terms の id は、それぞれの中で一意にする（この Schema では表せないため、normalizeIndex と checkIndex が確かめる）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "docs"],
+  "properties": {
+    "schema": {
+      "title": "索引の版",
+      "description": "索引の版。今は 1。",
+      "type": "integer",
+      "const": 1
+    },
+    "docs": {
+      "title": "文書",
+      "description": "索引に載せる文書。",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "path", "title"],
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "文書の ID。docs の中で一意。",
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "title": "パス",
+            "description": "文書のパス。索引のファイルのあるフォルダからの相対パスで、区切りは /。docs の中で一意。",
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "title": "題",
+            "description": "文書の題。関連文書のリンクの文字に出す。",
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "title": "概要",
+            "description": "1 文の概要。ツールチップの関連文書に出す。",
+            "type": "string"
+          },
+          "aliases": {
+            "title": "別名",
+            "description": "本文での呼び名。本文に出たら、その語のツールチップの関連文書にこの文書を出し、被参照にも数える。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "default": []
+          },
+          "tags": {
+            "title": "タグ",
+            "description": "タグ。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "default": []
+          },
+          "related": {
+            "title": "関連する文書",
+            "description": "関連する文書の id。この文書からその文書への参照として数える。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "default": []
+          }
+        }
+      }
+    },
+    "terms": {
+      "title": "用語",
+      "description": "索引に載せる用語。本文に出たら意味のツールチップを付ける。",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "term", "meaning"],
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "用語の ID。terms の中で一意。節ごとに最初の 1 回を数える単位。",
+            "type": "string",
+            "minLength": 1
+          },
+          "term": {
+            "title": "用語",
+            "description": "用語の語。",
+            "type": "string",
+            "minLength": 1
+          },
+          "aliases": {
+            "title": "別名",
+            "description": "別名。本文に出たら、用語と同じツールチップを出す。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "default": []
+          },
+          "meaning": {
+            "title": "意味",
+            "description": "意味。ツールチップの「用語」に出す。",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

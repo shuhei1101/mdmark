@@ -1,0 +1,139 @@
+import { expect, test } from "@playwright/test";
+import { buildDistRoot, checkInNode, removeDistRoot } from "../dist-page.ts";
+
+// ビルドした配布物を置いた作業ツリー
+let builtRoot = "";
+
+/** 用語集の表を 1 つ持つ本文。`rows` は `[用語, 意味]` の並びで、最初の行が 5 行目になる */
+function glossaryDocument(rows: Array<[string, string]>): string {
+  return [
+    "<!-- glossary: term=用語 meaning=意味 -->",
+    "",
+    "| 用語 | 意味 |",
+    "| --- | --- |",
+    ...rows.map(([term, meaning]) => `| ${term} | ${meaning} |`),
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+}
+
+test.beforeAll(async () => {
+  builtRoot = await buildDistRoot();
+});
+
+test.afterAll(async () => {
+  await removeDistRoot(builtRoot);
+});
+
+// ずれの無い索引と文書では、空のずれの一覧を返す（正常シナリオ）
+test("test_normal", async () => {
+  // 準備
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "arch", path: "arch.md", title: "アーキテクチャ" },
+      { id: "api", path: "api.md", title: "API", related: ["arch"] },
+    ],
+    terms: [
+      { id: "ws", term: "ワークスペース", meaning: "記録を置くフォルダ" },
+    ],
+  };
+  const documents = { "arch.md": "# アーキテクチャ\n", "api.md": "# API\n" };
+  // 実行
+  const issues = await checkInNode(builtRoot, { index, documents });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 消えた文書・索引に無い文書・切れた id・用語の重複を、場所と種類つきで返す（正常シナリオ（ずれがある））
+test("test_normal_when_drift", async () => {
+  // 準備
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "api", path: "api.md", title: "API", related: ["gone"] },
+      { id: "old", path: "old.md", title: "旧" },
+      { id: "guide", path: "guide.md", title: "使い方" },
+    ],
+    terms: [
+      { id: "ws1", term: "ワークスペース", meaning: "一つ目" },
+      { id: "ws2", term: "ワークスペース", meaning: "二つ目" },
+    ],
+  };
+  const documents = {
+    "api.md": glossaryDocument([
+      ["ワークスペース", "索引と重なる"],
+      ["印", "HTML コメントで書く指定"],
+    ]),
+    "guide.md": glossaryDocument([["印", "api.md と重なる"]]),
+    "new.md": "# 新しい文書\n",
+  };
+  // 実行
+  const issues = await checkInNode(builtRoot, {
+    index,
+    documents,
+    indexFile: "docs/index.yaml",
+  });
+  // 検証
+  // 索引にあって消えた文書は、索引のファイルとその場所を持つ
+  expect(issues).toContainEqual(
+    expect.objectContaining({
+      file: "docs/index.yaml",
+      where: "docs[1].path",
+      kind: "missing_doc",
+    }),
+  );
+  // 索引に無い文書は、その文書のファイルを持つ
+  expect(issues).toContainEqual(
+    expect.objectContaining({ file: "new.md", where: "", kind: "orphan_doc" }),
+  );
+  // 切れた id は、その related の場所を持つ
+  const broken = issues.find((issue) => issue.kind === "broken_ref");
+  expect(broken).toMatchObject({
+    file: "docs/index.yaml",
+    where: "docs[0].related[0]",
+  });
+  expect(broken?.message).toContain("gone");
+  // 用語の重複は、索引の terms どうし・索引と api の表・api と guide の表の 3 件
+  const duplicates = issues.filter((issue) => issue.kind === "duplicate_term");
+  expect(duplicates).toHaveLength(3);
+  expect(duplicates.map((issue) => issue.file)).toEqual([
+    "docs/index.yaml",
+    "api.md",
+    "guide.md",
+  ]);
+  // 各行が、ずれの種類と直す場所が分かる内容を持つ
+  for (const issue of issues) {
+    expect(issue.message.length).toBeGreaterThan(0);
+  }
+});
+
+// Schema に合わない索引でも例外で止まらず、Schema のずれの行を返す（正常シナリオ（Schema に合わない索引））
+test("test_normal_when_invalid_schema", async () => {
+  // 準備
+  const index = {
+    docs: [
+      { id: "a", path: "a.md", title: "A" },
+      { id: "b", title: "B" },
+    ],
+  };
+  const documents = { "a.md": "# A\n" };
+  // 実行
+  const issues = await checkInNode(builtRoot, { index, documents });
+  // 検証
+  expect(issues).toContainEqual(
+    expect.objectContaining({
+      file: "index.yaml",
+      where: "schema",
+      kind: "schema",
+    }),
+  );
+  expect(issues).toContainEqual(
+    expect.objectContaining({
+      file: "index.yaml",
+      where: "docs[1].path",
+      kind: "schema",
+    }),
+  );
+});

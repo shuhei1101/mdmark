@@ -460,6 +460,56 @@ flows:
       - 2 つ目のタブを押した後、そのタブの `aria-selected` が `true`
       - '`destroy` の後、`window` へ `hashchange` を送っても例外が出ない'
     test: test_normal_when_updated_with_syntax
+  - name: 正常系（用語と関連文書のツールチップ）
+    summary: 索引の用語と文書の別名に下線を引き、ポインター・フォーカス・Tab・Esc でツールチップを操作する
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 用語 `索引`（意味 `文書と用語を並べた YAML のファイル`）と、文書 `arch`（`設計/arch.md`）・`api`（`api.md`、`aliases` に `公開関数`）・`index-ref`（`索引.md`、題 `索引のリファレンス`、`aliases` に `索引`）を持つ索引
+        notes: '`opts.docId` は `arch`'
+      - name: 用語が出る Markdown
+        description: 1 つの節の段落に `索引` が 2 回と `公開関数` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId })
+        M->>P: 用語と文書の別名に下線を引いて描く
+        P->>P: 公開関数にフォーカスし、Tab を押す
+        P->>P: Esc を押す
+    expected:
+      - 最初の `索引` と `公開関数` が class `mdmark-term` の要素で、2 回目の `索引` はその要素でない
+      - '`索引` のツールチップに、「用語」の意味と「関連文書」の `索引のリファレンス`（`href` が `../索引.md`）がこの順である'
+      - '`公開関数` にフォーカスすると「関連文書」だけのツールチップが出て、Tab で `API` のリンク（`href` が `../api.md`）へフォーカスが移る'
+      - Esc でツールチップが消え、フォーカスが `公開関数` に戻る
+    test: test_normal_when_glossary
+  - name: 正常系（被参照の一覧）
+    summary: 参照の表から、文書の末尾に「関連文書」の一覧を置き、`update` の後も置き直す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引と参照の表
+        description: インターフェース定義『参照の表を作る』のリクエスト例の索引と、そのレスポンス例の参照の表
+        notes: '`opts.docId` は `arch`'
+      - name: 描く Markdown
+        description: 段落を 1 つ持つ文書。差し替える Markdown は見出しだけの文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId, references })
+        M->>P: 本文と末尾の関連文書の一覧を描く
+        P->>M: update(markdown)
+        M->>P: 差し替えた本文と末尾の関連文書の一覧を描く
+    expected:
+      - '`el` の最後の子が、題 `関連文書` の一覧で、`API`（`href` が `../api.md`）と `使い方`（`href` が `../使い方/guide.md`）がこの順で並ぶ'
+      - '`update` の後も一覧が 1 つだけあり、中身が変わらない'
+    test: test_normal_when_backlinks
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む'
@@ -501,7 +551,7 @@ request:
     default: '全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`anchors`・`sections`・`row-details`・`figures`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`anchors`・`sections`・`row-details`・`figures`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -511,6 +561,28 @@ request:
     constraints: URL はページの `document.baseURI` を基準に解決する
     example: '{ "test-lib": "/fixtures/test-lib.js" }'
     notes: '無い名前を足せることは確認ログの決定（推奨案 A）。#6 の `registerComponent()` との棲み分けは #6 が決める'
+  - name: opts.index
+    type: MdmarkIndex
+    required: false
+    default: なし（描く文書の用語集の表だけで用語を照合し、被参照を出さない）
+    location: argument
+    description: 使う側のサーバーが、設定の `index` のパスの索引の YAML を読んだオブジェクト。形は ER 図『索引』
+    notes: Schema に合わない文書・用語の項目は除いて使い、例外を投げない
+  - name: opts.docId
+    type: string
+    required: false
+    default: なし（被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする）
+    location: argument
+    description: 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う
+    example: arch
+    notes: 索引に無い `id` は渡さないときと同じに扱う
+  - name: opts.references
+    type: MdmarkReferences
+    required: false
+    default: なし（被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない）
+    location: argument
+    description: '`collectReferences` が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う'
+    notes: 形はインターフェース定義『参照の表を作る』のレスポンス
 request_example: |-
   ```json
   {
@@ -567,4 +639,17 @@ constraints:
   - item: 拡張の印
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
+  - item: 用語と文書の別名の下線
+    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
+    notes: 下線の要素の形は部品設計で決める
+  - item: ツールチップの操作
+    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、下に収まらなければ上に開く。`update` で付け直し、`destroy` で外す
+    notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
+  - item: 関連文書と被参照の一覧
+    constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない
+  - item: 索引の値の出し方
+    constraint: 索引の題・意味・`description` は Markdown として解析せず、文字として出す。リンクの `href` は本文のリンクと同じ許可の検査を通す
+  - item: 用語と関連文書の一覧の id
+    constraint: 1 つのページに文書を 2 つ以上描いても重ならないよう、`mount` は用語の下線のツールチップと関連文書の一覧の題の `id` を、モジュールの通し番号でページの中で一意な値に振り直し、それを指す `aria-describedby`・`aria-details`・`aria-labelledby` も直す。`update` で振り直す。`render` の出力の `id` は文書の中で一意なまま
+    notes: タブの `mdmark-tabs-{n}`（`src/interact/tabs.ts` の `tabsCounter`）と同じ作り
 test_file: tests/integration/lib/mount.browser.test.ts

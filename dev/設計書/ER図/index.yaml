@@ -1,0 +1,5 @@
+summary: "使う側が書き mdmark が読むデータの形"
+docs_index: true
+items:
+  - page: 索引.yaml
+    summary: 文書のメタデータと用語を書く YAML の索引

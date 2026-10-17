@@ -40,6 +40,20 @@ states:
         value: '<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->'
       - name: message
         value: の絞り込みの種類 `range` は使えません。使える種類は `select`・`text`・`date` です。
+  - name: GlossaryColumn
+    description: 用語集の表の印に、表に無い列名を書いた
+    args:
+      - name: mark
+        value: '<!-- glossary: term=用語 meaning=説明 -->'
+      - name: message
+        value: の `meaning=` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を直してください。この表からは用語を入れずに描いています。
+  - name: GlossaryMissingArg
+    description: 用語集の表の印に、必須の `meaning=` を書いていない
+    args:
+      - name: mark
+        value: '<!-- glossary: term=用語 -->'
+      - name: message
+        value: に `meaning=` がありません。意味の列を `meaning=列名` で指してください。この表からは用語を入れずに描いています。
 lead: 記法の印や拡張の引数に読めない指定がある箇所に置き、書く人へ読めない指定と直し方を知らせる枠。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
 args:
   - name: mark

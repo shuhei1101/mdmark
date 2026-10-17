@@ -1,0 +1,181 @@
+title: "参照の表を作る"
+entry:
+  kind: operation
+  value: '`collectReferences(input)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: '`related`・本文のリンク・文書の別名から被参照を作る'
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、`collectReferences` を呼ぶ
+      - name: 3 つの文書の索引と本文
+        description: リクエスト例と同じ。`api` の `related` に `arch`、`guide` の本文に `../設計/arch.md` へのリンク、`arch` の本文に `api` の別名 `公開関数`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: 各文書の related・本文のリンク・別名の出現を拾う
+        M-->>C: { backlinks, glossary }
+    expected:
+      - '`backlinks.arch` が `["api", "guide"]`'
+      - '`backlinks.api` が `["arch"]`（`arch` の本文の `公開関数`）'
+      - '`backlinks.guide` が `[]`'
+      - '`glossary` が `[]`'
+      - 引数の `index` と `documents` が書き換わっていない
+    test: test_normal
+  - name: 正常系（用語集の表）
+    summary: 各文書の用語集の表から用語を集める
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 用語集のページを持つ索引と本文
+        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文が `<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` で、用語 `印`（別名 `マーク、オン・オフの印`）の行を持つ表を囲む'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: glossary の印で囲んだ表の列を読む
+        M-->>C: { backlinks, glossary }
+    expected:
+      - '`glossary` が `[{ "term": "印", "aliases": ["マーク", "オン・オフの印"], "meaning": "HTML コメントで書く指定", "docId": "glossary" }]`'
+    test: test_normal_when_glossary_table
+  - name: 正常系（Schema に合わない索引）
+    summary: 合わない項目を除いて作り、例外を投げない
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 合わない文書を持つ索引
+        description: 正常系の索引に、`path` を持たない文書 `broken`（`related` に `arch`）を足したもの。本文は正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: 形の合わない文書を除く
+        M-->>C: { backlinks, glossary }
+    expected:
+      - 例外を投げない
+      - '`backlinks.arch` が `["api", "guide"]` で、`broken` を含まない'
+      - '`backlinks` に `broken` のキーが無い'
+    test: test_normal_when_invalid_index
+  - name: 正常系（符号化して書いたリンク）
+    summary: パーセントエンコードで書いたリンクと `#`・`?` を持つリンクも、同じ文書への参照にする
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 符号化したリンクを持つ本文
+        description: 正常系の索引と本文のうち、`使い方/guide.md` の本文を `[構成](../%E8%A8%AD%E8%A8%88/arch.md?v=1#top)` に替えたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: href の ? と # 以降を除き、符号化を戻して解決する
+        M-->>C: { backlinks, glossary }
+    expected:
+      - '`backlinks.arch` が `["api", "guide"]`（正常系と同じ）'
+    test: test_normal_when_encoded_link
+lead: 使う側のサーバーや CLI（#9 の `mdmark build`）が、索引と全ての文書の本文を渡して、文書ごとの被参照と、用語集の表から入れた用語をまとめた参照の表を受け取る。`mount`・`render` はこの表を `opts.references` で受け取り、ほかの文書の本文を読まずに被参照とほかの文書の用語を描く。
+idempotent: true
+side_effects: なし（引数を書き換えず、ファイルとネットワークを読まない）
+request:
+  - name: input.index
+    type: MdmarkIndex
+    required: true
+    location: argument
+    description: 使う側が索引の YAML を読んだオブジェクト。形は ER 図『索引』
+    notes: Schema に合わない文書・用語の項目は除いて作る
+  - name: input.documents
+    type: Record<string, string>
+    required: true
+    location: argument
+    description: 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表
+    example: '{ "設計/arch.md": "# アーキテクチャ\n" }'
+    notes: 索引に無いパスの文書は無視する。索引にあって表に無い文書は、`related` だけで参照に入る
+  - name: input.config
+    type: MdmarkConfig
+    required: false
+    default: なし（全てのキーに既定を当てる）
+    location: argument
+    description: '`mount` の `opts.config` と同じ。読むのは `features`（文書ごとの `<!-- features: … -->` を重ねて、`backlinks`・`glossary` がオフの文書を算出から外す）だけ'
+request_example: |-
+  ```json
+  {
+    "index": {
+      "schema": 1,
+      "docs": [
+        { "id": "arch", "path": "設計/arch.md", "title": "アーキテクチャ" },
+        { "id": "api", "path": "api.md", "title": "API", "aliases": ["公開関数"], "related": ["arch"] },
+        { "id": "guide", "path": "使い方/guide.md", "title": "使い方" }
+      ],
+      "terms": [{ "id": "ws", "term": "ワークスペース", "aliases": ["WS"], "meaning": "話し合いの記録を置くフォルダ" }]
+    },
+    "documents": {
+      "設計/arch.md": "# アーキテクチャ\n\n公開関数を使う。",
+      "api.md": "# API\n",
+      "使い方/guide.md": "# 使い方\n\n[構成](../設計/arch.md)"
+    }
+  }
+  ```
+response:
+  - name: backlinks
+    type: Record<string, string[]>
+    description: 文書の `id` から、その文書を参照している文書の `id` の並びを引く表
+    constraints: 並びは索引の `docs` の順。重なりと自分自身は入らない。参照されていない文書は空の並び
+    notes: 参照は、参照元の `related` に参照先の `id` がある、参照元の本文のリンクが参照先の `path` を指す（`#` 以降を除いて比べる）、参照元の本文に参照先の `aliases` が用語と同じ照合で出る、のどれか
+  - name: glossary
+    type: MdmarkGlossaryEntry[]
+    description: 各文書の用語集の表から入れた用語の並び
+    constraints: 並びは索引の `docs` の順、同じ文書の中は表の行の順
+  - name: glossary[].term
+    type: string
+    description: 用語の列の文字
+  - name: glossary[].aliases
+    type: string[]
+    description: 別名の列を「、」「,」で区切ったもの。別名の列が無いときは空
+  - name: glossary[].meaning
+    type: string
+    description: 意味の列の文字
+  - name: glossary[].docId
+    type: string
+    description: その表を持つ文書の `id`。描く文書の表とほかの文書の表の優先を決めるのに使う
+response_example: |-
+  ```json
+  {
+    "backlinks": { "arch": ["api", "guide"], "api": ["arch"], "guide": [] },
+    "glossary": []
+  }
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 参照の表を返す
+  - name: なし（Schema に合わない索引）
+    condition: 索引の文書・用語の項目が Schema に合わない
+    notes: 例外を投げず、合わない項目を除いて作る。合わないことを知るには `checkIndex` を呼ぶ
+constraints:
+  - item: 実行する環境
+    constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
+  - item: 本文のリンクの解決
+    constraint: リンクの `href` の `#` 以降と `?` 以降を除き、パーセントエンコードを戻してから（`decodeURI`。戻せないときはそのまま）、参照元の `path` のフォルダを基準に相対パスを解決し、索引の `path` と比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
+    notes: markdown-it 15.0.2 は `link_open` の `href` の ASCII 以外の文字を符号化する（`../設計/arch.md` → `../%E8%A8%AD%E8%A8%88/arch.md`）ため、戻してから比べる
+  - item: 文書の別名の照合
+    constraint: 用語のツールチップと同じ照合（語の区切りに揃う、コード・リンク・見出し・用語集の表の中を除く）を使う
+    notes: 節ごとの最初の 1 回の制限は下線のもので、参照の有無には効かない
+  - item: 機能のオフ
+    constraint: '`backlinks` がオフの文書は参照元にも参照先にもならず（`related` を含む）、`glossary` がオフの文書の表は用語を入れない'
+  - item: 計算の量
+    constraint: 全ての文書の本文を 1 回ずつ解析する。結果は使う側が持ち、文書を書き換えたときに作り直す
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/被参照を見る#
+  - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#
+test_file: tests/integration/lib/collect-references.test.ts
