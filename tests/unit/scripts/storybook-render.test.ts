@@ -17,6 +17,9 @@ const loadEmbed = () => import("../../../src/parts/embed.ts");
 /** 表の処理を読み込む */
 const loadTable = () => import("../../../src/parts/table.ts");
 
+/** 文書の一覧の処理を読み込む */
+const loadDocList = () => import("../../../src/parts/doc-list.ts");
+
 const servers: Server[] = [];
 const createdRoots: string[] = [];
 
@@ -121,6 +124,27 @@ test("test_render_part_when_json_args", async () => {
       rows: [["1"]],
       sort: { column: 0, direction: "ascending" },
     })}</div>`,
+  );
+});
+
+// JSON の引数を戻して文書の一覧を描く（正常系）
+test("test_render_part_when_doc_list", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const { renderDocList } = await loadDocList();
+  const docs = [
+    { path: "README.md", title: "入口" },
+    { path: "使い方/guide.md", title: "使い方" },
+  ];
+  const params = new URLSearchParams({
+    docs: JSON.stringify(docs),
+    current: "使い方/guide.md",
+  });
+  // 実行
+  const html = renderPart({ component: "doc-list", params });
+  // 検証
+  expect(html).toBe(
+    `<div class="mdmark">${renderDocList({ docs, current: "使い方/guide.md" })}</div>`,
   );
 });
 
