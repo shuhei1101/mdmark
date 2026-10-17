@@ -12,12 +12,12 @@ scenarios:
         description: 差し替えない。外部ライブラリを使わない部品だけで組む
     flow: |-
       flowchart TD
-        A[雛形を置く:正常シナリオ] --> B[足すJavaScriptを型で点検する:正常シナリオ]
+        A[雛形を置く:正常シナリオ（JavaScript の雛形を置く）] --> B[足すJavaScriptを型で点検する:正常シナリオ]
         B --> C[固有の部品とCSSを当てる:正常シナリオ]
         C --> D[図を描く:正常シナリオ]
         D --> E[図の要素のツールチップを見る:正常シナリオ]
         E --> F[図を拡大・縮小・移動する:正常シナリオ]
-        click A "../単一ユースケース/雛形を置く.yaml#正常シナリオ"
+        click A "../単一ユースケース/雛形を置く.yaml#正常シナリオjavascript-の雛形を置く"
         click B "../単一ユースケース/足すJavaScriptを型で点検する.yaml#正常シナリオ"
         click C "../単一ユースケース/固有の部品とCSSを当てる.yaml#正常シナリオ"
         click D "../単一ユースケース/図を描く.yaml#正常シナリオ"
@@ -63,10 +63,10 @@ scenarios:
         description: 差し替えない
     flow: |-
       flowchart TD
-        A[雛形を置く:正常シナリオ] --> B[足すJavaScriptを型で点検する:異常シナリオ（型が合わない）]
+        A[雛形を置く:正常シナリオ（JavaScript の雛形を置く）] --> B[足すJavaScriptを型で点検する:異常シナリオ（型が合わない）]
         B --> C[足すJavaScriptを型で点検する:正常シナリオ]
         C --> D[固有の部品とCSSを当てる:正常シナリオ]
-        click A "../単一ユースケース/雛形を置く.yaml#正常シナリオ"
+        click A "../単一ユースケース/雛形を置く.yaml#正常シナリオjavascript-の雛形を置く"
         click B "../単一ユースケース/足すJavaScriptを型で点検する.yaml#異常シナリオ型が合わない"
         click C "../単一ユースケース/足すJavaScriptを型で点検する.yaml#正常シナリオ"
         click D "../単一ユースケース/固有の部品とCSSを当てる.yaml#正常シナリオ"
