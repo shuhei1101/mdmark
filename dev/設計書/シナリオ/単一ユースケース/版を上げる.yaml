@@ -205,24 +205,30 @@ scenarios:
       - 設定・索引・文書が変わっておらず、写しのフォルダが無い
       - 終了コードが 0 以外
     test: test_error_when_local_version_newer
-  - name: 異常シナリオ（目標の版が呼んだ CLI の版より新しい）
+  - name: 正常シナリオ（壊す手順を --yes で当てる）
     setup:
       - name: 手元の版が古いフォルダ
         description: 正常シナリオと同じ
       - name: Mock
-        description: 呼んだ CLI の版を `v0.5.0` に差し替える
-        notes: 目標の版に `v0.6.0` を渡す
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊す印を付ける
+        notes: '`--yes` を付け、標準入力には何も渡さない'
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
         participant C as mdmark CLI
-        W->>C: mdmark upgrade v0.6.0
-        C-->>W: 目標の版の CLI で呼ぶこと・終了コード 0 以外
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>C: v0.4.0・v0.5.0 の手順を読む
+        C->>F: 写しを取り、確かめずに v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検を流す（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 当てた手順・変更履歴の行・写しのフォルダの場所・終了コード 0
     expected:
-      - 出力に `npx github:shuhei1101/mdmark#v0.6.0 upgrade` で呼び直すことが出る
-      - 設定・索引・文書が変わっておらず、写しのフォルダが無い
-      - 終了コードが 0 以外
-    test: test_error_when_target_newer_than_cli
+      - 出力に壊す手順の確かめが出ない
+      - 壊す手順を含む v0.4.0・v0.5.0 の手順が当たっている
+      - 設定の `version` が `v0.5.0`
+      - 終了コードが 0
+    test: test_normal_when_destructive_with_yes
 lead: 文書を書く人が `mdmark upgrade` を流し、設定の手元の版から目標の版までの移行の手順を版の順に当て、点検を通してから設定の版を書き換え、その範囲の変更履歴を受け取る。
 issue: 10
 primary_actor: 文書を書く人
