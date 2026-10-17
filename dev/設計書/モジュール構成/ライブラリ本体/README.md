@@ -19,5 +19,8 @@
 | [操作.ts](./操作.ts.yaml) | mount が描いた記法に付ける表・タブ・節と行の詳細の操作 |
 | [拡張.ts](./拡張.ts.yaml) | registerExtension の登録表と、Standard Schema での引数の検査 |
 | [索引と用語.ts](./索引と用語.ts.yaml) | 索引の形の検査・参照の表・索引の点検と、用語集の表・用語の下線・関連文書の一覧・ツールチップの操作 |
+| [CLI.ts](./CLI.ts.yaml) | init・check・export・build の CLI と、設定・文書の読み取り・埋め込み・HTML の組み立て |
+| [書き出したHTMLの起動.ts](./書き出したHTMLの起動.ts.yaml) | 書き出した HTML を開いたときに埋めたモジュールを用意して描き、まとめた HTML で文書を行き来する処理 |
+| [版を上げる.ts](./版を上げる.ts.yaml) | mdmark upgrade の版の比較・移行の手順の読み取りと適用・写しと戻し・変更履歴・問い |
 
 <!-- /table -->

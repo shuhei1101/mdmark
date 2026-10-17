@@ -4,3 +4,5 @@ items:
     summary: 版を固定した URL で JavaScript と CSS を読み込む
   - page: 文書を描く.md
     summary: 配布物を読んだページで `mount` を呼び、要素の中に Markdown を描く
+  - page: 版を上げる.md
+    summary: '`mdmark upgrade` で移行の手順を当てて、設定・索引・文書を新しい版に合わせる'

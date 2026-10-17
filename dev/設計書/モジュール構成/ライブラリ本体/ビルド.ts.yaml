@@ -3,7 +3,8 @@ lead: '`npm run build` が実行するビルドのスクリプト。版を決め
 directory: |-
   ```tree
   scripts/
-  └── build.ts  # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  ├── build.ts       # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  └── migrations.ts  # スキーマを変えた版に移行の手順があるかの点検
   ```
 constants:
   - name: VERSION_PATTERN
@@ -33,9 +34,24 @@ constants:
     title: 出力の対象のブラウザ
     container: scripts/build.ts
     summary: esbuild の `target` に渡すブラウザの版
-    value: '["chrome99", "firefox97", "safari16.4"]'
+    value: '["chrome99", "firefox98", "safari16.4"]'
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+  - name: UNSIZED_OUTPUTS
+    title: サイズを検めない配布ファイル
+    container: scripts/build.ts
+    summary: 使う側のページが jsDelivr から読まないため、配布ファイル 1 つの上限を当てない出力
+    value: '["dist/cli.js", "dist/viewer.js", "dist/viewer.css"]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[配布ファイル 1 つのサイズ]
+    status: planned
+    introduced:
+      pr: 32
+  - name: CHECKED_SCHEMAS
+    title: 点検する Schema
+    container: scripts/migrations.ts
+    summary: 変えたら移行の手順を求める `schemas/` のファイル
+    value: '`["mdmark.config.schema.json", "mdmark.index.schema.json"]`'
 functions:
   - name: main
     title: ビルドを実行する
@@ -43,7 +59,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: 前回の `dist/` を消してから、版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す
+    summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、終了コードを返す
     side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過）は `dist/` を残さず、標準エラーに理由を出す'
     args:
       - name: argv
@@ -94,6 +110,12 @@ functions:
         condition: '`maxBytes` が 1'
         mock: 一時フォルダに `src/` と `version.ini` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーにファイル名とサイズが出る
+      - name: test_main_when_migrations_invalid
+        case: 異常
+        summary: 移行の手順の点検に誤りがあれば dist/ を書かずに終わる
+        condition: '`migrations/next/steps.yaml` の手順が `op` を持たない'
+        mock: 一時フォルダに `src/` と `version.ini` と `migrations/` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーに `migrations/next/steps.yaml` が出る
     callees:
       - '#functions[resolveVersion]'
       - '#functions[buildDist]'
@@ -147,7 +169,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -163,6 +185,7 @@ functions:
     callees:
       - '#functions[writeThirdPartyLicenses]'
       - '#functions[emitDeclarations]'
+      - '#functions[assertNoScriptClose]'
     unit_tests:
       - name: test_build_dist
         case: 正常
@@ -182,6 +205,15 @@ functions:
         condition: '`src/index.ts` が `import { parse } from "postcss"` を持ち、`parse` を export する'
         mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: '`dist/index.js` に postcss の本体（`CssSyntaxError`）が無い'
+      - name: test_build_dist_when_cli_and_viewer
+        case: 正常
+        summary: CLI と起動の処理を束ねる
+        condition: 版 `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` がある
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` を束ねていない。`src/viewer/index.ts` の文字列 `"</script>"` が `dist/viewer.js` では `<\/script>` になっている
+    notes:
+      CLI と起動の処理の束ね方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・版の `define`）で、ライブラリ本体を含めて 1 つに束ねる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` で束ね、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読む。どちらも `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
+      起動の処理の script の閉じ: '`dist/viewer.js` は書き出した HTML の `<script type="module">` にそのまま置くため、書いた後に `assertNoScriptClose` で検める。esbuild は文字列・テンプレート文字列の `</script` を大文字と小文字によらず `<\/script` に替えるため（外部ライブラリ『esbuild』の動作確認）、この検査は esbuild の振る舞いが変わったときの備え'
   - name: writeThirdPartyLicenses
     title: 束ねた依存のライセンスを書く
     container: scripts/build.ts
@@ -221,7 +253,7 @@ functions:
     container: scripts/build.ts
     kind: 関数
     scope: public
-    summary: 出力ファイルのうち上限を超えたものを返す
+    summary: 出力ファイルのうち `UNSIZED_OUTPUTS` に無く上限を超えたものを返す
     args:
       - name: outputs
         type: Record<string, number>
@@ -245,6 +277,12 @@ functions:
         condition: 100 バイトと 201 バイト、上限 200
         mock: なし
         expected: 201 バイトの 1 件
+      - name: test_find_too_large_outputs_when_unsized
+        case: 正常
+        summary: CLI と起動の処理は上限を超えても返さない
+        condition: '`dist/cli.js` が 300 バイト、`dist/index.js` が 100 バイト、上限 200'
+        mock: なし
+        expected: 空
   - name: emitDeclarations
     title: 型定義を書く
     container: scripts/build.ts
@@ -275,5 +313,133 @@ functions:
         condition: '`src/index.ts` が `export const x: number = "a"` を持つ'
         mock: なし
         expected: メッセージに `tsc` のエラーを含む例外
+  - name: assertNoScriptClose
+    title: script を閉じる並びが無いことを検める
+    container: scripts/build.ts
+    summary: コードに `</script` の並び（大文字と小文字を区別しない）があれば例外を投げる
+    kind: 関数
+    scope: public
+    args:
+      - name: code
+        type: string
+        required: true
+        description: 検めるコード
+      - name: file
+        type: string
+        required: true
+        description: 例外のメッセージに出すファイル名
+    returns:
+      type: void
+      description: なし
+    exceptions:
+      - name: Error
+        condition: '`code` に `</script` の並び（大文字と小文字を区別しない）がある'
+        message: '{file} に </script の並びがあり、書き出した HTML の script 要素が閉じる'
+    unit_tests:
+      - name: test_assert_no_script_close
+        case: 正常
+        summary: esbuild が替えた形は通す
+        condition: '`code` が `const t="<\/SCRIPT>"`'
+        mock: なし
+        expected: 例外を投げない
+      - name: test_assert_no_script_close_when_found
+        case: 異常
+        summary: 大文字を含む </script の並びを拒む
+        condition: '`code` が `x</SCRIPT>y`、`file` が `dist/viewer.js`'
+        mock: なし
+        expected: '`Error` を投げ、メッセージに `dist/viewer.js` と `</script` が入る'
+        exception: Error
+    status: planned
+    introduced:
+      pr: 32
+  - name: latestVersionTag
+    title: 最新の版のタグを引く
+    container: scripts/migrations.ts
+    summary: '`git tag --list v*` のうち `VERSION_PATTERN` に合う最も新しい版を返す'
+    description: git は `execFile` で引数を配列にして呼ぶ。git の作業ツリーでないとき・タグが無いときは `undefined`。比較は `compareVersions`
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの直下
+    returns:
+      type: Promise<string | undefined>
+      description: 最新の版のタグ
+    unit_tests:
+      - name: test_latest_version_tag
+        case: 正常
+        summary: 数として最も新しいタグを返す
+        condition: '`v0.9.0`・`v0.10.0`・`foo` のタグ'
+        mock: 一時フォルダの git のリポジトリ
+        expected: '`v0.10.0`'
+      - name: test_latest_version_tag_when_none
+        case: 正常
+        summary: タグが無ければ undefined
+        condition: タグの無いリポジトリと、git のリポジトリでないフォルダ
+        mock: 一時フォルダ
+        expected: どちらも `undefined`
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts#functions[compareVersions]
+    status: planned
+    introduced:
+      pr: 39
+  - name: checkMigrations
+    title: 移行の手順を点検する
+    container: scripts/migrations.ts
+    summary: スキーマを最新の版のタグから変えたのに移行の手順も手順なしの一覧の合う行も無いこと、release のビルドで出していない版の手順が残ること、手順の形の誤りを、直し方つきの文で返す
+    description: '順に、`migrations/` の全ての `steps.yaml`（`next` と `v{版}`）を `validateSteps` で検め、`call` のスクリプトがあることと `no-steps.yaml` の形を確かめる → `latestVersionTag` が `undefined` か、比べる版がタグより古ければそこで終える → 比べる版がタグと同じなら `next`、新しければ `v{比べる版}` を見る版にし、新しいときは `migrations/next/` と `version: next` の行が残っていれば誤りにする → `CHECKED_SCHEMAS` ごとに `git show {タグ}:schemas/{名前}` と今の中身を比べ、違うものは見る版の `steps.yaml` か、見る版・その Schema・今の中身の SHA-256（`node:crypto`）の合う行があれば通す。タグに無い Schema は比べない'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ root: string; version: string }'
+        required: true
+        description: 作業ツリーの直下・比べる版（`resolveVersion` の版）
+    returns:
+      type: Promise<string[]>
+      description: 誤り 1 つ 1 文（無ければ空）
+    unit_tests:
+      - name: test_check_migrations
+        case: 正常
+        summary: スキーマを変えて next に手順があれば誤り 0 件
+        condition: '`v0.3.0` のタグの後に `mdmark.index.schema.json` を変え、`migrations/next/steps.yaml` を置く。版は `v0.3.0`'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 空
+      - name: test_check_migrations_when_listed
+        case: 正常
+        summary: SHA-256 の合う手順なしの行があれば誤り 0 件
+        condition: '`mdmark.config.schema.json` を変え、`no-steps.yaml` に `next`・その Schema・今の SHA-256 の行'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 空
+      - name: test_check_migrations_when_steps_missing
+        case: 異常
+        summary: スキーマを変えて手順も合う行も無ければ誤り
+        condition: '`mdmark.index.schema.json` を変え、`no-steps.yaml` には SHA-256 の合わない `next` の行だけ'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 1 つで `schemas/mdmark.index.schema.json` と `migrations/next/steps.yaml` を含む
+      - name: test_check_migrations_when_next_left
+        case: 異常
+        summary: release のビルドで next が残れば誤り
+        condition: タグ `v0.3.0`、版 `v0.4.0`、`migrations/next/steps.yaml` がある
+        mock: 一時フォルダの git のリポジトリ
+        expected: 誤りに `migrations/v0.4.0/` へ移すことが入る
+      - name: test_check_migrations_when_no_tag
+        case: 正常
+        summary: タグが無ければスキーマを比べない
+        condition: タグの無いリポジトリで Schema を変える
+        mock: 一時フォルダの git のリポジトリ
+        expected: 空
+    refs:
+      - '#functions[latestVersionTag]'
+      - dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts#functions[validateSteps]
+      - dev/設計書/ER図/移行の手順#
+    status: planned
+    introduced:
+      pr: 39
 test_files:
   - tests/unit/scripts/build.test.ts
+  - tests/unit/scripts/migrations.test.ts

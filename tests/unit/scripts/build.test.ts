@@ -224,6 +224,32 @@ test("test_main_when_dist_file_too_large", async () => {
   expect(stderr()).toMatch(/index\.js[^\n]*\d/);
 });
 
+// 移行の手順の点検に誤りがあれば dist/ を書かずに終わる（異常系）
+test("test_main_when_migrations_invalid", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createBuildRoot("v0.0.0\n");
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(
+    join(root, "migrations", "next", "steps.yaml"),
+    [
+      "steps:",
+      "  - description: op が無い",
+      "    file: config",
+      "    from: legacy",
+      "    to: renamed",
+      "",
+    ].join("\n"),
+  );
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], { root, maxBytes: MAX_BYTES });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr()).toContain("migrations/next/steps.yaml");
+});
+
 // version.ini の先頭行を返す（正常系）
 test("test_resolve_version", async () => {
   // 準備
@@ -306,6 +332,47 @@ test("test_build_dist_when_postcss_imported", async () => {
   expect(js).not.toContain("CssSyntaxError");
 });
 
+// CLI と起動の処理を束ねる（正常系）
+test("test_build_dist_when_cli_and_viewer", async () => {
+  // 準備
+  const { buildDist } = await loadBuild();
+  const root = await createBuildRoot("v0.0.0\n");
+  await mkdir(join(root, "src", "cli"));
+  await mkdir(join(root, "src", "viewer"));
+  await writeFile(
+    join(root, "src", "cli", "main.ts"),
+    [
+      'import { parse } from "yaml";',
+      "",
+      "export function main(): unknown {",
+      '  return parse("a: 1");',
+      "}",
+      "",
+    ].join("\n"),
+  );
+  await writeFile(
+    join(root, "src", "viewer", "index.ts"),
+    'export const closing: string = "</script>";\n',
+  );
+  await writeFile(
+    join(root, "src", "viewer", "viewer.css"),
+    ".a { color: red }\n",
+  );
+  // 実行
+  const outputs = await buildDist("v0.0.1", root);
+  // 検証
+  const paths = Object.keys(outputs);
+  for (const name of ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"]) {
+    expect(paths.some((path) => path.endsWith(name))).toBe(true);
+  }
+  const cli = await readFile(join(root, "dist", "cli.js"), "utf8");
+  expect(cli.split("\n")[0]).toBe("#!/usr/bin/env node");
+  expect(cli).toMatch(/from\s*["']yaml["']/);
+  const viewer = await readFile(join(root, "dist", "viewer.js"), "utf8");
+  expect(viewer).toContain("<\\/script>");
+  expect(viewer).not.toContain("</script>");
+});
+
 // 束ねたパッケージごとに名前・版・ライセンス・本文を書く（正常系）
 test("test_write_third_party_licenses", async () => {
   // 準備
@@ -383,6 +450,39 @@ test("test_find_too_large_outputs_when_over_limit", async () => {
   );
   // 検証
   expect(tooLarge).toEqual([{ path: "dist/index.css", bytes: 201 }]);
+});
+
+// CLI と起動の処理は上限を超えても返さない（正常系）
+test("test_find_too_large_outputs_when_unsized", async () => {
+  // 準備
+  const { findTooLargeOutputs } = await loadBuild();
+  // 実行
+  const tooLarge = findTooLargeOutputs(
+    { "dist/cli.js": 300, "dist/index.js": 100 },
+    200,
+  );
+  // 検証
+  expect(tooLarge).toEqual([]);
+});
+
+// esbuild が替えた形は通す（正常系）
+test("test_assert_no_script_close", async () => {
+  // 準備
+  const { assertNoScriptClose } = await loadBuild();
+  // 実行・検証
+  expect(() =>
+    assertNoScriptClose('const t="<\\/SCRIPT>"', "dist/viewer.js"),
+  ).not.toThrow();
+});
+
+// 大文字を含む </script の並びを拒む（異常系）
+test("test_assert_no_script_close_when_found", async () => {
+  // 準備
+  const { assertNoScriptClose } = await loadBuild();
+  // 実行・検証
+  expect(() => assertNoScriptClose("x</SCRIPT>y", "dist/viewer.js")).toThrow(
+    /dist\/viewer\.js[\s\S]*<\/script/,
+  );
 });
 
 const execFileAsync = promisify(execFile);

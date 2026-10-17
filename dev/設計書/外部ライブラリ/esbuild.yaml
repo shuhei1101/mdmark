@@ -52,8 +52,8 @@ adoption: 採用
 upstream: evanw/esbuild
 verification:
   state: 済
-  date: '2026-10-13'
-  detail: '`build()` に TS と CSS の入口を渡し、`format: esm`・`define`・`banner.css`・`target: [chrome94, firefox93, safari16.4]`・`metafile` で `dist/index.js` と `dist/index.css` が出た。`banner.css` は CSS の先頭に入り、`lab()` は 16 進の色に、入れ子は展開された。クラスの非公開メンバーと静的初期化ブロックは書き換えずに残った。`metafile.outputs[].bytes` でサイズを取れた'
+  date: '2026-10-17'
+  detail: '`build()` に TS と CSS の入口を渡し、`format: esm`・`define`・`banner.css`・`target: [chrome94, firefox93, safari16.4]`・`metafile` で `dist/index.js` と `dist/index.css` が出た。`banner.css` は CSS の先頭に入り、`lab()` は 16 進の色に、入れ子は展開された。クラスの非公開メンバーと静的初期化ブロックは書き換えずに残った。`metafile.outputs[].bytes` でサイズを取れた（2026-10-13）。0.28.2 を `--bundle --minify --format=esm --target=chrome99,firefox98,safari16.4` で流し、文字列 `"</SCRIPT>"`・テンプレート文字列（中身 `x</script>y`）・正規表現 `/<\/script>/i` を export する入力が `var t="<\/SCRIPT>",o="x<\/script>y",r=/<\/script>/i;` になり、文字列・テンプレート文字列の `</script` を大文字と小文字によらず `<\/script` に替えた（2026-10-17）'
 license: MIT（商用利用可）
 docs_url: https://esbuild.github.io/api/
 selection:

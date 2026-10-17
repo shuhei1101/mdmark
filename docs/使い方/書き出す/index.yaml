@@ -1,0 +1,10 @@
+summary: CLI で Markdown を、CDN を読まず 1 枚で完結する HTML に書き出す手順
+items:
+  - page: 雛形を置く.md
+    summary: "`mdmark init` で設定・`theme.css`・索引・拡張のビルドの雛形を置く手順"
+  - page: 文書を書き出す.md
+    summary: "`mdmark export` で 1 文書を 1 枚の HTML に書き出す手順"
+  - page: 文書を1枚にまとめる.md
+    summary: "設定の `build` を書き、`mdmark build` で複数の文書を 1 枚にまとめる手順"
+  - page: 点検する.md
+    summary: "`mdmark check` で設定と索引を点検し、ずれを直す手順"

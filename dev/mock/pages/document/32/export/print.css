@@ -1,0 +1,93 @@
+/* 印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* モックのパンくず: 紙に出さない */
+.mock-breadcrumb {
+  display: none;
+}
+
+/* mdmark の層: 印刷のときの文書 */
+@layer mdmark {
+  /* 描く先の要素: 紙の幅いっぱいに使い、地の色と余白を外す */
+  .mdmark {
+    max-width: none;
+    padding: 0;
+    background: none;
+
+    /* リンク: 後ろに URL を併記する */
+    a[href^="http"]::after {
+      color: var(--mdmark-color-muted);
+      content: " (" attr(href) ")";
+      overflow-wrap: anywhere;
+    }
+
+    /* 図表・コードブロック・知らせの枠: 改ページで切らない */
+    :is(table, pre, figure, .mdmark-embed, .mdmark-notice) {
+      break-inside: avoid;
+    }
+
+    /* 表とコードブロック: 横スクロールをやめて紙の幅に収め、影を外す */
+    :is(pre, table) {
+      display: table;
+      width: 100%;
+      box-sizing: border-box;
+      background: none;
+    }
+
+    /* コードブロックの中のコード: 長い行を折り返す */
+    pre code {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    /* 表のセルと、その中のコード: 列の最小幅を外し、語の切れ目で折り返す */
+    :is(th, td),
+    :is(th, td) code {
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
+
+    /* 見出し: 直後で改ページしない */
+    :is(h1, h2, h3) {
+      break-after: avoid;
+    }
+  }
+
+  /* 紙の幅が狭いとき（A5 など）: 表を行ごとの「見出し: 値」の並びに積み、列が細く折れないようにする */
+  @media (max-width: 40rem) {
+    .mdmark {
+      /* 表の部品: 表の組みをやめて縦に積む */
+      :is(table, tbody, tr, td) {
+        display: block;
+      }
+
+      /* 見出し行: 各セルの前に列名を出すので隠す */
+      thead {
+        display: none;
+      }
+
+      /* 行: 行ごとに区切り線で分ける */
+      tr {
+        padding-block: 0.4em;
+        border-block-end: 1px solid var(--mdmark-color-border);
+      }
+
+      /* セル: 罫線を外し、値の寄せを左に戻す */
+      td {
+        padding: 0.15em 0;
+        border: 0;
+        text-align: start !important;
+      }
+
+      /* セルの前の列名（data-label は描くときに見出し行から写す） */
+      td::before {
+        display: block;
+        color: var(--mdmark-color-muted);
+        content: attr(data-label);
+        font-size: 0.85em;
+        font-weight: 600;
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@ import type { WarningItem } from "../src/extensions.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
+import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
 import { renderFigure } from "../src/parts/figure.ts";
 import { renderNotice } from "../src/parts/notice.ts";
@@ -128,6 +129,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const cells = Array.from({ length: columns - 1 }, () => "<td>値</td>");
     return `<table><tbody><tr>${head}${cells.join("")}</tr>${row}</tbody></table>`;
   },
+  "doc-list": (args) =>
+    renderDocList({
+      docs: args.docs as DocListItem[],
+      current: args.current as string | undefined,
+    }),
   figure: (args) =>
     renderFigure({
       kind: args.kind as "image" | "table",

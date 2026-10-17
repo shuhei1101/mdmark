@@ -1,8 +1,10 @@
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import {
   copyFile,
   cp,
+  mkdir,
   mkdtemp,
   readFile,
   rm,
@@ -34,6 +36,10 @@ async function createWorkTree(versionIni: string): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI の `init` が写す雛形の正本
+  await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
+    recursive: true,
+  });
   await writeFile(join(root, "package.json"), '{"type":"module"}\n');
   await writeFile(join(root, "version.ini"), versionIni);
   // 型定義を書く `tsc` が読む設定
@@ -46,6 +52,68 @@ async function createWorkTree(versionIni: string): Promise<string> {
     "dir",
   );
   return root;
+}
+
+/** 一時フォルダの git で、署名なしに git を流す */
+async function git(root: string, args: string[]): Promise<void> {
+  await execFileAsync(
+    "git",
+    [
+      "-c",
+      "user.name=test",
+      "-c",
+      "user.email=test@example.com",
+      "-c",
+      "commit.gpgsign=false",
+      ...args,
+    ],
+    { cwd: root },
+  );
+}
+
+/** 手順を 1 つ持つ `steps.yaml` の本文（`to` を省いて形の誤りにもできる） */
+function stepsYaml(options?: { withoutTo?: boolean }): string {
+  return [
+    "steps:",
+    "  - op: rename_key",
+    "    description: legacy を renamed に改める",
+    "    file: config",
+    "    from: legacy",
+    ...(options?.withoutTo ? [] : ["    to: renamed"]),
+    "",
+  ].join("\n");
+}
+
+/** `v0.3.0` のタグを打った作業ツリーを作る。タグの commit は今の Schema と、手順なしの一覧が空の `migrations/` を持つ */
+async function createTaggedWorkTree(versionIni: string): Promise<string> {
+  const root = await createWorkTree(versionIni);
+  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
+    recursive: true,
+  });
+  await mkdir(join(root, "migrations"), { recursive: true });
+  await writeFile(join(root, "migrations", "no-steps.yaml"), "entries: []\n");
+  await git(root, ["init", "--quiet"]);
+  await git(root, ["add", "schemas", "migrations", "version.ini"]);
+  await git(root, ["commit", "--quiet", "-m", "初期"]);
+  await git(root, ["tag", "v0.3.0"]);
+  return root;
+}
+
+/** ファイルの中身の SHA-256（16 進数） */
+function sha256(text: string): string {
+  return createHash("sha256").update(text).digest("hex");
+}
+
+/** 手順なしの一覧の本文を 1 行で作る */
+function noStepsYaml(schema: string, hash: string): string {
+  return [
+    "entries:",
+    "  - version: next",
+    `    schema: ${schema}`,
+    `    sha256: ${hash}`,
+    "    reason: 省いてよいキーを足しただけで、古い設定もそのまま合う",
+    "",
+  ].join("\n");
 }
 
 /** 入口 `node scripts/build.ts` を子プロセスとして流し、終了コードと標準エラーを返す */
@@ -114,6 +182,19 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   ]) {
     expect(declarations).toMatch(new RegExp(`export[^;]*\\b${name}\\b`));
   }
+  // CLI と、書き出した HTML の起動の処理と画面の規則を書く
+  for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
+    expect(existsSync(join(root, "dist", name))).toBe(true);
+  }
+  const initTarget = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
+  createdRoots.push(initTarget);
+  const init = await execFileAsync(
+    process.execPath,
+    [join(root, "dist", "cli.js"), "init", initTarget],
+    { cwd: root },
+  );
+  expect(init.stdout).toContain("置いた: mdmark.config.yaml");
+  expect(existsSync(join(initTarget, "mdmark.config.yaml"))).toBe(true);
   await writeFile(
     join(root, "consumer.ts"),
     'import { mount, registerExtension, render, version } from "./dist/index.js";\nexport { mount, registerExtension, render, version };\n',
@@ -182,4 +263,108 @@ test("test_error_when_dist_file_too_large", {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
+});
+
+// スキーマを変えても migrations/next/steps.yaml があれば通す（正常系）
+test("test_normal_when_schema_changed_with_steps", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createTaggedWorkTree("v0.3.0\n");
+  await writeFile(
+    join(root, "schemas", "mdmark.index.schema.json"),
+    '{ "type": "object", "required": ["documents"] }\n',
+  );
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(join(root, "migrations", "next", "steps.yaml"), stepsYaml());
+  // 実行
+  const { code } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(0);
+  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
+});
+
+// 手順なしの一覧に今の Schema の SHA-256 の行があれば通す（正常系）
+test("test_normal_when_schema_change_listed", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createTaggedWorkTree("v0.3.0\n");
+  const changed =
+    '{ "type": "object", "properties": { "title": { "type": "string" } } }\n';
+  await writeFile(join(root, "schemas", "mdmark.config.schema.json"), changed);
+  await writeFile(
+    join(root, "migrations", "no-steps.yaml"),
+    noStepsYaml("mdmark.config.schema.json", sha256(changed)),
+  );
+  // 実行
+  const { code } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(0);
+  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
+});
+
+// スキーマを変えたのに手順も一覧の合う行も無ければ、配布物を書かずに終わる（異常系）
+test("test_error_when_schema_changed_without_steps", async () => {
+  // 準備
+  const root = await createTaggedWorkTree("v0.3.0\n");
+  const before = await readFile(
+    join(root, "schemas", "mdmark.index.schema.json"),
+    "utf8",
+  );
+  await writeFile(
+    join(root, "schemas", "mdmark.index.schema.json"),
+    '{ "type": "object", "required": ["documents"] }\n',
+  );
+  // SHA-256 が変える前の Schema のものの行は、合わない
+  await writeFile(
+    join(root, "migrations", "no-steps.yaml"),
+    noStepsYaml("mdmark.index.schema.json", sha256(before)),
+  );
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr).toContain("schemas/mdmark.index.schema.json");
+  expect(stderr).toContain("migrations/next/steps.yaml");
+  expect(stderr).toContain("migrations/no-steps.yaml");
+});
+
+// release のビルドで migrations/next/ が残っていれば、移し方を示して終わる（異常系）
+test("test_error_when_next_steps_left_in_release", async () => {
+  // 準備
+  const root = await createTaggedWorkTree("v0.4.0\n");
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(join(root, "migrations", "next", "steps.yaml"), stepsYaml());
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr).toContain("migrations/next/");
+  expect(stderr).toContain("migrations/v0.4.0/");
+  expect(stderr).toContain("no-steps.yaml");
+});
+
+// steps.yaml が Schema に合わなければ、配布物を書かずに終わる（異常系）
+test("test_error_when_steps_invalid", async () => {
+  // 準備
+  const root = await createTaggedWorkTree("v0.3.0\n");
+  await writeFile(
+    join(root, "schemas", "mdmark.index.schema.json"),
+    '{ "type": "object", "required": ["documents"] }\n',
+  );
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(
+    join(root, "migrations", "next", "steps.yaml"),
+    stepsYaml({ withoutTo: true }),
+  );
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr).toContain("migrations/next/steps.yaml");
+  expect(stderr).toContain("to");
 });

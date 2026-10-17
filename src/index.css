@@ -34,6 +34,7 @@
     --mdmark-color-callout-important: #8250df;
     --mdmark-color-callout-warning: #9a6700;
     --mdmark-color-callout-caution: #d1242f;
+    --mdmark-color-current-bg: #ddf4ff;
     --mdmark-table-max-height: 28rem;
     --mdmark-color-term-underline: var(--mdmark-color-muted);
     --mdmark-tooltip-max-width: 22rem;
@@ -61,6 +62,7 @@
       --mdmark-color-callout-important: #ab7df8;
       --mdmark-color-callout-warning: #d29922;
       --mdmark-color-callout-caution: #f85149;
+      --mdmark-color-current-bg: #121d2f;
       color-scheme: dark;
     }
   }
@@ -1647,5 +1649,65 @@
         break-inside: avoid;
       }
     }
+  }
+
+  /* 文書の一覧（まとめた HTML の横の一覧とパネルの中身）: フォルダごとのまとまりを縦に並べる */
+  /* 文書の一覧: フォルダごとのまとまりを縦に並べる */
+  .mdmark-doc-list {
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+
+    /* 文書の並び: 記号を付けない */
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* 文書同士の間隔 */
+    li + li {
+      margin-block-start: 2px;
+    }
+
+    /* 文書のリンク: 行の全体を押せるようにする */
+    a {
+      display: block;
+      padding: 0.35em 0.65em;
+      border-radius: var(--mdmark-radius);
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* 開いている文書: 行の背景と文字の色で示す（太さは変えない） */
+      &[aria-current="page"] {
+        background: var(--mdmark-color-current-bg);
+        color: var(--mdmark-color-link);
+      }
+    }
+  }
+
+  /* フォルダのまとまり同士の間隔 */
+  .mdmark-doc-list-group + .mdmark-doc-list-group {
+    margin-block-start: calc(var(--mdmark-space) * 0.9);
+  }
+
+  /* フォルダの見出し: フォルダのパスを控えめな文字で書く */
+  .mdmark-doc-list-folder {
+    margin: 0 0 0.25em;
+    padding-inline: 0.65em;
+    color: var(--mdmark-color-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
   }
 }

@@ -7,6 +7,7 @@
 | [backlinks](./backlinks/index.html) | 描いた文書を参照している文書の一覧（文書の末尾の「関連文書」の節） |
 | [badge](./badge/index.html) | 頭に `badge:` を付けた行内のコードを描いた札 |
 | [callout](./callout/index.html) | 種類ごとの題・色・アイコンを持つ注意書きの枠と、閉じた注意書き |
+| [doc-list](./doc-list/index.html) | まとめた HTML の文書の一覧（フォルダごとに 1 段の見出しにパスを書き、開いている文書を示す） |
 | [figure](./figure/index.html) | 図と表に付ける通し番号と、番号にした参照のリンク |
 | [file-tree](./file-tree/index.html) | 罫線で書いたフォルダ構成を描いた入れ子のツリー |
 | [notice](./notice/index.html) | 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中の印の場所 |

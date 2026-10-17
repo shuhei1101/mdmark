@@ -1,0 +1,86 @@
+title: "文書をHTMLに書き出す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本の文書
+        description: 表の印・用語集の表・Chart.js の印・相対パスで指す画像・他の文書へのリンク・`script` 要素を持つ文書 1 つと、`theme.css` を指す設定
+      - name: Mock
+        description: 外部ライブラリは、URL の代わりに相対パスの手元のモジュールを `libraries` に書く（書き出しがネットワークを読まない）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス（出力を指定）
+        C->>C: 設定・索引・文書を読み、モジュールを束ね、画像を読む
+        C->>F: 配布物・CSS・モジュール・画像・本文を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: HTML だけを空のフォルダへ写して file:// で開く
+        F-->>R: 文書・表のボタン・用語のツールチップ・図・画像
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と `blob:`・`data:` のほかの要求が 0 件
+      - 表に並べ替え・ピン止めのボタンが付き、用語集の表の用語にツールチップが出る
+      - Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
+      - 相対パスで指した画像が描かれる（`naturalWidth` が 0 より大きい）
+      - '`theme.css` の上書きが当たっている'
+      - 他の文書へのリンクが書いたままの `href` で残る
+      - 文書に書いた `script` 要素が実行されていない
+    test: test_normal
+  - name: 正常シナリオ（読めない画像とモジュールがある）
+    setup:
+      - name: 読めないものを指す文書
+        description: 無い画像ファイルを相対パスで指し、`libraries` に無いファイルのモジュールを書いた印を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: 画像とモジュールを読めない
+        C->>F: 読めたものだけを埋めた HTML を書く
+        C-->>W: 読めなかった画像とモジュールの警告・終了コード 0
+        R->>F: file:// で開く
+        F-->>R: 文書と、印の場所の知らせの枠
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - 出力の警告に、読めなかった画像のパスとモジュールの印の名前が出る
+      - file:// で開くと、その印の場所に知らせの枠が出て、本文のほかの部分は描かれる
+      - 外への要求が 0 件
+    test: test_normal_when_unreadable_assets
+  - name: 異常シナリオ（出力先へ書けない）
+    setup:
+      - name: 書けない出力先
+        description: 出力のパスの親がフォルダではなくファイル
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark export 文書のパス（書けない出力を指定）
+        C-->>W: 書けない出力先と直し方・終了コード 0 以外
+    expected:
+      - 終了コードが 0 以外
+      - 出力に書けなかったパスと直し方が出る
+      - HTML がどこにも書かれていない
+    test: test_error_when_output_unwritable
+lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
+issue: 9
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: サーバーを立てずに 1 文書を配れる
+  - name: 読む人
+    interest: CDN を読めない環境でも、受け取った HTML で文書と図を読める
+trigger: 文書を書く人が、1 つの文書をサーバー無しで渡したくなる
+preconditions:
+  - 文書を書く人の手元に Node 24 以降がある
+  - 文書を書く人の手元から、設定の `libraries` に書いた URL の先へ届く
+success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。他の文書へのリンクは書いたままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。
+minimal_guarantee: 読めない画像とモジュールは書き出しを止めず警告に出す。出力先へ書けないときは、原因と直し方の 1 文を出して 0 以外で終わる。文書に書いたスクリプトは書き出した HTML でも実行しない。
+test_file: tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts

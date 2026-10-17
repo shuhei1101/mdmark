@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-cli-export-build
+
+
+ Test Files  71 passed (71)
+      Tests  266 passed (266)
+   Start at  12:17:47
+   Duration  20.67s (tests 43%, import 26%, worker 19%, transform 12%)
+

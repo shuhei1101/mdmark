@@ -1,0 +1,161 @@
+title: "設定と索引を点検する"
+entry:
+  kind: operation
+  value: '`mdmark check [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: ずれの無いフォルダで 0 件を返す
+    setup:
+      - name: ずれの無いフォルダ
+        description: '`mdmark init` の雛形に文書 2 つを足し、索引に 2 つとも載せ、`build.include` が 2 つに当たるフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い（CLI をそのフォルダで子プロセスとして流す）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as checkIndex
+        W->>C: mdmark check
+        C->>C: 設定を探して読み、Schema と build の対象を確かめる
+        C->>M: 索引・文書
+        M-->>C: []
+        C-->>W: ずれ 0 件・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準出力が `ずれ 0 件` の 1 行
+      - 設定・索引・文書が変わっていない
+    test: test_normal
+  - name: 正常系（ずれがある）
+    summary: 索引と文書のずれと設定の Schema のずれを出し、終了コード 1 で終わる
+    setup:
+      - name: ずれを持つフォルダ
+        description: 正常系のフォルダから文書 `old.md` を消して索引には残し、設定の `build` から `out` を消したフォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as checkIndex
+        W->>C: mdmark check
+        C->>C: 設定の Schema を確かめる
+        C->>M: 索引・文書
+        M-->>C: missing_doc のずれ
+        C-->>W: ずれ 2 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`mdmark.config.yaml:build: schema:` で始まり `build.out` を含む行がある'
+      - 索引の `old.md` の行を指す `missing_doc` の行がある
+      - 最後の行が `ずれ 2 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_drift
+  - name: 正常系（build の対象が 0 件）
+    summary: '`build.include` がどの文書にも当たらないと `no_documents` を出す'
+    setup:
+      - name: 当たらない include
+        description: 正常系のフォルダで、`build.include` をどのファイルにも当たらない glob にしたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: include に当たる文書が 0 件
+        C-->>W: no_documents の行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`mdmark.config.yaml:build.include: no_documents:` で始まる行がある'
+    test: test_normal_when_no_documents
+  - name: 異常系（設定ファイルが無い・終了コード 1）
+    summary: 設定ファイルが見つからないと、`mdmark init` で置けることを示して終わる
+    setup:
+      - name: 設定ファイルの無いフォルダ
+        description: 文書だけがあり、そのフォルダと上のフォルダに `mdmark.config.yaml` が無い一時フォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 今のフォルダから上へ設定ファイルを探す
+        C-->>W: 設定ファイルが無いことと mdmark init・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `mdmark.config.yaml` が無いことと `mdmark init` が出る
+    test: test_error_when_config_missing
+  - name: 異常系（設定ファイルを読めない・終了コード 1）
+    summary: YAML として読めない設定ファイルは、読めない行を示して終わる
+    setup:
+      - name: 壊れた設定ファイル
+        description: 3 行目の字下げが崩れた `mdmark.config.yaml` を持つフォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 設定ファイルを YAML として読めない
+        C-->>W: ファイルと行と直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `mdmark.config.yaml` と 3 行目が出る
+    test: test_error_when_config_unreadable
+lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
+idempotent: true
+side_effects: なし（設定・索引・文書を書き換えない）
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
+request:
+  - name: --config
+    type: string
+    required: false
+    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う）
+    location: argument
+    description: 使う設定ファイルのパス
+    example: docs/mdmark.config.yaml
+response:
+  - name: 標準出力
+    type: string
+    description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び
+  - name: 種類
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term'"
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないものを含む）、`no_documents` は `build.include` に当たる文書が 0 件。ほかはインターフェース定義『索引を点検する』の `kind`'
+  - name: 終了コード
+    type: 0 | 1
+    description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
+response_example: |-
+  ```text
+  docs/index.yaml:docs[1].path: missing_doc: `old.md` が見つかりません。文書を戻すか、索引の `docs[1]` を消してください。
+  mdmark.config.yaml:build: schema: `build.out` がありません。書き出す HTML のパスを書いてください。
+  ずれ 2 件
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: ずれが 0 件。終了コード 0
+  - name: なし（ずれがある・終了コード 1）
+    condition: ずれが 1 件以上ある
+    notes: 全てのずれを出してから終わる
+  - name: 設定ファイルが無い（終了コード 1）
+    condition: '`--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い'
+    notes: 標準エラーに、探した場所と `mdmark init` で置けることを出す
+  - name: 設定ファイルを読めない（終了コード 1）
+    condition: 設定ファイルを YAML として読めない
+    notes: 標準エラーに、ファイルと読めない行と直し方を出す
+constraints:
+  - item: 設定の点検
+    constraint: '`schemas/mdmark.config.schema.json` に合わないところごとに `schema` のずれにする。空の設定ファイル（読んだ値がオブジェクトでない）も `schema` のずれにする。`build.glossary`・`build.entry` がまとめる文書に当たらないものも `schema` のずれにする。`theme`・`extensions` のファイルが無いものも `schema` のずれにする'
+  - item: 索引の点検
+    constraint: 設定に `index` があるときだけ行う。索引のフォルダの下の拡張子 `.md` のファイルのうち `build.exclude` に当たらないものを文書として `checkIndex` に渡し、返ったずれをそのまま出す。索引のファイルを読めないときは、索引を指す `schema` のずれにする
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
+  - item: build の対象
+    constraint: 設定に `build` があるときだけ行う。`include` に当たり `exclude` に当たらない文書が 0 件なら `no_documents` のずれにする
+  - item: 内容の文
+    constraint: ずれごとに、何が合わないかと直し方を日本語の 1 文で書く
+  - item: 動く Node の版
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+test_file: tests/integration/lib/check-config.test.ts

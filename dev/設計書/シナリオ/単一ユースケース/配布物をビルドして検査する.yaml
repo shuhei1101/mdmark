@@ -90,6 +90,70 @@ scenarios:
       - '`dist/` に配布物が残っていない'
       - 出力に超えたファイル名とサイズが出る
     test: test_error_when_dist_file_too_large
+  - name: 正常シナリオ（広げるだけのスキーマの変更を一覧に載せる）
+    setup:
+      - name: スキーマを広げた作業ツリー
+        description: '`npm ci` を流し、版のタグを取ってある作業ツリー。`schemas/mdmark.config.schema.json` に省いてよいキーを 1 つ足してある'
+        notes: 最新の版のタグと `version.ini` はどちらも `v0.3.0`。`migrations/next/steps.yaml` は無く、`no-steps.yaml` に `next`・理由・変えた後の Schema の SHA-256 の行がある
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        participant F as dist/
+        D->>B: npm run build
+        B->>G: 最新の版のタグの schemas/ を読む
+        B->>B: 変わった Schema を数え、migrations/next/ と no-steps.yaml の行と SHA-256 を照らす
+        B->>F: 版を埋めた JS と CSS を書く
+        B-->>D: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` と `dist/index.css` がある'
+    test: test_normal_when_schema_change_listed
+  - name: 異常シナリオ（スキーマを変えたのに移行の手順が無い）
+    setup:
+      - name: スキーマを変えた作業ツリー
+        description: '`npm ci` を流し、版のタグを取ってある作業ツリー。`schemas/mdmark.index.schema.json` の必須のキーの名前を変えてある'
+        notes: 最新の版のタグと `version.ini` はどちらも `v0.3.0`。`migrations/next/steps.yaml` も、`no-steps.yaml` の `next` の行も無い
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        D->>B: npm run build
+        B->>G: 最新の版のタグの schemas/ を読む
+        B->>B: 変わった Schema に移行の手順も一覧の行も無い
+        B-->>D: 変わった Schema と直し方を出し、終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` に配布物が書かれていない'
+      - 出力に変わった Schema のファイルと、`migrations/next/steps.yaml` を置くか `no-steps.yaml` に理由を書くことが出る
+    test: test_error_when_schema_changed_without_steps
+  - name: 異常シナリオ（release のビルドで出していない版の手順が残る）
+    setup:
+      - name: 版を上げた作業ツリー
+        description: '`npm ci` を流し、版のタグを取ってある作業ツリー。`version.ini` を最新の版のタグより新しい版に上げてある'
+        notes: 最新の版のタグは `v0.3.0`、`version.ini` は `v0.4.0`。`migrations/next/steps.yaml` が残っていて、`migrations/v0.4.0/` は無い
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        D->>B: npm run build
+        B->>G: 最新の版のタグを読む
+        B->>B: version.ini がタグより新しく、migrations/next/ が残っている
+        B-->>D: migrations/next/ を migrations/v0.4.0/ へ移すことを出し、終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` に配布物が書かれていない'
+      - 出力に `migrations/next/` を `migrations/v0.4.0/` へ移し、`no-steps.yaml` の `next` の行を `v0.4.0` にすることが出る
+    test: test_error_when_next_steps_left_in_release
 lead: 開発者が、クローンしたリポジトリで依存の導入・lint・型検査・ビルド・テストを順に流し、版を埋めた配布物を `dist/` に得る。
 issue: 2
 primary_actor: mdmark の開発者

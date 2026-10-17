@@ -100,13 +100,19 @@ type MdmarkWindow = Window & {
   handle?: { update: (markdown: string) => void; destroy: () => void };
 };
 
-/** `v0.0.1` を埋めてビルドした作業ツリーを作り、その場所を返す。ビルドは入口 `node scripts/build.ts` を流し、配布ファイルの上限は既定のままにする */
-export async function buildDistRoot(): Promise<string> {
+/** `version`（既定は `v0.0.1`）を埋めてビルドした作業ツリーを作り、その場所を返す。ビルドは入口 `node scripts/build.ts --version {版}` を流し、配布ファイルの上限は既定のままにする */
+export async function buildDistRoot(
+  version: string = BUILT_VERSION,
+): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-e2e-dist-"));
   await cp(join(REPO_ROOT, "scripts"), join(root, "scripts"), {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI の `init` が写す雛形の正本
+  await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
+    recursive: true,
+  });
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await cp(join(REPO_ROOT, name), join(root, name));
   }
@@ -118,7 +124,11 @@ export async function buildDistRoot(): Promise<string> {
     "dir",
   );
   // 失敗（上限の超過を含む）すると例外になる
-  await execFileAsync(process.execPath, ["scripts/build.ts"], { cwd: root });
+  await execFileAsync(
+    process.execPath,
+    ["scripts/build.ts", "--version", version],
+    { cwd: root },
+  );
   return root;
 }
 

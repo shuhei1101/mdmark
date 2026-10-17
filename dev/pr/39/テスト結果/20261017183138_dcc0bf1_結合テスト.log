@@ -1,0 +1,12 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-cli-upgrade-migrations
+
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  18:31:42
+   Duration  25.11s (tests 88%, import 8%, transform 3%)
+
+
+exit=0

@@ -1,0 +1,17 @@
+/* 文書の一覧の部品のカタログだけの規則 */
+
+/* 見本の枠: まとめた HTML の横の一覧と同じ幅と地で、文書の一覧を置く */
+.catalog-side {
+  width: 16rem;
+  max-width: 100%;
+  padding: var(--mdmark-space) calc(var(--mdmark-space) * 0.75);
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+
+  /* 文書が多いとき: 横の一覧の高さを超えた分は一覧の中でスクロールする */
+  &.is-scroll {
+    height: 24rem;
+    overflow-y: auto;
+  }
+}

@@ -12,3 +12,7 @@ Markdown 文書の表示（拡張記法・図・差分・部品）を各アプ�
 ```bash
 PROJECT_ROOT="$PWD" PYTHONPATH="$AI_MONITOR_HOME/src" python3 -m ai_monitor.inject.build_docs_index
 ```
+
+## 設定・索引の Schema
+
+`schemas/` の設定・索引の JSON Schema を変えるときは、`migrations/next/` に移行の手順か、`migrations/no-steps.yaml` に行を置く（[移行の手順](./dev/設計書/ER図/移行の手順.yaml)）。

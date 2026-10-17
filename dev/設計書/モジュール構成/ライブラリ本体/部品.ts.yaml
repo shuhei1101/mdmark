@@ -20,6 +20,7 @@ directory: |-
   ├── section.ts                   # 節の renderSection
   ├── row-detail.ts                # 行の詳細の renderRowDetail
   ├── figure.ts                    # 図表の番号の renderFigure
+  ├── doc-list.ts                  # 文書の一覧の renderDocList
   └── {部品}.stories.yaml         # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
   ```
 constants:
@@ -469,6 +470,41 @@ functions:
         condition: '`kind: image`、`number: 1`、`caption: 全体の構成` と、`kind: table`、`number: 1`'
         mock: なし
         expected: 1 つ目は中身の後に `<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>`、2 つ目は中身の前に `<b>表 1</b>`
+  - name: renderDocList
+    title: 文書の一覧を描く
+    container: src/parts/doc-list.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 部品設計『文書の一覧』の HTML を返す。フォルダの無い文書を先に、フォルダごとに 1 段の見出しでまとめ、`current` の行に `aria-current="page"` を付ける
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ docs: Array<{ path: string; title: string }>; current?: string }'
+        required: true
+        description: まとめた文書と開いている文書のパス
+    returns:
+      type: string
+      description: '`<nav class="mdmark-doc-list" aria-label="文書の一覧">` で始まる HTML。各リンクは `href="#/{path}"` と `data-doc-path` を持つ'
+    unit_tests:
+      - name: test_render_doc_list
+        case: 正常
+        summary: フォルダの無い文書を先に、フォルダごとに最初に出た順でまとめる
+        condition: '`docs` が `a/x.md`・`README.md`・`b/y.md`・`a/z.md`、`current` が `b/y.md`'
+        mock: なし
+        expected: まとまりが見出しなし（`README.md`）・`a`（`x.md`・`z.md`）・`b` の順で、`b/y.md` のリンクだけが `aria-current="page"` を持つ
+      - name: test_render_doc_list_when_escaped
+        case: 正常
+        summary: 題とパスの HTML の特殊文字を替える
+        condition: 題が `<b>&` の文書
+        mock: なし
+        expected: 題が `&lt;b&gt;&amp;` で出る
+    callees:
+      - '#functions[escapeHtml]'
+    refs:
+      - dev/設計書/部品設計/文書の一覧.ts#
+    status: planned
+    introduced:
+      pr: 32
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -488,3 +524,4 @@ test_files:
   - tests/unit/src/parts/section.test.ts
   - tests/unit/src/parts/row-detail.test.ts
   - tests/unit/src/parts/figure.test.ts
+  - tests/unit/src/parts/doc-list.test.ts

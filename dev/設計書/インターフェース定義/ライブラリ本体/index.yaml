@@ -14,3 +14,13 @@ items:
     summary: 索引と全ての文書の本文から、被参照と用語集の表の用語をまとめた参照の表を作る（collectReferences）
   - page: 索引を点検する.ts.yaml
     summary: 索引と文書の本文から、索引と文書のずれの一覧を返す（checkIndex）
+  - page: 雛形を置く.ts.yaml
+    summary: 文書を書く人が、設定・使う側の CSS・索引・拡張の雛形をフォルダに置く（mdmark init）
+  - page: 設定と索引を点検する.ts.yaml
+    summary: 文書を書く人が、設定の形・索引と文書のずれ・build の対象の有無を点検する（mdmark check）
+  - page: 文書をHTMLに書き出す.ts.yaml
+    summary: 文書を書く人が、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export）
+  - page: 複数の文書を1枚のHTMLにまとめる.ts.yaml
+    summary: 文書を書く人が、設定の build の文書を行き来できる 1 枚の HTML にまとめる（mdmark build）
+  - page: 版を上げる.ts.yaml
+    summary: 文書を書く人が、移行の手順を版の順に当てて設定の版を呼んだ CLI の版にする（mdmark upgrade）

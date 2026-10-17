@@ -1,0 +1,12 @@
+$ npm run lint && npm run typecheck
+
+> lint
+> biome check .
+
+Checked 249 files in 1202ms. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+
+exit=0

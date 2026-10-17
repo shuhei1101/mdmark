@@ -89,6 +89,7 @@ categories:
   - name: ビルド・生成
     prerequisites:
       - '`npm ci` で依存を入れてある'
+      - 移行の手順の点検に git の版のタグが要る（`git fetch --tags`）。タグが無い clone、git の作業ツリーでないフォルダでは、スキーマの比較を飛ばす
     commands: |-
       `version.ini` の版を埋めて `dist/` に配布物を書く。
 
@@ -101,11 +102,11 @@ categories:
       ```bash
       npm run build -- --version v{版}
       ```
-    effects: '`dist/` を前回の分を消してから書き直す。`index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt` のほかに、`tsconfig.dist.json` で `tsc` を流して型定義（`index.d.ts` と、それが読み込む `.d.ts`）を書く。版の書式が違う・`version.ini` を読めない・esbuild か `tsc` が失敗する・配布ファイルが 256KB を超えると、終了コード 1 で終わり `dist/` は残らない'
+    effects: '`dist/` を前回の分を消してから書き直す。`index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・ CLI の `cli.js`・書き出した HTML に埋める `viewer.js`・`viewer.css` のほかに、`tsconfig.dist.json` で `tsc` を流して型定義（`index.d.ts` と、それが読み込む `.d.ts`）を書く。版の書式が違う・`version.ini` を読めない・設定・索引の JSON Schema（`schemas/`）を最新の版のタグから変えたのに移行の手順（`migrations/next/steps.yaml`）も手順なしの一覧（`migrations/no-steps.yaml`）の合う行も無い・release のビルドで `migrations/next/` が残っている・移行の手順の形が合わない・esbuild か `tsc` が失敗する・`index.js`・`index.css` が 256KB を超える・`viewer.js` が `</script` の並びを持つと、終了コード 1 で終わり `dist/` は残らない'
     verification:
       state: 済
-      date: '2026-10-16'
-      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`（220KB）・`index.css`・`THIRD_PARTY_LICENSES.txt` と型定義（`index.d.ts` ほか）が書かれることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ることは、単体テストで確かめた'
+      date: '2026-10-17'
+      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた'
   - name: 取り込み前の検査
     commands: 未確定
   - name: 管理作業
@@ -113,27 +114,34 @@ categories:
       - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で流す
       - release は `version.ini` を打つ版へ更新した後、hotfix は打つ版を決めた後
     commands: |-
-      版のタグが指す commit に配布物を入れる（release と hotfix で、master へマージする前に流す）。
-
       1. 依存を lock どおりに入れる
 
       ```bash
       npm ci
       ```
 
-      2. 打つ版を埋めてビルドする
+      2. 出していない版の移行の手順を打つ版へ移し、`migrations/no-steps.yaml` の `version: next` を打つ版に書き換えて commit する（`migrations/next/` が無ければ `git mv` を、`version: next` の行が無ければ `sed` を飛ばす。どちらも無ければ手順ごと飛ばす）
+
+      ```bash
+      git mv migrations/next migrations/v{版}
+      sed -i 's/version: next$/version: v{版}/' migrations/no-steps.yaml
+      git add migrations
+      git commit -m "chore: 移行の手順を v{版} へ移す"
+      ```
+
+      3. 打つ版を埋めてビルドする
 
       ```bash
       npm run build -- --version v{版}
       ```
 
-      3. `dist/` に差分があるかを確かめる（出力が空なら手順 4 を飛ばす）
+      4. `dist/` に差分があるかを確かめる（出力が空なら手順 5 を飛ばす）
 
       ```bash
       git status --porcelain dist
       ```
 
-      4. `dist/` を commit して対象のブランチへ push する
+      5. `dist/` を commit して対象のブランチへ push する
 
       ```bash
       git add dist
@@ -143,4 +151,4 @@ categories:
     effects: 対象のブランチへ `dist/` の commit を push する。`dist/` が変わらなければ commit は要らない
     verification:
       state: 未確認
-      detail: 手順 1・2・3（`npm ci`、`npm run build -- --version v{版}`、`git status --porcelain dist` が `?? dist/` を出す）は確かめた。手順 4 は対象のブランチへ push して外へ書き込むため走らせていない
+      detail: 手順 1・2・3・4（`npm ci`、移行の手順の移し、`npm run build -- --version v{版}`、`git status --porcelain dist` が `dist/` の差分を出す）は、一時の clone で `--version v0.4.0` を使って確かめた。`migrations/next/` が無いときは `git mv` が失敗するので飛ばし、`sed` 以降でビルドが通る。手順 5 は対象のブランチへ push して外へ書き込むため走らせていない

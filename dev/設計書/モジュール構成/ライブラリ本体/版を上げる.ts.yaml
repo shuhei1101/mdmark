@@ -1,0 +1,908 @@
+title: "ライブラリ本体 / 版を上げる"
+lead: '`mdmark upgrade` の処理。版の読み取りと比較、移行の手順の読み取り・検め・適用、写しと戻し、変更履歴の行の抽き出し、標準入力での問いを持ち、`runUpgrade` がこれらと CLI の点検をつなぐ。'
+directory: |-
+  ```tree
+  src/cli/
+  ├── versions.ts    # 版の書式・比較・呼んだ CLI の版
+  ├── migrations.ts  # 移行の手順の読み取り・形の検め・適用
+  ├── backup.ts      # 当てる前の写しと写しからの戻し
+  ├── changelog.ts   # 変更履歴の表から範囲の行を抽き出す
+  ├── prompt.ts      # 標準入力の 1 行を答えにする問い
+  └── upgrade.ts     # mdmark upgrade
+  schemas/
+  └── mdmark.steps.schema.json  # steps.yaml の JSON Schema
+  migrations/
+  ├── v{版}/        # 出した版の steps.yaml とスクリプト
+  ├── next/          # 出していない版の steps.yaml とスクリプト
+  └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
+  ```
+function_types:
+  - name: Prompter
+    title: 問い
+    container: src/cli/prompt.ts
+    summary: 問いの文を出し、答えの 1 行を返す。答える前に入力が終わったら `undefined` を返す
+    args:
+      - name: question
+        type: string
+        required: true
+        description: 問いの文
+    returns:
+      type: Promise<string | undefined>
+      description: 前後の空白を落とした答え、入力が終わっていれば `undefined`
+data_models:
+  - name: MigrationStep
+    title: 移行の手順
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: '`steps.yaml` の `steps` の要素 1 つ。`op` で分けた判別子つきユニオン'
+    properties:
+      - name: op
+        type: '"rename_key" | "set_default" | "map_values" | "replace_mark" | "call"'
+        description: 手順の種類。残りのプロパティは種類ごとに ER 図『移行の手順』の必須のとおりに持つ
+      - name: description
+        type: string
+        description: 何をどう変えるかの 1 文
+      - name: destructive
+        type: boolean
+        default: 'false'
+        description: 壊す印
+      - name: file
+        type: '"config" | "index"'
+        description: '`rename_key`・`set_default`・`map_values` が書き換える YAML'
+      - name: from
+        type: string
+        description: '`rename_key` の元のキーのパス、`replace_mark` の書き換える前の印'
+      - name: to
+        type: string
+        description: '`rename_key` の新しいキーのパス、`replace_mark` の書き換えた後の印'
+      - name: key
+        type: string
+        description: '`set_default`・`map_values` のキーのパス'
+      - name: value
+        type: unknown
+        description: '`set_default` が足す値'
+      - name: ask
+        type: string
+        description: '`set_default` が値を聞く問いの文'
+      - name: mapping
+        type: Record<string, unknown>
+        description: '`map_values` の読み替えの表'
+      - name: script
+        type: string
+        description: '`call` のスクリプトの、`steps.yaml` のあるフォルダからの相対パス'
+      - name: files
+        type: ("config" | "index" | "documents")[]
+        description: '`call` が書き換えうるもの'
+    refs:
+      - dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
+  - name: MigrationVersion
+    title: 当てる版
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: 当てる 1 つの版と、その版の検めた手順
+    properties:
+      - name: version
+        type: string
+        description: 版（`v{MAJOR}.{MINOR}.{PATCH}`）
+      - name: dir
+        type: string
+        description: その版のフォルダの絶対パス（`call` のスクリプトの基準）
+      - name: steps
+        type: MigrationStep[]
+        description: 書いた順の手順
+  - name: MigrationTarget
+    title: 手順の当て先
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: 手順を当てる設定・索引・文書の場所と、当てる前に聞いた答え
+    properties:
+      - name: configPath
+        type: string
+        description: 設定ファイルの絶対パス
+      - name: indexPath
+        type: string | undefined
+        description: 設定の `index` が指す索引の絶対パス。設定に `index` が無ければ `undefined`
+      - name: documents
+        type: string[]
+        description: '`build` の対象と索引の文書の絶対パス（重なりなし）'
+      - name: answers
+        type: Map<MigrationStep, string>
+        description: '`ask` を持つ `set_default` に答えた値'
+  - name: ChangelogRow
+    title: 変更履歴の行
+    container: src/cli/changelog.ts
+    usecase: 版を上げる
+    summary: 変更履歴の表の 1 行
+    properties:
+      - name: version
+        type: string
+        description: バージョンの列
+      - name: pr
+        type: string
+        description: PR の列のリンクの文字（`#40`）
+      - name: change
+        type: string
+        description: 変更の列
+constants:
+  - name: VERSION_PATTERN
+    title: 版の書式
+    container: src/cli/versions.ts
+    summary: 手元の版・パッケージの版・移行の手順のフォルダ名が合うべき書式
+    value: '`/^v(\d+)\.(\d+)\.(\d+)$/`'
+  - name: MIGRATIONS_DIR
+    title: 移行の手順のフォルダ
+    container: src/cli/migrations.ts
+    summary: パッケージの直下からの移行の手順のフォルダと、その中の名前
+    entries:
+      - key: root
+        value: '`migrations`'
+      - key: next
+        value: '`next`'
+      - key: steps
+        value: '`steps.yaml`'
+      - key: noSteps
+        value: '`no-steps.yaml`'
+  - name: SCRIPT_EXTENSIONS
+    title: スクリプトの拡張子
+    container: src/cli/migrations.ts
+    summary: '`call` のスクリプトに許す拡張子（`node_modules` の下で流せるものだけ）'
+    value: '`[".js", ".mjs"]`'
+  - name: BACKUP_DIR
+    title: 写しのフォルダ
+    container: src/cli/backup.ts
+    summary: 設定ファイルのあるフォルダからの写しの置き場と、中身が `*` の `.gitignore` を置くフォルダ
+    entries:
+      - key: root
+        value: '`.mdmark`'
+      - key: backups
+        value: '`.mdmark/backup`'
+  - name: CHANGELOG_FILE
+    title: 変更履歴のファイル
+    container: src/cli/changelog.ts
+    summary: パッケージの直下からの変更履歴のパス
+    value: '`docs/はじめに/変更履歴.md`'
+  - name: CONFIRM_ANSWER
+    title: 承諾の答え
+    container: src/cli/upgrade.ts
+    summary: 壊す手順の確かめで承諾とする答え
+    value: '`y`'
+functions:
+  - name: parseVersion
+    title: 版を読む
+    container: src/cli/versions.ts
+    usecase: 版を上げる
+    summary: '`v{MAJOR}.{MINOR}.{PATCH}` を 3 つの数にする。書式が違えば `undefined`'
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 版の文字列
+    returns:
+      type: '[number, number, number] | undefined'
+      description: MAJOR・MINOR・PATCH
+    unit_tests:
+      - name: test_parse_version
+        case: 正常
+        summary: 版を 3 つの数にする
+        condition: '`v0.12.3`'
+        mock: なし
+        expected: '`[0, 12, 3]`'
+      - name: test_parse_version_when_invalid
+        case: 異常
+        summary: 書式の違う版は undefined
+        condition: '`0.3`・`v0.3`・`v0.3.0-rc`'
+        mock: なし
+        expected: どれも `undefined`
+    status: planned
+    introduced:
+      pr: 39
+  - name: compareVersions
+    title: 版を比べる
+    container: src/cli/versions.ts
+    usecase: 版を上げる
+    summary: 2 つの版を MAJOR・MINOR・PATCH の順に数として比べる
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: a
+        type: string
+        required: true
+        description: 書式の合う版
+      - name: b
+        type: string
+        required: true
+        description: 書式の合う版
+    returns:
+      type: -1 | 0 | 1
+      description: '`a` が古ければ -1、同じなら 0、新しければ 1'
+    exceptions:
+      - name: Error
+        condition: どちらかが `VERSION_PATTERN` に合わない（呼ぶ側の不具合）
+        message: '版の書式が違います: {版}'
+    unit_tests:
+      - name: test_compare_versions
+        case: 正常
+        summary: 桁ごとに数として比べる
+        condition: '`v0.10.0` と `v0.9.9`、`v1.0.0` と `v1.0.0`、`v0.3.0` と `v0.4.0`'
+        mock: なし
+        expected: 1・0・-1
+    status: planned
+    introduced:
+      pr: 39
+  - name: validateSteps
+    title: 移行の手順の形を検める
+    container: src/cli/migrations.ts
+    usecase: 共通
+    summary: 読んだ `steps.yaml` を `schemas/mdmark.steps.schema.json` と同じ形で検め、手順の並びと合わないところを返す
+    description: 検めるのは、最上位が `steps`（配列）だけを持つこと・各手順の `op` が 5 つのどれかで `description` が空でないこと・`op` ごとの必須のプロパティ・`set_default` が `value` か `ask` のどちらか 1 つだけを持つこと・`replace_mark` の `to` が `from` を含まないこと・`map_values` の読み替えの表の新しい値が元の値に無いこと・`call` の `script` の拡張子が `SCRIPT_EXTENSIONS` のどれかで `files` が 1 つ以上。形の検査は `validateConfig` と同じく手書きで、ライブラリを足さない。配布物のビルドもこの関数で検める
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: raw
+        type: unknown
+        required: true
+        description: YAML として読んだ値
+      - name: file
+        type: string
+        required: true
+        description: 合わないところに出すファイルの名前（`migrations/v0.5.0/steps.yaml` など）
+    returns:
+      type: '{ steps: MigrationStep[]; problems: string[] }'
+      description: '形の合う手順と、合わないところ 1 つ 1 文（`{ファイル}: steps[{番号}].{キー}: {内容}`）。`problems` が空でなければ `steps` を使わない'
+    unit_tests:
+      - name: test_validate_steps
+        case: 正常
+        summary: 5 つの種類の手順をそのまま返す
+        condition: '`rename_key`・`set_default`（`value`）・`map_values`・`replace_mark`・`call`（`.mjs`）を 1 つずつ持つ値'
+        mock: なし
+        expected: '`problems` が空で、`steps` が 5 つ'
+      - name: test_validate_steps_when_required_missing
+        case: 異常
+        summary: op の必須のプロパティが無いと合わないところを返す
+        condition: '`replace_mark` が `to` を持たない'
+        mock: なし
+        expected: '`problems` が 1 つで `steps[0].to` を含む'
+      - name: test_validate_steps_when_not_reapplicable
+        case: 異常
+        summary: 当て直すと結果が変わる手順を拒む
+        condition: '`to` が `from` を含む `replace_mark` と、新しい値が元の値にある `map_values`'
+        mock: なし
+        expected: '`problems` が 2 つ'
+      - name: test_validate_steps_when_script_ts
+        case: 異常
+        summary: 拡張子 .ts のスクリプトを拒む
+        condition: '`script: move.ts` の `call`'
+        mock: なし
+        expected: '`problems` が 1 つで `steps[0].script` を含む'
+    status: planned
+    introduced:
+      pr: 39
+  - name: loadMigrationVersions
+    title: 当てる版を読む
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: パッケージの `migrations/` から手元の版より新しく目標の版以下の `v{版}` を版の昇順に読み、形を検めて返す
+    description: '`v{版}` でないフォルダ（`next` を含む）とファイルは飛ばす。`migrations/` が無ければ空の並びを返す。全ての版を検めてから、合わないところを 1 つの `CliError` にまとめて投げる。`call` のスクリプトは版のフォルダの配下にあることを確かめる'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ packageDir: string; from: string; to: string }'
+        required: true
+        description: パッケージの直下・手元の版・目標の版
+    returns:
+      type: Promise<MigrationVersion[]>
+      description: 当てる版の並び（昇順）
+    exceptions:
+      - name: CliError
+        condition: '`steps.yaml` を読めない・形が合わない、`call` のスクリプトが無いか版のフォルダの外を指す'
+        message: 移行の手順に誤りがあります（{合わないところを `、` でつないだもの}）。mdmark を入れ直してください。
+    unit_tests:
+      - name: test_load_migration_versions
+        case: 正常
+        summary: 範囲の版だけを昇順に返す
+        condition: '`v0.3.0`・`v0.4.0`・`v0.10.0`・`next` のフォルダ、`from: v0.3.0`・`to: v0.10.0`'
+        mock: 一時フォルダのパッケージ
+        expected: '`v0.4.0`・`v0.10.0` の 2 つ'
+      - name: test_load_migration_versions_when_steps_invalid
+        case: 異常
+        summary: 形の合わない版があれば CliError
+        condition: '`v0.4.0` の手順が `op` を持たない'
+        mock: 一時フォルダのパッケージ
+        expected: '`CliError` の文に `migrations/v0.4.0/steps.yaml` と `steps[0].op` が入る'
+      - name: test_load_migration_versions_when_script_outside
+        case: 異常
+        summary: 版のフォルダの外を指すスクリプトを拒む
+        condition: '`script: ../x.mjs` の `call`'
+        mock: 一時フォルダのパッケージ
+        expected: '`CliError` を投げる'
+    refs:
+      - '#functions[validateSteps]'
+      - '#functions[compareVersions]'
+    status: planned
+    introduced:
+      pr: 39
+  - name: renameKey
+    title: キーの名前を変える
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: YAML の Document で、元のキーがあり新しいキーが無いときだけ、値とコメントを保って新しいキーへ移す
+    description: キーのパスは `.` で区切る。新しいキーが同じ親の下なら元のキーの位置で名前だけを替え、親が違えば新しい親の末尾に移す（無い親は作る）
+    kind: 関数
+    scope: public
+    is_async: false
+    side_effects: '`doc` を書き換える'
+    args:
+      - name: doc
+        type: Document
+        required: true
+        description: yaml の Document
+      - name: from
+        type: string
+        required: true
+        description: 元のキーのパス
+      - name: to
+        type: string
+        required: true
+        description: 新しいキーのパス
+    returns:
+      type: boolean
+      description: 書き換えたら `true`
+    unit_tests:
+      - name: test_rename_key
+        case: 正常
+        summary: 同じ親の下で名前を変え、位置とコメントを保つ
+        condition: '`build:` の下に `# 書き出す先` のコメントつきの `out` と `include` がある。`build.out` → `build.output`'
+        mock: なし
+        expected: '`true` を返し、文字列にすると `output` が `out` の位置にありコメントが残る'
+      - name: test_rename_key_when_already_renamed
+        case: 正常
+        summary: 新しいキーがあれば何もしない
+        condition: '`build.output` だけがある'
+        mock: なし
+        expected: '`false` を返し、文字列が変わらない'
+    status: planned
+    introduced:
+      pr: 39
+  - name: setDefault
+    title: 無いキーを足す
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: キーが無いときだけ値を足す
+    kind: 関数
+    scope: public
+    is_async: false
+    side_effects: '`doc` を書き換える'
+    args:
+      - name: doc
+        type: Document
+        required: true
+        description: yaml の Document
+      - name: key
+        type: string
+        required: true
+        description: キーのパス
+      - name: value
+        type: unknown
+        required: true
+        description: 足す値
+    returns:
+      type: boolean
+      description: 足したら `true`
+    unit_tests:
+      - name: test_set_default
+        case: 正常
+        summary: 無いキーを足す
+        condition: '`features.diff` が無い。値 `true`'
+        mock: なし
+        expected: '`true` を返し、`features.diff` が `true`'
+      - name: test_set_default_when_present
+        case: 正常
+        summary: あるキーは変えない
+        condition: '`features.diff: false` がある'
+        mock: なし
+        expected: '`false` を返し、値が `false` のまま'
+    status: planned
+    introduced:
+      pr: 39
+  - name: mapValues
+    title: 値を読み替える
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: キーの値が読み替えの表の元の値のときだけ新しい値に替える
+    description: 値が配列のときは要素ごとに替える。比べるのは YAML の値としての一致
+    kind: 関数
+    scope: public
+    is_async: false
+    side_effects: '`doc` を書き換える'
+    args:
+      - name: doc
+        type: Document
+        required: true
+        description: yaml の Document
+      - name: key
+        type: string
+        required: true
+        description: キーのパス
+      - name: mapping
+        type: Record<string, unknown>
+        required: true
+        description: 元の値から新しい値への表
+    returns:
+      type: boolean
+      description: 替えたら `true`
+    unit_tests:
+      - name: test_map_values
+        case: 正常
+        summary: 表にある値を替え、無い値は残す
+        condition: '`build.include: [docs/**/*.md, a.md]`、表 `{ "docs/**/*.md": "**/*.md" }`'
+        mock: なし
+        expected: '`true` を返し、`[**/*.md, a.md]`'
+      - name: test_map_values_when_no_match
+        case: 正常
+        summary: 当て直しても変わらない
+        condition: 替えた後の値に同じ表を当てる
+        mock: なし
+        expected: '`false` を返す'
+    status: planned
+    introduced:
+      pr: 39
+  - name: replaceMark
+    title: 印を書き換える
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: 文書の本文の `from` を全て `to` にする
+    description: 文字列として一致した箇所を替える（正規表現にしない）。`to` は `from` を含まないため、当て直しても結果が変わらない
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 文書の本文
+      - name: from
+        type: string
+        required: true
+        description: 書き換える前の印
+      - name: to
+        type: string
+        required: true
+        description: 書き換えた後の印
+    returns:
+      type: string
+      description: 書き換えた本文
+    unit_tests:
+      - name: test_replace_mark
+        case: 正常
+        summary: 全ての印を書き換える
+        condition: '`<!-- note -->` を 2 つ持つ本文、`<!-- note -->` → `<!-- callout -->`'
+        mock: なし
+        expected: 2 つとも `<!-- callout -->` になり、他の文字が変わらない
+    status: planned
+    introduced:
+      pr: 39
+  - name: stepFiles
+    title: 手順が書き換えうるファイル
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: 当てる全ての手順が書き換えうるファイルを、設定ファイルを先頭に重なりなく返す
+    description: '設定ファイルは版を書き換えるため手順に関わらず含める。`file: index` と `files` の `index` は索引を、`replace_mark` と `files` の `documents` は文書を足す。索引が無いときは足さない'
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: versions
+        type: MigrationVersion[]
+        required: true
+        description: 当てる版
+      - name: target
+        type: MigrationTarget
+        required: true
+        description: 手順の当て先
+    returns:
+      type: string[]
+      description: 絶対パスの並び
+    unit_tests:
+      - name: test_step_files
+        case: 正常
+        summary: 設定・索引・文書を重なりなく返す
+        condition: '`file: index` の `rename_key` と `replace_mark` と `files: [index, documents]` の `call`、文書 2 つ'
+        mock: なし
+        expected: 設定・索引・文書 2 つの 4 つで、先頭が設定
+      - name: test_step_files_when_no_index
+        case: 正常
+        summary: 索引が無ければ足さない
+        condition: '`indexPath` が `undefined` で `file: index` の手順を持つ'
+        mock: なし
+        expected: 設定だけ
+    status: planned
+    introduced:
+      pr: 39
+  - name: applyStep
+    title: 手順を当てる
+    container: src/cli/migrations.ts
+    usecase: 版を上げる
+    summary: 手順 1 つを当て先へ当てる
+    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻す。`file: index` で索引が無ければ何もしない。`set_default` の `ask` は `target.answers` の値を YAML の値として読んで足す。`replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き戻す。`call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで流す（シェルを通さない）'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 設定・索引・文書を書き換える。`call` は子プロセスを流す
+    args:
+      - name: options
+        type: '{ step: MigrationStep; version: MigrationVersion; target: MigrationTarget }'
+        required: true
+        description: 当てる手順・その版・当て先
+    returns:
+      type: Promise<void>
+      description: 当て終えた
+    exceptions:
+      - name: CliError
+        condition: ファイルを読めない・書けない、対象の YAML を読めない、`call` のスクリプトが 0 以外で終わった
+        message: '{版} の手順「{説明}」に失敗しました（{理由}）。'
+    unit_tests:
+      - name: test_apply_step
+        case: 正常
+        summary: rename_key で設定のキーの名前を変えて書き戻す
+        condition: '`file: config` の `rename_key`（`legacy` → `renamed`）'
+        mock: 一時フォルダの設定
+        expected: 設定ファイルに `renamed` があり `legacy` が無い
+      - name: test_apply_step_when_asked
+        case: 正常
+        summary: ask の答えを YAML の値として足す
+        condition: '`ask` を持つ `set_default`（`key: count`）、答え `3`'
+        mock: 一時フォルダの設定
+        expected: '`count` が数 `3`'
+      - name: test_apply_step_when_index_missing
+        case: 正常
+        summary: '索引が無ければ file: index の手順は何もしない'
+        condition: '`indexPath` が `undefined` で `file: index` の `rename_key`'
+        mock: 一時フォルダの設定
+        expected: 例外を投げず、ファイルが変わらない
+      - name: test_apply_step_when_script_fails
+        case: 異常
+        summary: スクリプトが 0 以外で終わると CliError
+        condition: '`process.exit(1)` する `.mjs` を流す `call`'
+        mock: 一時フォルダのスクリプト
+        expected: '`CliError` の文に版と手順の説明と終了コード 1 が入る'
+      - name: test_apply_step_keeps_flow_style
+        case: 正常
+        summary: 手順が触らないフロー形式の並びの書き方を残す
+        condition: '`legacy: 1` と `include: ["**/*.md"]` を持つ設定に `rename_key`（`legacy` → `renamed`）'
+        mock: 一時フォルダの設定
+        expected: '設定ファイルに `include: ["**/*.md"]` がそのまま残る'
+    refs:
+      - '#functions[renameKey]'
+      - '#functions[setDefault]'
+      - '#functions[mapValues]'
+      - '#functions[replaceMark]'
+    status: planned
+    introduced:
+      pr: 39
+  - name: takeBackup
+    title: 写しを取る
+    container: src/cli/backup.ts
+    usecase: 版を上げる
+    summary: ファイルを `.mdmark/backup/{yyyymmddHHMMSS}/` へ、設定ファイルのフォルダからの相対パスを保って写す
+    description: '`.mdmark/.gitignore`（中身 `*`）が無ければ置く。日時は引数の時刻の手元の時刻。同じ名前のフォルダが既にあれば末尾に `-2`・`-3` …を付ける。設定ファイルのフォルダの外のファイルは写さずに `CliError` を投げる'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 写しのフォルダと `.gitignore` を書く
+    args:
+      - name: options
+        type: '{ dir: string; files: string[]; now: Date }'
+        required: true
+        description: 設定ファイルのフォルダ・写すファイルの絶対パス・今の時刻（テストで差し替える）
+    returns:
+      type: Promise<string>
+      description: 写しのフォルダの絶対パス
+    exceptions:
+      - name: CliError
+        condition: 写すファイルが設定ファイルのフォルダの外にある、または写しを書けない
+        message: '{パス} の写しを取れません（{理由}）。何も書き換えていません。'
+    unit_tests:
+      - name: test_take_backup
+        case: 正常
+        summary: 相対パスを保って写し、.gitignore を置く
+        condition: '`mdmark.config.yaml` と `docs/a.md`、`now` は 2026-10-17 12:00:00'
+        mock: 一時フォルダ
+        expected: '`.mdmark/backup/20261017120000/mdmark.config.yaml` と `.../docs/a.md` が元と同じ中身で、`.mdmark/.gitignore` が `*`'
+      - name: test_take_backup_when_same_time
+        case: 正常
+        summary: 同じ日時の写しがあれば別の名前にする
+        condition: 同じ `now` で 2 回呼ぶ
+        mock: 一時フォルダ
+        expected: 2 回目のフォルダ名が `20261017120000-2`
+      - name: test_take_backup_when_outside
+        case: 異常
+        summary: 設定ファイルのフォルダの外のファイルは拒む
+        condition: '`files` に親のフォルダのファイルがある'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、`.mdmark/backup/` にファイルが無い'
+    status: planned
+    introduced:
+      pr: 39
+  - name: restoreBackup
+    title: 写しから戻す
+    container: src/cli/backup.ts
+    usecase: 版を上げる
+    summary: 写しの全てのファイルを元の場所へ書き戻す
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 設定・索引・文書を書き戻す
+    args:
+      - name: options
+        type: '{ dir: string; backupDir: string }'
+        required: true
+        description: 設定ファイルのフォルダ・写しのフォルダ
+    returns:
+      type: Promise<void>
+      description: 戻し終えた
+    unit_tests:
+      - name: test_restore_backup
+        case: 正常
+        summary: 書き換えたファイルを写しの中身に戻す
+        condition: 写しを取った後に設定と文書を書き換える
+        mock: 一時フォルダ
+        expected: 設定と文書が写しを取る前の中身
+    status: planned
+    introduced:
+      pr: 39
+  - name: changelogRows
+    title: 範囲の変更履歴を抽き出す
+    container: src/cli/changelog.ts
+    usecase: 版を上げる
+    summary: 変更履歴の Markdown の表から、バージョンの列が手元の版より新しく目標の版以下の行を、表の並びで返す
+    description: 表は `| バージョン | PR | 変更 |` の見出しの行の後の行。PR の列は `[#40](...)` のリンクの文字だけを取る。バージョンの列が版の書式に合わない行は飛ばす
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ text: string; from: string; to: string }'
+        required: true
+        description: 変更履歴の本文・手元の版・目標の版
+    returns:
+      type: ChangelogRow[]
+      description: 範囲の行
+    unit_tests:
+      - name: test_changelog_rows
+        case: 正常
+        summary: 範囲の版の行だけを表の並びで返す
+        condition: 'v0.5.0・v0.4.0・v0.4.0・v0.3.0 の 4 行、`from: v0.3.0`・`to: v0.5.0`'
+        mock: なし
+        expected: 先頭から 3 行で、`pr` が `#45` のようなリンクの文字
+    status: planned
+    introduced:
+      pr: 39
+  - name: createLinePrompter
+    title: 標準入力の問いを作る
+    container: src/cli/prompt.ts
+    usecase: 版を上げる
+    summary: 問いの文を書き出し、入力の次の 1 行を答えにする `Prompter` を返す
+    description: '`node:readline` で入力を行ごとに読み、問いごとに 1 行を渡す。入力が終わっていれば `undefined` を返す。問いが無いまま終わるときは入力を読まない'
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ input: NodeJS.ReadableStream; write: (line: string) => void }'
+        required: true
+        description: 答えを読む入力・問いを書く先（標準エラー）
+    returns:
+      type: Prompter
+      description: 問い
+    unit_tests:
+      - name: test_create_line_prompter
+        case: 正常
+        summary: 問いごとに 1 行ずつ返す
+        condition: '`v0.3.0\ny\n` を流す入力で 2 回問う'
+        mock: '`Readable.from` の入力'
+        expected: '`v0.3.0`・`y` を返し、問いの文が 2 つ書かれる'
+      - name: test_create_line_prompter_when_ended
+        case: 異常
+        summary: 入力が終わっていれば undefined
+        condition: 空の入力で問う
+        mock: '`Readable.from([])`'
+        expected: '`undefined`'
+    status: planned
+    introduced:
+      pr: 39
+  - name: writeConfigVersion
+    title: 設定の版を書き換える
+    container: src/cli/upgrade.ts
+    usecase: 版を上げる
+    summary: 設定ファイルの `version` を版にし、無ければ最上位の先頭に足す
+    description: '`parseDocument` で読み、コメントと他のキーの書き方を残して `doc.toString({ flowCollectionPadding: false })` で書き戻す'
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: 設定ファイルを書き換える
+    args:
+      - name: configPath
+        type: string
+        required: true
+        description: 設定ファイルの絶対パス
+      - name: version
+        type: string
+        required: true
+        description: 書く版
+    returns:
+      type: Promise<void>
+      description: 書き終えた
+    unit_tests:
+      - name: test_write_config_version
+        case: 正常
+        summary: ある version を書き換え、コメントを残す
+        condition: 'コメントつきで `version: v0.3.0` とフロー形式の並び `include: ["**/*.md"]`（雛形と同じ書き方）を持つ設定、版 `v0.5.0`'
+        mock: 一時フォルダ
+        expected: '書き戻した文字列が、元の文字列の `version: v0.3.0` を `version: v0.5.0` にしたものと一致する（コメントと `["**/*.md"]` の書き方が残る）'
+      - name: test_write_config_version_when_missing
+        case: 正常
+        summary: 無い version を先頭に足す
+        condition: '`version` を持たない設定'
+        mock: 一時フォルダ
+        expected: '最上位の先頭のキーが `version: v0.5.0`'
+    status: planned
+    introduced:
+      pr: 39
+  - name: runUpgrade
+    title: 版を上げる
+    container: src/cli/upgrade.ts
+    usecase: 版を上げる
+    summary: 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える
+    description: 順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep` → `collectCheckIssues` → ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 設定・索引・文書を書き換え、写しを置く
+    args:
+      - name: options
+        type: '{ config?: string | undefined; plan: boolean; yes: boolean; packageDir: string; cliVersion: string; now: Date }'
+        required: true
+        description: '`--config`・`--plan`・`--yes`・パッケージの直下（`migrations/` と変更履歴の基準）・目標の版（`cliVersion()`。テストで差し替える）・今の時刻'
+      - name: io
+        type: CliIo
+        required: true
+        description: 今のフォルダと出力の先
+      - name: ask
+        type: Prompter
+        required: true
+        description: 問い（テストで差し替える）
+    returns:
+      type: Promise<0 | 1>
+      description: 当てた・示した・当てる手順が無いとき 0、点検のずれで戻したとき 1
+    exceptions:
+      - name: CliError
+        condition: 設定ファイルが無い・読めない
+        message: '`findConfigFile`・`loadConfig` のメッセージ'
+      - name: CliError
+        condition: 手元の版の書式が違う
+        message: 手元の版 {値} の書式が違います。v{MAJOR}.{MINOR}.{PATCH} で書いてください。
+      - name: CliError
+        condition: 問いに答える前に入力が終わった
+        message: 「{問い}」に答えがありません。何も書き換えていません。
+      - name: CliError
+        condition: 手元の版が目標の版より新しい
+        message: 手元の版 {手元の版} はこの mdmark（{目標の版}）より新しいです。npx github:shuhei1101/mdmark#{手元の版} upgrade のように、手元の版以上の mdmark で呼んでください。
+      - name: CliError
+        condition: 壊す手順の確かめを断った
+        message: 何も当てていません。確かめずに当てるときは --yes を付けてください。
+      - name: CliError
+        condition: 手順のファイルの誤り・手順の失敗・写しを取れない
+        message: '`loadMigrationVersions`・`applyStep`・`takeBackup` のメッセージ（手順の失敗は写しから戻した後）'
+    unit_tests:
+      - name: test_run_upgrade
+        case: 正常
+        summary: 2 つの版の手順を当てて版を書き換える
+        condition: '`version: v0.3.0` の設定、パッケージは `v0.5.0` で `v0.4.0`（`rename_key`）・`v0.5.0`（`replace_mark`）を持つ'
+        mock: 一時フォルダのパッケージと設定、出力を配列に貯める `CliIo`、呼ばれたら失敗にする `Prompter`
+        expected: 0 を返し、キーと印が書き換わり、`version` が `v0.5.0`、標準出力の最後が `版を v0.5.0 にしました`
+      - name: test_run_upgrade_when_plan
+        case: 正常
+        summary: --plan は何も書き換えない
+        condition: 'test_run_upgrade と同じで `plan: true`'
+        mock: test_run_upgrade と同じ
+        expected: 0 を返し、設定・文書が変わらず `.mdmark/` が無い
+      - name: test_run_upgrade_when_up_to_date
+        case: 正常
+        summary: 同じ版なら何も当てない
+        condition: '`version: v0.5.0` の設定'
+        mock: test_run_upgrade と同じ
+        expected: 0 を返し、標準出力に `当てる手順はありません` が出る
+      - name: test_run_upgrade_when_version_missing
+        case: 正常
+        summary: version が無ければ手元の版を聞く
+        condition: '`version` を持たない設定'
+        mock: 1 回目に `v0.3.0` を返す `Prompter`
+        expected: 0 を返し、`version` が `v0.5.0`
+      - name: test_run_upgrade_when_local_newer
+        case: 異常
+        summary: 手元の版が新しければ CliError
+        condition: '`version: v0.6.0` の設定'
+        mock: test_run_upgrade と同じ
+        expected: '`CliError` の文に `v0.6.0`・`v0.5.0`・`npx github:shuhei1101/mdmark#v0.6.0 upgrade` が入る'
+      - name: test_run_upgrade_when_declined
+        case: 異常
+        summary: 壊す手順を断ると何も書き換えない
+        condition: '`v0.5.0` の手順に `destructive: true`、`yes: false`'
+        mock: '`n` を返す `Prompter`'
+        expected: '`CliError` の文に `--yes` が入り、設定が変わらず `.mdmark/` が無い'
+      - name: test_run_upgrade_when_step_fails
+        case: 異常
+        summary: 手順が失敗すると写しから戻して投げ直す
+        condition: '`v0.5.0` が `process.exit(1)` する `call`'
+        mock: test_run_upgrade と同じ
+        expected: '`CliError` を投げ、設定に `v0.4.0` で変えたキーが戻り `version` が `v0.3.0`'
+      - name: test_run_upgrade_when_check_fails
+        case: 異常
+        summary: 点検のずれで写しから戻し 1 を返す
+        condition: '`v0.5.0` が `build.out` を `.txt` に読み替える `map_values`'
+        mock: test_run_upgrade と同じ
+        expected: 1 を返し、標準エラーに `build.out` の `schema` の行があり、設定が当てる前の中身
+      - name: test_run_upgrade_when_answer_missing
+        case: 異常
+        summary: 問いに答えが無ければ書き換えずに CliError
+        condition: '`version` を持たない設定'
+        mock: '`undefined` を返す `Prompter`'
+        expected: '`CliError` を投げ、`.mdmark/` が無い'
+      - name: test_run_upgrade_when_plan_with_ask
+        case: 正常
+        summary: --plan では値を聞く手順があっても聞かない
+        condition: '`v0.5.0` が `ask` を持つ `set_default`、`plan: true`'
+        mock: 呼ばれたら失敗にする `Prompter`
+        expected: 0 を返し、`Prompter` が呼ばれない
+    refs:
+      - '#functions[loadMigrationVersions]'
+      - '#functions[stepFiles]'
+      - '#functions[applyStep]'
+      - '#functions[takeBackup]'
+      - '#functions[restoreBackup]'
+      - '#functions[changelogRows]'
+      - '#functions[writeConfigVersion]'
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[findConfigFile]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectBuildDocuments]
+    status: planned
+    introduced:
+      pr: 39
+  - name: cliVersion
+    title: 呼んだ CLI の版
+    container: src/cli/versions.ts
+    usecase: 共通
+    summary: ビルドが `dist/cli.js` に埋めた `__MDMARK_VERSION__` を返す
+    description: ライブラリ本体の `version()` と同じ出所。hotfix のビルドは `version.ini` を上げず `--version` で打つタグの版を埋めるため、`version.ini` は読まない
+    kind: 関数
+    scope: public
+    is_async: false
+    returns:
+      type: string
+      description: 埋めた版（`v{MAJOR}.{MINOR}.{PATCH}`）
+    unit_tests:
+      - name: test_cli_version
+        case: 正常
+        summary: 埋めた版を返す
+        condition: '`__MDMARK_VERSION__` が `v0.5.0`'
+        mock: '`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`'
+        expected: '`v0.5.0`'
+    status: planned
+    introduced:
+      pr: 39
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts#
+  - dev/設計書/ER図/移行の手順#
+test_files:
+  - tests/unit/src/cli/versions.test.ts
+  - tests/unit/src/cli/migrations.test.ts
+  - tests/unit/src/cli/backup.test.ts
+  - tests/unit/src/cli/changelog.test.ts
+  - tests/unit/src/cli/prompt.test.ts
+  - tests/unit/src/cli/upgrade.test.ts
