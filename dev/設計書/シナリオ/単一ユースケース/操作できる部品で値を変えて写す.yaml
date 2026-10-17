@@ -11,7 +11,9 @@ scenarios:
         actor U as 読む人
         participant C as 操作できる部品
         participant B as クリップボード
-        U->>C: スライダーを 8 に動かす
+        U->>C: スライダーを 7 に動かす
+        C-->>U: グラフを 7 で描き直す
+        U->>C: スライダーにフォーカスして→を押す
         C-->>U: グラフを 8 で描き直す
         U->>C: 今の値を写すボタンを押す
         C->>B: 今の値を JSON で書く

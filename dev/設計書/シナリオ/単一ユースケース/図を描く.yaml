@@ -6,7 +6,7 @@ scenarios:
         description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、文書を描く HTML
       - name: フロー図の定義を持つ Markdown
         description: フロー図の部品の定義を 1 つ持つ文書
-        notes: システムの枠の内側に LLM の層・処理の層・データの層の箱を各 1〜2 行、枠の外に外部のシステムの箱を 1 つ置く。箱の並びでは消せない交差を 1 か所、ループの戻りを 1 本、題名・範囲・更新日を持つ
+        notes: システムの枠の内側に LLM の層・処理の層・データの層の箱を各 1〜2 行、枠の外に外部のシステムの箱を 1 つ置く。箱の並びでは消せない交差を 1 か所、ループの戻りを 1 本、題名・範囲・更新日を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
     flow: |-
@@ -26,7 +26,7 @@ scenarios:
       - 線の種類が色と模様（破線の間隔・太さ・矢じり）の組で分かれている
       - 残った交差は横の線が縦の線を飛び越える形（line jump）で描かれている
       - ループの戻りの線が上か下の帯を通る破線で、戻り先のラベルを持つ
-      - 文書に書いた `<script>` は動かない
+      - '`window.__mdmarkScriptRan` が `true` になっていない（文書に書いた `<script>` が動いていない）'
     test: test_normal
   - name: 正常シナリオ（シーケンス図）
     setup:
