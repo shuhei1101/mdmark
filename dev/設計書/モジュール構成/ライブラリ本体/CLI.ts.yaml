@@ -108,8 +108,8 @@ functions:
     title: CLI を実行する
     container: src/cli/main.ts
     usecase: 共通
-    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build` を呼び分け、終了コードを返す
-    description: 引数は `node:util` の `parseArgs`（`--out`・`--config` は文字列、`--js` は真偽値、位置引数を許す）で読む。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力)` を呼び、戻り値を `process.exitCode` に入れる
+    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -122,6 +122,10 @@ functions:
         type: CliIo
         required: true
         description: 今のフォルダと出力の先（テストで差し替える）
+      - name: ask
+        type: Prompter
+        required: true
+        description: '`upgrade` の問い（テストで差し替える）'
     returns:
       type: Promise<0 | 1>
       description: コマンドの終了コード
@@ -130,7 +134,7 @@ functions:
         case: 正常
         summary: コマンド名で init を呼び、その終了コードを返す
         condition: '`["init", "{一時フォルダ}"]`'
-        mock: 出力を配列に貯める `CliIo`
+        mock: 出力を配列に貯める `CliIo`、`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`（`init` が `cliVersion()` を読むため）
         expected: 0 を返し、標準出力に `置いた:` の行がある
       - name: test_main_when_command_unknown
         case: 異常
@@ -144,6 +148,12 @@ functions:
         condition: 設定ファイルの無い一時フォルダで `["check"]`
         mock: 出力を配列に貯める `CliIo`
         expected: 1 を返し、標準エラーに `mdmark init` が出る
+      - name: test_main_when_upgrade
+        case: 正常
+        summary: upgrade を呼び、--plan を runUpgrade に渡す
+        condition: 設定の `version` がパッケージと同じ一時フォルダで `["upgrade", "--plan"]`
+        mock: 出力を配列に貯める `CliIo`、呼ばれたら失敗にする `Prompter`
+        expected: 0 を返し、標準出力に `当てる手順はありません` が出る
     status: planned
     introduced:
       pr: 32
@@ -236,7 +246,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -255,7 +265,7 @@ functions:
       - name: test_validate_config
         case: 正常
         summary: 形の合う設定はずれ 0 件
-        condition: '`theme`・`extensions`・`build`（`include`・`out`）と知らないキー `version` を持つ値'
+        condition: '`version: v0.3.0`・`theme`・`extensions`・`build`（`include`・`out`）と知らないキー `title` を持つ値'
         mock: なし
         expected: '`issues` が空'
       - name: test_validate_config_when_build_out_missing
@@ -276,6 +286,12 @@ functions:
         condition: '`libraries` が文字列'
         mock: なし
         expected: '`where` が `libraries` のずれが 1 件で、`config.libraries` が無い'
+      - name: test_validate_config_when_version_invalid
+        case: 異常
+        summary: 書式の違う version を schema のずれにする
+        condition: '`version: 0.3`'
+        mock: なし
+        expected: '`where` が `version` の `schema` のずれが 1 件'
     status: planned
     introduced:
       pr: 32
@@ -636,16 +652,16 @@ functions:
     container: src/cli/init.ts
     usecase: 雛形を置く
     summary: '`TEMPLATE_FILES` のうち置く先に無いものを写し、置いた・置かなかった行を出す'
-    description: '雛形の正本は `dist/cli.js` から見た `../templates/` を読む。既にあるファイルは中身を読まずに飛ばす（`writeFile` の `flag: "wx"`）'
+    description: '雛形の正本は `dist/cli.js` から見た `../templates/` を読む。既にあるファイルは中身を読まずに飛ばす（`writeFile` の `flag: "wx"`）。`mdmark.config.yaml` は雛形の `version` の値を `options.version` に置き換えて書く'
     kind: 関数
     scope: public
     is_async: true
     side_effects: 置く先にフォルダとファイルを書く
     args:
       - name: options
-        type: '{ dir: string; js: boolean; templatesDir: string }'
+        type: '{ dir: string; js: boolean; templatesDir: string; version: string }'
         required: true
-        description: 置く先・`--js`・雛形の正本のフォルダ
+        description: 置く先・`--js`・雛形の正本のフォルダ・呼んだ CLI の版
       - name: io
         type: CliIo
         required: true
@@ -676,6 +692,12 @@ functions:
         condition: '中身 `x: 1` の `mdmark.config.yaml` がある'
         mock: 作業ツリーの `templates/`
         expected: '`mdmark.config.yaml` が `x: 1` のままで、標準出力に `置かなかった（既にある）: mdmark.config.yaml` が出る'
+      - name: test_run_init_writes_version
+        case: 正常
+        summary: 置く設定の version を呼んだ CLI の版にする
+        condition: '`version: v0.5.0`、空の一時フォルダ'
+        mock: 作業ツリーの `templates/`
+        expected: 置いた `mdmark.config.yaml` の `version` が `v0.5.0` で、コメントは雛形のまま
     status: planned
     introduced:
       pr: 32
@@ -684,7 +706,7 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
-    description: 並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする
+    description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues` のずれを 1 件 1 行で出す
     kind: 関数
     scope: public
     is_async: true
@@ -958,6 +980,40 @@ functions:
     status: planned
     introduced:
       pr: 32
+  - name: collectCheckIssues
+    title: 点検のずれを集める
+    container: src/cli/check.ts
+    usecase: 共通
+    summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
+    description: 並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼ぶ
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: path
+        type: string
+        required: true
+        description: 設定ファイルの絶対パス
+    returns:
+      type: Promise<CheckIssue[]>
+      description: ずれの並び（無ければ空）
+    exceptions:
+      - name: CliError
+        condition: 設定ファイルを YAML として読めない
+        message: '`loadConfig` のメッセージ'
+    unit_tests:
+      - name: test_collect_check_issues
+        case: 正常
+        summary: 設定の schema と索引の missing_doc をこの順に返す
+        condition: '`build.out` が無く、索引の `old.md` が無い'
+        mock: 一時フォルダ
+        expected: 2 件で、`kind` が `schema`・`missing_doc` の順
+    refs:
+      - '#functions[validateConfig]'
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
+    status: planned
+    introduced:
+      pr: 39
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧

@@ -224,6 +224,32 @@ test("test_main_when_dist_file_too_large", async () => {
   expect(stderr()).toMatch(/index\.js[^\n]*\d/);
 });
 
+// 移行の手順の点検に誤りがあれば dist/ を書かずに終わる（異常系）
+test("test_main_when_migrations_invalid", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createBuildRoot("v0.0.0\n");
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(
+    join(root, "migrations", "next", "steps.yaml"),
+    [
+      "steps:",
+      "  - description: op が無い",
+      "    file: config",
+      "    from: legacy",
+      "    to: renamed",
+      "",
+    ].join("\n"),
+  );
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], { root, maxBytes: MAX_BYTES });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr()).toContain("migrations/next/steps.yaml");
+});
+
 // version.ini の先頭行を返す（正常系）
 test("test_resolve_version", async () => {
   // 準備

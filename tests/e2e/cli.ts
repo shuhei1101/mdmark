@@ -58,18 +58,21 @@ export const test = base.extend<CliFixtures, CliWorkerFixtures>({
   },
 });
 
-/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。標準入力には `stdin`（既定は空）を渡して閉じる。終了コードが 0 以外でも例外を投げず、結果を返す */
 export async function runCli(
   builtRoot: string,
   args: string[],
   cwd: string,
+  stdin = "",
 ): Promise<CliResult> {
+  const running = execFileAsync(
+    process.execPath,
+    [join(builtRoot, "dist", "cli.js"), ...args],
+    { cwd },
+  );
+  running.child.stdin?.end(stdin);
   try {
-    const { stdout, stderr } = await execFileAsync(
-      process.execPath,
-      [join(builtRoot, "dist", "cli.js"), ...args],
-      { cwd },
-    );
+    const { stdout, stderr } = await running;
     return { code: 0, stdout, stderr };
   } catch (error) {
     const failed = error as { code?: number; stdout?: string; stderr?: string };

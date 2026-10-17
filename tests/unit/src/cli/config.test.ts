@@ -89,10 +89,11 @@ test("test_validate_config", async () => {
   // 準備
   const { validateConfig } = await loadModule();
   const raw = {
+    version: "v0.3.0",
     theme: "theme.css",
     extensions: ["extensions/example.ts"],
     build: { include: ["**/*.md"], out: "dist/docs.html" },
-    version: "v1",
+    title: "知らないキー",
   };
   // 実行
   const { issues } = validateConfig(raw, "mdmark.config.yaml");
@@ -135,6 +136,18 @@ test("test_validate_config_when_libraries_not_object", async () => {
   expect(issues).toHaveLength(1);
   expect(issues[0]).toMatchObject({ where: "libraries", kind: "schema" });
   expect(config.libraries).toBeUndefined();
+});
+
+// 書式の違う version を schema のずれにする（異常系）
+test("test_validate_config_when_version_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const raw = { version: "0.3" };
+  // 実行
+  const { issues } = validateConfig(raw, "mdmark.config.yaml");
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({ where: "version", kind: "schema" });
 });
 
 // 形が合わないと mdmark check を添えた CliError を投げる（異常系）

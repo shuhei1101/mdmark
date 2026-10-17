@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "migrations/{版}/steps.yaml",
+  "description": "1 つの版で当てる移行の手順の並び。`mdmark upgrade` が読み、配布物のビルドが検める。",
+  "type": "object",
+  "properties": {
+    "steps": {
+      "title": "手順",
+      "description": "書いた順に当てる手順の並び。",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/rename_key" },
+          { "$ref": "#/$defs/set_default" },
+          { "$ref": "#/$defs/map_values" },
+          { "$ref": "#/$defs/replace_mark" },
+          { "$ref": "#/$defs/call" }
+        ]
+      }
+    }
+  },
+  "required": ["steps"],
+  "additionalProperties": false,
+  "$defs": {
+    "description": {
+      "title": "説明",
+      "description": "何をどう変えるかの 1 文。`--plan` と当てた手順の出力に出す。",
+      "type": "string",
+      "minLength": 1
+    },
+    "destructive": {
+      "title": "壊す印",
+      "description": "当てると値が失われる手順か。`true` の手順が 1 つでもあれば、`--yes` が無いとき当てる前に確かめる。",
+      "type": "boolean",
+      "default": false
+    },
+    "file": {
+      "title": "対象のファイル",
+      "description": "`config` は設定ファイル、`index` は設定の `index` が指す索引。",
+      "enum": ["config", "index"]
+    },
+    "path": {
+      "title": "キーのパス",
+      "description": "`.` でつないだキーのパス。",
+      "type": "string",
+      "minLength": 1
+    },
+    "rename_key": {
+      "title": "キーの名前を変える",
+      "description": "元のキーがあり新しいキーが無いときだけ、キーの名前を変える。",
+      "type": "object",
+      "properties": {
+        "op": { "const": "rename_key" },
+        "description": { "$ref": "#/$defs/description" },
+        "destructive": { "$ref": "#/$defs/destructive" },
+        "file": { "$ref": "#/$defs/file" },
+        "from": { "$ref": "#/$defs/path" },
+        "to": { "$ref": "#/$defs/path" }
+      },
+      "required": ["op", "description", "file", "from", "to"],
+      "additionalProperties": false
+    },
+    "set_default": {
+      "title": "無いキーを足す",
+      "description": "キーが無いときだけ値を足す。値は `value` に書くか、`ask` で利用者に聞く。",
+      "type": "object",
+      "properties": {
+        "op": { "const": "set_default" },
+        "description": { "$ref": "#/$defs/description" },
+        "destructive": { "$ref": "#/$defs/destructive" },
+        "file": { "$ref": "#/$defs/file" },
+        "key": { "$ref": "#/$defs/path" },
+        "value": {
+          "title": "足す値",
+          "description": "YAML の値としてそのまま書く。"
+        },
+        "ask": {
+          "title": "聞く問い",
+          "description": "利用者に値を聞くときの問いの文。答えた 1 行を YAML の値として足す。",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["op", "description", "file", "key"],
+      "oneOf": [{ "required": ["value"] }, { "required": ["ask"] }],
+      "additionalProperties": false
+    },
+    "map_values": {
+      "title": "値を読み替える",
+      "description": "キーの値が表の元の値のときだけ新しい値に替える。表に無い値は変えない。",
+      "type": "object",
+      "properties": {
+        "op": { "const": "map_values" },
+        "description": { "$ref": "#/$defs/description" },
+        "destructive": { "$ref": "#/$defs/destructive" },
+        "file": { "$ref": "#/$defs/file" },
+        "key": { "$ref": "#/$defs/path" },
+        "mapping": {
+          "title": "読み替えの表",
+          "description": "元の値から新しい値への表。新しい値に元の値を置かない（当て直しても変わらないようにする）。",
+          "type": "object"
+        }
+      },
+      "required": ["op", "description", "file", "key", "mapping"],
+      "additionalProperties": false
+    },
+    "replace_mark": {
+      "title": "文書の印を書き換える",
+      "description": "文書の本文の `from` を全て `to` にする。",
+      "type": "object",
+      "properties": {
+        "op": { "const": "replace_mark" },
+        "description": { "$ref": "#/$defs/description" },
+        "destructive": { "$ref": "#/$defs/destructive" },
+        "from": {
+          "title": "書き換える前の印",
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "title": "書き換えた後の印",
+          "description": "`from` を含まない文字列。",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["op", "description", "from", "to"],
+      "additionalProperties": false
+    },
+    "call": {
+      "title": "スクリプトで当てる",
+      "description": "宣言で書けない移行を、同じ版のフォルダに置いたスクリプトで当てる。`node {スクリプト} --config {設定ファイル}` で流す。",
+      "type": "object",
+      "properties": {
+        "op": { "const": "call" },
+        "description": { "$ref": "#/$defs/description" },
+        "destructive": { "$ref": "#/$defs/destructive" },
+        "script": {
+          "title": "スクリプト",
+          "description": "`steps.yaml` のあるフォルダからのスクリプトのパス。拡張子は `.js` か `.mjs`。",
+          "type": "string",
+          "pattern": "\\.m?js$"
+        },
+        "files": {
+          "title": "書き換えるもの",
+          "description": "スクリプトが書き換えうるもの。当てる前に写しを取る対象になる。",
+          "type": "array",
+          "items": { "enum": ["config", "index", "documents"] },
+          "minItems": 1
+        }
+      },
+      "required": ["op", "description", "script", "files"],
+      "additionalProperties": false
+    }
+  }
+}

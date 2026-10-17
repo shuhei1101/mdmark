@@ -48,6 +48,115 @@ flows:
       - 終了コードが 0
       - '`dist/index.js` の `version()` が `v0.0.1` を返す'
     test: test_normal_when_version_given
+  - name: 正常系（スキーマを変えて移行の手順を置く）
+    summary: スキーマを変えても `migrations/next/steps.yaml` があれば通す
+    setup:
+      - name: タグを打った作業ツリー
+        description: 作業ツリーを写した一時フォルダを git のリポジトリにして commit し、`v0.3.0` のタグを打った後、`schemas/mdmark.index.schema.json` の必須のキーの名前を変え、`migrations/next/steps.yaml`（`rename_key` 1 つ）を置いたもの
+        notes: '`version.ini` は `v0.3.0`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        participant F as ファイル
+        D->>B: npm run build
+        B->>G: 最新の版のタグ v0.3.0 の schemas/ を読む
+        B->>F: migrations/next/steps.yaml を読み Schema で検める
+        B->>F: dist/ を書く
+        B-->>D: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` がある'
+    test: test_normal_when_schema_changed_with_steps
+  - name: 正常系（広げるだけのスキーマの変更を一覧に載せる）
+    summary: 手順なしの一覧に今の Schema の SHA-256 の行があれば通す
+    setup:
+      - name: タグを打った作業ツリー
+        description: '正常系（スキーマを変えて移行の手順を置く）と同じ手順で作り、`schemas/mdmark.config.schema.json` に省いてよいキーを 1 つ足し、`migrations/no-steps.yaml` に `version: next`・その Schema・今の SHA-256・理由の行を置いたもの'
+        notes: '`migrations/next/` は無い'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        participant F as ファイル
+        D->>B: npm run build
+        B->>G: v0.3.0 の schemas/ を読む
+        B->>F: no-steps.yaml の next の行と SHA-256 を照らす
+        B->>F: dist/ を書く
+        B-->>D: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` がある'
+    test: test_normal_when_schema_change_listed
+  - name: 異常系（移行の手順が無い・終了コード 1）
+    summary: スキーマを変えたのに手順も一覧の合う行も無ければ、配布物を書かずに終わる
+    setup:
+      - name: タグを打った作業ツリー
+        description: 正常系（スキーマを変えて移行の手順を置く）から `migrations/next/` を消し、`migrations/no-steps.yaml` には SHA-256 の合わない `next` の行だけを置いたもの
+        notes: SHA-256 は変える前の Schema のもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        D->>B: npm run build
+        B->>G: v0.3.0 の schemas/ を読む
+        B->>B: 変えた Schema に手順も合う行も無い
+        B-->>D: Schema と直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` が無い'
+      - 標準エラーに `schemas/mdmark.index.schema.json` と `migrations/next/steps.yaml`・`migrations/no-steps.yaml` が出る
+    test: test_error_when_schema_changed_without_steps
+  - name: 異常系（出していない版の手順が残る・終了コード 1）
+    summary: release のビルドで `migrations/next/` が残っていれば、移し方を示して終わる
+    setup:
+      - name: 版を上げた作業ツリー
+        description: 正常系（スキーマを変えて移行の手順を置く）の `version.ini` を `v0.4.0` にしたもの
+        notes: '`migrations/next/steps.yaml` が残り、`migrations/v0.4.0/` は無い'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        D->>B: npm run build
+        B->>G: 最新の版のタグ v0.3.0 を読む
+        B->>B: v0.4.0 がタグより新しく migrations/next/ が残る
+        B-->>D: 移し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` が無い'
+      - 標準エラーに `migrations/next/` を `migrations/v0.4.0/` へ移し `no-steps.yaml` の `next` を `v0.4.0` にすることが出る
+    test: test_error_when_next_steps_left_in_release
+  - name: 異常系（移行の手順の形の誤り・終了コード 1）
+    summary: '`steps.yaml` が Schema に合わなければ、配布物を書かずに終わる'
+    setup:
+      - name: タグを打った作業ツリー
+        description: 正常系（スキーマを変えて移行の手順を置く）の `migrations/next/steps.yaml` の手順から `to` を消したもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        D->>B: npm run build
+        B->>B: migrations/next/steps.yaml が Schema に合わない
+        B-->>D: ファイルと合わないところ・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` が無い'
+      - 標準エラーに `migrations/next/steps.yaml` と `to` が出る
+    test: test_error_when_steps_invalid
   - name: 異常系（版の書式が違う・終了コード 1）
     summary: 書式に合わない版を渡すと、配布物を書かずに終わる
     setup:
@@ -109,6 +218,12 @@ exceptions:
     condition: 埋める版が `v{MAJOR}.{MINOR}.{PATCH}` に合わない
   - name: 配布ファイルの上限超過（終了コード 1）
     condition: '`dist/` のファイルが 1 つでも上限を超える'
+  - name: 移行の手順が無い（終了コード 1）
+    condition: 設定・索引の JSON Schema を最新の版のタグから変えたのに、見る手順のフォルダの `steps.yaml` も、`migrations/no-steps.yaml` の合う行も無い
+  - name: 出していない版の手順が残る（終了コード 1）
+    condition: '比べる版が最新の版のタグより新しいビルド（release・hotfix のビルド）で、`migrations/next/` か `migrations/no-steps.yaml` の `version: next` の行が残っている'
+  - name: 移行の手順の形の誤り（終了コード 1）
+    condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
 constraints:
   - item: 配布ファイル 1 つのサイズ
     constraint: 256KB 以下（262144 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
@@ -120,4 +235,14 @@ constraints:
     constraint: '`dist/cli.js` は Node 24 を target にし、先頭に `#!/usr/bin/env node` を置く。esbuild と YAML を読むライブラリは束ねず、`package.json` の `dependencies` から読む。`package.json` の `bin` の `mdmark` が `dist/cli.js` を指す'
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
     notes: 書き出しに埋める `dist/index.css`・`dist/viewer.js`・`dist/viewer.css` は、同じ版のものを `dist/cli.js` と同じフォルダから読む。`dist/viewer.js` はライブラリ本体を含めて束ねる
+  - item: 移行の手順の点検
+    constraint: '配布物を書く前に流す。比べる版は `--version` があればその版、無ければ `version.ini` の版。最新の版のタグは `git tag` の `v{MAJOR}.{MINOR}.{PATCH}` のうち最も新しい版。比べる版がタグと同じなら `migrations/next/` と `version: next` の行を、新しければ `migrations/v{比べる版}/` と `version: v{比べる版}` の行を見る。`schemas/mdmark.config.schema.json` と `schemas/mdmark.index.schema.json` の中身がタグのものと違うとき、見るフォルダに `steps.yaml` があるか、見る行のうち `schema` がそのファイルで `sha256` が今の中身と合う行があれば通す'
+    decided_by: dev/設計書/ER図/移行の手順#
+    notes: 版のタグが 1 つも無いとき、git の作業ツリーでないとき、比べる版がタグより古いときは飛ばす。タグに無い Schema は比べない
+  - item: 出していない版の手順の移し
+    constraint: 'release で `version.ini` を上げる commit で、`migrations/next/` を `migrations/v{版}/` へ移し、`migrations/no-steps.yaml` の `version: next` を `v{版}` に書き換える。hotfix のビルドも同じように打つタグの版へ移す'
+    decided_by: dev/設計書/開発コマンド/開発コマンド#
+  - item: 移行の手順の配布
+    constraint: '`migrations/`・`schemas/mdmark.steps.schema.json`・`docs/はじめに/変更履歴.md` は `dist/` に写さず、版のタグのパッケージから `dist/cli.js` がパッケージの直下を基準に読む'
+    notes: '`package.json` は `files` を持たず、パッケージには `.gitignore` に当たらないファイルが入る。入ることは E2E（版を上げる）で確かめる'
 test_file: tests/integration/lib/build.test.ts

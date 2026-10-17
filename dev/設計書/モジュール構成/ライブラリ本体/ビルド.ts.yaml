@@ -3,7 +3,8 @@ lead: '`npm run build` が実行するビルドのスクリプト。版を決め
 directory: |-
   ```tree
   scripts/
-  └── build.ts  # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  ├── build.ts       # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  └── migrations.ts  # スキーマを変えた版に移行の手順があるかの点検
   ```
 constants:
   - name: VERSION_PATTERN
@@ -46,6 +47,11 @@ constants:
     status: planned
     introduced:
       pr: 32
+  - name: CHECKED_SCHEMAS
+    title: 点検する Schema
+    container: scripts/migrations.ts
+    summary: 変えたら移行の手順を求める `schemas/` のファイル
+    value: '`["mdmark.config.schema.json", "mdmark.index.schema.json"]`'
 functions:
   - name: main
     title: ビルドを実行する
@@ -53,7 +59,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: 前回の `dist/` を消してから、版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す
+    summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、終了コードを返す
     side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過）は `dist/` を残さず、標準エラーに理由を出す'
     args:
       - name: argv
@@ -104,6 +110,12 @@ functions:
         condition: '`maxBytes` が 1'
         mock: 一時フォルダに `src/` と `version.ini` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーにファイル名とサイズが出る
+      - name: test_main_when_migrations_invalid
+        case: 異常
+        summary: 移行の手順の点検に誤りがあれば dist/ を書かずに終わる
+        condition: '`migrations/next/steps.yaml` の手順が `op` を持たない'
+        mock: 一時フォルダに `src/` と `version.ini` と `migrations/` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーに `migrations/next/steps.yaml` が出る
     callees:
       - '#functions[resolveVersion]'
       - '#functions[buildDist]'
@@ -340,5 +352,94 @@ functions:
     status: planned
     introduced:
       pr: 32
+  - name: latestVersionTag
+    title: 最新の版のタグを引く
+    container: scripts/migrations.ts
+    summary: '`git tag --list v*` のうち `VERSION_PATTERN` に合う最も新しい版を返す'
+    description: git は `execFile` で引数を配列にして呼ぶ。git の作業ツリーでないとき・タグが無いときは `undefined`。比較は `compareVersions`
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの直下
+    returns:
+      type: Promise<string | undefined>
+      description: 最新の版のタグ
+    unit_tests:
+      - name: test_latest_version_tag
+        case: 正常
+        summary: 数として最も新しいタグを返す
+        condition: '`v0.9.0`・`v0.10.0`・`foo` のタグ'
+        mock: 一時フォルダの git のリポジトリ
+        expected: '`v0.10.0`'
+      - name: test_latest_version_tag_when_none
+        case: 正常
+        summary: タグが無ければ undefined
+        condition: タグの無いリポジトリと、git のリポジトリでないフォルダ
+        mock: 一時フォルダ
+        expected: どちらも `undefined`
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts#functions[compareVersions]
+    status: planned
+    introduced:
+      pr: 39
+  - name: checkMigrations
+    title: 移行の手順を点検する
+    container: scripts/migrations.ts
+    summary: スキーマを最新の版のタグから変えたのに移行の手順も手順なしの一覧の合う行も無いこと、release のビルドで出していない版の手順が残ること、手順の形の誤りを、直し方つきの文で返す
+    description: '順に、`migrations/` の全ての `steps.yaml`（`next` と `v{版}`）を `validateSteps` で検め、`call` のスクリプトがあることと `no-steps.yaml` の形を確かめる → `latestVersionTag` が `undefined` か、比べる版がタグより古ければそこで終える → 比べる版がタグと同じなら `next`、新しければ `v{比べる版}` を見る版にし、新しいときは `migrations/next/` と `version: next` の行が残っていれば誤りにする → `CHECKED_SCHEMAS` ごとに `git show {タグ}:schemas/{名前}` と今の中身を比べ、違うものは見る版の `steps.yaml` か、見る版・その Schema・今の中身の SHA-256（`node:crypto`）の合う行があれば通す。タグに無い Schema は比べない'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ root: string; version: string }'
+        required: true
+        description: 作業ツリーの直下・比べる版（`resolveVersion` の版）
+    returns:
+      type: Promise<string[]>
+      description: 誤り 1 つ 1 文（無ければ空）
+    unit_tests:
+      - name: test_check_migrations
+        case: 正常
+        summary: スキーマを変えて next に手順があれば誤り 0 件
+        condition: '`v0.3.0` のタグの後に `mdmark.index.schema.json` を変え、`migrations/next/steps.yaml` を置く。版は `v0.3.0`'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 空
+      - name: test_check_migrations_when_listed
+        case: 正常
+        summary: SHA-256 の合う手順なしの行があれば誤り 0 件
+        condition: '`mdmark.config.schema.json` を変え、`no-steps.yaml` に `next`・その Schema・今の SHA-256 の行'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 空
+      - name: test_check_migrations_when_steps_missing
+        case: 異常
+        summary: スキーマを変えて手順も合う行も無ければ誤り
+        condition: '`mdmark.index.schema.json` を変え、`no-steps.yaml` には SHA-256 の合わない `next` の行だけ'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 1 つで `schemas/mdmark.index.schema.json` と `migrations/next/steps.yaml` を含む
+      - name: test_check_migrations_when_next_left
+        case: 異常
+        summary: release のビルドで next が残れば誤り
+        condition: タグ `v0.3.0`、版 `v0.4.0`、`migrations/next/steps.yaml` がある
+        mock: 一時フォルダの git のリポジトリ
+        expected: 誤りに `migrations/v0.4.0/` へ移すことが入る
+      - name: test_check_migrations_when_no_tag
+        case: 正常
+        summary: タグが無ければスキーマを比べない
+        condition: タグの無いリポジトリで Schema を変える
+        mock: 一時フォルダの git のリポジトリ
+        expected: 空
+    refs:
+      - '#functions[latestVersionTag]'
+      - dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts#functions[validateSteps]
+      - dev/設計書/ER図/移行の手順#
+    status: planned
+    introduced:
+      pr: 39
 test_files:
   - tests/unit/scripts/build.test.ts
+  - tests/unit/scripts/migrations.test.ts

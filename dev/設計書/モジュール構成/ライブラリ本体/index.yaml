@@ -26,3 +26,5 @@ items:
     summary: init・check・export・build の CLI と、設定・文書の読み取り・埋め込み・HTML の組み立て
   - page: 書き出したHTMLの起動.ts.yaml
     summary: 書き出した HTML を開いたときに埋めたモジュールを用意して描き、まとめた HTML で文書を行き来する処理
+  - page: 版を上げる.ts.yaml
+    summary: mdmark upgrade の版の比較・移行の手順の読み取りと適用・写しと戻し・変更履歴・問い

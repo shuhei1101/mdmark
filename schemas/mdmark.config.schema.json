@@ -1,9 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "mdmark.config.yaml",
-  "description": "mdmark の設定のうち、ライブラリ本体が読むキー。他のキーは拒まない。",
+  "description": "mdmark の設定のうち、ライブラリ本体と CLI が読むキー。他のキーは拒まない。",
   "type": "object",
   "properties": {
+    "version": {
+      "title": "手元の版",
+      "description": "この設定・索引・文書が合わせてある mdmark の版。`mdmark init` が呼んだ CLI の版を書き、`mdmark upgrade` が移行の手順を当てて点検が通った後に呼んだ CLI の版へ書き換える。",
+      "type": "string",
+      "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+    },
     "features": {
       "title": "機能のオン・オフ",
       "description": "機能ごとのオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする。",
@@ -130,6 +136,66 @@
         "type": "string"
       },
       "default": {}
+    },
+    "theme": {
+      "title": "使う側の CSS",
+      "description": "CLI が書き出す HTML に、配布物の CSS の後で埋める使う側の CSS のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない。",
+      "type": "string"
+    },
+    "extensions": {
+      "title": "拡張のモジュール",
+      "description": "CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない。",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "build": {
+      "title": "まとめる設定",
+      "description": "`mdmark build` が 1 枚の HTML にまとめる文書と書き出す先。パスと glob は `mdmark.config.yaml` のあるフォルダからの相対。`mount`・`render`・`mdmark export` はこのキーを読まない。",
+      "type": "object",
+      "properties": {
+        "include": {
+          "title": "まとめる文書",
+          "description": "まとめる Markdown の glob の並び。`**`・`*`・`?` を使える。当たるのは拡張子 `.md` のファイルだけ。",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "exclude": {
+          "title": "外す文書",
+          "description": "`include` に当たった文書から外す glob の並び。",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "glossary": {
+          "title": "用語集の文書",
+          "description": "用語集の表（`<!-- glossary -->`）の用語を、まとめた全ての文書で効かせる文書のパスの並び。",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "entry": {
+          "title": "最初に開く文書",
+          "description": "まとめた HTML を URL の `#` 無しで開いたときに出す文書のパス。",
+          "type": "string"
+        },
+        "out": {
+          "title": "書き出す先",
+          "description": "まとめた HTML を書くパス。拡張子 `.html`。既にあれば上書きする。",
+          "type": "string",
+          "pattern": "\\.html$"
+        }
+      },
+      "required": ["include", "out"]
     }
   },
   "additionalProperties": true

@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
+import { parse } from "yaml";
 import { createIo, useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
 /** 雛形を置く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -20,7 +21,7 @@ test("test_run_init", async () => {
   const { io, stdout } = createIo(dir);
   // 実行
   const code = await runInit(
-    { dir, js: false, templatesDir: TEMPLATES_DIR },
+    { dir, js: false, templatesDir: TEMPLATES_DIR, version: "v0.5.0" },
     io,
   );
   // 検証
@@ -46,7 +47,10 @@ test("test_run_init_when_javascript", async () => {
   const dir = await createTempDir();
   const { io } = createIo(dir);
   // 実行
-  await runInit({ dir, js: true, templatesDir: TEMPLATES_DIR }, io);
+  await runInit(
+    { dir, js: true, templatesDir: TEMPLATES_DIR, version: "v0.5.0" },
+    io,
+  );
   // 検証
   expect(existsSync(join(dir, "extensions", "example.js"))).toBe(true);
   expect(existsSync(join(dir, "extensions", "example.ts"))).toBe(false);
@@ -62,10 +66,34 @@ test("test_run_init_when_file_exists", async () => {
   await writeFiles(dir, { "mdmark.config.yaml": "x: 1\n" });
   const { io, stdout } = createIo(dir);
   // 実行
-  await runInit({ dir, js: false, templatesDir: TEMPLATES_DIR }, io);
+  await runInit(
+    { dir, js: false, templatesDir: TEMPLATES_DIR, version: "v0.5.0" },
+    io,
+  );
   // 検証
   expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(
     "x: 1\n",
   );
   expect(stdout).toContain("置かなかった（既にある）: mdmark.config.yaml");
+});
+
+// 置く設定の version を呼んだ CLI の版にする（正常系）
+test("test_run_init_writes_version", async () => {
+  // 準備
+  const { runInit } = await loadInit();
+  const dir = await createTempDir();
+  const { io } = createIo(dir);
+  const template = await readFile(
+    join(TEMPLATES_DIR, "mdmark.config.yaml"),
+    "utf8",
+  );
+  // 実行
+  await runInit(
+    { dir, js: false, templatesDir: TEMPLATES_DIR, version: "v0.5.0" },
+    io,
+  );
+  // 検証
+  const placed = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  expect(parse(placed).version).toBe("v0.5.0");
+  expect(placed).toBe(template.replace(/^version: .*$/m, "version: v0.5.0"));
 });

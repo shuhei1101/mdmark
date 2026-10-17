@@ -1,0 +1,244 @@
+title: "版を上げる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: '`version: v0.3.0` の設定・索引・文書 2 つを持つフォルダ。設定と索引は v0.3.0 の Schema に合う'
+      - name: Mock
+        description: 呼んだ CLI の版を `v0.5.0` に、移行の手順のフォルダと変更履歴をテスト用のものに差し替える
+        notes: '`v0.4.0` は設定のキーの名前を変える手順、`v0.5.0` は文書の印を書き換える手順を持つ。どちらも壊す印と値を聞く指定を持たない。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読む
+        C->>C: 手元の版 v0.3.0 と目標の版 v0.5.0 を比べ、v0.4.0・v0.5.0 の手順を読む
+        C->>F: 書き換えうるファイルを写しのフォルダへ写す
+        C->>F: v0.4.0・v0.5.0 の手順を版の順に当てる
+        C->>C: mdmark check と同じ点検を流す（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 当てた手順・変更履歴の行・写しのフォルダの場所・終了コード 0
+    expected:
+      - 設定のキーの名前が v0.4.0 の手順のとおりに変わり、文書の印が v0.5.0 の手順のとおりに書き換わっている
+      - 設定の `version` が `v0.5.0`
+      - 設定ファイルのコメントと、手順が触らないキーの値と並びが残っている
+      - 出力に v0.4.0・v0.5.0 の変更履歴の行が出て、v0.3.0 の行が出ない
+      - 出力に写しのフォルダの場所が出て、そのフォルダに当てる前の設定・文書がある
+      - 終了コードが 0
+    test: test_normal
+  - name: 正常シナリオ（当てる前に示す）
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊す印を付ける
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --plan
+        C->>F: 設定の version を読む
+        C->>C: v0.4.0・v0.5.0 の手順を読む
+        C-->>W: 版ごとの手順・変更履歴の行・壊す手順があること・終了コード 0
+    expected:
+      - 出力に v0.4.0・v0.5.0 の順で手順が出る
+      - 出力に v0.4.0・v0.5.0 の変更履歴の行が出る
+      - 出力に壊す手順を持つ版と手順が示される
+      - 設定・索引・文書が変わっておらず、写しのフォルダが無い
+      - 終了コードが 0
+    test: test_normal_when_plan
+  - name: 正常シナリオ（値を聞く手順がある）
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 呼んだ CLI の版を `v0.4.0` に、`v0.4.0` の手順を値を利用者に聞いてキーを足す手順に差し替える
+        notes: 標準入力に足すキーの値を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>C: v0.4.0 の手順を読む
+        C-->>W: 足すキーの値を聞く
+        W->>C: 値
+        C->>F: 写しを取り、キーを足す
+        C->>C: 点検を流す（ずれ 0 件）
+        C->>F: 設定の version を v0.4.0 にする
+        C-->>W: 当てた手順・変更履歴の行・写しのフォルダの場所・終了コード 0
+    expected:
+      - 設定に、答えた値でキーが足されている
+      - 設定の `version` が `v0.4.0`
+      - 終了コードが 0
+    test: test_normal_when_value_asked
+  - name: 正常シナリオ（手元の版を持たない設定）
+    setup:
+      - name: 版を持たない設定のフォルダ
+        description: 正常シナリオのフォルダの設定から `version` を消したもの（v0.3.0 までの `init` が置いた設定）
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: 標準入力に手元の版 `v0.3.0` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読む（無い）
+        C-->>W: 手元の版を聞く
+        W->>C: v0.3.0
+        C->>F: 写しを取り、v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検を流す（ずれ 0 件）
+        C->>F: 設定に version: v0.5.0 を書く
+        C-->>W: 当てた手順・変更履歴の行・写しのフォルダの場所・終了コード 0
+    expected:
+      - 設定の `version` が `v0.5.0`
+      - 変更後の設定・文書が、`version` を除いて正常シナリオと同じ
+      - 終了コードが 0
+    test: test_normal_when_version_missing
+  - name: 正常シナリオ（手元の版が目標の版と同じ）
+    setup:
+      - name: 版が揃ったフォルダ
+        description: '`version: v0.5.0` の設定を持つフォルダ'
+      - name: Mock
+        description: 呼んだ CLI の版を `v0.5.0` に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読む
+        C-->>W: 当てる手順が無いこと・終了コード 0
+    expected:
+      - 出力に、手元の版が目標の版と同じで当てる手順が無いことが出る
+      - 設定・索引・文書が変わっておらず、写しのフォルダが無い
+      - 終了コードが 0
+    test: test_normal_when_up_to_date
+  - name: 正常シナリオ（壊す手順を断る）
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊す印を付ける
+        notes: '`--yes` を付けず、確かめに標準入力で断る'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>C: v0.4.0・v0.5.0 の手順を読む
+        C-->>W: 壊す手順を示して当ててよいか確かめる
+        W->>C: 断る
+        C-->>W: 何も当てなかったこと・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が変わっておらず、写しのフォルダが無い
+      - 出力に、何も当てなかったことと `--yes` で確かめずに当てられることが出る
+      - 終了コードが 0 以外
+    test: test_normal_when_destructive_declined
+  - name: 異常シナリオ（手順の途中で失敗する）
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、終了コード 1 で終わるスクリプトの手順に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 写しを取る
+        C->>F: v0.4.0 の手順を当てる
+        C->>F: v0.5.0 のスクリプトを流す（失敗）
+        C->>F: 写しから戻す
+        C-->>W: 失敗した版・手順・理由・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が当てる前と同じ中身に戻っている（v0.4.0 で変えたキーも戻っている）
+      - 設定の `version` が `v0.3.0` のまま
+      - 出力に失敗した版 `v0.5.0`・手順・スクリプトの終了コードが出る
+      - 終了コードが 0 以外
+    test: test_error_when_step_fails
+  - name: 異常シナリオ（当てた後の点検が通らない）
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、設定の `build.out` を拡張子 `.txt` の値に読み替える手順に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 写しを取り、v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検を流す（ずれがある）
+        C->>F: 写しから戻す
+        C-->>W: ずれの一覧・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が当てる前と同じ中身に戻っている
+      - 設定の `version` が `v0.3.0` のまま
+      - 出力に `build.out` を指す `schema` のずれの行が出る
+      - 終了コードが 0 以外
+    test: test_error_when_check_fails
+  - name: 異常シナリオ（手元の版が目標の版より新しい）
+    setup:
+      - name: 版が新しいフォルダ
+        description: '`version: v0.6.0` の設定を持つフォルダ'
+      - name: Mock
+        description: 呼んだ CLI の版を `v0.5.0` に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読む
+        C-->>W: 手元の版が新しいことと、手元の版以上の CLI で呼ぶこと・終了コード 0 以外
+    expected:
+      - 出力に手元の版 `v0.6.0` と目標の版 `v0.5.0` と、手元の版以上の版の CLI で呼び直すことが出る
+      - 設定・索引・文書が変わっておらず、写しのフォルダが無い
+      - 終了コードが 0 以外
+    test: test_error_when_local_version_newer
+  - name: 正常シナリオ（壊す手順を --yes で当てる）
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊す印を付ける
+        notes: '`--yes` を付け、標準入力には何も渡さない'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>C: v0.4.0・v0.5.0 の手順を読む
+        C->>F: 写しを取り、確かめずに v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検を流す（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 当てた手順・変更履歴の行・写しのフォルダの場所・終了コード 0
+    expected:
+      - 出力に壊す手順の確かめが出ない
+      - 壊す手順を含む v0.4.0・v0.5.0 の手順が当たっている
+      - 設定の `version` が `v0.5.0`
+      - 終了コードが 0
+    test: test_normal_when_destructive_with_yes
+lead: 文書を書く人が `mdmark upgrade` を流し、設定の手元の版から目標の版までの移行の手順を版の順に当て、点検を通してから設定の版を書き換え、その範囲の変更履歴を受け取る。
+issue: 10
+primary_actor: 文書を書く人
+trigger: 新しい版が出て、文書を書く人がその版の CLI と配布物を使いたくなった
+preconditions:
+  - 文書を書く人の手元に Node 24 以降がある
+  - 手元に `mdmark.config.yaml` がある
+success_guarantee: 手元の版より新しく目標の版以下の版の移行の手順が版の順に当たり、`mdmark check` と同じ点検が通り、設定の `version` が目標の版になる。当てた版の範囲の変更履歴の行と、写しのフォルダの場所が出る。
+minimal_guarantee: 手順の途中で失敗したとき・当てた後の点検が通らないときは、書き換えた全てのファイルを写しから戻し、設定の `version` を変えない。次の `upgrade` は同じ手元の版から当て直せる。
+frequency: 版が上がるたびに 1 回
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
+test_file: tests/e2e/単一ユースケース/版を上げる.spec.ts

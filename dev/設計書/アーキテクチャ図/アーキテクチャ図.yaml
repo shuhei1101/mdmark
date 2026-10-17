@@ -48,7 +48,7 @@ repository:
     | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
     | `templates/` | 使う側へ置く雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が置く | #9 |
     | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI | #3・#5・#6 |
-    | `migrations/{版}/` | 版ごとの移行の手順とスクリプト | 版を上げるコマンド | #10 |
+    | `migrations/` | 版ごとの移行の手順とスクリプト（`v{版}/`）、出していない版の手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{版}/` を読む（`next/` と `no-steps.yaml` は配布物のビルドだけが読む） | #10 |
     | `guide/` | 使い方集 | プラグインと MCP | #11 |
     | `plugin/` | Claude Code のプラグイン（SessionStart・MCP） | プラグインのマーケットプレイス | #11 |
 

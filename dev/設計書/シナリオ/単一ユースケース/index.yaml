@@ -50,3 +50,5 @@ items:
     summary: 文書を書く人が `mdmark build` で、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる
   - page: まとめたHTMLで文書を行き来する.yaml
     summary: 読む人がまとめた HTML を file:// で開き、文書の一覧・リンク・戻ると進むで文書を行き来する
+  - page: 版を上げる.yaml
+    summary: 文書を書く人が `mdmark upgrade` で移行の手順を版の順に当て、点検を通してから設定の版を書き換える

@@ -1,0 +1,5 @@
+entries:
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 7193e1b03a80238c1166d033398e6f5ffadcd2a19d3ced2461937bc46706cb48
+    reason: 省いてよい version と、既に CLI が検めていた theme・extensions・build を Schema に足しただけで、古い設定もそのまま新しい Schema に合う

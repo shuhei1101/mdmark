@@ -19,5 +19,6 @@
 | [設定と索引を点検する.ts](./設定と索引を点検する.ts.yaml) | 文書を書く人が、設定の形・索引と文書のずれ・build の対象の有無を点検する（mdmark check） |
 | [文書をHTMLに書き出す.ts](./文書をHTMLに書き出す.ts.yaml) | 文書を書く人が、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export） |
 | [複数の文書を1枚のHTMLにまとめる.ts](./複数の文書を1枚のHTMLにまとめる.ts.yaml) | 文書を書く人が、設定の build の文書を行き来できる 1 枚の HTML にまとめる（mdmark build） |
+| [版を上げる.ts](./版を上げる.ts.yaml) | 文書を書く人が、移行の手順を版の順に当てて設定の版を呼んだ CLI の版にする（mdmark upgrade） |
 
 <!-- /table -->

@@ -1,0 +1,463 @@
+title: "版を上げる"
+entry:
+  kind: operation
+  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{目標の版} upgrade` で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: 2 つの版の手順を版の順に当て、点検を通して版を書き換える
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: '`version: v0.3.0`・`legacy: 1`・`index`・`build` を書いたコメントつきの設定と、索引と、印 `<!-- note -->` を持つ文書 2 つの一時フォルダ'
+        notes: '`legacy` は点検が拒まない最上位の知らないキーで、名前を変えても点検が通る'
+      - name: Mock
+        description: 作業ツリーを写した一時フォルダ（テスト用のパッケージ）の `migrations/` と `docs/はじめに/変更履歴.md` をテスト用のものに差し替え、`npm run build -- --version v0.5.0` で版を埋めた `dist/cli.js` を子プロセスで流す
+        notes: '`v0.4.0` は `rename_key`（`file: config`・`legacy` → `renamed`）、`v0.5.0` は `replace_mark`（`<!-- note -->` → `<!-- callout -->`）。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定を読む（version: v0.3.0）
+        C->>C: v0.4.0・v0.5.0 の steps.yaml を読み、Schema で検める
+        C->>F: 設定・索引・文書を .mdmark/backup/{日時}/ へ写す
+        C->>F: v0.4.0 の rename_key・v0.5.0 の replace_mark を当てる
+        C->>C: mdmark check と同じ点検（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 手順・変更履歴・写しの場所・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 設定の `legacy` が `renamed` になり、値と他のキーの並びとコメントが残っている
+      - 文書 2 つの `<!-- note -->` が `<!-- callout -->` になっている
+      - 設定の `version` が `v0.5.0`
+      - 標準出力に `v0.4.0:`・`v0.5.0:` の順で手順の行と、`v0.4.0`・`v0.5.0` の変更履歴の行が出て、`v0.3.0` の変更履歴の行が出ない
+      - 標準出力の `写し:` のフォルダに当てる前の設定・索引・文書があり、`.mdmark/.gitignore` の中身が `*`
+    test: test_normal
+  - name: 正常系（当てる前に示す）
+    summary: '`--plan` で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない'
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順に `destructive: true` を付ける'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade --plan
+        C->>C: 設定と v0.4.0・v0.5.0 の手順を読む
+        C-->>W: 手順・変更履歴・壊す手順の印・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準出力に `replace_mark（壊す手順）:` の行と `--plan のため書き換えていません` がある
+      - 設定・索引・文書が変わっておらず、`.mdmark/` が無い
+    test: test_normal_when_plan
+  - name: 正常系（値を聞く手順がある）
+    summary: '`set_default` の `ask` で値を聞き、答えた値でキーを足す'
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 'テスト用のパッケージを `--version v0.4.0` でビルドし、`v0.4.0` の手順を `set_default`（`file: config`・`key: title`・`ask`）に差し替える'
+        notes: 標準入力に `設計の文書` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C-->>W: ask の問い（標準エラー）
+        W->>C: 設計の文書
+        C->>F: 写しを取り、title を足す
+        C->>C: 点検（ずれ 0 件）
+        C->>F: version を v0.4.0 にする
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準エラーに `ask` の問いの文が出る
+      - 設定の `title` が `設計の文書`、`version` が `v0.4.0`
+    test: test_normal_when_value_asked
+  - name: 正常系（手元の版を持たない設定）
+    summary: 設定に `version` が無いと手元の版を聞き、当てた後に `version` を足す
+    setup:
+      - name: 版を持たない設定のフォルダ
+        description: 正常系のフォルダの設定から `version` を消したもの
+      - name: Mock
+        description: 正常系と同じ
+        notes: 標準入力に `v0.3.0` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C-->>W: 手元の版の問い（標準エラー）
+        W->>C: v0.3.0
+        C->>F: 写しを取り、v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検（ずれ 0 件）
+        C->>F: 設定の先頭に version: v0.5.0 を足す
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '設定の最上位の先頭のキーが `version: v0.5.0`'
+      - 設定・文書の中身が、`version` の行を除いて正常系と同じ
+    test: test_normal_when_version_missing
+  - name: 正常系（手元の版が目標の版と同じ）
+    summary: 当てる手順が無ければ何も書き換えずに終わる
+    setup:
+      - name: 版が揃ったフォルダ
+        description: 正常系のフォルダの `version` を `v0.5.0` にしたもの
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C->>C: 手元の版と目標の版が同じ
+        C-->>W: 当てる手順が無いこと・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準出力に `手元の版が目標の版と同じです。当てる手順はありません` がある
+      - 設定・索引・文書が変わっておらず、`.mdmark/` が無い
+    test: test_normal_when_up_to_date
+  - name: 正常系（壊す手順を --yes で当てる）
+    summary: '`--yes` なら壊す手順を確かめずに当てる'
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順に `destructive: true` を付ける'
+        notes: 標準入力には何も渡さない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 写しを取り、確かめずに手順を当てる
+        C->>C: 点検（ずれ 0 件）
+        C->>F: version を v0.5.0 にする
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準エラーに確かめの問いが出ない
+      - 文書の印が書き換わり、`version` が `v0.5.0`
+    test: test_normal_when_destructive_with_yes
+  - name: 正常系（当たった後に当て直す）
+    summary: 手順が既に当たった設定・文書に同じ手順を当てても中身が変わらない
+    setup:
+      - name: 手順が当たった後のフォルダ
+        description: 正常系を流した後のフォルダの `version` だけを `v0.3.0` に戻したもの（写しから戻せずに止まった状態）
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 写しを取り、v0.4.0・v0.5.0 の手順を当てる（どれも何も変えない）
+        C->>C: 点検（ずれ 0 件）
+        C->>F: version を v0.5.0 にする
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 設定・文書の中身が正常系を流した後と同じ
+    test: test_normal_when_reapplied
+  - name: 異常系（壊す手順を断った・終了コード 1）
+    summary: 壊す手順の確かめに `y` 以外を答えると、何も書き換えずに終わる
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順に `destructive: true` を付ける'
+        notes: 標準入力に `n` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C-->>W: 壊す手順を示して確かめる（標準エラー）
+        W->>C: n
+        C-->>W: 何も当てなかったことと --yes・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `--yes` が出る
+      - 設定・索引・文書が変わっておらず、`.mdmark/` が無い
+    test: test_error_when_destructive_declined
+  - name: 異常系（手順の失敗・終了コード 1）
+    summary: '`call` のスクリプトが失敗すると、前の版で当てた分も写しから戻す'
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順を、終了コード 1 で終わるスクリプトを流す `call`（`files: [config]`）に差し替える'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 写しを取り、v0.4.0 の rename_key を当てる
+        C->>S: node {スクリプト} --config {設定ファイル}
+        S-->>C: 終了コード 1
+        C->>F: 写しから戻す
+        C-->>W: 失敗した版・手順・理由・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 設定の中身が当てる前と同じ（`legacy` が残り、`version` が `v0.3.0`）
+      - 標準エラーに `v0.5.0` と手順の説明とスクリプトの終了コード 1 が出る
+    test: test_error_when_step_fails
+  - name: 異常系（点検のずれ・終了コード 1）
+    summary: 当てた後の点検でずれがあると、写しから戻してずれを出す
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ。設定の `build.out` は `dist/docs.html`
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順を `map_values`（`file: config`・`key: build.out`・`dist/docs.html` → `dist/docs.txt`）に差し替える'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 写しを取り、v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検（build.out の schema のずれ）
+        C->>F: 写しから戻す
+        C-->>W: ずれの行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '標準エラーに `mdmark.config.yaml:build.out: schema:` で始まる行がある'
+      - 設定の `legacy`・`build.out`・`version` が当てる前のまま
+    test: test_error_when_check_fails
+  - name: 異常系（手元の版が新しい・終了コード 1）
+    summary: 手元の版が呼んだ CLI の版より新しいと、呼び直し方を示して終わる
+    setup:
+      - name: 版が新しいフォルダ
+        description: 正常系のフォルダの `version` を `v0.6.0` にしたもの
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C->>C: 手元の版 v0.6.0 が目標の版 v0.5.0 より新しい
+        C-->>W: 呼び直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `v0.6.0`・`v0.5.0`・`npx github:shuhei1101/mdmark#v0.6.0 upgrade` が出る
+      - 設定・索引・文書が変わっておらず、`.mdmark/` が無い
+    test: test_error_when_local_version_newer
+  - name: 異常系（手元の版の書式の誤り・終了コード 1）
+    summary: 手元の版の問いに書式の違う答えを返すと、書式を示して終わる
+    setup:
+      - name: 版を持たない設定のフォルダ
+        description: 正常系（手元の版を持たない設定）と同じ
+      - name: Mock
+        description: 正常系と同じ
+        notes: 標準入力に `0.3` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C-->>W: 手元の版の問い
+        W->>C: 0.3
+        C-->>W: 書式 v{MAJOR}.{MINOR}.{PATCH}・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `v{MAJOR}.{MINOR}.{PATCH}` が出る
+      - 設定・索引・文書が変わっていない
+    test: test_error_when_version_format_invalid
+  - name: 異常系（答えが無い・終了コード 1）
+    summary: 問いに答える前に標準入力が終わると、何も書き換えずに終わる
+    setup:
+      - name: 版を持たない設定のフォルダ
+        description: 正常系（手元の版を持たない設定）と同じ
+      - name: Mock
+        description: 正常系と同じ
+        notes: 標準入力を何も書かずに閉じる
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C-->>W: 手元の版の問い
+        C->>C: 標準入力が終わる
+        C-->>W: 答える問い・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに手元の版の問いに答えが無いことが出る
+      - 設定・索引・文書が変わっておらず、`.mdmark/` が無い
+    test: test_error_when_answer_missing
+  - name: 異常系（手順のファイルの誤り・終了コード 1）
+    summary: 当てる版の `steps.yaml` が Schema に合わないと、書き換える前に終わる
+    setup:
+      - name: 手元の版が古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ。`v0.5.0` の `steps.yaml` の手順から `to` を消す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C->>C: v0.5.0 の steps.yaml が Schema に合わない
+        C-->>W: 版と合わないところと入れ直し・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `v0.5.0` と `to` が出る
+      - 設定・索引・文書が変わっておらず（v0.4.0 の手順も当たっていない）、`.mdmark/` が無い
+    test: test_error_when_steps_invalid
+  - name: 異常系（設定ファイルが無い・終了コード 1）
+    summary: 設定ファイルが見つからないと、`mdmark init` で置けることを示して終わる
+    setup:
+      - name: 設定ファイルの無いフォルダ
+        description: そのフォルダと上のフォルダに `mdmark.config.yaml` が無い一時フォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C->>C: 今のフォルダから上へ設定ファイルを探す
+        C-->>W: 設定ファイルが無いことと mdmark init・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `mdmark.config.yaml` が無いことと `mdmark init` が出る
+    test: test_error_when_config_missing
+lead: 文書を書く人が、設定の手元の版から呼んだ CLI の版までの移行の手順を版の順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI の版にする。当てる前に写しを取り、失敗したら写しから戻す。
+idempotent: true
+side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` に写しを置く。`--plan` は何も書き換えない
+exclusivity: 排他しない。同じフォルダで同時に流さないことを前提にする
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/版を上げる#
+  - dev/設計書/ER図/移行の手順#
+  - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+request:
+  - name: --plan
+    type: boolean
+    required: false
+    default: 'false'
+    location: argument
+    description: 何も書き換えず、当てる版ごとの手順・変更履歴の行・壊す手順の有無を出す
+  - name: --yes
+    type: boolean
+    required: false
+    default: 'false'
+    location: argument
+    description: 壊す印のある手順を、確かめずに当てる。値を聞く手順と手元の版の問いは飛ばさない
+  - name: --config
+    type: string
+    required: false
+    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う）
+    location: argument
+    description: 使う設定ファイルのパス
+    example: docs/mdmark.config.yaml
+  - name: 標準入力
+    type: string
+    required: false
+    default: なし（問いが無ければ読まない）
+    location: argument
+    description: 問いへの答え。問い 1 つに 1 行を読む。問いは手元の版（設定に `version` が無いとき）→ 値を聞く手順（当てる順）→ 壊す手順の確かめ（`--yes` が無いとき）の順に出す
+    example: v0.3.0
+response:
+  - name: 標準出力
+    type: string
+    description: '`手元の版: {版}`・`目標の版: {版}` の後に、当てる版ごとに `{版}:` の行と手順 1 つ 1 行（`  {種類}: {説明}`。壊す印のある手順は種類の後ろに `（壊す手順）`）、`変更履歴:` の行と変更履歴の行 1 つ 1 行（`  {バージョン} {PR} {変更}`）を出す。最後に、当てたときは `写し: {パス}` と `版を {目標の版} にしました`、`--plan` のときは `--plan のため書き換えていません`、当てる手順が無いときは `手元の版が目標の版と同じです。当てる手順はありません` を出す'
+    notes: 写しのパスは設定ファイルのあるフォルダからの相対パス。手順のない版は行を出さない
+  - name: 標準エラー
+    type: string
+    description: 問いの文と、誤りの原因と直し方の 1 文。点検が通らないときは、`mdmark check` と同じ形のずれの行を出す
+  - name: 終了コード
+    type: 0 | 1
+    description: 当てたとき・`--plan` で示したとき・当てる手順が無いときは 0、それ以外は 1
+response_example: |-
+  ```text
+  手元の版: v0.3.0
+  目標の版: v0.5.0
+  v0.4.0:
+    rename_key: `build.out` を `build.output` に改める
+  v0.5.0:
+    replace_mark（壊す手順）: 印 `<!-- note -->` を `<!-- callout -->` に書き換える
+  変更履歴:
+    v0.4.0 #40 版を上げるときに移行の手順を当てる mdmark upgrade を作る
+    v0.5.0 #45 注意書きの印の名前を揃える
+  写し: .mdmark/backup/20261017120000
+  版を v0.5.0 にしました
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 手順を当てて点検が通り、版を書き換えた。`--plan` で示した。手元の版が目標の版と同じ。終了コード 0
+  - name: 壊す手順を断った（終了コード 1）
+    condition: '`--yes` が無く、壊す手順の確かめに `y` 以外を答えた'
+    notes: 何も書き換えず、写しも取らない。`--yes` で確かめずに当てられることを出す
+  - name: 手順の失敗（終了コード 1）
+    condition: 手順を当てる途中で、`call` のスクリプトが 0 以外で終わったか、ファイルを書けなかった
+    notes: 写しから戻し、失敗した版・手順の説明・理由を出す
+  - name: 点検のずれ（終了コード 1）
+    condition: 全ての手順を当てた後の点検でずれが 1 件以上ある
+    notes: 写しから戻し、ずれの行を出す
+  - name: 手元の版が新しい（終了コード 1）
+    condition: 手元の版が呼んだ CLI の版より新しい
+    notes: 手元の版と目標の版と、`npx github:shuhei1101/mdmark#{手元の版} upgrade` など手元の版以上の CLI で呼び直すことを出す
+  - name: 手元の版の書式の誤り（終了コード 1）
+    condition: 設定の `version` か、問いへの答えが `v{MAJOR}.{MINOR}.{PATCH}` に合わない
+    notes: 書式を示す
+  - name: 答えが無い（終了コード 1）
+    condition: 問いに答える前に標準入力が終わった
+    notes: 何も書き換えない。答える問いを出す
+  - name: 手順のファイルの誤り（終了コード 1）
+    condition: 当てる版の `steps.yaml` が読めないか、`schemas/mdmark.steps.schema.json` に合わないか、`call` のスクリプトが無い
+    notes: 何も書き換えない。版と合わないところと、mdmark を入れ直すことを出す
+  - name: 設定ファイルが無い・読めない（終了コード 1）
+    condition: '`--config` のファイルが無い、今のフォルダと上のフォルダに `mdmark.config.yaml` が無い、または YAML として読めない'
+    notes: '`mdmark check` と同じ文を出す'
+constraints:
+  - item: 目標の版
+    constraint: ビルドが呼んだ CLI（`dist/cli.js`）に埋めた版（ライブラリ本体の `version()` と同じ出所）。`version.ini` は読まない。引数では受けない
+    notes: hotfix のビルドは `version.ini` を上げず `--version` で打つタグの版を埋める。引数で古い版を受けると、呼んだ CLI の形で点検して目標の版では正しい設定を戻してしまう
+  - item: 手元の版
+    constraint: 設定の `version`。無ければ標準エラーに `手元の版（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出し、標準入力の 1 行を手元の版にする（`--plan` のときも聞く）
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[version]
+  - item: 版の比較
+    constraint: '`v{MAJOR}.{MINOR}.{PATCH}` の 3 つの数を左から数として比べる'
+  - item: 当てる版
+    constraint: パッケージの `migrations/` の直下の `v{版}` のフォルダのうち、手元の版より新しく目標の版以下のものを版の昇順に当てる。`migrations/next/` は読まない
+    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
+  - item: 手順の検め
+    constraint: 当てる全ての版の `steps.yaml` を、問いと書き換えの前に `schemas/mdmark.steps.schema.json` で検める。1 つでも合わなければ何も書き換えない
+  - item: 問いの順
+    constraint: 手元の版 → 値を聞く手順（当てる順。キーが既にある `set_default` は聞かない）→ 壊す手順の確かめ（`--yes` が無く壊す印の手順が 1 つ以上あるとき 1 回だけ）の順に、全て書き換えの前に聞く。`--plan` では手元の版だけを聞く。確かめは `y` だけを承諾とする
+  - item: 写し
+    constraint: 書き換えの前に、設定ファイルと、手順が書き換えうる全てのファイル（`file`・`files` が指すものと、`replace_mark` の対象の文書）を、設定ファイルのあるフォルダの `.mdmark/backup/{yyyymmddHHMMSS}/` へ、そのフォルダからの相対パスを保って写す。`.mdmark/.gitignore`（中身は `*`）が無ければ置く。当てた後も消さない
+    notes: 日時は利用者の手元の時刻
+  - item: 戻し
+    constraint: 手順の失敗か点検のずれで、写しの全てのファイルを元の場所へ書き戻す。`call` のスクリプトは `files` に挙げたものだけを書き換える
+  - item: 当て直し
+    constraint: '`rename_key` は元のキーがあり新しいキーが無いときだけ名前を変え、他は何もしない。`set_default` はキーが無いときだけ足す。`map_values` は値が読み替えの表の元の値のときだけ替える。`replace_mark` は `from` を `to` に書き換える（`to` は `from` を含まない）。`call` のスクリプトは当て直しても結果が変わらないように書く'
+    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
+    notes: 写しから戻せずに止まっても（Ctrl-C など）、次の `upgrade` が同じ手元の版から当て直せる
+  - item: YAML の書き換え
+    constraint: 設定と索引はコメント・キーの並び・触らないキーの書き方を残して書き換える
+    decided_by: dev/設計書/外部ライブラリ/yaml#
+  - item: 文書
+    constraint: '`replace_mark` と `files` の `documents` が指す文書は、設定の `build` の対象（`include` に当たり `exclude` に当たらないもの）と索引の文書。同じ文書は 1 回だけ扱う'
+  - item: スクリプトの呼び方
+    constraint: '`node {スクリプト} --config {設定ファイルの絶対パス}` を設定ファイルのあるフォルダで流し、終了コード 0 以外を失敗にする。スクリプトの拡張子は `.js` か `.mjs`。待ち時間は制限なし'
+    notes: スクリプトは同じ版の mdmark の開発者が書き、利用者が Ctrl-C で止められる。`npx` が入れたパッケージは `node_modules` の下にあり、Node はそこの `.ts` の型を落とさない（`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`）ため `.ts` は受けない
+  - item: 点検
+    constraint: 全ての手順を当てた後に、`mdmark check` と同じ点検（呼んだ CLI の形）を流す。ずれが 0 件のときだけ版を書き換える
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+  - item: 版の書き換え
+    constraint: 設定の `version` を目標の版にする。無ければ最上位の先頭に足す
+  - item: 変更履歴
+    constraint: パッケージの `docs/はじめに/変更履歴.md` の表のうち、バージョンの列が手元の版より新しく目標の版以下の行を、表の並びで出す。PR の列はリンクの文字（`#40`）だけを出す
+  - item: 動く Node の版
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+test_file: tests/integration/lib/upgrade.test.ts

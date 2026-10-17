@@ -11,6 +11,7 @@ import {
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { build, type Metafile, type Plugin } from "esbuild";
+import { checkMigrations } from "./migrations.ts";
 
 // 埋める版が合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
@@ -269,7 +270,7 @@ export function findTooLargeOutputs(
     .map(([path, bytes]) => ({ path, bytes }));
 }
 
-/** 前回の `dist/` を消してから、版を決めて検査し、`dist/` を書いてサイズを検査し、終了コードを返す */
+/** 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、終了コードを返す */
 export async function main(
   argv: string[],
   options: { root: string; maxBytes: number } = {
@@ -283,15 +284,22 @@ export async function main(
   rmSync(distDir, { recursive: true, force: true });
   try {
     const version = resolveVersion(argv, root);
-    const outputs = await buildDist(version, root);
-    const tooLarge = findTooLargeOutputs(outputs, maxBytes);
-    if (tooLarge.length === 0) {
-      return 0;
+    // 移行の手順の置き忘れは、配布物を書く前に止める
+    const migrationProblems = await checkMigrations({ root, version });
+    for (const problem of migrationProblems) {
+      console.error(problem);
     }
-    for (const { path, bytes } of tooLarge) {
-      console.error(
-        `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
-      );
+    if (migrationProblems.length === 0) {
+      const outputs = await buildDist(version, root);
+      const tooLarge = findTooLargeOutputs(outputs, maxBytes);
+      if (tooLarge.length === 0) {
+        return 0;
+      }
+      for (const { path, bytes } of tooLarge) {
+        console.error(
+          `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
+        );
+      }
     }
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

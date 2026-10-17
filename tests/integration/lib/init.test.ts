@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { expect, inject, test } from "vitest";
 import { parse } from "yaml";
 import { validateConfig } from "../../../src/cli/config.ts";
 import { normalizeIndex } from "../../../src/knowledge/index-shape.ts";
@@ -42,6 +42,12 @@ test("test_normal", async () => {
   expect(linesOf(result.stdout)).toEqual(
     TYPESCRIPT_FILES.map((path) => `置いた: ${path}`),
   );
+  // 置いた設定の version は、ビルドした CLI に埋めた版
+  const builtVersion = (
+    await readFile(join(inject("builtRoot"), "version.ini"), "utf8")
+  ).trim();
+  const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
+  expect(config.version).toBe(builtVersion);
 });
 
 // --js で JavaScript の拡張の雛形を置く（正常系）

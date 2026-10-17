@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -170,4 +171,130 @@ test("test_error_when_dist_file_too_large", async () => {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
+});
+
+// 最新の版のタグ（シナリオのセットアップの `version.ini` もこの版）
+const TAG = "v0.3.0";
+
+/** 作業ツリーの中で git を流す（署名なし） */
+async function git(args: string[]): Promise<void> {
+  await execFileAsync(
+    "git",
+    [
+      "-c",
+      "user.name=test",
+      "-c",
+      "user.email=test@example.com",
+      "-c",
+      "commit.gpgsign=false",
+      ...args,
+    ],
+    { cwd: root },
+  );
+}
+
+/** 作業ツリーを git のリポジトリにして、Schema・移行の手順・`version.ini` を commit して版のタグを打つ。打ってあれば、それらをタグの状態に戻す */
+async function resetTaggedWorkTree(): Promise<void> {
+  if (!existsSync(join(root, ".git"))) {
+    await writeFile(join(root, "version.ini"), `${TAG}\n`);
+    await git(["init", "--quiet"]);
+    await git(["add", "schemas", "migrations", "version.ini"]);
+    await git(["commit", "--quiet", "-m", "初期"]);
+    await git(["tag", TAG]);
+    return;
+  }
+  await git([
+    "checkout",
+    "--quiet",
+    "--",
+    "schemas",
+    "migrations",
+    "version.ini",
+  ]);
+  await git(["clean", "--quiet", "-fd", "migrations"]);
+}
+
+/** Schema の JSON を読み、`change` で変えて書き戻し、書いた中身を返す */
+async function changeSchema(
+  name: string,
+  change: (schema: Record<string, unknown>) => void,
+): Promise<string> {
+  const path = join(root, "schemas", name);
+  const schema = JSON.parse(await readFile(path, "utf8"));
+  change(schema);
+  const text = `${JSON.stringify(schema, null, 2)}\n`;
+  await writeFile(path, text);
+  return text;
+}
+
+// 設定の Schema に省いてよいキーを足し、手順なしの一覧に今の Schema の SHA-256 の行があれば通す（正常シナリオ（広げるだけのスキーマの変更を一覧に載せる））
+test("test_normal_when_schema_change_listed", async () => {
+  // 準備
+  await resetTaggedWorkTree();
+  const changed = await changeSchema("mdmark.config.schema.json", (schema) => {
+    (schema.properties as Record<string, unknown>).title = { type: "string" };
+  });
+  await writeFile(
+    join(root, "migrations", "no-steps.yaml"),
+    [
+      "entries:",
+      "  - version: next",
+      "    schema: mdmark.config.schema.json",
+      `    sha256: ${createHash("sha256").update(changed).digest("hex")}`,
+      "    reason: 省いてよいキーを足しただけで、古い設定もそのまま合う",
+      "",
+    ].join("\n"),
+  );
+  // 実行
+  const { code } = await run("npm", ["run", "build"]);
+  // 検証
+  expect(code).toBe(0);
+  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
+  expect(existsSync(join(root, "dist", "index.css"))).toBe(true);
+});
+
+// 索引の Schema を変えたのに移行の手順も一覧の行も無いと、配布物を書かずに終わる（異常シナリオ（スキーマを変えたのに移行の手順が無い））
+test("test_error_when_schema_changed_without_steps", async () => {
+  // 準備
+  await resetTaggedWorkTree();
+  await changeSchema("mdmark.index.schema.json", (schema) => {
+    schema.required = ["documents"];
+  });
+  await writeFile(join(root, "migrations", "no-steps.yaml"), "entries: []\n");
+  // 実行
+  const { code, stderr } = await run("npm", ["run", "build"]);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr).toContain("schemas/mdmark.index.schema.json");
+  expect(stderr).toContain("migrations/next/steps.yaml");
+  expect(stderr).toContain("no-steps.yaml");
+});
+
+// version.ini を最新の版のタグより新しく上げたのに migrations/next/ が残っていると、移し方を示して終わる（異常シナリオ（release のビルドで出していない版の手順が残る））
+test("test_error_when_next_steps_left_in_release", async () => {
+  // 準備
+  await resetTaggedWorkTree();
+  await writeFile(join(root, "version.ini"), "v0.4.0\n");
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(
+    join(root, "migrations", "next", "steps.yaml"),
+    [
+      "steps:",
+      "  - op: rename_key",
+      "    description: legacy を renamed に改める",
+      "    file: config",
+      "    from: legacy",
+      "    to: renamed",
+      "",
+    ].join("\n"),
+  );
+  // 実行
+  const { code, stderr } = await run("npm", ["run", "build"]);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(stderr).toContain("migrations/next/");
+  expect(stderr).toContain("migrations/v0.4.0/");
+  expect(stderr).toContain("no-steps.yaml");
 });

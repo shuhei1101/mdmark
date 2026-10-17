@@ -1,0 +1,14 @@
+$ npx vitest run --project 'unit*' -t '^(?!.*(?:^|[ >])(test_apply_step|test_apply_step_when_asked|test_apply_step_when_index_missing|test_apply_step_when_script_fails|test_changelog_rows|test_check_migrations|test_check_migrations_when_listed|test_check_migrations_when_next_left|test_check_migrations_when_no_tag|test_check_migrations_when_steps_missing|test_cli_version|test_collect_check_issues|test_compare_versions|test_create_line_prompter|test_create_line_prompter_when_ended|test_latest_version_tag|test_latest_version_tag_when_none|test_load_migration_versions|test_load_migration_versions_when_script_outside|test_load_migration_versions_when_steps_invalid|test_main_when_migrations_invalid|test_main_when_upgrade|test_map_values|test_map_values_when_no_match|test_parse_version|test_parse_version_when_invalid|test_rename_key|test_rename_key_when_already_renamed|test_replace_mark|test_restore_backup|test_run_init_writes_version|test_run_upgrade|test_run_upgrade_when_answer_missing|test_run_upgrade_when_check_fails|test_run_upgrade_when_declined|test_run_upgrade_when_local_newer|test_run_upgrade_when_plan|test_run_upgrade_when_plan_with_ask|test_run_upgrade_when_step_fails|test_run_upgrade_when_up_to_date|test_run_upgrade_when_version_missing|test_set_default|test_set_default_when_present|test_step_files|test_step_files_when_no_index|test_take_backup|test_take_backup_when_outside|test_take_backup_when_same_time|test_validate_config_when_version_invalid|test_validate_steps|test_validate_steps_when_not_reapplicable|test_validate_steps_when_required_missing|test_validate_steps_when_script_ts|test_write_config_version|test_write_config_version_when_missing)$)'
+（新しく足した 55 テストは実装が無く Red のため、テスト名で除いた。除いた 55 テストは skipped になる）
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-cli-upgrade-migrations
+
+
+ Test Files  71 passed | 7 skipped (78)
+      Tests  266 passed | 55 skipped (321)
+   Start at  17:31:26
+   Duration  18.15s (tests 38%, import 33%, worker 22%, transform 7%)
+
+
+exit=0
