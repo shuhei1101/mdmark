@@ -23,8 +23,8 @@ flows:
       - 終了コードが 0
       - '`dist/index.js` と `dist/index.css` がある'
       - '`dist/index.js` の `version()` が `v0.0.0` を返す'
-      - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it` と `sanitize-html` の名前とライセンスの本文がある'
-      - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、`tsc --noEmit` で型エラーが 0 件'
+      - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it`・`sanitize-html`・`lucide`（図のボタンと箱の種類のアイコンの形）の名前とライセンスの本文がある'
+      - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` を export し、`tsc --noEmit` で型エラーが 0 件'
       - '`dist/cli.js` があり、`node dist/cli.js init {一時フォルダ}` が終了コード 0 で雛形を置く'
       - '`dist/viewer.js` と `dist/viewer.css` がある'
     test: test_normal

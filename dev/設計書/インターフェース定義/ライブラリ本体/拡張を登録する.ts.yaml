@@ -177,12 +177,65 @@ flows:
       - どちらの呼び出しも `Error` を投げ、メッセージに重なった名前を含む
       - 'その後 `<!-- greet: world -->` を `mount` すると、最初に登録した拡張の `load` が呼ばれる'
     test: test_error_when_directive_taken
+  - name: 正常系（部品の定義を渡す）
+    summary: 範囲で書いた拡張の印の `json` のコードブロックを、`definition` として `schema` と `draw` へ渡す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: 正常系の拡張に、`definition` が `title`（文字）と `items`（文字の配列）を持つことを確かめる `schema` を足したもの
+        notes: '`schema` は valibot 1.5.0 の `v.object({ args: v.array(v.string()), keys: v.record(v.string(), v.string()), definition: v.object({ title: v.string(), items: v.array(v.string()) }) })`'
+      - name: 部品の定義を持つ印の Markdown
+        description: '`<!-- greet -->` 〜 `<!-- /greet -->` に `{"title": "段取り", "items": ["a", "b", "c"]}` の `json` のコードブロックを置いた文書'
+      - name: Mock
+        description: 拡張のモジュールの代役は、`draw(slot, value)` で `slot` の文字を `value.definition.title` と `value.definition.items` の数にする。ほかは正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension({ name, directive, load, schema })
+        P->>M: mount(el, { markdown })
+        M->>M: 範囲の json を読み、schema で確かめる
+        M->>X: load()
+        M->>X: draw(印の場所の要素, { args, keys, definition })
+        X->>P: 印の場所に描く
+    expected:
+      - 印の場所の文字が `段取り 3`
+      - '`el` の中に定義の JSON の文字（`"items"`）が無い'
+      - '`load` が 1 回だけ呼ばれる'
+    test: test_normal_when_definition
+  - name: 異常系（部品の定義を読めない・書き方の警告）
+    summary: JSON として読めない定義の印の場所を書き方の警告にし、モジュールを読まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: 正常系と同じ
+      - name: 読めない定義を持つ印の Markdown
+        description: '`<!-- greet -->` 〜 `<!-- /greet -->` に、閉じの `}` が無い `json` のコードブロックを置き、前後に段落を持つ文書'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ name, directive, load })
+        P->>M: mount(el, { markdown })
+        M->>M: 範囲の json を読めない
+        M->>P: 印の場所を書き方の警告に替える
+    expected:
+      - 印の場所の要素が class `mdmark-syntax-warning` を持ち、拡張の名前 `greet` と読めなかった行と列がある
+      - '`load` が 1 回も呼ばれていない'
+      - 印の前後の段落があり、`mount` が例外を投げない
+    test: test_error_when_definition_invalid
 lead: 使う側が、自分の印の名前と、その印を描くモジュールの読み方を mdmark へ登録する。`mount` は文書にその印があるときだけ、引数を検査してからモジュールを読んで描かせる。
 test_file: tests/integration/lib/register-extension.browser.test.ts
 idempotent: false
 side_effects: mdmark の中の拡張の登録表に足す。同じページの以降の `mount`・`update`・`render` に効く
 callers:
   - dev/設計書/シナリオ/単一ユースケース/拡張を登録して印を足す#
+  - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを当てる#
 exclusivity: 登録は同期で終わる。描いた後に登録した印は、次の `mount`・`update` から効く
 request:
   - name: extension.name
@@ -197,7 +250,7 @@ request:
     required: true
     location: argument
     description: '拡張の印の名前（`<!-- {directive}: {引数} -->`）'
-    constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と登録済みの拡張の `directive` は使えない
+    constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）と登録済みの拡張の `directive` は使えない
     example: greet
     notes: 設定の `libraries` に同じ名前があるときは、拡張を優先する
   - name: extension.load
@@ -235,7 +288,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 拡張を登録表に足す
   - name: なし（書き方の警告）
-    condition: '`mount`・`update` で、印の引数が `schema` に合わない'
+    condition: '`mount`・`update` で、印の引数が `schema` に合わない、または範囲の部品の定義を JSON として読めない'
     notes: 例外を投げず、その印の場所だけを書き方の警告に替える
   - name: なし（知らせの枠）
     condition: '`mount`・`update` で、`load` が拒否されるか `draw` が例外を投げる'
@@ -251,7 +304,7 @@ exceptions:
     notes: 登録しない。メッセージに重なった名前を含める
 constraints:
   - item: 印の引数の形
-    constraint: '`MdmarkMarkArgs` は `{ args: string[]; keys: Record<string, string> }`。印の引数を空白で区切り、`キー=値` を `keys` に、それ以外を書いた順に `args` に入れる。`schema` の検査と `draw` は同じ値を受け取る'
+    constraint: '`MdmarkMarkArgs` は `{ args: string[]; keys: Record<string, string>; definition?: unknown }`。印の引数を空白で区切り、`キー=値` を `keys` に、それ以外を書いた順に `args` に入れる。印を範囲（`<!-- {directive}: {引数} -->` 〜 `<!-- /{directive} -->`）で書き、範囲に言語 `json` のコードブロックを 1 つ置いたときは、その JSON を読んだ値を `definition` に入れる（範囲が無い印では持たない）。`schema` の検査と `draw` は同じ値を受け取る'
   - item: 拡張のモジュールの形
     constraint: '`draw(slot: HTMLElement, value: MdmarkMarkArgs): void | Promise<void>` を名前付きで export する。`slot` は印の場所の要素'
   - item: 引数の検査
@@ -264,3 +317,6 @@ constraints:
     constraint: 同じ文書の同じ拡張の印は 1 回だけ `load` を呼ぶ。読み込みの間は外部ライブラリの印と同じ読み込み中の印の場所を置く。知らせの枠は題 `この図を表示できません`、本文 `表示に使う拡張（{name}）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。` で、`name` と元のエラーを `console.error` に出す
   - item: 型の配布
     constraint: '`registerExtension`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を `dist/index.d.ts` に書き出す。`StandardSchemaV1` は仕様の型を書き写し、mdmark は検査ライブラリに依存しない'
+  - item: 部品の定義の誤り
+    constraint: 拡張の印の範囲に `json` のコードブロックが 2 つ以上あるか、JSON として読めないときは、`schema` の検査も `load` も呼ばず、印の場所を書き方の警告に替える。警告には拡張の名前と、読めなかった行と列を書く。定義の中身の形は拡張の `schema` が確かめる
+    notes: 警告の文言は画面設計『文書』

@@ -1,0 +1,36 @@
+title: "lucide"
+kind: "ライブラリ"
+version:
+  current: 1.59.0
+  latest: 1.59.0
+  checked_on: '2026-10-18'
+  source: package.json
+  pinning: 完全一致。上げるときは図と記法のスクリーンショットで崩れを確かめる
+catalogs:
+  - name: アイコン
+    version: 1.59.0
+    entries:
+      - name: plus
+        kind: アイコン
+        purpose: 図の拡大のボタン
+      - name: minus
+        kind: アイコン
+        purpose: 図の縮小のボタン
+      - name: rotate-ccw
+        kind: アイコン
+        purpose: 図を全体が収まる倍率に戻すボタン
+      - name: expand
+        kind: アイコン
+        purpose: 図を全画面のモーダルで開くボタン
+      - name: x
+        kind: アイコン
+        purpose: 全画面のモーダルを閉じるボタン
+lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
+purl: pkg:npm/lucide@1.59.0
+upstream: lucide-icons/lucide
+license: ISC（商用利用可）。形を写した配布物に著作権表示とライセンスの本文を残す
+official_url: https://lucide.dev/
+docs_url: https://lucide.dev/icons/
+verification:
+  state: 未確認
+  detail: 'モック（PR #42）では形を手で写した。配布物への取り込み方はモジュール構成設計で決める'
