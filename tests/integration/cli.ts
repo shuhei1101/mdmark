@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { type Browser, chromium, type Page } from "playwright";
 import { afterAll, afterEach, beforeAll, inject } from "vitest";
@@ -101,7 +102,7 @@ export function linesOf(text: string): string[] {
 export type OpenedHtml = {
   /** 開いたページ */
   page: Page;
-  /** 開いてから今までの、ページ自身と `blob:`・`data:`・`file:` のほかへの要求の URL */
+  /** 開いてから今までの、ページ自身（開いた HTML）と `blob:`・`data:` のほかへの要求の URL */
   externalRequests: () => string[];
 };
 
@@ -129,10 +130,11 @@ export function useBrowser(createTempDir: () => Promise<string>): {
       const alone = join(dir, "alone.html");
       await copyFile(htmlFile, alone);
       const page = await browser.newPage({ viewport: size });
+      const pageUrl = pathToFileURL(alone).href;
       const requests: string[] = [];
       page.on("request", (request) => {
         const url = request.url();
-        if (!/^(?:file|blob|data):/.test(url)) {
+        if (url !== pageUrl && !/^(?:blob|data):/.test(url)) {
           requests.push(url);
         }
       });

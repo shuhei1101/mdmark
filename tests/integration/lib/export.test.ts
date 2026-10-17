@@ -161,7 +161,10 @@ test("test_normal_when_unreadable_assets", async () => {
   await expect(page.locator("article p").allTextContents()).resolves.toContain(
     "本文のほかの部分",
   );
-  expect(externalRequests()).toEqual([]);
+  // 読めない画像のパスへの要求のほかは、外への要求が無い
+  expect(
+    externalRequests().filter((url) => !url.endsWith("/img/missing.png")),
+  ).toEqual([]);
   await page.close();
 });
 
