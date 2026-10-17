@@ -4,6 +4,8 @@ items:
     summary: mdmark を使うページへ組み込む手順
   - page: 書く/
     summary: Markdown に印と記法を書いて、表・注意書き・タブなどを付ける手順
+  - page: 図を描く/
+    summary: 図・部品を文書に部品の定義で描き、確かめ、使う側に固有の部品と CSS を足す手順
   - page: カスタマイズ/
     summary: 見た目と機能を使う側で変える手順
   - page: 書き出す/

@@ -71,6 +71,7 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 索引を渡すと、本文に出た用語と文書の別名に破線の下線を引き、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を置く。
 ツールチップの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
 書き方は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
+図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
 
 ### リクエスト
 
@@ -143,6 +144,7 @@ const html = render("# 見出し\n\n本文");
 並べ替え・タブの切り替えなどの操作は `mount` が付ける。
 用語の意味と関連文書、文書の末尾の被参照の一覧も、スクリプトを動かさなくても読める。
 ツールチップを開閉する操作は `mount` が付ける。
+図の部品の定義は、題・図・凡例の HTML にし、定義の JSON は残さない。図の操作は `mount` が付ける。
 
 ### エラー
 
@@ -276,16 +278,18 @@ registerExtension({
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `extension.name` | 必須 | 拡張の名前。空にできない。知らせの枠・書き方の警告・`console.error` に出す |
-| `extension.directive` | 必須 | 拡張の印の名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`）と、登録済みの拡張の `directive` は使えない。設定の `libraries` に同じ名前があるときは、拡張を優先する |
+| `extension.directive` | 必須 | 拡張の印の名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`）と、登録済みの拡張の `directive` は使えない。設定の `libraries` や図の部品の印（`flow`・`sequence`・`chart`・`param`）に同じ名前があるときは、拡張を優先する |
 | `extension.load` | 必須 | 拡張のモジュールを読む関数。文書に印があるときだけ、`mount` と `update` が描くごとに 1 回呼ぶ。同じ文書の同じ拡張の印では 1 回だけ呼ぶ |
 | `extension.schema` | 任意 | 印の引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま渡せる。省くと検査しない |
 
 拡張のモジュールは、`draw(slot, value)` を名前付きで export する。
-`slot` は印の場所の要素、`value` は `{ args: string[]; keys: Record<string, string> }`。
+`slot` は印の場所の要素、`value` は `{ args: string[]; keys: Record<string, string>; definition?: unknown }`。
 `キー=値` でない引数を書いた順に `args`、`キー=値` の引数を `keys` に入れる。
+印を範囲（`<!-- {directive} -->` 〜 `<!-- /{directive} -->`）で書き、範囲に言語 `json` のコードブロックを 1 つ置くと、その JSON を読んだ値を `definition` に入れる。範囲が無い印は `definition` を持たない。
 `draw` は同期でも `Promise` を返す非同期でもよい。
 
-`registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+`registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` と、図の部品の定義の型 `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で点検できる（[固有の部品とCSSを当てる](../使い方/図を描く/固有の部品とCSSを当てる.md)）。
 `StandardSchemaV1` は Standard Schema の仕様の型を書き写したもので、mdmark は検査ライブラリに依存しない。
 
 ### レスポンス
@@ -352,6 +356,8 @@ registerExtension({
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
+| `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、箱の色の濃さ |
+| `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の高さの上限。全体が収まる倍率はこの高さと枠の幅に収める |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |
@@ -382,6 +388,17 @@ registerExtension({
 | `--mdmark-color-callout-warning` | `#9a6700` | `#d29922` | 警告の注意書きの枠の線・題・アイコン |
 | `--mdmark-color-callout-caution` | `#d1242f` | `#f85149` | 注意の注意書きの枠の線・題・アイコン |
 | `--mdmark-color-current-bg` | `#ddf4ff` | `#121d2f` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景 |
+| `--mdmark-color-diagram-llm` | `#8250df` | `#ab7df8` | 図の LLM の箱と LLM の層の色 |
+| `--mdmark-color-diagram-dm` | `#0550ae` | `#79c0ff` | 図の意思決定モデルの箱の色 |
+| `--mdmark-color-diagram-script` | `#59636e` | `#9198a1` | 図のスクリプトの箱の色 |
+| `--mdmark-color-diagram-mcp` | `#bc4c00` | `#f0883e` | 図の MCP の箱と処理の層の色 |
+| `--mdmark-color-diagram-data` | `#1b7c83` | `#39c5cf` | 図のデータの箱とデータの層の色 |
+| `--mdmark-color-diagram-external` | `#1a7f37` | `#3fb950` | 図の外部のシステムの箱の色 |
+| `--mdmark-color-diagram-line` | `#59636e` | `#9198a1` | 図の処理の流れ・戻る線の色 |
+| `--mdmark-color-series-1` | `#0969da` | `#4493f8` | グラフの 1 つ目の系列の色（実線・丸の点） |
+| `--mdmark-color-series-2` | `#bc4c00` | `#f0883e` | グラフの 2 つ目の系列の色 |
+| `--mdmark-color-series-3` | `#8250df` | `#ab7df8` | グラフの 3 つ目の系列の色 |
+| `--mdmark-color-series-4` | `#1b7c83` | `#39c5cf` | グラフの 4 つ目の系列の色 |
 
 <!-- /table -->
 
