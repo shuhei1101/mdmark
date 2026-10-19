@@ -730,3 +730,13 @@ functions:
         condition: 写すボタンを押す
         mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒まれる関数に差し替える'
         expected: '`pre` が `hidden` を持たず、文字が写すはずだった JSON で、例外が外に出ない'
+test_files:
+  - tests/unit/src/diagram/definition.test.ts
+  - tests/unit/src/diagram/geometry.test.ts
+  - tests/unit/src/parts/icons.test.ts
+  - tests/unit/src/parts/diagram.test.ts
+  - tests/unit/src/parts/param.test.ts
+  - tests/unit/src/render/syntax/diagrams.test.ts
+  - tests/unit/src/interact/diagrams.browser.test.ts
+  - tests/unit/src/interact/diagram-tips.browser.test.ts
+  - tests/unit/src/interact/params.browser.test.ts
