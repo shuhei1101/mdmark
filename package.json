@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "esbuild": "0.28.2",
+    "lucide": "1.59.0",
     "markdown-it": "15.0.2",
     "sanitize-html": "2.18.0",
     "yaml": "2.9.1"

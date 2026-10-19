@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { MdmarkMarkArgs } from "../../../src/extensions.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
 
 /** 描く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -175,4 +176,95 @@ test("test_mount_when_updated_with_syntax", async () => {
   expect(types).toContain("pointerdown");
   expect(types).toContain("keydown");
   expect(el.querySelector('[role="tablist"]')).not.toBeNull();
+});
+
+/** 範囲で書いた拡張の印を持つ文書 */
+function definitionMarkdown(json: string): string {
+  return [
+    "前の段落",
+    "",
+    "<!-- greet -->",
+    "",
+    "```json",
+    json,
+    "```",
+    "",
+    "<!-- /greet -->",
+    "",
+    "後ろの段落",
+    "",
+  ].join("\n");
+}
+
+// 範囲の部品の定義を schema と draw に渡し、定義の JSON を文書に残さない（正常系）
+test("test_mount_when_extension_definition", async () => {
+  // 準備
+  const { registerExtension, resetExtensions } = await import(
+    "../../../src/extensions.ts"
+  );
+  resetExtensions();
+  const received: unknown[] = [];
+  const load = vi.fn(async () => ({
+    draw(slot: HTMLElement, value: MdmarkMarkArgs) {
+      const { definition } = value as { definition?: unknown };
+      received.push(definition);
+      const { title, items } = definition as { title: string; items: string[] };
+      slot.textContent = `${title} ${items.length}`;
+    },
+  }));
+  registerExtension({ name: "greet", directive: "greet", load });
+  const el = createElement();
+  try {
+    // 実行
+    await mountTracked(el, {
+      markdown: definitionMarkdown(
+        '{"title": "段取り", "items": ["a", "b", "c"]}',
+      ),
+    });
+    // 検証
+    await vi.waitFor(() => {
+      expect(el.textContent).toContain("段取り 3");
+    });
+    expect(received).toEqual([{ title: "段取り", items: ["a", "b", "c"] }]);
+    expect(el.innerHTML).not.toContain('"items"');
+    expect(load).toHaveBeenCalledTimes(1);
+  } finally {
+    resetExtensions();
+  }
+});
+
+// 範囲の部品の定義を JSON として読めないときは、schema も load も呼ばず書き方の警告にする（異常系）
+test("test_mount_when_extension_definition_invalid", async () => {
+  // 準備
+  const { registerExtension, resetExtensions } = await import(
+    "../../../src/extensions.ts"
+  );
+  resetExtensions();
+  const load = vi.fn(async () => ({ draw: () => {} }));
+  const validate = vi.fn(() => ({ value: { args: [], keys: {} } }));
+  registerExtension({
+    name: "greet",
+    directive: "greet",
+    load,
+    schema: { "~standard": { version: 1, vendor: "test", validate } },
+  });
+  const el = createElement();
+  try {
+    // 実行
+    await mountTracked(el, {
+      markdown: definitionMarkdown('{"title": "段取り",'),
+    });
+    // 検証
+    await vi.waitFor(() => {
+      expect(el.querySelector(".mdmark-syntax-warning")).not.toBeNull();
+    });
+    const warning = el.querySelector(".mdmark-syntax-warning")?.textContent;
+    expect(warning).toContain("greet");
+    expect(load).not.toHaveBeenCalled();
+    expect(validate).not.toHaveBeenCalled();
+    expect(el.textContent).toContain("前の段落");
+    expect(el.textContent).toContain("後ろの段落");
+  } finally {
+    resetExtensions();
+  }
 });
