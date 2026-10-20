@@ -212,6 +212,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 export const EMBED_STYLES: ReadonlyArray<{ name: RegExp; value: RegExp }> =
   (() => {
     const length = String.raw`-?(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
+    // 負の値を持たない長さ（`margin`・`padding` が使う。負の値は他の要素の上へはみ出させるため落とす）
+    const unsigned = String.raw`(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
     const keyword = "[a-z]+(?:-[a-z]+)*";
     const color = String.raw`#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\(\s*[0-9.%\s,/-]+\)|var\(--mdmark-[a-z0-9-]+\)`;
     const fn = String.raw`(?:repeat|minmax)\([a-z0-9\s,.%-]*\)`;
@@ -234,7 +236,7 @@ export const EMBED_STYLES: ReadonlyArray<{ name: RegExp; value: RegExp }> =
       },
       {
         name: /^(?:margin|padding)(?:-[a-z-]+)?$/,
-        value: words(`${length}|auto`),
+        value: words(`${unsigned}|auto`),
       },
       {
         name: /^border(?:-(?!image)[a-z-]+)?$/,

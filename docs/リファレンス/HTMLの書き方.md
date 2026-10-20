@@ -65,6 +65,6 @@ AI が HTML を作るときの書き方の決まり
 | 項目 | 宣言 |
 | --- | --- |
 | 残す宣言 | `display`・`flex` で始まるもの・`align-items`・`align-self`・`justify-content`・`grid` で始まるもの・`gap`・`row-gap`・`column-gap`・`margin` で始まるもの・`padding` で始まるもの・`border` で始まるもの・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align` |
-| 落とす値 | `url(` を含む値・単位 `vw`・`vh` を含む値・`position` |
+| 落とす値 | `url(` を含む値・単位 `vw`・`vh` を含む値・`position`・負の `margin`・`padding` |
 
 幅が本文の列より広い HTML は、描いた枠の中で横にスクロールする。
