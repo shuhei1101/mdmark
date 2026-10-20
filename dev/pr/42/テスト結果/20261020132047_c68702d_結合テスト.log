@@ -14,9 +14,13 @@ $ npm run test:integration
 
 
 
- Test Files  28 passed (28)
-      Tests  163 passed (163)
-   Start at  10:35:08
-   Duration  151.92s (tests 85%, import 10%, transform 4%, worker 1%)
+
+
+
+
+ Test Files  34 passed (34)
+      Tests  199 passed (199)
+   Start at  13:21:20
+   Duration  147.63s (tests 84%, import 11%, transform 4%, worker 1%)
 
 exit: 0
