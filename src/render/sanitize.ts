@@ -100,7 +100,10 @@ function dropSyntaxAttributes(
       name !== "id" &&
       name !== "hidden" &&
       name !== "colspan" &&
-      !name.startsWith("aria-")
+      !name.startsWith("aria-") &&
+      // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときに付け直した値）
+      (!DIAGRAM_ATTRIBUTE_SET.has(name) ||
+        (tagName === "input" && (name === "type" || name === "disabled")))
     ) {
       next[name] = value;
     }
@@ -152,6 +155,9 @@ const DIAGRAM_ATTRIBUTES = [
   "transform",
   "text-anchor",
 ];
+
+/** `DIAGRAM_ATTRIBUTES` の集合 */
+const DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
 
 /** sanitize-html に渡す、描くごとに変わらない設定: 許可していない要素・属性・URL を落とす */
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
