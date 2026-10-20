@@ -19,6 +19,8 @@ catalogs:
       - name: rotate-ccw
         kind: アイコン
         purpose: 図を全体が収まる倍率に戻すボタン
+        status: removed
+        reason: 図の枠の戻すのボタンを倍率のボタンにまとめ、使わなくなった（#6 の確認ログ）
       - name: expand
         kind: アイコン
         purpose: 図を全画面のモーダルで開くボタン

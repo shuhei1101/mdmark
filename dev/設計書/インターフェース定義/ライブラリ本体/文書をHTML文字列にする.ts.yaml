@@ -309,6 +309,97 @@ flows:
       - 2 つ目の図の場所に書き方の警告があり、3 つ目の箱の名前と種類 `robot` と使える種類が書かれている
       - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
     test: test_normal_when_diagram_invalid
+  - name: 正常系（埋め込んだ HTML）
+    summary: 印を付けた `html` のコードブロックの中身を HTML として描き、スクリプトと許可していない宣言を落とす
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 埋め込んだ HTML を持つ Markdown
+        description: '`<!-- html -->` 〜 `<!-- /html -->` の範囲に、`style="display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png)"` を持つ `div`・`onclick` を持つ `button`・`script` 要素・`data-hint` を持つ `div` と `span`・`<mdmark-chart>` の中に棒のグラフの定義を書いた `html` のコードブロック 1 つと、範囲の外の `html` のコードブロック 1 つを持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: html の範囲のコードブロックを生の HTML として読む
+        M->>M: 許可していない要素・属性・宣言を落とし、図の部品とヒントを置く
+        M-->>C: HTML 文字列
+    expected:
+      - 範囲のコードブロックの中身が `<div class="mdmark-html">` の中に要素として出て、`<pre>` にならない
+      - 範囲の外の `html` のコードブロックは `<pre><code class="language-html">` のまま出る
+      - '`div` の `style` が `display: flex; gap: 12px` だけを持ち、`position` と `url(` が無い'
+      - 文字列に `<script`・`onclick` が無く、文書に書いた `button` は残らない
+      - '`<mdmark-chart>` の場所に `figure.mdmark-diagram` の `data-diagram="chart"` があり、`rect` の棒を持ち、文字列に `<mdmark-chart` と定義の JSON の文字が無い'
+      - '`data-hint` の `div` が class `mdmark-hint-block` と `button.mdmark-hint-mark` を持ち、`span` が class `mdmark-hint-inline` と `tabindex="0"` を持つ。どちらの `aria-describedby` も `hidden` を持つ `role="tooltip"` の要素を指し、その文字が `data-hint` の値'
+    test: test_normal_when_embedded_html
+  - name: 正常系（埋め込んだ HTML とヒントの機能を外す）
+    summary: '`html` がオフならコードブロックをコードのまま出し、`hints` がオフならツールチップの中身と印を出さない'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 機能を外す Markdown
+        description: '先頭に `<!-- features: -html -->` を持ち、正常系（埋め込んだ HTML）と同じ範囲を持つ文書と、先頭に `<!-- features: -hints -->` を持ち、同じ範囲と `tip` を持つ線・`io` を持つ箱・`hint` を持つ箱のフロー図を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(-html の文書)
+        M-->>C: コードブロックのままの HTML 文字列
+        C->>M: render(-hints の文書)
+        M-->>C: ツールチップの無い HTML 文字列
+    expected:
+      - '`-html` の文書で、範囲のコードブロックが `<pre><code class="language-html">` で出て、文字列に `mdmark-html` と `<!--` が無い'
+      - '`-hints` の文書で、埋め込んだ HTML が描かれ、文字列に `data-hint`・`mdmark-hint-`・`role="tooltip"` が無い'
+      - '`-hints` の文書で、フロー図の線のラベルと箱の名前は出て、箱に印が無い'
+    test: test_normal_when_html_and_hints_disabled
+  - name: 正常系（埋め込んだ HTML の書き方の誤り）
+    summary: 範囲にコードブロックが 1 つでないときと、読めないチャートの定義の場所に書き方の警告を置く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 書き方を誤った Markdown
+        description: '`html` のコードブロックの無い `<!-- html -->` 〜 `<!-- /html -->` の範囲、`html` のコードブロックを 2 つ持つ範囲、JSON として読めない定義を中に書いた `<mdmark-chart>` を持つ範囲と、段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 読めない範囲と要素の場所を書き方の警告に替える
+        M-->>C: HTML 文字列
+    expected:
+      - '`<div class="mdmark-syntax-warning" role="note">` が 3 つあり、それぞれに題 `書き方の警告` がある'
+      - コードブロックの無い範囲と 2 つある範囲の警告の本文に、範囲に置ける `html` のコードブロックが 1 つであることが書かれ、2 つある範囲のコードブロックはコードのまま出る
+      - '`<mdmark-chart>` の場所の警告が `グラフの部品の定義を JSON として読めません` で始まり、同じ範囲のほかの HTML は描かれる'
+      - 段落がある
+    test: test_normal_when_embedded_html_invalid
+  - name: 正常系（グラフの種類と縦の軸）
+    summary: グラフの定義の `type` で棒・円・散布図を描き、縦の軸の範囲を省くと刻みをデータから切る
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: グラフを持つ Markdown
+        description: '`<!-- chart -->` の範囲に、`type` が `bar`（2 系列・縦の軸の範囲を省き、値の最大が 137）・`pie`（3 項目）・`scatter`（2 系列）のグラフの定義を 1 つずつ置いた文書'
+        notes: 定義は `dev/mock/refs/45/assets/` の見本と同じ形
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 種類ごとにグラフを描く
+        M-->>C: HTML 文字列
+    expected:
+      - 棒のグラフが系列ごとに異なる塗りの模様の `rect` を持ち、縦の軸の目盛りが `0`・`50`・`100`・`150`
+      - 円のグラフが 3 つの扇形の `path` を持ち、扇形の外に整数の割合（合計 100%）、凡例に項目の名前と値がある
+      - 散布図が系列ごとに異なる形の点を持ち、横と縦の両方の軸が数値の目盛りを持つ
+    test: test_normal_when_chart_types
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -357,11 +448,11 @@ constraints:
   - item: 印の書式
     constraint: '1 か所に付ける印は `<!-- {名前}: {引数} -->`、範囲を持つ印は `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。引数の無い印は `<!-- {名前} -->` と書ける。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は空白で区切り、種類・`+機能`・`-機能`・`キー=値`・`closed`・`open` に読み分ける。コードブロックと行内のコードの中は印として扱わない'
   - item: 印の扱い
-    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。図の部品の印と同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どの印も出力にコメントとして残さない'
+    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。図の部品の印と同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どの印も出力にコメントとして残さない'
   - item: 印の場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`。登録した拡張の印も同じ要素にする。`render` は拡張の `load` も `schema` の検査も呼ばない'
   - item: 残す要素・属性
-    constraint: 'sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` と、記法が使う `nav`・`figure`・`figcaption` を足す。文書に書いた `input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。文書に書いた生の HTML の class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけを残す。記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`）・`data-*`・`id` は、mdmark が記法から出した要素だけが持つ。`style` 属性は残さず、図の部品が出した要素の位置と大きさ（`left`・`top`・`width`・`height` の px）と拡大の倍率（`transform: scale()`）だけを残す。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で書いた `pre`・`table` は、書いた `aria-label` を残し、`tabindex` は `0` にする）。文書に書いた `svg`・`button`・`output`・`label` は残さない。図の部品が定義から出した要素だけに、`svg` とその中の `defs`・`marker`・`g`・`path`・`rect`・`circle`・`ellipse`・`line`・`polyline`・`polygon`・`text`、`button`・`output`・`label`・`input type="range"`、属性の `role`・`hidden`・`tabindex`・`aria-describedby`・`aria-label`・`aria-labelledby`・`aria-hidden`・`type`・`min`・`max`・`step`・`value`・`for` と svg の描画の属性（`d`・`viewBox`・`marker-end` など。一覧はモジュール構成設計）を許し、記法の class・`data-*` と同じ見分けで出力の全体を sanitize-html に通す（記法のアイコンは CSS で付ける）'
+    constraint: 'sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` と、記法が使う `nav`・`figure`・`figcaption` を足す。文書に書いた `input` は `transformTags` で常に `type="checkbox"` と `disabled` を付け直し、元の属性からは `checked` だけを引き継ぐ。文書に書いた生の HTML の class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけを残す。記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`）・`data-*`・`id` は、mdmark が記法から出した要素だけが持つ（埋め込んだ HTML の中の `data-hint` は制約の「ヒント」のとおり残す）。`style` 属性は残さず（埋め込んだ HTML の中は制約の「埋め込んだ HTML」のとおり）、図の部品が出した要素の位置と大きさ（`left`・`top`・`width`・`height` の px）と拡大の倍率（`transform: scale()`）だけを残す。`pre` と `table` には、描くときに `tabindex="0"` と読み上げの名前（`aria-label`。書き方は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で書いた `pre`・`table` は、書いた `aria-label` を残し、`tabindex` は `0` にする）。文書に書いた `svg`・`button`・`output`・`label` は残さない。図の部品が定義から出した要素だけに、`svg` とその中の `defs`・`marker`・`g`・`path`・`rect`・`circle`・`ellipse`・`line`・`polyline`・`polygon`・`text`、`button`・`output`・`label`・`input type="range"`、属性の `role`・`hidden`・`tabindex`・`aria-describedby`・`aria-label`・`aria-labelledby`・`aria-hidden`・`type`・`min`・`max`・`step`・`value`・`for` と svg の描画の属性（`d`・`viewBox`・`marker-end` など。一覧はモジュール構成設計）を許し、記法の class・`data-*` と同じ見分けで出力の全体を sanitize-html に通す（記法のアイコンは CSS で付ける）'
     notes: dev/設計書/外部ライブラリ/sanitize-html
   - item: URL のスキーム
     constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す'
@@ -394,7 +485,7 @@ constraints:
     constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリーでは、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
-    constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` 〜 閉じの印の範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み、形（`dist/index.d.ts` の `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`）を確かめて、`<figure class="mdmark-diagram" data-diagram="{種類}">` に題（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（箱の名前・補足・線のラベル・ツールチップの中身）は文字として出し、`{{語}}` はその語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に置き、拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける'
+    constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` 〜 閉じの印の範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み、形（`dist/index.d.ts` の `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`）を確かめて、`<figure class="mdmark-diagram" data-diagram="{種類}">` に題（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（箱の名前・補足・線のラベル・ツールチップの中身）は文字として出し、`{{語}}` はその語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に置き、拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter` で、棒と円は系列を色と塗りの模様の組、散布図は色と点の形の組で描き分け、円は扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。縦の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
     notes: 定義の形の項目はモジュール構成設計で型に書く。見本は `dev/mock/refs/42/assets/samples.js`
   - item: 図の見た目の決まり
     constraint: フロー図は定義の座標のとおりに箱と線を置き、自動配置はしない。`frame` をシステムの枠、`lanes` を枠の中の層（層の箱の色をうっすら敷く）にする。線の種類（`flow`・`read`・`write`・`reply`・`loop`）は色と模様（破線の間隔・太さ・矢じり）の組で描き分ける。横の線が縦の線と交わる点は横の線に飛び越えの弧（line jump）を入れ、同じ向きで重なる線はずらす。シーケンス図は相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ並べ、`loop` は右の帯を通る破線と戻り先のラベルにする。グラフは系列を色と線の模様と点の形の組で描き分ける。凡例には定義に出る箱の種類・線の種類・系列だけを載せ、枠・層・交差・ツールチップの印・用語の下線は図にあるときだけ載せる
@@ -408,4 +499,13 @@ constraints:
   - item: 拡張の印の定義
     constraint: 登録した拡張の印を範囲で書き、範囲に `json` のコードブロックを置いたときも、印の場所の要素だけを出し、範囲の中身と定義の JSON は出力に残さない。登録していない印の範囲のうち、中身が `json` のコードブロックだけのものは中身ごと取り除く（それ以外の範囲は今のとおり印だけを取り除く）
     notes: 定義を `draw` へ渡すのは `mount`（インターフェース定義『拡張を登録する』）
+  - item: 埋め込んだ HTML
+    constraint: '`html` がオンのとき、`<!-- html -->` 〜 `<!-- /html -->` の範囲にある言語 `html` のコードブロック 1 つの中身を、コードでなく生の HTML として `<div class="mdmark-html">` の中に描く。範囲の中のコードブロック以外の Markdown は出力に残さない。中身は文書に書いた生の HTML と同じ許可の検査（制約の「残す要素・属性」「URL のスキーム」）を通し、`script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。中身の要素の `style` 属性は、レイアウト・余白・枠・色・文字の宣言（`display`・`flex*`・`grid*`・`gap`・`margin*`・`padding*`・`border*`・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align`）だけを残し、`url(` を含む値と `position` を落とす。範囲の外の `html` のコードブロックは今のとおりコードとして出す。`html` がオフのときは印だけを取り除き、コードブロックをコードとして出す'
+    notes: '`style` の残し方はユーザーへの確認事項。宣言の一覧はモジュール構成設計で sanitize-html の `allowedStyles` に書く'
+  - item: 埋め込んだ HTML の中の図の部品
+    constraint: 埋め込んだ HTML の中の custom element `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品の印の範囲の `json` のコードブロックと同じ定義として読み、制約の「図の部品」と同じ図に置き換える。読めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を書き方の警告にする。`diagrams` がオフのときは要素を中身ごと落とす。custom element の属性は読まない。埋め込んだ HTML の中の文字は用語の照合に回す
+    notes: 文書に式やスクリプトを書かせない（D-22）
+  - item: ヒント
+    constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素と、図の部品の定義の `hint` を持つ箱に、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で置く（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を足す。`hint` を持つ箱は `io` を持つ箱と同じ右上の印を持ち、`io` と `hint` を両方持つ箱は 1 つの印に入力・処理・出力と `hint` をこの順に出す。`hints` がオフのときは、`data-hint` の属性・`hint`・`io`・線の `tip` のツールチップの中身と印を出さない（線のラベルと箱の名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'
+    notes: 印のアイコンは CSS で付ける。開く操作は `mount`
 test_file: tests/integration/lib/render.test.ts
