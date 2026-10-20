@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { join, resolve } from "node:path";
+import { build } from "esbuild";
 import {
   type DiagramDirective,
   definitionWarning,
@@ -40,6 +41,11 @@ const REPO_ROOT = resolve(import.meta.dirname, "..");
 // 描画の口の経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
+// 図のストーリーが読む、拡大・縮小の操作を付ける処理の経路と、その元のソース
+const DIAGRAM_SCRIPT_PATH = "/render/diagram.js";
+const DIAGRAM_SOURCE = "src/interact/diagrams.ts";
+// 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
+const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
 // 中身を持つ部品に渡す、部品ごとの見本の HTML
 const SAMPLE_BODY =
@@ -104,6 +110,11 @@ function invalidDefinition(directive: DiagramDirective, name: string): string {
     readDefinition(directive, [broken]).problems,
   );
   return renderSyntaxWarning({ message, items });
+}
+
+/** `zoom` を渡さないストーリーは、描いた直後に全体が収まる倍率にする印を足す */
+function fitted(html: string, args: PartArgs): string {
+  return typeof args.zoom === "number" ? html : html + DIAGRAM_FIT_MARKER;
 }
 
 /** 図の部品のストーリーの引数: 見本・状態 */
@@ -211,13 +222,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       current: args.current as string | undefined,
     }),
   "diagram-frame": (args) =>
-    renderDiagram({
-      kind: "flow",
-      definition: sampleDefinition<MdmarkFlowDefinition>("inquiry"),
-      id: "story-frame",
-      lookup: (word) => SAMPLE_TERMS[word],
-      ...diagramArgs(args),
-    }),
+    fitted(
+      renderDiagram({
+        kind: "flow",
+        definition: sampleDefinition<MdmarkFlowDefinition>("inquiry"),
+        id: "story-frame",
+        lookup: (word) => SAMPLE_TERMS[word],
+        ...diagramArgs(args),
+      }),
+      args,
+    ),
   "flow-diagram": (args) => {
     if (args.invalid === true) {
       return invalidDefinition("flow", "inquiry");
@@ -229,22 +243,29 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         node.name = `${node.name}${LONG_NAME_SUFFIX}`;
       }
     }
-    return renderDiagram({
-      kind: "flow",
-      definition,
-      id: "story-flow",
-      lookup: (word) => SAMPLE_TERMS[word],
-    });
+    return fitted(
+      renderDiagram({
+        kind: "flow",
+        definition,
+        id: "story-flow",
+        lookup: (word) => SAMPLE_TERMS[word],
+      }),
+      args,
+    );
   },
   "sequence-diagram": (args) =>
     args.invalid === true
       ? invalidDefinition("sequence", "inquiry-seq")
-      : renderDiagram({
-          kind: "sequence",
-          definition: sampleDefinition<MdmarkSequenceDefinition>("inquiry-seq"),
-          id: "story-sequence",
-          lookup: (word) => SAMPLE_TERMS[word],
-        }),
+      : fitted(
+          renderDiagram({
+            kind: "sequence",
+            definition:
+              sampleDefinition<MdmarkSequenceDefinition>("inquiry-seq"),
+            id: "story-sequence",
+            lookup: (word) => SAMPLE_TERMS[word],
+          }),
+          args,
+        ),
   chart: (args) => {
     if (args.invalid === true) {
       return invalidDefinition("chart", "reply-time");
@@ -257,11 +278,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         { name: "休日", points: [30, 28, 35, 26, 32] },
       );
     }
-    return renderDiagram({
-      kind: "chart",
-      definition,
-      id: "story-chart",
-    });
+    return fitted(
+      renderDiagram({ kind: "chart", definition, id: "story-chart" }),
+      args,
+    );
   },
   "diagram-tooltip": (args) => {
     const open = args.open === true;
@@ -296,11 +316,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return `<div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div>`;
   },
   param: (args) =>
-    renderParam(sampleDefinition<MdmarkParamDefinition>("strength"), {
-      id: "story-param",
-      ...(typeof args.value === "number" ? { value: args.value } : {}),
-      ...(args.copy === undefined ? {} : { copy: args.copy as CopyState }),
-    }),
+    fitted(
+      renderParam(sampleDefinition<MdmarkParamDefinition>("strength"), {
+        id: "story-param",
+        ...(typeof args.value === "number" ? { value: args.value } : {}),
+        ...(args.copy === undefined ? {} : { copy: args.copy as CopyState }),
+      }),
+      args,
+    ),
   figure: (args) =>
     renderFigure({
       kind: args.kind as "image" | "table",
@@ -346,6 +369,20 @@ export function renderPart(options: {
   return `<div class="mdmark">${renderer(args)}</div>`;
 }
 
+/** 図の操作（`src/interact/diagrams.ts`）をブラウザの ES モジュールに束ねた文字。初めて求められたときに束ねる */
+let diagramScriptCode: Promise<string> | undefined;
+function diagramScript(root: string): Promise<string> {
+  diagramScriptCode ??= build({
+    absWorkingDir: root,
+    entryPoints: [DIAGRAM_SOURCE],
+    bundle: true,
+    format: "esm",
+    write: false,
+    logLevel: "silent",
+  }).then((result) => result.outputFiles[0]?.text ?? "");
+  return diagramScriptCode;
+}
+
 /** `GET /render/index.css` に `src/index.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
@@ -357,6 +394,23 @@ export function createRenderServer(options: {
       const css = readFileSync(join(options.root, "src", "index.css"), "utf8");
       response.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
       response.end(css);
+      return;
+    }
+    if (url.pathname === DIAGRAM_SCRIPT_PATH) {
+      diagramScript(options.root).then(
+        (code) => {
+          response.writeHead(200, {
+            "Content-Type": "text/javascript; charset=utf-8",
+          });
+          response.end(code);
+        },
+        (error: unknown) => {
+          response.writeHead(500, {
+            "Content-Type": "text/plain; charset=utf-8",
+          });
+          response.end(String(error));
+        },
+      );
       return;
     }
     const component = PART_PATH_PATTERN.exec(url.pathname)?.[1];

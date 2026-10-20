@@ -2344,9 +2344,14 @@
     .mdmark-diagram-tip {
       position: absolute;
       z-index: 10;
+      inset-inline-start: 0;
       box-sizing: border-box;
       width: max-content;
-      max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
+      max-width: min(
+        var(--mdmark-tooltip-max-width),
+        calc(100% - 1rem),
+        calc(100vw - 2rem)
+      );
       max-height: min(var(--mdmark-tooltip-max-height), 60vh);
       overflow-y: auto;
       overscroll-behavior: contain;
