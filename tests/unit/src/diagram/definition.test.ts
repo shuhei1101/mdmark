@@ -92,7 +92,7 @@ test("test_read_definition_when_points_mismatch", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
   const definition = parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT);
-  const staff = definition.series.find((series) => series.name === "担当者");
+  const staff = definition.series?.find((series) => series.name === "担当者");
   if (staff === undefined) {
     throw new Error("見本の系列「担当者」が無い");
   }

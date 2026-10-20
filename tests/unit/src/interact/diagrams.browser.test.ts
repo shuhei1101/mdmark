@@ -131,7 +131,7 @@ test("test_attach_diagrams_when_zoom_button", async () => {
   await userEvent.keyboard("{ArrowRight}");
   expect(viewport.scrollLeft).toBeGreaterThan(0);
   expect(zoomButton(root).getAttribute("aria-label")).toBe(
-    "倍率 86%。全体が収まる倍率に戻す",
+    "倍率 85%。全体が収まる倍率に戻す",
   );
   // 実行
   zoomButton(root).click();

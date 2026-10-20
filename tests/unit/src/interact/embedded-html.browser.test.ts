@@ -29,6 +29,8 @@ function createEmbeddedRoot(): {
     ].join(""),
   );
   root.style.width = "600px";
+  // 本文の幅の上限（既定 46rem）を外し、幅を 1000px にしても 1000px になるようにする
+  root.style.maxWidth = "none";
   root.style.setProperty("--mdmark-padding", "0");
   const [wide, narrow] = root.querySelectorAll<HTMLElement>("div.mdmark-html");
   if (wide === undefined || narrow === undefined) {
