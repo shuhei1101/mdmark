@@ -1,10 +1,15 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 import type {
   MdmarkIndex,
   MdmarkReferences,
   MountHandle,
 } from "../../../src/index.ts";
+import {
+  INQUIRY_COUNT_TEXT,
+  INQUIRY_HINT_TEXT,
+  wrapHtml,
+} from "../../unit/helpers/charts.ts";
 import {
   INQUIRY_TEXT,
   STRENGTH_TEXT,
@@ -948,9 +953,14 @@ function scaleOf(figure: Element): number {
   return new DOMMatrixReadOnly(getComputedStyle(stage).transform).a;
 }
 
+/** 倍率のボタン（読み上げの名前が `倍率 {今の倍率}。全体が収まる倍率に戻す`） */
+function zoomButton(figure: Element): HTMLButtonElement {
+  return find<HTMLButtonElement>(figure, 'button[aria-label^="倍率"]');
+}
+
 /** 倍率の表示の文字 */
 function zoomText(figure: Element): string {
-  return find(figure, '[aria-label="倍率"]').textContent ?? "";
+  return zoomButton(figure).textContent ?? "";
 }
 
 // 図を収まる倍率で描き、右上のボタンとキーで拡大・縮小・戻す。ホイールは受け取らない（正常系）
@@ -967,20 +977,44 @@ test("test_normal_when_diagram_zoomed", async () => {
   expect(sizer.getBoundingClientRect().width).toBeLessThanOrEqual(
     viewport.clientWidth + 1,
   );
-  expect(buttonOf(figure, "縮小").disabled).toBe(true);
-  expect(buttonOf(figure, "全体が収まる倍率に戻す").disabled).toBe(true);
-  expect(buttonOf(figure, "拡大").disabled).toBe(false);
-  expect(buttonOf(figure, "全画面で開く").disabled).toBe(false);
+  // 右上のボタンは縮小・倍率・拡大・全画面の 4 つで、戻すのボタンは無い。縮小だけが押せない
+  const tools = [
+    ...figure.querySelectorAll<HTMLButtonElement>(
+      '[data-group="zoom"] button, [data-group="screen"] button',
+    ),
+  ];
+  expect(
+    tools.map((tool) => tool.getAttribute("aria-label")?.split("。")[0]),
+  ).toEqual(["縮小", `倍率 ${zoomText(figure)}`, "拡大", "全画面で開く"]);
+  expect(tools.filter((tool) => tool.disabled)).toEqual([
+    buttonOf(figure, "縮小"),
+  ]);
+  expect(figure.querySelector('[data-tool="fit"]')).toBe(zoomButton(figure));
+  expect(zoomButton(figure).getAttribute("aria-label")).toBe(
+    `倍率 ${zoomText(figure)}。全体が収まる倍率に戻す`,
+  );
+  // 今の名前の一部で、getByRole の部分一致で見つかる
+  expect(
+    page.getByRole("button", { name: /全体が収まる倍率に戻す/ }).element(),
+  ).toBe(zoomButton(figure));
   for (const tool of figure.querySelectorAll("button.mdmark-diagram-tool")) {
     expect(tool.getAttribute("aria-label")).toBeTruthy();
   }
   // 実行・検証: 拡大のボタンで 1.25 倍
   buttonOf(figure, "拡大").click();
   expect(scaleOf(figure) / fit).toBeCloseTo(1.25, 2);
+  expect(zoomButton(figure).getAttribute("aria-label")).toBe(
+    `倍率 ${zoomText(figure)}。全体が収まる倍率に戻す`,
+  );
+  const afterButton = zoomText(figure);
   // 表示する枠にフォーカスして + で、さらに 1.25 倍
   viewport.focus();
   await userEvent.keyboard("+");
   expect(scaleOf(figure) / fit).toBeCloseTo(1.25 * 1.25, 2);
+  expect(zoomText(figure)).not.toBe(afterButton);
+  expect(zoomButton(figure).getAttribute("aria-label")).toContain(
+    zoomText(figure),
+  );
   // ホイールは倍率を変えず、既定の動きも止めない
   const before = scaleOf(figure);
   const wheel = new WheelEvent("wheel", {
@@ -993,6 +1027,14 @@ test("test_normal_when_diagram_zoomed", async () => {
   expect(wheel.defaultPrevented).toBe(false);
   // 0 で、描いた直後の倍率と位置に戻る
   await userEvent.keyboard("0");
+  expect(scaleOf(figure)).toBeCloseTo(fit, 4);
+  expect(viewport.scrollLeft).toBe(0);
+  expect(viewport.scrollTop).toBe(0);
+  // 拡大して動かしてから倍率のボタンを押すと、描いた直後の倍率と位置に戻る
+  buttonOf(figure, "拡大").click();
+  buttonOf(figure, "拡大").click();
+  viewport.scrollLeft = 120;
+  zoomButton(figure).click();
   expect(scaleOf(figure)).toBeCloseTo(fit, 4);
   expect(viewport.scrollLeft).toBe(0);
   expect(viewport.scrollTop).toBe(0);
@@ -1038,7 +1080,7 @@ test("test_normal_when_diagram_panned", async () => {
   buttonOf(figure, "下へ動かす").click();
   expect(viewport.scrollTop - top).toBe(80);
   // 収まる倍率に戻すと、移動のボタンが出ない
-  buttonOf(figure, "全体が収まる倍率に戻す").click();
+  zoomButton(figure).click();
   expect(panGroup.hidden).toBe(true);
 });
 
@@ -1274,4 +1316,117 @@ test("test_error_when_clipboard_denied", async () => {
   expect(find(param, "svg[role=img]").getAttribute("aria-label")).toContain(
     "今の値（3）",
   );
+});
+
+/** 描く先の要素の幅を 600px にして、埋め込んだ HTML の文書を描く */
+async function mountEmbedded(markdown: string): Promise<HTMLElement> {
+  const el = createElement();
+  el.style.width = "600px";
+  el.style.setProperty("--mdmark-padding", "0");
+  await mountTracked(el, { markdown });
+  return el;
+}
+
+// 埋め込んだ HTML の中のチャートだけに拡大・縮小・移動を付け、列より広い HTML を中で横にスクロールさせる（正常系）
+test("test_normal_when_embedded_chart", async () => {
+  // 準備
+  const markdown = [
+    wrapHtml(
+      `<p>チャートの前の段落</p>\n<mdmark-chart>\n${INQUIRY_COUNT_TEXT}\n</mdmark-chart>`,
+    ),
+    wrapHtml('<div style="width: 900px">列より広い HTML</div>'),
+  ].join("\n");
+  // 実行
+  const el = await mountEmbedded(markdown);
+  // 検証
+  const [chartHtml, wideHtml] =
+    el.querySelectorAll<HTMLElement>("div.mdmark-html");
+  if (!chartHtml || !wideHtml) {
+    throw new Error("埋め込んだ HTML が描かれていない");
+  }
+  const figure = find<HTMLElement>(chartHtml, "figure.mdmark-diagram");
+  expect(figure.getAttribute("data-diagram")).toBe("chart");
+  await vi.waitFor(() => {
+    expect(scaleOf(figure)).toBeLessThanOrEqual(1);
+  });
+  expect(
+    [
+      ...figure.querySelectorAll<HTMLButtonElement>(
+        '[data-group="zoom"] button, [data-group="screen"] button',
+      ),
+    ].map((tool) => tool.getAttribute("aria-label")?.split("。")[0]),
+  ).toEqual([
+    "縮小",
+    expect.stringMatching(/^倍率 \d+%$/),
+    "拡大",
+    "全画面で開く",
+  ]);
+  const before = scaleOf(figure);
+  buttonOf(figure, "拡大").click();
+  expect(scaleOf(figure) / before).toBeCloseTo(1.25, 2);
+  // 同じ HTML の中の段落には、拡大・縮小のボタンが無い
+  expect(chartHtml.querySelectorAll("button")).toHaveLength(
+    figure.querySelectorAll("button").length,
+  );
+  expect(find(chartHtml, "p").querySelector("button")).toBeNull();
+  // 幅 900px の HTML だけが、中で横にスクロールする
+  await vi.waitFor(() => {
+    expect(wideHtml.classList.contains("is-wide")).toBe(true);
+  });
+  expect(wideHtml.getAttribute("tabindex")).toBe("0");
+  expect(chartHtml.classList.contains("is-wide")).toBe(false);
+  expect(chartHtml.hasAttribute("tabindex")).toBe(false);
+});
+
+// data-hint のブロックは右上の印、行内は要素そのものでツールチップを開き、印の外では開かない（正常系）
+test("test_normal_when_embedded_hint", async () => {
+  // 準備
+  const body = [
+    '<div data-hint="返信の種類を 1 つ選ぶ" style="display: inline-block; padding: 1rem 2rem">自動返信</div>',
+    '<p>問い合わせは <span data-hint="本文を読んで種類を決める処理">分類</span> する。</p>',
+  ].join("\n");
+  const markdown = `${wrapHtml(body)}\n${wrapDirective("flow", INQUIRY_HINT_TEXT)}`;
+  // ポインターを前のテストの位置から離しておく
+  await userEvent.unhover(document.body);
+  const el = await mountEmbedded(markdown);
+  const block = find<HTMLElement>(el, ".mdmark-hint-block");
+  const mark = find<HTMLElement>(block, ".mdmark-hint-mark");
+  const inline = find<HTMLElement>(el, ".mdmark-hint-inline");
+  const tips = (): HTMLElement[] => [
+    ...el.querySelectorAll<HTMLElement>('[role="tooltip"]'),
+  ];
+  // 実行・検証: 文字の上では開かず、ポインターの形は help でない
+  await userEvent.hover(block);
+  expect(tips().every((tip) => tip.hidden)).toBe(true);
+  expect(getComputedStyle(block).cursor).not.toBe("help");
+  // 印の上で、data-hint の文を出す
+  await userEvent.hover(mark);
+  expect(tipOf(mark).hidden).toBe(false);
+  expect(tipOf(mark).textContent).toBe("返信の種類を 1 つ選ぶ");
+  // 行内の要素: フォーカスで開き、Esc で消えてフォーカスが残る
+  inline.focus();
+  expect(tipOf(inline).hidden).toBe(false);
+  expect(tipOf(inline).textContent).toBe("本文を読んで種類を決める処理");
+  await userEvent.keyboard("{Escape}");
+  expect(tipOf(inline).hidden).toBe(true);
+  expect(document.activeElement).toBe(inline);
+  expect(getComputedStyle(inline).cursor).not.toBe("help");
+  // 図の箱の hint: 名前の上では開かず、右上の印の上で hint の文を出す
+  const name = find<HTMLElement>(
+    el,
+    '[data-node="mcp"] .mdmark-diagram-node-name',
+  );
+  const info = find<HTMLElement>(
+    el,
+    'button[aria-label="「窓口の MCP」の説明"]',
+  );
+  await userEvent.hover(name);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(tipOf(info).hidden).toBe(true);
+  await userEvent.hover(info);
+  expect(tipOf(info).hidden).toBe(false);
+  expect(tipOf(info).textContent).toContain("保存と送信のツールだけを持つ");
+  // ページの中のツールチップの id が重ならない
+  const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
 });
