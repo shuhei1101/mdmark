@@ -73,3 +73,4 @@ preconditions:
   - 固有の部品は、使う側が JavaScript（`// @ts-check` と JSDoc）か TypeScript で書き、JavaScript として置いている
 success_guarantee: 固有の部品と CSS を読んだ場所の文書でだけ、固有の部品が描かれ、固有の CSS が当たる。文書に書いたスクリプトは動かない。
 minimal_guarantee: 固有の部品を読んでいない場所の文書では、その部品の印は知らない印として取り除かれ、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts

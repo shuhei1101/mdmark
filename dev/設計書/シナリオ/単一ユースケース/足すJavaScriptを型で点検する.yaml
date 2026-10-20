@@ -51,3 +51,4 @@ preconditions:
   - 手元に Node 24 以降と TypeScript がある
 success_guarantee: 型に合う JavaScript は誤り 0 件で通り、合わない JavaScript はファイルと行を出して落ちる。
 minimal_guarantee: 点検は使う側のファイルを書き換えず、JavaScript のファイルも出さない。
+test_file: tests/e2e/単一ユースケース/足すJavaScriptを型で点検する.spec.ts

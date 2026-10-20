@@ -106,3 +106,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
 success_guarantee: 部品の定義の場所に、決まりのとおりの図が描かれる。文書に書いたスクリプトは動かない。
 minimal_guarantee: 定義を読めない図の場所には書き方の警告が出て、ほかの本文と図は描かれる。
+test_file: tests/e2e/単一ユースケース/図を描く.spec.ts
