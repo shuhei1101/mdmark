@@ -338,6 +338,7 @@ var DEFAULT_FEATURES = {
   sections: true,
   "row-details": true,
   figures: true,
+  diagrams: true,
   glossary: true,
   backlinks: true
 };
@@ -390,7 +391,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.4.0";
+  return "v0.5.0";
 }
 
 // src/cli/config.ts
@@ -5761,6 +5762,52 @@ _defineProperty(MarkdownIt, "ParserInline", ParserInline);
 _defineProperty(MarkdownIt, "StateInline", StateInline);
 var MarkdownItCallable = callable(MarkdownIt);
 
+// src/diagram/definition.ts
+function missingSymbols(text2) {
+  const stack = [];
+  let inString = false;
+  for (let index = 0; index < text2.length; index++) {
+    const char = text2[index];
+    if (inString) {
+      if (char === "\\") {
+        index += 1;
+      } else if (char === '"') {
+        inString = false;
+      }
+    } else if (char === '"') {
+      inString = true;
+    } else if (char === "{") {
+      stack.push("}");
+    } else if (char === "[") {
+      stack.push("]");
+    } else if (char === "}" || char === "]") {
+      stack.pop();
+    }
+  }
+  return `${inString ? '"' : ""}${stack.reverse().join("")}`;
+}
+function errorPosition(error, length) {
+  const message = error instanceof Error ? error.message : "";
+  const position = /position (\d+)/.exec(message)?.[1];
+  return position === void 0 ? length : Math.min(Number(position), length);
+}
+function parseDefinitionJson(text2) {
+  try {
+    return { ok: true, value: JSON.parse(text2) };
+  } catch (error) {
+    const position = errorPosition(error, text2.length);
+    const readable = text2.slice(0, position).trimEnd();
+    const lines = readable.split("\n");
+    const atEnd = text2.slice(position).trim() === "";
+    return {
+      ok: false,
+      line: lines.length,
+      after: (lines.at(-1) ?? "").trim(),
+      missing: atEnd ? missingSymbols(readable) : ""
+    };
+  }
+}
+
 // src/extensions.ts
 var extensions = /* @__PURE__ */ new Map();
 function extensionFor(directive) {
@@ -5788,8 +5835,9 @@ function escapeHtml2(text2) {
 // src/parts/embed.ts
 var LOADING_TEXT = "\u56F3\u3092\u8AAD\u307F\u8FBC\u3093\u3067\u3044\u307E\u3059";
 function renderEmbed(options) {
-  const { name, args = [] } = options;
-  return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml2(name)}" data-mdmark-args="${escapeHtml2(args.join(" "))}" role="status">${LOADING_TEXT}</div>`;
+  const { name, args = [], definition } = options;
+  const index = definition === void 0 ? "" : ` data-mdmark-definition="${definition}"`;
+  return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml2(name)}" data-mdmark-args="${escapeHtml2(args.join(" "))}"${index} role="status">${LOADING_TEXT}</div>`;
 }
 
 // src/parts/own.ts
@@ -5798,6 +5846,22 @@ function markOwn(html, nonce) {
     /<([a-zA-Z][a-zA-Z0-9-]*)/g,
     `<$1 data-mdmark-own="${nonce}"`
   );
+}
+
+// src/parts/syntax-warning.ts
+var WARNING_TITLE = "\u66F8\u304D\u65B9\u306E\u8B66\u544A";
+function renderInline(text2) {
+  return text2.split("`").map(
+    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
+  ).join("");
+}
+function renderSyntaxWarning(options) {
+  const { mark = "", message, items = [] } = options;
+  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
+  const list2 = items.length ? `<ul>${items.map(
+    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
+  ).join("")}</ul>` : "";
+  return `<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list2}</div>`;
 }
 
 // src/render/marks.ts
@@ -5811,8 +5875,13 @@ var SYNTAX_MARKS = {
   "row-detail": "row-details",
   fig: "figures",
   toc: "toc",
-  glossary: "glossary"
+  glossary: "glossary",
+  flow: "diagrams",
+  sequence: "diagrams",
+  chart: "diagrams",
+  param: "diagrams"
 };
+var DIAGRAM_MARKS = ["flow", "sequence", "chart", "param"];
 var MARK_TOKEN = "mdmark_mark";
 function parseMarkArgs(text2) {
   const value = { args: [], keys: {} };
@@ -5831,7 +5900,8 @@ function toMark(raw, closing, name, rest) {
     name,
     args: parseMarkArgs(rest ?? ""),
     raw,
-    closing: closing === "/"
+    closing: closing === "/",
+    rest: rest ?? ""
   };
 }
 function replaceMarks(html, env) {
@@ -5854,20 +5924,115 @@ function replaceMarks(html, env) {
     }
   );
 }
-function soleSyntaxMark(content) {
+function soleMark(content) {
   const matches = [...content.matchAll(MARK_PATTERN)];
   const [only] = matches;
   if (matches.length !== 1 || !only || content.replace(MARK_PATTERN, "").trim()) {
     return void 0;
   }
-  const mark = toMark(only[0], only[1], only[2] ?? "", only[3]);
-  return Object.hasOwn(SYNTAX_MARKS, mark.name) ? mark : void 0;
+  return toMark(only[0], only[1], only[2] ?? "", only[3]);
+}
+function soleSyntaxMark(content, env) {
+  const mark = soleMark(content);
+  if (!mark || !Object.hasOwn(SYNTAX_MARKS, mark.name)) {
+    return void 0;
+  }
+  const overridden = DIAGRAM_MARKS.includes(mark.name) && (extensionFor(mark.name) || Object.hasOwn(env.libraries, mark.name));
+  return overridden ? void 0 : mark;
+}
+function isJsonFence(token) {
+  return token.type === "fence" && token.info.trim().split(/\s+/)[0] === "json";
+}
+function closeOf(tokens, index, mark) {
+  const level = tokens[index]?.level;
+  return tokens.findIndex((token, position) => {
+    if (position <= index || token.type !== "html_block") {
+      return false;
+    }
+    const other = soleMark(token.content);
+    return token.level === level && other?.closing === true && other.name === mark.name;
+  });
+}
+function isHandledMark(name, env) {
+  return name === FEATURES_MARK || Object.hasOwn(SYNTAX_MARKS, name) || Object.hasOwn(env.libraries, name);
+}
+function ownHtmlBlock(state, html) {
+  const token = new state.Token("html_block", "", 0);
+  token.block = true;
+  token.content = markOwn(html, state.env.nonce);
+  return token;
+}
+function extensionSlot(options) {
+  const { state, mark, fences, extensionName } = options;
+  const env = state.env;
+  const [fence2] = fences;
+  if (!fence2 || fences.length > 1) {
+    return ownHtmlBlock(
+      state,
+      renderSyntaxWarning({
+        mark: mark.raw,
+        message: `\u306E\u7BC4\u56F2\u306B json \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u304C ${fences.length} \u3064\u3042\u308A\u307E\u3059\u3002\u90E8\u54C1\u306E\u5B9A\u7FA9\u306F 1 \u3064\u3060\u3051\u7F6E\u3044\u3066\u304F\u3060\u3055\u3044\u3002\u62E1\u5F35 \`${extensionName}\` \u306E\u90E8\u54C1\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+      })
+    );
+  }
+  const parsed = parseDefinitionJson(fence2.content);
+  if (!parsed.ok) {
+    const after = parsed.after.replaceAll("`", "'");
+    const where = `${parsed.line} \u884C\u76EE\u306E ${after} \u306E\u5F8C`;
+    const detail = parsed.missing === "" ? `${where}\u304C\u8AAD\u3081\u307E\u305B\u3093` : `${where}\u306B ${parsed.missing} \u304C\u3042\u308A\u307E\u305B\u3093`;
+    return ownHtmlBlock(
+      state,
+      renderSyntaxWarning({
+        mark: mark.raw,
+        message: `\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u3092 JSON \u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\uFF08${detail}\uFF09\u3002\u62E1\u5F35 \`${extensionName}\` \u306E\u90E8\u54C1\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+      })
+    );
+  }
+  env.extensionDefinitions ??= [];
+  const definition = env.extensionDefinitions.push(parsed.value) - 1;
+  const args = (mark.rest ?? "").split(/\s+/).filter(Boolean);
+  return ownHtmlBlock(
+    state,
+    renderEmbed({ name: mark.name, args, definition })
+  );
+}
+function takeDefinitionRanges(state) {
+  const env = state.env;
+  const tokens = state.tokens;
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    const mark = token.type === "html_block" ? soleMark(token.content) : void 0;
+    const extension = mark ? extensionFor(mark.name) : void 0;
+    if (!mark || mark.closing || !extension && isHandledMark(mark.name, env)) {
+      out.push(token);
+      continue;
+    }
+    const closeIndex = closeOf(tokens, index, mark);
+    const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
+    const fences = inner.filter(isJsonFence);
+    if (extension && fences.length > 0) {
+      out.push(
+        extensionSlot({ state, mark, fences, extensionName: extension.name })
+      );
+      index = closeIndex;
+    } else if (!extension && inner.length > 0 && fences.length === inner.length) {
+      index = closeIndex;
+    } else {
+      out.push(token);
+    }
+  }
+  state.tokens = out;
 }
 function takeMarks(state) {
   const env = state.env;
+  takeDefinitionRanges(state);
   for (const token of state.tokens) {
     if (token.type === "html_block") {
-      const mark = soleSyntaxMark(token.content);
+      const mark = soleSyntaxMark(token.content, env);
       if (mark) {
         token.type = MARK_TOKEN;
         token.meta = mark;
@@ -6295,22 +6460,6 @@ function findClose(tokens, openIndex, name) {
 }
 function textOf(token) {
   return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
-}
-
-// src/parts/syntax-warning.ts
-var WARNING_TITLE = "\u66F8\u304D\u65B9\u306E\u8B66\u544A";
-function renderInline(text2) {
-  return text2.split("`").map(
-    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
-  ).join("");
-}
-function renderSyntaxWarning(options) {
-  const { mark = "", message, items = [] } = options;
-  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
-  const list2 = items.length ? `<ul>${items.map(
-    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
-  ).join("")}</ul>` : "";
-  return `<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list2}</div>`;
 }
 
 // src/render/syntax/warnings.ts
@@ -7234,6 +7383,7 @@ var TEMPLATE_FILES = [
     language: "js"
   },
   { path: "tsconfig.json", source: "tsconfig.json", language: "ts" },
+  { path: "tsconfig.json", source: "js/tsconfig.json", language: "js" },
   { path: "package.json", source: "package.json", language: "ts" }
 ];
 var CONFIG_TEMPLATE = "mdmark.config.yaml";

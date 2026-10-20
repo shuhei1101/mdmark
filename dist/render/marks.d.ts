@@ -18,6 +18,8 @@ export type Mark = {
     raw: string;
     /** 閉じの印（`<!-- /名前 -->`）か */
     closing: boolean;
+    /** 印の引数の文字（コロンの後ろ）。空白で区切る前のまま */
+    rest?: string;
 };
 /** 印の引数の文字を空白で区切り、`キー=値` を `keys`、それ以外を書いた順に `args` に入れる */
 export declare function parseMarkArgs(text: string): MdmarkMarkArgs;
