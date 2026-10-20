@@ -157,7 +157,7 @@ constants:
       - key: grid-template-columns・grid-template-rows・grid-column・grid-row・gap・row-gap・column-gap
         value: キーワード・数値・長さ・`fr`・`repeat(`・`minmax(`
       - key: margin*・padding*
-        value: 長さ・`auto`
+        value: 0 以上の長さ・`auto`（負の値は落とす。負の `margin` で枠の外へ出して重ねる表示を作らせない）
       - key: border*・border-radius
         value: 長さ・線の種類・色
       - key: width・max-width・min-width・height
@@ -526,9 +526,9 @@ functions:
       - name: test_filter_embedded_style
         case: 正常
         summary: 許した宣言だけを残す
-        condition: '`display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png); width: 100vw; color: var(--mdmark-color-accent)`'
+        condition: '`display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png); width: 100vw; color: var(--mdmark-color-accent); margin-top: -9999px; padding: 4px`'
         mock: なし
-        expected: '`display:flex;gap:12px;color:var(--mdmark-color-accent)`'
+        expected: '`display:flex;gap:12px;color:var(--mdmark-color-accent);padding:4px`（負の `margin-top` は落ちる）'
       - name: test_filter_embedded_style_when_tricky
         case: 異常
         summary: コメントと引用符を含む宣言を落とす
