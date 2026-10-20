@@ -60,3 +60,4 @@ preconditions:
   - 図の部品の機能（`diagrams`）がオン（既定）
 success_guarantee: custom element の場所に、印で描いたときと同じ図の部品が図の枠に載って描かれる。定義の JSON は描いた文書に残らない。
 minimal_guarantee: 定義を読めないチャートの場所には書き方の警告が出て、HTML の残りと文書の残りは描かれる。
+test_file: tests/e2e/単一ユースケース/チャートを描く.spec.ts

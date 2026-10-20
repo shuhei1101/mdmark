@@ -84,3 +84,4 @@ preconditions:
   - HTML の表示の機能（`html`）がオン（既定）
 success_guarantee: 印で囲んだコードブロックの HTML が、今の生の HTML と同じサニタイズを通してその場に描かれる。印の無い `html` のコードブロックはコードのまま出る。
 minimal_guarantee: 埋め込んだ HTML に書いたスクリプトとイベントの属性は動かない。印の書き方を読めない範囲には書き方の警告を出し、範囲のコードブロックと文書の残りは描く。
+test_file: tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts
