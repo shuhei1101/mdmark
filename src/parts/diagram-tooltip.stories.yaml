@@ -1,0 +1,27 @@
+title: Parts/DiagramTooltip
+stories:
+  - name: Closed
+    parameters:
+      server:
+        id: diagram-tooltip
+  - name: Wire
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      kind: wire
+      open: true
+  - name: Io
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      kind: io
+      open: true
+  - name: Term
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      term: true
+      open: true

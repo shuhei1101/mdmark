@@ -1,0 +1,18 @@
+title: Parts/Chart
+stories:
+  - name: TwoSeries
+    parameters:
+      server:
+        id: chart
+  - name: FourSeries
+    parameters:
+      server:
+        id: chart
+    args:
+      series: 4
+  - name: Invalid
+    parameters:
+      server:
+        id: chart
+    args:
+      invalid: true

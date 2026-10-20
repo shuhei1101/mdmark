@@ -1,0 +1,18 @@
+title: Parts/FlowDiagram
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: flow-diagram
+  - name: LongNames
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      longNames: true
+  - name: Invalid
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      invalid: true

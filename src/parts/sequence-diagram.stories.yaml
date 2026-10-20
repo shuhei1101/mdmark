@@ -1,0 +1,12 @@
+title: Parts/SequenceDiagram
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: sequence-diagram
+  - name: Invalid
+    parameters:
+      server:
+        id: sequence-diagram
+    args:
+      invalid: true
