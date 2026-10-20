@@ -185,3 +185,116 @@ test("test_sanitize_when_own_diagram_attributes", async () => {
   expect(sanitized).toContain('width="5"');
   expect(sanitized).toContain('d="M0,0"');
 });
+
+// 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、書いた要素の style は落とす（正常系）
+test("test_sanitize_when_own_style", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const html = [
+    `<div class="mdmark-diagram-node" ${own} style="left:10px;top:20px">図の箱</div>`,
+    `<div class="mdmark-html" ${own}><div ${own} style="display:flex;position:fixed">埋め込み</div></div>`,
+    '<div style="display:flex">書いた要素</div>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toContain('style="left:10px;top:20px"');
+  expect(sanitized).toContain('style="display:flex"');
+  expect(sanitized).not.toContain("position");
+  expect(sanitized.match(/style=/g) ?? []).toHaveLength(2);
+  expect(sanitized).toContain("<div>書いた要素</div>");
+});
+
+/** 埋め込んだ HTML を落とす処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadEmbedded = async () => {
+  const { sanitizeEmbedded, filterEmbeddedStyle } = await import(
+    "../../../../src/render/sanitize.ts"
+  );
+  return {
+    /** 文字をそのまま返す `onText` で落とす */
+    sanitizeEmbedded: (html: string) =>
+      sanitizeEmbedded(html, (text: string) => text),
+    sanitizeEmbeddedWith: sanitizeEmbedded,
+    filterEmbeddedStyle,
+  };
+};
+
+// スクリプトを落とし、ボタンと data-hint を残す（正常系）
+test("test_sanitize_embedded", async () => {
+  // 準備
+  const { sanitizeEmbedded } = await loadEmbedded();
+  const html = [
+    "<script>alert(1)</script>",
+    '<button onclick="x" type="submit" formaction="/x">b</button>',
+    '<div data-hint="説明" data-x="1" class="evil">d</div>',
+  ].join("");
+  // 実行
+  const sanitized = sanitizeEmbedded(html);
+  // 検証
+  for (const word of ["<script", "onclick", "formaction", "data-x", "class"]) {
+    expect(sanitized, word).not.toContain(word);
+  }
+  expect(sanitized).toContain('<button type="button">');
+  expect(sanitized).toContain('data-hint="説明"');
+});
+
+// style を filterEmbeddedStyle で絞る（正常系）
+test("test_sanitize_embedded_when_style", async () => {
+  // 準備
+  const { sanitizeEmbedded } = await loadEmbedded();
+  const html = [
+    '<div style="display: flex; position: fixed">a</div>',
+    '<div style="position: fixed">b</div>',
+  ].join("");
+  // 実行
+  const sanitized = sanitizeEmbedded(html);
+  // 検証
+  expect(sanitized).toBe('<div style="display:flex">a</div><div>b</div>');
+});
+
+// 本文の文字だけを onText に渡す（正常系）
+test("test_sanitize_embedded_when_text", async () => {
+  // 準備
+  const { sanitizeEmbeddedWith } = await loadEmbedded();
+  const html = '<p>索引</p><a href="#">索引</a><code>索引</code>';
+  const onText = (text: string) =>
+    text.replaceAll("索引", '<span class="t">索引</span>');
+  // 実行
+  const sanitized = sanitizeEmbeddedWith(html, onText);
+  // 検証
+  expect(sanitized).toContain('<p><span class="t">索引</span></p>');
+  expect(sanitized).toContain('<a href="#">索引</a>');
+  expect(sanitized).toContain("<code>索引</code>");
+});
+
+// 許した宣言だけを残す（正常系）
+test("test_filter_embedded_style", async () => {
+  // 準備
+  const { filterEmbeddedStyle } = await loadEmbedded();
+  const style = [
+    "display: flex",
+    "gap: 12px",
+    "position: fixed",
+    "background-image: url(https://example.com/a.png)",
+    "width: 100vw",
+    "color: var(--mdmark-color-accent)",
+  ].join("; ");
+  // 実行
+  const filtered = filterEmbeddedStyle(style);
+  // 検証
+  expect(filtered).toBe(
+    "display:flex;gap:12px;color:var(--mdmark-color-accent)",
+  );
+});
+
+// コメントと引用符を含む宣言を落とす（異常系）
+test("test_filter_embedded_style_when_tricky", async () => {
+  // 準備
+  const { filterEmbeddedStyle } = await loadEmbedded();
+  const style = 'color: red /* x */; font-size: "12px"; padding: 4px';
+  // 実行
+  const filtered = filterEmbeddedStyle(style);
+  // 検証
+  expect(filtered).toBe("padding:4px");
+});

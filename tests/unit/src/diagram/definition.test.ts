@@ -4,6 +4,12 @@ import type {
   MdmarkFlowDefinition,
 } from "../../../../src/diagram/definition.ts";
 import {
+  INQUIRY_COUNT_TEXT,
+  INQUIRY_HINT_TEXT,
+  LENGTH_TIME_TEXT,
+  REPLY_KIND_TEXT,
+} from "../../helpers/charts.ts";
+import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
   parsed,
@@ -158,5 +164,57 @@ test("test_read_definition_when_blocks_count", async () => {
     expect(result.problems[0]).toContain(
       "印の範囲に json のコードブロックを 1 つだけ置いてください",
     );
+  }
+});
+
+// 棒・円・散布図のモックの見本を読める（正常系）
+test("test_read_definition_when_chart_types", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  // 実行
+  const results = [
+    readDefinition("chart", [INQUIRY_COUNT_TEXT]),
+    readDefinition("chart", [REPLY_KIND_TEXT]),
+    readDefinition("chart", [LENGTH_TIME_TEXT]),
+    readDefinition("flow", [INQUIRY_HINT_TEXT]),
+  ];
+  // 検証
+  for (const result of results) {
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+  }
+});
+
+// 種類に合わない項目を読めない箇所にする（異常系）
+test("test_read_definition_when_chart_shape_mismatch", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const base = { title: "題", scope: "範囲", updated: "2026-10-17" };
+  const pieWithoutItems = { ...base, type: "pie" };
+  const scatterWithNumbers = {
+    ...base,
+    type: "scatter",
+    x: { label: "横" },
+    y: { label: "縦" },
+    series: [{ name: "系列", points: [1, 2] }],
+  };
+  const yWithMinOnly = {
+    ...base,
+    x: { label: "横", ticks: ["a", "b"] },
+    y: { label: "縦", min: 0 },
+    series: [{ name: "系列", points: [1, 2] }],
+  };
+  // 実行
+  const pie = readDefinition("chart", [JSON.stringify(pieWithoutItems)]);
+  const scatter = readDefinition("chart", [JSON.stringify(scatterWithNumbers)]);
+  const axis = readDefinition("chart", [JSON.stringify(yWithMinOnly)]);
+  // 検証
+  for (const result of [pie, scatter, axis]) {
+    expect(result.ok).toBe(false);
+  }
+  expect(pie.problems[0]).toContain("items");
+  expect(scatter.problems[0]).toContain("[x, y]");
+  for (const name of ["min", "max", "step"]) {
+    expect(axis.problems[0], name).toContain(name);
   }
 });

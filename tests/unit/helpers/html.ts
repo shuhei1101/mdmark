@@ -49,6 +49,15 @@ export function outerHtml(html: string, needle: string): string {
   return `${tag}${innerHtml(html, needle)}</${tagName(tag)}>`;
 }
 
+/** タグを取り除き、`&lt;`・`&gt;`・`&amp;` を文字に戻して、画面に出る文字だけにする */
+export function plainText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&amp;", "&");
+}
+
 /** 正規表現（`g` 付き）に合う文字列を全て返す（合わなければ空） */
 export function matches(text: string, pattern: RegExp): string[] {
   return text.match(pattern) ?? [];

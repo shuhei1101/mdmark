@@ -21,6 +21,8 @@ const DEFAULT_FEATURES = {
   diagrams: true,
   glossary: true,
   backlinks: true,
+  html: true,
+  hints: true,
 };
 
 // 設定が無ければ既定を返す（正常系）
