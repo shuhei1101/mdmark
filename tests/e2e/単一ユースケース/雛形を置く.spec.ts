@@ -41,7 +41,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   );
 });
 
-// JavaScript の拡張の雛形を置き、TypeScript の雛形と tsconfig は置かない（正常シナリオ（JavaScript の雛形を置く））
+// JavaScript の拡張の雛形と型で点検する tsconfig.json を置き、TypeScript の雛形と package.json は置かない（正常シナリオ（JavaScript の雛形を置く））
 test("test_normal_when_javascript", async ({ builtRoot, tempDir }) => {
   // 準備
   const typescript = await tempDir();
@@ -52,11 +52,16 @@ test("test_normal_when_javascript", async ({ builtRoot, tempDir }) => {
   // 検証
   expect(result.code).toBe(0);
   expect(existsSync(join(dir, "extensions", "example.js"))).toBe(true);
-  for (const path of [
-    "extensions/example.ts",
-    "tsconfig.json",
-    "package.json",
-  ]) {
+  expect(await readFile(join(dir, "tsconfig.json"), "utf8")).toBe(
+    await readFile(
+      join(import.meta.dirname, "../../../templates/js/tsconfig.json"),
+      "utf8",
+    ),
+  );
+  expect(await readFile(join(dir, "tsconfig.json"), "utf8")).toMatch(
+    /"allowJs": true[\s\S]*"checkJs": true[\s\S]*"noEmit": true/,
+  );
+  for (const path of ["extensions/example.ts", "package.json"]) {
     expect(existsSync(join(dir, path))).toBe(false);
   }
   for (const path of ["mdmark.config.yaml", "theme.css", "index.yaml"]) {

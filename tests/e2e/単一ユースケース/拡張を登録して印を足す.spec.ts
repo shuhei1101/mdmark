@@ -86,3 +86,35 @@ test("test_error_when_module_not_found", async ({ page }) => {
   await expect(notice).toContainText("greet");
   await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
 });
+
+// 部品の定義を持つ印の場所に、定義を受けた拡張が題と項目の数を描き、定義の JSON は本文に出さない（正常シナリオ（部品の定義を渡す））
+test("test_normal_when_definition", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await routeExtension(
+    page,
+    200,
+    'export function draw(slot, value) { slot.textContent = value.definition.title + " " + value.definition.items.length; }\n',
+  );
+  await registerGreet(page);
+  const markdown = [
+    "前の段落",
+    "",
+    "<!-- greet -->",
+    "",
+    "```json",
+    '{"title": "段取り", "items": ["a", "b", "c"]}',
+    "```",
+    "",
+    "<!-- /greet -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  await expect(page.locator("#doc [data-mdmark-slot]")).toHaveText("段取り 3");
+  expect(await page.locator("#doc").innerText()).not.toContain('"items"');
+  await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
+});
