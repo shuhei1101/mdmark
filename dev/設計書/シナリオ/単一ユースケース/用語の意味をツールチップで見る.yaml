@@ -121,6 +121,32 @@ scenarios:
       - '`ワークスペース` に下線が付き、意味のツールチップが出る'
       - '`ブランチ` に下線が付いていない'
     test: test_error_when_invalid_index
+  - name: 正常シナリオ（埋め込んだ HTML の中の用語）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が HTML の中に出る Markdown
+        description: '`<!-- html -->` の範囲の `html` のコードブロックの段落に `ワークスペース` が出て、その後ろの Markdown の段落にも `ワークスペース` が出る文書。HTML の中には `ワークスペース` を文字に持つリンクも 1 つ置く'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を渡して描かせる
+        M->>M: 埋め込んだ HTML の文字も用語と照合する
+        M-->>P: HTML の中の用語にも下線を引いて描く
+        U->>P: HTML の中の下線の語にフォーカスする
+        P-->>U: 用語の意味のツールチップを表示
+    expected:
+      - HTML の中の段落の `ワークスペース` に、本文の用語と同じ破線の下線が引かれている
+      - その語にフォーカスすると `話し合いの記録を置くフォルダ` のツールチップが出る
+      - HTML の中のリンクの文字には下線が引かれていない（本文のリンクと同じ扱い）
+      - 後ろの Markdown の段落の `ワークスペース` の下線は、節ごとに最初に出たところだけに引く今の決まりのとおりになる
+    test: test_normal_when_embedded_html
 lead: 使う側が索引に書いた用語の語・別名が本文に出ると、mdmark が破線の下線を引き、読む人がポインターを乗せるかフォーカスすると意味のツールチップが出る。
 issue: 5
 primary_actor: 文書を読む人
