@@ -16,4 +16,6 @@ export declare function loadLibraries(options: {
     isCurrent: () => boolean;
     /** モジュールを読む関数（単体テストで差し替える） */
     importModule?: ImportModule;
+    /** 範囲で書いた拡張の印から読んだ部品の定義。印の場所の `data-mdmark-definition` の番号で引く */
+    definitions?: unknown[];
 }): Promise<void>;

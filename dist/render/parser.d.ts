@@ -1,5 +1,6 @@
 import type { MarkdownIt as MarkdownItParser } from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
+import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkGlossaryEntry, MdmarkReferences } from "../knowledge/references.ts";
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
@@ -30,6 +31,10 @@ export type RenderEnv = {
     ownGlossary: MdmarkGlossaryEntry[];
     /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
     glossaryLines?: number[] | undefined;
+    /** 拡張の印の範囲から読んだ部品の定義（印の場所の `data-mdmark-definition` の番号で引く） */
+    extensionDefinitions?: unknown[];
+    /** 描いた操作できる部品の定義（文書の中の並びの順） */
+    paramDefinitions?: MdmarkParamDefinition[];
 };
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export declare function createParser(): MarkdownItParser;
