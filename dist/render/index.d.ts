@@ -1,4 +1,5 @@
 import { type MdmarkConfig, type ResolvedConfig } from "../config.ts";
+import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import { type MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 /** 本文の HTML と、文書の印で決まった機能のオン・オフ */
@@ -7,6 +8,10 @@ export type RenderedDocument = {
     html: string;
     /** 文書の印を重ねて決まった機能のオン・オフ */
     features: Record<string, boolean>;
+    /** 範囲で書いた拡張の印から読んだ部品の定義。印の場所の `data-mdmark-definition` の番号で引く。出力の HTML には残さない */
+    extensionDefinitions: unknown[];
+    /** 描いた操作できる部品の定義。文書の中の並びの順。出力の HTML には残さない */
+    paramDefinitions: MdmarkParamDefinition[];
 };
 /** Markdown を本文の HTML にし、文書の印で決まった機能のオン・オフと一緒に返す */
 export declare function renderDocument(options: {
