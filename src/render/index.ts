@@ -4,6 +4,7 @@ import {
   type ResolvedConfig,
   resolveConfig,
 } from "../config.ts";
+import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
@@ -15,6 +16,10 @@ export type RenderedDocument = {
   html: string;
   /** 文書の印を重ねて決まった機能のオン・オフ */
   features: Record<string, boolean>;
+  /** 範囲で書いた拡張の印から読んだ部品の定義。印の場所の `data-mdmark-definition` の番号で引く。出力の HTML には残さない */
+  extensionDefinitions: unknown[];
+  /** 描いた操作できる部品の定義。文書の中の並びの順。出力の HTML には残さない */
+  paramDefinitions: MdmarkParamDefinition[];
 };
 
 /** 描くごとに作る、mdmark が出した要素の印の値（乱数 16 バイトの 16 進） */
@@ -60,9 +65,16 @@ export function renderDocument(options: {
       : undefined,
     mdmarkReferences: options.references,
     ownGlossary: [],
+    extensionDefinitions: [],
+    paramDefinitions: [],
   };
   const html = sanitize(parser.render(options.markdown, env), env.nonce);
-  return { html, features: env.features };
+  return {
+    html,
+    features: env.features,
+    extensionDefinitions: env.extensionDefinitions ?? [],
+    paramDefinitions: env.paramDefinitions ?? [],
+  };
 }
 
 /** 画面を持たずに Markdown を本文の HTML 文字列にする */

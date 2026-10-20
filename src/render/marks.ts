@@ -1,8 +1,10 @@
-import type { StateCore } from "markdown-it";
+import type { StateCore, Token } from "markdown-it";
+import { parseDefinitionJson } from "../diagram/definition.ts";
 import { extensionFor, type MdmarkMarkArgs } from "../extensions.ts";
 import { resolveFeatures } from "../features.ts";
 import { renderEmbed } from "../parts/embed.ts";
 import { markOwn } from "../parts/own.ts";
+import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import type { RenderEnv } from "./parser.ts";
 
 /** 生の HTML の中の印（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を拾う正規表現 */
@@ -22,7 +24,14 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   fig: "figures",
   toc: "toc",
   glossary: "glossary",
+  flow: "diagrams",
+  sequence: "diagrams",
+  chart: "diagrams",
+  param: "diagrams",
 };
+
+/** 図の部品の印の名前。同じ名前の拡張と対応表が先に使われる */
+const DIAGRAM_MARKS = ["flow", "sequence", "chart", "param"];
 
 /** 印のトークンの type */
 export const MARK_TOKEN = "mdmark_mark";
@@ -37,6 +46,8 @@ export type Mark = {
   raw: string;
   /** 閉じの印（`<!-- /名前 -->`）か */
   closing: boolean;
+  /** 印の引数の文字（コロンの後ろ）。空白で区切る前のまま */
+  rest?: string;
 };
 
 /** 印の引数の文字を空白で区切り、`キー=値` を `keys`、それ以外を書いた順に `args` に入れる */
@@ -65,6 +76,7 @@ function toMark(
     args: parseMarkArgs(rest ?? ""),
     raw,
     closing: closing === "/",
+    rest: rest ?? "",
   };
 }
 
@@ -96,8 +108,8 @@ function replaceMarks(html: string, env: RenderEnv): string {
   );
 }
 
-/** 印だけの `html_block` から、記法の印を取り出す。記法の印でなければ `undefined` */
-function soleSyntaxMark(content: string): Mark | undefined {
+/** 印だけの `html_block` の内容から、印を取り出す。印だけでなければ `undefined` */
+function soleMark(content: string): Mark | undefined {
   const matches = [...content.matchAll(MARK_PATTERN)];
   const [only] = matches;
   if (
@@ -107,16 +119,144 @@ function soleSyntaxMark(content: string): Mark | undefined {
   ) {
     return undefined;
   }
-  const mark = toMark(only[0], only[1], only[2] ?? "", only[3]);
-  return Object.hasOwn(SYNTAX_MARKS, mark.name) ? mark : undefined;
+  return toMark(only[0], only[1], only[2] ?? "", only[3]);
+}
+
+/** 印だけの `html_block` から、記法の印を取り出す。記法の印でなければ `undefined`。図の部品の印は、同じ名前の拡張と対応表が先に使われる */
+function soleSyntaxMark(content: string, env: RenderEnv): Mark | undefined {
+  const mark = soleMark(content);
+  if (!mark || !Object.hasOwn(SYNTAX_MARKS, mark.name)) {
+    return undefined;
+  }
+  const overridden =
+    DIAGRAM_MARKS.includes(mark.name) &&
+    (extensionFor(mark.name) || Object.hasOwn(env.libraries, mark.name));
+  return overridden ? undefined : mark;
+}
+
+/** 範囲の言語 `json` のコードブロックか */
+function isJsonFence(token: Token): boolean {
+  return token.type === "fence" && token.info.trim().split(/\s+/)[0] === "json";
+}
+
+/** `index` の開きの印に対する閉じの印の位置を、同じ階層で探す。無ければ `-1` */
+function closeOf(tokens: Token[], index: number, mark: Mark): number {
+  const level = tokens[index]?.level;
+  return tokens.findIndex((token, position) => {
+    if (position <= index || token.type !== "html_block") {
+      return false;
+    }
+    const other = soleMark(token.content);
+    return (
+      token.level === level &&
+      other?.closing === true &&
+      other.name === mark.name
+    );
+  });
+}
+
+/** 印の名前を `takeMarks` が扱うか（機能の印・記法の印・対応表の印） */
+function isHandledMark(name: string, env: RenderEnv): boolean {
+  return (
+    name === FEATURES_MARK ||
+    Object.hasOwn(SYNTAX_MARKS, name) ||
+    Object.hasOwn(env.libraries, name)
+  );
+}
+
+/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする */
+function ownHtmlBlock(state: StateCore, html: string): Token {
+  const token = new state.Token("html_block", "", 0);
+  token.block = true;
+  token.content = markOwn(html, (state.env as RenderEnv).nonce);
+  return token;
+}
+
+/** 範囲で書いた拡張の印の `json` のコードブロックを読み、印の場所の要素にする。JSON として読めなければ書き方の警告にする */
+function extensionSlot(options: {
+  state: StateCore;
+  mark: Mark;
+  fence: Token;
+  extensionName: string;
+}): Token {
+  const { state, mark, fence, extensionName } = options;
+  const env = state.env as RenderEnv;
+  const parsed = parseDefinitionJson(fence.content);
+  if (!parsed.ok) {
+    const after = parsed.after.replaceAll("`", "'");
+    const where = `${parsed.line} 行目の ${after} の後`;
+    const detail =
+      parsed.missing === ""
+        ? `${where}が読めません`
+        : `${where}に ${parsed.missing} がありません`;
+    return ownHtmlBlock(
+      state,
+      renderSyntaxWarning({
+        mark: mark.raw,
+        message: `の部品の定義を JSON として読めません（${detail}）。拡張 \`${extensionName}\` の部品は描いていません。`,
+      }),
+    );
+  }
+  env.extensionDefinitions ??= [];
+  const definition = env.extensionDefinitions.push(parsed.value) - 1;
+  const args = (mark.rest ?? "").split(/\s+/).filter(Boolean);
+  return ownHtmlBlock(
+    state,
+    renderEmbed({ name: mark.name, args, definition }),
+  );
+}
+
+/** 範囲で書いた印のうち、登録した拡張の印は `json` のコードブロックを定義として読んで印の場所の要素 1 つにし、登録していない印は中身が `json` のコードブロックだけなら中身ごと取り除く。範囲の中身は出力に残さない */
+function takeDefinitionRanges(state: StateCore): void {
+  const env = state.env as RenderEnv;
+  const tokens = state.tokens;
+  const out: Token[] = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    const mark =
+      token.type === "html_block" ? soleMark(token.content) : undefined;
+    const extension = mark ? extensionFor(mark.name) : undefined;
+    // 記法の印と対応表の印は、拡張でなければ今のとおり扱う
+    if (
+      !mark ||
+      mark.closing ||
+      (!extension && isHandledMark(mark.name, env))
+    ) {
+      out.push(token);
+      continue;
+    }
+    const closeIndex = closeOf(tokens, index, mark);
+    const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
+    const fences = inner.filter(isJsonFence);
+    const [fence] = fences;
+    if (extension && fence && fences.length === 1) {
+      out.push(
+        extensionSlot({ state, mark, fence, extensionName: extension.name }),
+      );
+      index = closeIndex;
+    } else if (
+      !extension &&
+      inner.length > 0 &&
+      fences.length === inner.length
+    ) {
+      index = closeIndex;
+    } else {
+      out.push(token);
+    }
+  }
+  state.tokens = out;
 }
 
 /** 印を拾い、`features` は引数を環境へ足し、対応表と拡張の名前は印の場所の要素にし、記法の印は印のトークンにし、それ以外は取り除く */
 export function takeMarks(state: StateCore): void {
   const env = state.env as RenderEnv;
+  takeDefinitionRanges(state);
   for (const token of state.tokens) {
     if (token.type === "html_block") {
-      const mark = soleSyntaxMark(token.content);
+      const mark = soleSyntaxMark(token.content, env);
       if (mark) {
         token.type = MARK_TOKEN;
         token.meta = mark;

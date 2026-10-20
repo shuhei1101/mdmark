@@ -1,6 +1,7 @@
 import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
+import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type {
   MdmarkGlossaryEntry,
@@ -16,6 +17,7 @@ import {
 import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
+import { buildDiagrams } from "./syntax/diagrams.ts";
 import { numberFigures } from "./syntax/figures.ts";
 import { glossaryRule } from "./syntax/glossary.ts";
 import { assignHeadingIds } from "./syntax/headings.ts";
@@ -52,6 +54,10 @@ export type RenderEnv = {
   ownGlossary: MdmarkGlossaryEntry[];
   /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
   glossaryLines?: number[] | undefined;
+  /** 拡張の印の範囲から読んだ部品の定義（印の場所の `data-mdmark-definition` の番号で引く） */
+  extensionDefinitions?: unknown[];
+  /** 描いた操作できる部品の定義（文書の中の並びの順） */
+  paramDefinitions?: MdmarkParamDefinition[];
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -119,7 +125,7 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt({ html: true, linkify: true });
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
@@ -132,6 +138,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_callouts", buildCallouts],
     ["mdmark_build_file_trees", buildFileTrees],
     ["mdmark_build_badges", buildBadges],
+    ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_number_figures", numberFigures],
     ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],

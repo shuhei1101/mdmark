@@ -65,12 +65,17 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     el.innerHTML = rendered.html;
     el.classList.add(ROOT_CLASS);
     features = rendered.features;
-    detachInteractions = attachInteractions({ root: el, features });
+    detachInteractions = attachInteractions({
+      root: el,
+      features,
+      paramDefinitions: rendered.paramDefinitions,
+    });
     // 読み込みの完了は待たない
     void loadLibraries({
       root: el,
       libraries: config.libraries,
       isCurrent: () => !destroyed && generation === current,
+      definitions: rendered.extensionDefinitions,
     });
   };
 

@@ -12,8 +12,34 @@ const OWN_ATTRIBUTE = "data-mdmark-own";
 /** 文書に書いた生の HTML が持ってよい記法の class: 列の揃えと、外部ライブラリの印の場所 */
 const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 
-/** 記法の class（`mdmark-` で始まるものと `markdown-alert*`） */
-const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert)/;
+/** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`） */
+const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$)/;
+
+/** 図の部品が定義から出した要素だけが持てる要素。文書に書いたものは取り除く */
+const DIAGRAM_ONLY_TAGS = new Set([
+  "svg",
+  "defs",
+  "marker",
+  "g",
+  "path",
+  "rect",
+  "circle",
+  "ellipse",
+  "line",
+  "polyline",
+  "polygon",
+  "text",
+  "button",
+  "output",
+  "label",
+]);
+
+/** 取り除く要素に付ける印の属性 */
+const DROP_ATTRIBUTE = "data-mdmark-drop";
+
+/** 図の部品が出した要素の `style` に許す宣言: 位置と大きさ（px）と、拡大の倍率だけ */
+const DIAGRAM_STYLE_PATTERN =
+  /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
 
 /** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
 const DATA_IMAGE_PATTERN =
@@ -82,6 +108,51 @@ function dropSyntaxAttributes(
   return next;
 }
 
+/** 図の部品の要素が持つ属性。名前は sanitize-html が読む小文字で書く（ブラウザが svg の属性の大文字を戻す）。文書に書いた要素は `dropSyntaxAttributes` が属性を絞る */
+const DIAGRAM_ATTRIBUTES = [
+  "tabindex",
+  "style",
+  "for",
+  "type",
+  "min",
+  "max",
+  "step",
+  "value",
+  "disabled",
+  "datetime",
+  "d",
+  "viewbox",
+  "width",
+  "height",
+  "x",
+  "y",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "points",
+  "fill",
+  "stroke",
+  "stroke-width",
+  "stroke-dasharray",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "marker-end",
+  "markerwidth",
+  "markerheight",
+  "markerunits",
+  "refx",
+  "refy",
+  "orient",
+  "transform",
+  "text-anchor",
+];
+
 /** sanitize-html に渡す、描くごとに変わらない設定: 許可していない要素・属性・URL を落とす */
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
@@ -94,9 +165,18 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     "nav",
     "figure",
     "figcaption",
+    ...DIAGRAM_ONLY_TAGS,
   ],
   allowedAttributes: {
-    "*": ["id", "role", "aria-*", "data-*", "hidden", "colspan"],
+    "*": [
+      "id",
+      "role",
+      "aria-*",
+      "data-*",
+      "hidden",
+      "colspan",
+      ...DIAGRAM_ATTRIBUTES,
+    ],
     a: ["href", "title"],
     img: ["src", "alt", "title"],
     details: ["open"],
@@ -105,9 +185,11 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     table: ["tabindex"],
     span: ["tabindex"],
   },
+  // 図の部品の要素以外から取り除く要素は、印を付けた要素を中身ごと消す
+  exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== undefined,
   // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
   allowedClasses: {
-    "*": ["mdmark-*", "markdown-alert*"],
+    "*": ["mdmark-*", "markdown-alert*", "has-tip"],
     code: ["language-*"],
     li: ["task-list-item"],
   },
@@ -144,11 +226,21 @@ export function sanitize(html: string, nonce: string): string {
             .filter(Boolean)
             .join(" ");
         }
-        delete next.style;
+        // `style` は、図の部品が出した要素の位置・大きさ・倍率だけを残す
+        if (!(own && DIAGRAM_STYLE_PATTERN.test(attribs.style ?? ""))) {
+          delete next.style;
+        }
+        // 図の部品が出した要素だけが持つ要素は、文書に書いたものを取り除く
+        if (!own && DIAGRAM_ONLY_TAGS.has(tagName)) {
+          next[DROP_ATTRIBUTE] = "1";
+        }
         return { tagName, attribs: next };
       },
-      // 入力欄: 常に無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ
+      // 入力欄: 常に無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ。図の部品が出したスライダーはそのまま残す
       input: (tagName, attribs) => {
+        if (attribs[OWN_ATTRIBUTE] === nonce && attribs.type === "range") {
+          return { tagName, attribs };
+        }
         const next: Record<string, string> = { type: "checkbox", disabled: "" };
         if (attribs.checked !== undefined) {
           next.checked = "";

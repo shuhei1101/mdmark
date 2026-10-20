@@ -9,7 +9,11 @@ export function renderEmbed(options: {
   name: string;
   /** 印の引数（既定 `[]`） */
   args?: string[];
+  /** 印の範囲から読んだ定義の番号。範囲で書いた印だけが持つ */
+  definition?: number;
 }): string {
-  const { name, args = [] } = options;
-  return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml(name)}" data-mdmark-args="${escapeHtml(args.join(" "))}" role="status">${LOADING_TEXT}</div>`;
+  const { name, args = [], definition } = options;
+  const index =
+    definition === undefined ? "" : ` data-mdmark-definition="${definition}"`;
+  return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml(name)}" data-mdmark-args="${escapeHtml(args.join(" "))}"${index} role="status">${LOADING_TEXT}</div>`;
 }
