@@ -39,6 +39,19 @@
     --mdmark-color-term-underline: var(--mdmark-color-muted);
     --mdmark-tooltip-max-width: 22rem;
     --mdmark-tooltip-max-height: 18rem;
+    --mdmark-diagram-lane-tint: 8%;
+    --mdmark-diagram-max-height: 36rem;
+    --mdmark-color-diagram-llm: #8250df;
+    --mdmark-color-diagram-dm: #0550ae;
+    --mdmark-color-diagram-script: #59636e;
+    --mdmark-color-diagram-mcp: #bc4c00;
+    --mdmark-color-diagram-data: #1b7c83;
+    --mdmark-color-diagram-external: #1a7f37;
+    --mdmark-color-diagram-line: #59636e;
+    --mdmark-color-series-1: #0969da;
+    --mdmark-color-series-2: #bc4c00;
+    --mdmark-color-series-3: #8250df;
+    --mdmark-color-series-4: #1b7c83;
     color-scheme: light;
   }
 
@@ -63,6 +76,17 @@
       --mdmark-color-callout-warning: #d29922;
       --mdmark-color-callout-caution: #f85149;
       --mdmark-color-current-bg: #121d2f;
+      --mdmark-color-diagram-llm: #ab7df8;
+      --mdmark-color-diagram-dm: #79c0ff;
+      --mdmark-color-diagram-script: #9198a1;
+      --mdmark-color-diagram-mcp: #f0883e;
+      --mdmark-color-diagram-data: #39c5cf;
+      --mdmark-color-diagram-external: #3fb950;
+      --mdmark-color-diagram-line: #9198a1;
+      --mdmark-color-series-1: #4493f8;
+      --mdmark-color-series-2: #f0883e;
+      --mdmark-color-series-3: #ab7df8;
+      --mdmark-color-series-4: #39c5cf;
       color-scheme: dark;
     }
   }
@@ -1200,84 +1224,84 @@
 
     /* 並べていない列: 上下の両方の矢印 */
     .mdmark-sort::after {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 15 5 5 5-5'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3C/svg%3E");
     }
 
     /* 昇順に並べた列: 上向きの矢印 */
     th[aria-sort="ascending"] .mdmark-sort::after {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 13V3.5M4.5 7 8 3.5 11.5 7'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E");
     }
 
     /* 降順に並べた列: 下向きの矢印 */
     th[aria-sort="descending"] .mdmark-sort::after {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3v9.5M4.5 9 8 12.5 11.5 9'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E");
     }
 
     /* 絞り込みのボタン: 漏斗。絞り込み中は塗る */
     .mdmark-filter::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M2.5 3.5h11l-4.2 5v4l-2.6 1.2v-5.2z'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z'/%3E%3C/svg%3E");
     }
 
     .mdmark-filter.is-active::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M2.5 3.5h11l-4.2 5v4l-2.6 1.2v-5.2z'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z'/%3E%3C/svg%3E");
     }
 
     /* ピン止めのボタン: ピン。押した後は塗る */
     .mdmark-pin::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9.8 2.5 3.7 3.7-1.7.7-2 2 .3 2.4-1.1 1.1L6.6 9.8 3 13.4M6.2 5.4l-.2 0-1.8 1.4 5 5'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5'/%3E%3Cpath d='M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z'/%3E%3C/svg%3E");
     }
 
     .mdmark-pin[aria-pressed="true"]::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9.8 2.5 3.7 3.7-1.7.7-2 2 .3 2.4-1.1 1.1L6.6 9.8 3 13.4M6.2 5.4l-.2 0-1.8 1.4 5 5'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5'/%3E%3Cpath d='M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z'/%3E%3C/svg%3E");
     }
 
     /* 開閉の印（行の詳細・節・注意書き）: 下向きの山形 */
     .mdmark-row-toggle::before,
     .mdmark-section-toggle::after,
     details.markdown-alert > summary::after {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6.5 4 4 4-4'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     }
 
     /* 見出しのアンカー: リンクの鎖 */
     .mdmark-anchor::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 9.5l3-3M7 5l1-1a2.5 2.5 0 0 1 3.5 3.5l-1 1M9 11l-1 1a2.5 2.5 0 0 1-3.5-3.5l1-1'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
       width: 1.1em;
       height: 1.1em;
     }
 
     /* ファイルツリーのフォルダとファイル */
     .mdmark-tree-folder > .mdmark-tree-name::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M2 4.5a1 1 0 0 1 1-1h3l1.5 1.5H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
     }
 
     .mdmark-tree-file > .mdmark-tree-name::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M4 2.5h5l3 3V13a.5.5 0 0 1-.5.5h-7.5a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5zM9 2.5V6h3'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3C/svg%3E");
     }
 
     /* 注意書きの題のアイコン: 種類ごと */
     .markdown-alert-note > .markdown-alert-title::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M8 7.2V11M8 5v.2'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
     }
 
     .markdown-alert-tip > .markdown-alert-title::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12h4M6.5 13.5h3M8 2a4 4 0 0 0-2 7.5c.5.4.5 1 .5 1.5h3c0-.5 0-1.1.5-1.5A4 4 0 0 0 8 2z'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
     }
 
     .markdown-alert-important > .markdown-alert-title::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 3h11v8h-6l-3 2.5V11h-2zM8 5.5v2.6M8 9.5v.1'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z'/%3E%3Cpath d='M12 15h.01'/%3E%3Cpath d='M12 7v4'/%3E%3C/svg%3E");
     }
 
     .markdown-alert-warning > .markdown-alert-title::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.5 14 13H2zM8 6.5v3.2M8 11.4v.1'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
     }
 
     /* 書き方の警告の題のアイコン: 注意書きの「警告」の三角と見分けるため、鉛筆にする */
     .mdmark-syntax-warning-title::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.75 2.25l3 3-8.5 8.5H2.25v-3z'/%3E%3Cpath d='M9 4l3 3'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z'/%3E%3Cpath d='m15 5 4 4'/%3E%3C/svg%3E");
     }
 
     .markdown-alert-caution > .markdown-alert-title::before {
-      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.2 2.5h5.6l2.7 2.7v5.6l-2.7 2.7H5.2l-2.7-2.7V5.2zM8 5.5v3.2M8 10.5v.1'/%3E%3C/svg%3E");
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16h.01'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z'/%3E%3C/svg%3E");
     }
   }
 
@@ -1646,6 +1670,916 @@
 
       /* 被参照の一覧: 改ページで切らない */
       .mdmark-backlinks {
+        break-inside: avoid;
+      }
+    }
+  }
+
+  /* 図の部品と操作できる部品: 図の枠（題・範囲・更新日・凡例・右上のボタン）・フロー図・シーケンス図・グラフ・図のツールチップ・スライダーと今の値を写すボタン */
+
+  .mdmark {
+    /* ---------- 図の枠 ---------- */
+
+    /* 図の枠: 題・凡例・表示の箱を縦に並べる。拡大した図の幅で文書の幅を広げない */
+    .mdmark-diagram {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+      min-width: 0;
+      margin-inline: 0;
+      container-type: inline-size;
+    }
+
+    /* 図の題の行: 題と、範囲・更新日を折り返して並べる */
+    .mdmark-diagram-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.15rem 1rem;
+      align-items: baseline;
+    }
+
+    /* 図の題 */
+    .mdmark-diagram-title {
+      color: var(--mdmark-color-heading);
+      font-weight: 700;
+    }
+
+    /* 図の範囲と更新日: 控えめな文字で題の後に置く */
+    .mdmark-diagram-meta {
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+    }
+
+    /* 凡例: 表示の箱の下に、色・形・線・矢じりの見本と意味を横に並べ、幅に応じて折り返す */
+    .mdmark-diagram-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      line-height: 1.6;
+    }
+
+    /* 凡例の 1 項目: 見本と意味 */
+    .mdmark-diagram-legend-item {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      margin: 0;
+    }
+
+    /* 凡例の見本（箱・線・印の SVG） */
+    .mdmark-diagram-legend-sample {
+      flex: none;
+      overflow: visible;
+    }
+
+    /* 凡例の箱の見本: 種類の色の線と地。データは下の角が丸い */
+    .mdmark-diagram-legend-sample[data-kind] {
+      fill: color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg));
+      stroke: var(--node-color);
+      stroke-width: 1.5;
+    }
+
+    /* 凡例のシステムの枠の見本 */
+    .mdmark-diagram-legend-frame {
+      fill: none;
+      stroke: var(--mdmark-color-muted);
+      stroke-width: 1.5;
+    }
+
+    /* 凡例の層の背景の見本 */
+    .mdmark-diagram-legend-lane {
+      fill: color-mix(
+        in srgb,
+        var(--mdmark-color-diagram-llm) 14%,
+        var(--mdmark-color-bg)
+      );
+    }
+
+    /* 凡例の線の交差の見本: 縦の線を横の線が飛び越える */
+    .mdmark-diagram-legend-jump {
+      fill: none;
+      stroke: var(--mdmark-color-diagram-line);
+      stroke-width: 1.5;
+    }
+
+    /* 凡例の入力・処理・出力が出る箱の印の見本 */
+    .mdmark-diagram-legend-info {
+      display: inline-grid;
+      color: var(--mdmark-color-muted);
+
+      .mdmark-diagram-icon {
+        width: 15px;
+        height: 15px;
+      }
+    }
+
+    /* 矢じりを定義する svg: 大きさを持たず、図の中に置く */
+    .mdmark-diagram-defs {
+      position: absolute;
+    }
+
+    /* 凡例の用語の見本: 本文の用語と同じ破線の下線 */
+    .mdmark-diagram-legend-term {
+      color: var(--mdmark-color-text);
+      text-decoration: underline dashed var(--mdmark-color-term-underline);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3em;
+    }
+
+    /* 狭い図の枠（スマホ幅の文書）: 凡例の文字と間隔を詰める */
+    @container (width < 30rem) {
+      .mdmark-diagram-legend {
+        gap: 0.125rem 0.75rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+      }
+    }
+
+    /* 表示の箱: 右上のボタンの帯と、図を動かして見る表示枠。ツールチップを箱に対して置く */
+    .mdmark-diagram-box {
+      position: relative;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      box-shadow: inset 0 0 0 1px var(--mdmark-color-border);
+    }
+
+    /* 右上のボタンの帯: 移動と拡大・縮小のまとまりを右に寄せ、狭い幅では折り返す */
+    .mdmark-diagram-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      justify-content: flex-end;
+      padding: 0.375rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* ボタンのまとまり（移動・拡大と縮小）: 隙間なく並べる */
+    .mdmark-diagram-tools-group {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 図の操作のボタン: 高さを揃えた四角。アイコンだけで、読み上げの名前は aria-label が持つ */
+    .mdmark-diagram-tool {
+      display: inline-grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:active:not(:disabled) {
+        background: var(--mdmark-color-table-head);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 上限・下限の倍率に達したボタン: 隣の倍率の表示で理由が読める */
+      &:disabled {
+        color: var(--mdmark-color-muted);
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    /* 今の倍率: 縮小と拡大のボタンの間に、桁を揃えて出す */
+    .mdmark-diagram-zoom {
+      min-width: 3.25rem;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    /* 図のアイコン（24 の格子の線のアイコン。16px で線の太さを 1.5px に揃える） */
+    .mdmark-diagram-icon {
+      flex: none;
+      width: 1rem;
+      height: 1rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* 表示枠: 横は Shift＋ホイールとスクロールバー、縦はドラッグ・矢印キー・移動のボタンで動かす。
+       縦をスクロールさせないので、図の上のホイールは文書のスクロールになる。余白はつかんで動かす形、文字は選べない */
+    .mdmark-diagram-viewport {
+      position: relative;
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-height: var(--mdmark-diagram-max-height);
+      border-end-start-radius: var(--mdmark-radius);
+      border-end-end-radius: var(--mdmark-radius);
+      cursor: grab;
+      user-select: none;
+      touch-action: pan-y;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* ドラッグ中: つかんだ形にし、文字の上でも選ばせない */
+      &.is-dragging {
+        cursor: grabbing;
+
+        * {
+          user-select: none;
+        }
+      }
+    }
+
+    /* 拡大後の大きさを持つ台: 横のスクロールの幅を決める */
+    .mdmark-diagram-sizer {
+      position: relative;
+    }
+
+    /* 図の本体: 定義の座標のまま描き、倍率は transform で当てる */
+    .mdmark-diagram-stage {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      transform-origin: 0 0;
+    }
+
+    /* 文字の上: I の形にして選べるようにする（ドラッグを始めない） */
+    :is(
+        .mdmark-diagram-node-kind,
+        .mdmark-diagram-node-name,
+        .mdmark-diagram-node-sub,
+        .mdmark-diagram-label,
+        .mdmark-diagram-frame-title,
+        .mdmark-diagram-lane-label,
+        .mdmark-diagram-axis-text
+      ) {
+      cursor: text;
+      user-select: text;
+    }
+
+    /* ---------- フロー図 ---------- */
+
+    /* システムの枠: 内側を囲む太めの線。外部のシステムは枠の外に置く */
+    .mdmark-diagram-frame {
+      position: absolute;
+      border: 1.5px solid var(--mdmark-color-muted);
+      border-radius: 12px;
+    }
+
+    /* システムの枠の題: 枠の左上に、アイコンと名前 */
+    .mdmark-diagram-frame-title {
+      position: absolute;
+      display: flex;
+      gap: 0.375rem;
+      align-items: center;
+      color: var(--mdmark-color-heading);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    /* 層の背景: その層の箱の色をうっすら敷く */
+    .mdmark-diagram-lane {
+      position: absolute;
+      background: color-mix(
+        in srgb,
+        var(--lane-color) var(--mdmark-diagram-lane-tint),
+        var(--mdmark-color-bg)
+      );
+    }
+
+    /* 層の見出し: 層の左上に控えめな文字で */
+    .mdmark-diagram-lane-label {
+      position: absolute;
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    /* 種類ごとの色: 箱の線・種類の行・層の背景が読む */
+    :is(
+        .mdmark-diagram-node,
+        .mdmark-diagram-lane,
+        .mdmark-diagram-legend-sample
+      ) {
+      &[data-kind="llm"] {
+        --node-color: var(--mdmark-color-diagram-llm);
+        --lane-color: var(--mdmark-color-diagram-llm);
+      }
+
+      &[data-kind="dm"] {
+        --node-color: var(--mdmark-color-diagram-dm);
+        --lane-color: var(--mdmark-color-diagram-dm);
+      }
+
+      &[data-kind="script"] {
+        --node-color: var(--mdmark-color-diagram-script);
+        --lane-color: var(--mdmark-color-diagram-script);
+      }
+
+      &[data-kind="mcp"] {
+        --node-color: var(--mdmark-color-diagram-mcp);
+        --lane-color: var(--mdmark-color-diagram-mcp);
+      }
+
+      &[data-kind="data"] {
+        --node-color: var(--mdmark-color-diagram-data);
+        --lane-color: var(--mdmark-color-diagram-data);
+      }
+
+      &[data-kind="external"] {
+        --node-color: var(--mdmark-color-diagram-external);
+        --lane-color: var(--mdmark-color-diagram-external);
+      }
+    }
+
+    /* 箱: 種類の色の線で囲み、地は文書の地にして層の背景から浮かせる */
+    .mdmark-diagram-node {
+      position: absolute;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6px 10px;
+      border: 1.5px solid var(--node-color);
+      border-radius: 8px;
+      background: var(--mdmark-color-bg);
+      line-height: 1.35;
+
+      /* データの箱: 下の角を大きく丸めて入れ物に見せる */
+      &[data-kind="data"] {
+        border-radius: 8px 8px 20px 20px;
+      }
+
+      /* ツールチップを持つ箱: 種類の行を右上の印と重ねない */
+      &.has-tip .mdmark-diagram-node-kind {
+        padding-inline-end: 22px;
+      }
+    }
+
+    /* 箱の種類の行: アイコンと種類の名前を種類の色で */
+    .mdmark-diagram-node-kind {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      color: var(--node-color);
+      font-size: 11px;
+      font-weight: 600;
+
+      .mdmark-diagram-icon {
+        width: 14px;
+        height: 14px;
+        stroke-width: 2.4;
+      }
+    }
+
+    /* 箱の名前 */
+    .mdmark-diagram-node-name {
+      color: var(--mdmark-color-heading);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* 箱の補足 */
+    .mdmark-diagram-node-sub {
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+    }
+
+    /* ツールチップのある箱の印: 右上に置く。押すかフォーカスで入力・処理・出力が出る */
+    .mdmark-diagram-info {
+      position: absolute;
+      inset-block-start: 3px;
+      inset-inline-end: 3px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--node-color);
+      cursor: pointer;
+
+      &:hover,
+      &[aria-expanded="true"] {
+        background: color-mix(in srgb, var(--node-color) 14%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      .mdmark-diagram-icon {
+        width: 15px;
+        height: 15px;
+      }
+    }
+
+    /* 箱の中の用語: 本文の用語と同じ破線の下線（.mdmark-term）。箱の小さな文字に合わせて下線を近づける */
+    .mdmark-diagram-node .mdmark-term {
+      text-underline-offset: 0.25em;
+      cursor: help;
+    }
+
+    /* 線の層: 箱の上に重ね、線そのものは押せない（ツールチップ用の太い透明の線だけが拾う） */
+    .mdmark-diagram-wires {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    /* 線: 種類ごとに色と模様（破線の間隔・太さ・矢じり）の組で分ける */
+    .mdmark-diagram-wire {
+      fill: none;
+      stroke: var(--wire-color);
+      stroke-linejoin: round;
+
+      /* 処理の流れ: 実線・塗った矢じり */
+      &[data-line="flow"] {
+        --wire-color: var(--mdmark-color-diagram-line);
+      }
+
+      /* 読む: データの色の短い破線・開いた矢じり */
+      &[data-line="read"] {
+        --wire-color: var(--mdmark-color-diagram-data);
+      }
+
+      /* 書く: 処理（MCP）の色の太い実線・塗った矢じり */
+      &[data-line="write"] {
+        --wire-color: var(--mdmark-color-diagram-mcp);
+      }
+
+      /* 返す（シーケンス図の返事）: 流れの色の短い破線・開いた矢じり */
+      &[data-line="reply"] {
+        --wire-color: var(--mdmark-color-diagram-line);
+      }
+
+      /* 戻る（ループの戻り）: 流れの色の長い破線・開いた矢じり */
+      &[data-line="loop"] {
+        --wire-color: var(--mdmark-color-diagram-line);
+      }
+
+      /* ツールチップを開いている線: 太くしてどの線の詳細かを示す */
+      &.is-active {
+        stroke-width: 3;
+      }
+
+      &[data-line="write"].is-active {
+        stroke-width: 4.5;
+      }
+    }
+
+    /* 矢じり: 線の種類ごとの色。処理の流れと書くは塗り、読むと戻るは線だけの開いた形 */
+    .mdmark-diagram-arrowhead {
+      &[data-line="flow"] {
+        fill: var(--mdmark-color-diagram-line);
+      }
+
+      &[data-line="write"] {
+        fill: var(--mdmark-color-diagram-mcp);
+      }
+
+      &[data-line="read"] {
+        fill: none;
+        stroke: var(--mdmark-color-diagram-data);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:is([data-line="loop"], [data-line="reply"]) {
+        fill: none;
+        stroke: var(--mdmark-color-diagram-line);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+
+    /* 線のツールチップを拾う太い透明の線 */
+    .mdmark-diagram-wire-hit {
+      fill: none;
+      stroke: transparent;
+      stroke-width: 14;
+      pointer-events: stroke;
+      cursor: help;
+    }
+
+    /* 線のラベル（入力の要約）: 線の上に地の色の札で置く */
+    .mdmark-diagram-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: 0 6px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: nowrap;
+
+      /* 詳細のツールチップを持つラベル: 本文の用語と同じ破線の下線で示し、フォーカスできる */
+      &.has-tip {
+        color: var(--mdmark-color-text);
+        text-decoration: underline dashed var(--mdmark-color-term-underline);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.25em;
+        cursor: help;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* 戻り先のラベル: 戻りの線と同じ破線の枠 */
+      &[data-line="loop"] {
+        border-style: dashed;
+        border-color: var(--mdmark-color-diagram-line);
+        color: var(--mdmark-color-text);
+      }
+    }
+
+    /* ---------- シーケンス図 ---------- */
+
+    /* 相手の下に引く縦の線（時刻の軸） */
+    .mdmark-diagram-lifeline {
+      stroke: var(--mdmark-color-border);
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+    }
+
+    /* 相手の名前の行: 縦に動かしても表示枠の上端に留まる層。下を流れるメッセージを地で隠す */
+    .mdmark-diagram-seq-heads {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: var(--mdmark-color-bg);
+
+      /* 縦に動かして下にメッセージが流れている間だけ、境目の線を引く */
+      &.is-stuck {
+        border-bottom: 1px solid var(--mdmark-color-border);
+      }
+    }
+
+    /* 繰り返しの範囲: 戻りの線の帯を薄い面で示す */
+    .mdmark-diagram-loop-band {
+      fill: color-mix(
+        in srgb,
+        var(--mdmark-color-diagram-line) 6%,
+        transparent
+      );
+      stroke: none;
+    }
+
+    /* ---------- グラフ ---------- */
+
+    /* 軸の線 */
+    .mdmark-diagram-axis {
+      stroke: var(--mdmark-color-muted);
+      stroke-width: 1;
+    }
+
+    /* 目盛りの補助線 */
+    .mdmark-diagram-grid {
+      stroke: var(--mdmark-color-border);
+      stroke-width: 1;
+    }
+
+    /* 目盛りと軸の名前の文字 */
+    .mdmark-diagram-axis-text {
+      fill: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 系列の線: 色と線の模様の組で分ける（1 実線・2 破線・3 点線・4 一点鎖線） */
+    .mdmark-diagram-series {
+      fill: none;
+      stroke: var(--series-color);
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+
+      &[data-series="1"] {
+        --series-color: var(--mdmark-color-series-1);
+      }
+
+      &[data-series="2"] {
+        --series-color: var(--mdmark-color-series-2);
+        stroke-dasharray: 7 4;
+      }
+
+      &[data-series="3"] {
+        --series-color: var(--mdmark-color-series-3);
+        stroke-dasharray: 1 4;
+      }
+
+      &[data-series="4"] {
+        --series-color: var(--mdmark-color-series-4);
+        stroke-dasharray: 9 3 1 3;
+      }
+    }
+
+    /* 系列の点の印: 系列ごとの形（1 丸・2 四角・3 三角・4 菱形）を系列の色で塗る */
+    .mdmark-diagram-point {
+      fill: var(--series-color);
+      stroke: var(--mdmark-color-bg);
+      stroke-width: 1.5;
+    }
+
+    /* 系列ごとの点の色 */
+    g[data-series="1"] {
+      --series-color: var(--mdmark-color-series-1);
+    }
+
+    /* 系列 2 の点の色 */
+    g[data-series="2"] {
+      --series-color: var(--mdmark-color-series-2);
+    }
+
+    /* 系列 3 の点の色 */
+    g[data-series="3"] {
+      --series-color: var(--mdmark-color-series-3);
+    }
+
+    /* 系列 4 の点の色 */
+    g[data-series="4"] {
+      --series-color: var(--mdmark-color-series-4);
+    }
+
+    /* ---------- 図のツールチップ ---------- */
+
+    /* 図のツールチップ: 本文の用語のツールチップと同じ見た目。表示の箱に対して置き、拡大の倍率を受けない */
+    .mdmark-diagram-tip {
+      position: absolute;
+      z-index: 10;
+      box-sizing: border-box;
+      width: max-content;
+      max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
+      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5em 0.75em;
+      border: 1px solid var(--mdmark-color-muted);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 入力・処理・出力の並び: 見出しと中身を 2 列に揃える */
+    .mdmark-diagram-tip-io {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.15em 0.75em;
+      margin: 0;
+
+      dt {
+        color: var(--mdmark-color-muted);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.75;
+      }
+
+      dd {
+        margin: 0;
+      }
+    }
+
+    /* ---------- 操作できる部品 ---------- */
+
+    /* 操作できる部品: 値を変える区画・写すボタン・グラフを 1 つの枠にまとめる */
+    .mdmark-param {
+      display: grid;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 操作できる部品の題 */
+    .mdmark-param-title {
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 700;
+    }
+
+    /* 値を変える区画: スライダーを縦に積み、写すボタンを最後に置く。グラフより上に置く */
+    .mdmark-param-controls {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    /* スライダーの 1 行: 名前と今の値、下にスライダー */
+    .mdmark-param-knob {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.125rem 0.75rem;
+      align-items: baseline;
+      font-size: 0.875rem;
+
+      label {
+        color: var(--mdmark-color-text);
+        font-weight: 600;
+      }
+
+      /* 今の値: 桁を揃える */
+      output {
+        color: var(--mdmark-color-text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* 範囲の端の値: スライダーの下の両端に控えめに */
+      small {
+        color: var(--mdmark-color-muted);
+        font-size: 0.75rem;
+      }
+
+      input[type="range"] {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0;
+        accent-color: var(--mdmark-color-link);
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 4px;
+        }
+      }
+    }
+
+    /* スライダーの端の値の行: 下限を左、上限を右に */
+    .mdmark-param-range {
+      display: flex;
+      grid-column: 1 / -1;
+      justify-content: space-between;
+    }
+
+    /* 写すボタンと知らせの行: ボタンの右に知らせを出し、狭い幅では下へ折り返す */
+    .mdmark-param-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+    }
+
+    /* 今の値を写すボタン: 図の操作のボタンと同じ高さ。動詞で起きることを書く */
+    .mdmark-param-copy {
+      display: inline-flex;
+      gap: 0.375rem;
+      align-items: center;
+      height: 2rem;
+      padding: 0 0.75rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-table-head);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 写したか・写せなかったかの知らせ: アイコンと文で示し、色だけに頼らない */
+    .mdmark-param-status {
+      display: inline-flex;
+      gap: 0.375rem;
+      align-items: center;
+      min-height: 1.5rem;
+      margin: 0;
+      font-size: 0.875rem;
+
+      &:empty {
+        display: none;
+      }
+
+      &[data-state="copied"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-tip);
+      }
+
+      &[data-state="failed"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* 写せなかったときに出す JSON: 選んで写せる文字。押すと全体が選ばれる */
+    .mdmark-param-fallback {
+      margin: 0;
+      user-select: all;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+  }
+
+  /* 全画面のモーダル: 画面の端から 16px 空けて図を広げる */
+  .mdmark {
+    .mdmark-diagram-dialog {
+      margin: auto;
+      box-sizing: border-box;
+      width: calc(100vw - 2rem);
+      max-width: none;
+      height: calc(100dvh - 2rem);
+      max-height: none;
+      padding: 1rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+
+      /* モーダルの後ろ: 文書を暗くして、図だけを見せる */
+      &::backdrop {
+        background: rgb(0 0 0 / 0.5);
+      }
+
+      /* モーダルの中の図の枠: 題と凡例の残りの高さを表示の箱に渡す */
+      .mdmark-diagram {
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        height: 100%;
+        margin: 0;
+      }
+
+      /* モーダルの中の表示の箱: ボタンの帯の下を表示枠に渡す */
+      .mdmark-diagram-box {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      /* モーダルの中の表示枠: 箱の残りの高さを全て使う */
+      .mdmark-diagram-viewport {
+        flex: 1;
+        max-height: none;
+      }
+    }
+  }
+
+  /* 印刷のとき（図の部品）: 押せない操作とツールチップを出さず、図は表示する枠からはみ出さず紙に出す */
+  @media print {
+    .mdmark {
+      :is(
+          .mdmark-diagram-tools,
+          .mdmark-diagram-tip,
+          .mdmark-param-copy,
+          .mdmark-param-status,
+          .mdmark-param-fallback
+        ) {
+        display: none;
+      }
+
+      .mdmark-diagram-viewport {
+        max-height: none;
+        overflow: visible;
+        cursor: auto;
+      }
+
+      :is(.mdmark-diagram, .mdmark-param) {
         break-inside: avoid;
       }
     }
