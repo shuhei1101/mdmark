@@ -67,16 +67,19 @@ scenarios:
       sequenceDiagram
         actor U as 読む人
         participant D as 埋め込んだ HTML
-        U->>D: data-hint の箱にポインターを乗せる
+        U->>D: data-hint の箱の印の外にポインターを乗せる
+        D-->>U: ツールチップを出さない
+        U->>D: data-hint の箱の印にポインターを乗せる
         D-->>U: data-hint の文のツールチップ
-        U->>D: Tab で data-hint の箱にフォーカスする
+        U->>D: Tab で data-hint の箱の印にフォーカスする
         D-->>U: 同じツールチップ
         U->>D: Esc を押す
-        D-->>U: ツールチップを消し、フォーカスは箱に残す
+        D-->>U: ツールチップを消し、フォーカスは印に残す
     expected:
-      - '`data-hint` の箱の上で、`data-hint` の文を書いた `role="tooltip"` の要素が、図のツールチップと同じ見た目で出る'
-      - '`data-hint` の箱はフォーカスでき、フォーカスすると箱の `aria-describedby` がそのツールチップを指す'
-      - Esc でツールチップが消え、フォーカスは箱に残る
+      - '`data-hint` の箱の右上の印の上で、`data-hint` の文を書いた `role="tooltip"` の要素が、図のツールチップと同じ見た目で出る'
+      - '`data-hint` の箱の印の外にポインターを乗せても、ツールチップは出ず、ポインターの形は変わらない'
+      - '`data-hint` の箱の印はフォーカスでき、フォーカスすると印の `aria-describedby` がそのツールチップを指す'
+      - Esc でツールチップが消え、フォーカスは印に残る
       - '`data-hint` を持つ箱には図の箱と同じ印があり、持たない箱には無い'
     test: test_normal_when_data_hint
   - name: 正常シナリオ（箱の hint）
