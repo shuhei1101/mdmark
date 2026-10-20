@@ -3,7 +3,7 @@ implementation: "src/parts/diagram.ts#renderDiagramFrame"
 story: "Parts/DiagramFrame"
 states:
   - name: Fit
-    description: 開いたとき。全体が収まる倍率で、縮小と戻すは押せず、移動のボタンを出さない
+    description: 開いたとき。全体が収まる倍率で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
     notes:
       定義: モックの `inquiry`（`dev/mock/refs/42/assets/samples.js`）
   - name: Zoomed
@@ -66,9 +66,9 @@ slots:
       - dev/設計書/部品設計/グラフ.ts#
 events:
   - name: 拡大・縮小する
-    when: 拡大・縮小・戻すのボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す
-    value: 倍率の `output` の文字
-    description: '`mount` が倍率を 1.25 倍ずつ変え、ボタンの `disabled` を付け替える'
+    when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す
+    value: 倍率のボタンの文字と読み上げの名前
+    description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・読み上げの名前を付け替える'
   - name: 動かす
     when: 余白をドラッグする、矢印キーを押す、移動のボタンを押す
     value: 表示する枠の `scrollLeft`・`scrollTop`
@@ -84,8 +84,8 @@ css_properties:
     description: 文書の中の表示する枠の高さの上限。全体が収まる倍率はこの高さと枠の幅に収める
 accessibility:
   - 題は `figcaption` で、表示する枠は `role="group"`・`aria-roledescription="図"`・`aria-labelledby`（題）・`aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"`・`tabindex="0"` を持ち、フォーカスの枠を見せる
-  - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。ボタンはアイコンだけで、読み上げの名前を `縮小`・`拡大`・`全体が収まる倍率に戻す`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
-  - 倍率は `aria-label="倍率"` の `output` に出す
+  - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、読み上げの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
+  - 倍率は縮小と拡大の間のボタンに `125%` の形（等幅の数字）で出し、読み上げの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
 status: planned
 introduced:

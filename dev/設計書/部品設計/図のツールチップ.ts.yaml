@@ -22,12 +22,19 @@ states:
         value: 'true'
   - name: Term
     description: 箱の中の用語を開いた。本文の用語と同じ破線の下線と見た目
+  - name: Hint
+    description: 箱の `hint` を開いた。箱の右上の印の下に文だけを出す
+    args:
+      - name: kind
+        value: hint
+      - name: open
+        value: 'true'
 lead: 図の線のラベルと箱の印に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどの箱は入力・処理・出力を出す。箱の中の用語は用語のツールチップを使う。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力）'
+    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力と `hint`）・`hint`（箱の `hint` か埋め込んだ HTML の `data-hint` の文だけ）'
     description: ツールチップの種類
   - name: label
     type: 文字列
@@ -45,6 +52,11 @@ args:
     type: 真偽値
     default: 'false'
     description: 開いているか。開いている線は太くする
+  - name: hint
+    type: 文字列
+    required: false
+    enabled_when: '`kind` が `hint` か `io` のとき'
+    description: 箱の `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す
 events:
   - name: 開く・閉じる
     when: 持ち主にポインターを乗せるかフォーカスする。外すか Esc を押す
@@ -54,9 +66,9 @@ uses:
   - component: dev/設計書/部品設計/用語のツールチップ.ts#
     how: 箱の中の用語の下線と意味はこの部品ではなく用語のツールチップで出す
 accessibility:
-  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・箱の印のボタン）は `aria-describedby` でそれを指す
-  - 箱の印のボタンは `aria-label="「{箱の名前}」の入力・処理・出力"` を持つ
-  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）
+  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・箱の右上の印のボタン）は `aria-describedby` でそれを指す。箱の印の外では開かない
+  - 箱の印のボタンは、`io` を持つとき `aria-label="「{箱の名前}」の入力・処理・出力"`、`hint` だけを持つとき `aria-label="「{箱の名前}」の説明"` を持つ
+  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。ポインターの形は変えない
   - 理解に必須のことは入れず、線と箱の要約だけで図を読めるようにする。印刷では出さない
 status: planned
 introduced:

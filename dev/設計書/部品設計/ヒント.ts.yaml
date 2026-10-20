@@ -1,0 +1,69 @@
+title: "ヒント"
+implementation: "src/parts/hint.ts#renderHint"
+story: "Parts/Hint"
+states:
+  - name: Block
+    description: ブロックの要素。右上に印があり、閉じている
+    args:
+      - name: placement
+        value: block
+  - name: BlockOpen
+    description: ブロックの要素の印に乗せて開いた
+    args:
+      - name: placement
+        value: block
+      - name: open
+        value: 'true'
+  - name: Inline
+    description: 行内の要素。破線の下線がある
+    args:
+      - name: placement
+        value: inline
+  - name: InlineOpen
+    description: 行内の要素にフォーカスして開いた（ダークでも確かめる）
+    args:
+      - name: placement
+        value: inline
+      - name: open
+        value: 'true'
+  - name: Colored
+    description: 書いた人が地の色を付けたブロックの要素。印が地の色の上でも読める
+    args:
+      - name: placement
+        value: block
+lead: 埋め込んだ HTML の `data-hint` を持つ要素に付ける印。ブロックの要素は右上の情報のアイコン、行内の要素は破線の下線で示し、図のツールチップと同じ見た目で文を出す。
+args:
+  - name: text
+    type: 文字列
+    required: true
+    description: '`data-hint` の文。文字として出す'
+  - name: placement
+    type: 列挙
+    required: true
+    choices: '`block`（右上の印）・`inline`（要素そのものに下線）'
+    description: 要素の種類から決まる印の付け方（インターフェース定義『文書をHTML文字列にする』の制約「ヒント」）
+  - name: open
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: ツールチップを開いているか
+slots:
+  - name: default
+    description: '`data-hint` を持つ書いた人の要素'
+events:
+  - name: 開く・閉じる
+    when: ブロックは印、行内は要素にポインターを乗せるかフォーカスする。外すか Esc を押す
+    value: ツールチップの `hidden`
+    description: '`mount` が 1 つだけ開き、ツールチップの上では閉じず、Esc で閉じてフォーカスを持ち主に残す'
+uses:
+  - component: dev/設計書/部品設計/図のツールチップ.ts#
+    how: '`kind` を `hint` にして文を出す'
+accessibility:
+  - ブロックの印は `<button type="button" aria-label="説明">` で、行内の要素は `tabindex="0"` を持ち、どちらも `aria-describedby` でツールチップを指す
+  - ブロックの要素の印の外では開かず、ポインターの形は変えない
+  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。印刷では出さない
+status: planned
+introduced:
+  pr: 45
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ヒントの操作]

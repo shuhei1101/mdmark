@@ -1,0 +1,42 @@
+title: "埋め込んだHTML"
+implementation: "src/parts/embedded-html.ts#renderEmbeddedHtml"
+story: "Parts/EmbeddedHtml"
+states:
+  - name: Default
+    description: 色を付けた箱 2 つを横に並べた HTMLと、`onclick` を落としたボタン
+  - name: WithChart
+    description: 見出しと段落の間に棒のグラフを置いた HTML。グラフだけに図の枠のボタンがある
+  - name: Wide
+    description: 列より広い HTML。中で横にスクロールする
+    args:
+      - name: wide
+        value: 'true'
+lead: '`<!-- html -->` の範囲のコードブロックに書いた HTML を、その場に描く枠。列より広いときだけ中で横にスクロールし、中の図の部品だけに拡大・縮小を付ける。'
+args:
+  - name: html
+    type: 文字列
+    required: true
+    description: 許可の検査を通した後の HTML（インターフェース定義『文書をHTML文字列にする』の制約「埋め込んだ HTML」）
+  - name: wide
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 列より広いか。`true` のとき class `is-wide` と `tabindex="0"` を付け、中で横にスクロールさせる。`mount` が幅の変化ごとに決める
+slots:
+  - name: default
+    description: 書いた人の HTML。`<mdmark-chart>` などは図の枠に、`data-hint` を持つ要素はヒントに置き換わる
+uses:
+  - component: dev/設計書/部品設計/図の枠.ts#
+    how: 中の `<mdmark-chart>` などを図の枠に載せる
+  - component: dev/設計書/部品設計/ヒント.ts#
+    how: '`data-hint` を持つ要素に印か下線とツールチップを付ける'
+  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+    how: 中の文字の用語に本文と同じ下線とツールチップを付ける
+accessibility:
+  - 列より広いときだけ `tabindex="0"` を持ち、キーボードで横にスクロールできる
+  - 書いた人のスクリプトとイベントの属性は落とすため、文書に書いたボタンは押しても何も起きない
+status: planned
+introduced:
+  pr: 45
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[埋め込んだ HTML]

@@ -12,18 +12,26 @@ states:
       定義: モックの `reply-time-4`
   - name: Invalid
     description: 定義を読めない。図の代わりに書き方の警告を出す
+  - name: Bar
+    description: 棒・系列 2 つ。色と塗りの模様（塗りつぶし・斜線）の組で分け、縦の軸はデータから切る
+  - name: BarFour
+    description: 棒・系列 4 つ。塗りの模様（塗りつぶし・斜線・点・格子）の組の全て
+  - name: Pie
+    description: 円・項目 3 つ。扇形の外に整数の割合、凡例に項目の名前と値。扇形は地の色の隙間で分ける
+  - name: Scatter
+    description: 散布図・系列 2 つ。横と縦の両方を数値の軸にし、系列を色と点の形（丸・四角・三角・菱形）で分ける
 lead: 系列ごとの点を線で結ぶ折れ線のグラフ。系列は色と線の模様と点の形の組で分ける。
 args:
   - name: definition
     type: オブジェクト
     required: true
-    description: グラフの定義（`MdmarkChartDefinition`。`x`（ラベルと目盛り）・`y`（ラベル・最小・最大・刻み）・`series`）。系列は 4 つまで
+    description: グラフの定義（`MdmarkChartDefinition`。`type`（`line`・`bar`・`pie`・`scatter`。省いたとき `line`）・`x`（ラベルと目盛り。散布図は数値の軸）・`y`（ラベル・最小・最大・刻み。省くとデータから 1・2・5×10 のべき乗の刻みで切る）・`series`）。系列と円の項目は 4 つまで
 uses:
   - component: dev/設計書/部品設計/書き方の警告.ts#
     how: 定義を読めないときに図の代わりに置く
 accessibility:
-  - グラフの svg は `role="img"` と、題名と系列ごとの値を並べた `aria-label` を持つ
-  - 系列は色だけでなく線の模様と点の形でも分ける
+  - グラフの svg は `role="img"` と、題名と系列（円は項目）ごとの値を並べた `aria-label` を持つ
+  - 系列は色だけでなく、折れ線は線の模様と点の形、棒と円は塗りの模様、散布図は点の形でも分ける
 status: planned
 introduced:
   pr: 42

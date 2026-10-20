@@ -315,7 +315,7 @@ elements:
     position: 描く先の要素
     description: 図の部品の印の範囲に置いた定義から描く図。描いたときは全体が収まる倍率で出す
     visible_when: '`diagrams` がオンで、図の部品の印の範囲に読める定義があるとき'
-    action: 右上のボタンとキーで拡大・縮小・戻す、ドラッグ・矢印キー・移動のボタンで動かす、全画面のボタンで全画面のモーダルを開く
+    action: 右上の縮小・拡大のボタンとキーで拡大・縮小し、倍率のボタンと `0` で開いたときの倍率と位置に戻す、ドラッグ・矢印キー・移動のボタンで動かす、全画面のボタンで全画面のモーダルを開く
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[図の部品]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の拡大・縮小]
@@ -359,8 +359,8 @@ elements:
         value: 箱の定義の `io`
     position: 描く先の要素 > 図
     description: 線の入力の詳細と、箱の入力・処理・出力。箱の中の `{{語}}` は用語の下線（要素「用語の下線」）にする
-    visible_when: 定義の線が `tip`、箱が `io` を持つとき
-    action: ポインターとフォーカスで開き、上に乗っても閉じず、Esc で閉じる
+    visible_when: '`hints` がオンで、定義の線が `tip`、箱が `io` か `hint` を持つとき'
+    action: 線のラベルと箱の右上の印にポインターを乗せるかフォーカスすると開き、上に乗っても閉じず、Esc で閉じる。箱の印の外では開かず、ポインターの形は変えない
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図のツールチップ]
     status: planned
@@ -379,5 +379,37 @@ elements:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[操作できる部品の操作]
     status: planned
+  - name: 埋め込んだ HTML
+    id: embedded-html
+    kind: region
+    component: dev/設計書/部品設計/埋め込んだHTML.ts#
+    args:
+      - name: html
+        value: '`<!-- html -->` の範囲の `html` のコードブロックの中身を、許可の検査に通したもの'
+    position: 描く先の要素
+    description: 書いた人の HTML をその場に描く。中の `<mdmark-chart>` などは要素「図」、`data-hint` を持つ要素は要素「ヒント」、文字の中の用語は要素「用語の下線」になる
+    visible_when: '`html` がオンで、`<!-- html -->` の範囲に `html` のコードブロックが 1 つだけあるとき'
+    action: 列より広いときだけ中で横にスクロールする。書いたボタンは押しても何も起きない
+    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[埋め込んだ HTML の操作]
+    status: planned
+    introduced:
+      pr: 45
+  - name: ヒント
+    id: hint
+    kind: tooltip
+    component: dev/設計書/部品設計/ヒント.ts#
+    args:
+      - name: text
+        value: 要素の `data-hint` の値
+      - name: placement
+        value: 行内の要素なら `inline`、それ以外は `block`
+    position: 描く先の要素 > 埋め込んだ HTML
+    description: '`data-hint` を持つ要素に、ブロックは右上の情報のアイコン、行内は破線の下線を付け、図のツールチップと同じ見た目で文を出す。描いた直後は閉じている'
+    visible_when: '`hints` がオンで、埋め込んだ HTML の要素が `data-hint` を持つとき'
+    action: ブロックは印、行内は要素にポインターを乗せるかフォーカスすると開き、上に乗っても閉じず、Esc で閉じる。ブロックの印の外では開かず、ポインターの形は変えない
+    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ヒントの操作]
+    status: planned
+    introduced:
+      pr: 45
 mock: dev/mock/pages/document/19/modern/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。
