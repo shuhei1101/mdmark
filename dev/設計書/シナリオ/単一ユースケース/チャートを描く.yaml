@@ -16,58 +16,14 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
         M->>M: コードブロックの HTML の中の mdmark-chart の定義を読んで形を確かめる
-        M->>M: データから縦の軸の目盛りを切り、棒を描く
+        M->>M: グラフの部品で棒を描き、図の枠に載せる
         M-->>P: 図の枠に載せた題と凡例つきのチャートと、HTML の残り
         P-->>U: 文書を表示
     expected:
-      - '`<mdmark-chart>` の場所に、系列 2 つを色と模様の組で分けた棒が項目 4 つ分描かれている'
-      - 縦の軸の目盛りが、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切られている
-      - 題名と、系列の名前を載せた凡例があり、右上に拡大・縮小・戻すのボタンがある
-      - チャートは `role="img"` と、題名と系列の値を書いた読み上げの名前を持つ
-      - HTML の見出しが描かれ、定義の JSON の文字は描いた文書に残っていない
+      - '`<mdmark-chart>` の場所に、`<!-- chart -->` で描いたときと同じ棒のグラフが、題と凡例つきで図の枠に載って描かれている'
+      - 図の枠の右上に拡大・縮小・戻すのボタンがある
+      - HTML の見出しがチャートの前に描かれ、定義の JSON の文字は描いた文書に残っていない
     test: test_normal
-  - name: 正常シナリオ（円）
-    setup:
-      - name: 文書を描くページ
-        description: 正常シナリオと同じ
-      - name: 円のチャートを置いた Markdown
-        description: 正常シナリオの `<mdmark-chart>` を、種類が円で項目 3 つの定義に替えた文書
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読む人
-        participant P as 使う側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 項目の値の割合で扇形を描く
-        M-->>P: 題と凡例つきの円のチャート
-        P-->>U: 文書を表示
-    expected:
-      - 項目 3 つの扇形が、値の割合の角度で、色と模様の組で分けて描かれている
-      - 凡例に項目の名前が並ぶ
-    test: test_normal_when_pie
-  - name: 正常シナリオ（散布図）
-    setup:
-      - name: 文書を描くページ
-        description: 正常シナリオと同じ
-      - name: 散布図を置いた Markdown
-        description: 正常シナリオの `<mdmark-chart>` を、種類が散布図で系列 1 つ・点 6 つ（横と縦がどちらも数値）の定義に替えた文書
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読む人
-        participant P as 使う側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 横と縦の両方の軸の目盛りを切り、点を置く
-        M-->>P: 題と凡例つきの散布図
-        P-->>U: 文書を表示
-    expected:
-      - 点 6 つが、横と縦の値の位置に系列の点の印で置かれている
-      - 横と縦の両方の軸に、数値の目盛りがある
-    test: test_normal_when_scatter
   - name: 異常シナリオ（定義を読めない）
     setup:
       - name: 文書を描くページ
@@ -90,7 +46,7 @@ scenarios:
       - 正しい定義のチャートが描かれている
       - 段落が描かれている
     test: test_error_when_definition_invalid
-lead: 文書を書く人が、埋め込んだ HTML の中に図の部品の custom element（`<mdmark-chart>` など）を置き、中身に部品の定義（JSON）だけを書く。mdmark が折れ線・棒・円・散布図のチャートを、図の枠に載せて SVG で描く。
+lead: 文書を書く人が、埋め込んだ HTML の中に図の部品の custom element（`<mdmark-chart>` など）を置き、中身に部品の定義（JSON）だけを書く。mdmark が、`<!-- chart -->` などの印と同じ図の部品で、HTML のその場所に図の枠に載せて描く。グラフの種類ごとの描き方は『図を描く』が確かめる。
 issue: 6
 primary_actor: 文書を書く人（AI を含む）
 stakeholders:
@@ -102,5 +58,5 @@ trigger: 文書を書く人が、印で囲んだ `html` のコードブロック
 preconditions:
   - コードブロックの HTML を描ける（『コードブロックのHTMLを描く』）
   - 図の部品の機能（`diagrams`）がオン（既定）
-success_guarantee: custom element の場所に、題と凡例を持つチャートが図の枠に載って描かれる。定義の JSON は描いた文書に残らない。
+success_guarantee: custom element の場所に、印で描いたときと同じ図の部品が図の枠に載って描かれる。定義の JSON は描いた文書に残らない。
 minimal_guarantee: 定義を読めないチャートの場所には書き方の警告が出て、HTML の残りと文書の残りは描かれる。

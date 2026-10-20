@@ -67,4 +67,4 @@ items:
   - page: コードブロックのHTMLを描く.yaml
     summary: 印で囲んだ `html` のコードブロックを、スクリプトを落としてその場の HTML として描く
   - page: チャートを描く.yaml
-    summary: 埋め込んだ HTML の custom element に書いた定義から、折れ線・棒・円・散布図を図の枠に載せて描く
+    summary: 埋め込んだ HTML の custom element に書いた定義から、図の部品をその場所に図の枠に載せて描く
