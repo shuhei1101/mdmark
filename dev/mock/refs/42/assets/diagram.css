@@ -150,10 +150,12 @@
       }
     }
 
-    /* 今の倍率: 縮小と拡大のボタンの間に、桁を揃えて出す */
-    .mdmark-diagram-zoom {
+    /* 今の倍率のボタン: 縮小と拡大のボタンの間に、桁を揃えて今の倍率を出す。押すと開いたときの倍率と位置に戻す */
+    .mdmark-diagram-tool.mdmark-diagram-zoom {
+      width: auto;
       min-width: 3.25rem;
-      color: var(--mdmark-color-muted);
+      padding: 0 0.375rem;
+      font: inherit;
       font-size: 0.8125rem;
       font-variant-numeric: tabular-nums;
       text-align: center;
@@ -377,7 +379,6 @@
     /* 箱の中の用語: 本文の用語と同じ破線の下線（.mdmark-term）。箱の小さな文字に合わせて下線を近づける */
     .mdmark-diagram-node .mdmark-term {
       text-underline-offset: 0.25em;
-      cursor: help;
     }
 
     /* 線の層: 箱の上に重ね、線そのものは押せない（ツールチップ用の太い透明の線だけが拾う） */
@@ -467,7 +468,6 @@
       stroke: transparent;
       stroke-width: 14;
       pointer-events: stroke;
-      cursor: help;
     }
 
     /* 線のラベル（入力の要約）: 線の上に地の色の札で置く */
@@ -489,7 +489,6 @@
         text-decoration: underline dashed var(--mdmark-color-term-underline);
         text-decoration-thickness: 1px;
         text-underline-offset: 0.25em;
-        cursor: help;
       }
 
       &:focus-visible {

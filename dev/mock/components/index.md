@@ -8,7 +8,7 @@
 | [badge](./badge/index.html) | 頭に `badge:` を付けた行内のコードを描いた札 |
 | [callout](./callout/index.html) | 種類ごとの題・色・アイコンを持つ注意書きの枠と、閉じた注意書き |
 | [chart](./chart/index.html) | 系列を色と線の模様・点の印の組で分けたグラフ（折れ線）と、色と塗りの模様の組で分けた棒・円、点の印で分けた散布図 |
-| [diagram-frame](./diagram-frame/index.html) | 図の題・範囲・更新日・凡例と、右上の拡大・縮小・戻すのボタンと移動のボタン |
+| [diagram-frame](./diagram-frame/index.html) | 図の題・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン |
 | [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・箱の入力・処理・出力・箱の hint・箱の中の用語のツールチップと、ヒントを外した図 |
 | [embedded-html](./embedded-html/index.html) | 印の範囲のコードブロックの HTML を本文に溶け込ませて描いた場所と、チャートを含む・列より広い・機能がオフ・書き方の警告の場面 |
 | [doc-list](./doc-list/index.html) | まとめた HTML の文書の一覧（フォルダごとに 1 段の見出しにパスを書き、開いている文書を示す） |

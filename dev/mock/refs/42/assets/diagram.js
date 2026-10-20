@@ -18,7 +18,6 @@
     frame: '<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/>',
     zoomIn: '<path d="M5 12h14"/><path d="M12 5v14"/>',
     zoomOut: '<path d="M5 12h14"/>',
-    fit: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
     fullscreen: '<path d="m15 15 6 6"/><path d="m15 9 6-6"/><path d="M21 16v5h-5"/><path d="M21 8V3h-5"/><path d="M3 16v5h5"/><path d="m3 21 6-6"/><path d="M3 8V3h5"/><path d="M9 9 3 3"/>',
     close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     left: '<path d="m15 18-6-6 6-6"/>',
@@ -498,7 +497,7 @@
         ${tool("left", "左へ動かす", "left")}${tool("up", "上へ動かす", "up")}${tool("down", "下へ動かす", "down")}${tool("right", "右へ動かす", "right")}
       </div>
       <div class="mdmark-diagram-tools-group" data-group="zoom">
-        ${tool("out", "縮小", "zoomOut")}<output class="mdmark-diagram-zoom" aria-label="倍率">100%</output>${tool("in", "拡大", "zoomIn")}${tool("fit", "全体が収まる倍率に戻す", "fit")}
+        ${tool("out", "縮小", "zoomOut")}<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit">100%</button>${tool("in", "拡大", "zoomIn")}
       </div>
       <div class="mdmark-diagram-tools-group" data-group="screen">
         ${modal ? tool("close", "全画面を閉じる", "close") : tool("fullscreen", "全画面で開く", "fullscreen")}
@@ -591,11 +590,11 @@
       sizer.style.width = `${state.width * scale}px`;
       sizer.style.height = `${state.height * scale}px`;
       stickHeads();
-      zoomText.value = `${Math.round(scale * 100)}%`;
-      zoomText.textContent = zoomText.value;
+      // 今の倍率のボタン: 倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
+      zoomText.textContent = `${Math.round(scale * 100)}%`;
+      zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。押すと開いたときの倍率と位置に戻す`);
       button("out").disabled = scale <= state.fit + ZOOM_EPSILON;
       button("in").disabled = scale >= ZOOM_MAX - ZOOM_EPSILON;
-      button("fit").disabled = state.atFit;
       // 図の全体が見えている間は、移動のボタンは何も動かさないので出さない
       panGroup.hidden = state.width * scale <= viewport.clientWidth + 1 && state.height * scale <= viewport.clientHeight + 1;
       // 押したボタンが押せなくなった・消えたときは、フォーカスを表示枠へ移して失わせない
@@ -631,7 +630,6 @@
       viewport.scrollLeft += dx;
       viewport.scrollTop += dy;
       state.atFit = false;
-      button("fit").disabled = false;
     };
 
     const actions = {
@@ -669,7 +667,6 @@
       viewport.scrollTop = drag.top - (event.clientY - drag.y);
       if (event.clientX !== drag.x || event.clientY !== drag.y) {
         state.atFit = false;
-        button("fit").disabled = false;
       }
     });
     const endDrag = () => {
@@ -683,7 +680,6 @@
     viewport.addEventListener("scroll", () => {
       if (viewport.scrollLeft || viewport.scrollTop) {
         state.atFit = false;
-        button("fit").disabled = false;
       }
     });
 
