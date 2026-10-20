@@ -25,3 +25,4 @@ accessibility:
 status: planned
 introduced:
   pr: 42
+test_file: tests/integration/lib/sequence-diagram.story.test.ts

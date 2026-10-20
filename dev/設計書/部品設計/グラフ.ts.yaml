@@ -44,3 +44,4 @@ css_properties:
     syntax: <color>
     default: '#1b7c83（ダーク #39c5cf）'
     description: 4 つ目の系列の色
+test_file: tests/integration/lib/chart.story.test.ts

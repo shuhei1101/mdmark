@@ -6,6 +6,11 @@ import type {
   MountHandle,
 } from "../../../src/index.ts";
 import {
+  INQUIRY_TEXT,
+  STRENGTH_TEXT,
+  wrapDirective,
+} from "../../unit/helpers/diagrams.ts";
+import {
   DOC_ID,
   EXPECTED_HTML,
   INDEX,
@@ -904,4 +909,369 @@ test("test_normal_when_index_in_browser", async () => {
   });
   // 検証
   expect(html).toBe(EXPECTED_HTML);
+});
+
+/** 幅 600px の描く先の要素に、幅 1100・高さ 560 のフロー図を描き、図と表示する枠を返す */
+async function mountFlow(
+  options: { index?: MdmarkIndex; extra?: string } = {},
+): Promise<{
+  el: HTMLElement;
+  figure: HTMLElement;
+  viewport: HTMLElement;
+}> {
+  const el = createElement();
+  el.style.width = "600px";
+  el.style.setProperty("--mdmark-padding", "0");
+  await mountTracked(el, {
+    markdown: `${wrapDirective("flow", INQUIRY_TEXT)}\n${options.extra ?? ""}`,
+    ...(options.index ? { index: options.index } : {}),
+  });
+  const figure = find<HTMLElement>(el, "figure.mdmark-diagram");
+  const viewport = find<HTMLElement>(
+    figure,
+    '[role="group"][aria-roledescription="図"]',
+  );
+  return { el, figure, viewport };
+}
+
+/** 読み上げの名前でボタンを探す */
+function buttonOf(root: ParentNode, name: string): HTMLButtonElement {
+  return find<HTMLButtonElement>(
+    root as Element,
+    `button[aria-label="${name}"]`,
+  );
+}
+
+/** 図の倍率（図の本体に掛けた `scale()`） */
+function scaleOf(figure: Element): number {
+  const stage = find<HTMLElement>(figure, ".mdmark-diagram-stage");
+  return new DOMMatrixReadOnly(getComputedStyle(stage).transform).a;
+}
+
+/** 倍率の表示の文字 */
+function zoomText(figure: Element): string {
+  return find(figure, '[aria-label="倍率"]').textContent ?? "";
+}
+
+// 図を収まる倍率で描き、右上のボタンとキーで拡大・縮小・戻す。ホイールは受け取らない（正常系）
+test("test_normal_when_diagram_zoomed", async () => {
+  // 準備
+  const { figure, viewport } = await mountFlow();
+  const sizer = find<HTMLElement>(figure, ".mdmark-diagram-sizer");
+  // 描いた直後の倍率は収まる倍率で、図の幅が表示する枠の幅を超えない
+  await vi.waitFor(() => {
+    expect(scaleOf(figure)).toBeLessThan(1);
+  });
+  const fit = scaleOf(figure);
+  expect(Number.parseInt(zoomText(figure), 10)).toBeLessThan(100);
+  expect(sizer.getBoundingClientRect().width).toBeLessThanOrEqual(
+    viewport.clientWidth + 1,
+  );
+  expect(buttonOf(figure, "縮小").disabled).toBe(true);
+  expect(buttonOf(figure, "全体が収まる倍率に戻す").disabled).toBe(true);
+  expect(buttonOf(figure, "拡大").disabled).toBe(false);
+  expect(buttonOf(figure, "全画面で開く").disabled).toBe(false);
+  for (const tool of figure.querySelectorAll("button.mdmark-diagram-tool")) {
+    expect(tool.getAttribute("aria-label")).toBeTruthy();
+  }
+  // 実行・検証: 拡大のボタンで 1.25 倍
+  buttonOf(figure, "拡大").click();
+  expect(scaleOf(figure) / fit).toBeCloseTo(1.25, 2);
+  // 表示する枠にフォーカスして + で、さらに 1.25 倍
+  viewport.focus();
+  await userEvent.keyboard("+");
+  expect(scaleOf(figure) / fit).toBeCloseTo(1.25 * 1.25, 2);
+  // ホイールは倍率を変えず、既定の動きも止めない
+  const before = scaleOf(figure);
+  const wheel = new WheelEvent("wheel", {
+    deltaY: -100,
+    bubbles: true,
+    cancelable: true,
+  });
+  viewport.dispatchEvent(wheel);
+  expect(scaleOf(figure)).toBe(before);
+  expect(wheel.defaultPrevented).toBe(false);
+  // 0 で、描いた直後の倍率と位置に戻る
+  await userEvent.keyboard("0");
+  expect(scaleOf(figure)).toBeCloseTo(fit, 4);
+  expect(viewport.scrollLeft).toBe(0);
+  expect(viewport.scrollTop).toBe(0);
+});
+
+// 拡大した図を、余白のドラッグ・矢印キー・移動のボタンで動かし、文字の上では動かさず文字を選ばせる（正常系）
+test("test_normal_when_diagram_panned", async () => {
+  // 準備
+  const { figure, viewport } = await mountFlow();
+  buttonOf(figure, "拡大").click();
+  buttonOf(figure, "拡大").click();
+  const panGroup = find<HTMLElement>(figure, '[data-group="pan"]');
+  expect(panGroup.hidden).toBe(false);
+  // 余白を 100px 左へドラッグすると、図が 100px 動き、文字は選ばれない
+  const start = viewport.scrollLeft;
+  await userEvent.dragAndDrop(viewport, viewport, {
+    sourcePosition: { x: 300, y: 4 },
+    targetPosition: { x: 200, y: 4 },
+  });
+  expect(viewport.scrollLeft - start).toBe(100);
+  expect(getSelection()?.toString()).toBe("");
+  expect(getComputedStyle(viewport).cursor).toBe("grab");
+  const name = find<HTMLElement>(
+    figure,
+    '[data-node="mcp"] .mdmark-diagram-node-name',
+  );
+  expect(getComputedStyle(name).cursor).toBe("text");
+  // 箱の名前の上のドラッグは、図を動かさず、名前の文字を選ばせる
+  const moved = viewport.scrollLeft;
+  await userEvent.dragAndDrop(name, name, {
+    sourcePosition: { x: 1, y: 5 },
+    targetPosition: { x: 60, y: 5 },
+  });
+  expect(viewport.scrollLeft).toBe(moved);
+  expect(getSelection()?.toString()).toContain("窓口");
+  // 矢印キーで 80px、下の移動のボタンで縦に 80px
+  getSelection()?.removeAllRanges();
+  viewport.focus();
+  viewport.scrollLeft = 0;
+  await userEvent.keyboard("{ArrowRight}");
+  expect(viewport.scrollLeft).toBe(80);
+  const top = viewport.scrollTop;
+  buttonOf(figure, "下へ動かす").click();
+  expect(viewport.scrollTop - top).toBe(80);
+  // 収まる倍率に戻すと、移動のボタンが出ない
+  buttonOf(figure, "全体が収まる倍率に戻す").click();
+  expect(panGroup.hidden).toBe(true);
+});
+
+/** 図の `tip` を持つ線のラベルを全て返す */
+function tipLabels(root: ParentNode): HTMLElement[] {
+  return [
+    ...root.querySelectorAll<HTMLElement>(".mdmark-diagram-label.has-tip"),
+  ];
+}
+
+/** 持ち主が指すツールチップ */
+function tipOf(owner: Element): HTMLElement {
+  const id = owner.getAttribute("aria-describedby") ?? "";
+  const tip = document.getElementById(id);
+  if (!tip) {
+    throw new Error(`ツールチップが無い: ${id}`);
+  }
+  return tip;
+}
+
+// 全画面のボタンで図をモーダルに開き、Esc でツールチップ→モーダルの順に閉じる（正常系）
+test("test_normal_when_diagram_fullscreen", async () => {
+  // 準備
+  const { el, figure } = await mountFlow();
+  // ポインターを図から離しておく（前のテストの位置が図の上だと、図のツールチップが開き、閉じるのを待つ）
+  await userEvent.unhover(document.body);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  const added: string[] = [];
+  const removed: string[] = [];
+  const addListener = document.addEventListener.bind(document);
+  const removeListener = document.removeEventListener.bind(document);
+  vi.spyOn(document, "addEventListener").mockImplementation(
+    (
+      type: string,
+      ...rest: [EventListenerOrEventListenerObject, ...unknown[]]
+    ) => {
+      added.push(type);
+      return addListener(
+        type,
+        ...(rest as [EventListenerOrEventListenerObject]),
+      );
+    },
+  );
+  vi.spyOn(document, "removeEventListener").mockImplementation(
+    (
+      type: string,
+      ...rest: [EventListenerOrEventListenerObject, ...unknown[]]
+    ) => {
+      removed.push(type);
+      return removeListener(
+        type,
+        ...(rest as [EventListenerOrEventListenerObject]),
+      );
+    },
+  );
+  const opener = buttonOf(figure, "全画面で開く");
+  // 実行
+  opener.click();
+  // 検証: 題・図・凡例と閉じるボタンを持つモーダル
+  const dialog = find<HTMLDialogElement>(el, "dialog[open]");
+  expect(dialog.querySelector(".mdmark-diagram-head")).not.toBeNull();
+  expect(dialog.querySelector(".mdmark-diagram-stage")).not.toBeNull();
+  expect(dialog.querySelector('ul[aria-label="凡例"]')).not.toBeNull();
+  expect(buttonOf(dialog, "全画面を閉じる")).not.toBeNull();
+  const modalViewport = find<HTMLElement>(
+    dialog,
+    '[aria-roledescription="図"]',
+  );
+  const box = dialog.getBoundingClientRect();
+  const inner = modalViewport.getBoundingClientRect();
+  expect(inner.left).toBeGreaterThanOrEqual(box.left);
+  expect(inner.right).toBeLessThanOrEqual(box.right);
+  expect(inner.bottom).toBeLessThanOrEqual(box.bottom);
+  // tip を持つ線にフォーカスして Esc: ツールチップだけが閉じる
+  const label = tipLabels(dialog)[0];
+  if (!label) {
+    throw new Error("tip を持つ線のラベルが無い");
+  }
+  label.focus();
+  const tip = tipOf(label);
+  expect(tip.hidden).toBe(false);
+  await userEvent.keyboard("{Escape}");
+  expect(tip.hidden).toBe(true);
+  expect(dialog.open).toBe(true);
+  // もう一度 Esc: モーダルが閉じ、フォーカスが全画面のボタンへ戻る
+  await userEvent.keyboard("{Escape}");
+  expect(el.querySelector("dialog")).toBeNull();
+  expect(document.activeElement).toBe(opener);
+  // モーダルのために付けた document の keydown の受け取りが外れている
+  expect(removed.filter((type) => type === "keydown")).toHaveLength(
+    added.filter((type) => type === "keydown").length,
+  );
+});
+
+/** 索引: 用語 `意思決定モデル` を持つ */
+const TERM_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [],
+  terms: [
+    {
+      id: "dm",
+      term: "意思決定モデル",
+      meaning: "選択肢から選ぶだけの、速く安い判断用の AI",
+    },
+  ],
+};
+
+// 線・箱・箱の中の用語に、ポインターとフォーカスでツールチップを出し、Esc で消す（正常系）
+test("test_normal_when_diagram_tooltip", async () => {
+  // 準備
+  const { el, figure } = await mountFlow({
+    index: TERM_INDEX,
+    extra: "\n図の外の意思決定モデル。\n",
+  });
+  // 線のラベルにポインターを乗せ、ツールチップの上へ動かしても出したままにする
+  const label = tipLabels(figure)[0];
+  if (!label) {
+    throw new Error("tip を持つ線のラベルが無い");
+  }
+  await userEvent.hover(label);
+  const wireTip = tipOf(label);
+  expect(wireTip.hidden).toBe(false);
+  expect(wireTip.textContent).toContain("件名・本文・送り主のアドレス");
+  await userEvent.hover(wireTip);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(wireTip.hidden).toBe(false);
+  // LLM の箱の印にフォーカスすると、入力・処理・出力を出す。io を持たない箱に印は無い
+  const info = buttonOf(figure, "「分類」の入力・処理・出力");
+  info.focus();
+  const ioTip = tipOf(info);
+  expect(ioTip.hidden).toBe(false);
+  expect(ioTip.querySelectorAll("dt")).toHaveLength(3);
+  expect([...ioTip.querySelectorAll("dt")].map((dt) => dt.textContent)).toEqual(
+    ["入力", "処理", "出力"],
+  );
+  expect(
+    figure.querySelector('[data-node="mcp"] .mdmark-diagram-info'),
+  ).toBeNull();
+  // Esc でツールチップを消し、フォーカスを印に残す
+  await userEvent.keyboard("{Escape}");
+  expect(ioTip.hidden).toBe(true);
+  expect(document.activeElement).toBe(info);
+  // 箱の中の用語は、本文の用語と同じ破線の下線で、ポインターで意味を出す
+  const term = find<HTMLElement>(figure, ".mdmark-diagram-node .mdmark-term");
+  await userEvent.hover(term);
+  expect(tipOf(term).hidden).toBe(false);
+  expect(tipOf(term).textContent).toContain("選択肢から選ぶだけの");
+  const outside = find<HTMLElement>(el, ":scope > p .mdmark-term");
+  expect(getComputedStyle(term).textDecorationStyle).toBe("dashed");
+  expect(getComputedStyle(outside).textDecorationStyle).toBe("dashed");
+});
+
+/** 操作できる部品を描いた要素と、その要素の部品の要素 */
+async function mountParam(): Promise<{ el: HTMLElement; param: HTMLElement }> {
+  const el = createElement();
+  await mountTracked(el, { markdown: wrapDirective("param", STRENGTH_TEXT) });
+  return { el, param: find<HTMLElement>(el, ".mdmark-param") };
+}
+
+/** スライダーのボタンを押して、今の値を写すボタンを返す */
+function copyButtonOf(param: ParentNode): HTMLButtonElement {
+  const found = [...param.querySelectorAll("button")].find((button) =>
+    button.textContent?.includes("写す"),
+  );
+  if (!found) {
+    throw new Error("今の値を写すボタンが無い");
+  }
+  return found;
+}
+
+// スライダーの値でグラフを描き直し、今の値を JSON でクリップボードへ写す（正常系）
+test("test_normal_when_param", async () => {
+  // 準備
+  const { param } = await mountParam();
+  const written: string[] = [];
+  vi.spyOn(navigator.clipboard, "writeText").mockImplementation(
+    async (text) => {
+      written.push(text);
+    },
+  );
+  const slider = find<HTMLInputElement>(param, 'input[type="range"]');
+  // 実行: スライダーを 7 にして、→ を押す
+  slider.focus();
+  slider.value = "7";
+  slider.dispatchEvent(new Event("input", { bubbles: true }));
+  await userEvent.keyboard("{ArrowRight}");
+  // 検証: 今の値とグラフが 8 で描き直され、題と凡例は 1 つずつのまま
+  expect(find(param, ".mdmark-param-knob output").textContent).toBe("8");
+  expect(find(param, "svg[role=img]").getAttribute("aria-label")).toContain(
+    "今の値（8）: 0・55・80・91・96・98",
+  );
+  expect(param.querySelectorAll(".mdmark-diagram-head")).toHaveLength(1);
+  expect(param.querySelectorAll(".mdmark-diagram-legend")).toHaveLength(1);
+  // 今の値を写すと、JSON を書き、写したことを出す
+  copyButtonOf(param).click();
+  await vi.waitFor(() => {
+    expect(find(param, '[role="status"]').textContent).toContain(
+      "クリップボードに写しました",
+    );
+  });
+  expect(JSON.parse(written[0] ?? "{}")).toEqual({
+    strength: { name: "反応の強さ", value: 8 },
+  });
+});
+
+// 書き込みを拒まれたら、書けなかったことと選んで写せる JSON を出す（異常系）
+test("test_error_when_clipboard_denied", async () => {
+  // 準備
+  const { param } = await mountParam();
+  vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(
+    new DOMException("denied", "NotAllowedError"),
+  );
+  const slider = find<HTMLInputElement>(param, 'input[type="range"]');
+  slider.value = "8";
+  slider.dispatchEvent(new Event("input", { bubbles: true }));
+  // 実行
+  copyButtonOf(param).click();
+  // 検証
+  await vi.waitFor(() => {
+    expect(find(param, '[role="status"]').textContent).toContain(
+      "クリップボードへ書けませんでした",
+    );
+  });
+  const fallback = find<HTMLElement>(param, "pre");
+  expect(fallback.hidden).toBe(false);
+  expect(fallback.getAttribute("tabindex")).toBe("0");
+  expect(JSON.parse(fallback.textContent ?? "{}")).toEqual({
+    strength: { name: "反応の強さ", value: 8 },
+  });
+  // その後もスライダーを動かすとグラフが描き直される
+  slider.value = "3";
+  slider.dispatchEvent(new Event("input", { bubbles: true }));
+  expect(find(param, "svg[role=img]").getAttribute("aria-label")).toContain(
+    "今の値（3）",
+  );
 });
