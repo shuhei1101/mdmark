@@ -747,7 +747,7 @@ functions:
     container: src/interact/diagram-tips.ts
     kind: 関数
     scope: internal
-    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける
+    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
     args:
       - name: figure
         type: HTMLElement
@@ -781,6 +781,12 @@ functions:
         condition: '`div.mdmark-html` にブロックと行内のヒント。ブロックの要素の文字、印、行内の要素の順に `pointerenter`'
         mock: なし
         expected: 文字では開かず、印と行内の要素でそれぞれのツールチップが開き、同時に開いているのは 1 つ
+      - name: test_attach_diagram_tips_when_embedded_unique_ids
+        case: 正常
+        summary: 同じページに 2 回描いてもヒントの id が重ならない
+        condition: ヒントを持つ同じ `div.mdmark-html` を 2 つの要素に入れ、両方に付ける
+        mock: なし（Chromium）
+        expected: ページの `id` が全て一意で、各印の `aria-describedby` が同じ要素の中のツールチップを指す
   - name: attachParams
     title: 操作できる部品の操作を付ける
     container: src/interact/params.ts

@@ -147,7 +147,7 @@ constants:
   - name: EMBED_STYLES
     title: 埋め込んだ HTML の残す宣言
     container: src/render/sanitize.ts
-    summary: 埋め込んだ HTML の要素の `style` に残す宣言と、値の許可の正規表現。sanitize-html の `allowedStyles` の `*` に渡す。どの宣言も値に `url(`・`expression(`・単位 `vw`・`vh` を含むと落とす
+    summary: 埋め込んだ HTML の要素の `style` に残す宣言の名前と、値の許可の正規表現。sanitize-html の `allowedStyles` には渡さず（postcss を差し替えているため）、`filterEmbeddedStyle` が使う。どの宣言も値に `url(`・`expression(`・単位 `vw`・`vh` を含むと落とす
     value: 下の entries
     entries:
       - key: display
@@ -349,7 +349,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（`style` は `EMBED_STYLES` の宣言だけを残す。自分で `style` を出すのは埋め込んだ HTML だけ）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
     args:
       - name: html
         type: string
@@ -401,10 +401,10 @@ functions:
         expected: 1 つ目の `img` だけが `src` を持ち、2 つ目と3 つ目の `img` は `src` を持たず、`a` は `href` を持たない
       - name: test_sanitize_when_own_style
         case: 正常
-        summary: 自分が出した要素の style は許した宣言だけ残し、書いた要素の style は落とす
-        condition: '`data-mdmark-own` が `nonce` と等しい `<div style="display:flex;position:fixed">` と、持たない `<div style="display:flex">`'
+        summary: 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、書いた要素の style は落とす
+        condition: '`data-mdmark-own` が `nonce` と等しい図の箱の `<div class="mdmark-diagram-node" style="left:10px;top:20px">` と、`div.mdmark-html` の中の `<div style="display:flex;position:fixed">`、持たない `<div style="display:flex">`'
         mock: なし
-        expected: 前者が `style="display:flex"`、後者は `style` を持たない
+        expected: 図の箱が `style="left:10px;top:20px"`、埋め込んだ HTML の要素が `style="display:flex"`、書いた要素は `style` を持たない
   - name: parseMarkArgs
     title: 印の引数を読み分ける
     container: src/render/marks.ts
@@ -468,7 +468,7 @@ functions:
   - name: sanitizeEmbedded
     title: 埋め込んだ HTML を落とす
     container: src/render/sanitize.ts
-    summary: 埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`EMBED_STYLES` を足した設定で落とす。`button` は `type="button"` に付け直し `form` で始まる属性を落とし、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。`textFilter` で文字を `onText` に渡し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は渡さない）
+    summary: 埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`style` を足した設定で落とし、`style` は `transformTags` で `filterEmbeddedStyle` に通す。`button` は `type="button"` に付け直し `form` で始まる属性を落とし、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。`textFilter` で文字を `onText` に渡し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は渡さない）
     kind: 関数
     scope: internal
     args:
@@ -492,10 +492,10 @@ functions:
         expected: '`script`・`onclick`・`formaction`・`data-x`・`class` が無く、`<button type="button">` と `data-hint="説明"` が残る'
       - name: test_sanitize_embedded_when_style
         case: 正常
-        summary: 許した宣言だけを残す
-        condition: '`style="display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png); width: 100vw; color: var(--mdmark-color-accent)"`'
+        summary: style を filterEmbeddedStyle で絞る
+        condition: '`style="display: flex; position: fixed"` と `style="position: fixed"`'
         mock: なし
-        expected: '`style` が `display:flex;gap:12px;color:var(--mdmark-color-accent)` だけを持つ'
+        expected: 前者が `style="display:flex"`、後者は `style` を持たない
       - name: test_sanitize_embedded_when_text
         case: 正常
         summary: 本文の文字だけを onText に渡す
@@ -505,6 +505,38 @@ functions:
     refs:
       - '#constants[EMBED_STYLES]'
       - '#constants[SANITIZE_OPTIONS]'
+    status: planned
+    introduced:
+      pr: 45
+  - name: filterEmbeddedStyle
+    title: 埋め込んだ HTML の style を絞る
+    container: src/render/sanitize.ts
+    summary: '`style` の値を `;` で宣言に分け、宣言ごとに `:` の前を名前、後ろを値として `EMBED_STYLES` の名前と値の正規表現で絞り、残った宣言を `名前:値` を `;` でつないで組み直す。値に `/*`・引用符・`\` を含む宣言は落とす。postcss を使わない（`DIAGRAM_STYLE_PATTERN` と同じ作り）'
+    kind: 関数
+    scope: internal
+    args:
+      - name: style
+        type: string
+        required: true
+        description: 要素の `style` の値
+    returns:
+      type: string
+      description: 残した宣言をつないだ値。残る宣言が無ければ空の文字で、呼び元は `style` を消す
+    unit_tests:
+      - name: test_filter_embedded_style
+        case: 正常
+        summary: 許した宣言だけを残す
+        condition: '`display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png); width: 100vw; color: var(--mdmark-color-accent)`'
+        mock: なし
+        expected: '`display:flex;gap:12px;color:var(--mdmark-color-accent)`'
+      - name: test_filter_embedded_style_when_tricky
+        case: 異常
+        summary: コメントと引用符を含む宣言を落とす
+        condition: '`color: red /* x */; font-size: "12px"; padding: 4px`'
+        mock: なし
+        expected: '`padding:4px`'
+    refs:
+      - '#constants[EMBED_STYLES]'
     status: planned
     introduced:
       pr: 45
