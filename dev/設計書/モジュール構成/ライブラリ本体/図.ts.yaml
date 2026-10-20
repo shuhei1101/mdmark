@@ -712,7 +712,7 @@ functions:
         summary: 倍率のボタンで開いたときの倍率と位置に戻す
         condition: 幅 600px の要素に幅 1100 のフロー図。拡大を 2 回押して表示する枠を `ArrowRight` で動かし、倍率のボタンを押す
         mock: なし
-        expected: 押す前の読み上げの名前が `倍率 86%。全体が収まる倍率に戻す`、押した後に文字が `55%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
+        expected: 押す前の読み上げの名前が `倍率 85%。全体が収まる倍率に戻す`、押した後に文字が `55%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
   - name: openDiagramDialog
     title: 図を全画面で開く
     container: src/interact/diagrams.ts

@@ -297,7 +297,7 @@ functions:
       - name: test_attach_embedded_html
         case: 正常
         summary: 列より広い間だけ横にスクロールさせる
-        condition: 幅 600px の要素に、幅 900px の中身と幅 300px の中身の `div.mdmark-html`。その後、要素の幅を 1000px にする
+        condition: '幅 600px の要素に、幅 900px の中身と幅 300px の中身の `div.mdmark-html`。その後、要素に `max-width: none` を付けて幅を 1000px にする（`.mdmark` の `max-width` が `--mdmark-content-width` で止めるため）'
         mock: なし（Chromium）
         expected: 付けた直後は前者だけが `is-wide` と `tabindex="0"` を持ち、幅を広げた後はどちらも持たない。外す関数の後はどちらも持たない
     status: planned
