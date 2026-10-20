@@ -567,3 +567,4 @@ test_files:
   - tests/unit/src/render/syntax/badges.test.ts
   - tests/unit/src/render/syntax/figures.test.ts
   - tests/unit/src/render/syntax/toc.test.ts
+  - tests/unit/src/render/syntax/html.test.ts

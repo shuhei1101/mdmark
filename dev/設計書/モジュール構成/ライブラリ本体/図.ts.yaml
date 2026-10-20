@@ -888,6 +888,7 @@ test_files:
   - tests/unit/src/parts/icons.test.ts
   - tests/unit/src/parts/diagram.test.ts
   - tests/unit/src/parts/param.test.ts
+  - tests/unit/src/parts/hint.test.ts
   - tests/unit/src/render/syntax/diagrams.test.ts
   - tests/unit/src/interact/diagrams.browser.test.ts
   - tests/unit/src/interact/diagram-tips.browser.test.ts
