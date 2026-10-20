@@ -279,12 +279,14 @@ test("test_filter_embedded_style", async () => {
     "background-image: url(https://example.com/a.png)",
     "width: 100vw",
     "color: var(--mdmark-color-accent)",
+    "margin-top: -9999px",
+    "padding: 4px",
   ].join("; ");
   // 実行
   const filtered = filterEmbeddedStyle(style);
   // 検証
   expect(filtered).toBe(
-    "display:flex;gap:12px;color:var(--mdmark-color-accent)",
+    "display:flex;gap:12px;color:var(--mdmark-color-accent);padding:4px",
   );
 });
 
