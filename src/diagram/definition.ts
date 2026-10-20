@@ -42,6 +42,8 @@ export type MdmarkDiagramNode = {
   sub?: string;
   /** 入力・処理・出力。持つ箱に印を付ける */
   io?: MdmarkDiagramIo;
+  /** 箱の右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+  hint?: string;
 };
 
 /** フロー図の線 */
@@ -118,20 +120,37 @@ export type MdmarkSequenceDefinition = {
   loop?: { label: string };
 };
 
+/** グラフの種類 */
+export type MdmarkChartType = "line" | "bar" | "pie" | "scatter";
+
+/** 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くとデータから切る */
+export type MdmarkChartYAxis = {
+  label: string;
+  min?: number;
+  max?: number;
+  step?: number;
+};
+
 /** グラフの定義 */
 export type MdmarkChartDefinition = {
+  /** グラフの種類。省くと `line` */
+  type?: MdmarkChartType;
   /** 題名 */
   title: string;
   /** 範囲 */
   scope: string;
   /** 更新日 */
   updated: string;
-  /** 横の軸 */
-  x: { label: string; ticks: string[] };
-  /** 縦の軸 */
-  y: { label: string; min: number; max: number; step: number };
-  /** 系列。1〜4 つで、`points` の数は `x.ticks` と同じ */
-  series: Array<{ name: string; points: number[] }>;
+  /** 横の軸。`line`・`bar` は `ticks` が必須、`scatter` は数値の軸で `ticks` を持たない。`pie` は持たない */
+  x?: { label: string; ticks?: string[] };
+  /** 縦の軸。`pie` は持たない */
+  y?: MdmarkChartYAxis;
+  /** 系列。`pie` 以外で 1〜4 つ。`line`・`bar` の `points` の数は `x.ticks` と同じ、`scatter` は `[x, y]` の組 */
+  series?: Array<{ name: string; points: number[] | Array<[number, number]> }>;
+  /** `pie` の項目。1〜4 つで、`value` は 0 より大きい */
+  items?: Array<{ name: string; value: number }>;
+  /** `pie` の凡例の値に付ける単位 */
+  unit?: string;
 };
 
 /** 操作できる部品の定義 */
@@ -147,8 +166,14 @@ export type MdmarkParamDefinition = {
     step: number;
     value: number;
   };
-  /** グラフの題と軸 */
-  chart: Omit<MdmarkChartDefinition, "series">;
+  /** グラフの題と軸（折れ線） */
+  chart: {
+    title: string;
+    scope: string;
+    updated: string;
+    x: { label: string; ticks: string[] };
+    y: { label: string; min: number; max: number; step: number };
+  };
   /** スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ */
   table: Record<string, number[]>;
 };
@@ -205,8 +230,16 @@ const LINE_KINDS: readonly MdmarkDiagramLine[] = [
   "loop",
 ];
 
-/** 系列の数の下限と上限 */
+/** 系列の数の下限と上限（円の項目の数も同じ） */
 const SERIES_RANGE = { min: 1, max: 4 };
+
+/** グラフの種類 */
+const CHART_TYPES: readonly MdmarkChartType[] = [
+  "line",
+  "bar",
+  "pie",
+  "scatter",
+];
 
 /** 小数のスライダーの値を揃える桁 */
 const KNOB_DIGITS = 10;
@@ -405,6 +438,7 @@ function checkNode(
   }
   checkOptionalText(node.tag, `${label}の tag`, problems);
   checkOptionalText(node.sub, `${label}の sub`, problems);
+  checkOptionalText(node.hint, `${label}の hint`, problems);
   if (node.io !== undefined) {
     const io = asObject(node.io, `${label}の io`, problems);
     if (io) {
@@ -694,10 +728,164 @@ function checkPointList(
   }
 }
 
+/** 横の軸の名前と目盛り（折れ線・棒）を確かめる。目盛りの数を返す */
+function checkTickAxis(
+  source: Record<string, unknown>,
+  minTicks: number,
+  problems: Problems,
+): number | undefined {
+  const x = asObject(source.x, "x", problems);
+  if (!x) {
+    return undefined;
+  }
+  problems.expect(x.label, "文字", "x.label");
+  const ticks = asArray(x.ticks, "x.ticks", problems);
+  if (!ticks) {
+    return undefined;
+  }
+  if (ticks.length < minTicks) {
+    problems.add(
+      `x.ticks が ${minTicks} つに満たないです。目盛りを ${minTicks} つ以上書いてください`,
+    );
+  }
+  if (!ticks.every((tick) => typeof tick === "string")) {
+    problems.add(
+      "x.ticks に文字でない目盛りがあります。目盛りは文字で書いてください",
+    );
+    return undefined;
+  }
+  return ticks.length;
+}
+
+/** 散布図の横の軸（数値の軸で、目盛りを持たない）を確かめる */
+function checkNumericXAxis(
+  source: Record<string, unknown>,
+  problems: Problems,
+): void {
+  const x = asObject(source.x, "x", problems);
+  if (!x) {
+    return;
+  }
+  problems.expect(x.label, "文字", "x.label");
+  if (x.ticks !== undefined) {
+    problems.add(
+      "散布図の x は数値の軸なので、ticks は書けません。ticks を消してください",
+    );
+  }
+}
+
+/** 縦の軸を確かめる。`min`・`max`・`step` は 3 つとも書くか 3 つとも省く */
+function checkYAxis(source: Record<string, unknown>, problems: Problems): void {
+  const y = asObject(source.y, "y", problems);
+  if (!y) {
+    return;
+  }
+  problems.expect(y.label, "文字", "y.label");
+  const given = ["min", "max", "step"].filter((key) => y[key] !== undefined);
+  if (given.length === 0) {
+    return;
+  }
+  if (given.length < 3) {
+    problems.add(
+      "y の min・max・step は 3 つとも書くか、3 つとも省いてください。省くとデータから切ります",
+    );
+    return;
+  }
+  const numbers = ["min", "max", "step"].map((key) =>
+    problems.expect(y[key], "数", `y.${key}`),
+  );
+  if (numbers.every(Boolean)) {
+    if ((y.min as number) >= (y.max as number)) {
+      problems.add(
+        "y.min が y.max 以上です。min は max より小さくしてください",
+      );
+    }
+    if ((y.step as number) <= 0) {
+      problems.add("y.step が 0 以下です。step は正の数にしてください");
+    }
+  }
+}
+
+/** 散布図の点が `[x, y]` の数の組だけかを確かめる */
+function checkPairList(
+  points: unknown,
+  label: string,
+  problems: Problems,
+): void {
+  const list = asArray(points, `${label}の points`, problems);
+  if (
+    list &&
+    !list.every(
+      (point) =>
+        Array.isArray(point) &&
+        point.length === 2 &&
+        point.every((value) => isType(value, "数")),
+    )
+  ) {
+    problems.add(
+      `${label}の points に [x, y] でない点があります。点は [x, y] の数の組で書いてください`,
+    );
+  }
+}
+
+/** 円の項目を確かめる */
+function checkPieItems(
+  source: Record<string, unknown>,
+  problems: Problems,
+): void {
+  checkOptionalText(source.unit, "unit", problems);
+  const items = asArray(source.items, "items", problems);
+  if (!items) {
+    return;
+  }
+  if (items.length < SERIES_RANGE.min || items.length > SERIES_RANGE.max) {
+    problems.add(
+      `項目が ${items.length} つです。項目は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで書いてください`,
+    );
+  }
+  items.forEach((value, index) => {
+    const item = asObject(value, `items[${index}]`, problems);
+    if (!item) {
+      return;
+    }
+    const name =
+      typeof item.name === "string" ? item.name : `${index + 1} つ目`;
+    problems.expect(item.name, "文字", `items[${index}].name`);
+    if (
+      problems.expect(item.value, "数", `項目「${name}」の value`) &&
+      (item.value as number) <= 0
+    ) {
+      problems.add(
+        `項目「${name}」の value が 0 以下です。value は 0 より大きい数にしてください`,
+      );
+    }
+  });
+}
+
 /** グラフの定義を確かめる */
 function checkChart(source: Record<string, unknown>, problems: Problems): void {
   checkHead(source, problems);
-  const tickCount = checkAxes(source, problems);
+  const type = source.type ?? "line";
+  if (
+    typeof type !== "string" ||
+    !(CHART_TYPES as readonly string[]).includes(type)
+  ) {
+    problems.add(
+      `グラフの種類 ${String(type)} は使えません。使える種類は ${CHART_TYPES.join("・")} です`,
+    );
+    return;
+  }
+  if (type === "pie") {
+    checkPieItems(source, problems);
+    return;
+  }
+  let tickCount: number | undefined;
+  if (type === "scatter") {
+    checkNumericXAxis(source, problems);
+  } else {
+    tickCount = checkTickAxis(source, type === "line" ? 2 : 1, problems);
+  }
+  checkYAxis(source, problems);
   const series = asArray(source.series, "series", problems);
   if (!series) {
     return;
@@ -715,7 +903,11 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
     const name =
       typeof entry.name === "string" ? entry.name : `${index + 1} つ目`;
     problems.expect(entry.name, "文字", `series[${index}].name`);
-    checkPointList(entry.points, `系列「${name}」`, tickCount, problems);
+    if (type === "scatter") {
+      checkPairList(entry.points, `系列「${name}」`, problems);
+    } else {
+      checkPointList(entry.points, `系列「${name}」`, tickCount, problems);
+    }
   });
 }
 

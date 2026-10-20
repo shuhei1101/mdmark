@@ -1,0 +1,18 @@
+title: Parts/EmbeddedHtml
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: embedded-html
+  - name: WithChart
+    parameters:
+      server:
+        id: embedded-html
+    args:
+      chart: true
+  - name: Wide
+    parameters:
+      server:
+        id: embedded-html
+    args:
+      wide: true

@@ -16,3 +16,28 @@ stories:
         id: chart
     args:
       invalid: true
+  - name: Bar
+    parameters:
+      server:
+        id: chart
+    args:
+      type: bar
+  - name: BarFour
+    parameters:
+      server:
+        id: chart
+    args:
+      type: bar
+      series: 4
+  - name: Pie
+    parameters:
+      server:
+        id: chart
+    args:
+      type: pie
+  - name: Scatter
+    parameters:
+      server:
+        id: chart
+    args:
+      type: scatter

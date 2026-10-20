@@ -1500,7 +1500,6 @@
     /* 下線の付いた用語と文書の別名: リンクの実線と見分ける破線の下線。色は本文のまま */
     .mdmark-term {
       border-radius: 2px;
-      cursor: help;
       text-decoration: underline dashed var(--mdmark-color-term-underline);
       text-decoration-thickness: 1px;
       text-underline-offset: 0.3em;
@@ -1863,10 +1862,12 @@
       }
     }
 
-    /* 今の倍率: 縮小と拡大のボタンの間に、桁を揃えて出す */
-    .mdmark-diagram-zoom {
+    /* 今の倍率のボタン: 縮小と拡大のボタンの間に、桁を揃えて今の倍率を出す。押すと開いたときの倍率と位置に戻す */
+    .mdmark-diagram-tool.mdmark-diagram-zoom {
+      width: auto;
       min-width: 3.25rem;
-      color: var(--mdmark-color-muted);
+      padding: 0 0.375rem;
+      font: inherit;
       font-size: 0.8125rem;
       font-variant-numeric: tabular-nums;
       text-align: center;
@@ -1933,7 +1934,8 @@
         .mdmark-diagram-label,
         .mdmark-diagram-frame-title,
         .mdmark-diagram-lane-label,
-        .mdmark-diagram-axis-text
+        .mdmark-diagram-axis-text,
+        .mdmark-diagram-value-text
       ) {
       cursor: text;
       user-select: text;
@@ -2106,7 +2108,6 @@
     /* 箱の中の用語: 本文の用語と同じ破線の下線（.mdmark-term）。箱の小さな文字に合わせて下線を近づける */
     .mdmark-diagram-node .mdmark-term {
       text-underline-offset: 0.25em;
-      cursor: help;
     }
 
     /* 線の層: 箱の上に重ね、線そのものは押せない（ツールチップ用の太い透明の線だけが拾う） */
@@ -2191,7 +2192,6 @@
       stroke: transparent;
       stroke-width: 14;
       pointer-events: stroke;
-      cursor: help;
     }
 
     /* 線のラベル（入力の要約）: 線の上に地の色の札で置く */
@@ -2213,7 +2213,6 @@
         text-decoration: underline dashed var(--mdmark-color-term-underline);
         text-decoration-thickness: 1px;
         text-underline-offset: 0.25em;
-        cursor: help;
       }
 
       &:focus-visible {
@@ -2318,6 +2317,64 @@
       stroke-width: 1.5;
     }
 
+    /* 棒と凡例の棒の見本: 系列の模様（1 塗りつぶし・2 斜線・3 点・4 格子）で塗り、系列の色の線で縁取る */
+    .mdmark-diagram-bar {
+      stroke: var(--series-color);
+      stroke-width: 1.5;
+    }
+
+    /* 円の扇形: 系列の模様で塗り、隣の扇形とは地の色の隙間で分ける */
+    .mdmark-diagram-slice {
+      stroke: var(--mdmark-color-bg);
+      stroke-width: 2;
+      stroke-linejoin: round;
+    }
+
+    /* 円の割合: 扇形の外に、本文の色の等幅数字で出す */
+    .mdmark-diagram-value-text {
+      fill: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-body);
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 系列の塗りの模様: 系列の番号で色を決め、模様の中身は色の薄い地・系列の色の面・線・点で描く */
+    pattern[data-series="1"] {
+      --series-color: var(--mdmark-color-series-1);
+    }
+
+    pattern[data-series="2"] {
+      --series-color: var(--mdmark-color-series-2);
+    }
+
+    pattern[data-series="3"] {
+      --series-color: var(--mdmark-color-series-3);
+    }
+
+    pattern[data-series="4"] {
+      --series-color: var(--mdmark-color-series-4);
+    }
+
+    .mdmark-diagram-pattern-tint {
+      fill: color-mix(in srgb, var(--series-color) 22%, var(--mdmark-color-bg));
+    }
+
+    :is(.mdmark-diagram-pattern-solid, .mdmark-diagram-pattern-dot) {
+      fill: var(--series-color);
+    }
+
+    :is(.mdmark-diagram-pattern-ink, .mdmark-diagram-pattern-ink-thin) {
+      fill: none;
+      stroke: var(--series-color);
+      stroke-width: 2;
+      stroke-linecap: square;
+    }
+
+    .mdmark-diagram-pattern-ink-thin {
+      stroke-width: 1.25;
+    }
+
     /* 系列ごとの点の色 */
     g[data-series="1"] {
       --series-color: var(--mdmark-color-series-1);
@@ -2386,6 +2443,98 @@
       dd {
         margin: 0;
       }
+    }
+
+    /* ---------- 埋め込んだ HTML とヒント ---------- */
+
+    /* 埋め込んだ HTML の場所: 枠・地・余白を足さず、本文のブロックと同じ間隔で本文に溶け込ませる */
+    .mdmark-html {
+      min-width: 0;
+
+      /* 列より広い HTML: この場所の中で横にスクロールし、文書の幅を広げない。キーボードでも動かせるようフォーカスできる */
+      &.is-wide {
+        overflow-x: auto;
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 2px;
+        }
+      }
+
+      /* 中の図の部品: 前後の要素と本文と同じ間隔を空ける */
+      .mdmark-diagram {
+        margin-block: var(--mdmark-space);
+      }
+    }
+
+    /* data-hint を持つブロックの要素: 右上の印の置き場所 */
+    .mdmark-hint-block {
+      position: relative;
+    }
+
+    /* ヒントのある要素の印: 図の箱の印と同じ情報のアイコンのボタンを右上に置く。ポインターとフォーカスはこの印だけが受ける。
+       色は要素の文字の色にし、書いた人の地の色の上でも読める */
+    .mdmark-hint-mark {
+      position: absolute;
+      inset-block-start: 3px;
+      inset-inline-end: 3px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: currentColor;
+
+      /* 情報のアイコン（lucide の info）を文字の色で塗る */
+      &::before {
+        content: "";
+        width: 15px;
+        height: 15px;
+        background: currentColor;
+        mask:
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+      }
+
+      &:hover {
+        background: color-mix(in srgb, currentColor 14%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* ヒントを開いているブロックの印: 図の箱の印と同じく、文字の色をうっすら敷く */
+    .mdmark-hint-block.is-hint-open .mdmark-hint-mark {
+      background: color-mix(in srgb, currentColor 14%, transparent);
+    }
+
+    /* data-hint を持つ行内の要素: 本文の用語と同じ破線の下線で示す（印は文字に重なるので置かない） */
+    .mdmark-hint-inline {
+      border-radius: 2px;
+      text-decoration: underline dashed var(--mdmark-color-term-underline);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3em;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* ヒントを開いている行内の要素: 下線を本文の色にして、どの語の説明かを示す */
+    .mdmark-hint-inline.is-hint-open {
+      text-decoration-color: var(--mdmark-color-text);
+    }
+
+    /* data-hint のツールチップ: 図のツールチップの見た目のまま、画面に対して置く（横にスクロールする HTML の枠で切れない） */
+    .mdmark-hint-tip {
+      position: fixed;
     }
 
     /* ---------- 操作できる部品 ---------- */
@@ -2565,12 +2714,13 @@
     }
   }
 
-  /* 印刷のとき（図の部品）: 押せない操作とツールチップを出さず、図は表示する枠からはみ出さず紙に出す */
+  /* 印刷のとき（図の部品・埋め込んだ HTML）: 押せない操作とツールチップを出さず、図は表示する枠からはみ出さず紙に出す */
   @media print {
     .mdmark {
       :is(
           .mdmark-diagram-tools,
           .mdmark-diagram-tip,
+          .mdmark-hint-mark,
           .mdmark-param-copy,
           .mdmark-param-status,
           .mdmark-param-fallback
@@ -2586,6 +2736,15 @@
 
       :is(.mdmark-diagram, .mdmark-param) {
         break-inside: avoid;
+      }
+
+      /* 埋め込んだ HTML: 横のスクロールをやめて紙の幅に収め、ヒントの行内の要素の下線を外す */
+      .mdmark-html.is-wide {
+        overflow: visible;
+      }
+
+      .mdmark-hint-inline {
+        text-decoration: none;
       }
     }
   }
