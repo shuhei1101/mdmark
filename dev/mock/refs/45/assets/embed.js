@@ -1,6 +1,6 @@
 // 埋め込んだ HTML と data-hint のヒントのモック（実装の mount が埋め込んだ HTML に付ける振る舞い）。
 // .mdmark-html: 列より広いときだけ中で横にスクロールさせる。
-// [data-hint]: ブロックの要素は右上の印、行内の要素は破線の下線で示し、フォーカスできるようにして、ポインターとフォーカスで図のツールチップと同じ見た目のツールチップを開く。
+// [data-hint]: ブロックの要素は右上の印、行内の要素は破線の下線で示す。ブロックは印、行内は要素そのものがポインターとフォーカスを受け、図のツールチップと同じ見た目のツールチップを開く。
 // 上に乗っても消えず、Esc で閉じる（フォーカスは要素に残す）。祖先に data-mock-hints="off" があるときは何も付けない（機能 hints をオフにした文書）。
 // モックの見本だけの指定: data-mock-open（その要素のツールチップを開いたまま見せる）
 
@@ -58,7 +58,7 @@
   const closeLater = () => {
     clearTimeout(closeTimer);
     closeTimer = setTimeout(() => {
-      if (current && (current.mdmarkHintTip.matches(":hover") || current.matches(":hover, :focus"))) return;
+      if (current && (current.mdmarkHintTip.matches(":hover") || current.mdmarkHintTrigger.matches(":hover, :focus"))) return;
       close();
     }, CLOSE_DELAY_MS);
   };
@@ -75,18 +75,24 @@
     root.append(tip);
     owner.mdmarkHintTip = tip;
 
-    // 行内の要素は下線、それ以外は右上の印
+    // 行内の要素は下線を引いて要素そのものを、それ以外は右上に置く印をツールチップの持ち主にする（ブロックの印の外では開かない）
     const inline = getComputedStyle(owner).display === "inline";
     owner.classList.add(inline ? "mdmark-hint-inline" : "mdmark-hint-block");
-    if (!inline) owner.insertAdjacentHTML("beforeend", `<span class="mdmark-hint-mark" aria-hidden="true">${INFO_ICON}</span>`);
-    // 元からフォーカスできない要素（div・span など）だけを Tab で辿れるようにする
-    if (owner.tabIndex < 0) owner.tabIndex = 0;
-    owner.setAttribute("aria-describedby", tip.id);
+    let trigger = owner;
+    if (inline) {
+      // 元からフォーカスできない要素（span など）だけを Tab で辿れるようにする
+      if (owner.tabIndex < 0) owner.tabIndex = 0;
+    } else {
+      owner.insertAdjacentHTML("beforeend", `<button class="mdmark-hint-mark" type="button" aria-label="説明">${INFO_ICON}</button>`);
+      trigger = owner.lastElementChild;
+    }
+    trigger.setAttribute("aria-describedby", tip.id);
+    owner.mdmarkHintTrigger = trigger;
 
-    owner.addEventListener("pointerenter", () => open(owner));
-    owner.addEventListener("pointerleave", closeLater);
-    owner.addEventListener("focus", () => open(owner));
-    owner.addEventListener("blur", closeLater);
+    trigger.addEventListener("pointerenter", () => open(owner));
+    trigger.addEventListener("pointerleave", closeLater);
+    trigger.addEventListener("focus", () => open(owner));
+    trigger.addEventListener("blur", closeLater);
     tip.addEventListener("pointerenter", () => clearTimeout(closeTimer));
     tip.addEventListener("pointerleave", closeLater);
   };

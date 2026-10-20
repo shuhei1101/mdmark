@@ -28,18 +28,13 @@
 
     /* ---------- data-hint ---------- */
 
-    /* data-hint を持つブロックの要素: 右上の印の置き場所。ポインターでヒントがあることを示す */
+    /* data-hint を持つブロックの要素: 右上の印の置き場所 */
     .mdmark-hint-block {
       position: relative;
-      cursor: help;
-
-      &:focus-visible {
-        outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 2px;
-      }
     }
 
-    /* ヒントのある要素の印: 図の箱の印と同じ情報のアイコンを右上に置く。色は要素の文字の色にし、書いた人の地の色の上でも読める */
+    /* ヒントのある要素の印: 図の箱の印と同じ情報のアイコンのボタンを右上に置く。ポインターとフォーカスはこの印だけが受ける。
+       色は要素の文字の色にし、書いた人の地の色の上でも読める */
     .mdmark-hint-mark {
       position: absolute;
       inset-block-start: 3px;
@@ -48,9 +43,20 @@
       place-items: center;
       width: 22px;
       height: 22px;
+      padding: 0;
+      border: 0;
       border-radius: 4px;
+      background: transparent;
       color: currentColor;
-      pointer-events: none;
+
+      &:hover {
+        background: color-mix(in srgb, currentColor 14%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
 
       .mdmark-diagram-icon {
         width: 15px;
@@ -69,7 +75,6 @@
       text-decoration: underline dashed var(--mdmark-color-term-underline);
       text-decoration-thickness: 1px;
       text-underline-offset: 0.3em;
-      cursor: help;
 
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);

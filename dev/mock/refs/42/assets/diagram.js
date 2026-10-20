@@ -777,18 +777,12 @@
       }, CLOSE_DELAY_MS);
     };
 
-    // 持ち主: 線のラベル・透明の太い線・箱の印・箱の中の用語。入力・処理・出力を持つ箱は箱の上でも開く
+    // 持ち主: 線のラベル・透明の太い線・箱の印・箱の中の用語。箱の説明・入力・処理・出力は右上の印でだけ開く（箱の印の外では開かない）
     for (const owner of figure.querySelectorAll("[data-tip-owner]")) {
       owner.addEventListener("pointerenter", () => open(owner.dataset.tipOwner));
       owner.addEventListener("pointerleave", closeLater);
       owner.addEventListener("focus", () => open(owner.dataset.tipOwner));
       owner.addEventListener("blur", closeLater);
-    }
-    for (const node of figure.querySelectorAll(".mdmark-diagram-node.has-tip")) {
-      node.addEventListener("pointerenter", (event) => {
-        if (!event.target.closest(".mdmark-term")) open(`node:${node.dataset.node}`);
-      });
-      node.addEventListener("pointerleave", closeLater);
     }
     for (const tip of tips.values()) {
       tip.addEventListener("pointerenter", () => clearTimeout(closeTimer));
