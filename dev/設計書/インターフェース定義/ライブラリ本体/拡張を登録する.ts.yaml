@@ -225,7 +225,7 @@ flows:
         M->>M: 範囲の json を読めない
         M->>P: 印の場所を書き方の警告に替える
     expected:
-      - 印の場所の要素が class `mdmark-syntax-warning` を持ち、拡張の名前 `greet` と読めなかった行と列がある
+      - 印の場所の要素が class `mdmark-syntax-warning` を持ち、拡張の名前 `greet` と、読めなかった行・その行の読めた最後の部分・足りない記号がある
       - '`load` が 1 回も呼ばれていない'
       - 印の前後の段落があり、`mount` が例外を投げない
     test: test_error_when_definition_invalid
