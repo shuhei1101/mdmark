@@ -7,7 +7,7 @@ scenarios:
       - name: 索引
         description: 見本の HTML の文書の文に出る用語 1 つを載せる
       - name: Mock
-        description: 差し替えない。チャートのライブラリは配布物と同じ版の対応表の URL から読む
+        description: チャートを描くのに外部ライブラリを使うときは、URL の代わりに相対パスの手元のモジュールを `libraries` に書いて読む（ネットワークを読まない）
     flow: |-
       flowchart TD
         A[コードブロックのHTMLを描く:正常シナリオ] --> B[チャートを描く:正常シナリオ]
@@ -33,7 +33,7 @@ scenarios:
       - name: 設定
         description: 見本の HTML の文書を書き出す `mdmark.config.yaml`
       - name: Mock
-        description: 書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
+        description: チャートを描くのに外部ライブラリを使うときは、URL の代わりに相対パスの手元のモジュールを `libraries` に書く（書き出しがネットワークを読まない）。書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
     flow: |-
       flowchart TD
         A[文書をHTMLに書き出す:正常シナリオ] --> B[チャートを拡大・縮小・移動する:正常シナリオ]
@@ -47,6 +47,8 @@ scenarios:
       - チャートを右上のボタンで拡大・縮小でき、ドラッグで動かせる
       - '`data-hint` を付けた箱と HTML の中の用語に、ツールチップが出る'
     test: test_normal_when_exported
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ]
 lead: 文書を書く人が、印を付けたコードブロックの HTML にチャートとヒントを書いて描かせ、読む人がチャートを拡大・縮小・移動し、ヒントと用語をツールチップで読む。書き出した 1 枚の HTML でも同じように読める。
 issue: 6
 primary_actor: 文書を書く人（AI を含む）
@@ -60,4 +62,4 @@ preconditions:
   - 使う側のページが配布物を読み込み、`mount` で文書を描ける
   - 索引に用語を載せている
 success_guarantee: 印を付けたコードブロックの HTML がその場に描かれ、その中のチャートは拡大・縮小・移動でき、`data-hint` を付けた要素と HTML の中の用語にツールチップが出る。書き出した 1 枚の HTML でも外を読まずに同じように動く。
-minimal_guarantee: 埋め込んだ HTML に書いたスクリプトとイベントの属性は動かない。チャートのライブラリを読めないときは、その場所に知らせの枠を出し、文書の残りは描く。
+minimal_guarantee: 埋め込んだ HTML に書いたスクリプトとイベントの属性は動かない。チャートを描けないときは、その場所に知らせの枠か書き方の警告を出し、文書の残りは描く。
