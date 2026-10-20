@@ -36,6 +36,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   sections: true,
   "row-details": true,
   figures: true,
+  diagrams: true,
   glossary: true,
   backlinks: true,
 };

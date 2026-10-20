@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>diagram-tooltip | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット。図の中の用語も同じ見た目） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">図のツールチップ</h1>
+
+      <!-- 通常: 下線のラベル・箱の右上の印・箱の中の下線の語にポインターを乗せるか Tab でフォーカスすると開き、Esc で閉じる。ツールチップの上へ移っても消えない -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">通常（ポインターを乗せるか Tab でフォーカスすると開き、Esc で閉じる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <!-- 矢印の詳細: 矢印のラベルは入力の要約、ツールチップは詳細。開いている間は矢印を太くして、どの線の詳細かを示す -->
+      <section aria-labelledby="state-wire">
+        <h2 class="catalog-label" id="state-wire">矢印の詳細（開いた。開いている矢印を太くする）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-open]: 開いたままにするツールチップの持ち主（モックだけの指定） -->
+          <figure data-mock-diagram="inquiry" data-mock-open="w-faq"></figure>
+        </article>
+      </section>
+
+      <!-- 箱の入力・処理・出力: LLM・スクリプトの箱。右上の印を持つ箱の上か、印にフォーカスすると開く -->
+      <section aria-labelledby="state-io">
+        <h2 class="catalog-label" id="state-io">箱の入力・処理・出力（開いた）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry" data-mock-open="node:draft"></figure>
+        </article>
+      </section>
+
+      <!-- 箱の中の用語: 本文の用語と同じ破線の下線とツールチップに用語集の意味を出す -->
+      <section aria-labelledby="state-term">
+        <h2 class="catalog-label" id="state-term">箱の中の用語（開いた。本文の用語と同じ見た目）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry" data-mock-open="term:意思決定モデル"></figure>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -35,8 +35,16 @@ export async function loadLibraries(options: {
   isCurrent: () => boolean;
   /** モジュールを読む関数（単体テストで差し替える） */
   importModule?: ImportModule;
+  /** 範囲で書いた拡張の印から読んだ部品の定義。印の場所の `data-mdmark-definition` の番号で引く */
+  definitions?: unknown[];
 }): Promise<void> {
-  const { root, libraries, isCurrent, importModule = importByUrl } = options;
+  const {
+    root,
+    libraries,
+    isCurrent,
+    importModule = importByUrl,
+    definitions = [],
+  } = options;
   // 同じ名前のモジュールは、1 回の呼び出しの中で 1 回だけ読む
   const modules = new Map<string, Promise<LibraryModule>>();
   const extensionModules = new Map<string, Promise<MdmarkExtensionModule>>();
@@ -99,6 +107,11 @@ export async function loadLibraries(options: {
   }): Promise<void> {
     const { slot, extension, argsText } = target;
     const value: MdmarkMarkArgs = parseMarkArgs(argsText);
+    // 範囲で書いた印だけが部品の定義を持つ
+    const definitionIndex = slot.getAttribute("data-mdmark-definition");
+    if (definitionIndex !== null && Number(definitionIndex) in definitions) {
+      value.definition = definitions[Number(definitionIndex)];
+    }
     try {
       if (extension.schema) {
         const items = await validateMarkArgs(extension.schema, value);

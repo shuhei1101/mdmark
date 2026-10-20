@@ -14,3 +14,19 @@ export const parameters = {
     fetchStoryHtml,
   },
 };
+
+// 図のストーリー（`data-story-fit` の印を持つもの）は、描いた直後に全体が収まる倍率にする操作を付ける
+const fitted = new WeakSet();
+new MutationObserver(async () => {
+  for (const marker of document.querySelectorAll("[data-story-fit]")) {
+    const root = marker.closest(".mdmark");
+    if (!root || fitted.has(root)) {
+      continue;
+    }
+    fitted.add(root);
+    const { attachDiagrams } = await import(
+      /* webpackIgnore: true */ `${window.location.origin}/render/diagram.js`
+    );
+    attachDiagrams(root);
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });

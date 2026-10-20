@@ -52,3 +52,15 @@ items:
     summary: 読む人がまとめた HTML を file:// で開き、文書の一覧・リンク・戻ると進むで文書を行き来する
   - page: 版を上げる.yaml
     summary: 文書を書く人が `mdmark upgrade` で移行の手順を版の順に当て、点検を通してから設定の版を書き換える
+  - page: 図を描く.yaml
+    summary: 文書に部品の定義を書き、共通の部品にフロー図・シーケンス図・グラフを図の決まりのとおりに描かせる
+  - page: 図を拡大・縮小・移動する.yaml
+    summary: 読む人が図を右上のボタンとキーで拡大・縮小し、ドラッグ・矢印キー・ボタンで動かす
+  - page: 図の要素のツールチップを見る.yaml
+    summary: 読む人が図の矢印・箱・箱の中の用語の詳細を、ホバーとフォーカスで出るツールチップで読む
+  - page: 操作できる部品で値を変えて写す.yaml
+    summary: 読む人がスライダーで値を変えてグラフを見、今の値を JSON にしてクリップボードへ写す
+  - page: 固有の部品とCSSを当てる.yaml
+    summary: 使う側が自分の場所だけの部品を `registerExtension` で足し、自分の場所だけの見た目を CSS で当てる
+  - page: 足すJavaScriptを型で点検する.yaml
+    summary: 使う側が `// @ts-check` と JSDoc で書いた JavaScript を、配布物の型定義に対して `tsc --noEmit` で点検する

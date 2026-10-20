@@ -87,6 +87,12 @@
           "type": "boolean",
           "default": true
         },
+        "diagrams": {
+          "title": "図の部品の機能",
+          "description": "`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` の範囲の部品の定義から図と操作できる部品を描く。オフのときは印を取り除き、定義を JSON のコードブロックのまま描く。",
+          "type": "boolean",
+          "default": true
+        },
         "glossary": {
           "title": "用語の機能",
           "description": "索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く。",
@@ -116,6 +122,7 @@
         "sections": true,
         "row-details": true,
         "figures": true,
+        "diagrams": true,
         "glossary": true,
         "backlinks": true
       }

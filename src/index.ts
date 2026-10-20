@@ -1,5 +1,11 @@
 export type { MdmarkConfig } from "./config.ts";
 export type {
+  MdmarkChartDefinition,
+  MdmarkFlowDefinition,
+  MdmarkParamDefinition,
+  MdmarkSequenceDefinition,
+} from "./diagram/definition.ts";
+export type {
   MdmarkExtension,
   MdmarkExtensionModule,
   MdmarkMarkArgs,

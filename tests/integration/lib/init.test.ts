@@ -60,12 +60,10 @@ test("test_normal_when_javascript", async () => {
   const result = await runCli(["init", dir, "--js"], dir);
   // 検証
   expect(result.code).toBe(0);
-  expect(existsSync(join(dir, "extensions", "example.js"))).toBe(true);
-  for (const path of [
-    "extensions/example.ts",
-    "tsconfig.json",
-    "package.json",
-  ]) {
+  for (const path of ["extensions/example.js", "tsconfig.json"]) {
+    expect(existsSync(join(dir, path))).toBe(true);
+  }
+  for (const path of ["extensions/example.ts", "package.json"]) {
     expect(existsSync(join(dir, path))).toBe(false);
   }
   for (const path of ["mdmark.config.yaml", "theme.css", "index.yaml"]) {
@@ -73,7 +71,7 @@ test("test_normal_when_javascript", async () => {
       await readFile(join(typescript, path), "utf8"),
     );
   }
-  expect(linesOf(result.stdout)).toHaveLength(4);
+  expect(linesOf(result.stdout)).toHaveLength(5);
 });
 
 // 既にあるファイルを上書きせず、無いものだけを置く（正常系）

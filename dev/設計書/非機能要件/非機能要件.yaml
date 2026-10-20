@@ -6,9 +6,9 @@ requirements:
     external_constraint: jsDelivr の GitHub エンドポイントは 1 ファイル 20MB までを配る
     source_kind: 実行基盤の制限
     source: https://github.com/jsdelivr/jsdelivr#restrictions
-    value: '256'
-    unit: KB 以下（262144 バイト）
-    rationale: 外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にする。後続の Issue が超えるときは、その Issue が実測を添えて上げる
+    value: '320'
+    unit: KB 以下（327680 バイト）
+    rationale: '外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを足した #42 で、束ねた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を見て 320KB に上げた'
     overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確かめる時点はビルドの直後で、版のタグを打つ前。
   - name: 対応ブラウザ
     english_name: supported_browsers
@@ -21,7 +21,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-17'
+      date: '2026-10-20'
       result: 合格
   - name: 通信
     english_name: network
@@ -48,7 +48,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-17'
+      date: '2026-10-20'
       result: 合格
   - name: CLI が動く Node の版
     english_name: cli_node_version
@@ -65,5 +65,5 @@ requirements:
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0
-      date: '2026-10-17'
+      date: '2026-10-20'
       result: 合格

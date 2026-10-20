@@ -1,0 +1,26 @@
+title: Parts/ParamControl
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: param
+  - name: Changed
+    parameters:
+      server:
+        id: param
+    args:
+      value: 8
+  - name: Copied
+    parameters:
+      server:
+        id: param
+    args:
+      value: 8
+      copy: copied
+  - name: Failed
+    parameters:
+      server:
+        id: param
+    args:
+      value: 8
+      copy: failed

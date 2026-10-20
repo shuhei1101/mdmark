@@ -282,5 +282,16 @@ settings:
     status: planned
     introduced:
       pr: 39
+  - key: features.diagrams
+    title: 図の部品の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` の範囲の部品の定義から図と操作できる部品を描く。オフのときは印を取り除き、定義を JSON のコードブロックのまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 42
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

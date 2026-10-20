@@ -4,14 +4,14 @@
 /* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
 @layer mdmark {
   .mdmark {
-    /* 操作部品に共通のアイコン: 文字と上下中央に揃え、線の太さを揃える */
+    /* 操作部品に共通のアイコン（24 の格子。lucide の形）: 文字と上下中央に揃え、1em で線の太さを 1.5px に揃える */
     .mdmark-icon {
       flex: none;
       width: 1em;
       height: 1em;
       fill: none;
       stroke: currentColor;
-      stroke-width: 1.5;
+      stroke-width: 2.25;
       stroke-linecap: round;
       stroke-linejoin: round;
       vertical-align: -0.125em;

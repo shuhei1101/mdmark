@@ -28,6 +28,7 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
     language: "js",
   },
   { path: "tsconfig.json", source: "tsconfig.json", language: "ts" },
+  { path: "tsconfig.json", source: "js/tsconfig.json", language: "js" },
   { path: "package.json", source: "package.json", language: "ts" },
 ];
 
