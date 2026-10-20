@@ -1,0 +1,224 @@
+title: "差分の取り出し元を渡す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、要素・Markdown・`docId`・取り出し元を渡して文書を描く HTML
+        notes: '`docId` は `guide`'
+      - name: 見本の文書の 3 つのリビジョン
+        description: '`id` が `r1`・`r2`・`r3` で、`at` が古い順に 1 日ずつ進み、`label` と `author` を持つ。`r2` から `r3` で段落の語を 1 つ書き換える'
+      - name: Mock
+        description: 取り出し元は、見本の 3 つのリビジョンをメモリーから返すページの中の `DiffSource`。受けた呼び出しの引数を記録する。jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 要素・Markdown・docId・取り出し元を渡して描かせる
+        M-->>P: 要素の中に文書を描く
+        U->>M: 差分を開く
+        M->>S: revisions(docId)
+        S-->>M: リビジョンの一覧（新しい順）
+        M->>S: content(docId, 一番新しいリビジョン)・content(docId, その 1 つ前)
+        S-->>M: 2 つの Markdown
+        M-->>U: 2 つのリビジョンの差分を出す
+      ```
+    expected:
+      - '`revisions` が `guide` を受けて 1 回呼ばれる'
+      - '`content` が `(guide, r3)` と `(guide, r2)` を受けて呼ばれる'
+      - 前と後のリビジョンを選ぶ欄に、`r3`・`r2`・`r1` が新しい順に、日時・`label`・`author` つきで並ぶ
+      - 前に `r2`、後に `r3` が選ばれ、書き換えた語の行が差分に出る
+    test: test_normal
+  - name: 正常シナリオ（取り出し元を渡さない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じページで、取り出し元を渡さずに文書を描く
+      - name: 見本の Markdown
+        description: 見本の文書の `r3` の本文
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 要素と Markdown を渡して描かせる
+        M-->>P: 要素の中に文書を描く
+        P-->>U: 文書を表示
+      ```
+    expected:
+      - 描く先の要素の中に文書の本文がある
+      - 差分を開く UI が無い
+    test: test_normal_when_no_source
+  - name: 正常シナリオ（Git のサンプル）
+    setup:
+      - name: Git のリポジトリ
+        description: 見本の文書のファイルを、`r1`・`r2`・`r3` の本文で 3 回コミットした手元のリポジトリ
+      - name: mdmark を読むページ
+        description: Git のサンプルの取り出し元を渡して文書を描く HTML
+      - name: Mock
+        description: 手元のサーバーが、サンプルの取り出し元の求めに応じて、Git のリポジトリのコミットの一覧と、そのコミットの文書のファイルの本文を返す。jsDelivr は正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        participant S as Git のサンプルの取り出し元
+        participant G as 手元のサーバー
+        U->>M: 差分を開く
+        M->>S: revisions(docId)
+        S->>G: 文書のファイルのコミットの一覧を求める
+        G-->>S: コミットの一覧
+        S-->>M: リビジョンの一覧（新しい順）
+        M->>S: content(docId, 2 つのコミット)
+        S->>G: 2 つのコミットの文書のファイルを求める
+        G-->>S: 2 つの本文
+        S-->>M: 2 つの Markdown
+        M-->>U: 直近の 2 つのコミットの差分を出す
+      ```
+    expected:
+      - リビジョンの選ぶ欄に、3 つのコミットが新しい順に並ぶ
+      - 各リビジョンの `id` がコミットの ID、`at` がコミットの日時、`label` がコミットの件名、`author` がコミットを書いた人
+      - 直近の 2 つのコミットの差分に、書き換えた語の行が出る
+    test: test_normal_when_git_sample
+  - name: 正常シナリオ（YAML のサンプル）
+    setup:
+      - name: 変更履歴の YAML
+        description: 見本の文書の項目に、`r1`・`r2`・`r3` の日時・書いた人・その時点の本文を変更履歴として並べた YAML
+      - name: mdmark を読むページ
+        description: YAML のサンプルの取り出し元を渡して文書を描く HTML
+      - name: Mock
+        description: 手元のサーバーが、変更履歴の YAML をそのまま返す。jsDelivr は正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        participant S as YAML のサンプルの取り出し元
+        participant G as 手元のサーバー
+        U->>M: 差分を開く
+        M->>S: revisions(docId)
+        S->>G: 変更履歴の YAML を求める
+        G-->>S: 変更履歴の YAML
+        S-->>M: 項目の変更履歴のリビジョンの一覧（新しい順）
+        M->>S: content(docId, 2 つのリビジョン)
+        S-->>M: 2 つの Markdown
+        M-->>U: 2 つのリビジョンの差分を出す
+      ```
+    expected:
+      - リビジョンの選ぶ欄に、変更履歴の 3 つが新しい順に並ぶ
+      - 一番新しいリビジョンとその 1 つ前の差分に、書き換えた語の行が出る
+    test: test_normal_when_yaml_sample
+  - name: 正常シナリオ（リビジョンが 1 つ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 見本の文書の 1 つのリビジョン
+        description: 見本の文書の `r1` だけ
+      - name: Mock
+        description: 取り出し元が `r1` だけを返す。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M->>S: revisions(docId)
+        S-->>M: リビジョン 1 つ
+        M-->>U: 比べるリビジョンが無いことを知らせる
+      ```
+    expected:
+      - 差分の場所に、比べるリビジョンが無いことを知らせる文がある
+      - '`content` は呼ばれない'
+      - 文書の本文は描かれたまま残る
+    test: test_normal_when_single_revision
+  - name: 異常シナリオ（一覧を取り出せない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 取り出し元の `revisions` が reject する。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M->>S: revisions(docId)
+        S-->>M: reject
+        M-->>U: 差分の場所に知らせの枠を出す
+      ```
+    expected:
+      - 差分の場所に、リビジョンの一覧を取り出せなかったことを伝える知らせの枠がある
+      - '`content` は呼ばれない'
+      - 文書の本文は描かれたまま残る
+    test: test_error_when_revisions_unavailable
+  - name: 異常シナリオ（本文を取り出せない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 見本の文書の 3 つのリビジョン
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 取り出し元の `content` が `r1` のときだけ reject する。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 前のリビジョンに r1 を選ぶ
+        M->>S: content(docId, r1)
+        S-->>M: reject
+        M-->>U: 差分の場所に知らせの枠を出す
+        U->>M: 前のリビジョンに r2 を選び直す
+        M->>S: content(docId, r2)
+        S-->>M: Markdown
+        M-->>U: r2 と r3 の差分を出す
+      ```
+    expected:
+      - 前に `r1` を選ぶと、差分の場所に、本文を取り出せなかったリビジョンを伝える知らせの枠が出る
+      - 文書の本文は描かれたまま残る
+      - 前に `r2` を選び直すと、知らせの枠が消えて `r2` と `r3` の差分が出る
+    test: test_error_when_content_unavailable
+  - name: 異常シナリオ（リビジョンの形が合わない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 取り出し元の `revisions` が、`at` を持たないリビジョンを 1 つ含む一覧を返す。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M->>S: revisions(docId)
+        S-->>M: 形の合わないリビジョンを含む一覧
+        M-->>U: 差分の場所に知らせの枠を出す
+      ```
+    expected:
+      - 差分の場所に、合わないリビジョンの `id` と、欠けている項目 `at` を書いた知らせの枠がある
+      - '`content` は呼ばれない'
+      - 文書の本文は描かれたまま残る
+    test: test_error_when_revision_shape_invalid
+lead: 使う側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に渡して文書を描く。読む人が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。
+issue: 7
+primary_actor: mdmark を使うアプリのページ
+stakeholders:
+  - name: 使う側のアプリの開発者
+    interest: 取り出し元の `revisions`・`content` の 2 つを書くだけで差分が付き、Git や YAML の読み方を mdmark に合わせなくて済む
+  - name: 文書を読む人
+    interest: リビジョンを取り出せなくても、文書は読める
+trigger: 使う側のページが、取り出し元を渡して文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 描く先の要素がページにある
+success_guarantee: 読む人が差分を開くと、取り出し元が返したリビジョンが新しい順に選べ、一番新しいリビジョンとその 1 つ前の差分が出る。
+minimal_guarantee: 取り出し元がリビジョンの一覧か本文を返せないとき、または返した値がリビジョンの形に合わないときは、差分の場所に知らせの枠を出し、文書の本文は描いたまま残す。
