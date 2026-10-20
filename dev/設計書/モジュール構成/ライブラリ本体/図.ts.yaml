@@ -420,6 +420,10 @@ functions:
         type: boolean
         required: true
         description: 機能 `hints` がオンか
+      - name: lookup
+        type: TermLookup
+        required: false
+        description: 箱の中の `{{語}}` の意味を引く関数。省くと語だけを出す
     returns:
       type: '{ html: string; width: number; height: number; tips: string }'
       description: 図の中身
