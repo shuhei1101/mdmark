@@ -1,0 +1,6 @@
+$ npx biome check .
+Checked 269 files in 1420ms. No fixes applied.
+exit: 0
+
+$ npx tsc --noEmit
+exit: 0
