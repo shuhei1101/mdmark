@@ -9,7 +9,7 @@ $ npm run test:unit
 
  Test Files  87 passed (87)
       Tests  364 passed (364)
-   Start at  09:50:30
-   Duration  20.38s (tests 36%, import 33%, worker 25%, transform 6%)
+   Start at  10:11:35
+   Duration  19.92s (tests 39%, import 32%, worker 23%, transform 5%)
 
 exit: 0

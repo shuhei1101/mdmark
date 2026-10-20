@@ -1,0 +1,22 @@
+$ npm run test:integration
+
+> test:integration
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-diagram-base-and-authoring-guide
+
+
+
+
+
+
+
+
+
+
+ Test Files  28 passed (28)
+      Tests  163 passed (163)
+   Start at  10:12:04
+   Duration  143.94s (tests 84%, import 11%, transform 5%, worker 1%)
+
+exit: 0
