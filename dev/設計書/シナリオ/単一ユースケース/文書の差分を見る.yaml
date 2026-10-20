@@ -84,7 +84,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: Mock
         description: ページを開く前に `Intl.Segmenter` を消す（対応ブラウザの Firefox 98〜124 の代わり）。ほかは正常シナリオと同じ
-        notes: 配布物の読み込みが例外になる不具合（#50）が直っていることが前提
+        notes: '配布物の読み込みが例外になる不具合（#50）が直っていることが前提。#7 は #50 に依存し、#50 が develop に入ってからマージする'
     flow: |-
       ```mermaid
       sequenceDiagram

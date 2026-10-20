@@ -186,28 +186,6 @@ scenarios:
       - 文書の本文は描かれたまま残る
       - 前に `r2` を選び直すと、知らせの枠が消えて `r2` と `r3` の差分が出る
     test: test_error_when_content_unavailable
-  - name: 異常シナリオ（リビジョンの形が合わない）
-    setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ
-      - name: Mock
-        description: 取り出し元の `revisions` が、`at` を持たないリビジョンを 1 つ含む一覧を返す。ほかは正常シナリオと同じ
-    flow: |-
-      ```mermaid
-      sequenceDiagram
-        actor U as 読む人
-        participant M as mdmark
-        participant S as 取り出し元
-        U->>M: 差分を開く
-        M->>S: revisions(docId)
-        S-->>M: 形の合わないリビジョンを含む一覧
-        M-->>U: 差分の場所に知らせの枠を出す
-      ```
-    expected:
-      - 差分の場所に、合わないリビジョンの `id` と、欠けている項目 `at` を書いた知らせの枠がある
-      - '`content` は呼ばれない'
-      - 文書の本文は描かれたまま残る
-    test: test_error_when_revision_shape_invalid
 lead: 使う側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に渡して文書を描く。読む人が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。
 issue: 7
 primary_actor: mdmark を使うアプリのページ
@@ -221,4 +199,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 描く先の要素がページにある
 success_guarantee: 読む人が差分を開くと、取り出し元が返したリビジョンが新しい順に選べ、一番新しいリビジョンとその 1 つ前の差分が出る。
-minimal_guarantee: 取り出し元がリビジョンの一覧か本文を返せないとき、または返した値がリビジョンの形に合わないときは、差分の場所に知らせの枠を出し、文書の本文は描いたまま残す。
+minimal_guarantee: 取り出し元がリビジョンの一覧か本文を返せないときは、差分の場所に知らせの枠を出し、文書の本文は描いたまま残す。
