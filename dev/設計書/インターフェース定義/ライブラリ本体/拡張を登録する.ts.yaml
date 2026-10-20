@@ -342,5 +342,5 @@ constraints:
   - item: 型の配布
     constraint: '`registerExtension`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を `dist/index.d.ts` に書き出す。`StandardSchemaV1` は仕様の型を書き写し、mdmark は検査ライブラリに依存しない'
   - item: 部品の定義の誤り
-    constraint: 拡張の印の範囲に `json` のコードブロックが 2 つ以上あるか、JSON として読めないときは、`schema` の検査も `load` も呼ばず、印の場所を書き方の警告に替える。警告には拡張の名前と、読めなかった行と列を書く。定義の中身の形は拡張の `schema` が確かめる
+    constraint: 拡張の印の範囲に `json` のコードブロックが 2 つ以上あるか、JSON として読めないときは、`schema` の検査も `load` も呼ばず、印の場所を書き方の警告に替える。警告には拡張の名前と、JSON として読めないときは読めなかった行と、2 つ以上あるときはコードブロックの数を書く（文言は `{印} の範囲に json のコードブロックが {数} つあります。部品の定義は 1 つだけ置いてください。拡張 {名前} の部品は描いていません。`）。定義の中身の形は拡張の `schema` が確かめる
     notes: 警告の文言は画面設計『文書』

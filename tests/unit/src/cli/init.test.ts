@@ -40,7 +40,7 @@ test("test_run_init", async () => {
   expect(stdout).toEqual(placed.map((path) => `置いた: ${path}`));
 });
 
-// --js では JavaScript の拡張だけを置く（正常系）
+// --js では JavaScript の拡張と、JavaScript を点検する tsconfig.json を置く（正常系）
 test("test_run_init_when_javascript", async () => {
   // 準備
   const { runInit } = await loadInit();
@@ -54,7 +54,9 @@ test("test_run_init_when_javascript", async () => {
   // 検証
   expect(existsSync(join(dir, "extensions", "example.js"))).toBe(true);
   expect(existsSync(join(dir, "extensions", "example.ts"))).toBe(false);
-  expect(existsSync(join(dir, "tsconfig.json"))).toBe(false);
+  expect(await readFile(join(dir, "tsconfig.json"), "utf8")).toBe(
+    await readFile(join(TEMPLATES_DIR, "js", "tsconfig.json"), "utf8"),
+  );
   expect(existsSync(join(dir, "package.json"))).toBe(false);
 });
 

@@ -409,7 +409,7 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: '相手を左から右に等間隔で、メッセージを上から下に等間隔で置き、`reply` は破線と開いた矢じり、`loop` は右の帯を通る破線と戻り先のラベルにする。相手の行は `position: sticky` で上端に留める'
+    summary: '相手を左から右に等間隔で、メッセージを上から下に等間隔で置き、`reply` は破線と開いた矢じり、`loop` は右の帯を通る破線と戻り先のラベルにする。相手の行は別の層にし、表示する枠の縦のスクロールの量を倍率で割った分だけ `translateY` で下げて上端に留める（`attachDiagrams` が動かす）'
     args:
       - name: definition
         type: MdmarkSequenceDefinition
