@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>chart | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">グラフ</h1>
+
+      <!-- 系列 2 つ: 色と線の模様（実線・破線）と点の印（丸・四角）の組で分け、凡例に系列の名前を載せる -->
+      <section aria-labelledby="state-two">
+        <h2 class="catalog-label" id="state-two">系列 2 つ（色と線の模様・点の印の組で分ける）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
+          <figure data-mock-diagram="reply-time"></figure>
+        </article>
+      </section>
+
+      <!-- 系列 4 つ: 4 つ目までの色と模様（実線・破線・点線・一点鎖線）と点の印（丸・四角・三角・菱形） -->
+      <section aria-labelledby="state-four">
+        <h2 class="catalog-label" id="state-four">系列 4 つ（色と模様の組の全て）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="reply-time-4"></figure>
+        </article>
+      </section>
+
+      <!-- 定義を読めない: 系列の点の数が目盛りの数と合わない。書き方の警告を出し、このグラフは描かない -->
+      <section aria-labelledby="state-invalid">
+        <h2 class="catalog-label" id="state-invalid">定義を読めない（書き方の警告）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>グラフの部品の定義を読めません。系列「担当者」の点が 4 つで、横の目盛り（<code>x.ticks</code>）の 5 つと合いません。このグラフは描いていません。</p>
+</div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

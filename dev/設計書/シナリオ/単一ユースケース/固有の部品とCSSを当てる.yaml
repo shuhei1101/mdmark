@@ -1,0 +1,76 @@
+title: "固有の部品とCSSを当てる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 固有の部品を読むページ
+        description: mdmark の JavaScript と CSS の後に固有の CSS を読み、固有の部品を `registerExtension` で登録してから文書を描く HTML
+      - name: 固有の部品の定義を持つ Markdown
+        description: 固有の部品の定義 1 つとフロー図の部品の定義 1 つを持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。固有の部品は、受けた定義の題を要素に書く手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 固有の部品
+        P->>M: registerExtension で固有の部品を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: 部品の定義を渡して描かせる
+        X-->>M: 印の場所に描く
+        M-->>P: 固有の部品・フロー図・本文
+        P->>P: 固有の CSS が当たる
+        P-->>U: 文書を表示
+    expected:
+      - 固有の部品の場所に、定義の題が描かれている
+      - 固有の CSS が変えた色が、固有の部品とフロー図の計算値に出ている
+      - フロー図と本文は共通の部品と同じように描かれている
+    test: test_normal
+  - name: 正常シナリオ（書き出す）
+    setup:
+      - name: 固有の部品と CSS を指す設定
+        description: '`theme` に固有の CSS、`extensions` に固有の部品のモジュールを書いた `mdmark.config.yaml` と、正常シナリオと同じ Markdown'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        actor U as 読む人
+        W->>C: mdmark export
+        C->>C: 固有の CSS と部品を 1 枚に埋める
+        C-->>W: 書き出した HTML
+        U->>U: 書き出した HTML を file:// で開く
+    expected:
+      - 書き出した HTML に、固有の部品が描かれ、固有の CSS が当たっている
+      - 開いてからの外への要求が 0 件
+    test: test_normal_when_export
+  - name: 正常シナリオ（別の場所の文書）
+    setup:
+      - name: 固有の部品を読まないページ
+        description: mdmark の JavaScript と CSS だけを読み、固有の部品も固有の CSS も読まずに、正常シナリオと同じ Markdown を描く HTML
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 別の場所のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 登録されていない印を取り除く
+        M-->>P: フロー図と本文
+        P-->>U: 文書を表示
+    expected:
+      - 固有の部品の場所には何も描かれず、定義の JSON も出ない
+      - フロー図の色は mdmark の既定のまま
+      - 本文が描かれている
+    test: test_normal_when_other_place
+lead: 使う側が、自分の場所だけの部品を `registerExtension` で足し、自分の場所だけの見た目を CSS で当てる。当たるのは、その部品と CSS を読んだページと、同じ設定ファイルで書き出した文書だけ。
+issue: 21
+primary_actor: 使う側（ワークスペースの持ち主）
+trigger: 使う側が、共通の部品に無い自分の場所だけの部品と見た目を文書に使いたくなる
+preconditions:
+  - 固有の部品は、使う側が JavaScript（`// @ts-check` と JSDoc）か TypeScript で書き、JavaScript として置いている
+success_guarantee: 固有の部品と CSS を読んだ場所の文書でだけ、固有の部品が描かれ、固有の CSS が当たる。文書に書いたスクリプトは動かない。
+minimal_guarantee: 固有の部品を読んでいない場所の文書では、その部品の印は知らない印として取り除かれ、ほかの本文は描かれる。
+test_file: tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts

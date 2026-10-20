@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { flowMarkdown } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -61,4 +62,32 @@ test("test_normal_when_dark", async ({ page }) => {
     "background-color",
     DARK_BACKGROUND,
   );
+});
+
+// 使う側が図の層の色の変数を上書きすると、その層の箱の縁・層の背景・凡例の色が変わる（正常シナリオ（図の色を変える））
+test("test_normal_when_diagram", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  const hostCss = ".mdmark { --mdmark-color-diagram-llm: rgb(255, 0, 0) }";
+  await openPage(page, builtRoot, { hostCss });
+  // 実行
+  await mountDocument(page, { markdown: await flowMarkdown() });
+  // 検証: LLM の層の箱の縁が上書きした色になり、ほかの層は変わらない
+  await expect(page.locator('#doc [data-node="draft"]')).toHaveCSS(
+    "border-top-color",
+    "rgb(255, 0, 0)",
+  );
+  await expect(page.locator('#doc [data-node="mcp"]')).not.toHaveCSS(
+    "border-top-color",
+    "rgb(255, 0, 0)",
+  );
+  // LLM の層の背景は、上書きした色（赤）を薄く混ぜた色になる
+  const background = await page
+    .locator('#doc .mdmark-diagram-lane[data-kind="llm"]')
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  const [red = 0, green = 0, blue = 0] = (
+    background.match(/[\d.]+/g) ?? []
+  ).map(Number);
+  expect(red).toBeGreaterThan(green);
+  expect(red).toBeGreaterThan(blue);
 });

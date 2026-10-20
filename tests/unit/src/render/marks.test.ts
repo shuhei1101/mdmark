@@ -166,3 +166,67 @@ test("test_drop_marks", async () => {
   expect(html).not.toContain("<!--");
   expect(tokens.some((token) => token.type === "mdmark_mark")).toBe(false);
 });
+
+// 範囲で書いた拡張の印は、印の場所の要素だけを出して範囲の中身と定義の JSON を残さない（正常系）
+test("test_take_marks_when_extension_range", async () => {
+  // 準備
+  const { registerExtension, resetExtensions } = await loadExtensions();
+  resetExtensions();
+  registerExtension({
+    name: "greet",
+    directive: "greet",
+    load: async () => ({ draw: () => {} }),
+  });
+  const markdown = [
+    "前",
+    "",
+    "<!-- greet -->",
+    "",
+    "```json",
+    '{"title": "段取り", "items": ["a"]}',
+    "```",
+    "",
+    "<!-- /greet -->",
+    "",
+    "後",
+    "",
+  ].join("\n");
+  try {
+    // 実行
+    const { html } = await parse(markdown);
+    // 検証
+    expect(html).toContain('data-mdmark-slot="greet"');
+    expect(html).not.toContain("段取り");
+    expect(html).not.toContain("items");
+    expect(html).toContain("<p>前</p>");
+    expect(html).toContain("<p>後</p>");
+  } finally {
+    resetExtensions();
+  }
+});
+
+// 登録していない印の範囲のうち、中身が json のコードブロックだけのものは中身ごと取り除く（正常系）
+test("test_take_marks_when_unknown_range_with_json", async () => {
+  // 準備
+  const markdown = [
+    "前",
+    "",
+    "<!-- unknown -->",
+    "",
+    "```json",
+    '{"title": "消える"}',
+    "```",
+    "",
+    "<!-- /unknown -->",
+    "",
+    "後",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = await parse(markdown);
+  // 検証
+  expect(html).not.toContain("消える");
+  expect(html).not.toContain("language-json");
+  expect(html).toContain("<p>前</p>");
+  expect(html).toContain("<p>後</p>");
+});

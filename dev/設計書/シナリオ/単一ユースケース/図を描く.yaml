@@ -1,0 +1,109 @@
+title: "図を描く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 図を描くページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、文書を描く HTML
+      - name: フロー図の定義を持つ Markdown
+        description: フロー図の部品の定義を 1 つ持つ文書
+        notes: システムの枠の内側に LLM の層・処理の層・データの層の箱を各 1〜2 行、枠の外に外部のシステムの箱を 1 つ置く。箱の並びでは消せない交差を 1 か所、ループの戻りを 1 本、題名・範囲・更新日を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 部品の定義を読んで形を確かめる
+        M->>M: フロー図の部品が grid に箱と線を置く
+        M-->>P: 枠・層・凡例つきのフロー図と本文
+        P-->>U: 文書を表示
+    expected:
+      - システムの枠の中に 3 つの層が上から LLM・処理・データの順に並び、層ごとに箱の色の背景が敷かれている
+      - 外部のシステムの箱が枠の外にある
+      - 題名・範囲・更新日と、定義に出る色・形・線・矢じりを全て載せた凡例がある
+      - 線の種類が色と模様（破線の間隔・太さ・矢じり）の組で分かれている
+      - 残った交差は横の線が縦の線を飛び越える形（line jump）で描かれている
+      - ループの戻りの線が上か下の帯を通る破線で、戻り先のラベルを持つ
+      - '`window.__mdmarkScriptRan` が `true` になっていない（文書に書いた `<script>` が動いていない）'
+    test: test_normal
+  - name: 正常シナリオ（シーケンス図）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: シーケンス図の定義を持つ Markdown
+        description: 登場する相手 3 つとメッセージ 4 つ、ループの戻り 1 本を持つシーケンス図の部品の定義の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: シーケンス図の部品が相手とメッセージを左から右へ置く
+        M-->>P: 題と凡例つきのシーケンス図と本文
+        P-->>U: 文書を表示
+    expected:
+      - 相手が定義の順に左から右へ並び、メッセージが時刻の順に並ぶ
+      - ループの戻りが破線と戻り先のラベルで描かれている
+      - 題名・範囲・更新日と凡例がある
+    test: test_normal_when_sequence
+  - name: 正常シナリオ（グラフ）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: グラフの定義を持つ Markdown
+        description: 系列 2 つ・点 5 つずつの折れ線のグラフの部品の定義の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: グラフの部品が系列を描く
+        M-->>P: 題と凡例つきのグラフと本文
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの系列が、色と線の模様の組で分かれて描かれている
+      - 題名と、系列の名前を載せた凡例がある
+    test: test_normal_when_graph
+  - name: 異常シナリオ（定義を読めない）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 読めない定義を持つ Markdown
+        description: JSON として読めないフロー図の定義 1 つと、正しいフロー図の定義 1 つと段落を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 部品の定義を読んで形を確かめる
+        M-->>P: 読めない定義の場所に書き方の警告、ほかは図と本文を描く
+        P-->>U: 警告と図と本文を表示
+    expected:
+      - 読めない定義の場所に書き方の警告があり、読めない箇所が書かれている
+      - 正しい定義のフロー図が描かれている
+      - 段落が描かれている
+    test: test_error_when_definition_invalid
+lead: 文書を書く人が、文書に部品の定義（JSON）だけを書き、mdmark の共通の図の部品にフロー図・シーケンス図・グラフを描かせる。部品は図の見た目の決まり（枠と 3 層・時系列とループ・題と凡例・線の交差）のとおりに描く。
+issue: 21
+primary_actor: 文書を書く人（AI を含む）
+stakeholders:
+  - name: 文書を書く人
+    interest: HTML と CSS を一から書かずに、部品の定義だけで見た目のそろった図を描ける
+  - name: 読む人
+    interest: どの文書の図も同じ決まりで描かれ、凡例で色・形・線の意味を読める
+trigger: 使う側のページが、図の部品の定義を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+success_guarantee: 部品の定義の場所に、決まりのとおりの図が描かれる。文書に書いたスクリプトは動かない。
+minimal_guarantee: 定義を読めない図の場所には書き方の警告が出て、ほかの本文と図は描かれる。
+test_file: tests/e2e/単一ユースケース/図を描く.spec.ts

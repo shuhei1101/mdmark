@@ -23,8 +23,8 @@ flows:
       - 終了コードが 0
       - '`dist/index.js` と `dist/index.css` がある'
       - '`dist/index.js` の `version()` が `v0.0.0` を返す'
-      - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it` と `sanitize-html` の名前とライセンスの本文がある'
-      - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、`tsc --noEmit` で型エラーが 0 件'
+      - '`dist/THIRD_PARTY_LICENSES.txt` に `markdown-it` と `sanitize-html` の名前とライセンスの本文と、`lucide`（図と記法のアイコンの形）の ISC と Feather 由来のアイコンの MIT の両方の著作権表示と本文がある'
+      - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` を export し、`tsc --noEmit` で型エラーが 0 件'
       - '`dist/cli.js` があり、`node dist/cli.js init {一時フォルダ}` が終了コード 0 で雛形を置く'
       - '`dist/viewer.js` と `dist/viewer.css` がある'
     test: test_normal
@@ -226,7 +226,7 @@ exceptions:
     condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 256KB 以下（262144 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 320KB 以下（327680 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4

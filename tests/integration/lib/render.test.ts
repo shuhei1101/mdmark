@@ -4,9 +4,18 @@ import { expect, inject, test, vi } from "vitest";
 import type {
   MdmarkConfig,
   MdmarkExtension,
+  MdmarkFlowDefinition,
   MdmarkIndex,
   MdmarkReferences,
 } from "../../../src/index.ts";
+import {
+  INQUIRY_SEQ_TEXT,
+  INQUIRY_TEXT,
+  parsed,
+  REPLY_TIME_TEXT,
+  STRENGTH_TEXT,
+  wrapDirective,
+} from "../../unit/helpers/diagrams.ts";
 import {
   DOC_ID,
   EXPECTED_HTML,
@@ -472,4 +481,203 @@ test("test_normal_when_index", async () => {
   expect(html).toBe(EXPECTED_HTML);
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
+});
+
+/** `figure.mdmark-diagram` の開始タグを、現れた順に返す */
+function diagramFigures(html: string): string[] {
+  return startTags(html, "figure").filter((tag) =>
+    tag.includes('class="mdmark-diagram"'),
+  );
+}
+
+// 図の部品の定義から、題・図・凡例を持つ図を描き、定義の JSON と文書のスクリプトを出さない（正常系）
+test("test_normal_when_diagram", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "前の段落",
+    "",
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("sequence", INQUIRY_SEQ_TEXT),
+    wrapDirective("chart", REPLY_TIME_TEXT),
+    wrapDirective("param", STRENGTH_TEXT),
+    "<script>window.__ran = true</script>",
+    "",
+  ].join("\n");
+  const flow = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const figures = diagramFigures(html);
+  expect(figures).toHaveLength(4);
+  expect(
+    figures.slice(0, 3).map((tag) => /data-diagram="(\w+)"/.exec(tag)?.[1]),
+  ).toEqual(["flow", "sequence", "chart"]);
+  // 操作できる部品は、グラフの図を持つ
+  expect(html).toMatch(
+    /<div[^>]*class="mdmark-param"[\s\S]*<figure[^>]*data-diagram="chart"/,
+  );
+  expect(
+    startTags(html, "ul").filter((tag) => tag.includes('aria-label="凡例"')),
+  ).toHaveLength(4);
+  for (const title of [
+    "問い合わせへの自動返信の構成",
+    "問い合わせ 1 通の流れ",
+    "返信までの時間",
+  ]) {
+    expect(html, title).toContain(title);
+  }
+  expect(html).toContain(
+    "範囲: メールを受け取ってから返信するまで・更新日: <time",
+  );
+  // フロー図: 3 つの層が定義の順にあり、枠の外の箱が枠の外の座標にある
+  const lanes = startTags(html, "div").filter((tag) =>
+    tag.includes('class="mdmark-diagram-lane"'),
+  );
+  expect(lanes.map((tag) => /data-kind="(\w+)"/.exec(tag)?.[1])).toEqual(
+    flow.lanes?.map((lane) => lane.kind),
+  );
+  const frameLeft = Number(
+    /left:(-?[\d.]+)px/.exec(
+      startTags(html, "div").find((tag) =>
+        tag.includes('class="mdmark-diagram-frame"'),
+      ) ?? "",
+    )?.[1],
+  );
+  const mailLeft = Number(
+    /left:(-?[\d.]+)px/.exec(
+      startTags(html, "div").find((tag) => tag.includes('data-node="mail"')) ??
+        "",
+    )?.[1],
+  );
+  expect(mailLeft).toBeLessThan(frameLeft);
+  // 交わる横の線は飛び越えの弧を持ち、loop の線は破線で戻り先のラベルを持つ
+  expect(html).toMatch(/<path[^>]*data-line="flow"[^>]*d="[^"]* A6,6 /);
+  expect(html).toMatch(/<path[^>]*data-line="loop"[^>]*stroke-dasharray="8 4"/);
+  expect(html).toContain("次の問い合わせへ（受け取りへ戻る）");
+  // tip を持つ線と io を持つ箱: role="tooltip" と hidden を持つ中身があり、印は io を持つ箱にだけ
+  const tips = startTags(html, "div").filter((tag) =>
+    tag.includes('role="tooltip"'),
+  );
+  const withTip = flow.wires.filter((wire) => wire.tip).length;
+  const withIo = flow.nodes.filter((node) => node.io).length;
+  expect(tips.length).toBeGreaterThanOrEqual(withTip + withIo);
+  for (const tag of tips) {
+    expect(tag).toContain("hidden");
+  }
+  expect(
+    startTags(html, "button").filter((tag) =>
+      tag.includes("mdmark-diagram-info"),
+    ),
+  ).toHaveLength(withIo);
+  // 操作できる部品: スライダーの値が既定の値
+  const range =
+    startTags(html, "input").find((tag) => tag.includes('type="range"')) ?? "";
+  expect(range).toContain('value="5"');
+  // 定義の JSON と文書のスクリプトを出さない
+  expect(html).not.toContain('"nodes"');
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
+  expect(html).toContain("<p>前の段落</p>");
+});
+
+// 読めない定義の図の場所だけを書き方の警告にし、ほかの図と本文を描く（正常系）
+test("test_normal_when_diagram_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const broken = INQUIRY_TEXT.slice(0, INQUIRY_TEXT.lastIndexOf("}"));
+  const robot = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
+  Object.assign(robot.nodes[2] ?? {}, { kind: "robot" });
+  const markdown = [
+    wrapDirective("flow", broken),
+    wrapDirective("flow", JSON.stringify(robot)),
+    wrapDirective("flow", INQUIRY_TEXT),
+    "段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const warnings = [
+    ...html.matchAll(
+      /<div class="mdmark-syntax-warning"[^>]*>([\s\S]*?)<\/div>/g,
+    ),
+  ].map((match) => match[1] ?? "");
+  expect(warnings).toHaveLength(2);
+  expect(warnings[0]).toContain("フロー図の部品の定義を JSON として読めません");
+  expect(warnings[0]).toContain("行目");
+  expect(warnings[0]).toContain("}");
+  for (const word of [
+    "分類",
+    "robot",
+    "llm・dm・script・mcp・data・external",
+  ]) {
+    expect(warnings[1], word).toContain(word);
+  }
+  expect(diagramFigures(html)).toHaveLength(1);
+  expect(html).toContain("<p>段落</p>");
+});
+
+// 文書の印で図の部品の機能を外すと、印だけを取り除き、定義を json のコードブロックのまま描く（正常系）
+test("test_normal_when_diagram_feature_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = `<!-- features: -diagrams -->\n\n${wrapDirective("flow", INQUIRY_TEXT)}`;
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain('<code class="language-json">');
+  expect(diagramFigures(html)).toHaveLength(0);
+  expect(html).not.toContain("<!--");
+});
+
+// 図の部品が出した hidden は sanitize を通った後も残り、文書に書いた生の svg・button は残らない（正常系）
+test("test_normal_when_diagram_sanitized", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    wrapDirective("flow", INQUIRY_TEXT),
+    '<svg width="10"><text>生の文字</text></svg>',
+    "<button>生のボタン</button>",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(
+    /role="tooltip"[^>]*hidden="hidden"|hidden="hidden"[^>]*role="tooltip"/,
+  );
+  expect(html).not.toContain("生の文字");
+  expect(html).not.toContain("生のボタン");
+});
+
+// 拡張の印を範囲で書いたときは、印の場所の要素だけを出し、定義の JSON を出力に残さない。json が 2 つ以上あれば書き方の警告にする（正常系）
+test("test_normal_when_extension_definition", async () => {
+  // 準備
+  const { render, registerExtension } = await loadBuilt();
+  const load = vi.fn(async () => ({ draw: () => {} }));
+  registerExtension({ name: "plan", directive: "plan", load });
+  const one = wrapDirective("plan", '{"title": "段取り"}');
+  const two = [
+    "<!-- plan -->",
+    "",
+    "```json",
+    '{"title": "a"}',
+    "```",
+    "",
+    "```json",
+    '{"title": "b"}',
+    "```",
+    "",
+    "<!-- /plan -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(`${one}\n${two}`);
+  // 検証
+  expect(html).toContain('data-mdmark-slot="plan"');
+  expect(html).not.toContain("段取り");
+  expect(html).toContain("mdmark-syntax-warning");
+  expect(html).toContain("json のコードブロックが 2 つあります");
+  expect(load).not.toHaveBeenCalled();
 });

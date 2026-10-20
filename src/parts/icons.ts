@@ -1,0 +1,93 @@
+import type { IconNode } from "lucide";
+import {
+  ArrowDown,
+  ArrowUp,
+  Bot,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  ChevronUp,
+  CircleAlert,
+  CodeXml,
+  Copy,
+  Database,
+  Expand,
+  File,
+  Folder,
+  Funnel,
+  Globe,
+  Info,
+  Lightbulb,
+  Link,
+  Menu,
+  MessageSquareWarning,
+  Minus,
+  OctagonAlert,
+  Pencil,
+  Pin,
+  Plug,
+  Plus,
+  RotateCcw,
+  Server,
+  Split,
+  TriangleAlert,
+  X,
+} from "lucide";
+
+/** 図と記法で使う lucide のアイコン */
+const ICONS = {
+  plus: Plus,
+  minus: Minus,
+  "rotate-ccw": RotateCcw,
+  expand: Expand,
+  x: X,
+  "chevron-left": ChevronLeft,
+  "chevron-right": ChevronRight,
+  "chevron-up": ChevronUp,
+  "chevron-down": ChevronDown,
+  bot: Bot,
+  split: Split,
+  "code-xml": CodeXml,
+  plug: Plug,
+  database: Database,
+  globe: Globe,
+  server: Server,
+  info: Info,
+  copy: Copy,
+  check: Check,
+  "circle-alert": CircleAlert,
+  lightbulb: Lightbulb,
+  "message-square-warning": MessageSquareWarning,
+  "triangle-alert": TriangleAlert,
+  "octagon-alert": OctagonAlert,
+  pencil: Pencil,
+  pin: Pin,
+  "chevrons-up-down": ChevronsUpDown,
+  "arrow-up": ArrowUp,
+  "arrow-down": ArrowDown,
+  funnel: Funnel,
+  link: Link,
+  file: File,
+  folder: Folder,
+  menu: Menu,
+} satisfies Record<string, IconNode>;
+
+/** 図と記法で使う lucide のアイコンの名前 */
+export type IconName = keyof typeof ICONS;
+
+/** 要素 1 つを属性つきの開始タグと閉じタグの文字にする */
+function renderNode([tag, attributes]: IconNode[number]): string {
+  const attrs = Object.entries(attributes)
+    .filter(([, value]) => value !== undefined)
+    .map(([name, value]) => ` ${name}="${value}"`)
+    .join("");
+  return `<${tag}${attrs}></${tag}>`;
+}
+
+/** lucide のアイコンの形を、24 の格子・`stroke="currentColor"`・`aria-hidden="true"` の svg の文字にする */
+export function iconSvg(name: IconName): string {
+  const body = ICONS[name].map(renderNode).join("");
+  return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}

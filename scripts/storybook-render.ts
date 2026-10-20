@@ -1,14 +1,26 @@
 import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { join, resolve } from "node:path";
+import { build } from "esbuild";
+import {
+  type DiagramDirective,
+  definitionWarning,
+  type MdmarkChartDefinition,
+  type MdmarkFlowDefinition,
+  type MdmarkParamDefinition,
+  type MdmarkSequenceDefinition,
+  readDefinition,
+} from "../src/diagram/definition.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
+import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
 import { renderFigure } from "../src/parts/figure.ts";
 import { renderNotice } from "../src/parts/notice.ts";
+import { type CopyState, renderParam } from "../src/parts/param.ts";
 import { renderRowDetail } from "../src/parts/row-detail.ts";
 import { renderSection } from "../src/parts/section.ts";
 import { renderSteps } from "../src/parts/steps.ts";
@@ -29,6 +41,11 @@ const REPO_ROOT = resolve(import.meta.dirname, "..");
 // 描画の口の経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
+// 図のストーリーが読む、拡大・縮小の操作を付ける処理の経路と、その元のソース
+const DIAGRAM_SCRIPT_PATH = "/render/diagram.js";
+const DIAGRAM_SOURCE = "src/interact/diagrams.ts";
+// 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
+const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
 // 中身を持つ部品に渡す、部品ごとの見本の HTML
 const SAMPLE_BODY =
@@ -37,6 +54,76 @@ const SAMPLE_IMAGE =
   "<img alt=\"見本の図\" width=\"320\" height=\"120\" src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='120'%3E%3Crect width='320' height='120' fill='%23d1d9e0'/%3E%3C/svg%3E\">";
 const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
+
+// 図の見本の定義を書いた文書と、その中の `json` のコードブロックの並び
+const SAMPLE_DOCUMENT = join(
+  REPO_ROOT,
+  "docs",
+  "使い方",
+  "図を描く",
+  "見本.md",
+);
+const SAMPLE_BLOCKS: Record<string, number> = {
+  inquiry: 0,
+  "inquiry-seq": 1,
+  "reply-time": 2,
+  strength: 3,
+};
+
+// 箱の中の `{{語}}` に出す意味（見本の文書の用語集の表と同じ）
+const SAMPLE_TERMS: Record<string, string> = {
+  意思決定モデル:
+    "選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI",
+  よくある質問: "問い合わせの多い質問と、その答えをまとめた表",
+};
+
+// 長い題と箱の名前を見せるストーリーで足す文字
+const LONG_TITLE =
+  "問い合わせのメールを受け取ってから、分類・下書き・送信を経て、担当者のチャットへ控えを流すまでの、とても長い題名の構成";
+const LONG_NAME_SUFFIX = "（箱の名前が長いときは箱の中で折り返す）";
+
+/** 見本の文書から、見本の定義の JSON の文字を取り出す */
+function sampleText(name: string): string {
+  const blocks = [
+    ...readFileSync(SAMPLE_DOCUMENT, "utf8").matchAll(
+      /```json\n([\s\S]*?)\n```/g,
+    ),
+  ];
+  const text = blocks[SAMPLE_BLOCKS[name] ?? -1]?.[1];
+  if (text === undefined) {
+    throw new Error(`見本の定義が無い: ${name}`);
+  }
+  return text;
+}
+
+/** 見本の定義を読んだ値 */
+function sampleDefinition<T>(name: string): T {
+  return JSON.parse(sampleText(name)) as T;
+}
+
+/** 定義を読めないストーリーの書き方の警告: 見本の閉じの `}` を落として読ませる */
+function invalidDefinition(directive: DiagramDirective, name: string): string {
+  const text = sampleText(name);
+  const broken = text.slice(0, text.lastIndexOf("}"));
+  const { message, items } = definitionWarning(
+    directive,
+    readDefinition(directive, [broken]).problems,
+  );
+  return renderSyntaxWarning({ message, items });
+}
+
+/** `zoom` を渡さないストーリーは、描いた直後に全体が収まる倍率にする印を足す */
+function fitted(html: string, args: PartArgs): string {
+  return typeof args.zoom === "number" ? html : html + DIAGRAM_FIT_MARKER;
+}
+
+/** 図の部品のストーリーの引数: 見本・状態 */
+function diagramArgs(args: PartArgs): { zoom?: number; modal?: boolean } {
+  return {
+    ...(typeof args.zoom === "number" ? { zoom: args.zoom } : {}),
+    ...(args.modal === true ? { modal: true } : {}),
+  };
+}
 
 /** 問い合わせの引数の値を戻す: JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま */
 function decodeValue(value: string): unknown {
@@ -134,6 +221,109 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       docs: args.docs as DocListItem[],
       current: args.current as string | undefined,
     }),
+  "diagram-frame": (args) =>
+    fitted(
+      renderDiagram({
+        kind: "flow",
+        definition: sampleDefinition<MdmarkFlowDefinition>("inquiry"),
+        id: "story-frame",
+        lookup: (word) => SAMPLE_TERMS[word],
+        ...diagramArgs(args),
+      }),
+      args,
+    ),
+  "flow-diagram": (args) => {
+    if (args.invalid === true) {
+      return invalidDefinition("flow", "inquiry");
+    }
+    const definition = sampleDefinition<MdmarkFlowDefinition>("inquiry");
+    if (args.longNames === true) {
+      definition.title = LONG_TITLE;
+      for (const node of definition.nodes) {
+        node.name = `${node.name}${LONG_NAME_SUFFIX}`;
+      }
+    }
+    return fitted(
+      renderDiagram({
+        kind: "flow",
+        definition,
+        id: "story-flow",
+        lookup: (word) => SAMPLE_TERMS[word],
+      }),
+      args,
+    );
+  },
+  "sequence-diagram": (args) =>
+    args.invalid === true
+      ? invalidDefinition("sequence", "inquiry-seq")
+      : fitted(
+          renderDiagram({
+            kind: "sequence",
+            definition:
+              sampleDefinition<MdmarkSequenceDefinition>("inquiry-seq"),
+            id: "story-sequence",
+            lookup: (word) => SAMPLE_TERMS[word],
+          }),
+          args,
+        ),
+  chart: (args) => {
+    if (args.invalid === true) {
+      return invalidDefinition("chart", "reply-time");
+    }
+    const definition = sampleDefinition<MdmarkChartDefinition>("reply-time");
+    if (args.series === 4) {
+      // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ足す
+      definition.series.push(
+        { name: "夜間", points: [20, 18, 25, 16, 22] },
+        { name: "休日", points: [30, 28, 35, 26, 32] },
+      );
+    }
+    return fitted(
+      renderDiagram({ kind: "chart", definition, id: "story-chart" }),
+      args,
+    );
+  },
+  "diagram-tooltip": (args) => {
+    const open = args.open === true;
+    const kind = args.kind === "io" ? "io" : "wire";
+    const tip =
+      args.term === true
+        ? renderDiagramTip({
+            id: "story-tip",
+            kind: "wire",
+            label: "用語",
+            tip: SAMPLE_TERMS.意思決定モデル ?? "",
+            open,
+          })
+        : renderDiagramTip({
+            id: "story-tip",
+            kind,
+            label: kind === "io" ? "分類" : "本文",
+            tip: "件名を除いた本文。署名と引用は落とす",
+            io: {
+              in: "問い合わせの本文",
+              do: "返信の種類（よくある質問で答える・担当者へ回す）から 1 つ選ぶ",
+              out: "返信の種類と、その確からしさ",
+            },
+            open,
+          });
+    const owner =
+      args.term === true
+        ? '<span class="mdmark-term" tabindex="0" aria-describedby="story-tip">意思決定モデル</span>'
+        : kind === "io"
+          ? '<button class="mdmark-diagram-info" type="button" aria-label="「分類」の入力・処理・出力" aria-describedby="story-tip">i</button>'
+          : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
+    return `<div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div>`;
+  },
+  param: (args) =>
+    fitted(
+      renderParam(sampleDefinition<MdmarkParamDefinition>("strength"), {
+        id: "story-param",
+        ...(typeof args.value === "number" ? { value: args.value } : {}),
+        ...(args.copy === undefined ? {} : { copy: args.copy as CopyState }),
+      }),
+      args,
+    ),
   figure: (args) =>
     renderFigure({
       kind: args.kind as "image" | "table",
@@ -179,6 +369,20 @@ export function renderPart(options: {
   return `<div class="mdmark">${renderer(args)}</div>`;
 }
 
+/** 図の操作（`src/interact/diagrams.ts`）をブラウザの ES モジュールに束ねた文字。初めて求められたときに束ねる */
+let diagramScriptCode: Promise<string> | undefined;
+function diagramScript(root: string): Promise<string> {
+  diagramScriptCode ??= build({
+    absWorkingDir: root,
+    entryPoints: [DIAGRAM_SOURCE],
+    bundle: true,
+    format: "esm",
+    write: false,
+    logLevel: "silent",
+  }).then((result) => result.outputFiles[0]?.text ?? "");
+  return diagramScriptCode;
+}
+
 /** `GET /render/index.css` に `src/index.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
@@ -190,6 +394,23 @@ export function createRenderServer(options: {
       const css = readFileSync(join(options.root, "src", "index.css"), "utf8");
       response.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
       response.end(css);
+      return;
+    }
+    if (url.pathname === DIAGRAM_SCRIPT_PATH) {
+      diagramScript(options.root).then(
+        (code) => {
+          response.writeHead(200, {
+            "Content-Type": "text/javascript; charset=utf-8",
+          });
+          response.end(code);
+        },
+        (error: unknown) => {
+          response.writeHead(500, {
+            "Content-Type": "text/plain; charset=utf-8",
+          });
+          response.end(String(error));
+        },
+      );
       return;
     }
     const component = PART_PATH_PATTERN.exec(url.pathname)?.[1];

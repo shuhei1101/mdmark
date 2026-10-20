@@ -28,3 +28,5 @@ items:
     summary: 書き出した HTML を開いたときに埋めたモジュールを用意して描き、まとめた HTML で文書を行き来する処理
   - page: 版を上げる.ts.yaml
     summary: mdmark upgrade の版の比較・移行の手順の読み取りと適用・写しと戻し・変更履歴・問い
+  - page: 図.ts.yaml
+    summary: 図の部品の定義の型と確かめ・線の形・部品の HTML・記法のコアルール・拡大と縮小・全画面・ツールチップ・写す操作

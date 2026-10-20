@@ -1,0 +1,66 @@
+title: "フロー図"
+implementation: "src/parts/diagram.ts#renderFlow"
+story: "Parts/FlowDiagram"
+states:
+  - name: Default
+    description: 枠と 3 つの層・外部のシステム・5 種の線・線の交差 1 か所・ループの戻り 1 本
+    notes:
+      定義: モックの `inquiry`（`dev/mock/refs/42/assets/samples.js`）
+  - name: LongNames
+    description: 長い題と箱の名前。箱の中で折り返す
+    notes:
+      定義: モックの `long-names`
+  - name: Invalid
+    description: 定義を読めない。図の代わりに書き方の警告を出す
+lead: システムの枠と3 つの層、箱と線を定義の座標に置く構成図。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
+args:
+  - name: definition
+    type: オブジェクト
+    required: true
+    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。箱は `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ
+css_properties:
+  - name: --mdmark-color-diagram-llm
+    syntax: <color>
+    default: '#8250df（ダーク #ab7df8）'
+    description: LLM の箱と LLM の層の色
+  - name: --mdmark-color-diagram-dm
+    syntax: <color>
+    default: '#0550ae（ダーク #79c0ff）'
+    description: 意思決定モデルの箱の色
+  - name: --mdmark-color-diagram-script
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: スクリプトの箱の色
+  - name: --mdmark-color-diagram-mcp
+    syntax: <color>
+    default: '#bc4c00（ダーク #f0883e）'
+    description: MCP の箱と処理の層の色
+  - name: --mdmark-color-diagram-data
+    syntax: <color>
+    default: '#1b7c83（ダーク #39c5cf）'
+    description: データの箱とデータの層の色
+  - name: --mdmark-color-diagram-external
+    syntax: <color>
+    default: '#1a7f37（ダーク #3fb950）'
+    description: 外部のシステムの箱の色
+  - name: --mdmark-color-diagram-line
+    syntax: <color>
+    default: '#59636e（ダーク #9198a1）'
+    description: 処理の流れ・戻る線の色
+  - name: --mdmark-diagram-lane-tint
+    syntax: <percentage>
+    default: 8%
+    description: 層の背景に敷く箱の色の濃さ
+uses:
+  - component: dev/設計書/部品設計/書き方の警告.ts#
+    how: 定義を読めないときに図の代わりに置く
+  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+    how: 箱の中の `{{語}}` の下線と意味
+accessibility:
+  - 箱の種類は色だけでなく、箱の左上のアイコンと種類の名前でも示す。データの箱は下の角を丸くする
+  - 線の種類は色と模様（破線の間隔・太さ・矢じり）の組で分ける
+  - 箱と線のラベルの文字は選べ、読み上げに出る。線の svg は `aria-hidden`
+status: planned
+introduced:
+  pr: 42
+test_file: tests/integration/lib/flow-diagram.story.test.ts

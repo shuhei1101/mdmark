@@ -1,0 +1,55 @@
+/* 使う側の固有の CSS（ワークスペースの theme.css に当たる）: mdmark の層の外に書き、図の LLM の色を使う側の色に変え、固有の部品の見た目を持つ */
+
+/* 使う側の色: 図の LLM の箱・層の背景と、固有の部品の差し色に使う */
+:root {
+  --team-accent: #bf3989;
+  --mdmark-color-diagram-llm: var(--team-accent);
+}
+
+/* 使う側の色のダーク: mdmark のダークの値より後に当てる */
+:root[data-scheme="dark"] {
+  --team-accent: #f778ba;
+  --mdmark-color-diagram-llm: var(--team-accent);
+}
+
+/* 固有の部品（段取りの一覧）: 差し色の線で囲む */
+.team-milestones {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--team-accent);
+  border-radius: var(--mdmark-radius);
+
+  /* 段取りの並び: 日付と内容を 2 列に揃える */
+  ol {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* 1 件の段取り: 子を親の 3 列に並べる */
+  li {
+    display: contents;
+  }
+
+  /* 段取りの日付: 桁を揃える */
+  time {
+    color: var(--mdmark-color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* 固有の部品の題: 定義の題を差し色で */
+.team-milestones-title {
+  margin: 0;
+  color: var(--team-accent);
+  font-weight: 700;
+}
+
+/* 段取りの状態: 済み・進行中・未着手を文字で示す */
+.team-milestones-state {
+  color: var(--mdmark-color-muted);
+  font-size: 0.875rem;
+}

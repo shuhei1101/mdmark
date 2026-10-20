@@ -1,0 +1,742 @@
+title: "ライブラリ本体 / 図"
+lead: 図の部品（フロー図・シーケンス図・グラフ・操作できる部品）の定義の型と確かめ、線の形の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使わず Node でも動き、操作はブラウザでだけ動く。
+directory: |-
+  ```tree
+  src/
+  ├── diagram/
+  │   ├── definition.ts   # 定義の型・JSON の読み取り・形の確かめ
+  │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし
+  ├── parts/
+  │   ├── icons.ts        # lucide のアイコンの svg
+  │   ├── diagram.ts      # 図の枠・フロー図・シーケンス図・グラフ・図のツールチップ・凡例
+  │   └── param.ts        # 操作できる部品
+  ├── render/syntax/
+  │   └── diagrams.ts     # 図の部品の印の範囲を部品の HTML にするコアルール
+  └── interact/
+      ├── diagrams.ts     # 拡大・縮小・移動・全画面
+      ├── diagram-tips.ts # 図のツールチップ
+      └── params.ts       # 操作できる部品の値と写す
+  ```
+notes:
+  単体テストのファイル: 物理ファイルごとに `tests/unit/src/{同じパス}.test.ts`（`interact/` は `.browser.test.ts`）を置き、単体テスト作成の段で `test_files` に載せる
+  他の分類への変更: 記法のコアルールの順では `buildDiagrams` を図表の番号の前に置き、`fig` の印が図の部品に番号を付けられるようにする。`mount` の `attachInteractions` は `diagrams` がオンなら `attachDiagrams`・`attachParams` を呼ぶ。描画の sanitize は `data-mdmark-own` を持つ要素にだけ図の部品の要素と属性（インターフェース定義『文書をHTML文字列にする』の `残す要素・属性`）を許す。svg の描画の属性は `d`・`viewBox`・`width`・`height`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`cx`・`cy`・`r`・`rx`・`ry`・`points`・`fill`・`stroke`・`stroke-width`・`stroke-dasharray`・`stroke-linecap`・`stroke-linejoin`・`marker-end`・`markerWidth`・`markerHeight`・`refX`・`refY`・`orient`・`transform`。記法の CSS のアイコン（`mask-image` の data URL）は lucide の形に置き換え、形が lucide@1.59.0 と一致することと、外部ライブラリ『lucide』の一覧のアイコンが使う要素と属性が全て sanitize の許可にあることを `tests/unit/src/parts/icons.test.ts` で確かめる。拡張の印の `definition` は分類『拡張』の `MdmarkMarkArgs` に足す
+data_models:
+  - name: MdmarkFlowDefinition
+    title: フロー図の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- flow -->` の範囲に書く定義。`dist/index.d.ts` へ書き出す'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日（`YYYY-MM-DD`）
+      - name: width
+        type: number
+        description: 図の幅（px）
+      - name: height
+        type: number
+        description: 図の高さ（px）
+      - name: frame
+        type: '{ title: string; x: number; y: number; w: number; h: number } | undefined'
+        description: システムの枠
+      - name: lanes
+        type: '{ label: string; kind: "llm" | "mcp" | "data"; y: number; h: number }[] | undefined'
+        description: 枠の中の層。層の箱の色をうっすら敷く
+      - name: nodes
+        type: MdmarkDiagramNode[]
+        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`）。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external`。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
+      - name: wires
+        type: MdmarkDiagramWire[]
+        description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端の箱の `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
+  - name: MdmarkSequenceDefinition
+    title: シーケンス図の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- sequence -->` の範囲に書く定義'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日
+      - name: participants
+        type: '{ id: string; kind: MdmarkDiagramNode["kind"]; name: string; tag?: string }[]'
+        description: 相手。左から右へ並べる順
+      - name: steps
+        type: '{ from: string; to: string; label: string; reply?: boolean; tip?: string }[]'
+        description: メッセージ。時刻の順
+      - name: loop
+        type: '{ label: string } | undefined'
+        description: 最後のメッセージから最初へ戻る繰り返し
+  - name: MdmarkChartDefinition
+    title: グラフの定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- chart -->` の範囲に書く定義'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日
+      - name: x
+        type: '{ label: string; ticks: string[] }'
+        description: 横の軸
+      - name: y
+        type: '{ label: string; min: number; max: number; step: number }'
+        description: 縦の軸
+      - name: series
+        type: '{ name: string; points: number[] }[]'
+        description: 系列。1〜4 つで、`points` の数は `x.ticks` と同じ
+  - name: MdmarkParamDefinition
+    title: 操作できる部品の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- param -->` の範囲に書く定義'
+    properties:
+      - name: title
+        type: string
+        description: 部品の題
+      - name: knob
+        type: '{ key: string; label: string; min: number; max: number; step: number; value: number }'
+        description: スライダー。`value` が既定の値
+      - name: chart
+        type: Omit<MdmarkChartDefinition, "series">
+        description: グラフの題と軸
+      - name: table
+        type: Record<string, number[]>
+        description: スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ
+  - name: DefinitionResult
+    title: 定義を読んだ結果
+    container: src/diagram/definition.ts
+    summary: '`readDefinition` の戻り値'
+    properties:
+      - name: ok
+        type: boolean
+        description: 読めたか
+      - name: definition
+        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | undefined
+        description: 読めた定義
+      - name: problems
+        type: string[]
+        description: 読めない箇所と直し方の文（画面設計『文書』の書き方の警告の文言）。読めたときは空
+constants:
+  - name: DIAGRAM_DIRECTIVES
+    title: 図の部品の印
+    container: src/diagram/definition.ts
+    summary: 図の部品の印の名前と、書き方の警告に出す図の種類の名前・呼び名
+    entries:
+      - key: flow
+        value: '{ name: "フロー図", call: "この図" }'
+      - key: sequence
+        value: '{ name: "シーケンス図", call: "この図" }'
+      - key: chart
+        value: '{ name: "グラフ", call: "このグラフ" }'
+      - key: param
+        value: '{ name: "操作できる部品", call: "この部品" }'
+  - name: LINE_STYLES
+    title: 線の種類の描き方
+    container: src/parts/diagram.ts
+    summary: 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS 変数で当てる
+    entries:
+      - key: flow
+        value: '{ dash: "", width: 1.5, head: "filled", label: "処理の流れ" }'
+      - key: read
+        value: '{ dash: "6 4", width: 1.5, head: "open", label: "読む" }'
+      - key: write
+        value: '{ dash: "", width: 2.5, head: "filled", label: "書く" }'
+      - key: reply
+        value: '{ dash: "4 3", width: 1.5, head: "open", label: "返す" }'
+      - key: loop
+        value: '{ dash: "8 4", width: 1.5, head: "open", label: "戻る（ループ）" }'
+  - name: ZOOM
+    title: 拡大・縮小と移動の量
+    container: src/diagram/geometry.ts
+    summary: 1 回の倍率・上限・1 回の移動量
+    entries:
+      - key: step
+        value: '1.25'
+      - key: max
+        value: '3'
+      - key: pan
+        value: '80'
+  - name: JUMP_RADIUS
+    title: 飛び越えの弧の半径
+    container: src/diagram/geometry.ts
+    summary: line jump の弧の半径（px）
+    value: '6'
+  - name: OVERLAP_OFFSET
+    title: 重なる線のずらし
+    container: src/diagram/geometry.ts
+    summary: 同じ向きで重なる線をずらす幅（px）
+    value: '4'
+functions:
+  - name: parseDefinitionJson
+    title: 定義の JSON を読む
+    container: src/diagram/definition.ts
+    kind: 関数
+    scope: internal
+    summary: '`JSON.parse` で読み、読めないときは読めたところまでを頭から数え、行・読めた最後の部分（その行の空白を除いた文字）・足りない記号（閉じていない `{`・`[`・`"` の対）を返す'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: コードブロックの中身
+    returns:
+      type: '{ ok: true; value: unknown } | { ok: false; line: number; after: string; missing: string }'
+      description: 読めた値か、読めない箇所
+    unit_tests:
+      - name: test_parse_definition_json
+        case: 正常
+        summary: 読める JSON は値を返す
+        condition: '`{"title": "a"}`'
+        mock: なし
+        expected: '`ok` が `true` で `value.title` が `a`'
+      - name: test_parse_definition_json_when_unclosed
+        case: 異常
+        summary: 閉じの `}` が無い
+        condition: '12 行目が `"label": "本文",` で終わる JSON'
+        mock: なし
+        expected: '`line` が 12、`after` が `"label": "本文",`、`missing` が `}`'
+  - name: readDefinition
+    title: 定義を読んで形を確かめる
+    container: src/diagram/definition.ts
+    kind: 関数
+    scope: internal
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・`table` の値の漏れ）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す
+    args:
+      - name: directive
+        type: '"flow" | "sequence" | "chart" | "param"'
+        required: true
+        description: 印の名前
+      - name: blocks
+        type: string[]
+        required: true
+        description: 範囲の `json` のコードブロックの中身
+    returns:
+      type: DefinitionResult
+      description: 読めた定義か、読めない箇所の文
+    unit_tests:
+      - name: test_read_definition
+        case: 正常
+        summary: モックの見本の定義を読める
+        condition: '`inquiry`・`inquiry-seq`・`reply-time`・`strength` と同じ定義（線に `from`・`to` を足したもの）'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_kind_unknown
+        case: 異常
+        summary: 箱の種類が使えない
+        condition: 3 つ目の箱（名前 `分類`）の `kind` が `robot`
+        mock: なし
+        expected: '`problems[0]` が `箱「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external です`'
+      - name: test_read_definition_when_points_mismatch
+        case: 異常
+        summary: 系列の点の数が目盛りと合わない
+        condition: 系列 `担当者` の点が 4 つ、`x.ticks` が 5 つ
+        mock: なし
+        expected: '`problems[0]` が `系列「担当者」の点が 4 つで、横の目盛り（x.ticks）の 5 つと合いません`'
+      - name: test_read_definition_when_wire_end_missing
+        case: 異常
+        summary: 線の端が無い箱を指す
+        condition: 線 `w-mail` の `to` が無い箱の `id` `recieve`
+        mock: なし
+        expected: '`problems[0]` が `線 w-mail の端の箱 recieve がありません。箱の id で書いてください`'
+      - name: test_read_definition_when_id_duplicated
+        case: 異常
+        summary: 箱の id が重なる
+        condition: 2 つの箱の `id` が `recv`
+        mock: なし
+        expected: '`problems[0]` が `箱の id recv が 2 つあります。別の id にしてください`'
+      - name: test_read_definition_when_blocks_count
+        case: 異常
+        summary: json のコードブロックが 0 つ・2 つ
+        condition: '`blocks` が `[]` と 2 つ'
+        mock: なし
+        expected: どちらも `problems[0]` が `印の範囲に json のコードブロックを 1 つだけ置いてください` を含む
+  - name: fitScale
+    title: 全体が収まる倍率
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 図の幅と高さが表示する枠に収まる倍率を返す。100% を超えない
+    args:
+      - name: content
+        type: '{ width: number; height: number }'
+        required: true
+        description: 図の大きさ
+      - name: box
+        type: '{ width: number; height: number }'
+        required: true
+        description: 表示する枠の大きさ
+    returns:
+      type: number
+      description: '`min(1, box.width / content.width, box.height / content.height)`'
+    unit_tests:
+      - name: test_fit_scale
+        case: 正常
+        summary: 広い図は幅で収め、小さい図は 1
+        condition: 1100×560 と 600×576、300×200 と 600×576
+        mock: なし
+        expected: '`600 / 1100` と 1'
+  - name: jumpPaths
+    title: 飛び越えの弧を入れた線のパス
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 全ての線の横の区間が、ほかの線の縦の区間と交わる点に `JUMP_RADIUS` の半円の弧を入れ、同じ向きで重なる区間を `OVERLAP_OFFSET` ずつずらした svg のパスを返す
+    args:
+      - name: wires
+        type: MdmarkDiagramWire[]
+        required: true
+        description: 線
+    returns:
+      type: Map<string, string>
+      description: 線の `id` から svg の `d`
+    unit_tests:
+      - name: test_jump_paths
+        case: 正常
+        summary: 横の線が縦の線を飛び越える
+        condition: (0,50)→(100,50) の横の線と (50,0)→(50,100) の縦の線
+        mock: なし
+        expected: 横の線のパスが x 44〜56 に弧（`A`）を持ち、縦の線は弧を持たない
+      - name: test_jump_paths_when_overlap
+        case: 正常
+        summary: 重なる線をずらす
+        condition: 同じ y で区間が重なる横の線 2 本
+        mock: なし
+        expected: 2 本目の y が 4 ずれる
+  - name: iconSvg
+    title: アイコンの svg
+    container: src/parts/icons.ts
+    kind: 関数
+    scope: internal
+    summary: lucide のアイコンの形（`lucide` のパッケージから名前付きで import した要素の並び）を、24 の格子・`stroke="currentColor"`・`aria-hidden="true"` の svg の文字にする。図のボタンと箱の種類で使う
+    args:
+      - name: name
+        type: IconName
+        required: true
+        description: 外部ライブラリ『lucide』の一覧のうち図で使う名前
+    returns:
+      type: string
+      description: svg の HTML
+    unit_tests:
+      - name: test_icon_svg
+        case: 正常
+        summary: lucide の形をそのまま出す
+        condition: '`plus`'
+        mock: なし
+        expected: '`viewBox="0 0 24 24"` と lucide@1.59.0 の `plus` の `path` 2 つを持ち、`aria-hidden="true"`'
+      - name: test_icon_svg_when_sanitized
+        case: 正常
+        summary: 使うアイコンの要素と属性が sanitize で落ちない
+        condition: 外部ライブラリ『lucide』の一覧の全てのアイコンを `data-mdmark-own` を付けて描画の sanitize に通す
+        mock: なし
+        expected: どのアイコンも通す前と後で要素と属性が同じ（`database` の `ellipse` と `copy` の `ry` が残る）
+  - name: renderDiagramFrame
+    title: 図の枠を描く
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『図の枠』の HTML。題・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`id` は `render` の中の通し番号で文書の中で一意にする
+    args:
+      - name: frame
+        type: '{ kind; title; scope; updated; legend; zoom?; modal?; id: string }'
+        required: true
+        description: 部品設計の引数と、題・ツールチップに使う `id` の頭
+      - name: body
+        type: '{ html: string; width: number; height: number; tips: string }'
+        required: true
+        description: 中の図の HTML と大きさ、ツールチップの中身の HTML
+    returns:
+      type: string
+      description: '`figure.mdmark-diagram` の HTML'
+    unit_tests:
+      - name: test_render_diagram_frame
+        case: 正常
+        summary: 題・ボタンの帯・凡例をこの順に出す
+        condition: '`kind` が `flow`、`legend` が 2 項目'
+        mock: なし
+        expected: '`figcaption`・`role="toolbar"`・`role="group"` の表示する枠・`aria-label="凡例"` の `ul` がこの順にあり、移動のボタンのまとまりが `hidden`'
+      - name: test_render_diagram_frame_when_modal
+        case: 正常
+        summary: モーダルでは閉じるボタンを置く
+        condition: '`modal` が `true`'
+        mock: なし
+        expected: '`aria-label="全画面を閉じる"` のボタンがあり、全画面で開くボタンが無い'
+  - name: renderFlow
+    title: フロー図を描く
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: 定義の座標に枠・層・箱を置き、`jumpPaths` のパスで線を svg に描く。箱の種類のアイコン・`io` の印・線のラベルを置き、`{{語}}` は用語の照合に回す
+    args:
+      - name: definition
+        type: MdmarkFlowDefinition
+        required: true
+        description: 読めた定義
+      - name: id
+        type: string
+        required: true
+        description: ツールチップと矢じりの `id` の頭
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string }'
+      description: 図の中身
+    unit_tests:
+      - name: test_render_flow
+        case: 正常
+        summary: 枠・層・箱・線・ツールチップを出す
+        condition: '`inquiry` の定義'
+        mock: なし
+        expected: 層が 3 つ、箱が 9 つ、線が 10 本、`role="tooltip"` が `tip` の線と `io` の箱の数だけあり、`loop` の線が `stroke-dasharray="8 4"` を持つ
+      - name: test_render_flow_when_text_escaped
+        case: 異常
+        summary: 定義の文字の HTML を文字にする
+        condition: 箱の `name` が `<img src=x onerror=alert(1)>`
+        mock: なし
+        expected: 出力に `<img` が無く、`&lt;img` がある
+  - name: renderSequence
+    title: シーケンス図を描く
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: '相手を左から右に等間隔で、メッセージを上から下に等間隔で置き、`reply` は破線と開いた矢じり、`loop` は右の帯を通る破線と戻り先のラベルにする。相手の行は別の層にし、表示する枠の縦のスクロールの量を倍率で割った分だけ `translateY` で下げて上端に留める（`attachDiagrams` が動かす）'
+    args:
+      - name: definition
+        type: MdmarkSequenceDefinition
+        required: true
+        description: 読めた定義
+      - name: id
+        type: string
+        required: true
+        description: '`id` の頭'
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string }'
+      description: 図の中身
+    unit_tests:
+      - name: test_render_sequence
+        case: 正常
+        summary: 相手とメッセージを順に置く
+        condition: '`inquiry-seq` の定義'
+        mock: なし
+        expected: 相手の箱の x が定義の順に増え、メッセージの y が順に増え、`reply` の線と戻りの線が破線で、戻り先のラベルがある
+  - name: renderChart
+    title: グラフを描く
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: 軸・目盛り・系列の折れ線と点を svg に描く。系列は位置で色（`--mdmark-color-series-{n}`）・線の模様・点の形の組を決める
+    args:
+      - name: definition
+        type: MdmarkChartDefinition
+        required: true
+        description: 読めた定義
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string }'
+      description: 図の中身。`tips` は空
+    unit_tests:
+      - name: test_render_chart
+        case: 正常
+        summary: 系列ごとに線と点を描き、読み上げに値を載せる
+        condition: '`reply-time` の定義'
+        mock: なし
+        expected: '`data-series` が 1・2 の線があり、点が 5 つずつ、svg の `aria-label` が `返信までの時間。自動返信: 12・9・14・8・10。担当者: 42・38・51・35・44`'
+  - name: legendFor
+    title: 凡例の項目
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: 定義に出る箱の種類・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ
+    args:
+      - name: definition
+        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition
+        required: true
+        description: 読めた定義
+      - name: drawn
+        type: '{ jumps: boolean; terms: boolean }'
+        required: true
+        description: 描いた図に交差と用語があるか
+    returns:
+      type: '{ sample: string; label: string }[]'
+      description: 凡例の項目
+    unit_tests:
+      - name: test_legend_for
+        case: 正常
+        summary: 出るものだけを載せる
+        condition: '`flow` と `read` の線だけを持ち、枠も交差も無いフロー図'
+        mock: なし
+        expected: 線の項目が `処理の流れ`・`読む` の 2 つで、枠・交差の項目が無く、外部のシステムに `（枠の外）` が付かない
+  - name: renderDiagramTip
+    title: 図のツールチップを描く
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
+    args:
+      - name: tip
+        type: '{ id: string; kind: "wire" | "io"; label: string; tip?: string; io?: { in: string; do: string; out: string } }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: ツールチップの HTML
+    unit_tests:
+      - name: test_render_diagram_tip
+        case: 正常
+        summary: 入力・処理・出力を 3 行に出す
+        condition: '`kind` が `io`'
+        mock: なし
+        expected: '`入力`・`処理`・`出力` の見出しと値がこの順にあり、`hidden` を持つ'
+  - name: renderParam
+    title: 操作できる部品を描く
+    container: src/parts/param.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『操作できる部品』の HTML。題・スライダー・今の値・写すボタン・知らせ・写せなかったときの `pre` と、`table` の今の値と既定の値の系列のグラフを図の枠で出す
+    args:
+      - name: definition
+        type: MdmarkParamDefinition
+        required: true
+        description: 読めた定義
+      - name: state
+        type: '{ value?: number; copy?: "none" | "copied" | "failed"; id: string }'
+        required: true
+        description: 今の値・写した結果・`id` の頭
+    returns:
+      type: string
+      description: '`div.mdmark-param` の HTML'
+    unit_tests:
+      - name: test_render_param
+        case: 正常
+        summary: 既定の値で描く
+        condition: '`strength` の定義'
+        mock: なし
+        expected: '`input type="range"` の `min`・`max`・`step`・`value` が 0・10・1・5 で、グラフの系列が `今の値（5）`・`既定の値（5）`'
+  - name: paramJson
+    title: 今の値の JSON
+    container: src/parts/param.ts
+    kind: 関数
+    scope: internal
+    summary: '`{"{key}": {"name": "{label}", "value": {値}}}` を 2 字下げの JSON にする'
+    args:
+      - name: knob
+        type: MdmarkParamDefinition["knob"]
+        required: true
+        description: スライダー
+      - name: value
+        type: number
+        required: true
+        description: 今の値
+    returns:
+      type: string
+      description: JSON
+    unit_tests:
+      - name: test_param_json
+        case: 正常
+        summary: 名前と値を持つ
+        condition: '`strength` の `knob` と 8'
+        mock: なし
+        expected: '`JSON.parse` すると `{"strength": {"name": "反応の強さ", "value": 8}}`'
+  - name: buildDiagrams
+    title: 図の部品の印を部品にする
+    container: src/render/syntax/diagrams.ts
+    kind: 関数
+    scope: internal
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態。`env` に機能のオン・オフと登録した拡張を持つ
+    returns:
+      type: void
+      description: トークンの並びを書き換える
+    callees:
+      - '#functions[readDefinition]'
+      - '#functions[renderDiagramFrame]'
+      - '#functions[renderParam]'
+    unit_tests:
+      - name: test_build_diagrams
+        case: 正常
+        summary: 範囲を図にして定義の JSON を残さない
+        condition: '`<!-- flow -->` 〜 `<!-- /flow -->` に `inquiry` の定義を置いた文書'
+        mock: なし
+        expected: '`figure.mdmark-diagram` が 1 つで、出力に `"nodes"` が無い'
+      - name: test_build_diagrams_when_disabled
+        case: 正常
+        summary: 機能がオフなら定義をコードブロックのまま描く
+        condition: 同じ文書と `diagrams` が `false`
+        mock: なし
+        expected: '`pre > code.language-json` があり、`figure.mdmark-diagram` が無い'
+      - name: test_build_diagrams_when_extension_registered
+        case: 正常
+        summary: 同じ名前の拡張を優先する
+        condition: '`directive` が `flow` の拡張を登録した `env`'
+        mock: なし
+        expected: '`figure.mdmark-diagram` が無く、印の場所の要素がある'
+      - name: test_build_diagrams_when_invalid
+        case: 異常
+        summary: 読めない定義は書き方の警告にする
+        condition: 閉じの `}` が無いフロー図の定義
+        mock: なし
+        expected: '`.mdmark-syntax-warning` の本文が `フロー図の部品の定義を JSON として読めません` で始まる'
+  - name: attachDiagrams
+    title: 図の拡大・縮小・移動・全画面を付ける
+    container: src/interact/diagrams.ts
+    kind: 関数
+    scope: internal
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、ボタン・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 付けた操作と監視を外し、開いている全画面を閉じる関数
+    callees:
+      - '#functions[fitScale]'
+      - '#functions[openDiagramDialog]'
+    unit_tests:
+      - name: test_attach_diagrams
+        case: 正常
+        summary: 収まる倍率で開き、拡大と戻す
+        condition: 幅 600px の要素に幅 1100 のフロー図
+        mock: なし
+        expected: 倍率の表示が `55%` で縮小が `disabled`、拡大の後に `68%`、`0` の後に `55%`
+      - name: test_attach_diagrams_when_max
+        case: 正常
+        summary: 上限で拡大を押せなくする
+        condition: 拡大を 10 回押す
+        mock: なし
+        expected: 倍率の表示が `300%` で拡大が `disabled`
+      - name: test_attach_diagrams_when_panned
+        case: 正常
+        summary: 拡大した間だけ移動のボタンを出し、矢印キーで動かす
+        condition: 拡大を 2 回押して表示する枠で `ArrowRight`
+        mock: なし
+        expected: 移動のボタンのまとまりが `hidden` を持たず、`scrollLeft` が 80 増える
+      - name: test_attach_diagrams_when_wheel
+        case: 正常
+        summary: ホイールで倍率を変えない
+        condition: 表示する枠に `wheel`
+        mock: なし
+        expected: 倍率が変わらず `defaultPrevented` が `false`
+      - name: test_attach_diagrams_when_cleaned_up
+        case: 正常
+        summary: 外すと監視も外れる
+        condition: 戻り値を呼ぶ
+        mock: '`ResizeObserver.prototype.disconnect` を呼ばれた回数を数える関数で包む'
+        expected: '`disconnect` が図の数だけ呼ばれ、拡大を押しても倍率が変わらない'
+  - name: openDiagramDialog
+    title: 図を全画面で開く
+    container: src/interact/diagrams.ts
+    kind: 関数
+    scope: internal
+    summary: 図の題・中身・凡例を写した `modal` の枠を `dialog` に入れて `root` の中に置き、`showModal()` で開き、拡大・縮小とツールチップを付ける。ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を起こさない。`cancel` を取り消す作りは、history-action activation を使い切ると 2 回目から取り消せないため使わない）。閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: 開く図
+      - name: opener
+        type: HTMLButtonElement
+        required: true
+        description: 全画面のボタン
+    returns:
+      type: () => void
+      description: 開いた全画面を閉じる関数
+    callees:
+      - '#functions[attachDiagramTips]'
+    unit_tests:
+      - name: test_open_diagram_dialog
+        case: 正常
+        summary: 開いて Esc で閉じ、フォーカスを戻す
+        condition: 全画面のボタンを押し、ツールチップを開かずに Esc を押す（Playwright のキー操作）
+        mock: なし
+        expected: 押した後に `dialog[open]` が 1 つあり、Esc の後に `dialog` が無く、フォーカスが全画面のボタン
+      - name: test_open_diagram_dialog_when_tip_open
+        case: 正常
+        summary: ツールチップを開いている間の Esc は何度でもツールチップだけを閉じる
+        condition: モーダルの中でツールチップ A にポインターを乗せて Esc、ツールチップ B にポインターを乗せて Esc（Playwright のキー操作）
+        mock: なし
+        expected: どちらの Esc の後もツールチップが `hidden` を持ち、`dialog` が `open` のまま
+  - name: attachDiagramTips
+    title: 図のツールチップを付ける
+    container: src/interact/diagram-tips.ts
+    kind: 関数
+    scope: internal
+    summary: ツールチップの持ち主に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。`beforeprint` で閉じる
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: 図
+    returns:
+      type: '{ closeOpen: () => boolean; detach: () => void }'
+      description: 開いているツールチップを閉じて閉じたかを返す関数と、操作を外す関数
+    unit_tests:
+      - name: test_attach_diagram_tips
+        case: 正常
+        summary: フォーカスで開き Esc で閉じる
+        condition: '`tip` を持つ線のラベルにフォーカスし、`Escape` を送る'
+        mock: なし
+        expected: フォーカスでツールチップが `hidden` を持たず、Esc の後に `hidden` を持ち、フォーカスがラベルに残る
+      - name: test_attach_diagram_tips_when_hovered
+        case: 正常
+        summary: ツールチップの上では閉じない
+        condition: 持ち主からツールチップへ `pointerleave`・`pointerenter` を送る
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: ツールチップが `hidden` を持たない
+  - name: attachParams
+    title: 操作できる部品の操作を付ける
+    container: src/interact/params.ts
+    kind: 関数
+    scope: internal
+    summary: スライダーの `input` で今の値とグラフの系列を描き直し、写すボタンで `paramJson` を `navigator.clipboard.writeText` で書き、結果を `role="status"` に出す。拒まれたら `pre` を出す。点の表は、`mount` が Markdown から読んだ `param` の定義を文書の中の並びの順で受け取る（出力の HTML に定義を残さない）
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+      - name: definitions
+        type: MdmarkParamDefinition[]
+        required: true
+        description: '`render` と同じ解析で読めた `param` の定義。`div.mdmark-param` の並びと同じ順'
+    returns:
+      type: () => void
+      description: 付けた操作を外す関数
+    callees:
+      - '#functions[paramJson]'
+    unit_tests:
+      - name: test_attach_params
+        case: 正常
+        summary: 値を変えて写す
+        condition: スライダーを 8 にして `input` を送り、写すボタンを押す
+        mock: '`navigator.clipboard.writeText` を渡された文字を控えて解決する関数に差し替える'
+        expected: '`output` が `8`、控えた文字の `strength.value` が 8、知らせが `クリップボードに写しました`'
+      - name: test_attach_params_when_clipboard_denied
+        case: 異常
+        summary: 拒まれたら選んで写せる JSON を出す
+        condition: 写すボタンを押す
+        mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒まれる関数に差し替える'
+        expected: '`pre` が `hidden` を持たず、文字が写すはずだった JSON で、例外が外に出ない'
+test_files:
+  - tests/unit/src/diagram/definition.test.ts
+  - tests/unit/src/diagram/geometry.test.ts
+  - tests/unit/src/parts/icons.test.ts
+  - tests/unit/src/parts/diagram.test.ts
+  - tests/unit/src/parts/param.test.ts
+  - tests/unit/src/render/syntax/diagrams.test.ts
+  - tests/unit/src/interact/diagrams.browser.test.ts
+  - tests/unit/src/interact/diagram-tips.browser.test.ts
+  - tests/unit/src/interact/params.browser.test.ts

@@ -10,6 +10,7 @@ type Built = typeof import("../../../src/index.ts");
 
 // 拡張のモジュールの代役と、404 を返すモジュールの URL（手元の開発サーバーが配る）
 const GREET_PATH = "/fixtures/greet.js";
+const DEFINITION_PATH = "/fixtures/definition.js";
 const MISSING_PATH = "/fixtures/missing.js";
 // 拡張のモジュールの代役が `slot` に書く、引数の読み分けた値
 const GREET_TEXT = '{"args":["world"],"keys":{"lang":"ja"}}';
@@ -300,4 +301,107 @@ test("test_error_when_directive_taken", async () => {
     expect(load).toHaveBeenCalledTimes(1);
   });
   expect(second.load).not.toHaveBeenCalled();
+});
+
+/** 範囲で書いた拡張の印の Markdown: `json` のコードブロックを `blocks` の数だけ置く */
+function rangeMarkdown(blocks: string[]): string {
+  const fences = blocks.flatMap((json) => ["```json", json, "```", ""]);
+  return [
+    "前の段落",
+    "",
+    "<!-- greet -->",
+    "",
+    ...fences,
+    "<!-- /greet -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+}
+
+// 範囲で書いた拡張の印の json を、definition として schema と draw へ渡す（正常系）
+test("test_normal_when_definition", async () => {
+  // 準備
+  const built = await loadBuilt();
+  const el = createElement();
+  const load = vi.fn(() => importFixture(DEFINITION_PATH));
+  const schema = v.object({
+    args: v.array(v.string()),
+    keys: v.record(v.string(), v.string()),
+    definition: v.object({ title: v.string(), items: v.array(v.string()) }),
+  });
+  built.registerExtension({
+    name: "greet",
+    directive: "greet",
+    load,
+    schema: schema as unknown as MdmarkExtension["schema"],
+  });
+  // 実行
+  mountTracked(
+    built,
+    el,
+    rangeMarkdown(['{"title": "段取り", "items": ["a", "b", "c"]}']),
+  );
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.textContent).toContain("段取り 3");
+  });
+  expect(el.innerHTML).not.toContain('"items"');
+  expect(load).toHaveBeenCalledTimes(1);
+});
+
+// JSON として読めない定義の印の場所を書き方の警告にし、モジュールを読まない（異常系）
+test("test_error_when_definition_invalid", async () => {
+  // 準備
+  const built = await loadBuilt();
+  const el = createElement();
+  const { extension, load } = createGreet();
+  built.registerExtension(extension);
+  // 実行
+  mountTracked(built, el, rangeMarkdown(['{"title": "段取り",']));
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-syntax-warning")).not.toBeNull();
+  });
+  const warning = find(el, ".mdmark-syntax-warning").textContent ?? "";
+  expect(warning).toContain("greet");
+  expect(warning).toContain("行目");
+  expect(load).not.toHaveBeenCalled();
+  expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
+});
+
+// json のコードブロックが 2 つあると、モジュールを読まずに書き方の警告にする（異常系）
+test("test_error_when_definition_two_blocks", async () => {
+  // 準備
+  const built = await loadBuilt();
+  const el = createElement();
+  const { extension, load } = createGreet();
+  built.registerExtension(extension);
+  // 実行
+  mountTracked(built, el, rangeMarkdown(['{"title": "a"}', '{"title": "b"}']));
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-syntax-warning")).not.toBeNull();
+  });
+  expect(find(el, ".mdmark-syntax-warning").textContent).toContain(
+    "json のコードブロックが 2 つあります",
+  );
+  expect(load).not.toHaveBeenCalled();
+});
+
+// 図の部品の印と同じ directive の拡張を登録でき、その印を拡張に描かせる（正常系）
+test("test_normal_when_directive_is_diagram_name", async () => {
+  // 準備
+  const built = await loadBuilt();
+  const el = createElement();
+  const { extension } = createGreet({ directive: "flow" });
+  // 実行・検証
+  expect(() => built.registerExtension(extension)).not.toThrow();
+  mountTracked(built, el, "前の段落\n\n<!-- flow: world -->\n\n後の段落\n");
+  await vi.waitFor(() => {
+    expect(find(el, "[data-mdmark-slot]").textContent).toBe(
+      '{"args":["world"],"keys":{}}',
+    );
+  });
+  expect(el.querySelector("figure.mdmark-diagram")).toBeNull();
 });

@@ -196,17 +196,18 @@ export async function routeLibrary(
   return () => requests;
 }
 
-/** 拡張の代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない */
+/** 拡張の代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない。`source` を渡すとその中身を返す */
 export async function routeExtension(
   page: Page,
   status: 200 | 404,
+  source: string = EXTENSION_SOURCE,
 ): Promise<() => number> {
   let requests = 0;
   await page.route(EXTENSION_URL, (route) => {
     requests += 1;
     return route.fulfill({
       status,
-      body: status === 200 ? EXTENSION_SOURCE : undefined,
+      body: status === 200 ? source : undefined,
       contentType: "text/javascript",
       headers: { "access-control-allow-origin": "*" },
     });

@@ -7,6 +7,8 @@ export type MdmarkMarkArgs = {
   args: string[];
   /** `キー=値` の引数。同じキーは後に書いた値 */
   keys: Record<string, string>;
+  /** 印を範囲で書き、範囲に `json` のコードブロックを 1 つ置いたときの、その JSON を読んだ値。範囲が無い印では持たない */
+  definition?: unknown;
 };
 
 /** `load` が返すモジュールの形 */

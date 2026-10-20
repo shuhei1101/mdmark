@@ -96,6 +96,31 @@ scenarios:
       - 印の場所に知らせの枠があり、拡張の名前が書かれている
       - 印の前後の段落が描かれている
     test: test_error_when_module_not_found
+  - name: 正常シナリオ（部品の定義を渡す）
+    setup:
+      - name: 拡張を登録するページ
+        description: 正常シナリオと同じ
+      - name: 部品の定義を持つ印の Markdown
+        description: 拡張の印に、題と項目 3 つを持つ部品の定義（JSON）を添えた文書
+      - name: Mock
+        description: 正常シナリオと同じ。拡張の代役は、受けた定義の題と項目の数を印の場所に書く
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: registerExtension で拡張を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: load でモジュールを読む
+        X-->>M: モジュール
+        M->>X: 印の引数と部品の定義を渡して描かせる
+        M-->>P: 印の場所に拡張が描く
+        P-->>U: 文書を表示
+    expected:
+      - 印の場所に、定義の題と項目の数 3 が描かれている
+      - 部品の定義の JSON は本文にそのまま出ていない
+    test: test_normal_when_definition
 lead: 使う側が `registerExtension({ name, directive, load, schema })` で自分の印を足す。mdmark は文書にその印があるときだけ `load` でモジュールを読み、印の場所に描かせる。
 issue: 4
 primary_actor: 使う側のアプリの開発者

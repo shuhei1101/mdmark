@@ -1,6 +1,7 @@
 import type { StateCore, Token } from "markdown-it";
 import { renderFigure } from "../../parts/figure.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
+import { DIAGRAM_META } from "./diagrams.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
 import { type SyntaxWarning, warningBlock } from "./warnings.ts";
 
@@ -19,6 +20,10 @@ function figureTarget(
   start: number,
 ): { kind: FigureKind; end: number; caption: string } | undefined {
   const first = tokens[start];
+  // 図の部品は画像と同じ「図」の番号にする
+  if (first?.meta?.[DIAGRAM_META] === true) {
+    return { kind: "image", end: start, caption: "" };
+  }
   if (first?.type === "paragraph_open") {
     const children = tokens[start + 1]?.children ?? [];
     const image = children.find((child) => child.type === "image");

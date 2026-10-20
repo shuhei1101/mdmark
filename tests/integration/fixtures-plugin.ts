@@ -12,7 +12,13 @@ const GREET_SOURCE = `export function draw(slot, value) {
 }
 `;
 
-/** 結合テストの開発サーバーに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js` と、404 を返す `/fixtures/missing.js` を足す */
+// 部品の定義を受ける拡張のモジュールの代役: `draw(slot, value)` で `slot` の文字を `value.definition.title` と `value.definition.items` の数にする
+const DEFINITION_SOURCE = `export function draw(slot, value) {
+  slot.textContent = value.definition.title + " " + value.definition.items.length;
+}
+`;
+
+/** 結合テストの開発サーバーに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返す `/fixtures/missing.js` を足す */
 export function fixturesPlugin(): Plugin {
   return {
     name: "mdmark-fixtures",
@@ -25,6 +31,13 @@ export function fixturesPlugin(): Plugin {
         response.setHeader("Content-Type", "text/javascript; charset=utf-8");
         response.end(GREET_SOURCE);
       });
+      server.middlewares.use(
+        "/fixtures/definition.js",
+        (_request, response) => {
+          response.setHeader("Content-Type", "text/javascript; charset=utf-8");
+          response.end(DEFINITION_SOURCE);
+        },
+      );
       server.middlewares.use("/fixtures/missing.js", (_request, response) => {
         response.statusCode = 404;
         response.end();

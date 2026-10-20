@@ -510,9 +510,164 @@ flows:
       - '`el` の最後の子が、題 `関連文書` の一覧で、`API`（`href` が `../api.md`）と `使い方`（`href` が `../使い方/guide.md`）がこの順で並ぶ'
       - '`update` の後も一覧が 1 つだけあり、中身が変わらない'
     test: test_normal_when_backlinks
+  - name: 正常系（図を拡大・縮小する）
+    summary: 図を収まる倍率で描き、右上のボタンとキーで拡大・縮小・戻す。ホイールは受け取らない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 600px
+      - name: フロー図を持つ Markdown
+        description: 幅 1100・高さ 560 のフロー図の定義を `<!-- flow -->` 〜 `<!-- /flow -->` に置いた文書
+      - name: Mock
+        description: 差し替える依存は無い。ホイールは図の表示する枠へ `wheel` のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 収まる倍率で図を描き、右上にボタンを置く
+        P->>M: 拡大のボタンを押す・+ を押す
+        M->>P: 倍率を上げる
+        P->>M: ホイールを送る
+        M-->>P: 倍率を変えない
+        P->>M: 0 を押す
+        M->>P: 収まる倍率と位置に戻す
+    expected:
+      - 描いた直後、倍率の表示が収まる倍率（100% 未満）で、図の幅が表示する枠の幅を超えない
+      - 縮小と戻すのボタンが `disabled` を持ち、拡大と全画面のボタンは持たない。どのボタンも読み上げの名前を持つ
+      - 拡大のボタンの後と、表示する枠にフォーカスして `+` を押した後に、それぞれ倍率が 1.25 倍になる
+      - '`wheel` の後も倍率が変わらず、イベントの `defaultPrevented` が `false`'
+      - '`0` の後、倍率と表示する枠のスクロールの位置が描いた直後と同じ'
+    test: test_normal_when_diagram_zoomed
+  - name: 正常系（図を動かす）
+    summary: 拡大した図を、余白のドラッグ・矢印キー・移動のボタンで動かし、文字の上では動かさず文字を選ばせる
+    setup:
+      - name: 拡大した図
+        description: 正常系（図を拡大・縮小する）の図を、拡大のボタンで 2 回拡大した状態
+      - name: Mock
+        description: 差し替える依存は無い。ドラッグは Playwright のマウス操作で行う
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 余白を 100px 左へドラッグする
+        M->>P: 図を動かす
+        P->>M: 箱の名前の上でドラッグする
+        M-->>P: 図を動かさない
+        P->>M: → を押す・下の移動のボタンを押す
+        M->>P: 図を動かす
+    expected:
+      - 余白のドラッグの後、表示する枠の `scrollLeft` が 100 増え、`getSelection()` が空
+      - 余白の `cursor` の計算値が `grab`、箱の名前の `cursor` が `text`
+      - 箱の名前の上のドラッグの後、`scrollLeft` が変わらず、`getSelection()` が名前の文字を含む
+      - '`→` の後に `scrollLeft` が 80 増え、下の移動のボタンの後に `scrollTop` が 80 増える'
+      - 収まる倍率に戻した後、移動のボタンが出ていない
+    test: test_normal_when_diagram_panned
+  - name: 正常系（図を全画面で開く）
+    summary: 全画面のボタンで図をモーダルに開き、Esc でツールチップ→モーダルの順に閉じる
+    setup:
+      - name: 図を描いたページ
+        description: 正常系（図を拡大・縮小する）と同じ。定義の線 1 本が `tip` を持つ
+      - name: Mock
+        description: 差し替える依存は無い。`document.removeEventListener` を、外した受け取りを数える関数で包む
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 全画面のボタンを押す
+        M->>P: 題・図・凡例を dialog のモーダルに出す
+        P->>M: tip を持つ線にフォーカスして Esc を押す
+        M->>P: ツールチップだけを閉じる
+        P->>M: Esc を押す
+        M->>P: モーダルを閉じ、全画面のボタンへフォーカスを戻す
+    expected:
+      - 押した後、`el` の中に `open` を持つ `dialog` があり、題・図・凡例と閉じるボタンを持つ
+      - モーダルの中の図の幅と高さが、モーダルの表示する枠を超えない
+      - 1 回目の Esc の後、ツールチップが `hidden` を持ち、`dialog` は `open` を持ったまま
+      - 2 回目の Esc の後、`dialog` が `open` を持たず、フォーカスが全画面のボタンにある
+      - 閉じた後、モーダルのために付けた `document` の `keydown` の受け取りが外れている
+    test: test_normal_when_diagram_fullscreen
+  - name: 正常系（図のツールチップ）
+    summary: 線・箱・箱の中の用語に、ポインターとフォーカスでツールチップを出し、Esc で消す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 用語 `意思決定モデル`（意味 `選択肢から選ぶだけの、速く安い判断用の AI`）を持つ索引
+      - name: ツールチップを持つ Markdown
+        description: '`tip` を持つ線 1 本、`io` を持つ LLM の箱 1 つ、`io` を持たない箱 1 つ、種類の名前に `{{意思決定モデル}}` を持つ箱 1 つのフロー図と、図の外の段落に `意思決定モデル` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index })
+        P->>M: 線のラベルにポインターを乗せ、ツールチップの上へ動かす
+        M->>P: 入力の詳細を出したままにする
+        P->>M: LLM の箱の印にフォーカスする
+        M->>P: 入力・処理・出力を出す
+        P->>M: Esc を押す
+        M->>P: ツールチップを消し、フォーカスを印に残す
+        P->>M: 箱の中の用語にポインターを乗せる
+        M->>P: 用語の意味を出す
+    expected:
+      - 線のラベルの上で、`role="tooltip"` の要素が `hidden` を持たず、文字が定義の `tip`。ツールチップの上へ動かした後も `hidden` を持たない
+      - LLM の箱の印の `aria-describedby` が出たツールチップを指し、入力・処理・出力の 3 項目を持つ
+      - '`io` を持たない箱に印が無い'
+      - Esc の後、ツールチップが `hidden` を持ち、フォーカスが印にある
+      - 箱の中の `意思決定モデル` と図の外の段落の `意思決定モデル` がどちらも class `mdmark-term` の要素で、箱の中の語のツールチップに索引の意味が出る
+      - 箱の中の語の `text-decoration-style` の計算値が、図の外の語と同じ `dashed`
+    test: test_normal_when_diagram_tooltip
+  - name: 正常系（操作できる部品）
+    summary: スライダーの値でグラフを描き直し、今の値を JSON でクリップボードへ写す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 操作できる部品を持つ Markdown
+        description: '`<!-- param -->` 〜 `<!-- /param -->` に、`key` が `strength`・`label` が `反応の強さ`・範囲 0〜10・刻み 1・既定 5 のスライダーと、値ごとの点の `table` を持つ定義を置いた文書'
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を控えて解決する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant B as クリップボード
+        P->>M: mount(el, { markdown })
+        P->>M: スライダーを 7 にし、→ を押す
+        M->>P: 今の値とグラフを 8 で描き直す
+        P->>M: 今の値を写すボタンを押す
+        M->>B: writeText(JSON)
+        M->>P: 写したことを出す
+    expected:
+      - → の後、`output` の文字が `8` で、グラフの今の値の系列の点が `table` の `8` の点
+      - グラフの題と凡例が 1 つずつのまま
+      - '`writeText` に渡った文字を JSON として読むと `{"strength": {"name": "反応の強さ", "value": 8}}`'
+      - ボタンのそばの `role="status"` に写したことが出ている
+    test: test_normal_when_param
+  - name: 異常系（クリップボードへ書けない）
+    summary: 書き込みを拒まれたら、書けなかったことと選んで写せる JSON を出す
+    setup:
+      - name: 操作できる部品を描いたページ
+        description: 正常系（操作できる部品）と同じ Markdown を描いたページ
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒まれる関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant B as クリップボード
+        P->>M: 今の値を写すボタンを押す
+        M->>B: writeText(JSON)
+        B-->>M: NotAllowedError
+        M->>P: 書けなかったことと、写すはずだった JSON を出す
+    expected:
+      - ボタンのそばの `role="status"` に書けなかったことが出ている
+      - '`hidden` を持たない `pre` が `tabindex="0"` を持ち、文字が写すはずだった JSON'
+      - その後もスライダーを動かすとグラフが描き直され、`mount` もボタンの操作も例外を投げない
+    test: test_error_when_clipboard_denied
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品があるとき、表示する枠の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -527,6 +682,11 @@ callers:
   - dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する#
   - dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する#
   - dev/設計書/シナリオ/単一ユースケース/拡張を登録して印を足す#
+  - dev/設計書/シナリオ/単一ユースケース/図を描く#
+  - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#
+  - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る#
+  - dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す#
+  - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを当てる#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -551,7 +711,7 @@ request:
     default: '全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`anchors`・`sections`・`row-details`・`figures`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`anchors`・`sections`・`row-details`・`figures`、図の部品の `diagrams`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -652,4 +812,19 @@ constraints:
   - item: 用語と関連文書の一覧の id
     constraint: 1 つのページに文書を 2 つ以上描いても重ならないよう、`mount` は用語の下線のツールチップと関連文書の一覧の題の `id` を、モジュールの通し番号でページの中で一意な値に振り直し、それを指す `aria-describedby`・`aria-details`・`aria-labelledby` も直す。`update` で振り直す。`render` の出力の `id` は文書の中で一意なまま
     notes: タブの `mdmark-tabs-{n}`（`src/interact/tabs.ts` の `tabsCounter`）と同じ作り
+  - item: 図の拡大・縮小
+    constraint: 図の部品の右上に、縮小・倍率の表示・拡大・全体が収まる倍率に戻す・全画面のボタンをこの順に置く（アイコンは lucide の `minus`・`plus`・`rotate-ccw`・`expand`）。描いたときは図の全体が表示する枠の幅と高さに収まる倍率（100% を超えない）で出し、この倍率を下限、300% を上限にする。拡大・縮小は 1 回 1.25 倍。図の中にフォーカスがある間だけ、キーの `+`・`-`・`0` で拡大・縮小・戻すを行う。下限・上限ではその向きのボタンを押せなくし、描いたときの倍率と位置では戻すのボタンを押せなくする。ホイールは受け取らず、文書のスクロールと Shift との横のスクロールに任せる。表示する枠の幅が変わったとき、描いたときの倍率のままなら収まる倍率を求め直す
+    notes: D-43 は部品でない普通の HTML に限る（確認ログ）。ボタンの読み上げの名前は部品設計
+  - item: 図の移動
+    constraint: 図の文字の上ではカーソルを `text` にして文字を選ばせ、それ以外の上では `grab` にして、ドラッグした分だけ図を動かす（ドラッグの間は `grabbing` で、文字を選ばせない）。図の表示する枠は `tabindex="0"` を持ち、フォーカスの間は矢印キーで押した向きの先が見えるよう 80px ずつ動かす（動かせる向きがあるときだけ文書のスクロールを止める）。図が表示する枠に収まらない間だけ、右上の帯に移動のボタン（上・下・左・右）を出し、矢印キーと同じだけ動かす。シーケンス図は相手の行を表示する枠の上端に留める
+    notes: モックの「移動のボタンは全体が見えている間は出さない」（確認ログ）
+  - item: 図の全画面
+    constraint: 全画面のボタンで、題・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を置く。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を外す
+    notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
+  - item: 図のツールチップ
+    constraint: '`tip` を持つ線のラベル・`io` を持つ箱の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。同時に出すのは 1 つだけ。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
+  - item: 操作できる部品の操作
+    constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
+    notes: 知らせの文言は画面設計『文書』
 test_file: tests/integration/lib/mount.browser.test.ts

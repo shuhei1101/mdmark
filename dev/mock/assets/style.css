@@ -33,6 +33,17 @@
   --mdmark-color-callout-warning: #9a6700;
   --mdmark-color-callout-caution: #d1242f;
   --mdmark-table-max-height: 28rem;
+  --mdmark-color-diagram-llm: #8250df;
+  --mdmark-color-diagram-dm: #0550ae;
+  --mdmark-color-diagram-script: #59636e;
+  --mdmark-color-diagram-mcp: #bc4c00;
+  --mdmark-color-diagram-data: #1b7c83;
+  --mdmark-color-diagram-external: #1a7f37;
+  --mdmark-color-diagram-line: #59636e;
+  --mdmark-color-series-1: #0969da;
+  --mdmark-color-series-2: #bc4c00;
+  --mdmark-color-series-3: #8250df;
+  --mdmark-color-series-4: #1b7c83;
   color-scheme: light;
 }
 
@@ -58,6 +69,17 @@
     --mdmark-color-callout-important: #ab7df8;
     --mdmark-color-callout-warning: #d29922;
     --mdmark-color-callout-caution: #f85149;
+    --mdmark-color-diagram-llm: #ab7df8;
+    --mdmark-color-diagram-dm: #79c0ff;
+    --mdmark-color-diagram-script: #9198a1;
+    --mdmark-color-diagram-mcp: #f0883e;
+    --mdmark-color-diagram-data: #39c5cf;
+    --mdmark-color-diagram-external: #3fb950;
+    --mdmark-color-diagram-line: #9198a1;
+    --mdmark-color-series-1: #4493f8;
+    --mdmark-color-series-2: #f0883e;
+    --mdmark-color-series-3: #ab7df8;
+    --mdmark-color-series-4: #39c5cf;
     color-scheme: dark;
   }
 }

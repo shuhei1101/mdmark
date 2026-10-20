@@ -1,0 +1,30 @@
+title: Parts/DiagramFrame
+stories:
+  - name: Fit
+    parameters:
+      server:
+        id: diagram-frame
+  - name: Zoomed
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      zoom: 1.25
+  - name: Max
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      zoom: 3
+  - name: Narrow
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      zoom: 0.6
+  - name: Fullscreen
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      modal: true

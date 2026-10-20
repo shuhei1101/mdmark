@@ -1,0 +1,14 @@
+$ npm run test:integration
+
+> test:integration
+> vitest run --project 'integration*'
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-diagram-base-and-authoring-guide
+
+
+ Test Files  34 passed (34)
+      Tests  199 passed (199)
+   Start at  14:16:24
+   Duration  141.64s (tests 84%, import 11%, transform 4%, worker 1%)
+
+exit: 0
