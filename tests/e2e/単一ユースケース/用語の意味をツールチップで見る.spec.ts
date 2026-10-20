@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { MdmarkIndex } from "../../../src/index.ts";
+import { wrapHtml } from "../chart.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -75,6 +76,10 @@ test("test_normal", async ({ page }) => {
   await term.hover();
   await expect(tip).toBeVisible();
   await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  // ポインターの形は `?` にならない
+  expect(
+    await term.evaluate((element) => getComputedStyle(element).cursor),
+  ).not.toBe("help");
   await tip.hover();
   await expect(tip).toBeVisible();
 });
@@ -177,4 +182,44 @@ test("test_error_when_invalid_index", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-term-tip")).toContainText(
     "話し合いの記録を置くフォルダ",
   );
+});
+
+// 埋め込んだ HTML の中の語にも下線を引き、フォーカスすると意味を出し、リンクの文字には引かず、後ろの Markdown は節ごとに最初に出たところだけに引く決まりのまま（正常シナリオ（埋め込んだ HTML の中の用語））
+test("test_normal_when_embedded_html", async ({ page }) => {
+  // 準備
+  const markdown = [
+    wrapHtml(
+      [
+        "<p>ワークスペースを置く。</p>",
+        '<p><a href="https://example.com/">ワークスペース</a>へのリンク。</p>',
+      ].join("\n"),
+    ),
+    "後ろの段落でもワークスペースを使う。",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown, index: INDEX, docId: DOC_ID });
+  // 検証: HTML の中の段落の語に、本文の用語と同じ破線の下線が引かれている
+  const term = page.locator("#doc .mdmark-html p .mdmark-term");
+  await expect(term).toHaveCount(1);
+  await expect(term).toHaveText("ワークスペース");
+  await expect(term).toHaveCSS("text-decoration-style", "dashed");
+  expect(
+    await term.evaluate((element) => getComputedStyle(element).cursor),
+  ).not.toBe("help");
+  // 実行: 語にフォーカスする
+  await term.focus();
+  // 検証: 意味のツールチップが出る
+  const describedBy = await term.getAttribute("aria-describedby");
+  const tip = page.locator(`[id="${describedBy}"]`);
+  await expect(tip).toBeVisible();
+  await expect(tip).toHaveAttribute("role", "tooltip");
+  await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  // HTML の中のリンクの文字には下線が引かれていない
+  await expect(page.locator("#doc .mdmark-html a .mdmark-term")).toHaveCount(0);
+  // 後ろの Markdown の段落は、節ごとに最初に出たところだけに引く決まりのとおり、HTML とは別に最初の語へ下線が引かれる
+  const after = page.locator("#doc p", { hasText: "後ろの段落でも" });
+  await expect(after.locator(".mdmark-term")).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-term")).toHaveCount(2);
 });
