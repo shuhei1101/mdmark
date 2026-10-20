@@ -1,0 +1,10 @@
+# lint の実行ログ（結合テスト作成後）
+# commit: b5d9d448fa30303477c00b6d022741fad7745a61
+# 日時: 2026-10-21 06:22:15 JST
+
+$ npx biome check .
+Checked 293 files in 1253ms. No fixes applied.
+exit=0
+
+$ npx tsc --noEmit
+exit=0
