@@ -7,13 +7,15 @@
 | [backlinks](./backlinks/index.html) | 描いた文書を参照している文書の一覧（文書の末尾の「関連文書」の節） |
 | [badge](./badge/index.html) | 頭に `badge:` を付けた行内のコードを描いた札 |
 | [callout](./callout/index.html) | 種類ごとの題・色・アイコンを持つ注意書きの枠と、閉じた注意書き |
-| [chart](./chart/index.html) | 系列を色と線の模様・点の印の組で分けたグラフ |
+| [chart](./chart/index.html) | 系列を色と線の模様・点の印の組で分けたグラフ（折れ線）と、色と塗りの模様の組で分けた棒・円、点の印で分けた散布図 |
 | [diagram-frame](./diagram-frame/index.html) | 図の題・範囲・更新日・凡例と、右上の拡大・縮小・戻すのボタンと移動のボタン |
-| [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・箱の入力・処理・出力・箱の中の用語のツールチップ |
+| [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・箱の入力・処理・出力・箱の hint・箱の中の用語のツールチップと、ヒントを外した図 |
+| [embedded-html](./embedded-html/index.html) | 印の範囲のコードブロックの HTML を本文に溶け込ませて描いた場所と、チャートを含む・列より広い・機能がオフ・書き方の警告の場面 |
 | [doc-list](./doc-list/index.html) | まとめた HTML の文書の一覧（フォルダごとに 1 段の見出しにパスを書き、開いている文書を示す） |
 | [figure](./figure/index.html) | 図と表に付ける通し番号と、番号にした参照のリンク |
 | [file-tree](./file-tree/index.html) | 罫線で書いたフォルダ構成を描いた入れ子のツリー |
 | [flow-diagram](./flow-diagram/index.html) | システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図 |
+| [hint](./hint/index.html) | `data-hint` を持つ要素の右上の印・行内の破線の下線と、図のツールチップと同じ見た目のツールチップ |
 | [notice](./notice/index.html) | 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中の印の場所 |
 | [param-control](./param-control/index.html) | スライダー・グラフ・今の値を写すボタンを組み合わせた操作できる部品と、写した・写せなかったの知らせ |
 | [row-detail](./row-detail/index.html) | 表の行の下に開閉して出す行の詳細 |

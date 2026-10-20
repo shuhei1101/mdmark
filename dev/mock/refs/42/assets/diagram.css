@@ -213,7 +213,7 @@
     }
 
     /* 文字の上: I の形にして選べるようにする（ドラッグを始めない） */
-    :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text) {
+    :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text) {
       cursor: text;
       user-select: text;
     }
@@ -588,6 +588,28 @@
       fill: var(--series-color);
       stroke: var(--mdmark-color-bg);
       stroke-width: 1.5;
+    }
+
+    /* 棒と凡例の棒の見本: 系列の模様（1 塗りつぶし・2 斜線・3 点・4 格子）で塗り、系列の色の線で縁取る */
+    .mdmark-diagram-bar {
+      stroke: var(--series-color);
+      stroke-width: 1.5;
+    }
+
+    /* 円の扇形: 系列の模様で塗り、隣の扇形とは地の色の隙間で分ける */
+    .mdmark-diagram-slice {
+      stroke: var(--mdmark-color-bg);
+      stroke-width: 2;
+      stroke-linejoin: round;
+    }
+
+    /* 円の割合: 扇形の外に、本文の色の等幅数字で出す */
+    .mdmark-diagram-value-text {
+      fill: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-body);
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
 
     /* 系列ごとの点の色 */

@@ -22,6 +22,8 @@
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
+  <!-- 棒・円・散布図の定義の見本（#45 で共有するアセット。diagram.js の前に読む） -->
+  <script src="../../refs/45/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
@@ -52,6 +54,38 @@
         <h2 class="catalog-label" id="state-four">系列 4 つ（色と模様の組の全て）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="reply-time-4"></figure>
+        </article>
+      </section>
+
+      <!-- 棒 系列 2 つ: 項目ごとに系列の棒を並べ、色と塗りの模様（塗りつぶし・斜線）の組で分ける。縦の軸の範囲を書かず、データから 1・2・5×10 のべき乗の刻みで切る -->
+      <section aria-labelledby="state-bar">
+        <h2 class="catalog-label" id="state-bar">棒 系列 2 つ（色と塗りの模様の組で分ける。縦の軸はデータから切る）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-count"></figure>
+        </article>
+      </section>
+
+      <!-- 棒 系列 4 つ: 4 つ目までの塗りの模様（塗りつぶし・斜線・点・格子）。折れ線の線の模様と同じ順 -->
+      <section aria-labelledby="state-bar-four">
+        <h2 class="catalog-label" id="state-bar-four">棒 系列 4 つ（塗りの模様の組の全て）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-count-4"></figure>
+        </article>
+      </section>
+
+      <!-- 円 項目 3 つ: 値の割合の角度の扇形を、色と塗りの模様の組で分ける。扇形の外に割合、凡例に項目の名前と値 -->
+      <section aria-labelledby="state-pie">
+        <h2 class="catalog-label" id="state-pie">円 項目 3 つ（扇形の外に割合、凡例に名前と値）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="reply-kind"></figure>
+        </article>
+      </section>
+
+      <!-- 散布図 系列 2 つ: 横と縦の両方を数値の軸にし、系列の点の印（丸・四角）だけを置く -->
+      <section aria-labelledby="state-scatter">
+        <h2 class="catalog-label" id="state-scatter">散布図 系列 2 つ（横と縦の両方が数値の軸。点の印で分ける）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="length-time"></figure>
         </article>
       </section>
 

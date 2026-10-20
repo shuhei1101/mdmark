@@ -22,6 +22,8 @@
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
+  <!-- 箱の hint を持つ図の定義の見本（#45 で共有するアセット。diagram.js の前に読む） -->
+  <script src="../../refs/45/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
@@ -64,11 +66,28 @@
         </article>
       </section>
 
+      <!-- 箱の hint: io を持たない箱の hint の文を、入力・処理・出力と同じ印とツールチップで出す -->
+      <section aria-labelledby="state-hint">
+        <h2 class="catalog-label" id="state-hint">箱の hint（開いた。入力・処理・出力と同じ印）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-hint" data-mock-open="node:mcp"></figure>
+        </article>
+      </section>
+
       <!-- 箱の中の用語: 本文の用語と同じ破線の下線とツールチップに用語集の意味を出す -->
       <section aria-labelledby="state-term">
         <h2 class="catalog-label" id="state-term">箱の中の用語（開いた。本文の用語と同じ見た目）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="inquiry" data-mock-open="term:意思決定モデル"></figure>
+        </article>
+      </section>
+
+      <!-- ヒントを外した（機能 hints がオフ）: 線の詳細・入力・処理・出力・hint のツールチップと箱の印・ラベルの下線を出さない。用語の下線とツールチップは残す -->
+      <section aria-labelledby="state-hints-off">
+        <h2 class="catalog-label" id="state-hints-off">ヒントを外した（機能 hints がオフ。用語のツールチップは残す）</h2>
+        <!-- [data-mock-hints="off"]: diagram.js がこの中の図にヒントを付けない（設定の features.hints が false の文書に当たる） -->
+        <article class="mdmark" data-mock-hints="off">
+          <figure data-mock-diagram="inquiry-hint"></figure>
         </article>
       </section>
     </div>
