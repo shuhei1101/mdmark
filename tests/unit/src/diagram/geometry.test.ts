@@ -70,3 +70,36 @@ test("test_jump_paths_when_overlap", async () => {
   expect(secondNumbers).not.toContain(50);
   expect(secondNumbers.some((n) => Math.abs(n - 50) === 4)).toBe(true);
 });
+
+// 最大を含むきりのよい刻みにする（正常系）
+test("test_nice_ticks", async () => {
+  // 準備
+  const { niceTicks } = await loadGeometry();
+  // 実行
+  const ticks = niceTicks([124, 86, 57, 12, 38, 41, 63, 95]);
+  // 検証
+  expect(ticks).toEqual({ min: 0, max: 150, step: 50 });
+});
+
+// 1 未満の値も切れる（正常系）
+test("test_nice_ticks_when_small", async () => {
+  // 準備
+  const { niceTicks } = await loadGeometry();
+  // 実行
+  const ticks = niceTicks([0.12, 0.47]);
+  // 検証
+  expect(ticks.min).toBeCloseTo(0);
+  expect(ticks.max).toBeCloseTo(0.5);
+  expect(ticks.step).toBeCloseTo(0.1);
+});
+
+// 全て同じ値でも幅を持たせる（正常系）
+test("test_nice_ticks_when_flat", async () => {
+  // 準備
+  const { niceTicks } = await loadGeometry();
+  // 実行
+  const ticks = niceTicks([0, 0]);
+  // 検証
+  expect(ticks.max).toBeGreaterThan(ticks.min);
+  expect(ticks.step).toBeGreaterThan(0);
+});

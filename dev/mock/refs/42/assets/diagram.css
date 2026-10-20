@@ -150,10 +150,12 @@
       }
     }
 
-    /* 今の倍率: 縮小と拡大のボタンの間に、桁を揃えて出す */
-    .mdmark-diagram-zoom {
+    /* 今の倍率のボタン: 縮小と拡大のボタンの間に、桁を揃えて今の倍率を出す。押すと開いたときの倍率と位置に戻す */
+    .mdmark-diagram-tool.mdmark-diagram-zoom {
+      width: auto;
       min-width: 3.25rem;
-      color: var(--mdmark-color-muted);
+      padding: 0 0.375rem;
+      font: inherit;
       font-size: 0.8125rem;
       font-variant-numeric: tabular-nums;
       text-align: center;
@@ -213,7 +215,7 @@
     }
 
     /* 文字の上: I の形にして選べるようにする（ドラッグを始めない） */
-    :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text) {
+    :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text) {
       cursor: text;
       user-select: text;
     }
@@ -377,7 +379,6 @@
     /* 箱の中の用語: 本文の用語と同じ破線の下線（.mdmark-term）。箱の小さな文字に合わせて下線を近づける */
     .mdmark-diagram-node .mdmark-term {
       text-underline-offset: 0.25em;
-      cursor: help;
     }
 
     /* 線の層: 箱の上に重ね、線そのものは押せない（ツールチップ用の太い透明の線だけが拾う） */
@@ -467,7 +468,6 @@
       stroke: transparent;
       stroke-width: 14;
       pointer-events: stroke;
-      cursor: help;
     }
 
     /* 線のラベル（入力の要約）: 線の上に地の色の札で置く */
@@ -489,7 +489,6 @@
         text-decoration: underline dashed var(--mdmark-color-term-underline);
         text-decoration-thickness: 1px;
         text-underline-offset: 0.25em;
-        cursor: help;
       }
 
       &:focus-visible {
@@ -588,6 +587,28 @@
       fill: var(--series-color);
       stroke: var(--mdmark-color-bg);
       stroke-width: 1.5;
+    }
+
+    /* 棒と凡例の棒の見本: 系列の模様（1 塗りつぶし・2 斜線・3 点・4 格子）で塗り、系列の色の線で縁取る */
+    .mdmark-diagram-bar {
+      stroke: var(--series-color);
+      stroke-width: 1.5;
+    }
+
+    /* 円の扇形: 系列の模様で塗り、隣の扇形とは地の色の隙間で分ける */
+    .mdmark-diagram-slice {
+      stroke: var(--mdmark-color-bg);
+      stroke-width: 2;
+      stroke-linejoin: round;
+    }
+
+    /* 円の割合: 扇形の外に、本文の色の等幅数字で出す */
+    .mdmark-diagram-value-text {
+      fill: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-body);
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
 
     /* 系列ごとの点の色 */

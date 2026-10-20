@@ -14,12 +14,12 @@ scenarios:
         D-->>U: 入力の詳細のツールチップ
         U->>D: ツールチップの上へポインターを動かす
         D-->>U: ツールチップを出したままにする
-        U->>D: LLM の箱にポインターを乗せる
+        U->>D: LLM の箱の印にポインターを乗せる
         D-->>U: 入力・処理・出力のツールチップ
     expected:
       - 矢印の上で、入力の詳細を書いた `role="tooltip"` の要素が出る
       - ツールチップの上へポインターを動かしても消えない
-      - LLM の箱の上で、入力・処理・出力を書いたツールチップが出る
+      - LLM の箱の右上の印の上で、入力・処理・出力を書いたツールチップが出る。箱の印の外では出ない
       - ツールチップを持つ箱には印があり、持たない箱には無い
     test: test_normal
   - name: 正常シナリオ（キーボード）
@@ -57,7 +57,65 @@ scenarios:
       - 用語の上で、本文の用語と同じ見た目のツールチップに用語集の意味が出る
       - 図の外の段落の同じ用語にも下線とツールチップがある
     test: test_normal_when_term
-lead: 読む人が、図の矢印・箱・箱の中の用語にポインターを乗せるかフォーカスして、詳細をツールチップで読む。矢印は入力の詳細、LLM・スクリプトの箱は入力・処理・出力、用語は用語集の意味を出す。
+  - name: 正常シナリオ（埋め込んだ HTML の data-hint）
+    setup:
+      - name: ヒントを持つ HTML を描いたページ
+        description: '`<!-- html -->` の範囲の `html` のコードブロックに、`data-hint` を付けた箱 1 つと、付けない箱 1 つを置いて描いたページ'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 埋め込んだ HTML
+        U->>D: data-hint の箱の印の外にポインターを乗せる
+        D-->>U: ツールチップを出さない
+        U->>D: data-hint の箱の印にポインターを乗せる
+        D-->>U: data-hint の文のツールチップ
+        U->>D: Tab で data-hint の箱の印にフォーカスする
+        D-->>U: 同じツールチップ
+        U->>D: Esc を押す
+        D-->>U: ツールチップを消し、フォーカスは印に残す
+    expected:
+      - '`data-hint` の箱の右上の印の上で、`data-hint` の文を書いた `role="tooltip"` の要素が、図のツールチップと同じ見た目で出る'
+      - '`data-hint` の箱の印の外にポインターを乗せても、ツールチップは出ず、ポインターの形は変わらない'
+      - '`data-hint` の箱の印はフォーカスでき、フォーカスすると印の `aria-describedby` がそのツールチップを指す'
+      - Esc でツールチップが消え、フォーカスは印に残る
+      - '`data-hint` を持つ箱には図の箱と同じ印があり、持たない箱には無い'
+    test: test_normal_when_data_hint
+  - name: 正常シナリオ（箱の hint）
+    setup:
+      - name: hint を持つ図を描いたページ
+        description: '`hint` だけを持ち `io` を持たない箱 1 つを含むフロー図を描いたページ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 図
+        U->>D: hint を持つ箱の印にポインターを乗せる
+        D-->>U: hint の文のツールチップ
+    expected:
+      - '`hint` を持つ箱の右上の印の上で、`hint` の文を書いたツールチップが出る'
+      - '`hint` を持つ箱には、ツールチップを持つ箱の印がある'
+    test: test_normal_when_node_hint
+  - name: 正常シナリオ（ヒントを外す）
+    setup:
+      - name: ヒントを外して描いたページ
+        description: 正常シナリオのフロー図（矢印の詳細・LLM の箱の入力・処理・出力）に、正常シナリオ（箱の hint）と同じ `hint` だけを持つ箱を足した図と、`data-hint` を付けた箱を持つ HTML を、設定の `features.hints` を `false` にして描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 図と埋め込んだ HTML
+        U->>D: 矢印・LLM の箱・hint の箱・data-hint の箱にポインターを乗せる
+        D-->>U: ツールチップを出さない
+    expected:
+      - 矢印・LLM の箱・`hint` の箱・`data-hint` の箱のどれに乗せても、ツールチップが出ない
+      - ツールチップを持つ箱の印が無い
+      - 矢印のラベル・箱の名前・`data-hint` の箱の文字は描かれている
+    test: test_normal_when_hints_off
+lead: 読む人が、図の矢印・箱・箱の中の用語にポインターを乗せるかフォーカスして、詳細をツールチップで読む。矢印は入力の詳細、LLM・スクリプトの箱は入力・処理・出力、用語は用語集の意味を出す。箱の `hint` と、埋め込んだ HTML の要素の `data-hint` も同じツールチップで出し、設定の `features.hints` でまとめて外せる。
 issue: 21
 primary_actor: 読む人
 trigger: 読む人が、図の矢印や箱に書いた要約より詳しく知りたくなる

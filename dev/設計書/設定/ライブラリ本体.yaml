@@ -293,5 +293,27 @@ settings:
     status: planned
     introduced:
       pr: 42
+  - key: features.html
+    title: 埋め込んだ HTML の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- html -->` の範囲の `html` のコードブロックの中身を HTML として描き、中の図の部品の custom element を図にする。オフのときは印を取り除き、コードブロックのまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 45
+  - key: features.hints
+    title: ヒントの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す
+    reload: reload
+    status: planned
+    introduced:
+      pr: 45
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

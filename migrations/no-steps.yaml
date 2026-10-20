@@ -7,3 +7,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 994b6dd47210be7b5743b703a2eb4cd3b258436aedd8666602ee1777688f0918
     reason: features に省いてよい diagrams を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 4603c8eba15b46c3eaf3a22aa110d4b25bb60bafa2ad4b8994335b62c838d77c
+    reason: features に省いてよい html・hints を足しただけで、古い設定もそのまま新しい Schema に合う

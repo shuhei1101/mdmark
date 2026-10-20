@@ -45,3 +45,26 @@ AI が HTML を作るときの書き方の決まり
 | URL | `href` と `src` は `http`・`https`・`mailto` と相対 URL だけ |
 
 見た目を自分で作る HTML は、使う側のページに載せるか、画像にして置く。
+
+## 埋め込んだ HTML で残るもの
+
+`<!-- html -->` の範囲に置いた `html` のコードブロックの HTML は、上の文書に書いた HTML と同じ許可の検査を通してから、その場に描く。
+書き方は [コードブロックのHTMLを描く](../使い方/図を描く/コードブロックのHTMLを描く.md)。
+
+| 項目 | 決まり |
+| --- | --- |
+| スクリプト・イベントの属性 | `script` 要素・`on` で始まる属性・`javascript:` の URL は落ち、動かない。動くのは mdmark の部品だけ |
+| `button` | 残る。`type="button"` に固定し、`form` で始まる属性は落とす。押しても何も起きない |
+| `style` | 下の宣言だけが残る |
+| `data-hint` | 任意の要素に書け、値の文がツールチップで出る。値は Markdown として読まず、文字として出す |
+| 図の部品 | `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` の中の JSON を、図の部品の定義として描く。要素の属性は読まない |
+| `id`・`data-*`（`data-hint` を除く） | 残さない |
+
+`style` の宣言は、次のものだけが残る。
+
+| 項目 | 宣言 |
+| --- | --- |
+| 残す宣言 | `display`・`flex` で始まるもの・`align-items`・`align-self`・`justify-content`・`grid` で始まるもの・`gap`・`row-gap`・`column-gap`・`margin` で始まるもの・`padding` で始まるもの・`border` で始まるもの・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align` |
+| 落とす値 | `url(` を含む値・単位 `vw`・`vh` を含む値・`position`・負の `margin`・`padding` |
+
+幅が本文の列より広い HTML は、描いた枠の中で横にスクロールする。

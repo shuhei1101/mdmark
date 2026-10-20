@@ -39,9 +39,20 @@ function button(root: ParentNode, name: string): HTMLButtonElement {
   return found;
 }
 
+/** 倍率のボタン（読み上げの名前が `倍率 {今の倍率}。全体が収まる倍率に戻す`） */
+function zoomButton(root: ParentNode): HTMLButtonElement {
+  const found = root.querySelector<HTMLButtonElement>(
+    'button[aria-label^="倍率"]',
+  );
+  if (!found) {
+    throw new Error("倍率のボタンが無い");
+  }
+  return found;
+}
+
 /** 倍率の表示 */
 function zoomText(root: ParentNode): string {
-  return root.querySelector('[aria-label="倍率"]')?.textContent ?? "";
+  return zoomButton(root).textContent ?? "";
 }
 
 /** 図の表示する枠 */
@@ -105,6 +116,36 @@ test("test_attach_diagrams_when_panned", async () => {
   // 検証
   expect(panGroup?.hidden).toBe(false);
   expect(viewport.scrollLeft - before).toBe(80);
+});
+
+// 倍率のボタンで開いたときの倍率と位置に戻す（正常系）
+test("test_attach_diagrams_when_zoom_button", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createDiagramRoot();
+  detachers.push(attachDiagrams(root));
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  const viewport = viewportOf(root);
+  viewport.focus();
+  await userEvent.keyboard("{ArrowRight}");
+  expect(viewport.scrollLeft).toBeGreaterThan(0);
+  expect(zoomButton(root).getAttribute("aria-label")).toBe(
+    "倍率 85%。全体が収まる倍率に戻す",
+  );
+  // 実行
+  zoomButton(root).click();
+  // 検証
+  expect(zoomText(root)).toBe("55%");
+  expect(viewport.scrollLeft).toBe(0);
+  expect(zoomButton(root).getAttribute("aria-label")).toBe(
+    "倍率 55%。全体が収まる倍率に戻す",
+  );
+  // 実行: 開いたときの倍率のままでも押せる
+  expect(zoomButton(root).disabled).toBe(false);
+  zoomButton(root).click();
+  // 検証
+  expect(zoomText(root)).toBe("55%");
 });
 
 // ホイールで倍率を変えない（正常系）

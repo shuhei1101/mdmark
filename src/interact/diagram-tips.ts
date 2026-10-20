@@ -8,20 +8,37 @@ const VIEWPORT_MARGIN_PX = 16;
 // 開いているツールチップの線に付ける class
 const ACTIVE_CLASS = "is-active";
 
-/** 図のツールチップ（線の詳細・箱の入力・処理・出力・箱の中の用語）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる */
+// 開いているヒントの要素に付ける class
+const HINT_OPEN_CLASS = "is-hint-open";
+
+// 埋め込んだ HTML のヒントの持ち主（ブロックの要素の印・行内の要素）と、ツールチップの class
+const HINT_OWNER_SELECTOR = ".mdmark-hint-mark, .mdmark-hint-inline";
+const HINT_HOST_SELECTOR = ".mdmark-hint-block, .mdmark-hint-inline";
+const HINT_TIP_CLASS = "mdmark-hint-tip";
+
+// 埋め込んだ HTML のヒントに操作を付けた回数の通し番号。`id` を重ならせないために使う
+let hintCounter = 0;
+
+/** 図のツールチップ（線の詳細・箱の説明と入力・処理・出力・箱の中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を渡したとき）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。箱は右上の印の上、ヒントはブロックの要素の印か行内の要素の上でだけ開く */
 export function attachDiagramTips(figure: HTMLElement): {
   closeOpen: () => boolean;
   detach: () => void;
 } {
+  const embedded = figure.classList.contains("mdmark-html");
   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
   const viewport = figure.querySelector<HTMLElement>(
     ".mdmark-diagram-viewport",
   );
-  const tips = new Map(
-    [...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-tip")].map(
-      (tip) => [tip.dataset.tipFor ?? "", tip],
-    ),
+  // 埋め込んだ HTML を受けたときは、中の図の部品の分は図の側が扱うので、図の外のヒントだけを見る
+  const tips = new Map<string, HTMLElement>(
+    embedded
+      ? []
+      : [...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-tip")].map(
+          (tip) => [tip.dataset.tipFor ?? "", tip],
+        ),
   );
+  // 埋め込んだ HTML のヒントの持ち主（ツールチップを置く基準にもなる）
+  const hintOwners = new Map<string, HTMLElement>();
   const controller = new AbortController();
   const { signal } = controller;
   let current: string | undefined;
@@ -29,9 +46,14 @@ export function attachDiagramTips(figure: HTMLElement): {
 
   /** 持ち主の名前から、ツールチップを置く基準の要素（フォーカスできる要素）を引く */
   const anchorOf = (owner: string): HTMLElement | null =>
+    hintOwners.get(owner) ??
     figure.querySelector<HTMLElement>(
       `[data-tip-owner="${CSS.escape(owner)}"]:not(.mdmark-diagram-wire-hit)`,
     );
+
+  /** ヒントの持ち主の名前から、開いている印を付ける要素（ブロックの要素か行内の要素）を引く */
+  const hintHostOf = (owner: string): Element | null | undefined =>
+    hintOwners.get(owner)?.closest(HINT_HOST_SELECTOR);
 
   /** 持ち主の線 */
   const wireOf = (owner: string): Element | null =>
@@ -41,6 +63,10 @@ export function attachDiagramTips(figure: HTMLElement): {
 
   /** ツールチップを持ち主の下（収まらなければ上）に、画面からはみ出さないよう置く */
   const place = (tip: HTMLElement, anchor: HTMLElement): void => {
+    if (tip.classList.contains(HINT_TIP_CLASS)) {
+      placeHint(tip, anchor);
+      return;
+    }
     if (!box) {
       return;
     }
@@ -62,6 +88,21 @@ export function attachDiagramTips(figure: HTMLElement): {
     tip.style.top = `${(above ? a.top - TIP_GAP_PX - height : a.bottom + TIP_GAP_PX) - b.top}px`;
   };
 
+  /** 埋め込んだ HTML のヒントのツールチップを、画面に対して持ち主の下（収まらなければ上）に、画面からはみ出さないよう置く */
+  const placeHint = (tip: HTMLElement, anchor: HTMLElement): void => {
+    const a = anchor.getBoundingClientRect();
+    const { width, height } = tip.getBoundingClientRect();
+    const above =
+      a.bottom + TIP_GAP_PX + height > window.innerHeight &&
+      a.top - TIP_GAP_PX - height >= 0;
+    const left = Math.max(
+      VIEWPORT_MARGIN_PX,
+      Math.min(a.left, window.innerWidth - width - VIEWPORT_MARGIN_PX),
+    );
+    tip.style.left = `${left}px`;
+    tip.style.top = `${above ? a.top - TIP_GAP_PX - height : a.bottom + TIP_GAP_PX}px`;
+  };
+
   /** ツールチップを閉じ、持ち主の線の強調を外す */
   const close = (): void => {
     clearTimeout(closeTimer);
@@ -73,6 +114,7 @@ export function attachDiagramTips(figure: HTMLElement): {
       tip.hidden = true;
     }
     wireOf(current)?.classList.remove(ACTIVE_CLASS);
+    hintHostOf(current)?.classList.remove(HINT_OPEN_CLASS);
     current = undefined;
     unwatch();
   };
@@ -92,6 +134,7 @@ export function attachDiagramTips(figure: HTMLElement): {
     tip.hidden = false;
     place(tip, anchor);
     wireOf(owner)?.classList.add(ACTIVE_CLASS);
+    hintHostOf(owner)?.classList.add(HINT_OPEN_CLASS);
     current = owner;
     watch();
   };
@@ -109,30 +152,39 @@ export function attachDiagramTips(figure: HTMLElement): {
     }, CLOSE_DELAY_MS);
   };
 
-  // 持ち主: 線のラベル・透明の太い線・箱の印・箱の中の用語
-  for (const owner of figure.querySelectorAll<HTMLElement>(
-    "[data-tip-owner]",
-  )) {
+  // 持ち主: 線のラベル・透明の太い線・箱の印・箱の中の用語（埋め込んだ HTML の中の図は、図の側が扱う）
+  for (const owner of embedded
+    ? []
+    : figure.querySelectorAll<HTMLElement>("[data-tip-owner]")) {
     const name = owner.dataset.tipOwner ?? "";
     owner.addEventListener("pointerenter", () => open(name), { signal });
     owner.addEventListener("pointerleave", closeLater, { signal });
     owner.addEventListener("focus", () => open(name), { signal });
     owner.addEventListener("blur", closeLater, { signal });
   }
-  // 入力・処理・出力を持つ箱は、箱の上でも開く（箱の中の用語の上を除く）
-  for (const node of figure.querySelectorAll<HTMLElement>(
-    ".mdmark-diagram-node.has-tip",
-  )) {
-    node.addEventListener(
-      "pointerenter",
-      (event) => {
-        if (!(event.target as Element).closest(".mdmark-term")) {
-          open(`node:${node.dataset.node ?? ""}`);
-        }
-      },
-      { signal },
-    );
-    node.addEventListener("pointerleave", closeLater, { signal });
+  // 埋め込んだ HTML のヒント: ツールチップの `id` を、ページの中で一意な値に振り直して持ち主と結ぶ
+  if (embedded) {
+    hintCounter += 1;
+    const owners = [
+      ...figure.querySelectorAll<HTMLElement>(HINT_OWNER_SELECTOR),
+    ].filter((owner) => !owner.closest("figure.mdmark-diagram"));
+    owners.forEach((owner, position) => {
+      const tip = figure.querySelector<HTMLElement>(
+        `#${CSS.escape(owner.getAttribute("aria-describedby") ?? "")}`,
+      );
+      if (!tip) {
+        return;
+      }
+      const name = `mdmark-hint-${hintCounter}-${position + 1}`;
+      tip.id = name;
+      owner.setAttribute("aria-describedby", name);
+      tips.set(name, tip);
+      hintOwners.set(name, owner);
+      owner.addEventListener("pointerenter", () => open(name), { signal });
+      owner.addEventListener("pointerleave", closeLater, { signal });
+      owner.addEventListener("focus", () => open(name), { signal });
+      owner.addEventListener("blur", closeLater, { signal });
+    });
   }
   for (const tip of tips.values()) {
     tip.addEventListener("pointerenter", () => clearTimeout(closeTimer), {
@@ -164,13 +216,14 @@ export function attachDiagramTips(figure: HTMLElement): {
   // 開いている間だけ受け取る。印刷の前は閉じる（紙には出さない）
   const watch = (): void => {
     document.addEventListener("keydown", onKeydown);
-    window.addEventListener("scroll", follow, { passive: true });
+    // 横にスクロールする埋め込んだ HTML の中のスクロールも受けるため、捕捉の段で受ける
+    window.addEventListener("scroll", follow, { capture: true, passive: true });
     window.addEventListener("resize", follow);
     window.addEventListener("beforeprint", close);
   };
   const unwatch = (): void => {
     document.removeEventListener("keydown", onKeydown);
-    window.removeEventListener("scroll", follow);
+    window.removeEventListener("scroll", follow, { capture: true });
     window.removeEventListener("resize", follow);
     window.removeEventListener("beforeprint", close);
   };

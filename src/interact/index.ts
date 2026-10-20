@@ -1,12 +1,14 @@
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagrams } from "./diagrams.ts";
+import { attachEmbeddedHtml } from "./embedded-html.ts";
 import { attachParams } from "./params.ts";
 import { attachSections } from "./sections.ts";
 import { attachTables } from "./tables.ts";
 import { attachTabs } from "./tabs.ts";
 import { attachTermTips } from "./terms.ts";
 
-/** 機能がオンの記法だけ操作を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ操作を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、まとめて外す関数を返す */
 export function attachInteractions(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -34,6 +36,17 @@ export function attachInteractions(options: {
   }
   if (features.glossary === true || features.backlinks === true) {
     detachers.push(attachTermTips(root));
+  }
+  if (features.html === true) {
+    detachers.push(attachEmbeddedHtml(root));
+    // ヒントの印と中身は、`hints` がオンのときだけ `render` が出す。操作もオンのときだけ付ける
+    if (features.hints === true) {
+      for (const embedded of root.querySelectorAll<HTMLElement>(
+        "div.mdmark-html",
+      )) {
+        detachers.push(attachDiagramTips(embedded).detach);
+      }
+    }
   }
   return () => {
     for (const detach of detachers.reverse()) {

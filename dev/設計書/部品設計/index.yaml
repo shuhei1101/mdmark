@@ -40,8 +40,12 @@ items:
   - page: シーケンス図.ts.yaml
     summary: 相手を左から右、メッセージを時刻の順に並べる図
   - page: グラフ.ts.yaml
-    summary: 系列を色と模様の組で分ける折れ線のグラフ
+    summary: 系列を色と模様の組で分ける折れ線・棒・円・散布図のグラフ
   - page: 図のツールチップ.ts.yaml
-    summary: 図の線の入力の詳細と、箱の入力・処理・出力を出すツールチップ
+    summary: 図の線の入力の詳細と、箱の入力・処理・出力・ヒントを出すツールチップ
   - page: 操作できる部品.ts.yaml
     summary: スライダー・今の値を写すボタン・グラフを組み合わせた部品
+  - page: 埋め込んだHTML.ts.yaml
+    summary: コードブロックに書いた HTML をその場に描き、列より広いときだけ中で横にスクロールする枠
+  - page: ヒント.ts.yaml
+    summary: 埋め込んだ HTML の `data-hint` の要素に付ける印と下線とツールチップ

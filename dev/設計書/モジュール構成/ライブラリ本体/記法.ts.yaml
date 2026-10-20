@@ -14,6 +14,7 @@ directory: |-
   ├── badges.ts       # バッジ
   ├── figures.ts      # 図表の番号と参照
   ├── toc.ts          # 目次
+  ├── html.ts         # 埋め込んだ HTML
   ├── warnings.ts     # 書き方の警告を差し込む助け
   └── tokens.ts       # 記法のコアルールが共有するトークンの助け（印の読み取り・閉じの印の探索・機能の判定）
   ```
@@ -485,9 +486,75 @@ functions:
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
+  - name: buildEmbeddedHtml
+    title: 埋め込んだ HTML を描く
+    container: src/render/syntax/html.ts
+    summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲ごとに言語 `html` の `fence` を数え、1 つなら範囲のトークンを `html_block` 1 つに置き換える。0 ・ 2 つ以上なら `pushWarning` で書き方の警告を差し込み、範囲の中身はそのまま残す。オフのときは何もしない（印は `dropMarks` が取り除く）
+    description: |-
+      置き換える HTML は次の順で作る。
+
+      1. 中身の `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` を正規表現で拾い、中身の文字を `readDefinition` に渡す（`diagrams` がオフなら要素を中身ごと消す）。読めたら図の部品の HTML（`buildDiagrams` と同じ作りで `markOwn` を掛ける）、読めなければ書き方の警告の HTML を、その場所へ一時的な印（`<!--mdmark-part:{n}-->`）で預ける
+      2. 残りを `sanitizeEmbedded` で落とす。`onText` は `buildDictionary`・`findWords`・`renderTermTip` で用語と文書の別名に下線を引く（範囲ごとに語の最初の 1 回だけ。`glossary` と `backlinks` が両方オフなら文字のまま）
+      3. `hints` がオンなら `data-hint` を持つ要素に `renderHintMarkup` を当て、オフなら `data-hint` を消す
+      4. 預けた印を図の部品と書き方の警告の HTML に戻し、`<div class="mdmark-html">`（`markOwn`）で囲む
+      5. 書いた人の要素にも `markOwn` を掛け、最後の `sanitize` で下線・ヒントの class と `style` を残す（中身は 2. で落とし済み）
+    kind: 関数
+    scope: internal
+    side_effects: '`state.tokens` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態（`state.env` は `RenderEnv`）
+    unit_tests:
+      - name: test_build_embedded_html
+        case: 正常
+        summary: 範囲のコードブロックを HTML として描き、範囲の外はコードのままにする
+        condition: '`<!-- html -->` の範囲に `<p>こんにちは</p>` の `html` のコードブロック、範囲の外にもう 1 つ'
+        mock: なし
+        expected: '`div.mdmark-html > p` が 1 つ、`pre > code.language-html` が 1 つ'
+      - name: test_build_embedded_html_when_chart
+        case: 正常
+        summary: 中の custom element を図の部品にする
+        condition: 範囲の HTML に `<mdmark-chart>` と棒のグラフの定義
+        mock: なし
+        expected: '`div.mdmark-html figure.mdmark-diagram[data-diagram="chart"]` があり、出力に `<mdmark-chart` と `"series"` が無い'
+      - name: test_build_embedded_html_when_hint
+        case: 正常
+        summary: data-hint に印とツールチップの中身を置き、hints がオフなら外す
+        condition: '`<div data-hint="説明">` と `<span data-hint="分類の説明">`。もう 1 つは同じ文書に `<!-- features: -hints -->`'
+        mock: なし
+        expected: 前者で `div.mdmark-hint-block > button.mdmark-hint-mark` と `span.mdmark-hint-inline[tabindex="0"]` があり、後者で `data-hint` と `mdmark-hint-` が無い
+      - name: test_build_embedded_html_when_terms
+        case: 正常
+        summary: 中の文字の用語に下線を引く
+        condition: 索引の用語 `索引` と、範囲の HTML の `p` に `索引` が 2 回
+        mock: なし
+        expected: '`div.mdmark-html .mdmark-term-wrap` が 1 つ'
+      - name: test_build_embedded_html_when_blocks_count
+        case: 異常
+        summary: 範囲のコードブロックが 1 つでないときは書き方の警告を置く
+        condition: コードブロックの無い範囲と、2 つある範囲
+        mock: なし
+        expected: どちらも `.mdmark-syntax-warning` の本文が `<!-- html --> の範囲に html のコードブロックを 1 つだけ置いてください` で始まり、2 つある範囲のコードブロックは `pre` で出る
+      - name: test_build_embedded_html_when_disabled
+        case: 正常
+        summary: html がオフならコードブロックのままにする
+        condition: '正常の文書に `<!-- features: -html -->`'
+        mock: なし
+        expected: '`pre > code.language-html` が 2 つで、`mdmark-html` と `<!--` が無い'
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[sanitizeEmbedded]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[renderHintMarkup]
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[findWords]
+      - '#functions[pushWarning]'
+    status: planned
+    introduced:
+      pr: 45
 notes:
-  部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける
-  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 節 → 目次 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後
+  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする
+  部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
 test_files:
   - tests/unit/src/render/syntax/headings.test.ts
   - tests/unit/src/render/syntax/sections.test.ts
@@ -500,3 +567,4 @@ test_files:
   - tests/unit/src/render/syntax/badges.test.ts
   - tests/unit/src/render/syntax/figures.test.ts
   - tests/unit/src/render/syntax/toc.test.ts
+  - tests/unit/src/render/syntax/html.test.ts

@@ -104,6 +104,18 @@
           "description": "文書の末尾に関連文書（被参照）の一覧を置き、索引の文書の `aliases` に一致した語のツールチップに関連文書を出す。オフの文書は参照の表で参照元にも参照先にもならない。",
           "type": "boolean",
           "default": true
+        },
+        "html": {
+          "title": "埋め込んだ HTML の機能",
+          "description": "`<!-- html -->` の範囲の `html` のコードブロックの中身を HTML として描き、中の図の部品の custom element を図にする。オフのときは印を取り除き、コードブロックのまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "hints": {
+          "title": "ヒントの機能",
+          "description": "埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す。",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": {
@@ -124,7 +136,9 @@
         "figures": true,
         "diagrams": true,
         "glossary": true,
-        "backlinks": true
+        "backlinks": true,
+        "html": true,
+        "hints": true
       }
     },
     "index": {

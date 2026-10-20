@@ -64,3 +64,7 @@ items:
     summary: 使う側が自分の場所だけの部品を `registerExtension` で足し、自分の場所だけの見た目を CSS で当てる
   - page: 足すJavaScriptを型で点検する.yaml
     summary: 使う側が `// @ts-check` と JSDoc で書いた JavaScript を、配布物の型定義に対して `tsc --noEmit` で点検する
+  - page: コードブロックのHTMLを描く.yaml
+    summary: 印で囲んだ `html` のコードブロックを、スクリプトを落としてその場の HTML として描く
+  - page: チャートを描く.yaml
+    summary: 埋め込んだ HTML の custom element に書いた定義から、図の部品をその場所に図の枠に載せて描く

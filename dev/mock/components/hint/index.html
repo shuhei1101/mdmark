@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>hint | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット。行内のヒントの下線の色） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット。ツールチップとアイコンの見た目） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 埋め込んだ HTML と data-hint の規則（#45 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/45/assets/embed.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- data-hint に印・下線・ツールチップを付けるスクリプト（#45 で共有するアセット） -->
+  <script src="../../refs/45/assets/embed.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">data-hint のヒント</h1>
+
+      <!-- 通常: ブロックの要素は右上に図の箱と同じ印、行内の要素は本文の用語と同じ破線の下線。印か下線の語にポインターを乗せるか Tab でフォーカスすると開き、Esc で閉じる。ブロックの印の外では開かない。
+           .mdmark-html の中は文書を書く人が書いた HTML（style 属性は書いた人のもの） -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">通常（ブロックは右上の印、行内は破線の下線。印か下線の語へのポインターかフォーカスで開く）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              <div id="hint-card" data-hint="よくある質問の表から答えを選び、LLM が返信の下書きを書く。担当者は送る前に下書きを確かめる" style="flex: 1 1 12rem; padding: 12px 36px 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+                <strong>自動返信</strong><br>よくある質問から下書きを書く
+              </div>
+              <div style="flex: 1 1 12rem; padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+                <strong>担当者</strong><br>答えの無い問い合わせに返す
+              </div>
+            </div>
+            <p style="margin: 12px 0 0;">返信の種類は<span id="hint-word" data-hint="受け取ったメールの本文から、よくある質問で答える・担当者へ回すのどちらかを選ぶ">分類</span>が決めます。</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- ブロックを開いた: 印に文字の色をうっすら敷き、要素の下にツールチップを出す -->
+      <section aria-labelledby="state-block-open">
+        <h2 class="catalog-label" id="state-block-open">ブロックを開いた（印に色を敷く）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              <!-- [data-mock-open]: embed.js がこのツールチップを開いたまま見せる（モックだけの指定） -->
+              <div data-hint="よくある質問の表から答えを選び、LLM が返信の下書きを書く。担当者は送る前に下書きを確かめる" data-mock-open style="flex: 1 1 12rem; padding: 12px 36px 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+                <strong>自動返信</strong><br>よくある質問から下書きを書く
+              </div>
+              <div style="flex: 1 1 12rem; padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+                <strong>担当者</strong><br>答えの無い問い合わせに返す
+              </div>
+            </div>
+          </div>
+          <p style="min-height: 6rem;">図のツールチップと同じ枠と文字で出ます。</p>
+        </article>
+      </section>
+
+      <!-- 行内を開いた: 下線を本文の色にして、どの語の説明かを示す -->
+      <section aria-labelledby="state-inline-open">
+        <h2 class="catalog-label" id="state-inline-open">行内を開いた（下線を本文の色にする）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html">
+            <p style="margin: 0;">返信の種類は<span data-hint="受け取ったメールの本文から、よくある質問で答える・担当者へ回すのどちらかを選ぶ" data-mock-open>分類</span>が決めます。</p>
+          </div>
+          <p style="min-height: 4rem;">答えの候補が無いときは担当者へ回します。</p>
+        </article>
+      </section>
+
+      <!-- 書いた人の色の地: 印は要素の文字の色で描くので、書いた人が付けた地と文字の色の組のまま読める -->
+      <section aria-labelledby="state-colored">
+        <h2 class="catalog-label" id="state-colored">書いた人の色の地（印は要素の文字の色）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html">
+            <div data-hint="夜間（22 時〜8 時）に届いた問い合わせは、翌朝の担当者の一覧に回す" style="padding: 12px 36px 12px 16px; border-radius: 8px; background: #0a3069; color: #ffffff;">
+              <strong>夜間の窓口</strong><br>翌朝に担当者が返す
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 長い文: ツールチップの幅の上限で折り返し、高さの上限を超えるとツールチップの中でスクロールする -->
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長い文（幅の上限で折り返す）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html">
+            <div data-hint="添付ファイルのある問い合わせは、PDF・画像・表計算のファイルだけを通し、10 MB を超えるものは落としてから、中身を 3 行に要約して担当者の確認待ちの一覧へ回す。要約できなかったファイルは、元のファイルへのリンクだけを一覧に載せ、担当者が開いて確かめる。一覧に 1 日以上残った問い合わせは、窓口の責任者のチャットへ知らせる" data-mock-open style="padding: 12px 36px 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px;">
+              <strong>添付つきの問い合わせ</strong><br>確認待ちの一覧へ回す
+            </div>
+          </div>
+          <p style="min-height: 12rem;">要約の確からしさは、確認待ちの一覧の列で見られます。</p>
+        </article>
+      </section>
+
+      <!-- ヒントを外した（機能 hints がオフ）: 印・下線・ツールチップを付けず、フォーカスもさせない。要素の文字はそのまま描く -->
+      <section aria-labelledby="state-off">
+        <h2 class="catalog-label" id="state-off">ヒントを外した（機能 hints がオフ。印・下線・ツールチップを付けない）</h2>
+        <!-- [data-mock-hints="off"]: embed.js がこの中の data-hint に何も付けない（設定の features.hints が false の文書に当たる） -->
+        <article class="mdmark" data-mock-hints="off">
+          <div class="mdmark-html">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              <div data-hint="よくある質問の表から答えを選び、LLM が返信の下書きを書く。担当者は送る前に下書きを確かめる" style="flex: 1 1 12rem; padding: 12px 36px 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+                <strong>自動返信</strong><br>よくある質問から下書きを書く
+              </div>
+              <div style="flex: 1 1 12rem; padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+                <strong>担当者</strong><br>答えの無い問い合わせに返す
+              </div>
+            </div>
+            <p style="margin: 12px 0 0;">返信の種類は<span data-hint="受け取ったメールの本文から、よくある質問で答える・担当者へ回すのどちらかを選ぶ">分類</span>が決めます。</p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

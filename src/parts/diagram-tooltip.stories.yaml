@@ -25,3 +25,10 @@ stories:
     args:
       term: true
       open: true
+  - name: Hint
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      kind: hint
+      open: true
