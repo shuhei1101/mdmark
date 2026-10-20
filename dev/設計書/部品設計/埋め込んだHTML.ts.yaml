@@ -40,3 +40,4 @@ introduced:
   pr: 45
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[埋め込んだ HTML]
+test_file: tests/integration/lib/embedded-html.story.test.ts
