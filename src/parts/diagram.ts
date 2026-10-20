@@ -148,7 +148,7 @@ export function renderDiagramTip(tip: DiagramTip): string {
     tip.kind === "io" && tip.io
       ? `<dl class="mdmark-diagram-tip-io"><dt>入力</dt><dd>${escapeHtml(tip.io.in)}</dd><dt>処理</dt><dd>${escapeHtml(tip.io.do)}</dd><dt>出力</dt><dd>${escapeHtml(tip.io.out)}</dd></dl>`
       : `<span class="mdmark-term-tip-meaning">${escapeHtml(tip.tip ?? "")}</span>`;
-  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${escapeHtml(tip.owner ?? tip.label)}"${tip.open ? "" : " hidden"}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span>${body}</span></div>`;
+  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${escapeHtml(tip.owner ?? tip.label)}"${tip.open ? "" : ' hidden="hidden"'}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span>${body}</span></div>`;
 }
 
 /** 図の中のツールチップを集める入れ物 */
@@ -717,7 +717,7 @@ function renderTools(frame: DiagramFrame): string {
     icon: IconName,
     disabled = false,
   ): string =>
-    `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}"${disabled ? " disabled" : ""}>${iconSvg(icon)}</button>`;
+    `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(icon)}</button>`;
   const pan = [
     tool("left", "左へ動かす", "chevron-left"),
     tool("up", "上へ動かす", "chevron-up"),
@@ -727,7 +727,7 @@ function renderTools(frame: DiagramFrame): string {
   const screen = frame.modal
     ? tool("close", "全画面を閉じる", "x")
     : tool("fullscreen", "全画面で開く", "expand");
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > 1 ? "" : " hidden"}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= 1)}<output class="mdmark-diagram-zoom" aria-label="倍率">${Math.round(zoom * 100)}%</output>${tool("in", "拡大", "plus", zoom >= ZOOM.max)}${tool("fit", "全体が収まる倍率に戻す", "rotate-ccw", zoom === 1)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > 1 ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= 1)}<output class="mdmark-diagram-zoom" aria-label="倍率">${Math.round(zoom * 100)}%</output>${tool("in", "拡大", "plus", zoom >= ZOOM.max)}${tool("fit", "全体が収まる倍率に戻す", "rotate-ccw", zoom === 1)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
 }
 
 /** 図の枠を描く: 題・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */

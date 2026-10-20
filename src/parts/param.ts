@@ -65,7 +65,7 @@ export function renderParam(
     copy === "none"
       ? '<p class="mdmark-param-status" role="status"></p>'
       : `<p class="mdmark-param-status" role="status" data-state="${copy}">${renderCopyStatus(copy)}</p>`;
-  const fallback = `<pre class="mdmark-param-fallback"${copy === "failed" ? "" : " hidden"} tabindex="0" aria-label="写す JSON"><code>${copy === "failed" ? escapeHtml(paramJson(knob, value)) : ""}</code></pre>`;
+  const fallback = `<pre class="mdmark-param-fallback"${copy === "failed" ? "" : ' hidden="hidden"'} tabindex="0" aria-label="写す JSON"><code>${copy === "failed" ? escapeHtml(paramJson(knob, value)) : ""}</code></pre>`;
   const chart = renderDiagram({
     kind: "chart",
     definition: paramChart(definition, value),

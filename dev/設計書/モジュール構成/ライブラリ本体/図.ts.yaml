@@ -161,7 +161,7 @@ constants:
         value: '{ dash: "8 4", width: 1.5, head: "open", label: "戻る（ループ）" }'
   - name: ZOOM
     title: 拡大・縮小と移動の量
-    container: src/interact/diagrams.ts
+    container: src/diagram/geometry.ts
     summary: 1 回の倍率・上限・1 回の移動量
     entries:
       - key: step

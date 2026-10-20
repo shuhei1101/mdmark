@@ -226,7 +226,7 @@ exceptions:
     condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 256KB 以下（262144 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 320KB 以下（327680 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4

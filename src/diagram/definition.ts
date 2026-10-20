@@ -184,7 +184,7 @@ export const DIAGRAM_DIRECTIVES: Readonly<
 };
 
 /** 箱の種類の並び（書き方の警告にも出す） */
-export const NODE_KINDS: readonly MdmarkDiagramKind[] = [
+const NODE_KINDS: readonly MdmarkDiagramKind[] = [
   "llm",
   "dm",
   "script",
@@ -212,7 +212,7 @@ const SERIES_RANGE = { min: 1, max: 4 };
 const KNOB_DIGITS = 10;
 
 /** JSON として読めないことを書き方の警告の文に入れる頭 */
-export const JSON_PROBLEM_HEAD = "JSON として読めません";
+const JSON_PROBLEM_HEAD = "JSON として読めません";
 
 /** 閉じていない括弧と文字列から、足りない記号を閉じる順に並べる */
 function missingSymbols(text: string): string {
@@ -720,7 +720,7 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
 }
 
 /** スライダーの値を `min` から `max` まで `step` ごとに並べる */
-export function knobValues(knob: {
+function knobValues(knob: {
   min: number;
   max: number;
   step: number;

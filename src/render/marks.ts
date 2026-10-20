@@ -172,15 +172,25 @@ function ownHtmlBlock(state: StateCore, html: string): Token {
   return token;
 }
 
-/** 範囲で書いた拡張の印の `json` のコードブロックを読み、印の場所の要素にする。JSON として読めなければ書き方の警告にする */
+/** 範囲で書いた拡張の印の `json` のコードブロックを読み、印の場所の要素にする。コードブロックが 2 つ以上ある、または JSON として読めなければ書き方の警告にする */
 function extensionSlot(options: {
   state: StateCore;
   mark: Mark;
-  fence: Token;
+  fences: Token[];
   extensionName: string;
 }): Token {
-  const { state, mark, fence, extensionName } = options;
+  const { state, mark, fences, extensionName } = options;
   const env = state.env as RenderEnv;
+  const [fence] = fences;
+  if (!fence || fences.length > 1) {
+    return ownHtmlBlock(
+      state,
+      renderSyntaxWarning({
+        mark: mark.raw,
+        message: `の範囲に json のコードブロックが ${fences.length} つあります。部品の定義は 1 つだけ置いてください。拡張 \`${extensionName}\` の部品は描いていません。`,
+      }),
+    );
+  }
   const parsed = parseDefinitionJson(fence.content);
   if (!parsed.ok) {
     const after = parsed.after.replaceAll("`", "'");
@@ -206,7 +216,7 @@ function extensionSlot(options: {
   );
 }
 
-/** 範囲で書いた印のうち、登録した拡張の印は `json` のコードブロックを定義として読んで印の場所の要素 1 つにし、登録していない印は中身が `json` のコードブロックだけなら中身ごと取り除く。範囲の中身は出力に残さない */
+/** 範囲で書いた印のうち、登録した拡張の印は `json` のコードブロックを定義として読んで印の場所の要素 1 つ（コードブロックが 2 つ以上なら書き方の警告）にし、登録していない印は中身が `json` のコードブロックだけなら中身ごと取り除く。範囲の中身は出力に残さない */
 function takeDefinitionRanges(state: StateCore): void {
   const env = state.env as RenderEnv;
   const tokens = state.tokens;
@@ -231,10 +241,9 @@ function takeDefinitionRanges(state: StateCore): void {
     const closeIndex = closeOf(tokens, index, mark);
     const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
     const fences = inner.filter(isJsonFence);
-    const [fence] = fences;
-    if (extension && fence && fences.length === 1) {
+    if (extension && fences.length > 0) {
       out.push(
-        extensionSlot({ state, mark, fence, extensionName: extension.name }),
+        extensionSlot({ state, mark, fences, extensionName: extension.name }),
       );
       index = closeIndex;
     } else if (

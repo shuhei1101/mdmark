@@ -109,10 +109,13 @@ function attachView(
 
   /** 枠に図の全体が収まる倍率。文書の中は幅だけ、モーダルの中は幅と高さで決める */
   const computeFit = (): number =>
-    fitScale(content, {
-      width: viewport.clientWidth,
-      height: modal ? viewport.clientHeight : Number.POSITIVE_INFINITY,
-    });
+    // 隠れた場所（閉じた節・選んでいないタブ）では枠の幅が 0 なので、表示されて大きさが変わるまで等倍にする
+    viewport.clientWidth === 0
+      ? 1
+      : fitScale(content, {
+          width: viewport.clientWidth,
+          height: modal ? viewport.clientHeight : Number.POSITIVE_INFINITY,
+        });
 
   /** 戻すのボタンを、開いたときの倍率と位置かどうかに合わせる */
   const syncFit = (): void => {
