@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / diff（文書の差分） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・トップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 差分の規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/49/assets/diff.css">
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 見本のリビジョンと場面ごとの取り出し元・差分を描くスクリプト（番号で共有するアセット） -->
+  <script src="../../../../refs/49/assets/samples.js" defer></script>
+  <script src="../../../../refs/49/assets/diff.js" defer></script>
+  <!-- 操作列の切り替えと、取り出し元を渡して「変更を見る」を付けるスクリプト -->
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色・場面・差分の出し方・描いた結果の並べ方 -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-param] [data-value]: app.js が行き先の URL と今の状態の aria-current を当てる。[data-default] は URL に値を書かない既定 -->
+    <div class="mock-bar-group" role="group" aria-label="場面">
+      <a class="mock-bar-item" data-param="case" data-value="normal" data-default>リビジョンが 3 つ</a>
+      <a class="mock-bar-item" data-param="case" data-value="single">リビジョンが 1 つ</a>
+      <a class="mock-bar-item" data-param="case" data-value="same">変更が無い</a>
+      <a class="mock-bar-item" data-param="case" data-value="revisions-error">一覧を取り出せない</a>
+      <a class="mock-bar-item" data-param="case" data-value="content-error">r1 の本文を取り出せない</a>
+      <a class="mock-bar-item" data-param="case" data-value="no-segmenter">語の区切りが無い</a>
+      <a class="mock-bar-item" data-param="case" data-value="no-source">取り出し元を渡さない</a>
+    </div>
+    <!-- 差分の出し方: 文書の代わりに出すか、文書の上に並べるか -->
+    <div class="mock-bar-group" role="group" aria-label="差分の出し方">
+      <a class="mock-bar-item" data-param="layout" data-value="replace" data-default>文書の代わりに出す</a>
+      <a class="mock-bar-item" data-param="layout" data-value="stack">文書の上に並べる</a>
+    </div>
+    <!-- 埋め込んだ HTML の描いた結果の前と後の並べ方 -->
+    <div class="mock-bar-group" role="group" aria-label="描いた結果の並べ方">
+      <a class="mock-bar-item" data-param="sides" data-value="side" data-default>前と後を横に並べる</a>
+      <a class="mock-bar-item" data-param="sides" data-value="stack">前と後を縦に並べる</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">49</a> / diff
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた一番新しいリビジョン（r3）の文書。
+         diff.js が先頭に「変更を見る」の帯と差分の場所を足す（取り出し元を渡さない場面では足さない） -->
+    <article class="mdmark">
+<h1 id="問い合わせ窓口の週の報告">問い合わせ窓口の週の報告</h1>
+<p>10 月の第 2 週に受けた問い合わせを、窓口ごとにまとめます。</p>
+<h2 id="窓口ごとの件数">窓口ごとの件数</h2>
+<!-- 埋め込んだ HTML 1: 窓口ごとの件数の表 -->
+<div class="mdmark-html">
+<table>
+  <thead><tr><th>窓口</th><th>件数</th></tr></thead>
+  <tbody>
+    <tr><td>メール</td><td>150</td></tr>
+    <tr><td>電話</td><td>95</td></tr>
+  </tbody>
+</table>
+</div>
+<h2 id="返信の仕方">返信の仕方</h2>
+<!-- 埋め込んだ HTML 2: 返信の流れの箱 -->
+<div class="mdmark-html">
+<div style="display: flex; flex-wrap: wrap; gap: 12px;">
+  <div style="flex: 1 1 10rem; padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px;"><strong>自動返信</strong><br>よくある質問から返す</div>
+  <div style="flex: 1 1 10rem; padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px;"><strong>担当者</strong><br>答えの無い問い合わせに返す</div>
+</div>
+</div>
+<p>自動返信は、よくある質問の表から答えを選びます。
+よくある質問の変更は、担当者が週に 1 回確かめます。
+答えの無い問い合わせは、翌日までに担当者へ回します。
+電話の問い合わせは、受けたその日のうちに返します。</p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>diff-lines | mdmark の部品のモック</title>
+  <!-- 本文の規則と知らせの枠の規則（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- カタログの並べ方と差分の規則（#49 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/49/assets/catalog.css">
+  <link rel="stylesheet" href="../../refs/49/assets/diff.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 見本のリビジョン・差分を描くスクリプトと、見本ごとに差分の場所を開いて描くスクリプト -->
+  <script src="../../refs/49/assets/samples.js" defer></script>
+  <script src="../../refs/49/assets/diff.js" defer></script>
+  <script src="../../refs/49/assets/catalog.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">差分の行</h1>
+      <!-- 消した行は赤と -、足した行は緑と +。対の行は変わった語だけを濃い色にする -->
+      <section aria-labelledby="lines-normal">
+        <h2 class="catalog-label" id="lines-normal">行と語の色分け（r1 → r2）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="normal" data-mock-before="r1" data-mock-after="r2"></div>
+        </article>
+      </section>
+
+      <!-- Intl.Segmenter が無いとき、対の行を 1 文字ずつ比べる -->
+      <section aria-labelledby="lines-no-segmenter">
+        <h2 class="catalog-label" id="lines-no-segmenter">語の区切りを持たないブラウザ（1 文字ずつ比べる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="no-segmenter" data-mock-before="r1" data-mock-after="r2"></div>
+        </article>
+      </section>
+
+      <!-- 長い行は列の中で折り返し、横にスクロールさせない -->
+      <section aria-labelledby="lines-long">
+        <h2 class="catalog-label" id="lines-long">長文（長い URL を持つ行）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="long"></div>
+        </article>
+      </section>
+
+      <!-- 本文が同じ 2 つのリビジョンを選んだとき -->
+      <section aria-labelledby="lines-same">
+        <h2 class="catalog-label" id="lines-same">変更が無い</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="same"></div>
+        </article>
+      </section>
+
+      <!-- 取り出し元がリビジョンを 1 つだけ返したとき。選ぶ欄を出さない -->
+      <section aria-labelledby="lines-single">
+        <h2 class="catalog-label" id="lines-single">比べるリビジョンが無い</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="single"></div>
+        </article>
+      </section>
+
+      <!-- 取り出し元の応答に 1 秒以上かかったときだけ出す -->
+      <section aria-labelledby="lines-loading">
+        <h2 class="catalog-label" id="lines-loading">読み込み中</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="pending"></div>
+        </article>
+      </section>
+
+      <!-- revisions が reject したとき。文書の本文は描いたまま残す -->
+      <section aria-labelledby="lines-revisions-error">
+        <h2 class="catalog-label" id="lines-revisions-error">リビジョンの一覧を取り出せない</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="revisions-error"></div>
+        </article>
+      </section>
+
+    </div>
+  </main>
+</body>
+</html>
