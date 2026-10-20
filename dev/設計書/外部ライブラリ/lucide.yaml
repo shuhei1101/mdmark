@@ -62,7 +62,7 @@ catalogs:
         purpose: 図のシステムの枠の題
       - name: info
         kind: アイコン
-        purpose: 図の入力・処理・出力が出る箱の印と、注意書き（補足）
+        purpose: 図の入力・処理・出力とヒントが出る箱の印、埋め込んだ HTML のヒントの印、注意書き（補足）
       - name: copy
         kind: アイコン
         purpose: 操作できる部品の今の値を写すボタン

@@ -37,7 +37,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼び、まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。まとめて外す関数を返す
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean> }'
@@ -58,6 +58,12 @@ functions:
         condition: タブと表を描いた要素、`features` の `tabs` が `false`
         mock: なし
         expected: '`role="tablist"` が無く、表の見出しにボタンがある'
+      - name: test_attach_interactions_when_hints_off
+        case: 正常
+        summary: hints がオフなら埋め込んだ HTML にツールチップの操作を付けない
+        condition: ヒントを持つ `div.mdmark-html` を描いた要素と、`features` の `hints` が `false`
+        mock: なし
+        expected: 印にフォーカスしても `role="tooltip"` の要素が `hidden` を持ったまま
   - name: compareCells
     title: セルを比べる
     container: src/table-logic.ts
@@ -272,6 +278,31 @@ functions:
         condition: '`<td>本文の<span class="mdmark-term-wrap"><span class="mdmark-term">印</span><span class="mdmark-term-tip">用語HTML コメントで書く指定</span></span></td>`'
         mock: なし（Chromium）
         expected: '`本文の印`、`td` の中身が変わらない'
+  - name: attachEmbeddedHtml
+    title: 埋め込んだ HTML の幅を見る
+    container: src/interact/embedded-html.ts
+    summary: '`root` の中の `div.mdmark-html` ごとに `ResizeObserver` で幅を見、`scrollWidth` が `clientWidth` を 1px より大きく超える間だけ class `is-wide` と `tabindex="0"` を付ける。返す関数で監視を外し、付けた class と `tabindex` を消す'
+    kind: 関数
+    scope: internal
+    side_effects: '`root` の中の要素の class と `tabindex` を書き換える'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 監視を外す関数
+    unit_tests:
+      - name: test_attach_embedded_html
+        case: 正常
+        summary: 列より広い間だけ横にスクロールさせる
+        condition: 幅 600px の要素に、幅 900px の中身と幅 300px の中身の `div.mdmark-html`。その後、要素の幅を 1000px にする
+        mock: なし（Chromium）
+        expected: 付けた直後は前者だけが `is-wide` と `tabindex="0"` を持ち、幅を広げた後はどちらも持たない。外す関数の後はどちらも持たない
+    status: planned
+    introduced:
+      pr: 45
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts

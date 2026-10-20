@@ -134,6 +134,43 @@ constants:
         value: toc
       - key: glossary
         value: glossary
+      - key: flow
+        value: diagrams
+      - key: sequence
+        value: diagrams
+      - key: chart
+        value: diagrams
+      - key: param
+        value: diagrams
+      - key: html
+        value: html
+  - name: EMBED_STYLES
+    title: 埋め込んだ HTML の残す宣言
+    container: src/render/sanitize.ts
+    summary: 埋め込んだ HTML の要素の `style` に残す宣言と、値の許可の正規表現。sanitize-html の `allowedStyles` の `*` に渡す。どの宣言も値に `url(`・`expression(`・単位 `vw`・`vh` を含むと落とす
+    value: 下の entries
+    entries:
+      - key: display
+        value: /^(block|inline|inline-block|flex|inline-flex|grid|inline-grid|none)$/
+      - key: flex・flex-direction・flex-wrap・flex-grow・flex-shrink・flex-basis・align-items・justify-content・align-self
+        value: キーワード・数値・長さ
+      - key: grid-template-columns・grid-template-rows・grid-column・grid-row・gap・row-gap・column-gap
+        value: キーワード・数値・長さ・`fr`・`repeat(`・`minmax(`
+      - key: margin*・padding*
+        value: 長さ・`auto`
+      - key: border*・border-radius
+        value: 長さ・線の種類・色
+      - key: width・max-width・min-width・height
+        value: 長さ・割合・`auto`
+      - key: color・background-color
+        value: 色（`var(--mdmark-` で始まる変数を含む）
+      - key: font-size・font-weight・text-align
+        value: 長さ・割合・キーワード・数値
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[埋め込んだ HTML]
+    status: planned
+    introduced:
+      pr: 45
 functions:
   - name: render
     title: Markdown を HTML 文字列にする
@@ -312,7 +349,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（`style` は `EMBED_STYLES` の宣言だけを残す。自分で `style` を出すのは埋め込んだ HTML だけ）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
     args:
       - name: html
         type: string
@@ -362,6 +399,12 @@ functions:
         condition: '`<img src="data:image/png;base64,iVBORw0KGgo=">`・`<img src="data:text/html;base64,PHNjcmlwdD4=">`・`<img src="data:image/svg+xml,<svg/>">`・`<a href="data:image/png;base64,iVBORw0KGgo=">`'
         mock: なし
         expected: 1 つ目の `img` だけが `src` を持ち、2 つ目と3 つ目の `img` は `src` を持たず、`a` は `href` を持たない
+      - name: test_sanitize_when_own_style
+        case: 正常
+        summary: 自分が出した要素の style は許した宣言だけ残し、書いた要素の style は落とす
+        condition: '`data-mdmark-own` が `nonce` と等しい `<div style="display:flex;position:fixed">` と、持たない `<div style="display:flex">`'
+        mock: なし
+        expected: 前者が `style="display:flex"`、後者は `style` を持たない
   - name: parseMarkArgs
     title: 印の引数を読み分ける
     container: src/render/marks.ts
@@ -422,6 +465,49 @@ functions:
         condition: '`<!-- features: -tabs -->` と、段落を囲んだ `<!-- tabs -->` 〜 `<!-- /tabs -->`'
         mock: なし
         expected: 段落があり、印のトークンと `<!--` が無い
+  - name: sanitizeEmbedded
+    title: 埋め込んだ HTML を落とす
+    container: src/render/sanitize.ts
+    summary: 埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`EMBED_STYLES` を足した設定で落とす。`button` は `type="button"` に付け直し `form` で始まる属性を落とし、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。`textFilter` で文字を `onText` に渡し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は渡さない）
+    kind: 関数
+    scope: internal
+    args:
+      - name: html
+        type: string
+        required: true
+        description: コードブロックの中身（図の部品の custom element を置き換えた後）
+      - name: onText
+        type: '(text: string) => string'
+        required: true
+        description: 文字（エスケープ済み）を受け、置き換える HTML を返す関数
+    returns:
+      type: string
+      description: 落とした後の HTML
+    unit_tests:
+      - name: test_sanitize_embedded
+        case: 正常
+        summary: スクリプトを落とし、ボタンと data-hint を残す
+        condition: '`<script>`・`<button onclick="x" type="submit" formaction="/x">`・`<div data-hint="説明" data-x="1" class="evil">`'
+        mock: なし
+        expected: '`script`・`onclick`・`formaction`・`data-x`・`class` が無く、`<button type="button">` と `data-hint="説明"` が残る'
+      - name: test_sanitize_embedded_when_style
+        case: 正常
+        summary: 許した宣言だけを残す
+        condition: '`style="display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png); width: 100vw; color: var(--mdmark-color-accent)"`'
+        mock: なし
+        expected: '`style` が `display:flex;gap:12px;color:var(--mdmark-color-accent)` だけを持つ'
+      - name: test_sanitize_embedded_when_text
+        case: 正常
+        summary: 本文の文字だけを onText に渡す
+        condition: '`<p>索引</p><a href="#">索引</a><code>索引</code>`、`onText` は `索引` を `<span class="t">索引</span>` にする'
+        mock: なし
+        expected: '`p` の中だけが置き換わり、`a` と `code` の中は文字のまま'
+    refs:
+      - '#constants[EMBED_STYLES]'
+      - '#constants[SANITIZE_OPTIONS]'
+    status: planned
+    introduced:
+      pr: 45
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts
