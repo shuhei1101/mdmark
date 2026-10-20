@@ -592,7 +592,7 @@
       stickHeads();
       // 今の倍率のボタン: 倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
       zoomText.textContent = `${Math.round(scale * 100)}%`;
-      zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。押すと開いたときの倍率と位置に戻す`);
+      zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`);
       button("out").disabled = scale <= state.fit + ZOOM_EPSILON;
       button("in").disabled = scale >= ZOOM_MAX - ZOOM_EPSILON;
       // 図の全体が見えている間は、移動のボタンは何も動かさないので出さない
