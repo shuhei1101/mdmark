@@ -305,6 +305,12 @@
       font-size: 0.875rem;
     }
 
+    /* 変えていない範囲の見出し: ラベルだけなので帯を詰める */
+    .mdmark-diff-html:not([data-changed]) .mdmark-diff-html-head {
+      min-height: 0;
+      padding-block: 2px;
+    }
+
     /* 範囲の右上の「HTML」のラベル: コードブロックの言語のラベルと同じく、等幅の小さな文字で右端に置く */
     .mdmark-diff-html-label {
       margin-inline-start: auto;
