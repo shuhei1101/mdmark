@@ -21,13 +21,13 @@ scenarios:
         U->>M: 差分を開く
         M->>S: revisions(docId)
         S-->>M: リビジョンの一覧（新しい順）
-        M->>S: content(docId, 一番新しいリビジョン)・content(docId, その 1 つ前)
+        M->>S: content({ docId, revisionId: 一番新しいリビジョン })・content({ docId, revisionId: その 1 つ前 })
         S-->>M: 2 つの Markdown
         M-->>U: 2 つのリビジョンの差分を出す
       ```
     expected:
       - '`revisions` が `guide` を受けて 1 回呼ばれる'
-      - '`content` が `(guide, r3)` と `(guide, r2)` を受けて呼ばれる'
+      - '`content` が `{ docId: guide, revisionId: r3 }` と `{ docId: guide, revisionId: r2 }` を受けて呼ばれる'
       - 前と後のリビジョンを選ぶ欄に、`r3`・`r2`・`r1` が新しい順に、日時・`label`・`author` つきで並ぶ
       - 前に `r2`、後に `r3` が選ばれ、書き換えた語の行が差分に出る
     test: test_normal
@@ -73,7 +73,7 @@ scenarios:
         S->>G: 文書のファイルのコミットの一覧を求める
         G-->>S: コミットの一覧
         S-->>M: リビジョンの一覧（新しい順）
-        M->>S: content(docId, 2 つのコミット)
+        M->>S: content({ docId, revisionId }) を 2 つのコミットで
         S->>G: 2 つのコミットの文書のファイルを求める
         G-->>S: 2 つの本文
         S-->>M: 2 つの Markdown
@@ -104,7 +104,7 @@ scenarios:
         S->>G: 変更履歴の YAML を求める
         G-->>S: 変更履歴の YAML
         S-->>M: 項目の変更履歴のリビジョンの一覧（新しい順）
-        M->>S: content(docId, 2 つのリビジョン)
+        M->>S: content({ docId, revisionId }) を 2 つのリビジョンで
         S-->>M: 2 つの Markdown
         M-->>U: 2 つのリビジョンの差分を出す
       ```
@@ -173,11 +173,11 @@ scenarios:
         participant M as mdmark
         participant S as 取り出し元
         U->>M: 前のリビジョンに r1 を選ぶ
-        M->>S: content(docId, r1)
+        M->>S: content({ docId, revisionId: r1 })
         S-->>M: reject
         M-->>U: 差分の場所に知らせの枠を出す
         U->>M: 前のリビジョンに r2 を選び直す
-        M->>S: content(docId, r2)
+        M->>S: content({ docId, revisionId: r2 })
         S-->>M: Markdown
         M-->>U: r2 と r3 の差分を出す
       ```
