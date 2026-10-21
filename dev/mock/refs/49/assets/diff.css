@@ -168,21 +168,19 @@
       }
     }
 
-    /* 差分の行とミニマップ: 行の右に細い帯を並べる */
+    /* 差分の行: ミニマップは画面の右端に貼り付くので、行は横幅を削らない */
     .mdmark-diff-body {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 14px;
-      gap: 8px;
-      align-items: start;
+      display: block;
     }
 
-    /* ミニマップの帯: 画面の上端に貼り付け、差分の行の全体を帯の高さに縮めて写す */
+    /* ミニマップの帯: 差分を開いている間、画面の右端に画面の高さいっぱいに貼り付け、ページのスクロールバーと一体に見せる */
     .mdmark-diff-minimap {
-      position: sticky;
-      inset-block-start: 8px;
-      height: min(calc(100dvh - 16px), 100%);
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: calc(var(--mdmark-radius) / 2);
+      position: fixed;
+      inset-block: 0;
+      inset-inline-end: 0;
+      z-index: 10;
+      width: 14px;
+      border-inline-start: 1px solid var(--mdmark-color-border);
       background: var(--mdmark-color-surface);
       cursor: pointer;
       touch-action: none;

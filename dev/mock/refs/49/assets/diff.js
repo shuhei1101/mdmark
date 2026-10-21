@@ -210,33 +210,33 @@
   /** 差分の場所に出す短い文（比較対象のリビジョンが無い・変更が無い）。 */
   const message = (text) => html(`<p class="mdmark-diff-empty">${text}</p>`);
 
-  /** 差分の横のミニマップ: 削除した行（左半分の赤）・追加した行（右半分の緑）の位置に印を並べ、今見えている範囲を枠で示す。
-      帯を押す・押したまま上下に動かすと、その位置へ差分を送る。 */
+  /** 差分のミニマップ: 差分を開いている間、画面の右端に画面の高さいっぱいの帯を貼り付け、ページのスクロールバーと同じ割合でページ全体を写す。
+      削除した行（左半分の赤）・追加した行（右半分の緑）の位置に印を並べ、今見えている範囲を枠で示す。
+      帯を押す・押したまま上下に動かすと、その位置へページを送る。 */
   const minimap = (lines, signal) => {
     const band = html('<div class="mdmark-diff-minimap" aria-hidden="true"><div class="mdmark-diff-minimap-view"></div></div>');
     const view = band.firstElementChild;
-    /** 差分の行の中での縦の位置を、0〜1 の割合にする。 */
-    const ratio = (y, box) => Math.min(Math.max(y / box.height, 0), 1);
-    /** 今見えている範囲の枠を置き直す。 */
+    /** ページ全体の高さ（スクロールバーが写す長さ）。 */
+    const pageHeight = () => document.documentElement.scrollHeight;
+    /** ページの中での縦の位置を、0〜1 の割合にする。 */
+    const ratio = (y) => Math.min(Math.max(y / pageHeight(), 0), 1);
+    /** 今見えている範囲の枠を、スクロールバーのつまみと同じ位置と長さに置き直す。 */
     const placeView = () => {
-      const box = lines.getBoundingClientRect();
-      const top = ratio(-box.top, box);
-      const bottom = ratio(window.innerHeight - box.top, box);
-      view.hidden = bottom <= top;
+      const top = ratio(window.scrollY);
+      const bottom = ratio(window.scrollY + window.innerHeight);
       view.style.top = `${top * 100}%`;
       view.style.height = `${(bottom - top) * 100}%`;
     };
     /** 印を置き直す。同じ種類の続いた行は 1 つの印にまとめ、プレビューに切り替えた範囲は範囲ごと 1 つの印にする。 */
     const placeMarks = () => {
       for (const mark of band.querySelectorAll(".mdmark-diff-minimap-mark")) mark.remove();
-      const box = lines.getBoundingClientRect();
       let last = null;
       for (const line of lines.querySelectorAll('.mdmark-diff-line[data-kind="del"], .mdmark-diff-line[data-kind="add"]')) {
         // 隠れた見方の行は、見えている範囲の塊の位置で示す
         const target = line.offsetParent ? line : line.closest(".mdmark-diff-html");
         const rect = target.getBoundingClientRect();
-        const top = ratio(rect.top - box.top, box);
-        const bottom = ratio(rect.bottom - box.top, box);
+        const top = ratio(rect.top + window.scrollY);
+        const bottom = ratio(rect.bottom + window.scrollY);
         const kind = line.dataset.kind;
         if (last && last.kind === kind && top <= last.bottom + 0.001) {
           last.bottom = Math.max(last.bottom, bottom);
@@ -251,12 +251,11 @@
       }
       placeView();
     };
-    /** 帯の上の位置へ差分を送る（その位置を画面の中ほどに置く）。 */
+    /** 帯の上の位置へページを送る（その位置を画面の中ほどに置く）。 */
     const scrollTo = (clientY) => {
       const bandBox = band.getBoundingClientRect();
-      const box = lines.getBoundingClientRect();
-      const at = ratio(clientY - bandBox.top, bandBox) * box.height;
-      window.scrollTo({ top: window.scrollY + box.top + at - window.innerHeight / 2 });
+      const at = Math.min(Math.max((clientY - bandBox.top) / bandBox.height, 0), 1) * pageHeight();
+      window.scrollTo({ top: at - window.innerHeight / 2 });
     };
     band.addEventListener("pointerdown", (event) => {
       band.setPointerCapture(event.pointerId);
@@ -289,7 +288,9 @@
     }
     result.mockMinimap = new AbortController();
     const body = html('<div class="mdmark-diff-body"></div>');
-    body.append(lines, minimap(lines, result.mockMinimap.signal));
+    body.append(lines);
+    // ミニマップは画面の右端に 1 本だけ置く（カタログでは長い文書の見本だけが持つ）
+    if (opts.minimap !== false) body.append(minimap(lines, result.mockMinimap.signal));
     result.replaceChildren(body);
     return counts;
   };
