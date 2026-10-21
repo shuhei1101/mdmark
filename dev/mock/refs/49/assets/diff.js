@@ -8,6 +8,7 @@
   const HTML_OPEN = "<!-- html -->";
   const HTML_CLOSE = "<!-- /html -->";
   const LOADING_DELAY_MS = 1000;
+  const SPINNER_DELAY_MS = 2000;
   const SVG_NS = 'xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
   const ICON_DIFF = `<svg ${SVG_NS}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></svg>`;
   const ICON_ARROW = `<svg ${SVG_NS}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
@@ -243,11 +244,13 @@
     const after = element.querySelector('[data-side="after"]');
     before.value = ids.before;
     after.value = ids.after;
-    /** 後の欄の、前より古い選択肢を選べなくする。後が前より古くなったら、前の 1 つ新しいリビジョンに移す。 */
+    // 前の欄: 一番新しいリビジョンは、後に選ぶものが無いので選べない
+    before.options[0].disabled = true;
+    /** 後の欄の、前と同じか古い選択肢を選べなくする。後が前と同じか古くなったら、前の 1 つ新しいリビジョンに移す。 */
     const constrain = () => {
       const beforeIndex = before.selectedIndex;
-      for (const option of after.options) option.disabled = option.index > beforeIndex;
-      if (after.selectedIndex > beforeIndex) after.selectedIndex = Math.max(beforeIndex - 1, 0);
+      for (const option of after.options) option.disabled = option.index >= beforeIndex;
+      if (after.selectedIndex >= beforeIndex) after.selectedIndex = beforeIndex - 1;
     };
     constrain();
     return { element, before, after, constrain };
@@ -258,19 +261,28 @@
     const token = Symbol("open");
     panel.mockToken = token;
     const stale = () => panel.mockToken !== token;
-    // 待ちが長いときだけ読み込み中を出す
-    const loading = setTimeout(() => {
-      if (!stale()) panel.replaceChildren(html('<div class="mdmark-diff-loading" role="status">変更を読み込んでいます</div>'));
+    // 待ちが 1 秒を過ぎたら読み込み中の枠を出し、2 秒を過ぎたら回る表示を足す
+    const box = html('<div class="mdmark-diff-loading"><span class="mdmark-diff-spinner" aria-hidden="true" hidden></span>変更を読み込んでいます</div>');
+    const loadingTimer = setTimeout(() => {
+      if (!stale()) panel.replaceChildren(box);
     }, opts.loadingDelay ?? LOADING_DELAY_MS);
+    // spinnerDelay が null の見本では回る表示を出さない
+    const spinnerTimer = opts.spinnerDelay === null ? undefined : setTimeout(() => {
+      box.querySelector(".mdmark-diff-spinner").hidden = false;
+    }, opts.spinnerDelay ?? SPINNER_DELAY_MS);
+    const clearLoading = () => {
+      clearTimeout(loadingTimer);
+      clearTimeout(spinnerTimer);
+    };
     let revisions;
     try {
       revisions = await source.revisions(DOC_ID);
     } catch {
-      clearTimeout(loading);
+      clearLoading();
       if (!stale()) panel.replaceChildren(notice("変更の履歴を表示できません", "リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。"));
       return;
     }
-    clearTimeout(loading);
+    clearLoading();
     if (stale()) return;
     if (revisions.length < 2) {
       panel.replaceChildren(message("この文書のリビジョンは 1 つだけのため、比べるリビジョンがありません。"));
@@ -304,13 +316,16 @@
     await update();
   };
 
-  /** 描いた文書に「変更を見る」を付ける。開くと差分を文書の代わりに（layout が stack なら文書の上に）出す。 */
+  /** 描いた文書に「変更を見る」を付ける。開くと差分を文書の代わりに（layout が stack なら文書の上に）出す。
+      文書が h1 で始まるときは、題を差分の上に残し、帯と差分を h1 の後に置く。 */
   const attach = (article, source, opts = {}) => {
-    const body = [...article.children];
+    const title = article.firstElementChild?.tagName === "H1" ? article.firstElementChild : null;
+    const body = [...article.children].filter((element) => element !== title);
     const id = `mdmark-diff-panel-${++serial}`;
     const bar = html(`<div class="mdmark-diff-bar"><button type="button" class="mdmark-diff-toggle" aria-expanded="false" aria-controls="${id}">${ICON_DIFF}変更を見る</button></div>`);
     const panel = html(`<div class="mdmark-diff" id="${id}" data-layout="${opts.layout ?? "replace"}" hidden></div>`);
-    article.prepend(bar, panel);
+    if (title) title.after(bar, panel);
+    else article.prepend(bar, panel);
     const button = bar.querySelector("button");
     button.addEventListener("click", () => {
       const open = button.getAttribute("aria-expanded") !== "true";

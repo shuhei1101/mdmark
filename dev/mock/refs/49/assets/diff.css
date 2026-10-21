@@ -135,14 +135,37 @@
       color: var(--mdmark-color-muted);
     }
 
-    /* 読み込み中: 差分の高さを先に確保する */
+    /* 読み込み中: 差分の高さを先に確保する（読み込み中の枠と同じ破線） */
     .mdmark-diff-loading {
-      display: grid;
-      place-items: center;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
       min-height: 8rem;
       border: 1px dashed var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
       color: var(--mdmark-color-muted);
+    }
+
+    /* 回る表示: 待ちが 2 秒を過ぎたら出す */
+    .mdmark-diff-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--mdmark-color-border);
+      border-block-start-color: var(--mdmark-color-muted);
+      border-radius: 50%;
+      animation: mdmark-diff-spin 0.8s linear infinite;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 動きを減らす設定: 回さずに止めて出す */
+    @media (prefers-reduced-motion: reduce) {
+      .mdmark-diff-spinner {
+        animation: none;
+      }
     }
 
     /* 差分の行の並び: 線と小さめの角丸で囲む */
@@ -324,6 +347,13 @@
       background: var(--mdmark-color-surface);
       color: var(--mdmark-color-muted);
     }
+  }
+}
+
+/* 回る表示の回転 */
+@keyframes mdmark-diff-spin {
+  to {
+    transform: rotate(1turn);
   }
 }
 

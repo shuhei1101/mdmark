@@ -79,12 +79,21 @@
         </article>
       </section>
 
-      <!-- 取り出し元の応答に 1 秒以上かかったときだけ出す -->
+      <!-- 取り出し元の応答に 1 秒以上かかったとき。破線の枠と文字だけを出し、読み上げない -->
       <section aria-labelledby="lines-loading">
-        <h2 class="catalog-label" id="lines-loading">読み込み中</h2>
+        <h2 class="catalog-label" id="lines-loading">読み込み中（1 秒を過ぎた）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="pending"></div>
+        </article>
+      </section>
+
+      <!-- 取り出し元の応答に 2 秒以上かかったとき。回る表示を足す（動きを減らす設定では回さない） -->
+      <section aria-labelledby="lines-loading-spin">
+        <h2 class="catalog-label" id="lines-loading-spin">読み込み中（2 秒を過ぎた）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-spin]: catalog.js が回る表示をすぐに出す -->
+          <div class="mdmark-diff" data-mock-case="pending" data-mock-spin="true"></div>
         </article>
       </section>
 

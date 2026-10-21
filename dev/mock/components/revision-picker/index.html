@@ -59,9 +59,9 @@
         </article>
       </section>
 
-      <!-- 前に r2 を選ぶと、後の欄の r1（前より古い）は選べない -->
+      <!-- 前の欄では一番新しい r3 を選べない。前に r2 を選ぶと、後の欄では r2 と r1（前と同じか古い）を選べない -->
       <section aria-labelledby="picker-oldest">
-        <h2 class="catalog-label" id="picker-oldest">前に r2 を選んだ（後の欄では、前より古い r1 を選べない）</h2>
+        <h2 class="catalog-label" id="picker-oldest">前に r2 を選んだ（前の欄では r3、後の欄では r2 と r1 を選べない）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="normal" data-mock-before="r2" data-mock-after="r3"></div>
