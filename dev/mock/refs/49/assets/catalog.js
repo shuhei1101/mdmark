@@ -1,5 +1,5 @@
 // 差分の部品のカタログ: [data-mock-case] の場所ごとに、場面の取り出し元から差分の場所を開いた状態で描く。
-// data-mock-before / data-mock-after で選ぶリビジョン、data-mock-view で埋め込んだ HTML の見方、data-mock-sides で描いた結果の並べ方、data-mock-spin で読み込み中の回る表示を出すかを指す
+// data-mock-before / data-mock-after で選ぶリビジョン、data-mock-view で埋め込んだ HTML の見方、data-mock-sides でプレビューの並べ方、data-mock-spin で読み込み中の回る表示を出すかを指す
 
 // sample.js と同じ大域に読むため、宣言をブロックに閉じる
 {

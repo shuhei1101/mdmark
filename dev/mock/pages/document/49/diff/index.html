@@ -24,7 +24,7 @@
   <script src="./app.js" defer></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 配色・場面・差分の出し方・描いた結果の並べ方 -->
+  <!-- モック専用の操作列: 配色・場面・差分の出し方・プレビューの並べ方 -->
   <div class="mock-bar">
     <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
     <div class="mock-bar-group" role="group" aria-label="配色">
@@ -34,6 +34,7 @@
     <!-- [data-param] [data-value]: app.js が行き先の URL と今の状態の aria-current を当てる。[data-default] は URL に値を書かない既定 -->
     <div class="mock-bar-group" role="group" aria-label="場面">
       <a class="mock-bar-item" data-param="case" data-value="normal" data-default>リビジョンが 3 つ</a>
+      <a class="mock-bar-item" data-param="case" data-value="long-doc">長い文書（ミニマップ）</a>
       <a class="mock-bar-item" data-param="case" data-value="single">リビジョンが 1 つ</a>
       <a class="mock-bar-item" data-param="case" data-value="same">変更が無い</a>
       <a class="mock-bar-item" data-param="case" data-value="revisions-error">一覧を取り出せない</a>
@@ -46,8 +47,8 @@
       <a class="mock-bar-item" data-param="layout" data-value="replace" data-default>文書の代わりに出す</a>
       <a class="mock-bar-item" data-param="layout" data-value="stack">文書の上に並べる</a>
     </div>
-    <!-- 埋め込んだ HTML の描いた結果の前と後の並べ方 -->
-    <div class="mock-bar-group" role="group" aria-label="描いた結果の並べ方">
+    <!-- 埋め込んだ HTML のプレビューの前と後の並べ方 -->
+    <div class="mock-bar-group" role="group" aria-label="プレビューの並べ方">
       <a class="mock-bar-item" data-param="sides" data-value="side" data-default>前と後を横に並べる</a>
       <a class="mock-bar-item" data-param="sides" data-value="stack">前と後を縦に並べる</a>
     </div>

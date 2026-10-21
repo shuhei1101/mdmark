@@ -1,6 +1,6 @@
 // 差分のモック: 文書の上に「変更を見る」を置き、取り出し元から受けた 2 つのリビジョンの Markdown を行で比べ、
-// 消した行と足した行の対を語で比べて描く（実装の jsdiff の diffLines・diffWords の代わり）。
-// 埋め込んだ HTML の範囲は、ソースの色分けと描いた結果の前と後を切り替える
+// 削除した行と追加した行の対を語で比べて描く（実装の jsdiff の diffLines・diffWords の代わり）。
+// 埋め込んだ HTML の範囲は、ソースの色分けとプレビューの前と後を切り替える
 
 // sample.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -13,7 +13,7 @@
   const ICON_DIFF = `<svg ${SVG_NS}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></svg>`;
   const ICON_ARROW = `<svg ${SVG_NS}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
   const DATE_FORMAT = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
-  const KIND_NAME = { del: "消した行", add: "足した行" };
+  const KIND_NAME = { del: "削除した行", add: "追加した行" };
   const KIND_SIGN = { del: "-", add: "+", same: " " };
   let serial = 0;
 
@@ -73,7 +73,7 @@
       ? [...new Intl.Segmenter("ja", { granularity: "word" }).segment(text)].map((s) => s.segment)
       : [...text];
 
-  /** 消した行と足した行の対を語で比べ、変わった語を濃い色の要素で包んだ 2 つの HTML を返す。 */
+  /** 削除した行と追加した行の対を語で比べ、変わった語を濃い色の要素で包んだ 2 つの HTML を返す。 */
   const wordDiff = (before, after, useSegmenter) => {
     const ops = diffSeq(tokenize(before, useSegmenter), tokenize(after, useSegmenter));
     const side = (keep, mark, tag) => {
@@ -96,13 +96,13 @@
     return { before: side("same", "del", "del"), after: side("same", "add", "ins") };
   };
 
-  /** 差分の 1 行の HTML。消した・足した行は行頭の印と読み上げの名前を持つ。 */
+  /** 差分の 1 行の HTML。消した・追加した行は行頭の印と読み上げの名前を持つ。 */
   const lineHtml = (kind, textHtml) => {
     const name = KIND_NAME[kind] ? `<span class="mdmark-visually-hidden">${KIND_NAME[kind]}: </span>` : "";
     return `<div class="mdmark-diff-line" data-kind="${kind}"><span class="mdmark-diff-sign" aria-hidden="true">${KIND_SIGN[kind]}</span><span class="mdmark-diff-text">${name}${textHtml}</span></div>`;
   };
 
-  /** 行の並びを描く。変えた塊の中で消した行と足した行を前から順に対にし、対の行は語で比べる。 */
+  /** 行の並びを描く。変えた塊の中で削除した行と追加した行を前から順に対にし、対の行は語で比べる。 */
   const linesHtml = (ops, useSegmenter) => {
     let out = "";
     for (let k = 0; k < ops.length; ) {
@@ -158,7 +158,7 @@
     return template.innerHTML;
   };
 
-  /** 描いた結果の片側（前か後）。範囲が無い側はそのことを示す。 */
+  /** プレビューの片側（前か後）。範囲が無い側はそのことを示す。 */
   const sideHtml = (name, revision, lines) => {
     const caption = `<figcaption><span class="mdmark-diff-side-name">${name}</span> ${escape(describe(revision))}</figcaption>`;
     const inner = lines.length > 2 ? lines.slice(1, -1).join("\n") : "";
@@ -168,22 +168,24 @@
     return `<figure class="mdmark-diff-side">${caption}${body}</figure>`;
   };
 
-  /** 埋め込んだ HTML の範囲の塊。変えた範囲だけ、ソースと描いた結果を切り替える。 */
+  /** 埋め込んだ HTML の範囲の塊。変えた範囲だけ、ソースとプレビューを切り替える。 */
   const htmlBlock = (block, pair, opts) => {
     const changed = block.ops.some((op) => op.kind !== "same");
     const source = linesHtml(block.ops, opts.segmenter);
-    if (!changed) return html(`<div class="mdmark-diff-html">${source}</div>`);
+    const label = '<span class="mdmark-diff-html-label">HTML</span>';
+    // 変えていない範囲: 右上の「HTML」のラベルだけを置き、見方の切り替えを付けない
+    if (!changed) return html(`<div class="mdmark-diff-html"><div class="mdmark-diff-html-head">${label}</div>${source}</div>`);
     const before = block.ops.filter((op) => op.kind !== "add").map((op) => op.text);
     const after = block.ops.filter((op) => op.kind !== "del").map((op) => op.text);
     const rendered = opts.htmlView === "rendered";
     const element = html(`
       <div class="mdmark-diff-html" data-changed>
         <div class="mdmark-diff-html-head">
-          <span class="mdmark-diff-html-title">埋め込んだ HTML</span>
           <div class="mdmark-diff-view" role="group" aria-label="埋め込んだ HTML の見方">
             <button type="button" data-view="source" aria-pressed="${!rendered}">ソース</button>
-            <button type="button" data-view="rendered" aria-pressed="${rendered}">描いた結果</button>
+            <button type="button" data-view="rendered" aria-pressed="${rendered}">プレビュー</button>
           </div>
+          ${label}
         </div>
         <div data-pane="source"${rendered ? " hidden" : ""}>${source}</div>
         <div class="mdmark-diff-sides" data-pane="rendered" data-sides="${opts.sides ?? "side"}"${rendered ? "" : " hidden"}>
@@ -195,6 +197,7 @@
       button.addEventListener("click", () => {
         for (const other of element.querySelectorAll("[data-view]")) other.setAttribute("aria-pressed", String(other === button));
         for (const pane of element.querySelectorAll("[data-pane]")) pane.hidden = pane.dataset.pane !== button.dataset.view;
+        element.dispatchEvent(new Event("mockresize", { bubbles: true }));
       });
     }
     return element;
@@ -204,11 +207,75 @@
   const notice = (title, text) =>
     html(`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p>${text}</p></div>`);
 
-  /** 差分の場所に出す短い文（比べるリビジョンが無い・変更が無い）。 */
+  /** 差分の場所に出す短い文（比較対象のリビジョンが無い・変更が無い）。 */
   const message = (text) => html(`<p class="mdmark-diff-empty">${text}</p>`);
 
-  /** 2 つのリビジョンの差分を描き、消した行と足した行の数を返す。 */
+  /** 差分の横のミニマップ: 削除した行（左半分の赤）・追加した行（右半分の緑）の位置に印を並べ、今見えている範囲を枠で示す。
+      帯を押す・押したまま上下に動かすと、その位置へ差分を送る。 */
+  const minimap = (lines, signal) => {
+    const band = html('<div class="mdmark-diff-minimap" aria-hidden="true"><div class="mdmark-diff-minimap-view"></div></div>');
+    const view = band.firstElementChild;
+    /** 差分の行の中での縦の位置を、0〜1 の割合にする。 */
+    const ratio = (y, box) => Math.min(Math.max(y / box.height, 0), 1);
+    /** 今見えている範囲の枠を置き直す。 */
+    const placeView = () => {
+      const box = lines.getBoundingClientRect();
+      const top = ratio(-box.top, box);
+      const bottom = ratio(window.innerHeight - box.top, box);
+      view.hidden = bottom <= top;
+      view.style.top = `${top * 100}%`;
+      view.style.height = `${(bottom - top) * 100}%`;
+    };
+    /** 印を置き直す。同じ種類の続いた行は 1 つの印にまとめ、プレビューに切り替えた範囲は範囲ごと 1 つの印にする。 */
+    const placeMarks = () => {
+      for (const mark of band.querySelectorAll(".mdmark-diff-minimap-mark")) mark.remove();
+      const box = lines.getBoundingClientRect();
+      let last = null;
+      for (const line of lines.querySelectorAll('.mdmark-diff-line[data-kind="del"], .mdmark-diff-line[data-kind="add"]')) {
+        // 隠れた見方の行は、見えている範囲の塊の位置で示す
+        const target = line.offsetParent ? line : line.closest(".mdmark-diff-html");
+        const rect = target.getBoundingClientRect();
+        const top = ratio(rect.top - box.top, box);
+        const bottom = ratio(rect.bottom - box.top, box);
+        const kind = line.dataset.kind;
+        if (last && last.kind === kind && top <= last.bottom + 0.001) {
+          last.bottom = Math.max(last.bottom, bottom);
+          last.element.style.height = `${(last.bottom - last.top) * 100}%`;
+          continue;
+        }
+        const element = html(`<div class="mdmark-diff-minimap-mark" data-kind="${kind}"></div>`);
+        element.style.top = `${top * 100}%`;
+        element.style.height = `${(bottom - top) * 100}%`;
+        band.append(element);
+        last = { kind, top, bottom, element };
+      }
+      placeView();
+    };
+    /** 帯の上の位置へ差分を送る（その位置を画面の中ほどに置く）。 */
+    const scrollTo = (clientY) => {
+      const bandBox = band.getBoundingClientRect();
+      const box = lines.getBoundingClientRect();
+      const at = ratio(clientY - bandBox.top, bandBox) * box.height;
+      window.scrollTo({ top: window.scrollY + box.top + at - window.innerHeight / 2 });
+    };
+    band.addEventListener("pointerdown", (event) => {
+      band.setPointerCapture(event.pointerId);
+      scrollTo(event.clientY);
+    }, { signal });
+    band.addEventListener("pointermove", (event) => {
+      if (band.hasPointerCapture(event.pointerId)) scrollTo(event.clientY);
+    }, { signal });
+    window.addEventListener("scroll", placeView, { passive: true, signal });
+    window.addEventListener("resize", placeMarks, { signal });
+    lines.addEventListener("mockresize", () => requestAnimationFrame(placeMarks), { signal });
+    requestAnimationFrame(placeMarks);
+    return band;
+  };
+
+  /** 2 つのリビジョンの差分を描き、削除した行と追加した行の数を返す。 */
   const renderDiff = (result, pair, texts, opts) => {
+    // 前に描いた差分のミニマップの操作を外す
+    result.mockMinimap?.abort();
     const ops = diffSeq(texts.before.split("\n"), texts.after.split("\n"));
     const counts = { del: ops.filter((op) => op.kind === "del").length, add: ops.filter((op) => op.kind === "add").length };
     if (!counts.del && !counts.add) {
@@ -220,7 +287,10 @@
       if (block.type === "html") lines.append(htmlBlock(block, pair, opts));
       else lines.insertAdjacentHTML("beforeend", linesHtml(block.ops, opts.segmenter));
     }
-    result.replaceChildren(lines);
+    result.mockMinimap = new AbortController();
+    const body = html('<div class="mdmark-diff-body"></div>');
+    body.append(lines, minimap(lines, result.mockMinimap.signal));
+    result.replaceChildren(body);
     return counts;
   };
 
@@ -285,7 +355,7 @@
     clearLoading();
     if (stale()) return;
     if (revisions.length < 2) {
-      panel.replaceChildren(message("この文書のリビジョンは 1 つだけのため、比べるリビジョンがありません。"));
+      panel.replaceChildren(message("この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。"));
       return;
     }
     const select = picker(revisions, { before: opts.before ?? revisions[1].id, after: opts.after ?? revisions[0].id });
@@ -304,12 +374,13 @@
       const failed = [pair.before, pair.after].filter((_, n) => settled[n].status === "rejected");
       if (failed.length) {
         summary.textContent = "";
+        result.mockMinimap?.abort();
         const names = failed.map((r) => `「${escape(describe(r))}」`).join("と");
         result.replaceChildren(notice("このリビジョンの本文を表示できません", `${names}の本文を取り出せませんでした。別のリビジョンを選んでください。`));
         return;
       }
       const counts = renderDiff(result, pair, { before: settled[0].value, after: settled[1].value }, opts);
-      summary.textContent = counts.del || counts.add ? `消した行 ${counts.del}・足した行 ${counts.add}` : "";
+      summary.textContent = counts.del || counts.add ? `削除した行 ${counts.del}・追加した行 ${counts.add}` : "";
     };
     select.before.addEventListener("change", () => { select.constrain(); update(); });
     select.after.addEventListener("change", update);

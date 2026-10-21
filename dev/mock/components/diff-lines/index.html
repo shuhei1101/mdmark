@@ -34,12 +34,21 @@
   <main class="host">
     <div class="catalog">
       <h1 class="catalog-title">差分の行</h1>
-      <!-- 消した行は赤と -、足した行は緑と +。対の行は変わった語だけを濃い色にする -->
+      <!-- 削除した行は赤と -、追加した行は緑と +。対の行は変わった語だけを濃い色にする -->
       <section aria-labelledby="lines-normal">
         <h2 class="catalog-label" id="lines-normal">行と語の色分け（r1 → r2）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="normal" data-mock-before="r1" data-mock-after="r2"></div>
+        </article>
+      </section>
+
+      <!-- 変えていない行が多く画面に収まらない文書。行の右のミニマップに削除した行（左半分の赤）と追加した行（右半分の緑）の位置と、今見えている範囲を出す -->
+      <section aria-labelledby="lines-minimap">
+        <h2 class="catalog-label" id="lines-minimap">ミニマップ（長い文書）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
+          <div class="mdmark-diff" data-mock-case="long-doc"></div>
         </article>
       </section>
 
@@ -72,7 +81,7 @@
 
       <!-- 取り出し元がリビジョンを 1 つだけ返したとき。選ぶ欄を出さない -->
       <section aria-labelledby="lines-single">
-        <h2 class="catalog-label" id="lines-single">比べるリビジョンが無い</h2>
+        <h2 class="catalog-label" id="lines-single">比較対象のリビジョンが無い</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="single"></div>

@@ -34,7 +34,7 @@
   <main class="host">
     <div class="catalog">
       <h1 class="catalog-title">埋め込んだ HTML の切り替え</h1>
-      <!-- 変えた範囲の見出しに、ソースと描いた結果の切り替えを置く -->
+      <!-- 変えた範囲の見出しに、ソースとプレビューの切り替えを置く -->
       <section aria-labelledby="html-source">
         <h2 class="catalog-label" id="html-source">ソース（既定）</h2>
         <article class="mdmark">
@@ -45,7 +45,7 @@
 
       <!-- 幅があれば前と後を横に並べ、狭い幅では縦に積む -->
       <section aria-labelledby="html-rendered">
-        <h2 class="catalog-label" id="html-rendered">描いた結果（前と後を横に並べる）</h2>
+        <h2 class="catalog-label" id="html-rendered">プレビュー（前と後を横に並べる）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="normal" data-mock-before="r1" data-mock-after="r2" data-mock-view="rendered"></div>
@@ -54,7 +54,7 @@
 
       <!-- 幅によらず前と後を縦に並べる案 -->
       <section aria-labelledby="html-rendered-stack">
-        <h2 class="catalog-label" id="html-rendered-stack">描いた結果（前と後を縦に並べる）</h2>
+        <h2 class="catalog-label" id="html-rendered-stack">プレビュー（前と後を縦に並べる）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="normal" data-mock-before="r1" data-mock-after="r2" data-mock-view="rendered" data-mock-sides="stack"></div>
@@ -63,7 +63,7 @@
 
       <!-- r3 で足した範囲。前の側に範囲が無いことを示す -->
       <section aria-labelledby="html-one-side">
-        <h2 class="catalog-label" id="html-one-side">片側にだけある範囲（描いた結果）</h2>
+        <h2 class="catalog-label" id="html-one-side">片側にだけある範囲（プレビュー）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="normal" data-mock-view="rendered"></div>
@@ -79,9 +79,9 @@
         </article>
       </section>
 
-      <!-- 描いた結果では script 要素とイベントの属性を落とす。ソースでは文字として出す -->
+      <!-- プレビューでは script 要素とイベントの属性を落とす。ソースでは文字として出す -->
       <section aria-labelledby="html-script">
-        <h2 class="catalog-label" id="html-script">スクリプトを書いた範囲（描いた結果）</h2>
+        <h2 class="catalog-label" id="html-script">スクリプトを書いた範囲（プレビュー）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="script" data-mock-view="rendered"></div>

@@ -127,6 +127,26 @@
     { ...r1, body: md("よくある質問の差分は、担当者が確かめます。", "", ...table(120)) },
   ];
 
+  // 長い文書: 変えていない行が多く、変えた行が文書の頭・中ほど・終わりに散らばる（ミニマップの見本）
+  const topics = ["メール", "フォーム", "チャット", "電話", "店頭", "SNS"];
+  /** 長い文書の本文。changed が真なら、頭の語・中ほどの行・終わりの表を変えた後のリビジョンにする。 */
+  const longBody = (changed) => {
+    const lines = ["# 問い合わせ窓口の運用の手引き", "", changed ? "この手引きは、窓口の担当者が毎日の運用で確かめることをまとめます。" : "この手引きは、窓口の担当者が毎日の作業で確かめることをまとめます。", ""];
+    topics.forEach((topic, n) => {
+      lines.push(`## ${topic}の窓口`, "");
+      for (let k = 1; k <= 6; k++) lines.push(`${topic}の窓口の手順 ${k}: 受けた問い合わせを分類し、よくある質問の表と照らして返し方を決めます。`);
+      if (n === 2 && !changed) lines.push("チャットの窓口は、夜間は自動返信だけで受けます。", "夜間に受けた問い合わせは、翌朝に担当者が確かめます。");
+      if (n === 4 && changed) lines.push("店頭で受けた問い合わせも、その日のうちに記録へ残します。");
+      lines.push("");
+    });
+    lines.push("## 窓口ごとの件数", "", ...table(changed ? 150 : 120));
+    return md(...lines);
+  };
+  const longDoc = [
+    { ...r2, body: longBody(true) },
+    { ...r1, body: longBody(false) },
+  ];
+
   // 場面ごとの取り出し元の設定: revisions は新しい順
   window.mockDiffCases = {
     normal: { revisions: [r3, r2, r1] },
@@ -140,6 +160,7 @@
     long: { revisions: long },
     script: { revisions: script },
     outside: { revisions: outside },
+    "long-doc": { revisions: longDoc },
   };
 
   /** 場面の設定から、メモリーの見本を返す取り出し元（DiffSource）を作る。 */
