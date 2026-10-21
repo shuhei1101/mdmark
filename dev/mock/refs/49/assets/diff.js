@@ -181,7 +181,7 @@
     const element = html(`
       <div class="mdmark-diff-html" data-changed>
         <div class="mdmark-diff-html-head">
-          <div class="mdmark-diff-view" role="group" aria-label="埋め込んだ HTML の見方">
+          <div class="mdmark-diff-view" role="group" aria-label="HTML の見方">
             <button type="button" data-view="source" aria-pressed="${!rendered}">ソース</button>
             <button type="button" data-view="rendered" aria-pressed="${rendered}">プレビュー</button>
           </div>
