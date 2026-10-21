@@ -1,0 +1,48 @@
+title: "差分の状態の文"
+implementation: "src/parts/diff-message.ts#renderDiffMessage"
+story: "Parts/DiffMessage"
+states:
+  - name: Same
+    description: 選んだ 2 つの本文に変更が無い
+    args:
+      - name: kind
+        value: same
+  - name: Single
+    description: リビジョンが 1 つだけ
+    args:
+      - name: kind
+        value: single
+  - name: Loading
+    description: 待ちが 1 秒を過ぎた。破線の枠に `変更を読み込んでいます`
+    args:
+      - name: kind
+        value: loading
+  - name: LoadingSpinner
+    description: 待ちが 2 秒を過ぎた。回る表示を足す
+    args:
+      - name: kind
+        value: loading
+      - name: spinner
+        value: 'true'
+lead: 差分の場所に、行の代わりに出す短い文（変更が無い・比較対象が無い・読み込んでいる）。HTML 文字列を返す。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`same`（`選んだ 2 つのリビジョンの本文に、変更はありません。`）・`single`（`この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。`）・`loading`（`変更を読み込んでいます`）'
+    description: 出す文
+  - name: spinner
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`kind` が `loading` のとき'
+    description: 回る表示を足すか（待ちが 2 秒を過ぎたとき）
+accessibility:
+  - '`loading` の枠は `role="status"` を持ち、読み込んでいることを文言で伝える'
+  - '回る表示は `aria-hidden` にし、`prefers-reduced-motion: reduce` のときは回さない'
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の待ち]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]
+status: planned
+notes:
+  モック: '`dev/mock/components/diff-lines/` の「変更が無い」「比較対象のリビジョンが無い」「読み込み中」'

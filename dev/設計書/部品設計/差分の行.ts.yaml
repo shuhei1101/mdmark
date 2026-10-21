@@ -1,0 +1,55 @@
+title: "差分の行"
+implementation: "src/parts/diff-lines.ts#renderDiffLines"
+story: "Parts/DiffLines"
+states:
+  - name: Normal
+    description: r1 → r2 で、語を書き換えた行の対・追加した行・削除した行・変えていない行が並ぶ。対の行で `差分` と `変更` だけが濃い色
+  - name: CharByChar
+    description: 語の区切りを持たないブラウザの結果。対の行で 1 文字ずつ比べた語が濃い色
+  - name: LongLine
+    description: 長い URL を持つ行。行の中で折り返し、横スクロールを出さない
+  - name: WithHtml
+    description: 行の塊の間に、変えた埋め込んだ HTML の範囲が 1 つ入る
+lead: 2 つのリビジョンの Markdown のソースを比べた行を並べ、削除した行を赤・追加した行を緑、対の行で変わった語を濃い色で出す。HTML 文字列を返す。
+args:
+  - name: blocks
+    type: オブジェクトの配列
+    required: true
+    description: '上から順の塊。行の塊は行（`kind`: `same`・`del`・`add` と、語ごとに変わったかを持つ切れの並び）の配列、埋め込んだ HTML の範囲は部品『埋め込んだ HTML の差分』の引数'
+slots:
+  - name: html
+    description: 埋め込んだ HTML の範囲の塊
+    accepts:
+      - dev/設計書/部品設計/埋め込んだHTMLの差分.ts#
+css_properties:
+  - name: --mdmark-color-diff-del-bg
+    syntax: <color>
+    description: 削除した行の地の色
+  - name: --mdmark-color-diff-del-word
+    syntax: <color>
+    description: 削除した行で変わった語の地の色
+  - name: --mdmark-color-diff-del-sign
+    syntax: <color>
+    description: 削除した行の `-` の色
+  - name: --mdmark-color-diff-add-bg
+    syntax: <color>
+    description: 追加した行の地の色
+  - name: --mdmark-color-diff-add-word
+    syntax: <color>
+    description: 追加した行で変わった語の地の色
+  - name: --mdmark-color-diff-add-sign
+    syntax: <color>
+    description: 追加した行の `+` の色
+uses:
+  - component: dev/設計書/部品設計/埋め込んだHTMLの差分.ts#
+    how: 埋め込んだ HTML の範囲の塊を描く
+accessibility:
+  - 行の並びは `role="group"`・`aria-label="変更の行"` を持つ
+  - '行頭の `-`・`+` は `aria-hidden` にし、削除した行・追加した行は見えない文字の `削除した行: `・`追加した行: ` を行の頭に持つ（WCAG 1.4.1）'
+  - 変わった語は、削除した側を `del`、追加した側を `ins` で囲む
+  - 地の色と文字のコントラストはライト・ダークとも 4.5:1 以上
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の行]
+status: planned
+notes:
+  モック: '`dev/mock/components/diff-lines/`。色の値は `dev/mock/assets/style.css` の `--mdmark-color-diff-*`'
