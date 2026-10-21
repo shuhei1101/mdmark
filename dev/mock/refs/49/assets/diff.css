@@ -207,7 +207,7 @@
     /* ミニマップの今見えている範囲の枠 */
     .mdmark-diff-minimap-view {
       position: absolute;
-      inset-inline: -1px;
+      inset-inline: 0;
       border: 1px solid var(--mdmark-color-muted);
       border-radius: 2px;
       background: color-mix(in srgb, var(--mdmark-color-text) 10%, transparent);
