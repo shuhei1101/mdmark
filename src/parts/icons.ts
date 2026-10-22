@@ -1,6 +1,7 @@
 import type { IconNode } from "lucide";
 import {
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   Bot,
   Check,
@@ -15,6 +16,7 @@ import {
   Database,
   Expand,
   File,
+  FileDiff,
   Folder,
   Funnel,
   Globe,
@@ -67,9 +69,11 @@ const ICONS = {
   "chevrons-up-down": ChevronsUpDown,
   "arrow-up": ArrowUp,
   "arrow-down": ArrowDown,
+  "arrow-right": ArrowRight,
   funnel: Funnel,
   link: Link,
   file: File,
+  "file-diff": FileDiff,
   folder: Folder,
   menu: Menu,
 } satisfies Record<string, IconNode>;

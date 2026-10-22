@@ -1,0 +1,27 @@
+title: Parts/RevisionPicker
+stories:
+  - name: Normal
+    parameters:
+      server:
+        id: revision-picker
+    args:
+      revisions: '[{"id":"r3","at":"2026-10-20T02:05:00Z","label":"見出しを書き換える","author":"田中"},{"id":"r2","at":"2026-10-19T07:40:00Z","label":"件数を直す","author":"鈴木"},{"id":"r1","at":"2026-10-18T00:12:00Z","label":"初版","author":"佐藤"}]'
+      before: r2
+      after: r3
+      counts: '{"del":1,"add":8}'
+  - name: BeforeSelected
+    parameters:
+      server:
+        id: revision-picker
+    args:
+      revisions: '[{"id":"r3","at":"2026-10-20T02:05:00Z","label":"見出しを書き換える","author":"田中"},{"id":"r2","at":"2026-10-19T07:40:00Z","label":"件数を直す","author":"鈴木"},{"id":"r1","at":"2026-10-18T00:12:00Z","label":"初版","author":"佐藤"}]'
+      before: r2
+      after: r3
+  - name: Sparse
+    parameters:
+      server:
+        id: revision-picker
+    args:
+      revisions: '[{"id":"b2","at":"2026-10-20T02:05:00Z","label":"問い合わせ窓口の週の報告の件数を全ての窓口で数え直し、返し方の節を書き足す","author":"問い合わせ窓口の運用担当のとても長い名前"},{"id":"b1","at":"2026-10-18T00:12:00Z"}]'
+      before: b1
+      after: b2

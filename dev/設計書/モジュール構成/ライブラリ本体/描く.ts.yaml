@@ -44,6 +44,9 @@ data_models:
       - name: references
         type: MdmarkReferences | undefined
         description: '`collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない'
+      - name: diffSource
+        type: DiffSource | undefined
+        description: 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -120,7 +123,7 @@ functions:
       type: MountHandle
       description: 描き直しと片付けの関数
     process: |-
-      1. `mounted` に `el` があれば、その `destroy` を呼ぶ
+      1. `diffSource` を渡して `docId` が無ければ `TypeError` を投げる。`mounted` に `el` があれば、その `destroy` を呼ぶ
       2. 設定に既定を当てる（設定に既定を当てる）
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数を無しにする
       4. 文書を描く。描くたびに次を行う
@@ -129,9 +132,10 @@ functions:
          - 機能のオン・オフを控える
          - 記法の操作を付け（記法の操作を付ける）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
+         - `diffSource` を渡していれば、前の差分を外す関数を呼んでから差分を付け（差分を付ける。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
       6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（`index`・`docId`・`references` は最初に渡したもののまま）
-      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作と印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
+      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
       8. `mounted` に `el` と戻り値を控えて返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
@@ -139,6 +143,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachInteractions]
       - '#functions[loadLibraries]'
       - '#functions[attachPrint]'
+      - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[attachDiff]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
     unit_tests:
@@ -184,6 +189,30 @@ functions:
         condition: 表を描いて絞り込みのドロワーを開いた後、タブの文書に `update`
         mock: '`document.removeEventListener` を数える関数で包む'
         expected: '`pointerdown`・`keydown` が外れ、`role="tablist"` がある'
+      - name: test_mount_when_diff_source
+        case: 正常
+        summary: 取り出し元を渡すと見出しの後ろに差分を開くボタンを置き、片付けると取り除く
+        condition: '`# 見出し` と `docId: "guide"`・`diffSource` を渡し、後で `destroy`'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: '`h1` の次に `mdmark-diff-toggle` があり、`revisions` は呼ばれていない。`destroy` の後はボタンが無い'
+      - name: test_mount_when_diff_source_without_doc_id
+        case: 異常
+        summary: 取り出し元を渡して docId が無いと投げる
+        condition: '`diffSource` を渡し、`docId` を省く'
+        mock: なし
+        expected: '`TypeError` を投げ、`el` の中は変わらない'
+      - name: test_mount_when_diff_html_has_chart
+        case: 正常
+        summary: 差分の埋め込んだ HTML のプレビューで、図の部品を文書と同じく図に描く
+        condition: 前と後の本文で `<mdmark-chart>` の定義を書き換えた範囲。差分を開いて「プレビュー」を押す
+        mock: 取り出し元は 2 つの本文を返す関数
+        expected: プレビューの前と後に図の要素（`figure[data-diagram="chart"]`）があり、定義の JSON の文字が本文に出ない
+      - name: test_mount_when_diff_preview_zoomed
+        case: 正常
+        summary: 差分のプレビューの図も文書と同じく拡大でき、前と後で id が重ならない
+        condition: '`test_mount_when_diff_html_has_chart` と同じ本文で差分を開き、「プレビュー」を押して、後の側の図の拡大のボタンを押す'
+        mock: 取り出し元は 2 つの本文を返す関数
+        expected: 後の側の図の倍率が上がる。ページの中の `id` に重なりが無く、後の側の表示する枠の `aria-labelledby` が後の側の題を指す
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts

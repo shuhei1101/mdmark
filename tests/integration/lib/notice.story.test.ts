@@ -78,3 +78,30 @@ test("test_extension", async () => {
     "表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。",
   );
 });
+
+// 差分の取り出し元がリビジョンの一覧を返せない知らせの枠は、題が「変更の履歴を表示できません」になる（DiffRevisions）
+test("test_diff_revisions", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-notice--diff-revisions");
+  // 検証
+  await expect(page.locator(".mdmark-notice-title").innerText()).resolves.toBe(
+    "変更の履歴を表示できません",
+  );
+  await expect(page.locator(".mdmark-notice p").innerText()).resolves.toBe(
+    "リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。",
+  );
+  await expect(page.locator(".mdmark-notice code").count()).resolves.toBe(0);
+});
+
+// 1 つのリビジョンの本文を返せない知らせの枠は、題が「このリビジョンの本文を表示できません」になる（DiffContent）
+test("test_diff_content", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-notice--diff-content");
+  // 検証
+  await expect(page.locator(".mdmark-notice-title").innerText()).resolves.toBe(
+    "このリビジョンの本文を表示できません",
+  );
+  await expect(page.locator(".mdmark-notice p").innerText()).resolves.toBe(
+    "「2026/10/18 09:12 初版（佐藤）」の本文を取り出せませんでした。別のリビジョンを選んでください。",
+  );
+});

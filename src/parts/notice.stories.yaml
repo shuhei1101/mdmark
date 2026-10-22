@@ -29,3 +29,17 @@ stories:
       name: greet
       figure: true
       source: extension
+  - name: DiffRevisions
+    parameters:
+      server:
+        id: notice
+    args:
+      name: guide
+      source: diff-revisions
+  - name: DiffContent
+    parameters:
+      server:
+        id: notice
+    args:
+      name: 2026/10/18 09:12 初版（佐藤）
+      source: diff-content

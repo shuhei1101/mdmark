@@ -5,6 +5,7 @@ export type {
   MdmarkParamDefinition,
   MdmarkSequenceDefinition,
 } from "./diagram/definition.ts";
+export type { DiffRevision, DiffSource } from "./diff/source.ts";
 export type {
   MdmarkExtension,
   MdmarkExtensionModule,

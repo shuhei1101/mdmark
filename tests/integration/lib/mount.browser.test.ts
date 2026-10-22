@@ -1,6 +1,7 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type {
+  DiffRevision,
   MdmarkIndex,
   MdmarkReferences,
   MountHandle,
@@ -1429,4 +1430,597 @@ test("test_normal_when_embedded_hint", async () => {
   // ページの中のツールチップの id が重ならない
   const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
   expect(new Set(ids).size).toBe(ids.length);
+});
+
+// ─── 差分 ───
+
+/** `content` が受けた引数 */
+type ContentCall = { docId: string; revisionId: string };
+
+/** 呼ばれた引数を記録する取り出し元 */
+type RecordingSource = {
+  revisionsCalls: string[];
+  contentCalls: ContentCall[];
+  revisions: (docId: string) => Promise<DiffRevision[]>;
+  content: (target: ContentCall) => Promise<string>;
+};
+
+// 新しい順の 3 つのリビジョン
+const DIFF_REVISIONS = [
+  { id: "r3", at: "2026-10-20T02:05:00Z", label: "足す", author: "田中" },
+  { id: "r2", at: "2026-10-19T07:40:00Z", label: "件数を直す", author: "鈴木" },
+  { id: "r1", at: "2026-10-18T00:12:00Z", label: "初版", author: "佐藤" },
+];
+
+// リビジョンごとの本文: r2 から r3 で語 `差分` を `変更` に書き換え、行を 1 つ足し、別の行を 1 つ消す
+const DIFF_CONTENTS: Record<string, string> = {
+  r1: "# ガイド\n\n初版の行\n終わり\n",
+  r2: "# ガイド\n\n差分を色分けして読む。\n消す行\n終わり\n",
+  r3: "# ガイド\n\n変更を色分けして読む。\n終わり\n足す行\n",
+};
+
+/** 呼ばれた引数を記録し、本文をすぐに返す取り出し元を作る */
+function createDiffSource(
+  override: Partial<RecordingSource> = {},
+  revisions: unknown = DIFF_REVISIONS,
+  contents: Record<string, string> = DIFF_CONTENTS,
+): RecordingSource {
+  const source: RecordingSource = {
+    revisionsCalls: [],
+    contentCalls: [],
+    revisions: async (docId) => {
+      source.revisionsCalls.push(docId);
+      return revisions as DiffRevision[];
+    },
+    content: async (target) => {
+      source.contentCalls.push(target);
+      return contents[target.revisionId] ?? "";
+    },
+  };
+  return Object.assign(source, override);
+}
+
+/** 取り出し元を渡して文書を描く。文書は `h1` で始まり、本文の段落を 1 つ持つ */
+async function mountDiff(
+  source: RecordingSource,
+  markdown = "# ガイド\n\n本文の段落。\n",
+): Promise<HTMLElement> {
+  const el = createElement();
+  await mountTracked(el, { markdown, docId: "guide", diffSource: source });
+  return el;
+}
+
+/** 「変更を見る」のボタン */
+function diffToggle(el: HTMLElement): HTMLButtonElement {
+  return find<HTMLButtonElement>(el, ".mdmark-diff-toggle");
+}
+
+/** `ラベルの文字` を持つ label が指す select */
+function diffSelect(el: HTMLElement, labelText: string): HTMLSelectElement {
+  const label = [...el.querySelectorAll("label")].find(
+    (candidate) => candidate.textContent?.trim() === labelText,
+  );
+  return find<HTMLSelectElement>(el, `#${CSS.escape(label?.htmlFor ?? "")}`);
+}
+
+/** 差分の行が描かれるのを待つ */
+async function waitForDiffLines(el: HTMLElement): Promise<void> {
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-diff-line")).not.toBeNull();
+  });
+}
+
+/** `document.body` の直下のミニマップの帯 */
+function minimapBands(): HTMLElement[] {
+  return [
+    ...document.body.querySelectorAll<HTMLElement>(
+      ":scope > .mdmark-diff-minimap",
+    ),
+  ];
+}
+
+/** 選ぶ欄の選択肢 1 つが選べないか */
+function isDisabled(select: HTMLSelectElement, value: string): boolean {
+  return [...select.options].find((option) => option.value === value)
+    ?.disabled as boolean;
+}
+
+// 取り出し元を渡して描き、「変更を見る」で一番新しい 2 つのリビジョンの差分を出す（正常系）
+test("test_normal_when_diff_opened", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = await mountDiff(source);
+  // 検証: mount の直後は取り出し元を呼ばず、h1 の後ろにボタンがある
+  const toggle = diffToggle(el);
+  expect(source.revisionsCalls).toEqual([]);
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(find(el, "h1").nextElementSibling?.contains(toggle)).toBe(true);
+  // 実行
+  toggle.click();
+  await waitForDiffLines(el);
+  // 検証: 本文が隠れ、見出しは残る
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(true);
+  expect(find<HTMLElement>(el, "h1").hidden).toBe(false);
+  // 取り出し元の呼び出し
+  expect(source.revisionsCalls).toEqual(["guide"]);
+  expect(source.contentCalls).toHaveLength(2);
+  expect(source.contentCalls).toContainEqual({
+    docId: "guide",
+    revisionId: "r2",
+  });
+  expect(source.contentCalls).toContainEqual({
+    docId: "guide",
+    revisionId: "r3",
+  });
+  // 選ぶ欄
+  const before = diffSelect(el, "前のリビジョン");
+  const after = diffSelect(el, "後のリビジョン");
+  expect(before.value).toBe("r2");
+  expect(after.value).toBe("r3");
+  expect(isDisabled(before, "r3")).toBe(true);
+  expect(isDisabled(after, "r2")).toBe(true);
+  expect(isDisabled(after, "r1")).toBe(true);
+  // 差分の行
+  const del = find(el, '.mdmark-diff-line[data-kind="del"]');
+  const add = find(el, '.mdmark-diff-line[data-kind="add"]');
+  expect(find(del, ".mdmark-diff-sign").textContent).toBe("-");
+  expect(find(add, ".mdmark-diff-sign").textContent).toBe("+");
+  expect(
+    [...el.querySelectorAll("del.mdmark-diff-word")].map((e) => e.textContent),
+  ).toEqual(["差分"]);
+  expect(
+    [...el.querySelectorAll("ins.mdmark-diff-word")].map((e) => e.textContent),
+  ).toEqual(["変更"]);
+  expect(find(el, '[role="status"]').textContent).toBe(
+    "削除した行 2・追加した行 2",
+  );
+  // ミニマップ
+  await vi.waitFor(() => {
+    expect(minimapBands()).toHaveLength(1);
+    expect(
+      minimapBands()[0]?.querySelector(
+        '.mdmark-diff-minimap-mark[data-kind="del"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      minimapBands()[0]?.querySelector(
+        '.mdmark-diff-minimap-mark[data-kind="add"]',
+      ),
+    ).not.toBeNull();
+  });
+  expect(minimapBands()[0]?.getAttribute("aria-hidden")).toBe("true");
+});
+
+// 前のリビジョンを選び直すと、その 2 つの差分に描き直す（正常系）
+test("test_normal_when_revision_reselected", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = await mountDiff(source);
+  diffToggle(el).click();
+  await waitForDiffLines(el);
+  source.contentCalls.length = 0;
+  // 実行
+  const before = diffSelect(el, "前のリビジョン");
+  await userEvent.selectOptions(before, "r1");
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.textContent).toContain("初版の行");
+  });
+  expect(source.contentCalls.map((call) => call.revisionId).sort()).toEqual([
+    "r1",
+    "r3",
+  ]);
+  const after = diffSelect(el, "後のリビジョン");
+  expect(after.value).toBe("r3");
+  expect(isDisabled(after, "r1")).toBe(true);
+  expect(el.textContent).not.toContain("消す行");
+});
+
+// リビジョンが 1 つなら本文を取り出さず、比較対象が無いことを出す（正常系）
+test("test_normal_when_single_revision", async () => {
+  // 準備
+  const source = createDiffSource({}, [DIFF_REVISIONS[2]]);
+  const el = await mountDiff(source);
+  // 実行
+  diffToggle(el).click();
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.textContent).toContain(
+      "この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。",
+    );
+  });
+  expect(source.contentCalls).toEqual([]);
+  expect(el.querySelector("select")).toBeNull();
+  expect(minimapBands()).toHaveLength(0);
+});
+
+// 選んだ 2 つの本文が同じなら、行を出さずに変更が無いことを出す（正常系）
+test("test_normal_when_no_change", async () => {
+  // 準備
+  const same = "# ガイド\n\n同じ本文\n";
+  const source = createDiffSource({}, DIFF_REVISIONS.slice(1), {
+    r1: same,
+    r2: same,
+  });
+  const el = await mountDiff(source);
+  // 実行
+  diffToggle(el).click();
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.textContent).toContain(
+      "選んだ 2 つのリビジョンの本文に、変更はありません。",
+    );
+  });
+  expect(el.querySelector(".mdmark-diff-line")).toBeNull();
+  expect(minimapBands()).toHaveLength(0);
+  expect(el.querySelector("select")).not.toBeNull();
+});
+
+// `Intl.Segmenter` を持たないブラウザでは、対の行を文字ごとに比べる（正常系）
+test("test_normal_when_segmenter_missing", async () => {
+  // 準備
+  const segmenter = Intl.Segmenter;
+  const source = createDiffSource();
+  const el = await mountDiff(source);
+  Reflect.deleteProperty(Intl, "Segmenter");
+  try {
+    // 実行
+    expect(() => diffToggle(el).click()).not.toThrow();
+    await waitForDiffLines(el);
+    // 検証: 変わった文字だけが del・ins で囲まれる
+    expect(
+      [...el.querySelectorAll("del.mdmark-diff-word")]
+        .map((e) => e.textContent)
+        .join(""),
+    ).toBe("差分");
+    expect(
+      [...el.querySelectorAll("ins.mdmark-diff-word")]
+        .map((e) => e.textContent)
+        .join(""),
+    ).toBe("変更");
+  } finally {
+    Object.defineProperty(Intl, "Segmenter", {
+      value: segmenter,
+      configurable: true,
+      writable: true,
+    });
+  }
+});
+
+/** 埋め込んだ HTML の範囲を、`html` のコードブロックで包む */
+function diffRange(body: string): string {
+  return ["<!-- html -->", "```html", body, "```", "<!-- /html -->"].join("\n");
+}
+
+/** 表の 1 つのセルが数を持つ埋め込んだ HTML */
+function diffTable(count: number): string {
+  return `<table><tr><td>${count}</td></tr></table>`;
+}
+
+// 変えた埋め込んだ HTML の範囲を、ソースの色分けから前と後のプレビューへ切り替えて戻す（正常系）
+test("test_normal_when_html_previewed", async () => {
+  // 準備
+  const before = [
+    "# 表",
+    diffRange(diffTable(120)),
+    "中間",
+    diffRange("<p>同じ</p>"),
+    "末尾",
+    "",
+  ].join("\n");
+  const after = [
+    "# 表",
+    diffRange(diffTable(150)),
+    "中間",
+    diffRange("<p>同じ</p>"),
+    "末尾",
+    diffRange("<p>新しい</p>"),
+    "",
+  ].join("\n");
+  const source = createDiffSource({}, DIFF_REVISIONS.slice(1), {
+    r1: before,
+    r2: after,
+  });
+  const el = await mountDiff(source, "# 表\n\n本文\n");
+  // 実行: 差分を開く
+  diffToggle(el).click();
+  await waitForDiffLines(el);
+  // 検証: 各範囲に HTML のラベルがあり、見方のボタンは変えた範囲だけが持つ
+  const ranges = [...el.querySelectorAll<HTMLElement>(".mdmark-diff-html")];
+  expect(ranges).toHaveLength(3);
+  expect(
+    ranges.map(
+      (range) => range.querySelector(".mdmark-diff-html-label")?.textContent,
+    ),
+  ).toEqual(["HTML", "HTML", "HTML"]);
+  const switchers = ranges.map((range) =>
+    range.querySelector('[role="group"][aria-label="HTML の見方"]'),
+  );
+  expect(switchers.map((found) => found !== null)).toEqual([true, false, true]);
+  const first = ranges[0] as HTMLElement;
+  const third = ranges[2] as HTMLElement;
+  const sourceButton = find<HTMLButtonElement>(first, '[data-view="source"]');
+  const previewButton = find<HTMLButtonElement>(
+    first,
+    '[data-view="rendered"]',
+  );
+  expect(sourceButton.getAttribute("aria-pressed")).toBe("true");
+  expect(find<HTMLElement>(first, '[data-pane="rendered"]').hidden).toBe(true);
+  expect(first.querySelectorAll(".mdmark-diff-line").length).toBeGreaterThan(0);
+  // 実行: プレビューを押す
+  previewButton.click();
+  find<HTMLButtonElement>(third, '[data-view="rendered"]').click();
+  // 検証: 前と後の表が並び、前のセルが元の数、後のセルが変えた数を持つ
+  expect(previewButton.getAttribute("aria-pressed")).toBe("true");
+  const sides = [...first.querySelectorAll<HTMLElement>(".mdmark-diff-side")];
+  expect(sides).toHaveLength(2);
+  expect(sides[0]?.querySelector("td")?.textContent).toBe("120");
+  expect(sides[1]?.querySelector("td")?.textContent).toBe("150");
+  expect(third.textContent).toContain(
+    "前のリビジョンには、この範囲がありません",
+  );
+  // 実行: ソースを押す
+  sourceButton.click();
+  // 検証: 色分けの行に戻る
+  expect(sourceButton.getAttribute("aria-pressed")).toBe("true");
+  expect(find<HTMLElement>(first, '[data-pane="source"]').hidden).toBe(false);
+  expect(find<HTMLElement>(first, '[data-pane="rendered"]').hidden).toBe(true);
+});
+
+// 長い文書の差分で、ミニマップの帯を押す・押したまま動かすと差分を送る（正常系）
+test("test_normal_when_scrolled_by_minimap", async () => {
+  // 準備
+  const lines = (changed: boolean) => {
+    const out = ["# 長い文書", ""];
+    for (let index = 0; index < 120; index += 1) {
+      out.push(`変えない行 ${index}`);
+      if (index === 10 && changed) {
+        out.push("前半で足した行");
+      }
+      if (index === 110 && changed) {
+        out.push("後半で足した行");
+      }
+    }
+    return `${out.join("\n")}\n`;
+  };
+  const source = createDiffSource({}, DIFF_REVISIONS.slice(1), {
+    r1: lines(false),
+    r2: lines(true),
+  });
+  const el = await mountDiff(source, "# 長い文書\n\n本文\n");
+  window.scrollTo(0, 0);
+  diffToggle(el).click();
+  await waitForDiffLines(el);
+  await vi.waitFor(() => {
+    expect(minimapBands()).toHaveLength(1);
+  });
+  const band = minimapBands()[0] as HTMLElement;
+  // 検証: 帯は画面の右端に、画面の高さいっぱいで置かれる
+  expect(band.getAttribute("aria-hidden")).toBe("true");
+  const rect = band.getBoundingClientRect();
+  expect(getComputedStyle(band).position).toBe("fixed");
+  expect(
+    Math.abs(rect.right - document.documentElement.clientWidth),
+  ).toBeLessThanOrEqual(1);
+  expect(Math.abs(rect.height - window.innerHeight)).toBeLessThanOrEqual(1);
+  /** 変えた行が画面に入っているか */
+  const visible = (text: string): boolean => {
+    const line = [
+      ...el.querySelectorAll<HTMLElement>(".mdmark-diff-line"),
+    ].find((candidate) => candidate.textContent?.includes(text));
+    const box = line?.getBoundingClientRect();
+    return (
+      box !== undefined && box.top >= 0 && box.bottom <= window.innerHeight
+    );
+  };
+  const frame = () =>
+    find<HTMLElement>(band, ".mdmark-diff-minimap-view").getBoundingClientRect()
+      .top;
+  const frameAtTop = frame();
+  // 実行: 後半の印の位置を押す
+  const lastMark = [
+    ...band.querySelectorAll<HTMLElement>(".mdmark-diff-minimap-mark"),
+  ].at(-1);
+  const markRect = (lastMark as HTMLElement).getBoundingClientRect();
+  await userEvent.click(band, {
+    position: { x: 5, y: markRect.top - rect.top + markRect.height / 2 },
+  });
+  // 検証
+  await vi.waitFor(() => {
+    expect(visible("後半で足した行")).toBe(true);
+  });
+  await vi.waitFor(() => {
+    expect(frame()).toBeGreaterThan(frameAtTop);
+  });
+  // 実行: 帯を押したまま上へ動かす
+  await userEvent.dragAndDrop(band, band, {
+    sourcePosition: { x: 5, y: rect.height * 0.9 },
+    targetPosition: { x: 5, y: 2 },
+  });
+  // 検証
+  await vi.waitFor(() => {
+    expect(visible("前半で足した行")).toBe(true);
+  });
+});
+
+// 「変更を見る」を押し直すと差分とミニマップを片付けて本文に戻す（正常系）
+test("test_normal_when_diff_closed", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = await mountDiff(source);
+  const toggle = diffToggle(el);
+  toggle.click();
+  await waitForDiffLines(el);
+  // 実行
+  toggle.focus();
+  toggle.click();
+  // 検証
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(toggle);
+  expect(el.querySelector(".mdmark-diff-line")).toBeNull();
+  expect(el.querySelector("select")).toBeNull();
+  expect(minimapBands()).toHaveLength(0);
+  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(false);
+});
+
+// 取り出し元の待ちの間に destroy すると、後から返った結果を描かない（正常系）
+test("test_normal_when_destroyed_while_waiting", async () => {
+  // 準備
+  let release: (value: DiffRevision[]) => void = () => {};
+  const source = createDiffSource({
+    revisions: (docId) => {
+      source.revisionsCalls.push(docId);
+      return new Promise((resolve) => {
+        release = resolve;
+      });
+    },
+  });
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "# ガイド\n\n本文の段落。\n",
+    docId: "guide",
+    diffSource: source,
+  });
+  // 実行
+  diffToggle(el).click();
+  // 検証: 待ちが 1 秒を過ぎると読み込み中が出る
+  await vi.waitFor(
+    () => {
+      expect(el.textContent).toContain("変更を読み込んでいます");
+    },
+    { timeout: 3000 },
+  );
+  // 実行: 片付けた後に、一覧が返る
+  handle.destroy();
+  release(DIFF_REVISIONS);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  // 検証
+  expect(el.innerHTML).toBe("");
+  expect(source.contentCalls).toEqual([]);
+});
+
+// `revisions` が reject すると差分の場所を知らせの枠にし、本文は残す（異常系）
+test("test_error_when_revisions_rejected", async () => {
+  // 準備
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  const error = new Error("network");
+  const source = createDiffSource({
+    revisions: async () => {
+      throw error;
+    },
+  });
+  const el = await mountDiff(source);
+  // 実行
+  expect(() => diffToggle(el).click()).not.toThrow();
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-notice")).not.toBeNull();
+  });
+  const notice = find(el, ".mdmark-notice");
+  expect(notice.getAttribute("role")).toBe("status");
+  expect(find(notice, ".mdmark-notice-title").textContent).toBe(
+    "変更の履歴を表示できません",
+  );
+  expect(find(notice, "p").textContent).toBe(
+    "リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。",
+  );
+  expect(source.contentCalls).toEqual([]);
+  // 押し直すと、本文が開く前と同じに出る
+  diffToggle(el).click();
+  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(false);
+  expect(consoleError).toHaveBeenCalledTimes(1);
+  const args = consoleError.mock.calls.flat();
+  expect(args).toContain(error);
+  expect(args.some((arg) => String(arg).includes("revisions"))).toBe(true);
+  expect(args.some((arg) => String(arg).includes("guide"))).toBe(true);
+});
+
+// `content` が 1 つのリビジョンで reject すると、選ぶ欄を残して知らせの枠を出し、選び直せば差分を出す（異常系）
+test("test_error_when_content_rejected", async () => {
+  // 準備
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  const error = new Error("content");
+  const source = createDiffSource();
+  const original = source.content;
+  source.content = async (target) => {
+    if (target.revisionId === "r1") {
+      source.contentCalls.push(target);
+      throw error;
+    }
+    return original(target);
+  };
+  const el = await mountDiff(source);
+  diffToggle(el).click();
+  await waitForDiffLines(el);
+  // 実行: 本文を返せない r1 を選ぶ
+  await userEvent.selectOptions(diffSelect(el, "前のリビジョン"), "r1");
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-notice")).not.toBeNull();
+  });
+  const notice = find(el, ".mdmark-notice");
+  expect(find(notice, ".mdmark-notice-title").textContent).toBe(
+    "このリビジョンの本文を表示できません",
+  );
+  expect(find(notice, "p").textContent).toBe(
+    "「2026/10/18 09:12 初版（佐藤）」の本文を取り出せませんでした。別のリビジョンを選んでください。",
+  );
+  expect(el.querySelector("select")).not.toBeNull();
+  expect(minimapBands()).toHaveLength(0);
+  expect(find(el, '[role="status"]').textContent).toBe("");
+  // 実行: r2 を選び直す
+  await userEvent.selectOptions(diffSelect(el, "前のリビジョン"), "r2");
+  // 検証
+  await waitForDiffLines(el);
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  expect(el.textContent).toContain("差分");
+  const args = consoleError.mock.calls.flat();
+  expect(args).toContain(error);
+  for (const word of ["content", "guide", "r1"]) {
+    expect(args.some((arg) => String(arg).includes(word))).toBe(true);
+  }
+});
+
+// `revisions` が形に合わない値を返すと、取り出せないときと同じ知らせの枠を出す（異常系）
+test("test_error_when_revisions_malformed", async () => {
+  // 準備
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  const malformed = [{ id: "r1" }, DIFF_REVISIONS[1]];
+  const source = createDiffSource({}, malformed);
+  const el = await mountDiff(source);
+  // 実行
+  expect(() => diffToggle(el).click()).not.toThrow();
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-notice")).not.toBeNull();
+  });
+  expect(find(el, ".mdmark-notice-title").textContent).toBe(
+    "変更の履歴を表示できません",
+  );
+  expect(source.contentCalls).toEqual([]);
+  const args = consoleError.mock.calls.flat();
+  for (const word of ["revisions", "guide"]) {
+    expect(args.some((arg) => String(arg).includes(word))).toBe(true);
+  }
+  expect(args.some((arg) => arg instanceof TypeError)).toBe(true);
+});
+
+// 取り出し元を渡して `docId` を渡さないと、何も描かずに TypeError を投げる（異常系）
+test("test_error_when_doc_id_missing", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const { mount } = await loadBuilt();
+  // 実行・検証
+  expect(() => mount(el, { markdown: "# ガイド", diffSource: source })).toThrow(
+    /docId/,
+  );
+  expect(() => mount(el, { markdown: "# ガイド", diffSource: source })).toThrow(
+    TypeError,
+  );
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+  expect(el.classList.contains("mdmark")).toBe(false);
+  expect(source.revisionsCalls).toEqual([]);
 });
