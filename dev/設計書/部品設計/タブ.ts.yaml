@@ -29,6 +29,16 @@ states:
     args:
       - name: titles
         value: '["macOS","Windows"]'
+  - name: Grouped
+    description: 組 `os` を持ち、1 つ目のタブを選んだ。見た目は First と同じで、`data-group` を持つ
+    screenshot: false
+    args:
+      - name: titles
+        value: '["macOS","Windows","Linux"]'
+      - name: selected
+        value: '0'
+      - name: group
+        value: os
 lead: '`<!-- tabs -->` の範囲を見出しで区切った中身を、見出しの文字をタブ名にしたタブで切り替えて見せる。`render` は全ての中身を順に出し、`mount` がタブの並びを付ける。'
 args:
   - name: titles
@@ -40,6 +50,11 @@ args:
     required: false
     default: なし（タブの並びを付けず、全ての中身を順に出す）
     description: 選んだタブの位置（0 から）。渡すと `role="tablist"` の並びを付け、選んだタブの中身だけを出す（`mount` が付けた状態）
+  - name: group
+    type: 文字列
+    required: false
+    default: なし（組を持たず、他のタブと揃えない）
+    description: タブの組の名前。渡すと `mdmark-tabs` に `data-group` を付ける。同じ組のタブの選択を揃え、選んだタブ名を覚えるのは `mount` の操作
 slots:
   - name: default
     description: タブごとの中身（区切りの見出しから次の見出しの前までの HTML）
@@ -48,7 +63,7 @@ events:
   - name: タブを選ぶ
     when: タブを押すか、タブにフォーカスがあるときに左右の矢印・Home・End を押す
     value: 選んだタブの `aria-selected`
-    description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする'
+    description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする。`data-group` を持つときは、ページの同じ `data-group` で同じタブ名を持つ `mdmark-tabs` もそのタブ名へ切り替え、タブ名を localStorage に残す'
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
@@ -71,4 +86,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
 status: planned
 notes:
-  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>`。`selected` を渡すと頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を置き、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。モックは `dev/mock/components/tabs/`'
+  HTML: '`render` は `<div class="mdmark-tabs">`（`group` を渡すと `<div class="mdmark-tabs" data-group="{group}">`）。中身は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>`。`selected` を渡すと頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を置き、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。モックは `dev/mock/components/tabs/`'
