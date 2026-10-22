@@ -1,6 +1,8 @@
 import type { StateCore, Token } from "markdown-it";
+import type { WarningItem } from "../../extensions.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
+import type { Mark } from "../marks.ts";
 import {
   envOf,
   featureOn,
@@ -9,9 +11,58 @@ import {
   ownBlock,
   textOf,
 } from "./tokens.ts";
-import { unclosedWarning, warningBlock } from "./warnings.ts";
+import {
+  type SyntaxWarning,
+  unclosedWarning,
+  warningBlock,
+} from "./warnings.ts";
 
-/** `tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、タブの部品にする。見出しが無ければ警告を差し込み、中身をそのまま残す */
+/** タブの印で読めるキー */
+const GROUP_KEY = "group";
+
+/** タブの印の引数から `group` を読む。値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定は、1 つの書き方の警告にまとめる */
+export function readTabsOptions(mark: Mark): {
+  group?: string;
+  warning?: SyntaxWarning;
+} {
+  const items: WarningItem[] = [];
+  let group: string | undefined;
+  for (const [key, value] of Object.entries(mark.args.keys)) {
+    if (key !== GROUP_KEY) {
+      items.push({
+        label: `${key}=`,
+        message: `使えないキーです。使えるキーは \`${GROUP_KEY}=\` です`,
+      });
+    } else if (value === "") {
+      items.push({
+        label: `${GROUP_KEY}=`,
+        message: `組の名前がありません。\`${GROUP_KEY}=os\` のように名前を書いてください。組を持たないタブとして描いています`,
+      });
+    } else {
+      group = value;
+    }
+  }
+  // `キー=値` の形でない指定
+  for (const arg of mark.args.args) {
+    items.push({
+      label: arg,
+      message: `使えない指定です。使える指定は \`${GROUP_KEY}=名前\` です`,
+    });
+  }
+  if (items.length === 0) {
+    return { group };
+  }
+  return {
+    group,
+    warning: {
+      mark: mark.raw,
+      message: "の読めない指定を当てずに描いています。",
+      items,
+    },
+  };
+}
+
+/** `tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、タブの部品にする。印の引数の `group` は部品へ渡し、読めない指定は警告を差し込む。見出しが無ければ警告を差し込み、中身をそのまま残す */
 export function buildTabs(state: StateCore): void {
   if (!featureOn(state, "tabs")) {
     return;
@@ -27,6 +78,10 @@ export function buildTabs(state: StateCore): void {
         out.push(token);
       }
       continue;
+    }
+    const { group, warning } = readTabsOptions(mark);
+    if (warning) {
+      out.push(warningBlock(state, warning));
     }
     const closeIndex = findClose(tokens, index, "tabs");
     const end = closeIndex < 0 ? tokens.length : closeIndex;
@@ -69,6 +124,7 @@ export function buildTabs(state: StateCore): void {
       id: "mdmark-tabs",
       titles,
       panels: titles.map(() => SLOT_MARKER),
+      group,
     });
     const pieces = html.split(SLOT_MARKER);
     const firstPosition = separators[0]?.position ?? 0;

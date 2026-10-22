@@ -102,7 +102,7 @@ flows:
       - name: 配布物を読んだ Node の処理
         description: 正常系と同じ
       - name: 記法を持つ Markdown
-        description: '`<!-- toc -->`、`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` で囲んだ 3 行の表（列は `名前`・`値`）、`### macOS`・`### Windows` を持つ `<!-- tabs -->` の範囲、`> [!WARNING]` と `> [!NOTE]-` の引用、番号付きリストを囲んだ `<!-- steps -->` の範囲、言語 `tree` のコードブロック（`src/` の下に `index.ts`）、`` `badge:v1` ``、直後に `<!-- section: closed -->` を持つ `## 補足`、直後に `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` を持つ 2 行の表、`<!-- fig: arch -->` の直後の title `全体の構成` の画像と `[図](#fig-arch)` のリンクを持つ文書'
+        description: '`<!-- toc -->`、`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` で囲んだ 3 行の表（列は `名前`・`値`）、`### macOS`・`### Windows` を持つ `<!-- tabs: group=os -->` の範囲、`> [!WARNING]` と `> [!NOTE]-` の引用、番号付きリストを囲んだ `<!-- steps -->` の範囲、言語 `tree` のコードブロック（`src/` の下に `index.ts`）、`` `badge:v1` ``、直後に `<!-- section: closed -->` を持つ `## 補足`、直後に `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` を持つ 2 行の表、`<!-- fig: arch -->` の直後の title `全体の構成` の画像と `[図](#fig-arch)` のリンクを持つ文書'
         notes: '`opts` は渡さない（記法の機能は既定でオン）'
       - name: Mock
         description: 差し替える依存は無い
@@ -118,7 +118,7 @@ flows:
     expected:
       - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
       - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表を開く</summary>` を持つ
-      - タブの範囲が `<div class="mdmark-tabs">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
+      - タブの範囲が `<div class="mdmark-tabs" data-group="os">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
       - '`[!WARNING]` の引用が `<div class="markdown-alert markdown-alert-warning">` と題 `警告` になり、文字列に `[!WARNING]` が無い'
       - '`[!NOTE]-` の引用が `<details class="markdown-alert markdown-alert-note">` と `<summary class="markdown-alert-title">補足</summary>` になる'
       - ステップの範囲の `ol` が class `mdmark-steps` を持つ
@@ -178,7 +178,7 @@ flows:
       - name: 配布物を読んだ Node の処理
         description: 正常系と同じ
       - name: 書き方を誤った Markdown
-        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で囲んだ表、見出しの無い `<!-- tabs -->` 〜 `<!-- /tabs -->` の範囲、`[図](#fig-missing)` のリンク、文書の終わりまで閉じの印の無い `<!-- table: data -->` とその後の表を持つ文書'
+        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で囲んだ表、見出しの無い `<!-- tabs -->` 〜 `<!-- /tabs -->` の範囲、`### macOS`・`### Windows` を持つ `<!-- tabs: group= grop=os closed -->` の範囲、`[図](#fig-missing)` のリンク、文書の終わりまで閉じの印の無い `<!-- table: data -->` とその後の表を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -190,9 +190,10 @@ flows:
         M->>M: 読めない指定の箇所に書き方の警告を置く
         M-->>C: HTML 文字列
     expected:
-      - '`<div class="mdmark-syntax-warning" role="note">` が 4 つあり、それぞれに題 `書き方の警告` がある'
+      - '`<div class="mdmark-syntax-warning" role="note">` が 5 つあり、それぞれに題 `書き方の警告` がある'
       - 1 つ目の表が `data-kind="default"` と `data-features="pin sort"` を持ち、警告の本文に `unknown` と使える種類 `data`・`plain` がある
-      - タブの範囲の段落があり、文字列に `mdmark-tabs` が無い
+      - 見出しの無いタブの範囲の段落がある
+      - '`group= grop=os closed` のタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に `group=`・`grop=`・`closed` がある'
       - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
       - 閉じの印の無い表が `data-kind="data"` を持ち、警告の本文に `<!-- /table -->` がある
     test: test_normal_when_syntax_errors
@@ -544,7 +545,7 @@ constraints:
   - item: 注意書き
     constraint: 1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` と題 `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から外す。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にする。知らない種類は `note` として出す
   - item: タブ
-    constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの文字}</p>` に替え、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）'
+    constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの文字}</p>` に替え、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。`<!-- tabs: group=名前 -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない'
   - item: ステップ・ファイルツリー・バッジ
     constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<ul class="mdmark-tree" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする'
   - item: 見出しの ID とアンカー
@@ -558,7 +559,7 @@ constraints:
   - item: 図と表の番号
     constraint: '`<!-- fig: {ID} -->` の直後の画像の段落と表を `<figure class="mdmark-figure" id="fig-{ID}">` に入れ、文書の頭から種類ごとに数えた番号を付ける。画像は下に `<figcaption class="mdmark-figure-caption"><b>図 {番号}</b>{画像の title}</figcaption>`、表は上に `<figcaption class="mdmark-figure-caption"><b>表 {番号}</b></figcaption>` を置く。本文の `#fig-{ID}` へのリンクの文字を、その図表の `図 {番号}`・`表 {番号}` に替える'
   - item: 書き手の誤り
-    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類・知らない集計の計算・`hide=` の先頭の列、`+total` の無い表の `total=`・`+columns` の無い表の `hide=` を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリーでは、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
+    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類・知らない集計の計算・`hide=` の先頭の列、`+total` の無い表の `total=`・`+columns` の無い表の `hide=` を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、タブの印の値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定（値の無い `group=` は組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリーでは、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
     constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` 〜 閉じの印の範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み、形（`dist/index.d.ts` の `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`）を確かめて、`<figure class="mdmark-diagram" data-diagram="{種類}">` に題（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（箱の名前・補足・線のラベル・ツールチップの中身）は文字として出し、`{{語}}` はその語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に置き、拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter` で、棒と円は系列を色と塗りの模様の組、散布図は色と点の形の組で描き分け、円は扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。縦の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'

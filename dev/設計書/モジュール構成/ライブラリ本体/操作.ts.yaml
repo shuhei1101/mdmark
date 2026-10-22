@@ -235,7 +235,7 @@ functions:
     container: src/interact/tabs.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にして 1 つ目を選ぶ。押すと左右の矢印・Home・End で選ぶ
+    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から引いた関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す
     args:
       - name: root
         type: HTMLElement
@@ -243,9 +243,11 @@ functions:
         description: 描いた要素
     returns:
       type: () => void
-      description: タブの並びを取り除き、中身を `render` の形に戻す関数
-    side_effects: タブの DOM を書き換え、イベントを付ける
+      description: タブの並びを取り除き、`tabSelectors` から外し、中身を `render` の形に戻す関数
+    side_effects: タブの DOM を書き換え、イベントを付ける。`data-group` を持つときは localStorage を読み書きし、`root` の外の同じ `data-group` のタブも切り替える
     callees:
+      - '#functions[loadTabChoice]'
+      - '#functions[saveTabChoice]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
     unit_tests:
       - name: test_attach_tabs
@@ -254,6 +256,30 @@ functions:
         condition: 3 つの中身のタブ、2 つ目を押し、右の矢印、End、Home
         mock: なし
         expected: 2 つ目・3 つ目・3 つ目・1 つ目の順に `aria-selected="true"` とフォーカスが移り、その中身だけが `hidden` を持たない
+      - name: test_attach_tabs_when_group_synced
+        case: 正常
+        summary: 同じ組のタブを揃えて残す
+        condition: '`data-group="os"` の `macOS`・`Windows` のタブを 2 つ、`data-group="os"` の `macOS`・`Linux` のタブを 1 つ、組の無い `macOS`・`Windows` のタブを 1 つ、2 つの `root` に分けて付け、1 つ目の `Windows` を押す'
+        mock: localStorage を空にしておく
+        expected: 1 つ目と 2 つ目は `Windows` を選び、3 つ目と 4 つ目は `macOS` のまま。フォーカスは 1 つ目の `Windows`。localStorage の `mdmark-tabs:os` が `Windows`
+      - name: test_attach_tabs_when_choice_saved
+        case: 正常
+        summary: 残したタブ名のタブを選んで付ける
+        condition: localStorage の `mdmark-tabs:os` が `Windows`、`mdmark-tabs:lang` が `Go`。`data-group="os"` の `macOS`・`Windows` と `data-group="lang"` の `Python`・`TypeScript` のタブ
+        mock: なし
+        expected: '`os` は `Windows`、`lang` は `Python` を選ぶ。localStorage は書き換わらない'
+      - name: test_attach_tabs_when_detached
+        case: 正常
+        summary: 外したタブは揃える対象から外れる
+        condition: '`data-group="os"` のタブを 2 つの `root` に付け、1 つ目の `root` を外してから 2 つ目の `Windows` を押す'
+        mock: なし
+        expected: 例外が出ず、1 つ目の `root` にタブの並びが無く、中身に `hidden` が無い
+      - name: test_attach_tabs_when_group_has_quote
+        case: 正常
+        summary: セレクタの記号を含む組の名前でも揃える
+        condition: '`data-group` が `a"b\c]` の `macOS`・`Windows` のタブを 2 つ、1 つ目の `Windows` を押す'
+        mock: localStorage を空にしておく
+        expected: 例外が出ず、2 つとも `Windows` を選び、localStorage の `mdmark-tabs:a"b\c]` が `Windows`
   - name: attachSections
     title: 節と行の詳細に開閉を付ける
     container: src/interact/sections.ts
@@ -438,6 +464,58 @@ functions:
         condition: '`#%E3%81%BF%E3%81%8B%E3%82%93`・`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93`・`#%E3%81`・空文字'
         mock: なし
         expected: '`みかん`・`みかん`・`%E3%81`・空文字'
+  - name: loadTabChoice
+    title: 残したタブ名を読む
+    container: src/interact/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: localStorage の `{TAB_CHOICE_KEY_PREFIX}{group}` を読む。`window.localStorage` の取り出しと読み出しを try の中で行い、例外は `console.warn` に出して `undefined` を返す
+    args:
+      - name: group
+        type: string
+        required: true
+        description: 組の名前
+    returns:
+      type: string | undefined
+      description: 残したタブ名。残していないか読めないときは `undefined`
+    unit_tests:
+      - name: test_load_tab_choice
+        case: 正常
+        summary: 残したタブ名を返す
+        condition: localStorage の `mdmark-tabs:os` が `Windows`
+        mock: なし
+        expected: '`Windows`'
+      - name: test_load_tab_choice_when_storage_unavailable
+        case: 異常
+        summary: localStorage を取り出せなければ undefined
+        condition: '`window.localStorage` を読むと `SecurityError` を投げる'
+        mock: '`window.localStorage` の getter と `console.warn` を差し替える'
+        expected: 例外を投げず `undefined` を返し、`console.warn` が 1 回呼ばれる
+  - name: saveTabChoice
+    title: 選んだタブ名を残す
+    container: src/interact/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: localStorage の `{TAB_CHOICE_KEY_PREFIX}{group}` にタブ名を書く。`window.localStorage` の取り出しと書き込みを try の中で行い、例外は `console.warn` に出して続ける
+    args:
+      - name: choice
+        type: '{ group: string; name: string }'
+        required: true
+        description: 組の名前と選んだタブ名
+    side_effects: localStorage に書く
+    unit_tests:
+      - name: test_save_tab_choice
+        case: 正常
+        summary: タブ名を残す
+        condition: '`{ group: "os", name: "Windows" }`'
+        mock: なし
+        expected: localStorage の `mdmark-tabs:os` が `Windows`
+      - name: test_save_tab_choice_when_storage_unavailable
+        case: 異常
+        summary: localStorage を取り出せなければ書かずに続ける
+        condition: '`window.localStorage` を読むと `SecurityError` を投げる'
+        mock: '`window.localStorage` の getter と `console.warn` を差し替える'
+        expected: 例外を投げず、`console.warn` が 1 回呼ばれる
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
@@ -445,3 +523,16 @@ test_files:
   - tests/unit/src/interact/sections.browser.test.ts
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
+constants:
+  - name: TAB_CHOICE_KEY_PREFIX
+    title: 残したタブ名のキーの頭
+    container: src/interact/tabs.ts
+    summary: 選んだタブ名を残す localStorage のキーの頭。キーは `{頭}{group}`
+    value: '"mdmark-tabs:"'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
+  - name: tabSelectors
+    title: タブを名前で選ぶ関数の控え
+    container: src/interact/tabs.ts
+    summary: '`attachTabs` が操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を引く。ページの別の `mount` のタブも同じ控えから引いて揃える。外す関数が取り除く'
+    value: 'new WeakMap<HTMLElement, (name: string) => void>()'

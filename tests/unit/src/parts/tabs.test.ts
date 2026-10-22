@@ -44,3 +44,20 @@ test("test_render_tabs_when_selected", async () => {
   expect(panels[0]).toMatch(/\shidden\b/);
   expect(panels[1]).not.toMatch(/\shidden\b/);
 });
+
+// group を data-group に写す（正常系）
+test("test_render_tabs_when_group", async () => {
+  // 準備
+  const { renderTabs } = await loadTabs();
+  // 実行
+  const html = renderTabs({
+    id: "t",
+    titles: ["macOS", "Windows"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    group: 'os"&',
+  });
+  // 検証
+  expect(
+    html.startsWith('<div class="mdmark-tabs" data-group="os&quot;&amp;">'),
+  ).toBe(true);
+});

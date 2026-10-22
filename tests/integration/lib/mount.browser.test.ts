@@ -118,6 +118,7 @@ afterEach(() => {
   for (const style of addedStyles.splice(0)) {
     style.remove();
   }
+  localStorage.clear();
   vi.restoreAllMocks();
 });
 
@@ -2023,4 +2024,147 @@ test("test_error_when_doc_id_missing", async () => {
   expect(el.innerHTML).toBe("<p>前の中身</p>");
   expect(el.classList.contains("mdmark")).toBe(false);
   expect(source.revisionsCalls).toEqual([]);
+});
+
+/** `### {タイトル}` で区切ったタブの範囲の Markdown。`group` が無ければ組を持たない */
+function tabsRange(titles: string[], group?: string): string {
+  return [
+    group === undefined ? "<!-- tabs -->" : `<!-- tabs: group=${group} -->`,
+    "",
+    ...titles.flatMap((title) => [`### ${title}`, "", `${title} の手順`, ""]),
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+}
+
+/** 描いた要素の中の `i` 番目のタブ群で、選んでいるタブの名前 */
+function selectedTab(el: Element, i: number): string | null | undefined {
+  return el
+    .querySelectorAll(".mdmark-tabs")
+    [i]?.querySelector('[role="tab"][aria-selected="true"]')?.textContent;
+}
+
+/** 描いた要素の中の `i` 番目のタブ群で、名前のタブ */
+function tabNamed(el: Element, i: number, name: string): HTMLElement {
+  const tab = [
+    ...(el
+      .querySelectorAll(".mdmark-tabs")
+      [i]?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []),
+  ].find((candidate) => candidate.textContent === name);
+  if (!tab) {
+    throw new Error(`タブが無い: ${name}`);
+  }
+  return tab;
+}
+
+// 同じ group のタブ群を同じタブ名へ揃え、選んだタブ名を localStorage に残す（正常系）
+test("test_normal_when_tab_group_synced", async () => {
+  // 準備
+  localStorage.clear();
+  const el = createElement();
+  const markdown = [
+    tabsRange(["macOS", "Windows"], "os"),
+    tabsRange(["macOS", "Windows"], "os"),
+    tabsRange(["macOS", "Linux"], "os"),
+    tabsRange(["macOS", "Windows"]),
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  // 検証: 押す前は残していない
+  expect(localStorage.getItem("mdmark-tabs:os")).toBeNull();
+  expect([0, 1, 2, 3].map((i) => selectedTab(el, i))).toEqual([
+    "macOS",
+    "macOS",
+    "macOS",
+    "macOS",
+  ]);
+  // 実行
+  const windows = tabNamed(el, 0, "Windows");
+  windows.click();
+  // 検証
+  for (const i of [0, 1]) {
+    const tab = tabNamed(el, i, "Windows");
+    expect(tab.getAttribute("aria-selected")).toBe("true");
+    expect(tab.getAttribute("tabindex")).toBe("0");
+    const panels = [
+      ...(el
+        .querySelectorAll(".mdmark-tabs")
+        [i]?.querySelectorAll<HTMLElement>('[role="tabpanel"]') ?? []),
+    ];
+    expect(panels.map((panel) => panel.hasAttribute("hidden"))).toEqual([
+      true,
+      false,
+    ]);
+  }
+  expect(selectedTab(el, 2)).toBe("macOS");
+  expect(selectedTab(el, 3)).toBe("macOS");
+  expect(document.activeElement).toBe(windows);
+  expect(localStorage.getItem("mdmark-tabs:os")).toBe("Windows");
+});
+
+// localStorage に残したタブ名のタブを選んで描き、本文を差し替えても同じタブを選ぶ（正常系）
+test("test_normal_when_tab_choice_restored", async () => {
+  // 準備
+  localStorage.setItem("mdmark-tabs:os", "Windows");
+  localStorage.setItem("mdmark-tabs:lang", "Go");
+  const el = createElement();
+  const markdown = [
+    tabsRange(["macOS", "Windows"], "os"),
+    tabsRange(["Python", "TypeScript"], "lang"),
+    tabsRange(["macOS", "Windows"]),
+  ].join("\n");
+  const handle = await mountTracked(el, { markdown });
+  // 検証: 描いた直後
+  const windowsPanel = [
+    ...(el
+      .querySelectorAll(".mdmark-tabs")[0]
+      ?.querySelectorAll<HTMLElement>('[role="tabpanel"]') ?? []),
+  ];
+  expect(selectedTab(el, 0)).toBe("Windows");
+  expect(windowsPanel.map((panel) => panel.hasAttribute("hidden"))).toEqual([
+    true,
+    false,
+  ]);
+  expect(selectedTab(el, 1)).toBe("Python");
+  expect(selectedTab(el, 2)).toBe("macOS");
+  // 実行: 同じ本文で描き直す
+  handle.update(markdown);
+  // 検証
+  expect(selectedTab(el, 0)).toBe("Windows");
+  expect(localStorage.getItem("mdmark-tabs:lang")).toBe("Go");
+});
+
+// localStorage を取り出せなくても、同じ組のタブを揃えて切り替える（正常系）
+test("test_normal_when_storage_unavailable", async () => {
+  // 準備
+  const original = Object.getOwnPropertyDescriptor(window, "localStorage");
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    get() {
+      throw new DOMException("denied", "SecurityError");
+    },
+  });
+  try {
+    const el = createElement();
+    const markdown = [
+      tabsRange(["macOS", "Windows"], "os"),
+      tabsRange(["macOS", "Windows"], "os"),
+    ].join("\n");
+    // 実行・検証: 描く
+    await mountTracked(el, { markdown });
+    expect(selectedTab(el, 0)).toBe("macOS");
+    expect(selectedTab(el, 1)).toBe("macOS");
+    // 実行・検証: 押す
+    tabNamed(el, 0, "Windows").click();
+    expect(selectedTab(el, 0)).toBe("Windows");
+    expect(selectedTab(el, 1)).toBe("Windows");
+    expect(warn).toHaveBeenCalled();
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  } finally {
+    if (original) {
+      Object.defineProperty(window, "localStorage", original);
+    } else {
+      Reflect.deleteProperty(window, "localStorage");
+    }
+  }
 });

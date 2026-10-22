@@ -27,3 +27,11 @@ stories:
         id: tabs
     args:
       titles: '["macOS","Windows"]'
+  - name: Grouped
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows","Linux"]'
+      selected: 0
+      group: os
