@@ -137,3 +137,47 @@ test("test_normal_when_invalid_schema", async () => {
     }),
   );
 });
+
+// 本文に出た用語のやめた言い方を、行とやめた言い方の組ごとに返す（正常シナリオ（やめた言い方が本文に出る））
+test("test_normal_when_avoided_term", async () => {
+  // 準備
+  const index = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "手引き" }],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid: ["作業場"],
+      },
+    ],
+  };
+  // 1 行目に作業場が 2 回、3 行目に 1 回、5 行目はワークスペースだけ
+  const guide = [
+    "作業場を開き、作業場に記録を置く。",
+    "",
+    "作業場の記録を確かめる。",
+    "",
+    "ワークスペースを閉じる。",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = await checkInNode(builtRoot, {
+    index,
+    documents: { "guide.md": guide },
+  });
+  // 検証
+  // 同じ行に 2 回出た 1 行目は 1 件にまとまり、ワークスペースだけの 5 行目と、ほかの種類のずれは返らない
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+    { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+  ]);
+  // 各行の内容が、やめた言い方と代わりに使う用語を示す
+  for (const issue of issues) {
+    expect(issue.message).toContain("作業場");
+    expect(issue.message).toContain("ワークスペース");
+  }
+});
