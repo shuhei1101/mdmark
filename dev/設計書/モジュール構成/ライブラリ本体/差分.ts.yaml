@@ -259,7 +259,7 @@ functions:
       3. 待ちの間、`LOADING_DELAY_MS` を過ぎたら場所に `renderDiffMessage({ kind: "loading" })`、`SPINNER_DELAY_MS` を過ぎたら `spinner: true` に替える。`source.revisions(docId)` を待ち、世代が変わっていたら何もしない。拒否か `checkRevisions` が投げたら、場所を `renderNotice({ name: docId, source: "diff-revisions" })` にして終わる
          - `[error]` リビジョンの一覧を取り出せない（`revisions`・`docId`・元のエラーを `console.error` の引数に並べる）
       4. リビジョンが 1 つなら `renderDiffMessage({ kind: "single" })` を出して終わる。2 つ以上なら、前に 2 番目・後に 1 番目を選んでリビジョンの選択（`renderRevisionPicker`）を置き、手順 5 を行う。前を選び直したら後の選べない項目を直し、後が前以前なら前の 1 つ新しいリビジョンに移す。選び直すたびに手順 5 を行う
-      5. 選んだ 2 つの `source.content({ docId, revisionId })` を並んで待ち（選び直しの世代を進め、古い待ちの結果は描かない）、拒否か文字列でないものがあれば、選択を残して行の場所を `renderNotice({ name: 取り出せなかったリビジョンの説明, source: "diff-content" })` にし、数の文とミニマップを外す
+      5. 選んだ 2 つの `source.content({ docId, revisionId })` を並んで待ち（選び直しの世代を進め、古い待ちの結果は描かない）、待ちの間は手順 3 と同じタイマーで、`LOADING_DELAY_MS` を過ぎたら行の場所を `renderDiffMessage({ kind: "loading" })` にして数の文とミニマップを外し、`SPINNER_DELAY_MS` を過ぎたら `spinner: true` に替える。拒否か文字列でないものがあれば、選択を残して行の場所を `renderNotice({ name: 取り出せなかったリビジョンの説明, source: "diff-content" })` にし、数の文とミニマップを外す
          - `[error]` 本文を取り出せない（`content`・`docId`・リビジョンの `id`・元のエラーか合わなかった値を並べる）
       6. `computeDiff` で比べる（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）。数がどちらも 0 なら `renderDiffMessage({ kind: "same" })` を出す。そうでなければ `renderDiffLines` で行を描き（`html` の塊の `before`・`after` は `renderHtml` を通す）、数の文を書き換え、埋め込んだ HTML の見方のボタンに受け取りを付け、`attachMinimap` でミニマップを付ける
       7. 外す関数は、世代を進め、待ちのタイマー・受け取り・ミニマップを外し、置いたボタンと場所を取り除いて隠した子を戻す
@@ -306,6 +306,12 @@ functions:
         condition: 開いた後に外す関数を呼ぶ
         mock: なし
         expected: ボタンと場所が無く、段落が `hidden` を持たない。ミニマップの帯が無い
+      - name: test_attach_diff_when_content_loading
+        case: 正常
+        summary: 選び直した本文の待ちが 1 秒を過ぎると、前の差分に替えて読み込み中を出す
+        condition: 開いた後に前の欄で `r1` を選び、`content` を返さずに時計を 1 秒、2 秒進める
+        mock: Vitest の偽の時計。取り出し元は 2 回目の `content` を合図まで返さない
+        expected: 1 秒で行の場所が `変更を読み込んでいます` になり、数の文が空、2 秒で回る表示が出る。選ぶ欄は残る
     callees:
       - '#functions[checkRevisions]'
       - '#functions[computeDiff]'
