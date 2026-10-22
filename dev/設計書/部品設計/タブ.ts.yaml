@@ -86,4 +86,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
 status: planned
 notes:
-  HTML: '`render` は `<div class="mdmark-tabs">`（`group` を渡すと `<div class="mdmark-tabs" data-group="{group}">`）。中身は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>`。`selected` を渡すと頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を置き、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。モックは `dev/mock/components/tabs/`'
+  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を渡すと外側の `div` に `data-group="{group}"` を付ける。`selected` を渡すと頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を置き、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。モックは `dev/mock/components/tabs/`'
