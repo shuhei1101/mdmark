@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { BAR_TEXT, chartElement, wrapHtml } from "../chart.ts";
 import { flowMarkdown, tabToViewport, zoomPercent } from "../diagram.ts";
 import {
   buildDistRoot,
@@ -12,6 +13,9 @@ let builtRoot = "";
 
 // 拡大のボタンを押す回数
 const ZOOM_CLICKS = 2;
+
+// 文書を縦にスクロールできるようにする、末尾の段落の数
+const TAIL_PARAGRAPHS = 40;
 
 test.beforeAll(async () => {
   builtRoot = await buildDistRoot();
@@ -57,7 +61,7 @@ test("test_normal", async ({ page }) => {
     (element) => element.getBoundingClientRect().width,
   );
   expect(sizerWidth).toBeLessThanOrEqual(frameWidth + 1);
-  // ボタンは右上にあり、それぞれ読み上げの名前を持つ。縮小と戻すは押せない
+  // ボタンは右上にあり、それぞれ読み上げの名前を持つ。縮小は押せない。戻すための別のボタンは無く、倍率の表示がその役目を持つ
   for (const name of [
     "縮小",
     "拡大",
@@ -67,9 +71,16 @@ test("test_normal", async ({ page }) => {
     await expect(page.getByRole("button", { name })).toBeVisible();
   }
   await expect(page.getByRole("button", { name: "縮小" })).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "全体が収まる倍率に戻す" }),
-  ).toBeDisabled();
+  const fitButton = page.getByRole("button", {
+    name: "全体が収まる倍率に戻す",
+  });
+  await expect(fitButton).toHaveCount(1);
+  await expect(fitButton).toHaveClass(/mdmark-diagram-zoom/);
+  await expect(fitButton).toHaveText(`${fit}%`);
+  await expect(fitButton).toBeEnabled();
+  await expect(page.locator("#doc .mdmark-diagram-tools output")).toHaveCount(
+    0,
+  );
   // 拡大のボタンで倍率が上がり、縮小のボタンで下がる
   await page.getByRole("button", { name: "拡大" }).click();
   const larger = await zoomPercent(page);
@@ -89,12 +100,21 @@ test("test_normal", async ({ page }) => {
   expect(await zoomPercent(page)).toBe(fit);
   expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(0);
   expect(await viewport.evaluate((element) => element.scrollTop)).toBe(0);
+  // 拡大のボタンを押してから倍率の表示を押すと、開いたときの倍率と位置に戻る
+  await zoomIn(page);
+  await viewport.focus();
+  await page.keyboard.press("ArrowRight");
+  expect(await zoomPercent(page)).toBeGreaterThan(fit);
+  await fitButton.click();
+  expect(await zoomPercent(page)).toBe(fit);
+  expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(0);
+  expect(await viewport.evaluate((element) => element.scrollTop)).toBe(0);
 });
 
 // 図の上のホイールは倍率を変えず文書を縦にスクロールし、Shift とホイールで図が横に動く（正常シナリオ（ホイール））
 test("test_normal_when_wheel", async ({ page }) => {
   // 準備
-  await openFlow(page, 40);
+  await openFlow(page, TAIL_PARAGRAPHS);
   await zoomIn(page);
   const viewport = viewportOf(page);
   const zoom = await zoomPercent(page);
@@ -202,5 +222,73 @@ test("test_normal_when_keyboard", async ({ page }) => {
   await down.click();
   expect(await viewport.evaluate((element) => element.scrollTop)).toBe(
     top + 80,
+  );
+});
+
+// 埋め込んだ HTML の中のチャートを、ボタンとキーで拡大・縮小し、ドラッグで動かし、ホイールは文書のスクロールに使う。段落には拡大・縮小のボタンが無い（正常シナリオ（埋め込んだ HTML の中のチャート））
+test("test_normal_when_embedded_chart", async ({ page }) => {
+  // 準備: チャートを同じ HTML の段落と一緒に描き、文書が縦にスクロールできるようにする
+  await openPage(page, builtRoot);
+  const tail = Array.from(
+    { length: TAIL_PARAGRAPHS },
+    (_, i) => `段落 ${i + 1}\n`,
+  );
+  await mountDocument(page, {
+    markdown: `${wrapHtml(`<p>チャートの前の段落</p>\n${chartElement(BAR_TEXT)}\n<p>チャートの後の段落</p>`)}\n${tail.join("\n")}`,
+  });
+  const figure = page.locator("#doc .mdmark-html figure.mdmark-diagram");
+  await expect(figure).toHaveCount(1);
+  const viewport = viewportOf(page);
+  const fit = await zoomPercent(page);
+  // 検証: 拡大のボタンで倍率が上がる
+  await page.getByRole("button", { name: "拡大" }).click();
+  const larger = await zoomPercent(page);
+  expect(larger).toBeGreaterThan(fit);
+  // 実行・検証: チャートにフォーカスして - で下がり、0 で開いたときの倍率と位置に戻る
+  await zoomIn(page);
+  await viewport.focus();
+  const zoomed = await zoomPercent(page);
+  await page.keyboard.press("-");
+  expect(await zoomPercent(page)).toBeLessThan(zoomed);
+  await page.keyboard.press("0");
+  expect(await zoomPercent(page)).toBe(fit);
+  expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(0);
+  // 実行・検証: 拡大してからドラッグすると、チャートの位置が動く
+  await zoomIn(page);
+  await viewport.evaluate((element) => {
+    element.scrollLeft = 0;
+    element.scrollTop = 0;
+  });
+  const box = await viewport.boundingBox();
+  if (!box) {
+    throw new Error("表示する枠の範囲を取れない");
+  }
+  const start = await viewport.evaluate((element) => element.scrollLeft);
+  const margin = { x: box.x + box.width / 2, y: box.y + 4 };
+  await page.mouse.move(margin.x, margin.y);
+  await page.mouse.down();
+  await page.mouse.move(margin.x - 100, margin.y, { steps: 5 });
+  await page.mouse.up();
+  expect(
+    await viewport.evaluate((element) => element.scrollLeft),
+  ).toBeGreaterThan(start);
+  // 検証: 拡大しても線と文字は SVG のまま描かれ、画像に置き換わらない
+  await expect(figure.locator("svg[role=img]")).toHaveCount(1);
+  await expect(figure.locator("svg[role=img] text").first()).toBeVisible();
+  await expect(figure.locator("canvas, img")).toHaveCount(0);
+  // 実行・検証: チャートの上のホイールは、倍率を変えず文書をスクロールする
+  const zoom = await zoomPercent(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const box2 = (await viewport.boundingBox()) ?? box;
+  await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2);
+  await page.mouse.wheel(0, 300);
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(0);
+  expect(await zoomPercent(page)).toBe(zoom);
+  // 検証: 同じ HTML の段落には、拡大・縮小のボタンが無い
+  await expect(page.locator("#doc .mdmark-html p button")).toHaveCount(0);
+  await expect(page.locator("#doc .mdmark-html button[data-tool]")).toHaveCount(
+    await figure.locator("button[data-tool]").count(),
   );
 });

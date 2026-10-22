@@ -1,0 +1,21 @@
+# lint の実行ログ
+# commit: dbb87cd8addb565fb3524597421fca3c02272f2a
+# 日時: 2026-10-21 05:53:54 JST
+
+$ npx biome check .
+Checked 291 files in 1219ms. No fixes applied.
+exit=0
+
+$ npx tsc --noEmit
+exit=0
+
+$ npm run build（配布ファイルのサイズの検査 MAX_DIST_FILE_BYTES = 327680 バイト）
+
+> build
+> node scripts/build.ts
+
+exit=0
+302176 dist/cli.js
+52588 dist/index.css
+312461 dist/index.js
+312716 dist/viewer.js

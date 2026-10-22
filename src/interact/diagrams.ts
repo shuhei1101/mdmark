@@ -9,7 +9,7 @@ const ZOOM_EPSILON = 0.001;
 
 // 文字を選べる所（ここではドラッグを始めない）と、押せる所
 const TEXT_SELECTOR =
-  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-term";
+  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
 const CONTROL_SELECTOR = "button, a, input";
 
 // キーと操作の対応: 表示する枠にフォーカスがあるとき
@@ -59,12 +59,12 @@ export function renumberIds(
       }
     }
   }
-  for (const element of scope.querySelectorAll("[marker-end]")) {
-    const value = element.getAttribute("marker-end") ?? "";
-    element.setAttribute(
-      "marker-end",
-      value.replace(`url(#${head}`, `url(#${to}-`),
-    );
+  // 矢じりと塗りの模様の参照
+  for (const name of ["marker-end", "fill"]) {
+    for (const element of scope.querySelectorAll(`[${name}]`)) {
+      const value = element.getAttribute(name) ?? "";
+      element.setAttribute(name, value.replace(`url(#${head}`, `url(#${to}-`));
+    }
   }
 }
 
@@ -79,7 +79,7 @@ function attachView(
   );
   const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
   const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
-  const zoomText = figure.querySelector<HTMLOutputElement>(
+  const zoomText = figure.querySelector<HTMLButtonElement>(
     ".mdmark-diagram-zoom",
   );
   const panGroup = figure.querySelector<HTMLElement>('[data-group="pan"]');
@@ -117,14 +117,6 @@ function attachView(
           height: modal ? viewport.clientHeight : Number.POSITIVE_INFINITY,
         });
 
-  /** 戻すのボタンを、開いたときの倍率と位置かどうかに合わせる */
-  const syncFit = (): void => {
-    const fitButton = button("fit");
-    if (fitButton) {
-      fitButton.disabled = state.atFit;
-    }
-  };
-
   /** 倍率を当て、ボタンの有効・無効と移動のボタンの有無を合わせる */
   const apply = (scale: number): void => {
     state.scale = scale;
@@ -132,8 +124,12 @@ function attachView(
     sizer.style.width = `${content.width * scale}px`;
     sizer.style.height = `${content.height * scale}px`;
     stickHeads();
-    zoomText.value = `${Math.round(scale * 100)}%`;
-    zoomText.textContent = zoomText.value;
+    // 倍率のボタン: 今の倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
+    zoomText.textContent = `${Math.round(scale * 100)}%`;
+    zoomText.setAttribute(
+      "aria-label",
+      `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`,
+    );
     const out = button("out");
     const zoomIn = button("in");
     if (out) {
@@ -142,7 +138,6 @@ function attachView(
     if (zoomIn) {
       zoomIn.disabled = scale >= ZOOM.max - ZOOM_EPSILON;
     }
-    syncFit();
     // 図の全体が見えている間は、移動のボタンは何も動かさないので出さない
     panGroup.hidden =
       content.width * scale <= viewport.clientWidth + 1 &&
@@ -190,7 +185,6 @@ function attachView(
     viewport.scrollLeft += dx;
     viewport.scrollTop += dy;
     state.atFit = false;
-    syncFit();
   };
 
   const actions: Record<ViewAction, () => void> = {
@@ -260,7 +254,6 @@ function attachView(
       viewport.scrollTop = drag.top - (event.clientY - drag.y);
       if (event.clientX !== drag.x || event.clientY !== drag.y) {
         state.atFit = false;
-        syncFit();
       }
     },
     { signal },
@@ -279,7 +272,6 @@ function attachView(
       stickHeads();
       if (viewport.scrollLeft || viewport.scrollTop) {
         state.atFit = false;
-        syncFit();
       }
     },
     { passive: true, signal },

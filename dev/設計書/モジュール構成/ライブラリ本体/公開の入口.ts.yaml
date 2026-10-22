@@ -74,6 +74,9 @@ styles:
       - class_name: '@media print の記法'
         target: 印刷のときの記法
         value: 表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行と列を留めず、表の高さの上限を外してセルの余白を詰める。`[data-printing]` のタブは全ての中身をタブ名を題にして縦に並べる
+      - class_name: .mdmark .mdmark-html と .mdmark-hint-*
+        target: 埋め込んだ HTML とヒント
+        value: '部品設計（埋め込んだHTML・ヒント）の HTML に当てる規則。`dev/mock/refs/45/assets/embed.css` から取る。`.is-wide` の間だけ横にスクロールし、ブロックの印（`.mdmark-hint-mark`）は要素の右上に `position: absolute` で置き、アイコンは lucide の `info` を `mask-image` で付ける。行内（`.mdmark-hint-inline`）は破線の下線。ツールチップは図のツールチップと同じ規則。用語・ヒント・図の線のラベルと箱の印に `cursor: help` を付けない。印刷では印とツールチップを隠し、横のスクロールをやめて紙の幅に収める'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

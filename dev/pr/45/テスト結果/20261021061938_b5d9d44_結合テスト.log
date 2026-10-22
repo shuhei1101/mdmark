@@ -1,0 +1,389 @@
+# 結合テストの実行ログ
+# commit: b5d9d448fa30303477c00b6d022741fad7745a61
+# 日時: 2026-10-21 06:19:38 JST
+# コマンド: npm run test:integration（verbose）
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-embed-html-code-block-and-charts
+
+6:20:41 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=1
+6:20:41 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+ ✓ |integration-browser (chromium)| tests/integration/lib/version.browser.test.ts > test_normal 712ms
+6:20:41 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=2
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal 281ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_updated 2ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_destroyed 1ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_mounted_twice 1ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_unknown_mark 2ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_script_in_markdown 4ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_normal 761ms
+6:20:41 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=3
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_no_library_mark 201ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_library_mark 53ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_printed 3ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_feature_disabled_by_mark 1ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_feature_enabled_by_mark 1ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_theme_overridden 1ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_normal_when_no_mark 331ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_error_when_library_not_found 102ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_table_sorted_and_filtered 17ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_table_pinned 36ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_tabs_switched 5ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_sections_and_row_details_toggled 13ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_printed_with_syntax 9ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_updated_with_syntax 5ms
+6:20:41 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=4
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_glossary 56ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_backlinks 11ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_index_in_browser 2ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_args_invalid 208ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=5
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_zoomed 151ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_module_not_found 184ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=6
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal 734ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_validate_fails 166ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=7
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_gfm_extensions 167ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_extension_invalid 130ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=8
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_marks_and_scripts 126ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_directive_taken 132ms
+ ✓ |integration-node| tests/integration/lib/export.test.ts > test_normal 670ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=9
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_library_mark 133ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_normal_when_definition 177ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=10
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_syntax 172ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_definition_invalid 123ms
+6:20:42 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-LyNyWV/dist/index.js
+18 |  `),t=t.replace(Yu,"\uFFFD"),e.src=t}function ed(e){let t;e.inlineMode?(t=new e.Token("inline","",0),t.content=e.src,t...
+19 |  `,a.map=[t,e.line],!0}function Ad(e,t,r,n){let o=e.bMarks[t]+e.tShift[t],a=e.eMarks[t];if(e.sCount[t]-e.blkIndent>=4|...
+20 |  ...44\u3002</p></div>`}var Pi="data-mdmark-drawn",tp=e=>import(e);async function Bi(e){let{root:t,libraries:r,isCurre...
+   |                                                                 ^
+21 |  `).filter(a=>a.trim()!==""),o=-1;for(let[a,s]of n.entries()){let{depth:i,name:l}=Cx(s);if(i>o+1)return{line:a+1,depth...
+22 |  /*! Bundled license information:
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-LyNyWV/dist/index.js?test=11
+ ✓ |integration-node| tests/integration/lib/bundle.test.ts > test_normal 975ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_headings 96ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_error_when_definition_two_blocks 110ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_syntax_features_disabled 105ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/register-extension.browser.test.ts > test_normal_when_directive_is_diagram_name 159ms
+ ✓ |integration-node| tests/integration/lib/check-config.test.ts > test_normal 1271ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_panned 633ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_syntax_errors 80ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_raw_html_imitates_syntax 99ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_extension_mark 105ms
+ ✓ |integration-node| tests/integration/lib/export.test.ts > test_normal_when_unreadable_assets 852ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_index 94ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_diagram 121ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_diagram_invalid 97ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_diagram_feature_disabled 117ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_fullscreen 583ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_diagram_sanitized 104ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_tooltip 586ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_param 81ms
+ ✓ |integration-node| tests/integration/lib/bundle.test.ts > test_normal_when_link_outside_bundle 981ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_extension_definition 119ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_error_when_clipboard_denied 56ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_embedded_chart 7ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_embedded_html 111ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_html_and_hints_disabled 120ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_embedded_html_invalid 94ms
+ ✓ |integration-node| tests/integration/lib/export.test.ts > test_error_when_config_invalid 875ms
+ ✓ |integration-node| tests/integration/lib/render.test.ts > test_normal_when_chart_types 111ms
+ ✓ |integration-node| tests/integration/lib/bundle.test.ts > test_error_when_build_missing 587ms
+ ✓ |integration-node| tests/integration/lib/init.test.ts > test_normal 646ms
+ ✓ |integration-browser (chromium)| tests/integration/lib/mount.browser.test.ts > test_normal_when_embedded_hint 675ms
+ ✓ |integration-node| tests/integration/lib/check-config.test.ts > test_normal_when_drift 1593ms
+ ✓ |integration-node| tests/integration/lib/export.test.ts > test_error_when_document_missing 521ms
+ ✓ |integration-node| tests/integration/lib/bundle.test.ts > test_error_when_no_documents 393ms
+ ✓ |integration-node| tests/integration/lib/export.test.ts > test_error_when_output_unwritable 406ms
+ ✓ |integration-node| tests/integration/lib/init.test.ts > test_normal_when_javascript 741ms
+ ✓ |integration-node| tests/integration/lib/bundle.test.ts > test_error_when_output_unwritable 701ms
+ ✓ |integration-node| tests/integration/lib/check-index.test.ts > test_normal 106ms
+ ✓ |integration-node| tests/integration/lib/init.test.ts > test_normal_when_file_exists 401ms
+ ✓ |integration-node| tests/integration/lib/check-config.test.ts > test_normal_when_no_documents 895ms
+ ✓ |integration-node| tests/integration/lib/check-index.test.ts > test_normal_when_drift 87ms
+ ✓ |integration-node| tests/integration/lib/check-index.test.ts > test_normal_when_invalid_schema 80ms
+ ✓ |integration-node| tests/integration/lib/init.test.ts > test_error_when_unwritable 439ms
+ ✓ |integration-node| tests/integration/lib/check-config.test.ts > test_error_when_config_missing 426ms
+ ✓ |integration-node| tests/integration/lib/collect-references.test.ts > test_normal 115ms
+ ✓ |integration-node| tests/integration/lib/collect-references.test.ts > test_normal_when_glossary_table 75ms
+ ✓ |integration-node| tests/integration/lib/collect-references.test.ts > test_normal_when_invalid_index 93ms
+ ✓ |integration-node| tests/integration/lib/collect-references.test.ts > test_normal_when_encoded_link 83ms
+ ✓ |integration-node| tests/integration/lib/check-config.test.ts > test_error_when_config_unreadable 1091ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_data 347ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_sorted_ascending 587ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_sorted_descending 839ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_note 746ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_filter_select_open 562ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_tip 541ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_filter_text_open 503ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_important 461ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_filter_date_open 431ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_warning 425ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_filtered 318ms
+ ✓ |integration-storybook| tests/integration/lib/term-tip.story.test.ts > test_term_only 366ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_caution 351ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_no_match 339ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_collapsed 353ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_collapsed_opened 340ms
+ ✓ |integration-storybook| tests/integration/lib/callout.story.test.ts > test_long 315ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_default_overflow 341ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_pinned 360ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_default_fits 307ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_plain 579ms
+ ✓ |integration-storybook| tests/integration/lib/term-tip.story.test.ts > test_docs_only 345ms
+ ✓ |integration-storybook| tests/integration/lib/term-tip.story.test.ts > test_both 331ms
+ ✓ |integration-storybook| tests/integration/lib/term-tip.story.test.ts > test_many_docs 317ms
+ ✓ |integration-storybook| tests/integration/lib/term-tip.story.test.ts > test_long_meaning 454ms
+ ✓ |integration-storybook| tests/integration/lib/term-tip.story.test.ts > test_closed 546ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_closed 592ms
+ ✓ |integration-storybook| tests/integration/lib/flow-diagram.story.test.ts > test_default 6390ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-frame.story.test.ts > test_fit 6755ms
+ ✓ |integration-storybook| tests/integration/lib/table.story.test.ts > test_long_cells 312ms
+ ✓ |integration-storybook| tests/integration/lib/flow-diagram.story.test.ts > test_long_names 373ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-frame.story.test.ts > test_zoomed 356ms
+ ✓ |integration-storybook| tests/integration/lib/flow-diagram.story.test.ts > test_invalid 268ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-frame.story.test.ts > test_max 311ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-frame.story.test.ts > test_narrow 541ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-frame.story.test.ts > test_fullscreen 838ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_unknown_kind 544ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_items 359ms
+ ✓ |integration-storybook| tests/integration/lib/hint.story.test.ts > test_block 377ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_broken_reference 323ms
+ ✓ |integration-storybook| tests/integration/lib/hint.story.test.ts > test_block_open 374ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_extension_schema 365ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-tooltip.story.test.ts > test_closed 289ms
+ ✓ |integration-storybook| tests/integration/lib/hint.story.test.ts > test_inline 387ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-tooltip.story.test.ts > test_wire 364ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_long_mark 439ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_two_series 453ms
+ ✓ |integration-storybook| tests/integration/lib/hint.story.test.ts > test_inline_open 482ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-tooltip.story.test.ts > test_io 404ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_glossary_column 408ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_four_series 435ms
+ ✓ |integration-storybook| tests/integration/lib/hint.story.test.ts > test_colored 366ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-tooltip.story.test.ts > test_term 444ms
+ ✓ |integration-storybook| tests/integration/lib/syntax-warning.story.test.ts > test_glossary_missing_arg 444ms
+ ✓ |integration-storybook| tests/integration/lib/section.story.test.ts > test_open 525ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_invalid 367ms
+ ✓ |integration-storybook| tests/integration/lib/diagram-tooltip.story.test.ts > test_hint 336ms
+ ✓ |integration-storybook| tests/integration/lib/section.story.test.ts > test_closed 315ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal 16163ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_bar 353ms
+ ✓ |integration-storybook| tests/integration/lib/section.story.test.ts > test_level_4 274ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_bar_four 306ms
+ ✓ |integration-storybook| tests/integration/lib/section.story.test.ts > test_long_title 304ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_pie 341ms
+ ✓ |integration-storybook| tests/integration/lib/section.story.test.ts > test_unmounted 305ms
+ ✓ |integration-storybook| tests/integration/lib/chart.story.test.ts > test_scatter 332ms
+ ✓ |integration-storybook| tests/integration/lib/notice.story.test.ts > test_figure 301ms
+ ✓ |integration-storybook| tests/integration/lib/tabs.story.test.ts > test_first 294ms
+ ✓ |integration-storybook| tests/integration/lib/notice.story.test.ts > test_block 337ms
+ ✓ |integration-storybook| tests/integration/lib/tabs.story.test.ts > test_second 360ms
+ ✓ |integration-storybook| tests/integration/lib/param.story.test.ts > test_default 336ms
+ ✓ |integration-storybook| tests/integration/lib/notice.story.test.ts > test_long_name 355ms
+ ✓ |integration-storybook| tests/integration/lib/tabs.story.test.ts > test_many 311ms
+ ✓ |integration-storybook| tests/integration/lib/param.story.test.ts > test_changed 327ms
+ ✓ |integration-storybook| tests/integration/lib/notice.story.test.ts > test_extension 329ms
+ ✓ |integration-storybook| tests/integration/lib/tabs.story.test.ts > test_unmounted 358ms
+ ✓ |integration-storybook| tests/integration/lib/param.story.test.ts > test_copied 349ms
+ ✓ |integration-storybook| tests/integration/lib/param.story.test.ts > test_failed 358ms
+ ✓ |integration-storybook| tests/integration/lib/embedded-html.story.test.ts > test_default 441ms
+ ✓ |integration-storybook| tests/integration/lib/doc-list.story.test.ts > test_grouped 398ms
+ ✓ |integration-storybook| tests/integration/lib/embedded-html.story.test.ts > test_with_chart 354ms
+ ✓ |integration-storybook| tests/integration/lib/doc-list.story.test.ts > test_flat 319ms
+ ✓ |integration-storybook| tests/integration/lib/embedded-html.story.test.ts > test_wide 374ms
+ ✓ |integration-storybook| tests/integration/lib/doc-list.story.test.ts > test_long_text 356ms
+ ✓ |integration-storybook| tests/integration/lib/doc-list.story.test.ts > test_many 415ms
+ ✓ |integration-storybook| tests/integration/lib/figure.story.test.ts > test_image_with_caption 452ms
+ ✓ |integration-storybook| tests/integration/lib/figure.story.test.ts > test_image 340ms
+ ✓ |integration-storybook| tests/integration/lib/toc.story.test.ts > test_nested 466ms
+ ✓ |integration-storybook| tests/integration/lib/toc.story.test.ts > test_flat 746ms
+ ✓ |integration-storybook| tests/integration/lib/figure.story.test.ts > test_table 819ms
+ ✓ |integration-storybook| tests/integration/lib/backlinks.story.test.ts > test_two 763ms
+ ✓ |integration-storybook| tests/integration/lib/toc.story.test.ts > test_long_heading 680ms
+ ✓ |integration-storybook| tests/integration/lib/backlinks.story.test.ts > test_one 426ms
+ ✓ |integration-storybook| tests/integration/lib/backlinks.story.test.ts > test_long 341ms
+ ✓ |integration-storybook| tests/integration/lib/steps.story.test.ts > test_basic 427ms
+ ✓ |integration-storybook| tests/integration/lib/steps.story.test.ts > test_rich 338ms
+ ✓ |integration-storybook| tests/integration/lib/row-detail.story.test.ts > test_closed 328ms
+ ✓ |integration-storybook| tests/integration/lib/steps.story.test.ts > test_long 333ms
+ ✓ |integration-storybook| tests/integration/lib/row-detail.story.test.ts > test_open 369ms
+ ✓ |integration-storybook| tests/integration/lib/badge.story.test.ts > test_inline 336ms
+ ✓ |integration-storybook| tests/integration/lib/tree.story.test.ts > test_basic 334ms
+ ✓ |integration-storybook| tests/integration/lib/badge.story.test.ts > test_long 300ms
+ ✓ |integration-storybook| tests/integration/lib/tree.story.test.ts > test_deep 446ms
+ ✓ |integration-storybook| tests/integration/lib/sequence-diagram.story.test.ts > test_default 583ms
+ ✓ |integration-storybook| tests/integration/lib/tree.story.test.ts > test_long_name 613ms
+ ✓ |integration-storybook| tests/integration/lib/sequence-diagram.story.test.ts > test_invalid 561ms
+ ✓ |integration-storybook| tests/integration/lib/embed.story.test.ts > test_loading 267ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal 1047ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_plan 1095ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_value_asked 1689ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_version_given 18802ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_version_missing 1255ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_version_format_invalid 1171ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_up_to_date 734ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_destructive_with_yes 767ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_reapplied 1502ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_destructive_declined 796ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_step_fails 829ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_check_fails 777ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_local_version_newer 740ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_version_format_invalid 1900ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_answer_missing 781ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_steps_invalid 764ms
+ ✓ |integration-node| tests/integration/lib/upgrade.test.ts > test_error_when_config_missing 732ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_dist_file_too_large 15076ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_schema_changed_with_steps 16346ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_schema_change_listed 15739ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_schema_changed_without_steps 1658ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_next_steps_left_in_release 1605ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_steps_invalid 1510ms
+
+ Test Files  36 passed (36)
+      Tests  218 passed (218)
+   Start at  06:19:42
+   Duration  151.22s (tests 83%, import 12%, transform 4%, worker 1%)
+
+exit=0

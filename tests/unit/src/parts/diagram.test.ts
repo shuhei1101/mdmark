@@ -4,13 +4,20 @@ import type {
   MdmarkFlowDefinition,
   MdmarkSequenceDefinition,
 } from "../../../../src/diagram/definition.ts";
+import { iconSvg } from "../../../../src/parts/icons.ts";
+import {
+  INQUIRY_COUNT_TEXT,
+  INQUIRY_HINT_TEXT,
+  LENGTH_TIME_TEXT,
+  REPLY_KIND_TEXT,
+} from "../../helpers/charts.ts";
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
   parsed,
   REPLY_TIME_TEXT,
 } from "../../helpers/diagrams.ts";
-import { findTag, matches } from "../../helpers/html.ts";
+import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
 
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDiagram = () => import("../../../../src/parts/diagram.ts");
@@ -45,6 +52,22 @@ function wireStartYs(html: string): number[] {
       const numbers = (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
       return numbers[1] ?? Number.NaN;
     });
+}
+
+/** 塗りの模様 `id` の `pattern` 要素の中身を返す（無ければ空） */
+function patternOf(html: string, id: string): string {
+  const pattern = new RegExp(
+    `<pattern[^>]*id="${id}"[^>]*>([\\s\\S]*?)</pattern>`,
+  );
+  return pattern.exec(html)?.[1] ?? "";
+}
+
+/** 軸の目盛りの文字のうち数だけを、現れた順に返す */
+function axisNumbers(html: string): number[] {
+  return matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-axis-text"[^>]*>-?\d+(?:\.\d+)?<\/text>/g,
+  ).map((text) => Number(plainText(text)));
 }
 
 /** 箱 `id` の `left` を返す */
@@ -114,7 +137,7 @@ test("test_render_flow", async () => {
   const { renderFlow } = await loadDiagram();
   const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
   // 実行
-  const { html, tips } = renderFlow(definition, "d1");
+  const { html, tips } = renderFlow(definition, "d1", true);
   // 検証
   expect(matches(html, /class="mdmark-diagram-lane"/g)).toHaveLength(3);
   expect(matches(html, /class="mdmark-diagram-node[ "]/g)).toHaveLength(9);
@@ -138,7 +161,7 @@ test("test_render_flow_when_text_escaped", async () => {
   }
   first.name = "<img src=x onerror=alert(1)>";
   // 実行
-  const { html } = renderFlow(definition, "d1");
+  const { html } = renderFlow(definition, "d1", true);
   // 検証
   expect(html).not.toContain("<img");
   expect(html).toContain("&lt;img");
@@ -170,7 +193,7 @@ test("test_render_chart", async () => {
   const { renderChart } = await loadDiagram();
   const definition = parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT);
   // 実行
-  const { html, tips } = renderChart(definition);
+  const { html, tips } = renderChart(definition, "d1");
   // 検証
   expect(matches(html, /<path[^>]*data-series="1"/g)).toHaveLength(1);
   expect(matches(html, /<path[^>]*data-series="2"/g)).toHaveLength(1);
@@ -249,4 +272,136 @@ test("test_render_diagram_tip", async () => {
   ).toBe(true);
   expect(html).toContain('role="tooltip"');
   expect(html).toMatch(/\bhidden\b/);
+});
+
+// hint だけを文として出す（正常系）
+test("test_render_diagram_tip_when_hint", async () => {
+  // 準備
+  const { renderDiagramTip } = await loadDiagram();
+  // 実行
+  const html = renderDiagramTip({
+    id: "t1",
+    kind: "hint",
+    label: "分類",
+    hint: "<b>太字</b>",
+  });
+  // 検証
+  expect(html).not.toContain("mdmark-term-tip-heading");
+  expect(html).not.toContain("mdmark-diagram-tip-io");
+  expect(html).toContain("&lt;b&gt;太字&lt;/b&gt;");
+  expect(html).not.toContain("<b>");
+  expect(html).toContain('role="tooltip"');
+  expect(html).toMatch(/\bhidden\b/);
+});
+
+// 戻すのボタンを置かず、倍率をボタンにする（正常系）
+test("test_render_diagram_frame_when_zoom_button", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "flow" as const,
+    title: "題",
+    scope: "範囲",
+    updated: "2026-10-17",
+    legend: [],
+    zoom: 0.55,
+    id: "d1",
+  };
+  const zoomName = "倍率 55%。全体が収まる倍率に戻す";
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  const names = matches(
+    html,
+    /aria-label="(?:縮小|倍率 55%。全体が収まる倍率に戻す|拡大|全画面で開く)"/g,
+  ).map((attribute) => attribute.slice('aria-label="'.length, -1));
+  expect(names).toEqual(["縮小", zoomName, "拡大", "全画面で開く"]);
+  const zoomButton = outerHtml(html, `aria-label="${zoomName}"`);
+  expect(zoomButton.startsWith("<button")).toBe(true);
+  expect(plainText(zoomButton)).toBe("55%");
+  expect(html).not.toContain(iconSvg("rotate-ccw"));
+});
+
+// 棒を系列ごとの塗りの模様で描き、縦の軸をデータから切る（正常系）
+test("test_render_chart_when_bar", async () => {
+  // 準備
+  const { renderChart } = await loadDiagram();
+  const definition = parsed<MdmarkChartDefinition>(INQUIRY_COUNT_TEXT);
+  // 実行
+  const { html } = renderChart(definition, "d1");
+  // 検証
+  expect(matches(html, /<rect[^>]*class="mdmark-diagram-bar"/g)).toHaveLength(
+    8,
+  );
+  const second = /<g data-series="2">([\s\S]*?)<\/g>/.exec(html)?.[1] ?? "";
+  expect(matches(second, /fill="url\(#d1-fill-2\)"/g)).toHaveLength(4);
+  expect(patternOf(html, "d1-fill-1")).not.toContain("<path");
+  expect(patternOf(html, "d1-fill-2")).toContain("<path");
+  expect(axisNumbers(html)).toEqual([0, 50, 100, 150]);
+});
+
+// 扇形の外に合計 100 の整数の割合を置き、凡例に名前と値を出す（正常系）
+test("test_render_chart_when_pie", async () => {
+  // 準備
+  const { renderChart } = await loadDiagram();
+  const definition = parsed<MdmarkChartDefinition>(REPLY_KIND_TEXT);
+  // 実行
+  const { html } = renderChart(definition, "d1");
+  // 検証
+  expect(matches(html, /<path[^>]*class="mdmark-diagram-slice"/g)).toHaveLength(
+    3,
+  );
+  const percents = matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-value-text"[^>]*>[^<]*<\/text>/g,
+  ).map((text) => plainText(text));
+  expect(percents).toEqual(["62%", "31%", "7%"]);
+  expect(html).toContain("よくある質問で答えた: 186 件");
+});
+
+// 横と縦を数値の軸にして系列ごとの形の点を置く（正常系）
+test("test_render_chart_when_scatter", async () => {
+  // 準備
+  const { renderChart } = await loadDiagram();
+  const definition = parsed<MdmarkChartDefinition>(LENGTH_TIME_TEXT);
+  // 実行
+  const { html } = renderChart(definition, "d1");
+  // 検証
+  const first = /<g data-series="1">([\s\S]*?)<\/g>/.exec(html)?.[1] ?? "";
+  const second = /<g data-series="2">([\s\S]*?)<\/g>/.exec(html)?.[1] ?? "";
+  expect(
+    matches(first, /<circle[^>]*class="mdmark-diagram-point"/g),
+  ).toHaveLength(6);
+  expect(
+    matches(second, /<rect[^>]*class="mdmark-diagram-point"/g),
+  ).toHaveLength(6);
+  // 縦の軸の目盛りに加え、横の軸（中央揃えの文字）も数値の目盛りを持つ
+  const horizontal = matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-axis-text"[^>]*text-anchor="middle"[^>]*>-?\d+(?:\.\d+)?<\/text>/g,
+  );
+  expect(horizontal.length).toBeGreaterThanOrEqual(2);
+  expect(axisNumbers(html).length).toBeGreaterThan(horizontal.length);
+});
+
+// hint だけを持つ箱にも印を置き、hints がオフなら印もツールチップも置かない（正常系）
+test("test_render_flow_when_hint", async () => {
+  // 準備
+  const { renderFlow } = await loadDiagram();
+  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_HINT_TEXT);
+  const label = definition.wires.find((wire) => wire.label)?.label ?? "";
+  const mark = 'aria-label="「窓口の MCP」の説明"';
+  // 実行
+  const on = renderFlow(definition, "d1", true);
+  const off = renderFlow(definition, "d1", false);
+  // 検証
+  expect(on.html).toContain(mark);
+  expect(on.tips).toContain("保存と送信のツールだけを持つ MCP サーバー");
+  expect(off.html).not.toContain(mark);
+  expect(off.html).not.toContain("mdmark-diagram-info");
+  expect(off.tips).not.toContain('role="tooltip"');
+  expect(off.html).not.toContain("aria-describedby");
+  expect(off.html).toContain("窓口の MCP");
+  expect(label).not.toBe("");
+  expect(off.html).toContain(label);
 });

@@ -1,0 +1,95 @@
+/* 埋め込んだ HTML と data-hint のヒント: 印を付けたコードブロックの HTML を描いた場所と、data-hint を持つ要素の印・下線・ツールチップ。
+   図の部品の規則（refs/42/assets/diagram.css）の後に読む。ツールチップの見た目は図のツールチップ（.mdmark-diagram-tip）を使う */
+
+/* mdmark の層: 使う側と、文書を書く人が HTML に書いた style が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* ---------- 埋め込んだ HTML ---------- */
+
+    /* 埋め込んだ HTML の場所: 枠・地・余白を足さず、本文のブロックと同じ間隔で本文に溶け込ませる */
+    .mdmark-html {
+      min-width: 0;
+
+      /* 列より広い HTML: この場所の中で横にスクロールし、文書の幅を広げない。キーボードでも動かせるようフォーカスできる */
+      &.is-wide {
+        overflow-x: auto;
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 2px;
+        }
+      }
+
+      /* 埋め込んだ HTML の中の図の部品: 前後の要素と本文と同じ間隔を空ける */
+      .mdmark-diagram {
+        margin-block: var(--mdmark-space);
+      }
+    }
+
+    /* ---------- data-hint ---------- */
+
+    /* data-hint を持つブロックの要素: 右上の印の置き場所 */
+    .mdmark-hint-block {
+      position: relative;
+    }
+
+    /* ヒントのある要素の印: 図の箱の印と同じ情報のアイコンのボタンを右上に置く。ポインターとフォーカスはこの印だけが受ける。
+       色は要素の文字の色にし、書いた人の地の色の上でも読める */
+    .mdmark-hint-mark {
+      position: absolute;
+      inset-block-start: 3px;
+      inset-inline-end: 3px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: currentColor;
+
+      &:hover {
+        background: color-mix(in srgb, currentColor 14%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      .mdmark-diagram-icon {
+        width: 15px;
+        height: 15px;
+      }
+    }
+
+    /* ヒントを開いているブロックの印: 図の箱の印と同じく、文字の色をうっすら敷く */
+    .mdmark-hint-block.is-hint-open .mdmark-hint-mark {
+      background: color-mix(in srgb, currentColor 14%, transparent);
+    }
+
+    /* data-hint を持つ行内の要素: 本文の用語と同じ破線の下線で示す（印は文字に重なるので置かない） */
+    .mdmark-hint-inline {
+      border-radius: 2px;
+      text-decoration: underline dashed var(--mdmark-color-term-underline);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3em;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* ヒントを開いている行内の要素: 下線を本文の色にして、どの語の説明かを示す */
+    .mdmark-hint-inline.is-hint-open {
+      text-decoration-color: var(--mdmark-color-text);
+    }
+
+    /* data-hint のツールチップ: 図のツールチップの見た目のまま、画面に対して置く（横にスクロールする HTML の枠で切れない） */
+    .mdmark-hint-tip {
+      position: fixed;
+    }
+  }
+}

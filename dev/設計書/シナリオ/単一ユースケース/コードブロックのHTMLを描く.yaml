@@ -1,0 +1,87 @@
+title: "コードブロックのHTMLを描く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 文書を描くページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、文書を描く HTML
+      - name: HTML のコードブロックを持つ Markdown
+        description: '`<!-- html -->` 〜 `<!-- /html -->` の範囲に `html` のコードブロックを 1 つ置き、範囲の外にも `html` のコードブロックを 1 つ置く文書'
+        notes: 範囲の HTML は、文字に色を付けた箱 2 つを横に並べる `div`、動くと `window.__mdmarkScriptRan` を `true` にする `<script>` 1 つ、`onclick` 属性を持つボタン 1 つを持つ
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 印の範囲の html のコードブロックを HTML として読む
+        M->>M: スクリプトとイベントの属性を落とす
+        M-->>P: その場の HTML と、範囲の外のコードブロックと本文
+        P-->>U: 文書を表示
+    expected:
+      - 範囲のコードブロックの場所に、色を付けた箱 2 つが横に並んで描かれ、コードの `pre` は無い
+      - 範囲の外の `html` のコードブロックは、コードの `pre` のまま出る
+      - 描いた文書に `script` 要素が無く、`window.__mdmarkScriptRan` が `true` になっていない
+      - ボタンは描かれ、`onclick` 属性を持たない
+      - 印のコメントは描いた文書に残らない
+      - 描いた HTML の周りに拡大・縮小のボタンが無い
+    test: test_normal
+  - name: 正常シナリオ（機能がオフ）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ。設定の `features.html` を `false` にして渡す
+      - name: HTML のコードブロックを持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: html をオフにした設定と Markdown を渡して描かせる
+        M->>M: 印を取り除く
+        M-->>P: 範囲のコードブロックもコードのまま描く
+        P-->>U: 文書を表示
+    expected:
+      - 範囲のコードブロックも、コードの `pre` のまま出る
+      - 印のコメントは描いた文書に残らない
+    test: test_normal_when_feature_off
+  - name: 異常シナリオ（範囲にコードブロックが 1 つでない）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ
+      - name: 読めない範囲を持つ Markdown
+        description: '`html` のコードブロックを 2 つ置いた `<!-- html -->` の範囲 1 つと、その後ろの段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 印の範囲のコードブロックを数える
+        M-->>P: 範囲の上に書き方の警告、範囲のコードブロックはコードのまま、本文を描く
+        P-->>U: 警告と本文を表示
+    expected:
+      - 範囲の上に、HTML のコードブロックを 1 つだけ置くように促す書き方の警告がある
+      - 範囲の 2 つのコードブロックは、コードの `pre` のまま出る
+      - 範囲の後ろの段落が描かれている
+    test: test_error_when_block_count_invalid
+lead: 文書を書く人が `<!-- html -->` で囲んだ `html` のコードブロックを、mdmark がコードではなくその場の HTML として描く。スクリプトとイベントの属性は落とし、動くのは mdmark の部品だけにする。
+issue: 6
+primary_actor: 文書を書く人（AI を含む）
+stakeholders:
+  - name: 文書を書く人
+    interest: Markdown で表せない見た目を、文書の中の HTML で書ける。印に対応しない表示（GitHub）ではコードのまま読める
+  - name: 読む人
+    interest: 文書に書かれたスクリプトが動かず、安全に読める
+trigger: 文書を書く人が、印で囲んだ `html` のコードブロックを持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - HTML の表示の機能（`html`）がオン（既定）
+success_guarantee: 印で囲んだコードブロックの HTML が、今の生の HTML と同じサニタイズを通してその場に描かれる。印の無い `html` のコードブロックはコードのまま出る。
+minimal_guarantee: 埋め込んだ HTML に書いたスクリプトとイベントの属性は動かない。印の書き方を読めない範囲には書き方の警告を出し、範囲のコードブロックと文書の残りは描く。
+test_file: tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts

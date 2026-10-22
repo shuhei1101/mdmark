@@ -24,6 +24,9 @@ const PARAM_ID_PREFIX = "mdmark-param";
 /** 図の部品の `html_block` に付ける `meta` の印（図表の番号の対象にする） */
 export const DIAGRAM_META = "diagram";
 
+/** 操作できる部品を持つ `html_block` の `meta` に、持つ数を書くキー（文書の中の並びを数えるのに使う） */
+export const PARAM_COUNT_META = "params";
+
 /** 範囲の言語 `json` のコードブロックの中身 */
 function jsonBlocks(tokens: Token[]): string[] {
   return tokens
@@ -50,9 +53,9 @@ export function buildDiagrams(state: StateCore): void {
   });
   const lookup: TermLookup = (word) => dictionary.terms.get(word)?.meaning;
   env.paramDefinitions ??= [];
+  const hints = featureOn(state, "hints");
   const tokens = state.tokens;
   const out: Token[] = [];
-  let count = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const mark = markOf(token);
@@ -83,7 +86,8 @@ export function buildDiagrams(state: StateCore): void {
         warningBlock(state, definitionWarning(directive, result.problems)),
       );
     } else {
-      count += 1;
+      env.diagramCount = (env.diagramCount ?? 0) + 1;
+      const count = env.diagramCount;
       let html: string;
       if (directive === "param") {
         const param = definition as MdmarkParamDefinition;
@@ -98,10 +102,14 @@ export function buildDiagrams(state: StateCore): void {
             | MdmarkChartDefinition,
           id: `${DIAGRAM_ID_PREFIX}-${count}`,
           lookup,
+          hints,
         });
       }
       const block = ownBlock(state, html);
-      block.meta = { [DIAGRAM_META]: true };
+      block.meta = {
+        [DIAGRAM_META]: true,
+        [PARAM_COUNT_META]: directive === "param" ? 1 : 0,
+      };
       out.push(block);
     }
     index = end;

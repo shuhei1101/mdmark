@@ -1,0 +1,35 @@
+title: Parts/Hint
+stories:
+  - name: Block
+    parameters:
+      server:
+        id: hint
+    args:
+      placement: block
+  - name: BlockOpen
+    parameters:
+      server:
+        id: hint
+    args:
+      placement: block
+      open: true
+  - name: Inline
+    parameters:
+      server:
+        id: hint
+    args:
+      placement: inline
+  - name: InlineOpen
+    parameters:
+      server:
+        id: hint
+    args:
+      placement: inline
+      open: true
+  - name: Colored
+    parameters:
+      server:
+        id: hint
+    args:
+      placement: block
+      colored: true

@@ -4,6 +4,8 @@ items:
     summary: HTML の使いどころと、文書に部品の定義を書いてフロー図・シーケンス図・グラフを描く手順
   - page: 操作できる部品を作る.md
     summary: スライダー・グラフ・今の値を写すボタンの部品の定義を書く手順
+  - page: コードブロックのHTMLを描く.md
+    summary: コードブロックの HTML を描かせる印・チャートの custom element の置き方・`data-hint` の書き方の手順
   - page: 描いた図を確かめる.md
     summary: 置いた部品を Playwright で動かし、スクリーンショットを撮って見る手順
   - page: 固有の部品とCSSを当てる.md

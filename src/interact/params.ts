@@ -39,7 +39,7 @@ function attachParam(
   /** グラフを今の値の系列で描き直す。題と倍率は保つ */
   const redraw = (): void => {
     const chart = paramChart(definition, value);
-    const part = renderChart(chart);
+    const part = renderChart(chart, "");
     if (stage) {
       stage.innerHTML = part.html;
     }

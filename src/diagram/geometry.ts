@@ -162,3 +162,35 @@ export function jumpPaths(wires: MdmarkDiagramWire[]): Map<string, string> {
   }
   return paths;
 }
+
+/** 軸の目盛りの刻みの候補（1・2・5・10 に 10 のべき乗を掛けた値の元） */
+const STEP_BASES = [1, 2, 5, 10];
+
+/** 目盛りの本数の目安（範囲をこの数で割った値より大きい最小のきりのよい刻みを選ぶ） */
+const TICK_TARGET = 5;
+
+/** 刻みの誤差で桁が崩れないよう、有効数字 12 桁に丸める */
+function tidy(value: number): number {
+  return Number(value.toPrecision(12));
+}
+
+/** 縦の軸の刻みを切る: データの最小と最大を含む範囲を、1・2・5×10 のべき乗の刻みで切る。最小が 0 以上なら下端を 0 にする */
+export function niceTicks(values: number[]): {
+  min: number;
+  max: number;
+  step: number;
+} {
+  const lowest = Math.min(...values);
+  const highest = Math.max(...values);
+  const lower = lowest >= 0 ? 0 : lowest;
+  const rough = (highest - lower || Math.abs(highest) || 1) / TICK_TARGET;
+  const magnitude = 10 ** Math.floor(Math.log10(rough));
+  const step =
+    STEP_BASES.map((base) => base * magnitude).find(
+      (value) => value >= rough,
+    ) ?? 10 * magnitude;
+  const min = tidy(Math.floor(lower / step) * step);
+  const max = tidy(Math.ceil(highest / step) * step);
+  // 全て同じ値のときも、幅を 1 刻み持たせる
+  return { min, max: max > min ? max : tidy(min + step), step: tidy(step) };
+}

@@ -5,11 +5,12 @@ directory: |-
   src/
   ├── diagram/
   │   ├── definition.ts   # 定義の型・JSON の読み取り・形の確かめ
-  │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし
+  │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし・軸の刻み
   ├── parts/
   │   ├── icons.ts        # lucide のアイコンの svg
   │   ├── diagram.ts      # 図の枠・フロー図・シーケンス図・グラフ・図のツールチップ・凡例
-  │   └── param.ts        # 操作できる部品
+  │   ├── param.ts        # 操作できる部品
+  │   └── hint.ts         # 埋め込んだ HTML のヒントの印と中身
   ├── render/syntax/
   │   └── diagrams.ts     # 図の部品の印の範囲を部品の HTML にするコアルール
   └── interact/
@@ -49,7 +50,7 @@ data_models:
         description: 枠の中の層。層の箱の色をうっすら敷く
       - name: nodes
         type: MdmarkDiagramNode[]
-        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`）。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external`。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
+        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`）。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external`。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
       - name: wires
         type: MdmarkDiagramWire[]
         description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端の箱の `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
@@ -81,6 +82,9 @@ data_models:
     container: src/diagram/definition.ts
     summary: '`<!-- chart -->` の範囲に書く定義'
     properties:
+      - name: type
+        type: '"line" | "bar" | "pie" | "scatter" | undefined'
+        description: グラフの種類。省くと `line`
       - name: title
         type: string
         description: 題名
@@ -91,14 +95,20 @@ data_models:
         type: string
         description: 更新日
       - name: x
-        type: '{ label: string; ticks: string[] }'
-        description: 横の軸
+        type: '{ label: string; ticks?: string[] } | undefined'
+        description: 横の軸。`line`・`bar` は `ticks` が必須、`scatter` は数値の軸で `ticks` を持たない。`pie` は持たない
       - name: y
-        type: '{ label: string; min: number; max: number; step: number }'
-        description: 縦の軸
+        type: '{ label: string; min?: number; max?: number; step?: number } | undefined'
+        description: 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くと `niceTicks` で切る。`pie` は持たない
       - name: series
-        type: '{ name: string; points: number[] }[]'
-        description: 系列。1〜4 つで、`points` の数は `x.ticks` と同じ
+        type: '{ name: string; points: number[] | [number, number][] }[] | undefined'
+        description: 系列。`pie` 以外で 1〜4 つ。`line`・`bar` の `points` の数は `x.ticks` と同じ、`scatter` は `[x, y]` の組
+      - name: items
+        type: '{ name: string; value: number }[] | undefined'
+        description: '`pie` の項目。1〜4 つで、`value` は 0 より大きい'
+      - name: unit
+        type: string | undefined
+        description: '`pie` の凡例の値に付ける単位（例 ` 件`）'
   - name: MdmarkParamDefinition
     title: 操作できる部品の定義
     container: src/diagram/definition.ts
@@ -263,6 +273,18 @@ functions:
         condition: '`blocks` が `[]` と 2 つ'
         mock: なし
         expected: どちらも `problems[0]` が `印の範囲に json のコードブロックを 1 つだけ置いてください` を含む
+      - name: test_read_definition_when_chart_types
+        case: 正常
+        summary: 棒・円・散布図のモックの見本を読める
+        condition: '`inquiry-count`・`reply-kind`・`length-time`・`inquiry-hint` と同じ定義'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_chart_shape_mismatch
+        case: 異常
+        summary: 種類に合わない項目を読めない箇所にする
+        condition: '`type` が `pie` で `items` が無い定義と、`type` が `scatter` で点が数値 1 つの定義と、`y` に `min` だけを書いた定義'
+        mock: なし
+        expected: どれも `ok` が `false` で、`problems[0]` がそれぞれ `items`・点の形 `[x, y]`・`min`・`max`・`step` を揃えて書くことを含む
   - name: fitScale
     title: 全体が収まる倍率
     container: src/diagram/geometry.ts
@@ -347,7 +369,7 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図の枠』の HTML。題・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`id` は `render` の中の通し番号で文書の中で一意にする
+    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
         type: '{ kind; title; scope; updated; legend; zoom?; modal?; id: string }'
@@ -373,12 +395,18 @@ functions:
         condition: '`modal` が `true`'
         mock: なし
         expected: '`aria-label="全画面を閉じる"` のボタンがあり、全画面で開くボタンが無い'
+      - name: test_render_diagram_frame_when_zoom_button
+        case: 正常
+        summary: 戻すのボタンを置かず、倍率をボタンにする
+        condition: '`zoom` が `0.55`'
+        mock: なし
+        expected: 帯のボタンが `縮小`・`倍率 55%。全体が収まる倍率に戻す`・`拡大`・`全画面で開く` の順で、倍率のボタンの文字が `55%`、`rotate-ccw` のアイコンが無い
   - name: renderFlow
     title: フロー図を描く
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義の座標に枠・層・箱を置き、`jumpPaths` のパスで線を svg に描く。箱の種類のアイコン・`io` の印・線のラベルを置き、`{{語}}` は用語の照合に回す
+    summary: 定義の座標に枠・層・箱を置き、`jumpPaths` のパスで線を svg に描く。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・線のラベルを置き（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
     args:
       - name: definition
         type: MdmarkFlowDefinition
@@ -388,6 +416,14 @@ functions:
         type: string
         required: true
         description: ツールチップと矢じりの `id` の頭
+      - name: hints
+        type: boolean
+        required: true
+        description: 機能 `hints` がオンか
+      - name: lookup
+        type: TermLookup
+        required: false
+        description: 箱の中の `{{語}}` の意味を引く関数。省くと語だけを出す
     returns:
       type: '{ html: string; width: number; height: number; tips: string }'
       description: 図の中身
@@ -404,6 +440,12 @@ functions:
         condition: 箱の `name` が `<img src=x onerror=alert(1)>`
         mock: なし
         expected: 出力に `<img` が無く、`&lt;img` がある
+      - name: test_render_flow_when_hint
+        case: 正常
+        summary: hint だけを持つ箱にも印を置き、hints がオフなら印もツールチップも置かない
+        condition: '`inquiry-hint` の定義を `hints` が `true` と `false` で描く'
+        mock: なし
+        expected: '`true` で箱 `mcp` の印が `aria-label="「窓口の MCP」の説明"` を持ち、`false` で `role="tooltip"` と箱の印が無く、線のラベルと箱の名前はある'
   - name: renderSequence
     title: シーケンス図を描く
     container: src/parts/diagram.ts
@@ -434,12 +476,16 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 軸・目盛り・系列の折れ線と点を svg に描く。系列は位置で色（`--mdmark-color-series-{n}`）・線の模様・点の形の組を決める
+    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を置き、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を置く。系列と円の項目は位置で色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（塗りつぶし・斜線・点・格子の svg の `pattern`）・点の形の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る'
     args:
       - name: definition
         type: MdmarkChartDefinition
         required: true
         description: 読めた定義
+      - name: id
+        type: string
+        required: true
+        description: 塗りの模様の `pattern` の `id` の頭
     returns:
       type: '{ html: string; width: number; height: number; tips: string }'
       description: 図の中身。`tips` は空
@@ -450,6 +496,24 @@ functions:
         condition: '`reply-time` の定義'
         mock: なし
         expected: '`data-series` が 1・2 の線があり、点が 5 つずつ、svg の `aria-label` が `返信までの時間。自動返信: 12・9・14・8・10。担当者: 42・38・51・35・44`'
+      - name: test_render_chart_when_bar
+        case: 正常
+        summary: 棒を系列ごとの塗りの模様で描き、縦の軸をデータから切る
+        condition: '`inquiry-count` の定義'
+        mock: なし
+        expected: '`rect` の棒が 8 本で、系列 2 の棒の `fill` が斜線の `pattern` を指し、縦の軸の目盛りが `0`・`50`・`100`・`150`'
+      - name: test_render_chart_when_pie
+        case: 正常
+        summary: 扇形の外に合計 100 の整数の割合を置き、凡例に名前と値を出す
+        condition: '`reply-kind` の定義（186・92・22）'
+        mock: なし
+        expected: '扇形の `path` が 3 つ、割合の文字が `62%`・`31%`・`7%`、svg の `aria-label` に `よくある質問で答えた: 186 件` がある'
+      - name: test_render_chart_when_scatter
+        case: 正常
+        summary: 横と縦を数値の軸にして系列ごとの形の点を置く
+        condition: '`length-time` の定義'
+        mock: なし
+        expected: 系列 1 の点が `circle` 6 つ、系列 2 の点が四角の `rect` 6 つで、横の軸も数値の目盛りを持つ
   - name: legendFor
     title: 凡例の項目
     container: src/parts/diagram.ts
@@ -483,9 +547,9 @@ functions:
     summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
     args:
       - name: tip
-        type: '{ id: string; kind: "wire" | "io"; label: string; tip?: string; io?: { in: string; do: string; out: string } }'
+        type: '{ id: string; kind: "wire" | "io" | "hint"; label: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string }'
         required: true
-        description: 部品設計の引数
+        description: 部品設計の引数。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す
     returns:
       type: string
       description: ツールチップの HTML
@@ -496,6 +560,12 @@ functions:
         condition: '`kind` が `io`'
         mock: なし
         expected: '`入力`・`処理`・`出力` の見出しと値がこの順にあり、`hidden` を持つ'
+      - name: test_render_diagram_tip_when_hint
+        case: 正常
+        summary: hint だけを文として出す
+        condition: '`kind` が `hint`、`hint` が `<b>太字</b>`'
+        mock: なし
+        expected: 見出しを持たず、文字が `&lt;b&gt;太字&lt;/b&gt;` で `hidden` を持つ
   - name: renderParam
     title: 操作できる部品を描く
     container: src/parts/param.ts
@@ -551,7 +621,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow` に `hints` のオン・オフを渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore
@@ -594,7 +664,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、ボタン・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
     args:
       - name: root
         type: HTMLElement
@@ -637,6 +707,12 @@ functions:
         condition: 戻り値を呼ぶ
         mock: '`ResizeObserver.prototype.disconnect` を呼ばれた回数を数える関数で包む'
         expected: '`disconnect` が図の数だけ呼ばれ、拡大を押しても倍率が変わらない'
+      - name: test_attach_diagrams_when_zoom_button
+        case: 正常
+        summary: 倍率のボタンで開いたときの倍率と位置に戻す
+        condition: 幅 600px の要素に幅 1100 のフロー図。拡大を 2 回押して表示する枠を `ArrowRight` で動かし、倍率のボタンを押す
+        mock: なし
+        expected: 押す前の読み上げの名前が `倍率 85%。全体が収まる倍率に戻す`、押した後に文字が `55%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
   - name: openDiagramDialog
     title: 図を全画面で開く
     container: src/interact/diagrams.ts
@@ -675,12 +751,12 @@ functions:
     container: src/interact/diagram-tips.ts
     kind: 関数
     scope: internal
-    summary: ツールチップの持ち主に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。`beforeprint` で閉じる
+    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
     args:
       - name: figure
         type: HTMLElement
         required: true
-        description: 図
+        description: 図か、埋め込んだ HTML の `div.mdmark-html`
     returns:
       type: '{ closeOpen: () => boolean; detach: () => void }'
       description: 開いているツールチップを閉じて閉じたかを返す関数と、操作を外す関数
@@ -697,6 +773,24 @@ functions:
         condition: 持ち主からツールチップへ `pointerleave`・`pointerenter` を送る
         mock: タイマーを `vi.useFakeTimers` で進める
         expected: ツールチップが `hidden` を持たない
+      - name: test_attach_diagram_tips_when_box_hovered
+        case: 正常
+        summary: 箱の印の外では開かない
+        condition: '`io` を持つ箱の名前に `pointerenter` を送り、次に印に送る'
+        mock: なし
+        expected: 名前ではツールチップが `hidden` を持ち、印では持たない
+      - name: test_attach_diagram_tips_when_embedded_hint
+        case: 正常
+        summary: 埋め込んだ HTML のヒントを開く
+        condition: '`div.mdmark-html` にブロックと行内のヒント。ブロックの要素の文字、印、行内の要素の順に `pointerenter`'
+        mock: なし
+        expected: 文字では開かず、印と行内の要素でそれぞれのツールチップが開き、同時に開いているのは 1 つ
+      - name: test_attach_diagram_tips_when_embedded_unique_ids
+        case: 正常
+        summary: 同じページに 2 回描いてもヒントの id が重ならない
+        condition: ヒントを持つ同じ `div.mdmark-html` を 2 つの要素に入れ、両方に付ける
+        mock: なし（Chromium）
+        expected: ページの `id` が全て一意で、各印の `aria-describedby` が同じ要素の中のツールチップを指す
   - name: attachParams
     title: 操作できる部品の操作を付ける
     container: src/interact/params.ts
@@ -730,12 +824,75 @@ functions:
         condition: 写すボタンを押す
         mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒まれる関数に差し替える'
         expected: '`pre` が `hidden` を持たず、文字が写すはずだった JSON で、例外が外に出ない'
+  - name: niceTicks
+    title: 縦の軸の刻みを切る
+    container: src/diagram/geometry.ts
+    summary: データの最小と最大を含む範囲を、1・2・5×10 のべき乗の刻みで 4〜6 等分に切る。最小が 0 以上なら下端を 0 にする
+    kind: 関数
+    scope: internal
+    args:
+      - name: values
+        type: number[]
+        required: true
+        description: 軸に載せる値
+    returns:
+      type: '{ min: number; max: number; step: number }'
+      description: 軸の範囲と刻み
+    unit_tests:
+      - name: test_nice_ticks
+        case: 正常
+        summary: 最大を含むきりのよい刻みにする
+        condition: '`[124, 86, 57, 12, 38, 41, 63, 95]`'
+        mock: なし
+        expected: '`{ min: 0, max: 150, step: 50 }`'
+      - name: test_nice_ticks_when_small
+        case: 正常
+        summary: 1 未満の値も切れる
+        condition: '`[0.12, 0.47]`'
+        mock: なし
+        expected: '`{ min: 0, max: 0.5, step: 0.1 }`'
+      - name: test_nice_ticks_when_flat
+        case: 正常
+        summary: 全て同じ値でも幅を持たせる
+        condition: '`[0, 0]`'
+        mock: なし
+        expected: '`max` が `min` より大きく、`step` が 0 より大きい'
+    status: planned
+    introduced:
+      pr: 45
+  - name: renderHintMarkup
+    title: ヒントの印と中身を付ける
+    container: src/parts/hint.ts
+    summary: '部品設計『ヒント』の HTML。`data-hint` を持つ要素の開きタグに、行内の要素なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を、それ以外なら class `mdmark-hint-block` を付け、閉じタグの前に `button.mdmark-hint-mark`（ブロックだけ）と、要素の後ろに `renderDiagramTip` の `kind: "hint"` の中身を置く。`sanitizeEmbedded` の `transformTags` と `exclusiveFilter` から呼ぶ'
+    kind: 関数
+    scope: internal
+    args:
+      - name: hint
+        type: '{ tag: string; text: string; id: string }'
+        required: true
+        description: 要素のタグ名・`data-hint` の値・ツールチップの `id`（`mdmark-hint-{n}`）
+    returns:
+      type: '{ placement: "block" | "inline"; attributes: Record<string, string>; inside: string; after: string }'
+      description: 要素に足す属性と、閉じタグの前と要素の後ろに置く HTML
+    unit_tests:
+      - name: test_render_hint_markup
+        case: 正常
+        summary: ブロックの要素には印、行内の要素には tabindex を付ける
+        condition: '`tag` が `div` と `span`'
+        mock: なし
+        expected: '`div` は `placement` が `block` で `inside` が `aria-label="説明"` のボタン、`span` は `inline` で `attributes.tabindex` が `0`。どちらも `after` が `role="tooltip"` で `hidden`'
+    refs:
+      - '#functions[renderDiagramTip]'
+    status: planned
+    introduced:
+      pr: 45
 test_files:
   - tests/unit/src/diagram/definition.test.ts
   - tests/unit/src/diagram/geometry.test.ts
   - tests/unit/src/parts/icons.test.ts
   - tests/unit/src/parts/diagram.test.ts
   - tests/unit/src/parts/param.test.ts
+  - tests/unit/src/parts/hint.test.ts
   - tests/unit/src/render/syntax/diagrams.test.ts
   - tests/unit/src/interact/diagrams.browser.test.ts
   - tests/unit/src/interact/diagram-tips.browser.test.ts

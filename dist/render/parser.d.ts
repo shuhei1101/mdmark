@@ -35,6 +35,12 @@ export type RenderEnv = {
     extensionDefinitions?: unknown[];
     /** 描いた操作できる部品の定義（文書の中の並びの順） */
     paramDefinitions?: MdmarkParamDefinition[];
+    /** 描いた図と操作できる部品の数（`id` の通し番号。範囲の印と埋め込んだ HTML で共有する） */
+    diagramCount?: number;
+    /** 用語のツールチップの数（`id` の通し番号。埋め込んだ HTML と本文で共有する） */
+    termTipCount?: number;
+    /** ヒントのツールチップの数（`id` の通し番号） */
+    hintCount?: number;
 };
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export declare function createParser(): MarkdownItParser;

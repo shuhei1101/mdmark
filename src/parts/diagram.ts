@@ -1,5 +1,6 @@
 import type {
   MdmarkChartDefinition,
+  MdmarkChartYAxis,
   MdmarkDiagramIo,
   MdmarkDiagramKind,
   MdmarkDiagramLine,
@@ -7,7 +8,12 @@ import type {
   MdmarkFlowDefinition,
   MdmarkSequenceDefinition,
 } from "../diagram/definition.ts";
-import { jumpPaths, polylinePath, ZOOM } from "../diagram/geometry.ts";
+import {
+  jumpPaths,
+  niceTicks,
+  polylinePath,
+  ZOOM,
+} from "../diagram/geometry.ts";
 import { escapeHtml } from "./escape.ts";
 import { type IconName, iconSvg } from "./icons.ts";
 
@@ -62,8 +68,15 @@ const CHART = {
   pad: { top: 36, right: 24, bottom: 56, left: 56 },
 };
 
-/** 系列の点の印の大きさ（px） */
+/** 系列の点の印の大きさ（px）。散布図は点だけで読むので大きくする */
 const POINT_SIZE = 4.5;
+const SCATTER_POINT_SIZE = 5.5;
+
+/** 円の半径（px）と、扇形の外に置く割合の文字までの距離（px） */
+const PIE = { radius: 118, labelGap: 16 };
+
+/** 棒 1 本の幅の上限（px）と、項目の幅に対する棒の幅の割合 */
+const BAR = { maxWidth: 28, share: 0.72 };
 
 /** 図の表示する枠のキー操作 */
 const VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
@@ -128,27 +141,38 @@ export type TermLookup = (word: string) => string | undefined;
 export type DiagramTip = {
   /** ツールチップの `id` */
   id: string;
-  /** 線の詳細か、箱の入力・処理・出力か */
-  kind: "wire" | "io";
+  /** 線の詳細か、箱の入力・処理・出力か、文だけか（箱の `hint`・埋め込んだ HTML の `data-hint`） */
+  kind: "wire" | "io" | "hint";
   /** 持ち主の名前。ツールチップの題に出す */
   label: string;
   /** 線の詳細 */
   tip?: string;
   /** 箱の入力・処理・出力 */
   io?: MdmarkDiagramIo;
+  /** 箱の `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す */
+  hint?: string;
   /** 持ち主を引く名前（線の `id`・`node:{箱の id}`・`term:{語}`）。省くと題 */
   owner?: string;
   /** 開いているか */
   open?: boolean;
 };
 
-/** 図のツールチップを描く */
+/** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも置けるよう `span` で出す */
 export function renderDiagramTip(tip: DiagramTip): string {
+  const hint =
+    tip.hint === undefined || tip.hint === ""
+      ? ""
+      : `<span class="mdmark-term-tip-meaning">${escapeHtml(tip.hint)}</span>`;
+  const owner = escapeHtml(tip.owner ?? tip.label);
+  const hidden = tip.open ? "" : ' hidden="hidden"';
+  if (tip.kind === "hint") {
+    return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section">${hint}</span></span>`;
+  }
   const body =
     tip.kind === "io" && tip.io
-      ? `<dl class="mdmark-diagram-tip-io"><dt>入力</dt><dd>${escapeHtml(tip.io.in)}</dd><dt>処理</dt><dd>${escapeHtml(tip.io.do)}</dd><dt>出力</dt><dd>${escapeHtml(tip.io.out)}</dd></dl>`
+      ? `<dl class="mdmark-diagram-tip-io"><dt>入力</dt><dd>${escapeHtml(tip.io.in)}</dd><dt>処理</dt><dd>${escapeHtml(tip.io.do)}</dd><dt>出力</dt><dd>${escapeHtml(tip.io.out)}</dd></dl>${hint}`
       : `<span class="mdmark-term-tip-meaning">${escapeHtml(tip.tip ?? "")}</span>`;
-  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${escapeHtml(tip.owner ?? tip.label)}"${tip.open ? "" : ' hidden="hidden"'}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span>${body}</span></div>`;
+  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span>${body}</span></div>`;
 }
 
 /** 図の中のツールチップを集める入れ物 */
@@ -288,15 +312,19 @@ function labelPosition(points: Array<[number, number]>): [number, number] {
   return best;
 }
 
-/** 箱 1 つ（種類の行・名前・補足と、`io` を持つ箱の右上の印）の HTML */
+/** 箱 1 つ（種類の行・名前・補足と、`hint` か `io` を持つ箱の右上の印）の HTML。`hints` がオフなら印を置かない */
 function renderNode(options: {
-  node: Pick<MdmarkDiagramNode, "id" | "kind" | "name" | "tag" | "sub" | "io">;
+  node: Pick<
+    MdmarkDiagramNode,
+    "id" | "kind" | "name" | "tag" | "sub" | "io" | "hint"
+  >;
   box: { x: number; y: number; w: number; h: number };
   tips: TipList;
   lookup: TermLookup | undefined;
   found: { terms: boolean };
+  hints: boolean;
 }): string {
-  const { node, box, tips, lookup, found } = options;
+  const { node, box, tips, lookup, found, hints } = options;
   const kind = KIND_STYLES[node.kind];
   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
   const name = renderText(node.name, tips, lookup, found);
@@ -304,24 +332,28 @@ function renderNode(options: {
     node.sub === undefined
       ? ""
       : `<span class="mdmark-diagram-node-sub">${renderText(node.sub, tips, lookup, found)}</span>`;
+  const hasTip = hints && (node.io !== undefined || node.hint !== undefined);
   let info = "";
-  if (node.io) {
+  if (hasTip) {
     const owner = `node:${node.id}`;
     const id = tips.add({
-      kind: "io",
+      kind: node.io ? "io" : "hint",
       label: node.name,
-      io: node.io,
+      ...(node.io ? { io: node.io } : {}),
+      ...(node.hint === undefined ? {} : { hint: node.hint }),
       owner,
     });
-    info = `<button class="mdmark-diagram-info" type="button" aria-label="「${escapeHtml(node.name)}」の入力・処理・出力" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+    const what = node.io ? "入力・処理・出力" : "説明";
+    info = `<button class="mdmark-diagram-info" type="button" aria-label="「${escapeHtml(node.name)}」の${what}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
   }
-  return `<div class="mdmark-diagram-node${node.io ? " has-tip" : ""}" data-kind="${node.kind}" data-node="${escapeHtml(node.id)}"${boxStyle(box)}><span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${info}</div>`;
+  return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node.kind}" data-node="${escapeHtml(node.id)}"${boxStyle(box)}><span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${info}</div>`;
 }
 
 /** フロー図を描く */
 export function renderFlow(
   definition: MdmarkFlowDefinition,
   id: string,
+  hints: boolean,
   lookup?: TermLookup,
 ): DiagramPart {
   const tips = createTips(id);
@@ -348,7 +380,7 @@ export function renderFlow(
         wireId: wire.id,
         line: wire.line,
         d: paths.get(wire.id) ?? "",
-        hit: wire.tip !== undefined && wire.tip !== "",
+        hit: hints && wire.tip !== undefined && wire.tip !== "",
       }),
     )
     .join("");
@@ -356,7 +388,7 @@ export function renderFlow(
     `<svg class="mdmark-diagram-wires" width="${num(definition.width)}" height="${num(definition.height)}" aria-hidden="true">${wires}</svg>`,
   );
   for (const node of definition.nodes) {
-    parts.push(renderNode({ node, box: node, tips, lookup, found }));
+    parts.push(renderNode({ node, box: node, tips, lookup, found, hints }));
   }
   for (const wire of definition.wires) {
     parts.push(
@@ -364,7 +396,7 @@ export function renderFlow(
         wireId: wire.id,
         line: wire.line,
         label: wire.label,
-        tip: wire.tip,
+        tip: hints ? wire.tip : undefined,
         at: wire.labelAt ?? labelPosition(wire.points),
         tips,
       }),
@@ -385,6 +417,7 @@ export function renderSequence(
   definition: MdmarkSequenceDefinition,
   id: string,
   lookup?: TermLookup,
+  hints = true,
 ): DiagramPart {
   const tips = createTips(id);
   const found = { terms: false };
@@ -460,7 +493,7 @@ export function renderSequence(
         wireId,
         line,
         d: polylinePath(points),
-        hit: step.tip !== undefined && step.tip !== "",
+        hit: hints && step.tip !== undefined && step.tip !== "",
       }),
     );
     labels.push(
@@ -468,7 +501,7 @@ export function renderSequence(
         wireId,
         line,
         label: `${index + 1} ${step.label}`,
-        tip: step.tip,
+        tip: hints ? step.tip : undefined,
         at: [(x1 + x2) / 2, y - 14],
         tips,
       }),
@@ -487,6 +520,7 @@ export function renderSequence(
         tips,
         lookup,
         found,
+        hints,
       }),
     )
     .join("");
@@ -507,8 +541,12 @@ export function renderSequence(
 }
 
 /** 系列の点の印（1 丸・2 四角・3 三角・4 菱形） */
-function pointSvg(series: number, x: number, y: number): string {
-  const size = POINT_SIZE;
+function pointSvg(
+  series: number,
+  x: number,
+  y: number,
+  size: number = POINT_SIZE,
+): string {
   if (series === 1) {
     return `<circle class="mdmark-diagram-point" cx="${num(x)}" cy="${num(y)}" r="${size}"></circle>`;
   }
@@ -521,45 +559,125 @@ function pointSvg(series: number, x: number, y: number): string {
   return `<path class="mdmark-diagram-point" d="M${num(x)},${num(y - size - 1)} L${num(x + size + 1)},${num(y)} L${num(x)},${num(y + size + 1)} L${num(x - size - 1)},${num(y)} z"></path>`;
 }
 
-/** グラフを描く */
-export function renderChart(definition: MdmarkChartDefinition): DiagramPart {
-  const { pad } = CHART;
-  const left = pad.left;
-  const right = CHART.width - pad.right;
-  const top = pad.top;
-  const bottom = CHART.height - pad.bottom;
-  const { ticks } = definition.x;
-  const { min, max, step } = definition.y;
-  const xAt = (index: number): number =>
-    left + (index * (right - left)) / Math.max(1, ticks.length - 1);
-  const yAt = (value: number): number =>
-    bottom - ((value - min) * (bottom - top)) / (max - min);
-  const svg: string[] = [];
-  // 横の補助線と縦の目盛りの値
-  const rows = Math.round((max - min) / step);
+/** 系列の塗りの模様（1 塗りつぶし・2 斜線・3 点・4 格子）の `pattern`。折れ線の模様と同じ順に、線から面へ移した形。色は CSS が系列の番号で当てる */
+function fillPatterns(id: string): string {
+  const base =
+    '<rect class="mdmark-diagram-pattern-tint" width="8" height="8"></rect>';
+  const bodies = [
+    '<rect class="mdmark-diagram-pattern-solid" width="8" height="8"></rect>',
+    `${base}<path class="mdmark-diagram-pattern-ink" d="M-2,2 L2,-2 M0,8 L8,0 M6,10 L10,6"></path>`,
+    `${base}<circle class="mdmark-diagram-pattern-dot" cx="4" cy="4" r="1.8"></circle>`,
+    `${base}<path class="mdmark-diagram-pattern-ink-thin" d="M0,0 L8,8 M8,0 L0,8"></path>`,
+  ];
+  return bodies
+    .map(
+      (body, index) =>
+        `<pattern id="${id}-fill-${index + 1}" data-series="${index + 1}" patternunits="userSpaceOnUse" width="8" height="8">${body}</pattern>`,
+    )
+    .join("");
+}
+
+/** 描く範囲 */
+type ChartBox = { left: number; right: number; top: number; bottom: number };
+
+/** 縦の軸の範囲。定義が `min`・`max`・`step` を持つならそのまま、省いていればデータから切る */
+function axisOf(
+  axis: MdmarkChartYAxis | undefined,
+  values: number[],
+): { min: number; max: number; step: number } {
+  if (
+    axis?.min !== undefined &&
+    axis.max !== undefined &&
+    axis.step !== undefined
+  ) {
+    return { min: axis.min, max: axis.max, step: axis.step };
+  }
+  return niceTicks(values);
+}
+
+/** 目盛りの値を並べる（刻みの誤差で桁が崩れないよう丸める） */
+function ticksOf(axis: { min: number; max: number; step: number }): number[] {
+  const values: number[] = [];
+  const rows = Math.round((axis.max - axis.min) / axis.step);
   for (let index = 0; index <= rows; index++) {
-    const value = Number((min + index * step).toFixed(10));
+    values.push(Number((axis.min + index * axis.step).toPrecision(12)));
+  }
+  return values;
+}
+
+/** 縦の軸の補助線・目盛りの値・軸の名前 */
+function yAxisSvg(options: {
+  axis: { min: number; max: number; step: number };
+  label: string;
+  yAt: (value: number) => number;
+  box: ChartBox;
+}): string[] {
+  const { axis, label, yAt, box } = options;
+  const svg: string[] = [];
+  for (const value of ticksOf(axis)) {
     svg.push(
-      `<line class="mdmark-diagram-grid" x1="${left}" y1="${num(yAt(value))}" x2="${right}" y2="${num(yAt(value))}"></line>`,
-      `<text class="mdmark-diagram-axis-text" x="${left - 8}" y="${num(yAt(value) + 4)}" text-anchor="end">${num(value)}</text>`,
+      `<line class="mdmark-diagram-grid" x1="${box.left}" y1="${num(yAt(value))}" x2="${box.right}" y2="${num(yAt(value))}"></line>`,
+      `<text class="mdmark-diagram-axis-text" x="${box.left - 8}" y="${num(yAt(value) + 4)}" text-anchor="end">${num(value)}</text>`,
     );
   }
-  // 横の目盛りの値
-  ticks.forEach((tick, index) => {
-    svg.push(
-      `<text class="mdmark-diagram-axis-text" x="${num(xAt(index))}" y="${bottom + 20}" text-anchor="middle">${escapeHtml(tick)}</text>`,
-    );
-  });
   svg.push(
-    `<line class="mdmark-diagram-axis" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"></line>`,
-    `<line class="mdmark-diagram-axis" x1="${left}" y1="${top - 8}" x2="${left}" y2="${bottom}"></line>`,
-    // 軸の名前: 縦は軸の上、横は目盛りの下
-    `<text class="mdmark-diagram-axis-text" x="${left - 8}" y="${top - 18}" text-anchor="start">${escapeHtml(definition.y.label)}</text>`,
-    `<text class="mdmark-diagram-axis-text" x="${num((left + right) / 2)}" y="${bottom + 44}" text-anchor="middle">${escapeHtml(definition.x.label)}</text>`,
+    `<text class="mdmark-diagram-axis-text" x="${box.left - 8}" y="${box.top - 18}" text-anchor="start">${escapeHtml(label)}</text>`,
   );
-  definition.series.forEach((series, index) => {
+  return svg;
+}
+
+/** 軸の線と、横の軸の名前（目盛りの下） */
+function axisLinesSvg(label: string, box: ChartBox): string[] {
+  return [
+    `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.bottom}" x2="${box.right}" y2="${box.bottom}"></line>`,
+    `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.top - 8}" x2="${box.left}" y2="${box.bottom}"></line>`,
+    `<text class="mdmark-diagram-axis-text" x="${num((box.left + box.right) / 2)}" y="${box.bottom + 44}" text-anchor="middle">${escapeHtml(label)}</text>`,
+  ];
+}
+
+/** 横の目盛りが項目の名前の軸（折れ線・棒）の目盛りの値 */
+function xTicksSvg(
+  ticks: string[],
+  xAt: (index: number) => number,
+  box: ChartBox,
+): string[] {
+  return ticks.map(
+    (tick, index) =>
+      `<text class="mdmark-diagram-axis-text" x="${num(xAt(index))}" y="${box.bottom + 20}" text-anchor="middle">${escapeHtml(tick)}</text>`,
+  );
+}
+
+/** 描いたグラフの中身 */
+type ChartBody = { svg: string[]; label: string };
+
+/** 折れ線・棒の入力: 横の目盛りと、系列ごとの点 */
+type TickedChart = {
+  ticks: string[];
+  series: Array<{ name: string; points: number[] }>;
+  yAxis: MdmarkChartYAxis | undefined;
+  xLabel: string;
+};
+
+/** 折れ線: 系列を色と線の模様・点の印の組で引く */
+function lineChart(input: TickedChart, box: ChartBox): ChartBody {
+  const { ticks, series, yAxis, xLabel } = input;
+  const axis = axisOf(
+    yAxis,
+    series.flatMap((entry) => entry.points),
+  );
+  const xAt = (index: number): number =>
+    box.left + (index * (box.right - box.left)) / Math.max(1, ticks.length - 1);
+  const yAt = (value: number): number =>
+    box.bottom -
+    ((value - axis.min) * (box.bottom - box.top)) / (axis.max - axis.min);
+  const svg = [
+    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
+    ...xTicksSvg(ticks, xAt, box),
+    ...axisLinesSvg(xLabel, box),
+  ];
+  series.forEach((entry, index) => {
     const n = index + 1;
-    const points = series.points.map((value, position): [number, number] => [
+    const points = entry.points.map((value, position): [number, number] => [
       xAt(position),
       yAt(value),
     ]);
@@ -569,11 +687,216 @@ export function renderChart(definition: MdmarkChartDefinition): DiagramPart {
       `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, x, y)).join("")}</g>`,
     );
   });
-  const label = `${definition.title}。${definition.series
-    .map((series) => `${series.name}: ${series.points.join("・")}`)
-    .join("。")}`;
   return {
-    html: `<svg class="mdmark-diagram-wires" width="${CHART.width}" height="${CHART.height}" role="img" aria-label="${escapeHtml(label)}">${svg.join("")}</svg>`,
+    svg,
+    label: series
+      .map((entry) => `${entry.name}: ${entry.points.join("・")}`)
+      .join("。"),
+  };
+}
+
+/** 棒: 項目ごとに系列の棒を横に並べ、系列を色と塗りの模様の組で分ける */
+function barChart(input: TickedChart, box: ChartBox, id: string): ChartBody {
+  const { ticks, series, yAxis, xLabel } = input;
+  const axis = axisOf(
+    yAxis,
+    series.flatMap((entry) => entry.points),
+  );
+  const band = (box.right - box.left) / ticks.length;
+  const xAt = (index: number): number => box.left + band * (index + 0.5);
+  const yAt = (value: number): number =>
+    box.bottom -
+    ((value - axis.min) * (box.bottom - box.top)) / (axis.max - axis.min);
+  const barWidth = Math.min(BAR.maxWidth, (band * BAR.share) / series.length);
+  const svg = [
+    `<defs>${fillPatterns(id)}</defs>`,
+    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
+    ...xTicksSvg(ticks, xAt, box),
+  ];
+  series.forEach((entry, index) => {
+    const n = index + 1;
+    const bars = entry.points.map((value, position) => {
+      const x =
+        xAt(position) - (barWidth * series.length) / 2 + barWidth * index;
+      const top = Math.min(yAt(value), yAt(0));
+      return `<rect class="mdmark-diagram-bar" x="${num(x + 1)}" y="${num(top)}" width="${num(barWidth - 2)}" height="${num(Math.abs(yAt(value) - yAt(0)))}" fill="url(#${id}-fill-${n})"></rect>`;
+    });
+    svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
+  });
+  svg.push(...axisLinesSvg(xLabel, box));
+  return {
+    svg,
+    label: series
+      .map(
+        (entry) =>
+          `${entry.name}: ${entry.points.map((value, position) => `${ticks[position]} ${value}`).join("・")}`,
+      )
+      .join("。"),
+  };
+}
+
+/** 割合（整数の %）。合計が 100 になるよう最大剰余法で丸める */
+function percentsOf(values: number[]): number[] {
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const exact = values.map((value) => (value / total) * 100);
+  const floors = exact.map(Math.floor);
+  let rest = 100 - floors.reduce((sum, value) => sum + value, 0);
+  const byRemainder = exact
+    .map((value, index) => ({ index, remainder: value - Math.floor(value) }))
+    .sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+  for (const { index } of byRemainder) {
+    if (rest <= 0) {
+      break;
+    }
+    floors[index] = (floors[index] ?? 0) + 1;
+    rest -= 1;
+  }
+  return floors;
+}
+
+/** 円: 12 時から時計回りに項目の値の割合の角度で扇形を描き、扇形の外に割合を出す。項目の名前と値は凡例が持つ */
+function pieChart(
+  items: Array<{ name: string; value: number }>,
+  unit: string,
+  id: string,
+): ChartBody {
+  const cx = CHART.width / 2;
+  const cy = CHART.height / 2;
+  const { radius, labelGap } = PIE;
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  const percents = percentsOf(items.map((item) => item.value));
+  const svg: string[] = [`<defs>${fillPatterns(id)}</defs>`];
+  const at = (angle: number, distance: number): [number, number] => [
+    cx + distance * Math.cos(angle),
+    cy + distance * Math.sin(angle),
+  ];
+  let angle = -Math.PI / 2;
+  items.forEach((item, index) => {
+    const n = index + 1;
+    // 1 項目だけのときの全周は、始点と終点が重なって弧が消えるので、わずかに足りない角にする
+    const sweep = Math.min(
+      (item.value / total) * Math.PI * 2,
+      Math.PI * 2 - 1e-4,
+    );
+    const [x1, y1] = at(angle, radius);
+    const [x2, y2] = at(angle + sweep, radius);
+    svg.push(
+      `<g data-series="${n}"><path class="mdmark-diagram-slice" d="M${cx},${cy} L${num(x1)},${num(y1)} A${radius},${radius} 0 ${sweep > Math.PI ? 1 : 0} 1 ${num(x2)},${num(y2)} Z" fill="url(#${id}-fill-${n})"></path></g>`,
+    );
+    const middle = angle + sweep / 2;
+    const [lx, ly] = at(middle, radius + labelGap);
+    const anchor =
+      Math.abs(Math.cos(middle)) < 0.2
+        ? "middle"
+        : Math.cos(middle) > 0
+          ? "start"
+          : "end";
+    svg.push(
+      `<text class="mdmark-diagram-value-text" x="${num(lx)}" y="${num(ly + 5)}" text-anchor="${anchor}">${percents[index]}%</text>`,
+    );
+    angle += sweep;
+  });
+  return {
+    svg,
+    label: items
+      .map(
+        (item, index) =>
+          `${item.name}: ${item.value}${unit}（${percents[index]}%）`,
+      )
+      .join("。"),
+  };
+}
+
+/** 散布図: 横と縦の両方を数値の軸にし、系列の点の印だけを置く（線で結ばない） */
+function scatterChart(
+  input: {
+    series: Array<{ name: string; points: Array<[number, number]> }>;
+    xLabel: string;
+    yAxis: MdmarkChartYAxis | undefined;
+  },
+  box: ChartBox,
+): ChartBody {
+  const { series, xLabel, yAxis } = input;
+  const xAxis = niceTicks(
+    series.flatMap((entry) => entry.points.map((p) => p[0])),
+  );
+  const yScale = axisOf(
+    yAxis,
+    series.flatMap((entry) => entry.points.map((p) => p[1])),
+  );
+  const xAt = (value: number): number =>
+    box.left +
+    ((value - xAxis.min) * (box.right - box.left)) / (xAxis.max - xAxis.min);
+  const yAt = (value: number): number =>
+    box.bottom -
+    ((value - yScale.min) * (box.bottom - box.top)) / (yScale.max - yScale.min);
+  const svg = yAxisSvg({ axis: yScale, label: yAxis?.label ?? "", yAt, box });
+  for (const value of ticksOf(xAxis)) {
+    svg.push(
+      `<line class="mdmark-diagram-grid" x1="${num(xAt(value))}" y1="${box.top}" x2="${num(xAt(value))}" y2="${box.bottom}"></line>`,
+      `<text class="mdmark-diagram-axis-text" x="${num(xAt(value))}" y="${box.bottom + 20}" text-anchor="middle">${num(value)}</text>`,
+    );
+  }
+  svg.push(...axisLinesSvg(xLabel, box));
+  series.forEach((entry, index) => {
+    const n = index + 1;
+    svg.push(
+      `<g data-series="${n}">${entry.points.map(([x, y]) => pointSvg(n, xAt(x), yAt(y), SCATTER_POINT_SIZE)).join("")}</g>`,
+    );
+  });
+  return {
+    svg,
+    label: series
+      .map(
+        (entry) =>
+          `${entry.name}: ${entry.points.map(([x, y]) => `(${x}, ${y})`).join("・")}`,
+      )
+      .join("。"),
+  };
+}
+
+/** グラフを種類（折れ線・棒・円・散布図）ごとに描く。定義は `readDefinition` が形を確かめたもの。`id` は塗りの模様の `pattern` の `id` の頭 */
+export function renderChart(
+  definition: MdmarkChartDefinition,
+  id: string,
+): DiagramPart {
+  const { pad } = CHART;
+  const box: ChartBox = {
+    left: pad.left,
+    right: CHART.width - pad.right,
+    top: pad.top,
+    bottom: CHART.height - pad.bottom,
+  };
+  const type = definition.type ?? "line";
+  const series = definition.series ?? [];
+  const xLabel = definition.x?.label ?? "";
+  let body: ChartBody;
+  if (type === "pie") {
+    body = pieChart(definition.items ?? [], definition.unit ?? "", id);
+  } else if (type === "scatter") {
+    body = scatterChart(
+      {
+        series: series as Array<{
+          name: string;
+          points: Array<[number, number]>;
+        }>,
+        xLabel,
+        yAxis: definition.y,
+      },
+      box,
+    );
+  } else {
+    const input: TickedChart = {
+      ticks: definition.x?.ticks ?? [],
+      series: series as Array<{ name: string; points: number[] }>,
+      yAxis: definition.y,
+      xLabel,
+    };
+    body = type === "bar" ? barChart(input, box, id) : lineChart(input, box);
+  }
+  const label = `${definition.title}。${body.label}`;
+  return {
+    html: `<svg class="mdmark-diagram-wires" width="${CHART.width}" height="${CHART.height}" role="img" aria-label="${escapeHtml(label)}">${body.svg.join("")}</svg>`,
     width: CHART.width,
     height: CHART.height,
     tips: "",
@@ -588,19 +911,42 @@ type LegendDefinition =
   | MdmarkSequenceDefinition
   | MdmarkChartDefinition;
 
-/** 凡例の項目: 定義に出る箱の種類・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える */
-export function legendFor(
+/** グラフの定義か（フロー図は `wires`、シーケンス図は `participants` を持つ） */
+function isChartDefinition(
   definition: LegendDefinition,
-  drawn: { jumps: boolean; terms: boolean },
-): DiagramLegendItem[] {
-  if ("series" in definition) {
-    return definition.series.map((series, index) => ({
-      sample: `series-${index + 1}`,
-      label: series.name,
+): definition is MdmarkChartDefinition {
+  return !("wires" in definition) && !("participants" in definition);
+}
+
+/** グラフの凡例の項目: 種類ごとの見本（折れ線は線と点、棒と円は塗りの模様、散布図は点の形）に、系列か項目の名前を添える */
+function chartLegend(definition: MdmarkChartDefinition): DiagramLegendItem[] {
+  const type = definition.type ?? "line";
+  if (type === "pie") {
+    const unit = definition.unit ?? "";
+    return (definition.items ?? []).map((item, index) => ({
+      sample: `fill-${index + 1}`,
+      label: `${item.name}（${item.value}${unit}）`,
     }));
   }
+  const sample =
+    type === "bar" ? "fill" : type === "scatter" ? "point" : "series";
+  return (definition.series ?? []).map((series, index) => ({
+    sample: `${sample}-${index + 1}`,
+    label: series.name,
+  }));
+}
+
+/** 凡例の項目: 定義に出る箱の種類・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。`hints` がオフ（既定はオン）なら、ヒントの印と線の詳細の下線は図にない */
+export function legendFor(
+  definition: LegendDefinition,
+  drawn: { jumps: boolean; terms: boolean; hints?: boolean },
+): DiagramLegendItem[] {
+  if (isChartDefinition(definition)) {
+    return chartLegend(definition);
+  }
+  const hints = drawn.hints !== false;
   const isFlow = "wires" in definition;
-  const nodes: Array<Pick<MdmarkDiagramNode, "kind" | "io">> = isFlow
+  const nodes: Array<Pick<MdmarkDiagramNode, "kind" | "io" | "hint">> = isFlow
     ? definition.nodes
     : definition.participants;
   const frame = isFlow ? definition.frame : undefined;
@@ -638,13 +984,25 @@ export function legendFor(
   if (drawn.jumps) {
     items.push({ sample: "jump", label: "線の交差（横の線が飛び越える）" });
   }
-  if (nodes.some((node) => node.io)) {
-    items.push({ sample: "info", label: "入力・処理・出力が出る箱" });
+  if (hints && nodes.some((node) => node.io || node.hint)) {
+    const io = nodes.some((node) => node.io);
+    const hint = nodes.some((node) => node.hint && !node.io);
+    items.push({
+      sample: "info",
+      label:
+        io && hint
+          ? "説明や入力・処理・出力が出る箱"
+          : io
+            ? "入力・処理・出力が出る箱"
+            : "説明が出る箱",
+    });
   }
   // 下線: 箱の中の用語（意味が出る）と、線のラベル（送るものの詳細が出る）を 1 項目にまとめる
-  const hasTip = isFlow
-    ? definition.wires.some((wire) => wire.tip)
-    : definition.steps.some((step) => step.tip);
+  const hasTip =
+    hints &&
+    (isFlow
+      ? definition.wires.some((wire) => wire.tip)
+      : definition.steps.some((step) => step.tip));
   if (drawn.terms || hasTip) {
     const what =
       drawn.terms && hasTip
@@ -674,6 +1032,14 @@ function legendSample(id: string, sample: string): string {
     const style = LINE_STYLES[line];
     const dash = style.dash ? ` stroke-dasharray="${style.dash}"` : "";
     return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="${line}" d="M1,6 H32"${dash} stroke-width="${style.width}" marker-end="url(#${id}-head-${line})"></path></svg>`;
+  }
+  if (sample.startsWith("fill-")) {
+    const n = Number(sample.slice("fill-".length));
+    return `<svg class="mdmark-diagram-legend-sample" width="18" height="14" aria-hidden="true"><g data-series="${n}"><rect class="mdmark-diagram-bar" x="1" y="1" width="16" height="12" fill="url(#${id}-fill-${n})"></rect></g></svg>`;
+  }
+  if (sample.startsWith("point-")) {
+    const n = Number(sample.slice("point-".length));
+    return `<svg class="mdmark-diagram-legend-sample" width="14" height="14" aria-hidden="true"><g data-series="${n}">${pointSvg(n, 7, 7, SCATTER_POINT_SIZE)}</g></svg>`;
   }
   if (sample.startsWith("series-")) {
     const n = Number(sample.slice("series-".length));
@@ -727,7 +1093,9 @@ function renderTools(frame: DiagramFrame): string {
   const screen = frame.modal
     ? tool("close", "全画面を閉じる", "x")
     : tool("fullscreen", "全画面で開く", "expand");
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > 1 ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= 1)}<output class="mdmark-diagram-zoom" aria-label="倍率">${Math.round(zoom * 100)}%</output>${tool("in", "拡大", "plus", zoom >= ZOOM.max)}${tool("fit", "全体が収まる倍率に戻す", "rotate-ccw", zoom === 1)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  const percent = `${Math.round(zoom * 100)}%`;
+  const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 ${percent}。全体が収まる倍率に戻す">${percent}</button>`;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > 1 ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= 1)}${zoomButton}${tool("in", "拡大", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
 }
 
 /** 図の枠を描く: 題・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
@@ -746,7 +1114,7 @@ export function renderDiagramFrame(
 /** 図の種類 */
 export type DiagramKind = DiagramFrame["kind"];
 
-/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す */
+/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、線の詳細・箱の説明と入力・処理・出力のツールチップと印を置かない */
 export function renderDiagram(options: {
   kind: DiagramKind;
   definition: LegendDefinition;
@@ -754,17 +1122,24 @@ export function renderDiagram(options: {
   id: string;
   /** 用語から意味を引く関数 */
   lookup?: TermLookup;
+  /** 機能 `hints` がオンか（既定 `true`） */
+  hints?: boolean;
   zoom?: number;
   modal?: boolean;
 }): string {
-  const { kind, definition, id, lookup, zoom, modal } = options;
+  const { kind, definition, id, lookup, zoom, modal, hints = true } = options;
   let part: DiagramPart;
   if (kind === "flow") {
-    part = renderFlow(definition as MdmarkFlowDefinition, id, lookup);
+    part = renderFlow(definition as MdmarkFlowDefinition, id, hints, lookup);
   } else if (kind === "sequence") {
-    part = renderSequence(definition as MdmarkSequenceDefinition, id, lookup);
+    part = renderSequence(
+      definition as MdmarkSequenceDefinition,
+      id,
+      lookup,
+      hints,
+    );
   } else {
-    part = renderChart(definition as MdmarkChartDefinition);
+    part = renderChart(definition as MdmarkChartDefinition, id);
   }
   return renderDiagramFrame(
     {
@@ -772,7 +1147,7 @@ export function renderDiagram(options: {
       title: definition.title,
       scope: definition.scope,
       updated: definition.updated,
-      legend: legendFor(definition, part),
+      legend: legendFor(definition, { ...part, hints }),
       id,
       ...(zoom === undefined ? {} : { zoom }),
       ...(modal === undefined ? {} : { modal }),

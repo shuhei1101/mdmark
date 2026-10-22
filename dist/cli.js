@@ -340,7 +340,9 @@ var DEFAULT_FEATURES = {
   figures: true,
   diagrams: true,
   glossary: true,
-  backlinks: true
+  backlinks: true,
+  html: true,
+  hints: true
 };
 var DEFAULT_LIBRARIES = {};
 var MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
@@ -391,7 +393,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.5.0";
+  return "v0.6.0";
 }
 
 // src/cli/config.ts
@@ -5879,7 +5881,8 @@ var SYNTAX_MARKS = {
   flow: "diagrams",
   sequence: "diagrams",
   chart: "diagrams",
-  param: "diagrams"
+  param: "diagrams",
+  html: "html"
 };
 var DIAGRAM_MARKS = ["flow", "sequence", "chart", "param"];
 var MARK_TOKEN = "mdmark_mark";

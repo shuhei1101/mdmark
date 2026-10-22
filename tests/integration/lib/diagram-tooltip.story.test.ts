@@ -59,3 +59,20 @@ test("test_term", async () => {
   expect(style).toBe("dashed");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 箱の hint を開いた状態は、見出しを持たず文だけを出し、横にはみ出さない（Hint）
+test("test_hint", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-diagramtooltip--hint");
+  // 検証
+  const tip = page.locator('[role="tooltip"]');
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect(tip.innerText()).resolves.toContain(
+    "保存と送信のツールだけを持つ MCP サーバー",
+  );
+  await expect(tip.locator(".mdmark-term-tip-heading").count()).resolves.toBe(
+    0,
+  );
+  await expect(tip.locator("dt").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

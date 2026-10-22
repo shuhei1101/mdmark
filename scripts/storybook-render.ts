@@ -18,7 +18,9 @@ import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
+import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
 import { renderFigure } from "../src/parts/figure.ts";
+import { type HintPlacement, renderHint } from "../src/parts/hint.ts";
 import { renderNotice } from "../src/parts/notice.ts";
 import { type CopyState, renderParam } from "../src/parts/param.ts";
 import { renderRowDetail } from "../src/parts/row-detail.ts";
@@ -69,6 +71,83 @@ const SAMPLE_BLOCKS: Record<string, number> = {
   "reply-time": 2,
   strength: 3,
 };
+
+// グラフの種類ごとの見本の定義（棒・円・散布図）。`bar` の 4 系列は、色と塗りの模様の組を全て見せる
+const BAR_SAMPLE: MdmarkChartDefinition = {
+  type: "bar",
+  title: "窓口ごとの問い合わせの件数",
+  scope: "10 月の第 2 週",
+  updated: "2026-10-17",
+  x: { label: "窓口", ticks: ["メール", "フォーム", "チャット", "電話"] },
+  y: { label: "件" },
+  series: [
+    { name: "自動返信", points: [124, 86, 57, 12] },
+    { name: "担当者", points: [38, 41, 63, 95] },
+  ],
+};
+const BAR_FOUR_SAMPLE: MdmarkChartDefinition = {
+  ...BAR_SAMPLE,
+  title: "窓口ごとの問い合わせの件数（週ごと）",
+  scope: "10 月",
+  updated: "2026-10-31",
+  series: [
+    { name: "第 1 週", points: [118, 80, 49, 15] },
+    { name: "第 2 週", points: [124, 86, 57, 12] },
+    { name: "第 3 週", points: [131, 92, 61, 18] },
+    { name: "第 4 週", points: [109, 77, 70, 9] },
+  ],
+};
+const PIE_SAMPLE: MdmarkChartDefinition = {
+  type: "pie",
+  title: "返信の種類の割合",
+  scope: "10 月の第 2 週",
+  updated: "2026-10-17",
+  unit: " 件",
+  items: [
+    { name: "よくある質問で答えた", value: 186 },
+    { name: "担当者へ回した", value: 92 },
+    { name: "返信しなかった", value: 22 },
+  ],
+};
+const SCATTER_SAMPLE: MdmarkChartDefinition = {
+  type: "scatter",
+  title: "本文の長さと返信までの時間",
+  scope: "10 月の第 2 週",
+  updated: "2026-10-17",
+  x: { label: "本文の長さ（字）" },
+  y: { label: "分" },
+  series: [
+    {
+      name: "自動返信",
+      points: [
+        [120, 6],
+        [260, 9],
+        [410, 11],
+        [580, 14],
+        [730, 13],
+        [900, 18],
+      ],
+    },
+    {
+      name: "担当者",
+      points: [
+        [150, 28],
+        [300, 35],
+        [450, 41],
+        [620, 39],
+        [800, 52],
+        [960, 58],
+      ],
+    },
+  ],
+};
+
+// ヒントのストーリーに出す文
+const HINT_TEXT = "返信の種類を 1 つ選ぶ。選べないときは担当者へ回す";
+
+// 箱の `hint` のストーリーに出す文
+const NODE_HINT_TEXT =
+  "保存と送信のツールだけを持つ MCP サーバー。メールの本文は読まず、下書きの ID で頼まれた操作をする";
 
 // 箱の中の `{{語}}` に出す意味（見本の文書の用語集の表と同じ）
 const SAMPLE_TERMS: Record<string, string> = {
@@ -270,13 +349,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     if (args.invalid === true) {
       return invalidDefinition("chart", "reply-time");
     }
-    const definition = sampleDefinition<MdmarkChartDefinition>("reply-time");
-    if (args.series === 4) {
-      // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ足す
-      definition.series.push(
-        { name: "夜間", points: [20, 18, 25, 16, 22] },
-        { name: "休日", points: [30, 28, 35, 26, 32] },
-      );
+    let definition: MdmarkChartDefinition;
+    if (args.type === "bar") {
+      definition = args.series === 4 ? BAR_FOUR_SAMPLE : BAR_SAMPLE;
+    } else if (args.type === "pie") {
+      definition = PIE_SAMPLE;
+    } else if (args.type === "scatter") {
+      definition = SCATTER_SAMPLE;
+    } else {
+      definition = sampleDefinition<MdmarkChartDefinition>("reply-time");
+      if (args.series === 4) {
+        // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ足す
+        definition.series?.push(
+          { name: "夜間", points: [20, 18, 25, 16, 22] },
+          { name: "休日", points: [30, 28, 35, 26, 32] },
+        );
+      }
     }
     return fitted(
       renderDiagram({ kind: "chart", definition, id: "story-chart" }),
@@ -285,7 +373,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   },
   "diagram-tooltip": (args) => {
     const open = args.open === true;
-    const kind = args.kind === "io" ? "io" : "wire";
+    const kind =
+      args.kind === "io" ? "io" : args.kind === "hint" ? "hint" : "wire";
     const tip =
       args.term === true
         ? renderDiagramTip({
@@ -300,6 +389,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
             kind,
             label: kind === "io" ? "分類" : "本文",
             tip: "件名を除いた本文。署名と引用は落とす",
+            ...(kind === "hint" ? { hint: NODE_HINT_TEXT } : {}),
             io: {
               in: "問い合わせの本文",
               do: "返信の種類（よくある質問で答える・担当者へ回す）から 1 つ選ぶ",
@@ -312,8 +402,42 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ? '<span class="mdmark-term" tabindex="0" aria-describedby="story-tip">意思決定モデル</span>'
         : kind === "io"
           ? '<button class="mdmark-diagram-info" type="button" aria-label="「分類」の入力・処理・出力" aria-describedby="story-tip">i</button>'
-          : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
+          : kind === "hint"
+            ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
+            : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
     return `<div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div>`;
+  },
+  hint: (args) =>
+    renderHint({
+      text: HINT_TEXT,
+      placement: (args.placement === "inline"
+        ? "inline"
+        : "block") satisfies HintPlacement,
+      open: args.open === true,
+      // 書いた人が地の色を付けたブロックの要素: 印が地の色の上でも読める
+      ...(args.colored === true
+        ? {
+            style:
+              "padding:1rem;background:#1f6feb;color:#fff;border-radius:6px",
+          }
+        : {}),
+    }),
+  "embedded-html": (args) => {
+    const chart = renderDiagram({
+      kind: "chart",
+      definition: BAR_SAMPLE,
+      id: "story-embedded-chart",
+    });
+    const boxes =
+      '<div style="display:flex;gap:12px"><div style="padding:12px;border:1px solid var(--mdmark-color-border);color:var(--mdmark-color-link)">受け取り</div><div style="padding:12px;border:1px solid var(--mdmark-color-border);color:var(--mdmark-color-link)">分類</div></div><p><button type="button">押しても何も起きない</button></p>';
+    const html =
+      args.chart === true
+        ? `<h3>窓口ごとの問い合わせの件数</h3>${chart}<p>見出しと段落の間のグラフだけに、図のボタンがある。</p>`
+        : args.wide === true
+          ? '<div style="width:900px;padding:12px;border:1px solid var(--mdmark-color-border)">列より広い HTML。中で横にスクロールする。</div>'
+          : boxes;
+    const embedded = renderEmbeddedHtml({ html, wide: args.wide === true });
+    return args.chart === true ? fitted(embedded, args) : embedded;
   },
   param: (args) =>
     fitted(

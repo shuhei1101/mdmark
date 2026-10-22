@@ -9,6 +9,13 @@ import type {
   MdmarkReferences,
 } from "../../../src/index.ts";
 import {
+  INQUIRY_COUNT_TEXT,
+  INQUIRY_HINT_TEXT,
+  LENGTH_TIME_TEXT,
+  REPLY_KIND_TEXT,
+  wrapHtml,
+} from "../../unit/helpers/charts.ts";
+import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
   parsed,
@@ -16,6 +23,7 @@ import {
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
+import { matches, plainText } from "../../unit/helpers/html.ts";
 import {
   DOC_ID,
   EXPECTED_HTML,
@@ -680,4 +688,184 @@ test("test_normal_when_extension_definition", async () => {
   expect(html).toContain("mdmark-syntax-warning");
   expect(html).toContain("json のコードブロックが 2 つあります");
   expect(load).not.toHaveBeenCalled();
+});
+
+/** 開始タグのうち `needle` を含む最初のものを返す（無ければ失敗する） */
+function tagOf(html: string, needle: string): string {
+  const tag = (html.match(/<[a-zA-Z][^>]*>/g) ?? []).find((candidate) =>
+    candidate.includes(needle),
+  );
+  if (tag === undefined) {
+    throw new Error(`開始タグが無い: ${needle}`);
+  }
+  return tag;
+}
+
+/** `id` を持つ要素の中の文字（タグを除いたもの） */
+function textById(html: string, id: string): string {
+  const pattern = new RegExp(
+    `<([a-z]+)[^>]*\\sid="${id}"[^>]*>([\\s\\S]*?)</\\1>`,
+  );
+  return plainText(pattern.exec(html)?.[2] ?? "");
+}
+
+/** 埋め込んだ HTML の見本: 許されない宣言・スクリプト・ボタン・ヒント・チャートを持つ */
+const EMBEDDED_BODY = [
+  '<div style="display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png)">箱</div>',
+  '<button onclick="x" type="submit">押す</button>',
+  "<script>window.__ran = true</script>",
+  '<div data-hint="返信の種類を選ぶ">自動返信</div>',
+  '<p>問い合わせは <span data-hint="本文を読んで種類を決める">分類</span> する。</p>',
+  `<mdmark-chart>\n${INQUIRY_COUNT_TEXT}\n</mdmark-chart>`,
+].join("\n");
+
+// 印を付けた html のコードブロックの中身を HTML として描き、スクリプトと許可していない宣言を落とす（正常系）
+test("test_normal_when_embedded_html", async () => {
+  // 準備
+  const render = await loadRender();
+  const outside = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
+  const markdown = `${wrapHtml(EMBEDDED_BODY)}\n${outside}`;
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(/<div class="mdmark-html">\s*<div style=/);
+  expect(html).not.toMatch(/<pre[^>]*><code class="language-html">[\s\S]*箱/);
+  expect(html).toMatch(/<pre[^>]*><code class="language-html">/);
+  expect(html).toContain("&lt;p&gt;範囲の外&lt;/p&gt;");
+  expect(html).toContain('style="display:flex;gap:12px"');
+  expect(html).not.toContain("position");
+  expect(html).not.toContain("example.com/a.png");
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("onclick");
+  expect(html).toMatch(/<button[^>]*type="button"[^>]*>押す<\/button>/);
+  expect(tagOf(html, "<figure")).toContain('data-diagram="chart"');
+  // 凡例の見本の棒を除いた、グラフの svg の中の棒
+  const chartSvg = /<svg[^>]*role="img"[\s\S]*?<\/svg>/.exec(html)?.[0] ?? "";
+  expect(
+    matches(chartSvg, /<rect[^>]*class="mdmark-diagram-bar"/g),
+  ).toHaveLength(8);
+  expect(html).not.toContain("<mdmark-chart");
+  expect(html).not.toContain('"series"');
+  // data-hint: ブロックは印、行内は tabindex を持ち、どちらもツールチップを指す
+  const block = tagOf(html, "mdmark-hint-block");
+  expect(block).toContain("<div");
+  const mark = tagOf(html, "mdmark-hint-mark");
+  const inline = tagOf(html, "mdmark-hint-inline");
+  expect(inline).toContain('tabindex="0"');
+  const markTip = /aria-describedby="([^"]*)"/.exec(mark)?.[1] ?? "";
+  const inlineTip = /aria-describedby="([^"]*)"/.exec(inline)?.[1] ?? "";
+  expect(tagOf(html, `id="${markTip}"`)).toMatch(/role="tooltip"/);
+  expect(tagOf(html, `id="${markTip}"`)).toMatch(/\bhidden\b/);
+  expect(textById(html, markTip)).toBe("返信の種類を選ぶ");
+  expect(textById(html, inlineTip)).toBe("本文を読んで種類を決める");
+});
+
+// html がオフならコードブロックをコードのまま出し、hints がオフならツールチップの中身と印を出さない（正常系）
+test("test_normal_when_html_and_hints_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const htmlOff = wrapHtml(EMBEDDED_BODY, "<!-- features: -html -->");
+  const diagramHints = `<!-- features: -hints -->\n\n${wrapDirective("flow", INQUIRY_HINT_TEXT)}`;
+  const hintsOff = `${wrapHtml(EMBEDDED_BODY)}\n${diagramHints}`;
+  // 実行
+  const offHtml = render(htmlOff);
+  const offHints = render(hintsOff);
+  // 検証
+  expect(offHtml).toMatch(/<pre[^>]*><code class="language-html">/);
+  expect(offHtml).not.toContain("mdmark-html");
+  expect(offHtml).not.toContain("<!--");
+  expect(offHints).toContain("mdmark-html");
+  expect(offHints).not.toContain("data-hint");
+  expect(offHints).not.toContain("mdmark-hint-");
+  expect(offHints).not.toContain('role="tooltip"');
+  expect(offHints).toContain("窓口の MCP");
+  expect(offHints).not.toContain("mdmark-diagram-info");
+});
+
+// 範囲にコードブロックが 1 つでないときと、読めないチャートの定義の場所に書き方の警告を置く（正常系）
+test("test_normal_when_embedded_html_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const none = "<!-- html -->\n\nコードブロックの無い範囲\n\n<!-- /html -->\n";
+  const two = [
+    "<!-- html -->",
+    "",
+    "```html",
+    "<p>一つ目</p>",
+    "```",
+    "",
+    "```html",
+    "<p>二つ目</p>",
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+  const broken = wrapHtml(
+    `<p>読めない定義の前</p><mdmark-chart>{"title": "a",</mdmark-chart><p>同じ範囲のほかの HTML</p>`,
+  );
+  const markdown = [none, two, broken, "後ろの段落", ""].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(3);
+  const text = plainText(html);
+  const sentence =
+    "<!-- html --> の範囲に html のコードブロックを 1 つだけ置いてください";
+  expect(text.split(sentence)).toHaveLength(3);
+  expect(html).toContain("コードブロックの無い範囲");
+  expect(html).toMatch(/<pre[^>]*><code class="language-html">/);
+  expect(text).toContain("グラフの部品の定義を JSON として読めません");
+  expect(html).toContain("同じ範囲のほかの HTML");
+  expect(html).toContain("<p>後ろの段落</p>");
+});
+
+// グラフの定義の type で棒・円・散布図を描き、縦の軸の範囲を省くと刻みをデータから切る（正常系）
+test("test_normal_when_chart_types", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    wrapDirective("chart", INQUIRY_COUNT_TEXT),
+    wrapDirective("chart", REPLY_KIND_TEXT),
+    wrapDirective("chart", LENGTH_TIME_TEXT),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [bar = "", pie = "", scatter = ""] = html
+    .split('<figure class="mdmark-diagram"')
+    .slice(1);
+  // 棒: 系列ごとの塗りの模様と、データから切った縦の軸
+  const fills = new Set(
+    matches(bar, /<rect[^>]*class="mdmark-diagram-bar"[^>]*>/g).map(
+      (tag) => /fill="([^"]*)"/.exec(tag)?.[1],
+    ),
+  );
+  expect(fills.size).toBe(2);
+  expect(matches(bar, /<pattern[^>]*patternunits/g)).toHaveLength(4);
+  const ticks = matches(
+    bar,
+    /<text[^>]*class="mdmark-diagram-axis-text"[^>]*text-anchor="end"[^>]*>-?\d+<\/text>/g,
+  ).map((text) => Number(plainText(text)));
+  expect(ticks).toEqual([0, 50, 100, 150]);
+  // 円: 扇形 3 つと、扇形の外の整数の割合、凡例の名前と値
+  expect(matches(pie, /class="mdmark-diagram-slice"/g)).toHaveLength(3);
+  expect(
+    matches(
+      pie,
+      /<text[^>]*class="mdmark-diagram-value-text"[^>]*>[^<]*<\/text>/g,
+    ).map((text) => plainText(text)),
+  ).toEqual(["62%", "31%", "7%"]);
+  expect(pie).toContain("よくある質問で答えた（186 件）");
+  // 散布図: 系列ごとに違う形の点と、数値の目盛りを持つ横の軸
+  const first = /<g data-series="1">([\s\S]*?)<\/g>/.exec(scatter)?.[1] ?? "";
+  const second = /<g data-series="2">([\s\S]*?)<\/g>/.exec(scatter)?.[1] ?? "";
+  expect(matches(first, /<circle[^>]*mdmark-diagram-point/g)).toHaveLength(6);
+  expect(matches(second, /<rect[^>]*mdmark-diagram-point/g)).toHaveLength(6);
+  expect(
+    matches(
+      scatter,
+      /<text[^>]*class="mdmark-diagram-axis-text"[^>]*text-anchor="middle"[^>]*>-?\d+<\/text>/g,
+    ).length,
+  ).toBeGreaterThanOrEqual(2);
 });

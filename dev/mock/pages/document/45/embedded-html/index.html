@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / embedded-html（埋め込んだ HTML とチャート） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・トップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/42/assets/diagram.css">
+  <!-- 埋め込んだ HTML と data-hint の規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/45/assets/embed.css">
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- HTML の表示・ヒントの切り替え（モックだけの仕組み。図と data-hint を描く前に読む） -->
+  <script src="./app.js" defer></script>
+  <!-- 用語と関連文書のツールチップの操作（本文と埋め込んだ HTML の中の用語） -->
+  <script src="../../../../refs/27/assets/glossary.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト -->
+  <script src="../../../../refs/42/assets/samples.js" defer></script>
+  <script src="../../../../refs/45/assets/samples.js" defer></script>
+  <script src="../../../../refs/42/assets/diagram.js" defer></script>
+  <!-- 埋め込んだ HTML の横のスクロールと data-hint のスクリプト -->
+  <script src="../../../../refs/45/assets/embed.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色と、機能 html・hints のオン・オフ -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-feature] [data-value]: app.js が行き先の URL（?html=off）と今の状態の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="HTML の表示">
+      <a class="mock-bar-item" data-feature="html" data-value="on">HTML を描く</a>
+      <a class="mock-bar-item" data-feature="html" data-value="off">HTML の表示がオフ</a>
+    </div>
+    <!-- [data-feature] [data-value]: app.js が行き先の URL（?hints=off）と今の状態の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="ヒント">
+      <a class="mock-bar-item" data-feature="hints" data-value="on">ヒントを出す</a>
+      <a class="mock-bar-item" data-feature="hints" data-value="off">ヒントを外す</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">45</a> / embedded-html
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書。印の範囲のコードブロックの HTML はその場に描き、書いた script とイベントの属性は落とす -->
+    <article class="mdmark">
+<h1 id="問い合わせ窓口の週の報告">問い合わせ窓口の週の報告</h1>
+<p>10 月の第 2 週に受けた問い合わせを、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-1">意思決定モデル</span><span class="mdmark-term-tip" id="term-tip-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI</span></span></span></span>の分類ごとにまとめます。</p>
+
+<h2 id="返し方">返し方</h2>
+<!-- 埋め込んだ HTML 1: 書いた人の箱 2 つ（片方に data-hint）・行内の data-hint・用語・リンク・onclick を落としたボタン。
+     [data-mock-source]: app.js が「HTML の表示がオフ」で外し、同じ名前の [data-mock-source-of] のコードブロックを出す -->
+<div class="mdmark-html" data-mock-source="ways">
+  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+    <div data-hint="よくある質問の表から答えを選び、LLM が返信の下書きを書く。担当者は送る前に下書きを確かめる" style="flex: 1 1 12rem; padding: 12px 36px 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+      <strong>自動返信</strong><br>よくある質問から下書きを書く
+    </div>
+    <div style="flex: 1 1 12rem; padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px; background: var(--mdmark-color-surface);">
+      <strong>担当者</strong><br>答えの無い問い合わせに返す
+    </div>
+  </div>
+  <p style="margin: 12px 0;">返し方は<span data-hint="受け取ったメールの本文から、よくある質問で答える・担当者へ回すのどちらかを選ぶ">分類</span>が決め、下書きは<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-2">ワークスペース</span><span class="mdmark-term-tip" id="term-tip-2" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>に残します（<a href="#返し方">ワークスペースの決まり</a>）。</p>
+  <!-- 書いた onclick は落として描く（ボタンは押しても何も起こらない） -->
+  <button type="button" style="padding: 4px 12px; border: 1px solid var(--mdmark-color-border); border-radius: 6px; background: var(--mdmark-color-bg); color: var(--mdmark-color-text); font: inherit;">下書きを見る</button>
+</div>
+<!-- 「HTML の表示がオフ」のときに出すコードブロック。初めは HTML を描くので出さない -->
+<pre tabindex="0" aria-label="コード: html" data-mock-source-of="ways" hidden><code>&lt;div style="display: flex; flex-wrap: wrap; gap: 12px;"&gt;
+  &lt;div data-hint="よくある質問の表から答えを選び、LLM が返信の下書きを書く。担当者は送る前に下書きを確かめる"&gt;
+    &lt;strong&gt;自動返信&lt;/strong&gt;&lt;br&gt;よくある質問から下書きを書く
+  &lt;/div&gt;
+  &lt;div&gt;&lt;strong&gt;担当者&lt;/strong&gt;&lt;br&gt;答えの無い問い合わせに返す&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;返し方は&lt;span data-hint="…"&gt;分類&lt;/span&gt;が決め、下書きはワークスペースに残します。&lt;/p&gt;
+&lt;button type="button" onclick="openDraft()"&gt;下書きを見る&lt;/button&gt;
+&lt;script&gt;function openDraft() { /* … */ }&lt;/script&gt;</code></pre>
+<p>ワークスペースの下書きは、担当者が送る前に確かめます。</p>
+
+<h2 id="窓口ごとの件数">窓口ごとの件数</h2>
+<!-- 埋め込んだ HTML 2: 見出しと段落の間に <mdmark-chart> の棒のグラフ。チャートだけを図の枠に載せる -->
+<div class="mdmark-html" data-mock-source="count">
+  <h3 style="margin: 0;">メール・フォーム・チャット・電話</h3>
+  <!-- <mdmark-chart> を描いた場所。[data-mock-diagram]: diagram.js が samples.js の定義から描く -->
+  <figure data-mock-diagram="inquiry-count"></figure>
+  <p style="margin: 0;">電話は担当者が多く返しています。</p>
+</div>
+<!-- 「HTML の表示がオフ」のときに出すコードブロック。初めは HTML を描くので出さない -->
+<pre tabindex="0" aria-label="コード: html" data-mock-source-of="count" hidden><code>&lt;h3&gt;メール・フォーム・チャット・電話&lt;/h3&gt;
+&lt;mdmark-chart&gt;
+{ "type": "bar", "title": "窓口ごとの問い合わせの件数", "x": { "label": "窓口", "ticks": ["メール", "フォーム", "チャット", "電話"] },
+  "y": { "label": "件" }, "series": [{ "name": "自動返信", "points": [124, 86, 57, 12] }, { "name": "担当者", "points": [38, 41, 63, 95] }] }
+&lt;/mdmark-chart&gt;
+&lt;p&gt;電話は担当者が多く返しています。&lt;/p&gt;</code></pre>
+
+<h2 id="返信の種類">返信の種類</h2>
+<!-- chart の印で描いた円のグラフ: 埋め込んだ HTML の中のチャートと同じ部品 -->
+<figure data-mock-diagram="reply-kind"></figure>
+
+<h2 id="書き方の見本">書き方の見本</h2>
+<p>印の範囲の外の <code>html</code> のコードブロックは、今のとおりコードとして出します。</p>
+<pre tabindex="0" aria-label="コード: html"><code>&lt;div data-hint="ポインターを乗せると出る説明"&gt;自動返信&lt;/div&gt;</code></pre>
+    </article>
+  </main>
+</body>
+</html>
