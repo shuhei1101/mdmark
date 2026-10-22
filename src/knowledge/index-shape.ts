@@ -26,6 +26,8 @@ export type MdmarkIndexTerm = {
   aliases?: string[];
   /** 意味 */
   meaning: string;
+  /** やめた言い方 */
+  avoid?: string[];
 };
 
 /** 使う側が索引の YAML を読んだ値の型 */
@@ -70,6 +72,7 @@ export const INDEX_SHAPE: {
     term: { type: "string", required: true },
     meaning: { type: "string", required: true },
     aliases: { type: "string[]", required: false },
+    avoid: { type: "string[]", required: false },
   },
 };
 

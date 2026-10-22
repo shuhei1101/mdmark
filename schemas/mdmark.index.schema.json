@@ -101,6 +101,13 @@
             "description": "意味。ツールチップの「用語」に出す。",
             "type": "string",
             "minLength": 1
+          },
+          "avoid": {
+            "title": "やめた言い方",
+            "description": "使わないことにした言い方。索引の文書の本文に出たら、点検が avoided_term のずれで知らせる。ツールチップは付けない。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "default": []
           }
         }
       }
