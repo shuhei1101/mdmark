@@ -76,8 +76,11 @@ export function draftFromRange(options: {
   end -= raw.length - raw.trimEnd().length;
   return {
     quote: collected.text.slice(start, end),
-    prefix: collected.text.slice(Math.max(0, start - CONTEXT_CHARS), start),
-    suffix: collected.text.slice(end, end + CONTEXT_CHARS),
+    // 前後の文字の外側の空白（ブロックの間の改行）は落とす
+    prefix: collected.text
+      .slice(Math.max(0, start - CONTEXT_CHARS), start)
+      .trimStart(),
+    suffix: collected.text.slice(end, end + CONTEXT_CHARS).trimEnd(),
     body: body.trim(),
   };
 }

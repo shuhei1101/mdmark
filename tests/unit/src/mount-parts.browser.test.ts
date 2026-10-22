@@ -376,3 +376,33 @@ test("test_attach_parts_when_module_unavailable", async () => {
   expect(loggedText(spy)).toContain("view");
   expect(loggedText(spy)).toContain(url);
 });
+
+// root の中に mountView・mountComments で付けた部品も外す関数で片付け、root の外の部品は片付けない（正常系）
+test("test_attach_parts_when_parts_mounted_inside", async () => {
+  // 準備
+  const { attachParts, mountView, mountComments } = await loadMountParts();
+  const recorder = await resetParts();
+  await useFakeModule("view");
+  await useFakeModule("comments");
+  const root = createHost("<div></div><div></div>");
+  const outside = createHost();
+  const [viewHost, commentsHost] = [...root.querySelectorAll("div")];
+  const store = { load: vi.fn(async () => []), save: vi.fn() };
+  await mountView(viewHost as HTMLElement, VIEW_OPTIONS);
+  await mountComments(commentsHost as HTMLElement, {
+    store,
+    docId: "panel-setup",
+  });
+  await mountView(outside, VIEW_OPTIONS);
+  const detach = attachParts({
+    root,
+    features: {},
+    isCurrent: () => true,
+    warned: { missingStore: false },
+  });
+  // 実行
+  detach();
+  // 検証
+  expect(recorder.attachCommentsDetached).toBe(1);
+  expect(recorder.drawViewDetached).toBe(1);
+});

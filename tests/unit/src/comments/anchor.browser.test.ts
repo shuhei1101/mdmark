@@ -72,6 +72,20 @@ test("test_draft_from_range_when_spaces", async () => {
   expect(draft.body).toBe("本文");
 });
 
+// 前後の文字の外側の空白（ブロックの間の改行）を落とす（正常系）
+test("test_draft_from_range_when_block_end", async () => {
+  // 準備
+  const { draftFromRange } = await loadAnchor();
+  const root = createRoot("\n<p>先頭で選ぶ。</p>\n");
+  const range = selectText(root, 0, 2);
+  // 実行
+  const draft = draftFromRange({ root, range, body: "本文" });
+  // 検証
+  expect(draft.quote).toBe("先頭");
+  expect(draft.prefix).toBe("");
+  expect(draft.suffix).toBe("で選ぶ。");
+});
+
 // コードとビューの操作の文字を除く（正常系）
 test("test_comment_text", async () => {
   // 準備

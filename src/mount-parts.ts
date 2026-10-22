@@ -216,5 +216,10 @@ export function attachParts(options: {
     for (const detach of detachers.splice(0).reverse()) {
       detach();
     }
+    // 拡張の `draw` から呼んだ `mountView`・`mountComments` も片付ける
+    for (const el of root.querySelectorAll<HTMLElement>("*")) {
+      mountedViews.get(el)?.destroy();
+      mountedComments.get(el)?.destroy();
+    }
   };
 }
