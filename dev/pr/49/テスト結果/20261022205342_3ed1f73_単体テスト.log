@@ -1,4 +1,4 @@
-# commit: 3968a31
+# commit: 3ed1f73
 $ npm run test:unit
 
 > test:unit
@@ -9,7 +9,7 @@ $ npm run test:unit
 
 
  Test Files  100 passed (100)
-      Tests  430 passed (430)
-   Start at  20:45:51
-   Duration  20.23s (tests 38%, worker 32%, import 25%, transform 5%)
+      Tests  431 passed (431)
+   Start at  20:53:46
+   Duration  19.46s (tests 40%, worker 30%, import 25%, transform 5%)
 
