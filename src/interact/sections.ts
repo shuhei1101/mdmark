@@ -1,3 +1,4 @@
+import { rowIdFromHash } from "../table-logic.ts";
 import { visibleText } from "./text.ts";
 
 /** 節の開閉を切り替える関数。節の中身の要素から引く */
@@ -42,17 +43,12 @@ function attachSection(
   };
 }
 
-/** URL の `#ID` が指す要素を囲む閉じた節を、外側から開く */
+/** URL の `#ID`（まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素を囲む閉じた節を、外側から開く */
 function revealHashTarget(
   root: HTMLElement,
   setters: Map<HTMLElement, SetOpen>,
 ) {
-  let id = location.hash.slice(1);
-  try {
-    id = decodeURIComponent(id);
-  } catch {
-    // 読めない `#ID` は、そのまま探す
-  }
+  const id = rowIdFromHash(location.hash);
   const target = id
     ? [...root.querySelectorAll<HTMLElement>("[id]")].find(
         (element) => element.id === id,
@@ -69,7 +65,10 @@ function revealHashTarget(
   ) {
     setters.get(body)?.(true);
   }
-  target.scrollIntoView();
+  // 表の行へは、`attachTables` が絞り込みを外してから送る
+  if (target.tagName !== "TR") {
+    target.scrollIntoView();
+  }
 }
 
 /** 行の詳細を持つ行の先頭のセルに開閉のボタンを置き、詳細の行を閉じる。外す関数を返す */
