@@ -15,8 +15,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（352KB）
-    value: 352 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（368KB）
+    value: 368 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE

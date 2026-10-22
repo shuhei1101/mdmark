@@ -437,7 +437,7 @@ functions:
       1. `features.views` がオンで `root` に `div.mdmark-view` があれば `loadPartModule("view")` を待ち、`isCurrent()` で外していなければ、`div.mdmark-view` ごとに `attachView` を呼んで外す関数を控える
       2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
       3. 読めないときは付けずに、部品の名前（`view` か `comments`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューの印の場所は `render` の表のまま残す
-      4. 外す関数は、外した印を立て、控えた外す関数を逆の順に呼ぶ
+      4. 外す関数は、外した印を立て、控えた外す関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
     unit_tests:
       - name: test_attach_parts
         case: 正常
@@ -469,6 +469,12 @@ functions:
         condition: '`div.mdmark-view` 2 つ'
         mock: '`importModule` は reject する。`console.error` を控える'
         expected: '`root` の中は変わらない。`console.error` が `view` と URL で 1 回だけ呼ばれる'
+      - name: test_attach_parts_when_parts_mounted_inside
+        case: 正常
+        summary: 外す関数で root の中に mountView・mountComments で付けた部品も片付ける
+        condition: '`root` の中の要素 1 つに `mountView`、別の要素に `mountComments` を呼び、解決してから `attachParts` の外す関数を呼ぶ。`root` の外の要素にも `mountView` を呼ぶ'
+        mock: '`importModule` は、呼ばれた回数を控える外す関数を返す `drawView`・`attachComments` を持つモジュールを返す'
+        expected: '`root` の中の 2 つの外す関数が 1 回ずつ呼ばれ、`root` の外のビューの外す関数は呼ばれない'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ビュー・コメントの部品のモジュールを読めない）]
   - name: checkViewOptions
@@ -768,7 +774,7 @@ functions:
     process: |-
       1. `commentText(root)` で本文の文字と、文字の節ごとの位置を得る
       2. 範囲の始まりと終わりを本文の文字の位置にし、間の文字の前後の空白を落として `quote` にする（落とした分だけ位置をずらす）
-      3. 始まりの前の `CONTEXT_CHARS` 文字を `prefix`、終わりの後の `CONTEXT_CHARS` 文字を `suffix`、`body` の前後の空白を落としたものを `body` にする
+      3. 始まりの前の `CONTEXT_CHARS` 文字の先頭の空白を落としたものを `prefix`、終わりの後の `CONTEXT_CHARS` 文字の末尾の空白（ブロックの間の改行を含む）を落としたものを `suffix`、`body` の前後の空白を落としたものを `body` にする
     unit_tests:
       - name: test_draft_from_range
         case: 正常
@@ -782,6 +788,12 @@ functions:
         condition: '` 手順 ` を選ぶ'
         mock: なし
         expected: '`quote` が `手順`、`prefix` の末尾が空白'
+      - name: test_draft_from_range_when_block_end
+        case: 正常
+        summary: 前後の文字の外側の空白を落とす
+        condition: '`<p>先頭で選ぶ。</p>\n` のようにブロックの後ろに改行の文字の節がある `root` で、段落の途中を選ぶ'
+        mock: なし
+        expected: '`suffix` が段落の最後の文字で終わり、改行を含まない。段落の前に改行があるときは `prefix` も改行で始まらない'
   - name: commentText
     title: 本文の文字を集める
     container: src/comments/anchor.ts
