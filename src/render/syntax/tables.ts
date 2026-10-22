@@ -132,7 +132,7 @@ function readHide(
     } else if (column === 0) {
       warnings.push({
         label: name,
-        message: `は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの置き場所なので、隠さずに描いています。`,
+        message: `の列 \`${name}\` は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの置き場所なので、隠さずに描いています。`,
       });
     } else if (!hide.includes(column)) {
       hide.push(column);
