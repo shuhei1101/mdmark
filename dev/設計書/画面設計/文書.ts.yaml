@@ -23,7 +23,7 @@ elements:
     description: 'Markdown の表。表の印で囲んだ表はその種類、囲まない表は既定の種類の表の部品にする。列が多いときは表の中で横スクロールし、続きがある側の端に影を出す。紙の幅が 40rem 以下の印刷では、行ごとの「列名: 値」の並びに積む。読み上げの名前（`aria-label`）は `表: {直前の見出しの文字}`（直前に見出しが無ければ `表`）。`table` の機能がオフのときは部品を使わず今の表を描く'
     visible_when: 文書に表があるとき
     tab_order: 0
-    sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（昇順 → 降順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み、既定の種類はピン止めだけ、`plain` は無し。既定の並びは書いた順
+    sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（昇順 → 降順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み、既定の種類はピン止めだけ、`plain` は無し。件数（`count`）・列の表示の切り替え（`columns`）・集計の行（`total`）・表のコピー（`copy`）・行へのリンク（`rowlink`）はどの種類の既定にも入らず、`+機能` を書いた表にだけ付く。既定の並びは書いた順
     component: dev/設計書/部品設計/表.ts#
     args:
       - name: kind
@@ -38,6 +38,12 @@ elements:
         value: 印の `filter=列名:種類,…`（列名を列の位置に読み替える）
       - name: collapse
         value: 印の `closed`・`open`（無ければ `none`）
+      - name: hide
+        value: 印の `hide=列名,…`（`+columns` の表だけ。先頭を除く列の位置に読み替える）
+      - name: totals
+        value: 印の `total=列名:計算,…`（`+total` の表だけ。列名を列の位置に読み替える）
+      - name: rowIds
+        value: '`+rowlink` の表の行ごとの、先頭のセルの文字から見出しと同じ規則で作った ID（文書の中の見出し・前の行と重なれば `-1`・`-2`）'
   - name: 表のセル
     id: table-cell
     kind: label
