@@ -1083,4 +1083,14 @@ functions:
       - dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts#
 notes:
   配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild の入口で、使う関数（表の部品・表の操作・知らせの枠など）をそれぞれのファイルに束ねる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'
-  単体テストのファイル: 単体テストを作るときに `test_files` へ移す。`tests/unit/src/part-modules.test.ts`・`tests/unit/src/mount-parts.browser.test.ts`・`tests/unit/src/views/spec.test.ts`・`tests/unit/src/views/index.browser.test.ts`・`tests/unit/src/comments/spec.test.ts`・`tests/unit/src/comments/anchor.test.ts`・`tests/unit/src/comments/index.browser.test.ts`・`tests/unit/src/parts/view.test.ts`・`tests/unit/src/parts/comment.test.ts`。`*.browser.test.ts` は実ブラウザで、それ以外は Node で流す
+test_files:
+  - tests/unit/src/part-modules.test.ts
+  - tests/unit/src/mount-parts.browser.test.ts
+  - tests/unit/src/views/spec.test.ts
+  - tests/unit/src/views/index.browser.test.ts
+  - tests/unit/src/comments/spec.test.ts
+  - tests/unit/src/comments/anchor.test.ts
+  - tests/unit/src/comments/anchor.browser.test.ts
+  - tests/unit/src/comments/index.browser.test.ts
+  - tests/unit/src/parts/view.test.ts
+  - tests/unit/src/parts/comment.test.ts

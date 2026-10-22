@@ -382,5 +382,6 @@ notes:
   単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,print}.browser.test.ts` に置き、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
 test_files:
   - tests/unit/src/mount.browser.test.ts
+  - tests/unit/src/mount-view.browser.test.ts
   - tests/unit/src/libraries.browser.test.ts
   - tests/unit/src/print.browser.test.ts
