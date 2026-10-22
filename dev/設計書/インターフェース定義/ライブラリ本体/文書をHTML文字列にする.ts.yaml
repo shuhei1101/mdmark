@@ -472,10 +472,10 @@ flows:
         M->>M: 読めない指定の箇所に書き方の警告を置く
         M-->>C: HTML 文字列
     expected:
-      - 表 A が `data-total="2:avg"` を持ち、`data-hide` を持たない。表 A の警告の本文に、`max` と使える計算 `sum`・`avg`・`count`、表に無い列名 `価格`・`備考`、先頭の列で隠せない `名前` がある
-      - 表 B が `data-total`・`data-hide` を持たず、表 B の警告の本文に `total=` には `+total`、`hide=` には `+columns` が要ることがある
+      - 表 A が `data-total="2:avg"` を持ち、`data-hide` を持たない。表 A の前には読めない指定ごとに 1 つずつ、書き方の警告が 4 つある。それぞれの本文に、`max` と使える計算 `sum`・`avg`・`count`、表に無い列名 `価格`、表に無い列名 `備考`、先頭の列で隠せない `名前` がある（`名前` は印の文字とは別に、本文の中にある）
+      - 表 B が `data-total`・`data-hide` を持たず、表 B の前の 1 つの書き方の警告の項目に `total=` には `+total`、`hide=` には `+columns` が要ることがある
       - 表 C は `data-features` に `total` を持ち、`data-total` を持たず、表 C の前に書き方の警告が無い
-      - '`<div class="mdmark-syntax-warning" role="note">` が 2 つだけある'
+      - '`<div class="mdmark-syntax-warning" role="note">` が 5 つだけある（表 A に 4 つ、表 B に 1 つ）'
     test: test_normal_when_table_feature_errors
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
