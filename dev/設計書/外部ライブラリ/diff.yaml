@@ -1,0 +1,66 @@
+title: "diff"
+kind: "ライブラリ"
+version:
+  current: 8.0.4
+  latest: 8.0.4
+  checked_on: '2026-10-21'
+  source: package.json
+  pinning: 完全一致。依存は lockfile で固定する
+catalogs:
+  - name: API
+    version: 8.0.4
+    entries:
+      - name: diffLines
+        kind: 関数
+        purpose: 2 つの文字列を行ごとに比べる
+        params:
+          - name: oldStr
+            type: string
+            required: true
+            description: 前の文字列
+          - name: newStr
+            type: string
+            required: true
+            description: 後の文字列
+        returns:
+          - name: '-'
+            type: '{ value: string; added: boolean; removed: boolean; count: number }[]'
+            description: 切れの並び。`value` は行末を含む行の塊
+      - name: diffWords
+        kind: 関数
+        purpose: 2 つの文字列を語ごとに比べる
+        params:
+          - name: oldStr
+            type: string
+            required: true
+            description: 前の文字列
+          - name: newStr
+            type: string
+            required: true
+            description: 後の文字列
+          - name: options.intlSegmenter
+            type: Intl.Segmenter
+            required: false
+            default: なし（英数字の語と空白で区切る）
+            description: 語の区切りに使う `Intl.Segmenter`。`granularity` は `word` にする
+        returns:
+          - name: '-'
+            type: '{ value: string; added: boolean; removed: boolean; count: number }[]'
+            description: 切れの並び
+lead: 2 つの文字列を行・語・文字などの単位で比べ、同じ・消した・足したの切れの並びを返す（jsdiff）。
+purl: pkg:npm/diff@8.0.4
+used_in:
+  - src/diff/compute.ts
+upstream: kpdecker/jsdiff
+verification:
+  state: 済
+  date: '2026-10-21'
+  detail: 'PR #49 のレビューで、`diffLines`・`diffWords` の 2 つだけを esbuild で束ねて minify すると 7,072 バイトで、`diffWords` の `intlSegmenter` に `Intl.Segmenter`（`ja`・`word`）を渡すと日本語を語の単位で比べることを Node 24 で確かめた（https://github.com/shuhei1101/mdmark/pull/49#discussion_r4330919999）'
+license: BSD-3-Clause（商用利用可）。束ねた配布物に著作権表示を残す
+docs_url: https://github.com/kpdecker/jsdiff#readme
+selection:
+  decision: 行と語の 2 つの粒度を 1 つのライブラリで比べられ、`intlSegmenter` で日本語を語の単位で比べられる。使う 2 つの関数だけを束ねても配布物のサイズの上限に収まる（計画書の「差分の計算」）
+install: |-
+  ```bash
+  npm i -E diff@8.0.4
+  ```

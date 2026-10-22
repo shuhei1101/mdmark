@@ -42,6 +42,10 @@ css_properties:
   - name: --mdmark-color-diff-add-sign
     syntax: <color>
     description: 追加した行の印の色（帯の右半分）
+  - name: --mdmark-diff-minimap-z-index
+    syntax: <integer>
+    default: '10'
+    description: 帯の重なり順。使う側のページの固定のヘッダーなどに隠れるときに上げる
 accessibility:
   - 帯は `aria-hidden` にし、読み上げとキーで辿る対象にしない。同じ行へはページのスクロールで移れる
   - 削除と追加は帯の左右の位置でも分け、色だけに頼らない

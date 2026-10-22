@@ -1215,7 +1215,7 @@ constraints:
     constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
     notes: 印だけで開くのとポインターの形は確認ログの決定
   - item: 差分の取り出し元
-    constraint: '`revisions(docId: string): Promise<Revision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`Revision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
+    constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
     notes: '`content` は ID が 2 つ並ぶためオブジェクトで受ける（外部規約『関数とオブジェクト引数』）。形が合わないのは使う側の開発者の誤りで、読む人の操作では起きない（計画書）'
   - item: 差分を開く UI
     constraint: '`opts.diffSource` を渡したとき、文書の題（先頭の `h1`）の後ろ、`h1` が無ければ文書の先頭に、`aria-expanded`・`aria-controls` を持つ「変更を見る」のボタンを置く。押すと、題を残して文書の本文を隠し、その場所に差分を出す。押し直すと差分を片付けて本文に戻し、フォーカスはボタンに残す。`update` は差分を閉じて本文を描き直し、`destroy` は差分と取り出し元の待ちを片付ける'
