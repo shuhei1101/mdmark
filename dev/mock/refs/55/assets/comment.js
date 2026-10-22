@@ -95,7 +95,7 @@
     if (!force && textarea.value.trim() && !window.confirm("書いたコメントを捨てて閉じますか？")) return false;
     open.element.remove();
     open = null;
-    CSS.highlights.delete(PENDING_HIGHLIGHT);
+    if (CSS.highlights) CSS.highlights.delete(PENDING_HIGHLIGHT);
     return true;
   };
 
@@ -129,8 +129,8 @@
     open = { element: dialog, anchor: () => range.getBoundingClientRect(), returnTo: addButton };
     place(dialog, range.getBoundingClientRect());
     addButton.hidden = true;
-    // 選びが入力欄へ移って消えても、選んだ箇所に色を残す
-    CSS.highlights.set(PENDING_HIGHLIGHT, new Highlight(range));
+    // 選びが入力欄へ移って消えても、選んだ箇所に色を残す。Custom Highlight API の無いブラウザでは色を残さず、入力欄の見出しの選んだ文字で箇所を示す
+    if (CSS.highlights) CSS.highlights.set(PENDING_HIGHLIGHT, new Highlight(range));
 
     const form = dialog.querySelector("form");
 
