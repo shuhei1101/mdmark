@@ -217,7 +217,7 @@ constants:
   - name: COMMENT_EXCLUDED
     title: コメントを付けない場所
     container: src/comments/index.ts
-    summary: この中の選びにはボタンを出さず、箇所を探す本文の文字にも数えない
+    summary: この中の選びにはボタンを出さず、箇所を探す本文の文字にも数えない（印 `.mdmark-comment-mark` だけは本文の文字に数える）
     value: '"input, textarea, pre, code, .mdmark-view-switch, .mdmark-view-board, .mdmark-filter-drawer, .mdmark-comment-mark, .mdmark-comment-popover, .mdmark-comment-add, .mdmark-comment-orphans"'
   - name: PENDING_HIGHLIGHT
     title: 選んだ箇所の色の名前
@@ -785,7 +785,7 @@ functions:
   - name: commentText
     title: 本文の文字を集める
     container: src/comments/anchor.ts
-    summary: '`root` の中の、`COMMENT_EXCLUDED` に入らない文字の節を順に集め、つないだ文字と節ごとの始まりの位置を返す'
+    summary: '`root` の中の、`COMMENT_EXCLUDED` に入らない文字の節（印 `.mdmark-comment-mark` の中の文字は本文の文字なので数える）を順に集め、つないだ文字と節ごとの始まりの位置を返す'
     kind: 関数
     scope: internal
     args:
@@ -796,7 +796,7 @@ functions:
     returns:
       type: '{ text: string; nodes: Array<{ node: Text; start: number }> }'
       description: 本文の文字と節の位置
-    process: 1. `TreeWalker` で文字の節を順に辿り、`COMMENT_EXCLUDED` の中の節を飛ばしてつなぐ
+    process: 1. `TreeWalker` で文字の節を順に辿り、`COMMENT_EXCLUDED` の中の節を飛ばしてつなぐ。印 `.mdmark-comment-mark` の中の節は飛ばさない（印は本文の文字を変えず、飛ばすと印を付けた後に保存するコメントの前後の文字が欠ける）
     unit_tests:
       - name: test_comment_text
         case: 正常

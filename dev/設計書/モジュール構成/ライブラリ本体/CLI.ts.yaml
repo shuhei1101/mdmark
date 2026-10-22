@@ -104,8 +104,8 @@ data_models:
         type: string[]
         description: 束ねた拡張のモジュールのコード
       - name: parts
-        type: Partial<Record<"view", string>>
-        description: 埋めた部品のモジュールのコード。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
+        type: Partial<Record<"view", string>> | undefined
+        description: 埋めた部品のモジュールのコード。無いときは空として扱う。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
 functions:
   - name: main
     title: CLI を実行する
