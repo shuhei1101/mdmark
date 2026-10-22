@@ -315,5 +315,20 @@ settings:
     status: planned
     introduced:
       pr: 45
+  - key: check.ignore
+    title: 知らない印から外す名前
+    file: mdmark.config.yaml
+    type: string[]
+    required: false
+    default: '[]'
+    description: '`mdmark check` が文書の本文の知らない印として知らせない、印と同じ書き方の HTML コメントの名前の並び（`prettier-ignore`・`markdownlint-disable` など他のツールへの指示）。`mount`・`render`・`export`・`build` はこのキーを読まない'
+    missing: 印に当たらない名前を全て知らない印として知らせる
+    reload: reload
+    allowed: 印の名前の書式（英小文字で始まり、英小文字・数字・`-` が続く）の文字列。合わないと `mdmark check` は `schema` のずれにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+    status: planned
+    introduced:
+      pr: 64
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
