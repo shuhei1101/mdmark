@@ -236,8 +236,8 @@ functions:
     container: src/knowledge/dictionary.ts
     kind: 関数
     scope: internal
-    summary: 文字列の中で、始まりと終わりが `Intl.Segmenter`（`ja`・`word`）の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に返す
-    description: '`Intl.Segmenter` はモジュールで 1 つだけ作る。区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。英字の語は大文字と小文字を区別する'
+    summary: 文字列の中で、始まりと終わりが語の区切り（`wordStarts`）に揃う辞書の語の位置を、重ならないよう長い語を先に返す
+    description: '区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。英字の語は大文字と小文字を区別する'
     args:
       - name: text
         type: string
@@ -263,6 +263,12 @@ functions:
         condition: 語 `オン・オフの印` と `印`、文字列 `オン・オフの印を書く`
         mock: なし
         expected: '`オン・オフの印` が 1 つだけ'
+      - name: test_find_words_without_intl_segmenter
+        case: 正常
+        summary: '`Intl.Segmenter` を持たない環境で、英数字の語の一部を照合しない'
+        condition: 語 `ワークスペース`・`WS`。文字列 `ワークスペースをWSLに置く`
+        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
+        expected: 読み込みが例外を出さず、`ワークスペース` が 1 つだけ（`WSL` の中の `WS` は入らない）
   - name: collectReferences
     title: 参照の表を作る
     container: src/knowledge/references.ts
@@ -577,6 +583,28 @@ functions:
         condition: 同じ HTML を 2 つの要素に入れて両方に付ける
         mock: なし（Chromium）
         expected: ページの `id` が全て一意で、`aria-describedby` が同じ要素の中のツールチップを指す
+  - name: wordStarts
+    title: 語の区切りの位置を返す
+    container: src/knowledge/dictionary.ts
+    kind: 関数
+    scope: internal
+    summary: 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す
+    description: '`Intl.Segmenter` があれば `ja`・`word` で区切る。`Intl.Segmenter` は初めて呼ばれたときに 1 つだけ作り、以降は使い回す（モジュールを読み込んだ時点では作らない）。`Intl.Segmenter` が無い環境では、英数字（`A-Z`・`a-z`・`0-9`）の連なりを 1 語とし、それ以外の文字を 1 文字（コードポイント）ずつ区切る'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 区切る文字列
+    returns:
+      type: number[]
+      description: 各語の始まりの位置（頭から順）
+    unit_tests:
+      - name: test_word_starts_without_intl_segmenter
+        case: 正常
+        summary: '`Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字ずつ区切る'
+        condition: 文字列 `印刷をWSL2で😀見る`
+        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
+        expected: '`[0, 1, 2, 3, 7, 8, 10, 11]`（`WSL2` は 1 語、サロゲートペアの絵文字は 1 文字）'
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
