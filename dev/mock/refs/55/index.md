@@ -4,6 +4,6 @@
 
 | 見るもの | リンク |
 | --- | --- |
-| ビュー・検索・コメントを置いた文書 | [document / 55](../../pages/document/55/) |
-| ボードと表のビュー・検索欄（使う側の要素に描いた見本を含む） | [view](../../components/view/index.html) |
+| ビュー・コメントを置いた文書 | [document / 55](../../pages/document/55/) |
+| ボードと表のビュー・列の絞り込み（使う側の要素に描いた見本を含む） | [view](../../components/view/index.html) |
 | 選んだ箇所のコメント（使う側の要素に付けた見本を含む） | [comment](../../components/comment/index.html) |

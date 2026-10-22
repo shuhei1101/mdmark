@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
   <meta name="color-scheme" content="light dark">
-  <title>document / views-comments（ビュー・検索・コメント） | mdmark のモック</title>
+  <title>document / views-comments（ビュー・コメント） | mdmark のモック</title>
   <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値 -->
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="./style.css">
   <!-- 拡張記法の規則（#19 で共有するアセット。表のビューが記法の表の並べ替えを使う） -->
   <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
-  <!-- ビュー・検索とコメントの規則（番号で共有するアセット） -->
+  <!-- ビューとコメントの規則（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/55/assets/view.css">
   <link rel="stylesheet" href="../../../../refs/55/assets/comment.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で app.js が media を all に切り替える -->
@@ -28,10 +28,10 @@
   <script src="../../../../refs/55/assets/samples.js" defer></script>
   <!-- 場面の切り替えと印刷の見え方（モックだけの仕組み。ビューとコメントを描く前に文書を切り替える） -->
   <script src="./app.js" defer></script>
-  <!-- ビューと検索、コメントの操作 -->
+  <!-- ビューとコメントの操作 -->
   <script src="../../../../refs/55/assets/view.js" defer></script>
   <script src="../../../../refs/55/assets/comment.js" defer></script>
-  <!-- 拡張記法の操作（表のビューの並べ替えと、印刷の前後の展開。view.js が描いた表に付ける） -->
+  <!-- 拡張記法の操作（表のビューの並べ替え・列の絞り込みと、印刷の前後の展開。view.js が描いた表に付ける） -->
   <script src="../../../../refs/19/assets/syntax.js" defer></script>
 </head>
 <body>
@@ -48,9 +48,11 @@
     <div class="mock-bar-group" role="group" aria-label="ビューの場面">
       <a class="mock-bar-item" data-scene-axis="view" data-scene-value="board">ボードで開く</a>
       <a class="mock-bar-item" data-scene-axis="view" data-scene-value="table">表で開く</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="filtered">列で絞り込んだ</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="filtered-board">絞ったままボード</a>
       <a class="mock-bar-item" data-scene-axis="view" data-scene-value="unknown-column">知らない列</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="unknown-filter">知らない絞り込み</a>
       <a class="mock-bar-item" data-scene-axis="view" data-scene-value="no-table">表が無い</a>
-      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="search-off">検索がオフ</a>
       <a class="mock-bar-item" data-scene-axis="view" data-scene-value="off">ビューがオフ</a>
     </div>
     <!-- [data-scene-axis] [data-scene-value]: app.js が行き先の URL（?comments=）と今の場面の aria-current を当てる -->
@@ -85,14 +87,20 @@
 
 <h2 id="作業の一覧">作業の一覧</h2>
 <p>10 月の第 4 週の時点の作業です。</p>
-<!-- ビュー（ボードで開く・表で開く・検索がオフ）: view の印（group=状態）で囲んだ表。[data-mock-view]: view.js が samples.js の定義から描く -->
-<div data-mock-view="tasks" data-mock-scene="view:board table search-off"></div>
+<!-- ビュー（ボードで開く・表で開く・列で絞り込んだ・絞ったままボード）: view の印（group=状態 filter=担当）で囲んだ表。[data-mock-view]: view.js が samples.js の定義から描く -->
+<div data-mock-view="tasks" data-mock-scene="view:board table filtered filtered-board"></div>
 <!-- 知らない列: view の印（group=優先度）の書き方の警告と、ボードにせず表で描いたビュー -->
 <div class="mdmark-syntax-warning" id="view-warning-column" data-mock-scene="view:unknown-column">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
   <p><code>&lt;!-- view: group=優先度 --&gt;</code> の列 <code>優先度</code> は表にありません。表の列は <code>題</code>・<code>状態</code>・<code>担当</code> です。ボードにせず、表で描いています。</p>
 </div>
 <div data-mock-view="tasks" data-board="disabled" data-warning="view-warning-column" data-mock-scene="view:unknown-column"></div>
+<!-- 知らない絞り込み: view の印（filter=担当:range）の書き方の警告と、担当の列に絞り込みの無い表のビュー -->
+<div class="mdmark-syntax-warning" data-mock-scene="view:unknown-filter">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- view: group=状態 default=table filter=担当:range --&gt;</code> の絞り込みの種類 <code>range</code> は使えません。使える種類は <code>select</code>・<code>text</code>・<code>date</code> です。担当の列には絞り込みを付けずに描いています。</p>
+</div>
+<div data-mock-view="tasks" data-default="table" data-filter="担当:range" data-mock-scene="view:unknown-filter"></div>
 <!-- 表が無い: 範囲に表が無いことの書き方の警告と、範囲の中身をそのまま描いた段落 -->
 <div class="mdmark-syntax-warning" data-mock-scene="view:no-table">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>

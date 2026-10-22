@@ -14,7 +14,7 @@
   <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット。表のビューが記法の表の並べ替えを使う） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
-  <!-- ビューと検索の規則（番号で共有するアセット） -->
+  <!-- ビューの規則（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/55/assets/view.css">
   <!-- カタログの使う側の要素の枠（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/55/assets/catalog.css">
@@ -23,7 +23,7 @@
   <!-- ビューの項目の定義と、ビューを描いて操作を付けるスクリプト -->
   <script src="../../refs/55/assets/samples.js" defer></script>
   <script src="../../refs/55/assets/view.js" defer></script>
-  <!-- 拡張記法の操作（表のビューの並べ替え。view.js が描いた表に付ける） -->
+  <!-- 拡張記法の操作（表のビューの並べ替えと列の絞り込み。view.js が描いた表に付ける） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
 </head>
 <body>
@@ -38,9 +38,9 @@
 
   <main class="host">
     <div class="catalog">
-      <h1 class="catalog-title">ビューと検索</h1>
+      <h1 class="catalog-title">ビュー</h1>
 
-      <!-- ボード表示: 状態の列の値ごとの列に、表に出た順で項目を並べる。[data-mock-view]: view.js が samples.js の定義から描く -->
+      <!-- ボード表示: 状態の列の値ごとの列に、表に出た順で項目を並べる。列の見出しに値の既定のアイコンを付ける。[data-mock-view]: view.js が samples.js の定義から描く -->
       <section aria-labelledby="state-board">
         <h2 class="catalog-label" id="state-board">ボード表示（既定）</h2>
         <article class="mdmark">
@@ -48,49 +48,65 @@
         </article>
       </section>
 
-      <!-- 表形式: default=table で開いたビュー。列名の押下で並べ替える -->
+      <!-- 表形式: default=table で開いたビュー。列名の押下で並べ替え、filter= の列（担当）の見出しにだけ絞り込みのボタンを出す -->
       <section aria-labelledby="state-table">
-        <h2 class="catalog-label" id="state-table">表形式で開く（default=table）</h2>
+        <h2 class="catalog-label" id="state-table">表形式で開く（default=table filter=担当）</h2>
         <article class="mdmark">
           <div data-mock-view="tasks" data-default="table"></div>
         </article>
       </section>
 
-      <!-- 検索で絞ったボード: 列は残し、見出しの数を合った項目の数にする -->
-      <section aria-labelledby="state-search-board">
-        <h2 class="catalog-label" id="state-search-board">ボードで検索した（鈴木）</h2>
+      <!-- 列で絞り込んだ表: 担当の絞り込みで佐藤を選び、絞り込み中のボタンを塗る -->
+      <section aria-labelledby="state-filtered">
+        <h2 class="catalog-label" id="state-filtered">列で絞り込んだ表（担当: 佐藤）</h2>
         <article class="mdmark">
-          <div data-mock-view="tasks" data-query="鈴木"></div>
+          <div data-mock-view="tasks" data-default="table" data-filter-value="佐藤"></div>
         </article>
       </section>
 
-      <!-- 検索で絞った表 -->
-      <section aria-labelledby="state-search-table">
-        <h2 class="catalog-label" id="state-search-table">表で検索した（佐藤）</h2>
+      <!-- 絞ったままボードに切り替えた: ボードには絞り込みを当てず全ての項目を出す。表に戻すと佐藤の絞り込みが残っている -->
+      <section aria-labelledby="state-filtered-board">
+        <h2 class="catalog-label" id="state-filtered-board">絞ったままボードに切り替えた（全ての項目を出す）</h2>
         <article class="mdmark">
-          <div data-mock-view="tasks" data-default="table" data-query="佐藤"></div>
+          <div data-mock-view="tasks" data-filter-value="佐藤"></div>
         </article>
       </section>
 
-      <!-- 大文字・小文字と全角・半角を区別しない検索: 「ui」で全角の「ＵＩ の調整」が残る -->
-      <section aria-labelledby="state-search-width">
-        <h2 class="catalog-label" id="state-search-width">大文字・小文字と全角・半角を区別しない（ui）</h2>
+      <!-- 文字で絞り込む: filter=題:text の列は、チェックボックスの代わりに文字の入力欄で絞る -->
+      <section aria-labelledby="state-filtered-text">
+        <h2 class="catalog-label" id="state-filtered-text">文字で絞り込んだ表（filter=題:text、変数）</h2>
         <article class="mdmark">
-          <div data-mock-view="width" data-default="table" data-query="ui"></div>
+          <div data-mock-view="tasks" data-default="table" data-filter="題:text" data-filter-value="変数"></div>
         </article>
       </section>
 
-      <!-- 合う項目が無い: ボードと表の代わりに、合う項目が無いことを出す。切り替えと検索欄は残す -->
+      <!-- 一致する行が無い: 表の中に一致する行が無いことを出す（記法の表と同じ） -->
       <section aria-labelledby="state-no-match">
-        <h2 class="catalog-label" id="state-no-match">合う項目が無い</h2>
+        <h2 class="catalog-label" id="state-no-match">一致する行が無い（filter=題:text、山田）</h2>
         <article class="mdmark">
-          <div data-mock-view="tasks" data-query="山田"></div>
+          <div data-mock-view="tasks" data-default="table" data-filter="題:text" data-filter-value="山田"></div>
         </article>
       </section>
 
-      <!-- 列が多い: 描く先の幅に収まらない列は、ボードの中で横にスクロールする -->
+      <!-- 既定のアイコン: よく使う値（未着手・進行中・保留・完了・中止）に既定で当てるアイコン -->
+      <section aria-labelledby="state-icons-default">
+        <h2 class="catalog-label" id="state-icons-default">既定のアイコン（未着手・進行中・保留・完了・中止）</h2>
+        <article class="mdmark">
+          <div data-mock-view="states"></div>
+        </article>
+      </section>
+
+      <!-- アイコンを上書きした: 印の icons=値:アイコンの名前（lucide）で、値ごとのアイコンを変える -->
+      <section aria-labelledby="state-icons-override">
+        <h2 class="catalog-label" id="state-icons-override">アイコンを上書きした（icons=未着手:inbox,完了:archive）</h2>
+        <article class="mdmark">
+          <div data-mock-view="tasks" data-icons="未着手:inbox,完了:archive"></div>
+        </article>
+      </section>
+
+      <!-- 列が多い: 描く先の幅に収まらない列は、ボードの中で横にスクロールする。既定の対応に無い値は丸のアイコンにする -->
       <section aria-labelledby="state-many">
-        <h2 class="catalog-label" id="state-many">列が多い（ボードの中で横にスクロール）</h2>
+        <h2 class="catalog-label" id="state-many">列が多い（ボードの中で横にスクロール。既定の対応に無い値）</h2>
         <article class="mdmark">
           <div data-mock-view="many"></div>
         </article>
@@ -116,7 +132,19 @@
         </article>
       </section>
 
-      <!-- 範囲に表が無い: 書き方の警告と、範囲の中身をそのまま描く（切り替えと検索欄は出さない） -->
+      <!-- 知らない絞り込みの種類: 書き方の警告と、担当の列に絞り込みのボタンの無い表のビュー -->
+      <section aria-labelledby="state-unknown-filter">
+        <h2 class="catalog-label" id="state-unknown-filter">知らない絞り込みの種類（filter=担当:range）</h2>
+        <article class="mdmark">
+          <div class="mdmark-syntax-warning">
+            <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+            <p><code>&lt;!-- view: group=状態 default=table filter=担当:range --&gt;</code> の絞り込みの種類 <code>range</code> は使えません。使える種類は <code>select</code>・<code>text</code>・<code>date</code> です。担当の列には絞り込みを付けずに描いています。</p>
+          </div>
+          <div data-mock-view="tasks" data-default="table" data-filter="担当:range"></div>
+        </article>
+      </section>
+
+      <!-- 範囲に表が無い: 書き方の警告と、範囲の中身をそのまま描く（切り替えは出さない） -->
       <section aria-labelledby="state-no-table">
         <h2 class="catalog-label" id="state-no-table">範囲に表が無い</h2>
         <article class="mdmark">
@@ -125,14 +153,6 @@
             <p><code>&lt;!-- view: group=状態 --&gt;</code> の範囲に、項目にする表がありません。範囲の中に Markdown の表を書いてください。範囲の中身はそのまま描いています。</p>
           </div>
           <p>作業は来週の打ち合わせで洗い出します。</p>
-        </article>
-      </section>
-
-      <!-- 検索の機能がオフ: 検索欄と件数を出さず、切り替えだけを出す -->
-      <section aria-labelledby="state-search-off">
-        <h2 class="catalog-label" id="state-search-off">検索の機能がオフ（features.search: false）</h2>
-        <article class="mdmark">
-          <div data-mock-view="tasks" data-search="off"></div>
         </article>
       </section>
 

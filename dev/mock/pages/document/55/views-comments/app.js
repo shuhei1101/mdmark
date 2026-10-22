@@ -1,5 +1,5 @@
 // ビューとコメントを置いた文書のモック: 場面の切り替えと、モックだけの「印刷の見え方」。
-// URL の ?view= でビューの場面（board・table・unknown-column・no-table・off・search-off）を、
+// URL の ?view= でビューの場面（board・table・filtered・filtered-board・unknown-column・unknown-filter・no-table・off）を、
 // ?comments= でコメントの場面（none・loaded・save-error・orphaned・off）を選ぶ。
 // view.js・comment.js より先に読み、描く前に文書を場面に合わせる
 
@@ -19,10 +19,10 @@
     if (!values.split(" ").includes(scene[axis])) part.remove();
   }
 
-  // ビュー: 表で開く・検索の機能がオフを、描く前のビューの属性で当てる
+  // ビュー: 表で開く・担当の列の絞り込みで佐藤を選んだ状態を、描く前のビューの属性で当てる
   const view = document.querySelector("[data-mock-view]");
-  if (view && scene.view === "table") view.dataset.default = "table";
-  if (view && scene.view === "search-off") view.dataset.search = "off";
+  if (view && ["table", "filtered"].includes(scene.view)) view.dataset.default = "table";
+  if (view && ["filtered", "filtered-board"].includes(scene.view)) view.dataset.filterValue = "佐藤";
 
   // コメント: 機能がオフのときは選んでもボタンを出さない。保存できない場面は保存で失敗させる
   const article = document.querySelector("article.mdmark");

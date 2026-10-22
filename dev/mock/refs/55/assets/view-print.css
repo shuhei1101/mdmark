@@ -1,11 +1,11 @@
-/* ビュー・検索・コメントの印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+/* ビュー・コメントの印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
    モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
 
 /* mdmark の層: 印刷のときのビューとコメント */
 @layer mdmark {
   .mdmark {
-    /* 紙では押せない操作（ビューの切り替え・検索欄と件数）: 帯ごと出さない */
-    .mdmark-view-bar {
+    /* 紙では押せない操作（ビューの切り替え）: 出さない */
+    .mdmark-view-switch {
       display: none;
     }
 

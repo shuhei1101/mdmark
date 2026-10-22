@@ -1,39 +1,30 @@
-/* ビューと検索の表示: ビューの切り替え・検索欄と件数・ボード・表のビュー・合う項目が無いときの表示。
+/* ビューの表示: ビューの切り替え・ボード・表のビュー。
    本文の規則（refs/16/assets/sample.css）・採用スタイルの変数（assets/style.css）・拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
 
 /* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
 @layer mdmark {
   .mdmark {
-    /* ビューの入れ物: 操作の帯・ボードか表・合う項目が無いときの表示を縦に並べる */
+    /* ビューの入れ物: 切り替え・ボードか表を縦に並べる */
     .mdmark-view {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: calc(var(--mdmark-space) * 0.75);
 
-      /* 隠したボード・表・項目: grid の表示より hidden を優先する */
+      /* 隠したボード・表: grid の表示より hidden を優先する */
       [hidden] {
         display: none;
       }
     }
 
-    /* 操作の帯: 左にビューの切り替え、右に検索欄と件数。狭い幅では折り返す */
-    .mdmark-view-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.875rem;
-      line-height: 1.4;
-    }
-
-    /* ビューの切り替え: 線で囲んだセグメント。ボタンの間に隙間を作らない */
+    /* ビューの切り替え: 線で囲んだセグメント。地の色は付けず、ボタンの間に隙間を作らない */
     .mdmark-view-switch {
       display: inline-flex;
+      justify-self: start;
       padding: 2px;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-surface);
+      font-size: 0.875rem;
+      line-height: 1.4;
     }
 
     /* 切り替えのボタン: 選んでいないボタンは控えめな文字 */
@@ -50,7 +41,7 @@
       font: inherit;
       cursor: pointer;
 
-      &:hover:not(:disabled) {
+      &:hover:not(:disabled, [aria-pressed="true"]) {
         color: var(--mdmark-color-text);
       }
 
@@ -59,11 +50,10 @@
         outline-offset: 1px;
       }
 
-      /* 選んだビュー: 本文の地と線で浮かせ、文字を見出しの色にする */
+      /* 選んだビュー: 見出しの色の濃い地で塗り、文字を本文の地の色にする */
       &[aria-pressed="true"] {
-        border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg);
-        color: var(--mdmark-color-heading);
+        background: var(--mdmark-color-heading);
+        color: var(--mdmark-color-bg);
       }
 
       /* 押せないボード（書き方の警告が理由を書く）: 薄くし、押せない指の形にする */
@@ -71,62 +61,6 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
-    }
-
-    /* 検索欄と件数: 横に並べて右に寄せる。帯の 2 行目に回ったときは、検索欄を縮めて 1 行に収める */
-    .mdmark-view-search {
-      display: flex;
-      flex: 1 1 auto;
-      gap: 0.75em;
-      align-items: center;
-      justify-content: flex-end;
-      min-width: 0;
-    }
-
-    /* 検索欄: 頭に虫眼鏡を置いた入力欄。高さを切り替えのボタンと揃える */
-    .mdmark-view-search-field {
-      position: relative;
-      display: block;
-      flex: 0 1 14rem;
-      min-width: 0;
-
-      /* 虫眼鏡: 入力欄の左に重ねる */
-      .mdmark-icon {
-        position: absolute;
-        top: 50%;
-        left: 0.65em;
-        color: var(--mdmark-color-muted);
-        transform: translateY(-50%);
-        pointer-events: none;
-      }
-
-      /* 入力欄: 虫眼鏡の分だけ左を空ける */
-      input {
-        box-sizing: border-box;
-        width: 100%;
-        height: calc(2rem + 6px);
-        padding: 0 0.6em 0 2.1em;
-        border: 1px solid var(--mdmark-color-border);
-        border-radius: var(--mdmark-radius);
-        background: var(--mdmark-color-bg);
-        color: var(--mdmark-color-text);
-        font: inherit;
-
-        &:focus-visible {
-          border-color: var(--mdmark-color-link);
-          outline: 2px solid var(--mdmark-color-link);
-          outline-offset: 0;
-        }
-      }
-    }
-
-    /* 件数: 等幅の数字にし、「5 件」と「5 件中 2 件」の間で幅が揺れないよう長い方の幅を取っておく */
-    .mdmark-view-count {
-      margin: 0;
-      min-width: 7em;
-      color: var(--mdmark-color-muted);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
     }
 
     /* ボード: 列を横に並べ、描く先の幅に収まらない列は中で横にスクロールする */
@@ -147,25 +81,29 @@
       }
     }
 
-    /* ボードの列: 面の色を敷いた縦の帯 */
+    /* ボードの列: 地の色を敷かない縦の並び */
     .mdmark-view-column {
       display: grid;
       align-content: start;
       gap: 0.5rem;
-      padding: 0.6rem;
-      border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-surface);
     }
 
-    /* 列の見出し: 値と項目の数を横に並べる */
+    /* 列の見出し: アイコン・値・項目の数を横に並べ、下に線を引いて項目と区切る */
     .mdmark-view-column-head {
       display: flex;
       gap: 0.5em;
       align-items: center;
       margin: 0;
-      padding-inline: 0.15rem;
+      padding: 0 0.15rem 0.4rem;
+      border-bottom: 1px solid var(--mdmark-color-border);
       color: var(--mdmark-color-heading);
       font-weight: 600;
+
+      /* 値のアイコン: 文字より控えめな色 */
+      .mdmark-icon {
+        flex: none;
+        color: var(--mdmark-color-muted);
+      }
     }
 
     /* 列の項目の数: 値の後ろに控えめな文字で置く */
@@ -224,24 +162,6 @@
       dd {
         margin: 0;
       }
-    }
-
-    /* 項目が 0 件の列: 列の中に控えめな文字で出す */
-    .mdmark-view-column-empty {
-      margin: 0;
-      padding: 0.4rem 0.15rem;
-      color: var(--mdmark-color-muted);
-      font-size: 0.875em;
-    }
-
-    /* 合う項目が無いときの表示: ボード・表の代わりに、線で囲んだ枠の中央に出す */
-    .mdmark-view-empty {
-      margin: 0;
-      padding: calc(var(--mdmark-space) * 1.5) var(--mdmark-space);
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: var(--mdmark-radius);
-      color: var(--mdmark-color-muted);
-      text-align: center;
     }
   }
 }
