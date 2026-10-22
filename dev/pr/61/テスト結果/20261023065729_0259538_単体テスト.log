@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-metadata-term-avoid
+
+
+ Test Files  100 passed (100)
+      Tests  482 passed (482)
+   Start at  06:57:33
+   Duration  26.51s (tests 38%, worker 31%, import 27%, transform 4%)
+

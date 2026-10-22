@@ -109,5 +109,12 @@ tables:
         check: 空でない
         description: 意味。ツールチップの「用語」に出す
         example: 話し合いの記録を置くフォルダ
+      - name: avoid
+        title: やめた言い方
+        type: array
+        default: '`[]`'
+        description: 使わないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で知らせる
+        example: '[作業場]'
+        notes: 要素は空でない文字列。ツールチップは付けない
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#

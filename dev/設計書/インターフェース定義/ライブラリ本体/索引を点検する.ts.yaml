@@ -66,6 +66,28 @@ flows:
       - '`{ file: "index.yaml", where: "schema", kind: "schema" }` と `{ file: "index.yaml", where: "docs[1].path", kind: "schema" }` の行がある'
       - '`docs[0]` の文書について、ほかの種類のずれが無い'
     test: test_normal_when_invalid_schema
+  - name: 正常系（やめた言い方が本文に出る）
+    summary: 本文に出た用語のやめた言い方を、行とやめた言い方の組ごとに返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: やめた言い方を持つ索引と文書
+        description: 索引は `docs[0]` が `guide`（`guide.md`）、`terms[0]` が語 `ワークスペース`・`avoid` に `作業場`。`documents` は `guide.md` だけ
+        notes: '`guide.md` は 1 行目が見出し `# 作業場の手引き`、3 行目が `作業場を開き、作業場に記録を置く。`、5 行目が行内のコード `` `作業場` `` だけの段落、7・8 行目が 1 つの段落で `ワークスペースを閉じる前に` / `作業場の記録を確かめる。`、10〜12 行目がふつうの表で 12 行目の行が `| 共有 | 作業場の共有 |`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: 索引の文書の本文から、用語のやめた言い方を探す
+        M-->>C: avoided_term のずれを持つ一覧
+    expected:
+      - '戻り値が `{ file: "guide.md", where: "3 行目", kind: "avoided_term" }`・`{ file: "guide.md", where: "8 行目", kind: "avoided_term" }`・`{ file: "guide.md", where: "12 行目", kind: "avoided_term" }` の 3 つだけで、この順に並ぶ'
+      - どの `message` にも `作業場` と `ワークスペース` がある
+      - 見出し（1 行目）と行内のコード（5 行目）の `作業場` のずれは無い
+    test: test_normal_when_avoided_term
 lead: 使う側の処理（#9 の `mdmark check`・#11 の MCP の `check`）が、索引と、索引のフォルダにある文書の本文を渡して、索引と文書のずれの一覧を受け取る。ファイルを読むのは呼ぶ側で、mdmark は渡された値だけを確かめる。
 idempotent: true
 side_effects: なし（引数・索引・文書を書き換えない）
@@ -93,7 +115,7 @@ response:
   - name: '[]'
     type: MdmarkIndexIssue[]
     description: ずれの一覧。ずれが無ければ空
-    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` の順、同じ種類の中は索引の並びとパスの順
+    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` → `avoided_term` の順、同じ種類の中は索引の並びとパスの順
   - name: '[].file'
     type: string
     description: ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス
@@ -103,9 +125,9 @@ response:
     description: 索引のキーのパス（`docs[3].path`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
     example: docs[3].path
   - name: '[].kind'
-    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term'"
+    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term'"
     description: ずれの種類
-    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`duplicate_term` は用語の重複'
+    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方'
   - name: '[].message'
     type: string
     description: ずれの内容と直し方。日本語の 1 文
@@ -136,6 +158,9 @@ constraints:
     notes: 用語集の表は `collectReferences` と同じ読み方で拾う
   - item: 上限
     constraint: 制限なし（渡された全ての文書を確かめる）
+  - item: やめた言い方
+    constraint: 索引の `docs` の文書のうち `documents` にある文書の本文から、索引の `terms[].avoid` の語を、文書の別名の一致と同じ範囲（見出し・リンクの中・コード・用語集の表の中を除く）と同じ語の切れ目で探す。索引の用語の語・別名も一緒に探し、長いほうを当てて（同じ長さなら用語の語・別名を当てる）、やめた言い方が当たったところだけを数える。出た行とやめた言い方の組ごとに 1 つの `avoided_term` にし、`file` は文書のパス、`where` はその語が出た文書の中の行番号（`8 行目`。解析器の行内のトークンの `map` の開始行 + 語より前の改行の数 + 1。行内のトークンが `map` を持たない表のセルは、そのセルを囲む `tr_open` の `map` の開始行 + 1）。`message` にやめた言い方と代わりに使う用語の語を書く。並びは索引の `docs` の順、文書の中は行の順、同じ行の中は出た順
+    notes: 索引に無い文書（`orphan_doc`）は探さない。語の切れ目と探す範囲は `collectReferences` の文書の別名の一致と同じ
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
   - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#

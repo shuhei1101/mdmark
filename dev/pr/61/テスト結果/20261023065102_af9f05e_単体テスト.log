@@ -1,0 +1,118 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-metadata-term-avoid
+
+ ❯ |unit| tests/unit/src/knowledge/index-shape.test.ts (5 tests | 1 failed) 93ms
+   × test_normalize_index_when_invalid_avoid 6ms
+ ❯ |unit| tests/unit/src/knowledge/check.test.ts (7 tests | 4 failed) 54ms
+   × test_check_index_when_avoided_term 7ms
+   × test_find_avoided_terms 2ms
+   × test_find_avoided_terms_ignores_code_links_and_headings 2ms
+   × test_find_avoided_terms_prefers_term_words 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_avoided_term
+AssertionError: expected [ { file: 'index.yaml', …(2) } ] to deeply equal [ { file: 'guide.md', …(2) }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "file": "guide.md",
+-     "kind": "avoided_term",
+-     "where": "3 行目",
+-   },
+-   {
+-     "file": "guide.md",
+-     "kind": "avoided_term",
+-     "where": "8 行目",
+-   },
+-   {
+-     "file": "guide.md",
+-     "kind": "avoided_term",
+-     "where": "12 行目",
++     "file": "index.yaml",
++     "kind": "schema",
++     "where": "terms[0].avoid",
+    },
+  ]
+
+ ❯ tests/unit/src/knowledge/check.test.ts:149:5
+    147|   expect(
+    148|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    149|   ).toEqual([
+       |     ^
+    150|     { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+    151|     { file: "guide.md", where: "8 行目", kind: "avoided_term" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_avoided_terms
+TypeError: findAvoidedTerms is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:166:18
+    164|   const tokens = tokensOf(AVOIDED_GUIDE);
+    165|   // 実行
+    166|   const issues = findAvoidedTerms({
+       |                  ^
+    167|     file: "guide.md",
+    168|     tokens,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_avoided_terms_ignores_code_links_and_headings
+TypeError: findAvoidedTerms is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:210:18
+    208|   ].join("\n");
+    209|   // 実行
+    210|   const issues = findAvoidedTerms({
+       |                  ^
+    211|     file: "guide.md",
+    212|     tokens: tokensOf(body),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_avoided_terms_prefers_term_words
+TypeError: findAvoidedTerms is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:232:18
+    230|   );
+    231|   // 実行
+    232|   const issues = findAvoidedTerms({
+       |                  ^
+    233|     file: "guide.md",
+    234|     tokens: tokensOf(body),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_invalid_avoid
+AssertionError: expected [ 'terms[0].avoid', 'terms[1].avoid' ] to deeply equal [ 'terms[0].avoid' ]
+
+- Expected
++ Received
+
+  [
+    "terms[0].avoid",
++   "terms[1].avoid",
+  ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:124:52
+    122|   const { index, problems } = normalizeIndex(value);
+    123|   // 検証
+    124|   expect(problems.map((problem) => problem.where)).toEqual(["terms[0].…
+       |                                                    ^
+    125|   expect((index.terms ?? []).map((term) => term.id)).toEqual(["b"]);
+    126| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed | 98 passed (100)
+      Tests  5 failed | 477 passed (482)
+   Start at  06:51:09
+   Duration  34.23s (tests 35%, import 31%, worker 29%, transform 5%)
+
