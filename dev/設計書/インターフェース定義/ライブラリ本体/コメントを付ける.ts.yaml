@@ -123,6 +123,28 @@ flows:
       - 2 通りとも `mountComments` が同期で `TypeError` を投げ、メッセージに `store`、`docId` を含む
       - '`load` が呼ばれず、`el` の中身が変わらない'
     test: test_error_when_arguments_invalid
+  - name: 異常系（部品のモジュールを読めない）
+    summary: コメントの部品のモジュールを読めないと、`el` を書き換えずに reject する
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コメントの読み書きの関数
+        description: 正常系と同じ
+      - name: Mock
+        description: コメントの部品のモジュールの要求を、配信で 404 に差し替える
+        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で外す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountComments(el, { store, docId })
+        M->>M: 部品のモジュールを読めない
+        M-->>P: reject
+    expected:
+      - 戻り値の Promise が読み込みのエラーで reject する
+      - '`load` が呼ばれず、`el` の中身が変わらない'
+      - 文字を選んでもコメントのボタンが出ない
+    test: test_error_when_module_unavailable
 lead: 使う側のページが、自分で書いた要素とコメントの読み書きの関数を渡し、要素の中の選んだ箇所にコメントを付けられるようにする。文書のコメントと同じ見た目と操作になる。
 idempotent: false
 side_effects: '`opts.store.load` を 1 回呼び、読んだコメントの箇所を印の要素で包む（`el` の文字は変えない）。`document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。保存で `opts.store.save` を呼ぶ'
@@ -166,12 +188,15 @@ exceptions:
   - name: なし（保存できない）
     condition: '`save` が reject するか、返した値がコメントの形に合わない'
     notes: 例外を投げず、入力欄に書いた本文を残して知らせを出し、印を付けない。`save`・`docId`・元のエラーを `console.error` に出す
+  - name: なし（読み込みの失敗）
+    condition: コメントの部品のモジュールを読めない
+    notes: '`el` を書き換えず、`load` を呼ばずに、Promise を元のエラーで reject する'
 constraints:
   - item: コメントの操作
     constraint: インターフェース定義『文書を描く』の制約の「コメントの操作」「コメントの箇所」と同じ要素と操作にする。範囲は `el` の中
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
   - item: 部品のモジュールの読み込み
     constraint: コメントの部品のモジュールは、初めて `mountComments` を呼んだときか、`mount` でコメントの機能がオンになったときに 1 回だけ読む
-    notes: 別の配布ファイルに分けるかはモジュール構成設計で決める。読めないときはインターフェース定義『ビューを描く』と同じく reject し、`el` は書き換えない
+    notes: 別の配布ファイルに分けるかはモジュール構成設計で決める。読めないときは例外の「なし（読み込みの失敗）」
   - item: 型の配布
     constraint: '`mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'

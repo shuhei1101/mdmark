@@ -1275,6 +1275,31 @@ flows:
       - '`el` の中身と class が変わらない'
       - '`load` が呼ばれない'
     test: test_error_when_comment_doc_id_missing
+  - name: 異常系（ビュー・コメントの部品のモジュールを読めない）
+    summary: 部品のモジュールを読めないと、ビューの印の場所は表のまま残し、コメントのボタンを出さず、`console.error` に出す
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` は `{ comments: true }`、`opts.docId` は `guide`'
+      - name: ビューの印と段落を持つ Markdown
+        description: 正常系（ビューを描く）の表と、正常系（コメントを付ける）の段落を持つ文書
+      - name: コメントの読み書きの関数
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: ビューとコメントの部品のモジュールの要求を、配信で 404 に差し替える
+        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で外す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>M: 部品のモジュールを読めない
+        M->>P: 表と本文を描き、切り替えとコメントのボタンを置かない
+    expected:
+      - ビューの印の場所に 5 行の表が残り、切り替えとボードが無く、知らせの枠も無い
+      - 文字を選んでもコメントのボタンが出ず、`load` が呼ばれない
+      - '`console.error` が部品ごとに 1 回ずつ呼ばれ、引数に部品の名前（`view`・`comments`）・モジュールの URL・元のエラーを含む'
+      - 例外を投げず、段落は描かれる
+    test: test_error_when_part_module_unavailable
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -1415,6 +1440,9 @@ exceptions:
   - name: なし（コメントの読み書きの関数が無い）
     condition: '`comments` がオンで `opts.commentStore` を渡さない'
     notes: 例外を投げず、コメントのボタンを出さない。コメントの機能に読み書きの関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す
+  - name: なし（ビュー・コメントの部品のモジュールを読めない）
+    condition: ビューの部品かコメントの部品のモジュールを読めない
+    notes: 例外を投げない。ビューの印の場所は `render` が出した表のまま残し（切り替えとボードは置かず、表は読めるため知らせの枠に替えない）、コメントはボタンを出さず `load` も呼ばない。読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーを `console.error` に出す。文書の残りは描く
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
