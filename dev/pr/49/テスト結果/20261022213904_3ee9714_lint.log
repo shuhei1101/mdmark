@@ -1,0 +1,11 @@
+# commit: 3ee9714
+$ npm run lint && npm run typecheck
+
+> lint
+> biome check .
+
+Checked 323 files in 1429ms. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
