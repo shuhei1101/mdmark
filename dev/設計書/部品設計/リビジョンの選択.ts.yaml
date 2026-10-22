@@ -19,7 +19,7 @@ states:
       - name: revisions
         value: '[{"id":"r3","at":"2026-10-20T02:05:00Z","label":"見出しを書き換える","author":"田中"},{"id":"r2","at":"2026-10-19T07:40:00Z","label":"件数を直す","author":"鈴木"},{"id":"r1","at":"2026-10-18T00:12:00Z","label":"初版","author":"佐藤"}]'
       - name: before
-        value: r1
+        value: r2
       - name: after
         value: r3
   - name: Sparse

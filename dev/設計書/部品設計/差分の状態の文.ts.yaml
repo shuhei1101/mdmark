@@ -38,8 +38,7 @@ args:
     enabled_when: '`kind` が `loading` のとき'
     description: 回る表示を足すか（待ちが 2 秒を過ぎたとき）
 accessibility:
-  - '`loading` の枠は `role="status"` を持ち、読み込んでいることを文言で伝える'
-  - '回る表示は `aria-hidden` にし、`prefers-reduced-motion: reduce` のときは回さない'
+  - '`loading` の枠は読み上げの対象にしない（`role="status"` を持たない）。回る表示は `aria-hidden` にし、`prefers-reduced-motion: reduce` のときは回さない'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の待ち]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]

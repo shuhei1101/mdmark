@@ -33,9 +33,18 @@ events:
     value: ボタンの `aria-expanded`
     description: '`mount` が差分を開くか閉じ、`aria-expanded` を書き換える'
 css_properties:
-  - name: --mdmark-color-accent
+  - name: --mdmark-color-border
     syntax: <color>
-    description: ボタンの線と文字の色。開いている間は地にも使う
+    description: 閉じている間のボタンの線の色
+  - name: --mdmark-color-text
+    syntax: <color>
+    description: ボタンの文字とアイコンの色
+  - name: --mdmark-color-link
+    syntax: <color>
+    description: 開いている間のボタンの線の色
+  - name: --mdmark-color-current-bg
+    syntax: <color>
+    description: 開いている間のボタンの地の色
   - name: --mdmark-radius
     syntax: <length>
     default: 6px
