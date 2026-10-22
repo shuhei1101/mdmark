@@ -14,6 +14,31 @@ import {
   type DiffSource,
 } from "./source.ts";
 
+/** 差分のプレビューの前と後の HTML を文書と同じ描き方で描き、置いた要素に文書と同じ操作を付ける関数を返す関数 */
+export type DiffHtmlRenderer = (html: string) => {
+  /** 描いた範囲の中身 */
+  html: string;
+  /** 置いた要素に図の拡大・ツールチップ・操作できる部品などの操作を付け、外す関数を返す */
+  attach: (root: HTMLElement) => () => void;
+};
+
+/** プレビューの前と後の、描いた中身に操作を付ける関数 */
+type RangeAttaches = {
+  before: ReturnType<DiffHtmlRenderer>["attach"] | null;
+  after: ReturnType<DiffHtmlRenderer>["attach"] | null;
+};
+
+/** `id` を指す、空白で区切った `id` を持つ属性 */
+const ID_LIST_ATTRIBUTES = [
+  "aria-labelledby",
+  "aria-describedby",
+  "aria-controls",
+  "for",
+];
+
+/** `url(#id)` の参照 */
+const URL_REFERENCE = /url\(#([^)\s]+)\)/g;
+
 /** 取り出し元の待ちがこれを過ぎたら読み込み中の文を出す（ミリ秒） */
 const LOADING_DELAY_MS = 1000;
 
@@ -40,20 +65,76 @@ function createSegmenter(): Intl.Segmenter | undefined {
     : undefined;
 }
 
-/** 埋め込んだ HTML の範囲の塊の前と後を、今の描画で安全な HTML にする */
-function sanitizeBlocks(
+/** 要素の中の `id` に頭を付け、その `id` を指す属性も書き換えて、前と後のプレビューと本文の間で `id` を重ならせない。表に無い `id`（範囲の外を指すもの）は変えない */
+export function scopeIds(options: {
+  /** プレビューの側の中身 */
+  root: HTMLElement;
+  /** 付ける頭 */
+  prefix: string;
+}): void {
+  const { root, prefix } = options;
+  const scoped = new Map<string, string>();
+  for (const element of root.querySelectorAll("[id]")) {
+    scoped.set(element.id, `${prefix}${element.id}`);
+    element.id = `${prefix}${element.id}`;
+  }
+  if (scoped.size === 0) {
+    return;
+  }
+  for (const element of [root, ...root.querySelectorAll("*")]) {
+    for (const attribute of [...element.attributes]) {
+      const { name, value } = attribute;
+      if (ID_LIST_ATTRIBUTES.includes(name)) {
+        element.setAttribute(
+          name,
+          value
+            .split(/\s+/)
+            .map((id) => scoped.get(id) ?? id)
+            .join(" "),
+        );
+      } else if (
+        (name === "href" || name === "xlink:href") &&
+        value[0] === "#"
+      ) {
+        element.setAttribute(
+          name,
+          `#${scoped.get(value.slice(1)) ?? value.slice(1)}`,
+        );
+      } else if (value.includes("url(#")) {
+        element.setAttribute(
+          name,
+          value.replace(URL_REFERENCE, (match, id: string) =>
+            scoped.has(id) ? `url(#${scoped.get(id)})` : match,
+          ),
+        );
+      }
+    }
+  }
+}
+
+/** 埋め込んだ HTML の範囲の塊の前と後を、今の描画で描く。描いた中身に置き換えたブロックと、範囲ごとの操作を付ける関数を返す */
+function renderBlocks(
   blocks: DiffBlock[],
-  renderHtml: (html: string) => string,
-): DiffBlock[] {
-  return blocks.map((block) =>
-    block.type === "html"
-      ? {
-          ...block,
-          before: block.before === null ? null : renderHtml(block.before),
-          after: block.after === null ? null : renderHtml(block.after),
-        }
-      : block,
-  );
+  renderHtml: DiffHtmlRenderer,
+): { blocks: DiffBlock[]; ranges: RangeAttaches[] } {
+  const ranges: RangeAttaches[] = [];
+  const rendered = blocks.map((block) => {
+    if (block.type !== "html") {
+      return block;
+    }
+    const before = block.before === null ? null : renderHtml(block.before);
+    const after = block.after === null ? null : renderHtml(block.after);
+    ranges.push({
+      before: before?.attach ?? null,
+      after: after?.attach ?? null,
+    });
+    return {
+      ...block,
+      before: before?.html ?? null,
+      after: after?.html ?? null,
+    };
+  });
+  return { blocks: rendered, ranges };
 }
 
 /** 描いた文書に「変更を見る」と差分の場所を置き、開く・選び直す・閉じるを受け取って取り出し元を呼び、差分を描く。差分を閉じ、待ちと受け取りとミニマップを片付け、置いた要素を取り除く関数を返す */
@@ -64,8 +145,8 @@ export function attachDiff(options: {
   source: DiffSource;
   /** 取り出し元に渡す文書の `id` */
   docId: string;
-  /** 埋め込んだ HTML を今の描画で安全な HTML にする関数 */
-  renderHtml: (html: string) => string;
+  /** 埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数 */
+  renderHtml: DiffHtmlRenderer;
 }): () => void {
   const { root, source, docId, renderHtml } = options;
   serial += 1;
@@ -94,6 +175,8 @@ export function attachDiff(options: {
   let loadingTimer: ReturnType<typeof setTimeout> | undefined;
   let spinnerTimer: ReturnType<typeof setTimeout> | undefined;
   let detachMinimap: (() => void) | undefined;
+  // プレビューの前と後に付けた操作を外す関数
+  let detachPreviews: (() => void)[] = [];
 
   /** 読み込み中の文を出す待ちのタイマーを止める */
   const clearTimers = (): void => {
@@ -101,10 +184,36 @@ export function attachDiff(options: {
     clearTimeout(spinnerTimer);
   };
 
-  /** 差分の行のミニマップを外す */
+  /** 差分の行のミニマップと、プレビューに付けた操作を外す */
   const clearMinimap = (): void => {
     detachMinimap?.();
     detachMinimap = undefined;
+    for (const detach of detachPreviews) {
+      detach();
+    }
+    detachPreviews = [];
+  };
+
+  /** 置いた前と後のプレビューの中身ごとに、`id` に側ごとの頭を付けてから操作を付ける */
+  const attachPreviews = (
+    result: HTMLElement,
+    ranges: RangeAttaches[],
+  ): void => {
+    result
+      .querySelectorAll<HTMLElement>(".mdmark-diff-html")
+      .forEach((range, position) => {
+        const attaches = ranges[position];
+        const sides = range.querySelectorAll<HTMLElement>(".mdmark-diff-side");
+        (["before", "after"] as const).forEach((name, side) => {
+          const attach = attaches?.[name];
+          const root = sides[side]?.querySelector<HTMLElement>(".mdmark-html");
+          if (!attach || !root) {
+            return;
+          }
+          scopeIds({ root, prefix: `${panelId}-${position}-${name}-` });
+          detachPreviews.push(attach(root));
+        });
+      });
   };
 
   /** 選んだ 2 つのリビジョンの本文を取り出して差分を描く */
@@ -175,14 +284,16 @@ export function attachDiff(options: {
       result.innerHTML = renderDiffMessage({ kind: "same" });
       return;
     }
+    const prepared = renderBlocks(diff.blocks, renderHtml);
     result.innerHTML = renderDiffLines({
-      blocks: sanitizeBlocks(diff.blocks, renderHtml),
+      blocks: prepared.blocks,
       sides: "side",
       labels: {
         before: describeRevision(pair[0]),
         after: describeRevision(pair[1]),
       },
     });
+    attachPreviews(result, prepared.ranges);
     summary.textContent = `削除した行 ${diff.counts.del}・追加した行 ${diff.counts.add}`;
     const lines = result.querySelector<HTMLElement>(".mdmark-diff-lines");
     if (lines !== null) {

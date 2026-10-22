@@ -3,7 +3,7 @@ import {
   type ResolvedConfig,
   resolveConfig,
 } from "./config.ts";
-import { attachDiff } from "./diff/panel.ts";
+import { attachDiff, type DiffHtmlRenderer } from "./diff/panel.ts";
 import type { DiffSource } from "./diff/source.ts";
 import { attachInteractions } from "./interact/index.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
@@ -45,11 +45,11 @@ const PRINT_FEATURE = "print";
 /** 描いた要素から、その `MountHandle` を引く。同じ要素への `mount` が前の描画を片付けるのに使う */
 const mounted = new WeakMap<HTMLElement, MountHandle>();
 
-/** 差分のプレビューに出す埋め込んだ HTML の範囲を、文書に描くときと同じ描き方で描く関数を作る: 範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を文書を描く処理に通し、得た枠の中身を返す。`html` の機能がオフのときは枠が無く、空の文字を返す。図の拡大・ツールチップなどの操作は付けない */
+/** 差分のプレビューに出す埋め込んだ HTML の範囲を、文書に描くときと同じ描き方で描く関数を作る: 範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を文書を描く処理に通し、得た枠の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義で記法の操作を付ける関数を返す。`html` の機能がオフのときは枠が無く、空の文字と何もしない関数を返す */
 function createDiffHtmlRenderer(options: {
   config: ResolvedConfig;
   opts: MountOptions;
-}): (html: string) => string {
+}): DiffHtmlRenderer {
   const { config, opts } = options;
   return (html) => {
     const markdown = [
@@ -71,7 +71,15 @@ function createDiffHtmlRenderer(options: {
     });
     const template = document.createElement("template");
     template.innerHTML = rendered.html;
-    return template.content.querySelector(".mdmark-html")?.innerHTML ?? "";
+    return {
+      html: template.content.querySelector(".mdmark-html")?.innerHTML ?? "",
+      attach: (root) =>
+        attachInteractions({
+          root,
+          features: rendered.features,
+          paramDefinitions: rendered.paramDefinitions,
+        }),
+    };
   };
 }
 
