@@ -1,0 +1,1 @@
+# E2E『チャートを描く』の test_error_when_definition_invalid で書き方の警告の外の段落だけを検証する
