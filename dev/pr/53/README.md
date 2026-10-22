@@ -1,0 +1,1 @@
+# 配布物の読み込み時に Intl.Segmenter を作らず、Firefox 98〜124 でも mdmark を動かす
