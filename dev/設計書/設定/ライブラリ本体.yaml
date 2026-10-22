@@ -188,7 +188,7 @@ settings:
     title: 拡張のモジュール
     file: mdmark.config.yaml
     type: string[]
-    description: CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。各モジュールは `registerExtension` に渡す拡張を既定の export にする。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない
+    description: CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。各モジュールは `registerExtension` に渡す拡張を既定の export にし、読み込みの時点でブラウザの API を使わない（使うのは `load` の中だけ。`mdmark check` が Node で読み込んで `directive` を取る）。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない
     default: '[]'
     missing: 拡張を埋めない（拡張の印は知らない印として取り除かれる）
     reload: reload
