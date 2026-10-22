@@ -171,6 +171,13 @@ test("test_normal", async () => {
   tableButton.click();
   // 検証
   expect(visibleRows(el)).toBe(5);
+  const heads = [...el.querySelectorAll(".mdmark-view-table thead th")].map(
+    (head) => head.textContent ?? "",
+  );
+  expect(heads).toHaveLength(COLUMNS.length);
+  for (const [index, name] of COLUMNS.entries()) {
+    expect(heads[index]).toContain(name);
+  }
   expect(el.querySelector<HTMLElement>(".mdmark-view-board")?.hidden).toBe(
     true,
   );

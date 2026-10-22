@@ -121,3 +121,4 @@ preconditions:
   - ビューの機能（`views`）がオン（既定）
 success_guarantee: 印で囲んだ表の行が項目になり、`group=` の列の値ごとの列に並んだボード表示で描かれる。ビューの上の切り替えで表形式のビューと行き来できる。
 minimal_guarantee: 印に読めない指定があっても、表は描かれ、範囲の上に書き方の警告が出る。
+test_file: tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts

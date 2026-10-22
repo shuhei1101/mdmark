@@ -2960,6 +2960,10 @@ test("test_error_when_part_module_unavailable", async () => {
     expect.stringMatching(/view .*\/blocked\/.*\/view\.js/),
     expect.stringMatching(/comments .*\/blocked\/.*\/comments\.js/),
   ]);
+  // 元のエラーを最後の引数に含む
+  for (const call of spy.mock.calls) {
+    expect(call.at(-1)).toBeInstanceOf(Error);
+  }
   expect(find(el, "p:last-of-type").textContent).toBe(COMMENT_TEXT);
   // 実行
   selectText(find(el, "p:last-of-type"), 10, 16);
