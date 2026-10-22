@@ -225,7 +225,9 @@ test("test_find_avoided_terms_prefers_term_words", async () => {
     { id: "job", term: "仕事", meaning: "取り組むこと", avoid: ["ワーク"] },
   ];
   // 1 行目の ワークスペース は用語の語に当たり、3 行目の ワーク が 2 回だけやめた言い方に当たる
-  const body = ["ワークスペースを開く。", "", "ワークとワーク。", ""].join("\n");
+  const body = ["ワークスペースを開く。", "", "ワークとワーク。", ""].join(
+    "\n",
+  );
   // 実行
   const issues = findAvoidedTerms({
     file: "guide.md",
