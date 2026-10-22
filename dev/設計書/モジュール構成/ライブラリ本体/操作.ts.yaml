@@ -37,7 +37,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。まとめて外す関数を返す
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean> }'
@@ -64,6 +64,12 @@ functions:
         condition: ヒントを持つ `div.mdmark-html` を描いた要素と、`features` の `hints` が `false`
         mock: なし
         expected: 印にフォーカスしても `role="tooltip"` の要素が `hidden` を持ったまま
+      - name: test_attach_interactions_when_row_in_closed_section
+        case: 正常
+        summary: 閉じた節の中の行へは、節を開いてから送る
+        condition: '`data-section="closed"` の節の中に `rowlink` の表（`id` `もも` の行）を描いた要素で、`location.hash` を `#もも` にして付け、次に `#/a.md#もも` にして `hashchange` を送る'
+        mock: '`Element.prototype.scrollIntoView` を、呼ばれたときに節の中身の `hidden` を記録する関数に差し替える'
+        expected: どちらも、`もも` の行の `scrollIntoView` が呼ばれたときに節の中身が `hidden` を持たず、行が `data-target` を持つ
   - name: compareCells
     title: セルを比べる
     container: src/table-logic.ts
@@ -136,7 +142,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRow` の集計の行を置き、`rowlink` の表は行へ移る処理を付ける
-    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。件数と集計の行は、絞り込みを当てるたびに `hidden` を持たない行から作り直す（集計は `computeTotal`）。列の表示のメニューは絞り込みのドロワーと同じ開閉の受け取りを使い（同時に開くのはドロワーとメニューを合わせて 1 つ）、チェックボックスに合わせて列の見出し・セル・集計のセルの `hidden` を切り替え、「既定に戻す」で `data-hide` の状態に戻す。ピン止めの左端からの位置は隠した列を除いて測り直す。コピーは見出しの行と `hidden` を持たない本文の行の、`hidden` を持たない列の `visibleText` を `tableToTsv` で写し、結果をボタンの `data-state` と `role="status"` の要素で知らせる（写せたら 2 秒で `idle` に戻し、拒まれたら次に押すまで `failed` のままにする。拒まれた例外は外へ出さない）。行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じた節は `attachSections` が同じ `hashchange` で開く）、行が `hidden` ならその表の絞り込みを全て外し、`scrollIntoView` してその行だけに `data-target` を付ける'
+    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。件数と集計の行は、絞り込みを当てるたびに、行の詳細と `一致する行がありません` の行を除く本文の行（今の本文の行の取り出しと同じ）のうち `hidden` を持たない行から作り直す（集計は `computeTotal`）。列の表示のメニューは絞り込みのドロワーと同じ開閉の受け取りを使い（同時に開くのはドロワーとメニューを合わせて 1 つ）、チェックボックスに合わせて列の見出し・セル・集計のセルの `hidden` を切り替え、「既定に戻す」で `data-hide` の状態に戻す。ピン止めの左端からの位置は隠した列を除いて測り直す。コピーは見出しの行と、行の詳細と `一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行の、`hidden` を持たない列の `visibleText` を `tableToTsv` で写し、結果をボタンの `data-state` と `role="status"` の要素で知らせる（写せたら 2 秒で `idle` に戻し、拒まれたら次に押すまで `failed` のままにする。拒まれた例外は外へ出さない）。行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じた節は、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て外し、`scrollIntoView` してその行だけに `data-target` を付ける'
     args:
       - name: root
         type: HTMLElement
@@ -193,7 +199,7 @@ functions:
         summary: 絞り込みに合わせて件数と集計の行を作り直す
         condition: '`data-features="sort pin filter count total"`・`data-filter="0:text"`・`data-total="0:count 1:sum 2:avg"` の表（名前 `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量 `10`・`2`・`33`・`-`、単価 `100`・`200`・`300`・`400`）を `りんご` で絞り込む'
         mock: なし
-        expected: 絞り込む前は `4 / 4 件` と `個数 4`・`合計 45`・`平均 250`、後は `2 / 4 件` と `個数 2`・`合計 43`・`平均 200`
+        expected: 絞り込む前は `4 / 4 件` と `個数 4`・`合計 45`・`平均 250`、後は `2 / 4 件` と `個数 2`・`合計 43`・`平均 200`、絞り込みを `存在しない` にした後は `0 / 4 件` と `個数 0`・`合計 0`・`平均 —`（`一致する行がありません` の行を数えない）
       - name: test_attach_tables_when_columns_toggled
         case: 正常
         summary: 列を隠して既定に戻し、Esc でメニューを閉じる
@@ -215,9 +221,9 @@ functions:
       - name: test_attach_tables_when_row_linked
         case: 正常
         summary: '#ID が指す行を開いて強調し、hashchange で移す'
-        condition: 閉じた `details` の中の `rowlink` の表（`id` `みかん` の行）と、`data-filter="0:text"` で `ぶどう` に絞った `rowlink` の表（`id` `もも` の行）を描いた要素で、`#みかん` のまま付け、`#もも` にする
+        condition: 閉じた `details` の中の `rowlink` の表（`id` `みかん` の行）と、`data-filter="0:text"` で `ぶどう` に絞った `rowlink` の表（`id` `もも` の行）を描いた要素で、`#みかん` のまま付け、`#もも` にし、`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93` にする
         mock: なし
-        expected: 付けた後は `details` が `open` で `みかん` の行だけ `data-target`、`#もも` の後は 2 つ目の表の行が全て `hidden` を持たず `もも` の行だけ `data-target`
+        expected: 付けた後は `details` が `open` で `みかん` の行だけ `data-target`、`#もも` の後は 2 つ目の表の行が全て `hidden` を持たず `もも` の行だけ `data-target`、`#/a.md#…` の後は `みかん` の行だけ `data-target`
     refs:
       - '#functions[computeTotal]'
       - '#functions[tableToTsv]'
@@ -253,7 +259,7 @@ functions:
     container: src/interact/sections.ts
     kind: 関数
     scope: internal
-    summary: '`sections` がオンなら節の見出しを開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID` が閉じた節の中を指すとき（付けたときと `hashchange`）と `beforematch` でその節を開く'
+    summary: '`sections` がオンなら節の見出しを開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID`（`rowIdFromHash` で読む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が閉じた節の中を指すとき（付けたときと `hashchange`）と `beforematch` でその節を開く'
     args:
       - name: options
         type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean }'
@@ -292,6 +298,14 @@ functions:
         condition: 行の詳細を持つ表で、持ち主の行の 1 列目に用語 `印` の下線がある
         mock: なし
         expected: 開閉ボタンの読み上げの名前に `印` が入り、ツールチップの意味の文字が入らない
+      - name: test_attach_sections_when_bundle_hash
+        case: 正常
+        summary: 'まとめた HTML の # の形でも閉じた節を開く'
+        condition: 閉じた節の中の `### 注意`、`location.hash` を `#/a.md#%E6%B3%A8%E6%84%8F`
+        mock: なし
+        expected: 節の中身が `hidden` を持たない
+    refs:
+      - '#functions[rowIdFromHash]'
   - name: visibleText
     title: 要素の見える文字を読む
     container: src/interact/text.ts
