@@ -136,6 +136,17 @@ function_types:
     returns:
       type: '-'
       description: 上の 2 つを持つオブジェクト
+  - name: DiffHtmlRenderer
+    title: 埋め込んだ HTML を描く関数型
+    container: src/diff/panel.ts
+    summary: 差分のプレビューの前と後の HTML を文書と同じ描き方で描き、置いた要素に文書と同じ操作を付ける関数を返す。実体は `mount` が作り、単体テストで差し替える
+    args:
+      - name: html
+        type: string
+        description: 範囲の `html` のコードブロックの中身
+    returns:
+      type: '{ html: string; attach: (root: HTMLElement) => () => void }'
+      description: '`html` は描いた範囲の中身。`attach` は、置いた要素に図の拡大・ツールチップ・操作できる部品などの操作を付け、外す関数を返す'
 functions:
   - name: checkRevisions
     title: 取り出し元の一覧を検める
@@ -247,9 +258,9 @@ functions:
     side_effects: '`root` の中に要素を置き、本文の要素の `hidden` を書き換える。取り出し元を呼ぶ。取り出せないときは `console.error` に出す'
     args:
       - name: options
-        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: (html: string) => string }'
+        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer }'
         required: true
-        description: '`root` は描いた要素、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を今の描画で安全な HTML にする関数'
+        description: '`root` は描いた要素、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数'
     returns:
       type: () => void
       description: 差分を閉じ、待ちと受け取りとミニマップを片付け、置いた要素を取り除く関数
@@ -261,7 +272,7 @@ functions:
       4. リビジョンが 1 つなら `renderDiffMessage({ kind: "single" })` を出して終わる。2 つ以上なら、前に 2 番目・後に 1 番目を選んでリビジョンの選択（`renderRevisionPicker`）を置き、手順 5 を行う。前を選び直したら後の選べない項目を直し、後が前以前なら前の 1 つ新しいリビジョンに移す。選び直すたびに手順 5 を行う
       5. 選んだ 2 つの `source.content({ docId, revisionId })` を並んで待ち（選び直しの世代を進め、古い待ちの結果は描かない）、待ちの間は手順 3 と同じタイマーで、`LOADING_DELAY_MS` を過ぎたら行の場所を `renderDiffMessage({ kind: "loading" })` にして数の文とミニマップを外し、`SPINNER_DELAY_MS` を過ぎたら `spinner: true` に替える。拒否か文字列でないものがあれば、選択を残して行の場所を `renderNotice({ name: 取り出せなかったリビジョンの説明, source: "diff-content" })` にし、数の文とミニマップを外す
          - `[error]` 本文を取り出せない（`content`・`docId`・リビジョンの `id`・元のエラーか合わなかった値を並べる）
-      6. `computeDiff` で比べる（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）。数がどちらも 0 なら `renderDiffMessage({ kind: "same" })` を出す。そうでなければ `renderDiffLines` で行を描き（`html` の塊の `before`・`after` は `renderHtml` を通す）、数の文を書き換え、埋め込んだ HTML の見方のボタンに受け取りを付け、`attachMinimap` でミニマップを付ける
+      6. `computeDiff` で比べる（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）。数がどちらも 0 なら `renderDiffMessage({ kind: "same" })` を出す。そうでなければ `renderDiffLines` で行を描き（`html` の塊の `before`・`after` は `renderHtml` を通す）、置いた前と後のプレビューの中身ごとに `scopeIds` で `id` に側ごとの頭（`{場所の id}-{範囲の番号}-{before か after}-`）を付けてから `renderHtml` の `attach` で操作を付け、外す関数を控える（描き直す・閉じる・外すときに呼ぶ）。数の文を書き換え、埋め込んだ HTML の見方のボタンに受け取りを付け、`attachMinimap` でミニマップを付ける
       7. 外す関数は、世代を進め、待ちのタイマー・受け取り・ミニマップを外し、置いたボタンと場所を取り除いて隠した子を戻す
     unit_tests:
       - name: test_attach_diff
@@ -312,6 +323,12 @@ functions:
         condition: 開いた後に前の欄で `r1` を選び、`content` を返さずに時計を 1 秒、2 秒進める
         mock: Vitest の偽の時計。取り出し元は 2 回目の `content` を合図まで返さない
         expected: 1 秒で行の場所が `変更を読み込んでいます` になり、数の文が空、2 秒で回る表示が出る。選ぶ欄は残る
+      - name: test_attach_diff_when_preview_attached
+        case: 正常
+        summary: プレビューの前と後に操作を付け、選び直しと閉じるで外す
+        condition: 変えた埋め込んだ HTML の範囲を 1 つ持つ 2 つの本文。開いた後に選び直し、閉じる
+        mock: '`renderHtml` は、`attach` に渡された要素と外す関数を呼んだ回数を控える偽物'
+        expected: 開くと `attach` が前と後のプレビューの中身で 1 回ずつ呼ばれる。選び直すと前の 2 つが外され、閉じると全て外される
     callees:
       - '#functions[checkRevisions]'
       - '#functions[computeDiff]'
@@ -321,6 +338,7 @@ functions:
       - '#functions[renderDiffLines]'
       - '#functions[renderDiffMessage]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+      - '#functions[scopeIds]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の待ち]
@@ -546,6 +564,31 @@ functions:
         expected: 部品設計の文を出し、`loading` は `role` を持たず回る表示が `aria-hidden`
     refs:
       - dev/設計書/部品設計/差分の状態の文.ts#
+  - name: scopeIds
+    title: id に頭を付ける
+    container: src/diff/panel.ts
+    summary: 要素の中の `id` に頭を付け、その `id` を指す属性も書き換えて、前と後のプレビューと本文の間で `id` を重ならせない
+    kind: 関数
+    scope: internal
+    side_effects: '`root` の子孫の属性を書き換える'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; prefix: string }'
+        required: true
+        description: '`root` はプレビューの側の中身、`prefix` は付ける頭'
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. `root` の中の `id` を持つ要素を集め、元の `id` から頭を付けた `id` への表を作り、`id` を書き換える
+      2. `aria-labelledby`・`aria-describedby`・`aria-controls`・`for` の空白で区切った `id` と、`href` の `#{id}`、属性と `style` の `url(#{id})` のうち、表にあるものを頭を付けた `id` に書き換える。表に無い `id`（範囲の外を指すもの）は変えない
+    unit_tests:
+      - name: test_scope_ids
+        case: 正常
+        summary: id と、それを指す属性に頭を付ける
+        condition: '`<figcaption id="d-1-title">`・`aria-labelledby="d-1-title"`・`marker-end="url(#d-1-arrow)"` と `<marker id="d-1-arrow">`、範囲の外を指す `aria-describedby="outside"` を持つ要素。`prefix` は `p-1-before-`'
+        mock: なし
+        expected: '`id` が `p-1-before-d-1-title`・`p-1-before-d-1-arrow` になり、`aria-labelledby` と `marker-end` もそれを指す。`aria-describedby="outside"` は変わらない'
 notes:
   単体テストの実行場所: '`checkRevisions`・`computeDiff` と `render*` は DOM を使わず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで流す。`attachDiff`・`attachMinimap` は `tests/unit/src/diff/{panel,minimap}.browser.test.ts` で `unit-browser` プロジェクトで流す'
   配布物の大きさ: jsdiff は `diffLines`・`diffWords`・`diffChars` だけを名前で import し、使わない関数を束ねない。足した後の `dist/index.js` が非機能要件の上限に収まることを、ビルドのサイズの検査で確かめる
