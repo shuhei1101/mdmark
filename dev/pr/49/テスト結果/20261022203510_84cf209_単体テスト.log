@@ -1,0 +1,15 @@
+# commit: 84cf209
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diff-line-and-char-diff
+
+
+ Test Files  100 passed (100)
+      Tests  430 passed (430)
+   Start at  20:35:14
+   Duration  21.25s (tests 40%, worker 28%, import 27%, transform 5%)
+
