@@ -201,7 +201,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`）で操作を付けた後の見た目を作る
+    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`）で操作を付けた後の見た目を作る。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`renderTotalRow` の集計の行、`rowIds` の行の `id` と行へのリンクも描く
     args:
       - name: options
         type: TableOptions
@@ -232,6 +232,18 @@ functions:
         condition: '`filterValues: [{ column: 1, text: "存在しない" }]`'
         mock: なし
         expected: 本文の行が全て `hidden` で、`一致する行がありません` の行が `hidden` を持たない
+      - name: test_render_table_when_feature_attributes
+        case: 正常
+        summary: 囲みに隠す列と集計する列を属性で持たせる
+        condition: '`features: [sort, pin, filter, columns, total]`、`hide: [1]`、`totals: [{2, sum}]`、`body: SLOT_MARKER`'
+        mock: なし
+        expected: 囲みが `data-hide="1"`・`data-total="2:sum"` を持ち、帯と集計の行を持たない
+      - name: test_render_table_when_all_features
+        case: 正常
+        summary: 5 つの機能の状態を描く
+        condition: '部品設計の `AllFeatures`（`hide: [1]`、`totals: [{2, sum}]`、`rowIds`）に `targetRow: 1`'
+        mock: なし
+        expected: 帯に `3 / 3 件`・`列の表示`・`表をコピー`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`
   - name: renderTableTools
     title: 表の見出しのボタンとドロワーを描く
     container: src/parts/table.ts
@@ -511,6 +523,58 @@ functions:
     status: planned
     introduced:
       pr: 32
+  - name: renderTableBar
+    title: 表の上の帯と列の表示のメニューを描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: '`count`・`columns`・`copy` のうち付けた機能の帯（件数・`列の表示`・`表をコピー`）と、列の表示のメニュー（列名のチェックボックス、先頭の列は `disabled`、`先頭の列は隠せません`、`既定に戻す`）の HTML を返す。アイコンは lucide の `columns-3`・`copy`・`check`・`circle-alert`（`columns-3` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
+    args:
+      - name: options
+        type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed" }'
+        required: true
+        description: メニューの id の頭、機能、列名、表示している行の数、全ての行の数、隠している列、メニューを開いているか、コピーのボタンの状態
+    returns:
+      type: '{ bar: string; menu: string }'
+      description: 帯とメニュー（該当する機能が無ければ空）
+    unit_tests:
+      - name: test_render_table_bar
+        case: 正常
+        summary: 件数と列の表示とコピーの帯を返す
+        condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
+        mock: なし
+        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` の `列の表示`、`data-state="idle"` の `表をコピー`。`menu` が `hidden` で、名前のチェックボックスが `checked disabled`、説明のチェックが外れ、`先頭の列は隠せません` と `既定に戻す` がある'
+      - name: test_render_table_bar_when_copy_failed
+        case: 正常
+        summary: コピーできなかったボタンを返す
+        condition: '`features: [copy]`、`copyState: failed`'
+        mock: なし
+        expected: '`bar` のボタンが `data-state="failed"` と `コピーできませんでした` を持ち、件数と `列の表示` が無く、`menu` が空'
+    refs:
+      - '#functions[escapeHtml]'
+  - name: renderTotalRow
+    title: 集計の行を描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: 列の数だけセルを持つ `<tfoot><tr class="mdmark-table-total">` を返す。集計する列のセルは `data-total="{計算}"` と題（`合計`・`平均`・`個数`）と値を持ち、隠している列のセルは `hidden` を持つ。`mount` が集計し直すときにも使う
+    args:
+      - name: options
+        type: '{ columns: number; totals: Array<{ column: number; calc: "sum" | "avg" | "count"; value: string }>; hiddenColumns: number[]; labels: string[] }'
+        required: true
+        description: 列の数、集計する列と計算と整えた値（`computeTotal` の戻り値）、隠している列、列名（`data-label`）
+    returns:
+      type: string
+      description: '`<tfoot>` の HTML'
+    unit_tests:
+      - name: test_render_total_row
+        case: 正常
+        summary: 集計する列に題と値を出し、隠した列のセルを隠す
+        condition: '`columns: 3`、`totals: [{0, count, "4"}, {1, sum, "45"}, {2, avg, "250"}]`、`hiddenColumns: [2]`'
+        mock: なし
+        expected: 3 つのセルが `個数 4`・`合計 45`・`平均 250` で `data-total` を持ち、3 つ目だけ `hidden`
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[computeTotal]
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
