@@ -444,7 +444,7 @@ flows:
         C->>M: render(markdown)
         M-->>C: HTML 文字列
     expected:
-      - '`<div class="mdmark-view" data-group="状態" data-default="table" data-icons="未着手:inbox">` があり、その中に担当の列を `data-filter` に持つ表がある'
+      - class `mdmark-view` の `div` があり、その `data-view` を JSON として読むと `{"group":1,"mode":"table","boardDisabled":"","icons":{"未着手":"inbox"}}` で、その中に担当の列を `data-filter` に持つ表がある
       - 文字列にボードと切り替えのボタンが無く、印の文字が残らない
       - '`features` で `views` を外すと、`mdmark-view` が無く表だけが出る'
     test: test_normal_when_view_marked
@@ -557,6 +557,6 @@ constraints:
     constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素と、図の部品の定義の `hint` を持つ箱に、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で置く（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を足す。`hint` を持つ箱は `io` を持つ箱と同じ右上の印を持ち、`io` と `hint` を両方持つ箱は 1 つの印に入力・処理・出力と `hint` をこの順に出す。`hints` がオフのときは、`data-hint` の属性・`hint`・`io`・線の `tip` のツールチップの中身と印を出さない（線のラベルと箱の名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'
     notes: 印のアイコンは CSS で付ける。開く操作は `mount`
   - item: ビューの印
-    constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、印の引数を `data-group`・`data-default`・`data-icons` に持たせ、中に範囲の表を記法の表と同じ形（`filter=` は表の `data-filter`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読む表示では表のまま読める。書き方の誤りは書き方の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
+    constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、印の引数を読んだ指定を `data-view` に JSON（`group` は分ける列の位置か `null`、`mode` は `board`・`table`、`boardDisabled` は `group=` の列が表に無いときの書き方の警告の `id` か空、`icons` は読めた `icons=` の対応）で持たせ、中に範囲の表を記法の表と同じ形（`filter=` は表の `data-filter`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読む表示では表のまま読める。書き方の誤りは書き方の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
     notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューの印」
 test_file: tests/integration/lib/render.test.ts
