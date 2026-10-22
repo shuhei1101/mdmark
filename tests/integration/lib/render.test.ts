@@ -221,7 +221,7 @@ test("test_normal_when_syntax", async () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- tabs -->",
+    "<!-- tabs: group=os -->",
     "",
     "### macOS",
     "",
@@ -288,7 +288,7 @@ test("test_normal_when_syntax", async () => {
     /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表を開く<\/summary>/,
   );
   expect(html).not.toMatch(/<details class="mdmark-table-details"[^>]*\sopen/);
-  expect(html).toContain('<div class="mdmark-tabs">');
+  expect(html).toContain('<div class="mdmark-tabs" data-group="os">');
   expect(html.match(/<div class="mdmark-tab-panel">/g)).toHaveLength(2);
   expect(html).toContain('<p class="mdmark-tab-title">macOS</p>');
   expect(html).toContain('<p class="mdmark-tab-title">Windows</p>');
@@ -402,6 +402,18 @@ test("test_normal_when_syntax_errors", async () => {
     "",
     "<!-- /tabs -->",
     "",
+    "<!-- tabs: group= grop=os closed -->",
+    "",
+    "### macOS",
+    "",
+    "macOS の手順",
+    "",
+    "### Windows",
+    "",
+    "Windows の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
     "[図](#fig-missing)",
     "",
     "<!-- table: data -->",
@@ -416,15 +428,28 @@ test("test_normal_when_syntax_errors", async () => {
   // 検証
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(4);
+  ).toHaveLength(5);
   expect(
     html.match(/<p class="mdmark-syntax-warning-title">書き方の警告<\/p>/g),
-  ).toHaveLength(4);
+  ).toHaveLength(5);
   expect(html).toContain('data-kind="default" data-features="pin sort"');
   expect(html).toContain("<code>unknown</code>");
   expect(html).toContain("<code>data</code>・<code>plain</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
-  expect(html).not.toContain("mdmark-tabs");
+  // 見出しの無い範囲はタブにせず、読めない指定の範囲だけが組を持たないタブになる
+  expect(html.match(/<div class="mdmark-tabs"/g)).toHaveLength(1);
+  expect(html).toContain('<div class="mdmark-tabs">');
+  expect(html).not.toContain("data-group");
+  const tabsWarning = html.slice(
+    html.lastIndexOf(
+      '<div class="mdmark-syntax-warning"',
+      html.indexOf('<div class="mdmark-tabs">'),
+    ),
+    html.indexOf('<div class="mdmark-tabs">'),
+  );
+  for (const label of ["group=", "grop=", "closed"]) {
+    expect(tabsWarning).toContain(`<code>${label}</code>`);
+  }
   expect(html).toContain('<a href="#fig-missing">図</a>');
   expect(html).toContain("<code>#fig-missing</code>");
   expect(html).toContain('data-kind="data"');

@@ -1029,9 +1029,96 @@ flows:
       - '`el` の中身と class が変わらない'
       - '`revisions` が呼ばれない'
     test: test_error_when_doc_id_missing
+  - name: 正常系（同じ組のタブを揃えて残す）
+    summary: 同じ group のタブ群を同じタブ名へ揃え、選んだタブ名を localStorage に残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。localStorage は空
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: mdmark-tabs:os を読む
+        S-->>M: 無い
+        M->>P: 4 つのタブ群で最初のタブを選ぶ
+        P->>M: 1 つ目のタブ群の Windows のタブを押す
+        M->>P: group=os で Windows を持つタブ群を Windows に切り替える
+        M->>S: mdmark-tabs:os に Windows を残す
+    expected:
+      - 押す前、localStorage の `mdmark-tabs:os` が無い（描いたときの選択は残さない）
+      - 押した後、1 つ目と 2 つ目のタブ群で `Windows` のタブの `aria-selected` が `true`、`tabindex` が `0` で、`Windows` の中身だけが `hidden` を持たない
+      - 3 つ目と 4 つ目のタブ群は `macOS` のタブの `aria-selected` が `true` のまま
+      - フォーカスが 1 つ目のタブ群の `Windows` のタブにある
+      - localStorage の `mdmark-tabs:os` が `Windows`
+    test: test_normal_when_tab_group_synced
+  - name: 正常系（残したタブで描く）
+    summary: localStorage に残したタブ名のタブを選んで描き、本文を差し替えても同じタブを選ぶ
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 残したタブ名
+        description: localStorage の `mdmark-tabs:os` に `Windows`、`mdmark-tabs:lang` に `Go` を入れておく
+        notes: '`Go` は文書のどのタブにも無いタブ名'
+      - name: 組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲、`<!-- tabs: group=lang -->` で `### Python`・`### TypeScript` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: mdmark-tabs:os と mdmark-tabs:lang を読む
+        S-->>M: Windows と Go
+        M->>P: os のタブ群は Windows、lang と組の無いタブ群は最初のタブを選ぶ
+        P->>M: update(同じ markdown)
+        M->>S: mdmark-tabs:os を読む
+        M->>P: os のタブ群を Windows を選んで描き直す
+    expected:
+      - 描いた直後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の中身だけが `hidden` を持たない
+      - '`group=lang` のタブ群は `Python`、`group` の無いタブ群は `macOS` を選んでいる'
+      - '`update` の後も `group=os` のタブ群は `Windows` を選んでいる'
+      - localStorage の `mdmark-tabs:lang` は `Go` のまま
+    test: test_normal_when_tab_choice_restored
+  - name: 正常系（localStorage が使えない）
+    summary: localStorage を取り出せなくても、同じ組のタブを揃えて切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: localStorage が使えないページ
+        description: '`mount` の前に、`window.localStorage` を読むと `SecurityError` を投げるように差し替える'
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
+      - name: Mock
+        description: '`console.warn` を記録する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: 取り出す
+        S-->>M: SecurityError
+        M->>P: 最初のタブを選んで描く
+        P->>M: 1 つ目のタブ群の Windows のタブを押す
+        M->>P: 2 つのタブ群を Windows に切り替える
+        M->>S: 取り出す
+        S-->>M: SecurityError
+    expected:
+      - '`mount` が例外を投げず、描いた直後は 2 つのタブ群とも `macOS` を選んでいる'
+      - 押した後、2 つのタブ群とも `Windows` のタブの `aria-selected` が `true`
+      - '`console.warn` が呼ばれ、書き方の警告は無い'
+    test: test_normal_when_storage_unavailable
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -1172,7 +1259,7 @@ constraints:
   - item: 表の操作
     constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く'
   - item: タブの操作
-    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ'
+    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読む人が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と揃えて切り替わった選択は残さない。localStorage を取り出す・読み書きするときに例外が出たら、`console.warn` に出して残さず・読まずに揃える動きと切り替えを続ける'
   - item: 節と行の詳細の開閉
     constraint: 節は見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じた節の `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じた節の中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じた節の中に当たったときは、その節を開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを置き、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く

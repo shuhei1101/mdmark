@@ -293,12 +293,12 @@ functions:
     container: src/parts/tabs.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『タブ』の HTML を返す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする
+    summary: 部品設計『タブ』の HTML を返す。`group` を渡すと `mdmark-tabs` に `data-group` を付ける。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする
     args:
       - name: options
-        type: '{ id: string; titles: string[]; panels: string[]; selected?: number }'
+        type: '{ id: string; titles: string[]; panels: string[]; selected?: number; group?: string }'
         required: true
-        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を渡せる）、選んだタブ
+        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を渡せる）、選んだタブ、組の名前
     returns:
       type: string
       description: '`<div class="mdmark-tabs">` で始まる HTML'
@@ -315,6 +315,12 @@ functions:
         condition: '`selected: 1`'
         mock: なし
         expected: '`role="tablist"` と 2 つの `role="tab"`、2 つ目が `aria-selected="true"` と `tabindex="0"`、1 つ目の `tabpanel` が `hidden`'
+      - name: test_render_tabs_when_group
+        case: 正常
+        summary: group を data-group に写す
+        condition: '`group: "os\"&"`'
+        mock: なし
+        expected: '`<div class="mdmark-tabs" data-group="os&quot;&amp;">` で始まる（値をエスケープする）'
   - name: renderSteps
     title: ステップを描く
     container: src/parts/steps.ts

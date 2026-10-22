@@ -1,6 +1,6 @@
 import { escapeHtml } from "./escape.ts";
 
-/** タブを描く。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする */
+/** タブを描く。`group` を渡すと `data-group` に写す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする */
 export function renderTabs(options: {
   /** タブの id の頭 */
   id: string;
@@ -10,8 +10,10 @@ export function renderTabs(options: {
   panels: string[];
   /** 選んだタブの位置（0 から） */
   selected?: number;
+  /** タブの組の名前 */
+  group?: string;
 }): string {
-  const { id, titles, panels, selected } = options;
+  const { id, titles, panels, selected, group } = options;
   const mounted = selected !== undefined;
   const tablist = mounted
     ? `<div class="mdmark-tablist" role="tablist">${titles
@@ -29,5 +31,7 @@ export function renderTabs(options: {
       return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${escapeHtml(titles[index] ?? "")}</p>${panel}</div>`;
     })
     .join("");
-  return `<div class="mdmark-tabs">${tablist}${body}</div>`;
+  const groupAttribute =
+    group === undefined ? "" : ` data-group="${escapeHtml(group)}"`;
+  return `<div class="mdmark-tabs"${groupAttribute}>${tablist}${body}</div>`;
 }
