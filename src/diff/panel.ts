@@ -122,6 +122,16 @@ export function attachDiff(options: {
     const pair = [before.value, after.value].map((id) =>
       revisions.find((revision) => revision.id === id),
     ) as [DiffRevision, DiffRevision];
+    // 本文の待ちが長いときは、前の差分に替えて読み込み中を出す
+    clearTimers();
+    loadingTimer = setTimeout(() => {
+      clearMinimap();
+      summary.textContent = "";
+      result.innerHTML = renderDiffMessage({ kind: "loading" });
+    }, LOADING_DELAY_MS);
+    spinnerTimer = setTimeout(() => {
+      result.innerHTML = renderDiffMessage({ kind: "loading", spinner: true });
+    }, SPINNER_DELAY_MS);
     const settled = await Promise.allSettled(
       pair.map(async (revision) =>
         source.content({ docId, revisionId: revision.id }),
@@ -130,6 +140,7 @@ export function attachDiff(options: {
     if (openGeneration !== current || selectGeneration !== mine) {
       return;
     }
+    clearTimers();
     clearMinimap();
     const failed: DiffRevision[] = [];
     const texts: string[] = [];

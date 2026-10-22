@@ -1,4 +1,8 @@
-import { type MdmarkConfig, resolveConfig } from "./config.ts";
+import {
+  type MdmarkConfig,
+  type ResolvedConfig,
+  resolveConfig,
+} from "./config.ts";
 import { attachDiff } from "./diff/panel.ts";
 import type { DiffSource } from "./diff/source.ts";
 import { attachInteractions } from "./interact/index.ts";
@@ -7,7 +11,6 @@ import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
-import { sanitizeEmbedded } from "./render/sanitize.ts";
 
 /** `mount` の第 2 引数 */
 export type MountOptions = {
@@ -42,9 +45,34 @@ const PRINT_FEATURE = "print";
 /** 描いた要素から、その `MountHandle` を引く。同じ要素への `mount` が前の描画を片付けるのに使う */
 const mounted = new WeakMap<HTMLElement, MountHandle>();
 
-/** 差分のプレビューに出す埋め込んだ HTML を、文書に描くときと同じ許可の検査にかけて、文字はそのまま返す */
-function sanitizeForDiff(html: string): string {
-  return sanitizeEmbedded(html, (text) => text);
+/** 差分のプレビューに出す埋め込んだ HTML の範囲を、文書に描くときと同じ描き方で描く関数を作る: 範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を文書を描く処理に通し、得た枠の中身を返す。`html` の機能がオフのときは枠が無く、空の文字を返す。図の拡大・ツールチップなどの操作は付けない */
+function createDiffHtmlRenderer(options: {
+  config: ResolvedConfig;
+  opts: MountOptions;
+}): (html: string) => string {
+  const { config, opts } = options;
+  return (html) => {
+    const markdown = [
+      "<!-- html -->",
+      "",
+      "```html",
+      html,
+      "```",
+      "",
+      "<!-- /html -->",
+      "",
+    ].join("\n");
+    const rendered = renderDocument({
+      markdown,
+      config,
+      index: opts.index,
+      docId: opts.docId,
+      references: opts.references,
+    });
+    const template = document.createElement("template");
+    template.innerHTML = rendered.html;
+    return template.content.querySelector(".mdmark-html")?.innerHTML ?? "";
+  };
 }
 
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` を渡して `docId` が無いときは、何も描かずに `TypeError` を投げる */
@@ -56,6 +84,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
   const config = resolveConfig({ config: opts.config });
+  const renderDiffHtml = createDiffHtmlRenderer({ config, opts });
   // 描く世代: 描き直すたびに進め、古い描画の読み込みの結果を捨てるのに使う
   let generation = 0;
   let destroyed = false;
@@ -100,7 +129,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         root: el,
         source: diffSource,
         docId,
-        renderHtml: sanitizeForDiff,
+        renderHtml: renderDiffHtml,
       });
     }
   };
