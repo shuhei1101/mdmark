@@ -401,6 +401,33 @@ flows:
       - 円のグラフが 3 つの扇形の `path` を持ち、扇形の外に整数の割合（合計 100%）、凡例に項目の名前と値がある
       - 散布図が系列ごとに異なる形の点を持ち、横と縦の両方の軸が数値の目盛りを持つ
     test: test_normal_when_chart_types
+  - name: 正常系（Intl.Segmenter を持たない環境）
+    summary: '`Intl.Segmenter` を持たない環境（Firefox 98〜124）でも配布物を読み込め、英数字の語の一部に下線を付けずに用語を照合する'
+    setup:
+      - name: 配布物を読む Node の処理
+        description: '`Intl` から `Segmenter` を取り除いてから、配布物の入口を読み込む'
+        notes: テストの後に `Intl.Segmenter` を戻す
+      - name: 索引
+        description: 用語 `ワークスペース`（別名 `WS`）を持つ索引
+        notes: '-'
+      - name: 用語が出る Markdown
+        description: 段落に `ワークスペースを WSL に置く` が出る文書
+        notes: '`WSL` の中の `WS` で、英数字の語の一部に付かないことを確かめる'
+      - name: Mock
+        description: '`Intl.Segmenter` を取り除く（`Intl.Segmenter` を持たないブラウザの代わり）'
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 配布物の入口を読み込む
+        C->>M: render(markdown, { index })
+        M-->>C: HTML 文字列
+    expected:
+      - 配布物の入口の読み込みが例外を出さない
+      - '`ワークスペース` が class `mdmark-term` の要素になる'
+      - '`WSL` は class `mdmark-term` の要素にならず、文字のまま残る'
+    test: test_normal_when_no_intl_segmenter
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
