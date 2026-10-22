@@ -57,3 +57,4 @@ refs:
 status: planned
 notes:
   モック: '`dev/mock/components/revision-picker/` の「変更を見る」（閉じている・開いている）'
+test_file: tests/integration/lib/diff-toggle.story.test.ts

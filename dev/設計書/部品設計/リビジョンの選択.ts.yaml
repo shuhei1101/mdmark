@@ -77,3 +77,4 @@ status: planned
 notes:
   項目の文字: 日時を JST の `YYYY/MM/DD HH:mm` にし、`label` を空白の後に、`author` を全角の括弧で続ける。無いものは出さない
   モック: '`dev/mock/components/revision-picker/`'
+test_file: tests/integration/lib/revision-picker.story.test.ts

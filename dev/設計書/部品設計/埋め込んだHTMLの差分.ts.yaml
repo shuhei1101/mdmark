@@ -67,3 +67,4 @@ refs:
 status: planned
 notes:
   モック: '`dev/mock/components/diff-html-switch/`'
+test_file: tests/integration/lib/diff-html.story.test.ts

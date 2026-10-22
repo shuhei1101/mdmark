@@ -55,3 +55,4 @@ status: planned
 notes:
   帯の本数: 送り先のスクロールごとに 1 本だけ置き、同じ送り先で開いている差分が 2 つ以上あれば、その印をまとめて写す。最後の差分を閉じたら帯を外す（計画書のミニマップの行・レビューの申し送り）
   モック: '`dev/mock/components/diff-lines/` の「ミニマップ（長い文書）」'
+test_file: tests/integration/lib/diff-minimap.story.test.ts
