@@ -4,7 +4,7 @@ import type { MdmarkConfig } from "../../../src/config.ts";
 /** 設定の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadConfig = () => import("../../../src/config.ts");
 
-/** この版が知っている機能の既定（全てオン） */
+/** この版が知っている機能の既定（`comments` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -23,6 +23,8 @@ const DEFAULT_FEATURES = {
   backlinks: true,
   html: true,
   hints: true,
+  views: true,
+  comments: false,
 };
 
 // 設定が無ければ既定を返す（正常系）

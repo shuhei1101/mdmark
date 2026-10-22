@@ -214,19 +214,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   return { payload, themeCss, warnings };
 }
 
-/** ファイルを読む。無ければ `undefined` を返し、それ以外の読めない理由はそのまま投げる */
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf8");
-  } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return undefined;
-    }
-    throw error;
-  }
-}
-
-/** 配布物の CSS・起動の処理・ビューの部品のモジュールを読む。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す。`view.js` が無いときは空として読み、文書にビューの印があっても部品を埋めない */
+/** 配布物の CSS・起動の処理・ビューの部品のモジュールを読む。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す */
 export async function readDistAssets(options: {
   /** `dist/` の場所 */
   distDir: string;
@@ -236,22 +224,28 @@ export async function readDistAssets(options: {
   const { distDir, kind } = options;
   let distCss: string;
   let viewer: string;
+  let view: string;
   try {
     distCss = await readFile(join(distDir, "index.css"), "utf8");
     viewer = await readFile(join(distDir, "viewer.js"), "utf8");
+    view = await readFile(join(distDir, "view.js"), "utf8");
   } catch (error) {
     throw new CliError(
       `配布物を読めません（${reasonOf(error)}）。mdmark を入れ直してください。`,
     );
   }
-  const view = await readOptional(join(distDir, "view.js"));
   if (kind === "bundle") {
-    const viewerCss = await readOptional(join(distDir, "viewer.css"));
-    if (viewerCss !== undefined) {
-      distCss += `\n${viewerCss}`;
+    try {
+      distCss += `\n${await readFile(join(distDir, "viewer.css"), "utf8")}`;
+    } catch (error) {
+      if (
+        !(error instanceof Error && "code" in error && error.code === "ENOENT")
+      ) {
+        throw error;
+      }
     }
   }
-  return { distCss, viewer, view: view ?? "" };
+  return { distCss, viewer, view };
 }
 
 /** HTML を書く。親のフォルダが無ければ作り、書けなければ書けなかったパスを示す誤りを投げる */
