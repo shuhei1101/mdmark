@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { MdmarkMarkArgs } from "../../../src/extensions.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
+import { INQUIRY_COUNT_TEXT, wrapHtml } from "../helpers/charts.ts";
 
 /** 描く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMount = () => import("../../../src/mount.ts");
@@ -313,4 +314,38 @@ test("test_mount_when_diff_source_without_doc_id", async () => {
     TypeError,
   );
   expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
+// 差分の埋め込んだ HTML のプレビューで、図の部品を文書と同じく図に描く（正常系）
+test("test_mount_when_diff_html_has_chart", async () => {
+  // 準備
+  const el = createElement();
+  const chart = (text: string) =>
+    `# 見出し\n\n${wrapHtml(`<mdmark-chart>\n${text}\n</mdmark-chart>`)}\n`;
+  const contents: Record<string, string> = {
+    r1: chart(INQUIRY_COUNT_TEXT),
+    r2: chart(INQUIRY_COUNT_TEXT.replace("124", "130")),
+  };
+  const diffSource = {
+    revisions: async () => [
+      { id: "r2", at: "2026-10-19T07:40:00Z" },
+      { id: "r1", at: "2026-10-18T00:12:00Z" },
+    ],
+    content: async ({ revisionId }: { revisionId: string }) =>
+      contents[revisionId] ?? "",
+  };
+  await mountTracked(el, { markdown: "# 見出し", docId: "guide", diffSource });
+  // 実行: 差分を開き、「プレビュー」を押す
+  el.querySelector<HTMLButtonElement>(".mdmark-diff-toggle")?.click();
+  await vi.waitFor(() => {
+    expect(el.querySelector('[data-view="rendered"]')).not.toBeNull();
+  });
+  el.querySelector<HTMLButtonElement>('[data-view="rendered"]')?.click();
+  // 検証: 前と後に図の要素があり、定義の JSON の文字がプレビューに出ない
+  const sides = el.querySelector(".mdmark-diff-sides");
+  expect(sides?.querySelectorAll(".mdmark-diff-side")).toHaveLength(2);
+  expect(sides?.querySelectorAll('figure[data-diagram="chart"]')).toHaveLength(
+    2,
+  );
+  expect(sides?.textContent).not.toContain('"series"');
 });

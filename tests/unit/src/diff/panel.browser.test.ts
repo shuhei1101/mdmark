@@ -334,3 +334,40 @@ test("test_attach_diff_when_detached", async () => {
   expect(root.querySelector("p")?.hidden).toBeFalsy();
   expect(document.querySelector(".mdmark-diff-minimap")).toBeNull();
 });
+
+// 選び直した本文の待ちが 1 秒・2 秒を過ぎると、前の差分に替えて読み込み中と回る表示を出す（正常系）
+test("test_attach_diff_when_content_loading", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const root = createRoot();
+  const source = createSource({
+    content: ({ revisionId }) =>
+      revisionId === "r1"
+        ? new Promise<string>(() => {})
+        : Promise.resolve(CONTENTS[revisionId] ?? ""),
+  });
+  await attachTracked(root, source);
+  clickToggle(root);
+  await vi.advanceTimersByTimeAsync(0);
+  expect(root.querySelector(".mdmark-diff-line")).not.toBeNull();
+  // 実行: 前の欄で、本文を返さない r1 を選ぶ
+  const before = findSelect(root, "前のリビジョン");
+  before.value = "r1";
+  before.dispatchEvent(new Event("change", { bubbles: true }));
+  await vi.advanceTimersByTimeAsync(500);
+  const early = root.querySelector(".mdmark-diff-line");
+  await vi.advanceTimersByTimeAsync(600);
+  const afterOneSecond = root.querySelector(".mdmark-diff-result")?.textContent;
+  const lineAtOneSecond = root.querySelector(".mdmark-diff-line");
+  const spinnerAtOneSecond = root.querySelector(".mdmark-diff-spinner");
+  await vi.advanceTimersByTimeAsync(1000);
+  const spinner = root.querySelector(".mdmark-diff-spinner");
+  // 検証
+  expect(early).not.toBeNull();
+  expect(afterOneSecond).toContain("変更を読み込んでいます");
+  expect(lineAtOneSecond).toBeNull();
+  expect(spinnerAtOneSecond).toBeNull();
+  expect(root.querySelector(".mdmark-diff-summary")?.textContent).toBe("");
+  expect(spinner?.getAttribute("aria-hidden")).toBe("true");
+  expect(root.querySelector("select")).not.toBeNull();
+});
