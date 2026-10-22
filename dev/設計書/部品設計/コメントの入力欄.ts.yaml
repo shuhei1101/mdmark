@@ -82,7 +82,7 @@ events:
     description: '`mount`・`mountComments` が本文を確かめ、空でなければ `store.save` を呼ぶ。保存できたら入力欄を閉じて選んだ文字を印で包む'
   - name: 閉じる
     when: 「キャンセル」を押すか Esc を押す
-    description: '`mount`・`mountComments` が入力欄を閉じ、コメントのボタンへフォーカスを戻す。本文があるときは捨ててよいかを確かめる。外側の押下では閉じない'
+    description: '`mount`・`mountComments` が入力欄を閉じ、コメントのボタンへフォーカスを戻す。本文があるときは `window.confirm` の `書いたコメントを捨てて閉じますか？` で確かめ、捨てないときは入力欄を残す。外側の押下では閉じない'
 css_properties:
   - name: --mdmark-color-error
     syntax: <color>
