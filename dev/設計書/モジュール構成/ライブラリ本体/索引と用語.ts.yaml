@@ -34,7 +34,7 @@ data_models:
         description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意）
       - name: terms
         type: MdmarkIndexTerm[] | undefined
-        description: 用語（`id`・`term`・`meaning` が必須、`aliases` が任意）
+        description: 用語（`id`・`term`・`meaning` が必須、`aliases`・`avoid` が任意）
   - name: MdmarkReferences
     title: 参照の表
     container: src/knowledge/references.ts
@@ -60,7 +60,7 @@ data_models:
         type: string
         description: 索引のキーのパスか文書の行。ファイル全体は空文字
       - name: kind
-        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "duplicate_term"'
+        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "duplicate_term" | "avoided_term"'
         description: ずれの種類
       - name: message
         type: string
@@ -138,6 +138,12 @@ functions:
         condition: Schema の JSON を読み、最上位・`docs.items`・`terms.items` の `properties`・`required`・`additionalProperties` を取る
         mock: なし
         expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`
+      - name: test_normalize_index_when_invalid_avoid
+        case: 異常
+        summary: 空の要素を持つ `avoid` の用語を除き、場所を返す
+        condition: '`terms[0].avoid` が `[""]`、`terms[1].avoid` が `["作業場"]` の索引'
+        mock: なし
+        expected: '`problems` が `where` が `terms[0].avoid` の 1 件だけで、`index.terms` が `terms[1]` だけ'
     refs:
       - dev/設計書/ER図/索引#
   - name: resolveLink
@@ -315,8 +321,8 @@ functions:
     container: src/knowledge/check.ts
     kind: 関数
     scope: public
-    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term` のずれをこの順で返す
-    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。`message` は日本語の 1 文で、直す場所を書く'
+    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term` のずれをこの順で返す
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、索引の文書ごとに `parseDocument` で読んだトークンを `findAvoidedTerms` に渡して拾う。`message` は日本語の 1 文で、直す場所を書く'
     args:
       - name: input
         type: '{ index: unknown; documents: Record<string, string>; indexFile?: string }'
@@ -328,6 +334,7 @@ functions:
     callees:
       - '#functions[normalizeIndex]'
       - '#functions[readGlossaryTable]'
+      - '#functions[findAvoidedTerms]'
     unit_tests:
       - name: test_check_index
         case: 正常
@@ -347,6 +354,12 @@ functions:
         condition: '`schema` が無く `docs[1]` が `path` を持たない索引'
         mock: なし
         expected: '`where` が `schema` と `docs[1].path` の `schema` の行がある'
+      - name: test_check_index_when_avoided_term
+        case: 正常
+        summary: 本文に出たやめた言い方を `avoided_term` で返す
+        condition: インターフェース定義『索引を点検する』の「正常系（やめた言い方が本文に出る）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
   - name: readGlossaryTable
@@ -605,12 +618,48 @@ functions:
         condition: 文字列 `印刷をWSL2で😀見る`
         mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
         expected: '`[0, 1, 2, 3, 7, 8, 10, 11]`（`WSL2` は 1 語、サロゲートペアの絵文字は 1 文字）'
+  - name: findAvoidedTerms
+    title: やめた言い方を探す
+    container: src/knowledge/check.ts
+    summary: 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする
+    description: 見出しの中を飛ばして行内のトークンを頭から辿り、`matchableChildren` の位置のテキストを `findWords` で照合する。`findWords` には索引の用語の語・別名を先に、やめた言い方を後に並べて渡し（同じ長さなら用語の側が当たる）、やめた言い方が当たったものだけを数える。行は、行内のトークンの `map` の開始行（無ければ直前の `tr_open` の `map` の開始行）に、その子より前の `softbreak`・`hardbreak` の数と 1 を足す。同じ行とやめた言い方の組は 1 件にまとめ、行の順・行の中は出た順に返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ file: string; tokens: Token[]; terms: MdmarkIndexTerm[] }'
+        required: true
+        description: ずれの `file` に出す文書のパス・`parseDocument` のトークン・索引の用語
+    returns:
+      type: MdmarkIndexIssue[]
+      description: '`kind` が `avoided_term` のずれ。`where` は `{行} 行目`、`message` は `` `{やめた言い方}` はやめた言い方です。用語 `{語}` に書き換えてください。 ``'
+    callees:
+      - '#functions[findWords]'
+    unit_tests:
+      - name: test_find_avoided_terms
+        case: 正常
+        summary: 段落・段落の 2 行目・表のセルのやめた言い方をその行で返す
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）と、インターフェース定義『索引を点検する』の「正常系（やめた言い方が本文に出る）」の `guide.md` のトークン
+        mock: なし
+        expected: '`where` が `3 行目`・`8 行目`・`12 行目` の 3 件をこの順に返し、どれも `message` に `作業場` と `ワークスペース` がある'
+      - name: test_find_avoided_terms_ignores_code_links_and_headings
+        case: 正常
+        summary: 見出し・リンクの中・行内のコード・コードブロック・用語集の表の中のやめた言い方を返さない
+        condition: '`作業場` を見出し・リンクの文字・行内のコード・コードブロック・`glossary` の印で囲んだ表にだけ書いた本文'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_avoided_terms_prefers_term_words
+        case: 正常
+        summary: やめた言い方が用語の語の一部として出たところと、同じ行に 2 回出たやめた言い方を数え分ける
+        condition: 用語 `作業場所`（`avoid` なし）と用語 `ワークスペース`（`avoid` に `作業場`）。本文の 1 行目が `作業場所を開く。`、3 行目が `作業場と作業場。`
+        mock: なし
+        expected: '`where` が `3 行目` の 1 件だけ'
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
     container: src/knowledge/index-shape.ts
     summary: 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`）と必須か。`normalizeIndex` がこれで検査する
-    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "string[]", required: false }, related: { type: "string[]", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false } } }'
+    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "string[]", required: false }, related: { type: "string[]", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'
     refs:
       - dev/設計書/ER図/索引#
 test_files:
