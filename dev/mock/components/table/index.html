@@ -447,8 +447,8 @@
   <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-columns-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
-    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
-    <p class="mdmark-columns-note" hidden>最後の 1 列は隠せません</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
     <button class="mdmark-columns-reset" type="button">既定に戻す</button>
   </div>
 </div>
@@ -477,8 +477,8 @@
   <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-columns-open-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
-    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
-    <p class="mdmark-columns-note" hidden>最後の 1 列は隠せません</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
     <button class="mdmark-columns-reset" type="button">既定に戻す</button>
   </div>
 </div>
@@ -487,18 +487,18 @@
         <div class="catalog-spacer" aria-hidden="true"></div>
       </section>
 
-      <!-- 最後の 1 列（名前と更新日を隠し、説明だけを出した。説明のチェックは外せない） -->
-      <section aria-labelledby="state-columns-last">
-        <h2 class="catalog-label" id="state-columns-last">最後の 1 列（名前と更新日を隠し、説明だけを出した。説明のチェックは外せない）</h2>
+      <!-- 先頭の列は隠せない（説明を出し、更新日を外した。名前のチェックは外せない） -->
+      <section aria-labelledby="state-columns-first">
+        <h2 class="catalog-label" id="state-columns-first">先頭の列は隠せない（説明を出し、更新日を外した。名前のチェックは外せない）</h2>
         <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-hidden-columns="0,2" data-mock-open="columns">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="2" data-mock-open="columns">
   <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-last-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-first-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
     </div>
   </div>
-  <table tabindex="0" aria-label="表: 最後の 1 列">
+  <table tabindex="0" aria-label="表: 先頭の列は隠せない">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
@@ -507,10 +507,10 @@
     </tbody>
   </table>
   <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
-  <div class="mdmark-columns-menu" id="t-columns-last-columns" role="dialog" hidden aria-label="表示する列">
+  <div class="mdmark-columns-menu" id="t-columns-first-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
-    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0">名前</label></li><li><label><input type="checkbox" value="1" checked>説明</label></li><li><label><input type="checkbox" value="2">更新日</label></li></ul>
-    <p class="mdmark-columns-note" hidden>最後の 1 列は隠せません</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1" checked>説明</label></li><li><label><input type="checkbox" value="2">更新日</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
     <button class="mdmark-columns-reset" type="button">既定に戻す</button>
   </div>
 </div>
@@ -636,8 +636,8 @@
   <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-copy-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
-    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
-    <p class="mdmark-columns-note" hidden>最後の 1 列は隠せません</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
     <button class="mdmark-columns-reset" type="button">既定に戻す</button>
   </div>
 </div>
@@ -800,8 +800,8 @@
   <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-all-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
-    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>数量</label></li></ul>
-    <p class="mdmark-columns-note" hidden>最後の 1 列は隠せません</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>数量</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
     <button class="mdmark-columns-reset" type="button">既定に戻す</button>
   </div>
 </div>
@@ -838,8 +838,8 @@
   <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-total-warning-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
-    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked>名前</label></li><li><label><input type="checkbox" value="1" checked>数量</label></li><li><label><input type="checkbox" value="2" checked>単価</label></li></ul>
-    <p class="mdmark-columns-note" hidden>最後の 1 列は隠せません</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1" checked>数量</label></li><li><label><input type="checkbox" value="2" checked>単価</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
     <button class="mdmark-columns-reset" type="button">既定に戻す</button>
   </div>
 </div>

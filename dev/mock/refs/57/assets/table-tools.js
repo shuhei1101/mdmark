@@ -23,7 +23,7 @@
   const COPIED_NOTICE_MS = 2000;
 
   // 集計の種類ごとの見出し
-  const TOTAL_LABELS = { sum: "合計", avg: "平均", count: "件数" };
+  const TOTAL_LABELS = { sum: "合計", avg: "平均", count: "個数" };
 
   // 集計の値の書式: 桁区切りを付け、小数は 2 桁までにする
   const totalFormat = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 2 });
@@ -102,13 +102,12 @@
     }
     const menu = wrapper.querySelector(".mdmark-columns-menu");
     if (!menu) return;
-    // 最後の 1 列は外せない: そのチェックボックスを押せなくし、理由を出す
+    // 先頭の列（行の識別子）は外せない: そのチェックボックスは押せないまま、理由をメニューの中に出しておく
     for (const input of menu.querySelectorAll(".mdmark-columns-options input")) {
       const index = Number(input.value);
       input.checked = !hidden.has(index);
-      input.disabled = shownCount === 1 && input.checked;
+      input.disabled = index === 0;
     }
-    menu.querySelector(".mdmark-columns-note").hidden = shownCount > 1;
     const button = wrapper.querySelector(`[aria-controls="${menu.id}"]`);
     button.classList.toggle("is-active", hidden.size > 0);
     button.querySelector(".mdmark-visually-hidden").textContent = hidden.size ? `（${hidden.size} 列を隠しています）` : "";

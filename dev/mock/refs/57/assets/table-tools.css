@@ -124,14 +124,14 @@
         accent-color: var(--mdmark-color-link);
       }
 
-      /* 外せない最後の 1 列: 押せないことを薄い文字で示す（理由はメニューの中の文に書く） */
+      /* 外せない先頭の列: 押せないことを薄い文字で示す（理由はメニューの中の文に書く） */
       label:has(input:disabled) {
         color: var(--mdmark-color-muted);
         cursor: default;
       }
     }
 
-    /* 最後の 1 列を外せない理由 */
+    /* 先頭の列を外せない理由 */
     .mdmark-columns-note {
       margin: 0;
       color: var(--mdmark-color-muted);
@@ -177,7 +177,7 @@
       background: var(--mdmark-color-table-head);
     }
 
-    /* 集計の種類（合計・平均・件数）: 値の前に小さく控えめに出す */
+    /* 集計の種類（合計・平均・個数）: 値の前に小さく控えめに出す */
     .mdmark-total-label {
       margin-inline-end: 0.5em;
       color: var(--mdmark-color-muted);
