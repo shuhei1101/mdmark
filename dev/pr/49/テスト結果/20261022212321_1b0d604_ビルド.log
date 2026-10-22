@@ -1,9 +1,9 @@
-# commit: b25d8ed
+# commit: 1b0d604
 $ npm run build
 
 > build
 > node scripts/build.ts
 
 59309 dist/index.css
-336840 dist/index.js
+337989 dist/index.js
 上限: 360448 バイト（352KB）
