@@ -611,7 +611,7 @@ elements:
     description: コメントが付いた本文の文字を包む印。同じ箇所のコメントは 1 つの印にまとめる。本文の文字は変えない
     visible_when: '`load` が返したコメントの箇所が本文に見つかったときと、保存できたとき'
     source: コメントを付ける.request.opts.store（`load` の戻り値）
-    action: 押下・Enter・Space でコメントの吹き出しを開く。印刷では地の色だけを残す
+    action: 押下・Enter・Space でコメントの吹き出しを開く。印刷では地の色を外し、下線だけを残す
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
     status: planned

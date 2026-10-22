@@ -124,7 +124,7 @@ const handle = await mountComments(document.querySelector("#panel"), {
 印は要素の文字を変えない。
 コメントのボタン・入力欄・吹き出しは `document.body` に置く。
 戻り値は `Promise<{ destroy }>`。
-型 `mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 
 #### 片付ける
 

@@ -48,4 +48,4 @@ refs:
 status: planned
 notes:
   HTML: '`<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false" aria-describedby="mdmark-comment-hint">{text}</mark>`。モックは `dev/mock/components/comment/`'
-  印刷: 地の色だけを残す
+  印刷: 地の色を外し、下線だけを残す
