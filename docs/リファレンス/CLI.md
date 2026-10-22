@@ -156,7 +156,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 ずれ 2 件
 ```
 
-種類は次の 6 つ。
+種類は次の 7 つ。
 
 <!-- table: data -->
 
@@ -168,10 +168,11 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `orphan_doc` | 文書があって、索引に無い |
 | `broken_ref` | `related` の `id` が索引に無い |
 | `duplicate_term` | 用語の語か別名が重なっている |
+| `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
 
 <!-- /table -->
 
-`missing_doc` 以降の 4 つは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`missing_doc` 以降の 5 つは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
 
 ### 使い方
 
