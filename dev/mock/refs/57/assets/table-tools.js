@@ -162,9 +162,7 @@
   const followMenuButton = (event) => {
     if (!openMenu || (event.target instanceof Node && openMenu.menu.contains(event.target))) return;
     const rect = openMenu.button.getBoundingClientRect();
-    // モックで開いたまま見せるメニューは、画面から出ても閉じない
-    const pinnedOpen = openMenu.menu.closest(".mdmark-table").dataset.mockOpen === "columns";
-    if (!pinnedOpen && (rect.bottom < 0 || rect.top > window.innerHeight)) closeMenu(false);
+    if (rect.bottom < 0 || rect.top > window.innerHeight) closeMenu(false);
     else placeMenu(openMenu.menu, openMenu.button);
   };
   document.addEventListener("scroll", followMenuButton, true);
@@ -211,7 +209,7 @@
   /** URL の #ID が表の行を指すとき、閉じた表・閉じた節を開き、絞り込みで隠れていれば外してから行へ移り、行を強調する。 */
   const revealRow = () => {
     const id = decodeURIComponent(location.hash.slice(1));
-    const row = id && document.getElementById(id);
+    const row = id ? document.getElementById(id) : null;
     if (!row?.matches(".mdmark-table tbody tr")) return;
     const wrapper = row.closest(".mdmark-table");
     // 閉じた表: 折り畳みを開く
@@ -222,9 +220,13 @@
       const toggle = document.querySelector(`[aria-controls="${body.id}"]`);
       if (toggle?.getAttribute("aria-expanded") === "false") toggle.click();
     }
-    // 絞り込みで隠れた行: その表の絞り込みを全て外す
+    // 絞り込みで隠れた行: その表の絞り込みの入力を全て空にし、絞り込みを当て直させる
     if (row.hidden) {
-      for (const clear of wrapper.querySelectorAll(".mdmark-filter-clear")) clear.click();
+      for (const input of wrapper.querySelectorAll(".mdmark-filter-drawer input:not(.mdmark-filter-search)")) {
+        if (input.type === "checkbox") input.checked = false;
+        else input.value = "";
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     }
     for (const other of document.querySelectorAll(".mdmark-table tr.is-target")) other.classList.remove("is-target");
     row.classList.add("is-target");
@@ -250,7 +252,15 @@
     const menu = wrapper.querySelector(".mdmark-columns-menu");
     if (menu) {
       const button = wrapper.querySelector(`[aria-controls="${menu.id}"]`);
-      button.addEventListener("click", () => (menu.hidden ? openColumnsMenu(menu, button, true) : closeMenu(false)));
+      button.addEventListener("click", () => {
+        if (menu.hidden) openColumnsMenu(menu, button, true);
+        else if (openMenu?.menu === menu) closeMenu(false);
+        else {
+          // モックで開いたまま見せているメニュー: 閉じるだけにする
+          menu.hidden = true;
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
       for (const input of menu.querySelectorAll(".mdmark-columns-options input")) {
         input.addEventListener("change", () => {
           const hidden = hiddenColumns.get(wrapper);
@@ -263,7 +273,11 @@
         hiddenColumns.set(wrapper, defaultHidden(wrapper));
         applyColumns(wrapper);
       });
-      if (wrapper.dataset.mockOpen === "columns") openColumnsMenu(menu, button, false);
+      // モックで開いたまま見せるメニュー: 表の入れ物の中に置き（catalog.css）、スクロールに付いて動かさない
+      if (wrapper.dataset.mockOpen === "columns") {
+        menu.hidden = false;
+        button.setAttribute("aria-expanded", "true");
+      }
     }
 
     // 表のコピー

@@ -1,8 +1,20 @@
-/* 表の部品のカタログのモック専用の追加分: 開いたまま見せるメニューの余白と、URL の #ID を変える移る先のリンク */
+/* 表の部品のカタログのモック専用の追加分: 開いたまま見せるメニューの置き方と余白、URL の #ID を変える移る先のリンク */
+
+/* 開いたまま見せるメニューを持つ表の入れ物: メニューを置く基準にする */
+.mdmark .mdmark-table[data-mock-open] {
+  position: relative;
+}
+
+/* 開いたまま見せるメニュー: 実装と同じくボタンの下に重ねるが、画面に留めずに表の入れ物の中に置く */
+.mdmark .mdmark-table[data-mock-open] .mdmark-columns-menu {
+  position: absolute;
+  top: 2.25rem;
+  left: 0;
+}
 
 /* 開いたまま見せるメニューの分の余白: 次の見本にメニューを重ねない */
 .catalog-spacer {
-  height: 12rem;
+  height: 9rem;
 }
 
 /* 移る先のリンク（モック専用）: 状態の名前と同じ控えめな文字で、見本の上に置く */

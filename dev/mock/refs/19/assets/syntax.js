@@ -121,7 +121,9 @@
       item.hidden = !match;
       if (match) shown += 1;
     }
-    drawer.querySelector(".mdmark-filter-none").hidden = shown > 0;
+    // 一致する候補が無いときの文: 候補を持たない絞り込み（文字・日付）には無い
+    const none = drawer.querySelector(".mdmark-filter-none");
+    if (none) none.hidden = shown > 0;
   };
 
   /** ドロワーを押した見出しのボタンの下に置き、画面の端からはみ出さないようにする。 */
