@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { DiffHtmlRenderer } from "../../../../src/diff/panel.ts";
 import type { DiffRevision, DiffSource } from "../../../../src/diff/source.ts";
 
 /** 差分を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -69,14 +70,10 @@ function createRoot(): HTMLElement {
 async function attachTracked(
   root: HTMLElement,
   source: DiffSource,
+  renderHtml: DiffHtmlRenderer = (html) => ({ html, attach: () => () => {} }),
 ): Promise<() => void> {
   const { attachDiff } = await loadPanel();
-  const detach = attachDiff({
-    root,
-    source,
-    docId: "guide",
-    renderHtml: (html: string) => html,
-  });
+  const detach = attachDiff({ root, source, docId: "guide", renderHtml });
   detaches.push(detach);
   return detach;
 }
@@ -370,4 +367,83 @@ test("test_attach_diff_when_content_loading", async () => {
   expect(root.querySelector(".mdmark-diff-summary")?.textContent).toBe("");
   expect(spinner?.getAttribute("aria-hidden")).toBe("true");
   expect(root.querySelector("select")).not.toBeNull();
+});
+
+/** 埋め込んだ HTML の範囲を 1 つ持つ本文。表のセルの件数を引数で変える */
+function tableDocument(count: number): string {
+  return `# ガイド\n<!-- html -->\n\`\`\`html\n<table><tr><td>${count}</td></tr></table>\n\`\`\`\n<!-- /html -->\n`;
+}
+
+// プレビューの前と後に操作を付け、選び直しと閉じるで外す（正常系）
+test("test_attach_diff_when_preview_attached", async () => {
+  // 準備
+  const contents: Record<string, string> = {
+    r3: tableDocument(150),
+    r2: tableDocument(120),
+    r1: tableDocument(100),
+  };
+  const source = createSource({
+    content: async ({ revisionId }) => contents[revisionId] ?? "",
+  });
+  const attached: HTMLElement[] = [];
+  const detached: HTMLElement[] = [];
+  const root = createRoot();
+  await attachTracked(root, source, (html) => ({
+    html,
+    attach: (element) => {
+      attached.push(element);
+      return () => {
+        detached.push(element);
+      };
+    },
+  }));
+  // 実行: 開く
+  clickToggle(root);
+  await vi.waitFor(() => {
+    expect(attached).toHaveLength(2);
+  });
+  // 検証: 前と後のプレビューの中身に 1 回ずつ付き、まだ外れていない
+  const sides = root.querySelectorAll(".mdmark-diff-side");
+  expect(sides).toHaveLength(2);
+  expect(attached.every((element) => root.contains(element))).toBe(true);
+  expect(sides[0]?.contains(attached[0] ?? null)).toBe(true);
+  expect(sides[1]?.contains(attached[1] ?? null)).toBe(true);
+  expect(detached).toHaveLength(0);
+  // 実行: 前を選び直す
+  const before = findSelect(root, "前のリビジョン");
+  before.value = "r1";
+  before.dispatchEvent(new Event("change", { bubbles: true }));
+  // 検証: 前の 2 つが外され、新しい 2 つが付く
+  await vi.waitFor(() => {
+    expect(attached).toHaveLength(4);
+  });
+  expect(detached).toEqual(attached.slice(0, 2));
+  // 実行: 閉じる
+  clickToggle(root);
+  // 検証: 全て外される
+  expect(detached).toHaveLength(4);
+});
+
+// id と、それを指す属性に頭を付ける（正常系）
+test("test_scope_ids", async () => {
+  // 準備
+  const { scopeIds } = await loadPanel();
+  const root = document.createElement("div");
+  root.innerHTML =
+    '<figure><figcaption id="d-1-title">題</figcaption><div aria-labelledby="d-1-title" aria-describedby="outside"><svg><line marker-end="url(#d-1-arrow)"></line><marker id="d-1-arrow"></marker></svg></div></figure>';
+  document.body.append(root);
+  roots.push(root);
+  // 実行
+  scopeIds({ root, prefix: "p-1-before-" });
+  // 検証
+  expect(root.querySelector("figcaption")?.id).toBe("p-1-before-d-1-title");
+  expect(root.querySelector("marker")?.id).toBe("p-1-before-d-1-arrow");
+  const labelled = root.querySelector("div");
+  expect(labelled?.getAttribute("aria-labelledby")).toBe(
+    "p-1-before-d-1-title",
+  );
+  expect(labelled?.getAttribute("aria-describedby")).toBe("outside");
+  expect(root.querySelector("line")?.getAttribute("marker-end")).toBe(
+    "url(#p-1-before-d-1-arrow)",
+  );
 });
