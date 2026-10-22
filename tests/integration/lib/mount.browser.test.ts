@@ -793,6 +793,10 @@ test("test_normal_when_table_row_linked", async () => {
   )) {
     expect(row.hasAttribute("hidden")).toBe(false);
   }
+  // 絞り込みのボタンが絞り込み中のままでない（見た目と読み上げの文字）
+  const filterButton = find<HTMLElement>(second, "button.mdmark-filter");
+  expect(filterButton.classList.contains("is-active")).toBe(false);
+  expect(filterButton.textContent).not.toContain("（絞り込み中）");
   // 実行・検証: まとめた HTML の # の形
   location.hash = "#/a.md#みかん";
   await vi.waitFor(() => {
