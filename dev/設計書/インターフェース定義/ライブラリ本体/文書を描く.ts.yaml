@@ -720,9 +720,318 @@ flows:
       - '`hint` の箱の印の上で `hint` の文のツールチップが出て、箱の名前の上では出ない'
       - ページの中のツールチップの `id` が重ならない
     test: test_normal_when_embedded_hint
+  - name: 正常系（差分を開く）
+    summary: 取り出し元を渡して描き、「変更を見る」で一番新しい 2 つのリビジョンの差分を出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 3 つのリビジョンの取り出し元
+        description: '`r1`・`r2`・`r3` を新しい順に返し、`r2` から `r3` で段落の 1 行の語 `差分` を `変更` に書き換え、行を 1 つ足し、別の行を 1 つ消した本文を返す `DiffSource`。受けた呼び出しの引数を記録する'
+        notes: '`opts.docId` は `guide`。文書は `h1` で始まる'
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource })
+        M->>P: 文書を描き、題の後ろに「変更を見る」を置く
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: r3・r2・r1
+        M->>S: content を r2 と r3 で
+        S-->>M: 2 つの Markdown
+        M->>P: 本文を隠し、差分を出す
+    expected:
+      - '`mount` の直後は `revisions` が呼ばれず、`h1` の後ろに `aria-expanded="false"` の「変更を見る」のボタンがある'
+      - 押すと、ボタンが `aria-expanded="true"` になり、`h1` を残して本文が隠れる
+      - '`revisions` が `guide` で 1 回、`content` が `{ docId: "guide", revisionId: "r2" }` と `{ docId: "guide", revisionId: "r3" }` で 1 回ずつ呼ばれる'
+      - 前の選ぶ欄で `r2`、後の選ぶ欄で `r3` が選ばれ、前の欄の `r3` と後の欄の `r2`・`r1` を選べない
+      - 消した行が `data-kind="del"` で行頭に `-` を持ち、足した行が `data-kind="add"` で行頭に `+` を持つ
+      - 語を書き換えた行の対で、`del` が `差分` だけ、`ins` が `変更` だけを囲む
+      - '`role="status"` の要素が `削除した行 2・追加した行 2` を持つ'
+      - ミニマップの帯があり、消した行と足した行の印を持つ
+    test: test_normal_when_diff_opened
+  - name: 正常系（リビジョンを選び直す）
+    summary: 前のリビジョンを選び直すと、その 2 つの差分に描き直す
+    setup:
+      - name: 差分を開いたページ
+        description: 正常系（差分を開く）で差分を出した後のページ
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 前の選ぶ欄で r1 を選ぶ
+        M->>S: content を r1 と r3 で
+        S-->>M: 2 つの Markdown
+        M->>P: r1 と r3 の差分に描き直す
+    expected:
+      - '`content` が `r1` と `r3` の `revisionId` で呼ばれる'
+      - 後の選ぶ欄は `r3` のまま、`r1` を選べない
+      - 差分の行が `r1` と `r3` の比較に替わる
+    test: test_normal_when_revision_reselected
+  - name: 正常系（リビジョンが 1 つ）
+    summary: リビジョンが 1 つなら本文を取り出さず、比較対象が無いことを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 1 つのリビジョンの取り出し元
+        description: '`revisions` が `r1` だけを返す `DiffSource`'
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: r1
+        M->>P: 比較対象が無いことを出す
+    expected:
+      - 差分の場所が `この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。` を持つ
+      - '`content` が呼ばれない'
+      - 選ぶ欄とミニマップが無い
+    test: test_normal_when_single_revision
+  - name: 正常系（変更が無い）
+    summary: 選んだ 2 つの本文が同じなら、行を出さずに変更が無いことを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 同じ本文の取り出し元
+        description: '`r1`・`r2` を返し、`content` がどちらにも同じ Markdown を返す `DiffSource`'
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions と content を 2 回
+        S-->>M: 同じ 2 つの Markdown
+        M->>P: 変更が無いことを出す
+    expected:
+      - 差分の場所が `選んだ 2 つのリビジョンの本文に、変更はありません。` を持つ
+      - '`mdmark-diff-line` の要素とミニマップが無い'
+      - 選ぶ欄は残る
+    test: test_normal_when_no_change
+  - name: 正常系（語の区切りを持たない）
+    summary: '`Intl.Segmenter` を持たないブラウザでは、対の行を文字ごとに比べる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じで、配布物を読む前に `Intl.Segmenter` を消したページ
+      - name: Mock
+        description: 正常系（差分を開く）と同じ取り出し元
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions と content を 2 回
+        S-->>M: 2 つの Markdown
+        M->>P: 文字ごとに比べた差分を出す
+    expected:
+      - 語を書き換えた行の対で、変わった文字だけが `del`・`ins` で囲まれる
+      - '`mount` と差分を開く操作が例外を投げない'
+    test: test_normal_when_segmenter_missing
+  - name: 正常系（埋め込んだ HTML をプレビューに切り替える）
+    summary: 変えた埋め込んだ HTML の範囲を、ソースの色分けから前と後のプレビューへ切り替えて戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 埋め込んだ HTML の取り出し元
+        description: '`r1`・`r2` を返し、表の 1 つのセルの数を変えた `<!-- html -->` の範囲・変えていない範囲・`r2` にだけある範囲を持つ本文を返す `DiffSource`'
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 差分を開く
+        M->>P: 範囲をソースの色分けで出す
+        P->>M: 変えた範囲の「プレビュー」を押す
+        M->>P: 前と後の HTML を並べて描く
+        P->>M: 「ソース」を押す
+        M->>P: ソースの色分けに戻す
+    expected:
+      - 各範囲の見出しに `HTML` のラベルがある
+      - 変えた範囲だけが `aria-label="HTML の見方"` の「ソース」「プレビュー」のボタンを持ち、変えていない範囲は持たない
+      - 既定は「ソース」が `aria-pressed="true"` で、範囲の行が色分けされる
+      - 「プレビュー」を押すと、前と後の表が並び、前のセルが元の数、後のセルが変えた数を持つ
+      - '`r2` にだけある範囲のプレビューで、前の側が `前のリビジョンには、この範囲がありません` を持つ'
+      - 「ソース」を押すと色分けの行に戻る
+    test: test_normal_when_html_previewed
+  - name: 正常系（ミニマップで送る）
+    summary: 長い文書の差分で、ミニマップの帯を押す・押したまま動かすと差分を送る
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じで、ページ全体がスクロールするページ
+      - name: 長い文書の取り出し元
+        description: 変えていない行が多く画面に収まらない長さで、前半と後半に変えた行がある `r1`・`r2` を返す `DiffSource`
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 差分を開く
+        M->>P: 画面の右端にミニマップを置く
+        P->>M: 帯の後半の印の位置を押す
+        M->>P: 後半の変えた行が見えるまで送る
+        P->>M: 帯を押したまま上へ動かす
+        M->>P: 前半の変えた行が見えるまで送る
+    expected:
+      - ミニマップの帯が `aria-hidden` を持ち、画面の右端に画面の高さいっぱいで置かれる
+      - 帯の後半の印の位置を押すと、後半の変えた行が画面に入る
+      - 押したまま上へ動かすと、前半の変えた行が画面に入る
+      - 今見えている範囲の枠が、送りに合わせて動く
+    test: test_normal_when_scrolled_by_minimap
+  - name: 正常系（差分を閉じる）
+    summary: 「変更を見る」を押し直すと差分とミニマップを片付けて本文に戻す
+    setup:
+      - name: 差分を開いたページ
+        description: 正常系（差分を開く）で差分を出した後のページ
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 「変更を見る」を押し直す
+        M->>P: 差分とミニマップを片付け、本文を出す
+    expected:
+      - ボタンが `aria-expanded="false"` になり、フォーカスがボタンに残る
+      - 差分の行・選ぶ欄・ミニマップが無くなり、本文が開く前と同じに出る
+    test: test_normal_when_diff_closed
+  - name: 正常系（待つ間に片付ける）
+    summary: 取り出し元の待ちの間に `destroy` すると、後から返った結果を描かない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 待たせる取り出し元
+        description: '`revisions` がテストの合図まで返らない `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で合図を待つ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        P->>M: destroy()
+        S-->>M: r3・r2・r1
+        M->>M: 結果を捨てる
+    expected:
+      - 待ちが 1 秒を過ぎると差分の場所に `変更を読み込んでいます` が出る
+      - '`destroy` の後に `revisions` が返っても、`el` の中は空のまま'
+      - '`content` が呼ばれない'
+    test: test_normal_when_destroyed_while_waiting
+  - name: 異常系（リビジョンの一覧を取り出せない・知らせの枠）
+    summary: '`revisions` が reject すると差分の場所を知らせの枠にし、本文は残す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 一覧を返せない取り出し元
+        description: '`revisions` が `Error("network")` で reject する `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で reject する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: reject
+        M->>P: 差分の場所を知らせの枠にする
+    expected:
+      - 差分の場所の要素が class `mdmark-notice` と `role="status"` を持つ
+      - 題が `変更の履歴を表示できません`、本文が `リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。`
+      - '`content` が呼ばれず、例外が投げられない'
+      - 「変更を見る」を押し直すと、本文が開く前と同じに出る
+      - '`console.error` が 1 回呼ばれ、引数に `revisions`・`guide`・元のエラーを含む'
+    test: test_error_when_revisions_rejected
+  - name: 異常系（本文を取り出せない・知らせの枠）
+    summary: '`content` が 1 つのリビジョンで reject すると、選ぶ欄を残して知らせの枠を出し、選び直せば差分を出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: r1 の本文を返せない取り出し元
+        description: 正常系（差分を開く）の取り出し元で、`content` が `r1` のときだけ reject する
+      - name: Mock
+        description: 取り出し元はページの中で reject する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 前の選ぶ欄で r1 を選ぶ
+        M->>S: content を r1 で
+        S-->>M: reject
+        M->>P: 差分の行の場所を知らせの枠にする
+        P->>M: 前の選ぶ欄で r2 を選び直す
+        M->>S: content を r2 で
+        S-->>M: Markdown
+        M->>P: r2 と r3 の差分を出す
+    expected:
+      - 題が `このリビジョンの本文を表示できません`、本文が `r1` のリビジョンの説明を `「」` で囲んだ `…の本文を取り出せませんでした。別のリビジョンを選んでください。`
+      - 選ぶ欄が残り、ミニマップと `削除した行・追加した行` の数が無い
+      - '`r2` を選び直すと、知らせの枠が消えて `r2` と `r3` の差分が出る'
+      - '`console.error` が引数に `content`・`guide`・`r1`・元のエラーを含む'
+    test: test_error_when_content_rejected
+  - name: 異常系（リビジョンの形が合わない・知らせの枠）
+    summary: '`revisions` が形に合わない値を返すと、取り出せないときと同じ知らせの枠を出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 形が合わない取り出し元
+        description: '`revisions` が `at` を持たないリビジョンを含む配列を返す `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: at の無いリビジョン
+        M->>P: 差分の場所を知らせの枠にする
+    expected:
+      - 題が `変更の履歴を表示できません` の知らせの枠が出る
+      - '`content` が呼ばれず、例外が投げられない'
+      - '`console.error` が引数に `revisions`・`guide`・合わなかった値を含む'
+    test: test_error_when_revisions_malformed
+  - name: 異常系（docId が無い・TypeError）
+    summary: 取り出し元を渡して `docId` を渡さないと、何も描かずに TypeError を投げる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 取り出し元
+        description: 正常系（差分を開く）の `DiffSource`
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, diffSource })
+        M-->>P: TypeError
+    expected:
+      - '`mount` が `TypeError` を投げ、メッセージに `docId` を含む'
+      - '`el` の中身と class が変わらない'
+      - '`revisions` が呼ばれない'
+    test: test_error_when_doc_id_missing
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -742,6 +1051,9 @@ callers:
   - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る#
   - dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す#
   - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを当てる#
+  - dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す#
+  - dev/設計書/シナリオ/単一ユースケース/文書の差分を見る#
+  - dev/設計書/シナリオ/単一ユースケース/埋め込んだHTMLの差分を切り替える#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -798,6 +1110,14 @@ request:
     location: argument
     description: '`collectReferences` が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う'
     notes: 形はインターフェース定義『参照の表を作る』のレスポンス
+  - name: opts.diffSource
+    type: DiffSource
+    required: false
+    default: なし（差分を開く UI を付けない）
+    location: argument
+    description: 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元。渡すと、描いた文書に差分を開く UI が付く
+    constraints: '`opts.docId` と一緒に渡す'
+    notes: 形は制約の「差分の取り出し元」。Git・YAML の読み方は mdmark が持たず、使う側が書く
 request_example: |-
   ```json
   {
@@ -823,6 +1143,12 @@ exceptions:
   - name: なし（知らせの枠）
     condition: 外部ライブラリのモジュールを読めない、またはモジュールの `draw` が例外を投げる
     notes: 例外を投げず、その印の場所だけを知らせの枠に替える。印の名前・URL・元のエラーを `console.error` に出す
+  - name: TypeError
+    condition: '`opts.diffSource` を渡し、`opts.docId` を渡さない'
+    notes: 何も描かずに投げる。取り出し元に渡す文書の `id` が無く、使う側の誤りのため
+  - name: なし（差分の知らせの枠）
+    condition: 取り出し元の `revisions`・`content` が reject するか、返した値が制約の「差分の取り出し元」の形に合わない
+    notes: 例外を投げず、差分の場所を知らせの枠に替え、文書の本文は描いたまま残す。取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーか合わなかった値を `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -888,4 +1214,31 @@ constraints:
   - item: ヒントの操作
     constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
     notes: 印だけで開くのとポインターの形は確認ログの決定
+  - item: 差分の取り出し元
+    constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
+    notes: '`content` は ID が 2 つ並ぶためオブジェクトで受ける（外部規約『関数とオブジェクト引数』）。形が合わないのは使う側の開発者の誤りで、読む人の操作では起きない（計画書）'
+  - item: 差分を開く UI
+    constraint: '`opts.diffSource` を渡したとき、文書の題（先頭の `h1`）の後ろ、`h1` が無ければ文書の先頭に、`aria-expanded`・`aria-controls` を持つ「変更を見る」のボタンを置く。押すと、題を残して文書の本文を隠し、その場所に差分を出す。押し直すと差分を片付けて本文に戻し、フォーカスはボタンに残す。`update` は差分を閉じて本文を描き直し、`destroy` は差分と取り出し元の待ちを片付ける'
+    notes: 置き方は確認ログのモックへの合意。見た目は画面設計『文書』
+  - item: 比べる 2 つのリビジョン
+    constraint: 差分を開くたびに `revisions` を 1 回呼ぶ。2 つ以上あれば、前に 2 番目・後に 1 番目のリビジョンを選び、`content` を前と後に 1 回ずつ呼ぶ。前と後の選ぶ欄の項目は、日時（JST）と `label`・`author` を並べる。前の欄では一番新しいリビジョンを、後の欄では前に選んだもの以前のリビジョンを選べなくし、前を選び直して後が前以前になったら、後を前の 1 つ新しいリビジョンに移す。選び直すたびに選んだ 2 つの `content` を呼び直す。リビジョンが 1 つなら `content` を呼ばず、`この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。` を出す
+    notes: 文面は確認ログの決定
+  - item: 差分の待ち
+    constraint: 取り出し元の待ちが 1 秒を過ぎたら差分の場所に `変更を読み込んでいます` の枠を出し、2 秒を過ぎたら回る表示を足す。待つ間に選び直す・閉じる・`update`・`destroy` があったら、前の待ちの結果は描かない。mdmark は待ちを時間で打ち切らず、打ち切るときは取り出し元が reject で返す
+    notes: 古い結果を捨てるのは、本文の描き直しの世代の番号と同じ作り
+  - item: 差分の計算
+    constraint: 2 つの Markdown のソースを行ごとに比べる。変えた塊の中で、消した行と足した行を前から順に対にし、対の行を語ごとに比べる。語の区切りは `Intl.Segmenter`（`ja`・`word`）で、持たないブラウザでは 1 文字ずつ比べる
+    notes: 比べるライブラリ（jsdiff）はモジュール構成設計で差分の計算の関数型の後ろに置く
+  - item: 差分の行
+    constraint: 'ソースの行を、文字のまま 1 行ずつ出す。前にだけある行は class `mdmark-diff-line`・`data-kind="del"`、後にだけある行は `data-kind="add"`、同じ行は `data-kind="same"` を持つ。消した行・足した行は行頭に `-`・`+` の印（`aria-hidden`）と、読み上げの名前 `削除した行: `・`追加した行: `（見えない文字）を持つ。対の行で変わった語は、消した側を `del`、足した側を `ins` で囲む。選ぶ欄の下の `role="status"` に `削除した行 {数}・追加した行 {数}` を出す。2 つの本文が同じなら行を出さず、`選んだ 2 つのリビジョンの本文に、変更はありません。` を出す'
+    notes: 色は `--mdmark-color-diff-*` の CSS 変数（モジュール構成設計）
+  - item: 埋め込んだ HTML の差分
+    constraint: 差分の中の `<!-- html -->` 〜 `<!-- /html -->` の範囲は、範囲の見出しの右端に `HTML` のラベルを置く。前か後で変えた範囲だけ、見出しに `role="group"`・`aria-label="HTML の見方"` の中に `aria-pressed` を持つ「ソース」「プレビュー」のボタンを置く。既定はソースの行の色分けで、「プレビュー」を押すと、範囲の前と後の HTML を今の埋め込んだ HTML の描画（スクリプトとイベントの属性を落とす）で並べる。片側にしか無い範囲は、無い側に `{前か後}のリビジョンには、この範囲がありません` を出す
+    notes: D-48・確認ログの語彙
+  - item: 差分の知らせの枠
+    constraint: 知らせの枠と同じ要素に置く。`revisions` を取り出せないときは、題 `変更の履歴を表示できません`・本文 `リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。` を差分の場所に出す。`content` を取り出せないときは、選ぶ欄を残し、題 `このリビジョンの本文を表示できません`・本文 `「{リビジョンの説明}」の本文を取り出せませんでした。別のリビジョンを選んでください。`（2 つとも取り出せなければ `「…」と「…」`）を差分の行の場所に出し、選び直せば差分を描き直す
+    notes: 文面は確認ログの決定
+  - item: ミニマップ
+    constraint: 差分の行を出している間、送り先のスクロールの右端に、その高さいっぱいの帯（`aria-hidden`）を貼り付ける。送り先は差分の行の一番近いスクロールする祖先で、無ければ画面。帯は送り先の全体を写し、消した行は左半分の赤・足した行は右半分の緑の印（続いた同じ種類の行は 1 つの印にまとめ、プレビューに切り替えた範囲は範囲ごと 1 つの印）にし、今見えている範囲を枠で示す。帯を押すとその位置を送り先の中ほどに置くよう送り、押したまま上下に動かすとそれに合わせて送る。差分を閉じる・選び直す・`destroy` で帯と受け取りを外す
+    notes: '確認ログのモックへの合意（画面の右端）。帯の本数と `position: fixed` の基準は部品設計とモジュール構成設計（計画書）'
 test_file: tests/integration/lib/mount.browser.test.ts

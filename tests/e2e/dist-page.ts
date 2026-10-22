@@ -85,7 +85,11 @@ type MdmarkWindow = Window & {
   mdmark?: {
     mount: (
       el: HTMLElement,
-      opts: { markdown: string; config?: MdmarkConfig } & IndexOptions,
+      opts: {
+        markdown: string;
+        config?: MdmarkConfig;
+        diffSource?: unknown;
+      } & IndexOptions,
     ) => { update: (markdown: string) => void; destroy: () => void };
     render: (
       markdown: string,
@@ -98,6 +102,33 @@ type MdmarkWindow = Window & {
     }) => MdmarkReferences;
   };
   handle?: { update: (markdown: string) => void; destroy: () => void };
+  diffCalls?: { revisions: string[]; content: DiffContentCall[] };
+  releaseRevisions?: () => void;
+};
+
+/** 取り出し元の `content` が受けた引数 */
+export type DiffContentCall = { docId: string; revisionId: string };
+
+/** 取り出し元のリビジョン 1 つ分 */
+export type DiffRevisionSpec = {
+  id: string;
+  at: string;
+  label?: string;
+  author?: string;
+};
+
+/** ページの中に作る取り出し元（`DiffSource`）の仕様 */
+export type DiffSourceSpec = {
+  /** `revisions` が返す値。形を壊した値も渡せる */
+  revisions: unknown;
+  /** リビジョンの `id` から本文を引く表 */
+  contents: Record<string, string>;
+  /** `revisions` が reject する */
+  failRevisions?: boolean;
+  /** `content` が reject するリビジョンの `id` */
+  failContent?: string[];
+  /** `revisions` が `releaseRevisions` を呼ぶまで返らない */
+  pendingRevisions?: boolean;
 };
 
 /** `version`（既定は `v0.0.1`）を埋めてビルドした作業ツリーを作り、その場所を返す。ビルドは入口 `node scripts/build.ts --version {版}` を流し、配布ファイルの上限は既定のままにする */
@@ -378,4 +409,82 @@ export async function sendPrintEvent(
   await page.evaluate((eventType) => {
     window.dispatchEvent(new Event(eventType));
   }, type);
+}
+
+/** ページの中に、仕様どおりの取り出し元を作って文書を描かせる。取り出し元が受けた呼び出しは `window.diffCalls` に控える。`docId` を省くと渡さない */
+export async function mountDiffDocument(
+  page: Page,
+  options: { markdown: string; docId?: string; source: DiffSourceSpec },
+): Promise<void> {
+  await page.evaluate(({ markdown, docId, source }) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    const calls = {
+      revisions: [] as string[],
+      content: [] as DiffContentCall[],
+    };
+    w.diffCalls = calls;
+    let release: () => void = () => {};
+    w.releaseRevisions = () => release();
+    const diffSource = {
+      revisions: (id: string) => {
+        calls.revisions.push(id);
+        if (source.failRevisions) {
+          return Promise.reject(new Error("network"));
+        }
+        if (source.pendingRevisions) {
+          return new Promise((resolve) => {
+            release = () => resolve(source.revisions);
+          });
+        }
+        return Promise.resolve(source.revisions);
+      },
+      content: (target: DiffContentCall) => {
+        calls.content.push(target);
+        return source.failContent?.includes(target.revisionId)
+          ? Promise.reject(new Error("content"))
+          : Promise.resolve(source.contents[target.revisionId] ?? "");
+      },
+    };
+    w.handle = w.mdmark.mount(el, { markdown, docId, diffSource });
+  }, options);
+}
+
+/** ページの中で、式の文字列が返す取り出し元（`DiffSource`）を渡して文書を描かせる。サンプルの取り出し元のコードをそのまま渡すのに使う */
+export async function mountDiffFactory(
+  page: Page,
+  options: { markdown: string; docId: string; factory: string },
+): Promise<void> {
+  await page.evaluate(({ markdown, docId, factory }) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    const diffSource = new Function(`return (${factory})`)();
+    w.handle = w.mdmark.mount(el, { markdown, docId, diffSource });
+  }, options);
+}
+
+/** ページが記録した、取り出し元の呼び出しを返す */
+export async function readDiffCalls(
+  page: Page,
+): Promise<{ revisions: string[]; content: DiffContentCall[] }> {
+  return page.evaluate(() => {
+    const calls = (window as MdmarkWindow).diffCalls;
+    if (!calls) {
+      throw new Error("取り出し元を作っていない");
+    }
+    return JSON.parse(JSON.stringify(calls));
+  });
+}
+
+/** ページの取り出し元の `revisions` を返させる（`pendingRevisions` のとき） */
+export async function releaseRevisions(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (window as MdmarkWindow).releaseRevisions?.();
+  });
 }

@@ -30,3 +30,5 @@ items:
     summary: mdmark upgrade の版の比較・移行の手順の読み取りと適用・写しと戻し・変更履歴・問い
   - page: 図.ts.yaml
     summary: 図の部品の定義の型と確かめ・線の形・部品の HTML・記法のコアルール・拡大と縮小・全画面・ツールチップ・写す操作
+  - page: 差分.ts.yaml
+    summary: 差分の取り出し元の型と検査・行と語の比較・差分を開く UI とミニマップ・差分の部品の HTML

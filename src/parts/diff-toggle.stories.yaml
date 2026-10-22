@@ -1,0 +1,16 @@
+title: Parts/DiffToggle
+stories:
+  - name: Closed
+    parameters:
+      server:
+        id: diff-toggle
+    args:
+      controls: mdmark-diff-panel-1
+      expanded: false
+  - name: Open
+    parameters:
+      server:
+        id: diff-toggle
+    args:
+      controls: mdmark-diff-panel-1
+      expanded: true

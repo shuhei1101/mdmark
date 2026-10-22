@@ -22,3 +22,5 @@ items:
     summary: CLI が設定と索引の YAML を読む（配布物に束ねない）
   - page: lucide.yaml
     summary: 図と記法のアイコンの形
+  - page: diff.yaml
+    summary: 2 つのリビジョンの Markdown を行と語で比べる（jsdiff）

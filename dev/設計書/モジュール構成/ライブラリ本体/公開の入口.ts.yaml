@@ -27,7 +27,7 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts#
 notes:
-  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`checkIndex`（`src/knowledge/check.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkReferences`・`MdmarkIndexIssue` を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
+  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`checkIndex`（`src/knowledge/check.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkReferences`・`MdmarkIndexIssue`・`DiffSource`・`DiffRevision`（`src/diff/source.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
 styles:
   - name: index
     title: 入口の CSS
@@ -77,6 +77,12 @@ styles:
       - class_name: .mdmark .mdmark-html と .mdmark-hint-*
         target: 埋め込んだ HTML とヒント
         value: '部品設計（埋め込んだHTML・ヒント）の HTML に当てる規則。`dev/mock/refs/45/assets/embed.css` から取る。`.is-wide` の間だけ横にスクロールし、ブロックの印（`.mdmark-hint-mark`）は要素の右上に `position: absolute` で置き、アイコンは lucide の `info` を `mask-image` で付ける。行内（`.mdmark-hint-inline`）は破線の下線。ツールチップは図のツールチップと同じ規則。用語・ヒント・図の線のラベルと箱の印に `cursor: help` を付けない。印刷では印とツールチップを隠し、横のスクロールをやめて紙の幅に収める'
+      - class_name: :root（差分）
+        target: 差分の変数の既定
+        value: '`--mdmark-color-diff-del-bg`（`#ffebe9`）・`-del-word`（`#ffcecb`）・`-del-sign`（`#d1242f`）・`-add-bg`（`#dafbe1`）・`-add-word`（`#aceebb`）・`-add-sign`（`#1a7f37`）、`--mdmark-diff-minimap-width`（`14px`）・`--mdmark-diff-minimap-z-index`（`10`）。ダークの値は `dev/mock/assets/style.css`'
+      - class_name: .mdmark-diff-* と body > .mdmark-diff-minimap
+        target: 差分の部品
+        value: '差分を開くボタン・リビジョンの選択・差分の行・埋め込んだ HTML の差分・差分の状態の文は `.mdmark` の下。ミニマップは `document.body` の直下に置くため `.mdmark` の外で当て、`position: fixed` と `z-index: var(--mdmark-diff-minimap-z-index)`。`@media print` ではミニマップを隠す。値は `dev/mock/assets/style.css`'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

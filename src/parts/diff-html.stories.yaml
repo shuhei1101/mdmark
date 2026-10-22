@@ -1,0 +1,46 @@
+title: Parts/DiffHtml
+stories:
+  - name: Source
+    parameters:
+      server:
+        id: diff-html
+    args:
+      sample: table
+  - name: PreviewSide
+    parameters:
+      server:
+        id: diff-html
+    args:
+      sample: table
+      view: rendered
+      sides: side
+  - name: PreviewStack
+    parameters:
+      server:
+        id: diff-html
+    args:
+      sample: table
+      view: rendered
+      sides: stack
+  - name: OneSide
+    parameters:
+      server:
+        id: diff-html
+    args:
+      sample: added
+      view: rendered
+      sides: side
+  - name: Unchanged
+    parameters:
+      server:
+        id: diff-html
+    args:
+      sample: unchanged
+  - name: ScriptDropped
+    parameters:
+      server:
+        id: diff-html
+    args:
+      sample: script
+      view: rendered
+      sides: side

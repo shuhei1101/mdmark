@@ -1,6 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { MdmarkMarkArgs } from "../../../src/extensions.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
+import { INQUIRY_COUNT_TEXT, wrapHtml } from "../helpers/charts.ts";
+import { addStyles } from "../helpers/dom.ts";
 
 /** 描く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMount = () => import("../../../src/mount.ts");
@@ -267,4 +269,131 @@ test("test_mount_when_extension_definition_invalid", async () => {
   } finally {
     resetExtensions();
   }
+});
+
+// 取り出し元を渡すと見出しの後ろに差分を開くボタンを置き、片付けると取り除く（正常系）
+test("test_mount_when_diff_source", async () => {
+  // 準備
+  const el = createElement();
+  const revisionsCalls: string[] = [];
+  const diffSource = {
+    revisions: async (docId: string) => {
+      revisionsCalls.push(docId);
+      return [];
+    },
+    content: async () => "",
+  };
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown: "# 見出し\n\n本文",
+    docId: "guide",
+    diffSource,
+  });
+  // 検証
+  const next = el.querySelector("h1")?.nextElementSibling;
+  expect(
+    next?.matches(".mdmark-diff-toggle") ||
+      next?.querySelector(".mdmark-diff-toggle"),
+  ).toBeTruthy();
+  expect(revisionsCalls).toEqual([]);
+  handle.destroy();
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+});
+
+// 取り出し元を渡して docId が無いと投げる（異常系）
+test("test_mount_when_diff_source_without_doc_id", async () => {
+  // 準備
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const diffSource = {
+    revisions: async () => [],
+    content: async () => "",
+  };
+  const { mount } = await loadMount();
+  // 実行・検証
+  expect(() => mount(el, { markdown: "# 見出し", diffSource })).toThrow(
+    TypeError,
+  );
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
+// 差分の埋め込んだ HTML のプレビューで、図の部品を文書と同じく図に描く（正常系）
+test("test_mount_when_diff_html_has_chart", async () => {
+  // 準備
+  const el = createElement();
+  const chart = (text: string) =>
+    `# 見出し\n\n${wrapHtml(`<mdmark-chart>\n${text}\n</mdmark-chart>`)}\n`;
+  const contents: Record<string, string> = {
+    r1: chart(INQUIRY_COUNT_TEXT),
+    r2: chart(INQUIRY_COUNT_TEXT.replace("124", "130")),
+  };
+  const diffSource = {
+    revisions: async () => [
+      { id: "r2", at: "2026-10-19T07:40:00Z" },
+      { id: "r1", at: "2026-10-18T00:12:00Z" },
+    ],
+    content: async ({ revisionId }: { revisionId: string }) =>
+      contents[revisionId] ?? "",
+  };
+  await mountTracked(el, { markdown: "# 見出し", docId: "guide", diffSource });
+  // 実行: 差分を開き、「プレビュー」を押す
+  el.querySelector<HTMLButtonElement>(".mdmark-diff-toggle")?.click();
+  await vi.waitFor(() => {
+    expect(el.querySelector('[data-view="rendered"]')).not.toBeNull();
+  });
+  el.querySelector<HTMLButtonElement>('[data-view="rendered"]')?.click();
+  // 検証: 前と後に図の要素があり、定義の JSON の文字がプレビューに出ない
+  const sides = el.querySelector(".mdmark-diff-sides");
+  expect(sides?.querySelectorAll(".mdmark-diff-side")).toHaveLength(2);
+  expect(sides?.querySelectorAll('figure[data-diagram="chart"]')).toHaveLength(
+    2,
+  );
+  expect(sides?.textContent).not.toContain('"series"');
+});
+
+// 差分のプレビューの図も文書と同じく拡大でき、前と後で id が重ならない（正常系）
+test("test_mount_when_diff_preview_zoomed", async () => {
+  // 準備
+  addStyles();
+  const el = createElement();
+  el.style.width = "600px";
+  const chart = (text: string) =>
+    `# 見出し\n\n${wrapHtml(`<mdmark-chart>\n${text}\n</mdmark-chart>`)}\n`;
+  const contents: Record<string, string> = {
+    r1: chart(INQUIRY_COUNT_TEXT),
+    r2: chart(INQUIRY_COUNT_TEXT.replace("124", "130")),
+  };
+  const diffSource = {
+    revisions: async () => [
+      { id: "r2", at: "2026-10-19T07:40:00Z" },
+      { id: "r1", at: "2026-10-18T00:12:00Z" },
+    ],
+    content: async ({ revisionId }: { revisionId: string }) =>
+      contents[revisionId] ?? "",
+  };
+  await mountTracked(el, { markdown: "# 見出し", docId: "guide", diffSource });
+  el.querySelector<HTMLButtonElement>(".mdmark-diff-toggle")?.click();
+  await vi.waitFor(() => {
+    expect(el.querySelector('[data-view="rendered"]')).not.toBeNull();
+  });
+  el.querySelector<HTMLButtonElement>('[data-view="rendered"]')?.click();
+  const sides = el.querySelectorAll<HTMLElement>(".mdmark-diff-side");
+  const after = sides[1] as HTMLElement;
+  const zoomText = () =>
+    after.querySelector('button[aria-label^="倍率"]')?.textContent ?? "";
+  await vi.waitFor(() => {
+    expect(zoomText()).toMatch(/%$/);
+  });
+  const fitted = Number.parseInt(zoomText(), 10);
+  // 実行: 後の側の図の拡大のボタンを押す
+  after.querySelector<HTMLButtonElement>('button[aria-label="拡大"]')?.click();
+  // 検証: 後の側の図の倍率が上がり、id に重なりが無い
+  expect(Number.parseInt(zoomText(), 10)).toBeGreaterThan(fitted);
+  const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  const viewport = after.querySelector(
+    '[role="group"][aria-roledescription="図"]',
+  );
+  const labelId = viewport?.getAttribute("aria-labelledby") ?? "";
+  expect(after.querySelector(`#${CSS.escape(labelId)}`)).not.toBeNull();
 });
