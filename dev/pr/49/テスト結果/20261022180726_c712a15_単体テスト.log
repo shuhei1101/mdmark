@@ -1,0 +1,12 @@
+# 既存の単体テストが全 pass のままであることの確認（新しい差分のテストは実装が無く Red のため、除いて流した）
+# commit: c712a15
+$ npx vitest run --project 'unit*' {新しい差分のテストのファイルを除く既存のテストファイル} -t '^(?!.*(test_mount_when_diff_source|test_render_notice_when_diff))'
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diff-line-and-char-diff
+
+
+ Test Files  90 passed (90)
+      Tests  397 passed | 3 skipped (400)
+   Start at  18:07:31
+   Duration  20.41s (tests 41%, import 28%, worker 25%, transform 5%)
+

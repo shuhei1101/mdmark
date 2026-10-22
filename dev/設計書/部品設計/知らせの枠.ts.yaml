@@ -32,6 +32,20 @@ states:
         value: 'true'
       - name: source
         value: extension
+  - name: DiffRevisions
+    description: 差分の取り出し元がリビジョンの一覧を返せない。題が `変更の履歴を表示できません`
+    args:
+      - name: name
+        value: guide
+      - name: source
+        value: diff-revisions
+  - name: DiffContent
+    description: 差分の取り出し元が 1 つのリビジョンの本文を返せない。題が `このリビジョンの本文を表示できません`
+    args:
+      - name: name
+        value: 2026/10/18 09:12 初版（佐藤）
+      - name: source
+        value: diff-content
 lead: 外部ライブラリを読めない印の場所に置く枠。何が起きたかを題に、印の名前と直し方を本文に出す。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
 args:
   - name: name
@@ -47,8 +61,8 @@ args:
     type: 列挙
     required: false
     default: library
-    choices: '`library`（本文 `表示に使うライブラリ（{name}）を…`）・`extension`（本文 `表示に使う拡張（{name}）を…`）'
-    description: 読めなかったものが外部ライブラリか、`registerExtension` で登録した拡張か
+    choices: '`library`（本文 `表示に使うライブラリ（{name}）を…`）・`extension`（本文 `表示に使う拡張（{name}）を…`）・`diff-revisions`（題 `変更の履歴を表示できません`・本文 `リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。`）・`diff-content`（題 `このリビジョンの本文を表示できません`・本文 `「{name}」の本文を取り出せませんでした。別のリビジョンを選んでください。`）'
+    description: 読めなかったものが外部ライブラリか、`registerExtension` で登録した拡張か、差分の取り出し元のリビジョンの一覧か本文か。`diff-revisions` は `name` と `figure` を使わず、`diff-content` は `name` に取り出せなかったリビジョンの説明（複数なら `「…」と「…」` の中身）を渡し `figure` を使わない
     status: planned
 css_properties:
   - name: --mdmark-color-notice-bg

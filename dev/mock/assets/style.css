@@ -44,6 +44,12 @@
   --mdmark-color-series-2: #bc4c00;
   --mdmark-color-series-3: #8250df;
   --mdmark-color-series-4: #1b7c83;
+  --mdmark-color-diff-del-bg: #ffebe9;
+  --mdmark-color-diff-del-word: #ffcecb;
+  --mdmark-color-diff-del-sign: #d1242f;
+  --mdmark-color-diff-add-bg: #dafbe1;
+  --mdmark-color-diff-add-word: #aceebb;
+  --mdmark-color-diff-add-sign: #1a7f37;
   --mdmark-color-comment-bg: #fbefff;
   --mdmark-color-comment-line: #8250df;
   --mdmark-color-error: #d1242f;
@@ -84,6 +90,12 @@
     --mdmark-color-series-2: #f0883e;
     --mdmark-color-series-3: #ab7df8;
     --mdmark-color-series-4: #39c5cf;
+    --mdmark-color-diff-del-bg: #25171c;
+    --mdmark-color-diff-del-word: #6b2b2b;
+    --mdmark-color-diff-del-sign: #f85149;
+    --mdmark-color-diff-add-bg: #12261e;
+    --mdmark-color-diff-add-word: #1a4a29;
+    --mdmark-color-diff-add-sign: #3fb950;
     --mdmark-color-comment-bg: #2e2147;
     --mdmark-color-comment-line: #ab7df8;
     --mdmark-color-error: #f85149;

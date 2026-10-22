@@ -72,6 +72,9 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 ツールチップの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
 書き方は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
 図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
+`opts.diffSource` を渡すと、文書の題の後ろに「変更を見る」のボタンを付け、押すと 2 つのリビジョンの差分を出す。
+差分の操作は `mount` が付け、`update` で閉じ、`destroy` で外す。
+仕組みは [差分を表示する仕組み](../はじめに/コアコンセプト/差分を表示する仕組み.md)、書き方は [差分を表示する](../使い方/導入/差分を表示する.md)。
 
 ### リクエスト
 
@@ -91,6 +94,26 @@ handle.destroy();
 | `opts.index` | 任意 | 使う側のサーバーが、設定の `index` のパスの索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて使う。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う |
 | `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
+| `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
+
+`opts.diffSource` の形。
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| `revisions(docId)` | `(docId: string) => Promise<DiffRevision[]>` | 文書のリビジョンを新しい順に返す。mdmark は並べ替えない。差分を開くたびに 1 回呼ぶ |
+| `content({ docId, revisionId })` | `(target: { docId: string; revisionId: string }) => Promise<string>` | そのリビジョンの Markdown を返す。選んだ 2 つのリビジョンに 1 回ずつ呼ぶ |
+
+`DiffRevision` の形。
+
+| 項目 | 型 | 必須 / 任意 | 説明 |
+| --- | --- | --- | --- |
+| `id` | `string` | 必須 | リビジョンの識別子。空にできず、一覧の中で重ならない |
+| `at` | `string` | 必須 | ISO 8601 の日時 |
+| `label` | `string` | 任意 | 一言の説明。リビジョンを選ぶ欄に出る |
+| `author` | `string` | 任意 | 書いた人。リビジョンを選ぶ欄に出る |
+
+型 `DiffSource` と `DiffRevision` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う。
 
 同じ要素へもう一度 `mount` を呼ぶと、前の描画を片付けてから描く。
 前の戻り値の `update` は何もしなくなる。
@@ -104,7 +127,10 @@ handle.destroy();
 
 ### エラー
 
-例外は投げない。
+`opts.diffSource` を渡して `opts.docId` を渡さないときだけ、何も描かずに `TypeError` を投げる。
+それ以外は例外を投げない。
+取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したときは、差分の場所を [知らせの枠](./用語集.md) に替え、文書の本文は描いたまま残す。
+取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
 外部ライブラリを読めない印の場所は、その場所だけを [知らせの枠](./用語集.md) に替え、ほかは描く。
 読めなかった印の名前・URL・元のエラーが `console.error` に出る。
 記法の印に読めない指定がある箇所は、読めた指定で描き、その箇所の前に [書き方の警告](./記法.md#書き方の警告) を置く。
@@ -358,6 +384,8 @@ JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で�
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
 | `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、箱の色の濃さ |
 | `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の高さの上限。全体が収まる倍率はこの高さと枠の幅に収める |
+| `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |
+| `--mdmark-diff-minimap-z-index` | `10` | 差分のミニマップの帯の重なり順。使う側のページの固定のヘッダーなどに隠れるときに上げる |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |
@@ -399,6 +427,12 @@ JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で�
 | `--mdmark-color-series-2` | `#bc4c00` | `#f0883e` | グラフの 2 つ目の系列の色 |
 | `--mdmark-color-series-3` | `#8250df` | `#ab7df8` | グラフの 3 つ目の系列の色 |
 | `--mdmark-color-series-4` | `#1b7c83` | `#39c5cf` | グラフの 4 つ目の系列の色 |
+| `--mdmark-color-diff-del-bg` | `#ffebe9` | `#25171c` | 差分の削除した行の背景 |
+| `--mdmark-color-diff-del-word` | `#ffcecb` | `#6b2b2b` | 差分の削除した行で変わった語の背景 |
+| `--mdmark-color-diff-del-sign` | `#d1242f` | `#f85149` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色 |
+| `--mdmark-color-diff-add-bg` | `#dafbe1` | `#12261e` | 差分の追加した行の背景 |
+| `--mdmark-color-diff-add-word` | `#aceebb` | `#1a4a29` | 差分の追加した行で変わった語の背景 |
+| `--mdmark-color-diff-add-sign` | `#1a7f37` | `#3fb950` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色 |
 
 <!-- /table -->
 

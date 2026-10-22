@@ -491,6 +491,50 @@ test("test_normal_when_index", async () => {
   expect(html).not.toContain("<!--");
 });
 
+/** `Intl.Segmenter` を取り除いた間だけ、ほかのテストと共有しない新しいモジュールとして配布物の入口を読み込んで `run` に渡す */
+async function withoutIntlSegmenter(
+  run: (built: Built) => Promise<void>,
+): Promise<void> {
+  const original = Intl.Segmenter;
+  Reflect.deleteProperty(Intl, "Segmenter");
+  try {
+    const url = pathToFileURL(join(inject("builtRoot"), "dist", "index.js"));
+    url.search = "without-intl-segmenter";
+    await run(await import(url.href));
+  } finally {
+    Object.defineProperty(Intl, "Segmenter", {
+      value: original,
+      configurable: true,
+      writable: true,
+    });
+  }
+}
+
+// `Intl.Segmenter` を持たない環境でも配布物を読み込め、英数字の語の一部に下線を付けずに用語を照合する（正常系）
+test("test_normal_when_no_intl_segmenter", async () => {
+  await withoutIntlSegmenter(async (built) => {
+    // 準備
+    const index: MdmarkIndex = {
+      schema: 1,
+      docs: [],
+      terms: [
+        {
+          id: "ws",
+          term: "ワークスペース",
+          aliases: ["WS"],
+          meaning: "話し合いの記録を置くフォルダ",
+        },
+      ],
+    };
+    // 実行
+    const html = built.render("ワークスペースを WSL に置く\n", { index });
+    // 検証
+    expect(matches(html, /class="mdmark-term"/g)).toHaveLength(1);
+    expect(html).toContain(">ワークスペース</span>");
+    expect(html).toContain("を WSL に置く");
+  });
+});
+
 /** `figure.mdmark-diagram` の開始タグを、現れた順に返す */
 function diagramFigures(html: string): string[] {
   return startTags(html, "figure").filter((tag) =>

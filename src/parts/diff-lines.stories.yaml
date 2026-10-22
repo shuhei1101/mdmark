@@ -1,0 +1,26 @@
+title: Parts/DiffLines
+stories:
+  - name: Normal
+    parameters:
+      server:
+        id: diff-lines
+    args:
+      sample: normal
+  - name: CharByChar
+    parameters:
+      server:
+        id: diff-lines
+    args:
+      sample: char
+  - name: LongLine
+    parameters:
+      server:
+        id: diff-lines
+    args:
+      sample: long
+  - name: WithHtml
+    parameters:
+      server:
+        id: diff-lines
+    args:
+      sample: html

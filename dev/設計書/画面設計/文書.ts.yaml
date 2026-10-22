@@ -411,5 +411,136 @@ elements:
     status: planned
     introduced:
       pr: 45
+  - name: 差分を開くボタン
+    id: diff-toggle
+    kind: button
+    component: dev/設計書/部品設計/差分を開くボタン.ts#
+    args:
+      - name: controls
+        value: 差分の場所の `id`（ページの中で一意な `mdmark-diff-panel-{n}`）
+      - name: expanded
+        value: 差分を開いているか
+    position: 描く先の要素 > 題の後ろ
+    description: 文書の題（先頭の `h1`）の後ろ、`h1` が無ければ文書の先頭に、右に寄せて置く
+    label: 変更を見る
+    visible_when: '`opts.diffSource` を渡したとき'
+    initial_state: 活性
+    initial_value: 閉じた状態（`aria-expanded="false"`）
+    action: 押すと、題を残して本文を隠し、差分の場所を開く。押し直すと差分を片付けて本文に戻す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
+    status: planned
+  - name: 差分の場所
+    id: diff-panel
+    kind: region
+    position: 描く先の要素 > 題の後ろ
+    description: 差分を開いている間、隠した本文の代わりに出す場所。リビジョンの選択・差分の行・差分の状態の文・差分の知らせの枠を入れる
+    visible_when: 差分を開いている間
+    initial_value: '`hidden`'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
+    status: planned
+  - name: リビジョンの選択
+    id: revision-picker
+    kind: select
+    component: dev/設計書/部品設計/リビジョンの選択.ts#
+    args:
+      - name: revisions
+        value: DiffSource.revisions の戻り値
+      - name: before
+        value: 既定は 2 番目のリビジョンの `id`
+      - name: after
+        value: 既定は 1 番目のリビジョンの `id`
+    position: 描く先の要素 > 差分の場所
+    description: 比べる前と後のリビジョンを選ぶ 2 つの欄と、削除した行と追加した行の数。幅が狭いときは 2 つの欄を縦に積む
+    io: 入力
+    visible_when: リビジョンが 2 つ以上あるとき
+    initial_value: 前に 2 番目、後に 1 番目のリビジョン
+    options: 取り出し元が返した順（新しい順）。前の欄では一番新しいリビジョン、後の欄では前に選んだもの以前のリビジョンを選べない
+    display_format: '`2026/10/19 16:40 件数を直す（鈴木）`（JST。`label`・`author` が無ければ出さない）'
+    source: 文書を描く.request.opts.diffSource
+    action: 選び直すと、選んだ 2 つの本文を取り出して差分を描き直す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]
+    status: planned
+  - name: 差分の行
+    id: diff-lines
+    kind: region
+    component: dev/設計書/部品設計/差分の行.ts#
+    args:
+      - name: blocks
+        value: 選んだ 2 つの `DiffSource.content` の戻り値を比べた結果
+    slots:
+      - name: html
+        value: 埋め込んだ HTML の差分
+    position: 描く先の要素 > 差分の場所
+    description: 前と後の Markdown のソースを比べた行。削除した行を赤と `-`、追加した行を緑と `+`、対の行で変わった語を濃い色で出す
+    io: 表示
+    visible_when: 選んだ 2 つの本文を取り出せ、変更があるとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の行]
+    status: planned
+  - name: 埋め込んだ HTML の差分
+    id: diff-html
+    kind: region
+    component: dev/設計書/部品設計/埋め込んだHTMLの差分.ts#
+    args:
+      - name: changed
+        value: 前か後で範囲の行が変わったか
+      - name: lines
+        value: 範囲の行の比較の結果
+    position: 描く先の要素 > 差分の場所 > 差分の行
+    description: 差分の中の `<!-- html -->` の範囲。右端に「HTML」のラベルを置き、変えた範囲は「ソース」「プレビュー」で切り替える。幅が狭いときは前と後を縦に並べる
+    visible_when: 差分の行に埋め込んだ HTML の範囲があるとき
+    initial_value: ソース
+    action: 「プレビュー」で前と後の描いた結果を並べ、「ソース」で行の色分けに戻す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[埋め込んだ HTML の差分]
+    status: planned
+  - name: 差分の状態の文
+    id: diff-message
+    kind: label
+    component: dev/設計書/部品設計/差分の状態の文.ts#
+    args:
+      - name: kind
+        value: '`loading`（待ちが 1 秒を過ぎた）・`single`（リビジョンが 1 つ）・`same`（本文が同じ）'
+    position: 描く先の要素 > 差分の場所
+    description: 差分の行の代わりに出す短い文
+    visible_when: 待ちが 1 秒を過ぎたとき・リビジョンが 1 つのとき・選んだ 2 つの本文が同じとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の待ち]
+    status: planned
+  - name: 差分の知らせの枠
+    id: diff-notice
+    kind: label
+    component: dev/設計書/部品設計/知らせの枠.ts#
+    args:
+      - name: name
+        value: 取り出せなかったリビジョンの説明（`diff-revisions` のときは文書の `id`）
+      - name: source
+        value: '`diff-revisions`（一覧を取り出せない）・`diff-content`（本文を取り出せない）'
+    position: 描く先の要素 > 差分の場所
+    description: 取り出し元が一覧か本文を返せないときに出す。一覧のときは差分の場所の全体、本文のときはリビジョンの選択を残して差分の行の場所に置く
+    visible_when: 取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の知らせの枠]
+    status: planned
+  - name: ミニマップ
+    id: diff-minimap
+    kind: region
+    component: dev/設計書/部品設計/ミニマップ.ts#
+    args:
+      - name: marks
+        value: 差分の行の削除した行・追加した行の位置（送り先の全体に対する割合）
+      - name: view
+        value: 送り先の今見えている範囲
+    position: 送り先のスクロールの右端
+    description: 差分の行を出している間、送り先のスクロール（ページ全体がスクロールするときは画面）の右端に、その高さいっぱいで貼り付ける帯。差分の行の横幅は削らない
+    visible_when: 差分の行を出している間
+    action: 帯を押すとその位置へ、押したまま上下に動かすとそれに合わせて差分を送る
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ミニマップ]
+    reason: スクロールバーと一体に見せる（確認ログのモックへの合意）
+    status: planned
 mock: dev/mock/pages/document/19/modern/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。

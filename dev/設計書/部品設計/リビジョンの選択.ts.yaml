@@ -1,0 +1,80 @@
+title: "リビジョンの選択"
+implementation: "src/parts/revision-picker.ts#renderRevisionPicker"
+story: "Parts/RevisionPicker"
+states:
+  - name: Normal
+    description: 3 つのリビジョンを新しい順に並べ、一番新しいものとその 1 つ前を選ぶ。前の欄の r3 と後の欄の r2・r1 を選べない
+    args:
+      - name: revisions
+        value: '[{"id":"r3","at":"2026-10-20T02:05:00Z","label":"見出しを書き換える","author":"田中"},{"id":"r2","at":"2026-10-19T07:40:00Z","label":"件数を直す","author":"鈴木"},{"id":"r1","at":"2026-10-18T00:12:00Z","label":"初版","author":"佐藤"}]'
+      - name: before
+        value: r2
+      - name: after
+        value: r3
+      - name: counts
+        value: '{"del":1,"add":8}'
+  - name: BeforeSelected
+    description: 前に r2 を選んだ。後の欄で r2 と r1 を選べない
+    args:
+      - name: revisions
+        value: '[{"id":"r3","at":"2026-10-20T02:05:00Z","label":"見出しを書き換える","author":"田中"},{"id":"r2","at":"2026-10-19T07:40:00Z","label":"件数を直す","author":"鈴木"},{"id":"r1","at":"2026-10-18T00:12:00Z","label":"初版","author":"佐藤"}]'
+      - name: before
+        value: r2
+      - name: after
+        value: r3
+  - name: Sparse
+    description: '`label`・`author` が無いリビジョンと、長い `label`・`author` のリビジョンが混ざる。長い項目は欄の幅で省略する'
+    args:
+      - name: revisions
+        value: '[{"id":"b2","at":"2026-10-20T02:05:00Z","label":"問い合わせ窓口の週の報告の件数を全ての窓口で数え直し、返し方の節を書き足す","author":"問い合わせ窓口の運用担当のとても長い名前"},{"id":"b1","at":"2026-10-18T00:12:00Z"}]'
+      - name: before
+        value: b1
+      - name: after
+        value: b2
+lead: 差分で比べる前と後のリビジョンを選ぶ 2 つの欄と、削除した行と追加した行の数。HTML 文字列を返す。
+args:
+  - name: revisions
+    type: オブジェクトの配列
+    required: true
+    description: 取り出し元が返したリビジョン（`id`・`at`・`label`・`author`）を新しい順に。2 つ以上
+  - name: before
+    type: 文字列
+    required: true
+    description: 前の欄で選んだリビジョンの `id`
+  - name: after
+    type: 文字列
+    required: true
+    description: 後の欄で選んだリビジョンの `id`。`before` より新しい
+  - name: counts
+    type: オブジェクト
+    required: false
+    default: なし（数の文を空にする）
+    description: 削除した行と追加した行の数（`del`・`add`）。`削除した行 {del}・追加した行 {add}` を出す
+events:
+  - name: 前を選び直す
+    when: 前の欄の選択を変える
+    value: 前の欄の `value`（リビジョンの `id`）
+    description: '`mount` が後の欄の選べない項目を直し、後が前以前なら前の 1 つ新しいリビジョンに移して、差分を描き直す'
+  - name: 後を選び直す
+    when: 後の欄の選択を変える
+    value: 後の欄の `value`
+    description: '`mount` が差分を描き直す'
+css_properties:
+  - name: --mdmark-color-border
+    syntax: <color>
+    description: 選ぶ欄の線の色
+  - name: --mdmark-color-muted
+    syntax: <color>
+    description: 削除した行と追加した行の数の文字の色
+accessibility:
+  - 2 つの `select` は `label` の `前のリビジョン`・`後のリビジョン` で名前を持ち、キーで選べる
+  - 選べない項目は `disabled` にする
+  - 削除した行と追加した行の数は `role="status"` に出し、選び直して変わった数を読み上げる
+  - 前と後の間の矢印のアイコンは `aria-hidden`
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]
+status: planned
+notes:
+  項目の文字: 日時を JST の `YYYY/MM/DD HH:mm` にし、`label` を空白の後に、`author` を全角の括弧で続ける。無いものは出さない
+  モック: '`dev/mock/components/revision-picker/`'
+test_file: tests/integration/lib/revision-picker.story.test.ts

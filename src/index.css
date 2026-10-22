@@ -52,6 +52,14 @@
     --mdmark-color-series-2: #bc4c00;
     --mdmark-color-series-3: #8250df;
     --mdmark-color-series-4: #1b7c83;
+    --mdmark-color-diff-del-bg: #ffebe9;
+    --mdmark-color-diff-del-word: #ffcecb;
+    --mdmark-color-diff-del-sign: #d1242f;
+    --mdmark-color-diff-add-bg: #dafbe1;
+    --mdmark-color-diff-add-word: #aceebb;
+    --mdmark-color-diff-add-sign: #1a7f37;
+    --mdmark-diff-minimap-width: 14px;
+    --mdmark-diff-minimap-z-index: 10;
     color-scheme: light;
   }
 
@@ -87,6 +95,12 @@
       --mdmark-color-series-2: #f0883e;
       --mdmark-color-series-3: #ab7df8;
       --mdmark-color-series-4: #39c5cf;
+      --mdmark-color-diff-del-bg: #25171c;
+      --mdmark-color-diff-del-word: #6b2b2b;
+      --mdmark-color-diff-del-sign: #f85149;
+      --mdmark-color-diff-add-bg: #12261e;
+      --mdmark-color-diff-add-word: #1a4a29;
+      --mdmark-color-diff-add-sign: #3fb950;
       color-scheme: dark;
     }
   }
@@ -2807,5 +2821,402 @@
     color: var(--mdmark-color-muted);
     font-size: 0.8125rem;
     font-weight: 600;
+  }
+
+  /* 差分の表示: 文書の題の後ろの「変更を見る」・前と後のリビジョンの選択・差分の行・埋め込んだ HTML の切り替え。色は `--mdmark-color-diff-*` の変数で決まる */
+  .mdmark {
+    /* 「変更を見る」の帯: 文書の右上に置く */
+    .mdmark-diff-bar {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* 操作部品の共通: 高さを 32px に揃える */
+    :where(
+        .mdmark-diff-toggle,
+        .mdmark-diff-picker select,
+        .mdmark-diff-view button
+      ) {
+      min-height: 32px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font: inherit;
+      font-size: 0.875rem;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 「変更を見る」のボタン: 開いている間は押された見た目にする */
+    .mdmark-diff-toggle {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 0 12px;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      /* 開いている: 面と枠の色を変える */
+      &[aria-expanded="true"] {
+        border-color: var(--mdmark-color-link);
+        background: var(--mdmark-color-current-bg);
+      }
+    }
+
+    /* 差分の場所: 選ぶ欄・数・差分を縦に並べる。幅で選ぶ欄の並びを変える */
+    .mdmark-diff {
+      display: grid;
+      gap: calc(var(--mdmark-space) * 0.75);
+      container-type: inline-size;
+
+      /* 閉じている: hidden を display: grid に負けさせない */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 前と後のリビジョンを選ぶ欄: 横に並べ、狭い幅では縦に積む */
+    .mdmark-diff-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: flex-end;
+    }
+
+    /* 選ぶ欄の 1 つ: ラベルを上に置く */
+    .mdmark-diff-field {
+      display: grid;
+      flex: 1 1 14rem;
+      gap: 4px;
+      min-width: 0;
+
+      /* 選ぶ欄のラベル */
+      label {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+
+      /* 選ぶ欄: 欄の幅いっぱいに広げ、長い説明は欄の中で切る */
+      select {
+        width: 100%;
+        padding: 0 8px;
+        text-overflow: ellipsis;
+      }
+    }
+
+    /* 前から後への矢印: 横に並ぶときだけ出す */
+    .mdmark-diff-arrow {
+      display: grid;
+      place-items: center;
+      height: 32px;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 狭い幅: 選ぶ欄が縦に積まれるので矢印を出さない */
+    @container (width < 30rem) {
+      .mdmark-diff-arrow {
+        display: none;
+      }
+    }
+
+    /* 削除した行と追加した行の数 */
+    .mdmark-diff-summary {
+      color: var(--mdmark-color-muted);
+      font-size: 0.875rem;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    /* 差分の場所の短い文（比較対象のリビジョンが無い・変更が無い） */
+    .mdmark-diff-empty {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 読み込み中: 差分の高さを先に確保する（読み込み中の枠と同じ破線） */
+    .mdmark-diff-loading {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      min-height: 8rem;
+      border: 1px dashed var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 回る表示: 待ちが 2 秒を過ぎたら出す */
+    .mdmark-diff-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--mdmark-color-border);
+      border-block-start-color: var(--mdmark-color-muted);
+      border-radius: 50%;
+      animation: mdmark-diff-spin 0.8s linear infinite;
+    }
+
+    /* 動きを減らす設定: 回さずに止めて出す */
+    @media (prefers-reduced-motion: reduce) {
+      .mdmark-diff-spinner {
+        animation: none;
+      }
+    }
+
+    /* 差分の行の並び: 線と小さめの角丸で囲む */
+    .mdmark-diff-lines {
+      overflow: hidden;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 差分の 1 行: 行頭の印とソースの行の文字。長い行は折り返す */
+    .mdmark-diff-line {
+      display: grid;
+      grid-template-columns: 1.5ch 1fr;
+      column-gap: 1ch;
+      min-height: 1.55em;
+      padding-inline: 0.75em;
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.875rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+
+      /* 削除した行: 赤の面と赤の印 */
+      &[data-kind="del"] {
+        background: var(--mdmark-color-diff-del-bg);
+
+        .mdmark-diff-sign {
+          color: var(--mdmark-color-diff-del-sign);
+        }
+      }
+
+      /* 追加した行: 緑の面と緑の印 */
+      &[data-kind="add"] {
+        background: var(--mdmark-color-diff-add-bg);
+
+        .mdmark-diff-sign {
+          color: var(--mdmark-color-diff-add-sign);
+        }
+      }
+    }
+
+    /* 行頭の印（-・+） */
+    .mdmark-diff-sign {
+      font-weight: 700;
+      user-select: none;
+    }
+
+    /* 行の中で変わった語: 濃い色の面に加え、消した語は打ち消し線で示す */
+    del.mdmark-diff-word {
+      border-radius: 2px;
+      background: var(--mdmark-color-diff-del-word);
+      text-decoration: line-through;
+      text-decoration-color: var(--mdmark-color-diff-del-sign);
+    }
+
+    /* 足した語: 濃い色の面に加え、下線で示す */
+    ins.mdmark-diff-word {
+      border-radius: 2px;
+      background: var(--mdmark-color-diff-add-word);
+      text-decoration: underline;
+      text-decoration-color: var(--mdmark-color-diff-add-sign);
+      text-underline-offset: 0.2em;
+    }
+
+    /* 埋め込んだ HTML の範囲: 範囲の外の行と線で区切る */
+    .mdmark-diff-html {
+      border-block: 1px solid var(--mdmark-color-border);
+
+      /* 先頭の範囲: 外枠の線と重ねない */
+      &:first-child {
+        border-block-start: 0;
+      }
+
+      /* 末尾の範囲: 外枠の線と重ねない */
+      &:last-child {
+        border-block-end: 0;
+      }
+    }
+
+    /* 範囲の見出し: 見方の切り替えと「HTML」のラベル */
+    .mdmark-diff-html-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 40px;
+      padding: 4px 0.75em;
+      background: var(--mdmark-color-surface);
+      font-size: 0.875rem;
+    }
+
+    /* 変えていない範囲の見出し: ラベルだけなので帯を詰める */
+    .mdmark-diff-html:not([data-changed]) .mdmark-diff-html-head {
+      min-height: 0;
+      padding-block: 2px;
+    }
+
+    /* 範囲の右上の「HTML」のラベル: コードブロックの言語のラベルと同じく、等幅の小さな文字で右端に置く */
+    .mdmark-diff-html-label {
+      margin-inline-start: auto;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+    }
+
+    /* 見方の切り替え（ソース・プレビュー）: 2 つのボタンを 1 つの帯に並べる */
+    .mdmark-diff-view {
+      display: inline-flex;
+
+      /* 見方のボタン: 隣と線を共有する */
+      button {
+        padding: 0 12px;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--mdmark-color-surface);
+        }
+
+        &:first-child {
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
+        }
+
+        &:last-child {
+          margin-inline-start: -1px;
+          border-start-start-radius: 0;
+          border-end-start-radius: 0;
+        }
+
+        /* 選んでいる見方: 差し色の面で示す */
+        &[aria-pressed="true"] {
+          position: relative;
+          border-color: var(--mdmark-color-link);
+          background: var(--mdmark-color-link);
+          color: var(--mdmark-color-bg);
+        }
+      }
+    }
+
+    /* プレビューの前と後: 幅があれば横に、狭ければ縦に並べる */
+    .mdmark-diff-sides {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+      gap: var(--mdmark-space);
+      padding: 0.75em;
+
+      /* 縦に並べる */
+      &[data-sides="stack"] {
+        grid-template-columns: 1fr;
+      }
+
+      /* hidden の中身を出さない（display: grid に負けない） */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* プレビューの片側 */
+    .mdmark-diff-side {
+      display: grid;
+      align-content: start;
+      gap: 0.5em;
+      min-width: 0;
+      margin: 0;
+
+      /* 片側の題: 前・後の名前とリビジョンの説明 */
+      figcaption {
+        color: var(--mdmark-color-muted);
+        font-size: 0.875rem;
+      }
+
+      /* 描いた HTML: 列より広いときはこの中で横にスクロールする */
+      .mdmark-html {
+        overflow-x: auto;
+      }
+    }
+
+    /* 片側の題の前・後の名前 */
+    .mdmark-diff-side-name {
+      color: var(--mdmark-color-text);
+      font-weight: 700;
+    }
+
+    /* 範囲が無い側: 面の色で場所を示す */
+    .mdmark-diff-absent {
+      padding: 0.75em;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+    }
+  }
+
+  /* ミニマップの帯: `document.body` の直下に置くため `.mdmark` の外で当てる。差分を開いている間、画面（スクロールする枠の中の差分は枠）の右端に貼り付け、スクロールバーと一体に見せる */
+  .mdmark-diff-minimap {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: var(--mdmark-diff-minimap-z-index);
+    width: var(--mdmark-diff-minimap-width);
+    border-inline-start: 1px solid var(--mdmark-color-border);
+    background: var(--mdmark-color-surface);
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  /* ミニマップの印: 削除した行は左半分の赤、追加した行は右半分の緑。短い行も見える高さを取る */
+  .mdmark-diff-minimap-mark {
+    position: absolute;
+    width: 50%;
+    min-height: 3px;
+    pointer-events: none;
+
+    /* 削除した行の印 */
+    &[data-kind="del"] {
+      inset-inline-start: 0;
+      background: var(--mdmark-color-diff-del-sign);
+    }
+
+    /* 追加した行の印 */
+    &[data-kind="add"] {
+      inset-inline-end: 0;
+      background: var(--mdmark-color-diff-add-sign);
+    }
+  }
+
+  /* ミニマップの今見えている範囲の枠 */
+  .mdmark-diff-minimap-view {
+    position: absolute;
+    inset-inline: 0;
+    border: 1px solid var(--mdmark-color-muted);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--mdmark-color-text) 10%, transparent);
+    pointer-events: none;
+  }
+
+  /* 回る表示の回転 */
+  @keyframes mdmark-diff-spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  /* 紙に出すとき: 差分を開く操作とミニマップを出さない */
+  @media print {
+    .mdmark-diff-bar,
+    .mdmark-diff-minimap {
+      display: none;
+    }
   }
 }

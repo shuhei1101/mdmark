@@ -69,9 +69,9 @@ functions:
     summary: 部品設計『知らせの枠』の HTML を返す
     args:
       - name: options
-        type: '{ name: string; figure?: boolean; source?: "library" | "extension" }'
+        type: '{ name: string; figure?: boolean; source?: "library" | "extension" | "diff-revisions" | "diff-content" }'
         required: true
-        description: 印の名前、図の印か（既定 `true`）、読めなかったもの（既定 `library`。`extension` は本文を `表示に使う拡張（…）` にする）
+        description: 印の名前、図の印か（既定 `true`）、読めなかったもの（既定 `library`。`extension` は本文を `表示に使う拡張（…）` にする。`diff-revisions`・`diff-content` は部品設計の題と本文にし、`figure` を使わない）
     returns:
       type: string
       description: '`<div class="mdmark-notice" role="status">` で始まる HTML'
@@ -104,6 +104,12 @@ functions:
         condition: '`{ name: "greet", source: "extension" }`'
         mock: なし
         expected: 本文が `表示に使う拡張（<code>greet</code>）を読み込めませんでした。` で始まる
+      - name: test_render_notice_when_diff
+        case: 正常
+        summary: 差分の取り出し元を読めないときの題と本文を返す
+        condition: '`{ name: "guide", source: "diff-revisions" }` と `{ name: "2026/10/19 16:40 件数を直す", source: "diff-content" }`'
+        mock: なし
+        expected: 前者の題が `変更の履歴を表示できません`、後者の本文が `「2026/10/19 16:40 件数を直す」の本文を取り出せませんでした。` で始まる
   - name: renderEmbed
     title: 読み込み中の枠を描く
     container: src/parts/embed.ts
