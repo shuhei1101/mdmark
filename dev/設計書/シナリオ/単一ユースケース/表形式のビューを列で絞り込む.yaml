@@ -1,0 +1,82 @@
+title: "表形式のビューを列で絞り込む"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 絞り込む列を指定した Markdown
+        description: '`<!-- view: group=状態 default=table filter=担当 -->` 〜 `<!-- /view -->` で、題・状態・担当の列と 5 行を持つ表を囲んだ文書'
+        notes: 担当の列の値は上から `佐藤`・`鈴木`・`佐藤`・`田中`・`鈴木`。`filter=` に種類を書かない列は値を選んで絞り込む（`select`）
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 担当の列の見出しに絞り込みのボタンを持つ表形式のビュー
+        U->>P: 担当の列の絞り込みで「佐藤」を選ぶ
+        P-->>U: 担当が佐藤の 2 行だけの表形式のビュー
+        U->>P: ボード表示に切り替える
+        P-->>U: 全ての項目のボード表示
+        U->>P: 表形式に戻す
+        P-->>U: 担当が佐藤の 2 行だけの表形式のビュー
+    expected:
+      - 絞り込みのボタンは担当の列の見出しにだけあり、題・状態の列の見出しには無い
+      - ビューの上に、全ての列を検索する検索欄と件数は無い
+      - '`佐藤` を選んだ後、担当が `佐藤` の 2 行だけが表示され、担当の列の絞り込みのボタンが絞り込み中であることを示す'
+      - ボード表示に切り替えると、5 件の項目が全て出て、列の見出しの件数は絞る前の数（2・2・1）
+      - 表形式に戻すと、`佐藤` の絞り込みが残ったまま 2 行だけが表示される
+    test: test_normal
+  - name: 正常シナリオ（文字で絞り込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 文字で絞り込む列を指定した Markdown
+        description: '`<!-- view: group=状態 default=table filter=題:text -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
+        notes: 題の列に `配色の変数を洗い出す`・`余白の変数を決める`・`印刷の見え方を確かめる` などを持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        U->>P: 題の列の絞り込みに「変数」を入れる
+        P-->>U: 題に「変数」を含む行だけの表形式のビュー
+    expected:
+      - 絞り込みのボタンを押すと、チェックボックスではなく文字の入力欄が出る
+      - '`変数` を入れた後、題に `変数` を含む行だけが表示される'
+    test: test_normal_when_filtered_by_text
+  - name: 異常シナリオ（知らない絞り込みの種類）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない種類を指定した Markdown
+        description: '`<!-- view: group=状態 default=table filter=担当:range -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 書き方の警告と、絞り込みのボタンの無い表形式のビュー
+    expected:
+      - 範囲の上に、`range` が使えない絞り込みの種類であることと、使える種類（`select`・`text`・`date`）を書いた書き方の警告がある
+      - 担当の列に絞り込みのボタンが無く、ビューと切り替えは描かれる
+    test: test_error_when_filter_kind_unknown
+lead: 文書を書く人がビューの印に `filter=列名:種類` を書き、読む人が表形式のビューの列の見出しの絞り込みで項目を絞る。ボード表示には絞り込みを当てず、常に全ての項目を出す。
+issue: 8
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を書く人
+    interest: 記法の表と同じ `filter=` の書き方で、絞り込める列と種類を選べる
+  - name: 読む人
+    interest: 列の値で項目を絞って探せ、ボード表示では全体を見渡せる
+trigger: 読む人が、ビューの項目の中から列の値で目当ての項目を探したくなる
+preconditions:
+  - ページが `mount` でビューの印を持つ文書を描いているか、使う側のページがビューを描く関数でビューを描いている
+  - ビューの機能（`views`）がオン（既定）
+success_guarantee: '`filter=` で指定した列の見出しにだけ絞り込みのボタンがあり、選んだ値・入れた文字に合う行だけが表形式のビューに残る。ボード表示に切り替えると全ての項目が出て、表形式に戻ると絞り込みは残っている。'
+minimal_guarantee: '`filter=` に読めない指定があってもビューは描かれ、読めた指定だけを当てて、範囲の上に書き方の警告が出る。'

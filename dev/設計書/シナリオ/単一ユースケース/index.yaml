@@ -70,8 +70,8 @@ items:
     summary: 埋め込んだ HTML の custom element に書いた定義から、図の部品をその場所に図の枠に載せて描く
   - page: ビューで項目を見る.yaml
     summary: 印で囲んだ項目の表を、読む人がボード表示と表形式のビューで切り替えて見る
-  - page: 全項目を検索する.yaml
-    summary: ビューの全ての項目を、検索欄の文字で全ての列から絞り込む
+  - page: 表形式のビューを列で絞り込む.yaml
+    summary: 読む人が表形式のビューを、印の `filter=` で指定した列の見出しの絞り込みで絞る
   - page: 選んだ箇所にコメントする.yaml
     summary: 読む人が本文の選んだ箇所にコメントを付け、使う側の読み書きの関数で残す
   - page: 部品をJavaScriptから使う.yaml
