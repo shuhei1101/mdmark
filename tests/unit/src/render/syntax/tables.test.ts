@@ -112,6 +112,9 @@ test("test_read_table_spec_when_feature_keys_invalid", async () => {
   expect(firstLabels).toEqual(
     expect.arrayContaining(["max", "価格", "備考", "名前"]),
   );
+  const headColumn = first.warnings.find((warning) => warning.label === "名前");
+  expect(headColumn?.message).toContain("`名前`");
+  expect(headColumn?.message).toContain("先頭の列");
   // 検証: 機能の無い表のキー
   expect(second.totals).toEqual([]);
   expect(second.hide).toEqual([]);

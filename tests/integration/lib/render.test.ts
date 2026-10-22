@@ -530,15 +530,25 @@ test("test_normal_when_table_feature_errors", async () => {
   expect(wrapperTag(a)).toContain('data-total="2:avg"');
   expect(wrapperTag(a)).not.toContain("data-hide");
   const warnings = html.split('<div class="mdmark-syntax-warning"');
-  expect(warnings).toHaveLength(3);
-  const warningA = warnings[1] ?? "";
-  for (const word of ["max", "sum", "avg", "count", "価格", "備考", "名前"]) {
-    expect(warningA).toContain(word);
+  expect(warnings).toHaveLength(6);
+  // 警告の本文: 先頭の `<code>` は印の文字なので、取り除いた本文だけを見る
+  const bodyOf = (warning: string | undefined): string =>
+    (warning ?? "").replace(/<code>.*?<\/code>/, "");
+  // 表 A: 読めない指定ごとに 1 つずつ、本文に列名と計算がある
+  const [maxBody, priceBody, noteBody, firstBody] = [1, 2, 3, 4].map((i) =>
+    bodyOf(warnings[i]),
+  );
+  for (const word of ["max", "sum", "avg", "count"]) {
+    expect(maxBody).toContain(word);
   }
+  expect(priceBody).toContain("価格");
+  expect(noteBody).toContain("備考");
+  expect(firstBody).toContain("<code>名前</code>");
+  expect(firstBody).toContain("先頭の列");
   // 表 B: 機能の無い表のキーは当てず、機能が要ることを知らせる
   expect(wrapperTag(b)).not.toContain("data-total");
   expect(wrapperTag(b)).not.toContain("data-hide");
-  const warningB = warnings[2] ?? "";
+  const warningB = warnings[5] ?? "";
   expect(warningB).toContain("+total");
   expect(warningB).toContain("+columns");
   // 表 C: total= の無い +total は警告も集計の行も出さない
@@ -546,7 +556,7 @@ test("test_normal_when_table_feature_errors", async () => {
   expect(wrapperTag(c)).not.toContain("data-total");
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(2);
+  ).toHaveLength(5);
 });
 
 // 文書に生の HTML で書いた記法の class・data-*・id を落とす（正常系）
