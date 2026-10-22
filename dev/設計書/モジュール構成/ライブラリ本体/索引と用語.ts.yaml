@@ -651,7 +651,7 @@ functions:
       - name: test_find_avoided_terms_prefers_term_words
         case: 正常
         summary: やめた言い方が用語の語の一部として出たところと、同じ行に 2 回出たやめた言い方を数え分ける
-        condition: 用語 `作業場所`（`avoid` なし）と用語 `ワークスペース`（`avoid` に `作業場`）。本文の 1 行目が `作業場所を開く。`、3 行目が `作業場と作業場。`
+        condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 行目が `ワークスペースを開く。`、3 行目が `ワークとワーク。`（どちらも `ワーク` の終わりが語の切れ目に揃うので、用語の語を渡さないと 1 行目も当たる）
         mock: なし
         expected: '`where` が `3 行目` の 1 件だけ'
 constants:
