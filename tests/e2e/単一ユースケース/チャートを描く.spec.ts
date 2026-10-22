@@ -107,5 +107,10 @@ test("test_error_when_definition_invalid", async ({ page }) => {
   await expect(
     page.locator("#doc svg[role=img] .mdmark-diagram-bar"),
   ).toHaveCount(BAR_COUNT);
-  await expect(page.locator("#doc .mdmark-html p")).toHaveText("後ろの段落");
+  // 書き方の警告の題・本文も p で描かれるため、警告の外の段落だけを取る
+  const paragraph = page.locator(
+    "#doc .mdmark-html p:not(.mdmark-syntax-warning p)",
+  );
+  await expect(paragraph).toHaveCount(1);
+  await expect(paragraph).toHaveText("後ろの段落");
 });
