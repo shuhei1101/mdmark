@@ -102,3 +102,53 @@ test("test_find_words_prefers_longer", async () => {
   // 検証
   expect(found.map((item) => item.word)).toEqual(["オン・オフの印"]);
 });
+
+/** `Intl.Segmenter` を取り除いた間だけ `run` を流し、終わったら戻す */
+async function withoutIntlSegmenter(run: () => Promise<void>): Promise<void> {
+  const original = Intl.Segmenter;
+  Reflect.deleteProperty(Intl, "Segmenter");
+  try {
+    await run();
+  } finally {
+    Object.defineProperty(Intl, "Segmenter", {
+      value: original,
+      configurable: true,
+      writable: true,
+    });
+  }
+}
+
+/** ほかのテストと共有しない新しいモジュールとして、照合の辞書の処理を読み込む（`key` ごとに別のモジュールになる） */
+const loadFreshDictionary = (key: string) =>
+  import(
+    /* @vite-ignore */ `../../../../src/knowledge/dictionary.ts?${key}`
+  ) as Promise<typeof import("../../../../src/knowledge/dictionary.ts")>;
+
+// `Intl.Segmenter` を持たない環境で、英数字の語の一部を照合しない（正常系）
+test("test_find_words_without_intl_segmenter", async () => {
+  await withoutIntlSegmenter(async () => {
+    // 準備・実行
+    const { findWords } = await loadFreshDictionary(
+      "without-intl-segmenter-find-words",
+    );
+    const found = findWords("ワークスペースをWSLに置く", [
+      "ワークスペース",
+      "WS",
+    ]);
+    // 検証
+    expect(found).toEqual([{ start: 0, end: 7, word: "ワークスペース" }]);
+  });
+});
+
+// `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字ずつ区切る（正常系）
+test("test_word_starts_without_intl_segmenter", async () => {
+  await withoutIntlSegmenter(async () => {
+    // 準備・実行
+    const { wordStarts } = await loadFreshDictionary(
+      "without-intl-segmenter-word-starts",
+    );
+    const starts = wordStarts("印刷をWSL2で😀見る");
+    // 検証
+    expect(starts).toEqual([0, 1, 2, 3, 7, 8, 10, 11]);
+  });
+});

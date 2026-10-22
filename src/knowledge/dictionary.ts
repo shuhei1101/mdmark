@@ -2,8 +2,11 @@ import type { Token } from "markdown-it";
 import type { MdmarkIndex, MdmarkIndexDoc } from "./index-shape.ts";
 import type { MdmarkGlossaryEntry, MdmarkReferences } from "./references.ts";
 
-/** 語の区切り（`Intl.Segmenter` の `ja`・`word`）を引く。区切り方は実行環境の辞書に依る */
-const SEGMENTER = new Intl.Segmenter("ja", { granularity: "word" });
+/** 語の区切り（`Intl.Segmenter` の `ja`・`word`）。初めて使うときに作り、以降は使い回す */
+let segmenter: Intl.Segmenter | undefined;
+
+/** `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字（コードポイント）に区切る */
+const FALLBACK_WORD = /[A-Za-z0-9]+|[\s\S]/gu;
 
 /** 照合の辞書: 索引の用語・用語集の表の用語・文書の別名を、照合する語から引ける形にまとめたもの */
 export type Dictionary = {
@@ -82,13 +85,22 @@ export function buildDictionary(options: {
   return { words, terms, docs };
 }
 
+/** 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す。区切り方は実行環境の辞書に依る */
+export function wordStarts(text: string): number[] {
+  if (typeof Intl.Segmenter === "undefined") {
+    return [...text.matchAll(FALLBACK_WORD)].map((match) => match.index);
+  }
+  segmenter ??= new Intl.Segmenter("ja", { granularity: "word" });
+  return [...segmenter.segment(text)].map((segment) => segment.index);
+}
+
 /** 文字列の中で、始まりと終わりが語の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に、頭から順に返す */
 export function findWords(
   text: string,
   words: string[],
 ): Array<{ start: number; end: number; word: string }> {
   const longestFirst = [...words].sort((a, b) => b.length - a.length);
-  const starts = [...SEGMENTER.segment(text)].map((segment) => segment.index);
+  const starts = wordStarts(text);
   const boundaries = new Set([...starts, text.length]);
   const found: Array<{ start: number; end: number; word: string }> = [];
   let skipTo = 0;
