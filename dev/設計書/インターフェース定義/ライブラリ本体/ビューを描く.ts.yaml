@@ -238,7 +238,7 @@ constraints:
     constraint: 列名と項目の値は文字として出し、HTML として解釈しない
   - item: 部品のモジュールの読み込み
     constraint: ビューの部品のモジュールは、初めて `mountView` を呼んだときか、文書にビューの印があるときに 1 回だけ読む
-    notes: 別の配布ファイルに分けるかはモジュール構成設計で決める（計画書の `未確定`）。どちらでも戻り値は Promise
+    notes: モジュールは `dist/index.js` の隣の `dist/view.js`（モジュール構成『ビューとコメント』）
   - item: 拡張のモジュールからの呼び出し
     constraint: 拡張の `draw(slot, value)` の中で `mountView(slot, …)` を呼んで待つと、印の場所に描く。`mount` の `update`・`destroy` で印の場所を片付けるとき、その中のビューの `destroy` も行う
     notes: 拡張の形はインターフェース定義『拡張を登録する』

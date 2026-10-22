@@ -197,6 +197,6 @@ constraints:
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
   - item: 部品のモジュールの読み込み
     constraint: コメントの部品のモジュールは、初めて `mountComments` を呼んだときか、`mount` でコメントの機能がオンになったときに 1 回だけ読む
-    notes: 別の配布ファイルに分けるかはモジュール構成設計で決める。読めないときは例外の「なし（読み込みの失敗）」
+    notes: モジュールは `dist/index.js` の隣の `dist/comments.js`（モジュール構成『ビューとコメント』）。読めないときは例外の「なし（読み込みの失敗）」
   - item: 型の配布
     constraint: '`mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
