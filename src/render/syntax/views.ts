@@ -124,6 +124,9 @@ function readView(options: {
       kind: "data",
       features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
       filters,
+      // ビューの表には件数・列の表示の切り替え・集計を付けない
+      hide: [],
+      totals: [],
       collapse: "none",
       warnings: [],
     },

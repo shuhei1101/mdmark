@@ -221,7 +221,7 @@ test("test_normal_when_syntax", async () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- tabs -->",
+    "<!-- tabs: group=os -->",
     "",
     "### macOS",
     "",
@@ -288,7 +288,7 @@ test("test_normal_when_syntax", async () => {
     /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表を開く<\/summary>/,
   );
   expect(html).not.toMatch(/<details class="mdmark-table-details"[^>]*\sopen/);
-  expect(html).toContain('<div class="mdmark-tabs">');
+  expect(html).toContain('<div class="mdmark-tabs" data-group="os">');
   expect(html.match(/<div class="mdmark-tab-panel">/g)).toHaveLength(2);
   expect(html).toContain('<p class="mdmark-tab-title">macOS</p>');
   expect(html).toContain('<p class="mdmark-tab-title">Windows</p>');
@@ -402,6 +402,18 @@ test("test_normal_when_syntax_errors", async () => {
     "",
     "<!-- /tabs -->",
     "",
+    "<!-- tabs: group= grop=os closed -->",
+    "",
+    "### macOS",
+    "",
+    "macOS の手順",
+    "",
+    "### Windows",
+    "",
+    "Windows の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
     "[図](#fig-missing)",
     "",
     "<!-- table: data -->",
@@ -416,19 +428,135 @@ test("test_normal_when_syntax_errors", async () => {
   // 検証
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(4);
+  ).toHaveLength(5);
   expect(
     html.match(/<p class="mdmark-syntax-warning-title">書き方の警告<\/p>/g),
-  ).toHaveLength(4);
+  ).toHaveLength(5);
   expect(html).toContain('data-kind="default" data-features="pin sort"');
   expect(html).toContain("<code>unknown</code>");
   expect(html).toContain("<code>data</code>・<code>plain</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
-  expect(html).not.toContain("mdmark-tabs");
+  // 見出しの無い範囲はタブにせず、読めない指定の範囲だけが組を持たないタブになる
+  expect(html.match(/<div class="mdmark-tabs"/g)).toHaveLength(1);
+  expect(html).toContain('<div class="mdmark-tabs">');
+  expect(html).not.toContain("data-group");
+  const tabsWarning = html.slice(
+    html.lastIndexOf(
+      '<div class="mdmark-syntax-warning"',
+      html.indexOf('<div class="mdmark-tabs">'),
+    ),
+    html.indexOf('<div class="mdmark-tabs">'),
+  );
+  for (const label of ["group=", "grop=", "closed"]) {
+    expect(tabsWarning).toContain(`<code>${label}</code>`);
+  }
   expect(html).toContain('<a href="#fig-missing">図</a>');
   expect(html).toContain("<code>#fig-missing</code>");
   expect(html).toContain('data-kind="data"');
   expect(html).toContain("&lt;!-- /table --&gt;");
+});
+
+// 表の印の 5 つの機能と hide=・total= を data-* に写し、行に ID とリンクを付ける（正常系）
+test("test_normal_when_table_features", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "## みかん",
+    "",
+    "<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->",
+    "",
+    "| 名前 | 説明 | 数量 |",
+    "| --- | --- | --- |",
+    "| りんご | 描画を速くする | 1 |",
+    "| みかん | 印刷を直す | 2 |",
+    "| みかん | 描画の崩れを直す | 3 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter count columns total copy rowlink"[^>]*data-hide="1"[^>]*data-total="2:sum"/,
+  );
+  expect(html).toContain('id="みかん"');
+  const rowIds = startTags(html, "tr")
+    .map((tag) => /\sid="([^"]*)"/.exec(tag)?.[1])
+    .filter((id) => id !== undefined);
+  expect(rowIds).toEqual(["りんご", "みかん-1", "みかん-2"]);
+  const anchors = startTags(html, "a").filter((tag) =>
+    tag.includes("mdmark-row-anchor"),
+  );
+  expect(anchors).toHaveLength(3);
+  expect(anchors[1]).toContain('href="#みかん-1"');
+  expect(anchors[1]).toContain('aria-label="「みかん」の行へのリンク"');
+  expect(html).not.toContain("<tfoot");
+  expect(html).not.toContain("<button");
+  expect(html).not.toContain("<!--");
+});
+
+// 読めない集計・隠す列と、機能を付けていない表のキーを書き方の警告にして当てない（正常系）
+test("test_normal_when_table_feature_errors", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = [
+    "| 名前 | 数量 | 単価 |",
+    "| --- | --- | --- |",
+    "| a | 1 | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ];
+  const markdown = [
+    "<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->",
+    "",
+    ...table,
+    "<!-- table: data total=数量:sum hide=単価 -->",
+    "",
+    ...table,
+    "<!-- table: data +total -->",
+    "",
+    ...table,
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrappers = html.split('<div class="mdmark-table"').slice(1);
+  expect(wrappers).toHaveLength(3);
+  const [a, b, c] = wrappers as [string, string, string];
+  const wrapperTag = (part: string): string => part.slice(0, part.indexOf(">"));
+  // 表 A: 読めた計算だけを当て、隠す列は当てない
+  expect(wrapperTag(a)).toContain('data-total="2:avg"');
+  expect(wrapperTag(a)).not.toContain("data-hide");
+  const warnings = html.split('<div class="mdmark-syntax-warning"');
+  expect(warnings).toHaveLength(6);
+  // 警告の本文: 先頭の `<code>` は印の文字なので、取り除いた本文だけを見る
+  const bodyOf = (warning: string | undefined): string =>
+    (warning ?? "").replace(/<code>.*?<\/code>/, "");
+  // 表 A: 読めない指定ごとに 1 つずつ、本文に列名と計算がある
+  const [maxBody, priceBody, noteBody, firstBody] = [1, 2, 3, 4].map((i) =>
+    bodyOf(warnings[i]),
+  );
+  for (const word of ["max", "sum", "avg", "count"]) {
+    expect(maxBody).toContain(word);
+  }
+  expect(priceBody).toContain("価格");
+  expect(noteBody).toContain("備考");
+  expect(firstBody).toContain("<code>名前</code>");
+  expect(firstBody).toContain("先頭の列");
+  // 表 B: 機能の無い表のキーは当てず、機能が要ることを知らせる
+  expect(wrapperTag(b)).not.toContain("data-total");
+  expect(wrapperTag(b)).not.toContain("data-hide");
+  const warningB = warnings[5] ?? "";
+  expect(warningB).toContain("+total");
+  expect(warningB).toContain("+columns");
+  // 表 C: total= の無い +total は警告も集計の行も出さない
+  expect(wrapperTag(c)).toContain("total");
+  expect(wrapperTag(c)).not.toContain("data-total");
+  expect(
+    html.match(/<div class="mdmark-syntax-warning" role="note">/g),
+  ).toHaveLength(5);
 });
 
 // 文書に生の HTML で書いた記法の class・data-*・id を落とす（正常系）

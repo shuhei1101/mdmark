@@ -204,3 +204,36 @@ test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
     .evaluate((link) => getComputedStyle(link, "::after").content);
   expect(suffix).toContain("../api.md");
 });
+
+// 印刷すると、表の上のボタンと行へのリンクの印は出さず、件数と集計の行は出し、隠した列は隠したままにする（正常シナリオ（表の機能を印刷に出す））
+test("test_normal_when_table_features_printed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data +count +columns +total +copy +rowlink total=数量:sum hide=説明 -->",
+      "",
+      "| 名前 | 説明 | 数量 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 1 |",
+      "| みかん | 印刷を直す | 2 |",
+      "| ぶどう | 描画の崩れを直す | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("button.mdmark-columns-toggle")).toBeHidden();
+  await expect(doc.locator("button.mdmark-copy")).toBeHidden();
+  await expect(doc.locator(".mdmark-row-anchor").first()).toBeHidden();
+  await expect(doc.locator(".mdmark-table-count")).toBeVisible();
+  await expect(doc.locator(".mdmark-table-count")).toContainText("3 / 3 件");
+  await expect(doc.locator("tfoot tr")).toBeVisible();
+  await expect(doc.locator("tfoot td").nth(2)).toContainText("6");
+  await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
+});

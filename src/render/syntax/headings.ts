@@ -3,14 +3,18 @@ import { escapeHtml } from "../../parts/escape.ts";
 import { markOwn } from "../../parts/own.ts";
 import { envOf, featureOn, textOf } from "./tokens.ts";
 
+/** GitHub と同じ規則で文字を ID の元にする。作れないときは空文字 */
+export function slugBase(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\p{L}\p{N}\p{M}_\- ]/gu, "")
+    .replaceAll(" ", "-");
+}
+
 /** 見出しの文字から GitHub と同じ規則で ID を作り、使用済みの ID には `-1`・`-2` を付ける */
 export function slugify(text: string, used: Map<string, number>): string {
-  const base =
-    text
-      .toLowerCase()
-      .trim()
-      .replace(/[^\p{L}\p{N}\p{M}_\- ]/gu, "")
-      .replaceAll(" ", "-") || "heading";
+  const base = slugBase(text) || "heading";
   const count = used.get(base);
   if (count === undefined) {
     used.set(base, 0);

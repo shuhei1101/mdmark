@@ -452,6 +452,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       titles,
       panels: titles.map((title) => `<p>${title} の中身の見本です。</p>`),
       selected: args.selected as number | undefined,
+      group: args.group as string | undefined,
     });
   },
   steps: (args) => renderSteps({ items: args.items as string[] }),

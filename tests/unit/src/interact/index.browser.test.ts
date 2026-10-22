@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { wrapHtml } from "../../helpers/charts.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
@@ -12,6 +12,8 @@ afterEach(() => {
     detach();
   }
   removeRoots();
+  vi.restoreAllMocks();
+  history.replaceState(null, "", location.pathname);
 });
 
 // オフの記法には操作を付けない（正常系）
@@ -49,6 +51,58 @@ test("test_attach_interactions", async () => {
   // 検証
   expect(root.querySelector('[role="tablist"]')).toBeNull();
   expect(root.querySelector("thead th button")).not.toBeNull();
+});
+
+// 閉じた節の中の行へは、節を開いてから送る（正常系）
+test("test_attach_interactions_when_row_in_closed_section", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createRoot(
+    [
+      "## 親",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "<!-- table: data +rowlink -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| ぶどう | 1 |",
+      "| もも | 2 |",
+      "| なし | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  const body = root.querySelector<HTMLElement>('[id="section-親"]');
+  const row = root.querySelector<HTMLElement>('tr[id="もも"]');
+  const toggle = root.querySelector<HTMLButtonElement>(
+    '[aria-controls="section-親"]',
+  );
+  // 節の中身が隠れているかを、行へ送られた時点で記録する
+  const hiddenWhenScrolled: boolean[] = [];
+  vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(function (
+    this: Element,
+  ) {
+    if (this.id === "もも") {
+      hiddenWhenScrolled.push(body?.hasAttribute("hidden") ?? true);
+    }
+  });
+  // 実行・検証: #ID のまま付ける
+  history.replaceState(null, "", "#もも");
+  detachers.push(attachInteractions({ root, features }));
+  expect(hiddenWhenScrolled).toEqual([false]);
+  expect(row?.hasAttribute("data-target")).toBe(true);
+  // 実行・検証: 節を閉じ直し、まとめた HTML の # の形に変えて hashchange を送る
+  toggle?.click();
+  row?.removeAttribute("data-target");
+  hiddenWhenScrolled.length = 0;
+  location.hash = "#/a.md#もも";
+  await vi.waitFor(() => {
+    expect(hiddenWhenScrolled).toEqual([false]);
+  });
+  expect(row?.hasAttribute("data-target")).toBe(true);
 });
 
 // hints がオフなら埋め込んだ HTML にツールチップの操作を付けない（正常系）

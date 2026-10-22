@@ -141,3 +141,124 @@ stories:
       columns: '["とても長い列の名前で見出しの幅を超えるもの","値"]'
       rows: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確かめる","1"]]'
       filters: '[{"column":0,"kind":"select"}]'
+  - name: Count
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","count"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      filters: '[{"column":1,"kind":"text"}]'
+  - name: CountFiltered
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","count"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      filters: '[{"column":1,"kind":"text"}]'
+      filterValues: '[{"column":1,"text":"描画"}]'
+  - name: ColumnsHidden
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","columns"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      hide: '[1]'
+  - name: ColumnsMenuOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","columns"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      hide: '[1]'
+      hiddenColumns: '[2]'
+      openColumns: true
+  - name: Totals
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","total"]'
+      columns: '["名前","数量","単価"]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      filters: '[{"column":0,"kind":"text"}]'
+      totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+  - name: TotalsFiltered
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","total"]'
+      columns: '["名前","数量","単価"]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      filters: '[{"column":0,"kind":"text"}]'
+      filterValues: '[{"column":0,"text":"りんご"}]'
+      totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+  - name: TotalsEmpty
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","count","total"]'
+      columns: '["名前","数量","単価"]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      filters: '[{"column":0,"kind":"text"}]'
+      filterValues: '[{"column":0,"text":"存在しない"}]'
+      totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+  - name: Copied
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]'
+      copyState: copied
+  - name: CopyFailed
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]'
+      copyState: failed
+  - name: RowLinkTarget
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","rowlink"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      rowIds: '["りんご","みかん","りんご飴"]'
+      targetRow: 1
+  - name: AllFeatures
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","count","columns","total","copy","rowlink"]'
+      columns: '["名前","説明","数量"]'
+      rows: '[["なつめ","描画を速くする","12"],["かりん","印刷を直す","8"],["ざくろ","描画の崩れを直す","5"]]'
+      hide: '[1]'
+      totals: '[{"column":2,"calc":"sum"}]'
+      rowIds: '["なつめ","かりん","ざくろ"]'

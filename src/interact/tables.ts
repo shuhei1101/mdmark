@@ -1,10 +1,23 @@
-import { renderTableTools } from "../parts/table.ts";
+import { iconSvg } from "../parts/icons.ts";
+import {
+  COPY_STATES,
+  type CopyState,
+  renderTableBar,
+  renderTableTools,
+  renderTotalRow,
+  type TableTotal,
+} from "../parts/table.ts";
 import {
   compareCells,
+  computeTotal,
   FILTER_KINDS,
   type FilterKind,
   type FilterValue,
   matchesFilter,
+  rowIdFromHash,
+  TOTAL_CALCS,
+  type TotalCalc,
+  tableToTsv,
 } from "../table-logic.ts";
 import { visibleText } from "./text.ts";
 
@@ -16,6 +29,9 @@ const SORT_CYCLE = ["none", "ascending", "descending"] as const;
 // ドロワーとボタンの間の隙間と、画面の端に残す余白（px）
 const DRAWER_GAP = 4;
 const VIEWPORT_GUTTER = 16;
+
+// コピーしたことの知らせをボタンに出しておく時間（ミリ秒）。できなかったことの知らせは次に押すまで残す
+const COPIED_NOTICE_MS = 2000;
 
 // 表の id を文書の中で重ならせないための通し番号
 let tableCounter = 0;
@@ -30,6 +46,27 @@ function readFilterKinds(value: string | undefined): Map<number, FilterKind> {
     }
   }
   return kinds;
+}
+
+/** `data-hide`（`1 3`）から隠す列の位置を読む */
+function readColumnList(value: string | undefined): number[] {
+  return (value ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(Number)
+    .filter(Number.isInteger);
+}
+
+/** `data-total`（`2:sum 0:count`）から集計する列と計算を読む */
+function readTotalSpecs(value: string | undefined): TableTotal[] {
+  const totals: TableTotal[] = [];
+  for (const item of (value ?? "").split(/\s+/).filter(Boolean)) {
+    const [column, calc] = item.split(":");
+    if (TOTAL_CALCS.includes(calc as TotalCalc)) {
+      totals.push({ column: Number(column), calc: calc as TotalCalc });
+    }
+  }
+  return totals;
 }
 
 /** 行の直後に続く行の詳細の行を返す */
@@ -70,6 +107,14 @@ function attachTable(
   const tbody = table.tBodies[0];
   const originalRows = bodyRows(table);
   const originalHeads = headCells.map((cell) => cell.innerHTML);
+  // 見出しのボタンを置く前の列名（列の表示のメニューとコピーの見出しの行に使う）
+  const labels = headCells.map((cell) => visibleText(cell));
+  const hiddenColumns = new Set(
+    features.includes("columns") ? readColumnList(wrapper.dataset.hide) : [],
+  );
+  const totalSpecs = features.includes("total")
+    ? readTotalSpecs(wrapper.dataset.total)
+    : [];
   const cleanups: Array<() => void> = [];
   /** 行の指定した列のセルの文字 */
   const cellText = (row: HTMLTableRowElement, column: number): string => {
@@ -122,6 +167,31 @@ function attachTable(
   if (drawers.size > 0) {
     tbody?.append(empty);
   }
+
+  // ─── 表の上の帯と列の表示のメニュー ───
+  const barParts = renderTableBar({
+    id,
+    features,
+    labels,
+    shown: originalRows.length,
+    total: originalRows.length,
+    hiddenColumns: [...hiddenColumns],
+  });
+  if (barParts.bar) {
+    table.insertAdjacentHTML("beforebegin", barParts.bar);
+    const bar = table.previousElementSibling;
+    if (bar) {
+      cleanups.push(() => bar.remove());
+    }
+  }
+  if (barParts.menu) {
+    table.insertAdjacentHTML("afterend", barParts.menu);
+    const menuElement = table.nextElementSibling;
+    if (menuElement) {
+      cleanups.push(() => menuElement.remove());
+    }
+  }
+  const menu = wrapper.querySelector<HTMLElement>(".mdmark-columns-menu");
 
   // ─── 並べ替え ───
   /** 見出しの並べ替えの向きを `aria-sort` に当てる */
@@ -221,6 +291,7 @@ function attachTable(
       }
     }
     empty.hidden = shown > 0;
+    updateSummary();
   };
   /** 値の候補を、検索欄の文字を含むものだけにする */
   const narrowOptions = (drawer: HTMLElement, query: string): void => {
@@ -241,13 +312,36 @@ function attachTable(
     }
   };
 
+  /** ドロワーの入力を全て空にして、候補の絞り込みも戻す */
+  const clearDrawer = (drawer: HTMLElement): void => {
+    for (const input of drawer.querySelectorAll<HTMLInputElement>("input")) {
+      if (input.type === "checkbox") {
+        input.checked = false;
+      } else {
+        input.value = "";
+      }
+    }
+    narrowOptions(drawer, "");
+  };
+  /** この表の全ての列の絞り込みを外す */
+  const clearFilters = (): void => {
+    for (const drawer of drawers.values()) {
+      clearDrawer(drawer);
+    }
+    applyFilters();
+  };
+
   // ─── ドロワーの開閉 ───
   let openState: { drawer: HTMLElement; button: HTMLElement } | undefined;
   /** ドロワーを押したボタンの下に置き、画面の端からはみ出さないようにする */
   const placeDrawer = (drawer: HTMLElement, button: HTMLElement): void => {
     const rect = button.getBoundingClientRect();
+    // 列の表示のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に揃える
+    const start = drawer.classList.contains("mdmark-columns-menu")
+      ? rect.left
+      : rect.right - drawer.offsetWidth;
     const left = Math.min(
-      Math.max(rect.right - drawer.offsetWidth, VIEWPORT_GUTTER),
+      Math.max(start, VIEWPORT_GUTTER),
       window.innerWidth - drawer.offsetWidth - VIEWPORT_GUTTER,
     );
     const below = rect.bottom + DRAWER_GAP;
@@ -317,7 +411,9 @@ function attachTable(
     drawer.hidden = false;
     button.setAttribute("aria-expanded", "true");
     placeDrawer(drawer, button);
-    drawer.querySelector("input")?.focus({ preventScroll: true });
+    drawer
+      .querySelector<HTMLInputElement>("input:not(:disabled)")
+      ?.focus({ preventScroll: true });
     openState = { drawer, button };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -381,6 +477,196 @@ function attachTable(
     }
   };
 
+  // ─── 件数と集計の行 ───
+  /** 表の上の件数を、表示している行の数と全ての行の数に書き換える */
+  const updateCount = (): void => {
+    const [visible, spoken] = wrapper.querySelectorAll(
+      ".mdmark-table-count span",
+    );
+    if (!visible || !spoken) {
+      return;
+    }
+    const shown = originalRows.filter((row) => !row.hidden).length;
+    visible.textContent = `${shown} / ${originalRows.length} 件`;
+    spoken.textContent = `${originalRows.length} 件中 ${shown} 件を表示`;
+  };
+  /** 集計の行を、表示している行で計算し直して置き換える */
+  const renderTotals = (): void => {
+    if (totalSpecs.length === 0) {
+      return;
+    }
+    table.tFoot?.remove();
+    const shownRows = originalRows.filter((row) => !row.hidden);
+    table.insertAdjacentHTML(
+      "beforeend",
+      renderTotalRow({
+        columns: headCells.length,
+        totals: totalSpecs.map((total) => ({
+          ...total,
+          value: computeTotal(
+            shownRows.map((row) => cellText(row, total.column)),
+            total.calc,
+          ),
+        })),
+        hiddenColumns: [...hiddenColumns],
+        labels,
+      }),
+    );
+    // 列の揃えは、本文のセルから写す
+    const cells = [...(table.tFoot?.rows[0]?.cells ?? [])];
+    cells.forEach((cell, index) => {
+      for (const name of originalRows[0]?.cells[index]?.classList ?? []) {
+        if (name.startsWith("mdmark-align-")) {
+          cell.classList.add(name);
+        }
+      }
+    });
+    if (pinned > 0) {
+      pinColumns(pinned);
+    }
+  };
+  /** 件数と集計の行を、表示している行に合わせる */
+  const updateSummary = (): void => {
+    updateCount();
+    renderTotals();
+  };
+  cleanups.push(() => table.tFoot?.remove());
+
+  // ─── 列の表示の切り替え ───
+  /** 隠している列を見出し・セル・集計のセルに当て、メニューとボタンの状態を合わせる */
+  const applyColumns = (): void => {
+    const shownCount = headCells.length - hiddenColumns.size;
+    for (const row of table.rows) {
+      // 行の詳細の行と一致なしの行（1 つのセルが全ての列にまたがる）は、表示している列の数にまたがらせる
+      if (
+        row.classList.contains("mdmark-row-detail") ||
+        row.classList.contains("mdmark-table-empty")
+      ) {
+        const cell = row.cells[0];
+        if (cell) {
+          cell.colSpan = shownCount;
+        }
+        continue;
+      }
+      [...row.cells].forEach((cell, index) => {
+        cell.hidden = hiddenColumns.has(index);
+      });
+    }
+    for (const input of menu?.querySelectorAll<HTMLInputElement>(
+      ".mdmark-columns-options input",
+    ) ?? []) {
+      const column = Number(input.value);
+      input.checked = !hiddenColumns.has(column);
+      // 先頭の列は隠せない
+      input.disabled = column === 0;
+    }
+    const toggle = wrapper.querySelector<HTMLElement>(".mdmark-columns-toggle");
+    toggle?.classList.toggle("is-active", hiddenColumns.size > 0);
+    const status = toggle?.querySelector(".mdmark-visually-hidden");
+    if (status) {
+      status.textContent =
+        hiddenColumns.size > 0
+          ? `（${hiddenColumns.size} 列を隠しています）`
+          : "";
+    }
+    renderTotals();
+    if (pinned > 0) {
+      pinColumns(pinned);
+    }
+  };
+  if (features.includes("columns")) {
+    applyColumns();
+    cleanups.push(() => {
+      for (const row of table.rows) {
+        const wide =
+          row.classList.contains("mdmark-row-detail") ||
+          row.classList.contains("mdmark-table-empty");
+        for (const cell of row.cells) {
+          cell.hidden = false;
+        }
+        if (wide && row.cells[0]) {
+          row.cells[0].colSpan = headCells.length;
+        }
+      }
+    });
+  }
+  updateSummary();
+
+  // ─── 表のコピー ───
+  let copyTimer: ReturnType<typeof setTimeout> | undefined;
+  /** コピーのボタンに状態の文言とアイコンを当て、読み上げにも知らせる */
+  const setCopyState = (state: CopyState): void => {
+    const button = wrapper.querySelector<HTMLElement>(".mdmark-copy");
+    if (!button) {
+      return;
+    }
+    const { label, icon } = COPY_STATES[state];
+    button.dataset.state = state;
+    button.innerHTML = `${iconSvg(icon)}${label}`;
+    const status = wrapper.querySelector(".mdmark-copy-status");
+    if (status) {
+      status.textContent = state === "idle" ? "" : label;
+    }
+  };
+  /** 見出しの行と、画面の並びで表示している行の、表示している列をクリップボードへ写し、結果をボタンで知らせる */
+  const copyTable = async (): Promise<void> => {
+    clearTimeout(copyTimer);
+    const columns = labels.flatMap((_, column) =>
+      hiddenColumns.has(column) ? [] : [column],
+    );
+    const rows = [
+      columns.map((column) => labels[column] ?? ""),
+      ...bodyRows(table)
+        .filter((row) => !row.hidden)
+        .map((row) => columns.map((column) => cellText(row, column))),
+    ];
+    try {
+      await navigator.clipboard.writeText(tableToTsv(rows));
+      setCopyState("copied");
+      copyTimer = setTimeout(() => setCopyState("idle"), COPIED_NOTICE_MS);
+    } catch {
+      // 拒まれたことはボタンで知らせ、例外は外へ出さない
+      setCopyState("failed");
+    }
+  };
+  cleanups.push(() => clearTimeout(copyTimer));
+
+  // ─── 行へのリンク ───
+  /** URL の `#ID` がこの表の行を指すとき、閉じた表を開き、絞り込みで隠れていれば外してから行へ移り、その行だけを強調する */
+  const revealRow = (): void => {
+    const id = rowIdFromHash(location.hash);
+    const target = id ? originalRows.find((row) => row.id === id) : undefined;
+    for (const row of originalRows) {
+      if (row !== target) {
+        row.removeAttribute("data-target");
+      }
+    }
+    if (!target) {
+      return;
+    }
+    for (
+      let details = target.closest("details");
+      details;
+      details = details.parentElement?.closest("details") ?? null
+    ) {
+      details.open = true;
+    }
+    if (target.hidden) {
+      clearFilters();
+    }
+    target.setAttribute("data-target", "");
+    target.scrollIntoView({ block: "center" });
+  };
+  if (features.includes("rowlink")) {
+    window.addEventListener("hashchange", revealRow);
+    cleanups.push(() => {
+      window.removeEventListener("hashchange", revealRow);
+      for (const row of originalRows) {
+        row.removeAttribute("data-target");
+      }
+    });
+  }
+
   // ─── 受け取り ───
   const onClick = (event: Event): void => {
     const target = event.target as HTMLElement;
@@ -388,6 +674,9 @@ function attachTable(
     const filter = target.closest<HTMLElement>(".mdmark-filter");
     const pin = target.closest<HTMLElement>(".mdmark-pin");
     const clear = target.closest<HTMLElement>(".mdmark-filter-clear");
+    const columnsToggle = target.closest<HTMLElement>(".mdmark-columns-toggle");
+    const columnsReset = target.closest<HTMLElement>(".mdmark-columns-reset");
+    const copy = target.closest<HTMLElement>(".mdmark-copy");
     const cell = target.closest<HTMLTableCellElement>("th");
     if (sort && cell) {
       sortBy(cell);
@@ -407,19 +696,38 @@ function attachTable(
     } else if (clear) {
       const drawer = clear.closest<HTMLElement>(".mdmark-filter-drawer");
       if (drawer) {
-        for (const input of drawer.querySelectorAll<HTMLInputElement>(
-          "input",
-        )) {
-          if (input.type === "checkbox") {
-            input.checked = false;
-          } else {
-            input.value = "";
-          }
-        }
-        narrowOptions(drawer, "");
+        clearDrawer(drawer);
         applyFilters();
       }
+    } else if (columnsToggle && menu) {
+      if (menu.hidden) {
+        openDrawer(menu, columnsToggle);
+      } else {
+        closeDrawer(false);
+      }
+    } else if (columnsReset) {
+      hiddenColumns.clear();
+      for (const column of readColumnList(wrapper.dataset.hide)) {
+        hiddenColumns.add(column);
+      }
+      applyColumns();
+    } else if (copy) {
+      void copyTable();
     }
+  };
+  /** 列の表示のメニューのチェックボックスに合わせて、列を隠す・出す */
+  const onChange = (event: Event): void => {
+    const input = event.target as HTMLInputElement;
+    if (!input.closest(".mdmark-columns-options")) {
+      return;
+    }
+    const column = Number(input.value);
+    if (input.checked) {
+      hiddenColumns.delete(column);
+    } else {
+      hiddenColumns.add(column);
+    }
+    applyColumns();
   };
   const onInput = (event: Event): void => {
     const input = event.target as HTMLInputElement;
@@ -435,6 +743,7 @@ function attachTable(
   };
   wrapper.addEventListener("click", onClick);
   wrapper.addEventListener("input", onInput);
+  wrapper.addEventListener("change", onChange);
   const observer = new ResizeObserver(() => {
     updatePinVisibility();
     updateVisibleWidth();
@@ -446,11 +755,15 @@ function attachTable(
   observer.observe(wrapper);
   updatePinVisibility();
   updateVisibleWidth();
+  if (features.includes("rowlink")) {
+    revealRow();
+  }
   cleanups.push(() => {
     closeDrawer(false);
     observer.disconnect();
     wrapper.removeEventListener("click", onClick);
     wrapper.removeEventListener("input", onInput);
+    wrapper.removeEventListener("change", onChange);
     headCells.forEach((cell, index) => {
       cell.innerHTML = originalHeads[index] ?? "";
       cell.removeAttribute("aria-sort");

@@ -1029,6 +1029,221 @@ flows:
       - '`el` の中身と class が変わらない'
       - '`revisions` が呼ばれない'
     test: test_error_when_doc_id_missing
+  - name: 正常系（表の件数と列の表示）
+    summary: 絞り込みに合わせて件数を書き換え、列の表示のメニューで列を隠して既定に戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 件数と列の表示の表を持つ Markdown
+        description: '`<!-- table: data +count +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` に `りんご`・`みかん`・`りんご飴` の 3 行を持つ表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 件数と列の表示の帯を置き、説明の列を隠す
+        P->>M: 名前の列を「りんご」で絞り込む
+        M->>P: 件数を書き換える
+        P->>M: 列の表示を押し、説明にチェックを入れて更新日を外す
+        M->>P: 列の表示を切り替える
+        P->>M: 既定に戻すを押す
+        M->>P: data-hide の状態に戻す
+    expected:
+      - 描いた直後、件数の要素が `aria-live="polite"` を持ち、文字が `3 / 3 件`、説明の列の `th` と `td` が `hidden` を持つ
+      - 「りんご」で絞り込んだ後、件数の文字が `2 / 3 件` で、読み上げの文字が `3 件中 2 件を表示`
+      - メニューを開いた後、ボタンの `aria-expanded` が `true` で、名前のチェックボックスが `disabled`、メニューに `先頭の列は隠せません` がある
+      - 説明にチェックを入れて更新日を外した後、説明の列が `hidden` を持たず、更新日の列の `th` と `td` が `hidden` を持つ
+      - 「既定に戻す」を押した後、説明の列だけが `hidden` を持ち、更新日の列は `hidden` を持たない
+      - Esc でメニューが `hidden` を持ち、列の表示のボタンにフォーカスがある
+    test: test_normal_when_table_counted_and_columns_toggled
+  - name: 正常系（表の集計の行）
+    summary: 表示している行で集計した tfoot の行を置き、絞り込みで計算し直し、並べ替えでは動かさない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 集計の行の表を持つ Markdown
+        description: '`<!-- table: data +total +columns total=数量:sum,単価:avg,名前:count filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 4 行の表を囲んだ文書'
+        notes: 名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量は `10`・`2`・`33`・`-`、単価は `100`・`200`・`300`・`400`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 集計の行を置く
+        P->>M: 名前の列を「りんご」で絞り込む
+        M->>P: 集計を計算し直す
+        P->>M: 数量の列の見出しを押す
+        M->>P: 本文の行だけを並べ替える
+        P->>M: 列の表示で単価を外す
+        M->>P: 単価の列と集計のセルを隠す
+    expected:
+      - 描いた直後、`tfoot` の行のセルが左から `個数 4`・`合計 45`・`平均 250`
+      - 「りんご」で絞り込んだ後、`tfoot` の行のセルが `個数 2`・`合計 43`・`平均 200`
+      - 一致する行が無い絞り込みでは、`個数 0`・`合計 0`・`平均 —`
+      - 並べ替えた後も、集計の行は `tfoot` にあり、`tbody` の行に入っていない
+      - 単価を外した後、単価の列の `th`・`td` と `tfoot` の単価のセルが `hidden` を持つ
+    test: test_normal_when_table_totals
+  - name: 正常系（表をコピーする）
+    summary: 表示している行と列を TSV でクリップボードへ写し、ボタンで知らせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コピーできる表を持つ Markdown
+        description: '`<!-- table: data +copy +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` の 3 行の表を囲んだ文書'
+        notes: 名前は `りんご`・`みかん`・`りんご飴`、更新日は `2026-10-01`・`2026-10-10`・`2026-10-20`
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を記録して解決する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 名前の列を「りんご」で絞り込み、表をコピーを押す
+        M->>P: 表示している行と列を TSV で写し、ボタンで知らせる
+    expected:
+      - '`navigator.clipboard.writeText` が `名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれる'
+      - 押した後、ボタンの文字が `コピーしました` で、2 秒後に `表をコピー` に戻る
+    test: test_normal_when_table_copied
+  - name: 正常系（表をコピーできない）
+    summary: クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コピーできる表を持つ Markdown
+        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 表をコピーを押す
+        M->>M: 書き込みが拒まれる
+        M->>P: ボタンで写せなかったことを知らせる
+    expected:
+      - 押した後、ボタンの文字が `コピーできませんでした` で、2 秒後も変わらない
+      - ページに捕まえられない例外（`unhandledrejection`）が出ていない
+      - もう一度押すと、書き込みをもう一度試す
+    test: test_normal_when_table_copy_denied
+  - name: 正常系（行へのリンクで行へ移る）
+    summary: 'URL の #ID が指す行を囲む閉じた表・節を開き、絞り込みを外して行へ移り、その行を強調する'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 行へのリンクの表を持つ Markdown
+        description: '`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` の表 A（名前 `りんご`・`みかん`・`りんご飴`）と、`<!-- section: closed -->` の節の中の `<!-- table: data +rowlink filter=名前:text -->` 〜 `<!-- /table -->` の表 B（名前 `ぶどう`・`もも`・`なし`）を持つ文書'
+      - name: 行を指す URL
+        description: '`mount` の前に `location.hash` を `#みかん` にする'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表 A を開き、みかんの行へ移って強調する
+        P->>M: 表 B を「ぶどう」で絞り込み、location.hash を #もも にする
+        M->>P: 節を開き、表 B の絞り込みを外してももの行へ移り、強調を移す
+        P->>M: location.hash を #/a.md#みかん にする
+        M->>P: みかんの行を強調する
+    expected:
+      - 描いた後、表 A の `details` が `open` を持ち、`id="みかん"` の行だけが `data-target` を持つ
+      - '`#もも` にした後（`hashchange`）、節の中身が `hidden` を持たず、表 B の 3 行とも `hidden` を持たず、絞り込みのボタンが絞り込み中でない'
+      - '`#もも` にした後、`id="もも"` の行だけが `data-target` を持ち、`id="みかん"` の行は持たない'
+      - '`#/a.md#みかん` にした後、`id="みかん"` の行だけが `data-target` を持つ（まとめた HTML の `#` の形）'
+    test: test_normal_when_table_row_linked
+  - name: 正常系（同じ組のタブを揃えて残す）
+    summary: 同じ group のタブ群を同じタブ名へ揃え、選んだタブ名を localStorage に残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。localStorage は空
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: mdmark-tabs:os を読む
+        S-->>M: 無い
+        M->>P: 4 つのタブ群で最初のタブを選ぶ
+        P->>M: 1 つ目のタブ群の Windows のタブを押す
+        M->>P: group=os で Windows を持つタブ群を Windows に切り替える
+        M->>S: mdmark-tabs:os に Windows を残す
+    expected:
+      - 押す前、localStorage の `mdmark-tabs:os` が無い（描いたときの選択は残さない）
+      - 押した後、1 つ目と 2 つ目のタブ群で `Windows` のタブの `aria-selected` が `true`、`tabindex` が `0` で、`Windows` の中身だけが `hidden` を持たない
+      - 3 つ目と 4 つ目のタブ群は `macOS` のタブの `aria-selected` が `true` のまま
+      - フォーカスが 1 つ目のタブ群の `Windows` のタブにある
+      - localStorage の `mdmark-tabs:os` が `Windows`
+    test: test_normal_when_tab_group_synced
+  - name: 正常系（残したタブで描く）
+    summary: localStorage に残したタブ名のタブを選んで描き、本文を差し替えても同じタブを選ぶ
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 残したタブ名
+        description: localStorage の `mdmark-tabs:os` に `Windows`、`mdmark-tabs:lang` に `Go` を入れておく
+        notes: '`Go` は文書のどのタブにも無いタブ名'
+      - name: 組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲、`<!-- tabs: group=lang -->` で `### Python`・`### TypeScript` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: mdmark-tabs:os と mdmark-tabs:lang を読む
+        S-->>M: Windows と Go
+        M->>P: os のタブ群は Windows、lang と組の無いタブ群は最初のタブを選ぶ
+        P->>M: update(同じ markdown)
+        M->>S: mdmark-tabs:os を読む
+        M->>P: os のタブ群を Windows を選んで描き直す
+    expected:
+      - 描いた直後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の中身だけが `hidden` を持たない
+      - '`group=lang` のタブ群は `Python`、`group` の無いタブ群は `macOS` を選んでいる'
+      - '`update` の後も `group=os` のタブ群は `Windows` を選んでいる'
+      - localStorage の `mdmark-tabs:lang` は `Go` のまま
+    test: test_normal_when_tab_choice_restored
+  - name: 正常系（localStorage が使えない）
+    summary: localStorage を取り出せなくても、同じ組のタブを揃えて切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: localStorage が使えないページ
+        description: '`mount` の前に、`window.localStorage` を読むと `SecurityError` を投げるように差し替える'
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
+      - name: Mock
+        description: '`console.warn` を記録する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: 取り出す
+        S-->>M: SecurityError
+        M->>P: 最初のタブを選んで描く
+        P->>M: 1 つ目のタブ群の Windows のタブを押す
+        M->>P: 2 つのタブ群を Windows に切り替える
+        M->>S: 取り出す
+        S-->>M: SecurityError
+    expected:
+      - '`mount` が例外を投げず、描いた直後は 2 つのタブ群とも `macOS` を選んでいる'
+      - 押した後、2 つのタブ群とも `Windows` のタブの `aria-selected` が `true`
+      - '`console.warn` が呼ばれ、書き方の警告は無い'
+    test: test_normal_when_storage_unavailable
   - name: 正常系（ビューを描く）
     summary: ビューの印で囲んだ表をボード表示で描き、表形式と切り替える
     setup:
@@ -1302,7 +1517,7 @@ flows:
     test: test_error_when_part_module_unavailable
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -1464,9 +1679,9 @@ constraints:
     constraint: Chrome 99・Firefox 97・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
   - item: 表の操作
-    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く'
+    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`copy` の表は、表の上に `mdmark-table-bar` の帯を置く。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（読み上げは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示は `aria-expanded`・`aria-controls` を持つ `列の表示` のボタンで、列名のチェックボックスと `先頭の列は隠せません`・「既定に戻す」を並べたメニュー（絞り込みのドロワーと同じ開閉の作法）を開く。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、先頭の列のチェックボックスは `disabled` にする。「既定に戻す」は `data-hide` の状態に戻す。`total` の表は、`data-total` の列を表示している行で集計した `tfoot` の行を置き、絞り込みのたびに計算し直す（題は `合計`・`平均`・`個数`。`sum`・`avg` は数として読めないセルを除き、桁区切りを付けて小数は 2 桁までに丸める。平均する値が無いときは `—`）。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の `表をコピー` のボタンは、見出しの行と表示している行の、表示している列のセルの文字を、セルをタブで、行を改行で区切って `navigator.clipboard.writeText` で写す（集計の行と行の詳細は含めない）。写せたらボタンを `コピーしました` にして 2 秒で戻し、拒まれたら `コピーできませんでした` にして次に押すまで残す（どちらも読み上げで知らせ、例外を外へ出さない）。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じた節を開き、行が絞り込みで隠れていればその表の絞り込みを外してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクの印は、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。印刷では表の上のボタンと行へのリンクの印を出さず、件数と集計の行を出し、隠した列は隠したままにする'
   - item: タブの操作
-    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ'
+    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読む人が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と揃えて切り替わった選択は残さない。localStorage を取り出す・読み書きするときに例外が出たら、`console.warn` に出して残さず・読まずに揃える動きと切り替えを続ける'
   - item: 節と行の詳細の開閉
     constraint: 節は見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じた節の `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じた節の中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じた節の中に当たったときは、その節を開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを置き、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く

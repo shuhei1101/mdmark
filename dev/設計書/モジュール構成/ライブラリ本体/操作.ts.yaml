@@ -3,10 +3,10 @@ lead: '`mount` が描いた記法に操作を付け、外す処理。表の並�
 directory: |-
   ```tree
   src/
-  ├── table-logic.ts  # 表の並べ替えの比べ方と絞り込みの当てはめ（部品の表と操作が使う）
+  ├── table-logic.ts  # 表の並べ替えの比べ方・絞り込みの当てはめ・集計・TSV・URL の #ID の読み方（部品の表と操作が使う）
   └── interact/
       ├── index.ts     # attachInteractions
-      ├── tables.ts    # 表の並べ替え・ピン止め・絞り込み
+      ├── tables.ts    # 表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る
       ├── tabs.ts      # タブの切り替え
       └── sections.ts  # 節と行の詳細の開閉、URL の #ID で開く
   ```
@@ -37,7 +37,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachTables`・`attachTabs`・`attachSections` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。まとめて外す関数を返す
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean> }'
@@ -64,6 +64,12 @@ functions:
         condition: ヒントを持つ `div.mdmark-html` を描いた要素と、`features` の `hints` が `false`
         mock: なし
         expected: 印にフォーカスしても `role="tooltip"` の要素が `hidden` を持ったまま
+      - name: test_attach_interactions_when_row_in_closed_section
+        case: 正常
+        summary: 閉じた節の中の行へは、節を開いてから送る
+        condition: '`data-section="closed"` の節の中に `rowlink` の表（`id` `もも` の行）を描いた要素で、`location.hash` を `#もも` にして付け、次に `#/a.md#もも` にして `hashchange` を送る'
+        mock: '`Element.prototype.scrollIntoView` を、呼ばれたときに節の中身の `hidden` を記録する関数に差し替える'
+        expected: どちらも、`もも` の行の `scrollIntoView` が呼ばれたときに節の中身が `hidden` を持たず、行が `data-target` を持つ
   - name: compareCells
     title: セルを比べる
     container: src/table-logic.ts
@@ -135,8 +141,8 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-table` の `data-features`・`data-filter` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける
-    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける'
+    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRow` の集計の行を置き、`rowlink` の表は行へ移る処理を付ける
+    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。件数と集計の行は、絞り込みを当てるたびに、行の詳細と `一致する行がありません` の行を除く本文の行（今の本文の行の取り出しと同じ）のうち `hidden` を持たない行から作り直す（集計は `computeTotal`）。列の表示のメニューは絞り込みのドロワーと同じ開閉の受け取りを使い（同時に開くのはドロワーとメニューを合わせて 1 つ）、チェックボックスに合わせて列の見出し・セル・集計のセルの `hidden` を切り替え、「既定に戻す」で `data-hide` の状態に戻す。ピン止めの左端からの位置は隠した列を除いて測り直す。コピーは見出しの行と、行の詳細と `一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行の、`hidden` を持たない列の `visibleText` を `tableToTsv` で写し、結果をボタンの `data-state` と `role="status"` の要素で知らせる（写せたら 2 秒で `idle` に戻し、拒まれたら次に押すまで `failed` のままにする。拒まれた例外は外へ出さない）。行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じた節は、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て外し、`scrollIntoView` してその行だけに `data-target` を付ける'
     args:
       - name: root
         type: HTMLElement
@@ -188,12 +194,48 @@ functions:
         condition: '`<!-- table: data filter=名前 -->` の表（列 `名前`・`値`、行 `印`・`表`）と、`印`・`名前` を入れた用語集の表を `mount` で描く'
         mock: なし
         expected: 絞り込みの値の候補が `["印", "表"]`、見出しのボタンの名前が `名前` と `値`、`印` のセルに用語の下線が残る
+      - name: test_attach_tables_when_counted
+        case: 正常
+        summary: 絞り込みに合わせて件数と集計の行を作り直す
+        condition: '`data-features="sort pin filter count total"`・`data-filter="0:text"`・`data-total="0:count 1:sum 2:avg"` の表（名前 `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量 `10`・`2`・`33`・`-`、単価 `100`・`200`・`300`・`400`）を `りんご` で絞り込む'
+        mock: なし
+        expected: 絞り込む前は `4 / 4 件` と `個数 4`・`合計 45`・`平均 250`、後は `2 / 4 件` と `個数 2`・`合計 43`・`平均 200`、絞り込みを `存在しない` にした後は `0 / 4 件` と `個数 0`・`合計 0`・`平均 —`（`一致する行がありません` の行を数えない）
+      - name: test_attach_tables_when_columns_toggled
+        case: 正常
+        summary: 列を隠して既定に戻し、Esc でメニューを閉じる
+        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、メニューを開き、2 列目を入れて 3 列目を外し、「既定に戻す」を押し、Esc'
+        mock: なし
+        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目のチェックボックスが `disabled` で 2 つ目のチェックボックスにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden`、戻した後は 2 列目だけが `hidden`、Esc の後はメニューが `hidden` で `列の表示` にフォーカス
+      - name: test_attach_tables_when_copied
+        case: 正常
+        summary: 表示している行と列を TSV で写し、2 秒でボタンを戻す
+        condition: '`data-features="sort pin filter columns copy"`・`data-hide="1"`・`data-filter="0:text"` の表（列 `名前`・`説明`・`更新日`、名前 `りんご`・`みかん`・`りんご飴`、更新日 `2026-10-01`・`2026-10-10`・`2026-10-20`）を `りんご` で絞り、`表をコピー` を押す'
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
+        expected: '`名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれ、ボタンが `data-state="copied"`、2 秒進めると `idle`'
+      - name: test_attach_tables_when_copy_denied
+        case: 正常
+        summary: 拒まれたら failed を残し、例外を外へ出さない
+        condition: '`data-features="copy"` の表で `表をコピー` を押す'
+        mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒む関数に、時計を偽の時計に差し替える'
+        expected: ボタンが `data-state="failed"` で 2 秒進めても変わらず、`unhandledrejection` が起きない
+      - name: test_attach_tables_when_row_linked
+        case: 正常
+        summary: '#ID が指す行を開いて強調し、hashchange で移す'
+        condition: 閉じた `details` の中の `rowlink` の表（`id` `みかん` の行）と、`data-filter="0:text"` で `ぶどう` に絞った `rowlink` の表（`id` `もも` の行）を描いた要素で、`#みかん` のまま付け、`#もも` にし、`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93` にする
+        mock: なし
+        expected: 付けた後は `details` が `open` で `みかん` の行だけ `data-target`、`#もも` の後は 2 つ目の表の行が全て `hidden` を持たず `もも` の行だけ `data-target`、`#/a.md#…` の後は `みかん` の行だけ `data-target`
+    refs:
+      - '#functions[computeTotal]'
+      - '#functions[tableToTsv]'
+      - '#functions[rowIdFromHash]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableBar]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTotalRow]
   - name: attachTabs
     title: タブに操作を付ける
     container: src/interact/tabs.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にして 1 つ目を選ぶ。押すと左右の矢印・Home・End で選ぶ
+    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から引いた関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す
     args:
       - name: root
         type: HTMLElement
@@ -201,9 +243,11 @@ functions:
         description: 描いた要素
     returns:
       type: () => void
-      description: タブの並びを取り除き、中身を `render` の形に戻す関数
-    side_effects: タブの DOM を書き換え、イベントを付ける
+      description: タブの並びを取り除き、`tabSelectors` から外し、中身を `render` の形に戻す関数
+    side_effects: タブの DOM を書き換え、イベントを付ける。`data-group` を持つときは localStorage を読み書きし、`root` の外の同じ `data-group` のタブも切り替える
     callees:
+      - '#functions[loadTabChoice]'
+      - '#functions[saveTabChoice]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
     unit_tests:
       - name: test_attach_tabs
@@ -212,12 +256,36 @@ functions:
         condition: 3 つの中身のタブ、2 つ目を押し、右の矢印、End、Home
         mock: なし
         expected: 2 つ目・3 つ目・3 つ目・1 つ目の順に `aria-selected="true"` とフォーカスが移り、その中身だけが `hidden` を持たない
+      - name: test_attach_tabs_when_group_synced
+        case: 正常
+        summary: 同じ組のタブを揃えて残す
+        condition: '`data-group="os"` の `macOS`・`Windows` のタブを 2 つ、`data-group="os"` の `macOS`・`Linux` のタブを 1 つ、組の無い `macOS`・`Windows` のタブを 1 つ、2 つの `root` に分けて付け、1 つ目の `Windows` を押す'
+        mock: localStorage を空にしておく
+        expected: 1 つ目と 2 つ目は `Windows` を選び、3 つ目と 4 つ目は `macOS` のまま。フォーカスは 1 つ目の `Windows`。localStorage の `mdmark-tabs:os` が `Windows`
+      - name: test_attach_tabs_when_choice_saved
+        case: 正常
+        summary: 残したタブ名のタブを選んで付ける
+        condition: localStorage の `mdmark-tabs:os` が `Windows`、`mdmark-tabs:lang` が `Go`。`data-group="os"` の `macOS`・`Windows` と `data-group="lang"` の `Python`・`TypeScript` のタブ
+        mock: なし
+        expected: '`os` は `Windows`、`lang` は `Python` を選ぶ。localStorage は書き換わらない'
+      - name: test_attach_tabs_when_detached
+        case: 正常
+        summary: 外したタブは揃える対象から外れる
+        condition: '`data-group="os"` のタブを 2 つの `root` に付け、1 つ目の `root` を外してから 2 つ目の `Windows` を押す'
+        mock: なし
+        expected: 例外が出ず、1 つ目の `root` にタブの並びが無く、中身に `hidden` が無い
+      - name: test_attach_tabs_when_group_has_quote
+        case: 正常
+        summary: セレクタの記号を含む組の名前でも揃える
+        condition: '`data-group` が `a"b\c]` の `macOS`・`Windows` のタブを 2 つ、1 つ目の `Windows` を押す'
+        mock: localStorage を空にしておく
+        expected: 例外が出ず、2 つとも `Windows` を選び、localStorage の `mdmark-tabs:a"b\c]` が `Windows`
   - name: attachSections
     title: 節と行の詳細に開閉を付ける
     container: src/interact/sections.ts
     kind: 関数
     scope: internal
-    summary: '`sections` がオンなら節の見出しを開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID` が閉じた節の中を指すとき（付けたときと `hashchange`）と `beforematch` でその節を開く'
+    summary: '`sections` がオンなら節の見出しを開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID`（`rowIdFromHash` で読む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が閉じた節の中を指すとき（付けたときと `hashchange`）と `beforematch` でその節を開く'
     args:
       - name: options
         type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean }'
@@ -256,6 +324,14 @@ functions:
         condition: 行の詳細を持つ表で、持ち主の行の 1 列目に用語 `印` の下線がある
         mock: なし
         expected: 開閉ボタンの読み上げの名前に `印` が入り、ツールチップの意味の文字が入らない
+      - name: test_attach_sections_when_bundle_hash
+        case: 正常
+        summary: 'まとめた HTML の # の形でも閉じた節を開く'
+        condition: 閉じた節の中の `### 注意`、`location.hash` を `#/a.md#%E6%B3%A8%E6%84%8F`
+        mock: なし
+        expected: 節の中身が `hidden` を持たない
+    refs:
+      - '#functions[rowIdFromHash]'
   - name: visibleText
     title: 要素の見える文字を読む
     container: src/interact/text.ts
@@ -303,6 +379,143 @@ functions:
     status: planned
     introduced:
       pr: 45
+  - name: computeTotal
+    title: 列を集計する
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: セルの文字を集計して表示する文字にする。`sum`・`avg` は `,` を除いて数として読めるセルだけ、`count` は空でないセルを数える。値は `Intl.NumberFormat`（`ja`、小数は 2 桁まで）で整え、平均する値が無いときは `—`
+    args:
+      - name: cells
+        type: string[]
+        required: true
+        description: 表示している行のその列のセルの文字
+      - name: calc
+        type: '"sum" | "avg" | "count"'
+        required: true
+        description: 計算
+    returns:
+      type: string
+      description: 集計の行に出す値
+    unit_tests:
+      - name: test_compute_total
+        case: 正常
+        summary: 数として読めないセルを除いて合計・平均し、空でないセルを数える
+        condition: '`["10", "2", "33", "-"]` の `sum`、`["100", "200", "300", "400"]` の `avg`、`["りんご", "", "ぶどう"]` の `count`'
+        mock: なし
+        expected: '`45`・`250`・`2`'
+      - name: test_compute_total_when_rounded
+        case: 正常
+        summary: 桁区切りを付け、小数を 2 桁までに丸める
+        condition: '`["1,000", "2,001"]` の `sum` と `["1", "2", "2"]` の `avg`'
+        mock: なし
+        expected: '`3,001` と `1.67`'
+      - name: test_compute_total_when_empty
+        case: 正常
+        summary: 行が無いとき
+        condition: '`[]` の `sum`・`avg`・`count`'
+        mock: なし
+        expected: '`0`・`—`・`0`'
+  - name: tableToTsv
+    title: 表を TSV にする
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 行ごとのセルの文字を、セルをタブで、行を改行で区切った文字にする。セルの中のタブと改行は空白 1 つにする
+    args:
+      - name: rows
+        type: string[][]
+        required: true
+        description: 見出しの行を先頭にした、表示している行と列のセルの文字
+    returns:
+      type: string
+      description: TSV
+    unit_tests:
+      - name: test_table_to_tsv
+        case: 正常
+        summary: セルをタブで、行を改行で区切る
+        condition: '`[["名前", "更新日"], ["りんご", "2026-10-01"], ["りんご飴", "2026-10-20"]]`'
+        mock: なし
+        expected: '`名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20`'
+      - name: test_table_to_tsv_when_cell_has_tab
+        case: 正常
+        summary: セルの中のタブと改行を空白にする
+        condition: '`[["a\tb", "c\nd"]]`'
+        mock: なし
+        expected: '`a b\tc d`'
+  - name: rowIdFromHash
+    title: 'URL の # から行の ID を読む'
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`location.hash` の最後の `#` の後ろを `decodeURIComponent` して返す（読めないときはそのまま）。まとめた HTML の `#/{文書のパス}#{ID}` も同じように読む'
+    args:
+      - name: hash
+        type: string
+        required: true
+        description: '`location.hash`'
+    returns:
+      type: string
+      description: 行の ID（`#` が無ければ空文字）
+    unit_tests:
+      - name: test_row_id_from_hash
+        case: 正常
+        summary: '最後の # の後ろを戻した文字を返す'
+        condition: '`#%E3%81%BF%E3%81%8B%E3%82%93`・`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93`・`#%E3%81`・空文字'
+        mock: なし
+        expected: '`みかん`・`みかん`・`%E3%81`・空文字'
+  - name: loadTabChoice
+    title: 残したタブ名を読む
+    container: src/interact/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: localStorage の `{TAB_CHOICE_KEY_PREFIX}{group}` を読む。`window.localStorage` の取り出しと読み出しを try の中で行い、例外は `console.warn` に出して `undefined` を返す
+    args:
+      - name: group
+        type: string
+        required: true
+        description: 組の名前
+    returns:
+      type: string | undefined
+      description: 残したタブ名。残していないか読めないときは `undefined`
+    unit_tests:
+      - name: test_load_tab_choice
+        case: 正常
+        summary: 残したタブ名を返す
+        condition: localStorage の `mdmark-tabs:os` が `Windows`
+        mock: なし
+        expected: '`Windows`'
+      - name: test_load_tab_choice_when_storage_unavailable
+        case: 異常
+        summary: localStorage を取り出せなければ undefined
+        condition: '`window.localStorage` を読むと `SecurityError` を投げる'
+        mock: '`window.localStorage` の getter と `console.warn` を差し替える'
+        expected: 例外を投げず `undefined` を返し、`console.warn` が 1 回呼ばれる
+  - name: saveTabChoice
+    title: 選んだタブ名を残す
+    container: src/interact/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: localStorage の `{TAB_CHOICE_KEY_PREFIX}{group}` にタブ名を書く。`window.localStorage` の取り出しと書き込みを try の中で行い、例外は `console.warn` に出して続ける
+    args:
+      - name: choice
+        type: '{ group: string; name: string }'
+        required: true
+        description: 組の名前と選んだタブ名
+    side_effects: localStorage に書く
+    unit_tests:
+      - name: test_save_tab_choice
+        case: 正常
+        summary: タブ名を残す
+        condition: '`{ group: "os", name: "Windows" }`'
+        mock: なし
+        expected: localStorage の `mdmark-tabs:os` が `Windows`
+      - name: test_save_tab_choice_when_storage_unavailable
+        case: 異常
+        summary: localStorage を取り出せなければ書かずに続ける
+        condition: '`window.localStorage` を読むと `SecurityError` を投げる'
+        mock: '`window.localStorage` の getter と `console.warn` を差し替える'
+        expected: 例外を投げず、`console.warn` が 1 回呼ばれる
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
@@ -310,3 +523,16 @@ test_files:
   - tests/unit/src/interact/sections.browser.test.ts
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
+constants:
+  - name: TAB_CHOICE_KEY_PREFIX
+    title: 残したタブ名のキーの頭
+    container: src/interact/tabs.ts
+    summary: 選んだタブ名を残す localStorage のキーの頭。キーは `{頭}{group}`
+    value: '"mdmark-tabs:"'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
+  - name: tabSelectors
+    title: タブを名前で選ぶ関数の控え
+    container: src/interact/tabs.ts
+    summary: '`attachTabs` が操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を引く。ページの別の `mount` のタブも同じ控えから引いて揃える。外す関数が取り除く'
+    value: 'new WeakMap<HTMLElement, (name: string) => void>()'

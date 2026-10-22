@@ -71,3 +71,62 @@ export function matchesFilter(
   }
   return (!value.from || date >= value.from) && (!value.to || date <= value.to);
 }
+
+/** 集計の計算 */
+export type TotalCalc = "sum" | "avg" | "count";
+
+/** `total=列名:計算` に書ける計算。集計の行の題は `TOTAL_LABELS` */
+export const TOTAL_CALCS: readonly TotalCalc[] = ["sum", "avg", "count"];
+
+/** 集計の行に出す題 */
+export const TOTAL_LABELS: Readonly<Record<TotalCalc, string>> = {
+  sum: "合計",
+  avg: "平均",
+  count: "個数",
+};
+
+/** 平均する値が無いときの表示 */
+const NO_VALUE = "—";
+
+/** 集計の値の書式: 桁区切りを付け、小数は 2 桁までにする */
+const totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
+
+/** セルの文字を集計して表示する文字にする。`sum`・`avg` は数として読めるセルだけ、`count` は空でないセルを数える */
+export function computeTotal(cells: string[], calc: TotalCalc): string {
+  if (calc === "count") {
+    return totalFormat.format(
+      cells.filter((cell) => cell.trim() !== "").length,
+    );
+  }
+  const numbers = cells
+    .map(toNumber)
+    .filter((value): value is number => value !== undefined);
+  const sum = numbers.reduce((total, value) => total + value, 0);
+  if (calc === "sum") {
+    return totalFormat.format(sum);
+  }
+  return numbers.length > 0
+    ? totalFormat.format(sum / numbers.length)
+    : NO_VALUE;
+}
+
+/** 行ごとのセルの文字を、セルをタブで、行を改行で区切った文字にする。セルの中のタブと改行は空白 1 つにする */
+export function tableToTsv(rows: string[][]): string {
+  return rows
+    .map((row) => row.map((cell) => cell.replace(/[\t\r\n]+/g, " ")).join("\t"))
+    .join("\n");
+}
+
+/** `location.hash` の最後の `#` の後ろを戻した文字を返す。戻せないときはそのまま、`#` が無ければ空文字 */
+export function rowIdFromHash(hash: string): string {
+  const position = hash.lastIndexOf("#");
+  if (position < 0) {
+    return "";
+  }
+  const raw = hash.slice(position + 1);
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}

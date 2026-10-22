@@ -29,8 +29,8 @@ data_models:
         type: '"default" | "data" | "plain"'
         description: 種類。知らない種類は `default`
       - name: features
-        type: Array<"sort" | "pin" | "filter">
-        description: 種類の機能に `+機能`・`-機能` を当てたもの
+        type: TableFeature[]
+        description: 種類の機能に `+機能`・`-機能` を当てたもの（`TABLE_FEATURES` のうち）
       - name: filters
         type: 'Array<{ column: number; kind: "select" | "text" | "date" }>'
         description: 絞り込む列。表に無い列名・知らない種類は入れない
@@ -40,6 +40,12 @@ data_models:
       - name: warnings
         type: WarningItem[]
         description: 読めなかった指定
+      - name: hide
+        type: number[]
+        description: '`hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない'
+      - name: totals
+        type: 'Array<{ column: number; calc: "sum" | "avg" | "count" }>'
+        description: '`total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない'
   - name: TreeNode
     title: ツリーの項目
     container: src/parts/tree.ts
@@ -73,13 +79,23 @@ constants:
     container: src/parts/callout.ts
     summary: 引用の 1 行目に書ける種類。知らない種類は `note`
     value: '["note", "tip", "important", "warning", "caution"]'
+  - name: TABLE_FEATURES
+    title: 表の機能の名前
+    container: src/render/syntax/tables.ts
+    summary: '`+機能`・`-機能` に書ける機能の名前。後ろの 5 つはどの種類の既定にも入らない'
+    value: '["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]'
+  - name: TOTAL_CALCS
+    title: 集計の計算
+    container: src/table-logic.ts
+    summary: '`total=列名:計算` に書ける計算。集計の行の題はそれぞれ `合計`・`平均`・`個数`'
+    value: '["sum", "avg", "count"]'
 functions:
   - name: slugify
     title: 見出しの ID を作る
     container: src/render/syntax/headings.ts
     kind: 関数
     scope: internal
-    summary: GitHub と同じ規則で見出しの文字から ID を作り、使用済みの ID には `-1`・`-2` を付ける
+    summary: '`slugBase`（作れないときは `heading`）で見出しの文字から ID を作り、使用済みの ID には `-1`・`-2` を付ける'
     args:
       - name: text
         type: string
@@ -172,7 +188,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`
+    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。`hide=` は `columns`、`total=` は `total` を付けた表でだけ読み、機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする
     args:
       - name: args
         type: MdmarkMarkArgs | undefined
@@ -198,12 +214,24 @@ functions:
         condition: '`unknown +sort +foo size=2 filter=無い列,名前:range closed open`'
         mock: なし
         expected: '`kind` が `default`、`features` が `["pin", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `unknown`・`+foo`・`size=`・`無い列`・`range`・`closed と open` の項目'
+      - name: test_read_table_spec_when_features
+        case: 正常
+        summary: 5 つの機能と hide=・total= を読む
+        condition: '`data +count +columns +total +copy +rowlink hide=説明 total=数量:sum,名前:count` と見出し `名前`・`説明`・`数量`'
+        mock: なし
+        expected: '`features` が `["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]`、`hide` が `[1]`、`totals` が `[{2, sum}, {0, count}]`、`warnings` が空'
+      - name: test_read_table_spec_when_feature_keys_invalid
+        case: 正常
+        summary: 読めない集計・隠す列と機能の無い表のキーを警告にして当てない
+        condition: 見出し `名前`・`数量`・`単価` で、`data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前` と `data total=数量:sum hide=単価` をそれぞれ読む
+        mock: なし
+        expected: 1 つ目は `totals` が `[{2, avg}]`、`hide` が空、`warnings` に `max`・`価格`・`備考`・`名前`（先頭の列）の項目。2 つ目は `totals`・`hide` が空、`warnings` に `total=`・`hide=`（機能が要る）の項目
   - name: decorateTables
     title: 表を表の部品にする
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・折り畳み）に入れ、警告を囲みの頭に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -234,6 +262,17 @@ functions:
         condition: '`env.features.table` が `false`'
         mock: なし
         expected: '`<table tabindex="0" aria-label="…">` があり、`mdmark-table` が無い'
+      - name: test_decorate_tables_when_features
+        case: 正常
+        summary: 5 つの機能と hide=・total= を属性に写し、行に ID とリンクを付ける
+        condition: '`## みかん` の後の `<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`・`数量`、名前 `りんご`・`みかん`・`みかん`）'
+        mock: なし
+        expected: '`data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
+    refs:
+      - '#functions[readTableSpec]'
+      - '#functions[rowIdOf]'
+      - '#functions[pushWarning]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTable]
   - name: attachRowDetails
     title: 行の詳細を表に入れる
     container: src/render/syntax/row-details.ts
@@ -267,7 +306,7 @@ functions:
     container: src/render/syntax/tabs.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。区切りの見出しのトークンは取り除く。見出しが無ければ警告を差し込み、中身をそのまま残す
+    summary: コアルール。`tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。印の引数は `readTabsOptions` で読み、読めた `group` を部品へ渡し、読めない指定の警告を範囲の前に差し込む。区切りの見出しのトークンは取り除く。見出しが無ければ警告を差し込み、中身をそのまま残す
     args:
       - name: state
         type: StateCore
@@ -275,6 +314,7 @@ functions:
         description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
+      - '#functions[readTabsOptions]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
       - '#functions[pushWarning]'
     unit_tests:
@@ -290,6 +330,18 @@ functions:
         condition: 段落だけを囲んだ範囲
         mock: なし
         expected: 警告と段落があり、`mdmark-tabs` が無い
+      - name: test_build_tabs_when_group
+        case: 正常
+        summary: group を部品に写す
+        condition: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲'
+        mock: なし
+        expected: '`<div class="mdmark-tabs" data-group="os">` があり、書き方の警告が無い'
+      - name: test_build_tabs_when_unreadable_options
+        case: 正常
+        summary: 読めない指定は警告にしてタブにはする
+        condition: '`<!-- tabs: group= grop=os closed -->` で `### macOS`・`### Windows` を囲んだ範囲'
+        mock: なし
+        expected: 範囲の前に書き方の警告が 1 つあり、項目に `group=`・`grop=`・`closed` がある。`data-group` を持たない `mdmark-tabs` がある
   - name: buildSteps
     title: ステップにする
     container: src/render/syntax/steps.ts
@@ -570,7 +622,7 @@ functions:
       2. 引数を `parseMarkArgs` で読む。使えるキーは `group`・`default`・`filter`・`icons`。知らないキーは項目つきの警告にする
       3. 範囲に表が無ければ、範囲に表が無い警告を差し込み、中身はそのまま残す
       4. 最初の表の見出しの行の文字を列名にして、`group=`・`filter=` の列名を位置にし、`filter=` の種類を `FILTER_KINDS`、`icons=` の名前を `VIEW_ICON_NAMES` で確かめる。表に無い `group=` の列は `boardDisabled` に警告の `id` を入れ、表に無い `filter=` の列・知らない絞り込みの種類・使えないアイコンはその指定だけを当てずに警告にする（文言は画面設計『文書』の書き方の警告）
-      5. 表の `table_open` に、`data` の種類・`sort` と読めた `filter=` の列を持つ `TableSpec` を当てる（`decorateTables` が表の部品にする）
+      5. 表の `table_open` に、`data` の種類・`sort` と読めた `filter=` の列を持ち、`hide`・`totals` を空にした `TableSpec` を当てる（ビューの表に件数・列の表示の切り替え・集計は付けない）（`decorateTables` が表の部品にする）
       6. 範囲を `<div class="mdmark-view" data-view="{ViewSpec の JSON}">` の開きと閉じの `html_block`（`markOwn`）で挟む。`mode` は `default=`、無ければ `group=` が当たれば `board`、それ以外は `table`。`default=board` で `group=` が当たらないときは `table`
     unit_tests:
       - name: test_build_views
@@ -606,6 +658,92 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#
       - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#data_models[ViewSpec]
+  - name: slugBase
+    title: ID の元を作る
+    container: src/render/syntax/headings.ts
+    kind: 関数
+    scope: internal
+    summary: GitHub と同じ規則で文字を ID の元にする（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする）。`slugify` と `rowIdOf` が使う
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 文字（タグを除いたもの）
+    returns:
+      type: string
+      description: ID の元。作れないときは空文字
+    unit_tests:
+      - name: test_slug_base
+        case: 正常
+        summary: 見出しと同じ規則で ID の元にする
+        condition: '`Hello, World!`・`使い方`・`!!!`'
+        mock: なし
+        expected: '`hello-world`・`使い方`・空文字'
+  - name: rowIdOf
+    title: 行の ID を作る
+    container: src/render/syntax/tables.ts
+    kind: 関数
+    scope: internal
+    summary: 先頭のセルの文字を `slugBase` で ID の元にし（作れないときは `row`）、`taken` にあれば `-1`・`-2` と番号を上げて空いている ID を返す。返した ID を `taken` に足す
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 先頭のセルの文字（タグを除いたもの）
+      - name: taken
+        type: Set<string>
+        required: true
+        description: 文書の中で使った ID（見出しの ID と前の行の ID）
+    returns:
+      type: string
+      description: 行の ID
+    side_effects: '`taken` を書き換える'
+    unit_tests:
+      - name: test_row_id_of
+        case: 正常
+        summary: 見出しと前の行に重ならない ID を作る
+        condition: '`taken` が `{みかん, みかん-1}` で `りんご`・`みかん`・`みかん` を順に渡す'
+        mock: なし
+        expected: '`りんご`・`みかん-2`・`みかん-3`'
+      - name: test_row_id_of_when_empty
+        case: 正常
+        summary: 文字から ID が作れないときは row を元にする
+        condition: 空の `taken` で `!!!` と空文字
+        mock: なし
+        expected: '`row`・`row-1`'
+  - name: readTabsOptions
+    title: タブの印の指定を読む
+    container: src/render/syntax/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: タブの印の引数から `group` を読む。値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定を、画面設計『文書』の「タブの印の読めない指定」の項目にして 1 つの警告にまとめる
+    args:
+      - name: mark
+        type: Mark
+        required: true
+        description: タブの開きの印
+    returns:
+      type: '{ group?: string; warning?: SyntaxWarning }'
+      description: 読めた組の名前と、読めない指定があれば書き方の警告
+    unit_tests:
+      - name: test_read_tabs_options
+        case: 正常
+        summary: group を読む
+        condition: '`<!-- tabs: group=os -->`'
+        mock: なし
+        expected: '`group` が `os` で、`warning` が無い'
+      - name: test_read_tabs_options_when_none
+        case: 正常
+        summary: 引数が無ければ組も警告も無い
+        condition: '`<!-- tabs -->`'
+        mock: なし
+        expected: '`group` と `warning` が無い'
+      - name: test_read_tabs_options_when_unreadable
+        case: 異常
+        summary: 読めない指定を 1 つの警告にまとめる
+        condition: '`<!-- tabs: group= grop=os closed -->`'
+        mock: なし
+        expected: '`group` が無く、`warning.message` が `の読めない指定を当てずに描いています。`、`warning.items` の `label` が `group=`・`grop=`・`closed` の 3 つ'
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける

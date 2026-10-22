@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { stubClipboard, writtenTexts } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -318,4 +319,312 @@ test("test_error_when_unknown_filter_kind", async ({ page }) => {
   await expect(head(page, "名前").locator("button.mdmark-filter")).toHaveCount(
     0,
   );
+});
+
+/** 名前・説明・更新日の 3 行の表を、印の引数で囲んだ Markdown */
+function fruitTable(mark: string): string {
+  return [
+    `<!-- table: ${mark} -->`,
+    "",
+    "| 名前 | 説明 | 更新日 |",
+    "| --- | --- | --- |",
+    "| りんご | 描画を速くする | 2026-10-01 |",
+    "| みかん | 印刷を直す | 2026-10-10 |",
+    "| りんご飴 | 描画の崩れを直す | 2026-10-20 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 表の列の見出しのボタンから文字の入力欄を出し、文字を入れる */
+async function filterByText(
+  page: Page,
+  column: string,
+  text: string,
+): Promise<void> {
+  const button = head(page, column).locator("button.mdmark-filter");
+  const drawer = page.locator("#doc .mdmark-filter-drawer");
+  if (!(await drawer.first().isVisible())) {
+    await button.click();
+  }
+  await drawer.locator('input[type="text"]').fill(text);
+}
+
+/** 集計の行のセルの文字を、空白を除いて左から並べて返す */
+async function totalCells(page: Page): Promise<string[]> {
+  const cells = await page.locator("#doc tfoot td").allTextContents();
+  return cells.map((cell) => cell.replace(/\s+/g, ""));
+}
+
+// 表の上の件数が、絞り込みで行が減ると書き換わり、外すと戻る（正常シナリオ（件数を見る））
+test("test_normal_when_counting_rows", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: fruitTable("data +count filter=説明:text"),
+  });
+  const count = page.locator("#doc .mdmark-table-count");
+  // 検証: 描いた直後
+  await expect(count).toContainText("3 / 3 件");
+  await expect(count).toHaveAttribute("aria-live", "polite");
+  // 実行・検証: 「描画」で絞り込む
+  await filterByText(page, "説明", "描画");
+  await expect(count).toContainText("2 / 3 件");
+  await expect(count).toContainText("3 件中 2 件を表示");
+  // 実行・検証: 絞り込みを外す
+  await page
+    .locator("#doc .mdmark-filter-drawer")
+    .getByRole("button", { name: "絞り込みを外す" })
+    .click();
+  await expect(count).toContainText("3 / 3 件");
+});
+
+// 列の表示のメニューで列を隠し・出し、既定に戻し、Esc で閉じる（正常シナリオ（列を隠す・出す））
+test("test_normal_when_columns_toggled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: fruitTable("data +columns hide=説明"),
+  });
+  const toggle = page.getByRole("button", { name: "列の表示" });
+  const menu = page.locator("#doc .mdmark-columns-menu");
+  const boxes = menu.locator('input[type="checkbox"]');
+  // 検証: 描いた直後は説明の列だけが隠れている
+  await expect(head(page, "説明")).toBeHidden();
+  await expect(head(page, "名前")).toBeVisible();
+  await expect(head(page, "更新日")).toBeVisible();
+  // 実行・検証: メニューを開く
+  await toggle.click();
+  await expect(menu).toBeVisible();
+  await expect(boxes).toHaveCount(3);
+  await expect(boxes.nth(1)).not.toBeChecked();
+  await expect(boxes.nth(0)).toBeDisabled();
+  await expect(menu).toContainText("先頭の列は隠せません");
+  // 実行・検証: 説明を入れ、更新日を外す
+  await boxes.nth(1).check();
+  await boxes.nth(2).uncheck();
+  await expect(head(page, "説明")).toBeVisible();
+  await expect(head(page, "更新日")).toBeHidden();
+  const order = await page.locator("#doc thead th").allTextContents();
+  expect(order[0]).toContain("名前");
+  expect(order[1]).toContain("説明");
+  // 実行・検証: 既定に戻す
+  await menu.getByRole("button", { name: "既定に戻す" }).click();
+  await expect(head(page, "説明")).toBeHidden();
+  await expect(head(page, "更新日")).toBeVisible();
+  // 実行・検証: Esc で閉じてフォーカスが戻る
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
+// 表の末尾の集計の行を、絞り込みで計算し直し、並べ替えても末尾に残す（正常シナリオ（集計の行を読む））
+test("test_normal_when_totals_shown", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data +total total=数量:sum,単価:avg,名前:count filter=名前:text -->",
+      "",
+      "| 名前 | 数量 | 単価 |",
+      "| --- | --- | --- |",
+      "| りんご | 10 | 100 |",
+      "| みかん | 2 | 200 |",
+      "| りんご飴 | 33 | 300 |",
+      "| ぶどう | - | 400 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 描いた直後
+  expect(await totalCells(page)).toEqual(["個数4", "合計45", "平均250"]);
+  // 実行・検証: 「りんご」で絞り込む
+  await filterByText(page, "名前", "りんご");
+  expect(await totalCells(page)).toEqual(["個数2", "合計43", "平均200"]);
+  // 実行・検証: 数量の列を並べ替える
+  await head(page, "数量").locator("button.mdmark-sort").click();
+  await expect(page.locator("#doc tfoot tr")).toHaveCount(1);
+  await expect(page.locator("#doc tbody tfoot")).toHaveCount(0);
+  const last = await page.locator("#doc table tr").last().getAttribute("class");
+  expect(last).toContain("mdmark-table-total");
+});
+
+// 表をコピーすると、表示している行と列を TSV で写し、ボタンで知らせる（正常シナリオ（表をコピーする））
+test("test_normal_when_table_copied", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: fruitTable("data +copy +columns hide=説明 filter=名前:text"),
+  });
+  await filterByText(page, "名前", "りんご");
+  // 実行
+  await page.getByRole("button", { name: "表をコピー" }).click();
+  // 検証
+  const written = await writtenTexts(page);
+  expect(written).toEqual([
+    "名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20",
+  ]);
+  await expect(page.locator("#doc button.mdmark-copy")).toContainText(
+    "コピーしました",
+  );
+  await expect(page.locator("#doc .mdmark-copy-status")).toContainText(
+    "コピーしました",
+  );
+});
+
+// URL の #ID が指す行へ、閉じた表と閉じた節を開き、絞り込みを外して移り、その行を強調する（正常シナリオ（行へのリンクで行へ移る））
+test("test_normal_when_row_link_opened", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot, {
+    hash: `#${encodeURIComponent("みかん")}`,
+  });
+  await mountDocument(page, {
+    markdown: [
+      "# 見出し",
+      "",
+      ...Array.from({ length: 30 }, (_, i) => `長い段落 ${i + 1}\n`),
+      "<!-- table: data +rowlink closed -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| りんご | 1 |",
+      "| みかん | 2 |",
+      "| りんご飴 | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "## 節",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "<!-- table: data +rowlink filter=名前:text -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| ぶどう | 1 |",
+      "| もも | 2 |",
+      "| なし | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const targets = page.locator("#doc tr[data-target]");
+  // 検証: 各行の先頭のセルに、行の id を指すリンクがある
+  const anchors = page.locator("#doc .mdmark-row-anchor");
+  await expect(anchors).toHaveCount(6);
+  await expect(anchors.nth(1)).toHaveAttribute("href", "#みかん");
+  // 検証: 閉じていた表が開き、みかんの行が見えて強調されている
+  await expect(
+    page.locator("#doc details.mdmark-table-details").first(),
+  ).toHaveAttribute("open", "");
+  await expect(page.locator('#doc tr[id="みかん"]')).toBeInViewport();
+  await expect(targets).toHaveCount(1);
+  await expect(targets).toHaveAttribute("id", "みかん");
+  // 実行: 節を開いて表 B を絞り込み、節を閉じ、URL の #ID を もも にする
+  const toggle = page.locator('#doc button[aria-controls="section-節"]');
+  await toggle.click();
+  await filterByText(page, "名前", "ぶどう");
+  await page.locator("body").click({ position: { x: 0, y: 0 } });
+  await toggle.click();
+  await expect(page.locator('#doc [id="section-節"]')).toBeHidden();
+  await page.evaluate(() => {
+    location.hash = "#もも";
+  });
+  // 検証: 節が開き、表 B の絞り込みが外れて 3 行とも出て、もも の行が見える
+  await expect(page.locator('#doc [id="section-節"]')).toBeVisible();
+  const second = page.locator("#doc .mdmark-table").nth(1);
+  await expect(second.locator("tbody tr:not(.mdmark-table-empty)")).toHaveCount(
+    3,
+  );
+  await expect(
+    second.locator("tbody tr:not(.mdmark-table-empty):visible"),
+  ).toHaveCount(3);
+  await expect(page.locator('#doc tr[id="もも"]')).toBeInViewport();
+  // 検証: 強調が もも の行へ移り、みかん の行は強調されない
+  await expect(targets).toHaveCount(1);
+  await expect(targets).toHaveAttribute("id", "もも");
+});
+
+// 読めない計算・表に無い列名・先頭の列は指定ごとの警告にして当てず、機能の無い表のキーも当てない（異常シナリオ（読めない集計・隠す列））
+test("test_error_when_unknown_total_or_hidden_column", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const rows = [
+    "| 名前 | 数量 | 単価 |",
+    "| --- | --- | --- |",
+    "| a | 1 | 200 |",
+    "| b | 2 | 400 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ];
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->",
+      "",
+      ...rows,
+      "<!-- table: data total=数量:sum hide=名前 -->",
+      "",
+      ...rows,
+      "<!-- table: data +total -->",
+      "",
+      ...rows,
+    ].join("\n"),
+  });
+  // 検証: 表 A
+  const [a, b, c] = await page.locator("#doc .mdmark-table").all();
+  if (!a || !b || !c) {
+    throw new Error("表が 3 つ描かれていない");
+  }
+  const warningsA = a.locator(".mdmark-syntax-warning");
+  await expect(warningsA).toHaveCount(4);
+  const textA = (await warningsA.allTextContents()).join("\n");
+  for (const word of ["max", "sum", "avg", "count", "価格", "備考", "名前"]) {
+    expect(textA).toContain(word);
+  }
+  expect(textA).toContain("先頭の列");
+  const footA = a.locator("tfoot td");
+  await expect(footA).toHaveCount(3);
+  await expect(footA.nth(0)).toHaveText("");
+  await expect(footA.nth(1)).toHaveText("");
+  await expect(footA.nth(2)).toContainText("300");
+  await expect(a.locator("thead th")).toHaveCount(3);
+  for (const header of await a.locator("thead th").all()) {
+    await expect(header).toBeVisible();
+  }
+  // 検証: 表 B
+  const warningsB = b.locator(".mdmark-syntax-warning");
+  await expect(warningsB).toHaveCount(1);
+  await expect(warningsB).toContainText("+total");
+  await expect(warningsB).toContainText("+columns");
+  await expect(b.locator("tfoot")).toHaveCount(0);
+  await expect(b.locator("thead th", { hasText: "名前" })).toBeVisible();
+  // 検証: 表 C
+  await expect(c.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  await expect(c.locator("tfoot")).toHaveCount(0);
+});
+
+// クリップボードへの書き込みが拒まれたら、ボタンで知らせて残し、表は操作できる（異常シナリオ（クリップボードに書けない））
+test("test_error_when_clipboard_denied", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "deny");
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: fruitTable("data +copy") });
+  const button = page.locator("#doc button.mdmark-copy");
+  // 実行
+  await button.click();
+  // 検証: 写せなかったことが、ボタンと読み上げで知らされる
+  await expect(button).toContainText("コピーできませんでした");
+  await expect(button).toHaveAttribute("data-state", "failed");
+  await expect(page.locator("#doc .mdmark-copy-status")).toContainText(
+    "コピーできませんでした",
+  );
+  // 検証: 表はそのまま操作できる
+  await head(page, "名前").locator("button.mdmark-sort").click();
+  await expect(head(page, "名前")).toHaveAttribute("aria-sort", "ascending");
 });
