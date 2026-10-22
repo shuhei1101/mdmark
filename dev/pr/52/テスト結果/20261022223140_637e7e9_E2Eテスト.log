@@ -1,0 +1,11 @@
+$ npx playwright test "tests/e2e/単一ユースケース/チャートを描く.spec.ts"
+
+Running 4 tests using 2 workers
+
+  ✓  1 [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:36:1 › test_normal (262ms)
+  ✓  3 [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:84:1 › test_error_when_definition_invalid (187ms)
+  ✓  2 [firefox] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:36:1 › test_normal (1.0s)
+  ✓  4 [firefox] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:84:1 › test_error_when_definition_invalid (260ms)
+
+  4 passed (13.4s)
+exit: 0
