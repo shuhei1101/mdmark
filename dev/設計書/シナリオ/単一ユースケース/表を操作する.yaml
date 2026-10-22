@@ -402,8 +402,8 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 読めない集計と隠す列を書いた Markdown
-        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考 -->` 〜 `<!-- /table -->` の表 A、`<!-- table: data total=数量:sum hide=名前 -->` 〜 `<!-- /table -->` の表 B、`<!-- table: data +total -->` 〜 `<!-- /table -->` の表 C を持つ文書'
-        notes: 3 つの表とも名前・数量・単価の 3 列の表
+        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->` 〜 `<!-- /table -->` の表 A、`<!-- table: data total=数量:sum hide=名前 -->` 〜 `<!-- /table -->` の表 B、`<!-- table: data +total -->` 〜 `<!-- /table -->` の表 C を持つ文書'
+        notes: 3 つの表とも名前・数量・単価の 3 列の表（先頭の列は名前）
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -416,8 +416,8 @@ scenarios:
         M-->>P: 書き方の警告と、読めた指定だけを当てた表を描く
         P-->>U: 書き方の警告と表を表示
     expected:
-      - 表 A の上に、`max` が使えない計算であることと使える計算（`sum`・`avg`・`count`）、`価格` と `備考` が表に無い列名であることを書いた書き方の警告がある
-      - 表 A の集計の行は単価の列にだけ値を持ち、数量の列は空で、表 A の全ての列が表示されている
+      - 表 A の上に、`max` が使えない計算であることと使える計算（`sum`・`avg`・`count`）、`価格` と `備考` が表に無い列名であること、`名前` は先頭の列で隠せないことを書いた書き方の警告がある
+      - 表 A の集計の行は単価の列にだけ値を持ち、数量の列は空で、表 A の名前の列を含む全ての列が表示されている
       - 表 B の上に、`total=` は `+total`、`hide=` は `+columns` を書いた表でだけ使えることを書いた書き方の警告があり、表 B は集計の行を持たず、名前の列が表示されている
       - 表 C は書き方の警告も集計の行も持たない（`total=` の無い `+total` は集計する列が無い）
     test: test_error_when_unknown_total_or_hidden_column
