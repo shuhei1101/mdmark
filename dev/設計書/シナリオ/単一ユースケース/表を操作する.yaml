@@ -27,6 +27,7 @@ scenarios:
       - 2 回押した後、数値の列が上から `33`・`10`・`2` の順で、見出しの `aria-sort` が `descending`
       - 3 回押した後、数値の列が上から `10`・`2`・`33`（元の並び）で、見出しが `aria-sort` を持たない
       - 表の前後に印の文字が出ていない
+      - 件数・列の表示の切り替え・コピーのボタン、集計の行、行へのリンクが無い（この 5 つは `+機能` を書いた表にだけ付く）
     test: test_normal
   - name: 正常シナリオ（列の値を選んで絞り込む）
     setup:
@@ -262,7 +263,178 @@ scenarios:
       - 表の上に、`range` が使えない絞り込みの種類であることと、使える種類（`select`・`text`・`date`）を書いた書き方の警告がある
       - 説明の列の見出しに絞り込みのボタンがあり、名前の列の見出しには無い
     test: test_error_when_unknown_filter_kind
-lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。'
+  - name: 正常シナリオ（件数を見る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 件数を出す表を持つ Markdown
+        description: '`<!-- table: data +count filter=説明:text -->` 〜 `<!-- /table -->` で、説明の列に `描画を速くする`・`印刷を直す`・`描画の崩れを直す` を持つ 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表の上に件数を出した表を描く
+        U->>P: 説明の列を「描画」で絞り込む
+        P-->>U: 件数を書き換えた表
+    expected:
+      - 描いた直後、表の上の件数が、表示している行の数 3 と全ての行の数 3 を示す
+      - 「描画」で絞り込んだ後、件数が、表示している行の数 2 と全ての行の数 3 を示す
+      - 件数の書き換えが読み上げで知らされる（件数の要素が `aria-live="polite"` を持つ）
+      - 「絞り込みを外す」を押すと、件数が 3 と 3 に戻る
+    test: test_normal_when_counting_rows
+  - name: 正常シナリオ（列を隠す・出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 列を隠した表を持つ Markdown
+        description: '`<!-- table: data +columns hide=説明 -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 説明の列を隠した表を描く
+        U->>P: 表の上の列の表示の切り替えのボタンを押す
+        P-->>U: 列名のチェックボックスを並べたメニュー
+        U->>P: 説明にチェックを入れ、名前と更新日のチェックを外す
+        P-->>U: 説明の列だけを出した表
+    expected:
+      - 描いた直後、説明の列の見出しとセルが表示されておらず、名前と更新日の列が表示されている
+      - メニューに名前・説明・更新日のチェックボックスが並び、説明だけチェックが外れている
+      - 説明にチェックを入れた後、説明の列が元の位置（2 列目）に表示される
+      - 名前と更新日のチェックを外した後、説明の列だけが表示され、説明のチェックボックスは外せない（`disabled`）
+      - Esc でメニューが閉じ、フォーカスが列の表示の切り替えのボタンへ戻る
+    test: test_normal_when_columns_toggled
+  - name: 正常シナリオ（集計の行を読む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 集計の行を持つ表の Markdown
+        description: '`<!-- table: data +total total=数量:sum,単価:avg,名前:count filter=名前:text -->` 〜 `<!-- /table -->` で、名前・数量・単価の 3 列 4 行の表を囲んだ文書'
+        notes: 数量は上から `10`・`2`・`33`・`-`、単価は `100`・`200`・`300`・`400`、名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 末尾に集計の行を持つ表を描く
+        U->>P: 名前の列を「りんご」で絞り込む
+        P-->>U: 集計を計算し直した表
+        U->>P: 数量の列の並べ替えを押す
+        P-->>U: 集計の行が末尾に残った表
+    expected:
+      - 描いた直後、集計の行の数量が `45`（数として読めない `-` を除いた合計）、単価が `250`（平均）、名前が `4`（空でないセルの数）
+      - 「りんご」で絞り込んだ後、集計の行の数量が `43`、単価が `200`、名前が `2`
+      - 並べ替えた後も、集計の行は表の末尾（`tfoot`）にあり、並べ替えの対象にならない
+    test: test_normal_when_totals_shown
+  - name: 正常シナリオ（表をコピーする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コピーできる表を持つ Markdown
+        description: '`<!-- table: data +copy +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表の上にコピーのボタンを持つ表を描く
+        U->>P: 名前の列を「りんご」で絞り込む
+        U->>P: コピーのボタンを押す
+        P-->>U: 写したことを知らせるボタン
+    expected:
+      - クリップボードの中身が、見出しの行と「りんご」を含む 2 行の、名前と更新日の 2 列（隠した説明の列を含まない）を、セルをタブで、行を改行で区切ったテキスト
+      - ボタンの中で写したことが知らされ、読み上げでも知らされる
+    test: test_normal_when_table_copied
+  - name: 正常シナリオ（行へのリンクで行へ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じた表に行へのリンクを持つ Markdown
+        description: '見出し・長い段落の後に、`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` で名前の列を先頭に持つ 3 行の表を囲んだ文書'
+      - name: 行を指す URL
+        description: ページの URL の末尾に、`みかん` の行を指す `#ID` を付ける
+        notes: '`#ID` は描いた表の `みかん` の行のリンクの `href` から取る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: 行を指す #ID を付けた URL でページを開く
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: #ID が閉じた表の中の行を指すため、表を開く
+        M-->>P: 行へ移り、行を強調した表
+        P-->>U: みかんの行が見えている表
+    expected:
+      - 各行の先頭のセルに、その行の `id` を指す `#ID` のリンクがある
+      - ページを開いた後、閉じていた表が開き、`みかん` の行が画面の中に見えている
+      - '`みかん` の行だけが強調され、ほかの行は強調されていない'
+      - 描いた後に別の行のリンクを押すと、URL の `#ID` がその行に変わり、強調がその行へ移る
+    test: test_normal_when_row_link_opened
+  - name: 異常シナリオ（読めない集計・隠す列）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない集計と隠す列を書いた Markdown
+        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考 -->` 〜 `<!-- /table -->` で、名前・数量・単価の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない計算・表に無い列の指定を当てない
+        M-->>P: 書き方の警告と、単価の列だけを集計した表を描く
+        P-->>U: 書き方の警告と表を表示
+    expected:
+      - 表の上に、`max` が使えない計算であることと使える計算（`sum`・`avg`・`count`）、`価格` と `備考` が表に無い列名であることを書いた書き方の警告がある
+      - 集計の行は単価の列にだけ値を持ち、数量の列は空
+      - 全ての列が表示されている
+    test: test_error_when_unknown_total_or_hidden_column
+  - name: 異常シナリオ（クリップボードに書けない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コピーできる表を持つ Markdown
+        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許さない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表の上にコピーのボタンを持つ表を描く
+        U->>P: コピーのボタンを押す
+        M->>M: クリップボードへの書き込みが拒まれる
+        P-->>U: 写せなかったことを知らせるボタン
+    expected:
+      - ボタンの中で写せなかったことが知らされ、読み上げでも知らされる
+      - 表はそのまま操作できる
+    test: test_error_when_clipboard_denied
+lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。件数を見て、列を隠し、集計の行を読み、表をコピーし、行へのリンクで行へ移る。'
 issue: 4
 primary_actor: 文書を読む人
 stakeholders:
