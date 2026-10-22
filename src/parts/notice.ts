@@ -6,10 +6,11 @@ const NOTICE_TITLES = {
   block: "この箇所を表示できません",
 };
 
-/** 読めなかったものの呼び名: 外部ライブラリか拡張か */
+/** 読めなかったものの呼び名: 外部ライブラリか拡張か、ビューやコメントの部品のモジュールか */
 const NOTICE_SOURCES = {
   library: "ライブラリ",
   extension: "拡張",
+  part: "部品",
 };
 
 /** 差分の取り出し元を読めないときの題と本文: `diff-content` の本文は取り出せなかったリビジョンの説明を `「…」` で囲んで入れる */
@@ -31,7 +32,7 @@ export function renderNotice(options: {
   /** 図の印か（既定 `true`）。`diff-revisions`・`diff-content` では使わない */
   figure?: boolean;
   /** 読めなかったもの（既定 `library`） */
-  source?: "library" | "extension" | "diff-revisions" | "diff-content";
+  source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content";
 }): string {
   const { name, figure = true, source = "library" } = options;
   if (source === "diff-revisions" || source === "diff-content") {

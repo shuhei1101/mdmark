@@ -144,6 +144,8 @@ constants:
         value: diagrams
       - key: html
         value: html
+      - key: view
+        value: views
   - name: EMBED_STYLES
     title: 埋め込んだ HTML の残す宣言
     container: src/render/sanitize.ts

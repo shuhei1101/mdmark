@@ -1041,3 +1041,44 @@ test("test_normal_when_chart_types", async () => {
     ).length,
   ).toBeGreaterThanOrEqual(2);
 });
+
+// ビューの印の範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする（正常系）
+test("test_normal_when_view_marked", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = [
+    "| 題 | 状態 | 担当 |",
+    "| --- | --- | --- |",
+    "| 配色の変数を洗い出す | 未着手 | 佐藤 |",
+    "| 余白の変数を決める | 進行中 | 鈴木 |",
+  ].join("\n");
+  const markdown = `<!-- view: group=状態 default=table filter=担当 icons=未着手:inbox -->\n\n${table}\n\n<!-- /view -->\n`;
+  // 実行
+  const html = render(markdown);
+  const withoutViews = render(markdown, {
+    config: { features: { views: false } },
+  });
+  // 検証
+  const [view] = startTags(html, "div").filter((tag) =>
+    tag.includes("mdmark-view"),
+  );
+  expect(view).toBeDefined();
+  const data = /data-view="([^"]*)"/.exec(view ?? "")?.[1] ?? "";
+  expect(JSON.parse(data.replaceAll("&quot;", '"'))).toEqual({
+    group: 1,
+    mode: "table",
+    boardDisabled: "",
+    icons: { 未着手: "inbox" },
+  });
+  const viewBody = html.slice(html.indexOf('class="mdmark-view"'));
+  expect(viewBody).toContain("<table");
+  expect(startTags(viewBody, "div").join(" ")).toContain(
+    'data-filter="2:select"',
+  );
+  expect(html).not.toContain("mdmark-view-switch");
+  expect(html).not.toContain("mdmark-view-board");
+  expect(html).not.toContain("<button");
+  expect(html).not.toContain("<!--");
+  expect(withoutViews).not.toContain("mdmark-view");
+  expect(withoutViews).toContain("<table");
+});

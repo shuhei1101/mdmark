@@ -50,6 +50,10 @@
   --mdmark-color-diff-add-bg: #dafbe1;
   --mdmark-color-diff-add-word: #aceebb;
   --mdmark-color-diff-add-sign: #1a7f37;
+  --mdmark-color-comment-bg: #fbefff;
+  --mdmark-color-comment-line: #8250df;
+  --mdmark-color-error: #d1242f;
+  --mdmark-view-column-width: 12rem;
   color-scheme: light;
 }
 
@@ -92,6 +96,9 @@
     --mdmark-color-diff-add-bg: #12261e;
     --mdmark-color-diff-add-word: #1a4a29;
     --mdmark-color-diff-add-sign: #3fb950;
+    --mdmark-color-comment-bg: #2e2147;
+    --mdmark-color-comment-line: #ab7df8;
+    --mdmark-color-error: #f85149;
     color-scheme: dark;
   }
 }

@@ -1,0 +1,453 @@
+$ npx vitest run --project 'unit*' --reporter=verbose <0ad73d1 時点の tests/unit の全テストファイル> -t '^(?!.*(test_used_parts|test_render_notice_when_part|test_mount_when_comment_store_without_doc_id))'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-components-views-search-comments
+
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice 289ms
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_block 0ms
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_extension 0ms
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_diff 0ms
+ ↓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_part
+ ✓ |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_name_has_html 0ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_used_library_marks 3445ms
+ ↓ |unit| tests/unit/src/cli/embed.test.ts > test_used_parts
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module 237ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module_when_url 11ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module_when_unreachable 20ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_inline_images 9ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_inline_images_when_missing 2ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_inline_images_when_absolute_url 1ms
+ ✓ |unit| tests/unit/src/cli/embed.test.ts > test_find_outside_links 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries 2631ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_no_slot 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_unknown_slot 5ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_import_fails 5ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_draw_throws 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_draw_missing 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_stale 4ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_draw_removes_slot 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_extension 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_extension_args_invalid 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_extension_fails 5ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff 2726ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_reselected 55ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_stale 157ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_loading 5ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_revisions_rejected 53ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_content_rejected 52ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_detached 55ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_content_loading 9ms
+ ✓ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer 3101ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips 123ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_hovered 20ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_box_hovered 24ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_embedded_hint 21ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_embedded_unique_ids 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount 181ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_updated 7ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_destroyed 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_remounted 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_print_disabled_by_mark 6ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_attach_diff_when_preview_attached 103ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/panel.browser.test.ts > test_scope_ids 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_updated_with_print_mark 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_updated_with_syntax 17ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_extension_definition 6ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_extension_definition_invalid 13ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_diff_source 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_diff_source_without_doc_id 1ms
+ ↓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_comment_store_without_doc_id
+ ✓ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle 3326ms
+ ✓ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_missing_document 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_diff_html_has_chart 66ms
+ ✓ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_diff_preview_zoomed 84ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams 322ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_max 15ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_panned 50ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_compare_cells 16ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_compare_cells_when_text 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_matches_filter 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_matches_filter_when_open_range 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_sorted 25ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_filtered 11ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_escape 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned 30ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_detached 12ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_cell_has_term 68ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_zoom_button 65ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_wheel 16ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_cleaned_up 9ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog 55ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections 34ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_hash 7ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_row_detail 11ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_row_has_term 91ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/minimap.browser.test.ts > test_attach_minimap 28ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/minimap.browser.test.ts > test_attach_minimap_when_pressed 9ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/minimap.browser.test.ts > test_attach_minimap_when_two_diffs 7ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/minimap.browser.test.ts > test_attach_minimap_when_scroll_container 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/minimap.browser.test.ts > test_attach_minimap_when_theme_overridden 14ms
+ ✓ |unit-browser (chromium)| tests/unit/src/diff/minimap.browser.test.ts > test_attach_minimap_when_page_scrolled 80ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/index.browser.test.ts > test_attach_interactions 27ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/index.browser.test.ts > test_attach_interactions_when_hints_off 15ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open 796ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/embedded-html.browser.test.ts > test_attach_embedded_html 127ms
+ ✓ |unit-browser (chromium)| tests/unit/src/print.browser.test.ts > test_attach_print 8ms
+ ✓ |unit-browser (chromium)| tests/unit/src/print.browser.test.ts > test_attach_print_when_disabled 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/print.browser.test.ts > test_attach_print_when_detached 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/print.browser.test.ts > test_attach_print_when_syntax 74ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/params.browser.test.ts > test_attach_params 102ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/params.browser.test.ts > test_attach_params_when_clipboard_denied 19ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs 17ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips 14ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips_unique_ids 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/knowledge/dictionary.browser.test.ts > test_find_words 5ms
+ ✓ |unit-browser (chromium)| tests/unit/src/viewer/route.browser.test.ts > test_rewrite_links 8ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/text.browser.test.ts > test_visible_text 5ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_latest_version_tag 6001ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_latest_version_tag_when_none 113ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_check_migrations 133ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_check_migrations_when_listed 136ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_check_migrations_when_steps_missing 173ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_check_migrations_when_next_left 149ms
+ ✓ |unit| tests/unit/scripts/migrations.test.ts > test_check_migrations_when_no_tag 79ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_notice 7170ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_embed 0ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_json_args 1ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_doc_list 1ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_unknown 0ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_create_render_server 26ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_create_render_server_when_css 9ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_create_render_server_when_unknown_part 8ms
+ ✓ |unit| tests/unit/scripts/storybook-render.test.ts > test_main_when_port_missing 1ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main 7873ms
+ ✓ |unit| tests/unit/src/cli/check.test.ts > test_run_check 3100ms
+ ✓ |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_drift 20ms
+ ✓ |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_no_documents 12ms
+ ✓ |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_entry_outside 8ms
+ ✓ |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues 5ms
+ ✓ |unit| tests/unit/src/render/syntax/glossary.test.ts > test_read_glossary_table 6256ms
+ ✓ |unit| tests/unit/src/render/syntax/glossary.test.ts > test_read_glossary_table_when_unknown_column 2ms
+ ✓ |unit| tests/unit/src/render/syntax/glossary.test.ts > test_read_glossary_table_when_missing_arg 1ms
+ ✓ |unit| tests/unit/src/render/syntax/glossary.test.ts > test_glossary_rule 8ms
+ ✓ |unit| tests/unit/src/render/syntax/glossary.test.ts > test_glossary_rule_when_disabled 2ms
+ ✓ |unit| tests/unit/src/index.test.ts > test_version 8968ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_version_given 1740ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_version_format_invalid 7ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_version_ini_missing 15ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_build_fails 49ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_task_list 3582ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_autolink 15ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_strikethrough 1ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_table 3ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_table_without_heading 1ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_code_block 1ms
+ ✓ |unit| tests/unit/src/render/parser.test.ts > test_create_parser_when_info_has_quote 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_dist_file_too_large 1662ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_main_when_migrations_invalid 69ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_resolve_version 10ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_resolve_version_when_version_given 7ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_resolve_version_when_format_invalid 1ms
+ ✓ |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds 2441ms
+ ✓ |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_unreadable 12ms
+ ✓ |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_index 16ms
+ ✓ |unit| tests/unit/src/cli/export.test.ts > test_run_export 10ms
+ ✓ |unit| tests/unit/src/cli/export.test.ts > test_run_export_when_document_missing 6ms
+ ✓ |unit| tests/unit/src/cli/export.test.ts > test_run_export_when_output_unwritable 8ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_collect_build_documents 2603ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_collect_build_documents_when_excluded 6ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_read_index_with_documents 17ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_read_index_with_documents_when_no_index 1ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_read_index_with_documents_when_missing 2ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_document_title 0ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_document_title_when_no_index 0ms
+ ✓ |unit| tests/unit/src/cli/documents.test.ts > test_document_title_when_no_heading 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist 1634ms
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render 3712ms
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render_document 5ms
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render_document_when_same_input 2ms
+ ✓ |unit| tests/unit/src/render/index.test.ts > test_render_document_when_raw_html_imitates_syntax 4ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks 2987ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_library_mark 3ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_unknown_mark 1ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_syntax_mark 1ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_extension_mark 1ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_parse_mark_args 0ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_parse_mark_args_when_empty 0ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_drop_marks 1ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_extension_range 1ms
+ ✓ |unit| tests/unit/src/render/marks.test.ts > test_take_marks_when_unknown_range_with_json 1ms
+ ✓ |unit| tests/unit/src/parts/icons.test.ts > test_icon_svg 111ms
+ ✓ |unit| tests/unit/src/cli/build.test.ts > test_run_build 3171ms
+ ✓ |unit| tests/unit/src/cli/build.test.ts > test_run_build_when_link_outside_bundle 10ms
+ ✓ |unit| tests/unit/src/cli/build.test.ts > test_run_build_when_glossary_without_index 16ms
+ ✓ |unit| tests/unit/src/cli/build.test.ts > test_run_build_when_build_missing 7ms
+ ✓ |unit| tests/unit/src/cli/build.test.ts > test_run_build_when_no_documents 11ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist_when_nested_css 1611ms
+ ✓ |unit| tests/unit/src/cli/backup.test.ts > test_take_backup 2784ms
+ ✓ |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_same_time 9ms
+ ✓ |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside 5ms
+ ✓ |unit| tests/unit/src/cli/backup.test.ts > test_restore_backup 11ms
+ ✓ |unit| tests/unit/src/parts/icons.test.ts > test_icon_svg_when_sanitized 1963ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist_when_postcss_imported 1329ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize 1944ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_align 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_input 0ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_classes 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_tabindex 0ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_data_image 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_raw_html_has_diagram_attributes 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_raw_html_has_diagram_elements 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_own_diagram_attributes 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_own_style 2ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_embedded 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_embedded_when_style 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_embedded_when_text 0ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_filter_embedded_style 1ms
+ ✓ |unit| tests/unit/src/render/sanitize.test.ts > test_filter_embedded_style_when_tricky 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_build_dist_when_cli_and_viewer 1423ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_write_third_party_licenses 11ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_write_third_party_licenses_when_license_missing 6ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_find_too_large_outputs 1ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_find_too_large_outputs_when_over_limit 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_find_too_large_outputs_when_unsized 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_assert_no_script_close 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_assert_no_script_close_when_found 0ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_find_config_file 2388ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_find_config_file_when_explicit 5ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_find_config_file_when_missing 3ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_load_config 10ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_load_config_when_yaml_broken 5ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_validate_config 1ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_build_out_missing 1ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_empty 0ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_libraries_not_object 0ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_version_invalid 1ms
+ ✓ |unit| tests/unit/src/cli/config.test.ts > test_require_config_when_invalid 3ms
+ ✓ |unit| tests/unit/src/cli/main.test.ts > test_main 2181ms
+ ✓ |unit| tests/unit/src/cli/main.test.ts > test_main_when_command_unknown 4ms
+ ✓ |unit| tests/unit/src/cli/main.test.ts > test_main_when_cli_error 5ms
+ ✓ |unit| tests/unit/src/cli/main.test.ts > test_main_when_upgrade 7ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_validate_steps 859ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_validate_steps_when_required_missing 1ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_validate_steps_when_not_reapplicable 0ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_validate_steps_when_script_ts 0ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_load_migration_versions 22ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_load_migration_versions_when_steps_invalid 6ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_load_migration_versions_when_script_outside 6ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_rename_key 3ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_rename_key_when_already_renamed 1ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_set_default 1ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_set_default_when_present 1ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_map_values 1ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_map_values_when_no_match 0ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_replace_mark 0ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_step_files 1ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_step_files_when_no_index 0ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step 20ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step_keeps_flow_style 4ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step_when_asked 6ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step_when_index_missing 3ms
+ ✓ |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step_when_script_fails 37ms
+ ✓ |unit| tests/unit/src/knowledge/references.test.ts > test_collect_references 650ms
+ ✓ |unit| tests/unit/src/knowledge/references.test.ts > test_collect_references_when_disabled 2ms
+ ✓ |unit| tests/unit/src/knowledge/references.test.ts > test_collect_references_ignores_code_and_headings 1ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_write_config_version 891ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_write_config_version_when_missing 5ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade 50ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_plan 17ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_up_to_date 10ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_version_missing 29ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_local_newer 9ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_declined 15ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_step_fails 42ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_check_fails 26ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_answer_missing 10ms
+ ✓ |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_plan_with_ask 19ms
+ ✓ |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff 699ms
+ ✓ |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff_when_no_segmenter 1ms
+ ✓ |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff_when_same 0ms
+ ✓ |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff_when_html 2ms
+ ✓ |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff_when_engine 2ms
+ ✓ |unit| tests/unit/src/knowledge/check.test.ts > test_check_index 889ms
+ ✓ |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_drift 3ms
+ ✓ |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_invalid_schema 1ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_build_dictionary 13ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_build_dictionary_when_backlinks_disabled 1ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_build_dictionary_excludes_self 0ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_find_words 9ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_find_words_prefers_longer 0ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_find_words_without_intl_segmenter 64ms
+ ✓ |unit| tests/unit/src/knowledge/dictionary.test.ts > test_word_starts_without_intl_segmenter 77ms
+ ✓ |unit| tests/unit/src/cli/init.test.ts > test_run_init 1211ms
+ ✓ |unit| tests/unit/src/cli/init.test.ts > test_run_init_when_javascript 54ms
+ ✓ |unit| tests/unit/src/cli/init.test.ts > test_run_init_when_file_exists 64ms
+ ✓ |unit| tests/unit/src/cli/init.test.ts > test_run_init_writes_version 79ms
+ ✓ |unit| tests/unit/src/parts/hint.test.ts > test_render_hint_markup 212ms
+ ✓ |unit| tests/unit/src/parts/diff-toggle.test.ts > test_render_diff_toggle 104ms
+ ✓ |unit| tests/unit/src/parts/revision-picker.test.ts > test_render_revision_picker 131ms
+ ✓ |unit| tests/unit/src/parts/param.test.ts > test_render_param 194ms
+ ✓ |unit| tests/unit/src/parts/param.test.ts > test_param_json 1ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_emit_declarations 4858ms
+ ✓ |unit| tests/unit/src/viewer/route.test.ts > test_resolve_route 46ms
+ ✓ |unit| tests/unit/src/viewer/route.test.ts > test_resolve_route_when_no_hash 0ms
+ ✓ |unit| tests/unit/src/viewer/route.test.ts > test_resolve_route_when_heading_only 0ms
+ ✓ |unit| tests/unit/src/viewer/route.test.ts > test_resolve_route_when_missing_document 0ms
+ ✓ |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules 70ms
+ ✓ |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules_when_extension_fails 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame 44ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_modal 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow 3ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_text_escaped 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_sequence 9ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_chart 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_tip 0ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_tip_when_hint 0ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_zoom_button 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_chart_when_bar 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_chart_when_pie 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_chart_when_scatter 1ms
+ ✓ |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_hint 2ms
+ ✓ |unit| tests/unit/src/parts/table.test.ts > test_render_table 59ms
+ ✓ |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_closed 1ms
+ ✓ |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_filtered 2ms
+ ✓ |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools 1ms
+ ✓ |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools_when_date 0ms
+ ✓ |unit| tests/unit/scripts/build.test.ts > test_emit_declarations_when_type_error 1239ms
+ ✓ |unit| tests/unit/src/cli/html.test.ts > test_assemble_html 22ms
+ ✓ |unit| tests/unit/src/cli/html.test.ts > test_assemble_html_when_script_in_markdown 1ms
+ ✓ |unit| tests/unit/src/cli/html.test.ts > test_assemble_html_when_bundle 1ms
+ ✓ |unit| tests/unit/src/parts/diff-lines.test.ts > test_render_diff_lines 33ms
+ ✓ |unit| tests/unit/src/parts/diff-lines.test.ts > test_render_diff_lines_when_escaped 0ms
+ ✓ |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule 28ms
+ ✓ |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_skips_code_and_links 7ms
+ ✓ |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_prefers_longer 1ms
+ ✓ |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_doc_aliases 2ms
+ ✓ |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_when_backlinks_off 1ms
+ ✓ |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_build_diagrams 27ms
+ ✓ |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_build_diagrams_when_disabled 7ms
+ ✓ |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_build_diagrams_when_extension_registered 5ms
+ ✓ |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_build_diagrams_when_invalid 7ms
+ ✓ |unit| tests/unit/src/parts/doc-list.test.ts > test_render_doc_list 24ms
+ ✓ |unit| tests/unit/src/parts/doc-list.test.ts > test_render_doc_list_when_escaped 1ms
+ ✓ |unit| tests/unit/src/parts/diff-html.test.ts > test_render_diff_html 30ms
+ ✓ |unit| tests/unit/src/parts/diff-html.test.ts > test_render_diff_html_when_unchanged 1ms
+ ✓ |unit| tests/unit/src/parts/diff-html.test.ts > test_render_diff_html_when_one_side 0ms
+ ✓ |unit| tests/unit/src/parts/tabs.test.ts > test_render_tabs 18ms
+ ✓ |unit| tests/unit/src/parts/tabs.test.ts > test_render_tabs_when_selected 1ms
+ ✓ |unit| tests/unit/src/render/syntax/figures.test.ts > test_number_figures 28ms
+ ✓ |unit| tests/unit/src/render/syntax/figures.test.ts > test_number_figures_when_broken_or_duplicated 3ms
+ ✓ |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index 12ms
+ ✓ |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_invalid_item 0ms
+ ✓ |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_not_object 0ms
+ ✓ |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_matches_json_schema 7ms
+ ✓ |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html 16ms
+ ✓ |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_chart 10ms
+ ✓ |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_hint 3ms
+ ✓ |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_terms 29ms
+ ✓ |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_blocks_count 10ms
+ ✓ |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_disabled 1ms
+ ✓ |unit| tests/unit/src/render/syntax/backlinks.test.ts > test_backlinks_rule 38ms
+ ✓ |unit| tests/unit/src/render/syntax/backlinks.test.ts > test_backlinks_rule_when_empty 3ms
+ ✓ |unit| tests/unit/src/render/syntax/steps.test.ts > test_build_steps 35ms
+ ✓ |unit| tests/unit/src/render/syntax/steps.test.ts > test_build_steps_when_no_list 3ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_register_extension 27ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_register_extension_when_invalid 1ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_register_extension_when_directive_taken 1ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_validate_mark_args 1ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_validate_mark_args_when_invalid 1ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_validate_mark_args_when_rejected 0ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_format_issue 0ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_format_issue_when_key 0ms
+ ✓ |unit| tests/unit/src/extensions.test.ts > test_format_issue_when_no_position 0ms
+ ✓ |unit| tests/unit/src/parts/embed.test.ts > test_render_embed 18ms
+ ✓ |unit| tests/unit/src/parts/embed.test.ts > test_render_embed_when_args_have_quote 0ms
+ ✓ |unit| tests/unit/src/parts/section.test.ts > test_render_section 19ms
+ ✓ |unit| tests/unit/src/parts/section.test.ts > test_render_section_when_unmounted 0ms
+ ✓ |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec 2ms
+ ✓ |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_unknown 1ms
+ ✓ |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables 19ms
+ ✓ |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_range_not_closed 3ms
+ ✓ |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_feature_off 3ms
+ ✓ |unit| tests/unit/src/parts/row-detail.test.ts > test_render_row_detail 31ms
+ ✓ |unit| tests/unit/src/parts/figure.test.ts > test_render_figure 18ms
+ ✓ |unit| tests/unit/src/parts/tree.test.ts > test_render_tree 18ms
+ ✓ |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections 18ms
+ ✓ |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_unknown_value 2ms
+ ✓ |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_feature_off 1ms
+ ✓ |unit| tests/unit/src/render/syntax/row-details.test.ts > test_attach_row_details 24ms
+ ✓ |unit| tests/unit/src/render/syntax/row-details.test.ts > test_attach_row_details_when_row_missing 2ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_parse_definition_json 19ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_parse_definition_json_when_unclosed 2ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition 2ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_kind_unknown 0ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_points_mismatch 0ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_wire_end_missing 0ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_id_duplicated 0ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_blocks_count 0ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_chart_types 1ms
+ ✓ |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_chart_shape_mismatch 0ms
+ ✓ |unit| tests/unit/src/parts/syntax-warning.test.ts > test_render_syntax_warning 23ms
+ ✓ |unit| tests/unit/src/parts/syntax-warning.test.ts > test_render_syntax_warning_without_mark 1ms
+ ✓ |unit| tests/unit/src/render/syntax/callouts.test.ts > test_build_callouts 24ms
+ ✓ |unit| tests/unit/src/render/syntax/callouts.test.ts > test_build_callouts_when_collapsed_or_unknown 1ms
+ ✓ |unit| tests/unit/src/parts/term-tip.test.ts > test_render_term_tip 19ms
+ ✓ |unit| tests/unit/src/parts/term-tip.test.ts > test_render_term_tip_escapes 0ms
+ ✓ |unit| tests/unit/src/parts/toc.test.ts > test_render_toc 22ms
+ ✓ |unit| tests/unit/src/parts/badge.test.ts > test_render_badge 16ms
+ ✓ |unit| tests/unit/src/cli/prompt.test.ts > test_create_line_prompter 13ms
+ ✓ |unit| tests/unit/src/cli/prompt.test.ts > test_create_line_prompter_when_ended 1ms
+ ✓ |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs 24ms
+ ✓ |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs_when_no_heading 2ms
+ ✓ |unit| tests/unit/src/diagram/geometry.test.ts > test_fit_scale 9ms
+ ✓ |unit| tests/unit/src/diagram/geometry.test.ts > test_jump_paths 1ms
+ ✓ |unit| tests/unit/src/diagram/geometry.test.ts > test_jump_paths_when_overlap 1ms
+ ✓ |unit| tests/unit/src/diagram/geometry.test.ts > test_nice_ticks 0ms
+ ✓ |unit| tests/unit/src/diagram/geometry.test.ts > test_nice_ticks_when_small 0ms
+ ✓ |unit| tests/unit/src/diagram/geometry.test.ts > test_nice_ticks_when_flat 0ms
+ ✓ |unit| tests/unit/src/render/syntax/badges.test.ts > test_build_badges 34ms
+ ✓ |unit| tests/unit/src/parts/backlinks.test.ts > test_render_backlinks 21ms
+ ✓ |unit| tests/unit/src/parts/backlinks.test.ts > test_render_backlinks_when_empty 0ms
+ ✓ |unit| tests/unit/src/config.test.ts > test_resolve_config 10ms
+ ✓ |unit| tests/unit/src/config.test.ts > test_resolve_config_when_features_given 0ms
+ ✓ |unit| tests/unit/src/config.test.ts > test_resolve_config_when_libraries_given 0ms
+ ✓ |unit| tests/unit/src/config.test.ts > test_resolve_config_when_default_library_overridden 0ms
+ ✓ |unit| tests/unit/src/knowledge/paths.test.ts > test_resolve_link 10ms
+ ✓ |unit| tests/unit/src/knowledge/paths.test.ts > test_resolve_link_when_outside 0ms
+ ✓ |unit| tests/unit/src/knowledge/paths.test.ts > test_relative_href 1ms
+ ✓ |unit| tests/unit/src/render/syntax/toc.test.ts > test_build_toc 25ms
+ ✓ |unit| tests/unit/src/cli/changelog.test.ts > test_changelog_rows 18ms
+ ✓ |unit| tests/unit/src/parts/diff-minimap.test.ts > test_render_diff_minimap 11ms
+ ✓ |unit| tests/unit/src/cli/versions.test.ts > test_parse_version 12ms
+ ✓ |unit| tests/unit/src/cli/versions.test.ts > test_parse_version_when_invalid 0ms
+ ✓ |unit| tests/unit/src/cli/versions.test.ts > test_compare_versions 1ms
+ ✓ |unit| tests/unit/src/cli/versions.test.ts > test_cli_version 0ms
+ ✓ |unit| tests/unit/src/parts/escape.test.ts > test_escape_html 10ms
+ ✓ |unit| tests/unit/src/diff/source.test.ts > test_check_revisions 14ms
+ ✓ |unit| tests/unit/src/diff/source.test.ts > test_check_revisions_when_not_array 0ms
+ ✓ |unit| tests/unit/src/diff/source.test.ts > test_check_revisions_when_at_missing 1ms
+ ✓ |unit| tests/unit/src/diff/source.test.ts > test_check_revisions_when_id_duplicated 0ms
+ ✓ |unit| tests/unit/src/render/syntax/headings.test.ts > test_slugify 2ms
+ ✓ |unit| tests/unit/src/render/syntax/headings.test.ts > test_slugify_when_duplicated 0ms
+ ✓ |unit| tests/unit/src/render/syntax/headings.test.ts > test_assign_heading_ids 31ms
+ ✓ |unit| tests/unit/src/render/syntax/headings.test.ts > test_assign_heading_ids_when_anchors_off 1ms
+ ✓ |unit| tests/unit/src/parts/callout.test.ts > test_render_callout 8ms
+ ✓ |unit| tests/unit/src/parts/callout.test.ts > test_render_callout_when_collapsed 0ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features 10ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features_when_disabled 0ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features_when_enabled 0ms
+ ✓ |unit| tests/unit/src/features.test.ts > test_resolve_features_when_repeated 0ms
+ ✓ |unit| tests/unit/src/parts/diff-message.test.ts > test_render_diff_message 10ms
+ ✓ |unit| tests/unit/src/parts/steps.test.ts > test_render_steps 10ms
+ ✓ |unit| tests/unit/src/render/syntax/tree.test.ts > test_parse_tree 2ms
+ ✓ |unit| tests/unit/src/render/syntax/tree.test.ts > test_parse_tree_when_too_deep 0ms
+ ✓ |unit| tests/unit/src/render/syntax/tree.test.ts > test_build_file_trees 19ms
+ ✓ |unit| tests/unit/src/parts/own.test.ts > test_mark_own 8ms
+
+ Test Files  100 passed (100)
+      Tests  438 passed | 3 skipped (441)
+   Start at  04:43:04
+   Duration  39.86s (tests 39%, worker 31%, import 26%, transform 5%)
+
+exit=0

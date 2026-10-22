@@ -103,6 +103,9 @@ data_models:
       - name: extensions
         type: string[]
         description: 束ねた拡張のモジュールのコード
+      - name: parts
+        type: Partial<Record<"view", string>> | undefined
+        description: 埋めた部品のモジュールのコード。無いときは空として扱う。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
 functions:
   - name: main
     title: CLI を実行する
@@ -936,7 +939,7 @@ functions:
     title: 配布物を読む
     container: src/cli/export.ts
     usecase: 共通
-    summary: '`dist/index.css` と `dist/viewer.js` を読み、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
+    summary: '`dist/index.css`・`dist/viewer.js`・`dist/view.js` を読み、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
     description: '`dist/viewer.css` が無いときは足さずに続ける（それ以外の読めない理由はそのまま投げる）。`index.css` か `viewer.js` を読めなければ `CliError`'
     kind: 関数
     scope: public
@@ -947,11 +950,11 @@ functions:
         required: true
         description: '`dist/` の場所と書き出しの種類'
     returns:
-      type: 'Promise<{ distCss: string; viewer: string }>'
-      description: 埋める CSS と起動の処理
+      type: 'Promise<{ distCss: string; viewer: string; view: string }>'
+      description: 埋める CSS・起動の処理・ビューの部品のモジュール
     exceptions:
       - name: CliError
-        condition: '`index.css` か `viewer.js` を読めない'
+        condition: '`index.css`・`viewer.js`・`view.js` のどれかを読めない'
         message: 配布物を読めません（{理由}）。mdmark を入れ直してください。
     status: planned
     introduced:
@@ -1014,6 +1017,30 @@ functions:
     status: planned
     introduced:
       pr: 39
+  - name: usedParts
+    title: 埋める部品を選ぶ
+    container: src/cli/embed.ts
+    summary: 埋める文書にビューの印があれば、書き出しの中身の `parts` に `dist/view.js` のコードを入れた表を返す。`runExport` と `runBuild` が `readDistAssets` の後に呼ぶ
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ markdowns: string[]; view: string }'
+        required: true
+        description: 埋める文書の Markdown と `dist/view.js` のコード
+    returns:
+      type: Partial<Record<"view", string>>
+      description: 埋める部品のコード。印が無ければ空
+    process: 1. `MARK_PATTERN` で印を拾い、閉じでない `view` の印を持つ Markdown が 1 つでもあれば `{ view }` を返す。無ければ `{}`
+    unit_tests:
+      - name: test_used_parts
+        case: 正常
+        summary: ビューの印があるときだけ部品を埋める
+        condition: '`<!-- view: group=状態 -->` を持つ文書と、印の無い文書だけ'
+        mock: なし
+        expected: '前者は `{ view: "…" }`、後者は `{}`'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧

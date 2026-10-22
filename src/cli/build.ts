@@ -2,7 +2,7 @@ import { join, resolve } from "node:path";
 import { normalizePath } from "../knowledge/paths.ts";
 import { requireConfig } from "./config.ts";
 import { collectBuildDocuments } from "./documents.ts";
-import { findOutsideLinks } from "./embed.ts";
+import { findOutsideLinks, usedParts } from "./embed.ts";
 import { prepareEmbeds, readDistAssets, writeHtml } from "./export.ts";
 import { assembleHtml } from "./html.ts";
 import { CliError, type CliIo } from "./main.ts";
@@ -75,9 +75,13 @@ export async function runBuild(
     }
   }
 
-  const { distCss, viewer } = await readDistAssets({
+  const { distCss, viewer, view } = await readDistAssets({
     distDir: options.distDir,
     kind: "bundle",
+  });
+  payload.parts = usedParts({
+    markdowns: payload.docs.map((doc) => doc.markdown),
+    view,
   });
   await writeHtml({
     file: resolve(loaded.dir, build.out),

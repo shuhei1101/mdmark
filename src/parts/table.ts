@@ -83,6 +83,8 @@ export type TableOptions = {
   targetRow?: number;
   /** 表の代わりに置く HTML（`SLOT_MARKER` を渡せる） */
   body?: string;
+  /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を渡す */
+  id?: string;
 };
 
 /** 見出しのボタンとドロワーを作る引数 */
@@ -109,9 +111,15 @@ export type TableToolsOptions = {
   pinPressed?: boolean;
 };
 
-/** タグを除いた文字を取り出す */
+/** タグを除き、文字参照を文字に戻して、画面に出る文字を取り出す */
 function plainText(html: string): string {
-  return html.replace(/<[^>]*>/g, "");
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&amp;", "&");
 }
 
 /** 絞り込みのドロワーの id */
@@ -452,7 +460,8 @@ export function renderTable(options: TableOptions): string {
   const totalAttribute = totals.length
     ? ` data-total="${totals.map((total) => `${total.column}:${total.calc}`).join(" ")}"`
     : "";
-  const content = options.body ?? renderTableBody(options, "mdmark-table");
+  const content =
+    options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
   const collapse = options.collapse ?? "none";
   const inner =
     collapse === "none"

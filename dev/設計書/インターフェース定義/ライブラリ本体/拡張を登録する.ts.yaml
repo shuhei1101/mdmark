@@ -325,7 +325,7 @@ exceptions:
     notes: 登録しない。メッセージに合わない項目の名前を含める
   - name: Error（名前の重なり）
     condition: '`directive` が `features`・記法の印、または登録済みの拡張の `directive` と同じ'
-    notes: 登録しない。メッセージに重なった名前を含める
+    notes: 登録しない。ビューの印 `view` も記法の印として予約する。メッセージに重なった名前を含める
 constraints:
   - item: 印の引数の形
     constraint: '`MdmarkMarkArgs` は `{ args: string[]; keys: Record<string, string>; definition?: unknown }`。印の引数を空白で区切り、`キー=値` を `keys` に、それ以外を書いた順に `args` に入れる。印を範囲（`<!-- {directive}: {引数} -->` 〜 `<!-- /{directive} -->`）で書き、範囲に言語 `json` のコードブロックを 1 つ置いたときは、その JSON を読んだ値を `definition` に入れる（範囲が無い印では持たない）。`schema` の検査と `draw` は同じ値を受け取る'
@@ -344,3 +344,6 @@ constraints:
   - item: 部品の定義の誤り
     constraint: 拡張の印の範囲に `json` のコードブロックが 2 つ以上あるか、JSON として読めないときは、`schema` の検査も `load` も呼ばず、印の場所を書き方の警告に替える。警告には拡張の名前と、JSON として読めないときは読めなかった行と、2 つ以上あるときはコードブロックの数を書く（文言は `{印} の範囲に json のコードブロックが {数} つあります。部品の定義は 1 つだけ置いてください。拡張 {名前} の部品は描いていません。`）。定義の中身の形は拡張の `schema` が確かめる
     notes: 警告の文言は画面設計『文書』
+  - item: 拡張のモジュールから使う部品
+    constraint: 拡張の `draw` は、配布物が出す `mountView`・`mountComments` を `slot` に対して呼んで、印の場所に mdmark の部品を描ける。`draw` が部品の Promise を待つと、`mount` はその後に印の場所を描き終えたものとして扱う。`update`・`destroy` で印の場所を片付けるとき、その中の部品の `destroy` も行う
+    notes: dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts・dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts

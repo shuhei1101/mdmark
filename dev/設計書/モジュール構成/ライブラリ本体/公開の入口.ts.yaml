@@ -27,7 +27,7 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts#
 notes:
-  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`checkIndex`（`src/knowledge/check.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkReferences`・`MdmarkIndexIssue`・`DiffSource`・`DiffRevision`（`src/diff/source.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
+  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`checkIndex`（`src/knowledge/check.ts`）・`mountView`・`mountComments`（`src/mount-parts.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkReferences`・`MdmarkIndexIssue`・`DiffSource`・`DiffRevision`（`src/diff/source.ts`）・`MdmarkViewOptions`・`MdmarkViewHandle`（`src/views/spec.ts`）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentStore`・`MdmarkCommentsHandle`（`src/comments/spec.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
 styles:
   - name: index
     title: 入口の CSS
@@ -83,6 +83,18 @@ styles:
       - class_name: .mdmark-diff-* と body > .mdmark-diff-minimap
         target: 差分の部品
         value: '差分を開くボタン・リビジョンの選択・差分の行・埋め込んだ HTML の差分・差分の状態の文は `.mdmark` の下。ミニマップは `document.body` の直下に置くため `.mdmark` の外で当て、`position: fixed` と `z-index: var(--mdmark-diff-minimap-z-index)`。`@media print` ではミニマップを隠す。値は `dev/mock/assets/style.css`'
+      - class_name: :root（ビューとコメント）
+        target: ビューとコメントの変数の既定
+        value: '`--mdmark-view-column-width`（`12rem`）・`--mdmark-color-comment-bg`（`#fbefff`、ダーク `#2e2147`）・`--mdmark-color-comment-line`（`#8250df`、ダーク `#ab7df8`）・`--mdmark-color-error`（`#d1242f`、ダーク `#f85149`）。値は `dev/mock/assets/style.css`。コメントのボタン・入力欄・吹き出しは `.mdmark` の外に置くため、この 4 つは `.mdmark` でなく `:root` に置く'
+      - class_name: .mdmark .mdmark-view-*
+        target: ビューの部品
+        value: 部品設計（ビュー）の HTML に当てる規則。`dev/mock/refs/55/assets/view.css` から取る。切り替えの選んだボタンは濃い地で塗り、ボードの列は地の枠を持たず見出しの下の線で区切る（確認ログ）。列の最小の幅は `var(--mdmark-view-column-width)` で、収まらない列は `.mdmark-view-board` の中で横にスクロールする。列の見出しのアイコンは部品の HTML が持つ SVG
+      - class_name: .mdmark-comment-* と ::highlight(mdmark-comment-pending)
+        target: コメントの部品
+        value: '部品設計（コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧）の HTML に当てる規則。`dev/mock/refs/55/assets/comment.css` から取る。印と一覧は `.mdmark` の下、ボタン（`.mdmark-comment-add`）・入力欄と吹き出し（`.mdmark-comment-popover`）は `document.body` に置くため `.mdmark` の外で当て、`position: fixed` にする。保存のボタン（`.is-primary`）は差し色 `--mdmark-color-link` で塗る。`::highlight(mdmark-comment-pending)` は入力欄を開いている間の選んだ文字に `--mdmark-color-comment-bg` を当てる'
+      - class_name: '@media print（ビューとコメント）'
+        target: ビューとコメントの印刷
+        value: '`dev/mock/refs/55/assets/view-print.css` から取る。ビューは今のビューを出し、切り替えを隠す（絞り込みのボタンは表の印刷の規則が隠す）。ボードは横のスクロールをやめ、紙の幅に収まる数の列で折り返し、列と項目を改ページで切らない。コメントのボタン・入力欄・吹き出しを隠し、印は地の色を外して下線だけで箇所を示す'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

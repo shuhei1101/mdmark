@@ -13,6 +13,7 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Page } from "@playwright/test";
 import type {
+  MdmarkComment,
   MdmarkConfig,
   MdmarkExtension,
   MdmarkIndex,
@@ -81,7 +82,28 @@ export type IndexOptions = {
   references?: MdmarkReferences;
 };
 
+/** ページの中に作るコメントの読み書きの関数の仕様 */
+export type CommentStoreSpec = {
+  /** `load` が返すコメント */
+  loaded?: MdmarkComment[];
+  /** `save` が reject する */
+  failSave?: boolean;
+};
+
+/** コメントの読み書きの関数が受けた呼び出し */
+export type CommentCalls = {
+  load: Array<{ docId: string }>;
+  save: Array<{
+    docId: string;
+    comment: { quote: string; prefix: string; suffix: string; body: string };
+  }>;
+};
+
 type MdmarkWindow = Window & {
+  commentStore?: unknown;
+  commentCalls?: CommentCalls;
+  viewHandle?: { destroy: () => void };
+  commentsHandle?: { destroy: () => void };
   mdmark?: {
     mount: (
       el: HTMLElement,
@@ -89,8 +111,17 @@ type MdmarkWindow = Window & {
         markdown: string;
         config?: MdmarkConfig;
         diffSource?: unknown;
+        commentStore?: unknown;
       } & IndexOptions,
     ) => { update: (markdown: string) => void; destroy: () => void };
+    mountView: (
+      el: HTMLElement,
+      opts: unknown,
+    ) => Promise<{ destroy: () => void }>;
+    mountComments: (
+      el: HTMLElement,
+      opts: { store: unknown; docId: string },
+    ) => Promise<{ destroy: () => void }>;
     render: (
       markdown: string,
       opts?: { config?: MdmarkConfig } & IndexOptions,
@@ -176,8 +207,8 @@ function pageHtml(hostCss: string): string {
     <link rel="stylesheet" href="${CDN_BASE}@${BUILT_VERSION}/dist/index.css">
     <style>${hostCss}</style>
     <script type="module">
-      import { mount, render, registerExtension, collectReferences } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
-      window.mdmark = { mount, render, registerExtension, collectReferences };
+      import { mount, render, registerExtension, collectReferences, mountView, mountComments } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
+      window.mdmark = { mount, render, registerExtension, collectReferences, mountView, mountComments };
     </script>
   </head>
   <body><div id="doc"></div></body>
@@ -305,10 +336,20 @@ export async function mountDocument(
     markdown: string;
     config?: MdmarkConfig;
     documents?: Record<string, string>;
+    /** `installCommentStore` で作った読み書きの関数を `mount` に渡す */
+    useCommentStore?: boolean;
   } & IndexOptions,
 ): Promise<void> {
   await page.evaluate(
-    ({ markdown, config, index, docId, documents, references }) => {
+    ({
+      markdown,
+      config,
+      index,
+      docId,
+      documents,
+      references,
+      useCommentStore,
+    }) => {
       const w = window as MdmarkWindow;
       const el = document.querySelector<HTMLElement>("#doc");
       if (!w.mdmark || !el) {
@@ -325,10 +366,142 @@ export async function mountDocument(
         index,
         docId,
         references: refs,
+        commentStore: useCommentStore ? w.commentStore : undefined,
       });
     },
     options,
   );
+}
+
+/** ページの中に、仕様どおりのコメントの読み書きの関数を作る。受けた呼び出しは `window.commentCalls` に控える。`save` は渡された下書きに `id` を付けて返す */
+export async function installCommentStore(
+  page: Page,
+  spec: CommentStoreSpec = {},
+): Promise<void> {
+  await page.evaluate((storeSpec) => {
+    const w = window as MdmarkWindow;
+    const calls: CommentCalls = { load: [], save: [] };
+    w.commentCalls = calls;
+    w.commentStore = {
+      load: (target: { docId: string }) => {
+        calls.load.push({ docId: target.docId });
+        return Promise.resolve(storeSpec.loaded ?? []);
+      },
+      save: (target: {
+        docId: string;
+        comment: CommentCalls["save"][number]["comment"];
+      }) => {
+        calls.save.push(JSON.parse(JSON.stringify(target)));
+        if (storeSpec.failSave) {
+          return Promise.reject(new Error("network"));
+        }
+        return Promise.resolve({
+          id: `c${calls.save.length}`,
+          ...target.comment,
+        });
+      },
+    };
+  }, spec);
+}
+
+/** コメントの読み書きの関数が受けた呼び出しを返す */
+export async function readCommentCalls(page: Page): Promise<CommentCalls> {
+  return page.evaluate(() => {
+    const calls = (window as MdmarkWindow).commentCalls;
+    if (!calls) {
+      throw new Error("コメントの読み書きの関数を作っていない");
+    }
+    return JSON.parse(JSON.stringify(calls));
+  });
+}
+
+/** ページから、`#doc` の中にビューを描かせる。TypeError は同期で投げられるため、`error` に控えて返す */
+export async function mountViewInPage(
+  page: Page,
+  options: unknown,
+): Promise<{ error: string | null }> {
+  return page.evaluate(async (opts) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    try {
+      w.viewHandle = await w.mdmark.mountView(el, opts);
+      return { error: null };
+    } catch (error) {
+      return { error: `${(error as Error).name}: ${(error as Error).message}` };
+    }
+  }, options);
+}
+
+/** ページから、`tasks` の印の拡張を登録する。拡張の `draw` は、印の範囲の `json` の定義を、`mountView` で印の場所の要素に描いて待つ */
+export async function registerTasks(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as MdmarkWindow;
+    const mdmark = w.mdmark;
+    if (!mdmark) {
+      throw new Error("mdmark が無い");
+    }
+    mdmark.registerExtension({
+      name: "tasks",
+      directive: "tasks",
+      load: async () => ({
+        draw: async (slot: HTMLElement, value: { definition?: unknown }) => {
+          await mdmark.mountView(slot, value.definition);
+        },
+      }),
+    } as MdmarkExtension);
+  });
+}
+
+/** ページから、`#doc` の中の選んだ箇所にコメントを付けられるようにさせる */
+export async function mountCommentsInPage(
+  page: Page,
+  docId: string,
+): Promise<void> {
+  await page.evaluate(async (id) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    w.commentsHandle = await w.mdmark.mountComments(el, {
+      store: w.commentStore,
+      docId: id,
+    });
+  }, docId);
+}
+
+/** ページから、`mountView`・`mountComments` が返した片付けの関数を呼ぶ */
+export async function destroyHandles(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as MdmarkWindow;
+    w.viewHandle?.destroy();
+    w.commentsHandle?.destroy();
+  });
+}
+
+/** セレクターに当たる要素の最初の文字の節の、始まりと終わりの位置の間を選ぶ（選びを外すときは `null`） */
+export async function selectText(
+  page: Page,
+  target: { selector: string; start: number; end: number } | null,
+): Promise<void> {
+  await page.evaluate((range) => {
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    if (range === null) {
+      return;
+    }
+    const text = document.querySelector(range.selector)?.firstChild;
+    if (!text) {
+      throw new Error("選ぶ文字が無い");
+    }
+    const selected = document.createRange();
+    selected.setStart(text, range.start);
+    selected.setEnd(text, range.end);
+    selection?.addRange(selected);
+  }, target);
 }
 
 /** ページから、描いた文書の本文を差し替えさせる */

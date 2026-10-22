@@ -8,6 +8,7 @@
 | [badge](./badge/index.html) | 頭に `badge:` を付けた行内のコードを描いた札 |
 | [callout](./callout/index.html) | 種類ごとの題・色・アイコンを持つ注意書きの枠と、閉じた注意書き |
 | [chart](./chart/index.html) | 系列を色と線の模様・点の印の組で分けたグラフ（折れ線）と、色と塗りの模様の組で分けた棒・円、点の印で分けた散布図 |
+| [comment](./comment/index.html) | 選んだ箇所の印・文字を選んだときのコメントのボタン・入力欄と保存できない知らせ・吹き出しと、箇所が見つからないコメントの一覧 |
 | [diagram-frame](./diagram-frame/index.html) | 図の題・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン |
 | [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・箱の入力・処理・出力・箱の hint・箱の中の用語のツールチップと、ヒントを外した図 |
 | [diff-html-switch](./diff-html-switch/index.html) | 差分の中の埋め込んだ HTML の範囲を、ソースの色分けとプレビューの前と後で切り替える見方のボタンと、片側にだけある・変えていない・スクリプトを書いた範囲 |
@@ -30,3 +31,4 @@
 | [tabs](./tabs/index.html) | 見出しの文字をタブ名にしたタブ |
 | [term-tooltip](./term-tooltip/index.html) | 用語と文書の別名の破線の下線と、ポインター・フォーカスで開く用語と関連文書のツールチップ |
 | [toc](./toc/index.html) | 見出しを階層どおりに入れ子にした目次 |
+| [view](./view/index.html) | 印の表の行を列の値ごとに並べたボードと表のビュー、切り替え・列の見出しのアイコン・表の列の絞り込み |

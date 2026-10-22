@@ -1,0 +1,203 @@
+title: "コメントを付ける"
+entry:
+  kind: operation
+  value: '`mountComments(el, opts)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: 使う側の要素の中の文字を選んでコメントを保存し、印を付け、片付ける
+    setup:
+      - name: 配布物を読んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み、`導入の手順を整える。` の段落を持つ要素と、その外の段落を 1 つずつ持つページ
+      - name: コメントの読み書きの関数
+        description: '`load` は空の配列、`save` は受けた下書きに `id: "c1"` を足して返す。受けた引数を記録する'
+        notes: '`docId` は `panel-setup`。コメントの本文は `手順の数を <b>3</b> にする`'
+      - name: Mock
+        description: 読み書きの関数はページの中のメモリーで返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mountComments(el, { store, docId })
+        M->>S: load({ docId })
+        S-->>M: []
+        M-->>P: { destroy }
+        P->>M: 「導入の手順」を選び、コメントを書いて保存する
+        M->>S: save({ docId, comment })
+        S-->>M: id を持つコメント
+        M->>P: 選んだ文字に印を付ける
+        P->>M: destroy()
+        M->>P: 印を外す
+    expected:
+      - '`load` が `{ docId: "panel-setup" }` で 1 回呼ばれる'
+      - 要素の外の段落の文字を選んでもコメントのボタンが出ない
+      - '`save` が `{ docId: "panel-setup", comment: { quote: "導入の手順", prefix: "", suffix: "を整える。", body: "手順の数を <b>3</b> にする" } }` で 1 回呼ばれる'
+      - '`導入の手順` が class `mdmark-comment-mark` の印で包まれ、印から開いた吹き出しの本文に `b` 要素が無い'
+      - '`destroy` の後、印が無く、`el` の文字が `導入の手順を整える。` のままで、文字を選んでもボタンが出ない'
+    test: test_normal
+  - name: 正常系（保存したコメントを読み込む）
+    summary: '`load` が返したコメントの箇所に、呼んだ時点で印を付ける'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コメントの読み書きの関数
+        description: '`load` が `quote` が `導入の手順` のコメント 1 件と、`quote` が `無い文字` のコメント 1 件を返す'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mountComments(el, { store, docId })
+        M->>S: load({ docId })
+        S-->>M: コメント 2 件
+        M->>P: 箇所が見つかったコメントに印を付ける
+    expected:
+      - 解決した時点で `導入の手順` に印が付いている
+      - '`無い文字` のコメントは印を持たず、`el` の末尾の `箇所が見つからないコメント` の一覧に出る'
+    test: test_normal_when_loaded
+  - name: 異常系（保存できない）
+    summary: '`save` が reject すると、入力欄と本文を残して知らせを出し、印を付けない'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 保存できない読み書きの関数
+        description: '`load` は空の配列、`save` は `Error("network")` で reject する'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 文字を選び、コメントを書いて保存する
+        M->>S: save({ docId, comment })
+        S-->>M: reject
+        M->>P: 入力欄に知らせを出す
+    expected:
+      - 入力欄が開いたままで、書いた本文が残っている
+      - 入力欄のそばに `role="alert"` の知らせがある
+      - 選んだ文字に印が無い
+      - '`console.error` が 1 回呼ばれ、引数に `save`・`panel-setup`・元のエラーを含む'
+    test: test_error_when_save_rejected
+  - name: 異常系（読み込めない）
+    summary: '`load` が reject すると、印を付けずに解決し、新しいコメントは付けられる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 読み込めない読み書きの関数
+        description: '`load` が `Error("network")` で reject し、`save` は正常系と同じ'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mountComments(el, { store, docId })
+        M->>S: load({ docId })
+        S-->>M: reject
+        M-->>P: { destroy }
+    expected:
+      - 戻り値の Promise が `{ destroy }` で解決し、印が無い
+      - '`console.error` が 1 回呼ばれ、引数に `load`・`panel-setup`・元のエラーを含む'
+      - 文字を選ぶとコメントのボタンが出て、保存できる
+    test: test_error_when_load_rejected
+  - name: 異常系（引数の誤り・TypeError）
+    summary: '`store` が `save` を持たないときと `docId` が空のときに、`el` を書き換えずに TypeError を投げる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 誤った引数
+        description: '`store` に `load` だけを持つオブジェクトを渡すものと、`docId` に空の文字列を渡すものの 2 通り'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountComments(el, 誤った引数)
+        M-->>P: TypeError
+    expected:
+      - 2 通りとも `mountComments` が同期で `TypeError` を投げ、メッセージに `store`、`docId` を含む
+      - '`load` が呼ばれず、`el` の中身が変わらない'
+    test: test_error_when_arguments_invalid
+  - name: 異常系（部品のモジュールを読めない）
+    summary: コメントの部品のモジュールを読めないと、`el` を書き換えずに reject する
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コメントの読み書きの関数
+        description: 正常系と同じ
+      - name: Mock
+        description: コメントの部品のモジュールの要求を、配信で 404 に差し替える
+        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で外す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountComments(el, { store, docId })
+        M->>M: 部品のモジュールを読めない
+        M-->>P: reject
+    expected:
+      - 戻り値の Promise が読み込みのエラーで reject する
+      - '`load` が呼ばれず、`el` の中身が変わらない'
+      - 文字を選んでもコメントのボタンが出ない
+    test: test_error_when_module_unavailable
+lead: 使う側のページが、自分で書いた要素とコメントの読み書きの関数を渡し、要素の中の選んだ箇所にコメントを付けられるようにする。文書のコメントと同じ見た目と操作になる。
+idempotent: false
+side_effects: '`opts.store.load` を 1 回呼び、読んだコメントの箇所を印の要素で包む（`el` の文字は変えない）。`document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。保存で `opts.store.save` を呼ぶ'
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使う#
+exclusivity: 同じ要素へ 2 回目の `mountComments` を呼ぶと、前の `mountComments` の `destroy` を先に行う。保存を待つ間に `destroy` を呼ぶと、保存の結果で印を付けない
+request:
+  - name: el
+    type: HTMLElement
+    required: true
+    location: argument
+    description: コメントを付けられる範囲の要素。中の文字を選ぶとコメントのボタンを出す
+  - name: opts.store
+    type: MdmarkCommentStore
+    required: true
+    location: argument
+    description: コメントの読み書きの関数
+    notes: 形はインターフェース定義『文書を描く』の制約の「コメントの読み書きの関数」
+  - name: opts.docId
+    type: string
+    required: true
+    location: argument
+    description: 読み書きの関数に渡す、コメントを付ける対象の ID
+    constraints: 空でない文字列
+    example: panel-setup
+response:
+  - name: (Promise の値).destroy
+    type: () => void
+    description: 印を外して `el` の文字を呼ぶ前の並びに戻し、コメントのボタン・入力欄・吹き出しと `document` の受け取りを外す
+    notes: 2 回目以降は何もしない
+response_notes: 戻り値は `Promise<{ destroy }>`。`load` の結果で印を付けてから解決する。引数の誤りは Promise を返さずに同期で TypeError を投げる
+exceptions:
+  - name: なし（正常終了）
+    condition: 読んだコメントに印を付け、`{ destroy }` で解決する
+  - name: TypeError
+    condition: '`el` が HTMLElement でない、`opts.store` が `load`・`save` の関数を持たない、`opts.docId` が空か文字列でない'
+    notes: 同期で投げ、`el` を書き換えない。メッセージに誤った引数の名前を含める
+  - name: なし（読み込めない）
+    condition: '`load` が reject するか、返した値がコメントの形に合わない'
+    notes: 例外を投げず、印を付けずに解決する。新しいコメントは付けられる。`load`・`docId`・元のエラーか合わなかった値を `console.error` に出す
+  - name: なし（保存できない）
+    condition: '`save` が reject するか、返した値がコメントの形に合わない'
+    notes: 例外を投げず、入力欄に書いた本文を残して知らせを出し、印を付けない。`save`・`docId`・元のエラーを `console.error` に出す
+  - name: なし（読み込みの失敗）
+    condition: コメントの部品のモジュールを読めない
+    notes: '`el` を書き換えず、`load` を呼ばずに、Promise を元のエラーで reject する'
+constraints:
+  - item: コメントの操作
+    constraint: インターフェース定義『文書を描く』の制約の「コメントの操作」「コメントの箇所」と同じ要素と操作にする。範囲は `el` の中
+    notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
+  - item: 部品のモジュールの読み込み
+    constraint: コメントの部品のモジュールは、初めて `mountComments` を呼んだときか、`mount` でコメントの機能がオンになったときに 1 回だけ読む
+    notes: モジュールは `dist/index.js` の隣の `dist/comments.js`（モジュール構成『ビューとコメント』）。読めないときは例外の「なし（読み込みの失敗）」
+  - item: 型の配布
+    constraint: '`mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
+test_file: tests/integration/lib/mount-comments.browser.test.ts

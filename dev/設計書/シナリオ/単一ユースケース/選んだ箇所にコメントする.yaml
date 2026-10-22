@@ -1,0 +1,178 @@
+title: "選んだ箇所にコメントする"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: '`features.comments` を `true` にした設定と、コメントの読み書きの関数を渡して文書を描く HTML'
+      - name: コメントの読み書きの関数
+        description: 保存で渡されたコメントを配列に溜め、読み込みでその配列を返す手元の関数。読み込みは空の配列を返す
+      - name: 段落を持つ Markdown
+        description: '`描いた文書の見た目はテーマの変数で変える。` の段落を 1 つ持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+      - name: コメントの本文
+        description: 読む人が入力欄に書く本文
+        notes: '`ここは <b>太字</b> にしたい`'
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 設定・読み書きの関数・Markdown を渡して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: 空の配列
+        M-->>P: 描いた文書
+        U->>P: 「テーマの変数」を選ぶ
+        P-->>U: 選んだ文字のそばのコメントのボタン
+        U->>P: ボタンを押し、コメントを書いて保存する
+        M->>S: 選んだ文字・前後の文字・本文を渡して保存する
+        S-->>M: 保存した
+        M-->>P: 選んだ文字に印を付ける
+        U->>P: 印にフォーカスして Enter を押す
+        P-->>U: 書いたコメントの吹き出し
+    expected:
+      - 文字を選ぶと、選んだ文字のそばにコメントのボタンが出る。選びを外すとボタンが消える
+      - 保存を押すと、読み書きの関数の保存に、選んだ文字 `テーマの変数`・前後の文字・コメントの本文が渡る
+      - 保存の後、`テーマの変数` に印が付き、印はフォーカスできる
+      - 印にフォーカスして Enter を押すと、書いたコメントの吹き出しが出て、Esc で閉じる
+      - コメントの本文の `<b>太字</b>` は文字のまま出て、HTML として解釈されない
+    test: test_normal
+  - name: 正常シナリオ（保存したコメントを読み込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み書きの関数
+        description: 読み込みで、選んだ文字 `テーマの変数` と前後の文字・本文を持つコメント 1 件を返す手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 設定・読み書きの関数・Markdown を渡して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: コメント 1 件
+        M-->>P: 選んだ文字に印を付けた文書
+        U->>P: 印を押す
+        P-->>U: コメントの吹き出し
+    expected:
+      - 描いた時点で `テーマの変数` に印が付いている
+      - 印を押すと、読み込んだコメントの本文の吹き出しが出る
+    test: test_normal_when_loaded
+  - name: 正常シナリオ（描き直した後に付き直す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `update` を呼べる
+      - name: コメントの読み書きの関数
+        description: 正常シナリオ（保存したコメントを読み込む）と同じ
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: 描き直す Markdown
+        description: 段落の前に別の段落を 1 つ足した文書と、`テーマの変数` を `CSS 変数` に書き換えた文書の 2 つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 段落を足した Markdown で描き直させる
+        M-->>P: 同じ文字に印を付け直した文書
+        P->>M: 選んだ文字を書き換えた Markdown で描き直させる
+        M-->>P: 箇所が見つからないコメントを末尾に並べた文書
+        U->>P: 末尾の一覧のコメントを開く
+        P-->>U: コメントの本文
+    expected:
+      - 段落を足して描き直した後も、`テーマの変数` に印が付いている
+      - 選んだ文字を書き換えて描き直した後、本文に印は無く、文書の末尾の `箇所が見つからないコメント` の一覧に、選んだ文字とコメントの本文が出る
+    test: test_normal_when_updated
+  - name: 正常シナリオ（機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: '`features.comments` を指定しない（既定のオフ）設定と、コメントの読み書きの関数を渡して文書を描く HTML'
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 設定・読み書きの関数・Markdown を渡して描かせる
+        M-->>P: 描いた文書
+        U->>P: 本文の文字を選ぶ
+        P-->>U: コメントのボタンの無い選び
+    expected:
+      - 文字を選んでもコメントのボタンが出ない
+      - 読み書きの関数の読み込みが呼ばれない
+    test: test_normal_when_disabled
+  - name: 異常シナリオ（保存できない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み書きの関数
+        description: 保存で失敗の Promise を返す手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        U->>P: 文字を選び、コメントを書いて保存する
+        M->>S: 保存する
+        S-->>M: 失敗
+        M-->>P: 保存できなかったことの知らせ
+    expected:
+      - コメントの入力欄が閉じずに、書いた本文が残っている
+      - 入力欄のそばに、保存できなかったことの知らせが `role="alert"` で出る
+      - 選んだ文字に印が付かない
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_save_failed
+  - name: 異常シナリオ（読み書きの関数が無い）
+    setup:
+      - name: mdmark を読むページ
+        description: '`features.comments` を `true` にした設定を渡し、コメントの読み書きの関数を渡さずに文書を描く HTML'
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 描いた文書
+        U->>P: 本文の文字を選ぶ
+        P-->>U: コメントのボタンの無い選び
+    expected:
+      - 文字を選んでもコメントのボタンが出ない
+      - コメントの機能に読み書きの関数が要ることが `console.error` に 1 回だけ出る
+      - 文書の残りは描かれる
+    test: test_error_when_store_missing
+lead: 読む人が、描いた文書の本文の文字を選んでコメントを付け、付いた箇所の印からコメントを開く。コメントは使う側が `mount` に渡した読み書きの関数で残る。
+issue: 8
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 読む人
+    interest: 気になった箇所を選ぶだけで、その場にコメントを残せ、後から箇所の印で開ける
+  - name: 使う側
+    interest: コメントを自分の保存先に残せ、他の人とも共有できる
+trigger: 読む人が、文書の中の気になった箇所に意見を残したくなる
+preconditions:
+  - ページが `mount` で文書を描き、コメントの読み書きの関数を渡している
+  - コメントの機能（`comments`）がオン（既定はオフ）
+success_guarantee: 選んだ文字と前後の文字・コメントの本文が読み書きの関数へ渡り、選んだ箇所に印が付く。本文を描き直した後も、同じ文字の箇所に印が付き直る。
+minimal_guarantee: コメントを保存できないときは、書いたコメントを消さずに知らせ、文書の残りは今のとおり読める。
+test_file: tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts

@@ -59,6 +59,21 @@ test("test_render_notice_when_diff", async () => {
   );
 });
 
+// 部品のモジュールを読めないときの本文を返す（正常系）
+test("test_render_notice_when_part", async () => {
+  // 準備
+  const { renderNotice } = await loadNotice();
+  // 実行
+  const html = renderNotice({ name: "view", figure: false, source: "part" });
+  // 検証
+  expect(html).toContain(
+    '<strong class="mdmark-notice-title">この箇所を表示できません</strong>',
+  );
+  expect(html).toContain(
+    "<p>表示に使う部品（<code>view</code>）を読み込めませんでした。",
+  );
+});
+
 // 印の名前をエスケープする（正常系）
 test("test_render_notice_when_name_has_html", async () => {
   // 準備

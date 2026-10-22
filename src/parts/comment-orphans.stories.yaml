@@ -1,0 +1,16 @@
+title: Parts/CommentOrphans
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: comment-orphans
+    args:
+      comments: '[{"quote":"テーマの変数","body":"ここは <b>太字</b> にしたい"},{"quote":"角丸は 6px","body":"角丸は 6px のままでよいと思います。"}]'
+      id: story-orphans
+  - name: Empty
+    parameters:
+      server:
+        id: comment-orphans
+    args:
+      comments: '[]'
+      id: story-orphans

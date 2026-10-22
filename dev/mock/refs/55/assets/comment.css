@@ -1,0 +1,301 @@
+/* コメントの表示: 選んだ箇所の印・コメントのボタン・入力欄・吹き出し・箇所が見つからないコメントの一覧。
+   使う側の要素にコメントを付けたときも同じ見た目にするため、.mdmark の外でも当たるよう部品の class だけで当てる。
+   採用スタイルの変数（assets/style.css）と拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  /* コメントの付いた箇所の印: 地の色と下線の両方で示し、色だけに頼らない */
+  .mdmark-comment-mark {
+    padding: 0.05em 0;
+    border-radius: 2px;
+    background: var(--mdmark-color-comment-bg);
+    color: inherit;
+    text-decoration: underline 2px var(--mdmark-color-comment-line);
+    text-underline-offset: 0.25em;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration-thickness: 3px;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+
+    /* 吹き出しを開いている印: 線で囲み、どの箇所のコメントかを示す */
+    &[aria-expanded="true"] {
+      outline: 2px solid var(--mdmark-color-comment-line);
+      outline-offset: 1px;
+    }
+  }
+
+  /* ボタン・入力欄・吹き出しのアイコン: 描いた文書の外（body の直下）に置くので、文書の中のアイコンと同じ規則をここでも当てる */
+  :is(.mdmark-comment-add, .mdmark-comment-popover) .mdmark-icon {
+    flex: none;
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: -0.125em;
+  }
+
+  /* 文字を選んだときに出すコメントのボタン: 選んだ文字の下に重ねる（位置は描く処理が選んだ範囲から入れる）。
+     スマホの選びのメニューは選んだ文字の上に出るので、下に置いて重ねない。本文のブロックの間隔は付けない */
+  .mdmark-comment-add {
+    position: fixed;
+    z-index: 20;
+    margin: 0;
+    display: inline-flex;
+    gap: 0.4em;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0 0.75em;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--mdmark-color-muted);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* 入力欄を開いている間の選んだ箇所: 選びが入力欄へ移って消えても、どこへのコメントかを本文に残す */
+  ::highlight(mdmark-comment-pending) {
+    background-color: var(--mdmark-color-comment-bg);
+    text-decoration: underline 2px dashed var(--mdmark-color-comment-line);
+  }
+
+  /* 入力欄と吹き出しの共通の枠: 箇所の下に重ねる（位置は描く処理が箇所から入れる） */
+  .mdmark-comment-popover {
+    position: fixed;
+    z-index: 20;
+    display: grid;
+    gap: 0.6rem;
+    box-sizing: border-box;
+    width: min(22rem, calc(100vw - 32px));
+    padding: 0.75rem;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+  }
+
+  /* 入力欄の form: 枠の中の並びに加わり、枠の間隔をそのまま使う */
+  .mdmark-comment-popover > form {
+    display: contents;
+  }
+
+  /* 枠の頭: 選んだ文字と、閉じるボタン */
+  .mdmark-comment-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  /* 選んだ文字: 控えめな文字で、どの箇所へのコメントかを示す（長いときは 2 行で切る） */
+  .mdmark-comment-quote {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--mdmark-color-muted);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* 閉じるボタン: アイコンだけの四角のボタン */
+  .mdmark-comment-close {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: -0.25rem -0.25rem 0 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: calc(var(--mdmark-radius) - 2px);
+    background: transparent;
+    color: var(--mdmark-color-muted);
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--mdmark-color-border);
+      color: var(--mdmark-color-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 1px;
+    }
+  }
+
+  /* 吹き出しの本文: 書いた改行をそのまま出し、HTML として読まない（描く処理は文字として入れる） */
+  .mdmark-comment-body {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  /* 吹き出しの中の複数のコメント: 区切り線で分ける */
+  .mdmark-comment-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li + li {
+      margin-block-start: 0.6rem;
+      padding-block-start: 0.6rem;
+      border-block-start: 1px solid var(--mdmark-color-border);
+    }
+  }
+
+  /* 入力欄のラベルと入力欄: ラベルを上に常に出す */
+  .mdmark-comment-field {
+    display: grid;
+    gap: 0.25rem;
+    color: var(--mdmark-color-heading);
+    font-weight: 600;
+
+    /* 入力欄: 縦にだけ広げられる */
+    textarea {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 5.5rem;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font: inherit;
+      font-weight: 400;
+      resize: vertical;
+
+      &:focus-visible {
+        border-color: var(--mdmark-color-link);
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 0;
+      }
+
+      /* 書けなかった・保存できなかったときの入力欄: 線を誤りの色にする */
+      &[aria-invalid="true"] {
+        border-color: var(--mdmark-color-error);
+      }
+    }
+  }
+
+  /* 保存できなかったときの知らせ: 入力欄のそばに、アイコンと文で出す（色だけに頼らない） */
+  .mdmark-comment-error {
+    display: flex;
+    gap: 0.4em;
+    align-items: flex-start;
+    margin: 0;
+    color: var(--mdmark-color-error);
+
+    .mdmark-icon {
+      margin-block-start: 0.3em;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* 入力欄の操作: 右に寄せ、主の操作を右端に置く */
+  .mdmark-comment-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  /* 入力欄の操作のボタン: 高さを揃えた枠のボタン */
+  .mdmark-comment-button {
+    min-height: 2rem;
+    padding: 0 0.9em;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: calc(var(--mdmark-radius) - 2px);
+    background: var(--mdmark-color-surface);
+    color: var(--mdmark-color-text);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: var(--mdmark-color-muted);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+
+    /* 保存のボタン: 差し色で塗り、主の操作だと分かるようにする */
+    &.is-primary {
+      border-color: var(--mdmark-color-link);
+      background: var(--mdmark-color-link);
+      color: var(--mdmark-color-bg);
+      font-weight: 600;
+    }
+
+    /* 保存している間: 二重に押せないようにする。文言が「保存しています…」に変わるので、色は薄めず読めるまま残す */
+    &:disabled {
+      cursor: progress;
+    }
+  }
+
+  /* 箇所が見つからないコメントの一覧: 文書の末尾に置く節 */
+  .mdmark-comment-orphans {
+    /* 節の中の見出し・説明・一覧の間隔 */
+    > * + * {
+      margin-block-start: calc(var(--mdmark-space) / 2);
+    }
+
+    /* 一覧: 選んだ文字と本文を 1 件ずつ線で囲む */
+    ul {
+      display: grid;
+      gap: 0.5rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      margin: 0;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+
+      > * + * {
+        margin-block-start: 0.25rem;
+      }
+    }
+  }
+
+  /* 一覧の説明: 箇所が見つからない理由 */
+  .mdmark-comment-orphans-lead {
+    color: var(--mdmark-color-muted);
+  }
+}

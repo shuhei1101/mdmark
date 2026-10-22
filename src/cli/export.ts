@@ -17,7 +17,12 @@ import {
 } from "../knowledge/references.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
-import { bundleModule, inlineImages, usedLibraryMarks } from "./embed.ts";
+import {
+  bundleModule,
+  inlineImages,
+  usedLibraryMarks,
+  usedParts,
+} from "./embed.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
 import { CliError, type CliIo } from "./main.ts";
 
@@ -209,19 +214,21 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   return { payload, themeCss, warnings };
 }
 
-/** 配布物の CSS と起動の処理を読む。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す */
+/** 配布物の CSS・起動の処理・ビューの部品のモジュールを読む。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す */
 export async function readDistAssets(options: {
   /** `dist/` の場所 */
   distDir: string;
   /** 書き出しの種類 */
   kind: "document" | "bundle";
-}): Promise<{ distCss: string; viewer: string }> {
+}): Promise<{ distCss: string; viewer: string; view: string }> {
   const { distDir, kind } = options;
   let distCss: string;
   let viewer: string;
+  let view: string;
   try {
     distCss = await readFile(join(distDir, "index.css"), "utf8");
     viewer = await readFile(join(distDir, "viewer.js"), "utf8");
+    view = await readFile(join(distDir, "view.js"), "utf8");
   } catch (error) {
     throw new CliError(
       `配布物を読めません（${reasonOf(error)}）。mdmark を入れ直してください。`,
@@ -238,7 +245,7 @@ export async function readDistAssets(options: {
       }
     }
   }
-  return { distCss, viewer };
+  return { distCss, viewer, view };
 }
 
 /** HTML を書く。親のフォルダが無ければ作り、書けなければ書けなかったパスを示す誤りを投げる */
@@ -295,9 +302,13 @@ export async function runExport(
     kind: "document",
     entry: path,
   });
-  const { distCss, viewer } = await readDistAssets({
+  const { distCss, viewer, view } = await readDistAssets({
     distDir: options.distDir,
     kind: "document",
+  });
+  payload.parts = usedParts({
+    markdowns: payload.docs.map((doc) => doc.markdown),
+    view,
   });
   await writeHtml({
     file: outFile,

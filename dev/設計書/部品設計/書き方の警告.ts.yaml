@@ -54,6 +54,27 @@ states:
         value: '<!-- glossary: term=用語 -->'
       - name: message
         value: に `meaning=` がありません。意味の列を `meaning=列名` で指してください。この表からは用語を入れずに描いています。
+  - name: ViewGroupColumn
+    description: ビューの印の `group=` に、表に無い列名を書いた
+    args:
+      - name: mark
+        value: '<!-- view: group=優先度 -->'
+      - name: message
+        value: の列 `優先度` は表にありません。表の列は `題`・`状態`・`担当` です。ボードにせず、表で描いています。
+  - name: ViewNoTable
+    description: ビューの印の範囲に表が無い
+    args:
+      - name: mark
+        value: '<!-- view: group=状態 -->'
+      - name: message
+        value: の範囲に、項目にする表がありません。範囲の中に Markdown の表を書いてください。範囲の中身はそのまま描いています。
+  - name: ViewUnknownIcon
+    description: ビューの印の `icons=` に、使えないアイコンの名前を書いた
+    args:
+      - name: mark
+        value: '<!-- view: group=状態 icons=完了:rocket -->'
+      - name: message
+        value: のアイコン `rocket` は使えません。使えるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。
 lead: 記法の印や拡張の引数に読めない指定がある箇所に置き、書く人へ読めない指定と直し方を知らせる枠。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
 args:
   - name: mark
