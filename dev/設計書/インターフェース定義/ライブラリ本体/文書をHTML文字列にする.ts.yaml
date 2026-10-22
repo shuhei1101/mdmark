@@ -428,6 +428,54 @@ flows:
       - '`ワークスペース` が class `mdmark-term` の要素になる'
       - '`WSL` は class `mdmark-term` の要素にならず、文字のまま残る'
     test: test_normal_when_no_intl_segmenter
+  - name: 正常系（表の機能の印）
+    summary: 表の印の 5 つの機能と `hide=`・`total=` を `data-*` に写し、行に ID とリンクを付ける
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 表の機能の印を持つ Markdown
+        description: '`## みかん` の見出しの後に、`<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->` 〜 `<!-- /table -->` で列 `名前`・`説明`・`数量` の 3 行の表を囲んだ文書'
+        notes: 名前は上から `りんご`・`みかん`・`みかん`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 表の印の機能とキーを読む
+        M->>M: 見出しの ID を決め、行の ID を作る
+        M-->>C: HTML 文字列
+    expected:
+      - 表が `data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
+      - 見出しが `id="みかん"` を持ち、3 行の `tr` が上から `id="りんご"`・`id="みかん-1"`・`id="みかん-2"` を持つ
+      - 各行の先頭のセルに `<a class="mdmark-row-anchor" href="#みかん-1" aria-label="「みかん」の行へのリンク">` の形のリンクがあり、`href` がその行の `id` を指す
+      - 文字列に `<tfoot`・`<button`・`<!--` が無い
+    test: test_normal_when_table_features
+  - name: 正常系（表の機能の書き方の誤り）
+    summary: 読めない集計・隠す列と、機能を付けていない表のキーを書き方の警告にして当てない
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 表の機能を誤った Markdown
+        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->` 〜 `<!-- /table -->` の表 A、`<!-- table: data total=数量:sum hide=単価 -->` 〜 `<!-- /table -->` の表 B、`<!-- table: data +total -->` 〜 `<!-- /table -->` の表 C を持つ文書'
+        notes: 3 つの表とも列 `名前`・`数量`・`単価`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 読めた指定だけを当てる
+        M->>M: 読めない指定の箇所に書き方の警告を置く
+        M-->>C: HTML 文字列
+    expected:
+      - 表 A が `data-total="2:avg"` を持ち、`data-hide` を持たない。表 A の警告の本文に、`max` と使える計算 `sum`・`avg`・`count`、表に無い列名 `価格`・`備考`、先頭の列で隠せない `名前` がある
+      - 表 B が `data-total`・`data-hide` を持たず、表 B の警告の本文に `total=` には `+total`、`hide=` には `+columns` が要ることがある
+      - 表 C は `data-features` に `total` を持ち、`data-total` を持たず、表 C の前に書き方の警告が無い
+      - '`<div class="mdmark-syntax-warning" role="note">` が 2 つだけある'
+    test: test_normal_when_table_feature_errors
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -492,7 +540,7 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表の印で囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`、`data` は `sort`・`pin`・`filter`、`plain` は無し）に `+機能`・`-機能` を当てたものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
+    constraint: 表の印で囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`、`data` は `sort`・`pin`・`filter`、`plain` は無し）に `+機能`・`-機能` を当てたものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。`+機能` で足せる機能に `count`・`columns`・`total`・`copy`・`rowlink` があり、どの種類の既定にも入らない。`columns` の表の `hide=列名,…` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`total` の表の `total=列名:計算,…` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。並べ替え・ピン止め・絞り込みのボタンと、表の上の件数・列の表示・コピーの帯、集計の行は `mount` が付ける
   - item: 注意書き
     constraint: 1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` と題 `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から外す。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にする。知らない種類は `note` として出す
   - item: タブ
@@ -536,4 +584,7 @@ constraints:
   - item: ヒント
     constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素と、図の部品の定義の `hint` を持つ箱に、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で置く（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を足す。`hint` を持つ箱は `io` を持つ箱と同じ右上の印を持ち、`io` と `hint` を両方持つ箱は 1 つの印に入力・処理・出力と `hint` をこの順に出す。`hints` がオフのときは、`data-hint` の属性・`hint`・`io`・線の `tip` のツールチップの中身と印を出さない（線のラベルと箱の名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'
     notes: 印のアイコンは CSS で付ける。開く操作は `mount`
+  - item: 表の行の ID とリンク
+    constraint: '`rowlink` の表の本文の各行に、先頭のセルの文字（タグを除いたもの）から見出しの ID と同じ規則で作った `id` を付ける。見出しの ID を先に決め、行の ID が文書の中の見出し・前の行の ID と重なれば `-1`・`-2` を付ける。先頭のセルの文字から ID が作れないときは `row` を元にする。先頭のセルの中身の後ろに `<a class="mdmark-row-anchor" href="#{ID}" aria-label="「{先頭のセルの文字}」の行へのリンク">` を置く'
+    notes: ID の作り方は確認ログの決定（行を足しても、前に共有したリンクが同じ行を指す）
 test_file: tests/integration/lib/render.test.ts
