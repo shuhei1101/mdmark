@@ -11,11 +11,20 @@ import {
   type MdmarkSequenceDefinition,
   readDefinition,
 } from "../src/diagram/definition.ts";
+import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
+import { renderDiffHtml } from "../src/parts/diff-html.ts";
+import { renderDiffLines } from "../src/parts/diff-lines.ts";
+import { renderDiffMessage } from "../src/parts/diff-message.ts";
+import {
+  type DiffMinimapMark,
+  renderDiffMinimap,
+} from "../src/parts/diff-minimap.ts";
+import { renderDiffToggle } from "../src/parts/diff-toggle.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
 import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
@@ -23,6 +32,7 @@ import { renderFigure } from "../src/parts/figure.ts";
 import { type HintPlacement, renderHint } from "../src/parts/hint.ts";
 import { renderNotice } from "../src/parts/notice.ts";
 import { type CopyState, renderParam } from "../src/parts/param.ts";
+import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
 import { renderRowDetail } from "../src/parts/row-detail.ts";
 import { renderSection } from "../src/parts/section.ts";
 import { renderSteps } from "../src/parts/steps.ts";
@@ -32,6 +42,7 @@ import { renderTabs } from "../src/parts/tabs.ts";
 import { renderTermTip, type TermTipDoc } from "../src/parts/term-tip.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
+import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 
 // 描画の口を外へ出さないための待受アドレス
 const RENDER_HOST = "127.0.0.1";
@@ -221,8 +232,143 @@ function bodyOf(args: PartArgs, sample: string): string {
   return typeof args.body === "string" ? args.body : sample;
 }
 
+// 差分のストーリーの見本: 行の差分に使う前と後の Markdown
+const DIFF_TEXT_BEFORE =
+  "# 問い合わせ窓口の週の報告\n\nよくある質問の差分は、担当者が週に 1 回確かめます。\n消す行\n終わり\n";
+const DIFF_TEXT_AFTER =
+  "# 問い合わせ窓口の週の報告\n\nよくある質問の変更は、担当者が週に 1 回確かめます。\n終わり\n足す行\n";
+const DIFF_LONG_BEFORE =
+  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-faq-table に置きます。\n";
+const DIFF_LONG_AFTER =
+  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-frequently-asked-questions-table に置きます。\n";
+
+/** 埋め込んだ HTML の範囲を 1 つ持つ Markdown。表のメール欄の件数を引数で変える */
+function diffTable(mail: number, extra = ""): string {
+  return `<!-- html -->\n\`\`\`html\n<table><tr><th>窓口</th><th>件数</th></tr><tr><td>メール</td><td>${mail}</td></tr>${extra}</table>\n\`\`\`\n<!-- /html -->\n`;
+}
+
+// 埋め込んだ HTML の差分の見本: 前と後の Markdown
+const DIFF_HTML_SAMPLES: Record<string, { before: string; after: string }> = {
+  table: { before: diffTable(120), after: diffTable(150) },
+  added: { before: "# 題\n", after: `# 題\n${diffTable(150)}` },
+  unchanged: {
+    before: `${diffTable(120)}前の段落\n`,
+    after: `${diffTable(120)}後の段落\n`,
+  },
+  script: {
+    before: diffTable(
+      120,
+      '<tr><td><button onclick="alert(1)">数える</button><script>alert(1)</script></td></tr>',
+    ),
+    after: diffTable(
+      150,
+      '<tr><td><button onclick="alert(1)">数える</button><script>alert(1)</script></td></tr>',
+    ),
+  },
+};
+
+// 差分のストーリーで前と後に出すリビジョンの説明
+const DIFF_STORY_LABELS = {
+  before: "2026/10/18 09:12 初版（佐藤）",
+  after: "2026/10/19 16:40 件数を直す（鈴木）",
+};
+
+/** 差分の見本を比べる。語の区切りは `Intl.Segmenter`（`ja`・`word`）で、`char` の見本だけ持たないことにして 1 文字ずつ比べる */
+function storyDiff(before: string, after: string, segmented: boolean) {
+  return computeDiff({
+    before,
+    after,
+    segmenter: segmented
+      ? new Intl.Segmenter("ja", { granularity: "word" })
+      : undefined,
+  });
+}
+
+/** 差分の行のストーリー */
+function storyDiffLines(args: PartArgs): string {
+  const sample = String(args.sample);
+  const [before, after] =
+    sample === "long"
+      ? [DIFF_LONG_BEFORE, DIFF_LONG_AFTER]
+      : sample === "html"
+        ? [
+            `${DIFF_TEXT_BEFORE}${diffTable(120)}`,
+            `${DIFF_TEXT_AFTER}${diffTable(150)}`,
+          ]
+        : [DIFF_TEXT_BEFORE, DIFF_TEXT_AFTER];
+  const result = storyDiff(before, after, sample !== "char");
+  return renderDiffLines({
+    blocks: result.blocks.map((block) =>
+      block.type === "html"
+        ? {
+            ...block,
+            before: block.before && sanitizeEmbedded(block.before, (t) => t),
+            after: block.after && sanitizeEmbedded(block.after, (t) => t),
+          }
+        : block,
+    ),
+    sides: "side",
+    labels: DIFF_STORY_LABELS,
+  });
+}
+
+/** 埋め込んだ HTML の差分のストーリー */
+function storyDiffHtml(args: PartArgs): string {
+  const sample =
+    DIFF_HTML_SAMPLES[String(args.sample)] ?? DIFF_HTML_SAMPLES.table;
+  const result = storyDiff(sample?.before ?? "", sample?.after ?? "", true);
+  const block = result.blocks.find((candidate) => candidate.type === "html");
+  if (block?.type !== "html") {
+    throw new Error("埋め込んだ HTML の範囲が無い見本");
+  }
+  const safe = (html: string | null, label: string) =>
+    html === null
+      ? null
+      : { label, html: sanitizeEmbedded(html, (text) => text) };
+  return renderDiffHtml({
+    changed: block.changed,
+    view: args.view === "rendered" ? "rendered" : "source",
+    sides: args.sides === "stack" ? "stack" : "side",
+    lines: renderDiffLines({
+      blocks: [{ type: "lines", lines: block.lines }],
+      sides: "side",
+    }),
+    before: safe(block.before, DIFF_STORY_LABELS.before),
+    after: safe(block.after, DIFF_STORY_LABELS.after),
+  });
+}
+
 // 部品の id から、部品の関数を呼ぶ表
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
+  "diff-toggle": (args) =>
+    renderDiffToggle({
+      controls: String(args.controls ?? ""),
+      expanded: args.expanded === true,
+    }),
+  "revision-picker": (args) =>
+    renderRevisionPicker({
+      revisions: args.revisions as Parameters<
+        typeof renderRevisionPicker
+      >[0]["revisions"],
+      before: String(args.before),
+      after: String(args.after),
+      ...(args.counts === undefined
+        ? {}
+        : { counts: args.counts as { del: number; add: number } }),
+      idPrefix: "story-picker",
+    }),
+  "diff-lines": storyDiffLines,
+  "diff-html": storyDiffHtml,
+  "diff-minimap": (args) =>
+    renderDiffMinimap({
+      marks: args.marks as DiffMinimapMark[],
+      view: args.view as { top: number; height: number },
+    }),
+  "diff-message": (args) =>
+    renderDiffMessage({
+      kind: args.kind as "same" | "single" | "loading",
+      spinner: args.spinner === true,
+    }),
   "syntax-warning": (args) =>
     renderSyntaxWarning({
       mark: args.mark as string | undefined,
@@ -470,8 +616,13 @@ export function renderPart(options: {
   if (component === "notice") {
     // 真偽値は問い合わせの文字列で届くため、`"false"` のときだけ偽にする
     const figure = params.get("figure") !== "false";
+    const requested = params.get("source");
     const source =
-      params.get("source") === "extension" ? "extension" : "library";
+      requested === "extension" ||
+      requested === "diff-revisions" ||
+      requested === "diff-content"
+        ? requested
+        : "library";
     return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;
   }
   if (component === "embed") {

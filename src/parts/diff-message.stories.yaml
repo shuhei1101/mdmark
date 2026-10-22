@@ -1,0 +1,27 @@
+title: Parts/DiffMessage
+stories:
+  - name: Same
+    parameters:
+      server:
+        id: diff-message
+    args:
+      kind: same
+  - name: Single
+    parameters:
+      server:
+        id: diff-message
+    args:
+      kind: single
+  - name: Loading
+    parameters:
+      server:
+        id: diff-message
+    args:
+      kind: loading
+  - name: LoadingSpinner
+    parameters:
+      server:
+        id: diff-message
+    args:
+      kind: loading
+      spinner: true
