@@ -28,5 +28,5 @@
 | [syntax-warning](./syntax-warning/index.html) | 読めない指定とその直し方を書く人へ知らせる書き方の警告 |
 | [table](./table/index.html) | 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表 |
 | [tabs](./tabs/index.html) | 見出しの文字をタブ名にしたタブ |
-| [term-tooltip](./term-tooltip/index.html) | 用語と文書の別名の破線の下線と、ポインター・フォーカスで開く用語と関連文書のツールチップ |
+| [term-tooltip](./term-tooltip/index.html) | 用語と文書の別名の破線の下線と、ポインター・フォーカスで開く用語と関連文書のツールチップと、関連文書の並びを絞り込む入力欄 |
 | [toc](./toc/index.html) | 見出しを階層どおりに入れ子にした目次 |
