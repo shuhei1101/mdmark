@@ -54,6 +54,11 @@
       }
     }
 
+    /* 絞り込みを持つツールチップ: 絞り込んでスクロールが要らなくなっても中身の幅が変わらないよう、スクロールバーの幅を取っておく */
+    .mdmark-term-tip:has(.mdmark-term-tip-filter) {
+      scrollbar-gutter: stable;
+    }
+
     /* 絞り込みを持つツールチップの関連文書の並び: 外した文書を挟んでも間隔が揃うよう、文書の間を gap で空ける */
     .mdmark-term-tip:has(.mdmark-term-tip-filter) .mdmark-term-tip-docs {
       display: flex;
