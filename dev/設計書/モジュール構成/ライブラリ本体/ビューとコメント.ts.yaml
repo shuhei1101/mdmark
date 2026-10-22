@@ -427,15 +427,15 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean; warned: { missingStore: boolean } }'
         required: true
-        description: 描いた要素・文書で決まった機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか
+        description: 描いた要素・文書で決まった機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに控える、読み書きの関数が無いことを出したか
     returns:
       type: () => void
       description: 付けた部品を外す関数。読み込みを待っている間に呼ぶと、読めた後に付けない
     process: |-
       1. `features.views` がオンで `root` に `div.mdmark-view` があれば `loadPartModule("view")` を待ち、`isCurrent()` で外していなければ、`div.mdmark-view` ごとに `attachView` を呼んで外す関数を控える
-      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）
+      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
       3. 読めないときは付けずに、部品の名前（`view` か `comments`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューの印の場所は `render` の表のまま残す
       4. 外す関数は、外した印を立て、控えた外す関数を逆の順に呼ぶ
     unit_tests:
@@ -453,10 +453,10 @@ functions:
         expected: '`importModule` が呼ばれない'
       - name: test_attach_parts_when_comments_without_store
         case: 正常
-        summary: comments がオンでも読み書きの関数が無ければ読まない
-        condition: '`comments: true`、`commentStore` を渡さない'
-        mock: 同上
-        expected: '`importModule` が呼ばれない'
+        summary: comments がオンでも読み書きの関数が無ければ読まず、console.error に 1 回だけ出す
+        condition: '`comments: true`、`commentStore` を渡さず、同じ `warned` で 2 回呼ぶ'
+        mock: '`importModule` は呼ばれたかを控える。`console.error` を控える'
+        expected: '`importModule` が呼ばれない。`console.error` が 1 回だけ呼ばれる'
       - name: test_attach_parts_when_detached_while_loading
         case: 正常
         summary: 読み込みを待つ間に外すと付けない
