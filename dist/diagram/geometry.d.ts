@@ -23,4 +23,10 @@ export declare function fitScale(content: {
 }): number;
 /** 全ての線の横の区間が、ほかの線の縦の区間と交わる点に半円の弧を入れた svg のパスを、線の `id` から引ける形で返す。同じ向きで重なる区間はずらす */
 export declare function jumpPaths(wires: MdmarkDiagramWire[]): Map<string, string>;
+/** 縦の軸の刻みを切る: データの最小と最大を含む範囲を、1・2・5×10 のべき乗の刻みで切る。最小が 0 以上なら下端を 0 にする */
+export declare function niceTicks(values: number[]): {
+    min: number;
+    max: number;
+    step: number;
+};
 export {};
