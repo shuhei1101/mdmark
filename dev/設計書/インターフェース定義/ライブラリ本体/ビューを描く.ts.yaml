@@ -1,0 +1,246 @@
+title: "ビューを描く"
+entry:
+  kind: operation
+  value: '`mountView(el, opts)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: 列名と項目の値からボード表示を描き、表形式に切り替え、片付ける
+    setup:
+      - name: 配布物を読んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み、描く先の `div` を 1 つ持つページ
+      - name: 項目の値
+        description: 題・状態・担当の列名と 5 件の項目（状態は上から `未着手`・`進行中`・`未着手`・`完了`・`進行中`）
+        notes: 1 件目の題は `<script>alert(1)</script>設計`。`group` は `状態`
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読む）
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountView(el, { columns, items, group })
+        M->>M: 引数を確かめ、部品のモジュールを読む
+        M->>P: el の中にボード表示を描く
+        M-->>P: { destroy }
+        P->>M: 切り替えの「表」を押す
+        M->>P: 表形式のビュー
+        P->>M: destroy()
+        M->>P: el を空にする
+    expected:
+      - '`el` の中に class `mdmark` の要素が 1 つあり、その中にビューがある'
+      - ボードの列が `未着手`・`進行中`・`完了` の順で、見出しの件数が `2`・`2`・`1`
+      - 1 件目の題が文字 `<script>alert(1)</script>設計` のまま出て、`script` 要素が無い
+      - 「表」を押すと、5 行の表が列名の順で出て、「表」が `aria-pressed="true"`
+      - '`destroy` の後、`el` の子が無く、「表」を押すイベントを送っても何も起きない'
+    test: test_normal
+  - name: 正常系（表形式を列で絞り込む）
+    summary: '`filter` で指定した列にだけ絞り込みを付け、ボードには当てない'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 項目の値
+        description: 正常系と同じ。担当は上から `佐藤`・`鈴木`・`佐藤`・`田中`・`鈴木`
+        notes: '`filter` は `{ "担当": "select" }`、`default` は `table`'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountView(el, { columns, items, group, default, filter })
+        M->>P: 担当の列に絞り込みを持つ表形式のビュー
+        P->>M: 担当の絞り込みで佐藤を選ぶ
+        M->>P: 2 行の表
+        P->>M: ボードに切り替え、表に戻す
+        M->>P: ボードは 5 件、表は 2 行
+    expected:
+      - 絞り込みのボタンが担当の列の見出しにだけある
+      - 佐藤を選ぶと、担当が `佐藤` の 2 行だけが表示される
+      - ボードに切り替えると 5 件が全て出て、列の見出しの件数は `2`・`2`・`1`
+      - 表に戻すと、`佐藤` の絞り込みが残ったまま 2 行だけが表示される
+    test: test_normal_when_filtered
+  - name: 正常系（アイコンを上書きする）
+    summary: 既定の対応に `icons` を重ね、列の見出しのアイコンを値ごとに上書きする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 項目の値
+        description: 正常系の 5 件に、状態が `受付` の項目を 1 件足したもの
+        notes: '`icons` は `{ "未着手": "inbox", "完了": "archive" }`'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountView(el, { columns, items, group, icons })
+        M->>P: 列の見出しにアイコンを持つボード表示
+    expected:
+      - '`未着手` の列の見出しが `inbox`、`完了` が `archive` のアイコンを持つ'
+      - '`進行中` の列の見出しは既定の `circle-dot`、対応に無い `受付` は `circle` のアイコンを持つ'
+      - アイコンは `aria-hidden` を持ち、列の見出しの読み上げは値と件数だけ
+    test: test_normal_when_icons_overridden
+  - name: 正常系（拡張のモジュールから描く）
+    summary: 拡張の `draw` から `mountView` を呼び、印の場所に描いて、`mount` の `destroy` で片付く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`registerExtension` で `tasks` の印の拡張を登録する。拡張の `draw` は `value.definition` の `columns`・`items` を `mountView(slot, …)` に渡して待つ
+      - name: 拡張の印を持つ Markdown
+        description: '`<!-- tasks -->` 〜 `<!-- /tasks -->` の範囲に、列名・絞り込む列・3 件の項目の値の `json` のコードブロックを置いた文書'
+      - name: Mock
+        description: 拡張の `load` はページの中のモジュールを返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: mount(el, { markdown })
+        M->>X: draw(slot, value)
+        X->>M: mountView(slot, { columns, items, filter })
+        M->>P: 印の場所にビューを描く
+        P->>M: destroy()
+        M->>P: 印の場所のビューも片付ける
+    expected:
+      - '`tasks` の印の場所に、定義の 3 件を並べたビューがある'
+      - 表形式に切り替え、列の絞り込みで値を選ぶと合う行だけが残る
+      - '`mount` の `destroy` の後、ビューの要素が残らず、絞り込みのドロワーの `document` の受け取りも残らない'
+    test: test_normal_when_called_from_extension
+  - name: 異常系（引数の誤り・TypeError）
+    summary: 項目の値が配列でないときと、`group` が列名に無いときに、`el` を書き換えずに TypeError を投げる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。描く先の `div` は文字 `前の中身` を持つ
+      - name: 誤った引数
+        description: '`items` に文字列を渡すものと、`group` に `優先度`（列名に無い）を渡すものの 2 通り'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountView(el, 誤った引数)
+        M-->>P: TypeError
+    expected:
+      - 2 通りとも `mountView` が同期で `TypeError` を投げ、メッセージに `items`、`group` を含む
+      - '`el` の中身が `前の中身` のまま'
+    test: test_error_when_arguments_invalid
+  - name: 異常系（部品のモジュールを読めない・知らせの枠）
+    summary: ビューの部品のモジュールを読めないと、`el` に知らせの枠を置いて reject する
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 項目の値
+        description: 正常系と同じ
+      - name: Mock
+        description: ビューの部品のモジュールの要求を、配信で 404 に差し替える
+        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で外す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mountView(el, { columns, items, group })
+        M->>M: 部品のモジュールを読めない
+        M->>P: el に知らせの枠を置く
+        M-->>P: reject
+    expected:
+      - '`el` の中に class `mdmark-notice`・`role="status"` の要素があり、題が `この箇所を表示できません`'
+      - 戻り値の Promise が読み込みのエラーで reject する
+    test: test_error_when_module_unavailable
+lead: 使う側のページと拡張のモジュールが、列名と項目の値を渡し、要素の中にボード表示と表形式のビューを描く。文書のビューの印で描くものと同じ見た目と操作になる。
+idempotent: false
+side_effects: '`el` の中身を書き換え、ビューの切り替えと列の絞り込みのイベントを `el` の中に付ける。絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。ビューの部品のモジュールをまだ読んでいなければ読む'
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使う#
+  - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#
+exclusivity: 同じ要素へ 2 回目の `mountView` を呼ぶと、前の `mountView` の `destroy` を先に行う。部品のモジュールを読む間に `destroy` を呼ぶと、読んだ後に描かない
+request:
+  - name: el
+    type: HTMLElement
+    required: true
+    location: argument
+    description: 描く先の要素。中に class `mdmark` の要素を 1 つ置いて、その中に描く
+  - name: opts.columns
+    type: string[]
+    required: true
+    location: argument
+    description: 列名。表形式のビューの列の並びと、ボードの項目に出す値の並びになる
+    constraints: 1 つ以上。空の文字列と重なりを持たない
+    example: '["題", "状態", "担当"]'
+  - name: opts.items
+    type: Record<string, string>[]
+    required: true
+    location: argument
+    description: 項目の値。列名をキーにした文字列の値を持つ。並びは表の行の順
+    constraints: 列名に無いキーは使わない。列名のキーが無い値は空にする
+  - name: opts.group
+    type: string
+    required: false
+    default: なし（ボード表示を持たず、表形式のビューだけを描く）
+    location: argument
+    description: ボード表示で列に分ける列名。文書の印の `group=` に当たる
+    constraints: '`opts.columns` のどれか'
+  - name: opts.default
+    type: '"board" | "table"'
+    required: false
+    default: '`opts.group` があれば `"board"`、無ければ `"table"`'
+    location: argument
+    description: 描いた直後に出すビュー。文書の印の `default=` に当たる
+    constraints: '`opts.group` が無いときは `"table"` だけ'
+  - name: opts.filter
+    type: Record<string, "select" | "text" | "date">
+    required: false
+    default: '`{}`（どの列にも絞り込みを付けない）'
+    location: argument
+    description: 表形式のビューで絞り込みを付ける列と種類。文書の印の `filter=` に当たる
+    constraints: キーは `opts.columns` のどれか
+    example: '{ "担当": "select" }'
+  - name: opts.icons
+    type: Record<string, string>
+    required: false
+    default: '`{}`（既定の対応だけを使う）'
+    location: argument
+    description: ボードの列の見出しの値からアイコンの名前を引く対応。既定の対応に重ね、同じ値は上書きする。文書の印の `icons=` に当たる
+    constraints: アイコンの名前はインターフェース定義『文書を描く』の制約の「ボードの列の見出しのアイコン」の使えるアイコンのどれか
+    example: '{ "未着手": "inbox", "完了": "archive" }'
+request_example: |-
+  ```json
+  {
+    "columns": ["題", "状態", "担当"],
+    "items": [
+      { "題": "配色の変数を洗い出す", "状態": "未着手", "担当": "佐藤" },
+      { "題": "余白の変数を決める", "状態": "進行中", "担当": "鈴木" }
+    ],
+    "group": "状態",
+    "filter": { "担当": "select" }
+  }
+  ```
+response:
+  - name: (Promise の値).destroy
+    type: () => void
+    description: '`el` の中を空にし、ビューの操作と `document` の受け取りを外す'
+    notes: 2 回目以降は何もしない
+response_notes: 戻り値は `Promise<{ destroy }>`。部品のモジュールを読み、ビューを描いてから解決する。引数の誤りは Promise を返さずに同期で TypeError を投げる
+exceptions:
+  - name: なし（正常終了）
+    condition: ビューを描き、`{ destroy }` で解決する
+  - name: TypeError
+    condition: '`el` が HTMLElement でない、`opts.columns` が空か文字列の配列でないか重なりを持つ、`opts.items` が配列でないか要素がオブジェクトでない、`opts.group`・`opts.filter` の列名が `opts.columns` に無い、`opts.filter` の種類が `select`・`text`・`date` でない、`opts.default` が `board`・`table` でないか `opts.group` が無いのに `board`、`opts.icons` に使えないアイコンの名前がある'
+    notes: 同期で投げ、`el` を書き換えない。メッセージに誤った引数の名前を含める
+  - name: なし（知らせの枠・読み込みの失敗）
+    condition: ビューの部品のモジュールを読めない
+    notes: '`el` の中に知らせの枠を置いて、Promise を元のエラーで reject する。知らせの枠の形はインターフェース定義『文書を描く』の制約の「知らせの枠」で、題は `この箇所を表示できません`'
+constraints:
+  - item: 描くビュー
+    constraint: インターフェース定義『文書を描く』の制約の「ビューの操作」「ボードの列の見出しのアイコン」と同じ要素と操作にする。列の絞り込みは『文書を描く』の制約の「表の操作」の絞り込みと同じ
+    notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
+  - item: 描く先
+    constraint: '`el` の中を空にして、class `mdmark` の要素を 1 つ置き、その中にビューを描く。文書の印で描いたビューと同じ CSS が当たる'
+  - item: 値の出し方
+    constraint: 列名と項目の値は文字として出し、HTML として解釈しない
+  - item: 部品のモジュールの読み込み
+    constraint: ビューの部品のモジュールは、初めて `mountView` を呼んだときか、文書にビューの印があるときに 1 回だけ読む
+    notes: 別の配布ファイルに分けるかはモジュール構成設計で決める（計画書の `未確定`）。どちらでも戻り値は Promise
+  - item: 拡張のモジュールからの呼び出し
+    constraint: 拡張の `draw(slot, value)` の中で `mountView(slot, …)` を呼んで待つと、印の場所に描く。`mount` の `update`・`destroy` で印の場所を片付けるとき、その中のビューの `destroy` も行う
+    notes: 拡張の形はインターフェース定義『拡張を登録する』
+  - item: 型の配布
+    constraint: '`mountView`・`MdmarkViewOptions`・`MdmarkViewHandle` を `dist/index.d.ts` に書き出す'
