@@ -21,7 +21,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-20'
+      date: '2026-10-21'
       result: 合格
   - name: 通信
     english_name: network
@@ -48,7 +48,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-20'
+      date: '2026-10-21'
       result: 合格
   - name: CLI が動く Node の版
     english_name: cli_node_version
@@ -65,5 +65,5 @@ requirements:
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0
-      date: '2026-10-20'
+      date: '2026-10-22'
       result: 合格

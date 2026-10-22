@@ -33,6 +33,8 @@ export type MdmarkDiagramNode = {
     sub?: string;
     /** 入力・処理・出力。持つ箱に印を付ける */
     io?: MdmarkDiagramIo;
+    /** 箱の右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+    hint?: string;
 };
 /** フロー図の線 */
 export type MdmarkDiagramWire = {
@@ -113,31 +115,44 @@ export type MdmarkSequenceDefinition = {
         label: string;
     };
 };
+/** グラフの種類 */
+export type MdmarkChartType = "line" | "bar" | "pie" | "scatter";
+/** 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くとデータから切る */
+export type MdmarkChartYAxis = {
+    label: string;
+    min?: number;
+    max?: number;
+    step?: number;
+};
 /** グラフの定義 */
 export type MdmarkChartDefinition = {
+    /** グラフの種類。省くと `line` */
+    type?: MdmarkChartType;
     /** 題名 */
     title: string;
     /** 範囲 */
     scope: string;
     /** 更新日 */
     updated: string;
-    /** 横の軸 */
-    x: {
+    /** 横の軸。`line`・`bar` は `ticks` が必須、`scatter` は数値の軸で `ticks` を持たない。`pie` は持たない */
+    x?: {
         label: string;
-        ticks: string[];
+        ticks?: string[];
     };
-    /** 縦の軸 */
-    y: {
-        label: string;
-        min: number;
-        max: number;
-        step: number;
-    };
-    /** 系列。1〜4 つで、`points` の数は `x.ticks` と同じ */
-    series: Array<{
+    /** 縦の軸。`pie` は持たない */
+    y?: MdmarkChartYAxis;
+    /** 系列。`pie` 以外で 1〜4 つ。`line`・`bar` の `points` の数は `x.ticks` と同じ、`scatter` は `[x, y]` の組 */
+    series?: Array<{
         name: string;
-        points: number[];
+        points: number[] | Array<[number, number]>;
     }>;
+    /** `pie` の項目。1〜4 つで、`value` は 0 より大きい */
+    items?: Array<{
+        name: string;
+        value: number;
+    }>;
+    /** `pie` の凡例の値に付ける単位 */
+    unit?: string;
 };
 /** 操作できる部品の定義 */
 export type MdmarkParamDefinition = {
@@ -152,8 +167,22 @@ export type MdmarkParamDefinition = {
         step: number;
         value: number;
     };
-    /** グラフの題と軸 */
-    chart: Omit<MdmarkChartDefinition, "series">;
+    /** グラフの題と軸（折れ線） */
+    chart: {
+        title: string;
+        scope: string;
+        updated: string;
+        x: {
+            label: string;
+            ticks: string[];
+        };
+        y: {
+            label: string;
+            min: number;
+            max: number;
+            step: number;
+        };
+    };
     /** スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ */
     table: Record<string, number[]>;
 };
