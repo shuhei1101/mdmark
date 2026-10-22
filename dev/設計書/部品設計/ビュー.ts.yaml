@@ -1,0 +1,239 @@
+title: "ビュー"
+implementation: "src/parts/view.ts#renderView"
+story: "Parts/View"
+states:
+  - name: Board
+    description: ボードで開いた（既定）。状態の列の値ごとの列に、題と残りの列を並べる
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: id
+        value: story-view
+  - name: Table
+    description: 表形式で開いた（`default=table`）。担当の列にだけ絞り込みのボタンを出す
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: mode
+        value: table
+      - name: filters
+        value: '[{"column":2,"kind":"select"}]'
+      - name: id
+        value: story-view
+  - name: TableFilteredSelect
+    description: 表形式で担当を `佐藤` に絞り込んだ
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: mode
+        value: table
+      - name: filters
+        value: '[{"column":2,"kind":"select"}]'
+      - name: filterValues
+        value: '[{"column":2,"values":["佐藤"]}]'
+      - name: id
+        value: story-view
+  - name: BoardAfterFilter
+    description: 表形式で担当を `佐藤` に絞り込んだままボードに切り替えた。ボードは全ての項目を出す
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: filters
+        value: '[{"column":2,"kind":"select"}]'
+      - name: filterValues
+        value: '[{"column":2,"values":["佐藤"]}]'
+      - name: id
+        value: story-view
+  - name: TableFilteredText
+    description: 表形式で題を文字 `表` で絞り込み、ドロワーを開いた
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: mode
+        value: table
+      - name: filters
+        value: '[{"column":0,"kind":"text"}]'
+      - name: filterValues
+        value: '[{"column":0,"text":"表"}]'
+      - name: openFilter
+        value: '0'
+      - name: id
+        value: story-view
+  - name: TableNoMatch
+    description: 表形式で題を文字 `山田` で絞り込み、一致する行が無い
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: mode
+        value: table
+      - name: filters
+        value: '[{"column":0,"kind":"text"}]'
+      - name: filterValues
+        value: '[{"column":0,"text":"山田"}]'
+      - name: id
+        value: story-view
+  - name: DefaultIcons
+    description: 既定のアイコンの 5 つの値（未着手・進行中・保留・完了・中止）の列
+    args:
+      - name: columns
+        value: '["題","状態"]'
+      - name: items
+        value: '[["項目 1","未着手"],["項目 2","進行中"],["項目 3","保留"],["項目 4","完了"],["項目 5","中止"]]'
+      - name: group
+        value: 状態
+      - name: id
+        value: story-view
+  - name: OverriddenIcons
+    description: '`icons=未着手:inbox,完了:archive` でアイコンを上書きした'
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"],["アイコンを決める","完了","高橋"],["印刷を直す","進行中",""]]'
+      - name: group
+        value: 状態
+      - name: icons
+        value: '{"未着手":"inbox","完了":"archive"}'
+      - name: id
+        value: story-view
+  - name: ManyColumns
+    description: 列が多く、ボードの中で横にスクロールする。既定の対応に無い値は `circle`
+    args:
+      - name: columns
+        value: '["題","段階"]'
+      - name: items
+        value: '[["項目 1","受付"],["項目 2","設計"],["項目 3","実装"],["項目 4","テスト"],["項目 5","レビュー"],["項目 6","リリース"],["項目 7","運用"]]'
+      - name: group
+        value: 段階
+      - name: id
+        value: story-view
+  - name: LongTitleEmptyValue
+    description: 長い題と空の値。空の値の列は項目に出さない
+    args:
+      - name: columns
+        value: '["題","状態","担当","期限"]'
+      - name: items
+        value: '[["使う側のページが自分の JavaScript からビューを描き、拡張のモジュールからも同じ関数を呼べるようにして、文書の印と同じ見た目で出す","進行中","佐藤",""],["短い題","進行中","","2026-11-01"]]'
+      - name: group
+        value: 状態
+      - name: id
+        value: story-view
+  - name: BoardDisabled
+    description: '`group=` の列が表に無く、ボードのボタンを押せない。表形式を出す'
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"]]'
+      - name: group
+        value: 段階
+      - name: boardDisabled
+        value: story-warning
+      - name: id
+        value: story-view
+  - name: TableOnly
+    description: '`group` が無く、切り替えを置かずに表形式だけを出す'
+    args:
+      - name: columns
+        value: '["題","状態","担当"]'
+      - name: items
+        value: '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"]]'
+      - name: id
+        value: story-view
+lead: 項目の表を、`group` の列の値ごとに並べたボードと、記法の表と同じ表形式で切り替えて出す。HTML 文字列を返し、ブラウザと Node で同じ出力になる。切り替え・並べ替え・絞り込みは `mount` と `mountView` の操作が付ける。
+args:
+  - name: columns
+    type: 配列
+    required: true
+    description: 列名。先頭の列の値をボードの項目の題にする。文字として出し、HTML として解釈しない
+  - name: items
+    type: 配列
+    required: true
+    description: 項目ごとの値の配列（`columns` と同じ並び）。文字として出し、HTML として解釈しない
+  - name: group
+    type: 文字列
+    default: なし（ボードを持たない）
+    description: ボードで分ける列名。無いときは切り替えを置かず、表形式だけを出す
+  - name: mode
+    type: 列挙
+    default: board
+    choices: '`board`・`table`'
+    enabled_when: '`group` があり `boardDisabled` が空のとき'
+    description: 出しているビュー。もう片方は `hidden` にし、切り替えのボタンの `aria-pressed` に入れる
+  - name: filters
+    type: オブジェクトの配列
+    default: '[]'
+    description: 表形式で絞り込みを付ける列（`{ column, kind }`。`kind` は `select`・`text`・`date`）。表の部品の `filters` へそのまま渡す
+  - name: filterValues
+    type: オブジェクトの配列
+    default: '[]'
+    description: 表形式に当てている絞り込み。表の部品の `filterValues` へそのまま渡す。ボードには当てない
+  - name: openFilter
+    type: 整数
+    default: なし（ドロワーを閉じる）
+    description: 開いた絞り込みのドロワーの列の位置。表の部品の `openFilter` へそのまま渡す
+  - name: icons
+    type: オブジェクト
+    default: '{}'
+    description: ボードの列の見出しのアイコンを値ごとに上書きする対応（値 → アイコンの名前）。既定の対応（`未着手` → `circle-dashed`・`進行中` → `circle-dot`・`保留` → `circle-pause`・`完了` → `circle-check`・`中止` → `circle-x`、対応に無い値は `circle`）に重ねる。使えるアイコンは既定の 6 つと `inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban`
+  - name: boardDisabled
+    type: 文字列
+    default: '""'
+    enabled_when: '`group` があるとき'
+    description: ボードにできない理由の書き方の警告の `id`。空でないとき、ボードのボタンを `disabled` にして `aria-describedby` でこの `id` を指し、表形式を出す
+  - name: id
+    type: 文字列
+    required: true
+    description: ビューの要素の `id` の頭。絞り込みのドロワーの `id`（`{id}-filter-{列の位置}`）に使う。描くごとに文書の中で一意にする
+events:
+  - name: 切り替える
+    when: 切り替えの「ボード」「表」のボタンを押す
+    value: ボタンの `data-mode` と `aria-pressed`
+    description: '`mount`・`mountView` が押したビューを出し、もう片方を `hidden` にする。表形式の絞り込みは隠している間も残す'
+css_properties:
+  - name: --mdmark-view-column-width
+    syntax: <length>
+    default: 12rem
+    description: ボードの列の最小の幅。描く先の幅に収まらない列はボードの中で横にスクロールする
+uses:
+  - component: dev/設計書/部品設計/表.ts#
+    how: 表形式。`kind` は `data`、`features` は `sort` と、`filters` があれば `filter`
+accessibility:
+  - 切り替えは `role="group"`・`aria-label="ビューの表示"` の中の `button` で、選んだボタンを `aria-pressed="true"` で示す。選んだボタンは濃い地で塗り、色だけに頼らない
+  - ボードは `role="group"`・`aria-label="ボード"`・`tabindex="0"` で、キーボードで横にスクロールできる
+  - ボードの列は値を `aria-label` に持つ `ul` で、項目を `li` にする。列の見出しのアイコンは `aria-hidden` で、読み上げは値と項目の数だけにする
+  - 項目の列名と値は `dl` の `dt`・`dd` で組む
+  - ボードにできないとき、ボードのボタンは `disabled` で、`aria-describedby` で理由の書き方の警告を指す
+  - 表形式のアクセシビリティは表の部品のとおり
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ビューの操作]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ボードの列の見出しのアイコン]
+  - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#
+status: planned
+notes:
+  HTML: '`<div class="mdmark-view"><div class="mdmark-view-switch" role="group" aria-label="ビューの表示"><button class="mdmark-view-switch-item" type="button" data-mode="board" aria-pressed="true">{board のアイコン}ボード</button><button class="mdmark-view-switch-item" type="button" data-mode="table" aria-pressed="false">{table のアイコン}表</button></div><div class="mdmark-view-board" role="group" aria-label="ボード" tabindex="0"><div class="mdmark-view-column"><p class="mdmark-view-column-head">{値のアイコン}<span class="mdmark-view-column-name">{値}</span><span class="mdmark-view-column-count">{項目の数}</span></p><ul class="mdmark-view-cards" aria-label="{値}"><li class="mdmark-view-card"><p class="mdmark-view-card-title">{先頭の列の値}</p><dl class="mdmark-view-fields"><div><dt>{列名}</dt><dd>{値}</dd></div></dl></li></ul></div></div><div class="mdmark-view-table" hidden>{表の部品}</div></div>`。ボードの列は値が表に出た順、項目は表の行の順。`group` の列と空の値は項目に出さない。見た目は確認ログの決定（ビューの切り替えとボードの見た目・ボードの列の見出しの既定のアイコン）。モックは `dev/mock/components/view/`'
+  印刷: 今のビューを出し、切り替えと絞り込みのボタンを出さない

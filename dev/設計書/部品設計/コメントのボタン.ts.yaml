@@ -1,0 +1,20 @@
+title: "コメントのボタン"
+implementation: "src/parts/comment.ts#renderCommentButton"
+story: "Parts/CommentButton"
+states:
+  - name: Default
+    description: 文字を選んだときに出したボタン
+lead: 本文の文字を選んだときに、選んだ文字の終わりの下に出す「コメント」のボタン。HTML 文字列を返す。出す・置く・押したときの入力欄の開き方は `mount` と `mountComments` の操作が付ける。
+events:
+  - name: 入力欄を開く
+    when: ボタンを押す
+    description: '`mount`・`mountComments` が選んだ文字の下にコメントの入力欄を開き、ボタンを隠す'
+accessibility:
+  - '`button` で、読み上げの名前は表示の文字 `コメント`。アイコンは `aria-hidden`'
+  - DOM は選んだ文字のブロックの直後に置き、選んだ後の Tab で届く
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+status: planned
+notes:
+  HTML: '`<button class="mdmark-comment-add" type="button">{message-square-plus のアイコン}コメント</button>`。モックは `dev/mock/components/comment/`'
+  印刷: 出さない
