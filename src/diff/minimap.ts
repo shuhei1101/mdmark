@@ -215,6 +215,10 @@ function createEntry(target: HTMLElement): Entry {
     signal,
   });
   window.addEventListener("resize", place, { signal });
+  // 送り先が画面でないとき、送り先の外（画面や祖先の枠）のスクロールでも送り先の位置が変わるため、捕捉の段で受けて帯を置き直す
+  if (!page) {
+    document.addEventListener("scroll", placeBand, { capture: true, signal });
+  }
   window.matchMedia(DARK_QUERY).addEventListener("change", place, { signal });
   // 差分の行の大きさと送り先の大きさが変わったら置き直す
   const observer = new ResizeObserver(place);
