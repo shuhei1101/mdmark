@@ -15,6 +15,8 @@
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返す |
 | [索引を点検する](#索引を点検する) | `checkIndex(input)` | 索引と文書のずれの一覧を返す |
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 使う側が自分の印と、その印を描くモジュールの読み方を登録する |
+| [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
+| [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 使う側の要素の中の選んだ箇所に、コメントを付けられるようにする |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 見た目の値を持つ変数。使う側が上書きする |
 
 ## 版を返す
@@ -75,6 +77,11 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 `opts.diffSource` を渡すと、文書の題の後ろに「変更を見る」のボタンを付け、押すと 2 つのリビジョンの差分を出す。
 差分の操作は `mount` が付け、`update` で閉じ、`destroy` で外す。
 仕組みは [差分を表示する仕組み](../はじめに/コアコンセプト/差分を表示する仕組み.md)、書き方は [差分を表示する](../使い方/導入/差分を表示する.md)。
+ビューの印（[ビュー](./記法.md#ビュー)）があると、ボード表示と表形式の切り替えと、表形式の列の絞り込みも付ける。
+`opts.commentStore` と `opts.docId` を渡して機能 `comments` をオンにすると、本文の選んだ箇所にコメントを付けられる。
+コメントのボタン・入力欄・印・吹き出しの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
+書き方は [ビューとコメントを使う](../使い方/書く/ビューとコメントを使う.md)。
+ビューとコメントの部品のモジュール（`dist/view.js`・`dist/comments.js`）は、ビューの印のある文書とコメントの機能がオンのときにだけ、`dist/index.js` の隣から読む。
 
 ### リクエスト
 
@@ -92,9 +99,10 @@ handle.destroy();
 | `opts.markdown` | 必須 | 描く Markdown |
 | `opts.config` | 任意 | 使う側のサーバーが `mdmark.config.yaml` を読んだオブジェクト。省いたキーには既定を当てる。キーは [設定](./設定.md) |
 | `opts.index` | 任意 | 使う側のサーバーが、設定の `index` のパスの索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて使う。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
-| `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う |
+| `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を渡すときは必須で、コメントの読み書きの関数に渡す対象の ID にもなる |
 | `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
+| `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
 
 `opts.diffSource` の形。
 
@@ -115,6 +123,27 @@ handle.destroy();
 型 `DiffSource` と `DiffRevision` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 `revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う。
 
+`opts.commentStore` の形。
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| `load({ docId })` | `(target: { docId: string }) => Promise<MdmarkComment[]>` | その文書に付いたコメントを返す。描くたび（`mount`・`update`）に 1 回呼ぶ |
+| `save({ docId, comment })` | `(target: { docId: string; comment: MdmarkCommentDraft }) => Promise<MdmarkComment>` | 下書きのコメントを保存し、`id` を加えたコメントを返す。読む人が「コメントを保存」を押すたびに呼ぶ |
+
+`MdmarkCommentDraft` の形。
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| `quote` | `string` | 選んだ文字 |
+| `prefix` | `string` | 選んだ文字の前の最大 32 文字 |
+| `suffix` | `string` | 選んだ文字の後の最大 32 文字 |
+| `body` | `string` | コメントの本文 |
+
+`MdmarkComment` は、`MdmarkCommentDraft` に空でない文字列の `id` を加えたもの。
+型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+`load` が配列でない・要素の形が合わないとき、`save` が形の合わない値を返すときは、reject と同じに扱う。
+mdmark はコメントを保存せず、保存先は使う側の関数に任せる。
+
 同じ要素へもう一度 `mount` を呼ぶと、前の描画を片付けてから描く。
 前の戻り値の `update` は何もしなくなる。
 
@@ -123,14 +152,21 @@ handle.destroy();
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `update` | `(markdown: string) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない |
-| `destroy` | `() => void` | `el` の中を空にして class `mdmark` を外し、記法の操作と、印刷・`hashchange`・`document` の受け取りを外す。2 回目以降は何もしない |
+| `destroy` | `() => void` | `el` の中を空にして class `mdmark` を外し、記法の操作と、印刷・`hashchange`・`document` の受け取りを外す。コメントのボタン・入力欄・吹き出しも外す。2 回目以降は何もしない |
 
 ### エラー
 
-`opts.diffSource` を渡して `opts.docId` を渡さないときだけ、何も描かずに `TypeError` を投げる。
+`opts.diffSource` を渡して `opts.docId` を渡さないとき、`opts.commentStore` を渡して `opts.docId` を渡さないか `opts.commentStore` が `load`・`save` の関数を持たないときだけ、何も描かずに `TypeError` を投げる。
+メッセージに `docId` か `commentStore` を含める。
 それ以外は例外を投げない。
 取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したときは、差分の場所を [知らせの枠](./用語集.md) に替え、文書の本文は描いたまま残す。
 取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
+コメントの `save` が reject するか、形に合わない値を返したときは、入力欄に書いた本文を残して `role="alert"` の知らせを出し、印を付けない。
+`load` が reject するか、形に合わない値を返したときは、印を付けずに続け、新しいコメントは付けられる。
+どちらも読み書きの関数の名前・文書の `id`・元のエラーが `console.error` に出る。
+`comments` がオンで `opts.commentStore` を渡さないときは、コメントのボタンを出さず、読み書きの関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す。
+ビューかコメントの部品のモジュールを読めないときは、ビューの印の場所を `render` が出した表のまま残し、コメントはボタンを出さず `load` も呼ばない。
+読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーが `console.error` に出る。
 外部ライブラリを読めない印の場所は、その場所だけを [知らせの枠](./用語集.md) に替え、ほかは描く。
 読めなかった印の名前・URL・元のエラーが `console.error` に出る。
 記法の印に読めない指定がある箇所は、読めた指定で描き、その箇所の前に [書き方の警告](./記法.md#書き方の警告) を置く。
@@ -304,7 +340,7 @@ registerExtension({
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `extension.name` | 必須 | 拡張の名前。空にできない。知らせの枠・書き方の警告・`console.error` に出す |
-| `extension.directive` | 必須 | 拡張の印の名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`）と、登録済みの拡張の `directive` は使えない。設定の `libraries` や図の部品の印（`flow`・`sequence`・`chart`・`param`）に同じ名前があるときは、拡張を優先する |
+| `extension.directive` | 必須 | 拡張の印の名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`・`view`）と、登録済みの拡張の `directive` は使えない。設定の `libraries` や図の部品の印（`flow`・`sequence`・`chart`・`param`）に同じ名前があるときは、拡張を優先する |
 | `extension.load` | 必須 | 拡張のモジュールを読む関数。文書に印があるときだけ、`mount` と `update` が描くごとに 1 回呼ぶ。同じ文書の同じ拡張の印では 1 回だけ呼ぶ |
 | `extension.schema` | 任意 | 印の引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま渡せる。省くと検査しない |
 
@@ -313,6 +349,10 @@ registerExtension({
 `キー=値` でない引数を書いた順に `args`、`キー=値` の引数を `keys` に入れる。
 印を範囲（`<!-- {directive} -->` 〜 `<!-- /{directive} -->`）で書き、範囲に言語 `json` のコードブロックを 1 つ置くと、その JSON を読んだ値を `definition` に入れる。範囲が無い印は `definition` を持たない。
 `draw` は同期でも `Promise` を返す非同期でもよい。
+`draw` の中で、配布物が出す [`mountView`](#ビューを描く) と [`mountComments`](#コメントを付ける) を `slot` に対して呼んで、印の場所に mdmark の部品を描ける。
+`draw` が部品の `Promise` を待つと、`mount` はその後に印の場所を描き終えたものとして扱う。
+`update`・`destroy` で印の場所を片付けるとき、その中の部品の `destroy` も行う。
+手順は [部品をJavaScriptから使う](../使い方/カスタマイズ/部品をJavaScriptから使う.md)。
 
 `registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` と、図の部品の定義の型 `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で点検できる（[固有の部品とCSSを当てる](../使い方/図を描く/固有の部品とCSSを当てる.md)）。
@@ -342,6 +382,99 @@ JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で�
 | `schema` の `validate` が例外を投げるか拒否される | [知らせの枠](./用語集.md)。`load` を呼ばない。拡張の名前と元のエラーが `console.error` に出る |
 
 `render` は拡張の印を読み込み中の枠に置き換えるだけで、`load` も検査も呼ばない。
+
+## ビューを描く
+
+使う側のページと拡張のモジュールが、列名と項目の値を渡し、要素の中にボード表示と表形式のビューを描く。
+文書のビューの印（[ビュー](./記法.md#ビュー)）で描くものと同じ見た目と操作になる。
+手順は [部品をJavaScriptから使う](../使い方/カスタマイズ/部品をJavaScriptから使う.md)。
+
+### リクエスト
+
+```js
+import { mountView } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const handle = await mountView(document.querySelector("#tasks"), {
+  columns: ["題", "状態", "担当"],
+  items: [{ 題: "配色の変数を洗い出す", 状態: "未着手", 担当: "佐藤" }],
+  group: "状態",
+  filter: { 担当: "select" },
+});
+handle.destroy();
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `el` | 必須 | 描く先の要素。中身を空にして、class `mdmark` の要素を 1 つ置き、その中に描く |
+| `opts.columns` | 必須 | 列名の配列。表形式のビューの列の並びと、ボードの項目に出す値の並びになる。1 つ以上で、空の文字列と重なりを持たない |
+| `opts.items` | 必須 | 項目の配列。列名をキーにした文字列の値を持つオブジェクトで、並びは表の行の順。列名に無いキーは使わず、列名のキーが無い値は空にする |
+| `opts.group` | 任意 | ボード表示で列に分ける列名。`opts.columns` のどれか。省くと、ボード表示を持たず表形式のビューだけを描く。印の `group=` に当たる |
+| `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`opts.group` があれば `"board"`、無ければ `"table"`。`opts.group` が無いときは `"table"` だけ。印の `default=` に当たる |
+| `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列と種類（`select`・`text`・`date`）のオブジェクト。キーは `opts.columns` のどれか。省くと、どの列にも付けない。印の `filter=` に当たる |
+| `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を引くオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使えるアイコンは [ビュー](./記法.md#ビュー) のとおり。印の `icons=` に当たる |
+
+列名と項目の値は文字として出し、HTML として解釈しない。
+同じ要素へもう一度 `mountView` を呼ぶと、前の `mountView` の `destroy` を先に行う。
+ビューの部品のモジュール（`dist/view.js`）は、初めて呼んだときか文書にビューの印があるときに 1 回だけ、`dist/index.js` の隣から読む。
+型 `mountView`・`MdmarkViewOptions`・`MdmarkViewHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+
+### レスポンス
+
+| 型 | 説明 |
+| --- | --- |
+| `Promise<{ destroy: () => void }>` | 部品のモジュールを読み、ビューを描いてから解決する。`destroy` は `el` の中を空にし、ビューの操作と、絞り込みのドロワーを開いている間の `document` の受け取りを外す。2 回目以降は何もしない |
+
+### エラー
+
+| 起きたこと | 動き |
+| --- | --- |
+| `el` が要素でない、`opts.columns` が空か文字列の配列でないか重なりを持つ、`opts.items` が配列でないか要素がオブジェクトでない、`opts.group`・`opts.filter` の列名が `opts.columns` に無い、`opts.filter` の種類が `select`・`text`・`date` でない、`opts.default` が `board`・`table` でないか `opts.group` が無いのに `board`、`opts.icons` に使えないアイコンの名前がある | `TypeError` を同期で投げる（`Promise` は返さない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
+| ビューの部品のモジュールを読めない | `el` の中に題 `この箇所を表示できません` の [知らせの枠](./用語集.md) を置き、`Promise` を元のエラーで reject する |
+
+## コメントを付ける
+
+使う側のページが、自分で書いた要素とコメントの読み書きの関数を渡し、要素の中の選んだ箇所にコメントを付けられるようにする。
+`mount` で描いた文書のコメントと同じ見た目と操作になる。
+手順は [部品をJavaScriptから使う](../使い方/カスタマイズ/部品をJavaScriptから使う.md)。
+
+### リクエスト
+
+```js
+import { mountComments } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const handle = await mountComments(document.querySelector("#panel"), {
+  docId: "panel-setup",
+  store: { load, save },
+});
+handle.destroy();
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `el` | 必須 | コメントを付けられる範囲の要素。中の文字を選ぶとコメントのボタンを出す |
+| `opts.store` | 必須 | コメントの読み書きの関数（`MdmarkCommentStore`）。形は [文書を描く](#文書を描く) の `opts.commentStore` と同じ |
+| `opts.docId` | 必須 | 読み書きの関数に渡す、コメントを付ける対象の ID。空でない文字列 |
+
+`opts.store.load` を 1 回呼び、読んだコメントの箇所を印で包む。`el` の文字は変えない。
+コメントのボタン・入力欄・吹き出しは `document.body` に置く。
+同じ要素へもう一度 `mountComments` を呼ぶと、前の `mountComments` の `destroy` を先に行う。
+コメントの部品のモジュール（`dist/comments.js`）は、初めて呼んだときか `mount` でコメントの機能がオンになったときに 1 回だけ、`dist/index.js` の隣から読む。
+型 `mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+
+### レスポンス
+
+| 型 | 説明 |
+| --- | --- |
+| `Promise<{ destroy: () => void }>` | `load` の結果で印を付けてから解決する。`destroy` は印を外して `el` の文字を呼ぶ前の並びに戻し、コメントのボタン・入力欄・吹き出しと `document` の受け取りを外す。2 回目以降は何もしない。保存を待つ間に `destroy` を呼ぶと、保存の結果で印を付けない |
+
+### エラー
+
+| 起きたこと | 動き |
+| --- | --- |
+| `el` が要素でない、`opts.store` が `load`・`save` の関数を持たない、`opts.docId` が空か文字列でない | `TypeError` を同期で投げる（`Promise` は返さない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
+| `load` が reject する、または返した値がコメントの形に合わない | 例外を投げず、印を付けずに解決する。新しいコメントは付けられる。`load`・`docId`・元のエラーか合わなかった値を `console.error` に出す |
+| `save` が reject する、または返した値がコメントの形に合わない | 例外を投げず、入力欄に書いた本文を残して知らせを出し、印を付けない。`save`・`docId`・元のエラーを `console.error` に出す |
+| コメントの部品のモジュールを読めない | `el` を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで reject する |
 
 ## テーマの CSS 変数
 
@@ -386,6 +519,7 @@ JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で�
 | `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の高さの上限。全体が収まる倍率はこの高さと枠の幅に収める |
 | `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |
 | `--mdmark-diff-minimap-z-index` | `10` | 差分のミニマップの帯の重なり順。使う側のページの固定のヘッダーなどに隠れるときに上げる |
+| `--mdmark-view-column-width` | `12rem` | ビューのボードの列の最小の幅。描く先の幅に収まらない列はボードの中で横にスクロールする |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |
@@ -433,6 +567,9 @@ JavaScript で書く拡張は、この型定義に対して `tsc --noEmit` で�
 | `--mdmark-color-diff-add-bg` | `#dafbe1` | `#12261e` | 差分の追加した行の背景 |
 | `--mdmark-color-diff-add-word` | `#aceebb` | `#1a4a29` | 差分の追加した行で変わった語の背景 |
 | `--mdmark-color-diff-add-sign` | `#1a7f37` | `#3fb950` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色 |
+| `--mdmark-color-comment-bg` | `#fbefff` | `#2e2147` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
+| `--mdmark-color-comment-line` | `#8250df` | `#ab7df8` | コメントの印の下線の色 |
+| `--mdmark-color-error` | `#d1242f` | `#f85149` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |
 
 <!-- /table -->
 
