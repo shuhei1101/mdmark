@@ -1,0 +1,22 @@
+/* 表の機能の追加分の印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときの表の機能 */
+@layer mdmark {
+  .mdmark {
+    /* 紙では押せない操作（列の表示・コピーのボタン、列の表示のメニュー、行へのリンクの印）: 出さない。件数は出す */
+    :is(.mdmark-table-tools, .mdmark-columns-menu, .mdmark-row-anchor) {
+      display: none;
+    }
+
+    /* 集計の行: 紙では縦にスクロールしないので下端に留めない */
+    .mdmark-table tfoot td {
+      position: static;
+    }
+
+    /* URL の #ID が指していた行: 紙では強調を外す */
+    .mdmark-table tbody tr.is-target > td {
+      background: transparent;
+    }
+  }
+}

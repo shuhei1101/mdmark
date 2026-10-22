@@ -26,7 +26,7 @@
 | [sequence-diagram](./sequence-diagram/index.html) | 相手を左から右、メッセージを時刻の順に並べ、繰り返しの戻りを持つシーケンス図 |
 | [steps](./steps/index.html) | 番号と線でつないだ手順 |
 | [syntax-warning](./syntax-warning/index.html) | 読めない指定とその直し方を書く人へ知らせる書き方の警告 |
-| [table](./table/index.html) | 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表 |
+| [table](./table/index.html) | 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・集計の行・表のコピー・行へのリンク |
 | [tabs](./tabs/index.html) | 見出しの文字をタブ名にしたタブ |
 | [term-tooltip](./term-tooltip/index.html) | 用語と文書の別名の破線の下線と、ポインター・フォーカスで開く用語と関連文書のツールチップ |
 | [toc](./toc/index.html) | 見出しを階層どおりに入れ子にした目次 |

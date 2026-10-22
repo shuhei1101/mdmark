@@ -61,6 +61,23 @@ test("test_attach_sections_when_hash", async () => {
   });
 });
 
+// まとめた HTML の # の形でも閉じた節を開く（正常系）
+test("test_attach_sections_when_bundle_hash", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { root } = createRoot(
+    "## 親\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const closed = sectionBody(root, "親");
+  // 実行
+  location.hash = "#/a.md#%E6%B3%A8%E6%84%8F";
+  // 検証
+  await vi.waitFor(() => {
+    expect(closed.hasAttribute("hidden")).toBe(false);
+  });
+});
+
 // 行の詳細を閉じ、押すと開く（正常系）
 test("test_attach_sections_when_row_detail", async () => {
   // 準備

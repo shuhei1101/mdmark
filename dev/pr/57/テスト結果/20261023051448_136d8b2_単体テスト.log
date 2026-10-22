@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-table-count-columns-summary-copy-row-link
+
+
+ Test Files  100 passed (100)
+      Tests  477 passed (477)
+   Start at  05:17:58
+   Duration  34.33s (worker 75%, tests 12%, import 10%, transform 2%)
+

@@ -120,6 +120,9 @@ afterEach(() => {
   }
   localStorage.clear();
   vi.restoreAllMocks();
+  vi.useRealTimers();
+  Reflect.deleteProperty(navigator, "clipboard");
+  history.replaceState(null, "", location.pathname);
 });
 
 // 要素の中に Markdown を HTML として描く（正常系）
@@ -499,6 +502,306 @@ test("test_normal_when_table_sorted_and_filtered", async () => {
   );
   expect(drawer.hasAttribute("hidden")).toBe(true);
   expect(filterButton.getAttribute("aria-expanded")).toBe("false");
+});
+
+/** 表の本文の行の指定した列のセル（隠れた行も含む）と、その列の見出し・集計のセルを返す */
+function columnCells(el: Element, column: number): HTMLElement[] {
+  const head = el.querySelectorAll<HTMLElement>("thead th")[column];
+  const body = [...el.querySelectorAll<HTMLElement>("tbody tr")]
+    .filter(
+      (row) =>
+        !row.classList.contains("mdmark-row-detail") &&
+        !row.classList.contains("mdmark-table-empty"),
+    )
+    .map((row) => row.querySelectorAll<HTMLElement>("td")[column]);
+  const total = el.querySelectorAll<HTMLElement>("tfoot td")[column];
+  return [head, ...body, total].filter(
+    (cell): cell is HTMLElement => cell !== undefined,
+  );
+}
+
+/** 表の絞り込みのボタンを押して開き、含む文字の欄に文字を入れる */
+function inputFilterText(table: Element, text: string): void {
+  find<HTMLButtonElement>(table, "button.mdmark-filter").click();
+  const input = find<HTMLInputElement>(table, ".mdmark-filter-drawer input");
+  input.value = text;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+/** 集計の行のセルの文字を、空白を除いて左から並べて返す */
+function totalTexts(el: Element): string[] {
+  return [...el.querySelectorAll("tfoot td")].map((cell) =>
+    (cell.textContent ?? "").replace(/\s+/g, ""),
+  );
+}
+
+/** `navigator.clipboard.writeText` を差し替える */
+function stubClipboard(writeText: (text: string) => Promise<void>): void {
+  Object.defineProperty(navigator, "clipboard", {
+    value: { writeText },
+    configurable: true,
+  });
+}
+
+// 絞り込みに合わせて件数を書き換え、列の表示のメニューで列を隠して既定に戻す（正常系）
+test("test_normal_when_table_counted_and_columns_toggled", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "<!-- table: data +count +columns hide=説明 filter=名前:text -->",
+      "",
+      "| 名前 | 説明 | 更新日 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 2026-10-01 |",
+      "| みかん | 印刷を直す | 2026-10-10 |",
+      "| りんご飴 | 描画の崩れを直す | 2026-10-20 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const count = find<HTMLElement>(el, ".mdmark-table-count");
+  const hiddenOf = (column: number): boolean[] =>
+    columnCells(el, column).map((cell) => cell.hasAttribute("hidden"));
+  // 実行・検証: 描いた直後
+  expect(count.getAttribute("aria-live")).toBe("polite");
+  expect(count.textContent).toContain("3 / 3 件");
+  expect(hiddenOf(1).every(Boolean)).toBe(true);
+  // 実行・検証: 「りんご」で絞り込む
+  inputFilterText(table, "りんご");
+  expect(count.textContent).toContain("2 / 3 件");
+  expect(count.textContent).toContain("3 件中 2 件を表示");
+  // 実行・検証: 列の表示のメニューを開く
+  const toggle = find<HTMLButtonElement>(el, "button.mdmark-columns-toggle");
+  toggle.click();
+  const menu = find<HTMLElement>(el, ".mdmark-columns-menu");
+  const checkboxes = [
+    ...menu.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+  ];
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  expect(checkboxes[0]?.disabled).toBe(true);
+  expect(menu.textContent).toContain("先頭の列は隠せません");
+  // 実行・検証: 説明を入れて更新日を外す
+  checkboxes[1]?.click();
+  checkboxes[2]?.click();
+  expect(hiddenOf(1).some(Boolean)).toBe(false);
+  expect(hiddenOf(2).every(Boolean)).toBe(true);
+  // 実行・検証: 既定に戻す
+  find<HTMLButtonElement>(menu, "button.mdmark-columns-reset").click();
+  expect(hiddenOf(1).every(Boolean)).toBe(true);
+  expect(hiddenOf(2).some(Boolean)).toBe(false);
+  // 実行・検証: Esc でメニューを閉じてボタンへフォーカスを戻す
+  document.activeElement?.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+  expect(menu.hasAttribute("hidden")).toBe(true);
+  expect(document.activeElement).toBe(toggle);
+});
+
+// 表示している行で集計した tfoot の行を置き、絞り込みで計算し直し、並べ替えでは動かさない（正常系）
+test("test_normal_when_table_totals", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "<!-- table: data +total +columns total=数量:sum,単価:avg,名前:count filter=名前:text -->",
+      "",
+      "| 名前 | 数量 | 単価 |",
+      "| --- | --- | --- |",
+      "| りんご | 10 | 100 |",
+      "| みかん | 2 | 200 |",
+      "| りんご飴 | 33 | 300 |",
+      "| ぶどう | - | 400 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  // 実行・検証: 描いた直後
+  expect(totalTexts(el)).toEqual(["個数4", "合計45", "平均250"]);
+  // 実行・検証: 「りんご」で絞り込む
+  inputFilterText(table, "りんご");
+  expect(totalTexts(el)).toEqual(["個数2", "合計43", "平均200"]);
+  // 実行・検証: 一致する行が無い
+  inputFilterText(table, "存在しない");
+  expect(totalTexts(el)).toEqual(["個数0", "合計0", "平均—"]);
+  inputFilterText(table, "");
+  // 実行・検証: 数量の列の見出しを押して並べ替える
+  find<HTMLButtonElement>(
+    el.querySelectorAll("thead th")[1] as HTMLElement,
+    "button.mdmark-sort",
+  ).click();
+  const footRow = find<HTMLElement>(el, "tfoot tr");
+  expect(footRow.parentElement?.tagName).toBe("TFOOT");
+  expect(find(el, "tbody").contains(footRow)).toBe(false);
+  // 実行・検証: 単価を外す
+  find<HTMLButtonElement>(el, "button.mdmark-columns-toggle").click();
+  const checkboxes = [
+    ...el.querySelectorAll<HTMLInputElement>(
+      '.mdmark-columns-options input[type="checkbox"]',
+    ),
+  ];
+  checkboxes[2]?.click();
+  for (const cell of columnCells(el, 2)) {
+    expect(cell.hasAttribute("hidden")).toBe(true);
+  }
+});
+
+// 表示している行と列を TSV でクリップボードへ写し、ボタンで知らせる（正常系）
+test("test_normal_when_table_copied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "<!-- table: data +copy +columns hide=説明 filter=名前:text -->",
+      "",
+      "| 名前 | 説明 | 更新日 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 2026-10-01 |",
+      "| みかん | 印刷を直す | 2026-10-10 |",
+      "| りんご飴 | 描画の崩れを直す | 2026-10-20 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  inputFilterText(find<HTMLElement>(el, ".mdmark-table"), "りんご");
+  const button = find<HTMLButtonElement>(el, "button.mdmark-copy");
+  // 実行
+  button.click();
+  await vi.advanceTimersByTimeAsync(0);
+  // 検証: 写した中身と知らせ
+  expect(writeText).toHaveBeenCalledTimes(1);
+  expect(writeText).toHaveBeenCalledWith(
+    "名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20",
+  );
+  expect(button.textContent).toContain("コピーしました");
+  expect(find(el, ".mdmark-copy-status").textContent).toContain(
+    "コピーしました",
+  );
+  // 実行・検証: 2 秒後に戻る
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(button.textContent).toContain("表をコピー");
+});
+
+// クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す（正常系）
+test("test_normal_when_table_copy_denied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.reject(new DOMException("denied", "NotAllowedError")),
+  );
+  stubClipboard(writeText);
+  const rejections: PromiseRejectionEvent[] = [];
+  const onRejection = (event: PromiseRejectionEvent): void => {
+    rejections.push(event);
+  };
+  window.addEventListener("unhandledrejection", onRejection);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "<!-- table: data +copy -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "| b | 2 |",
+      "| c | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const button = find<HTMLButtonElement>(el, "button.mdmark-copy");
+  try {
+    // 実行・検証: 押すと失敗を知らせ、2 秒後も変わらない
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(button.textContent).toContain("コピーできませんでした");
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(button.textContent).toContain("コピーできませんでした");
+    expect(rejections).toHaveLength(0);
+    // 実行・検証: もう一度押すと、書き込みをもう一度試す
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(writeText).toHaveBeenCalledTimes(2);
+  } finally {
+    window.removeEventListener("unhandledrejection", onRejection);
+  }
+});
+
+// URL の #ID が指す行を囲む閉じた表・節を開き、絞り込みを外して行へ移り、その行を強調する（正常系）
+test("test_normal_when_table_row_linked", async () => {
+  // 準備
+  const el = createElement();
+  history.replaceState(null, "", "#みかん");
+  await mountTracked(el, {
+    markdown: [
+      "<!-- table: data +rowlink closed -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| りんご | 1 |",
+      "| みかん | 2 |",
+      "| りんご飴 | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "## 節",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "<!-- table: data +rowlink filter=名前:text -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| ぶどう | 1 |",
+      "| もも | 2 |",
+      "| なし | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const [first, second] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ] as [HTMLElement, HTMLElement];
+  const targets = (): string[] =>
+    [...el.querySelectorAll<HTMLElement>("tr[data-target]")].map(
+      (row) => row.id,
+    );
+  // 実行・検証: 描いた後、閉じた表を開いてみかんの行を強調する
+  expect(find(first, "details").hasAttribute("open")).toBe(true);
+  expect(targets()).toEqual(["みかん"]);
+  // 実行・検証: 表 B を絞り込んで #もも にする
+  inputFilterText(second, "ぶどう");
+  location.hash = "#もも";
+  await vi.waitFor(() => {
+    expect(targets()).toEqual(["もも"]);
+  });
+  expect(find(el, '[id="section-節"]').hasAttribute("hidden")).toBe(false);
+  for (const row of second.querySelectorAll<HTMLElement>(
+    "tbody tr:not(.mdmark-table-empty)",
+  )) {
+    expect(row.hasAttribute("hidden")).toBe(false);
+  }
+  // 絞り込みのボタンが絞り込み中のままでない（見た目と読み上げの文字）
+  const filterButton = find<HTMLElement>(second, "button.mdmark-filter");
+  expect(filterButton.classList.contains("is-active")).toBe(false);
+  expect(filterButton.textContent).not.toContain("（絞り込み中）");
+  // 実行・検証: まとめた HTML の # の形
+  location.hash = "#/a.md#みかん";
+  await vi.waitFor(() => {
+    expect(targets()).toEqual(["みかん"]);
+  });
 });
 
 // はみ出す表にだけピン止めのボタンを出し、押した列までを左端に留める（正常系）
