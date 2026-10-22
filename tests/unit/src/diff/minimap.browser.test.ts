@@ -81,6 +81,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  window.scrollTo(0, 0);
   window.matchMedia = originalMatchMedia;
   vi.restoreAllMocks();
   for (const detach of detaches.splice(0)) {
@@ -232,5 +233,41 @@ test("test_attach_minimap_when_theme_overridden", async () => {
   // 検証
   await vi.waitFor(() => {
     expect(read("--mdmark-color-diff-del-sign")).toBe("#111");
+  });
+});
+
+// スクロールする枠の外で画面がスクロールすると、帯を枠の右端に置き直す（正常系）
+test("test_attach_minimap_when_page_scrolled", async () => {
+  // 準備
+  const spacer = place(document.createElement("div"));
+  spacer.style.height = "600px";
+  const container = place(document.createElement("div"));
+  container.style.cssText =
+    "height: 300px; width: 240px; overflow-y: auto; margin-bottom: 2000px;";
+  const lines = place(createLines(100, { 5: "del", 90: "add" }), container);
+  await attachTracked(lines);
+  await vi.waitFor(() => {
+    expect(findBands()).toHaveLength(1);
+  });
+  const [band] = findBands();
+  // 大きさの監視の最初の通知が来て、帯が枠の位置に置かれるのを待つ
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  const before = container.getBoundingClientRect().top;
+  expect(
+    Math.abs((band as HTMLElement).getBoundingClientRect().top - before),
+  ).toBeLessThanOrEqual(1);
+  // 実行: 枠の外の画面をスクロールする
+  window.scrollTo(0, 300);
+  // 検証: 枠の位置が動いても、帯の上端と高さが枠と同じ
+  await vi.waitFor(() => {
+    const bandRect = (band as HTMLElement).getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    expect(containerRect.top).toBeLessThan(before);
+    expect(Math.abs(bandRect.top - containerRect.top)).toBeLessThanOrEqual(1);
+    expect(
+      Math.abs(bandRect.height - containerRect.height),
+    ).toBeLessThanOrEqual(1);
   });
 });
