@@ -263,3 +263,176 @@ test("test_long_cells", async () => {
   expect(wraps).toBe(true);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+/** 表の本文の行の隠れた列を含む、指定した列のセルが `hidden` かを上から並べて返す */
+function hiddenCells(page: Page, column: number): Promise<boolean[]> {
+  return page.evaluate((index) => {
+    const cells = [
+      document.querySelectorAll("#storybook-root thead th")[index],
+      ...[
+        ...document.querySelectorAll(
+          "#storybook-root tbody tr:not(.mdmark-table-empty)",
+        ),
+      ].map((row) => row.querySelectorAll("td")[index]),
+      document.querySelectorAll("#storybook-root tfoot td")[index],
+    ];
+    return cells
+      .filter((cell): cell is Element => cell !== undefined)
+      .map((cell) => cell.hasAttribute("hidden"));
+  }, column);
+}
+
+/** 集計の行のセルの文字を、空白を除いて左から並べて返す */
+function totalTexts(page: Page): Promise<string[]> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll("#storybook-root tfoot td")].map((cell) =>
+      (cell.textContent ?? "").replace(/\s+/g, ""),
+    ),
+  );
+}
+
+/** 件数の要素の、画面に出る文字を返す（読み上げだけの文字は含めない） */
+function countText(page: Page): Promise<string> {
+  return page.locator(".mdmark-table-count [aria-hidden='true']").innerText();
+}
+
+// 件数を表の上に出す（Count）
+test("test_count", async () => {
+  // 準備・実行
+  const page = await open("count");
+  // 検証
+  await expect(countText(page)).resolves.toBe("3 / 3 件");
+  await expect(
+    page.locator(".mdmark-table-count").getAttribute("aria-live"),
+  ).resolves.toBe("polite");
+});
+
+// 絞り込んだ後の件数を出す（CountFiltered）
+test("test_count_filtered", async () => {
+  // 準備・実行
+  const page = await open("count-filtered");
+  // 検証
+  await expect(countText(page)).resolves.toBe("2 / 3 件");
+  await expect(visibleRows(page)).resolves.toBe(2);
+});
+
+// hide= の列を隠し、帯に列の表示のボタンを出す（ColumnsHidden）
+test("test_columns_hidden", async () => {
+  // 準備・実行
+  const page = await open("columns-hidden");
+  // 検証
+  await expect(
+    page.locator(".mdmark-columns-toggle").innerText(),
+  ).resolves.toContain("列の表示");
+  await expect(
+    page.locator(".mdmark-columns-menu:not([hidden])").count(),
+  ).resolves.toBe(0);
+  const hidden = await hiddenCells(page, 1);
+  expect(hidden.every(Boolean)).toBe(true);
+  expect((await hiddenCells(page, 0)).some(Boolean)).toBe(false);
+});
+
+// 列の表示のメニューを開くと、先頭の列は外せず理由が出る（ColumnsMenuOpen）
+test("test_columns_menu_open", async () => {
+  // 準備・実行
+  const page = await open("columns-menu-open");
+  // 検証
+  const menu = page.locator(".mdmark-columns-menu:not([hidden])");
+  await expect(menu.count()).resolves.toBe(1);
+  const boxes = menu.locator("input[type='checkbox']");
+  await expect(boxes.count()).resolves.toBe(3);
+  await expect(boxes.nth(0).isDisabled()).resolves.toBe(true);
+  await expect(boxes.nth(1).isChecked()).resolves.toBe(true);
+  await expect(boxes.nth(2).isChecked()).resolves.toBe(false);
+  await expect(menu.innerText()).resolves.toContain("先頭の列は隠せません");
+  await expect(menu.innerText()).resolves.toContain("既定に戻す");
+  await expect(
+    page.locator(".mdmark-columns-toggle").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+});
+
+// 集計の行を表の末尾に出す（Totals）
+test("test_totals", async () => {
+  // 準備・実行
+  const page = await open("totals");
+  // 検証
+  await expect(totalTexts(page)).resolves.toEqual([
+    "個数4",
+    "合計45",
+    "平均250",
+  ]);
+});
+
+// 絞り込んだ行で集計する（TotalsFiltered）
+test("test_totals_filtered", async () => {
+  // 準備・実行
+  const page = await open("totals-filtered");
+  // 検証
+  await expect(totalTexts(page)).resolves.toEqual([
+    "個数2",
+    "合計43",
+    "平均200",
+  ]);
+});
+
+// 一致する行が無い集計の行を出す（TotalsEmpty）
+test("test_totals_empty", async () => {
+  // 準備・実行
+  const page = await open("totals-empty");
+  // 検証
+  await expect(totalTexts(page)).resolves.toEqual(["個数0", "合計0", "平均—"]);
+  await expect(countText(page)).resolves.toBe("0 / 4 件");
+});
+
+// コピーしたことを知らせる（Copied）
+test("test_copied", async () => {
+  // 準備・実行
+  const page = await open("copied");
+  // 検証
+  const button = page.locator(".mdmark-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("copied");
+  await expect(button.innerText()).resolves.toContain("コピーしました");
+  await expect(page.locator(".mdmark-copy-status").innerText()).resolves.toBe(
+    "コピーしました",
+  );
+});
+
+// コピーできなかったことを知らせる（CopyFailed）
+test("test_copy_failed", async () => {
+  // 準備・実行
+  const page = await open("copy-failed");
+  // 検証
+  const button = page.locator(".mdmark-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("failed");
+  await expect(button.innerText()).resolves.toContain("コピーできませんでした");
+});
+
+// 行へのリンクを持ち、指している行を強調する（RowLinkTarget）
+test("test_row_link_target", async () => {
+  // 準備・実行
+  const page = await open("row-link-target");
+  // 検証
+  const rows = page.locator("#storybook-root tbody tr[id]");
+  await expect(rows.count()).resolves.toBe(3);
+  await expect(
+    page.locator(".mdmark-row-anchor").nth(1).getAttribute("href"),
+  ).resolves.toBe("#みかん");
+  await expect(
+    page.locator("tr[data-target]").getAttribute("id"),
+  ).resolves.toBe("みかん");
+  await expect(page.locator("tr[data-target]").count()).resolves.toBe(1);
+});
+
+// 5 つの機能を全て付けた表を出す（AllFeatures）
+test("test_all_features", async () => {
+  // 準備・実行
+  const page = await open("all-features");
+  // 検証
+  await expect(countText(page)).resolves.toBe("3 / 3 件");
+  await expect(page.locator(".mdmark-columns-toggle").count()).resolves.toBe(1);
+  await expect(page.locator(".mdmark-copy").count()).resolves.toBe(1);
+  await expect(totalTexts(page)).resolves.toEqual(["", "", "合計25"]);
+  expect((await hiddenCells(page, 1)).every(Boolean)).toBe(true);
+  await expect(page.locator(".mdmark-row-anchor").count()).resolves.toBe(3);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
