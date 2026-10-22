@@ -81,7 +81,7 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 4 つのタブを描き、どれも 1 つ目のタブを選ぶ
+        M-->>P: 4 つのタブ群を描き、どれも 1 つ目のタブを選ぶ
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P->>M: 押したタブ群を Windows に切り替える
         M->>M: 同じ group で Windows を持つタブ群を Windows に切り替える
@@ -124,7 +124,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: localStorage が使えないページ
-        description: ページを開く前に、`localStorage` の読み書きが例外を投げるように差し替える
+        description: ページを開く前に、`window.localStorage` を読むと `SecurityError` を投げるように差し替える
         notes: ブラウザの設定でサイトのデータを拒んだときの状態に当たる
       - name: 同じ組のタブを持つ Markdown
         description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
@@ -172,6 +172,30 @@ scenarios:
       - 1 つ目のタブ群の上に、`group` の値が無いことを書いた書き方の警告がある
       - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
     test: test_error_when_empty_group
+  - name: 異常シナリオ（知らないタブの指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない指定を持つ Markdown
+        description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os closed -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        notes: 1 つ目は `group` を書き損じたキー、2 つ目は `キー=値` の形でない指定
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らないキーと指定がある
+        M-->>P: 書き方の警告と、読めた指定だけを当てたタブ群を描く
+        U->>P: 1 つ目のタブ群の Windows のタブを押す
+        P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
+    expected:
+      - 1 つ目のタブ群の上に `grop=` が使えないキーであること、2 つ目のタブ群の上に `closed` が使えない指定であることを書いた書き方の警告がある
+      - どちらのタブ群もタブに描かれている
+      - 1 つ目のタブ群は `Windows` を選び、`group` を持つ 2 つ目のタブ群は `macOS` を選んだまま
+    test: test_error_when_unknown_option
 lead: '文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が揃い、選んだタブ名を覚えて読み直しても同じタブで開く。'
 issue: 4
 primary_actor: 文書を読む人
