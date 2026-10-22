@@ -343,6 +343,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: コピーできる表を持つ Markdown
         description: '`<!-- table: data +copy +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        notes: 名前は上から `りんご`・`みかん`・`りんご飴`、説明は `描画を速くする`・`印刷を直す`・`描画の崩れを直す`、更新日は `2026-10-01`・`2026-10-10`・`2026-10-20`
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許す
       - name: Mock
@@ -358,18 +359,19 @@ scenarios:
         U->>P: コピーのボタンを押す
         P-->>U: 写したことを知らせるボタン
     expected:
-      - クリップボードの中身が、見出しの行と「りんご」を含む 2 行の、名前と更新日の 2 列（隠した説明の列を含まない）を、セルをタブで、行を改行で区切ったテキスト
+      - クリップボードの中身が `名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20`（見出しの行と「りんご」を含む 2 行の、隠した説明の列を除く 2 列を、セルをタブで、行を改行で区切ったテキスト）
       - ボタンの中で写したことが知らされ、読み上げでも知らされる
     test: test_normal_when_table_copied
   - name: 正常シナリオ（行へのリンクで行へ移る）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
-      - name: 閉じた表に行へのリンクを持つ Markdown
-        description: '見出し・長い段落の後に、`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` で名前の列を先頭に持つ 3 行の表を囲んだ文書'
+      - name: 行へのリンクを持つ表の Markdown
+        description: '見出し・長い段落の後に、`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` の表 A と、`<!-- section: closed -->` の節の中に `<!-- table: data +rowlink filter=名前:text -->` 〜 `<!-- /table -->` の表 B を持つ文書'
+        notes: 表 A・表 B とも名前の列を先頭に持つ 3 行の表。表 A の名前は `りんご`・`みかん`・`りんご飴`、表 B の名前は `ぶどう`・`もも`・`なし`
       - name: 行を指す URL
-        description: ページの URL の末尾に、`みかん` の行を指す `#ID` を付ける
-        notes: '`#ID` は描いた表の `みかん` の行のリンクの `href` から取る'
+        description: ページの URL の末尾に、表 A の `みかん` の行を指す `#ID` を付ける
+        notes: '`#ID` は描いた表の行のリンクの `href` から取る'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -377,23 +379,28 @@ scenarios:
         actor U as 利用者
         participant P as 使う側のページ
         participant M as mdmark
-        U->>P: 行を指す #ID を付けた URL でページを開く
+        U->>P: 表 A の行を指す #ID を付けた URL でページを開く
         P->>M: 設定と Markdown を渡して描かせる
         M->>M: #ID が閉じた表の中の行を指すため、表を開く
         M-->>P: 行へ移り、行を強調した表
-        P-->>U: みかんの行が見えている表
+        U->>P: 閉じた節を開き、表 B を「ぶどう」で絞り込み、節を閉じる
+        U->>P: URL の #ID を表 B の もも の行に変える
+        M->>M: 閉じた節を開き、表 B の絞り込みを外す
+        M-->>P: もも の行へ移り、行を強調した表
+        P-->>U: もも の行が見えている表
     expected:
       - 各行の先頭のセルに、その行の `id` を指す `#ID` のリンクがある
-      - ページを開いた後、閉じていた表が開き、`みかん` の行が画面の中に見えている
-      - '`みかん` の行だけが強調され、ほかの行は強調されていない'
-      - 描いた後に別の行のリンクを押すと、URL の `#ID` がその行に変わり、強調がその行へ移る
+      - ページを開いた後、閉じていた表 A が開き、`みかん` の行が画面の中に見えていて、`みかん` の行だけが強調されている
+      - URL の `#ID` を表 B の `もも` の行に変えた後（`hashchange`）、閉じていた節が開き、表 B の絞り込みが外れて 3 行とも表示され、`もも` の行が画面の中に見えている
+      - 強調が `もも` の行へ移り、`みかん` の行は強調されていない
     test: test_normal_when_row_link_opened
   - name: 異常シナリオ（読めない集計・隠す列）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 読めない集計と隠す列を書いた Markdown
-        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考 -->` 〜 `<!-- /table -->` で、名前・数量・単価の表を囲んだ文書'
+        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考 -->` 〜 `<!-- /table -->` の表 A、`<!-- table: data total=数量:sum hide=名前 -->` 〜 `<!-- /table -->` の表 B、`<!-- table: data +total -->` 〜 `<!-- /table -->` の表 C を持つ文書'
+        notes: 3 つの表とも名前・数量・単価の 3 列の表
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -402,13 +409,14 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らない計算・表に無い列の指定を当てない
-        M-->>P: 書き方の警告と、単価の列だけを集計した表を描く
+        M->>M: 知らない計算・表に無い列・機能を付けていないキーの指定を当てない
+        M-->>P: 書き方の警告と、読めた指定だけを当てた表を描く
         P-->>U: 書き方の警告と表を表示
     expected:
-      - 表の上に、`max` が使えない計算であることと使える計算（`sum`・`avg`・`count`）、`価格` と `備考` が表に無い列名であることを書いた書き方の警告がある
-      - 集計の行は単価の列にだけ値を持ち、数量の列は空
-      - 全ての列が表示されている
+      - 表 A の上に、`max` が使えない計算であることと使える計算（`sum`・`avg`・`count`）、`価格` と `備考` が表に無い列名であることを書いた書き方の警告がある
+      - 表 A の集計の行は単価の列にだけ値を持ち、数量の列は空で、表 A の全ての列が表示されている
+      - 表 B の上に、`total=` は `+total`、`hide=` は `+columns` を書いた表でだけ使えることを書いた書き方の警告があり、表 B は集計の行を持たず、名前の列が表示されている
+      - 表 C は書き方の警告も集計の行も持たない（`total=` の無い `+total` は集計する列が無い）
     test: test_error_when_unknown_total_or_hidden_column
   - name: 異常シナリオ（クリップボードに書けない）
     setup:
@@ -434,7 +442,7 @@ scenarios:
       - ボタンの中で写せなかったことが知らされ、読み上げでも知らされる
       - 表はそのまま操作できる
     test: test_error_when_clipboard_denied
-lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。件数を見て、列を隠し、集計の行を読み、表をコピーし、行へのリンクで行へ移る。'
+lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を列で並べ替え・絞り込み・ピン止めし、閉じた表を開く。'
 issue: 4
 primary_actor: 文書を読む人
 stakeholders:
