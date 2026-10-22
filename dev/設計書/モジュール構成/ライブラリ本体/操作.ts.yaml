@@ -193,7 +193,7 @@ functions:
     container: src/interact/tabs.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。押すと左右の矢印・Home・End で選び、`data-group` を持つときは `tabSelectors` でページの同じ `data-group` の `mdmark-tabs` を同じタブ名へ切り替え（フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す
+    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から引いた関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す
     args:
       - name: root
         type: HTMLElement
@@ -232,6 +232,12 @@ functions:
         condition: '`data-group="os"` のタブを 2 つの `root` に付け、1 つ目の `root` を外してから 2 つ目の `Windows` を押す'
         mock: なし
         expected: 例外が出ず、1 つ目の `root` にタブの並びが無く、中身に `hidden` が無い
+      - name: test_attach_tabs_when_group_has_quote
+        case: 正常
+        summary: セレクタの記号を含む組の名前でも揃える
+        condition: '`data-group` が `a"b\c]` の `macOS`・`Windows` のタブを 2 つ、1 つ目の `Windows` を押す'
+        mock: localStorage を空にしておく
+        expected: 例外が出ず、2 つとも `Windows` を選び、localStorage の `mdmark-tabs:a"b\c]` が `Windows`
   - name: attachSections
     title: 節と行の詳細に開閉を付ける
     container: src/interact/sections.ts
