@@ -608,7 +608,7 @@ function attachTable(
       status.textContent = state === "idle" ? "" : label;
     }
   };
-  /** 見出しの行と表示している行の、表示している列をクリップボードへ写し、結果をボタンで知らせる */
+  /** 見出しの行と、画面の並びで表示している行の、表示している列をクリップボードへ写し、結果をボタンで知らせる */
   const copyTable = async (): Promise<void> => {
     clearTimeout(copyTimer);
     const columns = labels.flatMap((_, column) =>
@@ -616,7 +616,7 @@ function attachTable(
     );
     const rows = [
       columns.map((column) => labels[column] ?? ""),
-      ...originalRows
+      ...bodyRows(table)
         .filter((row) => !row.hidden)
         .map((row) => columns.map((column) => cellText(row, column))),
     ];

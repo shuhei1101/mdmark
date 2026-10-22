@@ -94,6 +94,20 @@ function totalTexts(root: HTMLElement): string[] {
   );
 }
 
+/** `+copy` の data の表（名前 `a`・`b`・`c`、値は渡した順） */
+function dataTableWithCopy(values: string[]): string {
+  return [
+    "<!-- table: data +copy -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    ...values.map((value, i) => `| ${"abc"[i]} | ${value} |`),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
 /** 件数の要素の文字を返す */
 function countText(root: HTMLElement): string {
   return root.querySelector(".mdmark-table-count")?.textContent ?? "";
@@ -583,6 +597,31 @@ test("test_attach_tables_when_copied", async () => {
   // 実行・検証: 2 秒たつとボタンが戻る
   await vi.advanceTimersByTimeAsync(2000);
   expect(button.dataset.state).toBe("idle");
+});
+
+// 並べ替えた表は、画面の並びで写す（正常系）
+test("test_attach_tables_when_copied_after_sorted", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(dataTableWithCopy(["1", "3", "2"]));
+  detachers.push(attachTables(root));
+  const sortButton = root
+    .querySelectorAll("thead th")[1]
+    ?.querySelector<HTMLButtonElement>("button.mdmark-sort");
+  // 実行: 値の列を昇順・降順に並べ替えてからコピーする
+  sortButton?.click();
+  sortButton?.click();
+  findButton(root, "button.mdmark-copy").click();
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  // 検証
+  expect(columnTexts(root, 1)).toEqual(["3", "2", "1"]);
+  expect(writeText).toHaveBeenCalledWith("名前\t値\nb\t3\nc\t2\na\t1");
 });
 
 // 拒まれたら failed を残し、例外を外へ出さない（正常系）
