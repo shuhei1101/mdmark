@@ -268,3 +268,49 @@ test("test_mount_when_extension_definition_invalid", async () => {
     resetExtensions();
   }
 });
+
+// 取り出し元を渡すと見出しの後ろに差分を開くボタンを置き、片付けると取り除く（正常系）
+test("test_mount_when_diff_source", async () => {
+  // 準備
+  const el = createElement();
+  const revisionsCalls: string[] = [];
+  const diffSource = {
+    revisions: async (docId: string) => {
+      revisionsCalls.push(docId);
+      return [];
+    },
+    content: async () => "",
+  };
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown: "# 見出し\n\n本文",
+    docId: "guide",
+    diffSource,
+  });
+  // 検証
+  const next = el.querySelector("h1")?.nextElementSibling;
+  expect(
+    next?.matches(".mdmark-diff-toggle") ||
+      next?.querySelector(".mdmark-diff-toggle"),
+  ).toBeTruthy();
+  expect(revisionsCalls).toEqual([]);
+  handle.destroy();
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+});
+
+// 取り出し元を渡して docId が無いと投げる（異常系）
+test("test_mount_when_diff_source_without_doc_id", async () => {
+  // 準備
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const diffSource = {
+    revisions: async () => [],
+    content: async () => "",
+  };
+  const { mount } = await loadMount();
+  // 実行・検証
+  expect(() => mount(el, { markdown: "# 見出し", diffSource })).toThrow(
+    TypeError,
+  );
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
