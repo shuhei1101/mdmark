@@ -262,7 +262,7 @@ test("test_normal_when_scrolled_by_minimap", async ({ page }) => {
   await page.mouse.click(box.x + 5, lastMark.y + lastMark.height / 2);
   // 検証: 後半の変えた行が画面に入り、枠が下がる
   await expect.poll(() => inView("後半で足した行")).toBe(true);
-  expect(await frameTop()).toBeGreaterThan(topAtStart);
+  await expect.poll(frameTop).toBeGreaterThan(topAtStart);
   // 実行: 帯を押したまま上へ動かす
   await page.mouse.move(box.x + 5, box.y + box.height * 0.9);
   await page.mouse.down();
