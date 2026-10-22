@@ -405,7 +405,7 @@ flows:
     summary: '`Intl.Segmenter` を持たない環境（Firefox 98〜124）でも配布物を読み込め、英数字の語の一部に下線を付けずに用語を照合する'
     setup:
       - name: 配布物を読む Node の処理
-        description: '`Intl` から `Segmenter` を取り除いてから、配布物の入口を読み込む'
+        description: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして配布物の入口を読み込む（URL にクエリを付ける）'
         notes: テストの後に `Intl.Segmenter` を戻す
       - name: 索引
         description: 用語 `ワークスペース`（別名 `WS`）を持つ索引
