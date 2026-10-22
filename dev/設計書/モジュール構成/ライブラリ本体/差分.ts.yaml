@@ -116,11 +116,16 @@ constants:
     container: src/diff/minimap.ts
     summary: 送り先のスクロールの要素から、そこに置いた帯と印を出している差分の行の集まりを引く
     value: 'new WeakMap<Element, { band: HTMLElement; lines: Set<HTMLElement>; detach: () => void }>()'
+  - name: MINIMAP_VARIABLES
+    title: 帯に写す変数
+    container: src/diff/minimap.ts
+    summary: 差分の行の計算値から読み、`document.body` の直下の帯の `style` に写す CSS 変数。使う側が `.mdmark` に書いた上書きを帯にも当てる
+    value: '["--mdmark-color-diff-del-sign", "--mdmark-color-diff-add-sign", "--mdmark-color-border", "--mdmark-color-surface", "--mdmark-color-muted", "--mdmark-color-text", "--mdmark-diff-minimap-width", "--mdmark-diff-minimap-z-index"]'
 function_types:
   - name: DiffEngine
     title: 差分の計算の関数型
     container: src/diff/compute.ts
-    summary: 行と語の比較。既定は jsdiff の `diffLines`・`diffWords` を包む `jsdiffEngine`、単体テストで差し替える
+    summary: 行と語の比較。既定は jsdiff の `diffLines`・`diffWords`・`diffChars` を包む `jsdiffEngine`、単体テストで差し替える
     args:
       - name: lines
         type: '(pair: { before: string; after: string }) => DiffChange[]'
@@ -320,7 +325,7 @@ functions:
     summary: 差分の行の送り先のスクロールを見つけ、そこに 1 本だけの帯を置いて印と今見えている範囲の枠を並べ、押す・押したまま動かすで送る
     kind: 関数
     scope: internal
-    side_effects: '`document.body` に帯を置き、送り先の `scroll` と `window` の `resize` を受け取る。差分の行の大きさを `ResizeObserver` で見る'
+    side_effects: '`document.body` に帯を置き、送り先の `scroll`・`window` の `resize`・`matchMedia("(prefers-color-scheme: dark)")` の `change` を受け取る。差分の行の大きさを `ResizeObserver` で見る'
     args:
       - name: lines
         type: HTMLElement
@@ -331,10 +336,10 @@ functions:
       description: この行を帯から外す関数。帯に残る行が無くなったら帯と受け取りを外す
     process: |-
       1. 送り先を決める。`lines` の祖先をたどり、`overflow-y` が `auto`・`scroll` で中身がはみ出す一番近い要素、無ければ `document.scrollingElement`
-      2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため
+      2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯を置き直すたびと配色が切り替わったとき（`prefers-color-scheme` の `change`）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み、帯の `style` に写す
       3. 送り先の行の集まりに `lines` を足し、集まりの全ての行から `del`・`add` の行の位置を送り先の `scrollHeight` に対する割合にし、続いた同じ種類の行を 1 つの印にまとめて置き直す。隠れた見方の行は、埋め込んだ HTML の差分の塊の位置で示す。差分の行の大きさが変わったら置き直す
       4. 帯の `pointerdown` でポインターを捕まえ、押した位置の割合の場所が送り先の中ほどに来るよう `scrollTo` で送る。捕まえている間の `pointermove` も同じに送る
-      5. 外す関数は、集まりから `lines` を除いて印を置き直し、空になったら帯を取り除いて受け取りを外し、`minimaps` から消す
+      5. 外す関数は、集まりから `lines` を除いて印を置き直し、空になったら帯を取り除いて受け取り（配色の `change` を含む）を外し、`minimaps` から消す
     unit_tests:
       - name: test_attach_minimap
         case: 正常
@@ -360,6 +365,12 @@ functions:
         condition: '`overflow-y: auto` で高さを決めた枠の中の差分の行'
         mock: なし
         expected: 帯の右端と高さが枠と同じで、帯を押すと枠の `scrollTop` が変わる
+      - name: test_attach_minimap_when_theme_overridden
+        case: 正常
+        summary: 使う側が `.mdmark` に書いた変数の上書きを帯に写し、配色が切り替わると写し直す
+        condition: '`.mdmark { --mdmark-color-diff-del-sign: #000; --mdmark-diff-minimap-z-index: 50 }` の下の差分の行。後で上書きを `#111` に変え、`prefers-color-scheme` の `change` を送る'
+        mock: '`window.matchMedia` を `change` を送れる偽物に差し替える'
+        expected: 帯の `style` の `--mdmark-color-diff-del-sign` が `#000`、`--mdmark-diff-minimap-z-index` が `50`。`change` の後は `--mdmark-color-diff-del-sign` が `#111`
     callees:
       - '#functions[renderDiffMinimap]'
     refs:
