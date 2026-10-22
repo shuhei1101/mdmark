@@ -47,3 +47,4 @@ status: planned
 notes:
   HTML: '`<div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント" tabindex="-1"><div class="mdmark-comment-head"><p class="mdmark-comment-quote">「{quote}」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる">{x のアイコン}</button></div><ul class="mdmark-comment-list"><li><p class="mdmark-comment-body">{本文}</p></li></ul></div>`。モックは `dev/mock/components/comment/`'
   印刷: 出さない
+test_file: tests/integration/lib/comment-bubble.story.test.ts

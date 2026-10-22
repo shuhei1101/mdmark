@@ -99,3 +99,4 @@ status: planned
 notes:
   HTML: '`<div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く"><form novalidate><p class="mdmark-comment-quote">「{quote}」へのコメント</p><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="{id}-error">{body}</textarea></label><p class="mdmark-comment-error" id="{id}-error" role="alert" hidden>{alert のアイコン}<span>{知らせ}</span></p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit">コメントを保存</button></div></form></div>`。保存のボタンは差し色で塗る。モックは `dev/mock/components/comment/`'
   印刷: 出さない
+test_file: tests/integration/lib/comment-form.story.test.ts

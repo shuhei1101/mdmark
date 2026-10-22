@@ -2,10 +2,12 @@ import { afterEach, expect, inject, test, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import type {
   DiffRevision,
+  MdmarkComment,
   MdmarkIndex,
   MdmarkReferences,
   MountHandle,
 } from "../../../src/index.ts";
+import { VIEW_ICON_PATHS } from "../../../src/parts/view.ts";
 import {
   INQUIRY_COUNT_TEXT,
   INQUIRY_HINT_TEXT,
@@ -2470,4 +2472,499 @@ test("test_normal_when_storage_unavailable", async () => {
       Reflect.deleteProperty(window, "localStorage");
     }
   }
+});
+
+// ─── ビューとコメント ───
+
+/** 題・状態・担当の列と 5 行を持つ表。状態は上から未着手・進行中・未着手・完了・進行中、担当は佐藤・鈴木・佐藤・田中・鈴木 */
+const VIEW_TABLE = [
+  "| 題 | 状態 | 担当 |",
+  "| --- | --- | --- |",
+  "| 配色の変数を洗い出す | 未着手 | 佐藤 |",
+  "| 余白の変数を決める | 進行中 | 鈴木 |",
+  "| 印刷の見え方を確かめる | 未着手 | 佐藤 |",
+  "| 配色を直す | 完了 | 田中 |",
+  "| 表を絞り込む | 進行中 | 鈴木 |",
+].join("\n");
+
+/** ビューの印の引数を指定して、表を印で囲んだ文書にする */
+function viewMarkdown(args: string): string {
+  return `<!-- view: ${args} -->\n\n${VIEW_TABLE}\n\n<!-- /view -->\n`;
+}
+
+/** コメントを付ける段落の文字 */
+const COMMENT_TEXT = "描いた文書の見た目はテーマの変数で変える。";
+
+/** コメントの本文 */
+const COMMENT_BODY = "ここは <b>太字</b> にしたい";
+
+/** `テーマの変数` に付いたコメント */
+const THEME_COMMENT: MdmarkComment = {
+  id: "c1",
+  quote: "テーマの変数",
+  prefix: "描いた文書の見た目は",
+  suffix: "で変える。",
+  body: "読み込んだコメント",
+};
+
+/** ビルドした配布物のファイルを、名前ごとに別の URL で配る URL にする（別の名前は、ページの中の読み込み済みのモジュールを共有しない） */
+function namedDistUrl(name: string, file: string): string {
+  return `/fixtures/dist/${name}${inject("builtRoot")}/dist/${file}`;
+}
+
+/** 名前ごとに別の URL で配るビルドした JS を読み込む。`blocked` はビューとコメントの部品のモジュールを 404 にして配る */
+async function loadNamedBuilt(name: string): Promise<Built> {
+  await loadStylesheet();
+  return import(/* @vite-ignore */ namedDistUrl(name, "index.js"));
+}
+
+/** ボードの列の見出しの値を、並びの順に返す */
+function viewColumnNames(el: Element): string[] {
+  return [...el.querySelectorAll(".mdmark-view-column-name")].map(
+    (name) => name.textContent ?? "",
+  );
+}
+
+/** ビューの切り替えのボタンを返す */
+function viewSwitchButton(
+  el: Element,
+  mode: "board" | "table",
+): HTMLButtonElement {
+  return find<HTMLButtonElement>(
+    el,
+    `.mdmark-view-switch button[data-mode="${mode}"]`,
+  );
+}
+
+/** ビューの表形式の本文の行のうち、隠れていない行の数 */
+function viewVisibleRows(el: Element): number {
+  return [...el.querySelectorAll<HTMLElement>(".mdmark-view-table tbody tr")]
+    .filter((row) => !row.classList.contains("mdmark-table-empty"))
+    .filter((row) => !row.hidden).length;
+}
+
+/** 要素の中の最初の文字の節の、始まりと終わりの位置の間を選ぶ */
+function selectText(element: Element, start: number, end: number): void {
+  const text = element.firstChild;
+  if (!text) {
+    throw new Error("選ぶ文字が無い");
+  }
+  const range = document.createRange();
+  range.setStart(text, start);
+  range.setEnd(text, end);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
+/** 隠れていないコメントのボタンを返す（無ければ `undefined`） */
+function visibleCommentButton(): HTMLElement | undefined {
+  const button = document.querySelector<HTMLElement>(".mdmark-comment-add");
+  return button && !button.hidden ? button : undefined;
+}
+
+/** 少し待つ（出ないことを確かめる前に、選びの受け取りが動き終わるのを待つ） */
+function settle(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 100));
+}
+
+/** `console.error` に出た引数を 1 つの文字にする */
+function loggedText(spy: { mock: { calls: unknown[][] } }): string {
+  return spy.mock.calls
+    .flat()
+    .map((value) => (value instanceof Error ? value.message : String(value)))
+    .join(" ");
+}
+
+/** 読み書きの関数。`save` は受けた下書きに `id: "c1"` を足して返す */
+function createCommentStore(loaded: MdmarkComment[] = []) {
+  return {
+    load: vi.fn(async (_target: { docId: string }) => loaded),
+    save: vi.fn(
+      async (target: {
+        docId: string;
+        comment: Omit<MdmarkComment, "id">;
+      }): Promise<MdmarkComment> => ({ id: "c1", ...target.comment }),
+    ),
+  };
+}
+
+// ビューの印で囲んだ表をボード表示で描き、表形式と切り替える（正常系）
+test("test_normal_when_view_drawn", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown: viewMarkdown("group=状態") });
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector(".mdmark-view-switch")).not.toBeNull(),
+  );
+  const view = find(el, ".mdmark-view");
+  expect(viewSwitchButton(view, "board").getAttribute("aria-pressed")).toBe(
+    "true",
+  );
+  expect(viewColumnNames(view)).toEqual(["未着手", "進行中", "完了"]);
+  expect(
+    [...view.querySelectorAll(".mdmark-view-column-head svg")].map(
+      (icon) => icon.innerHTML,
+    ),
+  ).toEqual([
+    VIEW_ICON_PATHS["circle-dashed"],
+    VIEW_ICON_PATHS["circle-dot"],
+    VIEW_ICON_PATHS["circle-check"],
+  ]);
+  expect(
+    [...view.querySelectorAll(".mdmark-view-column-count")].map(
+      (count) => count.textContent,
+    ),
+  ).toEqual(["2", "2", "1"]);
+  const firstCard = find(view, ".mdmark-view-card");
+  expect(firstCard.querySelector(".mdmark-view-card-title")?.textContent).toBe(
+    "配色の変数を洗い出す",
+  );
+  expect(
+    [...firstCard.querySelectorAll("dt")].map((name) => name.textContent),
+  ).toEqual(["担当"]);
+  expect(
+    view.querySelector(
+      '.mdmark-view > input, .mdmark-view > [type="search"], .mdmark-view-count',
+    ),
+  ).toBeNull();
+  // 実行
+  viewSwitchButton(view, "table").click();
+  // 検証
+  expect(viewVisibleRows(view)).toBe(5);
+  expect(find<HTMLElement>(view, ".mdmark-view-board").hidden).toBe(true);
+});
+
+// filter= の列だけを絞り込み、ボードには当てず、表形式に戻すと絞り込みが残る（正常系）
+test("test_normal_when_view_filtered", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: viewMarkdown("group=状態 default=table filter=担当"),
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelector(".mdmark-view-switch")).not.toBeNull(),
+  );
+  const view = find(el, ".mdmark-view");
+  // 検証
+  const buttons = view.querySelectorAll("thead th button.mdmark-filter");
+  expect(buttons).toHaveLength(1);
+  expect(buttons[0]?.closest("th")?.cellIndex).toBe(2);
+  // 実行
+  find<HTMLButtonElement>(view, "button.mdmark-filter").click();
+  const label = [...view.querySelectorAll("label")].find((candidate) =>
+    candidate.textContent?.includes("佐藤"),
+  );
+  (label?.control as HTMLInputElement | null)?.click();
+  // 検証
+  expect(viewVisibleRows(view)).toBe(2);
+  expect(find(view, "button.mdmark-filter").className).toContain("is-active");
+  // 実行
+  viewSwitchButton(view, "board").click();
+  // 検証
+  expect(view.querySelectorAll(".mdmark-view-card")).toHaveLength(5);
+  expect(
+    [...view.querySelectorAll(".mdmark-view-column-count")].map(
+      (count) => count.textContent,
+    ),
+  ).toEqual(["2", "2", "1"]);
+  // 実行
+  viewSwitchButton(view, "table").click();
+  // 検証
+  expect(viewVisibleRows(view)).toBe(2);
+});
+
+// 表に無い group の列と知らない絞り込みの種類に書き方の警告を出し、表形式で描く（正常系）
+test("test_normal_when_view_syntax_invalid", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: viewMarkdown("group=優先度 filter=担当:range"),
+  });
+  // 検証
+  const view = find(el, ".mdmark-view");
+  const warnings = [...el.querySelectorAll(".mdmark-syntax-warning")];
+  expect(warnings.length).toBeGreaterThanOrEqual(1);
+  const text = warnings.map((warning) => warning.textContent).join(" ");
+  expect(text).toContain("優先度");
+  expect(text).toContain("range");
+  for (const warning of warnings) {
+    expect(
+      warning.compareDocumentPosition(view) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  }
+  expect(viewVisibleRows(view)).toBe(5);
+  const board = viewSwitchButton(view, "board");
+  expect(board.disabled).toBe(true);
+  const reason = board.getAttribute("aria-describedby") ?? "";
+  expect(el.querySelector(`#${CSS.escape(reason)}`)?.textContent).toContain(
+    "優先度",
+  );
+  expect(view.querySelectorAll("button.mdmark-filter")).toHaveLength(0);
+});
+
+// views がオフのときは、印の範囲の表を普通の表で描き、ビューの部品のモジュールを読まない（正常系）
+test("test_normal_when_views_disabled", async () => {
+  // 準備
+  const fresh = await loadNamedBuilt("views-disabled");
+  const el = createElement();
+  // 実行
+  const handle = fresh.mount(el, {
+    markdown: viewMarkdown("group=状態"),
+    config: { features: { views: false } },
+  });
+  handles.push(handle);
+  await settle();
+  // 検証
+  expect(el.querySelector(".mdmark-view")).toBeNull();
+  expect(el.querySelector(".mdmark-view-switch")).toBeNull();
+  expect(el.querySelector(".mdmark-view-board")).toBeNull();
+  expect(el.querySelectorAll("table tbody tr")).toHaveLength(5);
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  expect(
+    countRequests(`/views-disabled${inject("builtRoot")}/dist/view.js`),
+  ).toBe(0);
+});
+
+// 選んだ文字にコメントを書いて保存し、印と吹き出しで読む（正常系）
+test("test_normal_when_comment_added", async () => {
+  // 準備
+  const el = createElement();
+  const store = createCommentStore();
+  await mountTracked(el, {
+    markdown: `${COMMENT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() => expect(store.load).toHaveBeenCalledTimes(1));
+  expect(store.load).toHaveBeenCalledWith({ docId: "guide" });
+  const paragraph = find(el, "p");
+  // 実行
+  selectText(paragraph, 10, 16);
+  // 検証
+  await vi.waitFor(() => expect(visibleCommentButton()).toBeDefined());
+  // 実行
+  window.getSelection()?.removeAllRanges();
+  // 検証
+  await vi.waitFor(() => expect(visibleCommentButton()).toBeUndefined());
+  // 実行
+  selectText(paragraph, 10, 16);
+  await vi.waitFor(() => expect(visibleCommentButton()).toBeDefined());
+  visibleCommentButton()?.click();
+  const form = find(document.body, ".mdmark-comment-form");
+  const field = find<HTMLTextAreaElement>(form, "textarea");
+  field.value = COMMENT_BODY;
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  find<HTMLButtonElement>(form, ".is-primary").click();
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector("mark.mdmark-comment-mark")).not.toBeNull(),
+  );
+  expect(store.save).toHaveBeenCalledTimes(1);
+  expect(store.save).toHaveBeenCalledWith({
+    docId: "guide",
+    comment: {
+      quote: "テーマの変数",
+      prefix: "描いた文書の見た目は",
+      suffix: "で変える。",
+      body: COMMENT_BODY,
+    },
+  });
+  const mark = find<HTMLElement>(el, "mark.mdmark-comment-mark");
+  expect(mark.textContent).toBe("テーマの変数");
+  expect(document.activeElement).toBe(mark);
+  // 実行
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  const bubble = find(document.body, ".mdmark-comment-bubble");
+  expect(bubble.querySelector("b")).toBeNull();
+  expect(bubble.querySelector(".mdmark-comment-body")?.textContent).toBe(
+    COMMENT_BODY,
+  );
+  // 実行
+  await userEvent.keyboard("{Escape}");
+  // 検証
+  expect(document.querySelector(".mdmark-comment-bubble")).toBeNull();
+  expect(document.activeElement).toBe(mark);
+});
+
+// 読んだコメントに印を付け、update の後も前後の文字で付き直し、見つからないものは末尾の一覧に出す（正常系）
+test("test_normal_when_comments_reanchored", async () => {
+  // 準備
+  const el = createElement();
+  const store = createCommentStore([THEME_COMMENT]);
+  const handle = await mountTracked(el, {
+    markdown: `${COMMENT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector("mark.mdmark-comment-mark")?.textContent).toBe(
+      "テーマの変数",
+    ),
+  );
+  // 実行
+  handle.update(`別の段落\n\n${COMMENT_TEXT}\n`);
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector("mark.mdmark-comment-mark")?.textContent).toBe(
+      "テーマの変数",
+    ),
+  );
+  expect(store.load).toHaveBeenCalledTimes(2);
+  // 実行
+  handle.update("描いた文書の見た目は CSS 変数 で変える。\n");
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector(".mdmark-comment-orphans")).not.toBeNull(),
+  );
+  expect(el.querySelector("mark")).toBeNull();
+  const orphans = find(el, ".mdmark-comment-orphans");
+  expect(el.lastElementChild).toBe(orphans);
+  expect(orphans.textContent).toContain("テーマの変数");
+  expect(orphans.textContent).toContain("読み込んだコメント");
+});
+
+// comments が既定のオフのときは、読み書きの関数を渡しても呼ばず、ボタンを出さない（正常系）
+test("test_normal_when_comments_disabled", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  const store = createCommentStore();
+  await mountTracked(el, {
+    markdown: `${COMMENT_TEXT}\n`,
+    docId: "guide",
+    commentStore: store,
+  });
+  // 実行
+  selectText(find(el, "p"), 10, 16);
+  await settle();
+  // 検証
+  expect(store.load).not.toHaveBeenCalled();
+  expect(visibleCommentButton()).toBeUndefined();
+  expect(spy).not.toHaveBeenCalled();
+});
+
+// save が reject すると、入力欄と本文を残して知らせを出し、印を付けない（異常系）
+test("test_error_when_comment_save_rejected", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  const store = createCommentStore();
+  store.save.mockRejectedValue(new Error("network"));
+  await mountTracked(el, {
+    markdown: `${COMMENT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() => expect(store.load).toHaveBeenCalledTimes(1));
+  selectText(find(el, "p"), 10, 16);
+  await vi.waitFor(() => expect(visibleCommentButton()).toBeDefined());
+  visibleCommentButton()?.click();
+  const form = find(document.body, ".mdmark-comment-form");
+  const field = find<HTMLTextAreaElement>(form, "textarea");
+  field.value = COMMENT_BODY;
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  // 実行
+  find<HTMLButtonElement>(form, ".is-primary").click();
+  // 検証
+  await vi.waitFor(() =>
+    expect(find(form, '[role="alert"]').textContent).toMatch(
+      /^コメントを保存できませんでした。/,
+    ),
+  );
+  expect(document.querySelector(".mdmark-comment-form")).toBe(form);
+  expect(field.value).toBe(COMMENT_BODY);
+  expect(el.querySelector("mark")).toBeNull();
+  expect(spy).toHaveBeenCalledTimes(1);
+  expect(loggedText(spy)).toContain("save");
+  expect(loggedText(spy)).toContain("guide");
+  expect(loggedText(spy)).toContain("network");
+});
+
+// comments がオンで読み書きの関数を渡さないと、ボタンを出さず、console.error に 1 回だけ出す（異常系）
+test("test_error_when_comment_store_missing", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  const markdown = `${COMMENT_TEXT}\n`;
+  const handle = await mountTracked(el, {
+    markdown,
+    config: { features: { comments: true } },
+  });
+  // 実行
+  handle.update(markdown);
+  selectText(find(el, "p"), 10, 16);
+  await settle();
+  // 検証
+  expect(visibleCommentButton()).toBeUndefined();
+  expect(spy).toHaveBeenCalledTimes(1);
+  expect(loggedText(spy)).toContain("commentStore");
+  expect(find(el, "p").textContent).toBe(COMMENT_TEXT);
+});
+
+// 読み書きの関数を渡して docId を渡さないと、何も描かずに TypeError を投げる（異常系）
+test("test_error_when_comment_doc_id_missing", async () => {
+  // 準備
+  const { mount } = await loadBuilt();
+  const el = createElement();
+  el.className = "前の class";
+  el.innerHTML = "<p>前の中身</p>";
+  const store = createCommentStore();
+  // 実行・検証
+  const mounting = () =>
+    mount(el, {
+      markdown: `${COMMENT_TEXT}\n`,
+      config: { features: { comments: true } },
+      commentStore: store,
+    });
+  expect(mounting).toThrow(TypeError);
+  expect(mounting).toThrow("docId");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+  expect(el.className).toBe("前の class");
+  expect(store.load).not.toHaveBeenCalled();
+});
+
+// 部品のモジュールを読めないと、ビューの印の場所は表のまま残し、コメントのボタンを出さず、console.error に出す（異常系）
+test("test_error_when_part_module_unavailable", async () => {
+  // 準備
+  const blocked = await loadNamedBuilt("blocked");
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  const store = createCommentStore();
+  const markdown = `${viewMarkdown("group=状態")}\n${COMMENT_TEXT}\n`;
+  // 実行
+  const handle = blocked.mount(el, {
+    markdown,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  handles.push(handle);
+  // 検証
+  await vi.waitFor(() => expect(spy).toHaveBeenCalledTimes(2));
+  await settle();
+  expect(spy).toHaveBeenCalledTimes(2);
+  expect(el.querySelectorAll("table tbody tr")).toHaveLength(5);
+  expect(el.querySelector(".mdmark-view-switch")).toBeNull();
+  expect(el.querySelector(".mdmark-view-board")).toBeNull();
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  expect(spy.mock.calls.map((call) => call.map(String).join(" "))).toEqual([
+    expect.stringMatching(/view .*\/blocked\/.*\/view\.js/),
+    expect.stringMatching(/comments .*\/blocked\/.*\/comments\.js/),
+  ]);
+  expect(find(el, "p:last-of-type").textContent).toBe(COMMENT_TEXT);
+  // 実行
+  selectText(find(el, "p:last-of-type"), 10, 16);
+  await settle();
+  // 検証
+  expect(visibleCommentButton()).toBeUndefined();
+  expect(store.load).not.toHaveBeenCalled();
 });

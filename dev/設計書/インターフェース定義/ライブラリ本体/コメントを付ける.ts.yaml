@@ -200,3 +200,4 @@ constraints:
     notes: モジュールは `dist/index.js` の隣の `dist/comments.js`（モジュール構成『ビューとコメント』）。読めないときは例外の「なし（読み込みの失敗）」
   - item: 型の配布
     constraint: '`mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
+test_file: tests/integration/lib/mount-comments.browser.test.ts

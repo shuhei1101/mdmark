@@ -114,3 +114,50 @@ test("test_glossary_missing_arg", async () => {
   expect(text).toContain("この表からは用語を入れずに描いています");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// ビューの印の group= が表に無い列を指すときは、表の列を並べて表で描くことを伝える（ViewGroupColumn）
+test("test_view_group_column", async () => {
+  // 準備・実行
+  const { page, warning } = await open("view-group-column");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    "<!-- view: group=優先度 -->",
+  );
+  const text = await warning.innerText();
+  expect(text).toContain("優先度");
+  expect(text).toContain("ボードにせず、表で描いています");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// ビューの印の範囲に表が無いときは、表を書くよう伝える（ViewNoTable）
+test("test_view_no_table", async () => {
+  // 準備・実行
+  const { page, warning } = await open("view-no-table");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    "<!-- view: group=状態 -->",
+  );
+  const text = await warning.innerText();
+  expect(text).toContain("項目にする表がありません");
+  expect(text).toContain("範囲の中身はそのまま描いています");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// ビューの印の icons= に使えないアイコンを書いたときは、使えるアイコンを並べる（ViewUnknownIcon）
+test("test_view_unknown_icon", async () => {
+  // 準備・実行
+  const { page, warning } = await open("view-unknown-icon");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    "<!-- view: group=状態 icons=完了:rocket -->",
+  );
+  const text = await warning.innerText();
+  expect(text).toContain("rocket");
+  expect(text).toContain("circle-dashed");
+  expect(text).toContain("ban");
+  expect(text).toContain("既定のアイコンを付けています");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

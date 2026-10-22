@@ -18,3 +18,4 @@ status: planned
 notes:
   HTML: '`<button class="mdmark-comment-add" type="button">{message-square-plus のアイコン}コメント</button>`。モックは `dev/mock/components/comment/`'
   印刷: 出さない
+test_file: tests/integration/lib/comment-button.story.test.ts

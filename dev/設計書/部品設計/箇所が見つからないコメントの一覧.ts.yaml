@@ -33,3 +33,4 @@ refs:
 status: planned
 notes:
   HTML: '`<section class="mdmark-comment-orphans" aria-labelledby="{id}"><h2 id="{id}">箇所が見つからないコメント</h2><p class="mdmark-comment-orphans-lead">本文が書き換わり、コメントを付けた文字が見つかりません。</p><ul><li><p class="mdmark-comment-quote">「{quote}」へのコメント</p><p class="mdmark-comment-body">{body}</p></li></ul></section>`。モックは `dev/mock/components/comment/`'
+test_file: tests/integration/lib/comment-orphans.story.test.ts
