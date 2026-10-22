@@ -1,0 +1,34 @@
+/* ビュー・検索・コメントの印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときのビューとコメント */
+@layer mdmark {
+  .mdmark {
+    /* 紙では押せない操作（ビューの切り替え・検索欄と件数）: 帯ごと出さない */
+    .mdmark-view-bar {
+      display: none;
+    }
+
+    /* ボード: 横のスクロールをやめ、紙の幅に収まる数の列で折り返す */
+    .mdmark-view-board {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+      overflow: visible;
+    }
+
+    /* ボードの列と項目: 改ページで切らない */
+    :is(.mdmark-view-column, .mdmark-view-card) {
+      break-inside: avoid;
+    }
+  }
+
+  /* コメントのボタン・入力欄・吹き出し: 紙では押せないので出さない */
+  :is(.mdmark-comment-add, .mdmark-comment-popover) {
+    display: none !important;
+  }
+
+  /* コメントの印: 地の色は紙に出ないことがあるので、下線だけで箇所を示す */
+  .mdmark-comment-mark {
+    background: none;
+  }
+}

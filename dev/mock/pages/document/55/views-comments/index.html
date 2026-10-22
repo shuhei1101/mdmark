@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / views-comments（ビュー・検索・コメント） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・トップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット。表のビューが記法の表の並べ替えを使う） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- ビュー・検索とコメントの規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/55/assets/view.css">
+  <link rel="stylesheet" href="../../../../refs/55/assets/comment.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で app.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/55/assets/view-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- ビューの項目の定義 -->
+  <script src="../../../../refs/55/assets/samples.js" defer></script>
+  <!-- 場面の切り替えと印刷の見え方（モックだけの仕組み。ビューとコメントを描く前に文書を切り替える） -->
+  <script src="./app.js" defer></script>
+  <!-- ビューと検索、コメントの操作 -->
+  <script src="../../../../refs/55/assets/view.js" defer></script>
+  <script src="../../../../refs/55/assets/comment.js" defer></script>
+  <!-- 拡張記法の操作（表のビューの並べ替えと、印刷の前後の展開。view.js が描いた表に付ける） -->
+  <script src="../../../../refs/19/assets/syntax.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色・印刷の見え方と、ビュー・コメントの場面 -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色と印刷">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+      <!-- [data-preview-toggle]: app.js が印刷の規則を画面にも当てる -->
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+    <!-- [data-scene-axis] [data-scene-value]: app.js が行き先の URL（?view=）と今の場面の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="ビューの場面">
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="board">ボードで開く</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="table">表で開く</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="unknown-column">知らない列</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="no-table">表が無い</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="search-off">検索がオフ</a>
+      <a class="mock-bar-item" data-scene-axis="view" data-scene-value="off">ビューがオフ</a>
+    </div>
+    <!-- [data-scene-axis] [data-scene-value]: app.js が行き先の URL（?comments=）と今の場面の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="コメントの場面">
+      <a class="mock-bar-item" data-scene-axis="comments" data-scene-value="none">コメントなし</a>
+      <a class="mock-bar-item" data-scene-axis="comments" data-scene-value="loaded">保存したコメント</a>
+      <a class="mock-bar-item" data-scene-axis="comments" data-scene-value="save-error">保存できない</a>
+      <a class="mock-bar-item" data-scene-axis="comments" data-scene-value="orphaned">描き直した後</a>
+      <a class="mock-bar-item" data-scene-axis="comments" data-scene-value="off">コメントがオフ</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">55</a> / views-comments
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書。[data-mock-comments]: comment.js が中の文字を選んだときにコメントのボタンを出す -->
+    <article class="mdmark" data-mock-comments="on">
+<h1 id="テーマを整える作業">テーマを整える作業</h1>
+<!-- 本文の段落（コメントなし・保存できない・コメントがオフ）: 文字を選ぶとコメントのボタンが出る -->
+<p data-mock-scene="comments:none save-error off">描いた文書の見た目はテーマの変数で変える。色・余白・角丸の値は、使う側が自分の CSS で上書きします。</p>
+<!-- 本文の段落（保存したコメント）: 読み込んだコメントの箇所に印を付ける。[data-mock-body]: comment.js が吹き出しに出す本文 -->
+<p data-mock-scene="comments:loaded">描いた文書の見た目は<mark class="mdmark-comment-mark" data-mock-body="ここは <b>太字</b> にしたい">テーマの変数</mark>で変える。色・余白・角丸の値は、使う側が自分の CSS で上書きします。</p>
+<!-- 本文の段落（描き直した後）: コメントを付けた文字を書き換えたので印が無い -->
+<p data-mock-scene="comments:orphaned">描いた文書の見た目は CSS 変数で変える。色・余白・角丸の値は、使う側が自分の CSS で上書きします。</p>
+
+<h2 id="作業の一覧">作業の一覧</h2>
+<p>10 月の第 4 週の時点の作業です。</p>
+<!-- ビュー（ボードで開く・表で開く・検索がオフ）: view の印（group=状態）で囲んだ表。[data-mock-view]: view.js が samples.js の定義から描く -->
+<div data-mock-view="tasks" data-mock-scene="view:board table search-off"></div>
+<!-- 知らない列: view の印（group=優先度）の書き方の警告と、ボードにせず表で描いたビュー -->
+<div class="mdmark-syntax-warning" id="view-warning-column" data-mock-scene="view:unknown-column">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- view: group=優先度 --&gt;</code> の列 <code>優先度</code> は表にありません。表の列は <code>題</code>・<code>状態</code>・<code>担当</code> です。ボードにせず、表で描いています。</p>
+</div>
+<div data-mock-view="tasks" data-board="disabled" data-warning="view-warning-column" data-mock-scene="view:unknown-column"></div>
+<!-- 表が無い: 範囲に表が無いことの書き方の警告と、範囲の中身をそのまま描いた段落 -->
+<div class="mdmark-syntax-warning" data-mock-scene="view:no-table">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- view: group=状態 --&gt;</code> の範囲に、項目にする表がありません。範囲の中に Markdown の表を書いてください。範囲の中身はそのまま描いています。</p>
+</div>
+<p data-mock-scene="view:no-table">作業は来週の打ち合わせで洗い出します。</p>
+<!-- ビューがオフ: 印の範囲の表をそのまま普通の表で描く -->
+<table data-mock-scene="view:off" tabindex="0" aria-label="表">
+  <thead><tr><th>題</th><th>状態</th><th>担当</th></tr></thead>
+  <tbody>
+    <tr><td>配色の変数を洗い出す</td><td>未着手</td><td>佐藤</td></tr>
+    <tr><td>余白の変数を決める</td><td>進行中</td><td>鈴木</td></tr>
+    <tr><td>印刷の見え方を確かめる</td><td>未着手</td><td>佐藤</td></tr>
+    <tr><td>角丸の値を揃える</td><td>完了</td><td>田中</td></tr>
+    <tr><td>ダークの配色を直す</td><td>進行中</td><td>鈴木</td></tr>
+  </tbody>
+</table>
+
+<h2 id="進め方">進め方</h2>
+<p>進行中の作業は週に 1 度見直し、終わったものを完了に移します。見た目の値は、明るい配色とダークの両方で確かめてから決めます。</p>
+
+<!-- 箇所が見つからないコメント（描き直した後）: 選んだ文字が本文から消えたコメントを、文書の末尾に並べる -->
+<section class="mdmark-comment-orphans" aria-labelledby="comment-orphans" data-mock-scene="comments:orphaned">
+  <h2 id="comment-orphans">箇所が見つからないコメント</h2>
+  <p class="mdmark-comment-orphans-lead">本文が書き換わり、コメントを付けた文字が見つかりません。</p>
+  <ul>
+    <li>
+      <p class="mdmark-comment-quote">「テーマの変数」へのコメント</p>
+      <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+    </li>
+  </ul>
+</section>
+    </article>
+  </main>
+</body>
+</html>
