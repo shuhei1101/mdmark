@@ -336,7 +336,7 @@ functions:
       description: この行を帯から外す関数。帯に残る行が無くなったら帯と受け取りを外す
     process: |-
       1. 送り先を決める。`lines` の祖先をたどり、`overflow-y` が `auto`・`scroll` で中身がはみ出す一番近い要素、無ければ `document.scrollingElement`
-      2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯を置き直すたびと配色が切り替わったとき（`prefers-color-scheme` の `change`）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み、帯の `style` に写す
+      2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。送り先が画面でないときは、送り先の外（画面や祖先の枠）がスクロールしても送り先の位置が変わるため、`document` の `scroll` を捕捉の段で受け取って帯の位置を置き直す。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯を置き直すたびと配色が切り替わったとき（`prefers-color-scheme` の `change`）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み、帯の `style` に写す
       3. 送り先の行の集まりに `lines` を足し、集まりの全ての行から `del`・`add` の行の位置を送り先の `scrollHeight` に対する割合にし、続いた同じ種類の行を 1 つの印にまとめて置き直す。隠れた見方の行は、埋め込んだ HTML の差分の塊の位置で示す。差分の行の大きさが変わったら置き直す
       4. 帯の `pointerdown` でポインターを捕まえ、押した位置の割合の場所が送り先の中ほどに来るよう `scrollTo` で送る。捕まえている間の `pointermove` も同じに送る
       5. 外す関数は、集まりから `lines` を除いて印を置き直し、空になったら帯を取り除いて受け取り（配色の `change` を含む）を外し、`minimaps` から消す
@@ -371,6 +371,12 @@ functions:
         condition: '`.mdmark { --mdmark-color-diff-del-sign: #000; --mdmark-diff-minimap-z-index: 50 }` の下の差分の行。後で上書きを `#111` に変え、`prefers-color-scheme` の `change` を送る'
         mock: '`window.matchMedia` を `change` を送れる偽物に差し替える'
         expected: 帯の `style` の `--mdmark-color-diff-del-sign` が `#000`、`--mdmark-diff-minimap-z-index` が `50`。`change` の後は `--mdmark-color-diff-del-sign` が `#111`
+      - name: test_attach_minimap_when_page_scrolled
+        case: 正常
+        summary: スクロールする枠の外で画面がスクロールすると、帯を枠の右端に置き直す
+        condition: '画面より高いページの中の、`overflow-y: auto` で高さを決めた枠の中の差分の行。帯を置いた後に画面を下へスクロールする'
+        mock: なし
+        expected: スクロールの後も、帯の上端と高さが枠の `getBoundingClientRect` と同じ
     callees:
       - '#functions[renderDiffMinimap]'
     refs:
