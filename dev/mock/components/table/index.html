@@ -808,15 +808,15 @@
         </article>
       </section>
 
-      <!-- 読めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考。異常シナリオ） -->
+      <!-- 読めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前。異常シナリオ） -->
       <section aria-labelledby="state-total-warning">
-        <h2 class="catalog-label" id="state-total-warning">読めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-total-warning">読めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考 --&gt;</code>の読めない指定を当てずに描いています。</p>
-  <ul><li><code>total=</code>: <code>数量:max</code> の計算 <code>max</code> は使えません。使える計算は <code>sum</code>・<code>avg</code>・<code>count</code> です</li><li><code>total=</code>: <code>価格</code> は表に無い列名です</li><li><code>hide=</code>: <code>備考</code> は表に無い列名です</li></ul>
+  <p><code>&lt;!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 --&gt;</code>の読めない指定を当てずに描いています。</p>
+  <ul><li><code>total=</code>: <code>数量:max</code> の計算 <code>max</code> は使えません。使える計算は <code>sum</code>・<code>avg</code>・<code>count</code> です</li><li><code>total=</code>: <code>価格</code> は表に無い列名です</li><li><code>hide=</code>: <code>備考</code> は表に無い列名です</li><li><code>hide=</code>: <code>名前</code> は先頭の列のため隠せません</li></ul>
 </div>
   <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
   <div class="mdmark-table-bar">
