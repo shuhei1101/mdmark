@@ -247,7 +247,7 @@ functions:
     side_effects: '`root` の中に要素を置き、本文の要素の `hidden` を書き換える。取り出し元を呼ぶ。取り出せないときは `console.error` に出す'
     args:
       - name: options
-        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: (html: string) => string; now?: () => number }'
+        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: (html: string) => string }'
         required: true
         description: '`root` は描いた要素、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を今の描画で安全な HTML にする関数'
     returns:
@@ -430,9 +430,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ blocks: DiffBlock[]; sides: "side" | "stack" }'
+        type: '{ blocks: DiffBlock[]; sides: "side" | "stack"; labels?: { before: string; after: string } }'
         required: true
-        description: 塊の並びと、埋め込んだ HTML のプレビューの並べ方
+        description: 塊の並びと、埋め込んだ HTML のプレビューの並べ方、プレビューの前と後の `figcaption` に出すリビジョンの説明
     returns:
       type: string
       description: '`role="group"`・`aria-label="変更の行"` の要素。行は `mdmark-diff-line`・`data-kind`、行頭の印（`aria-hidden`）、削除した行・追加した行の見えない読み上げの名前を持ち、`changed` の切れを `del`・`ins` で囲む。文字はエスケープする'
