@@ -1,0 +1,23 @@
+title: Parts/CommentBubble
+stories:
+  - name: Single
+    parameters:
+      server:
+        id: comment-bubble
+    args:
+      quote: テーマの変数
+      bodies: '["変数の名前を一覧にしてほしい"]'
+  - name: Multiple
+    parameters:
+      server:
+        id: comment-bubble
+    args:
+      quote: テーマの変数
+      bodies: '["変数の名前を一覧にしてほしい","既定の値も並べると、上書きするときに迷わずに済みます。ダークの値も同じ表に並べてください。\n2 行目の続き"]'
+  - name: EscapedBody
+    parameters:
+      server:
+        id: comment-bubble
+    args:
+      quote: テーマの変数
+      bodies: '["ここは <b>太字</b> にしたい"]'

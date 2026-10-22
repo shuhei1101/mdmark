@@ -152,6 +152,39 @@ export async function emitDeclarations(root: string): Promise<void> {
   }
 }
 
+/** ビューとコメントの部品のモジュール `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ねる。使う関数はそれぞれのファイルに束ね、`dist/index.js` は読み込まない。ソースが無ければ何も書かない */
+async function buildParts(
+  version: string,
+  root: string,
+): Promise<Record<string, number>> {
+  const entryPoints = [
+    { in: "src/views/index.ts", out: "view" },
+    { in: "src/comments/index.ts", out: "comments" },
+  ].filter((entry) => existsSync(join(root, entry.in)));
+  if (entryPoints.length === 0) {
+    return {};
+  }
+  const result = await build({
+    absWorkingDir: root,
+    entryPoints,
+    outdir: "dist",
+    bundle: true,
+    format: "esm",
+    minify: true,
+    target: BROWSER_TARGETS,
+    plugins: [postcssStubPlugin],
+    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    metafile: true,
+    logLevel: "silent",
+  });
+  return Object.fromEntries(
+    Object.entries(result.metafile.outputs).map(([path, output]) => [
+      path,
+      output.bytes,
+    ]),
+  );
+}
+
 /** 書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に束ねる。ソースが無ければ何も書かない */
 async function buildViewer(
   version: string,
@@ -250,6 +283,7 @@ export async function buildDist(
       output.bytes,
     ]),
   );
+  Object.assign(outputs, await buildParts(version, root));
   Object.assign(outputs, await buildViewer(version, root));
   Object.assign(outputs, await buildCli(version, root));
   outputs[`dist/${LICENSES_FILE}`] = statSync(

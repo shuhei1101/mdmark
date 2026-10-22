@@ -1,0 +1,6 @@
+title: Parts/CommentButton
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: comment-button

@@ -41,6 +41,8 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   backlinks: true,
   html: true,
   hints: true,
+  views: true,
+  comments: false,
 };
 
 /** 印の名前から `LibraryEntry` を引く既定の対応表 */

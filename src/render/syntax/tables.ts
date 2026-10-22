@@ -47,12 +47,12 @@ export type TableSpec = {
 };
 
 /** 並びをコードにして `・` でつなぐ */
-function codes(values: readonly string[]): string {
+export function codes(values: readonly string[]): string {
   return values.map((value) => `\`${value}\``).join("・");
 }
 
 /** `filter=` の値を、表の見出しの文字と照らして読む */
-function readFilters(
+export function readFilters(
   value: string,
   headers: string[],
   warnings: WarningItem[],
@@ -169,7 +169,10 @@ function isItemWarning(item: WarningItem): boolean {
 }
 
 /** 表の指定の警告を、書き方の警告に渡す値にする: 項目の形のものは 1 つにまとめ、1 文のものは 1 つずつ */
-function warningsOf(mark: string, warnings: WarningItem[]): SyntaxWarning[] {
+export function warningsOf(
+  mark: string,
+  warnings: WarningItem[],
+): SyntaxWarning[] {
   const items = warnings.filter(isItemWarning);
   const sentences = warnings.filter((warning) => !isItemWarning(warning));
   const result: SyntaxWarning[] = sentences.map((warning) => ({
@@ -228,7 +231,7 @@ function decorateAttributes(state: StateCore): void {
 }
 
 /** 表の見出しの文字を集める */
-function headersOf(tokens: Token[], tableOpen: number): string[] {
+export function headersOf(tokens: Token[], tableOpen: number): string[] {
   const headers: string[] = [];
   for (let index = tableOpen; index < tokens.length; index++) {
     const token = tokens[index];
@@ -289,7 +292,11 @@ export function decorateTables(state: StateCore): void {
           (candidate.close < 0 || index < candidate.close),
       )
       .pop();
-    const spec = readTableSpec(range?.mark.args, headersOf(tokens, index));
+    // ビューの印が表の指定を当てた表は、その指定で表の部品にする
+    const viewSpec = (token.meta as { tableSpec?: TableSpec } | null)
+      ?.tableSpec;
+    const spec =
+      viewSpec ?? readTableSpec(range?.mark.args, headersOf(tokens, index));
     const filtering = spec.features.includes("filter");
     const html = renderTable({
       kind: spec.kind,

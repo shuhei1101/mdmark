@@ -1,3 +1,4 @@
+import type { MdmarkCommentStore } from "./comments/spec.ts";
 import {
   type MdmarkConfig,
   type ResolvedConfig,
@@ -9,6 +10,7 @@ import { attachInteractions } from "./interact/index.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
+import { attachParts } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
 
@@ -26,6 +28,8 @@ export type MountOptions = {
   references?: MdmarkReferences;
   /** 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る */
   diffSource?: DiffSource;
+  /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
+  commentStore?: MdmarkCommentStore;
 };
 
 /** `mount` の戻り値 */
@@ -83,11 +87,24 @@ function createDiffHtmlRenderer(options: {
   };
 }
 
-/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` を渡して `docId` が無いときは、何も描かずに `TypeError` を投げる */
+/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore` が `load`・`save` の関数を持たないときは、何も描かずに `TypeError` を投げる */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
-  const { diffSource, docId } = opts;
+  const { diffSource, commentStore, docId } = opts;
   if (diffSource !== undefined && docId === undefined) {
     throw new TypeError("diffSource を渡すときは docId も渡してください");
+  }
+  if (commentStore !== undefined) {
+    if (docId === undefined) {
+      throw new TypeError("commentStore を渡すときは docId も渡してください");
+    }
+    if (
+      typeof commentStore.load !== "function" ||
+      typeof commentStore.save !== "function"
+    ) {
+      throw new TypeError(
+        "commentStore は load と save の関数を持つオブジェクトで渡してください",
+      );
+    }
   }
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
@@ -102,6 +119,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let detachInteractions: (() => void) | undefined;
   // 今の文書に付けた差分を外す関数
   let detachDiff: (() => void) | undefined;
+  // 今の文書に付けたビューとコメントの部品を外す関数
+  let detachParts: (() => void) | undefined;
+  // コメントの機能に読み書きの関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
+  const warned = { missingStore: false };
 
   /** 文書を描く */
   const draw = (markdown: string): void => {
@@ -110,6 +131,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     detachInteractions?.();
     detachDiff?.();
     detachDiff = undefined;
+    detachParts?.();
+    detachParts = undefined;
     const rendered = renderDocument({
       markdown,
       config,
@@ -131,6 +154,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       libraries: config.libraries,
       isCurrent: () => !destroyed && generation === current,
       definitions: rendered.extensionDefinitions,
+    });
+    detachParts = attachParts({
+      root: el,
+      features,
+      commentStore,
+      docId,
+      isCurrent: () => !destroyed && generation === current,
+      warned,
     });
     if (diffSource !== undefined && docId !== undefined) {
       detachDiff = attachDiff({
@@ -160,6 +191,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       destroyed = true;
       detachInteractions?.();
       detachDiff?.();
+      detachParts?.();
       detachPrint();
       el.innerHTML = "";
       el.classList.remove(ROOT_CLASS);

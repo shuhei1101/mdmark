@@ -24,6 +24,7 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   fig: "figures",
   toc: "toc",
   glossary: "glossary",
+  view: "views",
   flow: "diagrams",
   sequence: "diagrams",
   chart: "diagrams",

@@ -1,3 +1,9 @@
+export type {
+  MdmarkComment,
+  MdmarkCommentDraft,
+  MdmarkCommentStore,
+  MdmarkCommentsHandle,
+} from "./comments/spec.ts";
 export type { MdmarkConfig } from "./config.ts";
 export type {
   MdmarkChartDefinition,
@@ -19,8 +25,10 @@ export type { MdmarkReferences } from "./knowledge/references.ts";
 export { collectReferences } from "./knowledge/references.ts";
 export type { MountHandle, MountOptions } from "./mount.ts";
 export { mount } from "./mount.ts";
+export { mountComments, mountView } from "./mount-parts.ts";
 export { render } from "./render/index.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
+export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";
 
 declare const __MDMARK_VERSION__: string;
 
