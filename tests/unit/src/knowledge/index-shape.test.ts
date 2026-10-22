@@ -106,6 +106,25 @@ test("test_normalize_index_when_invalid_item", async () => {
   expect(index.terms ?? []).toEqual([]);
 });
 
+// 空の要素を持つ avoid の用語を除き、場所を返す（異常系）
+test("test_normalize_index_when_invalid_avoid", async () => {
+  // 準備
+  const { normalizeIndex } = await loadShape();
+  const value = {
+    schema: 1,
+    docs: [],
+    terms: [
+      { id: "a", term: "語 A", meaning: "意味 A", avoid: [""] },
+      { id: "b", term: "語 B", meaning: "意味 B", avoid: ["作業場"] },
+    ],
+  };
+  // 実行
+  const { index, problems } = normalizeIndex(value);
+  // 検証
+  expect(problems.map((problem) => problem.where)).toEqual(["terms[0].avoid"]);
+  expect((index.terms ?? []).map((term) => term.id)).toEqual(["b"]);
+});
+
 // オブジェクトでない値でも例外を投げない（異常系）
 test("test_normalize_index_when_not_object", async () => {
   // 準備
