@@ -37,19 +37,19 @@ const PARAM_ID_PREFIX = "mdmark-param";
 const HINT_ID_PREFIX = "mdmark-hint-";
 
 /** 埋め込んだ HTML の中の図の部品の custom element と、その中の定義の文字 */
-const PART_PATTERN =
+export const PART_PATTERN =
   /<mdmark-(flow|sequence|chart|param)\b[^>]*>([\s\S]*?)<\/mdmark-\1\s*>/gi;
 
 /** 中身を持たない要素 */
 const VOID_TAGS = new Set(["img", "br", "hr", "input", "wbr"]);
 
 /** 範囲の言語 `html` のコードブロックか */
-function isHtmlFence(token: Token): boolean {
+export function isHtmlFence(token: Token): boolean {
   return token.type === "fence" && token.info.trim().split(/\s+/)[0] === "html";
 }
 
 /** sanitize-html が逃がした文字（`&amp;`・`&lt;`・`&gt;`・`&quot;`）を文字に戻す */
-function unescapeHtml(text: string): string {
+export function unescapeHtml(text: string): string {
   return text
     .replaceAll("&lt;", "<")
     .replaceAll("&gt;", ">")
