@@ -1,0 +1,1 @@
+# PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー
