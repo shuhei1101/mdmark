@@ -34,9 +34,9 @@
   --preview-notice-text: var(--mdmark-color-notice-text, #f0f6fc);
 }
 
-/* 帯の幅の基準: 列の幅が 480px 未満かをコンテナクエリで見る */
-#mdmark-preview {
-  container: preview / inline-size;
+/* 帯を包む枠: 帯の外側の幅が 480px 未満かをコンテナクエリで見るための基準（Webview でも Storybook でも効く） */
+.mdmark-config-band-frame {
+  container: mdmark-config-band / inline-size;
 }
 
 /* 読み込み中・描けない理由: 文書の代わりにパネルの中央に置く */
@@ -161,7 +161,7 @@
   overflow-wrap: anywhere;
 
   /* 狭い列: ボタンを文の下へ回す */
-  @container preview (width < 480px) {
+  @container mdmark-config-band (width < 480px) {
     grid-template-columns: 1fr;
   }
 
