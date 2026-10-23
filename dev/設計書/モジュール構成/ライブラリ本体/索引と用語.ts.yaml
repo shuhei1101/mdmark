@@ -830,7 +830,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`<!-- html -->` の範囲の `html` のコードブロックの文字を、描くときと同じ範囲で照合し、本文の位置を返す'
-    description: 範囲の見つけ方は `buildEmbeddedHtml` と同じ。図の部品の custom element を除いた HTML を `sanitizeEmbedded` に通し、文字を受け取る関数で受けた文字（`termsFilter` と同じく、`a`・`code`・`pre`・`button`・見出しの中を除き、逃がした文字を戻す）を `findWords` で照合する。位置は、コードブロックの中身を `maskEmbeddedHtml` で伏せた本文へ、中身の頭から順に `alignText` で当てて戻す。伏せた文字はどの文字にも当たらないため、属性の値・中身ごと落ちる要素・照合しない要素の中の同じ綴りを取り違えない
+    description: 範囲の見つけ方は `buildEmbeddedHtml` と同じ。図の部品の custom element を除いた HTML を `sanitizeEmbedded` に通し、文字を受け取る関数で受けた文字（`termsFilter` と同じく、`a`・`code`・`pre`・`button`・見出しが直接持つ文字を除き、逃がした文字を戻す）を `findWords` で照合する。位置は、コードブロックの中身を `maskEmbeddedHtml` で伏せた本文へ、中身の頭から順に `alignText` で当てて戻す。伏せた文字はどの文字にも当たらないため、属性の値・中身ごと落ちる要素・照合しない要素の中の同じ綴りを取り違えない
     args:
       - name: options
         type: '{ body: string; tokens: Token[]; dictionary: Dictionary }'
@@ -846,10 +846,10 @@ functions:
     unit_tests:
       - name: test_embedded_html_matches
         case: 正常
-        summary: HTML の文字の用語の位置だけを返し、属性の値・落ちる要素・照合しない要素の中の同じ綴りは返さない
-        condition: '`<!-- html -->` の範囲に、`<p>&amp;&lt;b&gt; の後ろのワークスペース</p>`・`<span title="ワークスペース">ワークスペース</span>`・`<script>ワークスペース</script>WS`・`<code>ワークスペース</code> とワークスペース`・`<a href="#">ワークスペース</a>` の行'
+        summary: HTML の文字の用語の位置だけを返し、属性の値・落ちる要素・照合しない要素が直接持つ同じ綴りは返さず、その要素の中の入れ子の文字は返す
+        condition: '`<!-- html -->` の範囲に、`<p>&amp;&lt;b&gt; の後ろのワークスペース</p>`・`<span title="ワークスペース">ワークスペース</span>`・`<script>ワークスペース</script>WS`・`<code>ワークスペース</code> とワークスペース`・`<a href="#">ワークスペース</a>`・`<a href="#"><span>ワークスペース</span></a>` の行'
         mock: なし
-        expected: '`p` の文字・`span` の要素の文字・`script` の後ろの `WS`・`code` の後ろの文字の 4 件だけで、本文の行を切り出した文字が一致した文字と同じ'
+        expected: '`p` の文字・`span` の要素の文字・`script` の後ろの `WS`・`code` の後ろの文字・`a` の中の `span` の文字の 5 件だけで、本文の行を切り出した文字が一致した文字と同じ'
   - name: diagramTermMatches
     title: 図の部品の用語を照合する
     container: src/knowledge/matches.ts
@@ -878,7 +878,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 埋め込んだ HTML のうち、照合に渡らない範囲を、どの文字にも当たらない文字で伏せた同じ長さの文字列を返す
-    description: 伏せるのは、タグ（`<`〜`>`。属性の値を含む）・コメント（`<!--`〜`-->`）と、中身ごと落ちる要素（sanitize-html の `nonTextTags` の `script`・`style`・`textarea`・`option`・`xmp` と、`button` を除く図の部品だけが持つ要素）・文字を照合しない要素（`TEXT_FILTER_SKIP_TAGS`）の開きから閉じまで。要素の一覧は `src/render/sanitize.ts` から同じ定数を export して使い、別に書かない。文字の位置は変えない
+    description: 伏せるのは、タグ（`<`〜`>`。属性の値を含む）・コメント（`<!--`〜`-->`）と、中身ごと落ちる要素（sanitize-html の `nonTextTags` の `script`・`style`・`textarea`・`option`・`xmp` と、`button` を除く図の部品だけが持つ要素）の開きから閉じまでと、文字を照合しない要素（`TEXT_FILTER_SKIP_TAGS`）が直接持つ文字。`sanitizeEmbedded` の `textFilter` はその文字を直接持つ一番内側の要素で判定するため、タグを頭から読んで開いている要素の並びを持ち、一番内側が `TEXT_FILTER_SKIP_TAGS` の要素のときの文字だけを伏せる（`<a><span>語</span></a>` の `span` の文字は伏せない）。要素の一覧は `src/render/sanitize.ts` から同じ定数を export して使い、別に書かない。文字の位置は変えない
     args:
       - name: html
         type: string
@@ -890,10 +890,10 @@ functions:
     unit_tests:
       - name: test_mask_embedded_html
         case: 正常
-        summary: タグ・コメント・落ちる要素・照合しない要素の中を伏せ、要素の文字を残す
-        condition: '`<span title="語">語</span><!-- 語 --><script>語</script><code>語</code><a href="#">語</a>`'
+        summary: タグ・コメント・落ちる要素の中と、照合しない要素が直接持つ文字を伏せ、要素の文字と入れ子の文字を残す
+        condition: '`<span title="語">語</span><!-- 語 --><script>語</script><code>語</code><a href="#">語</a><a href="#"><span>入</span></a><h2><em>見</em></h2>`'
         mock: なし
-        expected: 長さが同じで、`span` の要素の文字の `語` だけが残る
+        expected: 長さが同じで、最初の `span` の要素の文字の `語` と、`a` の中の `span` の `入`、見出しの中の `em` の `見` だけが残る
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
