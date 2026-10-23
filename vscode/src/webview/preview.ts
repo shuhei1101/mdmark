@@ -240,30 +240,35 @@ export function startPreview(): void {
   const view = new PreviewView({ root });
   /** 最初の `rendered` を送ったか、描けない理由を出したか */
   let settled = false;
-  // 本文のリンクと状態の表示のボタンの押下
-  document.addEventListener("click", (event) => {
-    const target = event.target instanceof Element ? event.target : undefined;
-    const action =
-      target?.closest<HTMLElement>("[data-action]")?.dataset.action;
-    if (action === "reload" || action === "openConfig") {
-      api.postMessage({ type: action });
-      return;
-    }
-    const link = target?.closest("a[href]");
-    if (link === null || link === undefined) {
-      return;
-    }
-    event.preventDefault();
-    const href = link.getAttribute("href") ?? "";
-    if (href.startsWith("#")) {
-      // ページの中のリンクは、この中で移る
-      document
-        .getElementById(decodeURIComponent(href.slice(1)))
-        ?.scrollIntoView();
-    } else {
-      api.postMessage({ type: "openLink", href });
-    }
-  });
+  // 本文のリンクと状態の表示のボタンの押下。VS Code の Webview の外枠は `window` の `click` でもリンクを開くため、キャプチャで受けて伝播を止める
+  document.addEventListener(
+    "click",
+    (event) => {
+      const target = event.target instanceof Element ? event.target : undefined;
+      const action =
+        target?.closest<HTMLElement>("[data-action]")?.dataset.action;
+      if (action === "reload" || action === "openConfig") {
+        api.postMessage({ type: action });
+        return;
+      }
+      const link = target?.closest("a[href]");
+      if (link === null || link === undefined) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const href = link.getAttribute("href") ?? "";
+      if (href.startsWith("#")) {
+        // ページの中のリンクは、この中で移る
+        document
+          .getElementById(decodeURIComponent(href.slice(1)))
+          ?.scrollIntoView();
+      } else {
+        api.postMessage({ type: "openLink", href });
+      }
+    },
+    true,
+  );
   window.addEventListener("message", (event: MessageEvent<HostMessage>) => {
     const message = event.data;
     if (message.type === "render") {
