@@ -1,0 +1,144 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-metadata-glossary-avoid
+
+ ❯ |unit| tests/unit/src/knowledge/check.test.ts (9 tests | 1 failed) 50ms
+   × test_check_index_when_glossary_avoided_term 7ms
+ ❯ |unit| tests/unit/src/render/syntax/glossary.test.ts (8 tests | 3 failed) 10301ms
+   × test_read_glossary_rows_with_avoid 15ms
+   × test_read_glossary_rows_without_avoid 4ms
+   × test_read_glossary_rows_when_unknown_avoid_column 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_glossary_avoided_term
+AssertionError: expected [] to deeply equal [ { file: 'guide.md', …(2) }, …(1) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "file": "guide.md",
+-     "kind": "avoided_term",
+-     "where": "1 行目",
+-   },
+-   {
+-     "file": "guide.md",
+-     "kind": "avoided_term",
+-     "where": "3 行目",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/check.test.ts:284:5
+    282|   expect(
+    283|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    284|   ).toEqual([
+       |     ^
+    285|     { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+    286|     { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/glossary.test.ts > test_read_glossary_rows_with_avoid
+AssertionError: expected { …(2) } to match object { avoid: [ '作業場', 'ワーク場' ] }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "avoid": [
+-     "作業場",
+-     "ワーク場",
+-   ],
++   "entry": {
++     "aliases": [],
++     "docId": "glossary",
++     "meaning": "作業の置き場所",
++     "term": "ワークスペース",
++   },
++   "line": 3,
+  }
+
+ ❯ tests/unit/src/render/syntax/glossary.test.ts:177:19
+    175|   expect(warning).toBeUndefined();
+    176|   expect(rows).toHaveLength(1);
+    177|   expect(rows[0]).toMatchObject({ avoid: ["作業場", "ワーク場"] });
+       |                   ^
+    178|   expect(rows[0]?.entry.aliases).toEqual([]);
+    179| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/glossary.test.ts > test_read_glossary_rows_without_avoid
+AssertionError: expected { entry: { term: '印', …(3) }, line: 3 } to match object { avoid: [] }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "avoid": [],
++   "entry": {
++     "aliases": [
++       "マーク",
++     ],
++     "docId": "glossary",
++     "meaning": "HTML コメントで書く指定",
++     "term": "印",
++   },
++   "line": 3,
+  }
+
+ ❯ tests/unit/src/render/syntax/glossary.test.ts:197:19
+    195|   // 検証
+    196|   expect(rows).toHaveLength(1);
+    197|   expect(rows[0]).toMatchObject({ avoid: [] });
+       |                   ^
+    198|   expect(rows[0]?.entry).toEqual(entries[0]);
+    199| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/glossary.test.ts > test_read_glossary_rows_when_unknown_avoid_column
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "entry": {
++       "aliases": [],
++       "docId": "",
++       "meaning": "HTML コメントで書く指定",
++       "term": "印",
++     },
++     "line": 3,
++   },
++ ]
+
+ ❯ tests/unit/src/render/syntax/glossary.test.ts:219:16
+    217|   });
+    218|   // 検証
+    219|   expect(rows).toEqual([]);
+       |                ^
+    220|   expect(warning).toContain("avoid=");
+    221|   expect(warning).toContain("旧称");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 120 passed (122)
+      Tests  4 failed | 666 passed (670)
+   Start at  21:56:08
+   Duration  52.10s (tests 36%, worker 36%, import 25%, transform 3%)
+
+exit=1
