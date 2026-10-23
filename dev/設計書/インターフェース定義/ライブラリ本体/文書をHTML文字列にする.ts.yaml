@@ -597,6 +597,30 @@ flows:
       - コードブロックの行の `span` は今のとおり `data-line`（`1` から）を持ち、`data-source-line` を持たない
       - '`<td>` の `data-label` と `mdmark-align-*` の class は正常系と同じ'
     test: test_normal_when_source_lines
+  - name: 正常系（やめた言い方）
+    summary: やめた言い方のマーカーと代わりの用語を、スクリプト無しで読める HTML 文字列にする
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 索引
+        description: '`mount` の「正常系（やめた言い方のマーカー）」と同じ索引'
+        notes: '`opts.docId` は `guide`'
+      - name: やめた言い方が出る Markdown
+        description: 段落に `ワークスペース` と `作業場` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { index, docId })
+        M-->>C: HTML 文字列
+    expected:
+      - '`ワークスペース` が class `mdmark-term` の要素で、その隣に「用語」の意味 `話し合いの記録を置くフォルダ` を持つ要素がある'
+      - '`作業場` が class `mdmark-term mdmark-term-avoided` の要素で、その隣に「代わりの用語」の `ワークスペース` と意味を持つ要素がある'
+      - 文字列に `script` 要素が無い
+      - Node とブラウザで同じ文字列を返す。期待する HTML 文字列をテストの固定値にし、Node の `render` と、ブラウザ（Chromium）で配布物の `render` を呼んだ結果がどちらもその値と等しい
+    test: test_normal_when_avoided_term
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）

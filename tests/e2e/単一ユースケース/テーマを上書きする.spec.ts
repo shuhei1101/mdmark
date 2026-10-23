@@ -13,9 +13,9 @@ let builtRoot = "";
 // 段落とリンクを持つ見本の Markdown
 const MARKDOWN = "段落\n\n[リンク](https://example.com/page)\n";
 
-// デザイン方針の modern の値（明るい配色のリンクの色と、ダークの配色の地の色）
-const LIGHT_LINK_COLOR = "rgb(9, 105, 218)";
-const DARK_BACKGROUND = "rgb(13, 17, 23)";
+// デザイン方針の dev-swiss の値（明るい配色のリンクの色と、ダークの配色の地の色）
+const LIGHT_LINK_COLOR = "rgb(15, 118, 110)";
+const DARK_BACKGROUND = "rgb(19, 19, 22)";
 const LIGHT_BACKGROUND = "rgb(255, 255, 255)";
 
 test.beforeAll(async () => {

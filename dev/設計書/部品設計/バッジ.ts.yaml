@@ -22,11 +22,11 @@ args:
 css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
-    default: '#f6f8fa（ダーク #151b23）'
+    default: '#f4f4f5（ダーク #1b1b1f）'
     description: 札の地の色
   - name: --mdmark-color-border
     syntax: <color>
-    default: '#d1d9e0（ダーク #3d444d）'
+    default: '#e4e4e7（ダーク #26262b）'
     description: 札の線の色
 accessibility:
   - 札は文言をそのまま読み上げる `span` で、色だけで意味を持たせない

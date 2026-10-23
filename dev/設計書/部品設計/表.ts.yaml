@@ -487,12 +487,12 @@ events:
 css_properties:
   - name: --mdmark-color-table-head
     syntax: <color>
-    default: '#e6ebf0（ダーク #262c36）'
+    default: '#f4f4f5（ダーク #1b1b1f）'
     description: 見出し行の地の色
   - name: --mdmark-color-surface
     syntax: <color>
-    default: '#f6f8fa（ダーク #151b23）'
-    description: 本文の行の地の色（面）
+    default: '#f4f4f5（ダーク #1b1b1f）'
+    description: 見出し行で `--mdmark-color-table-head` を上書きしないときの面の色。本文の行は面で塗らず地の色（`--mdmark-color-bg`）のままにする
   - name: --mdmark-table-max-height
     syntax: <length>
     default: 28rem
@@ -501,6 +501,10 @@ css_properties:
     syntax: <length>
     default: 1px
     description: 縦の罫線の太さ（`plain` は 0）
+  - name: --mdmark-radius
+    syntax: <length>
+    default: 4px
+    description: 表の外枠の角丸は、この値の 2 倍にする。外枠・見出しの下・行の間・集計の上の線はどれも 1px の `--mdmark-color-border`。文書全体の角丸を変えると表の角丸も変わる
 accessibility:
   - 並べ替えのボタンは列名を読み上げの名前にし、並べた列の `th` は `aria-sort` で向きを示す
   - 絞り込みのボタンは `「{列名}」で絞り込む` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない

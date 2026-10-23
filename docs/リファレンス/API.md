@@ -72,6 +72,7 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 表の並べ替え・タブの切り替えなど、記法の操作を付ける（書き方は [記法](./記法.md)）。
 文書に書いたスクリプト（`script` 要素・`on` で始まる属性・`javascript:` の URL）は落とし、実行しない。
 索引を渡すと、本文に出た用語と文書の別名に破線の下線を引き、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を置く。
+索引の用語の `avoid` に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の語と意味のツールチップを出す（`glossary` がオンのときだけ）。
 ツールチップの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
 書き方は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
 図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
@@ -205,7 +206,7 @@ const html = render("# 見出し\n\n本文");
 同じ引数には、ブラウザでも Node でも同じ文字列を返す。
 各記法の中身（全てのタブの中身・閉じた節の中身を含む）は、スクリプトを動かさなくても読める。
 並べ替え・タブの切り替えなどの操作は `mount` が付ける。
-用語の意味と関連文書、文書の末尾の被参照の一覧も、スクリプトを動かさなくても読める。
+用語の意味と関連文書、やめた言い方の代わりの用語、文書の末尾の被参照の一覧も、スクリプトを動かさなくても読める。
 ツールチップを開閉する操作は `mount` が付ける。
 図の部品の定義は、題・図・凡例の HTML にし、定義の JSON は残さない。図の操作は `mount` が付ける。
 
@@ -599,17 +600,18 @@ handle.destroy();
 | `--mdmark-font-body` | `system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif` | 本文の書体 |
 | `--mdmark-font-heading` | `var(--mdmark-font-body)` | 見出しの書体 |
 | `--mdmark-font-mono` | `ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace` | コードの書体 |
-| `--mdmark-font-size` | `1rem` | 本文の文字の大きさ |
-| `--mdmark-line-height` | `1.75` | 本文の行間 |
+| `--mdmark-font-size` | `0.875rem` | 本文の文字の大きさ |
+| `--mdmark-line-height` | `1.8` | 本文の行間 |
 | `--mdmark-content-width` | `46rem` | 行の長さの上限 |
-| `--mdmark-space` | `1rem` | ブロックの間隔の基準 |
+| `--mdmark-space` | `0.875rem` | ブロックの間隔の基準 |
 | `--mdmark-padding` | `1.5rem` | 描く先の要素の内側の余白 |
-| `--mdmark-radius` | `6px` | 角丸の大きさ（描く先の要素・コードブロック・引用・折り畳み・読み込み中の枠・知らせの枠・書き方の警告） |
-| `--mdmark-heading-weight` | `600` | 見出しの太さ |
-| `--mdmark-heading-rule-width` | `1px` | 見出し 1・見出し 2 の下の線の太さ。`0` にすると線が出ない |
+| `--mdmark-radius` | `4px` | 角丸の大きさ（描く先の要素・コードブロック・引用・折り畳み・読み込み中の枠・知らせの枠・書き方の警告・注意書き）。表の外側の枠は 2 倍 |
+| `--mdmark-heading-weight` | `700` | 見出しの太さ |
+| `--mdmark-heading-rule-width` | `0px` | 見出し 1・見出し 2 の下の線の太さ。`0` のままだと線が出ない |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
 | `--mdmark-table-max-height` | `28rem` | 表の高さの上限。超える表は表の中で縦にスクロールし、見出し行を上端に留める |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
+| `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
 | `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、箱の色の濃さ |
@@ -629,48 +631,50 @@ handle.destroy();
 
 | 変数 | 明るい配色 | ダークの配色 | 使う場所 |
 | --- | --- | --- | --- |
-| `--mdmark-color-bg` | `#ffffff` | `#0d1117` | 描く先の要素の地 |
-| `--mdmark-color-text` | `#1f2328` | `#f0f6fc` | 本文の文字 |
-| `--mdmark-color-heading` | `#1f2328` | `#f0f6fc` | 見出しの文字 |
-| `--mdmark-color-muted` | `#59636e` | `#9198a1` | 引用・読み込み中の枠の文字 |
-| `--mdmark-color-link` | `#0969da` | `#4493f8` | リンクとフォーカスの枠 |
-| `--mdmark-color-border` | `#d1d9e0` | `#3d444d` | 枠・罫線・読み込み中の枠の破線 |
-| `--mdmark-color-surface` | `#f6f8fa` | `#151b23` | コード・表の本文の行・引用の面 |
-| `--mdmark-color-scroll-shadow` | `rgb(31 35 40 / 0.22)` | `rgb(145 152 161 / 0.5)` | 表とコードブロックに横の続きがあることを示す影 |
-| `--mdmark-color-notice-bg` | `#fff8c5` | `#2a2110` | 知らせの枠の地 |
-| `--mdmark-color-notice-border` | `#9a6700` | `#bb8009` | 知らせの枠の線・書き方の警告の枠の破線 |
-| `--mdmark-color-notice-text` | `#1f2328` | `#f0f6fc` | 知らせの枠の文字・書き方の警告の文字 |
-| `--mdmark-color-table-head` | `#e6ebf0` | `#262c36` | 表の見出し行の面 |
-| `--mdmark-color-callout-note` | `#0969da` | `#4493f8` | 補足の注意書きの枠の線・題・アイコン |
-| `--mdmark-color-callout-tip` | `#1a7f37` | `#3fb950` | ヒントの注意書きの枠の線・題・アイコン |
-| `--mdmark-color-callout-important` | `#8250df` | `#ab7df8` | 重要の注意書きの枠の線・題・アイコン |
-| `--mdmark-color-callout-warning` | `#9a6700` | `#d29922` | 警告の注意書きの枠の線・題・アイコン |
-| `--mdmark-color-callout-caution` | `#d1242f` | `#f85149` | 注意の注意書きの枠の線・題・アイコン |
-| `--mdmark-color-current-bg` | `#ddf4ff` | `#121d2f` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景 |
-| `--mdmark-color-diagram-llm` | `#8250df` | `#ab7df8` | 図の LLM の箱と LLM の層の色 |
-| `--mdmark-color-diagram-dm` | `#0550ae` | `#79c0ff` | 図の意思決定モデルの箱の色 |
-| `--mdmark-color-diagram-script` | `#59636e` | `#9198a1` | 図のスクリプトの箱の色 |
-| `--mdmark-color-diagram-mcp` | `#bc4c00` | `#f0883e` | 図の MCP の箱と処理の層の色 |
-| `--mdmark-color-diagram-data` | `#1b7c83` | `#39c5cf` | 図のデータの箱とデータの層の色 |
-| `--mdmark-color-diagram-external` | `#1a7f37` | `#3fb950` | 図の外部のシステムの箱の色 |
-| `--mdmark-color-diagram-line` | `#59636e` | `#9198a1` | 図の処理の流れ・戻る線の色 |
-| `--mdmark-color-series-1` | `#0969da` | `#4493f8` | グラフの 1 つ目の系列の色（実線・丸の点） |
-| `--mdmark-color-series-2` | `#bc4c00` | `#f0883e` | グラフの 2 つ目の系列の色 |
-| `--mdmark-color-series-3` | `#8250df` | `#ab7df8` | グラフの 3 つ目の系列の色 |
-| `--mdmark-color-series-4` | `#1b7c83` | `#39c5cf` | グラフの 4 つ目の系列の色 |
-| `--mdmark-color-code-highlight-bg` | `#fff8c5` | `#2e2a14` | コードブロックの強調した行の背景 |
-| `--mdmark-color-code-highlight-line` | `#9a6700` | `#d29922` | コードブロックの強調した行の左端の線 |
-| `--mdmark-color-diff-del-bg` | `#ffebe9` | `#25171c` | 差分の削除した行の背景と、コードの行の印の消した行の背景 |
-| `--mdmark-color-diff-del-word` | `#ffcecb` | `#6b2b2b` | 差分の削除した行で変わった語の背景 |
-| `--mdmark-color-diff-del-sign` | `#d1242f` | `#f85149` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色。コードの行の印の消した行の行頭の `-` と左端の線にも使う |
-| `--mdmark-color-diff-add-bg` | `#dafbe1` | `#12261e` | 差分の追加した行の背景と、コードの行の印の足した行の背景 |
-| `--mdmark-color-diff-add-word` | `#aceebb` | `#1a4a29` | 差分の追加した行で変わった語の背景 |
-| `--mdmark-color-diff-add-sign` | `#1a7f37` | `#3fb950` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色。コードの行の印の足した行の行頭の `+` と左端の線にも使う |
-| `--mdmark-color-comment-bg` | `#fbefff` | `#2e2147` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
-| `--mdmark-color-comment-line` | `#8250df` | `#ab7df8` | コメントの印の下線の色 |
-| `--mdmark-color-error` | `#d1242f` | `#f85149` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |
+| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素の地と、表の本文の行の地。「コメントを保存」のボタンの文字 |
+| `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの地と線 |
+| `--mdmark-color-heading` | `#18181b` | `#ededef` | 見出しの文字 |
+| `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中の枠の文字 |
+| `--mdmark-color-link` | `#0f766e` | `#2dd4bf` | リンクとフォーカスの枠 |
+| `--mdmark-color-border` | `#e4e4e7` | `#26262b` | 枠・罫線・読み込み中の枠の破線 |
+| `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
+| `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | 表とコードブロックに横の続きがあることを示す影 |
+| `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 知らせの枠の地 |
+| `--mdmark-color-notice-border` | `#b45309` | `#fbbf24` | 知らせの枠の線・書き方の警告の枠の破線 |
+| `--mdmark-color-notice-text` | `#18181b` | `#ededef` | 知らせの枠の文字・書き方の警告の文字 |
+| `--mdmark-color-table-head` | `#f4f4f5` | `#1b1b1f` | 表の見出し行の面 |
+| `--mdmark-color-callout-note` | `#1d4ed8` | `#7aa2ff` | 補足の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-callout-tip` | `#15803d` | `#4ade80` | ヒントの注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-callout-important` | `#6d28d9` | `#c4a7ff` | 重要の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景 |
+| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM の箱と LLM の層の色 |
+| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルの箱の色 |
+| `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトの箱の色 |
+| `--mdmark-color-diagram-mcp` | `#b45309` | `#fbbf24` | 図の MCP の箱と処理の層の色 |
+| `--mdmark-color-diagram-data` | `#0f766e` | `#2dd4bf` | 図のデータの箱とデータの層の色 |
+| `--mdmark-color-diagram-external` | `#15803d` | `#4ade80` | 図の外部のシステムの箱の色 |
+| `--mdmark-color-diagram-line` | `#71717a` | `#8f8f99` | 図の処理の流れ・戻る線の色 |
+| `--mdmark-color-series-1` | `#0f766e` | `#2dd4bf` | グラフの 1 つ目の系列の色（実線・丸の点） |
+| `--mdmark-color-series-2` | `#b45309` | `#fbbf24` | グラフの 2 つ目の系列の色 |
+| `--mdmark-color-series-3` | `#6d28d9` | `#c4a7ff` | グラフの 3 つ目の系列の色 |
+| `--mdmark-color-series-4` | `#1d4ed8` | `#7aa2ff` | グラフの 4 つ目の系列の色 |
+| `--mdmark-color-code-highlight-bg` | `#fef3c7` | `#5c4a12` | コードブロックの強調した行の背景 |
+| `--mdmark-color-code-highlight-line` | `#b45309` | `#fbbf24` | コードブロックの強調した行の左端の線 |
+| `--mdmark-color-diff-del-bg` | `#fbe6e3` | `#2a1e20` | 差分の削除した行の背景と、コードの行の印の消した行の背景 |
+| `--mdmark-color-diff-del-word` | `#eeb4ad` | `#5d3435` | 差分の削除した行で変わった語の背景 |
+| `--mdmark-color-diff-del-sign` | `#b91c1c` | `#f87171` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色。コードの行の印の消した行の行頭の `-` と左端の線にも使う |
+| `--mdmark-color-diff-add-bg` | `#e1ede2` | `#1e2b24` | 差分の追加した行の背景と、コードの行の印の足した行の背景 |
+| `--mdmark-color-diff-add-word` | `#a9ccaf` | `#2f5c3e` | 差分の追加した行で変わった語の背景 |
+| `--mdmark-color-diff-add-sign` | `#15803d` | `#4ade80` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色。コードの行の印の足した行の行頭の `+` と左端の線にも使う |
+| `--mdmark-color-comment-bg` | `#f2effe` | `#25222d` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
+| `--mdmark-color-comment-line` | `#6d28d9` | `#c4a7ff` | コメントの印の下線の色 |
+| `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |
 
 <!-- /table -->
+
+注意書きの面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
 
 #### 配色を切り替える class
 

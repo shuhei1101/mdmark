@@ -1611,6 +1611,32 @@ flows:
     test: test_normal_when_parent_class_dark_printed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+  - name: 正常系（やめた言い方のマーカー）
+    summary: 索引の用語のやめた言い方に波線のマーカーを付け、フォーカスで代わりの用語のツールチップを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 用語 `ワークスペース`（意味 `話し合いの記録を置くフォルダ`、`avoid` に `作業場`）と、描く文書 `guide`（`guide.md`）を持つ索引
+        notes: '`opts.docId` は `guide`'
+      - name: やめた言い方が出る Markdown
+        description: 1 つの節の段落に `ワークスペース` が 1 回と `作業場` が 2 回出て、行内のコードにも `作業場` を書いた文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId })
+        M->>P: 用語に破線、やめた言い方に波線の下線を引いて描く
+        P->>P: 作業場にフォーカスする
+        P->>P: Esc を押す
+    expected:
+      - '`ワークスペース` が class `mdmark-term` の要素で、class `mdmark-term-avoided` を持たない'
+      - 最初の `作業場` が class `mdmark-term mdmark-term-avoided` の要素で、2 回目の `作業場` と行内のコードの `作業場` はその要素でない
+      - '`作業場` にフォーカスすると、語の `aria-describedby` が指す `role="tooltip"` のツールチップが出て、「代わりの用語」の下に `ワークスペース` と `話し合いの記録を置くフォルダ` がある'
+      - Esc でツールチップが消え、フォーカスが `作業場` に残る
+    test: test_normal_when_avoided_term
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -1814,7 +1840,7 @@ constraints:
     constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
     notes: 知らせの文言は画面設計『文書』
   - item: 埋め込んだ HTML の操作
-    constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線とツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
+    constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線・やめた言い方のマーカーとツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
     notes: 文書に書いたスクリプトは動かさず、動くのは mdmark が付ける操作だけ（D-22）
   - item: ヒントの操作
     constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
@@ -1867,4 +1893,7 @@ constraints:
   - item: 配色の切り替え
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
+  - item: やめた言い方のマーカー
+    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。同じやめた言い方を複数の用語が持つときは、索引の `terms` で先の用語を代わりの用語にする。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
+    notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences`・`collectMatches` の結果と関連文書の一覧は変わらない
 test_file: tests/integration/lib/mount.browser.test.ts

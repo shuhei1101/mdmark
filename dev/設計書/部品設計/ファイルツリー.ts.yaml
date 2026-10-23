@@ -27,7 +27,7 @@ args:
 css_properties:
   - name: --mdmark-color-muted
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#52525b（ダーク #b4b4bc）'
     description: フォルダとファイルのアイコンと、入れ子の線の色
   - name: --mdmark-font-mono
     syntax: <family-name>#

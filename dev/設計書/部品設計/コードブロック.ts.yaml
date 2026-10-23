@@ -73,27 +73,27 @@ args:
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>
-    default: '#fff8c5（ダーク #2e2a14）'
+    default: '#fef3c7（ダーク #5c4a12）'
     description: 強調した行の地の色
   - name: --mdmark-color-code-highlight-line
     syntax: <color>
-    default: '#9a6700（ダーク #d29922）'
+    default: '#b45309（ダーク #fbbf24）'
     description: 強調した行の左端の線の色
   - name: --mdmark-color-diff-add-bg
     syntax: <color>
-    default: '#dafbe1'
+    default: '#e1ede2'
     description: 足した行の地の色（差分の表示と共通）
   - name: --mdmark-color-diff-add-sign
     syntax: <color>
-    default: '#1a7f37'
+    default: '#15803d'
     description: 足した行の行頭の `+` と左端の線の色（差分の表示と共通）
   - name: --mdmark-color-diff-del-bg
     syntax: <color>
-    default: '#ffebe9'
+    default: '#fbe6e3'
     description: 消した行の地の色（差分の表示と共通）
   - name: --mdmark-color-diff-del-sign
     syntax: <color>
-    default: '#d1242f'
+    default: '#b91c1c'
     description: 消した行の行頭の `-` と左端の線の色（差分の表示と共通）
 accessibility:
   - '`pre` は `tabindex="0"` と読み上げの名前（題があれば `コード: {題}`、無ければ `コード: {言語}`）を持ち、キーボードで横にスクロールできる'

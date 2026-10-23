@@ -32,3 +32,27 @@ export const MARKDOWN = "ワークスペースを置き、公開関数を使う�
 /** 上の入力で `render` が返す HTML 文字列 */
 export const EXPECTED_HTML =
   '<p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span><span class="mdmark-term-tip" id="mdmark-term-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>を置き、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-details="mdmark-term-2">公開関数</span><span class="mdmark-term-tip" id="mdmark-term-2" role="group" aria-label="「公開関数」の関連文書"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">関連文書</span><span class="mdmark-term-tip-docs" role="list"><span class="mdmark-term-tip-doc" role="listitem"><a href="../api.md">API</a></span></span></span></span></span>を使う。</p>\n<nav class="mdmark-backlinks" aria-labelledby="mdmark-backlinks-title"><p class="mdmark-backlinks-title" id="mdmark-backlinks-title">関連文書</p><ul><li><a href="../api.md">API</a></li><li><a href="../使い方/guide.md">使い方</a></li></ul></nav>';
+
+/** やめた言い方の `render` の結合テストが使う索引: 描く文書 `guide` と、やめた言い方 `作業場` を持つ用語 1 つ */
+export const AVOID_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
+  terms: [
+    {
+      id: "ws",
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場"],
+    },
+  ],
+};
+
+/** やめた言い方の入力で描く文書の `id` */
+export const AVOID_DOC_ID = "guide";
+
+/** 用語 `ワークスペース` とそのやめた言い方 `作業場` が出る Markdown */
+export const AVOID_MARKDOWN = "ワークスペースと作業場を置く。\n";
+
+/** 上の入力で `render` が返す HTML 文字列 */
+export const AVOID_EXPECTED_HTML =
+  '<p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span><span class="mdmark-term-tip" id="mdmark-term-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>と<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="mdmark-term-2">作業場</span><span class="mdmark-term-tip" id="mdmark-term-2" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>を置く。</p>\n';

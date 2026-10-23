@@ -95,11 +95,11 @@ events:
 css_properties:
   - name: --mdmark-color-heading
     syntax: <color>
-    default: '#1f2328（ダーク #f0f6fc）'
+    default: '#18181b（ダーク #ededef）'
     description: 見出しと開閉のボタンの文字の色
   - name: --mdmark-color-muted
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#52525b（ダーク #b4b4bc）'
     description: 開閉の印とアンカーの色
 accessibility:
   - 開閉のボタンは見出しの文字を読み上げの名前にし、`aria-expanded`・`aria-controls` で開閉の状態を示す

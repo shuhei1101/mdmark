@@ -85,6 +85,66 @@ test("test_build_dictionary_excludes_self", async () => {
   expect(dictionary.docs.has("公開関数")).toBe(false);
 });
 
+/** やめた言い方 `作業場` を 2 つの用語が持ち、`WS` は用語の別名と同じやめた言い方でもある索引 */
+const AVOID_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [],
+  terms: [
+    {
+      id: "ws",
+      term: "ワークスペース",
+      aliases: ["WS"],
+      meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場", "WS"],
+    },
+    {
+      id: "area",
+      term: "作業スペース",
+      meaning: "作業の場所",
+      avoid: ["作業場"],
+    },
+  ],
+};
+
+// 索引の用語のやめた言い方を `avoided` に入れ、`words` には入れない（正常系）
+test("test_build_dictionary_avoided", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  // 実行
+  const dictionary = buildDictionary({
+    index: AVOID_INDEX,
+    ownGlossary: [],
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  // 同じやめた言い方は索引の `terms` で先の用語が代わりの用語で、別名と同じ `WS` は入らない
+  expect([...dictionary.avoided]).toEqual([
+    [
+      "作業場",
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+      },
+    ],
+  ]);
+  expect(dictionary.words).not.toContain("作業場");
+});
+
+// glossary がオフならやめた言い方を入れない（正常系）
+test("test_build_dictionary_avoided_when_glossary_disabled", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  // 実行
+  const dictionary = buildDictionary({
+    index: AVOID_INDEX,
+    ownGlossary: [],
+    features: { ...DEFAULT_FEATURES, glossary: false },
+  });
+  // 検証
+  expect(dictionary.avoided.size).toBe(0);
+});
+
 // 語の区切りに揃う語だけを返す（正常系）
 test("test_find_words", async () => {
   // 準備
