@@ -78,7 +78,7 @@ constants:
     status: planned
     introduced:
       pr: 72
-  - name: NEAR_NAME_COUNT
+  - name: NEAREST_NAME_COUNT
     title: 添える近い名前の数
     container: src/plugin/guide.ts
     usecase: 使い方集を読む

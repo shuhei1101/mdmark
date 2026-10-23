@@ -81,7 +81,7 @@ data_models:
     usecase: 共通
     role: DTO
     summary: ツールの引数の JSON Schema（2020-12）のうち、使う範囲だけの型
-    description: "最上位は `type: 'object'`・`properties`・`required`・`additionalProperties: false`。各引数は `type`（`string`・`array`・`object`・`null` かその並び）・`items`（要素が `string`）・`enum`・`minItems`・`minLength`・`description` だけを持つ"
+    description: "最上位は `type: 'object'`・`properties`・`required`・`additionalProperties: false`。各引数は `type`（`string`・`array`・`object`・`null` かその並び）・`items`（要素が `string`）・`enum`・`minItems`・`minLength`・`description`（任意）だけを持つ"
     properties:
       - name: type
         type: "'object'"

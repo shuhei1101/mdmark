@@ -4,6 +4,7 @@ directory: |-
   ```tree
   scripts/
   ├── build.ts       # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  ├── bundle.ts      # build.ts と build-plugin.ts が使う Node の束ねの target・先頭の行・postcss の差し替え・束ねたパッケージとライセンスの引き方
   └── migrations.ts  # スキーマを変えた版に移行の手順があるかの点検
   ```
 constants:
@@ -26,7 +27,7 @@ constants:
     value: '"THIRD_PARTY_LICENSES.txt"'
   - name: postcssStubPlugin
     title: postcss の差し替え
-    container: scripts/build.ts
+    container: scripts/bundle.ts
     summary: 'esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える'
     value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返す'
     reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
