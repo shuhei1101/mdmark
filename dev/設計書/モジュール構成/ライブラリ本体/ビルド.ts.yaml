@@ -580,7 +580,7 @@ functions:
       - name: test_is_guarded_by_typeof_when_in_test
         case: 正常
         summary: 条件の typeof の式の中の参照も真
-        condition: '`if (typeof Intl.Segmenter !== "undefined") {}` の `Intl.Segmenter` の先頭の `I` の位置（列が 1 ずれると `typeof` の後ろの空白を指し、`Intl.Segmenter` の外に出る）'
+        condition: '`if (typeof Intl.Segmenter !== "undefined") {}` の `Intl.Segmenter` の先頭の `I` の位置'
         mock: なし
         expected: '`true`'
       - name: test_is_guarded_by_typeof_when_unrelated_if
@@ -605,6 +605,12 @@ functions:
         case: 正常
         summary: 三項演算子は偽
         condition: '`typeof Intl.Segmenter === "undefined" ? undefined : new Intl.Segmenter("ja")` の `new` の位置'
+        mock: なし
+        expected: '`false`'
+      - name: test_is_guarded_by_typeof_when_just_before_if
+        case: 正常
+        summary: 確かめの if の直前の位置は偽（列を 0 始まりに直して引く）
+        condition: '`Intl.Segmenter;if (typeof Intl.Segmenter !== "undefined") {}` の 1 行目 15 列（`;` の位置。1 ずれると `if` の `i` を指す）'
         mock: なし
         expected: '`false`'
     callers:
