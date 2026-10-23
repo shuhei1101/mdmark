@@ -652,6 +652,7 @@ functions:
 test_files:
   - tests/unit/scripts/build.test.ts
   - tests/unit/scripts/migrations.test.ts
+  - tests/unit/scripts/baseline.test.ts
 data_models:
   - name: BaselineViolation
     title: 下限に無い API の使用
