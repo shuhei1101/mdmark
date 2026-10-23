@@ -96,6 +96,34 @@ function prepare(body: string, index: MdmarkIndex = MATCH_INDEX) {
   return { tokens, dictionary };
 }
 
+// 本文に出たやめた言い方を一致にも参照先にも入れない（正常系）
+test("test_collect_matches_ignores_avoided_terms", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "guide", path: "使い方/guide.md", title: "使い方" }],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid: ["作業場"],
+      },
+    ],
+  };
+  const documents = {
+    "使い方/guide.md": "# 使い方\n\nワークスペースと作業場を使う。",
+  };
+  // 実行
+  const result = collectMatches({ index, documents });
+  // 検証
+  expect((result.byDocument.guide ?? []).map((match) => match.text)).toEqual([
+    "ワークスペース",
+  ]);
+  expect(result.targets.map((target) => target.id)).toEqual(["ws"]);
+});
+
 // 索引の用語・別名と文書の別名の一致を、参照先と位置つきで返す（正常系）
 test("test_collect_matches", async () => {
   // 準備
