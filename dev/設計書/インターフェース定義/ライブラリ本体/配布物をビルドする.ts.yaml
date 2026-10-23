@@ -253,7 +253,7 @@ exceptions:
     condition: '`guide/index.yaml` が ER 図『使い方集』の形に合わないか、無いページを指すか、セッションに渡す索引の文が 10,000 文字を超えるか、`plugin/package.json` の esbuild のバージョンが `package.json` と違うか、`plugin/package-lock.json` が無い'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 368KB 以下（376832 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 384KB 以下（393216 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4
