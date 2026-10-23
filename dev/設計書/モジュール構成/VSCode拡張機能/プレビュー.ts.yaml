@@ -66,7 +66,7 @@ classes:
         access: private
         description: Markdown の URI の文字列 → パネル
       - name: deps
-        type: PreviewDeps
+        type: ExtensionDeps
         access: private
         description: '`ExtensionContext`・配布物の配信元・タグ一覧の取得先・テストか・ログの出力先（`Logger`）。`activate` が `extensionMode` と環境変数から作る'
     methods:

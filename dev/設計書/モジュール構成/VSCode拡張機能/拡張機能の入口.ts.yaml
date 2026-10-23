@@ -6,6 +6,9 @@ directory: |-
   ├── package.json      # 拡張機能の定義（main・engines・contributes・scripts・依存）
   └── src/
       ├── extension.ts  # activate（コマンドと知らせの登録、テストのときの戻り値）
+      ├── deps.ts       # 各処理が受ける共通の依存 ExtensionDeps と globalState のキー
+      ├── workspace.ts  # 相対パスの設定の基準のフォルダ（baseDirOf）
+      ├── escape.ts     # HTML として特別な文字のエスケープ（vscode を import しない）
       └── log.ts        # ログの出力先の型（vscode を import しない）
   ```
 
@@ -75,6 +78,28 @@ data_models:
     refs:
       - dev/設計書/外部ライブラリ/vscode#
     status: planned
+  - name: ExtensionDeps
+    title: 拡張機能の共通の依存
+    container: vscode/src/deps.ts
+    usecase: 共通
+    summary: '`activate` が `extensionMode` と環境変数から作り、`PreviewManager`・`PreviewPanel`・`exportMarkdown` が受ける依存'
+    properties:
+      - name: context
+        type: ExtensionContext
+        description: VS Code が渡す文脈（`globalState`・`extensionUri`）
+      - name: distBase
+        type: string
+        description: 配布物の配信元（`DIST_BASE` か `MDMARK_VSCODE_DIST_BASE`）
+      - name: tagsUrl
+        type: string
+        description: タグ一覧の取得先（`TAGS_URL` か `MDMARK_VSCODE_TAGS_URL`）
+      - name: test
+        type: boolean
+        description: '`ExtensionMode.Test` で動いているか'
+      - name: log
+        type: Logger
+        description: ログの出力先
+    status: planned
 functions:
   - name: activate
     title: 拡張機能を動かし始める
@@ -94,7 +119,7 @@ functions:
       description: '`ExtensionMode.Test` のときだけ `TestApi`'
     process: |-
       1. `context.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` を読む。無ければ `DIST_BASE`・`TAGS_URL`
-      2. `window.createOutputChannel("mdmark", { log: true })` でログの出力先を 1 つ作り、`PreviewManager`・`openConfigFile`・`exportMarkdown` に `Logger` として渡す。`PreviewManager` を作る
+      2. `window.createOutputChannel("mdmark", { log: true })` でログの出力先を 1 つ作り、`openConfigFile` には `Logger` として、`PreviewManager`・`exportMarkdown` には `ExtensionDeps` の `log` として渡す。`PreviewManager` を作る
       3. コマンドを登録する
          - `mdmark.openPreviewToSide`・`mdmark.openPreview` は `PreviewManager.open`（`ViewColumn.Beside`・`ViewColumn.Active`）
          - `mdmark.refreshPreview` は `PreviewManager.refresh`
