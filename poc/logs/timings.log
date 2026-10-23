@@ -1,0 +1,11 @@
+# 案 A: npx -y github:shuhei1101/mdmark#poc/claude-code/plugin-mcp mcp の起動から tools/list が返るまで（poc/probe-mcp-startup.mjs）
+空の npm_config_cache（1 回目）: 53.0 秒
+空の npm_config_cache（2 回目の計測）: 54.1 秒（取得した npm のキャッシュ 474M）
+キャッシュあり: 7.9 秒 / 7.9 秒
+
+# 案 B: plugin/server/mcp.js を node で起動（claude -p --debug のログ）
+MCP server "plugin:mdmark:mdmark": Successfully connected (transport: stdio) in 120ms
+
+# 案 B: 空の CLAUDE_CONFIG_DIR・空の npm_config_cache からのプラグインの導入
+claude plugin marketplace add "shuhei1101/mdmark#poc/claude-code/plugin-mcp": 5.2 秒
+claude plugin install mdmark@mdmark: 1.8 秒（plugin/package.json の esbuild を node_modules に入れた。npm のキャッシュ 4.7M）

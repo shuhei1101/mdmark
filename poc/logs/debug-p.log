@@ -1,0 +1,16 @@
+2026-10-23T06:29:42.417Z [DEBUG] MCP server "plugin:mdmark:mdmark": Starting connection with timeout of 30000ms
+2026-10-23T06:29:42.473Z [DEBUG] Hooks: Checking first line for async: {"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"…"}}
+2026-10-23T06:29:42.473Z [DEBUG] Hooks: Parsed initial response: {"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"…"}}
+2026-10-23T06:29:42.473Z [DEBUG] Hooks: SessionStart:startup [node /tmp/claude-1000/-mnt-c-Users-shuhe-repo-mdmark/c4c3ef31-d97a-41c4-a352-9e34eb5f0a9b/scratchpad/poc/config/plugins/cache/mdmark/mdmark/bbaff8383c88/scripts/session-start.mjs] (plugin mdmark@mdmark) finished with status 0 (65ms)
+2026-10-23T06:29:42.476Z [DEBUG] "Hook SessionStart:startup (SessionStart) success:\n{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"mdmark の使い方集の索引。先頭の合言葉: POC-INDEX-HEAD-3a8f\\n| 例の名前 | 例を読むとき | 例の概要の文 |\\n| 例の名前 | 例を読むとき | 例の概要の文 |\\n| 例の名前 | 例を読むと�
+2026-10-23T06:29:42.476Z [DEBUG] Hook SessionStart (node ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.mjs) provided additionalContext (8982 chars)
+2026-10-23T06:29:42.535Z [ERROR] "MCP server \"plugin:mdmark:mdmark\" Server stderr: 知らないコマンドです: （なし）\n使えるコマンド:\n  init [{置く先のフォルダ}] [--js]\n  check [--config {設定ファイル}]\n  export {文書} [--out {出力}] [--config {設定ファイル}]\n  build [--config {設定ファイル}]\n  upgrade [--plan] [--yes] [--config {設定ファ�
+2026-10-23T06:29:42.535Z [DEBUG] MCP server "plugin:mdmark:mdmark": Successfully connected (transport: stdio) in 120ms
+2026-10-23T06:29:42.535Z [DEBUG] MCP server "plugin:mdmark:mdmark": Connection established with capabilities: {"hasTools":true,"hasPrompts":false,"hasResources":false,"hasResourceSubscribe":false,"serverVersion":{"name":"mdmark","version":"v0.6.0"},"protocolEra":"legacy","negotiatedProtocolVersion":"2025-11-25"}
+2026-10-23T06:29:42.535Z [DEBUG] [MCP] Server "plugin:mdmark:mdmark" connected with subscribe=false
+2026-10-23T06:29:42.642Z [ERROR] API error (attempt 1/11): OAuth refresh token is no longer valid; run /login to re-authenticate
+2026-10-23T06:29:42.644Z [ERROR] API auth_error: OAuth refresh token is no longer valid; run /login to re-authenticate
+2026-10-23T06:29:42.654Z [DEBUG] MCP server "plugin:mdmark:mdmark": Sending SIGINT to MCP server process
+2026-10-23T06:29:42.660Z [DEBUG] MCP server "plugin:mdmark:mdmark": UNKNOWN connection closed after 0s (cleanly)
+2026-10-23T06:29:42.660Z [DEBUG] MCP server "plugin:mdmark:mdmark": Cleared connection cache for reconnection
+2026-10-23T06:29:42.704Z [DEBUG] MCP server "plugin:mdmark:mdmark": MCP server process exited cleanly
