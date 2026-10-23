@@ -65,6 +65,8 @@ test("test_read_line_marks", async () => {
     "x = 1  # [!code highlight]",
     "<p>a</p> <!-- [!code ++] -->",
     "a; /* [!code --] */",
+    "foo();// [!code ++]",
+    "i-- [!code ++]",
   ].join("\n");
   // 実行
   const { lines, warnings } = readLineMarks(source);
@@ -75,6 +77,8 @@ test("test_read_line_marks", async () => {
     { text: "x = 1", kind: "highlight" },
     { text: "<p>a</p>", kind: "add" },
     { text: "a;", kind: "del" },
+    { text: "foo();", kind: "add" },
+    { text: "i--", kind: "add" },
   ]);
   expect(warnings).toEqual([]);
 });

@@ -24,6 +24,12 @@ export const LINE_COMMENT_HEADS: readonly string[] = [
   ";",
 ];
 
+/** 前の文字を問わずに外す頭。`--`・`#`・`;` は `i--` や `foo();` の一部と取り違えるため、行頭か空白の後ろだけで外す */
+const ANYWHERE_COMMENT_HEADS: readonly string[] = ["<!--", "//", "/*"];
+
+/** コードブロックの印に書ける指定の並び（警告に書く） */
+const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`";
+
 /** 使えるコードの行の印の並び（警告に書く） */
 const LINE_MARK_LIST = "`[!code ++]`・`[!code --]`・`[!code highlight]`";
 
@@ -64,7 +70,7 @@ export function readCodeSpec(options: {
     if (!CODE_KEYS.includes(key)) {
       warnings.push({
         label: `${key}=`,
-        message: "使えないキーです。使えるキーは `title=`・`highlight=` です。",
+        message: `使えないキーです。使える指定は ${CODE_SPEC_LIST} です。`,
       });
     }
   }
@@ -72,8 +78,7 @@ export function readCodeSpec(options: {
     if (!CODE_FLAGS.includes(flag)) {
       warnings.push({
         label: flag,
-        message:
-          "使えない指定です。使える指定は `lines` です。印の引数は空白で区切るため、題に空白は書けません。",
+        message: `使えない指定です。使える指定は ${CODE_SPEC_LIST} です。印の引数は空白で区切るため、題に空白は書けません。`,
       });
     }
   }
@@ -101,7 +106,7 @@ export function readCodeSpec(options: {
       if (from < 1 || to > lineCount) {
         warnings.push({
           label: part,
-          message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。`,
+          message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。行の番号を 1〜${lineCount} で書いてください。`,
         });
       }
       for (
@@ -126,7 +131,7 @@ function unescapeMarks(text: string): string {
   return text.replace(ESCAPED_MARK_PATTERN, "[!code");
 }
 
-/** 行末の印の前の文字から、印だけを持っていた行コメントの頭を外す。頭は行頭か空白の後ろにあるものだけを頭として扱う（`foo();` の `;` は残す） */
+/** 行末の印の前の文字から、印だけを持っていた行コメントの頭を外す。`//`・`/*`・`<!--` は前の文字を問わず、`#`・`--`・`;` は行頭か空白の後ろにあるときだけ頭として外す（`foo();` の `;` は残す） */
 function dropCommentHead(text: string): string {
   const trimmed = text.trimEnd();
   for (const head of LINE_COMMENT_HEADS) {
@@ -134,7 +139,11 @@ function dropCommentHead(text: string): string {
       continue;
     }
     const before = trimmed.slice(0, -head.length);
-    if (before === "" || /\s$/.test(before)) {
+    if (
+      ANYWHERE_COMMENT_HEADS.includes(head) ||
+      before === "" ||
+      /\s$/.test(before)
+    ) {
       return before.trimEnd();
     }
   }
@@ -159,8 +168,8 @@ export function readLineMarks(source: string): {
     const kind = LINE_MARK_KINDS[found[1] ?? ""];
     if (kind === undefined) {
       warnings.push({
-        label: `[!code ${found[1] ?? ""}]`,
-        message: `${index + 1} 行目の印は使えません。使える印は ${LINE_MARK_LIST} です。その行には当てず、書いた文字のまま描いています。`,
+        label: "",
+        message: `コードの行の印 \`[!code ${found[1] ?? ""}]\` は使えません。使える印は ${LINE_MARK_LIST} です。${index + 1} 行目には当てず、書いた文字のまま描いています。`,
       });
       return { text: unescapeMarks(line) };
     }
@@ -214,7 +223,7 @@ export function buildCodeBlocks(state: StateCore): void {
         warningBlock(state, {
           mark: mark.raw,
           message:
-            "の直後にコードブロックがありません。印の直後にコードブロックを置いてください。印は当てずに描いています。",
+            "の直後にコードブロックがありません。印の次の行にコードブロックを書いてください。",
         }),
       );
       continue;
@@ -246,10 +255,10 @@ export function buildCodeBlocks(state: StateCore): void {
       message: "の読めない指定を当てずに描いています。",
       items: options?.warnings ?? [],
     });
-    pushWarnings(out, state, {
-      message: "コードの行の印に読めない指定があります。",
-      items: lineWarnings,
-    });
+    // 知らない印は 1 つにつき 1 つの警告にする
+    for (const warning of lineWarnings) {
+      out.push(warningBlock(state, { message: warning.message }));
+    }
     const title = options?.title ?? "";
     const lineNumbers = options?.lineNumbers ?? false;
     if (title || lineNumbers || lines.some((line) => line.kind !== undefined)) {
