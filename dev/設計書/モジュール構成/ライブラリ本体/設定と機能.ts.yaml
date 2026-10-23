@@ -23,8 +23,8 @@ data_models:
         type: Record<string, string> | undefined
         description: 印の名前からモジュールの URL を引く対応表
       - name: tooltips
-        type: '{ placement?: string }'
-        description: ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）
+        type: '{ placement?: string } | undefined'
+        description: ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が `top` にするため、型は `string`
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
