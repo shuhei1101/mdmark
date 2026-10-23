@@ -65,12 +65,19 @@ catalogs:
             description: ツールの失敗を表す
       - name: fromJsonSchema
         kind: 関数
-        purpose: JSON Schema を `inputSchema` に渡せる形に包み、引数に型を付ける
+        purpose: JSON Schema を `inputSchema` に渡せる形に包み、引数に型を付ける。検査に使う検証器を差し替えられる
         params:
           - name: schema
             type: JSON Schema
             required: true
-            description: 入力の JSON Schema。検査は Node では ajv が行う
+            description: 入力の JSON Schema。`tools/list` にそのまま出る
+          - name: validator
+            type: jsonSchemaValidator
+            required: false
+            default: Node では ajv の検証器
+            description: '入力を検査する検証器（`getValidator(schema)` が `(input) => { valid, data, errorMessage }` を返す）。どの入力も `valid: true` で返す検証器を渡すと、SDK は検査せずに入力をそのまま処理へ渡す'
+        refs:
+          - '#limitations[入力の検査のエラーの文]'
       - name: serveStdio
         kind: 関数
         purpose: 標準入出力でサーバーを動かし、旧方式（`initialize`）と新方式（`server/discover`）のどちらの相手にも答える
