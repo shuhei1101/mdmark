@@ -76,3 +76,4 @@ introduced:
   pr: 69
 notes:
   出典: 文言は確認ログの決定（描けないとき・読み込み中の文言、ボタンは「リロード」）。モックは `dev/mock/components/preview-status/`。見た目は知らせの枠の状態色と同じ値に揃える
+test_file: tests/integration/vscode/preview-status.story.test.ts

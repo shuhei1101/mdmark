@@ -57,3 +57,4 @@ introduced:
   pr: 69
 notes:
   出典: 文言と帯の置き方（文書の先頭に置きスクロールで流す）は確認ログの決定。モックは `dev/mock/components/preview-status/` の帯の場面
+test_file: tests/integration/vscode/config-band.story.test.ts
