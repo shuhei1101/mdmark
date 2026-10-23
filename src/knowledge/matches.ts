@@ -53,7 +53,13 @@ export type MdmarkMatches = {
 };
 
 /** 本文の頭からの位置で表した、一致した語の範囲 */
-type Found = { word: string; offset: number; end: number };
+type Found = {
+  word: string;
+  offset: number;
+  end: number;
+  /** 図の部品の `{{語}}` の一致か（用語だけを引き、文書の別名は引かない） */
+  termOnly?: boolean;
+};
 
 /** 語の終わりの本文の位置。次の文字の位置までに飛ばした改行の `\r` は含めない */
 function wordEnd(options: {
@@ -296,6 +302,7 @@ function definitionTerms(options: {
         word,
         offset: base + (string.starts[first] as number),
         end: base + (string.ends[last] as number),
+        termOnly: true,
       });
     }
   }
@@ -478,7 +485,7 @@ export function collectMatches(input: {
     // 本文の頭からの順に並べる（同じ位置は用語、文書の順）
     found.sort((a, b) => a.offset - b.offset);
     const matches: MdmarkMatch[] = [];
-    for (const { word, offset, end } of found) {
+    for (const { word, offset, end, termOnly } of found) {
       const lineIndex = lineIndexOf(lineStarts, offset);
       const position = {
         text: word,
@@ -493,7 +500,7 @@ export function collectMatches(input: {
       if (termTarget !== undefined) {
         referenced.push(termTarget);
       }
-      for (const target of dictionary.docs.get(word) ?? []) {
+      for (const target of termOnly ? [] : (dictionary.docs.get(word) ?? [])) {
         referenced.push({
           kind: "doc",
           id: target.id,
