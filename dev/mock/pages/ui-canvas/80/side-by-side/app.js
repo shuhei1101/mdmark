@@ -36,10 +36,11 @@ const DIFF_SOURCE = {
       : "# テーマ\n\nリンクの色は #0f766e です。\n\n変数の名前は変わりません。\n\n印刷ではダークを解除します。\n",
 };
 
-/** コメントの読み書き: 本文の「既定の見た目」に付いたコメントを 1 件返し、保存は下書きに ID を付けて返す */
+/** コメントの読み書き: 本文の「既定の見た目」に付いたコメントと、本文に無い文字に付いたコメント（箇所が見つからない）を返し、保存は下書きに ID を付けて返す */
 const COMMENT_STORE = {
   load: async () => [
     { id: "c1", quote: "既定の見た目", prefix: "mdmark の", suffix: "を mindstella", body: "表の見出し行の濃さも揃えたい。" },
+    { id: "c2", quote: "濃い青のリンク", prefix: "", suffix: "", body: "書き換える前の本文に付けたコメント。" },
   ],
   save: async ({ comment }) => ({ ...comment, id: `c${Date.now()}` }),
 };
@@ -80,6 +81,11 @@ function addColumns(section) {
 const PARAMS = new URLSearchParams(location.search);
 const PARTS = PARAMS.get("parts")?.split(",");
 const SHOWN_COLUMNS = PARAMS.get("columns")?.split(",");
+
+// 列を 1 つに絞ったときは、本文の外（body の直下）に置く部品にも列の値が効くよう、ページの根にもその列の class を当てる
+if (SHOWN_COLUMNS?.length === 1) {
+  document.documentElement.classList.add(SHOWN_COLUMNS[0]);
+}
 
 for (const section of document.querySelectorAll("[data-canvas]")) {
   const key = section.dataset.canvas;

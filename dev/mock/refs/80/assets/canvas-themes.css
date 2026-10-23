@@ -1,4 +1,4 @@
-/* 洗い出しのキャンバスの列ごとの値: 今の値（src/index.css の modern）と、採用した dev-swiss の値（dev/mock/assets/style.css）を、列の要素に当てる */
+/* 洗い出しのキャンバスの列ごとの値: 今の値（src/index.css の modern）と、採用した dev-swiss の値（dev/mock/assets/style.css）を、列の要素に当てる。列を 1 つに絞ったときはページの根（html）にも当て、本文の外に置く部品（コメントのボタン・入力欄・吹き出し・差分のミニマップ）にも効かせる */
 
 /* 今の値の明るい配色と配色によらない値（dev-swiss の列も土台にする） */
 :is(.theme-modern, .theme-dev-swiss) {
@@ -129,8 +129,9 @@
 
 /* ダークの配色の値。画面のときだけ当て、印刷では明るい配色に戻す */
 @media screen {
-  /* 今の値のダーク（dev-swiss の列も土台にする） */
-  :root[data-scheme="dark"] :is(.theme-modern, .theme-dev-swiss) {
+  /* 今の値のダーク（dev-swiss の列も土台にする）。列の要素と、列を 1 つに絞ったときのページの根に当てる */
+  :root[data-scheme="dark"] :is(.theme-modern, .theme-dev-swiss),
+  :root[data-scheme="dark"]:is(.theme-modern, .theme-dev-swiss) {
     --mdmark-color-bg: #0d1117;
     --mdmark-color-text: #f0f6fc;
     --mdmark-color-heading: #f0f6fc;
@@ -175,7 +176,8 @@
   }
 
   /* dev-swiss のダーク */
-  :root[data-scheme="dark"] .theme-dev-swiss {
+  :root[data-scheme="dark"] .theme-dev-swiss,
+  :root[data-scheme="dark"].theme-dev-swiss {
     --mdmark-color-bg: #131316;
     --mdmark-color-text: #ededef;
     --mdmark-color-heading: #ededef;

@@ -45,7 +45,7 @@
       <tbody>
         <tr><td><a href="#part-callout">注意書き</a></td><td>種類の色を地に 7% 混ぜた面と、40% 混ぜた線。今の CSS は種類の色そのものの線だけで、面を塗らない</td><td>必須（部品の CSS を変える）</td></tr>
         <tr><td><a href="#part-flow">フロー図</a></td><td>箱の角丸 8px（データの箱は 8px / 20px）を CSS に直に持ち、<code>--mdmark-radius</code>（4px）に揃わない</td><td>論点</td></tr>
-        <tr><td>図の全画面・まとめた HTML の一覧のパネル</td><td>開いたときの後ろの幕の色 <code>rgb(0 0 0 / 0.5)</code>・<code>rgb(0 0 0 / 0.4)</code> を CSS に直に持つ（キャンバスには出ない）</td><td>論点</td></tr>
+        <tr><td>図の全画面・まとめた HTML の一覧のパネル</td><td>開いたときの後ろの幕の色 <code>rgb(0 0 0 / 0.5)</code>・<code>rgb(0 0 0 / 0.4)</code> を CSS に直に持つ（図の幕は全画面のボタンで出る。一覧のパネルの幕はキャンバスには出ない）</td><td>論点</td></tr>
       </tbody>
     </table>
 
@@ -606,7 +606,7 @@ mount(el, { markdown }); // [!code highlight]
     <!-- コメント -->
     <section class="canvas-section" id="part-comment" data-canvas="comment">
       <h2>コメント</h2>
-      <p>コメントが付いた本文の文字の地と下線（文字を選ぶとコメントのボタン）</p>
+      <p>コメントが付いた本文の文字の地と下線・箇所が見つからないコメントの一覧（文字を選ぶとコメントのボタン、押すと入力欄）</p>
       <script type="text/markdown" data-canvas-source>
 mdmark の既定の見た目を mindstella の値に揃える。
 
