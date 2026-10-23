@@ -3,7 +3,7 @@ implementation: "src/parts/term-tip.ts#renderTermTip"
 story: "Parts/TermTip"
 states:
   - name: TermOnly
-    description: 用語だけに一致した語。「用語」の意味だけを持つ `role="tooltip"` のツールチップを開いた
+    description: 用語だけに一致した語。「用語」の意味だけを持つ `role="tooltip"` のツールチップを語の上に開いた。透明な線はツールチップの下側にある
     args:
       - name: text
         value: ワークスペース
@@ -78,6 +78,17 @@ states:
         value: tip-avoided-closed
       - name: replacement
         value: '{"term":"ワークスペース","meaning":"話し合いの記録を置くフォルダ"}'
+  - name: Below
+    description: 上に収まらず語の下に開いた。`mdmark-term-wrap` に `is-below` が付き、ツールチップが語の下にあり、透明な線はツールチップの上側にある
+    args:
+      - name: text
+        value: ワークスペース
+      - name: id
+        value: tip-below
+      - name: meaning
+        value: 話し合いの記録を置くフォルダ
+      - name: below
+        value: 'true'
 lead: 本文の用語と文書の別名に破線の下線を引き、隣に「用語」の意味と「関連文書」の並びを持つツールチップを置く。やめた言い方には波線の下線を引き、「代わりの用語」のツールチップを置く。HTML 文字列を返し、ブラウザと Node で同じ出力になる。開閉と置き場所は `mount` の操作が付ける。
 args:
   - name: text
@@ -99,6 +110,11 @@ args:
   - name: replacement
     type: オブジェクト
     description: '`text` がやめた言い方のときの代わりの用語（`{ term, meaning }`）。渡すと、語に破線ではなく波線の下線を引き（class `mdmark-term-avoided`）、ツールチップには「代わりの用語」の区分だけを置いて `term` と `meaning` を出す。渡したときは `meaning`・`docs` を使わない'
+  - name: below
+    type: 真偽値
+    default: 'false'
+    description: 語の下に開いた見た目にするか。`true` なら `mdmark-term-wrap` に `is-below` を付ける（`mount` が上に収まらない語に付けるのと同じ class）。`render` は渡さない
+    status: planned
 css_properties:
   - name: --mdmark-color-term-underline
     syntax: <color>
