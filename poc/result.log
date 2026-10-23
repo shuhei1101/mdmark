@@ -1,5 +1,5 @@
 $ node poc/compat.ts 
-root={worktree} minify=false files=4 reports=0 seconds=9.0
+root={worktree} minify=false strict=false files=4 reports=0 seconds=16.1
 exit=0
 $ node poc/compat.ts --minify
 {outdir}/index.js:4:8252 Intl.Segmenter() is not supported in Firefox 98
@@ -7,26 +7,43 @@ $ node poc/compat.ts --minify
 {outdir}/comments.js:1:10368 Highlight is not supported in Safari 16.4, Firefox 98, Chrome 99
 {outdir}/viewer.js:35:1042 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:35:1071 Intl.Segmenter() is not supported in Firefox 98
-root={worktree} minify=true files=4 reports=5 seconds=10.5
+root={worktree} minify=true strict=false files=4 reports=5 seconds=19.2
 exit=1
-$ node poc/compat.ts --root /tmp/claude-1000/-mnt-c-Users-shuhe-repo-mdmark/d12e2759-4f00-4549-9fce-5748b57cae18/scratchpad/v060
+$ node poc/compat.ts --strict
+{outdir}/index.js:6109:14 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/index.js:6110:23 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/index.js:16477:14 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/index.js:16478:16 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/comments.js:462:45 Highlight is not supported in Safari 16.4, Firefox 98, Chrome 99
+{outdir}/viewer.js:7400:14 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/viewer.js:7401:16 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/viewer.js:17518:14 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/viewer.js:17519:23 Intl.Segmenter() is not supported in Firefox 98
+root={worktree} minify=false strict=true files=4 reports=9 seconds=16.3
+exit=1
+$ node poc/compat.ts --root {scratchpad}/v060
 {outdir}/index.js:12136:21 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:15205:21 Intl.Segmenter() is not supported in Firefox 98
-root={scratchpad}/v060 minify=false files=2 reports=2 seconds=10.7
+root={scratchpad}/v060 minify=false strict=false files=2 reports=2 seconds=13.0
 exit=1
-$ node poc/compat.ts --root /tmp/claude-1000/-mnt-c-Users-shuhe-repo-mdmark/d12e2759-4f00-4549-9fce-5748b57cae18/scratchpad/v060 --minify
+$ node poc/compat.ts --root {scratchpad}/v060 --minify
 {outdir}/index.js:20:22527 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:20:34015 Intl.Segmenter() is not supported in Firefox 98
-root={scratchpad}/v060 minify=true files=2 reports=2 seconds=11.5
+root={scratchpad}/v060 minify=true strict=false files=2 reports=2 seconds=11.4
 exit=1
-$ node poc/compat.ts --root /tmp/claude-1000/-mnt-c-Users-shuhe-repo-mdmark/d12e2759-4f00-4549-9fce-5748b57cae18/scratchpad/develop
+$ node poc/compat.ts --root {scratchpad}/v060 --strict
+{outdir}/index.js:12136:21 Intl.Segmenter() is not supported in Firefox 98
+{outdir}/viewer.js:15205:21 Intl.Segmenter() is not supported in Firefox 98
+root={scratchpad}/v060 minify=false strict=true files=2 reports=2 seconds=12.5
+exit=1
+$ node poc/compat.ts --root {scratchpad}/develop
 {outdir}/index.js:6112:21 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/index.js:16477:36 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:7400:36 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:17518:21 Intl.Segmenter() is not supported in Firefox 98
-root={scratchpad}/develop minify=false files=4 reports=4 seconds=9.9
+root={scratchpad}/develop minify=false strict=false files=4 reports=4 seconds=10.5
 exit=1
-$ node poc/compat.ts --root /tmp/claude-1000/-mnt-c-Users-shuhe-repo-mdmark/d12e2759-4f00-4549-9fce-5748b57cae18/scratchpad/develop --minify
+$ node poc/compat.ts --root {scratchpad}/develop --minify
 {outdir}/index.js:4:8252 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/index.js:4:8317 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/index.js:34:5799 Intl.Segmenter() is not supported in Firefox 98
@@ -34,8 +51,12 @@ $ node poc/compat.ts --root /tmp/claude-1000/-mnt-c-Users-shuhe-repo-mdmark/d12e
 {outdir}/viewer.js:11:5799 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:35:1042 Intl.Segmenter() is not supported in Firefox 98
 {outdir}/viewer.js:35:1107 Intl.Segmenter() is not supported in Firefox 98
-root={scratchpad}/develop minify=true files=4 reports=7 seconds=8.8
+root={scratchpad}/develop minify=true strict=false files=4 reports=7 seconds=11.8
 exit=1
 $ unshare -rn node poc/compat.ts
-root={worktree} minify=false files=4 reports=0 seconds=10.2
+root={worktree} minify=false strict=false files=4 reports=0 seconds=12.6
 exit=0
+$ probe（b.js: if (x) の中の new Highlight / c.js: if の外の new Highlight / e.js: if (x > 1) の中の new Intl.Segmenter）
+b.js 報告なし
+c.js Highlight is not supported in Safari 16.4, Firefox 98, Chrome 99
+e.js 報告なし

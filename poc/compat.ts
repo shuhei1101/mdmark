@@ -57,6 +57,7 @@ async function bundle(options: {
 async function check(options: {
   files: string[];
   cwd: string;
+  strict: boolean;
 }): Promise<number> {
   const eslint = new ESLint({
     cwd: options.cwd,
@@ -72,7 +73,11 @@ async function check(options: {
           reportUnusedInlineConfigs: "off",
           reportUnusedDisableDirectives: "off",
         },
-        settings: { browsers: toBrowserslist(BROWSER_TARGETS) },
+        settings: {
+          browsers: toBrowserslist(BROWSER_TARGETS),
+          // true で、if のブロックの中の使用も数える（既定はどの if の中でも数えない）
+          ignoreConditionalChecks: options.strict,
+        },
         rules: { "compat/compat": "error" },
       },
     ],
@@ -99,12 +104,13 @@ const root = resolve(
   rootIndex >= 0 ? (process.argv[rootIndex + 1] ?? ".") : ".",
 );
 const minify = process.argv.includes("--minify");
+const strict = process.argv.includes("--strict");
 const outdir = mkdtempSync(join(tmpdir(), "mdmark-compat-"));
 const started = performance.now();
 const files = await bundle({ root, outdir, minify });
-const count = await check({ files, cwd: outdir });
+const count = await check({ files, cwd: outdir, strict });
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 console.log(
-  `root=${root} minify=${minify} files=${files.length} reports=${count} seconds=${seconds}`,
+  `root=${root} minify=${minify} strict=${strict} files=${files.length} reports=${count} seconds=${seconds}`,
 );
 process.exitCode = count === 0 ? 0 : 1;
