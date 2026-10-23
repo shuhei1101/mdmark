@@ -137,7 +137,7 @@ classes:
       - name: handleConfigChange
         title: 設定の変更を振り分ける
         kind: メソッド
-        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.load`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
+        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
         args:
           - name: event
             type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
@@ -218,6 +218,10 @@ classes:
         type: string[]
         access: private
         description: 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す
+      - name: rawLibraries
+        type: Record<string, unknown> | undefined
+        access: private
+        description: '`config` の `libraries` の URL を直す前の値（CSP に入れる origin の元）。読めなかったときは前に読めた値を残す'
     methods:
       - name: load
         title: 読み込む
@@ -345,6 +349,16 @@ classes:
         returns:
           type: Promise<InspectedElement[]>
           description: 当たった要素の様子
+      - name: applyConfigChange
+        title: 設定の変更を当てる
+        kind: メソッド
+        summary: 設定を読み直し（設定を読み直す）、`libraries` の origin の集まりが `cspLibraryOrigins` と違えば読み込み（読み込む）、同じなら今すぐ送る（`PreviewManager.handleConfigChange` が呼ぶ）
+        is_async: true
+        returns:
+          type: Promise<void>
+          description: '-'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
     status: planned
   - name: EditorScrollGuard
     title: エディタのスクロールの見張り
