@@ -3,7 +3,8 @@
   "displayName": "mdmark",
   "description": "Markdown を mdmark で描いたプレビューを VS Code に出し、HTML への書き出しと PDF への印刷ができる",
   "version": "0.1.0",
-  "publisher": "shuhei1101",
+  "publisher": "ShuheiNishikawa",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "repository": {
