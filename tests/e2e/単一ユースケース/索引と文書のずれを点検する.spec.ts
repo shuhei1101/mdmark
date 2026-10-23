@@ -181,3 +181,52 @@ test("test_normal_when_avoided_term", async () => {
     expect(issue.message).toContain("ワークスペース");
   }
 });
+
+// 用語集の表のやめた言い方を、表を持たない文書の本文からも返す（正常シナリオ（用語集の表のやめた言い方が本文に出る））
+test("test_normal_when_glossary_avoided_term", async () => {
+  // 準備
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "glossary", path: "glossary.md", title: "用語集" },
+      { id: "guide", path: "guide.md", title: "手引き" },
+    ],
+  };
+  // glossary は表の中に 作業場・ワーク場 を持つ。guide は 1 行目に 作業場、3 行目に ワーク場、5 行目に ワークスペース
+  const glossary = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  const guide = [
+    "作業場を開く。",
+    "",
+    "ワーク場を閉じる。",
+    "",
+    "ワークスペースを使う。",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = await checkInNode(builtRoot, {
+    index,
+    documents: { "glossary.md": glossary, "guide.md": guide },
+  });
+  // 検証
+  // guide の 2 件だけを返し、glossary の表の中の言い方と、ワークスペースだけの 5 行目と、ほかの種類のずれは返さない
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+    { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+  ]);
+  // 各行の内容が、やめた言い方と代わりに使う用語を示す
+  expect(issues[0]?.message).toContain("作業場");
+  expect(issues[0]?.message).toContain("ワークスペース");
+  expect(issues[1]?.message).toContain("ワーク場");
+  expect(issues[1]?.message).toContain("ワークスペース");
+});
