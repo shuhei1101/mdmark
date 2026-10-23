@@ -231,6 +231,23 @@
         }
       },
       "required": ["include", "out"]
+    },
+    "check": {
+      "title": "点検の設定",
+      "description": "`mdmark check` が読む設定。`mount`・`render`・`export`・`build` はこのキーを読まない。",
+      "type": "object",
+      "properties": {
+        "ignore": {
+          "title": "知らない印から外す名前",
+          "description": "`mdmark check` が文書の本文の知らない印として知らせない、印と同じ書き方の HTML コメントの名前の並び（`prettier-ignore`・`markdownlint-disable` など他のツールへの指示）。",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "default": []
+        }
+      }
     }
   },
   "additionalProperties": true
