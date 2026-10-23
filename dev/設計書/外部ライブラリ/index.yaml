@@ -26,3 +26,5 @@ items:
     summary: 2 つのリビジョンの Markdown を行と語で比べる（jsdiff）
   - page: MCP-SDK.yaml
     summary: Claude Code のプラグインの MCP サーバーとテストのクライアント
+  - page: ClaudeCode.yaml
+    summary: プラグインの導入・SessionStart のフック・プラグインの MCP サーバーの起動

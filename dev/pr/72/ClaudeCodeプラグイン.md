@@ -17,19 +17,11 @@
 | MCP サーバーの起動 | `plugin/.mcp.json` に、束ねた MCP サーバーを `node ${CLAUDE_PLUGIN_ROOT}/...` で起動する行を書く。束ねない実行時の依存（esbuild）は `plugin/package.json` と `plugin/package-lock.json` に版を固定して書く | Claude Code が入れる依存は、lockfile が揃うときだけ・`--ignore-scripts`・60 秒で打ち切り。esbuild は postinstall に頼らず `@esbuild/{プラットフォーム}` の optional dependency で動く。外部ライブラリの Claude Code の設計書に書く |
 | ツールの説明 | 各ツールの説明に、呼ぶ場面と引数・戻り値を書く。`read_guide` の説明に、索引の名前を渡すことを書く | - |
 | エラー表示 | ツールのエラーは、何が合わないかと直し方を日本語の 1 文で返す（CLI の点検の内容の文と同じ書き方） | - |
-| 使い方集の索引 | 名前・読むとき・概要・本文のページを 1 件 1 行で持ち、記法・部品・図の描き方・拡張の仕方・HTML の書き方・図の確かめ方の本文を指す | 本文の持ち方は要件.md の `未確定` |
+| 使い方集の索引 | 名前・読むとき・概要・本文のページを 1 件 1 行で持ち、記法・部品・図の描き方・拡張の仕方・HTML の書き方・図の確かめ方の本文を指す | 本文は `docs/` のページを指す（ER 図『使い方集』） |
 | 動作環境 | 確かめた Claude Code の版を非機能要件に書く | PoC で確かめる |
 | 外部ライブラリ | MCP サーバーは公式 SDK v2（`@modelcontextprotocol/server` 2.3.1）の `McpServer.registerTool` と `serveStdio` で作り、esbuild で束ねる。束ねた配布物に ajv と zod の著作権表示を入れる | [ライブラリ選定](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357833926)。旧方式（`initialize`）と新方式（`server/discover`）の両方に答える |
 
-`未確定`: サブシステムを分けるか（決める段: PoC 検証の後のアーキテクチャ図の確定）
-
-| 案 | 内容 | メリット | デメリット |
-| --- | --- | --- | --- |
-| A | 「Claude Code プラグイン」を別のサブシステムにする | Claude Code の版・仕様に依る部分を分けて確かめられる | サブシステムが増える |
-| B | ライブラリ本体に含める | 版とリリースが 1 つで済む | ライブラリ本体の動く場所に Claude Code が加わり、責務の境界がぼやける |
-
-推奨: A
-
+「Claude Code プラグイン」を別のサブシステムにする（アーキテクチャ図）。
 プラグインとフックは Claude Code の上で動き、ブラウザと Node で動くライブラリ本体と動く場所が違う。
 ツールの処理はライブラリ本体、起動とフックはプラグインの側に分かれる。
 

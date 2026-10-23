@@ -1,0 +1,49 @@
+title: "ER 図: 使い方集"
+lead: Claude Code のプラグインがセッションに渡す使い方集の索引。行ごとに名前・読むとき・概要と、本文にする `docs/` のページを持つ。
+overview: 正本はリポジトリの直下の `guide/index.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `guides`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。本文は別に書かず、`docs/` の使い方・リファレンスのページを指す。プラグインのビルドが索引を `plugin/guide/index.json` に JSON で書き、指したページを `plugin/guide/` の下に同じパスで写す。フックと MCP サーバーは写した方だけを読む
+tables:
+  - name: guides
+    title: 使い方集の行
+    datastore: YAML
+    summary: 使い方集の名前 1 つと、その本文のページ
+    primary_key: name
+    scale: ~50
+    access: 全件
+    columns:
+      - name: name
+        title: 名前
+        type: string
+        not_null: true
+        primary_key: true
+        unique: true
+        check: 空でない
+        description: '`read_guide` に渡す名前。索引の中で一意'
+        example: notation
+      - name: when
+        title: 読むとき
+        type: string
+        not_null: true
+        check: 空でない
+        description: どんな作業のときに読むか。セッションに渡す索引の表に出す
+        example: 印と記法を書くとき
+      - name: summary
+        title: 概要
+        type: string
+        not_null: true
+        check: 空でない
+        description: 1 文の概要。セッションに渡す索引の表に出す
+        example: 表・注意書き・タブなどの印の一覧
+      - name: page
+        title: 本文のページ
+        type: string
+        not_null: true
+        check: '`docs/` で始まり `.md` で終わる。区切りは `/`'
+        description: 本文にするページ。リポジトリの直下からの相対パス。セッションに渡す索引には出さない
+        example: docs/リファレンス/記法.md
+        notes: 無いページを指すと配布物のビルドが止まる
+    status: planned
+    introduced:
+      pr: 72
+refs:
+  - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#
+  - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts#

@@ -5,3 +5,5 @@ items:
     summary: 文書のメタデータと用語を書く YAML の索引
   - page: 移行の手順.yaml
     summary: 版ごとに当てる移行の手順と、移行の手順が要らないスキーマの変更の一覧
+  - page: 使い方集.yaml
+    summary: Claude Code のプラグインが渡す使い方集の索引

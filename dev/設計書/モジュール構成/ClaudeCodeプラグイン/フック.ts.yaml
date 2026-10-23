@@ -1,0 +1,51 @@
+title: "ClaudeCodeプラグイン / フック"
+lead: プラグインの `hooks/hooks.json` が SessionStart で `node` で起動する処理。同梱した使い方集の索引だけを `hookSpecificOutput.additionalContext` で標準出力に書く。
+directory: |-
+  ```tree
+  src/plugin/
+  └── session-start.ts  # SessionStart のフックの入口
+  ```
+functions:
+  - name: runSessionStart
+    title: 使い方集の索引を渡す
+    kind: 関数
+    container: src/plugin/session-start.ts
+    usecase: セッションの開始で使い方集の索引を受け取る
+    role: 入口
+    summary: 同梱した索引を読み、索引の文を `hookSpecificOutput` の JSON にして標準出力に 1 行書く
+    description: 束ねた `plugin/scripts/session-start.js` を入口として実行したときだけ流し、戻り値を終了コードにする（`import.meta.main`）。作業のフォルダのファイルは読まない
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ moduleDir: string; stdout: (line: string) => void; stderr: (line: string) => void }'
+        required: true
+        description: このファイルのあるフォルダ（`plugin/scripts`）・標準出力と標準エラーへ 1 行書く関数
+    returns:
+      type: Promise<0 | 1>
+      description: 索引を渡したら 0、読めなければ 1
+    process: |-
+      1. `moduleDir` の 1 つ上のフォルダの `guide` の索引を読む（同梱した索引を読む）
+         - `CliError` の場合、標準出力には何も書かず、標準エラーにそのメッセージを書いて 1 を返す
+      2. 索引の文を作り、`{ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext } }` を JSON の 1 行で標準出力に書いて 0 を返す（セッションに渡す索引の文を作る）
+    unit_tests:
+      - name: test_run_session_start
+        case: 正常
+        summary: 索引の文を hookSpecificOutput で書く
+        condition: 一時フォルダの `guide/index.json` に 2 行、`moduleDir` がその `scripts`
+        mock: 行を配列に貯める `stdout`・`stderr`
+        expected: 0 を返し、`stdout` の 1 行を JSON として読むと `hookEventName` が `SessionStart` で `additionalContext` に 2 つの名前がある
+      - name: test_run_session_start_when_index_missing
+        case: 正常
+        summary: 索引が無ければ標準出力を空にして 1
+        condition: '`guide/index.json` が無い'
+        mock: 行を配列に貯める `stdout`・`stderr`
+        expected: 1 を返し、`stdout` が空で、`stderr` に索引のパスと `入れ直して` がある
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts#functions[readGuideIndex]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts#functions[formatGuideContext]
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#
+    status: planned
+    introduced:
+      pr: 72
