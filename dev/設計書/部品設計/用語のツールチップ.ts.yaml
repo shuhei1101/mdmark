@@ -123,11 +123,11 @@ accessibility:
   - 関連文書の並びは `role="list"`・`role="listitem"` で件数を伝える
   - 用語であることは破線の下線の形でも示し、色だけに頼らない（リンクは実線）。語の上でポインターの形は変えない
   - やめた言い方であることは波線の下線の形で示し、用語の破線と色だけで分けない。代わりの用語のツールチップは `role="tooltip"` で、語の `aria-describedby` が指す
-  - スクリプトが動かない HTML 文字列でも、語にポインターを乗せるかフォーカスすると CSS で開く
+  - スクリプトが動かない HTML 文字列でも、語にポインターを乗せるかフォーカスすると CSS で語の上に開く
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ツールチップの操作]
 status: planned
 notes:
-  出力の形: '`<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="{id}-meaning" aria-details="{id}">{text}</span><span class="mdmark-term-tip" id="{id}" role="group" aria-label="「{text}」の用語と関連文書">…</span></span>`。区分は `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`（「用語」「関連文書」）を置き、意味は `mdmark-term-tip-meaning`、関連文書は `mdmark-term-tip-docs` の中の `mdmark-term-tip-doc`（題の `a` と `mdmark-term-tip-doc-desc`）。意味だけのときは `role="tooltip"` で `aria-details` を持たない。`replacement` を渡したときは、語が `<span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="{id}">`、ツールチップが `role="tooltip"` で、見出し「代わりの用語」の区分に代わりの用語の語 `mdmark-term-tip-replacement` と意味 `mdmark-term-tip-meaning` を置く。モックは `dev/mock/components/term-tooltip/`'
+  出力の形: '`<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="{id}-meaning" aria-details="{id}">{text}</span><span class="mdmark-term-tip" id="{id}" role="group" aria-label="「{text}」の用語と関連文書">…</span></span>`。区分は `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`（「用語」「関連文書」）を置き、意味は `mdmark-term-tip-meaning`、関連文書は `mdmark-term-tip-docs` の中の `mdmark-term-tip-doc`（題の `a` と `mdmark-term-tip-doc-desc`）。意味だけのときは `role="tooltip"` で `aria-details` を持たない。`replacement` を渡したときは、語が `<span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="{id}">`、ツールチップが `role="tooltip"` で、見出し「代わりの用語」の区分に代わりの用語の語 `mdmark-term-tip-replacement` と意味 `mdmark-term-tip-meaning` を置く。開いたツールチップは既定で語の上に置き、ポインターが語から移るための透明な線をツールチップの下側に持つ。`mount` が語の下に置いたときは `mdmark-term-wrap` に `is-below` を付け、透明な線を上側に移す。モックは `dev/mock/components/term-tooltip/`'
   印刷: 印刷の CSS で破線・波線の下線とツールチップを外し、語を本文の文字として出す
 test_file: tests/integration/lib/term-tip.story.test.ts

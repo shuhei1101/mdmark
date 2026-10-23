@@ -8,7 +8,7 @@ states:
       - name: placement
         value: block
   - name: BlockOpen
-    description: ブロックの要素の印に乗せて開いた
+    description: ブロックの要素の印に乗せて開いた。印の上に文を出す
     args:
       - name: placement
         value: block
