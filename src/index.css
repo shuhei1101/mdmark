@@ -252,12 +252,14 @@
       }
     }
 
-    /* 表: 幅に収まらないときは表の中で横スクロールする。外側を角丸の枠で囲み、セルの線は内側だけに引く */
+    /* 表: 幅に収まらないときは表の中で横スクロールする。外側を角丸の枠で囲み、下の線は枠でなく影で引く（縦にスクロールして最後の行が見えない間も下端に線を残し、最後の行まで進めると最後の行の下の線と同じ位置に重なる） */
     table {
       display: block;
       width: max-content;
       max-width: 100%;
       border: 1px solid var(--mdmark-color-border);
+      border-block-end: 0;
+      box-shadow: inset 0 -1px var(--mdmark-color-border);
       border-radius: calc(var(--mdmark-radius) * 2);
       border-collapse: separate;
       border-spacing: 0;
@@ -276,7 +278,7 @@
       }
     }
 
-    /* 表のセル: 下と右の線だけを引き、外側の枠と重ねない。縦の罫線は太さ 0 のときは出ない。狭い幅でも列を数文字より細くしない */
+    /* 表のセル: 下と右の線だけを引く。縦の罫線は太さ 0 のときは出ない。狭い幅でも列を数文字より細くしない */
     :where(th, td) {
       min-width: 6em;
       padding: 0.45em 0.9em;
@@ -290,11 +292,6 @@
     /* 右端の列: 右の線は外側の枠に任せる */
     :where(th, td):last-child {
       border-inline-end: 0;
-    }
-
-    /* 最後の行: 下の線は外側の枠に任せる */
-    tbody tr:last-child > :where(th, td) {
-      border-block-end: 0;
     }
 
     /* 表の見出し行 */
@@ -601,10 +598,10 @@
       }
     }
 
-    /* ピン止めした列: 表の左端に留め、後ろのセルが透けないよう表と同じ面の色を敷く（左の位置は描く処理が列の幅から入れる） */
+    /* ピン止めした列: 表の左端に留め、後ろのセルが透けないよう表と同じ地の色を敷く（左の位置は描く処理が列の幅から入れる） */
     .mdmark-table :is(th, td).is-pinned-col {
       position: sticky;
-      background: var(--mdmark-color-surface);
+      background: var(--mdmark-color-bg);
     }
 
     /* ピン止めした列の見出し: 見出し行と左端の両方に留まるので前に出し、見出しの色を敷く */
@@ -785,14 +782,16 @@
       }
     }
 
-    /* 集計の行: 見出し行と同じ面の色を敷き、上に 1px の線を引いて本文の行と分け、縦にスクロールしても下端に留める（下の線は外側の枠に任せる） */
+    /* 集計の行: 見出し行と同じ面の色を敷き、縦にスクロールしても下端に留める。上の線は直前の行の下の線と同じ位置に影で重ねて 1px に保ち、表の下の線は引かないので下の線もここで描く */
     .mdmark-table tfoot td {
       position: sticky;
       bottom: 0;
       z-index: 1;
       border-block-end: 0;
       background: var(--mdmark-color-table-head);
-      box-shadow: inset 0 1px var(--mdmark-color-border);
+      box-shadow:
+        0 -1px var(--mdmark-color-border),
+        inset 0 -1px var(--mdmark-color-border);
       font-variant-numeric: tabular-nums;
     }
 
