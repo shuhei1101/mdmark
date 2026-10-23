@@ -188,7 +188,7 @@ settings:
     title: 拡張のモジュール
     file: mdmark.config.yaml
     type: string[]
-    description: CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。各モジュールは `registerExtension` に渡す拡張を既定の export にする。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない
+    description: CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。各モジュールは `registerExtension` に渡す拡張を既定の export にし、読み込みの時点でブラウザの API を使わない（使うのは `load` の中だけ。`mdmark check` が Node で読み込んで `directive` を取る）。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない
     default: '[]'
     missing: 拡張を埋めない（拡張の印は知らない印として取り除かれる）
     reload: reload
@@ -315,6 +315,21 @@ settings:
     status: planned
     introduced:
       pr: 45
+  - key: check.ignore
+    title: 知らない印から外す名前
+    file: mdmark.config.yaml
+    type: string[]
+    required: false
+    default: '[]'
+    description: '`mdmark check` が文書の本文の知らない印として知らせない、印と同じ書き方の HTML コメントの名前の並び（`prettier-ignore`・`markdownlint-disable` など他のツールへの指示）。`mount`・`render`・`export`・`build` はこのキーを読まない'
+    missing: 印に当たらない名前を全て知らない印として知らせる
+    reload: reload
+    allowed: 印の名前の書式（英小文字で始まり、英小文字・数字・`-` が続く）の文字列。合わないと `mdmark check` は `schema` のずれにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+    status: planned
+    introduced:
+      pr: 64
   - key: features.views
     title: ビューの機能
     file: mdmark.config.yaml
@@ -338,5 +353,16 @@ settings:
     status: planned
     introduced:
       pr: 55
+  - key: features.code
+    title: コードブロックを飾る機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 'コードブロックに、直前の `<!-- code: -->` の題・行番号・行の強調と、行末のコードの行の印（`[!code ++]`・`[!code --]`・`[!code highlight]`）を当てる。オフのときは題・行番号・行の強調を付けず、コードの行の印は書いた文字のまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 65
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

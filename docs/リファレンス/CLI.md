@@ -141,13 +141,13 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 ## 設定と索引を点検する
 
-設定の形・索引と文書のずれ・`build` の対象の有無を点検する。
+設定の形・索引と文書のずれ・`build` の対象の有無・文書の本文にある知らない印を点検する。
 ずれの一覧を標準出力に出し、設定・索引・文書は書き換えない。
 手順は [点検する](../使い方/書き出す/点検する.md)。
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `no_documents` → `checkIndex` が返した並び。
+並びは `schema` → `no_documents` → `checkIndex` が返した並び → `unknown_mark`。
 内容は、何が合わないかと直し方の日本語の 1 文。
 
 ```text
@@ -156,23 +156,24 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 ずれ 2 件
 ```
 
-種類は次の 7 つ。
+種類は次のとおり。
 
 <!-- table: data -->
 
 | 種類 | 意味 |
 | --- | --- |
-| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルが無いものを含む |
+| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルが無いもの、`extensions` の拡張を読み込めないものを含む |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
 | `orphan_doc` | 文書があって、索引に無い |
 | `broken_ref` | `related` の `id` が索引に無い |
 | `duplicate_term` | 用語の語か別名が重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
+| `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
 
 <!-- /table -->
 
-`missing_doc` 以降の 5 つは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`missing_doc` から `avoided_term` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
 
 ### 使い方
 

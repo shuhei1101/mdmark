@@ -30,6 +30,7 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   chart: "diagrams",
   param: "diagrams",
   html: "html",
+  code: "code",
 };
 
 /** 図の部品の印の名前。同じ名前の拡張と対応表が先に使われる */

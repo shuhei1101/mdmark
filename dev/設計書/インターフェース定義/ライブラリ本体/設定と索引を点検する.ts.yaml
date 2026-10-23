@@ -103,7 +103,77 @@ flows:
       - 終了コードが 1
       - 標準エラーに `mdmark.config.yaml` と 3 行目が出る
     test: test_error_when_config_unreadable
-lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
+  - name: 正常系（知らない印がある）
+    summary: 文書の本文の知らない印を、文書と行を指す `unknown_mark` の行にして終了コード 1 で終わる
+    setup:
+      - name: 知らない印を持つフォルダ
+        description: 正常系のフォルダの文書 `a.md` の 3 行目に `<!-- tabz -->` を書き、同じ文書の `markdown` のコードブロックの中にも `<!-- tabz -->` を書いたフォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as checkIndex
+        W->>C: mdmark check
+        C->>C: 設定を探して読み、Schema と build の対象を確かめる
+        C->>M: 索引・文書
+        M-->>C: []
+        C->>C: 文書の本文から、知っている印に当たらない印を拾う
+        C-->>W: unknown_mark の行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`a.md:3: unknown_mark:` で始まり `tabz` を含む行が 1 つだけある'
+      - コードブロックの中の `<!-- tabz -->` を指す行が無い
+      - 最後の行が `ずれ 1 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_unknown_mark
+  - name: 正常系（拡張と check.ignore の印）
+    summary: 拡張が登録した印と `check.ignore` に書いた名前の印は、ずれにしない
+    setup:
+      - name: 拡張と外す名前を書いたフォルダ
+        description: '`mdmark init` の雛形の拡張 `extensions/example.js`（`directive` が `greet`）を設定の `extensions` に書き、設定の `check.ignore` に `prettier-ignore` を書いたフォルダ。文書 `a.md` に `<!-- greet: 太郎 -->` と `<!-- prettier-ignore -->` を書く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as checkIndex
+        W->>C: mdmark check
+        C->>C: 設定を読み、拡張を束ねて読み込み directive を取る
+        C->>M: 索引・文書
+        M-->>C: []
+        C->>C: 文書の本文の印を知っている印と突き合わせる
+        C-->>W: ずれ 0 件・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準出力が `ずれ 0 件` の 1 行
+    test: test_normal_when_known_extension_and_ignored_mark
+  - name: 正常系（拡張を読み込めない）
+    summary: 読み込めない拡張を `schema` のずれにし、その拡張の印を知らない印として出す
+    setup:
+      - name: 読み込めない拡張を書いたフォルダ
+        description: 設定の `extensions` に、読み込みの時点で `HTMLElement` を継いだ custom element を定義するモジュール `extensions/broken.js`（既定の書き出しの `directive` は `broken`）を書き、文書 `a.md` の 3 行目に `<!-- broken -->` を書いたフォルダ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as checkIndex
+        W->>C: mdmark check
+        C->>C: 拡張を束ねて読み込み、directive を取れない
+        C->>M: 索引・文書
+        M-->>C: []
+        C->>C: 文書の本文の印を知っている印と突き合わせる
+        C-->>W: schema と unknown_mark の行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`mdmark.config.yaml:extensions[0]: schema:` で始まり、元のエラー（`HTMLElement`）と `load` の中へ移す直し方を含む行がある'
+      - '`a.md:3: unknown_mark:` で始まり `broken` を含む行がある'
+    test: test_normal_when_extension_unloadable
+lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
 callers:
@@ -120,10 +190,10 @@ response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
-    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び → `unknown_mark`（文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term'"
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないものを含む）、`no_documents` は `build.include` に当たる文書が 0 件。ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'unknown_mark'"
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないものを含む）、`no_documents` は `build.include` に当たる文書が 0 件、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある。ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -158,4 +228,10 @@ constraints:
   - item: 動く Node の版
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+  - item: 知らない印の点検
+    constraint: '点検する文書ごとに、描く処理と同じ書き方の印（`<!-- 名前 -->`・`<!-- 名前: 引数 -->`・`<!-- /名前 -->`）を、描く処理と同じく生の HTML のブロックと行内の HTML からだけ拾う（コードブロックとインラインコードの中は拾わない）。名前が知っている印に当たらない印を、1 つにつき 1 件の `unknown_mark` のずれにする。ファイルは設定ファイルのフォルダからの文書の相対パス、場所は印のある行の番号（1 から）、内容は印の名前と、名前を直すか、拡張・対応表・`check.ignore` に足すかの直し方の 1 文'
+  - item: 知っている印
+    constraint: '`features`・記法の印・設定の `libraries` に既定を当てた対応表の名前・設定の `extensions` の拡張が既定の書き出しで持つ `directive`・設定の `check.ignore` の名前。拡張は `mdmark export` と同じく束ね、Node で読み込んで既定の書き出しの `directive` を取る（設定の `extensions` のモジュールは、読み込みの時点でブラウザの API を使わず、使うのは `load` の中だけにする）。束ねられない・読み込めない・既定の書き出しが `directive` を持たない拡張は、その `extensions[{位置}]` を指す `schema` のずれにし（読み込めないときは、元のエラーと、ブラウザの API を使う処理を `load` の中へ移す直し方を内容に書く）、その拡張の印は知っている印に入れない'
+  - item: 点検する文書
+    constraint: 索引の点検に渡す文書（設定に `index` があるとき）と、`build` の対象の文書（設定に `build` があるとき）を合わせ、同じファイルは 1 回だけ点検する。どちらも無い設定では知らない印を点検しない
 test_file: tests/integration/lib/check-config.test.ts

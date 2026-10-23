@@ -146,6 +146,8 @@ constants:
         value: html
       - key: view
         value: views
+      - key: code
+        value: code
   - name: EMBED_STYLES
     title: 埋め込んだ HTML の残す宣言
     container: src/render/sanitize.ts
@@ -250,7 +252,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図表の番号 → 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 図表の番号 → 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -351,7 +353,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
     args:
       - name: html
         type: string
@@ -407,6 +409,12 @@ functions:
         condition: '`data-mdmark-own` が `nonce` と等しい図の箱の `<div class="mdmark-diagram-node" style="left:10px;top:20px">` と、`div.mdmark-html` の中の `<div style="display:flex;position:fixed">`、持たない `<div style="display:flex">`'
         mock: なし
         expected: 図の箱が `style="left:10px;top:20px"`、埋め込んだ HTML の要素が `style="display:flex"`、書いた要素は `style` を持たない
+      - name: test_sanitize_when_code_digits
+        case: 正常
+        summary: 自分が出したコードブロックの行番号の桁の数だけを残す
+        condition: '`data-mdmark-own` が `nonce` と等しい `<code style="--mdmark-code-digits: 2">` と `<code style="--mdmark-code-digits: 2; color: red">`、持たない `<code style="--mdmark-code-digits: 2">`'
+        mock: なし
+        expected: 1 つ目が `style="--mdmark-code-digits:2"`、2 つ目と 3 つ目は `style` を持たない
   - name: parseMarkArgs
     title: 印の引数を読み分ける
     container: src/render/marks.ts
@@ -542,6 +550,59 @@ functions:
     status: planned
     introduced:
       pr: 45
+  - name: findMarks
+    title: 文書の印を拾う
+    container: src/render/parser.ts
+    usecase: 設定と索引を点検する
+    summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に当たる印を拾い、名前と行の番号を書いた順に返す
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、足すコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため拾わない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行に印より前の改行の数を足し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、印より前の子の `softbreak`・`hardbreak` の数と、印より前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中で印より前の改行の数を足す。閉じの印も 1 つの印として返す'
+    kind: 関数
+    scope: public
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: '{ name: string; line: number }[]'
+      description: 拾った印の名前と行の番号
+    unit_tests:
+      - name: test_find_marks
+        case: 正常
+        summary: ブロックと行内の印を行の番号つきで拾う
+        condition: '1 行目が `# 題`、3 行目が `<!-- tabz -->`、5・6 行目が `段落` と `続き <!-- note: a --> と <!-- /note -->`'
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }, { name: "note", line: 6 }, { name: "note", line: 6 }]`'
+      - name: test_find_marks_when_code
+        case: 正常
+        summary: コードブロックとインラインコードの中の印は拾わない
+        condition: '`markdown` のコードブロックの中の `<!-- tabz -->` と、段落の中のインラインコード `` `<!-- tabz -->` ``'
+        mock: なし
+        expected: 空の配列
+      - name: test_find_marks_when_multiline_block
+        case: 正常
+        summary: 複数行の HTML のブロックの中の印の行を数える
+        condition: 2 行目から `<div>`・`<!-- tabz -->`・`</div>` の 3 行のブロック
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }]`'
+      - name: test_find_marks_when_table_cell
+        case: 正常
+        summary: 表のセルの中の印の行を行の番号で返す
+        condition: 1・2 行目が表の見出しと区切り、3 行目が `| 1 <!-- tabz --> | 2 |`
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }]`'
+      - name: test_find_marks_when_multiline_inline_html
+        case: 正常
+        summary: 前に複数行の行内の HTML がある印の行を数える
+        condition: 1・2 行目が `p <a` と `href="x">l</a> <!-- c -->`
+        mock: なし
+        expected: '`[{ name: "c", line: 2 }]`'
+    refs:
+      - '#constants[MARK_PATTERN]'
+      - '#functions[createParser]'
+    status: planned
+    introduced:
+      pr: 64
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts

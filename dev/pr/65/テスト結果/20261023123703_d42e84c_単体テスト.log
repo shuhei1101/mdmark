@@ -1,0 +1,12 @@
+$ npx vitest run --project 'unit*' -t '^(?!.*test_sanitize_when_code_digits)' {既存の単体テスト 112 ファイル}
+（新規の tests/unit/src/render/syntax/code-blocks.test.ts・tests/unit/src/parts/code-block.test.ts と、sanitize.test.ts の test_sanitize_when_code_digits は実装が無く Red のため除く）
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-code-block-decorations
+
+
+ Test Files  112 passed (112)
+      Tests  563 passed | 1 skipped (564)
+   Start at  12:35:35
+   Duration  34.93s (tests 41%, worker 31%, import 25%, transform 4%)
+

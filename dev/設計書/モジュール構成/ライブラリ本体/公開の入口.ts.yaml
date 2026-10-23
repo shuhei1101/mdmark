@@ -67,13 +67,13 @@ styles:
         value: '表を行ごとに縦に積み、見出し行を隠し、`td::before` に `attr(data-label)` で列名を出す。セルの揃えは列の揃えの class より強い指定で `start` に戻す'
       - class_name: :root（記法）
         target: 記法の変数の既定
-        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-table-max-height`（`28rem`）。値とダークの値は `dev/mock/assets/style.css`'
+        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-table-max-height`（`28rem`）・`--mdmark-color-code-highlight-bg`（`#fff8c5`、ダーク `#2e2a14`）・`--mdmark-color-code-highlight-line`（`#9a6700`、ダーク `#d29922`）。値とダークの値は `dev/mock/assets/style.css`'
       - class_name: .mdmark .mdmark-table ほか記法の class
         target: 記法の部品
-        value: '部品設計（表・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・節・行の詳細・図表の番号・書き方の警告）の HTML に当てる規則。表は見出し行を `position: sticky` で上端に留め、高さを `--mdmark-table-max-height` に抑える。`plain` は縦の罫線と面を外す'
+        value: '部品設計（表・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・節・行の詳細・図表の番号・書き方の警告・コードブロック）の HTML に当てる規則。表は見出し行を `position: sticky` で上端に留め、高さを `--mdmark-table-max-height` に抑える。`plain` は縦の罫線と面を外す'
       - class_name: '@media print の記法'
         target: 印刷のときの記法
-        value: 表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行と列を留めず、表の高さの上限を外してセルの余白を詰める。`[data-printing]` のタブは全ての中身をタブ名を題にして縦に並べる
+        value: 表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行と列を留めず、表の高さの上限を外してセルの余白を詰める。飾ったコードブロックは題・行番号・行の地の色と `+`・`-` を出したまま行を折り返し、行番号は折り返した最初の 1 行にだけ出す（`dev/mock/refs/65/assets/code-block-print.css`）。`[data-printing]` のタブは全ての中身をタブ名を題にして縦に並べる
       - class_name: .mdmark .mdmark-html と .mdmark-hint-*
         target: 埋め込んだ HTML とヒント
         value: '部品設計（埋め込んだHTML・ヒント）の HTML に当てる規則。`dev/mock/refs/45/assets/embed.css` から取る。`.is-wide` の間だけ横にスクロールし、ブロックの印（`.mdmark-hint-mark`）は要素の右上に `position: absolute` で置き、アイコンは lucide の `info` を `mask-image` で付ける。行内（`.mdmark-hint-inline`）は破線の下線。ツールチップは図のツールチップと同じ規則。用語・ヒント・図の線のラベルと箱の印に `cursor: help` を付けない。印刷では印とツールチップを隠し、横のスクロールをやめて紙の幅に収める'

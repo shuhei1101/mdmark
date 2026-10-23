@@ -68,7 +68,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind']"
+        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind'] | 'unknown_mark'"
         description: ずれの種類
       - name: message
         type: string
@@ -249,7 +249,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -295,6 +295,12 @@ functions:
         condition: '`version: 0.3`'
         mock: なし
         expected: '`where` が `version` の `schema` のずれが 1 件'
+      - name: test_validate_config_when_check_ignore_invalid
+        case: 正常
+        summary: 印の名前の書式に合わない `check.ignore` の値を schema のずれにし、設定から落とす
+        condition: '`check.ignore` が `["prettier-ignore", "Bad Name"]`'
+        mock: なし
+        expected: '`where` が `check.ignore[1]` の `schema` のずれが 1 件で、`config.check.ignore` が `["prettier-ignore"]`'
     status: planned
     introduced:
       pr: 32
@@ -708,7 +714,7 @@ functions:
     title: 設定と索引を点検する
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
+    summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らない印を集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
     description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues` のずれを 1 件 1 行で出す
     kind: 関数
     scope: public
@@ -754,6 +760,12 @@ functions:
         condition: '`build.entry: missing.md`'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
         expected: '1 を返し、`mdmark.config.yaml:build.entry: schema:` の行がある'
+      - name: test_run_check_when_unknown_mark
+        case: 正常
+        summary: 知らない印を文書と行を指す unknown_mark の行にする
+        condition: 索引に載せた文書 `a.md` の 3 行目に `<!-- tabz -->`、`markdown` のコードブロックの中にも `<!-- tabz -->`
+        mock: 一時フォルダ、出力を配列に貯める `CliIo`
+        expected: '1 を返し、`a.md:3: unknown_mark:` で始まる行が 1 つだけで、`ずれ 1 件`'
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -988,7 +1000,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: 並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼ぶ
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -997,6 +1009,11 @@ functions:
         type: string
         required: true
         description: 設定ファイルの絶対パス
+      - name: options
+        type: '{ unknownMarks?: boolean }'
+        required: false
+        default: '`{ unknownMarks: true }`'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
@@ -1011,12 +1028,162 @@ functions:
         condition: '`build.out` が無く、索引の `old.md` が無い'
         mock: 一時フォルダ
         expected: 2 件で、`kind` が `schema`・`missing_doc` の順
+      - name: test_collect_check_issues_when_unknown_mark
+        case: 正常
+        summary: 知らない印を checkIndex のずれの後ろに返す
+        condition: 索引の `old.md` が無く、文書 `a.md` の 3 行目に `<!-- tabz -->`
+        mock: 一時フォルダ
+        expected: '`kind` が `missing_doc`・`unknown_mark` の順で、`unknown_mark` の `file` が `a.md`・`where` が `3`'
+      - name: test_collect_check_issues_when_unknown_marks_off
+        case: 正常
+        summary: '`unknownMarks: false` では知らない印を返さず、拡張を読み込まない'
+        condition: '文書 `a.md` に `<!-- tabz -->`、設定の `extensions` に読み込めない拡張 `broken.js`、`{ unknownMarks: false }`'
+        mock: 一時フォルダ
+        expected: '`unknown_mark` のずれも `extensions[0]` の `schema` のずれも無い'
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
+      - '#functions[checkUnknownMarks]'
     status: planned
     introduced:
       pr: 39
+  - name: loadExtensionDirectives
+    title: 拡張の印の名前を読む
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 設定の `extensions` の拡張を `bundleModule` で束ねて Node で読み込み、既定の書き出しの `directive` を集める
+    description: '`extensions` の位置の順に、ファイルが在る拡張だけを束ねる（無いファイルは `checkReferencedFiles` のずれだけにする）。束ねたコードは `importCode` で読み込む。束ねられない・読み込めない・既定の書き出しの `directive` が印の名前（`MARK_NAME_PATTERN`）の文字列でない拡張は、`extensions[{位置}]` を指す `schema` のずれにし、`directive` に入れない。読み込めないときの内容は、元のエラーの 1 行目と、読み込みの時点でブラウザの API を使う処理を `load` の中へ移す直し方'
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: 拡張のモジュールを Node で読み込む（モジュールの最上位の処理が動く）
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 形を検めた設定
+      - name: file
+        type: string
+        required: true
+        description: ずれの `file` に出す設定ファイルの名前
+      - name: importCode
+        type: '(code: string) => Promise<unknown>'
+        required: false
+        default: コードを `data:text/javascript;base64,` の URL にして `import()` する
+        passing: injected
+        description: 束ねたコードを読み込み、モジュールの名前空間を返す関数（テストで差し替える）
+    returns:
+      type: 'Promise<{ directives: Set<string>; issues: CheckIssue[] }>'
+      description: 読めた拡張の `directive` と、読めなかった拡張の `schema` のずれ
+    unit_tests:
+      - name: test_load_extension_directives
+        case: 正常
+        summary: 拡張の既定の書き出しの directive を集める
+        condition: 設定の `extensions` に `mdmark init` の雛形の `extensions/example.js`
+        mock: 一時フォルダ
+        expected: '`directives` が `{"greet"}` で、`issues` が空'
+      - name: test_load_extension_directives_when_browser_api
+        case: 異常
+        summary: 読み込みの時点でブラウザの API を使う拡張を schema のずれにする
+        condition: 最上位で `class extends HTMLElement` を定義する `extensions/broken.js`（`directive` は `broken`）
+        mock: 一時フォルダ
+        expected: '`directives` が空で、`where` が `extensions[0]` の `schema` のずれが 1 件、`message` に `HTMLElement` と `load` が入る'
+      - name: test_load_extension_directives_when_no_directive
+        case: 異常
+        summary: 既定の書き出しが directive を持たない拡張を schema のずれにする
+        condition: '`export default { name: "x" }` の `extensions/x.js`'
+        mock: 一時フォルダ
+        expected: '`directives` が空で、`where` が `extensions[0]` の `schema` のずれが 1 件'
+      - name: test_load_extension_directives_when_file_missing
+        case: 正常
+        summary: 無いファイルの拡張は束ねずにずれにしない
+        condition: 設定の `extensions` に無いファイル `missing.js`
+        mock: 一時フォルダ、呼ばれたら失敗する `importCode`
+        expected: '`directives` も `issues` も空'
+    refs:
+      - '#functions[bundleModule]'
+    status: planned
+    introduced:
+      pr: 64
+  - name: collectCheckDocuments
+    title: 知らない印を点検する文書を集める
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて返す
+    description: 索引の文書は `readIndexWithDocuments`（索引のフォルダからの相対パスを設定ファイルのフォルダからの相対パスに直す）、`build` の文書は `collectBuildDocuments` の文書を読む。索引を読めない（`CliError`）ときは索引の文書を入れない（ずれは `checkIndexFile` が出す）。設定に `index` も `build` も無ければ空
+    kind: 関数
+    scope: internal
+    is_async: true
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 形を検めた設定
+    returns:
+      type: 'Promise<{ path: string; markdown: string }[]>'
+      description: 点検する文書（パスは設定ファイルのフォルダからの相対パス）
+    unit_tests:
+      - name: test_collect_check_documents
+        case: 正常
+        summary: 索引の文書と build の文書を重なりを除いてパスの順に返す
+        condition: 索引のフォルダ `docs/` に `docs/a.md`・`docs/b.md`、`build.include` が `docs/b.md` と `notes/c.md` に当たる
+        mock: 一時フォルダ
+        expected: パスが `docs/a.md`・`docs/b.md`・`notes/c.md` の 3 件
+      - name: test_collect_check_documents_when_no_index_and_build
+        case: 正常
+        summary: index も build も無い設定では空
+        condition: '`version` だけの設定'
+        mock: 一時フォルダ
+        expected: 空の配列
+    refs:
+      - '#functions[readIndexWithDocuments]'
+      - '#functions[collectBuildDocuments]'
+    status: planned
+    introduced:
+      pr: 64
+  - name: checkUnknownMarks
+    title: 知らない印をずれにする
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 文書ごとに `findMarks` で拾った印のうち、知っている印に当たらないものを 1 つにつき 1 件の `unknown_mark` のずれにする
+    description: 知っている印は `FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を当てた対応表の名前・`directives`・設定の `check.ignore` の名前。ずれの `file` は文書のパス、`where` は印の行の番号の文字、`message` は印の名前と、名前を直すか、拡張・`libraries`・`check.ignore` に足すかの直し方の 1 文。並びは文書の並び、同じ文書の中は行の順
+    kind: 関数
+    scope: internal
+    args:
+      - name: documents
+        type: '{ path: string; markdown: string }[]'
+        required: true
+        description: '`collectCheckDocuments` の文書'
+      - name: config
+        type: CliConfig
+        required: true
+        description: 形を検めた設定（`libraries`・`check.ignore` を読む）
+      - name: directives
+        type: Set<string>
+        required: true
+        description: '`loadExtensionDirectives` の `directive`'
+    returns:
+      type: CheckIssue[]
+      description: '`unknown_mark` のずれ（無ければ空）'
+    unit_tests:
+      - name: test_check_unknown_marks
+        case: 正常
+        summary: 知っている印に当たらない印だけをずれにする
+        condition: '文書 `a.md` に `<!-- features: toc -->`・`<!-- table: data -->`・`<!-- /table -->`・3 行目に `<!-- tabz -->`'
+        mock: なし
+        expected: '`{ file: "a.md", where: "3", kind: "unknown_mark" }` の 1 件で、`message` に `tabz` が入る'
+      - name: test_check_unknown_marks_when_known_by_config
+        case: 正常
+        summary: 対応表・拡張・check.ignore の名前の印はずれにしない
+        condition: '`libraries` に `mermaid`、`directives` に `greet`、`check.ignore` に `prettier-ignore`、文書に 3 つの印'
+        mock: なし
+        expected: 空の配列
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[findMarks]
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[知っている印]
+    status: planned
+    introduced:
+      pr: 64
   - name: usedParts
     title: 埋める部品を選ぶ
     container: src/cli/embed.ts

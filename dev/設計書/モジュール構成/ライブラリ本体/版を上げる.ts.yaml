@@ -760,7 +760,7 @@ functions:
     container: src/cli/upgrade.ts
     usecase: 版を上げる
     summary: 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える
-    description: 順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep` → `collectCheckIssues` → ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる
+    description: '順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep` → `collectCheckIssues`（`unknownMarks: false`）→ ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる'
     kind: 関数
     scope: public
     is_async: true

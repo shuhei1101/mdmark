@@ -451,7 +451,7 @@ constraints:
     constraint: '`node {スクリプト} --config {設定ファイルの絶対パス}` を設定ファイルのあるフォルダで流し、終了コード 0 以外を失敗にする。スクリプトの拡張子は `.js` か `.mjs`。待ち時間は制限なし'
     notes: スクリプトは同じ版の mdmark の開発者が書き、利用者が Ctrl-C で止められる。`npx` が入れたパッケージは `node_modules` の下にあり、Node はそこの `.ts` の型を落とさない（`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`）ため `.ts` は受けない
   - item: 点検
-    constraint: 全ての手順を当てた後に、`mdmark check` と同じ点検（呼んだ CLI の形）を流す。ずれが 0 件のときだけ版を書き換える
+    constraint: 全ての手順を当てた後に、`mdmark check` と同じ点検（呼んだ CLI の形）を流す。文書の本文の知らない印（`unknown_mark`）は点検しない。ずれが 0 件のときだけ版を書き換える
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
   - item: 版の書き換え
     constraint: 設定の `version` を目標の版にする。無ければ最上位の先頭に足す

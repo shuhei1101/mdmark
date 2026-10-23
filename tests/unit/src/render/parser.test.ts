@@ -92,3 +92,82 @@ test("test_create_parser_when_info_has_quote", async () => {
   // 検証
   expect(html).toContain('aria-label="コード: ts&quot;x"');
 });
+
+// ブロックと行内の印を行の番号つきで拾う（正常系）
+test("test_find_marks", async () => {
+  // 準備
+  const { findMarks } = await loadParser();
+  const markdown = [
+    "# 題",
+    "",
+    "<!-- tabz -->",
+    "",
+    "段落",
+    "続き <!-- note: a --> と <!-- /note -->",
+    "",
+  ].join("\n");
+  // 実行
+  const marks = findMarks(markdown);
+  // 検証
+  expect(marks).toEqual([
+    { name: "tabz", line: 3 },
+    { name: "note", line: 6 },
+    { name: "note", line: 6 },
+  ]);
+});
+
+// コードブロックとインラインコードの中の印は拾わない（正常系）
+test("test_find_marks_when_code", async () => {
+  // 準備
+  const { findMarks } = await loadParser();
+  const markdown = [
+    "```markdown",
+    "<!-- tabz -->",
+    "```",
+    "",
+    "段落 `<!-- tabz -->`",
+    "",
+  ].join("\n");
+  // 実行
+  const marks = findMarks(markdown);
+  // 検証
+  expect(marks).toEqual([]);
+});
+
+// 複数行の HTML のブロックの中の印の行を数える（正常系）
+test("test_find_marks_when_multiline_block", async () => {
+  // 準備
+  const { findMarks } = await loadParser();
+  const markdown = ["# 題", "<div>", "<!-- tabz -->", "</div>", ""].join("\n");
+  // 実行
+  const marks = findMarks(markdown);
+  // 検証
+  expect(marks).toEqual([{ name: "tabz", line: 3 }]);
+});
+
+// 表のセルの中の印の行を行の番号で返す（正常系）
+test("test_find_marks_when_table_cell", async () => {
+  // 準備
+  const { findMarks } = await loadParser();
+  const markdown = [
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 <!-- tabz --> | 2 |",
+    "",
+  ].join("\n");
+  // 実行
+  const marks = findMarks(markdown);
+  // 検証
+  expect(marks).toEqual([{ name: "tabz", line: 3 }]);
+});
+
+// 前に複数行の行内の HTML がある印の行を数える（正常系）
+test("test_find_marks_when_multiline_inline_html", async () => {
+  // 準備
+  const { findMarks } = await loadParser();
+  const markdown = ["p <a", 'href="x">l</a> <!-- c -->', ""].join("\n");
+  // 実行
+  const marks = findMarks(markdown);
+  // 検証
+  expect(marks).toEqual([{ name: "c", line: 2 }]);
+});

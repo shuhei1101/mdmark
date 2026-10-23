@@ -1,0 +1,112 @@
+title: "コードブロック"
+implementation: "src/parts/code-block.ts#renderCodeBlock"
+story: "Parts/CodeBlock"
+states:
+  - name: TitleAndLineNumbers
+    description: 題・行番号・2 行目の強調
+    args:
+      - name: language
+        value: ts
+      - name: title
+        value: app.ts
+      - name: lineNumbers
+        value: 'true'
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const doc = await fetch(\"/README.md\");","kind":"highlight"},{"text":"mount(document.querySelector(\"#doc\"), await doc.text());"}]'
+  - name: LineMarks
+    description: 消した行・足した行・強調・印の無い行。印の無い行も印の列の幅を空けて文字の頭を揃える
+    args:
+      - name: language
+        value: ts
+      - name: lines
+        value: '[{"text":"let count = 0;","kind":"del"},{"text":"let count = 1;","kind":"add"},{"text":"count += 1; // 数える","kind":"highlight"},{"text":"console.log(count);"}]'
+  - name: TitleOnly
+    description: 題だけ。行に分けず今の `pre` のまま描く
+    args:
+      - name: language
+        value: yaml
+      - name: title
+        value: mdmark.config.yaml
+      - name: lines
+        value: '[{"text":"features:"},{"text":"  code: true"},{"text":"  print: true"}]'
+  - name: TwoDigits
+    description: 13 行で 2 桁の行番号と空の行、9〜10 行目の強調。空の行も 1 行の高さを取る
+    args:
+      - name: language
+        value: ts
+      - name: lineNumbers
+        value: 'true'
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":""},{"text":"const element = document.querySelector(\"#doc\");"},{"text":"const response = await fetch(\"/README.md\");"},{"text":"const markdown = await response.text();"},{"text":""},{"text":"const config = {"},{"text":"  features: {"},{"text":"    code: true,","kind":"highlight"},{"text":"    print: true,","kind":"highlight"},{"text":"  },"},{"text":"};"},{"text":"mount(element, markdown, config);"}]'
+  - name: LongLineAndTitle
+    description: 幅を超える題と行。題は帯の中で折り返し、行はブロックの中で横にスクロールして行の地を最も長い行の右端まで敷く
+    args:
+      - name: language
+        value: ts
+      - name: title
+        value: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts
+      - name: lineNumbers
+        value: 'true'
+      - name: lines
+        value: '[{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js\";"},{"text":"export const decorate = (tokens: Token[], options: { title?: string; lines: boolean; highlight: number[] }) => tokens;","kind":"del"},{"text":"export const decorate = (tokens: Token[], options: CodeBlockOptions, warnings: SyntaxWarning[]): Token[] => applyCodeBlockOptions(tokens, options, warnings);","kind":"add"}]'
+lead: 題・行番号・行の強調・足した行と消した行を付けたコードブロック。
+args:
+  - name: language
+    type: 文字列
+    required: false
+    default: 空（言語の無いコードブロック）
+    description: '情報文字列の言語。`code` の class `language-{言語}` と、題が無いときの読み上げの名前 `コード: {言語}` に使う'
+  - name: title
+    type: 文字列
+    required: false
+    default: 空（題を出さない）
+    description: '題。空でなければ `figure` の `figcaption` に出し、`pre` の読み上げの名前を `コード: {題}` にする'
+  - name: lineNumbers
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 行の左に 1 から始まる行番号を出すか
+  - name: lines
+    type: オブジェクトの配列
+    required: true
+    description: コードの行（`{ text, kind }`）。`text` は印を外した行の文字、`kind` は `add`・`del`・`highlight` か空
+css_properties:
+  - name: --mdmark-color-code-highlight-bg
+    syntax: <color>
+    default: '#fff8c5（ダーク #2e2a14）'
+    description: 強調した行の地の色
+  - name: --mdmark-color-code-highlight-line
+    syntax: <color>
+    default: '#9a6700（ダーク #d29922）'
+    description: 強調した行の左端の線の色
+  - name: --mdmark-color-diff-add-bg
+    syntax: <color>
+    default: '#dafbe1'
+    description: 足した行の地の色（差分の表示と共通）
+  - name: --mdmark-color-diff-add-sign
+    syntax: <color>
+    default: '#1a7f37'
+    description: 足した行の行頭の `+` と左端の線の色（差分の表示と共通）
+  - name: --mdmark-color-diff-del-bg
+    syntax: <color>
+    default: '#ffebe9'
+    description: 消した行の地の色（差分の表示と共通）
+  - name: --mdmark-color-diff-del-sign
+    syntax: <color>
+    default: '#d1242f'
+    description: 消した行の行頭の `-` と左端の線の色（差分の表示と共通）
+accessibility:
+  - '`pre` は `tabindex="0"` と読み上げの名前（題があれば `コード: {題}`、無ければ `コード: {言語}`）を持ち、キーボードで横にスクロールできる'
+  - 足した行・消した行・強調した行は、色に加えて左端の 2px の線（足した行・消した行は行頭の `+`・`-` も）で分ける。強調の線は隣り合う地の色と 3:1 以上
+  - '行頭の印は擬似要素の代わりの文字で読み上げる（足した行は `足した行`、消した行は `消した行`、強調した行は見た目の文字を持たず `強調した行`）。代わりの文字を読めないブラウザ（Firefox 128・Safari 17.4 より前）でも行番号と `+`・`-` が出るよう、代わりの文字の無い `content` を先に書き、代わりの文字付きの `content` を後ろに重ねる（例: `content: "+"; content: "+" / "足した行";`）'
+  - '行番号と行頭の `+`・`-` は擬似要素で出し、文字を選んで写す中身に入れない。行は `inline-block` で並べ、写した行の間に空行を入れない。空の行は `min-height: 1.55em` で高さを取る（`lh` 単位は対応ブラウザの一部で効かない）'
+  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。題・行番号・強調・行の色と `+`・`-` はそのまま出す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[コードブロック]
+status: planned
+introduced:
+  pr: 65
+notes:
+  出す HTML: 形はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。題の前のファイルのアイコンは CSS で付ける。題が無く、行番号も行の種類も無いときは今の `pre` のまま描く。モックは `dev/mock/components/code-block/`
+  行の地の色: '足した行・消した行・強調した行の地は、不透明の変数をそのまま当てた後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が効くブラウザでは `pre` の横スクロールの影が行の地を透けて見え、効かないブラウザ（Chrome 99〜110）では不透明の地になる。半透明の地と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭の印と線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭の印と線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
+test_file: tests/integration/lib/code-block.story.test.ts

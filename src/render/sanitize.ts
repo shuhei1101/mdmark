@@ -42,6 +42,9 @@ const DROP_ATTRIBUTE = "data-mdmark-drop";
 const DIAGRAM_STYLE_PATTERN =
   /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
 
+/** コードブロックの `code` が持つ、行番号の桁の数の `style`（`--mdmark-code-digits: {数字}` だけ） */
+const CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
+
 /** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
 const DATA_IMAGE_PATTERN =
   /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*$/;
@@ -284,10 +287,15 @@ export function filterEmbeddedStyle(style: string): string {
   return kept.join(";");
 }
 
-/** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・倍率はそのまま、それ以外は埋め込んだ HTML の許した宣言だけ */
+/** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・倍率はそのまま、コードブロックの行番号の桁の数だけを持つものはその宣言、それ以外は埋め込んだ HTML の許した宣言だけ */
 function ownStyle(style: string): string {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
+  }
+  // コードブロックの行番号の桁の数: ほかの宣言を重ねたものは、全て落とす
+  if (style.includes("--mdmark-code-digits")) {
+    const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
+    return digits === undefined ? "" : `--mdmark-code-digits:${digits}`;
   }
   return filterEmbeddedStyle(style);
 }

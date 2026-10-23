@@ -561,12 +561,14 @@ handle.destroy();
 | `--mdmark-color-series-2` | `#bc4c00` | `#f0883e` | グラフの 2 つ目の系列の色 |
 | `--mdmark-color-series-3` | `#8250df` | `#ab7df8` | グラフの 3 つ目の系列の色 |
 | `--mdmark-color-series-4` | `#1b7c83` | `#39c5cf` | グラフの 4 つ目の系列の色 |
-| `--mdmark-color-diff-del-bg` | `#ffebe9` | `#25171c` | 差分の削除した行の背景 |
+| `--mdmark-color-code-highlight-bg` | `#fff8c5` | `#2e2a14` | コードブロックの強調した行の背景 |
+| `--mdmark-color-code-highlight-line` | `#9a6700` | `#d29922` | コードブロックの強調した行の左端の線 |
+| `--mdmark-color-diff-del-bg` | `#ffebe9` | `#25171c` | 差分の削除した行の背景と、コードの行の印の消した行の背景 |
 | `--mdmark-color-diff-del-word` | `#ffcecb` | `#6b2b2b` | 差分の削除した行で変わった語の背景 |
-| `--mdmark-color-diff-del-sign` | `#d1242f` | `#f85149` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色 |
-| `--mdmark-color-diff-add-bg` | `#dafbe1` | `#12261e` | 差分の追加した行の背景 |
+| `--mdmark-color-diff-del-sign` | `#d1242f` | `#f85149` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色。コードの行の印の消した行の行頭の `-` と左端の線にも使う |
+| `--mdmark-color-diff-add-bg` | `#dafbe1` | `#12261e` | 差分の追加した行の背景と、コードの行の印の足した行の背景 |
 | `--mdmark-color-diff-add-word` | `#aceebb` | `#1a4a29` | 差分の追加した行で変わった語の背景 |
-| `--mdmark-color-diff-add-sign` | `#1a7f37` | `#3fb950` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色 |
+| `--mdmark-color-diff-add-sign` | `#1a7f37` | `#3fb950` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色。コードの行の印の足した行の行頭の `+` と左端の線にも使う |
 | `--mdmark-color-comment-bg` | `#fbefff` | `#2e2147` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
 | `--mdmark-color-comment-line` | `#8250df` | `#ab7df8` | コメントの印の下線の色 |
 | `--mdmark-color-error` | `#d1242f` | `#f85149` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |

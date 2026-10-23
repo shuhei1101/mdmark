@@ -16,6 +16,7 @@ directory: |-
   ├── steps.ts                     # ステップの renderSteps
   ├── tree.ts                      # ファイルツリーの renderTree
   ├── badge.ts                     # バッジの renderBadge
+  ├── code-block.ts                # コードブロックの renderCodeBlock
   ├── toc.ts                       # 目次の renderToc
   ├── section.ts                   # 節の renderSection
   ├── row-detail.ts                # 行の詳細の renderRowDetail
@@ -587,6 +588,41 @@ functions:
         expected: 3 つのセルが `個数 4`・`合計 45`・`平均 250` で `data-total` を持ち、3 つ目だけ `hidden`
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[computeTotal]
+  - name: renderCodeBlock
+    title: コードブロックを描く
+    container: src/parts/code-block.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類を持つときは行ごとの `mdmark-code-line` に分け、題があれば `figure` と `figcaption` で包む。題だけのときは行に分けず今の `pre` を包む。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
+    args:
+      - name: options
+        type: '{ language: string; title: string; lineNumbers: boolean; lines: CodeLine[] }'
+        required: true
+        description: 部品設計の引数。`language`・`title` は無ければ空
+    returns:
+      type: string
+      description: '題があれば `<figure class="mdmark-code">`、無ければ `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_code_block
+        case: 正常
+        summary: 題・行番号・行の種類を付け、文字をエスケープする
+        condition: '`title` が `a<b>.ts`、`lineNumbers` が `true`、`lines` が `{ text: "x < 1", kind: "add" }` と `{ text: "y" }`'
+        mock: なし
+        expected: '`<figcaption class="mdmark-code-title">a&lt;b&gt;.ts</figcaption>`、`pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` と `aria-label="コード: a&lt;b&gt;.ts"`、1 行目が `data-line="1" data-kind="add"` で文字が `x &lt; 1`、2 行目が `data-kind` を持たない'
+      - name: test_render_code_block_when_title_only
+        case: 正常
+        summary: 題だけなら行に分けない
+        condition: '`title` が `a.yaml`、`lineNumbers` が `false`、種類の無い 2 行'
+        mock: なし
+        expected: '`figure` の中の `pre` が class を持たず、`mdmark-code-line` が無い'
+      - name: test_render_code_block_when_two_digits
+        case: 正常
+        summary: 行の数の桁の数を渡す
+        condition: '`lineNumbers` が `true` で 13 行'
+        mock: なし
+        expected: '`code` が `style="--mdmark-code-digits: 2"`、最後の行が `data-line="13"`'
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -607,3 +643,16 @@ test_files:
   - tests/unit/src/parts/row-detail.test.ts
   - tests/unit/src/parts/figure.test.ts
   - tests/unit/src/parts/doc-list.test.ts
+  - tests/unit/src/parts/code-block.test.ts
+data_models:
+  - name: CodeLine
+    title: コードの行
+    container: src/parts/code-block.ts
+    summary: 部品『コードブロック』の `lines` の要素
+    properties:
+      - name: text
+        type: string
+        description: コードの行の印を外した行の文字（エスケープ前）
+      - name: kind
+        type: '"add" | "del" | "highlight" | undefined'
+        description: 行の種類。無ければ飾らない行
