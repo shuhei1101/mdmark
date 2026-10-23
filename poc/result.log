@@ -1,0 +1,50 @@
+✅ 段落の 1 行（一致 1 件 / 地の文の findWords 1 件）
+    ok inline "ワークスペース" → 1:0-7 "ワークスペース"
+✅ 段落の複数行（一致 2 件 / 地の文の findWords 2 件）
+    ok inline "WS" → 2:5-7 "WS"
+    ok inline "ワークスペース" → 3:5-12 "ワークスペース"
+✅ リストの項目（一致 3 件 / 地の文の findWords 3 件）
+    ok inline "ワークスペース" → 1:7-14 "ワークスペース"
+    ok inline "WS" → 2:9-11 "WS"
+    ok inline "公開関数" → 3:6-10 "公開関数"
+✅ 引用（一致 2 件 / 地の文の findWords 2 件）
+    ok inline "ワークスペース" → 1:7-14 "ワークスペース"
+    ok inline "WS" → 2:11-13 "WS"
+✅ 表のセル（一致 3 件 / 地の文の findWords 3 件）
+    ok inline "WS" → 3:2-4 "WS"
+    ok inline "ワークスペース" → 3:7-14 "ワークスペース"
+    ok inline "WS" → 3:17-19 "WS"
+✅ 強調の中（一致 3 件 / 地の文の findWords 3 件）
+    ok inline "ワークスペース" → 1:2-9 "ワークスペース"
+    ok inline "WS" → 1:15-17 "WS"
+    ok inline "公開関数" → 1:23-27 "公開関数"
+✅ エスケープ（一致 1 件 / 地の文の findWords 1 件）
+    ok inline "ワークスペース" → 1:11-18 "ワークスペース"
+✅ 実体参照（一致 2 件 / 地の文の findWords 2 件）
+    ok inline "WS" → 1:22-24 "WS"
+    ok inline "A&B" → 1:25-32 "A&amp;B"
+✅ 行内のコードが先（一致 1 件 / 地の文の findWords 1 件）
+    ok inline "ワークスペース" → 1:14-21 "ワークスペース"
+✅ リンクの文字が先（一致 1 件 / 地の文の findWords 1 件）
+    ok inline "ワークスペース" → 1:23-30 "ワークスペース"
+✅ リンクの URL に綴り（一致 2 件 / 地の文の findWords 2 件）
+    ok inline "WS" → 1:24-26 "WS"
+    ok inline "公開関数" → 1:28-32 "公開関数"
+✅ 見出しに綴り（一致 1 件 / 地の文の findWords 1 件）
+    ok inline "ワークスペース" → 3:3-10 "ワークスペース"
+✅ 字下げの段落（一致 1 件 / 地の文の findWords 1 件）
+    ok inline "ワークスペース" → 3:11-18 "ワークスペース"
+✅ 埋め込んだ HTML（一致 2 件 / 地の文の findWords 0 件）
+    ok html "ワークスペース" → 3:11-18 "ワークスペース"
+    ok html "WS" → 4:32-34 "WS"
+✅ 埋め込んだ HTML の実体参照の後ろ（一致 1 件 / 地の文の findWords 0 件）
+    ok html "ワークスペース" → 3:22-29 "ワークスペース"
+✅ flow の定義（一致 1 件 / 地の文の findWords 0 件）
+    ok diagram "ワークスペース" → 3:36-43 "ワークスペース"
+✅ flow の定義のエスケープの後ろ（一致 1 件 / 地の文の findWords 0 件）
+    ok diagram "ワークスペース" → 3:57-64 "ワークスペース"
+✅ HTML の中の mdmark-flow（一致 1 件 / 地の文の findWords 0 件）
+    ok diagram "ワークスペース" → 5:36-43 "ワークスペース"
+
+見本 18 件 / 不一致 0 件
+exit=0
