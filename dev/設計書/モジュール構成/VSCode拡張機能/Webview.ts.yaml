@@ -314,7 +314,7 @@ functions:
       6. `message` を受けて `type` ごとに `PreviewView` へ渡す
          - `render` の場合、描いて `rendered` を送る
          - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
-      7. 本文の `a` の `click` を `preventDefault` し、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
+      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
       8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る
     callees:
       - '#classes[PreviewView]'
@@ -324,6 +324,13 @@ functions:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#constraints[リンクの見分け方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[知らせの間引き]
     status: planned
+    unit_tests:
+      - name: test_start_preview_when_link_clicked
+        case: 正常
+        summary: 本物のクリックでもリンクの押下を `window` へ伝えず、`openLink` を 1 回だけ送る
+        condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`window` に `click` の記録のリスナーを置く。本文の `https://example.com/`・`./other.md`・`#末尾` のリンクを Playwright の `userEvent.click`（`isTrusted` が true）で押す'
+        mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
+        expected: '`window` のリスナーにどの押下も届かない。`openLink` が `https://example.com/` と `./other.md` で 1 回ずつ送られ、`#末尾` では送られない'
   - name: classifyLoadFailure
     title: 読めない理由を見分ける
     kind: 関数
