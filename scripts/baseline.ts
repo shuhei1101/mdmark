@@ -3,7 +3,6 @@ import { join, posix, relative, sep } from "node:path";
 import { build } from "esbuild";
 import { Linter, type SourceCode } from "eslint";
 import compat from "eslint-plugin-compat";
-import type { Node } from "estree";
 import { BROWSER_TARGETS, postcssStubPlugin } from "./bundle.ts";
 
 /** 対応ブラウザの下限に無い API の使用 1 件 */
@@ -20,6 +19,9 @@ export type BaselineViolation = {
   message: string;
 };
 
+/** `SourceCode` が返す構文木のノード */
+type AstNode = NonNullable<ReturnType<SourceCode["getNodeByRangeIndex"]>>;
+
 /** 対応ブラウザの下限と照らす、使う側のブラウザが読む JS の入口と、照らした結果に出す配布ファイルの名前 */
 const BASELINE_ENTRIES = [
   { in: "src/index.ts", out: "index" },
@@ -33,6 +35,9 @@ const TARGET_PATTERN = /^([a-z]+)([0-9.]+)$/;
 const API_PATTERN = /^(\S+?)(?:\(\))? is not supported in /;
 // 報告を取る規則の名前
 const COMPAT_RULE = "compat/compat";
+// `noInlineConfig` で読まないコメントに ESLint が付ける知らせの文の一部
+const INLINE_CONFIG_NOTICE =
+  "has no effect because you have 'noInlineConfig' setting";
 // 束ねた JS を書き出す配布フォルダ（束ねはメモリに置き、書かない）
 const DIST_DIR = "dist";
 
@@ -50,7 +55,7 @@ export function toBrowserslist(targets: string[]): string[] {
 /** ノードの中（自分を含む）に、`api` と同じ文字列の `typeof` の単項式があるかを返す */
 function containsTypeofOf(options: {
   sourceCode: SourceCode;
-  node: Node;
+  node: AstNode;
   api: string;
 }): boolean {
   const { sourceCode, node, api } = options;
@@ -70,7 +75,7 @@ function containsTypeofOf(options: {
         item !== null &&
         typeof item === "object" &&
         "type" in item &&
-        containsTypeofOf({ sourceCode, node: item as Node, api }),
+        containsTypeofOf({ sourceCode, node: item as AstNode, api }),
     );
   });
 }
@@ -100,9 +105,11 @@ export function isGuardedByTypeof(options: {
   );
 }
 
-/** 束ねた JS 1 つに eslint-plugin-compat を流し、同じ API の `typeof` の確かめの中を除いた報告を返す */
-function lintBundle(options: {
+/** 束ねた JS 1 つに eslint-plugin-compat を流し、同じ API の `typeof` の確かめの中を除いた報告を返す。照らせなかったときは例外を投げる */
+export function lintBundle(options: {
+  /** 束ねた JS */
   code: string;
+  /** 照らした JS に当たる配布ファイル。ESLint に渡すファイル名を兼ねる */
   file: string;
 }): BaselineViolation[] {
   const { code, file } = options;
@@ -126,6 +133,20 @@ function lintBundle(options: {
     ],
     file,
   );
+  // 構文として読めない・設定が当たらないときは何も照らさず 0 件になるため、止める
+  const unexpected = messages.find(
+    (message) =>
+      message.ruleId !== COMPAT_RULE &&
+      !(
+        message.ruleId === null &&
+        message.message.includes(INLINE_CONFIG_NOTICE)
+      ),
+  );
+  if (unexpected) {
+    throw new Error(
+      `束ねた JS を下限の版と照らせない: ${file}:${unexpected.line}:${unexpected.column} ${unexpected.message}`,
+    );
+  }
   const sourceCode = linter.getSourceCode();
   return messages
     .filter((message) => message.ruleId === COMPAT_RULE)
