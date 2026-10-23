@@ -72,4 +72,12 @@ MCP サーバーは CLI を `npx` で取得すると初回が 30 秒を超える
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/session-start.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/read-guide.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/find-docs.test.ts` | 全実行 | 新規 | ✅ | 4 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/update-index.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/check.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/export-html.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/build-site.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261023202301_83891b4_結合テスト.log` |
