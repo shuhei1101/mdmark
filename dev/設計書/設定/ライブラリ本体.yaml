@@ -364,5 +364,19 @@ settings:
     status: planned
     introduced:
       pr: 65
+  - key: tooltips.placement
+    title: ツールチップを出す場所
+    file: mdmark.config.yaml
+    type: '"top" | "bottom"'
+    required: false
+    default: '`top`'
+    description: 用語・図・ヒントのツールチップを、持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す
+    reload: reload
+    allowed: '`top` / `bottom`。`mount` は他の値を無視して `top` にし、CLI は他の値を設定ファイルの誤りにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.tooltips.placement]
+    implementation: src/config.ts#resolveConfig
+    introduced:
+      pr: 83
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

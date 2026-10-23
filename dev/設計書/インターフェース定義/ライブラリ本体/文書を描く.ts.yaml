@@ -1541,6 +1541,65 @@ flows:
       - '`作業場` にフォーカスすると、語の `aria-describedby` が指す `role="tooltip"` のツールチップが出て、「代わりの用語」の下に `ワークスペース` と `話し合いの記録を置くフォルダ` がある'
       - Esc でツールチップが消え、フォーカスが `作業場` に残る
     test: test_normal_when_avoided_term
+  - name: 正常系（ツールチップを上に出す）
+    summary: 用語・線・ヒントのツールチップを持ち主の上に出し、上に収まらない語だけ下に出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 描く先の要素をページの上端に置いたページ。ほかは正常系と同じ
+        notes: スクロールしない。文書の 1 行目の語の上にツールチップの高さが残らない
+      - name: 索引
+        description: 用語 `索引`（意味 `文書と用語を並べた YAML のファイル`）を持つ索引
+      - name: ツールチップを持つ Markdown
+        description: 1 行目の段落に `索引` を持ち、画面の高さを超えない範囲の段落を挟んだ後、別の節の段落の `索引`・`tip` を持つ線 1 本のフロー図・`<!-- html -->` の範囲の `data-hint` を持つ `div` を置いた文書
+        notes: 後ろの 3 つの持ち主は、上にツールチップの高さより広い余白を持つ
+      - name: Mock
+        description: 差し替える依存は無い。ポインターは Playwright のマウス操作で動かす
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index })
+        P->>M: 2 つ目の節の用語・線のラベル・div の印に順にポインターを乗せる
+        M->>P: それぞれの持ち主の上にツールチップを出す
+        P->>M: 1 行目の用語にポインターを乗せる
+        M->>P: 語の下にツールチップを出す
+    expected:
+      - 2 つ目の節の `索引` のツールチップの `getBoundingClientRect().bottom` が、語の `top` 以下
+      - 線のラベルのツールチップの `bottom` が、ラベルの `top` 以下
+      - '`div` の印のツールチップの `bottom` が、印の `top` 以下'
+      - 1 行目の `索引` のツールチップの `top` が、語の `bottom` 以上で、ツールチップの `top` が 0 以上
+    test: test_normal_when_tooltip_above
+  - name: 正常系（ツールチップを下に出す設定）
+    summary: '`tooltips.placement` が `bottom` のときは持ち主の下に出し、下に収まらない語だけ上に出す。知らない値は `top` として扱う'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（ツールチップを上に出す）と同じ
+      - name: 索引
+        description: 正常系（ツールチップを上に出す）と同じ
+      - name: ツールチップを持つ Markdown
+        description: 正常系（ツールチップを上に出す）と同じ文書の末尾に、画面の下端に揃うまでスクロールしたとき最後の行に来る `索引` を足した文書
+      - name: 設定
+        description: '`{ tooltips: { placement: "bottom" } }` と `{ tooltips: { placement: "left" } }`'
+        notes: 別の要素へ 1 つずつ描く
+      - name: Mock
+        description: 正常系（ツールチップを上に出す）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, config: { tooltips: { placement: "bottom" } } })
+        P->>M: 2 つ目の節の用語・線のラベル・div の印に順にポインターを乗せる
+        M->>P: それぞれの持ち主の下にツールチップを出す
+        P->>M: 末尾の用語を画面の下端まで送り、ポインターを乗せる
+        M->>P: 語の上にツールチップを出す
+        P->>M: mount(el2, { markdown, index, config: { tooltips: { placement: "left" } } })
+        P->>M: el2 の 2 つ目の節の用語にポインターを乗せる
+        M->>P: 語の上にツールチップを出す
+    expected:
+      - '`bottom` のとき、2 つ目の節の `索引`・線のラベル・`div` の印のツールチップの `top` が、それぞれの持ち主の `bottom` 以上'
+      - '`bottom` のとき、末尾の `索引` のツールチップの `bottom` が、語の `top` 以下で、`window.innerHeight` 以下'
+      - '`left` を渡した `el2` の `索引` のツールチップの `bottom` が、語の `top` 以下'
+    test: test_normal_when_tooltip_placement_bottom
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -1641,6 +1700,13 @@ request:
     description: コメントを読み込み、保存する関数。`comments` がオンのときだけ使う
     constraints: '`opts.docId` と一緒に渡す'
     notes: 形は制約の「コメントの読み書きの関数」。保存先は mdmark が持たず、使う側が書く
+  - name: opts.config.tooltips.placement
+    type: '"top" | "bottom"'
+    required: false
+    default: '`top`'
+    location: argument
+    description: 用語・図・ヒントのツールチップを、持ち主の上と下のどちらに先に出すか
+    notes: '`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す。他の値は無視して `top` にする'
 request_example: |-
   ```json
   {
@@ -1719,7 +1785,7 @@ constraints:
     constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
     notes: 下線の要素の形は部品設計で決める
   - item: ツールチップの操作
-    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、下に収まらなければ上に開く。`update` で付け直し、`destroy` で外す
+    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 関連文書と被参照の一覧
     constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない
@@ -1738,7 +1804,7 @@ constraints:
     constraint: 全画面のボタンで、題・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を置く。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を外す
     notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
   - item: 図のツールチップ
-    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。同時に出すのは 1 つだけ。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。同時に出すのは 1 つだけ。出す場所は制約の「ツールチップの操作」と同じく `opts.config.tooltips.placement` に従い、箱の印のツールチップは箱の上（下）に置く。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 操作できる部品の操作
     constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
@@ -1747,7 +1813,7 @@ constraints:
     constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線・やめた言い方のマーカーとツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
     notes: 文書に書いたスクリプトは動かさず、動くのは mdmark が付ける操作だけ（D-22）
   - item: ヒントの操作
-    constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
+    constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・出す場所・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
     notes: 印だけで開くのとポインターの形は確認ログの決定
   - item: 差分の取り出し元
     constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
