@@ -1,0 +1,98 @@
+title: "VSCodeのコマンドと通知"
+elements:
+  - name: プレビューを横に開くボタン
+    id: editor-title-open-preview
+    kind: button
+    position: Markdown のエディタのタイトル
+    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(open-preview)`、ポインターを当てるとコマンドの表示名を出す'
+    label: 'mdmark: プレビューを横に開く'
+    visible_when: '`editorLangId == markdown`'
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+    status: planned
+    introduced:
+      pr: 69
+  - name: コマンドの表示名
+    id: command-titles
+    kind: label
+    position: コマンドパレット
+    description: '`contributes.commands` の `category` を `mdmark`、`title` を次にする。`mdmark.openPreviewToSide`: プレビューを横に開く（既定のショートカット `Shift+Alt+D`、Mac は `Shift+Option+D`）・`mdmark.openPreview`: プレビューを開く・`mdmark.refreshPreview`: プレビューをリロード・`mdmark.openConfig`: 設定ファイルを開く・`mdmark.exportHtml`: HTML に書き出す・`mdmark.openInBrowser`: ブラウザで開く・`mdmark.printToPdf`: PDF に印刷'
+    label: 'mdmark: {title}'
+    visible_when: '`mdmark.refreshPreview` は mdmark のプレビューが開いているとき。他は `editorLangId == markdown` か mdmark のプレビューにフォーカスがあるとき（`mdmark.openConfig` は常時）'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#exceptions[なし（Markdown でない）]
+    reason: 「プレビューをリロード」は確認ログの決定。「プレビューを開く」「HTML に書き出す」「ブラウザで開く」「PDF に印刷」は単一ユースケースのシナリオの表記
+    status: planned
+    introduced:
+      pr: 69
+  - name: 雛形を作るかの確認
+    id: confirm-create-config
+    kind: dialog
+    position: VS Code のモーダルのダイアログ
+    description: '設定ファイルが無いときに `mdmark.openConfig` が `showInformationMessage(文, { modal: true, detail }, "作る")` で尋ねる。作らないときは VS Code が足す「キャンセル」を押す'
+    label: '文: `{mdmark.configPath} がありません。雛形を作りますか？`、detail: `features と libraries の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。`、ボタン: `作る`'
+    visible_when: '`mdmark.openConfig` を呼び、設定ファイルが無いとき'
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
+    status: planned
+    introduced:
+      pr: 69
+  - name: 雛形の中身
+    id: config-template
+    kind: label
+    position: 作った設定ファイルのエディタ
+    description: 「作る」で書く YAML。キーは書かず、書き方をコメントで示す
+    label: |-
+      ```yaml
+      # mdmark の設定。VS Code のプレビューは features と libraries を読みます
+
+      # 機能のオン・オフ（使うときは次の 2 行の # を外す）
+      # features:
+      #   callout: false
+
+      # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+      # libraries:
+      #   my-chart: ./libs/my-chart.js
+      ```
+    visible_when: 雛形を作ったとき
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[features]
+      - dev/設計書/設定/ライブラリ本体#settings[libraries]
+    status: planned
+    introduced:
+      pr: 69
+  - name: 書き出した通知
+    id: notify-exported
+    kind: notification
+    position: VS Code の通知
+    description: '`mdmark.exportHtml` が書き出せたときに `showInformationMessage` で出す。`mdmark.openInBrowser`・`mdmark.printToPdf` では出さない'
+    label: '文: `HTML を書き出しました: {書き出したファイルのパス}`、ボタン: `ブラウザで開く`'
+    visible_when: '`mdmark.exportHtml` が書き出せたとき'
+    action: 「ブラウザで開く」を押すと、書き出した HTML を `env.openExternal` で開く
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[通知]
+    status: planned
+    introduced:
+      pr: 69
+  - name: 書き出せない通知
+    id: notify-export-failed
+    kind: notification
+    position: VS Code の通知
+    description: 書き出す先に書けないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）。理由は OS が返した誤りの文
+    label: '`HTML を書き出せませんでした: {書き出す先のパス}（{理由}）。設定 mdmark.export.outputDir を書き込めるフォルダに直してください。`'
+    visible_when: 書き出す先に書けないとき
+    status: planned
+    introduced:
+      pr: 69
+  - name: バージョンを決められない通知
+    id: notify-version-undecidable
+    kind: notification
+    position: VS Code の通知
+    description: 書き出すときに読む版を決められないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）
+    label: '`HTML を書き出せませんでした。読む mdmark のバージョンを決められません。ネットワークにつながっているかを確かめてから、もう一度実行してください。`'
+    visible_when: '`mdmark.version` が `latest` で、タグ一覧を取れず前回の版も無いとき'
+    status: planned
+    introduced:
+      pr: 69
+screen: vscode/package.json
+lead: VS Code 拡張機能が VS Code の画面に足す入口（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。見た目は VS Code のままで、モックは作らない。
+refs:
+  - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#
+  - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#

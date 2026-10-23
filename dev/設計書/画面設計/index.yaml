@@ -5,3 +5,7 @@ items:
     summary: 描く先の要素の中に描く文書と、mdmark が足す UI の項目
   - page: まとめたHTML.ts.yaml
     summary: mdmark build が書き出す 1 枚の HTML の文書の一覧・開いている文書・一覧のパネル
+  - page: VSCodeのプレビュー.ts.yaml
+    summary: VS Code 拡張機能のプレビューのパネルの、描いた文書と状態の表示
+  - page: VSCodeのコマンドと通知.ts.yaml
+    summary: VS Code 拡張機能のエディタのボタン・コマンドの表示名・確認のダイアログ・通知・雛形の中身
