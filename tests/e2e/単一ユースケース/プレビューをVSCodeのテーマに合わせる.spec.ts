@@ -3,18 +3,16 @@ import { longDocument, useVscodeE2E } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
 
-// ダークとライトの `--mdmark-color-bg` の値（デザイン方針の modern）
-const DARK_BACKGROUND = "#0d1117";
-const LIGHT_BACKGROUND = "#ffffff";
+// ダークとライトの `--mdmark-color-bg` の値の地の色の計算値（デザイン方針の modern）
+const DARK_BACKGROUND = "rgb(13, 17, 23)";
+const LIGHT_BACKGROUND = "rgb(255, 255, 255)";
 
-/** 描く先の要素の `--mdmark-color-bg` の計算値 */
+/** 描く先の要素の地の色の計算値 */
 function background(frame: Frame): Promise<string> {
   return frame
     .locator(".mdmark")
     .first()
-    .evaluate((element) =>
-      getComputedStyle(element).getPropertyValue("--mdmark-color-bg").trim(),
-    );
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
 }
 
 // VS Code のテーマをダークに切り替えると、プレビューを開き直さずにダークの配色になり、本文とスクロールの位置は変わらない（正常シナリオ）

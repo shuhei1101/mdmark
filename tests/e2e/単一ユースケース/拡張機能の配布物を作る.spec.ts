@@ -22,6 +22,8 @@ const execFileAsync = promisify(execFile);
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 // ワークフローの場所
 const WORKFLOW = join(".github", "workflows", "vscode-release.yml");
+// シナリオの準備で作る、クローンの拡張機能のバージョン
+const RELEASE_VERSION = "0.1.0";
 // コマンドの出力が大きくなっても切れないようにする
 const MAX_BUFFER = 64 * 1024 * 1024;
 // クローンした直後には無い、複製しないもの
@@ -141,8 +143,26 @@ async function ghCalls(): Promise<string[]> {
     : [];
 }
 
+/** クローンの拡張機能の `package.json` と `package-lock.json` の直下のバージョンを書き換える（作業ツリーは変わらない） */
+async function setExtensionVersion(version: string): Promise<void> {
+  for (const name of ["package.json", "package-lock.json"]) {
+    const path = join(clone, "vscode", name);
+    const content = JSON.parse(await readFile(path, "utf8")) as {
+      version: string;
+      packages?: Record<string, { version?: string }>;
+    };
+    content.version = version;
+    if (content.packages?.[""] !== undefined) {
+      content.packages[""].version = version;
+    }
+    await writeFile(path, `${JSON.stringify(content, null, 2)}\n`);
+  }
+}
+
 test.beforeAll(async () => {
   clone = await createClone();
+  // シナリオの準備: 作業ツリーのバージョンに頼らず、`version` が `0.1.0` の状態にする
+  await setExtensionVersion(RELEASE_VERSION);
   await createGhStub();
 });
 
@@ -154,10 +174,6 @@ test.afterAll(async () => {
 // バージョンが合うタグで、.vsix を作って Release に添え、mdmark 本体のタグでは起きない（正常シナリオ）
 test("test_normal", async () => {
   // 準備
-  const manifest = JSON.parse(
-    await readFile(join(clone, "vscode", "package.json"), "utf8"),
-  ) as { version: string };
-  expect(manifest.version).toBe("0.1.0");
   const workflow = parse(
     await readFile(join(clone, WORKFLOW), "utf8"),
   ) as Workflow;
