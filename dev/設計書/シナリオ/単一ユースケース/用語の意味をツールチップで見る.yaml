@@ -26,6 +26,7 @@ scenarios:
       - 2 つ目の節では `WS` に破線の下線が付いている
       - '`印刷` の `印` には下線が付いていない'
       - '`WS` にポインターを乗せると `話し合いの記録を置くフォルダ` のツールチップが出る'
+      - ツールチップは `WS` の上に出る（ツールチップの下端が語の上端より上にある）
       - ツールチップの上へポインターを移しても、ツールチップが出たまま
     test: test_normal
   - name: 正常シナリオ（キーボードで読む）
@@ -180,6 +181,53 @@ scenarios:
       - Tab でマーカーの付いた語にフォーカスが移り、その語の `aria-describedby` がツールチップの要素を指す
       - Esc を押すとツールチップが消え、フォーカスは語に残る
     test: test_normal_when_avoided_term
+  - name: 正常シナリオ（上に収まらない語）
+    setup:
+      - name: mdmark を読むページ
+        description: 描く先の要素をページの上端に置き、スクロールせずに文書を描く。ほかは正常シナリオと同じ
+        notes: 文書の 1 行目の語の上に、ツールチップの高さが残らない状態を決定的に起こす
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 1 行目に用語が出る Markdown
+        description: 見出しを置かず、1 行目の段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を渡して描かせる
+        M-->>P: 用語に下線を引いて描く
+        U->>P: 1 行目の下線の付いた語にポインターを乗せる
+        M->>M: 語の上にツールチップが収まらないことを確かめる
+        P-->>U: 語の下に用語の意味のツールチップを表示
+    expected:
+      - '`ワークスペース` のツールチップが語の下に出る（ツールチップの上端が語の下端より下にある）'
+      - ツールチップの全体が画面の中に収まっている
+    test: test_normal_when_no_room_above
+  - name: 正常シナリオ（設定で下に出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 設定の `tooltips.placement` を `bottom` にした `opts.config` を渡して文書を描く。ほかは正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が出る Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定・索引・文書の id・Markdown を渡して描かせる
+        M-->>P: 用語に下線を引いて描く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: 語の下に用語の意味のツールチップを表示
+    expected:
+      - '`WS` にポインターを乗せると、`話し合いの記録を置くフォルダ` のツールチップが語の下に出る（ツールチップの上端が語の下端より下にある）'
+    test: test_normal_when_placement_bottom
 lead: 使う側が索引に書いた用語の語・別名が本文に出ると、mdmark が破線の下線を引き、読む人がポインターを乗せるかフォーカスすると意味のツールチップが出る。
 issue: 5
 primary_actor: 文書を読む人
@@ -192,7 +240,7 @@ trigger: 使う側のページが、索引と描く文書の `id` を渡して�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 用語のツールチップの機能（`glossary`）がオン（既定）
-success_guarantee: 本文に出た用語の語・別名に破線の下線が付き、ポインターを乗せたときとフォーカスしたときに、その用語の意味のツールチップが出る。本文に出た用語のやめた言い方にはマーカーが付き、同じ操作で代わりの用語とその意味のツールチップが出る。
+success_guarantee: 本文に出た用語の語・別名に破線の下線が付き、ポインターを乗せたときとフォーカスしたときに、その用語の意味のツールチップが出る。ツールチップは語の上に出て、上に収まらないときだけ語の下に出る。本文に出た用語のやめた言い方にはマーカーが付き、同じ操作で代わりの用語とその意味のツールチップが出る。
 minimal_guarantee: 索引を渡さないときも、索引の一部が Schema に合わないときも、本文は描かれる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
