@@ -188,8 +188,8 @@ export class PreviewPanel {
         : buildPreviewHtml(common);
   }
 
-  /** 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めなかったときは、前に読めた `libraries` を残す */
-  async reloadConfig(): Promise<void> {
+  /** 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めなかったときは、前に読めた `libraries` を残す。読めた（無いときを含む）なら true、読めない・開けないなら false を返す */
+  async reloadConfig(): Promise<boolean> {
     const { log } = this.deps;
     const configuration = workspace.getConfiguration("mdmark", this.uri);
     const settings = readSettings((key) => configuration.get(key));
@@ -209,19 +209,19 @@ export class PreviewPanel {
         path,
         error instanceof Error ? error : String(error),
       );
-      return;
+      return false;
     }
     if (load.kind === "missing") {
       this.config = {};
       this.rawLibraries = undefined;
       this.markConfigOk();
-      return;
+      return true;
     }
     if (load.kind === "error") {
       log.warn("設定ファイルを読めない", path, load.line, load.message);
       this.configErrorLine = load.line;
       void this.post({ type: "configError", line: load.line });
-      return;
+      return false;
     }
     const { libraries, ...rest } = load.config;
     this.rawLibraries = libraries;
@@ -240,11 +240,14 @@ export class PreviewPanel {
             }),
           };
     this.markConfigOk();
+    return true;
   }
 
-  /** 設定ファイルを読み直し、`libraries` の origin の集まりが今の HTML の CSP に入れたものと違えば HTML を入れ直し（新しい配信元のモジュールを CSP が止めないため）、同じなら待たずに送る */
+  /** 設定ファイルを読み直し、読めないときは何も送らずに終える。読めたときは、`libraries` の origin の集まりが今の HTML の CSP に入れたものと違えば HTML を入れ直し（新しい配信元のモジュールを CSP が止めないため）、同じなら待たずに送る */
   async applyConfigChange(): Promise<void> {
-    await this.reloadConfig();
+    if (!(await this.reloadConfig())) {
+      return;
+    }
     const next = libraryOrigins(this.rawLibraries);
     const same =
       next.length === this.cspLibraryOrigins.length &&
