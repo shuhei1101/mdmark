@@ -66,6 +66,9 @@ data_models:
       - name: glossaryLines
         type: number[] | undefined
         description: 用語集の表の用語ごとの文書の中の行番号（`ownGlossary` と同じ並び。`checkIndex` が `duplicate_term` の `where` に使う）
+      - name: glossaryAvoid
+        type: string[][] | undefined
+        description: 用語集の表の用語ごとのやめた言い方（`ownGlossary` と同じ並び。`checkIndex` が `avoided_term` に使う）
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts

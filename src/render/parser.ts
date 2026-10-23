@@ -62,6 +62,8 @@ export type RenderEnv = {
   ownGlossary: MdmarkGlossaryEntry[];
   /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
   glossaryLines?: number[] | undefined;
+  /** `ownGlossary` の各用語のやめた言い方。点検がやめた言い方を探すために渡したときだけ、`glossaryRule` が足す */
+  glossaryAvoid?: string[][] | undefined;
   /** 拡張の印の範囲から読んだ部品の定義（印の場所の `data-mdmark-definition` の番号で引く） */
   extensionDefinitions?: unknown[];
   /** 描いた操作できる部品の定義（文書の中の並びの順） */
