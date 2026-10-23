@@ -227,6 +227,59 @@ test("test_is_guarded_by_typeof_when_ternary", async () => {
   expect(guarded).toBe(false);
 });
 
+// 確かめずに使う下限に無い API を返し、同じ API の typeof の if の中は返さない（正常系）
+test("test_lint_bundle", async () => {
+  // 準備
+  const { lintBundle } = await loadBaseline();
+  const code = [
+    'new Intl.Segmenter("ja");',
+    'if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }',
+    "",
+  ].join("\n");
+  // 実行
+  const violations = lintBundle({ code, file: "dist/index.js" });
+  // 検証
+  expect(violations).toHaveLength(1);
+  expect(violations[0]?.file).toBe("dist/index.js");
+  expect(violations[0]?.line).toBe(1);
+  expect(violations[0]?.api).toBe(API);
+});
+
+// 他のプラグインの規則を無効にするコメントは落とす（正常系）
+test("test_lint_bundle_when_inline_config", async () => {
+  // 準備
+  const { lintBundle } = await loadBaseline();
+  const code = [
+    "// eslint-disable-next-line foo/bar",
+    "export const a = 1;",
+    "",
+  ].join("\n");
+  // 実行
+  const violations = lintBundle({ code, file: "dist/index.js" });
+  // 検証
+  expect(violations).toEqual([]);
+});
+
+// 構文として読めない JS を拒む（異常系）
+test("test_lint_bundle_when_parse_error", async () => {
+  // 準備
+  const { lintBundle } = await loadBaseline();
+  // 実行・検証
+  expect(() =>
+    lintBundle({ code: "let let = 1;\n", file: "dist/index.js" }),
+  ).toThrow(/dist\/index\.js[\s\S]*Parsing error/);
+});
+
+// 設定が当たらないファイル名を拒む（異常系）
+test("test_lint_bundle_when_config_not_matched", async () => {
+  // 準備
+  const { lintBundle } = await loadBaseline();
+  // 実行・検証
+  expect(() =>
+    lintBundle({ code: "export const a = 1;\n", file: "dist/index.ts" }),
+  ).toThrow(/dist\/index\.ts[\s\S]*No matching configuration/);
+});
+
 // 下限に無い API を使わなければ空を返す（正常系）
 test("test_find_baseline_violations", async () => {
   // 準備
