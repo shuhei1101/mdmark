@@ -93,7 +93,7 @@ constants:
   - name: LINE_COMMENT_HEADS
     title: 行コメントの頭
     container: src/render/syntax/code-blocks.ts
-    summary: 印だけを持つ行コメントのときに印と一緒に外す、印の直前の頭。言語に依らず同じものを当てる
+    summary: 印だけを持つ行コメントのときに印と一緒に外す、印の直前の頭。言語に依らず同じものを当てる。`//`・`/*`・`<!--` は前の文字を問わずに外し、`#`・`--`・`;` は行頭か空白の後ろにあるときだけ外す（`i--`・`foo();` を頭と取り違えない）
     entries:
       - key: //
         value: C 系・TypeScript など
@@ -813,9 +813,9 @@ functions:
       - name: test_read_line_marks
         case: 正常
         summary: 印と印だけの行コメントの頭と行末の空白を外す
-        condition: '`let count = 1; // [!code ++]`・`foo(); // 消す [!code --]`・`x = 1  # [!code highlight]`・`<p>a</p> <!-- [!code ++] -->`・`a; /* [!code --] */`'
+        condition: '`let count = 1; // [!code ++]`・`foo(); // 消す [!code --]`・`x = 1  # [!code highlight]`・`<p>a</p> <!-- [!code ++] -->`・`a; /* [!code --] */`・`foo();// [!code ++]`・`i-- [!code ++]`'
         mock: なし
-        expected: '`{ text: "let count = 1;", kind: "add" }`・`{ text: "foo(); // 消す", kind: "del" }`・`{ text: "x = 1", kind: "highlight" }`・`{ text: "<p>a</p>", kind: "add" }`・`{ text: "a;", kind: "del" }`'
+        expected: '`{ text: "let count = 1;", kind: "add" }`・`{ text: "foo(); // 消す", kind: "del" }`・`{ text: "x = 1", kind: "highlight" }`・`{ text: "<p>a</p>", kind: "add" }`・`{ text: "a;", kind: "del" }`・`{ text: "foo();", kind: "add" }`・`{ text: "i--", kind: "add" }`'
       - name: test_read_line_marks_when_escaped
         case: 正常
         summary: 打ち消した印は `\` を外した文字にして当てない
