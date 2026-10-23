@@ -1540,7 +1540,6 @@ flows:
       - 最初の `作業場` が class `mdmark-term mdmark-term-avoided` の要素で、2 回目の `作業場` と行内のコードの `作業場` はその要素でない
       - '`作業場` にフォーカスすると、語の `aria-describedby` が指す `role="tooltip"` のツールチップが出て、「代わりの用語」の下に `ワークスペース` と `話し合いの記録を置くフォルダ` がある'
       - Esc でツールチップが消え、フォーカスが `作業場` に残る
-      - 描いた文書の末尾に関連文書の一覧が無い（やめた言い方は参照に数えない）
     test: test_normal_when_avoided_term
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
