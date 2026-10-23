@@ -555,7 +555,7 @@ functions:
     container: scripts/baseline.ts
     scope: internal
     summary: 報告の位置が、同じ API の typeof を条件に持つ if の中（ブロックか条件の式）にあるかを返す
-    description: '`SourceCode` の `getIndexFromLoc` で報告の位置を引き、`getNodeByRangeIndex` の節とその祖先（`getAncestors`）のうち `IfStatement` の `test` を見る。`test` の中に、引数の元の文字列（`getText`）が `api` と同じ `typeof` の単項式があれば真。早期 return の後ろ・三項演算子・論理式の右辺は `IfStatement` の祖先を持たないため偽'
+    description: '`SourceCode` の `getIndexFromLoc` で報告の位置を引き（`getIndexFromLoc` の列は 0 始まりのため、引数の列から 1 引いて渡す）、`getNodeByRangeIndex` の節とその祖先（`getAncestors`）のうち `IfStatement` の `test` を見る。`test` の中に、引数の元の文字列（`getText`）が `api` と同じ `typeof` の単項式があれば真。早期 return の後ろ・三項演算子・論理式の右辺は `IfStatement` の祖先を持たないため偽'
     args:
       - name: options
         type: '{ sourceCode: SourceCode; line: number; column: number; api: string }'
@@ -580,7 +580,7 @@ functions:
       - name: test_is_guarded_by_typeof_when_in_test
         case: 正常
         summary: 条件の typeof の式の中の参照も真
-        condition: '`if (typeof Intl.Segmenter !== "undefined") {}` の `Intl.Segmenter` の位置'
+        condition: '`if (typeof Intl.Segmenter !== "undefined") {}` の `Intl.Segmenter` の先頭の `I` の位置（列が 1 ずれると `typeof` の後ろの空白を指し、`Intl.Segmenter` の外に出る）'
         mock: なし
         expected: '`true`'
       - name: test_is_guarded_by_typeof_when_unrelated_if
