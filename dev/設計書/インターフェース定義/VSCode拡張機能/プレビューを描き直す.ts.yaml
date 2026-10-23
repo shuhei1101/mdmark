@@ -62,7 +62,7 @@ flows:
         PV->>EX: rendered
     expected:
       - '`render` の `config.features` が `{ callout: false }`'
-      - Webview の注意書きが `markdown-alert` の枚でなく `blockquote` で描かれる
+      - Webview の注意書きが `markdown-alert` の枠でなく `blockquote` で描かれる
     test: test_normal_when_config_saved
   - name: 正常系（設定ファイルが無い）
     summary: 設定ファイルが無ければ設定なしで描き、知らせを出さない
@@ -121,7 +121,7 @@ flows:
         PV->>EX: rendered
     expected:
       - '`render` の `config.libraries.my-lib` が `config/libs/my-lib.js` の `asWebviewUri` の URL'
-      - Webview の印の場所が `data-drawn` を持ち、知らせの枚が無い
+      - Webview の印の場所が `data-drawn` を持ち、知らせの枠が無い
     test: test_normal_when_relative_library
   - name: 正常系（設定ファイルを直す）
     summary: 読めない設定ファイルを直して保存すると、新しい設定で描き帯を消す
@@ -193,7 +193,7 @@ constraints:
     constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
-    constraint: '`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枚を出す'
+    constraint: '`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す'
   - item: 設定ファイルを読めないとき
     constraint: '`yaml` の `YAMLParseError` の `linePos[0].line`（1 始まり）を `configError` の `line` に入れて送る。読めるようになったら、新しい設定の `render` と `configOk` を送る'
   - item: 設定が変わったときの描き方

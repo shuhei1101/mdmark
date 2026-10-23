@@ -307,10 +307,10 @@ constraints:
     constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{版}/dist/index.js` と `.../dist/index.css`。版なしの URL と `@latest` は使わない'
     notes: dev/設計書/外部API/jsDelivr
   - item: バージョンの決め方
-    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` の名前から `^v\d+\.\d+\.\d+$` に合うものだけを拾い、数で比べて最大を選ぶ（`vscode-` で始まるタグは拾わない）。`latest` でないときは書いた版をそのまま使い、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、描き直すたびには取らない'
+    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを拾い、数で比べて最大を選ぶ（`vscode-` で始まるタグは拾わない）。`latest` でないときは書いた版をそのまま使い、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、描き直すたびには取らない'
     notes: dev/設計書/外部API/GitHub
   - item: タグ一覧の待ち
-    constraint: 待ちの上限を超えたら要求を打ち切る。上限を超えたとき・ネットワークのエラー・200 以外（上限を超えた 403・429 を含む）・合うタグが 0 件のときは、取れなかったものとして前回のバージョンを使う。再試行しない
+    constraint: 待ちの上限は全てのページを読み終えるまでの合計にかけ、超えたら要求を打ち切る。上限を超えたとき・ネットワークのエラー・200 以外（上限を超えた 403・429 を含む）・合うタグが 0 件のときは、取れなかったものとして前回のバージョンを使う。再試行しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[タグ一覧を取る待ちの上限]
   - item: 前回のバージョン
     constraint: タグ一覧から選んだ版を `globalState` の `mdmark.lastVersion` に書き、取れないときに読む。`latest` でない版を書いたときは書き換えない

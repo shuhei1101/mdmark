@@ -112,10 +112,10 @@ constraints:
   - item: 書き出す先
     constraint: '`mdmark.export.outputDir` が空なら Markdown と同じフォルダ、相対パスなら Markdown を含むワークスペースのフォルダから、絶対パスならそのまま。ファイル名は Markdown の拡張子を `.html` に替えたもの。フォルダが無ければ作る。同じフォルダの一時ファイルに書いてから置き換える'
   - item: 書き出す中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（`<` は `<` にする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
   - item: 設定と相対パス
     constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`libraries` の相対パスは設定ファイルのフォルダから解決した `file:` の URL にする。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
-    notes: ブラウザは `file:` のページから `file:` の ES モジュールを読まないため、相対パスの `libraries` の印は mdmark が知らせの枚にする。`http:`・`https:` の `libraries` は読める
+    notes: ブラウザは `file:` のページから `file:` の ES モジュールを読まないため、相対パスの `libraries` の印は mdmark が知らせの枠にする。`http:`・`https:` の `libraries` は読める
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない
     notes: 要件.md の確認ログ「書き出す HTML の作り方」。外へ要求しない 1 枚の HTML は CLI の `mdmark export` が作る
