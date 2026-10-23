@@ -341,10 +341,10 @@
     /* 横スクロールする表: 地の色を敷き、続きがある側の端に影を出す（コードブロックと同じ重ね合わせを地の色で覆う） */
     table {
       background:
-        linear-gradient(to right, var(--mdmark-color-bg) 30%, transparent)
-        left / 2.5em 100% no-repeat local,
-        linear-gradient(to left, var(--mdmark-color-bg) 30%, transparent)
-        right / 2.5em 100% no-repeat local,
+        linear-gradient(to right, var(--mdmark-color-bg) 30%, transparent) left
+        / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-bg) 30%, transparent) right
+        / 2.5em 100% no-repeat local,
         radial-gradient(
           farthest-side at 0 50%,
           var(--mdmark-color-scroll-shadow),
