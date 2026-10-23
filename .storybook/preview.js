@@ -27,6 +27,6 @@ new MutationObserver(async () => {
     const { attachDiagrams } = await import(
       /* webpackIgnore: true */ `${window.location.origin}/render/diagram.js`
     );
-    attachDiagrams(root);
+    attachDiagrams({ root, placement: "top" });
   }
 }).observe(document.documentElement, { childList: true, subtree: true });
