@@ -49,7 +49,7 @@ styles:
         value: '地の色 `--mdmark-color-bg`・内側の余白 `--mdmark-padding`・角丸 `--mdmark-radius`。枠と影は付けない。行の長さ・書体・行間・ブロックの間隔と、中の見出し・段落・リスト・引用・表・コード・リンク・折り畳み・区切り線・画像・タスクリストの規則'
       - class_name: '.mdmark :is(pre, table)'
         target: 横スクロールする表とコードブロック
-        value: 続きがある側の端に影を出す背景の重ね合わせ（中身と動く面の `local` と、端に留まる影の `scroll`）。セルの地は透明
+        value: 続きがある側の端に影を出す背景の重ね合わせ（中身と動く面の `local` と、端に留まる影の `scroll`）。本文のセルの地は透明（見出し行のセルは面の色）
       - class_name: '.mdmark :is(th, td).mdmark-align-{left,center,right}'
         target: 表の列の揃え
         value: '`text-align: left` / `center` / `right`'
