@@ -1,0 +1,20 @@
+# E2E テスト（Playwright・chromium）の実行（指摘対応の 2 ファイル）
+# コミット: 1691879
+# コマンド: npx playwright test --project=chromium --workers=2 {対象のシナリオファイル}
+
+
+Running 4 tests using 2 workers
+
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode/.vscode-test/vscode-linux-x64-1.141.0
+  ✓  2 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:19:1 › test_normal (12.6s)
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode/.vscode-test/vscode-linux-x64-1.141.0
+  ✓  1 [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal (6.6s)
+  ✓  4 [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:204:1 › test_error_when_version_mismatch (202ms)
+  ✓  3 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:46:1 › test_normal_when_theme_fixed (8.2s)
+
+  4 passed (53.1s)
+exit=0

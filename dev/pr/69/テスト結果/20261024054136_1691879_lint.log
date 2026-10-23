@@ -1,0 +1,14 @@
+# lint の実行
+# コミット: 1691879
+# コマンド: npm run lint && npm run typecheck
+
+
+> lint
+> biome check .
+
+Checked 489 files in 2s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+exit=0
