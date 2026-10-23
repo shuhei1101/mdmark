@@ -908,6 +908,8 @@ test_files:
   - tests/unit/src/knowledge/dictionary.test.ts
   - tests/unit/src/knowledge/dictionary.browser.test.ts
   - tests/unit/src/knowledge/references.test.ts
+  - tests/unit/src/knowledge/matches.test.ts
+  - tests/unit/src/knowledge/positions.test.ts
   - tests/unit/src/knowledge/check.test.ts
   - tests/unit/src/render/syntax/glossary.test.ts
   - tests/unit/src/render/syntax/terms.test.ts
