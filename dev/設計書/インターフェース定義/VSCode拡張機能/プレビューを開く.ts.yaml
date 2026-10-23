@@ -323,7 +323,7 @@ constraints:
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, config, theme }`（`config` は `{ features?, libraries? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline` か `versionMissing`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, config, theme }`（`config` は `{ features?, libraries? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline` か `versionMissing`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
@@ -331,7 +331,7 @@ constraints:
     constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、VS Code が `body` に付ける class に任せる。設定を変えると開いているパネルへ `render` を送り直す'
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約「配色の切り替え」
   - item: テストのときの差し替え
-    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない'
+    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送って `inspected` の `elements` を返す `inspectPreview(selector)` を戻り値で返す。結合テストは Webview の DOM の期待値をこの戻り値で確かめる'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 対応する VS Code
     constraint: '`engines.vscode` の下限より古い VS Code には入らない'
