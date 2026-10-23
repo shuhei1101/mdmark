@@ -19,7 +19,7 @@
 | エラー表示 | ツールのエラーは、何が合わないかと直し方を日本語の 1 文で返す（CLI の点検の内容の文と同じ書き方） | - |
 | 使い方集の索引 | 名前・読むとき・概要・本文のページを 1 件 1 行で持ち、記法・部品・図の描き方・拡張の仕方・HTML の書き方・図の確かめ方の本文を指す | 本文の持ち方は要件.md の `未確定` |
 | 動作環境 | 確かめた Claude Code の版を非機能要件に書く | PoC で確かめる |
-| 外部ライブラリ | MCP サーバーのライブラリはライブラリ選定で決め、版を固定する | - |
+| 外部ライブラリ | MCP サーバーは公式 SDK v2（`@modelcontextprotocol/server` 2.3.1）の `McpServer.registerTool` と `serveStdio` で作り、esbuild で束ねる。束ねた配布物に ajv と zod の著作権表示を入れる | [ライブラリ選定](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357833926)。旧方式（`initialize`）と新方式（`server/discover`）の両方に答える |
 
 `未確定`: サブシステムを分けるか（決める段: PoC 検証の後のアーキテクチャ図の確定）
 

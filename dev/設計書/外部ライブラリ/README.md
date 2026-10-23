@@ -20,5 +20,6 @@
 | [yaml](./yaml.yaml) | CLI が設定と索引の YAML を読む（配布物に束ねない） |
 | [lucide](./lucide.yaml) | 図と記法のアイコンの形 |
 | [diff](./diff.yaml) | 2 つのリビジョンの Markdown を行と語で比べる（jsdiff） |
+| [MCP-SDK](./MCP-SDK.yaml) | Claude Code のプラグインの MCP サーバーとテストのクライアント |
 
 <!-- /table -->

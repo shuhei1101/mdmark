@@ -1,0 +1,147 @@
+title: "MCP-SDK"
+kind: "ライブラリ"
+version:
+  current: 2.3.1
+  latest: 2.3.1
+  checked_on: '2026-10-23'
+  source: package.json
+  pinning: 完全一致（server・client を同じ版に揃える）
+catalogs:
+  - name: API
+    version: 2.3.1
+    entries:
+      - name: McpServer
+        kind: クラス
+        purpose: サーバーの名前・版・`instructions` を持ち、ツールを登録する
+        params:
+          - name: serverInfo.name
+            type: string
+            required: true
+            description: サーバーの名前
+          - name: serverInfo.version
+            type: string
+            required: true
+            description: サーバーの版
+          - name: options.capabilities
+            type: object
+            required: false
+            description: 'サーバーの機能（ツールを持つときは `{ tools: {} }`）'
+          - name: options.instructions
+            type: string
+            required: false
+            description: クライアントへ渡す使い方の説明。旧方式では `initialize`、新方式では `server/discover` の結果に入る
+        params_example: |-
+          ```ts
+          import { McpServer } from '@modelcontextprotocol/server';
+          const server = new McpServer({ name: 'mdmark', version: '0.7.0' }, { capabilities: { tools: {} }, instructions: '…' });
+          ```
+      - name: McpServer.registerTool
+        kind: 関数
+        purpose: ツールの名前・説明・入力の Schema と処理を登録する
+        description: '入力が Schema に合わないとき、処理を呼ばずに `isError: true` とエラーの文を返す。処理が返した `isError: true` もそのまま返す'
+        params:
+          - name: name
+            type: string
+            required: true
+            description: ツールの名前
+          - name: config.description
+            type: string
+            required: false
+            description: ツールの説明
+          - name: config.inputSchema
+            type: StandardSchema
+            required: false
+            description: 入力の Schema。Standard Schema（zod 4 など）か `fromJsonSchema` で包んだ JSON Schema。SDK が JSON Schema（2020-12）に変えて `tools/list` に出す
+          - name: callback
+            type: (args, ctx) => Promise<CallToolResult>
+            required: true
+            description: ツールの処理。`inputSchema` が無いときは引数が `ctx` だけになる
+        returns:
+          - name: content
+            type: "{ type: 'text', text: string }[]"
+            description: 処理の結果
+          - name: isError?
+            type: boolean
+            description: ツールの失敗を表す
+      - name: fromJsonSchema
+        kind: 関数
+        purpose: JSON Schema を `inputSchema` に渡せる形に包み、引数に型を付ける
+        params:
+          - name: schema
+            type: JSON Schema
+            required: true
+            description: 入力の JSON Schema。検査は Node では ajv が行う
+      - name: serveStdio
+        kind: 関数
+        purpose: 標準入出力でサーバーを動かし、旧方式（`initialize`）と新方式（`server/discover`）のどちらの相手にも答える
+        params:
+          - name: factory
+            type: () => McpServer
+            required: true
+            description: サーバーを作って返す関数
+      - name: Client
+        kind: クラス
+        purpose: テストからサーバーへ繋ぎ、`getInstructions`・`listTools`・`callTool` を呼ぶ
+        params:
+          - name: options.versionNegotiation.mode
+            type: "'legacy' | 'auto' | { pin: string }"
+            required: false
+            description: プロトコルのバージョンの決め方。`legacy` は `initialize`、`auto` は `server/discover` を先に試す
+      - name: InMemoryTransport.createLinkedPair
+        kind: 関数
+        purpose: 同じプロセスの中でサーバーとクライアントを繋ぐ対を作る
+      - name: StdioClientTransport
+        kind: クラス
+        purpose: 子プロセスとして起動したサーバーへ標準入出力で繋ぐ
+        params:
+          - name: command
+            type: string
+            required: true
+            description: 起動するコマンド
+          - name: args
+            type: string[]
+            required: false
+            description: コマンドの引数
+lead: Model Context Protocol の公式 TypeScript SDK。サーバーの `@modelcontextprotocol/server` とクライアントの `@modelcontextprotocol/client` に分かれ、ツールの登録・stdio の通信・プロトコルのバージョンの取り決めを持つ。
+purl: pkg:npm/%40modelcontextprotocol/server@2.3.1
+supplier: Model Context Protocol（Anthropic）
+dependency_scope: 必須
+adoption: 採用
+upstream: modelcontextprotocol/typescript-sdk
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: '`McpServer`・`registerTool`（`fromJsonSchema` の入力）・`serveStdio` で最小のサーバーを書いた。Claude Code 2.1.309 を `claude -p --mcp-config --strict-mcp-config` で繋ぐと、`_meta` に `io.modelcontextprotocol/protocolVersion: 2026-07-28` を付けた `server/discover` → `subscriptions/listen` → `server/discover` → `tools/list` の順に新方式で決まり、`server/discover` の結果に `instructions` と `resultType: complete` が返った。モデルからの `tools/call` は Claude Code の認証切れで確かめていない。`@modelcontextprotocol/client` 2.3.1 の `Client` と `StdioClientTransport` で `versionNegotiation.mode` を `legacy`・`auto` にして繋ぐと、両方とも `getInstructions()` が `instructions` を返し、`callTool` はハンドラーの戻り値・ハンドラーが返した `isError: true`・Schema に合わない入力の `isError: true`（`Input validation error: Invalid arguments for tool read_guide: data/names must be array`）を返した'
+license: Apache-2.0（商用利用可）。リポジトリは MIT から移行中で、再許諾の同意が無い分は MIT のまま
+official_url: https://github.com/modelcontextprotocol/typescript-sdk
+docs_url: https://ts.sdk.modelcontextprotocol.io/v2/
+selection:
+  candidates: 公式 SDK v2（`@modelcontextprotocol/server` 2.3.1）・自前の JSON-RPC（`node:readline`）・公式 SDK v1（`@modelcontextprotocol/sdk` 1.32.1）・tmcp 1.20.0・FastMCP 4.23.7 を比べた（[ライブラリ選定の案](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357797368)）
+  decision: MCP の仕様 2026-07-28 の `server/discover` と、それより前の `initialize` の両方に答えられるのは v2 と自前だけで、v2 は仕様の改訂への追従と入力の検査を任せられる（[合格](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357833926)）
+  consequences: 開発用の依存に入れ、esbuild でプラグインの JavaScript に束ねる。束ねた配布物に、取り込まれた ajv と zod の著作権表示を入れる。クライアントはテストにだけ使う
+install: |-
+  ```bash
+  npm install --save-dev --save-exact @modelcontextprotocol/server@2.3.1 @modelcontextprotocol/client@2.3.1
+  ```
+
+  stdio の通信はサブパス `@modelcontextprotocol/server/stdio`・`@modelcontextprotocol/client/stdio` から import する。
+limitations:
+  - item: 入力の検査のエラーの文
+    content: 'Schema に合わない入力の `isError: true` の文は英語（`Input validation error: Invalid arguments for tool {名前}: …`）'
+  - item: 低レベルの `Server`
+    content: '`@deprecated`。ツールは `McpServer.registerTool` で登録する'
+  - item: 束ねたときのライセンスの表示
+    content: server の dist に ajv（MIT）が取り込まれているが、その著作権表示は dist に無い
+issues:
+  - title: StdioClientTransport の close でリスナーが外れない
+    summary: '`StdioClientTransport.close()` の後もリスナーが残る'
+    occurred_on: '2026-10-23'
+    state: 回避策あり
+    description: '`close()` を呼んでもリスナーが外れず、同じプロセスで何度も起動すると残り続ける。'
+    conditions:
+      - 2.3.1
+    workarounds:
+      - method: テストは `InMemoryTransport.createLinkedPair` で繋ぎ、`StdioClientTransport` は起動を確かめるケースに限る
+        result: リスナーが残らない
+        recommended: true
+    upstream_issue: https://github.com/modelcontextprotocol/typescript-sdk/issues/3070

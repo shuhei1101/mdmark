@@ -24,3 +24,5 @@ items:
     summary: 図と記法のアイコンの形
   - page: diff.yaml
     summary: 2 つのリビジョンの Markdown を行と語で比べる（jsdiff）
+  - page: MCP-SDK.yaml
+    summary: Claude Code のプラグインの MCP サーバーとテストのクライアント
