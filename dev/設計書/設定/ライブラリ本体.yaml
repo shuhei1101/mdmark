@@ -13,7 +13,7 @@ settings:
     file: mdmark.config.yaml
     type: Record<string, boolean>
     required: false
-    default: '全ての機能が `true`'
+    default: '`comments` を除く全ての機能が `true`'
     description: '機能ごとのオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
     allowed: 値は真偽値。知らない機能名と真偽値でない値は無視する
     reload: reload
@@ -330,5 +330,28 @@ settings:
     status: planned
     introduced:
       pr: 64
+  - key: features.views
+    title: ビューの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- view -->` の範囲の表を、ボード表示と表形式を切り替えるビューにする。オフのときは印を取り除き、表のまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 55
+  - key: features.comments
+    title: コメントの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'false'
+    description: 読む人が本文の選んだ箇所にコメントを付けられるようにする。使う側が `mount` にコメントの読み書きの関数（`commentStore`）を渡したときだけ効く
+    reason: コメントは使う側の保存先が要り、使わない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする
+    reload: reload
+    status: planned
+    introduced:
+      pr: 55
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

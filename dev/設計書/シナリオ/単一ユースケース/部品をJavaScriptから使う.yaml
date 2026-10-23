@@ -1,0 +1,119 @@
+title: "部品をJavaScriptから使う"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 使う側のページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、空の要素 1 つを持つ HTML
+      - name: 項目の値
+        description: 題・状態・担当の列名と、『ビューで項目を見る』の正常シナリオの表と同じ 5 件の値の配列
+        notes: 1 件目の題だけを `<script>alert(1)</script>設計` に差し替える
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 要素・列名・項目の値・ボード表示で分ける列（状態）を渡してビューを描かせる
+        M-->>P: 片付けの関数
+        U->>P: ビューの切り替えで表形式を選ぶ
+        P-->>U: 表形式のビュー
+        P->>M: 片付けの関数を呼ぶ
+        M-->>P: 空になった要素
+    expected:
+      - 要素の中に、『ビューで項目を見る』 の正常シナリオと同じボード表示（3 つの列と項目の数）と、ビューの切り替えが描かれる
+      - 表形式を選ぶと、5 行の項目が列名の順で並ぶ
+      - 片付けの関数を呼ぶと、要素の中が空になり、その後にビューの切り替えへの押下などのイベントが残っていない
+      - 項目の値に書いた `<script>` は文字のまま出て、実行されない
+    test: test_normal
+  - name: 正常シナリオ（拡張のモジュールから描く）
+    setup:
+      - name: mdmark を読むページ
+        description: '`registerExtension` で `tasks` の印の拡張を登録してから、`mount` で文書を描く HTML。拡張の `draw` は、印の定義（JSON）の項目の値を、ビューを描く関数で印の場所の要素に描く'
+      - name: 拡張の印を持つ Markdown
+        description: '`<!-- tasks -->` 〜 `<!-- /tasks -->` の範囲に、列名・絞り込む列・3 件の項目の値の `json` のコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 拡張のモジュール
+        P->>M: 拡張を登録する
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: 印の場所の要素と定義を渡して描かせる
+        X->>M: ビューを描く関数を呼ぶ
+        M-->>P: 印の場所に描いたビュー
+        U->>P: 表形式に切り替え、列の絞り込みで値を選ぶ
+        P-->>U: 絞り込んだ項目
+    expected:
+      - '`tasks` の印の場所に、定義の 3 件の項目を並べたビューが描かれる'
+      - 表形式に切り替えて列の絞り込みで値を選ぶと、合う項目だけが残る
+      - '`mount` の `destroy` を呼ぶと、印の場所のビューも片付く'
+    test: test_normal_when_called_from_extension
+  - name: 異常シナリオ（引数の誤り）
+    setup:
+      - name: 使う側のページ
+        description: 正常シナリオと同じ
+      - name: 誤った引数
+        description: 項目の値に配列でないもの、ボード表示で分ける列に列名に無い名前を渡す 2 通り
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 誤った引数でビューを描かせる
+        M-->>P: TypeError
+    expected:
+      - 2 通りとも `TypeError` が投げられ、メッセージに誤った引数の名前が入る
+      - 要素の中は呼ぶ前のまま変わらない
+    test: test_error_when_arguments_invalid
+  - name: 正常シナリオ（コメントを付ける）
+    setup:
+      - name: 使う側のページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、`導入の手順を整える。` の段落を持つ要素 1 つを持つ HTML。mdmark が描いた文書ではなく、使う側が自分で書いた要素
+      - name: コメントの読み書きの関数
+        description: 保存で渡されたコメントを配列に溜め、読み込みでその配列を返す手元の関数。読み込みは空の配列を返す
+      - name: コメントの本文
+        description: 読む人が入力欄に書く本文
+        notes: '`手順の数を <b>3</b> にする`'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 要素と読み書きの関数を渡してコメントを付けられるようにする
+        M->>S: コメントを読み込む
+        S-->>M: 空の配列
+        M-->>P: 片付けの関数
+        U->>P: 「導入の手順」を選び、コメントのボタンを押して本文を書き、保存する
+        M->>S: 選んだ文字・前後の文字・本文を渡して保存する
+        S-->>M: 保存した
+        M-->>P: 選んだ文字に印を付ける
+        P->>M: 片付けの関数を呼ぶ
+        M-->>P: 印とボタンを外した要素
+    expected:
+      - 要素の中の文字を選ぶとコメントのボタンが出て、要素の外の文字を選んでも出ない
+      - 保存を押すと、読み書きの関数の保存に、選んだ文字 `導入の手順`・前後の文字・コメントの本文が渡り、`導入の手順` に印が付く
+      - 印から開いたコメントの `<b>3</b>` は文字のまま出て、HTML として解釈されない
+      - 片付けの関数を呼ぶと、印とコメントのボタンが外れ、要素の文字は呼ぶ前のまま残る
+    test: test_normal_when_comments_attached
+lead: 使う側が、配布物から出したビューを描く関数とコメントを付ける関数を、自分のページの JavaScript・TypeScript と、`registerExtension` の拡張のモジュールから呼び、要素の中にビューを描き、要素の中の選んだ箇所にコメントを付ける。
+issue: 8
+primary_actor: 使う側
+stakeholders:
+  - name: 使う側
+    interest: 文書の印を使わずに、自分のデータからビューを描け、拡張のモジュールからも同じ部品を文書の印の場所に描ける
+  - name: 読む人
+    interest: 文書の印で描いたビューと同じ見た目と操作で読める
+trigger: 使う側が、自分のページのデータや拡張の印の定義を、mdmark のビューで見せたくなる
+preconditions:
+  - 使う側のページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+success_guarantee: 要素の中に、文書の印で描いたものと同じビューが描かれる。返った片付けの関数で、要素の中とイベントが片付く。
+minimal_guarantee: 引数に誤りがあるときは、要素を書き換えずに `TypeError` を投げる。
+test_file: tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts

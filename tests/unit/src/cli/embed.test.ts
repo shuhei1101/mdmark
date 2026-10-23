@@ -25,6 +25,23 @@ test("test_used_library_marks", async () => {
   expect([...marks]).toEqual(["chart"]);
 });
 
+// ビューの印があるときだけ部品を埋める（正常系）
+test("test_used_parts", async () => {
+  // 準備
+  const { usedParts } = await loadEmbed();
+  const viewCode = "export const drawView = () => {};";
+  const marked =
+    "<!-- view: group=状態 -->\n\n| 題 |\n| --- |\n| a |\n\n<!-- /view -->\n";
+  const unmarked =
+    "<!-- table: data -->\n\n| 題 |\n| --- |\n| a |\n\n<!-- /table -->\n";
+  // 実行
+  const withView = usedParts({ markdowns: [unmarked, marked], view: viewCode });
+  const withoutView = usedParts({ markdowns: [unmarked], view: viewCode });
+  // 検証
+  expect(withView).toEqual({ view: viewCode });
+  expect(withoutView).toEqual({});
+});
+
 // 手元のファイルとその import を 1 つに束ねる（正常系）
 test("test_bundle_module", async () => {
   // 準備

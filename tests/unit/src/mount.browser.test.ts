@@ -317,6 +317,29 @@ test("test_mount_when_diff_source_without_doc_id", async () => {
   expect(el.innerHTML).toBe("<p>前の中身</p>");
 });
 
+// コメントの読み書きの関数を渡して docId が無いと投げる（異常系）
+test("test_mount_when_comment_store_without_doc_id", async () => {
+  // 準備
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const commentStore = {
+    load: async () => [],
+    save: async () => ({
+      id: "c1",
+      quote: "a",
+      prefix: "",
+      suffix: "",
+      body: "b",
+    }),
+  };
+  const { mount } = await loadMount();
+  // 実行・検証
+  expect(() => mount(el, { markdown: "# 見出し", commentStore })).toThrow(
+    TypeError,
+  );
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
 // 差分の埋め込んだ HTML のプレビューで、図の部品を文書と同じく図に描く（正常系）
 test("test_mount_when_diff_html_has_chart", async () => {
   // 準備

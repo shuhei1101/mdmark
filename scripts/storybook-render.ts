@@ -16,6 +16,14 @@ import type { WarningItem } from "../src/extensions.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
+import {
+  type CommentFormState,
+  renderCommentBubble,
+  renderCommentButton,
+  renderCommentForm,
+  renderCommentMark,
+  renderCommentOrphans,
+} from "../src/parts/comment.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
 import { renderDiffHtml } from "../src/parts/diff-html.ts";
 import { renderDiffLines } from "../src/parts/diff-lines.ts";
@@ -42,6 +50,7 @@ import { renderTabs } from "../src/parts/tabs.ts";
 import { renderTermTip, type TermTipDoc } from "../src/parts/term-tip.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
+import { renderView } from "../src/parts/view.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 
 // 描画の口を外へ出さないための待受アドレス
@@ -338,6 +347,10 @@ function storyDiffHtml(args: PartArgs): string {
   });
 }
 
+// コメントのボタン・入力欄・吹き出しのストーリーに足す規則: 本物は `document.body` の直下で `position: fixed` だが、ストーリーではその場に置く
+const STATIC_POPOVER_STYLE =
+  "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static}</style>";
+
 // 部品の id から、部品の関数を呼ぶ表
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "diff-toggle": (args) =>
@@ -398,6 +411,33 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       docs: args.docs as Array<{ title: string; href: string }>,
     }),
   table: (args) => renderTable(args as TableOptions),
+  view: (args) =>
+    renderView(args as unknown as Parameters<typeof renderView>[0]),
+  "comment-button": () => STATIC_POPOVER_STYLE + renderCommentButton(),
+  "comment-form": (args) =>
+    STATIC_POPOVER_STYLE +
+    renderCommentForm({
+      quote: String(args.quote ?? ""),
+      body: args.body as string | undefined,
+      state: args.state as CommentFormState | undefined,
+      id: String(args.id ?? ""),
+    }),
+  "comment-mark": (args) =>
+    `<p>本文の<span>${renderCommentMark({
+      text: String(args.text ?? ""),
+      expanded: args.expanded === true,
+    })}</span>を読む。</p>`,
+  "comment-bubble": (args) =>
+    STATIC_POPOVER_STYLE +
+    renderCommentBubble({
+      quote: String(args.quote ?? ""),
+      bodies: args.bodies as string[],
+    }),
+  "comment-orphans": (args) =>
+    renderCommentOrphans({
+      comments: args.comments as Array<{ quote: string; body: string }>,
+      id: String(args.id ?? ""),
+    }),
   callout: (args) =>
     renderCallout({
       kind: args.kind as CalloutKind,

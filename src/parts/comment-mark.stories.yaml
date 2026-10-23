@@ -1,0 +1,15 @@
+title: Parts/CommentMark
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: comment-mark
+    args:
+      text: テーマの変数
+  - name: Expanded
+    parameters:
+      server:
+        id: comment-mark
+    args:
+      text: テーマの変数
+      expanded: 'true'

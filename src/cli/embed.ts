@@ -56,6 +56,22 @@ export function usedLibraryMarks(
   return marks;
 }
 
+/** 埋める文書にビューの印があれば、埋める部品のモジュールのコードを入れた表を返す。無ければ空。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない */
+export function usedParts(options: {
+  /** 埋める文書の Markdown */
+  markdowns: string[];
+  /** `dist/view.js` のコード */
+  view: string;
+}): Partial<Record<"view", string>> {
+  const { markdowns, view } = options;
+  const found = markdowns.some((markdown) =>
+    [...markdown.matchAll(MARK_PATTERN)].some(
+      ([, closing, name]) => closing !== "/" && name === "view",
+    ),
+  );
+  return found ? { view } : {};
+}
+
 /** URL の import を `fetchText` で読んで束ねる esbuild のプラグイン。取得したモジュールの中の import は、そのモジュールの URL を基準に解く */
 function urlPlugin(fetchText: FetchText): Plugin {
   return {

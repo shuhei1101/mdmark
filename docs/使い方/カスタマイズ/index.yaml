@@ -7,5 +7,7 @@ items:
     summary: 設定の `features` と文書の印で、機能のオン・オフを切り替える
   - page: 拡張を登録する.md
     summary: "`registerExtension` で印を足す手順。TypeScript を推奨し、配る前に JavaScript へ変換する"
+  - page: 部品をJavaScriptから使う.md
+    summary: 使う側のページと拡張のモジュールから部品を描く関数を呼ぶ手順と、コメントの読み書きの関数の渡し方
   - page: 印刷する.md
     summary: 印刷・PDF にしたときの文書の見え方

@@ -116,6 +116,18 @@
           "description": "埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す。",
           "type": "boolean",
           "default": true
+        },
+        "views": {
+          "title": "ビューの機能",
+          "description": "`<!-- view -->` の範囲の表を、ボード表示と表形式を切り替えるビューにする。オフのときは印を取り除き、表のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "comments": {
+          "title": "コメントの機能",
+          "description": "読む人が本文の選んだ箇所にコメントを付けられるようにする。使う側が `mount` にコメントの読み書きの関数（`commentStore`）を渡したときだけ効く。コメントは使う側の保存先が要り、使わない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする。",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": {
@@ -138,7 +150,9 @@
         "glossary": true,
         "backlinks": true,
         "html": true,
-        "hints": true
+        "hints": true,
+        "views": true,
+        "comments": false
       }
     },
     "index": {

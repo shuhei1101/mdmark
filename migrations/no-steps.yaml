@@ -12,6 +12,10 @@ entries:
     sha256: 4603c8eba15b46c3eaf3a22aa110d4b25bb60bafa2ad4b8994335b62c838d77c
     reason: features に省いてよい html・hints を足しただけで、古い設定もそのまま新しい Schema に合う
   - version: next
+    schema: mdmark.config.schema.json
+    sha256: 519afe0d0b579b3fb57afac5c1eca27199b51f40183854bbae06210652e6349e
+    reason: features に省いてよい views・comments を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
     schema: mdmark.index.schema.json
     sha256: d4fe459612e02b749d10b6b301c9468b863913a5146866006d8b180b1fe4dafa
     reason: terms の要素に省いてよい avoid を足しただけで、古い索引もそのまま新しい Schema に合う

@@ -30,6 +30,7 @@ import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
 import { buildToc } from "./syntax/toc.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
+import { buildViews } from "./syntax/views.ts";
 
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
 export type RenderEnv = {
@@ -65,6 +66,8 @@ export type RenderEnv = {
   termTipCount?: number;
   /** ヒントのツールチップの数（`id` の通し番号） */
   hintCount?: number;
+  /** ビューの書き方の警告の数（`id` の通し番号） */
+  viewCount?: number;
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -132,13 +135,14 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt({ html: true, linkify: true });
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
     ["mdmark_assign_heading_ids", assignHeadingIds],
     ["mdmark_glossary", glossaryRule],
     ["mdmark_attach_row_details", attachRowDetails],
+    ["mdmark_build_views", buildViews],
     ["mdmark_decorate_tables", decorateTables],
     ["mdmark_build_tabs", buildTabs],
     ["mdmark_build_steps", buildSteps],

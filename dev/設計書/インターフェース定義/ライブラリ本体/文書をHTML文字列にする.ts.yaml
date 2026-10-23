@@ -477,6 +477,26 @@ flows:
       - 表 C は `data-features` に `total` を持ち、`data-total` を持たず、表 C の前に書き方の警告が無い
       - '`<div class="mdmark-syntax-warning" role="note">` が 5 つだけある（表 A に 4 つ、表 B に 1 つ）'
     test: test_normal_when_table_feature_errors
+  - name: 正常系（ビューの印）
+    summary: ビューの印の範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: ビューの印を持つ Markdown
+        description: '`<!-- view: group=状態 default=table filter=担当 icons=未着手:inbox -->` 〜 `<!-- /view -->` で、題・状態・担当の列と 2 行を持つ表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M-->>C: HTML 文字列
+    expected:
+      - class `mdmark-view` の `div` があり、その `data-view` を JSON として読むと `{"group":1,"mode":"table","boardDisabled":"","icons":{"未着手":"inbox"}}` で、その中に担当の列を `data-filter` に持つ表がある
+      - 文字列にボードと切り替えのボタンが無く、印の文字が残らない
+      - '`features` で `views` を外すと、`mdmark-view` が無く表だけが出る'
+    test: test_normal_when_view_marked
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -588,4 +608,7 @@ constraints:
   - item: 表の行の ID とリンク
     constraint: '`rowlink` の表の本文の各行に、先頭のセルの文字（タグを除いたもの）から見出しの ID と同じ規則で作った `id` を付ける。見出しの ID を先に決め、行の ID が文書の中の見出し・前の行の ID と重なれば `-1`・`-2` を付ける。先頭のセルの文字から ID が作れないときは `row` を元にする。先頭のセルの中身の後ろに `<a class="mdmark-row-anchor" href="#{ID}" aria-label="「{先頭のセルの文字}」の行へのリンク">` を置く'
     notes: ID の作り方は確認ログの決定（行を足しても、前に共有したリンクが同じ行を指す）
+  - item: ビューの印
+    constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、印の引数を読んだ指定を `data-view` に JSON（`group` は分ける列の位置か `null`、`mode` は `board`・`table`、`boardDisabled` は `group=` の列が表に無いときの書き方の警告の `id` か空、`icons` は読めた `icons=` の対応）で持たせ、中に範囲の表を記法の表と同じ形（`filter=` は表の `data-filter`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読む表示では表のまま読める。書き方の誤りは書き方の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
+    notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューの印」
 test_file: tests/integration/lib/render.test.ts

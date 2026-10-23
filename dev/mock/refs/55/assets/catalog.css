@@ -1,0 +1,59 @@
+/* ビューとコメントの部品のカタログ: 使う側のページの要素（mdmark の外）に部品を描いた見本の枠。
+   refs/19/assets/catalog.css の後に読む */
+
+/* 使う側の要素の枠: 使う側のページの地と線で囲み、mdmark が描いた文書の外であることを示す（仮の色） */
+.catalog-host {
+  padding: 16px;
+  border: 1px solid var(--host-border, #d1d9e0);
+  border-radius: 8px;
+  background: var(--host-bg, #eef1f4);
+  color: var(--host-text, #1f2328);
+  font-family: system-ui, sans-serif;
+
+  /* 枠の中の描く先の要素: 枠の幅いっぱいに使う */
+  .mdmark {
+    max-width: none;
+  }
+}
+
+/* 使う側のページがダークのときの枠の色 */
+:root[data-scheme="dark"] .catalog-host {
+  --host-bg: #1c2128;
+  --host-text: #e6edf3;
+  --host-border: #3d444d;
+}
+
+/* 使う側の要素の題（使う側のページが書いた文字） */
+.catalog-host-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* mdmark の層: 状態の見本として、浮かせて出すボタン・入力欄・吹き出しをその場に置く */
+@layer mdmark {
+  /* 見本の中のボタン・入力欄・吹き出し: 重ねずに、見本の段落の下に並べる */
+  .catalog-static :is(.mdmark-comment-add, .mdmark-comment-popover) {
+    position: static;
+    margin-block-start: 8px;
+  }
+
+  /* 見本の中の入力欄・吹き出し: 画面の幅ではなく見本の幅に収める */
+  .catalog-static .mdmark-comment-popover {
+    width: auto;
+    max-width: 22rem;
+  }
+
+  /* 見本の中の選んだ文字: ブラウザの選びの色の代わりに敷く */
+  .catalog-selection {
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* 使う側の要素の本文（使う側のページが書いた段落。コメントを付ける関数を呼んだ要素） */
+.catalog-host-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+}

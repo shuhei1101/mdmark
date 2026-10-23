@@ -15,8 +15,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（352KB）
-    value: 352 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（368KB）
+    value: 368 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -169,7 +169,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
