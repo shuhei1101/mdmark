@@ -1,0 +1,49 @@
+title: "使い方集の索引を渡す"
+entry:
+  kind: trigger
+  value: Claude Code の SessionStart のフック（`plugin/hooks/hooks.json`）
+flows:
+  - name: 正常系
+    summary: 同梱した索引を additionalContext で返す
+    setup:
+      - name: ビルドした plugin/
+        description: 使い方集の索引を同梱した `plugin/`
+      - name: Mock
+        description: Claude Code の代わりに、`hooks/hooks.json` の SessionStart のコマンドを `CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流す
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as SessionStart のフック
+        C->>H: セッションの開始
+        H->>H: 同梱した索引を読む
+        H-->>C: hookSpecificOutput（additionalContext）・終了コード 0
+    expected:
+      - 標準出力が JSON で、`hookSpecificOutput.hookEventName` が `SessionStart`
+      - '`additionalContext` に索引の全ての名前があり、本文が無い'
+      - '`additionalContext` が 10,000 文字以下'
+      - 終了コードが 0
+    test: test_normal
+lead: プラグインを有効にしたセッションの開始で、使い方集の索引（名前・読むとき・概要）だけを `hookSpecificOutput.additionalContext` で Claude Code へ渡す。
+side_effects: なし（標準出力へ書くだけ）
+response:
+  - name: hookSpecificOutput.hookEventName
+    type: "'SessionStart'"
+    description: フックの種類
+  - name: hookSpecificOutput.additionalContext
+    type: string
+    description: 使い方集の索引。行ごとに名前・読むとき・概要を並べ、先頭に `read_guide` に名前を渡すと本文を読めることを事実として 1 文で書く
+    constraints: 10,000 文字以下。使い方集の本文を含めない
+response_example: |-
+  ```json
+  {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "mdmark の使い方集の索引。本文は MCP の read_guide に名前を渡すと読める。\n| 名前 | 読むとき | 概要 |\n| --- | --- | --- |\n| notation | 印と記法を書くとき | 表・注意書き・タブなどの印の一覧 |"}}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 索引を読めた。終了コード 0
+constraints:
+  - item: 索引の文字数
+    constraint: '`additionalContext` は 10,000 文字以下。超えると Claude Code が先頭 2,000 文字だけを渡すため、配布物のビルドが超える索引を止める'
+  - item: 読む索引
+    constraint: プラグインに同梱した使い方集の索引だけを読む。作業のフォルダのファイルは読まない
+  - item: 書き方
+    constraint: 命令調にしない。索引に何があり、どう読めるかを事実として書く

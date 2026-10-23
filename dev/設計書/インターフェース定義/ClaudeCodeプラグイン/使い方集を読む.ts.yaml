@@ -1,0 +1,83 @@
+title: "使い方集を読む"
+entry:
+  kind: mcp_tool
+  value: read_guide
+flows:
+  - name: 正常系
+    summary: 索引の名前 2 つの本文を返す
+    setup:
+      - name: ビルドした plugin/
+        description: 使い方集の索引と本文を同梱した `plugin/`
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを子プロセスで起動して標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: 2 つ）
+        S->>S: 索引の行が指すページを読む
+        S-->>C: guides（2 件）
+    expected:
+      - '`guides` が渡した 2 つの名前を渡した順に持つ'
+      - 各 `body` が、同梱したそのページの中身と一致する
+      - '`isError` が立たない'
+    test: test_normal
+  - name: 異常系（索引に無い名前・ツールのエラー）
+    summary: 索引に無い名前を、近い名前を添えてエラーにする
+    setup:
+      - name: ビルドした plugin/
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 索引に無い名前
+        description: 索引の名前 `notation` の 1 字を変えた `notatoin` と、索引にある `extension`
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: notatoin・extension）
+        S->>S: 索引に notatoin が無い
+        S-->>C: isError（無い名前と近い名前）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `notatoin` と `notation` が出る
+      - '`extension` の本文も返らない'
+    test: test_error_when_name_unknown
+lead: 使い方集の索引の名前を受け、名前ごとに索引の行が指すページの本文を返す。
+idempotent: true
+side_effects: なし
+request:
+  - name: names
+    type: string[]
+    required: true
+    location: argument
+    description: 読む使い方集の名前（索引の名前の列）
+    constraints: 1 件以上。重なりは 1 つにまとめる
+    example: '["notation", "extension"]'
+request_example: |-
+  ```json
+  {"names": ["notation", "extension"]}
+  ```
+response:
+  - name: guides[].name
+    type: string
+    description: 名前
+  - name: guides[].body
+    type: string
+    description: その名前が指すページの本文（Markdown）
+response_example: |-
+  ```json
+  {"guides": [{"name": "notation", "body": "# 記法\n..."}]}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 全ての名前が索引にある
+  - name: ツールのエラー（索引に無い名前）
+    condition: 渡した名前のうち 1 つでも索引に無い
+    notes: '`isError: true`。本文は 1 件も返さない'
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+constraints:
+  - item: 読む先
+    constraint: プラグインに同梱した使い方集だけを読む。名前からパスを組まず、索引の行が持つページだけを読む
+  - item: 近い名前
+    constraint: 索引に無い名前ごとに、編集距離の近い索引の名前を 3 件まで添える

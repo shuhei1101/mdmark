@@ -1,0 +1,17 @@
+summary: "Claude Code プラグインの SessionStart のフックと MCP のツール"
+docs_index: true
+items:
+  - page: 使い方集の索引を渡す.ts.yaml
+    summary: セッションの開始で、使い方集の索引だけを additionalContext で渡す（SessionStart）
+  - page: 使い方集を読む.ts.yaml
+    summary: 索引の名前ごとに使い方集の本文を返す（read_guide）
+  - page: 文書を探す.ts.yaml
+    summary: 索引から題・別名・概要・タグ・関係する文書で文書を引く（find_docs）
+  - page: 索引を書き換える.ts.yaml
+    summary: 索引の文書か用語の項目を、Schema で検査してから置き換え・足し・消す（update_index）
+  - page: 点検する.ts.yaml
+    summary: mdmark check と同じ点検をし、ずれの一覧を返す（check）
+  - page: 文書をHTMLに書き出す.ts.yaml
+    summary: mdmark export と同じ処理で 1 文書を 1 枚の HTML に書き出す（export_html）
+  - page: 複数の文書を1枚のHTMLにまとめる.ts.yaml
+    summary: mdmark build と同じ処理で文書を 1 枚の HTML にまとめる（build_site）
