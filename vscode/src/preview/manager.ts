@@ -82,9 +82,7 @@ export class PreviewManager {
         retainContextWhenHidden: false,
         localResourceRoots: [
           Uri.file(folder),
-          Uri.file(dirname(uri.fsPath)),
           Uri.joinPath(this.deps.context.extensionUri, "media"),
-          ...this.libraryRoots(),
         ],
       },
     );
@@ -187,11 +185,6 @@ export class PreviewManager {
       throw new Error("開いているプレビューが無い");
     }
     return panel.inspect(selector);
-  }
-
-  /** 設定ファイルの `libraries` の相対パスを Webview が読めるよう、ワークスペースのフォルダを読めるフォルダに足す */
-  private libraryRoots(): Uri[] {
-    return (workspace.workspaceFolders ?? []).map((folder) => folder.uri);
   }
 }
 

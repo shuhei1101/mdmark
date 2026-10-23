@@ -33,10 +33,21 @@ async function readExportConfig(options: {
     configPath,
     baseDir: baseDirOf(document.uri),
   });
-  const load = await loadConfig({
-    path,
-    readFile: (target) => readFile(target, "utf8"),
-  });
+  let load: Awaited<ReturnType<typeof loadConfig>>;
+  try {
+    load = await loadConfig({
+      path,
+      readFile: (target) => readFile(target, "utf8"),
+    });
+  } catch (error) {
+    // 読めない設定ファイルでは、設定なしで書き出す
+    deps.log.error(
+      "設定ファイルを開けない",
+      path,
+      error instanceof Error ? error : String(error),
+    );
+    return {};
+  }
   if (load.kind === "error") {
     deps.log.warn(
       "設定ファイルを読めないため設定なしで書き出す",

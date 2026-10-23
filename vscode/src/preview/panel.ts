@@ -65,6 +65,8 @@ export class PreviewPanel {
     number,
     (elements: InspectedElement[]) => void
   >();
+  /** 最後に HTML へ入れた配布物のバージョンと `index.js` の URL（決められなかったときは `undefined`） */
+  private loaded: { version: string; distJs: string } | undefined;
   /** 次の `inspect` の `id` */
   private nextInspectId = 1;
 
@@ -154,15 +156,23 @@ export class PreviewPanel {
       configPath: settings.configPath,
       test: deps.test,
     };
-    webview.html =
+    const distJs =
       decision.kind === "decided"
+        ? distUrl({
+            base: deps.distBase,
+            version: decision.version,
+            file: "index.js",
+          })
+        : undefined;
+    this.loaded =
+      decision.kind === "decided" && distJs !== undefined
+        ? { version: decision.version, distJs }
+        : undefined;
+    webview.html =
+      decision.kind === "decided" && distJs !== undefined
         ? buildPreviewHtml({
             ...common,
-            distJs: distUrl({
-              base: deps.distBase,
-              version: decision.version,
-              file: "index.js",
-            }),
+            distJs,
             distCss: distUrl({
               base: deps.distBase,
               version: decision.version,
@@ -296,7 +306,12 @@ export class PreviewPanel {
         this.pendingInspects.delete(message.id);
         return;
       case "loadFailed":
-        log.warn("配布物を読めない", message.reason);
+        log.warn(
+          "配布物を読めない",
+          message.reason,
+          this.loaded?.version,
+          this.loaded?.distJs,
+        );
         return;
       case "rendered":
         return;
