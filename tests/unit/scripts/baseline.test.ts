@@ -121,7 +121,7 @@ test("test_is_guarded_by_typeof_when_else_block", async () => {
   expect(guarded).toBe(true);
 });
 
-// 条件の typeof の式の中の参照も真（正常系）。列が 1 ずれると typeof の後ろの空白を指す
+// 条件の typeof の式の中の参照も真（正常系）
 test("test_is_guarded_by_typeof_when_in_test", async () => {
   // 準備
   const { isGuardedByTypeof } = await loadBaseline();
@@ -134,6 +134,21 @@ test("test_is_guarded_by_typeof_when_in_test", async () => {
   });
   // 検証
   expect(guarded).toBe(true);
+});
+
+// 確かめの if の直前の位置は偽。列を 0 始まりに直さず引くと 1 つ右の if の i を指して真になる（正常系）
+test("test_is_guarded_by_typeof_when_just_before_if", async () => {
+  // 準備
+  const { isGuardedByTypeof } = await loadBaseline();
+  const code = 'Intl.Segmenter;if (typeof Intl.Segmenter !== "undefined") {}\n';
+  // 実行
+  const guarded = isGuardedByTypeof({
+    sourceCode: createSourceCode(code),
+    ...positionOf(code, ";"),
+    api: API,
+  });
+  // 検証
+  expect(guarded).toBe(false);
 });
 
 // 無関係な条件の if の中は偽（正常系）
