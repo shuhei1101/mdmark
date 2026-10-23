@@ -35,7 +35,11 @@ test("test_resolve_config", async () => {
   // 実行
   const resolved = resolveConfig({});
   // 検証
-  expect(resolved).toEqual({ features: DEFAULT_FEATURES, libraries: {} });
+  expect(resolved).toEqual({
+    features: DEFAULT_FEATURES,
+    libraries: {},
+    tooltips: { placement: "top" },
+  });
 });
 
 // 知っている機能の真偽値だけを置き換える（正常系）
@@ -82,4 +86,20 @@ test("test_resolve_config_when_default_library_overridden", async () => {
   const resolved = resolveConfig({ config, defaultLibraries });
   // 検証
   expect(resolved.libraries.block).toEqual({ url: "/y.js", figure: false });
+});
+
+// bottom だけを受け、他の値は top にする（正常系）
+test("test_resolve_config_when_tooltip_placement_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const bottom: MdmarkConfig = { tooltips: { placement: "bottom" } };
+  const unknown = {
+    tooltips: { placement: "left" },
+  } as unknown as MdmarkConfig;
+  // 実行
+  const resolvedBottom = resolveConfig({ config: bottom });
+  const resolvedUnknown = resolveConfig({ config: unknown });
+  // 検証
+  expect(resolvedBottom.tooltips.placement).toBe("bottom");
+  expect(resolvedUnknown.tooltips.placement).toBe("top");
 });

@@ -116,3 +116,25 @@ test("test_render_term_tip_avoided", async () => {
   expect(escaped).toContain("&lt;script&gt;意味&lt;/script&gt;");
   expect(escaped).not.toContain("<script>");
 });
+
+// `below` を渡すと、語を包む要素に is-below を付ける（正常系）
+test("test_render_term_tip_below", async () => {
+  // 準備
+  const { renderTermTip } = await loadTermTip();
+  // 実行
+  // 部品設計の `Below` と `TermOnly` の引数
+  const below = renderTermTip({
+    text: "ワークスペース",
+    id: "tip-below",
+    meaning: "話し合いの記録を置くフォルダ",
+    below: true,
+  });
+  const termOnly = renderTermTip({
+    text: "ワークスペース",
+    id: "tip-term",
+    meaning: "話し合いの記録を置くフォルダ",
+  });
+  // 検証
+  expect(findTag(below, "mdmark-term-wrap")).toContain("is-below");
+  expect(findTag(termOnly, "mdmark-term-wrap")).not.toContain("is-below");
+});
