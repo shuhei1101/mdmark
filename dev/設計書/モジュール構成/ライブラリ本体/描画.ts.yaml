@@ -545,7 +545,7 @@ functions:
     container: src/render/parser.ts
     usecase: 設定と索引を点検する
     summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に当たる印を拾い、名前と行の番号を書いた順に返す
-    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、足すコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため拾わない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行に印より前の改行の数を足し、`html_inline` は親の `inline` の `map` の開始行に印より前の `softbreak`・`hardbreak` の数と印より前の改行の数を足す。閉じの印も 1 つの印として返す'
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、足すコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため拾わない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行に印より前の改行の数を足し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、印より前の子の `softbreak`・`hardbreak` の数と、印より前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中で印より前の改行の数を足す。閉じの印も 1 つの印として返す'
     kind: 関数
     scope: public
     args:
@@ -575,6 +575,18 @@ functions:
         condition: 2 行目から `<div>`・`<!-- tabz -->`・`</div>` の 3 行のブロック
         mock: なし
         expected: '`[{ name: "tabz", line: 3 }]`'
+      - name: test_find_marks_when_table_cell
+        case: 正常
+        summary: 表のセルの中の印の行を行の番号で返す
+        condition: 1・2 行目が表の見出しと区切り、3 行目が `| 1 <!-- tabz --> | 2 |`
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }]`'
+      - name: test_find_marks_when_multiline_inline_html
+        case: 正常
+        summary: 前に複数行の行内の HTML がある印の行を数える
+        condition: 1・2 行目が `p <a` と `href="x">l</a> <!-- c -->`
+        mock: なし
+        expected: '`[{ name: "c", line: 2 }]`'
     refs:
       - '#constants[MARK_PATTERN]'
       - '#functions[createParser]'
