@@ -57,6 +57,12 @@
           "type": "boolean",
           "default": true
         },
+        "code": {
+          "title": "コードブロックを飾る機能",
+          "description": "コードブロックに、直前の `<!-- code: -->` の題・行番号・行の強調と、行末のコードの行の印（`[!code ++]`・`[!code --]`・`[!code highlight]`）を当てる。オフのときは題・行番号・行の強調を付けず、コードの行の印は書いた文字のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
         "toc": {
           "title": "目次の機能",
           "description": "`<!-- toc -->` の場所に h2〜h3 の目次を置く。オフのときは印を取り除く。",
@@ -141,6 +147,7 @@
         "steps": true,
         "tree": true,
         "badge": true,
+        "code": true,
         "toc": true,
         "anchors": true,
         "sections": true,

@@ -16,6 +16,7 @@ import type { WarningItem } from "../src/extensions.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
+import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
 import {
   type CommentFormState,
   renderCommentBubble,
@@ -458,6 +459,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   steps: (args) => renderSteps({ items: args.items as string[] }),
   tree: (args) => renderTree({ nodes: args.nodes as TreeNode[] }),
   badge: (args) => renderBadge({ label: String(args.label ?? "") }),
+  "code-block": (args) =>
+    renderCodeBlock({
+      language: String(args.language ?? ""),
+      title: String(args.title ?? ""),
+      lineNumbers: args.lineNumbers === true,
+      lines: args.lines as CodeLine[],
+    }),
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
   section: (args) =>
     renderSection({
