@@ -11,8 +11,10 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { build, type Metafile } from "esbuild";
 import { GUIDE_CONTEXT_LIMIT } from "../src/plugin/guide.ts";
+import { findBaselineViolations } from "./baseline.ts";
 import { buildPlugin, removePluginOutputs } from "./build-plugin.ts";
 import {
+  BROWSER_TARGETS,
   listBundledPackages,
   NODE_BANNER,
   NODE_TARGET,
@@ -27,8 +29,6 @@ const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
 const MAX_DIST_FILE_BYTES = 384 * 1024;
 // 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
-// esbuild の target に渡すブラウザの版
-const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
 // サイズを検めない配布ファイル（使う側のページが jsDelivr から読まない出力）
 const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
 // CLI の実行時の依存: 束ねずに `package.json` の `dependencies` から読む
@@ -254,7 +254,7 @@ export function findTooLargeOutputs(
     .map(([path, bytes]) => ({ path, bytes }));
 }
 
-/** 前回の `dist/` とプラグインの生成物を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、プラグインをビルドし、終了コードを返す */
+/** 前回の `dist/` とプラグインの生成物を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズと対応ブラウザの下限を検査し、プラグインをビルドし、終了コードを返す */
 export async function main(
   argv: string[],
   options: {
@@ -287,7 +287,15 @@ export async function main(
           `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
         );
       }
-      if (tooLarge.length === 0) {
+      // 配布ファイルのサイズが上限内のときだけ、下限のブラウザに無い API を確かめる
+      const violations =
+        tooLarge.length === 0
+          ? await findBaselineViolations({ root, version })
+          : [];
+      for (const { file, line, column, message } of violations) {
+        console.error(`${file}:${line}:${column} ${message}`);
+      }
+      if (tooLarge.length === 0 && violations.length === 0) {
         const pluginProblems = await buildPlugin({
           version,
           root,
