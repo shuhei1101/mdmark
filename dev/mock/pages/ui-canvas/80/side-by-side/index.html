@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>ui-canvas / side-by-side（見た目の洗い出し） | mdmark のモック</title>
+  <!-- モック専用の操作列の規則（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 今の src から作った配布物の CSS と、まとめた HTML の画面の CSS（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/80/assets/mdmark/index.css">
+  <link rel="stylesheet" href="../../../../refs/80/assets/mdmark/viewer.css">
+  <!-- 列ごとの値（今の値と dev-swiss）と、dev-swiss の列だけに当てる部品の CSS の変更 -->
+  <link rel="stylesheet" href="../../../../refs/80/assets/canvas-themes.css">
+  <!-- キャンバスの並べ方 -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 部品ごとに 2 つの列を作り、Markdown を描く -->
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="canvas">
+    <!-- パンくず -->
+    <nav class="canvas-crumbs" aria-label="パンくず"><a href="../../../index.md">pages</a> / <a href="../../index.md">ui-canvas</a> / <a href="../index.md">80</a> / side-by-side</nav>
+    <h1>見た目の洗い出し</h1>
+    <p>mdmark が描く文書とまとめた HTML の UI を部品ごとに、今の値（左）と採用した dev-swiss の値（右）で並べる。どちらも今の src から作った配布物で描いている。</p>
+
+    <!-- 部品の CSS を変える箇所の一覧 -->
+    <table class="canvas-changes">
+      <thead>
+        <tr><th>部品</th><th>dev-swiss の値だけで表せない箇所</th><th>扱い</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="#part-callout">注意書き</a></td><td>種類の色を地に 7% 混ぜた面と、40% 混ぜた線。今の CSS は種類の色そのものの線だけで、面を塗らない</td><td>必須（部品の CSS を変える）</td></tr>
+        <tr><td><a href="#part-flow">フロー図</a></td><td>箱の角丸 8px（データの箱は 8px / 20px）を CSS に直に持ち、<code>--mdmark-radius</code>（4px）に揃わない</td><td>論点</td></tr>
+        <tr><td>図の全画面・まとめた HTML の一覧のパネル</td><td>開いたときの後ろの幕の色 <code>rgb(0 0 0 / 0.5)</code>・<code>rgb(0 0 0 / 0.4)</code> を CSS に直に持つ（キャンバスには出ない）</td><td>論点</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 部品の目次 -->
+    <nav aria-label="部品の目次">
+      <ul class="canvas-toc">
+        <li><a href="#part-body">文書</a></li>
+        <li><a href="#part-table">表</a></li>
+        <li><a href="#part-row-detail">行の詳細</a></li>
+        <li><a href="#part-callout">注意書き</a></li>
+        <li><a href="#part-tabs">タブ</a></li>
+        <li><a href="#part-steps">ステップ</a></li>
+        <li><a href="#part-tree">ファイルツリー</a></li>
+        <li><a href="#part-badge">バッジ</a></li>
+        <li><a href="#part-code">コードブロック</a></li>
+        <li><a href="#part-toc">目次・節</a></li>
+        <li><a href="#part-figure">図表の番号</a></li>
+        <li><a href="#part-glossary">用語</a></li>
+        <li><a href="#part-backlinks">関連文書</a></li>
+        <li><a href="#part-view">ビュー</a></li>
+        <li><a href="#part-flow">フロー図</a></li>
+        <li><a href="#part-sequence">シーケンス図</a></li>
+        <li><a href="#part-chart">グラフ</a></li>
+        <li><a href="#part-param">操作できる部品</a></li>
+        <li><a href="#part-html">埋め込んだ HTML・ヒント</a></li>
+        <li><a href="#part-notice">知らせ・読み込み中</a></li>
+        <li><a href="#part-warning">書き方の警告</a></li>
+        <li><a href="#part-diff">差分</a></li>
+        <li><a href="#part-comment">コメント</a></li>
+        <li><a href="#part-bundle">まとめた HTML</a></li>
+      </ul>
+    </nav>
+
+    <!-- 部品の節: [data-canvas] の節ごとに、app.js が 2 つの列を作り、[data-canvas-source] の Markdown を描く -->
+
+    <!-- 文書（本文の基本） -->
+    <section class="canvas-section" id="part-body" data-canvas="body">
+      <h2>文書（本文の基本）</h2>
+      <p>見出し・段落・リンク・リスト・文中のコード・コードブロック・引用・区切り線・折り畳み</p>
+      <script type="text/markdown" data-canvas-source>
+# 見た目の洗い出し
+
+mdmark の既定の見た目を mindstella の値に揃える。リンクは [テーマの上書き](#part-body)、文中のコードは `--mdmark-color-link`。
+
+## 導入の流れ
+
+1. 配布物の `index.js` と `index.css` を読み込む
+2. 描く先の要素を用意する
+   - 本文だけを差し替えるときは `update`
+   - 片付けるときは `destroy`
+
+```ts
+const view = mount(document.querySelector("#doc"), { markdown });
+```
+
+> 印の無い引用は、面の色と字下げで本文と分ける。
+
+### 対応ブラウザ
+
+<details>
+<summary>下限の版を見る</summary>
+
+- Chrome 99
+- Safari 16.4
+
+</details>
+
+---
+
+最後の段落。
+</script>
+    </section>
+
+    <!-- 表 -->
+    <section class="canvas-section" id="part-table" data-canvas="table">
+      <h2>表</h2>
+      <p>既定の表・data の表（並べ替え・絞り込み・件数・列の表示・集計・コピー・行へのリンク）・plain の表・閉じた表</p>
+      <script type="text/markdown" data-canvas-source>
+| 変数 | 役割 | 既定の値 |
+| --- | --- | ---: |
+| `--mdmark-color-bg` | 地の色 | #ffffff |
+| `--mdmark-color-link` | リンクの色 | #0f766e |
+
+<!-- table: data filter=状態 +count +columns +total +copy +rowlink total=件数:sum -->
+
+| 部品 | 状態 | 件数 |
+| --- | --- | ---: |
+| 表 | 済 | 12 |
+| 注意書き | 未 | 5 |
+| 図 | 済 | 8 |
+
+<!-- /table -->
+
+<!-- table: plain -->
+
+| 項目 | 内容 |
+| --- | --- |
+| 線 | 縦の罫線と面を外す |
+
+<!-- /table -->
+
+<!-- table: closed -->
+
+| 項目 | 内容 |
+| --- | --- |
+| 閉じた表 | 押すと開く |
+
+<!-- /table -->
+</script>
+    </section>
+
+    <!-- 行の詳細 -->
+    <section class="canvas-section" id="part-row-detail" data-canvas="row-detail">
+      <h2>行の詳細</h2>
+      <p>表の行の下に開閉して出す詳細</p>
+      <script type="text/markdown" data-canvas-source>
+| 部品 | 状態 |
+| --- | --- |
+| 表 | 済 |
+| 注意書き | 未 |
+
+<!-- row-detail: 2 -->
+
+面と線の混ぜ方を決める。
+
+<!-- /row-detail -->
+</script>
+    </section>
+
+    <!-- 注意書き -->
+    <section class="canvas-section" id="part-callout" data-canvas="callout">
+      <h2>注意書き</h2>
+      <p>5 つの種類と、閉じた注意書き</p>
+      <p class="canvas-change">必須: 種類の色の薄い面（地に 7%）と淡い線（地に 40%）は、今の変数で表せない。.markdown-alert の CSS を変える（dev-swiss の列は CSS を変えた後の見た目）</p>
+      <script type="text/markdown" data-canvas-source>
+> [!NOTE]
+> 変数の名前は変わらない。
+
+> [!TIP]
+> 層の外に書いた CSS が勝つ。
+
+> [!IMPORTANT]
+> 書き出した HTML は外を読まない。
+
+> [!WARNING]
+> 版を上げる前に点検する。
+
+> [!CAUTION]
+> 設定の版を手で書き換えない。
+
+> [!NOTE]-
+> 閉じた状態で始める補足。
+</script>
+    </section>
+
+    <!-- タブ -->
+    <section class="canvas-section" id="part-tabs" data-canvas="tabs">
+      <h2>タブ</h2>
+      <p>見出しの文字をタブ名にしたタブ</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- tabs -->
+
+### macOS
+
+macOS の手順。
+
+### Windows
+
+Windows の手順。
+
+<!-- /tabs -->
+</script>
+    </section>
+
+    <!-- ステップ -->
+    <section class="canvas-section" id="part-steps" data-canvas="steps">
+      <h2>ステップ</h2>
+      <p>番号と線でつないだ手順</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- steps -->
+
+1. 依存を入れる。
+2. ビルドする。
+3. 描いて確かめる。
+
+<!-- /steps -->
+</script>
+    </section>
+
+    <!-- ファイルツリー -->
+    <section class="canvas-section" id="part-tree" data-canvas="tree">
+      <h2>ファイルツリー</h2>
+      <p>罫線で書いたフォルダ構成</p>
+      <script type="text/markdown" data-canvas-source>
+```tree
+mdmark/
+├── src/
+│   ├── index.css
+│   └── index.ts
+└── package.json
+```
+</script>
+    </section>
+
+    <!-- バッジ -->
+    <section class="canvas-section" id="part-badge" data-canvas="badge">
+      <h2>バッジ</h2>
+      <p>行内の札</p>
+      <script type="text/markdown" data-canvas-source>
+この版は `badge:v0.7.0` で、状態は `badge:作業中` です。
+</script>
+    </section>
+
+    <!-- コードブロックの飾り -->
+    <section class="canvas-section" id="part-code" data-canvas="code">
+      <h2>コードブロックの飾り</h2>
+      <p>題・行番号・行の強調と、足した行・消した行</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- code: title=theme.css lines highlight=2 -->
+
+```css
+:root {
+  --mdmark-color-link: #0f766e;
+  --mdmark-radius: 4px;
+}
+```
+
+```ts
+const size = "1rem"; // [!code --]
+const size = "0.875rem"; // [!code ++]
+mount(el, { markdown }); // [!code highlight]
+```
+</script>
+    </section>
+
+    <!-- 目次・見出しのアンカー・節の開閉 -->
+    <section class="canvas-section" id="part-toc" data-canvas="toc">
+      <h2>目次・見出しのアンカー・節の開閉</h2>
+      <p>h2〜h3 の目次、見出しのリンク、閉じた節</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- toc -->
+
+## 配色
+
+色の役割。
+
+### 面と線
+
+表の見出し行の面。
+
+## 補足
+
+<!-- section: closed -->
+
+閉じた節の本文。
+</script>
+    </section>
+
+    <!-- 図と表の番号 -->
+    <section class="canvas-section" id="part-figure" data-canvas="figure">
+      <h2>図と表の番号</h2>
+      <p>図と表に付ける通し番号と、番号にした参照のリンク</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- fig: flow -->
+
+![受け取りから送信まで](../../../../refs/80/assets/figure.svg "受け取りから送信まで")
+
+<!-- fig: values -->
+
+| 変数 | 値 |
+| --- | --- |
+| 角丸 | 4px |
+
+[図](#fig-flow) と [表](#fig-values) を参照する。
+</script>
+    </section>
+
+    <!-- 用語集の表と用語のツールチップ -->
+    <section class="canvas-section" id="part-glossary" data-canvas="glossary">
+      <h2>用語集の表と用語のツールチップ</h2>
+      <p>用語集の表から入れた用語の破線の下線（ポインター・フォーカスでツールチップ）</p>
+      <script type="text/markdown" data-canvas-source>
+本文の印は、HTML コメントで書く。
+
+<!-- glossary: term=用語 aliases=別名 meaning=意味 -->
+
+| 用語 | 別名 | 意味 |
+| --- | --- | --- |
+| 印 | マーク | HTML コメントで書く指定 |
+
+<!-- /glossary -->
+</script>
+    </section>
+
+    <!-- 関連文書の一覧 -->
+    <section class="canvas-section" id="part-backlinks" data-canvas="backlinks">
+      <h2>関連文書の一覧</h2>
+      <p>文書の末尾に置く、この文書を参照している文書の一覧</p>
+      <script type="text/markdown" data-canvas-source>
+## 本文
+
+この文書を参照している文書が、末尾に並ぶ。
+</script>
+    </section>
+
+    <!-- ビュー -->
+    <section class="canvas-section" id="part-view" data-canvas="view">
+      <h2>ビュー</h2>
+      <p>ボード表示（状態ごとの列）と表形式の切り替え</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- view: group=状態 filter=担当 -->
+
+| 題 | 状態 | 担当 |
+| --- | --- | --- |
+| 配色の変数を洗い出す | 完了 | designer |
+| 余白の変数を決める | 進行中 | designer |
+| 部品の CSS を直す | 未着手 | implementer |
+
+<!-- /view -->
+</script>
+    </section>
+
+    <!-- フロー図 -->
+    <section class="canvas-section" id="part-flow" data-canvas="flow">
+      <h2>フロー図</h2>
+      <p>システムの枠と層・箱・線（図の枠の題・凡例・拡大のボタン）</p>
+      <p class="canvas-change">論点: 箱の角丸は 8px（データの箱は 8px / 20px）を CSS に直に持ち、--mdmark-radius（4px）に揃わない（dev-swiss の列も今の CSS のまま）</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- flow -->
+
+```json
+{
+  "title": "問い合わせへの自動返信の構成",
+  "scope": "受け取りから送信まで",
+  "updated": "2026-10-17",
+  "width": 760,
+  "height": 380,
+  "frame": { "title": "問い合わせ窓口", "x": 140, "y": 20, "w": 600, "h": 340 },
+  "lanes": [
+    { "label": "LLM・意思決定モデル", "kind": "llm", "y": 56, "h": 100 },
+    { "label": "処理（MCP・スクリプト）", "kind": "mcp", "y": 156, "h": 100 },
+    { "label": "データ", "kind": "data", "y": 256, "h": 100 }
+  ],
+  "nodes": [
+    { "id": "mail", "kind": "external", "x": 12, "y": 174, "w": 116, "h": 64, "tag": "外部", "name": "メールサーバー" },
+    { "id": "recv", "kind": "script", "x": 190, "y": 174, "w": 140, "h": 64, "name": "受け取り", "sub": "1 通ずつ読む", "io": { "in": "メール", "do": "本文を取り出す", "out": "本文" } },
+    { "id": "classify", "kind": "dm", "x": 390, "y": 74, "w": 140, "h": 64, "name": "分類", "sub": "返信の種類を選ぶ" },
+    { "id": "draft", "kind": "llm", "x": 580, "y": 74, "w": 140, "h": 64, "name": "返信の下書き" },
+    { "id": "mcp", "kind": "mcp", "x": 390, "y": 174, "w": 140, "h": 64, "name": "窓口の MCP" },
+    { "id": "table", "kind": "data", "x": 390, "y": 276, "w": 140, "h": 64, "name": "問い合わせの表" }
+  ],
+  "wires": [
+    { "id": "w1", "from": "mail", "to": "recv", "line": "flow", "points": [[128, 206], [190, 206]], "label": "メール", "labelAt": [159, 206], "tip": "件名・本文・送り主" },
+    { "id": "w2", "from": "recv", "to": "classify", "line": "flow", "points": [[260, 174], [260, 106], [390, 106]], "label": "本文", "labelAt": [260, 140] },
+    { "id": "w3", "from": "classify", "to": "draft", "line": "flow", "points": [[530, 106], [580, 106]], "label": "種類", "labelAt": [555, 106] },
+    { "id": "w4", "from": "draft", "to": "mcp", "line": "reply", "points": [[650, 138], [650, 206], [530, 206]], "label": "保存", "labelAt": [650, 172] },
+    { "id": "w5", "from": "mcp", "to": "table", "line": "write", "points": [[460, 238], [460, 276]], "label": "書く", "labelAt": [460, 257] },
+    { "id": "w6", "from": "table", "to": "recv", "line": "read", "points": [[390, 308], [260, 308], [260, 238]], "label": "読む", "labelAt": [325, 308] }
+  ]
+}
+```
+
+<!-- /flow -->
+</script>
+    </section>
+
+    <!-- シーケンス図 -->
+    <section class="canvas-section" id="part-sequence" data-canvas="sequence">
+      <h2>シーケンス図</h2>
+      <p>相手を左から右、メッセージを時刻の順に並べた図と繰り返しの戻り</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- sequence -->
+
+```json
+{
+  "title": "問い合わせ 1 通の流れ",
+  "scope": "受け取りから下書きの保存まで",
+  "updated": "2026-10-17",
+  "participants": [
+    { "id": "mail", "kind": "external", "tag": "外部", "name": "メールサーバー" },
+    { "id": "recv", "kind": "script", "name": "受け取り" },
+    { "id": "classify", "kind": "dm", "name": "分類" },
+    { "id": "draft", "kind": "llm", "name": "返信の下書き" }
+  ],
+  "steps": [
+    { "from": "mail", "to": "recv", "label": "問い合わせのメール" },
+    { "from": "recv", "to": "classify", "label": "本文" },
+    { "from": "classify", "to": "recv", "label": "返信の種類", "reply": true },
+    { "from": "recv", "to": "draft", "label": "本文と種類" }
+  ],
+  "loop": { "label": "1 へ戻る（次の問い合わせ）" }
+}
+```
+
+<!-- /sequence -->
+</script>
+    </section>
+
+    <!-- グラフ -->
+    <section class="canvas-section" id="part-chart" data-canvas="chart">
+      <h2>グラフ</h2>
+      <p>折れ線（系列 4 つ）・棒・円（系列は色と模様の組で分ける）</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- chart -->
+
+```json
+{
+  "title": "返信までの時間",
+  "scope": "10 月の第 2 週",
+  "updated": "2026-10-17",
+  "x": { "label": "曜日", "ticks": ["月", "火", "水", "木", "金"] },
+  "y": { "label": "分", "min": 0, "max": 60, "step": 15 },
+  "series": [
+    { "name": "自動返信", "points": [12, 9, 14, 8, 10] },
+    { "name": "担当者", "points": [42, 38, 51, 35, 44] },
+    { "name": "外部委託", "points": [30, 28, 33, 26, 31] },
+    { "name": "夜間", "points": [55, 50, 58, 48, 52] }
+  ]
+}
+```
+
+<!-- /chart -->
+
+<!-- chart -->
+
+```json
+{
+  "type": "bar",
+  "title": "種類ごとの件数",
+  "scope": "10 月",
+  "updated": "2026-10-17",
+  "x": { "label": "週", "ticks": ["1 週", "2 週", "3 週"] },
+  "y": { "label": "件", "min": 0, "max": 40, "step": 10 },
+  "series": [
+    { "name": "質問", "points": [20, 26, 31] },
+    { "name": "要望", "points": [12, 9, 15] }
+  ]
+}
+```
+
+<!-- /chart -->
+
+<!-- chart -->
+
+```json
+{
+  "type": "pie",
+  "title": "返信の種類の割合",
+  "scope": "10 月の第 2 週",
+  "updated": "2026-10-17",
+  "unit": " 件",
+  "items": [
+    { "name": "よくある質問", "value": 186 },
+    { "name": "担当者へ回した", "value": 92 },
+    { "name": "保留", "value": 21 }
+  ]
+}
+```
+
+<!-- /chart -->
+</script>
+    </section>
+
+    <!-- 操作できる部品 -->
+    <section class="canvas-section" id="part-param" data-canvas="param">
+      <h2>操作できる部品</h2>
+      <p>スライダー・グラフ・今の値を写すボタン</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- param -->
+
+```json
+{
+  "title": "返信の速さの見積もり",
+  "knob": { "key": "strength", "label": "反応の強さ", "min": 0, "max": 2, "step": 1, "value": 1 },
+  "chart": {
+    "title": "反応の強さごとの返信の進み",
+    "scope": "経過 0〜10 秒",
+    "updated": "2026-10-17",
+    "x": { "label": "経過（秒）", "ticks": ["0", "5", "10"] },
+    "y": { "label": "返信の進み（%）", "min": 0, "max": 100, "step": 25 }
+  },
+  "table": {
+    "0": [0, 20, 40],
+    "1": [0, 50, 80],
+    "2": [0, 70, 95]
+  }
+}
+```
+
+<!-- /param -->
+</script>
+    </section>
+
+    <!-- 埋め込んだ HTML とヒント -->
+    <section class="canvas-section" id="part-html" data-canvas="html">
+      <h2>埋め込んだ HTML とヒント</h2>
+      <p>コードブロックの HTML をその場に描いた場所と、data-hint の印と下線</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- html -->
+
+```html
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+  <div style="padding: 12px; border: 1px solid currentColor" data-hint="1 通ずつ読む">受け取り</div>
+  <div style="padding: 12px; border: 1px solid currentColor">分類</div>
+</div>
+<p>問い合わせは <span data-hint="本文を読んで返信の種類を決める処理">分類</span> してから返す。</p>
+```
+
+<!-- /html -->
+</script>
+    </section>
+
+    <!-- 知らせの枠・読み込み中の枠 -->
+    <section class="canvas-section" id="part-notice" data-canvas="notice">
+      <h2>知らせの枠・読み込み中の枠</h2>
+      <p>外部ライブラリを読めない印の場所と、読み込んでいる間の印の場所</p>
+      <script type="text/markdown" data-canvas-source>
+読めない印:
+
+<!-- missing-chart: sales -->
+
+読み込み中の印:
+
+<!-- slow-chart: sales -->
+</script>
+    </section>
+
+    <!-- 書き方の警告 -->
+    <section class="canvas-section" id="part-warning" data-canvas="warning">
+      <h2>書き方の警告</h2>
+      <p>記法の印に読めない指定がある箇所に置く枠</p>
+      <script type="text/markdown" data-canvas-source>
+<!-- table: data hide=名前 -->
+
+| 名前 | 値 |
+| --- | --- |
+| りんご | 10 |
+
+<!-- /table -->
+</script>
+    </section>
+
+    <!-- 差分 -->
+    <section class="canvas-section" id="part-diff" data-canvas="diff">
+      <h2>差分</h2>
+      <p>「変更を見る」・リビジョンを選ぶ欄・行と語の色分け・ミニマップ（描いた後に「変更を見る」を押している）</p>
+      <script type="text/markdown" data-canvas-source>
+# テーマ
+
+リンクの色は #0f766e です。
+
+変数の名前は変わりません。
+
+印刷ではダークを解除します。
+</script>
+    </section>
+
+    <!-- コメント -->
+    <section class="canvas-section" id="part-comment" data-canvas="comment">
+      <h2>コメント</h2>
+      <p>コメントが付いた本文の文字の地と下線（文字を選ぶとコメントのボタン）</p>
+      <script type="text/markdown" data-canvas-source>
+mdmark の既定の見た目を mindstella の値に揃える。
+
+コメントを付けた語は、地の色と下線で示す。
+</script>
+    </section>
+
+    <!-- まとめた HTML: 実装の CLI と同じ要素を、両方の列に写す -->
+    <section class="canvas-section" id="part-bundle" data-canvas="bundle">
+      <h2>まとめた HTML</h2>
+      <p>mdmark build が書き出す 1 枚の HTML の文書の一覧と、狭い幅の帯・一覧のパネル</p>
+      <template data-canvas-source>
+        <!-- 広い幅: 左に文書の一覧、右に開いている文書 -->
+        <div class="canvas-bundle">
+          <div class="mdmark-bundle">
+            <aside class="mdmark-bundle-side">
+              <nav class="mdmark-doc-list" aria-label="文書の一覧">
+                <div class="mdmark-doc-list-group">
+                  <ul>
+                    <li><a href="#part-bundle">mdmark の文書</a></li>
+                  </ul>
+                </div>
+                <div class="mdmark-doc-list-group">
+                  <p class="mdmark-doc-list-folder">使い方/導入</p>
+                  <ul>
+                    <li><a href="#part-bundle" aria-current="page">文書を描く</a></li>
+                    <li><a href="#part-bundle">配布物を読み込む</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </aside>
+            <div class="mdmark-bundle-main">
+              <article class="mdmark">
+                <h1>文書を描く</h1>
+                <p>開いている文書の本文。</p>
+              </article>
+            </div>
+          </div>
+        </div>
+        <!-- 狭い幅: 帯のボタンと、開いた一覧のパネル -->
+        <div class="canvas-bundle-narrow">
+          <div class="mdmark-bundle-bar">
+            <button class="mdmark-bundle-button" type="button" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.75 4h10.5"/><path d="M2.75 8h10.5"/><path d="M2.75 12h10.5"/></svg>文書の一覧</button>
+            <span class="mdmark-bundle-bar-title">文書を描く</span>
+          </div>
+          <div class="mdmark-bundle-panel">
+            <div class="mdmark-bundle-panel-head">
+              <p class="mdmark-bundle-panel-title">文書の一覧</p>
+              <button class="mdmark-bundle-button is-icon" type="button" aria-label="文書の一覧を閉じる"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8"/><path d="M12 4l-8 8"/></svg></button>
+            </div>
+            <nav class="mdmark-doc-list" aria-label="文書の一覧（パネル）">
+              <div class="mdmark-doc-list-group">
+                <ul>
+                  <li><a href="#part-bundle" aria-current="page">文書を描く</a></li>
+                  <li><a href="#part-bundle">配布物を読み込む</a></li>
+                </ul>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </template>
+    </section>
+  </main>
+</body>
+</html>
