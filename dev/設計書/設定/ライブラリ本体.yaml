@@ -378,6 +378,5 @@ settings:
     implementation: src/config.ts#resolveConfig
     introduced:
       pr: 83
-    status: planned
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

@@ -114,7 +114,6 @@ args:
     type: 真偽値
     default: 'false'
     description: 語の下に開いた見た目にするか。`true` なら `mdmark-term-wrap` に `is-below` を付ける（`mount` が上に収まらない語に付けるのと同じ class）。`render` は渡さない
-    status: planned
 css_properties:
   - name: --mdmark-color-term-underline
     syntax: <color>
