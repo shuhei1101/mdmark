@@ -131,6 +131,27 @@ scenarios:
       - 描いた直後、`ワークスペース` に下線が付き、被参照の一覧がある
       - 本文を `ワークスペース` が出る別の段落に差し替えた後も、下線と被参照の一覧がある
     test: test_normal_when_index
+  - name: 正常シナリオ（元の行番号を出す）
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常シナリオと同じ
+      - name: 行の位置が分かる Markdown
+        description: 1 行目に見出し、3 行目に段落、5〜7 行目に表、9〜11 行目にコードブロックを置いた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 行の位置が分かる Markdown を渡す
+        M->>M: ブロックごとに元の行番号を付けて描く
+        M-->>P: 元の行番号の属性を持つ本文
+        P-->>U: 文書を表示
+    expected:
+      - 見出し・段落・表・コードブロックの要素が、それぞれ Markdown で始まる行の番号を元の行番号の属性に持つ
+      - 見た目（要素の位置と色の計算値）は、元の行番号の属性が無いときと同じ
+    test: test_normal_when_source_lines
 lead: 使う側のページが、要素と Markdown と設定を mdmark に渡し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
 issue: 3
 primary_actor: mdmark を使うアプリのページ

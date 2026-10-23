@@ -22,11 +22,17 @@ categories:
       ```bash
       npm ci
       ```
+
+      VS Code 拡張機能を触るときは、`vscode/` の依存も入れる。
+
+      ```bash
+      npm --prefix vscode ci
+      ```
     effects: '`node_modules/` を `package-lock.json` のとおりに作り直す'
     verification:
       state: 済
       date: '2026-10-13'
-      detail: '`npm ci` が終了コード 0 で終わり、脆弱性 0 件を確かめた'
+      detail: '`npm ci` が終了コード 0 で終わり、脆弱性 0 件を確かめた。`npm --prefix vscode ci` は `vscode/` をまだ実装していないため走らせていない'
   - name: 依存の追加・更新・削除
     commands: |-
       版を完全一致で固定して追加・更新する。
@@ -131,11 +137,24 @@ categories:
       ```bash
       npm run build -- --version v{版}
       ```
+
+      VS Code 拡張機能を `vscode/dist/extension.cjs`・`vscode/media/preview.js`・`vscode/media/preview.css` にビルドし、型を検査する。
+
+      ```bash
+      npm --prefix vscode run build
+      npm --prefix vscode run typecheck
+      ```
+
+      `vscode/mdmark-{バージョン}.vsix` を作る（`vscode:prepublish` でビルドも流れる）。
+
+      ```bash
+      npm --prefix vscode run package
+      ```
     effects: '`dist/` を前回の分を消してから書き直す。`index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・ CLI の `cli.js`・書き出した HTML に埋める `viewer.js`・`viewer.css` のほかに、`tsconfig.dist.json` で `tsc` を流して型定義（`index.d.ts` と、それが読み込む `.d.ts`）を書く。版の書式が違う・`version.ini` を読めない・設定・索引の JSON Schema（`schemas/`）を最新の版のタグから変えたのに移行の手順（`migrations/next/steps.yaml`）も手順なしの一覧（`migrations/no-steps.yaml`）の合う行も無い・release のビルドで `migrations/next/` が残っている・移行の手順の形が合わない・esbuild か `tsc` が失敗する・`index.js`・`index.css` が 256KB を超える・`viewer.js` が `</script` の並びを持つと、終了コード 1 で終わり `dist/` は残らない。続けて Claude Code プラグインの生成物（`plugin/server/mcp.js`・`plugin/scripts/session-start.js`・`plugin/dist/`・`plugin/guide/`・`plugin/THIRD_PARTY_LICENSES.txt`）も前回の分を消して書き、使い方集の索引（`guide/index.yaml`）の形・指すページ・文字数の上限、`plugin/package.json` の依存のバージョンと `plugin/package-lock.json`、取り込まれたパッケージのライセンスの本文（`scripts/licenses/`）に問題があると、終了コード 1 で終わり `dist/` も `plugin/` の生成物も残らない'
     verification:
       state: 済
       date: '2026-10-23'
-      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を書くことを確かめた。`plugin/` の失敗の分岐は単体テストで確かめた'
+      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を書くことを確かめた。`plugin/` の失敗の分岐は単体テストで確かめた。VS Code 拡張機能のコマンドは `vscode/` を実装して走らせた（2026-10-23）。`npm --prefix vscode run build` が終了コード 0 で終わり、`vscode/dist/extension.cjs`（`require("vscode")` を持つ）・`vscode/media/preview.js`・`vscode/media/preview.css` が書かれ、`npm --prefix vscode run typecheck` が終了コード 0 で通る。`npm --prefix vscode run package` が `vscode:prepublish` のビルドも流して `vscode/mdmark-0.1.0.vsix`（`package.json`・`readme.md`・`dist/extension.cjs`・`media/preview.css`・`media/preview.js` の 7 ファイル、73KB。`src/`・`node_modules/` を含まない）を書く。LICENSE が無いと `vsce` が警告を出すが、終了コードは 0'
   - name: 取り込み前の検査
     commands: 未確定
   - name: 管理作業
@@ -177,7 +196,15 @@ categories:
       git commit -m "v{版} の配布物を入れる"
       git push origin {対象のブランチ}
       ```
+
+      VS Code 拡張機能を出すときは、`vscode/package.json` の `version` を出すバージョンにした commit が master に入った後、タグと `version` を照合してからタグを打つ（GitHub Actions の `vscode-release.yml` が .vsix を作り、そのタグの GitHub Release に添える）。mdmark の `v{版}` のタグと混ぜない。
+
+      ```bash
+      npm --prefix vscode run release:check -- vscode-v{バージョン}
+      git tag vscode-v{バージョン}
+      git push origin vscode-v{バージョン}
+      ```
     effects: 対象のブランチへ `dist/` と `plugin/` の commit を push する。どちらも変わらなければ commit は要らない
     verification:
       state: 未確認
-      detail: 手順 1・2・3・4（`npm ci`、移行の手順の移し、`npm run build -- --version v{版}`、`git status --porcelain dist` が `dist/` の差分を出す）は、一時の clone で `--version v0.4.0` を使って確かめた。`migrations/next/` が無いときは `git mv` が失敗するので飛ばし、`sed` 以降でビルドが通る。`plugin/` を足した手順 4・5 は、`npm run build` が `plugin/` の生成物を書くことまでを確かめた。手順 5 は対象のブランチへ push して外へ書き込むため走らせていない
+      detail: 手順 1・2・3・4（`npm ci`、移行の手順の移し、`npm run build -- --version v{版}`、`git status --porcelain dist` が `dist/` の差分を出す）は、一時の clone で `--version v0.4.0` を使って確かめた。`migrations/next/` が無いときは `git mv` が失敗するので飛ばし、`sed` 以降でビルドが通る。`plugin/` を足した手順 4・5 は、`npm run build` が `plugin/` の生成物を書くことまでを確かめた。手順 5 は対象のブランチへ push して外へ書き込むため走らせていない。VS Code 拡張機能のタグの照合（`npm --prefix vscode run release:check -- vscode-v0.1.0`）は、`package.json` の `version` が `0.1.0` のとき終了コード 0 で通り、`vscode-v0.2.0` のときは両方のバージョンを標準エラーに出して終了コード 1 で止まることを確かめた。タグの push は外へ書き込むため走らせていない

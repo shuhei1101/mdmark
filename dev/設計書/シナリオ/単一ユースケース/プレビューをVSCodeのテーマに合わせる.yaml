@@ -1,0 +1,52 @@
+title: "プレビューをVSCodeのテーマに合わせる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: ライトのテーマで開いたプレビュー
+        description: VS Code のテーマが Default Light Modern で、プレビューを開いた状態。`mdmark.preview.theme` は既定の `auto`
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant VS as VS Code
+        participant PV as プレビュー（Webview）
+        W->>VS: テーマを Default Dark Modern に切り替える
+        VS->>PV: body の class を vscode-dark にする
+        PV->>PV: mdmark がダークの配色の値を当てる
+        PV-->>W: ダークの配色で表示
+    expected:
+      - プレビューを開き直さずに、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値になる
+      - 本文とスクロールの位置は切り替える前と同じ
+    test: test_normal
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でダークにする）]
+  - name: 正常シナリオ（配色を固定する）
+    setup:
+      - name: ダークのテーマで開いたプレビュー
+        description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` を `light` にしてプレビューを開いた状態
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>PV: ライトの配色に固定して描かせる
+        PV-->>W: ライトの配色で表示
+    expected:
+      - VS Code のテーマがダークでも、描く先の要素の地の色の計算値がライトの `--mdmark-color-bg` の値
+    test: test_normal_when_theme_fixed
+lead: プレビューの配色が、VS Code のライト・ダークのテーマに合わせて切り替わる。設定で配色を固定もできる。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: エディタと同じ明るさでプレビューを読める
+trigger: 文書を書く人がプレビューを開いたまま VS Code のテーマを切り替える
+preconditions:
+  - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
+success_guarantee: '`mdmark.preview.theme` が `auto` のときはテーマの明暗、`light` / `dark` のときはその配色でプレビューが描かれる。'
+minimal_guarantee: 配色を切り替えても本文とスクロールの位置は変わらない。
+test_file: tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts

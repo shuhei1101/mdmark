@@ -10,5 +10,7 @@ items:
     summary: 見た目と機能を使う側で変える手順
   - page: 書き出す/
     summary: CLI で Markdown を、CDN を読まず 1 枚で完結する HTML に書き出す手順
+  - page: VSCodeで見る/
+    summary: VS Code の拡張機能で Markdown を mdmark で描いたプレビューを出し、HTML・PDF にする手順
   - page: ClaudeCodeで使う/
     summary: Claude Code に mdmark の使い方の索引と、書き出し・点検・索引のツールを渡す手順

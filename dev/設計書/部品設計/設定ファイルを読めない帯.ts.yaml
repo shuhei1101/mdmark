@@ -1,0 +1,60 @@
+title: "設定ファイルを読めない帯"
+implementation: "vscode/src/webview/parts/config-band.ts#renderConfigBand"
+story: "VSCode/ConfigBand"
+states:
+  - name: Default
+    description: 題「設定ファイルを読み込めません」、本文「mdmark.config.yaml の 4 行目を YAML として読めないため、features と libraries を当てずに表示しています。」と「設定ファイルを開く」が横に並ぶ
+    args:
+      - name: path
+        value: mdmark.config.yaml
+      - name: line
+        value: '4'
+  - name: NarrowLongPath
+    description: 列の幅が 480px 未満でパスが長い。ボタンが文の下へ回り、パスが帯の中で折り返す
+    args:
+      - name: path
+        value: docs/settings/mdmark/mdmark.config.workspace-shared.yaml
+      - name: line
+        value: '12'
+    notes:
+      幅: ストーリーは幅 390px の画面で撃つ
+lead: VS Code 拡張機能のプレビューで、設定ファイルを YAML として読めないときに文書の先頭に置く帯と「設定ファイルを開く」。文書は描いたまま残す。
+args:
+  - name: path
+    type: 文字列
+    required: true
+    description: 設定ファイルのパス（`mdmark.configPath` の書いたまま）。本文の `code` に入れる（HTML として特別な文字はエスケープする）
+  - name: line
+    type: 整数
+    required: true
+    description: 読めない行（1 始まり）
+slots:
+  - name: default
+    description: 帯の後ろに続く、描いた文書の要素
+events:
+  - name: 設定ファイルを開く
+    when: 「設定ファイルを開く」のボタンを押したとき
+    value: ボタンの `data-action="openConfig"`
+    description: 'Webview のスクリプトが `{ type: "openConfig" }` を拡張機能へ送る（設定ファイルを開く.ts）'
+css_properties:
+  - name: --mdmark-color-notice-bg
+    syntax: <color>
+    default: 知らせの枠と同じ
+    description: 帯の地の色
+  - name: --mdmark-color-notice-border
+    syntax: <color>
+    default: 知らせの枠と同じ
+    description: 帯とボタンの線の色
+accessibility:
+  - 帯は `role="status"` を持ち、出たときに読み上げが題と本文を読む
+  - 題は `h2`（文書の `h1` より下の階層）、本文は `p`
+  - 「設定ファイルを開く」は `button` で、Tab で届き Enter・Space で押せる
+  - 帯は文書の先頭に置き、固定せずスクロールで流す
+refs:
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
+status: planned
+introduced:
+  pr: 69
+notes:
+  出典: 文言と帯の置き方（文書の先頭に置きスクロールで流す）は確認ログの決定。モックは `dev/mock/components/preview-status/` の帯の場面
+test_file: tests/integration/vscode/config-band.story.test.ts

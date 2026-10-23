@@ -6,6 +6,11 @@
       "!dev",
       "!docs",
       "!dist",
+      "!vscode/dist",
+      "!vscode/media",
+      "!vscode/out",
+      "!vscode/node_modules",
+      "!vscode/.vscode-test",
       "!plugin/server",
       "!plugin/scripts",
       "!plugin/dist",
@@ -23,7 +28,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/index.css"],
+      "includes": ["src/index.css", "vscode/src/webview/preview.css"],
       "linter": {
         "rules": {
           "style": {

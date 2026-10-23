@@ -271,6 +271,7 @@ export function buildCodeBlocks(state: StateCore): void {
             lineNumbers,
             lines,
           }),
+          token,
         ),
       );
       continue;

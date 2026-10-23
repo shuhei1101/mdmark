@@ -1,0 +1,526 @@
+title: "VS Code 拡張機能 / Webview"
+lead: プレビューのパネルの中で動くスクリプトと、配布物を読む前にも出す部品。jsDelivr の mdmark を読んで `mount`・`update` で描き、スクロール・リンク・状態の表示を担う。拡張機能とのメッセージの型も持つ。
+directory: |-
+  ```tree
+  vscode/src/
+  ├── messages.ts                      # 拡張機能 ⇄ Webview のメッセージの型（型だけ）
+  └── webview/
+      ├── preview.ts                   # パネルの中の入口（配布物の読み込み・描く・リンク・スクロール・inspect）
+      ├── scroll.ts                    # 元の行番号とスクロールの位置の内分
+      ├── preview.css                  # パネルの状態の表示と帯の CSS
+      └── parts/
+          ├── preview-status.ts        # プレビューの状態の表示の HTML
+          ├── preview-status.stories.yaml
+          ├── config-band.ts           # 設定ファイルを読めない帯の HTML
+          └── config-band.stories.yaml
+  ```
+
+  `preview.ts` はビルドが `vscode/media/preview.js`（ES モジュール）に、`preview.css` は `vscode/media/preview.css` に束ねる。mdmark の配布物は束ねず、実行時に `import()` で読む。
+data_models:
+  - name: HostMessage
+    title: 拡張機能から Webview へのメッセージ
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: '`type` で見分ける判別付きの型'
+    description: '`{ type: "render"; markdown: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "inspect"; id: number; selector: string }`'
+    properties:
+      - name: type
+        type: '"render" | "scrollToLine" | "configError" | "configOk" | "inspect"'
+        description: メッセージの種類
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#data_models[PreviewConfig]
+    status: planned
+  - name: WebviewMessage
+    title: Webview から拡張機能へのメッセージ
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: '`type` で見分ける判別付きの型'
+    description: '`{ type: "ready" }`・`{ type: "rendered" }`・`{ type: "loadFailed"; reason: "offline" | "versionMissing" }`・`{ type: "openLink"; href: string }`・`{ type: "revealLine"; line: number }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected"; id: number; elements: InspectedElement[] }`'
+    properties:
+      - name: type
+        type: '"ready" | "rendered" | "loadFailed" | "openLink" | "revealLine" | "reload" | "openConfig" | "inspected"'
+        description: メッセージの種類
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
+    status: planned
+  - name: InspectedElement
+    title: 調べた要素
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: 結合テストが Webview の DOM の期待値を確かめるために返す要素 1 つの様子
+    properties:
+      - name: tagName
+        type: string
+        description: 小文字のタグ名
+      - name: className
+        type: string
+        description: '`class` の値'
+      - name: attributes
+        type: Record<string, string>
+        description: 全ての属性
+      - name: text
+        type: string
+        description: '`textContent`'
+      - name: naturalWidth
+        type: number | undefined
+        description: '`img` のときだけ'
+      - name: top
+        type: number
+        description: 見えている範囲の先頭からの位置（px。`getBoundingClientRect().top`）
+      - name: height
+        type: number
+        description: 高さ（px）
+    status: planned
+  - name: PreviewBoot
+    title: パネルの始め方
+    container: vscode/src/webview/preview.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 拡張機能が HTML の描く先を包む要素（`#mdmark-preview`）の `data-*` に置き、スクリプトが読む値
+    properties:
+      - name: distJs
+        type: string | undefined
+        description: '`data-dist-js`。読む配布物の `index.js` の URL。バージョンを決められないときは持たない'
+      - name: version
+        type: string | undefined
+        description: '`data-version`。読むバージョン（描けない理由に出す）'
+      - name: status
+        type: '"versionUndecidable" | undefined'
+        description: '`data-status`。配布物を読まずに出す状態'
+      - name: configPath
+        type: string
+        description: '`data-config-path`。`mdmark.configPath` の書いたままの値（帯に出す）'
+      - name: test
+        type: boolean
+        description: '`data-test` を持つか。`inspect` を受けるのは `true` のときだけ'
+    status: planned
+  - name: Anchor
+    title: 行の印
+    container: vscode/src/webview/scroll.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: '`data-source-line` を持つ要素の元の行番号と、文書の先頭からの位置'
+    properties:
+      - name: line
+        type: number
+        description: 元の行番号（0 始まり）
+      - name: top
+        type: number
+        description: スクロールする要素の先頭からの位置（px）
+    status: planned
+constants:
+  - name: LOADING_DELAY_MS
+    title: 読み込み中を出すまでの待ち
+    container: vscode/src/webview/preview.ts
+    summary: HTML を入れてからこのミリ秒が経っても描けていなければ読み込み中を出す
+    value: '1000'
+    refs:
+      - dev/設計書/画面設計/VSCodeのプレビュー.ts#elements[読み込み中の表示]
+    status: planned
+classes:
+  - name: PreviewView
+    title: パネルの中の表示
+    container: vscode/src/webview/preview.ts
+    usecase: 共通
+    summary: 描く先を包む要素の中の状態の表示・帯・描いた文書を切り替え、mdmark の `mount`・`update` とスクロールの位置を持つ
+    kind: クラス
+    properties:
+      - name: root
+        type: HTMLElement
+        access: private
+        description: 描く先を包む要素（`#mdmark-preview`）
+      - name: handle
+        type: MountHandle | undefined
+        access: private
+        description: 今の描画。初回の `render` までは `undefined`
+      - name: configKey
+        type: string | undefined
+        access: private
+        description: 今の描画に渡した `config` の `JSON.stringify`（前と同じかの比較に使う）
+      - name: pendingScrollTop
+        type: number | undefined
+        access: private
+        description: '`scrollToLine` で動かした `scrollTop`。次の `scroll` の知らせでその値なら `revealLine` を送らずに消す'
+      - name: mdmark
+        type: '{ mount: typeof mount }'
+        access: private
+        description: '`import()` で読んだ mdmark の配布物。`startPreview` が作るときに渡し、単体テストは代役を渡す'
+    methods:
+      - name: render
+        title: 描く
+        kind: メソッド
+        summary: '`render` を受けて文書を描く。初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は `update`'
+        args:
+          - name: message
+            type: 'Extract<HostMessage, { type: "render" }>'
+            required: true
+            description: 全文・設定・配色
+        returns:
+          type: void
+          description: '-'
+        process: |-
+          1. `theme` が `light`・`dark` なら `root` に class `mdmark-theme-light`・`mdmark-theme-dark` を付け、`auto` なら両方を外す
+          2. 描き直す前の `scrollTop` を控える
+          3. `configKey` が同じで `handle` があれば `handle.update(markdown)`、違えば `handle?.destroy()` の後に描く先の要素へ `mount(el, { markdown, config })`
+          4. 状態の表示を消し、控えた `scrollTop` に戻す
+        unit_tests:
+          - name: test_render
+            case: 正常
+            summary: 初回は mount、同じ設定の次の回は update
+            condition: '`config` が `{}` の `render` を 2 回'
+            mock: mdmark を `mount` と戻り値の `update`・`destroy` を記録する代役にする
+            expected: '`mount` が 1 回、2 回目は `update` が 2 回目の `markdown` で 1 回、`destroy` は呼ばれない'
+          - name: test_render_when_config_changed
+            case: 正常
+            summary: 設定が変わったら destroy してから mount し直し、スクロールの位置を保つ
+            condition: '`config` が `{}` の `render` の後、`scrollTop` を 200 にして `config` が `{ features: { callout: false } }` の `render`'
+            mock: mdmark を代役にする
+            expected: '`destroy` の後に `mount` が新しい `config` で呼ばれ、`scrollTop` が 200'
+          - name: test_render_when_theme
+            case: 正常
+            summary: 配色を固定するときだけ包む要素に class を付ける
+            condition: '`theme` が `dark`、続けて `auto`'
+            mock: mdmark を代役にする
+            expected: 1 回目の後は `root` が `mdmark-theme-dark` を持ち、2 回目の後は `mdmark-theme-*` を持たない
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定が変わったときの描き方]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配色]
+      - name: showStatus
+        title: 状態の表示を出す
+        kind: メソッド
+        summary: 描いた文書の代わりに、プレビューの状態の表示を入れる
+        args:
+          - name: options
+            type: '{ state: PreviewStatusState; version?: string }'
+            required: true
+            description: 出す状態と読もうとしたバージョン
+        returns:
+          type: void
+          description: '-'
+        callees:
+          - '#functions[renderPreviewStatus]'
+      - name: showConfigError
+        title: 帯を出す
+        kind: メソッド
+        summary: 描いた文書の前に設定ファイルを読めない帯を置く（既にあれば置き換える）。`configOk` では帯を取り除く（`clearConfigError`）
+        args:
+          - name: line
+            type: number
+            required: true
+            description: 読めない行（1 始まり）
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_show_config_error
+            case: 正常
+            summary: 帯を文書の前に 1 つだけ置き、configOk で消す
+            condition: '`showConfigError(4)`、`showConfigError(5)`、`clearConfigError()` の順に呼ぶ'
+            mock: なし
+            expected: 2 回目の後は帯が 1 つで `5` 行目を出し、描く先の要素より前にある。`clearConfigError` の後は帯が無い
+        callees:
+          - '#functions[renderConfigBand]'
+      - name: scrollToLine
+        title: 行まで動かす
+        kind: メソッド
+        summary: 元の行番号の位置を先頭に置く。動かす `scrollTop` が今の値と違うときだけ動かし、`pendingScrollTop` に覚える
+        args:
+          - name: line
+            type: number
+            required: true
+            description: 元の行番号（0 始まり）
+        returns:
+          type: void
+          description: '-'
+        callees:
+          - '#functions[collectAnchors]'
+          - '#functions[topForLine]'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[往復の止め方]
+      - name: takeScroll
+        title: スクロールを行にする
+        kind: メソッド
+        summary: '`scroll` の知らせを受け、自分が起こしたスクロールなら `undefined`、そうでなければ見えている先頭の元の行番号を返す'
+        returns:
+          type: number | undefined
+          description: '`revealLine` で送る行'
+        process: |-
+          1. `scrollTop` が `pendingScrollTop` と等しければ、`pendingScrollTop` を消して `undefined` を返す
+          2. `pendingScrollTop` を消し、今の `scrollTop` を行にして返す（行の印を集める、位置を行にする）
+        unit_tests:
+          - name: test_take_scroll_when_own_scroll
+            case: 正常
+            summary: 自分が動かしたスクロールの知らせだけを捨てる
+            condition: '`scrollToLine(20)` の後に `takeScroll()`、続けて `scrollTop` を別の値にして `takeScroll()`'
+            mock: なし
+            expected: 1 回目は `undefined`、2 回目はその位置の行
+        callees:
+          - '#functions[collectAnchors]'
+          - '#functions[lineForTop]'
+      - name: inspect
+        title: 要素を調べる
+        kind: メソッド
+        summary: '`selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）'
+        args:
+          - name: selector
+            type: string
+            required: true
+            description: CSS セレクタ（`document` 全体に当てる）
+        returns:
+          type: InspectedElement[]
+          description: 当たった要素の並び
+        unit_tests:
+          - name: test_inspect
+            case: 正常
+            summary: 属性・文字・画像の幅・位置を返す
+            condition: '`<h1 id="a" class="x">題</h1>` と読み終えた `<img alt="図">` を置き、`h1, img` で調べる'
+            mock: なし
+            expected: '`h1` は `className` が `x`・`attributes.id` が `a`・`text` が `題`・`naturalWidth` が無い。`img` は `naturalWidth` が画像の幅。どちらも `top`・`height` が数'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
+      - name: useMdmark
+        title: 配布物を渡す
+        kind: メソッド
+        summary: 配布物を読む前に状態の表示を出せるよう、`import()` で読み終えた mdmark を後から渡す（`startPreview` が呼ぶ）
+        args:
+          - name: mdmark
+            type: '{ mount: typeof mount }'
+            required: true
+            description: 読み終えた mdmark の配布物
+        returns:
+          type: void
+          description: '-'
+    status: planned
+functions:
+  - name: startPreview
+    title: パネルを始める
+    kind: 関数
+    container: vscode/src/webview/preview.ts
+    usecase: VSCodeでプレビューを開く
+    summary: Webview の入口。配布物を読み、拡張機能のメッセージ・リンクの押下・スクロールを受ける
+    description: ファイルの末尾で呼ぶ
+    scope: public
+    is_async: true
+    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`document` に `click`、`window` に `scroll`・`message` を受ける'
+    process: |-
+      1. `#mdmark-preview` の `data-*` から `PreviewBoot` を読む
+      2. `status` が `versionUndecidable` なら状態の表示を出して終わる（配布物を読まない。「リロード」は受ける）
+      3. `LOADING_DELAY_MS` 後に、まだ描けておらず描けない理由も出ていなければ読み込み中を出す
+      4. `import(distJs)` で mdmark を読む
+         - 失敗した場合、理由を見分け（読めない理由を見分ける）、状態の表示を出して `loadFailed` を送る
+      5. `ready` を送る
+      6. `message` を受けて `type` ごとに `PreviewView` へ渡す
+         - `render` の場合、描いて `rendered` を送る
+         - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
+      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
+      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る
+    callees:
+      - '#classes[PreviewView]'
+      - '#functions[classifyLoadFailure]'
+    refs:
+      - dev/設計書/画面設計/VSCodeのプレビュー.ts#
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#constraints[リンクの見分け方]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[知らせの間引き]
+    status: planned
+    unit_tests:
+      - name: test_start_preview_when_link_clicked
+        case: 正常
+        summary: 本物のクリックでもリンクの押下を `window` へ伝えず、`openLink` を 1 回だけ送る
+        condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`window` に `click` の記録のリスナーを置く。本文の `https://example.com/`・`./other.md`・`#末尾` のリンクを Playwright の `userEvent.click`（`isTrusted` が true）で押す'
+        mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
+        expected: '`window` のリスナーにどの押下も届かない。`openLink` が `https://example.com/` と `./other.md` で 1 回ずつ送られ、`#末尾` では送られない'
+  - name: classifyLoadFailure
+    title: 読めない理由を見分ける
+    kind: 関数
+    container: vscode/src/webview/preview.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 読めなかった `index.js` の URL を `fetch` の `HEAD` で確かめ、404 なら `versionMissing`、それ以外は `offline` を返す
+    scope: internal
+    is_async: true
+    args:
+      - name: options
+        type: '{ url: string; fetch: typeof fetch }'
+        required: true
+        description: 読めなかった URL と `fetch`
+    returns:
+      type: Promise<"offline" | "versionMissing">
+      description: 描けない理由
+    unit_tests:
+      - name: test_classify_load_failure
+        case: 正常
+        summary: 404 は指定したバージョンが無い
+        condition: '`fetch` が 404'
+        mock: '`fetch` を代役にする'
+        expected: '`versionMissing`。`fetch` に `method: "HEAD"` が渡る'
+      - name: test_classify_load_failure_when_network_error
+        case: 正常
+        summary: ネットワークのエラーと 404 以外はオフライン
+        condition: '`fetch` が `TypeError` で reject、別の回に 503'
+        mock: '`fetch` を代役にする'
+        expected: どちらも `offline`
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]
+    status: planned
+  - name: collectAnchors
+    title: 行の印を集める
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返す。同じ行は最初の要素だけ、見えていない要素（高さ 0）は除く
+    scope: public
+    args:
+      - name: options
+        type: '{ root: HTMLElement; scroller: HTMLElement }'
+        required: true
+        description: 描いた文書の要素と、スクロールする要素
+    returns:
+      type: Anchor[]
+      description: '`line` と `top` がどちらも増えていく並び（行が戻る要素は除く）'
+    unit_tests:
+      - name: test_collect_anchors
+        case: 正常
+        summary: 行と位置が増えていく並びにする
+        condition: '`data-source-line` が 0・2・2・1・5 の要素を上から並べる（3 つ目は 2 つ目の中）'
+        mock: なし
+        expected: '`line` が `[0, 2, 5]` の並び'
+    status: planned
+  - name: topForLine
+    title: 行を位置にする
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: 行以下の最後の印と次の印の間を、行の割合で内分した位置を返す
+    scope: public
+    args:
+      - name: anchors
+        type: Anchor[]
+        required: true
+        description: 行の印
+      - name: line
+        type: number
+        required: true
+        description: 元の行番号
+    returns:
+      type: number
+      description: 先頭に置く位置（px）。印が無いか最初の印より前は `0`、最後の印より後は最後の印の位置
+    unit_tests:
+      - name: test_top_for_line
+        case: 正常
+        summary: 印の間を行の割合で内分する
+        condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }]` で行 5・行 0・行 30'
+        mock: なし
+        expected: '`200`・`0`・`400`'
+      - name: test_top_for_line_when_no_anchor
+        case: 正常
+        summary: 印が無ければ先頭
+        condition: '`[]` で行 5'
+        mock: なし
+        expected: '`0`'
+    status: planned
+  - name: lineForTop
+    title: 位置を行にする
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: 位置の前後の印の間で内分した行番号を、整数に切り捨てて返す
+    scope: public
+    args:
+      - name: anchors
+        type: Anchor[]
+        required: true
+        description: 行の印
+      - name: top
+        type: number
+        required: true
+        description: 見えている先頭の位置（`scrollTop`）
+    returns:
+      type: number
+      description: 元の行番号。印が無いか最初の印より前は `0`、最後の印より後は最後の印の行
+    unit_tests:
+      - name: test_line_for_top
+        case: 正常
+        summary: 印の間を内分して切り捨てる
+        condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }]` で位置 210・位置 900'
+        mock: なし
+        expected: '`5`・`10`'
+    status: planned
+  - name: renderPreviewStatus
+    title: プレビューの状態の表示の HTML を返す
+    kind: 関数
+    container: vscode/src/webview/parts/preview-status.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 部品設計の引数どおりに、読み込み中か描けない理由と「リロード」の HTML を返す。`version` はエスケープする
+    scope: public
+    args:
+      - name: options
+        type: '{ state: PreviewStatusState; version?: string }'
+        required: true
+        description: '`PreviewStatusState` は `"loading" | "offline" | "versionMissing" | "versionUndecidable"`'
+    returns:
+      type: string
+      description: HTML 文字列
+    unit_tests:
+      - name: test_render_preview_status
+        case: 正常
+        summary: 指定したバージョンが無い理由とリロードを出し、バージョンをエスケープする
+        condition: '`state` が `versionMissing`、`version` が `v9.9.9<b>`'
+        mock: なし
+        expected: '`role="status"` の要素に題「プレビューを表示できません」、`<code>v9.9.9&lt;b&gt;</code>`、`data-action="reload"` の `button`'
+      - name: test_render_preview_status_when_loading
+        case: 正常
+        summary: 読み込み中は題と回る印だけ
+        condition: '`state` が `loading`'
+        mock: なし
+        expected: 題「mdmark を読み込んでいます」と `progress`（`aria-label="読み込み中"`）があり、`button` が無い
+    refs:
+      - dev/設計書/部品設計/プレビューの状態の表示.ts#
+    status: planned
+  - name: renderConfigBand
+    title: 設定ファイルを読めない帯の HTML を返す
+    kind: 関数
+    container: vscode/src/webview/parts/config-band.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: 部品設計の引数どおりに、帯と「設定ファイルを開く」の HTML を返す。`path` はエスケープする
+    scope: public
+    args:
+      - name: options
+        type: '{ path: string; line: number }'
+        required: true
+        description: 設定ファイルのパスと読めない行
+    returns:
+      type: string
+      description: HTML 文字列
+    unit_tests:
+      - name: test_render_config_band
+        case: 正常
+        summary: 題・パス・行とボタンを出し、パスをエスケープする
+        condition: '`path` が `a<b>.yaml`、`line` が 4'
+        mock: なし
+        expected: '`role="status"` の要素に `h2` の題「設定ファイルを読み込めません」、`<code>a&lt;b&gt;.yaml</code>` と `4 行目`、`data-action="openConfig"` の `button`'
+    refs:
+      - dev/設計書/部品設計/設定ファイルを読めない帯.ts#
+    status: planned
+styles:
+  - name: preview
+    title: パネルの CSS
+    container: vscode/src/webview/preview.css
+    summary: プレビューの状態の表示と設定ファイルを読めない帯の見た目。採用したモック `dev/mock/components/preview-status/` の規則を写し、色は mdmark の `--mdmark-color-notice-*` を使う
+    description: 配布物を読む前にも出すため、`--mdmark-color-notice-*` が無いときの値を `var()` の予備の値で持つ（mdmark の `:root` の値とダークの値と同じ）。ダークは VS Code が `body` に付ける class と `mdmark-theme-*` で切り替える
+    values:
+      - class_name: .mdmark-preview-status
+        target: プレビューの状態の表示
+        value: '地・線・文字は知らせの枠の状態色。理由の `code` は折り返し、横にスクロールしない。回る印は `prefers-reduced-motion: reduce` のとき 6 秒で 1 回転'
+      - class_name: .mdmark-config-band
+        target: 設定ファイルを読めない帯
+        value: 地と線は知らせの枠の状態色。文とボタンを横に並べ、列の幅が 480px 未満ではボタンを文の下へ回す。固定せずスクロールで流す
+    refs:
+      - dev/設計書/部品設計/プレビューの状態の表示.ts#
+      - dev/設計書/部品設計/設定ファイルを読めない帯.ts#
+    status: planned
+test_files:
+  - tests/unit/vscode/src/webview/preview.browser.test.ts
+  - tests/unit/vscode/src/webview/scroll.browser.test.ts
+  - tests/unit/vscode/src/webview/parts/preview-status.test.ts
+  - tests/unit/vscode/src/webview/parts/config-band.test.ts

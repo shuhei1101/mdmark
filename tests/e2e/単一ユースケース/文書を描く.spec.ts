@@ -162,3 +162,53 @@ test("test_normal_when_index", async ({ page }) => {
   await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
   await expect(doc.locator("nav.mdmark-backlinks a")).toHaveText(["API"]);
 });
+
+// 見出し・段落・表・コードブロックが元の行番号を持ち、見た目は元の行番号が無いときと同じ（正常シナリオ（元の行番号を出す））
+test("test_normal_when_source_lines", async ({ page }) => {
+  // 準備
+  const markdown = [
+    "# 見出し",
+    "",
+    "段落",
+    "",
+    "| 列A | 列B |",
+    "| --- | ---: |",
+    "| 1 | 2 |",
+    "",
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  const doc = page.locator("#doc");
+  const sourceLine = (selector: string) =>
+    doc.locator(selector).first().getAttribute("data-source-line");
+  expect(await sourceLine("h1")).toBe("0");
+  expect(await sourceLine("p")).toBe("2");
+  expect(await sourceLine(".mdmark-table")).toBe("4");
+  expect(await sourceLine("pre")).toBe("8");
+  // 属性を取り除いても、要素の位置と色は変わらない
+  const snapshot = () =>
+    doc.evaluate((root) =>
+      ["h1", "p", ".mdmark-table", "pre"].map((selector) => {
+        const element = root.querySelector(selector) as HTMLElement;
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          height: rect.height,
+          color: getComputedStyle(element).color,
+        };
+      }),
+    );
+  const withAttributes = await snapshot();
+  await doc.evaluate((root) => {
+    for (const element of root.querySelectorAll("[data-source-line]")) {
+      element.removeAttribute("data-source-line");
+    }
+  });
+  expect(await snapshot()).toEqual(withAttributes);
+});

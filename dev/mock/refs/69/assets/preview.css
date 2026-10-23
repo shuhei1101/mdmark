@@ -1,0 +1,225 @@
+/* VS Code 拡張機能のプレビューのパネル: 拡張機能が描く状態の表示（読み込み中・描けない・設定ファイルを読めない帯）と、モックの VS Code の枠 */
+
+/* VS Code の配色の仮の値（モックの枠だけに使う。実装では VS Code が --vscode-* の変数を渡す） */
+:root {
+  --vsc-tab-bar-bg: #f3f3f3;
+  --vsc-tab-bg: #ffffff;
+  --vsc-tab-text: #333333;
+  --vsc-border: #e5e5e5;
+  --vsc-page-bg: #e8e8e8;
+}
+
+/* VS Code のテーマがダーク: Webview の body に vscode-dark が付く */
+.vscode-dark {
+  --vsc-tab-bar-bg: #252526;
+  --vsc-tab-bg: #1e1e1e;
+  --vsc-tab-text: #e6e6e6;
+  --vsc-border: #3c3c3c;
+  --vsc-page-bg: #181818;
+}
+
+/* ページ全体: VS Code の枠の外の地 */
+body.vscode-light,
+body.vscode-dark {
+  background: var(--vsc-page-bg);
+}
+
+/* パンくず: モックの階層を遡るリンク列 */
+.mock-breadcrumb {
+  max-width: 760px;
+  margin: 0 auto 12px;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+
+  a {
+    color: inherit;
+  }
+}
+
+/* モックの VS Code の枠: エディタの列 1 つ分の幅 */
+.vsc-column {
+  max-width: 760px;
+  margin: 0 auto;
+  border: 1px solid var(--vsc-border);
+  background: var(--mdmark-color-bg);
+}
+
+/* モックの VS Code のタブの帯 */
+.vsc-tabs {
+  display: flex;
+  border-block-end: 1px solid var(--vsc-border);
+  background: var(--vsc-tab-bar-bg);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}
+
+/* モックの VS Code のタブ: 開いているプレビュー */
+.vsc-tab {
+  padding: 8px 16px;
+  background: var(--vsc-tab-bg);
+  color: var(--vsc-tab-text);
+}
+
+/* Webview の中: プレビューの地と文字 */
+.preview {
+  container: preview / inline-size;
+  min-height: 480px;
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+  font-family: var(--mdmark-font-body);
+
+  /* 描いた文書: 列の幅に合わせ、行の長さは mdmark の上限に従う */
+  .mdmark {
+    margin-inline: auto;
+    padding: var(--mdmark-padding);
+  }
+}
+
+/* 読み込み中・描けない: 文書の代わりにパネルの中央に置く */
+.preview-state {
+  display: grid;
+  place-items: center;
+  min-height: 480px;
+  padding: 24px 16px;
+}
+
+/* 読み込み中: 回る表示と文言を横に並べる */
+.preview-loading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--mdmark-color-muted);
+  font-size: 0.95rem;
+}
+
+/* 読み込み中の文言: 文書の無い場面の Webview の見出し 1。見た目は周りの文字のまま */
+.preview-loading h1 {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* 回る表示: 値を持たない progress を輪にして回す */
+.preview-spinner {
+  --size: 20px;
+  --thickness: 2px;
+  width: var(--size);
+  height: var(--size);
+  border: 0;
+  border-radius: 50%;
+  appearance: none;
+  background: conic-gradient(var(--mdmark-color-link) 0 25%, var(--mdmark-color-border) 0);
+  mask-image: radial-gradient(farthest-side, transparent calc(100% - var(--thickness)), #000 calc(100% - var(--thickness)));
+  animation: preview-spin 1s linear infinite;
+
+  &::-webkit-progress-bar,
+  &::-webkit-progress-value {
+    background: none;
+  }
+
+  &::-moz-progress-bar {
+    background: none;
+  }
+}
+
+/* 回る表示の動き */
+@keyframes preview-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/* 動きを減らす設定: ゆっくり回す */
+@media (prefers-reduced-motion: reduce) {
+  /* 回る表示 */
+  .preview-spinner {
+    animation-duration: 6s;
+  }
+}
+
+/* 描けない理由と設定ファイルを読めない帯: 知らせの枠と同じ状態色 */
+.preview-notice {
+  display: grid;
+  gap: 12px;
+  max-width: 32rem;
+  padding: 14px 16px;
+  border: 1px solid var(--mdmark-color-notice-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-notice-bg);
+  color: var(--mdmark-color-notice-text);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  /* 何が起きたか: 文書の無い場面では Webview の見出し 1、文書の上の帯では見出し 2 */
+  :is(h1, h2) {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  /* 文書の無い場面の見出し: 本文より一段大きくする */
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  /* 理由と直し方 */
+  p {
+    margin: 0;
+  }
+
+  /* バージョン・設定のキー・ファイル名 */
+  code {
+    font-family: var(--mdmark-font-mono);
+    font-size: 0.9em;
+  }
+}
+
+/* 設定ファイルを読めない帯: パネルの上部に幅いっぱいで置き、文書の上に並べる */
+.preview-notice.is-band {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  max-width: none;
+  margin: 12px 12px 0;
+
+  /* 狭い列: ボタンを文の下へ回す */
+  @container preview (width < 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 帯の文: タイトルと理由を縦に並べる */
+.preview-notice-text {
+  display: grid;
+  gap: 2px;
+}
+
+/* 状態の表示のボタン（リロード・設定ファイルを開く） */
+.preview-button {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--mdmark-color-notice-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+  font: inherit;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mdmark-color-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+}
+
+/* 今の場面に当たらない中身: 上の display の指定より後に置いて隠す */
+.preview [hidden] {
+  display: none;
+}

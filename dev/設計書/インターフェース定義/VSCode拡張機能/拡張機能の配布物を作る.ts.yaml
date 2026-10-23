@@ -1,0 +1,63 @@
+title: "拡張機能の配布物を作る"
+entry:
+  kind: trigger
+  value: '`vscode-v*` のタグの push（GitHub Actions のワークフロー `.github/workflows/vscode-release.yml`）'
+flows:
+  - name: 正常系
+    summary: 版が合うとき、.vsix を作る
+    setup:
+      - name: 版を合わせたリポジトリ
+        description: '`vscode/package.json` の `version` が `0.1.0` の作業ツリー'
+      - name: Mock
+        description: GitHub へは送らない。`release:check` と `package` を手元で流す
+    flow: |-
+      sequenceDiagram
+        participant D as 開発者
+        participant GA as ワークフロー
+        D->>GA: release:check vscode-v0.1.0
+        GA-->>D: 終了コード 0
+        D->>GA: package
+        GA-->>D: mdmark-0.1.0.vsix
+    expected:
+      - '`release:check` が終了コード 0'
+      - '`mdmark-0.1.0.vsix` が書かれ、中の `extension/package.json` の `version` が `0.1.0`、`extension/dist/` に束ねた拡張機能があり `node_modules/` が無い'
+      - ワークフローの YAML の `on.push.tags` が `vscode-v*` だけで、`permissions.contents` が `write`
+    test: test_normal
+  - name: 異常系（版が合わない・ワークフローの失敗）
+    summary: タグと `vscode/package.json` の版が違うとき、版の比較で止める
+    setup:
+      - name: 版がずれたリポジトリ
+        description: '`vscode/package.json` の `version` が `0.1.0` のまま'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant D as 開発者
+        participant GA as ワークフロー
+        D->>GA: release:check vscode-v0.2.0
+        GA-->>D: 終了コード 1 と 2 つの版
+    expected:
+      - 終了コードが 1 で、標準エラーに `0.2.0` と `0.1.0` が出る
+      - '`release:check vscode-0.1.0`（形に合わないタグ）も終了コード 1'
+    test: test_error_when_version_mismatch
+lead: 拡張機能のタグを受けて、タグと `vscode/package.json` の版を比べ、.vsix を作ってそのタグの GitHub Release に添える。
+idempotent: false
+permissions: 'ワークフローの `GITHUB_TOKEN` に `contents: write`'
+side_effects: タグの GitHub Release を作り（あれば使う）、`mdmark-{版}.vsix` を添える。Marketplace・Open VSX へは登録しない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/拡張機能の配布物を作る#
+exclusivity: 同じタグのワークフローは `concurrency` で 1 つずつ流す
+exceptions:
+  - name: なし（正常終了）
+    condition: Release に `mdmark-{版}.vsix` を添える
+  - name: ワークフローの失敗（版が合わない）
+    condition: タグの `vscode-v` の後ろと `vscode/package.json` の `version` が違う
+    notes: 版の比較の段で終了コード 1 で止め、ログに 2 つの版を出す。.vsix を作らず Release に何も添えない
+constraints:
+  - item: 起きるタグ
+    constraint: '`on.push.tags` は `vscode-v*` だけ。mdmark の `v*` のタグでは起きない'
+  - item: 段の並び
+    constraint: 版の比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（`npm --prefix vscode ci`）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{版}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）
+    notes: 結合テストは版の比較と .vsix を作る段を手元で流して確かめる。Release に添える段は GitHub Actions でだけ流れる
+  - item: タグの形
+    constraint: '`vscode-v{X}.{Y}.{Z}`。形に合わないタグは版の比較で版が合わないときと同じく止める'

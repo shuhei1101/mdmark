@@ -1,0 +1,79 @@
+title: "プレビューの状態の表示"
+implementation: "vscode/src/webview/parts/preview-status.ts#renderPreviewStatus"
+story: "VSCode/PreviewStatus"
+states:
+  - name: Loading
+    description: 配布物を読み終えていない。回る印と題「mdmark を読み込んでいます」
+    args:
+      - name: state
+        value: loading
+  - name: Offline
+    description: 配布物を読めない。本文「mdmark（v0.7.0）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。」
+    args:
+      - name: state
+        value: offline
+      - name: version
+        value: v0.7.0
+  - name: VersionMissing
+    description: 指定した版が無い。本文「設定 mdmark.version に指定したバージョン v9.9.9 の mdmark が見つかりませんでした。存在するバージョンか latest に直してから、リロードしてください。」
+    args:
+      - name: state
+        value: versionMissing
+      - name: version
+        value: v9.9.9
+  - name: VersionMissingLong
+    description: 指定した版の文字が長い。版の `code` が枠の中で折り返し、横にスクロールしない
+    args:
+      - name: state
+        value: versionMissing
+      - name: version
+        value: v0.7.0-rc.1+build.20261023.feature-vscode-preview-extension
+  - name: VersionUndecidable
+    description: 版を決められない。本文「読む mdmark のバージョンを決められませんでした。GitHub から最新のバージョンを取得できず、前回のバージョンも残っていません。ネットワークにつながっているかを確かめてから、リロードしてください。」
+    args:
+      - name: state
+        value: versionUndecidable
+lead: VS Code 拡張機能のプレビューのパネルで、文書の代わりに出す読み込み中の表示と、描けない理由と「リロード」。mdmark の配布物を読む前にも出すため、拡張機能が HTML を作る。
+args:
+  - name: state
+    type: 列挙
+    required: true
+    choices: '`loading`・`offline`・`versionMissing`・`versionUndecidable`'
+    description: 出す状態。`loading` は題「mdmark を読み込んでいます」だけを出し、他は題「プレビューを表示できません」と理由と「リロード」を出す
+  - name: version
+    type: 文字列
+    required: false
+    default: なし
+    enabled_when: '`state` が `offline` か `versionMissing` のとき'
+    description: 読もうとした mdmark の版。理由の `code` に入れる（HTML として特別な文字はエスケープする）
+events:
+  - name: リロード
+    when: 「リロード」のボタンを押したとき
+    value: ボタンの `data-action="reload"`
+    description: 'Webview のスクリプトが `{ type: "reload" }` を拡張機能へ送る（プレビューをリロードする.ts）'
+css_properties:
+  - name: --mdmark-color-notice-bg
+    syntax: <color>
+    default: 知らせの枠と同じ
+    description: 描けない理由の枠の地の色
+  - name: --mdmark-color-notice-border
+    syntax: <color>
+    default: 知らせの枠と同じ
+    description: 描けない理由の枠とボタンの線の色
+  - name: --mdmark-color-notice-text
+    syntax: <color>
+    default: 知らせの枠と同じ
+    description: 描けない理由の枠の文字の色
+accessibility:
+  - 表示の外側は `role="status"` を持ち、状態が変わると読み上げが題と本文を読む
+  - 題は `h1`、理由は `p`。色に頼らず文言で伝える
+  - '回る印は `progress`（`aria-label="読み込み中"`）で、`prefers-reduced-motion: reduce` のときは 6 秒で 1 回転にゆっくり回す'
+  - 「リロード」は `button` で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を出す
+refs:
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]
+status: planned
+introduced:
+  pr: 69
+notes:
+  出典: 文言は確認ログの決定（描けないとき・読み込み中の文言、ボタンは「リロード」）。モックは `dev/mock/components/preview-status/`。見た目は知らせの枠の状態色と同じ値に揃える
+test_file: tests/integration/vscode/preview-status.story.test.ts

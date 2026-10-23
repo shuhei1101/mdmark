@@ -86,6 +86,52 @@ scenarios:
       - LLM の層の箱の線の色の計算値が `rgb(255, 0, 0)`
       - LLM の層の背景は同じ色をうっすら敷いた色で、凡例の LLM の色も同じ色に変わる
     test: test_normal_when_diagram
+  - name: 正常シナリオ（親の class でダークにする）
+    setup:
+      - name: mdmark だけを読むページ
+        description: 正常シナリオ（上書きしない）と同じ
+        notes: 'OS の配色はライト（`prefers-color-scheme: light`）'
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: ダークの class
+        description: 描く先の要素の祖先（`body`）に、ダークを表す class（VS Code の `vscode-dark` など。class の名前はインターフェース定義で決める）を付ける
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>P: body にダークの class を付ける
+        P->>M: 文書を描かせる
+        M-->>P: ダークの値が当たった本文
+        P-->>U: ダークの見た目で表示
+    expected:
+      - OS の配色がライトでも、描く先の要素の地の色の計算値がデザイン方針の dev-swiss のダークの `--mdmark-color-bg` の値
+    test: test_normal_when_parent_class_dark
+  - name: 正常シナリオ（親の class でライトにする）
+    setup:
+      - name: mdmark だけを読むページ
+        description: 正常シナリオ（上書きしない）と同じ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: ライトの class
+        description: 描く先の要素の祖先（`body`）に、ライトを表す class（VS Code の `vscode-light` など。class の名前はインターフェース定義で決める）を付ける
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>P: body にライトの class を付ける
+        P->>M: 文書を描かせる
+        M-->>P: ライトの値が当たった本文
+        P-->>U: ライトの見た目で表示
+    expected:
+      - OS の配色がダークでも、描く先の要素の地の色の計算値がデザイン方針の dev-swiss のライトの `--mdmark-color-bg` の値
+    test: test_normal_when_parent_class_light
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（dev-swiss）で描かれる。
 issue: 3
 primary_actor: mdmark を使うアプリの開発者

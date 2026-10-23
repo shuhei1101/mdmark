@@ -36,7 +36,7 @@ styles:
     description: |-
       採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
 
-      ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
+      ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。描く先の祖先の class で決める配色も `:root` に値を置き、使う側が層の外で `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色が届くようにする。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
     values:
       - class_name: ':root'
         target: 変数の既定
@@ -95,6 +95,10 @@ styles:
       - class_name: '@media print（ビューとコメント）'
         target: ビューとコメントの印刷
         value: '`dev/mock/refs/55/assets/view-print.css` から取る。ビューは今のビューを出し、切り替えを隠す（絞り込みのボタンは表の印刷の規則が隠す）。ボードは横のスクロールをやめ、紙の幅に収まる数の列で折り返し、列と項目を改ページで切らない。コメントのボタン・入力欄・吹き出しを隠し、印は地の色を外して下線だけで箇所を示す'
+      - class_name: :root:has({class} .mdmark)
+        target: 描く先の祖先の class で決める配色（画面のとき）
+        value: '`@media screen` の中で、ダークの class の下に `.mdmark` があればダークの配色の値（`prefers-color-scheme: dark` の `:root` と同じ値と `color-scheme: dark`）を、ライトの class の下にあれば `:root` の既定と同じ値と `color-scheme: light` を `:root` に置く。ダークの class は `mdmark-theme-dark`・`vscode-dark`・`vscode-high-contrast:not(.vscode-high-contrast-light)`、ライトの class は `mdmark-theme-light`・`vscode-light`・`vscode-high-contrast-light`。`vscode-*` の規則は、`.mdmark` かその祖先が `mdmark-theme-*` を持つときに当てない。同じ優先度のライトとダークが入れ子になるときは、内側の class を持つ祖先の下の `.mdmark` を外側の規則から `:not()` で外し、描く先に近い祖先に従わせる'
+        notes: '`:root` より強い指定のため、OS の設定のダークの規則に勝つ。`@media print` では当てず、印刷は明るい配色のまま'
       - class_name: .mdmark .mdmark-term-avoided
         target: やめた言い方のマーカー
         value: '`.mdmark-term` の破線を波線（`text-decoration: underline wavy`）に替え、色を `--mdmark-color-avoided-underline`（既定 `var(--mdmark-color-notice-border)`、`:root` に置く）にする。代わりの用語の語 `mdmark-term-tip-replacement` は太字。印刷では波線を外す（`.mdmark-term` の印刷の規則より詳細度が高いので別に宣言する）。値は `dev/mock/refs/79/assets/avoided-term.css`・`avoided-term-print.css`'

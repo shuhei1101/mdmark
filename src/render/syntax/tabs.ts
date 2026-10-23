@@ -130,7 +130,9 @@ export function buildTabs(state: StateCore): void {
     const firstPosition = separators[0]?.position ?? 0;
     out.push(...content.slice(0, firstPosition));
     separators.forEach(({ position }, panel) => {
-      out.push(ownBlock(state, pieces[panel] ?? ""));
+      out.push(
+        ownBlock(state, pieces[panel] ?? "", panel === 0 ? token : undefined),
+      );
       const next = separators[panel + 1]?.position ?? content.length;
       // 区切りの見出しの 3 つのトークンは、タブ名になるので出さない
       out.push(...content.slice(position + 3, next));

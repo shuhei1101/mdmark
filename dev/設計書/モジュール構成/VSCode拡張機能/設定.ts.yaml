@@ -1,0 +1,362 @@
+title: "VS Code 拡張機能 / 設定"
+lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・`features`・`libraries` の取り出し・雛形の作成。
+directory: |-
+  ```tree
+  vscode/src/
+  ├── settings.ts     # settings.json の mdmark.* を読み、範囲の外の値を既定に戻す（vscode を import しない）
+  ├── config.ts       # 設定ファイルの場所・読み取り・features と libraries の取り出し・雛形（vscode を import しない）
+  └── config-file.ts  # mdmark.openConfig（設定ファイルを開く・雛形を作るか尋ねる）
+  ```
+data_models:
+  - name: PreviewSettings
+    title: 拡張機能の設定
+    container: vscode/src/settings.ts
+    usecase: 共通
+    summary: '`mdmark.*` を読み、範囲の外の値を既定に戻した値'
+    properties:
+      - name: version
+        type: string
+        description: '`mdmark.version`'
+      - name: configPath
+        type: string
+        description: '`mdmark.configPath`'
+      - name: liveUpdate
+        type: boolean
+        description: '`mdmark.preview.liveUpdate`'
+      - name: updateDelayMs
+        type: number
+        description: '`mdmark.preview.updateDelayMs`（描き直すまでの待ちを整える）'
+      - name: scrollPreviewWithEditor
+        type: boolean
+        description: '`mdmark.preview.scrollPreviewWithEditor`'
+      - name: scrollEditorWithPreview
+        type: boolean
+        description: '`mdmark.preview.scrollEditorWithPreview`'
+      - name: theme
+        type: '"auto" | "light" | "dark"'
+        description: '`mdmark.preview.theme`。知らない値は `auto`'
+      - name: outputDir
+        type: string
+        description: '`mdmark.export.outputDir`'
+    refs:
+      - dev/設計書/設定/VSCode拡張機能#
+    status: planned
+  - name: PreviewConfig
+    title: mount に渡す設定
+    container: vscode/src/config.ts
+    usecase: 共通
+    summary: 設定ファイルから取り出した `features`・`libraries`。`render` の `config` と書き出す HTML の `config` になる
+    properties:
+      - name: features
+        type: Record<string, unknown> | undefined
+        description: 書いた値のまま（中の知らない名前と型の違う値は mdmark が無視する）
+      - name: libraries
+        type: Record<string, unknown> | undefined
+        description: 書いた値のまま。URL は呼ぶ側が直す（libraries の URL を直す）
+    status: planned
+  - name: ConfigLoad
+    title: 設定ファイルの読み取りの結果
+    container: vscode/src/config.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: '`{ kind: "ok"; config: PreviewConfig }`・`{ kind: "missing" }`・`{ kind: "error"; line: number; message: string }` の判別付きの型'
+    properties:
+      - name: kind
+        type: '"ok" | "missing" | "error"'
+        description: 読めた・ファイルが無い・ YAML として読めない
+      - name: config
+        type: PreviewConfig
+        description: '`ok` のときだけ。空のファイル・最上位がマップでないファイルは `{}`'
+      - name: line
+        type: number
+        description: '`error` のときだけ。読めない行（1 始まり）'
+      - name: message
+        type: string
+        description: '`error` のときだけ。`YAMLParseError` の `message`（ログに出す）'
+    status: planned
+constants:
+  - name: SETTING_DEFAULTS
+    title: 設定の既定
+    container: vscode/src/settings.ts
+    summary: 設定が無いか型が違うときに使う値。`vscode/package.json` の `contributes.configuration` の `default` と同じ値
+    entries:
+      - key: version
+        value: '"latest"'
+      - key: configPath
+        value: '"mdmark.config.yaml"'
+      - key: liveUpdate
+        value: 'true'
+      - key: updateDelayMs
+        value: '300'
+      - key: scrollPreviewWithEditor
+        value: 'true'
+      - key: scrollEditorWithPreview
+        value: 'true'
+      - key: theme
+        value: '"auto"'
+      - key: outputDir
+        value: '""'
+    refs:
+      - dev/設計書/設定/VSCode拡張機能#
+    status: planned
+  - name: UPDATE_DELAY_RANGE
+    title: 描き直すまでの待ちの範囲
+    container: vscode/src/settings.ts
+    summary: '`mdmark.preview.updateDelayMs` に許すミリ秒の最小と最大'
+    value: '{ min: 0, max: 5000 }'
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
+    status: planned
+  - name: CONFIG_TEMPLATE
+    title: 設定ファイルの雛形
+    container: vscode/src/config.ts
+    summary: '`mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す'
+    description: 値は画面設計の「雛形の中身」の YAML をそのまま持つ
+    refs:
+      - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[雛形の中身]
+    status: planned
+function_types:
+  - name: ReadTextFile
+    title: テキストのファイルを読む関数
+    container: vscode/src/config.ts
+    summary: UTF-8 で読む。ファイルが無ければ `code` が `ENOENT` の例外を投げる
+    args:
+      - name: path
+        type: string
+        required: true
+        description: 絶対パス
+    returns:
+      type: Promise<string>
+      description: ファイルの中身
+    implementations:
+      - target: node:fs/promises の readFile
+        notes: 拡張機能の中で使う
+    status: planned
+functions:
+  - name: readSettings
+    title: 設定を読む
+    kind: 関数
+    container: vscode/src/settings.ts
+    usecase: 共通
+    summary: '`mdmark` の設定の値を読み、型が違う値と範囲の外の値を `SETTING_DEFAULTS` に戻して返す'
+    description: 呼ぶ側が `workspace.getConfiguration("mdmark", uri).get` を渡す
+    scope: public
+    args:
+      - name: get
+        type: '(key: string) => unknown'
+        required: true
+        description: '`mdmark.` を除いたキー（`preview.updateDelayMs` など）の値を返す関数'
+    returns:
+      type: PreviewSettings
+      description: 整えた設定
+    unit_tests:
+      - name: test_read_settings
+        case: 正常
+        summary: 書いた値をそのまま読む
+        condition: '`version` が `v0.6.0`、`preview.updateDelayMs` が `1000`、`preview.theme` が `dark`、他は `undefined`'
+        mock: なし
+        expected: '`version` が `v0.6.0`、`updateDelayMs` が `1000`、`theme` が `dark`、他は `SETTING_DEFAULTS`'
+      - name: test_read_settings_when_out_of_range
+        case: 正常
+        summary: 範囲の外・整数でない待ちと知らない配色は既定に戻す
+        condition: '`preview.updateDelayMs` が `-1`・`5001`・`12.5`・`"300"` の 4 通り、`preview.theme` が `sepia`'
+        mock: なし
+        expected: '`updateDelayMs` がどれも `300`、`theme` が `auto`。`0` と `5000` はそのまま読む'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[描き直すまでの待ち]
+    status: planned
+  - name: resolveConfigPath
+    title: 設定ファイルの場所を決める
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: 共通
+    summary: '`mdmark.configPath` が相対パスなら基準のフォルダから解決し、絶対パスならそのまま返す'
+    scope: public
+    args:
+      - name: options
+        type: '{ configPath: string; baseDir: string }'
+        required: true
+        description: '`mdmark.configPath` と、Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）の絶対パス'
+    returns:
+      type: string
+      description: 設定ファイルの絶対パス
+    unit_tests:
+      - name: test_resolve_config_path
+        case: 正常
+        summary: 相対パスは基準のフォルダから、絶対パスはそのまま
+        condition: '`baseDir` が `/ws`、`configPath` が `docs/mdmark.config.yaml` と `/etc/mdmark.yaml`'
+        mock: なし
+        expected: '`/ws/docs/mdmark.config.yaml` と `/etc/mdmark.yaml`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルの場所]
+    status: planned
+  - name: parseConfig
+    title: 設定を取り出す
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries` を取り出す
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 設定ファイルの中身
+    returns:
+      type: ConfigLoad
+      description: '`ok` か `error`'
+    process: |-
+      1. `parse(text)` を呼ぶ
+         - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
+      2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
+      3. `features`・`libraries` のうち値がマップのキーだけを `config` に入れて返す。他のキーは読まない
+    unit_tests:
+      - name: test_parse_config
+        case: 正常
+        summary: features と libraries だけを取り出す
+        condition: '`features: { callout: false }`・`libraries: { chart: ./chart.js }`・`theme: x`・`build: {}` の YAML'
+        mock: なし
+        expected: '`{ kind: "ok", config: { features: { callout: false }, libraries: { chart: "./chart.js" } } }`'
+      - name: test_parse_config_when_not_map
+        case: 正常
+        summary: 最上位がマップでない・空・キーの値がマップでないときは渡さない
+        condition: '空の文字列、`- a` の YAML、`features: [a]` の YAML'
+        mock: なし
+        expected: 'どれも `{ kind: "ok", config: {} }`'
+      - name: test_parse_config_when_invalid_yaml
+        case: 正常
+        summary: YAML として読めなければ読めない行を返す
+        condition: '4 行目に `features: {callout: false` と閉じの無い YAML'
+        mock: なし
+        expected: '`kind` が `error`、`line` が `4`、`message` が空でない'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
+      - dev/設計書/外部ライブラリ/yaml#
+    status: planned
+  - name: loadConfig
+    title: 設定ファイルを読む
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: 設定ファイルを読んで設定を取り出す。ファイルが無ければ `missing`
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ path: string; readFile: ReadTextFile }'
+        required: true
+        description: 設定ファイルの絶対パスと、読む関数
+    returns:
+      type: Promise<ConfigLoad>
+      description: 読み取りの結果
+    process: |-
+      1. `readFile(path)` で読む
+         - 例外の `code` が `ENOENT` の場合、`{ kind: "missing" }` を返す。他の例外は投げ直す
+      2. 読んだ中身から設定を取り出して返す（設定を取り出す）
+    exceptions:
+      - name: Error
+        condition: '`readFile` が `ENOENT` 以外で失敗した（投げ直す）'
+    unit_tests:
+      - name: test_load_config_when_missing
+        case: 正常
+        summary: ファイルが無ければ missing
+        condition: '`readFile` が `code` が `ENOENT` の例外を投げる'
+        mock: '`readFile` を代役にする'
+        expected: '`{ kind: "missing" }`'
+      - name: test_load_config
+        case: 正常
+        summary: 読んだ中身から取り出す
+        condition: '`readFile` が `features: { callout: false }` を返す'
+        mock: '`readFile` を代役にする'
+        expected: '`{ kind: "ok", config: { features: { callout: false } } }`'
+    callees:
+      - '#functions[parseConfig]'
+    status: planned
+  - name: resolveLibraries
+    title: libraries の URL を直す
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: 共通
+    summary: '`http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す'
+    description: プレビューは `toUrl` に `asWebviewUri` を、書き出しは `pathToFileURL` を渡す。文字列でない値はそのまま渡し、mdmark が無視する
+    scope: public
+    args:
+      - name: options
+        type: '{ libraries: Record<string, unknown>; configDir: string; toUrl: (path: string) => string }'
+        required: true
+        description: 取り出した `libraries`、設定ファイルのあるフォルダ、絶対パスを読める URL にする関数
+    returns:
+      type: Record<string, unknown>
+      description: URL を直した `libraries`
+    unit_tests:
+      - name: test_resolve_libraries
+        case: 正常
+        summary: 相対パスだけを設定ファイルのフォルダから直す
+        condition: '`{ a: "./libs/a.js", b: "https://cdn.example.com/b.js", c: "../c.js" }`、`configDir` が `/ws/docs`、`toUrl` が頭に `web:` を付ける'
+        mock: なし
+        expected: '`{ a: "web:/ws/docs/libs/a.js", b: "https://cdn.example.com/b.js", c: "web:/ws/c.js" }`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
+    status: planned
+  - name: libraryOrigins
+    title: libraries の配信元を拾う
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: VSCodeでプレビューを開く
+    summary: '`libraries` の値のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
+    scope: public
+    args:
+      - name: libraries
+        type: Record<string, unknown> | undefined
+        required: true
+        description: 取り出した `libraries`
+    returns:
+      type: string[]
+      description: origin の並び
+    unit_tests:
+      - name: test_library_origins
+        case: 正常
+        summary: http・https の origin だけを重なりなく拾う
+        condition: '`{ a: "https://cdn.example.com/a.js", b: "https://cdn.example.com/b.js", c: "./c.js", d: 1 }`'
+        mock: なし
+        expected: '`["https://cdn.example.com"]`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
+    status: planned
+  - name: openConfigFile
+    title: 設定ファイルを開く
+    kind: 関数
+    container: vscode/src/config-file.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: '`mdmark.openConfig` の本体。設定ファイルをエディタで開き、無ければ雛形を作るか尋ねる'
+    scope: public
+    is_async: true
+    side_effects: 「作る」を選んだときだけ、フォルダを作って `CONFIG_TEMPLATE` を書く
+    args:
+      - name: options
+        type: '{ configPath: string; baseDir: string; log: Logger }'
+        required: true
+        description: '`mdmark.configPath` と基準のフォルダ'
+    returns:
+      type: Promise<void>
+      description: 開いたか、作らないと答えたら解決する
+    process: |-
+      1. 設定ファイルの場所を決める（設定ファイルの場所を決める）
+      2. ファイルがあれば `window.showTextDocument` で開いて終わる
+      3. 無ければ `window.showInformationMessage` を `{ modal: true, detail }` とボタン「作る」で出す（文言は画面設計の「雛形を作るかの確認」）
+         - 「作る」以外（閉じた・キャンセル）の場合、何も書かずに終わる
+      4. フォルダが無ければ作り、`CONFIG_TEMPLATE` を書いて `window.showTextDocument` で開く。書く前にファイルができていたら書き換えずに開く
+         - フォルダを作れない・書けない場合、`window.showErrorMessage` で OS の誤りの文を出して終わる
+           - `[error]` 設定ファイルの雛形を書けない（パス・誤り）
+         - `[info]` 設定ファイルの雛形を作った（パス）
+    callees:
+      - '#functions[resolveConfigPath]'
+      - '#constants[CONFIG_TEMPLATE]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
+      - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[雛形を作るかの確認]
+    status: planned
+test_files:
+  - tests/unit/vscode/src/settings.test.ts
+  - tests/unit/vscode/src/config.test.ts

@@ -1,0 +1,10 @@
+# lint の実行
+# コミット: 8a5fd00
+
+$ npm run lint
+
+
+> lint
+> biome check .
+
+Checked 433 files in 4s. No fixes applied.

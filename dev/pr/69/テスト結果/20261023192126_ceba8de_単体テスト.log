@@ -1,0 +1,13 @@
+# 単体テストの実行（全件）
+# コミット: ceba8de
+# コマンド: npx vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension
+
+
+ Test Files  128 passed (128)
+      Tests  643 passed (643)
+   Start at  19:21:31
+   Duration  43.33s (tests 39%, worker 35%, import 22%, transform 4%)
+

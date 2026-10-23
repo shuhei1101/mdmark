@@ -67,7 +67,7 @@ export function buildCallouts(state: StateCore): void {
     const emptied = removeTitleLine(tokens, index);
     const html = renderCallout({ ...callout, body: SLOT_MARKER });
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    out.push(ownBlock(state, head));
+    out.push(ownBlock(state, head, token));
     for (let position = index + 1; position < closeIndex; position++) {
       const inner = tokens[position] as Token;
       if (!emptied.includes(inner)) {

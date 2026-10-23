@@ -210,6 +210,13 @@ const html = render("# 見出し\n\n本文");
 ツールチップを開閉する操作は `mount` が付ける。
 図の部品の定義は、題・図・凡例の HTML にし、定義の JSON は残さない。図の操作は `mount` が付ける。
 
+本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素には、そのブロックが Markdown で始まる行の番号を `data-source-line` で付ける。
+番号は 0 始まりで、Markdown の 1 行目が `0`。
+入れ子のブロックは、それぞれの開始の行を持つ。
+VS Code のエディタの行番号（0 始まり）とそのまま比べられるため、エディタとプレビューのスクロールを合わせる手がかりに使う。
+コードブロックの行の `data-line`（コードの中の 1 始まりの行番号）と、図の線の `data-line`（線の種類）とは別の属性で、sanitize は `data-source-line` を全ての要素で残す。
+`mount` が描いた本文のブロックにも、同じ `data-source-line` が付く。
+
 ### エラー
 
 なし。常に文字列を返す。
@@ -618,7 +625,7 @@ handle.destroy();
 
 <!-- /table -->
 
-配色の変数。ダークの配色は、画面で OS の設定がダークのときに当たる。印刷では明るい配色に戻る。
+配色の変数。ダークの配色は、画面で OS の設定がダークのとき、または描く先かその祖先の class がダークを選ぶとき（[配色を切り替える class](#配色を切り替える-class)）に当たる。印刷では明るい配色に戻る。
 
 <!-- table: data -->
 
@@ -668,6 +675,27 @@ handle.destroy();
 <!-- /table -->
 
 注意書きの面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
+
+#### 配色を切り替える class
+
+描く先の要素かその祖先が次の class を持つとき、配色は上から順に決まる。
+どれも無ければ、`prefers-color-scheme`（OS の設定）で決まる。
+
+<!-- table: data -->
+
+| 優先 | class | 配色 | 付けるもの |
+| --- | --- | --- | --- |
+| 1 | `mdmark-theme-dark` | ダーク | 使う側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける |
+| 1 | `mdmark-theme-light` | ライト | 同上。`mdmark.preview.theme` が `light` のとき |
+| 2 | `vscode-high-contrast-light`・`vscode-light` | ライト | VS Code が Webview の `body` に付ける |
+| 2 | `vscode-dark`・`vscode-high-contrast`（`vscode-high-contrast-light` を一緒に持たないとき） | ダーク | 同上 |
+
+<!-- /table -->
+
+同じ優先の class が両方あるときは、描く先に近い祖先の class に従う。
+ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決まる。
+印刷では、class によらず明るい配色にする。
+使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ。
 
 ### エラー
 
