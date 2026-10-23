@@ -20,7 +20,7 @@ layers:
     duration: 全件で数十秒（作業ツリーのクローンと `npm ci` を含む）
     external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
   - name: 結合テスト（フロント）
-    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す
+    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に流す
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
     run_all: |-
@@ -33,6 +33,17 @@ layers:
         ```bash
         npx vitest run --project 'integration*' {テストファイルパス}
         ```
+    notes:
+      VS Code 拡張機能: |-
+        `@vscode/test-electron` が VS Code 1.141.0 と stable を起動し、拡張機能ホストの中で mocha が `vscode/tests/integration/*.test.ts`（ビルドした `vscode/out/test/*.test.mjs`）を流す。Webview の DOM は拡張機能がテストのときだけ返す `inspectPreview` で確かめる。`vscode` を import しない処理は単体テスト（フロント）の `unit` プロジェクトが `tests/unit/vscode/` で流す。
+
+        前提: `npm ci` と `npm --prefix vscode ci` で依存を入れ、リポジトリの直下で `npm run build` を流して `dist/` がある（代役の配信が配る）。ヘッドレスの Linux では `xvfb-run` を入れてある。
+
+        ```bash
+        xvfb-run -a npm --prefix vscode run test:integration
+        ```
+
+        初回と stable が上がったときは VS Code（約 150MB）を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える。`vscode/` をまだ実装していないため、このコマンドは走らせていない
   - name: 結合テスト（バック）
     run_all: 未確定
   - name: 単体テスト（フロント）
