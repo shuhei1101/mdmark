@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-collect-term-matches
+
+
+ Test Files  116 passed (116)
+      Tests  591 passed (591)
+   Start at  17:35:31
+   Duration  28.27s (tests 37%, worker 37%, import 21%, transform 5%)
+
+exit code: 0
