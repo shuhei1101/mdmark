@@ -540,6 +540,47 @@ functions:
     status: planned
     introduced:
       pr: 45
+  - name: findMarks
+    title: 文書の印を拾う
+    container: src/render/parser.ts
+    usecase: 設定と索引を点検する
+    summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に当たる印を拾い、名前と行の番号を書いた順に返す
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、足すコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため拾わない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行に印より前の改行の数を足し、`html_inline` は親の `inline` の `map` の開始行に印より前の `softbreak`・`hardbreak` の数と印より前の改行の数を足す。閉じの印も 1 つの印として返す'
+    kind: 関数
+    scope: public
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: '{ name: string; line: number }[]'
+      description: 拾った印の名前と行の番号
+    unit_tests:
+      - name: test_find_marks
+        case: 正常
+        summary: ブロックと行内の印を行の番号つきで拾う
+        condition: '1 行目が `# 題`、3 行目が `<!-- tabz -->`、5・6 行目が `段落` と `続き <!-- note: a --> と <!-- /note -->`'
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }, { name: "note", line: 6 }, { name: "note", line: 6 }]`'
+      - name: test_find_marks_when_code
+        case: 正常
+        summary: コードブロックとインラインコードの中の印は拾わない
+        condition: '`markdown` のコードブロックの中の `<!-- tabz -->` と、段落の中のインラインコード `` `<!-- tabz -->` ``'
+        mock: なし
+        expected: 空の配列
+      - name: test_find_marks_when_multiline_block
+        case: 正常
+        summary: 複数行の HTML のブロックの中の印の行を数える
+        condition: 2 行目から `<div>`・`<!-- tabz -->`・`</div>` の 3 行のブロック
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }]`'
+    refs:
+      - '#constants[MARK_PATTERN]'
+      - '#functions[createParser]'
+    status: planned
+    introduced:
+      pr: 64
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts
