@@ -1,0 +1,24 @@
+# lint・型検査の実行
+# コミット: 29643ec
+
+$ npm run lint
+
+
+> lint
+> biome check .
+
+Checked 479 files in 2s. No fixes applied.
+
+$ npm run typecheck
+
+
+> typecheck
+> tsc --noEmit
+
+
+$ npm --prefix vscode run typecheck
+
+
+> mdmark@0.1.0 typecheck
+> tsc --noEmit
+

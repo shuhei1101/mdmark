@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import type { ResolvedConfig } from "../../../../src/config.ts";
 import type { RenderEnv } from "../../../../src/render/parser.ts";
 import { createEnv } from "../../helpers/env.ts";
+import { stripSourceLine } from "../../helpers/source-line.ts";
 
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../src/render/parser.ts");
@@ -26,7 +27,7 @@ async function parse(
 ): Promise<{ html: string; env: RenderEnv }> {
   const { createParser } = await loadParser();
   const env = createEnv({ libraries });
-  const html = createParser().render(markdown, env);
+  const html = stripSourceLine(createParser().render(markdown, env));
   return { html, env };
 }
 
@@ -159,7 +160,7 @@ test("test_drop_marks", async () => {
   const env = createEnv();
   const parser = createParser();
   // 実行
-  const html = parser.render(markdown, env);
+  const html = stripSourceLine(parser.render(markdown, env));
   const tokens = parser.parse(markdown, createEnv());
   // 検証
   expect(html).toContain("段落");

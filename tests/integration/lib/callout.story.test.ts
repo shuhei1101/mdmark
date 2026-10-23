@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import { createBrowserHolder, pageOverflows, resolveColor } from "../story.ts";
 
 const holder = createBrowserHolder();
 
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 注意書きのストーリーを開き、種類の class・題の文字・題と枠の色が同じことを確かめる */
+/** 注意書きのストーリーを開き、種類の class・題の文字・題と面と枠の線の色を確かめる */
 async function expectKind(
   id: string,
   kind: string,
@@ -21,10 +21,26 @@ async function expectKind(
     const heading = element.querySelector(".markdown-alert-title");
     return {
       border: getComputedStyle(element).borderTopColor,
+      background: getComputedStyle(element).backgroundColor,
       title: heading ? getComputedStyle(heading).color : "",
     };
   });
-  expect(colors.title).toBe(colors.border);
+  // 題は種類の色、面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色
+  const kindColor = `var(--mdmark-color-callout-${kind})`;
+  expect(colors.title).toBe(await resolveColor(page, kindColor));
+  expect(colors.border).toBe(
+    await resolveColor(
+      page,
+      `color-mix(in oklab, ${kindColor} 40%, var(--mdmark-color-bg))`,
+    ),
+  );
+  expect(colors.background).toBe(
+    await resolveColor(
+      page,
+      `color-mix(in oklab, ${kindColor} 7%, var(--mdmark-color-bg))`,
+    ),
+  );
+  expect(colors.border).not.toBe(colors.title);
   const icon = await heading.evaluate(
     (element) => getComputedStyle(element, "::before").maskImage,
   );

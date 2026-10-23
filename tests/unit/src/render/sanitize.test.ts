@@ -224,6 +224,24 @@ test("test_sanitize_when_code_digits", async () => {
   expect(sanitized.match(/style=/g) ?? []).toHaveLength(1);
 });
 
+// 元の行番号は整数のときだけ残す（正常系）
+test("test_sanitize_when_source_line", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const html = [
+    '<p data-source-line="3">a</p>',
+    '<table><tbody><tr><td data-source-line="12">b</td></tr></tbody></table>',
+    '<p data-source-line="x">c</p>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toContain('<p data-source-line="3">');
+  expect(sanitized).toContain('<td data-source-line="12">');
+  expect(sanitized).toContain("<p>c</p>");
+  expect(sanitized.match(/data-source-line/g) ?? []).toHaveLength(2);
+});
+
 /** 埋め込んだ HTML を落とす処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadEmbedded = async () => {
   const { sanitizeEmbedded, filterEmbeddedStyle } = await import(

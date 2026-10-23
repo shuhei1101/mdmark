@@ -27,11 +27,11 @@ args:
 css_properties:
   - name: --mdmark-color-link
     syntax: <color>
-    default: '#0969da（ダーク #4493f8）'
+    default: '#0f766e（ダーク #2dd4bf）'
     description: 目次のリンクの色
   - name: --mdmark-color-border
     syntax: <color>
-    default: '#d1d9e0（ダーク #3d444d）'
+    default: '#e4e4e7（ダーク #26262b）'
     description: 目次の枠の線の色
 accessibility:
   - 目次は `aria-label="目次"` を持つ `nav` で、ランドマークとして飛べる

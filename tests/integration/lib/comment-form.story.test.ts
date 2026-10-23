@@ -1,6 +1,6 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import { createBrowserHolder, pageOverflows, resolveColor } from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -44,6 +44,18 @@ test("test_idle", async () => {
   await expect(
     page.locator("textarea").getAttribute("aria-invalid"),
   ).resolves.toBeNull();
+  // 保存のボタンは、文字の色の地と線に、地の色の文字
+  const save = await page.locator("button.is-primary").evaluate((button) => ({
+    background: getComputedStyle(button).backgroundColor,
+    border: getComputedStyle(button).borderTopColor,
+    color: getComputedStyle(button).color,
+  }));
+  const text = await resolveColor(page, "var(--mdmark-color-text)");
+  expect(save).toEqual({
+    background: text,
+    border: text,
+    color: await resolveColor(page, "var(--mdmark-color-bg)"),
+  });
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 

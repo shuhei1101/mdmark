@@ -220,6 +220,13 @@ function createEntry(target: HTMLElement): Entry {
     document.addEventListener("scroll", placeBand, { capture: true, signal });
   }
   window.matchMedia(DARK_QUERY).addEventListener("change", place, { signal });
+  // 配色を決める祖先の class（`vscode-*`・`mdmark-theme-*`）が替わったら、変数を写し直す
+  const themeObserver = new MutationObserver(copyVariables);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+    subtree: true,
+  });
   // 差分の行の大きさと送り先の大きさが変わったら置き直す
   const observer = new ResizeObserver(place);
   observer.observe(page ? document.documentElement : target);
@@ -239,6 +246,7 @@ function createEntry(target: HTMLElement): Entry {
     destroy: () => {
       abort.abort();
       observer.disconnect();
+      themeObserver.disconnect();
       band.remove();
     },
   };

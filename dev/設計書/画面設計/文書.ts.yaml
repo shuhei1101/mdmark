@@ -3,7 +3,7 @@ elements:
   - name: 描く先の要素
     id: mdmark-root
     kind: container
-    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）
+    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）。配色は祖先の class と `prefers-color-scheme` でライトかダークにし、印刷では明るい配色にする（文書を描く.ts の制約「配色の切り替え」）
     visible_when: 常時
     source: 文書を描く.request.el
     refs:
@@ -670,5 +670,5 @@ elements:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
     status: planned
-mock: dev/mock/pages/document/19/modern/
+mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。

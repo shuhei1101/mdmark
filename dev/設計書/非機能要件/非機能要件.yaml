@@ -6,9 +6,9 @@ requirements:
     external_constraint: jsDelivr の GitHub エンドポイントは 1 ファイル 20MB までを配る
     source_kind: 実行基盤の制限
     source: https://github.com/jsdelivr/jsdelivr#restrictions
-    value: '368'
-    unit: KB 以下（376832 バイト）
-    rationale: '外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを足した #42 で、束ねた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を見て 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を足した #49 で、束ねた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を見て 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後の束ねた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を見て 368KB に上げた'
+    value: '384'
+    unit: KB 以下（393216 バイト）
+    rationale: '外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを足した #42 で、束ねた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を見て 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を足した #49 で、束ねた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を見て 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後の束ねた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を見て 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後の束ねた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を見て 384KB に上げた'
     overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確かめる時点はビルドの直後で、版のタグを打つ前。
   - name: 対応ブラウザ
     english_name: supported_browsers
@@ -67,6 +67,56 @@ requirements:
       version: Node v24.14.0
       date: '2026-10-22'
       result: 合格
+  - name: 対応する VS Code の版
+    english_name: vscode_version
+    category: 動作環境
+    external_constraint: 拡張機能は `package.json` の `engines.vscode` より古い VS Code に入らない
+    source_kind: 実行基盤の制限
+    source: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#visual-studio-code-compatibility
+    value: VS Code 1.141.0 以降（`vscode/package.json` の `engines.vscode` に `^1.141.0` を書く）
+    rationale: PoC（#70）で Webview の CSP・動的 `import()`・`ready` を受けた送り直しを確かめた最も古い版（Windows の 1.141.0。Linux 版は 1.143.1）を下限にする。それより古い版は確かめていない
+    measurement: 拡張機能の結合テストを VS Code 1.141.0 とその時点の stable の 2 つで流す
+    overflow: 下限より古い VS Code には Marketplace と Open VSX が入れさせない
+    status: planned
+    introduced:
+      pr: 69
+  - name: タグ一覧を取る待ちの上限
+    english_name: tag_list_timeout
+    category: 耐障害
+    external_constraint: GitHub の REST API は未認証で 60 回/時まで。応答の時間の保証は無い
+    source_kind: 外部 API の制限
+    source: dev/設計書/外部API/GitHub#
+    value: '3'
+    unit: 秒
+    rationale: 取れないときは前回の版で描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、PoC（#70）の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを足しても、前回の版で描き始めるまでを 5 秒前後に収める
+    overflow: 上限を超えたら要求を打ち切り、取れなかったときと同じく前回の版を使う。前回の版も無ければ、プレビューにバージョンを決められない理由を出す（書き出しは書き出せない通知を出す）
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描き直すまでの待ち
+    english_name: preview_update_delay
+    category: 性能
+    external_constraint: 制限なし
+    source_kind: 制限なし
+    value: 300（既定。設定 `mdmark.preview.updateDelayMs` で 0〜5000 に変えられる）
+    unit: ミリ秒
+    rationale: '打つたびに描き直すと、図と外部ライブラリの印を持つ文書でちらつく。続けて打つ間は描き直さず、手を止めてから待ちが目立たない長さにする。上限の 5000 は、保存したときだけ描き直す設定（`mdmark.preview.liveUpdate: false`）が別にあるため、それより長い待ちを許さない'
+    overflow: 範囲の外の値は VS Code の設定の画面が受け付けない（`package.json` の `minimum`・`maximum`）。`settings.json` に直に書いた範囲の外の値は既定の 300 として扱う
+    status: planned
+    introduced:
+      pr: 69
+  - name: 印刷のダイアログを出すまでの待ちの上限
+    english_name: print_wait_limit
+    category: 耐障害
+    external_constraint: 制限なし
+    source_kind: 制限なし
+    value: '10'
+    unit: 秒
+    rationale: 書き出した HTML は jsDelivr から配布物と外部ライブラリを読むため、描き終えるまで待ってから印刷する。PoC（#70）の jsDelivr のキャッシュが冷えた初回の読み込みは 5,045 ms だったため、その倍に近い値を上限にする
+    overflow: 上限までに外部ライブラリの印の読み込みが終わらなければ、そのまま印刷のダイアログを出す（読み込み中の印の場所は読み込み中の枠のまま印刷される）
+    status: planned
+    introduced:
+      pr: 69
   - name: 使い方集の索引の文字数
     english_name: guide_context_length
     category: 性能

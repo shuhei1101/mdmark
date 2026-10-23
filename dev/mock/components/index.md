@@ -22,6 +22,7 @@
 | [hint](./hint/index.html) | `data-hint` を持つ要素の右上の印・行内の破線の下線と、図のツールチップと同じ見た目のツールチップ |
 | [notice](./notice/index.html) | 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中の印の場所 |
 | [param-control](./param-control/index.html) | スライダー・グラフ・今の値を写すボタンを組み合わせた操作できる部品と、写した・写せなかったの知らせ |
+| [preview-status](./preview-status/index.html) | VS Code 拡張機能のプレビューのパネルに出す読み込み中・描けない理由と「リロード」・設定ファイルを読めない帯と「設定ファイルを開く」 |
 | [revision-picker](./revision-picker/index.html) | 文書の右上の「変更を見る」と、前と後のリビジョンを日時・label・author で選ぶ欄と、本文を取り出せない場面 |
 | [row-detail](./row-detail/index.html) | 表の行の下に開閉して出す行の詳細 |
 | [section](./section/index.html) | 見出しのアンカーと、見出しから開閉する節 |

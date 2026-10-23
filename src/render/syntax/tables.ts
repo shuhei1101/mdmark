@@ -489,7 +489,11 @@ export function decorateTables(state: StateCore): void {
       range.warned = true;
       warnings.push(unclosedWarning(range.mark));
     }
-    const open = ownBlock(state, head.slice(0, divEnd));
+    const open = ownBlock(
+      state,
+      head.slice(0, divEnd),
+      range ? tokens[range.open] : token,
+    );
     open.meta = { role: "table-open" };
     out.push(open);
     for (const warning of warnings) {

@@ -44,19 +44,19 @@ args:
 css_properties:
   - name: --mdmark-color-current-bg
     syntax: <color>
-    default: '#ddf4ff（ダーク #121d2f）'
+    default: '#e6f3f1（ダーク #10302c）'
     description: 開いている文書の行の背景
   - name: --mdmark-color-link
     syntax: <color>
-    default: '#0969da（ダーク #4493f8）'
+    default: '#0f766e（ダーク #2dd4bf）'
     description: 開いている文書の行の文字と、フォーカスの枠の色
   - name: --mdmark-color-surface
     syntax: <color>
-    default: '#f6f8fa（ダーク #151b23）'
+    default: '#f4f4f5（ダーク #1b1b1f）'
     description: ポインターを乗せた行の背景
   - name: --mdmark-color-muted
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#52525b（ダーク #b4b4bc）'
     description: フォルダの見出しの文字の色
 accessibility:
   - 一覧は `aria-label="文書の一覧"` を持つ `nav` で、ランドマークとして飛べる

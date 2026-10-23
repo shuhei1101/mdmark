@@ -59,7 +59,7 @@ slots:
 css_properties:
   - name: --mdmark-color-muted
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#52525b（ダーク #b4b4bc）'
     description: 題の文字の色
 accessibility:
   - 題は `figcaption` で、読み上げが図表の名前として読む

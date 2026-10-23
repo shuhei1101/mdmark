@@ -52,3 +52,5 @@ base_urls:
     url: https://cdn.jsdelivr.net
 official_url: https://www.jsdelivr.com/
 docs_url: https://github.com/jsdelivr/jsdelivr
+used_in:
+  - vscode/src/

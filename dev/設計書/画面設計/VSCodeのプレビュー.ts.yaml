@@ -1,0 +1,99 @@
+title: "VSCodeのプレビュー"
+elements:
+  - name: タブの題
+    id: preview-title
+    kind: label
+    position: エディタの列のタブ
+    description: パネルのタブに出す題
+    label: プレビュー {ファイル名}
+    io: 表示
+    type: 文字列
+    visible_when: 常時
+    source: プレビューを開く.request.uri（ファイル名だけ）
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描く先を包む要素
+    id: preview-root
+    kind: container
+    position: Webview の `body` の直下
+    description: 状態の表示、設定ファイルを読めない帯、描く先の要素を入れる。`mdmark.preview.theme` が `light`・`dark` のとき class `mdmark-theme-light`・`mdmark-theme-dark` を持つ
+    visible_when: 常時
+    source: プレビューを開くの Webview とのメッセージ `render.theme`
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配色]
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描いた文書
+    id: preview-document
+    kind: container
+    position: 描く先を包む要素
+    description: mdmark の `mount` に渡す描く先の要素。中身と見た目は画面設計『文書』のままで、拡張機能は手を加えない
+    visible_when: 配布物を読み終え、最初の `rendered` を送った後
+    source: プレビューを描き直すの送る中身（全文・`features`・`libraries`）
+    action: 本文のリンクを押すと `#` で始まるリンクはこの中で移り、それ以外は `openLink` を送る。スクロールすると `revealLine` を送る
+    action_ref: dev/設計書/画面設計/文書.ts#
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#
+    status: planned
+    introduced:
+      pr: 69
+  - name: 読み込み中の表示
+    id: preview-loading
+    kind: status
+    component: dev/設計書/部品設計/プレビューの状態の表示.ts#
+    args:
+      - name: state
+        value: '`loading`'
+    position: 描く先を包む要素
+    description: 配布物を読んでいる間、文書の代わりに出す
+    visible_when: Webview に HTML を入れてから 1 秒経っても、最初の `rendered` を送っておらず描けない理由も出ていないとき。`rendered` か描けない理由で消す
+    reason: 1 秒未満で描き終えるときに読み込み中が一瞬だけ出てちらつかないようにする（計画書『VS Code 拡張機能』の読み込み中）
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描けない理由
+    id: preview-error
+    kind: status
+    component: dev/設計書/部品設計/プレビューの状態の表示.ts#
+    args:
+      - name: state
+        value: '`loadFailed` の `reason`（`offline` / `versionMissing`）か、バージョンを決められないとき `versionUndecidable`'
+      - name: version
+        value: 読もうとした版（`versionUndecidable` では渡さない）
+    position: 描く先を包む要素
+    description: 配布物を読めないとき、文書の代わりに理由と「リロード」を出す
+    visible_when: Webview が `loadFailed` を送ったときか、拡張機能がバージョンを決められず配布物を読まない HTML を入れたとき
+    action: 「リロード」を押すと `reload` を送る
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#
+    status: planned
+    introduced:
+      pr: 69
+  - name: 設定ファイルを読めない帯
+    id: preview-config-band
+    kind: status
+    component: dev/設計書/部品設計/設定ファイルを読めない帯.ts#
+    args:
+      - name: path
+        value: '`mdmark.configPath` の書いたままの値'
+      - name: line
+        value: '`configError.line`'
+    slots:
+      - name: default
+        value: 描いた文書
+    position: 描く先を包む要素 > 描いた文書の前
+    description: 設定ファイルを読めないことを、文書を描いたまま文書の先頭で知らせる。固定せずスクロールで流す
+    visible_when: '`configError` を受けてから `configOk` を受けるまで'
+    action: 「設定ファイルを開く」を押すと `openConfig` を送る
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
+    status: planned
+    introduced:
+      pr: 69
+screen: vscode/src/webview/preview.ts
+mock: dev/mock/pages/vscode-preview/69/panel/
+lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。mdmark が描いた文書と、拡張機能が足す状態の表示を同じパネルの中で切り替える。
+refs:
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#

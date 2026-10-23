@@ -1,5 +1,5 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
-import { page, userEvent } from "vitest/browser";
+import { cdp, page, userEvent } from "vitest/browser";
 import type {
   DiffRevision,
   MdmarkComment,
@@ -18,6 +18,7 @@ import {
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
+import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   AVOID_DOC_ID,
   AVOID_EXPECTED_HTML,
@@ -37,6 +38,9 @@ const TEST_LIB_PATH = "/fixtures/test-lib.js";
 const MISSING_LIB_PATH = "/fixtures/missing.js";
 // 読み込み中の枠の文言
 const LOADING_TEXT = "図を読み込んでいます";
+// ダークとライトの `--mdmark-color-bg` の値
+const DARK_BG = "#131316";
+const LIGHT_BG = "#ffffff";
 
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
@@ -1221,7 +1225,7 @@ test("test_normal_when_avoided_term_in_browser", async () => {
     docId: AVOID_DOC_ID,
   });
   // 検証
-  expect(html).toBe(AVOID_EXPECTED_HTML);
+  expect(stripSourceLine(html)).toBe(AVOID_EXPECTED_HTML);
 });
 
 /** 参照の表: `arch` を `api`・`guide` が参照している */
@@ -1288,7 +1292,7 @@ test("test_normal_when_index_in_browser", async () => {
     references: REFERENCES,
   });
   // 検証
-  expect(html).toBe(EXPECTED_HTML);
+  expect(stripSourceLine(html)).toBe(EXPECTED_HTML);
 });
 
 /** 幅 600px の描く先の要素に、幅 1100・高さ 560 のフロー図を描き、図と表示する枠を返す */
@@ -3172,4 +3176,143 @@ test("test_normal_when_tooltip_placement_bottom", async () => {
   const unknownTerm = placementOwners(el2).terms[1] as HTMLElement;
   const unknown = await hoverAndMeasure(unknownTerm, "center");
   expect(unknown.tip.bottom).toBeLessThanOrEqual(unknown.owner.top);
+});
+
+/** 元の行番号を持つ要素の位置と色 */
+function snapshotBlocks(el: Element): Array<{
+  top: number;
+  height: number;
+  color: string;
+}> {
+  return ["h1", "p", ".mdmark-table", "pre"].map((selector) => {
+    const block = find(el, selector);
+    const rect = block.getBoundingClientRect();
+    return {
+      top: rect.top,
+      height: rect.height,
+      color: getComputedStyle(block).color,
+    };
+  });
+}
+
+// 描いたブロックと差し替えた本文のブロックが、元の行番号を持ち、見た目は変わらない（正常系）
+test("test_normal_when_source_lines", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "# 見出し",
+    "",
+    "段落",
+    "",
+    "| 列A | 列B |",
+    "| --- | ---: |",
+    "| 1 | 2 |",
+    "<!-- code: lines -->",
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+  ].join("\n");
+  const sourceLines = () =>
+    ["h1", "p", ".mdmark-table", "pre"].map((selector) =>
+      find(el, selector).getAttribute("data-source-line"),
+    );
+  // 実行・検証: 描いた直後
+  const handle = await mountTracked(el, { markdown });
+  expect(sourceLines()).toEqual(["0", "2", "4", "8"]);
+  // 属性を取り除いても、位置と色の計算値は変わらない
+  const withAttributes = snapshotBlocks(el);
+  for (const element of el.querySelectorAll("[data-source-line]")) {
+    element.removeAttribute("data-source-line");
+  }
+  expect(snapshotBlocks(el)).toEqual(withAttributes);
+  // 実行・検証: 頭に 2 行足して差し替える
+  handle.update(`\n\n${markdown}`);
+  expect(sourceLines()).toEqual(["2", "4", "6", "10"]);
+});
+
+/** 描く先を包む要素（`wrap`）と描く先（`el`）を置き、`body` の class と OS の配色を先に決めて見本の Markdown を描く */
+async function mountThemed(options: {
+  bodyClass: string;
+  colorScheme: "light" | "dark";
+}): Promise<{ wrap: HTMLElement; el: HTMLElement }> {
+  const wrap = createElement();
+  const el = document.createElement("div");
+  wrap.append(el);
+  document.body.className = options.bodyClass;
+  await cdp().send("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-color-scheme", value: options.colorScheme }],
+  });
+  await mountTracked(el, {
+    markdown: "# 見出し\n\n段落\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n",
+  });
+  return { wrap, el };
+}
+
+/** `body` の class と、OS の配色・印刷のメディアの切り替えを元に戻す */
+async function resetThemed(): Promise<void> {
+  document.body.className = "";
+  await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+}
+
+/** 描く先の要素の `--mdmark-color-bg` の計算値 */
+function readBackground(el: HTMLElement): string {
+  return getComputedStyle(el).getPropertyValue("--mdmark-color-bg").trim();
+}
+
+// OS の配色がライトでも、祖先の `vscode-dark` でダークの値を当て、class を外すと戻す（正常系）
+test("test_normal_when_parent_class_dark", async () => {
+  // 準備・実行
+  const { el } = await mountThemed({
+    bodyClass: "vscode-dark",
+    colorScheme: "light",
+  });
+  try {
+    // 検証
+    expect(readBackground(el)).toBe(DARK_BG);
+    document.body.className = "vscode-light";
+    expect(readBackground(el)).toBe(LIGHT_BG);
+    document.body.className = "vscode-high-contrast";
+    expect(readBackground(el)).toBe(DARK_BG);
+    document.body.className = "vscode-high-contrast vscode-high-contrast-light";
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// OS の配色がダークでも、祖先の `vscode-light` でライトにし、`mdmark-theme-light` は `vscode-dark` に勝つ（正常系）
+test("test_normal_when_parent_class_light", async () => {
+  // 準備・実行
+  const { wrap, el } = await mountThemed({
+    bodyClass: "vscode-light",
+    colorScheme: "dark",
+  });
+  try {
+    // 検証
+    expect(readBackground(el)).toBe(LIGHT_BG);
+    document.body.className = "vscode-dark";
+    wrap.className = "mdmark-theme-light";
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 祖先の class でダークにしても、印刷では明るい配色にする（正常系）
+test("test_normal_when_parent_class_dark_printed", async () => {
+  // 準備・実行
+  const { wrap, el } = await mountThemed({
+    bodyClass: "vscode-dark",
+    colorScheme: "light",
+  });
+  try {
+    wrap.className = "mdmark-theme-dark";
+    expect(readBackground(el)).toBe(DARK_BG);
+    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+    // 検証
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
 });

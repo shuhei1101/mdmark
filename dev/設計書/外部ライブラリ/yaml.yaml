@@ -85,3 +85,6 @@ install: |-
   ```bash
   npm i -E yaml@2.9.1
   ```
+used_in:
+  - src/cli/
+  - vscode/src/

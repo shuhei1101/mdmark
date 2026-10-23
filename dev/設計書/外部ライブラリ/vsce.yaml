@@ -1,0 +1,46 @@
+title: "vsce"
+kind: "CLI"
+version:
+  current: 4.0.0
+  latest: 4.0.0
+  checked_on: '2026-10-23'
+  source: vscode/package.json
+  pinning: '`devDependencies` に完全一致で置く'
+catalogs:
+  - name: コマンド
+    version: 4.0.0
+    entries:
+      - name: vsce package
+        kind: コマンド
+        purpose: 拡張機能のフォルダを .vsix にまとめる
+        description: '`package.json` の `vscode:prepublish` を流してから、`.vscodeignore` で除いた残りをまとめる。`engines.vscode` より新しい `@types/vscode` を使っていると失敗する'
+        params:
+          - name: --out
+            type: string
+            required: false
+            default: '`{name}-{version}.vsix`'
+            description: 書き出す .vsix のパス
+          - name: --no-dependencies
+            type: boolean
+            required: false
+            default: 'false'
+            description: '`node_modules` を含めない（束ねた拡張機能で使う）'
+lead: VS Code の拡張機能を .vsix にまとめ、Visual Studio Marketplace へ公開する CLI。
+purl: pkg:npm/%40vscode/vsce@4.0.0
+supplier: Microsoft
+dependency_scope: 開発のみ
+adoption: 採用
+used_in:
+  - .github/workflows/
+upstream: microsoft/vscode-vsce
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: '`dist/extension.js` だけを持ち `.vscodeignore` で `node_modules/**` を除いた最小の拡張機能で `npx @vscode/vsce@4.0.0 package --no-dependencies --out mdmark-0.1.0.vsix` を流し、.vsix が `extension/package.json`（`version` が `0.1.0`）・`extension/dist/extension.js`・`extension/LICENSE.txt`・`extension/readme.md`・`extension.vsixmanifest`・`[Content_Types].xml` だけを持ち `node_modules/` を含まないことを確かめた。`engines.vscode` を `^1.130.0`、`@types/vscode` を `1.140.0` にすると `@types/vscode 1.140.0 greater than engines.vscode ^1.130.0` で失敗し、.vsix を書かないことを確かめた'
+license: MIT（商用利用可）
+official_url: https://code.visualstudio.com/api/working-with-extensions/publishing-extension
+docs_url: https://github.com/microsoft/vscode-vsce
+install: |-
+  ```bash
+  npm --prefix vscode i -D -E @vscode/vsce@4.0.0
+  ```

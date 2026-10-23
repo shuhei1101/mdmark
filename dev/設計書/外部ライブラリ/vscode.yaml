@@ -1,0 +1,135 @@
+title: "vscode"
+kind: "フレームワーク"
+version:
+  current: 1.140.0（`@types/vscode`。`engines.vscode` は `^1.141.0`）
+  latest: 1.140.0
+  checked_on: '2026-10-23'
+  source: vscode/package.json
+  pinning: '`@types/vscode` は `engines.vscode` の下限より新しくしない（vsce が .vsix を作るときに確かめる）。`devDependencies` に完全一致で置く'
+catalogs:
+  - name: API
+    version: 1.140.0
+    entries:
+      - name: commands.registerCommand
+        kind: 関数
+        purpose: '`package.json` の `contributes.commands` に書いたコマンドの処理を登録する'
+      - name: window.createWebviewPanel
+        kind: 関数
+        purpose: エディタの列に Webview のパネルを開く
+        params:
+          - name: viewType
+            type: string
+            required: true
+            description: パネルの種類の識別子
+          - name: title
+            type: string
+            required: true
+            description: タブに出す題
+          - name: showOptions
+            type: 'ViewColumn | { viewColumn: ViewColumn; preserveFocus?: boolean }'
+            required: true
+            description: 開く列。`ViewColumn.Beside` は横の列、`ViewColumn.Active` は同じ列
+          - name: options.enableScripts
+            type: boolean
+            default: 'false'
+            description: Webview の中でスクリプトを動かすか
+          - name: options.retainContextWhenHidden
+            type: boolean
+            default: 'false'
+            description: 背面に回しても中身を捨てないか。`false` のときは表に戻すと HTML から読み直す
+          - name: options.localResourceRoots
+            type: Uri[]
+            default: ワークスペースのフォルダと拡張機能のフォルダ
+            description: Webview が読める手元のフォルダ
+        returns:
+          - name: '-'
+            type: WebviewPanel
+            description: 開いたパネル。`webview`・`visible`・`reveal()`・`onDidDispose`・`onDidChangeViewState` を持つ
+      - name: Webview
+        kind: クラス
+        purpose: パネルの中の HTML と、拡張機能とのメッセージのやり取り
+        description: '`html` に入れた HTML を描く。`postMessage(message)` は背面で `retainContextWhenHidden` が `false` のとき `false` を返して届かない。`onDidReceiveMessage` で Webview の `acquireVsCodeApi().postMessage` を受ける。`asWebviewUri(uri)` は手元のファイルを Webview で読める URL にし、`cspSource` はその URL を CSP で許す値'
+      - name: window.onDidChangeTextEditorVisibleRanges
+        kind: イベント
+        purpose: エディタの見えている行の範囲が変わったときに知らせる（行は 0 始まり）
+      - name: TextEditor.revealRange
+        kind: メソッド
+        purpose: 渡した範囲をエディタに見せる（`TextEditorRevealType.AtTop` で先頭に置く）
+      - name: workspace.onDidChangeTextDocument
+        kind: イベント
+        purpose: 保存前を含む文書の変更を知らせる
+      - name: workspace.onDidSaveTextDocument
+        kind: イベント
+        purpose: 文書を保存したことを知らせる
+      - name: workspace.createFileSystemWatcher
+        kind: 関数
+        purpose: ファイルの作成・変更・削除を知らせる（VS Code の外での書き換えを含む）
+      - name: workspace.getConfiguration
+        kind: 関数
+        purpose: '`contributes.configuration` に書いた設定の値を、文書のワークスペースを当てて読む。変更は `workspace.onDidChangeConfiguration` で知る'
+      - name: env.openExternal
+        kind: 関数
+        purpose: URL を OS の既定のブラウザで開く（`file:` の URL は既定のアプリで開く）
+      - name: window.showTextDocument
+        kind: 関数
+        purpose: ファイルをエディタで開く
+      - name: window.showInformationMessage
+        kind: 関数
+        purpose: '通知か、`{ modal: true }` でダイアログを出し、押したボタンの文字を返す。誤りは `showErrorMessage`'
+      - name: ExtensionContext.globalState
+        kind: プロパティ
+        purpose: ワークスペースをまたいで拡張機能の値を残す（`get`・`update`）
+      - name: ExtensionContext.extensionMode
+        kind: プロパティ
+        purpose: 拡張機能が本番・開発・テストのどれで動いているか（`ExtensionMode.Test` は結合テストのとき）
+      - name: window.createOutputChannel
+        kind: 関数
+        purpose: '`{ log: true }` で、レベル付きのログを出す「出力」パネルのチャネル（`LogOutputChannel`）を作る'
+        description: 戻り値は `trace`・`debug`・`info`・`warn`・`error` を持ち、出すレベルは利用者が「出力」パネルで切り替える（`logLevel`）。`context.subscriptions` に入れて片付ける
+        params:
+          - name: name
+            type: string
+            required: true
+            description: 「出力」パネルに出す名前（`mdmark`）
+          - name: options.log
+            type: 'true'
+            required: true
+            description: '`LogOutputChannel` を返す'
+        returns:
+          - name: '-'
+            type: LogOutputChannel
+            description: ログの出力先
+        refs:
+          - dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts#data_models[Logger]
+lead: VS Code が拡張機能に渡す API。コマンド・設定・エディタ・Webview のパネル・ファイルの監視を扱う。型は `@types/vscode` で配られ、実体は拡張機能を動かす VS Code が渡す。
+purl: pkg:npm/%40types/vscode@1.140.0
+supplier: Microsoft
+dependency_scope: 必須
+adoption: 採用
+used_in:
+  - vscode/src/
+upstream: microsoft/vscode
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: 'PoC（#70）で Webview の API（`window.createWebviewPanel`・`Webview.asWebviewUri`・`Webview.cspSource`・`Webview.postMessage`・`Webview.onDidReceiveMessage`）を動かした。この PR で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使い、VS Code 1.141.0 と 1.143.1（stable）で次を確かめた。`ExtensionContext.extensionMode` が `ExtensionMode.Test`（`3`）。`globalState.update` した値を `get` で読める。`TextEditor.revealRange`（`AtTop`、行 150）の後に `onDidChangeTextEditorVisibleRanges` が 1 回届き、先頭の行は 145（行 40 は 35、行 200 は 195。指定した行の 5 行前）。`revealRange` を呼んだ直後の `visibleRanges` はまだ前の値で、同じ位置へもう一度動かすと知らせが届かない。`TextEditor.edit` で `onDidChangeTextDocument`（`isDirty` が `true`）、`save` で `onDidSaveTextDocument` が届く。`createFileSystemWatcher` は VS Code の外から `fs.writeFileSync` で書き換えた設定ファイルの `onDidChange` を知らせる。`showInformationMessage` を `{ modal: true }` で呼ぶと、テストの中では `DialogService: refused to show dialog in tests` で失敗する。`env.openExternal` は既定のブラウザを開くため呼ばず、関数があることだけを確かめた（結合テストでは代役に差し替える）。2026-10-23 に VS Code 1.141.0 で、`window.createOutputChannel("mdmark", { log: true })` が `name` が `mdmark` で `trace`・`debug`・`info`・`warn`・`error` と数の `logLevel` を持ち、文字列と引数の `warn`・`Error` の `error` を例外なく受けることを確かめた'
+license: MIT（`@types/vscode`。商用利用可）
+official_url: https://code.visualstudio.com/api
+docs_url: https://code.visualstudio.com/api/references/vscode-api
+install: |-
+  ```bash
+  npm --prefix vscode i -D -E @types/vscode@1.140.0
+  ```
+limitations:
+  - item: Webview の印刷
+    content: Webview の中で `window.print()` を呼んでも印刷のダイアログが出ない
+    notes: 'Issue #22 の調査'
+  - item: Webview の配色の手がかり
+    content: VS Code は Webview の `body` にテーマの種類の class（`vscode-light`・`vscode-dark`・`vscode-high-contrast`・`vscode-high-contrast-light`）を付け、テーマを切り替えると付け替える
+    notes: PoC（#70）で `vscode-light`・`vscode-dark` を確かめた
+  - item: テストの中のモーダル
+    content: '拡張機能のテストの中で `showInformationMessage` を `{ modal: true }` で呼ぶと、`DialogService: refused to show dialog in tests` で失敗する'
+    notes: 結合テストでは `window.showInformationMessage` を代役に差し替える（2026-10-23、VS Code 1.141.0・1.143.1）
+  - item: AtTop で見せたときの先頭の行
+    content: '`revealRange` を `TextEditorRevealType.AtTop` で呼ぶと、見えている範囲の先頭は指定した行の数行前になる。位置が変わらないときは `onDidChangeTextEditorVisibleRanges` が届かない'
+    notes: 2026-10-23 に VS Code 1.141.0・1.143.1 で 5 行前だった

@@ -1,0 +1,338 @@
+title: "プレビューを開く"
+entry:
+  kind: operation
+  value: コマンド `mdmark.openPreviewToSide`・`mdmark.openPreview`（VS Code 拡張機能のコマンド）
+flows:
+  - name: 正常系
+    summary: タグ一覧から最新の版を選び、横の列のパネルに描かせる
+    setup:
+      - name: 見本のワークスペース
+        description: 見出し・表・注意書き・フロー図を持つ `guide.md` を置いたフォルダ。`mdmark.version` は既定の `latest`。`mdmark.lastVersion` は空
+      - name: Mock
+        description: '`MDMARK_VSCODE_DIST_BASE` に、このブランチでビルドした配布物を `@{版}/dist/` の形の URL で配る手元のサーバー。`MDMARK_VSCODE_TAGS_URL` に `v0.7.0`・`v0.10.0`・`v0.6.0`・`vscode-v0.11.0` を返す代役'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant GH as GitHub のタグ一覧
+        participant PV as Webview
+        participant CDN as jsDelivr
+        U->>EX: mdmark.openPreviewToSide
+        EX-->>GH: タグ一覧を取る
+        GH-->>EX: v0.7.0・v0.10.0・v0.6.0・vscode-v0.11.0
+        EX->>EX: v0.10.0 を選び mdmark.lastVersion に書く
+        EX->>PV: 横の列にパネルを開き HTML を入れる
+        PV-->>CDN: v0.10.0 の index.js・index.css
+        PV->>EX: ready
+        EX->>PV: render（全文・設定・theme）
+        PV->>EX: rendered
+    expected:
+      - パネルが `ViewColumn.Beside` に開き、題が `プレビュー guide.md`
+      - 配布物の要求が `@v0.10.0/dist/index.js` と `@v0.10.0/dist/index.css` だけで、`vscode-v0.11.0` を選んでいない（文字の並びでなく数で比べている）
+      - '`mdmark.lastVersion` が `v0.10.0`'
+      - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・フロー図の要素がある'
+      - Webview の HTML の CSP が制約「CSP」のとおりで、`script` 要素が全て nonce を持つ
+    test: test_normal
+  - name: 正常系（同じ列に開く）
+    summary: '`mdmark.openPreview` は同じ列のタブに開く'
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreview
+        EX->>PV: 同じ列にパネルを開く
+        PV->>EX: rendered
+    expected:
+      - パネルが Markdown のエディタと同じ列に開き、`rendered` が届く
+    test: test_normal_when_same_column
+  - name: 正常系（開いているパネルを表に出す）
+    summary: 同じ Markdown のパネルがあれば、作らずに表に出す
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常系の後。パネルの列で別のタブを表にしておく
+      - name: Mock
+        description: 正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: 開いているパネルを reveal
+    expected:
+      - mdmark のパネルが 1 つのままで、そのパネルが表にある
+      - タグ一覧の代役が 2 回目に呼ばれていない
+    test: test_normal_when_already_open
+  - name: 正常系（バージョンを固定する）
+    summary: '`mdmark.version` に書いた版を、タグ一覧を取らずに読む'
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。ワークスペースの設定で `mdmark.version` を `v0.6.0` にする。`mdmark.lastVersion` は `v0.7.0`
+      - name: Mock
+        description: 正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        participant CDN as jsDelivr
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: v0.6.0 で HTML を入れる
+        PV-->>CDN: v0.6.0 の index.js・index.css
+        PV->>EX: rendered
+    expected:
+      - 配布物の要求が `@v0.6.0/dist/` の 2 つ
+      - タグ一覧の代役が 1 回も呼ばれない
+      - '`mdmark.lastVersion` が `v0.7.0` のまま'
+    test: test_normal_when_version_pinned
+  - name: 正常系（タグ一覧を取れない）
+    summary: タグ一覧が待ちの上限まで返らないとき、前回の版で描く
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.lastVersion` は `v0.6.0`
+      - name: Mock
+        description: タグ一覧の代役は待ちの上限を超えても応えない。配布物は正常系と同じ
+        notes: 403 を返す代役でも同じ結果になることを同じテストで確かめる
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant GH as GitHub のタグ一覧
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX-->>GH: タグ一覧を取る
+        GH--xEX: 待ちの上限まで応答なし
+        EX->>PV: 前回の v0.6.0 で HTML を入れる
+        PV->>EX: rendered
+    expected:
+      - コマンドを呼んでから待ちの上限（3 秒）を少し過ぎたところで `@v0.6.0/dist/index.js` が要求される
+      - 描けない理由を出さず、`rendered` が届く
+      - '`mdmark.lastVersion` が `v0.6.0` のまま'
+    test: test_normal_when_tags_unreachable
+  - name: 正常系（配色を固定する）
+    summary: '`mdmark.preview.theme` の `light`・`dark` を包む要素の class にし、`auto` に戻すと外す'
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.preview.theme` を `light` にする
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: render（theme: light）
+        PV->>EX: rendered
+        U->>EX: mdmark.preview.theme を auto にする
+        EX->>PV: render（theme: auto）
+        PV->>EX: rendered
+    expected:
+      - '`light` の間、描く先を包む要素が class `mdmark-theme-light` を持ち、`mdmark-theme-dark` を持たない'
+      - '`auto` にすると、パネルを開き直さずに包む要素が `mdmark-theme-*` を持たなくなる'
+    test: test_normal_when_theme_fixed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（配色を固定する）]
+  - name: 正常系（相対パスの画像）
+    summary: Markdown のフォルダからの相対パスの画像を読む
+    setup:
+      - name: 画像を持つワークスペース
+        description: '`docs/guide.md` が `./images/figure.png` を持ち、`docs/images/figure.png` がワークスペースの中にある'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: base を docs/ の Webview の URL にした HTML
+        PV->>EX: rendered
+    expected:
+      - Webview の `img` の `naturalWidth` が 0 より大きい
+    test: test_normal_when_relative_image
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（相対パスの画像）]
+  - name: 異常系（ワークスペースの外の画像・代わりの文字）
+    summary: ワークスペースの外の画像は読まず、他の本文は描く
+    setup:
+      - name: 外の画像を指すワークスペース
+        description: '`guide.md` がワークスペースの外を指す `../../outside.png`（`alt` は `外の画像`）と見出しを持ち、`outside.png` は実際にある'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: HTML を入れる
+        PV->>PV: localResourceRoots の外は読まない
+        PV->>EX: rendered
+    expected:
+      - '`img` の `naturalWidth` が 0 で、`alt` が `外の画像`'
+      - 見出しは描かれている
+    test: test_error_when_image_outside_workspace
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[異常シナリオ（ワークスペースの外の画像）]
+  - name: 異常系（配布物を読めない・オフライン）
+    summary: 配布物の配信元が応えないとき、オフラインの理由と「リロード」を出す
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ
+      - name: Mock
+        description: '`MDMARK_VSCODE_DIST_BASE` に、接続を受け付けないポートの URL。タグ一覧は正常系と同じ'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        participant CDN as jsDelivr
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: v0.10.0 で HTML を入れる
+        PV--xCDN: index.js を読めない
+        PV--xCDN: HEAD で確かめても応答なし
+        PV->>EX: loadFailed（offline）
+    expected:
+      - '`loadFailed` の `reason` が `offline`'
+      - パネルにオフラインの描けない理由と「リロード」のボタンがあり、本文は無い
+      - Markdown と `mdmark.config.yaml` の中身が変わらない
+    test: test_error_when_distribution_unreachable
+  - name: 異常系（指定したバージョンが無い）
+    summary: 配布物の URL が 404 のとき、指定したバージョンが無い理由と「リロード」を出す
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.version` を `v9.9.9` にする
+      - name: Mock
+        description: 配布物を配る手元のサーバーは `@v9.9.9` に 404 を返す
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        participant CDN as jsDelivr
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: v9.9.9 で HTML を入れる
+        PV-->>CDN: index.js
+        CDN-->>PV: 404
+        PV->>EX: loadFailed（versionMissing）
+    expected:
+      - '`loadFailed` の `reason` が `versionMissing`'
+      - パネルに `v9.9.9` を含む描けない理由と「リロード」のボタンがある
+    test: test_error_when_version_missing
+  - name: 異常系（バージョンを決められない）
+    summary: タグ一覧を取れず前回の版も無いとき、配布物を要求せずに理由を出す
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.lastVersion` は空
+      - name: Mock
+        description: タグ一覧の代役は応えない。配布物のサーバーは要求を数える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant GH as GitHub のタグ一覧
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX-->>GH: タグ一覧を取る
+        GH--xEX: 待ちの上限まで応答なし
+        EX->>PV: 配布物を読まない HTML で理由を出す
+    expected:
+      - パネルにバージョンを決められない描けない理由と「リロード」のボタンがある
+      - 配布物の要求が 0 件
+    test: test_error_when_version_undecidable
+  - name: 異常系（Markdown でない・何もしない）
+    summary: Markdown でない文書でコマンドを呼んでもパネルを開かない
+    setup:
+      - name: Markdown でない文書
+        description: '`notes.txt` をエディタで開いた状態'
+      - name: Mock
+        description: 正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.openPreviewToSide（executeCommand）
+        EX->>EX: Markdown でないので何もしない
+    expected:
+      - mdmark のパネルが 0 個で、タグ一覧の代役が 1 回も呼ばれない
+      - '`package.json` の `contributes.menus`・`keybindings` の `when` に `editorLangId == markdown` がある'
+    test: test_error_when_not_markdown
+lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。
+idempotent: true
+side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。Markdown と設定ファイルは書き換えない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#
+  - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#
+  - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#
+exclusivity: 1 つの Markdown に 1 つのパネル。同じ Markdown のパネルが開いていれば、新しく作らずにそのパネルを今の列のまま表に出す
+request:
+  - name: uri
+    type: vscode.Uri
+    required: false
+    default: なし（アクティブなエディタの文書。mdmark のプレビューにフォーカスがあるときはそのプレビューの Markdown）
+    location: argument
+    description: プレビューを開く Markdown。エディタのタイトルのボタンから呼ぶと VS Code がそのエディタの文書を渡す
+    constraints: '`languageId` が `markdown` の文書'
+response:
+  - name: '-'
+    type: Promise<void>
+    description: パネルを開き、Webview に描かせる HTML を入れたら解決する（描き終わりを待たない）
+exceptions:
+  - name: なし（正常終了）
+    condition: パネルを開き、決めた版の mdmark で文書を描く
+  - name: なし（描けない理由・オフライン）
+    condition: Webview が配布物を読めず、配布物の URL への確かめの要求も応答が無いか 404 以外の失敗を返す
+    notes: 例外を投げず、パネルに描けない理由と「リロード」を出す
+  - name: なし（描けない理由・指定したバージョンが無い）
+    condition: 配布物の URL が 404 を返す
+    notes: 同上
+  - name: なし（描けない理由・バージョンを決められない）
+    condition: '`mdmark.version` が `latest` で、タグ一覧を取れず、`mdmark.lastVersion` も無い'
+    notes: 配布物を要求せず、パネルに描けない理由と「リロード」を出す
+  - name: なし（Markdown でない）
+    condition: 対象の文書が Markdown でないか、対象の文書が無い
+    notes: 何もしない。コマンドは `editorLangId == markdown` か mdmark のプレビューにフォーカスがあるときだけ、エディタのタイトル・ショートカット・コマンドパレットに出す（`package.json` の `when`）
+  - name: なし（ワークスペースの外の画像）
+    condition: 本文の画像が `localResourceRoots` の外を指す
+    notes: Webview が読まず `alt` が出る。他の本文は描く
+constraints:
+  - item: 配布物の URL
+    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{版}/dist/index.js` と `.../dist/index.css`。版なしの URL と `@latest` は使わない'
+    notes: dev/設計書/外部API/jsDelivr
+  - item: バージョンの決め方
+    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを拾い、数で比べて最大を選ぶ（`vscode-` で始まるタグは拾わない）。`latest` でないときは書いた版をそのまま使い、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、描き直すたびには取らない'
+    notes: dev/設計書/外部API/GitHub
+  - item: タグ一覧の待ち
+    constraint: 待ちの上限は全てのページを読み終えるまでの合計にかけ、超えたら要求を打ち切る。上限を超えたとき・ネットワークのエラー・200 以外（上限を超えた 403・429 を含む）・合うタグが 0 件のときは、取れなかったものとして前回のバージョンを使う。再試行しない
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[タグ一覧を取る待ちの上限]
+  - item: 前回のバージョン
+    constraint: タグ一覧から選んだ版を `globalState` の `mdmark.lastVersion` に書き、取れないときに読む。`latest` でない版を書いたときは書き換えない
+  - item: パネル
+    constraint: 'viewType `mdmark.preview`、タブの題 `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
+    notes: 背面に回したパネルは Webview が作り直され、`ready` を受けて最後の全文を送り直す（プレビューを描き直す.ts）
+  - item: CSP
+    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに作り直す。`libraries` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ"
+    notes: "図とヒントの部品が HTML に `style` 属性を書くため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"
+  - item: 相対パスの基準
+    constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
+  - item: Webview とのメッセージ
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, config, theme }`（`config` は `{ features?, libraries? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline` か `versionMissing`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
+  - item: 描けない理由の見分け方
+    constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
+  - item: 配色
+    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、VS Code が `body` に付ける class に任せる。設定を変えると開いているパネルへ `render` を送り直す'
+    notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約「配色の切り替え」
+  - item: テストのときの差し替え
+    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送って `inspected` の `elements` を返す `inspectPreview(selector)` を戻り値で返す。結合テストは Webview の DOM の期待値をこの戻り値で確かめる'
+    notes: dev/設計書/設定/VSCode拡張機能
+  - item: 対応する VS Code
+    constraint: '`engines.vscode` の下限より古い VS Code には入らない'
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]

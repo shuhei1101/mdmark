@@ -57,7 +57,7 @@ export function wrapSections(state: StateCore): void {
     });
     const [head = "", rest = ""] = html.split(TITLE_MARKER);
     const [body = ""] = rest.split(SLOT_MARKER);
-    out.push(ownBlock(state, head), inline, ownBlock(state, body));
+    out.push(ownBlock(state, head, token), inline, ownBlock(state, body));
     if (section && !known) {
       out.push(
         warningBlock(state, {

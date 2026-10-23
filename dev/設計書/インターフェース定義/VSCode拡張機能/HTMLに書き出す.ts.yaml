@@ -1,0 +1,123 @@
+title: "HTMLに書き出す"
+entry:
+  kind: operation
+  value: コマンド `mdmark.exportHtml`
+flows:
+  - name: 正常系
+    summary: Markdown と同じフォルダに書き出し、通知からブラウザで開く
+    setup:
+      - name: 見本のワークスペース
+        description: 見出し・表・注意書き・フロー図と `./images/figure.png` を持つ `docs/guide.md` を開いた状態。`mdmark.export.outputDir` は既定の空。`</script>` を含むコードブロックを持つ
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ配信元とタグ一覧の代役。`showInformationMessage` は「ブラウザで開く」を返す代役、`env.openExternal` は URL を記録する代役。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        U->>EX: mdmark.exportHtml
+        EX->>EX: 版を決めて HTML を組む
+        EX->>EX: docs/guide.html を書く
+        EX->>U: 書き出したパスと「ブラウザで開く」
+        U->>EX: ブラウザで開く
+        EX->>BR: env.openExternal（docs/guide.html）
+    expected:
+      - '`docs/guide.html` が 1 つ書かれ、戻り値がそのファイル'
+      - 通知に `docs/guide.html` のパスと「ブラウザで開く」が出る
+      - '`env.openExternal` の代役に `docs/guide.html` の `file:` の URL が渡る'
+      - HTML を開くと、見出し・表・注意書き・フロー図が描かれ、画像の `naturalWidth` が 0 より大きく、コードブロックの `</script>` が文字のまま出る
+    test: test_normal
+  - name: 正常系（書き出す先を指定する）
+    summary: '`mdmark.export.outputDir` のフォルダに書き、保存していない書き換えも入れる'
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.export.outputDir` を `out`（無いフォルダ）にし、見出しを保存せずに書き換える
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.exportHtml
+        EX->>EX: out/ を作り out/guide.html を書く
+    expected:
+      - ワークスペースの直下の `out/guide.html` が書かれ、`docs/guide.html` は書かれない
+      - HTML を開くと、保存していない見出しが描かれ、`docs/images/figure.png` の画像が読めている
+    test: test_normal_when_output_dir
+  - name: 異常系（書き出せない・通知）
+    summary: 書き出す先に書けないとき、理由を通知して何も残さない
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.export.outputDir` に書き込みを許さないフォルダを指定する
+      - name: Mock
+        description: 正常系と同じ。`showErrorMessage` は文字を記録する代役
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.exportHtml
+        EX->>EX: 書き出す先に書けない
+        EX->>U: 書き出せない理由の通知
+    expected:
+      - 戻り値が `undefined`
+      - '`showErrorMessage` の文字に書き出す先のパスと書けない理由が入る'
+      - 書き出す先に `.html` も一時ファイルも残らず、`env.openExternal` の代役は呼ばれない
+    test: test_error_when_output_unwritable
+  - name: 異常系（バージョンを決められない・通知）
+    summary: 読む版を決められないときは書かずに理由を通知する
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。`mdmark.lastVersion` は空
+      - name: Mock
+        description: タグ一覧の代役は応えない。`showErrorMessage` は文字を記録する代役
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.exportHtml
+        EX->>EX: タグ一覧を取れず前回の版も無い
+        EX->>U: 理由の通知
+    expected:
+      - 戻り値が `undefined` で、`.html` が書かれない
+      - '`showErrorMessage` が 1 回呼ばれる'
+    test: test_error_when_version_undecidable
+lead: 開いている Markdown を、jsDelivr の配布物を読んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で知らせる。
+idempotent: true
+side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。Markdown は書き換えない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#
+exclusivity: 同じ書き出す先への書き出しが重なったら、後に書き終えた内容が残る（一時ファイルから置き換えるため、書きかけは残らない）
+request:
+  - name: uri
+    type: vscode.Uri
+    required: false
+    default: なし（フォーカスのあるプレビューか、アクティブなエディタの Markdown）
+    location: argument
+    description: 書き出す Markdown
+    constraints: '`languageId` が `markdown` の文書'
+response:
+  - name: '-'
+    type: Promise<vscode.Uri | undefined>
+    description: 書き出した HTML のファイル。書き出せなかったときは `undefined`
+exceptions:
+  - name: なし（正常終了）
+    condition: HTML を書き、書き出したパスと「ブラウザで開く」の通知を出す
+  - name: なし（書き出せない）
+    condition: 書き出す先に書けない
+    notes: 例外を投げず、書き出す先のパスと理由を `showErrorMessage` で出す。一時ファイルは消す
+  - name: なし（バージョンを決められない）
+    condition: '`mdmark.version` が `latest` で、タグ一覧を取れず `mdmark.lastVersion` も無い'
+    notes: 書かずに、理由を `showErrorMessage` で出す
+constraints:
+  - item: 書き出す先
+    constraint: '`mdmark.export.outputDir` が空なら Markdown と同じフォルダ、相対パスなら Markdown を含むワークスペースのフォルダから、絶対パスならそのまま。ファイル名は Markdown の拡張子を `.html` に替えたもの。フォルダが無ければ作る。同じフォルダの一時ファイルに書いてから置き換える'
+  - item: 書き出す中身
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
+  - item: 設定と相対パス
+    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`libraries` の相対パスは設定ファイルのフォルダから解決した `file:` の URL にする。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
+    notes: ブラウザは `file:` のページから `file:` の ES モジュールを読まないため、相対パスの `libraries` の印は mdmark が知らせの枠にする。`http:`・`https:` の `libraries` は読める
+  - item: 通信
+    constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない
+    notes: 要件.md の確認ログ「書き出す HTML の作り方」。外へ要求しない 1 枚の HTML は CLI の `mdmark export` が作る
+  - item: 通知
+    constraint: 書き出せたら `showInformationMessage` で書き出したパスと「ブラウザで開く」のボタンを出し、押されたら `env.openExternal` で開く。文言は画面設計で決める

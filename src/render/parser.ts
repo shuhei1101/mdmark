@@ -138,6 +138,46 @@ function revertFuzzyLinks(state: StateCore): void {
   }
 }
 
+/** 元の行番号を付けるブロックの開始のトークンの種類（`fence` は `renderer.rules.fence` が付ける） */
+const SOURCE_LINE_TYPES = new Set([
+  "heading_open",
+  "paragraph_open",
+  "bullet_list_open",
+  "ordered_list_open",
+  "list_item_open",
+  "table_open",
+  "tr_open",
+  "blockquote_open",
+  "hr",
+  "code_block",
+]);
+
+/** `ownBlock` の HTML の最初の開始タグの属性の並びの頭 */
+const OWN_START_TAG = /^<([a-zA-Z][a-zA-Z0-9-]*)(?= data-mdmark-own=")/;
+
+/** ブロックの開始のトークンに、Markdown で始まる行の番号（0 始まり）を `data-source-line` で付ける */
+export function markSourceLines(state: StateCore): void {
+  const nonce = (state.env as RenderEnv).nonce;
+  for (const token of state.tokens) {
+    if (!token.block || !token.map) {
+      continue;
+    }
+    const line = token.map[0];
+    if (token.type === "html_block") {
+      // 記法が出した HTML だけに差し込む（文書に書いた生の HTML は変えない）
+      const start = OWN_START_TAG.exec(token.content);
+      if (
+        start &&
+        token.content.startsWith(` data-mdmark-own="${nonce}"`, start[0].length)
+      ) {
+        token.content = `${start[0]} data-source-line="${line}"${token.content.slice(start[0].length)}`;
+      }
+    } else if (SOURCE_LINE_TYPES.has(token.type)) {
+      token.attrSet("data-source-line", String(line));
+    }
+  }
+}
+
 /** 解析器の設定。印を拾う `findMarks` も同じ設定で解析する */
 const PARSER_OPTIONS = { html: true, linkify: true };
 
@@ -225,6 +265,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
     ["mdmark_drop_marks", dropMarks],
+    ["mdmark_mark_source_lines", markSourceLines],
   ];
   for (const [name, rule] of rules) {
     parser.core.ruler.push(name, rule);
@@ -240,9 +281,11 @@ export function createParser(): MarkdownItParser {
     const language = tokens[index]?.info.trim().split(/\s+/)[0] ?? "";
     const label = language ? `コード: ${language}` : "コード";
     const html = renderFence?.(tokens, index, options, env, self) ?? "";
+    const line = tokens[index]?.map?.[0];
+    const sourceLine = line === undefined ? "" : ` data-source-line="${line}"`;
     return html.replace(
       "<pre>",
-      `<pre tabindex="0" aria-label="${escapeHtml(label)}">`,
+      `<pre tabindex="0" aria-label="${escapeHtml(label)}"${sourceLine}>`,
     );
   };
   return parser;

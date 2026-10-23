@@ -73,8 +73,8 @@ slots:
 css_properties:
   - name: --mdmark-color-callout-note
     syntax: <color>
-    default: '#0969da（ダーク #4493f8）'
-    description: '`note` の枠の線・題・アイコンの色。`tip`（#1a7f37 / #3fb950）・`important`（#8250df / #ab7df8）・`warning`（#9a6700 / #d29922）・`caution`（#d1242f / #f85149）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
+    default: '#1d4ed8（ダーク #7aa2ff）'
+    description: '`note` の題・アイコンの色。枠の面は、この色を地の色に 7% 混ぜた色、枠の線は 40% 混ぜた色にする（`color-mix`。CSS 変数は持たない）。`tip`（#15803d / #4ade80）・`important`（#6d28d9 / #c4a7ff）・`warning`（#b45309 / #fbbf24）・`caution`（#b91c1c / #f87171）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
 accessibility:
   - 種類は題の文言（補足・ヒント・重要・警告・注意）で伝え、色だけに頼らない
   - アイコンは CSS で付け、読み上げに含めない

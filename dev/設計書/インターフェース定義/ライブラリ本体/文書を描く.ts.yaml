@@ -1515,6 +1515,102 @@ flows:
       - '`console.error` が部品ごとに 1 回ずつ呼ばれ、引数に部品の名前（`view`・`comments`）・モジュールの URL・元のエラーを含む'
       - 例外を投げず、段落は描かれる
     test: test_error_when_part_module_unavailable
+  - name: 正常系（元の行番号を出す）
+    summary: 描いたブロックと差し替えた本文のブロックが、元の行番号を持ち、見た目は変わらない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 行の位置が分かる Markdown
+        description: 1 行目に見出し、3 行目に段落、5〜7 行目に表、9〜11 行目にコードブロックを置いた文書。差し替え用に、頭に 2 行足した同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: data-source-line を持つ本文を描く
+        P->>M: update(頭に 2 行足した markdown)
+        M->>P: 行番号を付け直した本文を描く
+    expected:
+      - '`mount` の後、見出し・段落・表・コードブロックの要素の `data-source-line` が `0`・`2`・`4`・`8`'
+      - '`update` の後、同じ要素の `data-source-line` が `2`・`4`・`6`・`10`'
+      - 各要素の位置と色の計算値が、属性を取り除いた同じ HTML と同じ
+    test: test_normal_when_source_lines
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（元の行番号を出す）]
+  - name: 正常系（親の class でダークにする）
+    summary: OS の配色がライトでも、祖先の `vscode-dark` でダークの値を当て、class を外すと戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `vscode-dark` を付ける
+        notes: 'OS の配色は `prefers-color-scheme: light` にする'
+      - name: 見本の Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い（Playwright で `prefers-color-scheme` を切り替える）
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: ダークの値が当たった本文
+        P->>P: body の class を vscode-light に替える
+        P->>P: ライトの値に戻る
+    expected:
+      - '`body` が `vscode-dark` の間、`el` の `--mdmark-color-bg` の計算値がダークの `#131316`'
+      - '`body` を `vscode-light` に替えると、`mount` し直さずにライトの値になる'
+      - '`body` を `vscode-high-contrast` に替えるとダーク、`vscode-high-contrast vscode-high-contrast-light` に替えるとライトの値になる'
+    test: test_normal_when_parent_class_dark
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でダークにする）]
+  - name: 正常系（親の class でライトにする）
+    summary: OS の配色がダークでも、祖先の `vscode-light` でライトにし、`mdmark-theme-light` は `vscode-dark` に勝つ
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `vscode-light` を付ける
+        notes: 'OS の配色は `prefers-color-scheme: dark` にする'
+      - name: 固定の class の包み
+        description: '`body` の下に `el` を包む `div`。後半で `body` を `vscode-dark` にし、包みに `mdmark-theme-light` を付ける'
+      - name: 見本の Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: ライトの値が当たった本文
+        P->>P: body を vscode-dark、包みを mdmark-theme-light にする
+        P->>P: ライトの値のまま
+    expected:
+      - OS の配色がダークでも、`el` の `--mdmark-color-bg` の計算値がライトの値
+      - '`body` が `vscode-dark` でも、包みが `mdmark-theme-light` を持つ間はライトの値'
+    test: test_normal_when_parent_class_light
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でライトにする）]
+  - name: 正常系（親の class でダークにした文書を印刷する）
+    summary: 祖先の class でダークにしても、印刷では明るい配色にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `vscode-dark`、包みに `mdmark-theme-dark` を付ける
+      - name: 見本の Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: '印刷は Playwright の `emulateMedia({ media: "print" })` で代える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>P: 印刷の media にする
+        M-->>P: 明るい配色の本文
+    expected:
+      - 印刷の media の間、`el` の `--mdmark-color-bg` の計算値がライトの値
+    test: test_normal_when_parent_class_dark_printed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
   - name: 正常系（やめた言い方のマーカー）
     summary: 索引の用語のやめた言い方に波線のマーカーを付け、フォーカスで代わりの用語のツールチップを出す
     setup:
@@ -1860,6 +1956,9 @@ constraints:
   - item: コメントの箇所
     constraint: 描くたび（`mount`・`update`）に `load` を 1 回呼び、コメントごとに、本文の文字の中で `prefix + quote + suffix` が一致する箇所、無ければ `quote` が 1 か所だけ一致する箇所の `quote` を印で包む。同じ箇所のコメントは 1 つの印にまとめ、吹き出しに並べる。箇所が見つからないコメントは、文書の末尾の「箇所が見つからないコメント」の一覧（選んだ文字と本文）に出し、空なら置かない。`load` を読めないときは印を付けず、新しいコメントは付けられる。印は本文の文字を変えず、`destroy` で外す
     notes: 一覧の題と文言は画面設計『文書』
+  - item: 配色の切り替え
+    constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
+    notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
   - item: やめた言い方のマーカー
     constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。同じやめた言い方を複数の用語が持つときは、索引の `terms` で先の用語を代わりの用語にする。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
     notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences`・`collectMatches` の結果と関連文書の一覧は変わらない

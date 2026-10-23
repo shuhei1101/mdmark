@@ -1,0 +1,16 @@
+title: VSCode/ConfigBand
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: config-band
+    args:
+      path: mdmark.config.yaml
+      line: 4
+  - name: NarrowLongPath
+    parameters:
+      server:
+        id: config-band
+    args:
+      path: docs/settings/mdmark/mdmark.config.workspace-shared.yaml
+      line: 12

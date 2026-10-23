@@ -67,15 +67,15 @@ events:
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
-    default: '#d1d9e0（ダーク #3d444d）'
+    default: '#e4e4e7（ダーク #26262b）'
     description: 選んだタブを囲む線と、中身の枠の線の色
   - name: --mdmark-color-bg
     syntax: <color>
-    default: '#ffffff（ダーク #0d1117）'
+    default: '#ffffff（ダーク #131316）'
     description: 選んだタブと中身の地の色
   - name: --mdmark-color-heading
     syntax: <color>
-    default: '#1f2328（ダーク #f0f6fc）'
+    default: '#18181b（ダーク #ededef）'
     description: 選んだタブの文字の色
 accessibility:
   - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
