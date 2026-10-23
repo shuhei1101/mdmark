@@ -764,6 +764,12 @@ functions:
         condition: '`meaning` を持たない用語と `path` を持たない文書を持つ索引'
         mock: なし
         expected: 例外を投げず、合わない用語と文書の一致が入らない
+      - name: test_collect_matches_when_diagram_term_is_alias
+        case: 正常
+        summary: 図の部品の `{{語}}` は、語が文書の別名でもあるときも用語の参照先だけを返す
+        condition: 索引に用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`。`guide` の `<!-- flow -->` の定義の箱の `name` に `{{公開関数}}`
+        mock: なし
+        expected: '`{{公開関数}}` の位置は `term` の `fn` の 1 件だけで、`targets` に `api` が入らない'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts#
   - name: alignText
