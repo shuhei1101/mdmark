@@ -74,5 +74,18 @@ test("test_hint", async () => {
     0,
   );
   await expect(tip.locator("dt").count()).resolves.toBe(0);
+  // 箱の印の上に出る
+  const rects = await page.evaluate(() => {
+    const owner = document.querySelector(".mdmark-diagram-info");
+    const tooltip = document.querySelector('[role="tooltip"]');
+    if (!owner || !tooltip) {
+      throw new Error("印かツールチップが無い");
+    }
+    return {
+      ownerTop: owner.getBoundingClientRect().top,
+      tipBottom: tooltip.getBoundingClientRect().bottom,
+    };
+  });
+  expect(rects.tipBottom).toBeLessThanOrEqual(rects.ownerTop);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });

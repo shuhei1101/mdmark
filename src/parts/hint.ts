@@ -115,19 +115,20 @@ export function renderHint(props: {
     )
     .join("")
     .concat(styleAttribute);
-  // 開いた状態は、要素の後ろの静的な位置に出す（画面に対する位置は操作が決める）
+  // 開いた状態は、要素の上に出す（画面に対する位置は操作が決める）。上の余白の左上に置く
   const tip = open
     ? markup.after
         .replace(' hidden="hidden"', "")
         .replace(
           'role="tooltip"',
-          'role="tooltip" style="inset-inline-start:auto"',
+          'role="tooltip" style="position:absolute;inset-block-start:0;inset-inline-start:0"',
         )
     : markup.after;
+  const frame = `position:relative;padding-block-start:${open ? "6rem" : "0"}`;
   if (placement === "block") {
     const body = props.body ?? "ブロックの要素の文字";
-    return `<div style="padding-block-end:${open ? "6rem" : "0"}"><div${attributes}>${body}${markup.inside}</div>${tip}</div>`;
+    return `<div style="${frame}"><div${attributes}>${body}${markup.inside}</div>${tip}</div>`;
   }
   const body = props.body ?? "行内の語";
-  return `<p style="padding-block-end:${open ? "6rem" : "0"}">本文の<span${attributes}>${body}</span>${tip}を読む。</p>`;
+  return `<p style="${frame}">本文の<span${attributes}>${body}</span>${tip}を読む。</p>`;
 }
