@@ -24,6 +24,7 @@ import {
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
 import { matches, plainText } from "../../unit/helpers/html.ts";
+import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   DOC_ID,
   EXPECTED_HTML,
@@ -51,9 +52,15 @@ async function loadBuilt(): Promise<Built> {
   return await import(url);
 }
 
-/** ビルドした配布物を Node で読み込み、`render` を返す */
-async function loadRender(): Promise<Built["render"]> {
+/** ビルドした配布物を Node で読み込み、`render` をそのまま返す */
+async function loadRawRender(): Promise<Built["render"]> {
   return (await loadBuilt()).render;
+}
+
+/** ビルドした配布物を Node で読み込み、元の行番号の属性を取り除いた出力を返す `render` を返す。元の行番号以外の出力を比べるテストが使う */
+async function loadRender(): Promise<Built["render"]> {
+  const render = await loadRawRender();
+  return (markdown, opts) => stripSourceLine(render(markdown, opts));
 }
 
 /** HTML 文字列の中の、指定した要素の開始タグを全て返す */
@@ -593,7 +600,7 @@ test("test_normal_when_extension_mark", async () => {
   });
   const markdown = "前の段落\n\n<!-- greet: world lang=ja -->\n\n後の段落\n";
   // 実行
-  const html = render(markdown);
+  const html = stripSourceLine(render(markdown));
   // 検証
   expect(html).toContain(
     '<div class="mdmark-embed" data-mdmark-slot="greet" data-mdmark-args="world lang=ja" role="status">図を読み込んでいます</div>',
@@ -1232,4 +1239,53 @@ test("test_normal_when_code_block_feature_disabled", async () => {
   expect(html).toContain("// [!code ++]");
   expect(html).not.toContain("<!--");
   expect(html).not.toContain("app.ts");
+});
+
+/** 元の行番号の確認に使う、行の位置が分かる Markdown（1 行目に見出し、3 行目に段落、5〜7 行目に表、8 行目に印、9〜11 行目にコードブロック、13〜14 行目にリスト） */
+const SOURCE_LINE_MARKDOWN = [
+  "# 見出し",
+  "",
+  "段落",
+  "",
+  "| 列A | 列B |",
+  "| --- | ---: |",
+  "| 1 | 2 |",
+  "<!-- code: lines -->",
+  "```ts",
+  "const a = 1;",
+  "```",
+  "",
+  "- 項目A",
+  "- 項目B",
+  "",
+].join("\n");
+
+// ブロックの要素に、Markdown で始まる行の 0 始まりの番号を出す（正常系）
+test("test_normal_when_source_lines", async () => {
+  // 準備
+  const render = await loadRawRender();
+  // 実行
+  const html = render(SOURCE_LINE_MARKDOWN);
+  // 検証
+  const lineOf = (tag: string, index = 0): string | undefined =>
+    startTags(html, tag)[index]?.match(/data-source-line="(\d+)"/)?.[1];
+  expect(lineOf("h1")).toBe("0");
+  expect(lineOf("p")).toBe("2");
+  expect(html).toMatch(/<div data-source-line="4" class="mdmark-table"/);
+  expect(lineOf("tr", 1)).toBe("6");
+  expect(lineOf("pre")).toBe("8");
+  expect(lineOf("ul")).toBe("12");
+  expect(lineOf("li", 0)).toBe("12");
+  expect(lineOf("li", 1)).toBe("13");
+  // コードブロックの行は今のとおり `data-line`（1 から）を持ち、`data-source-line` を持たない
+  const codeLine = startTags(html, "span").find((tag) =>
+    tag.includes("mdmark-code-line"),
+  );
+  expect(codeLine).toContain('data-line="1"');
+  expect(codeLine).not.toContain("data-source-line");
+  // 表のセルの `data-label` と `mdmark-align-*` の class は変わらない
+  expect(html).toContain('<td data-label="列A">1</td>');
+  expect(html).toContain(
+    '<td data-label="列B" class="mdmark-align-right">2</td>',
+  );
 });

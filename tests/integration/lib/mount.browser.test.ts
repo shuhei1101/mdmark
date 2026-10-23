@@ -18,6 +18,7 @@ import {
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
+import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   DOC_ID,
   EXPECTED_HTML,
@@ -1220,7 +1221,7 @@ test("test_normal_when_index_in_browser", async () => {
     references: REFERENCES,
   });
   // 検証
-  expect(html).toBe(EXPECTED_HTML);
+  expect(stripSourceLine(html)).toBe(EXPECTED_HTML);
 });
 
 /** 幅 600px の描く先の要素に、幅 1100・高さ 560 のフロー図を描き、図と表示する枠を返す */
@@ -2971,4 +2972,57 @@ test("test_error_when_part_module_unavailable", async () => {
   // 検証
   expect(visibleCommentButton()).toBeUndefined();
   expect(store.load).not.toHaveBeenCalled();
+});
+
+/** 元の行番号を持つ要素の位置と色 */
+function snapshotBlocks(el: Element): Array<{
+  top: number;
+  height: number;
+  color: string;
+}> {
+  return ["h1", "p", ".mdmark-table", "pre"].map((selector) => {
+    const block = find(el, selector);
+    const rect = block.getBoundingClientRect();
+    return {
+      top: rect.top,
+      height: rect.height,
+      color: getComputedStyle(block).color,
+    };
+  });
+}
+
+// 描いたブロックと差し替えた本文のブロックが、元の行番号を持ち、見た目は変わらない（正常系）
+test("test_normal_when_source_lines", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "# 見出し",
+    "",
+    "段落",
+    "",
+    "| 列A | 列B |",
+    "| --- | ---: |",
+    "| 1 | 2 |",
+    "<!-- code: lines -->",
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+  ].join("\n");
+  const sourceLines = () =>
+    ["h1", "p", ".mdmark-table", "pre"].map((selector) =>
+      find(el, selector).getAttribute("data-source-line"),
+    );
+  // 実行・検証: 描いた直後
+  const handle = await mountTracked(el, { markdown });
+  expect(sourceLines()).toEqual(["0", "2", "4", "8"]);
+  // 属性を取り除いても、位置と色の計算値は変わらない
+  const withAttributes = snapshotBlocks(el);
+  for (const element of el.querySelectorAll("[data-source-line]")) {
+    element.removeAttribute("data-source-line");
+  }
+  expect(snapshotBlocks(el)).toEqual(withAttributes);
+  // 実行・検証: 頭に 2 行足して差し替える
+  handle.update(`\n\n${markdown}`);
+  expect(sourceLines()).toEqual(["2", "4", "6", "10"]);
 });

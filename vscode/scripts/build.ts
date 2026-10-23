@@ -55,7 +55,7 @@ export async function buildExtension(options: {
     format: "esm",
     platform: "node",
     target: "node22",
-    external: ["vscode", "mocha"],
+    external: ["vscode", "mocha", "playwright", "yaml"],
   });
 }
 

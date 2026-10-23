@@ -7,15 +7,15 @@ import {
 } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
-import { extname, join, normalize, resolve } from "node:path";
+import { dirname, extname, join, normalize, resolve } from "node:path";
 import { runTests } from "@vscode/test-electron";
+import { createBuiltRoot } from "../../../tests/integration/built-root.ts";
 
 /** 結合テストを流す VS Code: 対応する下限と、その時点の stable */
 export const TEST_VSCODE_VERSIONS = ["1.141.0", "stable"];
 
 /** 拡張機能の場所（`vscode/`）とリポジトリの直下 */
 const EXTENSION_PATH = resolve(import.meta.dirname, "..", "..");
-const REPO_ROOT = resolve(EXTENSION_PATH, "..");
 
 /** 配布物の拡張子ごとの `Content-Type` */
 const CONTENT_TYPES: Record<string, string> = {
@@ -27,8 +27,8 @@ const CONTENT_TYPES: Record<string, string> = {
 type Mode = {
   /** タグ一覧: 通常・応答しない・403 */
   tags: "ok" | "hang" | "forbidden";
-  /** 配布物: 通常・接続を切る（オフライン） */
-  dist: "ok" | "drop";
+  /** 配布物: 通常・接続を切る（オフライン）・`SLOW_DIST_MS` 遅らせて返す */
+  dist: "ok" | "drop" | "slow";
 };
 
 /** 代役の配信が受けた要求と、テストが切り替える状態 */
@@ -56,32 +56,38 @@ function sendJson(response: ServerResponse, body: unknown): void {
   response.end(JSON.stringify(body));
 }
 
+/** 配布物を遅らせて返すときの遅れ（ミリ秒）。読み込み中の表示を出す 1 秒より長くする */
+const SLOW_DIST_MS = 6000;
+
 /** 配布物が無いバージョン: `@v9.9.9` の配布物には 404 を返す */
 const MISSING_VERSION = "v9.9.9";
 
-/** 配布物の経路 `/@{バージョン}/dist/{ファイル}` を、どのバージョンでもリポジトリの `dist/` のファイルに引く。`MISSING_VERSION` だけ 404 を返す */
+/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンでも `distDir` のファイルに引く。`MISSING_VERSION` だけ 404 を返す */
 async function serveDist(
   path: string,
+  distDir: string,
   response: ServerResponse,
 ): Promise<void> {
-  const match = /^\/@(v[^/]+)\/dist\/([^/]+)$/.exec(path);
+  const match = /^\/mdmark@(v[^/]+)\/dist\/([^/]+)$/.exec(path);
   const file = match?.[2];
   if (match === null || file === undefined || match[1] === MISSING_VERSION) {
     response.writeHead(404);
     response.end();
     return;
   }
-  const target = normalize(join(REPO_ROOT, "dist", file));
-  if (!target.startsWith(join(REPO_ROOT, "dist"))) {
+  const target = normalize(join(distDir, file));
+  if (!target.startsWith(distDir)) {
     response.writeHead(404);
     response.end();
     return;
   }
   try {
     const body = await readFile(target);
+    // Webview が前のテストで読んだ配布物を使い回さないよう、キャッシュさせない
     response.writeHead(200, {
       "Content-Type":
         CONTENT_TYPES[extname(file)] ?? "application/octet-stream",
+      "Cache-Control": "no-store",
     });
     response.end(body);
   } catch {
@@ -91,7 +97,7 @@ async function serveDist(
 }
 
 /** 代役の配信を `127.0.0.1` の空きポートで立てる。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests` を持つ */
-export function createStubServer(stub: Stub): Server {
+export function createStubServer(stub: Stub, distDir: string): Server {
   return createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
     const path = url.pathname;
@@ -133,9 +139,12 @@ export function createStubServer(stub: Stub): Server {
       request.socket.destroy();
       return;
     }
+    if (stub.mode.dist === "slow") {
+      await new Promise((resolveWait) => setTimeout(resolveWait, SLOW_DIST_MS));
+    }
     // ブラウザの配布物の読み込みは別のオリジンのため、CORS を許す
     response.setHeader("Access-Control-Allow-Origin", "*");
-    await serveDist(path, response);
+    await serveDist(path, distDir, response);
   });
 }
 
@@ -154,7 +163,9 @@ export async function runIntegrationTests(): Promise<void> {
     mode: { tags: "ok", dist: "ok" },
     requests: [],
   };
-  const server = createStubServer(stub);
+  // 配布物は、このブランチのソースを一時フォルダにビルドして配る（`dist/` は書き換えない）
+  const built = await createBuiltRoot();
+  const server = createStubServer(stub, join(built.root, "dist"));
   const port = await listen(server);
   const origin = `http://127.0.0.1:${port}`;
   // 見本のワークスペース: 見出し・表・注意書きを持つ `guide.md`
@@ -166,20 +177,30 @@ export async function runIntegrationTests(): Promise<void> {
   );
   try {
     for (const version of TEST_VSCODE_VERSIONS) {
+      // 前回のバージョン（`globalState`）が空の状態で始めるため、バージョンごとに新しいユーザーデータを使う
+      const userDataDir = await mkdtemp(join(tmpdir(), "mdmark-vscode-user-"));
       await runTests({
         version,
         extensionDevelopmentPath: EXTENSION_PATH,
         extensionTestsPath: join(EXTENSION_PATH, "out", "test", "index.mjs"),
-        launchArgs: [workspacePath, "--disable-extensions"],
+        launchArgs: [
+          workspacePath,
+          "--disable-extensions",
+          `--user-data-dir=${userDataDir}`,
+        ],
         extensionTestsEnv: {
-          MDMARK_VSCODE_DIST_BASE: origin,
+          MDMARK_VSCODE_DIST_BASE: `${origin}/mdmark`,
           MDMARK_VSCODE_TAGS_URL: `${origin}/tags`,
+          // 子プロセスの npm が、この入口と同じ Node を使うようにする
+          MDMARK_TEST_NODE_DIR: dirname(process.execPath),
         },
       });
+      await rm(userDataDir, { recursive: true, force: true });
     }
   } finally {
     server.close();
     await rm(workspacePath, { recursive: true, force: true });
+    await built.dispose();
   }
 }
 

@@ -6,7 +6,8 @@ import Mocha from "mocha";
 export async function run(): Promise<void> {
   const mocha = new Mocha({ ui: "tdd", timeout: 20000 });
   const directory = import.meta.dirname;
-  for (const name of await readdir(directory)) {
+  // 読む順を決める（`00-` で始まるファイルは、前回のバージョンが空の状態で流す）
+  for (const name of (await readdir(directory)).sort()) {
     if (name.endsWith(".test.mjs")) {
       mocha.addFile(join(directory, name));
     }
