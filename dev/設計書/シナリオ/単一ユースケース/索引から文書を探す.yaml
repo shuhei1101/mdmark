@@ -46,3 +46,4 @@ preconditions:
   - 作業のフォルダに設定と索引がある
 success_guarantee: 条件に当たる文書の ID・パス・題名・概要・タグが返る。
 minimal_guarantee: 索引と文書を書き換えない。
+test_file: tests/e2e/単一ユースケース/索引から文書を探す.spec.ts

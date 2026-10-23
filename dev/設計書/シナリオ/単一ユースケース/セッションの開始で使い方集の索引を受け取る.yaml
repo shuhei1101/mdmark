@@ -29,3 +29,4 @@ preconditions:
   - ビルドした `plugin/` のフォルダがある
 success_guarantee: Claude Code が、使い方集の索引を `additionalContext` として受け取る。索引は `additionalContext` の上限の文字数に収まる。
 minimal_guarantee: フックは使い方集の本文を渡さず、索引だけを渡す。
+test_file: tests/e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts

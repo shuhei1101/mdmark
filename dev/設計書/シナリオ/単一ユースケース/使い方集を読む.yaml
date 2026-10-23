@@ -46,3 +46,4 @@ preconditions:
   - ビルドした `plugin/` の MCP サーバーが起動している
 success_guarantee: 渡した名前ごとに、その名前の本文が返る。
 minimal_guarantee: 索引に無い名前を渡したときは、本文を返さず、その名前と近い名前を添えたエラーを返す。
+test_file: tests/e2e/単一ユースケース/使い方集を読む.spec.ts

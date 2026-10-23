@@ -62,3 +62,4 @@ success_guarantee: 索引に文書が足され、点検のずれが 0 件にな�
 minimal_guarantee: 点検でずれが見つかったときは、ずれの一覧をツールの結果で返し、`build_site` を呼ぶ前に直せる。Schema に合わない索引の書き換えは書かずにエラーを返し、索引のファイルは変わらない。
 refs:
   - dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る#
+test_file: tests/e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts

@@ -73,3 +73,4 @@ preconditions:
   - 作業のフォルダに設定と索引がある
 success_guarantee: 索引のファイルの、渡した ID の項目だけが変わる。
 minimal_guarantee: 書き換えた後の索引が Schema に合わないときは、索引のファイルを書き換えず、合わないところと直し方を返す。
+test_file: tests/e2e/単一ユースケース/索引を書き換える.spec.ts

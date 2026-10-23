@@ -37,3 +37,4 @@ preconditions:
   - 文書を書く人の手元から GitHub と npm のレジストリへ届く
 success_guarantee: プラグインが有効になり、次に開くセッションで SessionStart のフックと MCP サーバー `plugin:mdmark:mdmark` が読み込まれる。プラグインが使う依存（`plugin/package.json` に書いたもの）がプラグインの置き場所に入っている。
 minimal_guarantee: マーケットプレイスの定義が読めないときは、Claude Code が理由を出してプラグインを入れない。手元の他のプラグインの設定は変わらない。
+test_file: tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts
