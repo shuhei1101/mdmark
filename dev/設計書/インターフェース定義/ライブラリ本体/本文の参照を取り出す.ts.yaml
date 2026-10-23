@@ -288,3 +288,4 @@ constraints:
 refs:
   - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#
   - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+test_file: tests/integration/lib/collect-matches.test.ts
