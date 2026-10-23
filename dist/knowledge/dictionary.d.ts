@@ -26,6 +26,8 @@ export declare function buildDictionary(options: {
     /** 文書で決まった機能のオン・オフ */
     features: Record<string, boolean>;
 }): Dictionary;
+/** 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す。区切り方は実行環境の辞書に依る */
+export declare function wordStarts(text: string): number[];
 /** 文字列の中で、始まりと終わりが語の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に、頭から順に返す */
 export declare function findWords(text: string, words: string[]): Array<{
     start: number;

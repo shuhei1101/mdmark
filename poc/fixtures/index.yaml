@@ -1,0 +1,8 @@
+schema: 1
+docs:
+  - id: a
+    path: a.md
+    title: 文書 A
+  - id: old
+    path: old.md
+    title: 消した文書

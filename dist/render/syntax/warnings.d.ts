@@ -9,6 +9,8 @@ export type SyntaxWarning = {
     message: string;
     /** 項目 */
     items?: WarningItem[];
+    /** 枠の `id` */
+    id?: string;
 };
 /** 書き方の警告の HTML に印を掛けて `html_block` にし、`index` の位置に差し込む */
 export declare function pushWarning(state: StateCore, index: number, warning: SyntaxWarning): void;

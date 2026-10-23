@@ -7,4 +7,6 @@ export declare function renderSyntaxWarning(options: {
     message: string;
     /** 読めない指定が複数あるときの項目（既定 `[]`） */
     items?: WarningItem[];
+    /** 枠の `id`。ほかの要素が `aria-describedby` で指すときに渡す */
+    id?: string;
 }): string;

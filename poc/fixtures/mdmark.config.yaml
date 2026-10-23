@@ -1,0 +1,4 @@
+version: v0.6.0
+index: index.yaml
+build:
+  include: ["**/*.md"]

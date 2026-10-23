@@ -5,6 +5,7 @@ import { runBuild } from "./build.ts";
 import { runCheck } from "./check.ts";
 import { runExport } from "./export.ts";
 import { runInit } from "./init.ts";
+import { runMcp } from "./mcp.ts";
 import { createLinePrompter, type Prompter } from "./prompt.ts";
 import { runUpgrade } from "./upgrade.ts";
 import { cliVersion } from "./versions.ts";
@@ -113,6 +114,9 @@ export async function main(
           { config: values.config, distDir: join(root, "dist") },
           io,
         );
+      case "mcp":
+        await runMcp({ cwd: io.cwd });
+        return 0;
       case "upgrade":
         return await runUpgrade(
           {

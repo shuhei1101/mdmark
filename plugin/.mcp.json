@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mdmark": {
+      "command": "npx",
+      "args": ["-y", "github:shuhei1101/mdmark#poc/claude-code/plugin-mcp", "mcp"]
+    }
+  }
+}

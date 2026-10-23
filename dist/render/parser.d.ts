@@ -41,6 +41,13 @@ export type RenderEnv = {
     termTipCount?: number;
     /** ヒントのツールチップの数（`id` の通し番号） */
     hintCount?: number;
+    /** ビューの書き方の警告の数（`id` の通し番号） */
+    viewCount?: number;
 };
+/** Markdown の生の HTML のブロックと行内の HTML から印の名前と行の番号（1 から）を、書いた順に返す。閉じの印も 1 つの印として返す */
+export declare function findMarks(markdown: string): Array<{
+    name: string;
+    line: number;
+}>;
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export declare function createParser(): MarkdownItParser;
