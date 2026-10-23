@@ -1,3 +1,6 @@
+import type { TooltipPlacement } from "../config.ts";
+import { chooseTipSide } from "./placement.ts";
+
 // ポインターが持ち主とツールチップの間を移る間、閉じるのを待つ時間（ミリ秒）
 const CLOSE_DELAY_MS = 150;
 
@@ -19,11 +22,17 @@ const HINT_TIP_CLASS = "mdmark-hint-tip";
 // 埋め込んだ HTML のヒントに操作を付けた回数の通し番号。`id` を重ならせないために使う
 let hintCounter = 0;
 
-/** 図のツールチップ（線の詳細・箱の説明と入力・処理・出力・箱の中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を渡したとき）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。箱は右上の印の上、ヒントはブロックの要素の印か行内の要素の上でだけ開く */
-export function attachDiagramTips(figure: HTMLElement): {
+/** 図のツールチップ（線の詳細・箱の説明と入力・処理・出力・箱の中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を渡したとき）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。箱は右上の印の上、ヒントはブロックの要素の印か行内の要素の上でだけ開く。置く側は `chooseTipSide` が決める */
+export function attachDiagramTips(options: {
+  /** 図か、埋め込んだ HTML の `div.mdmark-html` */
+  figure: HTMLElement;
+  /** ツールチップを先に出す側 */
+  placement: TooltipPlacement;
+}): {
   closeOpen: () => boolean;
   detach: () => void;
 } {
+  const { figure, placement } = options;
   const embedded = figure.classList.contains("mdmark-html");
   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
   const viewport = figure.querySelector<HTMLElement>(
@@ -61,7 +70,18 @@ export function attachDiagramTips(figure: HTMLElement): {
       `.mdmark-diagram-wire[data-wire="${CSS.escape(owner)}"]`,
     );
 
-  /** ツールチップを持ち主の下（収まらなければ上）に、画面からはみ出さないよう置く */
+  /** 持ち主の枠とツールチップの高さから、ツールチップを置く側を決める */
+  const tipSideOf = (options: { a: DOMRect; height: number }) =>
+    chooseTipSide({
+      anchorTop: options.a.top,
+      anchorBottom: options.a.bottom,
+      height: options.height,
+      gap: TIP_GAP_PX,
+      viewportHeight: window.innerHeight,
+      placement,
+    });
+
+  /** ツールチップを持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く */
   const place = (tip: HTMLElement, anchor: HTMLElement): void => {
     if (tip.classList.contains(HINT_TIP_CLASS)) {
       placeHint(tip, anchor);
@@ -77,9 +97,7 @@ export function attachDiagramTips(figure: HTMLElement): {
     const a = target.getBoundingClientRect();
     const b = box.getBoundingClientRect();
     const { width, height } = tip.getBoundingClientRect();
-    const above =
-      a.bottom + TIP_GAP_PX + height > window.innerHeight &&
-      a.top - TIP_GAP_PX - height >= 0;
+    const above = tipSideOf({ a, height }) === "top";
     const left = Math.max(
       VIEWPORT_MARGIN_PX,
       Math.min(a.left, window.innerWidth - width - VIEWPORT_MARGIN_PX),
@@ -88,13 +106,11 @@ export function attachDiagramTips(figure: HTMLElement): {
     tip.style.top = `${(above ? a.top - TIP_GAP_PX - height : a.bottom + TIP_GAP_PX) - b.top}px`;
   };
 
-  /** 埋め込んだ HTML のヒントのツールチップを、画面に対して持ち主の下（収まらなければ上）に、画面からはみ出さないよう置く */
+  /** 埋め込んだ HTML のヒントのツールチップを、画面に対して持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く */
   const placeHint = (tip: HTMLElement, anchor: HTMLElement): void => {
     const a = anchor.getBoundingClientRect();
     const { width, height } = tip.getBoundingClientRect();
-    const above =
-      a.bottom + TIP_GAP_PX + height > window.innerHeight &&
-      a.top - TIP_GAP_PX - height >= 0;
+    const above = tipSideOf({ a, height }) === "top";
     const left = Math.max(
       VIEWPORT_MARGIN_PX,
       Math.min(a.left, window.innerWidth - width - VIEWPORT_MARGIN_PX),

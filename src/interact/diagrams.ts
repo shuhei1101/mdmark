@@ -1,3 +1,4 @@
+import type { TooltipPlacement } from "../config.ts";
 import { fitScale, ZOOM } from "../diagram/geometry.ts";
 import { iconSvg } from "../parts/icons.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
@@ -334,10 +335,15 @@ function prepareModalFigure(figure: HTMLElement): HTMLElement {
 }
 
 /** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返す。閉じるボタンか Esc で閉じたら、付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す */
-export function openDiagramDialog(
-  figure: HTMLElement,
-  opener: HTMLButtonElement,
-): () => void {
+export function openDiagramDialog(options: {
+  /** 開く図 */
+  figure: HTMLElement;
+  /** 全画面のボタン */
+  opener: HTMLButtonElement;
+  /** モーダルの中のツールチップを先に出す側 */
+  placement: TooltipPlacement;
+}): () => void {
+  const { figure, opener, placement } = options;
   const host = figure.closest<HTMLElement>(".mdmark") ?? document.body;
   const dialog = document.createElement("dialog");
   dialog.className = "mdmark-diagram-dialog";
@@ -346,7 +352,7 @@ export function openDiagramDialog(
   host.append(dialog);
   dialog.showModal();
   const detachView = attachView(modalFigure, { modal: true });
-  const tips = attachDiagramTips(modalFigure);
+  const tips = attachDiagramTips({ figure: modalFigure, placement });
   const heading = modalFigure.querySelector(".mdmark-diagram-head");
   if (heading) {
     dialog.setAttribute("aria-labelledby", heading.id);
@@ -380,7 +386,13 @@ export function openDiagramDialog(
 }
 
 /** `root` の中の図ごとに、開いたときの倍率を当て、拡大・縮小・移動・全画面のボタンとキー・ドラッグ、ツールチップを付ける。付けた操作と監視を外し、開いている全画面を閉じる関数を返す */
-export function attachDiagrams(root: HTMLElement): () => void {
+export function attachDiagrams(options: {
+  /** 描いた要素 */
+  root: HTMLElement;
+  /** 図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ渡す） */
+  placement: TooltipPlacement;
+}): () => void {
+  const { root, placement } = options;
   attachCounter += 1;
   const detachers: Array<() => void> = [];
   const figures = [
@@ -395,7 +407,7 @@ export function attachDiagrams(root: HTMLElement): () => void {
       `mdmark-diagram-${attachCounter}-${index}`,
     );
     detachers.push(attachView(figure, { modal: false }));
-    const tips = attachDiagramTips(figure);
+    const tips = attachDiagramTips({ figure, placement });
     detachers.push(tips.detach);
     const opener = figure.querySelector<HTMLButtonElement>(
       '[data-tool="fullscreen"]',
@@ -403,7 +415,7 @@ export function attachDiagrams(root: HTMLElement): () => void {
     let closeDialog: (() => void) | undefined;
     const onOpen = (): void => {
       if (opener) {
-        closeDialog = openDiagramDialog(figure, opener);
+        closeDialog = openDiagramDialog({ figure, opener, placement });
       }
     };
     opener?.addEventListener("click", onOpen);

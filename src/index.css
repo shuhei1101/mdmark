@@ -1818,13 +1818,13 @@
       font-weight: 600;
     }
 
-    /* 用語と関連文書のツールチップ: 初めは出さない。上の透明な線で語との間を空け、ポインターが語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
+    /* 用語と関連文書のツールチップ: 初めは出さず、開くと語の上に置く。下の透明な線で語との間を空け、ポインターが語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
     .mdmark-term-tip {
       display: none;
       position: absolute;
       z-index: 10;
       box-sizing: border-box;
-      inset-block-start: 100%;
+      inset-block: auto 100%;
       inset-inline-start: 0;
       width: max-content;
       max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
@@ -1833,7 +1833,7 @@
       overscroll-behavior: contain;
       padding: 0.5em 0.75em;
       border: 1px solid var(--mdmark-color-muted);
-      border-block-start: 0.4em solid transparent;
+      border-block-end: 0.4em solid transparent;
       border-radius: var(--mdmark-radius);
       background: var(--mdmark-color-bg) padding-box;
       color: var(--mdmark-color-text);
@@ -1845,11 +1845,11 @@
       white-space: normal;
     }
 
-    /* 語の上に開いたツールチップ（下に収まらないとき）: 透明な線を下に移す */
-    .mdmark-term-wrap.is-above .mdmark-term-tip {
-      inset-block: auto 100%;
-      border-block-start: 1px solid var(--mdmark-color-muted);
-      border-block-end: 0.4em solid transparent;
+    /* 語の下に開いたツールチップ（上に収まらないとき）: 透明な線を上に移す */
+    .mdmark-term-wrap.is-below .mdmark-term-tip {
+      inset-block: 100% auto;
+      border-block-start: 0.4em solid transparent;
+      border-block-end: 1px solid var(--mdmark-color-muted);
     }
 
     /* 語にポインターを乗せたかフォーカスしたときと、スクリプトが開いたとき: ツールチップを出す */

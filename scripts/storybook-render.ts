@@ -398,16 +398,18 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       replacement: args.replacement as
         | { term: string; meaning: string }
         | undefined,
+      below: args.below === true,
     });
-    // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの下に余白を取る
+    // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの上と下に余白を取る
     const open = args.open === true;
     const wrap = open
       ? html.replace(
-          'class="mdmark-term-wrap"',
-          'class="mdmark-term-wrap is-open"',
+          'class="mdmark-term-wrap',
+          'class="mdmark-term-wrap is-open',
         )
       : html;
-    return `<p style="padding-block-end:${open ? "22rem" : "0"}">本文の${wrap}を読む。</p>`;
+    const space = open ? "22rem" : "0";
+    return `<p style="padding-block:${space}">本文の${wrap}を読む。</p>`;
   },
   backlinks: (args) =>
     renderBacklinks({
