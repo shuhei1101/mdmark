@@ -12,10 +12,20 @@ elements:
     id: code-block
     kind: region
     position: 描く先の要素
-    description: 'Markdown のコードブロック。狭い幅ではブロックの中で横スクロールし、続きがある側の端に影を出す。印刷では折り返す。読み上げの名前（`aria-label`）は `コード: {言語の識別子}`（言語が無ければ `コード`）'
+    description: 'Markdown のコードブロック。狭い幅ではブロックの中で横スクロールし、続きがある側の端に影を出す。印刷では折り返す。読み上げの名前（`aria-label`）は `コード: {言語の識別子}`（言語が無ければ `コード`、題があれば `コード: {題}`）。`code` がオンで、直前に `<!-- code: -->` か行末にコードの行の印があるときは、コードブロックの部品で題・行番号・行の強調・足した行と消した行を付けて描く'
     visible_when: 文書にコードブロックがあるとき
     tab_order: 0
     reason: キーボードで横スクロールできるように `tabindex="0"` を付ける。読み上げの名前は情報文字列をそのまま使い、言語名への対応表は持たない（モックの `TypeScript` は `ts` になる）
+    component: dev/設計書/部品設計/コードブロック.ts#
+    args:
+      - name: lines
+        value: コードブロックの行（行末のコードの行の印を外した文字と、印と `highlight=` から決めた行の種類）
+      - name: language
+        value: コードブロックの情報文字列の言語
+      - name: title
+        value: '直前の `<!-- code: -->` の `title=`'
+      - name: lineNumbers
+        value: '直前の `<!-- code: -->` に `lines` があるか'
   - name: 表
     id: table
     kind: table
