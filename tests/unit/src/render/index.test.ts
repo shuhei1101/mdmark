@@ -8,7 +8,11 @@ const loadRender = () => import("../../../../src/render/index.ts");
 function resolvedConfig(
   libraries: ResolvedConfig["libraries"] = {},
 ): ResolvedConfig {
-  return { features: { print: true }, libraries };
+  return {
+    features: { print: true },
+    libraries,
+    tooltips: { placement: "top" },
+  };
 }
 
 // 設定を渡さなくても本文の HTML を返す（正常系）
