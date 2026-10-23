@@ -353,5 +353,16 @@ settings:
     status: planned
     introduced:
       pr: 55
+  - key: features.code
+    title: コードブロックを飾る機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 'コードブロックに、直前の `<!-- code: -->` の題・行番号・行の強調と、行末のコードの行の印（`[!code ++]`・`[!code --]`・`[!code highlight]`）を当てる。オフのときは題・行番号・行の強調を付けず、コードの行の印は書いた文字のまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 65
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

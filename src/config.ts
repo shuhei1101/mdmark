@@ -31,6 +31,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   steps: true,
   tree: true,
   badge: true,
+  code: true,
   toc: true,
   anchors: true,
   sections: true,

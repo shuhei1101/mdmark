@@ -1,0 +1,38 @@
+$ npm run test:integration
+
+> test:integration
+> vitest run --project 'integration*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-code-block-decorations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Test Files  51 passed (51)
+      Tests  341 passed (341)
+   Start at  14:24:11
+   Duration  283.27s (tests 81%, import 13%, transform 5%, worker 1%)
+

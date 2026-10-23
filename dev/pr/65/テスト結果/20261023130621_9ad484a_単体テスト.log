@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-code-block-decorations
+
+
+ Test Files  114 passed (114)
+      Tests  578 passed (578)
+   Start at  13:06:23
+   Duration  31.60s (tests 38%, worker 34%, import 24%, transform 4%)
+

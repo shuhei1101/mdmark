@@ -13,6 +13,7 @@ const DEFAULT_FEATURES = {
   steps: true,
   tree: true,
   badge: true,
+  code: true,
   toc: true,
   anchors: true,
   sections: true,

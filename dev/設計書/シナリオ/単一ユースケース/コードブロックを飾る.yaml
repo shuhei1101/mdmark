@@ -1,0 +1,187 @@
+title: "コードブロックを飾る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: コードブロックの印を持つ Markdown
+        description: '`<!-- code: title=app.ts lines highlight=2 -->` の直後に、3 行の言語 `ts` のコードブロックを置いた文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 題・行番号・行の強調を付けたコードブロックを描く
+        P-->>U: 文書を表示
+    expected:
+      - コードブロックの上に題 `app.ts` が出ている
+      - 3 つの行の左に 1〜3 の行番号が出ている
+      - 2 行目だけが強調の背景になっている
+      - コードブロックの文字を全て選んだときの選んだ文字に、行番号が入っていない
+    test: test_normal
+  - name: 正常シナリオ（コードの行の印）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コードの行の印を持つ Markdown
+        description: 行末に `// [!code --]` を付けた行、`// [!code ++]` を付けた行、`count += 1; // 数える [!code highlight]` の行、印の無い行の 4 行を持つ言語 `ts` のコードブロックの文書（コードブロックの印は無い）
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 行末の印を読んで行に種類を付け、印を外す
+        M-->>P: 行ごとに分けたコードブロックを描く
+        P-->>U: 文書を表示
+    expected:
+      - '`[!code --]` の行が消した行の色で、行頭に `-` が出ている'
+      - '`[!code ++]` の行が足した行の色で、行頭に `+` が出ている'
+      - '`[!code highlight]` の行が強調の背景になっている'
+      - 3 つの印の文字が出ていない
+      - 印だけを持っていた 2 つの行の行コメントの頭 `//` が出ておらず、3 行目は `// 数える` が残っている
+      - 印の無い行は書いたとおりに出ている
+      - コードブロックの文字を全て選んだときの選んだ文字に、行頭の `+`・`-` が入っていない
+    test: test_normal_when_line_marks
+  - name: 正常シナリオ（印の書き方を見せる）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 打ち消した印を持つ Markdown
+        description: 行末に `// [\!code ++]` を付けた行を持つ言語 `ts` のコードブロックの文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 打ち消しの \ を外した行を描く
+        P-->>U: 文書を表示
+    expected:
+      - 行が `// [!code ++]` の文字のまま出ている
+      - 行が足した行の色になっておらず、行頭に `+` が出ていない
+    test: test_normal_when_line_mark_escaped
+  - name: 正常シナリオ（機能をオフにした文書）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 機能を外した Markdown
+        description: '`<!-- features: -code -->` を書き、正常シナリオのコードブロックの印と、行末に `// [!code ++]` を付けた行を持つコードブロックを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 印を取り除き、コードブロックをそのまま描く
+        P-->>U: 文書を表示
+    expected:
+      - 題・行番号・行の強調が出ていない
+      - 行が `// [!code ++]` の文字のまま出ている
+    test: test_normal_when_feature_off
+  - name: 異常シナリオ（読めない指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない指定を持つ Markdown
+        description: '`<!-- code: title=app.ts color=red -->` の直後に言語 `ts` のコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らないキー color= がある
+        M-->>P: 書き方の警告と、読めた指定だけを当てたコードブロックを描く
+        P-->>U: 書き方の警告とコードブロックを表示
+    expected:
+      - コードブロックの上に、`color=` が使えないキーであることと使えるキーを書いた書き方の警告がある
+      - コードブロックの上に題 `app.ts` が出ている
+    test: test_error_when_unknown_key
+  - name: 異常シナリオ（コードブロックに無い行の番号）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 無い行を強調する Markdown
+        description: '`<!-- code: highlight=2,5 -->` の直後に 3 行の言語 `ts` のコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 5 行目がコードブロックに無い
+        M-->>P: 書き方の警告と、2 行目を強調したコードブロックを描く
+        P-->>U: 書き方の警告とコードブロックを表示
+    expected:
+      - コードブロックの上に、5 行目が無いことと、コードブロックの行の数を書いた書き方の警告がある
+      - 2 行目が強調の背景になっている
+    test: test_error_when_highlight_line_missing
+  - name: 異常シナリオ（知らないコードの行の印）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない印を持つ Markdown
+        description: 行末に `// [!code focus]` を付けた行を持つ言語 `ts` のコードブロックの文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない印 focus がある
+        M-->>P: 書き方の警告と、印を当てない行を描く
+        P-->>U: 書き方の警告とコードブロックを表示
+    expected:
+      - コードブロックの上に、`[!code focus]` が使えない印であることと使える印を書いた書き方の警告がある
+      - 行が `// [!code focus]` の文字のまま出ている
+    test: test_error_when_unknown_line_mark
+  - name: 異常シナリオ（印の後にコードブロックが無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コードブロックの無い印を持つ Markdown
+        description: '`<!-- code: title=app.ts -->` の直後に段落を置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 印の直後にコードブロックが無い
+        M-->>P: 書き方の警告と、段落をそのまま描く
+        P-->>U: 書き方の警告と段落を表示
+    expected:
+      - 印の場所に、印の直後にコードブロックを置くよう書いた書き方の警告がある
+      - 段落が書いたとおりに出ていて、題が出ていない
+    test: test_error_when_no_code_block
+lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。'
+issue: 25
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: どのファイルのコードか、何行目か、どの行を変えたか・見るべきかが見て取れ、写したコードに行番号と行頭の `+`・`-` が混ざらない
+trigger: 使う側のページが、コードブロックの印かコードの行の印を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - コードブロックの機能（`code`）がオン（既定）
+success_guarantee: コードブロックの上に題が、各行の左に行番号が出て、指定した行と印を付けた行が色と行頭の `+`・`-` で分かれる。印と、印だけを持つ行コメントの頭は画面に出ない。GitHub ではコードブロックの印が見えず、コードの行の印は行コメントとして読める。
+minimal_guarantee: 読めない指定と知らない印は、その指定だけを当てずに描かれ、上に書き方の警告が出る。コードの中身は欠けずに出る。
+test_file: tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts
