@@ -97,6 +97,15 @@ constants:
     status: planned
     introduced:
       pr: 72
+  - name: GUIDE_LINK_BASE
+    title: 使い方集の外へのリンクの頭
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 索引に無いページへのリンクを書き換える GitHub の URL の頭。後ろに `/{埋めるバージョン}/{リポジトリの直下からのパス}` を続ける
+    value: https://github.com/shuhei1101/mdmark/blob
+    status: planned
+    introduced:
+      pr: 72
 functions:
   - name: checkGuideSource
     title: 使い方集の索引を検査する
@@ -325,25 +334,27 @@ functions:
     side_effects: '`plugin/guide/` を書く'
     args:
       - name: options
-        type: '{ root: string; entries: GuideEntry[] }'
+        type: '{ root: string; entries: GuideEntry[]; version: string }'
         required: true
-        description: 作業ツリーの場所と検査した索引の行
+        description: 作業ツリーの場所・検査した索引の行・埋めるバージョン
     returns:
       type: Promise<void>
       description: なし
     process: |-
       1. `plugin/guide/{GUIDE_INDEX_FILE}` に `{ schema: 1, guides: entries }` を JSON で書く
-      2. 行ごとに `{root}/{page}` を `plugin/guide/{page}` へ写す（親のフォルダが無ければ作る。同じページは 1 回）
+      2. 行ごとに `{root}/{page}` を読み、リンクを書き換えて `plugin/guide/{page}` へ書く（親のフォルダが無ければ作る。同じページは 1 回）（使い方集の本文のリンクを書き換える）
     unit_tests:
       - name: test_write_plugin_guide
         case: 正常
-        summary: 索引の JSON とページの写しを書く
-        condition: '`docs/a.md` を指す 1 行'
+        summary: 索引の JSON とリンクを書き換えたページを書く
+        condition: '`docs/a.md`（本文に索引に無い `./c.md` へのリンク）を指す 1 行、`version: v0.0.0`'
         mock: なし（一時フォルダ）
-        expected: '`plugin/guide/index.json` の `guides` が 1 行で、`plugin/guide/docs/a.md` が `docs/a.md` と同じ中身'
+        expected: '`plugin/guide/index.json` の `guides` が 1 行で、`plugin/guide/docs/a.md` のリンク先が `https://github.com/shuhei1101/mdmark/blob/v0.0.0/docs/c.md`'
     status: planned
     introduced:
       pr: 72
+    callees:
+      - '#functions[rewriteGuideLinks]'
   - name: removePluginOutputs
     title: プラグインの生成物を消す
     kind: 関数
@@ -417,6 +428,52 @@ functions:
       - '#functions[writePluginLicenses]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#
+    status: planned
+    introduced:
+      pr: 72
+  - name: rewriteGuideLinks
+    title: 使い方集の本文のリンクを書き換える
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 写すページの本文の相対リンクを、索引にあるページなら `read_guide` の名前、無いページならバージョンのタグの GitHub の URL に書き換える
+    description: '`read_guide` は本文をそのまま返すため、相対リンクのままではモデルがリンク先を読めない。フェンスのコードブロックとインラインコードの中、`http(s):` と `#` で始まるリンクは書き換えない'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ markdown: string; page: string; entries: GuideEntry[]; version: string }'
+        required: true
+        description: ページの本文・そのページのリポジトリの直下からのパス・索引の行・埋めるバージョン
+    returns:
+      type: string
+      description: リンクを書き換えた本文
+    process: |-
+      1. コードブロックとインラインコードの外の `[文字](リンク先)` と `![文字](リンク先)` を拾う
+      2. リンク先を `page` のフォルダから解決し、`#` の後ろを分ける
+         - 解決したパスが索引の行の `page` の場合、`[文字](…)` を `文字（read_guide の {名前}）` にする
+         - それ以外の場合、リンク先を `{GUIDE_LINK_BASE}/{version}/{パス}{#の後ろ}` にする
+    unit_tests:
+      - name: test_rewrite_guide_links
+        case: 正常
+        summary: 索引にあるページへのリンクを名前にする
+        condition: '`docs/使い方/a.md` の本文に `[表](./b.md)`、`docs/使い方/b.md` が名前 `tables` で索引にある'
+        mock: なし
+        expected: '`表（read_guide の tables）`'
+      - name: test_rewrite_guide_links_when_outside_index
+        case: 正常
+        summary: 索引に無いページへのリンクをタグの URL にする
+        condition: '`[設定](../リファレンス/設定.md#features)`、`version: v0.7.0`'
+        mock: なし
+        expected: リンク先が `https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/リファレンス/設定.md#features`
+      - name: test_rewrite_guide_links_when_in_code
+        case: 正常
+        summary: コードの中と絶対 URL・ページ内のリンクはそのまま
+        condition: フェンスの中の `[a](./b.md)`、インラインコードの `[a](./b.md)`、`[x](https://example.com)`、`[y](#一覧)`
+        mock: なし
+        expected: 本文が変わらない
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts#
     status: planned
     introduced:
       pr: 72
