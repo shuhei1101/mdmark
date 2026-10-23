@@ -246,7 +246,9 @@ test("test_filtered", async () => {
   await expect(visibleRows(page)).resolves.toBe(1);
   // 隠した行が tbody の末尾にあっても、見えている最後の行の下の線と枠が重ならず、下端は 1px
   await expect(
-    page.locator("tr.mdmark-table-empty").evaluate((el) => el.hidden),
+    page
+      .locator("tr.mdmark-table-empty")
+      .evaluate((el) => el.hasAttribute("hidden")),
   ).resolves.toBe(true);
   await expect(bottomLineWidth(page)).resolves.toBe(1);
 });
