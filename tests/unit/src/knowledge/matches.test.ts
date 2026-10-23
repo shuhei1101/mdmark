@@ -47,6 +47,26 @@ const API_TARGET = {
   description: "公開関数の一覧",
 };
 
+/** JSON の `\u` の 4 桁のエスケープ（`ア`）。ソースに書くと整形で文字に戻るため、組み立てる */
+const UNICODE_ESCAPE = ["\\", "u30a2"].join("");
+
+/** 箱の `name` に `{{語}}` を書いた、フロー図の定義の JSON */
+function flowDefinition(name: string): string[] {
+  return [
+    "{",
+    '  "title": "受け取り",',
+    '  "scope": "範囲",',
+    '  "updated": "2026-10-23",',
+    '  "width": 520,',
+    '  "height": 160,',
+    '  "nodes": [',
+    `    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "${name}", "sub": "" }`,
+    "  ],",
+    '  "wires": []',
+    "}",
+  ];
+}
+
 /** 一致の行・始まり・終わりで本文を切り出した文字 */
 function cut(
   body: string,
@@ -247,6 +267,56 @@ test("test_collect_matches_when_invalid_index", async () => {
   expect(matches?.targets.map((target) => target.id)).toEqual(["ws"]);
 });
 
+// 図の部品の {{語}} は、語が文書の別名でもあるときも用語の参照先だけを返す（正常系）
+test("test_collect_matches_when_diagram_term_is_alias", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  // 用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        description: "公開関数の一覧",
+        aliases: ["公開関数"],
+      },
+      { id: "guide", path: "使い方/guide.md", title: "使い方" },
+    ],
+    terms: [{ id: "fn", term: "公開関数", meaning: "配布物から呼べる関数" }],
+  };
+  const body = [
+    "<!-- flow -->",
+    "",
+    "```json",
+    ...flowDefinition("{{公開関数}}"),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  // 実行
+  const matches = collectMatches({
+    index,
+    documents: { "使い方/guide.md": body },
+  });
+  // 検証
+  // 箱の `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
+  const guide = matches.byDocument.guide ?? [];
+  expect(
+    guide.map((match) => [match.kind, match.id, cut(body, match)]),
+  ).toEqual([["term", "fn", "公開関数"]]);
+  expect(matches.targets).toEqual([
+    {
+      kind: "term",
+      id: "fn",
+      title: "公開関数",
+      description: "配布物から呼べる関数",
+    },
+  ]);
+});
+
 // 埋め込んだ HTML の文字の用語の位置だけを返し、属性の値・落ちる要素・照合しない要素が直接持つ同じ綴りは返さない（正常系）
 test("test_embedded_html_matches", async () => {
   // 準備
@@ -293,26 +363,14 @@ test("test_embedded_html_matches", async () => {
 test("test_diagram_term_matches", async () => {
   // 準備
   const { diagramTermMatches } = await loadMatches();
-  /** 箱の `name` に `{{語}}` を書いた、フロー図の定義の JSON */
-  const definition = (name: string): string[] => [
-    "{",
-    '  "title": "受け取り",',
-    '  "scope": "範囲",',
-    '  "updated": "2026-10-23",',
-    '  "width": 520,',
-    '  "height": 160,',
-    '  "nodes": [',
-    `    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "${name}", "sub": "" }`,
-    "  ],",
-    '  "wires": []',
-    "}",
-  ];
   const body = [
     "<!-- flow -->",
     "",
     "```json",
-    // JSON のエスケープ（\" と ア）の後ろの語
-    ...definition(String.raw`\"鍵\" ア {{ワークスペース}} と {{公開関数}}`),
+    // JSON のエスケープ（\" と \u の 4 桁）の後ろの語
+    ...flowDefinition(
+      `\\"鍵\\" ${UNICODE_ESCAPE} {{ワークスペース}} と {{公開関数}}`,
+    ),
     "```",
     "",
     "<!-- /flow -->",
@@ -321,7 +379,7 @@ test("test_diagram_term_matches", async () => {
     "",
     "```html",
     "<mdmark-flow>",
-    ...definition("{{ワークスペース}}"),
+    ...flowDefinition("{{ワークスペース}}"),
     "</mdmark-flow>",
     "```",
     "",
