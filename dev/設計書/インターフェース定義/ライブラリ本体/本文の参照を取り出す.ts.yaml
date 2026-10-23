@@ -255,7 +255,7 @@ response_example: |-
     "byDocument": {
       "guide": [
         { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "WS", "line": 3, "start": 0, "end": 2 },
-        { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧", "text": "公開関数", "line": 3, "start": 5, "end": 9 }
+        { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧", "text": "公開関数", "line": 3, "start": 4, "end": 8 }
       ]
     },
     "targets": [
