@@ -1,0 +1,55 @@
+title: "拡張機能の配布物を作る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 版を合わせたリポジトリ
+        description: '`vscode/package.json` の `version` が `0.1.0` の commit'
+      - name: Mock
+        description: なし（GitHub Actions で実際に流す。E2E ではワークフローを手元で流す代わりの手段を テスト実行方法 で決める）
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant GH as GitHub
+        participant GA as GitHub Actions
+        D->>GH: vscode-v0.1.0 のタグを push する
+        GH->>GA: タグのワークフローを起こす
+        GA->>GA: タグの版と vscode/package.json の版を比べる
+        GA->>GA: 依存を入れてビルドし .vsix を作る
+        GA->>GH: vscode-v0.1.0 の Release に .vsix を添える
+        GH-->>D: Release に mdmark-0.1.0.vsix
+    expected:
+      - '`vscode-v0.1.0` の GitHub Release に `mdmark-0.1.0.vsix` が添えられる'
+      - '`v{版}` の形の mdmark のタグを push しても、このワークフローは起きない'
+    test: test_normal
+  - name: 異常シナリオ（版が合わない）
+    setup:
+      - name: 版がずれたリポジトリ
+        description: '`vscode/package.json` の `version` が `0.1.0` のまま、`vscode-v0.2.0` のタグを打つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant GH as GitHub
+        participant GA as GitHub Actions
+        D->>GH: vscode-v0.2.0 のタグを push する
+        GH->>GA: タグのワークフローを起こす
+        GA->>GA: 版が合わないので止める
+        GA-->>D: ワークフローの失敗と、ずれた 2 つの版
+    expected:
+      - ワークフローが失敗し、ログにタグの版 `0.2.0` と `vscode/package.json` の版 `0.1.0` が出る
+      - '`vscode-v0.2.0` の Release に .vsix が添えられない'
+    test: test_error_when_version_mismatch
+lead: 開発者が `vscode-v{版}` のタグを打つと、GitHub Actions が拡張機能の .vsix を作り、そのタグの GitHub Release に添える。
+issue: 22
+primary_actor: mdmark の開発者
+stakeholders:
+  - name: mdmark の開発者
+    interest: 手で .vsix を作らずに、決まった版の拡張機能を配れる
+  - name: 文書を書く人
+    interest: GitHub Release から .vsix を落として入れられる
+trigger: 開発者が master の commit に `vscode-v{版}` のタグを打って push する
+preconditions:
+  - '`vscode/package.json` の `version` を配る版にしている'
+success_guarantee: タグの GitHub Release に `mdmark-{版}.vsix` が添えられる。
+minimal_guarantee: タグと `vscode/package.json` の版が合わないときは .vsix を作らず、Release に何も添えない。

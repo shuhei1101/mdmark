@@ -1,0 +1,69 @@
+title: "エディタとプレビューのスクロールを合わせる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 長い文書のプレビュー
+        description: 見出しで区切った 10 の節を持ち、画面の高さの 3 倍を超える Markdown のプレビューを開いた状態
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 8 番目の節の見出しの行までスクロールする
+        ED->>EX: 見えている先頭の行
+        EX->>PV: その行へ合わせる
+        PV->>PV: 元の行番号からブロックを探して動かす
+        PV-->>W: 8 番目の節の見出しを先頭に表示
+    expected:
+      - プレビューの見えている先頭に、8 番目の節の見出しが来る
+      - エディタの見えている先頭の行は、文書を書く人が動かした位置のまま（逆向きの同期で動き直さない）
+    test: test_normal
+  - name: 正常シナリオ（プレビューから合わせる）
+    setup:
+      - name: 長い文書のプレビュー
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>PV: 5 番目の節の見出しまでスクロールする
+        PV-->>EX: 見えている先頭のブロックの元の行番号
+        EX->>ED: その行を先頭に見せる
+        ED-->>W: 5 番目の節の見出しの行を先頭に表示
+    expected:
+      - エディタの見えている先頭の行が、5 番目の節の見出しの行になる
+    test: test_normal_when_from_preview
+  - name: 正常シナリオ（同期を切る）
+    setup:
+      - name: 長い文書のプレビュー
+        description: 正常シナリオと同じ。`mdmark.preview.scrollPreviewWithEditor` を `false` にする
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant PV as プレビュー（Webview）
+        W->>ED: 8 番目の節の見出しの行までスクロールする
+        PV-->>W: 位置を変えずに表示
+    expected:
+      - プレビューの見えている先頭が、スクロールする前と同じ位置のまま
+    test: test_normal_when_sync_off
+lead: 文書を書く人がエディタかプレビューのどちらかをスクロールすると、もう片方が同じ箇所まで動く。mdmark がブロックに付けた元の行番号を手がかりにする。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: 長い文書でも、書いている箇所の描いた見た目をすぐ見られる
+trigger: 文書を書く人がプレビューを開いたままエディタかプレビューをスクロールする
+preconditions:
+  - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
+success_guarantee: エディタの見えている先頭の行と、プレビューの見えている先頭のブロックの元の行番号が合う。
+minimal_guarantee: 同期を切った向きは動かさない。片方を動かした直後に逆向きの同期で往復しない。

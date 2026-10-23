@@ -82,3 +82,17 @@ items:
     summary: 読む人が本文の選んだ箇所にコメントを付け、使う側の読み書きの関数で残す
   - page: 部品をJavaScriptから使う.yaml
     summary: 使う側がページと拡張のモジュールから部品の関数を呼び、要素にビューを描き、選んだ箇所にコメントを付ける
+  - page: VSCodeでプレビューを開く.yaml
+    summary: 文書を書く人が VS Code で Markdown の横に mdmark のプレビューを開き、拡張機能が読む版を決めて描く
+  - page: 書いた内容をプレビューに映す.yaml
+    summary: Markdown と設定ファイルの書き換え・背面からの復帰・リロードで、プレビューを最後の内容で描き直す
+  - page: エディタとプレビューのスクロールを合わせる.yaml
+    summary: エディタかプレビューをスクロールすると、元の行番号を手がかりにもう片方が同じ箇所まで動く
+  - page: プレビューをVSCodeのテーマに合わせる.yaml
+    summary: プレビューの配色を VS Code のライト・ダークに合わせて切り替え、設定で固定もできる
+  - page: プレビューのリンクと画像を開く.yaml
+    summary: プレビューの外部の URL・Markdown へのリンク・`#` のリンクを開き、相対パスの画像を出す
+  - page: HTMLに書き出してPDFに印刷する.yaml
+    summary: 開いている Markdown を HTML に書き出して既定のブラウザで開き、印刷のダイアログで PDF にする
+  - page: 拡張機能の配布物を作る.yaml
+    summary: 開発者が `vscode-v{版}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える

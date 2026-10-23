@@ -1,0 +1,147 @@
+title: "書いた内容をプレビューに映す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオの後。`mdmark.preview.liveUpdate` は既定の `true`、`mdmark.preview.updateDelayMs` は既定の 300
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 見出しを書き換える（保存しない）
+        ED->>EX: 文書の変更
+        EX->>EX: updateDelayMs 待つ
+        EX->>PV: 最後の全文を送る
+        PV->>PV: update で描き直す
+        PV-->>W: 書き換えた見出しを表示
+    expected:
+      - 保存しないまま、プレビューの見出しが書き換えた文字になる
+      - 最後に打ってから updateDelayMs より前には描き直さない（続けて打った間の途中の全文は描かない）
+    test: test_normal
+  - name: 正常シナリオ（保存したときだけ描き直す）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。`mdmark.preview.liveUpdate` を `false` にする
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 見出しを書き換える
+        W->>ED: 保存する
+        ED->>EX: 保存の知らせ
+        EX->>PV: 全文を送る
+        PV-->>W: 書き換えた見出しを表示
+    expected:
+      - 保存する前は、プレビューの見出しが変わらない
+      - 保存すると、プレビューの見出しが書き換えた文字になる
+    test: test_normal_when_live_update_off
+  - name: 正常シナリオ（設定ファイルを保存する）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。`mdmark.config.yaml` は `features` を書いていない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: mdmark.config.yaml に features.callout: false を書いて保存する
+        ED->>EX: 設定ファイルの保存の知らせ
+        EX->>EX: features・libraries を取り出す
+        EX->>PV: 新しい設定で描き直させる
+        PV-->>W: 注意書きを枠にしない文書を表示
+    expected:
+      - プレビューの注意書きが、注意書きの枠ではなく引用として描かれる
+    test: test_normal_when_config_saved
+  - name: 正常シナリオ（背面から戻る）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。プレビューのパネルを同じ列の別のタブの後ろに回しておく
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: パネルが背面の間に見出しを 3 回書き換える
+        W->>ED: プレビューのタブを表に戻す
+        PV-->>EX: ready
+        EX->>PV: 最後の全文を送る
+        PV-->>W: 最後に書き換えた見出しを表示
+    expected:
+      - 表に戻したプレビューに、3 回目に書き換えた見出しが描かれる
+    test: test_normal_when_revealed
+  - name: 正常シナリオ（リロードする）
+    setup:
+      - name: 描けないプレビュー
+        description: VSCodeでプレビューを開くの異常シナリオ（配布物を読めない）の後
+      - name: Mock
+        description: 配布物を配る手元のサーバーを、配布物を配る状態へ戻す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>PV: 「リロード」を押す
+        PV-->>EX: リロードの依頼
+        EX->>EX: 設定ファイルと版を読み直す
+        EX->>PV: パネルを読み込み直す
+        PV->>CDN: 配布物を読む
+        PV-->>EX: ready
+        EX->>PV: 全文と設定を送る
+        PV-->>W: 描いた文書を表示
+    expected:
+      - 描けない理由と「リロード」のボタンが消え、見出し・表・注意書き・フロー図が描かれる
+      - 'コマンドパレットの「mdmark: プレビューをリロード」でも同じになる'
+    test: test_normal_when_reloaded
+  - name: 異常シナリオ（設定ファイルを読めない）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ
+      - name: 壊れた設定ファイル
+        description: YAML として読めない `mdmark.config.yaml`（閉じていない括弧）
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 読めない mdmark.config.yaml を保存する
+        ED->>EX: 設定ファイルの保存の知らせ
+        EX->>EX: 読めないので前の設定のまま
+        EX->>PV: 読めないことを知らせる
+        PV-->>W: 文書は描いたまま、上部に知らせの帯と「設定ファイルを開く」
+        W->>PV: 「設定ファイルを開く」を押す
+        PV-->>EX: 設定ファイルを開く依頼
+        EX->>ED: mdmark.config.yaml を開く
+    expected:
+      - プレビューの文書は描いたまま残る
+      - パネルの上部に、設定ファイルを読めないことを示す帯と「設定ファイルを開く」のボタンが出る
+      - ボタンを押すと `mdmark.config.yaml` がエディタで開く
+    test: test_error_when_config_unreadable
+lead: 文書を書く人が Markdown や設定ファイルを書き換えると、開いているプレビューが描き直される。背面から表に戻したときと、「リロード」を押したときも最後の内容で描く。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: 保存しなくても、打った内容が少し後にプレビューに出る
+trigger: 文書を書く人がプレビューを開いたまま Markdown か `mdmark.config.yaml` を書き換える
+preconditions:
+  - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
+success_guarantee: プレビューに、最後に書いた Markdown の全文が、設定ファイルの `features`・`libraries` を当てて描かれる。
+minimal_guarantee: 設定ファイルを読めないときも文書は描いたままにし、読めないことを知らせる。
