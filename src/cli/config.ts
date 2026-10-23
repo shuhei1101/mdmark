@@ -3,7 +3,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "../config.ts";
 import type { CheckIssue } from "./check.ts";
-import { CliError } from "./main.ts";
+import { CliError } from "./errors.ts";
 import { VERSION_PATTERN } from "./versions.ts";
 
 /** `mdmark build` が読む設定の `build` */

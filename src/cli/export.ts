@@ -23,8 +23,8 @@ import {
   usedLibraryMarks,
   usedParts,
 } from "./embed.ts";
+import { CliError, type CliIo } from "./errors.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
-import { CliError, type CliIo } from "./main.ts";
 
 /** 索引に足す、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
@@ -268,22 +268,22 @@ export async function writeHtml(options: {
   }
 }
 
-/** 文書 1 つを `kind: document` の中身にして HTML を書き、警告と `書き出した: {出力}` を出す */
-export async function runExport(
-  options: {
-    /** 書き出す Markdown のパス */
-    file: string;
-    /** 書き出す HTML のパス */
-    out?: string | undefined;
-    /** 使う設定ファイルのパス */
-    config?: string | undefined;
-    /** `dist/` の場所 */
-    distDir: string;
-  },
-  io: CliIo,
-): Promise<0> {
-  const loaded = await requireConfig(io.cwd, options.config);
-  const docFile = resolve(io.cwd, options.file);
+/** 文書 1 つを `kind: document` の中身にして HTML を書き、書いた絶対パス・利用者に見せるパス・警告を返す。標準出力・標準エラーには書かない */
+export async function exportDocument(options: {
+  /** 今のフォルダ */
+  cwd: string;
+  /** 書き出す Markdown のパス */
+  file: string;
+  /** 書き出す HTML のパス */
+  out?: string | undefined;
+  /** 使う設定ファイルのパス */
+  config?: string | undefined;
+  /** `dist/` の場所 */
+  distDir: string;
+}): Promise<{ out: string; display: string; warnings: string[] }> {
+  const { cwd } = options;
+  const loaded = await requireConfig(cwd, options.config);
+  const docFile = resolve(cwd, options.file);
   try {
     await readFile(docFile);
   } catch {
@@ -293,9 +293,9 @@ export async function runExport(
   }
   const path = normalizePath(toPosix(relative(loaded.dir, docFile)));
   const outFile = options.out
-    ? resolve(io.cwd, options.out)
+    ? resolve(cwd, options.out)
     : join(dirname(docFile), `${basename(docFile, extname(docFile))}.html`);
-  const display = options.out ?? toPosix(relative(io.cwd, outFile));
+  const display = options.out ?? toPosix(relative(cwd, outFile));
   const { payload, themeCss, warnings } = await prepareEmbeds({
     loaded,
     docs: [{ path, file: docFile }],
@@ -314,6 +314,27 @@ export async function runExport(
     file: outFile,
     display,
     html: assembleHtml({ payload, distCss, themeCss, viewer }),
+  });
+  return { out: outFile, display, warnings };
+}
+
+/** 文書 1 つを HTML に書き出し、警告と `書き出した: {出力}` を出す */
+export async function runExport(
+  options: {
+    /** 書き出す Markdown のパス */
+    file: string;
+    /** 書き出す HTML のパス */
+    out?: string | undefined;
+    /** 使う設定ファイルのパス */
+    config?: string | undefined;
+    /** `dist/` の場所 */
+    distDir: string;
+  },
+  io: CliIo,
+): Promise<0> {
+  const { display, warnings } = await exportDocument({
+    cwd: io.cwd,
+    ...options,
   });
   for (const warning of warnings) {
     io.stderr(`警告: ${warning}`);

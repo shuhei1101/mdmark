@@ -3,24 +3,15 @@ import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { runBuild } from "./build.ts";
 import { runCheck } from "./check.ts";
+import { CliError, type CliIo } from "./errors.ts";
 import { runExport } from "./export.ts";
 import { runInit } from "./init.ts";
 import { createLinePrompter, type Prompter } from "./prompt.ts";
 import { runUpgrade } from "./upgrade.ts";
 import { cliVersion } from "./versions.ts";
 
-/** コマンドが使う今のフォルダと、標準出力・標準エラーへの書き出し */
-export type CliIo = {
-  /** 今のフォルダ */
-  cwd: string;
-  /** 標準出力へ 1 行書く */
-  stdout: (line: string) => void;
-  /** 標準エラーへ 1 行書く */
-  stderr: (line: string) => void;
-};
-
-/** 原因と直し方の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り */
-export class CliError extends Error {}
+// 既存の呼び出し元のために、誤りと入出力の型を読み直して出す
+export { CliError, type CliIo } from "./errors.ts";
 
 /** 使えるコマンドの案内 */
 const USAGE = [

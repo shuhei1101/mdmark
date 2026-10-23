@@ -4,3 +4,4 @@ node_modules/
 test-results/
 playwright-report/
 debug-storybook.log
+plugin/node_modules/

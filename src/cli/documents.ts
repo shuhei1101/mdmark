@@ -11,7 +11,7 @@ import {
 import { parse } from "yaml";
 import { normalizePath } from "../knowledge/paths.ts";
 import type { BuildConfig, LoadedConfig } from "./config.ts";
-import { CliError } from "./main.ts";
+import { CliError } from "./errors.ts";
 
 /** Markdown の拡張子 */
 const MARKDOWN_EXTENSION = ".md";
