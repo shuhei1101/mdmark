@@ -45,6 +45,10 @@ const DIAGRAM_STYLE_PATTERN =
 /** コードブロックの `code` が持つ、行番号の桁の数の `style`（`--mdmark-code-digits: {数字}` だけ） */
 const CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
 
+/** 元の行番号の属性と、その値に許す形（0 以上の整数） */
+const SOURCE_LINE_ATTRIBUTE = "data-source-line";
+const SOURCE_LINE_PATTERN = /^\d+$/;
+
 /** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
 const DATA_IMAGE_PATTERN =
   /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*$/;
@@ -92,6 +96,8 @@ function dropSyntaxAttributes(
       if (tagName === "pre" || tagName === "table") {
         next[name] = value;
       }
+    } else if (name === SOURCE_LINE_ATTRIBUTE) {
+      next[name] = value;
     } else if (name.startsWith("data-")) {
       const keep =
         (tagName === "td" && name === "data-label") ||
@@ -399,6 +405,13 @@ export function sanitize(html: string, nonce: string): string {
           ? { ...attribs }
           : dropSyntaxAttributes(tagName, attribs);
         delete next[OWN_ATTRIBUTE];
+        // 元の行番号は、誰が出した要素でも 0 以上の整数のときだけ残す
+        if (
+          next[SOURCE_LINE_ATTRIBUTE] !== undefined &&
+          !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])
+        ) {
+          delete next[SOURCE_LINE_ATTRIBUTE];
+        }
         // 画像の `data:` URL は、画像の種類と base64 の形のものだけ残す
         if (
           tagName === "img" &&

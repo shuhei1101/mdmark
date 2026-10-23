@@ -4,3 +4,10 @@ node_modules/
 test-results/
 playwright-report/
 debug-storybook.log
+vscode/node_modules/
+vscode/dist/
+vscode/media/preview.js
+vscode/media/preview.css
+vscode/out/
+vscode/.vscode-test/
+*.vsix

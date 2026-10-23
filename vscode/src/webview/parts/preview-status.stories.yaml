@@ -1,0 +1,35 @@
+title: VSCode/PreviewStatus
+stories:
+  - name: Loading
+    parameters:
+      server:
+        id: preview-status
+    args:
+      state: loading
+  - name: Offline
+    parameters:
+      server:
+        id: preview-status
+    args:
+      state: offline
+      version: v0.7.0
+  - name: VersionMissing
+    parameters:
+      server:
+        id: preview-status
+    args:
+      state: versionMissing
+      version: v9.9.9
+  - name: VersionMissingLong
+    parameters:
+      server:
+        id: preview-status
+    args:
+      state: versionMissing
+      version: v0.7.0-rc.1+build.20261023.feature-vscode-preview-extension
+  - name: VersionUndecidable
+    parameters:
+      server:
+        id: preview-status
+    args:
+      state: versionUndecidable

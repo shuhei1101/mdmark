@@ -105,7 +105,7 @@ export function buildDiagrams(state: StateCore): void {
           hints,
         });
       }
-      const block = ownBlock(state, html);
+      const block = ownBlock(state, html, token);
       block.meta = {
         [DIAGRAM_META]: true,
         [PARAM_COUNT_META]: directive === "param" ? 1 : 0,

@@ -116,6 +116,174 @@
     }
   }
 
+  /* 描く先かその祖先の class で決める配色（画面のとき）: `:root` より強い指定で OS の設定に勝ち、印刷では当てない。優先は mdmark-theme-* → vscode-* で、同じ優先の class が入れ子のときは内側に従う */
+  @media screen {
+    /* ダークの配色: OS の設定のダークと同じ値 */
+    :root:has(
+        .mdmark:is(.mdmark-theme-dark, .mdmark-theme-dark *):not(
+            :is(
+              .mdmark-theme-dark .mdmark-theme-light,
+              .mdmark-theme-dark .mdmark-theme-light *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark:is(
+            :is(
+              .vscode-dark,
+              .vscode-high-contrast:not(.vscode-high-contrast-light)
+            ),
+            :is(
+                .vscode-dark,
+                .vscode-high-contrast:not(.vscode-high-contrast-light)
+              )
+              *
+          ):not(
+            :is(
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light),
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light)
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #0d1117;
+      --mdmark-color-text: #f0f6fc;
+      --mdmark-color-heading: #f0f6fc;
+      --mdmark-color-muted: #9198a1;
+      --mdmark-color-link: #4493f8;
+      --mdmark-color-border: #3d444d;
+      --mdmark-color-surface: #151b23;
+      --mdmark-color-scroll-shadow: rgb(145 152 161 / 0.5);
+      --mdmark-color-notice-bg: #2a2110;
+      --mdmark-color-notice-border: #bb8009;
+      --mdmark-color-notice-text: #f0f6fc;
+      --mdmark-color-table-head: #262c36;
+      --mdmark-color-callout-note: #4493f8;
+      --mdmark-color-callout-tip: #3fb950;
+      --mdmark-color-callout-important: #ab7df8;
+      --mdmark-color-callout-warning: #d29922;
+      --mdmark-color-callout-caution: #f85149;
+      --mdmark-color-current-bg: #121d2f;
+      --mdmark-color-diagram-llm: #ab7df8;
+      --mdmark-color-diagram-dm: #79c0ff;
+      --mdmark-color-diagram-script: #9198a1;
+      --mdmark-color-diagram-mcp: #f0883e;
+      --mdmark-color-diagram-data: #39c5cf;
+      --mdmark-color-diagram-external: #3fb950;
+      --mdmark-color-diagram-line: #9198a1;
+      --mdmark-color-series-1: #4493f8;
+      --mdmark-color-series-2: #f0883e;
+      --mdmark-color-series-3: #ab7df8;
+      --mdmark-color-series-4: #39c5cf;
+      --mdmark-color-code-highlight-bg: #2e2a14;
+      --mdmark-color-code-highlight-line: #d29922;
+      --mdmark-color-diff-del-bg: #25171c;
+      --mdmark-color-diff-del-word: #6b2b2b;
+      --mdmark-color-diff-del-sign: #f85149;
+      --mdmark-color-diff-add-bg: #12261e;
+      --mdmark-color-diff-add-word: #1a4a29;
+      --mdmark-color-diff-add-sign: #3fb950;
+      --mdmark-color-comment-bg: #2e2147;
+      --mdmark-color-comment-line: #ab7df8;
+      --mdmark-color-error: #f85149;
+      color-scheme: dark;
+    }
+
+    /* ライトの配色: 変数の既定と同じ値 */
+    :root:has(
+        .mdmark:is(.mdmark-theme-light, .mdmark-theme-light *):not(
+            :is(
+              .mdmark-theme-light .mdmark-theme-dark,
+              .mdmark-theme-light .mdmark-theme-dark *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark:is(
+            :is(.vscode-light, .vscode-high-contrast-light),
+            :is(.vscode-light, .vscode-high-contrast-light) *
+          ):not(
+            :is(
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                ),
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #ffffff;
+      --mdmark-color-text: #1f2328;
+      --mdmark-color-heading: #1f2328;
+      --mdmark-color-muted: #59636e;
+      --mdmark-color-link: #0969da;
+      --mdmark-color-border: #d1d9e0;
+      --mdmark-color-surface: #f6f8fa;
+      --mdmark-color-scroll-shadow: rgb(31 35 40 / 0.22);
+      --mdmark-color-notice-bg: #fff8c5;
+      --mdmark-color-notice-border: #9a6700;
+      --mdmark-color-notice-text: #1f2328;
+      --mdmark-color-table-head: #e6ebf0;
+      --mdmark-color-callout-note: #0969da;
+      --mdmark-color-callout-tip: #1a7f37;
+      --mdmark-color-callout-important: #8250df;
+      --mdmark-color-callout-warning: #9a6700;
+      --mdmark-color-callout-caution: #d1242f;
+      --mdmark-color-current-bg: #ddf4ff;
+      --mdmark-color-diagram-llm: #8250df;
+      --mdmark-color-diagram-dm: #0550ae;
+      --mdmark-color-diagram-script: #59636e;
+      --mdmark-color-diagram-mcp: #bc4c00;
+      --mdmark-color-diagram-data: #1b7c83;
+      --mdmark-color-diagram-external: #1a7f37;
+      --mdmark-color-diagram-line: #59636e;
+      --mdmark-color-series-1: #0969da;
+      --mdmark-color-series-2: #bc4c00;
+      --mdmark-color-series-3: #8250df;
+      --mdmark-color-series-4: #1b7c83;
+      --mdmark-color-code-highlight-bg: #fff8c5;
+      --mdmark-color-code-highlight-line: #9a6700;
+      --mdmark-color-diff-del-bg: #ffebe9;
+      --mdmark-color-diff-del-word: #ffcecb;
+      --mdmark-color-diff-del-sign: #d1242f;
+      --mdmark-color-diff-add-bg: #dafbe1;
+      --mdmark-color-diff-add-word: #aceebb;
+      --mdmark-color-diff-add-sign: #1a7f37;
+      --mdmark-color-comment-bg: #fbefff;
+      --mdmark-color-comment-line: #8250df;
+      --mdmark-color-error: #d1242f;
+      color-scheme: light;
+    }
+  }
+
   /* 描く先の要素: 行の長さ・文字・行間と、地の色・内側の余白・角丸（枠と影は付けない） */
   .mdmark {
     max-width: var(--mdmark-content-width);

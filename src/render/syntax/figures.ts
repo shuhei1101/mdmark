@@ -144,7 +144,7 @@ export function numberFigures(state: StateCore): void {
       body: SLOT_MARKER,
     });
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    out.push(ownBlock(state, head));
+    out.push(ownBlock(state, head, token));
     out.push(...tokens.slice(index + 1, target.end + 1));
     out.push(ownBlock(state, tail));
     index = target.end;

@@ -1,0 +1,199 @@
+{
+  "name": "mdmark",
+  "displayName": "mdmark",
+  "description": "Markdown を mdmark で描いたプレビューを VS Code に出し、HTML への書き出しと PDF への印刷ができる",
+  "version": "0.1.0",
+  "publisher": "shuhei1101",
+  "private": true,
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shuhei1101/mdmark.git",
+    "directory": "vscode"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "preview",
+    "mdmark"
+  ],
+  "engines": {
+    "vscode": "^1.141.0",
+    "node": ">=24"
+  },
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onWebviewPanel:mdmark.preview"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdmark.openPreviewToSide",
+        "title": "プレビューを横に開く",
+        "category": "mdmark",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "mdmark.openPreview",
+        "title": "プレビューを開く",
+        "category": "mdmark"
+      },
+      {
+        "command": "mdmark.refreshPreview",
+        "title": "プレビューをリロード",
+        "category": "mdmark"
+      },
+      {
+        "command": "mdmark.openConfig",
+        "title": "設定ファイルを開く",
+        "category": "mdmark"
+      },
+      {
+        "command": "mdmark.exportHtml",
+        "title": "HTML に書き出す",
+        "category": "mdmark"
+      },
+      {
+        "command": "mdmark.openInBrowser",
+        "title": "ブラウザで開く",
+        "category": "mdmark"
+      },
+      {
+        "command": "mdmark.printToPdf",
+        "title": "PDF に印刷",
+        "category": "mdmark"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "mdmark.openPreviewToSide",
+          "when": "editorLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "mdmark.openPreviewToSide",
+          "when": "editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'"
+        },
+        {
+          "command": "mdmark.openPreview",
+          "when": "editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'"
+        },
+        {
+          "command": "mdmark.refreshPreview",
+          "when": "mdmark.previewOpen"
+        },
+        {
+          "command": "mdmark.openConfig"
+        },
+        {
+          "command": "mdmark.exportHtml",
+          "when": "editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'"
+        },
+        {
+          "command": "mdmark.openInBrowser",
+          "when": "editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'"
+        },
+        {
+          "command": "mdmark.printToPdf",
+          "when": "editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "mdmark.openPreviewToSide",
+        "key": "shift+alt+d",
+        "mac": "shift+alt+d",
+        "when": "editorLangId == markdown"
+      }
+    ],
+    "configuration": {
+      "title": "mdmark",
+      "properties": {
+        "mdmark.version": {
+          "type": "string",
+          "default": "latest",
+          "pattern": "^(latest|v\\d+\\.\\d+\\.\\d+)$",
+          "patternErrorMessage": "latest か v{X}.{Y}.{Z} の形で記載してください",
+          "scope": "resource",
+          "description": "読む mdmark のバージョン。latest のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から最新の v{X}.{Y}.{Z} を選ぶ。バージョンを記載するとそのバージョンに固定する"
+        },
+        "mdmark.configPath": {
+          "type": "string",
+          "default": "mdmark.config.yaml",
+          "scope": "resource",
+          "description": "拡張機能が features と libraries を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから解決する"
+        },
+        "mdmark.preview.liveUpdate": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "true のときは Markdown を打つたびに描き直す。false のときは保存したときだけ描き直す"
+        },
+        "mdmark.preview.updateDelayMs": {
+          "type": "integer",
+          "default": 300,
+          "minimum": 0,
+          "maximum": 5000,
+          "scope": "resource",
+          "description": "最後に打ってから描き直すまでのミリ秒"
+        },
+        "mdmark.preview.scrollPreviewWithEditor": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "エディタをスクロールしたときに、プレビューを同じ箇所まで動かす"
+        },
+        "mdmark.preview.scrollEditorWithPreview": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "プレビューをスクロールしたときに、エディタを同じ箇所まで動かす"
+        },
+        "mdmark.preview.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
+          "default": "auto",
+          "scope": "resource",
+          "description": "プレビューの配色。auto は VS Code のテーマの明暗に合わせ、light・dark はその配色に固定する"
+        },
+        "mdmark.export.outputDir": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "HTML を書き出すフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package --no-dependencies --out mdmark-$npm_package_version.vsix",
+    "release:check": "node scripts/release-check.ts",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "node scripts/build.ts --tests && node tests/integration/run.ts"
+  },
+  "devDependencies": {
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.19.2",
+    "@types/vscode": "1.140.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "mocha": "12.0.3",
+    "typescript": "7.0.2",
+    "yaml": "2.9.1"
+  }
+}

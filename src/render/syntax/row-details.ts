@@ -125,7 +125,7 @@ export function attachRowDetails(state: StateCore): void {
           removed.add(index);
         }
         const detail = [
-          ownBlock(state, head),
+          ownBlock(state, head, tokens[position]),
           ...content,
           ownBlock(state, tail),
         ];

@@ -13,10 +13,17 @@ export function featureOn(state: StateCore, name: string): boolean {
   return envOf(state).features[name] === true;
 }
 
-/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする */
-export function ownBlock(state: StateCore, html: string): Token {
+/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする。`source` を渡すと、その `map`（元の行）を写す */
+export function ownBlock(
+  state: StateCore,
+  html: string,
+  source?: Token,
+): Token {
   const token = new state.Token("html_block", "", 0);
   token.block = true;
+  if (source?.map) {
+    token.map = [...source.map];
+  }
   token.content = markOwn(html, envOf(state).nonce);
   return token;
 }
