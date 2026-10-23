@@ -8,10 +8,11 @@ export type TermSegment = {
     kind: "tip";
     html: string;
 };
-/** 用語・文書の別名に下線を付けた場所（付けたら、同じ範囲の同じ語には付けない） */
+/** 用語・文書の別名に下線を、やめた言い方にマーカーを付けた場所（付けたら、同じ範囲の同じ語には付けない）。やめた言い方は用語の下線とは別に、言い方ごとに数える */
 export type SeenTerms = {
     terms: Set<string>;
     docs: Set<string>;
+    avoided: Set<string>;
 };
 /** 文字を辞書の語で区切る。同じ用語・文書は `seen` にあれば付けず、付けたら `seen` に足す。ツールチップの `id` は `nextTipId` が決める。語が 1 つも当たらなければ文字 1 つだけを返す */
 export declare function termSegments(options: {
