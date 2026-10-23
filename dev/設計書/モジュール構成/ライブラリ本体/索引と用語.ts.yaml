@@ -98,6 +98,20 @@ data_models:
       - name: docId
         type: string
         description: 表を持つ文書の `id`
+  - name: GlossaryRow
+    title: 用語集の表の行
+    container: src/render/syntax/glossary.ts
+    summary: 用語集の表の 1 行から読んだ用語と、その行の行番号・やめた言い方
+    properties:
+      - name: entry
+        type: MdmarkGlossaryEntry
+        description: 行から読んだ用語
+      - name: line
+        type: number
+        description: その行の文書の中の行番号（1 から）
+      - name: avoid
+        type: string[]
+        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -323,7 +337,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term` のずれをこの順で返す
-    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、索引の文書ごとに `parseDocument` で読んだトークンを `findAvoidedTerms` に渡して拾う。`message` は日本語の 1 文で、直す場所を書く'
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語と `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。`message` は日本語の 1 文で、直す場所を書く'
     args:
       - name: input
         type: '{ index: unknown; documents: Record<string, string>; indexFile?: string }'
@@ -361,6 +375,12 @@ functions:
         condition: インターフェース定義『索引を点検する』の「正常系（やめた言い方が本文に出る）」の索引と文書
         mock: なし
         expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_glossary_avoided_term
+        case: 正常
+        summary: 用語集の表のやめた言い方を、表を持たない文書の本文から `avoided_term` で返す
+        condition: インターフェース定義『索引を点検する』の「正常系（用語集の表のやめた言い方が本文に出る）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
   - name: readGlossaryTable
@@ -369,7 +389,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`glossary` の印の範囲の中の表のトークンから、用語・意味・別名の列を読んで用語を返す'
-    description: 印の引数の `term=`・`meaning=`・`aliases=` で列の見出しの文字を指す。別名のセルは「、」と「,」で区切り、前後の空白を落とす。必須の引数が無いときと、表に無い列名のときは用語を返さず、書き方の警告の項目を返す。用語か意味が空の行は飛ばす
+    description: 印の引数の `term=`・`meaning=`・`aliases=` で列の見出しの文字を指す。別名のセルは「、」と「,」で区切り、前後の空白を落とす。必須の引数が無いときと、表に無い列名のときは用語を返さず、書き方の警告の項目を返す。用語か意味が空の行は飛ばす。行は `readGlossaryRows` で読み、用語だけを返す（やめた言い方は用語に入れない）
     args:
       - name: options
         type: '{ args: MarkArgs; tokens: Token[]; docId: string }'
@@ -403,7 +423,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す'
-    description: 表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない
+    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines`、やめた言い方を `env.glossaryAvoid` に `env.ownGlossary` と同じ並びで足す。表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない'
     args:
       - name: state
         type: StateCore
@@ -623,14 +643,14 @@ functions:
     title: やめた言い方を探す
     container: src/knowledge/check.ts
     summary: 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする
-    description: 見出しの中を飛ばして行内のトークンを頭から辿り、`matchableChildren` の位置のテキストを `findWords` で照合する。`findWords` には索引の用語の語・別名を先に、やめた言い方を後に並べて渡し（同じ長さなら用語の側が当たる）、やめた言い方が当たったものだけを数える。行は、行内のトークンの `map` の開始行（無ければ直前の `tr_open` の `map` の開始行）に、その子より前の `softbreak`・`hardbreak` の数と 1 を足す。同じ行とやめた言い方の組は 1 件にまとめ、行の順・行の中は出た順に返す
+    description: 見出しの中を飛ばして行内のトークンを頭から辿り、`matchableChildren` の位置のテキストを `findWords` で照合する。`findWords` には用語の語・別名を先に、やめた言い方を後に並べて渡し（同じ長さなら用語の側が当たる）、やめた言い方が当たったものだけを数える。行は、行内のトークンの `map` の開始行（無ければ直前の `tr_open` の `map` の開始行）に、その子より前の `softbreak`・`hardbreak` の数と 1 を足す。同じ行とやめた言い方の組は 1 件にまとめ、行の順・行の中は出た順に返す
     kind: 関数
     scope: internal
     args:
       - name: options
-        type: '{ file: string; tokens: Token[]; terms: MdmarkIndexTerm[] }'
+        type: '{ file: string; tokens: Token[]; terms: Array<Pick<MdmarkIndexTerm, "term" | "aliases" | "avoid">> }'
         required: true
-        description: ずれの `file` に出す文書のパス・`parseDocument` のトークン・索引の用語
+        description: ずれの `file` に出す文書のパス・`parseDocument` のトークン・用語（索引の用語の後に、索引の `docs` の順の文書の用語集の表の用語を続けた並び。同じやめた言い方は先の用語を使う）
     returns:
       type: MdmarkIndexIssue[]
       description: '`kind` が `avoided_term` のずれ。`where` は `{行} 行目`、`message` は `` `{やめた言い方}` はやめた言い方です。用語 `{語}` に書き換えてください。 ``'
@@ -655,6 +675,12 @@ functions:
         condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 行目が `ワークスペースを開く。`、3 行目が `ワークとワーク。`（どちらも `ワーク` の終わりが語の切れ目に揃うので、用語の語を渡さないと 1 行目も当たる）
         mock: なし
         expected: '`where` が `3 行目` の 1 件だけ'
+      - name: test_find_avoided_terms_prefers_first_term
+        case: 正常
+        summary: 同じやめた言い方を持つ用語が 2 つあるとき、先の用語を代わりに使う用語にする
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）、用語 `作業スペース`（`avoid` に `作業場`）の順。本文の 1 行目が `作業場を開く。`
+        mock: なし
+        expected: 1 件だけで、`message` に `ワークスペース` があり `作業スペース` が無い
   - name: findDocs
     title: 索引から文書を探す
     kind: 関数
@@ -718,6 +744,40 @@ functions:
     status: planned
     introduced:
       pr: 72
+  - name: readGlossaryRows
+    title: 用語集の表の行を読む
+    container: src/render/syntax/glossary.ts
+    summary: '`glossary` の印の範囲の中の表のトークンから、用語・意味・別名・やめた言い方の列を読んで行ごとに返す'
+    description: 印の引数の `term=`・`meaning=`・`aliases=`・`avoid=` で列の見出しの文字を指す（`aliases=`・`avoid=` は任意）。別名とやめた言い方のセルは「、」と「,」で区切り、前後の空白を落とし、空のものを除く。必須の引数が無いときと、表に無い列名のときはその表の行を返さず、最初の誤りを書き方の警告の本文にする。用語か意味が空の行は飛ばす
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ args: MarkArgs; tokens: Token[]; docId: string }'
+        required: true
+        description: 印の引数・範囲の中のトークン・表を持つ文書の `id`（索引を渡さないときは空文字）
+    returns:
+      type: '{ rows: GlossaryRow[]; warning?: string }'
+      description: 行ごとの用語・行番号・やめた言い方と、書き方の警告の本文
+    unit_tests:
+      - name: test_read_glossary_rows_with_avoid
+        case: 正常
+        summary: やめた言い方の列を「、」「,」で区切って読み、用語の別名には入れない
+        condition: '`term=用語 meaning=意味 avoid=やめた言い方`、行 `ワークスペース | 作業の置き場所 | 作業場、ワーク場, `'
+        mock: なし
+        expected: '`avoid` が `["作業場", "ワーク場"]`、`entry.aliases` が `[]`、`warning` が無い'
+      - name: test_read_glossary_rows_without_avoid
+        case: 正常
+        summary: '`avoid=` が無ければやめた言い方を空にする'
+        condition: '`term=用語 aliases=別名 meaning=意味`、行 `印 | マーク | HTML コメントで書く指定`'
+        mock: なし
+        expected: '`avoid` が `[]`、`entry` が `readGlossaryTable` の用語と等しい'
+      - name: test_read_glossary_rows_when_unknown_avoid_column
+        case: 異常
+        summary: '`avoid=` が表に無い列名なら行を返さず警告を返す'
+        condition: '`term=用語 meaning=意味 avoid=旧称`、列が `用語`・`意味`'
+        mock: なし
+        expected: '`rows` が空、`warning` に `avoid=` と `旧称` と列の並び `用語`・`意味`'
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
