@@ -1,5 +1,5 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
-import { page, userEvent } from "vitest/browser";
+import { cdp, page, userEvent } from "vitest/browser";
 import type {
   DiffRevision,
   MdmarkComment,
@@ -38,6 +38,9 @@ const TEST_LIB_PATH = "/fixtures/test-lib.js";
 const MISSING_LIB_PATH = "/fixtures/missing.js";
 // 読み込み中の枠の文言
 const LOADING_TEXT = "図を読み込んでいます";
+// ダークとライトの `--mdmark-color-bg` の値
+const DARK_BG = "#131316";
+const LIGHT_BG = "#ffffff";
 
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
@@ -3093,4 +3096,90 @@ test("test_normal_when_source_lines", async () => {
   // 実行・検証: 頭に 2 行足して差し替える
   handle.update(`\n\n${markdown}`);
   expect(sourceLines()).toEqual(["2", "4", "6", "10"]);
+});
+
+/** 描く先を包む要素（`wrap`）と描く先（`el`）を置き、`body` の class と OS の配色を先に決めて見本の Markdown を描く */
+async function mountThemed(options: {
+  bodyClass: string;
+  colorScheme: "light" | "dark";
+}): Promise<{ wrap: HTMLElement; el: HTMLElement }> {
+  const wrap = createElement();
+  const el = document.createElement("div");
+  wrap.append(el);
+  document.body.className = options.bodyClass;
+  await cdp().send("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-color-scheme", value: options.colorScheme }],
+  });
+  await mountTracked(el, {
+    markdown: "# 見出し\n\n段落\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n",
+  });
+  return { wrap, el };
+}
+
+/** `body` の class と、OS の配色・印刷のメディアの切り替えを元に戻す */
+async function resetThemed(): Promise<void> {
+  document.body.className = "";
+  await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+}
+
+/** 描く先の要素の `--mdmark-color-bg` の計算値 */
+function readBackground(el: HTMLElement): string {
+  return getComputedStyle(el).getPropertyValue("--mdmark-color-bg").trim();
+}
+
+// OS の配色がライトでも、祖先の `vscode-dark` でダークの値を当て、class を外すと戻す（正常系）
+test("test_normal_when_parent_class_dark", async () => {
+  // 準備・実行
+  const { el } = await mountThemed({
+    bodyClass: "vscode-dark",
+    colorScheme: "light",
+  });
+  try {
+    // 検証
+    expect(readBackground(el)).toBe(DARK_BG);
+    document.body.className = "vscode-light";
+    expect(readBackground(el)).toBe(LIGHT_BG);
+    document.body.className = "vscode-high-contrast";
+    expect(readBackground(el)).toBe(DARK_BG);
+    document.body.className = "vscode-high-contrast vscode-high-contrast-light";
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// OS の配色がダークでも、祖先の `vscode-light` でライトにし、`mdmark-theme-light` は `vscode-dark` に勝つ（正常系）
+test("test_normal_when_parent_class_light", async () => {
+  // 準備・実行
+  const { wrap, el } = await mountThemed({
+    bodyClass: "vscode-light",
+    colorScheme: "dark",
+  });
+  try {
+    // 検証
+    expect(readBackground(el)).toBe(LIGHT_BG);
+    document.body.className = "vscode-dark";
+    wrap.className = "mdmark-theme-light";
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 祖先の class でダークにしても、印刷では明るい配色にする（正常系）
+test("test_normal_when_parent_class_dark_printed", async () => {
+  // 準備・実行
+  const { wrap, el } = await mountThemed({
+    bodyClass: "vscode-dark",
+    colorScheme: "light",
+  });
+  try {
+    wrap.className = "mdmark-theme-dark";
+    expect(readBackground(el)).toBe(DARK_BG);
+    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+    // 検証
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
 });
