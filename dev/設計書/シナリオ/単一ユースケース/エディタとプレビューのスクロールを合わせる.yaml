@@ -43,7 +43,7 @@ scenarios:
   - name: 正常シナリオ（同期を切る）
     setup:
       - name: 長い文書のプレビュー
-        description: 正常シナリオと同じ。`mdmark.preview.scrollPreviewWithEditor` を `false` にする
+        description: 正常シナリオと同じ。`mdmark.preview.scrollPreviewWithEditor` と `mdmark.preview.scrollEditorWithPreview` を `false` にする
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -53,8 +53,11 @@ scenarios:
         participant PV as プレビュー（Webview）
         W->>ED: 8 番目の節の見出しの行までスクロールする
         PV-->>W: 位置を変えずに表示
+        W->>PV: 3 番目の節の見出しまでスクロールする
+        ED-->>W: 位置を変えずに表示
     expected:
-      - プレビューの見えている先頭が、スクロールする前と同じ位置のまま
+      - プレビューの見えている先頭が、エディタをスクロールする前と同じ位置のまま
+      - プレビューをスクロールしても、エディタの見えている先頭の行は 8 番目の節の見出しの行のまま
     test: test_normal_when_sync_off
 lead: 文書を書く人がエディタかプレビューのどちらかをスクロールすると、もう片方が同じ箇所まで動く。mdmark がブロックに付けた元の行番号を手がかりにする。
 issue: 22
