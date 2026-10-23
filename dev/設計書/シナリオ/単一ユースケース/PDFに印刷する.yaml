@@ -52,5 +52,3 @@ preconditions:
   - 既定のブラウザから jsDelivr に届く
 success_guarantee: 書き出した HTML がブラウザで開き、文書を描き終えた後に印刷のダイアログが出る。
 minimal_guarantee: 書き出せないときはブラウザを開かず、理由を通知に出す。Markdown は書き換えない。
-notes:
-  未確定: 印刷のコマンドをこの作業 PR に含めるかと、`mdmark.printToPdf` で開く HTML は、要件.md の `未確定` の推奨案（含める・毎回書き出し直す）で書いた。ユーザーの確認で別案に決まったら書き直す。

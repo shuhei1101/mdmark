@@ -75,5 +75,3 @@ preconditions:
   - 既定のブラウザから jsDelivr に届く
 success_guarantee: 書き出し先に HTML が 1 つ書かれ、ブラウザで開くとプレビューと同じ文書が描かれる。
 minimal_guarantee: 書き出せないときは理由を通知に出し、書きかけのファイルを残さない。Markdown は書き換えない。
-notes:
-  未確定: 書き出しのコマンドをこの作業 PR に含めるか、書き出す HTML の形、`mdmark.openInBrowser` で開く HTML は、要件.md の `未確定` の推奨案（含める・jsDelivr の配布物を読んで `mount` で描く HTML・毎回書き出し直す）で書いた。ユーザーの確認で別案に決まったら書き直す。

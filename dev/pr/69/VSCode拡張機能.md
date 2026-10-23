@@ -18,7 +18,7 @@
 | リンクと画像 | Webview からのリンクの押下を拡張機能が受け、外部 URL は `openExternal`、`.md` は VS Code で開き、`#` はプレビューの中で移る。相対パスの画像は `asWebviewUri` で直す | `localResourceRoots` はワークスペースのフォルダに限る |
 | 設定ファイル | `mdmark.configPath` の YAML を拡張機能が読み、`features`・`libraries` だけを取り出して渡す。ファイルの保存を見て描き直す | 読めない YAML は描くのを止めず、プレビューに知らせる |
 | CSP | Webview の CSP は jsDelivr と `libraries` の配信元・ワークスペースの画像だけを許し、スクリプトは nonce で許す | `style-src` には `'unsafe-inline'` が要る（`## PoC 結果`） |
-| 印刷と書き出し | 要件.md の推奨案 A で、jsDelivr の配布物を読んで `mount` で描く HTML を書き出し、`openInBrowser` で開く。`printToPdf` は書き出した HTML を開いた後に印刷のダイアログを出す | Webview の中では `print()` が効かない。含めるかと HTML の形は `未確定`（要件.md） |
+| 印刷と書き出し | jsDelivr の配布物を読んで `mount` で描く HTML を書き出し、`openInBrowser` で開く。`printToPdf` は書き出した HTML を開いた後に印刷のダイアログを出す | Webview の中では `print()` が効かない。`openInBrowser`・`printToPdf` は毎回書き出し直す |
 | 版とタグ | 拡張機能の版は `vscode/package.json` の `version` で持ち、タグ `vscode-v{版}` を打つ | jsDelivr が mdmark の版として拾う `v{版}` と混ぜない |
 | .vsix の配布 | `.github/workflows/` に、`vscode-v*` のタグで .vsix を作って GitHub Release に添えるワークフローを置く | Marketplace・Open VSX への登録は手で行う（反映作業） |
 | テスト | 拡張機能の処理（版の選び方・設定の取り出し・URL の直し方・行番号の引き方）は単体テスト、Webview とコマンドは VS Code を起動する結合テストにする | テストのランナーは設計で決める |
@@ -60,16 +60,7 @@ flowchart LR
 ブラウザ・リンク先のエディタ・設定ファイルのエディタは VS Code の別のタブか別のウィンドウで開き、元のエディタとプレビューは残る。
 コマンドパレットからのコマンドは、プレビューにフォーカスがあるときも、そのプレビューの Markdown を対象に `ED` からと同じ遷移をする。
 
-`未確定`: `mdmark.openInBrowser`・`mdmark.printToPdf` で開く HTML（決める段: 単一ユースケース設計）
-
-| 案 | 内容 | メリット | デメリット |
-| --- | --- | --- | --- |
-| A | 毎回、開いている Markdown を書き出し直してから開く | 書いた内容と食い違う古い HTML を開かない。書き出していなくても 1 回のコマンドで開ける | 書き出し先の HTML を毎回上書きする |
-| B | 書き出した HTML があればそれを開き、無ければ書き出しを促す知らせを出す | 書き出し先の HTML を書き換えない | 書き出した後に書き換えた内容が HTML に出ない。知らせから書き出しのコマンドへ戻る往復が増える |
-
-推奨: A
-
-複合ユースケースの流れは書き終えた文書をそのまま PDF にするもので、開いた HTML がエディタの内容と違うと印刷し直しになる。
+`mdmark.openInBrowser`・`mdmark.printToPdf` は、毎回開いている Markdown を書き出し直してから開く。
 
 ## PoC 結果
 
