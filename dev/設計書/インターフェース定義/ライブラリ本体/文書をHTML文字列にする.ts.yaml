@@ -519,7 +519,7 @@ flows:
       ```
     expected:
       - '1 つ目のコードブロックが `<figure class="mdmark-code">` に入り、`<figcaption class="mdmark-code-title">app.ts</figcaption>` と、`aria-label="コード: app.ts"` と class `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` を持つ `pre` がある'
-      - '1 つ目の `code` が `style="--mdmark-code-digits: 1"` を持ち、`data-line` が 1〜3 の `mdmark-code-line` が 3 つあり、1 行目が `data-kind="highlight"`・2 行目が `data-kind="add"`・3 行目が `data-kind="del"` を持つ'
+      - '1 つ目の `code` が `style="--mdmark-code-digits:1"` を持ち、`data-line` が 1〜3 の `mdmark-code-line` が 3 つあり、1 行目が `data-kind="highlight"`・2 行目が `data-kind="add"`・3 行目が `data-kind="del"` を持つ'
       - 2 行目の `mdmark-code-text` が `let count = 1;` で終わり（行末に空白が無い）、3 行目の `mdmark-code-text` が `foo(); // 消す` で終わる
       - 2 つ目のコードブロックの 1 行目が `data-kind="highlight"` を持ち、`#` と `[!code highlight]` が無い。`pre` は `figure` に入らず、`mdmark-code-numbered`・`mdmark-code-signs` を持たない
       - 3 つ目のコードブロックが `mdmark-code-line` を持たず、`// [!code ++]` の文字のまま出ている
