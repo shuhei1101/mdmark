@@ -37,6 +37,7 @@
     --mdmark-color-current-bg: #ddf4ff;
     --mdmark-table-max-height: 28rem;
     --mdmark-color-term-underline: var(--mdmark-color-muted);
+    --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
     --mdmark-tooltip-max-width: 22rem;
     --mdmark-tooltip-max-height: 18rem;
     --mdmark-diagram-lane-tint: 8%;
@@ -1798,6 +1799,25 @@
       text-decoration-color: var(--mdmark-color-text);
     }
 
+    /* 下線の付いたやめた言い方: 用語の破線と形で見分ける波線の下線。色は本文のまま */
+    .mdmark-term.mdmark-term-avoided {
+      text-decoration: underline wavy var(--mdmark-color-avoided-underline);
+      text-decoration-thickness: 1px;
+      text-decoration-skip-ink: none;
+      text-underline-offset: 0.3em;
+    }
+
+    /* ツールチップを開いているやめた言い方: 波線を本文の色にして、どの語の代わりの用語かを示す */
+    .mdmark-term-wrap.is-open .mdmark-term.mdmark-term-avoided {
+      text-decoration-color: var(--mdmark-color-text);
+    }
+
+    /* 代わりの用語の語: 意味の上に本文の太字で出す */
+    .mdmark-term-tip-replacement {
+      display: block;
+      font-weight: 600;
+    }
+
     /* 用語と関連文書のツールチップ: 初めは出さない。上の透明な線で語との間を空け、ポインターが語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
     .mdmark-term-tip {
       display: none;
@@ -1935,6 +1955,11 @@
       /* 下線の付いた用語と文書の別名: 紙では開けないので下線を外し、本文の文字として出す */
       .mdmark-term {
         cursor: auto;
+        text-decoration: none;
+      }
+
+      /* 下線の付いたやめた言い方: 波線も外す（画面の波線の規則は詳細度が高いので別に宣言する） */
+      .mdmark-term.mdmark-term-avoided {
         text-decoration: none;
       }
 

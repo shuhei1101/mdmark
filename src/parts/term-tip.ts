@@ -15,7 +15,7 @@ function renderSection(heading: string, body: string): string {
   return `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${heading}</span>${body}</span>`;
 }
 
-/** 本文の語に破線の下線を引き、直後に「用語」の意味と「関連文書」のツールチップを置く HTML を返す。意味も関連文書も無ければ語をそのまま返す */
+/** 本文の語に破線の下線を引き、直後に「用語」の意味と「関連文書」のツールチップを置く HTML を返す。意味も関連文書も無ければ語をそのまま返す。`replacement` を渡すと、語に波線のマーカーを引き、「代わりの用語」だけのツールチップを置く（`meaning`・`docs` は使わない） */
 export function renderTermTip(props: {
   /** 下線を引く本文の語 */
   text: string;
@@ -25,13 +25,19 @@ export function renderTermTip(props: {
   meaning?: string;
   /** 「関連文書」に並べる文書。空なら「関連文書」の区分を出さない */
   docs?: TermTipDoc[];
+  /** `text` がやめた言い方のときの代わりの用語 */
+  replacement?: { term: string; meaning: string };
 }): string {
-  const { text, id, meaning = "", docs = [] } = props;
+  const { text, id, meaning = "", docs = [], replacement } = props;
   const word = escapeHtml(text);
+  const tipId = escapeHtml(id);
+  if (replacement !== undefined) {
+    const body = `<span class="mdmark-term-tip-replacement">${escapeHtml(replacement.term)}</span><span class="mdmark-term-tip-meaning">${escapeHtml(replacement.meaning)}</span>`;
+    return `<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="${tipId}">${word}</span><span class="mdmark-term-tip" id="${tipId}" role="tooltip">${renderSection("代わりの用語", body)}</span></span>`;
+  }
   if (meaning === "" && docs.length === 0) {
     return word;
   }
-  const tipId = escapeHtml(id);
   const meaningId = `${tipId}-meaning`;
   const sections: string[] = [];
   if (meaning !== "") {

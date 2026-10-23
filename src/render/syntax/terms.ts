@@ -19,8 +19,29 @@ export type TermSegment =
   | { kind: "text"; content: string }
   | { kind: "tip"; html: string };
 
-/** 用語・文書の別名に下線を付けた場所（付けたら、同じ範囲の同じ語には付けない） */
-export type SeenTerms = { terms: Set<string>; docs: Set<string> };
+/** 用語・文書の別名に下線を、やめた言い方にマーカーを付けた場所（付けたら、同じ範囲の同じ語には付けない）。やめた言い方は用語の下線とは別に、言い方ごとに数える */
+export type SeenTerms = {
+  terms: Set<string>;
+  docs: Set<string>;
+  avoided: Set<string>;
+};
+
+/** 辞書ごとの、やめた言い方を足した照合する語（辞書ごとに 1 回だけ作る） */
+const matchWordsCache = new WeakMap<Dictionary, string[]>();
+
+/** 用語・文書の別名の語の後ろに、やめた言い方の語を足した並びを返す。同じ長さなら先の語が当たる */
+function matchWords(dictionary: Dictionary): string[] {
+  const cached = matchWordsCache.get(dictionary);
+  if (cached) {
+    return cached;
+  }
+  const words =
+    dictionary.avoided.size === 0
+      ? dictionary.words
+      : [...new Set([...dictionary.words, ...dictionary.avoided.keys()])];
+  matchWordsCache.set(dictionary, words);
+  return words;
+}
 
 /** 文字を辞書の語で区切る。同じ用語・文書は `seen` にあれば付けず、付けたら `seen` に足す。ツールチップの `id` は `nextTipId` が決める。語が 1 つも当たらなければ文字 1 つだけを返す */
 export function termSegments(options: {
@@ -40,8 +61,39 @@ export function termSegments(options: {
   const { text, dictionary, ownPath, seen, nextTipId, nonce } = options;
   const segments: TermSegment[] = [];
   let cursor = 0;
-  for (const found of findWords(text, dictionary.words)) {
+  for (const found of findWords(text, matchWords(dictionary))) {
     const term = dictionary.terms.get(found.word);
+    // 用語 → やめた言い方 → 文書の別名の順に引く。文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
+    const replacement =
+      term === undefined ? dictionary.avoided.get(found.word) : undefined;
+    if (replacement !== undefined) {
+      if (seen.avoided.has(found.word)) {
+        continue;
+      }
+      seen.avoided.add(found.word);
+      if (found.start > cursor) {
+        segments.push({
+          kind: "text",
+          content: text.slice(cursor, found.start),
+        });
+      }
+      segments.push({
+        kind: "tip",
+        html: markOwn(
+          renderTermTip({
+            text: found.word,
+            id: nextTipId(),
+            replacement: {
+              term: replacement.term,
+              meaning: replacement.meaning,
+            },
+          }),
+          nonce,
+        ),
+      });
+      cursor = found.end;
+      continue;
+    }
     const activeTerm =
       term !== undefined && !seen.terms.has(term.id) ? term : undefined;
     const docs = (dictionary.docs.get(found.word) ?? []).filter(
@@ -104,7 +156,11 @@ export function termsRule(state: StateCore): void {
   const ownPath = env.index?.docs.find((doc) => doc.id === env.docId)?.path;
   // 同じ用語・文書は、節ごとに最初に出たところだけに下線を付ける
   let seenSection = -1;
-  let seen: SeenTerms = { terms: new Set(), docs: new Set() };
+  let seen: SeenTerms = {
+    terms: new Set(),
+    docs: new Set(),
+    avoided: new Set(),
+  };
   // 埋め込んだ HTML が先に使った番号の続きから振る
   let tipNumber = env.termTipCount ?? 0;
   const nextTipId = (): string => {
@@ -116,7 +172,7 @@ export function termsRule(state: StateCore): void {
   forEachInline(state.tokens, (inline, section) => {
     if (section !== seenSection) {
       seenSection = section;
-      seen = { terms: new Set(), docs: new Set() };
+      seen = { terms: new Set(), docs: new Set(), avoided: new Set() };
     }
     const children = inline.children ?? [];
     const matchable = new Set(matchableChildren(inline));

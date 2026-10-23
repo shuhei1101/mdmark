@@ -16,6 +16,8 @@ export type Dictionary = {
   terms: Map<string, { id: string; meaning: string }>;
   /** 語から、その語を `aliases` に持つ文書（索引の `docs` の順） */
   docs: Map<string, MdmarkIndexDoc[]>;
+  /** やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` から。同じ言い方は索引の `terms` で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
+  avoided: Map<string, { id: string; term: string; meaning: string }>;
 };
 
 /** 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から辞書を作る */
@@ -34,6 +36,10 @@ export function buildDictionary(options: {
   const { index, docId, ownGlossary, references, features } = options;
   const terms = new Map<string, { id: string; meaning: string }>();
   const docs = new Map<string, MdmarkIndexDoc[]>();
+  const avoided = new Map<
+    string,
+    { id: string; term: string; meaning: string }
+  >();
   /** 先に入れた用語を優先して、語に用語を入れる */
   const addTerm = (words: string[], id: string, meaning: string): void => {
     for (const word of words) {
@@ -68,6 +74,18 @@ export function buildDictionary(options: {
         entry.meaning,
       );
     }
+    // 用語の語・別名と同じ語は用語にし、同じやめた言い方は索引の `terms` で先の用語を代わりにする
+    for (const term of index?.terms ?? []) {
+      for (const word of term.avoid ?? []) {
+        if (!terms.has(word) && !avoided.has(word)) {
+          avoided.set(word, {
+            id: term.id,
+            term: term.term,
+            meaning: term.meaning,
+          });
+        }
+      }
+    }
   }
   if (features.backlinks !== false) {
     for (const doc of index?.docs ?? []) {
@@ -82,7 +100,7 @@ export function buildDictionary(options: {
   const words = [...new Set([...terms.keys(), ...docs.keys()])].sort(
     (a, b) => b.length - a.length,
   );
-  return { words, terms, docs };
+  return { words, terms, docs, avoided };
 }
 
 /** 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す。区切り方は実行環境の辞書に依る */
