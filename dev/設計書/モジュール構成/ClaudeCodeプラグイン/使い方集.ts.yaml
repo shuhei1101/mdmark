@@ -351,3 +351,5 @@ functions:
     status: planned
     introduced:
       pr: 72
+test_files:
+  - tests/unit/src/plugin/guide.test.ts

@@ -67,9 +67,9 @@ functions:
         required: false
         description: コマンドの引数（`--version v{版}` を持てる）
       - name: options
-        type: '{ root: string; maxBytes: number; guideContextLimit: number }'
+        type: '{ root: string; maxBytes: number; guideContextLimit?: number }'
         required: false
-        default: リポジトリの直下と `MAX_DIST_FILE_BYTES` と `GUIDE_CONTEXT_LIMIT`
+        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`。`guideContextLimit` は省くと `GUIDE_CONTEXT_LIMIT`
         description: 作業ツリーの場所、配布ファイルの上限、使い方集の索引の文の文字数の上限（テストで差し替える）
     returns:
       type: Promise<0 | 1>

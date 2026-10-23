@@ -1572,3 +1572,4 @@ test_files:
   - tests/unit/src/cli/check.test.ts
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
+  - tests/unit/src/cli/index-file.test.ts

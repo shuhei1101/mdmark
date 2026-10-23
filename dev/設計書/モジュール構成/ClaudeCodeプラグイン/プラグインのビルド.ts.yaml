@@ -477,3 +477,5 @@ functions:
     status: planned
     introduced:
       pr: 72
+test_files:
+  - tests/unit/scripts/build-plugin.test.ts
