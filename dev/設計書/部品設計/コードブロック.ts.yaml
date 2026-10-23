@@ -109,3 +109,4 @@ introduced:
 notes:
   出す HTML: 形はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。題の前のファイルのアイコンは CSS で付ける。題が無く、行番号も行の種類も無いときは今の `pre` のまま描く。モックは `dev/mock/components/code-block/`
   行の地の色: '足した行・消した行・強調した行の地は、不透明の変数をそのまま当てた後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が効くブラウザでは `pre` の横スクロールの影が行の地を透けて見え、効かないブラウザ（Chrome 99〜110）では不透明の地になる。半透明の地と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭の印と線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭の印と線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
+test_file: tests/integration/lib/code-block.story.test.ts

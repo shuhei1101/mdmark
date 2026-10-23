@@ -1082,3 +1082,154 @@ test("test_normal_when_view_marked", async () => {
   expect(withoutViews).not.toContain("mdmark-view");
   expect(withoutViews).toContain("<table");
 });
+
+/** HTML 文字列の中の、コードブロックの `pre` を書いた順に全て返す */
+function codeBlocks(html: string): string[] {
+  return html.match(/<pre[\s\S]*?<\/pre>/g) ?? [];
+}
+
+/** HTML 文字列の中の、書き方の警告の枠を書いた順に全て返す */
+function warnings(html: string): string[] {
+  return html.match(/<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g) ?? [];
+}
+
+// コードブロックの印と行の印から、題・行番号・行の強調・行の種類を付ける（正常系）
+test("test_normal_when_code_block_decorated", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- code: title=app.ts lines highlight=1 -->",
+    "",
+    "```ts",
+    "const a = 1;",
+    "let count = 1; // [!code ++]",
+    "foo(); // 消す [!code --]",
+    "```",
+    "",
+    "```python",
+    "x = 1  # [!code highlight]",
+    "y = 2",
+    "```",
+    "",
+    "```ts",
+    "let count = 1; // [\\!code ++]",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [first = "", second = "", third = ""] = codeBlocks(html);
+  expect(html).toContain('<figure class="mdmark-code"');
+  expect(matches(html, /<figure/g)).toHaveLength(1);
+  expect(html).toContain(
+    '<figcaption class="mdmark-code-title">app.ts</figcaption>',
+  );
+  expect(first).toContain('aria-label="コード: app.ts"');
+  expect(first).toContain(
+    'class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs"',
+  );
+  expect(first).toMatch(/style="--mdmark-code-digits: ?1"/);
+  expect(first).toContain('data-line="1" data-kind="highlight"');
+  expect(first).toContain('data-line="2" data-kind="add"');
+  expect(first).toContain('data-line="3" data-kind="del"');
+  expect(first).toMatch(/let count = 1;<\/span>/);
+  expect(first).toMatch(/foo\(\); \/\/ 消す<\/span>/);
+  expect(second).toContain('data-kind="highlight"');
+  expect(second).not.toContain("[!code highlight]");
+  expect(second).not.toContain("#");
+  expect(second).not.toContain("mdmark-code-numbered");
+  expect(second).not.toContain("mdmark-code-signs");
+  expect(third).not.toContain("mdmark-code-line");
+  expect(third).toContain("// [!code ++]");
+  expect(html).not.toContain("<!--");
+});
+
+// コードブロックの印と行の印の読めない指定を書き方の警告にし、読めた指定で描く（正常系）
+test("test_normal_when_code_block_syntax_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const block = (body: string[]): string[] => ["```ts", ...body, "```", ""];
+  const markdown = [
+    "<!-- code: title=app.ts color=red -->",
+    "",
+    ...block(["const a = 1;", "const b = 2;", "const c = 3;"]),
+    "<!-- code: highlight=2,5 -->",
+    "",
+    ...block(["const a = 1;", "const b = 2;", "const c = 3;"]),
+    ...block(["foo(); // [!code focus]"]),
+    "<!-- code: title=app.ts -->",
+    "",
+    "直後の段落",
+    "",
+    "<!-- code: title=My App.ts -->",
+    "",
+    ...block(["const a = 1;"]),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(5);
+  for (const box of boxes) {
+    expect(box).toContain('role="note"');
+    expect(box).toContain("書き方の警告");
+  }
+  const [
+    keyBox = "",
+    lineBox = "",
+    markBox = "",
+    fenceBox = "",
+    spaceBox = "",
+  ] = boxes.map(plainText);
+  expect(keyBox).toContain("color=");
+  for (const key of ["title=", "lines", "highlight="]) {
+    expect(keyBox).toContain(key);
+  }
+  expect(lineBox).toContain("5");
+  expect(lineBox).toContain("3 行");
+  expect(markBox).toContain("[!code focus]");
+  expect(markBox).toContain("[!code ++]");
+  expect(fenceBox).toContain("直後にコードブロックがありません");
+  expect(spaceBox).toContain("App.ts");
+  expect(html).toContain(
+    '<figcaption class="mdmark-code-title">app.ts</figcaption>',
+  );
+  expect(html).toContain(
+    '<figcaption class="mdmark-code-title">My</figcaption>',
+  );
+  expect(matches(html, /<figure/g)).toHaveLength(2);
+  const [, highlighted = "", focused = ""] = codeBlocks(html);
+  expect(matches(highlighted, /data-kind=/g)).toHaveLength(1);
+  expect(highlighted).toMatch(
+    /data-kind="highlight"><span class="mdmark-code-text">const b = 2;/,
+  );
+  expect(focused).not.toContain("mdmark-code-line");
+  expect(focused).toContain("// [!code focus]");
+  expect(html).toContain("<p>直後の段落</p>");
+});
+
+// コードブロックの飾りの機能を外すと、印を取り除き、行の印を書いた文字のまま描く（正常系）
+test("test_normal_when_code_block_feature_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- features: -code -->",
+    "",
+    "<!-- code: title=app.ts lines -->",
+    "",
+    "```ts",
+    "let count = 1; // [!code ++]",
+    "foo();",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain('<pre tabindex="0" aria-label="コード: ts">');
+  expect(html).not.toContain("mdmark-code");
+  expect(html).toContain("// [!code ++]");
+  expect(html).not.toContain("<!--");
+  expect(html).not.toContain("app.ts");
+});
