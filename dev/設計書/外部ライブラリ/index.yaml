@@ -24,3 +24,7 @@ items:
     summary: 図と記法のアイコンの形
   - page: diff.yaml
     summary: 2 つのリビジョンの Markdown を行と語で比べる（jsdiff）
+  - page: vscode.yaml
+    summary: VS Code の拡張機能の API（コマンド・設定・エディタ・Webview）
+  - page: vsce.yaml
+    summary: VS Code の拡張機能を .vsix にまとめる

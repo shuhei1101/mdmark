@@ -1,0 +1,83 @@
+title: "GitHub"
+version:
+  api_version: 2022-11-28（header `X-GitHub-Api-Version` で指定する）
+  checked_on: '2026-10-23'
+auth:
+  method: なし（公開リポジトリの読み取り。認証すると上限が上がるが、拡張機能はトークンを持たない）
+endpoints:
+  - name: GET /repos/{owner}/{repo}/tags
+    method: GET
+    path: /repos/{owner}/{repo}/tags
+    summary: リポジトリのタグの一覧を返す
+    idempotent: true
+    description: タグの名前と指す commit を返す。並びは版の大小を保証しないため、使う側が名前を比べて並べる
+    request:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: リポジトリの持ち主
+        example: shuhei1101
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: リポジトリ名
+        example: mdmark
+      - name: per_page
+        type: integer
+        required: false
+        default: '30'
+        location: query
+        description: 1 ページの件数
+        constraints: 1〜100
+      - name: page
+        type: integer
+        required: false
+        default: '1'
+        location: query
+        description: ページの番号
+    request_example: GET /repos/shuhei1101/mdmark/tags?per_page=100
+    response:
+      - name: '[].name'
+        type: string
+        description: タグの名前
+        notes: mdmark の版は `v{X}.{Y}.{Z}`、拡張機能の版は `vscode-v{X}.{Y}.{Z}`
+      - name: '[].commit.sha'
+        type: string
+        description: タグが指す commit
+    response_example: |-
+      ```json
+      [
+        { "name": "v0.6.0", "commit": { "sha": "b08d6d3…" } },
+        { "name": "v0.5.0", "commit": { "sha": "…" } }
+      ]
+      ```
+    status_codes:
+      - code: '200'
+        condition: リポジトリがある
+      - code: '403'
+        condition: 認証しない要求の上限を超えた
+      - code: '404'
+        condition: リポジトリが無い
+      - code: '429'
+        condition: 上限を超えた（二次的な上限を含む）
+lead: GitHub のリポジトリの情報を読み書きする REST API。
+used_in:
+  - vscode/src/
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: 認証せずに `GET /repos/shuhei1101/mdmark/tags?per_page=100` が 200 で `v0.6.0`〜`v0.1.0` の 6 件を新しい順に返し、`X-RateLimit-Limit` が `60` だった
+base_urls:
+  - env: 本番
+    url: https://api.github.com
+official_url: https://github.com/
+docs_url: https://docs.github.com/en/rest/repos/repos#list-repository-tags
+status_page: https://www.githubstatus.com/
+rate_limits:
+  - target: 認証しない要求
+    limit: 60 回/時（送信元の IP ごと）
+    notes: 残りは `X-RateLimit-Remaining`、戻る時刻は `X-RateLimit-Reset` で返る
+retry: 上限を超えると 403 か 429 を返す。拡張機能は再試行せず、取れなかったときと同じく前回の版を使う
+pagination: '`per_page`（最大 100）と `page` で送る。続きがあるときは header `Link` に `rel="next"` が入る'

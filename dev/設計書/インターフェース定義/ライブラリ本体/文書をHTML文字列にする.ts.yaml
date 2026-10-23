@@ -576,6 +576,27 @@ flows:
       - コードブロックに `// [!code ++]` の文字が残っている
       - 文字列に `<!--` と `app.ts` が無い
     test: test_normal_when_code_block_feature_disabled
+  - name: 正常系（元の行番号を出す）
+    summary: ブロックの要素に、Markdown で始まる行の 0 始まりの番号を出す
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 行の位置が分かる Markdown
+        description: '1 行目に見出し、3 行目に段落、5〜7 行目に表（見出し行・区切り行・本文 1 行）、9〜11 行目にコードブロック（`<!-- code: lines -->` を 8 行目に置く）、13〜14 行目に 2 項目のリストを置いた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: ブロックのトークンの開始の行を属性にする
+        M-->>C: data-source-line を持つ HTML 文字列
+    expected:
+      - '`<h1>` が `data-source-line="0"`、`<p>` が `"2"`、表を囲む要素が `"4"`、本文の `<tr>` が `"6"`、コードブロックの `<pre>` が `"8"`、`<ul>` と 1 つ目の `<li>` が `"12"`、2 つ目の `<li>` が `"13"`'
+      - コードブロックの行の `span` は今のとおり `data-line`（`1` から）を持ち、`data-source-line` を持たない
+      - '`<td>` の `data-label` と `mdmark-align-*` の class は正常系と同じ'
+    test: test_normal_when_source_lines
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -693,4 +714,7 @@ constraints:
   - item: コードブロック
     constraint: '`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読む。引数は `title=題`（題。印の引数は空白で区切るため題に空白は書けず、空白の後ろは別の引数として読む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類（`add`・`del`・`highlight`）として読んで印を外し、行コメントが印だけなら印の直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字のまま出す。行番号・強調・行の種類のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`add`・`del` の行を持てば `mdmark-code-signs` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を置く。題を持つコードブロックは `<figure class="mdmark-code">` に `<figcaption class="mdmark-code-title">{題}</figcaption>` と `pre` を入れ、`pre` の読み上げの名前を `コード: {題}` にする。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには当てない。印も行の印も持たないコードブロックは今のとおり描く。`code` がオフのときは印を取り除き、コードブロックを今のとおり描く（行の印は書いた文字のまま出す）'
     notes: 見た目はモック `dev/mock/components/code-block/`。題の前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、#67 の色分けした HTML を入れられる形にする
+  - item: 元の行番号
+    constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
+    notes: 番号は markdown-it のトークンの `map` の開始の行で、VS Code のエディタの行番号（0 始まり）とそのまま比べられる。コードブロックの行の `data-line`（コードの中の 1 始まりの行番号）・図の線の `data-line`（線の種類）とは別の属性にする
 test_file: tests/integration/lib/render.test.ts
