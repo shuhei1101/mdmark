@@ -52,6 +52,8 @@ export type RecordedPanel = {
   received: WebviewMessage[];
   /** 拡張機能が `onDidReceiveMessage` に登録した関数（Webview から届いたことにして呼ぶ） */
   listeners: Array<(message: unknown) => void>;
+  /** 記録せずに Webview へ送る */
+  postRaw: (message: unknown) => Thenable<boolean>;
   /** 作ったときの列とタイトル */
   options: { title: string; showOptions: unknown };
 };
@@ -70,15 +72,17 @@ export function installRecorder(): void {
     ...args: Parameters<typeof vscode.window.createWebviewPanel>
   ) => {
     const panel = original(...args);
+    const post = panel.webview.postMessage.bind(panel.webview);
     const record: RecordedPanel = {
       panel,
       sent: [],
       sentAt: [],
       received: [],
       listeners: [],
+      postRaw: post,
       options: { title: args[1], showOptions: args[2] },
     };
-    const post = panel.webview.postMessage.bind(panel.webview);
+    injectClickRelay(panel.webview);
     panel.webview.postMessage = (message: unknown) => {
       record.sent.push(message as HostMessage);
       record.sentAt.push(Date.now());
@@ -100,6 +104,44 @@ export function installRecorder(): void {
     recorded.push(record);
     return panel;
   };
+}
+
+/** `testClick` のメッセージを受けたら、セレクタに当たる最初の要素を押す（クリックの代わり）スクリプトを、Webview の HTML に足す。HTML を入れるたびに、その HTML の nonce を付けて足す */
+function injectClickRelay(webview: vscode.Webview): void {
+  let descriptor: PropertyDescriptor | undefined;
+  for (
+    let proto: object | null = Object.getPrototypeOf(webview);
+    proto !== null && descriptor === undefined;
+    proto = Object.getPrototypeOf(proto)
+  ) {
+    descriptor = Object.getOwnPropertyDescriptor(proto, "html");
+  }
+  assert.ok(
+    descriptor?.get && descriptor.set,
+    "Webview の html を差し替えられない",
+  );
+  const { get, set } = descriptor;
+  Object.defineProperty(webview, "html", {
+    configurable: true,
+    get: () => get.call(webview) as string,
+    set: (value: string) => {
+      const nonce = /<script[^>]*nonce="([^"]*)"/.exec(value)?.[1];
+      const relay = nonce
+        ? `<script nonce="${nonce}">window.addEventListener("message", (event) => { if (event.data?.type === "testClick") { document.querySelector(event.data.selector)?.click(); } });</script>`
+        : "";
+      set.call(
+        webview,
+        value.includes("</body>")
+          ? value.replace("</body>", `${relay}</body>`)
+          : `${value}${relay}`,
+      );
+    },
+  });
+}
+
+/** Webview の要素を押す（`injectClickRelay` が足したスクリプトが受ける） */
+export function clickInPreview(record: RecordedPanel, selector: string): void {
+  void record.postRaw({ type: "testClick", selector });
 }
 
 /** Webview から `message` が届いたことにして、拡張機能の受け取りを呼ぶ */

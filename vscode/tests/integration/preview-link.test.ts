@@ -2,7 +2,9 @@ import * as assert from "node:assert";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
+  clickInPreview,
   deliver,
+  inspect,
   installMessages,
   installOpenExternal,
   installRecorder,
@@ -10,6 +12,7 @@ import {
   opened,
   openMarkdown,
   resetEnvironment,
+  setSetting,
   sleep,
   waitFor,
   waitForRendered,
@@ -81,6 +84,62 @@ suite("プレビューのリンクを開く", () => {
     assert.strictEqual(
       vscode.window.activeTextEditor?.viewColumn,
       editor.viewColumn,
+    );
+    assert.deepStrictEqual(opened, []);
+  });
+
+  // `#` で始まるリンクはプレビューの中で移り、拡張機能へは送らない
+  test("test_normal_when_anchor_link", async () => {
+    // 準備: リンク先の見出しが画面の外にある長い文書。スクロールの同期は切り、リンクの移動だけを見る
+    await setSetting("preview.scrollPreviewWithEditor", false);
+    await setSetting("preview.scrollEditorWithPreview", false);
+    await writeFixture(
+      "long.md",
+      [
+        "# 案内",
+        "",
+        "[末尾へ](#末尾)",
+        "",
+        ...Array.from({ length: 200 }, (_, index) => [
+          `段落 ${index + 1}`,
+          "",
+        ]).flat(),
+        "## 末尾",
+        "",
+        // 見出しが先頭まで上がれるよう、後ろにも続ける
+        ...Array.from({ length: 200 }, (_, index) => [
+          `後の段落 ${index + 1}`,
+          "",
+        ]).flat(),
+      ].join("\n"),
+    );
+    const editor = await openMarkdown("long.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const headingTop = async () =>
+      (await inspect("h2")).find((item) => item.text.includes("末尾"))?.top;
+    assert.ok(((await headingTop()) ?? 0) > 3000, "見出しが画面の中にある");
+    const editors = vscode.window.visibleTextEditors.length;
+    // 実行: リンクを押す
+    clickInPreview(record, 'a[href="#末尾"]');
+    // 検証: 見出しが見えている範囲の先頭に入る
+    await waitFor(
+      async () => {
+        const top = await headingTop();
+        return top !== undefined && top > -2 && top < 100;
+      },
+      { message: "見出しへ移らない" },
+    );
+    await sleep(300);
+    assert.strictEqual(
+      record.received.filter((message) => message.type === "openLink").length,
+      0,
+    );
+    assert.strictEqual(vscode.window.visibleTextEditors.length, editors);
+    assert.deepStrictEqual(
+      vscode.window.visibleTextEditors.map((item) => item.document.uri.fsPath),
+      [editor.document.uri.fsPath],
     );
     assert.deepStrictEqual(opened, []);
   });
