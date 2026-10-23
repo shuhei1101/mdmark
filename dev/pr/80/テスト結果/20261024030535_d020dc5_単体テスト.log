@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-theme-align-mindstella-tokens
+
+
+ Test Files  124 passed (124)
+      Tests  693 passed (693)
+   Start at  03:05:39
+   Duration  39.93s (worker 72%, tests 14%, import 10%, transform 4%)
+
+exit=0
