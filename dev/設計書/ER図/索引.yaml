@@ -113,9 +113,9 @@ tables:
         title: やめた言い方
         type: array
         default: '`[]`'
-        description: 使わないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で知らせる
+        description: 使わないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で知らせ、描いた文書では波線のマーカーと「代わりの用語」のツールチップを出す
         example: '[作業場]'
-        notes: 要素は空でない文字列。ツールチップは付けない
+        notes: 要素は空でない文字列
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
 notes:
