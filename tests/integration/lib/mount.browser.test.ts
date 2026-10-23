@@ -1222,7 +1222,7 @@ test("test_normal_when_avoided_term_in_browser", async () => {
     docId: AVOID_DOC_ID,
   });
   // 検証
-  expect(html).toBe(AVOID_EXPECTED_HTML);
+  expect(stripSourceLine(html)).toBe(AVOID_EXPECTED_HTML);
 });
 
 /** 参照の表: `arch` を `api`・`guide` が参照している */

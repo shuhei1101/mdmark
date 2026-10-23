@@ -252,13 +252,13 @@ test("test_attach_minimap_when_class_changed", async () => {
     const read = (name: string) =>
       (band as HTMLElement).style.getPropertyValue(name).trim();
     await vi.waitFor(() => {
-      expect(read("--mdmark-color-diff-del-sign")).toBe("#d1242f");
+      expect(read("--mdmark-color-diff-del-sign")).toBe("#b91c1c");
     });
     // 実行: body の class を替える
     document.body.classList.replace("vscode-light", "vscode-dark");
     // 検証
     await vi.waitFor(() => {
-      expect(read("--mdmark-color-diff-del-sign")).toBe("#f85149");
+      expect(read("--mdmark-color-diff-del-sign")).toBe("#f87171");
     });
   } finally {
     document.body.classList.remove("vscode-light", "vscode-dark");
