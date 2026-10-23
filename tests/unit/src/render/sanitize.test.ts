@@ -206,6 +206,24 @@ test("test_sanitize_when_own_style", async () => {
   expect(sanitized).toContain("<div>書いた要素</div>");
 });
 
+// 自分が出したコードブロックの行番号の桁の数だけを残す（正常系）
+test("test_sanitize_when_code_digits", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const html = [
+    `<code ${own} style="--mdmark-code-digits: 2">a</code>`,
+    `<code ${own} style="--mdmark-code-digits: 2; color: red">b</code>`,
+    '<code style="--mdmark-code-digits: 2">c</code>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toContain('style="--mdmark-code-digits:2"');
+  expect(sanitized).not.toContain("color");
+  expect(sanitized.match(/style=/g) ?? []).toHaveLength(1);
+});
+
 /** 埋め込んだ HTML を落とす処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadEmbedded = async () => {
   const { sanitizeEmbedded, filterEmbeddedStyle } = await import(

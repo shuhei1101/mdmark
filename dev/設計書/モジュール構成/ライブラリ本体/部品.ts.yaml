@@ -643,6 +643,7 @@ test_files:
   - tests/unit/src/parts/row-detail.test.ts
   - tests/unit/src/parts/figure.test.ts
   - tests/unit/src/parts/doc-list.test.ts
+  - tests/unit/src/parts/code-block.test.ts
 data_models:
   - name: CodeLine
     title: コードの行
