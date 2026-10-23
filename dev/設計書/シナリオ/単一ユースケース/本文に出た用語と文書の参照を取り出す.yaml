@@ -82,8 +82,9 @@ scenarios:
     setup:
       - name: 配布物を読む Node の処理
         description: 正常シナリオと同じ
-      - name: 機能をオフにした文書
-        description: '正常シナリオの索引と、`guide` の本文の頭に `<!-- features: -glossary -->` を書いたもの'
+      - name: 機能をオフにした 2 つの文書
+        description: '正常シナリオの索引に文書 `memo` を足したものと、`guide`・`memo` の本文。どちらの本文も段落に `ワークスペース` と `公開関数` を書き、`guide` の頭に `<!-- features: -glossary -->`、`memo` の頭に `<!-- features: -glossary -backlinks -->` を書く'
+        notes: '`memo` で、用語も文書の別名も照合しないときに空の一覧が返ることを決定的に起こす'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -96,11 +97,39 @@ scenarios:
         M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
       ```
     expected:
-      - '`guide` の参照の一覧が、索引の用語の要素を持たない'
-      - '`guide` の参照の一覧が、文書の別名 `公開関数` の要素を持つ'
+      - '`guide` の参照の一覧が、索引の用語の要素を持たず、文書の別名 `公開関数` の要素を持つ'
+      - '`memo` の参照の一覧が空'
+      - まとめた参照の一覧が、`api` だけを持つ
     test: test_normal_when_feature_off
     refs:
       - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
+  - name: 正常シナリオ（埋め込んだ HTML と図の部品の用語）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: HTML と図の部品に用語を書いた本文
+        description: 正常シナリオの索引と、`guide` の本文。`<!-- html -->` の範囲の `html` のコードブロックの段落に `ワークスペース` を書き、同じ HTML の中に `ワークスペース` を文字に持つリンクも置く。`<!-- flow -->` の範囲の図の定義の箱の `name` に `{{ワークスペース}}` と `{{公開関数}}` を書く
+        notes: '`{{公開関数}}` は文書の別名で用語ではないため、図の部品では参照にならないことを決定的に起こす'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引と文書の本文を渡して参照を取り出させる
+        M->>M: 埋め込んだ HTML の文字と図の部品の {{語}} も照合する
+        M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
+      ```
+    expected:
+      - '`guide` の参照の一覧が、HTML の中の段落の `ワークスペース` と、図の箱の `{{ワークスペース}}` の 2 件を `ws` の要素として持つ'
+      - HTML の中のリンクの文字の `ワークスペース` は一覧に無い
+      - 図の箱の `{{公開関数}}` は一覧に無い
+      - 各要素が、本文の Markdown の中でその文字列が出た位置を持つ
+    test: test_normal_when_embedded_html_and_diagram
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る#
 lead: 使う側の処理（AI へ本文を返す MCP・サーバー）が、索引と文書の本文を mdmark に渡し、画面を出さずに、本文に出た用語・文書の別名と、その参照先の一覧を受け取る。
 issue: 47
 primary_actor: 使う側の処理
