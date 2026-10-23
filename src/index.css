@@ -278,20 +278,20 @@
       }
     }
 
-    /* 表のセル: 下と右の線だけを引く。縦の罫線は太さ 0 のときは出ない。狭い幅でも列を数文字より細くしない */
+    /* 表のセル: 下と左の線だけを引く（右端は外側の枠が受け持つので、最後の列を隠しても右端の線は 1 本）。縦の罫線は太さ 0 のときは出ない。狭い幅でも列を数文字より細くしない */
     :where(th, td) {
       min-width: 6em;
       padding: 0.45em 0.9em;
       border: 0;
       border-block-end: 1px solid var(--mdmark-color-border);
-      border-inline-end: var(--mdmark-table-rule-inline) solid
+      border-inline-start: var(--mdmark-table-rule-inline) solid
         var(--mdmark-color-border);
       text-align: start;
     }
 
-    /* 右端の列: 右の線は外側の枠に任せる */
-    :where(th, td):last-child {
-      border-inline-end: 0;
+    /* 先頭の列（隠せない列）: 左の線は外側の枠に任せる */
+    :where(th, td):first-child {
+      border-inline-start: 0;
     }
 
     /* 表の見出し行 */
