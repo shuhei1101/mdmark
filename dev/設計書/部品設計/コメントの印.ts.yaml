@@ -32,11 +32,11 @@ events:
 css_properties:
   - name: --mdmark-color-comment-bg
     syntax: <color>
-    default: '#fbefff（ダーク #2e2147）'
+    default: '#f2effe（ダーク #25222d）'
     description: 印の地の色と、入力欄を開いている間の選んだ文字の色
   - name: --mdmark-color-comment-line
     syntax: <color>
-    default: '#8250df（ダーク #ab7df8）'
+    default: '#6d28d9（ダーク #c4a7ff）'
     description: 印の下線の色
 accessibility:
   - '`mark` に `tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded` を付ける'

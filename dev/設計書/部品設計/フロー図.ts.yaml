@@ -21,31 +21,31 @@ args:
 css_properties:
   - name: --mdmark-color-diagram-llm
     syntax: <color>
-    default: '#8250df（ダーク #ab7df8）'
+    default: '#6d28d9（ダーク #c4a7ff）'
     description: LLM の箱と LLM の層の色
   - name: --mdmark-color-diagram-dm
     syntax: <color>
-    default: '#0550ae（ダーク #79c0ff）'
+    default: '#1d4ed8（ダーク #7aa2ff）'
     description: 意思決定モデルの箱の色
   - name: --mdmark-color-diagram-script
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#52525b（ダーク #b4b4bc）'
     description: スクリプトの箱の色
   - name: --mdmark-color-diagram-mcp
     syntax: <color>
-    default: '#bc4c00（ダーク #f0883e）'
+    default: '#b45309（ダーク #fbbf24）'
     description: MCP の箱と処理の層の色
   - name: --mdmark-color-diagram-data
     syntax: <color>
-    default: '#1b7c83（ダーク #39c5cf）'
+    default: '#0f766e（ダーク #2dd4bf）'
     description: データの箱とデータの層の色
   - name: --mdmark-color-diagram-external
     syntax: <color>
-    default: '#1a7f37（ダーク #3fb950）'
+    default: '#15803d（ダーク #4ade80）'
     description: 外部のシステムの箱の色
   - name: --mdmark-color-diagram-line
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#71717a（ダーク #8f8f99）'
     description: 処理の流れ・戻る線の色
   - name: --mdmark-diagram-lane-tint
     syntax: <percentage>

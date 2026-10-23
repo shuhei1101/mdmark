@@ -53,7 +53,7 @@ test("test_grouped", async () => {
     page
       .locator('.mdmark-doc-list a[aria-current="page"]')
       .evaluate((link) => getComputedStyle(link).backgroundColor),
-  ).resolves.toBe("rgb(221, 244, 255)");
+  ).resolves.toBe("rgb(230, 243, 241)");
   await expect(
     nav.locator('a[data-doc-path="使い方/guide.md"]').getAttribute("href"),
   ).resolves.toBe("#/使い方/guide.md");

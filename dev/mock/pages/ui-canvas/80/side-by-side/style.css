@@ -1,0 +1,197 @@
+/* 洗い出しのキャンバスの並べ方: 部品ごとの節に、今の値の列と dev-swiss の列を並べる。色はモック専用の値で、文書の値と混ぜない */
+
+/* キャンバスの地と文字: 列の文書の地と見分ける */
+:root {
+  --canvas-bg: #e4e4e7;
+  --canvas-text: #18181b;
+  --canvas-muted: #52525b;
+  --canvas-line: #a1a1aa;
+  --canvas-change-bg: #fef3c7;
+  --canvas-change-line: #b45309;
+}
+
+/* ダークを選んだページのキャンバスの地と文字 */
+:root[data-scheme="dark"] {
+  --canvas-bg: #000000;
+  --canvas-text: #ededef;
+  --canvas-muted: #b4b4bc;
+  --canvas-line: #52525b;
+  --canvas-change-bg: #3a2e0c;
+  --canvas-change-line: #fbbf24;
+}
+
+/* ページ全体: キャンバスの地を敷く */
+body {
+  margin: 0;
+  background: var(--canvas-bg);
+  color: var(--canvas-text);
+  font-family: system-ui, sans-serif;
+}
+
+/* キャンバスの本体: 幅を広く取り、左右に余白 */
+.canvas {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: 16px 16px 64px;
+  line-height: 1.6;
+
+  /* キャンバスの題 */
+  h1 {
+    margin: 8px 0 4px;
+    font-size: 1.5rem;
+  }
+
+  /* キャンバスの説明 */
+  > p {
+    margin: 0 0 12px;
+    color: var(--canvas-muted);
+  }
+}
+
+/* パンくず: 末端は文字だけ */
+.canvas-crumbs {
+  color: var(--canvas-muted);
+  font-size: 0.875rem;
+
+  /* パンくずのリンク */
+  a {
+    color: inherit;
+  }
+}
+
+/* 部品の目次: 部品の節へ移るリンクを折り返して並べる */
+.canvas-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0 0 16px;
+  padding: 0;
+  font-size: 0.875rem;
+  list-style: none;
+
+  /* 目次のリンク */
+  a {
+    color: inherit;
+  }
+}
+
+/* 部品の CSS を変える箇所の一覧の表 */
+.canvas-changes {
+  width: 100%;
+  margin: 0 0 24px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  /* 一覧のセル */
+  :is(th, td) {
+    padding: 6px 10px;
+    border: 1px solid var(--canvas-line);
+    text-align: start;
+    vertical-align: top;
+  }
+}
+
+/* 部品の節: 節ごとに上の余白で区切る */
+.canvas-section {
+  margin-block-start: 32px;
+
+  /* 部品の名前 */
+  > h2 {
+    margin: 0 0 4px;
+    font-size: 1.125rem;
+  }
+
+  /* 部品の説明 */
+  > p {
+    margin: 0 0 8px;
+    color: var(--canvas-muted);
+    font-size: 0.875rem;
+  }
+}
+
+/* 部品の CSS を変える箇所の印: 面と枠の全体で示す。文字は面の上で読める濃さにする */
+.canvas-section > .canvas-change {
+  padding: 6px 10px;
+  border: 1px solid var(--canvas-change-line);
+  border-radius: 4px;
+  background: var(--canvas-change-bg);
+  color: var(--canvas-text);
+}
+
+/* 2 つの列: 広い幅では左右に、狭い幅では上下に並べる */
+.canvas-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+
+  @media (width >= 64rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 列: 列の名前と描いた文書 */
+.canvas-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+
+/* 列の名前 */
+.canvas-column-label {
+  margin: 0;
+  color: var(--canvas-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* 列の中の描いた文書: 列の幅に収める */
+.canvas-column .mdmark {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* まとめた HTML の見本: 画面の高さに縛らず、列の中に収める */
+.canvas-bundle {
+  overflow: hidden;
+  border: 1px solid var(--canvas-line);
+
+  /* 画面全体: 列の幅で左右に並べ、高さは中身に合わせる */
+  .mdmark-bundle {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  /* 横の文書の一覧: 留めずに列の中に置く */
+  .mdmark-bundle-side {
+    position: static;
+    height: auto;
+  }
+
+  /* 開いている文書の領域の文書: 枠の中で余白を詰める */
+  .mdmark-bundle-main .mdmark {
+    padding: 1rem;
+  }
+}
+
+/* 狭い幅の帯と一覧のパネルの見本: 幅によらず出す */
+.canvas-bundle-narrow {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--canvas-line);
+
+  /* 帯: 狭い幅のときと同じく出す */
+  .mdmark-bundle-bar {
+    position: static;
+    display: flex;
+  }
+
+  /* パネル: 重ねずに列の中に置く */
+  .mdmark-bundle-panel {
+    position: static;
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}

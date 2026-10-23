@@ -47,7 +47,7 @@ css_properties:
     description: 開いている間のボタンの地の色
   - name: --mdmark-radius
     syntax: <length>
-    default: 6px
+    default: 4px
     description: ボタンの角丸
 accessibility:
   - '`button` 要素で、`aria-expanded`・`aria-controls` で開閉と開閉する場所を伝える'

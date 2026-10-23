@@ -11,7 +11,7 @@ import {
 import { mountDocument, openPage } from "../dist-page.ts";
 
 // 固有の CSS が変える前の、フロー図の LLM の色（既定の明るい配色）
-const DEFAULT_LLM_COLOR = "rgb(130, 80, 223)";
+const DEFAULT_LLM_COLOR = "rgb(109, 40, 217)";
 // 固有の CSS が変えた、フロー図の LLM の色と固有の部品の文字の色
 const HOST_LLM_COLOR = "rgb(255, 0, 0)";
 const HOST_CARD_COLOR = "rgb(0, 0, 255)";
