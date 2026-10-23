@@ -26,21 +26,11 @@ export type SeenTerms = {
   avoided: Set<string>;
 };
 
-/** 辞書ごとの、やめた言い方を足した照合する語（辞書ごとに 1 回だけ作る） */
-const matchWordsCache = new WeakMap<Dictionary, string[]>();
-
 /** 用語・文書の別名の語の後ろに、やめた言い方の語を足した並びを返す。同じ長さなら先の語が当たる */
 function matchWords(dictionary: Dictionary): string[] {
-  const cached = matchWordsCache.get(dictionary);
-  if (cached) {
-    return cached;
-  }
-  const words =
-    dictionary.avoided.size === 0
-      ? dictionary.words
-      : [...new Set([...dictionary.words, ...dictionary.avoided.keys()])];
-  matchWordsCache.set(dictionary, words);
-  return words;
+  return dictionary.avoided.size === 0
+    ? dictionary.words
+    : [...new Set([...dictionary.words, ...dictionary.avoided.keys()])];
 }
 
 /** 文字を辞書の語で区切る。同じ用語・文書は `seen` にあれば付けず、付けたら `seen` に足す。ツールチップの `id` は `nextTipId` が決める。語が 1 つも当たらなければ文字 1 つだけを返す */
@@ -66,69 +56,49 @@ export function termSegments(options: {
     // 用語 → やめた言い方 → 文書の別名の順に引く。文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
     const replacement =
       term === undefined ? dictionary.avoided.get(found.word) : undefined;
+    let html: string;
     if (replacement !== undefined) {
       if (seen.avoided.has(found.word)) {
         continue;
       }
       seen.avoided.add(found.word);
-      if (found.start > cursor) {
-        segments.push({
-          kind: "text",
-          content: text.slice(cursor, found.start),
-        });
-      }
-      segments.push({
-        kind: "tip",
-        html: markOwn(
-          renderTermTip({
-            text: found.word,
-            id: nextTipId(),
-            replacement: {
-              term: replacement.term,
-              meaning: replacement.meaning,
-            },
-          }),
-          nonce,
-        ),
+      html = renderTermTip({
+        text: found.word,
+        id: nextTipId(),
+        replacement,
       });
-      cursor = found.end;
-      continue;
-    }
-    const activeTerm =
-      term !== undefined && !seen.terms.has(term.id) ? term : undefined;
-    const docs = (dictionary.docs.get(found.word) ?? []).filter(
-      (doc) => !seen.docs.has(doc.id),
-    );
-    if (activeTerm === undefined && docs.length === 0) {
-      continue;
-    }
-    if (activeTerm) {
-      seen.terms.add(activeTerm.id);
-    }
-    for (const doc of docs) {
-      seen.docs.add(doc.id);
+    } else {
+      const activeTerm =
+        term !== undefined && !seen.terms.has(term.id) ? term : undefined;
+      const docs = (dictionary.docs.get(found.word) ?? []).filter(
+        (doc) => !seen.docs.has(doc.id),
+      );
+      if (activeTerm === undefined && docs.length === 0) {
+        continue;
+      }
+      if (activeTerm) {
+        seen.terms.add(activeTerm.id);
+      }
+      for (const doc of docs) {
+        seen.docs.add(doc.id);
+      }
+      html = renderTermTip({
+        text: found.word,
+        id: nextTipId(),
+        meaning: activeTerm?.meaning ?? "",
+        docs: docs.map((doc) => ({
+          title: doc.title,
+          href: relativeHref(ownPath, doc.path),
+          ...(doc.description === undefined
+            ? {}
+            : { description: doc.description }),
+        })),
+      });
     }
     if (found.start > cursor) {
       segments.push({ kind: "text", content: text.slice(cursor, found.start) });
     }
-    segments.push({
-      kind: "tip",
-      html: markOwn(
-        renderTermTip({
-          text: found.word,
-          id: nextTipId(),
-          meaning: activeTerm?.meaning ?? "",
-          docs: docs.map((doc) => ({
-            title: doc.title,
-            href: relativeHref(ownPath, doc.path),
-            ...(doc.description === undefined
-              ? {}
-              : { description: doc.description }),
-          })),
-        }),
-        nonce,
-      ),
-    });
+    segments.push({ kind: "tip", html: markOwn(html, nonce) });
     cursor = found.end;
   }
   if (cursor < text.length || segments.length === 0) {

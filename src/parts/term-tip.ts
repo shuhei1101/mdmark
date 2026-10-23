@@ -30,51 +30,58 @@ export function renderTermTip(props: {
 }): string {
   const { text, id, meaning = "", docs = [], replacement } = props;
   const word = escapeHtml(text);
-  const tipId = escapeHtml(id);
-  if (replacement !== undefined) {
-    const body = `<span class="mdmark-term-tip-replacement">${escapeHtml(replacement.term)}</span><span class="mdmark-term-tip-meaning">${escapeHtml(replacement.meaning)}</span>`;
-    return `<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="${tipId}">${word}</span><span class="mdmark-term-tip" id="${tipId}" role="tooltip">${renderSection("代わりの用語", body)}</span></span>`;
-  }
-  if (meaning === "" && docs.length === 0) {
+  if (replacement === undefined && meaning === "" && docs.length === 0) {
     return word;
   }
+  const tipId = escapeHtml(id);
   const meaningId = `${tipId}-meaning`;
   const sections: string[] = [];
-  if (meaning !== "") {
-    // 関連文書もあるときだけ、意味の要素に `id` を付けて語の説明にする
-    const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
+  if (replacement !== undefined) {
     sections.push(
       renderSection(
-        "用語",
-        `<span class="mdmark-term-tip-meaning"${idAttribute}>${escapeHtml(meaning)}</span>`,
+        "代わりの用語",
+        `<span class="mdmark-term-tip-replacement">${escapeHtml(replacement.term)}</span><span class="mdmark-term-tip-meaning">${escapeHtml(replacement.meaning)}</span>`,
       ),
     );
+  } else {
+    if (meaning !== "") {
+      // 関連文書もあるときだけ、意味の要素に `id` を付けて語の説明にする
+      const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
+      sections.push(
+        renderSection(
+          "用語",
+          `<span class="mdmark-term-tip-meaning"${idAttribute}>${escapeHtml(meaning)}</span>`,
+        ),
+      );
+    }
+    if (docs.length > 0) {
+      const items = docs
+        .map((doc) => {
+          const description = doc.description
+            ? `<span class="mdmark-term-tip-doc-desc">${escapeHtml(doc.description)}</span>`
+            : "";
+          return `<span class="mdmark-term-tip-doc" role="listitem"><a href="${escapeHtml(doc.href)}">${escapeHtml(doc.title)}</a>${description}</span>`;
+        })
+        .join("");
+      sections.push(
+        renderSection(
+          "関連文書",
+          `<span class="mdmark-term-tip-docs" role="list">${items}</span>`,
+        ),
+      );
+    }
   }
-  if (docs.length > 0) {
-    const items = docs
-      .map((doc) => {
-        const description = doc.description
-          ? `<span class="mdmark-term-tip-doc-desc">${escapeHtml(doc.description)}</span>`
-          : "";
-        return `<span class="mdmark-term-tip-doc" role="listitem"><a href="${escapeHtml(doc.href)}">${escapeHtml(doc.title)}</a>${description}</span>`;
-      })
-      .join("");
-    sections.push(
-      renderSection(
-        "関連文書",
-        `<span class="mdmark-term-tip-docs" role="list">${items}</span>`,
-      ),
-    );
-  }
-  const role = docs.length > 0 ? "group" : "tooltip";
+  const role =
+    docs.length > 0 && replacement === undefined ? "group" : "tooltip";
   const label =
-    docs.length === 0
+    role === "tooltip"
       ? ""
       : ` aria-label="「${word}」の${meaning === "" ? "" : "用語と"}関連文書"`;
   const described =
-    meaning === ""
+    replacement === undefined && meaning === ""
       ? ""
-      : ` aria-describedby="${docs.length > 0 ? meaningId : tipId}"`;
-  const details = docs.length > 0 ? ` aria-details="${tipId}"` : "";
-  return `<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+      : ` aria-describedby="${role === "group" ? meaningId : tipId}"`;
+  const details = role === "group" ? ` aria-details="${tipId}"` : "";
+  const termClass = replacement === undefined ? "" : " mdmark-term-avoided";
+  return `<span class="mdmark-term-wrap"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
 }
