@@ -273,7 +273,9 @@ export async function runUpgrade(
         await applyStep({ step, version, target: migrationTarget });
       }
     }
-    const issues = await collectCheckIssues(configPath);
+    const issues = await collectCheckIssues(configPath, {
+      unknownMarks: false,
+    });
     if (issues.length > 0) {
       await restoreBackup({ dir, backupDir });
       for (const issue of issues) {

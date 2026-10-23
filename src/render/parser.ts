@@ -1,4 +1,8 @@
-import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
+import type {
+  MarkdownIt as MarkdownItParser,
+  StateCore,
+  Token,
+} from "markdown-it";
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
@@ -10,6 +14,7 @@ import type {
 import { escapeHtml } from "../parts/escape.ts";
 import {
   dropMarks,
+  MARK_PATTERN,
   MARK_TOKEN,
   resolveDocumentFeatures,
   takeMarks,
@@ -130,9 +135,66 @@ function revertFuzzyLinks(state: StateCore): void {
   }
 }
 
+/** 解析器の設定。印を拾う `findMarks` も同じ設定で解析する */
+const PARSER_OPTIONS = { html: true, linkify: true };
+
+/** `s` の中の改行の数 */
+function countNewlines(s: string): number {
+  return s.split("\n").length - 1;
+}
+
+/** 親の `inline` の開始行（0 から）。表のセルのように `map` が `null` のときは直前の `tr_open` の開始行 */
+function inlineStartLine(tokens: Token[], position: number): number {
+  for (let index = position; index >= 0; index--) {
+    const token = tokens[index];
+    if (token?.map && (index === position || token.type === "tr_open")) {
+      return token.map[0];
+    }
+  }
+  return 0;
+}
+
+/** Markdown の生の HTML のブロックと行内の HTML から印の名前と行の番号（1 から）を、書いた順に返す。閉じの印も 1 つの印として返す */
+export function findMarks(
+  markdown: string,
+): Array<{ name: string; line: number }> {
+  const tokens = new MarkdownIt(PARSER_OPTIONS).parse(markdown, {});
+  const found: Array<{ name: string; line: number }> = [];
+  for (const [position, token] of tokens.entries()) {
+    if (token.type === "html_block" && token.map) {
+      const start = token.map[0] + 1;
+      for (const match of token.content.matchAll(MARK_PATTERN)) {
+        const before = token.content.slice(0, match.index);
+        found.push({
+          name: match[2] ?? "",
+          line: start + countNewlines(before),
+        });
+      }
+    } else if (token.type === "inline") {
+      // 印より前の子が持つ改行の数を足しながら、行内の HTML の印を拾う
+      let offset = inlineStartLine(tokens, position) + 1;
+      for (const child of token.children ?? []) {
+        if (child.type === "softbreak" || child.type === "hardbreak") {
+          offset += 1;
+        } else if (child.type === "html_inline") {
+          for (const match of child.content.matchAll(MARK_PATTERN)) {
+            const before = child.content.slice(0, match.index);
+            found.push({
+              name: match[2] ?? "",
+              line: offset + countNewlines(before),
+            });
+          }
+          offset += countNewlines(child.content);
+        }
+      }
+    }
+  }
+  return found;
+}
+
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export function createParser(): MarkdownItParser {
-  const parser = new MarkdownIt({ html: true, linkify: true });
+  const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
   // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
