@@ -1,4 +1,4 @@
-/* 開発者ツール × スイス: mindstella と同じ文字の大きさ・行間・角丸。見出しの下の線を引かず、注意書きは種類の色の薄い面と淡い線 */
+/* 開発者ツール × スイス: mindstella の本文（13px）より 1 段大きい 14px の文字と、mindstella と同じ行間・角丸。見出しの下の線を引かず、注意書きは種類の色の薄い面と淡い線 */
 
 /* 明るい配色の値と、配色によらない値 */
 :root {
@@ -22,7 +22,7 @@
   --mdmark-color-current-bg: #e6f3f1;
   --mdmark-color-border: #e4e4e7;
   --mdmark-color-surface: #f4f4f5;
-  --mdmark-color-table-head: #fafafa;
+  --mdmark-color-table-head: #f4f4f5;
   --mdmark-color-scroll-shadow: rgb(24 24 27 / 0.14);
   --mdmark-color-term-underline: #52525b;
   --mdmark-color-notice-bg: #f9eee8;
@@ -71,7 +71,7 @@
     --mdmark-color-current-bg: #10302c;
     --mdmark-color-border: #26262b;
     --mdmark-color-surface: #1b1b1f;
-    --mdmark-color-table-head: #16161a;
+    --mdmark-color-table-head: #1b1b1f;
     --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.6);
     --mdmark-color-term-underline: #b4b4bc;
     --mdmark-color-notice-bg: #2a251d;

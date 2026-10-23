@@ -8,11 +8,6 @@
     border-radius: var(--mdmark-radius);
     background: var(--mdmark-color-bg);
 
-    /* 表の見出し行: 表の見出しの色で塗る */
-    th {
-      background: var(--mdmark-color-table-head);
-    }
-
     /* 注意書きの枠: 種類の色の線で囲む。面と線の色はスタイルが変えられる */
     .markdown-alert {
       --mdmark-callout-color: var(--mdmark-color-callout-note);
