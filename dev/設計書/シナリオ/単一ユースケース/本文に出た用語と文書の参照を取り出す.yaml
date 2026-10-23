@@ -1,0 +1,151 @@
+title: "本文に出た用語と文書の参照を取り出す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、取り出しの処理を呼ぶ
+      - name: 用語と文書の別名を持つ索引
+        description: 用語 `ワークスペース`（ID `ws`、別名 `WS`、意味 `話し合いの記録を置くフォルダ`）と、文書 `api`（題 `API`、概要 `公開関数の一覧`、別名 `公開関数`）・文書 `guide` を持つ索引
+      - name: 用語と別名が出る本文
+        description: '`guide` の本文。1 つ目の節の段落に `ワークスペース` を 2 回と `WS` を、2 つ目の節の段落に `公開関数` を書き、見出しと行内のコードとリンクの文字にも `ワークスペース` を書く'
+        notes: 見出し・コード・リンクの中の語が一致にならないことを決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引と文書の本文を渡して参照を取り出させる
+        M->>M: 用語・文書の別名を語の区切りに揃えて照合する
+        M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
+      ```
+    expected:
+      - '`guide` の参照の一覧が、段落の `ワークスペース` 2 回・`WS`・`公開関数` の 4 件を本文の頭からの順に持つ'
+      - '`ワークスペース` と `WS` の要素が、種類が索引の用語・ID `ws`・タイトル `ワークスペース`・短い説明 `話し合いの記録を置くフォルダ` を持つ'
+      - '`公開関数` の要素が、種類が文書・ID `api`・タイトル `API`・短い説明 `公開関数の一覧` を持つ'
+      - 各要素が、一致した文字列と、本文の中でその文字列が出た位置を持つ
+      - 見出し・行内のコード・リンクの文字の `ワークスペース` は一覧に無い
+      - まとめた参照の一覧が、`ws` と `api` を 1 回ずつ持つ
+      - 引数の索引と本文が書き換わっていない
+    test: test_normal
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（複数の文書に同じ参照先）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 同じ用語が出る 2 つの文書
+        description: 正常シナリオの索引と、`guide` と `api` の本文。どちらの本文も段落に `ワークスペース` を書き、`api` の本文は段落に自身の別名 `公開関数` も書く
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引と 2 つの文書の本文を渡して参照を取り出させる
+        M->>M: 文書ごとに照合し、参照先の重なりを除いてまとめる
+        M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
+      ```
+    expected:
+      - '`guide` と `api` のそれぞれの参照の一覧が、`ws` の要素を持つ'
+      - まとめた参照の一覧が、`ws` を 1 回だけ持つ
+      - '`api` の参照の一覧が、`api` 自身の別名 `公開関数` の要素を持たない'
+    test: test_normal_when_same_target_in_documents
+  - name: 正常シナリオ（用語集の表の用語）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 用語集の表を持つ文書
+        description: 文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文が `glossary` の印で、用語 `印`（意味 `HTML コメントで書く指定`）の行を持つ表を囲み、`guide` の本文の段落に `印` と `印刷` を書く
+        notes: '`印刷` は用語 `印` を含むが、語の区切りは `印刷` の 1 語'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引と文書の本文を渡して参照を取り出させる
+        M->>M: 用語集の表の用語を辞書に入れて照合する
+        M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
+      ```
+    expected:
+      - '`guide` の参照の一覧が、`印` の 1 件を、種類が用語集の表の用語・タイトル `印`・短い説明 `HTML コメントで書く指定` で持つ'
+      - '`印刷` の `印` は一覧に無い'
+      - '`用語集.md` の表の中の `印` は一覧に無い'
+    test: test_normal_when_glossary_table
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#scenarios[正常シナリオ]
+  - name: 正常シナリオ（文書の印で機能がオフ）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 機能をオフにした 2 つの文書
+        description: '正常シナリオの索引に文書 `memo` を足したものと、`guide`・`memo` の本文。どちらの本文も段落に `ワークスペース` と `公開関数` を書き、`guide` の頭に `<!-- features: -glossary -->`、`memo` の頭に `<!-- features: -glossary -backlinks -->` を書く'
+        notes: '`memo` で、用語も文書の別名も照合しないときに空の一覧が返ることを決定的に起こす'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引と文書の本文を渡して参照を取り出させる
+        M->>M: 文書の印で決まった機能のオン・オフで照合する語を選ぶ
+        M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
+      ```
+    expected:
+      - '`guide` の参照の一覧が、索引の用語の要素を持たず、文書の別名 `公開関数` の要素を持つ'
+      - '`memo` の参照の一覧が空'
+      - まとめた参照の一覧が、`api` だけを持つ
+    test: test_normal_when_feature_off
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
+  - name: 正常シナリオ（埋め込んだ HTML と図の部品の用語）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: HTML と図の部品に用語を書いた本文
+        description: 正常シナリオの索引と、`guide` の本文。`<!-- html -->` の範囲の `html` のコードブロックの段落に `ワークスペース` を書き、同じ HTML の中に `ワークスペース` を文字に持つリンクと、箱の `name` に `{{ワークスペース}}` を書いた `<mdmark-flow>` も置く。`<!-- flow -->` の範囲の図の定義の箱の `name` に `{{ワークスペース}}` と `{{公開関数}}` を書く
+        notes: '`{{公開関数}}` は文書の別名で用語ではないため、図の部品では参照にならないことを決定的に起こす'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引と文書の本文を渡して参照を取り出させる
+        M->>M: 埋め込んだ HTML の文字と図の部品の {{語}} も照合する
+        M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
+      ```
+    expected:
+      - '`guide` の参照の一覧が、HTML の中の段落の `ワークスペース`、HTML の中の `<mdmark-flow>` の箱の `{{ワークスペース}}`、`<!-- flow -->` の図の箱の `{{ワークスペース}}` の 3 件を `ws` の要素として持つ'
+      - HTML の中のリンクの文字の `ワークスペース` は一覧に無い
+      - 図の箱の `{{公開関数}}` は一覧に無い
+      - 各要素が、本文の Markdown の中でその文字列が出た位置を持つ
+    test: test_normal_when_embedded_html_and_diagram
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る#
+      - dev/設計書/シナリオ/単一ユースケース/チャートを描く#
+lead: 使う側の処理（AI へ本文を返す MCP・サーバー）が、索引と文書の本文を mdmark に渡し、画面を出さずに、本文に出た用語・文書の別名と、その参照先の一覧を受け取る。
+issue: 47
+primary_actor: 使う側の処理
+stakeholders:
+  - name: 文書を読む AI
+    interest: 本文と別に、利用者が画面のツールチップで見るのと同じ用語の意味と関連する文書の説明を受け取れる
+  - name: 使う側のアプリ（mindstella など）
+    interest: 照合の処理を自前で持たず、画面と同じ一致の規則で参照を受け取れる。複数の文書を返すときに、同じ用語の説明を何度も返さずに済む
+trigger: 使う側の処理が、読んだ索引と、文書のパスから本文を引く表を渡して、参照を取り出させる
+preconditions:
+  - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
+  - 使う側の処理が索引の YAML と文書のファイルを読んでいる（mdmark はファイルを読まない）
+success_guarantee: 文書ごとに、本文に出た用語・文書の別名の一致が、参照先の種類・ID・タイトル・短い説明と、一致した文字列・本文の中の位置を持つ一覧で返る。あわせて、渡した全ての文書の参照先を重なりを除いてまとめた一覧が返る。一致は、描いた文書で下線とツールチップが付く語と同じ規則で決まる。
+minimal_guarantee: 索引に用語も文書の別名も無いとき、本文に一致が無いときは、空の一覧が返る。取り出しは索引と文書を書き換えない。
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#
+  - dev/設計書/シナリオ/単一ユースケース/被参照を見る#
+test_file: tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts

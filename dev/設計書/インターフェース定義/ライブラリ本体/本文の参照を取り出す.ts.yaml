@@ -1,0 +1,291 @@
+title: "本文の参照を取り出す"
+entry:
+  kind: operation
+  value: '`collectMatches(input)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: 索引の用語・別名と文書の別名の一致を、参照先と本文の位置つきで返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、`collectMatches` を呼ぶ
+      - name: 2 つの文書の索引と本文
+        description: リクエスト例の索引。`guide` の本文は、段落に `ワークスペース` を 2 回と `WS`・`公開関数` を書き、見出し・行内のコード・リンクの文字にも `ワークスペース` を書く。`api` の本文は、段落に `ワークスペース` と自身の別名 `公開関数` を書く
+        notes: 見出し・コード・リンクの中の語と、文書自身の別名が一致にならないことを決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 文書ごとに辞書を作り、地の文を照合して本文の位置へ戻す
+        M-->>C: { byDocument, targets }
+      ```
+    expected:
+      - '`byDocument.guide` が、段落の `ワークスペース` 2 回・`WS`・`公開関数` の 4 件を本文の頭からの順に持つ'
+      - '`ワークスペース` と `WS` の要素の `kind` が `term`、`id` が `ws`、`title` が `ワークスペース`、`description` が `話し合いの記録を置くフォルダ`'
+      - '`公開関数` の要素の `kind` が `doc`、`id` が `api`、`title` が `API`、`description` が `公開関数の一覧`'
+      - 各要素の `line`・`start`・`end` で本文の行を切り出した文字が `text` と同じ
+      - '`byDocument.api` が `ws` の要素を持ち、自身の別名 `公開関数` の要素を持たない'
+      - '`targets` が `ws` と `api` を 1 回ずつ持つ'
+      - 引数の `index` と `documents` が書き換わっていない
+    test: test_normal
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ]
+  - name: 正常系（用語集の表）
+    summary: ほかの文書の用語集の表の用語を照合し、`glossary` の参照先として返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 用語集のページを持つ索引と本文
+        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文は `<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` で、用語 `印`（意味 `HTML コメントで書く指定`）の行を持つ表を囲む。`guide` の本文の段落に `印` と `印刷` を書く'
+        notes: '`印刷` は語の区切りが 1 語（`Intl.Segmenter` を持つ Node で流す）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 各文書の用語集の表を読み、辞書に入れて照合する
+        M-->>C: { byDocument, targets }
+      ```
+    expected:
+      - '`byDocument.guide` が `印` の 1 件を持ち、`kind` が `glossary`、`id` が `glossary:glossary:印`、`title` が `印`、`description` が `HTML コメントで書く指定`'
+      - '`印刷` の `印` は `byDocument.guide` に無い'
+      - '`byDocument.glossary` が表の中の `印` を持たない'
+    test: test_normal_when_glossary_table
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（用語集の表の用語）]
+  - name: 正常系（埋め込んだ HTML と図の部品）
+    summary: 埋め込んだ HTML の文字と、図の部品の定義の `{{語}}` も照合し、本文の位置へ戻す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: HTML と図の部品に用語を書いた本文
+        description: 正常系の索引と、`guide` の本文。`<!-- html -->` の範囲の `html` のコードブロックに、段落の `ワークスペース`・`ワークスペース` を文字に持つリンク・箱の `name` が `{{ワークスペース}}` の `<mdmark-flow>` を書く。`<!-- flow -->` の範囲の定義に、箱の `name` が `{{ワークスペース}}` と `{{公開関数}}` を書く
+        notes: '`{{公開関数}}` は文書の別名で用語ではないため、参照にならないことを決定的に起こす'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 埋め込んだ HTML の文字と図の部品の {{語}} を照合して本文の位置へ戻す
+        M-->>C: { byDocument, targets }
+      ```
+    expected:
+      - '`byDocument.guide` が、HTML の段落・`<mdmark-flow>` の箱・`<!-- flow -->` の箱の `ワークスペース` の 3 件を `ws` の要素として持つ'
+      - HTML の中のリンクの文字と `{{公開関数}}` は `byDocument.guide` に無い
+      - 各要素の `line`・`start`・`end` で本文の行を切り出した文字が `text` と同じ
+    test: test_normal_when_embedded_html_and_diagram
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（埋め込んだ HTML と図の部品の用語）]
+  - name: 正常系（実体参照とエスケープ）
+    summary: 実体参照・エスケープ・強調の後ろの一致も、本文に書いたままの範囲を返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 記法を含む行の本文
+        description: 正常系の索引に用語 `A&B`（ID `ab`、意味 `A と B の組`）を足したものと、`guide` の本文。`\*記号\* の後ろのワークスペース`・`&amp; の後ろの WS と A&amp;B`・`**ワークスペース** と *WS*`・`> 引用の中の WS` の行と、`| WS | ワークスペース |` の行を持つ表を書く
+        notes: 照合した文字の位置が本文の位置からずれる書き方を並べる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 行内のトークンを頭から本文へ当て、エスケープと実体参照を数えて位置を戻す
+        M-->>C: { byDocument, targets }
+      ```
+    expected:
+      - 全ての要素で、`line`・`start`・`end` で本文の行を切り出した文字が `text` と同じか、実体参照を戻すと `text` になる
+      - '`A&B` の要素の範囲が、本文の `A&amp;B` を指す'
+      - 表の 2 つのセルの一致が、同じ行のそれぞれのセルの位置を指す
+    test: test_normal_when_escaped_text
+  - name: 正常系（機能のオフ）
+    summary: 文書の印で `glossary` や `backlinks` がオフの文書は、その種類の一致を返さない
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 機能をオフにした 2 つの文書
+        description: '正常系の索引に文書 `memo` を足したものと、`guide`・`memo` の本文。どちらも段落に `ワークスペース` と `公開関数` を書き、`guide` の頭に `<!-- features: -glossary -->`、`memo` の頭に `<!-- features: -glossary -backlinks -->` を書く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 文書の印で決まった機能のオン・オフで照合する語を選ぶ
+        M-->>C: { byDocument, targets }
+      ```
+    expected:
+      - '`byDocument.guide` が `kind` が `term` の要素を持たず、`api` の要素を持つ'
+      - '`byDocument.memo` が空の並び'
+      - '`targets` が `api` だけを持つ'
+    test: test_normal_when_feature_off
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（文書の印で機能がオフ）]
+  - name: 正常系（Schema に合わない索引）
+    summary: 合わない項目を除いて照合し、例外を投げない
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 合わない用語と文書を持つ索引
+        description: 正常系の索引に、`meaning` を持たない用語 `印`（ID `mark`）と `path` を持たない文書 `broken`（別名 `壊れた文書`）を足したもの。`guide` の本文は段落に `WS`・`印`・`壊れた文書` を書く
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 形の合わない用語と文書を除いて照合する
+        M-->>C: { byDocument, targets }
+      ```
+    expected:
+      - 例外を投げない
+      - '`byDocument.guide` が `WS` の 1 件だけを持つ'
+      - '`targets` が `mark` と `broken` を持たない'
+    test: test_normal_when_invalid_index
+lead: 使う側の処理（AI へ本文を返す MCP・サーバー）が、索引と文書の本文を渡し、画面を出さずに、本文に出た用語・文書の別名の一致とその参照先を受け取る。一致の規則は描いた文書の用語の下線とツールチップと同じ。
+identifier: collectMatches
+idempotent: true
+side_effects: なし（引数を書き換えず、ファイルとネットワークを読まない）
+request:
+  - name: input.index
+    type: MdmarkIndex
+    required: true
+    location: argument
+    description: 使う側が索引の YAML を読んだオブジェクト。形は ER 図『索引』
+    notes: Schema に合わない文書・用語の項目は除いて照合する（`collectReferences` と同じ）
+  - name: input.documents
+    type: Record<string, string>
+    required: true
+    location: argument
+    description: 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。複数の文書を渡せる
+    example: '{ "使い方/guide.md": "# 使い方\n\nワークスペースを開く。" }'
+    notes: 索引に無いパスの文書は無視する。他の文書の用語集の表の用語も、この表にある本文から読む
+  - name: input.config
+    type: MdmarkConfig
+    required: false
+    default: なし（全てのキーに既定を当てる）
+    location: argument
+    description: '`mount` の `opts.config` と同じ。読むのは `features`（文書ごとの `<!-- features: … -->` を重ねて、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める）だけ'
+request_example: |-
+  ```json
+  {
+    "index": {
+      "schema": 1,
+      "docs": [
+        { "id": "api", "path": "api.md", "title": "API", "description": "公開関数の一覧", "aliases": ["公開関数"] },
+        { "id": "guide", "path": "使い方/guide.md", "title": "使い方" }
+      ],
+      "terms": [{ "id": "ws", "term": "ワークスペース", "aliases": ["WS"], "meaning": "話し合いの記録を置くフォルダ" }]
+    },
+    "documents": {
+      "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。"
+    }
+  }
+  ```
+response:
+  - name: byDocument
+    type: Record<string, MdmarkMatch[]>
+    description: 文書の `id` から、その文書の本文の一致の並びを引く表
+    constraints: キーは `documents` に本文がある索引の文書だけ。一致が無い文書は空の並び
+    notes: 並びは本文の頭からの順（行の順、同じ行は始まりの順）。同じ参照先の出現を全て並べる
+  - name: byDocument[].kind
+    type: '"term" | "glossary" | "doc"'
+    description: 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書
+  - name: byDocument[].id
+    type: string
+    description: 参照先の ID。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`
+  - name: byDocument[].title
+    type: string
+    description: 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`
+  - name: byDocument[].description?
+    type: string
+    description: 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`
+    notes: '`doc` で `docs[].description` を持たないときはキーを持たない'
+  - name: byDocument[].text
+    type: string
+    description: 一致した文字列（照合した辞書の語。別名で一致したときはその別名）
+  - name: byDocument[].line
+    type: number
+    description: 一致した本文の Markdown の行
+    constraints: 1 から数える
+  - name: byDocument[].start
+    type: number
+    description: その行の中の始まりの位置
+    constraints: 0 から数える UTF-16 の位置
+  - name: byDocument[].end
+    type: number
+    description: その行の中の終わりの位置（含まない）
+    constraints: UTF-16 の位置
+    notes: 本文の文字が実体参照やエスケープで書かれているときは、本文に書いたままの範囲を指す（`A&amp;B` に一致した `A&B` は `A&amp;B` の範囲）
+  - name: targets
+    type: MdmarkMatchTarget[]
+    description: 渡した全ての文書の参照先を、種類と ID の組で重なりを除いてまとめた並び
+    constraints: 同じ参照先は 1 回だけ入る
+    notes: 並びは索引の `docs` の順に文書を見て、その文書の中の初出の順
+  - name: targets[].kind
+    type: '"term" | "glossary" | "doc"'
+    description: '`byDocument[].kind` と同じ'
+  - name: targets[].id
+    type: string
+    description: '`byDocument[].id` と同じ'
+  - name: targets[].title
+    type: string
+    description: '`byDocument[].title` と同じ'
+  - name: targets[].description?
+    type: string
+    description: '`byDocument[].description` と同じ'
+response_example: |-
+  ```json
+  {
+    "byDocument": {
+      "guide": [
+        { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "WS", "line": 3, "start": 0, "end": 2 },
+        { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧", "text": "公開関数", "line": 3, "start": 4, "end": 8 }
+      ]
+    },
+    "targets": [
+      { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ" },
+      { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧" }
+    ]
+  }
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 文書ごとの一致と、まとめた参照先を返す
+  - name: なし（Schema に合わない索引）
+    condition: 索引の文書・用語の項目が Schema に合わない
+    notes: 例外を投げず、合わない項目を除いて照合する。合わないことを知るには `checkIndex` を呼ぶ
+constraints:
+  - item: 実行する環境
+    constraint: Node とブラウザで動き、DOM に頼らない。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
+  - item: 照合の規則
+    constraint: 用語のツールチップと同じ辞書（索引の `terms` → 照合する文書の用語集の表 → ほかの文書の表。文書の別名は照合する文書自身の別名を除く）と、語の区切りに揃う一致を長い語から取る照合を使う
+    notes: 節ごとの最初の 1 回の制限は下線のもので、取り出しには効かない
+  - item: 照合する範囲
+    constraint: 本文の地の文（コード・リンク・見出し・用語集の表の中を除く）、`html` がオンなら埋め込んだ HTML の文字（`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・中身ごと落ちる要素を除く）、`diagrams` がオンなら図の部品の範囲の定義と埋め込んだ HTML の中の custom element の定義の `{{語}}`
+    notes: 図の部品の `{{語}}` は、語が用語に完全に一致し、意味が空でないときだけ参照にする（文書の別名は引かない）
+  - item: 機能のオフ
+    constraint: 文書の印で `glossary` がオフの文書は用語を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+  - item: 位置の数え方
+    constraint: 行は 1 から、行の中の位置は 0 から数える UTF-16 の位置。改行は `\n` で数える
+  - item: 計算の量
+    constraint: 全ての文書の本文を 1 回ずつ解析する。結果は使う側が持ち、文書を書き換えたときに作り直す
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#
+  - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+test_file: tests/integration/lib/collect-matches.test.ts
