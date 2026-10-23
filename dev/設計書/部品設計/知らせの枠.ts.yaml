@@ -67,19 +67,19 @@ args:
 css_properties:
   - name: --mdmark-color-notice-bg
     syntax: <color>
-    default: '#fff8c5（ダーク #2a2110）'
+    default: '#f9eee8（ダーク #2a251d）'
     description: 枠の地の色
   - name: --mdmark-color-notice-border
     syntax: <color>
-    default: '#9a6700（ダーク #bb8009）'
+    default: '#b45309（ダーク #fbbf24）'
     description: 枠の線の色
   - name: --mdmark-color-notice-text
     syntax: <color>
-    default: '#1f2328（ダーク #f0f6fc）'
+    default: '#18181b（ダーク #ededef）'
     description: 枠の文字の色
   - name: --mdmark-radius
     syntax: <length>
-    default: 6px
+    default: 4px
     description: 枠の角丸
 accessibility:
   - 枠は `role="status"` を持ち、読み上げが題と本文を読む

@@ -38,18 +38,18 @@ introduced:
 css_properties:
   - name: --mdmark-color-series-1
     syntax: <color>
-    default: '#0969da（ダーク #4493f8）'
+    default: '#0f766e（ダーク #2dd4bf）'
     description: 1 つ目の系列の色（実線・丸の点）
   - name: --mdmark-color-series-2
     syntax: <color>
-    default: '#bc4c00（ダーク #f0883e）'
+    default: '#b45309（ダーク #fbbf24）'
     description: 2 つ目の系列の色
   - name: --mdmark-color-series-3
     syntax: <color>
-    default: '#8250df（ダーク #ab7df8）'
+    default: '#6d28d9（ダーク #c4a7ff）'
     description: 3 つ目の系列の色
   - name: --mdmark-color-series-4
     syntax: <color>
-    default: '#1b7c83（ダーク #39c5cf）'
+    default: '#1d4ed8（ダーク #7aa2ff）'
     description: 4 つ目の系列の色
 test_file: tests/integration/lib/chart.story.test.ts

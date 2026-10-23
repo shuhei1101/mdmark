@@ -58,7 +58,7 @@ events:
 css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
-    default: '#f6f8fa（ダーク #151b23）'
+    default: '#f4f4f5（ダーク #1b1b1f）'
     description: 詳細の行の地の色
 accessibility:
   - 開閉のボタンは `「{label}」の詳細` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す

@@ -86,7 +86,7 @@ events:
 css_properties:
   - name: --mdmark-color-error
     syntax: <color>
-    default: '#d1242f（ダーク #f85149）'
+    default: '#b91c1c（ダーク #f87171）'
     description: 知らせの文字とアイコン、`aria-invalid` の本文の欄の枠の色
 accessibility:
   - 枠は `role="dialog"`・`aria-label="コメントを書く"` で、開いたら本文の欄へフォーカスを移す
