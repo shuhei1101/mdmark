@@ -4,6 +4,9 @@ import { createEnv, featuresOff } from "../../helpers/env.ts";
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../src/render/parser.ts");
 
+/** 描画の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadRender = () => import("../../../../src/render/index.ts");
+
 /** 記法の機能を全てオフにした解析器で Markdown を HTML にする */
 async function parse(markdown: string): Promise<string> {
   const { createParser } = await loadParser();
@@ -170,4 +173,93 @@ test("test_find_marks_when_multiline_inline_html", async () => {
   const marks = findMarks(markdown);
   // 検証
   expect(marks).toEqual([{ name: "c", line: 2 }]);
+});
+
+// ブロックごとに始まる行の 0 始まりの番号を付ける（正常系）
+test("test_mark_source_lines", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const markdown = [
+    "# 見出し",
+    "",
+    "段落",
+    "",
+    "- 項目 A",
+    "- 項目 B",
+    "",
+    "> 引用",
+    "",
+    "---",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(/<h1[^>]*data-source-line="0"/);
+  expect(html).toMatch(/<p[^>]*data-source-line="2"/);
+  expect(html).toMatch(/<ul[^>]*data-source-line="4"/);
+  expect(html).toMatch(/<li[^>]*data-source-line="4"/);
+  expect(html).toMatch(/<li[^>]*data-source-line="5"/);
+  expect(html).toMatch(/<blockquote[^>]*data-source-line="7"/);
+  expect(html).toMatch(/<hr[^>]*data-source-line="9"/);
+});
+
+// 表と表の行、コードブロックに付ける（正常系）
+test("test_mark_source_lines_when_table_and_code", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const markdown = [
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 | 2 |",
+    "| 3 | 4 |",
+    "",
+    "```ts",
+    "const x = 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(/<table[^>]*data-source-line="0"/);
+  expect(html).toMatch(/<tr[^>]*data-source-line="2"/);
+  expect(html).toMatch(/<tr[^>]*data-source-line="3"/);
+  expect(html).toMatch(/<pre[^>]*data-source-line="5"/);
+});
+
+// 印の範囲を囲む要素と注意書きに開きの印の行を付け、中のブロックにもそれぞれの行を付ける（正常系）
+test("test_mark_source_lines_when_mark_range", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const markdown = [
+    "<!-- table: data -->",
+    "",
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 | 2 |",
+    "<!-- /table -->",
+    "",
+    "> [!NOTE]",
+    "> 注意",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(/<[a-z]+[^>]*data-source-line="0"/);
+  expect(html).toMatch(/<table[^>]*data-source-line="2"/);
+  expect(html).toMatch(/<[a-z]+[^>]*data-source-line="7"/);
+});
+
+// 文書に書いた生の HTML のブロックは変えない（正常系）
+test("test_mark_source_lines_when_raw_html", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const markdown = '<div class="x">地</div>\n';
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain("地");
+  expect(html).not.toContain("data-source-line");
 });

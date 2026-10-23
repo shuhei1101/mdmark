@@ -20,6 +20,10 @@ const loadTable = () => import("../../../src/parts/table.ts");
 /** 文書の一覧の処理を読み込む */
 const loadDocList = () => import("../../../src/parts/doc-list.ts");
 
+/** VS Code 拡張機能のプレビューの状態の表示の処理を読み込む */
+const loadPreviewStatus = () =>
+  import("../../../vscode/src/webview/parts/preview-status.ts");
+
 const servers: Server[] = [];
 const createdRoots: string[] = [];
 
@@ -145,6 +149,20 @@ test("test_render_part_when_doc_list", async () => {
   // 検証
   expect(html).toBe(
     `<div class="mdmark">${renderDocList({ docs, current: "使い方/guide.md" })}</div>`,
+  );
+});
+
+// 拡張機能のプレビューの状態の表示を引数どおりに描く（正常系）
+test("test_render_part_when_vscode_part", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const { renderPreviewStatus } = await loadPreviewStatus();
+  const params = new URLSearchParams("state=versionMissing&version=v9.9.9");
+  // 実行
+  const html = renderPart({ component: "preview-status", params });
+  // 検証
+  expect(html).toBe(
+    `<div class="mdmark">${renderPreviewStatus({ state: "versionMissing", version: "v9.9.9" })}</div>`,
   );
 });
 

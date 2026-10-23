@@ -236,6 +236,35 @@ test("test_attach_minimap_when_theme_overridden", async () => {
   });
 });
 
+// 祖先の class で配色が切り替わると帯に写し直す（正常系）
+test("test_attach_minimap_when_class_changed", async () => {
+  // 準備
+  document.body.classList.add("vscode-light");
+  const root = place(document.createElement("div"));
+  root.className = "mdmark";
+  const lines = place(createLines(200, { 10: "del", 150: "add" }), root);
+  try {
+    await attachTracked(lines);
+    await vi.waitFor(() => {
+      expect(findBands()).toHaveLength(1);
+    });
+    const [band] = findBands();
+    const read = (name: string) =>
+      (band as HTMLElement).style.getPropertyValue(name).trim();
+    await vi.waitFor(() => {
+      expect(read("--mdmark-color-diff-del-sign")).toBe("#d1242f");
+    });
+    // 実行: body の class を替える
+    document.body.classList.replace("vscode-light", "vscode-dark");
+    // 検証
+    await vi.waitFor(() => {
+      expect(read("--mdmark-color-diff-del-sign")).toBe("#f85149");
+    });
+  } finally {
+    document.body.classList.remove("vscode-light", "vscode-dark");
+  }
+});
+
 // スクロールする枠の外で画面がスクロールすると、帯を枠の右端に置き直す（正常系）
 test("test_attach_minimap_when_page_scrolled", async () => {
   // 準備
