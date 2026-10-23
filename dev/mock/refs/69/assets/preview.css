@@ -144,11 +144,16 @@ body.vscode-dark {
   line-height: 1.6;
   overflow-wrap: anywhere;
 
-  /* 何が起きたか */
-  h2 {
+  /* 何が起きたか: 文書の無い場面では Webview の見出し 1、文書の上の帯では見出し 2 */
+  :is(h1, h2) {
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
+  }
+
+  /* 文書の無い場面の見出し: 本文より一段大きくする */
+  h1 {
+    font-size: 1.25rem;
   }
 
   /* 理由と直し方 */
