@@ -1,0 +1,25 @@
+# lint
+# コマンド: npm run lint && npm run typecheck
+# コミット: 3d9082e50e396baaca56028f0c9d837c3fa00391
+
+
+> lint
+> biome check .
+
+Checked 422 files in 2s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/render/index.test.ts(11,3): error TS2741: Property 'tooltips' is missing in type '{ features: { print: true; }; libraries: Record<string, LibraryEntry>; }' but required in type 'ResolvedConfig'.
+
+# base ブランチ（develop）で同じコマンド: 違反 0 件
+
+> lint
+> biome check .
+
+Checked 420 files in 2s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+

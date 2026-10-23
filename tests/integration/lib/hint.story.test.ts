@@ -40,7 +40,7 @@ test("test_block", async () => {
   ).resolves.toBe("説明");
 });
 
-// ブロックの要素の印に乗せて開いた状態は、印の下に文を出し、横にはみ出さない（BlockOpen）
+// ブロックの要素の印に乗せて開いた状態は、印の上に文を出し、横にはみ出さない（BlockOpen）
 test("test_block_open", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-hint--block-open");
@@ -49,6 +49,18 @@ test("test_block_open", async () => {
   await expect(tipOf(page).innerText()).resolves.toContain(
     "返信の種類を 1 つ選ぶ",
   );
+  const rects = await page.evaluate(() => {
+    const mark = document.querySelector(".mdmark-hint-mark");
+    const tooltip = document.querySelector('[role="tooltip"]');
+    if (!mark || !tooltip) {
+      throw new Error("印かツールチップが無い");
+    }
+    return {
+      markTop: mark.getBoundingClientRect().top,
+      tipBottom: tooltip.getBoundingClientRect().bottom,
+    };
+  });
+  expect(rects.tipBottom).toBeLessThanOrEqual(rects.markTop);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 

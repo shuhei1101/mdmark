@@ -625,10 +625,10 @@ functions:
     kind: 関数
     scope: internal
     summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
-    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し、語の `aria-describedby` でツールチップを指す。文字はエスケープする
+    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し、語の `aria-describedby` でツールチップを指す。`below` が `true` のときは `mdmark-term-wrap` に `is-below` を付ける（ストーリーが下に開いた見た目を出すため。`render` は渡さない）。文字はエスケープする
     args:
       - name: props
-        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning: string } }'
+        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning: string }; below?: boolean }'
         required: true
         description: 部品設計の引数
     returns:
@@ -653,6 +653,12 @@ functions:
         condition: 部品設計『用語のツールチップ』の `Avoided` の引数に、`meaning`・`docs` も渡したもの
         mock: なし
         expected: 語の class が `mdmark-term mdmark-term-avoided` で `aria-describedby` がツールチップの `id`、ツールチップが `role="tooltip"` で見出しが `代わりの用語` だけ、`ワークスペース` と意味が出て、渡した `meaning`・`docs` は出ない。`replacement` の語と意味の `<script>` は `&lt;script&gt;` になる
+      - name: test_render_term_tip_below
+        case: 正常
+        summary: '`below` を渡すと `is-below` を付ける'
+        condition: 部品設計『用語のツールチップ』の `Below` と `TermOnly` の引数
+        mock: なし
+        expected: '`Below` の `mdmark-term-wrap` が `is-below` を持ち、`TermOnly` は持たない'
     refs:
       - dev/設計書/部品設計/用語のツールチップ.ts#
   - name: renderBacklinks
@@ -690,12 +696,12 @@ functions:
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
-    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、下に収まらないときは `is-above` も付けて画面に対して置く。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-above`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
+    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に置いて `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
     args:
-      - name: root
-        type: HTMLElement
+      - name: options
+        type: '{ root: HTMLElement; placement: TooltipPlacement }'
         required: true
-        description: 描いた文書の要素
+        description: 描いた文書の要素と、ツールチップを先に出す側
     returns:
       type: () => void
       description: 付けた操作を外す関数
@@ -713,6 +719,12 @@ functions:
         condition: 同じ HTML を 2 つの要素に入れて両方に付ける
         mock: なし（Chromium）
         expected: ページの `id` が全て一意で、`aria-describedby` が同じ要素の中のツールチップを指す
+      - name: test_attach_term_tips_when_no_room_above
+        case: 正常
+        summary: 上に収まれば語の上、収まらなければ語の下に置き `is-below` を付ける
+        condition: '`placement` が `top` で、要素の上端に置いた語と、画面の中ほどに置いた語にそれぞれフォーカスする'
+        mock: なし（Chromium）
+        expected: 中ほどの語は `is-below` を持たずツールチップの `bottom` が語の `top` 以下、上端の語は `is-below` を持ちツールチップの `top` が語の `bottom` 以上。閉じた後は `is-below` が残らない
   - name: wordStarts
     title: 語の区切りの位置を返す
     container: src/knowledge/dictionary.ts

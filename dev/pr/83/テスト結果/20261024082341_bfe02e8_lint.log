@@ -1,0 +1,23 @@
+# lint
+# コマンド: npm run lint && npm run typecheck
+# コミット: bfe02e8e8b8d4498be034d75d7cda52913fd7a57
+
+
+> lint
+> biome check .
+
+Checked 490 files in 1982ms. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+vscode/tests/integration/run.ts(11,26): error TS2307: Cannot find module '@vscode/test-electron' or its corresponding type declarations.
+exit=1
+
+# 残った違反は base ブランチ（develop 7fb28e4d468066a2e3a572e3adacebb4589a14c9）で同じコマンドを回しても出る（この PR が変えていない vscode/tests/integration/run.ts）
+# コマンド: npm run typecheck（develop の worktree）
+
+> typecheck
+> tsc --noEmit
+
+vscode/tests/integration/run.ts(11,26): error TS2307: Cannot find module '@vscode/test-electron' or its corresponding type declarations.

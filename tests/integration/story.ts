@@ -4,11 +4,14 @@ import { inject } from "vitest";
 // ストーリーを開く画面の大きさ（狭い幅で折り返しを見る）
 const VIEWPORT = { width: 420, height: 360 };
 
+/** ストーリーを開く画面の大きさ */
+export type Viewport = { width: number; height: number };
+
 /** テストファイルの間で使う、Chromium の起動と終了 */
 export function createBrowserHolder(): {
   launch: () => Promise<void>;
   close: () => Promise<void>;
-  openStory: (id: string) => Promise<Page>;
+  openStory: (id: string, viewport?: Viewport) => Promise<Page>;
 } {
   let browser: Browser | undefined;
   const pages: Page[] = [];
@@ -20,11 +23,11 @@ export function createBrowserHolder(): {
       await browser?.close();
     },
     // ストーリーを単独で開き、部品が描かれるまで待つ
-    openStory: async (id) => {
+    openStory: async (id, viewport = VIEWPORT) => {
       if (!browser) {
         throw new Error("ブラウザを起動していない");
       }
-      const page = await browser.newPage({ viewport: VIEWPORT });
+      const page = await browser.newPage({ viewport });
       pages.push(page);
       await page.goto(
         `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,

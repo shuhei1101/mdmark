@@ -406,16 +406,18 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       replacement: args.replacement as
         | { term: string; meaning: string }
         | undefined,
+      below: args.below === true,
     });
-    // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの下に余白を取る
+    // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの上と下に余白を取る
     const open = args.open === true;
     const wrap = open
       ? html.replace(
-          'class="mdmark-term-wrap"',
-          'class="mdmark-term-wrap is-open"',
+          'class="mdmark-term-wrap',
+          'class="mdmark-term-wrap is-open',
         )
       : html;
-    return `<p style="padding-block-end:${open ? "22rem" : "0"}">本文の${wrap}を読む。</p>`;
+    const space = open ? "22rem" : "0";
+    return `<p style="padding-block:${space}">本文の${wrap}を読む。</p>`;
   },
   backlinks: (args) =>
     renderBacklinks({
@@ -610,6 +612,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
             },
             open,
           });
+    // 開いた状態は、箱の上端の上に出す（画面に対する位置は操作が決める）。箱の上に余白を取る
+    const placedTip = open
+      ? tip.replace(
+          'role="tooltip"',
+          'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
+        )
+      : tip;
     const owner =
       args.term === true
         ? '<span class="mdmark-term" tabindex="0" aria-describedby="story-tip">意思決定モデル</span>'
@@ -618,7 +627,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           : kind === "hint"
             ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
             : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
-    return `<div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div>`;
+    return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${placedTip}</div></div>`;
   },
   hint: (args) =>
     renderHint({

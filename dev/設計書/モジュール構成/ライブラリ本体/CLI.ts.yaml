@@ -251,7 +251,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -303,6 +303,12 @@ functions:
         condition: '`check.ignore` が `["prettier-ignore", "Bad Name"]`'
         mock: なし
         expected: '`where` が `check.ignore[1]` の `schema` のずれが 1 件で、`config.check.ignore` が `["prettier-ignore"]`'
+      - name: test_validate_config_when_tooltip_placement_invalid
+        case: 正常
+        summary: '`top`・`bottom` 以外の `tooltips.placement` を schema のずれにし、設定から落とす'
+        condition: '`tooltips.placement` が `left` の値と、`bottom` の値'
+        mock: なし
+        expected: '`left` は `where` が `tooltips.placement` の `schema` のずれが 1 件で `config.tooltips` が無い。`bottom` は `issues` が空で `config.tooltips.placement` が `bottom`'
     status: planned
     introduced:
       pr: 32
@@ -783,7 +789,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
-    description: '`export` と `build` に共通の処理。同じ URL のモジュールは 1 回だけ束ねる。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features` と `tooltips` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -815,6 +821,12 @@ functions:
         condition: 索引に `guide`（`guide.md`）と `api`（`api.md`、`related` に `guide`）
         mock: 一時フォルダ
         expected: '`payload.references.backlinks.guide` に `api` があり、`guide.md` の `docId` が `guide`'
+      - name: test_prepare_embeds_when_tooltip_placement
+        case: 正常
+        summary: 設定の `tooltips` を埋める設定に写す
+        condition: '`tooltips.placement: bottom` を持つ設定と、`tooltips` を持たない設定'
+        mock: 一時フォルダ
+        expected: '前者の `payload.config.tooltips` が `{ placement: "bottom" }`、後者は `payload.config` が `tooltips` を持たない'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[bundleModule]'

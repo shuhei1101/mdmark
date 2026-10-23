@@ -212,3 +212,27 @@ test("test_export_document_when_document_missing", async () => {
   await expect(result).rejects.toThrow("missing.md");
   expect(existsSync(join(dir, "missing.html"))).toBe(false);
 });
+
+// 設定の tooltips を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_tooltip_placement", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const withTooltips = await prepare({ tooltips: { placement: "bottom" } });
+  const withoutTooltips = await prepare({ features: { print: true } });
+  // 検証
+  expect(withTooltips.payload.config.tooltips).toEqual({
+    placement: "bottom",
+  });
+  expect(withoutTooltips.payload.config).not.toHaveProperty("tooltips");
+});

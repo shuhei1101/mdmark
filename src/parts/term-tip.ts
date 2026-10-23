@@ -27,8 +27,17 @@ export function renderTermTip(props: {
   docs?: TermTipDoc[];
   /** `text` がやめた言い方のときの代わりの用語 */
   replacement?: { term: string; meaning: string };
+  /** 語の下に開いた見た目にするか。ストーリーが下に開いた状態を出すために使い、`render` は渡さない */
+  below?: boolean;
 }): string {
-  const { text, id, meaning = "", docs = [], replacement } = props;
+  const {
+    text,
+    id,
+    meaning = "",
+    docs = [],
+    replacement,
+    below = false,
+  } = props;
   const word = escapeHtml(text);
   if (replacement === undefined && meaning === "" && docs.length === 0) {
     return word;
@@ -83,5 +92,6 @@ export function renderTermTip(props: {
       : ` aria-describedby="${role === "group" ? meaningId : tipId}"`;
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const termClass = replacement === undefined ? "" : " mdmark-term-avoided";
-  return `<span class="mdmark-term-wrap"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+  const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
+  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
 }

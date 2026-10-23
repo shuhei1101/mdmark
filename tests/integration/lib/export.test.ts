@@ -214,3 +214,60 @@ test("test_error_when_output_unwritable", async () => {
   expect(await readFile(join(dir, "blocked"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
+
+// 設定の tooltips を埋める設定に写し、開いた HTML で用語のツールチップを下に出す（正常系（ツールチップを下に出す設定））
+test("test_normal_when_tooltip_placement", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const filler = Array.from({ length: 40 }, (_, i) => `詰め物の段落 ${i}\n`);
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      "tooltips:",
+      "  placement: bottom",
+      "",
+    ].join("\n"),
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: guide",
+      "    path: guide.md",
+      "    title: ガイド",
+      "terms:",
+      "  - id: index",
+      "    term: 索引",
+      "    meaning: 文書と用語を並べた YAML のファイル",
+      "",
+    ].join("\n"),
+    "guide.md": [
+      "# ガイド",
+      "",
+      ...filler,
+      "## 2 つ目の節",
+      "",
+      "索引を読む。",
+      "",
+      ...filler,
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "guide.html"));
+  await page.waitForSelector(".mdmark-term");
+  // 持ち主を画面の中ほどへ送り、ポインターを乗せる
+  const term = page.locator(".mdmark-term");
+  await term.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await term.hover();
+  const rects = await page.evaluate(() => {
+    const word = document.querySelector(".mdmark-term");
+    const tip = document.querySelector(".mdmark-term-tip");
+    return {
+      termBottom: word?.getBoundingClientRect().bottom ?? Number.NaN,
+      tipTop: tip?.getBoundingClientRect().top ?? Number.NaN,
+    };
+  });
+  expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
+  await page.close();
+});

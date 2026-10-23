@@ -7,6 +7,12 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import {
+  expectAbove,
+  expectBelow,
+  expectInViewport,
+  TOP_EDGE_CSS,
+} from "../tooltip.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -76,6 +82,8 @@ test("test_normal", async ({ page }) => {
   await term.hover();
   await expect(tip).toBeVisible();
   await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  // ツールチップは語の上に出る
+  await expectAbove({ tip, owner: term });
   // ポインターの形は `?` にならない
   expect(
     await term.evaluate((element) => getComputedStyle(element).cursor),
@@ -318,4 +326,45 @@ test("test_normal_when_avoided_term", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(tip).toBeHidden();
   await expect(marker).toBeFocused();
+});
+
+// 語の上にツールチップの高さが残らないときだけ、語の下に出して画面に収める（正常シナリオ（上に収まらない語））
+test("test_normal_when_no_room_above", async ({ page }) => {
+  // 準備: 描く先の要素をページの上端に置き、スクロールせずに 1 行目の語を描く
+  await openPage(page, builtRoot, { hostCss: TOP_EDGE_CSS });
+  await mountDocument(page, {
+    markdown: "ワークスペースを使う。\n",
+    index: INDEX,
+    docId: DOC_ID,
+  });
+  const term = page.locator("#doc .mdmark-term");
+  const tip = page.locator("#doc .mdmark-term-tip");
+  // 実行
+  await term.hover();
+  // 検証
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  await expectBelow({ tip, owner: term });
+  await expectInViewport({ page, tip });
+});
+
+// 設定の tooltips.placement を bottom にすると、下に収まるツールチップを語の下に出す（正常シナリオ（設定で下に出す））
+test("test_normal_when_placement_bottom", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: MARKDOWN,
+    index: INDEX,
+    docId: DOC_ID,
+    config: { tooltips: { placement: "bottom" } },
+  });
+  const second = page.locator("#doc .mdmark-section-body").nth(1);
+  const term = second.locator(".mdmark-term");
+  const tip = second.locator(".mdmark-term-tip");
+  // 実行
+  await term.hover();
+  // 検証
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  await expectBelow({ tip, owner: term });
 });
