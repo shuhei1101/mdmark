@@ -49,6 +49,7 @@ scenarios:
         B-->>D: 終了コード 0
     expected:
       - '`dist/index.js` の公開関数が `v0.0.1` を返す'
+      - '`plugin/.claude-plugin/plugin.json` の版が `v0.0.1`'
     test: test_normal_when_version_given
     notes:
       使いどころ: 版のタグが `version.ini` と合わない hotfix で、打つタグの値を渡してビルドする。
@@ -176,27 +177,6 @@ scenarios:
       - '`dist/` と `plugin/` に配布物が残っていない'
       - 出力に使い方集の索引の文字数と上限が出る
     test: test_error_when_guide_index_too_long
-  - name: 異常シナリオ（プラグインの版が違う）
-    setup:
-      - name: 依存を入れた作業ツリー
-        description: '`npm ci` を流した作業ツリー'
-      - name: 版の違う plugin.json
-        description: '`plugin/.claude-plugin/plugin.json` の版を `version.ini` と違う値にしたもの'
-      - name: Mock
-        description: 差し替える依存は無い
-    flow: |-
-      sequenceDiagram
-        actor D as 開発者
-        participant B as ビルド
-        participant F as dist/・plugin/
-        D->>B: npm run build
-        B->>B: version.ini と plugin.json の版を比べる
-        B-->>D: 2 つの版を出し、終了コード 1
-    expected:
-      - 終了コードが 1
-      - '`dist/` と `plugin/` に配布物が書かれていない'
-      - 出力に `version.ini` の版と `plugin.json` の版が出る
-    test: test_error_when_plugin_version_mismatch
 lead: 開発者が、クローンしたリポジトリで依存の導入・lint・型検査・ビルド・テストを順に流し、版を埋めた配布物を `dist/` に得る。
 issue: 2
 primary_actor: mdmark の開発者

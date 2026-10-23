@@ -12,7 +12,7 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | マーケットプレイス | リポジトリの直下の `.claude-plugin/marketplace.json` に `plugin/` のプラグインを載せる | - |
-| プラグインの定義 | `plugin/.claude-plugin/plugin.json` に名前・版・説明を書き、版は mdmark の版と揃える | ビルドの検査で揃っていることを確かめる |
+| プラグインの定義 | `plugin/.claude-plugin/plugin.json` に名前・版・説明を書き、版は配布物のビルドが mdmark の版を書く | Claude Code は版が変わったときだけプラグインを更新する |
 | 索引を入れる | `plugin/hooks/hooks.json` の SessionStart のフックが、使い方集の索引を `hookSpecificOutput.additionalContext` で返す。索引は事実として書き、命令調にしない | 10,000 文字を超えると先頭 2,000 文字だけになるため、ビルドで止める |
 | MCP サーバーの起動 | `plugin/.mcp.json` に、束ねた MCP サーバーを `node ${CLAUDE_PLUGIN_ROOT}/...` で起動する行を書く。束ねない実行時の依存（esbuild）は `plugin/package.json` と `plugin/package-lock.json` に版を固定して書く | Claude Code が入れる依存は、lockfile が揃うときだけ・`--ignore-scripts`・60 秒で打ち切り。esbuild は postinstall に頼らず `@esbuild/{プラットフォーム}` の optional dependency で動く。外部ライブラリの Claude Code の設計書に書く |
 | ツールの説明 | 各ツールの説明に、呼ぶ場面と引数・戻り値を書く。`read_guide` の説明に、索引の名前を渡すことを書く | - |
