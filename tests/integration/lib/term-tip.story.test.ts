@@ -118,7 +118,7 @@ test("test_both", async () => {
 // 上に収まらず語の下に開いた状態は、is-below が付き、ツールチップが語の下、透明な線が上側にある（Below）
 test("test_below", async () => {
   // 準備・実行
-  const page = await holder.openStory("parts-termtip--below");
+  const page = await holder.openStory("parts-termtip--below", WIDE_VIEWPORT);
   // 検証
   const wrap = page.locator(".mdmark-term-wrap");
   await expect(wrap.getAttribute("class")).resolves.toContain("is-below");
