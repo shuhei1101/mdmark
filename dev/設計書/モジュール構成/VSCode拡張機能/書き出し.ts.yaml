@@ -167,9 +167,9 @@ functions:
     side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取り `mdmark.lastVersion` を書き換える
     args:
       - name: options
-        type: '{ document: TextDocument; mode: ExportMode; log: Logger }'
+        type: '{ document: TextDocument; mode: ExportMode; deps: PreviewDeps }'
         required: true
-        description: 書き出す Markdown・使い方・ログの出力先
+        description: 書き出す Markdown・使い方・`PreviewManager` と同じ依存（`globalState` を持つ `ExtensionContext`・配布物の配信元・タグ一覧の取得先・ログの出力先）
     returns:
       type: Promise<Uri | undefined>
       description: 書き出した HTML。書き出せなかったときは `undefined`

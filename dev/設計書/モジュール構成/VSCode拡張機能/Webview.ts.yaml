@@ -280,6 +280,18 @@ classes:
             expected: '`h1` は `className` が `x`・`attributes.id` が `a`・`text` が `題`・`naturalWidth` が無い。`img` は `naturalWidth` が画像の幅。どちらも `top`・`height` が数'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
+      - name: useMdmark
+        title: 配布物を渡す
+        kind: メソッド
+        summary: 配布物を読む前に状態の表示を出せるよう、`import()` で読み終えた mdmark を後から渡す（`startPreview` が呼ぶ）
+        args:
+          - name: mdmark
+            type: '{ mount: typeof mount }'
+            required: true
+            description: 読み終えた mdmark の配布物
+        returns:
+          type: void
+          description: '-'
     status: planned
 functions:
   - name: startPreview
