@@ -1,0 +1,1 @@
+# PoC: minify せずに束ねた JS を eslint-plugin-compat で対応ブラウザの下限と照らす
