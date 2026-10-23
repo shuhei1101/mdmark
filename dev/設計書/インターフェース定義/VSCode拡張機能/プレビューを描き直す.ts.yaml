@@ -163,6 +163,31 @@ flows:
       - '`configError` の `line` が `4` で、`render` は送られない'
       - Webview の文書は描いたまま（注意書きは `blockquote` のまま）で、文書の先頭に設定ファイルを読めない帯と「設定ファイルを開く」がある
     test: test_error_when_config_unreadable
+  - name: 正常系（設定ファイルに新しい配信元の libraries を足す）
+    summary: 開いたまま設定ファイルにまだ CSP に無い origin の `libraries` を足して保存すると、HTML を入れ直してそのモジュールを読む
+    setup:
+      - name: 見本のワークスペース
+        description: '`<!-- my-chart: a -->` の印を持つ `guide.md` と、`libraries` を持たない `mdmark.config.yaml` を置いたフォルダ。プレビューを開いて `rendered` を受けてある'
+      - name: Mock
+        description: 配布物とタグ一覧の代役の配信とは別の origin（別のポート）で、`draw` が印の場所に `data-drawn` を付けるモジュール `my-chart.js` を配る手元のサーバー
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        participant LIB as 別の配信元
+        U->>EX: mdmark.config.yaml に libraries.my-chart を足して保存
+        EX->>EX: libraries の origin が CSP に入れたものと違う
+        EX->>PV: 新しい CSP の HTML を入れ直す
+        PV->>EX: ready
+        EX->>PV: render（全文・新しい設定）
+        PV-->>LIB: my-chart.js
+        PV->>EX: rendered
+    expected:
+      - Webview の HTML の CSP の `script-src` が別の配信元の origin を含む
+      - 別の配信元が `my-chart.js` の要求を受ける
+      - '`rendered` を受けた後、印の場所が `data-drawn` を持ち、知らせの枠が無い'
+    test: test_normal_when_library_origin_added
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送る。Markdown と設定ファイルは書き換えない
@@ -193,7 +218,7 @@ constraints:
     constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
-    constraint: '`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す'
+    constraint: '`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'
   - item: 設定ファイルを読めないとき
     constraint: '`yaml` の `YAMLParseError` の `linePos[0].line`（1 始まり）を `configError` の `line` に入れて送る。読めるようになったら、新しい設定の `render` と `configOk` を送る'
   - item: 設定が変わったときの描き方
