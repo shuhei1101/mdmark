@@ -160,7 +160,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
   }
 });
 
-// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
   schema: 1,
   docs: [
@@ -172,6 +172,7 @@ const INDEX: MdmarkIndex = {
       id: "workspace",
       term: "ワークスペース",
       meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場"],
     },
   ],
 };
@@ -184,20 +185,26 @@ test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: "ワークスペースを置く。\n",
+    markdown: "ワークスペースと作業場を置く。\n",
     index: INDEX,
     docId: "arch",
     documents: DOCUMENTS,
   });
-  const term = page.locator("#doc .mdmark-term");
+  const term = page.locator("#doc .mdmark-term:not(.mdmark-term-avoided)");
+  const avoided = page.locator("#doc .mdmark-term-avoided");
+  const tips = page.locator("#doc .mdmark-term-tip");
   await term.focus();
-  await expect(page.locator("#doc .mdmark-term-tip")).toBeVisible();
+  await expect(tips.nth(0)).toBeVisible();
+  await avoided.focus();
+  await expect(tips.nth(1)).toBeVisible();
   // 実行
   await page.emulateMedia({ media: "print" });
   await sendPrintEvent(page, "beforeprint");
   // 検証
   await expect(term).toHaveCSS("text-decoration-line", "none");
-  await expect(page.locator("#doc .mdmark-term-tip")).toBeHidden();
+  await expect(tips.nth(0)).toBeHidden();
+  await expect(avoided).toHaveCSS("text-decoration-line", "none");
+  await expect(tips.nth(1)).toBeHidden();
   await expect(page.locator("#doc nav.mdmark-backlinks")).toBeVisible();
   const suffix = await page
     .locator("#doc nav.mdmark-backlinks a")

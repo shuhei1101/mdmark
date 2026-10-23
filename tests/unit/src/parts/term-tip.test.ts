@@ -71,3 +71,48 @@ test("test_render_term_tip_escapes", async () => {
   expect(html).not.toContain("<script>");
   expect(html).toContain("&lt;b&gt;題&lt;/b&gt;");
 });
+
+// `replacement` を渡すと、やめた言い方のマーカーと代わりの用語のツールチップを返す（正常系）
+test("test_render_term_tip_avoided", async () => {
+  // 準備
+  const { renderTermTip } = await loadTermTip();
+  // 実行
+  // 部品設計の `Avoided` の引数に、使われないはずの `meaning`・`docs` も渡す
+  const html = renderTermTip({
+    text: "作業場",
+    id: "tip-avoided",
+    meaning: "渡しても出ない意味",
+    docs: [API_DOC],
+    replacement: {
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+    },
+  });
+  const escaped = renderTermTip({
+    text: "作業場",
+    id: "tip-avoided-escape",
+    replacement: {
+      term: "<script>語</script>",
+      meaning: "<script>意味</script>",
+    },
+  });
+  // 検証
+  const word = findTag(html, "mdmark-term-avoided");
+  expect(word).toContain('class="mdmark-term mdmark-term-avoided"');
+  expect(word).toContain('aria-describedby="tip-avoided"');
+  expect(findTag(html, 'id="tip-avoided"')).toContain('role="tooltip"');
+  // 見出しは「代わりの用語」だけで、代わりの用語の語と意味が出る
+  expect(html).toContain(">代わりの用語<");
+  expect(html).not.toContain(">用語<");
+  expect(html).not.toContain("関連文書");
+  expect(findTag(html, "mdmark-term-tip-replacement")).toBeDefined();
+  expect(html).toContain("ワークスペース");
+  expect(html).toContain("話し合いの記録を置くフォルダ");
+  // 渡した `meaning`・`docs` は出ない
+  expect(html).not.toContain("渡しても出ない意味");
+  expect(html).not.toContain("../api.md");
+  // 代わりの用語の語と意味をエスケープする
+  expect(escaped).toContain("&lt;script&gt;語&lt;/script&gt;");
+  expect(escaped).toContain("&lt;script&gt;意味&lt;/script&gt;");
+  expect(escaped).not.toContain("<script>");
+});

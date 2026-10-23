@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-term-tip-avoided-term-mark
+
+
+ Test Files  124 passed (124)
+      Tests  693 passed (693)
+   Start at  00:23:14
+   Duration  47.19s (tests 41%, worker 29%, import 27%, transform 4%)
+

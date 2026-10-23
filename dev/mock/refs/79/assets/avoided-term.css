@@ -1,0 +1,31 @@
+/* やめた言い方のマーカーと、代わりの用語のツールチップ。
+   用語のツールチップの規則（refs/27/assets/glossary.css）の後に読み、組・開閉・置き場所は用語のツールチップの規則のまま使う */
+
+/* やめた言い方の変数の既定: 使う側が上書きする口。既定は採用スタイルの変数から取る */
+:root {
+  --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
+}
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* マーカーの付いたやめた言い方: 用語の破線と形で見分ける波線の下線。色は本文のまま */
+    .mdmark-term.mdmark-term-avoided {
+      text-decoration: underline wavy var(--mdmark-color-avoided-underline);
+      text-decoration-thickness: 1px;
+      text-decoration-skip-ink: none;
+      text-underline-offset: 0.3em;
+    }
+
+    /* ツールチップを開いているやめた言い方: 波線を本文の色にして、どの語の代わりの用語かを示す */
+    .mdmark-term-wrap.is-open .mdmark-term.mdmark-term-avoided {
+      text-decoration-color: var(--mdmark-color-text);
+    }
+
+    /* 代わりの用語の語: 意味の上に本文の太字で出す */
+    .mdmark-term-tip-replacement {
+      display: block;
+      font-weight: 600;
+    }
+  }
+}

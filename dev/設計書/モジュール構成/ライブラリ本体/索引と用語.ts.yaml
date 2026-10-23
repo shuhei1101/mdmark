@@ -82,6 +82,9 @@ data_models:
       - name: docs
         type: Map<string, MdmarkIndexDoc[]>
         description: 語から、その語を `aliases` に持つ文書（索引の `docs` の順）
+      - name: avoided
+        type: 'Map<string, { id: string; term: string; meaning: string }>'
+        description: やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` から。同じ言い方は索引の `terms` で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
   - name: MdmarkGlossaryEntry
     title: 用語集の表の用語
     container: src/knowledge/references.ts
@@ -275,7 +278,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
-    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語を入れない
+    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
     args:
       - name: options
         type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; features: Record<string, boolean> }'
@@ -303,6 +306,18 @@ functions:
         condition: '`docId` が `api`、`api` の別名 `公開関数`'
         mock: なし
         expected: '`docs` に `公開関数` が無い'
+      - name: test_build_dictionary_avoided
+        case: 正常
+        summary: 索引の用語のやめた言い方を `avoided` に入れ、`words` には入れない
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`・`WS`、別名 `WS`）と用語 `作業スペース`（`avoid` に `作業場`）の順
+        mock: なし
+        expected: '`avoided` が `作業場` → `{ id: "ws", term: "ワークスペース", meaning: … }` の 1 件だけ（別名と同じ `WS` は入らない）で、`words` に `作業場` が無い'
+      - name: test_build_dictionary_avoided_when_glossary_disabled
+        case: 正常
+        summary: '`glossary` がオフならやめた言い方を入れない'
+        condition: '`test_build_dictionary_avoided` と同じ索引、`features.glossary` が `false`'
+        mock: なし
+        expected: '`avoided` が空'
   - name: findWords
     title: 語の区切りで語を照合する
     container: src/knowledge/dictionary.ts
@@ -504,7 +519,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を語とツールチップの組（`renderTermTip`）に置き換える
-    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。`glossary` と `backlinks` が両方オフのときは何もしない
+    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。`glossary` と `backlinks` が両方オフのときは何もしない
     args:
       - name: state
         type: StateCore
@@ -549,6 +564,30 @@ functions:
         condition: '同じ入力に `<!-- features: -backlinks -->`'
         mock: なし
         expected: '`公開関数` に下線が無い'
+      - name: test_terms_rule_avoided
+        case: 正常
+        summary: やめた言い方に節ごとに最初の 1 回だけマーカーを付け、用語の下線とは別に数える
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）。1 つ目の節の段落に `ワークスペース` 1 回と `作業場` 2 回、2 つ目の節の段落に `作業場` 1 回
+        mock: なし
+        expected: '`mdmark-term-avoided` の要素が 2 つで、各節の最初の `作業場` の位置にあり、ツールチップに見出し `代わりの用語` と `ワークスペース` がある。1 つ目の節の `ワークスペース` には `mdmark-term-avoided` の無い下線がある'
+      - name: test_terms_rule_avoided_prefers_term_words
+        case: 正常
+        summary: やめた言い方が用語の語の一部として出たところにはマーカーを付けない
+        condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 つ目の段落が `ワークスペースを開く。`、2 つ目の節の段落が `ワークを始める。`
+        mock: なし
+        expected: '`ワークスペース` は用語の下線で、`mdmark-term-avoided` の要素は 2 つ目の節の `ワーク` の 1 つだけ'
+      - name: test_terms_rule_avoided_over_doc_alias
+        case: 正常
+        summary: 文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）と、`aliases` に `作業場` を持つ文書 `old`。`docId` は `guide`、本文に `作業場`
+        mock: なし
+        expected: '`作業場` が `mdmark-term-avoided` の要素で、ツールチップに見出し `関連文書` が無い'
+      - name: test_terms_rule_avoided_when_glossary_off
+        case: 正常
+        summary: '`glossary` がオフならやめた言い方を照合しない'
+        condition: '`test_terms_rule_avoided` と同じ入力に `<!-- features: -glossary -->`'
+        mock: なし
+        expected: '`mdmark-term-avoided` の要素が無い'
   - name: backlinksRule
     title: 関連文書の一覧のコアルール
     container: src/render/syntax/backlinks.ts
@@ -586,10 +625,10 @@ functions:
     kind: 関数
     scope: internal
     summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
-    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。文字はエスケープする
+    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し、語の `aria-describedby` でツールチップを指す。文字はエスケープする
     args:
       - name: props
-        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[] }'
+        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning: string } }'
         required: true
         description: 部品設計の引数
     returns:
@@ -608,6 +647,12 @@ functions:
         condition: 意味に `<script>`
         mock: なし
         expected: '`&lt;script&gt;` になる'
+      - name: test_render_term_tip_avoided
+        case: 正常
+        summary: '`replacement` を渡すと、やめた言い方のマーカーと代わりの用語のツールチップを返す'
+        condition: 部品設計『用語のツールチップ』の `Avoided` の引数に、`meaning`・`docs` も渡したもの
+        mock: なし
+        expected: 語の class が `mdmark-term mdmark-term-avoided` で `aria-describedby` がツールチップの `id`、ツールチップが `role="tooltip"` で見出しが `代わりの用語` だけ、`ワークスペース` と意味が出て、渡した `meaning`・`docs` は出ない。`replacement` の語と意味の `<script>` は `&lt;script&gt;` になる
     refs:
       - dev/設計書/部品設計/用語のツールチップ.ts#
   - name: renderBacklinks
@@ -797,6 +842,12 @@ functions:
         condition: 索引に用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`。`guide` の `<!-- flow -->` の定義の箱の `name` に `{{公開関数}}`
         mock: なし
         expected: '`{{公開関数}}` の位置は `term` の `fn` の 1 件だけで、`targets` に `api` が入らない'
+      - name: test_collect_matches_ignores_avoided_terms
+        case: 正常
+        summary: 本文に出たやめた言い方を一致にも参照先にも入れない
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、`guide` の本文に `ワークスペース` と `作業場`
+        mock: なし
+        expected: '`byDocument.guide` が `ワークスペース` の 1 件だけで、`作業場` の位置が無い'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts#
   - name: alignText

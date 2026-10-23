@@ -395,6 +395,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: String(args.id ?? ""),
       meaning: args.meaning as string | undefined,
       docs: args.docs as TermTipDoc[] | undefined,
+      replacement: args.replacement as
+        | { term: string; meaning: string }
+        | undefined,
     });
     // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの下に余白を取る
     const open = args.open === true;

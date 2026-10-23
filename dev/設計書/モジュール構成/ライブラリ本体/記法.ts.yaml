@@ -614,6 +614,12 @@ functions:
         condition: '正常の文書に `<!-- features: -html -->`'
         mock: なし
         expected: '`pre > code.language-html` が 2 つで、`mdmark-html` と `<!--` が無い'
+      - name: test_build_embedded_html_when_avoided_term
+        case: 正常
+        summary: 中の文字のやめた言い方にマーカーを付ける
+        condition: 索引の用語 `ワークスペース`（`avoid` に `作業場`）と、範囲の HTML の `p` に `作業場` が 2 回
+        mock: なし
+        expected: '`div.mdmark-html .mdmark-term-avoided` が 1 つ'
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[sanitizeEmbedded]
       - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]

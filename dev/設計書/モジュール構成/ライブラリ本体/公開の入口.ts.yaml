@@ -95,6 +95,9 @@ styles:
       - class_name: '@media print（ビューとコメント）'
         target: ビューとコメントの印刷
         value: '`dev/mock/refs/55/assets/view-print.css` から取る。ビューは今のビューを出し、切り替えを隠す（絞り込みのボタンは表の印刷の規則が隠す）。ボードは横のスクロールをやめ、紙の幅に収まる数の列で折り返し、列と項目を改ページで切らない。コメントのボタン・入力欄・吹き出しを隠し、印は地の色を外して下線だけで箇所を示す'
+      - class_name: .mdmark .mdmark-term-avoided
+        target: やめた言い方のマーカー
+        value: '`.mdmark-term` の破線を波線（`text-decoration: underline wavy`）に替え、色を `--mdmark-color-avoided-underline`（既定 `var(--mdmark-color-notice-border)`、`:root` に置く）にする。代わりの用語の語 `mdmark-term-tip-replacement` は太字。印刷では波線を外す（`.mdmark-term` の印刷の規則より詳細度が高いので別に宣言する）。値は `dev/mock/refs/79/assets/avoided-term.css`・`avoided-term-print.css`'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

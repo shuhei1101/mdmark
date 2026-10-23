@@ -1,0 +1,162 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-term-tip-avoided-term-mark
+
+ ❯ |unit| tests/unit/src/render/syntax/terms.test.ts (9 tests | 4 failed) 53ms
+   × test_terms_rule_avoided 9ms
+   × test_terms_rule_avoided_prefers_term_words 2ms
+   × test_terms_rule_avoided_over_doc_alias 1ms
+   × test_terms_rule_avoided_when_glossary_off 4ms
+ ❯ |unit| tests/unit/src/knowledge/dictionary.test.ts (9 tests | 2 failed) 195ms
+   × test_build_dictionary_avoided 3ms
+   × test_build_dictionary_avoided_when_glossary_disabled 0ms
+ ❯ |unit| tests/unit/src/parts/term-tip.test.ts (3 tests | 1 failed) 31ms
+   × test_render_term_tip_avoided 6ms
+ ❯ |unit| tests/unit/src/render/syntax/html.test.ts (7 tests | 1 failed) 68ms
+   × test_build_embedded_html_when_avoided_term 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/dictionary.test.ts > test_build_dictionary_avoided
+TypeError: dictionary.avoided is not iterable
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:121:25
+    119|   // 検証
+    120|   // 同じやめた言い方は索引の `terms` で先の用語が代わりの用語で、別名と同じ `WS` は入らない
+    121|   expect([...dictionary.avoided]).toEqual([
+       |                         ^
+    122|     [
+    123|       "作業場",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/dictionary.test.ts > test_build_dictionary_avoided_when_glossary_disabled
+TypeError: Cannot read properties of undefined (reading 'size')
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:145:29
+    143|   });
+    144|   // 検証
+    145|   expect(dictionary.avoided.size).toBe(0);
+       |                             ^
+    146| });
+    147|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |unit| tests/unit/src/parts/term-tip.test.ts > test_render_term_tip_avoided
+Error: 開始タグが無い: mdmark-term-avoided
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/parts/term-tip.test.ts:100:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_avoided_term
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/html.test.ts:120:5
+    118|   expect(
+    119|     matches(embedded, /class="mdmark-term mdmark-term-avoided"/g),
+    120|   ).toHaveLength(1);
+       |     ^
+    121| });
+    122|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_avoided
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/terms.test.ts:179:39
+    177|   );
+    178|   // 検証
+    179|   expect(matches(html, AVOIDED_TERM)).toHaveLength(2);
+       |                                       ^
+    180|   const [first, second] = html.split(/<h2\b/).slice(1);
+    181|   // 各節の最初の `作業場` の位置にマーカーがあり、2 回目の `作業場` は文字のまま
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_avoided_prefers_term_words
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/terms.test.ts:237:39
+    235|   );
+    236|   expect(matches(first ?? "", AVOIDED_TERM)).toHaveLength(0);
+    237|   expect(matches(html, AVOIDED_TERM)).toHaveLength(1);
+       |                                       ^
+    238|   expect(second).toMatch(
+    239|     /<span class="mdmark-term mdmark-term-avoided"[^>]*>ワーク<\/span>/,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_avoided_over_doc_alias
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/terms.test.ts:256:39
+    254|   const { html } = renderDoc("作業場を使う。\n", {}, { index, docId: "guide" …
+    255|   // 検証
+    256|   expect(matches(html, AVOIDED_TERM)).toHaveLength(1);
+       |                                       ^
+    257|   expect(html).not.toContain("関連文書");
+    258|   expect(html).not.toContain("旧文書");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_avoided_when_glossary_off
+AssertionError: expected '<p>作業場を使う。</p>\n' to contain 'mdmark-term-avoided'
+
+- Expected
++ Received
+
+- mdmark-term-avoided
++ <p>作業場を使う。</p>
++
+
+ ❯ tests/unit/src/render/syntax/terms.test.ts:275:19
+    273|   // 検証
+    274|   // 印が無ければマーカーが付く同じ入力で、印があると付かない
+    275|   expect(on.html).toContain("mdmark-term-avoided");
+       |                   ^
+    276|   expect(off.html).not.toContain("mdmark-term-avoided");
+    277| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  4 failed | 120 passed (124)
+      Tests  8 failed | 685 passed (693)
+   Start at  00:10:15
+   Duration  61.50s (worker 72%, tests 15%, import 10%, transform 4%)
+

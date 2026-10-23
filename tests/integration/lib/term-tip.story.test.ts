@@ -139,3 +139,60 @@ test("test_closed", async () => {
   await term.focus();
   await expect(tip.isVisible()).resolves.toBe(true);
 });
+
+// やめた言い方は、波線のマーカーと、見出し「代わりの用語」だけの role="tooltip" のツールチップを開く（Avoided）
+test("test_avoided", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--avoided");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(
+    tip.locator(".mdmark-term-tip-heading").allInnerTexts(),
+  ).resolves.toEqual(["代わりの用語"]);
+  const replacement = tip.locator(".mdmark-term-tip-replacement");
+  await expect(replacement.innerText()).resolves.toBe("ワークスペース");
+  await expect(
+    replacement.evaluate((element) => getComputedStyle(element).fontWeight),
+  ).resolves.toBe("600");
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("話し合いの記録を置くフォルダ");
+  const term = page.locator(".mdmark-term");
+  await expect(term.getAttribute("class")).resolves.toBe(
+    "mdmark-term mdmark-term-avoided",
+  );
+  await expect(term.getAttribute("tabindex")).resolves.toBe("0");
+  await expect(term.getAttribute("aria-describedby")).resolves.toBe(
+    "tip-avoided",
+  );
+  await expect(
+    term.evaluate((element) => getComputedStyle(element).textDecorationStyle),
+  ).resolves.toBe("wavy");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 開く前は波線の下線だけが出て、ツールチップは隠れ、ポインターとフォーカスで開く（AvoidedClosed）
+test("test_avoided_closed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--avoided-closed");
+  // 検証
+  const term = page.locator(".mdmark-term");
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.isVisible()).resolves.toBe(false);
+  await expect(
+    term.evaluate((element) => getComputedStyle(element).textDecorationLine),
+  ).resolves.toBe("underline");
+  await expect(
+    term.evaluate((element) => getComputedStyle(element).textDecorationStyle),
+  ).resolves.toBe("wavy");
+  // スクリプトが動かなくても、ポインターを乗せると開く
+  await term.hover();
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await page.mouse.move(0, 300);
+  await expect(tip.isVisible()).resolves.toBe(false);
+  // フォーカスでも開く
+  await term.focus();
+  await expect(tip.isVisible()).resolves.toBe(true);
+});

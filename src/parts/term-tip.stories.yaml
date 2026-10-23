@@ -55,3 +55,20 @@ stories:
       text: ワークスペース
       id: tip-closed
       meaning: 話し合いの記録を置くフォルダ
+  - name: Avoided
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 作業場
+      id: tip-avoided
+      replacement: '{"term":"ワークスペース","meaning":"話し合いの記録を置くフォルダ"}'
+      open: true
+  - name: AvoidedClosed
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 作業場
+      id: tip-avoided-closed
+      replacement: '{"term":"ワークスペース","meaning":"話し合いの記録を置くフォルダ"}'
