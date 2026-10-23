@@ -8,6 +8,8 @@ directory: |-
   │   ├── paths.ts         # 索引のパスの正規化・リンクの解決・相対パス
   │   ├── dictionary.ts    # 用語と文書の別名の辞書と語の区切りでの照合
   │   ├── references.ts    # 参照の表（collectReferences）
+  │   ├── matches.ts       # 本文の参照の取り出し（collectMatches）
+  │   ├── positions.ts     # 照合した文字の位置を本文の行と行の中の位置へ戻す
   │   └── check.ts         # 索引の点検（checkIndex）
   ├── render/syntax/
   │   ├── glossary.ts      # glossary の印で囲んだ表の読み取り
@@ -97,6 +99,55 @@ data_models:
       - name: docId
         type: string
         description: 表を持つ文書の `id`
+  - name: MdmarkMatchTarget
+    title: 参照先
+    container: src/knowledge/matches.ts
+    role: DTO
+    summary: '`collectMatches` が返す参照先 1 つ（公開の型）'
+    properties:
+      - name: kind
+        type: '"term" | "glossary" | "doc"'
+        description: 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書
+      - name: id
+        type: string
+        description: '`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`'
+      - name: title
+        type: string
+        description: '`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`'
+      - name: description
+        type: string | undefined
+        description: '`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。無いときはキーを持たない'
+  - name: MdmarkMatch
+    title: 本文の一致
+    container: src/knowledge/matches.ts
+    role: DTO
+    summary: 本文の 1 つの一致とその参照先（公開の型）
+    inherits: MdmarkMatchTarget
+    properties:
+      - name: text
+        type: string
+        description: 一致した文字列（照合した辞書の語）
+      - name: line
+        type: number
+        description: 本文の Markdown の行（1 から）
+      - name: start
+        type: number
+        description: その行の中の始まり（0 から数える UTF-16 の位置）
+      - name: end
+        type: number
+        description: その行の中の終わり（含まない）。実体参照やエスケープで書いた文字は、本文に書いたままの範囲を指す
+  - name: MdmarkMatches
+    title: 本文の参照
+    container: src/knowledge/matches.ts
+    role: DTO
+    summary: '`collectMatches` の戻り値（公開の型）'
+    properties:
+      - name: byDocument
+        type: Record<string, MdmarkMatch[]>
+        description: 文書の `id` から、本文の一致を本文の頭からの順（行の順、同じ行は `start` の順）に並べたもの。本文のある索引の文書だけをキーに持つ
+      - name: targets
+        type: MdmarkMatchTarget[]
+        description: 全ての文書の参照先を `kind` と `id` の組で重なりを除いたもの。索引の `docs` の順に文書を見て、文書の中の初出の順
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -654,6 +705,172 @@ functions:
         condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 行目が `ワークスペースを開く。`、3 行目が `ワークとワーク。`（どちらも `ワーク` の終わりが語の切れ目に揃うので、用語の語を渡さないと 1 行目も当たる）
         mock: なし
         expected: '`where` が `3 行目` の 1 件だけ'
+  - name: collectMatches
+    title: 本文の参照を取り出す
+    container: src/knowledge/matches.ts
+    kind: 関数
+    scope: public
+    summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す
+    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`features` に文書の印を重ねた機能）で辞書を作る。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。`collectReferences` を呼ばず、本文を 2 回解析しない'
+    args:
+      - name: input
+        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
+        required: true
+        description: 索引・文書のパスから本文を引く表・設定
+    returns:
+      type: MdmarkMatches
+      description: 文書ごとの一致と、まとめた参照先
+    callees:
+      - '#functions[normalizeIndex]'
+      - '#functions[buildDictionary]'
+      - '#functions[findWords]'
+      - '#functions[inlineOffsets]'
+      - '#functions[embeddedHtmlMatches]'
+      - '#functions[diagramTermMatches]'
+    unit_tests:
+      - name: test_collect_matches
+        case: 正常
+        summary: 索引の用語・別名と文書の別名の一致を、参照先と位置つきで返す
+        condition: インターフェース定義『本文の参照を取り出す』のリクエスト例
+        mock: なし
+        expected: レスポンス例と等しく、引数が書き換わっていない
+      - name: test_collect_matches_lists_every_occurrence
+        case: 正常
+        summary: 同じ節に同じ用語が何度出ても全ての出現を並べ、`targets` には 1 回だけ入れる
+        condition: 1 つの段落に `ワークスペース` を 2 回と `WS` を書いた本文
+        mock: なし
+        expected: '`byDocument.guide` が 3 件、`targets` が `ws` の 1 件'
+      - name: test_collect_matches_ignores_code_links_and_headings
+        case: 正常
+        summary: コード・リンクの文字・見出し・用語集の表の中の語と、文書自身の別名を一致にしない
+        condition: 見出し・行内のコード・リンクの文字に `ワークスペース` を書き、`api` の本文に自身の別名 `公開関数` を書く
+        mock: なし
+        expected: どの箇所も一致に入らない
+      - name: test_collect_matches_when_glossary_table
+        case: 正常
+        summary: ほかの文書の用語集の表の用語を `glossary` の参照先として返す
+        condition: '`用語集.md` の表に用語 `印`、`guide` の本文に `印` と `印刷`'
+        mock: なし
+        expected: '`guide` が `glossary:glossary:印` の 1 件だけを持ち、`用語集.md` の表の中の `印` は入らない'
+      - name: test_collect_matches_when_disabled
+        case: 正常
+        summary: 文書の印でオフにした機能の種類の一致を返さない
+        condition: '`guide` に `<!-- features: -glossary -->`、`memo` に `<!-- features: -glossary -backlinks -->`'
+        mock: なし
+        expected: '`guide` は `doc` の要素だけ、`memo` は空'
+      - name: test_collect_matches_when_invalid_index
+        case: 正常
+        summary: Schema に合わない用語・文書を除いて照合し、例外を投げない
+        condition: '`meaning` を持たない用語と `path` を持たない文書を持つ索引'
+        mock: なし
+        expected: 例外を投げず、合わない用語と文書の一致が入らない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts#
+  - name: alignText
+    title: 文字を本文へ当てる
+    container: src/knowledge/positions.ts
+    kind: 関数
+    scope: internal
+    summary: 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ当て、各文字の本文の位置と当て終えた位置を返す
+    description: 本文の文字が同じなら 1 文字進め、エスケープ（`\*`）は 2 文字で 1 文字、実体参照（`&amp;`・`&#x30EF;`）は markdown-it の `utils.unescapeAll` で戻した文字の長さぶん同じ位置を指し、どれにも当たらない本文の文字（記法の記号・字下げ・引用の印）は飛ばす。実体参照を戻すために新しい依存を足さない
+    args:
+      - name: options
+        type: '{ body: string; cursor: number; text: string }'
+        required: true
+        description: 本文・当て始める本文の頭からの位置・当てる文字
+    returns:
+      type: '{ offsets: number[]; end: number }'
+      description: '`text` の各文字の本文の頭からの位置（末尾に終わりの位置を 1 つ足す）と、当て終えた位置'
+    unit_tests:
+      - name: test_align_text
+        case: 正常
+        summary: 記法の記号を飛ばして文字を当てる
+        condition: 本文 `**ワークスペース**`、文字 `ワークスペース`、`cursor` 0
+        mock: なし
+        expected: 始まりが 2、終わりが 9
+      - name: test_align_text_with_escape_and_entity
+        case: 正常
+        summary: エスケープと実体参照を数えて当てる
+        condition: 本文 `\*記号\* と A&amp;B`、文字 `*記号* と A&B`
+        mock: なし
+        expected: '`A&B` の範囲が本文の `A&amp;B` を指す'
+  - name: inlineOffsets
+    title: 行内のトークンを本文へ当てる
+    container: src/knowledge/positions.ts
+    kind: 関数
+    scope: internal
+    summary: 行内のトークンの子を頭から本文へ当て、照合してよい `text` の子ごとに各文字の本文の位置を返す
+    description: 照合してよい子は `matchableChildren` と同じ。始めの位置はブロックのトークンの `map` の行の頭。子の種類ごとに本文の位置を進める（`text` は `alignText`、`code_inline` は記号と中身、`link_open` は `[`・自動リンクは `<`、`link_close` は `](…)` を入れ子の括弧ごと、参照形式の `][ref]`、自動リンクは `>`、`image` は `![…](…)` ごと、`softbreak`・`hardbreak` は次の行の頭、`html_inline` はその文字、強調などは `markup`）。同じ行から始まる行内のトークン（表のセル）は、前のセルを当て終えた位置から始める
+    args:
+      - name: options
+        type: '{ body: string; inline: Token; start: number }'
+        required: true
+        description: 本文・行内のトークン・当て始める本文の頭からの位置
+    returns:
+      type: '{ byChild: Map<number, number[]>; end: number }'
+      description: 照合してよい子の並びの位置から、その子の各文字の本文の位置（`alignText` の `offsets`）を引く表と、当て終えた位置
+    callees:
+      - '#functions[alignText]'
+    unit_tests:
+      - name: test_inline_offsets
+        case: 正常
+        summary: 同じ綴りが先に行内のコードとリンクの文字にあっても、地の文の位置を返す
+        condition: 本文 `` `ワークスペース` と [ワークスペース](./WS/ws.md) の後ろのワークスペース ``
+        mock: なし
+        expected: 地の文の `ワークスペース` の位置だけが返り、コード・リンクの文字・ URL の位置は返らない
+      - name: test_inline_offsets_in_blocks
+        case: 正常
+        summary: 複数行の段落・リストの入れ子・引用・表のセル・参照形式のリンク・画像の後ろでも、本文の行と行の中の位置が合う
+        condition: PoC（#75）の見本のうち地の文のものと、`[文字][ref]`・`![画像の文字](a.png)` の後ろに用語を書いた行
+        mock: なし
+        expected: 全ての一致で、本文の行を切り出した文字が一致した文字と同じ（実体参照は戻して同じ）
+  - name: embeddedHtmlMatches
+    title: 埋め込んだ HTML の文字を照合する
+    container: src/knowledge/matches.ts
+    kind: 関数
+    scope: internal
+    summary: '`<!-- html -->` の範囲の `html` のコードブロックの文字を、描くときと同じ範囲で照合し、本文の位置を返す'
+    description: 範囲の見つけ方は `buildEmbeddedHtml` と同じ。図の部品の custom element を除いた HTML を `sanitizeEmbedded` に通し、文字を受け取る関数で受けた文字（リンクの中を除く。`termsFilter` と同じく逃がした文字を戻す）を `findWords` で照合し、コードブロックの中身の頭から順に `alignText` で本文の位置へ戻す
+    args:
+      - name: options
+        type: '{ body: string; tokens: Token[]; dictionary: Dictionary }'
+        required: true
+        description: 本文・本文のトークン・辞書
+    returns:
+      type: 'Array<{ word: string; offset: number; end: number }>'
+      description: 一致した語と、本文の頭からの始まりと終わり
+    callees:
+      - '#functions[findWords]'
+      - '#functions[alignText]'
+    unit_tests:
+      - name: test_embedded_html_matches
+        case: 正常
+        summary: HTML の文字の用語の位置を返し、リンクの文字は返さない
+        condition: '`<p>&amp;&lt;b&gt; の後ろのワークスペース</p><p><a href="#">ワークスペース</a></p>` を書いた `<!-- html -->` の範囲'
+        mock: なし
+        expected: 1 件だけで、本文の行を切り出した文字が `ワークスペース`
+  - name: diagramTermMatches
+    title: 図の部品の用語を照合する
+    container: src/knowledge/matches.ts
+    kind: 関数
+    scope: internal
+    summary: 図の部品の範囲の定義と、埋め込んだ HTML の中の custom element の定義の `{{語}}` のうち、意味のある用語の位置を返す
+    description: 範囲の見つけ方は `buildDiagrams`（印の範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。定義の JSON の文字列を戻して `{{語}}` を探し、語が `dictionary.terms` に完全に一致して意味が空でないものだけを返す（`lookup` と同じ。文書の別名は引かない）。位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
+    args:
+      - name: options
+        type: '{ body: string; tokens: Token[]; dictionary: Dictionary; html: boolean }'
+        required: true
+        description: 本文・本文のトークン・辞書・埋め込んだ HTML の機能がオンか
+    returns:
+      type: 'Array<{ word: string; offset: number; end: number }>'
+      description: 一致した語と、本文の頭からの始まりと終わり
+    unit_tests:
+      - name: test_diagram_term_matches
+        case: 正常
+        summary: 定義の `{{語}}` の用語の位置を返し、用語でない語は返さない
+        condition: '`<!-- flow -->` の定義の箱の `name` に JSON のエスケープの後ろの `{{ワークスペース}}` と `{{公開関数}}`、`<!-- html -->` の中の `<mdmark-flow>` の箱に `{{ワークスペース}}`'
+        mock: なし
+        expected: '`ワークスペース` の 2 件だけで、本文の行を切り出した文字が `ワークスペース`'
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
