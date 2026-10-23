@@ -833,7 +833,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`code` がオンなら、残っている `fence` のトークンごとに `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む。題・行番号・行の種類のどれかを持つコードブロックを部品『コードブロック』の `ownBlock` に置き換え、読めない指定はその前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが `fence` でなくしているため当たらない
+    summary: コアルール。`code` がオンなら、残っている `fence` のトークンごとに `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む。題・行番号・行の種類のどれかを持つコードブロックを部品『コードブロック』の `ownBlock` に置き換える。置き換えないコードブロックも、`fence` の `content` を `readLineMarks` の行の文字でつなぎ直す（打ち消した印の `\` が外れる）。`readCodeSpec` と `readLineMarks` の読めない指定は、置き換えたかどうかに関わらずコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが `fence` でなくしているため当たらない
     args:
       - name: state
         type: StateCore
@@ -852,6 +852,18 @@ functions:
         condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行のコードブロックと、印も行の印も持たないコードブロック'
         mock: なし
         expected: 1 つ目が `<figure class="mdmark-code">` の `html_block`、2 つ目は `fence` のまま
+      - name: test_build_code_blocks_when_escaped
+        case: 正常
+        summary: 打ち消した印だけのコードブロックは `fence` のまま `\` を外した中身にする
+        condition: '`let count = 1; // [\!code ++]` だけのコードブロック'
+        mock: なし
+        expected: '`fence` のままで、`content` が `let count = 1; // [!code ++]` を持ち `\` が無い'
+      - name: test_build_code_blocks_when_unknown_line_mark
+        case: 異常
+        summary: 知らない印だけのコードブロックの前に警告を差し込む
+        condition: '`foo(); // [!code focus]` だけのコードブロック'
+        mock: なし
+        expected: コードブロックの前に警告（本文に `[!code focus]`）があり、`fence` の `content` は `foo(); // [!code focus]` のまま
       - name: test_build_code_blocks_when_no_fence
         case: 異常
         summary: 後ろにコードブロックの無い印を警告にする
