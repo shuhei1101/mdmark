@@ -176,3 +176,6 @@ functions:
     refs:
       - dev/設計書/外部ライブラリ/mocha#
     status: planned
+test_files:
+  - tests/unit/vscode/scripts/build.test.ts
+  - tests/unit/vscode/scripts/release-check.test.ts

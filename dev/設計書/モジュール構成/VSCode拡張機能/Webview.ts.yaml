@@ -500,3 +500,8 @@ styles:
       - dev/設計書/部品設計/プレビューの状態の表示.ts#
       - dev/設計書/部品設計/設定ファイルを読めない帯.ts#
     status: planned
+test_files:
+  - tests/unit/vscode/src/webview/preview.browser.test.ts
+  - tests/unit/vscode/src/webview/scroll.browser.test.ts
+  - tests/unit/vscode/src/webview/parts/preview-status.test.ts
+  - tests/unit/vscode/src/webview/parts/config-band.test.ts

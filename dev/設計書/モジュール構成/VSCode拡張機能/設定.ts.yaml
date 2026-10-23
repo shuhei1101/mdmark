@@ -357,3 +357,6 @@ functions:
       - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[雛形を作るかの確認]
     status: planned
+test_files:
+  - tests/unit/vscode/src/settings.test.ts
+  - tests/unit/vscode/src/config.test.ts

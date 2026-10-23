@@ -232,3 +232,5 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[前回のバージョン]
     status: planned
+test_files:
+  - tests/unit/vscode/src/version.test.ts
