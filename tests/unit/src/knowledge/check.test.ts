@@ -2,6 +2,8 @@ import { expect, test } from "vitest";
 import { DEFAULT_FEATURES } from "../../../../src/config.ts";
 import { parseDocument } from "../../../../src/knowledge/references.ts";
 import {
+  AVOID_GLOSSARY_DOCUMENT,
+  AVOID_GLOSSARY_GUIDE,
   AVOIDED_GUIDE,
   AVOIDED_TERMS,
   glossaryDocument,
@@ -236,4 +238,55 @@ test("test_find_avoided_terms_prefers_term_words", async () => {
   });
   // 検証
   expect(issues.map((issue) => issue.where)).toEqual(["3 行目"]);
+});
+
+// 同じやめた言い方を持つ用語が 2 つあるとき、先の用語を代わりに使う用語にする（正常系）
+test("test_find_avoided_terms_prefers_first_term", async () => {
+  // 準備
+  const { findAvoidedTerms } = await loadCheck();
+  const terms = [
+    { term: "ワークスペース", avoid: ["作業場"] },
+    { term: "作業スペース", avoid: ["作業場"] },
+  ];
+  // 実行
+  const issues = findAvoidedTerms({
+    file: "guide.md",
+    tokens: tokensOf("作業場を開く。\n"),
+    terms,
+  });
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]?.message).toContain("ワークスペース");
+  expect(issues[0]?.message).not.toContain("作業スペース");
+});
+
+// 用語集の表のやめた言い方を、表を持たない文書の本文から avoided_term で返す（正常系）
+test("test_check_index_when_glossary_avoided_term", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "glossary", path: "glossary.md", title: "用語集" },
+      { id: "guide", path: "guide.md", title: "手引き" },
+    ],
+  };
+  const documents = {
+    "glossary.md": AVOID_GLOSSARY_DOCUMENT,
+    "guide.md": AVOID_GLOSSARY_GUIDE,
+  };
+  // 実行
+  const issues = checkIndex({ index, documents });
+  // 検証
+  // glossary.md の表の中の 作業場・ワーク場 と、guide.md の 5 行目の ワークスペース はずれにならない
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+    { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+  ]);
+  expect(issues[0]?.message).toContain("作業場");
+  expect(issues[0]?.message).toContain("ワークスペース");
+  expect(issues[1]?.message).toContain("ワーク場");
+  expect(issues[1]?.message).toContain("ワークスペース");
 });

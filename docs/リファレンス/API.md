@@ -13,6 +13,7 @@
 | [文書を描く](#文書を描く) | `mount(el, opts)` | 要素の中に Markdown を HTML として描く |
 | [文書を HTML 文字列にする](#文書を-html-文字列にする) | `render(markdown, opts)` | 画面を持たずに Markdown を HTML 文字列にする |
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返す |
+| [本文の参照を取り出す](#本文の参照を取り出す) | `collectMatches(input)` | 索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返す |
 | [索引を点検する](#索引を点検する) | `checkIndex(input)` | 索引と文書のずれの一覧を返す |
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 使う側が自分の印と、その印を描くモジュールの読み方を登録する |
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
@@ -274,6 +275,95 @@ const references = collectReferences({
 
 例外は投げない。
 索引の文書・用語の項目が Schema に合わないときは、合わない項目を除いて作る。
+合わないことを知るには、[`checkIndex`](#索引を点検する) を呼ぶ。
+
+## 本文の参照を取り出す
+
+索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返す。
+画面を出さずに、描いた文書の下線とツールチップと同じ補足を取り出したいときに呼ぶ。
+引数を書き換えず、ファイルとネットワークを読まない。
+DOM に頼らず、Node とブラウザのどちらでも動く。
+
+### リクエスト
+
+```js
+import { collectMatches } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const { byDocument, targets } = collectMatches({
+  index,
+  documents: { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。" },
+});
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `input.index` | 必須 | 使う側が索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて照合する |
+| `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。複数の文書を渡せる。索引に無いパスの文書は無視する。ほかの文書の用語集の表の用語も、この表にある本文から読む |
+| `input.config` | 任意 | `mount` の `opts.config` と同じ。読むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める |
+
+### レスポンス
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `byDocument` | `Record<string, MdmarkMatch[]>` | 文書の `id` から、その文書の本文の一致の並びを引く表。キーは `documents` に本文がある索引の文書で、一致が無い文書は空の並び。並びは本文の頭からの順（行の順、同じ行は始まりの順）で、同じ参照先の出現も全て並べる |
+| `targets` | `MdmarkMatchTarget[]` | 渡した全ての文書の参照先を、種類と `id` の組で重なりを除いてまとめた並び。同じ参照先は 1 回だけ入る。並びは索引の `docs` の順に文書を見て、その文書の中の初出の順 |
+
+`byDocument` の要素（`MdmarkMatch`）は、次のキーを持つ。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `kind` | `'term' \| 'glossary' \| 'doc'` | 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書 |
+| `id` | `string` | 参照先の `id`。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id` |
+| `title` | `string` | 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title` |
+| `description` | `string` | 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。`doc` で `description` を持たないときは、このキーを持たない |
+| `text` | `string` | 一致した文字列。照合した辞書の語で、別名で一致したときはその別名 |
+| `line` | `number` | 一致した本文の Markdown の行。1 から数える |
+| `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
+| `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
+
+`targets` の要素（`MdmarkMatchTarget`）は、`kind`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
+
+```json
+{
+  "byDocument": {
+    "guide": [
+      { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "WS", "line": 3, "start": 0, "end": 2 },
+      { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧", "text": "公開関数", "line": 3, "start": 4, "end": 8 }
+    ]
+  },
+  "targets": [
+    { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ" },
+    { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧" }
+  ]
+}
+```
+
+#### 照合の範囲
+
+用語のツールチップと同じ辞書と照合を使う。
+
+- 辞書は、索引の `terms`、照合する文書の用語集の表、ほかの文書の表の順に優先する。文書の別名は、照合する文書自身の別名を除く
+- 語の始まりと終わりが本文の語の区切りに揃うところだけを取り、重なるときは長い語を先に取る。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
+- 照合するのは本文の地の文で、コード・リンク・見出し・用語集の表の中は除く
+- `html` がオンの文書は、`<!-- html -->` の範囲の `html` のコードブロックに書いた HTML の文字も照合する。`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・`script` のように中身ごと落ちる要素は除く
+- `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が用語に完全に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
+- 文書の印で `glossary` がオフの文書は用語を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+
+ツールチップの、節ごとに同じ参照先の最初の 1 回だけに下線を付ける制限は下線の出し方のためで、取り出しには効かない。
+
+#### 位置の数え方
+
+`line` は本文の Markdown の行を 1 から、`start`・`end` はその行の中の位置を 0 から数える UTF-16 の位置で返す。
+改行は `\n` で数える。
+本文の文字が実体参照やエスケープで記載されているときは、本文に記載したままの範囲を指す（`A&amp;B` に一致した `A&B` は `A&amp;B` の範囲）。
+
+全ての文書の本文を 1 回ずつ解析する。
+結果は使う側が持ち、文書を書き換えたときに作り直す。
+
+### エラー
+
+例外は投げない。
+索引の文書・用語の項目が Schema に合わないときは、合わない項目を除いて照合する。
 合わないことを知るには、[`checkIndex`](#索引を点検する) を呼ぶ。
 
 ## 索引を点検する

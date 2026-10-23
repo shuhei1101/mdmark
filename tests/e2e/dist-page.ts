@@ -18,8 +18,13 @@ import type {
   MdmarkExtension,
   MdmarkIndex,
   MdmarkIndexIssue,
+  MdmarkMatches,
   MdmarkReferences,
 } from "../../src/index.ts";
+import {
+  copyPluginInputs,
+  writeRootPackageJson,
+} from "../integration/plugin-inputs.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -178,7 +183,9 @@ export async function buildDistRoot(
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await cp(join(REPO_ROOT, name), join(root, name));
   }
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  // プラグインのビルドが読む入力
+  await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   await symlink(
     join(REPO_ROOT, "node_modules"),
@@ -568,6 +575,22 @@ export async function checkInNode(
 ): Promise<MdmarkIndexIssue[]> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
   const script = `import(${JSON.stringify(url)}).then((m) => process.stdout.write(JSON.stringify(m.checkIndex(JSON.parse(process.env.INPUT)))))`;
+  const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
+    env: { ...process.env, INPUT: JSON.stringify(input) },
+  });
+  return JSON.parse(stdout);
+}
+
+/** 配布物を Node で読み（DOM を持たない別のプロセス）、索引と文書の本文から本文の一致と参照先を返す */
+export async function collectMatchesInNode(
+  root: string,
+  input: {
+    index: unknown;
+    documents: Record<string, string>;
+  },
+): Promise<MdmarkMatches> {
+  const url = pathToFileURL(join(root, "dist", "index.js")).href;
+  const script = `import(${JSON.stringify(url)}).then((m) => process.stdout.write(JSON.stringify(m.collectMatches(JSON.parse(process.env.INPUT)))))`;
   const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
     env: { ...process.env, INPUT: JSON.stringify(input) },
   });

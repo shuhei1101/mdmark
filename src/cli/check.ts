@@ -14,7 +14,7 @@ import {
 } from "./config.ts";
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { bundleModule } from "./embed.ts";
-import { CliError, type CliIo } from "./main.ts";
+import { CliError, type CliIo } from "./errors.ts";
 
 /** `mdmark check` が出すずれ 1 件 */
 export type CheckIssue = {

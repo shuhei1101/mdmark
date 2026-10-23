@@ -1,0 +1,88 @@
+title: "複数の文書を1枚のHTMLにまとめる"
+entry:
+  kind: mcp_tool
+  value: build_site
+flows:
+  - name: 正常系
+    summary: 文書 2 つを 1 枚にまとめてパスと文書の数を返す
+    setup:
+      - name: 作業のフォルダ
+        description: 設定の `build` が文書 2 つに当たり、`out` が `dist/docs.html` のフォルダ
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: build_site
+        S->>F: 設定・索引・文書を読む
+        S->>F: dist/docs.html を書く
+        S-->>C: out・docs: 2・warnings
+    expected:
+      - '`out` が `dist/docs.html` の絶対パスで、そのファイルがある'
+      - '`docs` が 2'
+      - 同じフォルダで流した `mdmark build` の HTML と中身が同じ
+    test: test_normal
+  - name: 異常系（設定に build が無い・ツールのエラー）
+    summary: build の無い設定では何も書かずにエラーにする
+    setup:
+      - name: build の無い設定
+        description: '`build` を持たない `mdmark.config.yaml` を置いたフォルダ'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: build_site
+        S->>S: 設定に build が無い
+        S-->>C: isError（mdmark build と同じ文）
+    expected:
+      - '`isError` が立つ'
+      - 内容が、同じフォルダで流した `mdmark build` の標準エラーと同じ
+      - HTML が書かれていない
+    test: test_error_when_build_missing
+lead: '`mdmark build` と同じ処理で、設定の `build` の文書を行き来できる 1 枚の HTML にまとめ、書き出したパス・入れた文書の数・警告を返す。'
+idempotent: true
+side_effects: '`build.out` の HTML を書く（あれば上書きする）'
+request:
+  - name: config
+    type: string
+    required: false
+    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+request_example: |-
+  ```json
+  {}
+  ```
+response:
+  - name: out
+    type: string
+    description: 書き出した HTML の絶対パス
+  - name: docs
+    type: number
+    description: 入れた文書の数
+  - name: warnings
+    type: string[]
+    description: '`mdmark build` が標準エラーに出す警告の文（切れた参照など）'
+response_example: |-
+  ```json
+  {"out": "/home/user/docs/dist/docs.html", "docs": 2, "warnings": []}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: まとめられた
+  - name: ツールのエラー（設定に build が無い）
+    condition: 設定に `build` が無い
+    notes: 設定ファイルが無い・読めないとき、`include` に当たる文書が 0 件のとき、書き出せないときも、`mdmark build` が終了コード 1 で終わるときと同じ文でエラーにする
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark build` が標準エラーに出すのと同じ文を書く。'
+constraints:
+  - item: CLI との一致
+    constraint: 同じ設定・索引・文書では、`mdmark build` と同じ中身の HTML を書く
+  - item: 書き出す中身
+    constraint: プラグインに同梱した配布物を埋める。配布物の版はプラグインの版と同じ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/build-site.test.ts

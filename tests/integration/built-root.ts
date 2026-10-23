@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { main } from "../../scripts/build.ts";
+import { copyPluginInputs, writeRootPackageJson } from "./plugin-inputs.ts";
 
 // 埋めてビルドする版
 const BUILT_VERSION = "v0.0.1";
@@ -26,7 +27,9 @@ export async function createBuiltRoot(): Promise<{
   });
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   // CLI が配布物と雛形を探す、パッケージの直下の印と雛形の正本
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  // プラグインのビルドが読む入力
+  await copyPluginInputs(root);
   await cp(
     resolve(import.meta.dirname, "../../templates"),
     join(root, "templates"),

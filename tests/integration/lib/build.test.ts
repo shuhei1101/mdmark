@@ -17,6 +17,7 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterEach, expect, test, vi } from "vitest";
 import { main } from "../../../scripts/build.ts";
+import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -40,7 +41,8 @@ async function createWorkTree(versionIni: string): Promise<string> {
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,
   });
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), versionIni);
   // 型定義を書く `tsc` が読む設定
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
@@ -186,6 +188,29 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
+  // Claude Code のプラグインの生成物と、バージョン、取り込まれたパッケージのライセンス
+  for (const path of [
+    "server/mcp.js",
+    "scripts/session-start.js",
+    "dist/index.css",
+    "guide/index.json",
+  ]) {
+    expect(existsSync(join(root, "plugin", path))).toBe(true);
+  }
+  const manifest = JSON.parse(
+    await readFile(
+      join(root, "plugin", ".claude-plugin", "plugin.json"),
+      "utf8",
+    ),
+  );
+  expect(manifest.version).toBe("v0.0.0");
+  const pluginLicenses = await readFile(
+    join(root, "plugin", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  expect(pluginLicenses).toContain("@modelcontextprotocol/server");
+  expect(pluginLicenses).toContain("ajv");
+  expect(pluginLicenses).toContain("MIT License");
   const initTarget = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
   createdRoots.push(initTarget);
   const init = await execFileAsync(
@@ -232,6 +257,13 @@ test("test_normal_when_version_given", {
   // 検証
   expect(code).toBe(0);
   expect(await readBuiltVersion(root)).toBe("v0.0.1");
+  const manifest = JSON.parse(
+    await readFile(
+      join(root, "plugin", ".claude-plugin", "plugin.json"),
+      "utf8",
+    ),
+  );
+  expect(manifest.version).toBe("v0.0.1");
 });
 
 // 書式に合わない版を渡すと、配布物を書かずに終わる（異常系）
@@ -263,6 +295,31 @@ test("test_error_when_dist_file_too_large", {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
+});
+
+// セッションに渡す索引の文が上限を超えると、配布物を残さずに終わる（異常系）
+// コマンドに上限を差し替える口が無いため、main に guideContextLimit: 1 を渡す
+test("test_error_when_guide_index_too_long", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createWorkTree("v0.0.0\n");
+  const errors: string[] = [];
+  vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
+    errors.push(args.join(" "));
+  });
+  // 実行
+  const code = await main([], {
+    root,
+    maxBytes: 20 * 1024 * 1024,
+    guideContextLimit: 1,
+  });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
+  expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
 });
 
 // スキーマを変えても migrations/next/steps.yaml があれば通す（正常系）

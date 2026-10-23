@@ -32,3 +32,7 @@ items:
     summary: VS Code を取得して起動し、拡張機能ホストの中で結合テストを走らせる
   - page: mocha.yaml
     summary: 拡張機能ホストの中で結合テストを走らせるテストフレームワーク
+  - page: MCP-SDK.yaml
+    summary: Claude Code のプラグインの MCP サーバーとテストのクライアント
+  - page: ClaudeCode.yaml
+    summary: プラグインの導入・SessionStart のフック・プラグインの MCP サーバーの起動

@@ -16,7 +16,7 @@ const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$)/;
 
 /** 図の部品が定義から出した要素だけが持てる要素。文書に書いたものは取り除く */
-const DIAGRAM_ONLY_TAGS = new Set([
+export const DIAGRAM_ONLY_TAGS = new Set([
   "svg",
   "defs",
   "marker",
@@ -311,7 +311,7 @@ export const EMBED_PART_TAG = "mdmark-part";
 export const EMBED_PART_ATTRIBUTE = "data-part";
 
 /** 文字を `onText` に渡さない要素（用語の下線を引かない場所） */
-const TEXT_FILTER_SKIP_TAGS = new Set([
+export const TEXT_FILTER_SKIP_TAGS = new Set([
   "a",
   "code",
   "pre",
@@ -323,6 +323,15 @@ const TEXT_FILTER_SKIP_TAGS = new Set([
   "h5",
   "h6",
 ]);
+
+/** 許可していない要素のうち、中身の文字ごと落とす要素（sanitize-html の既定と同じ） */
+export const EMBEDDED_NON_TEXT_TAGS = [
+  "script",
+  "style",
+  "textarea",
+  "option",
+  "xmp",
+];
 
 /** 埋め込んだ HTML の `sanitize-html` の設定。文書に書いた生の HTML と同じ要素・URL の許可に `button` を足し、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` は持たせない */
 const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
@@ -342,6 +351,7 @@ const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
     [EMBED_PART_TAG]: [EMBED_PART_ATTRIBUTE],
   },
   allowedClasses: {},
+  nonTextTags: EMBEDDED_NON_TEXT_TAGS,
 };
 
 /** 埋め込んだ HTML の中身を落とす: `script` 要素・`on` で始まる属性・`javascript:` の URL・許していない `style` の宣言を落とし、`button` は `type="button"` で残す。`onText` は本文の文字（エスケープ済み。`a`・`code`・`pre`・`button`・見出しの中を除く）を受け、置き換える HTML を返す */

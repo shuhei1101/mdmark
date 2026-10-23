@@ -24,5 +24,7 @@
 | [vsce](./vsce.yaml) | VS Code の拡張機能を .vsix にまとめる |
 | [test-electron](./test-electron.yaml) | VS Code を取得して起動し、拡張機能ホストの中で結合テストを走らせる |
 | [mocha](./mocha.yaml) | 拡張機能ホストの中で結合テストを走らせるテストフレームワーク |
+| [MCP-SDK](./MCP-SDK.yaml) | Claude Code のプラグインの MCP サーバーとテストのクライアント |
+| [ClaudeCode](./ClaudeCode.yaml) | プラグインの導入・SessionStart のフック・プラグインの MCP サーバーの起動 |
 
 <!-- /table -->

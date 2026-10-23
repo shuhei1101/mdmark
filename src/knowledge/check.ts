@@ -85,14 +85,17 @@ function rowStarts(tokens: Token[]): Map<Token, number | undefined> {
   return starts;
 }
 
+/** `findAvoidedTerms` が探す用語: 語・別名・やめた言い方 */
+type AvoidableTerm = Pick<MdmarkIndexTerm, "term" | "aliases" | "avoid">;
+
 /** 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする */
 export function findAvoidedTerms(options: {
   /** ずれの `file` に出す文書のパス */
   file: string;
   /** `parseDocument` のトークン */
   tokens: Token[];
-  /** 索引の用語 */
-  terms: MdmarkIndexTerm[];
+  /** 用語（索引の用語の後に、索引の `docs` の順の文書の用語集の表の用語を続けた並び。同じやめた言い方は先の用語を使う） */
+  terms: AvoidableTerm[];
 }): MdmarkIndexIssue[] {
   const { file, tokens, terms } = options;
   // やめた言い方から、代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
@@ -224,6 +227,24 @@ export function checkIndex(input: {
       message: `\`${path}\` が索引にありません。索引の \`docs\` に足してください。`,
     }));
 
+  // 文書は先に全て読む（やめた言い方は、表を持たない文書の本文からも探すため）
+  const parsedDocs: Array<{
+    path: string;
+    parsed: ReturnType<typeof parseDocument>;
+  }> = [];
+  for (const doc of index.docs) {
+    const entry = documents.get(normalizePath(doc.path));
+    if (entry) {
+      parsedDocs.push({
+        path: entry.path,
+        parsed: parseDocument({
+          body: entry.body,
+          docId: doc.id,
+          defaults: { ...DEFAULT_FEATURES },
+        }),
+      });
+    }
+  }
   // 用語は、索引の `terms`、索引の `docs` の順の文書の用語集の表の順に並べる
   const sites: TermSite[] = (index.terms ?? []).map((term) => {
     const position = (
@@ -239,33 +260,21 @@ export function checkIndex(input: {
       ],
     };
   });
-  const avoided: MdmarkIndexIssue[] = [];
-  for (const doc of index.docs) {
-    const entry = documents.get(normalizePath(doc.path));
-    if (!entry) {
-      continue;
-    }
-    const parsed = parseDocument({
-      body: entry.body,
-      docId: doc.id,
-      defaults: { ...DEFAULT_FEATURES },
-    });
-    for (const { entry: term, line } of parsed.glossary) {
+  const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
+  for (const { path, parsed } of parsedDocs) {
+    for (const { entry: term, line, avoid } of parsed.glossary) {
       sites.push({
-        file: entry.path,
+        file: path,
         words: [term.term, ...term.aliases],
         wheres: [term.term, ...term.aliases].map(() => `${line} 行目`),
       });
+      avoidable.push({ term: term.term, aliases: term.aliases, avoid });
     }
-    // やめた言い方は、索引の `docs` の順に文書ごとに探す
-    avoided.push(
-      ...findAvoidedTerms({
-        file: entry.path,
-        tokens: parsed.tokens,
-        terms: index.terms ?? [],
-      }),
-    );
   }
+  // やめた言い方は、索引の `docs` の順に文書ごとに探す
+  const avoided = parsedDocs.flatMap(({ path, parsed }) =>
+    findAvoidedTerms({ file: path, tokens: parsed.tokens, terms: avoidable }),
+  );
   return [
     ...schema,
     ...missing,

@@ -117,3 +117,43 @@ requirements:
     status: planned
     introduced:
       pr: 69
+  - name: 使い方集の索引の文字数
+    english_name: guide_context_length
+    category: 性能
+    external_constraint: SessionStart のフックの additionalContext は 10,000 文字を超えると先頭 2,000 文字だけが渡る
+    source_kind: 外部ライブラリの制限
+    source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[additionalContext の文字数]
+    value: '10000'
+    unit: 文字 以下
+    rationale: 超えると索引の大半が届かないため、外部の上限をそのまま決定値にする。PoC（#73）の 8,982 文字は末尾まで届いた
+    measurement: プラグインのビルドが、セッションに渡す索引の文（formatGuideContext）の文字数を数える
+    overflow: ビルドが文字数と上限を標準エラーに出して失敗する。索引の行を減らすか、概要を短くしてから、ビルドし直す
+    status: planned
+    introduced:
+      pr: 72
+  - name: 確かめた Claude Code のバージョン
+    english_name: claude_code_version
+    category: 動作環境
+    external_constraint: プラグイン・SessionStart のフック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは使う側の手元のものを使い、mdmark は固定しない
+    source_kind: 外部ライブラリの制限
+    source: dev/設計書/外部ライブラリ/ClaudeCode#version
+    value: 2.1.309
+    rationale: PoC（#73）でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確かめたバージョン。これより新しいバージョンと古いバージョンは確かめていない
+    measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確かめる
+    status: planned
+    introduced:
+      pr: 72
+  - name: MCP サーバーの接続の待ち
+    english_name: mcp_connect_wait
+    category: 性能
+    external_constraint: MCP サーバーの接続を待つ上限は MCP_TIMEOUT の既定で 30 秒。超えるとサーバーを使えない
+    source_kind: 外部ライブラリの制限
+    source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP サーバーの接続の待ち]
+    value: '30'
+    unit: 秒 以内
+    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。束ねた JavaScript を node で起動すると 120ms で接続したため、起動で依存を取らない形にする'
+    measurement: 束ねた MCP サーバーを子プロセスとして起動し、標準入出力でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
+    overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使えない。起動で外へ要求する処理を足さない
+    status: planned
+    introduced:
+      pr: 72

@@ -100,3 +100,17 @@ items:
     summary: 開発者が `vscode-v{版}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える
   - page: PDFに印刷する.yaml
     summary: 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする
+  - page: 本文に出た用語と文書の参照を取り出す.yaml
+    summary: 使う側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る
+  - page: ClaudeCodeにプラグインを入れる.yaml
+    summary: 文書を書く人が mdmark のリポジトリをマーケットプレイスとして足し、mdmark のプラグインを Claude Code に入れる
+  - page: セッションの開始で使い方集の索引を受け取る.yaml
+    summary: プラグインの SessionStart のフックが、使い方集の索引だけを Claude Code のコンテキストへ渡す
+  - page: 使い方集を読む.yaml
+    summary: Claude Code が索引の名前を `read_guide` に渡し、その名前の使い方集の本文を受け取る
+  - page: 索引から文書を探す.yaml
+    summary: Claude Code が `find_docs` で、索引から題名・別名・概要の語・タグ・関係する文書で文書を引く
+  - page: 索引を書き換える.yaml
+    summary: Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない
+  - page: ClaudeCodeから点検と書き出しを呼ぶ.yaml
+    summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ

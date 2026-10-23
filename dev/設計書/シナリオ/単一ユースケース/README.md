@@ -58,5 +58,12 @@
 | [HTMLに書き出す](./HTMLに書き出す.yaml) | 開いている Markdown を HTML に書き出し、既定のブラウザで開く |
 | [拡張機能の配布物を作る](./拡張機能の配布物を作る.yaml) | 開発者が `vscode-v{版}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える |
 | [PDFに印刷する](./PDFに印刷する.yaml) | 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする |
+| [本文に出た用語と文書の参照を取り出す](./本文に出た用語と文書の参照を取り出す.yaml) | 使う側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る |
+| [ClaudeCodeにプラグインを入れる](./ClaudeCodeにプラグインを入れる.yaml) | 文書を書く人が mdmark のリポジトリをマーケットプレイスとして足し、mdmark のプラグインを Claude Code に入れる |
+| [セッションの開始で使い方集の索引を受け取る](./セッションの開始で使い方集の索引を受け取る.yaml) | プラグインの SessionStart のフックが、使い方集の索引だけを Claude Code のコンテキストへ渡す |
+| [使い方集を読む](./使い方集を読む.yaml) | Claude Code が索引の名前を `read_guide` に渡し、その名前の使い方集の本文を受け取る |
+| [索引から文書を探す](./索引から文書を探す.yaml) | Claude Code が `find_docs` で、索引から題名・別名・概要の語・タグ・関係する文書で文書を引く |
+| [索引を書き換える](./索引を書き換える.yaml) | Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない |
+| [ClaudeCodeから点検と書き出しを呼ぶ](./ClaudeCodeから点検と書き出しを呼ぶ.yaml) | Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ |
 
 <!-- /table -->

@@ -1,0 +1,110 @@
+title: "使い方集を読む"
+entry:
+  kind: mcp_tool
+  value: read_guide
+flows:
+  - name: 正常系
+    summary: 索引の名前 2 つの本文を返す
+    setup:
+      - name: ビルドした plugin/
+        description: 使い方集の索引と本文を同梱した `plugin/`
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを子プロセスで起動して標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: 2 つ）
+        S->>S: 索引の行が指すページを読む
+        S-->>C: guides（2 件）
+    expected:
+      - 内容が渡した 2 つの名前の順に 2 つのテキストで、それぞれ 1 行目が `# {名前}`
+      - 各テキストの 3 行目から後ろが、同梱したそのページの中身と一致する
+      - '`isError` が立たない'
+    test: test_normal
+  - name: 異常系（索引に無い名前・ツールのエラー）
+    summary: 索引に無い名前を、近い名前を添えてエラーにする
+    setup:
+      - name: ビルドした plugin/
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 索引に無い名前
+        description: 索引の名前 `notation` の 1 字を変えた `notatoin` と、索引にある `extension`
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: notatoin・extension）
+        S->>S: 索引に notatoin が無い
+        S-->>C: isError（無い名前と近い名前）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `notatoin` と `notation` が出る
+      - '`extension` の本文も返らない'
+    test: test_error_when_name_unknown
+  - name: 異常系（結果が上限を超える・ツールのエラー）
+    summary: 本文の合計が 50,000 文字を超えるときは読まずに分けて呼ぶよう返す
+    setup:
+      - name: 大きい本文の plugin/
+        description: 本文が 30,000 文字の名前 `large-a`・`large-b` を索引に持つ `plugin/`
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: large-a・large-b）
+        S->>S: 本文の合計 60,000 文字が上限を超える
+        S-->>C: isError（名前ごとの文字数と分けて呼ぶこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容に `large-a`・`large-b` それぞれの文字数と、名前を分けて呼ぶことが出る
+      - 本文は返らない
+    test: test_error_when_result_too_large
+lead: 使い方集の索引の名前を受け、名前ごとに索引の行が指すページの本文を返す。
+idempotent: true
+side_effects: なし
+request:
+  - name: names
+    type: string[]
+    required: true
+    location: argument
+    description: 読む使い方集の名前（索引の名前の列）
+    constraints: 1 件以上。重なりは 1 つにまとめる
+    example: '["notation", "extension"]'
+request_example: |-
+  ```json
+  {"names": ["notation", "extension"]}
+  ```
+response:
+  - name: content[].type
+    type: "'text'"
+    description: 名前 1 つにつきテキストの内容を 1 つ、渡した名前の順に並べる
+  - name: content[].text
+    type: string
+    description: 1 行目が `# {名前}`、空行を挟んでその名前が指すページの本文（Markdown）。JSON の文字列に入れず、そのままの文字で返す
+response_example: |-
+  ```json
+  {"content": [{"type": "text", "text": "# notation\n\n# 記法\n..."}, {"type": "text", "text": "# extension\n\n# 拡張を登録する\n..."}]}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 全ての名前が索引にある
+  - name: ツールのエラー（索引に無い名前）
+    condition: 渡した名前のうち 1 つでも索引に無い
+    notes: '`isError: true`。本文は 1 件も返さない'
+  - name: ツールのエラー（結果が上限を超える）
+    condition: 渡した名前の本文の合計が 50,000 文字を超える
+    notes: 本文は 1 件も返さず、名前ごとの文字数と、名前を分けて呼ぶことを書く
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+constraints:
+  - item: 読む先
+    constraint: プラグインに同梱した使い方集だけを読む。名前からパスを組まず、索引の行が持つページだけを読む
+  - item: 近い名前
+    constraint: 索引に無い名前ごとに、編集距離の近い索引の名前を 3 件まで添える
+  - item: 結果の大きさ
+    constraint: 1 回の結果の本文の合計は 50,000 文字以下。Claude Code は 50,000 文字を超えた結果をファイルに逃がし、本文の代わりにパスを渡すため、超えるときは読まずにエラーにする
+  - item: ログ
+    constraint: MCP サーバーは標準出力を MCP のやり取りにだけ使う。ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き、その呼び出しを `isError` にして例外のメッセージを返す。サーバーは止めない。他のツールも同じ
+test_file: tests/integration/ClaudeCodeプラグイン/read-guide.test.ts

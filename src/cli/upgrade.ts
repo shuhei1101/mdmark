@@ -6,7 +6,7 @@ import { CHANGELOG_FILE, changelogRows } from "./changelog.ts";
 import { collectCheckIssues } from "./check.ts";
 import { findConfigFile, loadConfig, validateConfig } from "./config.ts";
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
-import { CliError, type CliIo } from "./main.ts";
+import { CliError, type CliIo } from "./errors.ts";
 import {
   applyStep,
   loadMigrationVersions,

@@ -11,3 +11,4 @@ vscode/media/preview.css
 vscode/out/
 vscode/.vscode-test/
 *.vsix
+plugin/node_modules/

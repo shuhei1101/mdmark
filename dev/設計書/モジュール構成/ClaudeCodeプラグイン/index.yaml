@@ -1,0 +1,11 @@
+summary: "Claude Code プラグインの MCP サーバー・フック・使い方集と、プラグインのビルド"
+docs_index: true
+items:
+  - page: MCPサーバー.ts.yaml
+    summary: MCP サーバーの入口・6 つのツールの処理・ツールの引数の検査
+  - page: 使い方集.ts.yaml
+    summary: 使い方集の索引の検査と読み取り・セッションに渡す索引の文・本文の読み取り
+  - page: フック.ts.yaml
+    summary: SessionStart のフックで使い方集の索引を渡す
+  - page: プラグインのビルド.ts.yaml
+    summary: MCP サーバーとフックを束ね、配布物・使い方集・バージョン・ライセンスを plugin/ に書く

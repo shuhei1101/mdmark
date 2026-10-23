@@ -1,0 +1,141 @@
+title: "ClaudeCode"
+kind: "CLI"
+version:
+  current: 2.1.309
+  latest: 2.1.309
+  checked_on: '2026-10-23'
+  source: 使う側の手元の Claude Code（`claude --version`）
+  pinning: 固定しない（使う側の手元の版）
+catalogs:
+  - name: ファイル
+    version: 2.1.309
+    entries:
+      - name: .claude-plugin/marketplace.json
+        kind: ファイル
+        purpose: リポジトリをマーケットプレイスにし、`plugin/` のプラグインを載せる
+        params:
+          - name: name
+            type: string
+            required: true
+            description: マーケットプレイスの名前
+          - name: plugins[].name
+            type: string
+            required: true
+            description: プラグインの名前
+          - name: plugins[].source
+            type: string
+            required: true
+            description: プラグインのフォルダ（リポジトリの直下から `./plugin`）
+      - name: .claude-plugin/plugin.json
+        kind: ファイル
+        purpose: プラグインの名前・バージョン・説明
+        params:
+          - name: name
+            type: string
+            required: true
+            description: プラグインの名前
+          - name: version
+            type: string
+            required: false
+            description: バージョン。変わったときだけ入れたプラグインが更新される
+          - name: description
+            type: string
+            required: false
+            description: 説明
+      - name: .mcp.json
+        kind: ファイル
+        purpose: プラグインの MCP サーバーの起動の仕方
+        params:
+          - name: mcpServers.{名前}.command
+            type: string
+            required: true
+            description: 起動するコマンド（`node`）
+          - name: mcpServers.{名前}.args
+            type: string[]
+            required: false
+            description: 引数。`${CLAUDE_PLUGIN_ROOT}` がプラグインの直下に展開される
+      - name: hooks/hooks.json
+        kind: ファイル
+        purpose: プラグインのフックの定義
+        params:
+          - name: hooks.SessionStart[].hooks[].type
+            type: "'command'"
+            required: true
+            description: コマンドを流すフック
+          - name: hooks.SessionStart[].hooks[].command
+            type: string
+            required: true
+            description: 流すコマンド
+          - name: hooks.SessionStart[].hooks[].args
+            type: string[]
+            required: false
+            description: 引数。`${CLAUDE_PLUGIN_ROOT}` が展開される
+      - name: package.json・package-lock.json
+        kind: ファイル
+        purpose: プラグインの実行時の依存。導入時に Claude Code が入れる
+  - name: 環境変数
+    version: 2.1.309
+    entries:
+      - name: CLAUDE_PLUGIN_ROOT
+        kind: 環境変数
+        purpose: プラグインの直下（入れたプラグインのキャッシュの下）。`.mcp.json` と `hooks.json` の引数に展開される
+      - name: CLAUDE_PROJECT_DIR
+        kind: 環境変数
+        purpose: セッションのフォルダ。フックと標準入出力の MCP サーバーの環境に渡る
+      - name: MCP_TIMEOUT
+        kind: 環境変数
+        purpose: MCP サーバーの接続を待つ上限のミリ秒。既定は 30 秒
+  - name: フックの出力
+    version: 2.1.309
+    entries:
+      - name: hookSpecificOutput.additionalContext
+        kind: JSON のキー
+        purpose: SessionStart のフックが標準出力に書く JSON で、セッションの文脈に加わる文
+        params:
+          - name: hookSpecificOutput.hookEventName
+            type: "'SessionStart'"
+            required: true
+            description: フックの種類
+          - name: hookSpecificOutput.additionalContext
+            type: string
+            required: true
+            description: 文脈に加える文
+lead: Anthropic のコーディングエージェントの CLI。マーケットプレイスからプラグインを入れ、プラグインのフックと MCP サーバーを起動する。
+supplier: Anthropic
+dependency_scope: 任意
+adoption: 採用
+used_in:
+  - plugin/.claude-plugin/plugin.json
+  - plugin/.mcp.json
+  - plugin/hooks/hooks.json
+  - .claude-plugin/marketplace.json
+upstream: anthropics/claude-code
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: 2.1.309 で次を確かめた。PoC（#73）でマーケットプレイスの追加と導入が終了コード 0、導入時に `plugin/package.json` から `node_modules` が作られた。ユーザーの手元の対話のセッションで、SessionStart の `additionalContext`（8,982 文字）の末尾まで届き、MCP の `instructions` と `read_guide`・`check` の呼び出しが起動の直後の依頼に間に合った（[返信](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357235963)）。プラグインの MCP サーバーのプロセスの環境に `CLAUDE_PROJECT_DIR` がセッションのフォルダで渡った（[レビュー](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4358172495)）。MCP-SDK v2 のサーバーに新方式で接続した。採用した形（束ねた MCP-SDK v2 のサーバー・使い方集の `index.json`・`plugin.json` の `version` の書き方）での導入と呼び出しは E2E で確かめる
+license: 商用の利用規約（Anthropic の Commercial Terms）。mdmark は同梱も再配布もしない
+official_url: https://code.claude.com/
+docs_url: https://code.claude.com/docs/en/plugins-reference
+install: |-
+  使う側が Claude Code を入れておき、セッションで次を流す。
+
+  ```text
+  /plugin marketplace add shuhei1101/mdmark
+  /plugin install mdmark@mdmark
+  ```
+limitations:
+  - item: additionalContext の文字数
+    content: 10,000 文字を超えると先頭 2,000 文字だけが渡る
+  - item: MCP サーバーの接続の待ち
+    content: '`MCP_TIMEOUT`（既定 30 秒）のうちに接続しないとサーバーを使えない'
+    notes: PoC で `npx github:` で CLI を取る形は空の npm のキャッシュから 53 秒かかった
+  - item: ツールの結果の大きさ
+    content: 50,000 文字を超えた結果はファイルに逃がし、本文の代わりにパスを渡す
+  - item: プラグインの依存の導入
+    content: '`package.json` と lockfile が揃うときだけ、`--ignore-scripts` で入れ、60 秒で打ち切る。ローカルのパスで足したマーケットプレイスでは入らない'
+    notes: esbuild は postinstall に頼らず `@esbuild/{プラットフォーム}` の optional dependency で動く
+  - item: プラグインの更新
+    content: '`plugin.json` の `version` が変わったときだけ更新する'
+  - item: MCP のプロトコル
+    content: 先に `server/discover`（2026-07-28）を送り、エラーなら `initialize`（2025-11-25）へ落ちる

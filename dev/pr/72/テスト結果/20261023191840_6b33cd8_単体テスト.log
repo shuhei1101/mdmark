@@ -1,0 +1,19 @@
+# 実行したコマンド
+
+npx vitest run --project 'unit*' -t '^(?!test_parse_guide_index|test_read_guide_index|test_format_guide_context|test_nearest_names|test_read_guides|test_check_arguments|test_call_tool|test_run_read_guide|test_run_export_html|test_run_build_site|test_run_check_tool|test_run_find_docs|test_run_update_index|test_create_mcp_server|test_run_mcp_server|test_run_session_start|test_check_guide_source|test_check_plugin_dependencies|test_list_embedded_packages|test_write_plugin_|test_remove_plugin_outputs|test_build_plugin|test_rewrite_guide_links|test_require_index_with_documents|test_apply_index_update|test_update_index_file|test_find_docs|test_export_document|test_build_site|test_main_when_guide_index_too_long)'
+
+# 補足
+
+作業 PR で作った単体テスト（実装が無いため Red。失敗はどれも 'Cannot find module' など実装が無いことによる）を名前で除き、既存のテストが通ったままであることを示す。除いた 87 件は skipped に数える。
+
+# 出力
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-claude-code-plugin-and-mcp
+
+
+ Test Files  114 passed | 8 skipped (122)
+      Tests  578 passed | 87 skipped (665)
+   Start at  19:17:38
+   Duration  37.95s (tests 38%, worker 31%, import 27%, transform 4%)
+

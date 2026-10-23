@@ -1,0 +1,145 @@
+title: "文書を探す"
+entry:
+  kind: mcp_tool
+  value: find_docs
+flows:
+  - name: 正常系
+    summary: 題の一部で索引にある文書だけを返す
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 2 つ。索引に載っているのは 1 つ目（`a`、題「文書 A」、タグ `設計`）だけ
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（text: 文書 A）
+        S->>F: 設定と索引を読む
+        S-->>C: docs（1 件）
+    expected:
+      - '`docs` が `a` の 1 件だけで、ID・パス・題・概要・タグを持つ'
+      - 索引と文書が変わっていない
+    test: test_normal
+  - name: 正常系（当たらない）
+    summary: どの文書にも無い語では空の一覧を返す
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: find_docs（text: どの文書にも無い語）
+        S-->>C: docs（0 件）
+    expected:
+      - '`docs` が空で、`isError` が立たない'
+    test: test_normal_when_no_match
+  - name: 正常系（関係する文書）
+    summary: related_to で参照先と被参照の文書を返す
+    setup:
+      - name: 参照を持つ作業のフォルダ
+        description: 索引に文書 `a`・`b`・`c`・`d` があり、`a` が `related` で `b` を指し、`c` の本文が `a` へリンクする
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（related_to: a）
+        S->>F: 設定・索引・文書を読む
+        S->>S: 参照の表を作る
+        S-->>C: docs（b・c）
+    expected:
+      - '`docs` が `b` と `c` の 2 件で、`a` と `d` を含まない'
+    test: test_normal_when_related_to
+  - name: 異常系（設定に索引が無い・ツールのエラー）
+    summary: 設定に index が無いときはエラーにする
+    setup:
+      - name: 索引の無い設定
+        description: '`index` を持たない `mdmark.config.yaml` を置いたフォルダ'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: find_docs
+        S->>S: 設定に index が無い
+        S-->>C: isError（設定に index を書くこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に、設定に `index` が無いことと、`index` に索引のファイルを書くことが出る
+    test: test_error_when_index_missing
+lead: 設定の `index` の索引から、題・別名・概要の部分一致、タグ、関係する文書で文書を引く。
+idempotent: true
+side_effects: なし（索引と文書を書き換えない）
+request:
+  - name: text
+    type: string
+    required: false
+    default: なし（語で絞らない）
+    location: argument
+    description: 題（`title`）・別名（`aliases`）・概要（`description`）のどれかに含まれる語。大文字と小文字を区別しない
+  - name: tags
+    type: string[]
+    required: false
+    default: なし（タグで絞らない）
+    location: argument
+    description: 全てを持つ文書に絞るタグ
+  - name: related_to
+    type: string
+    required: false
+    default: なし（関係で絞らない）
+    location: argument
+    description: この文書の ID から参照している文書と、この文書を参照している文書（被参照）に絞る
+  - name: config
+    type: string
+    required: false
+    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+request_example: |-
+  ```json
+  {"text": "構成", "tags": ["設計"]}
+  ```
+response:
+  - name: docs[].id
+    type: string
+    description: 文書の ID
+  - name: docs[].path
+    type: string
+    description: 文書のパス（索引のファイルからの相対パス）
+  - name: docs[].title
+    type: string
+    description: 題
+  - name: docs[].description
+    type: string | null
+    description: 概要。索引に無いときは null
+  - name: docs[].tags
+    type: string[]
+    description: タグ
+response_example: |-
+  ```json
+  {"docs": [{"id": "arch", "path": "設計/arch.md", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": ["設計"]}]}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 索引を読めた。当たる文書が 0 件でも空の `docs` を返す
+  - name: ツールのエラー（設定に索引が無い）
+    condition: 設定に `index` が無い
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+constraints:
+  - item: 絞り込みの組み合わせ
+    constraint: 渡した条件を全て満たす文書を返す。条件を 1 つも渡さなければ全ての文書を返す
+  - item: 並び
+    constraint: 索引の `docs` の並び
+  - item: 設定ファイルと索引を読めないとき
+    constraint: 設定ファイルが無い・読めないときと、索引のファイルを読めないときは、『点検する』の設定ファイルが無いときと同じくツールのエラーにする
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/find-docs.test.ts
