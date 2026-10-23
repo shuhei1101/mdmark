@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { userEvent } from "vitest/browser";
 
 /** パネルの中の入口を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPreview = () =>
@@ -270,4 +271,39 @@ test("test_classify_load_failure_when_network_error", async () => {
   ];
   // 検証
   expect(reasons).toEqual(["offline", "offline"]);
+});
+
+// 本物のクリックでもリンクの押下を `window` へ伝えず、`openLink` を 1 回だけ送る（正常系）
+test("test_start_preview_when_link_clicked", async () => {
+  // 準備: 入口を先に読み込んでから、描く先を包む要素を置いて始める
+  const { startPreview } = await loadPreview();
+  const postMessage = vi.fn();
+  vi.stubGlobal("acquireVsCodeApi", () => ({ postMessage }));
+  createRoot();
+  const holder = document.createElement("div");
+  holder.innerHTML =
+    '<a href="https://example.com/">外部</a><a href="./other.md">別の文書</a><a href="#末尾">末尾へ</a><h2 id="末尾">末尾</h2>';
+  document.body.append(holder);
+  placed.push(holder);
+  startPreview();
+  // VS Code の Webview の外枠が `window` の `click` でリンクを開くため、`window` に届いた押下を記録する
+  const reachedWindow = vi.fn();
+  window.addEventListener("click", reachedWindow);
+  try {
+    // 実行: 本物のクリック（`isTrusted` が true）で押す
+    for (const link of holder.querySelectorAll("a")) {
+      await userEvent.click(link);
+    }
+  } finally {
+    window.removeEventListener("click", reachedWindow);
+  }
+  // 検証
+  expect(reachedWindow).not.toHaveBeenCalled();
+  const opened = postMessage.mock.calls
+    .map(([message]) => message)
+    .filter((message) => message.type === "openLink");
+  expect(opened).toEqual([
+    { type: "openLink", href: "https://example.com/" },
+    { type: "openLink", href: "./other.md" },
+  ]);
 });
