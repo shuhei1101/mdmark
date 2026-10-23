@@ -1,0 +1,14 @@
+# 単体テストの実行（全件）
+# コミット: 8a5fd00
+# コマンド: npx vitest run --project 'unit*'
+# 注: 生成物の vscode/out と vscode/.vscode-test を退避して流した（tests/unit/vscode/scripts/build.test.ts が vscode/ を丸ごと複製するため）
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension
+
+
+ Test Files  128 passed (128)
+      Tests  643 passed (643)
+   Start at  22:24:04
+   Duration  64.76s (tests 36%, worker 33%, import 26%, transform 4%)
+
