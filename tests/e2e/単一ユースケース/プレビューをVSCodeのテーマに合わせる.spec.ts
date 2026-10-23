@@ -3,8 +3,8 @@ import { longDocument, useVscodeE2E } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
 
-// ダークとライトの `--mdmark-color-bg` の値の地の色の計算値（デザイン方針の modern）
-const DARK_BACKGROUND = "rgb(13, 17, 23)";
+// ダークとライトの `--mdmark-color-bg` の値の地の色の計算値（デザイン方針の dev-swiss）
+const DARK_BACKGROUND = "rgb(19, 19, 22)";
 const LIGHT_BACKGROUND = "rgb(255, 255, 255)";
 
 /** 描く先の要素の地の色の計算値 */

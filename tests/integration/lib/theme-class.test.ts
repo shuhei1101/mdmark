@@ -6,7 +6,7 @@ import { type Browser, chromium, type Page } from "playwright";
 import { afterAll, beforeAll, expect, inject, test } from "vitest";
 
 // ダークとライトの `--mdmark-color-bg` の値
-const DARK_BG = "#0d1117";
+const DARK_BG = "#131316";
 const LIGHT_BG = "#ffffff";
 
 const CONTENT_TYPES: Record<string, string> = {
