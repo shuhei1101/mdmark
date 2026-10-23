@@ -4,14 +4,14 @@
 .mdmark-preview-status,
 .mdmark-config-band {
   --preview-bg: var(--mdmark-color-bg, #ffffff);
-  --preview-surface: var(--mdmark-color-surface, #f6f8fa);
-  --preview-text: var(--mdmark-color-text, #1f2328);
-  --preview-muted: var(--mdmark-color-muted, #59636e);
-  --preview-link: var(--mdmark-color-link, #0969da);
-  --preview-border: var(--mdmark-color-border, #d1d9e0);
-  --preview-notice-bg: var(--mdmark-color-notice-bg, #fff8c5);
-  --preview-notice-border: var(--mdmark-color-notice-border, #9a6700);
-  --preview-notice-text: var(--mdmark-color-notice-text, #1f2328);
+  --preview-surface: var(--mdmark-color-surface, #f4f4f5);
+  --preview-text: var(--mdmark-color-text, #18181b);
+  --preview-muted: var(--mdmark-color-muted, #52525b);
+  --preview-link: var(--mdmark-color-link, #0f766e);
+  --preview-border: var(--mdmark-color-border, #e4e4e7);
+  --preview-notice-bg: var(--mdmark-color-notice-bg, #f9eee8);
+  --preview-notice-border: var(--mdmark-color-notice-border, #b45309);
+  --preview-notice-text: var(--mdmark-color-notice-text, #18181b);
 }
 
 /* ダークの予備の値: VS Code のダークのテーマか、ダークに固定したとき。ライトに固定したときは当てない */
@@ -23,15 +23,15 @@
   :is(.mdmark-preview-status, .mdmark-config-band),
 #mdmark-preview.mdmark-theme-dark
   :is(.mdmark-preview-status, .mdmark-config-band) {
-  --preview-bg: var(--mdmark-color-bg, #0d1117);
-  --preview-surface: var(--mdmark-color-surface, #151b23);
-  --preview-text: var(--mdmark-color-text, #f0f6fc);
-  --preview-muted: var(--mdmark-color-muted, #9198a1);
-  --preview-link: var(--mdmark-color-link, #4493f8);
-  --preview-border: var(--mdmark-color-border, #3d444d);
-  --preview-notice-bg: var(--mdmark-color-notice-bg, #2a2110);
-  --preview-notice-border: var(--mdmark-color-notice-border, #bb8009);
-  --preview-notice-text: var(--mdmark-color-notice-text, #f0f6fc);
+  --preview-bg: var(--mdmark-color-bg, #131316);
+  --preview-surface: var(--mdmark-color-surface, #1b1b1f);
+  --preview-text: var(--mdmark-color-text, #ededef);
+  --preview-muted: var(--mdmark-color-muted, #b4b4bc);
+  --preview-link: var(--mdmark-color-link, #2dd4bf);
+  --preview-border: var(--mdmark-color-border, #26262b);
+  --preview-notice-bg: var(--mdmark-color-notice-bg, #2a251d);
+  --preview-notice-border: var(--mdmark-color-notice-border, #fbbf24);
+  --preview-notice-text: var(--mdmark-color-notice-text, #ededef);
 }
 
 /* 帯を包む枠: 帯の外側の幅が 480px 未満かをコンテナクエリで見るための基準（Webview でも Storybook でも効く） */
