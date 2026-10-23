@@ -1,0 +1,66 @@
+title: "ClaudeCodeで使い方集を読んで書いて配る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 作業のフォルダ
+        description: 雛形を置いた後の設定・索引と、文書 2 つ。2 つ目の文書は索引に載っていない
+      - name: Mock
+        description: Claude Code の代わりに、プラグインの SessionStart のフックの JavaScript を起動して標準出力を読むテストのコードと、プラグインの MCP サーバーへ標準入出力でつなぐ MCP のクライアントを使う。モデルは使わない
+    flow: |-
+      flowchart TD
+        A[Claude Codeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で使い方集の索引を受け取る:正常シナリオ]
+        B --> C[使い方集を読む:正常シナリオ]
+        C --> D[索引から文書を探す:正常シナリオ]
+        D --> E[索引を書き換える:正常シナリオ]
+        E --> F[Claude Codeから点検と書き出しを呼ぶ:正常シナリオ]
+        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
+        click B "../単一ユースケース/セッションの開始で使い方集の索引を受け取る.yaml#正常シナリオ"
+        click C "../単一ユースケース/使い方集を読む.yaml#正常シナリオ"
+        click D "../単一ユースケース/索引から文書を探す.yaml#正常シナリオ"
+        click E "../単一ユースケース/索引を書き換える.yaml#正常シナリオ"
+        click F "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
+    expected:
+      - SessionStart のフックが、使い方集の索引を `hookSpecificOutput.additionalContext` に入れて返す
+      - '`read_guide` に索引の名前を渡すと、その名前の本文が返る'
+      - '`find_docs` が索引に載っている 1 つ目の文書を返し、載っていない 2 つ目の文書は返さない'
+      - '`update_index` で 2 つ目の文書を足すと、索引のファイルにその文書の行が入る'
+      - '`check` がずれ 0 件を返す'
+      - '`build_site` が `build.out` に 1 枚の HTML を書き、書き出したパスと入れた文書の数 2 を返す'
+    test: test_normal
+  - name: 異常シナリオ（点検でずれが見つかる）
+    setup:
+      - name: ずれを持つ作業のフォルダ
+        description: 正常シナリオの作業のフォルダから 1 つ目の文書を消し、索引には残したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      flowchart TD
+        A[Claude Codeにプラグインを入れる:正常シナリオ] --> B[Claude Codeから点検と書き出しを呼ぶ:異常シナリオ（ずれがある）]
+        B --> C[索引を書き換える:正常シナリオ]
+        C --> D[Claude Codeから点検と書き出しを呼ぶ:正常シナリオ]
+        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
+        click B "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#異常シナリオずれがある"
+        click C "../単一ユースケース/索引を書き換える.yaml#正常シナリオ"
+        click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
+    expected:
+      - 1 回目の `check` が消えた文書の `missing_doc` を 1 件返す
+      - '`update_index` で消えた文書の行を消すと、索引のファイルからその行がなくなる'
+      - 2 回目の `check` がずれ 0 件を返す
+      - その後の `build_site` が 1 枚の HTML を書く
+    test: test_error_when_drift
+lead: 文書を書く人が mdmark のプラグインを Claude Code に入れ、Claude Code がセッションの開始で受け取った使い方集の索引から必要な本文を読み、索引を引いて書き換え、点検してから 1 枚の HTML にまとめる。
+issue: 11
+primary_actor: 文書を書く人（Claude Code に頼む）
+stakeholders:
+  - name: 文書を書く人
+    interest: mdmark の記法・部品・描き方を覚えていなくても、Claude Code に頼むだけで点検の通った文書と 1 枚の HTML ができる
+  - name: Claude Code
+    interest: 使い方集の本文を全部読まずに、索引から要る本文だけを読み、CLI と同じ処理を引数の説明つきのツールで呼べる
+trigger: 文書を書く人が Claude Code に mdmark の文書を書いて配れる形にしてほしいと頼む
+preconditions:
+  - 文書を書く人の手元に Claude Code と Node 24 以降がある
+  - 作業のフォルダに mdmark の設定（`mdmark.config.yaml`）と索引がある
+success_guarantee: Claude Code が使い方集の本文を名前で読み、索引に文書を足し、点検のずれが 0 件になってから `build.out` に 1 枚の HTML を書く。
+minimal_guarantee: 点検でずれが見つかったときは、ずれの一覧をツールの結果で返し、`build_site` を呼ぶ前に直せる。Schema に合わない索引の書き換えは書かずにエラーを返し、索引のファイルは変わらない。
+refs:
+  - dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る#
