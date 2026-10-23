@@ -1942,9 +1942,12 @@
         position: static;
       }
 
-      /* ツールチップ: 描く先の要素の左端から、語の直後に出す */
-      .mdmark-term-tip {
-        inset-block-start: auto;
+      /* ツールチップ: 描く先の要素の左端から、語の直後に出す。語の上に出す既定も下に開いたときも位置を指さず、語との間の透明な線を上に置く */
+      .mdmark-term-tip,
+      .mdmark-term-wrap.is-below .mdmark-term-tip {
+        inset-block: auto;
+        border-block-start: 0.4em solid transparent;
+        border-block-end: 1px solid var(--mdmark-color-muted);
       }
     }
   }
