@@ -7,6 +7,14 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import {
+  expectAbove,
+  expectBelow,
+  expectInViewport,
+  ROOM_CSS,
+  scrollToTop,
+  TALL_CSS,
+} from "../tooltip.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -28,9 +36,20 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** 図を描いたページを開く。`withTerm` なら、索引を渡し、図の外の段落にも用語を書く */
-async function openFlow(page: Page, withTerm = false): Promise<void> {
-  await openPage(page, builtRoot);
+/** 入力・処理・出力を書いた LLM の箱のツールチップ */
+function ioTipOf(page: Page) {
+  return page.locator('[role="tooltip"]', { hasText: "入力" }).filter({
+    hasText: "保存のツールを呼ぶ",
+  });
+}
+
+/** 図を描いたページを開く。`withTerm` なら、索引を渡し、図の外の段落にも用語を書く。`hostCss` は使う側の CSS */
+async function openFlow(
+  page: Page,
+  withTerm = false,
+  hostCss = "",
+): Promise<void> {
+  await openPage(page, builtRoot, { hostCss });
   await mountDocument(page, {
     markdown: withTerm
       ? `${await flowMarkdown()}\n図の外の意思決定モデル。\n`
@@ -42,8 +61,8 @@ async function openFlow(page: Page, withTerm = false): Promise<void> {
 
 // 矢印のラベルにポインターを乗せると入力の詳細が出て、ツールチップの上へ動かしても消えず、箱の上で入力・処理・出力が出る（正常シナリオ）
 test("test_normal", async ({ page }) => {
-  // 準備
-  await openFlow(page);
+  // 準備: ツールチップが上に収まるよう、図の上に余白を取る
+  await openFlow(page, false, ROOM_CSS);
   const label = page.locator(".mdmark-diagram-label.has-tip", {
     hasText: "メール",
   });
@@ -54,14 +73,14 @@ test("test_normal", async ({ page }) => {
     hasText: "件名・本文・送り主のアドレス",
   });
   await expect(wireTip).toBeVisible();
+  // 検証: 矢印のラベルの上に出る
+  await expectAbove({ tip: wireTip, owner: label });
   // 実行・検証: ツールチップの上へポインターを動かしても消えない
   await wireTip.hover();
   await page.waitForTimeout(CLOSE_WAIT_MS);
   await expect(wireTip).toBeVisible();
   // 実行: LLM の箱の印の外（箱の名前）にポインターを乗せる
-  const ioTip = page.locator('[role="tooltip"]', { hasText: "入力" }).filter({
-    hasText: "保存のツールを呼ぶ",
-  });
+  const ioTip = ioTipOf(page);
   await page.locator('[data-node="draft"] .mdmark-diagram-node-name').hover();
   await page.waitForTimeout(CLOSE_WAIT_MS);
   // 検証: ツールチップは出ず、ポインターの形は変わらない
@@ -76,6 +95,8 @@ test("test_normal", async ({ page }) => {
   // 検証: 入力・処理・出力のツールチップが出る
   await expect(ioTip).toBeVisible();
   await expect(ioTip.locator("dt")).toHaveText(["入力", "処理", "出力"]);
+  // 検証: LLM の箱の上に出る
+  await expectAbove({ tip: ioTip, owner: page.locator('[data-node="draft"]') });
   // ツールチップを持つ箱には印があり、持たない箱には無い
   await expect(
     page.locator('[data-node="draft"] .mdmark-diagram-info'),
@@ -149,8 +170,8 @@ test("test_normal_when_term", async ({ page }) => {
 
 // `data-hint` の箱の右上の印にポインターを乗せるかフォーカスすると文のツールチップが出て、印の外では出ず、Esc で消えてフォーカスは印に残る（正常シナリオ（埋め込んだ HTML の data-hint））
 test("test_normal_when_data_hint", async ({ page }) => {
-  // 準備
-  await openPage(page, builtRoot);
+  // 準備: ツールチップが上に収まるよう、HTML の上に余白を取る
+  await openPage(page, builtRoot, { hostCss: ROOM_CSS });
   await mountDocument(page, {
     markdown: wrapHtml(
       [
@@ -184,6 +205,8 @@ test("test_normal_when_data_hint", async ({ page }) => {
   await expect(tip).toBeVisible();
   await expect(tip).toHaveClass(/mdmark-diagram-tip/);
   await expect(tip).toHaveText(BLOCK_HINT);
+  // 検証: 印の上に出る
+  await expectAbove({ tip, owner: mark });
   await page.mouse.move(0, 0);
   await expect(tip).toBeHidden();
   // 実行: Tab で印にフォーカスする
@@ -264,4 +287,52 @@ test("test_normal_when_hints_off", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-html div")).toHaveText(
     "ヒントのある箱",
   );
+});
+
+// LLM の箱の上端が画面の上端に揃うと、箱の上にツールチップの高さが残らないため、箱の下に出して画面に収める（正常シナリオ（上に収まらない箱））
+test("test_normal_when_no_room_above", async ({ page }) => {
+  // 準備: 高い本文の後に図を描き、LLM の箱の上端が画面の上端に揃うまでスクロールする
+  await openFlow(page, false, TALL_CSS);
+  const draft = page.locator('[data-node="draft"]');
+  await scrollToTop(draft);
+  // 実行: LLM の箱の印にポインターを乗せる
+  await draft.locator(".mdmark-diagram-info").hover();
+  // 検証
+  const ioTip = ioTipOf(page);
+  await expect(ioTip).toBeVisible();
+  await expectBelow({ tip: ioTip, owner: draft });
+  await expectInViewport({ page, tip: ioTip });
+});
+
+// 設定の tooltips.placement を bottom にすると、矢印のラベルと data-hint の箱の印の下にツールチップを出す（正常シナリオ（設定で下に出す））
+test("test_normal_when_placement_bottom", async ({ page }) => {
+  // 準備: ツールチップが下に収まるよう、図と HTML の上下に余白を取る
+  await openPage(page, builtRoot, { hostCss: ROOM_CSS });
+  await mountDocument(page, {
+    markdown: [
+      await flowMarkdown(),
+      wrapHtml(
+        `<div data-hint="${BLOCK_HINT}" style="padding: 1rem 2rem">ヒントのある箱</div>`,
+      ),
+    ].join("\n"),
+    config: { tooltips: { placement: "bottom" } },
+  });
+  const label = page.locator(".mdmark-diagram-label.has-tip", {
+    hasText: "メール",
+  });
+  const mark = page.locator("#doc .mdmark-hint-block .mdmark-hint-mark");
+  // 実行: 矢印にポインターを乗せる
+  await label.hover();
+  // 検証: 入力の詳細のツールチップがラベルの下に出る
+  const wireTip = page.locator('[role="tooltip"]', {
+    hasText: "件名・本文・送り主のアドレス",
+  });
+  await expect(wireTip).toBeVisible();
+  await expectBelow({ tip: wireTip, owner: label });
+  // 実行: data-hint の箱の印にポインターを乗せる
+  await mark.hover();
+  // 検証: data-hint の文のツールチップが印の下に出る
+  const hintTip = page.locator('[role="tooltip"]', { hasText: BLOCK_HINT });
+  await expect(hintTip).toBeVisible();
+  await expectBelow({ tip: hintTip, owner: mark });
 });
