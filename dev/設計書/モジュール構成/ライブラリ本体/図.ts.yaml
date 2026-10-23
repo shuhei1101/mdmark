@@ -666,10 +666,10 @@ functions:
     scope: internal
     summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
     args:
-      - name: root
-        type: HTMLElement
+      - name: options
+        type: '{ root: HTMLElement; placement: TooltipPlacement }'
         required: true
-        description: 描いた要素
+        description: 描いた要素と、図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ渡す）
     returns:
       type: () => void
       description: 付けた操作と監視を外し、開いている全画面を閉じる関数
@@ -720,14 +720,10 @@ functions:
     scope: internal
     summary: 図の題・中身・凡例を写した `modal` の枠を `dialog` に入れて `root` の中に置き、`showModal()` で開き、拡大・縮小とツールチップを付ける。ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を起こさない。`cancel` を取り消す作りは、history-action activation を使い切ると 2 回目から取り消せないため使わない）。閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す
     args:
-      - name: figure
-        type: HTMLElement
+      - name: options
+        type: '{ figure: HTMLElement; opener: HTMLButtonElement; placement: TooltipPlacement }'
         required: true
-        description: 開く図
-      - name: opener
-        type: HTMLButtonElement
-        required: true
-        description: 全画面のボタン
+        description: 開く図・全画面のボタン・モーダルの中のツールチップを先に出す側
     returns:
       type: () => void
       description: 開いた全画面を閉じる関数
@@ -751,12 +747,12 @@ functions:
     container: src/interact/diagram-tips.ts
     kind: 関数
     scope: internal
-    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
+    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。同時に開くのは 1 つ。置く側は `chooseTipSide`（持ち主の上端・下端、箱の印は箱の上端・下端。`gap` は `TIP_GAP_PX`）で決め、横は持ち主の左端に揃えて画面の端から `VIEWPORT_MARGIN_PX` の内に収める。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
     args:
-      - name: figure
-        type: HTMLElement
+      - name: options
+        type: '{ figure: HTMLElement; placement: TooltipPlacement }'
         required: true
-        description: 図か、埋め込んだ HTML の `div.mdmark-html`
+        description: 図か、埋め込んだ HTML の `div.mdmark-html` と、ツールチップを先に出す側
     returns:
       type: '{ closeOpen: () => boolean; detach: () => void }'
       description: 開いているツールチップを閉じて閉じたかを返す関数と、操作を外す関数
@@ -791,6 +787,12 @@ functions:
         condition: ヒントを持つ同じ `div.mdmark-html` を 2 つの要素に入れ、両方に付ける
         mock: なし（Chromium）
         expected: ページの `id` が全て一意で、各印の `aria-describedby` が同じ要素の中のツールチップを指す
+      - name: test_attach_diagram_tips_when_placed
+        case: 正常
+        summary: 上に収まれば持ち主の上、`bottom` では下に置く
+        condition: '`tip` を持つ線のラベルを画面の中ほどに置いた図と、ブロックのヒントを持つ `div.mdmark-html` に、`placement` を `top` と `bottom` にしてそれぞれ付け、持ち主にフォーカスする'
+        mock: なし（Chromium）
+        expected: '`top` ではツールチップの `bottom` が持ち主の `top` 以下、`bottom` ではツールチップの `top` が持ち主の `bottom` 以上'
   - name: attachParams
     title: 操作できる部品の操作を付ける
     container: src/interact/params.ts

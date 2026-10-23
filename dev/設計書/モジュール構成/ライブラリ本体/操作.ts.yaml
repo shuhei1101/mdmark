@@ -6,6 +6,7 @@ directory: |-
   ├── table-logic.ts  # 表の並べ替えの比べ方・絞り込みの当てはめ・集計・TSV・URL の #ID の読み方（部品の表と操作が使う）
   └── interact/
       ├── index.ts     # attachInteractions
+      ├── placement.ts # ツールチップを持ち主の上と下のどちらに置くかを決める
       ├── tables.ts    # 表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る
       ├── tabs.ts      # タブの切り替え
       └── sections.ts  # 節と行の詳細の開閉、URL の #ID で開く
@@ -37,12 +38,12 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean> }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement }'
         required: true
-        description: 描いた要素と文書で決まった機能のオン・オフ
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を当てた設定のツールチップを出す場所
     returns:
       type: () => void
       description: 付けた操作を外す関数
@@ -516,6 +517,40 @@ functions:
         condition: '`window.localStorage` を読むと `SecurityError` を投げる'
         mock: '`window.localStorage` の getter と `console.warn` を差し替える'
         expected: 例外を投げず、`console.warn` が 1 回呼ばれる
+  - name: chooseTipSide
+    title: ツールチップを置く側を決める
+    container: src/interact/placement.ts
+    summary: 持ち主の上端・下端とツールチップの高さから、ツールチップを上と下のどちらに置くかを返す
+    description: '`placement` が `top` なら、`anchorTop - gap - height` が 0 以上のとき `top`、そうでなければ `bottom`。`bottom` なら、`anchorBottom + gap + height` が `viewportHeight` 以下のとき `bottom`、収まらず `anchorTop - gap - height` が 0 以上のとき `top`、どちらにも収まらなければ `bottom`。用語・図・ヒントのツールチップを置く処理が共通で使う'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ anchorTop: number; anchorBottom: number; height: number; gap: number; viewportHeight: number; placement: TooltipPlacement }'
+        required: true
+        description: 持ち主の画面に対する上端・下端、ツールチップの高さ、持ち主との間、画面の高さ、先に出す側（どれも px）
+    returns:
+      type: TooltipPlacement
+      description: 置く側
+    unit_tests:
+      - name: test_choose_tip_side
+        case: 正常
+        summary: 既定の `top` で上に収まれば上
+        condition: '`anchorTop: 300`・`anchorBottom: 320`・`height: 100`・`gap: 6`・`viewportHeight: 800`・`placement: "top"`'
+        mock: なし
+        expected: '`top`'
+      - name: test_choose_tip_side_when_no_room_above
+        case: 正常
+        summary: '`top` で上に収まらなければ下'
+        condition: '`anchorTop: 50`・`height: 100`・`gap: 6`・`placement: "top"`（他は `test_choose_tip_side` と同じ）と、境の `anchorTop: 106`'
+        mock: なし
+        expected: '`anchorTop: 50` は `bottom`、`anchorTop: 106` は `top`'
+      - name: test_choose_tip_side_when_bottom
+        case: 正常
+        summary: '`bottom` は下を先にし、下に収まらず上に収まれば上'
+        condition: '`placement: "bottom"` で、`anchorBottom: 320`（下に収まる）と `anchorTop: 740`・`anchorBottom: 760`（下に収まらず上に収まる）と、`viewportHeight: 120`・`anchorTop: 50`・`anchorBottom: 70`（どちらにも収まらない）'
+        mock: なし
+        expected: 順に `bottom`・`top`・`bottom`
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
