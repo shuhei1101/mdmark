@@ -62,10 +62,38 @@ categories:
       ```bash
       RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} npm run storybook -- --host 127.0.0.1 --exact-port -p {ポート}
       ```
+
+      手元のプラグインを Claude Code で確かめる。
+
+      1. プラグインをビルドする（`plugin/` に MCP サーバー・フック・使い方集・配布物が書かれる）
+
+      ```bash
+      npm run build
+      ```
+
+      2. `plugin/` に実行時の依存を入れる（ローカルのパスで足したマーケットプレイスでは Claude Code が依存を入れない）
+
+      ```bash
+      (cd plugin && npm ci)
+      ```
+
+      3. 作業ツリーをマーケットプレイスとして足し、プラグインを入れる
+
+      ```bash
+      claude plugin marketplace add {作業ツリーの絶対パス}
+      claude plugin install mdmark@mdmark
+      ```
+
+      4. 確かめ終えたらプラグインとマーケットプレイスを外す
+
+      ```bash
+      claude plugin uninstall mdmark@mdmark
+      claude plugin marketplace remove mdmark
+      ```
     verification:
-      state: 済
-      date: '2026-10-16'
-      detail: '`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた'
+      state: 未確認
+      detail: Storybook の分は 2026-10-16 に確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は `plugin/` を書くビルドが無く、走らせていない。実装の後に確かめる
+    effects: プラグインの確かめは、手元の Claude Code の設定にマーケットプレイスとプラグインを書き、`plugin/` に `node_modules/` を作る。外すコマンドで戻す
   - name: テスト
     refs:
       - dev/設計書/テスト/テスト実行方法#
