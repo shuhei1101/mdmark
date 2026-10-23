@@ -92,7 +92,7 @@
     position: relative;
     display: inline-block;
     width: 100%;
-    min-height: 1lh;
+    min-height: 1.55em;
     box-sizing: border-box;
     padding-inline: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width) + var(--mdmark-code-sign-width)) var(--mdmark-space);
     border-inline-start: 2px solid transparent;
