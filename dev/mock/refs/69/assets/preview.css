@@ -93,6 +93,14 @@ body.vscode-dark {
   font-size: 0.95rem;
 }
 
+/* 読み込み中の文言: 文書の無い場面の Webview の見出し 1。見た目は周りの文字のまま */
+.preview-loading h1 {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 /* 回る表示: 値を持たない progress を輪にして回す */
 .preview-spinner {
   --size: 20px;
