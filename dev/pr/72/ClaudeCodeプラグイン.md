@@ -59,4 +59,17 @@ MCP サーバーは CLI を `npx` で取得すると初回が 30 秒を超える
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/guide.test.ts` | 全実行 | 新規 | ✅ | 17 テスト pass<br>`テスト結果/20261023194100_99a19ff_単体テスト.log` |
+| `tests/unit/src/plugin/arguments.test.ts` | 全実行 | 新規 | ✅ | 8 テスト pass<br>`テスト結果/20261023194100_99a19ff_単体テスト.log` |
+| `tests/unit/src/plugin/tools.test.ts` | 全実行 | 新規 | ✅ | 12 テスト pass<br>`テスト結果/20261023194100_99a19ff_単体テスト.log` |
+| `tests/unit/src/plugin/mcp.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass<br>`テスト結果/20261023194100_99a19ff_単体テスト.log` |
+| `tests/unit/src/plugin/session-start.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261023194100_99a19ff_単体テスト.log` |
+| `tests/unit/scripts/build-plugin.test.ts` | 全実行 | 新規 | ✅ | 20 テスト pass<br>`テスト結果/20261023194100_99a19ff_単体テスト.log` |
+
+### 結合
+
 なし
