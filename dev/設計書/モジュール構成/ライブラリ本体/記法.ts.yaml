@@ -16,6 +16,7 @@ directory: |-
   ├── figures.ts      # 図表の番号と参照
   ├── toc.ts          # 目次
   ├── html.ts         # 埋め込んだ HTML
+  ├── code-blocks.ts  # コードブロックの題・行番号・行の強調とコードの行の印
   ├── warnings.ts     # 書き方の警告を差し込む助け
   └── tokens.ts       # 記法のコアルールが共有するトークンの助け（印の読み取り・閉じの印の探索・機能の判定）
   ```
@@ -89,6 +90,23 @@ constants:
     container: src/table-logic.ts
     summary: '`total=列名:計算` に書ける計算。集計の行の題はそれぞれ `合計`・`平均`・`個数`'
     value: '["sum", "avg", "count"]'
+  - name: LINE_COMMENT_HEADS
+    title: 行コメントの頭
+    container: src/render/syntax/code-blocks.ts
+    summary: 印だけを持つ行コメントのときに印と一緒に外す、印の直前の頭。言語に依らず同じものを当てる
+    entries:
+      - key: //
+        value: C 系・TypeScript など
+      - key: '#'
+        value: Python・YAML・シェルなど
+      - key: --
+        value: SQL・Lua など
+      - key: ;
+        value: Lisp・INI など
+      - key: <!-- 〜 -->
+        value: HTML・XML・Markdown（印の後ろの `-->` も外す）
+      - key: /* 〜 */
+        value: CSS など（印の後ろの `*/` も外す）
 functions:
   - name: slugify
     title: 見出しの ID を作る
@@ -744,8 +762,110 @@ functions:
         condition: '`<!-- tabs: group= grop=os closed -->`'
         mock: なし
         expected: '`group` が無く、`warning.message` が `の読めない指定を当てずに描いています。`、`warning.items` の `label` が `group=`・`grop=`・`closed` の 3 つ'
+  - name: readCodeSpec
+    title: コードブロックの印を読む
+    container: src/render/syntax/code-blocks.ts
+    kind: 関数
+    scope: internal
+    summary: '`code` の印の引数を、題・行番号の有無・強調する行に読む。知らないキー・指定、読めない `highlight=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする'
+    args:
+      - name: options
+        type: '{ args: MdmarkMarkArgs; lineCount: number }'
+        required: true
+        description: '`args` は `parseMarkArgs` が読んだ印の引数、`lineCount` は印を外した後のコードブロックの行の数'
+    returns:
+      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; warnings: WarningItem[] }'
+      description: 題（無ければ空）・行番号を出すか・強調する行の番号（1 から）・読めなかった指定
+    unit_tests:
+      - name: test_read_code_spec
+        case: 正常
+        summary: 題・行番号・行と範囲の強調を読む
+        condition: '`title=app.ts lines highlight=2,4-6`、`lineCount` が 6'
+        mock: なし
+        expected: '`title` が `app.ts`、`lineNumbers` が `true`、`highlights` が 2・4・5・6、`warnings` が空'
+      - name: test_read_code_spec_when_unknown_key
+        case: 異常
+        summary: 知らないキーと空白の後ろの指定を警告にし、読めた題を当てる
+        condition: '`title=My App.ts color=red`'
+        mock: なし
+        expected: '`title` が `My`、`warnings` に `App.ts` と `color=` がある'
+      - name: test_read_code_spec_when_line_missing
+        case: 異常
+        summary: 行の数を超える番号と読めない番号を外して警告にする
+        condition: '`highlight=2,5,x,3-1`、`lineCount` が 3'
+        mock: なし
+        expected: '`highlights` が 2 だけ、`warnings` に `5`・`x`・`3-1` がある'
+  - name: readLineMarks
+    title: コードの行の印を読む
+    container: src/render/syntax/code-blocks.ts
+    kind: 関数
+    scope: internal
+    summary: コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭（`LINE_COMMENT_HEADS`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code focus]` など）はその行に当てず書いた文字のままにし、警告にする
+    args:
+      - name: source
+        type: string
+        required: true
+        description: コードブロックの中身（末尾の改行 1 つは行に数えない）
+    returns:
+      type: '{ lines: CodeLine[]; warnings: WarningItem[] }'
+      description: 行と、知らない印の警告
+    unit_tests:
+      - name: test_read_line_marks
+        case: 正常
+        summary: 印と印だけの行コメントの頭と行末の空白を外す
+        condition: '`let count = 1; // [!code ++]`・`foo(); // 消す [!code --]`・`x = 1  # [!code highlight]`・`<p>a</p> <!-- [!code ++] -->`・`a; /* [!code --] */`'
+        mock: なし
+        expected: '`{ text: "let count = 1;", kind: "add" }`・`{ text: "foo(); // 消す", kind: "del" }`・`{ text: "x = 1", kind: "highlight" }`・`{ text: "<p>a</p>", kind: "add" }`・`{ text: "a;", kind: "del" }`'
+      - name: test_read_line_marks_when_escaped
+        case: 正常
+        summary: 打ち消した印は `\` を外した文字にして当てない
+        condition: '`let count = 1; // [\!code ++]`'
+        mock: なし
+        expected: '`{ text: "let count = 1; // [!code ++]" }`（`kind` を持たない）'
+      - name: test_read_line_marks_when_unknown
+        case: 異常
+        summary: 知らない印は当てずに警告にする
+        condition: '`foo(); // [!code focus]`'
+        mock: なし
+        expected: '`{ text: "foo(); // [!code focus]" }` と、`[!code focus]` の警告'
+  - name: buildCodeBlocks
+    title: コードブロックを飾る
+    container: src/render/syntax/code-blocks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`code` がオンなら、残っている `fence` のトークンごとに `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む。題・行番号・行の種類のどれかを持つコードブロックを部品『コードブロック』の `ownBlock` に置き換え、読めない指定はその前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが `fence` でなくしているため当たらない
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[readCodeSpec]'
+      - '#functions[readLineMarks]'
+      - '#functions[pushWarning]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeBlock]
+    unit_tests:
+      - name: test_build_code_blocks
+        case: 正常
+        summary: 印と行の印を持つコードブロックを部品にし、何も持たないコードブロックは `fence` のままにする
+        condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行のコードブロックと、印も行の印も持たないコードブロック'
+        mock: なし
+        expected: 1 つ目が `<figure class="mdmark-code">` の `html_block`、2 つ目は `fence` のまま
+      - name: test_build_code_blocks_when_no_fence
+        case: 異常
+        summary: 後ろにコードブロックの無い印を警告にする
+        condition: '`<!-- code: title=app.ts -->` の直後が段落'
+        mock: なし
+        expected: 印の場所に警告があり、段落が残る
+      - name: test_build_code_blocks_when_disabled
+        case: 正常
+        summary: '`code` がオフなら何もしない'
+        condition: '`features.code` が `false` で、行末に `// [!code ++]` を持つコードブロック'
+        mock: なし
+        expected: '`fence` のままで、中身に `// [!code ++]` が残る'
 notes:
-  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする
+  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → コードブロック → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
 test_files:
   - tests/unit/src/render/syntax/headings.test.ts
