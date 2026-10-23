@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { createEnv, featuresOff } from "../../helpers/env.ts";
+import { stripSourceLine } from "../../helpers/source-line.ts";
 
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../src/render/parser.ts");
@@ -11,7 +12,7 @@ const loadRender = () => import("../../../../src/render/index.ts");
 async function parse(markdown: string): Promise<string> {
   const { createParser } = await loadParser();
   const env = createEnv({ defaults: featuresOff() });
-  return createParser().render(markdown, env);
+  return stripSourceLine(createParser().render(markdown, env));
 }
 
 // タスクリストの項目をチェックボックスにする（正常系）
