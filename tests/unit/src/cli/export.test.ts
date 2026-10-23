@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -175,4 +176,39 @@ test("test_run_export_when_output_unwritable", async () => {
   // 検証
   await expect(result).rejects.toBeInstanceOf(CliError);
   await expect(result).rejects.toThrow("blocked/guide.html");
+});
+
+// HTML を書いて絶対パスと警告を返す（正常系）
+test("test_export_document", async () => {
+  // 準備
+  const { exportDocument } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "features:\n  print: true\n",
+    "guide.md": "# 題\n\n![図](missing.png)\n",
+  });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = await exportDocument({ cwd: dir, file: "guide.md", distDir });
+  // 検証
+  expect(result.out).toBe(join(dir, "guide.html"));
+  expect(await readFile(result.out, "utf8")).toContain("mdmark-payload");
+  expect(result.display).toBe("guide.html");
+  expect(result.warnings).toHaveLength(1);
+});
+
+// 無い文書は何も書かずに CliError（異常系）
+test("test_export_document_when_document_missing", async () => {
+  // 準備
+  const { exportDocument } = await loadExport();
+  const { CliError } = await import("../../../../src/cli/errors.ts");
+  const dir = await createTempDir();
+  await writeFiles(dir, { "mdmark.config.yaml": "features:\n  print: true\n" });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = exportDocument({ cwd: dir, file: "missing.md", distDir });
+  // 検証
+  await expect(result).rejects.toBeInstanceOf(CliError);
+  await expect(result).rejects.toThrow("missing.md");
+  expect(existsSync(join(dir, "missing.html"))).toBe(false);
 });

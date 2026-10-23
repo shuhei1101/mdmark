@@ -156,3 +156,64 @@ test("test_run_build_when_no_documents", async () => {
   await expect(result).rejects.toBeInstanceOf(CliError);
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });
+
+// まとめて絶対パスと文書の数を返す（正常系）
+test("test_build_site", async () => {
+  // 準備
+  const { buildSite } = await loadBuild();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": createConfig([
+      '  include: ["**/*.md"]',
+      "  out: dist/docs.html",
+    ]),
+    "a.md": "# A\n",
+    "b.md": "# B\n",
+  });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = await buildSite({ cwd: dir, distDir });
+  // 検証
+  expect(result.out).toBe(join(dir, "dist", "docs.html"));
+  expect(existsSync(result.out)).toBe(true);
+  expect(result.docs).toBe(2);
+  expect(result.warnings).toEqual([]);
+});
+
+// まとめる文書に当たらない build.entry を警告で返す（正常系）
+test("test_build_site_when_entry_outside", async () => {
+  // 準備
+  const { buildSite } = await loadBuild();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": createConfig([
+      '  include: ["**/*.md"]',
+      "  entry: missing.md",
+      "  out: dist/docs.html",
+    ]),
+    "a.md": "# A\n",
+  });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = await buildSite({ cwd: dir, distDir });
+  // 検証
+  expect(
+    result.warnings.some((warning) => warning.includes("missing.md")),
+  ).toBe(true);
+});
+
+// build が無いと CliError（異常系）
+test("test_build_site_when_build_missing", async () => {
+  // 準備
+  const { buildSite } = await loadBuild();
+  const { CliError } = await import("../../../../src/cli/errors.ts");
+  const dir = await createTempDir();
+  await writeFiles(dir, { "mdmark.config.yaml": "features:\n  print: true\n" });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = buildSite({ cwd: dir, distDir });
+  // 検証
+  await expect(result).rejects.toBeInstanceOf(CliError);
+  await expect(result).rejects.toThrow("build.include");
+  await expect(result).rejects.toThrow("build.out");
+});
