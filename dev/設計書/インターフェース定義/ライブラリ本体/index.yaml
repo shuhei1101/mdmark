@@ -28,3 +28,5 @@ items:
     summary: 使う側のページと拡張のモジュールが、列名と項目の値から要素の中にボード表示と表形式のビューを描く（mountView）
   - page: コメントを付ける.ts.yaml
     summary: 使う側のページが、自分の要素と読み書きの関数を渡し、要素の中の選んだ箇所にコメントを付ける（mountComments）
+  - page: 本文の参照を取り出す.ts.yaml
+    summary: 使う側の処理が、索引と文書の本文から、本文に出た用語・文書の別名の一致と参照先を取り出す（collectMatches）
