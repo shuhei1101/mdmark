@@ -1,0 +1,92 @@
+title: "ClaudeCodeから点検と書き出しを呼ぶ"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: ずれの無い作業のフォルダ
+        description: 設定・索引と文書 2 つ。索引に 2 つとも載り、設定の `build` が 2 つに当たる
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読む
+        S-->>C: 空のずれの一覧
+        C->>S: build_site
+        S->>F: build.out に 1 枚の HTML を書く
+        S-->>C: 書き出したパス・入れた文書の数・警告
+    expected:
+      - '`check` が空のずれの一覧を返す'
+      - '`build_site` が `build.out` に 1 枚の HTML を書き、書き出したパスと入れた文書の数 2 を返す'
+      - 書き出した HTML が、同じフォルダで `mdmark build` を流して書いた HTML と同じ
+    test: test_normal
+  - name: 正常シナリオ（ずれがある）
+    setup:
+      - name: ずれを持つ作業のフォルダ
+        description: 正常シナリオのフォルダから文書 1 つを消し、索引には残したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読む
+        S-->>C: ずれの一覧（ファイル・場所・種類・内容）
+    expected:
+      - ずれの一覧に、消えた文書の行を指す `missing_doc` が 1 件ある
+      - 各行がファイル・場所・種類・内容を持ち、内容に直し方が書かれている
+      - 同じフォルダで `mdmark check` を流したときと同じずれが返る
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_drift
+  - name: 正常シナリオ（1 文書を書き出す）
+    setup:
+      - name: ずれの無い作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: export_html（文書のパス）
+        S->>F: 文書と設定を読む
+        S->>F: 1 枚の HTML を書く
+        S-->>C: 書き出したパス
+    expected:
+      - '`export_html` が 1 枚の HTML を書き、書き出したパスを返す'
+      - 書き出した HTML が、同じ文書で `mdmark export` を流して書いた HTML と同じ
+    test: test_normal_when_single_document
+  - name: 異常シナリオ（設定ファイルが無い）
+    setup:
+      - name: 設定ファイルの無い作業のフォルダ
+        description: 文書だけがあり、そのフォルダと上のフォルダに `mdmark.config.yaml` が無い
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: check
+        S->>S: 設定ファイルを探す
+        S-->>C: エラー（設定ファイルが無いことと、mdmark init で置けること）
+    expected:
+      - ツールの結果がエラーになる
+      - エラーの文に、設定ファイルが無いことと `mdmark init` で置けることが出る
+    test: test_error_when_config_missing
+lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
+issue: 11
+primary_actor: Claude Code
+trigger: Claude Code が文書と索引を書き終え、点検してから配れる形にしたくなる
+preconditions:
+  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+success_guarantee: '`check` が `mdmark check` と同じずれの一覧を返し、`export_html`・`build_site` が CLI と同じ HTML を書いて、書き出したパスを返す。'
+minimal_guarantee: '`check` は設定・索引・文書を書き換えない。設定ファイルが無いときは、何も書かずに、無いことと `mdmark init` で置けることを返す。'
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
+  - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#
+  - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#

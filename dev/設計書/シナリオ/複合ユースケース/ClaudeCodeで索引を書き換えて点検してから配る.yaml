@@ -18,6 +18,10 @@ scenarios:
       - '`check` がずれ 0 件を返す'
       - '`build_site` が `build.out` に 1 枚の HTML を書き、書き出したパスと入れた文書の数 2 を返す'
     test: test_normal
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/索引から文書を探す#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/索引を書き換える#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
   - name: 異常シナリオ（点検でずれが見つかる）
     setup:
       - name: ずれを持つ作業のフォルダ
@@ -26,10 +30,10 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       flowchart TD
-        A[Claude Codeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）] --> B[索引を書き換える:正常シナリオ]
+        A[Claude Codeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）] --> B[索引を書き換える:正常シナリオ（消す）]
         B --> C[Claude Codeから点検と書き出しを呼ぶ:正常シナリオ]
         click A "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
-        click B "../単一ユースケース/索引を書き換える.yaml#正常シナリオ"
+        click B "../単一ユースケース/索引を書き換える.yaml#正常シナリオ消す"
         click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
     expected:
       - 1 回目の `check` が消えた文書の `missing_doc` を 1 件返す
@@ -37,6 +41,10 @@ scenarios:
       - 2 回目の `check` がずれ 0 件を返す
       - その後の `build_site` が 1 枚の HTML を書く
     test: test_error_when_drift
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
+      - dev/設計書/シナリオ/単一ユースケース/索引を書き換える#scenarios[正常シナリオ（消す）]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
 lead: 文書を書く人が Claude Code に頼み、Claude Code が mdmark のプラグインの MCP のツールで索引から文書を引いて索引を書き換え、点検のずれを 0 件にしてから 1 枚の HTML にまとめる。
 issue: 11
 primary_actor: 文書を書く人（Claude Code に頼む）

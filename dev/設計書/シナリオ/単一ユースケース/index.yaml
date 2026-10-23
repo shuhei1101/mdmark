@@ -84,3 +84,15 @@ items:
     summary: 使う側がページと拡張のモジュールから部品の関数を呼び、要素にビューを描き、選んだ箇所にコメントを付ける
   - page: コードブロックを飾る.yaml
     summary: 印と行末の行コメントで、コードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付ける
+  - page: ClaudeCodeにプラグインを入れる.yaml
+    summary: 文書を書く人が mdmark のリポジトリをマーケットプレイスとして足し、mdmark のプラグインを Claude Code に入れる
+  - page: セッションの開始で使い方集の索引を受け取る.yaml
+    summary: プラグインの SessionStart のフックが、使い方集の索引だけを Claude Code のコンテキストへ渡す
+  - page: 使い方集を読む.yaml
+    summary: Claude Code が索引の名前を `read_guide` に渡し、その名前の使い方集の本文を受け取る
+  - page: 索引から文書を探す.yaml
+    summary: Claude Code が `find_docs` で、索引から題名・別名・概要の語・タグ・関係する文書で文書を引く
+  - page: 索引を書き換える.yaml
+    summary: Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない
+  - page: ClaudeCodeから点検と書き出しを呼ぶ.yaml
+    summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ

@@ -1,0 +1,34 @@
+title: "ClaudeCodeにプラグインを入れる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 空の設定のフォルダ
+        description: プラグインもマーケットプレイスも入っていない Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）
+      - name: Mock
+        description: GitHub の代わりに、このブランチの作業ツリーのリポジトリの直下をマーケットプレイスのパスとして渡す。モデルは使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as Claude Code
+        participant R as mdmark のリポジトリ
+        W->>C: claude plugin marketplace add {リポジトリ}
+        C->>R: .claude-plugin/marketplace.json を読む
+        R-->>C: プラグイン mdmark の行
+        C-->>W: マーケットプレイス mdmark を足した
+        W->>C: claude plugin install mdmark@mdmark
+        C->>R: plugin/ を写す
+        C->>C: plugin/package.json の依存を入れる
+        C-->>W: プラグインを入れた・終了コード 0
+    expected:
+      - '`claude plugin marketplace add` と `claude plugin install mdmark@mdmark` がどちらも終了コード 0 で終わる'
+      - '`claude plugin list` に `mdmark@mdmark` が有効として出る'
+      - プラグインの置き場所に `hooks/hooks.json`・`.mcp.json`・束ねた MCP サーバーと、`node_modules` の依存がある
+    test: test_normal
+lead: 文書を書く人が、mdmark のリポジトリを Claude Code のマーケットプレイスとして足し、mdmark のプラグインを入れる。
+issue: 11
+primary_actor: 文書を書く人
+trigger: Claude Code で mdmark の文書を書き始める前
+preconditions:
+  - 文書を書く人の手元に Claude Code と git と Node 24 以降がある
+success_guarantee: プラグインが有効になり、次に開くセッションで SessionStart のフックと MCP サーバー `plugin:mdmark:mdmark` が読み込まれる。プラグインが使う依存（`plugin/package.json` に書いたもの）がプラグインの置き場所に入っている。
+minimal_guarantee: マーケットプレイスの定義が読めないときは、Claude Code が理由を出してプラグインを入れない。手元の他のプラグインの設定は変わらない。
