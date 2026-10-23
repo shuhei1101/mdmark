@@ -1,0 +1,79 @@
+title: "test-electron"
+kind: "ライブラリ"
+version:
+  current: 3.1.0
+  latest: 3.1.0
+  checked_on: '2026-10-23'
+  source: vscode/package.json
+  pinning: '`devDependencies` に完全一致で置く'
+catalogs:
+  - name: API
+    version: 3.1.0
+    entries:
+      - name: runTests
+        kind: 関数
+        purpose: VS Code を取得して起動し、拡張機能ホストの中でテストのランナーを呼ぶ
+        description: '`extensionTestsPath` のモジュールが返す `run(): Promise<void>` を拡張機能ホストが呼ぶ。拡張子が `.mjs` か `"type": "module"` なら ESM として読む。`--no-sandbox`・`--disable-updates`・`--disable-workspace-trust` などを自動で付ける'
+        params:
+          - name: version
+            type: string
+            required: false
+            default: '`stable`'
+            description: 起動する VS Code のバージョン。`stable`・`insiders`・`1.141.0` のような完全なバージョン
+            notes: 完全なバージョンでキャッシュがあればネットワークに出ない。`stable` は呼ぶたびに最新のバージョンを問い合わせる
+          - name: extensionDevelopmentPath
+            type: string
+            required: true
+            description: 開発中の拡張機能のフォルダ（`package.json` のあるフォルダ）
+          - name: extensionTestsPath
+            type: string
+            required: true
+            description: 拡張機能ホストの中で読む、`run()` を返すモジュールのパス
+          - name: launchArgs
+            type: string[]
+            required: false
+            description: VS Code に渡す引数（開くフォルダ・`--disable-extensions` など）
+          - name: extensionTestsEnv
+            type: Record<string, string>
+            required: false
+            description: 拡張機能ホストに渡す環境変数
+          - name: cachePath
+            type: string
+            required: false
+            default: '`{cwd}/.vscode-test`'
+            description: ダウンロードした VS Code を置くフォルダ
+        params_example: |-
+          ```ts
+          import { runTests } from "@vscode/test-electron";
+
+          for (const version of ["1.141.0", "stable"]) {
+            await runTests({ version, extensionDevelopmentPath, extensionTestsPath });
+          }
+          ```
+        returns:
+          - name: '-'
+            type: Promise<number>
+            description: テストが通ったときの終了コード（0）。落ちたときは `TestRunFailedError` で reject する
+lead: VS Code をダウンロードして拡張機能の開発用に起動し、拡張機能ホストの中でテストを走らせる。
+purl: pkg:npm/%40vscode/test-electron@3.1.0
+supplier: Microsoft
+dependency_scope: 開発のみ
+adoption: 採用
+used_in:
+  - vscode/tests/integration/
+upstream: microsoft/vscode-test
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: '`"type": "module"` の最小の拡張機能で、Node 24 の起動スクリプトから ESM の import で `runTests`（`version: "1.141.0"`・`extensionTestsPath` に ESM の `index.mjs`・`launchArgs: ["--disable-extensions"]`）を `xvfb-run -a` で呼んだ。拡張機能ホストの中で `index.mjs` の `run()` が呼ばれ、テストが通ると終了コード 0、`run()` が reject すると `TestRunFailedError`（`Test run failed with code 1`）で終了コード 1 になることを確かめた。`.vscode-test/vscode-linux-x64-1.141.0` があるとダウンロードせずに起動した'
+license: MIT（商用利用可）
+official_url: https://code.visualstudio.com/api/working-with-extensions/testing-extension
+docs_url: https://github.com/microsoft/vscode-test
+selection:
+  candidates: '`@vscode/test-cli` 0.0.15・`wdio-vscode-service` 8.0.0・`vscode-extension-tester` 8.28.1・Playwright の `_electron`（[比較](https://github.com/shuhei1101/mdmark/pull/69#discussion_r4357420485)）'
+  decision: テストが拡張機能ホストの中で動き、コマンド・エディタの API・`globalState` を直接呼べる。`@vscode/test-cli` は中の mocha が `^11.7.6` に固定され勧告を引き込むため、`runTests` を直接呼び mocha 12 を自前のランナーで動かす（[合格](https://github.com/shuhei1101/mdmark/pull/69#discussion_r4357498235)）
+  consequences: Webview の DOM はテストから見えないため、`ExtensionMode.Test` のときだけの `inspect` のメッセージで確かめる（インターフェース定義『プレビューを開く』の制約「テストのときの差し替え」）
+install: |-
+  ```bash
+  npm --prefix vscode i -D -E @vscode/test-electron@3.1.0
+  ```

@@ -1,0 +1,79 @@
+title: "mocha"
+kind: "ライブラリ"
+version:
+  current: 12.0.3
+  latest: 12.0.3
+  checked_on: '2026-10-23'
+  source: vscode/package.json
+  pinning: '`devDependencies` に完全一致で置く'
+catalogs:
+  - name: API
+    version: 12.0.3
+    entries:
+      - name: Mocha
+        kind: クラス
+        purpose: テストのファイルを集めて走らせる
+        params:
+          - name: ui
+            type: '"bdd" | "tdd"'
+            required: false
+            default: '`bdd`'
+            description: テストの書き方。`tdd` は `suite` / `test`
+          - name: timeout
+            type: number
+            required: false
+            default: '2000'
+            description: 1 つのテストの待ちの上限（ms）
+        params_example: |-
+          ```ts
+          import Mocha from "mocha";
+
+          const mocha = new Mocha({ ui: "tdd", timeout: 20_000 });
+          mocha.addFile(file);
+          await mocha.loadFilesAsync();
+          const failures = await new Promise<number>((resolve) => mocha.run(resolve));
+          ```
+      - name: Mocha.addFile
+        kind: 関数
+        purpose: 走らせるテストのファイルを加える
+      - name: Mocha.loadFilesAsync
+        kind: 関数
+        purpose: 加えたファイルを ESM も含めて読む
+        returns:
+          - name: '-'
+            type: Promise<void>
+            description: 読み終えたときに解決する
+      - name: Mocha.run
+        kind: 関数
+        purpose: テストを走らせ、終わったら失敗の数をコールバックに渡す
+        params:
+          - name: fn
+            type: '(failures: number) => void'
+            required: false
+            description: 終わったときに呼ぶ関数
+      - name: suite / test
+        kind: 関数
+        purpose: '`ui: "tdd"` でテストのまとまりと 1 件のテストを書く（グローバル）'
+lead: テストを suite と test で並べて走らせ、結果を報告するテストフレームワーク。
+purl: pkg:npm/mocha@12.0.3
+supplier: OpenJS Foundation
+dependency_scope: 開発のみ
+adoption: 採用
+used_in:
+  - vscode/tests/integration/
+upstream: mochajs/mocha
+verification:
+  state: 済
+  date: '2026-10-23'
+  detail: 'VS Code 1.141.0 の拡張機能ホストの中の ESM の `index.mjs` で、`new Mocha({ ui: "tdd", timeout: 20000 })` → `addFile` → `loadFilesAsync` → `run` を呼んだ。ESM の `*.test.mjs` を読み、`import * as vscode from "vscode"` で `workspace.openTextDocument`・`window.showTextDocument`・`extensions.getExtension().activate()` を呼べた（1 passing）。`assert` が落ちるテストでは `run` のコールバックが失敗の数 1 を渡した'
+license: MIT（商用利用可）
+official_url: https://mochajs.org/
+docs_url: https://mochajs.org/api/
+selection:
+  candidates: 拡張機能ホストの中で vitest を動かす試作（`vitest-vscode-runner`・`@gitbybit/vscode-extension-test-vitest-runner`）
+  decision: vitest はテストを別のワーカーで動かすため `vscode` モジュールを解決できず、試作は vitest 4 向けかライセンスが無い。拡張機能ホストの中でプログラムから動かせる mocha を使う（[合格](https://github.com/shuhei1101/mdmark/pull/69#discussion_r4357498235)）
+  consequences: テストのランナーが vitest・Playwright に続く 3 つ目になる。mocha 12 は型を同梱しない
+install: |-
+  ```bash
+  npm --prefix vscode i -D -E mocha@12.0.3
+  ```

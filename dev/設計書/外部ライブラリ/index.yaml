@@ -28,3 +28,7 @@ items:
     summary: VS Code の拡張機能の API（コマンド・設定・エディタ・Webview）
   - page: vsce.yaml
     summary: VS Code の拡張機能を .vsix にまとめる
+  - page: test-electron.yaml
+    summary: VS Code を取得して起動し、拡張機能ホストの中で結合テストを走らせる
+  - page: mocha.yaml
+    summary: 拡張機能ホストの中で結合テストを走らせるテストフレームワーク
