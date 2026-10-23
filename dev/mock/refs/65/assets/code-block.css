@@ -1,0 +1,147 @@
+/* コードブロックの題・行番号・行の強調・コードの行の印の規則（#65 で共有するアセット）。
+   実装では src/index.css の mdmark の層に足す */
+
+/* 行の強調の色: 新しく足す CSS 変数（足した行・消した行は差分の表示の変数を使う） */
+:root {
+  --mdmark-color-code-highlight-bg: #fff8c5;
+  --mdmark-color-code-highlight-line: #bf8700;
+}
+
+/* ダーク（OS の設定）: 行の強調の色 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-scheme="light"]) {
+    --mdmark-color-code-highlight-bg: #2e2a14;
+    --mdmark-color-code-highlight-line: #d29922;
+  }
+}
+
+/* ダーク（モックの配色の切り替え）: 行の強調の色 */
+:root[data-scheme="dark"] {
+  --mdmark-color-code-highlight-bg: #2e2a14;
+  --mdmark-color-code-highlight-line: #d29922;
+}
+
+/* mdmark の層: 飾ったコードブロック */
+@layer mdmark {
+  /* 飾ったコードブロックの入れ物: ブラウザ既定の余白を消し、前のブロックとの間隔は本文の規則に任せる */
+  :where(.mdmark .mdmark-code) {
+    margin: 0;
+  }
+
+  /* 飾ったコードブロックの入れ物: 題と pre を 1 つの枠にまとめる */
+  .mdmark .mdmark-code {
+
+    /* 題の下に続く pre: 題と枠をつなげ、上の角を丸めない */
+    .mdmark-code-title + pre {
+      margin: 0;
+      border-start-start-radius: 0;
+      border-start-end-radius: 0;
+    }
+  }
+
+  /* コードブロックの題: ファイルのアイコンと題。長い題は折り返す */
+  .mdmark .mdmark-code-title {
+    display: flex;
+    gap: 0.4em;
+    align-items: center;
+    padding: 0.4em var(--mdmark-space);
+    border: 1px solid var(--mdmark-color-border);
+    border-block-end: 0;
+    border-start-start-radius: var(--mdmark-radius);
+    border-start-end-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-table-head);
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-mono);
+    font-size: 0.8125em;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+
+    /* 題の前のファイルのアイコン */
+    .mdmark-icon {
+      flex: none;
+      color: var(--mdmark-color-muted);
+    }
+  }
+
+  /* 行に分けたコードブロック: 行の地を枠の端まで敷くため、左右の余白を行へ移す */
+  .mdmark pre.mdmark-code-lines {
+    padding-inline: 0;
+
+    /* 行を並べたコード: 最も長い行に幅を合わせ、短い行の地も右端まで敷く */
+    code {
+      display: block;
+      width: max-content;
+      min-width: 100%;
+    }
+  }
+
+  /* コードの 1 行: 行番号・行頭の印・行の文字の 3 列。行番号と印は擬似要素で出し、選んで写す中身に入れない */
+  .mdmark .mdmark-code-line {
+    display: inline-grid;
+    grid-template-columns: auto auto 1fr;
+    width: 100%;
+    box-sizing: border-box;
+    padding-inline: calc(var(--mdmark-space) - 2px) var(--mdmark-space);
+    border-inline-start: 2px solid transparent;
+    vertical-align: top;
+
+    /* 行番号: 桁を揃えて右寄せにし、控えめの色で出す。桁の数は code の --mdmark-code-digits */
+    &[data-line]::before {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: calc(var(--mdmark-code-digits) * 1ch);
+      padding-inline-end: 1.5ch;
+      color: var(--mdmark-color-muted);
+      text-align: end;
+      content: attr(data-line) / "";
+    }
+
+    /* 行頭の印の列 */
+    &::after {
+      grid-column: 2;
+      grid-row: 1;
+      width: 2ch;
+      font-weight: 700;
+      content: none;
+    }
+
+    /* 行の文字 */
+    .mdmark-code-text {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    /* 強調した行: 黄の地と左の線 */
+    &[data-kind="highlight"] {
+      border-inline-start-color: var(--mdmark-color-code-highlight-line);
+      background: var(--mdmark-color-code-highlight-bg);
+    }
+
+    /* 足した行: 差分の表示と同じ緑の地と左の線、行頭の + */
+    &[data-kind="add"] {
+      border-inline-start-color: var(--mdmark-color-diff-add-sign);
+      background: var(--mdmark-color-diff-add-bg);
+
+      &::after {
+        color: var(--mdmark-color-diff-add-sign);
+        content: "+" / "足した行";
+      }
+    }
+
+    /* 消した行: 差分の表示と同じ赤の地と左の線、行頭の - */
+    &[data-kind="del"] {
+      border-inline-start-color: var(--mdmark-color-diff-del-sign);
+      background: var(--mdmark-color-diff-del-bg);
+
+      &::after {
+        color: var(--mdmark-color-diff-del-sign);
+        content: "-" / "消した行";
+      }
+    }
+  }
+
+  /* 足した行か消した行を持つコードブロック: 印の無い行にも印の列の幅を空け、文字の頭を揃える */
+  .mdmark pre.mdmark-code-signs .mdmark-code-line:not([data-kind="add"], [data-kind="del"])::after {
+    content: "";
+  }
+}
