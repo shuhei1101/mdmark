@@ -138,15 +138,13 @@ export class PreviewManager {
     }
   }
 
-  /** 設定ファイルの作成・変更・削除と、`mdmark.configPath`・`mdmark.preview.theme` の変更を受け、影響するパネルに設定を読み直させて待たずに送らせる */
+  /** 設定ファイルの作成・変更・削除と、`mdmark.configPath`・`mdmark.preview.theme` の変更を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりが CSP に入れたものと違うパネルは、HTML を入れ直す */
   handleConfigChange(change: ConfigChange): void {
     for (const panel of this.panels.values()) {
       if (!this.affects(change, panel.uri)) {
         continue;
       }
-      void panel.reloadConfig().then(() => {
-        panel.renderNow();
-      });
+      void panel.applyConfigChange();
     }
   }
 
