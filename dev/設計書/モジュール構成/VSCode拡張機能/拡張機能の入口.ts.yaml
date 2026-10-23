@@ -1,0 +1,92 @@
+title: "VS Code 拡張機能 / 拡張機能の入口"
+lead: 拡張機能の `activate` と、`vscode/package.json` の `contributes`（コマンド・ショートカット・メニュー・設定）。コマンドと VS Code の知らせを各機能へつなぐ。
+directory: |-
+  ```tree
+  vscode/
+  ├── package.json      # 拡張機能の定義（main・engines・contributes・scripts・依存）
+  └── src/
+      └── extension.ts  # activate（コマンドと知らせの登録、テストのときの戻り値）
+  ```
+
+  `extension.ts` はビルドが `vscode/dist/extension.cjs`（CommonJS。`vscode` は束ねない）に束ね、`package.json` の `main` が指す。
+constants:
+  - name: contributes
+    title: 拡張機能が足すもの
+    container: vscode/package.json
+    summary: '`package.json` の `contributes` と、それを効かせるキー'
+    entries:
+      - key: engines.vscode
+        value: '`^1.141.0`'
+        description: 非機能要件「対応する VS Code の版」。`@types/vscode` は `1.141.0` に揃える
+      - key: activationEvents
+        value: '`onLanguage:markdown`・`onWebviewPanel:mdmark.preview`'
+        description: コマンドは `contributes.commands` から VS Code が足す
+      - key: contributes.commands
+        value: '`mdmark.openPreviewToSide`・`mdmark.openPreview`・`mdmark.refreshPreview`・`mdmark.openConfig`・`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`'
+        description: '`category` は `mdmark`、`title` は画面設計の「コマンドの表示名」。`mdmark.openPreviewToSide` は `icon` に `$(open-preview)`'
+      - key: contributes.menus.editor/title
+        value: '`mdmark.openPreviewToSide`（`when`: `editorLangId == markdown`、`group`: `navigation`）'
+        description: エディタのタイトルのボタン
+      - key: contributes.menus.commandPalette
+        value: "`mdmark.refreshPreview` は `mdmark.previewOpen`、`mdmark.openConfig` は常時、他は `editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'`"
+        description: コマンドパレットに出す条件。`mdmark.previewOpen` は `setContext` でパネルが 1 つ以上開いているかを書く
+      - key: contributes.keybindings
+        value: '`mdmark.openPreviewToSide` に `shift+alt+d`（`mac`: `shift+alt+d`）、`when`: `editorLangId == markdown`'
+        description: 既定のショートカット（Mac は `Shift+Option+D`）
+      - key: contributes.configuration
+        value: 設定『VS Code 拡張機能』の `settings.json` のキー。`mdmark.version` は `pattern` `^(latest|v\d+\.\d+\.\d+)$`、`mdmark.preview.updateDelayMs` は `minimum` 0・`maximum` 5000、`mdmark.preview.theme` は `enum`
+        description: 既定は `SETTING_DEFAULTS` と同じ値
+    refs:
+      - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#
+      - dev/設計書/設定/VSCode拡張機能#
+      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#constants[SETTING_DEFAULTS]
+    status: planned
+data_models:
+  - name: TestApi
+    title: テストのときの戻り値
+    container: vscode/src/extension.ts
+    usecase: 共通
+    summary: '`ExtensionMode.Test` のときだけ `activate` が返す、結合テストが Webview の DOM を確かめる口'
+    properties:
+      - name: inspectPreview
+        type: '(selector: string) => Promise<InspectedElement[]>'
+        description: 最後に表に出たパネルの要素を調べる
+    refs:
+      - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewManager]
+    status: planned
+functions:
+  - name: activate
+    title: 拡張機能を動かし始める
+    kind: 関数
+    container: vscode/src/extension.ts
+    usecase: 共通
+    summary: コマンドと VS Code の知らせを登録し、テストのときだけ `TestApi` を返す
+    scope: public
+    side_effects: 登録したものを `context.subscriptions` に入れる
+    args:
+      - name: context
+        type: ExtensionContext
+        required: true
+        description: VS Code が渡す
+    returns:
+      type: TestApi | undefined
+      description: '`ExtensionMode.Test` のときだけ `TestApi`'
+    process: |-
+      1. `context.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` を読む。無ければ `DIST_BASE`・`TAGS_URL`
+      2. `PreviewManager` を作る
+      3. コマンドを登録する
+         - `mdmark.openPreviewToSide`・`mdmark.openPreview` は `PreviewManager.open`（`ViewColumn.Beside`・`ViewColumn.Active`）
+         - `mdmark.refreshPreview` は `PreviewManager.refresh`
+         - `mdmark.openConfig` は対象の Markdown の基準のフォルダで `openConfigFile`
+         - `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` は `exportMarkdown`（`export`・`browser`・`print`）
+      4. `workspace.onDidChangeTextDocument`・`onDidSaveTextDocument`・`onDidChangeConfiguration`・`window.onDidChangeTextEditorVisibleRanges` を `PreviewManager` へ、設定ファイルの `createFileSystemWatcher` の作成・変更・削除を `PreviewManager.handleConfigChange` へつなぐ
+      5. テストのときだけ `{ inspectPreview }` を返す
+    callees:
+      - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewManager]
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[openConfigFile]
+      - dev/設計書/モジュール構成/VSCode拡張機能/書き出し.ts#functions[exportMarkdown]
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#
+    status: planned

@@ -1,0 +1,201 @@
+title: "VS Code 拡張機能 / 書き出し"
+lead: 開いている Markdown を jsDelivr の配布物で描く 1 つの HTML に書き出し、ブラウザで開き、印刷のダイアログを出させる。
+directory: |-
+  ```tree
+  vscode/src/export/
+  ├── html.ts    # 書き出す先のパスと HTML の組み立て（vscode を import しない）
+  └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体と、一時ファイルからの置き換え
+  ```
+enums:
+  - name: ExportMode
+    title: 書き出しの使い方
+    container: vscode/src/export/export.ts
+    usecase: HTMLに書き出す
+    summary: 書き出した後に何をするか
+    values:
+      - value: export
+        title: 書き出す
+        description: 書き出した通知を出す（`mdmark.exportHtml`）
+      - value: browser
+        title: ブラウザで開く
+        description: 通知を出さず `env.openExternal` で開く（`mdmark.openInBrowser`）
+      - value: print
+        title: PDF に印刷
+        description: 印刷を待つ処理を足して書き、通知を出さずに開く（`mdmark.printToPdf`）
+    status: planned
+constants:
+  - name: PRINT_WAIT_MS
+    title: 印刷のダイアログを出すまでの待ちの上限
+    container: vscode/src/export/html.ts
+    summary: '`mount` の後、外部ライブラリの印の場所が無くなるのとフォントを待つ上限（ミリ秒）'
+    value: '10000'
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[印刷のダイアログを出すまでの待ちの上限]
+    status: planned
+functions:
+  - name: resolveExportPath
+    title: 書き出す先を決める
+    kind: 関数
+    container: vscode/src/export/html.ts
+    usecase: HTMLに書き出す
+    summary: '`mdmark.export.outputDir` が空なら Markdown と同じフォルダ、相対パスならワークスペースのフォルダから、絶対パスならそのままのフォルダに、拡張子を `.html` に替えた名前を付けて返す'
+    scope: public
+    args:
+      - name: options
+        type: '{ markdownPath: string; outputDir: string; workspaceDir: string }'
+        required: true
+        description: Markdown の絶対パス、`mdmark.export.outputDir`、Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）
+    returns:
+      type: string
+      description: 書き出す HTML の絶対パス
+    unit_tests:
+      - name: test_resolve_export_path
+        case: 正常
+        summary: 空・相対パス・絶対パスのそれぞれで書き出す先を決める
+        condition: '`markdownPath` が `/ws/docs/guide.md`、`workspaceDir` が `/ws` で、`outputDir` が `""`・`out`・`/tmp/html`'
+        mock: なし
+        expected: '`/ws/docs/guide.html`・`/ws/out/guide.html`・`/tmp/html/guide.html`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[書き出す先]
+    status: planned
+  - name: escapeScriptJson
+    title: script に埋める JSON にする
+    kind: 関数
+    container: vscode/src/export/html.ts
+    usecase: HTMLに書き出す
+    summary: '`JSON.stringify` し、`<` を JSON の Unicode エスケープ（6 文字）に置き換えて返す。本文の `</script>` で `script` 要素が閉じない'
+    scope: public
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 埋める値
+    returns:
+      type: string
+      description: '`<` を持たない JSON'
+    unit_tests:
+      - name: test_escape_script_json
+        case: 正常
+        summary: 本文の script の閉じを含んでも `<` を残さず、読み戻すと同じ値
+        condition: '`{ markdown: "a</script><b>" }`'
+        mock: なし
+        expected: 戻り値が `<` を含まず、`JSON.parse` すると元の値
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[書き出す中身]
+    status: planned
+  - name: buildExportHtml
+    title: 書き出す HTML を組む
+    kind: 関数
+    container: vscode/src/export/html.ts
+    usecase: HTMLに書き出す
+    summary: '`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`index.js` を読んで `mount(document.querySelector("main"), { markdown, config })` を呼ぶ `<script type="module">` を持つ HTML を組む'
+    description: '`print` が `true` のときだけ、`mount` の後に「外部ライブラリの印の場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。`PRINT_WAIT_MS` を超えたらそのまま呼ぶ」処理を足す。印の場所は `MutationObserver` で待つ。`title` は Markdown のファイル名をエスケープして入れる'
+    scope: public
+    args:
+      - name: options
+        type: '{ markdown: string; config: PreviewConfig; title: string; distJs: string; distCss: string; baseHref: string; print: boolean }'
+        required: true
+        description: 全文・設定（`libraries` は `file:` の URL に直した値）・題・配布物の URL・Markdown のフォルダの `file:` の URL に `/` を付けたもの・印刷を待つか
+    returns:
+      type: string
+      description: HTML 文字列
+    unit_tests:
+      - name: test_build_export_html
+        case: 正常
+        summary: 本文を JSON で埋め、バージョン付きの配布物で mount する
+        condition: '`markdown` が `# 題\n</script>`、`print` が `false`'
+        mock: なし
+        expected: '`<base href="{baseHref}">`・`<link rel="stylesheet" href="{distCss}">`・`type="application/json"` の `script` を持ち、その中身が `<` を含まない。`type="module"` の `script` が `{distJs}` を import し `mount` を呼ぶ。`window.print` を含まない'
+      - name: test_build_export_html_when_print
+        case: 正常
+        summary: 印刷を待つ処理を足す
+        condition: '`print` が `true`'
+        mock: なし
+        expected: '`window.print()`・`document.fonts.ready`・`PRINT_WAIT_MS` の値 `10000` を含む'
+    callees:
+      - '#functions[escapeScriptJson]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[書き出す中身]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/PDFに印刷する.ts#constraints[印刷する時]
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#data_models[PreviewConfig]
+    status: planned
+  - name: writeFileAtomically
+    title: 一時ファイルから置き換える
+    kind: 関数
+    container: vscode/src/export/export.ts
+    usecase: HTMLに書き出す
+    summary: フォルダが無ければ作り、同じフォルダの `.{名前}.{乱数}.tmp` に書いてから `rename` で置き換える。失敗したら一時ファイルを消して投げ直す
+    scope: internal
+    is_async: true
+    side_effects: フォルダとファイルを書く
+    args:
+      - name: options
+        type: '{ path: string; content: string }'
+        required: true
+        description: 書き出す先と中身
+    returns:
+      type: Promise<void>
+      description: 置き換えたら解決する
+    exceptions:
+      - name: Error
+        condition: フォルダを作れない・書けない・置き換えられない（OS の誤りを投げ直す）
+    unit_tests:
+      - name: test_write_file_atomically
+        case: 正常
+        summary: 無いフォルダを作って書き、一時ファイルを残さない
+        condition: 一時フォルダの下の無いフォルダ `out/guide.html` に書く
+        mock: なし（一時フォルダ）
+        expected: '`out/guide.html` が中身どおりで、`out/` に `.tmp` のファイルが無い'
+      - name: test_write_file_atomically_when_not_writable
+        case: 異常
+        summary: 書けなければ一時ファイルを消して投げ直す
+        condition: 書き出す先が既にあるフォルダ（`rename` が失敗する）
+        mock: なし（一時フォルダ）
+        expected: 例外を投げ、フォルダに `.tmp` のファイルが無い
+        exception: 置き換えられない
+    status: planned
+  - name: exportMarkdown
+    title: Markdown を書き出す
+    kind: 関数
+    container: vscode/src/export/export.ts
+    usecase: HTMLに書き出す
+    summary: '`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` の本体。バージョンと設定を決めて HTML を書き、`mode` に合わせて知らせるか開く'
+    scope: public
+    is_async: true
+    side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取り `mdmark.lastVersion` を書き換える
+    args:
+      - name: options
+        type: '{ document: TextDocument; mode: ExportMode }'
+        required: true
+        description: 書き出す Markdown と使い方
+    returns:
+      type: Promise<Uri | undefined>
+      description: 書き出した HTML。書き出せなかったときは `undefined`
+    process: |-
+      1. 読むバージョンを決める（読むバージョンを決める）
+         - `undecidable` の場合、画面設計の「バージョンを決められない通知」を `showErrorMessage` で出し、`undefined` を返す
+         - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
+      2. 設定ファイルを読み（設定ファイルを読む）、`libraries` を `pathToFileURL` で直す。読めない・無いときは設定なし
+      3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき）、書く（一時ファイルから置き換える）
+         - 書けない場合、画面設計の「書き出せない通知」を `showErrorMessage` で出し、`undefined` を返す
+      4. `mode` で分ける
+         - `export` の場合、「書き出した通知」を出す（待たずに返す）。「ブラウザで開く」が押されたら `env.openExternal` で開く
+         - `browser`・`print` の場合、`env.openExternal` で開く
+      5. 書き出した HTML の `Uri` を返す
+    callees:
+      - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[decideVersion]
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[loadConfig]
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveLibraries]
+      - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#functions[distUrl]
+      - '#functions[resolveExportPath]'
+      - '#functions[buildExportHtml]'
+      - '#functions[writeFileAtomically]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#
+      - dev/設計書/インターフェース定義/VSCode拡張機能/ブラウザで開く.ts#
+      - dev/設計書/インターフェース定義/VSCode拡張機能/PDFに印刷する.ts#
+      - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[書き出した通知]
+      - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[書き出せない通知]
+      - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[バージョンを決められない通知]
+    status: planned

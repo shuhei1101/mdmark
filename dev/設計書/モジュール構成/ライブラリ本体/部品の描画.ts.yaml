@@ -20,7 +20,7 @@ constants:
     title: Storybook の設定
     container: .storybook/main.js
     summary: '`export default` する設定'
-    value: '`framework: { name: "@storybook/server-webpack5", options: {} }`・`stories: ["../src/**/*.stories.yaml"]`・`core: { disableTelemetry: true, allowedHosts }`。`allowedHosts` は環境変数 `STORYBOOK_ALLOWED_HOSTS` をカンマで区切ったもの（無ければ持たない）'
+    value: '`framework: { name: "@storybook/server-webpack5", options: {} }`・`stories: ["../src/**/*.stories.yaml", "../vscode/src/**/*.stories.yaml"]`・`core: { disableTelemetry: true, allowedHosts }`。`allowedHosts` は環境変数 `STORYBOOK_ALLOWED_HOSTS` をカンマで区切ったもの（無ければ持たない）'
   - name: parameters
     title: ストーリーの既定の引数
     container: .storybook/preview.js
@@ -33,7 +33,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`と、VS Code 拡張機能の `preview-status`・`config-band`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -88,6 +88,12 @@ functions:
         condition: '`component` が `doc-list`、`params` の `docs` が `[{"path":"README.md","title":"入口"},{"path":"使い方/guide.md","title":"使い方"}]`、`current` が `使い方/guide.md`'
         mock: なし
         expected: '`<div class="mdmark">` で包んだ `renderDocList({ docs, current: "使い方/guide.md" })`'
+      - name: test_render_part_when_vscode_part
+        case: 正常
+        summary: 拡張機能のプレビューの状態の表示を引数どおりに描く
+        condition: '`component` が `preview-status`、`params` が `state=versionMissing&version=v9.9.9`'
+        mock: なし
+        expected: '`<div class="mdmark">` で包んだ `renderPreviewStatus({ state: "versionMissing", version: "v9.9.9" })`'
   - name: createRenderServer
     title: 描画の口を作る
     container: scripts/storybook-render.ts
@@ -103,7 +109,7 @@ functions:
       type: http.Server
       description: 待ち受けていないサーバー
     process: |-
-      1. `/render/index.css` は、`src/index.css` を読んで `text/css; charset=utf-8` の 200 で返す
+      1. `/render/index.css` は、`src/index.css` を読んで `text/css; charset=utf-8` の 200 で返す。`/render/vscode.css` は、`vscode/src/webview/preview.css` を同じ形で返す
       2. `/render/{部品の id}` は、部品の HTML を返す（部品の HTML を返す）
          - HTML があれば `text/html; charset=utf-8` の 200 で返す
          - 無ければ `知らない部品: {部品の id}` を 404 で返す

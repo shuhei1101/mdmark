@@ -1,0 +1,17 @@
+summary: "VS Code 拡張機能の入口・プレビュー・Webview・読むバージョン・設定・書き出しと、ビルドと配布"
+docs_index: true
+items:
+  - page: 拡張機能の入口.ts.yaml
+    summary: activate と package.json の contributes
+  - page: プレビュー.ts.yaml
+    summary: パネルの管理・HTML と CSP・描き直し・スクロールの往復の止め方・リンクの振り分け
+  - page: Webview.ts.yaml
+    summary: パネルの中のスクリプト・状態の表示と帯の部品・メッセージの型
+  - page: 読むバージョン.ts.yaml
+    summary: タグ一覧と前回のバージョンから読む mdmark のバージョンを決める
+  - page: 設定.ts.yaml
+    summary: settings.json の mdmark.* と mdmark.config.yaml の取り出し・雛形
+  - page: 書き出し.ts.yaml
+    summary: HTML への書き出し・ブラウザで開く・PDF に印刷
+  - page: ビルドと配布.ts.yaml
+    summary: esbuild のビルド・タグの照合・結合テストの起動・リリースのワークフロー

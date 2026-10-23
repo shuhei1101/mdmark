@@ -102,7 +102,7 @@ constants:
       - key: allowedTags
         value: 既定 + `img`・`del`・`details`・`summary`・`input`
       - key: allowedAttributes
-        value: '`a`: `href`・`title` / `img`: `src`・`alt`・`title` / `details`: `open` / `input`: `type`・`disabled`・`checked` / `td`: `data-label` / `pre`・`table`: `tabindex`・`aria-label` / `div`: `data-mdmark-slot`・`data-mdmark-args`・`role`（値は `status` だけ）'
+        value: '`*`: `data-source-line` / `a`: `href`・`title` / `img`: `src`・`alt`・`title` / `details`: `open` / `input`: `type`・`disabled`・`checked` / `td`: `data-label` / `pre`・`table`: `tabindex`・`aria-label` / `div`: `data-mdmark-slot`・`data-mdmark-args`・`role`（値は `status` だけ）'
       - key: allowedClasses
         value: '`code`: `language-*` / `li`: `task-list-item` / `th`・`td`: `mdmark-align-*` / `div`: `mdmark-embed`。ここに無い要素は class を持てない（`allowedAttributes` に `class` を載せない）'
       - key: allowedSchemes
@@ -110,7 +110,7 @@ constants:
       - key: parseStyleAttributes
         value: '`false`（postcss を呼ばない）'
       - key: transformTags
-        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の形でなければ `src` を消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
+        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す。`data-source-line` は値が `^\d+$` の形でなければ消す / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の形でなければ `src` を消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
       - key: allowedSchemesByTag
         value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の形は `transformTags` が絞る）'
   - name: SYNTAX_MARKS
@@ -252,7 +252,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 図表の番号 → 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 図表の番号 → 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -353,7 +353,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す'
     args:
       - name: html
         type: string
@@ -415,6 +415,12 @@ functions:
         condition: '`data-mdmark-own` が `nonce` と等しい `<code style="--mdmark-code-digits: 2">` と `<code style="--mdmark-code-digits: 2; color: red">`、持たない `<code style="--mdmark-code-digits: 2">`'
         mock: なし
         expected: 1 つ目が `style="--mdmark-code-digits:2"`、2 つ目と 3 つ目は `style` を持たない
+      - name: test_sanitize_when_source_line
+        case: 正常
+        summary: 元の行番号は整数のときだけ残す
+        condition: '`<p data-source-line="3">`・`<td data-source-line="12">`・`<p data-source-line="x">`'
+        mock: なし
+        expected: 1 つ目と 2 つ目は属性が残り、3 つ目は `data-source-line` を持たない
   - name: parseMarkArgs
     title: 印の引数を読み分ける
     container: src/render/marks.ts
@@ -603,6 +609,52 @@ functions:
     status: planned
     introduced:
       pr: 64
+  - name: markSourceLines
+    title: 元の行番号を付ける
+    kind: 関数
+    container: src/render/parser.ts
+    usecase: 文書を描く
+    summary: コアルール。`map` を持つブロックの開始のトークンに、`map[0]` を `data-source-line` で付ける
+    description: 対象は `block` が `true` で `map` を持ち、`nesting` が `1`（見出し・段落・リスト・リストの項目・表・表の行・引用）か `0`（`hr`・`code_block`）のトークンで、`attrSet("data-source-line", String(map[0]))` を呼ぶ。`fence` は `createParser` が包んだ `renderer.rules.fence` が `pre` に付ける。記法のコアルールが印の範囲を置き換えた `html_block`（`ownBlock`。開きの印のトークンの `map` を写す）は、HTML の最初の開始タグに属性を差し込む。文書に書いた生の HTML の `html_block` は変えない
+    scope: internal
+    side_effects: '`state.tokens` の属性と `html_block` の `content` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    unit_tests:
+      - name: test_mark_source_lines
+        case: 正常
+        summary: ブロックごとに始まる行の 0 始まりの番号を付ける
+        condition: 1 行目 `# 見出し`、3 行目から段落、5 行目から 2 項目のリスト、8 行目から引用、10 行目 `---` を `render` で描く
+        mock: なし
+        expected: '`<h1 data-source-line="0"`・`<p data-source-line="2"`・`<ul data-source-line="4"` と項目の `<li data-source-line="4"`・`<li data-source-line="5"`・`<blockquote data-source-line="7"`・`<hr data-source-line="9"`'
+      - name: test_mark_source_lines_when_table_and_code
+        case: 正常
+        summary: 表と表の行、コードブロックに付ける
+        condition: 1 行目から見出し行と 2 行の表、6 行目から情報文字列 `ts` のコードブロック
+        mock: なし
+        expected: '`<table data-source-line="0"`、本体の `tr` が `data-source-line="2"` と `"3"`、`<pre` が `data-source-line="5"`'
+      - name: test_mark_source_lines_when_mark_range
+        case: 正常
+        summary: 印の範囲を囲む要素と注意書きに開きの印の行を付け、中のブロックにもそれぞれの行を付ける
+        condition: '1 行目 `<!-- table: data -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
+        mock: なし
+        expected: 表を囲む要素が `data-source-line="0"`、中の `table` が `data-source-line="2"`、注意書きの外側の要素が `data-source-line="7"`
+      - name: test_mark_source_lines_when_raw_html
+        case: 正常
+        summary: 文書に書いた生の HTML のブロックは変えない
+        condition: 1 行目 `<div class="x">地</div>`
+        mock: なし
+        expected: '`div` が `data-source-line` を持たない'
+    callers:
+      - '#functions[createParser]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[元の行番号]
+    status: planned
+    introduced:
+      pr: 69
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts

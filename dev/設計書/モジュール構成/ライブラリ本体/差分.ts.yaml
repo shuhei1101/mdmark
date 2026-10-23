@@ -349,7 +349,7 @@ functions:
     summary: 差分の行の送り先のスクロールを見つけ、そこに 1 本だけの帯を置いて印と今見えている範囲の枠を並べ、押す・押したまま動かすで送る
     kind: 関数
     scope: internal
-    side_effects: '`document.body` に帯を置き、送り先の `scroll`・`window` の `resize`・`matchMedia("(prefers-color-scheme: dark)")` の `change` を受け取る。差分の行の大きさを `ResizeObserver` で見る'
+    side_effects: '`document.body` に帯を置き、送り先の `scroll`・`window` の `resize`・`matchMedia("(prefers-color-scheme: dark)")` の `change` と、`document.documentElement` の配下の `class` 属性の変更（`MutationObserver`）を受け取る。差分の行の大きさを `ResizeObserver` で見る'
     args:
       - name: lines
         type: HTMLElement
@@ -360,10 +360,10 @@ functions:
       description: この行を帯から外す関数。帯に残る行が無くなったら帯と受け取りを外す
     process: |-
       1. 送り先を決める。`lines` の祖先をたどり、`overflow-y` が `auto`・`scroll` で中身がはみ出す一番近い要素、無ければ `document.scrollingElement`
-      2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。送り先が画面でないときは、送り先の外（画面や祖先の枠）がスクロールしても送り先の位置が変わるため、`document` の `scroll` を捕捉の段で受け取って帯の位置を置き直す。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯を置き直すたびと配色が切り替わったとき（`prefers-color-scheme` の `change`）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み、帯の `style` に写す
+      2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。送り先が画面でないときは、送り先の外（画面や祖先の枠）がスクロールしても送り先の位置が変わるため、`document` の `scroll` を捕捉の段で受け取って帯の位置を置き直す。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯を置き直すたびと配色が切り替わったとき（`prefers-color-scheme` の `change` と、配色を決める祖先の `class` の変更）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み、帯の `style` に写す
       3. 送り先の行の集まりに `lines` を足し、集まりの全ての行から `del`・`add` の行の位置を送り先の `scrollHeight` に対する割合にし、続いた同じ種類の行を 1 つの印にまとめて置き直す。隠れた見方の行は、埋め込んだ HTML の差分の塊の位置で示す。差分の行の大きさが変わったら置き直す
       4. 帯の `pointerdown` でポインターを捕まえ、押した位置の割合の場所が送り先の中ほどに来るよう `scrollTo` で送る。捕まえている間の `pointermove` も同じに送る
-      5. 外す関数は、集まりから `lines` を除いて印を置き直し、空になったら帯を取り除いて受け取り（配色の `change` を含む）を外し、`minimaps` から消す
+      5. 外す関数は、集まりから `lines` を除いて印を置き直し、空になったら帯を取り除いて受け取り（配色の `change` と `class` の観測を含む）を外し、`minimaps` から消す
     unit_tests:
       - name: test_attach_minimap
         case: 正常
@@ -401,6 +401,12 @@ functions:
         condition: '画面より高いページの中の、`overflow-y: auto` で高さを決めた枠の中の差分の行。帯を置いた後に画面を下へスクロールする'
         mock: なし
         expected: スクロールの後も、帯の上端と高さが枠の `getBoundingClientRect` と同じ
+      - name: test_attach_minimap_when_class_changed
+        case: 正常
+        summary: 祖先の class で配色が切り替わると帯に写し直す
+        condition: '`body` が class `vscode-light` を持つページの差分の行。後で `body` の class を `vscode-dark` に替え、`MutationObserver` の知らせを待つ'
+        mock: なし
+        expected: 帯の `style` の `--mdmark-color-diff-del-sign` が、替える前は `#d1242f`、替えた後はダークの値 `#f85149`
     callees:
       - '#functions[renderDiffMinimap]'
     refs:

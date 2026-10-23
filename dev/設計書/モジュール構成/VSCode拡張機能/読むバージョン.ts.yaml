@@ -1,0 +1,229 @@
+title: "VS Code 拡張機能 / 読むバージョン"
+lead: プレビューと書き出しが読む mdmark のバージョンを、設定 `mdmark.version` と GitHub のタグ一覧と前回のバージョンから決める。`vscode` を import しない。
+directory: |-
+  ```tree
+  vscode/src/
+  └── version.ts  # タグ一覧の取得・最新のバージョンの選び方・読むバージョンの決め方
+  ```
+data_models:
+  - name: VersionDecision
+    title: 読むバージョンの決まり方
+    container: vscode/src/version.ts
+    usecase: 共通
+    summary: 決めたバージョンか、決められないことを表す判別付きの型
+    description: '`{ kind: "decided"; version: string; fetched: boolean }` か `{ kind: "undecidable" }`'
+    properties:
+      - name: kind
+        type: '"decided" | "undecidable"'
+        description: 決まったか
+      - name: version
+        type: string
+        description: '`v{X}.{Y}.{Z}` のバージョン（`decided` のときだけ）'
+      - name: fetched
+        type: boolean
+        description: タグ一覧から選んだか（`decided` のときだけ。`true` なら呼ぶ側が `mdmark.lastVersion` に書く）
+    status: planned
+constants:
+  - name: LATEST
+    title: 最新を選ぶ値
+    container: vscode/src/version.ts
+    summary: '`mdmark.version` の既定で、タグ一覧から最新を選ぶ値'
+    value: '"latest"'
+    status: planned
+  - name: VERSION_TAG_PATTERN
+    title: mdmark のバージョンのタグの形
+    container: vscode/src/version.ts
+    summary: 拾うタグの名前の形。`vscode-` で始まるタグは合わない
+    value: /^v(\d+)\.(\d+)\.(\d+)$/
+    status: planned
+  - name: TAGS_URL
+    title: タグ一覧の取得先
+    container: vscode/src/version.ts
+    summary: テストで差し替えないときのタグ一覧の最初のページの URL
+    value: '"https://api.github.com/repos/shuhei1101/mdmark/tags?per_page=100"'
+    refs:
+      - dev/設計書/外部API/GitHub#
+    status: planned
+  - name: TAGS_TIMEOUT_MS
+    title: タグ一覧を取る待ちの上限
+    container: vscode/src/version.ts
+    summary: 全てのページを読み終えるまでの合計の待ちの上限（ミリ秒）
+    value: '3000'
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[タグ一覧を取る待ちの上限]
+    status: planned
+function_types:
+  - name: FetchLatestVersion
+    title: 最新のバージョンを取る関数
+    container: vscode/src/version.ts
+    summary: タグ一覧から最新のバージョンを取る。取れなければ `undefined`
+    returns:
+      type: Promise<string | undefined>
+      description: 最新の `v{X}.{Y}.{Z}`
+    implementations:
+      - target: fetchLatestVersion
+    status: planned
+functions:
+  - name: pickLatestVersion
+    title: 最新のバージョンを選ぶ
+    kind: 関数
+    container: vscode/src/version.ts
+    usecase: VSCodeでプレビューを開く
+    summary: タグの名前から `VERSION_TAG_PATTERN` に合うものだけを拾い、メジャー・マイナー・パッチを数で比べて最大を返す
+    scope: public
+    args:
+      - name: names
+        type: string[]
+        required: true
+        description: タグの名前
+    returns:
+      type: string | undefined
+      description: 最新のタグの名前。合うタグが無ければ `undefined`
+    unit_tests:
+      - name: test_pick_latest_version
+        case: 正常
+        summary: 文字の並びでなく数で比べ、拡張機能のタグを拾わない
+        condition: '`["v0.7.0", "v0.10.0", "v0.6.0", "vscode-v0.11.0"]`'
+        mock: なし
+        expected: '`v0.10.0`'
+      - name: test_pick_latest_version_when_no_match
+        case: 正常
+        summary: 合うタグが無ければ選ばない
+        condition: '`["vscode-v0.1.0", "v1.0", "v1.0.0-rc.1"]`'
+        mock: なし
+        expected: '`undefined`'
+    status: planned
+  - name: nextPageUrl
+    title: 次のページの URL を引く
+    kind: 関数
+    container: vscode/src/version.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 応答の header `Link` から `rel="next"` の URL を取り出す
+    scope: internal
+    args:
+      - name: link
+        type: string | null
+        required: true
+        description: header `Link` の値
+    returns:
+      type: string | undefined
+      description: 次のページの URL。無ければ `undefined`
+    unit_tests:
+      - name: test_next_page_url
+        case: 正常
+        summary: '`rel="next"` の URL を取る'
+        condition: '`<https://api.github.com/repositories/1/tags?per_page=100&page=2>; rel="next", <https://api.github.com/repositories/1/tags?per_page=100&page=3>; rel="last"`'
+        mock: なし
+        expected: '`https://api.github.com/repositories/1/tags?per_page=100&page=2`'
+      - name: test_next_page_url_when_last_page
+        case: 正常
+        summary: 最後のページでは次が無い
+        condition: '`null` と、`rel="prev"` と `rel="first"` だけの値'
+        mock: なし
+        expected: どちらも `undefined`
+    status: planned
+  - name: fetchLatestVersion
+    title: タグ一覧から最新のバージョンを取る
+    kind: 関数
+    container: vscode/src/version.ts
+    usecase: VSCodeでプレビューを開く
+    summary: タグ一覧を `rel="next"` が無くなるまで辿り、最新のバージョンを返す。取れなければ例外を投げず `undefined`
+    inherits: FetchLatestVersion
+    scope: public
+    is_async: true
+    side_effects: GitHub へ `GET` を送る
+    args:
+      - name: options
+        type: '{ url: string; timeoutMs: number; fetch: typeof fetch }'
+        required: true
+        description: 最初のページの URL（`TAGS_URL` か `MDMARK_VSCODE_TAGS_URL`）、合計の待ちの上限（`TAGS_TIMEOUT_MS`）、要求に使う `fetch`
+    returns:
+      type: Promise<string | undefined>
+      description: 最新の `v{X}.{Y}.{Z}`。取れなければ `undefined`
+    process: |-
+      1. `AbortSignal.timeout(timeoutMs)` を 1 つ作り、全てのページの要求に渡す
+      2. `url` から順に `GET`（header `Accept: application/vnd.github+json`）し、応答の `name` を集める。次の URL は header `Link` から引く（次のページの URL を引く）
+         - 200 以外の応答・ネットワークのエラー・待ちの上限の打ち切りの場合、`undefined` を返す（再試行しない）
+      3. 集めた名前から最新を選んで返す（最新のバージョンを選ぶ）
+    unit_tests:
+      - name: test_fetch_latest_version
+        case: 正常
+        summary: 全てのページを読んで最新を選ぶ
+        condition: 1 ページ目が `v0.7.0`・`vscode-v0.11.0` と `rel="next"`、2 ページ目が `v0.10.0` で `Link` 無し
+        mock: '`fetch` を URL ごとに応答を返す偶物にする'
+        expected: '`v0.10.0`。`fetch` が 2 回呼ばれる'
+      - name: test_fetch_latest_version_when_rate_limited
+        case: 正常
+        summary: 200 以外は取れなかったものとして扱う
+        condition: 1 ページ目が 403
+        mock: '`fetch` を 403 を返す偶物にする'
+        expected: '`undefined`。`fetch` は 1 回だけ'
+      - name: test_fetch_latest_version_when_timeout
+        case: 正常
+        summary: 合計の待ちが上限を超えたら打ち切る
+        condition: '`timeoutMs` が 50、`fetch` が `signal` の中断まで応答しない'
+        mock: '`fetch` を `signal` の `abort` で reject する偶物にする'
+        expected: '`undefined`'
+      - name: test_fetch_latest_version_when_no_tag
+        case: 正常
+        summary: 合うタグが 0 件なら取れなかったものとして扱う
+        condition: 1 ページ目が `vscode-v0.1.0` だけ
+        mock: '`fetch` を偶物にする'
+        expected: '`undefined`'
+    callees:
+      - '#functions[nextPageUrl]'
+      - '#functions[pickLatestVersion]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[バージョンの決め方]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[タグ一覧の待ち]
+    status: planned
+  - name: decideVersion
+    title: 読むバージョンを決める
+    kind: 関数
+    container: vscode/src/version.ts
+    usecase: 共通
+    summary: '`mdmark.version` が `latest` ならタグ一覧の最新を、取れなければ前回のバージョンを、`latest` でなければ書いたバージョンを使う'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ setting: string; lastVersion: string | undefined; fetchLatest: FetchLatestVersion }'
+        required: true
+        description: '`mdmark.version` の値、`globalState` の `mdmark.lastVersion`、最新のバージョンを取る関数'
+    returns:
+      type: Promise<VersionDecision>
+      description: 決めたバージョンか、決められないこと
+    process: |-
+      1. `setting` が `LATEST` でなければ、`{ kind: "decided", version: setting, fetched: false }` を返す（タグ一覧を取らない）
+      2. 最新のバージョンを取る（`fetchLatest`）
+         - 取れた場合、`fetched: true` で返す
+         - 取れず `lastVersion` がある場合、`fetched: false` で返す
+         - どちらも無い場合、`{ kind: "undecidable" }` を返す
+    unit_tests:
+      - name: test_decide_version
+        case: 正常
+        summary: latest はタグ一覧の最新を使う
+        condition: '`setting` が `latest`、`fetchLatest` が `v0.10.0`'
+        mock: '`fetchLatest` を偶物にする'
+        expected: '`{ kind: "decided", version: "v0.10.0", fetched: true }`'
+      - name: test_decide_version_when_pinned
+        case: 正常
+        summary: 書いたバージョンはそのまま使い、タグ一覧を取らない
+        condition: '`setting` が `v0.6.0`'
+        mock: '`fetchLatest` を呼ばれたら記録する偶物にする'
+        expected: '`{ kind: "decided", version: "v0.6.0", fetched: false }`。`fetchLatest` が呼ばれない'
+      - name: test_decide_version_when_fetch_failed
+        case: 正常
+        summary: タグ一覧を取れなければ前回のバージョンを使う
+        condition: '`setting` が `latest`、`fetchLatest` が `undefined`、`lastVersion` が `v0.7.0`'
+        mock: '`fetchLatest` を偶物にする'
+        expected: '`{ kind: "decided", version: "v0.7.0", fetched: false }`'
+      - name: test_decide_version_when_undecidable
+        case: 正常
+        summary: タグ一覧も前回のバージョンも無ければ決められない
+        condition: '`setting` が `latest`、`fetchLatest` が `undefined`、`lastVersion` が `undefined`'
+        mock: '`fetchLatest` を偶物にする'
+        expected: '`{ kind: "undecidable" }`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[前回のバージョン]
+    status: planned
