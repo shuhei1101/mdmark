@@ -2,3 +2,5 @@ summary: サブシステムの外部インターフェースと処理フロー�
 items:
   - page: ライブラリ本体/
     summary: ライブラリ本体の公開関数とビルドの操作
+  - page: VSCode拡張機能/
+    summary: VS Code 拡張機能のコマンド・Webview とのメッセージ・配布物のワークフロー

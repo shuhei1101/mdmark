@@ -1,0 +1,101 @@
+title: "スクロールを合わせる"
+entry:
+  kind: trigger
+  value: 'エディタの見えている範囲の変更（`window.onDidChangeTextEditorVisibleRanges`）と、Webview のスクロールからの `{ type: "revealLine", line }`'
+flows:
+  - name: 正常系
+    summary: エディタを動かすと、その行のブロックをプレビューの先頭に置き、エディタを動かし直さない
+    setup:
+      - name: 長い文書のプレビュー
+        description: 見出しで区切った 10 の節を持ち、画面の高さの 3 倍を超える Markdown をエディタと横の列のプレビューで開いた状態
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ。拡張機能と Webview の間のメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 8 番目の節の見出しの行をエディタの先頭にする
+        EX->>PV: scrollToLine（見出しの行）
+        PV->>PV: data-source-line から先頭に置く
+    expected:
+      - Webview の見えている先頭から 1 行分の高さの中に 8 番目の節の見出しがある
+      - その後 200 ms の間にエディタの `visibleRanges[0].start.line` が変わらない（逆向きの `revealLine` で動き直さない）
+    test: test_normal
+  - name: 正常系（プレビューから合わせる）
+    summary: プレビューを動かすと、そのブロックの行をエディタの先頭にする
+    setup:
+      - name: 長い文書のプレビュー
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant PV as Webview
+        participant EX as 拡張機能
+        U->>PV: 5 番目の節の見出しを先頭までスクロールする
+        PV->>EX: revealLine（見出しの行）
+        EX->>EX: revealRange（AtTop）
+    expected:
+      - エディタの `visibleRanges[0].start.line` が 5 番目の節の見出しの行
+      - カーソルの位置は動かない
+    test: test_normal_when_from_preview
+  - name: 正常系（同期を切る）
+    summary: 設定で切った向きは動かさない
+    setup:
+      - name: 長い文書のプレビュー
+        description: 正常系と同じ。`mdmark.preview.scrollPreviewWithEditor` と `mdmark.preview.scrollEditorWithPreview` を `false` にする
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: エディタを 8 番目の節までスクロールする
+        U->>PV: プレビューを 3 番目の節までスクロールする
+    expected:
+      - '`scrollToLine` が 1 回も送られず、プレビューの位置はエディタを動かす前のまま'
+      - エディタの先頭の行は 8 番目の節の見出しの行のまま
+    test: test_normal_when_sync_off
+  - name: 異常系（エディタが見えていない・何もしない）
+    summary: 同じ列に開いてエディタが隠れているときは、エディタを開き直さない
+    setup:
+      - name: 同じ列のプレビュー
+        description: 長い文書を `mdmark.openPreview` で同じ列に開き、エディタのタブが背面にある状態
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant PV as Webview
+        participant EX as 拡張機能
+        U->>PV: プレビューをスクロールする
+        PV->>EX: revealLine
+        EX->>EX: 見えているエディタが無いので何もしない
+    expected:
+      - アクティブなタブがプレビューのままで、エディタのタブが表に出ない
+    test: test_error_when_editor_hidden
+lead: エディタとプレビューのどちらかをスクロールすると、ブロックの元の行番号を手がかりにもう片方を同じ箇所まで動かす。
+idempotent: true
+side_effects: Webview へ `scrollToLine` を送る。エディタを `revealRange` で動かす。カーソルの位置と文書は変えない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#
+exclusivity: 片方に合わせて動かした直後に、動かした側から届く逆向きの知らせは捨てる（制約「往復の止め方」）
+exceptions:
+  - name: なし（正常終了）
+    condition: もう片方を同じ箇所まで動かす
+  - name: なし（エディタが見えていない）
+    condition: プレビューから合わせるとき、その Markdown のエディタがどの列にも見えていない
+    notes: 何もしない（エディタを開き直さない）
+constraints:
+  - item: エディタから合わせる
+    constraint: '`mdmark.preview.scrollPreviewWithEditor` が `true` のとき、エディタの `visibleRanges[0].start.line` を `scrollToLine` で送る。Webview は `data-source-line` がその行以下の最後の要素と次の要素の間を、行の割合で内分した位置を先頭に置く'
+  - item: プレビューから合わせる
+    constraint: '`mdmark.preview.scrollEditorWithPreview` が `true` のとき、Webview は見えている先頭の位置を、前後の `data-source-line` の要素の間で内分した行番号（整数に切り捨てる）にして `revealLine` で送る。拡張機能はその行を `TextEditorRevealType.AtTop` で見せる'
+  - item: 往復の止め方
+    constraint: 片方に合わせて動かしてから 50 ms の間は、動かした側から届く知らせを捨てる（拡張機能と Webview がそれぞれ持つ）
+    notes: 50 ms は、`revealRange` と `scrollTo` が起こすスクロールの知らせが届くまでの間。実装で測って足りなければ上げる
+  - item: 知らせの間引き
+    constraint: Webview はスクロールの知らせを `requestAnimationFrame` ごとに 1 回にまとめて送る

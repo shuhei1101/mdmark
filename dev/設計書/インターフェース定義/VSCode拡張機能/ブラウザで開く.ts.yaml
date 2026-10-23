@@ -1,0 +1,68 @@
+title: "ブラウザで開く"
+entry:
+  kind: operation
+  value: コマンド `mdmark.openInBrowser`
+flows:
+  - name: 正常系
+    summary: 書き出した HTML が無くても、書き出してから開く
+    setup:
+      - name: 見本のワークスペース
+        description: HTMLに書き出す.ts の正常系と同じ。`docs/guide.html` は無く、見出しを保存せずに書き換える
+      - name: Mock
+        description: HTMLに書き出す.ts の正常系と同じ。`showInformationMessage` は呼ばれた回数を数える代役
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        U->>EX: mdmark.openInBrowser
+        EX->>EX: docs/guide.html を書き出し直す
+        EX->>BR: env.openExternal
+    expected:
+      - '`docs/guide.html` が書かれ、`env.openExternal` の代役にその `file:` の URL が 1 回渡る'
+      - HTML を開くと保存していない見出しが描かれる
+      - '`showInformationMessage` が呼ばれない'
+    test: test_normal
+  - name: 異常系（書き出せない・通知）
+    summary: 書き出せないときはブラウザを開かない
+    setup:
+      - name: 見本のワークスペース
+        description: HTMLに書き出す.ts の異常系（書き出せない・通知）と同じ
+      - name: Mock
+        description: HTMLに書き出す.ts の異常系（書き出せない・通知）と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.openInBrowser
+        EX->>EX: 書き出す先に書けない
+        EX->>U: 書き出せない理由の通知
+    expected:
+      - '`showErrorMessage` に書き出す先のパスと理由が入り、`env.openExternal` の代役は呼ばれない'
+    test: test_error_when_output_unwritable
+lead: 開いている Markdown を HTML に書き出し直して、既定のブラウザで開く。
+idempotent: true
+side_effects: HTMLに書き出す.ts と同じファイルを書き、`env.openExternal` で開く。書き出した通知は出さない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#scenarios[正常シナリオ（ブラウザで開く）]
+request:
+  - name: uri
+    type: vscode.Uri
+    required: false
+    default: なし（フォーカスのあるプレビューか、アクティブなエディタの Markdown）
+    location: argument
+    description: 開く Markdown
+response:
+  - name: '-'
+    type: Promise<void>
+    description: ブラウザで開く指示を出したら解決する
+exceptions:
+  - name: なし（正常終了）
+    condition: 書き出し直した HTML をブラウザで開く
+  - name: なし（書き出せない）
+    condition: HTMLに書き出す.ts が書き出せない（書き出す先に書けない・バージョンを決められない）
+    notes: HTMLに書き出す.ts と同じ通知を出し、ブラウザを開かない
+constraints:
+  - item: 書き出し
+    constraint: 呼ぶたびに HTMLに書き出す.ts と同じものを書き出し直す。既にある HTML をそのまま開かない
+    notes: 確認ログ「ブラウザで開く・PDF に印刷で開く HTML」

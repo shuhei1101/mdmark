@@ -1,0 +1,178 @@
+title: "設定: VS Code 拡張機能"
+lead: VS Code 拡張機能が読む設定のキー。VS Code の設定（`settings.json`）の `mdmark.*` と、`mdmark.config.yaml` のうち拡張機能が取り出すキーを持つ。`settings.json` のキーの形の正は `vscode/package.json` の `contributes.configuration` に置く。
+files:
+  - file: settings.json
+    manages: 読む mdmark の版・設定ファイルの場所・プレビューの描き直しとスクロールの同期と配色・書き出す先
+    notes: VS Code の利用者の設定とワークスペースの設定（`.vscode/settings.json`）。後者が前者に勝つ
+  - file: mdmark.config.yaml
+    manages: 機能のオン・オフの既定と外部ライブラリの対応表（拡張機能はこの 2 つだけを読む）
+    notes: 場所は `mdmark.configPath`。他のキーは読まない。キーの意味は設定『ライブラリ本体』
+  - file: 環境変数
+    manages: 結合テストのときだけ差し替える配布物の配信元とタグ一覧の取得先
+    notes: 拡張機能が `ExtensionMode.Test` で動くときだけ読む。利用者の設定には出さない
+settings:
+  - key: mdmark.version
+    title: 読む mdmark の版
+    file: settings.json
+    type: string
+    required: false
+    default: latest
+    description: '`latest` のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。版を書くとその版に固定する'
+    reload: reload
+    allowed: '`latest` か `v{X}.{Y}.{Z}`（`package.json` の `pattern`）'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[バージョンの決め方]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.configPath
+    title: 設定ファイルの場所
+    file: settings.json
+    type: string
+    required: false
+    default: mdmark.config.yaml
+    description: 拡張機能が `features`・`libraries` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
+    reload: immediate
+    allowed: 相対パスか絶対パス
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.preview.liveUpdate
+    title: 打つたびに描き直すか
+    file: settings.json
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`true` のときは Markdown の変更から `mdmark.preview.updateDelayMs` 待って描き直す。`false` のときは保存したときだけ描き直す'
+    reload: immediate
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.preview.updateDelayMs
+    title: 描き直すまでの待ち
+    file: settings.json
+    type: integer
+    required: false
+    default: '300'
+    description: 最後に打ってから描き直すまでのミリ秒
+    reload: immediate
+    allowed: 0〜5000
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.preview.scrollPreviewWithEditor
+    title: エディタに合わせてプレビューを動かすか
+    file: settings.json
+    type: boolean
+    required: false
+    default: 'true'
+    description: エディタをスクロールしたときに、プレビューを同じ箇所まで動かす
+    reload: immediate
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.preview.scrollEditorWithPreview
+    title: プレビューに合わせてエディタを動かすか
+    file: settings.json
+    type: boolean
+    required: false
+    default: 'true'
+    description: プレビューをスクロールしたときに、エディタを同じ箇所まで動かす
+    reload: immediate
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.preview.theme
+    title: プレビューの配色
+    file: settings.json
+    type: '"auto" | "light" | "dark"'
+    required: false
+    default: auto
+    description: '`auto` は VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する'
+    reload: immediate
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[配色の切り替え]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: mdmark.export.outputDir
+    title: 書き出す先
+    file: settings.json
+    type: string
+    required: false
+    default: '""'
+    description: '`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が HTML を書くフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する'
+    reload: immediate
+    allowed: 空・相対パス・絶対パス
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[書き出す先]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: features
+    title: 機能のオン・オフ（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: Record<string, boolean>
+    required: false
+    default: なし（`mount` に渡さず mdmark の既定で描く）
+    description: 拡張機能は書いた値をそのまま `mount` の `opts.config.features` に渡す
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[features]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: libraries
+    title: 外部ライブラリの対応表（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: Record<string, string>
+    required: false
+    default: なし（`mount` に渡さない）
+    description: 相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では `file:` の URL に直してから `mount` の `opts.config.libraries` に渡す。`http:`・`https:` の URL はそのまま渡す
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[libraries]
+    reason: Webview で読める URL への直し方（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を渡す口を足しても拡張機能が URL を直す処理を持つことは変わらないため（要件.md の推奨案 B）
+    status: planned
+    visibility: user
+    introduced:
+      pr: 69
+  - key: MDMARK_VSCODE_DIST_BASE
+    title: テストの配布物の配信元
+    file: 環境変数
+    type: string
+    required: false
+    default: なし（`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark` を使う）
+    description: 配布物の URL `{配信元}@{版}/dist/{ファイル}` の `{配信元}` を置き換える。CSP の配布物の配信元もこの origin にする
+    env_var: MDMARK_VSCODE_DIST_BASE
+    reload: restart
+    allowed: '`http:` か `https:` の URL（末尾の `/` を持たない）'
+    status: planned
+    visibility: developer
+    introduced:
+      pr: 69
+  - key: MDMARK_VSCODE_TAGS_URL
+    title: テストのタグ一覧の取得先
+    file: 環境変数
+    type: string
+    required: false
+    default: なし（`https://api.github.com/repos/shuhei1101/mdmark/tags?per_page=100` を使う）
+    description: タグ一覧を取る URL を置き換える
+    env_var: MDMARK_VSCODE_TAGS_URL
+    reload: restart
+    allowed: '`http:` か `https:` の URL'
+    status: planned
+    visibility: developer
+    introduced:
+      pr: 69

@@ -1,0 +1,93 @@
+title: "PDFに印刷する"
+entry:
+  kind: operation
+  value: コマンド `mdmark.printToPdf`
+flows:
+  - name: 正常系
+    summary: 描き終えた後に印刷のダイアログを出す HTML を書き出して開く
+    setup:
+      - name: 見本のワークスペース
+        description: HTMLに書き出す.ts の正常系と同じ。文書は閉じた `details` と、手元の配信元の外部ライブラリ（500 ms 遅れて返す）の印を持つ
+      - name: Mock
+        description: HTMLに書き出す.ts の正常系と同じ。書き出した HTML を Playwright の Chromium で開き、`window.print` を呼ばれた時刻とその時の `details` の `open` を記録する代役に差し替える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        U->>EX: mdmark.printToPdf
+        EX->>EX: 印刷を待つ処理を足した HTML を書き出す
+        EX->>BR: env.openExternal
+        BR->>BR: 描き終えたら window.print()
+    expected:
+      - '`env.openExternal` の代役に書き出した HTML の `file:` の URL が渡る'
+      - '`window.print` が 1 回だけ、外部ライブラリの印が描かれた後に呼ばれる'
+      - 印刷の間、閉じていた `details` が `open` を持つ
+      - 続けて `mdmark.openInBrowser` を呼ぶと、書き出し直した HTML を開いても `window.print` が呼ばれない
+    test: test_normal
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+  - name: 正常系（待ちの上限を超える）
+    summary: 外部ライブラリが待ちの上限まで読み終わらなければ、そのまま印刷する
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。外部ライブラリの配信元は応えない
+      - name: Mock
+        description: 正常系と同じ。ページの時計を Playwright の `clock` で進める
+    flow: |-
+      sequenceDiagram
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        EX->>BR: 書き出した HTML を開く
+        BR->>BR: 待ちの上限まで印の場所が残る
+        BR->>BR: window.print()
+    expected:
+      - 開いてから待ちの上限（10 秒）の前には `window.print` が呼ばれず、上限を超えたところで 1 回呼ばれる
+    test: test_normal_when_wait_limit_reached
+  - name: 異常系（書き出せない・通知）
+    summary: 書き出せないときはブラウザを開かない
+    setup:
+      - name: 見本のワークスペース
+        description: HTMLに書き出す.ts の異常系（書き出せない・通知）と同じ
+      - name: Mock
+        description: HTMLに書き出す.ts の異常系（書き出せない・通知）と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.printToPdf
+        EX->>EX: 書き出す先に書けない
+        EX->>U: 書き出せない理由の通知
+    expected:
+      - '`showErrorMessage` に書き出す先のパスと理由が入り、`env.openExternal` の代役は呼ばれない'
+    test: test_error_when_output_unwritable
+lead: 開いている Markdown を、描き終えた後に印刷のダイアログを出す HTML に書き出し、既定のブラウザで開く。PDF はそのダイアログで作る。
+idempotent: true
+side_effects: HTMLに書き出す.ts と同じ場所に、印刷のダイアログを出す処理を足した HTML を書き、`env.openExternal` で開く
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/PDFに印刷する#
+request:
+  - name: uri
+    type: vscode.Uri
+    required: false
+    default: なし（フォーカスのあるプレビューか、アクティブなエディタの Markdown）
+    location: argument
+    description: 印刷する Markdown
+response:
+  - name: '-'
+    type: Promise<void>
+    description: ブラウザで開く指示を出したら解決する
+exceptions:
+  - name: なし（正常終了）
+    condition: 書き出した HTML をブラウザで開き、ブラウザが描き終えた後に印刷のダイアログを出す
+  - name: なし（書き出せない）
+    condition: HTMLに書き出す.ts が書き出せない
+    notes: HTMLに書き出す.ts と同じ通知を出し、ブラウザを開かない
+constraints:
+  - item: 書き出す HTML
+    constraint: HTMLに書き出す.ts と同じ場所・同じ名前に、`mount` の後で印刷を待つ処理を足して書き出し直す。`mdmark.exportHtml`・`mdmark.openInBrowser` で書き出し直すと印刷を待つ処理は消える
+    notes: 書き出せないときの扱いと書き出す先を HTMLに書き出す.ts と揃えるため、別のファイルにしない
+  - item: 印刷する時
+    constraint: '`mount` を呼んだ後、外部ライブラリの印の場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。待ちの上限を超えたらそのまま呼ぶ'
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[印刷のダイアログを出すまでの待ちの上限]
+    notes: 印の場所の要素は文書を描く.ts の制約「外部ライブラリの印の場所」。折り畳みを開くのは mdmark の印刷の機能（`beforeprint`）

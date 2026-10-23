@@ -1,0 +1,92 @@
+title: "プレビューをリロードする"
+entry:
+  kind: operation
+  value: 'コマンド `mdmark.refreshPreview`（コマンドパレットの表示は「mdmark: プレビューをリロード」）と、Webview の「リロード」からの `{ type: "reload" }`'
+flows:
+  - name: 正常系
+    summary: 描けないときの「リロード」から、配布物を読み直して描く
+    setup:
+      - name: 描けないプレビュー
+        description: プレビューを開く.ts の異常系（配布物を読めない・オフライン）の後
+      - name: Mock
+        description: 配布物を配る手元のサーバーを、配布物を配る状態に戻す。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant PV as Webview
+        participant EX as 拡張機能
+        participant CDN as jsDelivr
+        U->>PV: 「リロード」を押す
+        PV->>EX: reload
+        EX->>EX: 設定ファイルと版を決め直す
+        EX->>PV: HTML を入れ直す
+        PV-->>CDN: index.js・index.css
+        PV->>EX: ready
+        EX->>PV: render
+        PV->>EX: rendered
+    expected:
+      - タグ一覧の代役が 1 回呼ばれる
+      - 描けない理由と「リロード」が消え、見出し・表・注意書き・フロー図が描かれる
+    test: test_normal
+  - name: 正常系（コマンドパレットから）
+    summary: '`mdmark.refreshPreview` で、新しく打たれた版を読む'
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: プレビューを開く.ts の正常系の後（`v0.10.0` で描いている）
+      - name: Mock
+        description: タグ一覧の代役が `v0.11.0` も返すようにする
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.refreshPreview
+        EX->>EX: v0.11.0 を選ぶ
+        EX->>PV: v0.11.0 で HTML を入れ直す
+        PV->>EX: rendered
+    expected:
+      - 配布物の要求が `@v0.11.0/dist/` になり、`mdmark.lastVersion` が `v0.11.0`
+      - パネルは 1 つのまま
+    test: test_normal_when_from_command
+  - name: 異常系（プレビューが無い・何もしない）
+    summary: プレビューを開いていないときは何もしない
+    setup:
+      - name: 見本のワークスペース
+        description: プレビューを開かずに `guide.md` をエディタで開いた状態
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.refreshPreview（executeCommand）
+        EX->>EX: プレビューが無いので何もしない
+    expected:
+      - mdmark のパネルが 0 個のままで、タグ一覧の代役が呼ばれない
+    test: test_error_when_no_preview
+lead: プレビューの設定ファイルと読む版を決め直し、配布物を読み直して描く。
+idempotent: true
+side_effects: Webview の HTML を入れ直す。`mdmark.version` が `latest` のときはタグ一覧を 1 回取り、`mdmark.lastVersion` を書き換える
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#scenarios[正常シナリオ（リロードする）]
+exclusivity: 対象はフォーカスのある mdmark のプレビューか、アクティブなエディタの Markdown のプレビュー。リロードしている間にもう一度呼ばれたら、後の呼び出しで HTML を入れ直す
+request:
+  - name: uri
+    type: vscode.Uri
+    required: false
+    default: なし（フォーカスのあるプレビューか、アクティブなエディタの Markdown）
+    location: argument
+    description: リロードするプレビューの Markdown
+response:
+  - name: '-'
+    type: Promise<void>
+    description: Webview に HTML を入れ直したら解決する
+exceptions:
+  - name: なし（正常終了）
+    condition: 決め直した版と設定で描く。描けないときはプレビューを開く.ts の描けない理由と同じものを出す
+  - name: なし（プレビューが無い）
+    condition: 対象の Markdown のプレビューが開いていない
+    notes: 何もしない。コマンドは mdmark のプレビューが 1 つ以上開いているときだけコマンドパレットに出す
+constraints:
+  - item: 読み直すもの
+    constraint: 設定ファイル、読む版（プレビューを開く.ts の制約「バージョンの決め方」）、Webview の HTML（配布物を読み直す）。`ready` を受けたらその時点の全文と設定で `render` を送る
