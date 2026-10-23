@@ -121,7 +121,7 @@ flows:
         PV->>EX: rendered
     expected:
       - '`render` の `config.libraries.my-lib` が `config/libs/my-lib.js` の `asWebviewUri` の URL'
-      - Webview の印の場所が `data-drawn` を持ち、知らせの枠が無い
+      - Webview の印の場所が `data-mdmark-drawn` を持ち、知らせの枠が無い
     test: test_normal_when_relative_library
   - name: 正常系（設定ファイルを直す）
     summary: 読めない設定ファイルを直して保存すると、新しい設定で描き帯を消す
@@ -186,7 +186,7 @@ flows:
     expected:
       - Webview の HTML の CSP の `script-src` が別の配信元の origin を含む
       - 別の配信元が `my-chart.js` の要求を受ける
-      - '`rendered` を受けた後、印の場所が `data-drawn` を持ち、知らせの枠が無い'
+      - '`rendered` を受けた後、印の場所が `data-mdmark-drawn` を持ち、知らせの枠が無い'
     test: test_normal_when_library_origin_added
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true

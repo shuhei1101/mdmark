@@ -250,11 +250,11 @@ classes:
       - name: reloadConfig
         title: 設定を読み直す
         kind: メソッド
-        summary: 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする
+        summary: 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めたかを返す
         is_async: true
         returns:
-          type: Promise<void>
-          description: '-'
+          type: Promise<boolean>
+          description: '`ok`・`missing` のとき true、`error`・開けないときは false'
         callees:
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveConfigPath]
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[loadConfig]
@@ -352,7 +352,7 @@ classes:
       - name: applyConfigChange
         title: 設定の変更を当てる
         kind: メソッド
-        summary: 設定を読み直し（設定を読み直す）、`libraries` の origin の集まりが `cspLibraryOrigins` と違えば読み込み（読み込む）、同じなら今すぐ送る（`PreviewManager.handleConfigChange` が呼ぶ）
+        summary: 設定を読み直し（設定を読み直す）、読めなければ何も送らず、`libraries` の origin の集まりが `cspLibraryOrigins` と違えば読み込み（読み込む）、同じなら今すぐ送る（`PreviewManager.handleConfigChange` が呼ぶ）
         is_async: true
         returns:
           type: Promise<void>
