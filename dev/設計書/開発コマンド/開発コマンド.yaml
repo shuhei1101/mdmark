@@ -154,7 +154,7 @@ categories:
     verification:
       state: 済
       date: '2026-10-23'
-      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を書くことを確かめた。`plugin/` の失敗の分岐は単体テストで確かめた'
+      detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を書くことを確かめた。`plugin/` の失敗の分岐は単体テストで確かめた。VS Code 拡張機能のコマンドは `vscode/` を実装して走らせた（2026-10-23）。`npm --prefix vscode run build` が終了コード 0 で終わり、`vscode/dist/extension.cjs`（`require("vscode")` を持つ）・`vscode/media/preview.js`・`vscode/media/preview.css` が書かれ、`npm --prefix vscode run typecheck` が終了コード 0 で通る。`npm --prefix vscode run package` が `vscode:prepublish` のビルドも流して `vscode/mdmark-0.1.0.vsix`（`package.json`・`readme.md`・`dist/extension.cjs`・`media/preview.css`・`media/preview.js` の 7 ファイル、73KB。`src/`・`node_modules/` を含まない）を書く。LICENSE が無いと `vsce` が警告を出すが、終了コードは 0'
   - name: 取り込み前の検査
     commands: 未確定
   - name: 管理作業
@@ -207,4 +207,4 @@ categories:
     effects: 対象のブランチへ `dist/` と `plugin/` の commit を push する。どちらも変わらなければ commit は要らない
     verification:
       state: 未確認
-      detail: 手順 1・2・3・4（`npm ci`、移行の手順の移し、`npm run build -- --version v{版}`、`git status --porcelain dist` が `dist/` の差分を出す）は、一時の clone で `--version v0.4.0` を使って確かめた。`migrations/next/` が無いときは `git mv` が失敗するので飛ばし、`sed` 以降でビルドが通る。`plugin/` を足した手順 4・5 は、`npm run build` が `plugin/` の生成物を書くことまでを確かめた。手順 5 は対象のブランチへ push して外へ書き込むため走らせていない
+      detail: 手順 1・2・3・4（`npm ci`、移行の手順の移し、`npm run build -- --version v{版}`、`git status --porcelain dist` が `dist/` の差分を出す）は、一時の clone で `--version v0.4.0` を使って確かめた。`migrations/next/` が無いときは `git mv` が失敗するので飛ばし、`sed` 以降でビルドが通る。`plugin/` を足した手順 4・5 は、`npm run build` が `plugin/` の生成物を書くことまでを確かめた。手順 5 は対象のブランチへ push して外へ書き込むため走らせていない。VS Code 拡張機能のタグの照合（`npm --prefix vscode run release:check -- vscode-v0.1.0`）は、`package.json` の `version` が `0.1.0` のとき終了コード 0 で通り、`vscode-v0.2.0` のときは両方のバージョンを標準エラーに出して終了コード 1 で止まることを確かめた。タグの push は外へ書き込むため走らせていない
