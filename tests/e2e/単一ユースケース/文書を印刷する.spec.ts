@@ -237,3 +237,50 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await expect(doc.locator("tfoot td").nth(2)).toContainText("6");
   await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
 });
+
+// 印刷すると、コードブロックの題・行番号・行の強調と、足した行・消した行の色と行頭の印を出す（正常シナリオ（コードブロックの題と行を印刷に出す））
+test("test_normal_when_code_block_printed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- code: title=app.ts lines highlight=1 -->",
+      "",
+      "```ts",
+      "const a = 1;",
+      "let count = 1; // [!code ++]",
+      "foo(); // [!code --]",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-code-title")).toBeVisible();
+  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  const lines = doc.locator(".mdmark-code-line");
+  await expect(lines).toHaveCount(3);
+  const printed = await lines.evaluateAll((elements) =>
+    elements.map((element) => ({
+      number: getComputedStyle(element, "::before").content,
+      sign: getComputedStyle(element, "::after").content,
+      background: getComputedStyle(element).backgroundColor,
+      adjust: getComputedStyle(element).printColorAdjust,
+    })),
+  );
+  expect(printed.map((item) => item.number)).toEqual([
+    expect.stringContaining("1"),
+    expect.stringContaining("2"),
+    expect.stringContaining("3"),
+  ]);
+  expect(printed[1]?.sign).toContain("+");
+  expect(printed[2]?.sign).toContain("-");
+  expect(new Set(printed.map((item) => item.background)).size).toBe(3);
+  for (const item of printed) {
+    expect(item.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(item.adjust).toBe("exact");
+  }
+});

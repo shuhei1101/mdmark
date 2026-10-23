@@ -36,8 +36,13 @@ test("test_title_and_line_numbers", async () => {
     selection?.selectAllChildren(pre);
     return selection?.toString() ?? "";
   });
-  expect(copied).not.toMatch(/^\d/m);
-  expect(copied).toContain("import { mount }");
+  expect(copied).toBe(
+    [
+      'import { mount } from "mdmark";',
+      'const doc = await fetch("/README.md");',
+      'mount(document.querySelector("#doc"), await doc.text());',
+    ].join("\n"),
+  );
 });
 
 // 足した行・消した行・強調を色と行頭の印で分け、印の無い行も文字の頭を揃える（LineMarks）
