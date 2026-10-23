@@ -16,20 +16,31 @@
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 用語と関連文書のツールチップの規則（#27 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- やめた言い方のマーカーと代わりの用語のツールチップの規則（#79 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/79/assets/avoided-term.css">
   <!-- この部品のモックの固有の規則（見本の高さ） -->
   <link rel="stylesheet" href="./style.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で avoided-term.js が media を all に切り替える -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../refs/79/assets/avoided-term-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 用語と関連文書のツールチップの操作 -->
   <script src="../../refs/27/assets/glossary.js" defer></script>
+  <!-- モックの「印刷の見え方」の切り替え -->
+  <script src="../../refs/79/assets/avoided-term.js" defer></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 配色の切り替え -->
+  <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
   <div class="mock-bar">
     <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-preview-toggle]: avoided-term.js が印刷の規則を画面にも当て、明るい配色にする（モックだけの仕組み） -->
+    <div class="mock-bar-group">
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
     </div>
   </div>
 
@@ -97,6 +108,30 @@
     </tbody>
   </table>
 </div>
+        </article>
+      </section>
+
+      <!-- やめた言い方（開く前）: 索引の用語の avoid に一致した語。用語の破線と形の違う波線の下線を引き、ポインターを乗せるか Tab でフォーカスすると開く -->
+      <section aria-labelledby="state-avoided">
+        <h2 class="catalog-label" id="state-avoided">やめた言い方（開く前。ポインターを乗せるか Tab でフォーカスすると開き、Esc で閉じる）</h2>
+        <article class="mdmark">
+<p>話し合いの記録は<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-avoided">作業場</span><span class="mdmark-term-tip" id="tip-avoided" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>の中に日付ごとに置きます。</p>
+        </article>
+      </section>
+
+      <!-- やめた言い方（開いた）: 代わりの用語の区分に、代わりの用語の語と意味を出す -->
+      <section aria-labelledby="state-avoided-open">
+        <h2 class="catalog-label" id="state-avoided-open">やめた言い方（開いた）</h2>
+        <article class="mdmark catalog-tip-space">
+<p>話し合いの記録は<span class="mdmark-term-wrap is-open" data-mock-static><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-avoided-open">作業場</span><span class="mdmark-term-tip" id="tip-avoided-open" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>の中に日付ごとに置きます。</p>
+        </article>
+      </section>
+
+      <!-- 用語の下線とやめた言い方のマーカーが同じ段落に並ぶ: 破線と波線の形で見分ける。同じ節の 2 回目の「作業場」にはマーカーを付けない -->
+      <section aria-labelledby="state-avoided-mixed">
+        <h2 class="catalog-label" id="state-avoided-mixed">用語の下線とやめた言い方のマーカーが同じ段落に並ぶ（2 回目の「作業場」には付けない）</h2>
+        <article class="mdmark">
+<p>新しい<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-mixed-term">ワークスペース</span><span class="mdmark-term-tip" id="tip-mixed-term" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>を作ると、古い<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-mixed-avoided">作業場</span><span class="mdmark-term-tip" id="tip-mixed-avoided" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>の記録は読み込まれません。作業場の名前は日付から付けます。</p>
         </article>
       </section>
 
