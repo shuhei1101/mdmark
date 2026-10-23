@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>preview-status | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- プレビューのパネルの状態の表示とモックの VS Code の枠（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/69/assets/preview.css">
+  <!-- カタログの並べ方 -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- VS Code のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../refs/69/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: VS Code のテーマ -->
+  <div class="mock-bar">
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">プレビューの状態の表示</h1>
+
+      <!-- 読み込み中: 配布物を読み終えるまで -->
+      <section aria-labelledby="state-loading">
+        <h2 class="catalog-label" id="state-loading">読み込み中</h2>
+        <div class="preview">
+          <div class="preview-state">
+            <div class="preview-loading" role="status">
+              <progress class="preview-spinner" aria-label="読み込み中"></progress>
+              <span>mdmark を読み込んでいます</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 描けない: 理由とリロード -->
+      <section aria-labelledby="state-error">
+        <h2 class="catalog-label" id="state-error">描けない（オフライン）</h2>
+        <div class="preview">
+          <div class="preview-state">
+            <div class="preview-notice" role="status">
+              <h2>プレビューを表示できません</h2>
+              <p>mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。</p>
+              <button class="preview-button" type="button">リロード</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 描けない（長文）: 長いバージョンの指定 -->
+      <section aria-labelledby="state-error-long">
+        <h2 class="catalog-label" id="state-error-long">描けない（長いバージョンの指定）</h2>
+        <div class="preview">
+          <div class="preview-state">
+            <div class="preview-notice" role="status">
+              <h2>プレビューを表示できません</h2>
+              <p>設定 <code>mdmark.version</code> に指定したバージョン <code>v0.7.0-rc.1+build.20261023.feature-vscode-preview-extension</code> の mdmark が見つかりませんでした。存在するバージョンか <code>latest</code> に直してから、リロードしてください。</p>
+              <button class="preview-button" type="button">リロード</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 設定ファイルを読めない帯: 文書の上に置く -->
+      <section aria-labelledby="state-band">
+        <h2 class="catalog-label" id="state-band">設定ファイルを読めない帯</h2>
+        <div class="preview">
+          <div class="preview-notice is-band" role="status">
+            <div class="preview-notice-text">
+              <h2>設定ファイルを読み込めません</h2>
+              <p><code>mdmark.config.yaml</code> の 4 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+            </div>
+            <button class="preview-button" type="button">設定ファイルを開く</button>
+          </div>
+          <p class="catalog-body">（ここに文書が描かれる）</p>
+        </div>
+      </section>
+
+      <!-- 設定ファイルを読めない帯（狭い列・長いパス）: ボタンを文の下へ回す -->
+      <section aria-labelledby="state-band-narrow">
+        <h2 class="catalog-label" id="state-band-narrow">設定ファイルを読めない帯（狭い列・長いパス）</h2>
+        <div class="preview is-narrow">
+          <div class="preview-notice is-band" role="status">
+            <div class="preview-notice-text">
+              <h2>設定ファイルを読み込めません</h2>
+              <p><code>docs/settings/mdmark/mdmark.config.workspace-shared.yaml</code> の 12 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+            </div>
+            <button class="preview-button" type="button">設定ファイルを開く</button>
+          </div>
+          <p class="catalog-body">（ここに文書が描かれる）</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,49 @@
+/* プレビューの状態の表示のカタログ: 状態ごとの見本を縦に並べる */
+
+/* カタログ全体: 見本を縦に並べる */
+.catalog {
+  display: grid;
+  gap: 32px;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+/* カタログのタイトル（モック専用の見出し） */
+.catalog-title {
+  margin: 0;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 20px;
+}
+
+/* 状態の名前（モック専用の見出し）: Webview の外に置く */
+.catalog-label {
+  margin: 0 0 8px;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 見本の Webview: 枠で囲み、カタログでは高さを詰める */
+.catalog .preview {
+  min-height: 0;
+  border: 1px solid var(--vsc-border);
+}
+
+/* 見本の読み込み中・描けない: カタログでは高さを詰める */
+.catalog .preview-state {
+  min-height: 200px;
+}
+
+/* 見本の狭い列: VS Code の列を細くしたとき */
+.catalog .is-narrow {
+  max-width: 360px;
+}
+
+/* 帯の見本の下に置く本文の代わり */
+.catalog-body {
+  margin: 0;
+  padding: 16px;
+  color: var(--mdmark-color-muted);
+}
