@@ -23,7 +23,7 @@ const MARKDOWN = [
   "",
 ].join("\n");
 
-// 明るい配色の `--mdmark-color-bg`（デザイン方針の modern）
+// 明るい配色の `--mdmark-color-bg`（デザイン方針の dev-swiss）
 const LIGHT_BACKGROUND = "#ffffff";
 
 test.beforeAll(async () => {
