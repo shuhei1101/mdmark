@@ -142,3 +142,4 @@ constraints:
     constraint: 設定ファイルが無い・読めないときと、索引のファイルを読めないときは、『点検する』の設定ファイルが無いときと同じくツールのエラーにする
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/find-docs.test.ts

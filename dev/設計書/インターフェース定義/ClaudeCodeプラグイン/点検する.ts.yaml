@@ -104,3 +104,4 @@ constraints:
     constraint: 同じ設定・索引・文書では、`issues` が `mdmark check` の出力の行と 1 対 1 に一致する
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts

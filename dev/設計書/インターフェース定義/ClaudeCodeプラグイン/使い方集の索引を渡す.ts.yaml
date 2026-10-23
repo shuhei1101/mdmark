@@ -69,3 +69,4 @@ constraints:
     constraint: プラグインに同梱した使い方集の索引だけを読む。作業のフォルダのファイルは読まない
   - item: 書き方
     constraint: 命令調にしない。索引に何があり、どう読めるかを事実として書く
+test_file: tests/integration/ClaudeCodeプラグイン/session-start.test.ts

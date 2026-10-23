@@ -169,3 +169,4 @@ constraints:
     constraint: 設定ファイルが無い・読めないときと、設定に `index` が無い・索引のファイルを読めないときは、『文書を探す』と同じくツールのエラーにし、何も書かない
 refs:
   - dev/設計書/ER図/索引#
+test_file: tests/integration/ClaudeCodeプラグイン/update-index.test.ts

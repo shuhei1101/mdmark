@@ -92,3 +92,4 @@ constraints:
     constraint: プラグインに同梱した配布物を埋める。配布物の版はプラグインの版と同じ
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/export-html.test.ts

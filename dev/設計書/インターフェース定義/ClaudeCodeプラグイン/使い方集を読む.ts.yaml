@@ -107,3 +107,4 @@ constraints:
     constraint: 1 回の結果の本文の合計は 50,000 文字以下。Claude Code は 50,000 文字を超えた結果をファイルに逃がし、本文の代わりにパスを渡すため、超えるときは読まずにエラーにする
   - item: ログ
     constraint: MCP サーバーは標準出力を MCP のやり取りにだけ使う。ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き、その呼び出しを `isError` にして例外のメッセージを返す。サーバーは止めない。他のツールも同じ
+test_file: tests/integration/ClaudeCodeプラグイン/read-guide.test.ts

@@ -85,3 +85,4 @@ constraints:
     constraint: プラグインに同梱した配布物を埋める。配布物の版はプラグインの版と同じ
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/build-site.test.ts

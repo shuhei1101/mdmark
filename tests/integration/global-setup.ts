@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { TestProject } from "vitest/node";
 import { main } from "../../scripts/build.ts";
+import { copyPluginInputs, writeRootPackageJson } from "./plugin-inputs.ts";
 
 declare module "vitest" {
   interface ProvidedContext {
@@ -31,7 +32,9 @@ export default async function setup(project: TestProject) {
   });
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   // CLI が配布物と雛形を探す、パッケージの直下の印と雛形の正本
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  // プラグインのビルドが読む入力
+  await copyPluginInputs(root);
   await cp(
     resolve(import.meta.dirname, "../../templates"),
     join(root, "templates"),
