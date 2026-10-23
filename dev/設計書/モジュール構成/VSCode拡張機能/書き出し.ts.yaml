@@ -4,7 +4,8 @@ directory: |-
   ```tree
   vscode/src/export/
   ├── html.ts    # 書き出す先のパスと HTML の組み立て（vscode を import しない）
-  └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体と、一時ファイルからの置き換え
+  ├── write.ts   # 一時ファイルからの置き換え（vscode を import しない）
+  └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体
   ```
 enums:
   - name: ExportMode
@@ -123,7 +124,7 @@ functions:
   - name: writeFileAtomically
     title: 一時ファイルから置き換える
     kind: 関数
-    container: vscode/src/export/export.ts
+    container: vscode/src/export/write.ts
     usecase: HTMLに書き出す
     summary: フォルダが無ければ作り、同じフォルダの `.{名前}.{乱数}.tmp` に書いてから `rename` で置き換える。失敗したら一時ファイルを消して投げ直す
     scope: internal

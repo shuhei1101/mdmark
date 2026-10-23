@@ -143,6 +143,10 @@ classes:
         type: number | undefined
         access: private
         description: '`scrollToLine` で動かした `scrollTop`。次の `scroll` の知らせでその値なら `revealLine` を送らずに消す'
+      - name: mdmark
+        type: '{ mount: typeof mount }'
+        access: private
+        description: '`import()` で読んだ mdmark の配布物。`startPreview` が作るときに渡し、単体テストは代役を渡す'
     methods:
       - name: render
         title: 描く
