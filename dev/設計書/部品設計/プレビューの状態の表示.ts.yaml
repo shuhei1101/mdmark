@@ -67,7 +67,7 @@ css_properties:
 accessibility:
   - 表示の外側は `role="status"` を持ち、状態が変わると読み上げが題と本文を読む
   - 題は `h1`、理由は `p`。色に頼らず文言で伝える
-  - '回る印は `progress`（`aria-label="読み込み中"`）で、`prefers-reduced-motion: reduce` のときは回さない'
+  - '回る印は `progress`（`aria-label="読み込み中"`）で、`prefers-reduced-motion: reduce` のときは 6 秒で 1 回転にゆっくり回す'
   - 「リロード」は `button` で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を出す
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]
