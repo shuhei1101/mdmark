@@ -23,6 +23,25 @@ flows:
       - '`additionalContext` が 10,000 文字以下'
       - 終了コードが 0
     test: test_normal
+  - name: 異常系（索引を読めない・終了コード 1）
+    summary: 同梱した索引が無いときは何も渡さず、入れ直しを知らせる
+    setup:
+      - name: 索引の無い plugin/
+        description: ビルドした `plugin/` から使い方集の索引を消したもの
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as SessionStart のフック
+        C->>H: セッションの開始
+        H->>H: 同梱した索引が無い
+        H-->>C: 標準エラーに入れ直しの文・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準出力が空
+      - 標準エラーに、読めない索引のパスとプラグインを入れ直すことが出る
+    test: test_error_when_index_unreadable
 lead: プラグインを有効にしたセッションの開始で、使い方集の索引（名前・読むとき・概要）だけを `hookSpecificOutput.additionalContext` で Claude Code へ渡す。
 side_effects: なし（標準出力へ書くだけ）
 response:
@@ -40,6 +59,9 @@ response_example: |-
 exceptions:
   - name: なし（正常終了）
     condition: 索引を読めた。終了コード 0
+  - name: なし（索引を読めない・終了コード 1）
+    condition: 同梱した索引が無いか、読めない
+    notes: 標準出力には何も書かず、標準エラーに読めない索引のパスと、プラグインを入れ直すことを 1 文で書く。Claude Code はセッションを止めずに続ける
 constraints:
   - item: 索引の文字数
     constraint: '`additionalContext` は 10,000 文字以下。超えると Claude Code が先頭 2,000 文字だけを渡すため、配布物のビルドが超える索引を止める'
