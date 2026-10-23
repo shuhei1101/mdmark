@@ -3,10 +3,11 @@ layers:
   - name: 非機能要件テスト
     run_all: 未確定
   - name: E2E テスト
-    description: Playwright（`@playwright/test`）を Chromium と Firefox の 2 つのプロジェクトで流す。ブラウザを使わない『配布物をビルドして検査する』は Chromium のプロジェクトだけで流れ、Firefox の分は skip になる
+    description: Playwright（`@playwright/test`）を Chromium と Firefox の 2 つのプロジェクトで流す。ブラウザを使わない『配布物をビルドして検査する』『拡張機能の配布物を作る』は Chromium のプロジェクトだけで流れ、Firefox の分は skip になる。VS Code 拡張機能のシナリオは、`tests/e2e/vscode.ts` が VS Code 1.141.0 を `@vscode/test-electron` で取得し、Playwright の `_electron` で起動して操作する（Chromium のプロジェクトだけ）。拡張機能はこのブランチのソースを一時フォルダにビルドして `--extensionDevelopmentPath` に渡し、jsDelivr と GitHub のタグ一覧は `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える。待ちの既定は 30 秒（`playwright.config.ts` の `expect.timeout`）
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium firefox` でブラウザを入れてある'
       - 『配布物をビルドして検査する』が一時フォルダのクローンで `npm ci` を流すため、npm レジストリへの接続が要る
+      - VS Code 拡張機能のシナリオは `npm --prefix vscode ci` で拡張機能の依存を入れ、Node は 24 を使う。ヘッドレスの Linux では `xvfb-run -a` を付けて流す
     run_all: |-
       ```bash
       npm run test:e2e
@@ -17,7 +18,7 @@ layers:
         ```bash
         npx playwright test {シナリオファイルパス}
         ```
-    duration: 全件で数十秒（作業ツリーのクローンと `npm ci` を含む）
+    duration: 全件で約 10 分（作業ツリーのクローンと `npm ci`、VS Code の起動を含む。VS Code を起動するシナリオが大半を占める）。初回は VS Code（約 150MB）の取得が加わる
     external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
   - name: 結合テスト（フロント）
     description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む・Claude Code プラグインの MCP サーバーとフックを流す）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に流す

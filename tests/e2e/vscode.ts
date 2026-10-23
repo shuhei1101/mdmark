@@ -37,6 +37,9 @@ const WAIT_TIMEOUT_MS = 30_000;
 // コマンドパレットが開くのを待つ 1 回の長さ（ミリ秒）と、F1 を押す回数の上限
 const PALETTE_OPEN_WAIT_MS = 3_000;
 const PALETTE_OPEN_ATTEMPTS = 5;
+// 起動直後のメインプロセスへの評価を試す回数の上限と、失敗してから待つ長さ（ミリ秒）
+const EVALUATE_ATTEMPTS = 5;
+const EVALUATE_RETRY_WAIT_MS = 1_000;
 // 複製に含めないもの
 const NOT_COPIED = ["node_modules", ".vscode-test", "out", "dist", "media"];
 
@@ -303,13 +306,24 @@ async function startVscode(
     timeout: WAIT_TIMEOUT_MS * 2,
   });
   // `http`・`https` 以外の URL（`file:` など）を開く操作の代役: 渡された URL を記録するだけにする
-  await app.evaluate(({ shell }) => {
-    const target = globalThis as unknown as { __opened: string[] };
-    target.__opened = [];
-    shell.openExternal = async (url: string) => {
-      target.__opened.push(url);
-    };
-  });
+  // 起動直後は Electron のメインプロセスへの評価が破棄されることがあるため、成功するまで繰り返す
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      await app.evaluate(({ shell }) => {
+        const target = globalThis as unknown as { __opened: string[] };
+        target.__opened = [];
+        shell.openExternal = async (url: string) => {
+          target.__opened.push(url);
+        };
+      });
+      break;
+    } catch (error) {
+      if (attempt >= EVALUATE_ATTEMPTS) {
+        throw error;
+      }
+      await new Promise((done) => setTimeout(done, EVALUATE_RETRY_WAIT_MS));
+    }
+  }
   const win = await app.firstWindow();
   await win.waitForSelector(".monaco-workbench", {
     timeout: WAIT_TIMEOUT_MS * 2,
@@ -337,7 +351,7 @@ async function startVscode(
   /** コマンドパレットを開いて文字を打ち、先頭の候補を選ぶ */
   const runCommand = async (title: string): Promise<void> => {
     const input = win.locator(".quick-input-box input");
-    // フォーカスが Webview にあると F1 を取りこぼすことがあるため、開くまで押し直す
+    // フォーカスが Webview にあると F1 が届かないため、開けなかったらエディタへフォーカスを戻して押し直す
     for (let attempt = 0; attempt < PALETTE_OPEN_ATTEMPTS; attempt += 1) {
       await win.keyboard.press("F1");
       const opened = await input
@@ -346,6 +360,9 @@ async function startVscode(
         .catch(() => false);
       if (opened) {
         break;
+      }
+      if ((await win.locator(".editor-instance .monaco-editor").count()) > 0) {
+        await focusEditor();
       }
     }
     await input.waitFor({ timeout: WAIT_TIMEOUT_MS });

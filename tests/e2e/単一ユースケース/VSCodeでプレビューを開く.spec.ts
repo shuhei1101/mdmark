@@ -49,6 +49,8 @@ test("test_normal", async () => {
   // 前回のバージョンとして残ったことを、タグ一覧が応えない状態のリロードで確かめる
   stub.setMode({ tags: "hang", dist: "ok" });
   stub.clear();
+  // フォーカスがプレビューにあるとコマンドパレットが開かないため、エディタへ戻す
+  await session.focusEditor();
   await session.runCommand("mdmark: プレビューをリロード");
   await expect
     .poll(() => stub.requests())
