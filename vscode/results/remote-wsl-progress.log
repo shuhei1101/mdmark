@@ -1,0 +1,17 @@
+2026-10-23T03:22:45.590Z start remote=wsl
+2026-10-23T03:22:45.590Z load unsafeInline=false
+2026-10-23T03:22:46.409Z message ready 
+2026-10-23T03:22:46.749Z message report 2
+2026-10-23T03:22:46.750Z load unsafeInline=true
+2026-10-23T03:22:46.843Z message ready 
+2026-10-23T03:22:46.907Z message report 1
+2026-10-23T03:22:46.955Z message report 2
+2026-10-23T03:22:47.215Z hidden retain=false
+2026-10-23T03:22:47.467Z message ready 
+2026-10-23T03:22:47.467Z message report 1
+2026-10-23T03:22:48.361Z message ready 
+2026-10-23T03:22:48.455Z message report 6
+2026-10-23T03:22:48.456Z hidden retain=true
+2026-10-23T03:22:48.543Z message ready 
+2026-10-23T03:22:48.607Z message report 1
+2026-10-23T03:22:49.199Z message report 2

@@ -1,0 +1,301 @@
+{
+  "load": [
+    {
+      "unsafeInline": false,
+      "msToReport": 1400,
+      "readyCount": 1,
+      "report": {
+        "type": "report",
+        "seq": 2,
+        "at": 1792725766991,
+        "settled": true,
+        "version": "v0.6.0",
+        "h1": "PoC の見本",
+        "counts": {
+          "h2": 6,
+          "table": 1,
+          "callout": 1,
+          "diagram": 2,
+          "diagramNode": 5,
+          "seqHeads": 2,
+          "hint": 2,
+          "libDrawn": 1,
+          "slot": 1,
+          "slotDrawn": 1,
+          "slotText": [
+            "<div class=\"mdmark-embed\" data-mdmark-slot=\"poc-lib\" data-mdmark-args=\"a b\" data-poc-drawn=\"a,b\" data-mdmark-drawn=\"\">drawn:a,b</div>"
+          ]
+        },
+        "firstNode": {
+          "styleAttr": "left:12px;top:100px;width:116px;height:64px",
+          "computedLeft": "0px",
+          "computedTop": "0px"
+        },
+        "bodyClass": "vscode-light vscode-reduce-motion",
+        "violations": [
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          },
+          {
+            "directive": "style-src-attr",
+            "blockedURI": "inline",
+            "sourceFile": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js",
+            "line": 21,
+            "sample": ""
+          }
+        ]
+      }
+    },
+    {
+      "unsafeInline": true,
+      "msToReport": 418,
+      "readyCount": 1,
+      "report": {
+        "type": "report",
+        "seq": 1,
+        "at": 1792725767168,
+        "settled": true,
+        "version": "v0.6.0",
+        "h1": "PoC の見本",
+        "counts": {
+          "h2": 6,
+          "table": 1,
+          "callout": 1,
+          "diagram": 2,
+          "diagramNode": 5,
+          "seqHeads": 2,
+          "hint": 2,
+          "libDrawn": 1,
+          "slot": 1,
+          "slotDrawn": 1,
+          "slotText": [
+            "<div class=\"mdmark-embed\" data-mdmark-slot=\"poc-lib\" data-mdmark-args=\"a b\" data-poc-drawn=\"a,b\" data-mdmark-drawn=\"\">drawn:a,b</div>"
+          ]
+        },
+        "firstNode": {
+          "styleAttr": "left:12px;top:100px;width:116px;height:64px",
+          "computedLeft": "12px",
+          "computedTop": "100px"
+        },
+        "bodyClass": "vscode-light vscode-reduce-motion",
+        "violations": []
+      }
+    }
+  ],
+  "update": {
+    "h1": "差し替えた本文",
+    "counts": {
+      "h2": 6,
+      "table": 1,
+      "callout": 1,
+      "diagram": 2,
+      "diagramNode": 5,
+      "seqHeads": 2,
+      "hint": 2,
+      "libDrawn": 1,
+      "slot": 1,
+      "slotDrawn": 1,
+      "slotText": [
+        "<div class=\"mdmark-embed\" data-mdmark-slot=\"poc-lib\" data-mdmark-args=\"a b\" data-poc-drawn=\"a,b\" data-mdmark-drawn=\"\">drawn:a,b</div>"
+      ]
+    }
+  },
+  "hidden": [
+    {
+      "retain": false,
+      "visibleWhileHidden": false,
+      "postedWhileHidden": [
+        {
+          "seq": 3,
+          "type": "render",
+          "visible": false,
+          "returned": false
+        },
+        {
+          "seq": 4,
+          "type": "render",
+          "visible": false,
+          "returned": false
+        },
+        {
+          "seq": 5,
+          "type": "render",
+          "visible": false,
+          "returned": false
+        }
+      ],
+      "readyBefore": 1,
+      "readyAfter": 2,
+      "msFromRevealToLast": 433,
+      "lastH1": "背面 3",
+      "reportsWithHiddenH1": [],
+      "error": null
+    },
+    {
+      "retain": true,
+      "visibleWhileHidden": false,
+      "postedWhileHidden": [
+        {
+          "seq": 3,
+          "type": "render",
+          "visible": false,
+          "returned": true
+        },
+        {
+          "seq": 4,
+          "type": "render",
+          "visible": false,
+          "returned": true
+        },
+        {
+          "seq": 5,
+          "type": "render",
+          "visible": false,
+          "returned": true
+        }
+      ],
+      "readyBefore": 1,
+      "readyAfter": 1,
+      "msFromRevealToLast": 177,
+      "lastH1": "背面 3",
+      "reportsWithHiddenH1": [],
+      "error": null
+    }
+  ],
+  "theme": [],
+  "env": {
+    "vscodeVersion": "1.141.0",
+    "remoteName": "wsl",
+    "uiKind": 1
+  }
+}

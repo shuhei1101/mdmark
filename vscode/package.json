@@ -1,0 +1,28 @@
+{
+  "name": "mdmark-poc",
+  "displayName": "mdmark PoC",
+  "version": "0.0.0",
+  "private": true,
+  "publisher": "mdmark-poc",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdmarkPoc.runAll",
+        "title": "mdmark PoC: 検証を流す"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "xvfb-run -a node test/run.js"
+  },
+  "devDependencies": {
+    "@vscode/test-electron": "3.1.0"
+  }
+}
