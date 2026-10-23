@@ -89,6 +89,17 @@ async function createClone(): Promise<string> {
   return clone;
 }
 
+/** ビルドした `plugin/.claude-plugin/plugin.json` の `version` を返す */
+async function readPluginVersion(): Promise<string> {
+  const manifest = JSON.parse(
+    await readFile(
+      join(root, "plugin", ".claude-plugin", "plugin.json"),
+      "utf8",
+    ),
+  );
+  return manifest.version;
+}
+
 test.afterAll(async () => {
   if (root !== "") {
     await rm(root, { recursive: true, force: true });
@@ -117,6 +128,11 @@ test("test_normal", async () => {
   }
   expect(declarations).toContain("MdmarkExtension");
   expect(await readBuiltVersion()).toBe(CLONE_VERSION);
+  // Claude Code のプラグインの生成物と、バージョン
+  for (const path of ["server/mcp.js", "guide/index.json"]) {
+    expect(existsSync(join(root, "plugin", path)), path).toBe(true);
+  }
+  expect(await readPluginVersion()).toBe(CLONE_VERSION);
   expect((await run("npm", ["test"])).code).toBe(0);
 });
 
@@ -133,6 +149,7 @@ test("test_normal_when_version_given", async () => {
   // 検証
   expect(code).toBe(0);
   expect(await readBuiltVersion()).toBe("v0.0.1");
+  expect(await readPluginVersion()).toBe("v0.0.1");
 });
 
 // 書式に合わない版を渡すと、配布物を書かずに終わる（異常シナリオ）
@@ -171,6 +188,34 @@ test("test_error_when_dist_file_too_large", async () => {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
+});
+
+// セッションに渡す索引の文が上限を超えると、配布物を残さずに終わる（異常シナリオ）
+// コマンドに上限を差し替える口が無いため、main に guideContextLimit: 1 を渡す
+test("test_error_when_guide_index_too_long", async () => {
+  // 準備
+  const errors: string[] = [];
+  const original = console.error;
+  console.error = (...args: unknown[]) => {
+    errors.push(args.join(" "));
+  };
+  // 実行
+  let code: number;
+  try {
+    code = await main([], {
+      root,
+      maxBytes: 20 * 1024 * 1024,
+      guideContextLimit: 1,
+    });
+  } finally {
+    console.error = original;
+  }
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
+  expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
 });
 
 // 最新の版のタグ（シナリオのセットアップの `version.ini` もこの版）

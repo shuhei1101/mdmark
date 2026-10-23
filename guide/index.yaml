@@ -1,0 +1,70 @@
+schema: 1
+guides:
+  - name: notation
+    when: マーカーと記法を文書に記載するとき
+    summary: 表・注意書き・タブ・ステップ・ファイルツリー・バッジ・セクションの開閉・行の詳細などのマーカーと記法の一覧
+    page: docs/リファレンス/記法.md
+  - name: tables
+    when: 表に並べ替え・絞り込み・ピン止めなどの機能を付けるとき
+    summary: 表をマーカーで囲み、種類と機能を選ぶ手順
+    page: docs/使い方/書く/表に機能を付ける.md
+  - name: components
+    when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・目次などで本文を組むとき
+    summary: 本文の部品を記載する手順
+    page: docs/使い方/書く/本文を部品で組む.md
+  - name: glossary
+    when: 索引や用語集を記載するとき
+    summary: 索引に文書と用語を記載し、表から用語集に用語を入れる手順
+    page: docs/使い方/書く/索引と用語集を書く.md
+  - name: figure-numbers
+    when: 図や表に番号を付けて参照するとき
+    summary: fig のマーカーと、番号を出すリンクの記載
+    page: docs/使い方/書く/図と表に番号を付ける.md
+  - name: view-comments
+    when: ビュー（ボード表示と表形式）やコメントを使うとき
+    summary: ビューのマーカー、列の絞り込み、コメントを付ける手順
+    page: docs/使い方/書く/ビューとコメントを使う.md
+  - name: diagrams
+    when: フロー図・シーケンス図・グラフを描くとき
+    summary: HTML の使いどころと、文書に部品の定義を記載して図を描く手順
+    page: docs/使い方/図を描く/図を描く.md
+  - name: interactive-parts
+    when: スライダーや今の値をコピーするボタンなど、操作できる部品を付けるとき
+    summary: スライダー・グラフ・コピーするボタンの部品の定義
+    page: docs/使い方/図を描く/操作できる部品を作る.md
+  - name: html-blocks
+    when: コードブロックの HTML でチャートやヒントを描くとき
+    summary: HTML を描かせるマーカー、チャートの custom element、data-hint の記載
+    page: docs/使い方/図を描く/コードブロックのHTMLを描く.md
+  - name: html-rules
+    when: AI が HTML を作るとき
+    summary: HTML の記載の決まり
+    page: docs/リファレンス/HTMLの書き方.md
+  - name: diagram-check
+    when: 描いた図を確かめるとき
+    summary: 置いた部品を Playwright で動かし、スクリーンショットを撮って見る手順
+    page: docs/使い方/図を描く/描いた図を確かめる.md
+  - name: diagram-sample
+    when: 図や操作できる部品の記載の見本を見たいとき
+    summary: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書
+    page: docs/使い方/図を描く/見本.md
+  - name: custom-parts
+    when: 使う側に固有の部品や CSS を、その場所の文書にだけ当てるとき
+    summary: registerExtension と CSS で固有の部品と見た目を追加する手順
+    page: docs/使い方/図を描く/固有の部品とCSSを当てる.md
+  - name: architecture-style
+    when: 構成図を描くとき
+    summary: 枠・3 レイヤー・タイトルと凡例・線・交差・ツールチップ・操作の見た目の決まり
+    page: docs/リファレンス/構成図の決まり.md
+  - name: flowchart-style
+    when: 処理の順番を描くフローチャートを描くとき
+    summary: 時系列・ループの帯・分岐の見た目の決まり
+    page: docs/リファレンス/フローチャートの決まり.md
+  - name: extension
+    when: registerExtension で自分のマーカーを追加するとき
+    summary: 拡張の登録手順。TypeScript を推奨し、配る前に JavaScript へ変換し、linter（Biome を推奨）を使う
+    page: docs/使い方/カスタマイズ/拡張を登録する.md
+  - name: index-schema
+    when: 索引のキーや点検が返すずれの種類を確かめるとき
+    summary: 索引のキー・型・必須・既定と、点検のずれの種類の一覧
+    page: docs/リファレンス/索引.md

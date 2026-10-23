@@ -1,0 +1,19 @@
+# 実行したコマンド
+
+npm run test:unit
+
+# 出力
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-claude-code-plugin-and-mcp
+
+
+ Test Files  122 passed (122)
+      Tests  665 passed (665)
+   Start at  19:39:04
+   Duration  33.24s (tests 42%, worker 33%, import 22%, transform 3%)
+

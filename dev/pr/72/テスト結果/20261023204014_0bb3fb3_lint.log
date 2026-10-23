@@ -1,0 +1,15 @@
+# 実行したコマンド
+
+npm run lint && npm run typecheck
+
+# 出力
+
+
+> lint
+> biome check .
+
+Checked 414 files in 4s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+

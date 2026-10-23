@@ -1,0 +1,49 @@
+title: "使い方集を読む"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: ビルドした plugin/
+        description: 使い方集の索引と本文を持つビルドした `plugin/` のフォルダ
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: 索引の名前 2 つ）
+        S->>S: 名前ごとに本文を読む
+        S-->>C: 名前ごとの本文
+    expected:
+      - 2 つの名前それぞれの本文が返る
+      - 返った本文が、索引のその名前が指すページの本文と一致する
+    test: test_normal
+  - name: 異常シナリオ（索引に無い名前）
+    setup:
+      - name: ビルドした plugin/
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 索引に無い名前
+        description: 索引の名前の 1 字を変えた名前
+        notes: 近い名前として元の名前が返ることを確かめる
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: read_guide（names: 索引に無い名前）
+        S->>S: 索引から名前を探す
+        S-->>C: エラー（索引に無い名前と、近い名前）
+    expected:
+      - ツールの結果がエラーになる
+      - エラーの文に、渡した名前と、索引の近い名前が出る
+      - 本文は返らない
+    test: test_error_when_name_unknown
+lead: Claude Code が、受け取った使い方集の索引の名前を MCP のツール `read_guide` に渡し、その名前の本文を受け取る。
+issue: 11
+primary_actor: Claude Code
+trigger: Claude Code が、記法・部品・図の描き方・拡張の仕方を確かめたくなる
+preconditions:
+  - ビルドした `plugin/` の MCP サーバーが起動している
+success_guarantee: 渡した名前ごとに、その名前の本文が返る。
+minimal_guarantee: 索引に無い名前を渡したときは、本文を返さず、その名前と近い名前を添えたエラーを返す。
+test_file: tests/e2e/単一ユースケース/使い方集を読む.spec.ts

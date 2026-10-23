@@ -3,21 +3,25 @@ import { normalizePath } from "../knowledge/paths.ts";
 import { requireConfig } from "./config.ts";
 import { collectBuildDocuments } from "./documents.ts";
 import { findOutsideLinks, usedParts } from "./embed.ts";
+import { CliError, type CliIo } from "./errors.ts";
 import { prepareEmbeds, readDistAssets, writeHtml } from "./export.ts";
 import { assembleHtml } from "./html.ts";
-import { CliError, type CliIo } from "./main.ts";
 
-/** `build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、警告と `書き出した: {build.out}（文書 {件数} 件）` を出す */
-export async function runBuild(
-  options: {
-    /** 使う設定ファイルのパス */
-    config?: string | undefined;
-    /** `dist/` の場所 */
-    distDir: string;
-  },
-  io: CliIo,
-): Promise<0> {
-  const loaded = await requireConfig(io.cwd, options.config);
+/** `build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、書いた絶対パス・`build.out` のままのパス・文書の数・警告を返す。標準出力・標準エラーには書かない */
+export async function buildSite(options: {
+  /** 今のフォルダ */
+  cwd: string;
+  /** 使う設定ファイルのパス */
+  config?: string | undefined;
+  /** `dist/` の場所 */
+  distDir: string;
+}): Promise<{
+  out: string;
+  display: string;
+  docs: number;
+  warnings: string[];
+}> {
+  const loaded = await requireConfig(options.cwd, options.config);
   const build = loaded.config.build;
   if (!build) {
     throw new CliError(
@@ -83,14 +87,32 @@ export async function runBuild(
     markdowns: payload.docs.map((doc) => doc.markdown),
     view,
   });
+  const out = resolve(loaded.dir, build.out);
   await writeHtml({
-    file: resolve(loaded.dir, build.out),
+    file: out,
     display: build.out,
     html: assembleHtml({ payload, distCss, themeCss, viewer }),
+  });
+  return { out, display: build.out, docs: paths.length, warnings };
+}
+
+/** `build` の対象の文書を `build.out` に HTML として書き、警告と `書き出した: {build.out}（文書 {件数} 件）` を出す */
+export async function runBuild(
+  options: {
+    /** 使う設定ファイルのパス */
+    config?: string | undefined;
+    /** `dist/` の場所 */
+    distDir: string;
+  },
+  io: CliIo,
+): Promise<0> {
+  const { display, docs, warnings } = await buildSite({
+    cwd: io.cwd,
+    ...options,
   });
   for (const warning of warnings) {
     io.stderr(`警告: ${warning}`);
   }
-  io.stdout(`書き出した: ${build.out}（文書 ${paths.length} 件）`);
+  io.stdout(`書き出した: ${display}（文書 ${docs} 件）`);
   return 0;
 }

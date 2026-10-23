@@ -2,3 +2,5 @@ summary: クラス / 関数 / 定数をドメイン分類でまとめる（単�
 items:
   - page: ライブラリ本体/
     summary: ライブラリ本体の公開の入口・描く処理・部品と、ビルドと部品の描画のスクリプト
+  - page: ClaudeCodeプラグイン/
+    summary: Claude Code プラグインの MCP サーバー・フック・使い方集と、プラグインのビルド

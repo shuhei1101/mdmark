@@ -1,0 +1,49 @@
+title: "索引から文書を探す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 2 つ。2 つ目の文書は索引に載っていない
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（text: 1 つ目の文書の題名の一部）
+        S->>F: 設定と索引を読む
+        S->>S: 題名・別名・概要で引く
+        S-->>C: 1 つ目の文書の ID・パス・題名・概要・タグ
+    expected:
+      - 1 つ目の文書だけが返る
+      - 返った行が ID・パス・題名・概要・タグを持つ
+      - 索引に載っていない 2 つ目の文書は返らない
+      - 索引と文書が変わっていない
+    test: test_normal
+  - name: 正常シナリオ（当たらない）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: find_docs（text: どの文書にも無い語）
+        S->>S: 題名・別名・概要で引く
+        S-->>C: 空の一覧
+    expected:
+      - 空の一覧が返り、エラーにならない
+    test: test_normal_when_no_match
+lead: Claude Code が MCP のツール `find_docs` で、設定の `index` の索引から、題名・別名・概要の語・タグ・関係する文書で文書を引く。
+issue: 11
+primary_actor: Claude Code
+trigger: Claude Code が、文書を書く前や書き換える前に、関係する文書と索引に載っているかを確かめたくなる
+preconditions:
+  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+  - 作業のフォルダに設定と索引がある
+success_guarantee: 条件に当たる文書の ID・パス・題名・概要・タグが返る。
+minimal_guarantee: 索引と文書を書き換えない。
+test_file: tests/e2e/単一ユースケース/索引から文書を探す.spec.ts

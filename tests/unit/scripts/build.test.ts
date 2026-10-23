@@ -11,7 +11,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import type { Metafile } from "esbuild";
 import { afterEach, expect, test, vi } from "vitest";
@@ -248,6 +248,50 @@ test("test_main_when_migrations_invalid", async () => {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(stderr()).toContain("migrations/next/steps.yaml");
+});
+
+// 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる（異常系）
+test("test_main_when_guide_index_too_long", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createBuildRoot("v0.0.0\n");
+  const files: Record<string, string> = {
+    "package.json": JSON.stringify({ dependencies: { esbuild: "0.28.2" } }),
+    "src/plugin/mcp.ts": "export {};\n",
+    "src/plugin/session-start.ts": "export {};\n",
+    "guide/index.yaml": [
+      "schema: 1",
+      "guides:",
+      "  - name: a",
+      "    when: a を書くとき",
+      "    summary: a の概要",
+      "    page: docs/a.md",
+      "",
+    ].join("\n"),
+    "docs/a.md": "# A\n",
+    "plugin/.claude-plugin/plugin.json":
+      '{"name":"mdmark","version":"v0.0.0"}\n',
+    "plugin/package.json": JSON.stringify({
+      dependencies: { esbuild: "0.28.2" },
+    }),
+    "plugin/package-lock.json": "{}\n",
+  };
+  for (const [path, content] of Object.entries(files)) {
+    await mkdir(dirname(join(root, path)), { recursive: true });
+    await writeFile(join(root, path), content);
+  }
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], {
+    root,
+    maxBytes: MAX_BYTES,
+    guideContextLimit: 1,
+  });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(stderr()).toContain("上限 1 文字");
 });
 
 // version.ini の先頭行を返す（正常系）

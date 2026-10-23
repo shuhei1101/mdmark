@@ -1,0 +1,95 @@
+title: "文書をHTMLに書き出す"
+entry:
+  kind: mcp_tool
+  value: export_html
+flows:
+  - name: 正常系
+    summary: 文書を 1 枚の HTML に書き出してパスを返す
+    setup:
+      - name: 作業のフォルダ
+        description: 設定と、表と注意書きを持つ文書 `guide.md`
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: export_html（file: guide.md）
+        S->>F: 文書と設定を読む
+        S->>F: guide.html を書く
+        S-->>C: out・warnings
+    expected:
+      - '`out` が `guide.html` の絶対パスで、そのファイルがある'
+      - 同じ文書で流した `mdmark export` の HTML と中身が同じ
+    test: test_normal
+  - name: 異常系（文書が無い・ツールのエラー）
+    summary: 無い文書は何も書かずにエラーにする
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: export_html（file: missing.md）
+        S->>S: missing.md が無い
+        S-->>C: isError（無いパス）
+    expected:
+      - '`isError` が立つ'
+      - 内容に `missing.md` が出る
+      - '`.html` が書かれていない'
+    test: test_error_when_file_missing
+lead: '`mdmark export` と同じ処理で、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出し、書き出したパスを返す。'
+idempotent: true
+side_effects: 書き出す先の HTML を書く（あれば上書きする）
+request:
+  - name: file
+    type: string
+    required: true
+    location: argument
+    description: 書き出す Markdown のパス（MCP サーバーの作業のフォルダからの相対パスか絶対パス）
+  - name: out
+    type: string
+    required: false
+    default: なし（`mdmark export` と同じく、文書と同じフォルダの拡張子を `.html` にしたパス）
+    location: argument
+    description: 書き出す HTML のパス
+  - name: config
+    type: string
+    required: false
+    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+request_example: |-
+  ```json
+  {"file": "docs/guide.md"}
+  ```
+response:
+  - name: out
+    type: string
+    description: 書き出した HTML の絶対パス
+  - name: warnings
+    type: string[]
+    description: '`mdmark export` が標準エラーに出す警告の文'
+response_example: |-
+  ```json
+  {"out": "/home/user/docs/guide.html", "warnings": []}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 書き出せた
+  - name: ツールのエラー（文書が無い）
+    condition: '`file` のファイルが無い'
+    notes: 設定ファイルが無い・読めないときと書き出せないときも、`mdmark export` が終了コード 1 で終わるときと同じ文でエラーにする
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark export` が標準エラーに出すのと同じ文を書く。'
+constraints:
+  - item: CLI との一致
+    constraint: 同じ文書・設定では、`mdmark export` と同じ中身の HTML を書く
+  - item: 書き出す中身
+    constraint: プラグインに同梱した配布物を埋める。配布物の版はプラグインの版と同じ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/export-html.test.ts

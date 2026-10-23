@@ -1,0 +1,355 @@
+title: "ClaudeCodeプラグイン / 使い方集"
+lead: 使い方集の索引（名前・読むとき・概要・本文のページ）の形を検査して読み、セッションに渡す索引の文を組み立て、名前ごとに本文を読む。フックと MCP サーバーとプラグインのビルドが同じ処理を使う。
+directory: |-
+  ```tree
+  src/plugin/
+  └── guide.ts  # 使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前
+  ```
+data_models:
+  - name: GuideEntry
+    title: 使い方集の索引の行
+    container: src/plugin/guide.ts
+    usecase: 共通
+    role: DTO
+    summary: 使い方集の索引の 1 行
+    properties:
+      - name: name
+        type: string
+        description: 名前。`read_guide` に渡す値で、索引の中で一意
+      - name: when
+        type: string
+        description: 読むとき（どんな作業のときに読むか）
+      - name: summary
+        type: string
+        description: 1 文の概要
+      - name: page
+        type: string
+        description: 本文のページ。リポジトリの直下からの相対パス（`docs/` の下の `.md`）
+    refs:
+      - dev/設計書/ER図/使い方集#tables[guides]
+    status: planned
+    introduced:
+      pr: 72
+  - name: GuidePage
+    title: 読んだ本文
+    container: src/plugin/guide.ts
+    usecase: 使い方集を読む
+    role: DTO
+    summary: 名前 1 つの本文
+    properties:
+      - name: name
+        type: string
+        description: 名前
+      - name: text
+        type: string
+        description: 1 行目が `# {名前}`、空行を挟んでページの本文
+    status: planned
+    introduced:
+      pr: 72
+constants:
+  - name: GUIDE_INDEX_FILE
+    title: 同梱した索引のファイル名
+    container: src/plugin/guide.ts
+    usecase: 共通
+    summary: プラグインの使い方集のフォルダに置く索引のファイル名
+    value: index.json
+    status: planned
+    introduced:
+      pr: 72
+  - name: GUIDE_CONTEXT_LIMIT
+    title: セッションに渡す索引の文字数の上限
+    container: src/plugin/guide.ts
+    usecase: 共通
+    summary: '`additionalContext` の上限の文字数'
+    value: '10000'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#constraints[索引の文字数]
+    status: planned
+    introduced:
+      pr: 72
+  - name: GUIDE_RESULT_LIMIT
+    title: 1 回に返す本文の文字数の上限
+    container: src/plugin/guide.ts
+    usecase: 使い方集を読む
+    summary: '`read_guide` が 1 回に返す本文の合計の上限の文字数'
+    value: '50000'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts#constraints[結果の大きさ]
+    status: planned
+    introduced:
+      pr: 72
+  - name: NEAREST_NAME_COUNT
+    title: 添える近い名前の数
+    container: src/plugin/guide.ts
+    usecase: 使い方集を読む
+    summary: 索引に無い名前に添える近い名前の最大の数
+    value: '3'
+    status: planned
+    introduced:
+      pr: 72
+  - name: GUIDE_CONTEXT_LEAD
+    title: 索引の文の先頭の 1 文
+    container: src/plugin/guide.ts
+    usecase: 共通
+    summary: セッションに渡す索引の先頭に置く事実の 1 文
+    value: mdmark の使い方集の索引。本文は MCP の read_guide に名前を渡すと読める。
+    status: planned
+    introduced:
+      pr: 72
+functions:
+  - name: parseGuideIndex
+    title: 使い方集の索引を検査する
+    kind: 関数
+    container: src/plugin/guide.ts
+    usecase: 共通
+    role: 検査
+    summary: 値を使い方集の索引の形で検査し、合う行と合わない場所の一覧を返す
+    scope: public
+    is_async: false
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: YAML か JSON を読んだ値
+    returns:
+      type: '{ entries: GuideEntry[]; problems: IndexProblem[] }'
+      description: 合う行と、合わない場所（`guides[1].page` の形）と内容の一覧
+    process: |-
+      1. 値が `schema: 1` と `guides` の配列を持つオブジェクトかを確かめる
+      2. `guides` の要素ごとに、`name`・`when`・`summary`・`page` が空でない文字列か、知らないキーが無いかを確かめる
+      3. `name` の重なりと、`page` が `docs/` で始まり `.md` で終わるかを確かめる
+      4. 合う要素だけを `entries` に、合わないところを `problems` に入れて返す
+    unit_tests:
+      - name: test_parse_guide_index
+        case: 正常
+        summary: 合う索引の行を全て返す
+        condition: '`schema: 1` と 2 行の `guides`'
+        mock: なし
+        expected: '`entries` が 2 行、`problems` が空'
+      - name: test_parse_guide_index_when_key_missing
+        case: 正常
+        summary: 欠けたキーを場所つきで返す
+        condition: 2 行目に `page` が無い
+        mock: なし
+        expected: '`entries` が 1 行、`problems` に `guides[1].page` がある'
+      - name: test_parse_guide_index_when_name_duplicated
+        case: 正常
+        summary: 名前の重なりを返す
+        condition: 2 行が同じ `name`
+        mock: なし
+        expected: '`problems` に `guides[1].name` がある'
+      - name: test_parse_guide_index_when_page_outside_docs
+        case: 正常
+        summary: docs/ の外のページを返す
+        condition: '`page: src/index.ts`'
+        mock: なし
+        expected: '`problems` に `guides[0].page` がある'
+      - name: test_parse_guide_index_when_not_object
+        case: 正常
+        summary: オブジェクトでない値を返す
+        condition: 値が配列
+        mock: なし
+        expected: '`entries` が空、`problems` の場所が空文字'
+    refs:
+      - dev/設計書/ER図/使い方集#
+    status: planned
+    introduced:
+      pr: 72
+  - name: readGuideIndex
+    title: 同梱した索引を読む
+    kind: 関数
+    container: src/plugin/guide.ts
+    usecase: 共通
+    role: 読み込み
+    summary: プラグインの使い方集のフォルダの索引を読んで行を返す
+    scope: public
+    is_async: true
+    args:
+      - name: guideDir
+        type: string
+        required: true
+        description: プラグインの使い方集のフォルダの絶対パス
+    returns:
+      type: Promise<GuideEntry[]>
+      description: 索引の行（索引の並び）
+    process: |-
+      1. `{guideDir}/{GUIDE_INDEX_FILE}` を UTF-8 で読み、JSON として読む
+      2. 使い方集の索引を検査し、合わないところが 1 件でもあれば例外にする（使い方集の索引を検査する）
+    exceptions:
+      - name: CliError
+        condition: 索引が無い・JSON として読めない・形に合わない
+        message: 使い方集の索引 {パス} を読めません（{理由}）。プラグインを入れ直してください。
+    unit_tests:
+      - name: test_read_guide_index
+        case: 正常
+        summary: 同梱した索引の行を返す
+        condition: 一時フォルダに 2 行の `index.json`
+        mock: なし（一時フォルダ）
+        expected: 2 行を索引の並びで返す
+      - name: test_read_guide_index_when_missing
+        case: 異常
+        summary: 索引が無い
+        condition: '`index.json` の無い一時フォルダ'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに索引のパスと `入れ直して` が入る'
+        exception: 索引が無い・JSON として読めない・形に合わない
+      - name: test_read_guide_index_when_invalid
+        case: 異常
+        summary: 形に合わない索引
+        condition: '`page` の無い行を持つ `index.json`'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げる'
+        exception: 索引が無い・JSON として読めない・形に合わない
+    callees:
+      - '#functions[parseGuideIndex]'
+    status: planned
+    introduced:
+      pr: 72
+  - name: formatGuideContext
+    title: セッションに渡す索引の文を作る
+    kind: 関数
+    container: src/plugin/guide.ts
+    usecase: 共通
+    role: 整形
+    summary: 索引の行から、先頭の 1 文と名前・読むとき・概要の表の文を作る
+    scope: public
+    is_async: false
+    args:
+      - name: entries
+        type: GuideEntry[]
+        required: true
+        description: 索引の行
+    returns:
+      type: string
+      description: '`GUIDE_CONTEXT_LEAD` の行に続けて、`| 名前 | 読むとき | 概要 |` の表を行の並びで書いた文。本文のページは含めない'
+    process: |-
+      1. `GUIDE_CONTEXT_LEAD` を 1 行目に置く
+      2. 表の見出しと区切りの行を置き、行ごとに名前・読むとき・概要を 1 行で書く（セルの `|` は `\|` にする）
+    unit_tests:
+      - name: test_format_guide_context
+        case: 正常
+        summary: 先頭の 1 文と全ての名前の表を作る
+        condition: 2 行の索引
+        mock: なし
+        expected: 1 行目が `GUIDE_CONTEXT_LEAD`、表の行が 2 つで、本文のページのパスを含まない
+      - name: test_format_guide_context_when_pipe
+        case: 正常
+        summary: セルの縦棒を打ち消す
+        condition: 概要に `a | b`
+        mock: なし
+        expected: 表の行に `a \| b` が入る
+    status: planned
+    introduced:
+      pr: 72
+  - name: nearestNames
+    title: 近い名前を選ぶ
+    kind: 関数
+    container: src/plugin/guide.ts
+    usecase: 使い方集を読む
+    role: 検索
+    summary: 索引の名前を、渡した名前との編集距離の近い順に最大の数まで返す
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ name: string; names: string[]; count: number }'
+        required: true
+        description: 探す名前・索引の名前・返す最大の数
+    returns:
+      type: string[]
+      description: 近い順の名前。同じ距離は索引の並び
+    process: |-
+      1. 索引の名前ごとに、渡した名前とのレーベンシュタイン距離を数える
+      2. 距離の小さい順（同じなら索引の並び）に並べ、先頭から `count` 件を返す
+    unit_tests:
+      - name: test_nearest_names
+        case: 正常
+        summary: 1 字違いの名前を先頭に返す
+        condition: '`notatoin` と、名前 `extension`・`notation`・`diagram`'
+        mock: なし
+        expected: 先頭が `notation`
+      - name: test_nearest_names_when_count_exceeds
+        case: 正常
+        summary: 最大の数で切る
+        condition: '名前 5 つ、`count: 3`'
+        mock: なし
+        expected: 3 件
+    status: planned
+    introduced:
+      pr: 72
+  - name: readGuides
+    title: 名前ごとに本文を読む
+    kind: 関数
+    container: src/plugin/guide.ts
+    usecase: 使い方集を読む
+    role: 読み込み
+    summary: 渡した名前の順に、索引の行が指すページの本文を読む
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ guideDir: string; entries: GuideEntry[]; names: string[] }'
+        required: true
+        description: 使い方集のフォルダ・索引の行・読む名前
+    returns:
+      type: Promise<GuidePage[]>
+      description: 名前の重なりを除いた、渡した順の本文
+    process: |-
+      1. 名前の重なりを除く
+      2. 索引に無い名前があれば、名前ごとに近い名前を添えて例外にする（近い名前を選ぶ）
+      3. 行の `page` を `guideDir` から解決し、`guideDir` の配下にあることを確かめて UTF-8 で読む
+      4. 本文の合計が `GUIDE_RESULT_LIMIT` を超えたら、名前ごとの文字数を添えて例外にする
+      5. 名前ごとに `# {名前}`・空行・本文をつないで返す
+    exceptions:
+      - name: CliError
+        condition: 索引に無い名前がある
+        message: '使い方集に {名前} がありません（近い名前: {近い名前}）。索引の名前を渡してください。'
+      - name: CliError
+        condition: 本文の合計が上限を超える
+        message: '本文の合計が {上限} 文字を超えます（{名前}: {文字数}、…）。名前を分けて呼んでください。'
+      - name: CliError
+        condition: ページが無いか、使い方集のフォルダの外を指す
+        message: 使い方集の {名前} のページ {パス} を読めません。プラグインを入れ直してください。
+    unit_tests:
+      - name: test_read_guides
+        case: 正常
+        summary: 渡した順に本文を返す
+        condition: 名前 `b`・`a` を渡し、どちらも索引にある
+        mock: なし（一時フォルダ）
+        expected: '`b`・`a` の順で、`text` の 1 行目が `# b`、3 行目から後ろがページの中身'
+      - name: test_read_guides_when_duplicated
+        case: 正常
+        summary: 重なった名前を 1 つにする
+        condition: '`a`・`a`'
+        mock: なし（一時フォルダ）
+        expected: 1 件
+      - name: test_read_guides_when_name_unknown
+        case: 異常
+        summary: 索引に無い名前は本文を返さない
+        condition: '`notatoin`・`extension`（`notation` と `extension` が索引にある）'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `notatoin` と `notation` が入る'
+        exception: 索引に無い名前がある
+      - name: test_read_guides_when_too_large
+        case: 異常
+        summary: 合計が上限を超えると読まない
+        condition: 本文が 30,000 文字のページ 2 つ
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに 2 つの名前の文字数が入る'
+        exception: 本文の合計が上限を超える
+      - name: test_read_guides_when_page_outside
+        case: 異常
+        summary: フォルダの外を指すページを読まない
+        condition: '`page: docs/../../secret.md`'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げる'
+        exception: ページが無いか、使い方集のフォルダの外を指す
+    callees:
+      - '#functions[nearestNames]'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts#
+    status: planned
+    introduced:
+      pr: 72
+test_files:
+  - tests/unit/src/plugin/guide.test.ts
