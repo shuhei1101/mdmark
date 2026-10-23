@@ -4,7 +4,7 @@
 /* 行の強調の色: 新しく足す CSS 変数（足した行・消した行は差分の表示の変数を使う） */
 :root {
   --mdmark-color-code-highlight-bg: #fff8c5;
-  --mdmark-color-code-highlight-line: #bf8700;
+  --mdmark-color-code-highlight-line: #9a6700;
 }
 
 /* ダーク（OS の設定）: 行の強調の色 */
@@ -67,48 +67,55 @@
   .mdmark pre.mdmark-code-lines {
     padding-inline: 0;
 
-    /* 行を並べたコード: 最も長い行に幅を合わせ、短い行の地も右端まで敷く */
+    /* 行を並べたコード: 最も長い行に幅を合わせ、短い行の地も右端まで敷く。行番号と印の列の幅は既定で 0 */
     code {
       display: block;
       width: max-content;
       min-width: 100%;
+      --mdmark-code-number-width: 0px;
+      --mdmark-code-sign-width: 0px;
     }
   }
 
-  /* コードの 1 行: 行番号・行頭の印・行の文字の 3 列。行番号と印は擬似要素で出し、選んで写す中身に入れない */
+  /* 行番号を出すコードブロック: 行番号の列の幅（桁の数は code の --mdmark-code-digits）と、文字との間を取る */
+  .mdmark pre.mdmark-code-numbered code {
+    --mdmark-code-number-width: calc(var(--mdmark-code-digits) * 1ch + 1.5ch);
+  }
+
+  /* 足した行か消した行を持つコードブロック: 印の無い行にも印の列の幅を空け、文字の頭を揃える */
+  .mdmark pre.mdmark-code-signs code {
+    --mdmark-code-sign-width: 2ch;
+  }
+
+  /* コードの 1 行: 行番号と行頭の印の列を左の余白に取る。行番号と印は擬似要素で出し、選んで写す中身に入れない */
   .mdmark .mdmark-code-line {
-    display: inline-grid;
-    grid-template-columns: auto auto 1fr;
+    position: relative;
+    display: inline-block;
     width: 100%;
+    min-height: 1lh;
     box-sizing: border-box;
-    padding-inline: calc(var(--mdmark-space) - 2px) var(--mdmark-space);
+    padding-inline: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width) + var(--mdmark-code-sign-width)) var(--mdmark-space);
     border-inline-start: 2px solid transparent;
     vertical-align: top;
 
-    /* 行番号: 桁を揃えて右寄せにし、控えめの色で出す。桁の数は code の --mdmark-code-digits */
+    /* 行番号: 左の余白に桁を揃えて右寄せにし、控えめの色で出す。折り返した行では最初の 1 行にだけ出る */
     &[data-line]::before {
-      grid-column: 1;
-      grid-row: 1;
-      min-width: calc(var(--mdmark-code-digits) * 1ch);
-      padding-inline-end: 1.5ch;
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: calc(var(--mdmark-space) - 2px);
+      width: calc(var(--mdmark-code-digits) * 1ch);
       color: var(--mdmark-color-muted);
       text-align: end;
       content: attr(data-line) / "";
     }
 
-    /* 行頭の印の列 */
+    /* 行頭の印: 行番号の列の右に置く */
     &::after {
-      grid-column: 2;
-      grid-row: 1;
-      width: 2ch;
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width));
       font-weight: 700;
       content: none;
-    }
-
-    /* 行の文字 */
-    .mdmark-code-text {
-      grid-column: 3;
-      grid-row: 1;
     }
 
     /* 強調した行: 黄の地と左の線 */
@@ -138,10 +145,5 @@
         content: "-" / "消した行";
       }
     }
-  }
-
-  /* 足した行か消した行を持つコードブロック: 印の無い行にも印の列の幅を空け、文字の頭を揃える */
-  .mdmark pre.mdmark-code-signs .mdmark-code-line:not([data-kind="add"], [data-kind="del"])::after {
-    content: "";
   }
 }

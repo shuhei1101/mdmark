@@ -47,7 +47,7 @@
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
-  <pre class="mdmark-code-lines" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
+  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
 <span class="mdmark-code-line" data-line="2" data-kind="highlight"><span class="mdmark-code-text">const doc = await fetch("/README.md");</span></span>
 <span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text">mount(document.querySelector("#doc"), await doc.text());</span></span></code></pre>
 </figure>
@@ -81,7 +81,7 @@
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
-  <pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1" data-kind="highlight"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1" data-kind="highlight"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
 <span class="mdmark-code-line" data-line="2" data-kind="add"><span class="mdmark-code-text">mount(element, markdown, { features: { code: true } });</span></span>
 <span class="mdmark-code-line" data-line="3" data-kind="del"><span class="mdmark-code-text">mount(element, markdown);</span></span></code></pre>
 </figure>
@@ -105,7 +105,7 @@
       <section aria-labelledby="state-two-digits">
         <h2 class="catalog-label" id="state-two-digits">2 桁の行番号と範囲の強調（lines highlight=9-10）</h2>
         <article class="mdmark">
-<pre class="mdmark-code-lines" tabindex="0" aria-label="コード: ts"><code class="language-ts" style="--mdmark-code-digits: 2"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
+<pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: ts"><code class="language-ts" style="--mdmark-code-digits: 2"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
 <span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"></span></span>
 <span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text">const element = document.querySelector("#doc");</span></span>
 <span class="mdmark-code-line" data-line="4"><span class="mdmark-code-text">const response = await fetch("/README.md");</span></span>
@@ -127,7 +127,7 @@
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts</figcaption>
-  <pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js";</span></span>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js";</span></span>
 <span class="mdmark-code-line" data-line="2" data-kind="del"><span class="mdmark-code-text">export const decorate = (tokens: Token[], options: { title?: string; lines: boolean; highlight: number[] }) =&gt; tokens;</span></span>
 <span class="mdmark-code-line" data-line="3" data-kind="add"><span class="mdmark-code-text">export const decorate = (tokens: Token[], options: CodeBlockOptions, warnings: SyntaxWarning[]): Token[] =&gt; applyCodeBlockOptions(tokens, options, warnings);</span></span></code></pre>
 </figure>
