@@ -134,9 +134,9 @@ functions:
     side_effects: GitHub へ `GET` を送る
     args:
       - name: options
-        type: '{ url: string; timeoutMs: number; fetch: typeof fetch }'
+        type: '{ url: string; timeoutMs: number; fetch: typeof fetch; log: Logger }'
         required: true
-        description: 最初のページの URL（`TAGS_URL` か `MDMARK_VSCODE_TAGS_URL`）、合計の待ちの上限（`TAGS_TIMEOUT_MS`）、要求に使う `fetch`
+        description: 最初のページの URL（`TAGS_URL` か `MDMARK_VSCODE_TAGS_URL`）、合計の待ちの上限（`TAGS_TIMEOUT_MS`）、要求に使う `fetch`、ログの出力先
     returns:
       type: Promise<string | undefined>
       description: 最新の `v{X}.{Y}.{Z}`。取れなければ `undefined`
@@ -144,31 +144,34 @@ functions:
       1. `AbortSignal.timeout(timeoutMs)` を 1 つ作り、全てのページの要求に渡す
       2. `url` から順に `GET`（header `Accept: application/vnd.github+json`）し、応答の `name` を集める。次の URL は header `Link` から引く（次のページの URL を引く）
          - 200 以外の応答・ネットワークのエラー・待ちの上限の打ち切りの場合、`undefined` を返す（再試行しない）
+                 - `[warn]` タグ一覧を取れない（要求した URL・ステータスコードかエラーの名前とメッセージ）
       3. 集めた名前から最新を選んで返す（最新のバージョンを選ぶ）
+         - 合うタグが 0 件の場合、`undefined` を返す
+           - `[warn]` mdmark のバージョンのタグが無い（読んだタグの数）
     unit_tests:
       - name: test_fetch_latest_version
         case: 正常
         summary: 全てのページを読んで最新を選ぶ
         condition: 1 ページ目が `v0.7.0`・`vscode-v0.11.0` と `rel="next"`、2 ページ目が `v0.10.0` で `Link` 無し
-        mock: '`fetch` を URL ごとに応答を返す偶物にする'
+        mock: '`fetch` を URL ごとに応答を返す代役にする'
         expected: '`v0.10.0`。`fetch` が 2 回呼ばれる'
       - name: test_fetch_latest_version_when_rate_limited
         case: 正常
         summary: 200 以外は取れなかったものとして扱う
         condition: 1 ページ目が 403
-        mock: '`fetch` を 403 を返す偶物にする'
-        expected: '`undefined`。`fetch` は 1 回だけ'
+        mock: '`fetch` を 403 を返す代役にする'
+        expected: '`undefined`。`fetch` は 1 回だけ。`log.warn` が URL と `403` を含んで 1 回呼ばれる'
       - name: test_fetch_latest_version_when_timeout
         case: 正常
         summary: 合計の待ちが上限を超えたら打ち切る
         condition: '`timeoutMs` が 50、`fetch` が `signal` の中断まで応答しない'
-        mock: '`fetch` を `signal` の `abort` で reject する偶物にする'
+        mock: '`fetch` を `signal` の `abort` で reject する代役にする'
         expected: '`undefined`'
       - name: test_fetch_latest_version_when_no_tag
         case: 正常
         summary: 合うタグが 0 件なら取れなかったものとして扱う
         condition: 1 ページ目が `vscode-v0.1.0` だけ
-        mock: '`fetch` を偶物にする'
+        mock: '`fetch` を代役にする'
         expected: '`undefined`'
     callees:
       - '#functions[nextPageUrl]'
@@ -187,9 +190,9 @@ functions:
     is_async: true
     args:
       - name: options
-        type: '{ setting: string; lastVersion: string | undefined; fetchLatest: FetchLatestVersion }'
+        type: '{ setting: string; lastVersion: string | undefined; fetchLatest: FetchLatestVersion; log: Logger }'
         required: true
-        description: '`mdmark.version` の値、`globalState` の `mdmark.lastVersion`、最新のバージョンを取る関数'
+        description: '`mdmark.version` の値、`globalState` の `mdmark.lastVersion`、最新のバージョンを取る関数、ログの出力先（`Logger`）'
     returns:
       type: Promise<VersionDecision>
       description: 決めたバージョンか、決められないこと
@@ -198,31 +201,33 @@ functions:
       2. 最新のバージョンを取る（`fetchLatest`）
          - 取れた場合、`fetched: true` で返す
          - 取れず `lastVersion` がある場合、`fetched: false` で返す
+           - `[info]` 前回のバージョンで描く（バージョン）
          - どちらも無い場合、`{ kind: "undecidable" }` を返す
+           - `[warn]` 読むバージョンを決められない
     unit_tests:
       - name: test_decide_version
         case: 正常
         summary: latest はタグ一覧の最新を使う
         condition: '`setting` が `latest`、`fetchLatest` が `v0.10.0`'
-        mock: '`fetchLatest` を偶物にする'
+        mock: '`fetchLatest` を代役にする'
         expected: '`{ kind: "decided", version: "v0.10.0", fetched: true }`'
       - name: test_decide_version_when_pinned
         case: 正常
         summary: 書いたバージョンはそのまま使い、タグ一覧を取らない
         condition: '`setting` が `v0.6.0`'
-        mock: '`fetchLatest` を呼ばれたら記録する偶物にする'
+        mock: '`fetchLatest` を呼ばれたら記録する代役にする'
         expected: '`{ kind: "decided", version: "v0.6.0", fetched: false }`。`fetchLatest` が呼ばれない'
       - name: test_decide_version_when_fetch_failed
         case: 正常
         summary: タグ一覧を取れなければ前回のバージョンを使う
         condition: '`setting` が `latest`、`fetchLatest` が `undefined`、`lastVersion` が `v0.7.0`'
-        mock: '`fetchLatest` を偶物にする'
+        mock: '`fetchLatest` を代役にする'
         expected: '`{ kind: "decided", version: "v0.7.0", fetched: false }`'
       - name: test_decide_version_when_undecidable
         case: 正常
         summary: タグ一覧も前回のバージョンも無ければ決められない
         condition: '`setting` が `latest`、`fetchLatest` が `undefined`、`lastVersion` が `undefined`'
-        mock: '`fetchLatest` を偶物にする'
+        mock: '`fetchLatest` を代役にする'
         expected: '`{ kind: "undecidable" }`'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[前回のバージョン]

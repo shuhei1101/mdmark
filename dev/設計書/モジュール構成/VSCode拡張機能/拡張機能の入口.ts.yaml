@@ -5,7 +5,8 @@ directory: |-
   vscode/
   ├── package.json      # 拡張機能の定義（main・engines・contributes・scripts・依存）
   └── src/
-      └── extension.ts  # activate（コマンドと知らせの登録、テストのときの戻り値）
+      ├── extension.ts  # activate（コマンドと知らせの登録、テストのときの戻り値）
+      └── log.ts        # ログの出力先の型（vscode を import しない）
   ```
 
   `extension.ts` はビルドが `vscode/dist/extension.cjs`（CommonJS。`vscode` は束ねない）に束ね、`package.json` の `main` が指す。
@@ -55,6 +56,25 @@ data_models:
     refs:
       - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewManager]
     status: planned
+  - name: Logger
+    title: ログの出力先
+    container: vscode/src/log.ts
+    usecase: 共通
+    summary: 各処理に依存として渡すログの出力先。`activate` が作る `LogOutputChannel` が満たし、単体テストは呼ばれたものを記録する代役を渡す
+    description: '`vscode` を import しない処理（読むバージョン・設定）も受け取れるよう、`LogOutputChannel` のうち使うメソッドだけを持つ型にする'
+    properties:
+      - name: info
+        type: '(message: string, ...args: unknown[]) => void'
+        description: 経過
+      - name: warn
+        type: '(message: string, ...args: unknown[]) => void'
+        description: 代わりの値で続けた失敗
+      - name: error
+        type: '(error: string | Error, ...args: unknown[]) => void'
+        description: 利用者の操作が果たせなかった失敗
+    refs:
+      - dev/設計書/外部ライブラリ/vscode#
+    status: planned
 functions:
   - name: activate
     title: 拡張機能を動かし始める
@@ -74,7 +94,7 @@ functions:
       description: '`ExtensionMode.Test` のときだけ `TestApi`'
     process: |-
       1. `context.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` を読む。無ければ `DIST_BASE`・`TAGS_URL`
-      2. `PreviewManager` を作る
+      2. `window.createOutputChannel("mdmark", { log: true })` でログの出力先を 1 つ作り、`PreviewManager`・`openConfigFile`・`exportMarkdown` に `Logger` として渡す。`PreviewManager` を作る
       3. コマンドを登録する
          - `mdmark.openPreviewToSide`・`mdmark.openPreview` は `PreviewManager.open`（`ViewColumn.Beside`・`ViewColumn.Active`）
          - `mdmark.refreshPreview` は `PreviewManager.refresh`

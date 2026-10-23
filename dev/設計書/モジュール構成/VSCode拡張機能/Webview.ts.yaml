@@ -166,19 +166,19 @@ classes:
             case: 正常
             summary: 初回は mount、同じ設定の次の回は update
             condition: '`config` が `{}` の `render` を 2 回'
-            mock: mdmark を `mount` と戻り値の `update`・`destroy` を記録する偶物にする
+            mock: mdmark を `mount` と戻り値の `update`・`destroy` を記録する代役にする
             expected: '`mount` が 1 回、2 回目は `update` が 2 回目の `markdown` で 1 回、`destroy` は呼ばれない'
           - name: test_render_when_config_changed
             case: 正常
             summary: 設定が変わったら destroy してから mount し直し、スクロールの位置を保つ
             condition: '`config` が `{}` の `render` の後、`scrollTop` を 200 にして `config` が `{ features: { callout: false } }` の `render`'
-            mock: mdmark を偶物にする
+            mock: mdmark を代役にする
             expected: '`destroy` の後に `mount` が新しい `config` で呼ばれ、`scrollTop` が 200'
           - name: test_render_when_theme
             case: 正常
             summary: 配色を固定するときだけ包む要素に class を付ける
             condition: '`theme` が `dark`、続けて `auto`'
-            mock: mdmark を偶物にする
+            mock: mdmark を代役にする
             expected: 1 回目の後は `root` が `mdmark-theme-dark` を持ち、2 回目の後は `mdmark-theme-*` を持たない
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定が変わったときの描き方]
@@ -329,13 +329,13 @@ functions:
         case: 正常
         summary: 404 は指定したバージョンが無い
         condition: '`fetch` が 404'
-        mock: '`fetch` を偶物にする'
+        mock: '`fetch` を代役にする'
         expected: '`versionMissing`。`fetch` に `method: "HEAD"` が渡る'
       - name: test_classify_load_failure_when_network_error
         case: 正常
         summary: ネットワークのエラーと 404 以外はオフライン
         condition: '`fetch` が `TypeError` で reject、別の回に 503'
-        mock: '`fetch` を偶物にする'
+        mock: '`fetch` を代役にする'
         expected: どちらも `offline`
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]

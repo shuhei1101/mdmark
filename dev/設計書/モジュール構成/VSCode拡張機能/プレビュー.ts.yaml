@@ -68,7 +68,7 @@ classes:
       - name: deps
         type: PreviewDeps
         access: private
-        description: '`ExtensionContext`・配布物の配信元・タグ一覧の取得先・テストか。`activate` が `extensionMode` と環境変数から作る'
+        description: '`ExtensionContext`・配布物の配信元・タグ一覧の取得先・テストか・ログの出力先（`Logger`）。`activate` が `extensionMode` と環境変数から作る'
     methods:
       - name: open
         title: プレビューを開く
@@ -253,6 +253,14 @@ classes:
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveLibraries]
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
+        process: |-
+          1. 設定ファイルの場所を決め（設定ファイルの場所を決める）、読む（設定ファイルを読む）
+             - `ok` の場合、`libraries` を `asWebviewUri` で直して（libraries の URL を直す）`config` を替え、前が読めなかったときだけ `configOk` を送る
+             - `missing` の場合、`config` を `{}` にする
+             - `error` の場合、`config` を残して `configError` を送る
+               - `[warn]` 設定ファイルを読めない（パス・行・`message`）
+             - `readFile` が `ENOENT` 以外で失敗した場合、`config` を残す
+               - `[error]` 設定ファイルを開けない（パス・誤り）
       - name: scheduleRender
         title: 描き直しを待つ
         kind: メソッド
@@ -290,10 +298,13 @@ classes:
              - `ready` の場合、`ready` を `true` にして今すぐ送る（設定ファイルを読めないときは `configError` も送る）
              - `revealLine` の場合、`mdmark.preview.scrollEditorWithPreview` が `true` でその Markdown のエディタが見えていれば、動かすかを判定し（動かすかを決める）、動かすときだけ `revealRange(行, AtTop)` を呼ぶ
              - `openLink` の場合、開き先を見分け（リンクの開き先を見分ける）、`external` は `env.openExternal`、`markdown` は元のエディタと同じ列に `window.showTextDocument`、`file` は `vscode.open` で開く。ファイルが無いときは何もしない
+               - `[warn]` リンク先が無い（`href`・解決したパス）。`none` のときは `[warn]` 開けないリンク（`href`）
              - `reload` の場合、読み込む
              - `openConfig` の場合、設定ファイルを開く
              - `inspected` の場合、`pendingInspects` の同じ `id` に渡して消す
-             - `rendered`・`loadFailed` は何もしない（結合テストが受けたことを `onDidReceiveMessage` で確かめる）
+             - `loadFailed` の場合、描けない理由は Webview が出す
+               - `[warn]` 配布物を読めない（`reason`・バージョン・`index.js` の URL）
+             - `rendered` は何もしない（結合テストが受けたことを `onDidReceiveMessage` で確かめる）
         callees:
           - '#classes[EditorScrollGuard]'
           - '#functions[resolveLink]'

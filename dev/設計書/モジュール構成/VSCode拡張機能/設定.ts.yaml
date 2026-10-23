@@ -58,7 +58,7 @@ data_models:
     title: 設定ファイルの読み取りの結果
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: '`{ kind: "ok"; config: PreviewConfig }`・`{ kind: "missing" }`・`{ kind: "error"; line: number }` の判別付きの型'
+    summary: '`{ kind: "ok"; config: PreviewConfig }`・`{ kind: "missing" }`・`{ kind: "error"; line: number; message: string }` の判別付きの型'
     properties:
       - name: kind
         type: '"ok" | "missing" | "error"'
@@ -69,6 +69,9 @@ data_models:
       - name: line
         type: number
         description: '`error` のときだけ。読めない行（1 始まり）'
+      - name: message
+        type: string
+        description: '`error` のときだけ。`YAMLParseError` の `message`（ログに出す）'
     status: planned
 constants:
   - name: SETTING_DEFAULTS
@@ -203,7 +206,7 @@ functions:
       description: '`ok` か `error`'
     process: |-
       1. `parse(text)` を呼ぶ
-         - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line }` を返す
+         - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
       3. `features`・`libraries` のうち値がマップのキーだけを `config` に入れて返す。他のキーは読まない
     unit_tests:
@@ -224,7 +227,7 @@ functions:
         summary: YAML として読めなければ読めない行を返す
         condition: '4 行目に `features: {callout: false` と閉じの無い YAML'
         mock: なし
-        expected: '`{ kind: "error", line: 4 }`'
+        expected: '`kind` が `error`、`line` が `4`、`message` が空でない'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
@@ -258,13 +261,13 @@ functions:
         case: 正常
         summary: ファイルが無ければ missing
         condition: '`readFile` が `code` が `ENOENT` の例外を投げる'
-        mock: '`readFile` を偶物にする'
+        mock: '`readFile` を代役にする'
         expected: '`{ kind: "missing" }`'
       - name: test_load_config
         case: 正常
         summary: 読んだ中身から取り出す
         condition: '`readFile` が `features: { callout: false }` を返す'
-        mock: '`readFile` を偶物にする'
+        mock: '`readFile` を代役にする'
         expected: '`{ kind: "ok", config: { features: { callout: false } } }`'
     callees:
       - '#functions[parseConfig]'
@@ -332,7 +335,7 @@ functions:
     side_effects: 「作る」を選んだときだけ、フォルダを作って `CONFIG_TEMPLATE` を書く
     args:
       - name: options
-        type: '{ configPath: string; baseDir: string }'
+        type: '{ configPath: string; baseDir: string; log: Logger }'
         required: true
         description: '`mdmark.configPath` と基準のフォルダ'
     returns:
@@ -344,6 +347,9 @@ functions:
       3. 無ければ `window.showInformationMessage` を `{ modal: true, detail }` とボタン「作る」で出す（文言は画面設計の「雛形を作るかの確認」）
          - 「作る」以外（閉じた・キャンセル）の場合、何も書かずに終わる
       4. フォルダが無ければ作り、`CONFIG_TEMPLATE` を書いて `window.showTextDocument` で開く。書く前にファイルができていたら書き換えずに開く
+         - フォルダを作れない・書けない場合、`window.showErrorMessage` で OS の誤りの文を出して終わる
+           - `[error]` 設定ファイルの雛形を書けない（パス・誤り）
+         - `[info]` 設定ファイルの雛形を作った（パス）
     callees:
       - '#functions[resolveConfigPath]'
       - '#constants[CONFIG_TEMPLATE]'

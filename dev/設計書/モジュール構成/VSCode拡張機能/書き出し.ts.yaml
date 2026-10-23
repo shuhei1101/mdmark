@@ -166,9 +166,9 @@ functions:
     side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取り `mdmark.lastVersion` を書き換える
     args:
       - name: options
-        type: '{ document: TextDocument; mode: ExportMode }'
+        type: '{ document: TextDocument; mode: ExportMode; log: Logger }'
         required: true
-        description: 書き出す Markdown と使い方
+        description: 書き出す Markdown・使い方・ログの出力先
     returns:
       type: Promise<Uri | undefined>
       description: 書き出した HTML。書き出せなかったときは `undefined`
@@ -177,8 +177,11 @@ functions:
          - `undecidable` の場合、画面設計の「バージョンを決められない通知」を `showErrorMessage` で出し、`undefined` を返す
          - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
       2. 設定ファイルを読み（設定ファイルを読む）、`libraries` を `pathToFileURL` で直す。読めない・無いときは設定なし
+         - `[warn]` 設定ファイルを読めないため設定なしで書き出す（パス・行・`message`）
       3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき）、書く（一時ファイルから置き換える）
          - 書けない場合、画面設計の「書き出せない通知」を `showErrorMessage` で出し、`undefined` を返す
+           - `[error]` HTML を書き出せない（パス・誤り）
+         - `[info]` HTML を書き出した（パス・バージョン・`mode`）
       4. `mode` で分ける
          - `export` の場合、「書き出した通知」を出す（待たずに返す）。「ブラウザで開く」が押されたら `env.openExternal` で開く
          - `browser`・`print` の場合、`env.openExternal` で開く

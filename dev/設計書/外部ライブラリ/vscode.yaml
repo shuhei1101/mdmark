@@ -82,6 +82,25 @@ catalogs:
       - name: ExtensionContext.extensionMode
         kind: プロパティ
         purpose: 拡張機能が本番・開発・テストのどれで動いているか（`ExtensionMode.Test` は結合テストのとき）
+      - name: window.createOutputChannel
+        kind: 関数
+        purpose: '`{ log: true }` で、レベル付きのログを出す「出力」パネルのチャネル（`LogOutputChannel`）を作る'
+        description: 戻り値は `trace`・`debug`・`info`・`warn`・`error` を持ち、出すレベルは利用者が「出力」パネルで切り替える（`logLevel`）。`context.subscriptions` に入れて片付ける
+        params:
+          - name: name
+            type: string
+            required: true
+            description: 「出力」パネルに出す名前（`mdmark`）
+          - name: options.log
+            type: 'true'
+            required: true
+            description: '`LogOutputChannel` を返す'
+        returns:
+          - name: '-'
+            type: LogOutputChannel
+            description: ログの出力先
+        refs:
+          - dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts#data_models[Logger]
 lead: VS Code が拡張機能に渡す API。コマンド・設定・エディタ・Webview のパネル・ファイルの監視を扱う。型は `@types/vscode` で配られ、実体は拡張機能を動かす VS Code が渡す。
 purl: pkg:npm/%40types/vscode@1.140.0
 supplier: Microsoft
@@ -93,7 +112,7 @@ upstream: microsoft/vscode
 verification:
   state: 済
   date: '2026-10-23'
-  detail: 'PoC（#70）で Webview の API（`window.createWebviewPanel`・`Webview.asWebviewUri`・`Webview.cspSource`・`Webview.postMessage`・`Webview.onDidReceiveMessage`）を動かした。この PR で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使い、VS Code 1.141.0 と 1.143.1（stable）で次を確かめた。`ExtensionContext.extensionMode` が `ExtensionMode.Test`（`3`）。`globalState.update` した値を `get` で読める。`TextEditor.revealRange`（`AtTop`、行 150）の後に `onDidChangeTextEditorVisibleRanges` が 1 回届き、先頭の行は 145（行 40 は 35、行 200 は 195。指定した行の 5 行前）。`revealRange` を呼んだ直後の `visibleRanges` はまだ前の値で、同じ位置へもう一度動かすと知らせが届かない。`TextEditor.edit` で `onDidChangeTextDocument`（`isDirty` が `true`）、`save` で `onDidSaveTextDocument` が届く。`createFileSystemWatcher` は VS Code の外から `fs.writeFileSync` で書き換えた設定ファイルの `onDidChange` を知らせる。`showInformationMessage` を `{ modal: true }` で呼ぶと、テストの中では `DialogService: refused to show dialog in tests` で失敗する。`env.openExternal` は既定のブラウザを開くため呼ばず、関数があることだけを確かめた（結合テストでは代役に差し替える）'
+  detail: 'PoC（#70）で Webview の API（`window.createWebviewPanel`・`Webview.asWebviewUri`・`Webview.cspSource`・`Webview.postMessage`・`Webview.onDidReceiveMessage`）を動かした。この PR で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使い、VS Code 1.141.0 と 1.143.1（stable）で次を確かめた。`ExtensionContext.extensionMode` が `ExtensionMode.Test`（`3`）。`globalState.update` した値を `get` で読める。`TextEditor.revealRange`（`AtTop`、行 150）の後に `onDidChangeTextEditorVisibleRanges` が 1 回届き、先頭の行は 145（行 40 は 35、行 200 は 195。指定した行の 5 行前）。`revealRange` を呼んだ直後の `visibleRanges` はまだ前の値で、同じ位置へもう一度動かすと知らせが届かない。`TextEditor.edit` で `onDidChangeTextDocument`（`isDirty` が `true`）、`save` で `onDidSaveTextDocument` が届く。`createFileSystemWatcher` は VS Code の外から `fs.writeFileSync` で書き換えた設定ファイルの `onDidChange` を知らせる。`showInformationMessage` を `{ modal: true }` で呼ぶと、テストの中では `DialogService: refused to show dialog in tests` で失敗する。`env.openExternal` は既定のブラウザを開くため呼ばず、関数があることだけを確かめた（結合テストでは代役に差し替える）。2026-10-23 に VS Code 1.141.0 で、`window.createOutputChannel("mdmark", { log: true })` が `name` が `mdmark` で `trace`・`debug`・`info`・`warn`・`error` と数の `logLevel` を持ち、文字列と引数の `warn`・`Error` の `error` を例外なく受けることを確かめた'
 license: MIT（`@types/vscode`。商用利用可）
 official_url: https://code.visualstudio.com/api
 docs_url: https://code.visualstudio.com/api/references/vscode-api
