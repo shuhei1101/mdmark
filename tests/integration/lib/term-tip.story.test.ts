@@ -4,6 +4,9 @@ import { createBrowserHolder, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();
 
+// スクリプトが動かないときも語の上に開く広い画面（狭い画面は語の直後に出す）
+const WIDE_VIEWPORT = { width: 1280, height: 800 };
+
 beforeAll(holder.launch);
 afterAll(holder.close);
 
@@ -26,8 +29,9 @@ function tipAndTermRects(page: Page) {
   });
 }
 
-/** 開いたツールチップが語の上にあり、透明な線が下側にあることを確かめる */
-async function expectOpenedAbove(page: Page): Promise<void> {
+/** 広い画面でストーリーを開き、開いたツールチップが語の上にあり、透明な線が下側にあることを確かめる */
+async function expectOpenedAbove(id: string): Promise<void> {
+  const page = await holder.openStory(id, WIDE_VIEWPORT);
   const rects = await tipAndTermRects(page);
   expect(rects.tipBottom).toBeLessThanOrEqual(rects.termTop);
   const borders = await page.locator(".mdmark-term-tip").evaluate((tip) => ({
@@ -57,7 +61,7 @@ test("test_term_only", async () => {
   const term = page.locator(".mdmark-term");
   await expect(term.getAttribute("tabindex")).resolves.toBe("0");
   await expect(term.getAttribute("aria-describedby")).resolves.toBe("tip-term");
-  await expectOpenedAbove(page);
+  await expectOpenedAbove("parts-termtip--term-only");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -86,7 +90,7 @@ test("test_docs_only", async () => {
   await expect(
     page.locator(".mdmark-term").getAttribute("aria-details"),
   ).resolves.toBe("tip-docs");
-  await expectOpenedAbove(page);
+  await expectOpenedAbove("parts-termtip--docs-only");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -107,7 +111,7 @@ test("test_both", async () => {
   await expect(
     page.locator(`[id="tip-both-meaning"]`).innerText(),
   ).resolves.toBe("文書と用語を並べた YAML のファイル");
-  await expectOpenedAbove(page);
+  await expectOpenedAbove("parts-termtip--both");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -227,7 +231,7 @@ test("test_avoided", async () => {
   await expect(
     term.evaluate((element) => getComputedStyle(element).textDecorationStyle),
   ).resolves.toBe("wavy");
-  await expectOpenedAbove(page);
+  await expectOpenedAbove("parts-termtip--avoided");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 

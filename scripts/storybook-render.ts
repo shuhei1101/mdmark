@@ -612,11 +612,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
             },
             open,
           });
-    // 開いた状態は、持ち主の上に出す（画面に対する位置は操作が決める）。上の余白の左上に置く
+    // 開いた状態は、箱の上端の上に出す（画面に対する位置は操作が決める）。箱の上に余白を取る
     const placedTip = open
       ? tip.replace(
           'role="tooltip"',
-          'role="tooltip" style="position:absolute;inset-block-start:0.5rem;inset-inline-start:0.5rem"',
+          'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
         )
       : tip;
     const owner =
@@ -627,7 +627,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           : kind === "hint"
             ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
             : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
-    return `<div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem;padding-block-start:${open ? "11rem" : "1rem"}">${owner}${placedTip}</div>`;
+    return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${placedTip}</div></div>`;
   },
   hint: (args) =>
     renderHint({
