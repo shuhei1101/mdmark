@@ -205,3 +205,8 @@ body.vscode-dark {
     outline-offset: 2px;
   }
 }
+
+/* 今の場面に当たらない中身: 上の display の指定より後に置いて隠す */
+.preview [hidden] {
+  display: none;
+}
