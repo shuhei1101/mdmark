@@ -25,6 +25,10 @@ import {
 } from "../../unit/helpers/diagrams.ts";
 import { matches, plainText } from "../../unit/helpers/html.ts";
 import {
+  AVOID_DOC_ID,
+  AVOID_EXPECTED_HTML,
+  AVOID_INDEX,
+  AVOID_MARKDOWN,
   DOC_ID,
   EXPECTED_HTML,
   INDEX,
@@ -617,6 +621,31 @@ test("test_normal_when_index", async () => {
   expect(html).toBe(EXPECTED_HTML);
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
+});
+
+// やめた言い方のマーカーと代わりの用語を、スクリプト無しで読める HTML 文字列にする（正常系）
+test("test_normal_when_avoided_term", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(AVOID_MARKDOWN, {
+    index: AVOID_INDEX,
+    docId: AVOID_DOC_ID,
+  });
+  // 検証
+  expect(typeof document).toBe("undefined");
+  expect(html).toBe(AVOID_EXPECTED_HTML);
+  // 用語は破線の下線で「用語」の意味を持ち、やめた言い方は波線のマーカーで「代わりの用語」の語と意味を持つ
+  expect(html).toContain(
+    '<span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span>',
+  );
+  expect(html).toContain(
+    '<span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="mdmark-term-2">作業場</span>',
+  );
+  expect(plainText(html)).toContain(
+    "代わりの用語ワークスペース話し合いの記録を置くフォルダ",
+  );
+  expect(html).not.toContain("<script");
 });
 
 /** `Intl.Segmenter` を取り除いた間だけ、ほかのテストと共有しない新しいモジュールとして配布物の入口を読み込んで `run` に渡す */

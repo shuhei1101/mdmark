@@ -217,7 +217,11 @@ function termsFilter(state: StateCore): (text: string) => string {
   }
   const ownPath = env.index?.docs.find((doc) => doc.id === env.docId)?.path;
   // 同じ用語・文書は、1 つの範囲で最初に出たところだけに下線を付ける
-  const seen: SeenTerms = { terms: new Set(), docs: new Set() };
+  const seen: SeenTerms = {
+    terms: new Set(),
+    docs: new Set(),
+    avoided: new Set(),
+  };
   const nextTipId = (): string => {
     env.termTipCount = (env.termTipCount ?? 0) + 1;
     return `mdmark-term-${env.termTipCount}`;

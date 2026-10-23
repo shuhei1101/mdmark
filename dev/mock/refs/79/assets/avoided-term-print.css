@@ -1,0 +1,12 @@
+/* やめた言い方の印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときのやめた言い方 */
+@layer mdmark {
+  .mdmark {
+    /* マーカーの付いたやめた言い方: 紙では開けないので波線を外し、本文の文字として出す */
+    .mdmark-term.mdmark-term-avoided {
+      text-decoration: none;
+    }
+  }
+}

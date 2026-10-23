@@ -19,6 +19,10 @@ import {
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
 import {
+  AVOID_DOC_ID,
+  AVOID_EXPECTED_HTML,
+  AVOID_INDEX,
+  AVOID_MARKDOWN,
   DOC_ID,
   EXPECTED_HTML,
   INDEX,
@@ -1154,6 +1158,70 @@ test("test_normal_when_glossary", async () => {
   await userEvent.keyboard("{Escape}");
   expect(isOpen(apiTip)).toBe(false);
   expect(document.activeElement).toBe(term);
+});
+
+// 索引の用語のやめた言い方に波線のマーカーを付け、フォーカスで代わりの用語のツールチップを出し、Esc で閉じる（正常系）
+test("test_normal_when_avoided_term", async () => {
+  // 準備
+  const el = createElement();
+  const markdown =
+    "## 節\n\nワークスペースと作業場と作業場を書く。行内のコードは `作業場` と書く。\n";
+  // 実行
+  await mountTracked(el, {
+    markdown,
+    index: AVOID_INDEX,
+    docId: AVOID_DOC_ID,
+  });
+  // 検証
+  const terms = [...el.querySelectorAll<HTMLElement>(".mdmark-term")];
+  expect(terms.map((term) => term.textContent)).toEqual([
+    "ワークスペース",
+    "作業場",
+  ]);
+  // 用語は破線の下線のまま、最初の `作業場` だけがマーカーになる
+  const [workspace, avoided] = terms as [HTMLElement, HTMLElement];
+  expect(workspace.classList.contains("mdmark-term-avoided")).toBe(false);
+  expect(getComputedStyle(workspace).textDecorationStyle).toBe("dashed");
+  expect(avoided.classList.contains("mdmark-term-avoided")).toBe(true);
+  expect(getComputedStyle(avoided).textDecorationStyle).toBe("wavy");
+  expect(el.querySelectorAll(".mdmark-term-avoided")).toHaveLength(1);
+  expect(find<HTMLElement>(el, "code").closest(".mdmark-term")).toBeNull();
+  // フォーカスすると、語の `aria-describedby` が指す role="tooltip" のツールチップが開く
+  const tip = document.getElementById(
+    avoided.getAttribute("aria-describedby") ?? "",
+  ) as HTMLElement;
+  expect(isOpen(tip)).toBe(false);
+  avoided.focus();
+  expect(isOpen(tip)).toBe(true);
+  expect(tip.getAttribute("role")).toBe("tooltip");
+  expect(
+    [...tip.querySelectorAll(".mdmark-term-tip-heading")].map(
+      (heading) => heading.textContent,
+    ),
+  ).toEqual(["代わりの用語"]);
+  expect(
+    find<HTMLElement>(tip, ".mdmark-term-tip-replacement").textContent,
+  ).toBe("ワークスペース");
+  expect(find<HTMLElement>(tip, ".mdmark-term-tip-meaning").textContent).toBe(
+    "話し合いの記録を置くフォルダ",
+  );
+  // Esc: ツールチップが消え、フォーカスが語に残る
+  await userEvent.keyboard("{Escape}");
+  expect(isOpen(tip)).toBe(false);
+  expect(document.activeElement).toBe(avoided);
+});
+
+// ブラウザで配布物の render を呼んでも、やめた言い方つきの出力が固定値と等しい（正常系）
+test("test_normal_when_avoided_term_in_browser", async () => {
+  // 準備
+  const { render } = await loadBuilt();
+  // 実行
+  const html = render(AVOID_MARKDOWN, {
+    index: AVOID_INDEX,
+    docId: AVOID_DOC_ID,
+  });
+  // 検証
+  expect(html).toBe(AVOID_EXPECTED_HTML);
 });
 
 /** 参照の表: `arch` を `api`・`guide` が参照している */
