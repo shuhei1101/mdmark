@@ -64,5 +64,4 @@ preconditions:
   - 文書を書く人の手元から jsDelivr と GitHub のタグ一覧の API に届く
 success_guarantee: 書いた内容がプレビューに mdmark で描かれ、エディタの位置とプレビューの位置が合い、書き出した HTML をブラウザで開くとプレビューと同じ文書が描かれて印刷のダイアログが出る。
 minimal_guarantee: 配布物を読めないときは、プレビューに描けない理由を出し、Markdown と設定ファイルを書き換えない。
-notes:
-  対応テストファイル: 対応テストファイル（`test_file`）は E2E テスト作成の段で足す。
+test_file: tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts

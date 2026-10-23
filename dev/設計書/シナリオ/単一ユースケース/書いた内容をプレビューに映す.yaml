@@ -145,3 +145,4 @@ preconditions:
   - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
 success_guarantee: プレビューに、最後に書いた Markdown の全文が、設定ファイルの `features`・`libraries` を当てて描かれる。
 minimal_guarantee: 設定ファイルを読めないときも文書は描いたままにし、読めないことを知らせる。
+test_file: tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts

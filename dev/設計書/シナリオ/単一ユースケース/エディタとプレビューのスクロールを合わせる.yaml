@@ -70,3 +70,4 @@ preconditions:
   - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
 success_guarantee: エディタの見えている先頭の行と、プレビューの見えている先頭のブロックの元の行番号が合う。
 minimal_guarantee: 同期を切った向きは動かさない。片方を動かした直後に逆向きの同期で往復しない。
+test_file: tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts

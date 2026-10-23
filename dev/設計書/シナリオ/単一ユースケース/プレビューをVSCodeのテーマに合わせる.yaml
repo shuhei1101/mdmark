@@ -49,3 +49,4 @@ preconditions:
   - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
 success_guarantee: '`mdmark.preview.theme` が `auto` のときはテーマの明暗、`light` / `dark` のときはその配色でプレビューが描かれる。'
 minimal_guarantee: 配色を切り替えても本文とスクロールの位置は変わらない。
+test_file: tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts

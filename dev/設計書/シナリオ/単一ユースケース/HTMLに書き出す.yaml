@@ -75,3 +75,4 @@ preconditions:
   - 既定のブラウザから jsDelivr に届く
 success_guarantee: 書き出し先に HTML が 1 つ書かれ、ブラウザで開くとプレビューと同じ文書が描かれる。
 minimal_guarantee: 書き出せないときは理由を通知に出し、書きかけのファイルを残さない。Markdown は書き換えない。
+test_file: tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts

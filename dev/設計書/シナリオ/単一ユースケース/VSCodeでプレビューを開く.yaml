@@ -174,3 +174,4 @@ preconditions:
   - Markdown のファイルをエディタで開いている
 success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めた版の mdmark で文書が描かれる。
 minimal_guarantee: 配布物を読めないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と設定ファイルは書き換えない。
+test_file: tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts

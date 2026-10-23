@@ -53,3 +53,4 @@ preconditions:
   - '`vscode/package.json` の `version` を配る版にしている'
 success_guarantee: タグの GitHub Release に `mdmark-{版}.vsix` が添えられる。
 minimal_guarantee: タグと `vscode/package.json` の版が合わないときは .vsix を作らず、Release に何も添えない。
+test_file: tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts
