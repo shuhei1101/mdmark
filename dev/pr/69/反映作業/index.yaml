@@ -1,0 +1,28 @@
+拡張機能のタグの付与:
+  説明: master へ入った commit に `vscode/package.json` の版で `vscode-v{版}` のタグを打って push し、GitHub Actions に .vsix を作らせて GitHub Release に添えさせる
+  タグ: [タグ, リリース]
+  実行者: tester
+  時期: master へ入った後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 再試行せず、原因を確かめて依頼元へ返す
+  確認方法: GitHub Release の `vscode-v{版}` に `mdmark-{版}.vsix` が添えられている
+  状態: "-"
+Marketplace と Open VSX への登録:
+  説明: GitHub Release に添えた .vsix を、Visual Studio Marketplace の発行者と Open VSX の名前空間で公開する。公開した版は取り下げても利用者の手元とミラーに残るため戻せず、直すときは版を上げて出し直す（Microsoft アカウント・Eclipse アカウントでのログインと、発行者・名前空間・トークンの作成が要り、AI が行えない）
+  タグ: [ユーザーの操作, 公開]
+  実行者: ユーザー
+  時期: master へ入った後
+  回数: 拡張機能の版ごとに 1 回
+  可逆: false
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 実行者が原因を確かめて依頼元へ返す
+  確認方法: Visual Studio Marketplace と Open VSX の拡張機能のページに、`vscode/package.json` と同じ版が出ている
+  状態: "-"
