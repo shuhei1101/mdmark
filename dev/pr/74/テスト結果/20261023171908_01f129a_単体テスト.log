@@ -1,0 +1,12 @@
+$ npx vitest run --project 'unit*' <tests/unit の *.test.ts のうち matches.test.ts と positions.test.ts を除いた全ファイル>
+# 作った単体テスト（matches.test.ts・positions.test.ts）は実装が無いため Red で、ここでは除いて既存の単体テストだけを流した
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-collect-term-matches
+
+
+ Test Files  114 passed (114)
+      Tests  578 passed (578)
+   Start at  17:19:12
+   Duration  36.92s (tests 44%, worker 26%, import 26%, transform 4%)
+
+exit code: 0
