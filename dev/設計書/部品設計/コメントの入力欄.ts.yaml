@@ -88,6 +88,14 @@ css_properties:
     syntax: <color>
     default: '#b91c1c（ダーク #f87171）'
     description: 知らせの文字とアイコン、`aria-invalid` の本文の欄の枠の色
+  - name: --mdmark-color-text
+    syntax: <color>
+    default: '#18181b（ダーク #ededef）'
+    description: 「コメントを保存」のボタンの地と線の色
+  - name: --mdmark-color-bg
+    syntax: <color>
+    default: '#ffffff（ダーク #131316）'
+    description: 「コメントを保存」のボタンの文字の色
 accessibility:
   - 枠は `role="dialog"`・`aria-label="コメントを書く"` で、開いたら本文の欄へフォーカスを移す
   - 本文の欄は表示の `コメント` を読み上げの名前に持ち、`aria-describedby` で知らせを指す
