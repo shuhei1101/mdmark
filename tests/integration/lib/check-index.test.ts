@@ -156,6 +156,54 @@ test("test_normal_when_avoided_term", async () => {
   }
 });
 
+// 用語集の表のやめた言い方を、表を持たない文書の本文からも avoided_term で返す（正常系）
+test("test_normal_when_glossary_avoided_term", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "glossary", path: "glossary.md", title: "用語集" },
+      { id: "guide", path: "guide.md", title: "手引き" },
+    ],
+  };
+  // glossary.md は表の中に 作業場・ワーク場 を持つ。guide.md は 1 行目に 作業場、3 行目に ワーク場、5 行目に ワークスペース
+  const glossary = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  const guide = [
+    "作業場を開く。",
+    "",
+    "ワーク場を閉じる。",
+    "",
+    "ワークスペースを使う。",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = checkIndex({
+    index,
+    documents: { "glossary.md": glossary, "guide.md": guide },
+  });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+    { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+  ]);
+  expect(issues[0]?.message).toContain("作業場");
+  expect(issues[0]?.message).toContain("ワークスペース");
+  expect(issues[1]?.message).toContain("ワーク場");
+  expect(issues[1]?.message).toContain("ワークスペース");
+});
+
 // 合わないところごとに schema のずれを返し、例外を投げない（異常系）
 test("test_normal_when_invalid_schema", async () => {
   // 準備
