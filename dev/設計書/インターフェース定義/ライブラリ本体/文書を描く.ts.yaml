@@ -1558,7 +1558,7 @@ flows:
         P->>P: body の class を vscode-light に替える
         P->>P: ライトの値に戻る
     expected:
-      - '`body` が `vscode-dark` の間、`el` の `--mdmark-color-bg` の計算値がダークの `#0d1117`'
+      - '`body` が `vscode-dark` の間、`el` の `--mdmark-color-bg` の計算値がダークの `#131316`'
       - '`body` を `vscode-light` に替えると、`mount` し直さずにライトの値になる'
       - '`body` を `vscode-high-contrast` に替えるとダーク、`vscode-high-contrast vscode-high-contrast-light` に替えるとライトの値になる'
     test: test_normal_when_parent_class_dark
