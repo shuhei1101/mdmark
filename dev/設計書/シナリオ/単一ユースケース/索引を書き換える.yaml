@@ -1,0 +1,76 @@
+title: "索引を書き換える"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 2 つ。2 つ目の文書は索引に載っていない
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（id: 2 つ目の文書の ID、item: パスと題名）
+        S->>F: 索引を読む
+        S->>S: 項目を足した索引を Schema で検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: 書き換えた
+    expected:
+      - 索引のファイルに 2 つ目の文書の行が入る
+      - 1 つ目の文書の行は変わっていない
+      - 書き換えた後の索引が Schema に合う
+    test: test_normal
+  - name: 正常シナリオ（消す）
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 1 つ。索引にはもう 1 つ、文書の無い行がある
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（id: 文書の無い行の ID、item: null）
+        S->>F: 索引を読む
+        S->>S: 行を消した索引を Schema で検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: 書き換えた
+    expected:
+      - 索引のファイルから、渡した ID の行がなくなる
+      - 他の行は変わっていない
+    test: test_normal_when_removed
+  - name: 異常シナリオ（Schema に合わない）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 合わない項目
+        description: 必須のパスを持たない文書の項目
+        notes: 書き換える前と後で索引のファイルの中身が同じであることを確かめる
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（id: 新しい ID、item: パスの無い項目）
+        S->>F: 索引を読む
+        S->>S: 項目を足した索引を Schema で検査する
+        S-->>C: エラー（合わないところと直し方）
+    expected:
+      - ツールの結果がエラーになる
+      - エラーの文に、合わない項目の場所と直し方が出る
+      - 索引のファイルの中身が書き換える前と同じ
+    test: test_error_when_schema_invalid
+lead: Claude Code が MCP のツール `update_index` で、文書か用語の ID の項目を置き換え・足し・消す。書く前に索引の Schema で検査し、合わなければ書かない。
+issue: 11
+primary_actor: Claude Code
+trigger: Claude Code が文書を足した・消した・題名を変えた後に、索引を合わせたくなる
+preconditions:
+  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+  - 作業のフォルダに設定と索引がある
+success_guarantee: 索引のファイルの、渡した ID の項目だけが変わる。
+minimal_guarantee: 書き換えた後の索引が Schema に合わないときは、索引のファイルを書き換えず、合わないところと直し方を返す。
+test_file: tests/e2e/単一ユースケース/索引を書き換える.spec.ts

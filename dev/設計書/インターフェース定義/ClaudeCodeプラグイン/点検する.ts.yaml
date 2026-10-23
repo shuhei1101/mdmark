@@ -1,0 +1,107 @@
+title: "点検する"
+entry:
+  kind: mcp_tool
+  value: check
+flows:
+  - name: 正常系
+    summary: ずれの無いフォルダで空の一覧を返す
+    setup:
+      - name: ずれの無いフォルダ
+        description: 雛形に文書 2 つを足し、索引に 2 つとも載せ、`build.include` が 2 つに当たるフォルダ
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーをそのフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読む
+        S-->>C: issues（0 件）
+    expected:
+      - '`issues` が空で、`isError` が立たない'
+      - 設定・索引・文書が変わっていない
+    test: test_normal
+  - name: 正常系（ずれがある）
+    summary: CLI と同じずれを一覧で返す
+    setup:
+      - name: ずれを持つフォルダ
+        description: 正常系のフォルダから文書 `old.md` を消して索引には残し、設定の `build` から `out` を消したフォルダ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読む
+        S-->>C: issues（schema・missing_doc）
+    expected:
+      - '`issues` が `schema`（`mdmark.config.yaml`・`build`）と `missing_doc`（`index.yaml`・`docs[1].path`）の 2 件'
+      - '`isError` が立たない'
+      - 同じフォルダで流した `mdmark check` の出力の行と一致する
+    test: test_normal_when_drift
+  - name: 異常系（設定ファイルが無い・ツールのエラー）
+    summary: 設定ファイルが見つからないと mdmark init で置けることを返す
+    setup:
+      - name: 設定ファイルの無いフォルダ
+        description: 文書だけがあり、そのフォルダと上のフォルダに `mdmark.config.yaml` が無い一時フォルダ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: check
+        S->>S: 作業のフォルダから上へ設定ファイルを探す
+        S-->>C: isError（無いことと mdmark init）
+    expected:
+      - '`isError` が立つ'
+      - 内容に `mdmark.config.yaml` が無いことと `mdmark init` が出る
+    test: test_error_when_config_missing
+lead: '`mdmark check` と同じ処理で、設定の形・索引と文書のずれ・`build` の対象の有無・知らない印を点検し、ずれの一覧を返す。'
+idempotent: true
+side_effects: なし（設定・索引・文書を書き換えない）
+request:
+  - name: config
+    type: string
+    required: false
+    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+request_example: |-
+  ```json
+  {}
+  ```
+response:
+  - name: issues[].file
+    type: string
+    description: ずれのあるファイル（設定ファイルのあるフォルダからの相対パス）
+  - name: issues[].where
+    type: string
+    description: 行かキーのパス。無いときは空の文字列
+  - name: issues[].kind
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'unknown_mark'"
+    description: ずれの種類。意味は『設定と索引を点検する』の「種類」
+  - name: issues[].message
+    type: string
+    description: 何が合わないかと直し方の 1 文
+response_example: |-
+  ```json
+  {"issues": [{"file": "index.yaml", "where": "docs[1].path", "kind": "missing_doc", "message": "`old.md` が見つかりません。文書を戻すか、索引の `docs[1]` を消してください。"}]}
+  ```
+response_notes: ずれがあることはツールのエラーにしない（`isError` を立てず、`issues` に並べる）。並びは `mdmark check` の出力の行の並びと同じ。
+exceptions:
+  - name: なし（正常終了）
+    condition: 点検できた。ずれの有無を問わない
+  - name: ツールのエラー（設定ファイルが無い）
+    condition: '`config` のファイルが無いか、作業のフォルダと上のフォルダに `mdmark.config.yaml` が無い'
+    notes: 探した場所と `mdmark init` で置けることを書く。設定ファイルを YAML として読めないときも同じくエラーにし、読めない行を書く
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を書く。'
+constraints:
+  - item: CLI との一致
+    constraint: 同じ設定・索引・文書では、`issues` が `mdmark check` の出力の行と 1 対 1 に一致する
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts

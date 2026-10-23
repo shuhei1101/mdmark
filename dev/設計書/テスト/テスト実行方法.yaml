@@ -20,9 +20,12 @@ layers:
     duration: 全件で数十秒（作業ツリーのクローンと `npm ci` を含む）
     external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
   - name: 結合テスト（フロント）
-    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す
+    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む・Claude Code プラグインの MCP サーバーとフックを流す）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
+      - Claude Code プラグインの結合テスト（`tests/integration/ClaudeCodeプラグイン/`）は、ビルドした `plugin/` の MCP サーバーとフックを流す。Claude Code を起動しない
+      - MCP サーバーは `createMcpServer` で作ったサーバーを `InMemoryTransport` で MCP のクライアントとつなぐ。`StdioClientTransport` は、外部ライブラリ『MCP-SDK』の不具合一覧のとおり、束ねたサーバーが起動してツールを返すかを確かめるケースだけに使う（設定ファイルを探す起点は `CLAUDE_PROJECT_DIR` に作業のフォルダーを渡す）
+      - フックは `hooks/hooks.json` の SessionStart のコマンドを、`CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流す
     run_all: |-
       ```bash
       npm run test:integration

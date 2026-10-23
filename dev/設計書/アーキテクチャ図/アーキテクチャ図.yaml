@@ -17,6 +17,15 @@ overview:
     - id: page
       label: 使う側のページ
       kind: actor
+    - id: plugin
+      label: Claude Code プラグイン
+      kind: system
+    - id: cc
+      label: Claude Code
+      kind: external
+    - id: writer
+      label: 文書を書く人
+      kind: actor
   edges:
     - from: dev
       to: lib
@@ -30,11 +39,24 @@ overview:
     - from: cdn
       to: page
       label: HTTPS
+    - from: repo
+      to: cc
+      label: マーケットプレイス
+    - from: writer
+      to: cc
+      label: 依頼
+    - from: cc
+      to: plugin
+      label: フック・MCP（標準入出力）
+    - from: plugin
+      to: lib
+      label: 同じ処理を束ねる
   subgraphs:
     - id: mdmark
       label: mdmark
       nodes:
         - lib
+        - plugin
 repository:
   style: モノレポ
   repositories:
@@ -49,8 +71,9 @@ repository:
     | `templates/` | 使う側へ置く雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が置く | #9 |
     | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI | #3・#5・#6 |
     | `migrations/` | 版ごとの移行の手順とスクリプト（`v{版}/`）、出していない版の手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{版}/` を読む（`next/` と `no-steps.yaml` は配布物のビルドだけが読む） | #10 |
-    | `guide/` | 使い方集 | プラグインと MCP | #11 |
-    | `plugin/` | Claude Code のプラグイン（SessionStart・MCP） | プラグインのマーケットプレイス | #11 |
+    | `guide/` | 使い方集の索引（`index.yaml`。本文は `docs/` のページを指す） | 配布物のビルドが `plugin/guide/` に写し、フックと MCP が読む | #11 |
+    | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を載せる） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
+    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`・`package.json`）と、配布物のビルドが書く束ねた MCP サーバー・フック・配布物の写し・使い方集（`dist/` と同じく release と hotfix でだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる | #11 |
 
     この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。
 subsystems:
@@ -60,6 +83,15 @@ subsystems:
     runtime: TypeScript 7
     runs_on: 使う側のページを開いたブラウザ（`mount`・`render`）と、使う側の Node の処理（`render`）と、文書を書く人の手元の Node 24（CLI の `dist/cli.js`。`npx github:shuhei1101/mdmark#v{版}` で入れ、実行時の依存の yaml と esbuild を `dependencies` から読む）
     status: planned
+  - name: Claude Code プラグイン
+    scope: claude-code-plugin
+    role: Claude Code に使い方集の索引を渡し、使い方集の本文・書き出し・まとめ・点検・索引の検索と書き換えを MCP のツールで呼ばせる。ツールの処理はライブラリ本体の CLI と同じソースを束ねる
+    runtime: TypeScript 7（Node 24）
+    runs_on: 文書を書く人の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと標準入出力の MCP サーバー（実行時の依存の esbuild は `plugin/package.json` から Claude Code が入れる）
+    reason: Claude Code の版と仕様に依る部分を、ブラウザと Node で動くライブラリ本体と分けて確かめる
+    status: planned
+    introduced:
+      pr: 72
 lead: mdmark の配布物が、開発者のビルドから使う側のページへ届くまでの全体構成。
 external_systems:
   - name: jsDelivr
@@ -81,3 +113,14 @@ external_systems:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[外部ライブラリの読み込み]
     notes:
       事前確認: 否。この Issue の既定の対応表は空で、読む先は使う側が設定で渡す。結合テストは手元の開発サーバーが配る代役のモジュールで確かめる。既定の対応表に外部の配信元を載せる Issue（#6）が、その配信元の事前確認を決める
+  - name: Claude Code
+    purpose: マーケットプレイスからプラグインを入れ、セッションの開始でフックを流して使い方集の索引を受け取り、MCP サーバーを起動してツールを呼ぶ
+    direction: 双方向
+    protocol: 子プロセスの標準入出力（フックは JSON、MCP は JSON-RPC）
+    detail: dev/設計書/外部ライブラリ/ClaudeCode#
+    cost: mdmark の側には無い（Claude Code の利用料は使う側が持つ）。`update_index`・`export_html`・`build_site` は使う側の作業のフォルダに書く
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#
+    status: planned
+    introduced:
+      pr: 72

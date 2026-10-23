@@ -15,6 +15,7 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import { parse } from "yaml";
 import { main as buildMain } from "../../../scripts/build.ts";
 import { type CliResult, linesOf, useTempDirs, writeFiles } from "../cli.ts";
+import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
@@ -37,7 +38,8 @@ async function buildPackage(version: string): Promise<string> {
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,
   });
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), "v0.0.0\n");
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await copyFile(join(REPO_ROOT, name), join(root, name));

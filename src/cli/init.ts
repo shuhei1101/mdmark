@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { CliError, type CliIo } from "./main.ts";
+import { CliError, type CliIo } from "./errors.ts";
 
 /** 雛形 1 つ: 置く先のパスと、`templates/` の中の正本のパス */
 type TemplateFile = {

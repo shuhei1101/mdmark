@@ -20,6 +20,10 @@ import type {
   MdmarkIndexIssue,
   MdmarkReferences,
 } from "../../src/index.ts";
+import {
+  copyPluginInputs,
+  writeRootPackageJson,
+} from "../integration/plugin-inputs.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -178,7 +182,9 @@ export async function buildDistRoot(
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await cp(join(REPO_ROOT, name), join(root, name));
   }
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  // プラグインのビルドが読む入力
+  await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   await symlink(
     join(REPO_ROOT, "node_modules"),

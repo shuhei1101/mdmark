@@ -10,7 +10,8 @@ directory: |-
   │   ├── references.ts    # 参照の表（collectReferences）
   │   ├── matches.ts       # 本文の参照の取り出し（collectMatches）
   │   ├── positions.ts     # 照合した文字の位置を本文の行と行の中の位置へ戻す
-  │   └── check.ts         # 索引の点検（checkIndex）
+  │   ├── check.ts         # 索引の点検（checkIndex）
+  │   └── find.ts          # 索引から文書を探す（findDocs）
   ├── render/syntax/
   │   ├── glossary.ts      # glossary の印で囲んだ表の読み取り
   │   ├── terms.ts         # 本文の用語と文書の別名に下線を引くコアルール
@@ -900,6 +901,69 @@ functions:
         condition: '`<span title="語">語</span><!-- 語 --><script>語</script><code>語</code><a href="#">語</a><a href="#"><span>入</span></a><h2><em>見</em></h2>`'
         mock: なし
         expected: 長さが同じで、最初の `span` の要素の文字の `語` と、`a` の中の `span` の `入`、見出しの中の `em` の `見` だけが残る
+  - name: findDocs
+    title: 索引から文書を探す
+    kind: 関数
+    container: src/knowledge/find.ts
+    usecase: 索引から文書を探す
+    summary: 索引の文書を、題・別名・概要の部分一致、タグ、関係する文書で絞る
+    description: 渡した条件を全て満たす文書を、索引の `docs` の並びで返す。条件を 1 つも渡さなければ全ての文書を返す。関係する文書は、参照の表の被参照から、その文書が参照している文書と、その文書を参照している文書を引く
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; references?: MdmarkReferences; text?: string; tags?: string[]; relatedTo?: string }'
+        required: true
+        description: 索引・参照の表（`relatedTo` を渡すときに要る）・語・タグ・関係を引く文書の ID
+    returns:
+      type: MdmarkIndexDoc[]
+      description: 当たった文書（索引の並び）。当たらなければ空
+    process: |-
+      1. `text` があれば、題・別名・概要のどれかに、大文字と小文字を区別せず含む文書に絞る
+      2. `tags` があれば、全てのタグを持つ文書に絞る
+      3. `relatedTo` があれば、参照の表の `backlinks[relatedTo]` にある文書と、`backlinks` に `relatedTo` を持つ文書に絞る（`relatedTo` 自身は含めない）
+    unit_tests:
+      - name: test_find_docs
+        case: 正常
+        summary: 題の一部で引く
+        condition: '文書 `a`（題「文書 A」）・`b`（題「文書 B」）、`text: "文書 a"`'
+        mock: なし
+        expected: '`a` だけ'
+      - name: test_find_docs_when_alias_or_description
+        case: 正常
+        summary: 別名と概要でも引く
+        condition: '`a` の別名に `構成図`、`b` の概要に `構成`、`text: "構成"`'
+        mock: なし
+        expected: '`a`・`b` の順'
+      - name: test_find_docs_when_tags
+        case: 正常
+        summary: 全てのタグを持つ文書に絞る
+        condition: '`a` のタグ `設計`・`API`、`b` のタグ `設計`、`tags: ["設計", "API"]`'
+        mock: なし
+        expected: '`a` だけ'
+      - name: test_find_docs_when_related_to
+        case: 正常
+        summary: 参照先と被参照を引く
+        condition: '参照の表の `backlinks` が `{ a: ["c"], b: ["a"] }`、文書 `a`・`b`・`c`・`d`、`relatedTo: "a"`'
+        mock: なし
+        expected: '`b`・`c` の順で、`a`・`d` を含まない'
+      - name: test_find_docs_when_no_condition
+        case: 正常
+        summary: 条件が無ければ全ての文書
+        condition: 文書 2 つ、条件無し
+        mock: なし
+        expected: 2 件
+      - name: test_find_docs_when_no_match
+        case: 正常
+        summary: 当たらなければ空
+        condition: どの文書にも無い語
+        mock: なし
+        expected: 空
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#
+    status: planned
+    introduced:
+      pr: 72
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
@@ -923,3 +987,4 @@ test_files:
   - tests/unit/src/parts/term-tip.test.ts
   - tests/unit/src/parts/backlinks.test.ts
   - tests/unit/src/interact/terms.browser.test.ts
+  - tests/unit/src/knowledge/find.test.ts

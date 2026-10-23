@@ -1,0 +1,481 @@
+title: "ClaudeCodeプラグイン / プラグインのビルド"
+lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、使い方集の索引を検査してから、MCP サーバーとフックを束ね、配布物・使い方集・プラグインのバージョン・束ねた依存のライセンスを `plugin/` に書く。
+directory: |-
+  ```tree
+  scripts/
+  ├── build-plugin.ts   # プラグインのビルド
+  └── licenses/         # 束ねた依存の中に取り込まれたパッケージのライセンスの本文（{名前}.txt）
+  guide/
+  └── index.yaml        # 使い方集の索引の正本
+  .claude-plugin/
+  └── marketplace.json  # マーケットプレイスの定義（plugin/ を載せる）
+  plugin/
+  ├── .claude-plugin/plugin.json  # 名前・説明・バージョン（バージョンはビルドが書く）
+  ├── .mcp.json         # node ${CLAUDE_PLUGIN_ROOT}/server/mcp.js で MCP サーバーを起動する
+  ├── hooks/hooks.json  # SessionStart で node ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js を流す
+  ├── package.json      # 束ねない実行時の依存（esbuild）
+  ├── package-lock.json
+  ├── server/mcp.js     # 束ねた MCP サーバー（生成）
+  ├── scripts/session-start.js  # 束ねたフック（生成）
+  ├── dist/             # export_html・build_site が埋める配布物の写し（生成）
+  ├── guide/            # 使い方集の index.json と本文のページの写し（生成）
+  └── THIRD_PARTY_LICENSES.txt  # 束ねた依存のライセンス（生成）
+  ```
+constants:
+  - name: PLUGIN_ENTRY_POINTS
+    title: プラグインに束ねる入口
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 束ねるソースと書く先
+    entries:
+      - key: src/plugin/mcp.ts
+        value: plugin/server/mcp.js
+        description: MCP サーバー
+      - key: src/plugin/session-start.ts
+        value: plugin/scripts/session-start.js
+        description: SessionStart のフック
+    status: planned
+    introduced:
+      pr: 72
+  - name: PLUGIN_EXTERNALS
+    title: プラグインに束ねない依存
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 束ねず、`plugin/package.json` から Claude Code が入れる依存
+    value: '["esbuild"]'
+    reason: esbuild はプラットフォームごとの実行ファイルを持ち、束ねられない
+    status: planned
+    introduced:
+      pr: 72
+  - name: PLUGIN_DIST_ASSETS
+    title: プラグインに写す配布物
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`dist/` から `plugin/dist/` へ写す、書き出しが埋めるファイル'
+    value: '["index.css", "viewer.js", "viewer.css", "view.js"]'
+    status: planned
+    introduced:
+      pr: 72
+  - name: PLUGIN_OUTPUTS
+    title: ビルドが書くプラグインの生成物
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: ビルドの最初と失敗したときに消す、`plugin/` の中の生成物
+    value: '["plugin/server", "plugin/scripts", "plugin/dist", "plugin/guide", "plugin/THIRD_PARTY_LICENSES.txt"]'
+    status: planned
+    introduced:
+      pr: 72
+  - name: GUIDE_SOURCE
+    title: 使い方集の索引の正本
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: リポジトリの直下からの使い方集の索引のパス
+    value: guide/index.yaml
+    refs:
+      - dev/設計書/ER図/使い方集#
+    status: planned
+    introduced:
+      pr: 72
+  - name: PLUGIN_MANIFEST
+    title: プラグインの定義
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: バージョンを書くプラグインの定義のパス
+    value: plugin/.claude-plugin/plugin.json
+    status: planned
+    introduced:
+      pr: 72
+  - name: EMBEDDED_LICENSES_DIR
+    title: 取り込まれたパッケージのライセンスの置き場所
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 束ねたパッケージの配布物の中に取り込まれ、`node_modules` に無いパッケージのライセンスの本文を置くフォルダ。ファイル名は `{名前}.txt`（スコープの `/` は `__`）
+    value: scripts/licenses
+    reason: MCP の SDK の配布物は ajv などを取り込んでいるが、その著作権表示を含まない
+    refs:
+      - dev/設計書/外部ライブラリ/MCP-SDK#limitations[束ねたときのライセンスの表示]
+    status: planned
+    introduced:
+      pr: 72
+  - name: GUIDE_LINK_BASE
+    title: 使い方集の外へのリンクの頭
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 索引に無いページへのリンクを書き換える GitHub の URL の頭。後ろに `/{埋めるバージョン}/{リポジトリの直下からのパス}` を続ける
+    value: https://github.com/shuhei1101/mdmark/blob
+    status: planned
+    introduced:
+      pr: 72
+functions:
+  - name: checkGuideSource
+    title: 使い方集の索引を検査する
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`guide/index.yaml` を読み、形・指すページの有無・セッションに渡す索引の文字数を検査する'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ root: string; contextLimit: number }'
+        required: true
+        description: 作業ツリーの場所と、索引の文の文字数の上限
+    returns:
+      type: 'Promise<{ entries: GuideEntry[]; problems: string[] }>'
+      description: 合う行と、標準エラーに出す問題の行
+    process: |-
+      1. `GUIDE_SOURCE` を YAML として読む。読めなければ「使い方集の索引を読めない: guide/index.yaml（{理由}）」を問題にして返す
+      2. 使い方集の索引を検査し、合わないところを `guide/index.yaml:{場所}: {内容}` の行にする（使い方集の索引を検査する）
+      3. 行ごとに `page` が作業ツリーにあるかを確かめ、無ければ `guide/index.yaml:guides[{n}].page: {ページ} が無い` を問題にする
+      4. 索引の文の文字数が上限を超えたら「使い方集の索引が {文字数} 文字で、上限 {上限} 文字を超えた」を問題にする（セッションに渡す索引の文を作る）
+    unit_tests:
+      - name: test_check_guide_source
+        case: 正常
+        summary: 合う索引は問題が無い
+        condition: 2 行の索引と、指す 2 ページ
+        mock: なし（一時フォルダ）
+        expected: '`entries` が 2 行、`problems` が空'
+      - name: test_check_guide_source_when_page_missing
+        case: 正常
+        summary: 無いページを指す
+        condition: 2 行目のページが無い
+        mock: なし（一時フォルダ）
+        expected: '`problems` に `guides[1].page` を含む行'
+      - name: test_check_guide_source_when_too_long
+        case: 正常
+        summary: 索引の文が上限を超える
+        condition: '`contextLimit: 1`'
+        mock: なし（一時フォルダ）
+        expected: '`problems` に文字数と上限 `1` を含む行'
+      - name: test_check_guide_source_when_invalid
+        case: 正常
+        summary: 形に合わない索引
+        condition: 行に `when` が無い
+        mock: なし（一時フォルダ）
+        expected: '`problems` に `guide/index.yaml:guides[0].when` で始まる行'
+      - name: test_check_guide_source_when_unreadable
+        case: 正常
+        summary: 索引が無い
+        condition: '`guide/index.yaml` が無い'
+        mock: なし（一時フォルダ）
+        expected: '`problems` に `guide/index.yaml` を含む行'
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts#functions[parseGuideIndex]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts#functions[formatGuideContext]
+    status: planned
+    introduced:
+      pr: 72
+  - name: checkPluginDependencies
+    title: プラグインの依存を検査する
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`plugin/package.json` の束ねない依存のバージョンが作業ツリーの `package.json` と同じで、`plugin/package-lock.json` があるかを確かめる'
+    description: Claude Code は lockfile が揃うときだけプラグインの依存を入れる
+    scope: public
+    is_async: true
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの場所
+    returns:
+      type: Promise<string[]>
+      description: 問題の行。合えば空
+    process: |-
+      1. `PLUGIN_EXTERNALS` の各依存について、`plugin/package.json` の `dependencies` のバージョンと作業ツリーの `package.json` の `dependencies` のバージョンを比べ、違えば「plugin/package.json の {名前} が {バージョン} で、package.json の {バージョン} と違う」を問題にする
+      2. `plugin/package-lock.json` が無ければ「plugin/package-lock.json が無い（plugin/ で npm install を流す）」を問題にする
+    unit_tests:
+      - name: test_check_plugin_dependencies
+        case: 正常
+        summary: バージョンが同じで lockfile がある
+        condition: 両方の `esbuild` が `0.28.2`、`plugin/package-lock.json` がある
+        mock: なし（一時フォルダ）
+        expected: 空
+      - name: test_check_plugin_dependencies_when_version_differs
+        case: 正常
+        summary: バージョンが違う
+        condition: '`plugin/package.json` の `esbuild` が `0.27.0`'
+        mock: なし（一時フォルダ）
+        expected: '`esbuild` と 2 つのバージョンを含む行'
+      - name: test_check_plugin_dependencies_when_lockfile_missing
+        case: 正常
+        summary: lockfile が無い
+        condition: '`plugin/package-lock.json` が無い'
+        mock: なし（一時フォルダ）
+        expected: '`plugin/package-lock.json` を含む行'
+    status: planned
+    introduced:
+      pr: 72
+  - name: listEmbeddedPackages
+    title: 取り込まれたパッケージを引く
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 束ねた入力のソースマップの `sources` から、パッケージの配布物に取り込まれた別のパッケージの名前を引く
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ metafile: Metafile; root: string }'
+        required: true
+        description: esbuild の出力と作業ツリーの場所
+    returns:
+      type: string[]
+      description: 取り込まれたパッケージの名前（名前の順、重なりなし）。`node_modules` から束ねたパッケージ自身は含めない
+    process: |-
+      1. `node_modules/` の下の入力ごとに、同じパスに `.map` を足したソースマップがあれば JSON として読む
+      2. `sources` のうち `node_modules/` を含むパスの最後の `node_modules/` の後ろから `@scope/name` か `name` を取り出す
+      3. 入力のパッケージ自身を除き、名前の順に返す
+    unit_tests:
+      - name: test_list_embedded_packages
+        case: 正常
+        summary: ソースマップの sources から名前を引く
+        condition: 入力 `node_modules/pkg/dist/a.mjs` の `a.mjs.map` の `sources` に `../../node_modules/.pnpm/ajv@8.18.0/node_modules/ajv/dist/x.js` と `../src/y.ts`
+        mock: なし（一時フォルダ）
+        expected: '`["ajv"]`'
+      - name: test_list_embedded_packages_when_no_map
+        case: 正常
+        summary: ソースマップが無い入力は飛ばす
+        condition: '`.map` の無い入力だけ'
+        mock: なし（一時フォルダ）
+        expected: 空
+    status: planned
+    introduced:
+      pr: 72
+  - name: writePluginLicenses
+    title: プラグインの依存のライセンスを書く
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 束ねたパッケージと、その中に取り込まれたパッケージのライセンスの本文を `plugin/THIRD_PARTY_LICENSES.txt` に書く
+    scope: public
+    is_async: true
+    side_effects: '`plugin/THIRD_PARTY_LICENSES.txt` を書く'
+    args:
+      - name: options
+        type: '{ metafile: Metafile; root: string }'
+        required: true
+        description: esbuild の出力と作業ツリーの場所
+    returns:
+      type: Promise<void>
+      description: なし
+    process: |-
+      1. 束ねたパッケージごとに、`node_modules` のそのパッケージの `package.json` の名前・バージョン・ライセンスと、ライセンスのファイルの本文を並べる（`writeThirdPartyLicenses` と同じ書き方）
+      2. 取り込まれたパッケージごとに、`EMBEDDED_LICENSES_DIR` の本文を並べる（取り込まれたパッケージを引く）
+      3. 全てを空行でつないで書く
+    exceptions:
+      - name: Error
+        condition: 取り込まれたパッケージの本文が `EMBEDDED_LICENSES_DIR` に無い
+        message: 'ライセンスの本文が無い: {名前}（scripts/licenses/{ファイル名} を置く）'
+      - name: Error
+        condition: 束ねたパッケージにライセンスのファイルが無い
+        message: 'ライセンスの本文が無い: {名前}'
+    unit_tests:
+      - name: test_write_plugin_licenses
+        case: 正常
+        summary: 束ねたパッケージと取り込まれたパッケージの本文を書く
+        condition: metafile の入力に `node_modules/pkg` があり、そのソースマップが `ajv` を指し、`scripts/licenses/ajv.txt` がある
+        mock: なし（一時フォルダ）
+        expected: '`plugin/THIRD_PARTY_LICENSES.txt` に `pkg` の名前・バージョン・本文と `ajv` の本文がある'
+      - name: test_write_plugin_licenses_when_embedded_license_missing
+        case: 異常
+        summary: 取り込まれたパッケージの本文が無い
+        condition: '`scripts/licenses/ajv.txt` が無い'
+        mock: なし（一時フォルダ）
+        expected: '`Error` を投げ、メッセージに `ajv` と `scripts/licenses/ajv.txt` が入る'
+        exception: 取り込まれたパッケージの本文が `EMBEDDED_LICENSES_DIR` に無い
+    callees:
+      - '#functions[listEmbeddedPackages]'
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts#functions[writeThirdPartyLicenses]
+    status: planned
+    introduced:
+      pr: 72
+  - name: writePluginManifest
+    title: プラグインのバージョンを書く
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`PLUGIN_MANIFEST` の `version` を埋めるバージョンにし、他のキーと並びは保つ'
+    description: Claude Code は `version` が変わったときだけプラグインを更新するため、hotfix の `--version` でも `dist/` と同じバージョンを書く
+    scope: public
+    is_async: true
+    side_effects: '`PLUGIN_MANIFEST` を書き換える'
+    args:
+      - name: options
+        type: '{ root: string; version: string }'
+        required: true
+        description: 作業ツリーの場所と埋めるバージョン（`v{MAJOR}.{MINOR}.{PATCH}`）
+    returns:
+      type: Promise<void>
+      description: なし
+    process: |-
+      1. `PLUGIN_MANIFEST` を JSON として読み、`version` を置き換える
+      2. 2 字下げと末尾の改行で書く
+    unit_tests:
+      - name: test_write_plugin_manifest
+        case: 正常
+        summary: version だけを書き換える
+        condition: '`name`・`version: v0.0.0`・`description` の plugin.json に `version: v0.0.1`'
+        mock: なし（一時フォルダ）
+        expected: '`version` が `v0.0.1`、他のキーと並びが同じ'
+    status: planned
+    introduced:
+      pr: 72
+  - name: writePluginGuide
+    title: プラグインに使い方集を写す
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 検査した索引を `plugin/guide/index.json` に書き、指すページを `plugin/guide/` の下に同じパスで写す
+    scope: public
+    is_async: true
+    side_effects: '`plugin/guide/` を書く'
+    args:
+      - name: options
+        type: '{ root: string; entries: GuideEntry[]; version: string }'
+        required: true
+        description: 作業ツリーの場所・検査した索引の行・埋めるバージョン
+    returns:
+      type: Promise<void>
+      description: なし
+    process: |-
+      1. `plugin/guide/{GUIDE_INDEX_FILE}` に `{ schema: 1, guides: entries }` を JSON で書く
+      2. 行ごとに `{root}/{page}` を読み、リンクを書き換えて `plugin/guide/{page}` へ書く（親のフォルダが無ければ作る。同じページは 1 回）（使い方集の本文のリンクを書き換える）
+    unit_tests:
+      - name: test_write_plugin_guide
+        case: 正常
+        summary: 索引の JSON とリンクを書き換えたページを書く
+        condition: '`docs/a.md`（本文に索引に無い `./c.md` へのリンク）を指す 1 行、`version: v0.0.0`'
+        mock: なし（一時フォルダ）
+        expected: '`plugin/guide/index.json` の `guides` が 1 行で、`plugin/guide/docs/a.md` のリンク先が `https://github.com/shuhei1101/mdmark/blob/v0.0.0/docs/c.md`'
+    status: planned
+    introduced:
+      pr: 72
+    callees:
+      - '#functions[rewriteGuideLinks]'
+  - name: removePluginOutputs
+    title: プラグインの生成物を消す
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`PLUGIN_OUTPUTS` を消す。無いものは飛ばす'
+    scope: public
+    is_async: false
+    side_effects: '`PLUGIN_OUTPUTS` を消す'
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの場所
+    returns:
+      type: void
+      description: なし
+    process: 1. `PLUGIN_OUTPUTS` の各パスを、下のファイルごと消す
+    unit_tests:
+      - name: test_remove_plugin_outputs
+        case: 正常
+        summary: 生成物だけを消す
+        condition: '`plugin/server/mcp.js` と `plugin/.mcp.json` がある'
+        mock: なし（一時フォルダ）
+        expected: '`plugin/server` が無く、`plugin/.mcp.json` が残る'
+    status: planned
+    introduced:
+      pr: 72
+  - name: buildPlugin
+    title: プラグインをビルドする
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 使い方集の索引と依存を検査し、合えば MCP サーバーとフックを束ね、配布物・使い方集・バージョン・ライセンスを `plugin/` に書く
+    description: '`dist/` を書いた後に `main` が呼ぶ。`src/plugin/mcp.ts` が無ければ何もしない（ソースの一部だけを置いた単体テストのため）'
+    scope: public
+    is_async: true
+    side_effects: '`PLUGIN_OUTPUTS` と `PLUGIN_MANIFEST` を書く'
+    args:
+      - name: options
+        type: '{ version: string; root: string; contextLimit: number }'
+        required: true
+        description: 埋めるバージョン・作業ツリーの場所・索引の文の文字数の上限
+    returns:
+      type: Promise<string[]>
+      description: 問題の行。問題があれば `plugin/` に何も書かずに返す
+    process: |-
+      1. `src/plugin/mcp.ts` が無ければ空を返す
+      2. 使い方集の索引と依存を検査し、問題があれば返す（使い方集の索引を検査する・プラグインの依存を検査する）
+      3. `PLUGIN_ENTRY_POINTS` を esbuild で束ねる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・`external` は `PLUGIN_EXTERNALS`・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
+      4. `PLUGIN_DIST_ASSETS` を `dist/` から `plugin/dist/` へ写す（`dist/` に無いファイルは飛ばす）
+      5. 使い方集を写し、バージョンとライセンスを書いて、空を返す（プラグインに使い方集を写す・プラグインのバージョンを書く・プラグインの依存のライセンスを書く）
+    unit_tests:
+      - name: test_build_plugin_when_source_missing
+        case: 正常
+        summary: プラグインのソースが無ければ何も書かない
+        condition: '`src/plugin/mcp.ts` の無い一時フォルダ'
+        mock: なし（一時フォルダ）
+        expected: 空を返し、`plugin/server` が無い
+      - name: test_build_plugin_when_guide_invalid
+        case: 正常
+        summary: 索引に問題があれば書かずに問題を返す
+        condition: '`src/plugin/mcp.ts` があり、`guide/index.yaml` のページが無い'
+        mock: なし（一時フォルダ）
+        expected: 問題の行を返し、`plugin/server` が無い
+    callees:
+      - '#functions[checkGuideSource]'
+      - '#functions[checkPluginDependencies]'
+      - '#functions[writePluginGuide]'
+      - '#functions[writePluginManifest]'
+      - '#functions[writePluginLicenses]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#
+    status: planned
+    introduced:
+      pr: 72
+  - name: rewriteGuideLinks
+    title: 使い方集の本文のリンクを書き換える
+    kind: 関数
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 写すページの本文の相対リンクを、索引にあるページなら `read_guide` の名前、無いページならバージョンのタグの GitHub の URL に書き換える
+    description: '`read_guide` は本文をそのまま返すため、相対リンクのままではモデルがリンク先を読めない。フェンスのコードブロックとインラインコードの中、`http(s):` と `#` で始まるリンクは書き換えない'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ markdown: string; page: string; entries: GuideEntry[]; version: string }'
+        required: true
+        description: ページの本文・そのページのリポジトリの直下からのパス・索引の行・埋めるバージョン
+    returns:
+      type: string
+      description: リンクを書き換えた本文
+    process: |-
+      1. コードブロックとインラインコードの外の `[文字](リンク先)` と `![文字](リンク先)` を拾う
+      2. リンク先を `page` のフォルダから解決し、`#` の後ろを分ける
+         - 解決したパスが索引の行の `page` の場合、`[文字](…)` を `文字（read_guide の {名前}）` にする
+         - それ以外の場合、リンク先を `{GUIDE_LINK_BASE}/{version}/{パス}{#の後ろ}` にする
+    unit_tests:
+      - name: test_rewrite_guide_links
+        case: 正常
+        summary: 索引にあるページへのリンクを名前にする
+        condition: '`docs/使い方/a.md` の本文に `[表](./b.md)`、`docs/使い方/b.md` が名前 `tables` で索引にある'
+        mock: なし
+        expected: '`表（read_guide の tables）`'
+      - name: test_rewrite_guide_links_when_outside_index
+        case: 正常
+        summary: 索引に無いページへのリンクをタグの URL にする
+        condition: '`[設定](../リファレンス/設定.md#features)`、`version: v0.7.0`'
+        mock: なし
+        expected: リンク先が `https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/リファレンス/設定.md#features`
+      - name: test_rewrite_guide_links_when_in_code
+        case: 正常
+        summary: コードの中と絶対 URL・ページ内のリンクはそのまま
+        condition: フェンスの中の `[a](./b.md)`、インラインコードの `[a](./b.md)`、`[x](https://example.com)`、`[y](#一覧)`
+        mock: なし
+        expected: 本文が変わらない
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts#
+    status: planned
+    introduced:
+      pr: 72
+test_files:
+  - tests/unit/scripts/build-plugin.test.ts
