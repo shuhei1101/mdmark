@@ -140,3 +140,42 @@ test("test_normal_when_other_document", async ({ page }) => {
     "HTML コメントで書く指定",
   );
 });
+
+// やめた言い方の列を持つ表でも、表を描き、用語だけに下線を引いて、やめた言い方には付けない（正常シナリオ（やめた言い方の列がある））
+test("test_normal_when_avoid_column", async ({ page }) => {
+  // 準備
+  const markdown = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+    "ワークスペースを開く。作業場を閉じる。",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  const doc = page.locator("#doc");
+  // やめた言い方の列を含めて表として描かれ、書き方の警告は出ない
+  await expect(doc.locator("table")).toHaveCount(1);
+  await expect(doc.locator("table th")).toHaveText([
+    "用語",
+    "意味",
+    "やめた言い方",
+  ]);
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  // 段落の ワークスペース だけに下線が付き、ポインターを乗せると表の意味が出る
+  const term = doc.locator("p .mdmark-term");
+  await expect(term).toHaveText(["ワークスペース"]);
+  await term.hover();
+  await expect(doc.locator("p .mdmark-term-tip")).toContainText(
+    "作業の置き場所",
+  );
+  // 作業場 は段落に残り、下線が付かない
+  await expect(doc.locator("p")).toContainText("作業場を閉じる。");
+});

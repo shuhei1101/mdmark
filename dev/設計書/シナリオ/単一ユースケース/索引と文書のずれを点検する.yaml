@@ -83,6 +83,29 @@ scenarios:
       - '`ワークスペース` だけを書いた行のずれは返らない'
       - やめた言い方のずれ以外のずれは返らない
     test: test_normal_when_avoided_term
+  - name: 正常シナリオ（用語集の表のやめた言い方が本文に出る）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 用語集の表にやめた言い方を持つ索引と文書
+        description: '索引が文書 `glossary` と `guide` を持ち、`terms` を持たない。`glossary` の本文は、`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で用語 `ワークスペース`（やめた言い方 `作業場`）の行を持つ表だけを持つ。`guide` の本文は、1 つの行に `作業場` を書く'
+        notes: 表を持たない文書 `guide` にずれが出ることと、表の中の `作業場` を数えないことを、文書を分けて決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 索引の文書の用語集の表から、用語のやめた言い方を読む
+        M->>M: 索引の全ての文書の本文から、やめた言い方を探す
+        M-->>C: やめた言い方のずれの行を持つ一覧
+    expected:
+      - やめた言い方のずれが、`guide` の `作業場` を書いた行に 1 件返る
+      - その行の内容が、やめた言い方 `作業場` と、代わりに使う用語 `ワークスペース` を示す
+      - '`glossary` の用語集の表の中の `作業場` のずれは返らない'
+      - やめた言い方のずれ以外のずれは返らない
+    test: test_normal_when_glossary_avoided_term
 lead: 使う側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に渡し、索引と文書のずれの一覧を受け取る。
 issue: 5
 primary_actor: 使う側の処理
