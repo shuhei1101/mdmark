@@ -3,7 +3,7 @@ scenarios:
   - name: 正常シナリオ（外部の URL）
     setup:
       - name: リンクを持つ文書のプレビュー
-        description: '`https://example.com/` へのリンク・同じフォルダの `other.md` へのリンク・同じ文書の見出しへの `#` のリンク・`./images/figure.png` の画像を持つ Markdown のプレビューを開いた状態'
+        description: '`https://aka.ms/mdmark`（VS Code が既定で信頼するドメイン。信頼していないドメインは、開く前に VS Code が確認を出す）へのリンク・同じフォルダの `other.md` へのリンク・同じ文書の見出しへの `#` のリンク・`./images/figure.png` の画像を持つ Markdown のプレビューを開いた状態'
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
@@ -12,12 +12,12 @@ scenarios:
         participant PV as プレビュー（Webview）
         participant EX as 拡張機能
         participant BR as 既定のブラウザ
-        W->>PV: https://example.com/ のリンクを押す
+        W->>PV: https://aka.ms/mdmark のリンクを押す
         PV-->>EX: リンクの押下
         EX->>BR: URL を開く
         BR-->>W: ページを表示
     expected:
-      - ブラウザで開く代役に `https://example.com/` が渡る
+      - ブラウザで開く代役に `https://aka.ms/mdmark` が渡る
       - プレビューの文書とスクロールの位置は変わらない
     test: test_normal_when_external_link
   - name: 正常シナリオ（Markdown へのリンク）
