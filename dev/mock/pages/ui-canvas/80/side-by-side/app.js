@@ -2,11 +2,17 @@
 
 import { mount } from "../../../../refs/80/assets/mdmark/index.js";
 
-/** 列の class と名前: class が列に当てる値を決める */
-const COLUMNS = [
-  { theme: "theme-modern", label: "今の値（modern）" },
-  { theme: "theme-dev-swiss", label: "dev-swiss" },
-];
+/** 列の名前と class: class が列に当てる値と部品の CSS の変更を決める */
+const COLUMNS = {
+  "theme-modern": { classes: ["theme-modern"], label: "今の値（modern）" },
+  "theme-dev-swiss": { classes: ["theme-dev-swiss"], label: "dev-swiss" },
+  "table-a": { classes: ["theme-dev-swiss", "table-a"], label: "案 A: 本文の行を地の色・見出しの下の線を 1px" },
+  "table-b": { classes: ["theme-dev-swiss", "table-b"], label: "案 B: 案 A ＋ 角丸の外枠" },
+  "table-c": { classes: ["theme-dev-swiss", "table-c"], label: "案 C: 案 A ＋ 横の線だけ・角丸の見出し行" },
+};
+
+/** 節の [data-canvas-columns] が無いときに並べる列 */
+const DEFAULT_COLUMNS = ["theme-modern", "theme-dev-swiss"];
 
 /** 外部ライブラリの対応表: 読めない印（知らせの枠）と、読み終わらない印（読み込み中の枠） */
 const LIBRARIES = {
@@ -61,10 +67,12 @@ const AFTER_MOUNT = {
 function addColumns(section) {
   const pair = document.createElement("div");
   pair.className = "canvas-pair";
-  const columns = COLUMNS.filter(({ theme }) => !SHOWN_COLUMNS || SHOWN_COLUMNS.includes(theme));
-  const slots = columns.map(({ theme, label }) => {
+  const keys = section.dataset.canvasColumns?.split(",") ?? DEFAULT_COLUMNS;
+  const shown = keys.filter((key) => !SHOWN_COLUMNS || SHOWN_COLUMNS.includes(key));
+  const slots = shown.map((key) => {
+    const { classes, label } = COLUMNS[key];
     const column = document.createElement("div");
-    column.className = `canvas-column ${theme}`;
+    column.classList.add("canvas-column", ...classes);
     const name = document.createElement("p");
     name.className = "canvas-column-label";
     name.textContent = label;
@@ -84,7 +92,7 @@ const SHOWN_COLUMNS = PARAMS.get("columns")?.split(",");
 
 // 列を 1 つに絞ったときは、本文の外（body の直下）に置く部品にも列の値が効くよう、ページの根にもその列の class を当てる
 if (SHOWN_COLUMNS?.length === 1) {
-  document.documentElement.classList.add(SHOWN_COLUMNS[0]);
+  document.documentElement.classList.add(...COLUMNS[SHOWN_COLUMNS[0]].classes);
 }
 
 for (const section of document.querySelectorAll("[data-canvas]")) {

@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="../../../../refs/80/assets/mdmark/viewer.css">
   <!-- 列ごとの値（今の値と dev-swiss）と、dev-swiss の列だけに当てる部品の CSS の変更 -->
   <link rel="stylesheet" href="../../../../refs/80/assets/canvas-themes.css">
+  <!-- 表の案（案 A〜C）の囲み方 -->
+  <link rel="stylesheet" href="../../../../refs/80/assets/table-options.css">
   <!-- キャンバスの並べ方 -->
   <link rel="stylesheet" href="./style.css">
   <!-- 配色の切り替え -->
@@ -43,9 +45,11 @@
         <tr><th>部品</th><th>dev-swiss の値だけで表せない箇所</th><th>扱い</th></tr>
       </thead>
       <tbody>
-        <tr><td><a href="#part-callout">注意書き</a></td><td>種類の色を地に 7% 混ぜた面と、40% 混ぜた線。今の CSS は種類の色そのものの線だけで、面を塗らない</td><td>必須（部品の CSS を変える）</td></tr>
-        <tr><td><a href="#part-flow">フロー図</a></td><td>箱の角丸 8px（データの箱は 8px / 20px）を CSS に直に持ち、<code>--mdmark-radius</code>（4px）に揃わない</td><td>論点</td></tr>
-        <tr><td>図の全画面・まとめた HTML の一覧のパネル</td><td>開いたときの後ろの幕の色 <code>rgb(0 0 0 / 0.5)</code>・<code>rgb(0 0 0 / 0.4)</code> を CSS に直に持つ（図の幕は全画面のボタンで出る。一覧のパネルの幕はキャンバスには出ない）</td><td>論点</td></tr>
+        <tr><td><a href="#part-callout">注意書き</a></td><td>種類の色を地に 7% 混ぜた面と、40% 混ぜた線。今の CSS は種類の色そのものの線だけで、面を塗らない</td><td>部品の CSS を変える（dev-swiss の列は変えた後）</td></tr>
+        <tr><td><a href="#part-comment">コメントの入力欄</a></td><td>「コメントを保存」を印の色ではなく文字の色で塗り、文字を地の色にする</td><td>部品の CSS を変える（dev-swiss の列は変えた後）</td></tr>
+        <tr><td><a href="#part-table-options">表</a></td><td>角張った印象を和らげる囲み方（案 A〜C）</td><td>案を選ぶ</td></tr>
+        <tr><td><a href="#part-flow">フロー図</a></td><td>箱の角丸 8px（データの箱は 8px / 20px）を CSS に直に持ち、<code>--mdmark-radius</code>（4px）に揃わない</td><td>今のまま残す</td></tr>
+        <tr><td>図の全画面・まとめた HTML の一覧のパネル</td><td>開いたときの後ろの幕の色 <code>rgb(0 0 0 / 0.5)</code>・<code>rgb(0 0 0 / 0.4)</code> を CSS に直に持つ</td><td>今のまま残す</td></tr>
       </tbody>
     </table>
 
@@ -54,6 +58,7 @@
       <ul class="canvas-toc">
         <li><a href="#part-body">文書</a></li>
         <li><a href="#part-table">表</a></li>
+        <li><a href="#part-table-options">表の案</a></li>
         <li><a href="#part-row-detail">行の詳細</a></li>
         <li><a href="#part-callout">注意書き</a></li>
         <li><a href="#part-tabs">タブ</a></li>
@@ -157,6 +162,64 @@ const view = mount(document.querySelector("#doc"), { markdown });
 </script>
     </section>
 
+    <!-- 表の案: 今の dev-swiss の表と、角張った印象を和らげる案 A〜C -->
+    <section class="canvas-section" id="part-table-options" data-canvas="table-options" data-canvas-columns="theme-dev-swiss,table-a,table-b,table-c">
+      <h2>表の案</h2>
+      <p>既定の表・data の表・plain の表・閉じた表・用語集の表・ビューの表を、今の dev-swiss と案 A〜C で並べる。どの案も dev-swiss の値のまま、表の囲み方だけを変える</p>
+      <p class="canvas-change">今の表は表全体を面の色（#f4f4f5）で塗り、見出し行の下に 2px の線を引く。案 A〜C は本文の行を地の色にし、見出し行だけを面の色にする（mindstella の本文の表と同じ）</p>
+      <script type="text/markdown" data-canvas-source>
+| 変数 | 役割 | 既定の値 |
+| --- | --- | ---: |
+| `--mdmark-color-bg` | 地の色 | #ffffff |
+| `--mdmark-color-link` | リンクの色 | #0f766e |
+| `--mdmark-radius` | 角丸 | 4px |
+
+<!-- table: data filter=状態 +count +total total=件数:sum -->
+
+| 部品 | 状態 | 件数 |
+| --- | --- | ---: |
+| 表 | 済 | 12 |
+| 注意書き | 未 | 5 |
+| 図 | 済 | 8 |
+
+<!-- /table -->
+
+<!-- table: plain -->
+
+| 項目 | 内容 |
+| --- | --- |
+| 線 | 縦の罫線と面を外す |
+| 行 | 行の境の線だけ |
+
+<!-- /table -->
+
+<!-- table: open -->
+
+| 項目 | 内容 |
+| --- | --- |
+| 開いた表 | 折り畳みの中の表 |
+
+<!-- /table -->
+
+<!-- glossary: term=用語 meaning=意味 -->
+
+| 用語 | 意味 |
+| --- | --- |
+| 印 | HTML コメントで書く指定 |
+
+<!-- /glossary -->
+
+<!-- view: group=状態 default=table -->
+
+| 題 | 状態 | 担当 |
+| --- | --- | --- |
+| 配色の変数を洗い出す | 完了 | designer |
+| 表の囲み方を決める | 進行中 | designer |
+
+<!-- /view -->
+</script>
+    </section>
+
     <!-- 行の詳細 -->
     <section class="canvas-section" id="part-row-detail" data-canvas="row-detail">
       <h2>行の詳細</h2>
@@ -179,7 +242,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
     <section class="canvas-section" id="part-callout" data-canvas="callout">
       <h2>注意書き</h2>
       <p>5 つの種類と、閉じた注意書き</p>
-      <p class="canvas-change">必須: 種類の色の薄い面（地に 7%）と淡い線（地に 40%）は、今の変数で表せない。.markdown-alert の CSS を変える（dev-swiss の列は CSS を変えた後の見た目）</p>
+      <p class="canvas-change">種類の色の薄い面（地に 7%）と淡い線（地に 40%）は、.markdown-alert の CSS を変えて当てる（dev-swiss の列は CSS を変えた後の見た目）</p>
       <script type="text/markdown" data-canvas-source>
 > [!NOTE]
 > 変数の名前は変わらない。
@@ -372,7 +435,7 @@ mount(el, { markdown }); // [!code highlight]
     <section class="canvas-section" id="part-flow" data-canvas="flow">
       <h2>フロー図</h2>
       <p>システムの枠と層・箱・線（図の枠の題・凡例・拡大のボタン）</p>
-      <p class="canvas-change">論点: 箱の角丸は 8px（データの箱は 8px / 20px）を CSS に直に持ち、--mdmark-radius（4px）に揃わない（dev-swiss の列も今の CSS のまま）</p>
+      <p class="canvas-change">箱の角丸は 8px（データの箱は 8px / 20px）を CSS に直に持ち、--mdmark-radius（4px）に揃わない。今のまま残す</p>
       <script type="text/markdown" data-canvas-source>
 <!-- flow -->
 

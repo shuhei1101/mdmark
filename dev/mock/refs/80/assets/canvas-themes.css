@@ -230,3 +230,10 @@
   border-color: color-mix(in oklab, var(--mdmark-callout-color) 40%, var(--mdmark-color-bg));
   background: color-mix(in oklab, var(--mdmark-callout-color) 7%, var(--mdmark-color-bg));
 }
+
+/* 主のボタン（コメントを保存）: 印の色を使わず、文字の色で塗って文字を地の色にする */
+.theme-dev-swiss .mdmark-comment-button.is-primary {
+  border-color: var(--mdmark-color-text);
+  background: var(--mdmark-color-text);
+  color: var(--mdmark-color-bg);
+}
