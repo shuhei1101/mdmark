@@ -150,6 +150,19 @@ test("test_validate_config_when_version_invalid", async () => {
   expect(issues[0]).toMatchObject({ where: "version", kind: "schema" });
 });
 
+// 印の名前の書式に合わない check.ignore の値を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_check_ignore_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const raw = { check: { ignore: ["prettier-ignore", "Bad Name"] } };
+  // 実行
+  const { config, issues } = validateConfig(raw, "mdmark.config.yaml");
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({ where: "check.ignore[1]", kind: "schema" });
+  expect(config.check?.ignore).toEqual(["prettier-ignore"]);
+});
+
 // 形が合わないと mdmark check を添えた CliError を投げる（異常系）
 test("test_require_config_when_invalid", async () => {
   // 準備

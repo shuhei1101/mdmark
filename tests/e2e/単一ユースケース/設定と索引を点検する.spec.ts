@@ -93,3 +93,27 @@ test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   expect(result.stderr).toContain("mdmark.config.yaml");
   expect(result.stderr).toContain("mdmark init");
 });
+
+// 本文の知らない印を、文書と行を指す unknown_mark の行にして終了コード 0 以外で終わる（正常シナリオ（知らない印がある））
+test("test_normal_when_unknown_mark", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  await writeFiles(dir, {
+    "a.md": "# A\n\n<!-- tabz -->\n\n段落\n\n```markdown\n<!-- tabz -->\n```\n",
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const marks = linesOf(result.stdout).filter((line) =>
+    line.includes("unknown_mark"),
+  );
+  // コードブロックの中（8 行目）の印は拾わず、段落の間（3 行目）の印だけを指す
+  expect(marks).toHaveLength(1);
+  expect(marks[0]).toMatch(/^a\.md:3: unknown_mark: /);
+  // 内容に印の名前と直し方が書かれている
+  expect(marks[0]).toContain("tabz");
+  expect(marks[0]).toContain("ください");
+  expect(await snapshot(dir)).toEqual(before);
+});

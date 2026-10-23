@@ -1,5 +1,7 @@
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
+import type { LoadedConfig } from "../../../../src/cli/config.ts";
 import {
   CLEAN_INDEX,
   createIo,
@@ -128,4 +130,270 @@ test("test_collect_check_issues", async () => {
   const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"));
   // 検証
   expect(issues.map((issue) => issue.kind)).toEqual(["schema", "missing_doc"]);
+});
+
+/** 設定ファイルのフォルダの直下に索引（`index.yaml`）と文書 `a.md`・`b.md` を置いたフォルダを作る */
+async function createRootDir(options?: {
+  configLines?: string[];
+  aMarkdown?: string;
+  extraDocs?: string;
+  files?: Record<string, string>;
+}): Promise<string> {
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      ...(options?.configLines ?? []),
+      "",
+    ].join("\n"),
+    "index.yaml": options?.extraDocs
+      ? `${CLEAN_INDEX}${options.extraDocs}`
+      : CLEAN_INDEX,
+    "a.md": options?.aMarkdown ?? "# A\n",
+    "b.md": "# B\n",
+    ...options?.files,
+  });
+  return dir;
+}
+
+/** 3 行目に知らない印 `<!-- tabz -->` を持つ文書 */
+const TABZ_MARKDOWN = "# A\n\n<!-- tabz -->\n";
+
+/** 読み込みの時点でブラウザの API を使う拡張 */
+const BROKEN_EXTENSION = [
+  "class Broken extends HTMLElement {}",
+  'customElements.define("x-broken", Broken);',
+  'export default { name: "broken", directive: "broken", load: async () => ({}) };',
+  "",
+].join("\n");
+
+/** 設定ファイルのフォルダを `dir` にした読み込み済みの設定を作る */
+function createLoaded(
+  dir: string,
+  config: Record<string, unknown>,
+): LoadedConfig {
+  return { path: join(dir, "mdmark.config.yaml"), dir, config };
+}
+
+// 知っている印に当たらない印だけをずれにする（正常系）
+test("test_check_unknown_marks", async () => {
+  // 準備
+  const { checkUnknownMarks } = await loadCheck();
+  const documents = [
+    {
+      path: "a.md",
+      markdown: [
+        "<!-- features: toc -->",
+        "<!-- table: data -->",
+        "<!-- tabz -->",
+        "<!-- /table -->",
+        "",
+      ].join("\n"),
+    },
+  ];
+  // 実行
+  const issues = checkUnknownMarks(documents, {}, new Set());
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    file: "a.md",
+    where: "3",
+    kind: "unknown_mark",
+  });
+  expect(issues[0]?.message).toContain("tabz");
+});
+
+// 対応表・拡張・check.ignore の名前の印はずれにしない（正常系）
+test("test_check_unknown_marks_when_known_by_config", async () => {
+  // 準備
+  const { checkUnknownMarks } = await loadCheck();
+  const documents = [
+    {
+      path: "a.md",
+      markdown: [
+        "<!-- mermaid -->",
+        "<!-- greet: x -->",
+        "<!-- prettier-ignore -->",
+        "",
+      ].join("\n"),
+    },
+  ];
+  const config = {
+    libraries: { mermaid: "/mermaid.js" },
+    check: { ignore: ["prettier-ignore"] },
+  };
+  // 実行
+  const issues = checkUnknownMarks(documents, config, new Set(["greet"]));
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 拡張の既定の書き出しの directive を集める（正常系）
+test("test_load_extension_directives", async () => {
+  // 準備
+  const { loadExtensionDirectives } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "extensions/example.js": await readFile(
+      join(import.meta.dirname, "../../../../templates/extensions/example.js"),
+      "utf8",
+    ),
+  });
+  const loaded = createLoaded(dir, { extensions: ["extensions/example.js"] });
+  // 実行
+  const result = await loadExtensionDirectives(loaded, "mdmark.config.yaml");
+  // 検証
+  expect(result.directives).toEqual(new Set(["greet"]));
+  expect(result.issues).toEqual([]);
+});
+
+// 読み込みの時点でブラウザの API を使う拡張を schema のずれにする（異常系）
+test("test_load_extension_directives_when_browser_api", async () => {
+  // 準備
+  const { loadExtensionDirectives } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "extensions/broken.js": BROKEN_EXTENSION });
+  const loaded = createLoaded(dir, { extensions: ["extensions/broken.js"] });
+  // 実行
+  const result = await loadExtensionDirectives(loaded, "mdmark.config.yaml");
+  // 検証
+  expect(result.directives.size).toBe(0);
+  expect(result.issues).toHaveLength(1);
+  expect(result.issues[0]).toMatchObject({
+    where: "extensions[0]",
+    kind: "schema",
+  });
+  expect(result.issues[0]?.message).toContain("HTMLElement");
+  expect(result.issues[0]?.message).toContain("load");
+});
+
+// 既定の書き出しが directive を持たない拡張を schema のずれにする（異常系）
+test("test_load_extension_directives_when_no_directive", async () => {
+  // 準備
+  const { loadExtensionDirectives } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "extensions/x.js": 'export default { name: "x" };\n',
+  });
+  const loaded = createLoaded(dir, { extensions: ["extensions/x.js"] });
+  // 実行
+  const result = await loadExtensionDirectives(loaded, "mdmark.config.yaml");
+  // 検証
+  expect(result.directives.size).toBe(0);
+  expect(result.issues).toHaveLength(1);
+  expect(result.issues[0]).toMatchObject({
+    where: "extensions[0]",
+    kind: "schema",
+  });
+});
+
+// 無いファイルの拡張は束ねずにずれにしない（正常系）
+test("test_load_extension_directives_when_file_missing", async () => {
+  // 準備
+  const { loadExtensionDirectives } = await loadCheck();
+  const dir = await createTempDir();
+  const loaded = createLoaded(dir, { extensions: ["missing.js"] });
+  const failingImport = async (): Promise<unknown> => {
+    throw new Error("無いファイルの拡張は読み込まないはずです");
+  };
+  // 実行
+  const result = await loadExtensionDirectives(
+    loaded,
+    "mdmark.config.yaml",
+    failingImport,
+  );
+  // 検証
+  expect(result.directives.size).toBe(0);
+  expect(result.issues).toEqual([]);
+});
+
+// 索引の文書と build の文書を重なりを除いてパスの順に返す（正常系）
+test("test_collect_check_documents", async () => {
+  // 準備
+  const { collectCheckDocuments } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "docs/index.yaml": CLEAN_INDEX,
+    "docs/a.md": "# A\n",
+    "docs/b.md": "# B\n",
+    "notes/c.md": "# C\n",
+  });
+  const loaded = createLoaded(dir, {
+    index: "docs/index.yaml",
+    build: { include: ["docs/b.md", "notes/c.md"], out: "dist/docs.html" },
+  });
+  // 実行
+  const documents = await collectCheckDocuments(loaded);
+  // 検証
+  expect(documents).toEqual([
+    { path: "docs/a.md", markdown: "# A\n" },
+    { path: "docs/b.md", markdown: "# B\n" },
+    { path: "notes/c.md", markdown: "# C\n" },
+  ]);
+});
+
+// index も build も無い設定では空（正常系）
+test("test_collect_check_documents_when_no_index_and_build", async () => {
+  // 準備
+  const { collectCheckDocuments } = await loadCheck();
+  const dir = await createTempDir();
+  const loaded = createLoaded(dir, { version: "v0.3.0" });
+  // 実行
+  const documents = await collectCheckDocuments(loaded);
+  // 検証
+  expect(documents).toEqual([]);
+});
+
+// 知らない印を checkIndex のずれの後ろに返す（正常系）
+test("test_collect_check_issues_when_unknown_mark", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createRootDir({
+    aMarkdown: TABZ_MARKDOWN,
+    extraDocs: "  - id: old\n    path: old.md\n    title: Old\n",
+  });
+  // 実行
+  const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"));
+  // 検証
+  expect(issues.map((issue) => issue.kind)).toEqual([
+    "missing_doc",
+    "unknown_mark",
+  ]);
+  expect(issues[1]).toMatchObject({ file: "a.md", where: "3" });
+});
+
+// unknownMarks: false では知らない印を返さず、拡張を読み込まない（正常系）
+test("test_collect_check_issues_when_unknown_marks_off", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createRootDir({
+    configLines: ["extensions: [broken.js]"],
+    aMarkdown: TABZ_MARKDOWN,
+    files: { "broken.js": BROKEN_EXTENSION },
+  });
+  // 実行
+  const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"), {
+    unknownMarks: false,
+  });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 知らない印を文書と行を指す unknown_mark の行にする（正常系）
+test("test_run_check_when_unknown_mark", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const dir = await createRootDir({
+    aMarkdown: `${TABZ_MARKDOWN}\n\`\`\`markdown\n<!-- tabz -->\n\`\`\`\n`,
+  });
+  const { io, stdout } = createIo(dir);
+  // 実行
+  const code = await runCheck({}, io);
+  // 検証
+  expect(code).toBe(1);
+  expect(
+    stdout.filter((line) => line.startsWith("a.md:3: unknown_mark:")),
+  ).toHaveLength(1);
+  expect(stdout).toHaveLength(2);
+  expect(stdout[1]).toBe("ずれ 1 件");
 });
