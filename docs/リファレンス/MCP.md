@@ -168,7 +168,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 ### リクエスト
 
 ```json
-{ "any_tags": ["topic:mcp", "topic:yaml"], "limit": 10, "include": ["path"], "format": "json" }
+{ "tags": ["設計"], "include": ["path"], "format": "json" }
 ```
 
 | フィールド | 必須 / 任意 | 説明 |

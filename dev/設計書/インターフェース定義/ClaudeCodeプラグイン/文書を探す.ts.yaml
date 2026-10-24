@@ -301,7 +301,7 @@ request:
     description: 使う設定ファイルのパス
 request_example: |-
   ```json
-  {"any_tags": ["topic:mcp", "topic:yaml"], "limit": 10, "include": ["path"], "format": "json"}
+  {"tags": ["設計"], "include": ["path"], "format": "json"}
   ```
 response:
   - name: total
