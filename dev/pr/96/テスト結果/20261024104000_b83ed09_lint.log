@@ -1,0 +1,28 @@
+$ npm run lint
+
+> lint
+> biome check .
+
+Checked 491 files in 1820ms. No fixes applied.
+exit=0
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0
+
+$ npm --prefix vscode run typecheck
+
+> mdmark@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0
+
+$ (クローン直後の再現) git archive HEAD を空の一時フォルダへ展開し、直下で npm ci → npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0

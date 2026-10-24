@@ -27,7 +27,22 @@
 
 ### 結合
 
-なし
+<!-- table: data -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/00-undecidable.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/00-undecidable.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/commands.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/commands.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/export.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/export.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/open-config.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/open-config.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/preview-link.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/preview-link.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/preview-open.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/preview-reload.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/preview-reload.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/preview-rerender.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/release.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/release.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+| [vscode/tests/integration/scroll-sync.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/vscode/tests/integration/scroll-sync.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024104000_b83ed09_結合テスト.log` |
+
+<!-- /table -->
 
 ### E2E
 
