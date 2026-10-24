@@ -46,4 +46,20 @@
 
 ### E2E
 
-なし
+<!-- table: data -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E9%85%8D%E5%B8%83%E7%89%A9%E3%82%92%E3%83%93%E3%83%AB%E3%83%89%E3%81%97%E3%81%A6%E6%A4%9C%E6%9F%BB%E3%81%99%E3%82%8B.spec.ts) | 全実行（8 件） | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E8%A4%87%E5%90%88%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/VSCode%E3%81%A7%E6%9B%B8%E3%81%8D%E3%81%AA%E3%81%8C%E3%82%89%E7%A2%BA%E3%81%8B%E3%82%81%E3%81%A6PDF%E3%81%AB%E3%81%99%E3%82%8B.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/VSCode%E3%81%A7%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%8F.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E6%9B%B8%E3%81%84%E3%81%9F%E5%86%85%E5%AE%B9%E3%82%92%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AB%E6%98%A0%E3%81%99.spec.ts) | 全実行 | 実行のみ | ✅ | 1 回目の通しで `test_normal_when_config_saved` が 4 ワーカーの並列下で Ctrl+P のクイック入力を待つ 30 秒を超えて fail し、単独の再実行と 2 回目の通しは全 pass（`テスト結果/20261024105817_43691c2_E2Eテスト.log` は 2 回目） |
+| [tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E3%82%A8%E3%83%87%E3%82%A3%E3%82%BF%E3%81%A8%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AE%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%92%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%82%92VSCode%E3%81%AE%E3%83%86%E3%83%BC%E3%83%9E%E3%81%AB%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%A8%E7%94%BB%E5%83%8F%E3%82%92%E9%96%8B%E3%81%8F.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/HTML%E3%81%AB%E6%9B%B8%E3%81%8D%E5%87%BA%E3%81%99.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+| [tests/e2e/単一ユースケース/PDFに印刷する.spec.ts](https://github.com/shuhei1101/mdmark/blob/fix/e2e/typecheck-without-vscode-deps/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/PDF%E3%81%AB%E5%8D%B0%E5%88%B7%E3%81%99%E3%82%8B.spec.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261024105817_43691c2_E2Eテスト.log` |
+
+<!-- /table -->
+
+E2E の全件実行（`npm run test:e2e`）は流していない。影響するユースケースの 9 spec（38 件）だけを Chromium のプロジェクトで流した。
