@@ -78,3 +78,4 @@ preconditions:
   - 作業のフォルダに設定と索引がある
 success_guarantee: 語彙のタグごとに、名前・グループ・説明・別名・振り替え先・付いている文書の数が返る。付いている文書が 0 件のタグも返る。
 minimal_guarantee: 索引と文書を書き換えない。
+test_file: tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts
