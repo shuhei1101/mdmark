@@ -8,7 +8,8 @@
 
 [Issue #67](https://github.com/shuhei1101/mdmark/issues/67) の要望。
 [PR #65](https://github.com/shuhei1101/mdmark/pull/65)（起点 [Issue #25](https://github.com/shuhei1101/mdmark/issues/25)）のモックへの合意で、ユーザーから YAML・ts・Python などのシンタックスハイライトを出せるようにしたいと要望があり（[コメント](https://github.com/shuhei1101/mdmark/pull/65#discussion_r4355360829)）、PR #65 の `## スコープ外` に切り出した。
-PR #65 はマージ済みで、コードブロックは行ごとの `mdmark-code-line` に分けて描き、行の中身 `mdmark-code-text` は色分けした HTML を入れられる形になっている。
+PR #65 はマージ済みで、行番号か行の種類（強調・足した行・消した行）を持つコードブロックは行ごとの `mdmark-code-line` に分けて描き、行の中身 `mdmark-code-text` は色分けした HTML を入れられる形になっている。
+行番号も行の種類も無いコードブロック（題だけのものを含む）は、`code` 要素の中にエスケープした文字をそのまま置いて描く。
 今のコードブロックは色分けをせず、配布物 `dist/index.js` は非機能要件『配布ファイル 1 つのサイズ』の上限 384KB に対して 376,991 バイト（2026-10-24）になっている。
 
 ## 計画書
