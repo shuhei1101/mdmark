@@ -1,6 +1,11 @@
 import type { Token } from "markdown-it";
 import { DEFAULT_FEATURES } from "../config.ts";
-import { findWords, forEachInline, matchableChildren } from "./dictionary.ts";
+import {
+  findWords,
+  forEachInline,
+  matchableChildren,
+  normalizeWord,
+} from "./dictionary.ts";
 import {
   type MdmarkIndex,
   type MdmarkIndexDoc,
@@ -52,29 +57,34 @@ type TermSite = {
 /** 索引のずれを点検する既定の索引のファイル名 */
 const DEFAULT_INDEX_FILE = "index.yaml";
 
-/** ずれに書く用語の場所を、`{ファイル} の {場所}` の形にする */
+/** 正規化した語に当たる、用語の語か別名の位置 */
+function positionOfWord(site: TermSite, word: string): number {
+  return site.words.findIndex((candidate) => normalizeWord(candidate) === word);
+}
+
+/** ずれに書く用語の場所を、`{ファイル} の {場所}` の形にする。`word` は正規化した語 */
 function describeSite(site: TermSite, word: string): string {
-  const position = Math.max(site.words.indexOf(word), 0);
+  const position = Math.max(positionOfWord(site, word), 0);
   return `\`${site.file}\` の \`${site.wheres[position]}\``;
 }
 
-/** 重なった用語のずれを返す。後に出た用語ごとに、語か別名が重なる先の用語のうち最初の 1 つとの組を 1 件にする */
+/** 重なった用語のずれを返す。後に出た用語ごとに、語か別名が正規化した後に重なる先の用語のうち最初の 1 つとの組を 1 件にする */
 function duplicateTerms(sites: TermSite[]): MdmarkIndexIssue[] {
   const issues: MdmarkIndexIssue[] = [];
   sites.forEach((site, position) => {
-    for (const word of site.words) {
+    for (const [wordPosition, word] of site.words.entries()) {
+      const key = normalizeWord(word);
       const earlier = sites
         .slice(0, position)
-        .find((candidate) => candidate.words.includes(word));
+        .find((candidate) => positionOfWord(candidate, key) !== -1);
       if (!earlier) {
         continue;
       }
-      const where = site.wheres[site.words.indexOf(word)] ?? "";
       issues.push({
         file: site.file,
-        where,
+        where: site.wheres[wordPosition] ?? "",
         kind: "duplicate_term",
-        message: `用語 \`${word}\` が ${describeSite(earlier, word)} と重なっています。どちらかを消すか、語を変えてください。`,
+        message: `用語 \`${word}\` が ${describeSite(earlier, key)} と重なっています。どちらかを消すか、語を変えてください。`,
       });
       // 1 つの用語につき、重なりは最初の 1 件だけ返す
       break;
@@ -110,12 +120,13 @@ export function findAvoidedTerms(options: {
   terms: AvoidableTerm[];
 }): MdmarkIndexIssue[] {
   const { file, tokens, terms } = options;
-  // やめた言い方から、代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
-  const avoidedBy = new Map<string, string>();
+  // 正規化したやめた言い方から、記載した表記と代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
+  const avoidedBy = new Map<string, { written: string; term: string }>();
   for (const term of terms) {
     for (const word of term.avoid ?? []) {
-      if (!avoidedBy.has(word)) {
-        avoidedBy.set(word, term.term);
+      const key = normalizeWord(word);
+      if (key !== "" && !avoidedBy.has(key)) {
+        avoidedBy.set(key, { written: word, term: term.term });
       }
     }
   }
@@ -124,7 +135,9 @@ export function findAvoidedTerms(options: {
   }
   // 用語の語・別名を先に渡し、同じ長さならそちらを当てる。やめた言い方の一部に当たる用語の語を、やめた言い方として数えないため
   const termWords = new Set(
-    terms.flatMap((term) => [term.term, ...(term.aliases ?? [])]),
+    terms.flatMap((term) =>
+      [term.term, ...(term.aliases ?? [])].map(normalizeWord),
+    ),
   );
   const words = [...termWords, ...avoidedBy.keys()];
   const rows = rowStarts(tokens);
@@ -164,7 +177,7 @@ export function findAvoidedTerms(options: {
       file,
       where: `${line} 行目`,
       kind: "avoided_term" as const,
-      message: `\`${word}\` はやめた言い方です。用語 \`${avoidedBy.get(word)}\` に書き換えてください。`,
+      message: `\`${avoidedBy.get(word)?.written}\` はやめた言い方です。用語 \`${avoidedBy.get(word)?.term}\` に書き換えてください。`,
     }));
 }
 

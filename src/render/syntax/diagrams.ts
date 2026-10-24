@@ -54,7 +54,7 @@ export function buildDiagrams(state: StateCore): void {
     references: env.mdmarkReferences,
     features: env.features,
   });
-  const lookup: TermLookup = (word) => dictionary.terms.get(word)?.meaning;
+  const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
   env.paramDefinitions ??= [];
   const hints = featureOn(state, "hints");
   const tokens = state.tokens;

@@ -1,3 +1,4 @@
+import { normalizeWord } from "./dictionary.ts";
 import type { MdmarkIndex, MdmarkIndexDoc } from "./index-shape.ts";
 import type { MdmarkReferences } from "./references.ts";
 import {
@@ -16,11 +17,11 @@ export type FindDocsResult = {
   unknownTags: Array<{ tag: string; nearest: string | undefined }>;
 };
 
-/** 文書の題・別名・概要のどれかに、大文字と小文字を区別せず語が含まれるか */
+/** 文書の題・別名・概要のどれかに、`normalizeWord` で正規化した後に語が含まれるか */
 function matchesText(doc: MdmarkIndexDoc, text: string): boolean {
-  const word = text.toLowerCase();
+  const word = normalizeWord(text);
   return [doc.title, ...(doc.aliases ?? []), doc.description ?? ""].some(
-    (field) => field.toLowerCase().includes(word),
+    (field) => normalizeWord(field).includes(word),
   );
 }
 

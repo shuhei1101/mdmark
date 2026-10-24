@@ -1,3 +1,4 @@
+import { normalizeWord } from "./dictionary.ts";
 import type {
   MdmarkIndex,
   MdmarkIndexDoc,
@@ -184,7 +185,7 @@ export function countTags(options: {
 export function listTags(options: {
   /** 形に合う要素だけの索引 */
   index: MdmarkIndex;
-  /** 名前・別名・説明のどれかに、大文字と小文字を区別せず含まれる語 */
+  /** 名前・別名・説明のどれかに、`normalizeWord` で正規化した後に含まれる語 */
   query?: string;
 }): TagListEntry[] {
   const { index, query } = options;
@@ -198,13 +199,13 @@ export function listTags(options: {
       docCounts.set(name, (docCounts.get(name) ?? 0) + 1);
     }
   }
-  const word = query?.toLowerCase();
+  const word = query === undefined ? undefined : normalizeWord(query);
   return vocabulary.tags
     .filter(
       (tag) =>
         word === undefined ||
         [tag.name, ...(tag.aliases ?? []), tag.description ?? ""].some(
-          (field) => field.toLowerCase().includes(word),
+          (field) => normalizeWord(field).includes(word),
         ),
     )
     .map((tag) => ({

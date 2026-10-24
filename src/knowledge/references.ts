@@ -4,7 +4,12 @@ import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveDocumentFeatures, takeMarks } from "../render/marks.ts";
 import type { RenderEnv } from "../render/parser.ts";
 import { glossaryRule } from "../render/syntax/glossary.ts";
-import { findWords, forEachInline, matchableChildren } from "./dictionary.ts";
+import {
+  findWords,
+  forEachInline,
+  matchableChildren,
+  normalizeWord,
+} from "./dictionary.ts";
 import {
   type MdmarkIndex,
   type MdmarkIndexDoc,
@@ -154,11 +159,12 @@ export function collectReferences(input: {
   const featureOn = (item: ScannedDocument, name: string): boolean =>
     (item.parsed?.features ?? defaults)[name] !== false;
 
-  // 文書の別名から、その別名を持つ文書を引く
+  // 正規化した文書の別名から、その別名を持つ文書を引く
   const aliasOwners = new Map<string, MdmarkIndexDoc[]>();
   for (const { doc } of scanned) {
     for (const alias of doc.aliases ?? []) {
-      aliasOwners.set(alias, [...(aliasOwners.get(alias) ?? []), doc]);
+      const key = normalizeWord(alias);
+      aliasOwners.set(key, [...(aliasOwners.get(key) ?? []), doc]);
     }
   }
   const aliases = [...aliasOwners.keys()];

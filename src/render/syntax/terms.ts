@@ -63,7 +63,7 @@ export function termSegments(options: {
       }
       seen.avoided.add(found.word);
       html = renderTermTip({
-        text: found.word,
+        text: text.slice(found.start, found.end),
         id: nextTipId(),
         replacement,
       });
@@ -83,7 +83,7 @@ export function termSegments(options: {
         seen.docs.add(doc.id);
       }
       html = renderTermTip({
-        text: found.word,
+        text: text.slice(found.start, found.end),
         id: nextTipId(),
         meaning: activeTerm?.meaning ?? "",
         docs: docs.map((doc) => ({
