@@ -2,6 +2,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metafile, Plugin } from "esbuild";
 
+/** 使う側のブラウザが読む JS の束ねの target（esbuild に渡すブラウザの版） */
+export const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
 /** Node で動く束ねの target */
 export const NODE_TARGET = "node24";
 /** Node で動く束ねの先頭に置く行: 入口として実行できるようにし、束ねた CommonJS の依存の `require` を使えるようにする */

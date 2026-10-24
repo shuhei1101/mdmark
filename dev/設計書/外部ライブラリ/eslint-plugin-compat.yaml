@@ -1,0 +1,46 @@
+title: "eslint-plugin-compat"
+kind: "ライブラリ"
+version:
+  current: 7.0.2
+  latest: 7.0.2
+  checked_on: '2026-10-24'
+  source: package.json
+  pinning: 完全一致
+catalogs:
+  - name: 規則
+    version: 7.0.2
+    entries:
+      - name: compat/compat
+        kind: 規則
+        purpose: '`settings.browsers` の版に無い API の使用を報告する（文は `{API} is not supported in {ブラウザ} {版}`。関数・コンストラクタは `{API}()`）'
+  - name: 設定
+    version: 7.0.2
+    entries:
+      - name: settings.browsers
+        kind: 設定
+        purpose: 照らすブラウザの版（browserslist の問い合わせの配列）
+      - name: settings.ignoreConditionalChecks
+        kind: 設定
+        purpose: '`true` で、`if` の中の使用も数える（既定は祖先に `IfStatement` があれば条件を見ずに数えない）'
+lead: MDN の browser-compat-data を引いて、browserslist で渡したブラウザの版に無い Web API と JavaScript の組み込みの使用を報告する ESLint のプラグイン。
+purl: pkg:npm/eslint-plugin-compat@7.0.2
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: amilajack/eslint-plugin-compat
+used_in:
+  - scripts/baseline.ts
+verification:
+  state: 済
+  date: '2026-10-24'
+  detail: 'PoC #87 で `browsers: ["chrome 99", "firefox 98", "safari 16.4"]` を渡し、v0.6.0 のソースを minify せずに束ねた JS で `Intl.Segmenter() is not supported in Firefox 98` が出た。既定では祖先に `IfStatement` がある使用を条件によらず数えず（`if (x > 1)` の中の `new Intl.Segmenter` も報告しない）、`settings.ignoreConditionalChecks: true` で数えることを確かめた。`npm ci` の後はネットワークを切っても流れた'
+license: MIT（商用利用可）
+official_url: https://github.com/amilajack/eslint-plugin-compat
+docs_url: https://github.com/amilajack/eslint-plugin-compat#readme
+selection:
+  candidates: '対応ブラウザの下限の確かめ方として、下限の版のブラウザ本体で配布物を読み込む案、有料のクラウドの実機で読み込む案と比べた（作業 PR #86 の要件）。静的に照らす案の代表として選んだ'
+  decision: 'Safari 16.4 を含む 3 つの下限を 1 回で確かめられ、ブラウザ本体の取得も費用も要らない。PoC #87 で #50 の `Intl.Segmenter` を拾えた'
+  consequences: 互換のデータはこのプラグインが依存する `@mdn/browser-compat-data` の版（7.0.2 では 6.1.5）で決まる。動的に組み立てた参照は拾えない。minify した JS では有無を確かめた箇所も報告するため、minify せずに束ねた JS を照らす
+install: |-
+  ```bash
+  npm i -D -E eslint-plugin-compat@7.0.2
+  ```

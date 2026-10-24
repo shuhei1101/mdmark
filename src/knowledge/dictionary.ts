@@ -105,11 +105,11 @@ export function buildDictionary(options: {
 
 /** 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す。区切り方は実行環境の辞書に依る */
 export function wordStarts(text: string): number[] {
-  if (typeof Intl.Segmenter === "undefined") {
-    return [...text.matchAll(FALLBACK_WORD)].map((match) => match.index);
+  if (typeof Intl.Segmenter !== "undefined") {
+    segmenter ??= new Intl.Segmenter("ja", { granularity: "word" });
+    return [...segmenter.segment(text)].map((segment) => segment.index);
   }
-  segmenter ??= new Intl.Segmenter("ja", { granularity: "word" });
-  return [...segmenter.segment(text)].map((segment) => segment.index);
+  return [...text.matchAll(FALLBACK_WORD)].map((match) => match.index);
 }
 
 /** 文字列の中で、始まりと終わりが語の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に、頭から順に返す */

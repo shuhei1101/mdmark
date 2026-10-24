@@ -393,7 +393,7 @@ export async function attachComments(options: {
     placePopover({ element: form, rect: range.getBoundingClientRect() });
     addButton.hidden = true;
     // 選びが入力欄へ移って消えても、選んだ箇所に色を残す。Custom Highlight API の無いブラウザでは色を残さない
-    if ("highlights" in CSS) {
+    if ("highlights" in CSS && typeof Highlight !== "undefined") {
       CSS.highlights.set(PENDING_HIGHLIGHT, new Highlight(range));
     }
     form.querySelector("textarea")?.focus();

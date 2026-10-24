@@ -218,6 +218,28 @@ test("test_error_when_guide_index_too_long", async () => {
   expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
 });
 
+// 対応ブラウザの下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常シナリオ）
+// 後のテストが同じ作業ツリーを使うため、足した行は終わりに元へ戻す
+test("test_error_when_api_missing_in_baseline_browser", async () => {
+  // 準備
+  const entry = join(root, "src", "index.ts");
+  const original = await readFile(entry, "utf8");
+  await writeFile(entry, `${original}\nnew Intl.Segmenter("ja");\n`);
+  // 実行
+  let result: { code: number; stderr: string };
+  try {
+    result = await run("npm", ["run", "build"]);
+  } finally {
+    await writeFile(entry, original);
+  }
+  // 検証
+  expect(result.code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  for (const expected of ["Intl.Segmenter", "dist/index.js", "Firefox 98"]) {
+    expect(result.stderr).toContain(expected);
+  }
+});
+
 // 最新の版のタグ（シナリオのセットアップの `version.ini` もこの版）
 const TAG = "v0.3.0";
 

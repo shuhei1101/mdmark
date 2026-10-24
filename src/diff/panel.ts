@@ -60,9 +60,10 @@ function parseElement(html: string): HTMLElement {
 
 /** 語の区切り。`Intl.Segmenter` を持たないブラウザでは `undefined` */
 function createSegmenter(): Intl.Segmenter | undefined {
-  return "Segmenter" in Intl
-    ? new Intl.Segmenter("ja", { granularity: "word" })
-    : undefined;
+  if (typeof Intl.Segmenter !== "undefined") {
+    return new Intl.Segmenter("ja", { granularity: "word" });
+  }
+  return undefined;
 }
 
 /** 要素の中の `id` に頭を付け、その `id` を指す属性も書き換えて、前と後のプレビューと本文の間で `id` を重ならせない。表に無い `id`（範囲の外を指すもの）は変えない */

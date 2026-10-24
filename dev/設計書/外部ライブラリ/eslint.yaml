@@ -1,0 +1,36 @@
+title: "eslint"
+kind: "ライブラリ"
+version:
+  current: 10.13.0
+  latest: 10.13.0
+  checked_on: '2026-10-24'
+  source: package.json
+  pinning: 完全一致
+catalogs:
+  - name: API
+    version: 10.13.0
+    entries:
+      - name: Linter
+        kind: クラス
+        purpose: ファイルを読まずに、渡したコードに flat config の規則を当てる（`verify`）
+      - name: Linter.getSourceCode
+        kind: 関数
+        purpose: 直前の `verify` の構文木と、位置から節・祖先・元の文字列を引く `SourceCode` を返す
+lead: JavaScript を構文木にして規則を当て、違反を報告する lint のツール。
+purl: pkg:npm/eslint@10.13.0
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: eslint/eslint
+used_in:
+  - scripts/baseline.ts
+verification:
+  state: 済
+  date: '2026-10-24'
+  detail: 'PoC #87 で `ESLint` に eslint-plugin-compat を渡して束ねた JS を照らし、`Linter` の `getSourceCode()` の `getIndexFromLoc`・`getNodeByRangeIndex`・`getAncestors`・`getText` で報告の位置を囲む `IfStatement` を辿れることを確かめた。`linterOptions.noInlineConfig: true` で、束ねた依存が持つ他のプラグインの `eslint-disable` のコメントを読まない（その知らせは `ruleId` が `null`）'
+license: MIT（商用利用可）
+official_url: https://eslint.org/
+docs_url: https://eslint.org/docs/latest/integrate/nodejs-api
+install: |-
+  ```bash
+  npm i -D -E eslint@10.13.0
+  ```

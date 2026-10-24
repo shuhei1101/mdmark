@@ -294,6 +294,26 @@ test("test_main_when_guide_index_too_long", async () => {
   expect(stderr()).toContain("上限 1 文字");
 });
 
+// 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる（異常系）
+test("test_main_when_api_missing_in_baseline_browser", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createBuildRoot("v0.0.0\n");
+  await writeFile(
+    join(root, "src", "index.ts"),
+    'new Intl.Segmenter("ja");\nexport const a = 1;\n',
+  );
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], { root, maxBytes: MAX_BYTES });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  for (const expected of ["dist/index.js", "Intl.Segmenter", "Firefox 98"]) {
+    expect(stderr()).toContain(expected);
+  }
+});
+
 // version.ini の先頭行を返す（正常系）
 test("test_resolve_version", async () => {
   // 準備

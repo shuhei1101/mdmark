@@ -222,6 +222,51 @@ flows:
       - '`dist/` と `plugin/server`・`plugin/guide` が無い'
       - 標準エラーに使い方集の索引の文字数と上限が出る
     test: test_error_when_guide_index_too_long
+  - name: 正常系（有無を確かめてから下限に無い API を使う）
+    summary: 下限に無い API を同じ API の `typeof` の `if` のブロックの中で使うと、止めずにビルドする
+    setup:
+      - name: 有無を確かめて使う作業ツリー
+        description: '`dist/` が無い作業ツリー。`src/index.ts` の最上位に、下限に無い API を確かめてから使う行を足してある'
+        notes: '`if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as ファイル
+        D->>B: npm run build
+        B->>F: dist/ を書く
+        B->>B: minify せずに束ねた JS を下限の版と照らす（typeof の if の中は数えない）
+        B-->>D: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` がある'
+      - 標準エラーに `Intl.Segmenter` が出ない
+    test: test_normal_when_api_checked_before_use
+  - name: 異常系（対応ブラウザの下限に無い API を使う・終了コード 1）
+    summary: 下限に無い API を確かめずに使うと、書いた配布物を消して終わる
+    setup:
+      - name: 下限に無い API を使う作業ツリー
+        description: '`dist/` が無い作業ツリー。`src/index.ts` の最上位に、有無を確かめずに `new Intl.Segmenter("ja")` を呼ぶ行を足してある'
+        notes: '`Intl.Segmenter` は Firefox 98 に無い'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as ファイル
+        D->>B: npm run build
+        B->>F: dist/ を書く
+        B->>B: minify せずに束ねた JS を下限の版と照らす
+        B->>F: dist/ を消す
+        B-->>D: API・配布ファイル・ブラウザの版を示して終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` が無い'
+      - 標準エラーに `Intl.Segmenter`・`dist/index.js`・Firefox 98 が出る
+    test: test_error_when_api_missing_in_baseline_browser
 lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` と、CLI が書き出す HTML に埋める起動の処理 `dist/viewer.js`・`dist/viewer.css` にビルドする。'
 idempotent: true
 side_effects: '`dist/` を書き換える'
@@ -251,6 +296,8 @@ exceptions:
     condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
   - name: 使い方集の索引の誤り（終了コード 1）
     condition: '`guide/index.yaml` が ER 図『使い方集』の形に合わないか、無いページを指すか、セッションに渡す索引の文が 10,000 文字を超えるか、`plugin/package.json` の esbuild のバージョンが `package.json` と違うか、`plugin/package-lock.json` が無い'
+  - name: 対応ブラウザの下限に無い API（終了コード 1）
+    condition: 使う側のブラウザが読む JS（`dist/index.js`・`dist/view.js`・`dist/comments.js`・`dist/viewer.js`）のどれかが、下限の版に無い API を、同じ API の `typeof` で確かめる `if` のブロックの外で使う
 constraints:
   - item: 配布ファイル 1 つのサイズ
     constraint: 384KB 以下（393216 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
@@ -276,4 +323,8 @@ constraints:
     constraint: '`dist/` を書いた後に、束ねた MCP サーバー `plugin/server/mcp.js` とフック `plugin/scripts/session-start.js`（Node 24、esbuild だけ束ねない）、`dist/` の `index.css`・`viewer.js`・`viewer.css`・`view.js` の写し `plugin/dist/`、使い方集の `plugin/guide/index.json` と指すページの写し、束ねた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き、`plugin/.claude-plugin/plugin.json` の `version` を埋める版にする。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
     decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#constraints[索引の文字数]
     notes: '`plugin/` の定義（`.mcp.json`・`hooks/hooks.json`・`package.json`・`package-lock.json`・`plugin.json` のその他のキー）は書き換えない'
+  - item: 対応ブラウザの下限の確かめ
+    constraint: 配布物を書いた後に、配布ファイルのサイズの検査と並べて流す。使う側のブラウザが読む JS と同じ入口・同じ target で minify せずに束ねた JS を、MDN の browser-compat-data で対応ブラウザの下限の版と照らす。確かめの束は一時フォルダに書き、`dist/` には置かない。`if` のブロックの中の使用も数え、同じ API の `typeof` で確かめる `if` のブロックの中と、その `typeof` の式の中の参照だけを数えない。ネットワークには接続しない
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+    notes: 照らす版は制約『出力の対象のブラウザ』と同じ値から取る。minify した配布ファイルは `if` のブロックが式に畳まれ、有無を確かめた箇所も報告に出るため照らさない。`dist/cli.js` は対象外
 test_file: tests/integration/lib/build.test.ts
