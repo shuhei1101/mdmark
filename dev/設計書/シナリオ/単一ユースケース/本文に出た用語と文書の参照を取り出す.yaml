@@ -83,7 +83,7 @@ scenarios:
       - name: 配布物を読む Node の処理
         description: 正常シナリオと同じ
       - name: 機能をオフにした 2 つの文書
-        description: '正常シナリオの索引に文書 `memo` を足したものと、`guide`・`memo` の本文。どちらの本文も段落に `ワークスペース` と `公開関数` を書き、`guide` の頭に `<!-- features: -glossary -->`、`memo` の頭に `<!-- features: -glossary -backlinks -->` を書く'
+        description: '正常シナリオの索引に文書 `memo` を足し、用語 `ワークスペース` の `avoid` に `作業場` を加えたものと、`guide`・`memo` の本文。どちらの本文も段落に `ワークスペース` と `公開関数` と `作業場` を書き、`guide` の頭に `<!-- features: -glossary -->`、`memo` の頭に `<!-- features: -glossary -backlinks -->` を書く'
         notes: '`memo` で、用語も文書の別名も照合しないときに空の一覧が返ることを決定的に起こす'
       - name: Mock
         description: 差し替える依存は無い
@@ -100,6 +100,7 @@ scenarios:
       - '`guide` の参照の一覧が、索引の用語の要素を持たず、文書の別名 `公開関数` の要素を持つ'
       - '`memo` の参照の一覧が空'
       - まとめた参照の一覧が、`api` だけを持つ
+      - '`guide` と `memo` のやめた言い方の一覧が空'
     test: test_normal_when_feature_off
     refs:
       - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
@@ -143,12 +144,14 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      ```mermaid
       sequenceDiagram
         participant C as 使う側の処理
         participant M as mdmark
         C->>M: 索引と文書の本文を渡して参照を取り出させる
         M->>M: 用語の語・別名とやめた言い方を語の区切りに揃えて照合する
         M-->>C: 文書ごとの参照の一覧・やめた言い方の一覧と、まとめた参照の一覧
+      ```
     expected:
       - '`guide` のやめた言い方の一覧が、段落の `作業場` 3 件を本文の頭からの順に持つ'
       - やめた言い方の各要素が、一致した文字列 `作業場` と、本文の中でその文字列が出た位置を持つ
