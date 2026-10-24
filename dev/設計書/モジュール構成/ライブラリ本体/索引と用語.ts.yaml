@@ -1695,3 +1695,4 @@ test_files:
   - tests/unit/src/parts/backlinks.test.ts
   - tests/unit/src/interact/terms.browser.test.ts
   - tests/unit/src/knowledge/find.test.ts
+  - tests/unit/src/knowledge/tags.test.ts
