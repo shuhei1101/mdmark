@@ -1735,9 +1735,9 @@ flows:
         description: '印を持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後に 3 行のブロックスカラー（`|`）の文字列を持つ言語 `yml` のコードブロックと、言語 `text` のコードブロックを持つ文書'
         notes: '`yml` は別名で yaml のモジュールを読む。ブロックスカラーは行をまたぐ `hljs-string` の `span` になる'
       - name: 設定
-        description: '`opts.config.syntax.url` に `/fixtures/highlightjs/es/`'
+        description: '`opts.config.syntax.url` に `/fixtures/highlightjs/{名前}/es/`'
       - name: Mock
-        description: 色分けのライブラリの代わりに、`@highlightjs/cdn-assets@11.12.0` の `es/` を手元の開発サーバーが `/fixtures/highlightjs/es/` で配る。要求の件数は `performance.getEntriesByType("resource")` で数える
+        description: 色分けのライブラリの代わりに、`@highlightjs/cdn-assets@11.12.0` の `es/` を手元の開発サーバーが `/fixtures/highlightjs/{名前}/es/` で配る。`{名前}` はテストごとに変え、読み込み済みのモジュールを再利用させない。要求の件数は `performance.getEntriesByType("resource")` で数える
     flow: |-
       sequenceDiagram
         participant P as 使う側のページ
@@ -1812,7 +1812,7 @@ flows:
       - name: 設定
         description: コードブロックを色分けする正常系と同じ
       - name: Mock
-        description: コードブロックを色分けする正常系と同じで、`/fixtures/highlightjs/es/languages/yaml.min.js` だけ 404 を返す。`console.error` を記録する
+        description: コードブロックを色分けする正常系と同じで、`/fixtures/highlightjs/no-yaml/es/languages/yaml.min.js` だけ 404 を返す。`console.error` を記録する
     flow: |-
       sequenceDiagram
         participant P as 使う側のページ
