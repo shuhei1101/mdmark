@@ -262,13 +262,17 @@ export function checkIndex(input: {
   });
   const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
   for (const { path, parsed } of parsedDocs) {
-    for (const { entry: term, line, avoid } of parsed.glossary) {
+    for (const { entry: term, line } of parsed.glossary) {
       sites.push({
         file: path,
         words: [term.term, ...term.aliases],
         wheres: [term.term, ...term.aliases].map(() => `${line} 行目`),
       });
-      avoidable.push({ term: term.term, aliases: term.aliases, avoid });
+      avoidable.push({
+        term: term.term,
+        aliases: term.aliases,
+        avoid: term.avoid ?? [],
+      });
     }
   }
   // やめた言い方は、索引の `docs` の順に文書ごとに探す
