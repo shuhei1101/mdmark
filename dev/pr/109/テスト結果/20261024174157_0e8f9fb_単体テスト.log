@@ -1,0 +1,16 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-collect-matches-avoided
+
+
+ Test Files  140 passed (140)
+      Tests  795 passed (795)
+   Start at  17:42:03
+   Duration  58.79s (tests 42%, worker 32%, import 23%, transform 4%)
+
+
+exit=0

@@ -44,10 +44,18 @@ export type MdmarkMatch = MdmarkMatchTarget & {
   end: number;
 };
 
+/** 本文に出たやめた言い方 1 つと、代わりの用語 */
+export type MdmarkAvoidedMatch = Omit<MdmarkMatch, "kind"> & {
+  /** 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ */
+  kind: "term" | "glossary";
+};
+
 /** `collectMatches` の戻り値 */
 export type MdmarkMatches = {
   /** 文書の `id` から、本文の一致を本文の頭からの順に並べたもの。本文のある索引の文書だけをキーに持つ */
   byDocument: Record<string, MdmarkMatch[]>;
+  /** 文書の `id` から、本文に出たやめた言い方を本文の頭からの順に並べたもの。キーは `byDocument` と同じで、やめた言い方が無い文書と `glossary` がオフの文書は空の並び */
+  avoided: Record<string, MdmarkAvoidedMatch[]>;
   /** 全ての文書の参照先を `kind` と `id` の組で重なりを除いたもの */
   targets: MdmarkMatchTarget[];
 };
@@ -402,6 +410,52 @@ function paragraphMatches(options: {
   return found;
 }
 
+/** 本文の頭からの位置で表した一致を、行（1 から）と行の中の位置（0 から）に直す */
+function locate(options: { found: Found; lineStarts: number[] }): {
+  text: string;
+  line: number;
+  start: number;
+  end: number;
+} {
+  const { found, lineStarts } = options;
+  const lineIndex = lineIndexOf(lineStarts, found.offset);
+  const lineStart = lineStarts[lineIndex] as number;
+  return {
+    text: found.word,
+    line: lineIndex + 1,
+    start: found.offset - lineStart,
+    end: found.end - lineStart,
+  };
+}
+
+/** 地の文と（`html` がオンなら）埋め込んだ HTML の中の、やめた言い方の一致を本文の位置で返す。用語・文書の別名にやめた言い方の語を加えた辞書で照合し、やめた言い方の語の一致だけを残す */
+function avoidedFound(options: {
+  body: string;
+  tokens: Token[];
+  dictionary: Dictionary;
+  lineStarts: number[];
+  html: boolean;
+}): Found[] {
+  const { body, tokens, dictionary, lineStarts, html } = options;
+  // 描いた文書の `matchWords` と同じ語の集まり
+  const withAvoided: Dictionary = {
+    ...dictionary,
+    words: [...new Set([...dictionary.words, ...dictionary.avoided.keys()])],
+  };
+  const found = paragraphMatches({
+    body,
+    tokens,
+    dictionary: withAvoided,
+    lineStarts,
+  });
+  if (html) {
+    found.push(
+      ...embeddedHtmlMatches({ body, tokens, dictionary: withAvoided }),
+    );
+  }
+  return found.filter(({ word }) => dictionary.avoided.has(word));
+}
+
 /** 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す */
 export function collectMatches(input: {
   /** 索引 */
@@ -435,7 +489,10 @@ export function collectMatches(input: {
     item.parsed.glossary.map((row) => row.entry),
   );
   // 辞書が返す用語の `id` から、参照先の種類・タイトル・説明を引く
-  const termTargets = new Map<string, MdmarkMatchTarget>();
+  const termTargets = new Map<
+    string,
+    Omit<MdmarkMatchTarget, "kind"> & { kind: MdmarkAvoidedMatch["kind"] }
+  >();
   for (const entry of glossary) {
     const id = `glossary:${entry.docId}:${entry.term}`;
     termTargets.set(id, {
@@ -454,6 +511,7 @@ export function collectMatches(input: {
     });
   }
   const byDocument: Record<string, MdmarkMatch[]> = {};
+  const avoided: Record<string, MdmarkAvoidedMatch[]> = {};
   const targets = new Map<string, MdmarkMatchTarget>();
   for (const { doc, body, parsed } of scanned) {
     const dictionary = buildDictionary({
@@ -485,14 +543,9 @@ export function collectMatches(input: {
     // 本文の頭からの順に並べる（同じ位置は用語、文書の順）
     found.sort((a, b) => a.offset - b.offset);
     const matches: MdmarkMatch[] = [];
-    for (const { word, offset, end, termOnly } of found) {
-      const lineIndex = lineIndexOf(lineStarts, offset);
-      const position = {
-        text: word,
-        line: lineIndex + 1,
-        start: offset - (lineStarts[lineIndex] as number),
-        end: end - (lineStarts[lineIndex] as number),
-      };
+    for (const item of found) {
+      const { word, termOnly } = item;
+      const position = locate({ found: item, lineStarts });
       const referenced: MdmarkMatchTarget[] = [];
       const term = dictionary.terms.get(word);
       const termTarget =
@@ -516,6 +569,31 @@ export function collectMatches(input: {
       }
     }
     byDocument[doc.id] = matches;
+    // やめた言い方は参照先に混ぜず、代わりの用語を引いて `avoided` にだけ入れる
+    const avoidedMatches: MdmarkAvoidedMatch[] = [];
+    if (dictionary.avoided.size > 0) {
+      const foundAvoided = avoidedFound({
+        body,
+        tokens: parsed.tokens,
+        dictionary,
+        lineStarts,
+        html: parsed.features.html === true,
+      }).sort((a, b) => a.offset - b.offset);
+      for (const item of foundAvoided) {
+        const replacement = dictionary.avoided.get(item.word);
+        const target =
+          replacement === undefined
+            ? undefined
+            : termTargets.get(replacement.id);
+        if (target !== undefined) {
+          avoidedMatches.push({
+            ...target,
+            ...locate({ found: item, lineStarts }),
+          });
+        }
+      }
+    }
+    avoided[doc.id] = avoidedMatches;
   }
-  return { byDocument, targets: [...targets.values()] };
+  return { byDocument, avoided, targets: [...targets.values()] };
 }
