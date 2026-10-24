@@ -234,3 +234,56 @@ test("test_normal_when_invalid_schema", async () => {
   );
   expect(issues.every((issue) => issue.kind === "schema")).toBe(true);
 });
+
+// タグの語彙の重なり・切れた振り替え先・語彙に無いタグ・やめたタグを返す（正常系）
+test("test_normal_when_tag_drift", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        tags: [{ name: "topic:mcp", main: true }, "topic:mcq", "topic:old"],
+      },
+    ],
+    tags: [
+      { name: "topic:mcp", aliases: ["MCP"] },
+      { name: "topic:yaml", aliases: ["MCP"] },
+      { name: "topic:yaml" },
+      { name: "topic:old", deprecated: "topic:mcp" },
+      { name: "topic:gone", deprecated: "topic:none" },
+    ],
+  };
+  const documents = { "a.md": "# A\n" };
+  // 実行
+  const issues = checkIndex({ index, documents });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "index.yaml", where: "tags[2].name", kind: "duplicate_tag" },
+    {
+      file: "index.yaml",
+      where: "tags[1].aliases[0]",
+      kind: "tag_alias_conflict",
+    },
+    {
+      file: "index.yaml",
+      where: "tags[4].deprecated",
+      kind: "broken_tag_replacement",
+    },
+    { file: "index.yaml", where: "docs[0].tags[1]", kind: "unregistered_tag" },
+    { file: "index.yaml", where: "docs[0].tags[2]", kind: "deprecated_tag" },
+  ]);
+  const unregistered = issues.find(
+    (issue) => issue.kind === "unregistered_tag",
+  );
+  expect(unregistered?.message).toContain("topic:mcq");
+  expect(unregistered?.message).toContain("topic:mcp");
+  const deprecated = issues.find((issue) => issue.kind === "deprecated_tag");
+  expect(deprecated?.message).toContain("topic:old");
+  expect(deprecated?.message).toContain("topic:mcp");
+});
