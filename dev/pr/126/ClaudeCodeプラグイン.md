@@ -27,4 +27,8 @@
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/ClaudeCodeプラグイン/find-docs.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/find-docs.test.ts) | 全実行 | 変更 | ✅ | `test_normal_when_width_differs` を追加<br>`テスト結果/20261025073756_22bf362_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/list-tags.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/list-tags.test.ts) | 全実行 | 変更 | ✅ | `test_normal_when_query_width_differs` を追加<br>`テスト結果/20261025073756_22bf362_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン` の上記以外 | 全実行 | 実行のみ | ✅ | 62 ファイル 423 テスト全てが pass<br>`テスト結果/20261025073756_22bf362_結合テスト.log`<br>lint: `テスト結果/20261025074759_22bf362_lint.log` |
