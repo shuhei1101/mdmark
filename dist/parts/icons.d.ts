@@ -19,6 +19,7 @@ declare const ICONS: {
     server: IconNode;
     info: IconNode;
     copy: IconNode;
+    "columns-3": IconNode;
     check: IconNode;
     "circle-alert": IconNode;
     lightbulb: IconNode;
@@ -30,9 +31,11 @@ declare const ICONS: {
     "chevrons-up-down": IconNode;
     "arrow-up": IconNode;
     "arrow-down": IconNode;
+    "arrow-right": IconNode;
     funnel: IconNode;
     link: IconNode;
     file: IconNode;
+    "file-diff": IconNode;
     folder: IconNode;
     menu: IconNode;
 };

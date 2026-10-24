@@ -12,6 +12,13 @@ const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 // マーケットプレイスにするリポジトリ
 const REPOSITORY = "shuhei1101/mdmark";
 
+/** `claude plugin list --json` の 1 行のうち、検証に使う項目 */
+type InstalledPlugin = {
+  id: string;
+  enabled: boolean;
+  installPath: string;
+};
+
 // ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
 test.skip(
   ({ browserName }) => browserName !== "chromium",
@@ -99,25 +106,31 @@ test("test_normal", async ({ tempDir }) => {
     ["plugin", "install", "mdmark@mdmark"],
     options,
   );
-  const listed = await run("claude", ["plugin", "list"], options);
+  const listed = await run("claude", ["plugin", "list", "--json"], options);
   // 検証
   expect(added.code, added.stderr).toBe(0);
   expect(installed.code, installed.stderr).toBe(0);
-  expect(listed.stdout).toContain("mdmark@mdmark");
-  expect(listed.stdout).toContain("enabled");
-  const readFrom = /Read from:\s*(.+)/.exec(listed.stdout)?.[1]?.trim() ?? "";
-  expect(readFrom.startsWith(configDir)).toBe(true);
+  const plugin = (JSON.parse(listed.stdout) as InstalledPlugin[]).find(
+    (entry) => entry.id === "mdmark@mdmark",
+  );
+  expect(
+    plugin,
+    "mdmark@mdmark が claude plugin list --json に出る",
+  ).toBeDefined();
+  expect(plugin?.enabled).toBe(true);
+  const installPath = plugin?.installPath ?? "";
+  expect(installPath.startsWith(configDir)).toBe(true);
   for (const path of [
     join("hooks", "hooks.json"),
     ".mcp.json",
     join("server", "mcp.js"),
     join("node_modules", "esbuild"),
   ]) {
-    expect(existsSync(join(readFrom, path)), path).toBe(true);
+    expect(existsSync(join(installPath, path)), path).toBe(true);
   }
   // `.mcp.json` のコマンドで起動すると、ツールの一覧を返す
   const tools = await withMcpClient(
-    { pluginDir: readFrom, projectDir: await tempDir() },
+    { pluginDir: installPath, projectDir: await tempDir() },
     async (client) => (await client.listTools()).tools.map((tool) => tool.name),
   );
   expect(tools).toContain("read_guide");

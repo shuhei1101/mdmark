@@ -25,17 +25,18 @@ test("test_normal", async () => {
   // 準備・実行
   const html = await renderInNode(builtRoot, SAMPLE_MARKDOWN);
   // 検証
+  // 要素名の直後が空白か `>` の開始タグを探す（`p` が `pre` に当たらないように、属性の有無は問わない）
   for (const element of [
-    "<h1",
-    "<p>",
-    "<ul>",
-    "<table",
-    "<pre",
-    "<code",
-    "<a ",
-    "<details>",
+    "h1",
+    "p",
+    "ul",
+    "table",
+    "pre",
+    "code",
+    "a",
+    "details",
   ]) {
-    expect(html, element).toContain(element);
+    expect(html, element).toMatch(new RegExp(`<${element}[\\s>]`));
   }
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
