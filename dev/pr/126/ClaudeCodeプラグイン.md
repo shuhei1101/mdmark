@@ -19,4 +19,12 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/src/plugin/](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/) | 全実行 | 実行のみ | ✅ | `find_docs`・`list_tags` の記述を変えたあとの全件 pass（`tests/unit` の 144 ファイル 894 テスト）<br>`テスト結果/20261025072230_0c35589_単体テスト.log`<br>lint: `テスト結果/20261025072230_0c35589_lint.log` |
+
+### 結合
+
 なし
