@@ -12,6 +12,15 @@ import {
   test,
   writeFiles,
 } from "../cli.ts";
+import { SYNTAX_ES_ROOT } from "../dist-page.ts";
+
+// 色分けのライブラリの本体と、手元に置く言語のモジュール（文書が使うのは `typescript` と `python`、`yaml` は使わない）
+const SYNTAX_FILES = [
+  "core.min.js",
+  "languages/typescript.min.js",
+  "languages/python.min.js",
+  "languages/yaml.min.js",
+];
 
 // 表の印・用語集の表・Chart.js の印・相対パスで指す画像・他の文書へのリンク・script 要素を持つ文書
 const GUIDE = [
@@ -164,4 +173,62 @@ test("test_error_when_output_unwritable", async ({ builtRoot, tempDir }) => {
   expect(result.stderr).toContain("確かめて");
   expect(await readFile(join(dir, "blocked"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
+});
+
+// 文書が使う言語の分だけ色分けのモジュールを埋めた HTML を書き出し、外へ要求せずに色分けする（正常シナリオ（色分けするコードブロック））
+test("test_normal_when_code_highlighted", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const vendor: Record<string, string> = {};
+  for (const file of SYNTAX_FILES) {
+    vendor[`vendor/highlightjs/es/${file}`] = await readFile(
+      join(SYNTAX_ES_ROOT, file),
+      "utf8",
+    );
+  }
+  // 使わない言語のモジュールを見分けられる文字が、手元のモジュールにある
+  expect(vendor["vendor/highlightjs/es/languages/yaml.min.js"]).toContain(
+    'name:"YAML"',
+  );
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "syntax:\n  url: vendor/highlightjs/es/\n",
+    "guide.md": [
+      "# ガイド",
+      "",
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+      "```python",
+      "def greet(name):",
+      "    return name",
+      "```",
+      "",
+    ].join("\n"),
+    ...vendor,
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(result.stderr).toBe("");
+  expect(existsSync(join(dir, "guide.html"))).toBe(true);
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  expect(html).not.toContain('name:"YAML"');
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "guide.html"),
+  });
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("h1")).toContainText("ガイド");
+  for (const language of ["ts", "python"]) {
+    await expect(
+      article.locator(`code.language-${language} span[class*="hljs-"]`).first(),
+    ).toBeVisible();
+  }
+  expect(opened.externalRequests()).toEqual([]);
 });

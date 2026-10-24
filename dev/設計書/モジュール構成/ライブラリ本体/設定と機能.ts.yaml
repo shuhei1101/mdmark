@@ -25,6 +25,9 @@ data_models:
       - name: tooltips
         type: '{ placement?: string } | undefined'
         description: ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が `top` にするため、型は `string`
+      - name: syntax
+        type: '{ url?: string } | undefined'
+        description: 色分けのライブラリの設定。`url` は highlight.js の `es/` フォルダの URL（末尾 `/`）
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -52,6 +55,9 @@ data_models:
       - name: tooltips
         type: '{ placement: TooltipPlacement }'
         description: 設定の `tooltips.placement` が `bottom` のときだけ `bottom`、それ以外は `top`
+      - name: syntax
+        type: '{ url: string }'
+        description: 設定の `syntax.url` が文字列ならその値、それ以外は `DEFAULT_SYNTAX_URL`
   - name: TooltipPlacement
     title: ツールチップを出す場所
     container: src/config.ts
@@ -63,7 +69,7 @@ constants:
     title: 機能の既定
     container: src/config.ts
     summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, code: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -76,6 +82,16 @@ constants:
     container: src/config.ts
     summary: 印の名前と設定の `libraries` のキーが合うべき書式
     value: /^[a-z][a-z0-9-]*$/
+  - name: DEFAULT_SYNTAX_URL
+    title: 色分けのライブラリの既定の読み込み先
+    container: src/config.ts
+    summary: 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。版を固定する
+    value: '"https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/"'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[syntax.url]
+    status: planned
+    introduced:
+      pr: 97
 functions:
   - name: resolveConfig
     title: 設定に既定を当てる
@@ -83,7 +99,7 @@ functions:
     kind: 関数
     scope: public
     summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。渡されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。渡されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
@@ -98,7 +114,7 @@ functions:
         summary: 設定が無ければ既定を返す
         condition: '`config` が `undefined`'
         mock: なし
-        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top" } }`（`comments` を除く全ての機能が `true`）'
+        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top" }, syntax: { url: DEFAULT_SYNTAX_URL } }`（`comments` を除く全ての機能が `true`）'
       - name: test_resolve_config_when_features_given
         case: 正常
         summary: 知っている機能の真偽値だけを置き換える
@@ -123,6 +139,12 @@ functions:
         condition: '`{ tooltips: { placement: "bottom" } }` と `{ tooltips: { placement: "left" } }`'
         mock: なし
         expected: 前者の `tooltips.placement` が `bottom`、後者は `top`
+      - name: test_resolve_config_when_syntax_url_given
+        case: 正常
+        summary: 文字列の `syntax.url` だけを受け、他の型は既定にする
+        condition: '`{ syntax: { url: "/vendor/highlightjs/es/" } }` と `{ syntax: { url: 1 } }`'
+        mock: なし
+        expected: 前者の `syntax.url` が `/vendor/highlightjs/es/`、後者は `DEFAULT_SYNTAX_URL`
   - name: resolveFeatures
     title: 文書の印で機能のオン・オフを決める
     container: src/features.ts
@@ -164,7 +186,7 @@ functions:
         mock: なし
         expected: '`{ print: true }`'
 notes:
-  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
+  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を置く。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
 test_files:
   - tests/unit/src/config.test.ts
   - tests/unit/src/features.test.ts

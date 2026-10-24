@@ -2,7 +2,10 @@ import { readFile } from "node:fs/promises";
 import { dirname, extname, resolve } from "node:path";
 import { build, type Plugin } from "esbuild";
 import MarkdownIt from "markdown-it";
+import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveLink } from "../knowledge/paths.ts";
+import { SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
+import { renderDocument } from "../render/index.ts";
 import { MARK_PATTERN } from "../render/marks.ts";
 
 /** URL を読む関数 */
@@ -54,6 +57,32 @@ export function usedLibraryMarks(
     }
   }
   return marks;
+}
+
+/** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読む正規表現 */
+const SYNTAX_LANGUAGE_PATTERN = new RegExp(
+  `<code\\b[^>]*\\s${SYNTAX_ATTRIBUTE}="([^"]*)"`,
+  "g",
+);
+
+/** 文書ごとに `render` を設定と一緒に呼び、返った HTML の色分けの属性の値を、重なりなく名前の順に返す。`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を外すことを含む）を、同じ処理から得る */
+export function usedSyntaxLanguages(options: {
+  /** 文書の Markdown */
+  markdowns: string[];
+  /** 読んだ設定 */
+  config: MdmarkConfig;
+}): string[] {
+  const config = resolveConfig({ config: options.config });
+  const languages = new Set<string>();
+  for (const markdown of options.markdowns) {
+    const { html } = renderDocument({ markdown, config });
+    for (const match of html.matchAll(SYNTAX_LANGUAGE_PATTERN)) {
+      if (match[1]) {
+        languages.add(match[1]);
+      }
+    }
+  }
+  return [...languages].sort();
 }
 
 /** 埋める文書にビューの印があれば、埋める部品のモジュールのコードを入れた表を返す。無ければ空。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない */

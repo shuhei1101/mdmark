@@ -1,6 +1,7 @@
 import type { ExportPayload } from "../cli/html.ts";
 import type { MdmarkConfig } from "../config.ts";
 import { type MdmarkExtension, registerExtension } from "../extensions.ts";
+import { setSyntaxModuleUrls } from "../highlight.ts";
 import { type PartName, setPartModuleUrl } from "../part-modules.ts";
 
 /** 差し替えられる依存（単体テスト用） */
@@ -31,9 +32,12 @@ const defaultDeps: ModuleDeps = {
   register: registerExtension,
 };
 
-/** 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた部品のコードを `blob:` URL に替えて部品の読み込みに渡し（埋めなかった部品は読むと例外を投げる URL にする）、埋めた拡張を読んで `registerExtension` で登録し、`libraries` を替えた設定を返す */
+/** 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた部品のコードを `blob:` URL に替えて部品の読み込みに渡し（埋めなかった部品は読むと例外を投げる URL にする）、埋めた色分けのライブラリのコードを `blob:` URL に替えて色分けの読み込みに渡し、埋めた拡張を読んで `registerExtension` で登録し、`libraries` を替えた設定を返す */
 export async function prepareModules(
-  payload: Pick<ExportPayload, "config" | "modules" | "extensions" | "parts">,
+  payload: Pick<
+    ExportPayload,
+    "config" | "modules" | "extensions" | "parts" | "syntax"
+  >,
   deps: ModuleDeps = defaultDeps,
 ): Promise<MdmarkConfig> {
   const libraries: Record<string, string> = {};
@@ -50,6 +54,20 @@ export async function prepareModules(
       code === undefined ? UNAVAILABLE_MODULE : deps.createUrl(code),
     );
   }
+  // 埋めた色分けのモジュール。無いときは読むと例外を投げる URL にして、jsDelivr へ要求しない（色分けせずに描く）
+  setSyntaxModuleUrls(
+    payload.syntax
+      ? {
+          core: deps.createUrl(payload.syntax.core),
+          languages: Object.fromEntries(
+            Object.entries(payload.syntax.languages).map(([name, code]) => [
+              name,
+              deps.createUrl(code),
+            ]),
+          ),
+        }
+      : { core: UNAVAILABLE_MODULE, languages: {} },
+  );
   for (const code of payload.extensions) {
     // 読めない・登録できない拡張は飛ばし、ほかの拡張と描画は続ける（印は知らない印として取り除かれる）
     try {

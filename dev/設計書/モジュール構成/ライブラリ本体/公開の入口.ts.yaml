@@ -102,6 +102,10 @@ styles:
       - class_name: .mdmark .mdmark-term-avoided
         target: やめた言い方のマーカー
         value: '`.mdmark-term` の破線を波線（`text-decoration: underline wavy`）に替え、色を `--mdmark-color-avoided-underline`（既定 `var(--mdmark-color-notice-border)`、`:root` に置く）にする。代わりの用語の語 `mdmark-term-tip-replacement` は太字。印刷では波線を外す（`.mdmark-term` の印刷の規則より詳細度が高いので別に宣言する）。値は `dev/mock/refs/79/assets/avoided-term.css`・`avoided-term-print.css`'
+      - class_name: :root（色分け）と .mdmark code [class^="hljs-"]
+        target: コードブロックの色分け
+        value: '`--mdmark-color-syntax-{keyword,string,number,type,name,comment}` の既定とダークの値を `:root` に置き（部品設計『コードブロック』の CSS カスタムプロパティ）、`hljs-*` の class を 6 つの変数へ寄せる（部品設計の補足『色分けの種類』。コメントは斜体、`hljs-subst` は本文の色、`hljs-strong` は太字、`hljs-emphasis` は斜体）。値は `dev/mock/refs/97/assets/syntax-highlight.css`。`@media print` では色分けした `code` に `print-color-adjust: exact` を当て、明るい配色の色で印刷する'
+        notes: 色分けの HTML は `mount` が描いた後に入れるため、規則は描いた文書の class `.mdmark` の下で当てる
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

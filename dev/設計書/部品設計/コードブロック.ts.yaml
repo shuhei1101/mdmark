@@ -49,7 +49,51 @@ states:
         value: 'true'
       - name: lines
         value: '[{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js\";"},{"text":"export const decorate = (tokens: Token[], options: { title?: string; lines: boolean; highlight: number[] }) => tokens;","kind":"del"},{"text":"export const decorate = (tokens: Token[], options: CodeBlockOptions, warnings: SyntaxWarning[]): Token[] => applyCodeBlockOptions(tokens, options, warnings);","kind":"add"}]'
-lead: 題・行番号・行の強調・足した行と消した行を付けたコードブロック。
+  - name: SyntaxPlain
+    description: ts の色分け。題も行番号も行の種類も無いため、行に分けない `pre` の `code` の中身を色分けする
+    args:
+      - name: language
+        value: ts
+      - name: highlight
+        value: 'true'
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":""},{"text":"// 文書を描く"},{"text":"const element: HTMLElement | null = document.querySelector(\"#doc\");"},{"text":"mount(element, `# 見出し ${300}`, { features: { syntax: true } });"}]'
+  - name: SyntaxWithLineMarks
+    description: 題・行番号・消した行・足した行・強調と色分け。行番号・行頭の `+`・`-`・行の地と左端の線はそのままに、行の中身だけが色分けされる
+    args:
+      - name: language
+        value: ts
+      - name: title
+        value: app.ts
+      - name: lineNumbers
+        value: 'true'
+      - name: highlight
+        value: 'true'
+      - name: lines
+        value: '[{"text":"const limit = 100;","kind":"del"},{"text":"const limit = 300;","kind":"add"},{"text":"const doc = await fetch(\"/README.md\");","kind":"highlight"},{"text":"mount(element, await doc.text());"}]'
+  - name: SyntaxMultilineToken
+    description: 行をまたぐブロックコメントとテンプレート文字列を、行番号を付けて色分けする。色の `span` を行の切れ目で閉じて次の行で開き直し、どの行もコメント・文字列の色のまま 1 行ずつ並ぶ
+    args:
+      - name: language
+        value: ts
+      - name: lineNumbers
+        value: 'true'
+      - name: highlight
+        value: 'true'
+      - name: lines
+        value: '[{"text":"/*"},{"text":" * 文書を描く"},{"text":" */"},{"text":"const markdown = `# 見出し"},{"text":"本文 ${count}"},{"text":"`;","kind":"highlight"}]'
+  - name: SyntaxPython
+    description: 行コメントの頭が `#` の python の色分け。デコレーター・コメント・文字列・数値・組み込みの関数がそれぞれの色になる
+    args:
+      - name: language
+        value: python
+      - name: lineNumbers
+        value: 'true'
+      - name: highlight
+        value: 'true'
+      - name: lines
+        value: '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書の題"},{"text":"    title: str = \"README\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]'
+lead: 題・行番号・行の強調・足した行と消した行と、言語に応じた色分けを付けたコードブロック。
 args:
   - name: language
     type: 文字列
@@ -70,6 +114,17 @@ args:
     type: オブジェクトの配列
     required: true
     description: コードの行（`{ text, kind }`）。`text` は印を外した行の文字、`kind` は `add`・`del`・`highlight` か空
+  - name: highlight
+    type: 真偽値
+    default: 'false'
+    description: ストーリーで色分けした後の見た目を出すか。部品の HTML は色分けを持たず、`mount` が描いた後に行の中身 `mdmark-code-text`（行に分けないときは `code`）を色分けした HTML に置き換える。部品の描画のインターフェースはこの引数が `true` のとき、`language` の言語で同じ置き換えを当ててから返す
+    status: planned
+  - name: syntax
+    type: 文字列
+    required: false
+    default: 空
+    description: 色分けする言語のモジュール名（`typescript`・`yaml` など）。渡すと `code` に `data-mdmark-syntax="{モジュール名}"` を付け、`mount` が色分けする対象をこの属性で探す。見た目は変えない
+    status: planned
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>
@@ -95,18 +150,46 @@ css_properties:
     syntax: <color>
     default: '#b91c1c'
     description: 消した行の行頭の `-` と左端の線の色（差分の表示と共通）
+  - name: --mdmark-color-syntax-keyword
+    syntax: <color>
+    default: '#6d28d9（ダーク #d6c2ff）'
+    description: 色分けのキーワード（予約語・デコレーター・`document` や `self` などの言語の変数）の色
+  - name: --mdmark-color-syntax-string
+    syntax: <color>
+    default: '#166534（ダーク #4ade80）'
+    description: 色分けの文字列（文字列・正規表現・エスケープ・Markdown のリンクの文字）の色
+  - name: --mdmark-color-syntax-number
+    syntax: <color>
+    default: '#92400e（ダーク #fbbf24）'
+    description: 色分けの数値（数値・`true`・`false`・`null`・YAML と Markdown の箇条書きの `-`）の色
+  - name: --mdmark-color-syntax-type
+    syntax: <color>
+    default: '#be185d（ダーク #fbb6db）'
+    description: 色分けの型（型・クラス名・組み込みの関数と型・HTML のタグ名・CSS のセレクター）の色
+  - name: --mdmark-color-syntax-name
+    syntax: <color>
+    default: '#1d4ed8（ダーク #a8c1ff）'
+    description: 色分けの名前（関数名・オブジェクトと YAML と JSON のキー・HTML の属性・CSS のプロパティ・Markdown の見出し）の色
+  - name: --mdmark-color-syntax-comment
+    syntax: <color>
+    default: '#52525b（ダーク #c8c8cf）'
+    description: 色分けのコメントの色。コメントは斜体でも示す
 accessibility:
   - '`pre` は `tabindex="0"` と読み上げの名前（題があれば `コード: {題}`、無ければ `コード: {言語}`）を持ち、キーボードで横にスクロールできる'
   - 足した行・消した行・強調した行は、色に加えて左端の 2px の線（足した行・消した行は行頭の `+`・`-` も）で分ける。強調の線は隣り合う地の色と 3:1 以上
   - '行頭の印は擬似要素の代わりの文字で読み上げる（足した行は `足した行`、消した行は `消した行`、強調した行は見た目の文字を持たず `強調した行`）。代わりの文字を読めないブラウザ（Firefox 128・Safari 17.4 より前）でも行番号と `+`・`-` が出るよう、代わりの文字の無い `content` を先に書き、代わりの文字付きの `content` を後ろに重ねる（例: `content: "+"; content: "+" / "足した行";`）'
   - '行番号と行頭の `+`・`-` は擬似要素で出し、文字を選んで写す中身に入れない。行は `inline-block` で並べ、写した行の間に空行を入れない。空の行は `min-height: 1.55em` で高さを取る（`lh` 単位は対応ブラウザの一部で効かない）'
   - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。題・行番号・強調・行の色と `+`・`-` はそのまま出す
+  - 色分けは見た目だけで、読み上げの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、地（`--mdmark-color-surface` と、足した行・消した行・強調した行の半透明の地を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
+  - '印刷ではダークを解除した明るい配色の色分けの色を、`print-color-adjust: exact` で色を省くブラウザの設定でも紙に出す'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[コードブロック]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの当て方]
 status: planned
 introduced:
   pr: 65
 notes:
   出す HTML: 形はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。題の前のファイルのアイコンは CSS で付ける。題が無く、行番号も行の種類も無いときは今の `pre` のまま描く。モックは `dev/mock/components/code-block/`
   行の地の色: '足した行・消した行・強調した行の地は、不透明の変数をそのまま当てた後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が効くブラウザでは `pre` の横スクロールの影が行の地を透けて見え、効かないブラウザ（Chrome 99〜110）では不透明の地になる。半透明の地と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭の印と線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭の印と線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
+  色分けの種類: '色分けのライブラリが付ける `hljs-*` の class を 6 つの CSS 変数へ寄せる。キーワード: `hljs-keyword`・`hljs-meta`・`hljs-variable.language_`・`hljs-doctag`／文字列: `hljs-string`・`hljs-regexp`・`hljs-char`・`hljs-link`／数値: `hljs-number`・`hljs-literal`・`hljs-symbol`・`hljs-bullet`／型: `hljs-type`・`hljs-title.class_`・`hljs-built_in`・`hljs-name`・`hljs-selector-*`／名前: `hljs-title`・`hljs-attr`・`hljs-attribute`・`hljs-property`・`hljs-section`／コメント: `hljs-comment`・`hljs-quote`。テンプレート文字列に埋めた式 `hljs-subst` は本文の色に戻し、Markdown の `hljs-strong` は太字、`hljs-emphasis` は斜体にする。ここに無い class（変数名・引数・記号）は本文の色のまま。モックは `dev/mock/components/code-block/` と `dev/mock/refs/97/assets/syntax-highlight.css`'
 test_file: tests/integration/lib/code-block.story.test.ts

@@ -1,26 +1,6 @@
 /* コードブロックの題・行番号・行の強調・コードの行の印の規則（#65 で共有するアセット）。
    実装では src/index.css の mdmark の層に足す */
 
-/* 行の強調の色: 新しく足す CSS 変数（足した行・消した行は差分の表示の変数を使う） */
-:root {
-  --mdmark-color-code-highlight-bg: #fff8c5;
-  --mdmark-color-code-highlight-line: #9a6700;
-}
-
-/* ダーク（OS の設定）: 行の強調の色 */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-scheme="light"]) {
-    --mdmark-color-code-highlight-bg: #2e2a14;
-    --mdmark-color-code-highlight-line: #d29922;
-  }
-}
-
-/* ダーク（モックの配色の切り替え）: 行の強調の色 */
-:root[data-scheme="dark"] {
-  --mdmark-color-code-highlight-bg: #2e2a14;
-  --mdmark-color-code-highlight-line: #d29922;
-}
-
 /* mdmark の層: 飾ったコードブロック */
 @layer mdmark {
   /* 飾ったコードブロックの入れ物: ブラウザ既定の余白を消し、前のブロックとの間隔は本文の規則に任せる */

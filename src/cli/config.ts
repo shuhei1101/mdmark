@@ -338,6 +338,10 @@ export function validateConfig(
     delete config.tooltips;
   }
 
+  if (raw.syntax !== undefined && !isValidSyntax(raw.syntax, file, issues)) {
+    delete config.syntax;
+  }
+
   if (raw.check !== undefined) {
     const check = validateCheck(raw.check, file, issues);
     if (check) {
@@ -376,6 +380,35 @@ function isValidTooltips(
         file,
         "tooltips.placement",
         "`tooltips.placement` は `top` か `bottom` で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `syntax` を検める。キーと値の形でなければ、`url` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+function isValidSyntax(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "syntax",
+        "`syntax` は `url` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.url !== undefined && typeof value.url !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "syntax.url",
+        "`syntax.url` は色分けのライブラリの `es/` フォルダの URL かパスの文字列で書いてください。",
       ),
     );
     return false;

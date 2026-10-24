@@ -1,0 +1,426 @@
+# npm run test:unit（実装が無いため Red。新規・変更のテストだけが fail し、既存のテストは pass）
+# commit: 0a2310e
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight
+
+ ❯ |unit| tests/unit/src/config.test.ts (6 tests | 3 failed) 63ms
+   × test_resolve_config 59ms
+   × test_resolve_config_when_features_given 1ms
+   × test_resolve_config_when_syntax_url_given 1ms
+ ❯ |unit| tests/unit/src/viewer/modules.test.ts (3 tests | 1 failed) 1502ms
+   × test_prepare_modules_when_syntax 989ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (11 tests | 2 failed) 2003ms
+   × test_used_syntax_languages 4ms
+   × test_used_syntax_languages_when_disabled 0ms
+ ❯ |unit| tests/unit/src/render/syntax/code-blocks.test.ts (16 tests | 4 failed) 65ms
+   × test_build_code_blocks_when_syntax 11ms
+   × test_build_code_blocks_when_code_disabled_with_syntax 5ms
+   × test_syntax_language_of 1ms
+   × test_syntax_language_of_when_unknown 0ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (14 tests | 1 failed) 7042ms
+   × test_validate_config_when_syntax_url_invalid 9ms
+ ❯ |unit| tests/unit/scripts/storybook-render.test.ts (11 tests | 1 failed) 7638ms
+   × test_render_part_when_code_block_highlighted 6ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (12 tests | 3 failed) 7863ms
+   × test_prepare_embeds_when_syntax 15ms
+   × test_prepare_embeds_when_syntax_unreadable 7ms
+   × test_prepare_embeds_when_syntax_language_unreadable 6ms
+ ❯ |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts (7 tests | 7 failed) 2128ms
+   × test_highlight_code_blocks 858ms
+   × test_highlight_code_blocks_when_no_target 204ms
+   × test_highlight_code_blocks_when_core_fails 190ms
+   × test_highlight_code_blocks_when_language_fails 209ms
+   × test_highlight_code_blocks_when_stale 167ms
+   × test_highlight_code_blocks_when_cached 285ms
+   × test_highlight_code_blocks_when_module_urls 214ms
+ ❯ |unit| tests/unit/src/parts/code-block.test.ts (4 tests | 1 failed) 22ms
+   × test_render_code_block_when_syntax 4ms
+ ❯ |unit| tests/unit/src/highlight-lines.test.ts (4 tests | 4 failed) 29ms
+   × test_highlight_lines 18ms
+   × test_split_highlighted_lines 3ms
+   × test_split_highlighted_lines_when_nested 4ms
+   × test_split_highlighted_lines_when_single_line 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_code_block_highlighted
+AssertionError: expected 'const a = 1;</span></span>\n<span cla…' to contain '<span class="hljs-keyword">const</spa…'
+
+- Expected
++ Received
+
+- <span class="hljs-keyword">const</span>
++ const a = 1;</span></span>
++ <span class="mdmark-code-line" data-line="2">
+
+ ❯ tests/unit/scripts/storybook-render.test.ts:186:20
+    184|   const texts = (html ?? "").split('<span class="mdmark-code-text">').…
+    185|   expect(texts).toHaveLength(2);
+    186|   expect(texts[0]).toContain('<span class="hljs-keyword">const</span>'…
+       |                    ^
+    187|   expect(texts[1]).toContain('<span class="hljs-comment">// b</span>');
+    188|   expect(texts.map((text) => text.replace(/<[^>]*>/g, "").trim())).toE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(3) } to deeply equal { …(4) }
+
+- Expected
++ Received
+
+@@ -13,20 +13,16 @@
+      "html": true,
+      "print": true,
+      "row-details": true,
+      "sections": true,
+      "steps": true,
+-     "syntax": true,
+      "table": true,
+      "tabs": true,
+      "toc": true,
+      "tree": true,
+      "views": true,
+    },
+    "libraries": {},
+-   "syntax": {
+-     "url": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/",
+-   },
+    "tooltips": {
+      "placement": "top",
+    },
+  }
+
+ ❯ tests/unit/src/config.test.ts:43:20
+     41|   const resolved = resolveConfig({});
+     42|   // 検証
+     43|   expect(resolved).toEqual({
+       |                    ^
+     44|     features: DEFAULT_FEATURES,
+     45|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_features_given
+AssertionError: expected { print: false, table: true, …(18) } to deeply equal { print: false, table: true, …(19) }
+
+- Expected
++ Received
+
+@@ -12,11 +12,10 @@
+    "html": true,
+    "print": false,
+    "row-details": true,
+    "sections": true,
+    "steps": true,
+-   "syntax": true,
+    "table": true,
+    "tabs": true,
+    "toc": true,
+    "tree": true,
+    "views": true,
+
+ ❯ tests/unit/src/config.test.ts:61:29
+     59|   const resolved = resolveConfig({ config });
+     60|   // 検証
+     61|   expect(resolved.features).toEqual({ ...DEFAULT_FEATURES, print: fals…
+       |                             ^
+     62| });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/27]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_syntax_url_given
+TypeError: Cannot read properties of undefined (reading 'url')
+ ❯ tests/unit/src/config.test.ts:123:31
+    121|   const resolvedInvalid = resolveConfig({ config: invalid });
+    122|   // 検証
+    123|   expect(resolvedGiven.syntax.url).toBe("/vendor/highlightjs/es/");
+       |                               ^
+    124|   expect(resolvedInvalid.syntax.url).toBe(DEFAULT_SYNTAX_URL);
+    125| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/27]⎯
+
+ FAIL  |unit| tests/unit/src/highlight-lines.test.ts > test_highlight_lines
+Error: Cannot find module '/src/highlight-lines.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight/tests/unit/src/highlight-lines.test.ts
+ ❯ tests/unit/src/highlight-lines.test.ts:22:30
+     20| test("test_highlight_lines", async () => {
+     21|   // 準備
+     22|   const { highlightLines } = await loadLines();
+       |                              ^
+     23|   const instance = hljs.newInstance();
+     24|   instance.registerLanguage("yaml", yaml);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/27]⎯
+
+ FAIL  |unit| tests/unit/src/highlight-lines.test.ts > test_split_highlighted_lines
+Error: Cannot find module '/src/highlight-lines.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight/tests/unit/src/highlight-lines.test.ts
+ ❯ tests/unit/src/highlight-lines.test.ts:40:37
+     38| test("test_split_highlighted_lines", async () => {
+     39|   // 準備
+     40|   const { splitHighlightedLines } = await loadLines();
+       |                                     ^
+     41|   const html = '<span class="hljs-comment">/*\n * a\n */</span>\nx';
+     42|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/27]⎯
+
+ FAIL  |unit| tests/unit/src/highlight-lines.test.ts > test_split_highlighted_lines_when_nested
+Error: Cannot find module '/src/highlight-lines.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight/tests/unit/src/highlight-lines.test.ts
+ ❯ tests/unit/src/highlight-lines.test.ts:56:37
+     54| test("test_split_highlighted_lines_when_nested", async () => {
+     55|   // 準備
+     56|   const { splitHighlightedLines } = await loadLines();
+       |                                     ^
+     57|   const html =
+     58|     '<span class="hljs-string">`a<span class="hljs-subst">$' +
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/27]⎯
+
+ FAIL  |unit| tests/unit/src/highlight-lines.test.ts > test_split_highlighted_lines_when_single_line
+Error: Cannot find module '/src/highlight-lines.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight/tests/unit/src/highlight-lines.test.ts
+ ❯ tests/unit/src/highlight-lines.test.ts:75:37
+     73| test("test_split_highlighted_lines_when_single_line", async () => {
+     74|   // 準備
+     75|   const { splitHighlightedLines } = await loadLines();
+       |                                     ^
+     76|   const html = '<span class="hljs-number">1</span> &lt; 2';
+     77|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/27]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_syntax_url_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/config.test.ts:216:26
+    214|   );
+    215|   // 検証
+    216|   expect(invalid.issues).toHaveLength(1);
+       |                          ^
+    217|   expect(invalid.issues[0]).toMatchObject({
+    218|     where: "syntax.url",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/27]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_used_syntax_languages
+TypeError: usedSyntaxLanguages is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:208:21
+    206|   ].join("\n");
+    207|   // 実行
+    208|   const languages = usedSyntaxLanguages({
+       |                     ^
+    209|     markdowns: [first, second],
+    210|     config: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/27]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_used_syntax_languages_when_disabled
+TypeError: usedSyntaxLanguages is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:222:21
+    220|   const markdown = ["```ts", "const a = 1;", "```", ""].join("\n");
+    221|   // 実行
+    222|   const languages = usedSyntaxLanguages({
+       |                     ^
+    223|     markdowns: [markdown],
+    224|     config: { features: { syntax: false } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/27]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_syntax
+AssertionError: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/export.test.ts:268:39
+    266|   });
+    267|   // 検証
+    268|   expect(result.payload.syntax?.core).toBeTruthy();
+       |                                       ^
+    269|   expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
+    270|     "typescript",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/27]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_syntax_unreadable
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/export.test.ts:292:27
+    290|   // 検証
+    291|   expect(result.payload.syntax).toBeUndefined();
+    292|   expect(result.warnings).toHaveLength(1);
+       |                           ^
+    293|   expect(result.warnings[0]).toContain("missing/core.min.js");
+    294|   expect(result.warnings[0]).toContain("syntax.url");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/27]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_syntax_language_unreadable
+AssertionError: expected [] to deeply equal [ 'typescript' ]
+
+- Expected
++ Received
+
+- [
+-   "typescript",
+- ]
++ []
+
+ ❯ tests/unit/src/cli/export.test.ts:316:63
+    314|   });
+    315|   // 検証
+    316|   expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
+       |                                                               ^
+    317|     "typescript",
+    318|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/27]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_block_when_syntax
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/parts/code-block.test.ts:97:5
+     95|       '<pre tabindex="0" aria-label="コード: yml"><code class="language-y…
+     96|     ),
+     97|   ).toBe(true);
+       |     ^
+     98|   expect(findTag(withoutSyntax, "<code")).not.toContain("data-mdmark-s…
+     99| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/27]⎯
+
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules_when_syntax
+Error: Cannot find module '/src/highlight.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight/tests/unit/src/viewer/modules.test.ts
+ ❯ tests/unit/src/viewer/modules.test.ts:68:21
+     66|   // 準備
+     67|   const { prepareModules } = await loadModules();
+     68|   const highlight = await loadHighlight();
+       |                     ^
+     69|   let count = 0;
+     70|   const createUrl = vi.fn(() => `blob:test/${++count}`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/27]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_build_code_blocks_when_syntax
+AssertionError: expected '<pre tabindex="0" aria-label="コード: ym…' to contain '<code class="language-yml" data-mdmar…'
+
+- Expected
++ Received
+
+- <code class="language-yml" data-mdmark-syntax="yaml">
++ <pre tabindex="0" aria-label="コード: yml"><code class="language-yml">a: 1
++ </code></pre>
++ <pre tabindex="0" aria-label="コード: text"><code class="language-text">plain
++ </code></pre>
++
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:217:16
+    215|   const { html } = renderDoc(markdown);
+    216|   // 検証
+    217|   expect(html).toContain(
+       |                ^
+    218|     '<code class="language-yml" data-mdmark-syntax="yaml">',
+    219|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/27]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_build_code_blocks_when_code_disabled_with_syntax
+AssertionError: expected '<pre tabindex="0" aria-label="コード: ts…' to contain 'data-mdmark-syntax="typescript"'
+
+- Expected
++ Received
+
+- data-mdmark-syntax="typescript"
++ <pre tabindex="0" aria-label="コード: ts"><code class="language-ts">let count = 1; // [!code ++]
++ </code></pre>
++
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:258:16
+    256|   const { html } = renderDoc(markdown, { code: false });
+    257|   // 検証
+    258|   expect(html).toContain('data-mdmark-syntax="typescript"');
+       |                ^
+    259|   expect(html).not.toContain("mdmark-code-lines");
+    260|   expect(html).toContain("let count = 1; // [!code ++]");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/27]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_syntax_language_of
+TypeError: syntaxLanguageOf is not a function
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:269:5
+    267|   // 実行
+    268|   const result = ["ts", "YML", "html"].map((language) =>
+    269|     syntaxLanguageOf(language),
+       |     ^
+    270|   );
+    271|   // 検証
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:268:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/27]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_syntax_language_of_when_unknown
+TypeError: syntaxLanguageOf is not a function
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:281:5
+    279|   // 実行
+    280|   const result = ["text", "tree", "", "constructor"].map((language) =>
+    281|     syntaxLanguageOf(language),
+       |     ^
+    282|   );
+    283|   // 検証
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:280:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/27]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_no_target
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_core_fails
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_language_fails
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_stale
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_cached
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_module_urls
+TypeError: Failed to fetch dynamically imported module: http://localhost:63315/src/highlight.ts
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks.png
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_no_target.png
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_core_fails.png
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_language_fails.png
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_stale.png
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_cached.png
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_module_urls.png
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/27]⎯
+
+
+ Test Files  10 failed | 132 passed (142)
+      Tests  27 failed | 787 passed (814)
+   Start at  16:20:32
+   Duration  58.31s (tests 38%, worker 35%, import 23%, transform 4%)
+

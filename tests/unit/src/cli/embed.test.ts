@@ -175,3 +175,54 @@ test("test_find_outside_links", async () => {
   // 検証
   expect(links).toEqual(["下書き/メモ.md"]);
 });
+
+// 色分けの対象の言語だけを拾い、機能を外した文書は拾わない（正常系）
+test("test_used_syntax_languages", async () => {
+  // 準備
+  const { usedSyntaxLanguages } = await loadEmbed();
+  const first = [
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "```yml",
+    "a: 1",
+    "```",
+    "",
+    "```text",
+    "plain",
+    "```",
+    "",
+    '<pre><code class="language-python">x</code></pre>',
+    "",
+  ].join("\n");
+  const second = [
+    "<!-- features: -syntax -->",
+    "",
+    "```sql",
+    "select 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const languages = usedSyntaxLanguages({
+    markdowns: [first, second],
+    config: {},
+  });
+  // 検証
+  expect(languages).toEqual(["typescript", "yaml"]);
+});
+
+// 設定で機能を外すと何も拾わない（正常系）
+test("test_used_syntax_languages_when_disabled", async () => {
+  // 準備
+  const { usedSyntaxLanguages } = await loadEmbed();
+  const markdown = ["```ts", "const a = 1;", "```", ""].join("\n");
+  // 実行
+  const languages = usedSyntaxLanguages({
+    markdowns: [markdown],
+    config: { features: { syntax: false } },
+  });
+  // 検証
+  expect(languages).toEqual([]);
+});

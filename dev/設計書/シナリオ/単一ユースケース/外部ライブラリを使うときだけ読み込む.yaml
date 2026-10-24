@@ -46,6 +46,7 @@ scenarios:
     expected:
       - 外部ライブラリの代役への要求が 0 件
       - 段落が描かれている
+      - 色分けのライブラリへの要求も 0 件
     test: test_normal_when_no_mark
   - name: 異常シナリオ（外部ライブラリを読めない）
     setup:
@@ -70,6 +71,33 @@ scenarios:
       - 印の場所に知らせの枠がある
       - 印の前後の段落が描かれている
     test: test_error_when_library_not_found
+  - name: 正常シナリオ（色分けするコードブロック）
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 色分けする言語のコードブロックを持つ Markdown
+        description: 外部ライブラリの印を持たず、言語 `ts` と `yaml` のコードブロックを 1 つずつ持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: コードブロックの言語から、色分けする言語を集める
+        M->>X: 本体と typescript・yaml のモジュールを要求
+        X-->>M: モジュール
+        M-->>P: コードブロックを色分けする
+        P-->>U: 文書を表示
+      ```
+    expected:
+      - 色分けのライブラリへの要求が、本体 1 件と `typescript`・`yaml` の言語のモジュール 1 件ずつの計 3 件で、文書が使わない言語のモジュールへの要求が無い
+      - 2 つのコードブロックが色分けされている
+      - '`dist/index.js` に色分けのライブラリの本体が含まれていない（本体は別の要求で読まれる）'
+    test: test_normal_when_code_highlighted
 lead: mdmark が、文書に外部ライブラリを使う印があるときだけ、版を固定した URL からそのモジュールを読み込む。読めない箇所には知らせの枠を出し、ほかの本文は描く。
 issue: 3
 primary_actor: mdmark を使うアプリのページ

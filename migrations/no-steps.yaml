@@ -21,5 +21,5 @@ entries:
     reason: terms の要素に省いてよい avoid を足しただけで、古い索引もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.config.schema.json
-    sha256: c87d0132072bca57af95444b3a0b31fde7fb7cf38ef6323a8e7e95f9c6b751c8
-    reason: 省いてよい tooltips を足しただけで、古い設定もそのまま新しい Schema に合う
+    sha256: 4335f8e258786343db08968e418aeab60036bc8f54917997da19825266b4697d
+    reason: 省いてよい tooltips と、features に省いてよい syntax と、省いてよい syntax を足しただけで、古い設定もそのまま新しい Schema に合う

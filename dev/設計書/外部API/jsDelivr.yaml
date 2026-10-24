@@ -42,6 +42,37 @@ endpoints:
         condition: ファイルがある
       - code: '404'
         condition: タグかファイルが無い
+  - name: GET /npm/{package}@{version}/{file}
+    method: GET
+    path: /npm/{package}@{version}/{file}
+    summary: npm のパッケージの版を固定したファイルを配る（色分けのライブラリ）
+    idempotent: true
+    description: '`mount` が色分けの対象のコードブロックを持つ文書を描いた後に、`@highlightjs/cdn-assets` の `es/core.min.js` と `es/languages/{言語}.min.js` を `import()` で読む。CLI の書き出しも同じ URL から読んで埋める。`/+esm` は使わない（`es/*.min.js` は import を持たない）。応答は `application/javascript` と `access-control-allow-origin: *` を持つ'
+    request:
+      - name: package
+        type: string
+        required: true
+        description: npm のパッケージ名（scope を含む）
+        location: path
+        example: '@highlightjs/cdn-assets'
+      - name: version
+        type: string
+        required: true
+        description: 版。完全に固定する
+        location: path
+        example: 11.12.0
+      - name: file
+        type: string
+        required: true
+        description: パッケージの中のファイルのパス
+        location: path
+        example: es/languages/typescript.min.js
+    request_example: GET https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/core.min.js
+    status_codes:
+      - code: '200'
+        condition: パッケージのその版にファイルがある
+      - code: '404'
+        condition: パッケージ・版・ファイルのどれかが無い
 lead: npm と GitHub の公開リポジトリのファイルを配る無料の CDN。
 verification:
   state: 済

@@ -7,7 +7,7 @@ directory: |-
   ├── errors.ts     # CLI の誤りと入出力の型
   ├── config.ts     # 設定ファイルの探索・読み取り・形の検査
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
-  ├── embed.ts      # 外部ライブラリと拡張の束ね・画像の埋め込み・1 枚に含まれない文書へのリンク
+  ├── embed.ts      # 外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
@@ -108,6 +108,9 @@ data_models:
       - name: parts
         type: Partial<Record<"view", string>> | undefined
         description: 埋めた部品のモジュールのコード。無いときは空として扱う。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
+      - name: syntax
+        type: '{ core: string; languages: Record<string, string> } | undefined'
+        description: 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ
 functions:
   - name: main
     title: CLI を実行する
@@ -251,7 +254,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`syntax` があればオブジェクトで `url` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -309,6 +312,12 @@ functions:
         condition: '`tooltips.placement` が `left` の値と、`bottom` の値'
         mock: なし
         expected: '`left` は `where` が `tooltips.placement` の `schema` のずれが 1 件で `config.tooltips` が無い。`bottom` は `issues` が空で `config.tooltips.placement` が `bottom`'
+      - name: test_validate_config_when_syntax_url_invalid
+        case: 正常
+        summary: 文字列でない `syntax.url` を schema のずれにし、設定から落とす
+        condition: '`syntax.url` が `1` の値と、`/vendor/hl/` の値'
+        mock: なし
+        expected: '`1` は `where` が `syntax.url` の `schema` のずれが 1 件で `config.syntax` が無い。`/vendor/hl/` は `issues` が空で `config.syntax.url` が `/vendor/hl/`'
     status: planned
     introduced:
       pr: 32
@@ -789,7 +798,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features` と `tooltips` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features` と `tooltips` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -827,12 +836,31 @@ functions:
         condition: '`tooltips.placement: bottom` を持つ設定と、`tooltips` を持たない設定'
         mock: 一時フォルダ
         expected: '前者の `payload.config.tooltips` が `{ placement: "bottom" }`、後者は `payload.config` が `tooltips` を持たない'
+      - name: test_prepare_embeds_when_syntax
+        case: 正常
+        summary: 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に `syntax` を写さない
+        condition: 文書に `ts` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
+        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js`・`hl/languages/yaml.min.js` に手元のモジュールを置く
+        expected: '`payload.syntax.core` があり、`payload.syntax.languages` のキーが `typescript` だけ。`payload.config` が `syntax` を持たず、`warnings` が空'
+      - name: test_prepare_embeds_when_syntax_unreadable
+        case: 正常
+        summary: 色分けの本体を束ねられなければ警告にして埋めずに続ける
+        condition: 文書に `ts` のコードブロック。設定の `syntax.url` が無いフォルダ `missing/`
+        mock: 一時フォルダ
+        expected: '`payload.syntax` が無く、`warnings` に `missing/core.min.js` と `syntax.url` を含む 1 件'
+      - name: test_prepare_embeds_when_syntax_language_unreadable
+        case: 正常
+        summary: 束ねられない言語だけ埋めずに警告にし、他の言語は埋める
+        condition: 文書に `ts` と `yml` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
+        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js` だけに手元のモジュールを置き、`yaml.min.js` は置かない
+        expected: '`payload.syntax.languages` のキーが `typescript` だけで、`warnings` に `hl/languages/yaml.min.js` と `syntax.url` を含む 1 件'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[bundleModule]'
       - '#functions[inlineImages]'
       - '#functions[readIndexWithDocuments]'
       - '#functions[documentTitle]'
+      - '#functions[usedSyntaxLanguages]'
     status: planned
     introduced:
       pr: 32
@@ -1545,6 +1573,39 @@ functions:
     status: planned
     introduced:
       pr: 72
+  - name: usedSyntaxLanguages
+    title: 文書が使う色分けの言語を拾う
+    container: src/cli/embed.ts
+    kind: 関数
+    scope: public
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML の `data-mdmark-syntax` の値を重なりなく拾う
+    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を外すことを含む）を、同じ処理から得るために `render` を通す'
+    args:
+      - name: options
+        type: '{ markdowns: string[]; config: MdmarkConfig }'
+        required: true
+        description: 文書の Markdown と読んだ設定
+    returns:
+      type: string[]
+      description: 言語のモジュール名。名前の順に並べる
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[render]
+    unit_tests:
+      - name: test_used_syntax_languages
+        case: 正常
+        summary: 色分けの対象の言語だけを拾い、機能を外した文書は拾わない
+        condition: '文書 1 が `ts`・`yml`・`text` のコードブロックと生の HTML `<pre><code class="language-python">x</code></pre>`、文書 2 が `<!-- features: -syntax -->` と `sql` のコードブロック。設定は空'
+        mock: なし
+        expected: '`["typescript", "yaml"]`'
+      - name: test_used_syntax_languages_when_disabled
+        case: 正常
+        summary: 設定で機能を外すと何も拾わない
+        condition: '`ts` のコードブロックを持つ文書と、`features.syntax: false` の設定'
+        mock: なし
+        expected: '`[]`'
+    status: planned
+    introduced:
+      pr: 97
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧

@@ -1,0 +1,15 @@
+# npm run lint (commit: dd42c64)
+
+> lint
+> biome check .
+
+Checked 500 files in 2s. No fixes applied.
+# exit: 0
+
+# npm run typecheck (commit: dd42c64)
+
+> typecheck
+> tsc --noEmit
+
+# exit: 0
+

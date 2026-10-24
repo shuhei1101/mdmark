@@ -1,0 +1,11 @@
+$ npx vitest run --project 'integration-node' tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  20:34:54
+   Duration  575.22s (tests 98%, import 2%)
+
+# exit: 0

@@ -34,9 +34,9 @@ test("test_build_embedded_html", () => {
   const { html } = renderDoc(markdown);
   // 検証
   expect(html).toMatch(/<div class="mdmark-html">\s*<p>こんにちは<\/p>/);
-  expect(matches(html, /<pre[^>]*><code class="language-html">/g)).toHaveLength(
-    1,
-  );
+  expect(
+    matches(html, /<pre[^>]*><code class="language-html"[^>]*>/g),
+  ).toHaveLength(1);
   expect(html).toContain("&lt;p&gt;範囲の外&lt;/p&gt;");
   expect(html).not.toContain("<!--");
 });
@@ -156,7 +156,7 @@ test("test_build_embedded_html_when_blocks_count", () => {
   }
   expect(noneHtml).toContain("コードブロックの無い範囲");
   expect(
-    matches(twoHtml, /<pre[^>]*><code class="language-html">/g),
+    matches(twoHtml, /<pre[^>]*><code class="language-html"[^>]*>/g),
   ).toHaveLength(2);
 });
 
@@ -172,9 +172,9 @@ test("test_build_embedded_html_when_disabled", () => {
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  expect(matches(html, /<pre[^>]*><code class="language-html">/g)).toHaveLength(
-    2,
-  );
+  expect(
+    matches(html, /<pre[^>]*><code class="language-html"[^>]*>/g),
+  ).toHaveLength(2);
   expect(html).not.toContain("mdmark-html");
   expect(html).not.toContain("<!--");
 });
