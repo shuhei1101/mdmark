@@ -1,5 +1,5 @@
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
-/** 機能がオンの記法だけ操作を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ（節と行の詳細・表・タブの順に）操作を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、まとめて外す関数を返す */
 export declare function attachInteractions(options: {
     /** 描いた要素 */
     root: HTMLElement;
