@@ -83,7 +83,8 @@ export function findDocs(options: {
       return wantedAll.every((tag) => names.includes(tag));
     });
   }
-  if (anyTags !== undefined) {
+  // 空の配列は、省いたときと同じくタグで絞らない
+  if (anyTags !== undefined && anyTags.length > 0) {
     docs = docs.filter((doc) => {
       const names = docTags(doc, vocabulary).map((tag) => tag.name);
       return wantedAny.some((tag) => names.includes(tag));
