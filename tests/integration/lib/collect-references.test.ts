@@ -77,11 +77,11 @@ test("test_normal_when_glossary_table", async () => {
   };
   const documents = {
     "用語集.md": [
-      "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
+      "<!-- glossary: term=用語 aliases=別名 meaning=意味 avoid=やめた言い方 -->",
       "",
-      "| 用語 | 別名 | 意味 |",
-      "| --- | --- | --- |",
-      "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 |",
+      "| 用語 | 別名 | 意味 | やめた言い方 |",
+      "| --- | --- | --- | --- |",
+      "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 | しるし |",
       "",
       "<!-- /glossary -->",
       "",
@@ -97,6 +97,7 @@ test("test_normal_when_glossary_table", async () => {
       aliases: ["マーク", "オン・オフの印"],
       meaning: "HTML コメントで書く指定",
       docId: "glossary",
+      avoid: ["しるし"],
     },
   ]);
 });
