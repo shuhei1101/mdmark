@@ -1,0 +1,1 @@
+# E2E『VSCodeでプレビューを開く』の test_normal_when_tags_unreachable で、プレビューをフォーカスに依らずに閉じる
