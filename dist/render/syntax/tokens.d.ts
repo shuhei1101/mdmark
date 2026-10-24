@@ -5,8 +5,8 @@ import type { RenderEnv } from "../parser.ts";
 export declare function envOf(state: StateCore): RenderEnv;
 /** 記法の機能がオンか */
 export declare function featureOn(state: StateCore, name: string): boolean;
-/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする */
-export declare function ownBlock(state: StateCore, html: string): Token;
+/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする。`source` を渡すと、その `map`（元の行）を写す */
+export declare function ownBlock(state: StateCore, html: string, source?: Token): Token;
 /** 印のトークンなら、その印を返す */
 export declare function markOf(token: Token | undefined): Mark | undefined;
 /** `openIndex` の印に対する閉じの印の位置を返す。無ければ `-1` */

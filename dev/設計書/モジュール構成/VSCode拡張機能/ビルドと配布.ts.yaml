@@ -10,6 +10,7 @@ directory: |-
   │   └── release-check.ts       # タグと package.json の version を照合する
   └── tests/integration/
       ├── run.ts                 # 代役の配信を立て、runTests を 1.141.0 と stable で呼ぶ
+      ├── stub-server.ts         # 代役の配信（配布物とタグ一覧）。結合テストと E2E が使い、@vscode/test-electron を import しない
       ├── index.ts               # 拡張機能ホストの中で mocha を動かす run()
       └── {インターフェース定義}.test.ts
   .github/workflows/
@@ -150,10 +151,11 @@ functions:
     is_async: true
     side_effects: VS Code を `.vscode-test/` に取得する（1.141.0 はキャッシュがあれば取得しない）
     process: |-
-      1. リポジトリの直下の `dist/` を `/@{バージョン}/dist/` で、テストが決めたタグ一覧を `/tags` で返す HTTP サーバーを `127.0.0.1:0` で立てる
+      1. このブランチのソースを一時フォルダにビルドし、その `dist/` を配る代役の配信を `127.0.0.1` の空きポートで立てる（代役の配信を作る）
       2. `TEST_VSCODE_VERSIONS` の順に `runTests({ version, extensionDevelopmentPath, extensionTestsPath: out/test/index.mjs, launchArgs: [見本のワークスペース, "--disable-extensions"], extensionTestsEnv: { MDMARK_VSCODE_DIST_BASE, MDMARK_VSCODE_TAGS_URL } })` を呼ぶ
       3. サーバーを閉じる
     callees:
+      - dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts#functions[createStubServer]
       - dev/設計書/外部ライブラリ/test-electron#catalogs[API].entries[runTests]
     refs:
       - dev/設計書/外部ライブラリ/test-electron#
@@ -175,6 +177,28 @@ functions:
         message: '`{数} tests failed`'
     refs:
       - dev/設計書/外部ライブラリ/mocha#
+    status: planned
+  - name: createStubServer
+    title: 代役の配信を作る
+    kind: 関数
+    container: vscode/tests/integration/stub-server.ts
+    usecase: 共通
+    summary: 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` とタグ一覧 `/tags` を返し、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests` を持つ HTTP サーバーを作る
+    description: 結合テストの入口（`runIntegrationTests`）と E2E（`tests/e2e/vscode.ts`）が同じ代役を使う。直下の型検査が `vscode/` の依存を引かないよう、`@vscode/test-electron` を import しないファイルに置く
+    scope: public
+    is_async: false
+    args:
+      - name: stub
+        type: Stub
+        required: true
+        description: 'タグ一覧・振る舞い（`tags`: `ok` / `hang` / `forbidden`、`dist`: `ok` / `drop` / `slow`）・受けた要求の経路。サーバーが書き換える'
+      - name: distDir
+        type: string
+        required: true
+        description: 配る配布物のフォルダ
+    returns:
+      type: Server
+      description: 待ち受けを始めていない `node:http` のサーバー
     status: planned
 test_files:
   - tests/unit/vscode/scripts/build.test.ts

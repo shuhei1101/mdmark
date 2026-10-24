@@ -24,9 +24,9 @@ scenarios:
         C-->>W: プラグインを入れた・終了コード 0
     expected:
       - '`claude plugin marketplace add` と `claude plugin install mdmark@mdmark` がどちらも終了コード 0 で終わる'
-      - '`claude plugin list` に `mdmark@mdmark` が有効として出、`Read from:` が設定のフォルダのプラグインのキャッシュの下'
-      - '`Read from:` の場所に `hooks/hooks.json`・`.mcp.json`・束ねた MCP サーバーと、`node_modules` の依存がある'
-      - '`Read from:` の場所の MCP サーバーを `.mcp.json` のコマンドで起動すると、ツールの一覧を返す'
+      - '`claude plugin list --json` に `mdmark@mdmark` が有効として出、その `installPath` が設定のフォルダのプラグインのキャッシュの下'
+      - '`installPath` の場所に `hooks/hooks.json`・`.mcp.json`・束ねた MCP サーバーと、`node_modules` の依存がある'
+      - '`installPath` の場所の MCP サーバーを `.mcp.json` のコマンドで起動すると、ツールの一覧を返す'
     test: test_normal
 lead: 文書を書く人が、mdmark のリポジトリを Claude Code のマーケットプレイスとして足し、mdmark のプラグインを入れる。
 issue: 11

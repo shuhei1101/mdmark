@@ -1,7 +1,9 @@
-import type { StateCore } from "markdown-it";
+import type { StateCore, Token } from "markdown-it";
 /** 図の部品の `html_block` に付ける `meta` の印（図表の番号の対象にする） */
 export declare const DIAGRAM_META = "diagram";
 /** 操作できる部品を持つ `html_block` の `meta` に、持つ数を書くキー（文書の中の並びを数えるのに使う） */
 export declare const PARAM_COUNT_META = "params";
+/** 範囲の言語 `json` のコードブロック */
+export declare function jsonFences(tokens: Token[]): Token[];
 /** `diagrams` がオンなら、図の部品の印の範囲の `json` のコードブロックを定義として読み、図か操作できる部品の HTML にする。読めない定義は書き方の警告にする。範囲の中身は出力に残さない。オフのときは印だけを取り除く */
 export declare function buildDiagrams(state: StateCore): void;

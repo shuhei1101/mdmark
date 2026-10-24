@@ -1,4 +1,4 @@
-/** タブを描く。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする */
+/** タブを描く。`group` を渡すと `data-group` に写す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする */
 export declare function renderTabs(options: {
     /** タブの id の頭 */
     id: string;
@@ -8,4 +8,6 @@ export declare function renderTabs(options: {
     panels: string[];
     /** 選んだタブの位置（0 から） */
     selected?: number;
+    /** タブの組の名前 */
+    group?: string;
 }): string;

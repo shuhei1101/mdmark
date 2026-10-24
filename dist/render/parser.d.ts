@@ -1,4 +1,4 @@
-import type { MarkdownIt as MarkdownItParser } from "markdown-it";
+import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
@@ -31,6 +31,8 @@ export type RenderEnv = {
     ownGlossary: MdmarkGlossaryEntry[];
     /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
     glossaryLines?: number[] | undefined;
+    /** `ownGlossary` の各用語のやめた言い方。点検がやめた言い方を探すために渡したときだけ、`glossaryRule` が足す */
+    glossaryAvoid?: string[][] | undefined;
     /** 拡張の印の範囲から読んだ部品の定義（印の場所の `data-mdmark-definition` の番号で引く） */
     extensionDefinitions?: unknown[];
     /** 描いた操作できる部品の定義（文書の中の並びの順） */
@@ -41,6 +43,15 @@ export type RenderEnv = {
     termTipCount?: number;
     /** ヒントのツールチップの数（`id` の通し番号） */
     hintCount?: number;
+    /** ビューの書き方の警告の数（`id` の通し番号） */
+    viewCount?: number;
 };
+/** ブロックの開始のトークンに、Markdown で始まる行の番号（0 始まり）を `data-source-line` で付ける */
+export declare function markSourceLines(state: StateCore): void;
+/** Markdown の生の HTML のブロックと行内の HTML から印の名前と行の番号（1 から）を、書いた順に返す。閉じの印も 1 つの印として返す */
+export declare function findMarks(markdown: string): Array<{
+    name: string;
+    line: number;
+}>;
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export declare function createParser(): MarkdownItParser;
