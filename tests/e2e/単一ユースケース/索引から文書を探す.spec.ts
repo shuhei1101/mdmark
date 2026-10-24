@@ -287,3 +287,35 @@ test("test_normal_when_view_and_format", async ({ builtRoot, tempDir }) => {
   const docs = (json.structured?.docs ?? []) as { id: string }[];
   expect(docs.map((doc) => doc.id)).toEqual(["a"]);
 });
+
+// 全角の大文字の語でも、別名に半角の語を持つ 1 つ目の文書だけが返る（正常シナリオ（全角と半角だけが違う語））
+test("test_normal_when_width_differs", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": CONFIG_WITH_INDEX,
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "    aliases: [MCP]",
+      "  - id: b",
+      "    path: b.md",
+      "    title: B",
+      "",
+    ].join("\n"),
+    ...DOCUMENTS,
+  });
+  // 実行
+  const result = await withMcpClient(
+    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    (client) => callTool(client, "find_docs", { text: "ＭＣＰ" }),
+  );
+  // 検証
+  expect(result.isError).toBe(false);
+  const markdown = result.texts[0] ?? "";
+  expect(markdown.split("\n")[0]).toContain("総件数 1 件・返した件数 1 件");
+  expect(idsOf(markdown)).toEqual(["a"]);
+});

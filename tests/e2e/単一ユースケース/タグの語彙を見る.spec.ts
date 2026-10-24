@@ -121,3 +121,19 @@ test("test_normal_when_no_vocabulary", async ({ builtRoot, tempDir }) => {
   expect(result.isError).toBe(false);
   expect(rowsOf(result.texts[0] ?? "")).toEqual([]);
 });
+
+// 全角の語でも、半角の別名を持つタグだけが返る（正常シナリオ（全角と半角だけが違う語））
+test("test_normal_when_query_width_differs", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeVocabularyProject(dir);
+  // 実行
+  const result = await withMcpClient(
+    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    (client) => callTool(client, "list_tags", { query: "ＭＣＰ" }),
+  );
+  // 検証
+  const rows = rowsOf(result.texts[0] ?? "");
+  expect(rows[0]).toMatch(/^\| topic:mcp \|/);
+  expect(result.texts[0]).not.toContain("topic:unused");
+});

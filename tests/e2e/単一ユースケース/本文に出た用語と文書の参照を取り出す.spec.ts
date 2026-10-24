@@ -309,3 +309,46 @@ test("test_normal_when_embedded_html_and_diagram", async () => {
     expect(cut(guide, match)).toBe(match.text);
   }
 });
+
+// 全角と半角・大文字と小文字だけが違う語も一致にし、位置は正規化する前の本文を指す（正常シナリオ（全角と半角・大文字と小文字だけが違う語））
+test("test_normal_when_width_and_case_differ", async () => {
+  // 準備
+  const index: MdmarkIndex = {
+    ...INDEX,
+    terms: (INDEX.terms ?? []).map((term) => ({
+      ...term,
+      avoid: ["workplace"],
+    })),
+  };
+  // 1 行目の半角カナ `ﾜｰｸｽﾍﾟｰｽ`（8 文字）は正規化すると 7 文字になる
+  const guide = "ﾜｰｸｽﾍﾟｰｽとＷＳ\nws と WorkPlace\n";
+  // 実行
+  const matches = await collectMatchesInNode(builtRoot, {
+    index,
+    documents: { "使い方/guide.md": guide },
+  });
+  // 検証
+  const inGuide = matches.byDocument.guide ?? [];
+  expect(
+    inGuide.map((match) => [match.kind, match.id, cut(guide, match)]),
+  ).toEqual([
+    ["term", "ws", "ﾜｰｸｽﾍﾟｰｽ"],
+    ["term", "ws", "ＷＳ"],
+    ["term", "ws", "ws"],
+  ]);
+  expect(inGuide.map((match) => [match.line, match.start, match.end])).toEqual([
+    [1, 0, 8],
+    [1, 9, 11],
+    [2, 0, 2],
+  ]);
+  const avoided = matches.avoided.guide ?? [];
+  expect(avoided).toHaveLength(1);
+  expect(avoided[0]).toMatchObject({
+    kind: "term",
+    id: "ws",
+    title: "ワークスペース",
+    text: "workplace",
+  });
+  expect(cut(guide, avoided[0] as MdmarkMatch)).toBe("WorkPlace");
+  expect(matches.targets).toEqual([WS_TARGET]);
+});

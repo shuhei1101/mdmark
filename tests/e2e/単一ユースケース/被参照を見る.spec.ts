@@ -152,3 +152,37 @@ test("test_normal_when_document_alias", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect(apiTip.locator("a")).toBeFocused();
 });
+
+// 全角と半角・大文字と小文字だけが違う別名の出現から、被参照の一覧に参照している文書を並べる（正常シナリオ（全角と半角・大文字と小文字だけが違う別名））
+test("test_normal_when_alias_width_and_case_differ", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    ...INDEX,
+    docs: INDEX.docs.map((doc) =>
+      doc.id === "api"
+        ? { id: doc.id, path: doc.path, title: doc.title, aliases: ["MCP"] }
+        : doc,
+    ),
+  };
+  // どちらの本文も `api` へのリンクを持たず、別名の表記だけが違う
+  const documents = {
+    "設計/arch.md": "# アーキテクチャ\n\nmcp を使う。\n",
+    "api.md": "# API\n",
+    "使い方/guide.md": "# 使い方\n\nＭＣＰ を使う。\n",
+  };
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "# API\n",
+    index,
+    docId: "api",
+    documents,
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("h1")).toContainText("API");
+  const nav = doc.locator("nav.mdmark-backlinks");
+  await expect(nav.locator(".mdmark-backlinks-title")).toHaveText("関連文書");
+  const titles = await nav.locator("li a").allTextContents();
+  expect([...titles].sort()).toEqual(["アーキテクチャ", "使い方"].sort());
+});

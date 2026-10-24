@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
+import type { MdmarkIndex } from "../../../src/index.ts";
 import { hintFlowMarkdown, NODE_HINT, wrapHtml } from "../chart.ts";
-import { flowMarkdown, TERM_INDEX } from "../diagram.ts";
+import { flowMarkdown, TERM_INDEX, wrapDirective } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -335,4 +336,40 @@ test("test_normal_when_placement_bottom", async ({ page }) => {
   const hintTip = page.locator('[role="tooltip"]', { hasText: BLOCK_HINT });
   await expect(hintTip).toBeVisible();
   await expectBelow({ tip: hintTip, owner: mark });
+});
+
+// 箱の中の `{{語}}` が、全角と半角・大文字と小文字だけが違う索引の用語に当たり、本文の用語と同じ破線の下線とツールチップを出す（正常シナリオ（箱の中の表記の違う用語））
+test("test_normal_when_term_width_and_case_differ", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [],
+    terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
+  };
+  const flow = [
+    "{",
+    '  "title": "受け取り",',
+    '  "scope": "範囲",',
+    '  "updated": "2026-10-23",',
+    '  "width": 520,',
+    '  "height": 160,',
+    '  "nodes": [',
+    '    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "{{ｍｃｐ}}", "sub": "" }',
+    "  ],",
+    '  "wires": []',
+    "}",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: wrapDirective("flow", flow), index });
+  // 実行
+  const inBox = page.locator("#doc .mdmark-diagram-node .mdmark-term");
+  await inBox.hover();
+  // 検証
+  // 文字は箱に書いた表記のまま、本文の用語と同じ破線の下線
+  await expect(inBox).toHaveText("ｍｃｐ");
+  await expect(inBox).toHaveCSS("text-decoration-style", "dashed");
+  const tipId = await inBox.getAttribute("aria-describedby");
+  const tip = page.locator(`[id="${tipId}"]`);
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("Model Context Protocol");
 });

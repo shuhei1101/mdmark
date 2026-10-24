@@ -294,3 +294,48 @@ test("test_normal_when_tag_drift", async () => {
   expect(deprecated?.message).toContain("topic:old");
   expect(deprecated?.message).toContain("topic:mcp");
 });
+
+// 正規化すると同じになる用語の語・別名を用語の重複に、表記の違うやめた言い方を本文のずれにする（正常シナリオ（正規化すると同じになる語））
+test("test_normal_when_normalized_words", async () => {
+  // 準備
+  const index = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "手引き" }],
+    terms: [
+      { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
+      {
+        id: "mcp-kana",
+        term: "エムシーピー",
+        aliases: ["ｍｃｐ"],
+        meaning: "MCP の読み",
+      },
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "記録を置くフォルダ",
+        avoid: ["workplace"],
+      },
+    ],
+  };
+  const documents = { "guide.md": "WorkPlace を開く。\n" };
+  // 実行
+  const issues = await checkInNode(builtRoot, {
+    index,
+    documents,
+    indexFile: "docs/index.yaml",
+  });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "docs/index.yaml",
+      where: "terms[1].aliases[0]",
+      kind: "duplicate_term",
+    },
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+  ]);
+  expect(issues[0]?.message).toContain("ｍｃｐ");
+  expect(issues[0]?.message).toContain("terms[0].term");
+  expect(issues[1]?.message).toContain("ワークスペース");
+});
