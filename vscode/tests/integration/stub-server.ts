@@ -27,7 +27,7 @@ type Stub = {
   tags: string[];
   /** 振る舞い */
   mode: Mode;
-  /** 受けた要求の経路（`/tags` と `/@{バージョン}/dist/{ファイル}`） */
+  /** 受けた要求の経路（`/tags` と `/mdmark@{バージョン}/dist/{ファイル}`） */
   requests: string[];
 };
 
@@ -86,7 +86,7 @@ async function serveDist(
   }
 }
 
-/** 代役の配信を `127.0.0.1` の空きポートで立てる。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests` を持つ */
+/** 待ち受けを始めていない代役の配信のサーバーを作る。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests` を持つ */
 export function createStubServer(stub: Stub, distDir: string): Server {
   return createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
