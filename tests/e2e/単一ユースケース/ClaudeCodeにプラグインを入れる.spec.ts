@@ -54,6 +54,11 @@ test("test_normal", async ({ tempDir }) => {
   const branch = (
     await run("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd: REPO_ROOT })
   ).stdout.trim();
+  if (branch === "HEAD") {
+    throw new Error(
+      "HEAD が detached で、GitHub のブランチを決められない。ブランチを checkout して流す",
+    );
+  }
   const committed = await run(
     "git",
     ["cat-file", "-e", "HEAD:plugin/server/mcp.js"],
@@ -64,6 +69,26 @@ test("test_normal", async ({ tempDir }) => {
   if (committed.code !== 0) {
     throw new Error(
       `HEAD（${branch}）に plugin/server/mcp.js が無い。release ブランチで npm run build を流し、dist/ と plugin/ の生成物を commit して push した後に流す`,
+    );
+  }
+  // 手元の HEAD と GitHub のブランチの commit が違うと、手元と違う中身を入れて判定してしまう
+  const head = (
+    await run("git", ["rev-parse", "HEAD"], { cwd: REPO_ROOT })
+  ).stdout.trim();
+  const remote = await run(
+    "git",
+    ["ls-remote", "origin", `refs/heads/${branch}`],
+    { cwd: REPO_ROOT },
+  );
+  if (remote.code !== 0) {
+    throw new Error(
+      `git ls-remote origin refs/heads/${branch} が失敗した: ${remote.stderr}`,
+    );
+  }
+  const pushed = remote.stdout.split(/\s+/)[0] ?? "";
+  if (pushed !== head) {
+    throw new Error(
+      `手元の HEAD（${head}）と GitHub のブランチ（${pushed || "無い"}）の commit が違う。両方の commit を揃えるため、commit して push した後に流す`,
     );
   }
   // 手元の設定を書き換えないよう、設定のフォルダは空の一時フォルダに閉じる
