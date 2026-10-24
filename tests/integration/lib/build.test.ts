@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import {
+  appendFile,
   copyFile,
   cp,
   mkdir,
@@ -320,6 +321,46 @@ test("test_error_when_guide_index_too_long", {
   expect(existsSync(join(root, "plugin", "server"))).toBe(false);
   expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
   expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
+});
+
+/** 作業ツリーの `src/index.ts` の末尾（最上位）に、コードを足す */
+async function appendToEntry(root: string, code: string): Promise<void> {
+  await appendFile(join(root, "src", "index.ts"), `\n${code}\n`);
+}
+
+// 有無を確かめてから下限に無い API を使うと、止めずにビルドする（正常系）
+test("test_normal_when_api_checked_before_use", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createWorkTree("v0.0.0\n");
+  await appendToEntry(
+    root,
+    'if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }',
+  );
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(0);
+  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
+  expect(stderr).not.toContain("Intl.Segmenter");
+});
+
+// 下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常系）
+test("test_error_when_api_missing_in_baseline_browser", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createWorkTree("v0.0.0\n");
+  await appendToEntry(root, 'new Intl.Segmenter("ja");');
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  for (const expected of ["Intl.Segmenter", "dist/index.js", "Firefox 98"]) {
+    expect(stderr).toContain(expected);
+  }
 });
 
 // スキーマを変えても migrations/next/steps.yaml があれば通す（正常系）
