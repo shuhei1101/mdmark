@@ -10,7 +10,6 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
-import { createRequire } from "node:module";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
@@ -24,12 +23,11 @@ import {
 import { buildExtension } from "../../vscode/scripts/build.ts";
 import { createStubServer } from "../../vscode/tests/integration/run.ts";
 import { createBuiltRoot } from "../integration/built-root.ts";
+import { VSCODE_EXECUTABLE_ENV } from "./vscode-binary.ts";
 
 // リポジトリの直下と、拡張機能の場所
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const EXTENSION_SOURCE = join(REPO_ROOT, "vscode");
-// 流す VS Code のバージョン（拡張機能が対応する下限）
-const VSCODE_VERSION = "1.141.0";
 // 拡張機能ホストを Test のモードにして配信元を差し替えるため、終わらないテストの入口を渡す
 const NEVER_ENDING_RUNNER = "exports.run = () => new Promise(() => {});\n";
 // 何かを待つ上限（ミリ秒）
@@ -85,14 +83,15 @@ export async function buildExtensionAndDist(): Promise<BuiltExtension> {
   };
 }
 
-/** `@vscode/test-electron` で VS Code を用意し、実行ファイルの場所を返す */
-async function vscodeExecutable(): Promise<string> {
-  const require = createRequire(join(EXTENSION_SOURCE, "package.json"));
-  const { downloadAndUnzipVSCode } = require("@vscode/test-electron");
-  return downloadAndUnzipVSCode({
-    version: VSCODE_VERSION,
-    cachePath: join(EXTENSION_SOURCE, ".vscode-test"),
-  });
+/** `globalSetup` が取得した VS Code の実行ファイルの場所を返す */
+function vscodeExecutable(): string {
+  const executable = process.env[VSCODE_EXECUTABLE_ENV];
+  if (!executable) {
+    throw new Error(
+      `${VSCODE_EXECUTABLE_ENV} が未設定です（globalSetup が VS Code を取得していません）`,
+    );
+  }
+  return executable;
 }
 
 /** 代役の配信の操作 */
@@ -284,7 +283,7 @@ async function startVscode(
   const { built, stub } = options;
   const { temp, workspaceDir, userDataDir, binDir, openedLog } = dirs;
   const app = await _electron.launch({
-    executablePath: await vscodeExecutable(),
+    executablePath: vscodeExecutable(),
     args: [
       "--no-sandbox",
       "--disable-gpu",
