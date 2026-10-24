@@ -49,7 +49,7 @@ data_models:
         description: 文書の `id` から、その文書を参照している文書の `id` の並び
       - name: glossary
         type: MdmarkGlossaryEntry[]
-        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`）
+        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`・`avoid`）
   - name: MdmarkIndexIssue
     title: 索引のずれ
     container: src/knowledge/check.ts
@@ -104,8 +104,8 @@ data_models:
         type: string
         description: 表を持つ文書の `id`
       - name: avoid
-        type: string[]
-        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空
+        type: string[] | undefined
+        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。`collectReferences`・`readGlossaryRows` は常に入れる。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う
   - name: MdmarkMatchTarget
     title: 参照先
     container: src/knowledge/matches.ts
@@ -278,7 +278,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
-    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid` から入れ、代わりの用語は索引の用語なら `terms[].id`・語・意味、用語集の表の用語なら `glossary:{docId}:{語}`・用語・意味にする。同じやめた言い方は、索引の `terms`、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使う。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
+    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・語・意味、用語集の表の用語なら `glossary:{docId}:{語}`・用語・意味にする。同じやめた言い方は、索引の `terms`、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使う。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
     args:
       - name: options
         type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; features: Record<string, boolean> }'
@@ -330,6 +330,12 @@ functions:
         condition: 索引の `docs` が `glossary` だけで `docId` を渡さない。`ownGlossary` が用語 `下書き`（`docId` 空文字、`avoid` に `ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `ワーク場`）
         mock: なし
         expected: '`avoided` の `ワーク場` が `下書き` の用語'
+      - name: test_build_dictionary_avoided_when_glossary_entry_without_avoid
+        case: 正常
+        summary: '`avoid` が無い用語集の表の用語は、やめた言い方を持たないものとして扱う'
+        condition: '`references.glossary` が `avoid` を持たない用語 `ワークスペース`（`docId` `glossary`）と、`avoid` に `草稿` を持つ用語 `下書き`（`docId` `glossary`）'
+        mock: なし
+        expected: 例外を送出せず、`avoided` が `草稿` → `下書き` の 1 件だけで、`words` に `ワークスペース` がある
   - name: findWords
     title: 語の区切りで語を照合する
     container: src/knowledge/dictionary.ts

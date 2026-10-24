@@ -1809,7 +1809,7 @@ request:
     default: なし（被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない）
     location: argument
     description: '`collectReferences` が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う'
-    notes: 形はインターフェース定義『参照の表を作る』のレスポンス
+    notes: 形はインターフェース定義『参照の表を作る』のレスポンス。`glossary[].avoid` が無い用語は、やめた言い方を持たない用語として扱う
   - name: opts.diffSource
     type: DiffSource
     required: false
