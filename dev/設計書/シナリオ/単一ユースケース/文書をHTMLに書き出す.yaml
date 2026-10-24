@@ -74,7 +74,7 @@ scenarios:
       - name: 色分けする言語のコードブロックを持つ文書
         description: 言語 `ts` と `python` のコードブロックを 1 つずつ持つ文書 1 つと、設定
       - name: Mock
-        description: 色分けのライブラリの本体と言語のモジュールは、URL の代わりに相対パスの手元のモジュールを設定の `libraries` に書く（書き出しがネットワークを読まない）
+        description: 色分けのライブラリは、設定の `syntax.url` を本体と言語のモジュールを置いた手元のフォルダの相対パスにする（書き出しがネットワークを読まない）
     flow: |-
       ```mermaid
       sequenceDiagram
@@ -93,7 +93,7 @@ scenarios:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
       - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と `blob:`・`data:` のほかの要求が 0 件
       - '`ts` と `python` のコードブロックが色分けされている'
-      - 設定の `libraries` に書いた言語のモジュールのうち、文書が使わない言語（`yaml`）のモジュールは埋められていない
+      - 手元のフォルダにある言語のモジュールのうち、文書が使わない言語（`yaml`）のモジュールは埋められていない
     test: test_normal_when_code_highlighted
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9

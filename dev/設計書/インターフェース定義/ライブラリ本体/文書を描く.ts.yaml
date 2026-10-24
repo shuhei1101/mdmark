@@ -1696,6 +1696,109 @@ flows:
       - '`bottom` のとき、末尾の `索引` のツールチップの `bottom` が、語の `top` 以下で、`window.innerHeight` 以下'
       - '`left` を渡した `el2` の `索引` のツールチップの `bottom` が、語の `top` 以下'
     test: test_normal_when_tooltip_placement_bottom
+  - name: 正常系（コードブロックを色分けする）
+    summary: 色分けの対象のコードブロックがあるときだけ、本体と使う言語のモジュールを読んで、行に分けた形と分けない形の両方を色分けする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けするコードブロックを持つ Markdown
+        description: '印を持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後に 3 行のブロックスカラー（`|`）の文字列を持つ言語 `yml` のコードブロックと、言語 `text` のコードブロックを持つ文書'
+        notes: '`yml` は別名で yaml のモジュールを読む。ブロックスカラーは行をまたぐ `hljs-string` の `span` になる'
+      - name: 設定
+        description: '`opts.config.syntax.url` に `/fixtures/highlightjs/es/`'
+      - name: Mock
+        description: 色分けのライブラリの代わりに、`@highlightjs/cdn-assets@11.12.0` の `es/` を手元の開発サーバーが `/fixtures/highlightjs/es/` で配る。要求の件数は `performance.getEntriesByType("resource")` で数える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)・import(languages/typescript.min.js)・import(languages/yaml.min.js)
+        X-->>M: モジュール
+        M->>P: ts と yml のコードブロックの中身を色分けした HTML に置き換える
+    expected:
+      - 色分けのライブラリへの要求が `core.min.js`・`languages/typescript.min.js`・`languages/yaml.min.js` の 3 件
+      - '`ts` と `yml` の `code` の中に class が `hljs-` で始まる `span` があり、`text` の `code` の中には無い'
+      - '`yml` のコードブロックの `mdmark-code-line` の数と `data-line` が色分けの前と同じで、各 `mdmark-code-text` の中の `span` が行の中で閉じている'
+      - 3 つの `code` の `textContent` と、`pre`・`code` の属性が色分けの前と同じ
+    test: test_normal_when_syntax_highlighted
+  - name: 正常系（色分けの対象が無い）
+    summary: 色分けの対象のコードブロックが無い文書と、機能 `syntax` を外した文書では、色分けのライブラリを読まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けの対象が無い Markdown
+        description: '言語の無いコードブロックと言語 `tree` のコードブロックを持つ文書と、`<!-- features: -syntax -->` を書いて言語 `ts` のコードブロックを持つ文書の 2 つ'
+        notes: 2 つの文書をそれぞれ別の `mount` で描く
+      - name: 設定
+        description: コードブロックを色分けする正常系と同じ
+      - name: Mock
+        description: コードブロックを色分けする正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: 色分けのライブラリを読まずに本文を描く
+    expected:
+      - どちらの文書でも、色分けのライブラリへの要求が 0 件
+      - '`code` の中に class が `hljs-` で始まる `span` が無い'
+    test: test_normal_when_no_syntax_target
+  - name: 異常系（色分けのライブラリを読めない・色分けなし）
+    summary: 色分けのライブラリの本体を読めないとき、コードブロックを色分けせずに残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けするコードブロックを持つ Markdown
+        description: コードブロックを色分けする正常系と同じ文書
+      - name: 設定
+        description: '`opts.config.syntax.url` に `/fixtures/missing/`'
+      - name: Mock
+        description: 手元の開発サーバーが `/fixtures/missing/core.min.js` に 404 を返す。`console.error` を記録する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)
+        X-->>M: 404
+        M->>P: コードブロックをそのまま残す
+    expected:
+      - '`mount` が例外を投げず、本文の全ての `code` の HTML が色分けの前と同じ'
+      - 知らせの枠（`mdmark-notice`）が無い
+      - '`console.error` に `/fixtures/missing/core.min.js` を含む記録が 1 件以上ある'
+    test: test_error_when_highlighter_not_found
+  - name: 異常系（言語のモジュールを読めない・その言語だけ色分けなし）
+    summary: 言語のモジュールの一部を読めないとき、読めた言語のコードブロックだけを色分けする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けするコードブロックを持つ Markdown
+        description: コードブロックを色分けする正常系と同じ文書
+      - name: 設定
+        description: コードブロックを色分けする正常系と同じ
+      - name: Mock
+        description: コードブロックを色分けする正常系と同じで、`/fixtures/highlightjs/es/languages/yaml.min.js` だけ 404 を返す。`console.error` を記録する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)・import(languages/typescript.min.js)・import(languages/yaml.min.js)
+        X-->>M: core と typescript、yaml は 404
+        M->>P: ts のコードブロックだけを色分けする
+    expected:
+      - '`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
+      - '`yml` の `code` の HTML が色分けの前と同じ'
+      - 知らせの枠（`mdmark-notice`）が無い
+      - '`console.error` に `languages/yaml.min.js` を含む記録が 1 件以上ある'
+    test: test_error_when_language_module_not_found
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -1803,6 +1906,15 @@ request:
     location: argument
     description: 用語・図・ヒントのツールチップを、持ち主の上と下のどちらに先に出すか
     notes: '`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す。他の値は無視して `top` にする'
+  - name: opts.config.syntax.url
+    type: string
+    required: false
+    default: '`https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/`'
+    location: argument
+    description: 色分けのライブラリ（highlight.js）の `es/` フォルダの URL。本体を `{url}core.min.js`、言語を `{url}languages/{言語}.min.js` から読む
+    constraints: 末尾は `/`。URL はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる
+    example: '"/vendor/highlightjs/es/"'
+    notes: 印の名前の対応表 `libraries` とは分け、文書に `<!-- syntax -->` のような印を書かせない
 request_example: |-
   ```json
   {
@@ -1846,6 +1958,9 @@ exceptions:
   - name: なし（ビュー・コメントの部品のモジュールを読めない）
     condition: ビューの部品かコメントの部品のモジュールを読めない
     notes: 例外を投げない。ビューの印の場所は `render` が出した表のまま残し（切り替えとボードは置かず、表は読めるため知らせの枠に替えない）、コメントはボタンを出さず `load` も呼ばない。読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーを `console.error` に出す。文書の残りは描く
+  - name: なし（色分けなし）
+    condition: 色分けのライブラリの本体か言語のモジュールを読めない
+    notes: 例外を投げず、読めなかった分のコードブロックを色分けせずに残す。URL と元のエラーを `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -1962,4 +2077,17 @@ constraints:
   - item: やめた言い方のマーカー
     constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。同じやめた言い方を複数の用語が持つときは、索引の `terms` で先の用語を代わりの用語にする。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
     notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences`・`collectMatches` の結果と関連文書の一覧は変わらない
+  - item: 色分けの対象
+    constraint: 機能 `syntax` がオンの文書で、情報文字列の最初の語が色分けの言語の対応表にある `pre > code`。記法が描いたもの（ファイルツリー・図の部品の定義・埋め込んだ HTML）は `pre > code` でないため当たらず、記法がコードブロックのまま残したものは当たる
+    notes: '対応表（情報文字列の語 → 言語のモジュール）: `typescript`・`ts`・`tsx` → typescript／`javascript`・`js`・`jsx`・`mjs`・`cjs` → javascript／`json` → json／`yaml`・`yml` → yaml／`python`・`py` → python／`bash`・`sh`・`shell`・`zsh` → bash／`html`・`xml` → xml／`css` → css／`markdown`・`md` → markdown／`sql` → sql。語は大文字と小文字を区別しない'
+  - item: 色分けの読み込み
+    constraint: 描いた後に、色分けの対象が 1 つ以上あるときだけ、`syntax.url` の本体と文書が使う言語のモジュールを `import()` で読む。言語のモジュールは並べて読み、読めたものだけを登録する。同じ `mount` の中で同じモジュールは 1 回だけ読む。読み終わる前に `update`・`destroy` したときは、前の描画に色を当てない。読み込みの完了は待たずに `mount` を返す
+    decided_by: dev/設計書/非機能要件/非機能要件#
+    notes: 配布物 `dist/index.js` に色分けのライブラリを束ねない（非機能要件『配布ファイル 1 つのサイズ』）
+  - item: 色分けの当て方
+    constraint: 行に分けたコードブロック（`mdmark-code-line` を持つ）は各 `mdmark-code-text` の中を、分けないものは `code` の中を、highlight.js の `highlight` が返す HTML に置き換える。行をまたいで開いている `span` は行末で閉じ、次の行の頭で開き直す。`pre`・`code`・`mdmark-code-line` の属性と `code` の `textContent` は変えない。色は `hljs-*` の class に CSS 変数 `--mdmark-color-syntax-{keyword,string,number,type,name,comment}` を当てる
+    notes: 色分けの HTML は sanitize を通さない（`hljs-*` は sanitize の許可に無い）。highlight.js はコードの文字をエスケープしてから `span` を付ける。種類ごとの class の当て方はモック `dev/mock/refs/97/assets/syntax-highlight.css` のとおり
+  - item: 色分けを読めないとき
+    constraint: 本体を読めないときは全てのコードブロックを、言語のモジュールを読めないときはその言語のコードブロックを、色分けせずに描いたまま残す。例外を投げず、知らせの枠も出さない。読めなかった URL と元のエラーを `console.error` に出す
+    notes: コードは色分けが無くても欠けずに読めるため、外部ライブラリの印と違って本文を枠で置き換えない
 test_file: tests/integration/lib/mount.browser.test.ts

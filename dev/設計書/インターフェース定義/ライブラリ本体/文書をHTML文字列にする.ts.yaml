@@ -737,8 +737,11 @@ constraints:
     notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューの印」
   - item: コードブロック
     constraint: '`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読む。引数は `title=題`（題。印の引数は空白で区切るため題に空白は書けず、空白の後ろは別の引数として読む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類（`add`・`del`・`highlight`）として読んで印を外し、行コメントが印だけなら印の直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字のまま出す。行番号・強調・行の種類のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`add`・`del` の行を持てば `mdmark-code-signs` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を置く。題を持つコードブロックは `<figure class="mdmark-code">` に `<figcaption class="mdmark-code-title">{題}</figcaption>` と `pre` を入れ、`pre` の読み上げの名前を `コード: {題}` にする。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには当てない。印も行の印も持たないコードブロックは今のとおり描く。`code` がオフのときは印を取り除き、コードブロックを今のとおり描く（行の印は書いた文字のまま出す）'
-    notes: 見た目はモック `dev/mock/components/code-block/`。題の前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、#67 の色分けした HTML を入れられる形にする
+    notes: 見た目はモック `dev/mock/components/code-block/`。題の前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、`mount` が描いた後に色分けした HTML に置き換える（制約『コードブロックの色分け』）
   - item: 元の行番号
     constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
     notes: 番号は markdown-it のトークンの `map` の開始の行で、VS Code のエディタの行番号（0 始まり）とそのまま比べられる。コードブロックの行の `data-line`（コードの中の 1 始まりの行番号）・図の線の `data-line`（線の種類）とは別の属性にする
+  - item: コードブロックの色分け
+    constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、`code` の class `language-{言語}` を手掛かりに行う。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
+    notes: '`render` を同期のまま保ち、外部ライブラリの印を `mount` だけが描く今の役割分担と揃える（要件.md の推奨案 A）。色分けの中身は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『色分けの対象』〜『色分けを読めないとき』'
 test_file: tests/integration/lib/render.test.ts
