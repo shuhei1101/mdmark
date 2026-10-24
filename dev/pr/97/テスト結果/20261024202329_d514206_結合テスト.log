@@ -1,5 +1,5 @@
 # npm run test:integration (commit: d514206)
-# 403 件が pass、test_normal_when_api_checked_before_use だけが全件実行の負荷で 120 秒のタイムアウト。単独で再実行すると pass した（下記）
+# 403 件が pass、test_normal_when_api_checked_before_use だけが全件実行の負荷で 120 秒のタイムアウト。build.test.ts の実行は 結合テスト_build.log に置いた
 
 
 > test:integration
@@ -499,7 +499,3 @@ If this is a long-running test, pass a timeout value as the last argument or con
       Tests  1 failed | 403 passed (404)
    Start at  20:01:55
    Duration  1105.68s (tests 85%, import 12%, transform 2%, worker 1%)
-
-
-# 再実行: npx vitest run --project 'integration-node' tests/integration/lib/build.test.ts -t test_normal_when_api_checked_before_use
-# 結果: Tests 1 passed | 11 skipped (12) / Duration 156.53s
