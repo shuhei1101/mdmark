@@ -21,7 +21,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-21'
+      date: '2026-10-24'
       result: 合格
   - name: 通信
     english_name: network
@@ -48,7 +48,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-21'
+      date: '2026-10-24'
       result: 合格
   - name: CLI が動く Node の版
     english_name: cli_node_version
@@ -65,7 +65,7 @@ requirements:
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0
-      date: '2026-10-22'
+      date: '2026-10-24'
       result: 合格
   - name: 対応する VS Code の版
     english_name: vscode_version
@@ -80,6 +80,11 @@ requirements:
     status: planned
     introduced:
       pr: 69
+    verification:
+      device: WSL2 上の VS Code（xvfb-run）
+      version: VS Code 1.141.0・1.143.1（stable）
+      date: '2026-10-24'
+      result: 合格
   - name: タグ一覧を取る待ちの上限
     english_name: tag_list_timeout
     category: 耐障害
@@ -131,6 +136,11 @@ requirements:
     status: planned
     introduced:
       pr: 72
+    verification:
+      device: WSL2 上の Node
+      version: Node v24.14.0（1,395 文字）
+      date: '2026-10-24'
+      result: 合格
   - name: 確かめた Claude Code のバージョン
     english_name: claude_code_version
     category: 動作環境
@@ -143,6 +153,11 @@ requirements:
     status: planned
     introduced:
       pr: 72
+    verification:
+      device: ユーザーの手元の Claude Code（WSL2）
+      version: Claude Code 2.1.310
+      date: '2026-10-24'
+      result: 合格
   - name: MCP サーバーの接続の待ち
     english_name: mcp_connect_wait
     category: 性能
@@ -157,3 +172,8 @@ requirements:
     status: planned
     introduced:
       pr: 72
+    verification:
+      device: WSL2 上の Node
+      version: Node v24.14.0（tools/list まで 166〜206ms）
+      date: '2026-10-24'
+      result: 合格
