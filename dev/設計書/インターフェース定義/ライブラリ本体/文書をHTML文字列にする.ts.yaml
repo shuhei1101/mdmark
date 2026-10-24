@@ -742,6 +742,6 @@ constraints:
     constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
     notes: 番号は markdown-it のトークンの `map` の開始の行で、VS Code のエディタの行番号（0 始まり）とそのまま比べられる。コードブロックの行の `data-line`（コードの中の 1 始まりの行番号）・図の線の `data-line`（線の種類）とは別の属性にする
   - item: コードブロックの色分け
-    constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、`code` の class `language-{言語}` を手掛かりに行う。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
+    constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"` を手掛かりに行う（文書に書いた生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
     notes: '`render` を同期のまま保ち、外部ライブラリの印を `mount` だけが描く今の役割分担と揃える（要件.md の推奨案 A）。色分けの中身は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『色分けの対象』〜『色分けを読めないとき』'
 test_file: tests/integration/lib/render.test.ts

@@ -119,6 +119,12 @@ args:
     default: 'false'
     description: ストーリーで色分けした後の見た目を出すか。部品の HTML は色分けを持たず、`mount` が描いた後に行の中身 `mdmark-code-text`（行に分けないときは `code`）を色分けした HTML に置き換える。部品の描画のインターフェースはこの引数が `true` のとき、`language` の言語で同じ置き換えを当ててから返す
     status: planned
+  - name: syntax
+    type: 文字列
+    required: false
+    default: 空
+    description: 色分けする言語のモジュール名（`typescript`・`yaml` など）。渡すと `code` に `data-mdmark-syntax="{モジュール名}"` を付け、`mount` が色分けする対象をこの属性で探す。見た目は変えない
+    status: planned
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>

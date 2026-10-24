@@ -1,11 +1,13 @@
 title: "ライブラリ本体 / 描く"
-lead: 使う側のページの要素に文書を描き、描き直しと片付けを受け持つ処理。記法の操作を付け、文書の印にある外部ライブラリと拡張のモジュールを読んで印の場所に描かせ、印刷の前後で折り畳みと記法を開いて戻す。ブラウザでだけ動く。
+lead: 使う側のページの要素に文書を描き、描き直しと片付けを受け持つ処理。記法の操作を付け、文書の印にある外部ライブラリと拡張のモジュールを読んで印の場所に描かせ、色分けの対象のコードブロックを色分けし、印刷の前後で折り畳みと記法を開いて戻す。ブラウザでだけ動く（色分けの HTML を行に分ける `src/highlight-lines.ts` だけは DOM を使わず、部品の描画のインターフェースも使う）。
 directory: |-
   ```tree
   src/
-  ├── mount.ts      # 公開関数 mount と、描いた要素の控え
-  ├── libraries.ts  # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries
-  └── print.ts      # 印刷の前後で折り畳みを開いて戻す attachPrint
+  ├── mount.ts            # 公開関数 mount と、描いた要素の控え
+  ├── libraries.ts        # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries
+  ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの URL の控え
+  ├── highlight-lines.ts  # 色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）
+  └── print.ts            # 印刷の前後で折り畳みを開いて戻す attachPrint
   ```
 diagrams:
   - name: 全体
@@ -16,9 +18,15 @@ diagrams:
         class 文書を要素に描く
         class 描いた要素の操作
         class 印の場所に外部ライブラリを描かせる
+        class 色分けの対象を色分けする
+        class 色分けした行を作る
+        class 色分けしたHTMLを行に分ける
         class 印刷の前後で折り畳みを開く
         文書を要素に描く --> 描いた要素の操作 : 返す
         文書を要素に描く --> 印の場所に外部ライブラリを描かせる : 描くたびに呼ぶ
+        文書を要素に描く --> 色分けの対象を色分けする : 描くたびに呼ぶ
+        色分けの対象を色分けする --> 色分けした行を作る : 行に分けたコードブロック
+        色分けした行を作る --> 色分けしたHTMLを行に分ける
         文書を要素に描く --> 印刷の前後で折り畳みを開く : 1 回だけ付ける
       ```
 data_models:
@@ -71,6 +79,20 @@ data_models:
       - name: draw
         type: '(slot: HTMLElement, args: string[]) => void | Promise<void>'
         description: 印の場所の要素と、印の引数を受けて描く
+  - name: SyntaxModuleUrls
+    title: 埋めた色分けのモジュールの URL
+    container: src/highlight.ts
+    summary: 書き出した HTML の起動の処理が `setSyntaxModuleUrls` で渡す、埋めた色分けのモジュールの `blob:` URL
+    properties:
+      - name: core
+        type: string
+        description: 本体（`core.min.js`）の URL
+      - name: languages
+        type: Record<string, string>
+        description: 言語のモジュール名から URL を引く表。埋めなかった言語は持たない
+    status: planned
+    introduced:
+      pr: 97
 function_types:
   - name: ImportModule
     title: モジュールを読む
@@ -83,6 +105,20 @@ function_types:
     returns:
       type: Promise<LibraryModule>
       description: 読んだモジュール
+  - name: SyntaxImport
+    title: 色分けのモジュールを読む
+    container: src/highlight.ts
+    summary: URL の色分けのモジュールを読む関数。既定は `(url) => import(url)` で、単体テストで差し替える
+    args:
+      - name: url
+        type: string
+        description: 解決済みの URL
+    returns:
+      type: 'Promise<{ default?: unknown }>'
+      description: 読んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn`
+    status: planned
+    introduced:
+      pr: 97
 constants:
   - name: mounted
     title: 描いた要素の控え
@@ -99,6 +135,14 @@ constants:
     container: src/libraries.ts
     summary: モジュールが描き終えた印の場所に付ける属性。読み込み中の破線と高さを外すのに使う
     value: '"data-mdmark-drawn"'
+  - name: syntaxModuleUrls
+    title: 埋めた色分けのモジュールの URL の控え
+    container: src/highlight.ts
+    summary: '`setSyntaxModuleUrls` が入れる `SyntaxModuleUrls`。無ければ `syntax.url` から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
+    value: undefined
+    status: planned
+    introduced:
+      pr: 97
 functions:
   - name: mount
     title: 文書を要素に描く
@@ -135,6 +179,7 @@ functions:
          - 機能のオン・オフを控える
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
+         - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
          - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、外す関数を控える。前の外す関数は描き直す前に呼ぶ
          - `diffSource` を渡していれば、前の差分を外す関数を呼んでから差分を付け（差分を付ける。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
@@ -149,6 +194,7 @@ functions:
       - '#functions[attachPrint]'
       - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[attachDiff]
       - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#functions[attachParts]
+      - '#functions[highlightCodeBlocks]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
     unit_tests:
@@ -378,8 +424,168 @@ functions:
         condition: 操作を付けた、閉じた節・閉じた行の詳細・2 つ目を選んだタブ
         mock: なし
         expected: '`beforeprint` の後にどれも `hidden` を持たず、`afterprint` の後に節が `hidden="until-found"`、行の詳細が `hidden`、1 つ目のタブの中身が `hidden`'
+  - name: highlightCodeBlocks
+    title: 色分けの対象を色分けする
+    container: src/highlight.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使う言語のモジュールを読み、読めた言語の `code` の中身を色分けした HTML に置き換える
+    description: 読む先は、`syntaxModuleUrls` があればその URL（`languages` に無い言語は読まず、`console.error` にも出さない）、無ければ `url` を `document.baseURI` を基準に解決した `{url}core.min.js` と `{url}languages/{モジュール名}.min.js`。読んだモジュールは `modules`（URL → 読み込みの Promise）に控え、同じ `mount` の描き直しでは読み直さない。色分けの HTML は highlight.js が文字をエスケープしてから `span` を付けたもので、sanitize を通さない。待ちに時間の上限は置かない
+    side_effects: '`code` と `mdmark-code-text` の中身を置き換える。本体に言語を登録する。読めないモジュールを `console.error` に出す'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; url: string; isCurrent: () => boolean; modules: Map<string, Promise<{ default?: unknown }>>; importModule?: SyntaxImport }'
+        required: true
+        description: '`root` は描いた要素、`url` は既定を当てた設定の `syntax.url`、`isCurrent` は描いた文書がまだ今のものか、`modules` は `mount` ごとに 1 つの読んだモジュールの控え、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）'
+    returns:
+      type: Promise<void>
+      description: 色分けし終えるか、読めずにやめたら解決する。失敗しても拒否しない
+    process: |-
+      1. `root` の中の `code[data-mdmark-syntax]` を拾う。無ければ何も読まずに終える
+      2. 本体の URL を決め、`modules` に無ければ読み始めて控え、待つ
+         - `[error]` 本体を読めない（URL と元のエラーを `console.error` に出し、色分けせずに終える）
+      3. 拾った `code` の `data-mdmark-syntax` の値を重なりなく並べ、言語ごとに URL を決めて並べて読み（`Promise.allSettled`）、読めた言語を本体の `registerLanguage` で登録する（登録済みの言語は飛ばす）
+         - `[error]` 言語のモジュールを読めない（URL と元のエラーを `console.error` に出し、その言語の `code` を色分けせずに残す）
+      4. 待った後に `isCurrent()` が `false` なら何もしない
+      5. 登録できた言語の `code` ごとに次を行う
+         - `mdmark-code-text` を持つときは、各行の `textContent` を色分けした行にし（色分けした行を作る）、各 `mdmark-code-text` の `innerHTML` に入れる
+         - 持たないときは、`code` の `textContent` を `highlight`（`ignoreIllegals: true`）に通した HTML を `code` の `innerHTML` に入れる
+    callees:
+      - '#functions[highlightLines]'
+    unit_tests:
+      - name: test_highlight_code_blocks
+        case: 正常
+        summary: 行に分けた形と分けない形の両方を色分けし、文字と行の形を変えない
+        condition: '`renderCodeBlock` の `syntax: "typescript"` の行に分けないコードブロックと、`syntax: "yaml"`・`lineNumbers: true` で 3 行のブロックスカラーを持つコードブロック。`url` は `/hl/`'
+        mock: '`importModule` が `/hl/core.min.js` に npm の `highlight.js/lib/core`、`/hl/languages/{名前}.min.js` に `highlight.js/lib/languages/{名前}` を返す'
+        expected: '`importModule` が `location.origin` + `/hl/core.min.js`・`/hl/languages/typescript.min.js`・`/hl/languages/yaml.min.js` の 3 回。両方の `code` に class が `hljs-` で始まる `span` があり、`textContent` と `mdmark-code-line` の数・`data-line` が色分けの前と同じ'
+      - name: test_highlight_code_blocks_when_no_target
+        case: 正常
+        summary: 色分けの対象が無ければ何も読まない
+        condition: '`data-mdmark-syntax` を持たない `pre > code.language-ts` だけの要素'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれない'
+      - name: test_highlight_code_blocks_when_core_fails
+        case: 異常
+        summary: 本体を読めないときは色分けせずに残し、エラーを出す
+        condition: '`test_highlight_code_blocks` と同じ要素'
+        mock: '`importModule` が `core.min.js` を `new Error("404")` で拒否する。`console.error` を見張る'
+        expected: 戻りの Promise が解決し、両方の `code` の HTML が前と同じ。言語のモジュールを読まず、`console.error` が URL と `Error("404")` を含めて 1 回呼ばれる
+      - name: test_highlight_code_blocks_when_language_fails
+        case: 異常
+        summary: 読めない言語だけ色分けせずに残す
+        condition: '`test_highlight_code_blocks` と同じ要素'
+        mock: '`test_highlight_code_blocks` と同じで、`languages/yaml.min.js` だけ拒否する。`console.error` を見張る'
+        expected: '`typescript` の `code` は色分けし、`yaml` の `code` の HTML は前と同じ。`console.error` が `languages/yaml.min.js` を含めて 1 回呼ばれる'
+      - name: test_highlight_code_blocks_when_stale
+        case: 正常
+        summary: 読み終えたときに描き直していたら色を当てない
+        condition: '`test_highlight_code_blocks` と同じ要素。`isCurrent` が `false` を返す'
+        mock: '`test_highlight_code_blocks` と同じ'
+        expected: 両方の `code` の HTML が前と同じ
+      - name: test_highlight_code_blocks_when_cached
+        case: 正常
+        summary: 同じモジュールの控えで 2 回呼ぶとモジュールを読み直さない
+        condition: '`test_highlight_code_blocks` と同じ要素を 2 つ作り、同じ `modules` で順に呼ぶ'
+        mock: '`test_highlight_code_blocks` と同じ'
+        expected: '`importModule` が合わせて 3 回で、両方の要素が色分けされる'
+      - name: test_highlight_code_blocks_when_module_urls
+        case: 正常
+        summary: 埋めたモジュールの URL があればそこから読み、埋めていない言語は読まない
+        condition: '`setSyntaxModuleUrls({ core: "blob:core", languages: { typescript: "blob:ts" } })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setSyntaxModuleUrls(undefined)`'
+        mock: '`importModule` が `blob:core` に本体、`blob:ts` に typescript を返す。`console.error` を見張る'
+        expected: '`importModule` が `blob:core` と `blob:ts` の 2 回だけ。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの読み込み]
+      - dev/設計書/外部ライブラリ/highlight.js#
+    status: planned
+    introduced:
+      pr: 97
+  - name: setSyntaxModuleUrls
+    title: 埋めた色分けのモジュールの URL を入れる
+    container: src/highlight.ts
+    kind: 関数
+    scope: internal
+    summary: '`syntaxModuleUrls` を置き換える。`undefined` で `syntax.url` から読む形に戻す'
+    side_effects: '`syntaxModuleUrls` を書き換える'
+    args:
+      - name: urls
+        type: SyntaxModuleUrls | undefined
+        required: true
+        description: 埋めたモジュールの URL
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 97
+  - name: highlightLines
+    title: 色分けした行を作る
+    container: src/highlight-lines.ts
+    kind: 関数
+    scope: internal
+    summary: '行の文字を改行でつないで highlight.js の `highlight`（`ignoreIllegals: true`）に通し、`splitHighlightedLines` で行ごとの HTML に戻す'
+    description: 行をまたぐコメント・文字列も正しく色分けするため、行ごとでなくつないだ文字を一度に通す。`mount` と部品の描画のインターフェース（Node）が使う
+    args:
+      - name: options
+        type: '{ hljs: HLJSApi; language: string; lines: string[] }'
+        required: true
+        description: '`hljs` は言語を登録した本体（型は npm の `highlight.js` から `import type`）、`language` は言語のモジュール名、`lines` はエスケープ前の行の文字'
+    returns:
+      type: string[]
+      description: 行ごとの色分けした HTML。数は `lines` と同じ
+    callees:
+      - '#functions[splitHighlightedLines]'
+    unit_tests:
+      - name: test_highlight_lines
+        case: 正常
+        summary: 行をまたぐ文字列を色分けし、行の数と文字を変えない
+        condition: 'npm の `highlight.js/lib/core` に `yaml` を登録し、`key: |`・`  a < b`・`  c` の 3 行'
+        mock: なし
+        expected: 3 要素で、2・3 要素目が `<span class="hljs-string">` で始まり `</span>` で終わる。各要素のタグを外してエスケープを戻した文字が元の行と同じ
+    status: planned
+    introduced:
+      pr: 97
+  - name: splitHighlightedLines
+    title: 色分けしたHTMLを行に分ける
+    container: src/highlight-lines.ts
+    kind: 関数
+    scope: internal
+    summary: highlight.js が返した HTML を改行で分け、行末で開いている `span` を閉じて次の行の頭で同じ開始タグを開き直す
+    description: 入力のタグは highlight.js が出す `<span class="...">` と `</span>` だけとして扱い、文字はエスケープ済みのまま切り分ける。開いている開始タグを入れ子の順に持ち、行末でその数だけ `</span>` を足し、次の行の頭に同じ順で開始タグを置く
+    args:
+      - name: html
+        type: string
+        required: true
+        description: highlight.js の `highlight` の `value`
+    returns:
+      type: string[]
+      description: 行ごとの HTML。改行が n 個なら n + 1 要素
+    unit_tests:
+      - name: test_split_highlighted_lines
+        case: 正常
+        summary: 行をまたぐ `span` を行末で閉じ、次の行で開き直す
+        condition: '`<span class="hljs-comment">/*\n * a\n */</span>\nx`'
+        mock: なし
+        expected: '`["<span class=\"hljs-comment\">/*</span>", "<span class=\"hljs-comment\"> * a</span>", "<span class=\"hljs-comment\"> */</span>", "x"]`'
+      - name: test_split_highlighted_lines_when_nested
+        case: 正常
+        summary: 入れ子の `span` を内側から閉じ、外側から開き直す
+        condition: '`<span class="hljs-string">`a<span class="hljs-subst">${b\nc}</span>`</span>`'
+        mock: なし
+        expected: 1 要素目が `</span></span>` で終わり、2 要素目が `<span class="hljs-string"><span class="hljs-subst">c}` で始まる
+      - name: test_split_highlighted_lines_when_single_line
+        case: 正常
+        summary: 改行が無ければそのまま 1 要素で返す
+        condition: '`<span class="hljs-number">1</span> &lt; 2`'
+        mock: なし
+        expected: '`["<span class=\"hljs-number\">1</span> &lt; 2"]`'
+    status: planned
+    introduced:
+      pr: 97
 notes:
-  単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,print}.browser.test.ts` に置き、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
+  単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,highlight,print}.browser.test.ts` に置き（DOM を使わない `highlight-lines.ts` は `tests/unit/src/highlight-lines.test.ts` で `unit` プロジェクト。どちらも単体テスト作成で置き、対応テストファイルに足す）、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
 test_files:
   - tests/unit/src/mount.browser.test.ts
   - tests/unit/src/mount-view.browser.test.ts

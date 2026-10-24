@@ -40,6 +40,14 @@ constants:
     container: src/parts/own.ts
     summary: 中身を持つ部品に中身の代わりに渡し、記法がこの前後で HTML を分ける文字列。Markdown に現れない制御文字だけで作る
     value: '"\u0000mdmark-slot\u0000"'
+  - name: SYNTAX_ATTRIBUTE
+    title: 色分けの対象の属性
+    container: src/parts/code-block.ts
+    summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に書いた生の HTML の `code` は色分けの対象にならない
+    value: '"data-mdmark-syntax"'
+    status: planned
+    introduced:
+      pr: 97
 functions:
   - name: escapeHtml
     title: HTML の特別な文字をエスケープする
@@ -596,9 +604,9 @@ functions:
     summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類を持つときは行ごとの `mdmark-code-line` に分け、題があれば `figure` と `figcaption` で包む。題だけのときは行に分けず今の `pre` を包む。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
     args:
       - name: options
-        type: '{ language: string; title: string; lineNumbers: boolean; lines: CodeLine[] }'
+        type: '{ language: string; title: string; lineNumbers: boolean; lines: CodeLine[]; syntax?: string }'
         required: true
-        description: 部品設計の引数。`language`・`title` は無ければ空
+        description: 部品設計の引数。`language`・`title` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける
     returns:
       type: string
       description: '題があれば `<figure class="mdmark-code">`、無ければ `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
@@ -623,6 +631,12 @@ functions:
         condition: '`lineNumbers` が `true` で 13 行'
         mock: なし
         expected: '`code` が `style="--mdmark-code-digits: 2"`、最後の行が `data-line="13"`'
+      - name: test_render_code_block_when_syntax
+        case: 正常
+        summary: 色分けする言語を渡すと `code` に色分けの対象の属性を付ける
+        condition: '`language` が `yml`、`syntax` が `yaml`、題・行番号・行の種類が無い 1 行。もう 1 つは `syntax` を省く'
+        mock: なし
+        expected: '前者が `<pre tabindex="0" aria-label="コード: yml"><code class="language-yml" data-mdmark-syntax="yaml">` で始まり、後者の `code` は `data-mdmark-syntax` を持たない'
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
