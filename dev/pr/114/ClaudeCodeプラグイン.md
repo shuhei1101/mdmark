@@ -45,3 +45,14 @@
 | `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 144 ファイル・881 テスト pass<br>`テスト結果/20261025010507_214e46a_単体テスト.log` |
 
 lint と型検査は違反なし（`テスト結果/20261025010610_214e46a_lint.log`）。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/list-tags.test.ts` | 全実行 | 新規 | ✅ | 4 テスト pass<br>`テスト結果/20261025013821_7699cfc_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/find-docs.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/find-docs.test.ts) | 全実行 | 変更 | ✅ | 10 テスト pass（6 テストは新規、既存 4 テストは期待値を既定の Markdown に合わせて変更）<br>`テスト結果/20261025013821_7699cfc_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/update-index.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/update-index.test.ts) | `test_normal_when_tag` | 変更 | ✅ | 新規<br>`テスト結果/20261025013821_7699cfc_結合テスト.log` |
+| `tests/integration` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 62 ファイル・417 テスト pass<br>`テスト結果/20261025013821_7699cfc_結合テスト.log` |
+
+結合テストの lint と型検査は違反なし（`テスト結果/20261025014952_7699cfc_lint.log`）。
