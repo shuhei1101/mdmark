@@ -5,7 +5,7 @@ scenarios:
       - name: 配布物を読む Node の処理
         description: ビルドした `dist/index.js` を読み、点検の処理を呼ぶ
       - name: ずれの無い索引と文書
-        description: 文書 `arch`・`api`（`related` に `arch`）と用語 1 つを持つ索引と、その 2 つのパスの文書だけの一覧・本文
+        description: '文書 `arch`（タグ `設計`）・`api`（`related` に `arch`、タグ `{name: 設計, main: true}`）と用語 1 つを持ち、タグの語彙を持たない索引と、その 2 つのパスの文書だけの一覧・本文'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -106,6 +106,34 @@ scenarios:
       - '`glossary` の用語集の表の中の `作業場` のずれは返らない'
       - やめた言い方のずれ以外のずれは返らない
     test: test_normal_when_glossary_avoided_term
+  - name: 正常シナリオ（タグが語彙とずれる）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 語彙とずれるタグを持つ索引と文書
+        description: '索引の語彙が、`topic:mcp`（別名 `MCP`）・`topic:yaml`（別名 `MCP`）・2 つ目の `topic:yaml`・`topic:old`（振り替え先 `topic:mcp`）・`topic:gone`（振り替え先 `topic:none`）を持つ。文書 `a` のタグは `{name: topic:mcp, main: true}`・`topic:mpc`・`topic:old`。文書の一覧・本文は `a` だけ'
+        notes: 語彙に無いタグの近いタグに `topic:mcp` が選ばれることを、1 文字違いの `topic:mpc` で決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 語彙の重なりと振り替え先を確かめる
+        M->>M: 文書のタグを語彙と突き合わせる
+        M-->>C: タグのずれの行を持つ一覧
+      ```
+    expected:
+      - 例外で止まらずに一覧が返る
+      - 語彙に無いタグ `topic:mpc` の行が、`a` のタグの場所と、近いタグ `topic:mcp` を持つ
+      - やめたタグ `topic:old` の行が、`a` のタグの場所と、振り替え先 `topic:mcp` を持つ
+      - 語彙の `name` の重複 `topic:yaml` の行が、語彙の場所を持つ
+      - '`topic:mcp` と `topic:yaml` の別名 `MCP` の重なりの行が、語彙の場所を持つ'
+      - '`topic:gone` の振り替え先 `topic:none` が語彙に無い行が、語彙の場所を持つ'
+      - 語彙に載った `topic:mcp` のタグの行は返らない
+    test: test_normal_when_tag_drift
 lead: 使う側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に渡し、索引と文書のずれの一覧を受け取る。
 issue: 5
 primary_actor: 使う側の処理
