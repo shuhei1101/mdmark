@@ -175,7 +175,7 @@ scenarios:
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
-        C->>S: find_docs（text: 全角の ｍｃｐ）
+        C->>S: find_docs（text: 全角の大文字の ＭＣＰ）
         S->>S: 語と題名・別名・概要を正規化して引く
         S-->>C: 1 つ目の文書の行
     expected:
