@@ -38,10 +38,10 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/src/plugin/results.test.ts` | 全実行 | 新規 | ✅ | 14 テスト pass<br>`テスト結果/20261025004115_1995204_単体テスト.log` |
-| [tests/unit/src/plugin/arguments.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/arguments.test.ts) | 全実行 | 変更 | ✅ | 11 テスト pass（3 テストは新規）<br>`テスト結果/20261025004115_1995204_単体テスト.log` |
-| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | 21 テスト pass（9 テストは新規）<br>`テスト結果/20261025004115_1995204_単体テスト.log` |
-| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | 4 テスト pass（1 テストは新規）<br>`テスト結果/20261025004115_1995204_単体テスト.log` |
-| `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 144 ファイル・880 テスト pass<br>`テスト結果/20261025004115_1995204_単体テスト.log` |
+| `tests/unit/src/plugin/results.test.ts` | 全実行 | 新規 | ✅ | 14 テスト pass<br>`テスト結果/20261025010507_214e46a_単体テスト.log` |
+| [tests/unit/src/plugin/arguments.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/arguments.test.ts) | 全実行 | 変更 | ✅ | 11 テスト pass（3 テストは新規）<br>`テスト結果/20261025010507_214e46a_単体テスト.log` |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | 21 テスト pass（9 テストは新規）<br>`テスト結果/20261025010507_214e46a_単体テスト.log` |
+| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | 4 テスト pass（1 テストは新規）<br>`テスト結果/20261025010507_214e46a_単体テスト.log` |
+| `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 144 ファイル・881 テスト pass<br>`テスト結果/20261025010507_214e46a_単体テスト.log` |
 
-lint と型検査は違反なし（`テスト結果/20261025004228_1995204_lint.log`）。
+lint と型検査は違反なし（`テスト結果/20261025010610_214e46a_lint.log`）。
