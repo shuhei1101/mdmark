@@ -20,7 +20,7 @@ layers:
         ```bash
         npx playwright test {シナリオファイルパス}
         ```
-    duration: 全件で約 10 分（作業ツリーのクローンと `npm ci`、VS Code の起動を含む。VS Code を起動するシナリオが大半を占める）。初回は VS Code（約 150MB）の取得が加わる
+    duration: 全件で約 10 分（作業ツリーのクローンと `npm ci`、VS Code の起動を含む。VS Code を起動するシナリオが大半を占める）。初回は VS Code の取得が加わる
     external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
   - name: 結合テスト（フロント）
     description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む・Claude Code プラグインの MCP サーバーとフックを流す）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に流す
@@ -49,7 +49,7 @@ layers:
         xvfb-run -a npm --prefix vscode run test:integration
         ```
 
-        初回と stable が上がったときは VS Code（約 150MB）を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える（`MDMARK_VSCODE_DIST_BASE` は `http://127.0.0.1:{ポート}/mdmark` の形で、配布物は `/mdmark@{バージョン}/dist/{ファイル}` で引く）。VS Code のバージョンごとに新しい `--user-data-dir` で起動し、前回のバージョンが空の状態から始める
+        初回と stable が上がったときは VS Code を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える（`MDMARK_VSCODE_DIST_BASE` は `http://127.0.0.1:{ポート}/mdmark` の形で、配布物は `/mdmark@{バージョン}/dist/{ファイル}` で引く）。VS Code のバージョンごとに新しい `--user-data-dir` で起動し、前回のバージョンが空の状態から始める
   - name: 結合テスト（バック）
     run_all: 未確定
   - name: 単体テスト（フロント）
