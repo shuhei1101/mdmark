@@ -20,7 +20,7 @@ flows:
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
         M->>M: 文書ごとに辞書を作り、地の文を照合して本文の位置へ戻す
-        M-->>C: { byDocument, targets }
+        M-->>C: { byDocument, avoided, targets }
       ```
     expected:
       - '`byDocument.guide` が、段落の `ワークスペース` 2 回・`WS`・`公開関数` の 4 件を本文の頭からの順に持つ'
@@ -50,7 +50,7 @@ flows:
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
         M->>M: 各文書の用語集の表を読み、辞書に入れて照合する
-        M-->>C: { byDocument, targets }
+        M-->>C: { byDocument, avoided, targets }
       ```
     expected:
       - '`byDocument.guide` が `印` の 1 件を持ち、`kind` が `glossary`、`id` が `glossary:glossary:印`、`title` が `印`、`description` が `HTML コメントで書く指定`'
@@ -76,7 +76,7 @@ flows:
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
         M->>M: 埋め込んだ HTML の文字と図の部品の {{語}} を照合して本文の位置へ戻す
-        M-->>C: { byDocument, targets }
+        M-->>C: { byDocument, avoided, targets }
       ```
     expected:
       - '`byDocument.guide` が、HTML の段落・`<mdmark-flow>` の箱・`<!-- flow -->` の箱の `ワークスペース` の 3 件を `ws` の要素として持つ'
@@ -102,7 +102,7 @@ flows:
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
         M->>M: 行内のトークンを頭から本文へ当て、エスケープと実体参照を数えて位置を戻す
-        M-->>C: { byDocument, targets }
+        M-->>C: { byDocument, avoided, targets }
       ```
     expected:
       - 全ての要素で、`line`・`start`・`end` で本文の行を切り出した文字が `text` と同じか、実体参照を戻すと `text` になる
@@ -151,7 +151,7 @@ flows:
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
         M->>M: 形の合わない用語と文書を除いて照合する
-        M-->>C: { byDocument, targets }
+        M-->>C: { byDocument, avoided, targets }
       ```
     expected:
       - 例外を投げない
@@ -174,7 +174,8 @@ flows:
         participant C as 使う側の処理
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
-        M->>M: 用語・文書の別名の語にやめた言い方を加えて照合し、やめた言い方の一致を分ける
+        M->>M: 用語・文書の別名の語で照合して byDocument に取る
+        M->>M: やめた言い方を加えた照合で、やめた言い方の一致だけを avoided に取る
         M-->>C: { byDocument, avoided, targets }
       ```
     expected:
