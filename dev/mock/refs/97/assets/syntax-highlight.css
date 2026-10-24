@@ -1,0 +1,49 @@
+/* コードブロックの色分けの規則（#97 で共有するアセット）。
+   色分けのライブラリが付ける hljs-* の class に、種類ごとの色の CSS 変数を当てる。実装では src/index.css の mdmark の層に足す */
+
+/* mdmark の層: 色分けしたコード */
+@layer mdmark {
+  .mdmark pre code {
+
+    /* キーワード: 予約語・デコレーター・document や self などの言語の変数 */
+    :is(.hljs-keyword, .hljs-meta, .hljs-variable.language_, .hljs-doctag) {
+      color: var(--mdmark-color-syntax-keyword);
+    }
+
+    /* 文字列: 文字列・正規表現・エスケープ・Markdown のリンクの文字 */
+    :is(.hljs-string, .hljs-regexp, .hljs-char, .hljs-link) {
+      color: var(--mdmark-color-syntax-string);
+    }
+
+    /* 数値: 数値・true / false / null・YAML と Markdown の箇条書きの - */
+    :is(.hljs-number, .hljs-literal, .hljs-literal .hljs-keyword, .hljs-symbol, .hljs-bullet) {
+      color: var(--mdmark-color-syntax-number);
+    }
+
+    /* 型: 型・クラス名・組み込みの関数と型・HTML のタグ名・CSS のセレクター */
+    :is(.hljs-type, .hljs-title.class_, .hljs-built_in, .hljs-name, .hljs-selector-tag, .hljs-selector-class, .hljs-selector-id, .hljs-selector-attr, .hljs-selector-pseudo) {
+      color: var(--mdmark-color-syntax-type);
+    }
+
+    /* 名前: 関数名・オブジェクトと YAML と JSON のキー・HTML の属性・CSS のプロパティ・Markdown の見出し */
+    :is(.hljs-title, .hljs-attr, .hljs-attribute, .hljs-property, .hljs-section) {
+      color: var(--mdmark-color-syntax-name);
+    }
+
+    /* コメント: 色に加えて斜体でも示す */
+    :is(.hljs-comment, .hljs-quote) {
+      color: var(--mdmark-color-syntax-comment);
+      font-style: italic;
+    }
+
+    /* Markdown の太字 */
+    .hljs-strong {
+      font-weight: 700;
+    }
+
+    /* Markdown の斜体 */
+    .hljs-emphasis {
+      font-style: italic;
+    }
+  }
+}

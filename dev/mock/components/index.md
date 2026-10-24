@@ -8,7 +8,7 @@
 | [badge](./badge/index.html) | 頭に `badge:` を付けた行内のコードを描いた札 |
 | [callout](./callout/index.html) | 種類ごとの題・色・アイコンを持つ注意書きの枠と、閉じた注意書き |
 | [chart](./chart/index.html) | 系列を色と線の模様・点の印の組で分けたグラフ（折れ線）と、色と塗りの模様の組で分けた棒・円、点の印で分けた散布図 |
-| [code-block](./code-block/index.html) | コードブロックの題・行番号・行の強調と、コードの行の印で分けた足した行・消した行・強調の行、印刷の見え方 |
+| [code-block](./code-block/index.html) | コードブロックの題・行番号・行の強調と、コードの行の印で分けた足した行・消した行・強調の行、言語に応じた色分け、印刷の見え方 |
 | [comment](./comment/index.html) | 選んだ箇所の印・文字を選んだときのコメントのボタン・入力欄と保存できない知らせ・吹き出しと、箇所が見つからないコメントの一覧 |
 | [diagram-frame](./diagram-frame/index.html) | 図の題・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン |
 | [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・箱の入力・処理・出力・箱の hint・箱の中の用語のツールチップと、ヒントを外した図 |

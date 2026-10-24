@@ -18,6 +18,10 @@
   <link rel="stylesheet" href="../../refs/65/assets/code-block.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で code-block.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/65/assets/code-block-print.css" media="print" data-print-styles>
+  <!-- コードブロックの色分けの規則（hljs-* の class に種類ごとの色を当てる） -->
+  <link rel="stylesheet" href="../../refs/97/assets/syntax-highlight.css">
+  <!-- 色分けの印刷の規則: 紙に出すときだけ当てる。「印刷の見え方」で code-block.js が media を all に切り替える -->
+  <link rel="stylesheet" href="../../refs/97/assets/syntax-highlight-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
@@ -41,15 +45,198 @@
     <div class="catalog">
       <h1 class="catalog-title">コードブロック</h1>
 
+      <!-- 色分けの種類と色（モックだけの凡例）: 種類ごとに CSS 変数を 1 つ持つ。ここに無い記号・変数名・引数は本文の色のまま -->
+      <section aria-labelledby="syntax-kinds">
+        <h2 class="catalog-label" id="syntax-kinds">色分けの種類と色（モックだけの凡例）</h2>
+        <article class="mdmark">
+<table>
+  <thead><tr><th>種類</th><th>当たるもの</th><th>見え方</th><th>CSS 変数</th></tr></thead>
+  <tbody>
+    <tr><td>キーワード</td><td>予約語・デコレーター・<code>document</code> や <code>self</code></td><td><span style="color: var(--mdmark-color-syntax-keyword)">const</span></td><td><code>--mdmark-color-syntax-keyword</code></td></tr>
+    <tr><td>文字列</td><td>文字列・正規表現</td><td><span style="color: var(--mdmark-color-syntax-string)">"mdmark"</span></td><td><code>--mdmark-color-syntax-string</code></td></tr>
+    <tr><td>数値</td><td>数値・<code>true</code>・<code>false</code>・<code>null</code>・箇条書きの <code>-</code></td><td><span style="color: var(--mdmark-color-syntax-number)">300</span></td><td><code>--mdmark-color-syntax-number</code></td></tr>
+    <tr><td>型</td><td>型・クラス名・組み込みの関数・HTML のタグ名・CSS のセレクター</td><td><span style="color: var(--mdmark-color-syntax-type)">HTMLElement</span></td><td><code>--mdmark-color-syntax-type</code></td></tr>
+    <tr><td>名前</td><td>関数名・キー・HTML の属性・CSS のプロパティ・Markdown の見出し</td><td><span style="color: var(--mdmark-color-syntax-name)">mount</span></td><td><code>--mdmark-color-syntax-name</code></td></tr>
+    <tr><td>コメント</td><td>コメント（斜体でも示す）</td><td><span style="color: var(--mdmark-color-syntax-comment); font-style: italic">// 描く</span></td><td><code>--mdmark-color-syntax-comment</code></td></tr>
+  </tbody>
+</table>
+        </article>
+      </section>
+
+      <!-- 言語に応じて色分けする（正常シナリオ）: 印を持たない ts のコードブロック -->
+      <section aria-labelledby="syntax-ts">
+        <h2 class="catalog-label" id="syntax-ts">言語に応じて色分けする（ts）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;
+
+<span class="hljs-keyword">const</span> element = <span class="hljs-variable language_">document</span>.<span class="hljs-property">querySelector</span>&lt;<span class="hljs-title class_">HTMLElement</span>&gt;(<span class="hljs-string">&quot;#doc&quot;</span>);
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);
+<span class="hljs-comment">// 描いた文書の要素を返す</span>
+<span class="hljs-keyword">const</span> doc = <span class="hljs-title function_">mount</span>(element, <span class="hljs-keyword">await</span> response.<span class="hljs-title function_">text</span>(), { <span class="hljs-attr">features</span>: { <span class="hljs-attr">syntax</span>: <span class="hljs-literal">true</span> } });
+<span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> doc.<span class="hljs-title function_">focus</span>(), <span class="hljs-number">300</span>);</code></pre>
+        </article>
+      </section>
+
+      <!-- 言語に応じて色分けする（正常シナリオ）: 印を持たない yaml のコードブロック -->
+      <section aria-labelledby="syntax-yaml">
+        <h2 class="catalog-label" id="syntax-yaml">言語に応じて色分けする（yaml）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: yaml"><code class="language-yaml"><span class="hljs-comment"># 描く機能の既定</span>
+<span class="hljs-attr">features:</span>
+  <span class="hljs-attr">syntax:</span> <span class="hljs-literal">true</span>
+  <span class="hljs-attr">print:</span> <span class="hljs-literal">false</span>
+<span class="hljs-attr">libraries:</span>
+  <span class="hljs-attr">hljs:</span> <span class="hljs-string">&quot;https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/core.min.js&quot;</span>
+<span class="hljs-attr">build:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/README.md</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/使い方/*.md</span></code></pre>
+        </article>
+      </section>
+
+      <!-- 言語に応じて色分けする（正常シナリオ）: 印を持たない python のコードブロック -->
+      <section aria-labelledby="syntax-python">
+        <h2 class="catalog-label" id="syntax-python">言語に応じて色分けする（python）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: python"><code class="language-python"><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path
+
+
+<span class="hljs-meta">@dataclass</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Document</span>:
+    <span class="hljs-string">&quot;&quot;&quot;Markdown の文書 1 つ。&quot;&quot;&quot;</span>
+    path: Path
+    lines: <span class="hljs-built_in">int</span> = <span class="hljs-number">0</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">title</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">str</span>:
+        <span class="hljs-comment"># 最初の見出しをタイトルにする</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span>.path.read_text().splitlines()[<span class="hljs-number">0</span>].lstrip(<span class="hljs-string">&quot;# &quot;</span>)
+
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{<span class="hljs-built_in">len</span>(docs)}</span> 件を描きました&quot;</span>, <span class="hljs-literal">None</span>, <span class="hljs-literal">True</span>)</code></pre>
+        </article>
+      </section>
+
+      <!-- 題・行番号・コードの行の印と色分けする（正常シナリオ）: code の印 title=app.ts lines highlight=4 と、行末の // [!code --]・// [!code ++]。3 行のブロックコメントは行ごとに閉じた span に分ける -->
+      <section aria-labelledby="syntax-decorated">
+        <h2 class="catalog-label" id="syntax-decorated">題・行番号・行の強調・コードの行の印と色分けする（title=app.ts lines highlight=4）</h2>
+        <article class="mdmark">
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-comment">/**</span></span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-comment"> * 文書を描いて、描いた要素を返す。</span></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-comment"> */</span></span></span>
+<span class="mdmark-code-line" data-line="4" data-kind="highlight"><span class="mdmark-code-text"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"><span class="hljs-attr">element</span>: <span class="hljs-title class_">HTMLElement</span></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">HTMLElement</span>&gt; {</span></span>
+<span class="mdmark-code-line" data-line="5" data-kind="del"><span class="mdmark-code-text">  <span class="hljs-title function_">mount</span>(element, markdown);</span></span>
+<span class="mdmark-code-line" data-line="6" data-kind="add"><span class="mdmark-code-text">  <span class="hljs-title function_">mount</span>(element, markdown, { <span class="hljs-attr">features</span>: { <span class="hljs-attr">syntax</span>: <span class="hljs-literal">true</span> } });</span></span>
+<span class="mdmark-code-line" data-line="7"><span class="mdmark-code-text">  <span class="hljs-keyword">return</span> element;</span></span>
+<span class="mdmark-code-line" data-line="8"><span class="mdmark-code-text">}</span></span></code></pre>
+</figure>
+        </article>
+      </section>
+
+      <!-- そのほかの色分けする言語: json・bash・html・css・sql・markdown -->
+      <section aria-labelledby="syntax-others">
+        <h2 class="catalog-label" id="syntax-others">そのほかの色分けする言語（json・bash・html・css・sql・markdown）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: json"><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;mdmark&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.7.0&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;private&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;files&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;dist/index.js&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-literal"><span class="hljs-keyword">null</span></span><span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span></code></pre>
+<pre tabindex="0" aria-label="コード: bash"><code class="language-bash"><span class="hljs-comment"># 配布物をビルドして書き出す</span>
+npm ci &amp;&amp; npm run build
+npx mdmark <span class="hljs-built_in">export</span> docs/README.md --out <span class="hljs-string">&quot;dist/README.html&quot;</span></code></pre>
+<pre tabindex="0" aria-label="コード: html"><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">figure</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;mdmark-code&quot;</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- タイトル --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">figcaption</span>&gt;</span>app.ts<span class="hljs-tag">&lt;/<span class="hljs-name">figcaption</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">figure</span>&gt;</span></code></pre>
+<pre tabindex="0" aria-label="コード: css"><code class="language-css"><span class="hljs-comment">/* 色分けの色を変える */</span>
+<span class="hljs-selector-class">.mdmark</span> pre <span class="hljs-selector-tag">code</span> {
+  <span class="hljs-attr">--mdmark-color-syntax-keyword</span>: <span class="hljs-number">#7c3aed</span>;
+  <span class="hljs-attribute">font-size</span>: <span class="hljs-number">0.875rem</span>;
+}</code></pre>
+<pre tabindex="0" aria-label="コード: sql"><code class="language-sql"><span class="hljs-comment">-- 文書をタイトルの順に並べる</span>
+<span class="hljs-keyword">SELECT</span> path, title <span class="hljs-keyword">FROM</span> documents <span class="hljs-keyword">WHERE</span> lines <span class="hljs-operator">&gt;</span> <span class="hljs-number">10</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> title;</code></pre>
+<pre tabindex="0" aria-label="コード: markdown"><code class="language-markdown"><span class="hljs-section">## 描く</span>
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**mount**</span> で要素の中に描く
+<span class="hljs-bullet">-</span> 詳しくは [<span class="hljs-string">API</span>](<span class="hljs-link">./API.md</span>) を見る</code></pre>
+        </article>
+      </section>
+
+      <!-- 色分けしない言語（正常シナリオ）: 言語の無いコードブロックと言語 text のコードブロックは今のまま -->
+      <section aria-labelledby="syntax-unsupported">
+        <h2 class="catalog-label" id="syntax-unsupported">色分けしない言語（言語の無いブロック・text）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード"><code>$ npx mdmark build
+書き出しました: dist/index.html</code></pre>
+<pre tabindex="0" aria-label="コード: text"><code class="language-text">mount(element, markdown); // 言語 text は色分けしない</code></pre>
+        </article>
+      </section>
+
+      <!-- 色分けの機能をオフにした文書（正常シナリオ）: features の印で -syntax を書いた文書。コードの行の印は当て、色分けはしない -->
+      <section aria-labelledby="syntax-off">
+        <h2 class="catalog-label" id="syntax-off">色分けの機能をオフにした文書（features: -syntax）</h2>
+        <article class="mdmark">
+<pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
+<span class="mdmark-code-line" data-kind="add"><span class="mdmark-code-text">mount(element, markdown, { features: { syntax: false } });</span></span></code></pre>
+        </article>
+      </section>
+
+      <!-- 色分けのライブラリを読めない（異常シナリオ）: 本体が 404。コードは欠けずに色分けなしで出し、知らせの枠は出さない（コンソールにだけ出す） -->
+      <section aria-labelledby="syntax-load-failed">
+        <h2 class="catalog-label" id="syntax-load-failed">色分けのライブラリを読めない（異常シナリオ）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">import { mount } from "mdmark";
+
+const element = document.querySelector&lt;HTMLElement&gt;("#doc");
+const response = await fetch("/README.md");
+// 描いた文書の要素を返す
+const doc = mount(element, await response.text(), { features: { syntax: true } });
+setTimeout(() =&gt; doc.focus(), 300);</code></pre>
+        </article>
+      </section>
+
+      <!-- 言語のモジュールの一部を読めない（異常シナリオ）: python のモジュールだけが 404。読めた yaml だけを色分けする -->
+      <section aria-labelledby="syntax-partial">
+        <h2 class="catalog-label" id="syntax-partial">言語のモジュールの一部を読めない（異常シナリオ: python だけ読めない）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: yaml"><code class="language-yaml"><span class="hljs-comment"># 描く機能の既定</span>
+<span class="hljs-attr">features:</span>
+  <span class="hljs-attr">syntax:</span> <span class="hljs-literal">true</span>
+  <span class="hljs-attr">print:</span> <span class="hljs-literal">false</span>
+<span class="hljs-attr">libraries:</span>
+  <span class="hljs-attr">hljs:</span> <span class="hljs-string">&quot;https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/core.min.js&quot;</span>
+<span class="hljs-attr">build:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/README.md</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/使い方/*.md</span></code></pre>
+<pre tabindex="0" aria-label="コード: python"><code class="language-python">from pathlib import Path
+
+
+@dataclass
+class Document:
+    """Markdown の文書 1 つ。"""
+    path: Path
+    lines: int = 0
+
+    def title(self) -&gt; str:
+        # 最初の見出しをタイトルにする
+        return self.path.read_text().splitlines()[0].lstrip("# ")
+
+
+print(f"{len(docs)} 件を描きました", None, True)</code></pre>
+        </article>
+      </section>
+
       <!-- 題・行番号・行の強調（正常シナリオ）: code の印 title=app.ts lines highlight=2 の直後の 3 行 -->
       <section aria-labelledby="state-basic">
         <h2 class="catalog-label" id="state-basic">題・行番号・行の強調（title=app.ts lines highlight=2）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
-  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
-<span class="mdmark-code-line" data-line="2" data-kind="highlight"><span class="mdmark-code-text">const doc = await fetch("/README.md");</span></span>
-<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text">mount(document.querySelector("#doc"), await doc.text());</span></span></code></pre>
+  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2" data-kind="highlight"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);</span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), <span class="hljs-keyword">await</span> doc.<span class="hljs-title function_">text</span>());</span></span></code></pre>
 </figure>
         </article>
       </section>
@@ -58,10 +245,10 @@
       <section aria-labelledby="state-line-marks">
         <h2 class="catalog-label" id="state-line-marks">コードの行の印（足した行・消した行・強調・印の無い行）</h2>
         <article class="mdmark">
-<pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line" data-kind="del"><span class="mdmark-code-text">let count = 0;</span></span>
-<span class="mdmark-code-line" data-kind="add"><span class="mdmark-code-text">let count = 1;</span></span>
-<span class="mdmark-code-line" data-kind="highlight"><span class="mdmark-code-text">count += 1; // 数える</span></span>
-<span class="mdmark-code-line"><span class="mdmark-code-text">console.log(count);</span></span></code></pre>
+<pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line" data-kind="del"><span class="mdmark-code-text"><span class="hljs-keyword">let</span> count = <span class="hljs-number">0</span>;</span></span>
+<span class="mdmark-code-line" data-kind="add"><span class="mdmark-code-text"><span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>;</span></span>
+<span class="mdmark-code-line" data-kind="highlight"><span class="mdmark-code-text">count += <span class="hljs-number">1</span>; <span class="hljs-comment">// 数える</span></span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(count);</span></span></code></pre>
         </article>
       </section>
 
@@ -69,9 +256,9 @@
       <section aria-labelledby="state-hash-comment">
         <h2 class="catalog-label" id="state-hash-comment">行コメントの頭が # の言語（python）</h2>
         <article class="mdmark">
-<pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: python"><code class="language-python"><span class="mdmark-code-line"><span class="mdmark-code-text">def greet(name):</span></span>
-<span class="mdmark-code-line" data-kind="del"><span class="mdmark-code-text">    print("Hello " + name)</span></span>
-<span class="mdmark-code-line" data-kind="add"><span class="mdmark-code-text">    print(f"Hello {name}")</span></span></code></pre>
+<pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: python"><code class="language-python"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">def</span> <span class="hljs-title function_">greet</span>(<span class="hljs-params">name</span>):</span></span>
+<span class="mdmark-code-line" data-kind="del"><span class="mdmark-code-text">    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Hello &quot;</span> + name)</span></span>
+<span class="mdmark-code-line" data-kind="add"><span class="mdmark-code-text">    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Hello <span class="hljs-subst">{name}</span>&quot;</span>)</span></span></code></pre>
         </article>
       </section>
 
@@ -81,9 +268,9 @@
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
-  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1" data-kind="highlight"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
-<span class="mdmark-code-line" data-line="2" data-kind="add"><span class="mdmark-code-text">mount(element, markdown, { features: { code: true } });</span></span>
-<span class="mdmark-code-line" data-line="3" data-kind="del"><span class="mdmark-code-text">mount(element, markdown);</span></span></code></pre>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1" data-kind="highlight"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2" data-kind="add"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(element, markdown, { <span class="hljs-attr">features</span>: { <span class="hljs-attr">code</span>: <span class="hljs-literal">true</span> } });</span></span>
+<span class="mdmark-code-line" data-line="3" data-kind="del"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(element, markdown);</span></span></code></pre>
 </figure>
         </article>
       </section>
@@ -94,9 +281,9 @@
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>mdmark.config.yaml</figcaption>
-  <pre tabindex="0" aria-label="コード: mdmark.config.yaml"><code class="language-yaml">features:
-  code: true
-  print: true</code></pre>
+  <pre tabindex="0" aria-label="コード: mdmark.config.yaml"><code class="language-yaml"><span class="hljs-attr">features:</span>
+  <span class="hljs-attr">code:</span> <span class="hljs-literal">true</span>
+  <span class="hljs-attr">print:</span> <span class="hljs-literal">true</span></code></pre>
 </figure>
         </article>
       </section>
@@ -105,19 +292,19 @@
       <section aria-labelledby="state-two-digits">
         <h2 class="catalog-label" id="state-two-digits">2 桁の行番号と範囲の強調（lines highlight=9-10）</h2>
         <article class="mdmark">
-<pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: ts"><code class="language-ts" style="--mdmark-code-digits: 2"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
+<pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: ts"><code class="language-ts" style="--mdmark-code-digits: 2"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
 <span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"></span></span>
-<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text">const element = document.querySelector("#doc");</span></span>
-<span class="mdmark-code-line" data-line="4"><span class="mdmark-code-text">const response = await fetch("/README.md");</span></span>
-<span class="mdmark-code-line" data-line="5"><span class="mdmark-code-text">const markdown = await response.text();</span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> element = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>);</span></span>
+<span class="mdmark-code-line" data-line="4"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);</span></span>
+<span class="mdmark-code-line" data-line="5"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> markdown = <span class="hljs-keyword">await</span> response.<span class="hljs-title function_">text</span>();</span></span>
 <span class="mdmark-code-line" data-line="6"><span class="mdmark-code-text"></span></span>
-<span class="mdmark-code-line" data-line="7"><span class="mdmark-code-text">const config = {</span></span>
-<span class="mdmark-code-line" data-line="8"><span class="mdmark-code-text">  features: {</span></span>
-<span class="mdmark-code-line" data-line="9" data-kind="highlight"><span class="mdmark-code-text">    code: true,</span></span>
-<span class="mdmark-code-line" data-line="10" data-kind="highlight"><span class="mdmark-code-text">    print: true,</span></span>
+<span class="mdmark-code-line" data-line="7"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> config = {</span></span>
+<span class="mdmark-code-line" data-line="8"><span class="mdmark-code-text">  <span class="hljs-attr">features</span>: {</span></span>
+<span class="mdmark-code-line" data-line="9" data-kind="highlight"><span class="mdmark-code-text">    <span class="hljs-attr">code</span>: <span class="hljs-literal">true</span>,</span></span>
+<span class="mdmark-code-line" data-line="10" data-kind="highlight"><span class="mdmark-code-text">    <span class="hljs-attr">print</span>: <span class="hljs-literal">true</span>,</span></span>
 <span class="mdmark-code-line" data-line="11"><span class="mdmark-code-text">  },</span></span>
 <span class="mdmark-code-line" data-line="12"><span class="mdmark-code-text">};</span></span>
-<span class="mdmark-code-line" data-line="13"><span class="mdmark-code-text">mount(element, markdown, config);</span></span></code></pre>
+<span class="mdmark-code-line" data-line="13"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(element, markdown, config);</span></span></code></pre>
         </article>
       </section>
 
@@ -127,9 +314,9 @@
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts</figcaption>
-  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js";</span></span>
-<span class="mdmark-code-line" data-line="2" data-kind="del"><span class="mdmark-code-text">export const decorate = (tokens: Token[], options: { title?: string; lines: boolean; highlight: number[] }) =&gt; tokens;</span></span>
-<span class="mdmark-code-line" data-line="3" data-kind="add"><span class="mdmark-code-text">export const decorate = (tokens: Token[], options: CodeBlockOptions, warnings: SyntaxWarning[]): Token[] =&gt; applyCodeBlockOptions(tokens, options, warnings);</span></span></code></pre>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2" data-kind="del"><span class="mdmark-code-text"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title function_">decorate</span> = (<span class="hljs-params"><span class="hljs-attr">tokens</span>: <span class="hljs-title class_">Token</span>[], <span class="hljs-attr">options</span>: { title?: <span class="hljs-built_in">string</span>; lines: <span class="hljs-built_in">boolean</span>; highlight: <span class="hljs-built_in">number</span>[] }</span>) =&gt; tokens;</span></span>
+<span class="mdmark-code-line" data-line="3" data-kind="add"><span class="mdmark-code-text"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> decorate = (<span class="hljs-attr">tokens</span>: <span class="hljs-title class_">Token</span>[], <span class="hljs-attr">options</span>: <span class="hljs-title class_">CodeBlockOptions</span>, <span class="hljs-attr">warnings</span>: <span class="hljs-title class_">SyntaxWarning</span>[]): <span class="hljs-title class_">Token</span>[] =&gt; <span class="hljs-title function_">applyCodeBlockOptions</span>(tokens, options, warnings);</span></span></code></pre>
 </figure>
         </article>
       </section>
@@ -138,7 +325,7 @@
       <section aria-labelledby="state-escaped">
         <h2 class="catalog-label" id="state-escaped">打ち消した印（[\!code ++] を文字のまま出す）</h2>
         <article class="mdmark">
-<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">let count = 1; // [!code ++]</code></pre>
+<pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>; <span class="hljs-comment">// [!code ++]</span></code></pre>
         </article>
       </section>
 
@@ -146,9 +333,9 @@
       <section aria-labelledby="state-off">
         <h2 class="catalog-label" id="state-off">機能をオフにした文書（features: -code）</h2>
         <article class="mdmark">
-<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">import { mount } from "mdmark";
-const doc = await fetch("/README.md");
-let count = 1; // [!code ++]</code></pre>
+<pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;
+<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);
+<span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>; <span class="hljs-comment">// [!code ++]</span></code></pre>
         </article>
       </section>
 
@@ -170,9 +357,9 @@ let count = 1; // [!code ++]</code></pre>
 </div>
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
-  <pre tabindex="0" aria-label="コード: app.ts"><code class="language-ts">import { mount } from "mdmark";
-const doc = await fetch("/README.md");
-mount(document.querySelector("#doc"), await doc.text());</code></pre>
+  <pre tabindex="0" aria-label="コード: app.ts"><code class="language-ts"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;
+<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);
+<span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), <span class="hljs-keyword">await</span> doc.<span class="hljs-title function_">text</span>());</code></pre>
 </figure>
         </article>
       </section>
@@ -185,9 +372,9 @@ mount(document.querySelector("#doc"), await doc.text());</code></pre>
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
   <p><code>&lt;!-- code: highlight=2,5 --&gt;</code> の 5 行目がありません。コードブロックは 3 行です。行の番号を 1〜3 で書いてください。5 行目を除いて強調しています。</p>
 </div>
-<pre class="mdmark-code-lines" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line"><span class="mdmark-code-text">import { mount } from "mdmark";</span></span>
-<span class="mdmark-code-line" data-kind="highlight"><span class="mdmark-code-text">const doc = await fetch("/README.md");</span></span>
-<span class="mdmark-code-line"><span class="mdmark-code-text">mount(document.querySelector("#doc"), await doc.text());</span></span></code></pre>
+<pre class="mdmark-code-lines" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-kind="highlight"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);</span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), <span class="hljs-keyword">await</span> doc.<span class="hljs-title function_">text</span>());</span></span></code></pre>
         </article>
       </section>
 
@@ -199,7 +386,7 @@ mount(document.querySelector("#doc"), await doc.text());</code></pre>
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
   <p>コードの行の印 <code>[!code focus]</code> は使えません。使える印は <code>[!code ++]</code>・<code>[!code --]</code>・<code>[!code highlight]</code> です。この行には当てず、書いた文字のまま描いています。</p>
 </div>
-<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">const doc = await fetch("/README.md"); // [!code focus]</code></pre>
+<pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>); <span class="hljs-comment">// [!code focus]</span></code></pre>
         </article>
       </section>
 
