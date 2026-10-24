@@ -64,3 +64,25 @@ test("test_collect_references_ignores_code_and_headings", async () => {
   // 検証
   expect(references.backlinks.api).toEqual([]);
 });
+
+// 全角と半角・英字の大文字と小文字だけが違う文書の別名を被参照にする（正常系）
+test("test_collect_references_when_alias_notation_differs", async () => {
+  // 準備
+  const { collectReferences } = await loadReferences();
+  const index = structuredClone(ARCH_INDEX);
+  const api = index.docs.find((doc) => doc.id === "api");
+  if (api) {
+    api.aliases = ["MCP"];
+    api.related = [];
+  }
+  // どちらの本文も `api` へのリンクを持たず、別名の表記だけが違う
+  const documents = {
+    "設計/arch.md": "# アーキテクチャ\n\nmcp を使う。",
+    "api.md": "# API\n",
+    "使い方/guide.md": "# 使い方\n\nＭＣＰ を使う。",
+  };
+  // 実行
+  const references = collectReferences({ index, documents });
+  // 検証
+  expect(references.backlinks.api).toEqual(["arch", "guide"]);
+});

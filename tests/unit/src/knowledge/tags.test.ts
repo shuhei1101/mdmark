@@ -263,6 +263,21 @@ test("test_list_tags_when_query", async () => {
   ]);
 });
 
+// 全角と半角だけが違う語で絞る（正常系）
+test("test_list_tags_when_query_width_differs", async () => {
+  // 準備
+  const { listTags } = await loadTags();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [],
+    tags: [{ name: "topic:mcp", aliases: ["MCP"] }, { name: "kind:guide" }],
+  };
+  // 実行
+  const result = listTags({ index, query: "ＭＣＰ" });
+  // 検証
+  expect(result.map((entry) => entry.name)).toEqual(["topic:mcp"]);
+});
+
 // 語彙が無ければ空を返す（正常系）
 test("test_list_tags_without_vocabulary", async () => {
   // 準備

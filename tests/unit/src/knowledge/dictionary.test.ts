@@ -2,7 +2,10 @@ import { expect, test } from "vitest";
 import { DEFAULT_FEATURES } from "../../../../src/config.ts";
 import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../../../../src/knowledge/references.ts";
-import { expectFindWords } from "../../helpers/find-words-cases.ts";
+import {
+  expectFindWords,
+  expectFindWordsWhenNotationDiffers,
+} from "../../helpers/find-words-cases.ts";
 
 /** 照合の辞書の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDictionary = () => import("../../../../src/knowledge/dictionary.ts");
@@ -53,6 +56,54 @@ test("test_build_dictionary", async () => {
     meaning: "g1 のマーク",
   });
   expect(dictionary.words).toEqual(["マーク", "印"]);
+});
+
+// 正規化した後に同じになる語を 1 つの語にまとめ、優先の順で先の用語と表記を残す（正常系）
+test("test_build_dictionary_when_notation_differs", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "api", path: "api.md", title: "API", aliases: ["ＡＰＩ"] }],
+    terms: [
+      { id: "mcp", term: "MCP", meaning: "索引の意味" },
+      {
+        id: "ws",
+        term: "ワークスペース",
+        aliases: ["WS"],
+        meaning: "作業の置き場所",
+        avoid: ["ws"],
+      },
+    ],
+  };
+  // 実行
+  const dictionary = buildDictionary({
+    index,
+    ownGlossary: [
+      { term: "ｍｃｐ", aliases: [], meaning: "表の意味", docId: "cur" },
+    ],
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  // 正規化した語だけが入り、記載したままの表記は入らない
+  expect(dictionary.words).toContain("mcp");
+  expect(dictionary.words).toContain("api");
+  for (const word of ["MCP", "ｍｃｐ", "ＡＰＩ"]) {
+    expect(dictionary.words).not.toContain(word);
+  }
+  // 同じ語は索引の `terms` の用語を選び、記載した表記も先の側
+  expect(dictionary.terms.get("mcp")).toEqual({
+    id: "mcp",
+    meaning: "索引の意味",
+  });
+  expect(dictionary.term("Ｍｃｐ")).toEqual({
+    id: "mcp",
+    meaning: "索引の意味",
+  });
+  expect(dictionary.written.get("mcp")).toBe("MCP");
+  expect(dictionary.docs.get("api")?.map((doc) => doc.id)).toEqual(["api"]);
+  // `ws` は用語の別名 `WS` と同じ語なので、やめた言い方に入らない
+  expect(dictionary.avoided.size).toBe(0);
 });
 
 // backlinks がオフなら文書の別名を入れない（正常系）
@@ -314,6 +365,24 @@ test("test_find_words_prefers_longer", async () => {
   expect(found.map((item) => item.word)).toEqual(["オン・オフの印"]);
 });
 
+// 全角と半角・英字の大文字と小文字だけが違う語を、元の文字列の位置で返す（正常系）
+test("test_find_words_when_notation_differs", async () => {
+  // 準備
+  const { findWords } = await loadDictionary();
+  // 実行・検証
+  expectFindWordsWhenNotationDiffers(findWords);
+});
+
+// 照合・点検・検索の前に、全角と半角・英字の大文字と小文字・前後の空白をそろえる（正常系）
+test("test_normalize_word", async () => {
+  // 準備
+  const { normalizeWord } = await loadDictionary();
+  // 実行・検証
+  expect(normalizeWord("　Ｗｏｒｋ Place ")).toBe("work place");
+  expect(normalizeWord("ﾜｰｸｽﾍﾟｰｽ")).toBe("ワークスペース");
+  expect(normalizeWord("㍻")).toBe("平成");
+});
+
 /** `Intl.Segmenter` を取り除いた間だけ `run` を流し、終わったら戻す */
 async function withoutIntlSegmenter(run: () => Promise<void>): Promise<void> {
   const original = Intl.Segmenter;
@@ -361,5 +430,18 @@ test("test_word_starts_without_intl_segmenter", async () => {
     const starts = wordStarts("印刷をWSL2で😀見る");
     // 検証
     expect(starts).toEqual([0, 1, 2, 3, 7, 8, 10, 11]);
+  });
+});
+
+// `Intl.Segmenter` を持たない環境で、全角の英数字の連なりも 1 語にする（正常系）
+test("test_word_starts_without_intl_segmenter_when_fullwidth", async () => {
+  await withoutIntlSegmenter(async () => {
+    // 準備・実行
+    const { wordStarts } = await loadFreshDictionary(
+      "without-intl-segmenter-word-starts-fullwidth",
+    );
+    const starts = wordStarts("ＷＳＬ2を見る");
+    // 検証
+    expect(starts).toEqual([0, 4, 5, 6]);
   });
 });

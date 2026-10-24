@@ -258,6 +258,37 @@ test("test_collect_matches", async () => {
   expect(documents).toEqual(documentsBefore);
 });
 
+// 全角と半角・英字の大文字と小文字だけが違う語の一致を、本文の位置と記載した表記の text で返す（正常系）
+test("test_collect_matches_when_notation_differs", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const index = structuredClone(MATCH_INDEX);
+  const [term] = index.terms ?? [];
+  if (term) {
+    term.avoid = ["workplace"];
+  }
+  // 1 行目の半角カナ `ﾜｰｸｽﾍﾟｰｽ`（8 文字）は正規化すると 7 文字になり、正規化した位置と本文の位置がずれる
+  const documents = {
+    "使い方/guide.md": "ﾜｰｸｽﾍﾟｰｽとＷＳ\n\nws と WorkPlace\n",
+  };
+  // 実行
+  const result = collectMatches({ index, documents });
+  // 検証
+  expect(result).toEqual({
+    byDocument: {
+      guide: [
+        { ...WS_TARGET, text: "ワークスペース", line: 1, start: 0, end: 8 },
+        { ...WS_TARGET, text: "WS", line: 1, start: 9, end: 11 },
+        { ...WS_TARGET, text: "WS", line: 3, start: 0, end: 2 },
+      ],
+    },
+    avoided: {
+      guide: [{ ...WS_TARGET, text: "workplace", line: 3, start: 5, end: 14 }],
+    },
+    targets: [WS_TARGET],
+  });
+});
+
 // 同じ節に同じ用語が何度出ても全ての出現を並べ、targets には 1 回だけ入れる（正常系）
 test("test_collect_matches_lists_every_occurrence", async () => {
   // 準備
@@ -528,4 +559,31 @@ test("test_diagram_term_matches", async () => {
   // 1 つ目は flow の範囲の定義、2 つ目は埋め込んだ HTML の中の定義
   expect(body.slice(0, matches[1]?.offset ?? 0)).toContain("<!-- html -->");
   expect(body.slice(0, matches[0]?.offset ?? 0)).not.toContain("<!-- html -->");
+});
+
+// 表記の違う {{語}} も用語の位置として返す（正常系）
+test("test_diagram_term_matches_when_notation_differs", async () => {
+  // 準備
+  const { diagramTermMatches } = await loadMatches();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [],
+    terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
+  };
+  const body = [
+    "<!-- flow -->",
+    "",
+    "```json",
+    ...flowDefinition("{{ｍｃｐ}}"),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  const { tokens, dictionary } = prepare(body, index);
+  // 実行
+  const found = diagramTermMatches({ body, tokens, dictionary, html: false });
+  // 検証
+  expect(found).toHaveLength(1);
+  expect(body.slice(found[0]?.offset, found[0]?.end)).toBe("ｍｃｐ");
 });
