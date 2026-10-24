@@ -27,7 +27,8 @@ Claude Code は、これを超えた結果をファイルに逃がして本文�
 
 `export_html`・`build_site`・`check` は、CLI の `mdmark export`・`build`・`check` と同じ処理を呼ぶ。
 同じ文書・設定・索引では、CLI と同じ結果になる。
-`find_docs` と `update_index` は、設定の `index` の索引を引き、書き換える。
+`find_docs` と `list_tags` と `update_index` は、設定の `index` の索引を引き、書き換える。
+`find_docs` は、全ての文書ではなく既定の件数ずつ返し、タグの全てを持つ（AND）かどれかを持つ（OR）かで絞り、返す量と形式を引数で選ばせる。
 `update_index` は、書く前に索引のスキーマで検査し、合わなければ書かない。
 
 設定ファイルは、Claude Code のセッションのフォルダから上のフォルダへ順に探す。
