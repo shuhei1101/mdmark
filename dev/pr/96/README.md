@@ -1,0 +1,1 @@
+# クローン直後の npm ci だけで npm run typecheck が通るようにする
