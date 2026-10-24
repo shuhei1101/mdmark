@@ -155,6 +155,9 @@ data_models:
       - name: targets
         type: MdmarkMatchTarget[]
         description: 全ての文書の参照先を `kind` と `id` の組で重なりを除いたもの。索引の `docs` の順に文書を見て、文書の中の初出の順
+      - name: avoided
+        type: Record<string, MdmarkAvoidedMatch[]>
+        description: 文書の `id` から、本文に出たやめた言い方を本文の頭からの順に並べたもの。キーは `byDocument` と同じで、やめた言い方が無い文書と `glossary` がオフの文書は空の並び
   - name: GlossaryRow
     title: 用語集の表の行
     container: src/render/syntax/glossary.ts
@@ -166,6 +169,36 @@ data_models:
       - name: line
         type: number
         description: その行の文書の中の行番号（1 から）
+  - name: MdmarkAvoidedMatch
+    title: やめた言い方の一致
+    container: src/knowledge/matches.ts
+    role: DTO
+    summary: 本文に出たやめた言い方 1 つと代わりの用語（公開の型）
+    properties:
+      - name: kind
+        type: '"term" | "glossary"'
+        description: 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ
+      - name: id
+        type: string
+        description: 代わりの用語の ID。`MdmarkMatchTarget` の `id` と同じ書き方
+      - name: title
+        type: string
+        description: 代わりの用語のタイトル。`MdmarkMatchTarget` の `title` と同じ書き方
+      - name: description
+        type: string | undefined
+        description: 代わりの用語の意味。`MdmarkMatchTarget` の `description` と同じ書き方。無いときはキーを持たない
+      - name: text
+        type: string
+        description: 一致したやめた言い方
+      - name: line
+        type: number
+        description: '`MdmarkMatch` の `line` と同じ'
+      - name: start
+        type: number
+        description: '`MdmarkMatch` の `start` と同じ'
+      - name: end
+        type: number
+        description: '`MdmarkMatch` の `end` と同じ'
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -819,7 +852,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す
-    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`features` に文書の印を重ねた機能）で辞書を作る。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。`collectReferences` を呼ばず、本文を 2 回解析しない'
+    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`features` に文書の印を重ねた機能）で辞書を作る。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。辞書の `avoided` が空でない文書は、`words` に `avoided` の語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の語の一致だけを、`avoided` の用語の `id` で引いた参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。`collectReferences` を呼ばず、本文を 2 回解析しない'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
@@ -884,6 +917,24 @@ functions:
         condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、`guide` の本文に `ワークスペース` と `作業場`
         mock: なし
         expected: '`byDocument.guide` が `ワークスペース` の 1 件だけで、`作業場` の位置が無い'
+      - name: test_collect_matches_returns_avoided_terms
+        case: 正常
+        summary: 本文に出たやめた言い方の全ての出現を、代わりの用語と位置つきで `avoided` に返す
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、`guide` の 1 つの段落に `作業場` を 2 回、見出しと行内のコードに `作業場`、`api` の本文に `ワークスペース`
+        mock: なし
+        expected: '`avoided.guide` が段落の 2 件だけを持ち、各要素が `kind` `term`・`id` `ws`・`text` `作業場` で、位置で切り出した本文が `作業場`。`avoided.api` が空の並び'
+      - name: test_collect_matches_when_avoided_contains_term
+        case: 正常
+        summary: 用語を含む長いやめた言い方が出ても、`byDocument` はやめた言い方を加えない照合のまま変えない
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `共有ワークスペース`）と、`guide` の本文に `共有ワークスペース`
+        mock: なし
+        expected: '`byDocument.guide` が `共有ワークスペース` の中の `ワークスペース` の 1 件を持ち、`avoided.guide` が `共有ワークスペース` の 1 件を持つ'
+      - name: test_collect_matches_when_avoided_and_glossary_disabled
+        case: 正常
+        summary: '`glossary` がオフの文書はやめた言い方を返さない'
+        condition: '用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、頭に `<!-- features: -glossary -->` を書き段落に `作業場` を書いた `guide` の本文'
+        mock: なし
+        expected: '`avoided.guide` が空の並び'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts#
   - name: alignText
