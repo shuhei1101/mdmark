@@ -36,6 +36,10 @@ type Built = typeof import("../../../src/index.ts");
 // 外部ライブラリの代役のモジュールの URL（手元の開発サーバーが配る）
 const TEST_LIB_PATH = "/fixtures/test-lib.js";
 const MISSING_LIB_PATH = "/fixtures/missing.js";
+// 色分けのライブラリ（`@highlightjs/cdn-assets` の `es/`）を手元の開発サーバーが配る URL。名前ごとに別の URL にして、ページの中の読み込み済みのモジュールを分ける
+const HIGHLIGHT_BASE = "/fixtures/highlightjs/";
+// 色分けのライブラリを配らない URL（404 を返す）
+const MISSING_HIGHLIGHT_URL = "/fixtures/missing/";
 // 読み込み中の枠の文言
 const LOADING_TEXT = "図を読み込んでいます";
 // ダークとライトの `--mdmark-color-bg` の値
@@ -116,6 +120,54 @@ function countRequests(path: string): number {
   return performance
     .getEntriesByType("resource")
     .filter((entry) => entry.name.endsWith(path)).length;
+}
+
+/** 色分けのライブラリを `name` の名前で配る `es/` フォルダの URL（`syntax.url` に渡す） */
+function highlightUrl(name: string): string {
+  return `${HIGHLIGHT_BASE}${name}/es/`;
+}
+
+/** 色分けのライブラリを読んだ要求の URL を、並べ替えて返す */
+function highlightRequests(name: string): string[] {
+  const prefix = `${location.origin}${highlightUrl(name)}`;
+  return performance
+    .getEntriesByType("resource")
+    .map((entry) => entry.name)
+    .filter((url) => url.startsWith(prefix))
+    .sort();
+}
+
+/** 色分けの対象の見本: 印を持たない `ts`、`<!-- code: lines -->` の直後に 3 行のブロックスカラーを持つ `yml`、色分けしない `text` のコードブロック */
+const HIGHLIGHT_MARKDOWN = [
+  "```ts",
+  "const count: number = 1;",
+  "```",
+  "",
+  "<!-- code: lines -->",
+  "",
+  "```yml",
+  "body: |",
+  "  一行目",
+  "  二行目",
+  "  三行目",
+  "```",
+  "",
+  "```text",
+  "plain",
+  "```",
+  "",
+].join("\n");
+
+/** `code` の HTML を、文書の順に並べて返す */
+function codeHtmls(el: Element): string[] {
+  return [...el.querySelectorAll("code")].map((code) => code.outerHTML);
+}
+
+/** class が `hljs-` で始まる `span` を持つ `code` の言語の class を、文書の順に並べて返す */
+function coloredLanguages(el: Element): string[] {
+  return [...el.querySelectorAll("code")]
+    .filter((code) => code.querySelector('span[class^="hljs-"]') !== null)
+    .map((code) => code.className);
 }
 
 afterEach(() => {
@@ -3410,4 +3462,147 @@ test("test_normal_when_parent_class_dark_printed", async () => {
   } finally {
     await resetThemed();
   }
+});
+
+// 色分けの対象のコードブロックがあるときだけ、本体と使う言語のモジュールを読んで、行に分けた形と分けない形の両方を色分けする（正常系）
+test("test_normal_when_syntax_highlighted", async () => {
+  // 準備
+  const el = createElement();
+  const config = { syntax: { url: highlightUrl("highlighted") } };
+  // 実行
+  await mountTracked(el, { markdown: HIGHLIGHT_MARKDOWN, config });
+  const before = [...el.querySelectorAll("pre, code")].map((node) => ({
+    tag: node.tagName,
+    attributes: node
+      .getAttributeNames()
+      .map((name) => [name, node.getAttribute(name)]),
+    text: node.textContent,
+  }));
+  const lineCount = el.querySelectorAll(".mdmark-code-line").length;
+  const dataLines = [...el.querySelectorAll(".mdmark-code-line")].map((line) =>
+    line.getAttribute("data-line"),
+  );
+  const [ts, yml, text] = [...el.querySelectorAll("code")];
+  // 検証
+  await vi.waitFor(() => {
+    expect(coloredLanguages(el)).toHaveLength(2);
+  });
+  const base = `${location.origin}${highlightUrl("highlighted")}`;
+  expect(highlightRequests("highlighted")).toEqual(
+    [
+      `${base}core.min.js`,
+      `${base}languages/typescript.min.js`,
+      `${base}languages/yaml.min.js`,
+    ].sort(),
+  );
+  expect(coloredLanguages(el)).toEqual(["language-ts", "language-yml"]);
+  expect(text?.querySelector('span[class^="hljs-"]')).toBeNull();
+  expect(ts?.querySelector(".hljs-keyword")?.textContent).toBe("const");
+  const lines = [...(yml?.querySelectorAll(".mdmark-code-line") ?? [])];
+  expect(lines).toHaveLength(lineCount);
+  expect(lines.map((line) => line.getAttribute("data-line"))).toEqual(
+    dataLines,
+  );
+  for (const line of lines.slice(1)) {
+    const code = find(line, ".mdmark-code-text");
+    expect(
+      code.querySelector(":scope > .hljs-string"),
+      line.outerHTML,
+    ).not.toBeNull();
+  }
+  const after = [...el.querySelectorAll("pre, code")].map((node) => ({
+    tag: node.tagName,
+    attributes: node
+      .getAttributeNames()
+      .map((name) => [name, node.getAttribute(name)]),
+    text: node.textContent,
+  }));
+  expect(after).toEqual(before);
+});
+
+// 色分けの対象が無い文書と、機能 `syntax` を外した文書では、色分けのライブラリを読まない（正常系）
+test("test_normal_when_no_syntax_target", async () => {
+  // 準備
+  const config = { syntax: { url: highlightUrl("no-target") } };
+  const plain = createElement();
+  const disabled = createElement();
+  const plainMarkdown = [
+    "```",
+    "言語の無いコード",
+    "```",
+    "",
+    "```tree",
+    "├── a.ts",
+    "└── b.ts",
+    "```",
+    "",
+  ].join("\n");
+  const disabledMarkdown = [
+    "<!-- features: -syntax -->",
+    "",
+    "```ts",
+    "const count: number = 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(plain, { markdown: plainMarkdown, config });
+  await mountTracked(disabled, { markdown: disabledMarkdown, config });
+  // 検証: 読み込みは描いた後に始まるため、少し待ってから要求が無いことを確かめる
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(highlightRequests("no-target")).toEqual([]);
+  expect(coloredLanguages(plain)).toEqual([]);
+  expect(coloredLanguages(disabled)).toEqual([]);
+  expect(find(disabled, "code").textContent).toBe("const count: number = 1;\n");
+});
+
+// 色分けのライブラリの本体を読めないとき、コードブロックを色分けせずに残す（異常系）
+test("test_error_when_highlighter_not_found", async () => {
+  // 準備
+  const el = createElement();
+  const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const config = { syntax: { url: MISSING_HIGHLIGHT_URL } };
+  const { mount } = await loadBuilt();
+  let handle: MountHandle | undefined;
+  // 実行
+  expect(() => {
+    handle = mount(el, { markdown: HIGHLIGHT_MARKDOWN, config });
+  }).not.toThrow();
+  if (handle) {
+    handles.push(handle);
+  }
+  const before = codeHtmls(el);
+  // 検証
+  await vi.waitFor(() => {
+    expect(errorSpy).toHaveBeenCalled();
+  });
+  expect(codeHtmls(el)).toEqual(before);
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  const output = errorSpy.mock.calls.flat().map(String).join("\n");
+  expect(output).toContain(
+    `${location.origin}${MISSING_HIGHLIGHT_URL}core.min.js`,
+  );
+});
+
+// 言語のモジュールの一部を読めないとき、読めた言語のコードブロックだけを色分けする（異常系）
+test("test_error_when_language_module_not_found", async () => {
+  // 準備
+  const el = createElement();
+  const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const config = { syntax: { url: highlightUrl("no-yaml") } };
+  // 実行
+  await mountTracked(el, { markdown: HIGHLIGHT_MARKDOWN, config });
+  const [, yml] = [...el.querySelectorAll("code")];
+  const ymlBefore = yml?.outerHTML;
+  // 検証
+  await vi.waitFor(() => {
+    expect(coloredLanguages(el)).toEqual(["language-ts"]);
+  });
+  await vi.waitFor(() => {
+    expect(errorSpy).toHaveBeenCalled();
+  });
+  expect(yml?.outerHTML).toBe(ymlBefore);
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  const output = errorSpy.mock.calls.flat().map(String).join("\n");
+  expect(output).toContain("languages/yaml.min.js");
 });

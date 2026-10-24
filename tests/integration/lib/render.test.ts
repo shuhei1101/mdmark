@@ -103,12 +103,12 @@ test("test_normal", async () => {
     "<p>",
     "<ul>",
     "<table",
-    '<code class="language-ts">',
+    '<code class="language-ts"',
     '<a href="https://example.com/page">',
   ]) {
     expect(html).toContain(expected);
   }
-  expect(html).toMatch(/<pre[^>]*><code class="language-ts">/);
+  expect(html).toMatch(/<pre[^>]*><code class="language-ts"[^>]*>/);
   expect(
     startTags(html, "td").map((tag) => /data-label="([^"]*)"/.exec(tag)?.[1]),
   ).toEqual(["列A", "列B"]);
@@ -842,7 +842,7 @@ test("test_normal_when_diagram_feature_disabled", async () => {
   // 実行
   const html = render(markdown);
   // 検証
-  expect(html).toContain('<code class="language-json">');
+  expect(html).toContain('<code class="language-json"');
   expect(diagramFigures(html)).toHaveLength(0);
   expect(html).not.toContain("<!--");
 });
@@ -937,8 +937,10 @@ test("test_normal_when_embedded_html", async () => {
   const html = render(markdown);
   // 検証
   expect(html).toMatch(/<div class="mdmark-html">\s*<div style=/);
-  expect(html).not.toMatch(/<pre[^>]*><code class="language-html">[\s\S]*箱/);
-  expect(html).toMatch(/<pre[^>]*><code class="language-html">/);
+  expect(html).not.toMatch(
+    /<pre[^>]*><code class="language-html"[^>]*>[\s\S]*箱/,
+  );
+  expect(html).toMatch(/<pre[^>]*><code class="language-html"[^>]*>/);
   expect(html).toContain("&lt;p&gt;範囲の外&lt;/p&gt;");
   expect(html).toContain('style="display:flex;gap:12px"');
   expect(html).not.toContain("position");
@@ -979,7 +981,7 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   const offHtml = render(htmlOff);
   const offHints = render(hintsOff);
   // 検証
-  expect(offHtml).toMatch(/<pre[^>]*><code class="language-html">/);
+  expect(offHtml).toMatch(/<pre[^>]*><code class="language-html"[^>]*>/);
   expect(offHtml).not.toContain("mdmark-html");
   expect(offHtml).not.toContain("<!--");
   expect(offHints).toContain("mdmark-html");
@@ -1022,7 +1024,7 @@ test("test_normal_when_embedded_html_invalid", async () => {
     "<!-- html --> の範囲に html のコードブロックを 1 つだけ置いてください";
   expect(text.split(sentence)).toHaveLength(3);
   expect(html).toContain("コードブロックの無い範囲");
-  expect(html).toMatch(/<pre[^>]*><code class="language-html">/);
+  expect(html).toMatch(/<pre[^>]*><code class="language-html"[^>]*>/);
   expect(text).toContain("グラフの部品の定義を JSON として読めません");
   expect(html).toContain("同じ範囲のほかの HTML");
   expect(html).toContain("<p>後ろの段落</p>");

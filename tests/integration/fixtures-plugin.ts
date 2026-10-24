@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, extname, join, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 
 // 外部ライブラリの代役のモジュール: `draw(slot, args)` で `slot` の文字を `drawn:` と引数を `,` で結んだものにする
@@ -21,6 +22,15 @@ const DEFINITION_SOURCE = `export function draw(slot, value) {
 }
 `;
 
+// 色分けのライブラリ（`@highlightjs/cdn-assets@11.12.0` の `es/`）を配る経路の頭。`/fixtures/highlightjs/{名前}/es/{ファイル}` で引く。名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける
+const HIGHLIGHT_PREFIX = "/fixtures/highlightjs/";
+// 色分けのライブラリを配るとき、言語のモジュール `yaml.min.js` だけを 404 にする名前
+const NO_YAML_NAME = "no-yaml";
+// 色分けのライブラリの `es/` のある場所
+const HIGHLIGHT_ES_ROOT = fileURLToPath(
+  new URL("../../node_modules/@highlightjs/cdn-assets/es/", import.meta.url),
+);
+
 // ビルドした配布物を写して配る経路の頭。`/fixtures/dist/{名前}{配布物のファイルの絶対パス}` で引く
 const DIST_COPY_PREFIX = "/fixtures/dist/";
 // 配布物を写して配るときに、404 を返す部品のモジュール（名前が `blocked` のとき）
@@ -34,7 +44,7 @@ const CONTENT_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
 };
 
-/** 結合テストの開発サーバーに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返す `/fixtures/missing.js` を足す。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
+/** 結合テストの開発サーバーに、色分けのライブラリを `/fixtures/highlightjs/{名前}/es/` で配る経路（名前が `no-yaml` のときは `languages/yaml.min.js` を 404 にする）と、404 を返す `/fixtures/missing/` を足す。ほかに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返す `/fixtures/missing.js` を足す。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
 export function fixturesPlugin(): Plugin {
   return {
     name: "mdmark-fixtures",
@@ -54,6 +64,40 @@ export function fixturesPlugin(): Plugin {
           response.end(DEFINITION_SOURCE);
         },
       );
+      server.middlewares.use(HIGHLIGHT_PREFIX, (request, response) => {
+        const [, name = "", folder = "", ...rest] =
+          (request.url ?? "").split("?")[0]?.split("/") ?? [];
+        const file = resolve(HIGHLIGHT_ES_ROOT, ...rest);
+        const blocked =
+          name === NO_YAML_NAME && rest.join("/") === "languages/yaml.min.js";
+        if (
+          folder !== "es" ||
+          blocked ||
+          !file.startsWith(HIGHLIGHT_ES_ROOT) ||
+          extname(file) !== ".js"
+        ) {
+          response.statusCode = 404;
+          response.end();
+          return;
+        }
+        readFile(file).then(
+          (body) => {
+            response.setHeader(
+              "Content-Type",
+              "text/javascript; charset=utf-8",
+            );
+            response.end(body);
+          },
+          () => {
+            response.statusCode = 404;
+            response.end();
+          },
+        );
+      });
+      server.middlewares.use("/fixtures/missing/", (_request, response) => {
+        response.statusCode = 404;
+        response.end();
+      });
       server.middlewares.use("/fixtures/missing.js", (_request, response) => {
         response.statusCode = 404;
         response.end();
