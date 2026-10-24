@@ -6,10 +6,14 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeSyntax,
 } from "../dist-page.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
+
+// 読まないことを確かめるために待つ時間（ミリ秒）
+const SETTLE_MS = 500;
 
 // 動くと `window.__mdmarkScriptRan` を `true` にする、文書に書いた script 要素
 const SCRIPT = "<script>window.__mdmarkScriptRan = true</script>\n";
@@ -82,6 +86,7 @@ async function wireStyles(figure: Locator): Promise<Record<string, string>> {
 // フロー図の部品の定義から、枠・3 層・題と凡例・線の種類・交差・ループの戻りを持つ図を描き、文書に書いたスクリプトは動かさない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
+  const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
@@ -165,6 +170,9 @@ test("test_normal", async ({ page }) => {
   ).toContainText("受け取りへ戻る");
   // 文書に書いたスクリプトが動いていない
   expect(await page.evaluate(() => "__mdmarkScriptRan" in window)).toBe(false);
+  // 図の部品の定義の json のコードブロックは色分けの対象にならず、色分けのライブラリを読まない
+  await page.waitForTimeout(SETTLE_MS);
+  expect(syntaxRequests()).toEqual([]);
 });
 
 // シーケンス図の相手とメッセージを、定義の順に左から右・上から下へ並べ、ループの戻りと凡例を持つ（正常シナリオ（シーケンス図））
