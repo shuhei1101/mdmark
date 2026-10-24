@@ -23,3 +23,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 4335f8e258786343db08968e418aeab60036bc8f54917997da19825266b4697d
     reason: 省いてよい tooltips と、features に省いてよい syntax と、省いてよい syntax を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.index.schema.json
+    sha256: 0c1b836ce2f4efcb9aea44898d4ba94f0ca030d81cddcce4567fd68f12b574f3
+    reason: 最上位に省いてよい tags と、文書の tags の要素に name を持つオブジェクトを足しただけで、古い索引もそのまま新しい Schema に合う
