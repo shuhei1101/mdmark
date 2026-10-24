@@ -29,7 +29,7 @@ test("test_build_diagrams_when_disabled", () => {
   // 実行
   const { html } = renderDoc(markdown, { diagrams: false });
   // 検証
-  expect(html).toContain('<code class="language-json">');
+  expect(html).toContain('class="language-json"');
   expect(html).not.toContain("mdmark-diagram");
 });
 

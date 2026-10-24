@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
+import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 import { build } from "esbuild";
+import type { HLJSApi, LanguageFn } from "highlight.js";
 import {
   type DiagramDirective,
   definitionWarning,
@@ -13,6 +15,7 @@ import {
 } from "../src/diagram/definition.ts";
 import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
+import { highlightLines } from "../src/highlight-lines.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
@@ -53,6 +56,7 @@ import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
+import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { renderConfigBand } from "../vscode/src/webview/parts/config-band.ts";
 import {
   type PreviewStatusState,
@@ -472,13 +476,20 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   steps: (args) => renderSteps({ items: args.items as string[] }),
   tree: (args) => renderTree({ nodes: args.nodes as TreeNode[] }),
   badge: (args) => renderBadge({ label: String(args.label ?? "") }),
-  "code-block": (args) =>
-    renderCodeBlock({
-      language: String(args.language ?? ""),
+  "code-block": (args) => {
+    const language = String(args.language ?? "");
+    const lines = args.lines as CodeLine[];
+    const html = renderCodeBlock({
+      language,
       title: String(args.title ?? ""),
       lineNumbers: args.lineNumbers === true,
-      lines: args.lines as CodeLine[],
-    }),
+      lines,
+      ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
+    });
+    return args.highlight === true
+      ? highlightCodeBlock(html, language, lines)
+      : html;
+  },
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
   section: (args) =>
     renderSection({
@@ -679,6 +690,47 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       body: bodyOf(args, args.kind === "table" ? SAMPLE_TABLE : SAMPLE_IMAGE),
     }),
 };
+
+/** 色分けのライブラリ（npm の `highlight.js`）を同期で読む。描画の口は Node で動き、言語の登録を `renderPart` の同期のうちに終えるため `require` で読む */
+const requireModule = createRequire(import.meta.url);
+
+/** 部品の HTML の行の中身（行に分けないときは `code` の中身）を、`language` の言語で色分けした HTML に置き換える。色分けしない言語は部品の HTML のまま返す */
+function highlightCodeBlock(
+  html: string,
+  language: string,
+  lines: CodeLine[],
+): string {
+  const name = syntaxLanguageOf(language);
+  if (name === undefined) {
+    return html;
+  }
+  const hljs = (
+    requireModule("highlight.js/lib/core") as HLJSApi
+  ).newInstance();
+  hljs.registerLanguage(
+    name,
+    requireModule(`highlight.js/lib/languages/${name}`) as LanguageFn,
+  );
+  const colored = highlightLines({
+    hljs,
+    language: name,
+    lines: lines.map((line) => line.text),
+  });
+  const textPattern = /(<span class="mdmark-code-text">)[\s\S]*?(<\/span>)/g;
+  if (html.includes('class="mdmark-code-text"')) {
+    let index = 0;
+    return html.replace(
+      textPattern,
+      (_, open: string, close: string) =>
+        `${open}${colored[index++] ?? ""}${close}`,
+    );
+  }
+  return html.replace(
+    /(<code[^>]*>)[\s\S]*?(<\/code>)/,
+    (_, open: string, close: string) =>
+      `${open}${colored.join("\n")}\n${close}`,
+  );
+}
 
 /** ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す。知らない部品は `undefined` */
 export function renderPart(options: {

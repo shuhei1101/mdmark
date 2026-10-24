@@ -4,6 +4,10 @@ import type { MdmarkConfig } from "../../../src/config.ts";
 /** 設定の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadConfig = () => import("../../../src/config.ts");
 
+/** 色分けのライブラリの既定の読み込み先 */
+const DEFAULT_SYNTAX_URL =
+  "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
+
 /** この版が知っている機能の既定（`comments` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
@@ -14,6 +18,7 @@ const DEFAULT_FEATURES = {
   tree: true,
   badge: true,
   code: true,
+  syntax: true,
   toc: true,
   anchors: true,
   sections: true,
@@ -39,6 +44,7 @@ test("test_resolve_config", async () => {
     features: DEFAULT_FEATURES,
     libraries: {},
     tooltips: { placement: "top" },
+    syntax: { url: DEFAULT_SYNTAX_URL },
   });
 });
 
@@ -102,4 +108,18 @@ test("test_resolve_config_when_tooltip_placement_given", async () => {
   // 検証
   expect(resolvedBottom.tooltips.placement).toBe("bottom");
   expect(resolvedUnknown.tooltips.placement).toBe("top");
+});
+
+// 文字列の syntax.url だけを受け、他の型は既定にする（正常系）
+test("test_resolve_config_when_syntax_url_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const given: MdmarkConfig = { syntax: { url: "/vendor/highlightjs/es/" } };
+  const invalid = { syntax: { url: 1 } } as unknown as MdmarkConfig;
+  // 実行
+  const resolvedGiven = resolveConfig({ config: given });
+  const resolvedInvalid = resolveConfig({ config: invalid });
+  // 検証
+  expect(resolvedGiven.syntax.url).toBe("/vendor/highlightjs/es/");
+  expect(resolvedInvalid.syntax.url).toBe(DEFAULT_SYNTAX_URL);
 });

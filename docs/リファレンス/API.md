@@ -683,6 +683,12 @@ handle.destroy();
 | `--mdmark-color-series-4` | `#1d4ed8` | `#7aa2ff` | グラフの 4 つ目の系列の色 |
 | `--mdmark-color-code-highlight-bg` | `#fef3c7` | `#5c4a12` | コードブロックの強調した行の背景 |
 | `--mdmark-color-code-highlight-line` | `#b45309` | `#fbbf24` | コードブロックの強調した行の左端の線 |
+| `--mdmark-color-syntax-keyword` | `#6d28d9` | `#d6c2ff` | コードブロックの色分けのキーワード（予約語・デコレーター・`document` や `self` などの言語の変数）の色 |
+| `--mdmark-color-syntax-string` | `#166534` | `#4ade80` | コードブロックの色分けの文字列（文字列・正規表現・エスケープ・Markdown のリンクの文字）の色 |
+| `--mdmark-color-syntax-number` | `#92400e` | `#fbbf24` | コードブロックの色分けの数値（数値・`true`・`false`・`null`・YAML と Markdown の箇条書きの `-`）の色 |
+| `--mdmark-color-syntax-type` | `#be185d` | `#fbb6db` | コードブロックの色分けの型（型・クラス名・組み込みの関数と型・HTML のタグ名・CSS のセレクター）の色 |
+| `--mdmark-color-syntax-name` | `#1d4ed8` | `#a8c1ff` | コードブロックの色分けの名前（関数名・オブジェクトと YAML と JSON のキー・HTML の属性・CSS のプロパティ・Markdown の見出し）の色 |
+| `--mdmark-color-syntax-comment` | `#52525b` | `#c8c8cf` | コードブロックの色分けのコメントの色。コメントは斜体でも示す |
 | `--mdmark-color-diff-del-bg` | `#fbe6e3` | `#2a1e20` | 差分の削除した行の背景と、コードの行の印の消した行の背景 |
 | `--mdmark-color-diff-del-word` | `#eeb4ad` | `#5d3435` | 差分の削除した行で変わった語の背景 |
 | `--mdmark-color-diff-del-sign` | `#b91c1c` | `#f87171` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色。コードの行の印の消した行の行頭の `-` と左端の線にも使う |

@@ -4,6 +4,7 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeSyntax,
 } from "../dist-page.ts";
 
 // ビルドした配布物を置いた作業ツリー
@@ -17,6 +18,34 @@ const THREE_LINES = [
   "const c = 3;",
   "```",
 ];
+
+// 色分けする言語（`ts`・`yaml`・`python`）のコードブロックを 1 つずつ置いた文書
+const HIGHLIGHT_BLOCKS = [
+  "```ts",
+  'const greeting: string = "hello"; // 挨拶',
+  "```",
+  "",
+  "```yaml",
+  "name: mdmark",
+  "count: 3",
+  "```",
+  "",
+  "```python",
+  "def greet(name):",
+  '    return "hi"  # 挨拶',
+  "```",
+  "",
+].join("\n");
+
+// 色分けの前後で変わらない、各コードブロックの文字
+const HIGHLIGHT_TEXTS = [
+  'const greeting: string = "hello"; // 挨拶',
+  "name: mdmark\ncount: 3",
+  'def greet(name):\n    return "hi"  # 挨拶',
+];
+
+// 色分けのライブラリを読み終えるのを待つ時間の上限、読まないことを確かめるために待つ時間（ミリ秒）
+const SETTLE_MS = 500;
 
 test.beforeAll(async () => {
   builtRoot = await buildDistRoot();
@@ -266,4 +295,250 @@ test("test_error_when_no_code_block", async ({ page }) => {
   await expect(warning).toContainText("直後にコードブロックがありません");
   await expect(doc.locator("p", { hasText: "直後の段落" })).toBeVisible();
   await expect(doc.locator(".mdmark-code-title")).toHaveCount(0);
+});
+
+/** 開いたページの `console.error` の文字を控え、控えた文字を返す関数を返す */
+function collectConsoleErrors(page: Page): () => string[] {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      errors.push(message.text());
+    }
+  });
+  return () => errors;
+}
+
+/** `#doc` の色の変数 `name` が今の配色で指す色（`rgb(…)`）を返す */
+async function themeColor(page: Page, name: string): Promise<string> {
+  return await page.locator("#doc").evaluate((doc, variable) => {
+    const probe = document.createElement("span");
+    probe.style.color = `var(${variable})`;
+    doc.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }, name);
+}
+
+/** コードブロックごとに、`hljs-` で始まる class の `span` の数を返す */
+async function coloredSpanCounts(page: Page): Promise<number[]> {
+  return await page
+    .locator("#doc pre code")
+    .evaluateAll((codes) =>
+      codes.map((code) => code.querySelectorAll('span[class*="hljs-"]').length),
+    );
+}
+
+/** コードブロックごとに、文字を全て選んだときの選んだ文字を返す */
+async function selectedTexts(page: Page): Promise<string[]> {
+  return await page.locator("#doc pre").evaluateAll((pres) =>
+    pres.map((pre) => {
+      const selection = window.getSelection();
+      selection?.selectAllChildren(pre);
+      return (selection?.toString() ?? "").trim();
+    }),
+  );
+}
+
+// 言語に応じてコードブロックを色分けし、文字は書いたとおりで、本体と使う言語のモジュールだけを読む（正常シナリオ（言語に応じて色分けする））
+test("test_normal_when_syntax_highlighted", async ({ page }) => {
+  // 準備
+  const requests = await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: HIGHLIGHT_BLOCKS });
+  // 検証
+  await expect
+    .poll(async () => (await coloredSpanCounts(page)).every((n) => n > 0))
+    .toBe(true);
+  const codes = page.locator("#doc pre code");
+  await expect(codes).toHaveCount(3);
+  // キーワード・文字列・コメントなどが、地の文字と違う色で出ている
+  const colors = await codes.evaluateAll((elements) =>
+    elements.map((code) => ({
+      base: getComputedStyle(code).color,
+      spans: [...code.querySelectorAll('span[class*="hljs-"]')].map(
+        (span) => getComputedStyle(span).color,
+      ),
+    })),
+  );
+  for (const { base, spans } of colors) {
+    expect(spans.some((color) => color !== base)).toBe(true);
+  }
+  await expect(page.locator("#doc .hljs-keyword").first()).toHaveCSS(
+    "color",
+    await themeColor(page, "--mdmark-color-syntax-keyword"),
+  );
+  await expect(page.locator("#doc .hljs-comment").first()).toHaveCSS(
+    "color",
+    await themeColor(page, "--mdmark-color-syntax-comment"),
+  );
+  // 文字は書いたとおりで、全て選んで写した文字が色分けの前と同じ
+  expect(await selectedTexts(page)).toEqual(HIGHLIGHT_TEXTS);
+  // 本体と、文書が使う言語のモジュールを 1 件ずつ読む
+  expect(requests()).toEqual([
+    "core.min.js",
+    "languages/python.min.js",
+    "languages/typescript.min.js",
+    "languages/yaml.min.js",
+  ]);
+});
+
+// 題・行番号・コードの行の印を保ったまま、行ごとに中身を色分けする（正常シナリオ（題・行番号・コードの行の印と色分けする））
+test("test_normal_when_highlighted_with_line_marks", async ({ page }) => {
+  // 準備
+  const requests = await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- code: title=app.ts lines highlight=4 -->",
+      "",
+      "```ts",
+      "/*",
+      " * 説明",
+      " */",
+      "const base = 1;",
+      "let count = 0; // [!code --]",
+      "let count = 1; // [!code ++]",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-code-line .hljs-comment")).toHaveCount(3);
+  expect(requests()).toEqual(["core.min.js", "languages/typescript.min.js"]);
+  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  const lines = doc.locator(".mdmark-code-line");
+  await expect(lines).toHaveCount(6);
+  for (const [index, number] of ["1", "2", "3", "4", "5", "6"].entries()) {
+    const content = await lines
+      .nth(index)
+      .evaluate((element) => getComputedStyle(element, "::before").content);
+    expect(content).toContain(number);
+  }
+  // ブロックコメントの 3 行が、どの行もコメントの色で出ている
+  const comment = await themeColor(page, "--mdmark-color-syntax-comment");
+  for (const index of [0, 1, 2]) {
+    await expect(lines.nth(index).locator(".hljs-comment").first()).toHaveCSS(
+      "color",
+      comment,
+    );
+  }
+  // 消した行・足した行が、それぞれの地の色と行頭の印で出ていて、行の中の文字は色分けされている
+  await expect(lines.nth(4)).toHaveAttribute("data-kind", "del");
+  await expect(lines.nth(5)).toHaveAttribute("data-kind", "add");
+  const signs = await lines.evaluateAll((elements) =>
+    elements.map((element) => getComputedStyle(element, "::after").content),
+  );
+  expect(signs[4]).toContain("-");
+  expect(signs[5]).toContain("+");
+  expect(await hasBackground(lines.nth(4))).toBe(true);
+  expect(await hasBackground(lines.nth(5))).toBe(true);
+  await expect(lines.nth(4).locator(".hljs-keyword")).toHaveText("let");
+  await expect(lines.nth(5).locator(".hljs-keyword")).toHaveText("let");
+  // 4 行目が強調の背景になっている
+  await expect(lines.nth(3)).toHaveAttribute("data-kind", "highlight");
+  expect(await hasBackground(lines.nth(3))).toBe(true);
+  // 全て選んだ文字に、行番号と行頭の印が入らず、印の文字も出ない
+  const copied = (await selectedTexts(page))[0] ?? "";
+  expect(copied).not.toMatch(/^\d/m);
+  expect(copied).not.toMatch(/^[+-]/m);
+  expect(copied).not.toContain("[!code");
+});
+
+// 言語の無いコードブロックと、色分けしない言語のコードブロックは、書いたとおりに出し、ライブラリを読まない（正常シナリオ（色分けしない言語））
+test("test_normal_when_language_not_highlighted", async ({ page }) => {
+  // 準備
+  const requests = await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "```",
+      "言語の無い文字",
+      "```",
+      "",
+      "```text",
+      "text の文字",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  await page.waitForTimeout(SETTLE_MS);
+  // 検証
+  expect(await selectedTexts(page)).toEqual(["言語の無い文字", "text の文字"]);
+  expect(await coloredSpanCounts(page)).toEqual([0, 0]);
+  expect(requests()).toEqual([]);
+});
+
+// 色分けの機能をオフにした文書は、色分けせず、行の印を付けたコードブロックをそのまま描く（正常シナリオ（色分けの機能をオフにした文書））
+test("test_normal_when_syntax_feature_off", async ({ page }) => {
+  // 準備
+  const requests = await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- features: -syntax -->",
+      "",
+      "```ts",
+      "let count = 1; // [!code ++]",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  await page.waitForTimeout(SETTLE_MS);
+  // 検証
+  const line = page.locator("#doc .mdmark-code-line");
+  await expect(line).toHaveCount(1);
+  await expect(line).toHaveAttribute("data-kind", "add");
+  expect(await hasBackground(line)).toBe(true);
+  const sign = await line.evaluate(
+    (element) => getComputedStyle(element, "::after").content,
+  );
+  expect(sign).toContain("+");
+  expect(await coloredSpanCounts(page)).toEqual([0]);
+  expect(await selectedTexts(page)).toEqual(["let count = 1;"]);
+  expect(requests()).toEqual([]);
+});
+
+// 色分けのライブラリの本体を読めないとき、コードブロックを色分けせずに欠けずに出し、知らせの枠は出さずにコンソールへ出す（異常シナリオ（色分けのライブラリを読めない））
+test("test_error_when_highlighter_not_found", async ({ page }) => {
+  // 準備
+  const requests = await routeSyntax(page, { missing: ["core.min.js"] });
+  const errors = collectConsoleErrors(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: HIGHLIGHT_BLOCKS });
+  // 検証
+  await expect
+    .poll(() => errors().some((text) => text.includes("core.min.js")))
+    .toBe(true);
+  expect(requests()).toEqual(["core.min.js"]);
+  expect(await selectedTexts(page)).toEqual(HIGHLIGHT_TEXTS);
+  expect(await coloredSpanCounts(page)).toEqual([0, 0, 0]);
+  await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
+});
+
+// 言語のモジュールの一部を読めないとき、読めた言語のコードブロックだけを色分けし、読めなかった言語はコンソールへ出す（異常シナリオ（言語のモジュールの一部を読めない））
+test("test_error_when_language_module_not_found", async ({ page }) => {
+  // 準備
+  await routeSyntax(page, { missing: ["languages/python.min.js"] });
+  const errors = collectConsoleErrors(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: HIGHLIGHT_BLOCKS });
+  // 検証
+  await expect
+    .poll(async () => (await coloredSpanCounts(page)).map((count) => count > 0))
+    .toEqual([true, true, false]);
+  await expect
+    .poll(() =>
+      errors().some((text) => text.includes("languages/python.min.js")),
+    )
+    .toBe(true);
+  expect(await selectedTexts(page)).toEqual(HIGHLIGHT_TEXTS);
+  await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
 });

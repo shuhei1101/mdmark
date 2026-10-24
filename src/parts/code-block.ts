@@ -1,5 +1,8 @@
 import { escapeHtml } from "./escape.ts";
 
+/** 色分けの対象の `code` に付ける属性。値は色分けの言語のモジュール名。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に書いた生の HTML の `code` は色分けの対象にならない */
+export const SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
+
 /** コードの行 1 つ */
 export type CodeLine = {
   /** コードの行の印を外した行の文字（エスケープ前） */
@@ -39,8 +42,10 @@ export function renderCodeBlock(options: {
   lineNumbers: boolean;
   /** コードの行 */
   lines: CodeLine[];
+  /** 色分けする言語のモジュール名。渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける */
+  syntax?: string | undefined;
 }): string {
-  const { language, title, lineNumbers, lines } = options;
+  const { language, title, lineNumbers, lines, syntax } = options;
   const split = lineNumbers || lines.some((line) => line.kind !== undefined);
   const classes = split
     ? [
@@ -55,6 +60,7 @@ export function renderCodeBlock(options: {
   const label = escapeHtml(labelOf({ title, language }));
   const codeAttributes = [
     language ? `class="language-${escapeHtml(language)}"` : "",
+    syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml(syntax)}"` : "",
     lineNumbers
       ? `style="--mdmark-code-digits: ${String(lines.length).length}"`
       : "",

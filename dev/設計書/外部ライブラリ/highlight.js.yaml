@@ -1,0 +1,70 @@
+title: "highlight.js"
+kind: "ライブラリ"
+version:
+  current: 11.12.0
+  latest: 11.12.0
+  checked_on: '2026-10-24'
+  source: 既定の対応表の jsDelivr の URL（`https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/`）
+  pinning: 完全一致。11.12.0 で xml の ReDoS が直っているため 11.12.0 未満にしない。上げるときは色分けの結合テストとスクリーンショットで崩れを確かめる
+  support_until: 11.x がサポートの対象（SECURITY.md）。終わりの日は公開されていない
+catalogs:
+  - name: API
+    version: 11.12.0
+    entries:
+      - name: registerLanguage
+        kind: 関数
+        purpose: 言語のモジュールの既定の export（文法）を名前で登録する
+      - name: highlight
+        kind: 関数
+        purpose: 登録した言語でコードを色分けし、エスケープした文字に `hljs-*` の `span` を付けた HTML を `.value` で返す。登録していない言語は例外を投げる
+  - name: ファイル
+    version: 11.12.0
+    entries:
+      - name: es/core.min.js
+        kind: ES モジュール
+        purpose: 本体（20,501 バイト）。既定の export が `registerLanguage`・`highlight` を持つ
+      - name: es/languages/typescript.min.js
+        kind: ES モジュール
+        purpose: typescript（別名 ts・tsx・mts・cts）
+      - name: es/languages/javascript.min.js
+        kind: ES モジュール
+        purpose: javascript（別名 js・jsx・mjs・cjs）
+      - name: es/languages/json.min.js
+        kind: ES モジュール
+        purpose: json
+      - name: es/languages/yaml.min.js
+        kind: ES モジュール
+        purpose: yaml（別名 yml）
+      - name: es/languages/python.min.js
+        kind: ES モジュール
+        purpose: python（別名 py）
+      - name: es/languages/bash.min.js
+        kind: ES モジュール
+        purpose: bash（別名 sh・zsh。`shell` は含まない）
+      - name: es/languages/xml.min.js
+        kind: ES モジュール
+        purpose: html（`xml` の別名）
+      - name: es/languages/css.min.js
+        kind: ES モジュール
+        purpose: css
+      - name: es/languages/markdown.min.js
+        kind: ES モジュール
+        purpose: markdown（別名 md）
+      - name: es/languages/sql.min.js
+        kind: ES モジュール
+        purpose: sql
+lead: コードの文字を言語の文法で色分けし、`hljs-*` の class を付けた HTML 文字列を返すシンタックスハイライタ。`@highlightjs/cdn-assets` は、import を持たない ES モジュールを本体と言語ごとのファイルに分けて配る。
+purl: pkg:npm/%40highlightjs/cdn-assets@11.12.0
+supplier: highlight.js の保守者（Josh Goebel ほか）
+upstream: highlightjs/highlight.js
+verification:
+  state: 済
+  date: '2026-10-24'
+  detail: PoC（#98）で jsDelivr と同じパスの手元の配信から `es/core.min.js` と `es/languages/{typescript,yaml,python}.min.js` を Chromium で `import()` し、`registerLanguage`・`highlight` で色分けした。本番の jsDelivr の URL の core と typescript も `import()` でき、`highlight` が `<span class="hljs-keyword">const</span>` を返すことを確かめた。CLI の書き出しで core と 3 言語を束ねて埋め、外への要求 0 件で色分けできた
+license: BSD-3-Clause。商用利用できる。書き出した HTML に埋めるときは、モジュールの頭の著作権表示を残す
+official_url: https://highlightjs.org/
+docs_url: https://highlightjs.readthedocs.io/
+selection:
+  candidates: highlight.js・TanStack Highlight（`@tanstack/highlight` 1.1.0）・Shiki（4.5.0）・refractor（5.0.0）・Lezer を、機能適合・API の使いやすさと OpenSSF の観点で比べた（[比較表](https://github.com/shuhei1101/mdmark/pull/97#discussion_r4365903825)）。
+  decision: jsDelivr・手元の配信・書き出した HTML の 3 か所で同じファイルをそのまま `import()` できるのは、import を持たない highlight.js と TanStack Highlight だけだった。TanStack Highlight は 1.0 から日が浅く、パッチリリースでも色分けの境界が変わると明記しているため、PoC（#98）で全ての成功条件を確かめた highlight.js を採る。
+  consequences: 行ごとの `span` への分割は自前で持つ（行をまたぐ `span` を行末で閉じて次の行で開き直す）。`shell` は別の言語（Shell Session）を指すため、自前の別名表で `bash` に寄せる。`html` は `xml` の別名。CDN 用のパッケージは `.d.ts` を持たないため、型の得方はインターフェース定義・モジュール構成の段で決める。出す class は sanitize の許可に無いため、色分けは `mount` が描いた後に DOM の上で行う

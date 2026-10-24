@@ -5,6 +5,7 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeSyntax,
 } from "../dist-page.ts";
 
 // ビルドした配布物を置いた作業ツリー
@@ -34,6 +35,7 @@ test.afterAll(async () => {
 // 印で囲んだ html のコードブロックをその場の HTML として描き、スクリプトとイベントの属性を落とし、範囲の外のコードブロックはコードのまま出す（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
+  const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, { markdown: `${wrapHtml(HTML)}\n${OUTSIDE}` });
@@ -57,6 +59,9 @@ test("test_normal", async ({ page }) => {
   const code = page.locator("#doc pre");
   await expect(code).toHaveCount(1);
   await expect(code).toContainText("<p>範囲の外</p>");
+  // 範囲の外の html のコードブロックだけが色分けされ、読むのは本体と html の言語のモジュール
+  await expect(code.locator('span[class*="hljs-"]').first()).toBeVisible();
+  expect(syntaxRequests()).toEqual(["core.min.js", "languages/xml.min.js"]);
   // script 要素が無く、動いていない
   await expect(page.locator("#doc script")).toHaveCount(0);
   expect(await page.evaluate(() => "__mdmarkScriptRan" in window)).toBe(false);

@@ -40,3 +40,5 @@ items:
     summary: 束ねた JS を構文木にして規則を当てる（対応ブラウザの下限の確かめに使う）
   - page: eslint-plugin-compat.yaml
     summary: 対応ブラウザの下限の版に無い API の使用を報告する
+  - page: highlight.js.yaml
+    summary: コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む）

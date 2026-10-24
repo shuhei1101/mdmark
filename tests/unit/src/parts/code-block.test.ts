@@ -69,3 +69,31 @@ test("test_render_code_block_when_two_digits", async () => {
   const last = findTags(html, 'class="mdmark-code-line"').at(-1);
   expect(last).toContain('data-line="13"');
 });
+
+// 色分けする言語を渡すと code に色分けの対象の属性を付ける（正常系）
+test("test_render_code_block_when_syntax", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  const lines = [{ text: "a: 1" }];
+  // 実行
+  const withSyntax = renderCodeBlock({
+    language: "yml",
+    title: "",
+    lineNumbers: false,
+    lines,
+    syntax: "yaml",
+  });
+  const withoutSyntax = renderCodeBlock({
+    language: "yml",
+    title: "",
+    lineNumbers: false,
+    lines,
+  });
+  // 検証
+  expect(
+    withSyntax.startsWith(
+      '<pre tabindex="0" aria-label="コード: yml"><code class="language-yml" data-mdmark-syntax="yaml">',
+    ),
+  ).toBe(true);
+  expect(findTag(withoutSyntax, "<code")).not.toContain("data-mdmark-syntax");
+});

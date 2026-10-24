@@ -33,7 +33,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`と、VS Code 拡張機能の `preview-status`・`config-band`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`と、VS Code 拡張機能の `preview-status`・`config-band`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -57,6 +57,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderRowDetail]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFigure]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderDocList]
+      - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[highlightLines]
     unit_tests:
       - name: test_render_part_when_notice
         case: 正常
@@ -94,6 +95,12 @@ functions:
         condition: '`component` が `preview-status`、`params` が `state=versionMissing&version=v9.9.9`'
         mock: なし
         expected: '`<div class="mdmark">` で包んだ `renderPreviewStatus({ state: "versionMissing", version: "v9.9.9" })`'
+      - name: test_render_part_when_code_block_highlighted
+        case: 正常
+        summary: '`highlight` が `true` のコードブロックを色分けして返す'
+        condition: '`component` が `code-block`、`params` が `language=ts&title=&lineNumbers=true&highlight=true&lines=[{"text":"const a = 1;"},{"text":"// b"}]`'
+        mock: なし
+        expected: 2 つの `mdmark-code-text` の中に `hljs-keyword` と `hljs-comment` の `span` があり、タグを外した文字が元の行と同じ
   - name: createRenderServer
     title: 描画の口を作る
     container: scripts/storybook-render.ts
@@ -189,7 +196,7 @@ functions:
 notes:
   ストーリーの場所: '`src/parts/*.stories.yaml`（部品『部品』）。`preview-head.html` は `<link rel="stylesheet" href="/render/index.css">` を持ち、ストーリーに本文の CSS を当てる。CSS の入れ子はビルドを通さずに読むため、入れ子を解するブラウザで見る'
   起動: '描画の口を `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で立て、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で立てる'
-  依存: '`storybook`・`@storybook/server-webpack5`・`@storybook/server` を `10.6.2` で開発の依存に足す。`package.json` の `overrides` で `webpack-dev-middleware` を `^7.4.6` にする（Storybook の開発サーバーが引く版の脆弱性 GHSA-g84c-rxfj-3j2c を避ける）。どれも配布物には入らない'
+  依存: '`storybook`・`@storybook/server-webpack5`・`@storybook/server` を `10.6.2` で開発の依存に足す。`package.json` の `overrides` で `webpack-dev-middleware` を `^7.4.6` にする（Storybook の開発サーバーが引く版の脆弱性 GHSA-g84c-rxfj-3j2c を避ける）。ストーリーの色分けに npm の `highlight.js` を `11.12.0` で開発の依存に足す（`src/` は型だけを `import type` で使う）。どれも配布物には入らない'
   単体テストの場所: '`renderPart`・`createRenderServer`・`main` は `tests/unit/scripts/storybook-render.test.ts`（`unit` プロジェクト）。`.storybook/` の中は Storybook を立てて確かめる'
 test_files:
   - tests/unit/scripts/storybook-render.test.ts

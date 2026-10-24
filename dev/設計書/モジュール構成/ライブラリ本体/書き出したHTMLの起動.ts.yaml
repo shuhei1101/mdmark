@@ -58,15 +58,15 @@ functions:
     title: 埋めたモジュールを用意する
     container: src/viewer/modules.ts
     usecase: 共通
-    summary: 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた部品のコードを `blob:` URL に替えて `setPartModuleUrl` で入れ、埋めた拡張を `import()` して既定の export を `registerExtension` で登録する
-    description: '`Blob` の `type` は `text/javascript`。設定の `libraries` にあって埋められなかった外部ライブラリは、読むと例外を投げる `data:` URL に替える（印の場所は知らせの枠になり、ページの隣のファイルへ要求しない）。`parts` に無い部品（`view`・`comments`）も同じ `data:` URL を `setPartModuleUrl` で入れ、ページの隣の `view.js`・`comments.js` へ要求しない。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
+    summary: 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた部品のコードを `blob:` URL に替えて `setPartModuleUrl` で入れ、埋めた色分けのライブラリの本体と言語を `blob:` URL に替えて `setSyntaxModuleUrls` で入れ、埋めた拡張を `import()` して既定の export を `registerExtension` で登録する
+    description: '`Blob` の `type` は `text/javascript`。設定の `libraries` にあって埋められなかった外部ライブラリは、読むと例外を投げる `data:` URL に替える（印の場所は知らせの枠になり、ページの隣のファイルへ要求しない）。`parts` に無い部品（`view`・`comments`）も同じ `data:` URL を `setPartModuleUrl` で入れ、ページの隣の `view.js`・`comments.js` へ要求しない。`syntax` が無いときは `setSyntaxModuleUrls({ core: {読むと例外を投げる data: URL}, languages: {} })` を入れ、色分けのために jsDelivr へ要求しない（色分けせずに描く）。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
     kind: 関数
     scope: public
     is_async: true
     side_effects: '`blob:` URL を作り、拡張を登録する'
     args:
       - name: payload
-        type: Pick<ExportPayload, 'config' | 'modules' | 'extensions' | 'parts'>
+        type: Pick<ExportPayload, 'config' | 'modules' | 'extensions' | 'parts' | 'syntax'>
         required: true
         description: 埋めた中身
       - name: deps
@@ -91,9 +91,17 @@ functions:
         condition: '`extensions` に 2 つで、1 つ目の `importModule` が例外を投げる'
         mock: 1 つ目だけ例外を投げる `importModule`
         expected: '`register` が 2 つ目で 1 回だけ呼ばれ、例外を投げない'
+      - name: test_prepare_modules_when_syntax
+        case: 正常
+        summary: 埋めた色分けのモジュールを URL に替えて入れ、無ければ読むと例外を投げる URL を入れる
+        condition: '`syntax` が `{ core: "c", languages: { typescript: "t" } }` の中身と、`syntax` を持たない中身'
+        mock: 連番の URL を返す `createUrl`。`setSyntaxModuleUrls` の後に `syntaxModuleUrls` を読む
+        expected: 前者は `core` と `languages.typescript` が `createUrl` の URL。後者は `core` が `data:` URL で `languages` が空
     status: planned
     introduced:
       pr: 32
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[setSyntaxModuleUrls]
   - name: resolveRoute
     title: 'URL の # から開く文書を決める'
     container: src/viewer/route.ts

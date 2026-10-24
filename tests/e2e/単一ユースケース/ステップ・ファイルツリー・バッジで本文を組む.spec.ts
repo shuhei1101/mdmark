@@ -4,10 +4,14 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeSyntax,
 } from "../dist-page.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
+
+// 読まないことを確かめるために待つ時間（ミリ秒）
+const SETTLE_MS = 500;
 
 test.beforeAll(async () => {
   builtRoot = await buildDistRoot();
@@ -20,6 +24,7 @@ test.afterAll(async () => {
 // 番号付きリストが手順に、罫線のフォルダ構成がツリーに、`badge:` の行内のコードが札になる（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
+  const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
@@ -78,6 +83,9 @@ test("test_normal", async ({ page }) => {
   // 検証: バッジ
   await expect(page.locator("#doc .mdmark-badge")).toHaveText("v0.1.0");
   await expect(page.locator("#doc")).not.toContainText("badge:");
+  // 言語 tree のコードブロックは色分けの対象にならず、色分けのライブラリを読まない
+  await page.waitForTimeout(SETTLE_MS);
+  expect(syntaxRequests()).toEqual([]);
 });
 
 // 打ち消した `badge\:` は札にせず、書いたとおりの行内のコードで見せる（正常シナリオ（バッジの書き方を見せる））
