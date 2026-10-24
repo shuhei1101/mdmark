@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-tag-vocabulary-and-find-docs-view
+
+
+ Test Files  144 passed (144)
+      Tests  880 passed (880)
+   Start at  00:41:21
+   Duration  61.18s (tests 40%, worker 30%, import 26%, transform 4%)
+
