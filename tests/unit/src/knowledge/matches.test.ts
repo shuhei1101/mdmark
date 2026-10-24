@@ -124,6 +124,95 @@ test("test_collect_matches_ignores_avoided_terms", async () => {
   expect(result.targets.map((target) => target.id)).toEqual(["ws"]);
 });
 
+/** 用語 `ワークスペース`（`ws`）に、やめた言い方 `avoid` を持たせた、文書 `guide`・`api` の索引 */
+function avoidIndex(avoid: string[]): MdmarkIndex {
+  return {
+    schema: 1,
+    docs: [
+      { id: "api", path: "api.md", title: "API" },
+      { id: "guide", path: "使い方/guide.md", title: "使い方" },
+    ],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid,
+      },
+    ],
+  };
+}
+
+// 本文に出たやめた言い方の全ての出現を、代わりの用語と位置つきで avoided に返す（正常系）
+test("test_collect_matches_returns_avoided_terms", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const guideBody =
+    "# 作業場の使い方\n\n作業場を開き、作業場を閉じる。`作業場` は書き換えない。\n";
+  const documents = {
+    "使い方/guide.md": guideBody,
+    "api.md": "# API\n\nワークスペースを使う。\n",
+  };
+  // 実行
+  const result = collectMatches({ index: avoidIndex(["作業場"]), documents });
+  // 検証
+  const guide = result.avoided.guide ?? [];
+  expect(guide).toHaveLength(2);
+  for (const match of guide) {
+    expect(match).toMatchObject({ ...WS_TARGET, text: "作業場", line: 3 });
+  }
+  expect(guide.map((match) => cut(guideBody, match))).toEqual([
+    "作業場",
+    "作業場",
+  ]);
+  expect(guide.map((match) => match.start)).toEqual(
+    guide.map((match) => match.start).sort((a, b) => a - b),
+  );
+  expect(result.avoided.api).toEqual([]);
+});
+
+// 用語を含む長いやめた言い方が出ても、byDocument はやめた言い方を加えない照合のまま変えない（正常系）
+test("test_collect_matches_when_avoided_contains_term", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const guideBody = "# 使い方\n\n共有ワークスペースを使う。\n";
+  // 実行
+  const result = collectMatches({
+    index: avoidIndex(["共有ワークスペース"]),
+    documents: { "使い方/guide.md": guideBody },
+  });
+  // 検証
+  const byDocument = result.byDocument.guide ?? [];
+  expect(byDocument).toHaveLength(1);
+  expect(byDocument[0]).toMatchObject({ ...WS_TARGET, text: "ワークスペース" });
+  expect(byDocument.map((match) => cut(guideBody, match))).toEqual([
+    "ワークスペース",
+  ]);
+  const avoided = result.avoided.guide ?? [];
+  expect(avoided).toHaveLength(1);
+  expect(avoided[0]).toMatchObject({
+    ...WS_TARGET,
+    text: "共有ワークスペース",
+  });
+  expect(avoided.map((match) => cut(guideBody, match))).toEqual([
+    "共有ワークスペース",
+  ]);
+});
+
+// glossary がオフの文書はやめた言い方を返さない（正常系）
+test("test_collect_matches_when_avoided_and_glossary_disabled", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const guideBody = "<!-- features: -glossary -->\n\n作業場を使う。\n";
+  // 実行
+  const result = collectMatches({
+    index: avoidIndex(["作業場"]),
+    documents: { "使い方/guide.md": guideBody },
+  });
+  // 検証
+  expect(result.avoided.guide).toEqual([]);
+});
+
 // 索引の用語・別名と文書の別名の一致を、参照先と位置つきで返す（正常系）
 test("test_collect_matches", async () => {
   // 準備
