@@ -189,6 +189,33 @@ flows:
     test: test_normal_when_avoided_term
     refs:
       - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（やめた言い方が本文に出る）]
+  - name: 正常系（表記の違う語）
+    summary: 全角と半角・大文字と小文字だけが違う本文の語も一致にし、位置は正規化する前の本文を指す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 表記の違う語を書いた本文
+        description: 正常系の索引の用語 `ワークスペース`（別名 `WS`）の `avoid` に `workplace` を加えたもの。`guide` の本文は 1 行目の段落が `ﾜｰｸｽﾍﾟｰｽとＷＳ`、3 行目の段落が `ws と WorkPlace`
+        notes: 半角カナの `ﾜｰｸｽﾍﾟｰｽ`（8 文字）が NFKC で 7 文字になり、正規化した位置と本文の位置がずれることを決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents })
+        M->>M: 語と地の文を正規化して照合し、一致した範囲を正規化する前の本文の位置へ戻す
+        M-->>C: { byDocument, avoided, targets }
+      ```
+    expected:
+      - '`byDocument.guide` が `ﾜｰｸｽﾍﾟｰｽ`・`ＷＳ`・`ws` の 3 件を本文の頭からの順に持ち、どれも `kind` が `term`、`id` が `ws`'
+      - '`ﾜｰｸｽﾍﾟｰｽ` の要素が `line` 1・`start` 0・`end` 8 で、`ＷＳ` の要素が `line` 1・`start` 9・`end` 11'
+      - 各要素の `text` が索引に記載した表記（`ワークスペース` か `WS`）
+      - '`avoided.guide` が 3 行目の `WorkPlace` の 1 件を持ち、`text` が `workplace`'
+    test: test_normal_when_notation_differs
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（全角と半角・大文字と小文字だけが違う語）]
 lead: 使う側の処理（AI へ本文を返す MCP・サーバー）が、索引と文書の本文を渡し、画面を出さずに、本文に出た用語・文書の別名の一致とその参照先を受け取る。一致の規則は描いた文書の用語の下線とツールチップと同じ。
 identifier: collectMatches
 idempotent: true
@@ -251,6 +278,7 @@ response:
   - name: byDocument[].text
     type: string
     description: 一致した文字列（照合した辞書の語。別名で一致したときはその別名）
+    notes: 索引・用語集の表に記載した表記で、本文の表記とは限らない。本文の表記は `line`・`start`・`end` で引く
   - name: byDocument[].line
     type: number
     description: 一致した本文の Markdown の行
@@ -340,11 +368,11 @@ constraints:
   - item: 実行する環境
     constraint: Node とブラウザで動き、DOM に頼らない。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
   - item: 照合の規則
-    constraint: 用語のツールチップと同じ辞書（索引の `terms` → 照合する文書の用語集の表 → ほかの文書の表。文書の別名は照合する文書自身の別名を除く）と、語の区切りに揃う一致を長い語から取る照合を使う
+    constraint: 用語のツールチップと同じ辞書（索引の `terms` → 照合する文書の用語集の表 → ほかの文書の表。文書の別名は照合する文書自身の別名を除く）と、語の区切りに揃う一致を長い語から取る照合を使う。照合の前に、語と本文の文字の両方を用語のツールチップと同じく正規化する
     notes: 節ごとの最初の 1 回の制限は下線のもので、取り出しには効かない
   - item: 照合する範囲
     constraint: 本文の地の文（コード・リンク・見出し・用語集の表の中を除く）、`html` がオンなら埋め込んだ HTML の文字（`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・中身ごと落ちる要素を除く）、`diagrams` がオンなら図の部品の範囲の定義と埋め込んだ HTML の中の custom element の定義の `{{語}}`
-    notes: 図の部品の `{{語}}` は、語が用語に完全に一致し、意味が空でないときだけ参照にする（文書の別名は引かない）
+    notes: 図の部品の `{{語}}` は、語を正規化した後に用語に一致し、意味が空でないときだけ参照にする（文書の別名は引かない）
   - item: 機能のオフ
     constraint: 文書の印で `glossary` がオフの文書は用語とやめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
   - item: 位置の数え方

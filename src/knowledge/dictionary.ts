@@ -5,19 +5,28 @@ import type { MdmarkGlossaryEntry, MdmarkReferences } from "./references.ts";
 /** 語の区切り（`Intl.Segmenter` の `ja`・`word`）。初めて使うときに作り、以降は使い回す */
 let segmenter: Intl.Segmenter | undefined;
 
-/** `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字（コードポイント）に区切る */
-const FALLBACK_WORD = /[A-Za-z0-9]+|[\s\S]/gu;
+/** `Intl.Segmenter` を持たない環境で、英数字（全角を含む）の連なりを 1 語、それ以外を 1 文字（コードポイント）に区切る */
+const FALLBACK_WORD = /[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+|[\s\S]/gu;
+
+/** 照合・点検・検索の前に、語に NFKC・英字の小文字化・前後の空白の除去をかける */
+export function normalizeWord(word: string): string {
+  return word.normalize("NFKC").toLowerCase().trim();
+}
 
 /** 照合の辞書: 索引の用語・用語集の表の用語・文書の別名を、照合する語から引ける形にまとめたもの */
 export type Dictionary = {
-  /** 照合する語。長い語から並べる */
+  /** 照合する語。`normalizeWord` で正規化した語を、長い語から並べる */
   words: string[];
-  /** 語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語 */
+  /** 正規化した語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語 */
   terms: Map<string, { id: string; meaning: string }>;
-  /** 語から、その語を `aliases` に持つ文書（索引の `docs` の順） */
+  /** 正規化した語から、その語を `aliases` に持つ文書（索引の `docs` の順） */
   docs: Map<string, MdmarkIndexDoc[]>;
-  /** やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
+  /** 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
   avoided: Map<string, { id: string; term: string; meaning: string }>;
+  /** 正規化した語から、索引・用語集の表・文書の `aliases` に記載した表記。`words` と `avoided` の語を持ち、同じ正規化の語は `terms`・`avoided` と同じ優先の順で先の表記 */
+  written: Map<string, string>;
+  /** 語を `normalizeWord` で正規化してから `terms` を引く。`findWords` を通らずに書いた語で用語を引く箇所が使う */
+  term: (word: string) => { id: string; meaning: string } | undefined;
 };
 
 /** 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から辞書を作る */
@@ -40,11 +49,14 @@ export function buildDictionary(options: {
     string,
     { id: string; term: string; meaning: string }
   >();
-  /** 先に入れた用語を優先して、語に用語を入れる */
+  const written = new Map<string, string>();
+  /** 先に入れた用語を優先して、正規化した語に用語と記載した表記を入れる */
   const addTerm = (words: string[], id: string, meaning: string): void => {
     for (const word of words) {
-      if (!terms.has(word)) {
-        terms.set(word, { id, meaning });
+      const key = normalizeWord(word);
+      if (key !== "" && !terms.has(key)) {
+        terms.set(key, { id, meaning });
+        written.set(key, word);
       }
     }
   };
@@ -80,8 +92,10 @@ export function buildDictionary(options: {
       value: { id: string; term: string; meaning: string },
     ): void => {
       for (const word of words) {
-        if (!terms.has(word) && !avoided.has(word)) {
-          avoided.set(word, value);
+        const key = normalizeWord(word);
+        if (key !== "" && !terms.has(key) && !avoided.has(key)) {
+          avoided.set(key, value);
+          written.set(key, word);
         }
       }
     };
@@ -114,14 +128,28 @@ export function buildDictionary(options: {
         continue;
       }
       for (const alias of doc.aliases ?? []) {
-        docs.set(alias, [...(docs.get(alias) ?? []), doc]);
+        const key = normalizeWord(alias);
+        if (key === "") {
+          continue;
+        }
+        docs.set(key, [...(docs.get(key) ?? []), doc]);
+        if (!written.has(key)) {
+          written.set(key, alias);
+        }
       }
     }
   }
   const words = [...new Set([...terms.keys(), ...docs.keys()])].sort(
     (a, b) => b.length - a.length,
   );
-  return { words, terms, docs, avoided };
+  return {
+    words,
+    terms,
+    docs,
+    avoided,
+    written,
+    term: (word) => terms.get(normalizeWord(word)),
+  };
 }
 
 /** 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す。区切り方は実行環境の辞書に依る */
@@ -133,30 +161,56 @@ export function wordStarts(text: string): number[] {
   return [...text.matchAll(FALLBACK_WORD)].map((match) => match.index);
 }
 
-/** 文字列の中で、始まりと終わりが語の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に、頭から順に返す */
+/** 文字列の中で、元の文字列を語の区切りごとに NFKC と英字の小文字化をかけてつなぎ、始まりと終わりが区切りに揃う辞書の語（`normalizeWord` で正規化した語）の位置を、元の文字列の位置で、重ならないよう長い語を先に、頭から順に返す。`word` は `words` に渡したままの語で、正規化した後に同じになる語は `words` で先の語 */
 export function findWords(
   text: string,
   words: string[],
 ): Array<{ start: number; end: number; word: string }> {
-  const longestFirst = [...words].sort((a, b) => b.length - a.length);
-  const starts = wordStarts(text);
-  const boundaries = new Set([...starts, text.length]);
-  const found: Array<{ start: number; end: number; word: string }> = [];
-  let skipTo = 0;
-  for (const start of starts) {
-    if (start < skipTo) {
-      continue;
-    }
-    const word = longestFirst.find(
-      (candidate) =>
-        text.startsWith(candidate, start) &&
-        boundaries.has(start + candidate.length),
-    );
-    if (word !== undefined) {
-      found.push({ start, end: start + word.length, word });
-      skipTo = start + word.length;
+  // 正規化した語から、渡したままの語を引く（同じ語は先の語）
+  const passed = new Map<string, string>();
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key !== "" && !passed.has(key)) {
+      passed.set(key, word);
     }
   }
+  const longestFirst = [...passed.keys()].sort((a, b) => b.length - a.length);
+  const starts = wordStarts(text);
+  // 区切りごとに正規化するため、NFKC で長さが変わる文字があっても、正規化した文字の境目は元の区切りに揃う
+  const folded = starts.map((start, position) =>
+    text
+      .slice(start, starts[position + 1] ?? text.length)
+      .normalize("NFKC")
+      .toLowerCase(),
+  );
+  const normalized = folded.join("");
+  // 区切りの境目の、正規化した文字列の中の位置から元の文字列の位置を引く
+  const originals = new Map<number, number>([[normalized.length, text.length]]);
+  const heads: number[] = [];
+  let head = 0;
+  starts.forEach((start, position) => {
+    heads.push(head);
+    originals.set(head, start);
+    head += (folded[position] as string).length;
+  });
+  const found: Array<{ start: number; end: number; word: string }> = [];
+  let skipTo = 0;
+  starts.forEach((start, position) => {
+    if (start < skipTo) {
+      return;
+    }
+    const from = heads[position] as number;
+    const key = longestFirst.find(
+      (candidate) =>
+        normalized.startsWith(candidate, from) &&
+        originals.has(from + candidate.length),
+    );
+    if (key !== undefined) {
+      const end = originals.get(from + key.length) as number;
+      found.push({ start, end, word: passed.get(key) as string });
+      skipTo = end;
+    }
+  });
   return found;
 }
 

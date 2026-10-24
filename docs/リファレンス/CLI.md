@@ -167,7 +167,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `missing_doc` | 索引にあって、文書が見つからない |
 | `orphan_doc` | 文書があって、索引に無い |
 | `broken_ref` | `related` の `id` が索引に無い |
-| `duplicate_term` | 用語の語か別名が重なっている |
+| `duplicate_term` | 用語の語か別名が、NFKC・英字の小文字化・前後の空白の除去で正規化した後に重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
 | `duplicate_tag` | タグの語彙の `name` が重なっている |
 | `tag_alias_conflict` | タグの語彙の `aliases` が、別のタグの `name` か `aliases` と重なっている |

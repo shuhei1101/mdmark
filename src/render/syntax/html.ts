@@ -257,7 +257,7 @@ function buildHtml(options: {
     references: env.mdmarkReferences,
     features: env.features,
   });
-  const lookup: TermLookup = (word) => dictionary.terms.get(word)?.meaning;
+  const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
   const taken = takeParts({ source, state, paramsBefore, lookup });
   const sanitized = sanitizeEmbedded(taken.html, termsFilter(state));
   const hinted = applyHints({

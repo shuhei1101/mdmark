@@ -260,7 +260,7 @@ const references = collectReferences({
 
 - 参照元の `related` に、参照先の `id` がある
 - 参照元の本文のリンクが、参照先の `path` を指す。リンクの `#` 以降と `?` 以降を除き、参照元の `path` のフォルダを基準に相対パスを解決して比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
-- 参照元の本文に、参照先の `aliases` が出る。コード・リンク・見出し・用語集の表の中は照合しない
+- 参照元の本文に、参照先の `aliases` が出る。コード・リンク・見出し・用語集の表の中は照合しない。別名と本文の文字は、NFKC・英字の小文字化・前後の空白の除去で正規化して比べる
 
 ```json
 {
@@ -318,7 +318,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | `id` | `string` | 参照先の `id`。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id` |
 | `title` | `string` | 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title` |
 | `description` | `string` | 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。`doc` で `description` を持たないときは、このキーを持たない |
-| `text` | `string` | 一致した文字列。照合した辞書の語で、別名で一致したときはその別名 |
+| `text` | `string` | 一致した文字列。照合した辞書の語で、別名で一致したときはその別名。索引・用語集の表に記載した表記で返し、本文の表記は `line`・`start`・`end` から引く |
 | `line` | `number` | 一致した本文の Markdown の行。1 から数える |
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
 | `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
@@ -331,7 +331,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | `id` | `string` | 代わりの用語の `id`。`byDocument` の要素の `id` と同じ書き方 |
 | `title` | `string` | 代わりの用語のタイトル。`byDocument` の要素の `title` と同じ書き方 |
 | `description` | `string` | 代わりの用語の短い説明。`byDocument` の要素の `description` と同じ書き方 |
-| `text` | `string` | 一致したやめた言い方 |
+| `text` | `string` | 一致したやめた言い方。`byDocument` の要素の `text` と同じく、索引・用語集の表に記載した表記で返す |
 | `line` | `number` | `byDocument` の要素の `line` と同じ |
 | `start` | `number` | `byDocument` の要素の `start` と同じ |
 | `end` | `number` | `byDocument` の要素の `end` と同じ |
@@ -364,9 +364,10 @@ const { byDocument, avoided, targets } = collectMatches({
 
 - 辞書は、索引の `terms`、照合する文書の用語集の表、ほかの文書の表の順に優先する。文書の別名は、照合する文書自身の別名を除く
 - 語の始まりと終わりが本文の語の区切りに揃うところだけを取り、重なるときは長い語を先に取る。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
+- 照合の前に、辞書の語と本文の文字の両方を、NFKC・英字の小文字化・前後の空白の除去で正規化する。正規化した後に同じになる語は 1 つの語として扱い、優先の順で先の用語を使う。`line`・`start`・`end` は、正規化する前の本文の位置を指す
 - 照合するのは本文の地の文で、コード・リンク・見出し・用語集の表の中は除く
 - `html` がオンの文書は、`<!-- html -->` の範囲の `html` のコードブロックに書いた HTML の文字も照合する。`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・`script` のように中身ごと落ちる要素は除く
-- `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が用語に完全に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
+- `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が正規化した後に用語に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
 - 文書の印で `glossary` がオフの文書は用語とやめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
 - やめた言い方（索引の用語の `avoid` と、用語集の表の `avoid=` の列。用語の語・別名と同じ語は除く）は、用語・文書の別名の語に追加して照合し、やめた言い方に当たったところを `avoided` に返す。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない。用語・別名の一部として出たやめた言い方は返さない
 

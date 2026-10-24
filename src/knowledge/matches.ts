@@ -14,6 +14,7 @@ import {
   type Dictionary,
   findWords,
   forEachInline,
+  normalizeWord,
 } from "./dictionary.ts";
 import { type MdmarkIndex, normalizeIndex } from "./index-shape.ts";
 import { normalizePath } from "./paths.ts";
@@ -62,7 +63,10 @@ export type MdmarkMatches = {
 
 /** 本文の頭からの位置で表した、一致した語の範囲 */
 type Found = {
+  /** 辞書に記載した表記（本文の表記とは限らない） */
   word: string;
+  /** 辞書を引く正規化した語 */
+  key: string;
   offset: number;
   end: number;
   /** 図の部品の `{{語}}` の一致か（用語だけを引き、文書の別名は引かない） */
@@ -215,7 +219,8 @@ export function embeddedHtmlMatches(options: {
       cursor = aligned.end;
       for (const word of findWords(text, dictionary.words)) {
         found.push({
-          word: word.word,
+          word: dictionary.written.get(word.word) ?? word.word,
+          key: word.word,
           offset: block.from + (aligned.offsets[word.start] as number),
           end:
             block.from +
@@ -300,14 +305,15 @@ function definitionTerms(options: {
   for (const string of jsonStrings(raw)) {
     for (const match of string.text.matchAll(/\{\{(.+?)\}\}/g)) {
       const word = match[1] as string;
-      const meaning = dictionary.terms.get(word)?.meaning;
+      const meaning = dictionary.term(word)?.meaning;
       if (meaning === undefined || meaning === "") {
         continue;
       }
       const first = match.index + 2;
       const last = first + word.length - 1;
       found.push({
-        word,
+        word: dictionary.written.get(normalizeWord(word)) ?? word,
+        key: normalizeWord(word),
         offset: base + (string.starts[first] as number),
         end: base + (string.ends[last] as number),
         termOnly: true,
@@ -400,7 +406,8 @@ function paragraphMatches(options: {
       const content = inline.children?.[position]?.content ?? "";
       for (const word of findWords(content, dictionary.words)) {
         found.push({
-          word: word.word,
+          word: dictionary.written.get(word.word) ?? word.word,
+          key: word.word,
           offset: offsets[word.start] as number,
           end: wordEnd({ body, offsets, end: word.end }),
         });
@@ -453,7 +460,7 @@ function avoidedFound(options: {
       ...embeddedHtmlMatches({ body, tokens, dictionary: withAvoided }),
     );
   }
-  return found.filter(({ word }) => dictionary.avoided.has(word));
+  return found.filter(({ key }) => dictionary.avoided.has(key));
 }
 
 /** 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す */
@@ -544,16 +551,16 @@ export function collectMatches(input: {
     found.sort((a, b) => a.offset - b.offset);
     const matches: MdmarkMatch[] = [];
     for (const item of found) {
-      const { word, termOnly } = item;
+      const { key, termOnly } = item;
       const position = locate({ found: item, lineStarts });
       const referenced: MdmarkMatchTarget[] = [];
-      const term = dictionary.terms.get(word);
+      const term = dictionary.terms.get(key);
       const termTarget =
         term === undefined ? undefined : termTargets.get(term.id);
       if (termTarget !== undefined) {
         referenced.push(termTarget);
       }
-      for (const target of termOnly ? [] : (dictionary.docs.get(word) ?? [])) {
+      for (const target of termOnly ? [] : (dictionary.docs.get(key) ?? [])) {
         referenced.push({
           kind: "doc",
           id: target.id,
@@ -580,7 +587,7 @@ export function collectMatches(input: {
         html: parsed.features.html === true,
       }).sort((a, b) => a.offset - b.offset);
       for (const item of foundAvoided) {
-        const replacement = dictionary.avoided.get(item.word);
+        const replacement = dictionary.avoided.get(item.key);
         const target =
           replacement === undefined
             ? undefined

@@ -368,3 +368,63 @@ test("test_normal_when_placement_bottom", async ({ page }) => {
   await expect(tip).toContainText("話し合いの記録を置くフォルダ");
   await expectBelow({ tip, owner: term });
 });
+
+// 全角と半角・大文字と小文字だけが違う語にも下線を引き、文字は本文の表記のまま、やめた言い方には代わりの用語のツールチップを出す（正常シナリオ（全角と半角・大文字と小文字だけが違う語））
+test("test_normal_when_width_and_case_differ", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
+    terms: [
+      {
+        id: "workspace",
+        term: "ワークスペース",
+        aliases: ["WS"],
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid: ["workplace"],
+      },
+    ],
+  };
+  const markdown = [
+    "## 一つ目",
+    "",
+    "ＷＳを開く。",
+    "",
+    "## 二つ目",
+    "",
+    "ws と WorkPlace を書く。",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown, index, docId: DOC_ID });
+  // 検証
+  const sections = page.locator("#doc .mdmark-section-body");
+  const first = sections.nth(0);
+  const second = sections.nth(1);
+  // 下線の付いた語の文字は、本文に記載したまま
+  await expect(first.locator(".mdmark-term")).toHaveText(["ＷＳ"]);
+  await expect(second.locator(".mdmark-term")).toHaveText(["ws", "WorkPlace"]);
+  await expect(first.locator(".mdmark-term")).toHaveCSS(
+    "text-decoration-style",
+    "dashed",
+  );
+  await expect(second.locator(".mdmark-term").first()).toHaveCSS(
+    "text-decoration-style",
+    "dashed",
+  );
+  // `ＷＳ` にポインターを乗せると意味が出る
+  const wsTip = first.locator(".mdmark-term-tip");
+  await first.locator(".mdmark-term").hover();
+  await expect(wsTip).toBeVisible();
+  await expect(wsTip).toContainText("話し合いの記録を置くフォルダ");
+  // `WorkPlace` はやめた言い方のマーカーで、代わりの用語と意味が出る
+  const avoided = second.locator(".mdmark-term-avoided");
+  await expect(avoided).toHaveText("WorkPlace");
+  await expect(avoided).toHaveCSS("text-decoration-style", "wavy");
+  await avoided.hover();
+  const avoidedTip = second.locator(".mdmark-term-tip").nth(1);
+  await expect(avoidedTip).toBeVisible();
+  await expect(avoidedTip).toContainText("ワークスペース");
+  await expect(avoidedTip).toContainText("話し合いの記録を置くフォルダ");
+});

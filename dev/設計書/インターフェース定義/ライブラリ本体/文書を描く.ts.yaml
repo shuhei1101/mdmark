@@ -1829,6 +1829,31 @@ flows:
       - 知らせの枠（`mdmark-notice`）が無い
       - '`console.error` に `languages/yaml.min.js` を含む記録が 1 件以上ある'
     test: test_error_when_language_module_not_found
+  - name: 正常系（表記の違う用語）
+    summary: 全角と半角・大文字と小文字だけが違う本文の語と図の `{{語}}` にも、用語の下線とツールチップを付ける
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 用語 `ワークスペース`（別名 `WS`、意味 `作業の置き場所`、`avoid` に `workplace`）と、用語 `MCP`（意味 `Model Context Protocol`）を持つ索引
+      - name: 表記の違う語が出る Markdown
+        description: 1 つ目の節の段落に全角の `ＷＳ`、2 つ目の節の段落に小文字の `ws` と `WorkPlace` を書き、箱の名前に `{{ｍｃｐ}}` を持つフロー図を置いた文書
+        notes: 索引の語・別名・やめた言い方と、本文・図の語の表記が全角と半角・大文字と小文字だけ違う状態を決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index })
+        M->>M: 用語の語・別名と本文の文字を正規化して照合する
+        M->>P: 本文に記載したままの文字に下線を引いて描く
+    expected:
+      - '`ＷＳ` と `ws` がそれぞれ class `mdmark-term` の要素で、文字は本文に記載したまま'
+      - '`ＷＳ` と `ws` のツールチップに `ワークスペース` の意味 `作業の置き場所` が出る'
+      - '`WorkPlace` が class `mdmark-term mdmark-term-avoided` の要素で、「代わりの用語」に `ワークスペース` が出る'
+      - 図の箱の `ｍｃｐ` が class `mdmark-term` の要素で、ツールチップに `MCP` の意味が出る
+    test: test_normal_when_notation_differs
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -2023,7 +2048,7 @@ constraints:
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
   - item: 用語と文書の別名の下線
-    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
+    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。照合の前に、語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に引く。図の部品の `{{語}}` も同じ正規化で用語を引く。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
     notes: 下線の要素の形は部品設計で決める
   - item: ツールチップの操作
     constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
@@ -2105,7 +2130,7 @@ constraints:
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
   - item: やめた言い方のマーカー
-    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、点検の `avoided_term` と同じく、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
+    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ正規化・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、点検の `avoided_term` と同じく、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
     notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences` の `backlinks`・`collectMatches` の結果と関連文書の一覧は変わらない
   - item: 色分けの対象
     constraint: 機能 `syntax` がオンの文書で、情報文字列の最初の語が色分けの言語の対応表にある、フェンスのコードブロックの `pre > code`。文書に書いた生の HTML の `pre > code` は、`language-*` の class を持っていても当たらない。記法が描いたもの（ファイルツリー・図の部品の定義・埋め込んだ HTML）は `pre > code` でないため当たらず、記法がコードブロックのまま残したものは当たる

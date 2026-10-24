@@ -54,6 +54,20 @@ test("test_find_docs", async () => {
   expect(idsOf(result.docs)).toEqual(["a"]);
 });
 
+// 全角と半角だけが違う語で引く（正常系）
+test("test_find_docs_when_width_differs", async () => {
+  // 準備
+  const { findDocs } = await loadFind();
+  const index = createIndex([
+    { id: "a", path: "a.md", title: "A", aliases: ["MCP"] },
+    { id: "b", path: "b.md", title: "文書 B" },
+  ]);
+  // 実行
+  const result = findDocs({ index, text: "ＭＣＰ" });
+  // 検証
+  expect(idsOf(result.docs)).toEqual(["a"]);
+});
+
 // 別名と概要でも引く（正常系）
 test("test_find_docs_when_alias_or_description", async () => {
   // 準備

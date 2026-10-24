@@ -165,6 +165,22 @@ scenarios:
       - パスを加えた結果の行が、1 つ目の文書のパスを持つ
       - JSON の形式の結果が、テキストと構造化した結果の両方に同じ JSON を持ち、1 つ目の文書の行を持つ
     test: test_normal_when_view_and_format
+  - name: 正常シナリオ（全角と半角だけが違う語）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じで、1 つ目の文書が別名に `MCP` を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: find_docs（text: 全角の大文字の ＭＣＰ）
+        S->>S: 語と題名・別名・概要を正規化して引く
+        S-->>C: 1 つ目の文書の行
+    expected:
+      - 1 つ目の文書だけが返る
+    test: test_normal_when_width_differs
 lead: Claude Code が MCP のツール `find_docs` で、設定の `index` の索引から、題名・別名・概要の語・タグ・関係する文書で文書を引く。
 issue: 11
 primary_actor: Claude Code

@@ -1,5 +1,8 @@
 import { test } from "vitest";
-import { expectFindWords } from "../../helpers/find-words-cases.ts";
+import {
+  expectFindWords,
+  expectFindWordsWhenNotationDiffers,
+} from "../../helpers/find-words-cases.ts";
 
 /** 照合の辞書の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDictionary = () => import("../../../../src/knowledge/dictionary.ts");
@@ -10,4 +13,12 @@ test("test_find_words", async () => {
   const { findWords } = await loadDictionary();
   // 実行・検証
   expectFindWords(findWords);
+});
+
+// 全角と半角・英字の大文字と小文字だけが違う語を、元の文字列の位置で返す。対応ブラウザ（Chromium）の語の区切りでも確かめる（正常系）
+test("test_find_words_when_notation_differs", async () => {
+  // 準備
+  const { findWords } = await loadDictionary();
+  // 実行・検証
+  expectFindWordsWhenNotationDiffers(findWords);
 });

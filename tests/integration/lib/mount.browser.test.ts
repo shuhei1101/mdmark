@@ -1267,6 +1267,99 @@ test("test_normal_when_avoided_term", async () => {
   expect(document.activeElement).toBe(avoided);
 });
 
+// 全角と半角・大文字と小文字だけが違う本文の語と図の `{{語}}` にも、用語の下線とツールチップを付ける（正常系）
+test("test_normal_when_notation_differs", async () => {
+  // 準備
+  const el = createElement();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        aliases: ["WS"],
+        meaning: "作業の置き場所",
+        avoid: ["workplace"],
+      },
+      { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
+    ],
+  };
+  const flow = [
+    "{",
+    '  "title": "受け取り",',
+    '  "scope": "範囲",',
+    '  "updated": "2026-10-23",',
+    '  "width": 520,',
+    '  "height": 160,',
+    '  "nodes": [',
+    '    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "{{ｍｃｐ}}", "sub": "" }',
+    "  ],",
+    '  "wires": []',
+    "}",
+  ].join("\n");
+  const markdown = [
+    "## 一つ目",
+    "",
+    "ＷＳを開く。",
+    "",
+    "## 二つ目",
+    "",
+    "ws と WorkPlace を書く。",
+    "",
+    wrapDirective("flow", flow),
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown, index, docId: "cur" });
+  // 検証
+  // 本文の下線の語は、本文に記載したままの文字
+  const body = [...el.querySelectorAll<HTMLElement>("p .mdmark-term")].filter(
+    (term) => term.closest(".mdmark-diagram") === null,
+  );
+  expect(body.map((term) => term.textContent)).toEqual([
+    "ＷＳ",
+    "ws",
+    "WorkPlace",
+  ]);
+  const [first, second, avoided] = body as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  for (const term of [first, second]) {
+    expect(term.classList.contains("mdmark-term-avoided")).toBe(false);
+    term.focus();
+    const tip = document.getElementById(
+      term.getAttribute("aria-describedby") ?? "",
+    ) as HTMLElement;
+    expect(isOpen(tip)).toBe(true);
+    expect(find<HTMLElement>(tip, ".mdmark-term-tip-meaning").textContent).toBe(
+      "作業の置き場所",
+    );
+  }
+  // やめた言い方は波線のマーカーで、代わりの用語を出す
+  expect(avoided.classList.contains("mdmark-term-avoided")).toBe(true);
+  avoided.focus();
+  const avoidedTip = document.getElementById(
+    avoided.getAttribute("aria-describedby") ?? "",
+  ) as HTMLElement;
+  expect(
+    find<HTMLElement>(avoidedTip, ".mdmark-term-tip-replacement").textContent,
+  ).toBe("ワークスペース");
+  // 図の箱の `{{語}}` も用語の下線で、意味が出る
+  const boxTerm = find<HTMLElement>(el, ".mdmark-diagram-node .mdmark-term");
+  expect(boxTerm.textContent).toBe("ｍｃｐ");
+  boxTerm.focus();
+  expect(tipOfTerm(boxTerm).textContent).toContain("Model Context Protocol");
+});
+
+/** 語の `aria-describedby` が指すツールチップ */
+function tipOfTerm(term: Element): HTMLElement {
+  return document.getElementById(
+    term.getAttribute("aria-describedby") ?? "",
+  ) as HTMLElement;
+}
+
 // ブラウザで配布物の render を呼んでも、やめた言い方つきの出力が固定値と等しい（正常系）
 test("test_normal_when_avoided_term_in_browser", async () => {
   // 準備

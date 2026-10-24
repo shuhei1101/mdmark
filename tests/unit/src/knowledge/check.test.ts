@@ -196,6 +196,50 @@ test("test_check_index_when_avoided_term", async () => {
   }
 });
 
+// 正規化すると同じになる用語の語と、表記の違うやめた言い方を返す（正常系）
+test("test_check_index_when_normalized_words", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "手引き" }],
+    terms: [
+      { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
+      {
+        id: "mcp-kana",
+        term: "エムシーピー",
+        aliases: ["ｍｃｐ"],
+        meaning: "MCP の読み",
+      },
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "記録を置くフォルダ",
+        avoid: ["workplace"],
+      },
+    ],
+  };
+  const documents = { "guide.md": "WorkPlace を開く。\n" };
+  // 実行
+  const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "docs/index.yaml",
+      where: "terms[1].aliases[0]",
+      kind: "duplicate_term",
+    },
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+  ]);
+  // 重なりは後の側に記載した表記と先の側の場所を、やめた言い方は索引に記載した表記と代わりの用語を書く
+  expect(issues[0]?.message).toContain("ｍｃｐ");
+  expect(issues[0]?.message).toContain("terms[0].term");
+  expect(issues[1]?.message).toContain("workplace");
+  expect(issues[1]?.message).toContain("ワークスペース");
+});
+
 // 段落・段落の 2 行目・表のセルのやめた言い方をその行で返す（正常系）
 test("test_find_avoided_terms", async () => {
   // 準備
@@ -219,6 +263,33 @@ test("test_find_avoided_terms", async () => {
     expect(issue.message).toContain("作業場");
     expect(issue.message).toContain("ワークスペース");
   }
+});
+
+// 表記の違うやめた言い方を拾い、表記の違う用語の別名は拾わない（正常系）
+test("test_find_avoided_terms_when_notation_differs", async () => {
+  // 準備
+  const { findAvoidedTerms } = await loadCheck();
+  const terms = [
+    {
+      id: "ws",
+      term: "ワークスペース",
+      aliases: ["WS"],
+      meaning: "記録を置くフォルダ",
+      avoid: ["workplace"],
+    },
+  ];
+  // 1 行目の `ｗｓ` は用語の別名に当たり、3 行目の `WorkPlace` がやめた言い方に当たる
+  const body = ["ｗｓ を開く。", "", "WorkPlace を開く。", ""].join("\n");
+  // 実行
+  const issues = findAvoidedTerms({
+    file: "guide.md",
+    tokens: tokensOf(body),
+    terms,
+  });
+  // 検証
+  expect(issues.map((issue) => issue.where)).toEqual(["3 行目"]);
+  expect(issues[0]?.message).toContain("workplace");
+  expect(issues[0]?.message).toContain("ワークスペース");
 });
 
 // 見出し・リンクの中・行内のコード・コードブロック・用語集の表の中のやめた言い方を返さない（正常系）

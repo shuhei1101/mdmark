@@ -154,6 +154,23 @@ scenarios:
       - 矢印のツールチップがラベルの下に出る（ツールチップの上端がラベルの下端より下にある）
       - '`data-hint` のツールチップが印の下に出る（ツールチップの上端が印の下端より下にある）'
     test: test_normal_when_placement_bottom
+  - name: 正常シナリオ（箱の中の表記の違う用語）
+    setup:
+      - name: 表記の違う用語を持つ図を描いたページ
+        description: 索引に用語 `MCP` を載せ、箱の文字に全角の小文字で `{{ｍｃｐ}}` と書いたフロー図を持つ文書を、索引を渡して描いたページ
+        notes: 箱に書いた語と索引の用語が、全角と半角・大文字と小文字だけ違う状態を決定的に起こす
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant D as 図
+        U->>D: 箱の中の用語にポインターを乗せる
+        D-->>U: 用語の意味のツールチップ
+    expected:
+      - 箱の中の `ｍｃｐ` に本文の用語と同じ破線の下線が引かれ、文字は箱に書いた表記のまま
+      - 用語の上で、索引の用語 `MCP` の意味のツールチップが出る
+    test: test_normal_when_term_width_and_case_differ
 lead: 読む人が、図の矢印・箱・箱の中の用語にポインターを乗せるかフォーカスして、詳細をツールチップで読む。矢印は入力の詳細、LLM・スクリプトの箱は入力・処理・出力、用語は用語集の意味を出す。箱の `hint` と、埋め込んだ HTML の要素の `data-hint` も同じツールチップで出し、設定の `features.hints` でまとめて外せる。
 issue: 21
 primary_actor: 読む人

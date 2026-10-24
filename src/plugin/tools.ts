@@ -376,7 +376,7 @@ export const TOOLS: ToolDefinition[] = [
         text: {
           type: "string",
           description:
-            "題・別名・概要のどれかに含まれる語（大文字と小文字を区別しない）",
+            "題・別名・概要のどれかに含まれる語。語と題・別名・概要の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる",
         },
         tags: {
           type: "array",
@@ -486,14 +486,14 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "list_tags",
     description:
-      "設定の index の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで、語彙の並びで返す。付いている文書が 0 件のタグも返す。query を渡すと、名前・別名・説明のどれかに含まれるタグに絞る（大文字と小文字を区別しない）。語彙が多いときに、find_docs へ渡すタグを選ぶために呼ぶ。format は markdown（既定。表のテキストだけ）か json（structuredContent と text に同じ JSON）。",
+      "設定の index の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで、語彙の並びで返す。付いている文書が 0 件のタグも返す。query を渡すと、名前・別名・説明のどれかに含まれるタグに絞る（query と名前・別名・説明の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる）。語彙が多いときに、find_docs へ渡すタグを選ぶために呼ぶ。format は markdown（既定。表のテキストだけ）か json（structuredContent と text に同じ JSON）。",
     inputSchema: {
       type: "object",
       properties: {
         query: {
           type: "string",
           description:
-            "タグの名前・別名・説明のどれかに含まれる語（大文字と小文字を区別しない）",
+            "タグの名前・別名・説明のどれかに含まれる語。語と名前・別名・説明の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる",
         },
         format: {
           type: "string",
