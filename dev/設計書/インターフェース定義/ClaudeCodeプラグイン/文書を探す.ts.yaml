@@ -234,14 +234,14 @@ request:
     default: なし（タグで絞らない）
     location: argument
     description: 全てを持つ文書に絞るタグ（AND）
-    notes: 語彙の `aliases` に当たるタグは、そのタグの `name` として引く
+    notes: 語彙の `aliases` に当たるタグは、そのタグの `name` として引く。空の配列は省いたときと同じくタグで絞らない
   - name: any_tags
     type: string[]
     required: false
     default: なし（タグで絞らない）
     location: argument
     description: どれかを持つ文書に絞るタグ（OR）
-    notes: '`tags` と一緒に渡すと、両方の条件を満たす文書に絞る。別名の扱いは `tags` と同じ'
+    notes: '`tags` と一緒に渡すと、両方の条件を満たす文書に絞る。別名の扱いと空の配列の扱いは `tags` と同じ'
   - name: related_to
     type: string
     required: false

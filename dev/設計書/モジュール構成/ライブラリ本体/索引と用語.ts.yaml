@@ -1222,7 +1222,7 @@ functions:
       2. 語彙があれば、`tags`・`anyTags` のタグのうち語彙に当たらないものを、`nearestTag` の近いタグと一緒に `unknownTags` に入れる（`tags` が先、同じタグは 1 つ）
       3. `text` があれば、題・別名・概要のどれかに、大文字と小文字を区別せず含む文書に絞る
       4. `tags` があれば、全てのタグを持つ文書に絞る
-      5. `anyTags` があれば、どれかのタグを持つ文書に絞る
+      5. `anyTags` にタグが 1 つ以上あれば、どれかのタグを持つ文書に絞る（空の配列は省いたときと同じく絞らない）
       6. `relatedTo` があれば、参照の表の `backlinks[relatedTo]` にある文書と、`backlinks` に `relatedTo` を持つ文書に絞る（`relatedTo` 自身は含めない）
       7. `tags`・`anyTags` のタグのどれかが主題のタグに当たる文書を上に並べる
     unit_tests:
@@ -1292,6 +1292,12 @@ functions:
         condition: '`tags` を持たず、文書 `a` のタグが `{ name: "設計", main: true }` の索引、`tags: ["設計"]` と `tags: ["設定"]`'
         mock: なし
         expected: '`設計` では `docs` が `a`、`設定` では `docs` が空で、どちらも `unknownTags` が空'
+      - name: test_find_docs_when_empty_tag_lists
+        case: 正常
+        summary: 空の `tags`・`anyTags` は省いたときと同じくタグで絞らない
+        condition: '文書 2 つ、`tags: []` と `anyTags: []`'
+        mock: なし
+        expected: どちらも `docs` が 2 件で、`unknownTags` が空
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#
     status: planned
