@@ -157,7 +157,7 @@ flows:
     test: test_normal_when_syntax_highlighted
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
-side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む
+side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#
 request:
