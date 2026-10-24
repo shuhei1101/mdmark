@@ -3045,6 +3045,139 @@ test("test_error_when_part_module_unavailable", async () => {
   expect(store.load).not.toHaveBeenCalled();
 });
 
+/** ツールチップの置く側を確かめる索引: 用語 `索引` */
+const PLACEMENT_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [{ id: "arch", path: "設計/arch.md", title: "アーキテクチャ" }],
+  terms: [
+    {
+      id: "index",
+      term: "索引",
+      meaning: "文書と用語を並べた YAML のファイル",
+    },
+  ],
+};
+
+/** ツールチップの置く側を確かめる文書: 1 行目の用語、2 つ目の節の用語・`tip` を持つ線のフロー図・`data-hint` を持つ `div`。`tail` を渡すと、末尾に用語を足す */
+function placementMarkdown(options: { tail: boolean }): string {
+  const filler = Array.from({ length: 80 }, (_, i) => `詰め物の段落 ${i}\n`);
+  return [
+    "索引を 1 行目に置く。",
+    "",
+    "## 節",
+    "",
+    "索引を 2 つ目の節に置く。",
+    "",
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapHtml(
+      '<div data-hint="ブロックの説明" style="width: 20rem; padding: 1rem">ブロックの文字</div>',
+    ),
+    ...(options.tail ? [...filler, "## 末尾", "", "末尾の索引。", ""] : []),
+  ].join("\n");
+}
+
+/** 持ち主が指すツールチップ（用語は同じ枠の中のツールチップ） */
+function tooltipOf(owner: HTMLElement): HTMLElement {
+  const tip = owner.classList.contains("mdmark-term")
+    ? owner.closest(".mdmark-term-wrap")?.querySelector(".mdmark-term-tip")
+    : document.getElementById(owner.getAttribute("aria-describedby") ?? "");
+  if (!(tip instanceof HTMLElement)) {
+    throw new Error("ツールチップが無い");
+  }
+  return tip;
+}
+
+/** 持ち主を画面の中ほど（`block` が `end` なら下端）へ送り、ポインターを乗せて、持ち主とツールチップの枠を返す */
+async function hoverAndMeasure(
+  owner: HTMLElement,
+  block: "center" | "end",
+): Promise<{ owner: DOMRect; tip: DOMRect }> {
+  owner.scrollIntoView({ block });
+  await userEvent.hover(owner);
+  return {
+    owner: owner.getBoundingClientRect(),
+    tip: tooltipOf(owner).getBoundingClientRect(),
+  };
+}
+
+/** 文書の持ち主: 用語の並びと、2 つ目の節の線のラベル・ヒントの印 */
+function placementOwners(el: HTMLElement): {
+  terms: HTMLElement[];
+  label: HTMLElement;
+  mark: HTMLElement;
+} {
+  return {
+    terms: [...el.querySelectorAll<HTMLElement>(".mdmark-term")],
+    label: find<HTMLElement>(el, ".mdmark-diagram-label.has-tip"),
+    mark: find<HTMLElement>(el, ".mdmark-hint-mark"),
+  };
+}
+
+// ツールチップを持ち主の上に出し、上に収まらない語だけ下に出す（正常系（ツールチップを上に出す））
+test("test_normal_when_tooltip_above", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: placementMarkdown({ tail: false }),
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+  });
+  const { terms, label, mark } = placementOwners(el);
+  const [firstTerm, sectionTerm] = terms as [HTMLElement, HTMLElement];
+  // 実行・検証: 2 つ目の節の用語・線のラベル・ヒントの印は、持ち主の上に出る
+  for (const owner of [sectionTerm, label, mark]) {
+    const rects = await hoverAndMeasure(owner, "center");
+    expect(rects.tip.bottom).toBeLessThanOrEqual(rects.owner.top);
+  }
+  // 実行・検証: 1 行目の用語は上に収まらないので、語の下に出る
+  window.scrollTo(0, 0);
+  await userEvent.hover(firstTerm);
+  const termRect = firstTerm.getBoundingClientRect();
+  const tipRect = tooltipOf(firstTerm).getBoundingClientRect();
+  expect(tipRect.height).toBeGreaterThan(0);
+  expect(tipRect.top).toBeGreaterThanOrEqual(termRect.bottom);
+  expect(tipRect.top).toBeGreaterThanOrEqual(0);
+});
+
+// tooltips.placement が bottom のときは持ち主の下に出し、下に収まらない語だけ上に出す。知らない値は top として扱う（正常系（ツールチップを下に出す設定））
+test("test_normal_when_tooltip_placement_bottom", async () => {
+  // 準備
+  const markdown = placementMarkdown({ tail: true });
+  const el = createElement();
+  await mountTracked(el, {
+    markdown,
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+    config: { tooltips: { placement: "bottom" } },
+  });
+  const { terms, label, mark } = placementOwners(el);
+  const [, sectionTerm, tailTerm] = terms as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  // 実行・検証: 2 つ目の節の用語・線のラベル・ヒントの印は、持ち主の下に出る
+  for (const owner of [sectionTerm, label, mark]) {
+    const rects = await hoverAndMeasure(owner, "center");
+    expect(rects.tip.top).toBeGreaterThanOrEqual(rects.owner.bottom);
+  }
+  // 実行・検証: 画面の下端にある末尾の用語は下に収まらないので、語の上に出る
+  const tail = await hoverAndMeasure(tailTerm, "end");
+  expect(tail.tip.bottom).toBeLessThanOrEqual(tail.owner.top);
+  expect(tail.tip.bottom).toBeLessThanOrEqual(window.innerHeight);
+  // 実行・検証: 知らない値は top として扱い、語の上に出る
+  const el2 = createElement();
+  await mountTracked(el2, {
+    markdown,
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+    config: { tooltips: { placement: "left" } },
+  });
+  const unknownTerm = placementOwners(el2).terms[1] as HTMLElement;
+  const unknown = await hoverAndMeasure(unknownTerm, "center");
+  expect(unknown.tip.bottom).toBeLessThanOrEqual(unknown.owner.top);
+});
+
 /** 元の行番号を持つ要素の位置と色 */
 function snapshotBlocks(el: Element): Array<{
   top: number;

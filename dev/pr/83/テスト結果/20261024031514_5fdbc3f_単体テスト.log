@@ -1,0 +1,493 @@
+# 単体テスト（Red）: 実装前。25 件の fail は全て実装の無いことによる
+# コマンド: npm run test:unit
+# コミット: 5fdbc3f756e731a33e299189cdbfb78371b24d51
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-tooltip-place-above
+
+ ❯ |unit| tests/unit/src/config.test.ts (5 tests | 2 failed) 72ms
+   × test_resolve_config 68ms
+   × test_resolve_config_when_tooltip_placement_given 1ms
+ ❯ |unit| tests/unit/src/parts/term-tip.test.ts (4 tests | 1 failed) 700ms
+   × test_render_term_tip_below 5ms
+ ❯ |unit| tests/unit/src/interact/placement.test.ts (3 tests | 3 failed) 602ms
+   × test_choose_tip_side 65ms
+   × test_choose_tip_side_when_no_room_above 351ms
+   × test_choose_tip_side_when_bottom 181ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts (3 tests | 3 failed) 635ms
+   × test_attach_term_tips 306ms
+   × test_attach_term_tips_unique_ids 177ms
+   × test_attach_term_tips_when_no_room_above 148ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts (6 tests | 6 failed) 1609ms
+   × test_attach_diagram_tips 348ms
+   × test_attach_diagram_tips_when_hovered 214ms
+   × test_attach_diagram_tips_when_box_hovered 270ms
+   × test_attach_diagram_tips_when_embedded_hint 382ms
+   × test_attach_diagram_tips_when_embedded_unique_ids 167ms
+   × test_attach_diagram_tips_when_placed 224ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (8 tests | 8 failed) 2162ms
+   × test_attach_diagrams 483ms
+   × test_attach_diagrams_when_max 173ms
+   × test_attach_diagrams_when_panned 452ms
+   × test_attach_diagrams_when_zoom_button 257ms
+   × test_attach_diagrams_when_wheel 186ms
+   × test_attach_diagrams_when_cleaned_up 246ms
+   × test_open_diagram_dialog 150ms
+   × test_open_diagram_dialog_when_tip_open 212ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (13 tests | 1 failed) 7537ms
+   × test_validate_config_when_tooltip_placement_invalid 11ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (9 tests | 1 failed) 7260ms
+   × test_prepare_embeds_when_tooltip_placement 16ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(2) } to deeply equal { …(3) }
+
+- Expected
++ Received
+
+@@ -20,9 +20,6 @@
+      "toc": true,
+      "tree": true,
+      "views": true,
+    },
+    "libraries": {},
+-   "tooltips": {
+-     "placement": "top",
+-   },
+  }
+
+ ❯ tests/unit/src/config.test.ts:38:20
+     36|   const resolved = resolveConfig({});
+     37|   // 検証
+     38|   expect(resolved).toEqual({
+       |                    ^
+     39|     features: DEFAULT_FEATURES,
+     40|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_tooltip_placement_given
+TypeError: Cannot read properties of undefined (reading 'placement')
+ ❯ tests/unit/src/config.test.ts:103:34
+    101|   const resolvedUnknown = resolveConfig({ config: unknown });
+    102|   // 検証
+    103|   expect(resolvedBottom.tooltips.placement).toBe("bottom");
+       |                                  ^
+    104|   expect(resolvedUnknown.tooltips.placement).toBe("top");
+    105| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_tooltip_placement_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/config.test.ts:195:26
+    193|   );
+    194|   // 検証
+    195|   expect(invalid.issues).toHaveLength(1);
+       |                          ^
+    196|   expect(invalid.issues[0]).toMatchObject({
+    197|     where: "tooltips.placement",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_tooltip_placement
+AssertionError: expected undefined to deeply equal { placement: 'bottom' }
+
+- Expected:
+{
+  "placement": "bottom",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/export.test.ts:234:48
+    232|   const withoutTooltips = await prepare({ features: { print: true } });
+    233|   // 検証
+    234|   expect(withTooltips.payload.config.tooltips).toEqual({
+       |                                                ^
+    235|     placement: "bottom",
+    236|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  |unit| tests/unit/src/parts/term-tip.test.ts > test_render_term_tip_below
+AssertionError: expected '<span class="mdmark-term-wrap">' to contain 'is-below'
+
+Expected: "is-below"
+Received: "<span class="mdmark-term-wrap">"
+
+ ❯ tests/unit/src/parts/term-tip.test.ts:138:46
+    136|   });
+    137|   // 検証
+    138|   expect(findTag(below, "mdmark-term-wrap")).toContain("is-below");
+       |                                              ^
+    139|   expect(findTag(termOnly, "mdmark-term-wrap")).not.toContain("is-belo…
+    140| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  |unit| tests/unit/src/interact/placement.test.ts > test_choose_tip_side
+Error: Cannot find module '/src/interact/placement.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-tooltip-place-above/tests/unit/src/interact/placement.test.ts
+ ❯ tests/unit/src/interact/placement.test.ts:18:29
+     16| test("test_choose_tip_side", async () => {
+     17|   // 準備
+     18|   const { chooseTipSide } = await loadPlacement();
+       |                             ^
+     19|   // 実行
+     20|   const side = chooseTipSide({ ...BASE, placement: "top" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  |unit| tests/unit/src/interact/placement.test.ts > test_choose_tip_side_when_no_room_above
+Error: Cannot find module '/src/interact/placement.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-tooltip-place-above/tests/unit/src/interact/placement.test.ts
+ ❯ tests/unit/src/interact/placement.test.ts:28:29
+     26| test("test_choose_tip_side_when_no_room_above", async () => {
+     27|   // 準備
+     28|   const { chooseTipSide } = await loadPlacement();
+       |                             ^
+     29|   // 実行
+     30|   const noRoom = chooseTipSide({ ...BASE, anchorTop: 50, placement: "t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  |unit| tests/unit/src/interact/placement.test.ts > test_choose_tip_side_when_bottom
+Error: Cannot find module '/src/interact/placement.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-tooltip-place-above/tests/unit/src/interact/placement.test.ts
+ ❯ tests/unit/src/interact/placement.test.ts:40:29
+     38| test("test_choose_tip_side_when_bottom", async () => {
+     39|   // 準備
+     40|   const { chooseTipSide } = await loadPlacement();
+       |                             ^
+     41|   // 実行
+     42|   const fitsBelow = chooseTipSide({ ...BASE, placement: "bottom" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips
+TypeError: Cannot read properties of undefined (reading 'contains')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips.png
+
+ ❯ attachDiagramTips src/interact/diagram-tips.ts:27:37
+     25|   detach: () => void;
+     26| } {
+     27|   const embedded = figure.classList.contains("mdmark-html");
+       |                                     ^
+     28|   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+     29|   const viewport = figure.querySelector<HTMLElement>(
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:67:22
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_hovered
+TypeError: Cannot read properties of undefined (reading 'contains')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_hovered.png
+
+ ❯ attachDiagramTips src/interact/diagram-tips.ts:27:37
+     25|   detach: () => void;
+     26| } {
+     27|   const embedded = figure.classList.contains("mdmark-html");
+       |                                     ^
+     28|   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+     29|   const viewport = figure.querySelector<HTMLElement>(
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:86:22
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_box_hovered
+TypeError: Cannot read properties of undefined (reading 'contains')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_box_hovered.png
+
+ ❯ attachDiagramTips src/interact/diagram-tips.ts:27:37
+     25|   detach: () => void;
+     26| } {
+     27|   const embedded = figure.classList.contains("mdmark-html");
+       |                                     ^
+     28|   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+     29|   const viewport = figure.querySelector<HTMLElement>(
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:104:22
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_embedded_hint
+TypeError: Cannot read properties of undefined (reading 'contains')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_embedded_hint.png
+
+ ❯ attachDiagramTips src/interact/diagram-tips.ts:27:37
+     25|   detach: () => void;
+     26| } {
+     27|   const embedded = figure.classList.contains("mdmark-html");
+       |                                     ^
+     28|   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+     29|   const viewport = figure.querySelector<HTMLElement>(
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:152:22
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_embedded_unique_ids
+TypeError: Cannot read properties of undefined (reading 'contains')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_embedded_unique_ids.png
+
+ ❯ attachDiagramTips src/interact/diagram-tips.ts:27:37
+     25|   detach: () => void;
+     26| } {
+     27|   const embedded = figure.classList.contains("mdmark-html");
+       |                                     ^
+     28|   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+     29|   const viewport = figure.querySelector<HTMLElement>(
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:192:7
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_placed
+TypeError: Cannot read properties of undefined (reading 'contains')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_placed.png
+
+ ❯ attachDiagramTips src/interact/diagram-tips.ts:27:37
+     25|   detach: () => void;
+     26| } {
+     27|   const embedded = figure.classList.contains("mdmark-html");
+       |                                     ^
+     28|   const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+     29|   const viewport = figure.querySelector<HTMLElement>(
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:239:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:75:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_max
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_max.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:91:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_panned
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_panned.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:106:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_zoom_button
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_zoom_button.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:126:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_wheel
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_wheel.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:156:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_cleaned_up
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_cleaned_up.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:176:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:190:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+TypeError: root.querySelectorAll is not a function or its return value is not iterable
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ attachDiagrams src/interact/diagrams.ts:387:13
+    385|   const detachers: Array<() => void> = [];
+    386|   const figures = [
+    387|     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+       |             ^
+    388|   ].filter((figure) => !figure.closest("dialog"));
+    389|   figures.forEach((figure, index) => {
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:206:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips
+TypeError: root.querySelectorAll is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/terms.browser.test.ts/test_attach_term_tips.png
+
+ ❯ renumberIds src/interact/terms.ts:34:8
+     32| /** ツールチップと関連文書の一覧の題の `id` を、ページの中で一意な値に振り直す */
+     33| function renumberIds(root: HTMLElement, base: number): void {
+     34|   root.querySelectorAll<HTMLElement>(".mdmark-term-wrap").forEach((wra…
+       |        ^
+     35|     const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
+     36|     const term = wrap.querySelector(".mdmark-term");
+ ❯ attachTermTips src/interact/terms.ts:98:3
+ ❯ tests/unit/src/interact/terms.browser.test.ts:52:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips_unique_ids
+TypeError: root.querySelectorAll is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/terms.browser.test.ts/test_attach_term_tips_unique_ids.png
+
+ ❯ renumberIds src/interact/terms.ts:34:8
+     32| /** ツールチップと関連文書の一覧の題の `id` を、ページの中で一意な値に振り直す */
+     33| function renumberIds(root: HTMLElement, base: number): void {
+     34|   root.querySelectorAll<HTMLElement>(".mdmark-term-wrap").forEach((wra…
+       |        ^
+     35|     const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
+     36|     const term = wrap.querySelector(".mdmark-term");
+ ❯ attachTermTips src/interact/terms.ts:98:3
+ ❯ tests/unit/src/interact/terms.browser.test.ts:74:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips_when_no_room_above
+TypeError: root.querySelectorAll is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/terms.browser.test.ts/test_attach_term_tips_when_no_room_above.png
+
+ ❯ renumberIds src/interact/terms.ts:34:8
+     32| /** ツールチップと関連文書の一覧の題の `id` を、ページの中で一意な値に振り直す */
+     33| function renumberIds(root: HTMLElement, base: number): void {
+     34|   root.querySelectorAll<HTMLElement>(".mdmark-term-wrap").forEach((wra…
+       |        ^
+     35|     const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
+     36|     const term = wrap.querySelector(".mdmark-term");
+ ❯ attachTermTips src/interact/terms.ts:98:3
+ ❯ tests/unit/src/interact/terms.browser.test.ts:99:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7eb4e3ec:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯
+
+
+ Test Files  8 failed | 117 passed (125)
+      Tests  25 failed | 677 passed (702)
+   Start at  03:15:19
+   Duration  40.15s (worker 37%, tests 36%, import 23%, transform 4%)
+

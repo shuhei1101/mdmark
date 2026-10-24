@@ -187,6 +187,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     kind,
     config: {
       ...(loaded.config.features ? { features: loaded.config.features } : {}),
+      ...(loaded.config.tooltips ? { tooltips: loaded.config.tooltips } : {}),
       // 埋めたモジュールは開いたときに URL に替えるため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),

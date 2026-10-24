@@ -47,6 +47,16 @@ stories:
       id: tip-long
       meaning: '描く前の HTML から、スクリプトと許可していない要素・属性を落とすこと。文書に書いた script 要素・イベント属性・javascript: の URL を実行しないための処理で、索引に書いた題と意味にも当てる'
       open: true
+  - name: Below
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: ワークスペース
+      id: tip-below
+      meaning: 話し合いの記録を置くフォルダ
+      below: true
+      open: true
   - name: Closed
     parameters:
       server:

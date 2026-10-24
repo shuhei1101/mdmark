@@ -1,3 +1,6 @@
+import type { TooltipPlacement } from "../config.ts";
+import { chooseTipSide } from "./placement.ts";
+
 // ポインターが語とツールチップの間を移る間、閉じるのを待つ時間（ミリ秒）
 const CLOSE_DELAY_MS = 150;
 
@@ -6,7 +9,7 @@ const VIEWPORT_MARGIN_PX = 16;
 
 // 開いているツールチップを持つ語の枠に付ける class
 const OPEN_CLASS = "is-open";
-const ABOVE_CLASS = "is-above";
+const BELOW_CLASS = "is-below";
 const DISMISSED_CLASS = "is-dismissed";
 
 // `id` を重ならせないための、操作を付けた回数の通し番号
@@ -57,8 +60,12 @@ function renumberIds(root: HTMLElement, base: number): void {
   });
 }
 
-/** ツールチップを語の下（収まらなければ上）に、画面からはみ出さないよう置く。行をまたぐ語は、下なら最後の行、上なら最初の行に付ける */
-function place(wrap: HTMLElement): void {
+/** ツールチップを語の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く。行をまたぐ語は、下なら最後の行、上なら最初の行に付ける */
+function place(options: {
+  wrap: HTMLElement;
+  placement: TooltipPlacement;
+}): void {
+  const { wrap, placement } = options;
   const rects = wrap.querySelector(".mdmark-term")?.getClientRects();
   const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
   const first = rects?.[0];
@@ -68,15 +75,22 @@ function place(wrap: HTMLElement): void {
   }
   tip.style.position = "fixed";
   const { width, height } = tip.getBoundingClientRect();
-  const above =
-    last.bottom + height > window.innerHeight && first.top - height >= 0;
-  wrap.classList.toggle(ABOVE_CLASS, above);
-  const anchor = above ? first : last;
+  const below =
+    chooseTipSide({
+      anchorTop: first.top,
+      anchorBottom: last.bottom,
+      height,
+      gap: 0,
+      viewportHeight: window.innerHeight,
+      placement,
+    }) === "bottom";
+  wrap.classList.toggle(BELOW_CLASS, below);
+  const anchor = below ? last : first;
   const left = Math.min(
     anchor.left,
     window.innerWidth - width - VIEWPORT_MARGIN_PX,
   );
-  tip.style.top = `${above ? first.top - height : last.bottom}px`;
+  tip.style.top = `${below ? last.bottom : first.top - height}px`;
   tip.style.bottom = "auto";
   tip.style.left = `${Math.max(left, VIEWPORT_MARGIN_PX)}px`;
 }
@@ -93,7 +107,13 @@ function clearPlace(wrap: HTMLElement): void {
 }
 
 /** mount が描いた用語の下線に、ツールチップを開閉する操作を付け、外す関数を返す */
-export function attachTermTips(root: HTMLElement): () => void {
+export function attachTermTips(options: {
+  /** 描いた文書の要素 */
+  root: HTMLElement;
+  /** ツールチップを先に出す側 */
+  placement: TooltipPlacement;
+}): () => void {
+  const { root, placement } = options;
   attachCounter += 1;
   renumberIds(root, attachCounter);
   const wraps = [...root.querySelectorAll<HTMLElement>(".mdmark-term-wrap")];
@@ -102,7 +122,7 @@ export function attachTermTips(root: HTMLElement): () => void {
   /** ツールチップを閉じ、置いた位置を外す */
   const close = (wrap: HTMLElement): void => {
     clearTimeout(timers.get(wrap));
-    wrap.classList.remove(OPEN_CLASS, ABOVE_CLASS);
+    wrap.classList.remove(OPEN_CLASS, BELOW_CLASS);
     clearPlace(wrap);
   };
   /** ほかのツールチップを閉じてから開く。Esc で閉じた後は、語を離れるまで開き直さない */
@@ -117,7 +137,7 @@ export function attachTermTips(root: HTMLElement): () => void {
       }
     }
     wrap.classList.add(OPEN_CLASS);
-    place(wrap);
+    place({ wrap, placement });
   };
   /** ポインターもフォーカスも語とツールチップを離れたら、少し待って閉じる */
   const closeLater = (wrap: HTMLElement): void => {
@@ -168,7 +188,7 @@ export function attachTermTips(root: HTMLElement): () => void {
   const placeOpen = (): void => {
     for (const wrap of wraps) {
       if (wrap.classList.contains(OPEN_CLASS)) {
-        place(wrap);
+        place({ wrap, placement });
       }
     }
   };

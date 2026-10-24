@@ -4,7 +4,12 @@ export type MdmarkConfig = {
   features?: Record<string, boolean>;
   /** 印の名前からモジュールの URL を引く対応表 */
   libraries?: Record<string, string>;
+  /** ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が `top` にするため、型は `string` */
+  tooltips?: { placement?: string };
 };
+
+/** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
+export type TooltipPlacement = "top" | "bottom";
 
 /** 対応表の行: 印 1 つのモジュールの URL と、図の印か */
 export type LibraryEntry = {
@@ -20,6 +25,8 @@ export type ResolvedConfig = {
   features: Record<string, boolean>;
   /** 既定の対応表に設定の `libraries` を重ねたもの */
   libraries: Record<string, LibraryEntry>;
+  /** 設定の `tooltips.placement` が `bottom` のときだけ `bottom`、それ以外は `top` */
+  tooltips: { placement: TooltipPlacement };
 };
 
 /** この版が知っている機能とその既定 */
@@ -83,5 +90,8 @@ export function resolveConfig(options: {
       : undefined;
     libraries[name] = existing ? { ...existing, url } : { url, figure: true };
   }
-  return { features, libraries };
+  // 出す場所は、bottom だけを受け、他の値は top にする
+  const placement: TooltipPlacement =
+    config?.tooltips?.placement === "bottom" ? "bottom" : "top";
+  return { features, libraries, tooltips: { placement } };
 }

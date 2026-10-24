@@ -1,0 +1,17 @@
+# 単体テスト（全 pass）
+# コマンド: npm run test:unit
+# コミット: 5a172fff0aed7046534ab671b348efd619f24b25
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-tooltip-place-above
+
+
+ Test Files  125 passed (125)
+      Tests  702 passed (702)
+   Start at  04:20:00
+   Duration  55.92s (tests 40%, worker 31%, import 26%, transform 4%)
+

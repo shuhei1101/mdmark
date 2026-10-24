@@ -23,7 +23,7 @@ states:
   - name: Term
     description: 箱の中の用語を開いた。本文の用語と同じ破線の下線と見た目
   - name: Hint
-    description: 箱の `hint` を開いた。箱の右上の印の下に文だけを出す
+    description: 箱の `hint` を開いた。箱の上に文だけを出す
     args:
       - name: kind
         value: hint

@@ -72,7 +72,7 @@ test("test_attach_diagrams", async () => {
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
   // 実行
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   // 検証
   expect(zoomText(root)).toBe("55%");
   expect(button(root, "縮小").disabled).toBe(true);
@@ -88,7 +88,7 @@ test("test_attach_diagrams_when_max", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   // 実行
   for (let i = 0; i < 10; i += 1) {
     button(root, "拡大").click();
@@ -103,7 +103,7 @@ test("test_attach_diagrams_when_panned", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   const panGroup = button(root, "右へ動かす").parentElement;
   expect(panGroup?.hidden).toBe(true);
   button(root, "拡大").click();
@@ -123,7 +123,7 @@ test("test_attach_diagrams_when_zoom_button", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   button(root, "拡大").click();
   button(root, "拡大").click();
   const viewport = viewportOf(root);
@@ -153,7 +153,7 @@ test("test_attach_diagrams_when_wheel", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   const viewport = viewportOf(root);
   const event = new WheelEvent("wheel", {
     deltaY: -100,
@@ -173,7 +173,7 @@ test("test_attach_diagrams_when_cleaned_up", async () => {
   const { attachDiagrams } = await loadDiagrams();
   const disconnect = vi.spyOn(ResizeObserver.prototype, "disconnect");
   const root = createDiagramRoot();
-  const detach = attachDiagrams(root);
+  const detach = attachDiagrams({ root, placement: "top" });
   // 実行
   detach();
   button(root, "拡大").click();
@@ -187,7 +187,7 @@ test("test_open_diagram_dialog", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   const opener = button(root, "全画面で開く");
   // 実行
   opener.click();
@@ -203,7 +203,7 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
-  detachers.push(attachDiagrams(root));
+  detachers.push(attachDiagrams({ root, placement: "top" }));
   button(root, "全画面で開く").click();
   const dialog = root.querySelector("dialog");
   if (!dialog) {

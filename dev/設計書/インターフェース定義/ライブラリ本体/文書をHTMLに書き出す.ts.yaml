@@ -112,6 +112,26 @@ flows:
       - 標準エラーに `blocked/guide.html` と直し方が出る
       - '`blocked` が変わっておらず、HTML がどこにも書かれていない'
     test: test_error_when_output_unwritable
+  - name: 正常系（ツールチップを下に出す設定）
+    summary: 設定の `tooltips.placement` を埋める設定に写し、開いた HTML で用語のツールチップを下に出す
+    setup:
+      - name: 下に出す設定
+        description: '`tooltips.placement: bottom` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目の節の段落に出る文書を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 書き出した HTML
+        W->>C: mdmark export {文書}
+        C->>H: tooltips を写した設定を埋めて書く
+        W->>H: 開いて用語にポインターを乗せる
+        H-->>W: 語の下にツールチップを出す
+    expected:
+      - 終了コードが 0
+      - 開いた HTML で、用語のツールチップの `top` が語の `bottom` 以上
+    test: test_normal_when_tooltip_placement
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む
@@ -201,4 +221,7 @@ constraints:
   - item: 開くブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+  - item: ツールチップを出す場所
+    constraint: 設定の `tooltips.placement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`top`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
 test_file: tests/integration/lib/export.test.ts

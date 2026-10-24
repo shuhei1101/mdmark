@@ -1,3 +1,4 @@
+import type { TooltipPlacement } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagrams } from "./diagrams.ts";
@@ -14,10 +15,12 @@ export function attachInteractions(options: {
   root: HTMLElement;
   /** 文書で決まった機能のオン・オフ */
   features: Record<string, boolean>;
+  /** 既定を当てた設定のツールチップを出す場所 */
+  placement: TooltipPlacement;
   /** 描いた操作できる部品の定義。`div.mdmark-param` の並びと同じ順（既定 `[]`） */
   paramDefinitions?: MdmarkParamDefinition[];
 }): () => void {
-  const { root, features, paramDefinitions = [] } = options;
+  const { root, features, placement, paramDefinitions = [] } = options;
   const detachers: Array<() => void> = [];
   // 閉じた節の中の行へは、`attachTables` が行へ送る前に `attachSections` が節を開いておく
   const sections = features.sections === true;
@@ -32,11 +35,11 @@ export function attachInteractions(options: {
     detachers.push(attachTabs(root));
   }
   if (features.diagrams === true) {
-    detachers.push(attachDiagrams(root));
+    detachers.push(attachDiagrams({ root, placement }));
     detachers.push(attachParams(root, paramDefinitions));
   }
   if (features.glossary === true || features.backlinks === true) {
-    detachers.push(attachTermTips(root));
+    detachers.push(attachTermTips({ root, placement }));
   }
   if (features.html === true) {
     detachers.push(attachEmbeddedHtml(root));
@@ -45,7 +48,9 @@ export function attachInteractions(options: {
       for (const embedded of root.querySelectorAll<HTMLElement>(
         "div.mdmark-html",
       )) {
-        detachers.push(attachDiagramTips(embedded).detach);
+        detachers.push(
+          attachDiagramTips({ figure: embedded, placement }).detach,
+        );
       }
     }
   }

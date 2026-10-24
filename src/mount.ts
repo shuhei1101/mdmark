@@ -82,6 +82,7 @@ function createDiffHtmlRenderer(options: {
           root,
           features: rendered.features,
           paramDefinitions: rendered.paramDefinitions,
+          placement: config.tooltips.placement,
         }),
     };
   };
@@ -147,6 +148,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       root: el,
       features,
       paramDefinitions: rendered.paramDefinitions,
+      placement: config.tooltips.placement,
     });
     // 読み込みの完了は待たない
     void loadLibraries({
