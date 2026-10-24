@@ -56,6 +56,10 @@ catalogs:
             type: (args, ctx) => Promise<CallToolResult>
             required: true
             description: ツールの処理。`inputSchema` が無いときは引数が `ctx` だけになる
+          - name: config.annotations
+            type: '{ readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean; openWorldHint?: boolean; title?: string }'
+            required: false
+            description: 'ツールの振る舞いのヒント。`tools/list` の `annotations` にそのまま出る。`readOnlyHint: true` はツールが周りを書き換えないことを示す'
         returns:
           - name: content
             type: "{ type: 'text', text: string }[]"
@@ -63,6 +67,10 @@ catalogs:
           - name: isError?
             type: boolean
             description: ツールの失敗を表す
+          - name: structuredContent?
+            type: Record<string, unknown>
+            description: 構造化した結果。`outputSchema` を登録していないツールでも返せ、クライアントの `callTool` の結果にそのまま届く（2.3.1 で確かめた）
+            notes: 古いクライアントのため、同じ JSON の文字列を `content` にも入れる
       - name: fromJsonSchema
         kind: 関数
         purpose: JSON Schema を `inputSchema` に渡せる形に包み、引数に型を付ける。検査に使う検証器を差し替えられる

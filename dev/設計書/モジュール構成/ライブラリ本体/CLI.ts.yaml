@@ -1383,31 +1383,31 @@ functions:
     kind: 関数
     container: src/cli/index-file.ts
     usecase: 索引を書き換える
-    summary: 索引の YAML の文書で、`docs` か `terms` の ID の要素を置き換え・末尾へ足し・消し、書き換えた後の索引を索引の形で検査する
-    description: '`yaml` の `Document` のノードを書き換えるため、他の要素・キー・コメントはそのまま残る。置き換える要素は `{ id, ...item }` のキーの並びにする（`item` の `id` は使わない）'
+    summary: 索引の YAML の文書で、`docs`・`terms`・`tags` のどれかの鍵の要素を置き換え・末尾へ追加し・消し、書き換えた後の索引を索引の形で検査する
+    description: '`yaml` の `Document` のノードを書き換えるため、他の要素・キー・コメントはそのまま残る。鍵は `doc`・`term` が `id`、`tag` が `name` で、置き換える要素は `{ {鍵}: id, ...item }` のキーの並びにする（`item` の鍵のキーは使わない）'
     scope: public
     is_async: false
     side_effects: 渡した `document` を書き換える
     args:
       - name: options
-        type: "{ document: Document; kind: 'doc' | 'term'; id: string; item: Record<string, unknown> | null }"
+        type: "{ document: Document; kind: 'doc' | 'term' | 'tag'; id: string; item: Record<string, unknown> | null }"
         required: true
-        description: 索引の YAML の文書・書き換える一覧・ID・項目の中身（`null` は消す）
+        description: 索引の YAML の文書・書き換える一覧・鍵（tag はタグの名前）・項目の中身（`null` は消す）
     returns:
       type: "{ action: 'added' | 'replaced' | 'removed'; problems: IndexProblem[] }"
       description: したことと、書き換えた後の索引の合わないところ（合えば空）
     process: |-
-      1. `kind` が `doc` なら `docs`、`term` なら `terms` の並びのノードを取る。`terms` が無く足すときは空の並びを作る
-      2. `id` が同じ要素を探す
+      1. `kind` が `doc` なら `docs`、`term` なら `terms`、`tag` なら `tags` の並びのノードを取る。`terms`・`tags` が無く足すときは空の並びを作る
+      2. 鍵（`doc`・`term` は `id`、`tag` は `name`）が同じ要素を探す
          - `item` が `null` で要素が無い場合、例外にする
-         - `item` が `null` の場合、要素を消して `removed`
-         - 要素があれば `{ id, ...item }` に置き換えて `replaced`
-         - 無ければ末尾に `{ id, ...item }` を足して `added`
+         - `item` が `null` の場合、要素を消して `removed`。`tags` が空になったら `tags` のキーも消す
+         - 要素があれば `{ {鍵}: id, ...item }` に置き換えて `replaced`
+         - 無ければ末尾に `{ {鍵}: id, ...item }` を足して `added`
       3. 書き換えた後の文書を値にして索引の形で検査し、合わないところを返す（索引の形の検査）
     exceptions:
       - name: CliError
         condition: '`item` が `null` で、その ID の要素が無い'
-        message: '`{ID}` は索引の `{docs か terms}` にありません。ID を確かめてください。'
+        message: '`{ID}` は索引の `{docs か terms か tags}` にありません。ID を確かめてください。'
     unit_tests:
       - name: test_apply_index_update
         case: 正常
@@ -1446,6 +1446,18 @@ functions:
         mock: なし
         expected: '`CliError` を投げ、メッセージに `z` と `docs` が入る'
         exception: '`item` が `null` で、その ID の要素が無い'
+      - name: test_apply_index_update_when_tag
+        case: 正常
+        summary: tags が無い索引にタグを name を鍵にして足す
+        condition: '`tags` の無い索引に `kind: tag`、`id: topic:mcp`、`{ group: "topic" }`'
+        mock: なし
+        expected: '`action` が `added`、`problems` が空で、`tags` が `[{ name: "topic:mcp", group: "topic" }]`'
+      - name: test_apply_index_update_when_last_tag_removed
+        case: 正常
+        summary: 最後のタグを消すと tags のキーも消す
+        condition: '`tags` が `topic:mcp` だけの索引に `kind: tag`、`id: topic:mcp`、`item: null`'
+        mock: なし
+        expected: '`action` が `removed`、文書に `tags` のキーが無い'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
     refs:
@@ -1465,9 +1477,9 @@ functions:
     side_effects: 索引のファイルを置き換える。書き換えている間だけ `{索引}{INDEX_LOCK_SUFFIX}` を置く
     args:
       - name: options
-        type: "{ loaded: LoadedConfig; kind: 'doc' | 'term'; id: string; item: Record<string, unknown> | null; lockTimeoutMs?: number }"
+        type: "{ loaded: LoadedConfig; kind: 'doc' | 'term' | 'tag'; id: string; item: Record<string, unknown> | null; lockTimeoutMs?: number }"
         required: true
-        description: 読んだ設定・書き換える一覧・ID・項目の中身・ロックを待つ上限（既定は `INDEX_LOCK_TIMEOUT_MS`）
+        description: 読んだ設定・書き換える一覧・鍵・項目の中身・ロックを待つ上限（既定は `INDEX_LOCK_TIMEOUT_MS`）
     returns:
       type: "Promise<{ action: 'added' | 'replaced' | 'removed'; index: string }>"
       description: したことと、索引のファイルのパス（設定ファイルのあるフォルダからの相対パス）
