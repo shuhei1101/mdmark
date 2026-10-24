@@ -114,6 +114,27 @@ test("test_normal_when_query", async () => {
   ]);
 });
 
+// 全角と半角だけが違う query でも、名前・別名・説明に当たるタグを返す（正常系）
+test("test_normal_when_query_width_differs", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeVocabularyProject(dir);
+  const client = await connectInMemory({
+    projectDir: dir,
+    pluginDir: builtPluginDir(),
+  });
+  // 実行
+  const result = await callTool(client, "list_tags", {
+    query: "ＭＣＰ",
+    format: "json",
+  });
+  // 検証
+  expect(result.isError).toBe(false);
+  expect(tagsOf(result.structured).map((tag) => tag.name)).toEqual([
+    "topic:mcp",
+  ]);
+});
+
 // 語彙を持たない索引では空の一覧を返す（正常系）
 test("test_normal_when_no_vocabulary", async () => {
   // 準備

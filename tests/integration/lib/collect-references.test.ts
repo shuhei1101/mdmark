@@ -64,6 +64,30 @@ test("test_normal", async () => {
   expect(documents).toEqual(DOCUMENTS);
 });
 
+// 全角と半角・大文字と小文字だけが違う別名の出現も被参照にする（正常系）
+test("test_normal_when_alias_notation_differs", async () => {
+  // 準備
+  const { collectReferences } = await loadBuilt();
+  const index: MdmarkIndex = {
+    ...INDEX,
+    docs: INDEX.docs.map((doc) =>
+      doc.id === "api"
+        ? { id: doc.id, path: doc.path, title: doc.title, aliases: ["MCP"] }
+        : doc,
+    ),
+  };
+  // どちらの本文も `api` を指すリンクを持たず、別名の出現の表記だけが違う
+  const documents = {
+    "設計/arch.md": "# アーキテクチャ\n\nmcp を使う。",
+    "api.md": "# API\n",
+    "使い方/guide.md": "# 使い方\n\nＭＣＰ を使う。",
+  };
+  // 実行
+  const references = collectReferences({ index, documents });
+  // 検証
+  expect(references.backlinks.api).toEqual(["arch", "guide"]);
+});
+
 // 各文書の用語集の表から用語を集める（正常系）
 test("test_normal_when_glossary_table", async () => {
   // 準備

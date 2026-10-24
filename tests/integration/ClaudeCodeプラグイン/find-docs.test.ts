@@ -11,6 +11,7 @@ const { connectInMemory } = useMcpClients();
 function docYaml(doc: {
   id: string;
   title: string;
+  aliases?: string[];
   tags?: string[];
   related?: string[];
 }): string[] {
@@ -18,6 +19,7 @@ function docYaml(doc: {
     `  - id: ${doc.id}`,
     `    path: ${doc.id}.md`,
     `    title: ${doc.title}`,
+    ...(doc.aliases ? [`    aliases: [${doc.aliases.join(", ")}]`] : []),
     ...(doc.tags ? [`    tags: [${doc.tags.join(", ")}]`] : []),
     ...(doc.related ? [`    related: [${doc.related.join(", ")}]`] : []),
   ];
@@ -128,6 +130,29 @@ test("test_normal", async () => {
   expect(await readFile(join(dir, "index.yaml"), "utf8")).toBe(before);
   const tool = tools.find((candidate) => candidate.name === "find_docs");
   expect(tool?.annotations?.readOnlyHint).toBe(true);
+});
+
+// 全角と半角だけが違う語でも、別名に当たる文書を返す（正常系）
+test("test_normal_when_width_differs", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeProject(dir, [
+    { id: "a", title: "文書 A", aliases: ["MCP"], tags: ["設計"] },
+  ]);
+  const client = await connectInMemory({
+    projectDir: dir,
+    pluginDir: builtPluginDir(),
+  });
+  // 実行
+  const result = await callTool(client, "find_docs", { text: "ＭＣＰ" });
+  // 検証
+  expect(result.isError).toBe(false);
+  const lines = (result.texts[0] ?? "").split("\n");
+  expect(lines[0]).toContain("総件数 1 件・返した件数 1 件");
+  // 見出しと区切りの行を除いた行が、a の 1 行だけ
+  const tableLines = lines.filter((line) => line.startsWith("|"));
+  expect(tableLines.slice(2)).toHaveLength(1);
+  expect(tableLines[2]).toContain("| a |");
 });
 
 // どの文書にも無い語では総件数 0 件の結果を返す（正常系）
