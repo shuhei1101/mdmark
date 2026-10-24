@@ -1,0 +1,572 @@
+title: "VS Code 拡張機能 / プレビュー"
+lead: Markdown ごとのプレビューのパネルを開き、Webview の HTML・CSP を組み、描き直し・スクロールの同期・リンクの振り分けを担う拡張機能の側の処理。
+directory: |-
+  ```tree
+  vscode/src/preview/
+  ├── manager.ts       # PreviewManager（Markdown ごとのパネルと、エディタ・設定の変更の振り分け）
+  ├── panel.ts         # PreviewPanel（1 つのパネルの HTML・メッセージ・描き直しの待ち）
+  ├── html.ts          # Webview の HTML と CSP（vscode を import しない）
+  ├── scroll-guard.ts  # エディタを動かした直後の知らせを捨てる判定（vscode を import しない）
+  └── links.ts         # 押したリンクの開き先の見分け（vscode を import しない）
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      classDiagram
+        direction LR
+        class プレビューの管理
+        class プレビューのパネル
+        class エディタのスクロールの見張り
+        プレビューの管理 --> プレビューのパネル : Markdown ごとに持つ
+        プレビューのパネル --> エディタのスクロールの見張り : 往復を止める
+data_models:
+  - name: LinkTarget
+    title: リンクの開き先
+    container: vscode/src/preview/links.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`{ kind: "external"; url: string }`・`{ kind: "markdown"; path: string }`・`{ kind: "file"; path: string }`・`{ kind: "none" }` の判別付きの型'
+    properties:
+      - name: kind
+        type: '"external" | "markdown" | "file" | "none"'
+        description: 既定のブラウザ・VS Code のエディタ・`vscode.open`・何もしない
+    status: planned
+constants:
+  - name: VIEW_TYPE
+    title: パネルの種類
+    container: vscode/src/preview/manager.ts
+    summary: '`window.createWebviewPanel` に渡す viewType'
+    value: '"mdmark.preview"'
+    status: planned
+  - name: DIST_BASE
+    title: 配布物の配信元
+    container: vscode/src/preview/html.ts
+    summary: テストで差し替えないときの jsDelivr の配信元（末尾の `/` を持たない）
+    value: '"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark"'
+    refs:
+      - dev/設計書/外部API/jsDelivr#
+    status: planned
+  - name: REVEAL_MARGIN_LINES
+    title: 動かさない行の幅
+    container: vscode/src/preview/scroll-guard.ts
+    summary: 動かす行が、見えている範囲の先頭からこの行数以内にあるときは `revealRange` を呼ばない
+    value: '6'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[往復の止め方]
+    status: planned
+classes:
+  - name: PreviewManager
+    title: プレビューの管理
+    container: vscode/src/preview/manager.ts
+    usecase: 共通
+    summary: Markdown の URI ごとに 1 つの `PreviewPanel` を持ち、コマンドの対象を決め、エディタ・設定・設定ファイルの変更をパネルへ振り分ける
+    kind: クラス
+    properties:
+      - name: panels
+        type: Map<string, PreviewPanel>
+        access: private
+        description: Markdown の URI の文字列 → パネル
+      - name: deps
+        type: ExtensionDeps
+        access: private
+        description: '`ExtensionContext`・配布物の配信元・タグ一覧の取得先・テストか・ログの出力先（`Logger`）。`activate` が `extensionMode` と環境変数から作る'
+    methods:
+      - name: open
+        title: プレビューを開く
+        kind: メソッド
+        summary: '`mdmark.openPreviewToSide`・`mdmark.openPreview` の本体。同じ Markdown のパネルがあれば今の列のまま表に出し、無ければ作って読み込ませる'
+        is_async: true
+        args:
+          - name: options
+            type: '{ uri?: Uri; column: ViewColumn.Beside | ViewColumn.Active }'
+            required: true
+            description: 対象の Markdown（無ければ対象を決める）と開く列
+        returns:
+          type: Promise<void>
+          description: HTML を入れたら解決する
+        process: |-
+          1. 対象の Markdown を決める（対象を決める）
+             - 無いか `languageId` が `markdown` でない場合、何もしない
+          2. `panels` にあれば `reveal()` して終わる
+          3. `window.createWebviewPanel(VIEW_TYPE, "プレビュー {ファイル名}", column, { enableScripts: true, retainContextWhenHidden: false, localResourceRoots })` で開き、`PreviewPanel` を作って `panels` に入れ、読み込ませる（読み込む）。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と拡張機能の `media/`
+          4. パネルが閉じたら `panels` から消す
+        callees:
+          - '#classes[PreviewPanel]'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[パネル]
+      - name: refresh
+        title: プレビューをリロードする
+        kind: メソッド
+        summary: '`mdmark.refreshPreview` と Webview の `reload` の本体。対象のパネルを読み込み直す。パネルが無ければ何もしない'
+        is_async: true
+        args:
+          - name: uri
+            type: Uri | undefined
+            required: false
+            description: 対象の Markdown
+        returns:
+          type: Promise<void>
+          description: HTML を入れ直したら解決する
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#
+      - name: targetUri
+        title: 対象を決める
+        kind: メソッド
+        summary: 渡された URI、無ければフォーカスのある mdmark のプレビューの Markdown、無ければアクティブなエディタの文書を返す
+        args:
+          - name: uri
+            type: Uri | undefined
+            required: false
+            description: コマンドに渡された URI
+        returns:
+          type: Uri | undefined
+          description: 対象の Markdown
+      - name: handleDocumentChange
+        title: 文書の変更を振り分ける
+        kind: メソッド
+        summary: '`workspace.onDidChangeTextDocument`・`onDidSaveTextDocument` を受け、その Markdown のパネルへ渡す。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送る'
+        args:
+          - name: event
+            type: '{ document: TextDocument; saved: boolean }'
+            required: true
+            description: 変わった文書と、保存か
+        returns:
+          type: void
+          description: '-'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[描き直すきっかけ]
+      - name: handleConfigChange
+        title: 設定の変更を振り分ける
+        kind: メソッド
+        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
+        args:
+          - name: event
+            type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
+            required: true
+            description: 変わった設定ファイルか、設定の変更
+        returns:
+          type: void
+          description: '-'
+      - name: handleVisibleRanges
+        title: エディタのスクロールを振り分ける
+        kind: メソッド
+        summary: '`window.onDidChangeTextEditorVisibleRanges` を受け、その文書のパネルに見えている範囲を渡す'
+        args:
+          - name: event
+            type: TextEditorVisibleRangesChangeEvent
+            required: true
+            description: VS Code の知らせ
+        returns:
+          type: void
+          description: '-'
+      - name: inspectPreview
+        title: パネルの要素を調べる
+        kind: メソッド
+        summary: テストのときだけ `activate` が戻り値で返す。最後に表に出たパネルへ `inspect` を送り、`inspected` の `elements` を返す
+        is_async: true
+        args:
+          - name: selector
+            type: string
+            required: true
+            description: CSS セレクタ
+        returns:
+          type: Promise<InspectedElement[]>
+          description: 当たった要素の様子
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
+          - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#data_models[InspectedElement]
+    status: planned
+  - name: PreviewPanel
+    title: プレビューのパネル
+    container: vscode/src/preview/panel.ts
+    usecase: 共通
+    summary: 1 つの Markdown のパネル。読むバージョンと設定を決めて HTML を入れ、Webview とメッセージをやり取りし、描き直しの待ちを 1 つだけ持つ
+    kind: クラス
+    properties:
+      - name: webviewPanel
+        type: WebviewPanel
+        access: private
+        description: VS Code のパネル
+      - name: document
+        type: TextDocument
+        access: private
+        description: 対象の Markdown
+      - name: config
+        type: PreviewConfig
+        access: private
+        description: 最後に読めた設定（`libraries` は Webview で読める URL に直した値。読めたことが無ければ `{}`）
+      - name: timer
+        type: NodeJS.Timeout | undefined
+        access: private
+        description: 描き直すまでの待ち。待つ間に変更が来たら始め直す
+      - name: ready
+        type: boolean
+        access: private
+        description: 今の HTML の Webview から `ready` を受けたか
+      - name: loadToken
+        type: number
+        access: private
+        description: 読み込むたびに増やす番号。リロードが重なったとき、後の呼び出しだけが HTML を入れる
+      - name: scrollGuard
+        type: EditorScrollGuard
+        access: private
+        description: エディタを動かした直後の知らせを捨てる判定
+      - name: pendingInspects
+        type: 'Map<number, (elements: InspectedElement[]) => void>'
+        access: private
+        description: '`inspect` の `id` → 結果を渡す関数（テストのときだけ使う）'
+      - name: cspLibraryOrigins
+        type: string[]
+        access: private
+        description: 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す
+      - name: rawLibraries
+        type: Record<string, unknown> | undefined
+        access: private
+        description: '`config` の `libraries` の URL を直す前の値（CSP に入れる origin の元）。読めなかったときは前に読めた値を残す'
+    methods:
+      - name: load
+        title: 読み込む
+        kind: メソッド
+        summary: 読むバージョンと設定を決め直し、Webview に HTML を入れる（開くときとリロードのとき）
+        is_async: true
+        side_effects: '`mdmark.version` が `latest` のときはタグ一覧を 1 回取り、選んだバージョンを `globalState` の `mdmark.lastVersion` に書く'
+        returns:
+          type: Promise<void>
+          description: HTML を入れたら解決する
+        process: |-
+          1. `loadToken` を増やして控える
+          2. 設定を読み（設定を読む）、読むバージョンを決める（読むバージョンを決める）
+             - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
+          3. 設定ファイルを読む（設定を読み直す）
+          4. 控えた番号が今の `loadToken` と違えば、後の呼び出しに任せて終わる
+          5. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む）`webview.html` に入れる。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
+        callees:
+          - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[decideVersion]
+          - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[fetchLatestVersion]
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[readSettings]
+          - '#functions[buildPreviewHtml]'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#
+      - name: reloadConfig
+        title: 設定を読み直す
+        kind: メソッド
+        summary: 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めたかを返す
+        is_async: true
+        returns:
+          type: Promise<boolean>
+          description: '`ok`・`missing` のとき true、`error`・開けないときは false'
+        callees:
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveConfigPath]
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[loadConfig]
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveLibraries]
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
+        process: |-
+          1. 設定ファイルの場所を決め（設定ファイルの場所を決める）、読む（設定ファイルを読む）
+             - `ok` の場合、`libraries` を `asWebviewUri` で直して（libraries の URL を直す）`config` を替え、前が読めなかったときだけ `configOk` を送る
+             - `missing` の場合、`config` を `{}` にする
+             - `error` の場合、`config` を残して `configError` を送る
+               - `[warn]` 設定ファイルを読めない（パス・行・`message`）
+             - `readFile` が `ENOENT` 以外で失敗した場合、`config` を残す
+               - `[error]` 設定ファイルを開けない（パス・誤り）
+      - name: scheduleRender
+        title: 描き直しを待つ
+        kind: メソッド
+        summary: 待ちを始め直し、`mdmark.preview.updateDelayMs` 後に送る（今すぐ送る）
+        returns:
+          type: void
+          description: '-'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[描き直すまでの待ち]
+      - name: renderNow
+        title: 今すぐ送る
+        kind: メソッド
+        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config`・`mdmark.preview.theme` で `render` を送る。見えていなければ送らない
+        returns:
+          type: void
+          description: '-'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[送る中身]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
+      - name: handleMessage
+        title: Webview のメッセージを受ける
+        kind: メソッド
+        summary: '`onDidReceiveMessage` を `type` ごとに処理する'
+        is_async: true
+        args:
+          - name: message
+            type: WebviewMessage
+            required: true
+            description: Webview からのメッセージ
+        returns:
+          type: Promise<void>
+          description: '-'
+        process: |-
+          1. `type` で分ける
+             - `ready` の場合、`ready` を `true` にして今すぐ送る（設定ファイルを読めないときは `configError` も送る）
+             - `revealLine` の場合、`mdmark.preview.scrollEditorWithPreview` が `true` でその Markdown のエディタが見えていれば、動かすかを判定し（動かすかを決める）、動かすときだけ `revealRange(行, AtTop)` を呼ぶ
+             - `openLink` の場合、開き先を見分け（リンクの開き先を見分ける）、`external` は `env.openExternal`、`markdown` は元のエディタと同じ列に `window.showTextDocument`、`file` は `vscode.open` で開く。ファイルが無いときは何もしない
+               - `[warn]` リンク先が無い（`href`・解決したパス）。`none` のときは `[warn]` 開けないリンク（`href`）
+             - `reload` の場合、読み込む
+             - `openConfig` の場合、設定ファイルを開く
+             - `inspected` の場合、`pendingInspects` の同じ `id` に渡して消す
+             - `loadFailed` の場合、描けない理由は Webview が出す
+               - `[warn]` 配布物を読めない（`reason`・バージョン・`index.js` の URL）
+             - `rendered` は何もしない（結合テストが受けたことを `onDidReceiveMessage` で確かめる）
+        callees:
+          - '#classes[EditorScrollGuard]'
+          - '#functions[resolveLink]'
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[openConfigFile]
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#
+          - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[プレビューから合わせる]
+      - name: syncFromEditor
+        title: エディタに合わせる
+        kind: メソッド
+        summary: エディタの見えている範囲が変わったとき、自分が動かした知らせでなければ、`mdmark.preview.scrollPreviewWithEditor` が `true` のとき `visibleRanges[0].start.line` を `scrollToLine` で送る
+        args:
+          - name: range
+            type: '{ start: number; end: number }'
+            required: true
+            description: '`visibleRanges[0]` の開始と終わりの行'
+        returns:
+          type: void
+          description: '-'
+        callees:
+          - '#classes[EditorScrollGuard]'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[エディタから合わせる]
+      - name: inspect
+        title: 要素を調べさせる
+        kind: メソッド
+        summary: 新しい `id` で `inspect` を送り、`inspected` を受けたら解決する（テストのときだけ呼ばれる）
+        is_async: true
+        args:
+          - name: selector
+            type: string
+            required: true
+            description: CSS セレクタ
+        returns:
+          type: Promise<InspectedElement[]>
+          description: 当たった要素の様子
+      - name: applyConfigChange
+        title: 設定の変更を当てる
+        kind: メソッド
+        summary: 設定を読み直し（設定を読み直す）、読めなければ何も送らず、`libraries` の origin の集まりが `cspLibraryOrigins` と違えば読み込み（読み込む）、同じなら今すぐ送る（`PreviewManager.handleConfigChange` が呼ぶ）
+        is_async: true
+        returns:
+          type: Promise<void>
+          description: '-'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
+    status: planned
+  - name: EditorScrollGuard
+    title: エディタのスクロールの見張り
+    container: vscode/src/preview/scroll-guard.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: '`revealLine` で動かした行を覚え、次に届く見えている範囲の知らせが自分の起こしたものかを判定する。時間で捨てない'
+    kind: クラス
+    properties:
+      - name: revealedLine
+        type: number | undefined
+        access: private
+        description: 動かした行
+    methods:
+      - name: shouldReveal
+        title: 動かすかを決める
+        kind: メソッド
+        summary: 行が見えている範囲の先頭から `REVEAL_MARGIN_LINES` 行以内にあれば `false`（覚えを作らない）、それ以外は行を覚えて `true`
+        args:
+          - name: line
+            type: number
+            required: true
+            description: 動かす行
+          - name: visibleStart
+            type: number
+            required: true
+            description: 今の `visibleRanges[0].start.line`
+        returns:
+          type: boolean
+          description: '`revealRange` を呼ぶか'
+        unit_tests:
+          - name: test_should_reveal
+            case: 正常
+            summary: 先頭から 6 行を超えた先の行だけ動かす
+            condition: '`visibleStart` が 100 で、行 106 と行 107 と行 99'
+            mock: なし
+            expected: 106 は `false`、107 と 99 は `true`
+      - name: takeVisibleRange
+        title: 知らせを受ける
+        kind: メソッド
+        summary: 覚えがあり、見えている範囲がその行を含むなら `false`（送らない）。どちらの場合も覚えを消す。覚えが無ければ `true`
+        args:
+          - name: range
+            type: '{ start: number; end: number }'
+            required: true
+            description: '`visibleRanges[0]` の開始と終わりの行'
+        returns:
+          type: boolean
+          description: '`scrollToLine` を送るか'
+        unit_tests:
+          - name: test_take_visible_range
+            case: 正常
+            summary: 動かした行を含む最初の知らせだけを捨てる
+            condition: '`shouldReveal(150, 0)` の後、`{ start: 145, end: 190 }` を 2 回'
+            mock: なし
+            expected: 1 回目は `false`、2 回目は `true`
+          - name: test_take_visible_range_when_not_containing
+            case: 正常
+            summary: 動かした行を含まない知らせは送り、覚えを消す
+            condition: '`shouldReveal(150, 0)` の後、`{ start: 10, end: 50 }`'
+            mock: なし
+            expected: '`true`。続けて `{ start: 145, end: 190 }` も `true`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[往復の止め方]
+      - dev/設計書/外部ライブラリ/vscode#
+    status: planned
+functions:
+  - name: distUrl
+    title: 配布物の URL を組む
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: 共通
+    summary: '`{配信元}@{バージョン}/dist/{ファイル}` を返す'
+    scope: public
+    args:
+      - name: options
+        type: '{ base: string; version: string; file: "index.js" | "index.css" }'
+        required: true
+        description: 配信元（`DIST_BASE` か `MDMARK_VSCODE_DIST_BASE`）・バージョン・ファイル
+    returns:
+      type: string
+      description: URL
+    unit_tests:
+      - name: test_dist_url
+        case: 正常
+        summary: バージョン付きの URL を組む
+        condition: '`DIST_BASE`、`v0.10.0`、`index.js`'
+        mock: なし
+        expected: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配布物の URL]
+    status: planned
+  - name: buildCsp
+    title: CSP を組む
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: VSCodeでプレビューを開く
+    summary: インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む
+    scope: public
+    args:
+      - name: options
+        type: '{ nonce: string; distOrigin: string; libraryOrigins: string[]; cspSource: string }'
+        required: true
+        description: nonce・配布物の origin・`libraries` の origin・`Webview.cspSource`
+    returns:
+      type: string
+      description: '`;` で区切った CSP'
+    unit_tests:
+      - name: test_build_csp
+        case: 正常
+        summary: スクリプトは nonce と配信元だけ、スタイルに unsafe-inline を足す
+        condition: '`nonce` が `abc`、`distOrigin` が `https://cdn.jsdelivr.net`、`libraryOrigins` が `["https://cdn.example.com"]`、`cspSource` が `https://*.vscode-cdn.net`'
+        mock: なし
+        expected: "`default-src 'none'; script-src 'nonce-abc' https://cdn.jsdelivr.net https://cdn.example.com https://*.vscode-cdn.net; style-src https://cdn.jsdelivr.net https://*.vscode-cdn.net 'unsafe-inline'; img-src https://*.vscode-cdn.net https: data:; font-src https://cdn.jsdelivr.net https://*.vscode-cdn.net; connect-src https://cdn.jsdelivr.net`"
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
+    status: planned
+  - name: buildPreviewHtml
+    title: Webview の HTML を組む
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: VSCodeでプレビューを開く
+    summary: CSP・`<base>`・配布物の CSS・パネルの CSS・描く先を包む要素（`PreviewBoot` の `data-*`）・nonce 付きのパネルのスクリプトを持つ HTML を組む
+    description: 属性に入れる値は HTML として特別な文字をエスケープする。バージョンを決められないときは配布物の `link` と `data-dist-js` を持たず `data-status="versionUndecidable"` を持つ。テストのときだけ `data-test` を持つ
+    scope: public
+    args:
+      - name: options
+        type: '{ nonce: string; csp: string; baseHref: string; distJs?: string; distCss?: string; version?: string; scriptUri: string; styleUri: string; configPath: string; test: boolean }'
+        required: true
+        description: 組むのに要る値。`baseHref` は Markdown のフォルダの `asWebviewUri` に `/` を付けたもの、`scriptUri`・`styleUri` は `media/preview.js`・`media/preview.css` の `asWebviewUri`
+    returns:
+      type: string
+      description: HTML 文字列
+    unit_tests:
+      - name: test_build_preview_html
+        case: 正常
+        summary: CSP・base・配布物・スクリプトの nonce を持つ
+        condition: '`distJs`・`distCss`・`version` を渡し、`test` が `false`'
+        mock: なし
+        expected: '`<meta http-equiv="Content-Security-Policy" content="{csp}">`、`<base href="{baseHref}">`、`<link rel="stylesheet" href="{distCss}">`、`#mdmark-preview` が `data-dist-js` と `data-version` を持ち `data-test` を持たない、全ての `script` が `nonce="{nonce}"` を持つ'
+      - name: test_build_preview_html_when_undecidable
+        case: 正常
+        summary: バージョンを決められないときは配布物を読まない
+        condition: '`distJs`・`distCss`・`version` を渡さず、`test` が `true`'
+        mock: なし
+        expected: 配布物の `link` が無く、`#mdmark-preview` が `data-status="versionUndecidable"` と `data-test` を持つ
+      - name: test_build_preview_html_when_special_chars
+        case: 正常
+        summary: 属性の値をエスケープする
+        condition: '`configPath` が `a"><script>x</script>.yaml`'
+        mock: なし
+        expected: '`data-config-path="a&quot;&gt;&lt;script&gt;x&lt;/script&gt;.yaml"`、nonce を持たない `script` が無い'
+    callees:
+      - '#functions[buildCsp]'
+      - '#functions[distUrl]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[相対パスの基準]
+      - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#data_models[PreviewBoot]
+    status: planned
+  - name: createNonce
+    title: nonce を作る
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: VSCodeでプレビューを開く
+    summary: '`crypto.getRandomValues` の 16 バイトを base64url にした文字列を返す（HTML を入れるたびに作り直す）'
+    scope: public
+    returns:
+      type: string
+      description: nonce
+    unit_tests:
+      - name: test_create_nonce
+        case: 正常
+        summary: 呼ぶたびに違う base64url の文字列を返す
+        condition: 2 回呼ぶ
+        mock: なし
+        expected: どちらも `^[A-Za-z0-9_-]{22}$` に合い、等しくない
+    status: planned
+  - name: resolveLink
+    title: リンクの開き先を見分ける
+    kind: 関数
+    container: vscode/src/preview/links.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`http:`・`https:`・`mailto:` は `external`、それ以外のスキームは `none`、相対パスは `#` 以降を落として Markdown のフォルダから解決し、拡張子が `.md` なら `markdown`、他は `file` を返す'
+    scope: public
+    args:
+      - name: options
+        type: '{ href: string; markdownDir: string }'
+        required: true
+        description: 書いたままの `href` と Markdown のフォルダの絶対パス
+    returns:
+      type: LinkTarget
+      description: 開き先
+    unit_tests:
+      - name: test_resolve_link
+        case: 正常
+        summary: 種類ごとに開き先を決める
+        condition: '`markdownDir` が `/ws/docs` で、`https://example.com`・`mailto:a@example.com`・`./guide.md#使い方`・`../img/a.png`・`javascript:x`'
+        mock: なし
+        expected: '`external`（URL のまま）・`external`・`{ kind: "markdown", path: "/ws/docs/guide.md" }`・`{ kind: "file", path: "/ws/img/a.png" }`・`none`'
+      - name: test_resolve_link_when_encoded
+        case: 正常
+        summary: パーセントエンコードした相対パスを戻して解決する
+        condition: '`./%E4%BD%BF%E3%81%84%E6%96%B9.md`'
+        mock: なし
+        expected: '`{ kind: "markdown", path: "/ws/docs/使い方.md" }`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#constraints[リンクの見分け方]
+    status: planned
+test_files:
+  - tests/unit/vscode/src/preview/html.test.ts
+  - tests/unit/vscode/src/preview/links.test.ts
+  - tests/unit/vscode/src/preview/scroll-guard.test.ts

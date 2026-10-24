@@ -1,0 +1,177 @@
+title: "VSCodeでプレビューを開く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本のワークスペース
+        description: 見出し・表・注意書き・フロー図を持つ Markdown を 1 つ置いたフォルダ。`mdmark.version` は既定の `latest`
+      - name: Mock
+        description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの形の URL で配る手元のサーバー。GitHub のタグ一覧は `v0.7.0`・`v0.6.0`・`vscode-v0.1.0` を返す代役
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant GH as GitHub のタグ一覧
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>ED: Shift+Alt+D を押す
+        ED->>EX: mdmark.openPreviewToSide
+        EX->>GH: タグ一覧を取る
+        GH-->>EX: v0.7.0・v0.6.0・vscode-v0.1.0
+        EX->>EX: vX.Y.Z の最新 v0.7.0 を選び、前回の版として残す
+        EX->>PV: 横の列にパネルを開く
+        PV->>CDN: v0.7.0 の配布物を読む
+        CDN-->>PV: dist/index.js・dist/index.css
+        PV-->>EX: ready
+        EX->>PV: Markdown の全文と設定を送る
+        PV->>PV: mount で描く
+        PV-->>W: 描いた文書を表示
+    expected:
+      - Markdown のエディタの横の列にプレビューのパネルが開く
+      - パネルに見出し・表・注意書き・フロー図が mdmark で描かれる
+      - 読んだ配布物の版が `v0.7.0` で、`vscode-v0.1.0` を選んでいない
+      - 前回の版として `v0.7.0` が拡張機能の状態に残る
+    test: test_normal
+  - name: 正常シナリオ（同じ列に開く）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: コマンドパレットで mdmark: プレビューを開く
+        ED->>EX: mdmark.openPreview
+        EX->>PV: 同じ列のタブにパネルを開く
+        PV-->>W: 描いた文書を表示
+    expected:
+      - プレビューのパネルが Markdown のエディタと同じ列のタブで開き、文書が描かれる
+    test: test_normal_when_same_column
+  - name: 正常シナリオ（版を固定する）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ。ワークスペースの設定で `mdmark.version` を `v0.6.0` にする
+      - name: Mock
+        description: 正常シナリオと同じ。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>EX: プレビューを横に開く
+        EX->>PV: v0.6.0 でパネルを開く
+        PV->>CDN: v0.6.0 の配布物を読む
+        PV-->>W: 描いた文書を表示
+    expected:
+      - 読んだ配布物の版が `v0.6.0`
+      - タグ一覧の代役が 1 回も呼ばれない
+    test: test_normal_when_version_pinned
+  - name: 正常シナリオ（タグ一覧を取れない）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: 前回の版
+        description: 拡張機能の状態に前回の版 `v0.6.0` が残っている
+      - name: Mock
+        description: タグ一覧の代役は応答しない（待ちの上限まで返さない）。配布物は正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant GH as GitHub のタグ一覧
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>GH: タグ一覧を取る
+        GH--xEX: 待ちの上限まで応答なし
+        EX->>EX: 前回の版 v0.6.0 を使う
+        EX->>PV: v0.6.0 でパネルを開く
+        PV-->>W: 描いた文書を表示
+    expected:
+      - 読んだ配布物の版が前回の版の `v0.6.0`
+      - パネルに描けない理由は出ない
+    test: test_normal_when_tags_unreachable
+  - name: 異常シナリオ（配布物を読めない）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 配布物を配る手元のサーバーが配布物の要求に応えない（オフラインの代わり）。タグ一覧は正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>EX: プレビューを横に開く
+        EX->>PV: v0.7.0 でパネルを開く
+        PV->>CDN: v0.7.0 の配布物を読む
+        CDN--xPV: 応答なし
+        PV-->>EX: 読めなかったことを知らせる
+        PV-->>W: 描けない理由と「リロード」のボタンを表示
+    expected:
+      - パネルに、配布物を読めない（オフライン）ことを示す理由と「リロード」のボタンが出る
+      - Markdown と `mdmark.config.yaml` は書き換わらない
+    test: test_error_when_distribution_unreachable
+  - name: 異常シナリオ（指定した版が無い）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ。ワークスペースの設定で `mdmark.version` を `v9.9.9` にする
+      - name: Mock
+        description: 配布物を配る手元のサーバーは `v9.9.9` に 404 を返す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>EX: プレビューを横に開く
+        EX->>PV: v9.9.9 でパネルを開く
+        PV->>CDN: v9.9.9 の配布物を読む
+        CDN-->>PV: 404
+        PV-->>W: 描けない理由と「リロード」のボタンを表示
+    expected:
+      - パネルに、指定した版 `v9.9.9` が無いことを示す理由と「リロード」のボタンが出る
+    test: test_error_when_version_missing
+  - name: 異常シナリオ（版を決められない）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: 前回の版
+        description: 拡張機能の状態に前回の版が無い（初めて開く）
+      - name: Mock
+        description: タグ一覧の代役は応答しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant GH as GitHub のタグ一覧
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>GH: タグ一覧を取る
+        GH--xEX: 待ちの上限まで応答なし
+        EX->>PV: 版を決められないことを知らせてパネルを開く
+        PV-->>W: 描けない理由と「リロード」のボタンを表示
+    expected:
+      - パネルに、版を決められない（タグ一覧を取れず前回の版も無い）ことを示す理由と「リロード」のボタンが出る
+      - 配布物の要求が 0 件
+    test: test_error_when_version_undecidable
+lead: 文書を書く人が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読む mdmark の版を決め、jsDelivr の版付きの URL から配布物を読んで描く。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: Markdown を開いたまま、mdmark で描いた見た目を横で確かめられる
+  - name: mdmark の開発者
+    interest: mdmark にタグを打てば、拡張機能を上げ直さなくてもプレビューに届く
+trigger: 文書を書く人が Markdown を開いているときに `Shift+Alt+D`・エディタのタイトルのボタン・コマンドパレットのどれかでプレビューを開く
+preconditions:
+  - VS Code に mdmark の拡張機能を入れている
+  - Markdown のファイルをエディタで開いている
+success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めた版の mdmark で文書が描かれる。
+minimal_guarantee: 配布物を読めないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と設定ファイルは書き換えない。
+test_file: tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts

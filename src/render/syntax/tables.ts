@@ -1,15 +1,30 @@
 import type { StateCore, Token } from "markdown-it";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
-import { SLOT_MARKER } from "../../parts/own.ts";
+import { markOwn, SLOT_MARKER } from "../../parts/own.ts";
 import {
+  renderRowLink,
   renderTable,
   type TableFeature,
   type TableFilter,
   type TableKind,
+  type TableTotal,
 } from "../../parts/table.ts";
-import { FILTER_KINDS, type FilterKind } from "../../table-logic.ts";
+import {
+  FILTER_KINDS,
+  type FilterKind,
+  TOTAL_CALCS,
+  type TotalCalc,
+} from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
-import { featureOn, findClose, markOf, ownBlock, textOf } from "./tokens.ts";
+import { slugBase } from "./headings.ts";
+import {
+  envOf,
+  featureOn,
+  findClose,
+  markOf,
+  ownBlock,
+  textOf,
+} from "./tokens.ts";
 import {
   type SyntaxWarning,
   unclosedWarning,
@@ -26,8 +41,17 @@ export const TABLE_KINDS: Readonly<Record<TableKind, readonly TableFeature[]>> =
     plain: [],
   };
 
-/** 表の機能の名前 */
-const TABLE_FEATURES: readonly TableFeature[] = ["sort", "pin", "filter"];
+/** 表の機能の名前。後ろの 5 つはどの種類の既定にも入らず、`+機能` を書いた表にだけ付く */
+export const TABLE_FEATURES: readonly TableFeature[] = [
+  "sort",
+  "pin",
+  "filter",
+  "count",
+  "columns",
+  "total",
+  "copy",
+  "rowlink",
+];
 
 /** 表の印に書ける種類（`default` は印を書かない表の種類） */
 const WRITABLE_KINDS = ["data", "plain"];
@@ -44,15 +68,19 @@ export type TableSpec = {
   collapse: "none" | "closed" | "open";
   /** 読めなかった指定 */
   warnings: WarningItem[];
+  /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */
+  hide: number[];
+  /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
+  totals: TableTotal[];
 };
 
 /** 並びをコードにして `・` でつなぐ */
-function codes(values: readonly string[]): string {
+export function codes(values: readonly string[]): string {
   return values.map((value) => `\`${value}\``).join("・");
 }
 
 /** `filter=` の値を、表の見出しの文字と照らして読む */
-function readFilters(
+export function readFilters(
   value: string,
   headers: string[],
   warnings: WarningItem[],
@@ -82,6 +110,74 @@ function readFilters(
     }
   }
   return filters;
+}
+
+/** `hide=` の値を、表の見出しの文字と照らして読む。先頭の列は隠せない */
+function readHide(
+  value: string,
+  headers: string[],
+  warnings: WarningItem[],
+): number[] {
+  const hide: number[] = [];
+  for (const name of value.split(",").map((part) => part.trim())) {
+    if (!name) {
+      continue;
+    }
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push({
+        label: name,
+        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+      });
+    } else if (column === 0) {
+      warnings.push({
+        label: name,
+        message: `の列 \`${name}\` は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの置き場所なので、隠さずに描いています。`,
+      });
+    } else if (!hide.includes(column)) {
+      hide.push(column);
+    }
+  }
+  return hide;
+}
+
+/** `total=` の値を、表の見出しの文字と照らして読む */
+function readTotals(
+  value: string,
+  headers: string[],
+  warnings: WarningItem[],
+): TableTotal[] {
+  const totals: TableTotal[] = [];
+  for (const item of value.split(",").map((part) => part.trim())) {
+    if (!item) {
+      continue;
+    }
+    // 列名に `:` を含む表もあるため、`filter=` と同じく見出しの文字と一致するときは丸ごと列名にする
+    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
+    const name = colon > 0 ? item.slice(0, colon) : item;
+    const calc = colon > 0 ? item.slice(colon + 1) : "";
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push({
+        label: name,
+        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+      });
+    } else if (!TOTAL_CALCS.includes(calc as TotalCalc)) {
+      warnings.push({
+        label: calc || item,
+        message: `の計算 \`${calc}\` は使えません。\`total=列名:計算\` の形で書き、使える計算は ${codes(TOTAL_CALCS)} です。\`${name}\` の列は集計せずに描いています。`,
+      });
+    } else {
+      const next = { column, calc: calc as TotalCalc };
+      const position = totals.findIndex((total) => total.column === column);
+      if (position < 0) {
+        totals.push(next);
+      } else {
+        totals[position] = next;
+      }
+    }
+  }
+  return totals;
 }
 
 /** 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default` */
@@ -142,13 +238,30 @@ export function readTableSpec(
     });
   }
   let filters: TableFilter[] = [];
+  let hide: number[] = [];
+  let totals: TableTotal[] = [];
+  // `hide=` は `columns`、`total=` は `total` を付けた表でだけ読む
+  const keyFeatures: Record<string, TableFeature> = {
+    hide: "columns",
+    total: "total",
+  };
   for (const [key, value] of Object.entries(args?.keys ?? {})) {
-    if (key === "filter") {
+    const needed = keyFeatures[key];
+    if (needed && !features.includes(needed)) {
+      warnings.push({
+        label: `${key}=`,
+        message: `\`+${needed}\` を書いた表でだけ使えます。当てずに描いています`,
+      });
+    } else if (key === "filter") {
       filters = readFilters(value, headers, warnings);
+    } else if (key === "hide") {
+      hide = readHide(value, headers, warnings);
+    } else if (key === "total") {
+      totals = readTotals(value, headers, warnings);
     } else {
       warnings.push({
         label: `${key}=`,
-        message: "使えないキーです。使えるキーは `filter=` です",
+        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total="])} です`,
       });
     }
   }
@@ -160,7 +273,63 @@ export function readTableSpec(
     });
   }
   const collapse = closed ? "closed" : open ? "open" : "none";
-  return { kind, features, filters, collapse, warnings };
+  return { kind, features, filters, collapse, warnings, hide, totals };
+}
+
+/** 先頭のセルの文字から行の ID を作る。見出しの ID と同じ規則で、`taken` にあれば `-1`・`-2` と番号を上げる。作れないときは `row` を元にする。返した ID を `taken` に足す */
+export function rowIdOf(text: string, taken: Set<string>): string {
+  const base = slugBase(text) || "row";
+  let id = base;
+  for (let count = 1; taken.has(id); count++) {
+    id = `${base}-${count}`;
+  }
+  taken.add(id);
+  return id;
+}
+
+/** `table_open` から `table_close` までの本文の各行に、行の ID と先頭のセルの行へのリンクを付ける */
+function linkRows(
+  state: StateCore,
+  tokens: Token[],
+  tableOpen: number,
+  taken: Set<string>,
+): void {
+  const nonce = envOf(state).nonce;
+  /** 印を付けた HTML の `html_inline` を作る */
+  const inlineHtml = (html: string): Token => {
+    const token = new state.Token("html_inline", "", 0);
+    token.content = markOwn(html, nonce);
+    return token;
+  };
+  let inBody = false;
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.type === "table_close") {
+      break;
+    }
+    if (token?.type === "tbody_open") {
+      inBody = true;
+    } else if (inBody && token?.type === "tr_open") {
+      const inline = tokens.slice(index + 1).find((t) => t.type === "inline");
+      if (!inline) {
+        continue;
+      }
+      const text = textOf(inline);
+      const id = rowIdOf(text, taken);
+      token.attrSet("id", id);
+      token.attrSet("data-mdmark-own", nonce);
+      const [open = "", close = ""] = renderRowLink(
+        SLOT_MARKER,
+        id,
+        text,
+      ).split(SLOT_MARKER);
+      inline.children = [
+        inlineHtml(open),
+        ...(inline.children ?? []),
+        inlineHtml(close),
+      ];
+    }
+  }
 }
 
 /** 項目の形（`+機能`・`キー=`）の警告か、1 文の警告かを見分ける */
@@ -169,7 +338,10 @@ function isItemWarning(item: WarningItem): boolean {
 }
 
 /** 表の指定の警告を、書き方の警告に渡す値にする: 項目の形のものは 1 つにまとめ、1 文のものは 1 つずつ */
-function warningsOf(mark: string, warnings: WarningItem[]): SyntaxWarning[] {
+export function warningsOf(
+  mark: string,
+  warnings: WarningItem[],
+): SyntaxWarning[] {
   const items = warnings.filter(isItemWarning);
   const sentences = warnings.filter((warning) => !isItemWarning(warning));
   const result: SyntaxWarning[] = sentences.map((warning) => ({
@@ -228,7 +400,7 @@ function decorateAttributes(state: StateCore): void {
 }
 
 /** 表の見出しの文字を集める */
-function headersOf(tokens: Token[], tableOpen: number): string[] {
+export function headersOf(tokens: Token[], tableOpen: number): string[] {
   const headers: string[] = [];
   for (let index = tableOpen; index < tokens.length; index++) {
     const token = tokens[index];
@@ -267,6 +439,8 @@ export function decorateTables(state: StateCore): void {
   }
   const tokens = state.tokens;
   const ranges = collectRanges(tokens);
+  // 行の ID が重ならないよう、見出しの ID と前の行の ID を文書の頭から控える
+  const taken = new Set(envOf(state).headings.map((heading) => heading.id));
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -289,15 +463,24 @@ export function decorateTables(state: StateCore): void {
           (candidate.close < 0 || index < candidate.close),
       )
       .pop();
-    const spec = readTableSpec(range?.mark.args, headersOf(tokens, index));
+    // ビューの印が表の指定を当てた表は、その指定で表の部品にする
+    const viewSpec = (token.meta as { tableSpec?: TableSpec } | null)
+      ?.tableSpec;
+    const spec =
+      viewSpec ?? readTableSpec(range?.mark.args, headersOf(tokens, index));
     const filtering = spec.features.includes("filter");
     const html = renderTable({
       kind: spec.kind,
       features: spec.features,
       filters: filtering ? spec.filters : [],
       collapse: spec.collapse,
+      hide: spec.hide,
+      totals: spec.totals,
       body: SLOT_MARKER,
     });
+    if (spec.features.includes("rowlink")) {
+      linkRows(state, tokens, index, taken);
+    }
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
     // 警告は、囲みの頭（折り畳みの外）に差し込む
     const divEnd = head.indexOf(">") + 1;
@@ -306,7 +489,11 @@ export function decorateTables(state: StateCore): void {
       range.warned = true;
       warnings.push(unclosedWarning(range.mark));
     }
-    const open = ownBlock(state, head.slice(0, divEnd));
+    const open = ownBlock(
+      state,
+      head.slice(0, divEnd),
+      range ? tokens[range.open] : token,
+    );
     open.meta = { role: "table-open" };
     out.push(open);
     for (const warning of warnings) {

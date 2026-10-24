@@ -10,7 +10,7 @@ import {
   parse,
   parseDocument,
 } from "yaml";
-import { CliError } from "./main.ts";
+import { CliError } from "./errors.ts";
 import { compareVersions, VERSION_PATTERN } from "./versions.ts";
 
 /** 移行の手順の置き場所と、その中の名前 */

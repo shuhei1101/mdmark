@@ -1,0 +1,58 @@
+title: "ミニマップ"
+implementation: "src/parts/diff-minimap.ts#renderDiffMinimap"
+story: "Parts/DiffMinimap"
+states:
+  - name: Top
+    description: 長い文書を開いた直後。枠が帯の上端にあり、前半と後半に印が並ぶ
+    args:
+      - name: marks
+        value: '[{"kind":"del","top":0.02,"height":0.01},{"kind":"add","top":0.03,"height":0.01},{"kind":"del","top":0.41,"height":0.02},{"kind":"add","top":0.68,"height":0.01},{"kind":"del","top":0.93,"height":0.01},{"kind":"add","top":0.94,"height":0.01}]'
+      - name: view
+        value: '{"top":0,"height":0.18}'
+  - name: Middle
+    description: 帯を押して中ほどへ送った後。枠が中ほどにある
+    args:
+      - name: marks
+        value: '[{"kind":"del","top":0.02,"height":0.01},{"kind":"add","top":0.03,"height":0.01},{"kind":"del","top":0.41,"height":0.02},{"kind":"add","top":0.68,"height":0.01},{"kind":"del","top":0.93,"height":0.01},{"kind":"add","top":0.94,"height":0.01}]'
+      - name: view
+        value: '{"top":0.41,"height":0.18}'
+lead: 差分を開いている間、送り先のスクロールの右端に貼り付ける縦の帯。削除した行と追加した行の位置を印で並べ、今見えている範囲を枠で示す。HTML 文字列を返す。
+args:
+  - name: marks
+    type: オブジェクトの配列
+    required: true
+    description: '印（`kind`: `del`・`add`、`top`・`height`: 送り先の全体に対する 0〜1 の割合）。続いた同じ種類の行は 1 つにまとめて渡す'
+  - name: view
+    type: オブジェクト
+    required: true
+    description: '今見えている範囲（`top`・`height`: 0〜1 の割合）'
+events:
+  - name: 差分を送る
+    when: 帯を押すか、押したまま上下に動かす
+    value: 帯の上の押した位置（`pointerdown`・`pointermove` の `clientY`）
+    description: '`mount` がその位置を送り先の中ほどに置くよう送り、枠を置き直す'
+css_properties:
+  - name: --mdmark-diff-minimap-width
+    syntax: <length>
+    default: 14px
+    description: 帯の幅
+  - name: --mdmark-color-diff-del-sign
+    syntax: <color>
+    description: 削除した行の印の色（帯の左半分）
+  - name: --mdmark-color-diff-add-sign
+    syntax: <color>
+    description: 追加した行の印の色（帯の右半分）
+  - name: --mdmark-diff-minimap-z-index
+    syntax: <integer>
+    default: '10'
+    description: 帯の重なり順。使う側のページの固定のヘッダーなどに隠れるときに上げる
+accessibility:
+  - 帯は `aria-hidden` にし、読み上げとキーで辿る対象にしない。同じ行へはページのスクロールで移れる
+  - 削除と追加は帯の左右の位置でも分け、色だけに頼らない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ミニマップ]
+status: planned
+notes:
+  帯の本数: 送り先のスクロールごとに 1 本だけ置き、同じ送り先で開いている差分が 2 つ以上あれば、その印をまとめて写す。最後の差分を閉じたら帯を外す（計画書のミニマップの行・レビューの申し送り）
+  モック: '`dev/mock/components/diff-lines/` の「ミニマップ（長い文書）」'
+test_file: tests/integration/lib/diff-minimap.story.test.ts

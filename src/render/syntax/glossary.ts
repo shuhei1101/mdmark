@@ -4,14 +4,24 @@ import type { MdmarkGlossaryEntry } from "../../knowledge/references.ts";
 import { envOf, featureOn, findClose, markOf, textOf } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から） */
+/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から）・やめた言い方 */
 export type GlossaryRow = {
   entry: MdmarkGlossaryEntry;
   line: number;
+  /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空 */
+  avoid: string[];
 };
 
-/** 別名のセルを区切る文字（「、」と「,」。「・」は別名の中の文字として扱う） */
+/** 別名・やめた言い方のセルを区切る文字（「、」と「,」。「・」は別名の中の文字として扱う） */
 const ALIAS_SEPARATOR = /[、,]/;
+
+/** 別名・やめた言い方のセルを区切り、前後の空白を落として空のものを除く */
+function splitCell(cell: string): string[] {
+  return cell
+    .split(ALIAS_SEPARATOR)
+    .map((word) => word.trim())
+    .filter(Boolean);
+}
 
 /** 表のトークンから読んだ、見出しのセルの文字と本文の行 */
 type ReadTable = {
@@ -65,7 +75,7 @@ function missingArgMessage(argName: string): string {
   return `に \`${argName}=\` がありません。${column}の列を \`${argName}=列名\` で指してください。この表からは用語を入れずに描いています。`;
 }
 
-/** 範囲の中のトークンの表から、用語・意味・別名の列を読んで行ごとの用語を返す。誤りがあれば表ごとに用語を入れず、最初の誤りを警告にする */
+/** 範囲の中のトークンの表から、用語・意味・別名・やめた言い方の列を読んで行ごとの用語を返す。誤りがあれば表ごとに用語を入れず、最初の誤りを警告にする */
 export function readGlossaryRows(options: {
   args: MdmarkMarkArgs;
   tokens: Token[];
@@ -81,6 +91,7 @@ export function readGlossaryRows(options: {
       ["term", true],
       ["meaning", true],
       ["aliases", false],
+      ["avoid", false],
     ] as const) {
       const name = args.keys[argName];
       if (name === undefined || name === "") {
@@ -107,11 +118,16 @@ export function readGlossaryRows(options: {
       if (term === "" || meaning === "") {
         continue;
       }
-      const aliases = (row.cells[positions.aliases ?? -1] ?? "")
-        .split(ALIAS_SEPARATOR)
-        .map((alias) => alias.trim())
-        .filter(Boolean);
-      rows.push({ entry: { term, aliases, meaning, docId }, line: row.line });
+      rows.push({
+        entry: {
+          term,
+          aliases: splitCell(row.cells[positions.aliases ?? -1] ?? ""),
+          meaning,
+          docId,
+        },
+        line: row.line,
+        avoid: splitCell(row.cells[positions.avoid ?? -1] ?? ""),
+      });
     }
   }
   return warning === undefined ? { rows } : { rows, warning };
@@ -131,7 +147,7 @@ export function readGlossaryTable(options: {
   return warning === undefined ? { entries } : { entries, warning };
 }
 
-/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す */
+/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す（行番号は `env.glossaryLines`、やめた言い方は `env.glossaryAvoid` に同じ並びで足す） */
 export function glossaryRule(state: StateCore): void {
   const env = envOf(state);
   const enabled = featureOn(state, "glossary");
@@ -167,6 +183,7 @@ export function glossaryRule(state: StateCore): void {
       for (const row of rows) {
         env.ownGlossary.push(row.entry);
         env.glossaryLines?.push(row.line);
+        env.glossaryAvoid?.push(row.avoid);
       }
       // 表の中の語には、下線を引かない
       for (const inline of range) {

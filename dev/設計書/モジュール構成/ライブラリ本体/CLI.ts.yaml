@@ -3,7 +3,8 @@ lead: '`dist/cli.js` に束ねる Node の CLI。引数を読んでコマンド�
 directory: |-
   ```tree
   src/cli/
-  ├── main.ts       # 引数の読み取りとコマンドの振り分け・CLI の誤り
+  ├── main.ts       # 引数の読み取りとコマンドの振り分け
+  ├── errors.ts     # CLI の誤りと入出力の型
   ├── config.ts     # 設定ファイルの探索・読み取り・形の検査
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
   ├── embed.ts      # 外部ライブラリと拡張の束ね・画像の埋め込み・1 枚に含まれない文書へのリンク
@@ -11,13 +12,14 @@ directory: |-
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
   ├── export.ts     # mdmark export
-  └── build.ts      # mdmark build
+  ├── build.ts      # mdmark build
+  └── index-file.ts # 索引のファイルの項目の書き換え
   templates/        # init が置く雛形の正本
   ```
 data_models:
   - name: CliIo
     title: CLI の入出力
-    container: src/cli/main.ts
+    container: src/cli/errors.ts
     usecase: 共通
     summary: コマンドが使う今のフォルダと、標準出力・標準エラーへの書き出し
     properties:
@@ -32,7 +34,7 @@ data_models:
         description: 標準エラーへ 1 行書く
   - name: CliError
     title: CLI の誤り
-    container: src/cli/main.ts
+    container: src/cli/errors.ts
     usecase: 共通
     summary: 原因と直し方の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り
     inherits: Error
@@ -68,7 +70,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind']"
+        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind'] | 'unknown_mark'"
         description: ずれの種類
       - name: message
         type: string
@@ -103,6 +105,9 @@ data_models:
       - name: extensions
         type: string[]
         description: 束ねた拡張のモジュールのコード
+      - name: parts
+        type: Partial<Record<"view", string>> | undefined
+        description: 埋めた部品のモジュールのコード。無いときは空として扱う。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
 functions:
   - name: main
     title: CLI を実行する
@@ -246,7 +251,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -292,6 +297,12 @@ functions:
         condition: '`version: 0.3`'
         mock: なし
         expected: '`where` が `version` の `schema` のずれが 1 件'
+      - name: test_validate_config_when_check_ignore_invalid
+        case: 正常
+        summary: 印の名前の書式に合わない `check.ignore` の値を schema のずれにし、設定から落とす
+        condition: '`check.ignore` が `["prettier-ignore", "Bad Name"]`'
+        mock: なし
+        expected: '`where` が `check.ignore[1]` の `schema` のずれが 1 件で、`config.check.ignore` が `["prettier-ignore"]`'
     status: planned
     introduced:
       pr: 32
@@ -705,7 +716,7 @@ functions:
     title: 設定と索引を点検する
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
+    summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らない印を集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
     description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues` のずれを 1 件 1 行で出す
     kind: 関数
     scope: public
@@ -751,6 +762,12 @@ functions:
         condition: '`build.entry: missing.md`'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
         expected: '1 を返し、`mdmark.config.yaml:build.entry: schema:` の行がある'
+      - name: test_run_check_when_unknown_mark
+        case: 正常
+        summary: 知らない印を文書と行を指す unknown_mark の行にする
+        condition: 索引に載せた文書 `a.md` の 3 行目に `<!-- tabz -->`、`markdown` のコードブロックの中にも `<!-- tabz -->`
+        mock: 一時フォルダ、出力を配列に貯める `CliIo`
+        expected: '1 を返し、`a.md:3: unknown_mark:` で始まる行が 1 つだけで、`ずれ 1 件`'
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -854,9 +871,7 @@ functions:
         expected: '`CliError` を投げ、メッセージに `blocked/guide.html` が入る'
         exception: CliError
     callees:
-      - '#functions[requireConfig]'
-      - '#functions[prepareEmbeds]'
-      - '#functions[assembleHtml]'
+      - '#functions[exportDocument]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
     status: planned
@@ -922,11 +937,7 @@ functions:
         expected: '`CliError` を投げ、`build.out` が無い'
         exception: CliError
     callees:
-      - '#functions[requireConfig]'
-      - '#functions[collectBuildDocuments]'
-      - '#functions[findOutsideLinks]'
-      - '#functions[prepareEmbeds]'
-      - '#functions[assembleHtml]'
+      - '#functions[buildSite]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
     status: planned
@@ -936,7 +947,7 @@ functions:
     title: 配布物を読む
     container: src/cli/export.ts
     usecase: 共通
-    summary: '`dist/index.css` と `dist/viewer.js` を読み、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
+    summary: '`dist/index.css`・`dist/viewer.js`・`dist/view.js` を読み、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
     description: '`dist/viewer.css` が無いときは足さずに続ける（それ以外の読めない理由はそのまま投げる）。`index.css` か `viewer.js` を読めなければ `CliError`'
     kind: 関数
     scope: public
@@ -947,11 +958,11 @@ functions:
         required: true
         description: '`dist/` の場所と書き出しの種類'
     returns:
-      type: 'Promise<{ distCss: string; viewer: string }>'
-      description: 埋める CSS と起動の処理
+      type: 'Promise<{ distCss: string; viewer: string; view: string }>'
+      description: 埋める CSS・起動の処理・ビューの部品のモジュール
     exceptions:
       - name: CliError
-        condition: '`index.css` か `viewer.js` を読めない'
+        condition: '`index.css`・`viewer.js`・`view.js` のどれかを読めない'
         message: 配布物を読めません（{理由}）。mdmark を入れ直してください。
     status: planned
     introduced:
@@ -985,7 +996,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: 並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼ぶ
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -994,6 +1005,11 @@ functions:
         type: string
         required: true
         description: 設定ファイルの絶対パス
+      - name: options
+        type: '{ unknownMarks?: boolean }'
+        required: false
+        default: '`{ unknownMarks: true }`'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
@@ -1008,12 +1024,503 @@ functions:
         condition: '`build.out` が無く、索引の `old.md` が無い'
         mock: 一時フォルダ
         expected: 2 件で、`kind` が `schema`・`missing_doc` の順
+      - name: test_collect_check_issues_when_unknown_mark
+        case: 正常
+        summary: 知らない印を checkIndex のずれの後ろに返す
+        condition: 索引の `old.md` が無く、文書 `a.md` の 3 行目に `<!-- tabz -->`
+        mock: 一時フォルダ
+        expected: '`kind` が `missing_doc`・`unknown_mark` の順で、`unknown_mark` の `file` が `a.md`・`where` が `3`'
+      - name: test_collect_check_issues_when_unknown_marks_off
+        case: 正常
+        summary: '`unknownMarks: false` では知らない印を返さず、拡張を読み込まない'
+        condition: '文書 `a.md` に `<!-- tabz -->`、設定の `extensions` に読み込めない拡張 `broken.js`、`{ unknownMarks: false }`'
+        mock: 一時フォルダ
+        expected: '`unknown_mark` のずれも `extensions[0]` の `schema` のずれも無い'
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
+      - '#functions[checkUnknownMarks]'
     status: planned
     introduced:
       pr: 39
+  - name: loadExtensionDirectives
+    title: 拡張の印の名前を読む
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 設定の `extensions` の拡張を `bundleModule` で束ねて Node で読み込み、既定の書き出しの `directive` を集める
+    description: '`extensions` の位置の順に、ファイルが在る拡張だけを束ねる（無いファイルは `checkReferencedFiles` のずれだけにする）。束ねたコードは `importCode` で読み込む。束ねられない・読み込めない・既定の書き出しの `directive` が印の名前（`MARK_NAME_PATTERN`）の文字列でない拡張は、`extensions[{位置}]` を指す `schema` のずれにし、`directive` に入れない。読み込めないときの内容は、元のエラーの 1 行目と、読み込みの時点でブラウザの API を使う処理を `load` の中へ移す直し方'
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: 拡張のモジュールを Node で読み込む（モジュールの最上位の処理が動く）
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 形を検めた設定
+      - name: file
+        type: string
+        required: true
+        description: ずれの `file` に出す設定ファイルの名前
+      - name: importCode
+        type: '(code: string) => Promise<unknown>'
+        required: false
+        default: コードを `data:text/javascript;base64,` の URL にして `import()` する
+        passing: injected
+        description: 束ねたコードを読み込み、モジュールの名前空間を返す関数（テストで差し替える）
+    returns:
+      type: 'Promise<{ directives: Set<string>; issues: CheckIssue[] }>'
+      description: 読めた拡張の `directive` と、読めなかった拡張の `schema` のずれ
+    unit_tests:
+      - name: test_load_extension_directives
+        case: 正常
+        summary: 拡張の既定の書き出しの directive を集める
+        condition: 設定の `extensions` に `mdmark init` の雛形の `extensions/example.js`
+        mock: 一時フォルダ
+        expected: '`directives` が `{"greet"}` で、`issues` が空'
+      - name: test_load_extension_directives_when_browser_api
+        case: 異常
+        summary: 読み込みの時点でブラウザの API を使う拡張を schema のずれにする
+        condition: 最上位で `class extends HTMLElement` を定義する `extensions/broken.js`（`directive` は `broken`）
+        mock: 一時フォルダ
+        expected: '`directives` が空で、`where` が `extensions[0]` の `schema` のずれが 1 件、`message` に `HTMLElement` と `load` が入る'
+      - name: test_load_extension_directives_when_no_directive
+        case: 異常
+        summary: 既定の書き出しが directive を持たない拡張を schema のずれにする
+        condition: '`export default { name: "x" }` の `extensions/x.js`'
+        mock: 一時フォルダ
+        expected: '`directives` が空で、`where` が `extensions[0]` の `schema` のずれが 1 件'
+      - name: test_load_extension_directives_when_file_missing
+        case: 正常
+        summary: 無いファイルの拡張は束ねずにずれにしない
+        condition: 設定の `extensions` に無いファイル `missing.js`
+        mock: 一時フォルダ、呼ばれたら失敗する `importCode`
+        expected: '`directives` も `issues` も空'
+    refs:
+      - '#functions[bundleModule]'
+    status: planned
+    introduced:
+      pr: 64
+  - name: collectCheckDocuments
+    title: 知らない印を点検する文書を集める
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて返す
+    description: 索引の文書は `readIndexWithDocuments`（索引のフォルダからの相対パスを設定ファイルのフォルダからの相対パスに直す）、`build` の文書は `collectBuildDocuments` の文書を読む。索引を読めない（`CliError`）ときは索引の文書を入れない（ずれは `checkIndexFile` が出す）。設定に `index` も `build` も無ければ空
+    kind: 関数
+    scope: internal
+    is_async: true
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 形を検めた設定
+    returns:
+      type: 'Promise<{ path: string; markdown: string }[]>'
+      description: 点検する文書（パスは設定ファイルのフォルダからの相対パス）
+    unit_tests:
+      - name: test_collect_check_documents
+        case: 正常
+        summary: 索引の文書と build の文書を重なりを除いてパスの順に返す
+        condition: 索引のフォルダ `docs/` に `docs/a.md`・`docs/b.md`、`build.include` が `docs/b.md` と `notes/c.md` に当たる
+        mock: 一時フォルダ
+        expected: パスが `docs/a.md`・`docs/b.md`・`notes/c.md` の 3 件
+      - name: test_collect_check_documents_when_no_index_and_build
+        case: 正常
+        summary: index も build も無い設定では空
+        condition: '`version` だけの設定'
+        mock: 一時フォルダ
+        expected: 空の配列
+    refs:
+      - '#functions[readIndexWithDocuments]'
+      - '#functions[collectBuildDocuments]'
+    status: planned
+    introduced:
+      pr: 64
+  - name: checkUnknownMarks
+    title: 知らない印をずれにする
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 文書ごとに `findMarks` で拾った印のうち、知っている印に当たらないものを 1 つにつき 1 件の `unknown_mark` のずれにする
+    description: 知っている印は `FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を当てた対応表の名前・`directives`・設定の `check.ignore` の名前。ずれの `file` は文書のパス、`where` は印の行の番号の文字、`message` は印の名前と、名前を直すか、拡張・`libraries`・`check.ignore` に足すかの直し方の 1 文。並びは文書の並び、同じ文書の中は行の順
+    kind: 関数
+    scope: internal
+    args:
+      - name: documents
+        type: '{ path: string; markdown: string }[]'
+        required: true
+        description: '`collectCheckDocuments` の文書'
+      - name: config
+        type: CliConfig
+        required: true
+        description: 形を検めた設定（`libraries`・`check.ignore` を読む）
+      - name: directives
+        type: Set<string>
+        required: true
+        description: '`loadExtensionDirectives` の `directive`'
+    returns:
+      type: CheckIssue[]
+      description: '`unknown_mark` のずれ（無ければ空）'
+    unit_tests:
+      - name: test_check_unknown_marks
+        case: 正常
+        summary: 知っている印に当たらない印だけをずれにする
+        condition: '文書 `a.md` に `<!-- features: toc -->`・`<!-- table: data -->`・`<!-- /table -->`・3 行目に `<!-- tabz -->`'
+        mock: なし
+        expected: '`{ file: "a.md", where: "3", kind: "unknown_mark" }` の 1 件で、`message` に `tabz` が入る'
+      - name: test_check_unknown_marks_when_known_by_config
+        case: 正常
+        summary: 対応表・拡張・check.ignore の名前の印はずれにしない
+        condition: '`libraries` に `mermaid`、`directives` に `greet`、`check.ignore` に `prettier-ignore`、文書に 3 つの印'
+        mock: なし
+        expected: 空の配列
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[findMarks]
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[知っている印]
+    status: planned
+    introduced:
+      pr: 64
+  - name: usedParts
+    title: 埋める部品を選ぶ
+    container: src/cli/embed.ts
+    summary: 埋める文書にビューの印があれば、書き出しの中身の `parts` に `dist/view.js` のコードを入れた表を返す。`runExport` と `runBuild` が `readDistAssets` の後に呼ぶ
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ markdowns: string[]; view: string }'
+        required: true
+        description: 埋める文書の Markdown と `dist/view.js` のコード
+    returns:
+      type: Partial<Record<"view", string>>
+      description: 埋める部品のコード。印が無ければ空
+    process: 1. `MARK_PATTERN` で印を拾い、閉じでない `view` の印を持つ Markdown が 1 つでもあれば `{ view }` を返す。無ければ `{}`
+    unit_tests:
+      - name: test_used_parts
+        case: 正常
+        summary: ビューの印があるときだけ部品を埋める
+        condition: '`<!-- view: group=状態 -->` を持つ文書と、印の無い文書だけ'
+        mock: なし
+        expected: '前者は `{ view: "…" }`、後者は `{}`'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+  - name: exportDocument
+    title: 文書を HTML に書き出して結果を返す
+    kind: 関数
+    container: src/cli/export.ts
+    usecase: 文書をHTMLに書き出す
+    summary: '文書 1 つを `kind: document` の中身にして HTML を書き、書いたパスと警告を返す'
+    description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには書かない'
+    scope: public
+    is_async: true
+    side_effects: 出力のパスに HTML を書く
+    args:
+      - name: options
+        type: '{ cwd: string; file: string; out?: string; config?: string; distDir: string }'
+        required: true
+        description: 今のフォルダ・文書・出力・設定ファイル・`dist/` の場所
+    returns:
+      type: 'Promise<{ out: string; display: string; warnings: string[] }>'
+      description: '書いた HTML の絶対パス、利用者に見せるパス（`--out` か今のフォルダからの相対パス）、`{ファイル}: {内容}` の警告'
+    process: |-
+      1. 設定を読む（設定を読んで形を検める）
+      2. 文書が無ければ例外にする
+      3. 出力のパスを決める。`out` が無ければ文書と同じフォルダの拡張子を `.html` にしたパス
+      4. 埋めるものを用意し、配布物を読み、使う部品を入れて HTML を組み立てて書く（埋めるものを用意する・配布物を読む・HTML を書く）
+      5. 絶対パス・見せるパス・警告を返す
+    exceptions:
+      - name: CliError
+        condition: 設定の誤り・文書が無い・出力先へ書けない
+        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを直してください。／書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。）'
+    unit_tests:
+      - name: test_export_document
+        case: 正常
+        summary: HTML を書いて絶対パスと警告を返す
+        condition: '`file: guide.md`、`out` 無し、文書に読めない画像が 1 つ'
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        expected: '`out` が `guide.html` の絶対パスでファイルがあり、`display` が `guide.html`、`warnings` が 1 件'
+      - name: test_export_document_when_document_missing
+        case: 異常
+        summary: 無い文書は何も書かずに CliError
+        condition: '`file: missing.md`'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `missing.md` が入り、`.html` が無い'
+        exception: 設定の誤り・文書が無い・出力先へ書けない
+    callees:
+      - '#functions[requireConfig]'
+      - '#functions[prepareEmbeds]'
+      - '#functions[readDistAssets]'
+      - '#functions[usedParts]'
+      - '#functions[assembleHtml]'
+      - '#functions[writeHtml]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書をHTMLに書き出す.ts#
+    status: planned
+    introduced:
+      pr: 72
+  - name: buildSite
+    title: 複数の文書を 1 枚にまとめて結果を返す
+    kind: 関数
+    container: src/cli/build.ts
+    usecase: 複数の文書を1枚のHTMLにまとめる
+    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、書いたパス・文書の数・警告を返す'
+    description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには書かない'
+    scope: public
+    is_async: true
+    side_effects: '`build.out` に HTML を書く'
+    args:
+      - name: options
+        type: '{ cwd: string; config?: string; distDir: string }'
+        required: true
+        description: 今のフォルダ・設定ファイル・`dist/` の場所
+    returns:
+      type: 'Promise<{ out: string; display: string; docs: number; warnings: string[] }>'
+      description: 書いた HTML の絶対パス、`build.out` のままのパス、入れた文書の数、警告
+    process: |-
+      1. 設定を読み、`build` が無ければ例外にする（設定を読んで形を検める）
+      2. まとめる文書を集め、0 件なら例外にする（build の対象の文書を集める）
+      3. 最初に開く文書を決め、`build.entry`・`build.glossary` がまとめる文書に当たらないことを警告にする
+      4. 埋めるものを用意し、1 枚に含まれない文書へのリンクを警告に足す（埋めるものを用意する・1 枚に含まれない文書へのリンク）
+      5. 配布物を読み、使う部品を入れて HTML を書く
+      6. 絶対パス・`build.out`・文書の数・警告を返す
+    exceptions:
+      - name: CliError
+        condition: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書けない
+        message: '`runBuild` と同じ'
+    unit_tests:
+      - name: test_build_site
+        case: 正常
+        summary: まとめて絶対パスと文書の数を返す
+        condition: '`include: ["**/*.md"]` が 2 つに当たり、`out: dist/docs.html`'
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        expected: '`out` が `dist/docs.html` の絶対パスでファイルがあり、`docs` が 2、`warnings` が空'
+      - name: test_build_site_when_entry_outside
+        case: 正常
+        summary: まとめる文書に当たらない build.entry を警告で返す
+        condition: '`build.entry: missing.md`'
+        mock: 一時フォルダ
+        expected: '`warnings` に `missing.md` を含む文がある'
+      - name: test_build_site_when_build_missing
+        case: 異常
+        summary: build が無いと CliError
+        condition: '`build` の無い設定'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `build.include` と `build.out` が入る'
+        exception: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書けない
+    callees:
+      - '#functions[requireConfig]'
+      - '#functions[collectBuildDocuments]'
+      - '#functions[findOutsideLinks]'
+      - '#functions[prepareEmbeds]'
+      - '#functions[readDistAssets]'
+      - '#functions[usedParts]'
+      - '#functions[assembleHtml]'
+      - '#functions[writeHtml]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/複数の文書を1枚のHTMLにまとめる.ts#
+    status: planned
+    introduced:
+      pr: 72
+  - name: requireIndexWithDocuments
+    title: 索引を必ず読む
+    kind: 関数
+    container: src/cli/index-file.ts
+    usecase: 共通
+    summary: 設定の `index` の索引と索引の文書を読む。設定に `index` が無ければ例外にする
+    description: MCP の `find_docs`・`update_index` が使う
+    scope: public
+    is_async: true
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 読んだ設定
+    returns:
+      type: 'Promise<{ indexFile: string; indexDir: string; raw: unknown; documents: Record<string, string> }>'
+      description: '`readIndexWithDocuments` と同じ値'
+    process: |-
+      1. 索引と索引の文書を読む（索引と索引の文書を読む）
+      2. 設定に `index` が無く `undefined` が返ったら例外にする
+    exceptions:
+      - name: CliError
+        condition: 設定に `index` が無い
+        message: 設定に index がありません。index に索引のファイルのパスを書いてください。
+    unit_tests:
+      - name: test_require_index_with_documents
+        case: 正常
+        summary: 索引と文書を返す
+        condition: '`index: index.yaml` と文書 1 つ'
+        mock: なし（一時フォルダ）
+        expected: '`indexFile` が `index.yaml`、`documents` が 1 件'
+      - name: test_require_index_with_documents_when_index_missing
+        case: 異常
+        summary: 設定に index が無い
+        condition: '`index` の無い設定'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `index` が入る'
+        exception: 設定に `index` が無い
+    callees:
+      - '#functions[readIndexWithDocuments]'
+    status: planned
+    introduced:
+      pr: 72
+  - name: applyIndexUpdate
+    title: 索引の項目を書き換える
+    kind: 関数
+    container: src/cli/index-file.ts
+    usecase: 索引を書き換える
+    summary: 索引の YAML の文書で、`docs` か `terms` の ID の要素を置き換え・末尾へ足し・消し、書き換えた後の索引を索引の形で検査する
+    description: '`yaml` の `Document` のノードを書き換えるため、他の要素・キー・コメントはそのまま残る。置き換える要素は `{ id, ...item }` のキーの並びにする（`item` の `id` は使わない）'
+    scope: public
+    is_async: false
+    side_effects: 渡した `document` を書き換える
+    args:
+      - name: options
+        type: "{ document: Document; kind: 'doc' | 'term'; id: string; item: Record<string, unknown> | null }"
+        required: true
+        description: 索引の YAML の文書・書き換える一覧・ID・項目の中身（`null` は消す）
+    returns:
+      type: "{ action: 'added' | 'replaced' | 'removed'; problems: IndexProblem[] }"
+      description: したことと、書き換えた後の索引の合わないところ（合えば空）
+    process: |-
+      1. `kind` が `doc` なら `docs`、`term` なら `terms` の並びのノードを取る。`terms` が無く足すときは空の並びを作る
+      2. `id` が同じ要素を探す
+         - `item` が `null` で要素が無い場合、例外にする
+         - `item` が `null` の場合、要素を消して `removed`
+         - 要素があれば `{ id, ...item }` に置き換えて `replaced`
+         - 無ければ末尾に `{ id, ...item }` を足して `added`
+      3. 書き換えた後の文書を値にして索引の形で検査し、合わないところを返す（索引の形の検査）
+    exceptions:
+      - name: CliError
+        condition: '`item` が `null` で、その ID の要素が無い'
+        message: '`{ID}` は索引の `{docs か terms}` にありません。ID を確かめてください。'
+    unit_tests:
+      - name: test_apply_index_update
+        case: 正常
+        summary: 無い ID を末尾に足す
+        condition: '`docs` に `a` だけの索引に `kind: doc`、`id: b`、`path`・`title` を持つ項目'
+        mock: なし
+        expected: '`action` が `added`、`problems` が空で、`docs` が `a`・`b` の順'
+      - name: test_apply_index_update_when_replaced
+        case: 正常
+        summary: ある ID を置き換え、他の要素のコメントを残す
+        condition: '`docs` の `a`・`b` の `b` の上にコメントがあり、`id: a` の題を変える'
+        mock: なし
+        expected: '`action` が `replaced`、`a` の題が変わり、文書を文字列にすると `b` の上のコメントが残る'
+      - name: test_apply_index_update_when_removed
+        case: 正常
+        summary: item が null なら消す
+        condition: '`docs` の `a`・`old` に `id: old`、`item: null`'
+        mock: なし
+        expected: '`action` が `removed`、`docs` が `a` だけ'
+      - name: test_apply_index_update_when_terms_absent
+        case: 正常
+        summary: terms が無い索引に用語を足す
+        condition: '`terms` の無い索引に `kind: term`、`term`・`meaning` を持つ項目'
+        mock: なし
+        expected: '`action` が `added`、`terms` が 1 件'
+      - name: test_apply_index_update_when_schema_invalid
+        case: 正常
+        summary: 形に合わない項目は合わないところを返す
+        condition: '`docs` に `a` だけの索引に `id: b`、`{ title: "文書 B" }`'
+        mock: なし
+        expected: '`problems` に `docs[1].path` がある'
+      - name: test_apply_index_update_when_item_missing
+        case: 異常
+        summary: 無い ID を消そうとすると CliError
+        condition: '`id: z`、`item: null`'
+        mock: なし
+        expected: '`CliError` を投げ、メッセージに `z` と `docs` が入る'
+        exception: '`item` が `null` で、その ID の要素が無い'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
+    refs:
+      - dev/設計書/ER図/索引#notes
+    status: planned
+    introduced:
+      pr: 72
+  - name: updateIndexFile
+    title: 索引のファイルを書き換える
+    kind: 関数
+    container: src/cli/index-file.ts
+    usecase: 索引を書き換える
+    summary: ロックの中で索引のファイルを読み、項目を書き換えて検査し、合えば一時ファイルに書いてから置き換える
+    description: MCP の `update_index` が呼ぶ。合わないとき・失敗したときは索引のファイルを書き換えず、一時ファイルとロックを残さない
+    scope: public
+    is_async: true
+    side_effects: 索引のファイルを置き換える。書き換えている間だけ `{索引}{INDEX_LOCK_SUFFIX}` を置く
+    args:
+      - name: options
+        type: "{ loaded: LoadedConfig; kind: 'doc' | 'term'; id: string; item: Record<string, unknown> | null; lockTimeoutMs?: number }"
+        required: true
+        description: 読んだ設定・書き換える一覧・ID・項目の中身・ロックを待つ上限（既定は `INDEX_LOCK_TIMEOUT_MS`）
+    returns:
+      type: "Promise<{ action: 'added' | 'replaced' | 'removed'; index: string }>"
+      description: したことと、索引のファイルのパス（設定ファイルのあるフォルダからの相対パス）
+    process: |-
+      1. 設定に `index` が無ければ例外にする
+      2. `{索引}{INDEX_LOCK_SUFFIX}` を新しく作れるまで `INDEX_LOCK_RETRY_MS` ごとに取り直し、`lockTimeoutMs` を超えたら例外にする
+      3. ロックの中で次を行い、終わったら成否を問わずロックを消す
+         - 索引のファイルを読み、YAML の文書にする。読めないときは例外にする
+         - 項目を書き換える（索引の項目を書き換える）。合わないところがあれば、`{場所}: {内容}` の行を並べて例外にする
+         - 同じフォルダの一時ファイルに文字列にした文書を書き、索引のファイルへ名前を変えて置き換える。失敗したら一時ファイルを消す
+    exceptions:
+      - name: CliError
+        condition: 設定に `index` が無い
+        message: 設定に index がありません。index に索引のファイルのパスを書いてください。
+      - name: CliError
+        condition: ロックを待つ上限を超えた
+        message: 索引 {索引} は書き換え中です（{ロック} があります）。少し待ってから呼び直すか、書き換え中でなければ {ロック} を消してください。
+      - name: CliError
+        condition: 索引のファイルを読めない・YAML として読めない
+        message: 索引 {索引} を読めません（{理由}）。設定の index のパスを直すか、索引を置いてください。
+      - name: CliError
+        condition: 書き換えた後の索引が形に合わない
+        message: '書き換えた後の索引が索引の形に合いません。合わないところを直してください。（続く行に `{場所}: {内容}`）'
+    unit_tests:
+      - name: test_update_index_file
+        case: 正常
+        summary: 足して置き換え、ロックと一時ファイルを残さない
+        condition: '`docs` に `a` だけの `index.yaml` に `id: b`'
+        mock: なし（一時フォルダ）
+        expected: '`action` が `added`、`index` が `index.yaml`、ファイルの `docs` が `a`・`b`、フォルダに `index.yaml` と設定ファイル以外のファイルが無い'
+      - name: test_update_index_file_when_locked
+        case: 異常
+        summary: ロックが残っていると待ってから CliError
+        condition: '`index.yaml.lock` を置き、`lockTimeoutMs: 100`'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `index.yaml.lock` が入り、索引と置いたロックが変わらない'
+        exception: ロックを待つ上限を超えた
+      - name: test_update_index_file_when_schema_invalid
+        case: 異常
+        summary: 合わないときは書かずに CliError
+        condition: '`id: b`、`{ title: "文書 B" }`'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `docs[1].path` が入り、索引の中身が呼ぶ前と同じで、ロックも一時ファイルも残らない'
+        exception: 書き換えた後の索引が形に合わない
+      - name: test_update_index_file_when_unreadable
+        case: 異常
+        summary: YAML として読めない索引
+        condition: 字下げの崩れた `index.yaml`
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、ロックが残らない'
+        exception: 索引のファイルを読めない・YAML として読めない
+      - name: test_update_index_file_when_index_missing
+        case: 異常
+        summary: 設定に index が無い
+        condition: '`index` の無い設定'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げる'
+        exception: 設定に `index` が無い
+    callees:
+      - '#functions[applyIndexUpdate]'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/索引を書き換える.ts#
+    status: planned
+    introduced:
+      pr: 72
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -1027,6 +1534,34 @@ constants:
     container: src/cli/config.ts
     summary: 上へ探す設定ファイルの名前
     value: '`mdmark.config.yaml`'
+  - name: INDEX_LOCK_SUFFIX
+    title: 索引のロックのファイルの末尾
+    container: src/cli/index-file.ts
+    usecase: 索引を書き換える
+    summary: 索引のパスに足してロックのファイル名にする末尾
+    value: .lock
+    status: planned
+    introduced:
+      pr: 72
+  - name: INDEX_LOCK_RETRY_MS
+    title: ロックを取り直す間隔
+    container: src/cli/index-file.ts
+    usecase: 索引を書き換える
+    summary: 他の書き換えがロックを持っているときに取り直す間隔のミリ秒
+    value: '50'
+    status: planned
+    introduced:
+      pr: 72
+  - name: INDEX_LOCK_TIMEOUT_MS
+    title: ロックを待つ上限
+    container: src/cli/index-file.ts
+    usecase: 索引を書き換える
+    summary: ロックを取れるまで待つ上限のミリ秒
+    value: '5000'
+    reason: 索引の書き換えは読み込み・検査・置き換えで終わり、待ちがこれを超えるのはロックが残ったとき
+    status: planned
+    introduced:
+      pr: 72
 test_files:
   - tests/unit/src/cli/main.test.ts
   - tests/unit/src/cli/config.test.ts
@@ -1037,3 +1572,4 @@ test_files:
   - tests/unit/src/cli/check.test.ts
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
+  - tests/unit/src/cli/index-file.test.ts

@@ -1,0 +1,102 @@
+title: "スクロールを合わせる"
+entry:
+  kind: trigger
+  value: 'エディタの見えている範囲の変更（`window.onDidChangeTextEditorVisibleRanges`）と、Webview のスクロールからの `{ type: "revealLine", line }`'
+flows:
+  - name: 正常系
+    summary: エディタを動かすと、その行のブロックをプレビューの先頭に置き、エディタを動かし直さない
+    setup:
+      - name: 長い文書のプレビュー
+        description: 見出しで区切った 10 の節を持ち、画面の高さの 3 倍を超える Markdown をエディタと横の列のプレビューで開いた状態
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ。拡張機能と Webview の間のメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 8 番目の節の見出しの行をエディタの先頭にする
+        EX->>PV: scrollToLine（見出しの行）
+        PV->>PV: data-source-line から先頭に置く
+    expected:
+      - Webview の見えている先頭から 1 行分の高さの中に 8 番目の節の見出しがある
+      - その後 200 ms の間にエディタの `visibleRanges[0].start.line` が変わらない（逆向きの `revealLine` で動き直さない）
+    test: test_normal
+  - name: 正常系（プレビューから合わせる）
+    summary: プレビューを動かすと、そのブロックの行をエディタの先頭にする
+    setup:
+      - name: 長い文書のプレビュー
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant PV as Webview
+        participant EX as 拡張機能
+        U->>PV: 5 番目の節の見出しを先頭までスクロールする
+        PV->>EX: revealLine（見出しの行）
+        EX->>EX: revealRange（AtTop）
+    expected:
+      - 5 番目の節の見出しの行が、エディタの `visibleRanges[0]` の先頭から 6 行以内にある
+      - その後に Webview へ `scrollToLine` が送られない（自分が起こした知らせを捨てている）
+      - カーソルの位置は動かない
+    test: test_normal_when_from_preview
+  - name: 正常系（同期を切る）
+    summary: 設定で切った向きは動かさない
+    setup:
+      - name: 長い文書のプレビュー
+        description: 正常系と同じ。`mdmark.preview.scrollPreviewWithEditor` と `mdmark.preview.scrollEditorWithPreview` を `false` にする
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: エディタを 8 番目の節までスクロールする
+        U->>PV: プレビューを 3 番目の節までスクロールする
+    expected:
+      - '`scrollToLine` が 1 回も送られず、プレビューの位置はエディタを動かす前のまま'
+      - エディタの先頭の行は 8 番目の節の見出しの行のまま
+    test: test_normal_when_sync_off
+  - name: 異常系（エディタが見えていない・何もしない）
+    summary: 同じ列に開いてエディタが隠れているときは、エディタを開き直さない
+    setup:
+      - name: 同じ列のプレビュー
+        description: 長い文書を `mdmark.openPreview` で同じ列に開き、エディタのタブが背面にある状態
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant PV as Webview
+        participant EX as 拡張機能
+        U->>PV: プレビューをスクロールする
+        PV->>EX: revealLine
+        EX->>EX: 見えているエディタが無いので何もしない
+    expected:
+      - アクティブなタブがプレビューのままで、エディタのタブが表に出ない
+    test: test_error_when_editor_hidden
+lead: エディタとプレビューのどちらかをスクロールすると、ブロックの元の行番号を手がかりにもう片方を同じ箇所まで動かす。
+idempotent: true
+side_effects: Webview へ `scrollToLine` を送る。エディタを `revealRange` で動かす。カーソルの位置と文書は変えない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#
+exclusivity: 片方に合わせて動かした直後に、動かした側から届く逆向きの知らせは捨てる（制約「往復の止め方」）
+exceptions:
+  - name: なし（正常終了）
+    condition: もう片方を同じ箇所まで動かす
+  - name: なし（エディタが見えていない）
+    condition: プレビューから合わせるとき、その Markdown のエディタがどの列にも見えていない
+    notes: 何もしない（エディタを開き直さない）
+constraints:
+  - item: エディタから合わせる
+    constraint: '`mdmark.preview.scrollPreviewWithEditor` が `true` のとき、エディタの `visibleRanges[0].start.line` を `scrollToLine` で送る。Webview は `data-source-line` がその行以下の最後の要素と次の要素の間を、行の割合で内分した位置を先頭に置く'
+  - item: プレビューから合わせる
+    constraint: '`mdmark.preview.scrollEditorWithPreview` が `true` のとき、Webview は見えている先頭の位置を、前後の `data-source-line` の要素の間で内分した行番号（整数に切り捨てる）にして `revealLine` で送る。拡張機能はその行を `TextEditorRevealType.AtTop` で見せる'
+  - item: 往復の止め方
+    constraint: 動かした側が、自分が起こしたスクロールの知らせだけを捨てる。拡張機能は `revealLine` で動かした行を覚え、次に届く `onDidChangeTextEditorVisibleRanges` の `visibleRanges[0]` がその行を含むなら `scrollToLine` を送らずに覚えを消す（含まないなら覚えを消して通常どおり送る）。動かす前からその行が `visibleRanges[0]` の先頭から 6 行以内にあるときは `revealRange` を呼ばず、覚えも作らない。Webview は `scrollToLine` で動かす `scrollTop` が今の値と違うときだけ動かしてその値を覚え、次に届く `scroll` の知らせで `scrollTop` がその値なら `revealLine` を送らずに覚えを消す
+    notes: 時間で捨てないため、知らせが届くまでの間の長さによらず往復しない。`AtTop` は指定した行の 5 行前を先頭に置き、位置が変わらないときは知らせが届かないため、行の一致でなく範囲に含むかで比べ、動かないときは覚えを作らない（外部ライブラリ『vscode』の制限事項）
+  - item: 知らせの間引き
+    constraint: Webview はスクロールの知らせを `requestAnimationFrame` ごとに 1 回にまとめて送る

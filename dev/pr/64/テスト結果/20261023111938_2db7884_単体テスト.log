@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-cli-check-unknown-marks
+
+
+ Test Files  112 passed (112)
+      Tests  563 passed (563)
+   Start at  11:19:42
+   Duration  30.04s (tests 36%, worker 33%, import 27%, transform 4%)
+

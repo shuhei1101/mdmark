@@ -1,0 +1,55 @@
+title: "PDFに印刷する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本のワークスペース
+        description: HTMLに書き出すの正常シナリオと同じ。文書は閉じた折り畳みを持つ
+      - name: Mock
+        description: HTMLに書き出すの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        W->>EX: mdmark: PDF に印刷
+        EX->>EX: 印刷のダイアログを出す HTML を書き出し直す
+        EX->>BR: 書き出した HTML を開く
+        BR->>BR: 描き終えたら印刷のダイアログを出す
+        BR-->>W: 印刷のダイアログ（PDF に保存は文書を書く人が選ぶ）
+    expected:
+      - ブラウザで開く代役に、書き出した HTML の URL が渡る
+      - 書き出した HTML をブラウザで開くと、文書を描き終えた後に印刷のダイアログが呼ばれる
+      - 印刷の間は閉じた折り畳みが開いている（mdmark の印刷の機能）
+    test: test_normal
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+  - name: 異常シナリオ（書き出せない）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ。`mdmark.export.outputDir` に書き込めないフォルダを指定する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        W->>EX: mdmark: PDF に印刷
+        EX->>EX: 書き出し先に書けない
+        EX-->>W: 書き出せない理由の通知
+    expected:
+      - 通知に、書き出し先のパスと書き込めない理由が出る
+      - ブラウザで開く代役は呼ばれない
+    test: test_error_when_output_unwritable
+lead: 文書を書く人が、開いている Markdown をコマンドパレットから印刷する。拡張機能は HTML を書き出して既定のブラウザで開き、ブラウザの印刷のダイアログを出す。PDF はそのダイアログで作る。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: プレビューと同じ見た目の PDF を、外部のツールを入れずに作れる
+trigger: '文書を書く人がコマンドパレットから「mdmark: PDF に印刷」を選ぶ'
+preconditions:
+  - Markdown のファイルをエディタで開いている
+  - 既定のブラウザから jsDelivr に届く
+success_guarantee: 書き出した HTML がブラウザで開き、文書を描き終えた後に印刷のダイアログが出る。
+minimal_guarantee: 書き出せないときはブラウザを開かず、理由を通知に出す。Markdown は書き換えない。
+test_file: tests/e2e/単一ユースケース/PDFに印刷する.spec.ts

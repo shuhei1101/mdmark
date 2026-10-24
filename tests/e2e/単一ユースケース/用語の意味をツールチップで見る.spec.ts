@@ -223,3 +223,99 @@ test("test_normal_when_embedded_html", async ({ page }) => {
   await expect(after.locator(".mdmark-term")).toHaveCount(1);
   await expect(page.locator("#doc .mdmark-term")).toHaveCount(2);
 });
+
+// 用語 `ワークスペース` のやめた言い方 `作業場` を持つ索引
+const AVOID_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
+  terms: [
+    {
+      id: "workspace",
+      term: "ワークスペース",
+      meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場"],
+    },
+  ],
+};
+
+// 1 つ目の節の段落に `作業場` が 2 回と `ワークスペース` が 1 回、2 つ目の節の段落に `作業場` が出て、見出しと行内のコードにも `作業場` を書いた文書
+const AVOID_MARKDOWN = [
+  "## 一つ目の作業場",
+  "",
+  "作業場を置き、作業場を使う。ワークスペースも同じ。`作業場` も書く。",
+  "",
+  "## 二つ目",
+  "",
+  "作業場を使う。",
+  "",
+].join("\n");
+
+// 節ごとにやめた言い方が最初に出たところだけに波線のマーカーを付け、ポインターとフォーカスで代わりの用語のツールチップを出し、Esc で消す（正常シナリオ（やめた言い方が本文に出る））
+test("test_normal_when_avoided_term", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: AVOID_MARKDOWN,
+    index: AVOID_INDEX,
+    docId: DOC_ID,
+  });
+  // 実行・検証
+  const sections = page.locator("#doc .mdmark-section-body");
+  const first = sections.nth(0);
+  const second = sections.nth(1);
+  // 1 つ目の節: 最初の `作業場` だけにマーカーが付き、2 回目の `作業場` と行内のコードには付かない
+  await expect(first.locator(".mdmark-term-avoided")).toHaveText(["作業場"]);
+  await expect(first.locator("code .mdmark-term")).toHaveCount(0);
+  // 1 つ目の節の `ワークスペース` には、マーカーでなく用語の破線の下線が付く
+  const workspace = first.locator(".mdmark-term:not(.mdmark-term-avoided)");
+  await expect(workspace).toHaveText(["ワークスペース"]);
+  await expect(workspace).toHaveCSS("text-decoration-style", "dashed");
+  // 2 つ目の節の `作業場` にマーカーが付く。見出しの `作業場` には付かない
+  await expect(second.locator(".mdmark-term-avoided")).toHaveText(["作業場"]);
+  await expect(page.locator("#doc h2 .mdmark-term")).toHaveCount(0);
+  await expect(page.locator("#doc .mdmark-term-avoided")).toHaveCount(2);
+  // マーカーは用語の破線の下線と、形で見分けられる
+  const marker = first.locator(".mdmark-term-avoided");
+  await expect(marker).toHaveCSS("text-decoration-line", "underline");
+  await expect(marker).toHaveCSS("text-decoration-style", "wavy");
+  // ポインターを乗せると代わりの用語と意味が出て、ツールチップの上へ移っても出たまま
+  const tip = first
+    .locator(".mdmark-term-wrap", {
+      has: page.locator(".mdmark-term-avoided"),
+    })
+    .locator(".mdmark-term-tip");
+  await expect(tip).toBeHidden();
+  await marker.hover();
+  await expect(tip).toBeVisible();
+  await expect(tip.locator(".mdmark-term-tip-heading")).toHaveText([
+    "代わりの用語",
+  ]);
+  await expect(tip.locator(".mdmark-term-tip-replacement")).toHaveText(
+    "ワークスペース",
+  );
+  await expect(tip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "話し合いの記録を置くフォルダ",
+  );
+  await tip.hover();
+  await expect(tip).toBeVisible();
+  // Tab でマーカーの付いた語へフォーカスし、`aria-describedby` がツールチップを指す
+  await page.mouse.move(0, 0);
+  await expect(tip).toBeHidden();
+  await page.keyboard.press("Tab");
+  const heading = page.locator("#doc h2").first();
+  await expect(heading.locator("button.mdmark-section-toggle")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(heading.locator("a.mdmark-anchor")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(marker).toBeFocused();
+  await expect(tip).toBeVisible();
+  const describedBy = await marker.getAttribute("aria-describedby");
+  await expect(page.locator(`[id="${describedBy}"]`)).toHaveAttribute(
+    "role",
+    "tooltip",
+  );
+  // Esc: ツールチップが消え、フォーカスは語に残る
+  await page.keyboard.press("Escape");
+  await expect(tip).toBeHidden();
+  await expect(marker).toBeFocused();
+});

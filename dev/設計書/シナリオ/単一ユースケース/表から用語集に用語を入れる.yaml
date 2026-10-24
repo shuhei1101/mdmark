@@ -97,6 +97,31 @@ scenarios:
     expected:
       - '`guide` の段落の `マーク` に破線の下線が付き、ポインターを乗せると `HTML コメントで書く指定` のツールチップが出る'
     test: test_normal_when_other_document
+  - name: 正常シナリオ（やめた言い方の列がある）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: やめた言い方の列を持つ Markdown
+        description: '`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で、用語 `ワークスペース`（意味 `作業の置き場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表を囲み、表の後の段落に `ワークスペース` と `作業場` が出る文書'
+        notes: やめた言い方のセルは別名と同じく「、」で区切る
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: Markdown を渡して描かせる
+        M->>M: glossary の印で囲んだ表の用語・意味・やめた言い方の列を読む
+        M-->>P: 表を描き、本文の用語に下線を引く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: 表の意味のツールチップを表示
+    expected:
+      - 用語集の表が、やめた言い方の列を含めて表として描かれている
+      - 段落の `ワークスペース` に破線の下線が付き、ポインターを乗せると `作業の置き場所` のツールチップが出る
+      - 段落の `作業場` に下線が付いていない
+      - 書き方の警告が出ていない
+    test: test_normal_when_avoid_column
 lead: '文書を書く人が本文の表を `<!-- glossary: term=列名 meaning=列名 aliases=列名 -->` 〜 `<!-- /glossary -->` で囲むと、mdmark がその表の用語・意味・別名の列から用語を入れ、本文に出たその語に意味のツールチップを付ける。'
 issue: 5
 primary_actor: 文書を書く人
@@ -109,7 +134,7 @@ trigger: 使う側のページが、用語集の表を持つ文書を描かせ�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 用語のツールチップの機能（`glossary`）がオン（既定）
-success_guarantee: 用語集の表の用語と別名が本文に出ると、表の意味の列の文字をツールチップに出す。索引に同じ語があれば、索引の意味を出す。
+success_guarantee: 用語集の表の用語と別名が本文に出ると、表の意味の列の文字をツールチップに出す。索引に同じ語があれば、索引の意味を出す。やめた言い方の列の言い方には、下線もツールチップも付けない。
 minimal_guarantee: 印の列名が表に無いときも、表と本文は描かれ、書き方の警告がその箇所に出る。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#

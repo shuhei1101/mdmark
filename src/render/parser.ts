@@ -1,4 +1,8 @@
-import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
+import type {
+  MarkdownIt as MarkdownItParser,
+  StateCore,
+  Token,
+} from "markdown-it";
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
@@ -10,6 +14,7 @@ import type {
 import { escapeHtml } from "../parts/escape.ts";
 import {
   dropMarks,
+  MARK_PATTERN,
   MARK_TOKEN,
   resolveDocumentFeatures,
   takeMarks,
@@ -17,6 +22,7 @@ import {
 import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
+import { buildCodeBlocks } from "./syntax/code-blocks.ts";
 import { buildDiagrams } from "./syntax/diagrams.ts";
 import { numberFigures } from "./syntax/figures.ts";
 import { glossaryRule } from "./syntax/glossary.ts";
@@ -30,6 +36,7 @@ import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
 import { buildToc } from "./syntax/toc.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
+import { buildViews } from "./syntax/views.ts";
 
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
 export type RenderEnv = {
@@ -55,6 +62,8 @@ export type RenderEnv = {
   ownGlossary: MdmarkGlossaryEntry[];
   /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
   glossaryLines?: number[] | undefined;
+  /** `ownGlossary` の各用語のやめた言い方。点検がやめた言い方を探すために渡したときだけ、`glossaryRule` が足す */
+  glossaryAvoid?: string[][] | undefined;
   /** 拡張の印の範囲から読んだ部品の定義（印の場所の `data-mdmark-definition` の番号で引く） */
   extensionDefinitions?: unknown[];
   /** 描いた操作できる部品の定義（文書の中の並びの順） */
@@ -65,6 +74,8 @@ export type RenderEnv = {
   termTipCount?: number;
   /** ヒントのツールチップの数（`id` の通し番号） */
   hintCount?: number;
+  /** ビューの書き方の警告の数（`id` の通し番号） */
+  viewCount?: number;
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -127,18 +138,116 @@ function revertFuzzyLinks(state: StateCore): void {
   }
 }
 
+/** 元の行番号を付けるブロックの開始のトークンの種類（`fence` は `renderer.rules.fence` が付ける） */
+const SOURCE_LINE_TYPES = new Set([
+  "heading_open",
+  "paragraph_open",
+  "bullet_list_open",
+  "ordered_list_open",
+  "list_item_open",
+  "table_open",
+  "tr_open",
+  "blockquote_open",
+  "hr",
+  "code_block",
+]);
+
+/** `ownBlock` の HTML の最初の開始タグの属性の並びの頭 */
+const OWN_START_TAG = /^<([a-zA-Z][a-zA-Z0-9-]*)(?= data-mdmark-own=")/;
+
+/** ブロックの開始のトークンに、Markdown で始まる行の番号（0 始まり）を `data-source-line` で付ける */
+export function markSourceLines(state: StateCore): void {
+  const nonce = (state.env as RenderEnv).nonce;
+  for (const token of state.tokens) {
+    if (!token.block || !token.map) {
+      continue;
+    }
+    const line = token.map[0];
+    if (token.type === "html_block") {
+      // 記法が出した HTML だけに差し込む（文書に書いた生の HTML は変えない）
+      const start = OWN_START_TAG.exec(token.content);
+      if (
+        start &&
+        token.content.startsWith(` data-mdmark-own="${nonce}"`, start[0].length)
+      ) {
+        token.content = `${start[0]} data-source-line="${line}"${token.content.slice(start[0].length)}`;
+      }
+    } else if (SOURCE_LINE_TYPES.has(token.type)) {
+      token.attrSet("data-source-line", String(line));
+    }
+  }
+}
+
+/** 解析器の設定。印を拾う `findMarks` も同じ設定で解析する */
+const PARSER_OPTIONS = { html: true, linkify: true };
+
+/** `s` の中の改行の数 */
+function countNewlines(s: string): number {
+  return s.split("\n").length - 1;
+}
+
+/** 親の `inline` の開始行（0 から）。表のセルのように `map` が `null` のときは直前の `tr_open` の開始行 */
+function inlineStartLine(tokens: Token[], position: number): number {
+  for (let index = position; index >= 0; index--) {
+    const token = tokens[index];
+    if (token?.map && (index === position || token.type === "tr_open")) {
+      return token.map[0];
+    }
+  }
+  return 0;
+}
+
+/** Markdown の生の HTML のブロックと行内の HTML から印の名前と行の番号（1 から）を、書いた順に返す。閉じの印も 1 つの印として返す */
+export function findMarks(
+  markdown: string,
+): Array<{ name: string; line: number }> {
+  const tokens = new MarkdownIt(PARSER_OPTIONS).parse(markdown, {});
+  const found: Array<{ name: string; line: number }> = [];
+  for (const [position, token] of tokens.entries()) {
+    if (token.type === "html_block" && token.map) {
+      const start = token.map[0] + 1;
+      for (const match of token.content.matchAll(MARK_PATTERN)) {
+        const before = token.content.slice(0, match.index);
+        found.push({
+          name: match[2] ?? "",
+          line: start + countNewlines(before),
+        });
+      }
+    } else if (token.type === "inline") {
+      // 印より前の子が持つ改行の数を足しながら、行内の HTML の印を拾う
+      let offset = inlineStartLine(tokens, position) + 1;
+      for (const child of token.children ?? []) {
+        if (child.type === "softbreak" || child.type === "hardbreak") {
+          offset += 1;
+        } else if (child.type === "html_inline") {
+          for (const match of child.content.matchAll(MARK_PATTERN)) {
+            const before = child.content.slice(0, match.index);
+            found.push({
+              name: match[2] ?? "",
+              line: offset + countNewlines(before),
+            });
+          }
+          offset += countNewlines(child.content);
+        }
+      }
+    }
+  }
+  return found;
+}
+
 /** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
 export function createParser(): MarkdownItParser {
-  const parser = new MarkdownIt({ html: true, linkify: true });
+  const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
     ["mdmark_assign_heading_ids", assignHeadingIds],
     ["mdmark_glossary", glossaryRule],
     ["mdmark_attach_row_details", attachRowDetails],
+    ["mdmark_build_views", buildViews],
     ["mdmark_decorate_tables", decorateTables],
     ["mdmark_build_tabs", buildTabs],
     ["mdmark_build_steps", buildSteps],
@@ -147,6 +256,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_badges", buildBadges],
     ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
+    ["mdmark_build_code_blocks", buildCodeBlocks],
     ["mdmark_number_figures", numberFigures],
     ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],
@@ -155,6 +265,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
     ["mdmark_drop_marks", dropMarks],
+    ["mdmark_mark_source_lines", markSourceLines],
   ];
   for (const [name, rule] of rules) {
     parser.core.ruler.push(name, rule);
@@ -170,9 +281,11 @@ export function createParser(): MarkdownItParser {
     const language = tokens[index]?.info.trim().split(/\s+/)[0] ?? "";
     const label = language ? `コード: ${language}` : "コード";
     const html = renderFence?.(tokens, index, options, env, self) ?? "";
+    const line = tokens[index]?.map?.[0];
+    const sourceLine = line === undefined ? "" : ` data-source-line="${line}"`;
     return html.replace(
       "<pre>",
-      `<pre tabindex="0" aria-label="${escapeHtml(label)}">`,
+      `<pre tabindex="0" aria-label="${escapeHtml(label)}"${sourceLine}>`,
     );
   };
   return parser;

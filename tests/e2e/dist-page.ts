@@ -13,12 +13,18 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Page } from "@playwright/test";
 import type {
+  MdmarkComment,
   MdmarkConfig,
   MdmarkExtension,
   MdmarkIndex,
   MdmarkIndexIssue,
+  MdmarkMatches,
   MdmarkReferences,
 } from "../../src/index.ts";
+import {
+  copyPluginInputs,
+  writeRootPackageJson,
+} from "../integration/plugin-inputs.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -81,12 +87,46 @@ export type IndexOptions = {
   references?: MdmarkReferences;
 };
 
+/** ページの中に作るコメントの読み書きの関数の仕様 */
+export type CommentStoreSpec = {
+  /** `load` が返すコメント */
+  loaded?: MdmarkComment[];
+  /** `save` が reject する */
+  failSave?: boolean;
+};
+
+/** コメントの読み書きの関数が受けた呼び出し */
+export type CommentCalls = {
+  load: Array<{ docId: string }>;
+  save: Array<{
+    docId: string;
+    comment: { quote: string; prefix: string; suffix: string; body: string };
+  }>;
+};
+
 type MdmarkWindow = Window & {
+  commentStore?: unknown;
+  commentCalls?: CommentCalls;
+  viewHandle?: { destroy: () => void };
+  commentsHandle?: { destroy: () => void };
   mdmark?: {
     mount: (
       el: HTMLElement,
-      opts: { markdown: string; config?: MdmarkConfig } & IndexOptions,
+      opts: {
+        markdown: string;
+        config?: MdmarkConfig;
+        diffSource?: unknown;
+        commentStore?: unknown;
+      } & IndexOptions,
     ) => { update: (markdown: string) => void; destroy: () => void };
+    mountView: (
+      el: HTMLElement,
+      opts: unknown,
+    ) => Promise<{ destroy: () => void }>;
+    mountComments: (
+      el: HTMLElement,
+      opts: { store: unknown; docId: string },
+    ) => Promise<{ destroy: () => void }>;
     render: (
       markdown: string,
       opts?: { config?: MdmarkConfig } & IndexOptions,
@@ -98,6 +138,33 @@ type MdmarkWindow = Window & {
     }) => MdmarkReferences;
   };
   handle?: { update: (markdown: string) => void; destroy: () => void };
+  diffCalls?: { revisions: string[]; content: DiffContentCall[] };
+  releaseRevisions?: () => void;
+};
+
+/** 取り出し元の `content` が受けた引数 */
+export type DiffContentCall = { docId: string; revisionId: string };
+
+/** 取り出し元のリビジョン 1 つ分 */
+export type DiffRevisionSpec = {
+  id: string;
+  at: string;
+  label?: string;
+  author?: string;
+};
+
+/** ページの中に作る取り出し元（`DiffSource`）の仕様 */
+export type DiffSourceSpec = {
+  /** `revisions` が返す値。形を壊した値も渡せる */
+  revisions: unknown;
+  /** リビジョンの `id` から本文を引く表 */
+  contents: Record<string, string>;
+  /** `revisions` が reject する */
+  failRevisions?: boolean;
+  /** `content` が reject するリビジョンの `id` */
+  failContent?: string[];
+  /** `revisions` が `releaseRevisions` を呼ぶまで返らない */
+  pendingRevisions?: boolean;
 };
 
 /** `version`（既定は `v0.0.1`）を埋めてビルドした作業ツリーを作り、その場所を返す。ビルドは入口 `node scripts/build.ts --version {版}` を流し、配布ファイルの上限は既定のままにする */
@@ -116,7 +183,9 @@ export async function buildDistRoot(
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await cp(join(REPO_ROOT, name), join(root, name));
   }
-  await writeFile(join(root, "package.json"), '{"type":"module"}\n');
+  await writeRootPackageJson(root);
+  // プラグインのビルドが読む入力
+  await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   await symlink(
     join(REPO_ROOT, "node_modules"),
@@ -145,8 +214,8 @@ function pageHtml(hostCss: string): string {
     <link rel="stylesheet" href="${CDN_BASE}@${BUILT_VERSION}/dist/index.css">
     <style>${hostCss}</style>
     <script type="module">
-      import { mount, render, registerExtension, collectReferences } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
-      window.mdmark = { mount, render, registerExtension, collectReferences };
+      import { mount, render, registerExtension, collectReferences, mountView, mountComments } from "${CDN_BASE}@${BUILT_VERSION}/dist/index.js";
+      window.mdmark = { mount, render, registerExtension, collectReferences, mountView, mountComments };
     </script>
   </head>
   <body><div id="doc"></div></body>
@@ -274,10 +343,20 @@ export async function mountDocument(
     markdown: string;
     config?: MdmarkConfig;
     documents?: Record<string, string>;
+    /** `installCommentStore` で作った読み書きの関数を `mount` に渡す */
+    useCommentStore?: boolean;
   } & IndexOptions,
 ): Promise<void> {
   await page.evaluate(
-    ({ markdown, config, index, docId, documents, references }) => {
+    ({
+      markdown,
+      config,
+      index,
+      docId,
+      documents,
+      references,
+      useCommentStore,
+    }) => {
       const w = window as MdmarkWindow;
       const el = document.querySelector<HTMLElement>("#doc");
       if (!w.mdmark || !el) {
@@ -294,10 +373,142 @@ export async function mountDocument(
         index,
         docId,
         references: refs,
+        commentStore: useCommentStore ? w.commentStore : undefined,
       });
     },
     options,
   );
+}
+
+/** ページの中に、仕様どおりのコメントの読み書きの関数を作る。受けた呼び出しは `window.commentCalls` に控える。`save` は渡された下書きに `id` を付けて返す */
+export async function installCommentStore(
+  page: Page,
+  spec: CommentStoreSpec = {},
+): Promise<void> {
+  await page.evaluate((storeSpec) => {
+    const w = window as MdmarkWindow;
+    const calls: CommentCalls = { load: [], save: [] };
+    w.commentCalls = calls;
+    w.commentStore = {
+      load: (target: { docId: string }) => {
+        calls.load.push({ docId: target.docId });
+        return Promise.resolve(storeSpec.loaded ?? []);
+      },
+      save: (target: {
+        docId: string;
+        comment: CommentCalls["save"][number]["comment"];
+      }) => {
+        calls.save.push(JSON.parse(JSON.stringify(target)));
+        if (storeSpec.failSave) {
+          return Promise.reject(new Error("network"));
+        }
+        return Promise.resolve({
+          id: `c${calls.save.length}`,
+          ...target.comment,
+        });
+      },
+    };
+  }, spec);
+}
+
+/** コメントの読み書きの関数が受けた呼び出しを返す */
+export async function readCommentCalls(page: Page): Promise<CommentCalls> {
+  return page.evaluate(() => {
+    const calls = (window as MdmarkWindow).commentCalls;
+    if (!calls) {
+      throw new Error("コメントの読み書きの関数を作っていない");
+    }
+    return JSON.parse(JSON.stringify(calls));
+  });
+}
+
+/** ページから、`#doc` の中にビューを描かせる。TypeError は同期で投げられるため、`error` に控えて返す */
+export async function mountViewInPage(
+  page: Page,
+  options: unknown,
+): Promise<{ error: string | null }> {
+  return page.evaluate(async (opts) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    try {
+      w.viewHandle = await w.mdmark.mountView(el, opts);
+      return { error: null };
+    } catch (error) {
+      return { error: `${(error as Error).name}: ${(error as Error).message}` };
+    }
+  }, options);
+}
+
+/** ページから、`tasks` の印の拡張を登録する。拡張の `draw` は、印の範囲の `json` の定義を、`mountView` で印の場所の要素に描いて待つ */
+export async function registerTasks(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as MdmarkWindow;
+    const mdmark = w.mdmark;
+    if (!mdmark) {
+      throw new Error("mdmark が無い");
+    }
+    mdmark.registerExtension({
+      name: "tasks",
+      directive: "tasks",
+      load: async () => ({
+        draw: async (slot: HTMLElement, value: { definition?: unknown }) => {
+          await mdmark.mountView(slot, value.definition);
+        },
+      }),
+    } as MdmarkExtension);
+  });
+}
+
+/** ページから、`#doc` の中の選んだ箇所にコメントを付けられるようにさせる */
+export async function mountCommentsInPage(
+  page: Page,
+  docId: string,
+): Promise<void> {
+  await page.evaluate(async (id) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    w.commentsHandle = await w.mdmark.mountComments(el, {
+      store: w.commentStore,
+      docId: id,
+    });
+  }, docId);
+}
+
+/** ページから、`mountView`・`mountComments` が返した片付けの関数を呼ぶ */
+export async function destroyHandles(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as MdmarkWindow;
+    w.viewHandle?.destroy();
+    w.commentsHandle?.destroy();
+  });
+}
+
+/** セレクターに当たる要素の最初の文字の節の、始まりと終わりの位置の間を選ぶ（選びを外すときは `null`） */
+export async function selectText(
+  page: Page,
+  target: { selector: string; start: number; end: number } | null,
+): Promise<void> {
+  await page.evaluate((range) => {
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    if (range === null) {
+      return;
+    }
+    const text = document.querySelector(range.selector)?.firstChild;
+    if (!text) {
+      throw new Error("選ぶ文字が無い");
+    }
+    const selected = document.createRange();
+    selected.setStart(text, range.start);
+    selected.setEnd(text, range.end);
+    selection?.addRange(selected);
+  }, target);
 }
 
 /** ページから、描いた文書の本文を差し替えさせる */
@@ -370,6 +581,22 @@ export async function checkInNode(
   return JSON.parse(stdout);
 }
 
+/** 配布物を Node で読み（DOM を持たない別のプロセス）、索引と文書の本文から本文の一致と参照先を返す */
+export async function collectMatchesInNode(
+  root: string,
+  input: {
+    index: unknown;
+    documents: Record<string, string>;
+  },
+): Promise<MdmarkMatches> {
+  const url = pathToFileURL(join(root, "dist", "index.js")).href;
+  const script = `import(${JSON.stringify(url)}).then((m) => process.stdout.write(JSON.stringify(m.collectMatches(JSON.parse(process.env.INPUT)))))`;
+  const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
+    env: { ...process.env, INPUT: JSON.stringify(input) },
+  });
+  return JSON.parse(stdout);
+}
+
 /** 印刷の前後のイベントを送る */
 export async function sendPrintEvent(
   page: Page,
@@ -378,4 +605,82 @@ export async function sendPrintEvent(
   await page.evaluate((eventType) => {
     window.dispatchEvent(new Event(eventType));
   }, type);
+}
+
+/** ページの中に、仕様どおりの取り出し元を作って文書を描かせる。取り出し元が受けた呼び出しは `window.diffCalls` に控える。`docId` を省くと渡さない */
+export async function mountDiffDocument(
+  page: Page,
+  options: { markdown: string; docId?: string; source: DiffSourceSpec },
+): Promise<void> {
+  await page.evaluate(({ markdown, docId, source }) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    const calls = {
+      revisions: [] as string[],
+      content: [] as DiffContentCall[],
+    };
+    w.diffCalls = calls;
+    let release: () => void = () => {};
+    w.releaseRevisions = () => release();
+    const diffSource = {
+      revisions: (id: string) => {
+        calls.revisions.push(id);
+        if (source.failRevisions) {
+          return Promise.reject(new Error("network"));
+        }
+        if (source.pendingRevisions) {
+          return new Promise((resolve) => {
+            release = () => resolve(source.revisions);
+          });
+        }
+        return Promise.resolve(source.revisions);
+      },
+      content: (target: DiffContentCall) => {
+        calls.content.push(target);
+        return source.failContent?.includes(target.revisionId)
+          ? Promise.reject(new Error("content"))
+          : Promise.resolve(source.contents[target.revisionId] ?? "");
+      },
+    };
+    w.handle = w.mdmark.mount(el, { markdown, docId, diffSource });
+  }, options);
+}
+
+/** ページの中で、式の文字列が返す取り出し元（`DiffSource`）を渡して文書を描かせる。サンプルの取り出し元のコードをそのまま渡すのに使う */
+export async function mountDiffFactory(
+  page: Page,
+  options: { markdown: string; docId: string; factory: string },
+): Promise<void> {
+  await page.evaluate(({ markdown, docId, factory }) => {
+    const w = window as MdmarkWindow;
+    const el = document.querySelector<HTMLElement>("#doc");
+    if (!w.mdmark || !el) {
+      throw new Error("mdmark か描く先の要素が無い");
+    }
+    const diffSource = new Function(`return (${factory})`)();
+    w.handle = w.mdmark.mount(el, { markdown, docId, diffSource });
+  }, options);
+}
+
+/** ページが記録した、取り出し元の呼び出しを返す */
+export async function readDiffCalls(
+  page: Page,
+): Promise<{ revisions: string[]; content: DiffContentCall[] }> {
+  return page.evaluate(() => {
+    const calls = (window as MdmarkWindow).diffCalls;
+    if (!calls) {
+      throw new Error("取り出し元を作っていない");
+    }
+    return JSON.parse(JSON.stringify(calls));
+  });
+}
+
+/** ページの取り出し元の `revisions` を返させる（`pendingRevisions` のとき） */
+export async function releaseRevisions(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (window as MdmarkWindow).releaseRevisions?.();
+  });
 }

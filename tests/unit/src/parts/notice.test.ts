@@ -40,6 +40,40 @@ test("test_render_notice_when_extension", async () => {
   );
 });
 
+// 差分の取り出し元を読めないときの題と本文を返す（正常系）
+test("test_render_notice_when_diff", async () => {
+  // 準備
+  const { renderNotice } = await loadNotice();
+  // 実行
+  const revisions = renderNotice({ name: "guide", source: "diff-revisions" });
+  const content = renderNotice({
+    name: "2026/10/19 16:40 件数を直す",
+    source: "diff-content",
+  });
+  // 検証
+  expect(revisions).toContain(
+    '<strong class="mdmark-notice-title">変更の履歴を表示できません</strong>',
+  );
+  expect(content).toContain(
+    "<p>「2026/10/19 16:40 件数を直す」の本文を取り出せませんでした。",
+  );
+});
+
+// 部品のモジュールを読めないときの本文を返す（正常系）
+test("test_render_notice_when_part", async () => {
+  // 準備
+  const { renderNotice } = await loadNotice();
+  // 実行
+  const html = renderNotice({ name: "view", figure: false, source: "part" });
+  // 検証
+  expect(html).toContain(
+    '<strong class="mdmark-notice-title">この箇所を表示できません</strong>',
+  );
+  expect(html).toContain(
+    "<p>表示に使う部品（<code>view</code>）を読み込めませんでした。",
+  );
+});
+
 // 印の名前をエスケープする（正常系）
 test("test_render_notice_when_name_has_html", async () => {
   // 準備

@@ -4,6 +4,7 @@ directory: |-
   ```tree
   scripts/
   ├── build.ts       # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
+  ├── bundle.ts      # build.ts と build-plugin.ts が使う Node の束ねの target・先頭の行・postcss の差し替え・束ねたパッケージとライセンスの引き方
   └── migrations.ts  # スキーマを変えた版に移行の手順があるかの点検
   ```
 constants:
@@ -15,8 +16,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（320KB）
-    value: 256 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（384KB）
+    value: 384 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -26,7 +27,7 @@ constants:
     value: '"THIRD_PARTY_LICENSES.txt"'
   - name: postcssStubPlugin
     title: postcss の差し替え
-    container: scripts/build.ts
+    container: scripts/bundle.ts
     summary: 'esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える'
     value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返す'
     reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
@@ -59,17 +60,18 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、終了コードを返す
+    summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、プラグインをビルドし、終了コードを返す
     side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過）は `dist/` を残さず、標準エラーに理由を出す'
     args:
       - name: argv
         type: string[]
+        required: false
         description: コマンドの引数（`--version v{版}` を持てる）
       - name: options
-        type: '{ root: string; maxBytes: number }'
+        type: '{ root: string; maxBytes: number; guideContextLimit?: number }'
         required: false
-        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`
-        description: 作業ツリーの場所と配布ファイルの上限（テストで差し替える）
+        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`。`guideContextLimit` は省くと `GUIDE_CONTEXT_LIMIT`
+        description: 作業ツリーの場所、配布ファイルの上限、使い方集の索引の文の文字数の上限（テストで差し替える）
     returns:
       type: Promise<0 | 1>
       description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過は 1
@@ -116,13 +118,27 @@ functions:
         condition: '`migrations/next/steps.yaml` の手順が `op` を持たない'
         mock: 一時フォルダに `src/` と `version.ini` と `migrations/` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーに `migrations/next/steps.yaml` が出る
+      - name: test_main_when_guide_index_too_long
+        case: 異常
+        summary: 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる
+        condition: '`guideContextLimit` が 1'
+        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml` と指すページ・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: 1 を返し、`dist/` と `plugin/server` が無く、標準エラーに索引の文字数と上限が出る
     callees:
       - '#functions[resolveVersion]'
       - '#functions[buildDist]'
       - '#functions[findTooLargeOutputs]'
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts#functions[removePluginOutputs]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts#functions[buildPlugin]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#
     description: ファイルの末尾で、`import.meta.main` が `true`（`node scripts/build.ts` で入口として実行された）ときだけ `main(process.argv.slice(2))` を呼び、戻り値を `process.exitCode` に入れる。単体テストが import したときは呼ばない。
+    process: |-
+      1. `dist/` とプラグインの生成物を消す（プラグインの生成物を消す）
+      2. 版を決め、移行の手順を点検する（版を決める・移行の手順を点検する）
+      3. `dist/` を書き、上限を超えた配布ファイルを標準エラーに出す（配布物を書く・上限を超えた配布ファイルを拾う）
+      4. 超えたものが無ければプラグインをビルドし、問題の行を標準エラーに出す（プラグインをビルドする）
+      5. 問題が無ければ 0 を返す。どこかで失敗したら、`dist/` とプラグインの生成物を消して 1 を返す
   - name: resolveVersion
     title: 埋める版を決める
     container: scripts/build.ts
@@ -169,7 +185,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:

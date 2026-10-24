@@ -118,7 +118,7 @@ test("test_normal_when_syntax_disabled", async ({ page }) => {
   await expect(doc).not.toContainText("table:");
 });
 
-// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
   schema: 1,
   docs: [
@@ -130,6 +130,7 @@ const INDEX: MdmarkIndex = {
       id: "workspace",
       term: "ワークスペース",
       meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場"],
     },
   ],
 };
@@ -143,7 +144,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
   const markdown = [
     "<!-- features: -glossary -backlinks -->",
     "",
-    "ワークスペースを置く。",
+    "ワークスペースと作業場を置く。",
     "",
     "<!-- glossary: term=用語 meaning=意味 -->",
     "",
@@ -165,6 +166,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
   // 検証
   const doc = page.locator("#doc");
   await expect(doc.locator(".mdmark-term")).toHaveCount(0);
+  await expect(doc.locator(".mdmark-term-avoided")).toHaveCount(0);
   await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
   await expect(doc.locator("table")).toBeVisible();
   const html = await doc.innerHTML();

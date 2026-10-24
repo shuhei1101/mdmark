@@ -1,0 +1,70 @@
+title: "埋め込んだHTMLの差分"
+implementation: "src/parts/diff-html.ts#renderDiffHtml"
+story: "Parts/DiffHtml"
+states:
+  - name: Source
+    description: 表のセルの数を変えた範囲を、既定のソースの色分けで出す。右端に「HTML」
+  - name: PreviewSide
+    description: 同じ範囲をプレビューにし、前と後を横に並べる
+  - name: PreviewStack
+    description: 同じ範囲をプレビューにし、前と後を縦に並べる
+  - name: OneSide
+    description: 後にだけある範囲のプレビュー。前の側に `前のリビジョンには、この範囲がありません`
+  - name: Unchanged
+    description: 変えていない範囲。「HTML」のラベルだけの詰めた見出しで、切り替えを持たない
+  - name: ScriptDropped
+    description: スクリプトと `onclick` を書いた範囲のプレビュー。スクリプトとイベントの属性が落ちている
+lead: 差分の中の `<!-- html -->` の範囲を、右端に「HTML」のラベルを持つ見出しで囲む。変えた範囲は「ソース」「プレビュー」で、行の色分けと前と後の描いた結果を切り替える。HTML 文字列を返す。
+args:
+  - name: changed
+    type: 真偽値
+    required: true
+    description: 前か後で範囲を変えたか。false なら見方の切り替えを付けず、ラベルだけの見出しにする
+  - name: view
+    type: 列挙
+    required: false
+    default: source
+    choices: '`source`（ソースの行の色分け）・`rendered`（前と後の描いた結果）'
+    enabled_when: '`changed` が true のとき'
+    description: 今の見方
+  - name: sides
+    type: 列挙
+    required: false
+    default: side
+    choices: '`side`（横に並べる）・`stack`（縦に並べる）'
+    enabled_when: '`view` が `rendered` のとき'
+    description: 前と後の並べ方。幅が狭いときは `stack`
+  - name: lines
+    type: オブジェクトの配列
+    required: true
+    description: 範囲のソースの行。形は部品『差分の行』の行と同じ
+  - name: before
+    type: オブジェクト
+    required: false
+    default: なし（前のリビジョンに範囲が無い）
+    enabled_when: '`changed` が true のとき'
+    description: 前のリビジョンの説明（`label`）と、スクリプトとイベントの属性を落とした範囲の HTML（`html`）
+  - name: after
+    type: オブジェクト
+    required: false
+    default: なし（後のリビジョンに範囲が無い）
+    enabled_when: '`changed` が true のとき'
+    description: 後のリビジョンの説明と範囲の HTML。形は `before` と同じ
+events:
+  - name: 見方を切り替える
+    when: 「ソース」か「プレビュー」を押す
+    value: 押したボタンの `data-view`
+    description: '`mount` が押した見方の中身だけを出し、`aria-pressed` を書き換え、ミニマップの印を置き直す'
+uses:
+  - component: dev/設計書/部品設計/埋め込んだHTML.ts#
+    how: プレビューの前と後の HTML を今の埋め込んだ HTML の描画で出す
+accessibility:
+  - 見方のボタンは `role="group"`・`aria-label="HTML の見方"` の中に置き、押した状態を `aria-pressed` で伝える
+  - 「HTML」のラベルは文字で、色に頼らない
+  - 前と後の側は `figure` で、`figcaption` に `前`・`後` とリビジョンの説明を出す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[埋め込んだ HTML の差分]
+status: planned
+notes:
+  モック: '`dev/mock/components/diff-html-switch/`'
+test_file: tests/integration/lib/diff-html.story.test.ts

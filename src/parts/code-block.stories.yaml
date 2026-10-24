@@ -1,0 +1,43 @@
+title: Parts/CodeBlock
+stories:
+  - name: TitleAndLineNumbers
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      title: app.ts
+      lineNumbers: 'true'
+      lines: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const doc = await fetch(\"/README.md\");","kind":"highlight"},{"text":"mount(document.querySelector(\"#doc\"), await doc.text());"}]'
+  - name: LineMarks
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      lines: '[{"text":"let count = 0;","kind":"del"},{"text":"let count = 1;","kind":"add"},{"text":"count += 1; // 数える","kind":"highlight"},{"text":"console.log(count);"}]'
+  - name: TitleOnly
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: yaml
+      title: mdmark.config.yaml
+      lines: '[{"text":"features:"},{"text":"  code: true"},{"text":"  print: true"}]'
+  - name: TwoDigits
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      lineNumbers: 'true'
+      lines: '[{"text":"import { mount } from \"mdmark\";"},{"text":""},{"text":"const element = document.querySelector(\"#doc\");"},{"text":"const response = await fetch(\"/README.md\");"},{"text":"const markdown = await response.text();"},{"text":""},{"text":"const config = {"},{"text":"  features: {"},{"text":"    code: true,","kind":"highlight"},{"text":"    print: true,","kind":"highlight"},{"text":"  },"},{"text":"};"},{"text":"mount(element, markdown, config);"}]'
+  - name: LongLineAndTitle
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      title: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts
+      lineNumbers: 'true'
+      lines: '[{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js\";"},{"text":"export const decorate = (tokens: Token[], options: { title?: string; lines: boolean; highlight: number[] }) => tokens;","kind":"del"},{"text":"export const decorate = (tokens: Token[], options: CodeBlockOptions, warnings: SyntaxWarning[]): Token[] => applyCodeBlockOptions(tokens, options, warnings);","kind":"add"}]'

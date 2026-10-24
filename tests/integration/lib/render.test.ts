@@ -24,7 +24,12 @@ import {
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
 import { matches, plainText } from "../../unit/helpers/html.ts";
+import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
+  AVOID_DOC_ID,
+  AVOID_EXPECTED_HTML,
+  AVOID_INDEX,
+  AVOID_MARKDOWN,
   DOC_ID,
   EXPECTED_HTML,
   INDEX,
@@ -51,9 +56,15 @@ async function loadBuilt(): Promise<Built> {
   return await import(url);
 }
 
-/** ビルドした配布物を Node で読み込み、`render` を返す */
-async function loadRender(): Promise<Built["render"]> {
+/** ビルドした配布物を Node で読み込み、`render` をそのまま返す */
+async function loadRawRender(): Promise<Built["render"]> {
   return (await loadBuilt()).render;
+}
+
+/** ビルドした配布物を Node で読み込み、元の行番号の属性を取り除いた出力を返す `render` を返す。元の行番号以外の出力を比べるテストが使う */
+async function loadRender(): Promise<Built["render"]> {
+  const render = await loadRawRender();
+  return (markdown, opts) => stripSourceLine(render(markdown, opts));
 }
 
 /** HTML 文字列の中の、指定した要素の開始タグを全て返す */
@@ -221,7 +232,7 @@ test("test_normal_when_syntax", async () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- tabs -->",
+    "<!-- tabs: group=os -->",
     "",
     "### macOS",
     "",
@@ -288,7 +299,7 @@ test("test_normal_when_syntax", async () => {
     /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表を開く<\/summary>/,
   );
   expect(html).not.toMatch(/<details class="mdmark-table-details"[^>]*\sopen/);
-  expect(html).toContain('<div class="mdmark-tabs">');
+  expect(html).toContain('<div class="mdmark-tabs" data-group="os">');
   expect(html.match(/<div class="mdmark-tab-panel">/g)).toHaveLength(2);
   expect(html).toContain('<p class="mdmark-tab-title">macOS</p>');
   expect(html).toContain('<p class="mdmark-tab-title">Windows</p>');
@@ -402,6 +413,18 @@ test("test_normal_when_syntax_errors", async () => {
     "",
     "<!-- /tabs -->",
     "",
+    "<!-- tabs: group= grop=os closed -->",
+    "",
+    "### macOS",
+    "",
+    "macOS の手順",
+    "",
+    "### Windows",
+    "",
+    "Windows の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
     "[図](#fig-missing)",
     "",
     "<!-- table: data -->",
@@ -416,19 +439,135 @@ test("test_normal_when_syntax_errors", async () => {
   // 検証
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(4);
+  ).toHaveLength(5);
   expect(
     html.match(/<p class="mdmark-syntax-warning-title">書き方の警告<\/p>/g),
-  ).toHaveLength(4);
+  ).toHaveLength(5);
   expect(html).toContain('data-kind="default" data-features="pin sort"');
   expect(html).toContain("<code>unknown</code>");
   expect(html).toContain("<code>data</code>・<code>plain</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
-  expect(html).not.toContain("mdmark-tabs");
+  // 見出しの無い範囲はタブにせず、読めない指定の範囲だけが組を持たないタブになる
+  expect(html.match(/<div class="mdmark-tabs"/g)).toHaveLength(1);
+  expect(html).toContain('<div class="mdmark-tabs">');
+  expect(html).not.toContain("data-group");
+  const tabsWarning = html.slice(
+    html.lastIndexOf(
+      '<div class="mdmark-syntax-warning"',
+      html.indexOf('<div class="mdmark-tabs">'),
+    ),
+    html.indexOf('<div class="mdmark-tabs">'),
+  );
+  for (const label of ["group=", "grop=", "closed"]) {
+    expect(tabsWarning).toContain(`<code>${label}</code>`);
+  }
   expect(html).toContain('<a href="#fig-missing">図</a>');
   expect(html).toContain("<code>#fig-missing</code>");
   expect(html).toContain('data-kind="data"');
   expect(html).toContain("&lt;!-- /table --&gt;");
+});
+
+// 表の印の 5 つの機能と hide=・total= を data-* に写し、行に ID とリンクを付ける（正常系）
+test("test_normal_when_table_features", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "## みかん",
+    "",
+    "<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->",
+    "",
+    "| 名前 | 説明 | 数量 |",
+    "| --- | --- | --- |",
+    "| りんご | 描画を速くする | 1 |",
+    "| みかん | 印刷を直す | 2 |",
+    "| みかん | 描画の崩れを直す | 3 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter count columns total copy rowlink"[^>]*data-hide="1"[^>]*data-total="2:sum"/,
+  );
+  expect(html).toContain('id="みかん"');
+  const rowIds = startTags(html, "tr")
+    .map((tag) => /\sid="([^"]*)"/.exec(tag)?.[1])
+    .filter((id) => id !== undefined);
+  expect(rowIds).toEqual(["りんご", "みかん-1", "みかん-2"]);
+  const anchors = startTags(html, "a").filter((tag) =>
+    tag.includes("mdmark-row-anchor"),
+  );
+  expect(anchors).toHaveLength(3);
+  expect(anchors[1]).toContain('href="#みかん-1"');
+  expect(anchors[1]).toContain('aria-label="「みかん」の行へのリンク"');
+  expect(html).not.toContain("<tfoot");
+  expect(html).not.toContain("<button");
+  expect(html).not.toContain("<!--");
+});
+
+// 読めない集計・隠す列と、機能を付けていない表のキーを書き方の警告にして当てない（正常系）
+test("test_normal_when_table_feature_errors", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = [
+    "| 名前 | 数量 | 単価 |",
+    "| --- | --- | --- |",
+    "| a | 1 | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ];
+  const markdown = [
+    "<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->",
+    "",
+    ...table,
+    "<!-- table: data total=数量:sum hide=単価 -->",
+    "",
+    ...table,
+    "<!-- table: data +total -->",
+    "",
+    ...table,
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrappers = html.split('<div class="mdmark-table"').slice(1);
+  expect(wrappers).toHaveLength(3);
+  const [a, b, c] = wrappers as [string, string, string];
+  const wrapperTag = (part: string): string => part.slice(0, part.indexOf(">"));
+  // 表 A: 読めた計算だけを当て、隠す列は当てない
+  expect(wrapperTag(a)).toContain('data-total="2:avg"');
+  expect(wrapperTag(a)).not.toContain("data-hide");
+  const warnings = html.split('<div class="mdmark-syntax-warning"');
+  expect(warnings).toHaveLength(6);
+  // 警告の本文: 先頭の `<code>` は印の文字なので、取り除いた本文だけを見る
+  const bodyOf = (warning: string | undefined): string =>
+    (warning ?? "").replace(/<code>.*?<\/code>/, "");
+  // 表 A: 読めない指定ごとに 1 つずつ、本文に列名と計算がある
+  const [maxBody, priceBody, noteBody, firstBody] = [1, 2, 3, 4].map((i) =>
+    bodyOf(warnings[i]),
+  );
+  for (const word of ["max", "sum", "avg", "count"]) {
+    expect(maxBody).toContain(word);
+  }
+  expect(priceBody).toContain("価格");
+  expect(noteBody).toContain("備考");
+  expect(firstBody).toContain("<code>名前</code>");
+  expect(firstBody).toContain("先頭の列");
+  // 表 B: 機能の無い表のキーは当てず、機能が要ることを知らせる
+  expect(wrapperTag(b)).not.toContain("data-total");
+  expect(wrapperTag(b)).not.toContain("data-hide");
+  const warningB = warnings[5] ?? "";
+  expect(warningB).toContain("+total");
+  expect(warningB).toContain("+columns");
+  // 表 C: total= の無い +total は警告も集計の行も出さない
+  expect(wrapperTag(c)).toContain("total");
+  expect(wrapperTag(c)).not.toContain("data-total");
+  expect(
+    html.match(/<div class="mdmark-syntax-warning" role="note">/g),
+  ).toHaveLength(5);
 });
 
 // 文書に生の HTML で書いた記法の class・data-*・id を落とす（正常系）
@@ -465,7 +604,7 @@ test("test_normal_when_extension_mark", async () => {
   });
   const markdown = "前の段落\n\n<!-- greet: world lang=ja -->\n\n後の段落\n";
   // 実行
-  const html = render(markdown);
+  const html = stripSourceLine(render(markdown));
   // 検証
   expect(html).toContain(
     '<div class="mdmark-embed" data-mdmark-slot="greet" data-mdmark-args="world lang=ja" role="status">図を読み込んでいます</div>',
@@ -489,6 +628,75 @@ test("test_normal_when_index", async () => {
   expect(html).toBe(EXPECTED_HTML);
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
+});
+
+// やめた言い方のマーカーと代わりの用語を、スクリプト無しで読める HTML 文字列にする（正常系）
+test("test_normal_when_avoided_term", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(AVOID_MARKDOWN, {
+    index: AVOID_INDEX,
+    docId: AVOID_DOC_ID,
+  });
+  // 検証
+  expect(typeof document).toBe("undefined");
+  expect(html).toBe(AVOID_EXPECTED_HTML);
+  // 用語は破線の下線で「用語」の意味を持ち、やめた言い方は波線のマーカーで「代わりの用語」の語と意味を持つ
+  expect(html).toContain(
+    '<span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span>',
+  );
+  expect(html).toContain(
+    '<span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="mdmark-term-2">作業場</span>',
+  );
+  expect(plainText(html)).toContain(
+    "代わりの用語ワークスペース話し合いの記録を置くフォルダ",
+  );
+  expect(html).not.toContain("<script");
+});
+
+/** `Intl.Segmenter` を取り除いた間だけ、ほかのテストと共有しない新しいモジュールとして配布物の入口を読み込んで `run` に渡す */
+async function withoutIntlSegmenter(
+  run: (built: Built) => Promise<void>,
+): Promise<void> {
+  const original = Intl.Segmenter;
+  Reflect.deleteProperty(Intl, "Segmenter");
+  try {
+    const url = pathToFileURL(join(inject("builtRoot"), "dist", "index.js"));
+    url.search = "without-intl-segmenter";
+    await run(await import(url.href));
+  } finally {
+    Object.defineProperty(Intl, "Segmenter", {
+      value: original,
+      configurable: true,
+      writable: true,
+    });
+  }
+}
+
+// `Intl.Segmenter` を持たない環境でも配布物を読み込め、英数字の語の一部に下線を付けずに用語を照合する（正常系）
+test("test_normal_when_no_intl_segmenter", async () => {
+  await withoutIntlSegmenter(async (built) => {
+    // 準備
+    const index: MdmarkIndex = {
+      schema: 1,
+      docs: [],
+      terms: [
+        {
+          id: "ws",
+          term: "ワークスペース",
+          aliases: ["WS"],
+          meaning: "話し合いの記録を置くフォルダ",
+        },
+      ],
+    };
+    // 実行
+    const html = built.render("ワークスペースを WSL に置く\n", { index });
+    // 検証
+    expect(matches(html, /class="mdmark-term"/g)).toHaveLength(1);
+    expect(html).toContain(">ワークスペース</span>");
+    expect(html).toContain("を WSL に置く");
+  });
 });
 
 /** `figure.mdmark-diagram` の開始タグを、現れた順に返す */
@@ -868,4 +1076,245 @@ test("test_normal_when_chart_types", async () => {
       /<text[^>]*class="mdmark-diagram-axis-text"[^>]*text-anchor="middle"[^>]*>-?\d+<\/text>/g,
     ).length,
   ).toBeGreaterThanOrEqual(2);
+});
+
+// ビューの印の範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする（正常系）
+test("test_normal_when_view_marked", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = [
+    "| 題 | 状態 | 担当 |",
+    "| --- | --- | --- |",
+    "| 配色の変数を洗い出す | 未着手 | 佐藤 |",
+    "| 余白の変数を決める | 進行中 | 鈴木 |",
+  ].join("\n");
+  const markdown = `<!-- view: group=状態 default=table filter=担当 icons=未着手:inbox -->\n\n${table}\n\n<!-- /view -->\n`;
+  // 実行
+  const html = render(markdown);
+  const withoutViews = render(markdown, {
+    config: { features: { views: false } },
+  });
+  // 検証
+  const [view] = startTags(html, "div").filter((tag) =>
+    tag.includes("mdmark-view"),
+  );
+  expect(view).toBeDefined();
+  const data = /data-view="([^"]*)"/.exec(view ?? "")?.[1] ?? "";
+  expect(JSON.parse(data.replaceAll("&quot;", '"'))).toEqual({
+    group: 1,
+    mode: "table",
+    boardDisabled: "",
+    icons: { 未着手: "inbox" },
+  });
+  const viewBody = html.slice(html.indexOf('class="mdmark-view"'));
+  expect(viewBody).toContain("<table");
+  expect(startTags(viewBody, "div").join(" ")).toContain(
+    'data-filter="2:select"',
+  );
+  expect(html).not.toContain("mdmark-view-switch");
+  expect(html).not.toContain("mdmark-view-board");
+  expect(html).not.toContain("<button");
+  expect(html).not.toContain("<!--");
+  expect(withoutViews).not.toContain("mdmark-view");
+  expect(withoutViews).toContain("<table");
+});
+
+/** HTML 文字列の中の、コードブロックの `pre` を書いた順に全て返す */
+function codeBlocks(html: string): string[] {
+  return html.match(/<pre[\s\S]*?<\/pre>/g) ?? [];
+}
+
+/** HTML 文字列の中の、書き方の警告の枠を書いた順に全て返す */
+function warnings(html: string): string[] {
+  return html.match(/<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g) ?? [];
+}
+
+// コードブロックの印と行の印から、題・行番号・行の強調・行の種類を付ける（正常系）
+test("test_normal_when_code_block_decorated", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- code: title=app.ts lines highlight=1 -->",
+    "",
+    "```ts",
+    "const a = 1;",
+    "let count = 1; // [!code ++]",
+    "foo(); // 消す [!code --]",
+    "```",
+    "",
+    "```python",
+    "x = 1  # [!code highlight]",
+    "y = 2",
+    "```",
+    "",
+    "```ts",
+    "let count = 1; // [\\!code ++]",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [first = "", second = "", third = ""] = codeBlocks(html);
+  expect(html).toContain('<figure class="mdmark-code"');
+  expect(matches(html, /<figure/g)).toHaveLength(1);
+  expect(html).toContain(
+    '<figcaption class="mdmark-code-title">app.ts</figcaption>',
+  );
+  expect(first).toContain('aria-label="コード: app.ts"');
+  expect(first).toContain(
+    'class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs"',
+  );
+  expect(first).toMatch(/style="--mdmark-code-digits: ?1"/);
+  expect(first).toContain('data-line="1" data-kind="highlight"');
+  expect(first).toContain('data-line="2" data-kind="add"');
+  expect(first).toContain('data-line="3" data-kind="del"');
+  expect(first).toMatch(/let count = 1;<\/span>/);
+  expect(first).toMatch(/foo\(\); \/\/ 消す<\/span>/);
+  expect(second).toContain('data-kind="highlight"');
+  expect(second).not.toContain("[!code highlight]");
+  expect(second).not.toContain("#");
+  expect(second).not.toContain("mdmark-code-numbered");
+  expect(second).not.toContain("mdmark-code-signs");
+  expect(third).not.toContain("mdmark-code-line");
+  expect(third).toContain("// [!code ++]");
+  expect(html).not.toContain("<!--");
+});
+
+// コードブロックの印と行の印の読めない指定を書き方の警告にし、読めた指定で描く（正常系）
+test("test_normal_when_code_block_syntax_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const block = (body: string[]): string[] => ["```ts", ...body, "```", ""];
+  const markdown = [
+    "<!-- code: title=app.ts color=red -->",
+    "",
+    ...block(["const a = 1;", "const b = 2;", "const c = 3;"]),
+    "<!-- code: highlight=2,5 -->",
+    "",
+    ...block(["const a = 1;", "const b = 2;", "const c = 3;"]),
+    ...block(["foo(); // [!code focus]"]),
+    "<!-- code: title=app.ts -->",
+    "",
+    "直後の段落",
+    "",
+    "<!-- code: title=My App.ts -->",
+    "",
+    ...block(["const a = 1;"]),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(5);
+  for (const box of boxes) {
+    expect(box).toContain('role="note"');
+    expect(box).toContain("書き方の警告");
+  }
+  const [
+    keyBox = "",
+    lineBox = "",
+    markBox = "",
+    fenceBox = "",
+    spaceBox = "",
+  ] = boxes.map(plainText);
+  expect(keyBox).toContain("color=");
+  for (const key of ["title=", "lines", "highlight="]) {
+    expect(keyBox).toContain(key);
+  }
+  expect(lineBox).toContain("5");
+  expect(lineBox).toContain("3 行");
+  expect(markBox).toContain("[!code focus]");
+  expect(markBox).toContain("[!code ++]");
+  expect(fenceBox).toContain("直後にコードブロックがありません");
+  expect(spaceBox).toContain("App.ts");
+  expect(html).toContain(
+    '<figcaption class="mdmark-code-title">app.ts</figcaption>',
+  );
+  expect(html).toContain(
+    '<figcaption class="mdmark-code-title">My</figcaption>',
+  );
+  expect(matches(html, /<figure/g)).toHaveLength(2);
+  const [, highlighted = "", focused = ""] = codeBlocks(html);
+  expect(matches(highlighted, /data-kind=/g)).toHaveLength(1);
+  expect(highlighted).toMatch(
+    /data-kind="highlight"><span class="mdmark-code-text">const b = 2;/,
+  );
+  expect(focused).not.toContain("mdmark-code-line");
+  expect(focused).toContain("// [!code focus]");
+  expect(html).toContain("<p>直後の段落</p>");
+});
+
+// コードブロックの飾りの機能を外すと、印を取り除き、行の印を書いた文字のまま描く（正常系）
+test("test_normal_when_code_block_feature_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- features: -code -->",
+    "",
+    "<!-- code: title=app.ts lines -->",
+    "",
+    "```ts",
+    "let count = 1; // [!code ++]",
+    "foo();",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain('<pre tabindex="0" aria-label="コード: ts">');
+  expect(html).not.toContain("mdmark-code");
+  expect(html).toContain("// [!code ++]");
+  expect(html).not.toContain("<!--");
+  expect(html).not.toContain("app.ts");
+});
+
+/** 元の行番号の確認に使う、行の位置が分かる Markdown（1 行目に見出し、3 行目に段落、5〜7 行目に表、8 行目に印、9〜11 行目にコードブロック、13〜14 行目にリスト） */
+const SOURCE_LINE_MARKDOWN = [
+  "# 見出し",
+  "",
+  "段落",
+  "",
+  "| 列A | 列B |",
+  "| --- | ---: |",
+  "| 1 | 2 |",
+  "<!-- code: lines -->",
+  "```ts",
+  "const a = 1;",
+  "```",
+  "",
+  "- 項目A",
+  "- 項目B",
+  "",
+].join("\n");
+
+// ブロックの要素に、Markdown で始まる行の 0 始まりの番号を出す（正常系）
+test("test_normal_when_source_lines", async () => {
+  // 準備
+  const render = await loadRawRender();
+  // 実行
+  const html = render(SOURCE_LINE_MARKDOWN);
+  // 検証
+  const lineOf = (tag: string, index = 0): string | undefined =>
+    startTags(html, tag)[index]?.match(/data-source-line="(\d+)"/)?.[1];
+  expect(lineOf("h1")).toBe("0");
+  expect(lineOf("p")).toBe("2");
+  expect(html).toMatch(/<div data-source-line="4" class="mdmark-table"/);
+  expect(lineOf("tr", 1)).toBe("6");
+  expect(lineOf("pre")).toBe("8");
+  expect(lineOf("ul")).toBe("12");
+  expect(lineOf("li", 0)).toBe("12");
+  expect(lineOf("li", 1)).toBe("13");
+  // コードブロックの行は今のとおり `data-line`（1 から）を持ち、`data-source-line` を持たない
+  const codeLine = startTags(html, "span").find((tag) =>
+    tag.includes("mdmark-code-line"),
+  );
+  expect(codeLine).toContain('data-line="1"');
+  expect(codeLine).not.toContain("data-source-line");
+  // 表のセルの `data-label` と `mdmark-align-*` の class は変わらない
+  expect(html).toContain('<td data-label="列A">1</td>');
+  expect(html).toContain(
+    '<td data-label="列B" class="mdmark-align-right">2</td>',
+  );
 });

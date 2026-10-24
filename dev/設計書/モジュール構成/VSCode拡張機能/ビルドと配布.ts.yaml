@@ -1,0 +1,205 @@
+title: "VS Code 拡張機能 / ビルドと配布"
+lead: 拡張機能と Webview のスクリプトを esbuild で束ね、タグとバージョンを照合して .vsix を GitHub Release に添える。拡張機能ホストで流す結合テストの起動も持つ。配布物には入らない。
+directory: |-
+  ```tree
+  vscode/
+  ├── .vscodeignore              # .vsix に入れないもの（src/・tests/・scripts/・out/・node_modules/）
+  ├── tsconfig.json              # 型の検査（types: node・vscode・mocha）
+  ├── scripts/
+  │   ├── build.ts               # dist/extension.cjs・media/preview.js・media/preview.css と、--tests のとき out/test/ を書く
+  │   └── release-check.ts       # タグと package.json の version を照合する
+  └── tests/integration/
+      ├── run.ts                 # 代役の配信を立て、runTests を 1.141.0 と stable で呼ぶ
+      ├── stub-server.ts         # 代役の配信（配布物とタグ一覧）。結合テストと E2E が使い、@vscode/test-electron を import しない
+      ├── index.ts               # 拡張機能ホストの中で mocha を動かす run()
+      └── {インターフェース定義}.test.ts
+  .github/workflows/
+  └── vscode-release.yml         # vscode-v* のタグで .vsix を作り Release に添える
+  ```
+
+  `dist/`・`media/preview.js`・`media/preview.css`・`out/`・`.vscode-test/` は git の管理の外（`.gitignore`）にする。
+constants:
+  - name: TEST_VSCODE_VERSIONS
+    title: 結合テストを流す VS Code
+    container: vscode/tests/integration/run.ts
+    summary: 非機能要件の下限と、その時点の stable
+    value: '["1.141.0", "stable"]'
+    refs:
+      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
+    status: planned
+  - name: RELEASE_TAG_PATTERN
+    title: 拡張機能のタグの形
+    container: vscode/scripts/release-check.ts
+    summary: '`vscode-v{X}.{Y}.{Z}`'
+    value: /^vscode-v(\d+\.\d+\.\d+)$/
+    status: planned
+  - name: releaseWorkflow
+    title: リリースのワークフロー
+    container: .github/workflows/vscode-release.yml
+    summary: '`vscode-v*` のタグの push で、バージョンの照合 → `npm --prefix vscode ci` → `npm --prefix vscode run package` → `gh release upload`（Release が無ければ `gh release create`）を `ubuntu-latest` で流す'
+    entries:
+      - key: on.push.tags
+        value: '`vscode-v*`'
+      - key: permissions
+        value: '`contents: write`'
+      - key: concurrency
+        value: '`group: vscode-release-${{ github.ref }}`、`cancel-in-progress: false`'
+      - key: Node
+        value: '`actions/setup-node` で 24'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/拡張機能の配布物を作る.ts#
+    status: planned
+  - name: scripts
+    title: 拡張機能の npm のスクリプト
+    container: vscode/package.json
+    summary: '`vscode/package.json` の `scripts`'
+    entries:
+      - key: build
+        value: '`node scripts/build.ts`'
+      - key: vscode:prepublish
+        value: '`npm run build`'
+        description: '`vsce package` が先に流す'
+      - key: package
+        value: '`vsce package --no-dependencies --out mdmark-$npm_package_version.vsix`'
+      - key: release:check
+        value: '`node scripts/release-check.ts`'
+        description: 引数にタグを渡す
+      - key: typecheck
+        value: '`tsc --noEmit`'
+      - key: test:integration
+        value: '`node scripts/build.ts --tests && node tests/integration/run.ts`'
+        description: ヘッドレスの Linux では `xvfb-run -a` で包む
+    status: planned
+functions:
+  - name: buildExtension
+    title: 拡張機能をビルドする
+    kind: 関数
+    container: vscode/scripts/build.ts
+    usecase: 拡張機能の配布物を作る
+    summary: 'esbuild で `src/extension.ts` を `dist/extension.cjs`（`format: "cjs"`・`platform: "node"`・`external: ["vscode"]`）、`src/webview/preview.ts` を `media/preview.js`（`format: "esm"`・`platform: "browser"`）、`src/webview/preview.css` を `media/preview.css` に書く'
+    description: '`tests` が `true` のときは、`tests/integration/index.ts` と `*.test.ts` も `out/test/*.mjs`（`format: "esm"`・`platform: "node"`・`external: ["vscode", "mocha"]`）に書く。ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv` に `--tests` があるかを渡して呼ぶ'
+    scope: public
+    is_async: true
+    side_effects: '`dist/`・`media/`・`out/` に書く'
+    args:
+      - name: options
+        type: '{ root: string; tests: boolean }'
+        required: true
+        description: '`vscode/` の場所と、結合テストも束ねるか'
+    returns:
+      type: Promise<void>
+      description: 書き終えたら解決する
+    exceptions:
+      - name: Error
+        condition: esbuild が失敗した（投げ直す。`main` では終了コード 1）
+    unit_tests:
+      - name: test_build_extension
+        case: 正常
+        summary: 拡張機能と Webview のスクリプトを束ね、vscode を束ねない
+        condition: 作業ツリーの `vscode/` を一時フォルダに複製して `tests` が `false` で呼ぶ
+        mock: なし（一時フォルダ）
+        expected: '`dist/extension.cjs` が `require("vscode")` を含み、`media/preview.js` と `media/preview.css` があり、`out/` が無い'
+    refs:
+      - dev/設計書/外部ライブラリ/esbuild#
+    status: planned
+  - name: checkReleaseTag
+    title: タグとバージョンを照合する
+    kind: 関数
+    container: vscode/scripts/release-check.ts
+    usecase: 拡張機能の配布物を作る
+    summary: タグが `RELEASE_TAG_PATTERN` に合い、`vscode-v` の後ろが `package.json` の `version` と等しいかを返す
+    description: ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv[2]` のタグと `package.json` の `version` で呼び、合わなければ理由を標準エラーに出して終了コードを 1 にする
+    scope: public
+    args:
+      - name: options
+        type: '{ tag: string; version: string }'
+        required: true
+        description: push されたタグと `package.json` の `version`
+    returns:
+      type: '{ ok: true } | { ok: false; message: string }'
+      description: 照合の結果。合わないときは 2 つのバージョン（形に合わないときはタグ）を含む文
+    unit_tests:
+      - name: test_check_release_tag
+        case: 正常
+        summary: タグのバージョンと version が等しい
+        condition: '`tag` が `vscode-v0.1.0`、`version` が `0.1.0`'
+        mock: なし
+        expected: '`{ ok: true }`'
+      - name: test_check_release_tag_when_mismatch
+        case: 正常
+        summary: バージョンが違うときは 2 つのバージョンを出す
+        condition: '`tag` が `vscode-v0.2.0`、`version` が `0.1.0`'
+        mock: なし
+        expected: '`ok` が `false` で、`message` が `0.2.0` と `0.1.0` を含む'
+      - name: test_check_release_tag_when_invalid_tag
+        case: 正常
+        summary: 形に合わないタグは合わないときと同じく止める
+        condition: '`tag` が `v0.1.0` と `vscode-0.1.0`'
+        mock: なし
+        expected: どちらも `ok` が `false` で、`message` がタグを含む
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/拡張機能の配布物を作る.ts#constraints[タグの形]
+    status: planned
+  - name: runIntegrationTests
+    title: 結合テストを流す
+    kind: 関数
+    container: vscode/tests/integration/run.ts
+    usecase: 共通
+    summary: 代役の配信（このブランチでビルドした mdmark の配布物とタグ一覧）を空きポートで立て、`TEST_VSCODE_VERSIONS` のそれぞれで `runTests` を呼ぶ
+    description: ファイルの末尾で `import.meta.main` が `true` のときだけ呼ぶ。どれかが落ちたら終了コードを 1 にする
+    scope: public
+    is_async: true
+    side_effects: VS Code を `.vscode-test/` に取得する（1.141.0 はキャッシュがあれば取得しない）
+    process: |-
+      1. このブランチのソースを一時フォルダにビルドし、その `dist/` を配る代役の配信を `127.0.0.1` の空きポートで立てる（代役の配信を作る）
+      2. `TEST_VSCODE_VERSIONS` の順に `runTests({ version, extensionDevelopmentPath, extensionTestsPath: out/test/index.mjs, launchArgs: [見本のワークスペース, "--disable-extensions"], extensionTestsEnv: { MDMARK_VSCODE_DIST_BASE, MDMARK_VSCODE_TAGS_URL } })` を呼ぶ
+      3. サーバーを閉じる
+    callees:
+      - dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts#functions[createStubServer]
+      - dev/設計書/外部ライブラリ/test-electron#catalogs[API].entries[runTests]
+    refs:
+      - dev/設計書/外部ライブラリ/test-electron#
+    status: planned
+  - name: run
+    title: 拡張機能ホストの中でテストを走らせる
+    kind: 関数
+    container: vscode/tests/integration/index.ts
+    usecase: 共通
+    summary: '`out/test/` の `*.test.mjs` を mocha（`ui: "tdd"`・`timeout: 20000`）で走らせ、落ちた数が 1 以上なら reject する'
+    scope: public
+    is_async: true
+    returns:
+      type: Promise<void>
+      description: 全て通ったら解決する
+    exceptions:
+      - name: Error
+        condition: 落ちたテストがある
+        message: '`{数} tests failed`'
+    refs:
+      - dev/設計書/外部ライブラリ/mocha#
+    status: planned
+  - name: createStubServer
+    title: 代役の配信を作る
+    kind: 関数
+    container: vscode/tests/integration/stub-server.ts
+    usecase: 共通
+    summary: 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` とタグ一覧 `/tags` を返し、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests` を持つ HTTP サーバーを作る
+    description: 結合テストの入口（`runIntegrationTests`）と E2E（`tests/e2e/vscode.ts`）が同じ代役を使う。直下の型検査が `vscode/` の依存を引かないよう、`@vscode/test-electron` を import しないファイルに置く
+    scope: public
+    is_async: false
+    args:
+      - name: stub
+        type: Stub
+        required: true
+        description: 'タグ一覧・振る舞い（`tags`: `ok` / `hang` / `forbidden`、`dist`: `ok` / `drop` / `slow`）・受けた要求の経路。サーバーが書き換える'
+      - name: distDir
+        type: string
+        required: true
+        description: 配る配布物のフォルダ
+    returns:
+      type: Server
+      description: 待ち受けを始めていない `node:http` のサーバー
+    status: planned
+test_files:
+  - tests/unit/vscode/scripts/build.test.ts
+  - tests/unit/vscode/scripts/release-check.test.ts

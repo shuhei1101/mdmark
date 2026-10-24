@@ -1,0 +1,16 @@
+
+Running 10 tests using 4 workers
+
+  -   4 [firefox] › tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts:52:1 › test_normal
+  ✓   1 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:24:1 › test_normal (99ms)
+  ✓   2 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:24:1 › test_normal (98ms)
+  ✓   5 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:46:1 › test_normal_when_in_browser (202ms)
+  ✓   7 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:59:1 › test_normal_when_syntax (71ms)
+  ✓   8 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:137:1 › test_normal_when_index (56ms)
+  ✓   6 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:46:1 › test_normal_when_in_browser (937ms)
+  ✓   9 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:59:1 › test_normal_when_syntax (72ms)
+  ✓  10 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:137:1 › test_normal_when_index (62ms)
+  ✓   3 [chromium] › tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts:52:1 › test_normal (20.4s)
+
+  1 skipped
+  9 passed (25.0s)

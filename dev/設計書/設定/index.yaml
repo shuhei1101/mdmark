@@ -3,3 +3,5 @@ docs_index: true
 items:
   - page: ライブラリ本体.yaml
     summary: mdmark.config.yaml のうちライブラリ本体が読むキー（features・libraries）
+  - page: VSCode拡張機能.yaml
+    summary: VS Code 拡張機能の `settings.json` の `mdmark.*` と、拡張機能が読む `mdmark.config.yaml` のキー

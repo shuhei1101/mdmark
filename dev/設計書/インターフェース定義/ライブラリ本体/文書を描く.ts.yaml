@@ -720,9 +720,926 @@ flows:
       - '`hint` の箱の印の上で `hint` の文のツールチップが出て、箱の名前の上では出ない'
       - ページの中のツールチップの `id` が重ならない
     test: test_normal_when_embedded_hint
+  - name: 正常系（差分を開く）
+    summary: 取り出し元を渡して描き、「変更を見る」で一番新しい 2 つのリビジョンの差分を出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 3 つのリビジョンの取り出し元
+        description: '`r1`・`r2`・`r3` を新しい順に返し、`r2` から `r3` で段落の 1 行の語 `差分` を `変更` に書き換え、行を 1 つ足し、別の行を 1 つ消した本文を返す `DiffSource`。受けた呼び出しの引数を記録する'
+        notes: '`opts.docId` は `guide`。文書は `h1` で始まる'
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource })
+        M->>P: 文書を描き、題の後ろに「変更を見る」を置く
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: r3・r2・r1
+        M->>S: content を r2 と r3 で
+        S-->>M: 2 つの Markdown
+        M->>P: 本文を隠し、差分を出す
+    expected:
+      - '`mount` の直後は `revisions` が呼ばれず、`h1` の後ろに `aria-expanded="false"` の「変更を見る」のボタンがある'
+      - 押すと、ボタンが `aria-expanded="true"` になり、`h1` を残して本文が隠れる
+      - '`revisions` が `guide` で 1 回、`content` が `{ docId: "guide", revisionId: "r2" }` と `{ docId: "guide", revisionId: "r3" }` で 1 回ずつ呼ばれる'
+      - 前の選ぶ欄で `r2`、後の選ぶ欄で `r3` が選ばれ、前の欄の `r3` と後の欄の `r2`・`r1` を選べない
+      - 消した行が `data-kind="del"` で行頭に `-` を持ち、足した行が `data-kind="add"` で行頭に `+` を持つ
+      - 語を書き換えた行の対で、`del` が `差分` だけ、`ins` が `変更` だけを囲む
+      - '`role="status"` の要素が `削除した行 2・追加した行 2` を持つ'
+      - ミニマップの帯があり、消した行と足した行の印を持つ
+    test: test_normal_when_diff_opened
+  - name: 正常系（リビジョンを選び直す）
+    summary: 前のリビジョンを選び直すと、その 2 つの差分に描き直す
+    setup:
+      - name: 差分を開いたページ
+        description: 正常系（差分を開く）で差分を出した後のページ
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 前の選ぶ欄で r1 を選ぶ
+        M->>S: content を r1 と r3 で
+        S-->>M: 2 つの Markdown
+        M->>P: r1 と r3 の差分に描き直す
+    expected:
+      - '`content` が `r1` と `r3` の `revisionId` で呼ばれる'
+      - 後の選ぶ欄は `r3` のまま、`r1` を選べない
+      - 差分の行が `r1` と `r3` の比較に替わる
+    test: test_normal_when_revision_reselected
+  - name: 正常系（リビジョンが 1 つ）
+    summary: リビジョンが 1 つなら本文を取り出さず、比較対象が無いことを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 1 つのリビジョンの取り出し元
+        description: '`revisions` が `r1` だけを返す `DiffSource`'
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: r1
+        M->>P: 比較対象が無いことを出す
+    expected:
+      - 差分の場所が `この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。` を持つ
+      - '`content` が呼ばれない'
+      - 選ぶ欄とミニマップが無い
+    test: test_normal_when_single_revision
+  - name: 正常系（変更が無い）
+    summary: 選んだ 2 つの本文が同じなら、行を出さずに変更が無いことを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 同じ本文の取り出し元
+        description: '`r1`・`r2` を返し、`content` がどちらにも同じ Markdown を返す `DiffSource`'
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions と content を 2 回
+        S-->>M: 同じ 2 つの Markdown
+        M->>P: 変更が無いことを出す
+    expected:
+      - 差分の場所が `選んだ 2 つのリビジョンの本文に、変更はありません。` を持つ
+      - '`mdmark-diff-line` の要素とミニマップが無い'
+      - 選ぶ欄は残る
+    test: test_normal_when_no_change
+  - name: 正常系（語の区切りを持たない）
+    summary: '`Intl.Segmenter` を持たないブラウザでは、対の行を文字ごとに比べる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じで、配布物を読む前に `Intl.Segmenter` を消したページ
+      - name: Mock
+        description: 正常系（差分を開く）と同じ取り出し元
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions と content を 2 回
+        S-->>M: 2 つの Markdown
+        M->>P: 文字ごとに比べた差分を出す
+    expected:
+      - 語を書き換えた行の対で、変わった文字だけが `del`・`ins` で囲まれる
+      - '`mount` と差分を開く操作が例外を投げない'
+    test: test_normal_when_segmenter_missing
+  - name: 正常系（埋め込んだ HTML をプレビューに切り替える）
+    summary: 変えた埋め込んだ HTML の範囲を、ソースの色分けから前と後のプレビューへ切り替えて戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 埋め込んだ HTML の取り出し元
+        description: '`r1`・`r2` を返し、表の 1 つのセルの数を変えた `<!-- html -->` の範囲・変えていない範囲・`r2` にだけある範囲を持つ本文を返す `DiffSource`'
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 差分を開く
+        M->>P: 範囲をソースの色分けで出す
+        P->>M: 変えた範囲の「プレビュー」を押す
+        M->>P: 前と後の HTML を並べて描く
+        P->>M: 「ソース」を押す
+        M->>P: ソースの色分けに戻す
+    expected:
+      - 各範囲の見出しに `HTML` のラベルがある
+      - 変えた範囲だけが `aria-label="HTML の見方"` の「ソース」「プレビュー」のボタンを持ち、変えていない範囲は持たない
+      - 既定は「ソース」が `aria-pressed="true"` で、範囲の行が色分けされる
+      - 「プレビュー」を押すと、前と後の表が並び、前のセルが元の数、後のセルが変えた数を持つ
+      - '`r2` にだけある範囲のプレビューで、前の側が `前のリビジョンには、この範囲がありません` を持つ'
+      - 「ソース」を押すと色分けの行に戻る
+    test: test_normal_when_html_previewed
+  - name: 正常系（ミニマップで送る）
+    summary: 長い文書の差分で、ミニマップの帯を押す・押したまま動かすと差分を送る
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じで、ページ全体がスクロールするページ
+      - name: 長い文書の取り出し元
+        description: 変えていない行が多く画面に収まらない長さで、前半と後半に変えた行がある `r1`・`r2` を返す `DiffSource`
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 差分を開く
+        M->>P: 画面の右端にミニマップを置く
+        P->>M: 帯の後半の印の位置を押す
+        M->>P: 後半の変えた行が見えるまで送る
+        P->>M: 帯を押したまま上へ動かす
+        M->>P: 前半の変えた行が見えるまで送る
+    expected:
+      - ミニマップの帯が `aria-hidden` を持ち、画面の右端に画面の高さいっぱいで置かれる
+      - 帯の後半の印の位置を押すと、後半の変えた行が画面に入る
+      - 押したまま上へ動かすと、前半の変えた行が画面に入る
+      - 今見えている範囲の枠が、送りに合わせて動く
+    test: test_normal_when_scrolled_by_minimap
+  - name: 正常系（差分を閉じる）
+    summary: 「変更を見る」を押し直すと差分とミニマップを片付けて本文に戻す
+    setup:
+      - name: 差分を開いたページ
+        description: 正常系（差分を開く）で差分を出した後のページ
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 「変更を見る」を押し直す
+        M->>P: 差分とミニマップを片付け、本文を出す
+    expected:
+      - ボタンが `aria-expanded="false"` になり、フォーカスがボタンに残る
+      - 差分の行・選ぶ欄・ミニマップが無くなり、本文が開く前と同じに出る
+    test: test_normal_when_diff_closed
+  - name: 正常系（待つ間に片付ける）
+    summary: 取り出し元の待ちの間に `destroy` すると、後から返った結果を描かない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 待たせる取り出し元
+        description: '`revisions` がテストの合図まで返らない `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で合図を待つ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        P->>M: destroy()
+        S-->>M: r3・r2・r1
+        M->>M: 結果を捨てる
+    expected:
+      - 待ちが 1 秒を過ぎると差分の場所に `変更を読み込んでいます` が出る
+      - '`destroy` の後に `revisions` が返っても、`el` の中は空のまま'
+      - '`content` が呼ばれない'
+    test: test_normal_when_destroyed_while_waiting
+  - name: 異常系（リビジョンの一覧を取り出せない・知らせの枠）
+    summary: '`revisions` が reject すると差分の場所を知らせの枠にし、本文は残す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 一覧を返せない取り出し元
+        description: '`revisions` が `Error("network")` で reject する `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で reject する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: reject
+        M->>P: 差分の場所を知らせの枠にする
+    expected:
+      - 差分の場所の要素が class `mdmark-notice` と `role="status"` を持つ
+      - 題が `変更の履歴を表示できません`、本文が `リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。`
+      - '`content` が呼ばれず、例外が投げられない'
+      - 「変更を見る」を押し直すと、本文が開く前と同じに出る
+      - '`console.error` が 1 回呼ばれ、引数に `revisions`・`guide`・元のエラーを含む'
+    test: test_error_when_revisions_rejected
+  - name: 異常系（本文を取り出せない・知らせの枠）
+    summary: '`content` が 1 つのリビジョンで reject すると、選ぶ欄を残して知らせの枠を出し、選び直せば差分を出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: r1 の本文を返せない取り出し元
+        description: 正常系（差分を開く）の取り出し元で、`content` が `r1` のときだけ reject する
+      - name: Mock
+        description: 取り出し元はページの中で reject する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 前の選ぶ欄で r1 を選ぶ
+        M->>S: content を r1 で
+        S-->>M: reject
+        M->>P: 差分の行の場所を知らせの枠にする
+        P->>M: 前の選ぶ欄で r2 を選び直す
+        M->>S: content を r2 で
+        S-->>M: Markdown
+        M->>P: r2 と r3 の差分を出す
+    expected:
+      - 題が `このリビジョンの本文を表示できません`、本文が `r1` のリビジョンの説明を `「」` で囲んだ `…の本文を取り出せませんでした。別のリビジョンを選んでください。`
+      - 選ぶ欄が残り、ミニマップと `削除した行・追加した行` の数が無い
+      - '`r2` を選び直すと、知らせの枠が消えて `r2` と `r3` の差分が出る'
+      - '`console.error` が引数に `content`・`guide`・`r1`・元のエラーを含む'
+    test: test_error_when_content_rejected
+  - name: 異常系（リビジョンの形が合わない・知らせの枠）
+    summary: '`revisions` が形に合わない値を返すと、取り出せないときと同じ知らせの枠を出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 形が合わない取り出し元
+        description: '`revisions` が `at` を持たないリビジョンを含む配列を返す `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 「変更を見る」を押す
+        M->>S: revisions(guide)
+        S-->>M: at の無いリビジョン
+        M->>P: 差分の場所を知らせの枠にする
+    expected:
+      - 題が `変更の履歴を表示できません` の知らせの枠が出る
+      - '`content` が呼ばれず、例外が投げられない'
+      - '`console.error` が引数に `revisions`・`guide`・合わなかった値を含む'
+    test: test_error_when_revisions_malformed
+  - name: 異常系（docId が無い・TypeError）
+    summary: 取り出し元を渡して `docId` を渡さないと、何も描かずに TypeError を投げる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 取り出し元
+        description: 正常系（差分を開く）の `DiffSource`
+      - name: Mock
+        description: 正常系（差分を開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, diffSource })
+        M-->>P: TypeError
+    expected:
+      - '`mount` が `TypeError` を投げ、メッセージに `docId` を含む'
+      - '`el` の中身と class が変わらない'
+      - '`revisions` が呼ばれない'
+    test: test_error_when_doc_id_missing
+  - name: 正常系（表の件数と列の表示）
+    summary: 絞り込みに合わせて件数を書き換え、列の表示のメニューで列を隠して既定に戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 件数と列の表示の表を持つ Markdown
+        description: '`<!-- table: data +count +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` に `りんご`・`みかん`・`りんご飴` の 3 行を持つ表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 件数と列の表示の帯を置き、説明の列を隠す
+        P->>M: 名前の列を「りんご」で絞り込む
+        M->>P: 件数を書き換える
+        P->>M: 列の表示を押し、説明にチェックを入れて更新日を外す
+        M->>P: 列の表示を切り替える
+        P->>M: 既定に戻すを押す
+        M->>P: data-hide の状態に戻す
+    expected:
+      - 描いた直後、件数の要素が `aria-live="polite"` を持ち、文字が `3 / 3 件`、説明の列の `th` と `td` が `hidden` を持つ
+      - 「りんご」で絞り込んだ後、件数の文字が `2 / 3 件` で、読み上げの文字が `3 件中 2 件を表示`
+      - メニューを開いた後、ボタンの `aria-expanded` が `true` で、名前のチェックボックスが `disabled`、メニューに `先頭の列は隠せません` がある
+      - 説明にチェックを入れて更新日を外した後、説明の列が `hidden` を持たず、更新日の列の `th` と `td` が `hidden` を持つ
+      - 「既定に戻す」を押した後、説明の列だけが `hidden` を持ち、更新日の列は `hidden` を持たない
+      - Esc でメニューが `hidden` を持ち、列の表示のボタンにフォーカスがある
+    test: test_normal_when_table_counted_and_columns_toggled
+  - name: 正常系（表の集計の行）
+    summary: 表示している行で集計した tfoot の行を置き、絞り込みで計算し直し、並べ替えでは動かさない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 集計の行の表を持つ Markdown
+        description: '`<!-- table: data +total +columns total=数量:sum,単価:avg,名前:count filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 4 行の表を囲んだ文書'
+        notes: 名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量は `10`・`2`・`33`・`-`、単価は `100`・`200`・`300`・`400`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 集計の行を置く
+        P->>M: 名前の列を「りんご」で絞り込む
+        M->>P: 集計を計算し直す
+        P->>M: 数量の列の見出しを押す
+        M->>P: 本文の行だけを並べ替える
+        P->>M: 列の表示で単価を外す
+        M->>P: 単価の列と集計のセルを隠す
+    expected:
+      - 描いた直後、`tfoot` の行のセルが左から `個数 4`・`合計 45`・`平均 250`
+      - 「りんご」で絞り込んだ後、`tfoot` の行のセルが `個数 2`・`合計 43`・`平均 200`
+      - 一致する行が無い絞り込みでは、`個数 0`・`合計 0`・`平均 —`
+      - 並べ替えた後も、集計の行は `tfoot` にあり、`tbody` の行に入っていない
+      - 単価を外した後、単価の列の `th`・`td` と `tfoot` の単価のセルが `hidden` を持つ
+    test: test_normal_when_table_totals
+  - name: 正常系（表をコピーする）
+    summary: 表示している行と列を TSV でクリップボードへ写し、ボタンで知らせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コピーできる表を持つ Markdown
+        description: '`<!-- table: data +copy +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` の 3 行の表を囲んだ文書'
+        notes: 名前は `りんご`・`みかん`・`りんご飴`、更新日は `2026-10-01`・`2026-10-10`・`2026-10-20`
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を記録して解決する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 名前の列を「りんご」で絞り込み、表をコピーを押す
+        M->>P: 表示している行と列を TSV で写し、ボタンで知らせる
+    expected:
+      - '`navigator.clipboard.writeText` が `名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれる'
+      - 押した後、ボタンの文字が `コピーしました` で、2 秒後に `表をコピー` に戻る
+    test: test_normal_when_table_copied
+  - name: 正常系（表をコピーできない）
+    summary: クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コピーできる表を持つ Markdown
+        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 表をコピーを押す
+        M->>M: 書き込みが拒まれる
+        M->>P: ボタンで写せなかったことを知らせる
+    expected:
+      - 押した後、ボタンの文字が `コピーできませんでした` で、2 秒後も変わらない
+      - ページに捕まえられない例外（`unhandledrejection`）が出ていない
+      - もう一度押すと、書き込みをもう一度試す
+    test: test_normal_when_table_copy_denied
+  - name: 正常系（行へのリンクで行へ移る）
+    summary: 'URL の #ID が指す行を囲む閉じた表・節を開き、絞り込みを外して行へ移り、その行を強調する'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 行へのリンクの表を持つ Markdown
+        description: '`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` の表 A（名前 `りんご`・`みかん`・`りんご飴`）と、`<!-- section: closed -->` の節の中の `<!-- table: data +rowlink filter=名前:text -->` 〜 `<!-- /table -->` の表 B（名前 `ぶどう`・`もも`・`なし`）を持つ文書'
+      - name: 行を指す URL
+        description: '`mount` の前に `location.hash` を `#みかん` にする'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表 A を開き、みかんの行へ移って強調する
+        P->>M: 表 B を「ぶどう」で絞り込み、location.hash を #もも にする
+        M->>P: 節を開き、表 B の絞り込みを外してももの行へ移り、強調を移す
+        P->>M: location.hash を #/a.md#みかん にする
+        M->>P: みかんの行を強調する
+    expected:
+      - 描いた後、表 A の `details` が `open` を持ち、`id="みかん"` の行だけが `data-target` を持つ
+      - '`#もも` にした後（`hashchange`）、節の中身が `hidden` を持たず、表 B の 3 行とも `hidden` を持たず、絞り込みのボタンが絞り込み中でない'
+      - '`#もも` にした後、`id="もも"` の行だけが `data-target` を持ち、`id="みかん"` の行は持たない'
+      - '`#/a.md#みかん` にした後、`id="みかん"` の行だけが `data-target` を持つ（まとめた HTML の `#` の形）'
+    test: test_normal_when_table_row_linked
+  - name: 正常系（同じ組のタブを揃えて残す）
+    summary: 同じ group のタブ群を同じタブ名へ揃え、選んだタブ名を localStorage に残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。localStorage は空
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: mdmark-tabs:os を読む
+        S-->>M: 無い
+        M->>P: 4 つのタブ群で最初のタブを選ぶ
+        P->>M: 1 つ目のタブ群の Windows のタブを押す
+        M->>P: group=os で Windows を持つタブ群を Windows に切り替える
+        M->>S: mdmark-tabs:os に Windows を残す
+    expected:
+      - 押す前、localStorage の `mdmark-tabs:os` が無い（描いたときの選択は残さない）
+      - 押した後、1 つ目と 2 つ目のタブ群で `Windows` のタブの `aria-selected` が `true`、`tabindex` が `0` で、`Windows` の中身だけが `hidden` を持たない
+      - 3 つ目と 4 つ目のタブ群は `macOS` のタブの `aria-selected` が `true` のまま
+      - フォーカスが 1 つ目のタブ群の `Windows` のタブにある
+      - localStorage の `mdmark-tabs:os` が `Windows`
+    test: test_normal_when_tab_group_synced
+  - name: 正常系（残したタブで描く）
+    summary: localStorage に残したタブ名のタブを選んで描き、本文を差し替えても同じタブを選ぶ
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 残したタブ名
+        description: localStorage の `mdmark-tabs:os` に `Windows`、`mdmark-tabs:lang` に `Go` を入れておく
+        notes: '`Go` は文書のどのタブにも無いタブ名'
+      - name: 組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲、`<!-- tabs: group=lang -->` で `### Python`・`### TypeScript` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: mdmark-tabs:os と mdmark-tabs:lang を読む
+        S-->>M: Windows と Go
+        M->>P: os のタブ群は Windows、lang と組の無いタブ群は最初のタブを選ぶ
+        P->>M: update(同じ markdown)
+        M->>S: mdmark-tabs:os を読む
+        M->>P: os のタブ群を Windows を選んで描き直す
+    expected:
+      - 描いた直後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の中身だけが `hidden` を持たない
+      - '`group=lang` のタブ群は `Python`、`group` の無いタブ群は `macOS` を選んでいる'
+      - '`update` の後も `group=os` のタブ群は `Windows` を選んでいる'
+      - localStorage の `mdmark-tabs:lang` は `Go` のまま
+    test: test_normal_when_tab_choice_restored
+  - name: 正常系（localStorage が使えない）
+    summary: localStorage を取り出せなくても、同じ組のタブを揃えて切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: localStorage が使えないページ
+        description: '`mount` の前に、`window.localStorage` を読むと `SecurityError` を投げるように差し替える'
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
+      - name: Mock
+        description: '`console.warn` を記録する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: mount(el, { markdown })
+        M->>S: 取り出す
+        S-->>M: SecurityError
+        M->>P: 最初のタブを選んで描く
+        P->>M: 1 つ目のタブ群の Windows のタブを押す
+        M->>P: 2 つのタブ群を Windows に切り替える
+        M->>S: 取り出す
+        S-->>M: SecurityError
+    expected:
+      - '`mount` が例外を投げず、描いた直後は 2 つのタブ群とも `macOS` を選んでいる'
+      - 押した後、2 つのタブ群とも `Windows` のタブの `aria-selected` が `true`
+      - '`console.warn` が呼ばれ、書き方の警告は無い'
+    test: test_normal_when_storage_unavailable
+  - name: 正常系（ビューを描く）
+    summary: ビューの印で囲んだ表をボード表示で描き、表形式と切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: ビューの印を持つ Markdown
+        description: '`<!-- view: group=状態 -->` 〜 `<!-- /view -->` で、題・状態・担当の列と 5 行を持つ表を囲んだ文書'
+        notes: 状態は上から `未着手`・`進行中`・`未着手`・`完了`・`進行中`
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: ビューの部品のモジュールを読む
+        M->>P: ボード表示を描く
+        P->>M: 「表」を押す
+        M->>P: 表形式のビュー
+    expected:
+      - '`mdmark-view` の中に「ボード」「表」の切り替えがあり、「ボード」が `aria-pressed="true"`'
+      - ボードの列が `未着手`・`進行中`・`完了` の順で、見出しに既定のアイコン（`circle-dashed`・`circle-dot`・`circle-check`）と件数 `2`・`2`・`1` を持つ
+      - 項目に題と担当が出て、状態の値は出ない
+      - 「表」を押すと 5 行の表が出て、ボードが隠れる
+      - ビューの上に検索欄と件数が無い
+    test: test_normal_when_view_drawn
+  - name: 正常系（ビューの表形式を列で絞り込む）
+    summary: '`filter=` の列だけを絞り込み、ボードには当てず、表形式に戻すと絞り込みが残る'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 絞り込む列を指定した Markdown
+        description: '`<!-- view: group=状態 default=table filter=担当 -->` 〜 `<!-- /view -->` で、正常系（ビューを描く）と同じ表を囲んだ文書'
+        notes: 担当は上から `佐藤`・`鈴木`・`佐藤`・`田中`・`鈴木`
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表形式のビュー
+        P->>M: 担当の絞り込みで佐藤を選ぶ
+        M->>P: 2 行の表
+        P->>M: 「ボード」を押し、「表」を押す
+        M->>P: ボードは 5 件、表は 2 行
+    expected:
+      - 絞り込みのボタンが担当の列の見出しにだけある
+      - 佐藤を選ぶと、担当が `佐藤` の 2 行だけが表示され、ボタンが絞り込み中を示す
+      - ボードに切り替えると 5 件が全て出て、列の見出しの件数は `2`・`2`・`1`
+      - 表に戻すと `佐藤` の 2 行だけが表示される
+    test: test_normal_when_view_filtered
+  - name: 正常系（ビューの書き方の誤り）
+    summary: 表に無い `group=` の列と知らない絞り込みの種類に書き方の警告を出し、表形式で描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 誤った印を持つ Markdown
+        description: '`<!-- view: group=優先度 filter=担当:range -->` 〜 `<!-- /view -->` で、正常系（ビューを描く）と同じ表を囲んだ文書'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 書き方の警告と表形式のビュー
+    expected:
+      - 範囲の上の書き方の警告に、`優先度` が表に無い列であることと、`range` が使えない絞り込みの種類であることの 2 項目がある
+      - 5 行の表形式のビューで描かれ、「ボード」が押せない
+      - 担当の列に絞り込みのボタンが無い
+      - 例外を投げない
+    test: test_normal_when_view_syntax_invalid
+  - name: 正常系（ビューの機能を外す）
+    summary: '`views` がオフのときは、印の範囲の表を普通の表で描き、ビューの部品のモジュールを読まない'
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` は `{ views: false }`'
+      - name: ビューの印を持つ Markdown
+        description: 正常系（ビューを描く）と同じ
+      - name: Mock
+        description: ページの要求を記録する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: 印の範囲の表をそのまま描く
+    expected:
+      - 印の範囲の表が、切り替えもボードも持たない普通の表で描かれる
+      - 書き方の警告が無い
+      - ビューの部品のモジュールの要求が無い
+    test: test_normal_when_views_disabled
+  - name: 正常系（コメントを付ける）
+    summary: 選んだ文字にコメントを書いて保存し、印と吹き出しで読む
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` は `{ comments: true }`、`opts.docId` は `guide`'
+      - name: コメントの読み書きの関数
+        description: '`load` は空の配列、`save` は受けた下書きに `id: "c1"` を足して返す。受けた引数を記録する'
+      - name: 段落を持つ Markdown
+        description: '`描いた文書の見た目はテーマの変数で変える。` の段落を 1 つ持つ文書'
+        notes: コメントの本文は `ここは <b>太字</b> にしたい`
+      - name: Mock
+        description: 読み書きの関数はページの中のメモリーで返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>S: load({ docId })
+        S-->>M: []
+        P->>M: 「テーマの変数」を選び、コメントのボタンを押す
+        M->>P: 入力欄
+        P->>M: 本文を書いて保存する
+        M->>S: save({ docId, comment })
+        S-->>M: id を持つコメント
+        M->>P: 選んだ文字を印で包む
+        P->>M: 印で Enter を押す
+        M->>P: 吹き出し
+    expected:
+      - '`load` が `{ docId: "guide" }` で 1 回呼ばれる'
+      - 文字を選ぶと「コメント」のボタンが出て、選びを外すと消える
+      - '`save` が `{ docId: "guide", comment: { quote: "テーマの変数", prefix: "描いた文書の見た目は", suffix: "で変える。", body: "ここは <b>太字</b> にしたい" } }` で 1 回呼ばれる'
+      - '`テーマの変数` が class `mdmark-comment-mark` の印で包まれ、印にフォーカスがある'
+      - 印で Enter を押すと吹き出しが開き、本文に `b` 要素が無く文字 `<b>太字</b>` がある。Esc で閉じ、フォーカスが印に戻る
+    test: test_normal_when_comment_added
+  - name: 正常系（コメントを読み込んで付き直す）
+    summary: 読んだコメントに印を付け、`update` の後も前後の文字で付き直し、見つからないものは末尾の一覧に出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: コメントの読み書きの関数
+        description: '`load` が `quote` が `テーマの変数` のコメント 1 件を返す'
+      - name: 描き直す Markdown
+        description: 段落の前に別の段落を 1 つ足した文書と、`テーマの変数` を `CSS 変数` に書き換えた文書の 2 つ
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>S: load({ docId })
+        S-->>M: コメント 1 件
+        M->>P: 印を付ける
+        P->>M: update(段落を足した Markdown)
+        M->>P: 印を付け直す
+        P->>M: update(書き換えた Markdown)
+        M->>P: 末尾の一覧に出す
+    expected:
+      - '`mount` の後 `テーマの変数` に印がある'
+      - 段落を足した `update` の後も `テーマの変数` に印があり、`load` が済んだ回数は 2
+      - 書き換えた `update` の後、本文に印が無く、文書の末尾の「箇所が見つからないコメント」の一覧に選んだ文字と本文がある
+    test: test_normal_when_comments_reanchored
+  - name: 正常系（コメントの機能を外す）
+    summary: '`comments` が既定のオフのときは、読み書きの関数を渡しても呼ばず、ボタンを出さない'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`opts.config` は渡さず、`opts.docId` は `guide`
+      - name: コメントの読み書きの関数
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, docId, commentStore })
+        M->>P: 文書を描く
+        P->>M: 本文の文字を選ぶ
+        M->>P: ボタンを出さない
+    expected:
+      - '`load` が呼ばれない'
+      - 文字を選んでもコメントのボタンが出ない
+      - '`console.error` が呼ばれない'
+    test: test_normal_when_comments_disabled
+  - name: 異常系（コメントを保存できない）
+    summary: '`save` が reject すると、入力欄と本文を残して知らせを出し、印を付けない'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: 保存できない読み書きの関数
+        description: '`load` は空の配列、`save` は `Error("network")` で reject する'
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 文字を選び、コメントを書いて保存する
+        M->>S: save({ docId, comment })
+        S-->>M: reject
+        M->>P: 入力欄に知らせを出す
+    expected:
+      - 入力欄が開いたままで、書いた本文が残っている
+      - '`role="alert"` の要素が `コメントを保存できませんでした。` で始まる文を持つ'
+      - 選んだ文字に印が無い
+      - '`console.error` が 1 回呼ばれ、引数に `save`・`guide`・元のエラーを含む'
+    test: test_error_when_comment_save_rejected
+  - name: 異常系（コメントの読み書きの関数が無い）
+    summary: '`comments` がオンで読み書きの関数を渡さないと、ボタンを出さず、`console.error` に 1 回だけ出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` は `{ comments: true }`、`opts.commentStore` は渡さない'
+      - name: 段落を持つ Markdown
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: 文書を描く
+        P->>M: update(markdown)
+        P->>M: 本文の文字を選ぶ
+        M->>P: ボタンを出さない
+    expected:
+      - 文字を選んでもコメントのボタンが出ない
+      - '`update` を挑んでも `console.error` は 1 回だけで、引数に `commentStore` を含む'
+      - 文書の本文は描かれ、例外を投げない
+    test: test_error_when_comment_store_missing
+  - name: 異常系（コメントで docId が無い・TypeError）
+    summary: 読み書きの関数を渡して `docId` を渡さないと、何も描かずに TypeError を投げる
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` は `{ comments: true }`'
+      - name: コメントの読み書きの関数
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, commentStore })
+        M-->>P: TypeError
+    expected:
+      - '`mount` が `TypeError` を投げ、メッセージに `docId` を含む'
+      - '`el` の中身と class が変わらない'
+      - '`load` が呼ばれない'
+    test: test_error_when_comment_doc_id_missing
+  - name: 異常系（ビュー・コメントの部品のモジュールを読めない）
+    summary: 部品のモジュールを読めないと、ビューの印の場所は表のまま残し、コメントのボタンを出さず、`console.error` に出す
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` は `{ comments: true }`、`opts.docId` は `guide`'
+      - name: ビューの印と段落を持つ Markdown
+        description: 正常系（ビューを描く）の表と、正常系（コメントを付ける）の段落を持つ文書
+      - name: コメントの読み書きの関数
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: ビューとコメントの部品のモジュールの要求を、配信で 404 に差し替える
+        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で外す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>M: 部品のモジュールを読めない
+        M->>P: 表と本文を描き、切り替えとコメントのボタンを置かない
+    expected:
+      - ビューの印の場所に 5 行の表が残り、切り替えとボードが無く、知らせの枠も無い
+      - 文字を選んでもコメントのボタンが出ず、`load` が呼ばれない
+      - '`console.error` が部品ごとに 1 回ずつ呼ばれ、引数に部品の名前（`view`・`comments`）・モジュールの URL・元のエラーを含む'
+      - 例外を投げず、段落は描かれる
+    test: test_error_when_part_module_unavailable
+  - name: 正常系（元の行番号を出す）
+    summary: 描いたブロックと差し替えた本文のブロックが、元の行番号を持ち、見た目は変わらない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 行の位置が分かる Markdown
+        description: 1 行目に見出し、3 行目に段落、5〜7 行目に表、9〜11 行目にコードブロックを置いた文書。差し替え用に、頭に 2 行足した同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: data-source-line を持つ本文を描く
+        P->>M: update(頭に 2 行足した markdown)
+        M->>P: 行番号を付け直した本文を描く
+    expected:
+      - '`mount` の後、見出し・段落・表・コードブロックの要素の `data-source-line` が `0`・`2`・`4`・`8`'
+      - '`update` の後、同じ要素の `data-source-line` が `2`・`4`・`6`・`10`'
+      - 各要素の位置と色の計算値が、属性を取り除いた同じ HTML と同じ
+    test: test_normal_when_source_lines
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（元の行番号を出す）]
+  - name: 正常系（親の class でダークにする）
+    summary: OS の配色がライトでも、祖先の `vscode-dark` でダークの値を当て、class を外すと戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `vscode-dark` を付ける
+        notes: 'OS の配色は `prefers-color-scheme: light` にする'
+      - name: 見本の Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い（Playwright で `prefers-color-scheme` を切り替える）
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: ダークの値が当たった本文
+        P->>P: body の class を vscode-light に替える
+        P->>P: ライトの値に戻る
+    expected:
+      - '`body` が `vscode-dark` の間、`el` の `--mdmark-color-bg` の計算値がダークの `#131316`'
+      - '`body` を `vscode-light` に替えると、`mount` し直さずにライトの値になる'
+      - '`body` を `vscode-high-contrast` に替えるとダーク、`vscode-high-contrast vscode-high-contrast-light` に替えるとライトの値になる'
+    test: test_normal_when_parent_class_dark
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でダークにする）]
+  - name: 正常系（親の class でライトにする）
+    summary: OS の配色がダークでも、祖先の `vscode-light` でライトにし、`mdmark-theme-light` は `vscode-dark` に勝つ
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `vscode-light` を付ける
+        notes: 'OS の配色は `prefers-color-scheme: dark` にする'
+      - name: 固定の class の包み
+        description: '`body` の下に `el` を包む `div`。後半で `body` を `vscode-dark` にし、包みに `mdmark-theme-light` を付ける'
+      - name: 見本の Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: ライトの値が当たった本文
+        P->>P: body を vscode-dark、包みを mdmark-theme-light にする
+        P->>P: ライトの値のまま
+    expected:
+      - OS の配色がダークでも、`el` の `--mdmark-color-bg` の計算値がライトの値
+      - '`body` が `vscode-dark` でも、包みが `mdmark-theme-light` を持つ間はライトの値'
+    test: test_normal_when_parent_class_light
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でライトにする）]
+  - name: 正常系（親の class でダークにした文書を印刷する）
+    summary: 祖先の class でダークにしても、印刷では明るい配色にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `vscode-dark`、包みに `mdmark-theme-dark` を付ける
+      - name: 見本の Markdown
+        description: 正常系と同じ
+      - name: Mock
+        description: '印刷は Playwright の `emulateMedia({ media: "print" })` で代える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>P: 印刷の media にする
+        M-->>P: 明るい配色の本文
+    expected:
+      - 印刷の media の間、`el` の `--mdmark-color-bg` の計算値がライトの値
+    test: test_normal_when_parent_class_dark_printed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+  - name: 正常系（やめた言い方のマーカー）
+    summary: 索引の用語のやめた言い方に波線のマーカーを付け、フォーカスで代わりの用語のツールチップを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 用語 `ワークスペース`（意味 `話し合いの記録を置くフォルダ`、`avoid` に `作業場`）と、描く文書 `guide`（`guide.md`）を持つ索引
+        notes: '`opts.docId` は `guide`'
+      - name: やめた言い方が出る Markdown
+        description: 1 つの節の段落に `ワークスペース` が 1 回と `作業場` が 2 回出て、行内のコードにも `作業場` を書いた文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId })
+        M->>P: 用語に破線、やめた言い方に波線の下線を引いて描く
+        P->>P: 作業場にフォーカスする
+        P->>P: Esc を押す
+    expected:
+      - '`ワークスペース` が class `mdmark-term` の要素で、class `mdmark-term-avoided` を持たない'
+      - 最初の `作業場` が class `mdmark-term mdmark-term-avoided` の要素で、2 回目の `作業場` と行内のコードの `作業場` はその要素でない
+      - '`作業場` にフォーカスすると、語の `aria-describedby` が指す `role="tooltip"` のツールチップが出て、「代わりの用語」の下に `ワークスペース` と `話し合いの記録を置くフォルダ` がある'
+      - Esc でツールチップが消え、フォーカスが `作業場` に残る
+    test: test_normal_when_avoided_term
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -742,6 +1659,12 @@ callers:
   - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る#
   - dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す#
   - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを当てる#
+  - dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す#
+  - dev/設計書/シナリオ/単一ユースケース/文書の差分を見る#
+  - dev/設計書/シナリオ/単一ユースケース/埋め込んだHTMLの差分を切り替える#
+  - dev/設計書/シナリオ/単一ユースケース/ビューで項目を見る#
+  - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#
+  - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -763,10 +1686,10 @@ request:
   - name: opts.config.features
     type: Record<string, boolean>
     required: false
-    default: '全ての機能が `true`'
+    default: '`comments` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`anchors`・`sections`・`row-details`・`figures`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`anchors`・`sections`・`row-details`・`figures`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -798,6 +1721,22 @@ request:
     location: argument
     description: '`collectReferences` が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う'
     notes: 形はインターフェース定義『参照の表を作る』のレスポンス
+  - name: opts.diffSource
+    type: DiffSource
+    required: false
+    default: なし（差分を開く UI を付けない）
+    location: argument
+    description: 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元。渡すと、描いた文書に差分を開く UI が付く
+    constraints: '`opts.docId` と一緒に渡す'
+    notes: 形は制約の「差分の取り出し元」。Git・YAML の読み方は mdmark が持たず、使う側が書く
+  - name: opts.commentStore
+    type: MdmarkCommentStore
+    required: false
+    default: なし（コメントを付けられない）
+    location: argument
+    description: コメントを読み込み、保存する関数。`comments` がオンのときだけ使う
+    constraints: '`opts.docId` と一緒に渡す'
+    notes: 形は制約の「コメントの読み書きの関数」。保存先は mdmark が持たず、使う側が書く
 request_example: |-
   ```json
   {
@@ -823,6 +1762,24 @@ exceptions:
   - name: なし（知らせの枠）
     condition: 外部ライブラリのモジュールを読めない、またはモジュールの `draw` が例外を投げる
     notes: 例外を投げず、その印の場所だけを知らせの枠に替える。印の名前・URL・元のエラーを `console.error` に出す
+  - name: TypeError
+    condition: '`opts.diffSource` を渡し、`opts.docId` を渡さない'
+    notes: 何も描かずに投げる。取り出し元に渡す文書の `id` が無く、使う側の誤りのため
+  - name: なし（差分の知らせの枠）
+    condition: 取り出し元の `revisions`・`content` が reject するか、返した値が制約の「差分の取り出し元」の形に合わない
+    notes: 例外を投げず、差分の場所を知らせの枠に替え、文書の本文は描いたまま残す。取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーか合わなかった値を `console.error` に出す
+  - name: TypeError（コメント）
+    condition: '`opts.commentStore` を渡し、`opts.docId` を渡さないか、`opts.commentStore` が `load`・`save` の関数を持たない'
+    notes: 何も描かずに投げる。メッセージに `docId` か `commentStore` を含める
+  - name: なし（コメントを保存できない）
+    condition: '`save` が reject するか、返した値が制約の「コメントの読み書きの関数」の形に合わない'
+    notes: 例外を投げず、入力欄に書いた本文を残して `role="alert"` の知らせを出し、印を付けない。`save`・文書の `id`・元のエラーを `console.error` に出す
+  - name: なし（コメントの読み書きの関数が無い）
+    condition: '`comments` がオンで `opts.commentStore` を渡さない'
+    notes: 例外を投げず、コメントのボタンを出さない。コメントの機能に読み書きの関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す
+  - name: なし（ビュー・コメントの部品のモジュールを読めない）
+    condition: ビューの部品かコメントの部品のモジュールを読めない
+    notes: 例外を投げない。ビューの印の場所は `render` が出した表のまま残し（切り替えとボードは置かず、表は読めるため知らせの枠に替えない）、コメントはボタンを出さず `load` も呼ばない。読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーを `console.error` に出す。文書の残りは描く
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -841,12 +1798,12 @@ constraints:
     constraint: mdmark の CSS は `@layer mdmark` に入る。使う側は層の外の CSS と `--mdmark-` の変数で上書きする。mdmark は使う側の `theme.css` を読まない（使う側のページが `<link>` で読む）
     notes: '層の外で読むことが上書きの条件で、ページの `<link>` なら使う側がその条件を直に満たせ、`render` の出力にも同じ書き方で当たる'
   - item: 対応ブラウザ
-    constraint: Chrome 99・Firefox 97・Safari 16.4 以上
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
   - item: 表の操作
-    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く'
+    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`copy` の表は、表の上に `mdmark-table-bar` の帯を置く。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（読み上げは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示は `aria-expanded`・`aria-controls` を持つ `列の表示` のボタンで、列名のチェックボックスと `先頭の列は隠せません`・「既定に戻す」を並べたメニュー（絞り込みのドロワーと同じ開閉の作法）を開く。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、先頭の列のチェックボックスは `disabled` にする。「既定に戻す」は `data-hide` の状態に戻す。`total` の表は、`data-total` の列を表示している行で集計した `tfoot` の行を置き、絞り込みのたびに計算し直す（題は `合計`・`平均`・`個数`。`sum`・`avg` は数として読めないセルを除き、桁区切りを付けて小数は 2 桁までに丸める。平均する値が無いときは `—`）。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の `表をコピー` のボタンは、見出しの行と表示している行の、表示している列のセルの文字を、セルをタブで、行を改行で区切って `navigator.clipboard.writeText` で写す（集計の行と行の詳細は含めない）。写せたらボタンを `コピーしました` にして 2 秒で戻し、拒まれたら `コピーできませんでした` にして次に押すまで残す（どちらも読み上げで知らせ、例外を外へ出さない）。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じた節を開き、行が絞り込みで隠れていればその表の絞り込みを外してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクの印は、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。印刷では表の上のボタンと行へのリンクの印を出さず、件数と集計の行を出し、隠した列は隠したままにする'
   - item: タブの操作
-    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ'
+    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読む人が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と揃えて切り替わった選択は残さない。localStorage を取り出す・読み書きするときに例外が出たら、`console.warn` に出して残さず・読まずに揃える動きと切り替えを続ける'
   - item: 節と行の詳細の開閉
     constraint: 節は見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じた節の `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じた節の中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じた節の中に当たったときは、その節を開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを置き、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く
@@ -855,7 +1812,7 @@ constraints:
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
   - item: 用語と文書の別名の下線
-    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
+    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
     notes: 下線の要素の形は部品設計で決める
   - item: ツールチップの操作
     constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、下に収まらなければ上に開く。`update` で付け直し、`destroy` で外す
@@ -883,9 +1840,60 @@ constraints:
     constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
     notes: 知らせの文言は画面設計『文書』
   - item: 埋め込んだ HTML の操作
-    constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線とツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
+    constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線・やめた言い方のマーカーとツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
     notes: 文書に書いたスクリプトは動かさず、動くのは mdmark が付ける操作だけ（D-22）
   - item: ヒントの操作
     constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
     notes: 印だけで開くのとポインターの形は確認ログの決定
+  - item: 差分の取り出し元
+    constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
+    notes: '`content` は ID が 2 つ並ぶためオブジェクトで受ける（外部規約『関数とオブジェクト引数』）。形が合わないのは使う側の開発者の誤りで、読む人の操作では起きない（計画書）'
+  - item: 差分を開く UI
+    constraint: '`opts.diffSource` を渡したとき、文書の題（先頭の `h1`）の後ろ、`h1` が無ければ文書の先頭に、`aria-expanded`・`aria-controls` を持つ「変更を見る」のボタンを置く。押すと、題を残して文書の本文を隠し、その場所に差分を出す。押し直すと差分を片付けて本文に戻し、フォーカスはボタンに残す。`update` は差分を閉じて本文を描き直し、`destroy` は差分と取り出し元の待ちを片付ける'
+    notes: 置き方は確認ログのモックへの合意。見た目は画面設計『文書』
+  - item: 比べる 2 つのリビジョン
+    constraint: 差分を開くたびに `revisions` を 1 回呼ぶ。2 つ以上あれば、前に 2 番目・後に 1 番目のリビジョンを選び、`content` を前と後に 1 回ずつ呼ぶ。前と後の選ぶ欄の項目は、日時（JST）と `label`・`author` を並べる。前の欄では一番新しいリビジョンを、後の欄では前に選んだもの以前のリビジョンを選べなくし、前を選び直して後が前以前になったら、後を前の 1 つ新しいリビジョンに移す。選び直すたびに選んだ 2 つの `content` を呼び直す。リビジョンが 1 つなら `content` を呼ばず、`この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。` を出す
+    notes: 文面は確認ログの決定
+  - item: 差分の待ち
+    constraint: 取り出し元の待ちが 1 秒を過ぎたら差分の場所に `変更を読み込んでいます` の枠を出し、2 秒を過ぎたら回る表示を足す。待つ間に選び直す・閉じる・`update`・`destroy` があったら、前の待ちの結果は描かない。mdmark は待ちを時間で打ち切らず、打ち切るときは取り出し元が reject で返す
+    notes: 古い結果を捨てるのは、本文の描き直しの世代の番号と同じ作り
+  - item: 差分の計算
+    constraint: 2 つの Markdown のソースを行ごとに比べる。変えた塊の中で、消した行と足した行を前から順に対にし、対の行を語ごとに比べる。語の区切りは `Intl.Segmenter`（`ja`・`word`）で、持たないブラウザでは 1 文字ずつ比べる
+    notes: 比べるライブラリ（jsdiff）はモジュール構成設計で差分の計算の関数型の後ろに置く
+  - item: 差分の行
+    constraint: 'ソースの行を、文字のまま 1 行ずつ出す。前にだけある行は class `mdmark-diff-line`・`data-kind="del"`、後にだけある行は `data-kind="add"`、同じ行は `data-kind="same"` を持つ。消した行・足した行は行頭に `-`・`+` の印（`aria-hidden`）と、読み上げの名前 `削除した行: `・`追加した行: `（見えない文字）を持つ。対の行で変わった語は、消した側を `del`、足した側を `ins` で囲む。選ぶ欄の下の `role="status"` に `削除した行 {数}・追加した行 {数}` を出す。2 つの本文が同じなら行を出さず、`選んだ 2 つのリビジョンの本文に、変更はありません。` を出す'
+    notes: 色は `--mdmark-color-diff-*` の CSS 変数（モジュール構成設計）
+  - item: 埋め込んだ HTML の差分
+    constraint: 差分の中の `<!-- html -->` 〜 `<!-- /html -->` の範囲は、範囲の見出しの右端に `HTML` のラベルを置く。前か後で変えた範囲だけ、見出しに `role="group"`・`aria-label="HTML の見方"` の中に `aria-pressed` を持つ「ソース」「プレビュー」のボタンを置く。既定はソースの行の色分けで、「プレビュー」を押すと、範囲の前と後の HTML を今の埋め込んだ HTML の描画（スクリプトとイベントの属性を落とす）で並べる。片側にしか無い範囲は、無い側に `{前か後}のリビジョンには、この範囲がありません` を出す
+    notes: D-48・確認ログの語彙
+  - item: 差分の知らせの枠
+    constraint: 知らせの枠と同じ要素に置く。`revisions` を取り出せないときは、題 `変更の履歴を表示できません`・本文 `リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。` を差分の場所に出す。`content` を取り出せないときは、選ぶ欄を残し、題 `このリビジョンの本文を表示できません`・本文 `「{リビジョンの説明}」の本文を取り出せませんでした。別のリビジョンを選んでください。`（2 つとも取り出せなければ `「…」と「…」`）を差分の行の場所に出し、選び直せば差分を描き直す
+    notes: 文面は確認ログの決定
+  - item: ミニマップ
+    constraint: 差分の行を出している間、送り先のスクロールの右端に、その高さいっぱいの帯（`aria-hidden`）を貼り付ける。送り先は差分の行の一番近いスクロールする祖先で、無ければ画面。帯は送り先の全体を写し、消した行は左半分の赤・足した行は右半分の緑の印（続いた同じ種類の行は 1 つの印にまとめ、プレビューに切り替えた範囲は範囲ごと 1 つの印）にし、今見えている範囲を枠で示す。帯を押すとその位置を送り先の中ほどに置くよう送り、押したまま上下に動かすとそれに合わせて送る。差分を閉じる・選び直す・`destroy` で帯と受け取りを外す
+    notes: '確認ログのモックへの合意（画面の右端）。帯の本数と `position: fixed` の基準は部品設計とモジュール構成設計（計画書）'
+  - item: ビューの印
+    constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲の最初の表を項目にする（見出しの行が列名、本文の行が項目、セルの文字が値）。引数は `group=列名`（ボードで分ける列）・`default=board|table`（描いた直後のビュー。既定は `group=` があれば `board`）・`filter=列名:種類,…`（記法の表と同じ書き方）・`icons=値:アイコンの名前,…`。`render` は範囲を class `mdmark-view` の要素にし、中に表を残す（ビューの機能がオフのときは表だけを出す）。書き方の誤り（範囲に表が無い・`group=`・`filter=` の列が表に無い・知らない絞り込みの種類・使えないアイコンの名前・知らないキー・閉じの印が無い）は、範囲の上に書き方の警告を出し、読めた指定だけを当てる。`group=` が当たらないときはボードを押せなくし、表が無いときは範囲の中身をそのまま描く'
+    notes: 印の名前 `view` は記法の印として予約する（インターフェース定義『拡張を登録する』）。警告の文言は画面設計『文書』
+  - item: ビューの操作
+    constraint: '`mdmark-view` の頭に、`role="group"`・`aria-label="ビューの表示"` の中に `aria-pressed` を持つ「ボード」「表」のボタンを置く（`group=` が無いときは置かない）。ボードは `group=` の列の値ごとの列を表に出た順に横に並べ、列の見出しにアイコン・値・項目の数を出し、項目は表の行の順に、先頭の列の値を題に、`group=` の列を除く残りの列を列名と値の組で出す。描く先の幅に収まらない列はボードの中で横にスクロールさせる。表形式は範囲の表をそのまま使い、記法の表の並べ替えと、`filter=` の列にだけ記法の表と同じ絞り込みを付ける（制約の「表の操作」）。絞り込みは表形式にだけ当て、ボードは常に全ての項目を出し、表形式に戻すと絞り込みは残っている。ビューの上に検索欄と件数は置かない。印刷では今のビューを出し、切り替えと絞り込みのボタンは出さない。`update` で付け直し、`destroy` で外す'
+    notes: 検索欄を持たず、絞り込みを表形式だけに当てるのは確認ログの決定。見た目は部品設計と画面設計『文書』
+  - item: ボードの列の見出しのアイコン
+    constraint: 列の値から lucide のアイコンを引く。既定の対応は `未着手` → `circle-dashed`・`進行中` → `circle-dot`・`保留` → `circle-pause`・`完了` → `circle-check`・`中止` → `circle-x` で、対応に無い値は `circle`。印の `icons=` は既定の対応に重ねて値ごとに上書きする。使えるアイコンは mdmark が束ねるものに限り、既定の 6 つと `inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban`。アイコンは `aria-hidden` を持ち、列の見出しの読み上げは値と項目の数だけにする
+    notes: 既定の対応と `icons=` の書き方は確認ログの決定。lucide の全てのアイコンを束ねると配布ファイルのサイズの上限を超えるため、使えるアイコンを限る
+  - item: コメントの読み書きの関数
+    constraint: '`load({ docId }: { docId: string }): Promise<MdmarkComment[]>` と `save({ docId, comment }: { docId: string; comment: MdmarkCommentDraft }): Promise<MdmarkComment>` を持つ。`MdmarkCommentDraft` は `quote`（選んだ文字）・`prefix`（選んだ文字の前の最大 32 文字）・`suffix`（後の最大 32 文字）・`body`（コメントの本文）の文字列。`MdmarkComment` はそれに `id`（空でない文字列）を足したもの。`load` が配列でない・要素の形が合わない、`save` が形の合わない値を返すときは reject と同じに扱う。mdmark はコメントを保存せず、使う側の保存先に任せる'
+    notes: 差分の取り出し元と同じく、読み書きは使う側の関数に任せる（D-17・要件『コメントの保存』）
+  - item: コメントの操作
+    constraint: '`comments` がオンで `opts.commentStore` を渡したときだけ付ける。本文の文字を 1 つのブロック（段落・リストの項目・表のセル・見出し・引用）の中で選ぶと、選んだ文字の終わりの下（収まらなければ上）に「コメント」のボタンを出し、DOM はそのブロックの直後に置いて Tab で届くようにする。入力欄・ビューの操作・コード・既にある印の中の選びには出さない。ボタンを押すと、選んだ文字の下に `role="dialog"` の入力欄（題 `「{選んだ文字}」へのコメント`・本文の欄・「キャンセル」「コメントを保存」）を開き、本文の欄へフォーカスを移す。Custom Highlight API があるブラウザでだけ、開いている間の選んだ文字に色を残す。本文が空のまま保存すると入力欄のそばに `コメントを書いてから保存してください。` を出す。保存を待つ間は保存のボタンを押せなくし、`保存しています…` にする。保存できたら入力欄を閉じ、選んだ文字を印で包んで印へフォーカスを移す。保存できないときは入力欄と本文を残し、`role="alert"` で `コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。` を出す。入力欄はキャンセルか Esc で閉じ（本文があるときは捨ててよいかを確かめる）、外側の押下では閉じない。印は `tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded` を持ち、押下・Enter・Space で、付いたコメントの本文を並べた吹き出しを開く。吹き出しは閉じるボタン・外側の押下・Esc で閉じ、フォーカスを印へ戻す。選んだ文字とコメントの本文は文字として出し、HTML として解釈しない。印刷では印の地の色を外して下線だけを残し、ボタン・入力欄・吹き出しを出さない'
+    notes: 入力欄の捨てる確かめ方と見た目は部品設計。Custom Highlight API の確かめはモックの指摘（対応ブラウザの下限で入力欄が閉じられなくなる）から引き継ぐ
+  - item: コメントの箇所
+    constraint: 描くたび（`mount`・`update`）に `load` を 1 回呼び、コメントごとに、本文の文字の中で `prefix + quote + suffix` が一致する箇所、無ければ `quote` が 1 か所だけ一致する箇所の `quote` を印で包む。同じ箇所のコメントは 1 つの印にまとめ、吹き出しに並べる。箇所が見つからないコメントは、文書の末尾の「箇所が見つからないコメント」の一覧（選んだ文字と本文）に出し、空なら置かない。`load` を読めないときは印を付けず、新しいコメントは付けられる。印は本文の文字を変えず、`destroy` で外す
+    notes: 一覧の題と文言は画面設計『文書』
+  - item: 配色の切り替え
+    constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
+    notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
+  - item: やめた言い方のマーカー
+    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。同じやめた言い方を複数の用語が持つときは、索引の `terms` で先の用語を代わりの用語にする。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
+    notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences`・`collectMatches` の結果と関連文書の一覧は変わらない
 test_file: tests/integration/lib/mount.browser.test.ts

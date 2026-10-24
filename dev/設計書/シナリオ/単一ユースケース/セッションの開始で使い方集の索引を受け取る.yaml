@@ -1,0 +1,32 @@
+title: "セッションの開始で使い方集の索引を受け取る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: ビルドした plugin/
+        description: 使い方集の索引を持つビルドした `plugin/` のフォルダ
+      - name: Mock
+        description: Claude Code の代わりに、`hooks/hooks.json` の SessionStart の行のコマンドを、`CLAUDE_PLUGIN_ROOT` を `plugin/` にして起動し、標準出力を読むテストのコードを使う
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as SessionStart のフック
+        C->>H: セッションの開始
+        H->>H: 使い方集の索引を読む
+        H-->>C: hookSpecificOutput.additionalContext に索引
+        C->>C: 索引をコンテキストへ入れる
+    expected:
+      - フックの標準出力が JSON で、`hookSpecificOutput.hookEventName` が `SessionStart`
+      - '`additionalContext` に、使い方集の索引の全ての名前と読むときと概要がある'
+      - '`additionalContext` に使い方集の本文が無い'
+      - '`additionalContext` の文字数が非機能要件の索引の文字数の上限以下'
+      - フックの終了コードが 0
+    test: test_normal
+lead: プラグインを入れた Claude Code がセッションを始めると、プラグインの SessionStart のフックが使い方集の索引（名前・読むとき・概要）をコンテキストへ渡す。
+issue: 11
+primary_actor: Claude Code
+trigger: プラグインを入れた Claude Code で新しいセッションを開く
+preconditions:
+  - ビルドした `plugin/` のフォルダがある
+success_guarantee: Claude Code が、使い方集の索引を `additionalContext` として受け取る。索引は `additionalContext` の上限の文字数に収まる。
+minimal_guarantee: フックは使い方集の本文を渡さず、索引だけを渡す。
+test_file: tests/e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts

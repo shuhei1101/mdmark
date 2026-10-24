@@ -1,0 +1,215 @@
+/* パネルの状態の表示（読み込み中・描けない理由）と設定ファイルを読めない帯。配布物を読む前にも出すため、mdmark の変数が無いときの値を var() の予備の値で持つ */
+
+/* 状態の表示と帯の色の変数: mdmark の変数があればそれを、無ければ明るい配色の値を使う */
+.mdmark-preview-status,
+.mdmark-config-band {
+  --preview-bg: var(--mdmark-color-bg, #ffffff);
+  --preview-surface: var(--mdmark-color-surface, #f4f4f5);
+  --preview-text: var(--mdmark-color-text, #18181b);
+  --preview-muted: var(--mdmark-color-muted, #52525b);
+  --preview-link: var(--mdmark-color-link, #0f766e);
+  --preview-border: var(--mdmark-color-border, #e4e4e7);
+  --preview-notice-bg: var(--mdmark-color-notice-bg, #f9eee8);
+  --preview-notice-border: var(--mdmark-color-notice-border, #b45309);
+  --preview-notice-text: var(--mdmark-color-notice-text, #18181b);
+}
+
+/* ダークの予備の値: VS Code のダークのテーマか、ダークに固定したとき。ライトに固定したときは当てない */
+:is(
+    body.vscode-dark,
+    body.vscode-high-contrast:not(.vscode-high-contrast-light)
+  )
+  #mdmark-preview:not(.mdmark-theme-light)
+  :is(.mdmark-preview-status, .mdmark-config-band),
+#mdmark-preview.mdmark-theme-dark
+  :is(.mdmark-preview-status, .mdmark-config-band) {
+  --preview-bg: var(--mdmark-color-bg, #131316);
+  --preview-surface: var(--mdmark-color-surface, #1b1b1f);
+  --preview-text: var(--mdmark-color-text, #ededef);
+  --preview-muted: var(--mdmark-color-muted, #b4b4bc);
+  --preview-link: var(--mdmark-color-link, #2dd4bf);
+  --preview-border: var(--mdmark-color-border, #26262b);
+  --preview-notice-bg: var(--mdmark-color-notice-bg, #2a251d);
+  --preview-notice-border: var(--mdmark-color-notice-border, #fbbf24);
+  --preview-notice-text: var(--mdmark-color-notice-text, #ededef);
+}
+
+/* 帯を包む枠: 帯の外側の幅が 480px 未満かをコンテナクエリで見るための基準（Webview でも Storybook でも効く） */
+.mdmark-config-band-frame {
+  container: mdmark-config-band / inline-size;
+}
+
+/* 読み込み中・描けない理由: 文書の代わりにパネルの中央に置く */
+.mdmark-preview-status {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  padding: 24px 16px;
+  color: var(--preview-text);
+  font-family: var(--mdmark-font-body, system-ui, sans-serif);
+}
+
+/* 読み込み中: 回る表示と文言を横に並べる */
+.mdmark-preview-loading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  color: var(--preview-muted);
+  font-size: 0.95rem;
+
+  /* 文言: 文書の無い場面の見出し 1。見た目は周りの文字のまま */
+  h1 {
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+}
+
+/* 回る表示: 値を持たない progress を輪にして回す */
+.mdmark-preview-spinner {
+  --size: 20px;
+  --thickness: 2px;
+  width: var(--size);
+  height: var(--size);
+  border: 0;
+  border-radius: 50%;
+  appearance: none;
+  background: conic-gradient(
+    var(--preview-link) 0 25%,
+    var(--preview-border) 0
+  );
+  mask-image: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--thickness)),
+    #000 calc(100% - var(--thickness))
+  );
+  animation: mdmark-preview-spin 1s linear infinite;
+
+  &::-webkit-progress-bar,
+  &::-webkit-progress-value {
+    background: none;
+  }
+
+  &::-moz-progress-bar {
+    background: none;
+  }
+}
+
+/* 回る表示の動き */
+@keyframes mdmark-preview-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/* 動きを減らす設定: ゆっくり回す */
+@media (prefers-reduced-motion: reduce) {
+  /* 回る表示 */
+  .mdmark-preview-spinner {
+    animation-duration: 6s;
+  }
+}
+
+/* 描けない理由: 知らせの枠と同じ状態色 */
+.mdmark-preview-notice {
+  display: grid;
+  gap: 12px;
+  max-width: 32rem;
+  padding: 14px 16px;
+  border: 1px solid var(--preview-notice-border);
+  border-radius: var(--mdmark-radius, 6px);
+  background: var(--preview-notice-bg);
+  color: var(--preview-notice-text);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  /* 何が起きたか: 文書の無い場面の見出し 1 */
+  h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  /* 理由と直し方 */
+  p {
+    margin: 0;
+  }
+
+  /* バージョン・設定のキー */
+  code {
+    font-family: var(--mdmark-font-mono, ui-monospace, monospace);
+    font-size: 0.9em;
+  }
+}
+
+/* 設定ファイルを読めない帯: 文書の先頭に置き、固定せずスクロールで流す。知らせの枠と同じ状態色 */
+.mdmark-config-band {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin: 12px 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--preview-notice-border);
+  border-radius: var(--mdmark-radius, 6px);
+  background: var(--preview-notice-bg);
+  color: var(--preview-notice-text);
+  font-family: var(--mdmark-font-body, system-ui, sans-serif);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  /* 狭い列: ボタンを文の下へ回す */
+  @container mdmark-config-band (width < 480px) {
+    grid-template-columns: 1fr;
+  }
+
+  /* 帯の文字: 題と理由を縦に並べる */
+  .mdmark-config-band-text {
+    display: grid;
+    gap: 2px;
+  }
+
+  /* 題（文書の見出し 1 より下の階層） */
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  /* 理由 */
+  p {
+    margin: 0;
+  }
+
+  /* 設定ファイルのパス・設定のキー */
+  code {
+    font-family: var(--mdmark-font-mono, ui-monospace, monospace);
+    font-size: 0.9em;
+  }
+}
+
+/* 状態の表示のボタン（リロード・設定ファイルを開く） */
+.mdmark-preview-button {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--preview-notice-border);
+  border-radius: var(--mdmark-radius, 6px);
+  background: var(--preview-bg);
+  color: var(--preview-text);
+  font: inherit;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--preview-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--preview-link);
+    outline-offset: 2px;
+  }
+}

@@ -27,14 +27,17 @@ export const DIAGRAM_META = "diagram";
 /** 操作できる部品を持つ `html_block` の `meta` に、持つ数を書くキー（文書の中の並びを数えるのに使う） */
 export const PARAM_COUNT_META = "params";
 
+/** 範囲の言語 `json` のコードブロック */
+export function jsonFences(tokens: Token[]): Token[] {
+  return tokens.filter(
+    (token) =>
+      token.type === "fence" && token.info.trim().split(/\s+/)[0] === "json",
+  );
+}
+
 /** 範囲の言語 `json` のコードブロックの中身 */
 function jsonBlocks(tokens: Token[]): string[] {
-  return tokens
-    .filter(
-      (token) =>
-        token.type === "fence" && token.info.trim().split(/\s+/)[0] === "json",
-    )
-    .map((token) => token.content);
+  return jsonFences(tokens).map((token) => token.content);
 }
 
 /** `diagrams` がオンなら、図の部品の印の範囲の `json` のコードブロックを定義として読み、図か操作できる部品の HTML にする。読めない定義は書き方の警告にする。範囲の中身は出力に残さない。オフのときは印だけを取り除く */
@@ -105,7 +108,7 @@ export function buildDiagrams(state: StateCore): void {
           hints,
         });
       }
-      const block = ownBlock(state, html);
+      const block = ownBlock(state, html, token);
       block.meta = {
         [DIAGRAM_META]: true,
         [PARAM_COUNT_META]: directive === "param" ? 1 : 0,

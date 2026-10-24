@@ -1,0 +1,50 @@
+title: "コメントの吹き出し"
+implementation: "src/parts/comment.ts#renderCommentBubble"
+story: "Parts/CommentBubble"
+states:
+  - name: Single
+    description: コメントが 1 つ
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: bodies
+        value: '["変数の名前を一覧にしてほしい"]'
+  - name: Multiple
+    description: 同じ箇所に複数のコメントと、長いコメント
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: bodies
+        value: '["変数の名前を一覧にしてほしい","既定の値も並べると、上書きするときに迷わずに済みます。ダークの値も同じ表に並べてください。\n2 行目の続き"]'
+  - name: EscapedBody
+    description: HTML に見える本文を文字のまま出す
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: bodies
+        value: '["ここは <b>太字</b> にしたい"]'
+lead: 印の下に開く、その箇所に付いたコメントの本文を並べた `role="dialog"` の枠。HTML 文字列を返す。開閉と置き場所は `mount` と `mountComments` の操作が付ける。
+args:
+  - name: quote
+    type: 文字列
+    required: true
+    description: 印の文字。題 `「{quote}」へのコメント` に文字として出す
+  - name: bodies
+    type: 配列
+    required: true
+    description: 付いたコメントの本文（保存した順）。文字として出し、HTML として解釈しない。改行はそのまま折り返す
+events:
+  - name: 閉じる
+    when: 閉じるボタンを押す・外側を押す・Esc を押す
+    description: '`mount`・`mountComments` が吹き出しを閉じる。閉じるボタンと Esc ではフォーカスを印へ戻す'
+accessibility:
+  - 枠は `role="dialog"`・`aria-label="コメント"`・`tabindex="-1"` で、開いたら枠へフォーカスを移す
+  - 閉じるボタンは `aria-label="閉じる"` を持つ
+  - 本文の並びは `ul` で件数を伝える
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+status: planned
+notes:
+  HTML: '`<div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント" tabindex="-1"><div class="mdmark-comment-head"><p class="mdmark-comment-quote">「{quote}」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる">{x のアイコン}</button></div><ul class="mdmark-comment-list"><li><p class="mdmark-comment-body">{本文}</p></li></ul></div>`。モックは `dev/mock/components/comment/`'
+  印刷: 出さない
+test_file: tests/integration/lib/comment-bubble.story.test.ts

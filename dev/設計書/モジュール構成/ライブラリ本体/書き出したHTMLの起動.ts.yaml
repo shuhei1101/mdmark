@@ -58,15 +58,15 @@ functions:
     title: 埋めたモジュールを用意する
     container: src/viewer/modules.ts
     usecase: 共通
-    summary: 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた拡張を `import()` して既定の export を `registerExtension` で登録する
-    description: '`Blob` の `type` は `text/javascript`。設定の `libraries` にあって埋められなかった外部ライブラリは、読むと例外を投げる `data:` URL に替える（印の場所は知らせの枠になり、ページの隣のファイルへ要求しない）。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
+    summary: 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた部品のコードを `blob:` URL に替えて `setPartModuleUrl` で入れ、埋めた拡張を `import()` して既定の export を `registerExtension` で登録する
+    description: '`Blob` の `type` は `text/javascript`。設定の `libraries` にあって埋められなかった外部ライブラリは、読むと例外を投げる `data:` URL に替える（印の場所は知らせの枠になり、ページの隣のファイルへ要求しない）。`parts` に無い部品（`view`・`comments`）も同じ `data:` URL を `setPartModuleUrl` で入れ、ページの隣の `view.js`・`comments.js` へ要求しない。拡張の読み込み・登録が失敗したものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
     kind: 関数
     scope: public
     is_async: true
     side_effects: '`blob:` URL を作り、拡張を登録する'
     args:
       - name: payload
-        type: Pick<ExportPayload, 'config' | 'modules' | 'extensions'>
+        type: Pick<ExportPayload, 'config' | 'modules' | 'extensions' | 'parts'>
         required: true
         description: 埋めた中身
       - name: deps

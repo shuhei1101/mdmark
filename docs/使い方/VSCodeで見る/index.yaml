@@ -1,0 +1,6 @@
+summary: VS Code の拡張機能で Markdown を mdmark で描いたプレビューを出し、HTML・PDF にする手順
+items:
+  - page: プレビューを開く.md
+    summary: "拡張機能を入れ、Markdown の横にプレビューを出して、バージョン・設定ファイル・配色・スクロールを整える手順"
+  - page: HTMLとPDFにする.md
+    summary: "開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順"

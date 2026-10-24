@@ -1,0 +1,34 @@
+/* コードブロックの印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときのコードブロック */
+@layer mdmark {
+  .mdmark {
+    /* 題と pre: 改ページで切らない */
+    :is(.mdmark-code, pre) {
+      break-inside: avoid;
+    }
+
+    /* コードブロック: 横スクロールをやめて紙の幅に収め、横スクロールの影を外す */
+    pre {
+      overflow-x: visible;
+      background: var(--mdmark-color-surface);
+
+      /* コードブロックの中のコード: 長い行を折り返す */
+      code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    /* 行に分けたコード: 紙の幅に合わせる（折り返した行の行番号は最初の 1 行にだけ出る） */
+    pre.mdmark-code-lines code {
+      width: auto;
+    }
+
+    /* 題・行の地と行頭の印: 背景を省くブラウザの設定でも紙に出す */
+    :is(.mdmark-code-title, .mdmark-code-line) {
+      print-color-adjust: exact;
+    }
+  }
+}

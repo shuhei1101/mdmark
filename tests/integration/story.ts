@@ -35,6 +35,57 @@ export function createBrowserHolder(): {
   };
 }
 
+/** 色の式（CSS 変数・color-mix など）を、ページの中で解決した computed の色の文字列にする */
+export function resolveColor(page: Page, expression: string): Promise<string> {
+  return page.evaluate((value) => {
+    const probe = document.createElement("div");
+    probe.style.color = value;
+    document.body.append(probe);
+    const resolved = getComputedStyle(probe).color;
+    probe.remove();
+    return resolved;
+  }, expression);
+}
+
+/** ページ座標の細い帯を撮り、指定した色（`rgb(r, g, b)`）と同じ色の画素の数を返す */
+export async function countColorPixels(options: {
+  page: Page;
+  clip: { x: number; y: number; width: number; height: number };
+  color: string;
+}): Promise<number> {
+  const target = (options.color.match(/\d+/g) ?? []).slice(0, 3).map(Number);
+  const png = await options.page.screenshot({
+    clip: options.clip,
+    fullPage: true,
+  });
+  return options.page.evaluate(
+    async ({ data, rgb }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext("2d");
+      context?.drawImage(image, 0, 0);
+      const pixels = context?.getImageData(0, 0, canvas.width, canvas.height);
+      let count = 0;
+      for (let index = 0; index < (pixels?.data.length ?? 0); index += 4) {
+        // 圧縮や端数の位置で 1〜2 ずれた画素も同じ色として数える
+        const near = rgb.every(
+          (value, channel) =>
+            Math.abs((pixels?.data[index + channel] ?? 0) - value) <= 2,
+        );
+        if (near) {
+          count += 1;
+        }
+      }
+      return count;
+    },
+    { data: png.toString("base64"), rgb: target },
+  );
+}
+
 /** ページが横にはみ出しているか（横スクロールが出るか） */
 export function pageOverflows(page: Page): Promise<boolean> {
   return page.evaluate(

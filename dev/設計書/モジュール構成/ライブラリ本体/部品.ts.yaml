@@ -16,6 +16,7 @@ directory: |-
   ├── steps.ts                     # ステップの renderSteps
   ├── tree.ts                      # ファイルツリーの renderTree
   ├── badge.ts                     # バッジの renderBadge
+  ├── code-block.ts                # コードブロックの renderCodeBlock
   ├── toc.ts                       # 目次の renderToc
   ├── section.ts                   # 節の renderSection
   ├── row-detail.ts                # 行の詳細の renderRowDetail
@@ -69,9 +70,9 @@ functions:
     summary: 部品設計『知らせの枠』の HTML を返す
     args:
       - name: options
-        type: '{ name: string; figure?: boolean; source?: "library" | "extension" }'
+        type: '{ name: string; figure?: boolean; source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content" }'
         required: true
-        description: 印の名前、図の印か（既定 `true`）、読めなかったもの（既定 `library`。`extension` は本文を `表示に使う拡張（…）` にする）
+        description: 印の名前、図の印か（既定 `true`）、読めなかったもの（既定 `library`。`extension` は本文を `表示に使う拡張（…）` にする。`part` は本文を `表示に使う部品（…）` にする。`diff-revisions`・`diff-content` は部品設計の題と本文にし、`figure` を使わない）
     returns:
       type: string
       description: '`<div class="mdmark-notice" role="status">` で始まる HTML'
@@ -104,6 +105,18 @@ functions:
         condition: '`{ name: "greet", source: "extension" }`'
         mock: なし
         expected: 本文が `表示に使う拡張（<code>greet</code>）を読み込めませんでした。` で始まる
+      - name: test_render_notice_when_diff
+        case: 正常
+        summary: 差分の取り出し元を読めないときの題と本文を返す
+        condition: '`{ name: "guide", source: "diff-revisions" }` と `{ name: "2026/10/19 16:40 件数を直す", source: "diff-content" }`'
+        mock: なし
+        expected: 前者の題が `変更の履歴を表示できません`、後者の本文が `「2026/10/19 16:40 件数を直す」の本文を取り出せませんでした。` で始まる
+      - name: test_render_notice_when_part
+        case: 正常
+        summary: 部品のモジュールを読めないときの本文を返す
+        condition: '`{ name: "view", figure: false, source: "part" }`'
+        mock: なし
+        expected: 題が `この箇所を表示できません`、本文が `表示に使う部品（<code>view</code>）を読み込めませんでした。` で始まる
   - name: renderEmbed
     title: 読み込み中の枠を描く
     container: src/parts/embed.ts
@@ -195,7 +208,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`）で操作を付けた後の見た目を作る
+    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`）で操作を付けた後の見た目を作る。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`renderTotalRow` の集計の行、`rowIds` の行の `id` と行へのリンクも描く
     args:
       - name: options
         type: TableOptions
@@ -226,6 +239,18 @@ functions:
         condition: '`filterValues: [{ column: 1, text: "存在しない" }]`'
         mock: なし
         expected: 本文の行が全て `hidden` で、`一致する行がありません` の行が `hidden` を持たない
+      - name: test_render_table_when_feature_attributes
+        case: 正常
+        summary: 囲みに隠す列と集計する列を属性で持たせる
+        condition: '`features: [sort, pin, filter, columns, total]`、`hide: [1]`、`totals: [{2, sum}]`、`body: SLOT_MARKER`'
+        mock: なし
+        expected: 囲みが `data-hide="1"`・`data-total="2:sum"` を持ち、帯と集計の行を持たない
+      - name: test_render_table_when_all_features
+        case: 正常
+        summary: 5 つの機能の状態を描く
+        condition: '部品設計の `AllFeatures`（`hide: [1]`、`totals: [{2, sum}]`、`rowIds`）に `targetRow: 1`'
+        mock: なし
+        expected: 帯に `3 / 3 件`・`列の表示`・`表をコピー`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`
   - name: renderTableTools
     title: 表の見出しのボタンとドロワーを描く
     container: src/parts/table.ts
@@ -287,12 +312,12 @@ functions:
     container: src/parts/tabs.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『タブ』の HTML を返す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする
+    summary: 部品設計『タブ』の HTML を返す。`group` を渡すと `mdmark-tabs` に `data-group` を付ける。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする
     args:
       - name: options
-        type: '{ id: string; titles: string[]; panels: string[]; selected?: number }'
+        type: '{ id: string; titles: string[]; panels: string[]; selected?: number; group?: string }'
         required: true
-        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を渡せる）、選んだタブ
+        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を渡せる）、選んだタブ、組の名前
     returns:
       type: string
       description: '`<div class="mdmark-tabs">` で始まる HTML'
@@ -309,6 +334,12 @@ functions:
         condition: '`selected: 1`'
         mock: なし
         expected: '`role="tablist"` と 2 つの `role="tab"`、2 つ目が `aria-selected="true"` と `tabindex="0"`、1 つ目の `tabpanel` が `hidden`'
+      - name: test_render_tabs_when_group
+        case: 正常
+        summary: group を data-group に写す
+        condition: '`group: "os\"&"`'
+        mock: なし
+        expected: '`<div class="mdmark-tabs" data-group="os&quot;&amp;">` で始まる（値をエスケープする）'
   - name: renderSteps
     title: ステップを描く
     container: src/parts/steps.ts
@@ -505,6 +536,93 @@ functions:
     status: planned
     introduced:
       pr: 32
+  - name: renderTableBar
+    title: 表の上の帯と列の表示のメニューを描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: '`count`・`columns`・`copy` のうち付けた機能の帯（件数・`列の表示`・`表をコピー`）と、列の表示のメニュー（列名のチェックボックス、先頭の列は `disabled`、`先頭の列は隠せません`、`既定に戻す`）の HTML を返す。アイコンは lucide の `columns-3`・`copy`・`check`・`circle-alert`（`columns-3` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
+    args:
+      - name: options
+        type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed" }'
+        required: true
+        description: メニューの id の頭、機能、列名、表示している行の数、全ての行の数、隠している列、メニューを開いているか、コピーのボタンの状態
+    returns:
+      type: '{ bar: string; menu: string }'
+      description: 帯とメニュー（該当する機能が無ければ空）
+    unit_tests:
+      - name: test_render_table_bar
+        case: 正常
+        summary: 件数と列の表示とコピーの帯を返す
+        condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
+        mock: なし
+        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` の `列の表示`、`data-state="idle"` の `表をコピー`。`menu` が `hidden` で、名前のチェックボックスが `checked disabled`、説明のチェックが外れ、`先頭の列は隠せません` と `既定に戻す` がある'
+      - name: test_render_table_bar_when_copy_failed
+        case: 正常
+        summary: コピーできなかったボタンを返す
+        condition: '`features: [copy]`、`copyState: failed`'
+        mock: なし
+        expected: '`bar` のボタンが `data-state="failed"` と `コピーできませんでした` を持ち、件数と `列の表示` が無く、`menu` が空'
+    refs:
+      - '#functions[escapeHtml]'
+  - name: renderTotalRow
+    title: 集計の行を描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: 列の数だけセルを持つ `<tfoot><tr class="mdmark-table-total">` を返す。集計する列のセルは `data-total="{計算}"` と題（`合計`・`平均`・`個数`）と値を持ち、隠している列のセルは `hidden` を持つ。`mount` が集計し直すときにも使う
+    args:
+      - name: options
+        type: '{ columns: number; totals: Array<{ column: number; calc: "sum" | "avg" | "count"; value: string }>; hiddenColumns: number[]; labels: string[] }'
+        required: true
+        description: 列の数、集計する列と計算と整えた値（`computeTotal` の戻り値）、隠している列、列名（`data-label`）
+    returns:
+      type: string
+      description: '`<tfoot>` の HTML'
+    unit_tests:
+      - name: test_render_total_row
+        case: 正常
+        summary: 集計する列に題と値を出し、隠した列のセルを隠す
+        condition: '`columns: 3`、`totals: [{0, count, "4"}, {1, sum, "45"}, {2, avg, "250"}]`、`hiddenColumns: [2]`'
+        mock: なし
+        expected: 3 つのセルが `個数 4`・`合計 45`・`平均 250` で `data-total` を持ち、3 つ目だけ `hidden`
+    refs:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[computeTotal]
+  - name: renderCodeBlock
+    title: コードブロックを描く
+    container: src/parts/code-block.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類を持つときは行ごとの `mdmark-code-line` に分け、題があれば `figure` と `figcaption` で包む。題だけのときは行に分けず今の `pre` を包む。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
+    args:
+      - name: options
+        type: '{ language: string; title: string; lineNumbers: boolean; lines: CodeLine[] }'
+        required: true
+        description: 部品設計の引数。`language`・`title` は無ければ空
+    returns:
+      type: string
+      description: '題があれば `<figure class="mdmark-code">`、無ければ `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_code_block
+        case: 正常
+        summary: 題・行番号・行の種類を付け、文字をエスケープする
+        condition: '`title` が `a<b>.ts`、`lineNumbers` が `true`、`lines` が `{ text: "x < 1", kind: "add" }` と `{ text: "y" }`'
+        mock: なし
+        expected: '`<figcaption class="mdmark-code-title">a&lt;b&gt;.ts</figcaption>`、`pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` と `aria-label="コード: a&lt;b&gt;.ts"`、1 行目が `data-line="1" data-kind="add"` で文字が `x &lt; 1`、2 行目が `data-kind` を持たない'
+      - name: test_render_code_block_when_title_only
+        case: 正常
+        summary: 題だけなら行に分けない
+        condition: '`title` が `a.yaml`、`lineNumbers` が `false`、種類の無い 2 行'
+        mock: なし
+        expected: '`figure` の中の `pre` が class を持たず、`mdmark-code-line` が無い'
+      - name: test_render_code_block_when_two_digits
+        case: 正常
+        summary: 行の数の桁の数を渡す
+        condition: '`lineNumbers` が `true` で 13 行'
+        mock: なし
+        expected: '`code` が `style="--mdmark-code-digits: 2"`、最後の行が `data-line="13"`'
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -525,3 +643,16 @@ test_files:
   - tests/unit/src/parts/row-detail.test.ts
   - tests/unit/src/parts/figure.test.ts
   - tests/unit/src/parts/doc-list.test.ts
+  - tests/unit/src/parts/code-block.test.ts
+data_models:
+  - name: CodeLine
+    title: コードの行
+    container: src/parts/code-block.ts
+    summary: 部品『コードブロック』の `lines` の要素
+    properties:
+      - name: text
+        type: string
+        description: コードの行の印を外した行の文字（エスケープ前）
+      - name: kind
+        type: '"add" | "del" | "highlight" | undefined'
+        description: 行の種類。無ければ飾らない行

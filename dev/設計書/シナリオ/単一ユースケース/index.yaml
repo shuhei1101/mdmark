@@ -68,3 +68,49 @@ items:
     summary: 印で囲んだ `html` のコードブロックを、スクリプトを落としてその場の HTML として描く
   - page: チャートを描く.yaml
     summary: 埋め込んだ HTML の custom element に書いた定義から、図の部品をその場所に図の枠に載せて描く
+  - page: 差分の取り出し元を渡す.yaml
+    summary: 使う側のページが `DiffSource` を渡して文書を描き、差分を開いたときにリビジョンの一覧と本文を取り出す
+  - page: 文書の差分を見る.yaml
+    summary: 読む人が 2 つのリビジョンの差分を、消した行は赤・足した行は緑・変わった文字は濃い色で見、リビジョンを選び直す
+  - page: 埋め込んだHTMLの差分を切り替える.yaml
+    summary: 読む人が差分の中の埋め込んだ HTML を、ソースの色分けから描いた結果の前と後に切り替える
+  - page: ビューで項目を見る.yaml
+    summary: 印で囲んだ項目の表を、読む人がボード表示と表形式のビューで切り替えて見る
+  - page: 表形式のビューを列で絞り込む.yaml
+    summary: 読む人が表形式のビューを、印の `filter=` で指定した列の見出しの絞り込みで絞る
+  - page: 選んだ箇所にコメントする.yaml
+    summary: 読む人が本文の選んだ箇所にコメントを付け、使う側の読み書きの関数で残す
+  - page: 部品をJavaScriptから使う.yaml
+    summary: 使う側がページと拡張のモジュールから部品の関数を呼び、要素にビューを描き、選んだ箇所にコメントを付ける
+  - page: コードブロックを飾る.yaml
+    summary: 印と行末の行コメントで、コードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付ける
+  - page: VSCodeでプレビューを開く.yaml
+    summary: 文書を書く人が VS Code で Markdown の横に mdmark のプレビューを開き、拡張機能が読む版を決めて描く
+  - page: 書いた内容をプレビューに映す.yaml
+    summary: Markdown と設定ファイルの書き換え・背面からの復帰・リロードで、プレビューを最後の内容で描き直す
+  - page: エディタとプレビューのスクロールを合わせる.yaml
+    summary: エディタかプレビューをスクロールすると、元の行番号を手がかりにもう片方が同じ箇所まで動く
+  - page: プレビューをVSCodeのテーマに合わせる.yaml
+    summary: プレビューの配色を VS Code のライト・ダークに合わせて切り替え、設定で固定もできる
+  - page: プレビューのリンクと画像を開く.yaml
+    summary: プレビューの外部の URL・Markdown へのリンク・`#` のリンクを開き、相対パスの画像を出す
+  - page: HTMLに書き出す.yaml
+    summary: 開いている Markdown を HTML に書き出し、既定のブラウザで開く
+  - page: 拡張機能の配布物を作る.yaml
+    summary: 開発者が `vscode-v{版}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える
+  - page: PDFに印刷する.yaml
+    summary: 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする
+  - page: 本文に出た用語と文書の参照を取り出す.yaml
+    summary: 使う側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る
+  - page: ClaudeCodeにプラグインを入れる.yaml
+    summary: 文書を書く人が mdmark のリポジトリをマーケットプレイスとして足し、mdmark のプラグインを Claude Code に入れる
+  - page: セッションの開始で使い方集の索引を受け取る.yaml
+    summary: プラグインの SessionStart のフックが、使い方集の索引だけを Claude Code のコンテキストへ渡す
+  - page: 使い方集を読む.yaml
+    summary: Claude Code が索引の名前を `read_guide` に渡し、その名前の使い方集の本文を受け取る
+  - page: 索引から文書を探す.yaml
+    summary: Claude Code が `find_docs` で、索引から題名・別名・概要の語・タグ・関係する文書で文書を引く
+  - page: 索引を書き換える.yaml
+    summary: Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない
+  - page: ClaudeCodeから点検と書き出しを呼ぶ.yaml
+    summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ

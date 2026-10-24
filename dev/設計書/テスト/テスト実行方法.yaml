@@ -3,10 +3,13 @@ layers:
   - name: 非機能要件テスト
     run_all: 未確定
   - name: E2E テスト
-    description: Playwright（`@playwright/test`）を Chromium と Firefox の 2 つのプロジェクトで流す。ブラウザを使わない『配布物をビルドして検査する』は Chromium のプロジェクトだけで流れ、Firefox の分は skip になる
+    description: Playwright（`@playwright/test`）を Chromium と Firefox の 2 つのプロジェクトで流す。ブラウザを使わない『配布物をビルドして検査する』『拡張機能の配布物を作る』は Chromium のプロジェクトだけで流れ、Firefox の分は skip になる。Playwright の `globalSetup` は、E2E を流すたびに（VS Code 拡張機能のシナリオを選ばないときも）ワーカーの前で VS Code 1.141.0 を 1 回だけ取得する。VS Code 拡張機能のシナリオは、`tests/e2e/vscode.ts` がその実行ファイルを Playwright の `_electron` で起動して操作する（Chromium のプロジェクトだけ）。拡張機能はこのブランチのソースを一時フォルダにビルドして `--extensionDevelopmentPath` に渡し、jsDelivr と GitHub のタグ一覧は `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える。待ちの既定は 30 秒（`playwright.config.ts` の `expect.timeout`）
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium firefox` でブラウザを入れてある'
       - 『配布物をビルドして検査する』が一時フォルダのクローンで `npm ci` を流すため、npm レジストリへの接続が要る
+      - VS Code 拡張機能のシナリオは `npm --prefix vscode ci` で拡張機能の依存を入れ、Node は 24 を使う。ヘッドレスの Linux では `xvfb-run -a` を付けて流す
+      - 『ClaudeCodeにプラグインを入れる』は GitHub のブランチからプラグインを入れるため、開発コマンド『管理作業』の手順 3〜5 を release ブランチで済ませた後に流す
+      - '`globalSetup` は `npm --prefix vscode ci` で入れた `@vscode/test-electron` で VS Code を取得するため、どの E2E を流すときも（VS Code 拡張機能のシナリオを選ばないときも）`npm --prefix vscode ci` が要る。`vscode/.vscode-test/` に無いときは `update.code.visualstudio.com` から取得する'
     run_all: |-
       ```bash
       npm run test:e2e
@@ -17,12 +20,15 @@ layers:
         ```bash
         npx playwright test {シナリオファイルパス}
         ```
-    duration: 全件で数十秒（作業ツリーのクローンと `npm ci` を含む）
+    duration: 全件で約 10 分（作業ツリーのクローンと `npm ci`、VS Code の起動を含む。VS Code を起動するシナリオが大半を占める）。初回は VS Code の取得が加わる
     external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
   - name: 結合テスト（フロント）
-    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す
+    description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む・Claude Code プラグインの MCP サーバーとフックを流す）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に流す
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
+      - Claude Code プラグインの結合テスト（`tests/integration/ClaudeCodeプラグイン/`）は、ビルドした `plugin/` の MCP サーバーとフックを流す。Claude Code を起動しない
+      - MCP サーバーは `createMcpServer` で作ったサーバーを `InMemoryTransport` で MCP のクライアントとつなぐ。`StdioClientTransport` は、外部ライブラリ『MCP-SDK』の不具合一覧のとおり、束ねたサーバーが起動してツールを返すかを確かめるケースだけに使う（設定ファイルを探す起点は `CLAUDE_PROJECT_DIR` に作業のフォルダーを渡す）
+      - フックは `hooks/hooks.json` の SessionStart のコマンドを、`CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流す
     run_all: |-
       ```bash
       npm run test:integration
@@ -33,6 +39,17 @@ layers:
         ```bash
         npx vitest run --project 'integration*' {テストファイルパス}
         ```
+    notes:
+      VS Code 拡張機能: |-
+        `@vscode/test-electron` が VS Code 1.141.0 と stable を起動し、拡張機能ホストの中で mocha が `vscode/tests/integration/*.test.ts`（ビルドした `vscode/out/test/*.test.mjs`）を流す。Webview の DOM は拡張機能がテストのときだけ返す `inspectPreview` で確かめる。`vscode` を import しない処理は単体テスト（フロント）の `unit` プロジェクトが `tests/unit/vscode/` で流す。
+
+        前提: `npm ci` と `npm --prefix vscode ci` で依存を入れ、Node は 24 を使う（`PATH` の先頭の `node` が古いと、拡張機能の配布物を作るテストが落ちる）。代役の配信が配る配布物は、テストの入口がこのブランチのソースを一時フォルダにビルドして用意する。ヘッドレスの Linux では `xvfb-run` を入れてある。
+
+        ```bash
+        xvfb-run -a npm --prefix vscode run test:integration
+        ```
+
+        初回と stable が上がったときは VS Code を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える（`MDMARK_VSCODE_DIST_BASE` は `http://127.0.0.1:{ポート}/mdmark` の形で、配布物は `/mdmark@{バージョン}/dist/{ファイル}` で引く）。VS Code のバージョンごとに新しい `--user-data-dir` で起動し、前回のバージョンが空の状態から始める
   - name: 結合テスト（バック）
     run_all: 未確定
   - name: 単体テスト（フロント）

@@ -23,15 +23,15 @@ args:
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
-    default: '#d1d9e0（ダーク #3d444d）'
+    default: '#e4e4e7（ダーク #26262b）'
     description: 破線の色
   - name: --mdmark-color-muted
     syntax: <color>
-    default: '#59636e（ダーク #9198a1）'
+    default: '#52525b（ダーク #b4b4bc）'
     description: '`図を読み込んでいます` の文字の色'
   - name: --mdmark-radius
     syntax: <length>
-    default: 6px
+    default: 4px
     description: 枠の角丸
 accessibility:
   - 枠は `role="status"` を持ち、読み込み中であることを文言で伝える

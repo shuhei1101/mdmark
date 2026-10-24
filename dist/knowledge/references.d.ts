@@ -25,10 +25,11 @@ export type ParsedDocument = {
     tokens: Token[];
     /** 文書の印を重ねて決まった機能のオン・オフ */
     features: Record<string, boolean>;
-    /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
+    /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から）・やめた言い方 */
     glossary: Array<{
         entry: MdmarkGlossaryEntry;
         line: number;
+        avoid: string[];
     }>;
 };
 /** 文書の本文を、印・機能・用語集の表を読んだトークンにする */

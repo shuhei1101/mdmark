@@ -6,22 +6,39 @@ const NOTICE_TITLES = {
   block: "この箇所を表示できません",
 };
 
-/** 読めなかったものの呼び名: 外部ライブラリか拡張か */
+/** 読めなかったものの呼び名: 外部ライブラリか拡張か、ビューやコメントの部品のモジュールか */
 const NOTICE_SOURCES = {
   library: "ライブラリ",
   extension: "拡張",
+  part: "部品",
 };
 
-/** 外部ライブラリか拡張を読めない印の場所に置く、知らせの枠の HTML を返す */
+/** 差分の取り出し元を読めないときの題と本文: `diff-content` の本文は取り出せなかったリビジョンの説明を `「…」` で囲んで入れる */
+const DIFF_NOTICES = {
+  "diff-revisions": () => ({
+    title: "変更の履歴を表示できません",
+    body: "リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。",
+  }),
+  "diff-content": (name: string) => ({
+    title: "このリビジョンの本文を表示できません",
+    body: `「${escapeHtml(name)}」の本文を取り出せませんでした。別のリビジョンを選んでください。`,
+  }),
+};
+
+/** 外部ライブラリか拡張を読めない印の場所、または差分の取り出し元がリビジョンの一覧か本文を返せない場所に置く、知らせの枠の HTML を返す */
 export function renderNotice(options: {
-  /** 読めなかった印の名前 */
+  /** 読めなかった印の名前。`diff-content` では取り出せなかったリビジョンの説明（複数なら `「…」と「…」` の中身） */
   name: string;
-  /** 図の印か（既定 `true`） */
+  /** 図の印か（既定 `true`）。`diff-revisions`・`diff-content` では使わない */
   figure?: boolean;
   /** 読めなかったもの（既定 `library`） */
-  source?: "library" | "extension";
+  source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content";
 }): string {
   const { name, figure = true, source = "library" } = options;
+  if (source === "diff-revisions" || source === "diff-content") {
+    const { title, body } = DIFF_NOTICES[source](name);
+    return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p>${body}</p></div>`;
+  }
   const title = figure ? NOTICE_TITLES.figure : NOTICE_TITLES.block;
   return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p>表示に使う${NOTICE_SOURCES[source]}（<code>${escapeHtml(name)}</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>`;
 }

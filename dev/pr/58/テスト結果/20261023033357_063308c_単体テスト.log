@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-tabs-sync-group-and-remember-selection
+
+
+ Test Files  100 passed (100)
+      Tests  452 passed (452)
+   Start at  03:34:02
+   Duration  34.03s (tests 34%, import 34%, worker 27%, transform 5%)
+

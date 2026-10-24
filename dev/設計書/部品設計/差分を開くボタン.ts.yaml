@@ -1,0 +1,60 @@
+title: "差分を開くボタン"
+implementation: "src/parts/diff-toggle.ts#renderDiffToggle"
+story: "Parts/DiffToggle"
+states:
+  - name: Closed
+    description: 差分を閉じている。アイコンと `変更を見る` を出す
+    args:
+      - name: controls
+        value: mdmark-diff-panel-1
+      - name: expanded
+        value: 'false'
+  - name: Open
+    description: 差分を開いている。押された見た目にする
+    args:
+      - name: controls
+        value: mdmark-diff-panel-1
+      - name: expanded
+        value: 'true'
+lead: 取り出し元を渡して描いた文書の題の後ろに置き、押すと差分を開いたり閉じたりする「変更を見る」のボタン。HTML 文字列を返す。
+args:
+  - name: controls
+    type: 文字列
+    required: true
+    description: 開閉する差分の場所の要素の `id`。`aria-controls` に入れる
+  - name: expanded
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 差分を開いているか。`aria-expanded` に入れる
+events:
+  - name: 差分を開閉する
+    when: ボタンを押す
+    value: ボタンの `aria-expanded`
+    description: '`mount` が差分を開くか閉じ、`aria-expanded` を書き換える'
+css_properties:
+  - name: --mdmark-color-border
+    syntax: <color>
+    description: 閉じている間のボタンの線の色
+  - name: --mdmark-color-text
+    syntax: <color>
+    description: ボタンの文字とアイコンの色
+  - name: --mdmark-color-link
+    syntax: <color>
+    description: 開いている間のボタンの線の色
+  - name: --mdmark-color-current-bg
+    syntax: <color>
+    description: 開いている間のボタンの地の色
+  - name: --mdmark-radius
+    syntax: <length>
+    default: 4px
+    description: ボタンの角丸
+accessibility:
+  - '`button` 要素で、`aria-expanded`・`aria-controls` で開閉と開閉する場所を伝える'
+  - アイコンは `aria-hidden` にし、読み上げの名前は文字の `変更を見る`
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
+status: planned
+notes:
+  モック: '`dev/mock/components/revision-picker/` の「変更を見る」（閉じている・開いている）'
+test_file: tests/integration/lib/diff-toggle.story.test.ts

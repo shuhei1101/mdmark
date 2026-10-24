@@ -1,0 +1,5 @@
+{
+  "name": "mdmark",
+  "version": "v0.7.0",
+  "description": "mdmark の記法・部品・図の描き方の索引と、書き出し・点検・索引の操作を Claude Code に渡す"
+}

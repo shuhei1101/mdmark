@@ -60,19 +60,65 @@ scenarios:
       - 例外で止まらずに一覧が返る
       - '`schema` の欠けと、2 つ目の文書の `path` の欠けが、それぞれの場所を持つ Schema のずれの行で返る'
     test: test_normal_when_invalid_schema
+  - name: 正常シナリオ（やめた言い方が本文に出る）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: やめた言い方を持つ索引と文書
+        description: 索引が、文書 `guide` と、`avoid` に `作業場` を持つ用語 `ワークスペース` を持つ。`guide` の本文は、1 つの行に `作業場` を 2 回、別の行に `作業場` を 1 回書き、`ワークスペース` だけを書いた行も持つ
+        notes: 同じ行に 2 回出るやめた言い方が 1 件にまとまることを、2 回書いた行で決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 索引の文書の本文から、用語のやめた言い方を探す
+        M-->>C: やめた言い方のずれの行を持つ一覧
+    expected:
+      - やめた言い方のずれが、`作業場` を書いた 2 つの行それぞれに 1 件ずつ、計 2 件返る
+      - 各行が `guide` のファイルと、やめた言い方の出た行を持つ
+      - 各行の内容が、やめた言い方 `作業場` と、代わりに使う用語 `ワークスペース` を示す
+      - '`ワークスペース` だけを書いた行のずれは返らない'
+      - やめた言い方のずれ以外のずれは返らない
+    test: test_normal_when_avoided_term
+  - name: 正常シナリオ（用語集の表のやめた言い方が本文に出る）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 用語集の表にやめた言い方を持つ索引と文書
+        description: '索引が文書 `glossary` と `guide` を持ち、`terms` を持たない。`glossary` の本文は、`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で用語 `ワークスペース`（やめた言い方 `作業場`）の行を持つ表だけを持つ。`guide` の本文は、1 つの行に `作業場` を書く'
+        notes: 表を持たない文書 `guide` にずれが出ることと、表の中の `作業場` を数えないことを、文書を分けて決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: 索引の文書の用語集の表から、用語のやめた言い方を読む
+        M->>M: 索引の全ての文書の本文から、やめた言い方を探す
+        M-->>C: やめた言い方のずれの行を持つ一覧
+    expected:
+      - やめた言い方のずれが、`guide` の `作業場` を書いた行に 1 件返る
+      - その行の内容が、やめた言い方 `作業場` と、代わりに使う用語 `ワークスペース` を示す
+      - '`glossary` の用語集の表の中の `作業場` のずれは返らない'
+      - やめた言い方のずれ以外のずれは返らない
+    test: test_normal_when_glossary_avoided_term
 lead: 使う側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に渡し、索引と文書のずれの一覧を受け取る。
 issue: 5
 primary_actor: 使う側の処理
 stakeholders:
   - name: 文書を書く人
-    interest: 文書を移した・消したときに、直す索引の場所が分かる
+    interest: 文書を移した・消したときに、直す索引の場所が分かる。用語の言い方を改めたときに、やめた言い方が残った本文の場所が分かる
   - name: CLI と MCP（#9・#11）
     interest: ファイルを読んで渡すだけで、ずれを見つける処理を自前で持たない
 trigger: 使う側の処理が、読んだ索引と、索引のフォルダの文書のパスの一覧・本文を渡して点検させる
 preconditions:
   - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
   - 使う側の処理が索引の YAML と文書のファイルを読んでいる（mdmark はファイルを読まない）
-success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた `id`・用語の重複・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。
+success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた `id`・用語の重複・本文に出た用語のやめた言い方・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。
 minimal_guarantee: Schema に合わない索引でも例外で止まらず、読めた範囲のずれと Schema のずれを返す。点検は索引と文書を書き換えない。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#

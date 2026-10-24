@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-components-views-search-comments
+
+
+ Test Files  112 passed (112)
+      Tests  546 passed (546)
+   Start at  07:32:45
+   Duration  35.55s (worker 37%, tests 34%, import 25%, transform 3%)
+

@@ -16,7 +16,7 @@ const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$)/;
 
 /** 図の部品が定義から出した要素だけが持てる要素。文書に書いたものは取り除く */
-const DIAGRAM_ONLY_TAGS = new Set([
+export const DIAGRAM_ONLY_TAGS = new Set([
   "svg",
   "defs",
   "marker",
@@ -41,6 +41,13 @@ const DROP_ATTRIBUTE = "data-mdmark-drop";
 /** 図の部品が出した要素の `style` に許す宣言: 位置と大きさ（px）と、拡大の倍率だけ */
 const DIAGRAM_STYLE_PATTERN =
   /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
+
+/** コードブロックの `code` が持つ、行番号の桁の数の `style`（`--mdmark-code-digits: {数字}` だけ） */
+const CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
+
+/** 元の行番号の属性と、その値に許す形（0 以上の整数） */
+const SOURCE_LINE_ATTRIBUTE = "data-source-line";
+const SOURCE_LINE_PATTERN = /^\d+$/;
 
 /** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
 const DATA_IMAGE_PATTERN =
@@ -89,6 +96,8 @@ function dropSyntaxAttributes(
       if (tagName === "pre" || tagName === "table") {
         next[name] = value;
       }
+    } else if (name === SOURCE_LINE_ATTRIBUTE) {
+      next[name] = value;
     } else if (name.startsWith("data-")) {
       const keep =
         (tagName === "td" && name === "data-label") ||
@@ -284,10 +293,15 @@ export function filterEmbeddedStyle(style: string): string {
   return kept.join(";");
 }
 
-/** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・倍率はそのまま、それ以外は埋め込んだ HTML の許した宣言だけ */
+/** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・倍率はそのまま、コードブロックの行番号の桁の数だけを持つものはその宣言、それ以外は埋め込んだ HTML の許した宣言だけ */
 function ownStyle(style: string): string {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
+  }
+  // コードブロックの行番号の桁の数: ほかの宣言を重ねたものは、全て落とす
+  if (style.includes("--mdmark-code-digits")) {
+    const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
+    return digits === undefined ? "" : `--mdmark-code-digits:${digits}`;
   }
   return filterEmbeddedStyle(style);
 }
@@ -297,7 +311,7 @@ export const EMBED_PART_TAG = "mdmark-part";
 export const EMBED_PART_ATTRIBUTE = "data-part";
 
 /** 文字を `onText` に渡さない要素（用語の下線を引かない場所） */
-const TEXT_FILTER_SKIP_TAGS = new Set([
+export const TEXT_FILTER_SKIP_TAGS = new Set([
   "a",
   "code",
   "pre",
@@ -309,6 +323,15 @@ const TEXT_FILTER_SKIP_TAGS = new Set([
   "h5",
   "h6",
 ]);
+
+/** 許可していない要素のうち、中身の文字ごと落とす要素（sanitize-html の既定と同じ） */
+export const EMBEDDED_NON_TEXT_TAGS = [
+  "script",
+  "style",
+  "textarea",
+  "option",
+  "xmp",
+];
 
 /** 埋め込んだ HTML の `sanitize-html` の設定。文書に書いた生の HTML と同じ要素・URL の許可に `button` を足し、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` は持たせない */
 const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
@@ -328,6 +351,7 @@ const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
     [EMBED_PART_TAG]: [EMBED_PART_ATTRIBUTE],
   },
   allowedClasses: {},
+  nonTextTags: EMBEDDED_NON_TEXT_TAGS,
 };
 
 /** 埋め込んだ HTML の中身を落とす: `script` 要素・`on` で始まる属性・`javascript:` の URL・許していない `style` の宣言を落とし、`button` は `type="button"` で残す。`onText` は本文の文字（エスケープ済み。`a`・`code`・`pre`・`button`・見出しの中を除く）を受け、置き換える HTML を返す */
@@ -391,6 +415,13 @@ export function sanitize(html: string, nonce: string): string {
           ? { ...attribs }
           : dropSyntaxAttributes(tagName, attribs);
         delete next[OWN_ATTRIBUTE];
+        // 元の行番号は、誰が出した要素でも 0 以上の整数のときだけ残す
+        if (
+          next[SOURCE_LINE_ATTRIBUTE] !== undefined &&
+          !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])
+        ) {
+          delete next[SOURCE_LINE_ATTRIBUTE];
+        }
         // 画像の `data:` URL は、画像の種類と base64 の形のものだけ残す
         if (
           tagName === "img" &&

@@ -76,7 +76,7 @@ JavaScript は変換せずにそのまま配る。
 }
 
 .mdmark {
-  --mdmark-color-diagram-llm: #6f42c1;
+  --mdmark-color-diagram-llm: #be185d;
 }
 ```
 

@@ -1,5 +1,11 @@
+import type { Token } from "markdown-it";
 import { DEFAULT_FEATURES } from "../config.ts";
-import { type MdmarkIndexDoc, normalizeIndex } from "./index-shape.ts";
+import { findWords, forEachInline, matchableChildren } from "./dictionary.ts";
+import {
+  type MdmarkIndexDoc,
+  type MdmarkIndexTerm,
+  normalizeIndex,
+} from "./index-shape.ts";
 import { normalizePath } from "./paths.ts";
 import { parseDocument } from "./references.ts";
 
@@ -15,7 +21,8 @@ export type MdmarkIndexIssue = {
     | "missing_doc"
     | "orphan_doc"
     | "broken_ref"
-    | "duplicate_term";
+    | "duplicate_term"
+    | "avoided_term";
   /** ずれの内容と直し方 */
   message: string;
 };
@@ -64,7 +71,92 @@ function duplicateTerms(sites: TermSite[]): MdmarkIndexIssue[] {
   return issues;
 }
 
-/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term` のずれをこの順で返す */
+/** 行内のトークンごとに、表のセルなど `map` を持たないトークンの行を引くための、直前の `tr_open` の開始行（0 から）を返す */
+function rowStarts(tokens: Token[]): Map<Token, number | undefined> {
+  const starts = new Map<Token, number | undefined>();
+  let row: number | undefined;
+  for (const token of tokens) {
+    if (token.type === "tr_open") {
+      row = token.map?.[0];
+    } else if (token.type === "inline") {
+      starts.set(token, row);
+    }
+  }
+  return starts;
+}
+
+/** `findAvoidedTerms` が探す用語: 語・別名・やめた言い方 */
+type AvoidableTerm = Pick<MdmarkIndexTerm, "term" | "aliases" | "avoid">;
+
+/** 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする */
+export function findAvoidedTerms(options: {
+  /** ずれの `file` に出す文書のパス */
+  file: string;
+  /** `parseDocument` のトークン */
+  tokens: Token[];
+  /** 用語（索引の用語の後に、索引の `docs` の順の文書の用語集の表の用語を続けた並び。同じやめた言い方は先の用語を使う） */
+  terms: AvoidableTerm[];
+}): MdmarkIndexIssue[] {
+  const { file, tokens, terms } = options;
+  // やめた言い方から、代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
+  const avoidedBy = new Map<string, string>();
+  for (const term of terms) {
+    for (const word of term.avoid ?? []) {
+      if (!avoidedBy.has(word)) {
+        avoidedBy.set(word, term.term);
+      }
+    }
+  }
+  if (avoidedBy.size === 0) {
+    return [];
+  }
+  // 用語の語・別名を先に渡し、同じ長さならそちらを当てる。やめた言い方の一部に当たる用語の語を、やめた言い方として数えないため
+  const termWords = new Set(
+    terms.flatMap((term) => [term.term, ...(term.aliases ?? [])]),
+  );
+  const words = [...termWords, ...avoidedBy.keys()];
+  const rows = rowStarts(tokens);
+  const found: Array<{ line: number; word: string }> = [];
+  forEachInline(tokens, (inline) => {
+    // 解析器の開始行は 0 から数えるため、1 を足して行番号にする
+    const start = (inline.map?.[0] ?? rows.get(inline) ?? 0) + 1;
+    const children = inline.children ?? [];
+    for (const position of matchableChildren(inline)) {
+      // その子より前の改行（softbreak・hardbreak）の数だけ、行が進む
+      const breaks = children
+        .slice(0, position)
+        .filter(
+          (child) => child.type === "softbreak" || child.type === "hardbreak",
+        ).length;
+      for (const match of findWords(children[position]?.content ?? "", words)) {
+        if (!termWords.has(match.word)) {
+          found.push({ line: start + breaks, word: match.word });
+        }
+      }
+    }
+  });
+  // 行の順に並べ、同じ行とやめた言い方の組は 1 件にまとめる
+  const seen = new Set<string>();
+  return found
+    .map((item, order) => ({ ...item, order }))
+    .sort((a, b) => a.line - b.line || a.order - b.order)
+    .filter(({ line, word }) => {
+      const key = `${line}\u0000${word}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    })
+    .map(({ line, word }) => ({
+      file,
+      where: `${line} 行目`,
+      kind: "avoided_term" as const,
+      message: `\`${word}\` はやめた言い方です。用語 \`${avoidedBy.get(word)}\` に書き換えてください。`,
+    }));
+}
+
+/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term` のずれをこの順で返す */
 export function checkIndex(input: {
   /** 索引の値（形を確かめる前のもの） */
   index: unknown;
@@ -135,6 +227,24 @@ export function checkIndex(input: {
       message: `\`${path}\` が索引にありません。索引の \`docs\` に足してください。`,
     }));
 
+  // 文書は先に全て読む（やめた言い方は、表を持たない文書の本文からも探すため）
+  const parsedDocs: Array<{
+    path: string;
+    parsed: ReturnType<typeof parseDocument>;
+  }> = [];
+  for (const doc of index.docs) {
+    const entry = documents.get(normalizePath(doc.path));
+    if (entry) {
+      parsedDocs.push({
+        path: entry.path,
+        parsed: parseDocument({
+          body: entry.body,
+          docId: doc.id,
+          defaults: { ...DEFAULT_FEATURES },
+        }),
+      });
+    }
+  }
   // 用語は、索引の `terms`、索引の `docs` の順の文書の用語集の表の順に並べる
   const sites: TermSite[] = (index.terms ?? []).map((term) => {
     const position = (
@@ -150,29 +260,27 @@ export function checkIndex(input: {
       ],
     };
   });
-  for (const doc of index.docs) {
-    const entry = documents.get(normalizePath(doc.path));
-    if (!entry) {
-      continue;
-    }
-    const parsed = parseDocument({
-      body: entry.body,
-      docId: doc.id,
-      defaults: { ...DEFAULT_FEATURES },
-    });
-    for (const { entry: term, line } of parsed.glossary) {
+  const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
+  for (const { path, parsed } of parsedDocs) {
+    for (const { entry: term, line, avoid } of parsed.glossary) {
       sites.push({
-        file: entry.path,
+        file: path,
         words: [term.term, ...term.aliases],
         wheres: [term.term, ...term.aliases].map(() => `${line} 行目`),
       });
+      avoidable.push({ term: term.term, aliases: term.aliases, avoid });
     }
   }
+  // やめた言い方は、索引の `docs` の順に文書ごとに探す
+  const avoided = parsedDocs.flatMap(({ path, parsed }) =>
+    findAvoidedTerms({ file: path, tokens: parsed.tokens, terms: avoidable }),
+  );
   return [
     ...schema,
     ...missing,
     ...orphan,
     ...broken,
     ...duplicateTerms(sites),
+    ...avoided,
   ];
 }

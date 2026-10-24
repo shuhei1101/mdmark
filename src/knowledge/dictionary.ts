@@ -2,8 +2,11 @@ import type { Token } from "markdown-it";
 import type { MdmarkIndex, MdmarkIndexDoc } from "./index-shape.ts";
 import type { MdmarkGlossaryEntry, MdmarkReferences } from "./references.ts";
 
-/** 語の区切り（`Intl.Segmenter` の `ja`・`word`）を引く。区切り方は実行環境の辞書に依る */
-const SEGMENTER = new Intl.Segmenter("ja", { granularity: "word" });
+/** 語の区切り（`Intl.Segmenter` の `ja`・`word`）。初めて使うときに作り、以降は使い回す */
+let segmenter: Intl.Segmenter | undefined;
+
+/** `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字（コードポイント）に区切る */
+const FALLBACK_WORD = /[A-Za-z0-9]+|[\s\S]/gu;
 
 /** 照合の辞書: 索引の用語・用語集の表の用語・文書の別名を、照合する語から引ける形にまとめたもの */
 export type Dictionary = {
@@ -13,6 +16,8 @@ export type Dictionary = {
   terms: Map<string, { id: string; meaning: string }>;
   /** 語から、その語を `aliases` に持つ文書（索引の `docs` の順） */
   docs: Map<string, MdmarkIndexDoc[]>;
+  /** やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` から。同じ言い方は索引の `terms` で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
+  avoided: Map<string, { id: string; term: string; meaning: string }>;
 };
 
 /** 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から辞書を作る */
@@ -31,6 +36,10 @@ export function buildDictionary(options: {
   const { index, docId, ownGlossary, references, features } = options;
   const terms = new Map<string, { id: string; meaning: string }>();
   const docs = new Map<string, MdmarkIndexDoc[]>();
+  const avoided = new Map<
+    string,
+    { id: string; term: string; meaning: string }
+  >();
   /** 先に入れた用語を優先して、語に用語を入れる */
   const addTerm = (words: string[], id: string, meaning: string): void => {
     for (const word of words) {
@@ -65,6 +74,18 @@ export function buildDictionary(options: {
         entry.meaning,
       );
     }
+    // 用語の語・別名と同じ語は用語にし、同じやめた言い方は索引の `terms` で先の用語を代わりにする
+    for (const term of index?.terms ?? []) {
+      for (const word of term.avoid ?? []) {
+        if (!terms.has(word) && !avoided.has(word)) {
+          avoided.set(word, {
+            id: term.id,
+            term: term.term,
+            meaning: term.meaning,
+          });
+        }
+      }
+    }
   }
   if (features.backlinks !== false) {
     for (const doc of index?.docs ?? []) {
@@ -79,7 +100,16 @@ export function buildDictionary(options: {
   const words = [...new Set([...terms.keys(), ...docs.keys()])].sort(
     (a, b) => b.length - a.length,
   );
-  return { words, terms, docs };
+  return { words, terms, docs, avoided };
+}
+
+/** 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す。区切り方は実行環境の辞書に依る */
+export function wordStarts(text: string): number[] {
+  if (typeof Intl.Segmenter === "undefined") {
+    return [...text.matchAll(FALLBACK_WORD)].map((match) => match.index);
+  }
+  segmenter ??= new Intl.Segmenter("ja", { granularity: "word" });
+  return [...segmenter.segment(text)].map((segment) => segment.index);
 }
 
 /** 文字列の中で、始まりと終わりが語の区切りに揃う辞書の語の位置を、重ならないよう長い語を先に、頭から順に返す */
@@ -88,7 +118,7 @@ export function findWords(
   words: string[],
 ): Array<{ start: number; end: number; word: string }> {
   const longestFirst = [...words].sort((a, b) => b.length - a.length);
-  const starts = [...SEGMENTER.segment(text)].map((segment) => segment.index);
+  const starts = wordStarts(text);
   const boundaries = new Set([...starts, text.length]);
   const found: Array<{ start: number; end: number; word: string }> = [];
   let skipTo = 0;

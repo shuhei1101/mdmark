@@ -22,8 +22,10 @@ export function renderSyntaxWarning(options: {
   message: string;
   /** 読めない指定が複数あるときの項目（既定 `[]`） */
   items?: WarningItem[];
+  /** 枠の `id`。ほかの要素が `aria-describedby` で指すときに渡す */
+  id?: string;
 }): string {
-  const { mark = "", message, items = [] } = options;
+  const { mark = "", message, items = [], id } = options;
   const markHtml = mark ? `<code>${escapeHtml(mark)}</code>` : "";
   const list = items.length
     ? `<ul>${items
@@ -33,5 +35,6 @@ export function renderSyntaxWarning(options: {
         )
         .join("")}</ul>`
     : "";
-  return `<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list}</div>`;
+  const idAttribute = id === undefined ? "" : ` id="${escapeHtml(id)}"`;
+  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list}</div>`;
 }

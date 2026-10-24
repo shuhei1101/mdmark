@@ -1,0 +1,104 @@
+title: "埋め込んだHTMLの差分を切り替える"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 差分を開いたページ
+        description: 取り出し元を渡して文書を描き、差分を開いた後のページ
+      - name: 見本の文書の 2 つのリビジョン
+        description: 'どちらも `<!-- html -->` の範囲に `<table>` を 1 つ持ち、`r1` から `r2` で表のセルの値を 1 つ変える（例: `120` を `150` に）。範囲の外の段落は変えない'
+      - name: Mock
+        description: 取り出し元は、見本の 2 つのリビジョンをメモリーから返すページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        M-->>U: 範囲をソースの行と文字の色分けで出す
+        U->>M: 範囲を描いた結果に切り替える
+        M->>M: 前と後の範囲の HTML を、スクリプトを落として描く
+        M-->>U: 前と後の描いた結果を並べる
+        U->>M: ソースに戻す
+        M-->>U: ソースの色分けに戻す
+      ```
+    expected:
+      - 開いた時点では、範囲のソースの行が色分けで出て、変えたセルの行の `120` が濃い赤、`150` が濃い緑で出る
+      - 切り替えると、前と後の表が描いた表として並び、それぞれが前・後のどちらかを題と読み上げの名前で示す
+      - 前の表のセルは `120`、後の表のセルは `150` を持つ
+      - 戻すと、開いた時点と同じソースの色分けに戻る
+      - 切り替えはキーでも操作でき、今どちらの見方かを読み上げで伝える
+    test: test_normal
+  - name: 正常シナリオ（片側にだけある範囲）
+    setup:
+      - name: 差分を開いたページ
+        description: 正常シナリオと同じ
+      - name: 範囲を足した 2 つのリビジョン
+        description: '`r1` は段落だけを持ち、`r2` で `<!-- html -->` の範囲を 1 つ足す'
+      - name: Mock
+        description: 取り出し元は、範囲を足した 2 つのリビジョンを返す。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        M-->>U: 足した範囲を緑の行で出す
+        U->>M: 範囲を描いた結果に切り替える
+        M-->>U: 後の描いた結果だけを出し、前には範囲が無いことを示す
+      ```
+    expected:
+      - 開いた時点では、足した範囲のソースの行が全て緑と行頭の `+` で出る
+      - 切り替えると、後の描いた結果だけが出て、前の側には範囲が無いことを示す文がある
+    test: test_normal_when_range_only_on_one_side
+  - name: 正常シナリオ（変えていない範囲）
+    setup:
+      - name: 差分を開いたページ
+        description: 正常シナリオと同じ
+      - name: 範囲の外だけを変えた 2 つのリビジョン
+        description: どちらも同じ `<!-- html -->` の範囲を持ち、`r1` から `r2` で範囲の外の段落の語だけを書き換える
+      - name: Mock
+        description: 取り出し元は、範囲の外だけを変えた 2 つのリビジョンを返す。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        M-->>U: 範囲の行を色なしで出し、切り替えを付けない
+      ```
+    expected:
+      - 範囲のソースの行が色と印を持たずに出る
+      - その範囲には、描いた結果への切り替えが無い
+    test: test_normal_when_range_unchanged
+  - name: 正常シナリオ（スクリプトを書いた範囲）
+    setup:
+      - name: 差分を開いたページ
+        description: 正常シナリオと同じ
+      - name: スクリプトを書いた 2 つのリビジョン
+        description: 正常シナリオの 2 つのリビジョンの範囲に、ページの値を書き換える `script` 要素と `onclick` 属性を足したもの
+      - name: Mock
+        description: 取り出し元は、スクリプトを書いた 2 つのリビジョンを返す。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant M as mdmark
+        U->>M: 範囲を描いた結果に切り替える
+        M->>M: スクリプトとイベントの属性を落として描く
+        M-->>U: 前と後の描いた結果を並べる
+      ```
+    expected:
+      - 前と後の描いた結果に `script` 要素と `onclick` 属性が無い
+      - ページの値は書き換わっていない
+      - ソースの色分けでは、`script` 要素の行も文字として出る
+    test: test_normal_when_script_in_range
+lead: 読む人が、差分の中の `<!-- html -->` 〜 `<!-- /html -->` の範囲を、既定のソースの行と文字の色分けから、描いた結果の前と後に切り替えて見る。
+issue: 7
+primary_actor: 文書を読む人
+stakeholders:
+  - name: 文書を読む人
+    interest: 表や図を組んだ HTML の変更を、ソースの細かい値と、描いた見た目の変化の両方で確かめられる
+trigger: 読む人が、差分の中の埋め込んだ HTML の範囲を描いた結果に切り替える
+preconditions:
+  - 読む人が差分を開いている
+  - 比べた 2 つのリビジョンのどちらかに `<!-- html -->` の範囲がある
+success_guarantee: 変えた範囲を切り替えると、前と後のリビジョンのその範囲が、文書に描くときと同じ埋め込んだ HTML の描き方（スクリプトを落とす）で並ぶ。戻すとソースの色分けに戻る。
+minimal_guarantee: 描いた結果に切り替えても、埋め込んだ HTML に書いたスクリプトは動かない。
+test_file: tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts

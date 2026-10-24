@@ -38,8 +38,12 @@ export type ParsedDocument = {
   tokens: Token[];
   /** 文書の印を重ねて決まった機能のオン・オフ */
   features: Record<string, boolean>;
-  /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
-  glossary: Array<{ entry: MdmarkGlossaryEntry; line: number }>;
+  /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から）・やめた言い方 */
+  glossary: Array<{
+    entry: MdmarkGlossaryEntry;
+    line: number;
+    avoid: string[];
+  }>;
 };
 
 /** 参照の表と点検が本文を読む解析器: 印を拾い、機能を決め、用語集の表を読むところまでのコアルールだけを持つ */
@@ -70,11 +74,13 @@ export function parseDocument(options: {
     docId: options.docId,
     ownGlossary: [],
     glossaryLines: [],
+    glossaryAvoid: [],
   };
   const tokens = parser.parse(options.body, env);
   const glossary = env.ownGlossary.map((entry, position) => ({
     entry,
     line: env.glossaryLines?.[position] ?? 0,
+    avoid: env.glossaryAvoid?.[position] ?? [],
   }));
   return { tokens, features: env.features, glossary };
 }

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>comment | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- コメントの規則と、カタログの使う側の要素の枠・その場に置く見本（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/55/assets/comment.css">
+  <link rel="stylesheet" href="../../refs/55/assets/catalog.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- コメントの操作（文字を選ぶとボタン、保存で印、印から吹き出し） -->
+  <script src="../../refs/55/assets/comment.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">コメント</h1>
+
+      <!-- 文字を選んだとき: 選んだ文字のそばにコメントのボタンを出す。[data-mock-comments]: comment.js がこの中の選びでボタンを出す -->
+      <section aria-labelledby="state-select">
+        <h2 class="catalog-label" id="state-select">文字を選んだとき（コメントのボタン）</h2>
+        <article class="mdmark catalog-static">
+          <p>描いた文書の見た目は<span class="catalog-selection">テーマの変数</span>で変える。</p>
+          <button class="mdmark-comment-add" type="button"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/><path d="M12 8v6"/><path d="M9 11h6"/></svg>コメント</button>
+        </article>
+      </section>
+
+      <!-- コメントを書く入力欄: 選んだ文字・ラベルを上に出した入力欄・キャンセルと保存 -->
+      <section aria-labelledby="state-form">
+        <h2 class="catalog-label" id="state-form">コメントを書く</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く"><form>
+            <p class="mdmark-comment-quote">「テーマの変数」へのコメント</p>
+            <label class="mdmark-comment-field">コメント<textarea rows="3">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</textarea></label>
+            <div class="mdmark-comment-actions">
+              <button class="mdmark-comment-button" type="button">キャンセル</button>
+              <button class="mdmark-comment-button is-primary" type="button">コメントを保存</button>
+            </div>
+          </form></div>
+        </article>
+      </section>
+
+      <!-- 保存している間: 保存のボタンを押せなくし、保存していることを文言で出す -->
+      <section aria-labelledby="state-saving">
+        <h2 class="catalog-label" id="state-saving">保存している間</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く" aria-busy="true"><form>
+            <p class="mdmark-comment-quote">「テーマの変数」へのコメント</p>
+            <label class="mdmark-comment-field">コメント<textarea rows="3">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</textarea></label>
+            <div class="mdmark-comment-actions">
+              <button class="mdmark-comment-button" type="button">キャンセル</button>
+              <button class="mdmark-comment-button is-primary" type="button" disabled>保存しています…</button>
+            </div>
+          </form></div>
+        </article>
+      </section>
+
+      <!-- 書かずに保存した: 入力欄のそばに、書いてから保存することを出す -->
+      <section aria-labelledby="state-empty">
+        <h2 class="catalog-label" id="state-empty">書かずに保存した</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く"><form>
+            <p class="mdmark-comment-quote">「テーマの変数」へのコメント</p>
+            <label class="mdmark-comment-field">コメント<textarea rows="3" aria-invalid="true" aria-describedby="catalog-error-empty"></textarea></label>
+            <p class="mdmark-comment-error" id="catalog-error-empty"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>コメントを書いてから保存してください。</span></p>
+            <div class="mdmark-comment-actions">
+              <button class="mdmark-comment-button" type="button">キャンセル</button>
+              <button class="mdmark-comment-button is-primary" type="button">コメントを保存</button>
+            </div>
+          </form></div>
+        </article>
+      </section>
+
+      <!-- 保存できない: 入力欄を閉じず、書いた本文を残して、保存できなかったことを role="alert" で出す -->
+      <section aria-labelledby="state-save-error">
+        <h2 class="catalog-label" id="state-save-error">保存できない</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く"><form>
+            <p class="mdmark-comment-quote">「テーマの変数」へのコメント</p>
+            <label class="mdmark-comment-field">コメント<textarea rows="3" aria-invalid="true" aria-describedby="catalog-error-save">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</textarea></label>
+            <p class="mdmark-comment-error" id="catalog-error-save" role="alert"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。</span></p>
+            <div class="mdmark-comment-actions">
+              <button class="mdmark-comment-button" type="button">キャンセル</button>
+              <button class="mdmark-comment-button is-primary" type="button">コメントを保存</button>
+            </div>
+          </form></div>
+        </article>
+      </section>
+
+      <!-- コメントの付いた箇所の印: 地の色と下線で示す。押すか Enter で吹き出しを開く。[data-mock-body]: comment.js が吹き出しに出す本文 -->
+      <section aria-labelledby="state-mark">
+        <h2 class="catalog-label" id="state-mark">コメントの付いた箇所の印</h2>
+        <article class="mdmark">
+          <p>描いた文書の見た目は<mark class="mdmark-comment-mark" data-mock-body="ここは <b>太字</b> にしたい">テーマの変数</mark>で変える。色・余白・角丸の値は、使う側が自分の CSS で上書きします。</p>
+        </article>
+      </section>
+
+      <!-- 吹き出し（開いた）: 選んだ文字と閉じるボタン、コメントの本文を文字のまま出す -->
+      <section aria-labelledby="state-bubble">
+        <h2 class="catalog-label" id="state-bubble">吹き出しを開いた</h2>
+        <article class="mdmark catalog-static">
+          <p>描いた文書の見た目は<mark class="mdmark-comment-mark" role="button" tabindex="0" aria-haspopup="dialog" aria-expanded="true">テーマの変数</mark>で変える。</p>
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list"><li><p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p></li></ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 同じ箇所に複数のコメントと長いコメント: 区切り線で分け、本文の改行をそのまま出す -->
+      <section aria-labelledby="state-bubble-many">
+        <h2 class="catalog-label" id="state-bubble-many">同じ箇所に複数のコメント・長いコメント</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「描いた文書の見た目はテーマの変数で変える。色・余白・角丸の値は、使う側が自分の CSS で上書きします。」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li><p class="mdmark-comment-body">色だけでなく、文字の大きさと行間もテーマの変数で変えられるようにしたいです。
+使う側のページの本文と揃えたいときに、毎回 CSS を書き足すのは手間がかかります。</p></li>
+              <li><p class="mdmark-comment-body">角丸は 6px のままでよいと思います。</p></li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 箇所が見つからないコメントの一覧: 描き直しで選んだ文字が本文から消えたコメントを、文書の末尾に並べる -->
+      <section aria-labelledby="state-orphans">
+        <h2 class="catalog-label" id="state-orphans">箇所が見つからないコメントの一覧（文書の末尾）</h2>
+        <article class="mdmark">
+          <section class="mdmark-comment-orphans" aria-labelledby="catalog-orphans">
+            <h2 id="catalog-orphans">箇所が見つからないコメント</h2>
+            <p class="mdmark-comment-orphans-lead">本文が書き換わり、コメントを付けた文字が見つかりません。</p>
+            <ul>
+              <li>
+                <p class="mdmark-comment-quote">「テーマの変数」へのコメント</p>
+                <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+              </li>
+              <li>
+                <p class="mdmark-comment-quote">「角丸は 6px」へのコメント</p>
+                <p class="mdmark-comment-body">角丸は 6px のままでよいと思います。</p>
+              </li>
+            </ul>
+          </section>
+        </article>
+      </section>
+
+      <!-- 文字を選んで試す: 選ぶとボタン、書いて保存すると印が付く（保存できる場面） -->
+      <section aria-labelledby="state-try">
+        <h2 class="catalog-label" id="state-try">文字を選んで試す（保存できる）</h2>
+        <article class="mdmark" data-mock-comments="on">
+          <p>進行中の作業は週に 1 度見直し、終わったものを完了に移します。見た目の値は、明るい配色とダークの両方で確かめてから決めます。</p>
+        </article>
+      </section>
+
+      <!-- 文字を選んで試す（保存できない）: 保存を押すと、入力欄のそばに保存できなかったことが出る -->
+      <section aria-labelledby="state-try-error">
+        <h2 class="catalog-label" id="state-try-error">文字を選んで試す（保存できない）</h2>
+        <article class="mdmark" data-mock-comments="save-error">
+          <p>進行中の作業は週に 1 度見直し、終わったものを完了に移します。見た目の値は、明るい配色とダークの両方で確かめてから決めます。</p>
+        </article>
+      </section>
+
+      <!-- 使う側の要素にコメントを付けた: 使う側のページが書いた段落に、コメントを付ける関数を呼んだ。文書の中と同じ印と吹き出し -->
+      <section aria-labelledby="state-host">
+        <h2 class="catalog-label" id="state-host">使う側の要素にコメントを付けた（JavaScript から呼んだ）</h2>
+        <!-- 使う側のページの要素（mdmark の外）。[data-mock-comments]: comment.js がこの中の選びでボタンを出す -->
+        <div class="catalog-host" data-mock-comments="on">
+          <p class="catalog-host-title">使う側の画面の手順のメモ</p>
+          <p class="catalog-host-text"><mark class="mdmark-comment-mark" data-mock-body="手順の数を <b>3</b> にする">導入の手順</mark>を整える。読み込む URL は版を固定して書きます。</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

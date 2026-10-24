@@ -1,0 +1,531 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-table-count-columns-summary-copy-row-link
+
+ ❯ |unit| tests/unit/src/parts/table.test.ts (10 tests | 5 failed) 263ms
+   × test_render_table_when_feature_attributes 9ms
+   × test_render_table_when_all_features 1ms
+   × test_render_table_bar 0ms
+   × test_render_table_bar_when_copy_failed 0ms
+   × test_render_total_row 0ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/index.browser.test.ts (3 tests | 1 failed) 1504ms
+   × test_attach_interactions_when_row_in_closed_section 637ms
+ ❯ |unit| tests/unit/src/render/syntax/headings.test.ts (5 tests | 1 failed) 30ms
+   × test_slug_base 3ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts (5 tests | 1 failed) 2275ms
+   × test_attach_sections_when_bundle_hash 1465ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (10 tests | 6 failed) 110ms
+   × test_read_table_spec 16ms
+   × test_read_table_spec_when_features 1ms
+   × test_read_table_spec_when_feature_keys_invalid 4ms
+   × test_row_id_of 1ms
+   × test_row_id_of_when_empty 1ms
+   × test_decorate_tables_when_features 25ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (21 tests | 11 failed) 4764ms
+   × test_compute_total 715ms
+   × test_compute_total_when_rounded 250ms
+   × test_compute_total_when_empty 160ms
+   × test_table_to_tsv 512ms
+   × test_table_to_tsv_when_cell_has_tab 1300ms
+   × test_row_id_from_hash 154ms
+   × test_attach_tables_when_counted 185ms
+   × test_attach_tables_when_columns_toggled 183ms
+   × test_attach_tables_when_copied 190ms
+   × test_attach_tables_when_copy_denied 195ms
+   × test_attach_tables_when_row_linked 195ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/index.browser.test.ts > test_attach_interactions_when_row_in_closed_section
+AssertionError: expected [] to deeply equal [ false ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_interactions_when_row_in_closed_section.png
+
+- Expected
++ Received
+
+- [
+-   false,
+- ]
++ []
+
+ ❯ tests/unit/src/interact/index.browser.test.ts:95:30
+     93|   history.replaceState(null, "", "#もも");
+     94|   detachers.push(attachInteractions({ root, features }));
+     95|   expect(hiddenWhenScrolled).toEqual([false]);
+       |                              ^
+     96|   expect(row?.hasAttribute("data-target")).toBe(true);
+     97|   // 実行・検証: 節を閉じ直し、まとめた HTML の # の形に変えて hashchange を送る
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_bundle_hash
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_attach_sections_when_bundle_hash.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:77:43
+     75|   // 検証
+     76|   await vi.waitFor(() => {
+     77|     expect(closed.hasAttribute("hidden")).toBe(false);
+       |                                           ^
+     78|   });
+     79| });
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=ed9eead4:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_compute_total
+TypeError: computeTotal is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_compute_total.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:177:15
+    175|   const { computeTotal } = await loadLogic();
+    176|   // 実行
+    177|   const sum = computeTotal(["10", "2", "33", "-"], "sum");
+       |               ^
+    178|   const avg = computeTotal(["100", "200", "300", "400"], "avg");
+    179|   const count = computeTotal(["りんご", "", "ぶどう"], "count");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_compute_total_when_rounded
+TypeError: computeTotal is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_compute_total_when_rounded.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:191:15
+    189|   const { computeTotal } = await loadLogic();
+    190|   // 実行
+    191|   const sum = computeTotal(["1,000", "2,001"], "sum");
+       |               ^
+    192|   const avg = computeTotal(["1", "2", "2"], "avg");
+    193|   // 検証
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_compute_total_when_empty
+TypeError: computeTotal is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_compute_total_when_empty.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:203:15
+    201|   const { computeTotal } = await loadLogic();
+    202|   // 実行
+    203|   const sum = computeTotal([], "sum");
+       |               ^
+    204|   const avg = computeTotal([], "avg");
+    205|   const count = computeTotal([], "count");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_table_to_tsv
+TypeError: tableToTsv is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_table_to_tsv.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:217:15
+    215|   const { tableToTsv } = await loadLogic();
+    216|   // 実行
+    217|   const tsv = tableToTsv([
+       |               ^
+    218|     ["名前", "更新日"],
+    219|     ["りんご", "2026-10-01"],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_table_to_tsv_when_cell_has_tab
+TypeError: tableToTsv is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_table_to_tsv_when_cell_has_tab.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:231:15
+    229|   const { tableToTsv } = await loadLogic();
+    230|   // 実行
+    231|   const tsv = tableToTsv([["a\tb", "c\nd"]]);
+       |               ^
+    232|   // 検証
+    233|   expect(tsv).toBe("a b\tc d");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_row_id_from_hash
+TypeError: rowIdFromHash is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_row_id_from_hash.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:246:19
+    244|     "#%E3%81",
+    245|     "",
+    246|   ].map((hash) => rowIdFromHash(hash));
+       |                   ^
+    247|   // 検証
+    248|   expect(ids).toEqual(["みかん", "みかん", "%E3%81", ""]);
+ ❯ tests/unit/src/interact/tables.browser.test.ts:246:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_counted
+AssertionError: expected '' to contain '4 / 4 件'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_counted.png
+
+- Expected
++ Received
+
+- 4 / 4 件
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:465:27
+    463|   // 実行・検証: 絞り込む前
+    464|   detachers.push(attachTables(root));
+    465|   expect(countText(root)).toContain("4 / 4 件");
+       |                           ^
+    466|   expect(totalTexts(root)).toEqual(["個数4", "合計45", "平均250"]);
+    467|   // 実行・検証: 「りんご」で絞り込む
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_toggled
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_toggled.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:502:41
+    500|   detachers.push(attachTables(root));
+    501|   for (const cell of columnCells(root, 1)) {
+    502|     expect(cell.hasAttribute("hidden")).toBe(true);
+       |                                         ^
+    503|   }
+    504|   for (const cell of [...columnCells(root, 0), ...columnCells(root, 2)…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_copied
+Error: ボタンが無い: button.mdmark-copy
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_copied.png
+
+ ❯ findButton tests/unit/src/interact/tables.browser.test.ts:106:11
+    104|   const button = root.querySelector<HTMLButtonElement>(selector);
+    105|   if (!button) {
+    106|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    107|   }
+    108|   return button;
+ ❯ tests/unit/src/interact/tables.browser.test.ts:573:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_copy_denied
+Error: ボタンが無い: button.mdmark-copy
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_copy_denied.png
+
+ ❯ findButton tests/unit/src/interact/tables.browser.test.ts:106:11
+    104|   const button = root.querySelector<HTMLButtonElement>(selector);
+    105|   if (!button) {
+    106|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    107|   }
+    108|   return button;
+ ❯ tests/unit/src/interact/tables.browser.test.ts:616:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_row_linked
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_row_linked.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:676:64
+    674|   // 実行・検証: #ID のまま付けると、閉じた表を開いて行を強調する
+    675|   detachers.push(attachTables(root));
+    676|   expect(first.querySelector("details")?.hasAttribute("open")).toBe(tr…
+       |                                                                ^
+    677|   expect(targets()).toEqual(["みかん"]);
+    678|   // 実行・検証: 2 つ目の表を絞り込んで #ID を変えると、絞り込みを外して行を強調する
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ed9eead4:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_feature_attributes
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-hide="1"'
+
+Expected: "data-hide="1""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter columns total">"
+
+ ❯ tests/unit/src/parts/table.test.ts:94:19
+     92|   // 検証
+     93|   const wrapper = findTag(html, 'class="mdmark-table"');
+     94|   expect(wrapper).toContain('data-hide="1"');
+       |                   ^
+     95|   expect(wrapper).toContain('data-total="2:sum"');
+     96|   expect(html).not.toContain("mdmark-table-bar");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_all_features
+Error: 開始タグが無い: class="mdmark-table-bar"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/parts/table.test.ts:129:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar
+TypeError: renderTableBar is not a function
+ ❯ tests/unit/src/parts/table.test.ts:167:25
+    165|   const { renderTableBar } = await loadTable();
+    166|   // 実行
+    167|   const { bar, menu } = renderTableBar({
+       |                         ^
+    168|     id: "t1",
+    169|     features: ["count", "columns", "copy"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar_when_copy_failed
+TypeError: renderTableBar is not a function
+ ❯ tests/unit/src/parts/table.test.ts:201:25
+    199|   const { renderTableBar } = await loadTable();
+    200|   // 実行
+    201|   const { bar, menu } = renderTableBar({
+       |                         ^
+    202|     id: "t1",
+    203|     features: ["copy"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_total_row
+TypeError: renderTotalRow is not a function
+ ❯ tests/unit/src/parts/table.test.ts:223:16
+    221|   const { renderTotalRow } = await loadTable();
+    222|   // 実行
+    223|   const html = renderTotalRow({
+       |                ^
+    224|     columns: 3,
+    225|     totals: [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/headings.test.ts > test_slug_base
+TypeError: slugBase is not a function
+ ❯ tests/unit/src/render/syntax/headings.test.ts:41:19
+     39|   const { slugBase } = await loadHeadings();
+     40|   // 実行
+     41|   const english = slugBase("Hello, World!");
+       |                   ^
+     42|   const japanese = slugBase("使い方");
+     43|   const symbols = slugBase("!!!");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec
+AssertionError: expected { kind: 'data', …(4) } to deeply equal { kind: 'data', …(6) }
+
+- Expected
++ Received
+
+@@ -12,10 +12,8 @@
+      {
+        "column": 2,
+        "kind": "date",
+      },
+    ],
+-   "hide": [],
+    "kind": "data",
+-   "totals": [],
+    "warnings": [],
+  }
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:19:16
+     17|   const spec = readTableSpec(args, ["名前", "値", "更新日"]);
+     18|   // 検証
+     19|   expect(spec).toEqual({
+       |                ^
+     20|     kind: "data",
+     21|     features: ["pin", "filter"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_features
+AssertionError: expected [ 'sort', 'pin', 'filter' ] to deeply equal [ 'sort', 'pin', 'filter', …(5) ]
+
+- Expected
++ Received
+
+  [
+    "sort",
+    "pin",
+    "filter",
+-   "count",
+-   "columns",
+-   "total",
+-   "copy",
+-   "rowlink",
+  ]
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:73:25
+     71|   const spec = readTableSpec(args, ["名前", "説明", "数量"]);
+     72|   // 検証
+     73|   expect(spec.features).toEqual([
+       |                         ^
+     74|     "sort",
+     75|     "pin",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_feature_keys_invalid
+AssertionError: expected undefined to deeply equal [ { column: 2, calc: 'avg' } ]
+
+- Expected:
+[
+  {
+    "calc": "avg",
+    "column": 2,
+  },
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:108:24
+    106|   const second = readTableSpec(withoutFeatures, headers);
+    107|   // 検証: 読めない集計と隠す列
+    108|   expect(first.totals).toEqual([{ column: 2, calc: "avg" }]);
+       |                        ^
+    109|   expect(first.hide).toEqual([]);
+    110|   const firstLabels = first.warnings.map((warning) => warning.label);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_row_id_of
+TypeError: rowIdOf is not a function
+ ❯ tests/unit/src/render/syntax/tables.test.ts:130:5
+    128|   // 実行
+    129|   const ids = ["りんご", "みかん", "みかん"].map((text) =>
+    130|     rowIdOf(text, taken),
+       |     ^
+    131|   );
+    132|   // 検証
+ ❯ tests/unit/src/render/syntax/tables.test.ts:129:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_row_id_of_when_empty
+TypeError: rowIdOf is not a function
+ ❯ tests/unit/src/render/syntax/tables.test.ts:142:41
+    140|   const taken = new Set<string>();
+    141|   // 実行
+    142|   const ids = ["!!!", ""].map((text) => rowIdOf(text, taken));
+       |                                         ^
+    143|   // 検証
+    144|   expect(ids).toEqual(["row", "row-1"]);
+ ❯ tests/unit/src/render/syntax/tables.test.ts:142:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_features
+AssertionError: expected '<h2 class="mdmark-heading" id="みかん">み…' to contain 'data-features="sort pin filter count …'
+
+- Expected
++ Received
+
+- data-features="sort pin filter count columns total copy rowlink"
++ <h2 class="mdmark-heading" id="みかん">みかん<a class="mdmark-anchor" href="#みかん" aria-label="「みかん」へのリンク"></a></h2><div class="mdmark-section-body" id="section-みかん" data-section="open"><div class="mdmark-table" data-kind="data" data-features="sort pin filter"><div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum --&gt;</code>の読めない指定を当てずに描いています。</p><ul><li><code>+count</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li><li><code>+columns</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li><li><code>+total</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li><li><code>+copy</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li><li><code>+rowlink</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li><li><code>hide=</code>: 使えないキーです。使えるキーは <code>filter=</code> です</li><li><code>total=</code>: 使えないキーです。使えるキーは <code>filter=</code> です</li></ul></div><table tabindex="0" aria-label="表: みかん">
++ <thead>
++ <tr>
++ <th>名前</th>
++ <th>説明</th>
++ <th>数量</th>
++ </tr>
++ </thead>
++ <tbody>
++ <tr>
++ <td data-label="名前">りんご</td>
++ <td data-label="説明">描画を速くする</td>
++ <td data-label="数量">1</td>
++ </tr>
++ <tr>
++ <td data-label="名前">みかん</td>
++ <td data-label="説明">印刷を直す</td>
++ <td data-label="数量">2</td>
++ </tr>
++ <tr>
++ <td data-label="名前">みかん</td>
++ <td data-label="説明">描画の崩れを直す</td>
++ <td data-label="数量">3</td>
++ </tr>
++ </tbody>
++ </table>
++ </div></div>
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:217:16
+    215|   const { html } = renderDoc(markdown);
+    216|   // 検証: 囲みの属性
+    217|   expect(html).toContain(
+       |                ^
+    218|     'data-features="sort pin filter count columns total copy rowlink"',
+    219|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯
+
+
+ Test Files  6 failed | 94 passed (100)
+      Tests  25 failed | 437 passed (462)
+   Start at  03:24:27
+   Duration  45.99s (tests 36%, worker 33%, import 24%, transform 7%)
+

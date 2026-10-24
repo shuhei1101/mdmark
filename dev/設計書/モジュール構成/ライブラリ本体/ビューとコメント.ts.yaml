@@ -1,0 +1,1108 @@
+title: "ライブラリ本体 / ビューとコメント"
+lead: ビューとコメントの部品を `dist/index.js` と別の配布ファイル（`dist/view.js`・`dist/comments.js`）に分け、印のある文書と `mountView`・`mountComments` を呼んだときにだけ読む処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と箇所の探し方は Node でも動く）。
+directory: |-
+  ```tree
+  src/
+  ├── part-modules.ts      # 部品のモジュールのファイル名・URL の差し替え・1 回だけ読む loadPartModule（dist/index.js）
+  ├── mount-parts.ts       # 公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）
+  ├── views/
+  │   ├── spec.ts          # 公開の型 MdmarkViewOptions・MdmarkViewHandle、使えるアイコンと既定の対応、引数の検査（dist/index.js）
+  │   └── index.ts         # dist/view.js の入口。drawView・attachView
+  ├── comments/
+  │   ├── spec.ts          # 公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの形の検査（dist/index.js）
+  │   ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
+  │   └── index.ts         # dist/comments.js の入口。attachComments
+  └── parts/
+      ├── view.ts          # ビューの HTML とアイコンの形（dist/view.js）
+      └── comment.ts       # コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      classDiagram
+        direction LR
+        class 部品のモジュールを読む
+        class ビューを描く公開関数
+        class コメントを付ける公開関数
+        class 描いた文書に部品を付ける
+        class ビューの引数を検める
+        class コメントの引数を検める
+        class ビューを描く
+        class 印のビューに付ける
+        class コメントを付ける
+        class 選んだ範囲から下書きを作る
+        class コメントの箇所を探す
+        class 部品のHTML
+        ビューを描く公開関数 --> ビューの引数を検める : 同期で検める
+        ビューを描く公開関数 --> 部品のモジュールを読む : view
+        コメントを付ける公開関数 --> コメントの引数を検める : 同期で検める
+        コメントを付ける公開関数 --> 部品のモジュールを読む : comments
+        描いた文書に部品を付ける --> 部品のモジュールを読む : 印と機能があるときだけ
+        部品のモジュールを読む ..> ビューを描く : dist/view.js
+        部品のモジュールを読む ..> 印のビューに付ける : dist/view.js
+        部品のモジュールを読む ..> コメントを付ける : dist/comments.js
+        コメントを付ける --> コメントの箇所を探す : 読んだコメント
+        コメントを付ける --> 選んだ範囲から下書きを作る : 保存するとき
+        ビューを描く --> 部品のHTML
+        印のビューに付ける --> 部品のHTML
+        コメントを付ける --> 部品のHTML
+data_models:
+  - name: MdmarkViewOptions
+    title: ビューの引数
+    container: src/views/spec.ts
+    role: 公開の型
+    summary: '`mountView` に渡す項目と表示の指定'
+    properties:
+      - name: columns
+        type: string[]
+        description: 列名。表形式の列の並びと、ボードの項目に出す値の並び
+      - name: items
+        type: Record<string, string>[]
+        description: 列名をキーにした項目の値。並びは表の行の順
+      - name: group
+        type: string | undefined
+        description: ボードで列に分ける列名
+      - name: default
+        type: '"board" | "table" | undefined'
+        description: 描いた直後に出すビュー
+      - name: filter
+        type: Record<string, FilterKind> | undefined
+        description: 表形式で絞り込みを付ける列と種類（`FilterKind` は `src/table-logic.ts`）
+      - name: icons
+        type: Record<string, ViewIconName> | undefined
+        description: ボードの列の見出しの値からアイコンの名前を引く対応。`DEFAULT_VALUE_ICONS` に重ねる
+  - name: MdmarkViewHandle
+    title: ビューの片付け
+    container: src/views/spec.ts
+    role: 公開の型
+    summary: '`mountView` の Promise の値'
+    properties:
+      - name: destroy
+        type: () => void
+        description: '`el` の中を空にし、ビューの操作と `document` の受け取りを外す。2 回目以降は何もしない'
+  - name: ViewSpec
+    title: 印のビューの指定
+    container: src/views/spec.ts
+    role: DTO
+    summary: '`render` が `div.mdmark-view` の `data-view` に JSON で書き、`attachView` が読む指定'
+    properties:
+      - name: group
+        type: number | null
+        description: ボードで分ける列の位置。`group=` が無いか表に無ければ `null`
+      - name: mode
+        type: '"board" | "table"'
+        description: 描いた直後に出すビュー
+      - name: boardDisabled
+        type: string
+        description: '`group=` の列が表に無いときの書き方の警告の `id`。それ以外は空'
+      - name: icons
+        type: Record<string, ViewIconName>
+        description: '`icons=` の読めた対応'
+  - name: MdmarkCommentDraft
+    title: コメントの下書き
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: '`save` に渡す、まだ `id` の無いコメント'
+    properties:
+      - name: quote
+        type: string
+        description: 選んだ文字（前後の空白を落とす）
+      - name: prefix
+        type: string
+        description: 選んだ文字の直前の本文の文字。`CONTEXT_CHARS` 文字まで
+      - name: suffix
+        type: string
+        description: 選んだ文字の直後の本文の文字。`CONTEXT_CHARS` 文字まで
+      - name: body
+        type: string
+        description: コメントの本文（前後の空白を落とす）
+  - name: MdmarkComment
+    title: コメント
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: 保存したコメント。`MdmarkCommentDraft` に `id` を足したもの
+    inherits: MdmarkCommentDraft
+    properties:
+      - name: id
+        type: string
+        description: 保存先が付けた ID
+  - name: MdmarkCommentStore
+    title: コメントの読み書きの関数
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: 使う側が書く、コメントの読み込みと保存
+    properties:
+      - name: load
+        type: '(target: { docId: string }) => Promise<MdmarkComment[]>'
+        description: 対象のコメントを返す
+      - name: save
+        type: '(target: { docId: string; comment: MdmarkCommentDraft }) => Promise<MdmarkComment>'
+        description: 下書きを保存し、`id` を付けたコメントを返す
+  - name: MdmarkCommentsHandle
+    title: コメントの片付け
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: '`mountComments` の Promise の値'
+    properties:
+      - name: destroy
+        type: () => void
+        description: 印を外して文字を元の並びに戻し、ボタン・入力欄・吹き出し・一覧と `document` の受け取りを外す。2 回目以降は何もしない
+  - name: ViewPartModule
+    title: ビューの部品のモジュール
+    container: src/views/index.ts
+    role: モジュールの形
+    summary: '`dist/view.js` が export する関数'
+    properties:
+      - name: drawView
+        type: '(el: HTMLElement, opts: MdmarkViewOptions) => () => void'
+        description: '`mountView` が呼ぶ'
+      - name: attachView
+        type: '(view: HTMLElement) => () => void'
+        description: '`mount` が描いた `div.mdmark-view` ごとに呼ぶ'
+  - name: CommentsPartModule
+    title: コメントの部品のモジュール
+    container: src/comments/index.ts
+    role: モジュールの形
+    summary: '`dist/comments.js` が export する関数'
+    properties:
+      - name: attachComments
+        type: '(options: { root: HTMLElement; store: MdmarkCommentStore; docId: string }) => Promise<() => void>'
+        description: '`mountComments` と `mount` が呼ぶ'
+constants:
+  - name: PART_MODULE_FILES
+    title: 部品のモジュールのファイル名
+    container: src/part-modules.ts
+    summary: 部品の名前から、`dist/index.js` の隣に置く配布ファイルの名前を引く
+    value: '{ view: "view.js", comments: "comments.js" }'
+  - name: partModuleUrls
+    title: 部品のモジュールの URL の差し替え
+    container: src/part-modules.ts
+    summary: 書き出した HTML の起動の処理が、埋めたコードの `blob:` URL を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決する
+    value: new Map<PartName, string>()
+  - name: partModules
+    title: 読んだ部品のモジュール
+    container: src/part-modules.ts
+    summary: 部品の名前から読み込みの Promise を引く。ページの中で 1 回だけ読む（失敗も控え、読み直さない）
+    value: new Map<PartName, Promise<unknown>>()
+  - name: VIEW_ICON_NAMES
+    title: 使えるアイコン
+    container: src/views/spec.ts
+    summary: ボードの列の見出しに使える lucide のアイコンの名前
+    value: '["circle", "circle-dashed", "circle-dot", "circle-pause", "circle-check", "circle-x", "inbox", "archive", "clock", "flag", "star", "bug", "eye", "lock", "zap", "ban"]'
+  - name: DEFAULT_VALUE_ICONS
+    title: 値の既定のアイコン
+    container: src/views/spec.ts
+    summary: ボードの列の値から既定のアイコンを引く。無い値は `FALLBACK_VALUE_ICON`
+    value: '{ 未着手: "circle-dashed", 進行中: "circle-dot", 保留: "circle-pause", 完了: "circle-check", 中止: "circle-x" }'
+  - name: FALLBACK_VALUE_ICON
+    title: 対応に無い値のアイコン
+    container: src/views/spec.ts
+    value: '"circle"'
+    summary: 既定の対応にも `icons` にも無い値のアイコン
+  - name: VIEW_ICON_PATHS
+    title: アイコンの形
+    container: src/parts/view.ts
+    summary: '`VIEW_ICON_NAMES` と切り替えの `board`・`table` の、24 の格子の lucide の SVG の中身'
+    value: "{ circle: '<circle cx=\"12\" cy=\"12\" r=\"10\"/>', … }"
+  - name: CONTEXT_CHARS
+    title: 前後の文字の数
+    container: src/comments/anchor.ts
+    summary: 下書きの `prefix`・`suffix` に取る文字の上限
+    value: '32'
+  - name: COMMENT_BLOCKS
+    title: コメントを付けられるブロック
+    container: src/comments/index.ts
+    summary: 選んだ文字の始まりと終わりが同じ 1 つに入っていればボタンを出すブロック
+    value: '"p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote"'
+  - name: COMMENT_EXCLUDED
+    title: コメントを付けない場所
+    container: src/comments/index.ts
+    summary: この中の選びにはボタンを出さず、箇所を探す本文の文字にも数えない（印 `.mdmark-comment-mark` だけは本文の文字に数える）
+    value: '"input, textarea, pre, code, .mdmark-view-switch, .mdmark-view-board, .mdmark-filter-drawer, .mdmark-comment-mark, .mdmark-comment-popover, .mdmark-comment-add, .mdmark-comment-orphans"'
+  - name: PENDING_HIGHLIGHT
+    title: 選んだ箇所の色の名前
+    container: src/comments/index.ts
+    summary: 入力欄を開いている間の選んだ文字に当てる Custom Highlight の名前（CSS の `::highlight()` と揃える）
+    value: '"mdmark-comment-pending"'
+  - name: DISCARD_MESSAGE
+    title: 捨てる確かめの文
+    container: src/comments/index.ts
+    summary: 本文がある入力欄を閉じるときの `window.confirm` の文
+    value: '"書いたコメントを捨てて閉じますか？"'
+  - name: POPOVER_GAP_PX
+    title: 箇所と枠の隙間
+    container: src/comments/index.ts
+    summary: ボタン・入力欄・吹き出しを箇所から離す幅
+    value: '6'
+  - name: POPOVER_GUTTER_PX
+    title: 画面の端からの幅
+    container: src/comments/index.ts
+    summary: ボタン・入力欄・吹き出しを画面の端から離す幅
+    value: '8'
+  - name: COMMENT_MESSAGES
+    title: 入力欄の知らせ
+    container: src/parts/comment.ts
+    summary: 部品設計『コメントの入力欄』の `empty`・`failed` の知らせ
+    value: '{ empty: "コメントを書いてから保存してください。", failed: "コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。" }'
+functions:
+  - name: loadPartModule
+    title: 部品のモジュールを読む
+    container: src/part-modules.ts
+    summary: 部品の配布ファイルをページの中で 1 回だけ `import()` し、export の形を確かめて返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: name
+        type: PartName
+        required: true
+        description: '`"view"` か `"comments"`'
+      - name: importModule
+        type: '(url: string) => Promise<Record<string, unknown>>'
+        required: false
+        default: 動的 `import()`
+        passing: injected
+        description: モジュールを読む関数（単体テストで差し替える）
+    returns:
+      type: 'Promise<{ url: string; module: ViewPartModule | CommentsPartModule }>'
+      description: 読んだ URL とモジュール。読めない・形が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる
+    process: |-
+      1. `partModules` に名前があればその Promise を返す
+      2. URL を `partModuleUrls` の値、無ければ `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にする
+      3. `importModule(url)` を待ち、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確かめる。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
+      4. 手順 2〜3 の Promise を `partModules` に控えて返す
+    unit_tests:
+      - name: test_load_part_module
+        case: 正常
+        summary: 隣の配布ファイルを読み、同じ名前は 1 回だけ読む
+        condition: '`view` を 2 回読む'
+        mock: '`importModule` は呼ばれた URL を控え、2 つの関数を持つオブジェクトを返す'
+        expected: '`importModule` が 1 回だけ、`view.js` で終わる URL で呼ばれる。2 回とも同じモジュール'
+      - name: test_load_part_module_when_url_replaced
+        case: 正常
+        summary: 差し替えた URL から読む
+        condition: '`partModuleUrls` に `comments` → `blob:x` を入れて読む'
+        mock: '`importModule` は URL を控える'
+        expected: '`blob:x` で呼ばれる'
+      - name: test_load_part_module_when_shape_mismatch
+        case: 異常
+        summary: 関数を export しないモジュールを拒む
+        condition: '`comments` を読む'
+        mock: '`importModule` は `{}` を返す'
+        expected: '`attachComments` を含むメッセージの Error で reject し、`cause` に URL'
+      - name: test_load_part_module_when_rejected
+        case: 異常
+        summary: 読めないモジュールは元のエラーで reject し、次も読み直さない
+        condition: '`view` を 2 回読む'
+        mock: '`importModule` は reject する'
+        expected: 2 回とも同じエラーで reject し、`importModule` は 1 回だけ呼ばれる
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#constraints[部品のモジュールの読み込み]
+      - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#constraints[部品のモジュールの読み込み]
+  - name: setPartModuleUrl
+    title: 部品のモジュールの URL を差し替える
+    container: src/part-modules.ts
+    summary: '`partModuleUrls` に部品の名前と URL を入れる。書き出した HTML の起動の処理が呼ぶ'
+    kind: 関数
+    scope: internal
+    args:
+      - name: name
+        type: PartName
+        required: true
+        description: 部品の名前
+      - name: url
+        type: string
+        required: true
+        description: 埋めたコードの `blob:` URL
+    returns:
+      type: void
+      description: '-'
+    process: 1. `partModuleUrls` に `name` → `url` を入れる
+    unit_tests: []
+  - name: mountView
+    title: ビューを描く公開関数
+    container: src/mount-parts.ts
+    summary: 公開関数。引数を同期で検め、ビューの部品のモジュールを読んで `el` にビューを描く
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: '`el` の中を書き換える。読めないときは知らせの枠を置き、`console.error` に出す'
+    args:
+      - name: el
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
+      - name: opts
+        type: MdmarkViewOptions
+        required: true
+        description: 項目と表示の指定
+    args_example: |-
+      ```ts
+      const view = await mountView(slot, { columns: ["題", "状態"], items, group: "状態" });
+      view.destroy();
+      ```
+    returns:
+      type: Promise<MdmarkViewHandle>
+      description: 描き終えたら解決する
+    exceptions:
+      - name: TypeError
+        condition: '`checkViewOptions` が投げる（同期）'
+    process: |-
+      1. `checkViewOptions(el, opts)` を呼ぶ（投げたらそのまま同期で投げる）
+      2. `loadPartModule("view")` を待ち、`module.drawView(el, opts)` の外す関数を、2 回目以降は何もしない `destroy` に包んで解決する
+      3. 読めないときは `el` の中を class `mdmark` の要素 1 つにし、その中に `renderNotice({ name: "view", figure: false, source: "part" })` を置き、部品の名前・URL・元のエラーを `console.error` に出して、元のエラーで reject する
+    unit_tests:
+      - name: test_mount_view
+        case: 正常
+        summary: モジュールの drawView を呼んで destroy を返す
+        condition: '`columns`・`items`・`group` を渡す'
+        mock: '`loadPartModule` の `importModule` は、呼ばれた引数を控えて外す関数を返す `drawView` を持つモジュールを返す'
+        expected: '`drawView` が `el` と `opts` で呼ばれる。`destroy` を 2 回呼んでも外す関数は 1 回だけ呼ばれる'
+      - name: test_mount_view_when_invalid
+        case: 異常
+        summary: 引数が合わないと同期で投げ、モジュールを読まない
+        condition: '`group` に無い列名'
+        mock: '`importModule` は呼ばれたかを控える'
+        expected: '`TypeError` を同期で投げ、`importModule` は呼ばれず、`el` は変わらない'
+      - name: test_mount_view_when_module_unavailable
+        case: 異常
+        summary: 読めないと知らせの枠を置いて reject する
+        condition: 正しい引数
+        mock: '`importModule` は reject する。`console.error` を控える関数で包む'
+        expected: '`el` の中に題が `この箇所を表示できません` の知らせの枠があり、元のエラーで reject する。`console.error` に `view` と URL'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#
+  - name: mountComments
+    title: コメントを付ける公開関数
+    container: src/mount-parts.ts
+    summary: 公開関数。引数を同期で検め、コメントの部品のモジュールを読んで `el` の中にコメントを付ける
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: '`el` の中に印・ボタン・一覧を置き、`document` に受け取りを付ける'
+    args:
+      - name: el
+        type: HTMLElement
+        required: true
+        description: コメントを付けられる範囲の要素
+      - name: opts
+        type: '{ store: MdmarkCommentStore; docId: string }'
+        required: true
+        description: 読み書きの関数と対象の ID
+    returns:
+      type: Promise<MdmarkCommentsHandle>
+      description: 読んだコメントに印を付けたら解決する
+    exceptions:
+      - name: TypeError
+        condition: '`checkCommentOptions` が投げる（同期）'
+    process: |-
+      1. `checkCommentOptions(el, opts)` を呼ぶ（投げたらそのまま同期で投げる）
+      2. `loadPartModule("comments")` を待ち、`module.attachComments({ root: el, store, docId })` の外す関数を、2 回目以降は何もしない `destroy` に包んで解決する
+      3. 読めないときは `el` を書き換えず、`load` を呼ばずに元のエラーで reject する
+    unit_tests:
+      - name: test_mount_comments
+        case: 正常
+        summary: モジュールの attachComments を呼んで destroy を返す
+        condition: '`store` と `docId: "panel-setup"`'
+        mock: '`importModule` は、引数を控えて外す関数で解決する `attachComments` を持つモジュールを返す'
+        expected: '`attachComments` が `{ root: el, store, docId }` で呼ばれる。`destroy` で外す関数が 1 回呼ばれる'
+      - name: test_mount_comments_when_invalid
+        case: 異常
+        summary: 読み書きの関数が無いと同期で投げる
+        condition: '`store` に `save` が無い'
+        mock: なし
+        expected: メッセージに `opts.store` を含む `TypeError` を同期で投げる
+      - name: test_mount_comments_when_module_unavailable
+        case: 異常
+        summary: 読めないと el を書き換えずに reject する
+        condition: 正しい引数
+        mock: '`importModule` は reject する。`load` は呼ばれたかを控える'
+        expected: 元のエラーで reject し、`el` の中は変わらず、`load` は呼ばれない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
+  - name: attachParts
+    title: 描いた文書に部品を付ける
+    container: src/mount-parts.ts
+    summary: '`mount` が描くたびに呼ぶ。ビューの印とコメントの機能があるときだけ部品のモジュールを読んで付け、外す関数を返す'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean; warned: { missingStore: boolean } }'
+        required: true
+        description: 描いた要素・文書で決まった機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに控える、読み書きの関数が無いことを出したか
+    returns:
+      type: () => void
+      description: 付けた部品を外す関数。読み込みを待っている間に呼ぶと、読めた後に付けない
+    process: |-
+      1. `features.views` がオンで `root` に `div.mdmark-view` があれば `loadPartModule("view")` を待ち、`isCurrent()` で外していなければ、`div.mdmark-view` ごとに `attachView` を呼んで外す関数を控える
+      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
+      3. 読めないときは付けずに、部品の名前（`view` か `comments`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューの印の場所は `render` の表のまま残す
+      4. 外す関数は、外した印を立て、控えた外す関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
+    unit_tests:
+      - name: test_attach_parts
+        case: 正常
+        summary: ビューの印ごとに attachView を呼ぶ
+        condition: '`div.mdmark-view` 2 つを持つ `root`、`views: true`'
+        mock: '`importModule` は呼ばれた要素を控える `attachView` を返す'
+        expected: '`attachView` が 2 回呼ばれ、外す関数で両方の外す関数が呼ばれる'
+      - name: test_attach_parts_when_no_marks
+        case: 正常
+        summary: 印も機能も無ければモジュールを読まない
+        condition: 'ビューの印の無い `root`、`comments: false`'
+        mock: '`importModule` は呼ばれたかを控える'
+        expected: '`importModule` が呼ばれない'
+      - name: test_attach_parts_when_comments_without_store
+        case: 正常
+        summary: comments がオンでも読み書きの関数が無ければ読まず、console.error に 1 回だけ出す
+        condition: '`comments: true`、`commentStore` を渡さず、同じ `warned` で 2 回呼ぶ'
+        mock: '`importModule` は呼ばれたかを控える。`console.error` を控える'
+        expected: '`importModule` が呼ばれない。`console.error` が 1 回だけ呼ばれる'
+      - name: test_attach_parts_when_detached_while_loading
+        case: 正常
+        summary: 読み込みを待つ間に外すと付けない
+        condition: 読み込みを合図まで待たせ、外す関数を呼んでから返す
+        mock: 合図で返す `importModule`
+        expected: '`attachView` が呼ばれない'
+      - name: test_attach_parts_when_module_unavailable
+        case: 異常
+        summary: 読めないと表を残して console.error に 1 回出す
+        condition: '`div.mdmark-view` 2 つ'
+        mock: '`importModule` は reject する。`console.error` を控える'
+        expected: '`root` の中は変わらない。`console.error` が `view` と URL で 1 回だけ呼ばれる'
+      - name: test_attach_parts_when_parts_mounted_inside
+        case: 正常
+        summary: 外す関数で root の中に mountView・mountComments で付けた部品も片付ける
+        condition: '`root` の中の要素 1 つに `mountView`、別の要素に `mountComments` を呼び、解決してから `attachParts` の外す関数を呼ぶ。`root` の外の要素にも `mountView` を呼ぶ'
+        mock: '`importModule` は、呼ばれた回数を控える外す関数を返す `drawView`・`attachComments` を持つモジュールを返す'
+        expected: '`root` の中の 2 つの外す関数が 1 回ずつ呼ばれ、`root` の外のビューの外す関数は呼ばれない'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ビュー・コメントの部品のモジュールを読めない）]
+  - name: checkViewOptions
+    title: ビューの引数を検める
+    container: src/views/spec.ts
+    summary: '`mountView` の引数がインターフェース定義のとおりかを確かめ、合わなければ誤った引数の名前を含む `TypeError` を投げる'
+    kind: 関数
+    scope: internal
+    args:
+      - name: el
+        type: unknown
+        required: true
+        description: 描く先
+      - name: opts
+        type: unknown
+        required: true
+        description: 指定
+    returns:
+      type: asserts opts is MdmarkViewOptions
+      description: 合えば何も返さない
+    process: |-
+      1. `el` が `HTMLElement` でなければ投げる（`el`）
+      2. `columns` が 1 つ以上の空でない文字列の配列で重なりが無いか（`opts.columns`）、`items` が配列で要素がオブジェクトか（`opts.items`）を確かめる
+      3. `group`・`filter` のキーが `columns` にあるか、`filter` の値が `FILTER_KINDS` か、`default` が `board`・`table` で、`group` が無いのに `board` でないか、`icons` の値が `VIEW_ICON_NAMES` かを確かめる
+    unit_tests:
+      - name: test_check_view_options
+        case: 正常
+        summary: 合う引数では投げない
+        condition: '`columns`・`items`・`group`・`default: "table"`・`filter`・`icons` を持つ'
+        mock: なし
+        expected: 投げない
+      - name: test_check_view_options_when_invalid
+        case: 異常
+        summary: 合わない引数ごとに名前を含めて投げる
+        condition: '`columns: []`・列名の重なり・`items` の要素が配列・無い `group`・無い `filter` の列・`filter` の種類 `range`・`group` が無いのに `default: "board"`・`icons` の `rocket` をそれぞれ渡す'
+        mock: なし
+        expected: それぞれ `TypeError` を投げ、メッセージに `opts.columns`・`opts.items`・`opts.group`・`opts.filter`・`opts.default`・`opts.icons` のうちの該当する名前を含む
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#exceptions[TypeError]
+  - name: checkCommentOptions
+    title: コメントの引数を検める
+    container: src/comments/spec.ts
+    summary: '`mountComments` の引数を確かめ、合わなければ誤った引数の名前を含む `TypeError` を投げる。`mount` の `commentStore` の確かめにも使う'
+    kind: 関数
+    scope: internal
+    args:
+      - name: el
+        type: unknown
+        required: true
+        description: 範囲の要素
+      - name: opts
+        type: unknown
+        required: true
+        description: '`{ store, docId }`'
+    returns:
+      type: 'asserts opts is { store: MdmarkCommentStore; docId: string }'
+      description: 合えば何も返さない
+    process: |-
+      1. `el` が `HTMLElement` でなければ投げる（`el`）
+      2. `store` が `load`・`save` の関数を持たなければ投げる（`opts.store`）
+      3. `docId` が空でない文字列でなければ投げる（`opts.docId`）
+    unit_tests:
+      - name: test_check_comment_options_when_invalid
+        case: 異常
+        summary: 合わない引数ごとに名前を含めて投げる
+        condition: '`el` に `{}`・`save` の無い `store`・`docId: ""` をそれぞれ渡す'
+        mock: なし
+        expected: それぞれ `el`・`opts.store`・`opts.docId` を含む `TypeError`
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#exceptions[TypeError]
+  - name: isComment
+    title: コメントの形か
+    container: src/comments/spec.ts
+    summary: '`load`・`save` が返した値が `MdmarkComment` の形かを返す'
+    kind: 関数
+    scope: internal
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 返した値
+    returns:
+      type: value is MdmarkComment
+      description: '`id`・`quote` が空でない文字列で、`prefix`・`suffix`・`body` が文字列なら `true`'
+    process: 1. オブジェクトで、`id`・`quote` が空でない文字列、`prefix`・`suffix`・`body` が文字列かを返す
+    unit_tests:
+      - name: test_is_comment
+        case: 正常
+        summary: 形の合う値と合わない値を見分ける
+        condition: 揃った値・`id` の無い値・`body` が数の値
+        mock: なし
+        expected: '`true`・`false`・`false`'
+  - name: drawView
+    title: ビューを描く
+    container: src/views/index.ts
+    summary: '`mountView` の指定から、`el` の中に class `mdmark` の要素を置いてビューを描き、表の操作と切り替えを付ける'
+    kind: 関数
+    scope: public
+    side_effects: '`el` の中を書き換え、表の絞り込みのドロワーを開いている間 `document` の受け取りを付ける'
+    args:
+      - name: el
+        type: HTMLElement
+        required: true
+        description: 描く先
+      - name: opts
+        type: MdmarkViewOptions
+        required: true
+        description: 検めた指定
+    returns:
+      type: () => void
+      description: 操作を外し、`el` の中を空にする関数
+    process: |-
+      1. 項目を `columns` の並びの値の配列にする（キーが無ければ空の文字）
+      2. `el` の中を空にし、class `mdmark` の `div` を置いて、その中に `renderView`（`mode` は `default`、無ければ `group` があれば `board`、`filters` は `filter` の列の位置と種類、`icons` は `icons`、`id` はモジュールの通し番号）を入れる
+      3. `attachTables` で表の並べ替えと絞り込みを付け、`attachSwitch` で切り替えを付ける
+      4. 外す関数は、両方を外して `el` の中を空にする
+    unit_tests:
+      - name: test_draw_view
+        case: 正常
+        summary: ボードで描き、切り替えで表形式に替える
+        condition: '題・状態・担当の 5 件、`group: "状態"`。1 件目の題は `<script>alert(1)</script>設計`'
+        mock: なし
+        expected: '`el > .mdmark > .mdmark-view` があり、ボードの列は `未着手`・`進行中`・`完了` の順。題は文字として出て `script` 要素が無い。「表」を押すと表が出てボードが `hidden`、「表」が `aria-pressed="true"`'
+      - name: test_draw_view_when_filtered
+        case: 正常
+        summary: 表形式の絞り込みはボードに当たらず、戻すと残っている
+        condition: '`default: "table"`・`filter: { 担当: "select" }`。担当の絞り込みで `佐藤` を選び、ボードに替えて表に戻す'
+        mock: なし
+        expected: ボードに 5 件の項目が出る。表に戻すと `佐藤` 以外の行が `hidden`
+      - name: test_draw_view_when_destroyed
+        case: 正常
+        summary: 外すと el が空になる
+        condition: 描いた後に外す関数を呼ぶ
+        mock: なし
+        expected: '`el` の子が無い'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#constraints[描くビュー]
+      - dev/設計書/部品設計/ビュー.ts#
+  - name: attachView
+    title: 印のビューに付ける
+    container: src/views/index.ts
+    summary: '`render` が描いた `div.mdmark-view` の `data-view` と中の表から、切り替えとボードを置いて付ける'
+    kind: 関数
+    scope: public
+    side_effects: '`view` の中に要素を足す'
+    args:
+      - name: view
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-view`'
+    returns:
+      type: () => void
+      description: 足した要素を取り除き、表を元に戻す関数
+    process: |-
+      1. `data-view` を `ViewSpec` として読む。`group` が `null` で `boardDisabled` が空なら何もせず、何もしない関数を返す
+      2. 中の表の見出しの `th` と本文の `td` の文字（`visibleText`）を列名と値にする（`mdmark-table-empty` の行は除く）
+      3. 表を囲む要素を `div.mdmark-view-table` で包み、その前に `renderViewSwitch` と `renderViewBoard`（`boardDisabled` のときは空のボード）を置く
+      4. `attachSwitch` で切り替えを付け、`mode` で出し分ける
+    unit_tests:
+      - name: test_attach_view
+        case: 正常
+        summary: 印の表からボードを足し、外すと戻す
+        condition: '`data-view` が `{"group":1,"mode":"board","boardDisabled":"","icons":{}}` で、題・状態の表を持つ要素'
+        mock: なし
+        expected: 切り替えとボードがあり、表が `hidden`。外すと切り替えとボードが無く、表が `hidden` を持たず `div.mdmark-view-table` が無い
+      - name: test_attach_view_when_board_disabled
+        case: 正常
+        summary: group の列が無いとボードを押せない
+        condition: '`boardDisabled` に `w1` を持つ'
+        mock: なし
+        expected: ボードのボタンが `disabled` で `aria-describedby="w1"`、表が出ている
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ビューの操作]
+  - name: attachSwitch
+    title: 切り替えを付ける
+    container: src/views/index.ts
+    summary: 切り替えのボタンを押すとボードと表形式を出し分け、`aria-pressed` を直す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ view: HTMLElement; mode: "board" | "table" }'
+        required: true
+        description: ビューの要素と最初のビュー
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    process: |-
+      1. `mode` で `.mdmark-view-board` と `.mdmark-view-table` の `hidden` と、ボタンの `aria-pressed` を書く
+      2. `.mdmark-view-switch` の `click` を受け、押したボタンの `data-mode` で手順 1 を行う（`disabled` のボタンは押せない）
+    unit_tests: []
+  - name: renderView
+    title: ビューの HTML
+    container: src/parts/view.ts
+    summary: 部品設計『ビュー』の HTML を返す
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ columns: string[]; items: string[][]; group?: string; mode?: "board" | "table"; filters?: TableFilter[]; filterValues?: FilterValue[]; openFilter?: number; icons?: Record<string, string>; boardDisabled?: string; id: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<div class="mdmark-view">` で始まる HTML'
+    process: |-
+      1. `group` があれば `renderViewSwitch` と `renderViewBoard` を、無ければどちらも置かない
+      2. 列名と値をエスケープした表を `renderTable`（`kind: "data"`、`features` は `sort` と、`filters` があれば `filter`）で作り、`div.mdmark-view-table` に入れる
+      3. `mode` で出さない方に `hidden` を付ける
+    unit_tests:
+      - name: test_render_view
+        case: 正常
+        summary: ボードの列を値の出た順に並べ、項目の数を出す
+        condition: 部品設計の `Board` の引数
+        mock: なし
+        expected: 列が `進行中`・`未着手`・`完了` の順で、数が `2`・`2`・`1`。表は `hidden`
+      - name: test_render_view_when_values_have_html
+        case: 正常
+        summary: 列名と値をエスケープする
+        condition: 題が `<b>x</b>`
+        mock: なし
+        expected: '`&lt;b&gt;x&lt;/b&gt;` を含み、`<b>` を含まない'
+      - name: test_render_view_when_table_only
+        case: 正常
+        summary: group が無ければ切り替えもボードも置かない
+        condition: 部品設計の `TableOnly` の引数
+        mock: なし
+        expected: '`mdmark-view-switch` と `mdmark-view-board` を含まない'
+    refs:
+      - dev/設計書/部品設計/ビュー.ts#
+  - name: renderViewSwitch
+    title: 切り替えの HTML
+    container: src/parts/view.ts
+    summary: 「ボード」「表」の切り替えの HTML を返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: props
+        type: '{ mode: "board" | "table"; boardDisabled?: string }'
+        required: true
+        description: 出すビューと、ボードにできない理由の書き方の警告の `id`
+    returns:
+      type: string
+      description: '`div.mdmark-view-switch` の HTML'
+    process: 1. 部品設計の HTML の形で、`mode` のボタンを `aria-pressed="true"` にする。`boardDisabled` があればボードのボタンを `disabled` にして `aria-describedby` を付ける
+    unit_tests:
+      - name: test_render_view_switch_when_board_disabled
+        case: 正常
+        summary: ボードのボタンを押せなくする
+        condition: '`{ mode: "table", boardDisabled: "w1" }`'
+        mock: なし
+        expected: ボードのボタンが `disabled` と `aria-describedby="w1"`、表のボタンが `aria-pressed="true"`
+  - name: renderViewBoard
+    title: ボードの HTML
+    container: src/parts/view.ts
+    summary: 値ごとの列に項目を並べたボードの HTML を返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: props
+        type: '{ columns: string[]; items: string[][]; group: number; icons: Record<string, string> }'
+        required: true
+        description: 列名・値・分ける列の位置・上書きのアイコン
+    returns:
+      type: string
+      description: '`div.mdmark-view-board` の HTML'
+    process: |-
+      1. `group` の列の値を出た順に並べ、値ごとに列の見出し（`icons`・`DEFAULT_VALUE_ICONS`・`FALLBACK_VALUE_ICON` の順に引いたアイコン・値・`toLocaleString("ja-JP")` の数）と項目を置く
+      2. 項目は先頭の列の値を題にし、`group` の列と空の値を除いた列を `dl` に並べる
+    unit_tests:
+      - name: test_render_view_board_icons
+        case: 正常
+        summary: 既定・上書き・対応に無い値のアイコンを引く
+        condition: '値 `未着手`・`完了`・`受付`、`icons` に `完了: "archive"`'
+        mock: なし
+        expected: '`未着手` は `circle-dashed`、`完了` は `archive`、`受付` は `circle` の形'
+      - name: test_render_view_board_when_empty_value
+        case: 正常
+        summary: 空の値の列を項目に出さない
+        condition: 担当が空の項目
+        mock: なし
+        expected: その項目の `dl` に `担当` の `dt` が無い
+  - name: draftFromRange
+    title: 選んだ範囲から下書きを作る
+    container: src/comments/anchor.ts
+    summary: 範囲の文字と、範囲の前後の本文の文字から `MdmarkCommentDraft` を作る
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ root: HTMLElement; range: Range; body: string }'
+        required: true
+        description: 範囲の要素・選んだ範囲・本文
+    returns:
+      type: MdmarkCommentDraft
+      description: 下書き
+    process: |-
+      1. `commentText(root)` で本文の文字と、文字の節ごとの位置を得る
+      2. 範囲の始まりと終わりを本文の文字の位置にし、間の文字の前後の空白を落として `quote` にする（落とした分だけ位置をずらす）
+      3. 始まりの前の `CONTEXT_CHARS` 文字の先頭の空白を落としたものを `prefix`、終わりの後の `CONTEXT_CHARS` 文字の末尾の空白（ブロックの間の改行を含む）を落としたものを `suffix`、`body` の前後の空白を落としたものを `body` にする
+    unit_tests:
+      - name: test_draft_from_range
+        case: 正常
+        summary: 前後 32 文字までを取る
+        condition: 40 文字の後に `導入の手順` があり、後ろに 10 文字ある段落で `導入の手順` を選ぶ
+        mock: なし
+        expected: '`quote` が `導入の手順`、`prefix` が直前の 32 文字、`suffix` が後ろの 10 文字'
+      - name: test_draft_from_range_when_spaces
+        case: 正常
+        summary: 選んだ文字の前後の空白を落とす
+        condition: '` 手順 ` を選ぶ'
+        mock: なし
+        expected: '`quote` が `手順`、`prefix` の末尾が空白'
+      - name: test_draft_from_range_when_block_end
+        case: 正常
+        summary: 前後の文字の外側の空白を落とす
+        condition: '`<p>先頭で選ぶ。</p>\n` のようにブロックの後ろに改行の文字の節がある `root` で、段落の途中を選ぶ'
+        mock: なし
+        expected: '`suffix` が段落の最後の文字で終わり、改行を含まない。段落の前に改行があるときは `prefix` も改行で始まらない'
+  - name: commentText
+    title: 本文の文字を集める
+    container: src/comments/anchor.ts
+    summary: '`root` の中の、`COMMENT_EXCLUDED` に入らない文字の節（印 `.mdmark-comment-mark` の中の文字は本文の文字なので数える）を順に集め、つないだ文字と節ごとの始まりの位置を返す'
+    kind: 関数
+    scope: internal
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 範囲の要素
+    returns:
+      type: '{ text: string; nodes: Array<{ node: Text; start: number }> }'
+      description: 本文の文字と節の位置
+    process: 1. `TreeWalker` で文字の節を順に辿り、`COMMENT_EXCLUDED` の中の節を飛ばしてつなぐ。印 `.mdmark-comment-mark` の中の節は飛ばさない（印は本文の文字を変えず、飛ばすと印を付けた後に保存するコメントの前後の文字が欠ける）
+    unit_tests:
+      - name: test_comment_text
+        case: 正常
+        summary: コードとビューの操作の文字を除く
+        condition: 段落・`code`・`.mdmark-view-switch` を持つ要素
+        mock: なし
+        expected: 段落の文字だけをつないだ文字
+  - name: locateComments
+    title: コメントの箇所を探す
+    container: src/comments/anchor.ts
+    summary: 本文の文字の中で、コメントごとに箇所を探し、同じ箇所のコメントをまとめ、見つからないものを分ける
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ text: string; comments: MdmarkComment[] }'
+        required: true
+        description: 本文の文字と読んだコメント
+    returns:
+      type: '{ anchors: Array<{ start: number; end: number; comments: MdmarkComment[] }>; orphans: MdmarkComment[] }'
+      description: 箇所の並び（始まりの順）と見つからないコメント
+    process: |-
+      1. `prefix + quote + suffix` が一致する最初の位置があれば、`quote` の始まりと終わりを箇所にする
+      2. 無ければ `quote` が 1 か所だけ一致すればそこを箇所にし、0 か所か 2 か所以上なら見つからないコメントにする
+      3. 始まりと終わりが同じ箇所はまとめ（保存の順を保つ）、ほかの箇所と重なる箇所は見つからないコメントにする
+    unit_tests:
+      - name: test_locate_comments
+        case: 正常
+        summary: 前後の文字で箇所を決める
+        condition: '`手順` が 2 か所ある本文と、2 か所目の前後の文字を持つコメント'
+        mock: なし
+        expected: 2 か所目の位置
+      - name: test_locate_comments_when_context_changed
+        case: 正常
+        summary: 前後が変わっても 1 か所だけなら付く
+        condition: '`prefix` が合わず、`quote` が 1 か所だけある'
+        mock: なし
+        expected: その位置
+      - name: test_locate_comments_when_ambiguous
+        case: 正常
+        summary: 前後が合わず 2 か所あると見つからないにする
+        condition: '`prefix` が合わず、`quote` が 2 か所ある'
+        mock: なし
+        expected: '`orphans` に入る'
+      - name: test_locate_comments_when_same_place
+        case: 正常
+        summary: 同じ箇所のコメントをまとめる
+        condition: 同じ `quote`・`prefix`・`suffix` のコメント 2 つ
+        mock: なし
+        expected: 箇所が 1 つで `comments` が 2 つ
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
+  - name: attachComments
+    title: コメントを付ける
+    container: src/comments/index.ts
+    summary: 読んだコメントに印を付け、文字の選び・ボタン・入力欄・吹き出しの操作を付け、外す関数を返す
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: '`root` の中の文字を印で包み、ボタン・一覧を置き、`document` と `window` に受け取りを付ける。`store.load`・`store.save` を呼ぶ'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string }'
+        required: true
+        description: 範囲の要素・読み書きの関数・対象の ID
+    returns:
+      type: Promise<() => void>
+      description: 印を外して文字を元に戻し、置いた要素と受け取りを外す関数
+    process: |-
+      1. `store.load({ docId })` を待つ。reject するか、配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、コメントを空にする
+      2. `commentText(root)` と `locateComments` で箇所を探し、箇所ごとに文字の節を分けて `renderCommentMark` の形の `mark` で包み、付いたコメントを控える。見つからないコメントがあれば `root` の末尾に `renderCommentOrphans` を置く。読み上げの説明 `コメントが付いた箇所` を `document.body` に 1 つ置く
+      3. `selectionchange` を受け、選びの始まりと終わりが `root` の中の同じ `COMMENT_BLOCKS` に入り、`COMMENT_EXCLUDED` に入らず、文字が空白だけでないときに、`renderCommentButton` をそのブロックの直後に置き、選んだ文字の終わりの下（収まらなければ上）に置く。条件を外れたらボタンを隠す（フォーカス中は隠さない）
+      4. ボタンを押すと、`renderCommentForm` の入力欄を `document.body` に置いて選んだ範囲の下に置き、本文の欄へフォーカスを移し、`CSS.highlights` があれば範囲を `PENDING_HIGHLIGHT` に入れる
+      5. 保存のボタンで、本文が空なら `state: empty` の知らせを出す。空でなければ `state: saving` にして `store.save({ docId, comment: draftFromRange(...) })` を待つ。reject するか `isComment` でなければ `save`・`docId`・元のエラーを `console.error` に出して `state: failed` にし、本文を残す。保存できたら入力欄を閉じ、範囲を印で包んで印へフォーカスを移す
+      6. キャンセルと Esc で入力欄を閉じる。本文があれば `window.confirm(DISCARD_MESSAGE)` で確かめ、捨てないときは残す。閉じたらボタンへフォーカスを戻す。外側の押下では閉じない
+      7. 印の押下・Enter・Space で `renderCommentBubble` の吹き出しを開いて印の `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。閉じるボタンと Esc で閉じて印へフォーカスを戻し、外側の押下でも閉じる
+      8. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
+      9. 外す関数は、受け取りを外し、置いた要素と `PENDING_HIGHLIGHT` を消し、印を中の文字の節に戻して `normalize` する
+    unit_tests:
+      - name: test_attach_comments_when_loaded
+        case: 正常
+        summary: 読んだコメントに印を付け、見つからないものを一覧に出す
+        condition: '`導入の手順` を持つ段落。`load` が `quote` が `導入の手順` と `無い文字` の 2 件を返す'
+        mock: '`store` はメモリーで返す'
+        expected: '`導入の手順` が `mark.mdmark-comment-mark` に包まれ、末尾の一覧に `無い文字` がある'
+      - name: test_attach_comments_when_saved
+        case: 正常
+        summary: 選んで書いて保存すると印を付ける
+        condition: 段落の `導入の手順` を選び、ボタン・本文 `手順の数を <b>3</b> にする`・保存を押す
+        mock: '`save` は下書きに `id: "c1"` を足して返し、引数を控える'
+        expected: '`save` が `docId` と `quote`・`prefix`・`suffix`・`body` で呼ばれる。入力欄が無く、印にフォーカスがある。印を押すと吹き出しに本文が文字のまま出る'
+      - name: test_attach_comments_when_empty_body
+        case: 異常
+        summary: 空のまま保存すると知らせを出して save を呼ばない
+        condition: 本文を書かずに保存を押す
+        mock: '`save` は呼ばれたかを控える'
+        expected: '`コメントを書いてから保存してください。` が出て、`save` は呼ばれない'
+      - name: test_attach_comments_when_save_rejected
+        case: 異常
+        summary: 保存できないと本文を残して知らせる
+        condition: 本文を書いて保存を押す
+        mock: '`save` は reject する。`console.error` を控える'
+        expected: 入力欄と本文が残り、`role="alert"` に失敗の知らせ。`console.error` に `save` と `docId`
+      - name: test_attach_comments_when_load_rejected
+        case: 異常
+        summary: 読めないと印を付けずに新しいコメントは付けられる
+        condition: '`load` が reject する'
+        mock: '`console.error` を控える'
+        expected: 印が無く、`console.error` に `load`。文字を選ぶとボタンが出る
+      - name: test_attach_comments_when_discarding
+        case: 正常
+        summary: 本文があるときの Esc で確かめ、捨てないと残す
+        condition: 本文を書いて Esc を押す
+        mock: '`window.confirm` は `false` を返す'
+        expected: '`window.confirm` が `書いたコメントを捨てて閉じますか？` で呼ばれ、入力欄が残る'
+      - name: test_attach_comments_when_excluded
+        case: 正常
+        summary: コードとビューの操作の中の選びにはボタンを出さない
+        condition: '`code` の中の文字を選ぶ'
+        mock: なし
+        expected: ボタンが `hidden`
+      - name: test_attach_comments_when_detached
+        case: 正常
+        summary: 外すと文字を元の並びに戻す
+        condition: 印を付けた後に外す関数を呼ぶ
+        mock: なし
+        expected: '`root` の `innerHTML` が付ける前と同じで、ボタン・一覧・説明が無い'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+      - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
+      - dev/設計書/画面設計/文書.ts#
+  - name: placePopover
+    title: 枠を箇所に置く
+    container: src/comments/index.ts
+    summary: 枠を箇所の下に置き、下に収まらなければ上に置き、左右は画面の中に収める
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ element: HTMLElement; rect: DOMRect }'
+        required: true
+        description: 置く枠と箇所の矩形
+    returns:
+      type: void
+      description: '-'
+    process: |-
+      1. 左は `rect.left` を `POPOVER_GUTTER_PX` と画面の幅から枠の幅と `POPOVER_GUTTER_PX` を引いた値の間に収める
+      2. 上は `rect.bottom + POPOVER_GAP_PX`。枠の下端が画面の高さから `POPOVER_GUTTER_PX` を引いた値を超えるなら `rect.top - 枠の高さ - POPOVER_GAP_PX`（`POPOVER_GUTTER_PX` 未満にしない）
+    unit_tests:
+      - name: test_place_popover_when_no_room_below
+        case: 正常
+        summary: 下に収まらなければ上に置く
+        condition: 画面の下端近くの矩形
+        mock: なし
+        expected: '`top` が矩形の上端より上'
+  - name: renderCommentButton
+    title: コメントのボタンの HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『コメントのボタン』の HTML を返す
+    kind: 関数
+    scope: public
+    returns:
+      type: string
+      description: '`button.mdmark-comment-add` の HTML'
+    process: 1. 部品設計の HTML を返す
+    unit_tests:
+      - name: test_render_comment_button
+        case: 正常
+        summary: 文字とアイコンを持つボタン
+        condition: なし
+        mock: なし
+        expected: '`type="button"` で文字が `コメント`、アイコンが `aria-hidden`'
+    refs:
+      - dev/設計書/部品設計/コメントのボタン.ts#
+  - name: renderCommentForm
+    title: コメントの入力欄の HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『コメントの入力欄』の HTML を返す
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ quote: string; body?: string; state?: "idle" | "saving" | "empty" | "failed"; id: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`div.mdmark-comment-form` の HTML'
+    process: 1. 選んだ文字と本文をエスケープして部品設計の HTML にし、`state` で保存のボタン・知らせ・`aria-busy`・`aria-invalid` を書く（知らせは `COMMENT_MESSAGES`）
+    unit_tests:
+      - name: test_render_comment_form
+        case: 正常
+        summary: 題に選んだ文字をエスケープして出す
+        condition: '`quote` が `<b>x</b>`'
+        mock: なし
+        expected: 題が `「&lt;b&gt;x&lt;/b&gt;」へのコメント`、知らせが `hidden`
+      - name: test_render_comment_form_when_saving
+        case: 正常
+        summary: 保存を待つ間は押せない
+        condition: '`state: "saving"`'
+        mock: なし
+        expected: 保存のボタンが `disabled` で `保存しています…`、枠が `aria-busy="true"`
+      - name: test_render_comment_form_when_failed
+        case: 正常
+        summary: 保存できない知らせと本文を出す
+        condition: '`state: "failed"`・`body` あり'
+        mock: なし
+        expected: 知らせが `COMMENT_MESSAGES.failed` で `hidden` を持たず、本文の欄が `aria-invalid="true"` で本文を持つ
+    refs:
+      - dev/設計書/部品設計/コメントの入力欄.ts#
+  - name: renderCommentMark
+    title: コメントの印の HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『コメントの印』の HTML を返す（ストーリーと単体テスト用。文書の印は `attachComments` が同じ属性で文字の節を包む）
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ text: string; expanded?: boolean }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`mark.mdmark-comment-mark` の HTML'
+    process: 1. 文字をエスケープして部品設計の HTML にする
+    unit_tests:
+      - name: test_render_comment_mark
+        case: 正常
+        summary: 押せる印の属性を持つ
+        condition: '`{ text: "手順" }`'
+        mock: なし
+        expected: '`tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded="false"`'
+    refs:
+      - dev/設計書/部品設計/コメントの印.ts#
+  - name: renderCommentBubble
+    title: コメントの吹き出しの HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『コメントの吹き出し』の HTML を返す
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ quote: string; bodies: string[] }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`div.mdmark-comment-bubble` の HTML'
+    process: 1. 選んだ文字と本文をエスケープし、本文ごとに `li` を置く
+    unit_tests:
+      - name: test_render_comment_bubble
+        case: 正常
+        summary: 本文を文字のまま並べる
+        condition: '`bodies` が `["a", "<b>x</b>"]`'
+        mock: なし
+        expected: '`li` が 2 つで、2 つ目が `&lt;b&gt;x&lt;/b&gt;`'
+    refs:
+      - dev/設計書/部品設計/コメントの吹き出し.ts#
+  - name: renderCommentOrphans
+    title: 箇所が見つからないコメントの一覧の HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『箇所が見つからないコメントの一覧』の HTML を返す
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ comments: Array<{ quote: string; body: string }>; id: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`section.mdmark-comment-orphans` の HTML。空なら空の文字'
+    process: |-
+      1. `comments` が空なら空の文字を返す
+      2. 選んだ文字と本文をエスケープして部品設計の HTML にする
+    unit_tests:
+      - name: test_render_comment_orphans_when_empty
+        case: 正常
+        summary: 空なら何も返さない
+        condition: '`comments: []`'
+        mock: なし
+        expected: 空の文字
+    refs:
+      - dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts#
+notes:
+  配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild の入口で、使う関数（表の部品・表の操作・知らせの枠など）をそれぞれのファイルに束ねる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'
+test_files:
+  - tests/unit/src/part-modules.test.ts
+  - tests/unit/src/mount-parts.browser.test.ts
+  - tests/unit/src/views/spec.test.ts
+  - tests/unit/src/views/index.browser.test.ts
+  - tests/unit/src/comments/spec.test.ts
+  - tests/unit/src/comments/anchor.test.ts
+  - tests/unit/src/comments/anchor.browser.test.ts
+  - tests/unit/src/comments/index.browser.test.ts
+  - tests/unit/src/parts/view.test.ts
+  - tests/unit/src/parts/comment.test.ts

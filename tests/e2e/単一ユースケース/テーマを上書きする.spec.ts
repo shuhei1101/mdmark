@@ -13,9 +13,10 @@ let builtRoot = "";
 // 段落とリンクを持つ見本の Markdown
 const MARKDOWN = "段落\n\n[リンク](https://example.com/page)\n";
 
-// デザイン方針の modern の値（明るい配色のリンクの色と、ダークの配色の地の色）
-const LIGHT_LINK_COLOR = "rgb(9, 105, 218)";
-const DARK_BACKGROUND = "rgb(13, 17, 23)";
+// デザイン方針の dev-swiss の値（明るい配色のリンクの色と、ダークの配色の地の色）
+const LIGHT_LINK_COLOR = "rgb(15, 118, 110)";
+const DARK_BACKGROUND = "rgb(19, 19, 22)";
+const LIGHT_BACKGROUND = "rgb(255, 255, 255)";
 
 test.beforeAll(async () => {
   builtRoot = await buildDistRoot();
@@ -90,4 +91,45 @@ test("test_normal_when_diagram", async ({ page }) => {
   ).map(Number);
   expect(red).toBeGreaterThan(green);
   expect(red).toBeGreaterThan(blue);
+});
+
+// OS の配色がライトでも、祖先の `vscode-dark` でダークの配色で描き、class を外すと戻す（正常シナリオ（親の class でダークにする））
+test("test_normal_when_parent_class_dark", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  await openPage(page, builtRoot);
+  await page.evaluate(() => {
+    document.body.className = "vscode-dark";
+  });
+  // 実行
+  await mountDocument(page, { markdown: MARKDOWN });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc).toHaveCSS("background-color", DARK_BACKGROUND);
+  await page.evaluate(() => {
+    document.body.className = "vscode-light";
+  });
+  await expect(doc).toHaveCSS("background-color", LIGHT_BACKGROUND);
+});
+
+// OS の配色がダークでも、祖先の `vscode-light` でライトの配色で描き、`mdmark-theme-light` は `vscode-dark` に勝つ（正常シナリオ（親の class でライトにする））
+test("test_normal_when_parent_class_light", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "dark" });
+  await openPage(page, builtRoot);
+  await page.evaluate(() => {
+    document.body.className = "vscode-light";
+  });
+  // 実行
+  await mountDocument(page, { markdown: MARKDOWN });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc).toHaveCSS("background-color", LIGHT_BACKGROUND);
+  await page.evaluate(() => {
+    document.body.className = "vscode-dark";
+    document
+      .getElementById("doc")
+      ?.parentElement?.classList.add("mdmark-theme-light");
+  });
+  await expect(doc).toHaveCSS("background-color", LIGHT_BACKGROUND);
 });

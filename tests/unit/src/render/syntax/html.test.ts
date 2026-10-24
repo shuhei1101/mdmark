@@ -95,6 +95,31 @@ test("test_build_embedded_html_when_terms", () => {
   expect(matches(html, /class="mdmark-term-wrap"/g)).toHaveLength(1);
 });
 
+// 中の文字のやめた言い方にマーカーを付ける（正常系）
+test("test_build_embedded_html_when_avoided_term", () => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid: ["作業場"],
+      },
+    ],
+  };
+  const markdown = wrapHtml("<p>作業場と作業場</p>");
+  // 実行
+  const { html } = renderDoc(markdown, {}, { index, docId: "cur" });
+  // 検証
+  const embedded = innerHtml(html, 'class="mdmark-html"');
+  expect(
+    matches(embedded, /class="mdmark-term mdmark-term-avoided"/g),
+  ).toHaveLength(1);
+});
+
 // 範囲のコードブロックが 1 つでないときは書き方の警告を置く（異常系）
 test("test_build_embedded_html_when_blocks_count", () => {
   // 準備

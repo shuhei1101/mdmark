@@ -1,6 +1,6 @@
 import { copyFile, mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative } from "node:path";
-import { CliError } from "./main.ts";
+import { CliError } from "./errors.ts";
 
 /** 設定ファイルのあるフォルダからの写しの置き場 */
 export const BACKUP_DIR = {

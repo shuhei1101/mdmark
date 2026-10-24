@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-knowledge-segmenter-on-demand
+
+
+ Test Files  90 passed (90)
+      Tests  399 passed (399)
+   Start at  23:22:46
+   Duration  27.86s (tests 41%, import 27%, worker 27%, transform 5%)
+

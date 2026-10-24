@@ -7,3 +7,5 @@
 | ページ | 概要 |
 | --- | --- |
 | [ライブラリ本体](./ライブラリ本体/) | ライブラリ本体の公開関数とビルドの操作 |
+| [VSCode拡張機能](./VSCode拡張機能/) | VS Code 拡張機能のコマンド・Webview とのメッセージ・配布物のワークフロー |
+| [ClaudeCodeプラグイン](./ClaudeCodeプラグイン/) | Claude Code プラグインの SessionStart のフックと MCP のツール |

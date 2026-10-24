@@ -66,7 +66,137 @@ scenarios:
       - 範囲の中の段落が表示されている
       - タブの並び（`role="tablist"`）が無い
     test: test_error_when_no_heading
-lead: 文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。
+  - name: 正常シナリオ（同じ組のタブの選択を揃える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つと、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲を 1 つ、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 1 つ並べた文書'
+        notes: 3 つ目は `Windows` のタブ名を持たない組の仲間、4 つ目は組に入らないタブ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 4 つのタブ群を描き、どれも 1 つ目のタブを選ぶ
+        U->>P: 1 つ目のタブ群の Windows のタブを押す
+        P->>M: 押したタブ群を Windows に切り替える
+        M->>M: 同じ group で Windows を持つタブ群を Windows に切り替える
+        P-->>U: 1 つ目と 2 つ目のタブ群で Windows の中身を表示
+    expected:
+      - 1 つ目と 2 つ目のタブ群で、`Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
+      - '`Windows` のタブ名を持たない 3 つ目のタブ群は、`macOS` を選んだまま'
+      - '`group` の無い 4 つ目のタブ群は、`macOS` を選んだまま'
+      - フォーカスは押した 1 つ目のタブ群の `Windows` のタブにある
+    test: test_normal_when_same_group
+  - name: 正常シナリオ（読み直して選んだタブで開く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: タブを描く
+        U->>P: group=os のタブ群の Windows のタブを押す
+        M->>S: os の組に Windows を残す
+        U->>P: ページを読み直す
+        P->>M: 同じ Markdown を渡して描かせる
+        M->>S: os の組に残したタブ名を読む
+        M-->>P: group=os のタブ群を Windows を選んで描く
+        P-->>U: Windows の中身を表示
+    expected:
+      - 読み直した後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
+      - '`group` の無いタブ群は、読み直した後に `macOS` を選んでいる'
+    test: test_normal_when_reloaded
+  - name: 異常シナリオ（選んだタブを覚えられない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: localStorage が使えないページ
+        description: ページを開く前に、`window.localStorage` を読むと `SecurityError` を投げるように差し替える
+        notes: ブラウザの設定でサイトのデータを拒んだときの状態に当たる
+      - name: 同じ組のタブを持つ Markdown
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as localStorage
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>S: os の組に残したタブ名を読む
+        S-->>M: 例外
+        M-->>P: 1 つ目のタブを選んでタブを描く
+        U->>P: 1 つ目のタブ群の Windows のタブを押す
+        M->>S: os の組に Windows を残す
+        S-->>M: 例外
+        M-->>P: 2 つのタブ群を Windows に切り替える
+        P-->>U: Windows の中身を表示
+    expected:
+      - 描いた直後、2 つのタブ群とも `macOS` を選んでいる
+      - 押した後、2 つのタブ群とも `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
+      - 書き方の警告は出ていない
+    test: test_error_when_storage_unavailable
+  - name: 異常シナリオ（値の無い group）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 値の無い group を持つ Markdown
+        description: '`<!-- tabs: group= -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: group の値が無い
+        M-->>P: 書き方の警告と、group を持たないタブを描く
+        U->>P: 1 つ目のタブ群の Windows のタブを押す
+        P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
+    expected:
+      - 1 つ目のタブ群の上に、`group` の値が無いことを書いた書き方の警告がある
+      - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
+    test: test_error_when_empty_group
+  - name: 異常シナリオ（知らないタブの指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない指定を持つ Markdown
+        description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os closed -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        notes: 1 つ目は `group` を書き損じたキー、2 つ目は `キー=値` の形でない指定
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らないキーと指定がある
+        M-->>P: 書き方の警告と、読めた指定だけを当てたタブ群を描く
+        U->>P: 1 つ目のタブ群の Windows のタブを押す
+        P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
+    expected:
+      - 1 つ目のタブ群の上に `grop=` が使えないキーであること、2 つ目のタブ群の上に `closed` が使えない指定であることを書いた書き方の警告がある
+      - どちらのタブ群もタブに描かれている
+      - 1 つ目のタブ群は `Windows` を選び、`group` を持つ 2 つ目のタブ群は `macOS` を選んだまま
+    test: test_error_when_unknown_option
+lead: '文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が揃い、選んだタブ名を覚えて読み直しても同じタブで開く。'
 issue: 4
 primary_actor: 文書を読む人
 stakeholders:
@@ -76,6 +206,6 @@ trigger: 読む人が、タブの印を持つ文書を描いたページでタ�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
   - タブの機能（`tabs`）がオン（既定）
-success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。
-minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の警告が出る。
+success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。`group` を持つタブは、同じページの同じ `group` で同じタブ名を持つタブも同じタブ名に切り替わり、読み直しても選んだタブ名のタブで開く。
+minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の警告が出る。選んだタブを覚えられないときも、揃える動きと切り替えは続く。
 test_file: tests/e2e/単一ユースケース/タブを切り替える.spec.ts

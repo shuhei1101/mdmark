@@ -1,0 +1,103 @@
+title: "プレビューのリンクと画像を開く"
+scenarios:
+  - name: 正常シナリオ（外部の URL）
+    setup:
+      - name: リンクを持つ文書のプレビュー
+        description: '`https://aka.ms/mdmark`（VS Code が既定で信頼するドメイン。信頼していないドメインは、開く前に VS Code が確認を出す）へのリンク・同じフォルダの `other.md` へのリンク・同じ文書の見出しへの `#` のリンク・`./images/figure.png` の画像を持つ Markdown のプレビューを開いた状態'
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant PV as プレビュー（Webview）
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        W->>PV: https://aka.ms/mdmark のリンクを押す
+        PV-->>EX: リンクの押下
+        EX->>BR: URL を開く
+        BR-->>W: ページを表示
+    expected:
+      - ブラウザで開く代役に `https://aka.ms/mdmark` が渡る
+      - プレビューの文書とスクロールの位置は変わらない
+    test: test_normal_when_external_link
+  - name: 正常シナリオ（Markdown へのリンク）
+    setup:
+      - name: リンクを持つ文書のプレビュー
+        description: 正常シナリオ（外部の URL）と同じ
+      - name: Mock
+        description: 正常シナリオ（外部の URL）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant PV as プレビュー（Webview）
+        participant EX as 拡張機能
+        participant ED as エディタ（VS Code）
+        W->>PV: other.md へのリンクを押す
+        PV-->>EX: リンクの押下
+        EX->>ED: other.md を開く
+        ED-->>W: other.md のエディタを表示
+    expected:
+      - '`other.md` が VS Code のエディタで開く'
+      - ブラウザで開く代役は呼ばれない
+    test: test_normal_when_markdown_link
+  - name: 正常シナリオ（ページの中へのリンク）
+    setup:
+      - name: リンクを持つ文書のプレビュー
+        description: 正常シナリオ（外部の URL）と同じ。リンク先の見出しは画面の外にある
+      - name: Mock
+        description: 正常シナリオ（外部の URL）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant PV as プレビュー（Webview）
+        W->>PV: # で始まるリンクを押す
+        PV->>PV: リンク先の見出しまで移る
+        PV-->>W: 見出しを表示
+    expected:
+      - プレビューの見えている範囲にリンク先の見出しが入る
+      - エディタは開き直されず、ブラウザで開く代役も呼ばれない
+    test: test_normal_when_anchor_link
+  - name: 正常シナリオ（相対パスの画像）
+    setup:
+      - name: リンクを持つ文書のプレビュー
+        description: 正常シナリオ（外部の URL）と同じ。`images/figure.png` はワークスペースの中にある
+      - name: Mock
+        description: 正常シナリオ（外部の URL）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        EX->>PV: 画像のパスを Webview で読める URL に直して描かせる
+        PV-->>W: 画像を表示
+    expected:
+      - プレビューの画像が読み込まれ、幅と高さが 0 より大きい
+    test: test_normal_when_relative_image
+  - name: 異常シナリオ（ワークスペースの外の画像）
+    setup:
+      - name: 外の画像を指す文書のプレビュー
+        description: ワークスペースのフォルダの外を指す `../../outside.png` の画像を持つ Markdown のプレビューを開いた状態
+      - name: Mock
+        description: 正常シナリオ（外部の URL）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant PV as プレビュー（Webview）
+        PV->>PV: ワークスペースの外は読み込まない
+        PV-->>W: 画像の代わりの文字を表示
+    expected:
+      - 画像は読み込まれず、代わりの文字（`alt`）が出る
+      - 他の本文は描かれる
+    test: test_error_when_image_outside_workspace
+lead: 文書を書く人がプレビューのリンクを押すと、外部の URL は既定のブラウザで、Markdown へのリンクは VS Code で開き、`#` で始まるリンクはプレビューの中で移る。Markdown からの相対パスの画像もプレビューに出る。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: プレビューから参照先へそのまま移れ、書いた画像の見え方も確かめられる
+trigger: 文書を書く人がプレビューのリンクを押すか、画像を持つ Markdown のプレビューを開く
+preconditions:
+  - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
+success_guarantee: リンクの種類ごとに決めた先が開き、相対パスの画像が描かれる。
+minimal_guarantee: ワークスペースの外のファイルはプレビューに読み込まない。
+test_file: tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts

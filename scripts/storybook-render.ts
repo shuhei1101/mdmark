@@ -11,11 +11,29 @@ import {
   type MdmarkSequenceDefinition,
   readDefinition,
 } from "../src/diagram/definition.ts";
+import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
+import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
+import {
+  type CommentFormState,
+  renderCommentBubble,
+  renderCommentButton,
+  renderCommentForm,
+  renderCommentMark,
+  renderCommentOrphans,
+} from "../src/parts/comment.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
+import { renderDiffHtml } from "../src/parts/diff-html.ts";
+import { renderDiffLines } from "../src/parts/diff-lines.ts";
+import { renderDiffMessage } from "../src/parts/diff-message.ts";
+import {
+  type DiffMinimapMark,
+  renderDiffMinimap,
+} from "../src/parts/diff-minimap.ts";
+import { renderDiffToggle } from "../src/parts/diff-toggle.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
 import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
@@ -23,6 +41,7 @@ import { renderFigure } from "../src/parts/figure.ts";
 import { type HintPlacement, renderHint } from "../src/parts/hint.ts";
 import { renderNotice } from "../src/parts/notice.ts";
 import { type CopyState, renderParam } from "../src/parts/param.ts";
+import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
 import { renderRowDetail } from "../src/parts/row-detail.ts";
 import { renderSection } from "../src/parts/section.ts";
 import { renderSteps } from "../src/parts/steps.ts";
@@ -32,6 +51,13 @@ import { renderTabs } from "../src/parts/tabs.ts";
 import { renderTermTip, type TermTipDoc } from "../src/parts/term-tip.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
+import { renderView } from "../src/parts/view.ts";
+import { sanitizeEmbedded } from "../src/render/sanitize.ts";
+import { renderConfigBand } from "../vscode/src/webview/parts/config-band.ts";
+import {
+  type PreviewStatusState,
+  renderPreviewStatus,
+} from "../vscode/src/webview/parts/preview-status.ts";
 
 // 描画の口を外へ出さないための待受アドレス
 const RENDER_HOST = "127.0.0.1";
@@ -42,6 +68,9 @@ const MAX_PORT = 65535;
 const REPO_ROOT = resolve(import.meta.dirname, "..");
 // 描画の口の経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
+// VS Code 拡張機能のパネルの CSS（状態の表示と帯のストーリーが読む）の経路と、その元のソース
+const VSCODE_CSS_PATH = "/render/vscode.css";
+const VSCODE_CSS_SOURCE = join("vscode", "src", "webview", "preview.css");
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
 // 図のストーリーが読む、拡大・縮小の操作を付ける処理の経路と、その元のソース
 const DIAGRAM_SCRIPT_PATH = "/render/diagram.js";
@@ -221,8 +250,147 @@ function bodyOf(args: PartArgs, sample: string): string {
   return typeof args.body === "string" ? args.body : sample;
 }
 
+// 差分のストーリーの見本: 行の差分に使う前と後の Markdown
+const DIFF_TEXT_BEFORE =
+  "# 問い合わせ窓口の週の報告\n\nよくある質問の差分は、担当者が週に 1 回確かめます。\n消す行\n終わり\n";
+const DIFF_TEXT_AFTER =
+  "# 問い合わせ窓口の週の報告\n\nよくある質問の変更は、担当者が週に 1 回確かめます。\n終わり\n足す行\n";
+const DIFF_LONG_BEFORE =
+  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-faq-table に置きます。\n";
+const DIFF_LONG_AFTER =
+  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-frequently-asked-questions-table に置きます。\n";
+
+/** 埋め込んだ HTML の範囲を 1 つ持つ Markdown。表のメール欄の件数を引数で変える */
+function diffTable(mail: number, extra = ""): string {
+  return `<!-- html -->\n\`\`\`html\n<table><tr><th>窓口</th><th>件数</th></tr><tr><td>メール</td><td>${mail}</td></tr>${extra}</table>\n\`\`\`\n<!-- /html -->\n`;
+}
+
+// 埋め込んだ HTML の差分の見本: 前と後の Markdown
+const DIFF_HTML_SAMPLES: Record<string, { before: string; after: string }> = {
+  table: { before: diffTable(120), after: diffTable(150) },
+  added: { before: "# 題\n", after: `# 題\n${diffTable(150)}` },
+  unchanged: {
+    before: `${diffTable(120)}前の段落\n`,
+    after: `${diffTable(120)}後の段落\n`,
+  },
+  script: {
+    before: diffTable(
+      120,
+      '<tr><td><button onclick="alert(1)">数える</button><script>alert(1)</script></td></tr>',
+    ),
+    after: diffTable(
+      150,
+      '<tr><td><button onclick="alert(1)">数える</button><script>alert(1)</script></td></tr>',
+    ),
+  },
+};
+
+// 差分のストーリーで前と後に出すリビジョンの説明
+const DIFF_STORY_LABELS = {
+  before: "2026/10/18 09:12 初版（佐藤）",
+  after: "2026/10/19 16:40 件数を直す（鈴木）",
+};
+
+/** 差分の見本を比べる。語の区切りは `Intl.Segmenter`（`ja`・`word`）で、`char` の見本だけ持たないことにして 1 文字ずつ比べる */
+function storyDiff(before: string, after: string, segmented: boolean) {
+  return computeDiff({
+    before,
+    after,
+    segmenter: segmented
+      ? new Intl.Segmenter("ja", { granularity: "word" })
+      : undefined,
+  });
+}
+
+/** 差分の行のストーリー */
+function storyDiffLines(args: PartArgs): string {
+  const sample = String(args.sample);
+  const [before, after] =
+    sample === "long"
+      ? [DIFF_LONG_BEFORE, DIFF_LONG_AFTER]
+      : sample === "html"
+        ? [
+            `${DIFF_TEXT_BEFORE}${diffTable(120)}`,
+            `${DIFF_TEXT_AFTER}${diffTable(150)}`,
+          ]
+        : [DIFF_TEXT_BEFORE, DIFF_TEXT_AFTER];
+  const result = storyDiff(before, after, sample !== "char");
+  return renderDiffLines({
+    blocks: result.blocks.map((block) =>
+      block.type === "html"
+        ? {
+            ...block,
+            before: block.before && sanitizeEmbedded(block.before, (t) => t),
+            after: block.after && sanitizeEmbedded(block.after, (t) => t),
+          }
+        : block,
+    ),
+    sides: "side",
+    labels: DIFF_STORY_LABELS,
+  });
+}
+
+/** 埋め込んだ HTML の差分のストーリー */
+function storyDiffHtml(args: PartArgs): string {
+  const sample =
+    DIFF_HTML_SAMPLES[String(args.sample)] ?? DIFF_HTML_SAMPLES.table;
+  const result = storyDiff(sample?.before ?? "", sample?.after ?? "", true);
+  const block = result.blocks.find((candidate) => candidate.type === "html");
+  if (block?.type !== "html") {
+    throw new Error("埋め込んだ HTML の範囲が無い見本");
+  }
+  const safe = (html: string | null, label: string) =>
+    html === null
+      ? null
+      : { label, html: sanitizeEmbedded(html, (text) => text) };
+  return renderDiffHtml({
+    changed: block.changed,
+    view: args.view === "rendered" ? "rendered" : "source",
+    sides: args.sides === "stack" ? "stack" : "side",
+    lines: renderDiffLines({
+      blocks: [{ type: "lines", lines: block.lines }],
+      sides: "side",
+    }),
+    before: safe(block.before, DIFF_STORY_LABELS.before),
+    after: safe(block.after, DIFF_STORY_LABELS.after),
+  });
+}
+
+// コメントのボタン・入力欄・吹き出しのストーリーに足す規則: 本物は `document.body` の直下で `position: fixed` だが、ストーリーではその場に置く
+const STATIC_POPOVER_STYLE =
+  "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static}</style>";
+
 // 部品の id から、部品の関数を呼ぶ表
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
+  "diff-toggle": (args) =>
+    renderDiffToggle({
+      controls: String(args.controls ?? ""),
+      expanded: args.expanded === true,
+    }),
+  "revision-picker": (args) =>
+    renderRevisionPicker({
+      revisions: args.revisions as Parameters<
+        typeof renderRevisionPicker
+      >[0]["revisions"],
+      before: String(args.before),
+      after: String(args.after),
+      ...(args.counts === undefined
+        ? {}
+        : { counts: args.counts as { del: number; add: number } }),
+      idPrefix: "story-picker",
+    }),
+  "diff-lines": storyDiffLines,
+  "diff-html": storyDiffHtml,
+  "diff-minimap": (args) =>
+    renderDiffMinimap({
+      marks: args.marks as DiffMinimapMark[],
+      view: args.view as { top: number; height: number },
+    }),
+  "diff-message": (args) =>
+    renderDiffMessage({
+      kind: args.kind as "same" | "single" | "loading",
+      spinner: args.spinner === true,
+    }),
   "syntax-warning": (args) =>
     renderSyntaxWarning({
       mark: args.mark as string | undefined,
@@ -235,6 +403,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: String(args.id ?? ""),
       meaning: args.meaning as string | undefined,
       docs: args.docs as TermTipDoc[] | undefined,
+      replacement: args.replacement as
+        | { term: string; meaning: string }
+        | undefined,
     });
     // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの下に余白を取る
     const open = args.open === true;
@@ -252,6 +423,33 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       docs: args.docs as Array<{ title: string; href: string }>,
     }),
   table: (args) => renderTable(args as TableOptions),
+  view: (args) =>
+    renderView(args as unknown as Parameters<typeof renderView>[0]),
+  "comment-button": () => STATIC_POPOVER_STYLE + renderCommentButton(),
+  "comment-form": (args) =>
+    STATIC_POPOVER_STYLE +
+    renderCommentForm({
+      quote: String(args.quote ?? ""),
+      body: args.body as string | undefined,
+      state: args.state as CommentFormState | undefined,
+      id: String(args.id ?? ""),
+    }),
+  "comment-mark": (args) =>
+    `<p>本文の<span>${renderCommentMark({
+      text: String(args.text ?? ""),
+      expanded: args.expanded === true,
+    })}</span>を読む。</p>`,
+  "comment-bubble": (args) =>
+    STATIC_POPOVER_STYLE +
+    renderCommentBubble({
+      quote: String(args.quote ?? ""),
+      bodies: args.bodies as string[],
+    }),
+  "comment-orphans": (args) =>
+    renderCommentOrphans({
+      comments: args.comments as Array<{ quote: string; body: string }>,
+      id: String(args.id ?? ""),
+    }),
   callout: (args) =>
     renderCallout({
       kind: args.kind as CalloutKind,
@@ -266,11 +464,19 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       titles,
       panels: titles.map((title) => `<p>${title} の中身の見本です。</p>`),
       selected: args.selected as number | undefined,
+      group: args.group as string | undefined,
     });
   },
   steps: (args) => renderSteps({ items: args.items as string[] }),
   tree: (args) => renderTree({ nodes: args.nodes as TreeNode[] }),
   badge: (args) => renderBadge({ label: String(args.label ?? "") }),
+  "code-block": (args) =>
+    renderCodeBlock({
+      language: String(args.language ?? ""),
+      title: String(args.title ?? ""),
+      lineNumbers: args.lineNumbers === true,
+      lines: args.lines as CodeLine[],
+    }),
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
   section: (args) =>
     renderSection({
@@ -295,6 +501,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const cells = Array.from({ length: columns - 1 }, () => "<td>値</td>");
     return `<table><tbody><tr>${head}${cells.join("")}</tr>${row}</tbody></table>`;
   },
+  "preview-status": (args) =>
+    renderPreviewStatus({
+      state: args.state as PreviewStatusState,
+      ...(args.version === undefined ? {} : { version: String(args.version) }),
+    }),
+  "config-band": (args) =>
+    renderConfigBand({ path: String(args.path), line: Number(args.line) }),
   "doc-list": (args) =>
     renderDocList({
       docs: args.docs as DocListItem[],
@@ -470,8 +683,13 @@ export function renderPart(options: {
   if (component === "notice") {
     // 真偽値は問い合わせの文字列で届くため、`"false"` のときだけ偽にする
     const figure = params.get("figure") !== "false";
+    const requested = params.get("source");
     const source =
-      params.get("source") === "extension" ? "extension" : "library";
+      requested === "extension" ||
+      requested === "diff-revisions" ||
+      requested === "diff-content"
+        ? requested
+        : "library";
     return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;
   }
   if (component === "embed") {
@@ -507,7 +725,7 @@ function diagramScript(root: string): Promise<string> {
   return diagramScriptCode;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
   root: string;
@@ -516,6 +734,12 @@ export function createRenderServer(options: {
     const url = new URL(request.url ?? "/", `http://${RENDER_HOST}`);
     if (url.pathname === CSS_PATH) {
       const css = readFileSync(join(options.root, "src", "index.css"), "utf8");
+      response.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
+      response.end(css);
+      return;
+    }
+    if (url.pathname === VSCODE_CSS_PATH) {
+      const css = readFileSync(join(options.root, VSCODE_CSS_SOURCE), "utf8");
       response.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
       response.end(css);
       return;

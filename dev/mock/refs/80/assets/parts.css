@@ -1,0 +1,354 @@
+/* PR #80 のスタイルの候補の見本で、土台（refs/16/assets/sample.css）に無い部品の規則。値は各スタイルの style.css の変数が持つ */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  /* 描いた文書の外枠: 地の色・内側の余白・角丸（実装の .mdmark と同じ） */
+  .mdmark {
+    padding: var(--mdmark-padding);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+
+    /* 注意書きの枠: 種類の色の線で囲む。面と線の色はスタイルが変えられる */
+    .markdown-alert {
+      --mdmark-callout-color: var(--mdmark-color-callout-note);
+      padding: calc(var(--mdmark-space) * 0.6) var(--mdmark-space);
+      border: 1px solid var(--mdmark-callout-border, var(--mdmark-callout-color));
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-callout-bg, transparent);
+
+      /* 枠の中のブロック同士の間隔 */
+      > * + * {
+        margin-block-start: calc(var(--mdmark-space) / 2);
+      }
+    }
+
+    /* ヒントの色 */
+    .markdown-alert-tip {
+      --mdmark-callout-color: var(--mdmark-color-callout-tip);
+    }
+
+    /* 重要の色 */
+    .markdown-alert-important {
+      --mdmark-callout-color: var(--mdmark-color-callout-important);
+    }
+
+    /* 警告の色 */
+    .markdown-alert-warning {
+      --mdmark-callout-color: var(--mdmark-color-callout-warning);
+    }
+
+    /* 注意の色 */
+    .markdown-alert-caution {
+      --mdmark-callout-color: var(--mdmark-color-callout-caution);
+    }
+
+    /* 注意書きの題: アイコンと題の文字を種類の色で出す */
+    .markdown-alert-title {
+      display: flex;
+      gap: 0.45em;
+      align-items: center;
+      color: var(--mdmark-callout-color);
+      font-weight: 600;
+      line-height: 1.5;
+
+      /* 題のアイコン */
+      svg {
+        flex: none;
+        width: 1em;
+        height: 1em;
+      }
+    }
+
+    /* バッジ: 行内の札 */
+    .mdmark-badge {
+      display: inline-block;
+      padding: 0 0.6em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 999px;
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font-size: 0.8125em;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+
+    /* 用語: 破線の下線で意味を出せる語を示す */
+    .mdmark-term {
+      text-decoration: underline dashed var(--mdmark-color-term-underline);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3em;
+    }
+
+    /* コードの強調した行: 面と左の線 */
+    .mdmark-code-highlight {
+      display: block;
+      margin-inline: calc(var(--mdmark-space) * -1);
+      padding-inline: calc(var(--mdmark-space) - 3px) var(--mdmark-space);
+      border-inline-start: 3px solid var(--mdmark-color-code-highlight-line);
+      background: var(--mdmark-color-code-highlight-bg);
+    }
+
+    /* 差分の行の並び: 線で囲む */
+    .mdmark-diff-lines {
+      overflow: hidden;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 差分の 1 行: 行頭の印とソースの行の文字 */
+    .mdmark-diff-line {
+      display: grid;
+      grid-template-columns: 1.5ch 1fr;
+      column-gap: 1ch;
+      padding-inline: 0.75em;
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.875em;
+      line-height: 1.55;
+      white-space: pre-wrap;
+
+      /* 削除した行: 赤の面と赤の印 */
+      &[data-kind="del"] {
+        background: var(--mdmark-color-diff-del-bg);
+
+        .mdmark-diff-sign {
+          color: var(--mdmark-color-diff-del-sign);
+        }
+      }
+
+      /* 追加した行: 緑の面と緑の印 */
+      &[data-kind="add"] {
+        background: var(--mdmark-color-diff-add-bg);
+
+        .mdmark-diff-sign {
+          color: var(--mdmark-color-diff-add-sign);
+        }
+      }
+    }
+
+    /* 行頭の印（-・+） */
+    .mdmark-diff-sign {
+      font-weight: 700;
+    }
+
+    /* 消した語: 濃い面と打ち消し線 */
+    del.mdmark-diff-word {
+      border-radius: 2px;
+      background: var(--mdmark-color-diff-del-word);
+      text-decoration: line-through;
+      text-decoration-color: var(--mdmark-color-diff-del-sign);
+    }
+
+    /* 足した語: 濃い面と下線 */
+    ins.mdmark-diff-word {
+      border-radius: 2px;
+      background: var(--mdmark-color-diff-add-word);
+      text-decoration: underline;
+      text-decoration-color: var(--mdmark-color-diff-add-sign);
+      text-underline-offset: 0.2em;
+    }
+
+    /* コメントを付けた範囲: 面と下線 */
+    .mdmark-comment-mark {
+      border-block-end: 2px solid var(--mdmark-color-comment-line);
+      background: var(--mdmark-color-comment-bg);
+    }
+
+    /* 図の枠: 層を縦に積む */
+    .mdmark-diagram {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* 図の層: 種類の色を薄く敷いた帯に箱を並べる */
+    .mdmark-diagram-lane {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+      border-radius: var(--mdmark-radius);
+      background: color-mix(in srgb, var(--lane-color) var(--mdmark-diagram-lane-tint), var(--mdmark-color-bg));
+    }
+
+    /* 層の見出し */
+    .mdmark-diagram-lane-label {
+      color: var(--mdmark-color-muted);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* 層の中の箱の並び: 狭い幅では折り返す */
+    .mdmark-diagram-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* 種類ごとの色: 箱の線・種類の行・層の背景が読む */
+    :is(.mdmark-diagram-node, .mdmark-diagram-lane) {
+      &[data-kind="llm"] {
+        --node-color: var(--mdmark-color-diagram-llm);
+        --lane-color: var(--mdmark-color-diagram-llm);
+      }
+
+      &[data-kind="dm"] {
+        --node-color: var(--mdmark-color-diagram-dm);
+        --lane-color: var(--mdmark-color-diagram-dm);
+      }
+
+      &[data-kind="script"] {
+        --node-color: var(--mdmark-color-diagram-script);
+        --lane-color: var(--mdmark-color-diagram-script);
+      }
+
+      &[data-kind="mcp"] {
+        --node-color: var(--mdmark-color-diagram-mcp);
+        --lane-color: var(--mdmark-color-diagram-mcp);
+      }
+
+      &[data-kind="data"] {
+        --node-color: var(--mdmark-color-diagram-data);
+        --lane-color: var(--mdmark-color-diagram-data);
+      }
+
+      &[data-kind="external"] {
+        --node-color: var(--mdmark-color-diagram-external);
+        --lane-color: var(--mdmark-color-diagram-external);
+      }
+    }
+
+    /* 箱: 種類の色の線で囲み、地は文書の地にして層の背景から浮かせる */
+    .mdmark-diagram-node {
+      display: flex;
+      flex-direction: column;
+      min-width: 9rem;
+      padding: 6px 10px;
+      border: 1.5px solid var(--node-color);
+      border-radius: 8px;
+      background: var(--mdmark-color-bg);
+      line-height: 1.35;
+
+      /* データの箱: 下の角を大きく丸めて入れ物に見せる */
+      &[data-kind="data"] {
+        border-radius: 8px 8px 20px 20px;
+      }
+    }
+
+    /* 箱の種類の行 */
+    .mdmark-diagram-node-kind {
+      color: var(--node-color);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* 箱の名前 */
+    .mdmark-diagram-node-name {
+      color: var(--mdmark-color-heading);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* 箱をつなぐ矢印 */
+    .mdmark-diagram-arrow {
+      color: var(--mdmark-color-diagram-line);
+      font-weight: 700;
+    }
+
+    /* グラフ: 系列ごとの棒 */
+    .mdmark-chart {
+      display: block;
+      width: 100%;
+      max-width: 28rem;
+      height: auto;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* グラフの系列の色 */
+    .mdmark-chart-bar {
+      &[data-series="1"] {
+        fill: var(--mdmark-color-series-1);
+      }
+
+      &[data-series="2"] {
+        fill: var(--mdmark-color-series-2);
+      }
+
+      &[data-series="3"] {
+        fill: var(--mdmark-color-series-3);
+      }
+
+      &[data-series="4"] {
+        fill: var(--mdmark-color-series-4);
+      }
+    }
+
+    /* グラフの軸 */
+    .mdmark-chart-axis {
+      stroke: var(--mdmark-color-border);
+    }
+
+    /* グラフの文字 */
+    .mdmark-chart-label {
+      fill: currentColor;
+      font-size: 11px;
+    }
+  }
+
+  /* まとめた HTML の文書の一覧: 開いている文書を面の色で示す */
+  .mdmark-doc-list {
+    max-width: var(--mdmark-content-width);
+    margin: 0 auto var(--mdmark-space);
+    padding: 8px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    font-family: var(--mdmark-font-body);
+    font-size: 0.875rem;
+
+    /* 一覧の見出し */
+    h2 {
+      margin: 0 0 4px;
+      padding: 0 8px;
+      color: var(--mdmark-color-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* 一覧の項目の並び */
+    ul {
+      display: grid;
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* 文書へのリンク */
+    a {
+      display: block;
+      padding: 4px 8px;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      color: var(--mdmark-color-text);
+      text-decoration: none;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 開いている文書: 面の色と太さで示す */
+      &[aria-current="page"] {
+        background: var(--mdmark-color-current-bg);
+        font-weight: 600;
+      }
+    }
+  }
+}

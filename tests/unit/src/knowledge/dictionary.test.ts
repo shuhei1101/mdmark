@@ -85,6 +85,66 @@ test("test_build_dictionary_excludes_self", async () => {
   expect(dictionary.docs.has("公開関数")).toBe(false);
 });
 
+/** やめた言い方 `作業場` を 2 つの用語が持ち、`WS` は用語の別名と同じやめた言い方でもある索引 */
+const AVOID_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [],
+  terms: [
+    {
+      id: "ws",
+      term: "ワークスペース",
+      aliases: ["WS"],
+      meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場", "WS"],
+    },
+    {
+      id: "area",
+      term: "作業スペース",
+      meaning: "作業の場所",
+      avoid: ["作業場"],
+    },
+  ],
+};
+
+// 索引の用語のやめた言い方を `avoided` に入れ、`words` には入れない（正常系）
+test("test_build_dictionary_avoided", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  // 実行
+  const dictionary = buildDictionary({
+    index: AVOID_INDEX,
+    ownGlossary: [],
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  // 同じやめた言い方は索引の `terms` で先の用語が代わりの用語で、別名と同じ `WS` は入らない
+  expect([...dictionary.avoided]).toEqual([
+    [
+      "作業場",
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+      },
+    ],
+  ]);
+  expect(dictionary.words).not.toContain("作業場");
+});
+
+// glossary がオフならやめた言い方を入れない（正常系）
+test("test_build_dictionary_avoided_when_glossary_disabled", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  // 実行
+  const dictionary = buildDictionary({
+    index: AVOID_INDEX,
+    ownGlossary: [],
+    features: { ...DEFAULT_FEATURES, glossary: false },
+  });
+  // 検証
+  expect(dictionary.avoided.size).toBe(0);
+});
+
 // 語の区切りに揃う語だけを返す（正常系）
 test("test_find_words", async () => {
   // 準備
@@ -101,4 +161,54 @@ test("test_find_words_prefers_longer", async () => {
   const found = findWords("オン・オフの印を書く", ["オン・オフの印", "印"]);
   // 検証
   expect(found.map((item) => item.word)).toEqual(["オン・オフの印"]);
+});
+
+/** `Intl.Segmenter` を取り除いた間だけ `run` を流し、終わったら戻す */
+async function withoutIntlSegmenter(run: () => Promise<void>): Promise<void> {
+  const original = Intl.Segmenter;
+  Reflect.deleteProperty(Intl, "Segmenter");
+  try {
+    await run();
+  } finally {
+    Object.defineProperty(Intl, "Segmenter", {
+      value: original,
+      configurable: true,
+      writable: true,
+    });
+  }
+}
+
+/** ほかのテストと共有しない新しいモジュールとして、照合の辞書の処理を読み込む（`key` ごとに別のモジュールになる） */
+const loadFreshDictionary = (key: string) =>
+  import(
+    /* @vite-ignore */ `../../../../src/knowledge/dictionary.ts?${key}`
+  ) as Promise<typeof import("../../../../src/knowledge/dictionary.ts")>;
+
+// `Intl.Segmenter` を持たない環境で、英数字の語の一部を照合しない（正常系）
+test("test_find_words_without_intl_segmenter", async () => {
+  await withoutIntlSegmenter(async () => {
+    // 準備・実行
+    const { findWords } = await loadFreshDictionary(
+      "without-intl-segmenter-find-words",
+    );
+    const found = findWords("ワークスペースをWSLに置く", [
+      "ワークスペース",
+      "WS",
+    ]);
+    // 検証
+    expect(found).toEqual([{ start: 0, end: 7, word: "ワークスペース" }]);
+  });
+});
+
+// `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字ずつ区切る（正常系）
+test("test_word_starts_without_intl_segmenter", async () => {
+  await withoutIntlSegmenter(async () => {
+    // 準備・実行
+    const { wordStarts } = await loadFreshDictionary(
+      "without-intl-segmenter-word-starts",
+    );
+    const starts = wordStarts("印刷をWSL2で😀見る");
+    // 検証
+    expect(starts).toEqual([0, 1, 2, 3, 7, 8, 10, 11]);
+  });
 });

@@ -33,6 +33,20 @@ test("test_slugify_when_duplicated", async () => {
   expect(ids).toEqual(["使い方", "使い方-1", "使い方-2"]);
 });
 
+// 見出しと同じ規則で ID の元にする（正常系）
+test("test_slug_base", async () => {
+  // 準備
+  const { slugBase } = await loadHeadings();
+  // 実行
+  const english = slugBase("Hello, World!");
+  const japanese = slugBase("使い方");
+  const symbols = slugBase("!!!");
+  // 検証
+  expect(english).toBe("hello-world");
+  expect(japanese).toBe("使い方");
+  expect(symbols).toBe("");
+});
+
 // 見出しに ID とアンカーを付ける（正常系）
 test("test_assign_heading_ids", () => {
   // 準備

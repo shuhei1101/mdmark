@@ -3,7 +3,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "../config.ts";
 import type { CheckIssue } from "./check.ts";
-import { CliError } from "./main.ts";
+import { CliError } from "./errors.ts";
 import { VERSION_PATTERN } from "./versions.ts";
 
 /** `mdmark build` が読む設定の `build` */
@@ -32,6 +32,14 @@ export type CliConfig = MdmarkConfig & {
   extensions?: string[];
   /** まとめる設定 */
   build?: BuildConfig;
+  /** `mdmark check` の設定 */
+  check?: CheckConfig;
+};
+
+/** `mdmark check` が読む設定の `check` */
+export type CheckConfig = {
+  /** 知らない印として知らせない印の名前の並び */
+  ignore?: string[];
 };
 
 /** 見つけた設定ファイルの場所と、読んだ値 */
@@ -323,7 +331,64 @@ export function validateConfig(
     }
   }
 
+  if (raw.check !== undefined) {
+    const check = validateCheck(raw.check, file, issues);
+    if (check) {
+      config.check = check;
+    } else {
+      delete config.check;
+    }
+  }
+
   return { config: config as CliConfig, issues };
+}
+
+/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返し、`ignore` は印の名前の書式に合う値だけを残す */
+function validateCheck(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): CheckConfig | undefined {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "check",
+        "`check` は `ignore` を持つキーと値で書いてください。",
+      ),
+    );
+    return undefined;
+  }
+  if (value.ignore === undefined) {
+    return value as CheckConfig;
+  }
+  if (!Array.isArray(value.ignore)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "check.ignore",
+        "`check.ignore` は印の名前の並びで書いてください。",
+      ),
+    );
+    const rest = { ...value };
+    delete rest.ignore;
+    return rest as CheckConfig;
+  }
+  const ignore: string[] = [];
+  for (const [position, name] of value.ignore.entries()) {
+    if (typeof name === "string" && MARK_NAME_PATTERN.test(name)) {
+      ignore.push(name);
+    } else {
+      issues.push(
+        schemaIssue(
+          file,
+          `check.ignore[${position}]`,
+          `\`check.ignore[${position}]\` は、英小文字で始まり、英小文字・数字・\`-\` が続く印の名前で書いてください。`,
+        ),
+      );
+    }
+  }
+  return { ...value, ignore };
 }
 
 /** 設定ファイルを探して読み、形が合わなければ `mdmark check` で確かめられることを添えた誤りを投げる */

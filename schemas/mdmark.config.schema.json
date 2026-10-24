@@ -57,6 +57,12 @@
           "type": "boolean",
           "default": true
         },
+        "code": {
+          "title": "コードブロックを飾る機能",
+          "description": "コードブロックに、直前の `<!-- code: -->` の題・行番号・行の強調と、行末のコードの行の印（`[!code ++]`・`[!code --]`・`[!code highlight]`）を当てる。オフのときは題・行番号・行の強調を付けず、コードの行の印は書いた文字のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
         "toc": {
           "title": "目次の機能",
           "description": "`<!-- toc -->` の場所に h2〜h3 の目次を置く。オフのときは印を取り除く。",
@@ -116,6 +122,18 @@
           "description": "埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す。",
           "type": "boolean",
           "default": true
+        },
+        "views": {
+          "title": "ビューの機能",
+          "description": "`<!-- view -->` の範囲の表を、ボード表示と表形式を切り替えるビューにする。オフのときは印を取り除き、表のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "comments": {
+          "title": "コメントの機能",
+          "description": "読む人が本文の選んだ箇所にコメントを付けられるようにする。使う側が `mount` にコメントの読み書きの関数（`commentStore`）を渡したときだけ効く。コメントは使う側の保存先が要り、使わない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする。",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": {
@@ -129,6 +147,7 @@
         "steps": true,
         "tree": true,
         "badge": true,
+        "code": true,
         "toc": true,
         "anchors": true,
         "sections": true,
@@ -138,7 +157,9 @@
         "glossary": true,
         "backlinks": true,
         "html": true,
-        "hints": true
+        "hints": true,
+        "views": true,
+        "comments": false
       }
     },
     "index": {
@@ -217,6 +238,23 @@
         }
       },
       "required": ["include", "out"]
+    },
+    "check": {
+      "title": "点検の設定",
+      "description": "`mdmark check` が読む設定。`mount`・`render`・`export`・`build` はこのキーを読まない。",
+      "type": "object",
+      "properties": {
+        "ignore": {
+          "title": "知らない印から外す名前",
+          "description": "`mdmark check` が文書の本文の知らない印として知らせない、印と同じ書き方の HTML コメントの名前の並び（`prettier-ignore`・`markdownlint-disable` など他のツールへの指示）。",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "default": []
+        }
+      }
     }
   },
   "additionalProperties": true

@@ -1,0 +1,110 @@
+title: "コメントの入力欄"
+implementation: "src/parts/comment.ts#renderCommentForm"
+story: "Parts/CommentForm"
+states:
+  - name: Idle
+    description: 開いた直後。本文の欄は空
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: id
+        value: story-comment
+  - name: Typed
+    description: 本文を書いた
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: body
+        value: 変数の名前を一覧にしてほしい
+      - name: id
+        value: story-comment
+  - name: Saving
+    description: 保存を待っている
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: body
+        value: 変数の名前を一覧にしてほしい
+      - name: state
+        value: saving
+      - name: id
+        value: story-comment
+  - name: Empty
+    description: 本文が空のまま保存した
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: state
+        value: empty
+      - name: id
+        value: story-comment
+  - name: Failed
+    description: 保存できなかった。本文は残っている
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: body
+        value: 変数の名前を一覧にしてほしい
+      - name: state
+        value: failed
+      - name: id
+        value: story-comment
+  - name: LongQuote
+    description: 長い文字を選んだ。題は折り返す
+    args:
+      - name: quote
+        value: 使う側のページが自分の JavaScript からビューを描き、拡張のモジュールからも同じ関数を呼べるようにして、文書の印と同じ見た目で出す
+      - name: id
+        value: story-comment
+lead: 選んだ文字の下に開く、コメントを書いて保存する `role="dialog"` の枠。HTML 文字列を返す。開閉・置き場所・保存は `mount` と `mountComments` の操作が付ける。
+args:
+  - name: quote
+    type: 文字列
+    required: true
+    description: 選んだ文字。題 `「{quote}」へのコメント` に文字として出し、HTML として解釈しない
+  - name: body
+    type: 文字列
+    default: '""'
+    description: 本文の欄に入っている文字
+  - name: state
+    type: 列挙
+    default: idle
+    choices: '`idle`（書いている）・`saving`（保存を待っている）・`empty`（本文が空のまま保存した）・`failed`（保存できなかった）'
+    description: 入力欄の状態。`saving` は保存のボタンを `disabled` にして `保存しています…` にし、枠に `aria-busy="true"` を付ける。`empty`・`failed` は入力欄のそばに知らせを出し、本文の欄に `aria-invalid="true"` を付ける
+  - name: id
+    type: 文字列
+    required: true
+    description: 入力欄の要素の `id` の頭。知らせの `id`（`{id}-error`）に使う。開くごとに文書の中で一意にする
+events:
+  - name: 保存する
+    when: 「コメントを保存」を押す
+    value: 本文の欄の値
+    description: '`mount`・`mountComments` が本文を確かめ、空でなければ `store.save` を呼ぶ。保存できたら入力欄を閉じて選んだ文字を印で包む'
+  - name: 閉じる
+    when: 「キャンセル」を押すか Esc を押す
+    description: '`mount`・`mountComments` が入力欄を閉じ、コメントのボタンへフォーカスを戻す。本文があるときは `window.confirm` の `書いたコメントを捨てて閉じますか？` で確かめ、捨てないときは入力欄を残す。外側の押下では閉じない'
+css_properties:
+  - name: --mdmark-color-error
+    syntax: <color>
+    default: '#b91c1c（ダーク #f87171）'
+    description: 知らせの文字とアイコン、`aria-invalid` の本文の欄の枠の色
+  - name: --mdmark-color-text
+    syntax: <color>
+    default: '#18181b（ダーク #ededef）'
+    description: 「コメントを保存」のボタンの地と線の色
+  - name: --mdmark-color-bg
+    syntax: <color>
+    default: '#ffffff（ダーク #131316）'
+    description: 「コメントを保存」のボタンの文字の色
+accessibility:
+  - 枠は `role="dialog"`・`aria-label="コメントを書く"` で、開いたら本文の欄へフォーカスを移す
+  - 本文の欄は表示の `コメント` を読み上げの名前に持ち、`aria-describedby` で知らせを指す
+  - 知らせは `role="alert"` で読み上げ、アイコンと文で示して色だけに頼らない。文言は `empty` が `コメントを書いてから保存してください。`、`failed` が `コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。`
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+  - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
+status: planned
+notes:
+  HTML: '`<div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く"><form novalidate><p class="mdmark-comment-quote">「{quote}」へのコメント</p><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="{id}-error">{body}</textarea></label><p class="mdmark-comment-error" id="{id}-error" role="alert" hidden>{alert のアイコン}<span>{知らせ}</span></p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit">コメントを保存</button></div></form></div>`。保存のボタンは差し色で塗る。モックは `dev/mock/components/comment/`'
+  印刷: 出さない
+test_file: tests/integration/lib/comment-form.story.test.ts

@@ -24,19 +24,19 @@
   // 並べ替えの向きの順番（押すたびに次へ進み、最後の次は先頭へ戻る）
   const SORT_CYCLE = ["none", "ascending", "descending"];
 
-  // 並べ替えのアイコンの線（並べていない・昇順・降順）
-  const SORT_ICON_PATHS = {
-    none: "M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3",
-    ascending: "M8 13V3.5M4.5 7 8 3.5 11.5 7",
-    descending: "M8 3v9.5M4.5 9 8 12.5 11.5 9",
+  // 並べ替えのアイコンの線（24 の格子。lucide の chevrons-up-down・arrow-up・arrow-down の形）
+  const SORT_ICON_SHAPES = {
+    none: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+    ascending: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+    descending: '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
   };
 
   /** 見出しの並べ替えの向きを aria-sort とアイコンに当てる。 */
   const setSortState = (th, direction) => {
     if (direction === "none") th.removeAttribute("aria-sort");
     else th.setAttribute("aria-sort", direction);
-    const path = th.querySelector(".mdmark-sort path");
-    if (path) path.setAttribute("d", SORT_ICON_PATHS[direction]);
+    const svg = th.querySelector(".mdmark-sort .mdmark-icon");
+    if (svg) svg.innerHTML = SORT_ICON_SHAPES[direction];
   };
 
   /** 列の値で行を並べ替える。向きを昇順 → 降順 → 元の並びの順に進める。 */
@@ -121,7 +121,9 @@
       item.hidden = !match;
       if (match) shown += 1;
     }
-    drawer.querySelector(".mdmark-filter-none").hidden = shown > 0;
+    // 一致する候補が無いときの文: 候補を持たない絞り込み（文字・日付）には無い
+    const none = drawer.querySelector(".mdmark-filter-none");
+    if (none) none.hidden = shown > 0;
   };
 
   /** ドロワーを押した見出しのボタンの下に置き、画面の端からはみ出さないようにする。 */

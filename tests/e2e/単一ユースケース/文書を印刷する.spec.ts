@@ -23,7 +23,7 @@ const MARKDOWN = [
   "",
 ].join("\n");
 
-// 明るい配色の `--mdmark-color-bg`（デザイン方針の modern）
+// 明るい配色の `--mdmark-color-bg`（デザイン方針の dev-swiss）
 const LIGHT_BACKGROUND = "#ffffff";
 
 test.beforeAll(async () => {
@@ -160,7 +160,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
   }
 });
 
-// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
   schema: 1,
   docs: [
@@ -172,6 +172,7 @@ const INDEX: MdmarkIndex = {
       id: "workspace",
       term: "ワークスペース",
       meaning: "話し合いの記録を置くフォルダ",
+      avoid: ["作業場"],
     },
   ],
 };
@@ -184,23 +185,109 @@ test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: "ワークスペースを置く。\n",
+    markdown: "ワークスペースと作業場を置く。\n",
     index: INDEX,
     docId: "arch",
     documents: DOCUMENTS,
   });
-  const term = page.locator("#doc .mdmark-term");
+  const term = page.locator("#doc .mdmark-term:not(.mdmark-term-avoided)");
+  const avoided = page.locator("#doc .mdmark-term-avoided");
+  const tips = page.locator("#doc .mdmark-term-tip");
   await term.focus();
-  await expect(page.locator("#doc .mdmark-term-tip")).toBeVisible();
+  await expect(tips.nth(0)).toBeVisible();
+  await avoided.focus();
+  await expect(tips.nth(1)).toBeVisible();
   // 実行
   await page.emulateMedia({ media: "print" });
   await sendPrintEvent(page, "beforeprint");
   // 検証
   await expect(term).toHaveCSS("text-decoration-line", "none");
-  await expect(page.locator("#doc .mdmark-term-tip")).toBeHidden();
+  await expect(tips.nth(0)).toBeHidden();
+  await expect(avoided).toHaveCSS("text-decoration-line", "none");
+  await expect(tips.nth(1)).toBeHidden();
   await expect(page.locator("#doc nav.mdmark-backlinks")).toBeVisible();
   const suffix = await page
     .locator("#doc nav.mdmark-backlinks a")
     .evaluate((link) => getComputedStyle(link, "::after").content);
   expect(suffix).toContain("../api.md");
+});
+
+// 印刷すると、表の上のボタンと行へのリンクの印は出さず、件数と集計の行は出し、隠した列は隠したままにする（正常シナリオ（表の機能を印刷に出す））
+test("test_normal_when_table_features_printed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data +count +columns +total +copy +rowlink total=数量:sum hide=説明 -->",
+      "",
+      "| 名前 | 説明 | 数量 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 1 |",
+      "| みかん | 印刷を直す | 2 |",
+      "| ぶどう | 描画の崩れを直す | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("button.mdmark-columns-toggle")).toBeHidden();
+  await expect(doc.locator("button.mdmark-copy")).toBeHidden();
+  await expect(doc.locator(".mdmark-row-anchor").first()).toBeHidden();
+  await expect(doc.locator(".mdmark-table-count")).toBeVisible();
+  await expect(doc.locator(".mdmark-table-count")).toContainText("3 / 3 件");
+  await expect(doc.locator("tfoot tr")).toBeVisible();
+  await expect(doc.locator("tfoot td").nth(2)).toContainText("6");
+  await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
+});
+
+// 印刷すると、コードブロックの題・行番号・行の強調と、足した行・消した行の色と行頭の印を出す（正常シナリオ（コードブロックの題と行を印刷に出す））
+test("test_normal_when_code_block_printed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- code: title=app.ts lines highlight=1 -->",
+      "",
+      "```ts",
+      "const a = 1;",
+      "let count = 1; // [!code ++]",
+      "foo(); // [!code --]",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-code-title")).toBeVisible();
+  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  const lines = doc.locator(".mdmark-code-line");
+  await expect(lines).toHaveCount(3);
+  const printed = await lines.evaluateAll((elements) =>
+    elements.map((element) => ({
+      number: getComputedStyle(element, "::before").content,
+      sign: getComputedStyle(element, "::after").content,
+      background: getComputedStyle(element).backgroundColor,
+      adjust: getComputedStyle(element).printColorAdjust,
+    })),
+  );
+  expect(printed.map((item) => item.number)).toEqual([
+    expect.stringContaining("1"),
+    expect.stringContaining("2"),
+    expect.stringContaining("3"),
+  ]);
+  expect(printed[1]?.sign).toContain("+");
+  expect(printed[2]?.sign).toContain("-");
+  expect(new Set(printed.map((item) => item.background)).size).toBe(3);
+  for (const item of printed) {
+    expect(item.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(item.adjust).toBe("exact");
+  }
 });

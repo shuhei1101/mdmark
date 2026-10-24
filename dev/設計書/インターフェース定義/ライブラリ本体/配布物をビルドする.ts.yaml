@@ -27,6 +27,8 @@ flows:
       - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` を export し、`tsc --noEmit` で型エラーが 0 件'
       - '`dist/cli.js` があり、`node dist/cli.js init {一時フォルダ}` が終了コード 0 で雛形を置く'
       - '`dist/viewer.js` と `dist/viewer.css` がある'
+      - '`plugin/server/mcp.js`・`plugin/scripts/session-start.js`・`plugin/dist/index.css`・`plugin/guide/index.json` があり、`plugin/.claude-plugin/plugin.json` の `version` が `v0.0.0`'
+      - '`plugin/THIRD_PARTY_LICENSES.txt` に `@modelcontextprotocol/server` と、その配布物に取り込まれた `ajv` の名前とライセンスの本文がある'
     test: test_normal
   - name: 正常系（版を指定する）
     summary: '`--version` で渡した版を埋めてビルドする'
@@ -47,6 +49,7 @@ flows:
     expected:
       - 終了コードが 0
       - '`dist/index.js` の `version()` が `v0.0.1` を返す'
+      - '`plugin/.claude-plugin/plugin.json` の `version` が `v0.0.1`'
     test: test_normal_when_version_given
   - name: 正常系（スキーマを変えて移行の手順を置く）
     summary: スキーマを変えても `migrations/next/steps.yaml` があれば通す
@@ -197,6 +200,28 @@ flows:
       - '`dist/` が無い'
       - 標準エラーに超えたファイル名とサイズが出る
     test: test_error_when_dist_file_too_large
+  - name: 異常系（使い方集の索引が上限を超える・終了コード 1）
+    summary: セッションに渡す索引の文が上限を超えると、配布物を残さずに終わる
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`dist/` とプラグインの生成物が無い作業ツリー'
+      - name: Mock
+        description: 使い方集の索引の文字数の上限を 1 文字に差し替える
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as ファイル
+        D->>B: npm run build
+        B->>F: dist/ を書く
+        B->>F: guide/index.yaml を読み、索引の文の文字数を数える
+        B->>F: dist/ を消す
+        B-->>D: 索引の文字数と上限・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` と `plugin/server`・`plugin/guide` が無い'
+      - 標準エラーに使い方集の索引の文字数と上限が出る
+    test: test_error_when_guide_index_too_long
 lead: '`src/` の TypeScript と CSS を、版を埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` と、CLI が書き出す HTML に埋める起動の処理 `dist/viewer.js`・`dist/viewer.css` にビルドする。'
 idempotent: true
 side_effects: '`dist/` を書き換える'
@@ -224,9 +249,11 @@ exceptions:
     condition: '比べる版が最新の版のタグより新しいビルド（release・hotfix のビルド）で、`migrations/next/` か `migrations/no-steps.yaml` の `version: next` の行が残っている'
   - name: 移行の手順の形の誤り（終了コード 1）
     condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
+  - name: 使い方集の索引の誤り（終了コード 1）
+    condition: '`guide/index.yaml` が ER 図『使い方集』の形に合わないか、無いページを指すか、セッションに渡す索引の文が 10,000 文字を超えるか、`plugin/package.json` の esbuild のバージョンが `package.json` と違うか、`plugin/package-lock.json` が無い'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 320KB 以下（327680 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 384KB 以下（393216 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4
@@ -245,4 +272,8 @@ constraints:
   - item: 移行の手順の配布
     constraint: '`migrations/`・`schemas/mdmark.steps.schema.json`・`docs/はじめに/変更履歴.md` は `dist/` に写さず、版のタグのパッケージから `dist/cli.js` がパッケージの直下を基準に読む'
     notes: '`package.json` は `files` を持たず、パッケージには `.gitignore` に当たらないファイルが入る。入ることは E2E（版を上げる）で確かめる'
+  - item: Claude Code プラグインの配布物
+    constraint: '`dist/` を書いた後に、束ねた MCP サーバー `plugin/server/mcp.js` とフック `plugin/scripts/session-start.js`（Node 24、esbuild だけ束ねない）、`dist/` の `index.css`・`viewer.js`・`viewer.css`・`view.js` の写し `plugin/dist/`、使い方集の `plugin/guide/index.json` と指すページの写し、束ねた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き、`plugin/.claude-plugin/plugin.json` の `version` を埋める版にする。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
+    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#constraints[索引の文字数]
+    notes: '`plugin/` の定義（`.mcp.json`・`hooks/hooks.json`・`package.json`・`package-lock.json`・`plugin.json` のその他のキー）は書き換えない'
 test_file: tests/integration/lib/build.test.ts

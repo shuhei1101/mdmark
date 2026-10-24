@@ -1,0 +1,52 @@
+title: "コメントの印"
+implementation: "src/parts/comment.ts#renderCommentMark"
+story: "Parts/CommentMark"
+states:
+  - name: Default
+    description: 段落の中の印
+    args:
+      - name: text
+        value: テーマの変数
+  - name: Expanded
+    description: 吹き出しを開いている
+    args:
+      - name: text
+        value: テーマの変数
+      - name: expanded
+        value: 'true'
+lead: コメントが付いた本文の文字を包む印。本文の文字は変えず、押すと付いたコメントの吹き出しを開く。HTML 文字列を返す。
+args:
+  - name: text
+    type: 文字列
+    required: true
+    description: 包む本文の文字。文字として出し、HTML として解釈しない
+  - name: expanded
+    type: 真偽値
+    default: 'false'
+    description: 吹き出しを開いているか。`aria-expanded` に入れる
+events:
+  - name: 吹き出しを開く
+    when: 印を押すか、フォーカスして Enter・Space を押す
+    value: 印の `aria-expanded`
+    description: '`mount`・`mountComments` が印の下に付いたコメントの吹き出しを開く'
+css_properties:
+  - name: --mdmark-color-comment-bg
+    syntax: <color>
+    default: '#f2effe（ダーク #25222d）'
+    description: 印の地の色と、入力欄を開いている間の選んだ文字の色
+  - name: --mdmark-color-comment-line
+    syntax: <color>
+    default: '#6d28d9（ダーク #c4a7ff）'
+    description: 印の下線の色
+accessibility:
+  - '`mark` に `tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded` を付ける'
+  - '`aria-describedby` で文書の中に 1 つ置く説明 `コメントが付いた箇所` を指す'
+  - 印は地の色と下線で示し、色だけに頼らない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
+status: planned
+notes:
+  HTML: '`<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false" aria-describedby="mdmark-comment-hint">{text}</mark>`。モックは `dev/mock/components/comment/`'
+  印刷: 地の色を外し、下線だけを残す
+test_file: tests/integration/lib/comment-mark.story.test.ts

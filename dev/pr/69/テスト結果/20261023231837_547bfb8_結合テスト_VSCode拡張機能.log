@@ -1,0 +1,452 @@
+# 結合テスト（VS Code 拡張機能）の実行
+# コミット: 547bfb8
+# コマンド: xvfb-run -a npm --prefix vscode run test:integration
+# 結果: VS Code 1.141.0 と stable（1.143.1）で、50 件が全て pass
+
+
+> mdmark@0.1.0 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[main 2026-10-23T14:14:28.179Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[main 2026-10-23T14:14:28.280Z] StorageMainService: creating application shared storage
+[main 2026-10-23T14:14:28.437Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-10-23T14:14:28.437Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[main 2026-10-23T14:14:28.506Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-10-23T14:14:28.507Z] update#setState disabled
+[main 2026-10-23T14:14:28.507Z] update#ctor - updates are disabled by the environment
+Started local extension host with pid 89266.
+Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+
+  バージョンを決められない（前回のバージョンが空）
+(node:89266) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+    ✔ test_error_when_version_undecidable (4590ms)
+    ✔ test_error_when_version_undecidable_on_export (3099ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (482ms)
+    ✔ test_normal_when_output_dir (361ms)
+    ✔ test_error_when_output_unwritable (197ms)
+  ブラウザで開く
+    ✔ test_normal (385ms)
+    ✔ test_error_when_output_unwritable (195ms)
+  PDF に印刷
+    ✔ test_normal (3419ms)
+    ✔ test_normal_when_wait_limit_reached (917ms)
+    ✔ test_error_when_output_unwritable (285ms)
+  設定ファイルを開く
+    ✔ test_normal (258ms)
+    ✔ test_normal_when_template_created (74ms)
+    ✔ test_error_when_template_declined (48ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (552ms)
+    ✔ test_normal_when_markdown_link (306ms)
+    ✔ test_normal_when_anchor_link (716ms)
+    ✔ test_error_when_link_target_missing (878ms)
+  プレビューを開く
+    ✔ test_normal (3570ms)
+    ✔ test_normal_when_same_column (278ms)
+    ✔ test_normal_when_already_open (412ms)
+    ✔ test_normal_when_version_pinned (4769ms)
+    ✔ test_normal_when_tags_unreachable (4654ms)
+    ✔ test_normal_when_theme_fixed (348ms)
+    ✔ test_normal_when_relative_image (331ms)
+    ✔ test_error_when_image_outside_workspace (814ms)
+    ✔ test_error_when_distribution_unreachable (200ms)
+    ✔ test_normal_when_loading_shown (12189ms)
+    ✔ test_error_when_version_missing (407ms)
+    ✔ test_error_when_not_markdown (536ms)
+  プレビューをリロードする
+    ✔ test_normal (316ms)
+    ✔ test_normal_when_from_command (356ms)
+    ✔ test_error_when_no_preview (536ms)
+  プレビューを描き直す
+    ✔ test_normal (1360ms)
+    ✔ test_normal_when_live_update_off (1130ms)
+    ✔ test_normal_when_config_saved (738ms)
+    ✔ test_normal_when_config_missing (439ms)
+    ✔ test_normal_when_revealed (1830ms)
+    ✔ test_normal_when_relative_library (503ms)
+    ✔ test_error_when_config_unreadable (1041ms)
+    ✔ test_normal_when_config_fixed (535ms)
+    ✔ test_normal_when_library_origin_added (714ms)
+  拡張機能の配布物を作る
+    ✔ test_normal (16862ms)
+    ✔ test_error_when_version_mismatch (274ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1443ms)
+    ✔ test_normal_when_from_preview (1032ms)
+    ✔ test_normal_when_sync_off (2996ms)
+    ✔ test_error_when_editor_hidden (927ms)
+  50 passing (1m)
+[main 2026-10-23T14:16:03.430Z] Extension host with pid 89266 exited with code: 0, signal: unknown.
+Exit code:   0
+- Resolving version...
+✔ Validated version: 1.143.1
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode/.vscode-test/vscode-linux-x64-1.143.1
+[main 2026-10-23T14:16:04.579Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode/.vscode-test/vscode-linux-x64-1.143.1/resources/app/node-compile-cache/main, active: none)
+[main 2026-10-23T14:16:04.663Z] StorageMainService: creating application shared storage
+[main 2026-10-23T14:16:04.816Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-10-23T14:16:04.816Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[main 2026-10-23T14:16:04.885Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-10-23T14:16:04.885Z] update#setState disabled
+[main 2026-10-23T14:16:04.885Z] update#ctor - updates are disabled by the environment
+Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Started local extension host with pid 10802.
+Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+speech
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+languageModelRateLimit
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+speech
+DELTA: authIssuers
+languageModelRateLimit
+Proceeding with EXTRA proposals (authIssuers, languageModelRateLimit) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+
+  バージョンを決められない（前回のバージョンが空）
+(node:10802) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+    ✔ test_error_when_version_undecidable (4498ms)
+    ✔ test_error_when_version_undecidable_on_export (3010ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (398ms)
+    ✔ test_normal_when_output_dir (364ms)
+    ✔ test_error_when_output_unwritable (146ms)
+  ブラウザで開く
+    ✔ test_normal (317ms)
+    ✔ test_error_when_output_unwritable (92ms)
+  PDF に印刷
+    ✔ test_normal (3346ms)
+    ✔ test_normal_when_wait_limit_reached (823ms)
+    ✔ test_error_when_output_unwritable (247ms)
+  設定ファイルを開く
+    ✔ test_normal (240ms)
+    ✔ test_normal_when_template_created (59ms)
+    ✔ test_error_when_template_declined
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (277ms)
+    ✔ test_normal_when_markdown_link (219ms)
+    ✔ test_normal_when_anchor_link (553ms)
+    ✔ test_error_when_link_target_missing (878ms)
+  プレビューを開く
+    ✔ test_normal (3450ms)
+    ✔ test_normal_when_same_column (160ms)
+    ✔ test_normal_when_already_open (253ms)
+    ✔ test_normal_when_version_pinned (4783ms)
+    ✔ test_normal_when_tags_unreachable (4672ms)
+    ✔ test_normal_when_theme_fixed (397ms)
+    ✔ test_normal_when_relative_image (324ms)
+    ✔ test_error_when_image_outside_workspace (821ms)
+    ✔ test_error_when_distribution_unreachable (195ms)
+    ✔ test_normal_when_loading_shown (12169ms)
+    ✔ test_error_when_version_missing (263ms)
+    ✔ test_error_when_not_markdown (523ms)
+  プレビューをリロードする
+    ✔ test_normal (327ms)
+    ✔ test_normal_when_from_command (309ms)
+    ✔ test_error_when_no_preview (524ms)
+  プレビューを描き直す
+    ✔ test_normal (1374ms)
+    ✔ test_normal_when_live_update_off (1015ms)
+    ✔ test_normal_when_config_saved (457ms)
+    ✔ test_normal_when_config_missing (198ms)
+    ✔ test_normal_when_revealed (1325ms)
+    ✔ test_normal_when_relative_library (359ms)
+    ✔ test_error_when_config_unreadable (846ms)
+    ✔ test_normal_when_config_fixed (345ms)
+    ✔ test_normal_when_library_origin_added (517ms)
+  拡張機能の配布物を作る
+    ✔ test_normal (14621ms)
+    ✔ test_error_when_version_mismatch (308ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1448ms)
+    ✔ test_normal_when_from_preview (1030ms)
+    ✔ test_normal_when_sync_off (3003ms)
+    ✔ test_error_when_editor_hidden (955ms)
+  50 passing (1m)
+[main 2026-10-23T14:17:31.410Z] Extension host with pid 10802 exited with code: 0, signal: unknown.
+Exit code:   0

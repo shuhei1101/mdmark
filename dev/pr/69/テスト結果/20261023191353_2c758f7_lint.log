@@ -1,0 +1,24 @@
+# lint の実行
+# コミット: 2c758f7
+
+$ npm run lint
+
+> lint
+> biome check .
+
+Checked 418 files in 2s. No fixes applied.
+exit=0
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0
+
+$ npm --prefix vscode run typecheck
+
+> mdmark@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0

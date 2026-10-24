@@ -1,0 +1,14 @@
+# 既存の単体テストの実行（今回作った単体テストを除く）
+# コミット: aa8f431
+# コマンド: npx vitest run --project 'unit*' tests/unit/src tests/unit/scripts -t '^(?!.*(mark_source_lines|sanitize_when_source_line|attach_minimap_when_class_changed|render_part_when_vscode_part)).*$'
+# 今回作った単体テスト（tests/unit/vscode/ と上の名前のテスト）は実装が無く Red のため、この実行から除いた
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-preview-extension
+
+
+ Test Files  114 passed (114)
+      Tests  578 passed | 7 skipped (585)
+   Start at  18:37:45
+   Duration  28.25s (worker 36%, tests 34%, import 26%, transform 4%)
+

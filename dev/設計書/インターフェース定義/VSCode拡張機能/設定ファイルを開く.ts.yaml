@@ -1,0 +1,90 @@
+title: "設定ファイルを開く"
+entry:
+  kind: operation
+  value: 'コマンド `mdmark.openConfig` と、Webview の「設定ファイルを開く」からの `{ type: "openConfig" }`'
+flows:
+  - name: 正常系
+    summary: 設定ファイルがあれば、そのままエディタで開く
+    setup:
+      - name: 設定ファイルのあるワークスペース
+        description: '`mdmark.config.yaml` と `guide.md` を置いたフォルダで `guide.md` を開いた状態'
+      - name: Mock
+        description: '`window.showInformationMessage` を、呼ばれた回数を数える代役に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.openConfig
+        EX->>EX: showTextDocument（mdmark.config.yaml）
+    expected:
+      - アクティブなエディタの文書が `mdmark.config.yaml`
+      - 確認のダイアログの代役が呼ばれず、ファイルの中身が変わらない
+    test: test_normal
+  - name: 正常系（雛形を作る）
+    summary: 設定ファイルが無いとき、作ると答えると雛形を書いて開く
+    setup:
+      - name: 設定ファイルの無いワークスペース
+        description: '`guide.md` だけを置いたフォルダ'
+      - name: Mock
+        description: 確認のダイアログの代役が「作る」を返す
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.openConfig
+        EX->>U: 雛形を作るかの確認
+        U->>EX: 作る
+        EX->>EX: 雛形を書いて開く
+    expected:
+      - '`mdmark.config.yaml` が雛形の中身で書かれ、エディタで開いている'
+      - 雛形を YAML として読むと、`features`・`libraries` のキーを持たない
+    test: test_normal_when_template_created
+  - name: 異常系（作らない・何もしない）
+    summary: 作らないを選ぶとファイルを書かない
+    setup:
+      - name: 設定ファイルの無いワークスペース
+        description: 正常系（雛形を作る）と同じ
+      - name: Mock
+        description: 確認のダイアログの代役が `undefined`（閉じた）を返す
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        U->>EX: mdmark.openConfig
+        EX->>U: 雛形を作るかの確認
+        U->>EX: 閉じる
+        EX->>EX: 何もしない
+    expected:
+      - '`mdmark.config.yaml` が無いまま'
+      - エディタの数が変わらない
+    test: test_error_when_template_declined
+lead: 拡張機能が読む設定ファイルをエディタで開く。無ければ雛形を作るかを尋ね、作ると答えたときだけ作って開く。
+idempotent: true
+side_effects: 雛形を作ると答えたときだけ、`mdmark.configPath` の場所に雛形の YAML を書く。既にあるファイルは書き換えない
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#scenarios[異常シナリオ（設定ファイルを読めない）]
+request:
+  - name: uri
+    type: vscode.Uri
+    required: false
+    default: なし（フォーカスのあるプレビューか、アクティブなエディタの Markdown）
+    location: argument
+    description: 設定ファイルの場所を決める Markdown
+response:
+  - name: '-'
+    type: Promise<void>
+    description: 設定ファイルを開いたか、作らないと答えたら解決する
+exceptions:
+  - name: なし（正常終了）
+    condition: 設定ファイルをエディタで開く
+  - name: なし（作らない）
+    condition: 設定ファイルが無く、雛形を作るかの確認で作らないを選ぶか、ダイアログを閉じる
+    notes: 何も書かずに終わる
+constraints:
+  - item: 設定ファイルの場所
+    constraint: プレビューを描き直す.ts の制約「設定ファイルの場所」と同じ
+  - item: 雛形を作るかの確認
+    constraint: '`window.showInformationMessage` を `{ modal: true }` で出し、「作る」を選んだときだけ作る。文言は画面設計で決める'
+  - item: 雛形の中身
+    constraint: '`features` と `libraries` の書き方をコメントで示し、キーは書かない YAML（中身は画面設計で決める）。フォルダが無ければ作る'
+    notes: キーを書かないため、作った直後のプレビューは雛形を作る前と同じに描く

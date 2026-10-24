@@ -1,0 +1,78 @@
+title: "HTMLに書き出す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本のワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオと同じ。`mdmark.export.outputDir` は既定の空
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        W->>ED: mdmark: HTML に書き出す
+        ED->>EX: mdmark.exportHtml
+        EX->>EX: 決めた版の配布物を読んで mount で描く HTML を組む
+        EX->>EX: Markdown と同じフォルダに書き出す
+        EX-->>W: 書き出したパスと「ブラウザで開く」の通知
+        W->>EX: 通知の「ブラウザで開く」を押す
+        EX->>BR: 書き出した HTML を開く
+        BR-->>W: 文書を表示
+    expected:
+      - Markdown と同じフォルダに、Markdown と同じ名前の `.html` が 1 つ書かれる
+      - 通知に書き出したパスと「ブラウザで開く」が出る
+      - ブラウザで開く代役に、書き出した HTML の URL が渡る
+      - 書き出した HTML をブラウザで開くと、プレビューと同じ見出し・表・注意書き・フロー図が描かれる
+    test: test_normal
+  - name: 正常シナリオ（ブラウザで開く）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ。書き出した HTML はまだ無い
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        W->>EX: mdmark: ブラウザで開く
+        EX->>EX: 開いている Markdown を書き出し直す
+        EX->>BR: 書き出した HTML を開く
+        BR-->>W: 文書を表示
+    expected:
+      - 書き出した HTML が無くても、1 回のコマンドで HTML が書かれてブラウザで開く代役に URL が渡る
+      - 保存していない書き換えも、書き出した HTML に出る
+    test: test_normal_when_open_in_browser
+  - name: 異常シナリオ（書き出せない）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ。`mdmark.export.outputDir` に書き込めないフォルダを指定する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: 書き出し先に書けない
+        EX-->>W: 書き出せない理由の通知
+    expected:
+      - 通知に、書き出し先のパスと書き込めない理由が出る
+      - 書き出し先に `.html` が残らない
+      - ブラウザで開く代役は呼ばれない
+    test: test_error_when_output_unwritable
+lead: 文書を書く人が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
+issue: 22
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: プレビューと同じ見た目の HTML と PDF を、外部のツールを入れずに作れる
+trigger: '文書を書く人がコマンドパレットから「mdmark: HTML に書き出す」か「mdmark: ブラウザで開く」を選ぶ'
+preconditions:
+  - Markdown のファイルをエディタで開いている
+  - 既定のブラウザから jsDelivr に届く
+success_guarantee: 書き出し先に HTML が 1 つ書かれ、ブラウザで開くとプレビューと同じ文書が描かれる。
+minimal_guarantee: 書き出せないときは理由を通知に出し、書きかけのファイルを残さない。Markdown は書き換えない。
+test_file: tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts
