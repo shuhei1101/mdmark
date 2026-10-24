@@ -12,6 +12,7 @@ function resolvedConfig(
     features: { print: true },
     libraries,
     tooltips: { placement: "top" },
+    syntax: { url: "https://example.test/hl/" },
   };
 }
 
