@@ -590,4 +590,6 @@ test_files:
   - tests/unit/src/mount.browser.test.ts
   - tests/unit/src/mount-view.browser.test.ts
   - tests/unit/src/libraries.browser.test.ts
+  - tests/unit/src/highlight.browser.test.ts
+  - tests/unit/src/highlight-lines.test.ts
   - tests/unit/src/print.browser.test.ts
