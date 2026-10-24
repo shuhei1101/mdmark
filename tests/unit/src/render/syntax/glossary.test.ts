@@ -74,12 +74,14 @@ test("test_read_glossary_table", async () => {
       aliases: ["マーク", "オン・オフの印"],
       meaning: "HTML コメントで書く指定",
       docId: "glossary",
+      avoid: [],
     },
     {
       term: "型",
       aliases: ["種類", "タイプ"],
       meaning: "値の分類",
       docId: "glossary",
+      avoid: [],
     },
   ]);
 });
