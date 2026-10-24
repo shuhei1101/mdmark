@@ -393,9 +393,9 @@ functions:
       - name: test_check_arguments_when_item_enum_mismatch
         case: 正常
         summary: 配列の要素が選べない値
-        condition: '`find_docs` の形に `fields: ["body"]`'
+        condition: '`find_docs` の形に `include: ["body"]`'
         mock: なし
-        expected: '`fields` と `path か aliases か related か referenced_by の配列` を含む文'
+        expected: '`include` と `path か aliases か related か referenced_by の配列` を含む文'
     refs:
       - dev/設計書/外部ライブラリ/MCP-SDK#limitations[入力の検査のエラーの文]
     status: planned
