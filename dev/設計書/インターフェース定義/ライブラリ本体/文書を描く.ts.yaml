@@ -1696,6 +1696,36 @@ flows:
       - '`bottom` のとき、末尾の `索引` のツールチップの `bottom` が、語の `top` 以下で、`window.innerHeight` 以下'
       - '`left` を渡した `el2` の `索引` のツールチップの `bottom` が、語の `top` 以下'
     test: test_normal_when_tooltip_placement_bottom
+  - name: 正常系（用語集の表のやめた言い方）
+    summary: 描く文書とほかの文書の用語集の表のやめた言い方にマーカーを付け、索引の用語を先に代わりの用語にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 文書 `glossary`（`glossary.md`）と描く文書 `guide`（`guide.md`）をこの順で持ち、用語 `フォルダ`（意味 `ファイルの入れ物`、`avoid` に `作業場`）を持つ索引
+        notes: '`opts.docId` は `guide`'
+      - name: 参照の表
+        description: '`glossary.md` の本文から `collectReferences` が作った参照の表。`glossary.md` は `<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で、用語 `ワークスペース`（意味 `作業の置き場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表だけを持つ'
+        notes: '`作業場` を索引の用語と表の両方に持たせ、索引が先になることを決定的に起こす'
+      - name: 用語集の表とやめた言い方が出る Markdown
+        description: '`guide.md` の本文。`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で用語 `下書き`（意味 `公開前の文書`、やめた言い方 `草稿、ワーク場`）の行を持つ表を囲み、表の後の段落に `作業場`・`ワーク場`・`草稿` が出る'
+        notes: '`ワーク場` を描く文書の表とほかの文書の表の両方に持たせ、索引の `docs` で先に並ぶ `glossary` の表が先になることを決定的に起こす'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId, references })
+        M->>P: やめた言い方に波線の下線を引いて描く
+        P->>P: 各やめた言い方にフォーカスする
+    expected:
+      - 段落の `作業場`・`ワーク場`・`草稿` が、どれも class `mdmark-term mdmark-term-avoided` の要素
+      - 表の中の `草稿` は class `mdmark-term-avoided` の要素でない
+      - '`作業場` にフォーカスすると、「代わりの用語」の下に索引の用語 `フォルダ` と `ファイルの入れ物` がある'
+      - '`ワーク場` にフォーカスすると、「代わりの用語」の下に、描く文書の表の `下書き` ではなく、索引の `docs` で先に並ぶほかの文書の表の用語 `ワークスペース` と `作業の置き場所` がある'
+      - '`草稿` にフォーカスすると、「代わりの用語」の下に描く文書の表の用語 `下書き` と `公開前の文書` がある'
+    test: test_normal_when_glossary_avoid_column
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -1779,7 +1809,7 @@ request:
     default: なし（被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない）
     location: argument
     description: '`collectReferences` が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う'
-    notes: 形はインターフェース定義『参照の表を作る』のレスポンス
+    notes: 形はインターフェース定義『参照の表を作る』のレスポンス。`glossary[].avoid` が無い用語は、やめた言い方を持たない用語として扱う
   - name: opts.diffSource
     type: DiffSource
     required: false
@@ -1960,6 +1990,6 @@ constraints:
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
   - item: やめた言い方のマーカー
-    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。同じやめた言い方を複数の用語が持つときは、索引の `terms` で先の用語を代わりの用語にする。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
-    notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences`・`collectMatches` の結果と関連文書の一覧は変わらない
+    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、点検の `avoided_term` と同じく、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
+    notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences` の `backlinks`・`collectMatches` の結果と関連文書の一覧は変わらない
 test_file: tests/integration/lib/mount.browser.test.ts

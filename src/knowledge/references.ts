@@ -22,6 +22,8 @@ export type MdmarkGlossaryEntry = {
   meaning: string;
   /** 表を持つ文書の `id` */
   docId: string;
+  /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
+  avoid?: string[] | undefined;
 };
 
 /** `collectReferences` が返し、`mount`・`render` の `opts.references` が受け取る参照の表 */
@@ -38,11 +40,10 @@ export type ParsedDocument = {
   tokens: Token[];
   /** 文書の印を重ねて決まった機能のオン・オフ */
   features: Record<string, boolean>;
-  /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から）・やめた言い方 */
+  /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
   glossary: Array<{
     entry: MdmarkGlossaryEntry;
     line: number;
-    avoid: string[];
   }>;
 };
 
@@ -74,13 +75,11 @@ export function parseDocument(options: {
     docId: options.docId,
     ownGlossary: [],
     glossaryLines: [],
-    glossaryAvoid: [],
   };
   const tokens = parser.parse(options.body, env);
   const glossary = env.ownGlossary.map((entry, position) => ({
     entry,
     line: env.glossaryLines?.[position] ?? 0,
-    avoid: env.glossaryAvoid?.[position] ?? [],
   }));
   return { tokens, features: env.features, glossary };
 }

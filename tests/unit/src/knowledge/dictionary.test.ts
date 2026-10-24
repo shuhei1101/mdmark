@@ -145,6 +145,157 @@ test("test_build_dictionary_avoided_when_glossary_disabled", async () => {
   expect(dictionary.avoided.size).toBe(0);
 });
 
+/** 索引の `docs` が `glossary`・`guide` の順で、用語 `フォルダ` が `作業場` をやめた言い方に持つ索引 */
+const AVOID_TABLE_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [
+    { id: "glossary", path: "glossary.md", title: "用語集" },
+    { id: "guide", path: "guide.md", title: "ガイド" },
+  ],
+  terms: [
+    { id: "folder", term: "フォルダ", meaning: "置き場所", avoid: ["作業場"] },
+  ],
+};
+
+// 用語集の表のやめた言い方を `avoided` に入れ、索引の `terms`、索引の `docs` の順の文書の表の順で代わりの用語を選ぶ（正常系）
+test("test_build_dictionary_avoided_from_glossary", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const references: MdmarkReferences = {
+    backlinks: {},
+    glossary: [
+      {
+        term: "ワークスペース",
+        aliases: [],
+        meaning: "作業の置き場所",
+        docId: "glossary",
+        avoid: ["作業場", "ワーク場"],
+      },
+      // 描く文書の表の用語も参照の表に入っている（描く文書の表と同じ用語）
+      {
+        term: "下書き",
+        aliases: [],
+        meaning: "書きかけの文書",
+        docId: "guide",
+        avoid: ["草稿", "ワーク場"],
+      },
+    ],
+  };
+  // 実行
+  const dictionary = buildDictionary({
+    index: AVOID_TABLE_INDEX,
+    docId: "guide",
+    ownGlossary: [
+      {
+        term: "下書き",
+        aliases: [],
+        meaning: "書きかけの文書",
+        docId: "guide",
+        avoid: ["草稿", "ワーク場"],
+      },
+    ],
+    references,
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  // `作業場` は索引の `フォルダ`、`ワーク場` は索引の `docs` で先の `glossary` の表の `ワークスペース`、`草稿` は描く文書の表の `下書き`
+  expect(Object.fromEntries(dictionary.avoided)).toEqual({
+    作業場: { id: "folder", term: "フォルダ", meaning: "置き場所" },
+    ワーク場: {
+      id: "glossary:glossary:ワークスペース",
+      term: "ワークスペース",
+      meaning: "作業の置き場所",
+    },
+    草稿: {
+      id: "glossary:guide:下書き",
+      term: "下書き",
+      meaning: "書きかけの文書",
+    },
+  });
+  expect(dictionary.avoided.size).toBe(3);
+  for (const word of ["作業場", "ワーク場", "草稿"]) {
+    expect(dictionary.words).not.toContain(word);
+  }
+});
+
+// 描く文書が索引の `docs` に無いときは、描く文書の表のやめた言い方をほかの文書の表より先にする（正常系）
+test("test_build_dictionary_avoided_own_table_first_when_not_in_index", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "glossary", path: "glossary.md", title: "用語集" }],
+  };
+  const references: MdmarkReferences = {
+    backlinks: {},
+    glossary: [
+      {
+        term: "ワークスペース",
+        aliases: [],
+        meaning: "作業の置き場所",
+        docId: "glossary",
+        avoid: ["ワーク場"],
+      },
+    ],
+  };
+  // 実行
+  const dictionary = buildDictionary({
+    index,
+    ownGlossary: [
+      {
+        term: "下書き",
+        aliases: [],
+        meaning: "書きかけの文書",
+        docId: "",
+        avoid: ["ワーク場"],
+      },
+    ],
+    references,
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  expect(dictionary.avoided.get("ワーク場")?.term).toBe("下書き");
+});
+
+// `avoid` が無い用語集の表の用語は、やめた言い方を持たないものとして扱う（正常系）
+test("test_build_dictionary_avoided_when_glossary_entry_without_avoid", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "glossary", path: "glossary.md", title: "用語集" }],
+  };
+  const references: MdmarkReferences = {
+    backlinks: {},
+    glossary: [
+      {
+        term: "ワークスペース",
+        aliases: [],
+        meaning: "作業の置き場所",
+        docId: "glossary",
+      },
+      {
+        term: "下書き",
+        aliases: [],
+        meaning: "書きかけの文書",
+        docId: "glossary",
+        avoid: ["草稿"],
+      },
+    ],
+  };
+  // 実行
+  const dictionary = buildDictionary({
+    index,
+    ownGlossary: [],
+    references,
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  expect([...dictionary.avoided.keys()]).toEqual(["草稿"]);
+  expect(dictionary.avoided.get("草稿")?.term).toBe("下書き");
+  expect(dictionary.words).toContain("ワークスペース");
+});
+
 // 語の区切りに揃う語だけを返す（正常系）
 test("test_find_words", async () => {
   // 準備

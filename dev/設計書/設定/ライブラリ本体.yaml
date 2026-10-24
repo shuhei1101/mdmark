@@ -144,7 +144,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: 索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、索引の `terms[].avoid` のやめた言い方に波線のマーカーと代わりの用語のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く
+    description: 索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、索引の `terms[].avoid` と用語集の表のやめた言い方の列のやめた言い方に波線のマーカーと代わりの用語のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く
     reload: reload
     status: planned
     refs:

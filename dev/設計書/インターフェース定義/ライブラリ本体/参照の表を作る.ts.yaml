@@ -32,7 +32,7 @@ flows:
       - name: 配布物を読む Node の処理
         description: 正常系と同じ
       - name: 用語集のページを持つ索引と本文
-        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文が `<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` で、用語 `印`（別名 `マーク、オン・オフの印`）の行を持つ表を囲む'
+        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文が `<!-- glossary: term=用語 aliases=別名 meaning=意味 avoid=やめた言い方 -->` で、用語 `印`（別名 `マーク、オン・オフの印`、やめた言い方 `しるし`）の行を持つ表を囲む'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -43,7 +43,7 @@ flows:
         M->>M: glossary の印で囲んだ表の列を読む
         M-->>C: { backlinks, glossary }
     expected:
-      - '`glossary` が `[{ "term": "印", "aliases": ["マーク", "オン・オフの印"], "meaning": "HTML コメントで書く指定", "docId": "glossary" }]`'
+      - '`glossary` が `[{ "term": "印", "aliases": ["マーク", "オン・オフの印"], "meaning": "HTML コメントで書く指定", "docId": "glossary", "avoid": ["しるし"] }]`'
     test: test_normal_when_glossary_table
   - name: 正常系（Schema に合わない索引）
     summary: 合わない項目を除いて作り、例外を投げない
@@ -149,6 +149,9 @@ response:
   - name: glossary[].docId
     type: string
     description: その表を持つ文書の `id`。描く文書の表とほかの文書の表の優先を決めるのに使う
+  - name: glossary[].avoid
+    type: string[]
+    description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。`mount`・`render` がほかの文書の表のやめた言い方にマーカーを付けるのに使う
 response_example: |-
   ```json
   {

@@ -1228,6 +1228,101 @@ test("test_normal_when_avoided_term_in_browser", async () => {
   expect(stripSourceLine(html)).toBe(AVOID_EXPECTED_HTML);
 });
 
+// 描く文書とほかの文書の用語集の表のやめた言い方にマーカーを付け、索引の用語を先に代わりの用語にする（正常系）
+test("test_normal_when_glossary_avoid_column", async () => {
+  // 準備
+  const { collectReferences } = await loadBuilt();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [
+      { id: "glossary", path: "glossary.md", title: "用語集" },
+      { id: "guide", path: "guide.md", title: "ガイド" },
+    ],
+    terms: [
+      {
+        id: "folder",
+        term: "フォルダ",
+        meaning: "ファイルの入れ物",
+        avoid: ["作業場"],
+      },
+    ],
+  };
+  const glossaryMarkdown = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  const markdown = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| 下書き | 公開前の文書 | 草稿、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+    "## 節",
+    "",
+    "作業場、ワーク場、草稿を書く。",
+    "",
+  ].join("\n");
+  const references = collectReferences({
+    index,
+    documents: { "glossary.md": glossaryMarkdown, "guide.md": markdown },
+  });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown, index, docId: "guide", references });
+  // 検証
+  // 段落の 3 つの語が、どれもマーカーの要素になる（表の中は照合しない）
+  const avoided = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-term.mdmark-term-avoided"),
+  ];
+  expect(avoided.map((term) => term.textContent)).toEqual([
+    "作業場",
+    "ワーク場",
+    "草稿",
+  ]);
+  expect(el.querySelector("table .mdmark-term")).toBeNull();
+  // フォーカスすると、「代わりの用語」の下に代わりの用語の語と意味が出る
+  const replacementOf = (term: HTMLElement): string[] => {
+    const tip = document.getElementById(
+      term.getAttribute("aria-describedby") ?? "",
+    ) as HTMLElement;
+    term.focus();
+    expect(isOpen(tip)).toBe(true);
+    expect(
+      [...tip.querySelectorAll(".mdmark-term-tip-heading")].map(
+        (heading) => heading.textContent,
+      ),
+    ).toEqual(["代わりの用語"]);
+    return [
+      find<HTMLElement>(tip, ".mdmark-term-tip-replacement").textContent ?? "",
+      find<HTMLElement>(tip, ".mdmark-term-tip-meaning").textContent ?? "",
+    ];
+  };
+  // 索引の用語が、表の用語より先になる
+  expect(replacementOf(avoided[0] as HTMLElement)).toEqual([
+    "フォルダ",
+    "ファイルの入れ物",
+  ]);
+  // 描く文書の表より、索引の `docs` で先に並ぶほかの文書の表が先になる
+  expect(replacementOf(avoided[1] as HTMLElement)).toEqual([
+    "ワークスペース",
+    "作業の置き場所",
+  ]);
+  // 描く文書の表だけが持つやめた言い方は、描く文書の表の用語になる
+  expect(replacementOf(avoided[2] as HTMLElement)).toEqual([
+    "下書き",
+    "公開前の文書",
+  ]);
+});
+
 /** 参照の表: `arch` を `api`・`guide` が参照している */
 const BACKLINKS_REFERENCES: MdmarkReferences = {
   backlinks: { arch: ["api", "guide"], api: ["arch"], guide: [] },

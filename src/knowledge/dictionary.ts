@@ -16,7 +16,7 @@ export type Dictionary = {
   terms: Map<string, { id: string; meaning: string }>;
   /** 語から、その語を `aliases` に持つ文書（索引の `docs` の順） */
   docs: Map<string, MdmarkIndexDoc[]>;
-  /** やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` から。同じ言い方は索引の `terms` で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
+  /** やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
   avoided: Map<string, { id: string; term: string; meaning: string }>;
 };
 
@@ -74,17 +74,38 @@ export function buildDictionary(options: {
         entry.meaning,
       );
     }
-    // 用語の語・別名と同じ語は用語にし、同じやめた言い方は索引の `terms` で先の用語を代わりにする
-    for (const term of index?.terms ?? []) {
-      for (const word of term.avoid ?? []) {
+    // 用語の語・別名と同じ語は用語にし、同じやめた言い方は先の用語を代わりにする（索引の `terms`、索引の `docs` の順の文書の表の順。描く文書が索引の `docs` に無いときは描く文書の表を先にする）
+    const addAvoided = (
+      words: string[],
+      value: { id: string; term: string; meaning: string },
+    ): void => {
+      for (const word of words) {
         if (!terms.has(word) && !avoided.has(word)) {
-          avoided.set(word, {
-            id: term.id,
-            term: term.term,
-            meaning: term.meaning,
-          });
+          avoided.set(word, value);
         }
       }
+    };
+    for (const term of index?.terms ?? []) {
+      addAvoided(term.avoid ?? [], {
+        id: term.id,
+        term: term.term,
+        meaning: term.meaning,
+      });
+    }
+    const ownPosition =
+      docId !== undefined && order(docId) !== Number.MAX_SAFE_INTEGER
+        ? order(docId)
+        : -1;
+    const tableEntries = [
+      ...ownGlossary.map((entry) => ({ entry, position: ownPosition })),
+      ...others.map((entry) => ({ entry, position: order(entry.docId) })),
+    ].sort((a, b) => a.position - b.position);
+    for (const { entry } of tableEntries) {
+      addAvoided(entry.avoid ?? [], {
+        id: `glossary:${entry.docId}:${entry.term}`,
+        term: entry.term,
+        meaning: entry.meaning,
+      });
     }
   }
   if (features.backlinks !== false) {
