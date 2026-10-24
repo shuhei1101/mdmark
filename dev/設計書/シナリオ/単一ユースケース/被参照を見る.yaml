@@ -5,7 +5,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く HTML
       - name: 3 つの文書を持つ索引
-        description: '`docs/index.yaml` に置く索引。文書 `arch`（`path` は `設計/arch.md`、題 `アーキテクチャ`）・`api`（`path` は `api.md`、題 `API`、`related` に `arch`）・`guide`（`path` は `使い方/guide.md`、題 `使い方`）を持つ'
+        description: '`docs/index.yaml` に置く索引。文書 `arch`（`path` は `設計/arch.md`、題 `アーキテクチャ`）・`api`（`path` は `api.md`、題 `API`、`related` に `{to: arch, type: requires, when: API の前提の構成を確かめるとき}`）・`guide`（`path` は `使い方/guide.md`、題 `使い方`）を持つ'
         notes: 3 つの文書を別のフォルダに置く
       - name: ほかの文書の本文
         description: '`guide` の本文が `../設計/arch.md` へのリンクを持つ'
