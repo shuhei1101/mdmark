@@ -111,8 +111,8 @@ scenarios:
       - name: 配布物を読む Node の処理
         description: 正常シナリオと同じ
       - name: 語彙とずれるタグを持つ索引と文書
-        description: '索引の語彙が、`topic:mcp`（別名 `MCP`）・`topic:yaml`（別名 `MCP`）・2 つ目の `topic:yaml`・`topic:old`（振り替え先 `topic:mcp`）・`topic:gone`（振り替え先 `topic:none`）を持つ。文書 `a` のタグは `{name: topic:mcp, main: true}`・`topic:mpc`・`topic:old`。文書の一覧・本文は `a` だけ'
-        notes: 語彙に無いタグの近いタグに `topic:mcp` が選ばれることを、1 文字違いの `topic:mpc` で決定的に起こす
+        description: '索引の語彙が、`topic:mcp`（別名 `MCP`）・`topic:yaml`（別名 `MCP`）・2 つ目の `topic:yaml`・`topic:old`（振り替え先 `topic:mcp`）・`topic:gone`（振り替え先 `topic:none`）を持つ。文書 `a` のタグは `{name: topic:mcp, main: true}`・`topic:mcq`・`topic:old`。文書の一覧・本文は `a` だけ'
+        notes: 語彙に無いタグの近いタグに `topic:mcp` が選ばれることを、1 文字違いの `topic:mcq` で決定的に起こす
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -127,7 +127,7 @@ scenarios:
       ```
     expected:
       - 例外で止まらずに一覧が返る
-      - 語彙に無いタグ `topic:mpc` の行が、`a` のタグの場所と、近いタグ `topic:mcp` を持つ
+      - 語彙に無いタグ `topic:mcq` の行が、`a` のタグの場所と、近いタグ `topic:mcp` を持つ
       - やめたタグ `topic:old` の行が、`a` のタグの場所と、振り替え先 `topic:mcp` を持つ
       - 語彙の `name` の重複 `topic:yaml` の行が、語彙の場所を持つ
       - '`topic:mcp` と `topic:yaml` の別名 `MCP` の重なりの行が、語彙の場所を持つ'
@@ -146,7 +146,7 @@ trigger: 使う側の処理が、読んだ索引と、索引のフォルダの�
 preconditions:
   - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
   - 使う側の処理が索引の YAML と文書のファイルを読んでいる（mdmark はファイルを読まない）
-success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた `id`・用語の重複・本文に出た用語のやめた言い方・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。
+success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた `id`・用語の重複・本文に出た用語のやめた言い方・語彙に無いタグ・やめたタグ・語彙のずれ（タグの語彙を記載した索引のとき）・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。
 minimal_guarantee: Schema に合わない索引でも例外で止まらず、読めた範囲のずれと Schema のずれを返す。点検は索引と文書を書き換えない。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#

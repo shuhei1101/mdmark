@@ -87,10 +87,10 @@ scenarios:
       - 文書と用語の行は変わっていない
       - 書き換えた後の索引が Schema に合う
     test: test_normal_when_tag
-lead: Claude Code が MCP のツール `update_index` で、文書か用語の ID の項目を置き換え・足し・消す。書く前に索引の Schema で検査し、合わなければ書かない。
+lead: Claude Code が MCP のツール `update_index` で、文書・用語・タグの語彙の項目を置き換え・追加・削除する。書く前に索引の Schema で検査し、合わなければ書かない。
 issue: 11
 primary_actor: Claude Code
-trigger: Claude Code が文書を足した・消した・題名を変えた後に、索引を合わせたくなる
+trigger: Claude Code が文書を追加した・消した・題名を変えた後に索引を合わせたくなる。または、タグの語彙を整えたくなる
 preconditions:
   - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
   - 作業のフォルダに設定と索引がある

@@ -12,7 +12,7 @@ scenarios:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: find_docs（text: 1 つ目の文書の題名の一部）
-        S->>F: 設定と索引を読む
+        S->>F: 設定・索引・文書を読む
         S->>S: 題名・別名・概要で引く
         S-->>C: 1 つ目の文書の ID・題名・概要・タグ・文字数の表
     expected:
@@ -52,7 +52,7 @@ scenarios:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: find_docs（全てを持つタグ: topic:mcp・topic:yaml）
-        S->>F: 設定と索引を読む
+        S->>F: 設定・索引・文書を読む
         S-->>C: b の表
         C->>S: find_docs（どれかを持つタグ: topic:mcp・topic:yaml）
         S->>S: 主題のタグが当たる文書を上に並べる
@@ -71,7 +71,7 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
       - name: 語彙に無いタグ
-        description: '`topic:mcp` に 1 文字違いの `topic:mpc`'
+        description: '`topic:mcp` に 1 文字違いの `topic:mcq`'
         notes: 近いタグに `topic:mcp` が選ばれることを決定的に起こす
     flow: |-
       ```mermaid
@@ -80,21 +80,21 @@ scenarios:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: find_docs（タグ: MCP）
-        S->>F: 設定と索引を読む
+        S->>F: 設定・索引・文書を読む
         S->>S: 別名を語彙のタグに直す
         S-->>C: a・b の表
-        C->>S: find_docs（タグ: topic:mpc）
+        C->>S: find_docs（タグ: topic:mcq）
         S-->>C: 空の一覧と、語彙に無いタグの警告
       ```
     expected:
       - 別名 `MCP` で、`topic:mcp` を持つ `a`・`b` が返る
-      - 語彙に無い `topic:mpc` ではエラーにならず、空の一覧が返る
-      - '`topic:mpc` の結果に、`topic:mpc` が語彙に無いことと、近いタグ `topic:mcp` を示す警告が添う'
+      - 語彙に無い `topic:mcq` ではエラーにならず、空の一覧が返る
+      - '`topic:mcq` の結果に、`topic:mcq` が語彙に無いことと、近いタグ `topic:mcp` を示す警告が添う'
     test: test_normal_when_tag_vocabulary
   - name: 正常シナリオ（既定の件数で続きを引く）
     setup:
       - name: 文書の多い作業のフォルダ
-        description: 設定と、文書 25 個を全て載せた索引
+        description: 設定と、文書 25 個を全て載せた索引。全ての文書がタグ `設計` を持つ
         notes: 既定の件数 20 を超える数で、続きがあることを決定的に起こす
       - name: Mock
         description: 正常シナリオと同じ
@@ -105,14 +105,16 @@ scenarios:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: find_docs（引数なし）
-        S->>F: 設定と索引を読む
+        S->>F: 設定・索引・文書を読む
         S-->>C: 先頭の 20 件の表と続きの位置
         C->>S: find_docs（続きの位置）
         S-->>C: 残りの 5 件の表
       ```
     expected:
       - 引数なしで、索引の並びの先頭 20 件が返り、25 件の全ては返らない
-      - 1 回目の結果の先頭が、総件数 25 件・返した件数 20 件・合計文字数・続きの位置を示し、タグごとの件数が添う
+      - 1 回目の結果の先頭が、総件数 25 件・返した件数 20 件・合計文字数・続きの位置を示す
+      - 1 回目の結果のタグごとの件数が、`設計` 25 件を示す（返した 20 件ではなく当たった全件で数える）
+      - 1 回目の結果が、絞り込める引数（タグ・語・件数だけ）を案内する
       - 続きの位置を渡すと残りの 5 件が返り、続きの位置を持たない
     test: test_normal_when_paged
   - name: 正常シナリオ（件数だけ）
@@ -151,7 +153,7 @@ scenarios:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: find_docs（text: 1 つ目の文書の題名の一部）
-        S->>F: 設定と索引を読む
+        S->>F: 設定・索引・文書を読む
         S-->>C: 表と省いた項目
         C->>S: find_docs（text: 同じ語、加える項目: パス）
         S-->>C: パスを持つ表
