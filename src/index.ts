@@ -20,7 +20,11 @@ export type {
 export { registerExtension } from "./extensions.ts";
 export type { MdmarkIndexIssue } from "./knowledge/check.ts";
 export { checkIndex } from "./knowledge/check.ts";
-export type { MdmarkIndex } from "./knowledge/index-shape.ts";
+export type {
+  MdmarkIndex,
+  MdmarkIndexDocTag,
+  MdmarkIndexTag,
+} from "./knowledge/index-shape.ts";
 export type {
   MdmarkAvoidedMatch,
   MdmarkMatch,

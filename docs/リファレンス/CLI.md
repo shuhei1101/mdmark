@@ -169,11 +169,17 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `broken_ref` | `related` の `id` が索引に無い |
 | `duplicate_term` | 用語の語か別名が重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
+| `duplicate_tag` | タグの語彙の `name` が重なっている |
+| `tag_alias_conflict` | タグの語彙の `aliases` が、別のタグの `name` か `aliases` と重なっている |
+| `broken_tag_replacement` | タグの語彙の `deprecated` の振り替え先が、語彙に無い |
+| `unregistered_tag` | 文書のタグが、語彙の `name` にも `aliases` にも無い。近いタグを添える |
+| `deprecated_tag` | 文書のタグが、やめたタグに当たる。振り替え先を添える |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
 
 <!-- /table -->
 
-`missing_doc` から `avoided_term` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
 
 ### 使い方
 

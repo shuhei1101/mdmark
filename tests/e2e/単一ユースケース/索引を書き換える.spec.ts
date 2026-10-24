@@ -98,3 +98,49 @@ test("test_error_when_schema_invalid", async ({ builtRoot, tempDir }) => {
   expect(result.texts[0]).toContain("path");
   expect(await readFile(join(dir, "index.yaml"), "utf8")).toBe(before);
 });
+
+// 語彙を持たない索引に、語彙のタグを name でグループ・説明・別名つきで足す（正常シナリオ（タグの語彙を書き換える））
+test("test_normal_when_tag", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": CONFIG_WITH_INDEX,
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "    tags: [topic:mcp]",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+  });
+  const before = parse(await readFile(join(dir, "index.yaml"), "utf8"));
+  const item = {
+    group: "topic",
+    description:
+      "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs",
+    aliases: ["MCP"],
+  };
+  // 実行
+  const { result, check } = await withMcpClient(
+    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    async (client) => ({
+      result: await callTool(client, "update_index", {
+        kind: "tag",
+        id: "topic:mcp",
+        item,
+      }),
+      check: await callTool(client, "check"),
+    }),
+  );
+  // 検証
+  expect(result.isError).toBe(false);
+  const index = parse(await readFile(join(dir, "index.yaml"), "utf8"));
+  expect(index.tags).toEqual([{ name: "topic:mcp", ...item }]);
+  expect(index.docs).toEqual(before.docs);
+  expect(index.terms).toEqual(before.terms);
+  // 書き換えた後の索引が Schema に合い、タグのずれも無い
+  expect(JSON.parse(check.texts[0] ?? "")).toEqual({ issues: [] });
+});

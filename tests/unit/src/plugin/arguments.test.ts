@@ -89,7 +89,7 @@ test("test_check_arguments_when_enum_mismatch", async () => {
   });
   // 検証
   expect(result).toContain("kind");
-  expect(result).toContain("doc か term");
+  expect(result).toContain("doc か term か tag");
 });
 
 // null を許す引数（正常系）
@@ -115,4 +115,46 @@ test("test_check_arguments_when_not_object", async () => {
   const result = checkArguments({ schema, args: [] });
   // 検証
   expect(result).toContain("オブジェクト");
+});
+
+// 範囲の外か整数でない数（正常系）
+test("test_check_arguments_when_integer_out_of_range", async () => {
+  // 準備
+  const { checkArguments } = await loadArguments();
+  const schema = await schemaOf("find_docs");
+  // 実行
+  const results = [101, 1.5].map((limit) =>
+    checkArguments({ schema, args: { limit } }),
+  );
+  // 検証
+  for (const result of results) {
+    expect(result).toContain("limit");
+    expect(result).toContain("1 以上 100 以下の整数");
+  }
+});
+
+// 真偽値でない値（正常系）
+test("test_check_arguments_when_boolean_mismatch", async () => {
+  // 準備
+  const { checkArguments } = await loadArguments();
+  const schema = await schemaOf("find_docs");
+  // 実行
+  const result = checkArguments({ schema, args: { count_only: "true" } });
+  // 検証
+  expect(result).toContain("count_only");
+  expect(result).toContain("真偽値");
+});
+
+// 配列の要素が選べない値（正常系）
+test("test_check_arguments_when_item_enum_mismatch", async () => {
+  // 準備
+  const { checkArguments } = await loadArguments();
+  const schema = await schemaOf("find_docs");
+  // 実行
+  const result = checkArguments({ schema, args: { include: ["body"] } });
+  // 検証
+  expect(result).toContain("include");
+  expect(result).toContain(
+    "path か aliases か related か referenced_by の配列",
+  );
 });

@@ -65,5 +65,6 @@
 | [索引から文書を探す](./索引から文書を探す.yaml) | Claude Code が `find_docs` で、索引から題名・別名・概要の語・タグ・関係する文書で文書を引く |
 | [索引を書き換える](./索引を書き換える.yaml) | Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない |
 | [ClaudeCodeから点検と書き出しを呼ぶ](./ClaudeCodeから点検と書き出しを呼ぶ.yaml) | Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ |
+| [タグの語彙を見る](./タグの語彙を見る.yaml) | Claude Code が `list_tags` で、索引のタグの語彙を説明と付いている文書の数つきで受け取る |
 
 <!-- /table -->

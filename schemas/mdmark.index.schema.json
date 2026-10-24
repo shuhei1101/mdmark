@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "mdmark の索引",
-  "description": "使う側が文書のメタデータと用語を書く YAML の索引。docs の id と path、terms の id は、それぞれの中で一意にする（この Schema では表せないため、normalizeIndex と checkIndex が確かめる）。",
+  "description": "使う側が文書のメタデータと用語とタグの語彙を書く YAML の索引。docs の id と path、terms の id は、それぞれの中で一意にする（この Schema では表せないため、normalizeIndex と checkIndex が確かめる）。tags の name の重なりは Schema では拒まず、checkIndex が duplicate_tag で知らせる。",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "docs"],
@@ -53,9 +53,32 @@
           },
           "tags": {
             "title": "タグ",
-            "description": "タグ。",
+            "description": "タグ。MCP の find_docs が絞り込みと並びに使う。要素はタグの名前の文字列か、主題のタグかを持つオブジェクト。文字列の要素は main が false のオブジェクトと同じ。",
             "type": "array",
-            "items": { "type": "string", "minLength": 1 },
+            "items": {
+              "anyOf": [
+                { "type": "string", "minLength": 1 },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name"],
+                  "properties": {
+                    "name": {
+                      "title": "タグの名前",
+                      "description": "タグの名前。",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "main": {
+                      "title": "主題のタグ",
+                      "description": "主題のタグか。省くと false。find_docs は、渡したタグが主題のタグに当たる文書を上に並べる。",
+                      "type": "boolean",
+                      "default": false
+                    }
+                  }
+                }
+              ]
+            },
             "default": []
           },
           "related": {
@@ -108,6 +131,48 @@
             "type": "array",
             "items": { "type": "string", "minLength": 1 },
             "default": []
+          }
+        }
+      }
+    },
+    "tags": {
+      "title": "タグの語彙",
+      "description": "索引に載せるタグの語彙。文書の tags と、MCP の find_docs・list_tags に渡すタグは、ここの name と aliases に突き合わせる。",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "title": "名前",
+            "description": "タグの名前。重なっても Schema は拒まず、点検が duplicate_tag で知らせる。",
+            "type": "string",
+            "minLength": 1
+          },
+          "group": {
+            "title": "グループ",
+            "description": "タグのグループ（topic・kind・scope・tool など）。",
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "title": "説明",
+            "description": "タグを付ける文書の「含める / 含めない / 例」。MCP の list_tags が返す。",
+            "type": "string"
+          },
+          "aliases": {
+            "title": "別名",
+            "description": "タグの別名。文書の tags と find_docs に渡した別名は、このタグの name として扱う。別のタグの name か aliases と重なると、点検が tag_alias_conflict で知らせる。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "default": []
+          },
+          "deprecated": {
+            "title": "振り替え先",
+            "description": "やめたタグのとき、代わりに使うタグの name。書いたタグはやめたタグになる。語彙に無い name は、点検が broken_tag_replacement で知らせる。",
+            "type": "string",
+            "minLength": 1
           }
         }
       }

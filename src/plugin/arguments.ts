@@ -6,16 +6,27 @@ import type {
 
 /** ツールの引数 1 つの形（JSON Schema 2020-12 のうち使う範囲） */
 export type ArgumentSchema = {
-  /** `string`・`array`・`object`・`null` かその並び */
-  type: "string" | "array" | "object" | "null" | ("object" | "null")[];
-  /** 配列の要素の形 */
-  items?: { type: "string" };
+  /** `string`・`integer`・`boolean`・`array`・`object`・`null` かその並び */
+  type:
+    | "string"
+    | "integer"
+    | "boolean"
+    | "array"
+    | "object"
+    | "null"
+    | ("object" | "null")[];
+  /** 配列の要素の形。要素が選べる値を `enum` で持てる */
+  items?: { type: "string"; enum?: string[] };
   /** 選べる値 */
   enum?: string[];
   /** 配列の最小の要素数 */
   minItems?: number;
   /** 文字列の最小の長さ */
   minLength?: number;
+  /** 整数の最小値 */
+  minimum?: number;
+  /** 整数の最大値 */
+  maximum?: number;
   /** 引数の説明 */
   description?: string;
 };
@@ -51,6 +62,10 @@ function matchesType(schema: ArgumentSchema, value: unknown): boolean {
     switch (type) {
       case "string":
         return typeof value === "string";
+      case "integer":
+        return Number.isInteger(value);
+      case "boolean":
+        return typeof value === "boolean";
       case "array":
         return (
           Array.isArray(value) &&
@@ -74,7 +89,18 @@ function describeType(schema: ArgumentSchema): string {
   }
   const types = Array.isArray(schema.type) ? schema.type : [schema.type];
   if (types.includes("array")) {
+    if (schema.items?.enum !== undefined) {
+      return `${schema.items.enum.join(" か ")} の配列`;
+    }
     return schema.items === undefined ? "配列" : "文字列の配列";
+  }
+  if (types.includes("integer")) {
+    return schema.minimum !== undefined && schema.maximum !== undefined
+      ? `${schema.minimum} 以上 ${schema.maximum} 以下の整数`
+      : "整数";
+  }
+  if (types.includes("boolean")) {
+    return "真偽値";
   }
   if (types.includes("string")) {
     return schema.minLength === undefined ? "文字列" : "空でない文字列";
@@ -95,6 +121,20 @@ function describeMismatch(
   }
   if (schema.enum !== undefined && !schema.enum.includes(value as string)) {
     return schema.enum.join(" か ");
+  }
+  if (
+    typeof value === "number" &&
+    ((schema.minimum !== undefined && value < schema.minimum) ||
+      (schema.maximum !== undefined && value > schema.maximum))
+  ) {
+    return describeType(schema);
+  }
+  if (
+    schema.items?.enum !== undefined &&
+    Array.isArray(value) &&
+    value.some((item) => !schema.items?.enum?.includes(item))
+  ) {
+    return describeType(schema);
   }
   if (
     schema.minItems !== undefined &&

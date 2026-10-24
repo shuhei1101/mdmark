@@ -192,7 +192,7 @@ response:
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
     notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び → `unknown_mark`（文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'unknown_mark'"
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'unknown_mark'"
     description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないものを含む）、`no_documents` は `build.include` に当たる文書が 0 件、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある。ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1

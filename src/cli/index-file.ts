@@ -22,9 +22,11 @@ const INDEX_LOCK_TIMEOUT_MS = 5000;
 const INDEX_MISSING_MESSAGE =
   "設定に index がありません。index に索引のファイルのパスを書いてください。";
 /** `kind` から索引の一覧のキーを引く表 */
-const LIST_KEYS = { doc: "docs", term: "terms" } as const;
+const LIST_KEYS = { doc: "docs", term: "terms", tag: "tags" } as const;
+/** `kind` から、一覧の要素を引く鍵のキーを引く表 */
+const ITEM_KEYS = { doc: "id", term: "id", tag: "name" } as const;
 
-/** 書き換える一覧: 文書か用語 */
+/** 書き換える一覧: 文書か用語かタグの語彙 */
 export type IndexKind = keyof typeof LIST_KEYS;
 
 /** 書き換えでしたこと */
@@ -44,23 +46,24 @@ export async function requireIndexWithDocuments(loaded: LoadedConfig): Promise<{
   return read;
 }
 
-/** 索引の YAML の文書で、`docs` か `terms` の ID の要素を置き換え・末尾へ足し・消し、書き換えた後の索引を索引の形で検査する。渡した `document` を書き換える */
+/** 索引の YAML の文書で、`docs`・`terms`・`tags` のどれかの鍵の要素を置き換え・末尾へ足し・消し、書き換えた後の索引を索引の形で検査する。渡した `document` を書き換える */
 export function applyIndexUpdate(options: {
   /** 索引の YAML の文書 */
   document: Document;
   /** 書き換える一覧 */
   kind: IndexKind;
-  /** 文書か用語の ID */
+  /** 文書か用語の ID、タグの語彙の名前 */
   id: string;
   /** 項目の中身。`null` は消す */
   item: Record<string, unknown> | null;
 }): { action: IndexAction; problems: IndexProblem[] } {
   const { document, kind, id, item } = options;
   const key = LIST_KEYS[kind];
+  const itemKey = ITEM_KEYS[kind];
   const found = document.get(key, true);
   let list: YAMLSeq | undefined = isSeq(found) ? found : undefined;
   const position = list
-    ? list.items.findIndex((node) => isMap(node) && node.get("id") === id)
+    ? list.items.findIndex((node) => isMap(node) && node.get(itemKey) === id)
     : -1;
 
   let action: IndexAction;
@@ -71,11 +74,15 @@ export function applyIndexUpdate(options: {
       );
     }
     list.items.splice(position, 1);
+    // 最後のタグを消したら、`tags` のキーも消す
+    if (kind === "tag" && list.items.length === 0) {
+      document.delete(key);
+    }
     action = "removed";
   } else {
-    // 要素は `id` を先頭にした並びにし、`item` の `id` は使わない
-    const { id: _ignored, ...rest } = item;
-    const node = document.createNode({ id, ...rest });
+    // 要素は鍵（`id`・`name`）を先頭にした並びにし、`item` の鍵は使わない
+    const { [itemKey]: _ignored, ...rest } = item;
+    const node = document.createNode({ [itemKey]: id, ...rest });
     if (list === undefined) {
       list = document.createNode([]) as YAMLSeq;
       document.set(key, list);
@@ -153,7 +160,7 @@ export async function updateIndexFile(options: {
   loaded: LoadedConfig;
   /** 書き換える一覧 */
   kind: IndexKind;
-  /** 文書か用語の ID */
+  /** 文書か用語の ID、タグの語彙の名前 */
   id: string;
   /** 項目の中身。`null` は消す */
   item: Record<string, unknown> | null;

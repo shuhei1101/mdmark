@@ -1,0 +1,167 @@
+title: "タグの語彙を見る"
+entry:
+  kind: mcp_tool
+  value: list_tags
+flows:
+  - name: 正常系
+    summary: 語彙の全てのタグを、付いている文書の数つきで返す
+    setup:
+      - name: 語彙を持つ作業のフォルダ
+        description: '設定と、`tags` に `topic:mcp`（`group` が `topic`・説明・`aliases` に `MCP`）・`topic:yaml`・`topic:old`（`deprecated` が `topic:mcp`）・`topic:unused` を持つ索引と文書 2 つ。`a` のタグは `{name: topic:mcp, main: true}`、`b` のタグは `MCP` と `topic:yaml`'
+        notes: 別名で付けたタグも数えることを `b` の `MCP` で、文書の数 0 を `topic:old`・`topic:unused` で起こす
+      - name: Mock
+        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（format: json）
+        S->>F: 設定と索引を読む
+        S->>S: タグごとに付いている文書を数える
+        S-->>C: tags
+    expected:
+      - '`tags` が `topic:mcp`・`topic:yaml`・`topic:old`・`topic:unused` の順'
+      - '`topic:mcp` が `group: "topic"`・説明・`aliases: ["MCP"]`・`deprecated: null`・`docs: 2` を持つ'
+      - '`topic:yaml` の `docs` が 1、`topic:old` の `deprecated` が `topic:mcp` で `docs` が 0、`topic:unused` の `docs` が 0'
+      - 索引と文書が変わっていない
+    test: test_normal
+  - name: 正常系（語で絞る）
+    summary: query が名前・別名・説明に当たるタグだけを返す
+    setup:
+      - name: 語彙を持つ作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（query: mcp、format: json）
+        S->>F: 設定と索引を読む
+        S->>S: 名前・別名・説明が語に当たるタグを選ぶ
+        S-->>C: tags（topic:mcp）
+    expected:
+      - '`tags` が `topic:mcp` の 1 件だけ'
+      - 小文字の `mcp` で、名前と別名 `MCP` に当たる
+    test: test_normal_when_query
+  - name: 正常系（語彙が無い）
+    summary: 語彙を持たない索引では空の一覧を返す
+    setup:
+      - name: 語彙を持たない作業のフォルダ
+        description: 設定と、`tags` を持たず、文書がタグ `設計` を持つ索引
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（format: json）
+        S->>F: 設定と索引を読む
+        S-->>C: 空の tags
+    expected:
+      - '`isError` が立たず、`tags` が空'
+    test: test_normal_when_no_vocabulary
+  - name: 異常系（設定に索引が無い・ツールのエラー）
+    summary: 設定に index が無いときはエラーにする
+    setup:
+      - name: 索引の無い設定
+        description: '`index` を持たない `mdmark.config.yaml` を置いたフォルダ'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: list_tags
+        S->>S: 設定に index が無い
+        S-->>C: isError（設定に index を書くこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に、設定に `index` が無いことと、`index` に索引のファイルを書くことが出る
+    test: test_error_when_index_missing
+lead: 設定の `index` の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで返す。付いている文書が 0 件のタグも返す。
+idempotent: true
+side_effects: なし（索引と文書を書き換えない）
+request:
+  - name: query
+    type: string
+    required: false
+    default: なし（語で絞らない）
+    location: argument
+    description: タグの名前（`name`）・別名（`aliases`）・説明（`description`）のどれかに含まれる語。大文字と小文字を区別しない
+  - name: format
+    type: "'markdown' | 'json'"
+    required: false
+    default: markdown
+    location: argument
+    description: 結果の形式。意味は『文書を探す』の `format` と同じ
+  - name: config
+    type: string
+    required: false
+    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    location: argument
+    description: 使う設定ファイルのパス
+request_example: |-
+  ```json
+  {"query": "MCP", "format": "json"}
+  ```
+response:
+  - name: tags[].name
+    type: string
+    description: タグの名前
+  - name: tags[].group
+    type: string | null
+    description: グループ。語彙に無いときは null
+  - name: tags[].description
+    type: string | null
+    description: 説明（含める / 含めない / 例）。語彙に無いときは null
+  - name: tags[].aliases
+    type: string[]
+    description: 別名。語彙に無いときは空
+  - name: tags[].deprecated
+    type: string | null
+    description: やめたタグの振り替え先の `name`。やめたタグでないときは null
+  - name: tags[].docs
+    type: number
+    description: そのタグが付いている文書の数
+response_example: |-
+  `format: "json"` のとき:
+
+  ```json
+  {"tags": [{"name": "topic:mcp", "group": "topic", "description": "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs", "aliases": ["MCP"], "deprecated": null, "docs": 2}]}
+  ```
+
+  `format: "markdown"` のとき（text だけ）:
+
+  ```markdown
+  | 名前 | グループ | 説明 | 別名 | 振り替え先 | 文書の数 |
+  | --- | --- | --- | --- | --- | --- |
+  | topic:mcp | topic | 含める: MCP のツール。含めない: Claude Code の設定。例: find_docs | MCP | - | 2 |
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 索引を読めた。索引が語彙を持たないときも、当たるタグが 0 件のときも、空の `tags` を返す
+  - name: ツールのエラー（設定に索引が無い）
+    condition: 設定に `index` が無い
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+constraints:
+  - item: 並び
+    constraint: 索引の `tags` の並び。同じ `name` が複数あるときは先の 1 つだけを返す
+  - item: 文書の数
+    constraint: 索引の `docs` のうち、`tags` の要素（文字列か `name`）がそのタグの `name` か `aliases` に当たる文書の数。別名の解き方は『索引を点検する』のタグの点検と同じ
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[タグの点検]
+  - item: 件数
+    constraint: 制限なし（語彙の全てのタグを返す。語彙は ER 図『索引』の規模 ~100）
+  - item: 返す形式
+    constraint: '`markdown` はタグの表だけのテキストを返し、structuredContent を返さない。`json` はレスポンスのオブジェクトを structuredContent に入れ、同じ JSON の文字列を text に入れる'
+  - item: readOnlyHint
+    constraint: 'ツールの annotations に `readOnlyHint: true` を付ける'
+  - item: 設定ファイルと索引を読めないとき
+    constraint: 『文書を探す』と同じくツールのエラーにする
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/タグの語彙を見る#
+  - dev/設計書/ER図/索引#
+test_file: tests/integration/ClaudeCodeプラグイン/list-tags.test.ts

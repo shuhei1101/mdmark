@@ -64,10 +64,33 @@ scenarios:
       - エラーの文に、合わない項目の場所と直し方が出る
       - 索引のファイルの中身が書き換える前と同じ
     test: test_error_when_schema_invalid
-lead: Claude Code が MCP のツール `update_index` で、文書か用語の ID の項目を置き換え・足し・消す。書く前に索引の Schema で検査し、合わなければ書かない。
+  - name: 正常シナリオ（タグの語彙を書き換える）
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 1 つ。索引はタグの語彙を持たず、文書はタグ `topic:mcp` を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: tag、id: topic:mcp、item: グループ・説明・別名）
+        S->>F: 索引を読む
+        S->>S: 語彙のタグを追加した索引を Schema で検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: 書き換えた
+      ```
+    expected:
+      - 索引のファイルの最上位のタグの語彙に、`topic:mcp` のタグがグループ・説明・別名つきで入る
+      - 文書と用語の行は変わっていない
+      - 書き換えた後の索引が Schema に合う
+    test: test_normal_when_tag
+lead: Claude Code が MCP のツール `update_index` で、文書・用語・タグの語彙の項目を置き換え・追加・削除する。書く前に索引の Schema で検査し、合わなければ書かない。
 issue: 11
 primary_actor: Claude Code
-trigger: Claude Code が文書を足した・消した・題名を変えた後に、索引を合わせたくなる
+trigger: Claude Code が文書を追加した・消した・題名を変えた後に索引を合わせたくなる。または、タグの語彙を整えたくなる
 preconditions:
   - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
   - 作業のフォルダに設定と索引がある

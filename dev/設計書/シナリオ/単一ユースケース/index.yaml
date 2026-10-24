@@ -114,3 +114,5 @@ items:
     summary: Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない
   - page: ClaudeCodeから点検と書き出しを呼ぶ.yaml
     summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ
+  - page: タグの語彙を見る.yaml
+    summary: Claude Code が `list_tags` で、索引のタグの語彙を説明と付いている文書の数つきで受け取る

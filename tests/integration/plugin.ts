@@ -15,6 +15,8 @@ export type ToolResult = {
   isError: boolean;
   /** 内容のテキストを並べたもの */
   texts: string[];
+  /** structuredContent。持たないときは `undefined` */
+  structured: Record<string, unknown> | undefined;
 };
 
 /** フックを子プロセスで流した結果 */
@@ -148,5 +150,6 @@ export async function callTool(
   return {
     isError: result.isError === true,
     texts: content.map((item) => item.text),
+    structured: result.structuredContent as Record<string, unknown> | undefined,
   };
 }

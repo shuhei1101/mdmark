@@ -82,7 +82,7 @@ response:
     type: string
     description: 行かキーのパス。無いときは空の文字列
   - name: issues[].kind
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'unknown_mark'"
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'unknown_mark'"
     description: ずれの種類。意味は『設定と索引を点検する』の「種類」
   - name: issues[].message
     type: string
@@ -102,6 +102,8 @@ error_format: 'ツールの結果を `isError: true` にし、内容のテキス
 constraints:
   - item: CLI との一致
     constraint: 同じ設定・索引・文書では、`issues` が `mdmark check` の出力の行と 1 対 1 に一致する
+  - item: readOnlyHint
+    constraint: 'ツールの annotations に `readOnlyHint: true` を付ける'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
 test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts

@@ -12,12 +12,13 @@ scenarios:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: find_docs（text: 1 つ目の文書の題名の一部）
-        S->>F: 設定と索引を読む
+        S->>F: 設定・索引・文書を読む
         S->>S: 題名・別名・概要で引く
-        S-->>C: 1 つ目の文書の ID・パス・題名・概要・タグ
+        S-->>C: 1 つ目の文書の ID・題名・概要・タグ・文字数の表
     expected:
       - 1 つ目の文書だけが返る
-      - 返った行が ID・パス・題名・概要・タグを持つ
+      - 結果が Markdown の表で、返った行が ID・題名・概要・タグ・文字数を持つ
+      - 結果の先頭が、総件数 1 件・返した件数 1 件・合計文字数を示す
       - 索引に載っていない 2 つ目の文書は返らない
       - 索引と文書が変わっていない
     test: test_normal
@@ -37,6 +38,133 @@ scenarios:
     expected:
       - 空の一覧が返り、エラーにならない
     test: test_normal_when_no_match
+  - name: 正常シナリオ（タグを AND と OR で絞る）
+    setup:
+      - name: タグを持つ作業のフォルダ
+        description: 設定と、語彙に `topic:mcp`・`topic:yaml` を持つ索引と、文書 3 つ。索引の `docs` の並びは `c`（`topic:yaml`）・`a`（主題の `topic:mcp`）・`b`（`topic:mcp` と主題の `topic:yaml`）
+        notes: 主題のタグが当たる文書を上にした並びが索引の並びと違うことを、`c` を先頭に置いて決定的に起こす
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（全てを持つタグ: topic:mcp・topic:yaml）
+        S->>F: 設定・索引・文書を読む
+        S-->>C: b の表
+        C->>S: find_docs（どれかを持つタグ: topic:mcp・topic:yaml）
+        S->>S: 主題のタグが当たる文書を上に並べる
+        S-->>C: a・b・c の表とタグごとの件数
+      ```
+    expected:
+      - 全てを持つタグで、`b` だけが返る
+      - どれかを持つタグで、`a`・`b`・`c` の順に返る（主題のタグが当たる `a`・`b` が上で、その中は索引の並び）
+      - 各行のタグで、どのタグが主題か分かる
+      - どれかを持つタグの結果のタグごとの件数が、`topic:mcp` 2 件・`topic:yaml` 2 件を示す
+    test: test_normal_when_tags_and_or
+  - name: 正常シナリオ（語彙で引くタグ）
+    setup:
+      - name: タグの別名を持つ作業のフォルダ
+        description: タグを AND と OR で絞るシナリオと同じ作業のフォルダで、語彙の `topic:mcp` が別名 `MCP` を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 語彙に無いタグ
+        description: '`topic:mcp` に 1 文字違いの `topic:mcq`'
+        notes: 近いタグに `topic:mcp` が選ばれることを決定的に起こす
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（タグ: MCP）
+        S->>F: 設定・索引・文書を読む
+        S->>S: 別名を語彙のタグに直す
+        S-->>C: a・b の表
+        C->>S: find_docs（タグ: topic:mcq）
+        S-->>C: 空の一覧と、語彙に無いタグの警告
+      ```
+    expected:
+      - 別名 `MCP` で、`topic:mcp` を持つ `a`・`b` が返る
+      - 語彙に無い `topic:mcq` ではエラーにならず、空の一覧が返る
+      - '`topic:mcq` の結果に、`topic:mcq` が語彙に無いことと、近いタグ `topic:mcp` を示す警告が添う'
+    test: test_normal_when_tag_vocabulary
+  - name: 正常シナリオ（既定の件数で続きを引く）
+    setup:
+      - name: 文書の多い作業のフォルダ
+        description: 設定と、文書 25 個を全て載せた索引。全ての文書がタグ `設計` を持つ
+        notes: 既定の件数 20 を超える数で、続きがあることを決定的に起こす
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（引数なし）
+        S->>F: 設定・索引・文書を読む
+        S-->>C: 先頭の 20 件の表と続きの位置
+        C->>S: find_docs（続きの位置）
+        S-->>C: 残りの 5 件の表
+      ```
+    expected:
+      - 引数なしで、索引の並びの先頭 20 件が返り、25 件の全ては返らない
+      - 1 回目の結果の先頭が、総件数 25 件・返した件数 20 件・合計文字数・続きの位置を示す
+      - 1 回目の結果のタグごとの件数が、`設計` 25 件を示す（返した 20 件ではなく当たった全件で数える）
+      - 1 回目の結果が、絞り込める引数（タグ・語・件数だけ）を案内する
+      - 続きの位置を渡すと残りの 5 件が返り、続きの位置を持たない
+    test: test_normal_when_paged
+  - name: 正常シナリオ（件数だけ）
+    setup:
+      - name: タグを持つ作業のフォルダ
+        description: タグを AND と OR で絞るシナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（どれかを持つタグ: topic:mcp・topic:yaml、件数だけ）
+        S->>F: 設定・索引・文書を読む
+        S-->>C: 総件数・合計文字数・タグごとの件数
+        C->>S: find_docs（どれかを持つタグ: topic:mcp・topic:yaml）
+        S-->>C: a・b・c の表
+      ```
+    expected:
+      - 件数だけの結果が、文書の行を持たない
+      - 件数だけの結果が、総件数 3 件・合計文字数・タグごとの件数を示す
+      - 件数だけの合計文字数が、同じタグで引いた表の各行の文字数の合計と同じ
+    test: test_normal_when_count_only
+  - name: 正常シナリオ（返す量と形式を変える）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: find_docs（text: 1 つ目の文書の題名の一部）
+        S->>F: 設定・索引・文書を読む
+        S-->>C: 表と省いた項目
+        C->>S: find_docs（text: 同じ語、加える項目: パス）
+        S-->>C: パスを持つ表
+        C->>S: find_docs（text: 同じ語、形式: JSON）
+        S-->>C: JSON
+      ```
+    expected:
+      - 既定の結果が、省いた項目にパスを含み、パスの取り方を示す
+      - パスを加えた結果の行が、1 つ目の文書のパスを持つ
+      - JSON の形式の結果が、テキストと構造化した結果の両方に同じ JSON を持ち、1 つ目の文書の行を持つ
+    test: test_normal_when_view_and_format
 lead: Claude Code が MCP のツール `find_docs` で、設定の `index` の索引から、題名・別名・概要の語・タグ・関係する文書で文書を引く。
 issue: 11
 primary_actor: Claude Code
@@ -44,6 +172,6 @@ trigger: Claude Code が、文書を書く前や書き換える前に、関係�
 preconditions:
   - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
   - 作業のフォルダに設定と索引がある
-success_guarantee: 条件に当たる文書の ID・パス・題名・概要・タグが返る。
+success_guarantee: 条件に当たる文書が、主題のタグが当たる文書を上にした並びで、既定の件数ずつ返る。各行は ID・題名・概要・タグ・文字数を持ち、結果の先頭に総件数・返した件数・合計文字数・続きの位置が、あわせてタグごとの件数が返る。
 minimal_guarantee: 索引と文書を書き換えない。
 test_file: tests/e2e/単一ユースケース/索引から文書を探す.spec.ts

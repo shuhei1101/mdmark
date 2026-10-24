@@ -10,7 +10,7 @@ export const SERVER_NAME = "mdmark";
 
 /** MCP の `instructions` に渡す、何のためにどのツールを呼ぶかの事実の文 */
 export const INSTRUCTIONS =
-  "mdmark の記法・部品・図の描き方・拡張の仕方は、使い方集の索引の名前を read_guide に渡すと読める。文書の書き出しは export_html、まとめは build_site、点検は check、索引の文書の検索は find_docs、索引の書き換えは update_index で行える。";
+  "mdmark の記法・部品・図の描き方・拡張の仕方は、使い方集の索引の名前を read_guide に渡すと読める。文書の書き出しは export_html、まとめは build_site、点検は check、索引の文書の検索は find_docs、タグの語彙の一覧は list_tags、索引の書き換えは update_index で行える。";
 
 /** Claude Code が MCP サーバーに渡すセッションのフォルダの環境変数の名前 */
 export const PROJECT_DIR_ENV = "CLAUDE_PROJECT_DIR";
@@ -36,6 +36,9 @@ export function createMcpServer(options: {
       {
         description: tool.description,
         inputSchema: fromJsonSchema(tool.inputSchema, ACCEPT_ALL_VALIDATOR),
+        ...(tool.annotations !== undefined && {
+          annotations: tool.annotations,
+        }),
       },
       (args) => callTool({ tool, args, context, stderr }),
     );

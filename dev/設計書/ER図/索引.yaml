@@ -1,15 +1,24 @@
 title: "ER 図: 索引"
 lead: 使う側が文書のメタデータと用語を書く YAML の索引。場所は設定の `index` で決め、使う側が読んだオブジェクトを `mount`・`render`・`collectReferences`・`checkIndex` に渡す。形は `schemas/mdmark.index.schema.json`（JSON Schema draft 2020-12）で縛る。
-overview: 'データストアは YAML の 1 ファイル。最上位は `schema`（索引の版。整数で今は `1`、必須）・`docs`（文書の並び、必須）・`terms`（用語の並び、任意）の 3 つのキーを持ち、ほかのキーは拒む。索引の版を上げる移行は #10 が持つ'
+overview: 'データストアは YAML の 1 ファイル。最上位は `schema`（索引の版。整数で今は `1`、必須）・`docs`（文書の並び、必須）・`terms`（用語の並び、任意）・`tags`（タグの語彙、任意）のキーを持ち、ほかのキーは拒む。索引の版を上げる移行は #10 が持つ'
 er:
   entities:
     - name: 文書
     - name: 用語
+    - name: タグの語彙
   relations:
     - from: 文書
       to: 文書
       cardinality: '}o--o{'
       label: related
+    - from: 文書
+      to: タグの語彙
+      cardinality: '}o--o{'
+      label: tags
+    - from: タグの語彙
+      to: タグの語彙
+      cardinality: '}o--o|'
+      label: deprecated
 tables:
   - name: docs
     title: 文書
@@ -59,9 +68,9 @@ tables:
         title: タグ
         type: array
         default: '`[]`'
-        description: タグ。MCP の `find_docs`（#11）が絞り込みに使う
-        example: '[設計]'
-        notes: 要素は空でない文字列
+        description: タグ。MCP の `find_docs`（#11）が絞り込みに使う。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト
+        example: '[設計, {name: topic:mcp, main: true}]'
+        notes: '文字列の要素は `main: false` と同じ。タグの語彙（`tags`）を記載した索引で、語彙の `name` にも `aliases` にも無いタグは `checkIndex` が `unregistered_tag`、`deprecated` のタグは `deprecated_tag` で知らせる'
       - name: related
         title: 関連する文書
         type: array
@@ -116,7 +125,52 @@ tables:
         description: 使わないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で知らせ、描いた文書では波線のマーカーと「代わりの用語」のツールチップを出す
         example: '[作業場]'
         notes: 要素は空でない文字列
+  - name: tags
+    title: タグの語彙
+    datastore: YAML
+    summary: 索引に載せたタグ 1 つと、その説明・別名・振り替え先
+    primary_key: name
+    scale: ~100
+    access: 全件
+    columns:
+      - name: name
+        title: 名前
+        type: string
+        not_null: true
+        primary_key: true
+        unique: true
+        check: 空でない
+        description: タグの名前。文書の `tags` と MCP の `find_docs` に渡すタグと突き合わせる
+        example: topic:mcp
+        notes: 重なった名前は Schema では拒まず、`checkIndex` が `duplicate_tag` で知らせる
+      - name: group
+        title: グループ
+        type: string
+        check: 空でない
+        description: タグのグループ（`topic`・`kind`・`scope`・`tool` など）
+        example: topic
+      - name: description
+        title: 説明
+        type: string
+        description: タグを付ける文書の「含める / 含めない / 例」。MCP の `list_tags` が返す
+        example: '含める: MCP のツールの作り方。含めない: Claude Code の設定。例: find_docs の引数'
+      - name: aliases
+        title: 別名
+        type: array
+        default: '`[]`'
+        description: タグの別名。文書の `tags` と `find_docs` に渡した別名は、このタグの `name` として扱う
+        example: '[MCP]'
+        notes: 要素は空でない文字列。別のタグの `name` か `aliases` と重なると `checkIndex` が `tag_alias_conflict` で知らせる
+      - name: deprecated
+        title: 振り替え先
+        type: string
+        check: 空でない
+        description: やめたタグのとき、代わりに使うタグの `name`。書いたタグはやめたタグになる
+        example: topic:mcp
+        notes: 語彙に無い `name` は `checkIndex` が `broken_tag_replacement` で知らせる
+    introduced:
+      pr: 114
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
 notes:
-  MCP からの書き換え: MCP の `update_index` は `docs` か `terms` の要素を 1 つだけ置き換え・末尾へ足し・消す。渡した要素の前後の要素、最上位の他のキー、それらに付いたコメントは並びも含めて書き換えない。置き換えた要素は、渡した項目のキーの並び（先頭に `id`）になり、その要素の中のコメントは残らない
+  MCP からの書き換え: MCP の `update_index` は `docs`・`terms`・`tags` のどれかの要素を 1 つだけ置き換え・末尾へ足し・消す。渡した要素の前後の要素、最上位の他のキー、それらに付いたコメントは並びも含めて書き換えない。置き換えた要素は、渡した項目のキーの並び（先頭に、文書・用語は `id`、タグの語彙は `name`）になり、その要素の中のコメントは残らない

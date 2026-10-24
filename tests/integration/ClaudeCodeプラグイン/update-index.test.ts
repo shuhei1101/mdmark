@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
@@ -155,4 +155,58 @@ test("test_error_when_item_missing", async () => {
   expect(result.texts[0]).toContain("z");
   expect(result.texts[0]).toContain("docs");
   expect(await readFile(join(dir, "index.yaml"), "utf8")).toBe(INDEX_A);
+});
+
+// 語彙を持たない索引に、語彙のタグを name で足す（正常系）
+test("test_normal_when_tag", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeProject(
+    dir,
+    [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: 文書 A",
+      "    tags: [topic:mcp]",
+      "",
+    ].join("\n"),
+  );
+  // 文書は a.md の 1 つだけにする
+  await rm(join(dir, "b.md"));
+  const client = await connectInMemory({
+    projectDir: dir,
+    pluginDir: builtPluginDir(),
+  });
+  const item = {
+    group: "topic",
+    description:
+      "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs",
+    aliases: ["MCP"],
+  };
+  // 実行
+  const result = await callTool(client, "update_index", {
+    kind: "tag",
+    id: "topic:mcp",
+    item,
+  });
+  // 検証
+  expect(result.isError).toBe(false);
+  expect(JSON.parse(result.texts[0] ?? "").action).toBe("added");
+  const index = parse(await readFile(join(dir, "index.yaml"), "utf8"));
+  expect(index.tags).toHaveLength(1);
+  expect(Object.keys(index.tags[0])).toEqual([
+    "name",
+    "group",
+    "description",
+    "aliases",
+  ]);
+  expect(index.tags[0]).toEqual({ name: "topic:mcp", ...item });
+  expect(index.docs).toEqual([
+    { id: "a", path: "a.md", title: "文書 A", tags: ["topic:mcp"] },
+  ]);
+  expect(index).not.toHaveProperty("terms");
+  const check = await runCli(["check"], dir);
+  expect(check.stdout).toContain("ずれ 0 件");
 });
