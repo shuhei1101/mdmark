@@ -150,6 +150,6 @@ export async function callTool(
   return {
     isError: result.isError === true,
     texts: content.map((item) => item.text),
-    structured: result.structuredContent,
+    structured: result.structuredContent as Record<string, unknown> | undefined,
   };
 }
