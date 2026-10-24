@@ -32,6 +32,12 @@ const INDEX: MdmarkIndex = {
   ],
 };
 
+// `INDEX` の用語 `ワークスペース` に、やめた言い方 `作業場` を加えた索引
+const AVOID_INDEX: MdmarkIndex = {
+  ...INDEX,
+  terms: (INDEX.terms ?? []).map((term) => ({ ...term, avoid: ["作業場"] })),
+};
+
 // 用語 `ワークスペース` の参照先
 const WS_TARGET = {
   kind: "term",
@@ -196,10 +202,10 @@ test("test_normal_when_glossary_table", async () => {
 test("test_normal_when_feature_off", async () => {
   // 準備
   const index: MdmarkIndex = {
-    ...INDEX,
+    ...AVOID_INDEX,
     docs: [...INDEX.docs, { id: "memo", path: "memo.md", title: "メモ" }],
   };
-  const paragraph = "ワークスペースと公開関数を使う。";
+  const paragraph = "ワークスペースと公開関数と作業場を使う。";
   const documents = {
     "使い方/guide.md": `<!-- features: -glossary -->\n\n${paragraph}\n`,
     "memo.md": `<!-- features: -glossary -backlinks -->\n\n${paragraph}\n`,
@@ -214,6 +220,49 @@ test("test_normal_when_feature_off", async () => {
   // 両方がオフの memo は空の一覧
   expect(matches.byDocument.memo).toEqual([]);
   expect(matches.targets).toEqual([API_TARGET]);
+  // glossary がオフの文書は、やめた言い方の一覧も空
+  expect(matches.avoided.guide).toEqual([]);
+  expect(matches.avoided.memo).toEqual([]);
+});
+
+// 本文に出たやめた言い方を、代わりの用語と本文の位置つきで返す（正常シナリオ（やめた言い方が本文に出る））
+test("test_normal_when_avoided_term", async () => {
+  // 準備
+  const guide = [
+    "# 作業場の使い方",
+    "",
+    "作業場を開き、作業場を閉じ、ワークスペースを確かめる。",
+    "",
+    "`作業場` のコードは対象外。",
+    "",
+    "## 後片付け",
+    "",
+    "作業場を片付ける。",
+    "",
+  ].join("\n");
+  // 実行
+  const matches = await collectMatchesInNode(builtRoot, {
+    index: AVOID_INDEX,
+    documents: { "使い方/guide.md": guide },
+  });
+  // 検証
+  // 1 つ目の節の 2 件と 2 つ目の節の 1 件が出現の全てとして本文の頭からの順に並び、見出し・行内のコードの分は無い
+  const avoided = matches.avoided.guide ?? [];
+  expect(avoided.map((match) => [match.line, match.start, match.end])).toEqual([
+    [3, 0, 3],
+    [3, 7, 10],
+    [9, 0, 3],
+  ]);
+  // 代わりの用語は索引の用語 `ws`
+  for (const match of avoided) {
+    expect(match).toMatchObject({ ...WS_TARGET, text: "作業場" });
+    expect(cut(guide, match)).toBe("作業場");
+  }
+  // 参照の一覧は `ワークスペース` だけで、`作業場` を持たない
+  expect(matches.byDocument.guide?.map((match) => match.text)).toEqual([
+    "ワークスペース",
+  ]);
+  expect(matches.targets).toEqual([WS_TARGET]);
 });
 
 // 埋め込んだ HTML の文字と図の部品の {{語}} も照合し、図の部品では用語だけを一致にする（正常シナリオ（埋め込んだ HTML と図の部品の用語））
