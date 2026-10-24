@@ -5,7 +5,7 @@ scenarios:
       - name: 配布物を読む Node の処理
         description: ビルドした `dist/index.js` を読み、点検の処理を呼ぶ
       - name: ずれの無い索引と文書
-        description: '文書 `arch`（タグ `設計`）・`api`（`related` に `arch`、タグ `{name: 設計, main: true}`）と用語 1 つを持ち、タグの語彙を持たない索引と、その 2 つのパスの文書だけの一覧・本文'
+        description: '文書 `arch`（タグ `設計`）・`api`（`related` に `{to: arch, type: references, when: API の前提の構成を確かめるとき}`、タグ `{name: 設計, main: true}`）と用語 1 つを持ち、タグの語彙を持たない索引と、その 2 つのパスの文書だけの一覧・本文'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -23,7 +23,7 @@ scenarios:
       - name: 配布物を読む Node の処理
         description: 正常シナリオと同じ
       - name: ずれを持つ索引と文書
-        description: 索引が、一覧に無いパスの文書 `old`・`related` に索引に無い `id` の `gone` を持つ文書 `api`・文書 `guide`・同じ語 `ワークスペース` の用語 2 つを持ち、文書の一覧が索引に無い `new.md` を持つ。`api` の本文は用語集の表で索引と同じ語 `ワークスペース` と語 `印` を入れ、`guide` の本文も用語集の表で語 `印` を入れる
+        description: 索引が、一覧に無いパスの文書 `old`・`related` に索引に無い `id` の `gone` を `to` に持つ関連（`type` は `references`）を持つ文書 `api`・文書 `guide`・同じ語 `ワークスペース` の用語 2 つを持ち、文書の一覧が索引に無い `new.md` を持つ。`api` の本文は用語集の表で索引と同じ語 `ワークスペース` と語 `印` を入れ、`guide` の本文も用語集の表で語 `印` を入れる
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -36,7 +36,7 @@ scenarios:
     expected:
       - 索引にあって消えた文書 `old` の行が、索引のファイルと `old` の場所を持つ
       - 索引に無い文書 `new.md` の行が、`new.md` のファイルを持つ
-      - '`api` の `related` の切れた `id` `gone` の行が、その `related` の場所を持つ'
+      - '`api` の `related` の切れた相手 `gone` の行が、その関連の `to` の場所を持つ'
       - '`ワークスペース` の用語の重複が、索引の `terms` どうしの行と、索引と `api` の用語集の表の行で返る'
       - '`印` の用語の重複が、`api` と `guide` の用語集の表どうしの行で返る'
       - 各行がずれの種類と、直す場所が分かる内容を持つ
@@ -155,6 +155,60 @@ scenarios:
       - やめた言い方のずれが、`guide` の `WorkPlace` を書いた行を指す 1 件で返り、内容が代わりに使う用語 `ワークスペース` を示す
       - そのほかのずれは返らない
     test: test_normal_when_normalized_words
+  - name: 正常シナリオ（関連がずれる）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 関連がずれる索引と文書
+        description: '索引が文書 `a`・`b`・`c` を持つ。`a` の `related` は `{to: b, type: change_together, when: 索引の Schema を変えるとき}` と `{to: c, type: references, when: 使い方を確かめるとき}`、`b` は `related` を持たず、`c` の `related` は文字列の `a`。`a` の本文は `c.md` へのリンクを持つ。文書の一覧・本文は 3 つ'
+        notes: 片側だけの `change_together`・本文のリンクとの重なり・文字列の関連を、関連 1 つずつに置いて決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M->>M: change_together が両側に記載されているかを確かめる
+        M->>M: 関連の相手を本文のリンクと突き合わせる
+        M-->>C: 関連のずれの行を持つ一覧
+      ```
+    expected:
+      - 例外で止まらずに一覧が返る
+      - '`a` の `change_together` の行が、`a` のその関連の場所を持ち、`b` にも `a` への `change_together` を記載する直し方を示す'
+      - '`a` の `c` への関連の行が、その関連の場所を持ち、本文でリンクしていることを示す'
+      - '`c` の文字列の関連 `a` の行が、その関連の場所を持ち、`to`・`type`・`when` を持つ関連に書き換える直し方を示す'
+      - 関連のずれ以外のずれは返らない
+    test: test_normal_when_related_drift
+  - name: 正常シナリオ（change_together の組の片方だけが変わる）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 組で直す文書を持つ索引と文書
+        description: 索引が文書 `a`・`b`・`c` を持ち、`a` と `b` は互いを `change_together` で記載し、`c` は `a` を `references` で記載する。文書の一覧・本文は 3 つ
+      - name: 変わった文書のパス
+        description: '`a.md` だけ'
+        notes: 組の片方だけが変わったことを `a.md` で、`change_together` でない関連の相手を直し忘れに数えないことを `c` の `references` で決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を渡して点検させる
+        M-->>C: 空のずれの一覧
+        C->>M: 同じ索引・一覧・本文と、変わった文書のパスを渡して点検させる
+        M->>M: change_together の組のうち片方だけが変わった組を探す
+        M-->>C: 直し忘れの行を持つ一覧
+      ```
+    expected:
+      - 変わった文書のパスを渡さない点検では、ずれの一覧が空
+      - 変わった文書のパスを渡した点検で、直し忘れの行が 1 件だけ返る
+      - その行が、変わっていない `b` のファイルを持ち、変わった `a` と組であることを示す
+      - '`c` の直し忘れの行は返らない'
+    test: test_normal_when_change_together_missed
 lead: 使う側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に渡し、索引と文書のずれの一覧を受け取る。
 issue: 5
 primary_actor: 使う側の処理
@@ -167,7 +221,7 @@ trigger: 使う側の処理が、読んだ索引と、索引のフォルダの�
 preconditions:
   - 使う側の処理が mdmark の配布物の JavaScript を読んでいる
   - 使う側の処理が索引の YAML と文書のファイルを読んでいる（mdmark はファイルを読まない）
-success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた `id`・用語の重複・本文に出た用語のやめた言い方・語彙に無いタグ・やめたタグ・語彙のずれ（タグの語彙を記載した索引のとき）・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。用語の重複とやめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに見る。
+success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた相手・片側にしか記載していない `change_together`・本文でリンクしている文書と重なる関連・`type` と `when` を持たない文字列の関連・変わった文書のパスを渡したときの `change_together` の直し忘れ・用語の重複・本文に出た用語のやめた言い方・語彙に無いタグ・やめたタグ・語彙のずれ（タグの語彙を記載した索引のとき）・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。用語の重複とやめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに見る。
 minimal_guarantee: Schema に合わない索引でも例外で止まらず、読めた範囲のずれと Schema のずれを返す。点検は索引と文書を書き換えない。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#
