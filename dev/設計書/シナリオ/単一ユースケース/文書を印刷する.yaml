@@ -125,7 +125,7 @@ scenarios:
       - name: 飾ったコードブロックを持つ Markdown
         description: '`<!-- code: title=app.ts lines highlight=1 -->` の直後に、行末に `// [!code ++]` を付けた行と `// [!code --]` を付けた行を持つ 3 行の言語 `ts` のコードブロックを置いた文書'
       - name: Mock
-        description: 正常シナリオと同じ
+        description: 正常シナリオと同じ。色分けのライブラリの本体と `typescript` のモジュールも、jsDelivr と同じパスで返す手元の応答に差し替え、色分けし終えてから印刷を始める
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -139,6 +139,7 @@ scenarios:
       - コードブロックの上に題 `app.ts` が出ている
       - 3 つの行の左に 1〜3 の行番号が出ている
       - 1 行目が強調の背景で、足した行と消した行がそれぞれの色と行頭の `+`・`-` で出ている
+      - 行の中のキーワード・文字列などが、画面と同じ色分けの色で出ている
     test: test_normal_when_code_block_printed
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
