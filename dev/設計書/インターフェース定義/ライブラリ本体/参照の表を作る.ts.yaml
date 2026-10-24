@@ -85,6 +85,26 @@ flows:
     expected:
       - '`backlinks.arch` が `["api", "guide"]`（正常系と同じ）'
     test: test_normal_when_encoded_link
+  - name: 正常系（表記の違う別名）
+    summary: 全角と半角・大文字と小文字だけが違う別名の出現も被参照にする
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 表記の違う別名を持つ本文
+        description: 正常系の索引の `api` の `aliases` を `MCP` にし、`related` を持たせないもの。`使い方/guide.md` の本文の段落に全角の `ＭＣＰ`、`設計/arch.md` の本文の段落に小文字の `mcp` を書き、どちらの本文も `api` を指すリンクを持たない
+        notes: 別名の出現だけで被参照になることを決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: 別名と本文の文字を正規化して照合する
+        M-->>C: { backlinks, glossary }
+    expected:
+      - '`backlinks.api` が `guide` と `arch` を索引の `docs` の順で持つ'
+    test: test_normal_when_alias_notation_differs
 lead: 使う側のサーバーや CLI（#9 の `mdmark build`）が、索引と全ての文書の本文を渡して、文書ごとの被参照と、用語集の表から入れた用語をまとめた参照の表を受け取る。`mount`・`render` はこの表を `opts.references` で受け取り、ほかの文書の本文を読まずに被参照とほかの文書の用語を描く。
 idempotent: true
 side_effects: なし（引数を書き換えず、ファイルとネットワークを読まない）
@@ -172,7 +192,7 @@ constraints:
     constraint: リンクの `href` の `#` 以降と `?` 以降を除き、パーセントエンコードを戻してから（`decodeURI`。戻せないときはそのまま）、参照元の `path` のフォルダを基準に相対パスを解決し、索引の `path` と比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
     notes: markdown-it 15.0.2 は `link_open` の `href` の ASCII 以外の文字を符号化する（`../設計/arch.md` → `../%E8%A8%AD%E8%A8%88/arch.md`）ため、戻してから比べる
   - item: 文書の別名の照合
-    constraint: 用語のツールチップと同じ照合（語の区切りに揃う、コード・リンク・見出し・用語集の表の中を除く）を使う
+    constraint: 用語のツールチップと同じ照合（語の区切りに揃う、照合の前に正規化する、コード・リンク・見出し・用語集の表の中を除く）を使う
     notes: 節ごとの最初の 1 回の制限は下線のもので、参照の有無には効かない
   - item: 機能のオフ
     constraint: '`backlinks` がオフの文書は参照元にも参照先にもならず（`related` を含む）、`glossary` がオフの文書の表は用語を入れない'

@@ -82,6 +82,25 @@ flows:
       - '`isError` が立つ'
       - 内容の文に、設定に `index` が無いことと、`index` に索引のファイルを書くことが出る
     test: test_error_when_index_missing
+  - name: 正常系（全角と半角だけが違う語）
+    summary: 全角と半角だけが違う query でも、名前・別名・説明に当たるタグを返す
+    setup:
+      - name: 語彙を持つ作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（query: ＭＣＰ、format: json）
+        S->>F: 設定と索引を読む
+        S->>S: 語と名前・別名・説明を正規化して、当たるタグを選ぶ
+        S-->>C: tags（topic:mcp）
+    expected:
+      - '`tags` が `topic:mcp` の 1 件だけ'
+    test: test_normal_when_query_width_differs
 lead: 設定の `index` の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで返す。付いている文書が 0 件のタグも返す。
 idempotent: true
 side_effects: なし（索引と文書を書き換えない）
@@ -91,7 +110,7 @@ request:
     required: false
     default: なし（語で絞らない）
     location: argument
-    description: タグの名前（`name`）・別名（`aliases`）・説明（`description`）のどれかに含まれる語。大文字と小文字を区別しない
+    description: タグの名前（`name`）・別名（`aliases`）・説明（`description`）のどれかに含まれる語。語と名前・別名・説明の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる
   - name: format
     type: "'markdown' | 'json'"
     required: false
