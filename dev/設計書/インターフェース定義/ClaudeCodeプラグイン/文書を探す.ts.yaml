@@ -378,7 +378,7 @@ response_example: |-
   `format: "json"` のとき:
 
   ```json
-  {"total": 25, "returned": 20, "total_chars": 48210, "next_cursor": "eyJvZmZzZXQiOjIwfQ", "hint": "続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。", "tag_counts": [{"name": "設計", "count": 25}], "warnings": [], "omitted": [{"field": "path", "how": "include: [\"path\"]"}, {"field": "aliases", "how": "include: [\"aliases\"]"}, {"field": "related", "how": "include: [\"related\"]"}, {"field": "referenced_by", "how": "include: [\"referenced_by\"]"}], "docs": [{"id": "arch", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": [{"name": "設計", "main": true}], "chars": 2410}]}
+  {"total": 25, "returned": 20, "total_chars": 48210, "next_cursor": "eyJvZmZzZXQiOjIwfQ", "hint": "続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。", "tag_counts": [{"name": "設計", "count": 25}], "warnings": [], "omitted": [{"field": "aliases", "how": "include: [\"aliases\"]"}, {"field": "related", "how": "include: [\"related\"]"}, {"field": "referenced_by", "how": "include: [\"referenced_by\"]"}], "docs": [{"id": "arch", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": [{"name": "設計", "main": true}], "chars": 2410, "path": "設計/arch.md"}]}
   ```
 
   `format: "markdown"` のとき（text だけ）:
@@ -386,13 +386,13 @@ response_example: |-
   ```markdown
   総件数 25 件・返した件数 20 件・合計文字数 48210・next_cursor: eyJvZmZzZXQiOjIwfQ
 
-  | ID | 題 | 概要 | タグ | 文字数 |
-  | --- | --- | --- | --- | --- |
-  | arch | アーキテクチャ | 全体の構成と依存の向き | 設計（主題） | 2410 |
+  | ID | 題 | 概要 | タグ | 文字数 | パス |
+  | --- | --- | --- | --- | --- | --- |
+  | arch | アーキテクチャ | 全体の構成と依存の向き | 設計（主題） | 2410 | 設計/arch.md |
 
   タグごとの件数: 設計 25
 
-  省いた項目: path（include: ["path"]）・aliases（include: ["aliases"]）・related（include: ["related"]）・referenced_by（include: ["referenced_by"]）
+  省いた項目: aliases（include: ["aliases"]）・related（include: ["related"]）・referenced_by（include: ["referenced_by"]）
 
   続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。
   ```

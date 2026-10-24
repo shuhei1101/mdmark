@@ -4,7 +4,7 @@ MCP のツールの名前・引数・戻り値・エラーの一覧
 
 Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:mdmark`）が出すツールの一覧。
 入れ方は [プラグインを入れる](../使い方/ClaudeCodeで使う/プラグインを入れる.md)、使い方は [MCP のツールを使う](../使い方/ClaudeCodeで使う/MCPのツールを使う.md)。
-ツールの結果のテキストは、`read_guide` と、`format` を省いた `find_docs`・`list_tags` を除いて JSON の文字列 1 つ。
+ツールの結果のテキストは、`read_guide` と、`format` が `markdown`（既定）の `find_docs`・`list_tags` を除いて JSON の文字列 1 つ。
 エラーは結果の `isError` を `true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。
 `config` を省くと、Claude Code のセッションのフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す。
 相対パスの引数は、セッションのフォルダからの相対パス。
@@ -204,8 +204,12 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
   "hint": "続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。",
   "tag_counts": [{ "name": "設計", "count": 25 }],
   "warnings": [],
-  "omitted": [{ "field": "path", "how": "include: [\"path\"]" }],
-  "docs": [{ "id": "arch", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": [{ "name": "設計", "main": true }], "chars": 2410 }]
+  "omitted": [
+    { "field": "aliases", "how": "include: [\"aliases\"]" },
+    { "field": "related", "how": "include: [\"related\"]" },
+    { "field": "referenced_by", "how": "include: [\"referenced_by\"]" }
+  ],
+  "docs": [{ "id": "arch", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": [{ "name": "設計", "main": true }], "chars": 2410, "path": "設計/arch.md" }]
 }
 ```
 
@@ -242,13 +246,13 @@ git の最終更新日時・最終更新者も返さない。
 ```markdown
 総件数 25 件・返した件数 20 件・合計文字数 48210・next_cursor: eyJvZmZzZXQiOjIwfQ
 
-| ID | 題 | 概要 | タグ | 文字数 |
-| --- | --- | --- | --- | --- |
-| arch | アーキテクチャ | 全体の構成と依存の向き | 設計（主題） | 2410 |
+| ID | 題 | 概要 | タグ | 文字数 | パス |
+| --- | --- | --- | --- | --- | --- |
+| arch | アーキテクチャ | 全体の構成と依存の向き | 設計（主題） | 2410 | 設計/arch.md |
 
 タグごとの件数: 設計 25
 
-省いた項目: path（include: ["path"]）
+省いた項目: aliases（include: ["aliases"]）・related（include: ["related"]）・referenced_by（include: ["referenced_by"]）
 
 続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。
 ```
