@@ -1,3 +1,4 @@
+import { usedHighlightNames } from "./highlight-names.ts";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import {
   basename,
@@ -137,6 +138,9 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     Object.entries(libraries).map(([name, library]) => [name, library.url]),
   );
   const marks = usedLibraryMarks([...originals.values()], urls);
+  for (const name of usedHighlightNames([...originals.values()])) {
+    marks.add(name);
+  }
   const bundled = new Map<string, ReturnType<typeof bundleModule>>();
   const modules: Record<string, string> = {};
   for (const mark of marks) {

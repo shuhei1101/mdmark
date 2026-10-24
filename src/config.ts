@@ -54,7 +54,24 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
 };
 
 /** 印の名前から `LibraryEntry` を引く既定の対応表 */
-export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
+export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {
+  hljs: {
+    url: "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/core.min.js",
+    figure: false,
+  },
+  "hljs-typescript": {
+    url: "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/languages/typescript.min.js",
+    figure: false,
+  },
+  "hljs-yaml": {
+    url: "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/languages/yaml.min.js",
+    figure: false,
+  },
+  "hljs-python": {
+    url: "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/languages/python.min.js",
+    figure: false,
+  },
+};
 
 /** 印の名前と設定の `libraries` のキーが合うべき書式 */
 export const MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;

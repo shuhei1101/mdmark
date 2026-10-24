@@ -1,0 +1,78 @@
+$ CDN_PACKAGE=<cdn-assets@11.12.0 の package/> EXPORTED_HTML=poc/export/doc.html EMBEDDED_BYTES=35470 node poc/run.ts
+✅ 読み込みの範囲（3 言語の文書）: 要求 4 件: es/core.min.js, es/languages/typescript.min.js, es/languages/yaml.min.js, es/languages/python.min.js
+✅ 行に分けたブロックの保持: language-ts 行 3（1|del,2|add,3|）閉じていない行 0・色 true / language-ts 行 5（1|,2|,3|,4|,5|）閉じていない行 0・色 true / language-python 行 3（1|,2|,3|）閉じていない行 0・色 true
+✅ 行に分けないブロック: language-ts 色 true・pre 属性 true・code 属性 true / language-yaml 色 true・pre 属性 true・code 属性 true / language-python 色 true・pre 属性 true・code 属性 true / language-ts（題あり） 色 true・pre 属性 true・code 属性 true
+✅ 写す中身: 8/8 ブロックで textContent が一致
+✅ 対象外の言語は変えない: language-rust 同じ
+✅ 読み込みの範囲（コードブロックの無い文書）: 要求 0 件
+✅ 読み込みの範囲（tree と rust だけの文書）: 要求 0 件
+✅ 読み込めないとき（全部）: HTML が前と同じ 8/8・コンソール: Failed to load resource: the server responded with a status of 404 (Not Found) | 色分けのライブラリを読み込めない http://127.0.0.1:57590/npm/@highlightjs/cdn-assets@11.12.0/es/core.min.js TypeError: Failed to fetch d
+✅ 読み込めないとき（python だけ）: python は前と同じ true・ts と yaml に色 true・コンソール: Failed to load resource: the server responded with a status of 404 (Not Found) | 色分けの言語を読み込めない http://127.0.0.1:57590/npm/@highlightjs/cdn-assets@11.12.0/es/languages/python.min.js TypeError: Failed t
+✅ 色が付くまでの時間（300 行）: 中央値 16.7ms（25.2, 16.7, 16.5, 16.7, 15.5）
+✅ 本番の URL: highlight は function・例 <span class="hljs-keyword">const</span> a = <span class="hljs-number">1</span>;
+✅ 書き出した HTML: 外への要求 0 件・language-ts:true, language-yaml:true, language-python:true, language-ts:true, language-ts:true, language-ts:true, language-python:true, language-rust:false・埋めた色分けのモジュール 35470 バイト
+[
+  {
+    "check": "読み込みの範囲（3 言語の文書）",
+    "ok": true,
+    "detail": "要求 4 件: es/core.min.js, es/languages/typescript.min.js, es/languages/yaml.min.js, es/languages/python.min.js"
+  },
+  {
+    "check": "行に分けたブロックの保持",
+    "ok": true,
+    "detail": "language-ts 行 3（1|del,2|add,3|）閉じていない行 0・色 true / language-ts 行 5（1|,2|,3|,4|,5|）閉じていない行 0・色 true / language-python 行 3（1|,2|,3|）閉じていない行 0・色 true"
+  },
+  {
+    "check": "行に分けないブロック",
+    "ok": true,
+    "detail": "language-ts 色 true・pre 属性 true・code 属性 true / language-yaml 色 true・pre 属性 true・code 属性 true / language-python 色 true・pre 属性 true・code 属性 true / language-ts（題あり） 色 true・pre 属性 true・code 属性 true"
+  },
+  {
+    "check": "写す中身",
+    "ok": true,
+    "detail": "8/8 ブロックで textContent が一致"
+  },
+  {
+    "check": "対象外の言語は変えない",
+    "ok": true,
+    "detail": "language-rust 同じ"
+  },
+  {
+    "check": "読み込みの範囲（コードブロックの無い文書）",
+    "ok": true,
+    "detail": "要求 0 件"
+  },
+  {
+    "check": "読み込みの範囲（tree と rust だけの文書）",
+    "ok": true,
+    "detail": "要求 0 件"
+  },
+  {
+    "check": "読み込めないとき（全部）",
+    "ok": true,
+    "detail": "HTML が前と同じ 8/8・コンソール: Failed to load resource: the server responded with a status of 404 (Not Found) | 色分けのライブラリを読み込めない http://127.0.0.1:57590/npm/@highlightjs/cdn-assets@11.12.0/es/core.min.js TypeError: Failed to fetch d"
+  },
+  {
+    "check": "読み込めないとき（python だけ）",
+    "ok": true,
+    "detail": "python は前と同じ true・ts と yaml に色 true・コンソール: Failed to load resource: the server responded with a status of 404 (Not Found) | 色分けの言語を読み込めない http://127.0.0.1:57590/npm/@highlightjs/cdn-assets@11.12.0/es/languages/python.min.js TypeError: Failed t"
+  },
+  {
+    "check": "色が付くまでの時間（300 行）",
+    "ok": true,
+    "detail": "中央値 16.7ms（25.2, 16.7, 16.5, 16.7, 15.5）"
+  },
+  {
+    "check": "本番の URL",
+    "ok": true,
+    "detail": "highlight は function・例 <span class=\"hljs-keyword\">const</span> a = <span class=\"hljs-number\">1</span>;"
+  },
+  {
+    "check": "書き出した HTML",
+    "ok": true,
+    "detail": "外への要求 0 件・language-ts:true, language-yaml:true, language-python:true, language-ts:true, language-ts:true, language-ts:true, language-python:true, language-rust:false・埋めた色分けのモジュール 35470 バイト"
+  }
+]
+exit=0
+
+dist/index.js: develop 378592 バイト / PoC 380935 バイト（上限 393216）

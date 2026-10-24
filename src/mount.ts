@@ -9,6 +9,7 @@ import type { DiffSource } from "./diff/source.ts";
 import { attachInteractions } from "./interact/index.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
+import { highlightCodeBlocks } from "./highlight.ts";
 import { loadLibraries } from "./libraries.ts";
 import { attachParts } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
@@ -156,6 +157,11 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       libraries: config.libraries,
       isCurrent: () => !destroyed && generation === current,
       definitions: rendered.extensionDefinitions,
+    });
+    void highlightCodeBlocks({
+      root: el,
+      libraries: config.libraries,
+      isCurrent: () => !destroyed && generation === current,
     });
     detachParts = attachParts({
       root: el,
