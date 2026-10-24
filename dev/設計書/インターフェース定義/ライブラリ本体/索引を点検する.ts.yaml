@@ -111,6 +111,31 @@ flows:
       - 1 行目の `message` に `作業場` と `ワークスペース`、3 行目の `message` に `ワーク場` と `ワークスペース` がある
       - '`glossary.md` の表の中の `作業場`・`ワーク場` のずれは無い'
     test: test_normal_when_glossary_avoided_term
+  - name: 正常系（タグが語彙とずれる）
+    summary: タグの語彙を持つ索引で、語彙の重なり・切れた振り替え先・語彙に無いタグ・やめたタグを返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 語彙とずれるタグを持つ索引と文書
+        description: '索引の `tags` が `tags[0]` `topic:mcp`（`aliases` に `MCP`）・`tags[1]` `topic:yaml`（`aliases` に `MCP`）・`tags[2]` `topic:yaml`・`tags[3]` `topic:old`（`deprecated` が `topic:mcp`）・`tags[4]` `topic:gone`（`deprecated` が `topic:none`）。`docs[0]` が `a`（`a.md`）で、`tags` が `{name: topic:mcp, main: true}`・`topic:mcq`・`topic:old`。`documents` は `a.md` だけ'
+        notes: 近いタグに `topic:mcp` が選ばれることを、1 文字違いの `topic:mcq` で起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: 語彙の重なりと振り替え先を確かめる
+        M->>M: 文書のタグを語彙と突き合わせる
+        M-->>C: タグのずれを持つ一覧
+    expected:
+      - 例外を投げない
+      - '戻り値が `{ where: "tags[2].name", kind: "duplicate_tag" }`・`{ where: "tags[1].aliases[0]", kind: "tag_alias_conflict" }`・`{ where: "tags[4].deprecated", kind: "broken_tag_replacement" }`・`{ where: "docs[0].tags[1]", kind: "unregistered_tag" }`・`{ where: "docs[0].tags[2]", kind: "deprecated_tag" }` の 5 つだけで、この順に並び、どれも `file` が `index.yaml`'
+      - '`unregistered_tag` の `message` に `topic:mcq` と `topic:mcp` がある'
+      - '`deprecated_tag` の `message` に `topic:old` と `topic:mcp` がある'
+      - '`docs[0].tags[0]`（`topic:mcp`）のずれは無い'
+    test: test_normal_when_tag_drift
 lead: 使う側の処理（#9 の `mdmark check`・#11 の MCP の `check`）が、索引と、索引のフォルダにある文書の本文を渡して、索引と文書のずれの一覧を受け取る。ファイルを読むのは呼ぶ側で、mdmark は渡された値だけを確かめる。
 idempotent: true
 side_effects: なし（引数・索引・文書を書き換えない）
@@ -138,19 +163,19 @@ response:
   - name: '[]'
     type: MdmarkIndexIssue[]
     description: ずれの一覧。ずれが無ければ空
-    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` → `avoided_term` の順、同じ種類の中は索引の並びとパスの順
+    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順、同じ種類の中は索引の並びとパスの順
   - name: '[].file'
     type: string
     description: ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス
     example: docs/index.yaml
   - name: '[].where'
     type: string
-    description: 索引のキーのパス（`docs[3].path`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
+    description: 索引のキーのパス（`docs[3].path`・`docs[0].tags[1]`・`tags[2].name`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
     example: docs[3].path
   - name: '[].kind'
-    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term'"
+    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag'"
     description: ずれの種類
-    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方'
+    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方、`duplicate_tag` は語彙の `name` の重複、`tag_alias_conflict` は語彙の `aliases` が別のタグの `name` か `aliases` と重なる、`broken_tag_replacement` は語彙に無い `deprecated` の振り替え先、`unregistered_tag` は語彙に無い文書のタグ、`deprecated_tag` は文書のやめたタグ。タグの 5 種類は、索引がタグの語彙（`tags`）を持つときだけ返す'
   - name: '[].message'
     type: string
     description: ずれの内容と直し方。日本語の 1 文
@@ -172,7 +197,7 @@ constraints:
   - item: 実行する環境
     constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
   - item: Schema の検査
-    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする'
+    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする。最上位の `tags` は、要素が `name`（必須・空でない文字列）・`group`（空でない文字列）・`description`（文字列）・`aliases`（空でない文字列の並び）・`deprecated`（空でない文字列）だけを持つオブジェクトの並び。`docs[].tags` の要素は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクト。`tags[].name` の重なりは `schema` のずれにせず `duplicate_tag` で返す'
     notes: 検査の仕方（ライブラリを使うか）はモジュール構成設計で決める
   - item: 文書の対応
     constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する
@@ -184,6 +209,9 @@ constraints:
   - item: やめた言い方
     constraint: 索引の `docs` の文書のうち `documents` にある文書の本文から、索引の `terms[].avoid` の語と、索引の `docs` の文書の用語集の表のやめた言い方の列（印の `avoid=`）の言い方を、文書の別名の一致と同じ範囲（見出し・リンクの中・コード・用語集の表の中を除く）と同じ語の切れ目で探す。用語集の表のやめた言い方は、表を持つ文書に限らず索引の `docs` の全ての文書で探す。同じやめた言い方が複数の用語にあるときは、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりに使う用語にする。索引の用語と用語集の表の用語の語・別名も一緒に探し、長いほうを当てて（同じ長さなら用語の語・別名を当てる）、やめた言い方が当たったところだけを数える。出た行とやめた言い方の組ごとに 1 つの `avoided_term` にし、`file` は文書のパス、`where` はその語が出た文書の中の行番号（`8 行目`。解析器の行内のトークンの `map` の開始行 + 語より前の改行の数 + 1。行内のトークンが `map` を持たない表のセルは、そのセルを囲む `tr_open` の `map` の開始行 + 1）。`message` にやめた言い方と代わりに使う用語の語を書く。並びは索引の `docs` の順、文書の中は行の順、同じ行の中は出た順
     notes: 索引に無い文書（`orphan_doc`）は探さない。語の切れ目と探す範囲は `collectReferences` の文書の別名の一致と同じ
+  - item: タグの点検
+    constraint: 索引が最上位の `tags` を持つときだけ行い、持たない索引ではタグのずれを返さない。文書のタグは、語彙の `name` か `aliases` に同じ文字で当たれば、そのタグの `name` として扱う（同じ `name`・別名が複数あるときは語彙の並びで先のタグ）。`duplicate_tag` は 2 つ目以降に出た同じ `name` ごとに 1 つ（`where` は `tags[2].name`）。`tag_alias_conflict` は別名ごとに、ほかのタグの `name` か、語彙の並びで先のほかのタグの別名と同じ文字のとき 1 つ（`where` は `tags[1].aliases[0]`。`message` に重なる先のタグの `name` を書く）。`broken_tag_replacement` は `deprecated` が語彙のどの `name` にも当たらないタグごとに 1 つ（`where` は `tags[4].deprecated`）。`unregistered_tag` は文書のタグのうち語彙に当たらないものごとに 1 つ（`where` は `docs[0].tags[1]`）で、`message` に近いタグを書く。`deprecated_tag` は文書のタグが `deprecated` を持つタグに当たるとき 1 つ（`where` は `docs[0].tags[2]`）で、`message` に振り替え先を書く。`file` はどれも `indexFile`
+    notes: 近いタグは、`deprecated` を持たないタグの `name` と `aliases` のうち、文書のタグとの編集距離（文字の挿入・削除・置換の回数）が 2 以下で最も小さいもの（同じ距離なら語彙の並びで先）のタグの `name`。当たらないときは `message` に近いタグが無いことと、語彙に足すか直す直し方を書く
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
   - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#

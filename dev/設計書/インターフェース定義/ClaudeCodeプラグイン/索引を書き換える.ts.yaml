@@ -63,6 +63,31 @@ flows:
       - '`action` が `removed`'
       - 索引の `docs` が `a` だけになる
     test: test_normal_when_removed
+  - name: 正常系（タグの語彙を書き換える）
+    summary: 語彙を持たない索引に、語彙のタグを name で足す
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 1 つ。索引は `tags` を持たず、文書 `a` はタグ `topic:mcp` を持つ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 足すタグ
+        description: '`{"group": "topic", "description": "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs", "aliases": ["MCP"]}`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: tag、id: topic:mcp、item）
+        S->>F: 索引を読む
+        S->>S: 最上位に tags を作って足し、検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: action: added
+    expected:
+      - '`action` が `added`'
+      - 索引の最上位の `tags` が `topic:mcp` の 1 つだけで、`name` の後に渡した `group`・`description`・`aliases` を持つ
+      - 索引の `docs`・`terms` が変わっていない
+      - 書き換えた索引で `mdmark check` のずれが 0 件
+    test: test_normal_when_tag
   - name: 異常系（Schema に合わない・ツールのエラー）
     summary: パスの無い項目は書かずにエラーにする
     setup:
@@ -105,29 +130,29 @@ flows:
       - 内容に `z` が索引の `docs` に無いことが出る
       - 索引のファイルの中身が呼ぶ前と同じ
     test: test_error_when_item_missing
-lead: 索引の文書か用語の ID の項目を置き換え、無ければ足し、`null` なら消す。書く前に、書き換えた後の索引を索引の Schema で検査する。
+lead: 索引の文書・用語の ID かタグの語彙の名前の項目を置き換え、無ければ足し、`null` なら消す。書く前に、書き換えた後の索引を索引の Schema で検査する。
 idempotent: true
 side_effects: 設定の `index` の索引のファイルを書き換える
 exclusivity: 同じ索引への書き込みは 1 つずつ行う。読み込み・検査・置き換えを同じロックの中で行う
 request:
   - name: kind
-    type: "'doc' | 'term'"
+    type: "'doc' | 'term' | 'tag'"
     required: true
     location: argument
-    description: 書き換えるのが文書（`docs`）か用語（`terms`）か
-    notes: 文書と用語の ID はそれぞれの一覧の中でだけ一意のため、どちらかを渡す
+    description: 書き換えるのが文書（`docs`）・用語（`terms`）・タグの語彙（`tags`）のどれか
+    notes: 文書・用語の ID とタグの名前はそれぞれの一覧の中でだけ一意のため、どれかを渡す
   - name: id
     type: string
     required: true
     location: argument
-    description: 文書か用語の ID
+    description: 文書か用語の ID。`kind` が `tag` のときはタグの `name`
     constraints: 空でない
   - name: item
     type: object | null
     required: true
     location: argument
-    description: その ID の項目の中身（`id` を除くキー）。項目ごと置き換える。`null` なら項目を消す
-    notes: キーは ER 図『索引』の `docs`・`terms` のカラム
+    description: その ID の項目の中身（文書・用語は `id`、タグは `name` を除くキー）。項目ごと置き換える。`null` なら項目を消す
+    notes: キーは ER 図『索引』の `docs`・`terms`・`tags` のカラム
   - name: config
     type: string
     required: false
@@ -162,7 +187,7 @@ constraints:
   - item: 書き方
     constraint: 一時ファイルに書いてから置き換える。渡した ID の項目の前後の項目と、その他のキーは書き換えない
   - item: 足す位置
-    constraint: 索引に無い ID は、その一覧の末尾に足す
+    constraint: 索引に無い ID は、その一覧の末尾に足す。索引がその一覧のキー（`terms`・`tags`）を持たないときは、最上位の末尾にキーを作って足す。`tags` の最後の 1 つを消したときは `tags` のキーも消す
   - item: 検査
     constraint: 書き換えた後の索引全体を、`mdmark check` が使う索引の形の検査に通す。索引と文書のずれ（`checkIndex`）は検査しない
   - item: 設定ファイルと索引を読めないとき
