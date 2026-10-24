@@ -154,6 +154,33 @@ test("test_glossary_rule_when_disabled", async () => {
   expect(offEnv.ownGlossary).toEqual([]);
 });
 
+/** やめた言い方の列を持つ用語集の表を含む文書。表の後の段落に用語とやめた言い方が出る */
+const AVOID_GLOSSARY_MARKDOWN = [
+  "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+  "",
+  "| 用語 | 意味 | やめた言い方 |",
+  "| --- | --- | --- |",
+  "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+  "",
+  "<!-- /glossary -->",
+  "",
+  "ワークスペースと作業場を書く。",
+  "",
+].join("\n");
+
+// やめた言い方の列を用語の `avoid` に持たせて env に足す（正常系）
+test("test_glossary_rule_keeps_avoid", async () => {
+  // 準備
+  const { createParser } = await loadParser();
+  const env = createEnv();
+  // 実行
+  createParser().render(AVOID_GLOSSARY_MARKDOWN, env);
+  // 検証
+  expect(env.ownGlossary).toHaveLength(1);
+  expect(env.ownGlossary[0]?.term).toBe("ワークスペース");
+  expect(env.ownGlossary[0]?.avoid).toEqual(["作業場", "ワーク場"]);
+});
+
 // やめた言い方の列を「、」「,」で区切って読み、用語の別名には入れない（正常系）
 test("test_read_glossary_rows_with_avoid", async () => {
   // 準備
@@ -174,7 +201,7 @@ test("test_read_glossary_rows_with_avoid", async () => {
   // 検証
   expect(warning).toBeUndefined();
   expect(rows).toHaveLength(1);
-  expect(rows[0]).toMatchObject({ avoid: ["作業場", "ワーク場"] });
+  expect(rows[0]?.entry.avoid).toEqual(["作業場", "ワーク場"]);
   expect(rows[0]?.entry.aliases).toEqual([]);
 });
 
@@ -194,7 +221,7 @@ test("test_read_glossary_rows_without_avoid", async () => {
   const { entries } = readGlossaryTable({ args, tokens, docId: "glossary" });
   // 検証
   expect(rows).toHaveLength(1);
-  expect(rows[0]).toMatchObject({ avoid: [] });
+  expect(rows[0]?.entry.avoid).toEqual([]);
   expect(rows[0]?.entry).toEqual(entries[0]);
 });
 
