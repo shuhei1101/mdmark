@@ -195,8 +195,8 @@ flows:
       - name: 配布物を読む Node の処理
         description: 正常系と同じ
       - name: 表記の違う語を書いた本文
-        description: 正常系の索引の用語 `ワークスペース`（別名 `WS`）の `avoid` に `workplace` を加えたもの。`guide` の本文は 1 行目の段落が `ﾊﾜｰｸｽﾍﾟｰｽとＷＳ`、3 行目の段落が `ws と WorkPlace`
-        notes: 半角カナの `ﾊﾜｰｸｽﾍﾟｰｽ`（8 文字）が NFKC で 7 文字になり、正規化した位置と本文の位置がずれることを決定的に起こす
+        description: 正常系の索引の用語 `ワークスペース`（別名 `WS`）の `avoid` に `workplace` を加えたもの。`guide` の本文は 1 行目の段落が `ﾜｰｸｽﾍﾟｰｽとＷＳ`、3 行目の段落が `ws と WorkPlace`
+        notes: 半角カナの `ﾜｰｸｽﾍﾟｰｽ`（8 文字）が NFKC で 7 文字になり、正規化した位置と本文の位置がずれることを決定的に起こす
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -209,8 +209,8 @@ flows:
         M-->>C: { byDocument, avoided, targets }
       ```
     expected:
-      - '`byDocument.guide` が `ﾊﾜｰｸｽﾍﾟｰｽ`・`ＷＳ`・`ws` の 3 件を本文の頭からの順に持ち、どれも `kind` が `term`、`id` が `ws`'
-      - '`ﾊﾜｰｸｽﾍﾟｰｽ` の要素が `line` 1・`start` 0・`end` 8 で、`ＷＳ` の要素が `line` 1・`start` 9・`end` 11'
+      - '`byDocument.guide` が `ﾜｰｸｽﾍﾟｰｽ`・`ＷＳ`・`ws` の 3 件を本文の頭からの順に持ち、どれも `kind` が `term`、`id` が `ws`'
+      - '`ﾜｰｸｽﾍﾟｰｽ` の要素が `line` 1・`start` 0・`end` 8 で、`ＷＳ` の要素が `line` 1・`start` 9・`end` 11'
       - 各要素の `text` が索引に記載した表記（`ワークスペース` か `WS`）
       - '`avoided.guide` が 3 行目の `WorkPlace` の 1 件を持ち、`text` が `workplace`'
     test: test_normal_when_notation_differs

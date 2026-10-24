@@ -156,7 +156,7 @@ flows:
     expected:
       - '戻り値が `{ file: indexFile, where: "terms[1].aliases[0]", kind: "duplicate_term" }`・`{ file: "guide.md", where: "1 行目", kind: "avoided_term" }` の 2 つだけで、この順に並ぶ'
       - '`duplicate_term` の `message` に、記載した表記 `ｍｃｐ` と先の側の場所 `terms[0].term` がある'
-      - '`avoided_term` の `message` に `WorkPlace` と `ワークスペース` がある'
+      - '`avoided_term` の `message` に、索引に記載したやめた言い方 `workplace` と `ワークスペース` がある'
     test: test_normal_when_normalized_words
 lead: 使う側の処理（#9 の `mdmark check`・#11 の MCP の `check`）が、索引と、索引のフォルダにある文書の本文を渡して、索引と文書のずれの一覧を受け取る。ファイルを読むのは呼ぶ側で、mdmark は渡された値だけを確かめる。
 idempotent: true

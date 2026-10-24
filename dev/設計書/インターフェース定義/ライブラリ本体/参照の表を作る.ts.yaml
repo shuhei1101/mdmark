@@ -103,7 +103,7 @@ flows:
         M->>M: 別名と本文の文字を正規化して照合する
         M-->>C: { backlinks, glossary }
     expected:
-      - '`backlinks.api` が `guide` と `arch` を索引の `docs` の順で持つ'
+      - '`backlinks.api` が `["arch", "guide"]`'
     test: test_normal_when_alias_notation_differs
 lead: 使う側のサーバーや CLI（#9 の `mdmark build`）が、索引と全ての文書の本文を渡して、文書ごとの被参照と、用語集の表から入れた用語をまとめた参照の表を受け取る。`mount`・`render` はこの表を `opts.references` で受け取り、ほかの文書の本文を読まずに被参照とほかの文書の用語を描く。
 idempotent: true
