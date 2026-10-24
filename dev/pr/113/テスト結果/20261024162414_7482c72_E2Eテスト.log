@@ -1,0 +1,14 @@
+$ xvfb-run -a npx playwright test "tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts" --project=chromium -g "test_normal_when_tags_unreachable" --repeat-each 5 --workers 1
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-e2e-vscode-preview-close-by-tab/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 5 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (15.3s)
+  ✓  2 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (19.6s)
+  ✓  3 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (14.5s)
+  ✓  4 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (15.2s)
+  ✓  5 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (13.2s)
+
+  5 passed (5.6m)

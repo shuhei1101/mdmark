@@ -26,3 +26,7 @@
 なし
 
 ### E2E
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.7.0/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/VSCode%E3%81%A7%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%8F.spec.ts) | `test_normal_when_tags_unreachable` | 変更 | ✅ | Chromium で `--repeat-each 5 --workers 1`、5 回とも pass<br>`テスト結果/20261024162414_7482c72_E2Eテスト.log` |
