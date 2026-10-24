@@ -22,6 +22,7 @@ import {
   inlineImages,
   usedLibraryMarks,
   usedParts,
+  usedSyntaxLanguages,
 } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
@@ -110,6 +111,42 @@ async function prepareReferences(
   };
 }
 
+/** 色分けのライブラリの本体と、文書が使う言語のモジュールを `syntax.url` から束ねる。使う言語が無い、または本体を束ねられないときは `undefined`（束ねられなければ警告に積む）。言語のモジュールだけ束ねられなければ、その言語を入れずに警告に積む */
+async function bundleSyntax(options: {
+  languages: string[];
+  url: string;
+  loaded: LoadedConfig;
+  warnings: string[];
+}): Promise<ExportPayload["syntax"]> {
+  const { languages, url, loaded, warnings } = options;
+  if (languages.length === 0) {
+    return undefined;
+  }
+  const folder = url.endsWith("/") ? url : `${url}/`;
+  const bundle = async (path: string): Promise<string | undefined> => {
+    const result = await bundleModule(`${folder}${path}`, loaded.dir);
+    if ("code" in result) {
+      return result.code;
+    }
+    warnings.push(
+      `${basename(loaded.path)}: 色分けのライブラリ \`${folder}${path}\` を束ねられません（${result.error}）。\`syntax.url\` を直してください。`,
+    );
+    return undefined;
+  };
+  const core = await bundle("core.min.js");
+  if (core === undefined) {
+    return undefined;
+  }
+  const bundled: Record<string, string> = {};
+  for (const language of languages) {
+    const code = await bundle(`languages/${language}.min.js`);
+    if (code !== undefined) {
+      bundled[language] = code;
+    }
+  }
+  return { core, languages: bundled };
+}
+
 /** 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す */
 export async function prepareEmbeds(options: EmbedOptions): Promise<{
   payload: ExportPayload;
@@ -182,6 +219,17 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     }
   }
 
+  // 文書に色分けの対象があれば、色分けの本体と使う言語のモジュールを束ねる
+  const syntax = await bundleSyntax({
+    languages: usedSyntaxLanguages({
+      markdowns: [...originals.values()],
+      config: loaded.config,
+    }),
+    url: resolveConfig({ config: loaded.config }).syntax.url,
+    loaded,
+    warnings,
+  });
+
   const refs = await prepareReferences({ ...options, markdowns: originals });
   const payload: ExportPayload = {
     kind,
@@ -211,6 +259,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     entry,
     modules,
     extensions,
+    ...(syntax ? { syntax } : {}),
   };
   return { payload, themeCss, warnings };
 }
