@@ -151,10 +151,11 @@ functions:
     is_async: true
     side_effects: VS Code を `.vscode-test/` に取得する（1.141.0 はキャッシュがあれば取得しない）
     process: |-
-      1. リポジトリの直下の `dist/` を `/@{バージョン}/dist/` で、テストが決めたタグ一覧を `/tags` で返す HTTP サーバーを `127.0.0.1:0` で立てる
+      1. このブランチのソースを一時フォルダにビルドし、その `dist/` を配る代役の配信を `127.0.0.1` の空きポートで立てる（代役の配信を作る）
       2. `TEST_VSCODE_VERSIONS` の順に `runTests({ version, extensionDevelopmentPath, extensionTestsPath: out/test/index.mjs, launchArgs: [見本のワークスペース, "--disable-extensions"], extensionTestsEnv: { MDMARK_VSCODE_DIST_BASE, MDMARK_VSCODE_TAGS_URL } })` を呼ぶ
       3. サーバーを閉じる
     callees:
+      - dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts#functions[createStubServer]
       - dev/設計書/外部ライブラリ/test-electron#catalogs[API].entries[runTests]
     refs:
       - dev/設計書/外部ライブラリ/test-electron#
