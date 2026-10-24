@@ -208,3 +208,21 @@ test("test_find_docs_when_no_vocabulary", async () => {
   expect(missed.docs).toEqual([]);
   expect(missed.unknownTags).toEqual([]);
 });
+
+// 空の `tags`・`anyTags` は省いたときと同じくタグで絞らない（正常系）
+test("test_find_docs_when_empty_tag_lists", async () => {
+  // 準備
+  const { findDocs } = await loadFind();
+  const index = createIndex([
+    { id: "a", path: "a.md", title: "A" },
+    { id: "b", path: "b.md", title: "B" },
+  ]);
+  // 実行
+  const withTags = findDocs({ index, tags: [] });
+  const withAnyTags = findDocs({ index, anyTags: [] });
+  // 検証
+  expect(withTags.docs).toHaveLength(2);
+  expect(withTags.unknownTags).toEqual([]);
+  expect(withAnyTags.docs).toHaveLength(2);
+  expect(withAnyTags.unknownTags).toEqual([]);
+});
