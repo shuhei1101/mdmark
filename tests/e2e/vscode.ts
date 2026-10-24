@@ -21,7 +21,7 @@ import {
   test,
 } from "@playwright/test";
 import { buildExtension } from "../../vscode/scripts/build.ts";
-import { createStubServer } from "../../vscode/tests/integration/run.ts";
+import { createStubServer } from "../../vscode/tests/integration/stub-server.ts";
 import { createBuiltRoot } from "../integration/built-root.ts";
 import { VSCODE_EXECUTABLE_ENV } from "./vscode-binary.ts";
 
