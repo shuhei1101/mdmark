@@ -290,9 +290,9 @@ DOM に頼らず、Node とブラウザのどちらでも動く。
 ```js
 import { collectMatches } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
 
-const { byDocument, targets } = collectMatches({
+const { byDocument, avoided, targets } = collectMatches({
   index,
-  documents: { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。" },
+  documents: { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。作業場は使わない。" },
 });
 ```
 
@@ -307,6 +307,7 @@ const { byDocument, targets } = collectMatches({
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `byDocument` | `Record<string, MdmarkMatch[]>` | 文書の `id` から、その文書の本文の一致の並びを引く表。キーは `documents` に本文がある索引の文書で、一致が無い文書は空の並び。並びは本文の頭からの順（行の順、同じ行は始まりの順）で、同じ参照先の出現も全て並べる |
+| `avoided` | `Record<string, MdmarkAvoidedMatch[]>` | 文書の `id` から、その文書の本文に出たやめた言い方の並びを引く表。キーは `byDocument` と同じで、やめた言い方が無い文書と `glossary` がオフの文書は空の並び。並びは本文の頭からの順で、同じやめた言い方の出現も全て並べる |
 | `targets` | `MdmarkMatchTarget[]` | 渡した全ての文書の参照先を、種類と `id` の組で重なりを除いてまとめた並び。同じ参照先は 1 回だけ入る。並びは索引の `docs` の順に文書を見て、その文書の中の初出の順 |
 
 `byDocument` の要素（`MdmarkMatch`）は、次のキーを持つ。
@@ -322,6 +323,19 @@ const { byDocument, targets } = collectMatches({
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
 | `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
 
+`avoided` の要素（`MdmarkAvoidedMatch`）は、次のキーを持つ。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `kind` | `'term' \| 'glossary'` | 代わりの用語の種類。`byDocument` の要素の `term`・`glossary` と同じ |
+| `id` | `string` | 代わりの用語の `id`。`byDocument` の要素の `id` と同じ書き方 |
+| `title` | `string` | 代わりの用語のタイトル。`byDocument` の要素の `title` と同じ書き方 |
+| `description` | `string` | 代わりの用語の短い説明。`byDocument` の要素の `description` と同じ書き方 |
+| `text` | `string` | 一致したやめた言い方 |
+| `line` | `number` | `byDocument` の要素の `line` と同じ |
+| `start` | `number` | `byDocument` の要素の `start` と同じ |
+| `end` | `number` | `byDocument` の要素の `end` と同じ |
+
 `targets` の要素（`MdmarkMatchTarget`）は、`kind`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
 
 ```json
@@ -330,6 +344,11 @@ const { byDocument, targets } = collectMatches({
     "guide": [
       { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "WS", "line": 3, "start": 0, "end": 2 },
       { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧", "text": "公開関数", "line": 3, "start": 4, "end": 8 }
+    ]
+  },
+  "avoided": {
+    "guide": [
+      { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "作業場", "line": 3, "start": 12, "end": 15 }
     ]
   },
   "targets": [
@@ -348,9 +367,11 @@ const { byDocument, targets } = collectMatches({
 - 照合するのは本文の地の文で、コード・リンク・見出し・用語集の表の中は除く
 - `html` がオンの文書は、`<!-- html -->` の範囲の `html` のコードブロックに書いた HTML の文字も照合する。`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・`script` のように中身ごと落ちる要素は除く
 - `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が用語に完全に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
-- 文書の印で `glossary` がオフの文書は用語を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+- 文書の印で `glossary` がオフの文書は用語とやめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+- やめた言い方（索引の用語の `avoid` と、用語集の表の `avoid=` の列。用語の語・別名と同じ語は除く）は、用語・文書の別名の語に追加して照合し、やめた言い方に当たったところを `avoided` に返す。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない。用語・別名の一部として出たやめた言い方は返さない
 
 ツールチップの、節ごとに同じ参照先の最初の 1 回だけに下線を付ける制限は下線の出し方のためで、取り出しには効かない。
+やめた言い方のマーカーの、節ごとに言い方ごとの最初の 1 回だけに付ける制限も、取り出しには効かない。
 
 #### 位置の数え方
 
