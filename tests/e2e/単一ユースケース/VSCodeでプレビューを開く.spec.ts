@@ -105,10 +105,15 @@ test("test_normal_when_tags_unreachable", async () => {
   await session.openFile("guide.md");
   await session.openPreviewWithShortcut();
   await expectGuideRendered(await session.previewFrame());
+  // フォーカスの位置に依らず、プレビューのタブを押してから閉じる
+  await session.win.locator('.tab[aria-label*="プレビュー guide.md"]').click();
   await session.win.keyboard.press("Control+W");
   await expect(
     session.win.locator('.tab[aria-label*="プレビュー guide.md"]'),
   ).toHaveCount(0);
+  await expect(session.win.locator('.tab[aria-label="guide.md"]')).toHaveCount(
+    1,
+  );
   stub.setTags(["v0.7.0"]);
   stub.setMode({ tags: "hang", dist: "ok" });
   stub.clear();
