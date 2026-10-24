@@ -1,0 +1,14 @@
+# npm run test:unit (commit: ff6d9bc)
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-syntax-highlight
+
+
+ Test Files  142 passed (142)
+      Tests  814 passed (814)
+   Start at  17:48:00
+   Duration  63.10s (tests 39%, worker 33%, import 23%, transform 5%)
+
