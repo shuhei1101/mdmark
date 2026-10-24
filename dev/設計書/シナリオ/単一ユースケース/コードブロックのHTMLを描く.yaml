@@ -8,7 +8,7 @@ scenarios:
         description: '`<!-- html -->` 〜 `<!-- /html -->` の範囲に `html` のコードブロックを 1 つ置き、範囲の外にも `html` のコードブロックを 1 つ置く文書'
         notes: 範囲の HTML は、文字に色を付けた箱 2 つを横に並べる `div`、動くと `window.__mdmarkScriptRan` を `true` にする `<script>` 1 つ、`onclick` 属性を持つボタン 1 つを持つ
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
       sequenceDiagram
         actor U as 読む人

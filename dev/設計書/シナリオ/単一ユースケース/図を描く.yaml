@@ -8,7 +8,7 @@ scenarios:
         description: フロー図の部品の定義を 1 つ持つ文書
         notes: システムの枠の内側に LLM の層・処理の層・データの層の箱を各 1〜2 行、枠の外に外部のシステムの箱を 1 つ置く。箱の並びでは消せない交差を 1 か所、ループの戻りを 1 本、題名・範囲・更新日を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
       sequenceDiagram
         actor U as 読む人

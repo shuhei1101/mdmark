@@ -7,7 +7,7 @@ scenarios:
       - name: 3 つの部品を持つ Markdown
         description: '`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ 3 項目の番号付きリスト、`src/` の下に `index.ts` と `parts/` を持つ罫線を書いた言語 `tree` のコードブロック、行内のコード `` `badge:v0.1.0` `` を持つ文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
       sequenceDiagram
         actor U as 利用者
