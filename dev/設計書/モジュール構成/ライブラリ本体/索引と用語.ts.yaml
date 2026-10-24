@@ -49,7 +49,7 @@ data_models:
         description: 文書の `id` から、その文書を参照している文書の `id` の並び
       - name: glossary
         type: MdmarkGlossaryEntry[]
-        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`）
+        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`・`avoid`）
   - name: MdmarkIndexIssue
     title: 索引のずれ
     container: src/knowledge/check.ts
@@ -84,7 +84,7 @@ data_models:
         description: 語から、その語を `aliases` に持つ文書（索引の `docs` の順）
       - name: avoided
         type: 'Map<string, { id: string; term: string; meaning: string }>'
-        description: やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` から。同じ言い方は索引の `terms` で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
+        description: やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
   - name: MdmarkGlossaryEntry
     title: 用語集の表の用語
     container: src/knowledge/references.ts
@@ -103,6 +103,9 @@ data_models:
       - name: docId
         type: string
         description: 表を持つ文書の `id`
+      - name: avoid
+        type: string[] | undefined
+        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。`collectReferences`・`readGlossaryRows` は常に入れる。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う
   - name: MdmarkMatchTarget
     title: 参照先
     container: src/knowledge/matches.ts
@@ -155,7 +158,7 @@ data_models:
   - name: GlossaryRow
     title: 用語集の表の行
     container: src/render/syntax/glossary.ts
-    summary: 用語集の表の 1 行から読んだ用語と、その行の行番号・やめた言い方
+    summary: 用語集の表の 1 行から読んだ用語と、その行の行番号
     properties:
       - name: entry
         type: MdmarkGlossaryEntry
@@ -163,9 +166,6 @@ data_models:
       - name: line
         type: number
         description: その行の文書の中の行番号（1 から）
-      - name: avoid
-        type: string[]
-        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -278,7 +278,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
-    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
+    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・語・意味、用語集の表の用語なら `glossary:{docId}:{語}`・用語・意味にする。同じやめた言い方は、索引の `terms`、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使う。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
     args:
       - name: options
         type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; features: Record<string, boolean> }'
@@ -318,6 +318,24 @@ functions:
         condition: '`test_build_dictionary_avoided` と同じ索引、`features.glossary` が `false`'
         mock: なし
         expected: '`avoided` が空'
+      - name: test_build_dictionary_avoided_from_glossary
+        case: 正常
+        summary: 用語集の表のやめた言い方を `avoided` に入れ、索引の `terms`、索引の `docs` の順の文書の表の順で代わりの用語を選ぶ
+        condition: 索引の `docs` が `glossary`・`guide` の順で、用語 `フォルダ`（`avoid` に `作業場`）を持つ。`docId` が `guide`、`ownGlossary` が用語 `下書き`（`docId` `guide`、`avoid` に `草稿`・`ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `作業場`・`ワーク場`）と `下書き` の 2 つ
+        mock: なし
+        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`ワーク場` → `{ id: "glossary:glossary:ワークスペース", term: "ワークスペース", meaning: … }`、`草稿` → `{ id: "glossary:guide:下書き", term: "下書き", meaning: … }` の 3 件で、`words` にどれも無い'
+      - name: test_build_dictionary_avoided_own_table_first_when_not_in_index
+        case: 正常
+        summary: 描く文書が索引の `docs` に無いときは、描く文書の表のやめた言い方をほかの文書の表より先にする
+        condition: 索引の `docs` が `glossary` だけで `docId` を渡さない。`ownGlossary` が用語 `下書き`（`docId` 空文字、`avoid` に `ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `ワーク場`）
+        mock: なし
+        expected: '`avoided` の `ワーク場` が `下書き` の用語'
+      - name: test_build_dictionary_avoided_when_glossary_entry_without_avoid
+        case: 正常
+        summary: '`avoid` が無い用語集の表の用語は、やめた言い方を持たないものとして扱う'
+        condition: '`references.glossary` が `avoid` を持たない用語 `ワークスペース`（`docId` `glossary`）と、`avoid` に `草稿` を持つ用語 `下書き`（`docId` `glossary`）'
+        mock: なし
+        expected: 例外を送出せず、`avoided` が `草稿` → `下書き` の 1 件だけで、`words` に `ワークスペース` がある
   - name: findWords
     title: 語の区切りで語を照合する
     container: src/knowledge/dictionary.ts
@@ -362,7 +380,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と全ての文書の本文から、文書ごとの被参照と各文書の用語集の表の用語を返す
-    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む。コード・リンク・見出し・用語集の表の中は照合しない。`related` も参照に数える'
+    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む（表の用語はやめた言い方の列を `avoid` に持つ）。コード・リンク・見出し・用語集の表の中は照合しない。`related` も参照に数える'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
@@ -403,7 +421,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term` のずれをこの順で返す
-    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語と `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。`message` は日本語の 1 文で、直す場所を書く'
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。`message` は日本語の 1 文で、直す場所を書く'
     args:
       - name: input
         type: '{ index: unknown; documents: Record<string, string>; indexFile?: string }'
@@ -489,7 +507,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す'
-    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines`、やめた言い方を `env.glossaryAvoid` に `env.ownGlossary` と同じ並びで足す。表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない'
+    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines` に `env.ownGlossary` と同じ並びで足す（やめた言い方は用語の `avoid` が持つ）。表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない'
     args:
       - name: state
         type: StateCore
@@ -513,6 +531,12 @@ functions:
         condition: '同じ Markdown に `<!-- features: -glossary -->`'
         mock: なし
         expected: 表はあり、`env.ownGlossary` が空
+      - name: test_glossary_rule_keeps_avoid
+        case: 正常
+        summary: やめた言い方の列を用語の `avoid` に持たせて `env.ownGlossary` に足す
+        condition: シナリオ『表から用語集に用語を入れる』の「正常シナリオ（やめた言い方の列がある）」の Markdown
+        mock: なし
+        expected: '`env.ownGlossary` の `ワークスペース` の `avoid` が `["作業場", "ワーク場"]`'
   - name: termsRule
     title: 用語の下線のコアルール
     container: src/render/syntax/terms.ts
@@ -1074,13 +1098,13 @@ functions:
         summary: やめた言い方の列を「、」「,」で区切って読み、用語の別名には入れない
         condition: '`term=用語 meaning=意味 avoid=やめた言い方`、行 `ワークスペース | 作業の置き場所 | 作業場、ワーク場, `'
         mock: なし
-        expected: '`avoid` が `["作業場", "ワーク場"]`、`entry.aliases` が `[]`、`warning` が無い'
+        expected: '`entry.avoid` が `["作業場", "ワーク場"]`、`entry.aliases` が `[]`、`warning` が無い'
       - name: test_read_glossary_rows_without_avoid
         case: 正常
         summary: '`avoid=` が無ければやめた言い方を空にする'
         condition: '`term=用語 aliases=別名 meaning=意味`、行 `印 | マーク | HTML コメントで書く指定`'
         mock: なし
-        expected: '`avoid` が `[]`、`entry` が `readGlossaryTable` の用語と等しい'
+        expected: '`entry.avoid` が `[]`、`entry` が `readGlossaryTable` の用語と等しい'
       - name: test_read_glossary_rows_when_unknown_avoid_column
         case: 異常
         summary: '`avoid=` が表に無い列名なら行を返さず警告を返す'

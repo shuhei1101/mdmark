@@ -19,3 +19,15 @@ export type FilterValue = {
 export declare function compareCells(a: string, b: string): number;
 /** セルが絞り込みに合うか。値が空の絞り込みは全てに合う */
 export declare function matchesFilter(cell: string, kind: FilterKind, value: FilterValue): boolean;
+/** 集計の計算 */
+export type TotalCalc = "sum" | "avg" | "count";
+/** `total=列名:計算` に書ける計算。集計の行の題は `TOTAL_LABELS` */
+export declare const TOTAL_CALCS: readonly TotalCalc[];
+/** 集計の行に出す題 */
+export declare const TOTAL_LABELS: Readonly<Record<TotalCalc, string>>;
+/** セルの文字を集計して表示する文字にする。`sum`・`avg` は数として読めるセルだけ、`count` は空でないセルを数える */
+export declare function computeTotal(cells: string[], calc: TotalCalc): string;
+/** 行ごとのセルの文字を、セルをタブで、行を改行で区切った文字にする。セルの中のタブと改行は空白 1 つにする */
+export declare function tableToTsv(rows: string[][]): string;
+/** `location.hash` の最後の `#` の後ろを戻した文字を返す。戻せないときはそのまま、`#` が無ければ空文字 */
+export declare function rowIdFromHash(hash: string): string;

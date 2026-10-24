@@ -1,0 +1,51 @@
+$ rm -rf vscode/.vscode-test
+$ xvfb-run -a npx playwright test <VS Code を起動する 8 つの spec> --project=chromium
+(commit 46a2c67)
+
+- Resolving version...
+✔ Validated version: 1.141.0
+- Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+- Downloading (343.79 MB)
+✔ Downloaded VS Code (b224f6bf5a4fcad5fa4c640ed10f179c3b613e48) into /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-e2e-vscode-download-once/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 30 tests using 4 workers
+
+  ✓   2 [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:48:1 › test_normal (14.1s)
+  ✓   1 [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:46:1 › test_normal (15.4s)
+  ✓   3 [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:39:1 › test_normal (15.9s)
+  ✓   4 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:22:1 › test_normal (15.8s)
+  ✓   5 [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:88:1 › test_normal_when_open_in_browser (12.0s)
+  ✓   6 [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:62:1 › test_normal_when_from_preview (12.0s)
+  ✓   7 [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:74:1 › test_error_when_output_unwritable (11.9s)
+  ✓   8 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:62:1 › test_normal_when_same_column (10.7s)
+  ✓   9 [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:113:1 › test_error_when_output_unwritable (12.1s)
+  ✓  10 [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:77:1 › test_normal_when_sync_off (14.2s)
+  ✓  12 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:81:1 › test_normal_when_version_pinned (9.3s)
+  ✓  15 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (16.8s)
+  ✓  16 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:127:1 › test_error_when_distribution_unreachable (11.7s)
+  ✓  11 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:68:1 › test_normal_when_external_link (12.8s)
+  ✓  17 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:158:1 › test_error_when_version_missing (10.8s)
+  ✓  13 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:19:1 › test_normal (19.8s)
+  ✓  18 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:84:1 › test_normal_when_markdown_link (11.8s)
+  ✓  14 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:17:1 › test_normal (13.4s)
+  ✓  19 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:175:1 › test_error_when_version_undecidable (13.5s)
+  ✓  20 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:46:1 › test_normal_when_theme_fixed (10.1s)
+  ✓  21 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:99:1 › test_normal_when_anchor_link (10.3s)
+  ✓  22 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:54:1 › test_normal_when_live_update_off (11.2s)
+  ✓  24 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:131:1 › test_normal_when_relative_image (9.0s)
+  ✓  25 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:77:1 › test_normal_when_config_saved (11.0s)
+  ✓  26 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:149:1 › test_error_when_image_outside_workspace (10.6s)
+  ✓  27 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:100:1 › test_normal_when_revealed (11.4s)
+  ✓  28 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:121:1 › test_normal_when_reloaded (9.6s)
+  ✓  29 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:153:1 › test_error_when_config_unreadable (8.9s)
+  ✓  23 [chromium] › tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts:47:1 › test_normal (12.9s)
+  ✓  30 [chromium] › tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts:105:1 › test_error_when_distribution_unreachable (7.8s)
+
+  30 passed (3.5m)
+exit=0
+
+$ ls vscode/.vscode-test/vscode-linux-x64-1.141.0/icudtl.dat
+vscode/.vscode-test/vscode-linux-x64-1.141.0/icudtl.dat
+$ ls vscode/.vscode-test/vscode-linux-x64-1.141.0/is-complete
+vscode/.vscode-test/vscode-linux-x64-1.141.0/is-complete
