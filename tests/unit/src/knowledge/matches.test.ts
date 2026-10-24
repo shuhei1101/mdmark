@@ -218,7 +218,14 @@ test("test_collect_matches", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
   const index = structuredClone(MATCH_INDEX);
-  const documents = { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。" };
+  const [term] = index.terms ?? [];
+  if (term) {
+    term.avoid = ["作業場"];
+  }
+  const indexBefore = structuredClone(index);
+  const documents = {
+    "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。作業場は使わない。",
+  };
   const documentsBefore = structuredClone(documents);
   // 実行
   const matches = collectMatches({ index, documents });
@@ -242,9 +249,12 @@ test("test_collect_matches", async () => {
         },
       ],
     },
+    avoided: {
+      guide: [{ ...WS_TARGET, text: "作業場", line: 3, start: 12, end: 15 }],
+    },
     targets: [WS_TARGET, API_TARGET],
   });
-  expect(index).toEqual(MATCH_INDEX);
+  expect(index).toEqual(indexBefore);
   expect(documents).toEqual(documentsBefore);
 });
 
