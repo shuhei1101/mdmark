@@ -227,14 +227,14 @@ constants:
         value: config（文字列）
         description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返す'
       - key: check
-        value: config（文字列）
-        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。点検は書き換えない。`annotations` は `readOnlyHint: true`'
+        value: config・base（文字列）
+        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。`base` を渡すと `mdmark check --base` と同じ `change_together` の直し忘れも返す。点検は書き換えない。`annotations` は `readOnlyHint: true`'
       - key: find_docs
         value: text・related_to・cursor・config（文字列）・tags・any_tags（文字列の配列）・limit（1 以上 100 以下の整数）・view（brief・standard・full）・include・exclude（path・aliases・related・referenced_by の配列）・count_only（真偽値）・format（markdown・json）
         description: '設定の `index` の索引から、題・別名・概要の語、タグの AND / OR、関係する文書で文書を引き、主題のタグが当たる文書を上にして `limit` 件ずつ返す。説明で、タグを渡す前に `list_tags` で語彙を確かめられることを案内する。`annotations` は `readOnlyHint: true`'
       - key: update_index
         value: kind（doc・term・tag、必須）・id（空でない文字列、必須）・item（オブジェクトか null、必須）・config（文字列）
-        description: 索引の文書・用語の ID かタグの語彙の名前の項目を置き換え（無ければ追加し、null なら消し）、索引の形で検査してから書く。`action`（added・replaced・removed）と索引のパス `index` を返す
+        description: 索引の文書・用語の ID かタグの語彙の名前の項目を置き換え（無ければ追加し、null なら消し）、索引の形で検査してから書く。説明で、文書の `related` は `to`・`type`・`when`（任意で `paths`）を持つオブジェクトの並びで渡すことと、`type` の 5 つの値を案内する。`action`（added・replaced・removed）と索引のパス `index` を返す
       - key: list_tags
         value: query・config（文字列）・format（markdown・json）
         description: '設定の `index` の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と付いている文書の数つきで返す。`annotations` は `readOnlyHint: true`'
@@ -600,7 +600,7 @@ functions:
     is_async: true
     args:
       - name: args
-        type: '{ config?: string }'
+        type: '{ config?: string; base?: string }'
         required: true
         description: 検査を通った引数
       - name: context
@@ -612,7 +612,7 @@ functions:
       description: '`json` が `{ issues }`（`CheckIssue` の並び。ずれがあっても誤りにしない）'
     process: |-
       1. `projectDir` から設定ファイルを探す（設定ファイルを探す）
-      2. ずれを集めて `issues` で返す（ずれを集める）
+      2. `base` を渡してずれを集め、`issues` で返す（ずれを集める）。比べる基準を引けない `CliError` は `callTool` がその文のツールのエラーにする
     unit_tests:
       - name: test_run_check_tool
         case: 正常
@@ -620,6 +620,18 @@ functions:
         condition: '`projectDir` の索引が無い文書 `old.md` を指す'
         mock: なし（一時フォルダ）
         expected: '`json.issues` に `kind: missing_doc` が 1 件'
+      - name: test_run_check_tool_when_base_given
+        case: 正常
+        summary: '`base` から片方だけが変わった change_together の組を返す'
+        condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載した `projectDir` をコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`json.issues` が `{ file: "b.md", where: "", kind: "missed_change_together" }` の 1 件'
+      - name: test_run_check_tool_when_base_unknown
+        case: 異常
+        summary: 引けない `base` は `CliError` にする
+        condition: '`test_run_check_tool_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`CliError` を投げ、メッセージが `mdmark check --base no-such-ref` が標準エラーに出す文と等しい'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[findConfigFile]
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectCheckIssues]
@@ -659,7 +671,7 @@ functions:
       7. 当たった文書ごとに文字数を数える。索引の `path` を正規化して索引の文書から本文を引き、無ければ索引のフォルダからのパスでファイルを読む。本文のコードポイントの数、読めなければ `null`
       8. `total`・`total_chars`（`null` を足さない）・`tag_counts`（タグごとの件数を数える）・`warnings`（語彙に無いタグの警告を作る）を、当たった全ての文書で作る
       9. `count_only` なら、この 4 つだけを返す
-      10. それ以外は、先頭の位置から `limit`（無ければ `FIND_DOCS_DEFAULT_LIMIT`）件を行にし（文書の行を作る）、続きがあれば `next_cursor`（続きの位置を文字列にする）と `hint`（`FIND_DOCS_HINT`）、無ければどちらも `null` にする
+      10. それ以外は、先頭の位置から `limit`（無ければ `FIND_DOCS_DEFAULT_LIMIT`）件を行にし（文書の行を作る。`related_to` があれば `findDocs` の `relations` のその文書の並びを渡す）、続きがあれば `next_cursor`（続きの位置を文字列にする）と `hint`（`FIND_DOCS_HINT`）、無ければどちらも `null` にする
       11. `format` が `json` なら `structured`、それ以外は Markdown にした `texts` で返す（文書を探した結果を Markdown にする）
     unit_tests:
       - name: test_run_find_docs
@@ -679,7 +691,7 @@ functions:
         summary: 参照の表を作って関係する文書を返す
         condition: '`a` が `related` で `b` を指し、`c` の本文が `a` へリンクする。`related_to: a`、`format: json`'
         mock: なし（一時フォルダ）
-        expected: '`structured.docs` の ID が `b`・`c`'
+        expected: '`structured.docs` の ID が `b`・`c` で、`b` の `relations` が `[{ direction: "outgoing", type: null, when: null }]`、`c` の `relations` が `[{ direction: "incoming", type: null, when: null }]`'
       - name: test_run_find_docs_when_paged
         case: 正常
         summary: '`limit` 件ずつ返し、`next_cursor` で続きを返す'
@@ -760,6 +772,12 @@ functions:
         condition: '`tags` を持たない索引、`kind: tag`、`id: topic:mcp`、`group` を持つ項目'
         mock: なし（一時フォルダ）
         expected: '`json` が `{ action: "added", index: "index.yaml" }` で、索引の `tags` が `[{ name: "topic:mcp", group }]`'
+      - name: test_run_update_index_when_related_invalid
+        case: 異常
+        summary: Schema に合わない関連の項目は書かずに誤りにする
+        condition: '索引に `a` だけ、`kind: doc`、`id: b`、`related` が `[{ to: "a", type: "depends_on", when: "前提を確かめるとき" }]` の項目'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `docs[1].related[0].type` と `change_together` が入り、索引のファイルの中身が変わらない'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[requireConfig]
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[updateIndexFile]
@@ -964,16 +982,16 @@ functions:
     container: src/plugin/results.ts
     usecase: 索引から文書を探す
     role: 変換
-    summary: 索引の文書を、`id`・`title`・`description`・`tags`・`chars` と返す項目のキーをこの順で持つ行にする
-    description: '`description` が無ければ `null`。`tags` は `readDocTag` で `{ name, main }` にそろえ、無ければ空。`aliases`・`related` は無ければ空。`referenced_by` は参照の表の `backlinks[id]` の数（無ければ 0）'
+    summary: 索引の文書を、`id`・`title`・`description`・`tags`・`chars` と返す項目のキーと `relations` をこの順で持つ行にする
+    description: '`description` が無ければ `null`。`tags` は `readDocTag` で `{ name, main }` にそろえ、無ければ空。`aliases` は無ければ空。`related` は要素を `readRelated` で `{ to, type, when }`（`paths` は持つときだけ）にそろえ、無ければ空。`relations` は渡したときだけ持たせる。`referenced_by` は参照の表の `backlinks[id]` の数（無ければ 0）'
     kind: 関数
     scope: internal
     is_async: false
     args:
       - name: options
-        type: '{ doc: MdmarkIndexDoc; chars: number | null; fields: string[]; references: MdmarkReferences | undefined }'
+        type: '{ doc: MdmarkIndexDoc; chars: number | null; fields: string[]; references: MdmarkReferences | undefined; relations?: DocRelation[] }'
         required: true
-        description: 文書・文字数・返す項目・参照の表（`referenced_by` を返すときに要る）
+        description: 文書・文字数・返す項目・参照の表（`referenced_by` を返すときに要る）・`related_to` の文書との関係（`related_to` を渡したときだけ）
     returns:
       type: Record<string, unknown>
       description: '`docs` の 1 行'
@@ -990,10 +1008,17 @@ functions:
         condition: '別名と `related` を持たない文書 `a`、`chars: null`、`fields` が `VIEW_FIELDS.full`、参照の表の `backlinks` が `{ a: ["b", "c"] }`'
         mock: なし
         expected: '`chars` が `null`、`path` が索引の `path`、`aliases`・`related` が空、`referenced_by` が 2'
+      - name: test_to_doc_row_when_related_and_relations
+        case: 正常
+        summary: 文字列とオブジェクトの関連をそろえ、関係を最後のキーにする
+        condition: '`related` が `["b", { to: "c", type: "requires", when: "前提を確かめるとき" }]` の文書、`fields: ["related"]`、`relations: [{ direction: "incoming", type: "has_part", when: "全体を確かめるとき" }]`'
+        mock: なし
+        expected: '`related` が `[{ to: "b", type: null, when: null }, { to: "c", type: "requires", when: "前提を確かめるとき" }]`、最後のキーが `relations` で渡した並びと等しい'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[readDocTag]
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[docs[].id]
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[readRelated]
     status: planned
     introduced:
       pr: 114
@@ -1036,7 +1061,7 @@ functions:
     description: 表のセルの `|` は `\|`、改行は空白にする。`null` と空の配列は `-`、配列は `・` でつなぐ
     process: |-
       1. 先頭の行: `count_only` の結果は「総件数 {total} 件・合計文字数 {total_chars}」、それ以外は「総件数 {total} 件・返した件数 {returned} 件・合計文字数 {total_chars}・next_cursor: {next_cursor か なし}」
-      2. `docs` が 1 件以上なら文書の表。列は ID・題・概要・タグ・文字数に、返す項目のパス・別名・関連する文書・被参照の数を続ける。タグは主題のタグに `（主題）` を付ける
+      2. `docs` が 1 件以上なら文書の表。列は ID・題・概要・タグ・文字数に、返す項目のパス・別名・関連する文書・被参照の数と、行が `relations` を持つときの関係を続ける。タグは主題のタグに `（主題）` を付ける。関連する文書は要素ごとに `{to}`（`type` があれば `{to}（{type}）`）、関係は要素ごとに `{direction} {type}`（`type` が null なら `{direction}`）
       3. `tag_counts` があれば「タグごとの件数: {name} {count}・…」
       4. `omitted` があれば「省いた項目: {field}（{how}）・…」
       5. `warnings` を 1 つ 1 行
@@ -1073,6 +1098,12 @@ functions:
         condition: 概要が `a|b` と改行を含む行
         mock: なし
         expected: そのセルが `a\|b` で、行が 1 行
+      - name: test_format_find_docs_when_relations
+        case: 正常
+        summary: 関連する文書と関係をそれぞれ 1 つのセルにする
+        condition: '`related` が `[{ to: "b", type: "requires", when: "前提を確かめるとき" }, { to: "c", type: null, when: null }]`、`relations` が `[{ direction: "outgoing", type: "requires", when: "前提を確かめるとき" }, { direction: "incoming", type: null, when: null }]` の行'
+        mock: なし
+        expected: 関連する文書のセルが `b（requires）・c`、関係のセルが `outgoing requires・incoming`
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[返す形式]
     status: planned

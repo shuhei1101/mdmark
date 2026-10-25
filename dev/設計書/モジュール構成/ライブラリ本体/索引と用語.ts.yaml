@@ -35,7 +35,7 @@ data_models:
         description: 索引の版
       - name: docs
         type: MdmarkIndexDoc[]
-        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意。`tags` の要素は文字列か `MdmarkIndexDocTag`）
+        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意。`tags` の要素は文字列か `MdmarkIndexDocTag`、`related` の要素は文字列か `MdmarkIndexRelated`）
       - name: terms
         type: MdmarkIndexTerm[] | undefined
         description: 用語（`id`・`term`・`meaning` が必須、`aliases`・`avoid` が任意）
@@ -67,7 +67,7 @@ data_models:
         type: string
         description: 索引のキーのパスか文書の行。ファイル全体は空文字
       - name: kind
-        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "duplicate_term" | "avoided_term" | "duplicate_tag" | "tag_alias_conflict" | "broken_tag_replacement" | "unregistered_tag" | "deprecated_tag"'
+        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "duplicate_term" | "avoided_term" | "duplicate_tag" | "tag_alias_conflict" | "broken_tag_replacement" | "unregistered_tag" | "deprecated_tag"'
         description: ずれの種類
       - name: message
         type: string
@@ -279,6 +279,9 @@ data_models:
       - name: unknownTags
         type: 'Array<{ tag: string; nearest: string | undefined }>'
         description: 語彙を持つ索引で、`tags`・`anyTags` に渡したタグのうち語彙に当たらないもの（渡した順、重なりを除く）と近いタグの `name`。語彙の無い索引では空
+      - name: relations
+        type: Record<string, DocRelation[]>
+        description: 当たった文書の `id` から、`relatedTo` の文書との関係の並び。`relatedTo` を渡さないときは空
     status: planned
     introduced:
       pr: 114
@@ -309,6 +312,49 @@ data_models:
     status: planned
     introduced:
       pr: 114
+  - name: MdmarkIndexRelated
+    title: 文書の関連
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`docs[].related` の要素のうち、関係の種類といつ読むかを持つオブジェクト（公開の型）。要素は文字列かこの型'
+    properties:
+      - name: to
+        type: string
+        description: 相手の文書の `id`
+      - name: type
+        type: MdmarkRelationType
+        description: 関係の種類
+      - name: when
+        type: string
+        description: いつ読むかの 1 文（空でない文字列）
+      - name: paths
+        type: string[] | undefined
+        description: 関連が当たるファイルの glob の並び
+    refs:
+      - dev/設計書/ER図/索引#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
+  - name: DocRelation
+    title: 文書との関係
+    container: src/knowledge/find.ts
+    role: DTO
+    summary: '`findDocs` の `relatedTo` の文書から見た、当たった文書との関係 1 つ（内部の型）'
+    properties:
+      - name: direction
+        type: "'outgoing' | 'incoming'"
+        description: '`outgoing` は `relatedTo` の文書から当たった文書へ、`incoming` は当たった文書から `relatedTo` の文書へ'
+      - name: type
+        type: MdmarkRelationType | 'required_by' | 'referenced_by' | 'replaced_by' | 'has_part' | null
+        description: '`outgoing` は記載した `type`、`incoming` は `INVERSE_RELATION_TYPES` の逆向きの名前。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は null'
+      - name: when
+        type: string | null
+        description: 索引の関連に記載した `when`。`type` が null なら null
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[docs[].relations[].direction]
+    status: planned
+    introduced:
+      pr: 127
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -316,7 +362,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 値を ER 図『索引』の形で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返す
-    description: 検査のライブラリを使わず、`INDEX_SHAPE` で TypeScript の検査を書く（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確かめる。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキーを合わない場所にする。重なった要素は先の 1 つを残す。`tags` の要素は `INDEX_SHAPE.tag` で検査し、`tags[].name` の重なりは合わない場所にせず両方を残す（`duplicate_tag` は `checkIndex` が返す）。最上位に `tags` が無ければ、返す索引にも `tags` を持たせない
+    description: 検査のライブラリを使わず、`INDEX_SHAPE` で TypeScript の検査を書く（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確かめる。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキーを合わない場所にする。重なった要素は先の 1 つを残す。`tags` の要素は `INDEX_SHAPE.tag` で検査し、`tags[].name` の重なりは合わない場所にせず両方を残す（`duplicate_tag` は `checkIndex` が返す）。`docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の形。`type` が `MdmarkRelationType` の値でないときは、`message` に許す 5 つの値を並べる）。最上位に `tags` が無ければ、返す索引にも `tags` を持たせない
     args:
       - name: value
         type: unknown
@@ -347,9 +393,9 @@ functions:
       - name: test_normalize_index_matches_json_schema
         case: 正常
         summary: '`schemas/mdmark.index.schema.json` が `INDEX_SHAPE` と同じキー・型・必須を持つ'
-        condition: Schema の JSON を読み、最上位・`docs.items`・`terms.items`・`tags.items` の `properties`・`required`・`additionalProperties` と、`docs.items.properties.tags.items` を取る
+        condition: Schema の JSON を読み、最上位・`docs.items`・`terms.items`・`tags.items` の `properties`・`required`・`additionalProperties` と、`docs.items.properties.tags.items`・`docs.items.properties.related.items` を取る
         mock: なし
-        expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`。`docs.items.properties.tags.items` が文字列と、`name` が必須で `main` を持ち `additionalProperties` が `false` のオブジェクトの `anyOf`
+        expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`。`docs.items.properties.tags.items` が文字列と、`name` が必須で `main` を持ち `additionalProperties` が `false` のオブジェクトの `anyOf`。`docs.items.properties.related.items` が文字列と、`to`・`type`・`when` が必須で `paths` を持ち `additionalProperties` が `false`、`type` の `enum` が `MdmarkRelationType` の 5 つの値のオブジェクトの `anyOf` で、`docs.items.properties.related` が `maxItems` を持たない
       - name: test_normalize_index_when_invalid_avoid
         case: 異常
         summary: 空の要素を持つ `avoid` の用語を除き、場所を返す
@@ -374,6 +420,18 @@ functions:
         condition: ER 図『索引』の例の索引から `tags` を消したもの
         mock: なし
         expected: '`problems` が空で、`"tags" in index` が `false`'
+      - name: test_normalize_index_when_related
+        case: 正常
+        summary: 文字列とオブジェクトの関連をそのまま返す
+        condition: '`docs[0].related` が `["b", { to: "b", type: "change_together", when: "公開関数を変えるとき", paths: ["src/**"] }]`、`docs[1]`（`b`）の `related` が要素 9 つの索引'
+        mock: なし
+        expected: '`problems` が空で、`index.docs` が入力と等しい'
+      - name: test_normalize_index_when_invalid_related
+        case: 異常
+        summary: 形の合わない関連を持つ文書を、場所を返して除く
+        condition: '`docs[0].related[0]` が `when` を持たず、`docs[1].related[0].type` が `depends_on`、`docs[2].related[0]` が知らないキー `note` を持ち、`docs[3].related[0].when` が空文字の索引'
+        mock: なし
+        expected: '`problems` の `where` が `docs[0].related[0].when`・`docs[1].related[0].type`・`docs[2].related[0].note`・`docs[3].related[0].when` で、`docs[1].related[0].type` の `message` が `requires`・`references`・`replaces`・`part_of`・`change_together` を含み、`index.docs` から 4 つとも除かれる'
     refs:
       - dev/設計書/ER図/索引#
   - name: resolveLink
@@ -553,7 +611,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と全ての文書の本文から、文書ごとの被参照と各文書の用語集の表の用語を返す
-    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む（表の用語はやめた言い方の列を `avoid` に持つ）。コード・リンク・見出し・用語集の表の中は照合しない。`related` も参照に数える'
+    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む（表の用語はやめた言い方の列を `avoid` に持つ）。コード・リンク・見出し・用語集の表の中は照合しない。`related` の要素の相手（`readRelated` の `to`）も参照に数える'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
@@ -592,6 +650,12 @@ functions:
         condition: インターフェース定義『参照の表を作る』の「正常系（表記の違う別名）」の索引と文書
         mock: なし
         expected: '`backlinks.api` が `["arch", "guide"]`'
+      - name: test_collect_references_when_related_objects
+        case: 正常
+        summary: オブジェクトの関連は `to` を、文字列の関連はその文字列を参照に数える
+        condition: '`api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確かめるとき" }]`、`guide` の `related` が `["arch"]` で、どちらの本文も `arch` をリンクも別名でも指さない'
+        mock: なし
+        expected: '`backlinks.arch` が `["api", "guide"]`'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
   - name: checkIndex
@@ -599,13 +663,13 @@ functions:
     container: src/knowledge/check.ts
     kind: 関数
     scope: public
-    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term`・`duplicate_tag`・`tag_alias_conflict`・`broken_tag_replacement`・`unregistered_tag`・`deprecated_tag` のずれをこの順で返す
-    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を書く。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。タグのずれは `findTagIssues` で拾い、`avoided_term` の後ろに並べる。`message` は日本語の 1 文で、直す場所を書く'
+    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term`・`duplicate_tag`・`tag_alias_conflict`・`broken_tag_replacement`・`unregistered_tag`・`deprecated_tag` のずれをこの順で返す
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を書く。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。`broken_ref` は `readRelated` の `to` が索引の文書に無い要素ごとに 1 つで、`where` は文字列の要素が `docs[0].related[1]`、オブジェクトの要素が `docs[0].related[1].to`。`untyped_related`・`one_sided_change_together`・`related_link_overlap` は `findRelatedIssues` で、`missed_change_together` は `changedPaths` を渡したときだけ `findMissedChangeTogether` で拾い、`broken_ref` の後ろに並べる。`findRelatedIssues` に渡す文書ごとの本文のリンクは、`parseDocument` で読んだトークンの `link_open` の `href` を `resolveLink` で解いたパス。タグのずれは `findTagIssues` で拾い、`avoided_term` の後ろに並べる。`message` は日本語の 1 文で、直す場所を書く'
     args:
       - name: input
-        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string }'
+        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string; changedPaths?: string[] }'
         required: true
-        description: 索引の値・文書のパスから本文を引く表・索引のファイルの名前（既定 `index.yaml`）
+        description: 索引の値・文書のパスから本文を引く表・索引のファイルの名前（既定 `index.yaml`）・比べる基準から変わった文書のパス（渡したときだけ直し忘れを確かめる）
     returns:
       type: MdmarkIndexIssue[]
       description: ずれの一覧
@@ -614,6 +678,8 @@ functions:
       - '#functions[readGlossaryTable]'
       - '#functions[findAvoidedTerms]'
       - '#functions[findTagIssues]'
+      - '#functions[findRelatedIssues]'
+      - '#functions[findMissedChangeTogether]'
     unit_tests:
       - name: test_check_index
         case: 正常
@@ -663,6 +729,24 @@ functions:
         condition: インターフェース定義『索引を点検する』の「正常系（正規化すると同じになる語）」の索引と文書
         mock: なし
         expected: '`file`・`where`・`kind`・`message` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_related_drift
+        case: 正常
+        summary: 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を返す
+        condition: インターフェース定義『索引を点検する』の「正常系（関連がずれる）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind`・`message` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_change_together_missed
+        case: 正常
+        summary: '`changedPaths` で組の片方だけが変わったときだけ `missed_change_together` を返す'
+        condition: インターフェース定義『索引を点検する』の「正常系（change_together の直し忘れ）」の索引と文書で、`changedPaths` を渡さない・`["a.md"]`・`["a.md", "b.md"]` の 3 回
+        mock: なし
+        expected: 3 回の戻り値がそのフローの期待値と等しい
+      - name: test_check_index_when_broken_related_object
+        case: 正常
+        summary: 索引に無い `to` のオブジェクトの関連を `to` を指す `broken_ref` にする
+        condition: '「正常系」の索引で、`docs[0].related` を `[{ to: "zzz", type: "references", when: "使い方を確かめるとき" }]` にしたもの'
+        mock: なし
+        expected: '`{ file: "index.yaml", where: "docs[0].related[0].to", kind: "broken_ref" }` の 1 つだけで、`message` に `zzz` がある'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
   - name: readGlossaryTable
@@ -822,7 +906,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として足す
-    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
+    description: '`references.backlinks[docId]`（参照の表が無ければ、索引の `related` の要素のうち `readRelated` の `to` が `docId` の要素を持つ文書）から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
     args:
       - name: state
         type: StateCore
@@ -847,6 +931,12 @@ functions:
         condition: '`backlinks.arch` が空'
         mock: なし
         expected: 一覧が無い
+      - name: test_backlinks_rule_without_references
+        case: 正常
+        summary: 参照の表が無ければ、文字列とオブジェクトの関連の相手から一覧を作る
+        condition: '`docId` が `arch`、参照の表が無く、索引の `api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確かめるとき" }]`、`guide` の `related` が `["arch"]`'
+        mock: なし
+        expected: 末尾の一覧の項目が `api`・`guide` の順
   - name: renderTermTip
     title: 用語のツールチップの HTML を返す
     container: src/parts/term-tip.ts
@@ -1285,6 +1375,10 @@ functions:
       5. `anyTags` にタグが 1 つ以上あれば、どれかのタグを持つ文書に絞る（空の配列は省いたときと同じく絞らない）
       6. `relatedTo` があれば、参照の表の `backlinks[relatedTo]` にある文書と、`backlinks` に `relatedTo` を持つ文書に絞る（`relatedTo` 自身は含めない）
       7. `tags`・`anyTags` のタグのどれかが主題のタグに当たる文書を上に並べる
+      8. `relatedTo` があれば、残った文書ごとに `relatedTo` の文書との関係を `outgoing` → `incoming` の順で `relations` に入れる（関係を引く）
+         - `outgoing`: `relatedTo` の文書の `related` のうちその文書を相手にする要素ごとに、`readRelated` の `type` と `when`
+         - `incoming`: その文書の `related` のうち `relatedTo` を相手にする要素ごとに、`type` を `INVERSE_RELATION_TYPES` の逆向きの名前にしたもの（`type` が null なら null）と `when`
+         - その向きに索引の関連が無く、参照の表でその向きに参照しているとき（`outgoing` は `backlinks[その文書]` に `relatedTo`、`incoming` は `backlinks[relatedTo]` にその文書）は、`type` と `when` が null の関係を 1 つ置く
     unit_tests:
       - name: test_find_docs
         case: 正常
@@ -1309,7 +1403,7 @@ functions:
         summary: 参照先と被参照を引く
         condition: '参照の表の `backlinks` が `{ a: ["c"], b: ["a"] }`、文書 `a`・`b`・`c`・`d`、`relatedTo: "a"`'
         mock: なし
-        expected: '`b`・`c` の順で、`a`・`d` を含まない'
+        expected: '`docs` が `b`・`c` の順で `a`・`d` を含まず、`relations` が `{ b: [{ direction: "outgoing", type: null, when: null }], c: [{ direction: "incoming", type: null, when: null }] }`'
       - name: test_find_docs_when_no_condition
         case: 正常
         summary: 条件が無ければ全ての文書
@@ -1364,6 +1458,18 @@ functions:
         condition: '`a` の別名に `MCP`、`b` の題「文書 B」、`text: "ＭＣＰ"`'
         mock: なし
         expected: '`a` だけ'
+      - name: test_find_docs_when_related_to_typed
+        case: 正常
+        summary: 索引の関連の種類を向きごとに、相手からの関連は逆向きの名前で返す
+        condition: '`a` の `related` が `[{ to: "b", type: "requires", when: "前提を確かめるとき" }, { to: "e", type: "change_together", when: "索引を変えるとき" }]`、`c` の `related` が `[{ to: "a", type: "part_of", when: "全体を確かめるとき" }]`、`d` の `related` が `["a"]`、`e` の `related` が `[{ to: "a", type: "change_together", when: "索引を変えるとき" }]`。参照の表の `backlinks` が `{ a: ["c", "d", "e"], b: ["a"], e: ["a"] }`、`relatedTo: "a"`'
+        mock: なし
+        expected: '`relations.b` が `[{ direction: "outgoing", type: "requires", when: "前提を確かめるとき" }]`、`relations.c` が `[{ direction: "incoming", type: "has_part", when: "全体を確かめるとき" }]`、`relations.d` が `[{ direction: "incoming", type: null, when: null }]`、`relations.e` が `outgoing` の `change_together`・`incoming` の `change_together` の順の 2 つ'
+      - name: test_find_docs_without_related_to
+        case: 正常
+        summary: '`relatedTo` を渡さなければ `relations` が空'
+        condition: '`test_find_docs_when_related_to_typed` と同じ索引、条件無し'
+        mock: なし
+        expected: '`docs` が 5 件で、`relations` が `{}`'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#
     status: planned
@@ -1761,12 +1867,143 @@ functions:
         condition: '`　Ｗｏｒｋ Place `・`ﾜｰｸｽﾍﾟｰｽ`・`㍻`'
         mock: なし
         expected: '`work place`・`ワークスペース`・`平成`'
+  - name: readRelated
+    title: 文書の関連を読む
+    kind: 関数
+    container: src/knowledge/index-shape.ts
+    usecase: 共通
+    role: 変換
+    summary: '`docs[].related` の要素を `to`・`type`・`when` を持つオブジェクトにそろえる'
+    description: 文字列の要素は `to` がその文字列で `type` と `when` が null のオブジェクトにし、オブジェクトの要素はそのままのキー（`paths` は持つときだけ）で返す
+    scope: internal
+    args:
+      - name: item
+        type: string | MdmarkIndexRelated
+        required: true
+        description: '`docs[].related` の要素 1 つ'
+    returns:
+      type: '{ to: string; type: MdmarkRelationType | null; when: string | null; paths?: string[] }'
+      description: そろえた関連
+    unit_tests:
+      - name: test_read_related
+        case: 正常
+        summary: 文字列の要素を `type` と `when` が null のオブジェクトにする
+        condition: '`"arch"`'
+        mock: なし
+        expected: '`{ to: "arch", type: null, when: null }` で、`paths` のキーを持たない'
+      - name: test_read_related_when_object
+        case: 正常
+        summary: オブジェクトの要素をそのままのキーで返す
+        condition: '`{ to: "arch", type: "requires", when: "前提を確かめるとき", paths: ["src/**"] }`'
+        mock: なし
+        expected: 入力と等しい
+    refs:
+      - dev/設計書/ER図/索引#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
+  - name: findRelatedIssues
+    title: 関連のずれを拾う
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引を点検する
+    summary: 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返す
+    description: 同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び。関連の相手は `readRelated` の `to`。`untyped_related` は文字列の要素ごとに 1 つ。`one_sided_change_together` は `type` が `change_together` の要素のうち、相手が索引にあり、相手の `related` に自分を `to` とする `change_together` が無いものごとに 1 つ。`related_link_overlap` は `type` が `change_together` でない要素（文字列の要素を含む）のうち、相手が索引にあり、自分の `links` が相手の `path`（`./` と重なった `/` を除いたもの）を持つものごとに 1 つで、`links` にキーを持たない文書は確かめない。`where` はどれも `docs[0].related[1]`、`file` は `indexFile`。`message` は日本語の 1 文で、`untyped_related` は `to`・`type`・`when` を持つ関連に書き換える直し方、`one_sided_change_together` は相手の `id` と自分の `id` と相手にも記載する直し方、`related_link_overlap` は相手の `id` と関連か本文のリンクのどちらかにする直し方を書く
+    scope: internal
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; links: Record<string, string[]>; indexFile: string }'
+        required: true
+        description: '`normalizeIndex` で合う要素だけにした索引・文書の `id` から本文のリンクが指す文書のパス（本文を `documents` に持たない文書はキーを持たない）・索引のファイルの名前'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: 関連のずれ（無ければ空）
+    unit_tests:
+      - name: test_find_related_issues
+        case: 正常
+        summary: 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を種類の順に返す
+        condition: '`a`（`related` が `b` への `change_together`・`c` への `references`）・`b`（`related` なし）・`c`（`related` が文字列の `a`）、`links` が `{ a: ["c.md"], b: [], c: [] }`、`indexFile: "index.yaml"`'
+        mock: なし
+        expected: '`where` と `kind` が `docs[2].related[0]` の `untyped_related`・`docs[0].related[0]` の `one_sided_change_together`・`docs[0].related[1]` の `related_link_overlap` の順で、`file` がどれも `index.yaml`'
+      - name: test_find_related_issues_when_change_together_both_sides
+        case: 正常
+        summary: 両側に記載した change_together は、本文のリンクがあってもずれにしない
+        condition: '`a` と `b` が互いを `change_together` で記載し、`links` が `{ a: ["b.md"], b: ["./a.md"] }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_related_issues_when_target_missing
+        case: 正常
+        summary: 索引に無い相手への関連は片側だけの change_together にもリンクの重なりにもしない
+        condition: '`a` の `related` が `zzz` への `change_together` と `yyy` への `references`、`links` が `{ a: ["yyy.md"] }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_related_issues_without_body
+        case: 正常
+        summary: '`links` にキーを持たない文書はリンクの重なりを確かめない'
+        condition: '`a` の `related` が `b` への `references`、`links` が `{}`'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - '#functions[readRelated]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[関連の点検]
+    status: planned
+    introduced:
+      pr: 127
+  - name: findMissedChangeTogether
+    title: change_together の直し忘れを拾う
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引を点検する
+    summary: '`change_together` の組のうち片方の文書だけが `changedPaths` にある組を `missed_change_together` で返す'
+    description: 組は、どちらかの側の `related` に `type` が `change_together` の要素がある 2 つの文書で、向きを問わず組ごとに 1 回だけ確かめる。相手が索引に無い組は確かめない。文書の `path` と `changedPaths` は `./` と重なった `/` を除いて比べ、索引のどの `path` にも当たらないパスは無視する。`file` は変わっていない側の索引に記載した `path`、`where` は空文字。`message` は日本語の 1 文で、変わった側のパスと、変わっていない側も直すか確かめる直し方を書く。並びは、組を先に記載した側の文書の索引の並び（同じ文書の中は `related` の並び）
+    scope: internal
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; changedPaths: string[] }'
+        required: true
+        description: '`normalizeIndex` で合う要素だけにした索引・比べる基準から変わった文書のパス'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: 直し忘れの組（無ければ空）
+    unit_tests:
+      - name: test_find_missed_change_together
+        case: 正常
+        summary: 片側だけに記載した組でも、片方だけが変わったら変わっていない側を返す
+        condition: '`a`（`a.md`、`related` が `b` への `change_together`）・`b`（`b.md`、`related` なし）、`changedPaths: ["b.md"]`'
+        mock: なし
+        expected: '`{ file: "a.md", where: "", kind: "missed_change_together" }` の 1 つだけで、`message` に `b.md` がある'
+      - name: test_find_missed_change_together_when_both_sides_written
+        case: 正常
+        summary: 両側に記載した組を 1 つだけ返す
+        condition: '`a` と `b` が互いを `change_together` で記載し、`changedPaths: ["./a.md"]`'
+        mock: なし
+        expected: '`file` が `b.md` の 1 つだけ'
+      - name: test_find_missed_change_together_when_both_or_none_changed
+        case: 正常
+        summary: 両方が変わった組と、どちらも変わっていない組は返さない
+        condition: '`a` と `b` が互いを `change_together` で記載し、`changedPaths` が `["a.md", "b.md"]` と `["other.md"]`'
+        mock: なし
+        expected: どちらも `[]`
+      - name: test_find_missed_change_together_ignores_other_types
+        case: 正常
+        summary: '`change_together` でない関連と索引に無い相手の組は数えない'
+        condition: '`c` の `related` が `a` への `references` と `zzz` への `change_together`、`changedPaths: ["a.md"]`'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - '#functions[readRelated]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[直し忘れ]
+    status: planned
+    introduced:
+      pr: 127
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
     container: src/knowledge/index-shape.ts
-    summary: 索引の最上位・`docs` の要素・`terms` の要素・`tags` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`・`doc_tags`）と必須か。`doc_tags` は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び。`normalizeIndex` がこれで検査する
-    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false }, tags: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "string[]", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } }, tag: { name: { type: "string", required: true }, group: { type: "string", required: false }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, deprecated: { type: "string", required: false } } }'
+    summary: 索引の最上位・`docs` の要素・`terms` の要素・`tags` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`・`doc_tags`・`doc_related`）と必須か。`doc_tags` は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び。`doc_related` は、空でない文字列か、`to`（必須・空でない文字列）・`type`（必須・`MdmarkRelationType` の値）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクトの並びで、件数の上限を置かない。`normalizeIndex` がこれで検査する
+    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false }, tags: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } }, tag: { name: { type: "string", required: true }, group: { type: "string", required: false }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, deprecated: { type: "string", required: false } } }'
     refs:
       - dev/設計書/ER図/索引#
   - name: NEAR_TAG_MAX_DISTANCE
@@ -1779,6 +2016,26 @@ constants:
     status: planned
     introduced:
       pr: 114
+  - name: INVERSE_RELATION_TYPES
+    title: 逆向きの関係の名前
+    container: src/knowledge/find.ts
+    summary: '`MdmarkRelationType` から、相手の側から見た関係の名前'
+    entries:
+      - key: requires
+        value: required_by
+      - key: references
+        value: referenced_by
+      - key: replaces
+        value: replaced_by
+      - key: part_of
+        value: has_part
+      - key: change_together
+        value: change_together
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[docs[].relations[].type]
+    status: planned
+    introduced:
+      pr: 127
 test_files:
   - tests/unit/src/knowledge/index-shape.test.ts
   - tests/unit/src/knowledge/paths.test.ts
@@ -1796,3 +2053,30 @@ test_files:
   - tests/unit/src/interact/terms.browser.test.ts
   - tests/unit/src/knowledge/find.test.ts
   - tests/unit/src/knowledge/tags.test.ts
+enums:
+  - name: MdmarkRelationType
+    title: 関係の種類
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`MdmarkIndexRelated` の `type` に記載できる値（公開の型）'
+    values:
+      - value: requires
+        title: 前提
+        description: 相手を先に読まないと分からない
+      - value: references
+        title: 参照
+        description: 相手を必要なときに引く
+      - value: replaces
+        title: 置き換え
+        description: 相手を置き換えた
+      - value: part_of
+        title: 一部
+        description: 相手の一部をなす
+      - value: change_together
+        title: 一緒に直す
+        description: 片方を直したらもう片方も直す。両側に記載する
+    refs:
+      - dev/設計書/ER図/索引#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
