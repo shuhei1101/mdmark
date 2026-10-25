@@ -15,6 +15,7 @@ import {
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { bundleModule } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
+import { changedPathsSince } from "./git.ts";
 
 /** `mdmark check` が出すずれ 1 件 */
 export type CheckIssue = {
@@ -117,7 +118,10 @@ async function checkBuild(
 }
 
 /** 索引と文書のずれ（`checkIndex`）を、設定ファイルのフォルダからの相対パスのずれにして返す。索引を読めないときは索引を指す `schema` のずれにする */
-async function checkIndexFile(loaded: LoadedConfig): Promise<CheckIssue[]> {
+async function checkIndexFile(
+  loaded: LoadedConfig,
+  base: string | undefined,
+): Promise<CheckIssue[]> {
   if (loaded.config.index === undefined) {
     return [];
   }
@@ -141,10 +145,20 @@ async function checkIndexFile(loaded: LoadedConfig): Promise<CheckIssue[]> {
     return [];
   }
   const indexDirFromConfig = toPosix(relative(loaded.dir, read.indexDir));
+  // 比べる基準を渡したときだけ、基準から変わった文書を `change_together` の直し忘れの検査に渡す
+  const changedPaths =
+    base === undefined
+      ? undefined
+      : await changedPathsSince({
+          cwd: loaded.dir,
+          base,
+          indexDir: read.indexDir,
+        });
   return checkIndex({
     index: read.raw,
     documents: read.documents,
     indexFile: read.indexFile,
+    ...(changedPaths !== undefined && { changedPaths }),
   }).map((issue) => ({
     ...issue,
     // 索引のずれは設定ファイルのフォルダからの相対パスで出ているので、文書のずれだけ索引のフォルダの分を足す
@@ -277,10 +291,10 @@ export function checkUnknownMarks(
   return issues;
 }
 
-/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない */
+/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる */
 export async function collectCheckIssues(
   path: string,
-  options: { unknownMarks?: boolean } = {},
+  options: { unknownMarks?: boolean; base?: string } = {},
 ): Promise<CheckIssue[]> {
   const read = await loadConfig(path);
   const file = basename(path);
@@ -288,7 +302,7 @@ export async function collectCheckIssues(
   const loaded: LoadedConfig = { path, dir: read.dir, config };
   const referenced = await checkReferencedFiles(loaded, file);
   const build = await checkBuild(loaded, file);
-  const indexIssues = await checkIndexFile(loaded);
+  const indexIssues = await checkIndexFile(loaded, options.base);
   const checkMarks = options.unknownMarks !== false;
   const extensions = checkMarks
     ? await loadExtensionDirectives(loaded, file)
@@ -313,11 +327,14 @@ export async function collectCheckIssues(
 
 /** 設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す */
 export async function runCheck(
-  options: { config?: string | undefined },
+  options: { config?: string | undefined; base?: string | undefined },
   io: CliIo,
 ): Promise<0 | 1> {
   const path = await findConfigFile(io.cwd, options.config);
-  const issues = await collectCheckIssues(path);
+  const issues = await collectCheckIssues(
+    path,
+    options.base === undefined ? {} : { base: options.base },
+  );
   for (const issue of issues) {
     const place =
       issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;

@@ -1,4 +1,5 @@
 import type { StateCore } from "markdown-it";
+import { readRelated } from "../../knowledge/index-shape.ts";
 import { relativeHref } from "../../knowledge/paths.ts";
 import { renderBacklinks } from "../../parts/backlinks.ts";
 import { envOf, featureOn, ownBlock } from "./tokens.ts";
@@ -13,11 +14,13 @@ export function backlinksRule(state: StateCore): void {
   if (!featureOn(state, "backlinks") || !index || docId === undefined) {
     return;
   }
-  // 参照の表があればその被参照、無ければ索引の `related` に描く文書を持つ文書
+  // 参照の表があればその被参照、無ければ索引の `related` の相手に描く文書を持つ文書
   const ids =
     env.mdmarkReferences?.backlinks[docId] ??
     index.docs
-      .filter((doc) => doc.related?.includes(docId))
+      .filter((doc) =>
+        (doc.related ?? []).some((item) => readRelated(item).to === docId),
+      )
       .map((doc) => doc.id);
   const ownPath = index.docs.find((doc) => doc.id === docId)?.path;
   const docs = [...new Set(ids)]

@@ -1,5 +1,6 @@
 import { CliError } from "../cli/errors.ts";
-import type { MdmarkIndexDoc } from "../knowledge/index-shape.ts";
+import type { DocRelation } from "../knowledge/find.ts";
+import { type MdmarkIndexDoc, readRelated } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { readDocTag, type TagListEntry } from "../knowledge/tags.ts";
 
@@ -99,7 +100,7 @@ export function selectDocFields(options: {
   return { fields, omitted };
 }
 
-/** 索引の文書を、`id`・`title`・`description`・`tags`・`chars` と返す項目のキーをこの順で持つ行にする */
+/** 索引の文書を、`id`・`title`・`description`・`tags`・`chars` と返す項目のキーと `relations` をこの順で持つ行にする */
 export function toDocRow(options: {
   /** 文書 */
   doc: MdmarkIndexDoc;
@@ -109,8 +110,10 @@ export function toDocRow(options: {
   fields: DocField[];
   /** 参照の表。`referenced_by` を返すときに要る */
   references: MdmarkReferences | undefined;
+  /** `related_to` の文書との関係。`related_to` を渡したときだけ持つ */
+  relations?: DocRelation[] | undefined;
 }): Record<string, unknown> {
-  const { doc, chars, fields, references } = options;
+  const { doc, chars, fields, references, relations } = options;
   const row: Record<string, unknown> = {
     id: doc.id,
     title: doc.title,
@@ -124,10 +127,13 @@ export function toDocRow(options: {
     } else if (field === "aliases") {
       row.aliases = doc.aliases ?? [];
     } else if (field === "related") {
-      row.related = doc.related ?? [];
+      row.related = (doc.related ?? []).map(readRelated);
     } else {
       row.referenced_by = references?.backlinks[doc.id]?.length ?? 0;
     }
+  }
+  if (relations !== undefined) {
+    row.relations = relations;
   }
   return row;
 }
@@ -176,6 +182,22 @@ function tagsCell(tags: unknown): string {
   return cellOf(names);
 }
 
+/** 関連する文書の列のセルにする。要素ごとに `{to}`（`type` があれば `{to}（{type}）`）を `・` でつなぐ */
+function relatedCell(related: unknown): string {
+  const items = (related as Array<{ to: string; type: string | null }>).map(
+    ({ to, type }) => (type === null ? to : `${to}（${type}）`),
+  );
+  return cellOf(items);
+}
+
+/** 関係の列のセルにする。要素ごとに `{direction} {type}`（`type` が `null` なら `{direction}`）を `・` でつなぐ */
+function relationsCell(relations: unknown): string {
+  const items = (relations as DocRelation[]).map(({ direction, type }) =>
+    type === null ? direction : `${direction} ${type}`,
+  );
+  return cellOf(items);
+}
+
 /** 返す項目の表の列の見出し */
 const FIELD_HEADERS: Record<DocField, string> = {
   path: "パス",
@@ -197,6 +219,8 @@ export function formatFindDocs(result: Record<string, unknown>): string {
   // 文書の表。列は、行が持つ項目に合わせる
   if (docs !== undefined && docs.length > 0) {
     const fields = VIEW_FIELDS.full.filter((field) => field in (docs[0] ?? {}));
+    // `related_to` を渡した結果の行は、最後に関係の列を持つ
+    const withRelations = "relations" in (docs[0] ?? {});
     const lines = tableHead([
       "ID",
       "題",
@@ -204,6 +228,7 @@ export function formatFindDocs(result: Record<string, unknown>): string {
       "タグ",
       "文字数",
       ...fields.map((field) => FIELD_HEADERS[field]),
+      ...(withRelations ? ["関係"] : []),
     ]);
     for (const doc of docs) {
       lines.push(
@@ -213,7 +238,10 @@ export function formatFindDocs(result: Record<string, unknown>): string {
           cellOf(doc.description),
           tagsCell(doc.tags),
           cellOf(doc.chars),
-          ...fields.map((field) => cellOf(doc[field])),
+          ...fields.map((field) =>
+            field === "related" ? relatedCell(doc[field]) : cellOf(doc[field]),
+          ),
+          ...(withRelations ? [relationsCell(doc.relations)] : []),
         ]),
       );
     }

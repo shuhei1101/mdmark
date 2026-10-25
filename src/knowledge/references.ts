@@ -14,6 +14,7 @@ import {
   type MdmarkIndex,
   type MdmarkIndexDoc,
   normalizeIndex,
+  readRelated,
 } from "./index-shape.ts";
 import { normalizePath, resolveLink } from "./paths.ts";
 
@@ -96,7 +97,7 @@ type ScannedDocument = {
 };
 
 /** 本文のリンクが指す、索引のパスの集まり */
-function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string> {
+export function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string> {
   const paths = new Set<string>();
   for (const token of tokens) {
     for (const child of token.children ?? []) {
@@ -181,8 +182,8 @@ export function collectReferences(input: {
       continue;
     }
     const targets = new Set<MdmarkIndexDoc>();
-    for (const id of source.doc.related ?? []) {
-      const target = byId.get(id);
+    for (const item of source.doc.related ?? []) {
+      const target = byId.get(readRelated(item).to);
       if (target) {
         targets.add(target);
       }

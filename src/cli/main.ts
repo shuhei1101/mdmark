@@ -17,7 +17,7 @@ export { CliError, type CliIo } from "./errors.ts";
 const USAGE = [
   "使えるコマンド:",
   "  init [{置く先のフォルダ}] [--js]",
-  "  check [--config {設定ファイル}]",
+  "  check [--config {設定ファイル}] [--base {git の ref}]",
   "  export {文書} [--out {出力}] [--config {設定ファイル}]",
   "  build [--config {設定ファイル}]",
   "  upgrade [--plan] [--yes] [--config {設定ファイル}]",
@@ -63,6 +63,7 @@ export async function main(
       options: {
         out: { type: "string" },
         config: { type: "string" },
+        base: { type: "string" },
         js: { type: "boolean" },
         plan: { type: "boolean" },
         yes: { type: "boolean" },
@@ -83,7 +84,7 @@ export async function main(
           io,
         );
       case "check":
-        return await runCheck({ config: values.config }, io);
+        return await runCheck({ config: values.config, base: values.base }, io);
       case "export": {
         const file = rest[0];
         if (file === undefined) {
