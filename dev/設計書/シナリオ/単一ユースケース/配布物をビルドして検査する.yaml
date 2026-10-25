@@ -31,7 +31,7 @@ scenarios:
       - '`dist/index.js` の公開関数が `v0.0.0` を返す'
       - lint の違反と型エラーが 0 件
       - '`dist/index.d.ts` があり、公開関数と拡張の型を持つ'
-      - '`plugin/` に束ねた MCP サーバーと使い方集の索引があり、`plugin/.claude-plugin/plugin.json` の版が `v0.0.0`'
+      - '`plugin/` にフックのスクリプト（`scripts/session-start.js`・`scripts/pre-tool-use.js`）と使い方集の索引があり、MCP サーバー（`server/`・`dist/`）が無く、`plugin/.claude-plugin/plugin.json` の版が `v0.0.0`'
     test: test_normal
   - name: 正常シナリオ（版を指定してビルドする）
     setup:

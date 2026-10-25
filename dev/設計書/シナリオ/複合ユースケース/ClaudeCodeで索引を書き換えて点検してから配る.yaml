@@ -62,7 +62,7 @@ stakeholders:
 trigger: 文書を書く人が Claude Code に mdmark の文書を書いて配れる形にしてほしいと頼む
 preconditions:
   - 文書を書く人の手元に Node 24 以降がある
-  - ビルドした `plugin/` のフォルダ（`hooks/hooks.json`・`.mcp.json`・束ねた MCP サーバーを含む）がある
+  - ビルドした `plugin/` のフォルダ（`hooks/hooks.json`・`.mcp.json`・フックのスクリプトを含む）がある
   - 既定のポート 8782 を、ほかのプロセスが使っていない
   - 作業のフォルダに mdmark の設定（`mdmark.config.yaml`）と索引がある
 success_guarantee: 索引に文書が足され、点検のずれが 0 件になってから `build.out` に 1 枚の HTML が書かれる。

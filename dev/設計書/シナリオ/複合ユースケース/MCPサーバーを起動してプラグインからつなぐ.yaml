@@ -6,7 +6,7 @@ scenarios:
         description: 雛形を置いた後の設定・索引と、索引に載った文書 1 つ
       - name: 作業のフォルダ B
         description: 雛形を置いた後の設定・索引と、索引に載っていない文書 1 つ
-        notes: '`check` が `unindexed_doc` を 1 件返す状態'
+        notes: '`check` が `orphan_doc` を 1 件返す状態'
       - name: Mock
         description: Claude Code の代わりに、プラグインの PreToolUse のフックを通した引数で常駐サーバーへ HTTP でつなぐ MCP のクライアントを、作業のフォルダごとに 1 つずつ使う。モデルは使わない
     flow: |-
@@ -21,7 +21,7 @@ scenarios:
     expected:
       - 既定のポート 8782 で待ち受けるプロセスが 1 つだけある
       - 作業のフォルダ A のクライアントの `find_docs` が、作業のフォルダ A の索引の文書を返す
-      - 作業のフォルダ B のクライアントの `check` が、作業のフォルダ B の文書の `unindexed_doc` を 1 件返す
+      - 作業のフォルダ B のクライアントの `check` が、作業のフォルダ B の文書の `orphan_doc` を 1 件返す
       - 2 つのクライアントが送った引数（フックの記録の `tool_input`）に作業のフォルダの引数が無い
     test: test_normal
     uses:
