@@ -87,6 +87,31 @@ scenarios:
       - 文書と用語の行は変わっていない
       - 書き換えた後の索引が Schema に合う
     test: test_normal_when_tag
+  - name: 正常シナリオ（関連を書く）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 関連を持つ項目
+        description: '2 つ目の文書のパス・題名と、`related` に `{to: 1 つ目の文書の ID, type: requires, when: 前提を確かめるとき, paths: [src/**]}` を持つ文書の項目'
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（id: 2 つ目の文書の ID、item: 関連を持つ項目）
+        S->>F: 索引を読む
+        S->>S: 項目を追加した索引を Schema で検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: 書き換えた
+      ```
+    expected:
+      - 索引のファイルの 2 つ目の文書の行が、渡した `to`・`type`・`when`・`paths` を持つ関連を 1 件持つ
+      - 1 つ目の文書の行は変わっていない
+      - 書き換えた後の索引が Schema に合う
+    test: test_normal_when_related
 lead: Claude Code が MCP のツール `update_index` で、文書・用語・タグの語彙の項目を置き換え・追加・削除する。書く前に索引の Schema で検査し、合わなければ書かない。
 issue: 11
 primary_actor: Claude Code

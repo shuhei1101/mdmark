@@ -166,7 +166,11 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
 | `orphan_doc` | 文書があって、索引に無い |
-| `broken_ref` | `related` の `id` が索引に無い |
+| `broken_ref` | `related` の `id`（オブジェクトの要素は `to`）が索引に無い |
+| `untyped_related` | `related` の要素が `type` と `when` を持たない文字列。オブジェクトへの書き換えを求める |
+| `one_sided_change_together` | `change_together` の相手が、自分への `change_together` を記載していない |
+| `related_link_overlap` | `change_together` でない `related` の相手を、本文でもリンクしている |
+| `missed_change_together` | `--base` を渡したとき、`change_together` の組のうち片方の文書だけが変わっている。場所は空で、ファイルは変わっていない側の文書のパス |
 | `duplicate_term` | 用語の語か別名が、NFKC・英字の小文字化・前後の空白の除去で正規化した後に重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
 | `duplicate_tag` | タグの語彙の `name` が重なっている |
@@ -180,11 +184,12 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 `missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
 タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
+`missed_change_together` は、`--base` を渡したときだけ出る。
 
 ### 使い方
 
 ```bash
-npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}]
+npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--base {git の ref}]
 ```
 
 ### 引数
@@ -192,6 +197,7 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}]
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
 | `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う | `--config docs/mdmark.config.yaml` |
+| `--base` | 任意 | 直し忘れの検査に比べる基準の git の ref。渡すと、基準と HEAD の merge-base から作業ツリーまでに変わった文書を比べ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で出す。省くと直し忘れを検査しない。設定に `index` が無いときは使わない | `--base origin/develop` |
 
 ### 終了コード
 
@@ -201,6 +207,7 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}]
 | `1` | ずれが 1 件以上ある。全てのずれを出してから終わる |
 | `1` | `--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い。標準エラーに、探した場所と `mdmark init` で置けることを出す |
 | `1` | 設定ファイルを YAML として読めない。標準エラーに、ファイルと読めない行と直し方を出す |
+| `1` | `--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・ref と HEAD の merge-base を引けない。標準エラーに、渡した ref と引けない理由と、ref を直すか履歴を取得する直し方（CI の checkout の `fetch-depth`）を出す。ずれの点検はしない |
 
 ## 版を上げる
 

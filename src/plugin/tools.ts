@@ -123,13 +123,16 @@ export async function runBuildSite(
   return { json: { out, docs, warnings } };
 }
 
-/** 点検する: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返す */
+/** 点検する: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返す。`base` を渡すと `change_together` の直し忘れも返す */
 export async function runCheckTool(
-  args: { config?: string },
+  args: { config?: string; base?: string },
   context: ToolContext,
 ): Promise<ToolOutput> {
   const path = await findConfigFile(context.projectDir, args.config);
-  const issues = await collectCheckIssues(path);
+  const issues = await collectCheckIssues(
+    path,
+    args.base === undefined ? {} : { base: args.base },
+  );
   return { json: { issues } };
 }
 
@@ -200,7 +203,7 @@ export async function runFindDocs(
           documents: read.documents,
           config: { features: loaded.config.features ?? {} },
         });
-  const { docs, unknownTags } = findDocs({
+  const { docs, relations, unknownTags } = findDocs({
     index,
     references,
     text: args.text,
@@ -249,6 +252,8 @@ export async function runFindDocs(
             chars: chars[offset + position] ?? null,
             fields,
             references,
+            relations:
+              args.related_to === undefined ? undefined : relations[doc.id],
           }),
         ),
       };
@@ -354,16 +359,22 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "check",
     description:
-      "設定の形・索引と文書のずれ・build の対象の有無・知らない印を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。",
+      "設定の形・索引と文書のずれ・build の対象の有無・知らない印を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。",
     inputSchema: {
       type: "object",
       properties: {
         config: { type: "string", description: CONFIG_DESCRIPTION },
+        base: {
+          type: "string",
+          description:
+            "直し忘れの検査に比べる基準の git の ref。省くと直し忘れを検査しない",
+        },
       },
       required: [],
       additionalProperties: false,
     },
-    run: (args, context) => runCheckTool(args as { config?: string }, context),
+    run: (args, context) =>
+      runCheckTool(args as { config?: string; base?: string }, context),
     annotations: { readOnlyHint: true },
   },
   {
@@ -447,7 +458,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "update_index",
     description:
-      "設定の index の索引の、文書・用語の ID かタグの語彙の名前の項目を置き換える。ID（タグは名前）が無ければ末尾に追加し、item が null ならその項目を消す。書く前に、書き換えた後の索引を索引のスキーマで検査し、合わなければ書かずにエラーを返す。したこと action（added・replaced・removed）と索引のパス index を JSON で返す。",
+      "設定の index の索引の、文書・用語の ID かタグの語彙の名前の項目を置き換える。ID（タグは名前）が無ければ末尾に追加し、item が null ならその項目を消す。書く前に、書き換えた後の索引を索引のスキーマで検査し、合わなければ書かずにエラーを返す。文書の related は、to（相手の文書の id）・type（requires・references・replaces・part_of・change_together のどれか）・when（いつ読むかの 1 文）と、任意で paths（関連が当たるファイルの glob の並び）を持つオブジェクトの並びで渡す。したこと action（added・replaced・removed）と索引のパス index を JSON で返す。",
     inputSchema: {
       type: "object",
       properties: {

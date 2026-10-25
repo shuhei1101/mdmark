@@ -112,6 +112,10 @@ test("test_find_docs_when_related_to", async () => {
   const result = findDocs({ index, references, relatedTo: "a" });
   // 検証
   expect(idsOf(result.docs)).toEqual(["b", "c"]);
+  expect(result.relations).toEqual({
+    b: [{ direction: "outgoing", type: null, when: null }],
+    c: [{ direction: "incoming", type: null, when: null }],
+  });
 });
 
 // 条件が無ければ全ての文書（正常系）
@@ -239,4 +243,80 @@ test("test_find_docs_when_empty_tag_lists", async () => {
   expect(withTags.unknownTags).toEqual([]);
   expect(withAnyTags.docs).toHaveLength(2);
   expect(withAnyTags.unknownTags).toEqual([]);
+});
+
+/** 種類つきの関連を持つ文書 5 つの索引（`a` から `b`・`e`、`c`・`d`・`e` から `a`） */
+function createTypedRelatedIndex(): MdmarkIndex {
+  return createIndex([
+    {
+      id: "a",
+      path: "a.md",
+      title: "A",
+      related: [
+        { to: "b", type: "requires", when: "前提を確かめるとき" },
+        { to: "e", type: "change_together", when: "索引を変えるとき" },
+      ],
+    },
+    { id: "b", path: "b.md", title: "B" },
+    {
+      id: "c",
+      path: "c.md",
+      title: "C",
+      related: [{ to: "a", type: "part_of", when: "全体を確かめるとき" }],
+    },
+    { id: "d", path: "d.md", title: "D", related: ["a"] },
+    {
+      id: "e",
+      path: "e.md",
+      title: "E",
+      related: [{ to: "a", type: "change_together", when: "索引を変えるとき" }],
+    },
+  ]);
+}
+
+// 索引の関連の種類を向きごとに、相手からの関連は逆向きの名前で返す（正常系）
+test("test_find_docs_when_related_to_typed", async () => {
+  // 準備
+  const { findDocs } = await loadFind();
+  const index = createTypedRelatedIndex();
+  const references = {
+    backlinks: { a: ["c", "d", "e"], b: ["a"], e: ["a"] },
+    glossary: [],
+  };
+  // 実行
+  const result = findDocs({ index, references, relatedTo: "a" });
+  // 検証
+  expect(result.relations.b).toEqual([
+    { direction: "outgoing", type: "requires", when: "前提を確かめるとき" },
+  ]);
+  expect(result.relations.c).toEqual([
+    { direction: "incoming", type: "has_part", when: "全体を確かめるとき" },
+  ]);
+  expect(result.relations.d).toEqual([
+    { direction: "incoming", type: null, when: null },
+  ]);
+  expect(result.relations.e).toEqual([
+    {
+      direction: "outgoing",
+      type: "change_together",
+      when: "索引を変えるとき",
+    },
+    {
+      direction: "incoming",
+      type: "change_together",
+      when: "索引を変えるとき",
+    },
+  ]);
+});
+
+// `relatedTo` を渡さなければ `relations` が空（正常系）
+test("test_find_docs_without_related_to", async () => {
+  // 準備
+  const { findDocs } = await loadFind();
+  const index = createTypedRelatedIndex();
+  // 実行
+  const result = findDocs({ index });
+  // 検証
+  expect(result.docs).toHaveLength(5);
+  expect(result.relations).toEqual({});
 });

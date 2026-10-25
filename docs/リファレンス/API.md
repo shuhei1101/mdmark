@@ -258,7 +258,7 @@ const references = collectReferences({
 
 参照は、次のどれかで数える。
 
-- 参照元の `related` に、参照先の `id` がある
+- 参照元の `related` に、参照先の `id` がある（オブジェクトの要素は `to` が参照先の `id`）
 - 参照元の本文のリンクが、参照先の `path` を指す。リンクの `#` 以降と `?` 以降を除き、参照元の `path` のフォルダを基準に相対パスを解決して比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
 - 参照元の本文に、参照先の `aliases` が出る。コード・リンク・見出し・用語集の表の中は照合しない。別名と本文の文字は、NFKC・英字の小文字化・前後の空白の除去で正規化して比べる
 
@@ -409,6 +409,19 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | `input.index` | 必須 | 使う側が索引の YAML を読んだ値。形を確かめる前の値をそのまま渡す |
 | `input.documents` | 必須 | 索引のフォルダにある文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。どのファイルを文書として渡すかは呼ぶ側が決める |
 | `input.indexFile` | 任意 | ずれの `file` に出す索引のファイルの名前。既定は `index.yaml` |
+| `input.changedPaths` | 任意 | 比べる基準から変わった文書のパス（`documents` のキーと同じ書き方）の並び。渡したときだけ、`change_together` の組のうち片方の文書だけが変わった組を `missed_change_together` で返す。省くと直し忘れを確かめない。索引のどの `path` にも当たらないパスは無視する。基準の引き方（git の比べ方）は呼ぶ側が決める |
+
+索引の `docs[].related` の要素は、`MdmarkIndexRelated` のオブジェクトか、関連する文書の `id` の文字列。
+
+| 項目 | 型 | 必須 / 任意 | 説明 |
+| --- | --- | --- | --- |
+| `to` | `string` | 必須 | 相手の文書の `id` |
+| `type` | `MdmarkRelationType` | 必須 | 関係の種類。`'requires' \| 'references' \| 'replaces' \| 'part_of' \| 'change_together'` |
+| `when` | `string` | 必須 | いつ読むかの 1 文。空にできない |
+| `paths` | `string[]` | 任意 | 関連が当たるファイルの glob の並び |
+
+型 `MdmarkIndexRelated`・`MdmarkRelationType` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+キーの意味は [索引](./索引.md#関連の要素)。
 
 ### レスポンス
 
@@ -418,10 +431,10 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'duplicate_term' \| 'avoided_term' \| 'duplicate_tag' \| 'tag_alias_conflict' \| 'broken_tag_replacement' \| 'unregistered_tag' \| 'deprecated_tag'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term' \| 'duplicate_tag' \| 'tag_alias_conflict' \| 'broken_tag_replacement' \| 'unregistered_tag' \| 'deprecated_tag'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
 | `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
 
-並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順で、同じ種類の中は索引の並びとパスの順。
+並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順で、同じ種類の中は索引の並びとパスの順。
 タグの 5 種類は、索引がタグの語彙（`tags`）を記載しているときだけ返す。
 
 ```json

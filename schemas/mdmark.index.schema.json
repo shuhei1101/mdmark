@@ -82,10 +82,50 @@
             "default": []
           },
           "related": {
-            "title": "関連する文書",
-            "description": "関連する文書の id。この文書からその文書への参照として数える。",
+            "title": "関連",
+            "description": "この文書から他の文書への関連。件数の上限は置かない。要素は関連する文書の id の文字列か、相手と関係の種類といつ読むかを持つオブジェクト。文字列の要素は type と when を持たない関連として読める。to を、この文書からその文書への参照として数える。",
             "type": "array",
-            "items": { "type": "string", "minLength": 1 },
+            "items": {
+              "anyOf": [
+                { "type": "string", "minLength": 1 },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["to", "type", "when"],
+                  "properties": {
+                    "to": {
+                      "title": "相手の文書",
+                      "description": "相手の文書の id。",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "type": {
+                      "title": "関係の種類",
+                      "description": "requires（相手を先に読まないと分からない）・references（相手を必要なときに引く）・replaces（相手を置き換えた）・part_of（相手の一部をなす）・change_together（片方を直したらもう片方も直す。両側に記載する）のどれか。",
+                      "enum": [
+                        "requires",
+                        "references",
+                        "replaces",
+                        "part_of",
+                        "change_together"
+                      ]
+                    },
+                    "when": {
+                      "title": "いつ読むか",
+                      "description": "いつ読むかの 1 文。",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "paths": {
+                      "title": "関連が当たるファイル",
+                      "description": "関連が当たるファイルの glob の並び。",
+                      "type": "array",
+                      "items": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                }
+              ]
+            },
             "default": []
           }
         }

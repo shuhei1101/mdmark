@@ -1,5 +1,10 @@
 import { normalizeWord } from "./dictionary.ts";
-import type { MdmarkIndex, MdmarkIndexDoc } from "./index-shape.ts";
+import {
+  type MdmarkIndex,
+  type MdmarkIndexDoc,
+  type MdmarkRelationType,
+  readRelated,
+} from "./index-shape.ts";
 import type { MdmarkReferences } from "./references.ts";
 import {
   buildTagVocabulary,
@@ -9,10 +14,34 @@ import {
   type TagVocabulary,
 } from "./tags.ts";
 
+/** `MdmarkRelationType` から、相手の側から見た関係の名前 */
+export const INVERSE_RELATION_TYPES = {
+  requires: "required_by",
+  references: "referenced_by",
+  replaces: "replaced_by",
+  part_of: "has_part",
+  change_together: "change_together",
+} as const satisfies Record<MdmarkRelationType, string>;
+
+/** `findDocs` の `relatedTo` の文書から見た、当たった文書との関係 1 つ */
+export type DocRelation = {
+  /** `outgoing` は `relatedTo` の文書から当たった文書へ、`incoming` は当たった文書から `relatedTo` の文書へ */
+  direction: "outgoing" | "incoming";
+  /** `outgoing` は記載した `type`、`incoming` は逆向きの名前。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は `null` */
+  type:
+    | MdmarkRelationType
+    | (typeof INVERSE_RELATION_TYPES)[MdmarkRelationType]
+    | null;
+  /** 索引の関連に記載した `when`。`type` が `null` なら `null` */
+  when: string | null;
+};
+
 /** `findDocs` の戻り値 */
 export type FindDocsResult = {
   /** 当たった文書。主題のタグが当たる文書を上にし、同じ順位の中は索引の `docs` の並び */
   docs: MdmarkIndexDoc[];
+  /** 当たった文書の `id` から、`relatedTo` の文書との関係の並び（`outgoing` → `incoming` の順）。`relatedTo` を渡さないときは空 */
+  relations: Record<string, DocRelation[]>;
   /** 語彙を持つ索引で、`tags`・`anyTags` に渡したタグのうち語彙に当たらないもの（渡した順、重なりを除く）と近いタグの `name`。語彙の無い索引では空 */
   unknownTags: Array<{ tag: string; nearest: string | undefined }>;
 };
@@ -44,6 +73,43 @@ function docTags(
     const { name, main } = readDocTag(tag);
     return { name: normalizeTag(name, vocabulary), main };
   });
+}
+
+/** 文書 `from` の関連のうち、`to` の文書を相手にする要素を `readRelated` でそろえて返す */
+function relatedOf(
+  from: MdmarkIndexDoc | undefined,
+  to: string,
+): ReturnType<typeof readRelated>[] {
+  return (from?.related ?? [])
+    .map(readRelated)
+    .filter((related) => related.to === to);
+}
+
+/** `relatedTo` の文書から見た、当たった文書 1 つとの関係を `outgoing` → `incoming` の順で返す。索引の関連が無い向きは、参照の表でその向きに参照しているときだけ `type` と `when` が `null` の関係を 1 つ置く */
+function relationsOf(options: {
+  doc: MdmarkIndexDoc;
+  source: MdmarkIndexDoc | undefined;
+  sourceId: string;
+  backlinks: Record<string, string[]>;
+}): DocRelation[] {
+  const { doc, source, sourceId, backlinks } = options;
+  const outgoing: DocRelation[] = relatedOf(source, doc.id).map(
+    ({ type, when }) => ({ direction: "outgoing", type, when }),
+  );
+  const incoming: DocRelation[] = relatedOf(doc, sourceId).map(
+    ({ type, when }) => ({
+      direction: "incoming",
+      type: type === null ? null : INVERSE_RELATION_TYPES[type],
+      when,
+    }),
+  );
+  if (outgoing.length === 0 && (backlinks[doc.id] ?? []).includes(sourceId)) {
+    outgoing.push({ direction: "outgoing", type: null, when: null });
+  }
+  if (incoming.length === 0 && (backlinks[sourceId] ?? []).includes(doc.id)) {
+    incoming.push({ direction: "incoming", type: null, when: null });
+  }
+  return [...outgoing, ...incoming];
 }
 
 /** 索引の文書を、題・別名・概要の部分一致、タグの AND / OR、関係する文書で絞る。渡した条件を全て満たす文書を、主題のタグが当たる文書を上にして返す */
@@ -107,5 +173,19 @@ export function findDocs(options: {
     docTags(doc, vocabulary).some((tag) => tag.main && wanted.has(tag.name));
   const ranked = docs.map((doc) => ({ doc, main: isMain(doc) }));
   ranked.sort((a, b) => Number(b.main) - Number(a.main));
-  return { docs: ranked.map(({ doc }) => doc), unknownTags };
+  const found = ranked.map(({ doc }) => doc);
+  // 関係は、`relatedTo` の文書から見た向きごとに引く
+  const relations: Record<string, DocRelation[]> = {};
+  if (relatedTo !== undefined) {
+    const source = index.docs.find((doc) => doc.id === relatedTo);
+    for (const doc of found) {
+      relations[doc.id] = relationsOf({
+        doc,
+        source,
+        sourceId: relatedTo,
+        backlinks: references?.backlinks ?? {},
+      });
+    }
+  }
+  return { docs: found, relations, unknownTags };
 }

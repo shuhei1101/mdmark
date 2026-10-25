@@ -135,6 +135,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | フィールド | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `config` | 任意 | 使う設定ファイルのパス |
+| `base` | 任意 | 直し忘れの検査に比べる基準の git の ref。`mdmark check` の `--base` と同じで、渡すと `change_together` の組のうち片方の文書だけが変わった組を `missed_change_together` で返す。省くと直し忘れを検査しない |
 
 ### レスポンス
 
@@ -158,6 +159,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | --- | --- |
 | 設定ファイルが無い | 探した場所と、`mdmark init` で置けること |
 | 設定ファイルを YAML として読めない | 読めない行 |
+| `base` を渡し、比べる基準を引けない | `mdmark check --base` が標準エラーに出すのと同じ文。ずれの点検はしない |
 
 ## 文書を探す
 
@@ -176,7 +178,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | `text` | 任意 | 題・別名・概要のどれかに含まれる語。語と題・別名・概要の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる |
 | `tags` | 任意 | 全てを持つ文書に絞るタグ（AND）。タグの語彙の別名に当たるタグは、語彙の `name` のタグとして引く。空の配列は省いたときと同じくタグで絞らない |
 | `any_tags` | 任意 | どれかを持つ文書に絞るタグ（OR）。`tags` と一緒に渡すと、両方を満たす文書に絞る。別名の扱いと空の配列の扱いは `tags` と同じ |
-| `related_to` | 任意 | この文書の ID から参照している文書と、この文書を参照している文書（被参照）に絞る |
+| `related_to` | 任意 | この文書の ID から参照している文書と、この文書を参照している文書（被参照）に絞る。引いた各行に、その文書との関係（`relations`）を添える |
 | `limit` | 任意 | 1 回に返す文書の件数。1 以上 100 以下の整数。既定は 20 |
 | `cursor` | 任意 | 前の結果の `next_cursor`。続きの文書を返す。絞り込みの条件（`text`・`tags`・`any_tags`・`related_to`）は前の呼び出しと同じにする |
 | `view` | 任意 | 各行に返す項目の組。`brief`（既定）は ID・題・概要・タグ・文字数、`standard` は `brief` にパス・別名を加え、`full` は `standard` に関連する文書・被参照の数を加える |
@@ -233,15 +235,22 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | `docs[].chars` | 数値か null | 文書のファイルの文字数（Unicode のコードポイントの数）。ファイルが無い・読めないときは `null` |
 | `docs[].path` | 文字列 | 文書のパス。索引のファイルからの相対パス。`standard`・`full` か、`include` に `path` を渡したときだけ返す |
 | `docs[].aliases` | 文字列の並び | 文書の別名。`standard`・`full` か、`include` に `aliases` を渡したときだけ返す |
-| `docs[].related` | 文字列の並び | 関連する文書の ID。`full` か、`include` に `related` を渡したときだけ返す |
+| `docs[].related` | オブジェクトの並び | 索引に記載した関連。要素は `to`・`type`・`when` と、記載があれば `paths`。索引の文字列の要素は、`to` がその文字列で `type` と `when` が `null`。`full` か、`include` に `related` を渡したときだけ返す |
 | `docs[].referenced_by` | 数値 | この文書を参照している文書の数（被参照の数）。`full` か、`include` に `referenced_by` を渡したときだけ返す |
+| `docs[].relations[].direction` | 文字列 | 関係の向き。`outgoing` は `related_to` の文書からこの行の文書へ、`incoming` はこの行の文書から `related_to` の文書へ。`related_to` を渡したときだけ `relations` を返す |
+| `docs[].relations[].type` | 文字列か null | `related_to` の文書から見た関係の種類。`outgoing` は記載した `type`、`incoming` は逆向きの名前（`requires` → `required_by`、`references` → `referenced_by`、`replaces` → `replaced_by`、`part_of` → `has_part`、`change_together` はそのまま）。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は `null` |
+| `docs[].relations[].when` | 文字列か null | 索引の関連に記載した `when`。`type` が `null` の関係は `null` |
+
+`relations` の並びは `outgoing` → `incoming`、同じ向きの中は索引の関連の並び。
+索引の関連が無い向きだけ、本文のリンクか別名の出現による関係を 1 つ置く。
+関連は片側だけに記載し、逆向きは `relations` が出す（`change_together` だけは両側に記載する）。
 
 `view` で省いた項目は `omitted` に、`include` での取り方を添えて並べる。
 索引は文書のバージョンを持たないため、バージョン（`rev`）は返さない。
 git の最終更新日時・最終更新者も返さない。
 
 `format` が `markdown` のとき、結果は text だけで、structuredContent を返さない。
-先頭に総件数・返した件数・合計文字数・`next_cursor` の行、続けて文書の表（列は返す項目。主題のタグに `（主題）` を付ける）、タグごとの件数・省いた項目・警告・案内の行を並べる。
+先頭に総件数・返した件数・合計文字数・`next_cursor` の行、続けて文書の表（列は返す項目。主題のタグに `（主題）` を付ける。関連する文書は要素ごとに `{to}（{type}）`、関係は要素ごとに `{direction} {type}`）、タグごとの件数・省いた項目・警告・案内の行を並べる。
 
 ```markdown
 総件数 25 件・返した件数 20 件・合計文字数 48210・next_cursor: eyJvZmZzZXQiOjIwfQ
@@ -345,6 +354,9 @@ git の最終更新日時・最終更新者も返さない。
 | --- | --- | --- |
 | `action` | 文字列 | `added`（追加した）・`replaced`（置き換えた）・`removed`（消した） |
 | `index` | 文字列 | 書き換えた索引のファイルのパス。設定ファイルのあるフォルダからの相対パス |
+
+文書の `related` は、`to`・`type`・`when`（と任意の `paths`）を持つオブジェクトの並びで渡す。
+`to`・`type`・`when` の欠けと、知らない `type` は、スキーマに合わないものとして拒む。
 
 渡した ID の項目の前後の項目と、ほかのキーは書き換えない。
 索引がその一覧のキー（`terms`・`tags`）を持たないときは、最上位の末尾にキーを作って足す。

@@ -23,7 +23,9 @@ export { checkIndex } from "./knowledge/check.ts";
 export type {
   MdmarkIndex,
   MdmarkIndexDocTag,
+  MdmarkIndexRelated,
   MdmarkIndexTag,
+  MdmarkRelationType,
 } from "./knowledge/index-shape.ts";
 export type {
   MdmarkAvoidedMatch,

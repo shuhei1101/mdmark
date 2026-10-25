@@ -52,3 +52,29 @@ test("test_backlinks_rule_when_empty", () => {
   expect(withOne.html).toContain("mdmark-backlinks");
   expect(withNone.html).not.toContain("mdmark-backlinks");
 });
+
+// 参照の表が無ければ、文字列とオブジェクトの関連の相手から一覧を作る（正常系）
+test("test_backlinks_rule_without_references", () => {
+  // 準備
+  const index = structuredClone(ARCH_INDEX);
+  const api = index.docs.find((doc) => doc.id === "api");
+  const guide = index.docs.find((doc) => doc.id === "guide");
+  if (api && guide) {
+    api.related = [
+      { to: "arch", type: "requires", when: "前提を確かめるとき" },
+    ];
+    guide.related = ["arch"];
+  }
+  // 実行
+  const { html } = renderDoc(
+    "# 見出し\n\n本文\n",
+    {},
+    { index, docId: "arch" },
+  );
+  // 検証
+  const nav = outerHtml(html, "mdmark-backlinks");
+  expect(matches(nav, />(?:API|使い方)<\/a>/g)).toEqual([
+    ">API</a>",
+    ">使い方</a>",
+  ]);
+});

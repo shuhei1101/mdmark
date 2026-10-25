@@ -1,0 +1,10 @@
+$ npx vitest run --project integration-node tests/integration/ClaudeCodeプラグイン tests/integration/lib/check-index.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/collect-references.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/export.test.ts tests/integration/lib/build.test.ts tests/integration/lib/render.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when
+
+
+ Test Files  15 passed (15)
+      Tests  117 passed (117)
+   Start at  12:28:05
+   Duration  560.66s (tests 90%, import 9%)
+

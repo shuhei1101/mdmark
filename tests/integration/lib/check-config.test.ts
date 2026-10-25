@@ -1,7 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { linesOf, runCli, useTempDirs, writeFiles } from "../cli.ts";
+import {
+  BASE_TAG,
+  createChangeTogetherDir,
+  git,
+  linesOf,
+  runCli,
+  useTempDirs,
+  writeFiles,
+} from "../cli.ts";
 
 const createTempDir = useTempDirs();
 
@@ -213,4 +221,44 @@ test("test_normal_when_extension_unloadable", async () => {
         line.startsWith("a.md:3: unknown_mark:") && line.includes("broken"),
     ),
   ).toBe(true);
+});
+
+// --base との merge-base から片方だけが変わった change_together の組を出し、終了コード 1 で終わる（正常系（比べる基準を渡す））
+test("test_normal_when_base_given", async () => {
+  // 準備
+  const dir = await createChangeTogetherDir(createTempDir);
+  const before = await snapshot(dir);
+  const head = await git(dir, "rev-parse", "HEAD");
+  // 実行
+  const result = await runCli(["check", "--base", BASE_TAG], dir);
+  const withoutBase = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  expect(
+    lines.some(
+      (line) =>
+        line.startsWith("b.md: missed_change_together:") &&
+        line.includes("a.md"),
+    ),
+  ).toBe(true);
+  expect(lines.at(-1)).toBe("ずれ 1 件");
+  expect(withoutBase.code).toBe(0);
+  expect(linesOf(withoutBase.stdout)).toEqual(["ずれ 0 件"]);
+  expect(await snapshot(dir)).toEqual(before);
+  expect(await git(dir, "rev-parse", "HEAD")).toBe(head);
+});
+
+// merge-base を引けない --base は、引けないことと直し方を示して終わる（異常系（比べる基準を引けない））
+test("test_error_when_base_unknown", async () => {
+  // 準備
+  const dir = await createChangeTogetherDir(createTempDir);
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(["check", "--base", "no-such-ref"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("no-such-ref");
+  expect(result.stderr).toContain("fetch-depth");
+  expect(await snapshot(dir)).toEqual(before);
 });

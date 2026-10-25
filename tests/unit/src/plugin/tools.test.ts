@@ -4,6 +4,7 @@ import { expect, test, vi } from "vitest";
 import { parse } from "yaml";
 import type { ToolDefinition } from "../../../../src/plugin/tools.ts";
 import { useTempDirs, writeDist, writeFiles } from "../../helpers/cli.ts";
+import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 
 /** ツールの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTools = () => import("../../../../src/plugin/tools.ts");
@@ -348,6 +349,42 @@ test("test_run_check_tool", async () => {
   );
 });
 
+// `base` から片方だけが変わった change_together の組を返す（正常系）
+test("test_run_check_tool_when_base_given", async () => {
+  // 準備
+  const { runCheckTool } = await loadTools();
+  const context = await createContext();
+  await setUpChangeTogetherRepository(context.projectDir);
+  // 実行
+  const result = await runCheckTool({ base: BASE_TAG }, context);
+  // 検証
+  expect(result.json?.issues).toMatchObject([
+    { file: "b.md", where: "", kind: "missed_change_together" },
+  ]);
+  expect(result.json?.issues).toHaveLength(1);
+});
+
+// 引けない `base` は CliError にする（異常系）
+test("test_run_check_tool_when_base_unknown", async () => {
+  // 準備
+  const { runCheckTool } = await loadTools();
+  const { runCheck } = await import("../../../../src/cli/check.ts");
+  const { CliError } = await loadErrors();
+  const context = await createContext();
+  await setUpChangeTogetherRepository(context.projectDir);
+  // `mdmark check --base no-such-ref` が標準エラーに出す文
+  const cli = await runCheck(
+    { base: "no-such-ref" },
+    { cwd: context.projectDir, stdout: () => {}, stderr: () => {} },
+  ).catch((caught: unknown) => caught);
+  // 実行・検証
+  const error = await runCheckTool({ base: "no-such-ref" }, context).catch(
+    (caught: unknown) => caught,
+  );
+  expect(error).toBeInstanceOf(CliError);
+  expect((error as Error).message).toBe((cli as Error).message);
+});
+
 // 既定では Markdown の表を返す（正常系）
 test("test_run_find_docs", async () => {
   // 準備
@@ -423,9 +460,17 @@ test("test_run_find_docs_when_related_to", async () => {
     context,
   );
   // 検証
-  const docs = (result.structured?.docs ?? []) as { id: string }[];
-  const ids = docs.map((doc) => doc.id);
-  expect(ids).toEqual(["b", "c"]);
+  const docs = (result.structured?.docs ?? []) as {
+    id: string;
+    relations: unknown;
+  }[];
+  expect(docs.map((doc) => doc.id)).toEqual(["b", "c"]);
+  expect(docs[0]?.relations).toEqual([
+    { direction: "outgoing", type: null, when: null },
+  ]);
+  expect(docs[1]?.relations).toEqual([
+    { direction: "incoming", type: null, when: null },
+  ]);
 });
 
 // `limit` 件ずつ返し、`next_cursor` で続きを返す（正常系）
@@ -534,6 +579,36 @@ test("test_run_update_index", async () => {
   );
   // 検証
   expect(result.json).toEqual({ action: "added", index: "index.yaml" });
+});
+
+// Schema に合わない関連の項目は書かずに誤りにする（異常系）
+test("test_run_update_index_when_related_invalid", async () => {
+  // 準備
+  const { runUpdateIndex } = await loadTools();
+  const { CliError } = await loadErrors();
+  const context = await createContext();
+  await writeIndexProject(context.projectDir);
+  const before = await readFile(join(context.projectDir, "index.yaml"), "utf8");
+  // 実行
+  const error = await runUpdateIndex(
+    {
+      kind: "doc",
+      id: "b",
+      item: {
+        path: "b.md",
+        title: "B",
+        related: [{ to: "a", type: "depends_on", when: "前提を確かめるとき" }],
+      },
+    },
+    context,
+  ).catch((caught: unknown) => caught);
+  // 検証
+  expect(error).toBeInstanceOf(CliError);
+  expect((error as Error).message).toContain("docs[1].related[0].type");
+  expect((error as Error).message).toContain("change_together");
+  expect(await readFile(join(context.projectDir, "index.yaml"), "utf8")).toBe(
+    before,
+  );
 });
 
 // タグの語彙にタグを追加する（正常系）

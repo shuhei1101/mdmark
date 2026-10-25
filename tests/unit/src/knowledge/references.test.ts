@@ -86,3 +86,29 @@ test("test_collect_references_when_alias_notation_differs", async () => {
   // 検証
   expect(references.backlinks.api).toEqual(["arch", "guide"]);
 });
+
+// オブジェクトの関連は `to` を、文字列の関連はその文字列を参照に数える（正常系）
+test("test_collect_references_when_related_objects", async () => {
+  // 準備
+  const { collectReferences } = await loadReferences();
+  const index = structuredClone(ARCH_INDEX);
+  const api = index.docs.find((doc) => doc.id === "api");
+  const guide = index.docs.find((doc) => doc.id === "guide");
+  if (api && guide) {
+    api.aliases = [];
+    api.related = [
+      { to: "arch", type: "requires", when: "前提を確かめるとき" },
+    ];
+    guide.related = ["arch"];
+  }
+  // どちらの本文も `arch` をリンクでも別名でも指さない
+  const documents = {
+    "設計/arch.md": "# アーキテクチャ\n",
+    "api.md": "# API\n",
+    "使い方/guide.md": "# 使い方\n",
+  };
+  // 実行
+  const references = collectReferences({ index, documents });
+  // 検証
+  expect(references.backlinks.arch).toEqual(["api", "guide"]);
+});

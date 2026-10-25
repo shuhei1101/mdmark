@@ -173,19 +173,33 @@ test("test_normal_when_no_match", async () => {
   expect(result.texts[0]?.split("\n")[0]).toContain("総件数 0 件");
 });
 
-// related_to で参照先と被参照の文書を返す（正常系）
+// related_to で参照先と被参照の文書を、関係の種類・向き・when つきで返す（正常系（関係する文書））
 test("test_normal_when_related_to", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(
     dir,
     [
-      { id: "a", title: "A", related: ["b"] },
+      {
+        id: "a",
+        title: "A",
+        related: ["{to: b, type: requires, when: a の前提を確かめるとき}"],
+      },
       { id: "b", title: "B" },
-      { id: "c", title: "C" },
+      {
+        id: "c",
+        title: "C",
+        related: ["{to: a, type: part_of, when: 全体の中の位置を確かめるとき}"],
+      },
       { id: "d", title: "D" },
+      { id: "e", title: "E" },
     ],
-    { bodies: { "c.md": "# C\n\n[A](a.md)\n" } },
+    {
+      bodies: {
+        "d.md": "# D\n\n[A](a.md)\n",
+        "e.md": "# E\n",
+      },
+    },
   );
   const client = await connectInMemory({
     projectDir: dir,
@@ -198,7 +212,30 @@ test("test_normal_when_related_to", async () => {
   });
   // 検証
   expect(result.isError).toBe(false);
-  expect(idsOf(result.structured)).toEqual(["b", "c"]);
+  expect(idsOf(result.structured)).toEqual(["b", "c", "d"]);
+  const docs = (result.structured?.docs ?? []) as {
+    id: string;
+    relations: unknown;
+  }[];
+  const relationsOf = (id: string) =>
+    docs.find((doc) => doc.id === id)?.relations;
+  expect(relationsOf("b")).toEqual([
+    {
+      direction: "outgoing",
+      type: "requires",
+      when: "a の前提を確かめるとき",
+    },
+  ]);
+  expect(relationsOf("c")).toEqual([
+    {
+      direction: "incoming",
+      type: "has_part",
+      when: "全体の中の位置を確かめるとき",
+    },
+  ]);
+  expect(relationsOf("d")).toEqual([
+    { direction: "incoming", type: null, when: null },
+  ]);
 });
 
 // tags で全てを持つ文書、any_tags でどれかを持つ文書を、主題のタグが当たる文書を上にして返す（正常系）

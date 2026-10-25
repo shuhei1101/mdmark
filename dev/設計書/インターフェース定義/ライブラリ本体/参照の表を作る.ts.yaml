@@ -152,7 +152,7 @@ response:
     type: Record<string, string[]>
     description: 文書の `id` から、その文書を参照している文書の `id` の並びを引く表
     constraints: 並びは索引の `docs` の順。重なりと自分自身は入らない。参照されていない文書は空の並び
-    notes: 参照は、参照元の `related` に参照先の `id` がある、参照元の本文のリンクが参照先の `path` を指す（`#` 以降を除いて比べる）、参照元の本文に参照先の `aliases` が用語と同じ照合で出る、のどれか
+    notes: 参照は、参照元の `related` の要素の相手（オブジェクトは `to`、文字列はその値）が参照先の `id`、参照元の本文のリンクが参照先の `path` を指す（`#` 以降を除いて比べる）、参照元の本文に参照先の `aliases` が用語と同じ照合で出る、のどれか
   - name: glossary
     type: MdmarkGlossaryEntry[]
     description: 各文書の用語集の表から入れた用語の並び

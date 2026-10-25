@@ -60,6 +60,27 @@ flows:
       - '`isError` が立つ'
       - 内容に `mdmark.config.yaml` が無いことと `mdmark init` が出る
     test: test_error_when_config_missing
+  - name: 正常系（比べる基準を渡す）
+    summary: base を渡すと、mdmark check --base と同じ直し忘れを返す
+    setup:
+      - name: 組で直す文書を持つ git のフォルダ
+        description: インターフェース定義『設定と索引を点検する』の正常系（比べる基準を渡す）と同じフォルダ。タグ `base` の後に `a.md` だけを書き換えてコミットしてある
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check（base: base）
+        S->>F: 設定・索引・文書と、merge-base から変わったファイルを読む
+        S-->>C: issues（missed_change_together）
+      ```
+    expected:
+      - '`issues` が `missed_change_together`（`b.md`・空の `where`）の 1 件で、`isError` が立たない'
+      - 同じフォルダで流した `mdmark check --base base` の出力の行と一致する
+    test: test_normal_when_base_given
 lead: '`mdmark check` と同じ処理で、設定の形・索引と文書のずれ・`build` の対象の有無・知らない印を点検し、ずれの一覧を返す。'
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -70,6 +91,12 @@ request:
     default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
     location: argument
     description: 使う設定ファイルのパス
+  - name: base
+    type: string
+    required: false
+    default: なし（`change_together` の直し忘れを確かめない）
+    location: argument
+    description: 直し忘れの検査に比べる基準の git の ref。`mdmark check` の `--base` と同じ
 request_example: |-
   ```json
   {}
@@ -82,7 +109,7 @@ response:
     type: string
     description: 行かキーのパス。無いときは空の文字列
   - name: issues[].kind
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'unknown_mark'"
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'unknown_mark'"
     description: ずれの種類。意味は『設定と索引を点検する』の「種類」
   - name: issues[].message
     type: string
@@ -98,6 +125,9 @@ exceptions:
   - name: ツールのエラー（設定ファイルが無い）
     condition: '`config` のファイルが無いか、作業のフォルダと上のフォルダに `mdmark.config.yaml` が無い'
     notes: 探した場所と `mdmark init` で置けることを書く。設定ファイルを YAML として読めないときも同じくエラーにし、読めない行を書く
+  - name: ツールのエラー（比べる基準を引けない）
+    condition: '`base` を渡し、`mdmark check --base` が比べる基準を引けないときと同じ条件'
+    notes: '`mdmark check` が標準エラーに出すのと同じ文を書く'
 error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を書く。'
 constraints:
   - item: CLI との一致

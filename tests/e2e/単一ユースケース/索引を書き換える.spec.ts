@@ -99,6 +99,40 @@ test("test_error_when_schema_invalid", async ({ builtRoot, tempDir }) => {
   expect(await readFile(join(dir, "index.yaml"), "utf8")).toBe(before);
 });
 
+// 2 つ目の文書の related に to・type・when・paths のオブジェクトを書き、書き換えた索引が Schema に合う（正常シナリオ（関連を書く））
+test("test_normal_when_related", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeProject(dir, ["a"], DOCUMENTS);
+  const before = await readDocs(dir);
+  const related = {
+    to: "a",
+    type: "requires",
+    when: "前提を確かめるとき",
+    paths: ["src/**"],
+  };
+  // 実行
+  const { result, check } = await withMcpClient(
+    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    async (client) => ({
+      result: await callTool(client, "update_index", {
+        kind: "doc",
+        id: "b",
+        item: { path: "b.md", title: "B", related: [related] },
+      }),
+      check: await callTool(client, "check"),
+    }),
+  );
+  // 検証
+  expect(result.isError).toBe(false);
+  const docs = (await readDocs(dir)) as { id: string; related?: unknown }[];
+  expect(docs.map((doc) => doc.id)).toEqual(["a", "b"]);
+  expect(docs[1]?.related).toEqual([related]);
+  expect(docs[0]).toEqual(before[0]);
+  // 書き換えた後の索引が Schema に合う
+  expect(JSON.parse(check.texts[0] ?? "")).toEqual({ issues: [] });
+});
+
 // 語彙を持たない索引に、語彙のタグを name でグループ・説明・別名つきで足す（正常シナリオ（タグの語彙を書き換える））
 test("test_normal_when_tag", async ({ builtRoot, tempDir }) => {
   // 準備

@@ -11,6 +11,7 @@ directory: |-
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
+  ├── git.ts        # 比べる基準から変わったファイルの引き出し
   ├── export.ts     # mdmark export
   ├── build.ts      # mdmark build
   └── index-file.ts # 索引のファイルの項目の書き換え
@@ -117,7 +118,7 @@ functions:
     container: src/cli/main.ts
     usecase: 共通
     summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -732,15 +733,15 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らない印を集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
-    description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues` のずれを 1 件 1 行で出す
+    description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues`（`base` を渡す）のずれを 1 件 1 行で出す
     kind: 関数
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ config?: string }'
+        type: '{ config?: string; base?: string }'
         required: true
-        description: '`--config` の値'
+        description: '`--config`・`--base` の値'
       - name: io
         type: CliIo
         required: true
@@ -750,8 +751,8 @@ functions:
       description: ずれが 0 件なら 0、あれば 1
     exceptions:
       - name: CliError
-        condition: 設定ファイルが無い・YAML として読めない
-        message: '`findConfigFile`・`loadConfig` のメッセージ'
+        condition: 設定ファイルが無い・YAML として読めない・`--base` を渡し、比べる基準を引けない
+        message: '`findConfigFile`・`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_run_check
         case: 正常
@@ -783,6 +784,19 @@ functions:
         condition: 索引に載せた文書 `a.md` の 3 行目に `<!-- tabz -->`、`markdown` のコードブロックの中にも `<!-- tabz -->`
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
         expected: '1 を返し、`a.md:3: unknown_mark:` で始まる行が 1 つだけで、`ずれ 1 件`'
+      - name: test_run_check_when_base_given
+        case: 正常
+        summary: '`--base` から片方だけが変わった change_together の組を出す'
+        condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載したフォルダをコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }` と `{}` の 2 回'
+        mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
+        expected: '1 回目は 1 を返し、`b.md: missed_change_together:` で始まる行と `ずれ 1 件` を出す。2 回目は 0 を返し、`ずれ 0 件`'
+      - name: test_run_check_when_base_unknown
+        case: 異常
+        summary: 引けない `--base` はずれを点検せずに止める
+        condition: '`test_run_check_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
+        mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
+        expected: '`CliError` を投げ、メッセージに `no-such-ref` が入り、標準出力に `ずれ` の行が無い'
+        exception: 比べる基準を引けない
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -790,6 +804,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+      - '#functions[changedPathsSince]'
     status: planned
     introduced:
       pr: 32
@@ -1036,7 +1051,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -1046,17 +1061,17 @@ functions:
         required: true
         description: 設定ファイルの絶対パス
       - name: options
-        type: '{ unknownMarks?: boolean }'
+        type: '{ unknownMarks?: boolean; base?: string }'
         required: false
         default: '`{ unknownMarks: true }`'
-        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
     exceptions:
       - name: CliError
-        condition: 設定ファイルを YAML として読めない
-        message: '`loadConfig` のメッセージ'
+        condition: 設定ファイルを YAML として読めない・`base` を渡し、比べる基準を引けない
+        message: '`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_collect_check_issues
         case: 正常
@@ -1076,10 +1091,17 @@ functions:
         condition: '文書 `a.md` に `<!-- tabz -->`、設定の `extensions` に読み込めない拡張 `broken.js`、`{ unknownMarks: false }`'
         mock: 一時フォルダ
         expected: '`unknown_mark` のずれも `extensions[0]` の `schema` のずれも無い'
+      - name: test_collect_check_issues_when_base_without_index
+        case: 正常
+        summary: 設定に `index` が無ければ `base` を使わない
+        condition: '`index` の無い設定を持ち git のリポジトリでない一時フォルダ、`{ base: "no-such-ref" }`'
+        mock: 一時フォルダ
+        expected: 例外を投げず、`base` を渡さないときと同じずれを返す
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
       - '#functions[checkUnknownMarks]'
+      - '#functions[changedPathsSince]'
     status: planned
     introduced:
       pr: 39
@@ -1606,6 +1628,66 @@ functions:
     status: planned
     introduced:
       pr: 97
+  - name: changedPathsSince
+    title: 比べる基準から変わったファイルを引く
+    kind: 関数
+    container: src/cli/git.ts
+    usecase: 設定と索引を点検する
+    summary: git の ref と HEAD の merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイルを、索引のフォルダからの相対パスで返す
+    description: git は `node:child_process` の `execFile` で引数を配列にして呼び、シェルを通さない。出力は `-z` の NUL 区切りで読む。パスの区切りは `/` にそろえる
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ cwd: string; base: string; indexDir: string }'
+        required: true
+        description: git を呼ぶフォルダ（設定ファイルのフォルダ）・比べる基準の ref・索引のファイルのフォルダの絶対パス
+    returns:
+      type: Promise<string[]>
+      description: 変わったファイルと新しいファイルの、索引のフォルダからの相対パス（重なりを除く）
+    process: |-
+      1. `base` が `-` で始まれば、引けないものとして例外にする
+      2. `cwd` で `git rev-parse --show-toplevel` を呼び、リポジトリの直下を得る。git が無い・リポジトリの中に無ければ例外にする
+      3. リポジトリの直下で `git merge-base {base} HEAD` を呼ぶ。失敗したら例外にする
+      4. `git diff --name-only -z {merge-base}` で merge-base から作業ツリーまでに変わったファイルを、`git ls-files --others --exclude-standard -z` で git が管理していない新しいファイル（無視するファイルを除く）を引く
+      5. 両方をリポジトリの直下から解き、`indexDir` からの相対パスにして重なりを除いて返す
+    exceptions:
+      - name: CliError
+        condition: '`base` が `-` で始まる・git が無い・`cwd` が git のリポジトリの中に無い・`base` と HEAD の merge-base を引けない'
+        message: '比べる基準 {base} を引けません（{理由}）。ref を直すか、履歴を取得してください（CI の checkout は fetch-depth: 0）。'
+    unit_tests:
+      - name: test_changed_paths_since
+        case: 正常
+        summary: merge-base からのコミット済み・未コミットの変更と新しいファイルを、索引のフォルダからのパスで返す
+        condition: '`docs/a.md`・`docs/b.md`・`docs/c.md` と `.gitignore`（`*.log`）をコミットしてタグ `base` を付け、`docs/a.md` を書き換えてコミットし、`docs/b.md` をコミットせずに書き換え、`docs/d.md` と `docs/x.log` を新しく置く。`base: "base"`、`indexDir` が `docs`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: 並びを問わず `a.md`・`b.md`・`d.md` の 3 つ
+      - name: test_changed_paths_since_when_ref_unknown
+        case: 異常
+        summary: merge-base を引けない ref
+        condition: '`test_changed_paths_since` と同じリポジトリ、`base: "no-such-ref"`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`CliError` を投げ、メッセージに `no-such-ref` と `fetch-depth` が入る'
+        exception: merge-base を引けない
+      - name: test_changed_paths_since_when_not_repository
+        case: 異常
+        summary: git のリポジトリの中に無いフォルダ
+        condition: 'git を初期化していない一時フォルダ、`base: "main"`'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `main` が入る'
+        exception: リポジトリの中に無い
+      - name: test_changed_paths_since_when_ref_starts_with_dash
+        case: 異常
+        summary: '`-` で始まる ref を git の引数に渡さない'
+        condition: '`test_changed_paths_since` と同じリポジトリ、`base: "--output=x"`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`CliError` を投げ、リポジトリに `x` のファイルができていない'
+        exception: '`base` が `-` で始まる'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[変わった文書]
+    status: planned
+    introduced:
+      pr: 127
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -1655,6 +1737,7 @@ test_files:
   - tests/unit/src/cli/html.test.ts
   - tests/unit/src/cli/init.test.ts
   - tests/unit/src/cli/check.test.ts
+  - tests/unit/src/cli/git.test.ts
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/index-file.test.ts
