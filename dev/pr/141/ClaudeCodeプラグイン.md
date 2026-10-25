@@ -49,6 +49,75 @@ PoC 検証で確かめること:
 | `@modelcontextprotocol/server` 2.3.1 の HTTP の待ち受けを `node:http` にのせた最小のサーバー | Claude Code の実機で、`.mcp.json` の `type: http`・`url` の `${MDMARK_PORT:-8782}` の展開でつながり、並行する 2 つのセッションが同じプロセスの `tools/list`・`tools/call` を受け取る |
 | プラグインの PreToolUse のフックで MCP のツールの引数を書き換える | フックが返した引数（作業のフォルダ）がサーバーのツールに届き、エージェントが書いた引数は変わらない |
 
+## PoC 結果
+
+結論: 成立。PoC PR は #142（検証コードの commit: [0b22e50](https://github.com/shuhei1101/mdmark/commit/0b22e50)）。
+
+確かめた環境: Claude Code 2.1.310・Node v24.14.0・`@modelcontextprotocol/server` 2.3.1（WSL2）。
+
+| 成功条件 | 実測値 | 判定 |
+| --- | --- | --- |
+| `.mcp.json` の `type: http`・`${MDMARK_PORT:-8782}` の展開でつながる | 環境変数なしのセッションが 8782 のサーバー（pid 98064）の `echo_project_dir` を呼べた。`MDMARK_PORT=18782` のセッションは 18782 のサーバー（pid 1934）を呼べた | 合格 |
+| 並行する 2 つのセッションが同じプロセスの `tools/list`・`tools/call` を受け取る | 同時に起動した 2 つのセッションの戻り値の pid がどちらも 98064。8782 で待ち受けるプロセスは 1 つ | 合格 |
+| フックが返した作業のフォルダがツールに届く | 戻り値の `project_dir` が、それぞれのセッションの作業のフォルダ（`wa`・`wb`）と一致した | 合格 |
+| エージェントが書いた引数は変わらない | フックの記録の `tool_input` は `{"message": ...}` だけで `project_dir` を持たない。戻り値の `message` はエージェントが書いた値のまま | 合格 |
+| `tools/list` に作業のフォルダの引数を出さない | `tools/list` の `inputSchema` は `message` だけ。サーバー側の検査（`checkArguments`）だけが `project_dir` を必須にした | 合格 |
+| 許可の扱いが変わらない | `--permission-mode default` で、フックありとフックなしのプラグインのどちらも `permission_denials` に入って拒否された（`claude -p` ではダイアログが出ないため、拒否か通過かで記録）。`--allowedTools` で許可したときはどちらも通過 | 合格 |
+| サーバーが起動していないときもセッションは使える | 18782 のサーバーを止めてセッションを開くと、`mcp_servers` の `plugin:mdmark-poc:mdmark-poc` が `failed`、他の MCP サーバーは `connected` で、応答（`1+1` → `2`）も返った | 合格 |
+
+所感:
+
+- フックが `permissionDecision` を返さず `updatedInput` だけを返しても、許可の判定は変わらない。拒否の記録の `tool_input` にはフックが入れた `project_dir` が載るので、許可のダイアログにも作業のフォルダが出ると見込む
+- Claude Code は `updatedInput` を `tools/list` の Schema で検査し直さない（`additionalProperties: false` の Schema に `project_dir` を入れても通った）。案 B（公開の Schema にも引数を載せる）へ切り替える必要は無い
+- 1 つの `McpServer` を呼び出しごとに作る `createMcpHandler` の形で、セッションごとの状態を持たずに動いた
+- 計画との違い: マーケットプレイスの追加ではなく `--plugin-dir` でプラグインを読み込んだ。読み込んだ後の `.mcp.json`・`hooks.json` の扱いは同じ
+- この手元の設定は `permissions.defaultMode` が `bypassPermissions` のため、許可の確かめは `--permission-mode default` で上書きして行った
+
+検証コードの要点（`poc/mcp-http/server.ts` と `add-project-dir.mjs` の核心部）:
+
+```ts
+// 公開の Schema には project_dir を出さず、サーバーの検査だけが必須にする
+const CHECKED_SCHEMA: ToolInputSchema = {
+  ...PUBLISHED_SCHEMA,
+  properties: { ...PUBLISHED_SCHEMA.properties, project_dir: { type: "string" } },
+  required: [...PUBLISHED_SCHEMA.required, "project_dir"],
+};
+server.registerTool("echo_project_dir",
+  { inputSchema: fromJsonSchema(PUBLISHED_SCHEMA, ACCEPT_ALL_VALIDATOR) },
+  (args) => {
+    const mismatch = checkArguments({ schema: CHECKED_SCHEMA, args });
+    if (mismatch !== undefined) return { content: [{ type: "text", text: mismatch }], isError: true };
+    return { content: [{ type: "text", text: JSON.stringify({ pid: process.pid, args }) }] };
+  });
+
+// node:http の要求を組み込みの Request にし、Host と Origin を検査してから渡す
+const handler = createMcpHandler(createPocServer);
+createServer(async (req, res) => {
+  const request = await toRequest({ req, port });
+  const rejected =
+    hostHeaderValidationResponse(request, localhostAllowedHostnames()) ??
+    originValidationResponse(request, localhostAllowedOrigins());
+  const response = rejected ?? (await handler.fetch(request));
+  // 応答のヘッダーと本文（SSE を含む）を届いた順に書く
+}).listen(port, "127.0.0.1");
+```
+
+```js
+// PreToolUse のフック: permissionDecision を返さず、引数に作業のフォルダを入れて返す
+process.stdout.write(JSON.stringify({
+  hookSpecificOutput: {
+    hookEventName: "PreToolUse",
+    updatedInput: { ...input.tool_input, project_dir: process.env.CLAUDE_PROJECT_DIR },
+  },
+}));
+```
+
+PoC PR の diff の見どころ:
+
+- `poc/mcp-http/server.ts`: `toRequest` で `node:http` の要求を組み込みの `Request` にし、`createMcpHandler` の `fetch` へ渡す。本番の待ち受けもこの形にする
+- `poc/mcp-http/marketplace/plugin/.mcp.json`: `type: http` と `${MDMARK_PORT:-8782}` の `url`
+- `poc/mcp-http/marketplace/plugin/hooks/hooks.json`: PreToolUse の `matcher` をツール名で絞る。本番は `mcp__plugin_mdmark_mdmark__.*` にする
+
 ## テスト結果
 
 未実行。
