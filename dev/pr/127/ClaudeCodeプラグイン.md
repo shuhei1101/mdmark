@@ -28,4 +28,14 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | 3 テスト新規、1 テスト変更 |
+| [tests/unit/src/plugin/results.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/results.test.ts) | 全実行 | 変更 | ✅ | 2 テスト新規 |
+| `tests/unit/` の上記以外 | 全実行 | 実行のみ | ✅ | 回帰確認。全体で 925 テスト pass<br>`テスト結果/20261025121134_0fc1886_単体テスト.log` |
+
+### 結合
+
 なし

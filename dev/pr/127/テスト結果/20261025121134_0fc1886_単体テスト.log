@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when
+
+
+ Test Files  145 passed (145)
+      Tests  925 passed (925)
+   Start at  12:11:49
+   Duration  61.74s (tests 39%, worker 32%, import 24%, transform 4%)
+
