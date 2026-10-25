@@ -1912,9 +1912,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ index: MdmarkIndex; links: Record<string, string[]>; indexFile: string }'
+        type: '{ index: MdmarkIndex; links: Record<string, string[]>; indexFile: string; positionOf?: (doc: MdmarkIndexDoc) => number }'
         required: true
-        description: '`normalizeIndex` で合う要素だけにした索引・文書の `id` から本文のリンクが指す文書のパス（本文を `documents` に持たない文書はキーを持たない）・索引のファイルの名前'
+        description: '`normalizeIndex` で合う要素だけにした索引・文書の `id` から本文のリンクが指す文書のパス（本文を `documents` に持たない文書はキーを持たない）・索引のファイルの名前・`where` に出す文書の位置を返す関数（`checkIndex` が検査で除かれる前の `docs` の位置を渡す。省くと `index.docs` の位置）'
     returns:
       type: MdmarkIndexIssue[]
       description: 関連のずれ（無ければ空）
