@@ -1510,3 +1510,4 @@ test_files:
   - tests/unit/src/plugin/tools.test.ts
   - tests/unit/src/plugin/arguments.test.ts
   - tests/unit/src/plugin/results.test.ts
+  - tests/unit/src/plugin/http.test.ts

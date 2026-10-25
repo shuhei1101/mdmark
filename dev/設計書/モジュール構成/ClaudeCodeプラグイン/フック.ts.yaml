@@ -104,6 +104,7 @@ functions:
       pr: 141
 test_files:
   - tests/unit/src/plugin/session-start.test.ts
+  - tests/unit/src/plugin/pre-tool-use.test.ts
 constants:
   - name: PROJECT_DIR_ENV
     title: 作業のフォルダの環境変数
