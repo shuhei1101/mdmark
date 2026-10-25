@@ -130,6 +130,62 @@ flows:
       - 内容に `z` が索引の `docs` に無いことが出る
       - 索引のファイルの中身が呼ぶ前と同じ
     test: test_error_when_item_missing
+  - name: 異常系（関連が Schema に合わない・ツールのエラー）
+    summary: when の無い関連と知らない type の関連を、関連の場所を示して拒む
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 合わない関連
+        description: '1 回目は `related` が `[{to: a, type: requires}]`、2 回目は `related` が `[{to: a, type: depends_on, when: 前提を確かめるとき}]` の文書 `b` の項目'
+        notes: 書き換える前と後で索引のファイルの中身が同じであることを確かめる
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: doc、id: b、item: when の無い関連）
+        S->>F: 索引を読む
+        S->>S: 書き換えた索引を Schema で検査する
+        S-->>C: isError（docs[1].related[0].when）
+        C->>S: update_index（kind: doc、id: b、item: 知らない type の関連）
+        S->>S: 書き換えた索引を Schema で検査する
+        S-->>C: isError（docs[1].related[0].type）
+      ```
+    expected:
+      - どちらも `isError` が立つ
+      - 1 回目の内容に `docs[1].related[0].when` の行がある
+      - 2 回目の内容に `docs[1].related[0].type` の行があり、許す 5 つの値が出る
+      - 索引のファイルの中身が書き換える前と同じ
+    test: test_error_when_related_invalid
+  - name: 正常系（関連を書く）
+    summary: 文書の related を to・type・when のオブジェクトの並びで書く
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ。索引に載っているのは文書 `a` だけ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 関連を持つ項目
+        description: '`related` が `[{to: a, type: requires, when: 前提を確かめるとき}]` の文書 `b` の項目'
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: doc、id: b、item: 関連を持つ項目）
+        S->>F: 索引を読む
+        S->>S: b を末尾に足して検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: action: added
+      ```
+    expected:
+      - '`action` が `added`'
+      - 索引の `b` の `related` が、渡した `to`・`type`・`when` のオブジェクト 1 つの並び
+      - 書き換えた索引で `mdmark check` のずれが 0 件
+    test: test_normal_when_related
 lead: 索引の文書・用語の ID かタグの語彙の名前の項目を置き換え、無ければ足し、`null` なら消す。書く前に、書き換えた後の索引を索引の Schema で検査する。
 idempotent: true
 side_effects: 設定の `index` の索引のファイルを書き換える
@@ -152,7 +208,7 @@ request:
     required: true
     location: argument
     description: その ID の項目の中身（文書・用語は `id`、タグは `name` を除くキー）。項目ごと置き換える。`null` なら項目を消す
-    notes: キーは ER 図『索引』の `docs`・`terms`・`tags` のカラム
+    notes: キーは ER 図『索引』の `docs`・`terms`・`tags` のカラム。文書の `related` は `to`・`type`・`when`（と任意の `paths`）を持つオブジェクトの並びで渡す
   - name: config
     type: string
     required: false

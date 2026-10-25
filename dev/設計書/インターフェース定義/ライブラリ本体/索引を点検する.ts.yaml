@@ -9,7 +9,7 @@ flows:
       - name: 配布物を読む Node の処理
         description: ビルドした `dist/index.js` を読み、`checkIndex` を呼ぶ
       - name: ずれの無い索引と文書
-        description: 文書 `arch`（`arch.md`）・`api`（`api.md`、`related` に `arch`）と用語 1 つを持つ索引と、`arch.md`・`api.md` だけの `documents`
+        description: '文書 `arch`（`arch.md`）・`api`（`api.md`、`related` に `{to: arch, type: requires, when: API の前提の構成を確かめるとき}`）と用語 1 つを持つ索引と、`arch.md`・`api.md` だけの `documents`'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -28,7 +28,7 @@ flows:
       - name: 配布物を読む Node の処理
         description: 正常系と同じ。`indexFile` に `docs/index.yaml` を渡す
       - name: ずれを持つ索引と文書
-        description: 索引は `docs[0]` が `api`（`api.md`、`related` に `gone`）、`docs[1]` が `old`（`old.md`）、`docs[2]` が `guide`（`guide.md`）、`terms` に語 `ワークスペース` の用語 2 つ。`documents` は `api.md`・`guide.md`・`new.md` で、`api.md` の用語集の表が `ワークスペース` と `印`、`guide.md` の用語集の表が `印` を入れる
+        description: '索引は `docs[0]` が `api`（`api.md`、`related` に `{to: gone, type: references, when: 使い方を確かめるとき}`）、`docs[1]` が `old`（`old.md`）、`docs[2]` が `guide`（`guide.md`）、`terms` に語 `ワークスペース` の用語 2 つ。`documents` は `api.md`・`guide.md`・`new.md` で、`api.md` の用語集の表が `ワークスペース` と `印`、`guide.md` の用語集の表が `印` を入れる'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -41,7 +41,7 @@ flows:
     expected:
       - '`{ file: "docs/index.yaml", where: "docs[1].path", kind: "missing_doc" }` の行がある'
       - '`{ file: "new.md", where: "", kind: "orphan_doc" }` の行がある'
-      - '`{ file: "docs/index.yaml", where: "docs[0].related[0]", kind: "broken_ref" }` の行があり、`message` に `gone` がある'
+      - '`{ file: "docs/index.yaml", where: "docs[0].related[0].to", kind: "broken_ref" }` の行があり、`message` に `gone` がある'
       - '`kind` が `duplicate_term` の行が 3 つ（索引の `terms` どうしの `ワークスペース`、索引と `api.md` の表の `ワークスペース`、`api.md` と `guide.md` の表の `印`）'
       - 行の並びが `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term`
     test: test_normal_when_drift
@@ -158,6 +158,61 @@ flows:
       - '`duplicate_term` の `message` に、記載した表記 `ｍｃｐ` と先の側の場所 `terms[0].term` がある'
       - '`avoided_term` の `message` に、索引に記載したやめた言い方 `workplace` と `ワークスペース` がある'
     test: test_normal_when_normalized_words
+  - name: 正常系（関連がずれる）
+    summary: 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 関連がずれる索引と文書
+        description: '索引は `docs[0]` が `a`（`a.md`、`related[0]` が `{to: b, type: change_together, when: 索引の Schema を変えるとき}`、`related[1]` が `{to: c, type: references, when: 使い方を確かめるとき}`）、`docs[1]` が `b`（`b.md`、`related` なし）、`docs[2]` が `c`（`c.md`、`related[0]` が文字列の `a`）。`documents` は 3 つで、`a.md` の本文が `c.md` へのリンクを持つ'
+        notes: 片側だけの `change_together`・本文のリンクとの重なり・文字列の関連を、関連 1 つずつに置いて決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: 関連の要素の形・change_together の両側・本文のリンクとの重なりを確かめる
+        M-->>C: 関連のずれを持つ一覧
+      ```
+    expected:
+      - 例外を投げない
+      - '戻り値が `{ where: "docs[2].related[0]", kind: "untyped_related" }`・`{ where: "docs[0].related[0]", kind: "one_sided_change_together" }`・`{ where: "docs[0].related[1]", kind: "related_link_overlap" }` の 3 つだけで、この順に並び、どれも `file` が `index.yaml`'
+      - '`one_sided_change_together` の `message` に `b` と `a` がある'
+      - '`untyped_related` の `message` に `to`・`type`・`when` がある'
+    test: test_normal_when_related_drift
+  - name: 正常系（change_together の直し忘れ）
+    summary: changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す missed_change_together を返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 組で直す文書を持つ索引と文書
+        description: '索引は `a`（`a.md`、`related` に `{to: b, type: change_together, when: 索引の Schema を変えるとき}`）・`b`（`b.md`、`related` に `{to: a, type: change_together, when: 索引の Schema を変えるとき}`）・`c`（`c.md`、`related` に `{to: a, type: references, when: 前提を確かめるとき}`）。`documents` は 3 つ'
+      - name: 変わった文書のパス
+        description: 2 回目の呼び出しが `["a.md"]`、3 回目の呼び出しが `["a.md", "b.md"]`
+        notes: 組の片方だけが変わったことを `a.md` で、両方が変わったことを `a.md`・`b.md` で、`change_together` でない関連を数えないことを `c` の `references` で起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M-->>C: []
+        C->>M: checkIndex({ index, documents, changedPaths: [a.md] })
+        M->>M: change_together の組のうち片方だけが変わった組を探す
+        M-->>C: missed_change_together の一覧
+        C->>M: checkIndex({ index, documents, changedPaths: [a.md, b.md] })
+        M-->>C: []
+      ```
+    expected:
+      - 1 回目の戻り値が `[]`
+      - '2 回目の戻り値が `{ file: "b.md", where: "", kind: "missed_change_together" }` の 1 つだけで、`message` に `a.md` がある'
+      - 3 回目の戻り値が `[]`
+    test: test_normal_when_change_together_missed
 lead: 使う側の処理（#9 の `mdmark check`・#11 の MCP の `check`）が、索引と、索引のフォルダにある文書の本文を渡して、索引と文書のずれの一覧を受け取る。ファイルを読むのは呼ぶ側で、mdmark は渡された値だけを確かめる。
 idempotent: true
 side_effects: なし（引数・索引・文書を書き換えない）
@@ -181,23 +236,31 @@ request:
     location: argument
     description: ずれの `file` に出す索引のファイルの名前
     example: docs/index.yaml
+  - name: input.changedPaths
+    type: string[]
+    required: false
+    default: なし（直し忘れを確かめない）
+    location: argument
+    description: 比べる基準から変わった文書のパス（`documents` のキーと同じ書き方）。渡したときだけ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で返す
+    example: '["設計/arch.md"]'
+    notes: パスの引き方（git の比べ方）は呼ぶ側が決める。索引のどの `path` にも当たらないパスは無視する
 response:
   - name: '[]'
     type: MdmarkIndexIssue[]
     description: ずれの一覧。ずれが無ければ空
-    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順、同じ種類の中は索引の並びとパスの順
+    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順、同じ種類の中は索引の並びとパスの順
   - name: '[].file'
     type: string
     description: ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス
     example: docs/index.yaml
   - name: '[].where'
     type: string
-    description: 索引のキーのパス（`docs[3].path`・`docs[0].tags[1]`・`tags[2].name`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
+    description: 索引のキーのパス（`docs[3].path`・`docs[0].tags[1]`・`docs[0].related[1].to`・`tags[2].name`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
     example: docs[3].path
   - name: '[].kind'
-    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag'"
+    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag'"
     description: ずれの種類
-    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方、`duplicate_tag` は語彙の `name` の重複、`tag_alias_conflict` は語彙の `aliases` が別のタグの `name` か `aliases` と重なる、`broken_tag_replacement` は語彙に無い `deprecated` の振り替え先、`unregistered_tag` は語彙に無い文書のタグ、`deprecated_tag` は文書のやめたタグ。タグの 5 種類は、索引がタグの語彙（`tags`）を持つときだけ返す'
+    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`untyped_related` は `type` と `when` を持たない文字列の関連、`one_sided_change_together` は相手が自分への `change_together` を記載していない `change_together`、`related_link_overlap` は本文でリンクしている文書への関連（`change_together` を除く）、`missed_change_together` は `changedPaths` で片方だけが変わった `change_together` の組、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方、`duplicate_tag` は語彙の `name` の重複、`tag_alias_conflict` は語彙の `aliases` が別のタグの `name` か `aliases` と重なる、`broken_tag_replacement` は語彙に無い `deprecated` の振り替え先、`unregistered_tag` は語彙に無い文書のタグ、`deprecated_tag` は文書のやめたタグ。タグの 5 種類は、索引がタグの語彙（`tags`）を持つときだけ返す'
   - name: '[].message'
     type: string
     description: ずれの内容と直し方。日本語の 1 文
@@ -219,7 +282,7 @@ constraints:
   - item: 実行する環境
     constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
   - item: Schema の検査
-    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする。最上位の `tags` は、要素が `name`（必須・空でない文字列）・`group`（空でない文字列）・`description`（文字列）・`aliases`（空でない文字列の並び）・`deprecated`（空でない文字列）だけを持つオブジェクトの並び。`docs[].tags` の要素は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクト。`tags[].name` の重なりは `schema` のずれにせず `duplicate_tag` で返す'
+    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする。最上位の `tags` は、要素が `name`（必須・空でない文字列）・`group`（空でない文字列）・`description`（文字列）・`aliases`（空でない文字列の並び）・`deprecated`（空でない文字列）だけを持つオブジェクトの並び。`docs[].tags` の要素は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクト。`docs[].related` は 8 件までの並びで、要素は空でない文字列か、`to`（必須・空でない文字列）・`type`（必須。`requires`・`references`・`replaces`・`part_of`・`change_together` のどれか）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクト。`tags[].name` の重なりは `schema` のずれにせず `duplicate_tag` で返す'
     notes: 検査の仕方（ライブラリを使うか）はモジュール構成設計で決める
   - item: 文書の対応
     constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する
@@ -234,6 +297,11 @@ constraints:
   - item: タグの点検
     constraint: 索引が最上位の `tags` を持つときだけ行い、持たない索引ではタグのずれを返さない。文書のタグは、語彙の `name` か `aliases` に同じ文字で当たれば、そのタグの `name` として扱う（同じ `name`・別名が複数あるときは語彙の並びで先のタグ）。`duplicate_tag` は 2 つ目以降に出た同じ `name` ごとに 1 つ（`where` は `tags[2].name`）。`tag_alias_conflict` は別名ごとに、ほかのタグの `name` か、語彙の並びで先のほかのタグの別名と同じ文字のとき 1 つ（`where` は `tags[1].aliases[0]`。`message` に重なる先のタグの `name` を書く）。`broken_tag_replacement` は `deprecated` が語彙のどの `name` にも当たらないタグごとに 1 つ（`where` は `tags[4].deprecated`）。`unregistered_tag` は文書のタグのうち語彙に当たらないものごとに 1 つ（`where` は `docs[0].tags[1]`）で、`message` に近いタグを書く。`deprecated_tag` は文書のタグが `deprecated` を持つタグに当たるとき 1 つ（`where` は `docs[0].tags[2]`）で、`message` に振り替え先を書く。`file` はどれも `indexFile`
     notes: 近いタグは、`deprecated` を持たないタグの `name` と `aliases` のうち、文書のタグとの編集距離（文字の挿入・削除・置換の回数）が 2 以下で最も小さいもの（同じ距離なら語彙の並びで先）のタグの `name`。当たらないときは `message` に近いタグが無いことと、語彙に足すか直す直し方を書く
+  - item: 関連の点検
+    constraint: 関連の相手は、文字列の要素はその文字列、オブジェクトの要素は `to` とする。`broken_ref` の `where` は、文字列の要素が `docs[0].related[1]`、オブジェクトの要素が `docs[0].related[1].to`。`untyped_related` は文字列の要素ごとに 1 つ（`where` は `docs[0].related[1]`）で、`message` に `to`・`type`・`when` を持つ関連に書き換える直し方を書く。`one_sided_change_together` は `type` が `change_together` の要素のうち、相手が索引にあり、相手の `related` に自分を `to` とする `change_together` が無いものごとに 1 つ（`where` は `docs[0].related[1]`）で、`message` に相手にも記載する直し方を書く。`related_link_overlap` は `type` が `change_together` でない要素（文字列の要素を含む）のうち、自分の本文のリンクが相手の `path` を指すものごとに 1 つ（`where` は `docs[0].related[1]`）で、リンクの比べ方は `collectReferences` と同じ。`file` はどれも `indexFile`
+    notes: 本文を `documents` に持たない文書は `related_link_overlap` を確かめない
+  - item: 直し忘れ
+    constraint: '`changedPaths` を渡したときだけ行う。どちらかの側が `change_together` で記載した組を、組ごとに 1 回だけ確かめ、片方の文書の `path` だけが `changedPaths` にあるとき 1 つの `missed_change_together` にする。`file` は変わっていない側の文書のパス、`where` は空文字、`message` に変わった側の文書のパスと、変わっていない側も直すか確かめる直し方を書く。並びは、組を先に記載した側の文書の索引の並び'
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
   - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
