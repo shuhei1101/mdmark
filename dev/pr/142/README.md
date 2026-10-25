@@ -1,0 +1,1 @@
+# PoC: MCP の常駐サーバーへの HTTP の接続と PreToolUse のフックでの作業フォルダの受け渡し
