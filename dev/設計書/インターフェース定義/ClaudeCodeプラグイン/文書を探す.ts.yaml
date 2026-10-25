@@ -402,7 +402,7 @@ response:
   - name: docs[].relations[].direction
     type: "'outgoing' | 'incoming'"
     description: 関係の向き。`outgoing` は `related_to` の文書からこの行の文書へ、`incoming` はこの行の文書から `related_to` の文書へ
-    notes: '`related_to` を渡したときだけ `relations` を返す。並びは `outgoing` → `incoming`、同じ向きの中は索引の関連 → 本文のリンク → 別名の出現'
+    notes: '`related_to` を渡したときだけ `relations` を返す。並びは `outgoing` → `incoming`、同じ向きの中は索引の関連の並び。索引の関連が無い向きだけ、本文のリンクか別名の出現による関係を 1 つ置く'
   - name: docs[].relations[].type
     type: "'requires' | 'references' | 'replaces' | 'part_of' | 'change_together' | 'required_by' | 'referenced_by' | 'replaced_by' | 'has_part' | null"
     description: '`related_to` の文書から見た関係の種類。索引の関連は、`outgoing` なら記載した `type`、`incoming` なら逆向きの名前（`requires` → `required_by`、`references` → `referenced_by`、`replaces` → `replaced_by`、`part_of` → `has_part`、`change_together` はそのまま）。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は null'
