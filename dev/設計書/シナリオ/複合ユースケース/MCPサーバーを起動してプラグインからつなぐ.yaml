@@ -68,3 +68,4 @@ success_guarantee: 常駐サーバーのプロセスが 1 つだけ待ち受け�
 minimal_guarantee: 常駐サーバーが起動していないときも Claude Code のセッションは開け、MCP サーバー `plugin:mdmark:mdmark` だけが接続の失敗になる。常駐サーバーを起動してから接続し直せば、セッションを開き直さずにツールを呼べる。
 refs:
   - dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る#
+test_file: tests/e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
