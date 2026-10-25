@@ -36,11 +36,11 @@ test("test_main_when_command_unknown", async () => {
   const dir = await createTempDir();
   const { io, stderr } = createIo(dir);
   // 実行
-  const code = await main(["serve"], io, failingAsk);
+  const code = await main(["deploy"], io, failingAsk);
   // 検証
   expect(code).toBe(1);
   const text = stderr.join("\n");
-  for (const command of ["init", "check", "export", "build"]) {
+  for (const command of ["init", "check", "export", "build", "serve"]) {
     expect(text).toContain(command);
   }
 });

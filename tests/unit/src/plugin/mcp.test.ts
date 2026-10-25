@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
@@ -16,13 +17,14 @@ afterEach(async () => {
   await Promise.all(closers.splice(0).map((close) => close()));
 });
 
-/** サーバーを作り、`InMemoryTransport` で SDK のクライアントとつなぐ（作業のフォルダは渡さなければ空の一時フォルダ） */
-async function connectClient(projectDir?: string): Promise<Client> {
+/** サーバーを作り、`InMemoryTransport` で SDK のクライアントとつなぐ */
+async function connectClient(): Promise<Client> {
   const { createMcpServer } = await loadMcp();
+  const packageDir = await createTempDir();
   const server = createMcpServer({
-    context: {
-      projectDir: projectDir ?? (await createTempDir()),
-      pluginDir: await createTempDir(),
+    roots: {
+      guideDir: join(packageDir, "plugin", "guide"),
+      distDir: join(packageDir, "dist"),
     },
     version: "v0.0.0",
     stderr: () => {},
@@ -52,6 +54,11 @@ test("test_create_mcp_server", async () => {
     TOOLS.map((tool) => tool.name).sort(),
   );
   expect(tools).toHaveLength(7);
+  for (const tool of tools) {
+    expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
+      "project_dir",
+    );
+  }
   const readOnlyNames = ["read_guide", "check", "find_docs", "list_tags"];
   for (const name of readOnlyNames) {
     const tool = tools.find((candidate) => candidate.name === name);
@@ -97,11 +104,11 @@ test("test_create_mcp_server_when_structured", async () => {
     ].join("\n"),
     "a.md": "# A\n",
   });
-  const client = await connectClient(projectDir);
+  const client = await connectClient();
   // 実行
   const result = await client.callTool({
     name: "list_tags",
-    arguments: { format: "json" },
+    arguments: { format: "json", project_dir: projectDir },
   });
   // 検証
   const structured = result.structuredContent as { tags: unknown } | undefined;
@@ -109,20 +116,4 @@ test("test_create_mcp_server_when_structured", async () => {
   const texts = result.content as { type: string; text: string }[];
   expect(texts).toHaveLength(1);
   expect(JSON.parse(texts[0]?.text ?? "")).toEqual(structured);
-});
-
-// 作業のフォルダが無ければ待ち受けない（正常系）
-test("test_run_mcp_server_when_project_dir_missing", async () => {
-  // 準備
-  const { runMcpServer } = await loadMcp();
-  const stderr: string[] = [];
-  // 実行
-  const code = await runMcpServer({
-    env: {},
-    moduleDir: "/plugin/server",
-    stderr: (line) => stderr.push(line),
-  });
-  // 検証
-  expect(code).toBe(1);
-  expect(stderr.some((line) => line.includes("CLAUDE_PROJECT_DIR"))).toBe(true);
 });

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test, vi } from "vitest";
@@ -24,8 +25,11 @@ function textsOf(result: { content: unknown[] }): string[] {
   );
 }
 
-/** 引数を持たないツールを作る（`run` はテストごとに渡す） */
-function createTool(run: ToolDefinition["run"]): ToolDefinition {
+/** 引数を持たないツールを作る（`run` はテストごとに渡す。作業のフォルダを使うかは既定で使わない） */
+function createTool(
+  run: ToolDefinition["run"],
+  usesProjectDir = false,
+): ToolDefinition {
   return {
     name: "check",
     description: "テスト用のツール",
@@ -36,18 +40,32 @@ function createTool(run: ToolDefinition["run"]): ToolDefinition {
       additionalProperties: false,
     },
     run,
+    usesProjectDir,
   };
 }
 
-/** 作業のフォルダとプラグインのフォルダを一時フォルダに作る */
+/** サーバーの読む場所（使い方集と配布物のフォルダ）を作る。配布物のフォルダの親は `packageDir` */
+async function createRoots(): Promise<{
+  packageDir: string;
+  guideDir: string;
+  distDir: string;
+}> {
+  const packageDir = await createTempDir();
+  return {
+    packageDir,
+    guideDir: join(packageDir, "plugin", "guide"),
+    distDir: join(packageDir, "dist"),
+  };
+}
+
+/** 作業のフォルダと、サーバーの読む場所を一時フォルダに作る */
 async function createContext(): Promise<{
   projectDir: string;
-  pluginDir: string;
+  packageDir: string;
+  guideDir: string;
+  distDir: string;
 }> {
-  return {
-    projectDir: await createTempDir(),
-    pluginDir: await createTempDir(),
-  };
+  return { projectDir: await createTempDir(), ...(await createRoots()) };
 }
 
 /** 文書 `a` だけを載せた索引を、設定の `index` に指して作業のフォルダに置く */
@@ -129,12 +147,12 @@ test("test_call_tool", async () => {
   // 準備
   const { callTool } = await loadTools();
   const tool = createTool(async () => ({ json: { out: "/a.html" } }));
-  const context = await createContext();
+  const roots = await createRoots();
   // 実行
   const result = await callTool({
     tool,
     args: {},
-    context,
+    roots,
     stderr: () => {},
   });
   // 検証
@@ -150,12 +168,12 @@ test("test_call_tool_when_texts", async () => {
   const { callTool } = await loadTools();
   const expected = ["# a\n\n本文", "# b\n\n本文"];
   const tool = createTool(async () => ({ texts: expected }));
-  const context = await createContext();
+  const roots = await createRoots();
   // 実行
   const result = await callTool({
     tool,
     args: {},
-    context,
+    roots,
     stderr: () => {},
   });
   // 検証
@@ -176,12 +194,12 @@ test("test_call_tool_when_arguments_invalid", async () => {
       additionalProperties: false,
     },
   };
-  const context = await createContext();
+  const roots = await createRoots();
   // 実行
   const result = await callTool({
     tool,
     args: {},
-    context,
+    roots,
     stderr: () => {},
   });
   // 検証
@@ -197,13 +215,13 @@ test("test_call_tool_when_cli_error", async () => {
   const tool = createTool(async () => {
     throw new CliError("直し方の文");
   });
-  const context = await createContext();
+  const roots = await createRoots();
   const stderr: string[] = [];
   // 実行
   const result = await callTool({
     tool,
     args: {},
-    context,
+    roots,
     stderr: (line) => stderr.push(line),
   });
   // 検証
@@ -217,12 +235,12 @@ test("test_call_tool_when_structured", async () => {
   // 準備
   const { callTool } = await loadTools();
   const tool = createTool(async () => ({ structured: { tags: [] } }));
-  const context = await createContext();
+  const roots = await createRoots();
   // 実行
   const result = await callTool({
     tool,
     args: {},
-    context,
+    roots,
     stderr: () => {},
   });
   // 検証
@@ -239,13 +257,13 @@ test("test_call_tool_when_unexpected_error", async () => {
   const tool = createTool(async () => {
     throw new Error("boom");
   });
-  const context = await createContext();
+  const roots = await createRoots();
   const stderr: string[] = [];
   // 実行
   const result = await callTool({
     tool,
     args: {},
-    context,
+    roots,
     stderr: (line) => stderr.push(line),
   });
   // 検証
@@ -256,6 +274,109 @@ test("test_call_tool_when_unexpected_error", async () => {
   expect(logged).toContain("boom");
   // スタックには、例外を投げたこのテストのファイルが出る
   expect(logged).toContain("tools.test.ts");
+});
+
+/** `config` を受けられ、作業のフォルダを使うツールを作る */
+function createProjectDirTool(run: ToolDefinition["run"]): ToolDefinition {
+  const base = createTool(run, true);
+  return {
+    ...base,
+    inputSchema: {
+      type: "object",
+      properties: { config: { type: "string" } },
+      required: [],
+      additionalProperties: false,
+    },
+  };
+}
+
+// project_dir を前提に入れ、引数から除いて処理を呼ぶ（正常系）
+test("test_call_tool_when_project_dir", async () => {
+  // 準備
+  const { callTool } = await loadTools();
+  const run = vi.fn(async () => ({ json: {} }));
+  const tool = createProjectDirTool(run);
+  const roots = await createRoots();
+  const projectDir = await createTempDir();
+  // 実行
+  const result = await callTool({
+    tool,
+    args: { project_dir: projectDir, config: "a.yaml" },
+    roots,
+    stderr: () => {},
+  });
+  // 検証
+  expect(result.isError).toBeFalsy();
+  expect(run).toHaveBeenCalledTimes(1);
+  const [args, context] = run.mock.calls[0] as unknown as [
+    Record<string, unknown>,
+    { projectDir: string },
+  ];
+  expect(args).toEqual({ config: "a.yaml" });
+  expect(context.projectDir).toBe(projectDir);
+});
+
+// project_dir が無ければ処理を呼ばない（異常系）
+test("test_call_tool_when_project_dir_missing", async () => {
+  // 準備
+  const { callTool, PROJECT_DIR_ERROR_MESSAGE } = await loadTools();
+  const run = vi.fn(async () => ({ json: {} }));
+  const tool = createProjectDirTool(run);
+  const roots = await createRoots();
+  // 実行
+  const result = await callTool({
+    tool,
+    args: {},
+    roots,
+    stderr: () => {},
+  });
+  // 検証
+  expect(result.isError).toBe(true);
+  expect(textsOf(result)).toEqual([PROJECT_DIR_ERROR_MESSAGE]);
+  expect(run).not.toHaveBeenCalled();
+});
+
+// 絶対パスでないか、無いフォルダの project_dir を拒む（異常系）
+test("test_call_tool_when_project_dir_invalid", async () => {
+  // 準備
+  const { callTool, PROJECT_DIR_ERROR_MESSAGE } = await loadTools();
+  const run = vi.fn(async () => ({ json: {} }));
+  const tool = createProjectDirTool(run);
+  const roots = await createRoots();
+  const missingDir = join(await createTempDir(), "no-such-dir");
+  for (const projectDir of ["docs", missingDir]) {
+    // 実行
+    const result = await callTool({
+      tool,
+      args: { project_dir: projectDir },
+      roots,
+      stderr: () => {},
+    });
+    // 検証
+    expect(result.isError).toBe(true);
+    expect(textsOf(result)).toEqual([PROJECT_DIR_ERROR_MESSAGE]);
+  }
+  expect(run).not.toHaveBeenCalled();
+});
+
+// 作業のフォルダを使わないツールは project_dir を知らない引数として拒む（異常系）
+test("test_call_tool_when_project_dir_given_to_read_guide", async () => {
+  // 準備
+  const { callTool } = await loadTools();
+  const run = vi.fn(async () => ({ json: {} }));
+  const tool = createTool(run, false);
+  const roots = await createRoots();
+  // 実行
+  const result = await callTool({
+    tool,
+    args: { project_dir: await createTempDir() },
+    roots,
+    stderr: () => {},
+  });
+  // 検証
+  expect(result.isError).toBe(true);
+  expect(textsOf(result).join("\n")).toContain("project_dir");
+  expect(run).not.toHaveBeenCalled();
 });
 
 // 名前の順に本文を返す（正常系）
@@ -269,13 +390,13 @@ test("test_run_read_guide", async () => {
     summary: `${name} の概要`,
     page: `docs/${name}.md`,
   });
-  await writeFiles(context.pluginDir, {
-    "guide/index.json": JSON.stringify({
+  await writeFiles(context.guideDir, {
+    "index.json": JSON.stringify({
       schema: 1,
       guides: [entry("a"), entry("b")],
     }),
-    "guide/docs/a.md": "# ページ A\n",
-    "guide/docs/b.md": "# ページ B\n",
+    "docs/a.md": "# ページ A\n",
+    "docs/b.md": "# ページ B\n",
   });
   // 実行
   const result = await runReadGuide({ names: ["b", "a"] }, context);
@@ -293,12 +414,35 @@ test("test_run_export_html", async () => {
     "mdmark.config.yaml": "features:\n  print: true\n",
     "guide.md": "# 題\n",
   });
-  await writeDist(context.pluginDir);
+  await writeDist(context.packageDir);
   // 実行
   const result = await runExportHtml({ file: "guide.md" }, context);
   // 検証
   expect(result.json?.out).toBe(`${context.projectDir}/guide.html`);
   expect(result.json?.warnings).toEqual([]);
+});
+
+// サーバーの cwd が作業のフォルダと違っても、相対パスの out と config を作業のフォルダから解く（正常系）
+test("test_run_export_html_when_cwd_differs", async () => {
+  // 準備
+  const { runExportHtml } = await loadTools();
+  const context = await createContext();
+  await writeFiles(context.projectDir, {
+    "conf/mdmark.config.yaml": "features:\n  print: true\n",
+    "guide.md": "# 題\n",
+  });
+  await writeDist(context.packageDir);
+  const strayOut = join(process.cwd(), "out", "a.html");
+  expect(existsSync(strayOut)).toBe(false);
+  // 実行
+  const result = await runExportHtml(
+    { file: "guide.md", out: "out/a.html", config: "conf/mdmark.config.yaml" },
+    context,
+  );
+  // 検証
+  expect(result.json?.out).toBe(`${context.projectDir}/out/a.html`);
+  expect(existsSync(`${context.projectDir}/out/a.html`)).toBe(true);
+  expect(existsSync(strayOut)).toBe(false);
 });
 
 // まとめて絶対パスと文書の数を返す（正常系）
@@ -316,12 +460,37 @@ test("test_run_build_site", async () => {
     "a.md": "# A\n",
     "b.md": "# B\n",
   });
-  await writeDist(context.pluginDir);
+  await writeDist(context.packageDir);
   // 実行
   const result = await runBuildSite({}, context);
   // 検証
   expect(result.json?.out).toBe(`${context.projectDir}/dist/docs.html`);
   expect(result.json?.docs).toBe(2);
+});
+
+// サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で書く（正常系）
+test("test_run_build_site_when_cwd_differs", async () => {
+  // 準備
+  const { runBuildSite } = await loadTools();
+  const context = await createContext();
+  await writeFiles(context.projectDir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["**/*.md"]',
+      "  out: site/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+  });
+  await writeDist(context.packageDir);
+  const strayOut = join(process.cwd(), "site", "docs.html");
+  expect(existsSync(strayOut)).toBe(false);
+  // 実行
+  const result = await runBuildSite({}, context);
+  // 検証
+  expect(result.json?.out).toBe(`${context.projectDir}/site/docs.html`);
+  expect(existsSync(`${context.projectDir}/site/docs.html`)).toBe(true);
+  expect(existsSync(strayOut)).toBe(false);
 });
 
 // ずれを一覧で返す（正常系）
