@@ -62,7 +62,18 @@ test("test_check_index", async () => {
     schema: 1,
     docs: [
       { id: "arch", path: "arch.md", title: "アーキテクチャ" },
-      { id: "api", path: "api.md", title: "API", related: ["arch"] },
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        related: [
+          {
+            to: "arch",
+            type: "requires",
+            when: "API の前提の構成を確かめるとき",
+          },
+        ],
+      },
     ],
     terms: [
       { id: "ws", term: "ワークスペース", meaning: "記録を置くフォルダ" },
@@ -82,7 +93,14 @@ test("test_check_index_when_drift", async () => {
   const index = {
     schema: 1,
     docs: [
-      { id: "api", path: "api.md", title: "API", related: ["gone"] },
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        related: [
+          { to: "gone", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
       { id: "old", path: "old.md", title: "旧" },
       { id: "guide", path: "guide.md", title: "使い方" },
     ],
@@ -122,7 +140,7 @@ test("test_check_index_when_drift", async () => {
   expect(issues[1]).toMatchObject({ file: "new.md", where: "" });
   expect(issues[2]).toMatchObject({
     file: "docs/index.yaml",
-    where: "docs[0].related[0]",
+    where: "docs[0].related[0].to",
   });
   expect(issues[2]?.message).toContain("gone");
   // 用語の重複は、重なった組の後ろの側を指し、message にもう片方の場所を書く
@@ -426,7 +444,13 @@ test("test_check_index_without_tag_vocabulary", async () => {
         id: "api",
         path: "api.md",
         title: "API",
-        related: ["arch"],
+        related: [
+          {
+            to: "arch",
+            type: "requires",
+            when: "API の前提の構成を確かめるとき",
+          },
+        ],
         tags: ["topic:mcq"],
       },
     ],
