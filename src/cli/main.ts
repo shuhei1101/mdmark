@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { runServe } from "../plugin/http.ts";
 import { runBuild } from "./build.ts";
 import { runCheck } from "./check.ts";
 import { CliError, type CliIo } from "./errors.ts";
@@ -21,6 +22,7 @@ const USAGE = [
   "  export {文書} [--out {出力}] [--config {設定ファイル}]",
   "  build [--config {設定ファイル}]",
   "  upgrade [--plan] [--yes] [--config {設定ファイル}]",
+  "  serve",
 ];
 
 /** 雛形と配布物を置いたパッケージの直下を探す印のファイル */
@@ -51,7 +53,7 @@ function findPackageRoot(from: string): string {
   return dir;
 }
 
-/** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す */
+/** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返す */
 export async function main(
   argv: string[],
   io: CliIo,
@@ -118,6 +120,20 @@ export async function main(
           io,
           ask,
         );
+      case "serve": {
+        // SIGINT と SIGTERM を、常駐サーバーを止める合図にする
+        const controller = new AbortController();
+        process.once("SIGINT", () => controller.abort());
+        process.once("SIGTERM", () => controller.abort());
+        return await runServe({
+          env: process.env,
+          packageDir: root,
+          version: cliVersion(),
+          signal: controller.signal,
+          stdout: io.stdout,
+          stderr: io.stderr,
+        });
+      }
       default:
         throw new CliError(
           `知らないコマンドです: ${command ?? "（なし）"}\n${USAGE.join("\n")}`,

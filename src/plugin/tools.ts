@@ -1,5 +1,6 @@
+import { statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import type { CallToolResult } from "@modelcontextprotocol/server";
 import { buildSite } from "../cli/build.ts";
 import { collectCheckIssues } from "../cli/check.ts";
@@ -30,12 +31,18 @@ import {
   unknownTagWarning,
 } from "./results.ts";
 
-/** ツールの処理が使う作業のフォルダとプラグインの場所 */
-export type ToolContext = {
-  /** Claude Code のセッションのフォルダ。相対パスの引数と設定ファイルの探索の基準 */
-  projectDir: string;
-  /** プラグインの直下。`guide/` と `dist/` を持つ */
-  pluginDir: string;
+/** `mdmark serve` を起動したパッケージの直下から決める、使い方集と配布物のフォルダ */
+export type ServerRoots = {
+  /** 使い方集のフォルダ（`{パッケージの直下}/plugin/guide`） */
+  guideDir: string;
+  /** 書き出しに埋める配布物のフォルダ（`{パッケージの直下}/dist`） */
+  distDir: string;
+};
+
+/** ツールの処理が使う、呼び出しの作業のフォルダとサーバーが読む使い方集・配布物の場所 */
+export type ToolContext = ServerRoots & {
+  /** 引数の `project_dir`。相対パスの引数と設定ファイルの探索の基準。`usesProjectDir` のツールには必ず入り、それ以外は `undefined` */
+  projectDir: string | undefined;
 };
 
 /** ツールの処理が返す、テキストの並びか JSON にする値か structuredContent に入れる値 */
@@ -69,16 +76,29 @@ export type ToolDefinition = {
   ) => Promise<ToolOutput>;
   /** `tools/list` に出すツールの annotations。索引と文書を書き換えないツールだけが持つ */
   annotations?: { readOnlyHint: boolean };
+  /** 作業のフォルダを使うか。`true` のツールは引数の `project_dir` を必須にする。`project_dir` は `inputSchema` に含めない */
+  usesProjectDir: boolean;
 };
 
-/** 使い方集のフォルダと配布物のフォルダの、プラグインの直下からの名前 */
-const GUIDE_DIR = "guide";
-const DIST_DIR = "dist";
+/** PreToolUse のフックが作業のフォルダの絶対パスを入れる引数の名前 */
+export const PROJECT_DIR_ARG = "project_dir";
+
+/** `project_dir` が無い・絶対パスでない・そのフォルダが無いときのツールのエラーの文 */
+export const PROJECT_DIR_ERROR_MESSAGE =
+  "引数 project_dir が無いか、ある作業のフォルダの絶対パスではありません。mdmark のプラグインを入れた Claude Code のセッションから呼んでください。";
 
 /** `find_docs` が `limit` を渡されないときに 1 回に返す文書の件数 */
 export const FIND_DOCS_DEFAULT_LIMIT = 20;
 /** `find_docs` の `limit` に渡せる最大の件数 */
 export const FIND_DOCS_MAX_LIMIT = 100;
+
+/** `usesProjectDir` のツールの前提から作業のフォルダを取り出す。`callTool` が必ず入れるため、無いのはツールの定義の誤り */
+function requireProjectDir(context: ToolContext): string {
+  if (context.projectDir === undefined) {
+    throw new Error("作業のフォルダがありません");
+  }
+  return context.projectDir;
+}
 
 /** 設定ファイルの引数の説明 */
 const CONFIG_DESCRIPTION =
@@ -89,7 +109,7 @@ export async function runReadGuide(
   args: { names: string[] },
   context: ToolContext,
 ): Promise<ToolOutput> {
-  const guideDir = join(context.pluginDir, GUIDE_DIR);
+  const { guideDir } = context;
   const entries = await readGuideIndex(guideDir);
   const pages = await readGuides({ guideDir, entries, names: args.names });
   return { texts: pages.map((page) => page.text) };
@@ -101,11 +121,11 @@ export async function runExportHtml(
   context: ToolContext,
 ): Promise<ToolOutput> {
   const { out, warnings } = await exportDocument({
-    cwd: context.projectDir,
+    cwd: requireProjectDir(context),
     file: args.file,
     out: args.out,
     config: args.config,
-    distDir: join(context.pluginDir, DIST_DIR),
+    distDir: context.distDir,
   });
   return { json: { out, warnings } };
 }
@@ -116,9 +136,9 @@ export async function runBuildSite(
   context: ToolContext,
 ): Promise<ToolOutput> {
   const { out, docs, warnings } = await buildSite({
-    cwd: context.projectDir,
+    cwd: requireProjectDir(context),
     config: args.config,
-    distDir: join(context.pluginDir, DIST_DIR),
+    distDir: context.distDir,
   });
   return { json: { out, docs, warnings } };
 }
@@ -128,7 +148,7 @@ export async function runCheckTool(
   args: { config?: string; base?: string },
   context: ToolContext,
 ): Promise<ToolOutput> {
-  const path = await findConfigFile(context.projectDir, args.config);
+  const path = await findConfigFile(requireProjectDir(context), args.config);
   const issues = await collectCheckIssues(
     path,
     args.base === undefined ? {} : { base: args.base },
@@ -175,7 +195,7 @@ export async function runFindDocs(
   args: FindDocsArgs,
   context: ToolContext,
 ): Promise<ToolOutput> {
-  const loaded = await requireConfig(context.projectDir, args.config);
+  const loaded = await requireConfig(requireProjectDir(context), args.config);
   const read = await requireIndexWithDocuments(loaded);
   const { index } = normalizeIndex(read.raw);
   // 続きの位置は、絞り込みの条件が前の呼び出しと同じときだけ読む
@@ -267,7 +287,7 @@ export async function runListTags(
   args: { query?: string; format?: "markdown" | "json"; config?: string },
   context: ToolContext,
 ): Promise<ToolOutput> {
-  const loaded = await requireConfig(context.projectDir, args.config);
+  const loaded = await requireConfig(requireProjectDir(context), args.config);
   const read = await requireIndexWithDocuments(loaded);
   const { index } = normalizeIndex(read.raw);
   const tags = listTags({ index, query: args.query });
@@ -286,7 +306,7 @@ export async function runUpdateIndex(
   },
   context: ToolContext,
 ): Promise<ToolOutput> {
-  const loaded = await requireConfig(context.projectDir, args.config);
+  const loaded = await requireConfig(requireProjectDir(context), args.config);
   const { action, index } = await updateIndexFile({
     loaded,
     kind: args.kind,
@@ -300,6 +320,7 @@ export async function runUpdateIndex(
 export const TOOLS: ToolDefinition[] = [
   {
     name: "read_guide",
+    usesProjectDir: false,
     description:
       "mdmark の記法・部品・図の描き方・拡張の仕方を確かめるときに、使い方集の索引の名前を渡して本文を読む。引数 names は索引の名前の配列（1 件以上）。名前ごとに「# {名前}」で始まる本文のテキストを、渡した順に返す。索引に無い名前があるときは、近い名前を添えたエラーを返す。",
     inputSchema: {
@@ -320,6 +341,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "export_html",
+    usesProjectDir: true,
     description:
       "Markdown の文書を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export と同じ処理）。引数 file は書き出す文書、out は書き出す HTML のパス（省くと文書と同じフォルダの .html）。書き出した HTML の絶対パス out と警告 warnings を JSON で返す。",
     inputSchema: {
@@ -344,6 +366,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "build_site",
+    usesProjectDir: true,
     description:
       "設定の build で決めた文書を、行き来できる 1 枚の HTML にまとめる（mdmark build と同じ処理）。書き出した HTML の絶対パス out・入れた文書の数 docs・警告 warnings を JSON で返す。",
     inputSchema: {
@@ -358,6 +381,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "check",
+    usesProjectDir: true,
     description:
       "設定の形・索引と文書のずれ・build の対象の有無・知らない印を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。",
     inputSchema: {
@@ -379,6 +403,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "find_docs",
+    usesProjectDir: true,
     description:
       "設定の index の索引から、題・別名・概要の語、タグの AND / OR、関係する文書で文書を引く。条件は全てを満たす文書に絞り、渡したタグが主題のタグに当たる文書を上に並べて、limit 件（既定 20、上限 100）ずつ返す。tags は全てを持つ文書（AND）、any_tags はどれかを持つ文書（OR）で、語彙の別名は語彙のタグの名前として引く。タグを渡す前に、list_tags で語彙を確かめられる。語彙に無いタグを渡しても拒まず、警告 warnings に近いタグを添える。続きがあるときは next_cursor を cursor に渡す（絞り込みの条件は前の呼び出しと同じにする）。view（brief・standard・full）と include・exclude で各行に返す項目を選び、省いた項目は omitted に取り方つきで返す。count_only: true は総件数・合計文字数・タグごとの件数だけを返す。format は markdown（既定。表のテキストだけ）か json（structuredContent と text に同じ JSON）。",
     inputSchema: {
@@ -457,6 +482,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "update_index",
+    usesProjectDir: true,
     description:
       "設定の index の索引の、文書・用語の ID かタグの語彙の名前の項目を置き換える。ID（タグは名前）が無ければ末尾に追加し、item が null ならその項目を消す。書く前に、書き換えた後の索引を索引のスキーマで検査し、合わなければ書かずにエラーを返す。文書の related は、to（相手の文書の id）・type（requires・references・replaces・part_of・change_together のどれか）・when（いつ読むかの 1 文）と、任意で paths（関連が当たるファイルの glob の並び）を持つオブジェクトの並びで渡す。したこと action（added・replaced・removed）と索引のパス index を JSON で返す。",
     inputSchema: {
@@ -496,6 +522,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "list_tags",
+    usesProjectDir: true,
     description:
       "設定の index の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで、語彙の並びで返す。付いている文書が 0 件のタグも返す。query を渡すと、名前・別名・説明のどれかに含まれるタグに絞る（query と名前・別名・説明の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる）。語彙が多いときに、find_docs へ渡すタグを選ぶために呼ぶ。format は markdown（既定。表のテキストだけ）か json（structuredContent と text に同じ JSON）。",
     inputSchema: {
@@ -529,28 +556,54 @@ export const TOOLS: ToolDefinition[] = [
   },
 ];
 
+/** `project_dir` の値が、あるフォルダの絶対パスか */
+function isProjectDir(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    isAbsolute(value) &&
+    statSync(value, { throwIfNoEntry: false })?.isDirectory() === true
+  );
+}
+
 /** 引数を検査してツールの処理を呼び、結果か誤りを MCP のツールの結果にする。どの誤りでもサーバーを止めず、その呼び出しだけを `isError` にする */
 export async function callTool(options: {
   /** 呼ぶツール */
   tool: ToolDefinition;
   /** 渡された引数 */
   args: unknown;
-  /** ツールの前提 */
-  context: ToolContext;
+  /** サーバーの読む場所 */
+  roots: ServerRoots;
   /** 標準エラーへ 1 行書く */
   stderr: (line: string) => void;
 }): Promise<CallToolResult> {
-  const { tool, args, context, stderr } = options;
+  const { tool, roots, stderr } = options;
   const failure = (text: string): CallToolResult => ({
     content: [{ type: "text", text }],
     isError: true,
   });
+  // 作業のフォルダは引数から取り出して前提に入れ、ツールの引数の検査には渡さない
+  let args = options.args;
+  let projectDir: string | undefined;
+  if (tool.usesProjectDir && typeof args === "object" && args !== null) {
+    const { [PROJECT_DIR_ARG]: given, ...rest } = args as Record<
+      string,
+      unknown
+    >;
+    if (!isProjectDir(given)) {
+      return failure(PROJECT_DIR_ERROR_MESSAGE);
+    }
+    projectDir = given;
+    args = rest;
+  }
   const mismatch = checkArguments({ schema: tool.inputSchema, args });
   if (mismatch !== undefined) {
     return failure(mismatch);
   }
   try {
-    const output = await tool.run(args as Record<string, unknown>, context);
+    const output = await tool.run(args as Record<string, unknown>, {
+      ...roots,
+      projectDir,
+    });
     if (output.structured !== undefined) {
       return {
         content: [{ type: "text", text: JSON.stringify(output.structured) }],
@@ -564,7 +617,6 @@ export async function callTool(options: {
       return failure(error.message);
     }
     const message = error instanceof Error ? error.message : String(error);
-    // 標準出力は MCP のやり取りにだけ使うため、ログは標準エラーへ書く
     stderr(
       `[error] ${tool.name}: ${message}\n${error instanceof Error ? (error.stack ?? "") : ""}`,
     );

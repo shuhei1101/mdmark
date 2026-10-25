@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metafile, Plugin } from "esbuild";
 
@@ -14,6 +14,8 @@ export const NODE_BANNER = [
 ].join("\n");
 /** 束ねたパッケージの入力のパスにある、依存の置き場所 */
 export const NODE_MODULES_SEGMENT = "node_modules/";
+/** 束ねたパッケージの配布物の中に取り込まれ、`node_modules` に無いパッケージのライセンスの本文を置くフォルダ */
+const EMBEDDED_LICENSES_DIR = "scripts/licenses";
 // 差し替えた postcss を置く esbuild の名前空間
 const STUB_NAMESPACE = "stub";
 // パッケージの直下にあるライセンスのファイル名
@@ -59,6 +61,24 @@ export function readLicenseBlock(options: {
   }
   const text = readFileSync(join(dir, licenseFile), "utf8");
   return `${options.name} ${pkg.version} (${pkg.license})\n\n${text}`;
+}
+
+/** 束ねたパッケージの配布物に取り込まれたパッケージの名前と、`EMBEDDED_LICENSES_DIR` のライセンスの本文を並べた 1 ブロックを返す。本文のファイルが無ければ例外を投げる */
+export function readEmbeddedLicenseBlock(options: {
+  /** 作業ツリーの場所 */
+  root: string;
+  /** パッケージの名前 */
+  name: string;
+}): string {
+  const { root, name } = options;
+  const file = `${name.replace("/", "__")}.txt`;
+  const path = join(root, EMBEDDED_LICENSES_DIR, file);
+  if (!existsSync(path)) {
+    throw new Error(
+      `ライセンスの本文が無い: ${name}（${EMBEDDED_LICENSES_DIR}/${file} を置く）`,
+    );
+  }
+  return `${name}\n\n${readFileSync(path, "utf8")}`;
 }
 
 /** `postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える esbuild のプラグイン */

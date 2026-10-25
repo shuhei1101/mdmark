@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "mdmark": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/server/mcp.js"]
+      "type": "http",
+      "url": "http://127.0.0.1:${MDMARK_PORT:-8782}/mcp"
     }
   }
 }
