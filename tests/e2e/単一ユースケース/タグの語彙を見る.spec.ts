@@ -62,9 +62,8 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
     files.map((file) => readFile(join(dir, file), "utf8")),
   );
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "list_tags"),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "list_tags"),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -85,9 +84,8 @@ test("test_normal_when_query", async ({ builtRoot, tempDir }) => {
   const dir = await tempDir();
   await writeVocabularyProject(dir);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "list_tags", { query: "MCP" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "list_tags", { query: "MCP" }),
   );
   // 検証
   const rows = rowsOf(result.texts[0] ?? "");
@@ -113,9 +111,8 @@ test("test_normal_when_no_vocabulary", async ({ builtRoot, tempDir }) => {
     "a.md": "# A\n",
   });
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "list_tags"),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "list_tags"),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -128,9 +125,8 @@ test("test_normal_when_query_width_differs", async ({ builtRoot, tempDir }) => {
   const dir = await tempDir();
   await writeVocabularyProject(dir);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "list_tags", { query: "ＭＣＰ" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "list_tags", { query: "ＭＣＰ" }),
   );
   // 検証
   const rows = rowsOf(result.texts[0] ?? "");
