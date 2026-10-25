@@ -143,7 +143,7 @@ functions:
         summary: 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる
         condition: '`guideContextLimit` が 1'
         mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml` と指すページ・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
-        expected: 1 を返し、`dist/` と `plugin/server` が無く、標準エラーに索引の文字数と上限が出る
+        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに索引の文字数と上限が出る
       - name: test_main_when_api_missing_in_baseline_browser
         case: 異常
         summary: 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる
