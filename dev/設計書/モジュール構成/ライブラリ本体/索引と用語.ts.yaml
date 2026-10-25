@@ -2036,6 +2036,24 @@ constants:
     status: planned
     introduced:
       pr: 127
+  - name: RELATION_TYPES
+    title: 関係の種類の並び
+    container: src/knowledge/index-shape.ts
+    summary: '`MdmarkRelationType` の値を記載できる順に並べたもの。`normalizeIndex` が `type` の検査と誤りの文に使う'
+    entries:
+      - key: '0'
+        value: requires
+      - key: '1'
+        value: references
+      - key: '2'
+        value: replaces
+      - key: '3'
+        value: part_of
+      - key: '4'
+        value: change_together
+    status: planned
+    introduced:
+      pr: 127
 test_files:
   - tests/unit/src/knowledge/index-shape.test.ts
   - tests/unit/src/knowledge/paths.test.ts
