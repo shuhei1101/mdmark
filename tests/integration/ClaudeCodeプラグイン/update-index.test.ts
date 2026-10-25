@@ -3,10 +3,10 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
 import { runCli, useTempDirs, writeFiles } from "../cli.ts";
-import { builtPluginDir, callTool, useMcpClients } from "../plugin.ts";
+import { callTool, useMcpServers } from "../plugin.ts";
 
 const createTempDir = useTempDirs();
-const { connectInMemory } = useMcpClients();
+const { connectHttp } = useMcpServers();
 
 /** 文書 `a` だけを載せた索引 */
 const INDEX_A = [
@@ -39,10 +39,7 @@ test("test_normal", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "update_index", {
     kind: "doc",
@@ -64,10 +61,7 @@ test("test_normal_when_replaced", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "update_index", {
     kind: "doc",
@@ -90,10 +84,7 @@ test("test_normal_when_removed", async () => {
     dir,
     `${INDEX_A}  - id: old\n    path: old.md\n    title: Old\n`,
   );
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "update_index", {
     kind: "doc",
@@ -111,10 +102,7 @@ test("test_error_when_schema_invalid", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "update_index", {
     kind: "doc",
@@ -140,10 +128,7 @@ test("test_error_when_item_missing", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "update_index", {
     kind: "doc",
@@ -175,10 +160,7 @@ test("test_normal_when_tag", async () => {
   );
   // 文書は a.md の 1 つだけにする
   await rm(join(dir, "b.md"));
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   const item = {
     group: "topic",
     description:
@@ -216,10 +198,7 @@ test("test_error_when_related_invalid", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const withoutWhen = await callTool(client, "update_index", {
     kind: "doc",
@@ -261,10 +240,7 @@ test("test_normal_when_related", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   const related = [{ to: "a", type: "requires", when: "前提を確かめるとき" }];
   // 実行
   const result = await callTool(client, "update_index", {
@@ -279,4 +255,20 @@ test("test_normal_when_related", async () => {
   expect(index.docs[1].related).toEqual(related);
   const check = await runCli(["check"], dir);
   expect(check.stdout).toContain("ずれ 0 件");
+});
+
+// project_dir を持たない呼び出しを、作業のフォルダを読まずにエラーにする（異常系）
+test("test_error_when_project_dir_missing", async () => {
+  // 準備
+  const client = await connectHttp();
+  // 実行
+  const result = await callTool(client, "update_index", {
+    kind: "doc",
+    id: "b",
+    item: { path: "b.md", title: "文書 B" },
+  });
+  // 検証
+  expect(result.isError).toBe(true);
+  expect(result.texts[0]).toContain("project_dir");
+  expect(result.texts[0]).toContain("プラグインを入れた");
 });

@@ -2,10 +2,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../cli.ts";
-import { builtPluginDir, callTool, useMcpClients } from "../plugin.ts";
+import { callTool, useMcpServers } from "../plugin.ts";
 
 const createTempDir = useTempDirs();
-const { connectInMemory } = useMcpClients();
+const { connectHttp } = useMcpServers();
 
 /** タグの語彙の `topic:mcp` の説明 */
 const MCP_DESCRIPTION =
@@ -60,10 +60,7 @@ test("test_normal", async () => {
   const dir = await createTempDir();
   await writeVocabularyProject(dir);
   const before = await readFile(join(dir, "index.yaml"), "utf8");
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "list_tags", { format: "json" });
   const { tools } = await client.listTools();
@@ -99,10 +96,7 @@ test("test_normal_when_query", async () => {
   // 準備
   const dir = await createTempDir();
   await writeVocabularyProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "list_tags", {
     query: "mcp",
@@ -119,10 +113,7 @@ test("test_normal_when_query_width_differs", async () => {
   // 準備
   const dir = await createTempDir();
   await writeVocabularyProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "list_tags", {
     query: "ＭＣＰ",
@@ -152,10 +143,7 @@ test("test_normal_when_no_vocabulary", async () => {
     ].join("\n"),
     "a.md": "# A\n",
   });
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "list_tags", { format: "json" });
   // 検証
@@ -168,14 +156,23 @@ test("test_error_when_index_missing", async () => {
   // 準備
   const dir = await createTempDir();
   await writeFiles(dir, { "mdmark.config.yaml": "features:\n  print: true\n" });
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "list_tags", {});
   // 検証
   expect(result.isError).toBe(true);
   expect(result.texts[0]).toContain("index がありません");
   expect(result.texts[0]).toContain("索引のファイル");
+});
+
+// project_dir を持たない呼び出しを、作業のフォルダを読まずにエラーにする（異常系）
+test("test_error_when_project_dir_missing", async () => {
+  // 準備
+  const client = await connectHttp();
+  // 実行
+  const result = await callTool(client, "list_tags", {});
+  // 検証
+  expect(result.isError).toBe(true);
+  expect(result.texts[0]).toContain("project_dir");
+  expect(result.texts[0]).toContain("プラグインを入れた");
 });
