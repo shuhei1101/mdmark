@@ -121,4 +121,13 @@ PoC PR の diff の見どころ:
 
 ## テスト結果
 
-未実行。
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/http.test.ts` | 全実行 | 新規 | ✅ | 11 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
+| `tests/unit/src/plugin/pre-tool-use.test.ts` | 全実行 | 新規 | ✅ | 4 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | 30 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
+| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | 3 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
+| [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build-plugin.test.ts) | 全実行 | 変更 | ✅ | 17 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
+| `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認。`tests/unit` の全体で 944 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |

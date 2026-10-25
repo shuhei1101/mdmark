@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-claude-code-plugin-mcp-http-server
+
+
+ Test Files  147 passed (147)
+      Tests  944 passed (944)
+   Start at  06:57:16
+   Duration  59.63s (tests 45%, worker 29%, import 22%, transform 3%)
+
+exit=0
