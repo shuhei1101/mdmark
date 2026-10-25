@@ -90,3 +90,4 @@ constraints:
     constraint: Claude Code は `updatedInput` を `tools/list` の `inputSchema` で検査し直さない。`project_dir` は `inputSchema` に出さない
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引から文書を探す#
+test_file: tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts

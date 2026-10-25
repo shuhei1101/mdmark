@@ -127,3 +127,4 @@ constraints:
     constraint: 起動したときに待ち受ける URL を標準出力に 1 行出す
 refs:
   - dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する#
+test_file: tests/integration/ClaudeCodeプラグイン/serve.test.ts
