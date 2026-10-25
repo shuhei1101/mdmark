@@ -64,6 +64,7 @@ PoC 検証で確かめること:
 | `tools/list` に作業のフォルダの引数を出さない | `tools/list` の `inputSchema` は `message` だけ。サーバー側の検査（`checkArguments`）だけが `project_dir` を必須にした | 合格 |
 | 許可の扱いが変わらない | `--permission-mode default` で、フックありとフックなしのプラグインのどちらも `permission_denials` に入って拒否された（`claude -p` ではダイアログが出ないため、拒否か通過かで記録）。`--allowedTools` で許可したときはどちらも通過 | 合格 |
 | サーバーが起動していないときもセッションは使える | 18782 のサーバーを止めてセッションを開くと、`mcp_servers` の `plugin:mdmark-poc:mdmark-poc` が `failed`、他の MCP サーバーは `connected` で、応答（`1+1` → `2`）も返った | 合格 |
+| 起動していなかったサーバーを起動した後、セッションを開き直さずにつなぎ直せる | `MDMARK_PORT=18782` の対話のセッションを開くと、`/mcp` の一覧で `plugin:mdmark-poc:mdmark-poc` が `✘ failed`（`ECONNREFUSED: Unable to connect.`）。18782 でサーバー（pid 11967）を起動し、同じセッションの `/mcp` で Reconnect を選ぶと `Reconnected to plugin:mdmark-poc:mdmark-poc.` が出た。続けて `echo_project_dir` を呼ぶと、戻り値が `{"pid":11967,"args":{"message":"reconnect-check","project_dir":"{作業のフォルダ}"}}` | 合格 |
 
 所感:
 

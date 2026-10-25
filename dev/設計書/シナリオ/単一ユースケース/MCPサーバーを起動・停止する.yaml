@@ -76,7 +76,8 @@ scenarios:
         C->>C: 127.0.0.1:8782 で待ち受けられない
         C-->>W: 理由と修正方法・0 以外の終了コード
     expected:
-      - 出力に、ポート 8782 がほかのプロセスに使われていることと、`MDMARK_PORT` で別のポートを指定する修正方法が出る
+      - 出力に、ポート 8782 がほかのプロセスに使われていることが出る
+      - 出力に、`~/.claude/settings.json` の `env` と `mdmark serve` を起動する環境の両方に、同じ `MDMARK_PORT` を設定する修正方法が出る
       - 終了コードが 0 以外で、`mdmark serve` のプロセスが残らない
       - ポート 8782 は、ほかのプロセスが待ち受けたまま
     test: test_error_when_port_in_use
