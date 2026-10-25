@@ -19,7 +19,13 @@ const INDEX: MdmarkIndex = {
       id: "api",
       path: "api.md",
       title: "API",
-      related: ["arch"],
+      related: [
+        {
+          to: "arch",
+          type: "requires",
+          when: "API の前提の構成を確かめるとき",
+        },
+      ],
     },
     { id: "guide", path: "使い方/guide.md", title: "使い方" },
   ],

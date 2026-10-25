@@ -42,7 +42,13 @@ test("test_normal", async () => {
         id: "api",
         path: "api.md",
         title: "API",
-        related: ["arch"],
+        related: [
+          {
+            to: "arch",
+            type: "references",
+            when: "API の前提の構成を確かめるとき",
+          },
+        ],
         tags: [{ name: "設計", main: true }],
       },
     ],
@@ -63,7 +69,14 @@ test("test_normal_when_drift", async () => {
   const index = {
     schema: 1,
     docs: [
-      { id: "api", path: "api.md", title: "API", related: ["gone"] },
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        related: [
+          { to: "gone", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
       { id: "old", path: "old.md", title: "旧" },
       { id: "guide", path: "guide.md", title: "使い方" },
     ],
@@ -103,7 +116,7 @@ test("test_normal_when_drift", async () => {
   const broken = issues.find((issue) => issue.kind === "broken_ref");
   expect(broken).toMatchObject({
     file: "docs/index.yaml",
-    where: "docs[0].related[0]",
+    where: "docs[0].related[0].to",
   });
   expect(broken?.message).toContain("gone");
   // 用語の重複は、索引の terms どうし・索引と api の表・api と guide の表の 3 件
@@ -338,4 +351,112 @@ test("test_normal_when_normalized_words", async () => {
   expect(issues[0]?.message).toContain("ｍｃｐ");
   expect(issues[0]?.message).toContain("terms[0].term");
   expect(issues[1]?.message).toContain("ワークスペース");
+});
+
+// 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返す（正常シナリオ（関連がずれる））
+test("test_normal_when_related_drift", async () => {
+  // 準備
+  const index = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          {
+            to: "b",
+            type: "change_together",
+            when: "索引の Schema を変えるとき",
+          },
+          { to: "c", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B" },
+      { id: "c", path: "c.md", title: "C", related: ["a"] },
+    ],
+  };
+  // `a.md` の本文が `c.md` へリンクする
+  const documents = {
+    "a.md": "# A\n\n[C](c.md)\n",
+    "b.md": "# B\n",
+    "c.md": "# C\n",
+  };
+  // 実行
+  const issues = await checkInNode(builtRoot, { index, documents });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "index.yaml",
+      where: "docs[2].related[0]",
+      kind: "untyped_related",
+    },
+    {
+      file: "index.yaml",
+      where: "docs[0].related[0]",
+      kind: "one_sided_change_together",
+    },
+    {
+      file: "index.yaml",
+      where: "docs[0].related[1]",
+      kind: "related_link_overlap",
+    },
+  ]);
+  const message = (kind: string) =>
+    issues.find((issue) => issue.kind === kind)?.message ?? "";
+  // 片側だけの change_together は、相手の b にも a への change_together を記載する直し方を示す
+  expect(message("one_sided_change_together")).toContain("b");
+  expect(message("one_sided_change_together")).toContain("a");
+  // 本文でリンクしている相手 c を示す
+  expect(message("related_link_overlap")).toContain("c");
+  // 文字列の関連は、to・type・when を持つ関連へ書き換える直し方を示す
+  for (const key of ["to", "type", "when"]) {
+    expect(message("untyped_related")).toContain(key);
+  }
+});
+
+// changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す直し忘れの行を返す（正常シナリオ（change_together の組の片方だけが変わる））
+test("test_normal_when_change_together_missed", async () => {
+  // 準備
+  const together = (to: string) => [
+    { to, type: "change_together", when: "索引の Schema を変えるとき" },
+  ];
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "a", path: "a.md", title: "A", related: together("b") },
+      { id: "b", path: "b.md", title: "B", related: together("a") },
+      {
+        id: "c",
+        path: "c.md",
+        title: "C",
+        related: [{ to: "a", type: "references", when: "前提を確かめるとき" }],
+      },
+    ],
+  };
+  const documents = { "a.md": "# A\n", "b.md": "# B\n", "c.md": "# C\n" };
+  // 実行
+  const unchecked = await checkInNode(builtRoot, { index, documents });
+  const missed = await checkInNode(builtRoot, {
+    index,
+    documents,
+    changedPaths: ["a.md"],
+  });
+  const bothChanged = await checkInNode(builtRoot, {
+    index,
+    documents,
+    changedPaths: ["a.md", "b.md"],
+  });
+  // 検証
+  expect(unchecked).toEqual([]);
+  expect(missed).toHaveLength(1);
+  expect(missed[0]).toMatchObject({
+    file: "b.md",
+    where: "",
+    kind: "missed_change_together",
+  });
+  expect(missed[0]?.message).toContain("a.md");
+  expect(bothChanged).toEqual([]);
 });

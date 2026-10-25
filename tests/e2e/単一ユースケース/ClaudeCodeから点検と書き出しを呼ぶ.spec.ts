@@ -1,7 +1,14 @@
 import { existsSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, linesOf, runCli, test, writeFiles } from "../cli.ts";
+import {
+  createChangeTogetherDir,
+  expect,
+  linesOf,
+  runCli,
+  test,
+  writeFiles,
+} from "../cli.ts";
 import {
   CONFIG_WITH_BUILD,
   callTool,
@@ -138,4 +145,35 @@ test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   expect(result.isError).toBe(true);
   expect(result.texts[0]).toContain("mdmark.config.yaml");
   expect(result.texts[0]).toContain("mdmark init");
+});
+
+// 基準を渡すと、片方だけが変わった change_together の直し忘れが mdmark check --base と同じに返る（正常シナリオ（比べる基準を渡す））
+test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const { dir, base } = await createChangeTogetherDir(builtRoot, tempDir);
+  const files = ["mdmark.config.yaml", "index.yaml", "a.md", "b.md"];
+  const before = await Promise.all(
+    files.map((file) => readFile(join(dir, file), "utf8")),
+  );
+  // 実行
+  const checked = await withMcpClient(
+    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    (client) => callTool(client, "check", { base }),
+  );
+  const cli = await runCli(builtRoot, ["check", "--base", base], dir);
+  // 検証
+  expect(checked.isError).toBe(false);
+  const issues = JSON.parse(checked.texts[0] ?? "").issues as Issue[];
+  // 変わっていない 2 つ目の文書を指す直し忘れの行が 1 件
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    file: "b.md",
+    where: "",
+    kind: "missed_change_together",
+  });
+  // 同じフォルダ・同じ基準で mdmark check を流したときと同じずれ
+  expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(issueLine));
+  expect(
+    await Promise.all(files.map((file) => readFile(join(dir, file), "utf8"))),
+  ).toEqual(before);
 });

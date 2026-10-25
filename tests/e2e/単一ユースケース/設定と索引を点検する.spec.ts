@@ -1,6 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, linesOf, runCli, test, writeFiles } from "../cli.ts";
+import {
+  createChangeTogetherDir,
+  expect,
+  git,
+  linesOf,
+  runCli,
+  test,
+  writeFiles,
+} from "../cli.ts";
 
 // 雛形が置く設定の build.out の行
 const OUT_LINE = "  out: dist/docs.html\n";
@@ -115,5 +123,51 @@ test("test_normal_when_unknown_mark", async ({ builtRoot, tempDir }) => {
   // 内容に印の名前と直し方が書かれている
   expect(marks[0]).toContain("tabz");
   expect(marks[0]).toContain("ください");
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 基準から片方だけが変わった change_together の組を、直し忘れとして出して終了コード 0 以外で終わる（正常シナリオ（比べる基準を渡す））
+test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const { dir, base } = await createChangeTogetherDir(builtRoot, tempDir);
+  const before = await snapshot(dir);
+  const head = await git(dir, "rev-parse", "HEAD");
+  // 実行
+  const result = await runCli(builtRoot, ["check", "--base", base], dir);
+  const withoutBase = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  // 変わっていない 2 つ目の文書を指す行が 1 件で、組の相手と変わった 1 つ目の文書が書かれている
+  const missed = lines.filter((line) =>
+    line.includes("missed_change_together"),
+  );
+  expect(missed).toHaveLength(1);
+  expect(missed[0]).toMatch(/^b\.md: missed_change_together: /);
+  expect(missed[0]).toContain("a.md");
+  expect(lines.at(-1)).toBe("ずれ 1 件");
+  // 比べる基準を渡さなければ、ずれ 0 件
+  expect(withoutBase.code).toBe(0);
+  expect(linesOf(withoutBase.stdout)).toEqual(["ずれ 0 件"]);
+  // 設定・索引・文書と git の履歴が変わっていない
+  expect(await snapshot(dir)).toEqual(before);
+  expect(await git(dir, "rev-parse", "HEAD")).toBe(head);
+});
+
+// リポジトリに無い基準は、引けないことと直し方を出して終了コード 0 以外で終わる（異常シナリオ（比べる基準を引けない））
+test("test_error_when_base_unknown", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const { dir } = await createChangeTogetherDir(builtRoot, tempDir);
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["check", "--base", "no-such-ref"],
+    dir,
+  );
+  // 検証
+  expect(result.code).not.toBe(0);
+  expect(result.stderr).toContain("no-such-ref");
+  expect(result.stderr).toContain("fetch-depth");
   expect(await snapshot(dir)).toEqual(before);
 });

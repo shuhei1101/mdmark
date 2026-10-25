@@ -288,6 +288,86 @@ test("test_normal_when_view_and_format", async ({ builtRoot, tempDir }) => {
   expect(docs.map((doc) => doc.id)).toEqual(["a"]);
 });
 
+// 関係する文書を、種類・向き・when つきで引く。本文のリンクだけの参照は種類と when を持たない（正常シナリオ（関係する文書を種類と向きつきで引く））
+test("test_normal_when_related_to", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": CONFIG_WITH_INDEX,
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "    related:",
+      "      - to: b",
+      "        type: requires",
+      "        when: a の前提を確かめるとき",
+      "  - id: b",
+      "    path: b.md",
+      "    title: B",
+      "  - id: c",
+      "    path: c.md",
+      "    title: C",
+      "    related:",
+      "      - to: a",
+      "        type: part_of",
+      "        when: 全体の中の位置を確かめるとき",
+      "  - id: d",
+      "    path: d.md",
+      "    title: D",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+    "b.md": "# B\n",
+    "c.md": "# C\n",
+    "d.md": "# D\n\n[A](a.md)\n",
+  });
+  const files = ["index.yaml", "a.md", "b.md", "c.md", "d.md"];
+  const before = await Promise.all(
+    files.map((file) => readFile(join(dir, file), "utf8")),
+  );
+  // 実行
+  const result = await withMcpClient(
+    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    (client) =>
+      callTool(client, "find_docs", { related_to: "a", format: "json" }),
+  );
+  // 検証
+  expect(result.isError).toBe(false);
+  const docs = (result.structured?.docs ?? []) as {
+    id: string;
+    relations: unknown;
+  }[];
+  // a 自身は返らない
+  expect(docs.map((doc) => doc.id)).toEqual(["b", "c", "d"]);
+  const relationsOf = (id: string) =>
+    docs.find((doc) => doc.id === id)?.relations;
+  // a から相手への関連は記載した種類、相手から a への関連は逆向きの名前で返る
+  expect(relationsOf("b")).toEqual([
+    {
+      direction: "outgoing",
+      type: "requires",
+      when: "a の前提を確かめるとき",
+    },
+  ]);
+  expect(relationsOf("c")).toEqual([
+    {
+      direction: "incoming",
+      type: "has_part",
+      when: "全体の中の位置を確かめるとき",
+    },
+  ]);
+  // 本文のリンクだけの参照は、種類と when を持たない
+  expect(relationsOf("d")).toEqual([
+    { direction: "incoming", type: null, when: null },
+  ]);
+  expect(
+    await Promise.all(files.map((file) => readFile(join(dir, file), "utf8"))),
+  ).toEqual(before);
+});
+
 // 全角の大文字の語でも、別名に半角の語を持つ 1 つ目の文書だけが返る（正常シナリオ（全角と半角だけが違う語））
 test("test_normal_when_width_differs", async ({ builtRoot, tempDir }) => {
   // 準備

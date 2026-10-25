@@ -602,6 +602,7 @@ export async function checkInNode(
     index: unknown;
     documents: Record<string, string>;
     indexFile?: string;
+    changedPaths?: string[];
   },
 ): Promise<MdmarkIndexIssue[]> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
