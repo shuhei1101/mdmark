@@ -1,0 +1,52 @@
+title: "設定: Claude Code プラグイン"
+lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポートと、Claude Code がつなぐ先の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
+files:
+  - file: 環境変数
+    manages: '`mdmark serve` が待ち受けるポートと、Claude Code が `.mcp.json` の URL を展開する値'
+  - file: plugin/.mcp.json
+    manages: Claude Code がつなぐ MCP サーバーの種類と URL
+    notes: プラグインと一緒に配る。使う側は書き換えない
+settings:
+  - key: MDMARK_PORT
+    title: MCP サーバーのポート
+    file: 環境変数
+    type: integer
+    default: '8782'
+    description: '`mdmark serve` が 127.0.0.1 で待ち受けるポート。Claude Code は `plugin/.mcp.json` の URL で同じ変数を展開するため、変えるときは `~/.claude/settings.json` の `env` と `mdmark serve` を起動する環境の両方に同じ値を設定する'
+    env_var: MDMARK_PORT
+    reload: restart
+    allowed: 1〜65535 の整数。範囲外・整数でない値は `mdmark serve` が起動せず終了コード 1 で終わる
+    refs:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts#constants[DEFAULT_PORT]
+    status: planned
+    visibility: user
+    implementation: src/plugin/http.ts#readPort
+    introduced:
+      pr: 141
+  - key: mcpServers.mdmark.type
+    title: MCP サーバーの種類
+    file: plugin/.mcp.json
+    type: '"http"'
+    required: true
+    description: Claude Code が子プロセスを起動せず、常駐のサーバーへ Streamable HTTP でつなぐ
+    missing: Claude Code が MCP サーバーを読まない
+    reload: restart
+    status: planned
+    visibility: developer
+    introduced:
+      pr: 141
+  - key: mcpServers.mdmark.url
+    title: MCP サーバーの URL
+    file: plugin/.mcp.json
+    type: string
+    required: true
+    description: Claude Code がつなぐ先。ポートは `MDMARK_PORT` を展開し、無ければ 8782
+    missing: Claude Code が MCP サーバーを読まない
+    reload: restart
+    allowed: '`http://127.0.0.1:${MDMARK_PORT:-8782}/mcp`'
+    refs:
+      - dev/設計書/外部ライブラリ/ClaudeCode#
+    status: planned
+    visibility: developer
+    introduced:
+      pr: 141

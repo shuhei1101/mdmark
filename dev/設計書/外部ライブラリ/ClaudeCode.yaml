@@ -44,16 +44,16 @@ catalogs:
             description: 説明
       - name: .mcp.json
         kind: ファイル
-        purpose: プラグインの MCP サーバーの起動の仕方
+        purpose: プラグインの MCP サーバーへのつなぎ方
         params:
-          - name: mcpServers.{名前}.command
+          - name: mcpServers.{名前}.type
+            type: "'http'"
+            required: true
+            description: Streamable HTTP で起動済みのサーバーにつなぐ
+          - name: mcpServers.{名前}.url
             type: string
             required: true
-            description: 起動するコマンド（`node`）
-          - name: mcpServers.{名前}.args
-            type: string[]
-            required: false
-            description: 引数。`${CLAUDE_PLUGIN_ROOT}` がプラグインの直下に展開される
+            description: つなぐ URL。`${変数}` と `${変数:-既定}` が Claude Code の環境変数（`~/.claude/settings.json` の `env` を含む）で展開される
       - name: hooks/hooks.json
         kind: ファイル
         purpose: プラグインのフックの定義
@@ -70,9 +70,14 @@ catalogs:
             type: string[]
             required: false
             description: 引数。`${CLAUDE_PLUGIN_ROOT}` が展開される
+          - name: hooks.PreToolUse[].matcher
+            type: string
+            required: false
+            description: フックを流すツール名の正規表現。MCP のツールは `mcp__plugin_{プラグイン}_{サーバー}__{ツール}` の完全名で当てる。`hooks[]` は SessionStart と同じ形
       - name: package.json・package-lock.json
         kind: ファイル
         purpose: プラグインの実行時の依存。導入時に Claude Code が入れる
+        status: removed
   - name: 環境変数
     version: 2.1.309
     entries:
@@ -81,7 +86,7 @@ catalogs:
         purpose: プラグインの直下（入れたプラグインのキャッシュの下）。`.mcp.json` と `hooks.json` の引数に展開される
       - name: CLAUDE_PROJECT_DIR
         kind: 環境変数
-        purpose: セッションのフォルダ。フックと標準入出力の MCP サーバーの環境に渡る
+        purpose: セッションのフォルダ。フックの環境に渡る。HTTP でつなぐ MCP サーバーには渡らない
       - name: MCP_TIMEOUT
         kind: 環境変数
         purpose: MCP サーバーの接続を待つ上限のミリ秒。既定は 30 秒
@@ -100,6 +105,21 @@ catalogs:
             type: string
             required: true
             description: 文脈に加える文
+      - name: hookSpecificOutput.updatedInput
+        kind: JSON のキー
+        purpose: PreToolUse のフックが標準出力に書く JSON で、ツールに渡す引数を置き換える。`permissionDecision` を書かなければ許可の判定は変わらない
+        params:
+          - name: hookSpecificOutput.hookEventName
+            type: "'PreToolUse'"
+            required: true
+            description: フックの種類
+          - name: hookSpecificOutput.updatedInput
+            type: object
+            required: true
+            description: ツールに渡す引数の全体
+        status: planned
+        introduced:
+          pr: 141
 lead: Anthropic のコーディングエージェントの CLI。マーケットプレイスからプラグインを入れ、プラグインのフックと MCP サーバーを起動する。
 supplier: Anthropic
 dependency_scope: 任意
@@ -139,3 +159,5 @@ limitations:
     content: '`plugin.json` の `version` が変わったときだけ更新する'
   - item: MCP のプロトコル
     content: 先に `server/discover`（2026-07-28）を送り、エラーなら `initialize`（2025-11-25）へ落ちる
+  - item: HTTP の MCP サーバーが起動していない
+    content: その MCP サーバーだけが `failed`（`ECONNREFUSED`）になる。サーバーを起動してから `/mcp` の Reconnect でつなぎ直せる

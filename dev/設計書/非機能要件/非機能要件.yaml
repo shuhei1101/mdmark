@@ -166,8 +166,8 @@ requirements:
     source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP サーバーの接続の待ち]
     value: '30'
     unit: 秒 以内
-    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。束ねた JavaScript を node で起動すると 120ms で接続したため、起動で依存を取らない形にする'
-    measurement: 束ねた MCP サーバーを子プロセスとして起動し、標準入出力でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
+    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。`mdmark serve` を先に常駐させ、Claude Code は起動済みのサーバーへ HTTP でつなぐだけにする'
+    measurement: 起動済みの `mdmark serve` へ Streamable HTTP でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
     overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使えない。起動で外へ要求する処理を足さない
     status: planned
     introduced:

@@ -94,6 +94,7 @@ catalogs:
             type: () => McpServer
             required: true
             description: サーバーを作って返す関数
+        status: removed
       - name: Client
         kind: クラス
         purpose: テストからサーバーへ繋ぎ、`getInstructions`・`listTools`・`callTool` を呼ぶ
@@ -117,7 +118,88 @@ catalogs:
             type: string[]
             required: false
             description: コマンドの引数
-lead: Model Context Protocol の公式 TypeScript SDK。サーバーの `@modelcontextprotocol/server` とクライアントの `@modelcontextprotocol/client` に分かれ、ツールの登録・stdio の通信・プロトコルのバージョンの取り決めを持つ。
+        status: removed
+      - name: createMcpHandler
+        kind: 関数
+        purpose: 要求ごとにサーバーを作り、セッションの状態を持たずに Streamable HTTP の要求に応じるハンドラーを作る
+        params:
+          - name: factory
+            type: McpServerFactory
+            required: true
+            description: 要求ごとに `McpServer` を作って返す関数
+          - name: options
+            type: CreateMcpHandlerOptions
+            required: false
+            description: ハンドラーの設定
+        returns:
+          - name: fetch
+            type: '(request: Request) => Promise<Response>'
+            description: 組み込みの `Request` を受けて `Response` を返す（`McpHttpHandler`）
+        status: planned
+        introduced:
+          pr: 141
+      - name: hostHeaderValidationResponse
+        kind: 関数
+        purpose: Host が許すホスト名でなければ 403 の応答を返す
+        params:
+          - name: req
+            type: Request
+            required: true
+            description: 確かめる要求
+          - name: allowedHostnames
+            type: string[]
+            required: true
+            description: 許すホスト名
+        returns:
+          - name: '-'
+            type: Response | undefined
+            description: 拒むときの応答。許すときは `undefined`
+        status: planned
+        introduced:
+          pr: 141
+      - name: originValidationResponse
+        kind: 関数
+        purpose: Origin があり許すホスト名でなければ 403 の応答を返す
+        params:
+          - name: req
+            type: Request
+            required: true
+            description: 確かめる要求
+          - name: allowedOriginHostnames
+            type: string[]
+            required: true
+            description: 許す Origin のホスト名
+        returns:
+          - name: '-'
+            type: Response | undefined
+            description: 拒むときの応答。許すときは `undefined`
+        status: planned
+        introduced:
+          pr: 141
+      - name: localhostAllowedHostnames
+        kind: 関数
+        purpose: '`hostHeaderValidationResponse` に渡す localhost のホスト名の並びを返す'
+        status: planned
+        introduced:
+          pr: 141
+      - name: localhostAllowedOrigins
+        kind: 関数
+        purpose: '`originValidationResponse` に渡す localhost のホスト名の並びを返す'
+        status: planned
+        introduced:
+          pr: 141
+      - name: StreamableHTTPClientTransport
+        kind: クラス
+        purpose: テストから常駐サーバーの URL へ Streamable HTTP で繋ぐ
+        params:
+          - name: url
+            type: URL
+            required: true
+            description: サーバーの URL（`http://127.0.0.1:{port}/mcp`）
+        status: planned
+        introduced:
+          pr: 141
+lead: Model Context Protocol の公式 TypeScript SDK。サーバーの `@modelcontextprotocol/server` とクライアントの `@modelcontextprotocol/client` に分かれ、ツールの登録・Streamable HTTP の通信・プロトコルのバージョンの取り決めを持つ。
 purl: pkg:npm/%40modelcontextprotocol/server@2.3.1
 supplier: Model Context Protocol（Anthropic）
 dependency_scope: 必須

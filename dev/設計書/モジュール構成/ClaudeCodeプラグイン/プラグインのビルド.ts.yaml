@@ -1,5 +1,5 @@
 title: "ClaudeCodeプラグイン / プラグインのビルド"
-lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、使い方集の索引を検査してから、MCP サーバーとフックを束ね、配布物・使い方集・プラグインのバージョン・束ねた依存のライセンスを `plugin/` に書く。
+lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、使い方集の索引を検査してから、フックを束ね、使い方集・プラグインのバージョン・束ねた依存のライセンスを `plugin/` に書く。MCP サーバーは束ねず、`mdmark serve` が動かす。
 directory: |-
   ```tree
   scripts/
@@ -11,14 +11,10 @@ directory: |-
   └── marketplace.json  # マーケットプレイスの定義（plugin/ を載せる）
   plugin/
   ├── .claude-plugin/plugin.json  # 名前・説明・バージョン（バージョンはビルドが書く）
-  ├── .mcp.json         # node ${CLAUDE_PLUGIN_ROOT}/server/mcp.js で MCP サーバーを起動する
-  ├── hooks/hooks.json  # SessionStart で node ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js を流す
-  ├── package.json      # 束ねない実行時の依存（esbuild）
-  ├── package-lock.json
-  ├── server/mcp.js     # 束ねた MCP サーバー（生成）
-  ├── scripts/session-start.js  # 束ねたフック（生成）
-  ├── dist/             # export_html・build_site が埋める配布物の写し（生成）
-  ├── guide/            # 使い方集の index.json と本文のページの写し（生成）
+  ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
+  ├── hooks/hooks.json  # SessionStart で scripts/session-start.js、6 つのツールの PreToolUse で scripts/pre-tool-use.js を流す
+  ├── scripts/          # 束ねたフック（session-start.js・pre-tool-use.js。生成）
+  ├── guide/            # 使い方集の index.json と本文のページのコピー（生成。mdmark serve も読む）
   └── THIRD_PARTY_LICENSES.txt  # 束ねた依存のライセンス（生成）
   ```
 constants:
@@ -28,31 +24,12 @@ constants:
     usecase: 配布物をビルドして検査する
     summary: 束ねるソースと書く先
     entries:
-      - key: src/plugin/mcp.ts
-        value: plugin/server/mcp.js
-        description: MCP サーバー
       - key: src/plugin/session-start.ts
         value: plugin/scripts/session-start.js
         description: SessionStart のフック
-    status: planned
-    introduced:
-      pr: 72
-  - name: PLUGIN_EXTERNALS
-    title: プラグインに束ねない依存
-    container: scripts/build-plugin.ts
-    usecase: 配布物をビルドして検査する
-    summary: 束ねず、`plugin/package.json` から Claude Code が入れる依存
-    value: '["esbuild"]'
-    reason: esbuild はプラットフォームごとの実行ファイルを持ち、束ねられない
-    status: planned
-    introduced:
-      pr: 72
-  - name: PLUGIN_DIST_ASSETS
-    title: プラグインに写す配布物
-    container: scripts/build-plugin.ts
-    usecase: 配布物をビルドして検査する
-    summary: '`dist/` から `plugin/dist/` へ写す、書き出しが埋めるファイル'
-    value: '["index.css", "viewer.js", "viewer.css", "view.js"]'
+      - key: src/plugin/pre-tool-use.ts
+        value: plugin/scripts/pre-tool-use.js
+        description: PreToolUse のフック
     status: planned
     introduced:
       pr: 72
@@ -61,7 +38,7 @@ constants:
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
     summary: ビルドの最初と失敗したときに消す、`plugin/` の中の生成物
-    value: '["plugin/server", "plugin/scripts", "plugin/dist", "plugin/guide", "plugin/THIRD_PARTY_LICENSES.txt"]'
+    value: '["plugin/scripts", "plugin/guide", "plugin/THIRD_PARTY_LICENSES.txt"]'
     status: planned
     introduced:
       pr: 72
@@ -162,48 +139,6 @@ functions:
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts#functions[parseGuideIndex]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts#functions[formatGuideContext]
-    status: planned
-    introduced:
-      pr: 72
-  - name: checkPluginDependencies
-    title: プラグインの依存を検査する
-    kind: 関数
-    container: scripts/build-plugin.ts
-    usecase: 配布物をビルドして検査する
-    summary: '`plugin/package.json` の束ねない依存のバージョンが作業ツリーの `package.json` と同じで、`plugin/package-lock.json` があるかを確かめる'
-    description: Claude Code は lockfile が揃うときだけプラグインの依存を入れる
-    scope: public
-    is_async: true
-    args:
-      - name: root
-        type: string
-        required: true
-        description: 作業ツリーの場所
-    returns:
-      type: Promise<string[]>
-      description: 問題の行。合えば空
-    process: |-
-      1. `PLUGIN_EXTERNALS` の各依存について、`plugin/package.json` の `dependencies` のバージョンと作業ツリーの `package.json` の `dependencies` のバージョンを比べ、違えば「plugin/package.json の {名前} が {バージョン} で、package.json の {バージョン} と違う」を問題にする
-      2. `plugin/package-lock.json` が無ければ「plugin/package-lock.json が無い（plugin/ で npm install を流す）」を問題にする
-    unit_tests:
-      - name: test_check_plugin_dependencies
-        case: 正常
-        summary: バージョンが同じで lockfile がある
-        condition: 両方の `esbuild` が `0.28.2`、`plugin/package-lock.json` がある
-        mock: なし（一時フォルダ）
-        expected: 空
-      - name: test_check_plugin_dependencies_when_version_differs
-        case: 正常
-        summary: バージョンが違う
-        condition: '`plugin/package.json` の `esbuild` が `0.27.0`'
-        mock: なし（一時フォルダ）
-        expected: '`esbuild` と 2 つのバージョンを含む行'
-      - name: test_check_plugin_dependencies_when_lockfile_missing
-        case: 正常
-        summary: lockfile が無い
-        condition: '`plugin/package-lock.json` が無い'
-        mock: なし（一時フォルダ）
-        expected: '`plugin/package-lock.json` を含む行'
     status: planned
     introduced:
       pr: 72
@@ -377,9 +312,9 @@ functions:
       - name: test_remove_plugin_outputs
         case: 正常
         summary: 生成物だけを消す
-        condition: '`plugin/server/mcp.js` と `plugin/.mcp.json` がある'
+        condition: '`plugin/scripts/session-start.js` と `plugin/.mcp.json` がある'
         mock: なし（一時フォルダ）
-        expected: '`plugin/server` が無く、`plugin/.mcp.json` が残る'
+        expected: '`plugin/scripts` が無く、`plugin/.mcp.json` が残る'
     status: planned
     introduced:
       pr: 72
@@ -388,8 +323,8 @@ functions:
     kind: 関数
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
-    summary: 使い方集の索引と依存を検査し、合えば MCP サーバーとフックを束ね、配布物・使い方集・バージョン・ライセンスを `plugin/` に書く
-    description: '`dist/` を書いた後に `main` が呼ぶ。`src/plugin/mcp.ts` が無ければ何もしない（ソースの一部だけを置いた単体テストのため）'
+    summary: 使い方集の索引を検査し、合えばフックを束ね、使い方集・バージョン・ライセンスを `plugin/` に書く
+    description: '`dist/` を書いた後に `main` が呼ぶ。`src/plugin/session-start.ts` が無ければ何もしない（ソースの一部だけを置いた単体テストのため）'
     scope: public
     is_async: true
     side_effects: '`PLUGIN_OUTPUTS` と `PLUGIN_MANIFEST` を書く'
@@ -402,27 +337,25 @@ functions:
       type: Promise<string[]>
       description: 問題の行。問題があれば `plugin/` に何も書かずに返す
     process: |-
-      1. `src/plugin/mcp.ts` が無ければ空を返す
-      2. 使い方集の索引と依存を検査し、問題があれば返す（使い方集の索引を検査する・プラグインの依存を検査する）
-      3. `PLUGIN_ENTRY_POINTS` を esbuild で束ねる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・`external` は `PLUGIN_EXTERNALS`・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
-      4. `PLUGIN_DIST_ASSETS` を `dist/` から `plugin/dist/` へ写す（`dist/` に無いファイルは飛ばす）
-      5. 使い方集を写し、バージョンとライセンスを書いて、空を返す（プラグインに使い方集を写す・プラグインのバージョンを書く・プラグインの依存のライセンスを書く）
+      1. `src/plugin/session-start.ts` が無ければ空を返す
+      2. 使い方集の索引を検査し、問題があれば返す（使い方集の索引を検査する）
+      3. `PLUGIN_ENTRY_POINTS` を esbuild で束ねる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
+      4. 使い方集を写し、バージョンとライセンスを書いて、空を返す（プラグインに使い方集を写す・プラグインのバージョンを書く・プラグインの依存のライセンスを書く）
     unit_tests:
       - name: test_build_plugin_when_source_missing
         case: 正常
         summary: プラグインのソースが無ければ何も書かない
-        condition: '`src/plugin/mcp.ts` の無い一時フォルダ'
+        condition: '`src/plugin/session-start.ts` の無い一時フォルダ'
         mock: なし（一時フォルダ）
-        expected: 空を返し、`plugin/server` が無い
+        expected: 空を返し、`plugin/scripts` が無い
       - name: test_build_plugin_when_guide_invalid
         case: 正常
         summary: 索引に問題があれば書かずに問題を返す
-        condition: '`src/plugin/mcp.ts` があり、`guide/index.yaml` のページが無い'
+        condition: '`src/plugin/session-start.ts` があり、`guide/index.yaml` のページが無い'
         mock: なし（一時フォルダ）
-        expected: 問題の行を返し、`plugin/server` が無い
+        expected: 問題の行を返し、`plugin/scripts` が無い
     callees:
       - '#functions[checkGuideSource]'
-      - '#functions[checkPluginDependencies]'
       - '#functions[writePluginGuide]'
       - '#functions[writePluginManifest]'
       - '#functions[writePluginLicenses]'
