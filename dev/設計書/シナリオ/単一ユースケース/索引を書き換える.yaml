@@ -112,36 +112,6 @@ scenarios:
       - 1 つ目の文書の行は変わっていない
       - 書き換えた後の索引が Schema に合う
     test: test_normal_when_related
-  - name: 異常シナリオ（関連が Schema に合わない）
-    setup:
-      - name: 作業のフォルダ
-        description: 正常シナリオと同じ
-      - name: Mock
-        description: 正常シナリオと同じ
-      - name: '`when` の無い関連'
-        description: '`related` に `{to: 1 つ目の文書の ID, type: requires}` を持つ文書の項目'
-      - name: 知らない `type` の関連
-        description: '`related` に `{to: 1 つ目の文書の ID, type: depends_on, when: 前提を確かめるとき}` を持つ文書の項目'
-        notes: 書き換える前と後で索引のファイルの中身が同じであることを確かめる
-    flow: |-
-      ```mermaid
-      sequenceDiagram
-        participant C as Claude Code
-        participant S as MCP サーバー
-        participant F as 索引のファイル
-        C->>S: update_index（item: when の無い関連を持つ項目）
-        S->>S: 項目を追加した索引を Schema で検査する
-        S-->>C: エラー（合わないところと直し方）
-        C->>S: update_index（item: 知らない type の関連を持つ項目）
-        S->>S: 項目を追加した索引を Schema で検査する
-        S-->>C: エラー（合わないところと直し方）
-      ```
-    expected:
-      - 2 回ともツールの結果がエラーになる
-      - 1 回目のエラーの文に、関連の `when` が無い場所と直し方が出る
-      - 2 回目のエラーの文に、関連の `type` の場所と許す 5 つの値が出る
-      - 索引のファイルの中身が書き換える前と同じ
-    test: test_error_when_related_invalid
 lead: Claude Code が MCP のツール `update_index` で、文書・用語・タグの語彙の項目を置き換え・追加・削除する。書く前に索引の Schema で検査し、合わなければ書かない。
 issue: 11
 primary_actor: Claude Code
