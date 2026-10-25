@@ -97,8 +97,9 @@ categories:
       claude plugin marketplace remove mdmark
       ```
     verification:
-      state: 未確認
-      detail: 'Storybook の分は 2026-10-16 に確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は、`mdmark serve` が実装の前のため確かめていない（PR #141 の実装で確かめる）'
+      state: 済
+      date: '2026-10-26'
+      detail: 'Storybook の分は 2026-10-16 に確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は 2026-10-26 に確かめた（`npm run build` が終了コード 0 で `dist/cli.js` と `plugin/scripts/`・`plugin/guide/` を書き、`MDMARK_PORT=18801 node dist/cli.js serve` が `MCP サーバーを起動しました: http://127.0.0.1:18801/mcp` を出した。空の `CLAUDE_CONFIG_DIR` で `claude plugin marketplace add {作業ツリーの絶対パス}` と `claude plugin install mdmark@mdmark` が成功し、`MDMARK_PORT=18801` を渡した `claude mcp list` が `plugin:mdmark:mdmark: http://127.0.0.1:18801/mcp (HTTP) - ✔ Connected` を出した。`kill -TERM` で止めるとプロセスが終わり、`claude plugin uninstall mdmark@mdmark` と `claude plugin marketplace remove mdmark` で外れた）'
     effects: プラグインの確かめは、手元の Claude Code の設定にマーケットプレイスとプラグインを書き、常駐サーバーは `127.0.0.1` の `MDMARK_PORT`（既定 8782）を待ち受ける。外すコマンドで戻す。設定を書き換えたくないときは、`CLAUDE_CONFIG_DIR` に空のフォルダを指して流す
   - name: テスト
     refs:
