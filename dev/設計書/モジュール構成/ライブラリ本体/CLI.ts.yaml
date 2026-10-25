@@ -789,7 +789,7 @@ functions:
         summary: '`--base` から片方だけが変わった change_together の組を出す'
         condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載したフォルダをコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }` と `{}` の 2 回'
         mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
-        expected: '1 回目は 1 を返し、`b.md:: missed_change_together:` で始まる行と `ずれ 1 件` を出す。2 回目は 0 を返し、`ずれ 0 件`'
+        expected: '1 回目は 1 を返し、`b.md: missed_change_together:` で始まる行と `ずれ 1 件` を出す。2 回目は 0 を返し、`ずれ 0 件`'
       - name: test_run_check_when_base_unknown
         case: 異常
         summary: 引けない `--base` はずれを点検せずに止める
@@ -1737,6 +1737,7 @@ test_files:
   - tests/unit/src/cli/html.test.ts
   - tests/unit/src/cli/init.test.ts
   - tests/unit/src/cli/check.test.ts
+  - tests/unit/src/cli/git.test.ts
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/index-file.test.ts
