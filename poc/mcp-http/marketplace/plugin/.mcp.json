@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mdmark-poc": {
+      "type": "http",
+      "url": "http://127.0.0.1:${MDMARK_PORT:-8782}/mcp"
+    }
+  }
+}

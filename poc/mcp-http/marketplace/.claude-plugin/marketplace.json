@@ -1,0 +1,5 @@
+{
+  "name": "mdmark-poc",
+  "owner": { "name": "shuhei1101" },
+  "plugins": [{ "name": "mdmark-poc", "source": "./plugin", "description": "PoC" }]
+}

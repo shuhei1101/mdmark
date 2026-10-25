@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__plugin_mdmark-poc_mdmark-poc__echo_project_dir",
+        "hooks": [
+          {
+            "type": "command",
+            "_description": "MCP のツールの引数に作業のフォルダを入れる",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/add-project-dir.mjs"]
+          }
+        ]
+      }
+    ]
+  }
+}
