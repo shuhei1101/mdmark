@@ -282,7 +282,7 @@ constraints:
   - item: 実行する環境
     constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
   - item: Schema の検査
-    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする。最上位の `tags` は、要素が `name`（必須・空でない文字列）・`group`（空でない文字列）・`description`（文字列）・`aliases`（空でない文字列の並び）・`deprecated`（空でない文字列）だけを持つオブジェクトの並び。`docs[].tags` の要素は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクト。`docs[].related` は 8 件までの並びで、要素は空でない文字列か、`to`（必須・空でない文字列）・`type`（必須。`requires`・`references`・`replaces`・`part_of`・`change_together` のどれか）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクト。`tags[].name` の重なりは `schema` のずれにせず `duplicate_tag` で返す'
+    constraint: '`schemas/mdmark.index.schema.json` と同じ形を検査する。必須のキーの欠け・型の違い・`docs[].id` と `terms[].id` のそれぞれの中の重なりを `schema` のずれにする。最上位の `tags` は、要素が `name`（必須・空でない文字列）・`group`（空でない文字列）・`description`（文字列）・`aliases`（空でない文字列の並び）・`deprecated`（空でない文字列）だけを持つオブジェクトの並び。`docs[].tags` の要素は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクト。`docs[].related` は件数の上限が `未確定`（要件の件数の上限）の並びで、要素は空でない文字列か、`to`（必須・空でない文字列）・`type`（必須。`requires`・`references`・`replaces`・`part_of`・`change_together` のどれか）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクト。`tags[].name` の重なりは `schema` のずれにせず `duplicate_tag` で返す'
     notes: 検査の仕方（ライブラリを使うか）はモジュール構成設計で決める
   - item: 文書の対応
     constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する
