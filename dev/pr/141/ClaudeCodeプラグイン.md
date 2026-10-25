@@ -131,3 +131,20 @@ PoC PR の diff の見どころ:
 | [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | 3 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
 | [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build-plugin.test.ts) | 全実行 | 変更 | ✅ | 17 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
 | `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認。`tests/unit` の全体で 944 テスト pass<br>`テスト結果/20261026065705_4a8b5fd_単体テスト.log` |
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/check.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/check.test.ts) | 全実行 | 変更 | ✅ | 5 テスト pass（`test_error_when_project_dir_missing` を追加）<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/export-html.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/export-html.test.ts) | 全実行 | 変更 | ✅ | 3 テスト pass（`test_error_when_project_dir_missing` を追加）<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/find-docs.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/find-docs.test.ts) | 全実行 | 変更 | ✅ | 12 テスト pass（`test_error_when_project_dir_missing` を追加）<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/list-tags.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/list-tags.test.ts) | 全実行 | 変更 | ✅ | 6 テスト pass（`test_error_when_project_dir_missing` を追加）<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/update-index.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/update-index.test.ts) | 全実行 | 変更 | ✅ | 9 テスト pass（`test_error_when_project_dir_missing` を追加）<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/build-site.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/build-site.test.ts) | 全実行 | 変更 | ✅ | 3 テスト pass（`test_error_when_project_dir_missing` を追加）<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/read-guide.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/read-guide.test.ts) | 全実行 | 変更 | ✅ | 3 テスト pass<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/plugin.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/plugin.ts)・[tests/integration/plugin-inputs.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/plugin-inputs.ts) | 全実行 | 変更 | ✅ | 常駐サーバーの起動・接続・フックを流す補助<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/session-start.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/session-start.test.ts) | 全実行 | 実行のみ | ✅ | 2 テスト pass<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
+| `tests/integration` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認。`tests/integration` の全体で 443 テスト pass<br>`テスト結果/20261026081514_12b1047_結合テスト.log` |
