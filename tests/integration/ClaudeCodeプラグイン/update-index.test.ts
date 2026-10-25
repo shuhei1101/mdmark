@@ -210,3 +210,73 @@ test("test_normal_when_tag", async () => {
   const check = await runCli(["check"], dir);
   expect(check.stdout).toContain("ずれ 0 件");
 });
+
+// when の無い関連と知らない type の関連を、関連の場所を示して拒む（異常系（関連が Schema に合わない））
+test("test_error_when_related_invalid", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeProject(dir);
+  const client = await connectInMemory({
+    projectDir: dir,
+    pluginDir: builtPluginDir(),
+  });
+  // 実行
+  const withoutWhen = await callTool(client, "update_index", {
+    kind: "doc",
+    id: "b",
+    item: {
+      path: "b.md",
+      title: "文書 B",
+      related: [{ to: "a", type: "requires" }],
+    },
+  });
+  const unknownType = await callTool(client, "update_index", {
+    kind: "doc",
+    id: "b",
+    item: {
+      path: "b.md",
+      title: "文書 B",
+      related: [{ to: "a", type: "depends_on", when: "前提を確かめるとき" }],
+    },
+  });
+  // 検証
+  expect(withoutWhen.isError).toBe(true);
+  expect(withoutWhen.texts[0]).toContain("docs[1].related[0].when");
+  expect(unknownType.isError).toBe(true);
+  expect(unknownType.texts[0]).toContain("docs[1].related[0].type");
+  for (const type of [
+    "requires",
+    "references",
+    "replaces",
+    "part_of",
+    "change_together",
+  ]) {
+    expect(unknownType.texts[0]).toContain(type);
+  }
+  expect(await readFile(join(dir, "index.yaml"), "utf8")).toBe(INDEX_A);
+});
+
+// 文書の related を to・type・when のオブジェクトの並びで書く（正常系（関連を書く））
+test("test_normal_when_related", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeProject(dir);
+  const client = await connectInMemory({
+    projectDir: dir,
+    pluginDir: builtPluginDir(),
+  });
+  const related = [{ to: "a", type: "requires", when: "前提を確かめるとき" }];
+  // 実行
+  const result = await callTool(client, "update_index", {
+    kind: "doc",
+    id: "b",
+    item: { path: "b.md", title: "文書 B", related },
+  });
+  // 検証
+  expect(result.isError).toBe(false);
+  expect(JSON.parse(result.texts[0] ?? "").action).toBe("added");
+  const index = parse(await readFile(join(dir, "index.yaml"), "utf8"));
+  expect(index.docs[1].related).toEqual(related);
+  const check = await runCli(["check"], dir);
+  expect(check.stdout).toContain("ずれ 0 件");
+});
