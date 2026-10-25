@@ -1,0 +1,113 @@
+title: "MCPサーバーを起動・停止する"
+scenarios:
+  - name: 正常シナリオ（起動する）
+    setup:
+      - name: 空いた既定のポート
+        description: ポート 8782 で待ち受けるプロセスが無く、`MDMARK_PORT` を指定していない
+      - name: Mock
+        description: Claude Code の代わりに、常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant S as 常駐サーバー
+        participant M as MCP のクライアント
+        W->>C: mdmark serve
+        C->>S: 127.0.0.1:8782 の /mcp で待ち受ける
+        C-->>W: 接続先の URL
+        M->>S: tools/list
+        S-->>M: mdmark のツールの一覧
+    expected:
+      - 出力に接続先 `http://127.0.0.1:8782/mcp` が出る
+      - '`127.0.0.1` のポート 8782 で待ち受けるプロセスがあり、`mdmark serve` のプロセスが終わらずに残っている'
+      - クライアントの `tools/list` が、mdmark のツールの一覧を返す
+    test: test_normal_when_start
+  - name: 正常シナリオ（ポートを上書きする）
+    setup:
+      - name: MDMARK_PORT
+        description: '`MDMARK_PORT` に空いたポートを指定する'
+        notes: 既定の 8782 と違うポート（例 18782）で、上書きされたことを決定的に起こす
+      - name: Mock
+        description: 正常シナリオ（起動する）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant S as 常駐サーバー
+        participant M as MCP のクライアント
+        W->>C: MDMARK_PORT=18782 mdmark serve
+        C->>S: 127.0.0.1:18782 の /mcp で待ち受ける
+        C-->>W: 接続先の URL
+        M->>S: tools/list
+        S-->>M: mdmark のツールの一覧
+    expected:
+      - 出力に接続先 `http://127.0.0.1:18782/mcp` が出る
+      - ポート 18782 で待ち受け、ポート 8782 では待ち受けない
+      - クライアントの `tools/list` が、mdmark のツールの一覧を返す
+    test: test_normal_when_port_overridden
+  - name: 正常シナリオ（止める）
+    setup:
+      - name: 起動した常駐サーバー
+        description: '`mdmark serve` で起動し、ポート 8782 で待ち受けている'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: Ctrl+C（SIGINT）
+        C->>C: 待ち受けを閉じる
+        C-->>W: 終了コード 0
+    expected:
+      - '`mdmark serve` が終了コード 0 で終わる'
+      - ポート 8782 で待ち受けるプロセスが無い
+    test: test_normal_when_stop
+  - name: 異常シナリオ（ポートが使われている）
+    setup:
+      - name: ポートを使うほかのプロセス
+        description: ポート 8782 を、mdmark ではないプロセスが待ち受けている
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark serve
+        C->>C: 127.0.0.1:8782 で待ち受けられない
+        C-->>W: 理由と修正方法・0 以外の終了コード
+    expected:
+      - 出力に、ポート 8782 がほかのプロセスに使われていることと、`MDMARK_PORT` で別のポートを指定する修正方法が出る
+      - 終了コードが 0 以外で、`mdmark serve` のプロセスが残らない
+      - ポート 8782 は、ほかのプロセスが待ち受けたまま
+    test: test_error_when_port_in_use
+  - name: 異常シナリオ（MDMARK_PORT が使えない値）
+    setup:
+      - name: 使えない MDMARK_PORT
+        description: '`MDMARK_PORT` にポートとして使えない値を指定する'
+        notes: 数値でない値（例 `abc`）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: MDMARK_PORT=abc mdmark serve
+        C->>C: MDMARK_PORT を読む
+        C-->>W: 理由と修正方法・0 以外の終了コード
+    expected:
+      - 出力に、`MDMARK_PORT` の値 `abc` がポートとして使えないことと、使える値の範囲が出る
+      - 終了コードが 0 以外で、`mdmark serve` のプロセスが残らない
+    test: test_error_when_port_invalid
+lead: 文書を書く人が `mdmark serve` で MCP の常駐サーバーを起動し、待ち受けている接続先を確かめ、使い終えたら止める。
+issue: 111
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: 端末で 1 回起動したら、並行に開いたどのセッションからも同じプロセスのツールを呼べる。ポートがぶつかるときは理由と修正方法が分かる
+  - name: Claude Code
+    interest: '`.mcp.json` の接続先 `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` で常駐サーバーにつながる'
+trigger: 文書を書く人が、Claude Code で mdmark のツールを使う作業を始める前
+preconditions:
+  - 文書を書く人の手元に Node 24 以降がある
+success_guarantee: 常駐サーバーが `127.0.0.1` の `/mcp` で、既定のポート 8782（`MDMARK_PORT` を指定したときはそのポート）を待ち受け、接続先の URL を出す。止めると終了コード 0 で終わり、待ち受けるプロセスが残らない。
+minimal_guarantee: ポートを使えないときは待ち受けず、理由と修正方法を出して 0 以外の終了コードで終わる。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。

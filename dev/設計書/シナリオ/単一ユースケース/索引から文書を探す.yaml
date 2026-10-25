@@ -5,7 +5,7 @@ scenarios:
       - name: 作業のフォルダ
         description: 設定・索引と文書 2 つ。2 つ目の文書は索引に載っていない
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -211,7 +211,7 @@ issue: 11
 primary_actor: Claude Code
 trigger: Claude Code が、文書を書く前や書き換える前に、関係する文書と索引に載っているかを確かめたくなる
 preconditions:
-  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+  - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
   - 作業のフォルダに設定と索引がある
 success_guarantee: 条件に当たる文書が、主題のタグが当たる文書を上にした並びで、既定の件数ずつ返る。各行は ID・題名・概要・タグ・文字数を持ち、結果の先頭に総件数・返した件数・合計文字数・続きの位置が、あわせてタグごとの件数が返る。関係する文書で引いた各行は向き（相手から自分か、自分から相手か）を持ち、索引の関連で当たった行は、あわせて関係の種類と `when` を持つ。
 minimal_guarantee: 索引と文書を書き換えない。

@@ -9,6 +9,8 @@ scenarios:
         notes: マーケットプレイスは `shuhei1101/mdmark#{ブランチ}` で足す。ローカルのパスで足すとプラグインがその場で読まれ、依存が入らない
       - name: Mock
         description: なし（GitHub と npm のレジストリから実際に入れる。モデルは使わない）
+      - name: 起動した常駐サーバー
+        description: ビルドしたこのリポジトリの `mdmark serve` で起動し、ポート 8782 で待ち受けている
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
@@ -25,9 +27,39 @@ scenarios:
     expected:
       - '`claude plugin marketplace add` と `claude plugin install mdmark@mdmark` がどちらも終了コード 0 で終わる'
       - '`claude plugin list --json` に `mdmark@mdmark` が有効として出、その `installPath` が設定のフォルダのプラグインのキャッシュの下'
-      - '`installPath` の場所に `hooks/hooks.json`・`.mcp.json`・束ねた MCP サーバーと、`node_modules` の依存がある'
-      - '`installPath` の場所の MCP サーバーを `.mcp.json` のコマンドで起動すると、ツールの一覧を返す'
+      - '`installPath` の場所に `hooks/hooks.json`・`.mcp.json` と、フックが使う `node_modules` の依存がある'
+      - '`installPath` の `.mcp.json` が `type: http` と接続先 `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` を持ち、`command` を持たない'
+      - '`.mcp.json` の接続先につなぐと、起動した常駐サーバーがツールの一覧を返す'
     test: test_normal
+  - name: 異常シナリオ（常駐サーバーが起動していない）
+    setup:
+      - name: 空の設定のフォルダ
+        description: 正常シナリオと同じ
+      - name: push したブランチ
+        description: 正常シナリオと同じ
+      - name: 止めた常駐サーバー
+        description: ポート 8782 で待ち受けるプロセスが無い
+      - name: Mock
+        description: Claude Code の接続の代わりに、`installPath` の `.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使う。モデルは使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as Claude Code
+        participant R as GitHub の mdmark のリポジトリ
+        participant M as MCP のクライアント
+        W->>C: claude plugin marketplace add shuhei1101/mdmark#{ブランチ}
+        C->>R: .claude-plugin/marketplace.json を読む
+        R-->>C: プラグイン mdmark の行
+        W->>C: claude plugin install mdmark@mdmark
+        C-->>W: プラグインを入れた・終了コード 0
+        M->>M: .mcp.json の接続先へつなぐ
+        M-->>W: 接続を拒否されたエラー
+    expected:
+      - '`claude plugin install mdmark@mdmark` が終了コード 0 で終わり、`claude plugin list --json` に `mdmark@mdmark` が有効として出る'
+      - '`.mcp.json` の接続先へのクライアントの接続が、接続を拒否されたエラー（`ECONNREFUSED`）で失敗する'
+    test: test_error_when_server_not_running
+    notes:
+      Claude Code の実機での挙動: Claude Code 2.1.310 では、この状態で開いたセッションは MCP サーバーだけが `failed` になり、常駐サーバーを起動してから `/mcp` の Reconnect でセッションを開き直さずにツールを呼べた（外部ライブラリ『ClaudeCode』の `verification`）
 lead: 文書を書く人が、mdmark のリポジトリを Claude Code のマーケットプレイスとして足し、mdmark のプラグインを入れる。
 issue: 11
 primary_actor: 文書を書く人
@@ -35,6 +67,7 @@ trigger: Claude Code で mdmark の文書を書き始める前
 preconditions:
   - 文書を書く人の手元に Claude Code と git と Node 24 以降がある
   - 文書を書く人の手元から GitHub と npm のレジストリへ届く
+  - 既定のポート 8782 を、mdmark の常駐サーバーのほかに使うプロセスが無い
 success_guarantee: プラグインが有効になり、次に開くセッションで SessionStart のフックと MCP サーバー `plugin:mdmark:mdmark` が読み込まれる。プラグインが使う依存（`plugin/package.json` に書いたもの）がプラグインの置き場所に入っている。
-minimal_guarantee: マーケットプレイスの定義が読めないときは、Claude Code が理由を出してプラグインを入れない。手元の他のプラグインの設定は変わらない。
+minimal_guarantee: マーケットプレイスの定義が読めないときは、Claude Code が理由を出してプラグインを入れない。手元の他のプラグインの設定は変わらない。常駐サーバーが起動していなくてもプラグインは入り、MCP サーバー `plugin:mdmark:mdmark` だけが接続の失敗になる。
 test_file: tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts

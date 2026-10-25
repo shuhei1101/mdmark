@@ -5,7 +5,7 @@ scenarios:
       - name: ビルドした plugin/
         description: 使い方集の索引と本文を持つビルドした `plugin/` のフォルダ
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -43,7 +43,7 @@ issue: 11
 primary_actor: Claude Code
 trigger: Claude Code が、記法・部品・図の描き方・拡張の仕方を確かめたくなる
 preconditions:
-  - ビルドした `plugin/` の MCP サーバーが起動している
+  - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
 success_guarantee: 渡した名前ごとに、その名前の本文が返る。
 minimal_guarantee: 索引に無い名前を渡したときは、本文を返さず、その名前と近い名前を添えたエラーを返す。
 test_file: tests/e2e/単一ユースケース/使い方集を読む.spec.ts
