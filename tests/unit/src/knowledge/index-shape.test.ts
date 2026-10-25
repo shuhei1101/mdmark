@@ -15,7 +15,11 @@ type SchemaObject = {
 /** JSON Schema のキー 1 つ */
 type SchemaProperty = {
   type?: string;
-  items?: SchemaObject & { type?: string; anyOf?: SchemaObject[] };
+  maxItems?: number;
+  items?: SchemaObject & {
+    type?: string;
+    anyOf?: Array<SchemaObject & { enum?: string[] }>;
+  };
 };
 
 /** 索引の JSON Schema の最上位 */
@@ -28,10 +32,10 @@ type IndexSchema = SchemaObject & {
 };
 
 /** JSON Schema のキー 1 つを、`INDEX_SHAPE` と同じ型の書き方（`string[]` など）にする */
-function shapeType(property: SchemaProperty): string {
+function shapeType(key: string, property: SchemaProperty): string {
   if (property.type === "array") {
     if (property.items?.anyOf !== undefined) {
-      return "doc_tags";
+      return key === "related" ? "doc_related" : "doc_tags";
     }
     return property.items?.type === "string" ? "string[]" : "array";
   }
@@ -46,7 +50,7 @@ function shapeOf(
   return Object.fromEntries(
     Object.entries(schema.properties ?? {}).map(([key, property]) => [
       key,
-      { type: shapeType(property), required: required.has(key) },
+      { type: shapeType(key, property), required: required.has(key) },
     ]),
   );
 }
@@ -167,6 +171,8 @@ test("test_normalize_index_matches_json_schema", async () => {
   const term = shapeOf(schema.properties.terms.items);
   const tag = shapeOf(schema.properties.tags.items);
   const docTagItems = schema.properties.docs.items.properties?.tags?.items;
+  const docRelated = schema.properties.docs.items.properties?.related;
+  const docRelatedItems = docRelated?.items;
   // 検証
   expect(root).toEqual(INDEX_SHAPE.root);
   expect(doc).toEqual(INDEX_SHAPE.doc);
@@ -188,6 +194,33 @@ test("test_normalize_index_matches_json_schema", async () => {
   expect(docTagObject?.required).toEqual(["name"]);
   expect(Object.keys(docTagObject?.properties ?? {})).toEqual(["name", "main"]);
   expect(docTagObject?.additionalProperties).toBe(false);
+  // 文書の関連の要素は、文字列か `to`・`type`・`when` が必須で `paths` を持つオブジェクトで、件数の上限を置かない
+  expect(docRelatedItems?.anyOf).toHaveLength(2);
+  expect(docRelatedItems?.anyOf?.[0]?.type).toBe("string");
+  const docRelatedObject = docRelatedItems?.anyOf?.[1];
+  expect(docRelatedObject?.type).toBe("object");
+  expect(docRelatedObject?.required).toEqual(["to", "type", "when"]);
+  expect(Object.keys(docRelatedObject?.properties ?? {})).toEqual([
+    "to",
+    "type",
+    "when",
+    "paths",
+  ]);
+  expect(docRelatedObject?.additionalProperties).toBe(false);
+  expect(
+    (
+      docRelatedObject?.properties?.type as unknown as
+        | { enum?: string[] }
+        | undefined
+    )?.enum,
+  ).toEqual([
+    "requires",
+    "references",
+    "replaces",
+    "part_of",
+    "change_together",
+  ]);
+  expect(docRelated?.maxItems).toBeUndefined();
 });
 
 // タグの語彙と、文字列・オブジェクトの文書のタグをそのまま返す（正常系）
@@ -259,4 +292,126 @@ test("test_normalize_index_without_tags", async () => {
   // 検証
   expect(problems).toEqual([]);
   expect("tags" in index).toBe(false);
+});
+
+// 文字列とオブジェクトの関連をそのまま返す（正常系）
+test("test_normalize_index_when_related", async () => {
+  // 準備
+  const { normalizeIndex } = await loadShape();
+  const manyRelated = Array.from({ length: 9 }, (_, i) => ({
+    to: `doc${i}`,
+    type: "references",
+    when: "使い方を確かめるとき",
+  }));
+  const value = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          "b",
+          {
+            to: "b",
+            type: "change_together",
+            when: "公開関数を変えるとき",
+            paths: ["src/**"],
+          },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B", related: manyRelated },
+    ],
+  };
+  // 実行
+  const { index, problems } = normalizeIndex(structuredClone(value));
+  // 検証
+  expect(problems).toEqual([]);
+  expect(index.docs).toEqual(value.docs);
+});
+
+// 形の合わない関連を持つ文書を、場所を返して除く（異常系）
+test("test_normalize_index_when_invalid_related", async () => {
+  // 準備
+  const { normalizeIndex } = await loadShape();
+  const value = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [{ to: "b", type: "requires" }],
+      },
+      {
+        id: "b",
+        path: "b.md",
+        title: "B",
+        related: [{ to: "a", type: "depends_on", when: "前提を確かめるとき" }],
+      },
+      {
+        id: "c",
+        path: "c.md",
+        title: "C",
+        related: [
+          { to: "a", type: "requires", when: "前提を確かめるとき", note: "x" },
+        ],
+      },
+      {
+        id: "d",
+        path: "d.md",
+        title: "D",
+        related: [{ to: "a", type: "requires", when: "" }],
+      },
+    ],
+  };
+  // 実行
+  const { index, problems } = normalizeIndex(value);
+  // 検証
+  expect(problems.map((problem) => problem.where)).toEqual([
+    "docs[0].related[0].when",
+    "docs[1].related[0].type",
+    "docs[2].related[0].note",
+    "docs[3].related[0].when",
+  ]);
+  const typeProblem = problems.find(
+    (problem) => problem.where === "docs[1].related[0].type",
+  );
+  for (const type of [
+    "requires",
+    "references",
+    "replaces",
+    "part_of",
+    "change_together",
+  ]) {
+    expect(typeProblem?.message).toContain(type);
+  }
+  expect(index.docs).toEqual([]);
+});
+
+// 文字列の要素を `type` と `when` が null のオブジェクトにする（正常系）
+test("test_read_related", async () => {
+  // 準備
+  const { readRelated } = await loadShape();
+  // 実行
+  const related = readRelated("arch");
+  // 検証
+  expect(related).toEqual({ to: "arch", type: null, when: null });
+  expect("paths" in related).toBe(false);
+});
+
+// オブジェクトの要素をそのままのキーで返す（正常系）
+test("test_read_related_when_object", async () => {
+  // 準備
+  const { readRelated } = await loadShape();
+  const item = {
+    to: "arch",
+    type: "requires" as const,
+    when: "前提を確かめるとき",
+    paths: ["src/**"],
+  };
+  // 実行
+  const related = readRelated(item);
+  // 検証
+  expect(related).toEqual(item);
 });

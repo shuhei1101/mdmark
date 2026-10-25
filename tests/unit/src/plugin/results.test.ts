@@ -157,6 +157,43 @@ test("test_to_doc_row_when_full", async () => {
   expect(row.referenced_by).toBe(2);
 });
 
+// 文字列とオブジェクトの関連をそろえ、関係を最後のキーにする（正常系）
+test("test_to_doc_row_when_related_and_relations", async () => {
+  // 準備
+  const { toDocRow } = await loadResults();
+  const doc = {
+    id: "a",
+    path: "a.md",
+    title: "A",
+    related: [
+      "b",
+      { to: "c", type: "requires" as const, when: "前提を確かめるとき" },
+    ],
+  };
+  const relations = [
+    {
+      direction: "incoming" as const,
+      type: "has_part" as const,
+      when: "全体を確かめるとき",
+    },
+  ];
+  // 実行
+  const row = toDocRow({
+    doc,
+    chars: 10,
+    fields: ["related"],
+    references: undefined,
+    relations,
+  });
+  // 検証
+  expect(row.related).toEqual([
+    { to: "b", type: null, when: null },
+    { to: "c", type: "requires", when: "前提を確かめるとき" },
+  ]);
+  expect(Object.keys(row).at(-1)).toBe("relations");
+  expect(row.relations).toEqual(relations);
+});
+
 // 近いタグの有無で文を分ける（正常系）
 test("test_unknown_tag_warning", async () => {
   // 準備
@@ -307,4 +344,49 @@ test("test_format_list_tags_when_empty", async () => {
     "| 名前 | グループ | 説明 | 別名 | 振り替え先 | 文書の数 |",
     "| --- | --- | --- | --- | --- | --- |",
   ]);
+});
+
+// 関連する文書と関係をそれぞれ 1 つのセルにする（正常系）
+test("test_format_find_docs_when_relations", async () => {
+  // 準備
+  const { formatFindDocs } = await loadResults();
+  const result = {
+    total: 1,
+    returned: 1,
+    total_chars: 10,
+    next_cursor: null,
+    hint: null,
+    tag_counts: [],
+    warnings: [],
+    omitted: [],
+    docs: [
+      {
+        id: "a",
+        title: "A",
+        description: null,
+        tags: [],
+        chars: 10,
+        related: [
+          { to: "b", type: "requires", when: "前提を確かめるとき" },
+          { to: "c", type: null, when: null },
+        ],
+        relations: [
+          {
+            direction: "outgoing",
+            type: "requires",
+            when: "前提を確かめるとき",
+          },
+          { direction: "incoming", type: null, when: null },
+        ],
+      },
+    ],
+  };
+  // 実行
+  const markdown = formatFindDocs(result);
+  // 検証
+  const rows = markdown.split("\n").filter((line) => line.startsWith("| a |"));
+  expect(rows).toHaveLength(1);
+  expect(
+    rows[0]?.endsWith("| b（requires）・c | outgoing requires・incoming |"),
+  ).toBe(true);
 });

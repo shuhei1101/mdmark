@@ -532,3 +532,377 @@ test("test_find_tag_issues_without_vocabulary", async () => {
   // 検証
   expect(issues).toEqual([]);
 });
+
+/** 索引の値を、関連のずれを拾う処理に渡す索引にする */
+async function createIndexOf(raw: unknown) {
+  const { normalizeIndex } = await import(
+    "../../../../src/knowledge/index-shape.ts"
+  );
+  return normalizeIndex(raw).index;
+}
+
+/** 文書 `a`・`b` が互いを `change_together` で記載した索引 */
+const CHANGE_TOGETHER_INDEX = {
+  schema: 1,
+  docs: [
+    {
+      id: "a",
+      path: "a.md",
+      title: "A",
+      related: [
+        {
+          to: "b",
+          type: "change_together",
+          when: "索引の Schema を変えるとき",
+        },
+      ],
+    },
+    {
+      id: "b",
+      path: "b.md",
+      title: "B",
+      related: [
+        {
+          to: "a",
+          type: "change_together",
+          when: "索引の Schema を変えるとき",
+        },
+      ],
+    },
+  ],
+};
+
+// 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を返す（正常系）
+test("test_check_index_when_related_drift", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          {
+            to: "b",
+            type: "change_together",
+            when: "索引の Schema を変えるとき",
+          },
+          { to: "c", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B" },
+      { id: "c", path: "c.md", title: "C", related: ["a"] },
+    ],
+  };
+  // `a.md` の本文が `c.md` へリンクする
+  const documents = {
+    "a.md": "# A\n\n[C](c.md)\n",
+    "b.md": "# B\n",
+    "c.md": "# C\n",
+  };
+  // 実行
+  const issues = checkIndex({ index, documents });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "index.yaml",
+      where: "docs[2].related[0]",
+      kind: "untyped_related",
+    },
+    {
+      file: "index.yaml",
+      where: "docs[0].related[0]",
+      kind: "one_sided_change_together",
+    },
+    {
+      file: "index.yaml",
+      where: "docs[0].related[1]",
+      kind: "related_link_overlap",
+    },
+  ]);
+  const oneSided = issues.find(
+    (issue) => issue.kind === "one_sided_change_together",
+  );
+  expect(oneSided?.message).toContain("b");
+  expect(oneSided?.message).toContain("a");
+  const untyped = issues.find((issue) => issue.kind === "untyped_related");
+  expect(untyped?.message).toContain("to");
+  expect(untyped?.message).toContain("type");
+  expect(untyped?.message).toContain("when");
+});
+
+// `changedPaths` で組の片方だけが変わったときだけ missed_change_together を返す（正常系）
+test("test_check_index_when_change_together_missed", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    ...CHANGE_TOGETHER_INDEX,
+    docs: [
+      ...CHANGE_TOGETHER_INDEX.docs,
+      {
+        id: "c",
+        path: "c.md",
+        title: "C",
+        related: [{ to: "a", type: "references", when: "前提を確かめるとき" }],
+      },
+    ],
+  };
+  const documents = {
+    "a.md": "# A\n",
+    "b.md": "# B\n",
+    "c.md": "# C\n",
+  };
+  // 実行
+  const unchecked = checkIndex({ index, documents });
+  const missed = checkIndex({ index, documents, changedPaths: ["a.md"] });
+  const bothChanged = checkIndex({
+    index,
+    documents,
+    changedPaths: ["a.md", "b.md"],
+  });
+  // 検証
+  expect(unchecked).toEqual([]);
+  expect(missed).toHaveLength(1);
+  expect(missed[0]).toMatchObject({
+    file: "b.md",
+    where: "",
+    kind: "missed_change_together",
+  });
+  expect(missed[0]?.message).toContain("a.md");
+  expect(bothChanged).toEqual([]);
+});
+
+// 索引に無い `to` のオブジェクトの関連を、`to` を指す broken_ref にする（正常系）
+test("test_check_index_when_broken_related_object", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    schema: 1,
+    docs: [
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        related: [
+          { to: "zzz", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+      { id: "arch", path: "arch.md", title: "アーキテクチャ" },
+    ],
+  };
+  const documents = { "api.md": "# API\n", "arch.md": "# アーキテクチャ\n" };
+  // 実行
+  const issues = checkIndex({ index, documents });
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    file: "index.yaml",
+    where: "docs[0].related[0].to",
+    kind: "broken_ref",
+  });
+  expect(issues[0]?.message).toContain("zzz");
+});
+
+// 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を種類の順に返す（正常系）
+test("test_find_related_issues", async () => {
+  // 準備
+  const { findRelatedIssues } = await loadCheck();
+  const index = await createIndexOf({
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          {
+            to: "b",
+            type: "change_together",
+            when: "索引の Schema を変えるとき",
+          },
+          { to: "c", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B" },
+      { id: "c", path: "c.md", title: "C", related: ["a"] },
+    ],
+  });
+  // 実行
+  const issues = findRelatedIssues({
+    index,
+    links: { a: ["c.md"], b: [], c: [] },
+    indexFile: "index.yaml",
+  });
+  // 検証
+  expect(issues.map(({ where, kind }) => ({ where, kind }))).toEqual([
+    { where: "docs[2].related[0]", kind: "untyped_related" },
+    { where: "docs[0].related[0]", kind: "one_sided_change_together" },
+    { where: "docs[0].related[1]", kind: "related_link_overlap" },
+  ]);
+  expect(issues.every((issue) => issue.file === "index.yaml")).toBe(true);
+});
+
+// 両側に記載した change_together は、本文のリンクがあってもずれにしない（正常系）
+test("test_find_related_issues_when_change_together_both_sides", async () => {
+  // 準備
+  const { findRelatedIssues } = await loadCheck();
+  const index = await createIndexOf(CHANGE_TOGETHER_INDEX);
+  // 実行
+  const issues = findRelatedIssues({
+    index,
+    links: { a: ["b.md"], b: ["./a.md"] },
+    indexFile: "index.yaml",
+  });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 索引に無い相手への関連は、片側だけの change_together にもリンクの重なりにもしない（正常系）
+test("test_find_related_issues_when_target_missing", async () => {
+  // 準備
+  const { findRelatedIssues } = await loadCheck();
+  const index = await createIndexOf({
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          { to: "zzz", type: "change_together", when: "索引を変えるとき" },
+          { to: "yyy", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+    ],
+  });
+  // 実行
+  const issues = findRelatedIssues({
+    index,
+    links: { a: ["yyy.md"] },
+    indexFile: "index.yaml",
+  });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// `links` にキーを持たない文書は、リンクの重なりを確かめない（正常系）
+test("test_find_related_issues_without_body", async () => {
+  // 準備
+  const { findRelatedIssues } = await loadCheck();
+  const index = await createIndexOf({
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          { to: "b", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B" },
+    ],
+  });
+  // 実行
+  const issues = findRelatedIssues({
+    index,
+    links: {},
+    indexFile: "index.yaml",
+  });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 片側だけに記載した組でも、片方だけが変わったら変わっていない側を返す（正常系）
+test("test_find_missed_change_together", async () => {
+  // 準備
+  const { findMissedChangeTogether } = await loadCheck();
+  const index = await createIndexOf({
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          {
+            to: "b",
+            type: "change_together",
+            when: "索引の Schema を変えるとき",
+          },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B" },
+    ],
+  });
+  // 実行
+  const issues = findMissedChangeTogether({ index, changedPaths: ["b.md"] });
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    file: "a.md",
+    where: "",
+    kind: "missed_change_together",
+  });
+  expect(issues[0]?.message).toContain("b.md");
+});
+
+// 両側に記載した組を 1 つだけ返す（正常系）
+test("test_find_missed_change_together_when_both_sides_written", async () => {
+  // 準備
+  const { findMissedChangeTogether } = await loadCheck();
+  const index = await createIndexOf(CHANGE_TOGETHER_INDEX);
+  // 実行
+  const issues = findMissedChangeTogether({ index, changedPaths: ["./a.md"] });
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]?.file).toBe("b.md");
+});
+
+// 両方が変わった組と、どちらも変わっていない組は返さない（正常系）
+test("test_find_missed_change_together_when_both_or_none_changed", async () => {
+  // 準備
+  const { findMissedChangeTogether } = await loadCheck();
+  const index = await createIndexOf(CHANGE_TOGETHER_INDEX);
+  // 実行
+  const bothChanged = findMissedChangeTogether({
+    index,
+    changedPaths: ["a.md", "b.md"],
+  });
+  const noneChanged = findMissedChangeTogether({
+    index,
+    changedPaths: ["other.md"],
+  });
+  // 検証
+  expect(bothChanged).toEqual([]);
+  expect(noneChanged).toEqual([]);
+});
+
+// change_together でない関連と、索引に無い相手の組は数えない（正常系）
+test("test_find_missed_change_together_ignores_other_types", async () => {
+  // 準備
+  const { findMissedChangeTogether } = await loadCheck();
+  const index = await createIndexOf({
+    schema: 1,
+    docs: [
+      { id: "a", path: "a.md", title: "A" },
+      {
+        id: "c",
+        path: "c.md",
+        title: "C",
+        related: [
+          { to: "a", type: "references", when: "前提を確かめるとき" },
+          { to: "zzz", type: "change_together", when: "索引を変えるとき" },
+        ],
+      },
+    ],
+  });
+  // 実行
+  const issues = findMissedChangeTogether({ index, changedPaths: ["a.md"] });
+  // 検証
+  expect(issues).toEqual([]);
+});
