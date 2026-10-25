@@ -9,7 +9,7 @@ flows:
       - name: ビルドした plugin/
         description: 使い方集の索引と本文を同梱した `plugin/`
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを子プロセスで起動して標準入出力でつなぐ MCP のクライアント
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -106,7 +106,7 @@ constraints:
   - item: 結果の大きさ
     constraint: 1 回の結果の本文の合計は 50,000 文字以下。Claude Code は 50,000 文字を超えた結果をファイルに逃がし、本文の代わりにパスを渡すため、超えるときは読まずにエラーにする
   - item: ログ
-    constraint: MCP サーバーは標準出力を MCP のやり取りにだけ使う。ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き、その呼び出しを `isError` にして例外のメッセージを返す。サーバーは止めない。他のツールも同じ
+    constraint: ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き、その呼び出しを `isError` にして例外のメッセージを返す。サーバーは止めない。他のツールも同じ
   - item: readOnlyHint
     constraint: 'ツールの annotations に `readOnlyHint: true` を付ける'
 test_file: tests/integration/ClaudeCodeプラグイン/read-guide.test.ts

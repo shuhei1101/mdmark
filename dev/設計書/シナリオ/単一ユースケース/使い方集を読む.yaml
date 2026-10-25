@@ -5,7 +5,7 @@ scenarios:
       - name: ビルドした plugin/
         description: 使い方集の索引と本文を持つビルドした `plugin/` のフォルダ
       - name: Mock
-        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う
     flow: |-
       sequenceDiagram
         participant C as Claude Code
