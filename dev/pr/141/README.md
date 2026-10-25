@@ -1,0 +1,1 @@
+# MCP サーバーを stdio から HTTP の常駐サーバーに移す（既定のポート 8782・MDMARK_PORT）
