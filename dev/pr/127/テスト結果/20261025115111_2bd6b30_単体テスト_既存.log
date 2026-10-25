@@ -1,0 +1,726 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when
+
+ ❯ |unit| tests/unit/src/knowledge/check.test.ts (29 tests | 11 failed) 69ms
+   × test_check_index_when_related_drift 9ms
+   × test_check_index_when_change_together_missed 1ms
+   × test_check_index_when_broken_related_object 2ms
+   × test_find_related_issues 1ms
+   × test_find_related_issues_when_change_together_both_sides 0ms
+   × test_find_related_issues_when_target_missing 0ms
+   × test_find_related_issues_without_body 0ms
+   × test_find_missed_change_together 0ms
+   × test_find_missed_change_together_when_both_sides_written 0ms
+   × test_find_missed_change_together_when_both_or_none_changed 0ms
+   × test_find_missed_change_together_ignores_other_types 0ms
+ ❯ |unit| tests/unit/src/knowledge/references.test.ts (5 tests | 1 failed) 678ms
+   × test_collect_references_when_related_objects 9ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (24 tests | 4 failed) 6201ms
+   × test_run_check_tool_when_base_given 276ms
+   × test_run_check_tool_when_base_unknown 165ms
+   × test_run_find_docs_when_related_to 13ms
+   × test_run_update_index_when_related_invalid 9ms
+ ❯ |unit| tests/unit/src/plugin/results.test.ts (16 tests | 2 failed) 56ms
+   × test_to_doc_row_when_related_and_relations 9ms
+   × test_format_find_docs_when_relations 1ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (19 tests | 2 failed) 8764ms
+   × test_run_check_when_base_given 167ms
+   × test_run_check_when_base_unknown 144ms
+ ❯ |unit| tests/unit/src/knowledge/find.test.ts (15 tests | 3 failed) 65ms
+   × test_find_docs_when_related_to 18ms
+   × test_find_docs_when_related_to_typed 1ms
+   × test_find_docs_without_related_to 1ms
+ ❯ |unit| tests/unit/src/cli/git.test.ts (4 tests | 4 failed) 83ms
+   × test_changed_paths_since 62ms
+   × test_changed_paths_since_when_ref_unknown 5ms
+   × test_changed_paths_since_when_not_repository 10ms
+   × test_changed_paths_since_when_ref_starts_with_dash 5ms
+ ❯ |unit| tests/unit/src/knowledge/index-shape.test.ts (12 tests | 5 failed) 41ms
+   × test_normalize_index_matches_json_schema 15ms
+   × test_normalize_index_when_related 6ms
+   × test_normalize_index_when_invalid_related 1ms
+   × test_read_related 0ms
+   × test_read_related_when_object 0ms
+ ❯ |unit| tests/unit/scripts/build.test.ts (25 tests | 1 failed) 50646ms
+   × test_main 30014ms
+ ❯ |unit| tests/unit/src/render/syntax/backlinks.test.ts (3 tests | 1 failed) 38ms
+   × test_backlinks_rule_without_references 11ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 34 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/build.test.ts:136:1
+    134|
+    135| // version.ini の版でビルドする（正常系）
+    136| test("test_main", async () => {
+       | ^
+    137|   // 準備
+    138|   const { main } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_base_given
+AssertionError: expected [ …(5) ] to have a length of 2 but got 5
+
+- Expected
++ Received
+
+- 2
++ 5
+
+ ❯ tests/unit/src/cli/check.test.ts:415:27
+    413|   // 検証
+    414|   expect(codeWithBase).toBe(1);
+    415|   expect(withBase.stdout).toHaveLength(2);
+       |                           ^
+    416|   expect(withBase.stdout[0]).toMatch(/^b\.md: missed_change_together: …
+    417|   expect(withBase.stdout[0]).toContain("a.md");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_base_unknown
+AssertionError: expected 1 to be an instance of CliError
+ ❯ tests/unit/src/cli/check.test.ts:435:17
+    433|     (caught: unknown) => caught,
+    434|   );
+    435|   expect(error).toBeInstanceOf(CliError);
+       |                 ^
+    436|   expect((error as Error).message).toContain("no-such-ref");
+    437|   expect(stdout.some((line) => line.startsWith("ずれ"))).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/git.test.ts > test_changed_paths_since
+Error: Cannot find module '/src/cli/git.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when/tests/unit/src/cli/git.test.ts
+ ❯ tests/unit/src/cli/git.test.ts:44:33
+     42| test("test_changed_paths_since", async () => {
+     43|   // 準備
+     44|   const { changedPathsSince } = await loadGit();
+       |                                 ^
+     45|   const dir = await createChangedRepository();
+     46|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/git.test.ts > test_changed_paths_since_when_ref_unknown
+Error: Cannot find module '/src/cli/git.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when/tests/unit/src/cli/git.test.ts
+ ❯ tests/unit/src/cli/git.test.ts:59:33
+     57| test("test_changed_paths_since_when_ref_unknown", async () => {
+     58|   // 準備
+     59|   const { changedPathsSince } = await loadGit();
+       |                                 ^
+     60|   const { CliError } = await loadErrors();
+     61|   const dir = await createChangedRepository();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/git.test.ts > test_changed_paths_since_when_not_repository
+Error: Cannot find module '/src/cli/git.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when/tests/unit/src/cli/git.test.ts
+ ❯ tests/unit/src/cli/git.test.ts:77:33
+     75| test("test_changed_paths_since_when_not_repository", async () => {
+     76|   // 準備
+     77|   const { changedPathsSince } = await loadGit();
+       |                                 ^
+     78|   const { CliError } = await loadErrors();
+     79|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/git.test.ts > test_changed_paths_since_when_ref_starts_with_dash
+Error: Cannot find module '/src/cli/git.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when/tests/unit/src/cli/git.test.ts
+ ❯ tests/unit/src/cli/git.test.ts:94:33
+     92| test("test_changed_paths_since_when_ref_starts_with_dash", async () =>…
+     93|   // 準備
+     94|   const { changedPathsSince } = await loadGit();
+       |                                 ^
+     95|   const { CliError } = await loadErrors();
+     96|   const dir = await createChangedRepository();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_related_drift
+AssertionError: expected [ { file: 'index.yaml', …(2) }, …(2) ] to deeply equal [ { file: 'index.yaml', …(2) }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "file": "index.yaml",
+-     "kind": "untyped_related",
+-     "where": "docs[2].related[0]",
++     "kind": "schema",
++     "where": "docs[0].related",
+    },
+    {
+-     "file": "index.yaml",
+-     "kind": "one_sided_change_together",
+-     "where": "docs[0].related[0]",
++     "file": "a.md",
++     "kind": "orphan_doc",
++     "where": "",
+    },
+    {
+      "file": "index.yaml",
+-     "kind": "related_link_overlap",
+-     "where": "docs[0].related[1]",
++     "kind": "broken_ref",
++     "where": "docs[2].related[0]",
+    },
+  ]
+
+ ❯ tests/unit/src/knowledge/check.test.ts:610:5
+    608|   expect(
+    609|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    610|   ).toEqual([
+       |     ^
+    611|     {
+    612|       file: "index.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_change_together_missed
+AssertionError: expected [ { file: 'index.yaml', …(3) }, …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `docs[0].related` が形に合いません: related は空でない文字列の並びにします。直してください。",
++     "where": "docs[0].related",
++   },
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `docs[1].related` が形に合いません: related は空でない文字列の並びにします。直してください。",
++     "where": "docs[1].related",
++   },
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `docs[2].related` が形に合いません: related は空でない文字列の並びにします。直してください。",
++     "where": "docs[2].related",
++   },
++   {
++     "file": "a.md",
++     "kind": "orphan_doc",
++     "message": "`a.md` が索引にありません。索引の `docs` に足してください。",
++     "where": "",
++   },
++   {
++     "file": "b.md",
++     "kind": "orphan_doc",
++     "message": "`b.md` が索引にありません。索引の `docs` に足してください。",
++     "where": "",
++   },
++   {
++     "file": "c.md",
++     "kind": "orphan_doc",
++     "message": "`c.md` が索引にありません。索引の `docs` に足してください。",
++     "where": "",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/check.test.ts:668:21
+    666|   });
+    667|   // 検証
+    668|   expect(unchecked).toEqual([]);
+       |                     ^
+    669|   expect(missed).toHaveLength(1);
+    670|   expect(missed[0]).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_broken_related_object
+AssertionError: expected [ { file: 'index.yaml', …(3) }, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/knowledge/check.test.ts:701:18
+    699|   const issues = checkIndex({ index, documents });
+    700|   // 検証
+    701|   expect(issues).toHaveLength(1);
+       |                  ^
+    702|   expect(issues[0]).toMatchObject({
+    703|     file: "index.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_related_issues
+TypeError: findRelatedIssues is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:735:18
+    733|   });
+    734|   // 実行
+    735|   const issues = findRelatedIssues({
+       |                  ^
+    736|     index,
+    737|     links: { a: ["c.md"], b: [], c: [] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_related_issues_when_change_together_both_sides
+TypeError: findRelatedIssues is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:755:18
+    753|   const index = await createIndexOf(CHANGE_TOGETHER_INDEX);
+    754|   // 実行
+    755|   const issues = findRelatedIssues({
+       |                  ^
+    756|     index,
+    757|     links: { a: ["b.md"], b: ["./a.md"] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_related_issues_when_target_missing
+TypeError: findRelatedIssues is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:783:18
+    781|   });
+    782|   // 実行
+    783|   const issues = findRelatedIssues({
+       |                  ^
+    784|     index,
+    785|     links: { a: ["yyy.md"] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_related_issues_without_body
+TypeError: findRelatedIssues is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:811:18
+    809|   });
+    810|   // 実行
+    811|   const issues = findRelatedIssues({
+       |                  ^
+    812|     index,
+    813|     links: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_missed_change_together
+TypeError: findMissedChangeTogether is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:843:18
+    841|   });
+    842|   // 実行
+    843|   const issues = findMissedChangeTogether({ index, changedPaths: ["b.m…
+       |                  ^
+    844|   // 検証
+    845|   expect(issues).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_missed_change_together_when_both_sides_written
+TypeError: findMissedChangeTogether is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:860:18
+    858|   const index = await createIndexOf(CHANGE_TOGETHER_INDEX);
+    859|   // 実行
+    860|   const issues = findMissedChangeTogether({ index, changedPaths: ["./a…
+       |                  ^
+    861|   // 検証
+    862|   expect(issues).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_missed_change_together_when_both_or_none_changed
+TypeError: findMissedChangeTogether is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:872:23
+    870|   const index = await createIndexOf(CHANGE_TOGETHER_INDEX);
+    871|   // 実行
+    872|   const bothChanged = findMissedChangeTogether({
+       |                       ^
+    873|     index,
+    874|     changedPaths: ["a.md", "b.md"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_missed_change_together_ignores_other_types
+TypeError: findMissedChangeTogether is not a function
+ ❯ tests/unit/src/knowledge/check.test.ts:905:18
+    903|   });
+    904|   // 実行
+    905|   const issues = findMissedChangeTogether({ index, changedPaths: ["a.m…
+       |                  ^
+    906|   // 検証
+    907|   expect(issues).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/find.test.ts > test_find_docs_when_related_to
+AssertionError: expected undefined to deeply equal { b: [ { …(3) } ], c: [ { …(3) } ] }
+
+- Expected:
+{
+  "b": [
+    {
+      "direction": "outgoing",
+      "type": null,
+      "when": null,
+    },
+  ],
+  "c": [
+    {
+      "direction": "incoming",
+      "type": null,
+      "when": null,
+    },
+  ],
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/knowledge/find.test.ts:115:28
+    113|   // 検証
+    114|   expect(idsOf(result.docs)).toEqual(["b", "c"]);
+    115|   expect(result.relations).toEqual({
+       |                            ^
+    116|     b: [{ direction: "outgoing", type: null, when: null }],
+    117|     c: [{ direction: "incoming", type: null, when: null }],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/find.test.ts > test_find_docs_when_related_to_typed
+TypeError: Cannot read properties of undefined (reading 'b')
+ ❯ tests/unit/src/knowledge/find.test.ts:289:27
+    287|   const result = findDocs({ index, references, relatedTo: "a" });
+    288|   // 検証
+    289|   expect(result.relations.b).toEqual([
+       |                           ^
+    290|     { direction: "outgoing", type: "requires", when: "前提を確かめるとき" },
+    291|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/find.test.ts > test_find_docs_without_related_to
+AssertionError: expected undefined to deeply equal {}
+
+- Expected:
+{}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/knowledge/find.test.ts:321:28
+    319|   // 検証
+    320|   expect(result.docs).toHaveLength(5);
+    321|   expect(result.relations).toEqual({});
+       |                            ^
+    322| });
+    323|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_matches_json_schema
+AssertionError: Target cannot be null or undefined.
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:198:34
+    196|   expect(docTagObject?.additionalProperties).toBe(false);
+    197|   // 文書の関連の要素は、文字列か `to`・`type`・`when` が必須で `paths` を持つオブジェクトで、件数の上限を置…
+    198|   expect(docRelatedItems?.anyOf).toHaveLength(2);
+       |                                  ^
+    199|   expect(docRelatedItems?.anyOf?.[0]?.type).toBe("string");
+    200|   const docRelatedObject = docRelatedItems?.anyOf?.[1];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_related
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "related は空でない文字列の並びにします",
++     "where": "docs[0].related",
++   },
++   {
++     "message": "related は空でない文字列の並びにします",
++     "where": "docs[1].related",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:329:20
+    327|   const { index, problems } = normalizeIndex(structuredClone(value));
+    328|   // 検証
+    329|   expect(problems).toEqual([]);
+       |                    ^
+    330|   expect(index.docs).toEqual(value.docs);
+    331| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_invalid_related
+AssertionError: expected [ 'docs[0].related', …(3) ] to deeply equal [ 'docs[0].related[0].when', …(3) ]
+
+- Expected
++ Received
+
+  [
+-   "docs[0].related[0].when",
+-   "docs[1].related[0].type",
+-   "docs[2].related[0].note",
+-   "docs[3].related[0].when",
++   "docs[0].related",
++   "docs[1].related",
++   "docs[2].related",
++   "docs[3].related",
+  ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:371:52
+    369|   const { index, problems } = normalizeIndex(value);
+    370|   // 検証
+    371|   expect(problems.map((problem) => problem.where)).toEqual([
+       |                                                    ^
+    372|     "docs[0].related[0].when",
+    373|     "docs[1].related[0].type",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_read_related
+TypeError: readRelated is not a function
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:397:19
+    395|   const { readRelated } = await loadShape();
+    396|   // 実行
+    397|   const related = readRelated("arch");
+       |                   ^
+    398|   // 検証
+    399|   expect(related).toEqual({ to: "arch", type: null, when: null });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_read_related_when_object
+TypeError: readRelated is not a function
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:414:19
+    412|   };
+    413|   // 実行
+    414|   const related = readRelated(item);
+       |                   ^
+    415|   // 検証
+    416|   expect(related).toEqual(item);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/references.test.ts > test_collect_references_when_related_objects
+AssertionError: expected [ 'guide' ] to deeply equal [ 'api', 'guide' ]
+
+- Expected
++ Received
+
+  [
+-   "api",
+    "guide",
+  ]
+
+ ❯ tests/unit/src/knowledge/references.test.ts:113:37
+    111|   const references = collectReferences({ index, documents });
+    112|   // 検証
+    113|   expect(references.backlinks.arch).toEqual(["api", "guide"]);
+       |                                     ^
+    114| });
+    115|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/results.test.ts > test_to_doc_row_when_related_and_relations
+AssertionError: expected [ 'b', { to: 'c', …(2) } ] to deeply equal [ { to: 'b', type: null, …(1) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,11 +1,7 @@
+  [
+-   {
+-     "to": "b",
+-     "type": null,
+-     "when": null,
+-   },
++   "b",
+    {
+      "to": "c",
+      "type": "requires",
+      "when": "前提を確かめるとき",
+    },
+
+ ❯ tests/unit/src/plugin/results.test.ts:189:23
+    187|   });
+    188|   // 検証
+    189|   expect(row.related).toEqual([
+       |                       ^
+    190|     { to: "b", type: null, when: null },
+    191|     { to: "c", type: "requires", when: "前提を確かめるとき" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/results.test.ts > test_format_find_docs_when_relations
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/plugin/results.test.ts:391:5
+    389|   expect(
+    390|     rows[0]?.endsWith("| b（requires）・c | outgoing requires・incoming |"…
+    391|   ).toBe(true);
+       |     ^
+    392| });
+    393|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_check_tool_when_base_given
+AssertionError: expected [ { file: 'index.yaml', …(3) }, …(3) ] to match object [ { file: 'b.md', where: '', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `docs[0].related` が形に合いません: related は空でない文字列の並びにします。直してください。",
++     "where": "docs[0].related",
++   },
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `docs[1].related` が形に合いません: related は空でない文字列の並びにします。直してください。",
++     "where": "docs[1].related",
++   },
++   {
++     "file": "a.md",
++     "kind": "orphan_doc",
++     "message": "`a.md` が索引にありません。索引の `docs` に足してください。",
++     "where": "",
++   },
++   {
+      "file": "b.md",
+-     "kind": "missed_change_together",
++     "kind": "orphan_doc",
++     "message": "`b.md` が索引にありません。索引の `docs` に足してください。",
+      "where": "",
+    },
+  ]
+
+ ❯ tests/unit/src/plugin/tools.test.ts:361:31
+    359|   const result = await runCheckTool({ base: BASE_TAG }, context);
+    360|   // 検証
+    361|   expect(result.json?.issues).toMatchObject([
+       |                               ^
+    362|     { file: "b.md", where: "", kind: "missed_change_together" },
+    363|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_check_tool_when_base_unknown
+AssertionError: expected { Object (json) } to be an instance of CliError
+ ❯ tests/unit/src/plugin/tools.test.ts:384:17
+    382|     (caught: unknown) => caught,
+    383|   );
+    384|   expect(error).toBeInstanceOf(CliError);
+       |                 ^
+    385|   expect((error as Error).message).toBe((cli as Error).message);
+    386| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_find_docs_when_related_to
+AssertionError: expected undefined to deeply equal [ { direction: 'outgoing', …(2) } ]
+
+- Expected:
+[
+  {
+    "direction": "outgoing",
+    "type": null,
+    "when": null,
+  },
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/plugin/tools.test.ts:468:30
+    466|   }[];
+    467|   expect(docs.map((doc) => doc.id)).toEqual(["b", "c"]);
+    468|   expect(docs[0]?.relations).toEqual([
+       |                              ^
+    469|     { direction: "outgoing", type: null, when: null },
+    470|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_update_index_when_related_invalid
+AssertionError: expected '書き換えた後の索引が索引の形に合いません。合わないところを直してください。…' to contain 'docs[1].related[0].type'
+
+- Expected
++ Received
+
+- docs[1].related[0].type
++ 書き換えた後の索引が索引の形に合いません。合わないところを直してください。
++ docs[1].related: related は空でない文字列の並びにします
+
+ ❯ tests/unit/src/plugin/tools.test.ts:607:36
+    605|   // 検証
+    606|   expect(error).toBeInstanceOf(CliError);
+    607|   expect((error as Error).message).toContain("docs[1].related[0].type"…
+       |                                    ^
+    608|   expect((error as Error).message).toContain("change_together");
+    609|   expect(await readFile(join(context.projectDir, "index.yaml"), "utf8"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/34]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/backlinks.test.ts > test_backlinks_rule_without_references
+AssertionError: expected [ '>使い方</a>' ] to deeply equal [ '>API</a>', '>使い方</a>' ]
+
+- Expected
++ Received
+
+  [
+-   ">API</a>",
+    ">使い方</a>",
+  ]
+
+ ❯ tests/unit/src/render/syntax/backlinks.test.ts:76:46
+     74|   // 検証
+     75|   const nav = outerHtml(html, "mdmark-backlinks");
+     76|   expect(matches(nav, />(?:API|使い方)<\/a>/g)).toEqual([
+       |                                              ^
+     77|     ">API</a>",
+     78|     ">使い方</a>",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/34]⎯
+
+
+ Test Files  10 failed | 135 passed (145)
+      Tests  34 failed | 891 passed (925)
+   Start at  11:49:10
+   Duration  73.86s (worker 71%, tests 17%, import 10%, transform 3%)
+
+exit=1
+
+# 負荷で 30 秒の制限を超えた tests/unit/scripts/build.test.ts > test_main を単独で流し直した結果
+$ npx vitest run --project unit tests/unit/scripts/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-related-type-and-when
+
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  11:51:26
+   Duration  25.15s (tests 99%)
+
