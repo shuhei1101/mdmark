@@ -6,8 +6,8 @@ export type { MdmarkExtension, MdmarkExtensionModule, MdmarkMarkArgs, } from "./
 export { registerExtension } from "./extensions.ts";
 export type { MdmarkIndexIssue } from "./knowledge/check.ts";
 export { checkIndex } from "./knowledge/check.ts";
-export type { MdmarkIndex } from "./knowledge/index-shape.ts";
-export type { MdmarkMatch, MdmarkMatches, MdmarkMatchTarget, } from "./knowledge/matches.ts";
+export type { MdmarkIndex, MdmarkIndexDocTag, MdmarkIndexRelated, MdmarkIndexTag, MdmarkRelationType, } from "./knowledge/index-shape.ts";
+export type { MdmarkAvoidedMatch, MdmarkMatch, MdmarkMatches, MdmarkMatchTarget, } from "./knowledge/matches.ts";
 export { collectMatches } from "./knowledge/matches.ts";
 export type { MdmarkReferences } from "./knowledge/references.ts";
 export { collectReferences } from "./knowledge/references.ts";

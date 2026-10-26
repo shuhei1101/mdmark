@@ -8,7 +8,7 @@
 ## 前提
 
 - Node 24 以降
-- [文書を描く](https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/使い方/導入/文書を描く.md) で描くページか、[文書を書き出す](https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/使い方/書き出す/文書を書き出す.md) の設定ファイルがある
+- [文書を描く](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/導入/文書を描く.md) で描くページか、[文書を書き出す](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/書き出す/文書を書き出す.md) の設定ファイルがある
 - 固有の部品を JavaScript で書く。TypeScript で書くときは 拡張を登録する（read_guide の extension）
 
 ## 手順
@@ -23,7 +23,7 @@ npx github:shuhei1101/mdmark#v{版} init --js
 
 `extensions/example.js` と、JavaScript も点検する `tsconfig.json` が置かれる。
 `package.json` は置かれない。
-詳細は [雛形を置く](https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/使い方/書き出す/雛形を置く.md)。
+詳細は [雛形を置く](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/書き出す/雛形を置く.md)。
 
 ### 固有の部品を書く
 
@@ -82,7 +82,7 @@ JavaScript は変換せずにそのまま配る。
 
 固有の部品の見た目と、共通の部品の CSS 変数の上書きを書く。
 `theme.css` は `@layer` で囲まない。
-変数の一覧は [テーマの CSS 変数](https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/リファレンス/API.md#テーマの-css-変数)。
+変数の一覧は [テーマの CSS 変数](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/リファレンス/API.md#テーマの-css-変数)。
 
 ### 型で点検する
 
@@ -133,7 +133,7 @@ extensions: [extensions/milestones.js]
 ```
 
 `mdmark export` と `mdmark build` が、設定の `theme` と `extensions` を書き出した HTML に埋める。
-手順は [文書を書き出す](https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/使い方/書き出す/文書を書き出す.md)。
+手順は [文書を書き出す](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/書き出す/文書を書き出す.md)。
 
 #### 文書に印と定義を書く
 

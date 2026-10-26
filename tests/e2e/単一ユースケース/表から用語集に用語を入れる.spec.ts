@@ -177,7 +177,9 @@ test("test_normal_when_avoid_column", async ({ page }) => {
   await term.hover();
   await expect(
     doc
-      .locator("p .mdmark-term-wrap", { has: term })
+      .locator("p .mdmark-term-wrap", {
+        has: page.locator(".mdmark-term:not(.mdmark-term-avoided)"),
+      })
       .locator(".mdmark-term-tip"),
   ).toContainText("作業の置き場所");
   // 段落の 作業場 に、破線と形で見分けられる波線のマーカーが付く
@@ -186,7 +188,9 @@ test("test_normal_when_avoid_column", async ({ page }) => {
   await expect(marker).toHaveCSS("text-decoration-style", "wavy");
   // ポインターを乗せると、代わりの用語 ワークスペース と意味が出る
   const tip = doc
-    .locator("p .mdmark-term-wrap", { has: marker })
+    .locator("p .mdmark-term-wrap", {
+      has: page.locator(".mdmark-term-avoided"),
+    })
     .locator(".mdmark-term-tip");
   await expect(tip).toBeHidden();
   await marker.hover();
@@ -238,7 +242,9 @@ test("test_normal_when_other_document_avoid_column", async ({ page }) => {
   await expect(marker).toHaveText(["作業場"]);
   await expect(marker).toHaveCSS("text-decoration-style", "wavy");
   const tip = page
-    .locator("#doc .mdmark-term-wrap", { has: marker })
+    .locator("#doc .mdmark-term-wrap", {
+      has: page.locator(".mdmark-term-avoided"),
+    })
     .locator(".mdmark-term-tip");
   await marker.hover();
   await expect(tip).toBeVisible();
