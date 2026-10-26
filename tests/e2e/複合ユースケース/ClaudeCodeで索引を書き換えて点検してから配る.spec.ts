@@ -43,7 +43,10 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   const steps = await withMcpClient(
     { builtRoot, projectDir: dir },
     async (client) => ({
-      found: await callTool(client, "find_docs", { text: "A" }),
+      found: await callTool(client, "find_docs", {
+        text: "A",
+        format: "json",
+      }),
       updated: await callTool(client, "update_index", {
         kind: "doc",
         id: "b",
