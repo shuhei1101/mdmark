@@ -23,6 +23,11 @@ const loadBuild = () => import("../../../scripts/build.ts");
 // 配布ファイル 1 つの上限（jsDelivr の 20MB）
 const MAX_BYTES = 20 * 1024 * 1024;
 
+// ビルドを丸ごと流すテスト 1 件の待つ上限（ミリ秒）。
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と test:unit 全件 6 回を流した所要時間の最大は 40.8 秒（test_main）。
+// 40.8 秒 × 1.5 = 61.2 秒を 10 秒単位で切り上げて 70 秒にした
+const MAIN_BUILD_TIMEOUT_MS = 70_000;
+
 const entryScript = [
   "declare const __MDMARK_VERSION__: string;",
   "",
@@ -141,7 +146,7 @@ afterEach(async () => {
 });
 
 // version.ini の版でビルドする（正常系）
-test("test_main", async () => {
+test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
@@ -155,7 +160,9 @@ test("test_main", async () => {
 });
 
 // 渡した版でビルドする（正常系）
-test("test_main_when_version_given", async () => {
+test("test_main_when_version_given", {
+  timeout: MAIN_BUILD_TIMEOUT_MS,
+}, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
@@ -219,7 +226,9 @@ test("test_main_when_build_fails", async () => {
 });
 
 // 上限を超えると dist/ を消して終わる（異常系）
-test("test_main_when_dist_file_too_large", async () => {
+test("test_main_when_dist_file_too_large", {
+  timeout: MAIN_BUILD_TIMEOUT_MS,
+}, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
@@ -233,7 +242,9 @@ test("test_main_when_dist_file_too_large", async () => {
 });
 
 // 移行の手順の点検に誤りがあれば dist/ を書かずに終わる（異常系）
-test("test_main_when_migrations_invalid", async () => {
+test("test_main_when_migrations_invalid", {
+  timeout: MAIN_BUILD_TIMEOUT_MS,
+}, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
@@ -259,7 +270,9 @@ test("test_main_when_migrations_invalid", async () => {
 });
 
 // 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる（異常系）
-test("test_main_when_guide_index_too_long", async () => {
+test("test_main_when_guide_index_too_long", {
+  timeout: MAIN_BUILD_TIMEOUT_MS,
+}, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
@@ -297,7 +310,9 @@ test("test_main_when_guide_index_too_long", async () => {
 });
 
 // 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる（異常系）
-test("test_main_when_api_missing_in_baseline_browser", async () => {
+test("test_main_when_api_missing_in_baseline_browser", {
+  timeout: MAIN_BUILD_TIMEOUT_MS,
+}, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
