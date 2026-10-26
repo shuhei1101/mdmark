@@ -1,0 +1,40 @@
+/* 表の高さの上限を外し、縦はページのスクロールで読む（横は今のまま表の中でスクロールする） */
+.mdmark-table table {
+  max-height: none;
+}
+
+/* 案 C の見出し行: 元のセルを、スクロールに合わせて計算したずれだけ下げる */
+.poc-c .mdmark-table thead th {
+  transform: translateY(var(--poc-head-shift, 0px));
+}
+
+/* 案 C の集計の行: 元のセルを、スクロールに合わせて計算したずれだけ上げる */
+.poc-c .mdmark-table tfoot td {
+  transform: translateY(var(--poc-foot-shift, 0px));
+}
+
+/* 案 A の複製の枠: 画面に固定し、位置と幅は処理が入れる */
+.poc-clone {
+  position: fixed;
+  z-index: 5;
+  margin: 0;
+}
+
+/* 案 A の複製の表: 横は元の表のスクロールの位置に合わせ、自分ではスクロールさせない */
+.poc-clone table {
+  overflow: hidden;
+  max-height: none;
+}
+
+/* 紙では留めず、元の位置に 1 組だけ出す */
+@media print {
+  /* 案 C のずれを外す */
+  .poc-c .mdmark-table :is(thead th, tfoot td) {
+    transform: none;
+  }
+
+  /* 案 A の複製を出さない */
+  .poc-clone {
+    display: none;
+  }
+}
