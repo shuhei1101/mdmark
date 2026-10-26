@@ -10,7 +10,7 @@ flows:
         description: '設定と、`tags` に `topic:mcp`（`group` が `topic`・説明・`aliases` に `MCP`）・`topic:yaml`・`topic:old`（`deprecated` が `topic:mcp`）・`topic:unused` を持つ索引と文書 2 つ。`a` のタグは `{name: topic:mcp, main: true}`、`b` のタグは `MCP` と `topic:yaml`'
         notes: 別名で付けたタグも数えることを `b` の `MCP` で、文書の数 0 を `topic:old`・`topic:unused` で起こす
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -101,6 +101,22 @@ flows:
     expected:
       - '`tags` が `topic:mcp` の 1 件だけ'
     test: test_normal_when_query_width_differs
+  - name: 異常系（作業のフォルダが無い・ツールのエラー）
+    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読まずにエラーにする'
+    setup:
+      - name: Mock
+        description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: list_tags（project_dir なし）
+        S->>S: 引数を検査する
+        S-->>C: isError（project_dir が無いこととプラグインから呼ぶこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
+    test: test_error_when_project_dir_missing
 lead: 設定の `index` の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで返す。付いている文書が 0 件のタグも返す。
 idempotent: true
 side_effects: なし（索引と文書を書き換えない）
@@ -120,9 +136,16 @@ request:
   - name: config
     type: string
     required: false
-    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    default: なし（`project_dir` から上へ `mdmark.config.yaml` を探す）
     location: argument
     description: 使う設定ファイルのパス
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
 request_example: |-
   ```json
   {"query": "MCP", "format": "json"}
@@ -165,6 +188,9 @@ exceptions:
     condition: 索引を読めた。索引が語彙を持たないときも、当たるタグが 0 件のときも、空の `tags` を返す
   - name: ツールのエラー（設定に索引が無い）
     condition: 設定に `index` が無い
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを書く
 error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
 constraints:
   - item: 並び

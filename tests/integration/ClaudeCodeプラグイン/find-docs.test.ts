@@ -2,10 +2,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../cli.ts";
-import { builtPluginDir, callTool, useMcpClients } from "../plugin.ts";
+import { callTool, useMcpServers } from "../plugin.ts";
 
 const createTempDir = useTempDirs();
-const { connectInMemory } = useMcpClients();
+const { connectHttp } = useMcpServers();
 
 /** 索引の文書の行を YAML にする（`tags` の要素は YAML の書き方のまま渡す） */
 function docYaml(doc: {
@@ -107,10 +107,7 @@ test("test_normal", async () => {
   await writeProject(dir, [{ id: "a", title: "文書 A", tags: ["設計"] }]);
   await writeFiles(dir, { "extra.md": "# 索引に無い文書 A\n" });
   const before = await readFile(join(dir, "index.yaml"), "utf8");
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "find_docs", { text: "文書 A" });
   const { tools } = await client.listTools();
@@ -139,10 +136,7 @@ test("test_normal_when_width_differs", async () => {
   await writeProject(dir, [
     { id: "a", title: "文書 A", aliases: ["MCP"], tags: ["設計"] },
   ]);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "find_docs", { text: "ＭＣＰ" });
   // 検証
@@ -160,10 +154,7 @@ test("test_normal_when_no_match", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir, [{ id: "a", title: "文書 A" }]);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "find_docs", {
     text: "どの文書にも無い語",
@@ -201,10 +192,7 @@ test("test_normal_when_related_to", async () => {
       },
     },
   );
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "find_docs", {
     related_to: "a",
@@ -243,10 +231,7 @@ test("test_normal_when_tags_and_or", async () => {
   // 準備
   const dir = await createTempDir();
   await writeTaggedProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const all = await callTool(client, "find_docs", {
     tags: ["topic:mcp", "topic:yaml"],
@@ -280,10 +265,7 @@ test("test_normal_when_tag_vocabulary", async () => {
   // 準備
   const dir = await createTempDir();
   await writeTaggedProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const alias = await callTool(client, "find_docs", {
     tags: ["MCP"],
@@ -308,10 +290,7 @@ test("test_normal_when_paged", async () => {
   // 準備
   const dir = await createTempDir();
   const ids = await writeManyDocsProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   const chars = await Promise.all(ids.map((id) => charsOf(dir, id)));
   // 実行
   const first = await callTool(client, "find_docs", { format: "json" });
@@ -343,10 +322,7 @@ test("test_normal_when_count_only", async () => {
   // 準備
   const dir = await createTempDir();
   await writeTaggedProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   const anyTags = ["topic:mcp", "topic:yaml"];
   // 実行
   const counted = await callTool(client, "find_docs", {
@@ -374,10 +350,7 @@ test("test_normal_when_view_and_format", async () => {
   // 準備
   const dir = await createTempDir();
   await writeProject(dir, [{ id: "a", title: "文書 A", tags: ["設計"] }]);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const brief = await callTool(client, "find_docs", {
     text: "文書 A",
@@ -419,10 +392,7 @@ test("test_error_when_index_missing", async () => {
   // 準備
   const dir = await createTempDir();
   await writeFiles(dir, { "mdmark.config.yaml": "features:\n  print: true\n" });
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "find_docs", {});
   // 検証
@@ -436,10 +406,7 @@ test("test_error_when_cursor_invalid", async () => {
   // 準備
   const dir = await createTempDir();
   await writeManyDocsProject(dir);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   const first = await callTool(client, "find_docs", {
     tags: ["設計"],
     format: "json",
@@ -459,4 +426,16 @@ test("test_error_when_cursor_invalid", async () => {
     expect(result.texts[0]).toContain("cursor");
     expect(result.texts[0]).toContain("省いて先頭から引き直して");
   }
+});
+
+// project_dir を持たない呼び出しを、作業のフォルダを読まずにエラーにする（異常系）
+test("test_error_when_project_dir_missing", async () => {
+  // 準備
+  const client = await connectHttp();
+  // 実行
+  const result = await callTool(client, "find_docs", { text: "文書 A" });
+  // 検証
+  expect(result.isError).toBe(true);
+  expect(result.texts[0]).toContain("project_dir");
+  expect(result.texts[0]).toContain("プラグインを入れた");
 });

@@ -117,8 +117,8 @@ functions:
     title: CLI を実行する
     container: src/cli/main.ts
     usecase: 共通
-    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返す
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -148,9 +148,9 @@ functions:
       - name: test_main_when_command_unknown
         case: 異常
         summary: 知らないコマンドは一覧を出して 1 を返す
-        condition: '`["serve"]`'
+        condition: '`["deploy"]`'
         mock: 出力を配列に貯める `CliIo`
-        expected: 1 を返し、標準エラーに `init`・`check`・`export`・`build` が出る
+        expected: 1 を返し、標準エラーに `init`・`check`・`export`・`build`・`serve` が出る
       - name: test_main_when_cli_error
         case: 異常
         summary: コマンドが投げた CliError の文を出して 1 を返す

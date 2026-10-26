@@ -41,14 +41,12 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   await writeProject(dir, ["a"], DOCUMENTS);
   const before = await readDocs(dir);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) =>
-      callTool(client, "update_index", {
-        kind: "doc",
-        id: "b",
-        item: { path: "b.md", title: "B" },
-      }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "update_index", {
+      kind: "doc",
+      id: "b",
+      item: { path: "b.md", title: "B" },
+    }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -64,10 +62,8 @@ test("test_normal_when_removed", async ({ builtRoot, tempDir }) => {
   await writeProject(dir, ["a", "old"], { "a.md": "# A\n" });
   const before = await readDocs(dir);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) =>
-      callTool(client, "update_index", { kind: "doc", id: "old", item: null }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "update_index", { kind: "doc", id: "old", item: null }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -83,14 +79,12 @@ test("test_error_when_schema_invalid", async ({ builtRoot, tempDir }) => {
   await writeProject(dir, ["a"], DOCUMENTS);
   const before = await readFile(join(dir, "index.yaml"), "utf8");
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) =>
-      callTool(client, "update_index", {
-        kind: "doc",
-        id: "b",
-        item: { title: "B" },
-      }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "update_index", {
+      kind: "doc",
+      id: "b",
+      item: { title: "B" },
+    }),
   );
   // 検証
   expect(result.isError).toBe(true);
@@ -113,7 +107,7 @@ test("test_normal_when_related", async ({ builtRoot, tempDir }) => {
   };
   // 実行
   const { result, check } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       result: await callTool(client, "update_index", {
         kind: "doc",
@@ -159,7 +153,7 @@ test("test_normal_when_tag", async ({ builtRoot, tempDir }) => {
   };
   // 実行
   const { result, check } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       result: await callTool(client, "update_index", {
         kind: "tag",

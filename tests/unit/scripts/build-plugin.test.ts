@@ -136,68 +136,6 @@ test("test_check_guide_source_when_unreadable", async () => {
   ).toBe(true);
 });
 
-// バージョンが同じで lockfile がある（正常系）
-test("test_check_plugin_dependencies", async () => {
-  // 準備
-  const { checkPluginDependencies } = await loadBuildPlugin();
-  const root = await createTempDir();
-  await writeFiles(root, {
-    "package.json": JSON.stringify({ dependencies: { esbuild: "0.28.2" } }),
-    "plugin/package.json": JSON.stringify({
-      dependencies: { esbuild: "0.28.2" },
-    }),
-    "plugin/package-lock.json": "{}",
-  });
-  // 実行
-  const result = await checkPluginDependencies(root);
-  // 検証
-  expect(result).toEqual([]);
-});
-
-// バージョンが違う（正常系）
-test("test_check_plugin_dependencies_when_version_differs", async () => {
-  // 準備
-  const { checkPluginDependencies } = await loadBuildPlugin();
-  const root = await createTempDir();
-  await writeFiles(root, {
-    "package.json": JSON.stringify({ dependencies: { esbuild: "0.28.2" } }),
-    "plugin/package.json": JSON.stringify({
-      dependencies: { esbuild: "0.27.0" },
-    }),
-    "plugin/package-lock.json": "{}",
-  });
-  // 実行
-  const result = await checkPluginDependencies(root);
-  // 検証
-  expect(
-    result.some(
-      (line) =>
-        line.includes("esbuild") &&
-        line.includes("0.27.0") &&
-        line.includes("0.28.2"),
-    ),
-  ).toBe(true);
-});
-
-// lockfile が無い（正常系）
-test("test_check_plugin_dependencies_when_lockfile_missing", async () => {
-  // 準備
-  const { checkPluginDependencies } = await loadBuildPlugin();
-  const root = await createTempDir();
-  await writeFiles(root, {
-    "package.json": JSON.stringify({ dependencies: { esbuild: "0.28.2" } }),
-    "plugin/package.json": JSON.stringify({
-      dependencies: { esbuild: "0.28.2" },
-    }),
-  });
-  // 実行
-  const result = await checkPluginDependencies(root);
-  // 検証
-  expect(result.some((line) => line.includes("plugin/package-lock.json"))).toBe(
-    true,
-  );
-});
-
 // ソースマップの sources から取り込まれたパッケージの名前を引く（正常系）
 test("test_list_embedded_packages", async () => {
   // 準備
@@ -343,13 +281,13 @@ test("test_remove_plugin_outputs", async () => {
   const { removePluginOutputs } = await loadBuildPlugin();
   const root = await createTempDir();
   await writeFiles(root, {
-    "plugin/server/mcp.js": "export {};\n",
+    "plugin/scripts/session-start.js": "export {};\n",
     "plugin/.mcp.json": "{}\n",
   });
   // 実行
   removePluginOutputs(root);
   // 検証
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
   expect(existsSync(join(root, "plugin", ".mcp.json"))).toBe(true);
 });
 
@@ -366,7 +304,7 @@ test("test_build_plugin_when_source_missing", async () => {
   });
   // 検証
   expect(problems).toEqual([]);
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
 });
 
 // 索引に問題があれば書かずに問題を返す（正常系）
@@ -375,7 +313,7 @@ test("test_build_plugin_when_guide_invalid", async () => {
   const { buildPlugin } = await loadBuildPlugin();
   const root = await createTempDir();
   await writeFiles(root, {
-    "src/plugin/mcp.ts": "export {};\n",
+    "src/plugin/session-start.ts": "export {};\n",
     "guide/index.yaml": guideYaml([createEntry("a")]),
   });
   // 実行
@@ -386,7 +324,7 @@ test("test_build_plugin_when_guide_invalid", async () => {
   });
   // 検証
   expect(problems.some((line) => line.includes("guides[0].page"))).toBe(true);
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
 });
 
 // 索引にあるページへのリンクを名前にする（正常系）

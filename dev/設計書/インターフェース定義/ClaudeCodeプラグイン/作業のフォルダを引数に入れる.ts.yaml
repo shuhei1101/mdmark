@@ -1,0 +1,93 @@
+title: "作業のフォルダを引数に入れる"
+entry:
+  kind: trigger
+  value: Claude Code の PreToolUse のフック（`plugin/hooks/hooks.json`）
+flows:
+  - name: 正常系
+    summary: エージェントの引数に作業のフォルダを入れて返す
+    setup:
+      - name: Mock
+        description: Claude Code の代わりに、`hooks/hooks.json` の PreToolUse のコマンドを `CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流し、標準入力に呼び出しの JSON を渡す
+      - name: 作業のフォルダ
+        description: '`CLAUDE_PROJECT_DIR` に渡す絶対パス'
+      - name: エージェントの引数
+        description: '`check` の呼び出しで、`tool_input` が `{"config": "docs/mdmark.config.yaml", "project_dir": "/tmp/other"}`'
+        notes: エージェントが記載した `project_dir` を置き換えることを確かめる
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as PreToolUse のフック
+        C->>H: tool_name・tool_input
+        H->>H: tool_input に project_dir を入れる
+        H-->>C: hookSpecificOutput（updatedInput）・終了コード 0
+    expected:
+      - 標準出力が JSON で、`hookSpecificOutput.hookEventName` が `PreToolUse`
+      - '`updatedInput.project_dir` が `CLAUDE_PROJECT_DIR` の値で、`updatedInput.config` が渡した値のまま'
+      - '`hookSpecificOutput` が `permissionDecision` を持たない'
+      - 終了コードが 0
+    test: test_normal
+  - name: 正常系（作業のフォルダが分からない）
+    summary: '`CLAUDE_PROJECT_DIR` が無いときは引数を書き換えずに終わる'
+    setup:
+      - name: Mock
+        description: 正常系と同じで、`CLAUDE_PROJECT_DIR` を渡さない
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as PreToolUse のフック
+        C->>H: tool_name・tool_input
+        H->>H: CLAUDE_PROJECT_DIR が無い
+        H-->>C: 空の標準出力・終了コード 0
+    expected:
+      - 標準出力が空
+      - 終了コードが 0
+    test: test_normal_when_project_dir_unknown
+lead: 作業のフォルダを使う mdmark のツールの呼び出しの前に、引数へ `project_dir` として `CLAUDE_PROJECT_DIR` の値を入れて Claude Code へ返す。許可の判定には関わらない。
+side_effects: なし（標準出力へ記載するだけ）
+request:
+  - name: tool_name
+    type: string
+    required: true
+    location: body
+    description: 呼ぶツールの名前（`mcp__plugin_mdmark_mdmark__{ツール名}`）。標準入力の JSON
+  - name: tool_input
+    type: Record<string, unknown>
+    required: true
+    location: body
+    description: エージェントが記載したツールの引数。標準入力の JSON
+  - name: CLAUDE_PROJECT_DIR
+    type: string
+    required: false
+    description: セッションの作業のフォルダの絶対パス。Claude Code がフックのプロセスに渡す環境変数
+    default: なし（引数を書き換えずに終わる）
+request_example: |-
+  ```json
+  {"hook_event_name": "PreToolUse", "tool_name": "mcp__plugin_mdmark_mdmark__check", "tool_input": {}}
+  ```
+response:
+  - name: hookSpecificOutput.hookEventName
+    type: "'PreToolUse'"
+    description: フックの種類
+  - name: hookSpecificOutput.updatedInput
+    type: Record<string, unknown>
+    description: '`tool_input` に `project_dir` を入れた引数。エージェントが `project_dir` を記載していても `CLAUDE_PROJECT_DIR` の値で置き換える。ほかの引数はそのまま'
+response_example: |-
+  ```json
+  {"hookSpecificOutput": {"hookEventName": "PreToolUse", "updatedInput": {"project_dir": "/home/w/docs"}}}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: '`CLAUDE_PROJECT_DIR` がある。終了コード 0'
+  - name: なし（作業のフォルダが分からない・終了コード 0）
+    condition: '`CLAUDE_PROJECT_DIR` が無いか空'
+    notes: 標準出力に何も出さず、呼び出しを止めない。サーバーが `project_dir` の無い呼び出しをツールのエラーにする
+constraints:
+  - item: 対象のツール
+    constraint: '`hooks.json` の PreToolUse の `matcher` を、作業のフォルダを使うツール（`find_docs`・`list_tags`・`update_index`・`check`・`export_html`・`build_site`）の完全名に絞る。`read_guide` は含めない'
+  - item: 許可
+    constraint: '`permissionDecision` を返さず、`updatedInput` だけを返す。許可の判定はフックが無いときと同じ'
+  - item: 公開の Schema
+    constraint: Claude Code は `updatedInput` を `tools/list` の `inputSchema` で検査し直さない。`project_dir` は `inputSchema` に出さない
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/索引から文書を探す#
+test_file: tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts

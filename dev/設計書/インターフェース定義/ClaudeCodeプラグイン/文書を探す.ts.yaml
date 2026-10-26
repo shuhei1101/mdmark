@@ -9,7 +9,7 @@ flows:
       - name: 作業のフォルダ
         description: 設定・索引と文書 2 つ。索引に載っているのは 1 つ目（`a`、題「文書 A」、タグ `設計`）だけ
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -243,6 +243,22 @@ flows:
     expected:
       - 総件数が 1 件で、表の行が `a` の 1 行だけ
     test: test_normal_when_width_differs
+  - name: 異常系（作業のフォルダが無い・ツールのエラー）
+    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読まずにエラーにする'
+    setup:
+      - name: Mock
+        description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: find_docs（project_dir なし）
+        S->>S: 引数を検査する
+        S-->>C: isError（project_dir が無いこととプラグインから呼ぶこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
+    test: test_error_when_project_dir_missing
 lead: 設定の `index` の索引から、題・別名・概要の部分一致、タグの AND / OR、関係する文書で文書を引き、主題のタグが当たる文書を上にして既定の件数ずつ返す。返す項目は `view` と `include` / `exclude` で、形式は `format` で選ぶ。
 idempotent: true
 side_effects: なし（索引と文書を書き換えない）
@@ -321,9 +337,16 @@ request:
   - name: config
     type: string
     required: false
-    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    default: なし（`project_dir` から上へ `mdmark.config.yaml` を探す）
     location: argument
     description: 使う設定ファイルのパス
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
 request_example: |-
   ```json
   {"tags": ["設計"], "include": ["path"], "format": "json"}
@@ -438,6 +461,9 @@ exceptions:
     condition: 設定に `index` が無い
   - name: ツールのエラー（cursor を読めない）
     condition: '`cursor` がこのツールの返した `next_cursor` として読めない、または絞り込みの条件が `next_cursor` を返した呼び出しと違う'
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを書く
 error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
 constraints:
   - item: 絞り込みの組み合わせ

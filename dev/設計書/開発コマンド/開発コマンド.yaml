@@ -71,19 +71,19 @@ categories:
 
       手元のプラグインを Claude Code で確かめる。
 
-      1. プラグインをビルドする（`plugin/` に MCP サーバー・フック・使い方集・配布物が書かれる）
+      1. ビルドする（`dist/cli.js` と、`plugin/` にフック・使い方集が書かれる）
 
       ```bash
       npm run build
       ```
 
-      2. `plugin/` に実行時の依存を入れる（ローカルのパスで足したマーケットプレイスでは Claude Code が依存を入れない）
+      2. MCP の常駐サーバーを立てる（`Ctrl+C` で止める。別のポートにするときは `~/.claude/settings.json` の `env` にも同じ `MDMARK_PORT` を置く）
 
       ```bash
-      (cd plugin && npm ci)
+      node dist/cli.js serve
       ```
 
-      3. 作業ツリーをマーケットプレイスとして足し、プラグインを入れる
+      3. 別の端末で作業ツリーをマーケットプレイスとして足し、プラグインを入れる
 
       ```bash
       claude plugin marketplace add {作業ツリーの絶対パス}
@@ -98,9 +98,9 @@ categories:
       ```
     verification:
       state: 済
-      date: '2026-10-23'
-      detail: Storybook の分は 2026-10-16 に確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は、手元の設定を書き換えないよう `CLAUDE_CONFIG_DIR` に空のフォルダを指して、手順 4 つを流して確かめた（`npm run build` が `plugin/` の生成物を書き、`plugin/` の `npm ci` が終了コード 0、`claude plugin marketplace add`・`install` が終了コード 0 で `claude plugin list` に `mdmark@mdmark` が有効で出て、`uninstall`・`marketplace remove` で空に戻った）
-    effects: プラグインの確かめは、手元の Claude Code の設定にマーケットプレイスとプラグインを書き、`plugin/` に `node_modules/` を作る。外すコマンドで戻す。設定を書き換えたくないときは、`CLAUDE_CONFIG_DIR` に空のフォルダを指して流す
+      date: '2026-10-26'
+      detail: 'Storybook の分は 2026-10-16 に確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は 2026-10-26 に確かめた（`npm run build` が終了コード 0 で `dist/cli.js` と `plugin/scripts/`・`plugin/guide/` を書き、`MDMARK_PORT=18801 node dist/cli.js serve` が `MCP サーバーを起動しました: http://127.0.0.1:18801/mcp` を出した。空の `CLAUDE_CONFIG_DIR` で `claude plugin marketplace add {作業ツリーの絶対パス}` と `claude plugin install mdmark@mdmark` が成功し、`MDMARK_PORT=18801` を渡した `claude mcp list` が `plugin:mdmark:mdmark: http://127.0.0.1:18801/mcp (HTTP) - ✔ Connected` を出した。`kill -TERM` で止めるとプロセスが終わり、`claude plugin uninstall mdmark@mdmark` と `claude plugin marketplace remove mdmark` で外れた）'
+    effects: プラグインの確かめは、手元の Claude Code の設定にマーケットプレイスとプラグインを書き、常駐サーバーは `127.0.0.1` の `MDMARK_PORT`（既定 8782）を待ち受ける。外すコマンドで戻す。設定を書き換えたくないときは、`CLAUDE_CONFIG_DIR` に空のフォルダを指して流す
   - name: テスト
     refs:
       - dev/設計書/テスト/テスト実行方法#
@@ -150,7 +150,7 @@ categories:
       ```bash
       npm --prefix vscode run package
       ```
-    effects: '`dist/` を前回の分を消してから書き直す。`index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・ CLI の `cli.js`・書き出した HTML に埋める `viewer.js`・`viewer.css` のほかに、`tsconfig.dist.json` で `tsc` を流して型定義（`index.d.ts` と、それが読み込む `.d.ts`）を書く。版の書式が違う・`version.ini` を読めない・設定・索引の JSON Schema（`schemas/`）を最新の版のタグから変えたのに移行の手順（`migrations/next/steps.yaml`）も手順なしの一覧（`migrations/no-steps.yaml`）の合う行も無い・release のビルドで `migrations/next/` が残っている・移行の手順の形が合わない・esbuild か `tsc` が失敗する・`index.js`・`index.css` が 256KB を超える・`viewer.js` が `</script` の並びを持つ・使う側のブラウザが読む JS（`index.js`・`view.js`・`comments.js`・`viewer.js`）が対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）に無い API を、同じ API の `typeof` で確かめる `if` のブロックの外で使うと、終了コード 1 で終わり `dist/` は残らない。下限に無い API で止まったときは、標準エラーの API を `if (typeof {API} !== "undefined")` のブロックの中で使う形に直す（早期 return の後ろと三項演算子では使わない）。続けて Claude Code プラグインの生成物（`plugin/server/mcp.js`・`plugin/scripts/session-start.js`・`plugin/dist/`・`plugin/guide/`・`plugin/THIRD_PARTY_LICENSES.txt`）も前回の分を消して書き、使い方集の索引（`guide/index.yaml`）の形・指すページ・文字数の上限、`plugin/package.json` の依存のバージョンと `plugin/package-lock.json`、取り込まれたパッケージのライセンスの本文（`scripts/licenses/`）に問題があると、終了コード 1 で終わり `dist/` も `plugin/` の生成物も残らない'
+    effects: '`dist/` を前回の分を消してから書き直す。`index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・ CLI の `cli.js`・書き出した HTML に埋める `viewer.js`・`viewer.css` のほかに、`tsconfig.dist.json` で `tsc` を流して型定義（`index.d.ts` と、それが読み込む `.d.ts`）を書く。版の書式が違う・`version.ini` を読めない・設定・索引の JSON Schema（`schemas/`）を最新の版のタグから変えたのに移行の手順（`migrations/next/steps.yaml`）も手順なしの一覧（`migrations/no-steps.yaml`）の合う行も無い・release のビルドで `migrations/next/` が残っている・移行の手順の形が合わない・esbuild か `tsc` が失敗する・`index.js`・`index.css` が 256KB を超える・`viewer.js` が `</script` の並びを持つ・使う側のブラウザが読む JS（`index.js`・`view.js`・`comments.js`・`viewer.js`）が対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）に無い API を、同じ API の `typeof` で確かめる `if` のブロックの外で使うと、終了コード 1 で終わり `dist/` は残らない。下限に無い API で止まったときは、標準エラーの API を `if (typeof {API} !== "undefined")` のブロックの中で使う形に直す（早期 return の後ろと三項演算子では使わない）。続けて Claude Code プラグインの生成物（`plugin/scripts/`・`plugin/guide/`・`plugin/THIRD_PARTY_LICENSES.txt`）も前回の分を消して書き、使い方集の索引（`guide/index.yaml`）の形・指すページ・文字数の上限、取り込まれたパッケージのライセンスの本文（`scripts/licenses/`）に問題があると、終了コード 1 で終わり `dist/` も `plugin/` の生成物も残らない'
     verification:
       state: 済
       date: '2026-10-24'

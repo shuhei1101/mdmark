@@ -52,7 +52,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   await writeCleanProject(cliDir);
   // 実行
   const { checked, built } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       checked: await callTool(client, "check"),
       built: await callTool(client, "build_site"),
@@ -84,9 +84,8 @@ test("test_normal_when_drift", async ({ builtRoot, tempDir }) => {
     await readFile(join(dir, "a.md"), "utf8"),
   ];
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "check"),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "check"),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -115,9 +114,8 @@ test("test_normal_when_single_document", async ({ builtRoot, tempDir }) => {
   await writeCleanProject(dir);
   await writeCleanProject(cliDir);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "export_html", { file: "a.md" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "export_html", { file: "a.md" }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -137,9 +135,8 @@ test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   const dir = await tempDir();
   await writeFiles(dir, DOCUMENTS);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "check"),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "check"),
   );
   // 検証
   expect(result.isError).toBe(true);
@@ -157,7 +154,7 @@ test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   );
   // 実行
   const checked = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     (client) => callTool(client, "check", { base }),
   );
   const cli = await runCli(builtRoot, ["check", "--base", base], dir);

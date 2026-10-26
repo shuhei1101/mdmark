@@ -9,7 +9,7 @@ flows:
       - name: ずれの無いフォルダ
         description: 雛形に文書 2 つを足し、索引に 2 つとも載せ、`build.include` が 2 つに当たるフォルダ
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーをそのフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` にそのフォルダの絶対パスを入れて呼ぶ
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -81,6 +81,22 @@ flows:
       - '`issues` が `missed_change_together`（`b.md`・空の `where`）の 1 件で、`isError` が立たない'
       - 同じフォルダで流した `mdmark check --base base` の出力の行と一致する
     test: test_normal_when_base_given
+  - name: 異常系（作業のフォルダが無い・ツールのエラー）
+    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読まずにエラーにする'
+    setup:
+      - name: Mock
+        description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: check（project_dir なし）
+        S->>S: 引数を検査する
+        S-->>C: isError（project_dir が無いこととプラグインから呼ぶこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
+    test: test_error_when_project_dir_missing
 lead: '`mdmark check` と同じ処理で、設定の形・索引と文書のずれ・`build` の対象の有無・知らない印を点検し、ずれの一覧を返す。'
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -88,7 +104,7 @@ request:
   - name: config
     type: string
     required: false
-    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    default: なし（`project_dir` から上へ `mdmark.config.yaml` を探す）
     location: argument
     description: 使う設定ファイルのパス
   - name: base
@@ -97,6 +113,13 @@ request:
     default: なし（`change_together` の直し忘れを確かめない）
     location: argument
     description: 直し忘れの検査に比べる基準の git の ref。`mdmark check` の `--base` と同じ
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
 request_example: |-
   ```json
   {}
@@ -128,6 +151,9 @@ exceptions:
   - name: ツールのエラー（比べる基準を引けない）
     condition: '`base` を渡し、`mdmark check --base` が比べる基準を引けないときと同じ条件'
     notes: '`mdmark check` が標準エラーに出すのと同じ文を書く'
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを書く
 error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を書く。'
 constraints:
   - item: CLI との一致

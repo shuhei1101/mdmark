@@ -108,9 +108,8 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
     files.map((file) => readFile(join(dir, file), "utf8")),
   );
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "find_docs", { text: "A" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "find_docs", { text: "A" }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -133,9 +132,8 @@ test("test_normal_when_no_match", async ({ builtRoot, tempDir }) => {
   const dir = await tempDir();
   await writeProject(dir);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "find_docs", { text: "どの文書にも無い語" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "find_docs", { text: "どの文書にも無い語" }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -149,7 +147,7 @@ test("test_normal_when_tags_and_or", async ({ builtRoot, tempDir }) => {
   await writeTaggedProject(dir);
   // 実行
   const { all, any } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       all: await callTool(client, "find_docs", {
         tags: ["topic:mcp", "topic:yaml"],
@@ -179,7 +177,7 @@ test("test_normal_when_tag_vocabulary", async ({ builtRoot, tempDir }) => {
   await writeTaggedProject(dir);
   // 実行
   const { alias, unknown } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       alias: await callTool(client, "find_docs", { tags: ["MCP"] }),
       unknown: await callTool(client, "find_docs", { tags: ["topic:mcq"] }),
@@ -208,7 +206,7 @@ test("test_normal_when_paged", async ({ builtRoot, tempDir }) => {
   );
   // 実行
   const { first, second } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => {
       const first = await callTool(client, "find_docs");
       const cursor = /next_cursor: (\S+)/.exec(first.texts[0] ?? "")?.[1];
@@ -240,7 +238,7 @@ test("test_normal_when_count_only", async ({ builtRoot, tempDir }) => {
   const anyTags = ["topic:mcp", "topic:yaml"];
   // 実行
   const { counted, listed } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       counted: await callTool(client, "find_docs", {
         any_tags: anyTags,
@@ -265,7 +263,7 @@ test("test_normal_when_view_and_format", async ({ builtRoot, tempDir }) => {
   await writeProject(dir);
   // 実行
   const { plain, withPath, json } = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       plain: await callTool(client, "find_docs", { text: "A" }),
       withPath: await callTool(client, "find_docs", {
@@ -329,10 +327,8 @@ test("test_normal_when_related_to", async ({ builtRoot, tempDir }) => {
     files.map((file) => readFile(join(dir, file), "utf8")),
   );
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) =>
-      callTool(client, "find_docs", { related_to: "a", format: "json" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "find_docs", { related_to: "a", format: "json" }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -389,9 +385,8 @@ test("test_normal_when_width_differs", async ({ builtRoot, tempDir }) => {
     ...DOCUMENTS,
   });
   // 実行
-  const result = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
-    (client) => callTool(client, "find_docs", { text: "ＭＣＰ" }),
+  const result = await withMcpClient({ builtRoot, projectDir: dir }, (client) =>
+    callTool(client, "find_docs", { text: "ＭＣＰ" }),
   );
   // 検証
   expect(result.isError).toBe(false);

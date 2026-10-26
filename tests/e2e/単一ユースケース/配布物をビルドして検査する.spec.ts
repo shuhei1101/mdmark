@@ -129,8 +129,15 @@ test("test_normal", async () => {
   expect(declarations).toContain("MdmarkExtension");
   expect(await readBuiltVersion()).toBe(CLONE_VERSION);
   // Claude Code のプラグインの生成物と、バージョン
-  for (const path of ["server/mcp.js", "guide/index.json"]) {
+  for (const path of [
+    "scripts/session-start.js",
+    "scripts/pre-tool-use.js",
+    "guide/index.json",
+  ]) {
     expect(existsSync(join(root, "plugin", path)), path).toBe(true);
+  }
+  for (const path of ["server", "dist"]) {
+    expect(existsSync(join(root, "plugin", path)), path).toBe(false);
   }
   expect(await readPluginVersion()).toBe(CLONE_VERSION);
   expect((await run("npm", ["test"])).code).toBe(0);
@@ -213,7 +220,7 @@ test("test_error_when_guide_index_too_long", async () => {
   // 検証
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
   expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
   expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
 });

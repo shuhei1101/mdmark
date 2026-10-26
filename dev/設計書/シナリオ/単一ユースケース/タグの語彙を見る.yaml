@@ -6,7 +6,7 @@ scenarios:
         description: 設定と、語彙に `topic:mcp`（グループ `topic`・説明・別名 `MCP`）・`topic:yaml`・`topic:old`（振り替え先 `topic:mcp`）・`topic:unused` を持つ索引と、文書 2 つ。`a` のタグは主題の `topic:mcp`、`b` のタグは `topic:mcp` と `topic:yaml`
         notes: 付いている文書が 0 件のタグを、どの文書にも付けない `topic:old`・`topic:unused` で決定的に起こす
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
     flow: |-
       ```mermaid
       sequenceDiagram
@@ -98,7 +98,7 @@ issue: 101
 primary_actor: Claude Code
 trigger: Claude Code が、`find_docs` に渡すタグや文書に付けるタグを、語彙の説明を見て選びたくなる
 preconditions:
-  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+  - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
   - 作業のフォルダに設定と索引がある
 success_guarantee: 語彙のタグごとに、名前・グループ・説明・別名・振り替え先・付いている文書の数が返る。付いている文書が 0 件のタグも返る。
 minimal_guarantee: 索引と文書を書き換えない。

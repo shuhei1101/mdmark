@@ -1,0 +1,130 @@
+title: "MCPサーバーを起動・停止する"
+entry:
+  kind: operation
+  value: '`mdmark serve`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} serve` で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: 既定のポートで起動し、ツールの一覧を返す
+    setup:
+      - name: Mock
+        description: ビルドしたこのリポジトリの CLI を子プロセスで流し、HTTP でつなぐ MCP のクライアントで `tools/list` を呼ぶ
+      - name: 空いているポート
+        description: 8782 を使うプロセスが無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant S as mdmark serve
+        participant C as MCP のクライアント
+        W->>S: mdmark serve
+        S-->>W: 待ち受ける URL
+        C->>S: POST /mcp（tools/list）
+        S-->>C: 7 つのツール
+    expected:
+      - 標準出力に `http://127.0.0.1:8782/mcp` を含む 1 行が出る
+      - '`tools/list` が 7 つのツールを返し、どのツールの `inputSchema` も `project_dir` を持たない'
+      - プロセスが動き続けている
+    test: test_normal
+  - name: 正常系（ポートを上書きする）
+    summary: '`MDMARK_PORT` のポートで起動する'
+    setup:
+      - name: Mock
+        description: 正常系と同じで、`MDMARK_PORT=18782` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant S as mdmark serve
+        participant C as MCP のクライアント
+        W->>S: MDMARK_PORT=18782 mdmark serve
+        S-->>W: 待ち受ける URL
+        C->>S: POST :18782/mcp（tools/list）
+        S-->>C: 7 つのツール
+    expected:
+      - 標準出力に `http://127.0.0.1:18782/mcp` を含む 1 行が出る
+      - 18782 の `/mcp` への `tools/list` が 7 つのツールを返す
+    test: test_normal_when_port_overridden
+  - name: 正常系（止める）
+    summary: SIGINT を受けて待ち受けを閉じ、終了コード 0 で終わる
+    setup:
+      - name: Mock
+        description: 正常系と同じで起動した後、子プロセスへ SIGINT を送る
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant S as mdmark serve
+        W->>S: Ctrl+C（SIGINT）
+        S->>S: 待ち受けを閉じる
+        S-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - ポートへつなぐと接続を拒まれる
+    test: test_normal_when_stop
+  - name: 異常系（ポートが使われている・終了コード 1）
+    summary: ポートを別のプロセスが使っているとき、対処を出して終わる
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 使われているポート
+        description: テストが同じポートで待ち受けるサーバーを先に立てる
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant S as mdmark serve
+        W->>S: mdmark serve
+        S->>S: 待ち受けに失敗（EADDRINUSE）
+        S-->>W: 対処・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラー出力にポートの番号・`MDMARK_PORT` を `~/.claude/settings.json` の `env` と `mdmark serve` の環境の両方に設定すること・`mdmark serve` が既に起動しているならそのまま使えることが出る
+    test: test_error_when_port_in_use
+  - name: 異常系（MDMARK_PORT が使えない値・終了コード 1）
+    summary: '`MDMARK_PORT` が整数でないとき、待ち受けずに終わる'
+    setup:
+      - name: Mock
+        description: 正常系と同じで、`MDMARK_PORT=abc` を渡す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant S as mdmark serve
+        W->>S: MDMARK_PORT=abc mdmark serve
+        S->>S: 値を確かめる
+        S-->>W: 対処・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラー出力に `abc` と、1〜65535 の整数を設定することが出る
+    test: test_error_when_port_invalid
+lead: Claude Code のプラグインがつなぐ MCP の常駐サーバーを、127.0.0.1 の Streamable HTTP で起動する。Ctrl+C（SIGINT）か SIGTERM で止める。
+side_effects: 127.0.0.1 のポートで待ち受ける
+request:
+  - name: MDMARK_PORT
+    type: string
+    required: false
+    default: '8782'
+    description: 待ち受けるポート。プラグインの `.mcp.json` の url も同じ環境変数で決まる
+    constraints: 1〜65535 の整数
+exceptions:
+  - name: なし（正常終了）
+    condition: SIGINT か SIGTERM を受けて待ち受けを閉じた。終了コード 0
+  - name: なし（ポートが使われている・終了コード 1）
+    condition: ポートを別のプロセスが使っている
+    notes: 標準エラー出力に、ポートの番号と、`~/.claude/settings.json` の `env` と `mdmark serve` の環境の両方に同じ `MDMARK_PORT` を設定すれば別のポートで動かせること、`mdmark serve` が既に起動しているならそのまま使えることを出す
+  - name: なし（MDMARK_PORT が使えない値・終了コード 1）
+    condition: '`MDMARK_PORT` が 1〜65535 の整数でない'
+    notes: 標準エラー出力に、受け取った値と 1〜65535 の整数を設定することを出す
+constraints:
+  - item: 待ち受けるアドレス
+    constraint: 127.0.0.1 だけで待ち受ける
+  - item: パス
+    constraint: '`/mcp` だけで MCP を受け、ほかのパスは 404'
+  - item: Host・Origin
+    constraint: '`Host` が `127.0.0.1` か `localhost`（ポート付き）でないリクエストと、`Origin` があってそれが localhost でないリクエストは 403'
+  - item: セッション
+    constraint: セッションを持たない（stateless）。リクエストごとに処理し、呼び出しの間で状態を持ち越さない
+  - item: 作業のフォルダ
+    constraint: ツールの作業のフォルダは引数の `project_dir` から取る。サーバーのカレントディレクトリは使わない
+  - item: 使い方集と配布物
+    constraint: 使い方集・配布物は `mdmark serve` を呼んだパッケージから読む
+  - item: ログ
+    constraint: 起動したときに待ち受ける URL を標準出力に 1 行出す
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する#
+test_file: tests/integration/ClaudeCodeプラグイン/serve.test.ts

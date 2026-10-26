@@ -143,7 +143,7 @@ functions:
         summary: 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる
         condition: '`guideContextLimit` が 1'
         mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml` と指すページ・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
-        expected: 1 を返し、`dist/` と `plugin/server` が無く、標準エラーに索引の文字数と上限が出る
+        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに索引の文字数と上限が出る
       - name: test_main_when_api_missing_in_baseline_browser
         case: 異常
         summary: 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる
@@ -212,7 +212,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ね、`emitDeclarations` で型定義を書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ね、配布物と CLI に束ねた依存のライセンスを書く
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -254,6 +254,12 @@ functions:
         condition: 版 `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` がある
         mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` を束ねていない。`src/viewer/index.ts` の文字列 `"</script>"` が `dist/viewer.js` では `<\/script>` になっている
+      - name: test_build_dist_when_cli_bundles_package
+        case: 正常
+        summary: CLI に束ねたパッケージのライセンスも書く
+        condition: '`src/cli/main.ts` が `node_modules` のパッケージ（`dist/index.js` には束ねないもの）を import する'
+        mock: 一時フォルダに `src/` とそのパッケージの `package.json`・`LICENSE` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: '`dist/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
     notes:
       CLI と起動の処理の束ね方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・版の `define`）で、ライブラリ本体を含めて 1 つに束ねる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` で束ね、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読む。どちらも `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
       起動の処理の script の閉じ: '`dist/viewer.js` は書き出した HTML の `<script type="module">` にそのまま置くため、書いた後に `assertNoScriptClose` で検める。esbuild は文字列・テンプレート文字列の `</script` を大文字と小文字によらず `<\/script` に替えるため（外部ライブラリ『esbuild』の動作確認）、この検査は esbuild の振る舞いが変わったときの備え'
@@ -262,14 +268,14 @@ functions:
     container: scripts/build.ts
     kind: 関数
     scope: internal
-    summary: esbuild の `metafile` の入力から束ねたパッケージを拾い、名前の順にパッケージ名・版・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書く
-    description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読む。束ねたパッケージが無いときも空のファイルを書く
+    summary: esbuild の `metafile` の入力から束ねたパッケージと、その中に取り込まれたパッケージを拾い、名前の順にパッケージ名・版・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書く
+    description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読む。パッケージの配布物に取り込まれたパッケージは `listEmbeddedPackages` で拾い、`EMBEDDED_LICENSES_DIR` の本文を並べる。複数の `metafile` で同じパッケージは 1 回だけ書く。束ねたパッケージが無いときも空のファイルを書く
     side_effects: '`dist/` に `LICENSES_FILE` を書く'
     args:
       - name: options
-        type: '{ metafile: Metafile; root: string }'
+        type: '{ metafiles: Metafile[]; root: string }'
         required: true
-        description: '`metafile` は esbuild の出力、`root` は作業ツリーの場所'
+        description: '`metafiles` は配布物と CLI の esbuild の出力、`root` は作業ツリーの場所'
     returns:
       type: Promise<void>
       description: 書き終えたら解決する
@@ -291,6 +297,12 @@ functions:
         mock: 一時フォルダに `package.json` だけを置く
         expected: '`Error` を投げ、メッセージに `b` が入る'
         exception: 束ねたパッケージの直下に `LICENSE*` が無い
+      - name: test_write_third_party_licenses_when_embedded
+        case: 正常
+        summary: 複数の metafile をまとめ、取り込まれたパッケージの本文も書く
+        condition: 1 つ目の `metafile` の入力が `node_modules/b/index.js`、2 つ目が `node_modules/b/index.js` と `node_modules/pkg/dist/a.mjs`（そのソースマップが `ajv` を指す）
+        mock: 一時フォルダに `b`・`pkg` の `package.json` と `LICENSE`、`scripts/licenses/ajv.txt` を置く
+        expected: '`ajv`・`b`・`pkg` が名前の順に 1 回ずつ並び、`ajv` の本文が `scripts/licenses/ajv.txt` の中身'
   - name: findTooLargeOutputs
     title: 上限を超えた配布ファイルを拾う
     container: scripts/build.ts

@@ -27,8 +27,8 @@ flows:
       - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` を export し、`tsc --noEmit` で型エラーが 0 件'
       - '`dist/cli.js` があり、`node dist/cli.js init {一時フォルダ}` が終了コード 0 で雛形を置く'
       - '`dist/viewer.js` と `dist/viewer.css` がある'
-      - '`plugin/server/mcp.js`・`plugin/scripts/session-start.js`・`plugin/dist/index.css`・`plugin/guide/index.json` があり、`plugin/.claude-plugin/plugin.json` の `version` が `v0.0.0`'
-      - '`plugin/THIRD_PARTY_LICENSES.txt` に `@modelcontextprotocol/server` と、その配布物に取り込まれた `ajv` の名前とライセンスの本文がある'
+      - '`plugin/scripts/session-start.js`・`plugin/scripts/pre-tool-use.js`・`plugin/guide/index.json` があり、`plugin/server` と `plugin/dist` が無く、`plugin/.claude-plugin/plugin.json` の `version` が `v0.0.0`'
+      - '`dist/THIRD_PARTY_LICENSES.txt` に `dist/cli.js` に束ねた `@modelcontextprotocol/server` と、その配布物に取り込まれた `ajv` の名前とライセンスの本文がある'
     test: test_normal
   - name: 正常系（版を指定する）
     summary: '`--version` で渡した版を埋めてビルドする'
@@ -219,7 +219,7 @@ flows:
         B-->>D: 索引の文字数と上限・終了コード 1
     expected:
       - 終了コードが 1
-      - '`dist/` と `plugin/server`・`plugin/guide` が無い'
+      - '`dist/` と `plugin/scripts`・`plugin/guide` が無い'
       - 標準エラーに使い方集の索引の文字数と上限が出る
     test: test_error_when_guide_index_too_long
   - name: 正常系（有無を確かめてから下限に無い API を使う）
@@ -295,7 +295,7 @@ exceptions:
   - name: 移行の手順の形の誤り（終了コード 1）
     condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の形に合わない'
   - name: 使い方集の索引の誤り（終了コード 1）
-    condition: '`guide/index.yaml` が ER 図『使い方集』の形に合わないか、無いページを指すか、セッションに渡す索引の文が 10,000 文字を超えるか、`plugin/package.json` の esbuild のバージョンが `package.json` と違うか、`plugin/package-lock.json` が無い'
+    condition: '`guide/index.yaml` が ER 図『使い方集』の形に合わないか、無いページを指すか、セッションに渡す索引の文が 10,000 文字を超える'
   - name: 対応ブラウザの下限に無い API（終了コード 1）
     condition: 使う側のブラウザが読む JS（`dist/index.js`・`dist/view.js`・`dist/comments.js`・`dist/viewer.js`）のどれかが、下限の版に無い API を、同じ API の `typeof` で確かめる `if` のブロックの外で使う
 constraints:
@@ -306,7 +306,7 @@ constraints:
     constraint: Chrome 99・Firefox 98・Safari 16.4
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
   - item: CLI の配布物
-    constraint: '`dist/cli.js` は Node 24 を target にし、先頭に `#!/usr/bin/env node` を置く。esbuild と YAML を読むライブラリは束ねず、`package.json` の `dependencies` から読む。`package.json` の `bin` の `mdmark` が `dist/cli.js` を指す'
+    constraint: '`dist/cli.js` は Node 24 を target にし、先頭に `#!/usr/bin/env node` を置く。esbuild と YAML を読むライブラリは束ねず、`package.json` の `dependencies` から読む。`mdmark serve` が使う MCP の SDK は束ね、束ねた依存のライセンスを `dist/THIRD_PARTY_LICENSES.txt` に並べる。`package.json` の `bin` の `mdmark` が `dist/cli.js` を指す'
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
     notes: 書き出しに埋める `dist/index.css`・`dist/viewer.js`・`dist/viewer.css` は、同じ版のものを `dist/cli.js` と同じフォルダから読む。`dist/viewer.js` はライブラリ本体を含めて束ねる
   - item: 移行の手順の点検
@@ -320,9 +320,9 @@ constraints:
     constraint: '`migrations/`・`schemas/mdmark.steps.schema.json`・`docs/はじめに/変更履歴.md` は `dist/` に写さず、版のタグのパッケージから `dist/cli.js` がパッケージの直下を基準に読む'
     notes: '`package.json` は `files` を持たず、パッケージには `.gitignore` に当たらないファイルが入る。入ることは E2E（版を上げる）で確かめる'
   - item: Claude Code プラグインの配布物
-    constraint: '`dist/` を書いた後に、束ねた MCP サーバー `plugin/server/mcp.js` とフック `plugin/scripts/session-start.js`（Node 24、esbuild だけ束ねない）、`dist/` の `index.css`・`viewer.js`・`viewer.css`・`view.js` の写し `plugin/dist/`、使い方集の `plugin/guide/index.json` と指すページの写し、束ねた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き、`plugin/.claude-plugin/plugin.json` の `version` を埋める版にする。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
+    constraint: '`dist/` を書いた後に、束ねたフック `plugin/scripts/session-start.js`・`plugin/scripts/pre-tool-use.js`（Node 24）、使い方集の `plugin/guide/index.json` と指すページのコピー、束ねた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き、`plugin/.claude-plugin/plugin.json` の `version` を埋めるバージョンにする。MCP サーバーは `plugin/` に束ねない。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
     decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#constraints[索引の文字数]
-    notes: '`plugin/` の定義（`.mcp.json`・`hooks/hooks.json`・`package.json`・`package-lock.json`・`plugin.json` のその他のキー）は書き換えない'
+    notes: '`plugin/` の定義（`.mcp.json`・`hooks/hooks.json`・`plugin.json` のその他のキー）は書き換えない'
   - item: 対応ブラウザの下限の確かめ
     constraint: 配布物を書いた後に、配布ファイルのサイズの検査と並べて流す。使う側のブラウザが読む JS と同じ入口・同じ target で minify せずに束ねた JS を、MDN の browser-compat-data で対応ブラウザの下限の版と照らす。確かめの束は一時フォルダに書き、`dist/` には置かない。`if` のブロックの中の使用も数え、同じ API の `typeof` で確かめる `if` のブロックの中と、その `typeof` の式の中の参照だけを数えない。ネットワークには接続しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
