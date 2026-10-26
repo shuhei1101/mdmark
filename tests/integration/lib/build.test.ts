@@ -25,8 +25,10 @@ const execFileAsync = promisify(execFile);
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 
-// ビルド（型定義を書く `tsc` を含む）を子プロセスで流すテストの待つ上限（ミリ秒）
-const BUILD_TIMEOUT_MS = 120_000;
+// ビルド（型定義を書く `tsc` を含む）を子プロセスで流すテストの待つ上限（ミリ秒）。
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と integration-node 全件 3 回を流した所要時間の最大は 85.7 秒（test_normal）。
+// 85.7 秒 × 1.5 = 128.6 秒を 10 秒単位で切り上げて 130 秒にした
+const BUILD_TIMEOUT_MS = 130_000;
 
 const createdRoots: string[] = [];
 
