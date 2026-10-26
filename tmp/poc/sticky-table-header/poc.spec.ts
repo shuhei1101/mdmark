@@ -56,7 +56,7 @@ async function open(page: Page, mode: string, offset: number): Promise<void> {
   await page.waitForSelector("html[data-ready='1']");
 }
 
-for (const mode of ["a", "c"]) {
+for (const mode of (process.env.POC_MODES ?? "a,c").split(",")) {
   test.describe(`mode ${mode}`, () => {
     // 縦に留まる・表から外れる（ずれ 0 と 48px）
     for (const offset of [0, 48]) {

@@ -13,6 +13,44 @@
   transform: translateY(var(--poc-foot-shift, 0px));
 }
 
+/* 案 B: 表が画面の上端を過ぎる間を、見出し行を動かすタイムラインにする */
+.poc-b .mdmark-table table {
+  view-timeline: --poc-table block;
+  view-timeline-inset: var(--poc-sticky-top, 0px) 0px;
+}
+
+/* 案 B の見出し行: 表の上端が上端を過ぎた量だけ下げ、本文の最後の行で止める */
+.poc-b .mdmark-table thead th {
+  animation: poc-head linear both;
+  animation-timeline: --poc-table;
+  animation-range: exit-crossing var(--poc-head-start) exit-crossing calc(var(--poc-head-start) + var(--poc-head-max));
+}
+
+/* 案 B の集計の行: 表の下端が画面の下端より下にある間は上げ、本文の最初の行で止める */
+.poc-b .mdmark-table tfoot td {
+  animation: poc-foot linear both;
+  animation-timeline: --poc-table;
+  animation-range: entry-crossing calc(100% - var(--poc-foot-end) - var(--poc-foot-max)) entry-crossing calc(100% - var(--poc-foot-end));
+}
+
+@keyframes poc-head {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--poc-head-max));
+  }
+}
+
+@keyframes poc-foot {
+  from {
+    transform: translateY(calc(-1 * var(--poc-foot-max)));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 /* 案 A の複製の枠: 画面に固定し、位置と幅は処理が入れる */
 .poc-clone {
   position: fixed;
@@ -31,6 +69,11 @@
   /* 案 C のずれを外す */
   .poc-c .mdmark-table :is(thead th, tfoot td) {
     transform: none;
+  }
+
+  /* 案 B のアニメーションを外す */
+  .poc-b .mdmark-table :is(thead th, tfoot td) {
+    animation: none;
   }
 
   /* 案 A の複製を出さない */

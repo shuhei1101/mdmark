@@ -1,5 +1,5 @@
 // PoC: 表の見出し行を画面の上端、集計の行を画面の下端に、ページのスクロールで留める
-// mode "a": 枠の外に複製を置く / mode "c": 元のセルを transform で動かす
+// mode "a": 枠の外に複製を置く / mode "b": 元のセルを CSS のスクロール連動のアニメーションで動かす / mode "c": 元のセルを transform で動かす
 
 /** 画面の上端から留める位置のずれ（px） */
 const stickyTop = (root) =>
@@ -42,6 +42,31 @@ function shiftMode(root, table) {
   };
   return {
     update,
+    headCells: () => [...table.tHead.rows[0].cells],
+    footCells: () => (table.tFoot ? [...table.tFoot.rows[0].cells] : []),
+  };
+}
+
+/** 案 B: 見出し行と集計の行の動く範囲だけを変数で渡し、ずらすのは CSS のスクロール連動のアニメーションに任せる */
+function timelineMode(root, table) {
+  const update = () => {
+    const head = table.tHead;
+    const body = table.tBodies[0];
+    const foot = table.tFoot;
+    // 表の上端から見出し行の上端まで（枠の太さ）
+    table.style.setProperty("--poc-head-start", `${table.clientTop + head.offsetTop}px`);
+    // 見出し行を下げられる量: 本文の最後の行の下端まで
+    table.style.setProperty("--poc-head-max", `${Math.max(0, body.offsetTop + body.offsetHeight - head.offsetTop - head.offsetHeight)}px`);
+    if (foot) {
+      // 集計の行を上げられる量: 本文の最初の行の上端まで
+      table.style.setProperty("--poc-foot-max", `${foot.offsetTop - body.offsetTop}px`);
+      // 表の下端から集計の行の下端まで（枠の太さ）
+      table.style.setProperty("--poc-foot-end", `${table.offsetHeight - table.clientTop - foot.offsetTop - foot.offsetHeight}px`);
+    }
+  };
+  return {
+    update: () => {},
+    rebuild: update,
     headCells: () => [...table.tHead.rows[0].cells],
     footCells: () => (table.tFoot ? [...table.tFoot.rows[0].cells] : []),
   };
@@ -163,7 +188,8 @@ function cloneMode(root, table) {
 export function install(root, mode) {
   root.classList.add(`poc-${mode}`);
   const tables = [...root.querySelectorAll(".mdmark-table table")];
-  const parts = tables.map((table) => (mode === "a" ? cloneMode(root, table) : shiftMode(root, table)));
+  const modes = { a: cloneMode, b: timelineMode, c: shiftMode };
+  const parts = tables.map((table) => modes[mode](root, table));
   const update = () => {
     for (const part of parts) {
       part.update();
@@ -175,6 +201,7 @@ export function install(root, mode) {
     }
     update();
   };
+  relayout();
   addEventListener("scroll", update, { passive: true });
   // 表の中の横のスクロール
   document.addEventListener("scroll", update, { capture: true, passive: true });

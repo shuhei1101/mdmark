@@ -13,7 +13,7 @@ import {
   TOLERANCE,
 } from "./measure.ts";
 
-// 計る留め方（a: 複製 / c: 元のセルを動かす）
+// 計る留め方（a: 複製 / b: スクロール連動のアニメーション / c: 元のセルを動かす）
 const MODE = process.env.POC_MODE ?? "c";
 
 const e2e = useVscodeE2E();
