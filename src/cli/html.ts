@@ -28,6 +28,8 @@ export type ExportPayload = {
   extensions: string[];
   /** 埋めた部品のモジュールのコード。文書にビューの印があるときだけ `view` を持つ（コメントの部品は埋めない）。無ければ空として読む */
   parts?: Partial<Record<"view", string>>;
+  /** 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
+  syntax?: { core: string; languages: Record<string, string> } | undefined;
 };
 
 /** 書き出しの中身を入れる `script` 要素の `id`（起動の処理が読む） */

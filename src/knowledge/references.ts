@@ -4,11 +4,17 @@ import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveDocumentFeatures, takeMarks } from "../render/marks.ts";
 import type { RenderEnv } from "../render/parser.ts";
 import { glossaryRule } from "../render/syntax/glossary.ts";
-import { findWords, forEachInline, matchableChildren } from "./dictionary.ts";
+import {
+  findWords,
+  forEachInline,
+  matchableChildren,
+  normalizeWord,
+} from "./dictionary.ts";
 import {
   type MdmarkIndex,
   type MdmarkIndexDoc,
   normalizeIndex,
+  readRelated,
 } from "./index-shape.ts";
 import { normalizePath, resolveLink } from "./paths.ts";
 
@@ -22,6 +28,8 @@ export type MdmarkGlossaryEntry = {
   meaning: string;
   /** 表を持つ文書の `id` */
   docId: string;
+  /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
+  avoid?: string[] | undefined;
 };
 
 /** `collectReferences` が返し、`mount`・`render` の `opts.references` が受け取る参照の表 */
@@ -38,11 +46,10 @@ export type ParsedDocument = {
   tokens: Token[];
   /** 文書の印を重ねて決まった機能のオン・オフ */
   features: Record<string, boolean>;
-  /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から）・やめた言い方 */
+  /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
   glossary: Array<{
     entry: MdmarkGlossaryEntry;
     line: number;
-    avoid: string[];
   }>;
 };
 
@@ -74,13 +81,11 @@ export function parseDocument(options: {
     docId: options.docId,
     ownGlossary: [],
     glossaryLines: [],
-    glossaryAvoid: [],
   };
   const tokens = parser.parse(options.body, env);
   const glossary = env.ownGlossary.map((entry, position) => ({
     entry,
     line: env.glossaryLines?.[position] ?? 0,
-    avoid: env.glossaryAvoid?.[position] ?? [],
   }));
   return { tokens, features: env.features, glossary };
 }
@@ -92,7 +97,7 @@ type ScannedDocument = {
 };
 
 /** 本文のリンクが指す、索引のパスの集まり */
-function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string> {
+export function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string> {
   const paths = new Set<string>();
   for (const token of tokens) {
     for (const child of token.children ?? []) {
@@ -155,11 +160,12 @@ export function collectReferences(input: {
   const featureOn = (item: ScannedDocument, name: string): boolean =>
     (item.parsed?.features ?? defaults)[name] !== false;
 
-  // 文書の別名から、その別名を持つ文書を引く
+  // 正規化した文書の別名から、その別名を持つ文書を引く
   const aliasOwners = new Map<string, MdmarkIndexDoc[]>();
   for (const { doc } of scanned) {
     for (const alias of doc.aliases ?? []) {
-      aliasOwners.set(alias, [...(aliasOwners.get(alias) ?? []), doc]);
+      const key = normalizeWord(alias);
+      aliasOwners.set(key, [...(aliasOwners.get(key) ?? []), doc]);
     }
   }
   const aliases = [...aliasOwners.keys()];
@@ -176,8 +182,8 @@ export function collectReferences(input: {
       continue;
     }
     const targets = new Set<MdmarkIndexDoc>();
-    for (const id of source.doc.related ?? []) {
-      const target = byId.get(id);
+    for (const item of source.doc.related ?? []) {
+      const target = byId.get(readRelated(item).to);
       if (target) {
         targets.add(target);
       }

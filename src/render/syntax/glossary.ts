@@ -4,12 +4,10 @@ import type { MdmarkGlossaryEntry } from "../../knowledge/references.ts";
 import { envOf, featureOn, findClose, markOf, textOf } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から）・やめた言い方 */
+/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から） */
 export type GlossaryRow = {
   entry: MdmarkGlossaryEntry;
   line: number;
-  /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空 */
-  avoid: string[];
 };
 
 /** 別名・やめた言い方のセルを区切る文字（「、」と「,」。「・」は別名の中の文字として扱う） */
@@ -124,9 +122,9 @@ export function readGlossaryRows(options: {
           aliases: splitCell(row.cells[positions.aliases ?? -1] ?? ""),
           meaning,
           docId,
+          avoid: splitCell(row.cells[positions.avoid ?? -1] ?? ""),
         },
         line: row.line,
-        avoid: splitCell(row.cells[positions.avoid ?? -1] ?? ""),
       });
     }
   }
@@ -147,7 +145,7 @@ export function readGlossaryTable(options: {
   return warning === undefined ? { entries } : { entries, warning };
 }
 
-/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す（行番号は `env.glossaryLines`、やめた言い方は `env.glossaryAvoid` に同じ並びで足す） */
+/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す（行番号は `env.glossaryLines` に同じ並びで足す） */
 export function glossaryRule(state: StateCore): void {
   const env = envOf(state);
   const enabled = featureOn(state, "glossary");
@@ -183,7 +181,6 @@ export function glossaryRule(state: StateCore): void {
       for (const row of rows) {
         env.ownGlossary.push(row.entry);
         env.glossaryLines?.push(row.line);
-        env.glossaryAvoid?.push(row.avoid);
       }
       // 表の中の語には、下線を引かない
       for (const inline of range) {

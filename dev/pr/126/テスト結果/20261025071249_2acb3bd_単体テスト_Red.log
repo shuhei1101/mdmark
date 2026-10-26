@@ -1,0 +1,387 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-normalize-term-matching
+
+ ❯ |unit| tests/unit/src/knowledge/tags.test.ts (16 tests | 1 failed) 27ms
+   × test_list_tags_when_query_width_differs 5ms
+ ❯ |unit| tests/unit/src/knowledge/find.test.ts (13 tests | 1 failed) 38ms
+   × test_find_docs_when_width_differs 5ms
+ ❯ |unit-browser (chromium)| tests/unit/src/knowledge/dictionary.browser.test.ts (2 tests | 1 failed) 502ms
+   × test_find_words_when_notation_differs 155ms
+ ❯ |unit| tests/unit/src/knowledge/dictionary.test.ts (16 tests | 4 failed) 904ms
+   × test_build_dictionary_when_notation_differs 6ms
+   × test_find_words_when_notation_differs 5ms
+   × test_normalize_word 0ms
+   × test_word_starts_without_intl_segmenter_when_fullwidth 198ms
+ ❯ |unit| tests/unit/src/knowledge/references.test.ts (4 tests | 1 failed) 1735ms
+   × test_collect_references_when_alias_notation_differs 6ms
+ ❯ |unit| tests/unit/src/knowledge/check.test.ts (18 tests | 2 failed) 170ms
+   × test_check_index_when_normalized_words 9ms
+   × test_find_avoided_terms_when_notation_differs 1ms
+ ❯ |unit| tests/unit/src/knowledge/matches.test.ts (15 tests | 2 failed) 3905ms
+   × test_collect_matches_when_notation_differs 8ms
+   × test_diagram_term_matches_when_notation_differs 3ms
+ ❯ |unit| tests/unit/src/render/syntax/terms.test.ts (10 tests | 1 failed) 53ms
+   × test_terms_rule_when_notation_differs 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/knowledge/dictionary.browser.test.ts > test_find_words_when_notation_differs
+AssertionError: expected [] to deeply equal [ { start: +0, end: 8, …(1) }, …(1) ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/dictionary.browser.test.ts/test_find_words_when_notation_differs.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "end": 8,[39m
+[32m-     "start": 0,[39m
+[32m-     "word": "ワークスペース",[39m
+[32m-   },[39m
+[32m-   {[39m
+[32m-     "end": 11,[39m
+[32m-     "start": 9,[39m
+[32m-     "word": "ws",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ expectFindWordsWhenNotationDiffers tests/unit/helpers/find-words-cases.ts:26:43
+     24|   const words = ["ワークスペース", "ws", "MCP"];
+     25|   // 半角カナの `ﾜｰｸｽﾍﾟｰｽ`（8 文字）は正規化すると 7 文字になるが、位置は元の文字列のまま
+     26|   expect(findWords("ﾜｰｸｽﾍﾟｰｽとＷＳ", words)).toEqual([
+       |                                           ^
+     27|     { start: 0, end: 8, word: "ワークスペース" },
+     28|     { start: 9, end: 11, word: "ws" },
+ ❯ tests/unit/src/knowledge/dictionary.browser.test.ts:23:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=b9fcd519:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_normalized_words
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "file": "docs/index.yaml",
+-     "kind": "duplicate_term",
+-     "where": "terms[1].aliases[0]",
+-   },
+-   {
+-     "file": "guide.md",
+-     "kind": "avoided_term",
+-     "where": "1 行目",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/check.test.ts:228:5
+    226|   expect(
+    227|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    228|   ).toEqual([
+       |     ^
+    229|     {
+    230|       file: "docs/index.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_find_avoided_terms_when_notation_differs
+AssertionError: expected [] to deeply equal [ '3 行目' ]
+
+- Expected
++ Received
+
+- [
+-   "3 行目",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/check.test.ts:290:46
+    288|   });
+    289|   // 検証
+    290|   expect(issues.map((issue) => issue.where)).toEqual(["3 行目"]);
+       |                                              ^
+    291|   expect(issues[0]?.message).toContain("workplace");
+    292|   expect(issues[0]?.message).toContain("ワークスペース");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/dictionary.test.ts > test_build_dictionary_when_notation_differs
+AssertionError: expected [ Array(5) ] to include 'mcp'
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:89:28
+     87|   // 検証
+     88|   // 正規化した語だけが入り、記載したままの表記は入らない
+     89|   expect(dictionary.words).toContain("mcp");
+       |                            ^
+     90|   expect(dictionary.words).toContain("api");
+     91|   for (const word of ["MCP", "ｍｃｐ", "ＡＰＩ"]) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/dictionary.test.ts > test_find_words_when_notation_differs
+AssertionError: expected [] to deeply equal [ { start: +0, end: 8, …(1) }, …(1) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "end": 8,
+-     "start": 0,
+-     "word": "ワークスペース",
+-   },
+-   {
+-     "end": 11,
+-     "start": 9,
+-     "word": "ws",
+-   },
+- ]
++ []
+
+ ❯ expectFindWordsWhenNotationDiffers tests/unit/helpers/find-words-cases.ts:26:43
+     24|   const words = ["ワークスペース", "ws", "MCP"];
+     25|   // 半角カナの `ﾜｰｸｽﾍﾟｰｽ`（8 文字）は正規化すると 7 文字になるが、位置は元の文字列のまま
+     26|   expect(findWords("ﾜｰｸｽﾍﾟｰｽとＷＳ", words)).toEqual([
+       |                                           ^
+     27|     { start: 0, end: 8, word: "ワークスペース" },
+     28|     { start: 9, end: 11, word: "ws" },
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:373:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/dictionary.test.ts > test_normalize_word
+TypeError: normalizeWord is not a function
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:381:10
+    379|   const { normalizeWord } = await loadDictionary();
+    380|   // 実行・検証
+    381|   expect(normalizeWord("　Ｗｏｒｋ Place ")).toBe("work place");
+       |          ^
+    382|   expect(normalizeWord("ﾜｰｸｽﾍﾟｰｽ")).toBe("ワークスペース");
+    383|   expect(normalizeWord("㍻")).toBe("平成");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/dictionary.test.ts > test_word_starts_without_intl_segmenter_when_fullwidth
+AssertionError: expected [ +0, 1, 2, 3, 4, 5, 6 ] to deeply equal [ +0, 4, 5, 6 ]
+
+- Expected
++ Received
+
+  [
+    0,
++   1,
++   2,
++   3,
+    4,
+    5,
+    6,
+  ]
+
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:445:20
+    443|     const starts = wordStarts("ＷＳＬ2を見る");
+    444|     // 検証
+    445|     expect(starts).toEqual([0, 4, 5, 6]);
+       |                    ^
+    446|   });
+    447| });
+ ❯ withoutIntlSegmenter tests/unit/src/knowledge/dictionary.test.ts:391:5
+ ❯ tests/unit/src/knowledge/dictionary.test.ts:438:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/find.test.ts > test_find_docs_when_width_differs
+AssertionError: expected [] to deeply equal [ 'a' ]
+
+- Expected
++ Received
+
+- [
+-   "a",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/find.test.ts:68:30
+     66|   const result = findDocs({ index, text: "ＭＣＰ" });
+     67|   // 検証
+     68|   expect(idsOf(result.docs)).toEqual(["a"]);
+       |                              ^
+     69| });
+     70|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/matches.test.ts > test_collect_matches_when_notation_differs
+AssertionError: expected { byDocument: { guide: [] }, …(2) } to deeply equal { …(3) }
+
+- Expected
++ Received
+
+  {
+    "avoided": {
+-     "guide": [
+-       {
+-         "description": "話し合いの記録を置くフォルダ",
+-         "end": 14,
+-         "id": "ws",
+-         "kind": "term",
+-         "line": 3,
+-         "start": 5,
+-         "text": "workplace",
+-         "title": "ワークスペース",
+-       },
+-     ],
++     "guide": [],
+    },
+    "byDocument": {
+-     "guide": [
+-       {
+-         "description": "話し合いの記録を置くフォルダ",
+-         "end": 8,
+-         "id": "ws",
+-         "kind": "term",
+-         "line": 1,
+-         "start": 0,
+-         "text": "ワークスペース",
+-         "title": "ワークスペース",
+-       },
+-       {
+-         "description": "話し合いの記録を置くフォルダ",
+-         "end": 11,
+-         "id": "ws",
+-         "kind": "term",
+-         "line": 1,
+-         "start": 9,
+-         "text": "WS",
+-         "title": "ワークスペース",
+-       },
+-       {
+-         "description": "話し合いの記録を置くフォルダ",
+-         "end": 2,
+-         "id": "ws",
+-         "kind": "term",
+-         "line": 3,
+-         "start": 0,
+-         "text": "WS",
+-         "title": "ワークスペース",
+-       },
+-     ],
+-   },
+-   "targets": [
+-     {
+-       "description": "話し合いの記録を置くフォルダ",
+-       "id": "ws",
+-       "kind": "term",
+-       "title": "ワークスペース",
++     "guide": [],
+    },
+-   ],
++   "targets": [],
+  }
+
+ ❯ tests/unit/src/knowledge/matches.test.ts:277:18
+    275|   const result = collectMatches({ index, documents });
+    276|   // 検証
+    277|   expect(result).toEqual({
+       |                  ^
+    278|     byDocument: {
+    279|       guide: [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/matches.test.ts > test_diagram_term_matches_when_notation_differs
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/knowledge/matches.test.ts:587:17
+    585|   const found = diagramTermMatches({ body, tokens, dictionary, html: f…
+    586|   // 検証
+    587|   expect(found).toHaveLength(1);
+       |                 ^
+    588|   expect(body.slice(found[0]?.offset, found[0]?.end)).toBe("ｍｃｐ");
+    589| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/references.test.ts > test_collect_references_when_alias_notation_differs
+AssertionError: expected [] to deeply equal [ 'arch', 'guide' ]
+
+- Expected
++ Received
+
+- [
+-   "arch",
+-   "guide",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/references.test.ts:87:36
+     85|   const references = collectReferences({ index, documents });
+     86|   // 検証
+     87|   expect(references.backlinks.api).toEqual(["arch", "guide"]);
+       |                                    ^
+     88| });
+     89|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/tags.test.ts > test_list_tags_when_query_width_differs
+AssertionError: expected [] to deeply equal [ 'topic:mcp' ]
+
+- Expected
++ Received
+
+- [
+-   "topic:mcp",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/tags.test.ts:278:45
+    276|   const result = listTags({ index, query: "ＭＣＰ" });
+    277|   // 検証
+    278|   expect(result.map((entry) => entry.name)).toEqual(["topic:mcp"]);
+       |                                             ^
+    279| });
+    280|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/terms.test.ts > test_terms_rule_when_notation_differs
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/terms.test.ts:81:54
+     79|   );
+     80|   // 検証
+     81|   expect(matches(html, /class="mdmark-term-wrap"/g)).toHaveLength(2);
+       |                                                      ^
+     82|   // 下線の語は辞書の語でなく、本文に記載したままの文字
+     83|   expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  8 failed | 136 passed (144)
+      Tests  13 failed | 881 passed (894)
+   Start at  07:12:55
+   Duration  51.17s (tests 39%, worker 31%, import 24%, transform 6%)
+

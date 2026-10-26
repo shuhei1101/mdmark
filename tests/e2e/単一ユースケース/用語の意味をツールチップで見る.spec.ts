@@ -7,6 +7,12 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import {
+  expectAbove,
+  expectBelow,
+  expectInViewport,
+  TOP_EDGE_CSS,
+} from "../tooltip.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -76,6 +82,8 @@ test("test_normal", async ({ page }) => {
   await term.hover();
   await expect(tip).toBeVisible();
   await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  // ツールチップは語の上に出る
+  await expectAbove({ tip, owner: term });
   // ポインターの形は `?` にならない
   expect(
     await term.evaluate((element) => getComputedStyle(element).cursor),
@@ -318,4 +326,105 @@ test("test_normal_when_avoided_term", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(tip).toBeHidden();
   await expect(marker).toBeFocused();
+});
+
+// 語の上にツールチップの高さが残らないときだけ、語の下に出して画面に収める（正常シナリオ（上に収まらない語））
+test("test_normal_when_no_room_above", async ({ page }) => {
+  // 準備: 描く先の要素をページの上端に置き、スクロールせずに 1 行目の語を描く
+  await openPage(page, builtRoot, { hostCss: TOP_EDGE_CSS });
+  await mountDocument(page, {
+    markdown: "ワークスペースを使う。\n",
+    index: INDEX,
+    docId: DOC_ID,
+  });
+  const term = page.locator("#doc .mdmark-term");
+  const tip = page.locator("#doc .mdmark-term-tip");
+  // 実行
+  await term.hover();
+  // 検証
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  await expectBelow({ tip, owner: term });
+  await expectInViewport({ page, tip });
+});
+
+// 設定の tooltips.placement を bottom にすると、下に収まるツールチップを語の下に出す（正常シナリオ（設定で下に出す））
+test("test_normal_when_placement_bottom", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: MARKDOWN,
+    index: INDEX,
+    docId: DOC_ID,
+    config: { tooltips: { placement: "bottom" } },
+  });
+  const second = page.locator("#doc .mdmark-section-body").nth(1);
+  const term = second.locator(".mdmark-term");
+  const tip = second.locator(".mdmark-term-tip");
+  // 実行
+  await term.hover();
+  // 検証
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("話し合いの記録を置くフォルダ");
+  await expectBelow({ tip, owner: term });
+});
+
+// 全角と半角・大文字と小文字だけが違う語にも下線を引き、文字は本文の表記のまま、やめた言い方には代わりの用語のツールチップを出す（正常シナリオ（全角と半角・大文字と小文字だけが違う語））
+test("test_normal_when_width_and_case_differ", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
+    terms: [
+      {
+        id: "workspace",
+        term: "ワークスペース",
+        aliases: ["WS"],
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid: ["workplace"],
+      },
+    ],
+  };
+  const markdown = [
+    "## 一つ目",
+    "",
+    "ＷＳを開く。",
+    "",
+    "## 二つ目",
+    "",
+    "ws と WorkPlace を書く。",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown, index, docId: DOC_ID });
+  // 検証
+  const sections = page.locator("#doc .mdmark-section-body");
+  const first = sections.nth(0);
+  const second = sections.nth(1);
+  // 下線の付いた語の文字は、本文に記載したまま
+  await expect(first.locator(".mdmark-term")).toHaveText(["ＷＳ"]);
+  await expect(second.locator(".mdmark-term")).toHaveText(["ws", "WorkPlace"]);
+  await expect(first.locator(".mdmark-term")).toHaveCSS(
+    "text-decoration-style",
+    "dashed",
+  );
+  await expect(second.locator(".mdmark-term").first()).toHaveCSS(
+    "text-decoration-style",
+    "dashed",
+  );
+  // `ＷＳ` にポインターを乗せると意味が出る
+  const wsTip = first.locator(".mdmark-term-tip");
+  await first.locator(".mdmark-term").hover();
+  await expect(wsTip).toBeVisible();
+  await expect(wsTip).toContainText("話し合いの記録を置くフォルダ");
+  // `WorkPlace` はやめた言い方のマーカーで、代わりの用語と意味が出る
+  const avoided = second.locator(".mdmark-term-avoided");
+  await expect(avoided).toHaveText("WorkPlace");
+  await expect(avoided).toHaveCSS("text-decoration-style", "wavy");
+  await avoided.hover();
+  const avoidedTip = second.locator(".mdmark-term-tip").nth(1);
+  await expect(avoidedTip).toBeVisible();
+  await expect(avoidedTip).toContainText("ワークスペース");
+  await expect(avoidedTip).toContainText("話し合いの記録を置くフォルダ");
 });

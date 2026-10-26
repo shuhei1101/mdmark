@@ -4,7 +4,7 @@ MCP のツールの名前・引数・戻り値・エラーの一覧
 
 Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:mdmark`）が出すツールの一覧。
 入れ方は [プラグインを入れる](../使い方/ClaudeCodeで使う/プラグインを入れる.md)、使い方は [MCP のツールを使う](../使い方/ClaudeCodeで使う/MCPのツールを使う.md)。
-ツールの結果のテキストは、`read_guide` を除いて JSON の文字列 1 つ。
+ツールの結果のテキストは、`read_guide` と、`format` が `markdown`（既定）の `find_docs`・`list_tags` を除いて JSON の文字列 1 つ。
 エラーは結果の `isError` を `true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。
 `config` を省くと、Claude Code のセッションのフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す。
 相対パスの引数は、セッションのフォルダからの相対パス。
@@ -18,8 +18,28 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | [文書を HTML に書き出す](#文書を-html-に書き出す) | `export_html` | `mdmark export` と同じ処理で、Markdown を 1 つ、1 枚の HTML に書き出す |
 | [複数の文書を 1 枚の HTML にまとめる](#複数の文書を-1-枚の-html-にまとめる) | `build_site` | `mdmark build` と同じ処理で、設定の `build` の文書を 1 枚にまとめる |
 | [設定と索引を点検する](#設定と索引を点検する) | `check` | `mdmark check` と同じ点検をして、ずれの一覧を返す |
-| [文書を探す](#文書を探す) | `find_docs` | 設定の `index` の索引から、条件に当たる文書を返す |
-| [索引を書き換える](#索引を書き換える) | `update_index` | 索引の文書か用語の項目を置き換え、足し、消す |
+| [文書を探す](#文書を探す) | `find_docs` | 設定の `index` の索引から、条件に当たる文書を、既定の件数ずつ返す |
+| [タグの語彙を見る](#タグの語彙を見る) | `list_tags` | 設定の `index` の索引のタグの語彙を、付いている文書の数つきで返す |
+| [索引を書き換える](#索引を書き換える) | `update_index` | 索引の文書・用語・タグの語彙の項目を置き換え、足し、消す |
+
+## 接続先
+
+MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
+プラグインの `.mcp.json` は、種類 `http`・URL `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` で、Streamable HTTP でつなぐ。
+サーバーはセッションを持たず、並行して開いたセッションが同じプロセスを共有する。
+起動と停止は [MCPサーバーを起動する](../使い方/ClaudeCodeで使う/MCPサーバーを起動する.md)、`serve` の引数と終了コードは [CLI](./CLI.md#mcp-サーバーを起動する)、`MDMARK_PORT` は [設定](./設定.md#mcp-サーバーのポート)。
+
+## 作業のフォルダ
+
+`read_guide` を除くツールは、作業のフォルダの絶対パスを引数 `project_dir` で受ける。
+常駐サーバーには、セッションの作業のフォルダが環境変数で渡らないため。
+プラグインの PreToolUse のフックが、ツールの呼び出しのたびに、セッションの作業のフォルダ（`CLAUDE_PROJECT_DIR`）を `project_dir` に入れる。
+エージェントが `project_dir` を記載していても、フックが置き換える。
+`project_dir` は `tools/list` の入力のスキーマに出ないため、エージェントは記載しない。
+
+`project_dir` が無い・絶対パスでない・そのフォルダが無いときは、ツールのエラーにする（`CLAUDE_PROJECT_DIR` が無く、フックが入れられなかったときも同じ）。
+`read_guide` に `project_dir` を渡すと、知らない引数としてエラーにする。
+使い方集と配布物は、作業のフォルダによらず、`mdmark serve` を起動したパッケージから読む。
 
 ## 使い方集を読む
 
@@ -134,6 +154,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | フィールド | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `config` | 任意 | 使う設定ファイルのパス |
+| `base` | 任意 | 直し忘れの検査に比べる基準の git の ref。`mdmark check` の `--base` と同じで、渡すと `change_together` の組のうち片方の文書だけが変わった組を `missed_change_together` で返す。省くと直し忘れを検査しない |
 
 ### レスポンス
 
@@ -157,43 +178,162 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | --- | --- |
 | 設定ファイルが無い | 探した場所と、`mdmark init` で置けること |
 | 設定ファイルを YAML として読めない | 読めない行 |
+| `base` を渡し、比べる基準を引けない | `mdmark check --base` が標準エラーに出すのと同じ文。ずれの点検はしない |
 
 ## 文書を探す
 
 設定の `index` の索引から、題・別名・概要の語、タグ、関係する文書で文書を引く。
+主題のタグが当たる文書を上にして、既定の件数ずつ返す。
 索引と文書は書き換えない。
 
 ### リクエスト
 
 ```json
-{ "text": "構成", "tags": ["設計"] }
+{ "tags": ["設計"], "include": ["path"], "format": "json" }
 ```
 
 | フィールド | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `text` | 任意 | 題・別名・概要のどれかに含まれる語。大文字と小文字を区別しない |
-| `tags` | 任意 | 全てを持つ文書に絞るタグ |
-| `related_to` | 任意 | この文書の ID から参照している文書と、この文書を参照している文書（被参照）に絞る |
+| `text` | 任意 | 題・別名・概要のどれかに含まれる語。語と題・別名・概要の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる |
+| `tags` | 任意 | 全てを持つ文書に絞るタグ（AND）。タグの語彙の別名に当たるタグは、語彙の `name` のタグとして引く。空の配列は省いたときと同じくタグで絞らない |
+| `any_tags` | 任意 | どれかを持つ文書に絞るタグ（OR）。`tags` と一緒に渡すと、両方を満たす文書に絞る。別名の扱いと空の配列の扱いは `tags` と同じ |
+| `related_to` | 任意 | この文書の ID から参照している文書と、この文書を参照している文書（被参照）に絞る。引いた各行に、その文書との関係（`relations`）を添える |
+| `limit` | 任意 | 1 回に返す文書の件数。1 以上 100 以下の整数。既定は 20 |
+| `cursor` | 任意 | 前の結果の `next_cursor`。続きの文書を返す。絞り込みの条件（`text`・`tags`・`any_tags`・`related_to`）は前の呼び出しと同じにする |
+| `view` | 任意 | 各行に返す項目の組。`brief`（既定）は ID・題・概要・タグ・文字数、`standard` は `brief` にパス・別名を加え、`full` は `standard` に関連する文書・被参照の数を加える |
+| `include` | 任意 | `view` の組に加える項目。`path`・`aliases`・`related`・`referenced_by` の並び |
+| `exclude` | 任意 | `view` の組から除く項目。`include` の後に当て、`brief` の項目は除けない |
+| `count_only` | 任意 | `true` のとき、文書の行を返さず、総件数・合計文字数・タグごとの件数だけを返す。既定は `false` |
+| `format` | 任意 | 結果の形式。`markdown`（既定）は Markdown のテキストだけを返し、`json` は structuredContent と text に同じ JSON を入れる |
 | `config` | 任意 | 使う設定ファイルのパス |
 
-渡した条件を全て満たす文書を、索引の `docs` の並びで返す。
-条件を 1 つも渡さないと、全ての文書を返す。
+渡した条件を全て満たす文書を返す。
+条件を 1 つも渡さないと、全ての文書が当たり、既定の件数の先頭のページを返す。
+並びは、`tags`・`any_tags` のタグ（別名を語彙の `name` にそろえた後）のどれかが主題のタグ（`main: true`）に当たる文書を上にし、同じ順位の中は索引の `docs` の並び。
+タグで絞らないときは、索引の `docs` の並び。
 
 ### レスポンス
 
+`format` が `json` のとき。
+
 ```json
-{ "docs": [{ "id": "arch", "path": "設計/arch.md", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": ["設計"] }] }
+{
+  "total": 25,
+  "returned": 20,
+  "total_chars": 48210,
+  "next_cursor": "eyJvZmZzZXQiOjIwfQ",
+  "hint": "続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。",
+  "tag_counts": [{ "name": "設計", "count": 25 }],
+  "warnings": [],
+  "omitted": [
+    { "field": "aliases", "how": "include: [\"aliases\"]" },
+    { "field": "related", "how": "include: [\"related\"]" },
+    { "field": "referenced_by", "how": "include: [\"referenced_by\"]" }
+  ],
+  "docs": [{ "id": "arch", "title": "アーキテクチャ", "description": "全体の構成と依存の向き", "tags": [{ "name": "設計", "main": true }], "chars": 2410, "path": "設計/arch.md" }]
+}
 ```
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `docs[].id` | 文字列 | 文書の ID |
-| `docs[].path` | 文字列 | 文書のパス。索引のファイルからの相対パス |
+| `total` | 数値 | 条件に当たった文書の総件数 |
+| `returned` | 数値 | この結果で返した文書の件数。`count_only` のときは返さない |
+| `total_chars` | 数値 | 条件に当たった全ての文書の文字数の合計。文字数を数えられない文書は足さない |
+| `next_cursor` | 文字列か null | 続きを返す `cursor` の値。続きが無ければ `null`。`count_only` のときは返さない |
+| `hint` | 文字列か null | 続きがあるとき、絞り込める引数（`tags`・`any_tags`・`text`・`count_only`）を案内する 1 文。続きが無ければ `null`。`count_only` のときは返さない |
+| `tag_counts[].name` | 文字列 | 当たった全ての文書が持つタグの名前。語彙の別名は語彙の `name` にそろえる |
+| `tag_counts[].count` | 数値 | そのタグを持つ、当たった文書の件数。件数の多い順、同じ件数は語彙の並び、語彙に無いタグはその後に名前の順 |
+| `warnings` | 文字列の並び | 語彙に無いタグを `tags`・`any_tags` に渡したときの警告。タグごとに、語彙に無いことと近いタグを書いた 1 文 |
+| `omitted[].field` | 文字列 | この結果で省いた項目（`path`・`aliases`・`related`・`referenced_by`）。`count_only` のときは返さない |
+| `omitted[].how` | 文字列 | 省いた項目の取り方（`include: ["path"]` など） |
+| `docs[].id` | 文字列 | 文書の ID。`count_only` のときは `docs` を返さない |
 | `docs[].title` | 文字列 | 題 |
 | `docs[].description` | 文字列か null | 概要。索引に無いときは `null` |
-| `docs[].tags` | 文字列の並び | タグ |
+| `docs[].tags[].name` | 文字列 | タグの名前。索引の文字列の要素は、その文字列 |
+| `docs[].tags[].main` | 真偽値 | 主題のタグか。索引の文字列の要素は `false` |
+| `docs[].chars` | 数値か null | 文書のファイルの文字数（Unicode のコードポイントの数）。ファイルが無い・読めないときは `null` |
+| `docs[].path` | 文字列 | 文書のパス。索引のファイルからの相対パス。`standard`・`full` か、`include` に `path` を渡したときだけ返す |
+| `docs[].aliases` | 文字列の並び | 文書の別名。`standard`・`full` か、`include` に `aliases` を渡したときだけ返す |
+| `docs[].related` | オブジェクトの並び | 索引に記載した関連。要素は `to`・`type`・`when` と、記載があれば `paths`。索引の文字列の要素は、`to` がその文字列で `type` と `when` が `null`。`full` か、`include` に `related` を渡したときだけ返す |
+| `docs[].referenced_by` | 数値 | この文書を参照している文書の数（被参照の数）。`full` か、`include` に `referenced_by` を渡したときだけ返す |
+| `docs[].relations[].direction` | 文字列 | 関係の向き。`outgoing` は `related_to` の文書からこの行の文書へ、`incoming` はこの行の文書から `related_to` の文書へ。`related_to` を渡したときだけ `relations` を返す |
+| `docs[].relations[].type` | 文字列か null | `related_to` の文書から見た関係の種類。`outgoing` は記載した `type`、`incoming` は逆向きの名前（`requires` → `required_by`、`references` → `referenced_by`、`replaces` → `replaced_by`、`part_of` → `has_part`、`change_together` はそのまま）。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は `null` |
+| `docs[].relations[].when` | 文字列か null | 索引の関連に記載した `when`。`type` が `null` の関係は `null` |
 
-当たる文書が 0 件でも、空の `docs` を返す。
+`relations` の並びは `outgoing` → `incoming`、同じ向きの中は索引の関連の並び。
+索引の関連が無い向きだけ、本文のリンクか別名の出現による関係を 1 つ置く。
+関連は片側だけに記載し、逆向きは `relations` が出す（`change_together` だけは両側に記載する）。
+
+`view` で省いた項目は `omitted` に、`include` での取り方を添えて並べる。
+索引は文書のバージョンを持たないため、バージョン（`rev`）は返さない。
+git の最終更新日時・最終更新者も返さない。
+
+`format` が `markdown` のとき、結果は text だけで、structuredContent を返さない。
+先頭に総件数・返した件数・合計文字数・`next_cursor` の行、続けて文書の表（列は返す項目。主題のタグに `（主題）` を付ける。関連する文書は要素ごとに `{to}（{type}）`、関係は要素ごとに `{direction} {type}`）、タグごとの件数・省いた項目・警告・案内の行を並べる。
+
+```markdown
+総件数 25 件・返した件数 20 件・合計文字数 48210・next_cursor: eyJvZmZzZXQiOjIwfQ
+
+| ID | 題 | 概要 | タグ | 文字数 | パス |
+| --- | --- | --- | --- | --- | --- |
+| arch | アーキテクチャ | 全体の構成と依存の向き | 設計（主題） | 2410 | 設計/arch.md |
+
+タグごとの件数: 設計 25
+
+省いた項目: aliases（include: ["aliases"]）・related（include: ["related"]）・referenced_by（include: ["referenced_by"]）
+
+続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。
+```
+
+当たる文書が 0 件でも、総件数 0 件の結果を返す。
+索引がタグの語彙を記載しているとき、語彙に無いタグを渡しても拒まず、そのタグのまま引いて `warnings` を添える。
+
+### エラー
+
+| 発生条件 | 内容 |
+| --- | --- |
+| 設定に `index` が無い | 設定に `index` が無いことと、`index` に索引のファイルを書くこと |
+| `cursor` を読めない、または絞り込みの条件が `next_cursor` を返した呼び出しと違う | `cursor` を省いて先頭から引き直すこと |
+| 設定ファイルが無い・読めない、索引のファイルを読めない | 設定と索引を点検するときと同じ文 |
+
+## タグの語彙を見る
+
+設定の `index` の索引のタグの語彙を、名前・グループ・説明・別名・振り替え先と、付いている文書の数つきで返す。
+付いている文書が 0 件のタグも返す。
+索引と文書は書き換えない。
+
+### リクエスト
+
+```json
+{ "query": "MCP", "format": "json" }
+```
+
+| フィールド | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `query` | 任意 | タグの名前・別名・説明のどれかに含まれる語。語と名前・別名・説明の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる。省くと全てのタグを返す |
+| `format` | 任意 | 結果の形式。意味と既定は [文書を探す](#文書を探す) の `format` と同じ |
+| `config` | 任意 | 使う設定ファイルのパス |
+
+### レスポンス
+
+`format` が `json` のとき。
+
+```json
+{ "tags": [{ "name": "topic:mcp", "group": "topic", "description": "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs", "aliases": ["MCP"], "deprecated": null, "docs": 2 }] }
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `tags[].name` | 文字列 | タグの名前 |
+| `tags[].group` | 文字列か null | グループ。語彙に無いときは `null` |
+| `tags[].description` | 文字列か null | 説明（含める / 含めない / 例）。語彙に無いときは `null` |
+| `tags[].aliases` | 文字列の並び | 別名。語彙に無いときは空 |
+| `tags[].deprecated` | 文字列か null | やめたタグの振り替え先の `name`。やめたタグでないときは `null` |
+| `tags[].docs` | 数値 | そのタグが付いている文書の数。文書のタグが `name` か `aliases` に当たる文書を数える |
+
+並びは索引の `tags` の並びで、同じ `name` が複数あるときは先の 1 つだけを返す。
+`format` が `markdown` のときは、タグの表だけのテキストを返し、structuredContent を返さない。
+索引がタグの語彙を記載していないときと、当たるタグが 0 件のときは、空の `tags` を返す。
 
 ### エラー
 
@@ -204,8 +344,8 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 
 ## 索引を書き換える
 
-設定の `index` の索引の、文書か用語の ID の項目を置き換える。
-ID の項目が無ければ、その一覧の末尾に追加する。
+設定の `index` の索引の、文書か用語の ID、またはタグの語彙の `name` の項目を置き換える。
+項目が無ければ、その一覧の末尾に追加する。
 `item` が `null` なら、その ID の項目を消す。
 索引のファイルを書き換える。
 手順は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
@@ -218,9 +358,9 @@ ID の項目が無ければ、その一覧の末尾に追加する。
 
 | フィールド | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `kind` | 必須 | 書き換えるのが文書（`doc`）か用語（`term`）か。文書と用語の ID は、それぞれの一覧の中でだけ一意 |
-| `id` | 必須 | 文書か用語の ID。空にできない |
-| `item` | 必須 | その ID の項目の中身（`id` を除くキー）。項目ごと置き換える。`null` なら項目を消す。キーは [索引](./索引.md) の文書・用語 |
+| `kind` | 必須 | 書き換えるのが文書（`doc`）・用語（`term`）・タグの語彙（`tag`）のどれか。文書と用語の ID とタグの `name` は、それぞれの一覧の中でだけ一意 |
+| `id` | 必須 | 文書か用語の ID。`kind` が `tag` のときはタグの `name`。空にできない |
+| `item` | 必須 | その ID の項目の中身（文書・用語は `id`、タグは `name` を除くキー）。項目ごと置き換える。`null` なら項目を消す。キーは [索引](./索引.md) の文書・用語・タグの語彙 |
 | `config` | 任意 | 使う設定ファイルのパス |
 
 ### レスポンス
@@ -234,7 +374,12 @@ ID の項目が無ければ、その一覧の末尾に追加する。
 | `action` | 文字列 | `added`（追加した）・`replaced`（置き換えた）・`removed`（消した） |
 | `index` | 文字列 | 書き換えた索引のファイルのパス。設定ファイルのあるフォルダからの相対パス |
 
+文書の `related` は、`to`・`type`・`when`（と任意の `paths`）を持つオブジェクトの並びで渡す。
+`to`・`type`・`when` の欠けと、知らない `type` は、スキーマに合わないものとして拒む。
+
 渡した ID の項目の前後の項目と、ほかのキーは書き換えない。
+索引がその一覧のキー（`terms`・`tags`）を持たないときは、最上位の末尾にキーを作って足す。
+`tags` の最後の 1 つを消したときは、`tags` のキーも消す。
 書き換えた後の索引全体を、`mdmark check` が使う索引のスキーマの検査に通す。
 索引と文書のずれは検査しない。
 
@@ -243,5 +388,5 @@ ID の項目が無ければ、その一覧の末尾に追加する。
 | 発生条件 | 内容 |
 | --- | --- |
 | 書き換えた後の索引がスキーマに合わない | `{場所}: {内容}` の行を、合わないところの数だけ。索引のファイルは書き換えない |
-| `item` が `null` で、その ID の項目が無い | その ID が一覧に無いこと |
+| `item` が `null` で、その ID（タグは `name`）の項目が無い | その ID が一覧に無いこと |
 | 設定ファイルが無い・読めない、設定に `index` が無い、索引のファイルを読めない | 何も書かない |

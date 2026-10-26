@@ -1,6 +1,7 @@
+import { join } from "node:path";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, expect, test } from "vitest";
-import { useTempDirs } from "../../helpers/cli.ts";
+import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
 /** MCP サーバーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMcp = () => import("../../../../src/plugin/mcp.ts");
@@ -19,10 +20,11 @@ afterEach(async () => {
 /** サーバーを作り、`InMemoryTransport` で SDK のクライアントとつなぐ */
 async function connectClient(): Promise<Client> {
   const { createMcpServer } = await loadMcp();
+  const packageDir = await createTempDir();
   const server = createMcpServer({
-    context: {
-      projectDir: await createTempDir(),
-      pluginDir: await createTempDir(),
+    roots: {
+      guideDir: join(packageDir, "plugin", "guide"),
+      distDir: join(packageDir, "dist"),
     },
     version: "v0.0.0",
     stderr: () => {},
@@ -39,7 +41,7 @@ async function connectClient(): Promise<Client> {
   return client;
 }
 
-// 6 つのツールと instructions を出す（正常系）
+// 7 つのツールと instructions と annotations を出す（正常系）
 test("test_create_mcp_server", async () => {
   // 準備
   const { INSTRUCTIONS } = await loadMcp();
@@ -51,7 +53,17 @@ test("test_create_mcp_server", async () => {
   expect(tools.map((tool) => tool.name).sort()).toEqual(
     TOOLS.map((tool) => tool.name).sort(),
   );
-  expect(tools).toHaveLength(6);
+  expect(tools).toHaveLength(7);
+  for (const tool of tools) {
+    expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
+      "project_dir",
+    );
+  }
+  const readOnlyNames = ["read_guide", "check", "find_docs", "list_tags"];
+  for (const name of readOnlyNames) {
+    const tool = tools.find((candidate) => candidate.name === name);
+    expect(tool?.annotations?.readOnlyHint).toBe(true);
+  }
   expect(client.getInstructions()).toBe(INSTRUCTIONS);
 });
 
@@ -73,18 +85,35 @@ test("test_create_mcp_server_when_arguments_invalid", async () => {
   expect(text).toContain("names");
 });
 
-// 作業のフォルダが無ければ待ち受けない（正常系）
-test("test_run_mcp_server_when_project_dir_missing", async () => {
+// structuredContent がクライアントまで届く（正常系）
+test("test_create_mcp_server_when_structured", async () => {
   // 準備
-  const { runMcpServer } = await loadMcp();
-  const stderr: string[] = [];
+  const projectDir = await createTempDir();
+  await writeFiles(projectDir, {
+    "mdmark.config.yaml": "index: index.yaml\n",
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "    tags: [topic:mcp]",
+      "tags:",
+      "  - name: topic:mcp",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+  });
+  const client = await connectClient();
   // 実行
-  const code = await runMcpServer({
-    env: {},
-    moduleDir: "/plugin/server",
-    stderr: (line) => stderr.push(line),
+  const result = await client.callTool({
+    name: "list_tags",
+    arguments: { format: "json", project_dir: projectDir },
   });
   // 検証
-  expect(code).toBe(1);
-  expect(stderr.some((line) => line.includes("CLAUDE_PROJECT_DIR"))).toBe(true);
+  const structured = result.structuredContent as { tags: unknown } | undefined;
+  expect(Array.isArray(structured?.tags)).toBe(true);
+  const texts = result.content as { type: string; text: string }[];
+  expect(texts).toHaveLength(1);
+  expect(JSON.parse(texts[0]?.text ?? "")).toEqual(structured);
 });

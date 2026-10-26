@@ -16,7 +16,7 @@ directory: |-
   ├── figures.ts      # 図表の番号と参照
   ├── toc.ts          # 目次
   ├── html.ts         # 埋め込んだ HTML
-  ├── code-blocks.ts  # コードブロックの題・行番号・行の強調とコードの行の印
+  ├── code-blocks.ts  # コードブロックの題・行番号・行の強調とコードの行の印・色分けの対象の言語
   ├── warnings.ts     # 書き方の警告を差し込む助け
   └── tokens.ts       # 記法のコアルールが共有するトークンの助け（印の読み取り・閉じの印の探索・機能の判定）
   ```
@@ -107,6 +107,16 @@ constants:
         value: HTML・XML・Markdown（印の後ろの `-->` も外す）
       - key: /* 〜 */
         value: CSS など（印の後ろの `*/` も外す）
+  - name: SYNTAX_LANGUAGES
+    title: 色分けの言語の対応表
+    container: src/render/syntax/code-blocks.ts
+    summary: 情報文字列の最初の語（小文字）から、highlight.js の言語のモジュール名を引く表。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に当たる
+    value: '{ typescript: "typescript", ts: "typescript", tsx: "typescript", javascript: "javascript", js: "javascript", jsx: "javascript", mjs: "javascript", cjs: "javascript", json: "json", yaml: "yaml", yml: "yaml", python: "python", py: "python", bash: "bash", sh: "bash", shell: "bash", zsh: "bash", html: "xml", xml: "xml", css: "css", markdown: "markdown", md: "markdown", sql: "sql" }'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの対象]
+    status: planned
+    introduced:
+      pr: 97
 functions:
   - name: slugify
     title: 見出しの ID を作る
@@ -839,7 +849,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`code` がオンなら、残っている `fence` のトークンごとに `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む。題・行番号・行の種類のどれかを持つコードブロックを部品『コードブロック』の `ownBlock` に置き換える。置き換えないコードブロックも、`fence` の `content` を `readLineMarks` の行の文字でつなぎ直す（打ち消した印の `\` が外れる）。`readCodeSpec` と `readLineMarks` の読めない指定は、置き換えたかどうかに関わらずコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが `fence` でなくしているため当たらない
+    summary: コアルール。`code` か `syntax` がオンなら、残っている `fence` のトークンごとに次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む（オフのときは行の印を外さず中身の行をそのまま使う）。`syntax` がオンのときは情報文字列の言語を `syntaxLanguageOf` で引く。題・行番号・行の種類・色分けの言語のどれかを持つコードブロックを、部品『コードブロック』（色分けの言語を `syntax` に渡す）の `ownBlock` に置き換える。置き換えないコードブロックも、`code` がオンなら `fence` の `content` を `readLineMarks` の行の文字でつなぎ直す（打ち消した印の `\` が外れる）。`readCodeSpec` と `readLineMarks` の読めない指定は、置き換えたかどうかに関わらずコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが `fence` でなくしているため当たらない
     args:
       - name: state
         type: StateCore
@@ -851,11 +861,12 @@ functions:
       - '#functions[readLineMarks]'
       - '#functions[pushWarning]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeBlock]
+      - '#functions[syntaxLanguageOf]'
     unit_tests:
       - name: test_build_code_blocks
         case: 正常
         summary: 印と行の印を持つコードブロックを部品にし、何も持たないコードブロックは `fence` のままにする
-        condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行のコードブロックと、印も行の印も持たないコードブロック'
+        condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行のコードブロックと、印も行の印も持たない言語 `text` のコードブロック'
         mock: なし
         expected: 1 つ目が `<figure class="mdmark-code">` の `html_block`、2 つ目は `fence` のまま
       - name: test_build_code_blocks_when_escaped
@@ -882,6 +893,56 @@ functions:
         condition: '`features.code` が `false` で、行末に `// [!code ++]` を持つコードブロック'
         mock: なし
         expected: '`fence` のままで、中身に `// [!code ++]` が残る'
+      - name: test_build_code_blocks_when_syntax
+        case: 正常
+        summary: 色分けの対象を部品にして色分けの属性を付け、対象外は `fence` のままにする
+        condition: 印も行の印も持たない言語 `yml` のコードブロックと、言語 `text` のコードブロック。`syntax` はオン
+        mock: なし
+        expected: 1 つ目が `<code class="language-yml" data-mdmark-syntax="yaml">` を含む `html_block`、2 つ目は `fence` のまま
+      - name: test_build_code_blocks_when_syntax_disabled
+        case: 正常
+        summary: '`syntax` がオフなら色分けの属性を付けない'
+        condition: '`<!-- features: -syntax -->` と、印も行の印も持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後の言語 `ts` のコードブロック'
+        mock: なし
+        expected: 1 つ目は `fence` のまま、2 つ目は行番号を持つ部品で、どちらにも `data-mdmark-syntax` が無い
+      - name: test_build_code_blocks_when_code_disabled_with_syntax
+        case: 正常
+        summary: '`code` がオフでも `syntax` がオンなら、行の印を外さずに色分けの属性を付ける'
+        condition: '`features.code` が `false` で、行末に `// [!code ++]` を持つ言語 `ts` のコードブロック'
+        mock: なし
+        expected: '`data-mdmark-syntax="typescript"` を持つ `html_block` で、行に分けず、中身に `// [!code ++]` が残る'
+    reason: 色分けの対象を、mdmark が出した要素だけが持ち続ける属性 `data-mdmark-syntax` で示すため、印も行の印も持たない色分けの対象も部品に置き換える（`fence` のままだと `code` の属性は sanitize が生の HTML と同じく落とす）。部品は `pre` に同じ読み上げの名前と `tabindex` を付け、`markSourceLines` が元の行番号を付けるため、出力は `fence` のときと属性 1 つだけ違う
+  - name: syntaxLanguageOf
+    title: 色分けの言語を引く
+    container: src/render/syntax/code-blocks.ts
+    kind: 関数
+    scope: public
+    summary: 情報文字列の言語の語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返す。表に無ければ `undefined`
+    description: '`Object.hasOwn` で引き、`constructor` などの継承した名前に当てない'
+    args:
+      - name: language
+        type: string
+        required: true
+        description: 情報文字列の最初の語（空も受ける）
+    returns:
+      type: string | undefined
+      description: 言語のモジュール名
+    unit_tests:
+      - name: test_syntax_language_of
+        case: 正常
+        summary: 別名と大文字を表のモジュール名にする
+        condition: '`ts`・`YML`・`html`'
+        mock: なし
+        expected: '`typescript`・`yaml`・`xml`'
+      - name: test_syntax_language_of_when_unknown
+        case: 正常
+        summary: 表に無い語と継承した名前は引かない
+        condition: '`text`・`tree`・空・`constructor`'
+        mock: なし
+        expected: どれも `undefined`
+    status: planned
+    introduced:
+      pr: 97
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → コードブロック → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける

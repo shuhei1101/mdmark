@@ -11,12 +11,19 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { build, type Metafile } from "esbuild";
 import { GUIDE_CONTEXT_LIMIT } from "../src/plugin/guide.ts";
-import { buildPlugin, removePluginOutputs } from "./build-plugin.ts";
+import { findBaselineViolations } from "./baseline.ts";
 import {
+  buildPlugin,
+  listEmbeddedPackages,
+  removePluginOutputs,
+} from "./build-plugin.ts";
+import {
+  BROWSER_TARGETS,
   listBundledPackages,
   NODE_BANNER,
   NODE_TARGET,
   postcssStubPlugin,
+  readEmbeddedLicenseBlock,
   readLicenseBlock,
 } from "./bundle.ts";
 import { checkMigrations } from "./migrations.ts";
@@ -27,8 +34,6 @@ const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
 const MAX_DIST_FILE_BYTES = 384 * 1024;
 // 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
-// esbuild の target に渡すブラウザの版
-const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
 // サイズを検めない配布ファイル（使う側のページが jsDelivr から読まない出力）
 const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
 // CLI の実行時の依存: 束ねずに `package.json` の `dependencies` から読む
@@ -71,16 +76,23 @@ export function assertNoScriptClose(code: string, file: string): void {
   }
 }
 
-/** 束ねたパッケージごとに名前・版・ライセンス・ライセンスの本文を、`dist/` の `LICENSES_FILE` に書く */
+/** 束ねたパッケージと、その中に取り込まれたパッケージの名前・版・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書く。複数の `metafile` で同じパッケージは 1 回だけ書く */
 export async function writeThirdPartyLicenses(options: {
-  /** esbuild の出力 */
-  metafile: Metafile;
+  /** 配布物と CLI の esbuild の出力 */
+  metafiles: Metafile[];
   /** 作業ツリーの場所 */
   root: string;
 }): Promise<void> {
-  const { metafile, root } = options;
-  const blocks = listBundledPackages(metafile).map((name) =>
-    readLicenseBlock({ root, name }),
+  const { metafiles, root } = options;
+  const bundled = new Set(metafiles.flatMap(listBundledPackages));
+  const embedded = new Set(
+    metafiles.flatMap((metafile) => listEmbeddedPackages({ metafile, root })),
+  );
+  const names = [...new Set([...bundled, ...embedded])].sort();
+  const blocks = names.map((name) =>
+    bundled.has(name)
+      ? readLicenseBlock({ root, name })
+      : readEmbeddedLicenseBlock({ root, name }),
   );
   writeFileSync(join(root, "dist", LICENSES_FILE), blocks.join("\n\n"));
 }
@@ -172,13 +184,13 @@ async function buildViewer(
   );
 }
 
-/** CLI の `src/cli/main.ts` を Node で動く `dist/cli.js` に束ねる（`yaml` と `esbuild` は束ねない）。ソースが無ければ何も書かない */
+/** CLI の `src/cli/main.ts` を Node で動く `dist/cli.js` に束ねる（`yaml` と `esbuild` は束ねない）。出力のパスとバイト数と、ライセンスを書くための esbuild の出力を返す。ソースが無ければ何も書かず、出力を持たない */
 async function buildCli(
   version: string,
   root: string,
-): Promise<Record<string, number>> {
+): Promise<{ outputs: Record<string, number>; metafile?: Metafile }> {
   if (!existsSync(join(root, "src", "cli", "main.ts"))) {
-    return {};
+    return { outputs: {} };
   }
   const result = await build({
     absWorkingDir: root,
@@ -197,15 +209,18 @@ async function buildCli(
   });
   // `npx` や `node_modules/.bin` から入口として実行できるようにする
   chmodSync(join(root, "dist", "cli.js"), 0o755);
-  return Object.fromEntries(
-    Object.entries(result.metafile.outputs).map(([path, output]) => [
-      path,
-      output.bytes,
-    ]),
-  );
+  return {
+    outputs: Object.fromEntries(
+      Object.entries(result.metafile.outputs).map(([path, output]) => [
+        path,
+        output.bytes,
+      ]),
+    ),
+    metafile: result.metafile,
+  };
 }
 
-/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、型定義を書き、束ねた依存のライセンスを書く */
+/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、型定義を書き、配布物と CLI に束ねた依存のライセンスを書く */
 export async function buildDist(
   version: string,
   root: string,
@@ -226,7 +241,6 @@ export async function buildDist(
     logLevel: "silent",
   });
   await emitDeclarations(root);
-  await writeThirdPartyLicenses({ metafile: result.metafile, root });
   const outputs = Object.fromEntries(
     Object.entries(result.metafile.outputs).map(([path, output]) => [
       path,
@@ -235,7 +249,12 @@ export async function buildDist(
   );
   Object.assign(outputs, await buildParts(version, root));
   Object.assign(outputs, await buildViewer(version, root));
-  Object.assign(outputs, await buildCli(version, root));
+  const cli = await buildCli(version, root);
+  Object.assign(outputs, cli.outputs);
+  await writeThirdPartyLicenses({
+    metafiles: [result.metafile, ...(cli.metafile ? [cli.metafile] : [])],
+    root,
+  });
   outputs[`dist/${LICENSES_FILE}`] = statSync(
     join(root, "dist", LICENSES_FILE),
   ).size;
@@ -254,7 +273,7 @@ export function findTooLargeOutputs(
     .map(([path, bytes]) => ({ path, bytes }));
 }
 
-/** 前回の `dist/` とプラグインの生成物を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、プラグインをビルドし、終了コードを返す */
+/** 前回の `dist/` とプラグインの生成物を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズと対応ブラウザの下限を検査し、プラグインをビルドし、終了コードを返す */
 export async function main(
   argv: string[],
   options: {
@@ -287,7 +306,15 @@ export async function main(
           `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
         );
       }
-      if (tooLarge.length === 0) {
+      // 配布ファイルのサイズが上限内のときだけ、下限のブラウザに無い API を確かめる
+      const violations =
+        tooLarge.length === 0
+          ? await findBaselineViolations({ root, version })
+          : [];
+      for (const { file, line, column, message } of violations) {
+        console.error(`${file}:${line}:${column} ${message}`);
+      }
+      if (tooLarge.length === 0 && violations.length === 0) {
         const pluginProblems = await buildPlugin({
           version,
           root,

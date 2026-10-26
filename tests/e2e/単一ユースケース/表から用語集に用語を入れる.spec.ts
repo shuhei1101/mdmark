@@ -141,7 +141,7 @@ test("test_normal_when_other_document", async ({ page }) => {
   );
 });
 
-// やめた言い方の列を持つ表でも、表を描き、用語だけに下線を引いて、やめた言い方には付けない（正常シナリオ（やめた言い方の列がある））
+// 用語集の表のやめた言い方の列の言い方に、表の中には付けず、段落には波線のマーカーと代わりの用語のツールチップを付ける（正常シナリオ（やめた言い方の列がある））
 test("test_normal_when_avoid_column", async ({ page }) => {
   // 準備
   const markdown = [
@@ -161,21 +161,100 @@ test("test_normal_when_avoid_column", async ({ page }) => {
   await mountDocument(page, { markdown });
   // 検証
   const doc = page.locator("#doc");
-  // やめた言い方の列を含めて表として描かれ、書き方の警告は出ない
+  // やめた言い方の列を含めて表として描かれ、表の中にはマーカーが付かず、書き方の警告は出ない
   await expect(doc.locator("table")).toHaveCount(1);
   await expect(doc.locator("table th")).toHaveText([
     "用語",
     "意味",
     "やめた言い方",
   ]);
+  await expect(doc.locator("table .mdmark-term")).toHaveCount(0);
   await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
-  // 段落の ワークスペース だけに下線が付き、ポインターを乗せると表の意味が出る
-  const term = doc.locator("p .mdmark-term");
+  // 段落の ワークスペース に破線の下線が付き、ポインターを乗せると表の意味が出る
+  const term = doc.locator("p .mdmark-term:not(.mdmark-term-avoided)");
   await expect(term).toHaveText(["ワークスペース"]);
+  await expect(term).toHaveCSS("text-decoration-style", "dashed");
   await term.hover();
-  await expect(doc.locator("p .mdmark-term-tip")).toContainText(
+  await expect(
+    doc
+      .locator("p .mdmark-term-wrap", {
+        has: page.locator(".mdmark-term:not(.mdmark-term-avoided)"),
+      })
+      .locator(".mdmark-term-tip"),
+  ).toContainText("作業の置き場所");
+  // 段落の 作業場 に、破線と形で見分けられる波線のマーカーが付く
+  const marker = doc.locator("p .mdmark-term-avoided");
+  await expect(marker).toHaveText(["作業場"]);
+  await expect(marker).toHaveCSS("text-decoration-style", "wavy");
+  // ポインターを乗せると、代わりの用語 ワークスペース と意味が出る
+  const tip = doc
+    .locator("p .mdmark-term-wrap", {
+      has: page.locator(".mdmark-term-avoided"),
+    })
+    .locator(".mdmark-term-tip");
+  await expect(tip).toBeHidden();
+  await marker.hover();
+  await expect(tip).toBeVisible();
+  await expect(tip.locator(".mdmark-term-tip-heading")).toHaveText([
+    "代わりの用語",
+  ]);
+  await expect(tip.locator(".mdmark-term-tip-replacement")).toHaveText(
+    "ワークスペース",
+  );
+  await expect(tip.locator(".mdmark-term-tip-meaning")).toHaveText(
     "作業の置き場所",
   );
-  // 作業場 は段落に残り、下線が付かない
-  await expect(doc.locator("p")).toContainText("作業場を閉じる。");
+});
+
+// ほかの文書の用語集の表のやめた言い方にも、描く文書の本文でマーカーと代わりの用語のツールチップを付ける（正常シナリオ（ほかの文書の表のやめた言い方））
+test("test_normal_when_other_document_avoid_column", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [
+      { id: "glossary", path: "用語集.md", title: "用語集" },
+      { id: "guide", path: "使い方/guide.md", title: "使い方" },
+    ],
+  };
+  const documents = {
+    "用語集.md": [
+      "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+      "",
+      "| 用語 | 意味 | やめた言い方 |",
+      "| --- | --- | --- |",
+      "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+      "",
+      "<!-- /glossary -->",
+      "",
+    ].join("\n"),
+    "使い方/guide.md": "# 使い方\n\n作業場を書く。\n",
+  };
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: documents["使い方/guide.md"],
+    index,
+    docId: "guide",
+    documents,
+  });
+  // 検証
+  const marker = page.locator("#doc .mdmark-term-avoided");
+  await expect(marker).toHaveText(["作業場"]);
+  await expect(marker).toHaveCSS("text-decoration-style", "wavy");
+  const tip = page
+    .locator("#doc .mdmark-term-wrap", {
+      has: page.locator(".mdmark-term-avoided"),
+    })
+    .locator(".mdmark-term-tip");
+  await marker.hover();
+  await expect(tip).toBeVisible();
+  await expect(tip.locator(".mdmark-term-tip-heading")).toHaveText([
+    "代わりの用語",
+  ]);
+  await expect(tip.locator(".mdmark-term-tip-replacement")).toHaveText(
+    "ワークスペース",
+  );
+  await expect(tip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "作業の置き場所",
+  );
 });

@@ -22,6 +22,7 @@ scenarios:
         D->>B: npm run build
         B->>B: version.ini の版を読む
         B->>F: 版を埋めた JS と CSS を書く
+        B->>B: 使う側のブラウザが読む JS を対応ブラウザの下限の版と照らす
         B-->>D: 終了コード 0
         D->>N: npm test
         N-->>D: 全件 pass
@@ -30,7 +31,7 @@ scenarios:
       - '`dist/index.js` の公開関数が `v0.0.0` を返す'
       - lint の違反と型エラーが 0 件
       - '`dist/index.d.ts` があり、公開関数と拡張の型を持つ'
-      - '`plugin/` に束ねた MCP サーバーと使い方集の索引があり、`plugin/.claude-plugin/plugin.json` の版が `v0.0.0`'
+      - '`plugin/` にフックのスクリプト（`scripts/session-start.js`・`scripts/pre-tool-use.js`）と使い方集の索引があり、MCP サーバー（`server/`・`dist/`）が無く、`plugin/.claude-plugin/plugin.json` の版が `v0.0.0`'
     test: test_normal
   - name: 正常シナリオ（版を指定してビルドする）
     setup:
@@ -177,6 +178,28 @@ scenarios:
       - '`dist/` と `plugin/` に配布物が残っていない'
       - 出力に使い方集の索引の文字数と上限が出る
     test: test_error_when_guide_index_too_long
+  - name: 異常シナリオ（対応ブラウザの下限に無い API を使う）
+    setup:
+      - name: 下限に無い API を使う作業ツリー
+        description: '`npm ci` を流した作業ツリー。`src/index.ts` のモジュールの最上位に、有無を確かめずに `new Intl.Segmenter("ja")` を呼ぶ行を足してある'
+        notes: '`Intl.Segmenter` は Firefox 98 に無い（Firefox 125 から）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant F as dist/
+        D->>B: npm run build
+        B->>F: 版を埋めた JS と CSS を書く
+        B->>B: 使う側のブラウザが読む JS を対応ブラウザの下限の版と照らす
+        B->>F: 書いた配布物を消す
+        B-->>D: 下限に無い API と配布ファイルとブラウザの版を出し、終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`dist/` に配布物が残っていない'
+      - 出力に `Intl.Segmenter`・`dist/index.js`・Firefox 98 が出る
+    test: test_error_when_api_missing_in_baseline_browser
 lead: 開発者が、クローンしたリポジトリで依存の導入・lint・型検査・ビルド・テストを順に流し、版を埋めた配布物を `dist/` に得る。
 issue: 2
 primary_actor: mdmark の開発者

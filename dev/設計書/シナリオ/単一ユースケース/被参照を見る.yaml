@@ -5,7 +5,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く HTML
       - name: 3 つの文書を持つ索引
-        description: '`docs/index.yaml` に置く索引。文書 `arch`（`path` は `設計/arch.md`、題 `アーキテクチャ`）・`api`（`path` は `api.md`、題 `API`、`related` に `arch`）・`guide`（`path` は `使い方/guide.md`、題 `使い方`）を持つ'
+        description: '`docs/index.yaml` に置く索引。文書 `arch`（`path` は `設計/arch.md`、題 `アーキテクチャ`）・`api`（`path` は `api.md`、題 `API`、`related` に `{to: arch, type: requires, when: API の前提の構成を確かめるとき}`）・`guide`（`path` は `使い方/guide.md`、題 `使い方`）を持つ'
         notes: 3 つの文書を別のフォルダに置く
       - name: ほかの文書の本文
         description: '`guide` の本文が `../設計/arch.md` へのリンクを持つ'
@@ -76,6 +76,32 @@ scenarios:
       - ツールチップに、用語が出る文書の一覧が無い
       - キーボードでツールチップの中の `API` のリンクへフォーカスを移せる
     test: test_normal_when_document_alias
+  - name: 正常シナリオ（全角と半角・大文字と小文字だけが違う別名）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 英字の別名を持つ索引
+        description: 正常シナリオの 3 つの文書のうち `api` が `aliases` に `MCP` を持ち、`related` を持たない索引
+      - name: ほかの文書の本文
+        description: '`guide` の本文の段落に全角の `ＭＣＰ` を、`arch` の本文の段落に小文字の `mcp` を書く。どちらも `api` へのリンクを持たない'
+        notes: 被参照が別名の出現だけから来ることを、`related` とリンクを外して決定的に起こす
+      - name: 描く Markdown
+        description: '`api` の本文'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を渡して描かせる
+        M->>M: ほかの文書の本文の語と api の別名を正規化して照合した参照から、api を参照している文書を引く
+        M-->>P: 本文と被参照の一覧を描く
+        P-->>U: 被参照の一覧を表示
+    expected:
+      - 文書の末尾の「関連文書」に `使い方` と `アーキテクチャ` が並ぶ
+      - 本文が描かれている
+    test: test_normal_when_alias_width_and_case_differ
 lead: 読む人が、描いた文書を参照している文書の一覧と、本文の語に別名が一致した文書を見る。被参照は保存せず、索引の `related`・本文の文書間のリンク・文書の別名の出現から描くときに算出する。
 issue: 5
 primary_actor: 文書を読む人
@@ -88,7 +114,7 @@ trigger: 使う側のページが、索引・描く文書の `id`・ほかの文
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 被参照の機能（`backlinks`）がオン（既定）
-success_guarantee: 描いた文書の末尾に、その文書を `related`・本文のリンク・文書の別名で参照している文書が、「関連文書」の題で、題とその文書へのリンクで並ぶ。本文の語に別名が一致した文書は、その語のツールチップに並ぶ。
+success_guarantee: 描いた文書の末尾に、その文書を `related`・本文のリンク・文書の別名で参照している文書が、「関連文書」の題で、題とその文書へのリンクで並ぶ。本文の語に別名が一致した文書は、その語のツールチップに並ぶ。別名は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに照合する。
 minimal_guarantee: 参照されていない文書も、索引に無い文書も、本文は描かれる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#

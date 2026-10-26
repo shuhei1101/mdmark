@@ -3,8 +3,9 @@ lead: '`npm run build` が実行するビルドのスクリプト。版を決め
 directory: |-
   ```tree
   scripts/
+  ├── baseline.ts    # 使う側のブラウザが読む JS を minify せずに束ね、対応ブラウザの下限に無い API を拾う
   ├── build.ts       # 版の決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査
-  ├── bundle.ts      # build.ts と build-plugin.ts が使う Node の束ねの target・先頭の行・postcss の差し替え・束ねたパッケージとライセンスの引き方
+  ├── bundle.ts      # build.ts と build-plugin.ts が使う Node とブラウザの束ねの target・先頭の行・postcss の差し替え・束ねたパッケージとライセンスの引き方
   └── migrations.ts  # スキーマを変えた版に移行の手順があるかの点検
   ```
 constants:
@@ -33,7 +34,7 @@ constants:
     reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
   - name: BROWSER_TARGETS
     title: 出力の対象のブラウザ
-    container: scripts/build.ts
+    container: scripts/bundle.ts
     summary: esbuild の `target` に渡すブラウザの版
     value: '["chrome99", "firefox98", "safari16.4"]'
     refs:
@@ -53,6 +54,25 @@ constants:
     container: scripts/migrations.ts
     summary: 変えたら移行の手順を求める `schemas/` のファイル
     value: '`["mdmark.config.schema.json", "mdmark.index.schema.json"]`'
+  - name: BASELINE_ENTRIES
+    title: 下限と照らす入口
+    container: scripts/baseline.ts
+    summary: 対応ブラウザの下限と照らす、使う側のブラウザが読む JS の入口と、照らした結果に出す配布ファイルの名前
+    entries:
+      - key: '0'
+        value: '{ in: "src/index.ts", out: "index" }'
+        description: '`dist/index.js`'
+      - key: '1'
+        value: '{ in: "src/views/index.ts", out: "view" }'
+        description: '`dist/view.js`'
+      - key: '2'
+        value: '{ in: "src/comments/index.ts", out: "comments" }'
+        description: '`dist/comments.js`'
+      - key: '3'
+        value: '{ in: "src/viewer/index.ts", out: "viewer" }'
+        description: '`dist/viewer.js`'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[対応ブラウザの下限の確かめ]
 functions:
   - name: main
     title: ビルドを実行する
@@ -61,7 +81,7 @@ functions:
     scope: public
     is_async: true
     summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、プラグインをビルドし、終了コードを返す
-    side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過）は `dist/` を残さず、標準エラーに理由を出す'
+    side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す'
     args:
       - name: argv
         type: string[]
@@ -74,7 +94,7 @@ functions:
         description: 作業ツリーの場所、配布ファイルの上限、使い方集の索引の文の文字数の上限（テストで差し替える）
     returns:
       type: Promise<0 | 1>
-      description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過は 1
+      description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API は 1
     unit_tests:
       - name: test_main
         case: 正常
@@ -123,7 +143,13 @@ functions:
         summary: 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる
         condition: '`guideContextLimit` が 1'
         mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml` と指すページ・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
-        expected: 1 を返し、`dist/` と `plugin/server` が無く、標準エラーに索引の文字数と上限が出る
+        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに索引の文字数と上限が出る
+      - name: test_main_when_api_missing_in_baseline_browser
+        case: 異常
+        summary: 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる
+        condition: '`src/index.ts` の最上位で `new Intl.Segmenter("ja")` を呼ぶ'
+        mock: 一時フォルダに `src/` と `version.ini` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: 1 を返し、`dist/` が無く、標準エラーに `dist/index.js`・`Intl.Segmenter`・`Firefox 98` が出る
     callees:
       - '#functions[resolveVersion]'
       - '#functions[buildDist]'
@@ -137,8 +163,9 @@ functions:
       1. `dist/` とプラグインの生成物を消す（プラグインの生成物を消す）
       2. 版を決め、移行の手順を点検する（版を決める・移行の手順を点検する）
       3. `dist/` を書き、上限を超えた配布ファイルを標準エラーに出す（配布物を書く・上限を超えた配布ファイルを拾う）
-      4. 超えたものが無ければプラグインをビルドし、問題の行を標準エラーに出す（プラグインをビルドする）
-      5. 問題が無ければ 0 を返す。どこかで失敗したら、`dist/` とプラグインの生成物を消して 1 を返す
+      4. 超えたものが無ければ、対応ブラウザの下限に無い API の使用を 1 件 1 行（`{配布ファイル}:{行}:{列} {メッセージ}`）で標準エラーに出す（対応ブラウザの下限に無い API を拾う）
+      5. 下限に無い API も無ければプラグインをビルドし、問題の行を標準エラーに出す（プラグインをビルドする）
+      6. 問題が無ければ 0 を返す。どこかで失敗したら、`dist/` とプラグインの生成物を消して 1 を返す
   - name: resolveVersion
     title: 埋める版を決める
     container: scripts/build.ts
@@ -185,7 +212,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ね、`emitDeclarations` で型定義を書き、束ねた依存のライセンスを書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ねる
+    summary: esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ね、`emitDeclarations` で型定義を書く。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に束ね、配布物と CLI に束ねた依存のライセンスを書く
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{版}"}` を埋め、`metafile` を取る。続けて `metafile` を渡して束ねた依存のライセンスを書く。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -227,6 +254,12 @@ functions:
         condition: 版 `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` がある
         mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
         expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` を束ねていない。`src/viewer/index.ts` の文字列 `"</script>"` が `dist/viewer.js` では `<\/script>` になっている
+      - name: test_build_dist_when_cli_bundles_package
+        case: 正常
+        summary: CLI に束ねたパッケージのライセンスも書く
+        condition: '`src/cli/main.ts` が `node_modules` のパッケージ（`dist/index.js` には束ねないもの）を import する'
+        mock: 一時フォルダに `src/` とそのパッケージの `package.json`・`LICENSE` を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: '`dist/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
     notes:
       CLI と起動の処理の束ね方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・版の `define`）で、ライブラリ本体を含めて 1 つに束ねる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` で束ね、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読む。どちらも `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
       起動の処理の script の閉じ: '`dist/viewer.js` は書き出した HTML の `<script type="module">` にそのまま置くため、書いた後に `assertNoScriptClose` で検める。esbuild は文字列・テンプレート文字列の `</script` を大文字と小文字によらず `<\/script` に替えるため（外部ライブラリ『esbuild』の動作確認）、この検査は esbuild の振る舞いが変わったときの備え'
@@ -235,14 +268,14 @@ functions:
     container: scripts/build.ts
     kind: 関数
     scope: internal
-    summary: esbuild の `metafile` の入力から束ねたパッケージを拾い、名前の順にパッケージ名・版・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書く
-    description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読む。束ねたパッケージが無いときも空のファイルを書く
+    summary: esbuild の `metafile` の入力から束ねたパッケージと、その中に取り込まれたパッケージを拾い、名前の順にパッケージ名・版・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書く
+    description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読む。パッケージの配布物に取り込まれたパッケージは `listEmbeddedPackages` で拾い、`EMBEDDED_LICENSES_DIR` の本文を並べる。複数の `metafile` で同じパッケージは 1 回だけ書く。束ねたパッケージが無いときも空のファイルを書く
     side_effects: '`dist/` に `LICENSES_FILE` を書く'
     args:
       - name: options
-        type: '{ metafile: Metafile; root: string }'
+        type: '{ metafiles: Metafile[]; root: string }'
         required: true
-        description: '`metafile` は esbuild の出力、`root` は作業ツリーの場所'
+        description: '`metafiles` は配布物と CLI の esbuild の出力、`root` は作業ツリーの場所'
     returns:
       type: Promise<void>
       description: 書き終えたら解決する
@@ -264,6 +297,12 @@ functions:
         mock: 一時フォルダに `package.json` だけを置く
         expected: '`Error` を投げ、メッセージに `b` が入る'
         exception: 束ねたパッケージの直下に `LICENSE*` が無い
+      - name: test_write_third_party_licenses_when_embedded
+        case: 正常
+        summary: 複数の metafile をまとめ、取り込まれたパッケージの本文も書く
+        condition: 1 つ目の `metafile` の入力が `node_modules/b/index.js`、2 つ目が `node_modules/b/index.js` と `node_modules/pkg/dist/a.mjs`（そのソースマップが `ajv` を指す）
+        mock: 一時フォルダに `b`・`pkg` の `package.json` と `LICENSE`、`scripts/licenses/ajv.txt` を置く
+        expected: '`ajv`・`b`・`pkg` が名前の順に 1 回ずつ並び、`ajv` の本文が `scripts/licenses/ajv.txt` の中身'
   - name: findTooLargeOutputs
     title: 上限を超えた配布ファイルを拾う
     container: scripts/build.ts
@@ -456,6 +495,254 @@ functions:
     status: planned
     introduced:
       pr: 39
+  - name: findBaselineViolations
+    title: 対応ブラウザの下限に無い API を拾う
+    kind: 関数
+    container: scripts/baseline.ts
+    scope: public
+    is_async: true
+    summary: 使う側のブラウザが読む JS を minify せずに束ね、対応ブラウザの下限に無い API の使用を返す
+    description: '`BASELINE_ENTRIES` のうち作業ツリーにある入口を、`buildDist` と同じ `target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で、`minify: false`・`write: false` にして束ねる。束ねた JS ごとに `lintBundle` を呼ぶ。ネットワークに接続しない'
+    side_effects: なし（束ねた JS はメモリに置き、ファイルに書かない）
+    args:
+      - name: options
+        type: '{ root: string; version: string }'
+        required: true
+        description: 作業ツリーの場所と、`define` に埋める版
+    returns:
+      type: Promise<BaselineViolation[]>
+      description: 下限に無い API の使用（無ければ空）。入口の順、束ねた JS の中の位置の順
+    process: |-
+      1. 作業ツリーにある入口を minify せずに束ねる（esbuild）
+      2. 束ねた JS ごとに、下限に無い API の使用を拾う（束ねた JS を下限の版と照らす）
+      3. 拾ったものを入口の順につないで返す
+    unit_tests:
+      - name: test_find_baseline_violations
+        case: 正常
+        summary: 下限に無い API を使わなければ空を返す
+        condition: '`src/index.ts` が `export const a = 1`'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクを置く
+        expected: 空
+      - name: test_find_baseline_violations_when_api_unguarded
+        case: 正常
+        summary: 確かめずに使う下限に無い API を返す
+        condition: '`src/index.ts` の最上位で `new Intl.Segmenter("ja")` を呼ぶ'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクを置く
+        expected: 1 件で、`file` が `dist/index.js`、`api` が `Intl.Segmenter`、`message` に `Firefox 98` が入る
+      - name: test_find_baseline_violations_when_api_guarded
+        case: 正常
+        summary: 同じ API の typeof の if の中で使えば返さない
+        condition: '`src/index.ts` が `if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }`'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクを置く
+        expected: 空
+      - name: test_find_baseline_violations_when_unrelated_if
+        case: 正常
+        summary: 無関係な条件の if の中の使用も返す
+        condition: '`src/index.ts` が `export function f(x: number) { if (x > 1) { return new Intl.Segmenter("ja"); } }`'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクを置く
+        expected: 1 件で、`api` が `Intl.Segmenter`
+      - name: test_find_baseline_violations_when_entry_missing
+        case: 正常
+        summary: 作業ツリーに無い入口は飛ばす
+        condition: '`src/index.ts` だけがあり、`src/views/`・`src/comments/`・`src/viewer/` が無い'
+        mock: 一時フォルダに `src/` を置き、作業ツリーの `node_modules` へのリンクを置く
+        expected: 例外を投げず、空
+    callees:
+      - '#functions[toBrowserslist]'
+      - '#functions[isGuardedByTypeof]'
+      - '#functions[lintBundle]'
+    callers:
+      - '#functions[main]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[対応ブラウザの下限の確かめ]
+      - dev/設計書/外部ライブラリ/eslint-plugin-compat#
+      - dev/設計書/外部ライブラリ/eslint#
+    notes:
+      if の中を全て数える理由: 'eslint-plugin-compat の既定は、祖先に `IfStatement` があれば条件を見ずに数えない。無関係な `if` の中の使用を見逃すため、`ignoreConditionalChecks: true` で全て数え、外すのは `isGuardedByTypeof` に任せる'
+      minify しない理由: minify した JS では `if` のブロックが式に畳まれ、同じ API の `typeof` の確かめの中の使用も報告に出る
+  - name: isGuardedByTypeof
+    title: 有無を確かめた中かを判定する
+    kind: 関数
+    container: scripts/baseline.ts
+    scope: internal
+    summary: 報告の位置が、同じ API の typeof を条件に持つ if の中（ブロックか条件の式）にあるかを返す
+    description: '`SourceCode` の `getIndexFromLoc` で報告の位置を引き（`getIndexFromLoc` の列は 0 始まりのため、引数の列から 1 引いて渡す）、`getNodeByRangeIndex` の節とその祖先（`getAncestors`）のうち `IfStatement` の `test` を見る。`test` の中に、引数の元の文字列（`getText`）が `api` と同じ `typeof` の単項式があれば真。早期 return の後ろ・三項演算子・論理式の右辺は `IfStatement` の祖先を持たないため偽'
+    args:
+      - name: options
+        type: '{ sourceCode: SourceCode; line: number; column: number; api: string }'
+        required: true
+        description: 束ねた JS の `SourceCode`（ESLint の `Linter.getSourceCode()`）、報告の行と列（1 始まり）、API の名前
+    returns:
+      type: boolean
+      description: 同じ API の `typeof` の確かめの中なら `true`
+    unit_tests:
+      - name: test_is_guarded_by_typeof
+        case: 正常
+        summary: 同じ API の typeof の if のブロックの中は真
+        condition: '`if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }` の `new` の位置'
+        mock: なし
+        expected: '`true`'
+      - name: test_is_guarded_by_typeof_when_else_block
+        case: 正常
+        summary: else のブロックの中も真
+        condition: '`if (typeof Intl.Segmenter === "undefined") { f(); } else { new Intl.Segmenter("ja"); }` の `new` の位置'
+        mock: なし
+        expected: '`true`'
+      - name: test_is_guarded_by_typeof_when_in_test
+        case: 正常
+        summary: 条件の typeof の式の中の参照も真
+        condition: '`if (typeof Intl.Segmenter !== "undefined") {}` の `Intl.Segmenter` の先頭の `I` の位置'
+        mock: なし
+        expected: '`true`'
+      - name: test_is_guarded_by_typeof_when_unrelated_if
+        case: 正常
+        summary: 無関係な条件の if の中は偽
+        condition: '`if (x > 1) { new Intl.Segmenter("ja"); }` の `new` の位置'
+        mock: なし
+        expected: '`false`'
+      - name: test_is_guarded_by_typeof_when_other_api
+        case: 正常
+        summary: 別の API の typeof の if の中は偽
+        condition: '`if (typeof Highlight !== "undefined") { new Intl.Segmenter("ja"); }` の `new` の位置、`api` は `Intl.Segmenter`'
+        mock: なし
+        expected: '`false`'
+      - name: test_is_guarded_by_typeof_when_early_return
+        case: 正常
+        summary: 早期 return の後ろは偽
+        condition: '`function f() { if (typeof Intl.Segmenter === "undefined") { return; } return new Intl.Segmenter("ja"); }` の 2 つ目の `new` の位置'
+        mock: なし
+        expected: '`false`'
+      - name: test_is_guarded_by_typeof_when_ternary
+        case: 正常
+        summary: 三項演算子は偽
+        condition: '`typeof Intl.Segmenter === "undefined" ? undefined : new Intl.Segmenter("ja")` の `new` の位置'
+        mock: なし
+        expected: '`false`'
+      - name: test_is_guarded_by_typeof_when_just_before_if
+        case: 正常
+        summary: 確かめの if の直前の位置は偽（列を 0 始まりに直して引く）
+        condition: '`Intl.Segmenter;if (typeof Intl.Segmenter !== "undefined") {}` の 1 行目 15 列（`;` の位置。1 ずれると `if` の `i` を指す）'
+        mock: なし
+        expected: '`false`'
+    callers:
+      - '#functions[findBaselineViolations]'
+  - name: toBrowserslist
+    title: ブラウザの版を browserslist の書き方に直す
+    kind: 関数
+    container: scripts/baseline.ts
+    scope: public
+    summary: esbuild の target の書き方（`chrome99`）を browserslist の書き方（`chrome 99`）に直す
+    args:
+      - name: targets
+        type: string[]
+        required: true
+        description: esbuild の target（`BROWSER_TARGETS`）
+    returns:
+      type: string[]
+      description: browserslist の問い合わせ
+    exceptions:
+      - name: Error
+        condition: 英小文字の名前と数字・`.` の版に分けられない
+        message: 'target の書式が違う: {target}'
+    unit_tests:
+      - name: test_to_browserslist
+        case: 正常
+        summary: 名前と版の間に空白を入れる
+        condition: '`["chrome99", "firefox98", "safari16.4"]`'
+        mock: なし
+        expected: '`["chrome 99", "firefox 98", "safari 16.4"]`'
+      - name: test_to_browserslist_when_format_invalid
+        case: 異常
+        summary: 版の無い target を拒む
+        condition: '`["chrome"]`'
+        mock: なし
+        expected: '`Error` を投げ、メッセージに `chrome` が入る'
+        exception: 名前と版に分けられない
+    callers:
+      - '#functions[findBaselineViolations]'
+  - name: lintBundle
+    title: 束ねた JS を下限の版と照らす
+    kind: 関数
+    container: scripts/baseline.ts
+    scope: internal
+    summary: 束ねた JS 1 つに eslint-plugin-compat を流し、同じ API の typeof の確かめの中を除いた報告を返す。照らせなかったときは例外を投げる
+    description: "ESLint の `Linter` で `compat/compat` を流し、`settings.browsers` に `toBrowserslist(BROWSER_TARGETS)`、`settings.ignoreConditionalChecks: true`、`linterOptions.noInlineConfig: true` を渡す。知らせのうち `ruleId` が `compat/compat` のものを報告にし、`ruleId` が `null` で文が `has no effect because you have 'noInlineConfig' setting` を含むもの（束ねた依存が持つ他のプラグインの規則を無効にするコメント）だけを落とす。それ以外の知らせ（構文として読めない `fatal` の知らせ、`No matching configuration found` など）が 1 件でもあれば、何も照らさずに 0 件を返すことになるため例外を投げる"
+    args:
+      - name: options
+        type: '{ code: string; file: string }'
+        required: true
+        description: 束ねた JS と、それに当たる配布ファイル（`dist/index.js` など。ESLint に渡すファイル名を兼ねる）
+    returns:
+      type: BaselineViolation[]
+      description: 下限に無い API の使用（無ければ空）
+    process: |-
+      1. 束ねた JS に eslint-plugin-compat を流す（ESLint の `Linter`）
+      2. `compat/compat` でも `noInlineConfig` の知らせでもない知らせがあれば例外を投げる
+      3. `compat/compat` の報告ごとに API の名前を文の頭から取る
+      4. 同じ API の `typeof` の確かめの中なら外す（有無を確かめた中かを判定する）
+      5. 残りを `BaselineViolation` にして返す
+    exceptions:
+      - name: Error
+        condition: '`compat/compat` でも `noInlineConfig` の知らせでもない知らせがある（構文として読めない・設定が当たらない 等）'
+        message: '束ねた JS を下限の版と照らせない: {file}:{行}:{列} {知らせの文}'
+      - name: Error
+        condition: '`compat/compat` の報告の文の頭から API の名前を取れない'
+        message: '報告の文から API を取れない: {報告の文}'
+    unit_tests:
+      - name: test_lint_bundle
+        case: 正常
+        summary: 確かめずに使う下限に無い API を返し、同じ API の typeof の if の中は返さない
+        condition: '`code` が `new Intl.Segmenter("ja");` と `if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }` の 2 行、`file` が `dist/index.js`'
+        mock: なし
+        expected: 1 件で、1 行目の `Intl.Segmenter`
+      - name: test_lint_bundle_when_inline_config
+        case: 正常
+        summary: 他のプラグインの規則を無効にするコメントは落とす
+        condition: '`code` が `// eslint-disable-next-line foo/bar` と `export const a = 1;` の 2 行、`file` が `dist/index.js`'
+        mock: なし
+        expected: 空
+      - name: test_lint_bundle_when_parse_error
+        case: 異常
+        summary: 構文として読めない JS を拒む
+        condition: '`code` が `let let = 1;`、`file` が `dist/index.js`'
+        mock: なし
+        expected: '`Error` を投げ、メッセージに `dist/index.js` と `Parsing error` が入る'
+        exception: 構文として読めない
+      - name: test_lint_bundle_when_config_not_matched
+        case: 異常
+        summary: 設定が当たらないファイル名を拒む
+        condition: '`code` が `export const a = 1;`、`file` が `dist/index.ts`'
+        mock: なし
+        expected: '`Error` を投げ、メッセージに `dist/index.ts` と `No matching configuration` が入る'
+        exception: 設定が当たらない
+    callers:
+      - '#functions[findBaselineViolations]'
+    callees:
+      - '#functions[toBrowserslist]'
+      - '#functions[isGuardedByTypeof]'
 test_files:
   - tests/unit/scripts/build.test.ts
   - tests/unit/scripts/migrations.test.ts
+  - tests/unit/scripts/baseline.test.ts
+data_models:
+  - name: BaselineViolation
+    title: 下限に無い API の使用
+    container: scripts/baseline.ts
+    role: DTO
+    summary: 対応ブラウザの下限に無い API の使用 1 件
+    properties:
+      - name: file
+        type: string
+        description: 照らした JS に当たる配布ファイル（`dist/index.js` など）
+      - name: line
+        type: number
+        description: minify せずに束ねた JS の中の行（1 始まり）
+      - name: column
+        type: number
+        description: minify せずに束ねた JS の中の列（1 始まり）
+      - name: api
+        type: string
+        description: API の名前（`Intl.Segmenter` など。報告の文の頭から取る）
+      - name: message
+        type: string
+        description: eslint-plugin-compat の報告の文（`Intl.Segmenter() is not supported in Firefox 98` など。無い下限のブラウザと版を含む）

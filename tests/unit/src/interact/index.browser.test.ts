@@ -46,7 +46,11 @@ test("test_attach_interactions", async () => {
   );
   // 実行
   detachers.push(
-    attachInteractions({ root, features: { ...features, tabs: false } }),
+    attachInteractions({
+      root,
+      features: { ...features, tabs: false },
+      placement: "top",
+    }),
   );
   // 検証
   expect(root.querySelector('[role="tablist"]')).toBeNull();
@@ -91,7 +95,7 @@ test("test_attach_interactions_when_row_in_closed_section", async () => {
   });
   // 実行・検証: #ID のまま付ける
   history.replaceState(null, "", "#もも");
-  detachers.push(attachInteractions({ root, features }));
+  detachers.push(attachInteractions({ root, features, placement: "top" }));
   expect(hiddenWhenScrolled).toEqual([false]);
   expect(row?.hasAttribute("data-target")).toBe(true);
   // 実行・検証: 節を閉じ直し、まとめた HTML の # の形に変えて hashchange を送る
@@ -116,10 +120,12 @@ test("test_attach_interactions_when_hints_off", async () => {
     attachInteractions({
       root: on.root,
       features: { ...on.features, hints: true },
+      placement: "top",
     }),
     attachInteractions({
       root: off.root,
       features: { ...off.features, hints: false },
+      placement: "top",
     }),
   );
   const onMark = on.root.querySelector<HTMLElement>(".mdmark-hint-mark");

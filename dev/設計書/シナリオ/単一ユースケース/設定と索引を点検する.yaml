@@ -83,13 +83,66 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_unknown_mark
+  - name: 正常シナリオ（比べる基準を渡す）
+    setup:
+      - name: 組で直す文書を持つ git のフォルダ
+        description: 正常シナリオのフォルダで、索引の 2 つの文書が互いを `change_together` で記載し、全てをコミットした git のリポジトリ
+      - name: 片方だけの変更
+        description: コミットの後に 1 つ目の文書の本文だけを書き換える
+        notes: 比べる基準には、書き換える前のコミットを渡す
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant G as git
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check（比べる基準: 書き換える前のコミット）
+        C->>G: 基準から変わったファイルを引く
+        G-->>C: 1 つ目の文書のパス
+        C->>M: checkIndex（索引・文書・変わったパス）
+        M-->>C: 直し忘れの行
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+      ```
+    expected:
+      - 2 つ目の文書を指す直し忘れの行が 1 件あり、内容に組の相手と 1 つ目の文書が変わったことが書かれている
+      - 終了コードが 0 以外
+      - 同じフォルダで比べる基準を渡さずに流すと、ずれ 0 件・終了コード 0
+      - 設定・索引・文書と git の履歴が変わっていない
+    test: test_normal_when_base_given
+  - name: 異常シナリオ（比べる基準を引けない）
+    setup:
+      - name: git のフォルダ
+        description: 正常シナリオ（比べる基準を渡す）と同じ
+      - name: 無い基準
+        description: リポジトリに無い ref の名前を比べる基準に渡す
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant G as git
+        W->>C: mdmark check（比べる基準: 無い ref）
+        C->>G: 基準から変わったファイルを引く
+        G-->>C: 引けない
+        C-->>W: 基準を引けないことと直し方の 1 文・終了コード 0 以外
+      ```
+    expected:
+      - 出力に、渡した ref を引けないことと直し方が出る
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_error_when_base_unknown
 lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印を、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確かめる
 preconditions:
   - 文書を書く人の手元に Node 24 以降がある
-success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返すもの）・`build` の対象が 0 件であること・文書の本文にある知らない印が、ファイル・場所・種類・内容の一覧で出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
+success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返すもの）・`build` の対象が 0 件であること・文書の本文にある知らない印が、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を渡したときは、基準から片方の文書だけが変わった `change_together` の組も、直し忘れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
 minimal_guarantee: 点検は設定・索引・文書を書き換えない。設定ファイルを読めないときは、原因と直し方の 1 文を出して 0 以外で終わる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#

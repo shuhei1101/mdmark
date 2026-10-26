@@ -124,12 +124,108 @@ test("test_collect_matches_ignores_avoided_terms", async () => {
   expect(result.targets.map((target) => target.id)).toEqual(["ws"]);
 });
 
+/** 用語 `ワークスペース`（`ws`）に、やめた言い方 `avoid` を持たせた、文書 `guide`・`api` の索引 */
+function avoidIndex(avoid: string[]): MdmarkIndex {
+  return {
+    schema: 1,
+    docs: [
+      { id: "api", path: "api.md", title: "API" },
+      { id: "guide", path: "使い方/guide.md", title: "使い方" },
+    ],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "話し合いの記録を置くフォルダ",
+        avoid,
+      },
+    ],
+  };
+}
+
+// 本文に出たやめた言い方の全ての出現を、代わりの用語と位置つきで avoided に返す（正常系）
+test("test_collect_matches_returns_avoided_terms", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const guideBody =
+    "# 作業場の使い方\n\n作業場を開き、作業場を閉じる。`作業場` は書き換えない。\n";
+  const documents = {
+    "使い方/guide.md": guideBody,
+    "api.md": "# API\n\nワークスペースを使う。\n",
+  };
+  // 実行
+  const result = collectMatches({ index: avoidIndex(["作業場"]), documents });
+  // 検証
+  const guide = result.avoided.guide ?? [];
+  expect(guide).toHaveLength(2);
+  for (const match of guide) {
+    expect(match).toMatchObject({ ...WS_TARGET, text: "作業場", line: 3 });
+  }
+  expect(guide.map((match) => cut(guideBody, match))).toEqual([
+    "作業場",
+    "作業場",
+  ]);
+  expect(guide.map((match) => match.start)).toEqual(
+    guide.map((match) => match.start).sort((a, b) => a - b),
+  );
+  expect(result.avoided.api).toEqual([]);
+});
+
+// 用語を含む長いやめた言い方が出ても、byDocument はやめた言い方を加えない照合のまま変えない（正常系）
+test("test_collect_matches_when_avoided_contains_term", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const guideBody = "# 使い方\n\n共有ワークスペースを使う。\n";
+  // 実行
+  const result = collectMatches({
+    index: avoidIndex(["共有ワークスペース"]),
+    documents: { "使い方/guide.md": guideBody },
+  });
+  // 検証
+  const byDocument = result.byDocument.guide ?? [];
+  expect(byDocument).toHaveLength(1);
+  expect(byDocument[0]).toMatchObject({ ...WS_TARGET, text: "ワークスペース" });
+  expect(byDocument.map((match) => cut(guideBody, match))).toEqual([
+    "ワークスペース",
+  ]);
+  const avoided = result.avoided.guide ?? [];
+  expect(avoided).toHaveLength(1);
+  expect(avoided[0]).toMatchObject({
+    ...WS_TARGET,
+    text: "共有ワークスペース",
+  });
+  expect(avoided.map((match) => cut(guideBody, match))).toEqual([
+    "共有ワークスペース",
+  ]);
+});
+
+// glossary がオフの文書はやめた言い方を返さない（正常系）
+test("test_collect_matches_when_avoided_and_glossary_disabled", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const guideBody = "<!-- features: -glossary -->\n\n作業場を使う。\n";
+  // 実行
+  const result = collectMatches({
+    index: avoidIndex(["作業場"]),
+    documents: { "使い方/guide.md": guideBody },
+  });
+  // 検証
+  expect(result.avoided.guide).toEqual([]);
+});
+
 // 索引の用語・別名と文書の別名の一致を、参照先と位置つきで返す（正常系）
 test("test_collect_matches", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
   const index = structuredClone(MATCH_INDEX);
-  const documents = { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。" };
+  const [term] = index.terms ?? [];
+  if (term) {
+    term.avoid = ["作業場"];
+  }
+  const indexBefore = structuredClone(index);
+  const documents = {
+    "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。作業場は使わない。",
+  };
   const documentsBefore = structuredClone(documents);
   // 実行
   const matches = collectMatches({ index, documents });
@@ -153,10 +249,44 @@ test("test_collect_matches", async () => {
         },
       ],
     },
+    avoided: {
+      guide: [{ ...WS_TARGET, text: "作業場", line: 3, start: 12, end: 15 }],
+    },
     targets: [WS_TARGET, API_TARGET],
   });
-  expect(index).toEqual(MATCH_INDEX);
+  expect(index).toEqual(indexBefore);
   expect(documents).toEqual(documentsBefore);
+});
+
+// 全角と半角・英字の大文字と小文字だけが違う語の一致を、本文の位置と記載した表記の text で返す（正常系）
+test("test_collect_matches_when_notation_differs", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const index = structuredClone(MATCH_INDEX);
+  const [term] = index.terms ?? [];
+  if (term) {
+    term.avoid = ["workplace"];
+  }
+  // 1 行目の半角カナ `ﾜｰｸｽﾍﾟｰｽ`（8 文字）は正規化すると 7 文字になり、正規化した位置と本文の位置がずれる
+  const documents = {
+    "使い方/guide.md": "ﾜｰｸｽﾍﾟｰｽとＷＳ\n\nws と WorkPlace\n",
+  };
+  // 実行
+  const result = collectMatches({ index, documents });
+  // 検証
+  expect(result).toEqual({
+    byDocument: {
+      guide: [
+        { ...WS_TARGET, text: "ワークスペース", line: 1, start: 0, end: 8 },
+        { ...WS_TARGET, text: "WS", line: 1, start: 9, end: 11 },
+        { ...WS_TARGET, text: "WS", line: 3, start: 0, end: 2 },
+      ],
+    },
+    avoided: {
+      guide: [{ ...WS_TARGET, text: "workplace", line: 3, start: 5, end: 14 }],
+    },
+    targets: [WS_TARGET],
+  });
 });
 
 // 同じ節に同じ用語が何度出ても全ての出現を並べ、targets には 1 回だけ入れる（正常系）
@@ -429,4 +559,31 @@ test("test_diagram_term_matches", async () => {
   // 1 つ目は flow の範囲の定義、2 つ目は埋め込んだ HTML の中の定義
   expect(body.slice(0, matches[1]?.offset ?? 0)).toContain("<!-- html -->");
   expect(body.slice(0, matches[0]?.offset ?? 0)).not.toContain("<!-- html -->");
+});
+
+// 表記の違う {{語}} も用語の位置として返す（正常系）
+test("test_diagram_term_matches_when_notation_differs", async () => {
+  // 準備
+  const { diagramTermMatches } = await loadMatches();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [],
+    terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
+  };
+  const body = [
+    "<!-- flow -->",
+    "",
+    "```json",
+    ...flowDefinition("{{ｍｃｐ}}"),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  const { tokens, dictionary } = prepare(body, index);
+  // 実行
+  const found = diagramTermMatches({ body, tokens, dictionary, html: false });
+  // 検証
+  expect(found).toHaveLength(1);
+  expect(body.slice(found[0]?.offset, found[0]?.end)).toBe("ｍｃｐ");
 });

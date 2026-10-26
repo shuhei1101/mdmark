@@ -212,3 +212,111 @@ test("test_export_document_when_document_missing", async () => {
   await expect(result).rejects.toThrow("missing.md");
   expect(existsSync(join(dir, "missing.html"))).toBe(false);
 });
+
+// 設定の tooltips を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_tooltip_placement", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const withTooltips = await prepare({ tooltips: { placement: "bottom" } });
+  const withoutTooltips = await prepare({ features: { print: true } });
+  // 検証
+  expect(withTooltips.payload.config.tooltips).toEqual({
+    placement: "bottom",
+  });
+  expect(withoutTooltips.payload.config).not.toHaveProperty("tooltips");
+});
+
+/** 色分けのライブラリの代役のモジュールを書く（`hl/` の下に本体と言語の分を置く） */
+const SYNTAX_MODULES = {
+  "hl/core.min.js":
+    "export default { registerLanguage() {}, highlight() {} };\n",
+  "hl/languages/typescript.min.js":
+    'export default function typescript() { return { name: "TypeScript" }; }\n',
+  "hl/languages/yaml.min.js":
+    'export default function yaml() { return { name: "YAML" }; }\n',
+};
+
+// 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に syntax を写さない（正常系）
+test("test_prepare_embeds_when_syntax", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.md": "```ts\nconst a = 1;\n```\n",
+    ...SYNTAX_MODULES,
+  });
+  const loaded = createLoaded(dir, { syntax: { url: "hl/" } });
+  // 実行
+  const result = await prepareEmbeds({
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+  });
+  // 検証
+  expect(result.payload.syntax?.core).toBeTruthy();
+  expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
+    "typescript",
+  ]);
+  expect(result.payload.config).not.toHaveProperty("syntax");
+  expect(result.warnings).toEqual([]);
+});
+
+// 色分けの本体を束ねられなければ警告にして埋めずに続ける（正常系）
+test("test_prepare_embeds_when_syntax_unreadable", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "```ts\nconst a = 1;\n```\n" });
+  const loaded = createLoaded(dir, { syntax: { url: "missing/" } });
+  // 実行
+  const result = await prepareEmbeds({
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+  });
+  // 検証
+  expect(result.payload.syntax).toBeUndefined();
+  expect(result.warnings).toHaveLength(1);
+  expect(result.warnings[0]).toContain("missing/core.min.js");
+  expect(result.warnings[0]).toContain("syntax.url");
+});
+
+// 束ねられない言語だけ埋めずに警告にし、他の言語は埋める（正常系）
+test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  const { "hl/languages/yaml.min.js": _yaml, ...withoutYaml } = SYNTAX_MODULES;
+  await writeFiles(dir, {
+    "guide.md": "```ts\nconst a = 1;\n```\n\n```yml\na: 1\n```\n",
+    ...withoutYaml,
+  });
+  const loaded = createLoaded(dir, { syntax: { url: "hl/" } });
+  // 実行
+  const result = await prepareEmbeds({
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+  });
+  // 検証
+  expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
+    "typescript",
+  ]);
+  expect(result.warnings).toHaveLength(1);
+  expect(result.warnings[0]).toContain("hl/languages/yaml.min.js");
+  expect(result.warnings[0]).toContain("syntax.url");
+});

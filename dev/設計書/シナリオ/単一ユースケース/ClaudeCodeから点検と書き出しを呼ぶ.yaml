@@ -5,7 +5,7 @@ scenarios:
       - name: ずれの無い作業のフォルダ
         description: 設定・索引と文書 2 つ。索引に 2 つとも載り、設定の `build` が 2 つに当たる
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -78,12 +78,34 @@ scenarios:
       - ツールの結果がエラーになる
       - エラーの文に、設定ファイルが無いことと `mdmark init` で置けることが出る
     test: test_error_when_config_missing
+  - name: 正常シナリオ（比べる基準を渡す）
+    setup:
+      - name: 組で直す文書を持つ作業のフォルダ
+        description: 正常シナリオのフォルダで、索引の 2 つの文書が互いを `change_together` で記載し、全てをコミットした後に 1 つ目の文書の本文だけを書き換えた git のリポジトリ
+        notes: 比べる基準には、書き換える前のコミットを渡す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check（比べる基準: 書き換える前のコミット）
+        S->>F: 設定・索引・文書と、基準から変わったファイルを読む
+        S-->>C: 直し忘れの行を持つずれの一覧
+      ```
+    expected:
+      - ずれの一覧に、2 つ目の文書を指す直し忘れの行が 1 件ある
+      - 同じフォルダで同じ基準を渡して `mdmark check` を流したときと同じずれが返る
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_base_given
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 issue: 11
 primary_actor: Claude Code
 trigger: Claude Code が文書と索引を書き終え、点検してから配れる形にしたくなる
 preconditions:
-  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+  - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
 success_guarantee: '`check` が `mdmark check` と同じずれの一覧を返し、`export_html`・`build_site` が CLI と同じ HTML を書いて、書き出したパスを返す。'
 minimal_guarantee: '`check` は設定・索引・文書を書き換えない。設定ファイルが無いときは、何も書かずに、無いことと `mdmark init` で置けることを返す。'
 refs:

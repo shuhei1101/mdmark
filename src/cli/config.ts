@@ -331,6 +331,17 @@ export function validateConfig(
     }
   }
 
+  if (
+    raw.tooltips !== undefined &&
+    !isValidTooltips(raw.tooltips, file, issues)
+  ) {
+    delete config.tooltips;
+  }
+
+  if (raw.syntax !== undefined && !isValidSyntax(raw.syntax, file, issues)) {
+    delete config.syntax;
+  }
+
   if (raw.check !== undefined) {
     const check = validateCheck(raw.check, file, issues);
     if (check) {
@@ -341,6 +352,68 @@ export function validateConfig(
   }
 
   return { config: config as CliConfig, issues };
+}
+
+/** 設定の `tooltips` を検める。キーと値の形でなければ、`placement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
+function isValidTooltips(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "tooltips",
+        "`tooltips` は `placement` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.placement !== undefined &&
+    value.placement !== "top" &&
+    value.placement !== "bottom"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "tooltips.placement",
+        "`tooltips.placement` は `top` か `bottom` で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `syntax` を検める。キーと値の形でなければ、`url` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+function isValidSyntax(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "syntax",
+        "`syntax` は `url` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.url !== undefined && typeof value.url !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "syntax.url",
+        "`syntax.url` は色分けのライブラリの `es/` フォルダの URL かパスの文字列で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
 }
 
 /** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返し、`ignore` は印の名前の書式に合う値だけを残す */

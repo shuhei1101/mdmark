@@ -7,10 +7,11 @@ directory: |-
   ├── errors.ts     # CLI の誤りと入出力の型
   ├── config.ts     # 設定ファイルの探索・読み取り・形の検査
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
-  ├── embed.ts      # 外部ライブラリと拡張の束ね・画像の埋め込み・1 枚に含まれない文書へのリンク
+  ├── embed.ts      # 外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
+  ├── git.ts        # 比べる基準から変わったファイルの引き出し
   ├── export.ts     # mdmark export
   ├── build.ts      # mdmark build
   └── index-file.ts # 索引のファイルの項目の書き換え
@@ -108,13 +109,16 @@ data_models:
       - name: parts
         type: Partial<Record<"view", string>> | undefined
         description: 埋めた部品のモジュールのコード。無いときは空として扱う。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
+      - name: syntax
+        type: '{ core: string; languages: Record<string, string> } | undefined'
+        description: 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ
 functions:
   - name: main
     title: CLI を実行する
     container: src/cli/main.ts
     usecase: 共通
-    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade` を呼び分け、終了コードを返す
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返す
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -144,9 +148,9 @@ functions:
       - name: test_main_when_command_unknown
         case: 異常
         summary: 知らないコマンドは一覧を出して 1 を返す
-        condition: '`["serve"]`'
+        condition: '`["deploy"]`'
         mock: 出力を配列に貯める `CliIo`
-        expected: 1 を返し、標準エラーに `init`・`check`・`export`・`build` が出る
+        expected: 1 を返し、標準エラーに `init`・`check`・`export`・`build`・`serve` が出る
       - name: test_main_when_cli_error
         case: 異常
         summary: コマンドが投げた CliError の文を出して 1 を返す
@@ -251,7 +255,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`syntax` があればオブジェクトで `url` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -303,6 +307,18 @@ functions:
         condition: '`check.ignore` が `["prettier-ignore", "Bad Name"]`'
         mock: なし
         expected: '`where` が `check.ignore[1]` の `schema` のずれが 1 件で、`config.check.ignore` が `["prettier-ignore"]`'
+      - name: test_validate_config_when_tooltip_placement_invalid
+        case: 正常
+        summary: '`top`・`bottom` 以外の `tooltips.placement` を schema のずれにし、設定から落とす'
+        condition: '`tooltips.placement` が `left` の値と、`bottom` の値'
+        mock: なし
+        expected: '`left` は `where` が `tooltips.placement` の `schema` のずれが 1 件で `config.tooltips` が無い。`bottom` は `issues` が空で `config.tooltips.placement` が `bottom`'
+      - name: test_validate_config_when_syntax_url_invalid
+        case: 正常
+        summary: 文字列でない `syntax.url` を schema のずれにし、設定から落とす
+        condition: '`syntax.url` が `1` の値と、`/vendor/hl/` の値'
+        mock: なし
+        expected: '`1` は `where` が `syntax.url` の `schema` のずれが 1 件で `config.syntax` が無い。`/vendor/hl/` は `issues` が空で `config.syntax.url` が `/vendor/hl/`'
     status: planned
     introduced:
       pr: 32
@@ -717,15 +733,15 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らない印を集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
-    description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues` のずれを 1 件 1 行で出す
+    description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues`（`base` を渡す）のずれを 1 件 1 行で出す
     kind: 関数
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ config?: string }'
+        type: '{ config?: string; base?: string }'
         required: true
-        description: '`--config` の値'
+        description: '`--config`・`--base` の値'
       - name: io
         type: CliIo
         required: true
@@ -735,8 +751,8 @@ functions:
       description: ずれが 0 件なら 0、あれば 1
     exceptions:
       - name: CliError
-        condition: 設定ファイルが無い・YAML として読めない
-        message: '`findConfigFile`・`loadConfig` のメッセージ'
+        condition: 設定ファイルが無い・YAML として読めない・`--base` を渡し、比べる基準を引けない
+        message: '`findConfigFile`・`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_run_check
         case: 正常
@@ -768,6 +784,19 @@ functions:
         condition: 索引に載せた文書 `a.md` の 3 行目に `<!-- tabz -->`、`markdown` のコードブロックの中にも `<!-- tabz -->`
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
         expected: '1 を返し、`a.md:3: unknown_mark:` で始まる行が 1 つだけで、`ずれ 1 件`'
+      - name: test_run_check_when_base_given
+        case: 正常
+        summary: '`--base` から片方だけが変わった change_together の組を出す'
+        condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載したフォルダをコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }` と `{}` の 2 回'
+        mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
+        expected: '1 回目は 1 を返し、`b.md: missed_change_together:` で始まる行と `ずれ 1 件` を出す。2 回目は 0 を返し、`ずれ 0 件`'
+      - name: test_run_check_when_base_unknown
+        case: 異常
+        summary: 引けない `--base` はずれを点検せずに止める
+        condition: '`test_run_check_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
+        mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
+        expected: '`CliError` を投げ、メッセージに `no-such-ref` が入り、標準出力に `ずれ` の行が無い'
+        exception: 比べる基準を引けない
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -775,6 +804,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+      - '#functions[changedPathsSince]'
     status: planned
     introduced:
       pr: 32
@@ -783,7 +813,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
-    description: '`export` と `build` に共通の処理。同じ URL のモジュールは 1 回だけ束ねる。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features` と `tooltips` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -815,12 +845,37 @@ functions:
         condition: 索引に `guide`（`guide.md`）と `api`（`api.md`、`related` に `guide`）
         mock: 一時フォルダ
         expected: '`payload.references.backlinks.guide` に `api` があり、`guide.md` の `docId` が `guide`'
+      - name: test_prepare_embeds_when_tooltip_placement
+        case: 正常
+        summary: 設定の `tooltips` を埋める設定に写す
+        condition: '`tooltips.placement: bottom` を持つ設定と、`tooltips` を持たない設定'
+        mock: 一時フォルダ
+        expected: '前者の `payload.config.tooltips` が `{ placement: "bottom" }`、後者は `payload.config` が `tooltips` を持たない'
+      - name: test_prepare_embeds_when_syntax
+        case: 正常
+        summary: 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に `syntax` を写さない
+        condition: 文書に `ts` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
+        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js`・`hl/languages/yaml.min.js` に手元のモジュールを置く
+        expected: '`payload.syntax.core` があり、`payload.syntax.languages` のキーが `typescript` だけ。`payload.config` が `syntax` を持たず、`warnings` が空'
+      - name: test_prepare_embeds_when_syntax_unreadable
+        case: 正常
+        summary: 色分けの本体を束ねられなければ警告にして埋めずに続ける
+        condition: 文書に `ts` のコードブロック。設定の `syntax.url` が無いフォルダ `missing/`
+        mock: 一時フォルダ
+        expected: '`payload.syntax` が無く、`warnings` に `missing/core.min.js` と `syntax.url` を含む 1 件'
+      - name: test_prepare_embeds_when_syntax_language_unreadable
+        case: 正常
+        summary: 束ねられない言語だけ埋めずに警告にし、他の言語は埋める
+        condition: 文書に `ts` と `yml` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
+        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js` だけに手元のモジュールを置き、`yaml.min.js` は置かない
+        expected: '`payload.syntax.languages` のキーが `typescript` だけで、`warnings` に `hl/languages/yaml.min.js` と `syntax.url` を含む 1 件'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[bundleModule]'
       - '#functions[inlineImages]'
       - '#functions[readIndexWithDocuments]'
       - '#functions[documentTitle]'
+      - '#functions[usedSyntaxLanguages]'
     status: planned
     introduced:
       pr: 32
@@ -996,7 +1051,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -1006,17 +1061,17 @@ functions:
         required: true
         description: 設定ファイルの絶対パス
       - name: options
-        type: '{ unknownMarks?: boolean }'
+        type: '{ unknownMarks?: boolean; base?: string }'
         required: false
         default: '`{ unknownMarks: true }`'
-        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
     exceptions:
       - name: CliError
-        condition: 設定ファイルを YAML として読めない
-        message: '`loadConfig` のメッセージ'
+        condition: 設定ファイルを YAML として読めない・`base` を渡し、比べる基準を引けない
+        message: '`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_collect_check_issues
         case: 正常
@@ -1036,10 +1091,17 @@ functions:
         condition: '文書 `a.md` に `<!-- tabz -->`、設定の `extensions` に読み込めない拡張 `broken.js`、`{ unknownMarks: false }`'
         mock: 一時フォルダ
         expected: '`unknown_mark` のずれも `extensions[0]` の `schema` のずれも無い'
+      - name: test_collect_check_issues_when_base_without_index
+        case: 正常
+        summary: 設定に `index` が無ければ `base` を使わない
+        condition: '`index` の無い設定を持ち git のリポジトリでない一時フォルダ、`{ base: "no-such-ref" }`'
+        mock: 一時フォルダ
+        expected: 例外を投げず、`base` を渡さないときと同じずれを返す
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
       - '#functions[checkUnknownMarks]'
+      - '#functions[changedPathsSince]'
     status: planned
     introduced:
       pr: 39
@@ -1371,31 +1433,31 @@ functions:
     kind: 関数
     container: src/cli/index-file.ts
     usecase: 索引を書き換える
-    summary: 索引の YAML の文書で、`docs` か `terms` の ID の要素を置き換え・末尾へ足し・消し、書き換えた後の索引を索引の形で検査する
-    description: '`yaml` の `Document` のノードを書き換えるため、他の要素・キー・コメントはそのまま残る。置き換える要素は `{ id, ...item }` のキーの並びにする（`item` の `id` は使わない）'
+    summary: 索引の YAML の文書で、`docs`・`terms`・`tags` のどれかの鍵の要素を置き換え・末尾へ追加し・消し、書き換えた後の索引を索引の形で検査する
+    description: '`yaml` の `Document` のノードを書き換えるため、他の要素・キー・コメントはそのまま残る。鍵は `doc`・`term` が `id`、`tag` が `name` で、置き換える要素は `{ {鍵}: id, ...item }` のキーの並びにする（`item` の鍵のキーは使わない）'
     scope: public
     is_async: false
     side_effects: 渡した `document` を書き換える
     args:
       - name: options
-        type: "{ document: Document; kind: 'doc' | 'term'; id: string; item: Record<string, unknown> | null }"
+        type: "{ document: Document; kind: 'doc' | 'term' | 'tag'; id: string; item: Record<string, unknown> | null }"
         required: true
-        description: 索引の YAML の文書・書き換える一覧・ID・項目の中身（`null` は消す）
+        description: 索引の YAML の文書・書き換える一覧・鍵（tag はタグの名前）・項目の中身（`null` は消す）
     returns:
       type: "{ action: 'added' | 'replaced' | 'removed'; problems: IndexProblem[] }"
       description: したことと、書き換えた後の索引の合わないところ（合えば空）
     process: |-
-      1. `kind` が `doc` なら `docs`、`term` なら `terms` の並びのノードを取る。`terms` が無く足すときは空の並びを作る
-      2. `id` が同じ要素を探す
+      1. `kind` が `doc` なら `docs`、`term` なら `terms`、`tag` なら `tags` の並びのノードを取る。`terms`・`tags` が無く足すときは空の並びを作る
+      2. 鍵（`doc`・`term` は `id`、`tag` は `name`）が同じ要素を探す
          - `item` が `null` で要素が無い場合、例外にする
-         - `item` が `null` の場合、要素を消して `removed`
-         - 要素があれば `{ id, ...item }` に置き換えて `replaced`
-         - 無ければ末尾に `{ id, ...item }` を足して `added`
+         - `item` が `null` の場合、要素を消して `removed`。`tags` が空になったら `tags` のキーも消す
+         - 要素があれば `{ {鍵}: id, ...item }` に置き換えて `replaced`
+         - 無ければ末尾に `{ {鍵}: id, ...item }` を足して `added`
       3. 書き換えた後の文書を値にして索引の形で検査し、合わないところを返す（索引の形の検査）
     exceptions:
       - name: CliError
         condition: '`item` が `null` で、その ID の要素が無い'
-        message: '`{ID}` は索引の `{docs か terms}` にありません。ID を確かめてください。'
+        message: '`{ID}` は索引の `{docs か terms か tags}` にありません。ID を確かめてください。'
     unit_tests:
       - name: test_apply_index_update
         case: 正常
@@ -1434,6 +1496,18 @@ functions:
         mock: なし
         expected: '`CliError` を投げ、メッセージに `z` と `docs` が入る'
         exception: '`item` が `null` で、その ID の要素が無い'
+      - name: test_apply_index_update_when_tag
+        case: 正常
+        summary: tags が無い索引にタグを name を鍵にして足す
+        condition: '`tags` の無い索引に `kind: tag`、`id: topic:mcp`、`{ group: "topic" }`'
+        mock: なし
+        expected: '`action` が `added`、`problems` が空で、`tags` が `[{ name: "topic:mcp", group: "topic" }]`'
+      - name: test_apply_index_update_when_last_tag_removed
+        case: 正常
+        summary: 最後のタグを消すと tags のキーも消す
+        condition: '`tags` が `topic:mcp` だけの索引に `kind: tag`、`id: topic:mcp`、`item: null`'
+        mock: なし
+        expected: '`action` が `removed`、文書に `tags` のキーが無い'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
     refs:
@@ -1453,9 +1527,9 @@ functions:
     side_effects: 索引のファイルを置き換える。書き換えている間だけ `{索引}{INDEX_LOCK_SUFFIX}` を置く
     args:
       - name: options
-        type: "{ loaded: LoadedConfig; kind: 'doc' | 'term'; id: string; item: Record<string, unknown> | null; lockTimeoutMs?: number }"
+        type: "{ loaded: LoadedConfig; kind: 'doc' | 'term' | 'tag'; id: string; item: Record<string, unknown> | null; lockTimeoutMs?: number }"
         required: true
-        description: 読んだ設定・書き換える一覧・ID・項目の中身・ロックを待つ上限（既定は `INDEX_LOCK_TIMEOUT_MS`）
+        description: 読んだ設定・書き換える一覧・鍵・項目の中身・ロックを待つ上限（既定は `INDEX_LOCK_TIMEOUT_MS`）
     returns:
       type: "Promise<{ action: 'added' | 'replaced' | 'removed'; index: string }>"
       description: したことと、索引のファイルのパス（設定ファイルのあるフォルダからの相対パス）
@@ -1521,6 +1595,99 @@ functions:
     status: planned
     introduced:
       pr: 72
+  - name: usedSyntaxLanguages
+    title: 文書が使う色分けの言語を拾う
+    container: src/cli/embed.ts
+    kind: 関数
+    scope: public
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML の `data-mdmark-syntax` の値を重なりなく拾う
+    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を外すことを含む）を、同じ処理から得るために `render` を通す'
+    args:
+      - name: options
+        type: '{ markdowns: string[]; config: MdmarkConfig }'
+        required: true
+        description: 文書の Markdown と読んだ設定
+    returns:
+      type: string[]
+      description: 言語のモジュール名。名前の順に並べる
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[render]
+    unit_tests:
+      - name: test_used_syntax_languages
+        case: 正常
+        summary: 色分けの対象の言語だけを拾い、機能を外した文書は拾わない
+        condition: '文書 1 が `ts`・`yml`・`text` のコードブロックと生の HTML `<pre><code class="language-python">x</code></pre>`、文書 2 が `<!-- features: -syntax -->` と `sql` のコードブロック。設定は空'
+        mock: なし
+        expected: '`["typescript", "yaml"]`'
+      - name: test_used_syntax_languages_when_disabled
+        case: 正常
+        summary: 設定で機能を外すと何も拾わない
+        condition: '`ts` のコードブロックを持つ文書と、`features.syntax: false` の設定'
+        mock: なし
+        expected: '`[]`'
+    status: planned
+    introduced:
+      pr: 97
+  - name: changedPathsSince
+    title: 比べる基準から変わったファイルを引く
+    kind: 関数
+    container: src/cli/git.ts
+    usecase: 設定と索引を点検する
+    summary: git の ref と HEAD の merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイルを、索引のフォルダからの相対パスで返す
+    description: git は `node:child_process` の `execFile` で引数を配列にして呼び、シェルを通さない。出力は `-z` の NUL 区切りで読む。パスの区切りは `/` にそろえる
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ cwd: string; base: string; indexDir: string }'
+        required: true
+        description: git を呼ぶフォルダ（設定ファイルのフォルダ）・比べる基準の ref・索引のファイルのフォルダの絶対パス
+    returns:
+      type: Promise<string[]>
+      description: 変わったファイルと新しいファイルの、索引のフォルダからの相対パス（重なりを除く）
+    process: |-
+      1. `base` が `-` で始まれば、引けないものとして例外にする
+      2. `cwd` で `git rev-parse --show-toplevel` を呼び、リポジトリの直下を得る。git が無い・リポジトリの中に無ければ例外にする
+      3. リポジトリの直下で `git merge-base {base} HEAD` を呼ぶ。失敗したら例外にする
+      4. `git diff --name-only -z {merge-base}` で merge-base から作業ツリーまでに変わったファイルを、`git ls-files --others --exclude-standard -z` で git が管理していない新しいファイル（無視するファイルを除く）を引く
+      5. 両方をリポジトリの直下から解き、`indexDir` からの相対パスにして重なりを除いて返す
+    exceptions:
+      - name: CliError
+        condition: '`base` が `-` で始まる・git が無い・`cwd` が git のリポジトリの中に無い・`base` と HEAD の merge-base を引けない'
+        message: '比べる基準 {base} を引けません（{理由}）。ref を直すか、履歴を取得してください（CI の checkout は fetch-depth: 0）。'
+    unit_tests:
+      - name: test_changed_paths_since
+        case: 正常
+        summary: merge-base からのコミット済み・未コミットの変更と新しいファイルを、索引のフォルダからのパスで返す
+        condition: '`docs/a.md`・`docs/b.md`・`docs/c.md` と `.gitignore`（`*.log`）をコミットしてタグ `base` を付け、`docs/a.md` を書き換えてコミットし、`docs/b.md` をコミットせずに書き換え、`docs/d.md` と `docs/x.log` を新しく置く。`base: "base"`、`indexDir` が `docs`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: 並びを問わず `a.md`・`b.md`・`d.md` の 3 つ
+      - name: test_changed_paths_since_when_ref_unknown
+        case: 異常
+        summary: merge-base を引けない ref
+        condition: '`test_changed_paths_since` と同じリポジトリ、`base: "no-such-ref"`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`CliError` を投げ、メッセージに `no-such-ref` と `fetch-depth` が入る'
+        exception: merge-base を引けない
+      - name: test_changed_paths_since_when_not_repository
+        case: 異常
+        summary: git のリポジトリの中に無いフォルダ
+        condition: 'git を初期化していない一時フォルダ、`base: "main"`'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` を投げ、メッセージに `main` が入る'
+        exception: リポジトリの中に無い
+      - name: test_changed_paths_since_when_ref_starts_with_dash
+        case: 異常
+        summary: '`-` で始まる ref を git の引数に渡さない'
+        condition: '`test_changed_paths_since` と同じリポジトリ、`base: "--output=x"`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`CliError` を投げ、リポジトリに `x` のファイルができていない'
+        exception: '`base` が `-` で始まる'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[変わった文書]
+    status: planned
+    introduced:
+      pr: 127
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -1570,6 +1737,7 @@ test_files:
   - tests/unit/src/cli/html.test.ts
   - tests/unit/src/cli/init.test.ts
   - tests/unit/src/cli/check.test.ts
+  - tests/unit/src/cli/git.test.ts
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/index-file.test.ts

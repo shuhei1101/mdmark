@@ -5,6 +5,7 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeSyntax,
   sendPrintEvent,
 } from "../dist-page.ts";
 
@@ -248,6 +249,7 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
 // 印刷すると、コードブロックの題・行番号・行の強調と、足した行・消した行の色と行頭の印を出す（正常シナリオ（コードブロックの題と行を印刷に出す））
 test("test_normal_when_code_block_printed", async ({ page }) => {
   // 準備
+  await routeSyntax(page);
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
@@ -261,6 +263,12 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
       "",
     ].join("\n"),
   });
+  // 色分けし終えてから印刷する。画面の色分けの色を控える
+  const spans = page.locator("#doc .mdmark-code-text span[class*='hljs-']");
+  await expect(spans.first()).toBeVisible();
+  const screenColors = await spans.evaluateAll((elements) =>
+    elements.map((element) => getComputedStyle(element).color),
+  );
   // 実行
   await page.emulateMedia({ media: "print" });
   await sendPrintEvent(page, "beforeprint");
@@ -290,4 +298,13 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
     expect(item.background).not.toBe("rgba(0, 0, 0, 0)");
     expect(item.adjust).toBe("exact");
   }
+  // 行の中のキーワード・文字列などが、画面と同じ色分けの色で、色を省く設定でも出る
+  const printColors = await spans.evaluateAll((elements) =>
+    elements.map((element) => getComputedStyle(element).color),
+  );
+  expect(printColors).toEqual(screenColors);
+  const spanAdjust = await spans.evaluateAll((elements) =>
+    elements.map((element) => getComputedStyle(element).printColorAdjust),
+  );
+  expect(new Set(spanAdjust)).toEqual(new Set(["exact"]));
 });

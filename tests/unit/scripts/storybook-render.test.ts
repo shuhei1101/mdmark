@@ -166,6 +166,30 @@ test("test_render_part_when_vscode_part", async () => {
   );
 });
 
+// highlight が true のコードブロックを色分けして返す（正常系）
+test("test_render_part_when_code_block_highlighted", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const lines = [{ text: "const a = 1;" }, { text: "// b" }];
+  const params = new URLSearchParams({
+    language: "ts",
+    title: "",
+    lineNumbers: "true",
+    highlight: "true",
+    lines: JSON.stringify(lines),
+  });
+  // 実行
+  const html = renderPart({ component: "code-block", params });
+  // 検証
+  const texts = (html ?? "").split('<span class="mdmark-code-text">').slice(1);
+  expect(texts).toHaveLength(2);
+  expect(texts[0]).toContain('<span class="hljs-keyword">const</span>');
+  expect(texts[1]).toContain('<span class="hljs-comment">// b</span>');
+  expect(texts.map((text) => text.replace(/<[^>]*>/g, "").trim())).toEqual(
+    lines.map((line) => line.text),
+  );
+});
+
 // 知らない部品は返さない（正常系）
 test("test_render_part_when_unknown", async () => {
   // 準備

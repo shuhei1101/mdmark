@@ -1,0 +1,105 @@
+title: "タグの語彙を見る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 語彙を持つ作業のフォルダ
+        description: 設定と、語彙に `topic:mcp`（グループ `topic`・説明・別名 `MCP`）・`topic:yaml`・`topic:old`（振り替え先 `topic:mcp`）・`topic:unused` を持つ索引と、文書 2 つ。`a` のタグは主題の `topic:mcp`、`b` のタグは `topic:mcp` と `topic:yaml`
+        notes: 付いている文書が 0 件のタグを、どの文書にも付けない `topic:old`・`topic:unused` で決定的に起こす
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（引数なし）
+        S->>F: 設定と索引を読む
+        S->>S: タグごとに付いている文書を数える
+        S-->>C: 語彙のタグの一覧
+      ```
+    expected:
+      - 語彙の 4 つのタグが、語彙の並びで返る
+      - '`topic:mcp` の行が、グループ `topic`・説明・別名 `MCP` と、付いている文書の数 2 を持つ'
+      - '`topic:yaml` の行が、付いている文書の数 1 を持つ'
+      - '`topic:old` の行が、振り替え先 `topic:mcp` と、付いている文書の数 0 を持つ'
+      - '`topic:unused` の行が、付いている文書の数 0 で返る'
+      - 索引と文書が変わっていない
+    test: test_normal
+  - name: 正常シナリオ（語で絞る）
+    setup:
+      - name: 語彙を持つ作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 絞る語
+        description: '`topic:mcp` の別名 `MCP`'
+        notes: 名前ではなく別名で当たることを決定的に起こす
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（query: MCP）
+        S->>F: 設定と索引を読む
+        S->>S: 名前・別名・説明が語に当たるタグを選ぶ
+        S-->>C: 当たったタグの一覧
+      ```
+    expected:
+      - '`topic:mcp` が先頭に返る'
+      - 名前・別名・説明のどれにも `MCP` を持たない `topic:unused` は返らない
+    test: test_normal_when_query
+  - name: 正常シナリオ（語彙が無い）
+    setup:
+      - name: 語彙を持たない作業のフォルダ
+        description: 設定と、タグの語彙を持たず、文書がタグ `設計` を持つ索引
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（引数なし）
+        S->>F: 設定と索引を読む
+        S-->>C: 空の一覧
+      ```
+    expected:
+      - エラーにならず、空の一覧が返る
+    test: test_normal_when_no_vocabulary
+  - name: 正常シナリオ（全角と半角だけが違う語）
+    setup:
+      - name: 語彙を持つ作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 絞る語
+        description: '`topic:mcp` の別名 `MCP` を全角にした `ＭＣＰ`'
+        notes: 全角と半角の違いだけで当たることを決定的に起こす
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: list_tags（query: ＭＣＰ）
+        S->>F: 設定と索引を読む
+        S->>S: 語と名前・別名・説明を正規化して、当たるタグを選ぶ
+        S-->>C: 当たったタグの一覧
+      ```
+    expected:
+      - '`topic:mcp` が先頭に返る'
+      - 名前・別名・説明のどれにも `MCP` を持たない `topic:unused` は返らない
+    test: test_normal_when_query_width_differs
+lead: Claude Code が MCP のツール `list_tags` で、索引のタグの語彙を、タグごとの説明と付いている文書の数つきで受け取る。
+issue: 101
+primary_actor: Claude Code
+trigger: Claude Code が、`find_docs` に渡すタグや文書に付けるタグを、語彙の説明を見て選びたくなる
+preconditions:
+  - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
+  - 作業のフォルダに設定と索引がある
+success_guarantee: 語彙のタグごとに、名前・グループ・説明・別名・振り替え先・付いている文書の数が返る。付いている文書が 0 件のタグも返る。
+minimal_guarantee: 索引と文書を書き換えない。
+test_file: tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts

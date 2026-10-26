@@ -41,9 +41,12 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   await writeProject(builtRoot, dir, ["a"], DOCUMENTS);
   // 実行
   const steps = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
-      found: await callTool(client, "find_docs", { text: "A" }),
+      found: await callTool(client, "find_docs", {
+        text: "A",
+        format: "json",
+      }),
       updated: await callTool(client, "update_index", {
         kind: "doc",
         id: "b",
@@ -71,7 +74,7 @@ test("test_error_when_drift", async ({ builtRoot, tempDir }) => {
   await rm(join(dir, "a.md"));
   // 実行
   const steps = await withMcpClient(
-    { pluginDir: join(builtRoot, "plugin"), projectDir: dir },
+    { builtRoot, projectDir: dir },
     async (client) => ({
       first: await callTool(client, "check"),
       removed: await callTool(client, "update_index", {

@@ -166,6 +166,41 @@ test("test_apply_index_update_when_terms_absent", async () => {
   expect(document.toJS().terms).toHaveLength(1);
 });
 
+// tags が無い索引にタグを name を鍵にして足す（正常系）
+test("test_apply_index_update_when_tag", async () => {
+  // 準備
+  const { applyIndexUpdate } = await loadIndexFile();
+  const document = parseDocument(INDEX_A);
+  // 実行
+  const result = applyIndexUpdate({
+    document,
+    kind: "tag",
+    id: "topic:mcp",
+    item: { group: "topic" },
+  });
+  // 検証
+  expect(result.action).toBe("added");
+  expect(result.problems).toEqual([]);
+  expect(document.toJS().tags).toEqual([{ name: "topic:mcp", group: "topic" }]);
+});
+
+// 最後のタグを消すと tags のキーも消す（正常系）
+test("test_apply_index_update_when_last_tag_removed", async () => {
+  // 準備
+  const { applyIndexUpdate } = await loadIndexFile();
+  const document = parseDocument(`${INDEX_A}tags:\n  - name: topic:mcp\n`);
+  // 実行
+  const result = applyIndexUpdate({
+    document,
+    kind: "tag",
+    id: "topic:mcp",
+    item: null,
+  });
+  // 検証
+  expect(result.action).toBe("removed");
+  expect("tags" in document.toJS()).toBe(false);
+});
+
 // 形に合わない項目は合わないところを返す（正常系）
 test("test_apply_index_update_when_schema_invalid", async () => {
   // 準備

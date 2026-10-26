@@ -93,6 +93,63 @@ export async function writeFiles(
   }
 }
 
+/** フォルダで git を 1 回呼び、標準出力を返す */
+export async function git(cwd: string, ...args: string[]): Promise<string> {
+  const { stdout } = await execFileAsync("git", args, { cwd });
+  return stdout;
+}
+
+/** 最初のコミットに付けるタグの名前 */
+export const BASE_TAG = "base";
+
+/** 文書 `a`・`b` が互いを `change_together` で記載した索引の中身 */
+const CHANGE_TOGETHER_INDEX = [
+  "schema: 1",
+  "docs:",
+  "  - id: a",
+  "    path: a.md",
+  "    title: A",
+  "    related:",
+  "      - to: b",
+  "        type: change_together",
+  "        when: 索引の Schema を変えるとき",
+  "  - id: b",
+  "    path: b.md",
+  "    title: B",
+  "    related:",
+  "      - to: a",
+  "        type: change_together",
+  "        when: 索引の Schema を変えるとき",
+  "",
+].join("\n");
+
+/**
+ * `mdmark init` の雛形に、互いを `change_together` で記載した文書 `a`・`b` を足した git のフォルダを作る。
+ * 全てをコミットしてタグ `base` を付け、その後 `a.md` だけを書き換えてコミットする
+ */
+export async function createChangeTogetherDir(
+  createTempDir: () => Promise<string>,
+): Promise<string> {
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  await writeFiles(dir, {
+    "a.md": "# A\n",
+    "b.md": "# B\n",
+    "index.yaml": CHANGE_TOGETHER_INDEX,
+  });
+  await git(dir, "init", "-q");
+  await git(dir, "config", "user.email", "test@example.com");
+  await git(dir, "config", "user.name", "test");
+  await git(dir, "config", "commit.gpgsign", "false");
+  await git(dir, "add", "-A");
+  await git(dir, "commit", "-q", "-m", "最初のコミット");
+  await git(dir, "tag", BASE_TAG);
+  await writeFiles(dir, { "a.md": "# A\n\n書き換えた。\n" });
+  await git(dir, "add", "-A");
+  await git(dir, "commit", "-q", "-m", "a を書き換える");
+  return dir;
+}
+
 /** 標準出力・標準エラーを行に分ける（空行は除く） */
 export function linesOf(text: string): string[] {
   return text.split("\n").filter((line) => line !== "");

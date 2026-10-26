@@ -3,10 +3,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { runCli, useTempDirs, writeFiles } from "../cli.ts";
-import { builtPluginDir, callTool, useMcpClients } from "../plugin.ts";
+import { callTool, useMcpServers } from "../plugin.ts";
 
 const createTempDir = useTempDirs();
-const { connectInMemory } = useMcpClients();
+const { connectHttp } = useMcpServers();
 
 /** 文書 2 つと、それをまとめる設定 */
 const PROJECT_FILES = {
@@ -27,10 +27,7 @@ test("test_normal", async () => {
   const cliDir = await createTempDir();
   await writeFiles(dir, PROJECT_FILES);
   await writeFiles(cliDir, PROJECT_FILES);
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "build_site", {});
   // 検証
@@ -54,10 +51,7 @@ test("test_error_when_build_missing", async () => {
     "mdmark.config.yaml": "features:\n  print: true\n",
     "a.md": "# A\n",
   });
-  const client = await connectInMemory({
-    projectDir: dir,
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp({ projectDir: dir });
   // 実行
   const result = await callTool(client, "build_site", {});
   // 検証
@@ -66,4 +60,16 @@ test("test_error_when_build_missing", async () => {
   const cli = await runCli(["build"], dir);
   expect(result.texts[0]).toBe(cli.stderr.trim());
   expect(existsSync(join(dir, "dist"))).toBe(false);
+});
+
+// project_dir を持たない呼び出しを、作業のフォルダを読まずにエラーにする（異常系）
+test("test_error_when_project_dir_missing", async () => {
+  // 準備
+  const client = await connectHttp();
+  // 実行
+  const result = await callTool(client, "build_site", {});
+  // 検証
+  expect(result.isError).toBe(true);
+  expect(result.texts[0]).toContain("project_dir");
+  expect(result.texts[0]).toContain("プラグインを入れた");
 });

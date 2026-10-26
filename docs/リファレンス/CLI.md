@@ -18,6 +18,7 @@ Node 24 以降で動く。
 | [複数の文書を 1 枚の HTML にまとめる](#複数の文書を-1-枚の-html-にまとめる) | `mdmark build` | 設定の `build` で決めた文書を、文書を行き来できる 1 枚の HTML にまとめる |
 | [設定と索引を点検する](#設定と索引を点検する) | `mdmark check` | 設定の形・索引と文書のずれ・`build` の対象の有無を点検する |
 | [版を上げる](#版を上げる) | `mdmark upgrade` | 手元の版から呼んだ CLI の版までの移行の手順を版の順に当て、その範囲の変更履歴を出す |
+| [MCP サーバーを起動する](#mcp-サーバーを起動する) | `mdmark serve` | Claude Code のプラグインがつなぐ MCP の常駐サーバーを、127.0.0.1 の HTTP で起動する |
 
 ## 雛形を置く
 
@@ -166,19 +167,30 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
 | `orphan_doc` | 文書があって、索引に無い |
-| `broken_ref` | `related` の `id` が索引に無い |
-| `duplicate_term` | 用語の語か別名が重なっている |
+| `broken_ref` | `related` の `id`（オブジェクトの要素は `to`）が索引に無い |
+| `untyped_related` | `related` の要素が `type` と `when` を持たない文字列。オブジェクトへの書き換えを求める |
+| `one_sided_change_together` | `change_together` の相手が、自分への `change_together` を記載していない |
+| `related_link_overlap` | `change_together` でない `related` の相手を、本文でもリンクしている |
+| `missed_change_together` | `--base` を渡したとき、`change_together` の組のうち片方の文書だけが変わっている。場所は空で、ファイルは変わっていない側の文書のパス |
+| `duplicate_term` | 用語の語か別名が、NFKC・英字の小文字化・前後の空白の除去で正規化した後に重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
+| `duplicate_tag` | タグの語彙の `name` が重なっている |
+| `tag_alias_conflict` | タグの語彙の `aliases` が、別のタグの `name` か `aliases` と重なっている |
+| `broken_tag_replacement` | タグの語彙の `deprecated` の振り替え先が、語彙に無い |
+| `unregistered_tag` | 文書のタグが、語彙の `name` にも `aliases` にも無い。近いタグを添える |
+| `deprecated_tag` | 文書のタグが、やめたタグに当たる。振り替え先を添える |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
 
 <!-- /table -->
 
-`missing_doc` から `avoided_term` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
+`missed_change_together` は、`--base` を渡したときだけ出る。
 
 ### 使い方
 
 ```bash
-npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}]
+npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--base {git の ref}]
 ```
 
 ### 引数
@@ -186,6 +198,7 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}]
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
 | `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う | `--config docs/mdmark.config.yaml` |
+| `--base` | 任意 | 直し忘れの検査に比べる基準の git の ref。渡すと、基準と HEAD の merge-base から作業ツリーまでに変わった文書を比べ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で出す。省くと直し忘れを検査しない。設定に `index` が無いときは使わない | `--base origin/develop` |
 
 ### 終了コード
 
@@ -195,6 +208,7 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}]
 | `1` | ずれが 1 件以上ある。全てのずれを出してから終わる |
 | `1` | `--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い。標準エラーに、探した場所と `mdmark init` で置けることを出す |
 | `1` | 設定ファイルを YAML として読めない。標準エラーに、ファイルと読めない行と直し方を出す |
+| `1` | `--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・ref と HEAD の merge-base を引けない。標準エラーに、渡した ref と引けない理由と、ref を直すか履歴を取得する直し方（CI の checkout の `fetch-depth`）を出す。ずれの点検はしない |
 
 ## 版を上げる
 
@@ -267,3 +281,35 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 | `1` | 問いに答える前に標準入力が終わった。標準エラーに答える問いを出し、何も書き換えない |
 | `1` | 当てる版の `steps.yaml` が読めない・形に合わない、または `call` のスクリプトが無い。標準エラーに版と合わないところと、mdmark を入れ直すことを出す。何も書き換えない |
 | `1` | `--config` のファイルが無い、今のフォルダと上のフォルダに `mdmark.config.yaml` が無い、または YAML として読めない。`mdmark check` と同じ文を標準エラーに出す |
+
+## MCP サーバーを起動する
+
+Claude Code のプラグインがつなぐ MCP の常駐サーバーを、127.0.0.1 の Streamable HTTP で起動する。
+手順は [MCPサーバーを起動する](../使い方/ClaudeCodeで使う/MCPサーバーを起動する.md)。ツールは [MCP](./MCP.md)。
+
+`127.0.0.1` の `/mcp` だけを待ち受ける。
+待ち受けたら、接続先の URL を標準出力に 1 行出し、止める合図を受けるまで動き続ける。
+`Ctrl+C`（SIGINT）か SIGTERM を受けると待ち受けを閉じる。
+
+```text
+MCP サーバーを起動しました: http://127.0.0.1:8782/mcp
+```
+
+### 使い方
+
+```bash
+npx github:shuhei1101/mdmark#v{版} serve
+```
+
+### 引数
+
+引数は無い。
+待ち受けるポートは環境変数 `MDMARK_PORT` で決め、無ければ 8782 にする（[設定](./設定.md#mcp-サーバーのポート)）。
+
+### 終了コード
+
+| コード | 意味 |
+| --- | --- |
+| `0` | `Ctrl+C`（SIGINT）か SIGTERM を受けて、待ち受けを閉じた |
+| `1` | ポートを別のプロセスが使っている。標準エラーに、ポートの番号と、`~/.claude/settings.json` の `env` と `serve` を起動する環境の両方に同じ `MDMARK_PORT` を設定すれば別のポートで動かせること、`serve` が既に起動しているならそのまま使えることを出す |
+| `1` | `MDMARK_PORT` が 1〜65535 の整数でない。標準エラーに、受け取った値と、1〜65535 の整数を設定することを出す |

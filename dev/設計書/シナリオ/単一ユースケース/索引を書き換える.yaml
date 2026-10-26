@@ -5,7 +5,7 @@ scenarios:
       - name: 作業のフォルダ
         description: 設定・索引と文書 2 つ。2 つ目の文書は索引に載っていない
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを起動して標準入出力でつなぐ MCP のクライアントを使う
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -64,12 +64,60 @@ scenarios:
       - エラーの文に、合わない項目の場所と直し方が出る
       - 索引のファイルの中身が書き換える前と同じ
     test: test_error_when_schema_invalid
-lead: Claude Code が MCP のツール `update_index` で、文書か用語の ID の項目を置き換え・足し・消す。書く前に索引の Schema で検査し、合わなければ書かない。
+  - name: 正常シナリオ（タグの語彙を書き換える）
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 1 つ。索引はタグの語彙を持たず、文書はタグ `topic:mcp` を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: tag、id: topic:mcp、item: グループ・説明・別名）
+        S->>F: 索引を読む
+        S->>S: 語彙のタグを追加した索引を Schema で検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: 書き換えた
+      ```
+    expected:
+      - 索引のファイルの最上位のタグの語彙に、`topic:mcp` のタグがグループ・説明・別名つきで入る
+      - 文書と用語の行は変わっていない
+      - 書き換えた後の索引が Schema に合う
+    test: test_normal_when_tag
+  - name: 正常シナリオ（関連を書く）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+      - name: 関連を持つ項目
+        description: '2 つ目の文書のパス・題名と、`related` に `{to: 1 つ目の文書の ID, type: requires, when: 前提を確かめるとき, paths: [src/**]}` を持つ文書の項目'
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（id: 2 つ目の文書の ID、item: 関連を持つ項目）
+        S->>F: 索引を読む
+        S->>S: 項目を追加した索引を Schema で検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: 書き換えた
+      ```
+    expected:
+      - 索引のファイルの 2 つ目の文書の行が、渡した `to`・`type`・`when`・`paths` を持つ関連を 1 件持つ
+      - 1 つ目の文書の行は変わっていない
+      - 書き換えた後の索引が Schema に合う
+    test: test_normal_when_related
+lead: Claude Code が MCP のツール `update_index` で、文書・用語・タグの語彙の項目を置き換え・追加・削除する。書く前に索引の Schema で検査し、合わなければ書かない。
 issue: 11
 primary_actor: Claude Code
-trigger: Claude Code が文書を足した・消した・題名を変えた後に、索引を合わせたくなる
+trigger: Claude Code が文書を追加した・消した・題名を変えた後に索引を合わせたくなる。または、タグの語彙を整えたくなる
 preconditions:
-  - ビルドした `plugin/` の MCP サーバーが、作業のフォルダで起動している
+  - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
   - 作業のフォルダに設定と索引がある
 success_guarantee: 索引のファイルの、渡した ID の項目だけが変わる。
 minimal_guarantee: 書き換えた後の索引が Schema に合わないときは、索引のファイルを書き換えず、合わないところと直し方を返す。

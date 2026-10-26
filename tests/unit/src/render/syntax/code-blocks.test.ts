@@ -121,7 +121,7 @@ test("test_build_code_blocks", () => {
     "const b = 2;",
     "```",
     "",
-    "```ts",
+    "```text",
     "const plain = true;",
     "```",
     "",
@@ -196,4 +196,90 @@ test("test_build_code_blocks_when_disabled", () => {
   expect(findTag(off, "<pre")).not.toContain("mdmark-code-lines");
   expect(off).not.toContain("mdmark-code-lines");
   expect(off).toContain("let count = 1; // [!code ++]");
+});
+
+// 色分けの対象を部品にして色分けの属性を付け、対象外は `fence` のままにする（正常系）
+test("test_build_code_blocks_when_syntax", () => {
+  // 準備
+  const markdown = [
+    "```yml",
+    "a: 1",
+    "```",
+    "",
+    "```text",
+    "plain",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain(
+    '<code class="language-yml" data-mdmark-syntax="yaml">',
+  );
+  expect(matches(html, /data-mdmark-syntax/g)).toHaveLength(1);
+  expect(findTag(html, "language-text")).not.toContain("data-mdmark-syntax");
+});
+
+// `syntax` がオフなら色分けの属性を付けない（正常系）
+test("test_build_code_blocks_when_syntax_disabled", () => {
+  // 準備
+  const markdown = [
+    "<!-- features: -syntax -->",
+    "",
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "<!-- code: lines -->",
+    "",
+    "```ts",
+    "const b = 2;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).not.toContain("data-mdmark-syntax");
+  expect(matches(html, /mdmark-code-numbered/g)).toHaveLength(1);
+  expect(matches(html, /mdmark-code-lines/g)).toHaveLength(1);
+});
+
+// `code` がオフでも `syntax` がオンなら、行の印を外さずに色分けの属性を付ける（正常系）
+test("test_build_code_blocks_when_code_disabled_with_syntax", () => {
+  // 準備
+  const markdown = ["```ts", "let count = 1; // [!code ++]", "```", ""].join(
+    "\n",
+  );
+  // 実行
+  const { html } = renderDoc(markdown, { code: false });
+  // 検証
+  expect(html).toContain('data-mdmark-syntax="typescript"');
+  expect(html).not.toContain("mdmark-code-lines");
+  expect(html).toContain("let count = 1; // [!code ++]");
+});
+
+// 別名と大文字を表のモジュール名にする（正常系）
+test("test_syntax_language_of", async () => {
+  // 準備
+  const { syntaxLanguageOf } = await loadCodeBlocks();
+  // 実行
+  const result = ["ts", "YML", "html"].map((language) =>
+    syntaxLanguageOf(language),
+  );
+  // 検証
+  expect(result).toEqual(["typescript", "yaml", "xml"]);
+});
+
+// 表に無い語と継承した名前は引かない（正常系）
+test("test_syntax_language_of_when_unknown", async () => {
+  // 準備
+  const { syntaxLanguageOf } = await loadCodeBlocks();
+  // 実行
+  const result = ["text", "tree", "", "constructor"].map((language) =>
+    syntaxLanguageOf(language),
+  );
+  // 検証
+  expect(result).toEqual([undefined, undefined, undefined, undefined]);
 });

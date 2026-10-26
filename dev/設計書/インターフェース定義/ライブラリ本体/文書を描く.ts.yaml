@@ -1637,9 +1637,226 @@ flows:
       - '`作業場` にフォーカスすると、語の `aria-describedby` が指す `role="tooltip"` のツールチップが出て、「代わりの用語」の下に `ワークスペース` と `話し合いの記録を置くフォルダ` がある'
       - Esc でツールチップが消え、フォーカスが `作業場` に残る
     test: test_normal_when_avoided_term
+  - name: 正常系（ツールチップを上に出す）
+    summary: 用語・線・ヒントのツールチップを持ち主の上に出し、上に収まらない語だけ下に出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 描く先の要素をページの上端に置いたページ。ほかは正常系と同じ
+        notes: スクロールしない。文書の 1 行目の語の上にツールチップの高さが残らない
+      - name: 索引
+        description: 用語 `索引`（意味 `文書と用語を並べた YAML のファイル`）を持つ索引
+      - name: ツールチップを持つ Markdown
+        description: 1 行目の段落に `索引` を持ち、画面の高さを超えない範囲の段落を挟んだ後、別の節の段落の `索引`・`tip` を持つ線 1 本のフロー図・`<!-- html -->` の範囲の `data-hint` を持つ `div` を置いた文書
+        notes: 後ろの 3 つの持ち主は、上にツールチップの高さより広い余白を持つ
+      - name: Mock
+        description: 差し替える依存は無い。ポインターは Playwright のマウス操作で動かす
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index })
+        P->>M: 2 つ目の節の用語・線のラベル・div の印に順にポインターを乗せる
+        M->>P: それぞれの持ち主の上にツールチップを出す
+        P->>M: 1 行目の用語にポインターを乗せる
+        M->>P: 語の下にツールチップを出す
+    expected:
+      - 2 つ目の節の `索引` のツールチップの `getBoundingClientRect().bottom` が、語の `top` 以下
+      - 線のラベルのツールチップの `bottom` が、ラベルの `top` 以下
+      - '`div` の印のツールチップの `bottom` が、印の `top` 以下'
+      - 1 行目の `索引` のツールチップの `top` が、語の `bottom` 以上で、ツールチップの `top` が 0 以上
+    test: test_normal_when_tooltip_above
+  - name: 正常系（ツールチップを下に出す設定）
+    summary: '`tooltips.placement` が `bottom` のときは持ち主の下に出し、下に収まらない語だけ上に出す。知らない値は `top` として扱う'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（ツールチップを上に出す）と同じ
+      - name: 索引
+        description: 正常系（ツールチップを上に出す）と同じ
+      - name: ツールチップを持つ Markdown
+        description: 正常系（ツールチップを上に出す）と同じ文書の末尾に、画面の下端に揃うまでスクロールしたとき最後の行に来る `索引` を足した文書
+      - name: 設定
+        description: '`{ tooltips: { placement: "bottom" } }` と `{ tooltips: { placement: "left" } }`'
+        notes: 別の要素へ 1 つずつ描く
+      - name: Mock
+        description: 正常系（ツールチップを上に出す）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, config: { tooltips: { placement: "bottom" } } })
+        P->>M: 2 つ目の節の用語・線のラベル・div の印に順にポインターを乗せる
+        M->>P: それぞれの持ち主の下にツールチップを出す
+        P->>M: 末尾の用語を画面の下端まで送り、ポインターを乗せる
+        M->>P: 語の上にツールチップを出す
+        P->>M: mount(el2, { markdown, index, config: { tooltips: { placement: "left" } } })
+        P->>M: el2 の 2 つ目の節の用語にポインターを乗せる
+        M->>P: 語の上にツールチップを出す
+    expected:
+      - '`bottom` のとき、2 つ目の節の `索引`・線のラベル・`div` の印のツールチップの `top` が、それぞれの持ち主の `bottom` 以上'
+      - '`bottom` のとき、末尾の `索引` のツールチップの `bottom` が、語の `top` 以下で、`window.innerHeight` 以下'
+      - '`left` を渡した `el2` の `索引` のツールチップの `bottom` が、語の `top` 以下'
+    test: test_normal_when_tooltip_placement_bottom
+  - name: 正常系（用語集の表のやめた言い方）
+    summary: 描く文書とほかの文書の用語集の表のやめた言い方にマーカーを付け、索引の用語を先に代わりの用語にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 文書 `glossary`（`glossary.md`）と描く文書 `guide`（`guide.md`）をこの順で持ち、用語 `フォルダ`（意味 `ファイルの入れ物`、`avoid` に `作業場`）を持つ索引
+        notes: '`opts.docId` は `guide`'
+      - name: 参照の表
+        description: '`glossary.md` の本文から `collectReferences` が作った参照の表。`glossary.md` は `<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で、用語 `ワークスペース`（意味 `作業の置き場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表だけを持つ'
+        notes: '`作業場` を索引の用語と表の両方に持たせ、索引が先になることを決定的に起こす'
+      - name: 用語集の表とやめた言い方が出る Markdown
+        description: '`guide.md` の本文。`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で用語 `下書き`（意味 `公開前の文書`、やめた言い方 `草稿、ワーク場`）の行を持つ表を囲み、表の後の段落に `作業場`・`ワーク場`・`草稿` が出る'
+        notes: '`ワーク場` を描く文書の表とほかの文書の表の両方に持たせ、索引の `docs` で先に並ぶ `glossary` の表が先になることを決定的に起こす'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId, references })
+        M->>P: やめた言い方に波線の下線を引いて描く
+        P->>P: 各やめた言い方にフォーカスする
+    expected:
+      - 段落の `作業場`・`ワーク場`・`草稿` が、どれも class `mdmark-term mdmark-term-avoided` の要素
+      - 表の中の `草稿` は class `mdmark-term-avoided` の要素でない
+      - '`作業場` にフォーカスすると、「代わりの用語」の下に索引の用語 `フォルダ` と `ファイルの入れ物` がある'
+      - '`ワーク場` にフォーカスすると、「代わりの用語」の下に、描く文書の表の `下書き` ではなく、索引の `docs` で先に並ぶほかの文書の表の用語 `ワークスペース` と `作業の置き場所` がある'
+      - '`草稿` にフォーカスすると、「代わりの用語」の下に描く文書の表の用語 `下書き` と `公開前の文書` がある'
+    test: test_normal_when_glossary_avoid_column
+  - name: 正常系（コードブロックを色分けする）
+    summary: 色分けの対象のコードブロックがあるときだけ、本体と使う言語のモジュールを読んで、行に分けた形と分けない形の両方を色分けする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けするコードブロックを持つ Markdown
+        description: '印を持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後に 3 行のブロックスカラー（`|`）の文字列を持つ言語 `yml` のコードブロックと、言語 `text` のコードブロックを持つ文書'
+        notes: '`yml` は別名で yaml のモジュールを読む。ブロックスカラーは行をまたぐ `hljs-string` の `span` になる'
+      - name: 設定
+        description: '`opts.config.syntax.url` に `/fixtures/highlightjs/{名前}/es/`'
+      - name: Mock
+        description: 色分けのライブラリの代わりに、`@highlightjs/cdn-assets@11.12.0` の `es/` を手元の開発サーバーが `/fixtures/highlightjs/{名前}/es/` で配る。`{名前}` はテストごとに変え、読み込み済みのモジュールを再利用させない。要求の件数は `performance.getEntriesByType("resource")` で数える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)・import(languages/typescript.min.js)・import(languages/yaml.min.js)
+        X-->>M: モジュール
+        M->>P: ts と yml のコードブロックの中身を色分けした HTML に置き換える
+    expected:
+      - 色分けのライブラリへの要求が `core.min.js`・`languages/typescript.min.js`・`languages/yaml.min.js` の 3 件
+      - '`ts` と `yml` の `code` の中に class が `hljs-` で始まる `span` があり、`text` の `code` の中には無い'
+      - '`yml` のコードブロックの `mdmark-code-line` の数と `data-line` が色分けの前と同じで、各 `mdmark-code-text` の中の `span` が行の中で閉じている'
+      - 3 つの `code` の `textContent` と、`pre`・`code` の属性が色分けの前と同じ
+    test: test_normal_when_syntax_highlighted
+  - name: 正常系（色分けの対象が無い）
+    summary: 色分けの対象のコードブロックが無い文書と、機能 `syntax` を外した文書では、色分けのライブラリを読まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けの対象が無い Markdown
+        description: '言語の無いコードブロックと言語 `tree` のコードブロックを持つ文書と、`<!-- features: -syntax -->` を書いて言語 `ts` のコードブロックを持つ文書の 2 つ'
+        notes: 2 つの文書をそれぞれ別の `mount` で描く
+      - name: 設定
+        description: コードブロックを色分けする正常系と同じ
+      - name: Mock
+        description: コードブロックを色分けする正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: 色分けのライブラリを読まずに本文を描く
+    expected:
+      - どちらの文書でも、色分けのライブラリへの要求が 0 件
+      - '`code` の中に class が `hljs-` で始まる `span` が無い'
+    test: test_normal_when_no_syntax_target
+  - name: 異常系（色分けのライブラリを読めない・色分けなし）
+    summary: 色分けのライブラリの本体を読めないとき、コードブロックを色分けせずに残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けするコードブロックを持つ Markdown
+        description: コードブロックを色分けする正常系と同じ文書
+      - name: 設定
+        description: '`opts.config.syntax.url` に `/fixtures/missing/`'
+      - name: Mock
+        description: 手元の開発サーバーが `/fixtures/missing/core.min.js` に 404 を返す。`console.error` を記録する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)
+        X-->>M: 404
+        M->>P: コードブロックをそのまま残す
+    expected:
+      - '`mount` が例外を投げず、本文の全ての `code` の HTML が色分けの前と同じ'
+      - 知らせの枠（`mdmark-notice`）が無い
+      - '`console.error` に `/fixtures/missing/core.min.js` を含む記録が 1 件以上ある'
+    test: test_error_when_highlighter_not_found
+  - name: 異常系（言語のモジュールを読めない・その言語だけ色分けなし）
+    summary: 言語のモジュールの一部を読めないとき、読めた言語のコードブロックだけを色分けする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 色分けするコードブロックを持つ Markdown
+        description: コードブロックを色分けする正常系と同じ文書
+      - name: 設定
+        description: コードブロックを色分けする正常系と同じ
+      - name: Mock
+        description: コードブロックを色分けする正常系と同じで、`/fixtures/highlightjs/no-yaml/es/languages/yaml.min.js` だけ 404 を返す。`console.error` を記録する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)・import(languages/typescript.min.js)・import(languages/yaml.min.js)
+        X-->>M: core と typescript、yaml は 404
+        M->>P: ts のコードブロックだけを色分けする
+    expected:
+      - '`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
+      - '`yml` の `code` の HTML が色分けの前と同じ'
+      - 知らせの枠（`mdmark-notice`）が無い
+      - '`console.error` に `languages/yaml.min.js` を含む記録が 1 件以上ある'
+    test: test_error_when_language_module_not_found
+  - name: 正常系（表記の違う用語）
+    summary: 全角と半角・大文字と小文字だけが違う本文の語と図の `{{語}}` にも、用語の下線とツールチップを付ける
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 索引
+        description: 用語 `ワークスペース`（別名 `WS`、意味 `作業の置き場所`、`avoid` に `workplace`）と、用語 `MCP`（意味 `Model Context Protocol`）を持つ索引
+      - name: 表記の違う語が出る Markdown
+        description: 1 つ目の節の段落に全角の `ＷＳ`、2 つ目の節の段落に小文字の `ws` と `WorkPlace` を書き、箱の名前に `{{ｍｃｐ}}` を持つフロー図を置いた文書
+        notes: 索引の語・別名・やめた言い方と、本文・図の語の表記が全角と半角・大文字と小文字だけ違う状態を決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index })
+        M->>M: 用語の語・別名と本文の文字を正規化して照合する
+        M->>P: 本文に記載したままの文字に下線を引いて描く
+    expected:
+      - '`ＷＳ` と `ws` がそれぞれ class `mdmark-term` の要素で、文字は本文に記載したまま'
+      - '`ＷＳ` と `ws` のツールチップに `ワークスペース` の意味 `作業の置き場所` が出る'
+      - '`WorkPlace` が class `mdmark-term mdmark-term-avoided` の要素で、「代わりの用語」に `ワークスペース` が出る'
+      - 図の箱の `ｍｃｐ` が class `mdmark-term` の要素で、ツールチップに `MCP` の意味が出る
+    test: test_normal_when_notation_differs
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -1720,7 +1937,7 @@ request:
     default: なし（被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない）
     location: argument
     description: '`collectReferences` が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う'
-    notes: 形はインターフェース定義『参照の表を作る』のレスポンス
+    notes: 形はインターフェース定義『参照の表を作る』のレスポンス。`glossary[].avoid` が無い用語は、やめた言い方を持たない用語として扱う
   - name: opts.diffSource
     type: DiffSource
     required: false
@@ -1737,6 +1954,22 @@ request:
     description: コメントを読み込み、保存する関数。`comments` がオンのときだけ使う
     constraints: '`opts.docId` と一緒に渡す'
     notes: 形は制約の「コメントの読み書きの関数」。保存先は mdmark が持たず、使う側が書く
+  - name: opts.config.tooltips.placement
+    type: '"top" | "bottom"'
+    required: false
+    default: '`top`'
+    location: argument
+    description: 用語・図・ヒントのツールチップを、持ち主の上と下のどちらに先に出すか
+    notes: '`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す。他の値は無視して `top` にする'
+  - name: opts.config.syntax.url
+    type: string
+    required: false
+    default: '`https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/`'
+    location: argument
+    description: 色分けのライブラリ（highlight.js）の `es/` フォルダの URL。本体を `{url}core.min.js`、言語を `{url}languages/{言語}.min.js` から読む
+    constraints: 末尾は `/`。URL はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる
+    example: '"/vendor/highlightjs/es/"'
+    notes: 印の名前の対応表 `libraries` とは分け、文書に `<!-- syntax -->` のような印を書かせない
 request_example: |-
   ```json
   {
@@ -1780,6 +2013,9 @@ exceptions:
   - name: なし（ビュー・コメントの部品のモジュールを読めない）
     condition: ビューの部品かコメントの部品のモジュールを読めない
     notes: 例外を投げない。ビューの印の場所は `render` が出した表のまま残し（切り替えとボードは置かず、表は読めるため知らせの枠に替えない）、コメントはボタンを出さず `load` も呼ばない。読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーを `console.error` に出す。文書の残りは描く
+  - name: なし（色分けなし）
+    condition: 色分けのライブラリの本体か言語のモジュールを読めない
+    notes: 例外を投げず、読めなかった分のコードブロックを色分けせずに残す。URL と元のエラーを `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -1812,13 +2048,13 @@ constraints:
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
   - item: 用語と文書の別名の下線
-    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
+    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。照合の前に、語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に引く。図の部品の `{{語}}` も同じ正規化で用語を引く。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
     notes: 下線の要素の形は部品設計で決める
   - item: ツールチップの操作
-    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、下に収まらなければ上に開く。`update` で付け直し、`destroy` で外す
+    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 関連文書と被参照の一覧
-    constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない
+    constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` の要素の相手（オブジェクトは `to`、文字列はその値）に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない
   - item: 索引の値の出し方
     constraint: 索引の題・意味・`description` は Markdown として解析せず、文字として出す。リンクの `href` は本文のリンクと同じ許可の検査を通す
   - item: 用語と関連文書の一覧の id
@@ -1834,7 +2070,7 @@ constraints:
     constraint: 全画面のボタンで、題・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を置く。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を外す
     notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
   - item: 図のツールチップ
-    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。同時に出すのは 1 つだけ。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。同時に出すのは 1 つだけ。出す場所は制約の「ツールチップの操作」と同じく `opts.config.tooltips.placement` に従い、箱の印のツールチップは箱の上（下）に置く。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 操作できる部品の操作
     constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
@@ -1843,7 +2079,7 @@ constraints:
     constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線・やめた言い方のマーカーとツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
     notes: 文書に書いたスクリプトは動かさず、動くのは mdmark が付ける操作だけ（D-22）
   - item: ヒントの操作
-    constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
+    constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・出す場所・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
     notes: 印だけで開くのとポインターの形は確認ログの決定
   - item: 差分の取り出し元
     constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
@@ -1894,6 +2130,19 @@ constraints:
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
   - item: やめた言い方のマーカー
-    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。同じやめた言い方を複数の用語が持つときは、索引の `terms` で先の用語を代わりの用語にする。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
-    notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences`・`collectMatches` の結果と関連文書の一覧は変わらない
+    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ正規化・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、点検の `avoided_term` と同じく、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
+    notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences` の `backlinks`・`collectMatches` の結果と関連文書の一覧は変わらない
+  - item: 色分けの対象
+    constraint: 機能 `syntax` がオンの文書で、情報文字列の最初の語が色分けの言語の対応表にある、フェンスのコードブロックの `pre > code`。文書に書いた生の HTML の `pre > code` は、`language-*` の class を持っていても当たらない。記法が描いたもの（ファイルツリー・図の部品の定義・埋め込んだ HTML）は `pre > code` でないため当たらず、記法がコードブロックのまま残したものは当たる
+    notes: '対応表（情報文字列の語 → 言語のモジュール）: `typescript`・`ts`・`tsx` → typescript／`javascript`・`js`・`jsx`・`mjs`・`cjs` → javascript／`json` → json／`yaml`・`yml` → yaml／`python`・`py` → python／`bash`・`sh`・`shell`・`zsh` → bash／`html`・`xml` → xml／`css` → css／`markdown`・`md` → markdown／`sql` → sql。語は大文字と小文字を区別しない'
+  - item: 色分けの読み込み
+    constraint: 描いた後に、色分けの対象が 1 つ以上あるときだけ、`syntax.url` の本体と文書が使う言語のモジュールを `import()` で読む。言語のモジュールは並べて読み、読めたものだけを登録する。同じ `mount` の中で同じモジュールは 1 回だけ読む。読み終わる前に `update`・`destroy` したときは、前の描画に色を当てない。読み込みの完了は待たずに `mount` を返す
+    decided_by: dev/設計書/非機能要件/非機能要件#
+    notes: 配布物 `dist/index.js` に色分けのライブラリを束ねない（非機能要件『配布ファイル 1 つのサイズ』）
+  - item: 色分けの当て方
+    constraint: 行に分けたコードブロック（`mdmark-code-line` を持つ）は各 `mdmark-code-text` の中を、分けないものは `code` の中を、highlight.js の `highlight` が返す HTML に置き換える。行をまたいで開いている `span` は行末で閉じ、次の行の頭で開き直す。`pre`・`code`・`mdmark-code-line` の属性と `code` の `textContent` は変えない。色は `hljs-*` の class に CSS 変数 `--mdmark-color-syntax-{keyword,string,number,type,name,comment}` を当てる
+    notes: 色分けの HTML は sanitize を通さない（`hljs-*` は sanitize の許可に無い）。highlight.js はコードの文字をエスケープしてから `span` を付ける。種類ごとの class の当て方はモック `dev/mock/refs/97/assets/syntax-highlight.css` のとおり
+  - item: 色分けを読めないとき
+    constraint: 本体を読めないときは全てのコードブロックを、言語のモジュールを読めないときはその言語のコードブロックを、色分けせずに描いたまま残す。例外を投げず、知らせの枠も出さない。読めなかった URL と元のエラーを `console.error` に出す
+    notes: コードは色分けが無くても欠けずに読めるため、外部ライブラリの印と違って本文を枠で置き換えない
 test_file: tests/integration/lib/mount.browser.test.ts

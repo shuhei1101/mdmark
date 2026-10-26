@@ -6,6 +6,7 @@ import {
 } from "./config.ts";
 import { attachDiff, type DiffHtmlRenderer } from "./diff/panel.ts";
 import type { DiffSource } from "./diff/source.ts";
+import { highlightCodeBlocks } from "./highlight.ts";
 import { attachInteractions } from "./interact/index.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
@@ -82,6 +83,7 @@ function createDiffHtmlRenderer(options: {
           root,
           features: rendered.features,
           paramDefinitions: rendered.paramDefinitions,
+          placement: config.tooltips.placement,
         }),
     };
   };
@@ -121,6 +123,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let detachDiff: (() => void) | undefined;
   // 今の文書に付けたビューとコメントの部品を外す関数
   let detachParts: (() => void) | undefined;
+  // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
+  const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
   // コメントの機能に読み書きの関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
@@ -147,6 +151,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       root: el,
       features,
       paramDefinitions: rendered.paramDefinitions,
+      placement: config.tooltips.placement,
     });
     // 読み込みの完了は待たない
     void loadLibraries({
@@ -154,6 +159,13 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       libraries: config.libraries,
       isCurrent: () => !destroyed && generation === current,
       definitions: rendered.extensionDefinitions,
+    });
+    // 色分けの対象があるときだけ読む。読み込みの完了は待たない
+    void highlightCodeBlocks({
+      root: el,
+      url: config.syntax.url,
+      isCurrent: () => !destroyed && generation === current,
+      modules: syntaxModules,
     });
     detachParts = attachParts({
       root: el,

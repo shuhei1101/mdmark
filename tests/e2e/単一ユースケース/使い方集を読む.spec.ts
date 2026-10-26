@@ -21,17 +21,15 @@ async function readGuides(pluginDir: string): Promise<Guide[]> {
 }
 
 // 索引の名前 2 つの本文が、索引の指すページの本文と一致して返る（正常シナリオ）
-test("test_normal", async ({ builtRoot, tempDir }) => {
+test("test_normal", async ({ builtRoot }) => {
   // 準備
   const pluginDir = join(builtRoot, "plugin");
   const guides = (await readGuides(pluginDir)).slice(0, 2);
   // 実行
-  const result = await withMcpClient(
-    { pluginDir, projectDir: await tempDir() },
-    (client) =>
-      callTool(client, "read_guide", {
-        names: guides.map((guide) => guide.name),
-      }),
+  const result = await withMcpClient({ builtRoot }, (client) =>
+    callTool(client, "read_guide", {
+      names: guides.map((guide) => guide.name),
+    }),
   );
   // 検証
   expect(result.isError).toBe(false);
@@ -45,7 +43,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
 });
 
 // 索引に無い名前は本文を返さず、名前と近い名前を添えたエラーを返す（異常シナリオ）
-test("test_error_when_name_unknown", async ({ builtRoot, tempDir }) => {
+test("test_error_when_name_unknown", async ({ builtRoot }) => {
   // 準備
   const pluginDir = join(builtRoot, "plugin");
   const [first] = await readGuides(pluginDir);
@@ -53,9 +51,8 @@ test("test_error_when_name_unknown", async ({ builtRoot, tempDir }) => {
   // 索引の名前の 1 字を変えた名前
   const unknown = `${name.slice(0, -1)}${name.endsWith("x") ? "y" : "x"}`;
   // 実行
-  const result = await withMcpClient(
-    { pluginDir, projectDir: await tempDir() },
-    (client) => callTool(client, "read_guide", { names: [unknown] }),
+  const result = await withMcpClient({ builtRoot }, (client) =>
+    callTool(client, "read_guide", { names: [unknown] }),
   );
   // 検証
   expect(result.isError).toBe(true);

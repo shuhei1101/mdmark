@@ -1,0 +1,15 @@
+$ npm run test:unit
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-build-browser-baseline-check
+
+
+ Test Files  139 passed (139)
+      Tests  775 passed (775)
+   Start at  08:45:11
+   Duration  34.54s (tests 43%, worker 31%, import 23%, transform 3%)
+
+
+exit=0

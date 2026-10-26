@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import {
   buildDistRoot,
@@ -6,6 +8,7 @@ import {
   openPage,
   removeDistRoot,
   routeLibrary,
+  routeSyntax,
 } from "../dist-page.ts";
 
 // ビルドした配布物を置いた作業ツリー
@@ -43,12 +46,14 @@ test("test_normal", async ({ page }) => {
 test("test_normal_when_no_mark", async ({ page }) => {
   // 準備
   const requestCount = await routeLibrary(page, 200);
+  const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, { markdown: "段落\n", config: CONFIG });
   await page.waitForTimeout(SETTLE_MS);
   // 検証
   expect(requestCount()).toBe(0);
+  expect(syntaxRequests()).toEqual([]);
   await expect(page.locator("#doc p")).toHaveText("段落");
 });
 
@@ -63,4 +68,42 @@ test("test_error_when_library_not_found", async ({ page }) => {
   const doc = page.locator("#doc");
   await expect(doc.locator(".mdmark-notice")).toBeVisible();
   await expect(doc.locator(":scope > p")).toHaveText(["前の段落", "後の段落"]);
+});
+
+// 色分けする言語のコードブロックがあるときだけ、色分けのライブラリの本体と使う言語のモジュールを読む。本体は配布物に含まれない（正常シナリオ（色分けするコードブロック））
+test("test_normal_when_code_highlighted", async ({ page }) => {
+  // 準備
+  const syntaxRequests = await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+      "```yaml",
+      "name: mdmark",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const codes = page.locator("#doc pre code");
+  await expect(codes).toHaveCount(2);
+  for (const index of [0, 1]) {
+    await expect(
+      codes.nth(index).locator('span[class*="hljs-"]').first(),
+    ).toBeVisible();
+  }
+  // 本体 1 件と、文書が使う言語のモジュール 1 件ずつだけを読む
+  expect(syntaxRequests()).toEqual([
+    "core.min.js",
+    "languages/typescript.min.js",
+    "languages/yaml.min.js",
+  ]);
+  // 配布物に色分けのライブラリの本体が含まれていない
+  const dist = await readFile(join(builtRoot, "dist", "index.js"), "utf8");
+  expect(dist).not.toContain("highlightAuto");
+  expect(dist).not.toContain("Highlight.js v");
 });

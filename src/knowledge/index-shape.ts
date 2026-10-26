@@ -1,3 +1,45 @@
+/** 文書のタグのうち、主題のタグかを持つオブジェクト */
+export type MdmarkIndexDocTag = {
+  /** タグの名前 */
+  name: string;
+  /** 主題のタグか。無いときは `false` として扱う */
+  main?: boolean;
+};
+
+/** 関係の種類。`MdmarkIndexRelated` の `type` に記載できる値 */
+export type MdmarkRelationType =
+  /** 相手を先に読まないと分からない */
+  | "requires"
+  /** 相手を必要なときに引く */
+  | "references"
+  /** 相手を置き換えた */
+  | "replaces"
+  /** 相手の一部をなす */
+  | "part_of"
+  /** 片方を直したらもう片方も直す。両側に記載する */
+  | "change_together";
+
+/** `MdmarkRelationType` の値（記載できる順） */
+export const RELATION_TYPES: readonly MdmarkRelationType[] = [
+  "requires",
+  "references",
+  "replaces",
+  "part_of",
+  "change_together",
+];
+
+/** 文書の関連のうち、関係の種類といつ読むかを持つオブジェクト */
+export type MdmarkIndexRelated = {
+  /** 相手の文書の `id` */
+  to: string;
+  /** 関係の種類 */
+  type: MdmarkRelationType;
+  /** いつ読むかの 1 文 */
+  when: string;
+  /** 関連が当たるファイルの glob の並び */
+  paths?: string[];
+};
+
 /** 索引の文書 1 つ */
 export type MdmarkIndexDoc = {
   /** 文書の ID。`docs` の中で一意 */
@@ -10,10 +52,10 @@ export type MdmarkIndexDoc = {
   description?: string;
   /** 本文での呼び名 */
   aliases?: string[];
-  /** タグ */
-  tags?: string[];
-  /** 関連する文書の `id` */
-  related?: string[];
+  /** タグ。要素はタグの名前か、主題のタグかを持つオブジェクト */
+  tags?: (string | MdmarkIndexDocTag)[];
+  /** 他の文書への関連。要素は関連する文書の `id` か、`MdmarkIndexRelated` */
+  related?: (string | MdmarkIndexRelated)[];
 };
 
 /** 索引の用語 1 つ */
@@ -30,6 +72,20 @@ export type MdmarkIndexTerm = {
   avoid?: string[];
 };
 
+/** 索引のタグの語彙の 1 つ */
+export type MdmarkIndexTag = {
+  /** タグの名前 */
+  name: string;
+  /** グループ */
+  group?: string;
+  /** 説明（含める / 含めない / 例） */
+  description?: string;
+  /** 別名 */
+  aliases?: string[];
+  /** やめたタグの振り替え先の `name` */
+  deprecated?: string;
+};
+
 /** 使う側が索引の YAML を読んだ値の型 */
 export type MdmarkIndex = {
   /** 索引の版 */
@@ -38,25 +94,36 @@ export type MdmarkIndex = {
   docs: MdmarkIndexDoc[];
   /** 用語 */
   terms?: MdmarkIndexTerm[];
+  /** タグの語彙 */
+  tags?: MdmarkIndexTag[];
 };
 
 /** 索引のキー 1 つの型と必須か */
 type KeyShape = {
-  /** `string[]` は空でない文字列の並び、`array` は並びであること */
-  type: "string" | "string[]" | "integer" | "array";
+  /** `string[]` は空でない文字列の並び、`array` は並びであること、`doc_tags` は空でない文字列か `name`（必須）と `main` だけを持つオブジェクトの並び、`doc_related` は空でない文字列か `to`・`type`・`when`（必須）と `paths` だけを持つオブジェクトの並び */
+  type:
+    | "string"
+    | "string[]"
+    | "integer"
+    | "array"
+    | "doc_tags"
+    | "doc_related"
+    | "boolean";
   required: boolean;
 };
 
-/** 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型と必須か */
+/** 索引の最上位・`docs` の要素・`terms` の要素・`tags` の要素ごとの、キーと型と必須か */
 export const INDEX_SHAPE: {
   root: Record<string, KeyShape>;
   doc: Record<string, KeyShape>;
   term: Record<string, KeyShape>;
+  tag: Record<string, KeyShape>;
 } = {
   root: {
     schema: { type: "integer", required: true },
     docs: { type: "array", required: true },
     terms: { type: "array", required: false },
+    tags: { type: "array", required: false },
   },
   doc: {
     id: { type: "string", required: true },
@@ -64,8 +131,8 @@ export const INDEX_SHAPE: {
     title: { type: "string", required: true },
     description: { type: "string", required: false },
     aliases: { type: "string[]", required: false },
-    tags: { type: "string[]", required: false },
-    related: { type: "string[]", required: false },
+    tags: { type: "doc_tags", required: false },
+    related: { type: "doc_related", required: false },
   },
   term: {
     id: { type: "string", required: true },
@@ -74,6 +141,27 @@ export const INDEX_SHAPE: {
     aliases: { type: "string[]", required: false },
     avoid: { type: "string[]", required: false },
   },
+  tag: {
+    name: { type: "string", required: true },
+    group: { type: "string", required: false },
+    description: { type: "string", required: false },
+    aliases: { type: "string[]", required: false },
+    deprecated: { type: "string", required: false },
+  },
+};
+
+/** 文書のタグのオブジェクトの、キーと型と必須か */
+const DOC_TAG_SHAPE: Record<string, KeyShape> = {
+  name: { type: "string", required: true },
+  main: { type: "boolean", required: false },
+};
+
+/** 文書の関連のオブジェクトの、キーと型と必須か */
+const DOC_RELATED_SHAPE: Record<string, KeyShape> = {
+  to: { type: "string", required: true },
+  type: { type: "string", required: true },
+  when: { type: "string", required: true },
+  paths: { type: "string[]", required: false },
 };
 
 /** 空でなくてよい文字列のキー: 空文字を許す */
@@ -107,6 +195,9 @@ function checkType(
   if (shape.type === "array") {
     return Array.isArray(value) ? undefined : `${key} は並びにします`;
   }
+  if (shape.type === "boolean") {
+    return typeof value === "boolean" ? undefined : `${key} は真偽値にします`;
+  }
   if (shape.type === "string") {
     if (typeof value !== "string") {
       return `${key} は文字列にします`;
@@ -119,6 +210,107 @@ function checkType(
     Array.isArray(value) &&
     value.every((item) => typeof item === "string" && item !== "");
   return ok ? undefined : `${key} は空でない文字列の並びにします`;
+}
+
+/** 文書のタグの並びを検査し、合わない場所を `problems` に足す。要素は空でない文字列か、`name`（必須）と `main` だけを持つオブジェクト。1 つでも合わなければ `false` */
+function checkDocTags(options: {
+  value: unknown;
+  where: string;
+  problems: IndexProblem[];
+}): boolean {
+  const { value, where, problems } = options;
+  if (!Array.isArray(value)) {
+    problems.push({ where, message: "tags は並びにします" });
+    return false;
+  }
+  let valid = true;
+  value.forEach((tag, position) => {
+    const tagWhere = `${where}[${position}]`;
+    if (typeof tag === "string") {
+      if (tag === "") {
+        problems.push({
+          where: tagWhere,
+          message: "tags の要素は空にできません",
+        });
+        valid = false;
+      }
+      return;
+    }
+    if (!isRecord(tag)) {
+      problems.push({
+        where: tagWhere,
+        message:
+          "tags の要素はタグの名前の文字列か、name を持つオブジェクトにします",
+      });
+      valid = false;
+      return;
+    }
+    if (
+      !checkItem({ item: tag, shape: DOC_TAG_SHAPE, where: tagWhere, problems })
+    ) {
+      valid = false;
+    }
+  });
+  return valid;
+}
+
+/** 文書の関連の並びを検査し、合わない場所を `problems` に足す。要素は空でない文字列か、`to`・`type`・`when`（必須）と `paths` だけを持つオブジェクト。1 つでも合わなければ `false` */
+function checkDocRelated(options: {
+  value: unknown;
+  where: string;
+  problems: IndexProblem[];
+}): boolean {
+  const { value, where, problems } = options;
+  if (!Array.isArray(value)) {
+    problems.push({ where, message: "related は並びにします" });
+    return false;
+  }
+  let valid = true;
+  value.forEach((related, position) => {
+    const relatedWhere = `${where}[${position}]`;
+    if (typeof related === "string") {
+      if (related === "") {
+        problems.push({
+          where: relatedWhere,
+          message: "related の要素は空にできません",
+        });
+        valid = false;
+      }
+      return;
+    }
+    if (!isRecord(related)) {
+      problems.push({
+        where: relatedWhere,
+        message:
+          "related の要素は文書の id の文字列か、to・type・when を持つオブジェクトにします",
+      });
+      valid = false;
+      return;
+    }
+    if (
+      !checkItem({
+        item: related,
+        shape: DOC_RELATED_SHAPE,
+        where: relatedWhere,
+        problems,
+      })
+    ) {
+      valid = false;
+    }
+    const { type } = related;
+    if (
+      typeof type === "string" &&
+      type !== "" &&
+      !RELATION_TYPES.includes(type as MdmarkRelationType)
+    ) {
+      problems.push({
+        where: `${relatedWhere}.type`,
+        message: `type は ${RELATION_TYPES.join("・")} のどれかにします`,
+      });
+      valid = false;
+    }
+  });
+  return valid;
 }
 
 /** 要素 1 つをキーごとに検査し、合わない場所を `problems` に足す。1 つでも合わなければ `false` */
@@ -142,6 +334,20 @@ function checkItem(options: {
           where: `${where}.${key}`,
           message: `${key} がありません`,
         });
+        valid = false;
+      }
+      continue;
+    }
+    if (keyShape.type === "doc_tags") {
+      const tagsWhere = `${where}.${key}`;
+      if (!checkDocTags({ value, where: tagsWhere, problems })) {
+        valid = false;
+      }
+      continue;
+    }
+    if (keyShape.type === "doc_related") {
+      const relatedWhere = `${where}.${key}`;
+      if (!checkDocRelated({ value, where: relatedWhere, problems })) {
         valid = false;
       }
       continue;
@@ -216,15 +422,15 @@ export function normalizeIndex(value: unknown): {
   // 最上位のキー: 版・必須の欠け・知らないキー
   const root: IndexProblem[] = [];
   checkItem({
-    item: { ...value, docs: [], terms: [] },
+    item: { ...value, docs: [], terms: [], tags: [] },
     shape: INDEX_SHAPE.root,
     where: "",
     problems: root,
   });
   for (const problem of root) {
-    // 要素の検査に回す `docs`・`terms` の値は、ここでは見ない
+    // 要素の検査に回す `docs`・`terms`・`tags` の値は、ここでは見ない
     const key = problem.where.slice(1);
-    if (key !== "docs" && key !== "terms") {
+    if (key !== "docs" && key !== "terms" && key !== "tags") {
       problems.push({ where: key, message: problem.message });
     }
   }
@@ -235,6 +441,16 @@ export function normalizeIndex(value: unknown): {
         message: `schema は ${CURRENT_SCHEMA} にします`,
       });
     }
+  }
+  if (value.tags !== undefined) {
+    index.tags = checkTop<MdmarkIndexTag>({
+      list: value.tags,
+      name: "tags",
+      shape: INDEX_SHAPE.tag,
+      unique: [],
+      required: false,
+      problems,
+    });
   }
   index.docs = checkTop<MdmarkIndexDoc>({
     list: value.docs,
@@ -278,4 +494,19 @@ function checkTop<Item>(options: {
     return [];
   }
   return checkList<Item>({ ...options, list });
+}
+
+/** 文書の関連の要素を、`to`・`type`・`when` を持つオブジェクトにそろえる。文字列の要素は `type` と `when` が `null` のオブジェクトにする */
+export function readRelated(item: string | MdmarkIndexRelated): {
+  to: string;
+  type: MdmarkRelationType | null;
+  when: string | null;
+  paths?: string[];
+} {
+  if (typeof item === "string") {
+    return { to: item, type: null, when: null };
+  }
+  return item.paths === undefined
+    ? { to: item.to, type: item.type, when: item.when }
+    : { to: item.to, type: item.type, when: item.when, paths: item.paths };
 }

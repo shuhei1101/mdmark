@@ -72,7 +72,7 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 表の並べ替え・タブの切り替えなど、記法の操作を付ける（書き方は [記法](./記法.md)）。
 文書に書いたスクリプト（`script` 要素・`on` で始まる属性・`javascript:` の URL）は落とし、実行しない。
 索引を渡すと、本文に出た用語と文書の別名に破線の下線を引き、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を置く。
-索引の用語の `avoid` に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の語と意味のツールチップを出す（`glossary` がオンのときだけ）。
+索引の用語の `avoid` と用語集の表の `avoid=` の列に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の語と意味のツールチップを出す（`glossary` がオンのときだけ）。
 ツールチップの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
 書き方は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
 図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
@@ -102,7 +102,7 @@ handle.destroy();
 | `opts.config` | 任意 | 使う側のサーバーが `mdmark.config.yaml` を読んだオブジェクト。省いたキーには既定を当てる。キーは [設定](./設定.md) |
 | `opts.index` | 任意 | 使う側のサーバーが、設定の `index` のパスの索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて使う。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を渡すときは必須で、コメントの読み書きの関数に渡す対象の ID にもなる |
-| `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
+| `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使う。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
 
@@ -254,13 +254,13 @@ const references = collectReferences({
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `backlinks` | `Record<string, string[]>` | 文書の `id` から、その文書を参照している文書の `id` の並びを引く表。並びは索引の `docs` の順で、重なりと自分自身は入らない。参照されていない文書は空の並び |
-| `glossary` | `{ term, aliases, meaning, docId }[]` | 各文書の用語集の表から入れた用語の並び。並びは索引の `docs` の順で、同じ文書の中は表の行の順。`aliases` は別名の列を「、」か「,」で区切ったもので、別名の列が無いときは空。`docId` はその表を持つ文書の `id` |
+| `glossary` | `{ term, aliases, meaning, docId, avoid }[]` | 各文書の用語集の表から入れた用語の並び。並びは索引の `docs` の順で、同じ文書の中は表の行の順。`aliases` は別名の列を「、」か「,」で区切ったもので、別名の列が無いときは空。`docId` はその表を持つ文書の `id`。`avoid` はやめた言い方の列を別名と同じく区切ったもので、やめた言い方の列が無いときは空 |
 
 参照は、次のどれかで数える。
 
-- 参照元の `related` に、参照先の `id` がある
+- 参照元の `related` に、参照先の `id` がある（オブジェクトの要素は `to` が参照先の `id`）
 - 参照元の本文のリンクが、参照先の `path` を指す。リンクの `#` 以降と `?` 以降を除き、参照元の `path` のフォルダを基準に相対パスを解決して比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
-- 参照元の本文に、参照先の `aliases` が出る。コード・リンク・見出し・用語集の表の中は照合しない
+- 参照元の本文に、参照先の `aliases` が出る。コード・リンク・見出し・用語集の表の中は照合しない。別名と本文の文字は、NFKC・英字の小文字化・前後の空白の除去で正規化して比べる
 
 ```json
 {
@@ -290,9 +290,9 @@ DOM に頼らず、Node とブラウザのどちらでも動く。
 ```js
 import { collectMatches } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
 
-const { byDocument, targets } = collectMatches({
+const { byDocument, avoided, targets } = collectMatches({
   index,
-  documents: { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。" },
+  documents: { "使い方/guide.md": "# 使い方\n\nWS で公開関数を呼ぶ。作業場は使わない。" },
 });
 ```
 
@@ -307,6 +307,7 @@ const { byDocument, targets } = collectMatches({
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `byDocument` | `Record<string, MdmarkMatch[]>` | 文書の `id` から、その文書の本文の一致の並びを引く表。キーは `documents` に本文がある索引の文書で、一致が無い文書は空の並び。並びは本文の頭からの順（行の順、同じ行は始まりの順）で、同じ参照先の出現も全て並べる |
+| `avoided` | `Record<string, MdmarkAvoidedMatch[]>` | 文書の `id` から、その文書の本文に出たやめた言い方の並びを引く表。キーは `byDocument` と同じで、やめた言い方が無い文書と `glossary` がオフの文書は空の並び。並びは本文の頭からの順で、同じやめた言い方の出現も全て並べる |
 | `targets` | `MdmarkMatchTarget[]` | 渡した全ての文書の参照先を、種類と `id` の組で重なりを除いてまとめた並び。同じ参照先は 1 回だけ入る。並びは索引の `docs` の順に文書を見て、その文書の中の初出の順 |
 
 `byDocument` の要素（`MdmarkMatch`）は、次のキーを持つ。
@@ -317,10 +318,23 @@ const { byDocument, targets } = collectMatches({
 | `id` | `string` | 参照先の `id`。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id` |
 | `title` | `string` | 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title` |
 | `description` | `string` | 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。`doc` で `description` を持たないときは、このキーを持たない |
-| `text` | `string` | 一致した文字列。照合した辞書の語で、別名で一致したときはその別名 |
+| `text` | `string` | 一致した文字列。照合した辞書の語で、別名で一致したときはその別名。索引・用語集の表に記載した表記で返し、本文の表記は `line`・`start`・`end` から引く |
 | `line` | `number` | 一致した本文の Markdown の行。1 から数える |
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
 | `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
+
+`avoided` の要素（`MdmarkAvoidedMatch`）は、次のキーを持つ。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `kind` | `'term' \| 'glossary'` | 代わりの用語の種類。`byDocument` の要素の `term`・`glossary` と同じ |
+| `id` | `string` | 代わりの用語の `id`。`byDocument` の要素の `id` と同じ書き方 |
+| `title` | `string` | 代わりの用語のタイトル。`byDocument` の要素の `title` と同じ書き方 |
+| `description` | `string` | 代わりの用語の短い説明。`byDocument` の要素の `description` と同じ書き方 |
+| `text` | `string` | 一致したやめた言い方。`byDocument` の要素の `text` と同じく、索引・用語集の表に記載した表記で返す |
+| `line` | `number` | `byDocument` の要素の `line` と同じ |
+| `start` | `number` | `byDocument` の要素の `start` と同じ |
+| `end` | `number` | `byDocument` の要素の `end` と同じ |
 
 `targets` の要素（`MdmarkMatchTarget`）は、`kind`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
 
@@ -330,6 +344,11 @@ const { byDocument, targets } = collectMatches({
     "guide": [
       { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "WS", "line": 3, "start": 0, "end": 2 },
       { "kind": "doc", "id": "api", "title": "API", "description": "公開関数の一覧", "text": "公開関数", "line": 3, "start": 4, "end": 8 }
+    ]
+  },
+  "avoided": {
+    "guide": [
+      { "kind": "term", "id": "ws", "title": "ワークスペース", "description": "話し合いの記録を置くフォルダ", "text": "作業場", "line": 3, "start": 12, "end": 15 }
     ]
   },
   "targets": [
@@ -345,12 +364,15 @@ const { byDocument, targets } = collectMatches({
 
 - 辞書は、索引の `terms`、照合する文書の用語集の表、ほかの文書の表の順に優先する。文書の別名は、照合する文書自身の別名を除く
 - 語の始まりと終わりが本文の語の区切りに揃うところだけを取り、重なるときは長い語を先に取る。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
+- 照合の前に、辞書の語と本文の文字の両方を、NFKC・英字の小文字化・前後の空白の除去で正規化する。正規化した後に同じになる語は 1 つの語として扱い、優先の順で先の用語を使う。`line`・`start`・`end` は、正規化する前の本文の位置を指す
 - 照合するのは本文の地の文で、コード・リンク・見出し・用語集の表の中は除く
 - `html` がオンの文書は、`<!-- html -->` の範囲の `html` のコードブロックに書いた HTML の文字も照合する。`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・`script` のように中身ごと落ちる要素は除く
-- `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が用語に完全に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
-- 文書の印で `glossary` がオフの文書は用語を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+- `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が正規化した後に用語に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
+- 文書の印で `glossary` がオフの文書は用語とやめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+- やめた言い方（索引の用語の `avoid` と、用語集の表の `avoid=` の列。用語の語・別名と同じ語は除く）は、用語・文書の別名の語に追加して照合し、やめた言い方に当たったところを `avoided` に返す。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない。用語・別名の一部として出たやめた言い方は返さない
 
 ツールチップの、節ごとに同じ参照先の最初の 1 回だけに下線を付ける制限は下線の出し方のためで、取り出しには効かない。
+やめた言い方のマーカーの、節ごとに言い方ごとの最初の 1 回だけに付ける制限も、取り出しには効かない。
 
 #### 位置の数え方
 
@@ -387,6 +409,19 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | `input.index` | 必須 | 使う側が索引の YAML を読んだ値。形を確かめる前の値をそのまま渡す |
 | `input.documents` | 必須 | 索引のフォルダにある文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。どのファイルを文書として渡すかは呼ぶ側が決める |
 | `input.indexFile` | 任意 | ずれの `file` に出す索引のファイルの名前。既定は `index.yaml` |
+| `input.changedPaths` | 任意 | 比べる基準から変わった文書のパス（`documents` のキーと同じ書き方）の並び。渡したときだけ、`change_together` の組のうち片方の文書だけが変わった組を `missed_change_together` で返す。省くと直し忘れを確かめない。索引のどの `path` にも当たらないパスは無視する。基準の引き方（git の比べ方）は呼ぶ側が決める |
+
+索引の `docs[].related` の要素は、`MdmarkIndexRelated` のオブジェクトか、関連する文書の `id` の文字列。
+
+| 項目 | 型 | 必須 / 任意 | 説明 |
+| --- | --- | --- | --- |
+| `to` | `string` | 必須 | 相手の文書の `id` |
+| `type` | `MdmarkRelationType` | 必須 | 関係の種類。`'requires' \| 'references' \| 'replaces' \| 'part_of' \| 'change_together'` |
+| `when` | `string` | 必須 | いつ読むかの 1 文。空にできない |
+| `paths` | `string[]` | 任意 | 関連が当たるファイルの glob の並び |
+
+型 `MdmarkIndexRelated`・`MdmarkRelationType` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+キーの意味は [索引](./索引.md#関連の要素)。
 
 ### レスポンス
 
@@ -396,10 +431,11 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term' \| 'duplicate_tag' \| 'tag_alias_conflict' \| 'broken_tag_replacement' \| 'unregistered_tag' \| 'deprecated_tag'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
 | `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
 
-並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
+並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順で、同じ種類の中は索引の並びとパスの順。
+タグの 5 種類は、索引がタグの語彙（`tags`）を記載しているときだけ返す。
 
 ```json
 [
@@ -662,6 +698,12 @@ handle.destroy();
 | `--mdmark-color-series-4` | `#1d4ed8` | `#7aa2ff` | グラフの 4 つ目の系列の色 |
 | `--mdmark-color-code-highlight-bg` | `#fef3c7` | `#5c4a12` | コードブロックの強調した行の背景 |
 | `--mdmark-color-code-highlight-line` | `#b45309` | `#fbbf24` | コードブロックの強調した行の左端の線 |
+| `--mdmark-color-syntax-keyword` | `#6d28d9` | `#d6c2ff` | コードブロックの色分けのキーワード（予約語・デコレーター・`document` や `self` などの言語の変数）の色 |
+| `--mdmark-color-syntax-string` | `#166534` | `#4ade80` | コードブロックの色分けの文字列（文字列・正規表現・エスケープ・Markdown のリンクの文字）の色 |
+| `--mdmark-color-syntax-number` | `#92400e` | `#fbbf24` | コードブロックの色分けの数値（数値・`true`・`false`・`null`・YAML と Markdown の箇条書きの `-`）の色 |
+| `--mdmark-color-syntax-type` | `#be185d` | `#fbb6db` | コードブロックの色分けの型（型・クラス名・組み込みの関数と型・HTML のタグ名・CSS のセレクター）の色 |
+| `--mdmark-color-syntax-name` | `#1d4ed8` | `#a8c1ff` | コードブロックの色分けの名前（関数名・オブジェクトと YAML と JSON のキー・HTML の属性・CSS のプロパティ・Markdown の見出し）の色 |
+| `--mdmark-color-syntax-comment` | `#52525b` | `#c8c8cf` | コードブロックの色分けのコメントの色。コメントは斜体でも示す |
 | `--mdmark-color-diff-del-bg` | `#fbe6e3` | `#2a1e20` | 差分の削除した行の背景と、コードの行の印の消した行の背景 |
 | `--mdmark-color-diff-del-word` | `#eeb4ad` | `#5d3435` | 差分の削除した行で変わった語の背景 |
 | `--mdmark-color-diff-del-sign` | `#b91c1c` | `#f87171` | 削除した行の行頭の `-` と、ミニマップの削除した行の印の色。コードの行の印の消した行の行頭の `-` と左端の線にも使う |

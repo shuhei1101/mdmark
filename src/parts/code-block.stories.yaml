@@ -41,3 +41,39 @@ stories:
       title: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts
       lineNumbers: 'true'
       lines: '[{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js\";"},{"text":"export const decorate = (tokens: Token[], options: { title?: string; lines: boolean; highlight: number[] }) => tokens;","kind":"del"},{"text":"export const decorate = (tokens: Token[], options: CodeBlockOptions, warnings: SyntaxWarning[]): Token[] => applyCodeBlockOptions(tokens, options, warnings);","kind":"add"}]'
+  - name: SyntaxPlain
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      highlight: 'true'
+      lines: '[{"text":"import { mount } from \"mdmark\";"},{"text":""},{"text":"// 文書を描く"},{"text":"const element: HTMLElement | null = document.querySelector(\"#doc\");"},{"text":"mount(element, `# 見出し ${300}`, { features: { syntax: true } });"}]'
+  - name: SyntaxWithLineMarks
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      title: app.ts
+      lineNumbers: 'true'
+      highlight: 'true'
+      lines: '[{"text":"const limit = 100;","kind":"del"},{"text":"const limit = 300;","kind":"add"},{"text":"const doc = await fetch(\"/README.md\");","kind":"highlight"},{"text":"mount(element, await doc.text());"}]'
+  - name: SyntaxMultilineToken
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      lineNumbers: 'true'
+      highlight: 'true'
+      lines: '[{"text":"/*"},{"text":" * 文書を描く"},{"text":" */"},{"text":"const markdown = `# 見出し"},{"text":"本文 ${count}"},{"text":"`;","kind":"highlight"}]'
+  - name: SyntaxPython
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: python
+      lineNumbers: 'true'
+      highlight: 'true'
+      lines: '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書の題"},{"text":"    title: str = \"README\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]'

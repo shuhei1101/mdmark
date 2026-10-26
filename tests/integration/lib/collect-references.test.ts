@@ -64,6 +64,30 @@ test("test_normal", async () => {
   expect(documents).toEqual(DOCUMENTS);
 });
 
+// 全角と半角・大文字と小文字だけが違う別名の出現も被参照にする（正常系）
+test("test_normal_when_alias_notation_differs", async () => {
+  // 準備
+  const { collectReferences } = await loadBuilt();
+  const index: MdmarkIndex = {
+    ...INDEX,
+    docs: INDEX.docs.map((doc) =>
+      doc.id === "api"
+        ? { id: doc.id, path: doc.path, title: doc.title, aliases: ["MCP"] }
+        : doc,
+    ),
+  };
+  // どちらの本文も `api` を指すリンクを持たず、別名の出現の表記だけが違う
+  const documents = {
+    "設計/arch.md": "# アーキテクチャ\n\nmcp を使う。",
+    "api.md": "# API\n",
+    "使い方/guide.md": "# 使い方\n\nＭＣＰ を使う。",
+  };
+  // 実行
+  const references = collectReferences({ index, documents });
+  // 検証
+  expect(references.backlinks.api).toEqual(["arch", "guide"]);
+});
+
 // 各文書の用語集の表から用語を集める（正常系）
 test("test_normal_when_glossary_table", async () => {
   // 準備
@@ -77,11 +101,11 @@ test("test_normal_when_glossary_table", async () => {
   };
   const documents = {
     "用語集.md": [
-      "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
+      "<!-- glossary: term=用語 aliases=別名 meaning=意味 avoid=やめた言い方 -->",
       "",
-      "| 用語 | 別名 | 意味 |",
-      "| --- | --- | --- |",
-      "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 |",
+      "| 用語 | 別名 | 意味 | やめた言い方 |",
+      "| --- | --- | --- | --- |",
+      "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 | しるし |",
       "",
       "<!-- /glossary -->",
       "",
@@ -97,6 +121,7 @@ test("test_normal_when_glossary_table", async () => {
       aliases: ["マーク", "オン・オフの印"],
       meaning: "HTML コメントで書く指定",
       docId: "glossary",
+      avoid: ["しるし"],
     },
   ]);
 });

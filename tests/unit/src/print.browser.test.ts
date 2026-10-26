@@ -127,7 +127,7 @@ test("test_attach_print_when_syntax", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
   const { root, features } = createDocumentRoot(SYNTAX_MARKDOWN);
-  detachers.push(attachInteractions({ root, features }));
+  detachers.push(attachInteractions({ root, features, placement: "top" }));
   root.querySelectorAll<HTMLElement>('[role="tab"]')[1].click();
   await attachTracked(root, () => true);
   const section = root.querySelector<HTMLElement>('[id="section-閉じる"]');

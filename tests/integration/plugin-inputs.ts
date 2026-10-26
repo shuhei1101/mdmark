@@ -1,30 +1,17 @@
-import { cp, readFile, writeFile } from "node:fs/promises";
+import { cp, writeFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 
-// `plugin/` の中の、ビルドが書く生成物と依存の置き場所（写さない）
-const PLUGIN_GENERATED = [
-  "server",
-  "scripts",
-  "dist",
-  "guide",
-  "THIRD_PARTY_LICENSES.txt",
-  "node_modules",
-];
+// `plugin/` の中の、ビルドが書く生成物（写さない）
+const PLUGIN_GENERATED = ["scripts", "guide", "THIRD_PARTY_LICENSES.txt"];
 
-/** 一時の作業ツリーの `package.json` を書く。プラグインのビルドが比べる `esbuild` のバージョンを、リポジトリの `package.json` から写す */
+/** 一時の作業ツリーの `package.json` を書く。CLI がパッケージの直下を見つける目印になる */
 export async function writeRootPackageJson(root: string): Promise<void> {
-  const own = JSON.parse(
-    await readFile(join(REPO_ROOT, "package.json"), "utf8"),
-  );
   await writeFile(
     join(root, "package.json"),
-    `${JSON.stringify({
-      type: "module",
-      dependencies: { esbuild: own.dependencies.esbuild },
-    })}\n`,
+    `${JSON.stringify({ type: "module" })}\n`,
   );
 }
 

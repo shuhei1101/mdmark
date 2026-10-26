@@ -177,3 +177,48 @@ test("test_require_config_when_invalid", async () => {
   await expect(result).rejects.toThrow("libraries");
   await expect(result).rejects.toThrow("mdmark check");
 });
+
+// top・bottom 以外の tooltips.placement を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_tooltip_placement_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { tooltips: { placement: "left" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { tooltips: { placement: "bottom" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "tooltips.placement",
+    kind: "schema",
+  });
+  expect(invalid.config.tooltips).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.tooltips?.placement).toBe("bottom");
+});
+
+// 文字列でない syntax.url を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_syntax_url_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig({ syntax: { url: 1 } }, "mdmark.config.yaml");
+  const valid = validateConfig(
+    { syntax: { url: "/vendor/hl/" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "syntax.url",
+    kind: "schema",
+  });
+  expect(invalid.config.syntax).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.syntax?.url).toBe("/vendor/hl/");
+});

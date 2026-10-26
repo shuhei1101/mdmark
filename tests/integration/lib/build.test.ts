@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import {
+  appendFile,
   copyFile,
   cp,
   mkdir,
@@ -170,6 +171,10 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   for (const name of ["markdown-it", "sanitize-html"]) {
     expect(licenses).toContain(name);
   }
+  // `dist/cli.js` に束ねた MCP の SDK と、その配布物に取り込まれた依存
+  for (const name of ["@modelcontextprotocol/server", "ajv"]) {
+    expect(licenses).toContain(name);
+  }
   expect(licenses).toMatch(/permission is hereby granted|MIT|BSD/i);
   const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
   for (const name of [
@@ -188,14 +193,16 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
-  // Claude Code のプラグインの生成物と、バージョン、取り込まれたパッケージのライセンス
+  // Claude Code のプラグインの生成物と、バージョン。MCP サーバーは束ねない
   for (const path of [
-    "server/mcp.js",
     "scripts/session-start.js",
-    "dist/index.css",
+    "scripts/pre-tool-use.js",
     "guide/index.json",
   ]) {
     expect(existsSync(join(root, "plugin", path))).toBe(true);
+  }
+  for (const path of ["server", "dist"]) {
+    expect(existsSync(join(root, "plugin", path))).toBe(false);
   }
   const manifest = JSON.parse(
     await readFile(
@@ -204,13 +211,6 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     ),
   );
   expect(manifest.version).toBe("v0.0.0");
-  const pluginLicenses = await readFile(
-    join(root, "plugin", "THIRD_PARTY_LICENSES.txt"),
-    "utf8",
-  );
-  expect(pluginLicenses).toContain("@modelcontextprotocol/server");
-  expect(pluginLicenses).toContain("ajv");
-  expect(pluginLicenses).toContain("MIT License");
   const initTarget = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
   createdRoots.push(initTarget);
   const init = await execFileAsync(
@@ -317,9 +317,49 @@ test("test_error_when_guide_index_too_long", {
   // 検証
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
   expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
   expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
+});
+
+/** 作業ツリーの `src/index.ts` の末尾（最上位）に、コードを足す */
+async function appendToEntry(root: string, code: string): Promise<void> {
+  await appendFile(join(root, "src", "index.ts"), `\n${code}\n`);
+}
+
+// 有無を確かめてから下限に無い API を使うと、止めずにビルドする（正常系）
+test("test_normal_when_api_checked_before_use", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createWorkTree("v0.0.0\n");
+  await appendToEntry(
+    root,
+    'if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }',
+  );
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(0);
+  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
+  expect(stderr).not.toContain("Intl.Segmenter");
+});
+
+// 下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常系）
+test("test_error_when_api_missing_in_baseline_browser", {
+  timeout: BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const root = await createWorkTree("v0.0.0\n");
+  await appendToEntry(root, 'new Intl.Segmenter("ja");');
+  // 実行
+  const { code, stderr } = await runBuild(root, []);
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  for (const expected of ["Intl.Segmenter", "dist/index.js", "Firefox 98"]) {
+    expect(stderr).toContain(expected);
+  }
 });
 
 // スキーマを変えても migrations/next/steps.yaml があれば通す（正常系）

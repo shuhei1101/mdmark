@@ -1,7 +1,7 @@
 title: "設定と索引を点検する"
 entry:
   kind: operation
-  value: '`mdmark check [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
+  value: '`mdmark check [--config {設定ファイル}] [--base {git の ref}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
 flows:
   - name: 正常系
     summary: ずれの無いフォルダで 0 件を返す
@@ -173,6 +173,62 @@ flows:
       - '`mdmark.config.yaml:extensions[0]: schema:` で始まり、元のエラー（`HTMLElement`）と `load` の中へ移す直し方を含む行がある'
       - '`a.md:3: unknown_mark:` で始まり `broken` を含む行がある'
     test: test_normal_when_extension_unloadable
+  - name: 正常系（比べる基準を渡す）
+    summary: --base との merge-base から片方だけが変わった change_together の組を出し、終了コード 1 で終わる
+    setup:
+      - name: 組で直す文書を持つ git のフォルダ
+        description: 正常系のフォルダで、索引の文書 `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載し、全てをコミットした git のリポジトリ。コミットにタグ `base` を付ける
+      - name: 片方だけの変更
+        description: タグの後に `a.md` の本文だけを書き換えてコミットする
+        notes: merge-base からの比較で、コミット済みの変更も数えることを起こす
+      - name: Mock
+        description: 差し替える依存は無い（そのフォルダで CLI と git を子プロセスとして流す）
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant G as git
+        participant M as checkIndex
+        W->>C: mdmark check --base base
+        C->>G: base と HEAD の merge-base から変わったファイルを引く
+        G-->>C: a.md
+        C->>M: 索引・文書・changedPaths
+        M-->>C: missed_change_together
+        C-->>W: ずれ 1 行・終了コード 1
+      ```
+    expected:
+      - 終了コードが 1
+      - '`b.md: missed_change_together:` で始まり `a.md` を含む行がある'
+      - 最後の行が `ずれ 1 件`
+      - 同じフォルダで `--base` を渡さずに流すと、終了コード 0 で `ずれ 0 件`
+      - 設定・索引・文書と git の履歴が変わっていない
+    test: test_normal_when_base_given
+  - name: 異常系（比べる基準を引けない・終了コード 1）
+    summary: merge-base を引けない --base は、引けないことと直し方を示して終わる
+    setup:
+      - name: git のフォルダ
+        description: 正常系（比べる基準を渡す）と同じ
+      - name: 無い ref
+        description: '`--base` に `no-such-ref` を渡す'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant G as git
+        W->>C: mdmark check --base no-such-ref
+        C->>G: no-such-ref と HEAD の merge-base を引く
+        G-->>C: 引けない
+        C-->>W: 引けないことと直し方・終了コード 1
+      ```
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `no-such-ref` と `fetch-depth` が出る
+      - 設定・索引・文書が変わっていない
+    test: test_error_when_base_unknown
 lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -186,13 +242,20 @@ request:
     location: argument
     description: 使う設定ファイルのパス
     example: docs/mdmark.config.yaml
+  - name: --base
+    type: string
+    required: false
+    default: なし（`change_together` の直し忘れを確かめない）
+    location: argument
+    description: 直し忘れの検査に比べる基準の git の ref。渡したときだけ、基準から変わった文書を `checkIndex` の `changedPaths` に渡す
+    example: origin/develop
 response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
     notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び → `unknown_mark`（文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'duplicate_term' | 'avoided_term' | 'unknown_mark'"
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'unknown_mark'"
     description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないものを含む）、`no_documents` は `build.include` に当たる文書が 0 件、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある。ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
@@ -215,6 +278,9 @@ exceptions:
   - name: 設定ファイルを読めない（終了コード 1）
     condition: 設定ファイルを YAML として読めない
     notes: 標準エラーに、ファイルと読めない行と直し方を出す
+  - name: 比べる基準を引けない（終了コード 1）
+    condition: '`--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・その ref と HEAD の merge-base を引けない'
+    notes: 標準エラーに、渡した ref と引けない理由と、ref を直すか履歴を取得する（CI の checkout の `fetch-depth`）直し方を出す。ずれの点検はしない
 constraints:
   - item: 設定の点検
     constraint: '`schemas/mdmark.config.schema.json` に合わないところごとに `schema` のずれにする。空の設定ファイル（読んだ値がオブジェクトでない）も `schema` のずれにする。`build.glossary`・`build.entry` がまとめる文書に当たらないものも `schema` のずれにする。`theme`・`extensions` のファイルが無いものも `schema` のずれにする'
@@ -234,4 +300,7 @@ constraints:
     constraint: '`features`・記法の印・設定の `libraries` に既定を当てた対応表の名前・設定の `extensions` の拡張が既定の書き出しで持つ `directive`・設定の `check.ignore` の名前。拡張は `mdmark export` と同じく束ね、Node で読み込んで既定の書き出しの `directive` を取る（設定の `extensions` のモジュールは、読み込みの時点でブラウザの API を使わず、使うのは `load` の中だけにする）。束ねられない・読み込めない・既定の書き出しが `directive` を持たない拡張は、その `extensions[{位置}]` を指す `schema` のずれにし（読み込めないときは、元のエラーと、ブラウザの API を使う処理を `load` の中へ移す直し方を内容に書く）、その拡張の印は知っている印に入れない'
   - item: 点検する文書
     constraint: 索引の点検に渡す文書（設定に `index` があるとき）と、`build` の対象の文書（設定に `build` があるとき）を合わせ、同じファイルは 1 回だけ点検する。どちらも無い設定では知らない印を点検しない
+  - item: 変わった文書
+    constraint: '`--base` を渡したときだけ、設定ファイルのフォルダで `--base` と HEAD の merge-base を引き、merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイル（無視するファイルを除く）を、索引のファイルからの相対パスにして `checkIndex` の `changedPaths` に渡す。設定に `index` が無いときは `--base` を使わない'
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[直し忘れ]
 test_file: tests/integration/lib/check-config.test.ts

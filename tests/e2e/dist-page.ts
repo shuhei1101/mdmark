@@ -36,6 +36,14 @@ const PAGE_URL = "https://app.example.test/";
 export const LIB_URL = "https://libs.example.test/test-lib.js";
 // 拡張の代役のモジュールを返す架空の URL
 export const EXTENSION_URL = "https://libs.example.test/greet.js";
+// 色分けのライブラリ（highlight.js）を配る jsDelivr の npm の URL。`syntax.url` の既定と同じ
+export const SYNTAX_URL =
+  "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
+// 色分けのライブラリの `es/` を置いた場所（開発の依存 `@highlightjs/cdn-assets`）
+export const SYNTAX_ES_ROOT = resolve(
+  import.meta.dirname,
+  "../../node_modules/@highlightjs/cdn-assets/es",
+);
 // 配布物を埋めてビルドする版
 const BUILT_VERSION = "v0.0.1";
 // リポジトリの直下
@@ -263,6 +271,29 @@ export async function routeLibrary(
     });
   });
   return () => requests;
+}
+
+/** 色分けのライブラリの本体と言語のモジュールを、jsDelivr と同じパスの手元の応答に差し替え、受けた要求を `es/` からの相対パス（`core.min.js`・`languages/yaml.min.js`）の名前の順に返す関数を返す。`missing` に挙げた相対パスには 404 を返す */
+export async function routeSyntax(
+  page: Page,
+  options: { missing?: string[] } = {},
+): Promise<() => string[]> {
+  const requests: string[] = [];
+  const escaped = SYNTAX_URL.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  await page.route(new RegExp(`^${escaped}`), async (route) => {
+    const file = route.request().url().slice(SYNTAX_URL.length);
+    requests.push(file);
+    if (options.missing?.includes(file)) {
+      await route.fulfill({ status: 404 });
+      return;
+    }
+    await route.fulfill({
+      body: await readFile(join(SYNTAX_ES_ROOT, file)),
+      contentType: "text/javascript",
+      headers: { "access-control-allow-origin": "*" },
+    });
+  });
+  return () => [...requests].sort();
 }
 
 /** 拡張の代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない。`source` を渡すとその中身を返す */
@@ -571,6 +602,7 @@ export async function checkInNode(
     index: unknown;
     documents: Record<string, string>;
     indexFile?: string;
+    changedPaths?: string[];
   },
 ): Promise<MdmarkIndexIssue[]> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;

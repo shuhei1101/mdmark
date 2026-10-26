@@ -64,7 +64,7 @@ test("test_attach_diagram_tips", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
   const figure = createFigure();
-  const { detach } = attachDiagramTips(figure);
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
   detachers.push(detach);
   const owner = tipOwner(figure);
   // 実行
@@ -83,7 +83,7 @@ test("test_attach_diagram_tips_when_hovered", async () => {
   vi.useFakeTimers();
   const { attachDiagramTips } = await loadTips();
   const figure = createFigure();
-  const { detach } = attachDiagramTips(figure);
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
   detachers.push(detach);
   const owner = tipOwner(figure);
   const tip = tipOf(owner);
@@ -101,7 +101,7 @@ test("test_attach_diagram_tips_when_box_hovered", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
   const figure = createFigure();
-  const { detach } = attachDiagramTips(figure);
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
   detachers.push(detach);
   const info = figure.querySelector<HTMLElement>(".mdmark-diagram-info");
   const box = info?.closest<HTMLElement>(".mdmark-diagram-node");
@@ -149,7 +149,7 @@ test("test_attach_diagram_tips_when_embedded_hint", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
   const embedded = createEmbedded();
-  const { detach } = attachDiagramTips(embedded);
+  const { detach } = attachDiagramTips({ figure: embedded, placement: "top" });
   detachers.push(detach);
   const block = embedded.querySelector<HTMLElement>(".mdmark-hint-block");
   const mark = embedded.querySelector<HTMLElement>(".mdmark-hint-mark");
@@ -188,7 +188,9 @@ test("test_attach_diagram_tips_when_embedded_unique_ids", async () => {
     if (!embedded) {
       throw new Error("埋め込んだ HTML が描かれていない");
     }
-    detachers.push(attachDiagramTips(embedded).detach);
+    detachers.push(
+      attachDiagramTips({ figure: embedded, placement: "top" }).detach,
+    );
   }
   // 検証
   const ids = roots.flatMap((root) =>
@@ -201,6 +203,59 @@ test("test_attach_diagram_tips_when_embedded_unique_ids", async () => {
     expect(owners.length).toBe(2);
     for (const owner of owners) {
       expect(root.contains(tipOf(owner))).toBe(true);
+    }
+  }
+});
+
+// 上に収まれば持ち主の上、bottom では下にツールチップを置く（正常系）
+test("test_attach_diagram_tips_when_placed", async () => {
+  // 準備
+  const { attachDiagramTips } = await loadTips();
+  const targets = [
+    {
+      name: "線のラベル",
+      create: createFigure,
+      owner: tipOwner,
+    },
+    {
+      name: "ブロックのヒントの印",
+      create: createEmbedded,
+      owner: (embedded: HTMLElement) => {
+        const mark = embedded.querySelector<HTMLElement>(".mdmark-hint-mark");
+        if (!mark) {
+          throw new Error("ヒントの印が描かれていない");
+        }
+        return mark;
+      },
+    },
+  ];
+  for (const target of targets) {
+    for (const placement of ["top", "bottom"] as const) {
+      const host = target.create();
+      // 上にも下にも収まるよう、持ち主を画面の中ほどに置く
+      host
+        .closest<HTMLElement>(".mdmark")
+        ?.style.setProperty("margin", "100vh 0");
+      const { detach } = attachDiagramTips({ figure: host, placement });
+      detachers.push(detach);
+      const owner = target.owner(host);
+      owner.scrollIntoView({ block: "center" });
+      // 実行
+      owner.focus();
+      // 検証
+      const tipRect = tipOf(owner).getBoundingClientRect();
+      const ownerRect = owner.getBoundingClientRect();
+      if (placement === "top") {
+        expect(tipRect.bottom, `${target.name} の top`).toBeLessThanOrEqual(
+          ownerRect.top,
+        );
+      } else {
+        expect(tipRect.top, `${target.name} の bottom`).toBeGreaterThanOrEqual(
+          ownerRect.bottom,
+        );
+      }
+      detach();
+      removeRoots();
     }
   }
 });

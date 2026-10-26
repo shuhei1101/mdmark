@@ -1,0 +1,10 @@
+/* コードブロックの色分けの印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   印刷ではダークを解除するため、明るい配色の色分けの色で紙に出す */
+
+/* mdmark の層: 印刷のときの色分け */
+@layer mdmark {
+  /* 色分けしたコード: 色を省くブラウザの設定でも、色分けの色を紙に出す */
+  .mdmark pre code {
+    print-color-adjust: exact;
+  }
+}

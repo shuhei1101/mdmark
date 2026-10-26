@@ -172,6 +172,161 @@ scenarios:
       - 印の場所に、印の直後にコードブロックを置くよう書いた書き方の警告がある
       - 段落が書いたとおりに出ていて、題が出ていない
     test: test_error_when_no_code_block
+  - name: 正常シナリオ（言語に応じて色分けする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 色分けする言語のコードブロックを持つ Markdown
+        description: 印を持たない言語 `ts`・`yaml`・`python` のコードブロックを 1 つずつ置いた文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コードブロックを描く
+        M->>X: 本体と、文書が使う言語のモジュールを要求
+        X-->>M: モジュール
+        M-->>P: コードブロックの中身を色分けする
+        P-->>U: 色分けした文書を表示
+      ```
+    expected:
+      - 3 つのコードブロックのキーワード・文字列・コメントなどが、地の文字と違う色で出ている
+      - 3 つのコードブロックの文字が書いたとおりで、コードブロックの文字を全て選んだときの選んだ文字が色分けの前と同じ
+      - 色分けのライブラリへの要求が、本体 1 件と `typescript`・`yaml`・`python` の言語のモジュール 1 件ずつ
+    test: test_normal_when_syntax_highlighted
+  - name: 正常シナリオ（題・行番号・コードの行の印と色分けする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 飾りと色分けを両方持つ Markdown
+        description: '`<!-- code: title=app.ts lines highlight=4 -->` の直後に、3 行にまたがるブロックコメント、行末に `// [!code --]` を付けた行、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 題・行番号・行の印を付けたコードブロックを描く
+        M->>X: 本体と typescript のモジュールを要求
+        X-->>M: モジュール
+        M-->>P: 行ごとに中身を色分けする
+        P-->>U: 色分けした文書を表示
+      ```
+    expected:
+      - コードブロックの上に題 `app.ts` が出ていて、各行の左に 1 から始まる行番号が出ている
+      - ブロックコメントの 3 行が、どの行もコメントの色で出ている
+      - 消した行・足した行がそれぞれの地の色と行頭の `-`・`+` で出ていて、行の中の文字は色分けされている
+      - 4 行目が強調の背景になっている
+      - コードブロックの文字を全て選んだときの選んだ文字に、行番号と行頭の `+`・`-` が入っていない
+    test: test_normal_when_highlighted_with_line_marks
+  - name: 正常シナリオ（色分けしない言語）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 色分けしないコードブロックを持つ Markdown
+        description: 言語の無いコードブロックと、言語 `text` のコードブロックだけを持つ文書
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 色分けのライブラリを読まずにコードブロックを描く
+        P-->>U: 文書を表示
+      ```
+    expected:
+      - 2 つのコードブロックの文字が色分けされず、書いたとおりに出ている
+      - 色分けのライブラリへの要求が 0 件
+    test: test_normal_when_language_not_highlighted
+  - name: 正常シナリオ（色分けの機能をオフにした文書）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 色分けの機能を外した Markdown
+        description: '`<!-- features: -syntax -->` を書き、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 色分けのライブラリを読まずに、行の印を付けたコードブロックを描く
+        P-->>U: 文書を表示
+      ```
+    expected:
+      - コードブロックの文字が色分けされていない
+      - '`[!code ++]` の行が足した行の色で、行頭に `+` が出ている'
+      - 色分けのライブラリへの要求が 0 件
+    test: test_normal_when_syntax_feature_off
+  - name: 異常シナリオ（色分けのライブラリを読めない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 色分けする言語のコードブロックを持つ Markdown
+        description: 正常シナリオ（言語に応じて色分けする）と同じ文書
+      - name: Mock
+        description: 色分けのライブラリの本体が 404 を返す。ほかは正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コードブロックを描く
+        M->>X: 本体を要求
+        X-->>M: 404
+        M-->>P: コードブロックを色分けせずに残す
+        P-->>U: 文書を表示
+      ```
+    expected:
+      - 3 つのコードブロックの文字が色分けされず、書いたとおりに欠けずに出ている
+      - 知らせの枠が出ていない
+      - ブラウザのコンソールに、色分けのライブラリを読めなかった旨が出ている
+    test: test_error_when_highlighter_not_found
+  - name: 異常シナリオ（言語のモジュールの一部を読めない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 色分けする言語のコードブロックを持つ Markdown
+        description: 正常シナリオ（言語に応じて色分けする）と同じ文書
+      - name: Mock
+        description: '`python` の言語のモジュールだけが 404 を返す。ほかは正常シナリオ（言語に応じて色分けする）と同じ'
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コードブロックを描く
+        M->>X: 本体と 3 つの言語のモジュールを要求
+        X-->>M: 本体と typescript・yaml のモジュール、python は 404
+        M-->>P: ts と yaml のコードブロックだけを色分けする
+        P-->>U: 文書を表示
+      ```
+    expected:
+      - '`ts` と `yaml` のコードブロックが色分けされている'
+      - '`python` のコードブロックの文字が色分けされず、書いたとおりに出ている'
+      - ブラウザのコンソールに、`python` の言語のモジュールを読めなかった旨が出ている
+    test: test_error_when_language_module_not_found
 lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。'
 issue: 25
 primary_actor: 文書を書く人
@@ -182,6 +337,12 @@ trigger: 使う側のページが、コードブロックの印かコードの�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - コードブロックの機能（`code`）がオン（既定）
-success_guarantee: コードブロックの上に題が、各行の左に行番号が出て、指定した行と印を付けた行が色と行頭の `+`・`-` で分かれる。印と、印だけを持つ行コメントの頭は画面に出ない。GitHub ではコードブロックの印が見えず、コードの行の印は行コメントとして読める。
-minimal_guarantee: 読めない指定と知らない印は、その指定だけを当てずに描かれ、上に書き方の警告が出る。コードの中身は欠けずに出る。
+success_guarantee: |-
+  コードブロックの上に題が、各行の左に行番号が出て、指定した行と印を付けた行が色と行頭の `+`・`-` で分かれる。印と、印だけを持つ行コメントの頭は画面に出ない。GitHub ではコードブロックの印が見えず、コードの行の印は行コメントとして読める。
+
+  色分けに対応する言語のコードブロックは、題・行番号・行の印を保ったまま中身が言語に応じて色分けされる。色分けのライブラリは、色分けする言語のコードブロックがある文書でだけ、本体と使う言語の分を読む。
+minimal_guarantee: |-
+  読めない指定と知らない印は、その指定だけを当てずに描かれ、上に書き方の警告が出る。コードの中身は欠けずに出る。
+
+  色分けのライブラリか言語のモジュールを読めないときは、そのコードブロックを色分けせずに書いたとおりに出す。
 test_file: tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts

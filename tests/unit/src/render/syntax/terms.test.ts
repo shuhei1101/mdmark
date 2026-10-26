@@ -1,6 +1,11 @@
 import { expect, test } from "vitest";
 import type { MdmarkIndex } from "../../../../../src/knowledge/index-shape.ts";
-import { innerHtml, matches, outerHtml } from "../../../helpers/html.ts";
+import {
+  innerHtml,
+  matches,
+  outerHtml,
+  plainText,
+} from "../../../helpers/html.ts";
 import { glossaryDocument } from "../../../helpers/index-fixtures.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
@@ -53,6 +58,36 @@ test("test_terms_rule", () => {
     );
     expect(section).toContain(`${wrap}と印を書く。`);
   }
+});
+
+// 全角と半角・英字の大文字と小文字だけが違う語にも下線を付け、下線の語は本文の表記のままにする（正常系）
+test("test_terms_rule_when_notation_differs", () => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
+    terms: [
+      { id: "ws", term: "ワークスペース", meaning: "作業の置き場所" },
+      { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
+    ],
+  };
+  // 実行
+  const { html } = renderDoc(
+    "ﾜｰｸｽﾍﾟｰｽとｍｃｐを使う。\n",
+    {},
+    { index, docId: "cur" },
+  );
+  // 検証
+  expect(matches(html, /class="mdmark-term-wrap"/g)).toHaveLength(2);
+  // 下線の語は辞書の語でなく、本文に記載したままの文字
+  expect(
+    matches(html, /<span class="mdmark-term"[^>]*>[^<]*<\/span>/g).map(
+      plainText,
+    ),
+  ).toEqual(["ﾜｰｸｽﾍﾟｰｽ", "ｍｃｐ"]);
+  const [, first, second] = html.split('class="mdmark-term-wrap"');
+  expect(first).toContain("作業の置き場所");
+  expect(second).toContain("Model Context Protocol");
 });
 
 // コード・リンク・見出し・用語集の表の中の語には付けない（正常系）

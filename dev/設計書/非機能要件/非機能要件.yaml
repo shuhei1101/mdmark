@@ -8,7 +8,7 @@ requirements:
     source: https://github.com/jsdelivr/jsdelivr#restrictions
     value: '384'
     unit: KB 以下（393216 バイト）
-    rationale: '外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを足した #42 で、束ねた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を見て 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を足した #49 で、束ねた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を見て 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後の束ねた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を見て 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後の束ねた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を見て 384KB に上げた'
+    rationale: '外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを足した #42 で、束ねた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を見て 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を足した #49 で、束ねた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を見て 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後の束ねた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を見て 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後の束ねた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を見て 384KB に上げた。コードブロックの色分け（色分けのライブラリの本体と言語のモジュールは配布物に束ねず、使うときだけ読む）を追加した #97 で、#109 を取り込んだ後の束ねた dist/index.js が 382,101 バイトになった（2026-10-24）。上限の内に収まるため変えていない'
     overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確かめる時点はビルドの直後で、版のタグを打つ前。
   - name: 対応ブラウザ
     english_name: supported_browsers
@@ -17,11 +17,11 @@ requirements:
     source_kind: 制限なし
     value: Chrome 99 以降・Firefox 98 以降・Safari 16.4 以降（この版をビルドの target に書く）
     rationale: 使う側の CSS が詳細度によらず mdmark の CSS に勝つために `@layer` を使う。`@layer` を持つ最初の版（Chrome 99・Firefox 97・Safari 15.4）と、ES2022 のクラスの構文を書き換えずに出すための静的初期化ブロック（Safari 16.4）と、まとめた HTML の狭い幅の文書の一覧のパネルに使う `<dialog>`（Chrome 37・Firefox 98・Safari 15.4）のうち、新しい方を各ブラウザの下限にする。外部ライブラリの読み込みは動的 `import()`（どの下限でも使える）で行い、import map は使わない。CSS の入れ子は下限で効かないため、ビルドが展開する。トップレベル await は Safari 16.4 で部分対応のため使わない
-    measurement: E2E を Playwright 同梱の Chromium・Firefox で流す。Safari 16.4 はビルドの対象には入れるが、動作は確かめていない
+    measurement: E2E を Playwright 同梱の Chromium・Firefox で流す。加えて `npm run build` が、使う側のブラウザが読む JS を minify せずに束ね、eslint-plugin-compat（MDN の browser-compat-data）でこの版と照らして、無い API を同じ API の `typeof` で確かめずに使うと止まる（インターフェース定義『配布物をビルドする』の制約『対応ブラウザの下限の確かめ』）。Safari 16.4 の実機での動作は確かめていない
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-24'
+      date: '2026-10-26'
       result: 合格
   - name: 通信
     english_name: network
@@ -48,7 +48,7 @@ requirements:
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
-      date: '2026-10-24'
+      date: '2026-10-26'
       result: 合格
   - name: CLI が動く Node の版
     english_name: cli_node_version
@@ -65,7 +65,7 @@ requirements:
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0
-      date: '2026-10-24'
+      date: '2026-10-26'
       result: 合格
   - name: 対応する VS Code の版
     english_name: vscode_version
@@ -83,7 +83,7 @@ requirements:
     verification:
       device: WSL2 上の VS Code（xvfb-run）
       version: VS Code 1.141.0・1.143.1（stable）
-      date: '2026-10-24'
+      date: '2026-10-26'
       result: 合格
   - name: タグ一覧を取る待ちの上限
     english_name: tag_list_timeout
@@ -139,7 +139,7 @@ requirements:
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0（1,395 文字）
-      date: '2026-10-24'
+      date: '2026-10-26'
       result: 合格
   - name: 確かめた Claude Code のバージョン
     english_name: claude_code_version
@@ -156,7 +156,7 @@ requirements:
     verification:
       device: ユーザーの手元の Claude Code（WSL2）
       version: Claude Code 2.1.310
-      date: '2026-10-24'
+      date: '2026-10-26'
       result: 合格
   - name: MCP サーバーの接続の待ち
     english_name: mcp_connect_wait
@@ -166,14 +166,14 @@ requirements:
     source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP サーバーの接続の待ち]
     value: '30'
     unit: 秒 以内
-    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。束ねた JavaScript を node で起動すると 120ms で接続したため、起動で依存を取らない形にする'
-    measurement: 束ねた MCP サーバーを子プロセスとして起動し、標準入出力でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
+    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。`mdmark serve` を先に常駐させ、Claude Code は起動済みのサーバーへ HTTP でつなぐだけにする'
+    measurement: 起動済みの `mdmark serve` へ Streamable HTTP でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
     overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使えない。起動で外へ要求する処理を足さない
     status: planned
     introduced:
       pr: 72
     verification:
       device: WSL2 上の Node
-      version: Node v24.14.0（tools/list まで 166〜206ms）
-      date: '2026-10-24'
+      version: Node v24.14.0（tools/list まで 60〜107ms）
+      date: '2026-10-26'
       result: 合格

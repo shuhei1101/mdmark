@@ -1,17 +1,18 @@
 title: "ライブラリ本体 / 索引と用語"
-lead: 索引の形の検査・参照の表・索引の点検と、用語集の表の読み取り・用語と文書の別名の照合・ツールチップと関連文書の一覧の部品・ツールチップの操作。索引の処理は DOM に頼らず、Node とブラウザで同じ結果を返す。
+lead: 索引の形の検査・参照の表・索引の点検・タグの語彙の照合と、用語集の表の読み取り・用語と文書の別名の照合・ツールチップと関連文書の一覧の部品・ツールチップの操作。索引の処理は DOM に頼らず、Node とブラウザで同じ結果を返す。
 directory: |-
   ```tree
   src/
   ├── knowledge/
   │   ├── index-shape.ts   # 索引の型と形の検査（normalizeIndex）
   │   ├── paths.ts         # 索引のパスの正規化・リンクの解決・相対パス
-  │   ├── dictionary.ts    # 用語と文書の別名の辞書と語の区切りでの照合
+  │   ├── dictionary.ts    # 用語と文書の別名の辞書・語の正規化・語の区切りでの照合
   │   ├── references.ts    # 参照の表（collectReferences）
   │   ├── matches.ts       # 本文の参照の取り出し（collectMatches）
   │   ├── positions.ts     # 照合した文字の位置を本文の行と行の中の位置へ戻す
   │   ├── check.ts         # 索引の点検（checkIndex）
-  │   └── find.ts          # 索引から文書を探す（findDocs）
+  │   ├── find.ts          # 索引から文書を探す（findDocs）
+  │   └── tags.ts          # タグの語彙の照合・近いタグ・タグごとの件数・語彙の一覧（listTags）
   ├── render/syntax/
   │   ├── glossary.ts      # glossary の印で囲んだ表の読み取り
   │   ├── terms.ts         # 本文の用語と文書の別名に下線を引くコアルール
@@ -34,10 +35,13 @@ data_models:
         description: 索引の版
       - name: docs
         type: MdmarkIndexDoc[]
-        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意）
+        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意。`tags` の要素は文字列か `MdmarkIndexDocTag`、`related` の要素は文字列か `MdmarkIndexRelated`）
       - name: terms
         type: MdmarkIndexTerm[] | undefined
         description: 用語（`id`・`term`・`meaning` が必須、`aliases`・`avoid` が任意）
+      - name: tags
+        type: MdmarkIndexTag[] | undefined
+        description: タグの語彙（`name` が必須、`group`・`description`・`aliases`・`deprecated` が任意）
   - name: MdmarkReferences
     title: 参照の表
     container: src/knowledge/references.ts
@@ -49,7 +53,7 @@ data_models:
         description: 文書の `id` から、その文書を参照している文書の `id` の並び
       - name: glossary
         type: MdmarkGlossaryEntry[]
-        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`）
+        description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`・`avoid`）
   - name: MdmarkIndexIssue
     title: 索引のずれ
     container: src/knowledge/check.ts
@@ -63,7 +67,7 @@ data_models:
         type: string
         description: 索引のキーのパスか文書の行。ファイル全体は空文字
       - name: kind
-        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "duplicate_term" | "avoided_term"'
+        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "duplicate_term" | "avoided_term" | "duplicate_tag" | "tag_alias_conflict" | "broken_tag_replacement" | "unregistered_tag" | "deprecated_tag"'
         description: ずれの種類
       - name: message
         type: string
@@ -75,16 +79,22 @@ data_models:
     properties:
       - name: words
         type: string[]
-        description: 照合する語。長い語から並べる
+        description: 照合する語。`normalizeWord` で正規化した語を、長い語から並べる
       - name: terms
         type: 'Map<string, { id: string; meaning: string }>'
-        description: 語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語
+        description: 正規化した語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語
       - name: docs
         type: Map<string, MdmarkIndexDoc[]>
-        description: 語から、その語を `aliases` に持つ文書（索引の `docs` の順）
+        description: 正規化した語から、その語を `aliases` に持つ文書（索引の `docs` の順）
       - name: avoided
         type: 'Map<string, { id: string; term: string; meaning: string }>'
-        description: やめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` から。同じ言い方は索引の `terms` で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
+        description: 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
+      - name: written
+        type: Map<string, string>
+        description: 正規化した語から、索引・用語集の表・文書の `aliases` に記載した表記。`words` と `avoided` の語を持ち、同じ正規化の語は `terms`・`avoided` と同じ優先の順で先の表記
+      - name: term
+        type: '(word: string) => { id: string; meaning: string } | undefined'
+        description: 語を `normalizeWord` で正規化してから `terms` を引く。`findWords` を通らずに書いた語で用語を引く箇所（図の箱・埋め込んだ HTML のチャートの `{{語}}`）が使う
   - name: MdmarkGlossaryEntry
     title: 用語集の表の用語
     container: src/knowledge/references.ts
@@ -103,6 +113,9 @@ data_models:
       - name: docId
         type: string
         description: 表を持つ文書の `id`
+      - name: avoid
+        type: string[] | undefined
+        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。`collectReferences`・`readGlossaryRows` は常に入れる。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う
   - name: MdmarkMatchTarget
     title: 参照先
     container: src/knowledge/matches.ts
@@ -130,7 +143,7 @@ data_models:
     properties:
       - name: text
         type: string
-        description: 一致した文字列（照合した辞書の語）
+        description: 一致した辞書の語。索引・用語集の表に記載した表記で、本文の表記とは限らない（本文の表記は `line`・`start`・`end` で引く）
       - name: line
         type: number
         description: 本文の Markdown の行（1 から）
@@ -152,10 +165,13 @@ data_models:
       - name: targets
         type: MdmarkMatchTarget[]
         description: 全ての文書の参照先を `kind` と `id` の組で重なりを除いたもの。索引の `docs` の順に文書を見て、文書の中の初出の順
+      - name: avoided
+        type: Record<string, MdmarkAvoidedMatch[]>
+        description: 文書の `id` から、本文に出たやめた言い方を本文の頭からの順に並べたもの。キーは `byDocument` と同じで、やめた言い方が無い文書と `glossary` がオフの文書は空の並び
   - name: GlossaryRow
     title: 用語集の表の行
     container: src/render/syntax/glossary.ts
-    summary: 用語集の表の 1 行から読んだ用語と、その行の行番号・やめた言い方
+    summary: 用語集の表の 1 行から読んだ用語と、その行の行番号
     properties:
       - name: entry
         type: MdmarkGlossaryEntry
@@ -163,9 +179,182 @@ data_models:
       - name: line
         type: number
         description: その行の文書の中の行番号（1 から）
-      - name: avoid
+  - name: MdmarkAvoidedMatch
+    title: やめた言い方の一致
+    container: src/knowledge/matches.ts
+    role: DTO
+    summary: 本文に出たやめた言い方 1 つと代わりの用語（公開の型）
+    properties:
+      - name: kind
+        type: '"term" | "glossary"'
+        description: 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ
+      - name: id
+        type: string
+        description: 代わりの用語の ID。`MdmarkMatchTarget` の `id` と同じ書き方
+      - name: title
+        type: string
+        description: 代わりの用語のタイトル。`MdmarkMatchTarget` の `title` と同じ書き方
+      - name: description
+        type: string | undefined
+        description: 代わりの用語の意味。`MdmarkMatchTarget` の `description` と同じ書き方。無いときはキーを持たない
+      - name: text
+        type: string
+        description: 一致したやめた言い方。`MdmarkMatch` の `text` と同じく記載した表記
+      - name: line
+        type: number
+        description: '`MdmarkMatch` の `line` と同じ'
+      - name: start
+        type: number
+        description: '`MdmarkMatch` の `start` と同じ'
+      - name: end
+        type: number
+        description: '`MdmarkMatch` の `end` と同じ'
+  - name: MdmarkIndexDocTag
+    title: 文書のタグ
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`docs[].tags` の要素のうち、主題のタグかを持つオブジェクト（公開の型）。要素は文字列かこの型'
+    properties:
+      - name: name
+        type: string
+        description: タグの名前（空でない文字列）
+      - name: main
+        type: boolean | undefined
+        description: 主題のタグか。無いときは `false` として扱う
+    status: planned
+    introduced:
+      pr: 114
+  - name: MdmarkIndexTag
+    title: タグの語彙のタグ
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: 索引の最上位の `tags` の要素 1 つ（公開の型）。スキーマは ER 図『索引』の `tags`
+    properties:
+      - name: name
+        type: string
+        description: タグの名前
+      - name: group
+        type: string | undefined
+        description: グループ
+      - name: description
+        type: string | undefined
+        description: 説明（含める / 含めない / 例）
+      - name: aliases
+        type: string[] | undefined
+        description: 別名
+      - name: deprecated
+        type: string | undefined
+        description: やめたタグの振り替え先の `name`
+    refs:
+      - dev/設計書/ER図/索引#tables[tags]
+    status: planned
+    introduced:
+      pr: 114
+  - name: TagVocabulary
+    title: タグの語彙の引き表
+    container: src/knowledge/tags.ts
+    summary: タグの語彙を、名前と別名から語彙のタグを引ける形にまとめたもの（内部の型）
+    properties:
+      - name: tags
+        type: MdmarkIndexTag[]
+        description: 語彙のタグを語彙の並びで、同じ `name` は先の 1 つだけにしたもの
+      - name: byWord
+        type: Map<string, MdmarkIndexTag>
+        description: 名前か別名から語彙のタグ。同じ文字の名前・別名が複数あるときは、語彙の並びで先のタグ
+      - name: order
+        type: Map<string, number>
+        description: タグの `name` から、`tags` の中の位置。タグごとの件数の並びに使う
+    status: planned
+    introduced:
+      pr: 114
+  - name: FindDocsResult
+    title: 文書を探した結果
+    container: src/knowledge/find.ts
+    role: DTO
+    summary: '`findDocs` の戻り値（内部の型）'
+    properties:
+      - name: docs
+        type: MdmarkIndexDoc[]
+        description: 当たった文書。主題のタグが当たる文書を上にし、同じ順位の中は索引の `docs` の並び
+      - name: unknownTags
+        type: 'Array<{ tag: string; nearest: string | undefined }>'
+        description: 語彙を持つ索引で、`tags`・`anyTags` に渡したタグのうち語彙に当たらないもの（渡した順、重なりを除く）と近いタグの `name`。語彙の無い索引では空
+      - name: relations
+        type: Record<string, DocRelation[]>
+        description: 当たった文書の `id` から、`relatedTo` の文書との関係の並び。`relatedTo` を渡さないときは空
+    status: planned
+    introduced:
+      pr: 114
+  - name: TagListEntry
+    title: 語彙の一覧の行
+    container: src/knowledge/tags.ts
+    role: DTO
+    summary: '`listTags` が返す語彙のタグ 1 つ（内部の型）'
+    properties:
+      - name: name
+        type: string
+        description: タグの名前
+      - name: group
+        type: string | null
+        description: グループ。語彙に無いときは null
+      - name: description
+        type: string | null
+        description: 説明。語彙に無いときは null
+      - name: aliases
         type: string[]
-        description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空
+        description: 別名。語彙に無いときは空
+      - name: deprecated
+        type: string | null
+        description: 振り替え先。やめたタグでないときは null
+      - name: docs
+        type: number
+        description: そのタグが付いている文書の数
+    status: planned
+    introduced:
+      pr: 114
+  - name: MdmarkIndexRelated
+    title: 文書の関連
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`docs[].related` の要素のうち、関係の種類といつ読むかを持つオブジェクト（公開の型）。要素は文字列かこの型'
+    properties:
+      - name: to
+        type: string
+        description: 相手の文書の `id`
+      - name: type
+        type: MdmarkRelationType
+        description: 関係の種類
+      - name: when
+        type: string
+        description: いつ読むかの 1 文（空でない文字列）
+      - name: paths
+        type: string[] | undefined
+        description: 関連が当たるファイルの glob の並び
+    refs:
+      - dev/設計書/ER図/索引#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
+  - name: DocRelation
+    title: 文書との関係
+    container: src/knowledge/find.ts
+    role: DTO
+    summary: '`findDocs` の `relatedTo` の文書から見た、当たった文書との関係 1 つ（内部の型）'
+    properties:
+      - name: direction
+        type: "'outgoing' | 'incoming'"
+        description: '`outgoing` は `relatedTo` の文書から当たった文書へ、`incoming` は当たった文書から `relatedTo` の文書へ'
+      - name: type
+        type: MdmarkRelationType | 'required_by' | 'referenced_by' | 'replaced_by' | 'has_part' | null
+        description: '`outgoing` は記載した `type`、`incoming` は `INVERSE_RELATION_TYPES` の逆向きの名前。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は null'
+      - name: when
+        type: string | null
+        description: 索引の関連に記載した `when`。`type` が null なら null
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[docs[].relations[].direction]
+    status: planned
+    introduced:
+      pr: 127
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -173,7 +362,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 値を ER 図『索引』の形で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返す
-    description: 検査のライブラリを使わず、`INDEX_SHAPE` で TypeScript の検査を書く（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確かめる。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキーを合わない場所にする。重なった要素は先の 1 つを残す
+    description: 検査のライブラリを使わず、`INDEX_SHAPE` で TypeScript の検査を書く（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確かめる。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキーを合わない場所にする。重なった要素は先の 1 つを残す。`tags` の要素は `INDEX_SHAPE.tag` で検査し、`tags[].name` の重なりは合わない場所にせず両方を残す（`duplicate_tag` は `checkIndex` が返す）。`docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の形。`type` が `MdmarkRelationType` の値でないときは、`message` に許す 5 つの値を並べる）。最上位に `tags` が無ければ、返す索引にも `tags` を持たせない
     args:
       - name: value
         type: unknown
@@ -204,15 +393,45 @@ functions:
       - name: test_normalize_index_matches_json_schema
         case: 正常
         summary: '`schemas/mdmark.index.schema.json` が `INDEX_SHAPE` と同じキー・型・必須を持つ'
-        condition: Schema の JSON を読み、最上位・`docs.items`・`terms.items` の `properties`・`required`・`additionalProperties` を取る
+        condition: Schema の JSON を読み、最上位・`docs.items`・`terms.items`・`tags.items` の `properties`・`required`・`additionalProperties` と、`docs.items.properties.tags.items`・`docs.items.properties.related.items` を取る
         mock: なし
-        expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`
+        expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`。`docs.items.properties.tags.items` が文字列と、`name` が必須で `main` を持ち `additionalProperties` が `false` のオブジェクトの `anyOf`。`docs.items.properties.related.items` が文字列と、`to`・`type`・`when` が必須で `paths` を持ち `additionalProperties` が `false`、`type` の `enum` が `MdmarkRelationType` の 5 つの値のオブジェクトの `anyOf` で、`docs.items.properties.related` が `maxItems` を持たない
       - name: test_normalize_index_when_invalid_avoid
         case: 異常
         summary: 空の要素を持つ `avoid` の用語を除き、場所を返す
         condition: '`terms[0].avoid` が `[""]`、`terms[1].avoid` が `["作業場"]` の索引'
         mock: なし
         expected: '`problems` が `where` が `terms[0].avoid` の 1 件だけで、`index.terms` が `terms[1]` だけ'
+      - name: test_normalize_index_when_tags
+        case: 正常
+        summary: タグの語彙と、文字列・オブジェクトの文書のタグをそのまま返す
+        condition: '`tags` が `topic:mcp`（`group`・`description`・`aliases`）・`topic:mcp`（重なる `name`）・`topic:old`（`deprecated`）、`docs[0].tags` が `["設計", { name: "topic:mcp", main: true }]` の索引'
+        mock: なし
+        expected: '`problems` が空で、`index.tags` が 3 つとも入力と等しく、`index.docs[0].tags` が入力と等しい'
+      - name: test_normalize_index_when_invalid_tags
+        case: 異常
+        summary: 形の合わないタグの語彙の要素と文書のタグを、場所を返して除く
+        condition: '`tags[0]` が `name` を持たず、`tags[1]` が知らないキー `color` を持ち、`docs[0].tags[0]` が `{ main: true }`（`name` が無い）の索引'
+        mock: なし
+        expected: '`problems` の `where` が `tags[0].name`・`tags[1].color`・`docs[0].tags[0].name`、`index.tags` が空、`index.docs` から `docs[0]` が除かれる'
+      - name: test_normalize_index_without_tags
+        case: 正常
+        summary: 最上位に `tags` が無ければ、返す索引にも `tags` を持たせない
+        condition: ER 図『索引』の例の索引から `tags` を消したもの
+        mock: なし
+        expected: '`problems` が空で、`"tags" in index` が `false`'
+      - name: test_normalize_index_when_related
+        case: 正常
+        summary: 文字列とオブジェクトの関連をそのまま返す
+        condition: '`docs[0].related` が `["b", { to: "b", type: "change_together", when: "公開関数を変えるとき", paths: ["src/**"] }]`、`docs[1]`（`b`）の `related` が要素 9 つの索引'
+        mock: なし
+        expected: '`problems` が空で、`index.docs` が入力と等しい'
+      - name: test_normalize_index_when_invalid_related
+        case: 異常
+        summary: 形の合わない関連を持つ文書を、場所を返して除く
+        condition: '`docs[0].related[0]` が `when` を持たず、`docs[1].related[0].type` が `depends_on`、`docs[2].related[0]` が知らないキー `note` を持ち、`docs[3].related[0].when` が空文字の索引'
+        mock: なし
+        expected: '`problems` の `where` が `docs[0].related[0].when`・`docs[1].related[0].type`・`docs[2].related[0].note`・`docs[3].related[0].when` で、`docs[1].related[0].type` の `message` が `requires`・`references`・`replaces`・`part_of`・`change_together` を含み、`index.docs` から 4 つとも除かれる'
     refs:
       - dev/設計書/ER図/索引#
   - name: resolveLink
@@ -278,7 +497,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
-    description: 同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
+    description: 語は `normalizeWord` で正規化してから入れ、正規化した後に同じになる語は同じ語として扱う。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・語・意味、用語集の表の用語なら `glossary:{docId}:{語}`・用語・意味にする。同じやめた言い方は、索引の `terms`、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使う。やめた言い方が用語の語・別名と同じかも正規化した語で比べる。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
     args:
       - name: options
         type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; features: Record<string, boolean> }'
@@ -318,13 +537,37 @@ functions:
         condition: '`test_build_dictionary_avoided` と同じ索引、`features.glossary` が `false`'
         mock: なし
         expected: '`avoided` が空'
+      - name: test_build_dictionary_avoided_from_glossary
+        case: 正常
+        summary: 用語集の表のやめた言い方を `avoided` に入れ、索引の `terms`、索引の `docs` の順の文書の表の順で代わりの用語を選ぶ
+        condition: 索引の `docs` が `glossary`・`guide` の順で、用語 `フォルダ`（`avoid` に `作業場`）を持つ。`docId` が `guide`、`ownGlossary` が用語 `下書き`（`docId` `guide`、`avoid` に `草稿`・`ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `作業場`・`ワーク場`）と `下書き` の 2 つ
+        mock: なし
+        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`ワーク場` → `{ id: "glossary:glossary:ワークスペース", term: "ワークスペース", meaning: … }`、`草稿` → `{ id: "glossary:guide:下書き", term: "下書き", meaning: … }` の 3 件で、`words` にどれも無い'
+      - name: test_build_dictionary_avoided_own_table_first_when_not_in_index
+        case: 正常
+        summary: 描く文書が索引の `docs` に無いときは、描く文書の表のやめた言い方をほかの文書の表より先にする
+        condition: 索引の `docs` が `glossary` だけで `docId` を渡さない。`ownGlossary` が用語 `下書き`（`docId` 空文字、`avoid` に `ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `ワーク場`）
+        mock: なし
+        expected: '`avoided` の `ワーク場` が `下書き` の用語'
+      - name: test_build_dictionary_avoided_when_glossary_entry_without_avoid
+        case: 正常
+        summary: '`avoid` が無い用語集の表の用語は、やめた言い方を持たないものとして扱う'
+        condition: '`references.glossary` が `avoid` を持たない用語 `ワークスペース`（`docId` `glossary`）と、`avoid` に `草稿` を持つ用語 `下書き`（`docId` `glossary`）'
+        mock: なし
+        expected: 例外を送出せず、`avoided` が `草稿` → `下書き` の 1 件だけで、`words` に `ワークスペース` がある
+      - name: test_build_dictionary_when_notation_differs
+        case: 正常
+        summary: 正規化した後に同じになる語を 1 つの語にまとめ、優先の順で先の用語と表記を残す
+        condition: 索引の用語 `MCP`（`mcp`）と、`ownGlossary` の用語 `ｍｃｐ`。文書 `api` の別名 `ＡＰＩ`。索引の用語 `ワークスペース`（別名 `WS`、`avoid` に `ws`）
+        mock: なし
+        expected: '`words` に `mcp` と `api` があり `MCP`・`ｍｃｐ` が無い。`terms.get("mcp")` と `term("Ｍｃｐ")` が索引の `mcp` の用語、`written.get("mcp")` が `MCP`、`docs.get("api")` が `api` の文書。`avoided` が空（`ws` は別名 `WS` と同じ語）'
   - name: findWords
     title: 語の区切りで語を照合する
     container: src/knowledge/dictionary.ts
     kind: 関数
     scope: internal
     summary: 文字列の中で、始まりと終わりが語の区切り（`wordStarts`）に揃う辞書の語の位置を、重ならないよう長い語を先に返す
-    description: '区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。英字の語は大文字と小文字を区別する'
+    description: '区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。元の文字列を `wordStarts` の区切りごとに NFKC と英字の小文字化をかけてつなぎ、`normalizeWord` で正規化した辞書の語が区切りの境目から境目までに一致する箇所を、元の文字列の位置に戻して返す。区切りごとに正規化するため、NFKC で長さが変わる文字があっても位置は元の区切りに揃う。`word` は `words` に渡したままの語で、正規化した後に同じになる語が複数あるときは `words` で先の語'
     args:
       - name: text
         type: string
@@ -356,13 +599,19 @@ functions:
         condition: 語 `ワークスペース`・`WS`。文字列 `ワークスペースをWSLに置く`
         mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
         expected: 読み込みが例外を出さず、`ワークスペース` が 1 つだけ（`WSL` の中の `WS` は入らない）
+      - name: test_find_words_when_notation_differs
+        case: 正常
+        summary: 全角と半角・英字の大文字と小文字だけが違う語を、元の文字列の位置で返す
+        condition: 語 `ワークスペース`・`ws`・`MCP`。文字列 `ﾜｰｸｽﾍﾟｰｽとＷＳ` と `mcp と Mcp`
+        mock: なし（Node と対応ブラウザの両方で流す）
+        expected: '1 つ目は `{ start: 0, end: 8, word: "ワークスペース" }` と `{ start: 9, end: 11, word: "ws" }`、2 つ目は `word` が `MCP` の 2 つ（`0`〜`3` と `6`〜`9`）'
   - name: collectReferences
     title: 参照の表を作る
     container: src/knowledge/references.ts
     kind: 関数
     scope: public
     summary: 索引と全ての文書の本文から、文書ごとの被参照と各文書の用語集の表の用語を返す
-    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む。コード・リンク・見出し・用語集の表の中は照合しない。`related` も参照に数える'
+    description: '`normalizeIndex` で合う文書だけを使う。各文書の本文を解析器でトークンにし、文書の `features` の印を重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` の印の表を `readGlossaryTable` で読む（表の用語はやめた言い方の列を `avoid` に持つ）。コード・リンク・見出し・用語集の表の中は照合しない。`related` の要素の相手（`readRelated` の `to`）も参照に数える'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
@@ -395,6 +644,18 @@ functions:
         condition: '`arch` の本文の見出しと行内のコードにだけ `公開関数`'
         mock: なし
         expected: '`backlinks.api` が空'
+      - name: test_collect_references_when_alias_notation_differs
+        case: 正常
+        summary: 全角と半角・英字の大文字と小文字だけが違う文書の別名を被参照にする
+        condition: インターフェース定義『参照の表を作る』の「正常系（表記の違う別名）」の索引と文書
+        mock: なし
+        expected: '`backlinks.api` が `["arch", "guide"]`'
+      - name: test_collect_references_when_related_objects
+        case: 正常
+        summary: オブジェクトの関連は `to` を、文字列の関連はその文字列を参照に数える
+        condition: '`api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確かめるとき" }]`、`guide` の `related` が `["arch"]` で、どちらの本文も `arch` をリンクも別名でも指さない'
+        mock: なし
+        expected: '`backlinks.arch` が `["api", "guide"]`'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
   - name: checkIndex
@@ -402,13 +663,13 @@ functions:
     container: src/knowledge/check.ts
     kind: 関数
     scope: public
-    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term` のずれをこの順で返す
-    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が同じものを 1 組 1 件にする。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語と `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。`message` は日本語の 1 文で、直す場所を書く'
+    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term`・`duplicate_tag`・`tag_alias_conflict`・`broken_tag_replacement`・`unregistered_tag`・`deprecated_tag` のずれをこの順で返す
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を書く。用語集の表は `collectReferences` と同じ読み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に渡して拾う。`broken_ref` は `readRelated` の `to` が索引の文書に無い要素ごとに 1 つで、`where` は文字列の要素が `docs[0].related[1]`、オブジェクトの要素が `docs[0].related[1].to`。`untyped_related`・`one_sided_change_together`・`related_link_overlap` は `findRelatedIssues` で、`missed_change_together` は `changedPaths` を渡したときだけ `findMissedChangeTogether` で拾い、`broken_ref` の後ろに並べる。`findRelatedIssues` に渡す文書ごとの本文のリンクは、`parseDocument` で読んだトークンの `link_open` の `href` を `resolveLink` で解いたパス。タグのずれは `findTagIssues` で拾い、`avoided_term` の後ろに並べる。`message` は日本語の 1 文で、直す場所を書く'
     args:
       - name: input
-        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string }'
+        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string; changedPaths?: string[] }'
         required: true
-        description: 索引の値・文書のパスから本文を引く表・索引のファイルの名前（既定 `index.yaml`）
+        description: 索引の値・文書のパスから本文を引く表・索引のファイルの名前（既定 `index.yaml`）・比べる基準から変わった文書のパス（渡したときだけ直し忘れを確かめる）
     returns:
       type: MdmarkIndexIssue[]
       description: ずれの一覧
@@ -416,6 +677,9 @@ functions:
       - '#functions[normalizeIndex]'
       - '#functions[readGlossaryTable]'
       - '#functions[findAvoidedTerms]'
+      - '#functions[findTagIssues]'
+      - '#functions[findRelatedIssues]'
+      - '#functions[findMissedChangeTogether]'
     unit_tests:
       - name: test_check_index
         case: 正常
@@ -447,6 +711,42 @@ functions:
         condition: インターフェース定義『索引を点検する』の「正常系（用語集の表のやめた言い方が本文に出る）」の索引と文書
         mock: なし
         expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_tag_drift
+        case: 正常
+        summary: タグの語彙の重なり・切れた振り替え先・語彙に無いタグ・やめたタグを返す
+        condition: インターフェース定義『索引を点検する』の「正常系（タグが語彙とずれる）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_without_tag_vocabulary
+        case: 正常
+        summary: 語彙を持たない索引ではタグのずれを返さない
+        condition: インターフェース定義『索引を点検する』の「正常系」の索引で、`docs[0].tags` に `topic:mcq` を持たせたもの
+        mock: なし
+        expected: '`[]`'
+      - name: test_check_index_when_normalized_words
+        case: 正常
+        summary: 正規化すると同じになる用語の語と、表記の違うやめた言い方を返す
+        condition: インターフェース定義『索引を点検する』の「正常系（正規化すると同じになる語）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind`・`message` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_related_drift
+        case: 正常
+        summary: 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を返す
+        condition: インターフェース定義『索引を点検する』の「正常系（関連がずれる）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind`・`message` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_change_together_missed
+        case: 正常
+        summary: '`changedPaths` で組の片方だけが変わったときだけ `missed_change_together` を返す'
+        condition: インターフェース定義『索引を点検する』の「正常系（change_together の直し忘れ）」の索引と文書で、`changedPaths` を渡さない・`["a.md"]`・`["a.md", "b.md"]` の 3 回
+        mock: なし
+        expected: 3 回の戻り値がそのフローの期待値と等しい
+      - name: test_check_index_when_broken_related_object
+        case: 正常
+        summary: 索引に無い `to` のオブジェクトの関連を `to` を指す `broken_ref` にする
+        condition: '「正常系」の索引で、`docs[0].related` を `[{ to: "zzz", type: "references", when: "使い方を確かめるとき" }]` にしたもの'
+        mock: なし
+        expected: '`{ file: "index.yaml", where: "docs[0].related[0].to", kind: "broken_ref" }` の 1 つだけで、`message` に `zzz` がある'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
   - name: readGlossaryTable
@@ -489,7 +789,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す'
-    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines`、やめた言い方を `env.glossaryAvoid` に `env.ownGlossary` と同じ並びで足す。表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない'
+    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines` に `env.ownGlossary` と同じ並びで足す（やめた言い方は用語の `avoid` が持つ）。表の中のテキストのトークンに照合しない印（`meta.mdmarkNoTerms`）を付ける。警告は表の前に書き方の警告を差し込む。`glossary` がオフのときは印を取り除くだけで用語を足さず、警告も出さない'
     args:
       - name: state
         type: StateCore
@@ -513,13 +813,19 @@ functions:
         condition: '同じ Markdown に `<!-- features: -glossary -->`'
         mock: なし
         expected: 表はあり、`env.ownGlossary` が空
+      - name: test_glossary_rule_keeps_avoid
+        case: 正常
+        summary: やめた言い方の列を用語の `avoid` に持たせて `env.ownGlossary` に足す
+        condition: シナリオ『表から用語集に用語を入れる』の「正常シナリオ（やめた言い方の列がある）」の Markdown
+        mock: なし
+        expected: '`env.ownGlossary` の `ワークスペース` の `avoid` が `["作業場", "ワーク場"]`'
   - name: termsRule
     title: 用語の下線のコアルール
     container: src/render/syntax/terms.ts
     kind: 関数
     scope: internal
     summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を語とツールチップの組（`renderTermTip`）に置き換える
-    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。`glossary` と `backlinks` が両方オフのときは何もしない
+    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。下線の語は辞書の語ではなく、テキストの一致した範囲の本文の表記のまま出す。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。`glossary` と `backlinks` が両方オフのときは何もしない
     args:
       - name: state
         type: StateCore
@@ -588,13 +894,19 @@ functions:
         condition: '`test_terms_rule_avoided` と同じ入力に `<!-- features: -glossary -->`'
         mock: なし
         expected: '`mdmark-term-avoided` の要素が無い'
+      - name: test_terms_rule_when_notation_differs
+        case: 正常
+        summary: 表記の違う語に下線を付け、下線の語は本文の表記のままにする
+        condition: 索引の用語 `ワークスペース` と `MCP`。本文 `ﾜｰｸｽﾍﾟｰｽとｍｃｐを使う。`
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が 2 つで、下線の語が `ﾜｰｸｽﾍﾟｰｽ` と `ｍｃｐ`。ツールチップにそれぞれの用語の意味がある'
   - name: backlinksRule
     title: 関連文書の一覧のコアルール
     container: src/render/syntax/backlinks.ts
     kind: 関数
     scope: internal
     summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として足す
-    description: '`references.backlinks[docId]` から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
+    description: '`references.backlinks[docId]`（参照の表が無ければ、索引の `related` の要素のうち `readRelated` の `to` が `docId` の要素を持つ文書）から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に足す。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは足さない'
     args:
       - name: state
         type: StateCore
@@ -619,16 +931,22 @@ functions:
         condition: '`backlinks.arch` が空'
         mock: なし
         expected: 一覧が無い
+      - name: test_backlinks_rule_without_references
+        case: 正常
+        summary: 参照の表が無ければ、文字列とオブジェクトの関連の相手から一覧を作る
+        condition: '`docId` が `arch`、参照の表が無く、索引の `api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確かめるとき" }]`、`guide` の `related` が `["arch"]`'
+        mock: なし
+        expected: 末尾の一覧の項目が `api`・`guide` の順
   - name: renderTermTip
     title: 用語のツールチップの HTML を返す
     container: src/parts/term-tip.ts
     kind: 関数
     scope: internal
     summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
-    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し、語の `aria-describedby` でツールチップを指す。文字はエスケープする
+    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し、語の `aria-describedby` でツールチップを指す。`below` が `true` のときは `mdmark-term-wrap` に `is-below` を付ける（ストーリーが下に開いた見た目を出すため。`render` は渡さない）。文字はエスケープする
     args:
       - name: props
-        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning: string } }'
+        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning: string }; below?: boolean }'
         required: true
         description: 部品設計の引数
     returns:
@@ -653,6 +971,12 @@ functions:
         condition: 部品設計『用語のツールチップ』の `Avoided` の引数に、`meaning`・`docs` も渡したもの
         mock: なし
         expected: 語の class が `mdmark-term mdmark-term-avoided` で `aria-describedby` がツールチップの `id`、ツールチップが `role="tooltip"` で見出しが `代わりの用語` だけ、`ワークスペース` と意味が出て、渡した `meaning`・`docs` は出ない。`replacement` の語と意味の `<script>` は `&lt;script&gt;` になる
+      - name: test_render_term_tip_below
+        case: 正常
+        summary: '`below` を渡すと `is-below` を付ける'
+        condition: 部品設計『用語のツールチップ』の `Below` と `TermOnly` の引数
+        mock: なし
+        expected: '`Below` の `mdmark-term-wrap` が `is-below` を持ち、`TermOnly` は持たない'
     refs:
       - dev/設計書/部品設計/用語のツールチップ.ts#
   - name: renderBacklinks
@@ -690,12 +1014,12 @@ functions:
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
-    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、下に収まらないときは `is-above` も付けて画面に対して置く。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-above`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
+    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に置いて `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
     args:
-      - name: root
-        type: HTMLElement
+      - name: options
+        type: '{ root: HTMLElement; placement: TooltipPlacement }'
         required: true
-        description: 描いた文書の要素
+        description: 描いた文書の要素と、ツールチップを先に出す側
     returns:
       type: () => void
       description: 付けた操作を外す関数
@@ -713,13 +1037,19 @@ functions:
         condition: 同じ HTML を 2 つの要素に入れて両方に付ける
         mock: なし（Chromium）
         expected: ページの `id` が全て一意で、`aria-describedby` が同じ要素の中のツールチップを指す
+      - name: test_attach_term_tips_when_no_room_above
+        case: 正常
+        summary: 上に収まれば語の上、収まらなければ語の下に置き `is-below` を付ける
+        condition: '`placement` が `top` で、要素の上端に置いた語と、画面の中ほどに置いた語にそれぞれフォーカスする'
+        mock: なし（Chromium）
+        expected: 中ほどの語は `is-below` を持たずツールチップの `bottom` が語の `top` 以下、上端の語は `is-below` を持ちツールチップの `top` が語の `bottom` 以上。閉じた後は `is-below` が残らない
   - name: wordStarts
     title: 語の区切りの位置を返す
     container: src/knowledge/dictionary.ts
     kind: 関数
     scope: internal
     summary: 文字列を語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返す
-    description: '`Intl.Segmenter` があれば `ja`・`word` で区切る。`Intl.Segmenter` は初めて呼ばれたときに 1 つだけ作り、以降は使い回す（モジュールを読み込んだ時点では作らない）。`Intl.Segmenter` が無い環境では、英数字（`A-Z`・`a-z`・`0-9`）の連なりを 1 語とし、それ以外の文字を 1 文字（コードポイント）ずつ区切る'
+    description: '`Intl.Segmenter` があれば `ja`・`word` で区切る。`Intl.Segmenter` は初めて呼ばれたときに 1 つだけ作り、以降は使い回す（モジュールを読み込んだ時点では作らない）。`Intl.Segmenter` が無い環境では、英数字（`A-Z`・`a-z`・`0-9` と全角の英数字）の連なりを 1 語とし、それ以外の文字を 1 文字（コードポイント）ずつ区切る'
     args:
       - name: text
         type: string
@@ -735,11 +1065,17 @@ functions:
         condition: 文字列 `印刷をWSL2で😀見る`
         mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
         expected: '`[0, 1, 2, 3, 7, 8, 10, 11]`（`WSL2` は 1 語、サロゲートペアの絵文字は 1 文字）'
+      - name: test_word_starts_without_intl_segmenter_when_fullwidth
+        case: 正常
+        summary: '`Intl.Segmenter` を持たない環境で、全角の英数字の連なりも 1 語にする'
+        condition: 文字列 `ＷＳＬ2を見る`
+        mock: '`test_word_starts_without_intl_segmenter` と同じ'
+        expected: '`[0, 4, 5, 6]`（`ＷＳＬ2` は 1 語）'
   - name: findAvoidedTerms
     title: やめた言い方を探す
     container: src/knowledge/check.ts
     summary: 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする
-    description: 見出しの中を飛ばして行内のトークンを頭から辿り、`matchableChildren` の位置のテキストを `findWords` で照合する。`findWords` には用語の語・別名を先に、やめた言い方を後に並べて渡し（同じ長さなら用語の側が当たる）、やめた言い方が当たったものだけを数える。行は、行内のトークンの `map` の開始行（無ければ直前の `tr_open` の `map` の開始行）に、その子より前の `softbreak`・`hardbreak` の数と 1 を足す。同じ行とやめた言い方の組は 1 件にまとめ、行の順・行の中は出た順に返す
+    description: 見出しの中を飛ばして行内のトークンを頭から辿り、`matchableChildren` の位置のテキストを `findWords` で照合する。`findWords` には用語の語・別名を先に、やめた言い方を後に並べて渡し（同じ長さなら用語の側が当たる）、やめた言い方が当たったものだけを数える。当たった語とやめた言い方・用語の語・別名は `normalizeWord` で正規化した語で引き合わせ、`message` のやめた言い方は用語に記載した表記で出す。行は、行内のトークンの `map` の開始行（無ければ直前の `tr_open` の `map` の開始行）に、その子より前の `softbreak`・`hardbreak` の数と 1 を足す。同じ行とやめた言い方の組は 1 件にまとめ、行の順・行の中は出た順に返す
     kind: 関数
     scope: internal
     args:
@@ -777,13 +1113,19 @@ functions:
         condition: 用語 `ワークスペース`（`avoid` に `作業場`）、用語 `作業スペース`（`avoid` に `作業場`）の順。本文の 1 行目が `作業場を開く。`
         mock: なし
         expected: 1 件だけで、`message` に `ワークスペース` があり `作業スペース` が無い
+      - name: test_find_avoided_terms_when_notation_differs
+        case: 正常
+        summary: 表記の違うやめた言い方を拾い、表記の違う用語の別名は拾わない
+        condition: 用語 `ワークスペース`（別名 `WS`、`avoid` に `workplace`）。本文の 1 行目が `ｗｓ を開く。`、3 行目が `WorkPlace を開く。`
+        mock: なし
+        expected: '`where` が `3 行目` の 1 件だけで、`message` に `workplace` と `ワークスペース` がある'
   - name: collectMatches
     title: 本文の参照を取り出す
     container: src/knowledge/matches.ts
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す
-    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`features` に文書の印を重ねた機能）で辞書を作る。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。`collectReferences` を呼ばず、本文を 2 回解析しない'
+    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`features` に文書の印を重ねた機能）で辞書を作る。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。辞書の `avoided` が空でない文書は、`words` に `avoided` の語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の語の一致だけを、`avoided` の用語の `id` で引いた参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。`collectReferences` を呼ばず、本文を 2 回解析しない。一致の `text` は、一致した語を辞書の `written` で引いた索引・用語集の表に記載した表記'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
@@ -848,6 +1190,30 @@ functions:
         condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、`guide` の本文に `ワークスペース` と `作業場`
         mock: なし
         expected: '`byDocument.guide` が `ワークスペース` の 1 件だけで、`作業場` の位置が無い'
+      - name: test_collect_matches_returns_avoided_terms
+        case: 正常
+        summary: 本文に出たやめた言い方の全ての出現を、代わりの用語と位置つきで `avoided` に返す
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、`guide` の 1 つの段落に `作業場` を 2 回、見出しと行内のコードに `作業場`、`api` の本文に `ワークスペース`
+        mock: なし
+        expected: '`avoided.guide` が段落の 2 件だけを持ち、各要素が `kind` `term`・`id` `ws`・`text` `作業場` で、位置で切り出した本文が `作業場`。`avoided.api` が空の並び'
+      - name: test_collect_matches_when_avoided_contains_term
+        case: 正常
+        summary: 用語を含む長いやめた言い方が出ても、`byDocument` はやめた言い方を加えない照合のまま変えない
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `共有ワークスペース`）と、`guide` の本文に `共有ワークスペース`
+        mock: なし
+        expected: '`byDocument.guide` が `共有ワークスペース` の中の `ワークスペース` の 1 件を持ち、`avoided.guide` が `共有ワークスペース` の 1 件を持つ'
+      - name: test_collect_matches_when_avoided_and_glossary_disabled
+        case: 正常
+        summary: '`glossary` がオフの文書はやめた言い方を返さない'
+        condition: '用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、頭に `<!-- features: -glossary -->` を書き段落に `作業場` を書いた `guide` の本文'
+        mock: なし
+        expected: '`avoided.guide` が空の並び'
+      - name: test_collect_matches_when_notation_differs
+        case: 正常
+        summary: 表記の違う語の一致を、本文の位置と記載した表記の `text` で返す
+        condition: インターフェース定義『本文の参照を取り出す』の「正常系（表記の違う語）」の索引と文書
+        mock: なし
+        expected: '`byDocument`・`targets`・`avoided` がそのフローの期待値と等しい'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts#
   - name: alignText
@@ -940,7 +1306,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 図の部品の範囲の定義と、埋め込んだ HTML の中の custom element の定義の `{{語}}` のうち、意味のある用語の位置を返す
-    description: 範囲の見つけ方は `buildDiagrams`（印の範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。定義の JSON の文字列を戻して `{{語}}` を探し、語が `dictionary.terms` に完全に一致して意味が空でないものだけを返す（`lookup` と同じ。文書の別名は引かない）。位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
+    description: 範囲の見つけ方は `buildDiagrams`（印の範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。定義の JSON の文字列を戻して `{{語}}` を探し、語を `dictionary.term` で正規化して引いた用語の意味が空でないものだけを返す（`lookup` と同じ。文書の別名は引かない）。位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
     args:
       - name: options
         type: '{ body: string; tokens: Token[]; dictionary: Dictionary; html: boolean }'
@@ -956,6 +1322,12 @@ functions:
         condition: '`<!-- flow -->` の定義の箱の `name` に JSON のエスケープの後ろの `{{ワークスペース}}` と `{{公開関数}}`、`<!-- html -->` の中の `<mdmark-flow>` の箱に `{{ワークスペース}}`'
         mock: なし
         expected: '`ワークスペース` の 2 件だけで、本文の行を切り出した文字が `ワークスペース`'
+      - name: test_diagram_term_matches_when_notation_differs
+        case: 正常
+        summary: 表記の違う `{{語}}` も用語の位置として返す
+        condition: 索引の用語 `MCP`。`<!-- flow -->` の定義の箱の `name` に `{{ｍｃｐ}}`
+        mock: なし
+        expected: 1 件で、本文の行を切り出した文字が `ｍｃｐ`
   - name: maskEmbeddedHtml
     title: 埋め込んだ HTML の照合しない範囲を伏せる
     container: src/knowledge/positions.ts
@@ -983,22 +1355,30 @@ functions:
     kind: 関数
     container: src/knowledge/find.ts
     usecase: 索引から文書を探す
-    summary: 索引の文書を、題・別名・概要の部分一致、タグ、関係する文書で絞る
-    description: 渡した条件を全て満たす文書を、索引の `docs` の並びで返す。条件を 1 つも渡さなければ全ての文書を返す。関係する文書は、参照の表の被参照から、その文書が参照している文書と、その文書を参照している文書を引く
+    summary: 索引の文書を、題・別名・概要の部分一致、タグの AND / OR、関係する文書で絞る
+    description: '渡した条件を全て満たす文書を返す。条件を 1 つも渡さなければ全ての文書を返す。関係する文書は、参照の表の被参照から、その文書が参照している文書と、その文書を参照している文書を引く。タグは、索引が語彙を持つとき、渡したタグと文書のタグの両方を `resolveTag` で語彙の `name` にそろえてから比べ、語彙に無いタグはそのままの文字で比べる。並びは、`tags`・`anyTags` のタグのどれかが主題のタグ（`main: true`）に当たる文書を上にした安定ソート（同じ順位の中は索引の `docs` の並び）'
     scope: public
     is_async: false
     args:
       - name: options
-        type: '{ index: MdmarkIndex; references?: MdmarkReferences; text?: string; tags?: string[]; relatedTo?: string }'
+        type: '{ index: MdmarkIndex; references?: MdmarkReferences; text?: string; tags?: string[]; anyTags?: string[]; relatedTo?: string }'
         required: true
-        description: 索引・参照の表（`relatedTo` を渡すときに要る）・語・タグ・関係を引く文書の ID
+        description: 索引・参照の表（`relatedTo` を渡すときに要る）・語・全てを持つタグ・どれかを持つタグ・関係を引く文書の ID
     returns:
-      type: MdmarkIndexDoc[]
-      description: 当たった文書（索引の並び）。当たらなければ空
+      type: FindDocsResult
+      description: 当たった文書（当たらなければ空）と、語彙に無いタグ
     process: |-
-      1. `text` があれば、題・別名・概要のどれかに、大文字と小文字を区別せず含む文書に絞る
-      2. `tags` があれば、全てのタグを持つ文書に絞る
-      3. `relatedTo` があれば、参照の表の `backlinks[relatedTo]` にある文書と、`backlinks` に `relatedTo` を持つ文書に絞る（`relatedTo` 自身は含めない）
+      1. `buildTagVocabulary` で語彙の引き表を作る
+      2. 語彙があれば、`tags`・`anyTags` のタグのうち語彙に当たらないものを、`nearestTag` の近いタグと一緒に `unknownTags` に入れる（`tags` が先、同じタグは 1 つ）
+      3. `text` があれば、題・別名・概要のどれかに、`normalizeWord` で正規化した後に含む文書に絞る（`text` も正規化する）
+      4. `tags` があれば、全てのタグを持つ文書に絞る
+      5. `anyTags` にタグが 1 つ以上あれば、どれかのタグを持つ文書に絞る（空の配列は省いたときと同じく絞らない）
+      6. `relatedTo` があれば、参照の表の `backlinks[relatedTo]` にある文書と、`backlinks` に `relatedTo` を持つ文書に絞る（`relatedTo` 自身は含めない）
+      7. `tags`・`anyTags` のタグのどれかが主題のタグに当たる文書を上に並べる
+      8. `relatedTo` があれば、残った文書ごとに `relatedTo` の文書との関係を `outgoing` → `incoming` の順で `relations` に入れる（関係を引く）
+         - `outgoing`: `relatedTo` の文書の `related` のうちその文書を相手にする要素ごとに、`readRelated` の `type` と `when`
+         - `incoming`: その文書の `related` のうち `relatedTo` を相手にする要素ごとに、`type` を `INVERSE_RELATION_TYPES` の逆向きの名前にしたもの（`type` が null なら null）と `when`
+         - その向きに索引の関連が無く、参照の表でその向きに参照しているとき（`outgoing` は `backlinks[その文書]` に `relatedTo`、`incoming` は `backlinks[relatedTo]` にその文書）は、`type` と `when` が null の関係を 1 つ置く
     unit_tests:
       - name: test_find_docs
         case: 正常
@@ -1023,7 +1403,7 @@ functions:
         summary: 参照先と被参照を引く
         condition: '参照の表の `backlinks` が `{ a: ["c"], b: ["a"] }`、文書 `a`・`b`・`c`・`d`、`relatedTo: "a"`'
         mock: なし
-        expected: '`b`・`c` の順で、`a`・`d` を含まない'
+        expected: '`docs` が `b`・`c` の順で `a`・`d` を含まず、`relations` が `{ b: [{ direction: "outgoing", type: null, when: null }], c: [{ direction: "incoming", type: null, when: null }] }`'
       - name: test_find_docs_when_no_condition
         case: 正常
         summary: 条件が無ければ全ての文書
@@ -1036,11 +1416,70 @@ functions:
         condition: どの文書にも無い語
         mock: なし
         expected: 空
+      - name: test_find_docs_when_any_tags
+        case: 正常
+        summary: どれかのタグを持つ文書を、主題のタグが当たる文書を上にして返す
+        condition: '語彙が `topic:mcp`・`topic:yaml`、`docs` の並びが `c`（`topic:yaml`）・`a`（`{ name: topic:mcp, main: true }`）・`b`（`topic:mcp` と `{ name: topic:yaml, main: true }`）・`d`（`設計`）、`anyTags: ["topic:mcp", "topic:yaml"]`'
+        mock: なし
+        expected: '`docs` が `a`・`b`・`c` の順で、`unknownTags` が空'
+      - name: test_find_docs_when_tags_and_any_tags
+        case: 正常
+        summary: '`tags` と `anyTags` の両方を満たす文書に絞る'
+        condition: '`test_find_docs_when_any_tags` と同じ索引、`tags: ["topic:mcp"]`・`anyTags: ["topic:yaml"]`'
+        mock: なし
+        expected: '`docs` が `b` だけ'
+      - name: test_find_docs_when_alias_tag
+        case: 正常
+        summary: 渡したタグと文書のタグの別名を語彙の `name` にそろえて引く
+        condition: '語彙が `topic:mcp`（`aliases` に `MCP`）、文書 `a` のタグが `topic:mcp`、`b` のタグが `MCP`、`tags: ["MCP"]`'
+        mock: なし
+        expected: '`docs` が `a`・`b` の順で、`unknownTags` が空'
+      - name: test_find_docs_when_unknown_tag
+        case: 正常
+        summary: 語彙に無いタグを拒まず、近いタグと一緒に返す
+        condition: '語彙が `topic:mcp`、文書 `a` のタグが `topic:mcp`、`tags: ["topic:mcq"]`'
+        mock: なし
+        expected: '`docs` が空で、`unknownTags` が `[{ tag: "topic:mcq", nearest: "topic:mcp" }]`'
+      - name: test_find_docs_when_no_vocabulary
+        case: 正常
+        summary: 語彙を持たない索引ではタグを書いたとおりの文字で引き、語彙に無いタグを返さない
+        condition: '`tags` を持たず、文書 `a` のタグが `{ name: "設計", main: true }` の索引、`tags: ["設計"]` と `tags: ["設定"]`'
+        mock: なし
+        expected: '`設計` では `docs` が `a`、`設定` では `docs` が空で、どちらも `unknownTags` が空'
+      - name: test_find_docs_when_empty_tag_lists
+        case: 正常
+        summary: 空の `tags`・`anyTags` は省いたときと同じくタグで絞らない
+        condition: '文書 2 つ、`tags: []` と `anyTags: []`'
+        mock: なし
+        expected: どちらも `docs` が 2 件で、`unknownTags` が空
+      - name: test_find_docs_when_width_differs
+        case: 正常
+        summary: 全角と半角だけが違う語で引く
+        condition: '`a` の別名に `MCP`、`b` の題「文書 B」、`text: "ＭＣＰ"`'
+        mock: なし
+        expected: '`a` だけ'
+      - name: test_find_docs_when_related_to_typed
+        case: 正常
+        summary: 索引の関連の種類を向きごとに、相手からの関連は逆向きの名前で返す
+        condition: '`a` の `related` が `[{ to: "b", type: "requires", when: "前提を確かめるとき" }, { to: "e", type: "change_together", when: "索引を変えるとき" }]`、`c` の `related` が `[{ to: "a", type: "part_of", when: "全体を確かめるとき" }]`、`d` の `related` が `["a"]`、`e` の `related` が `[{ to: "a", type: "change_together", when: "索引を変えるとき" }]`。参照の表の `backlinks` が `{ a: ["c", "d", "e"], b: ["a"], e: ["a"] }`、`relatedTo: "a"`'
+        mock: なし
+        expected: '`relations.b` が `[{ direction: "outgoing", type: "requires", when: "前提を確かめるとき" }]`、`relations.c` が `[{ direction: "incoming", type: "has_part", when: "全体を確かめるとき" }]`、`relations.d` が `[{ direction: "incoming", type: null, when: null }]`、`relations.e` が `outgoing` の `change_together`・`incoming` の `change_together` の順の 2 つ'
+      - name: test_find_docs_without_related_to
+        case: 正常
+        summary: '`relatedTo` を渡さなければ `relations` が空'
+        condition: '`test_find_docs_when_related_to_typed` と同じ索引、条件無し'
+        mock: なし
+        expected: '`docs` が 5 件で、`relations` が `{}`'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#
     status: planned
     introduced:
       pr: 72
+    callees:
+      - '#functions[buildTagVocabulary]'
+      - '#functions[readDocTag]'
+      - '#functions[resolveTag]'
+      - '#functions[nearestTag]'
   - name: readGlossaryRows
     title: 用語集の表の行を読む
     container: src/render/syntax/glossary.ts
@@ -1062,27 +1501,559 @@ functions:
         summary: やめた言い方の列を「、」「,」で区切って読み、用語の別名には入れない
         condition: '`term=用語 meaning=意味 avoid=やめた言い方`、行 `ワークスペース | 作業の置き場所 | 作業場、ワーク場, `'
         mock: なし
-        expected: '`avoid` が `["作業場", "ワーク場"]`、`entry.aliases` が `[]`、`warning` が無い'
+        expected: '`entry.avoid` が `["作業場", "ワーク場"]`、`entry.aliases` が `[]`、`warning` が無い'
       - name: test_read_glossary_rows_without_avoid
         case: 正常
         summary: '`avoid=` が無ければやめた言い方を空にする'
         condition: '`term=用語 aliases=別名 meaning=意味`、行 `印 | マーク | HTML コメントで書く指定`'
         mock: なし
-        expected: '`avoid` が `[]`、`entry` が `readGlossaryTable` の用語と等しい'
+        expected: '`entry.avoid` が `[]`、`entry` が `readGlossaryTable` の用語と等しい'
       - name: test_read_glossary_rows_when_unknown_avoid_column
         case: 異常
         summary: '`avoid=` が表に無い列名なら行を返さず警告を返す'
         condition: '`term=用語 meaning=意味 avoid=旧称`、列が `用語`・`意味`'
         mock: なし
         expected: '`rows` が空、`warning` に `avoid=` と `旧称` と列の並び `用語`・`意味`'
+  - name: readDocTag
+    title: 文書のタグを読む
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: 共通
+    summary: '`docs[].tags` の要素 1 つから、タグの名前と主題のタグかを返す'
+    description: 文字列の要素はその文字列を名前にし、`main` を `false` にする。オブジェクトの要素は `main` が無ければ `false`
+    scope: internal
+    is_async: false
+    args:
+      - name: tag
+        type: string | MdmarkIndexDocTag
+        required: true
+        description: 文書のタグの要素
+    returns:
+      type: '{ name: string; main: boolean }'
+      description: タグの名前と主題のタグか
+    unit_tests:
+      - name: test_read_doc_tag
+        case: 正常
+        summary: 文字列とオブジェクトの要素を同じ型で返す
+        condition: '`"設計"`・`{ name: "topic:mcp", main: true }`・`{ name: "topic:yaml" }`'
+        mock: なし
+        expected: '`{ name: "設計", main: false }`・`{ name: "topic:mcp", main: true }`・`{ name: "topic:yaml", main: false }`'
+    status: planned
+    introduced:
+      pr: 114
+  - name: buildTagVocabulary
+    title: タグの語彙の引き表を作る
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: 共通
+    summary: 索引の `tags` から `TagVocabulary` を作る。`tags` が無い索引では `undefined`
+    description: 語彙の並びにタグを見て、同じ `name` は先の 1 つだけを `tags` に入れる。`byWord` には各タグの `name`、続けて `aliases` を、まだ入っていない語だけ入れる（同じ語は語彙の並びで先のタグ）。空の `tags` は空の引き表にする（語彙を持つ索引として扱う）
+    scope: internal
+    is_async: false
+    args:
+      - name: tags
+        type: MdmarkIndexTag[] | undefined
+        required: true
+        description: 形に合う要素だけの索引の `tags`
+    returns:
+      type: TagVocabulary | undefined
+      description: 引き表。語彙が無ければ `undefined`
+    unit_tests:
+      - name: test_build_tag_vocabulary
+        case: 正常
+        summary: 名前と別名から先のタグを引ける
+        condition: '`tags` が `topic:mcp`（`aliases` に `MCP`）・`topic:yaml`（`aliases` に `MCP`・`YAML`）・`topic:yaml`（`group` が `kind`）'
+        mock: なし
+        expected: '`tags` が `topic:mcp`・先の `topic:yaml` の 2 つ、`byWord` の `MCP` が `topic:mcp`、`YAML` と `topic:yaml` が先の `topic:yaml`、`order` が `topic:mcp` → 0・`topic:yaml` → 1'
+      - name: test_build_tag_vocabulary_when_absent
+        case: 正常
+        summary: 語彙が無ければ `undefined` 、空なら空の引き表
+        condition: '`undefined` と `[]`'
+        mock: なし
+        expected: '`undefined` と、`tags` が空の引き表'
+    status: planned
+    introduced:
+      pr: 114
+  - name: editDistance
+    title: 編集距離を数える
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: 共通
+    summary: 2 つの文字列の、文字（コードポイント）の挿入・削除・置換の回数の最小を返す
+    scope: internal
+    is_async: false
+    args:
+      - name: a
+        type: string
+        required: true
+        description: 比べる文字列
+      - name: b
+        type: string
+        required: true
+        description: 比べる文字列
+    returns:
+      type: number
+      description: 編集距離
+    unit_tests:
+      - name: test_edit_distance
+        case: 正常
+        summary: 挿入・削除・置換を 1 回ずつ数える
+        condition: '`topic:mcp` と `topic:mcq`、`mcp` と `mcps`、`abc` と `abc`、`設計😀` と `設計`'
+        mock: なし
+        expected: 1・1・0・1（サロゲートペアの絵文字は 1 文字）
+    status: planned
+    introduced:
+      pr: 114
+  - name: nearestTag
+    title: 近いタグを選ぶ
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: 共通
+    summary: 語彙に無いタグに、編集距離が `NEAR_TAG_MAX_DISTANCE` 以下で最も小さい語彙のタグの `name` を返す
+    description: 候補は `deprecated` を持たないタグの `name` と `aliases`。同じ距離は語彙の並びで先のタグ（同じタグの中は `name` が先、`aliases` は並びの順）。別名に近いときも、そのタグの `name` を返す
+    scope: internal
+    is_async: false
+    args:
+      - name: options
+        type: '{ vocabulary: TagVocabulary; tag: string }'
+        required: true
+        description: 語彙の引き表と、語彙に無いタグ
+    returns:
+      type: string | undefined
+      description: 近いタグの `name`。当たらなければ `undefined`
+    unit_tests:
+      - name: test_nearest_tag
+        case: 正常
+        summary: 1 文字違いのタグを選ぶ
+        condition: 語彙が `topic:mcp`・`topic:yaml`、`tag` が `topic:mcq`
+        mock: なし
+        expected: '`topic:mcp`'
+      - name: test_nearest_tag_when_alias
+        case: 正常
+        summary: 別名に近いときはそのタグの `name` を返す
+        condition: 語彙が `topic:mcp`（`aliases` に `MCP`）、`tag` が `MPC`
+        mock: なし
+        expected: '`topic:mcp`'
+      - name: test_nearest_tag_skips_deprecated
+        case: 正常
+        summary: やめたタグを候補にしない
+        condition: 語彙が `topic:mcq`（`deprecated` が `topic:mcp`）・`topic:mcp`、`tag` が `topic:mcr`
+        mock: なし
+        expected: '`topic:mcp`'
+      - name: test_nearest_tag_when_tie
+        case: 正常
+        summary: 同じ距離は語彙の並びで先のタグを選ぶ
+        condition: 語彙が `topic:mcq`・`topic:mcp`、`tag` が `topic:mcr`
+        mock: なし
+        expected: '`topic:mcq`'
+      - name: test_nearest_tag_when_too_far
+        case: 正常
+        summary: 編集距離が上限を超える候補しか無ければ `undefined`
+        condition: 語彙が `topic:mcp`、`tag` が `kind:guide`
+        mock: なし
+        expected: '`undefined`'
+    callees:
+      - '#functions[editDistance]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[タグの点検]
+    status: planned
+    introduced:
+      pr: 114
+  - name: countTags
+    title: タグごとの件数を数える
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: 索引から文書を探す
+    summary: 文書の並びが持つタグごとに、そのタグを持つ文書の数を返す
+    description: 文書のタグは語彙の `byWord` で語彙の `name` にそろえ（当たらなければそのまま）、1 つの文書の同じタグは 1 件と数える。並びは件数の多い順、同じ件数は語彙の並び（`order`）、語彙に無いタグはその後に名前の文字の順
+    scope: internal
+    is_async: false
+    args:
+      - name: options
+        type: '{ docs: MdmarkIndexDoc[]; vocabulary: TagVocabulary | undefined }'
+        required: true
+        description: 数える文書と、語彙の引き表
+    returns:
+      type: 'Array<{ name: string; count: number }>'
+      description: タグごとの件数
+    unit_tests:
+      - name: test_count_tags
+        case: 正常
+        summary: 別名を語彙のタグにそろえ、件数・語彙の並び・名前の順に並べる
+        condition: '語彙が `topic:yaml`・`topic:mcp`（`aliases` に `MCP`）。文書のタグが `[MCP, topic:mcp]`・`[topic:yaml, 設計]`・`[{ name: topic:mcp, main: true }, 設計, API]`・`[topic:yaml]`'
+        mock: なし
+        expected: '`topic:yaml` 2・`topic:mcp` 2・`設計` 2・`API` 1 の順'
+      - name: test_count_tags_without_vocabulary
+        case: 正常
+        summary: 語彙が無ければ書いたとおりの名前で数える
+        condition: 語彙が `undefined`、文書のタグが `[b, a]`・`[a]`
+        mock: なし
+        expected: '`a` 2・`b` 1 の順'
+    callees:
+      - '#functions[readDocTag]'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[タグごとの件数]
+    status: planned
+    introduced:
+      pr: 114
+  - name: listTags
+    title: タグの語彙を並べる
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: タグの語彙を見る
+    summary: 索引のタグの語彙を、タグごとに付いている文書の数つきで語彙の並びに返す
+    description: 語彙のタグは `TagVocabulary.tags`（同じ `name` は先の 1 つ）。文書の数は、文書のタグのどれかが `byWord` でそのタグに当たる文書の数（0 件のタグも返す）。`query` は、`name`・`aliases`・`description` のどれかに`normalizeWord` で正規化した後に含むタグに絞る（`query` も正規化する）。語彙が無い索引では空。語彙に無い項目は `group`・`description`・`deprecated` を `null`、`aliases` を空にする
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; query?: string }'
+        required: true
+        description: 形に合う要素だけの索引と、絞る語
+    returns:
+      type: TagListEntry[]
+      description: 語彙のタグ（語彙の並び）
+    unit_tests:
+      - name: test_list_tags
+        case: 正常
+        summary: 別名で付いた文書も数え、0 件のタグも返す
+        condition: '語彙が `topic:mcp`（`group`・`description`・`aliases` に `MCP`）・`topic:unused`。文書のタグが `[MCP]`・`[{ name: topic:mcp, main: true }]`・`[設計]`'
+        mock: なし
+        expected: '`topic:mcp`（`docs` 2）・`topic:unused`（`docs` 0、`group`・`description`・`deprecated` が `null`、`aliases` が空）の順で、`設計` は入らない'
+      - name: test_list_tags_when_query
+        case: 正常
+        summary: 名前・別名・説明の部分一致で絞る
+        condition: 語彙が `topic:mcp`（`aliases` に `MCP`）・`topic:yaml`（`description` に `mcp の設定は含めない`）・`kind:guide`、`query` が `Mcp`
+        mock: なし
+        expected: '`topic:mcp`・`topic:yaml` の順'
+      - name: test_list_tags_without_vocabulary
+        case: 正常
+        summary: 語彙が無ければ空を返す
+        condition: '`tags` を持たず、文書がタグ `設計` を持つ索引'
+        mock: なし
+        expected: '`[]`'
+      - name: test_list_tags_when_query_width_differs
+        case: 正常
+        summary: 全角と半角だけが違う語で絞る
+        condition: 語彙が `topic:mcp`（`aliases` に `MCP`）・`kind:guide`、`query` が `ＭＣＰ`
+        mock: なし
+        expected: '`topic:mcp` だけ'
+    callees:
+      - '#functions[buildTagVocabulary]'
+      - '#functions[readDocTag]'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/タグの語彙を見る.ts#
+    status: planned
+    introduced:
+      pr: 114
+  - name: resolveTag
+    title: タグを語彙で引く
+    kind: 関数
+    container: src/knowledge/tags.ts
+    usecase: 共通
+    summary: タグの名前を、語彙の `name` か `aliases` に同じ文字で当たるタグに引く
+    description: 同じ語が複数のタグにあるときは、`buildTagVocabulary` のとおり語彙の並びで先のタグ
+    scope: internal
+    is_async: false
+    args:
+      - name: options
+        type: '{ vocabulary: TagVocabulary; name: string }'
+        required: true
+        description: 語彙の引き表と、引くタグの名前
+    returns:
+      type: MdmarkIndexTag | undefined
+      description: 当たったタグ。当たらなければ `undefined`
+    unit_tests:
+      - name: test_resolve_tag
+        case: 正常
+        summary: 名前と別名で同じタグを引き、当たらなければ `undefined`
+        condition: 語彙が `topic:mcp`（`aliases` に `MCP`）、`name` が `topic:mcp`・`MCP`・`mcp`
+        mock: なし
+        expected: '`topic:mcp`・`topic:mcp`・`undefined`（大文字と小文字を区別する）'
+    status: planned
+    introduced:
+      pr: 114
+  - name: findTagIssues
+    title: タグのずれを拾う
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引と文書のずれを点検する
+    summary: 索引のタグの語彙と文書のタグから、`duplicate_tag`・`tag_alias_conflict`・`broken_tag_replacement`・`unregistered_tag`・`deprecated_tag` のずれをこの順で返す
+    description: 位置は `raw` の `tags` と `docs` の要素の並びで数える（`normalizeIndex` が除いた要素も数に入れる）。`file` はどれも `indexFile`
+    process: |-
+      1. `buildTagVocabulary` で語彙の引き表を作り、無ければ空を返す
+      2. `tags` の並びで、先に出た `name` と同じ `name` のタグごとに `duplicate_tag`（`where` は `tags[{位置}].name`）を拾う
+      3. 別名ごとに、ほかのタグ（位置が違い `name` も違うタグ）の `name` か、語彙の並びで先のほかのタグの別名と同じ文字なら `tag_alias_conflict`（`where` は `tags[{位置}].aliases[{位置}]`）を拾う
+      4. `deprecated` が語彙のどの `name` にも当たらないタグごとに `broken_tag_replacement`（`where` は `tags[{位置}].deprecated`）を拾う
+      5. 文書ごとに、`readDocTag` で読んだタグを `resolveTag` で引き、当たらなければ `unregistered_tag`（`nearestTag` の近いタグを添える）、`deprecated` を持つタグに当たれば `deprecated_tag`（`where` はどちらも `docs[{位置}].tags[{位置}]`）を拾う
+    scope: internal
+    is_async: false
+    args:
+      - name: input
+        type: '{ index: MdmarkIndex; raw: unknown; indexFile: string }'
+        required: true
+        description: 形に合う要素だけの索引・索引の YAML を読んだ値・索引のファイルの名前
+    returns:
+      type: MdmarkIndexIssue[]
+      description: タグのずれ
+    notes:
+      message の文面: |-
+        - `duplicate_tag`: 「タグ `{name}` が `tags[{先の位置}]` と重なっています。どちらかを消すか、名前を変えてください。」
+        - `tag_alias_conflict`: 「別名 `{別名}` がタグ `{重なる先のタグの name}` と重なっています。どちらかの別名を消すか、変えてください。」
+        - `broken_tag_replacement`: 「振り替え先 `{deprecated}` が語彙にありません。語彙にあるタグの名前に直すか、語彙に `{deprecated}` を追加してください。」
+        - `unregistered_tag`（近いタグがある）: 「タグ `{タグ}` が語彙にありません。近いタグは `{近いタグ}` です。`{近いタグ}` に直すか、語彙に `{タグ}` を追加してください。」
+        - `unregistered_tag`（近いタグが無い）: 「タグ `{タグ}` が語彙になく、近いタグもありません。語彙に `{タグ}` を追加するか、語彙にあるタグに直してください。」
+        - `deprecated_tag`: 「タグ `{タグ}` はやめたタグです。`{deprecated}` に直してください。」
+    unit_tests:
+      - name: test_find_tag_issues
+        case: 正常
+        summary: 5 種のずれをこの順で返す
+        condition: インターフェース定義『索引を点検する』の「正常系（タグが語彙とずれる）」の索引
+        mock: なし
+        expected: '`where`・`kind` と並びがそのフローの期待値と等しく、`unregistered_tag` の `message` に `topic:mcq` と `topic:mcp`、`deprecated_tag` の `message` に `topic:old` と `topic:mcp` がある'
+      - name: test_find_tag_issues_when_alias
+        case: 正常
+        summary: 別名で付けた文書のタグをずれにしない
+        condition: 語彙が `topic:mcp`（`aliases` に `MCP`）、`docs[0].tags` が `["MCP"]`
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_tag_issues_when_alias_matches_name
+        case: 正常
+        summary: ほかのタグの `name` と同じ別名を `tag_alias_conflict` にする
+        condition: 語彙が `topic:mcp`・`topic:model`（`aliases` に `topic:mcp`）
+        mock: なし
+        expected: '`where` が `tags[1].aliases[0]` の `tag_alias_conflict` 1 つで、`message` に `topic:mcp` がある'
+      - name: test_find_tag_issues_when_no_near_tag
+        case: 正常
+        summary: 近いタグが無いことを `message` に書く
+        condition: 語彙が `topic:mcp`、`docs[0].tags` が `["kind:guide"]`
+        mock: なし
+        expected: '`unregistered_tag` 1 つで、`message` が近いタグもないことと `kind:guide` を語彙に追加する直し方を書く'
+      - name: test_find_tag_issues_without_vocabulary
+        case: 正常
+        summary: 語彙を持たない索引では空を返す
+        condition: '`tags` を持たず、`docs[0].tags` が `["topic:mcq"]` の索引'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - '#functions[buildTagVocabulary]'
+      - '#functions[readDocTag]'
+      - '#functions[resolveTag]'
+      - '#functions[nearestTag]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[タグの点検]
+    status: planned
+    introduced:
+      pr: 114
+  - name: normalizeWord
+    title: 語を正規化する
+    container: src/knowledge/dictionary.ts
+    summary: 照合・点検・検索の前に語に NFKC・英字の小文字化・前後の空白の除去をかける
+    description: '`String.prototype.normalize("NFKC")`・`toLowerCase()`・`trim()` の順にかける。辞書の語の登録（`buildDictionary`）・本文の照合（`findWords`）・点検（`checkIndex`・`findAvoidedTerms`）・検索（`findDocs`・`listTags`）がこの関数を使う'
+    kind: 関数
+    scope: internal
+    args:
+      - name: word
+        type: string
+        required: true
+        description: 正規化する語
+    returns:
+      type: string
+      description: 正規化した語
+    unit_tests:
+      - name: test_normalize_word
+        case: 正常
+        summary: 全角と半角・英字の大文字と小文字・前後の空白をそろえる
+        condition: '`　Ｗｏｒｋ Place `・`ﾜｰｸｽﾍﾟｰｽ`・`㍻`'
+        mock: なし
+        expected: '`work place`・`ワークスペース`・`平成`'
+  - name: readRelated
+    title: 文書の関連を読む
+    kind: 関数
+    container: src/knowledge/index-shape.ts
+    usecase: 共通
+    role: 変換
+    summary: '`docs[].related` の要素を `to`・`type`・`when` を持つオブジェクトにそろえる'
+    description: 文字列の要素は `to` がその文字列で `type` と `when` が null のオブジェクトにし、オブジェクトの要素はそのままのキー（`paths` は持つときだけ）で返す
+    scope: internal
+    args:
+      - name: item
+        type: string | MdmarkIndexRelated
+        required: true
+        description: '`docs[].related` の要素 1 つ'
+    returns:
+      type: '{ to: string; type: MdmarkRelationType | null; when: string | null; paths?: string[] }'
+      description: そろえた関連
+    unit_tests:
+      - name: test_read_related
+        case: 正常
+        summary: 文字列の要素を `type` と `when` が null のオブジェクトにする
+        condition: '`"arch"`'
+        mock: なし
+        expected: '`{ to: "arch", type: null, when: null }` で、`paths` のキーを持たない'
+      - name: test_read_related_when_object
+        case: 正常
+        summary: オブジェクトの要素をそのままのキーで返す
+        condition: '`{ to: "arch", type: "requires", when: "前提を確かめるとき", paths: ["src/**"] }`'
+        mock: なし
+        expected: 入力と等しい
+    refs:
+      - dev/設計書/ER図/索引#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
+  - name: findRelatedIssues
+    title: 関連のずれを拾う
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引を点検する
+    summary: 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返す
+    description: 同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び。関連の相手は `readRelated` の `to`。`untyped_related` は文字列の要素ごとに 1 つ。`one_sided_change_together` は `type` が `change_together` の要素のうち、相手が索引にあり、相手の `related` に自分を `to` とする `change_together` が無いものごとに 1 つ。`related_link_overlap` は `type` が `change_together` でない要素（文字列の要素を含む）のうち、相手が索引にあり、自分の `links` が相手の `path`（`./` と重なった `/` を除いたもの）を持つものごとに 1 つで、`links` にキーを持たない文書は確かめない。`where` はどれも `docs[0].related[1]`、`file` は `indexFile`。`message` は日本語の 1 文で、`untyped_related` は `to`・`type`・`when` を持つ関連に書き換える直し方、`one_sided_change_together` は相手の `id` と自分の `id` と相手にも記載する直し方、`related_link_overlap` は相手の `id` と関連か本文のリンクのどちらかにする直し方を書く
+    scope: internal
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; links: Record<string, string[]>; indexFile: string; positionOf?: (doc: MdmarkIndexDoc) => number }'
+        required: true
+        description: '`normalizeIndex` で合う要素だけにした索引・文書の `id` から本文のリンクが指す文書のパス（本文を `documents` に持たない文書はキーを持たない）・索引のファイルの名前・`where` に出す文書の位置を返す関数（`checkIndex` が検査で除かれる前の `docs` の位置を渡す。省くと `index.docs` の位置）'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: 関連のずれ（無ければ空）
+    unit_tests:
+      - name: test_find_related_issues
+        case: 正常
+        summary: 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を種類の順に返す
+        condition: '`a`（`related` が `b` への `change_together`・`c` への `references`）・`b`（`related` なし）・`c`（`related` が文字列の `a`）、`links` が `{ a: ["c.md"], b: [], c: [] }`、`indexFile: "index.yaml"`'
+        mock: なし
+        expected: '`where` と `kind` が `docs[2].related[0]` の `untyped_related`・`docs[0].related[0]` の `one_sided_change_together`・`docs[0].related[1]` の `related_link_overlap` の順で、`file` がどれも `index.yaml`'
+      - name: test_find_related_issues_when_change_together_both_sides
+        case: 正常
+        summary: 両側に記載した change_together は、本文のリンクがあってもずれにしない
+        condition: '`a` と `b` が互いを `change_together` で記載し、`links` が `{ a: ["b.md"], b: ["./a.md"] }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_related_issues_when_target_missing
+        case: 正常
+        summary: 索引に無い相手への関連は片側だけの change_together にもリンクの重なりにもしない
+        condition: '`a` の `related` が `zzz` への `change_together` と `yyy` への `references`、`links` が `{ a: ["yyy.md"] }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_related_issues_without_body
+        case: 正常
+        summary: '`links` にキーを持たない文書はリンクの重なりを確かめない'
+        condition: '`a` の `related` が `b` への `references`、`links` が `{}`'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - '#functions[readRelated]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[関連の点検]
+    status: planned
+    introduced:
+      pr: 127
+  - name: findMissedChangeTogether
+    title: change_together の直し忘れを拾う
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引を点検する
+    summary: '`change_together` の組のうち片方の文書だけが `changedPaths` にある組を `missed_change_together` で返す'
+    description: 組は、どちらかの側の `related` に `type` が `change_together` の要素がある 2 つの文書で、向きを問わず組ごとに 1 回だけ確かめる。相手が索引に無い組は確かめない。文書の `path` と `changedPaths` は `./` と重なった `/` を除いて比べ、索引のどの `path` にも当たらないパスは無視する。`file` は変わっていない側の索引に記載した `path`、`where` は空文字。`message` は日本語の 1 文で、変わった側のパスと、変わっていない側も直すか確かめる直し方を書く。並びは、組を先に記載した側の文書の索引の並び（同じ文書の中は `related` の並び）
+    scope: internal
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; changedPaths: string[] }'
+        required: true
+        description: '`normalizeIndex` で合う要素だけにした索引・比べる基準から変わった文書のパス'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: 直し忘れの組（無ければ空）
+    unit_tests:
+      - name: test_find_missed_change_together
+        case: 正常
+        summary: 片側だけに記載した組でも、片方だけが変わったら変わっていない側を返す
+        condition: '`a`（`a.md`、`related` が `b` への `change_together`）・`b`（`b.md`、`related` なし）、`changedPaths: ["b.md"]`'
+        mock: なし
+        expected: '`{ file: "a.md", where: "", kind: "missed_change_together" }` の 1 つだけで、`message` に `b.md` がある'
+      - name: test_find_missed_change_together_when_both_sides_written
+        case: 正常
+        summary: 両側に記載した組を 1 つだけ返す
+        condition: '`a` と `b` が互いを `change_together` で記載し、`changedPaths: ["./a.md"]`'
+        mock: なし
+        expected: '`file` が `b.md` の 1 つだけ'
+      - name: test_find_missed_change_together_when_both_or_none_changed
+        case: 正常
+        summary: 両方が変わった組と、どちらも変わっていない組は返さない
+        condition: '`a` と `b` が互いを `change_together` で記載し、`changedPaths` が `["a.md", "b.md"]` と `["other.md"]`'
+        mock: なし
+        expected: どちらも `[]`
+      - name: test_find_missed_change_together_ignores_other_types
+        case: 正常
+        summary: '`change_together` でない関連と索引に無い相手の組は数えない'
+        condition: '`c` の `related` が `a` への `references` と `zzz` への `change_together`、`changedPaths: ["a.md"]`'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - '#functions[readRelated]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[直し忘れ]
+    status: planned
+    introduced:
+      pr: 127
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
     container: src/knowledge/index-shape.ts
-    summary: 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`）と必須か。`normalizeIndex` がこれで検査する
-    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "string[]", required: false }, related: { type: "string[]", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'
+    summary: 索引の最上位・`docs` の要素・`terms` の要素・`tags` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`・`doc_tags`・`doc_related`）と必須か。`doc_tags` は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び。`doc_related` は、空でない文字列か、`to`（必須・空でない文字列）・`type`（必須・`MdmarkRelationType` の値）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクトの並びで、件数の上限を置かない。`normalizeIndex` がこれで検査する
+    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false }, tags: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } }, tag: { name: { type: "string", required: true }, group: { type: "string", required: false }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, deprecated: { type: "string", required: false } } }'
     refs:
       - dev/設計書/ER図/索引#
+  - name: NEAR_TAG_MAX_DISTANCE
+    title: 近いタグの編集距離の上限
+    container: src/knowledge/tags.ts
+    summary: 語彙に無いタグに近いタグを選ぶときの、編集距離（文字の挿入・削除・置換の回数）の上限
+    value: '2'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[タグの点検]
+    status: planned
+    introduced:
+      pr: 114
+  - name: INVERSE_RELATION_TYPES
+    title: 逆向きの関係の名前
+    container: src/knowledge/find.ts
+    summary: '`MdmarkRelationType` から、相手の側から見た関係の名前'
+    entries:
+      - key: requires
+        value: required_by
+      - key: references
+        value: referenced_by
+      - key: replaces
+        value: replaced_by
+      - key: part_of
+        value: has_part
+      - key: change_together
+        value: change_together
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[docs[].relations[].type]
+    status: planned
+    introduced:
+      pr: 127
+  - name: RELATION_TYPES
+    title: 関係の種類の並び
+    container: src/knowledge/index-shape.ts
+    summary: '`MdmarkRelationType` の値を記載できる順に並べたもの。`normalizeIndex` が `type` の検査と誤りの文に使う'
+    entries:
+      - key: '0'
+        value: requires
+      - key: '1'
+        value: references
+      - key: '2'
+        value: replaces
+      - key: '3'
+        value: part_of
+      - key: '4'
+        value: change_together
+    status: planned
+    introduced:
+      pr: 127
 test_files:
   - tests/unit/src/knowledge/index-shape.test.ts
   - tests/unit/src/knowledge/paths.test.ts
@@ -1099,3 +2070,31 @@ test_files:
   - tests/unit/src/parts/backlinks.test.ts
   - tests/unit/src/interact/terms.browser.test.ts
   - tests/unit/src/knowledge/find.test.ts
+  - tests/unit/src/knowledge/tags.test.ts
+enums:
+  - name: MdmarkRelationType
+    title: 関係の種類
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`MdmarkIndexRelated` の `type` に記載できる値（公開の型）'
+    values:
+      - value: requires
+        title: 前提
+        description: 相手を先に読まないと分からない
+      - value: references
+        title: 参照
+        description: 相手を必要なときに引く
+      - value: replaces
+        title: 置き換え
+        description: 相手を置き換えた
+      - value: part_of
+        title: 一部
+        description: 相手の一部をなす
+      - value: change_together
+        title: 一緒に直す
+        description: 片方を直したらもう片方も直す。両側に記載する
+    refs:
+      - dev/設計書/ER図/索引#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127

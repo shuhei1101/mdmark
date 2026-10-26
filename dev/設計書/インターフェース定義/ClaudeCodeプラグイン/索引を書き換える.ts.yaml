@@ -9,7 +9,7 @@ flows:
       - name: 作業のフォルダ
         description: 設定・索引と文書 2 つ。索引に載っているのは文書 `a` だけ
       - name: Mock
-        description: Claude Code の代わりに、MCP サーバーを作業のフォルダで子プロセスとして起動し、標準入出力でつなぐ MCP のクライアント
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -63,6 +63,31 @@ flows:
       - '`action` が `removed`'
       - 索引の `docs` が `a` だけになる
     test: test_normal_when_removed
+  - name: 正常系（タグの語彙を書き換える）
+    summary: 語彙を持たない索引に、語彙のタグを name で足す
+    setup:
+      - name: 作業のフォルダ
+        description: 設定・索引と文書 1 つ。索引は `tags` を持たず、文書 `a` はタグ `topic:mcp` を持つ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 足すタグ
+        description: '`{"group": "topic", "description": "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs", "aliases": ["MCP"]}`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: tag、id: topic:mcp、item）
+        S->>F: 索引を読む
+        S->>S: 最上位に tags を作って足し、検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: action: added
+    expected:
+      - '`action` が `added`'
+      - 索引の最上位の `tags` が `topic:mcp` の 1 つだけで、`name` の後に渡した `group`・`description`・`aliases` を持つ
+      - 索引の `docs`・`terms` が変わっていない
+      - 書き換えた索引で `mdmark check` のずれが 0 件
+    test: test_normal_when_tag
   - name: 異常系（Schema に合わない・ツールのエラー）
     summary: パスの無い項目は書かずにエラーにする
     setup:
@@ -105,35 +130,114 @@ flows:
       - 内容に `z` が索引の `docs` に無いことが出る
       - 索引のファイルの中身が呼ぶ前と同じ
     test: test_error_when_item_missing
-lead: 索引の文書か用語の ID の項目を置き換え、無ければ足し、`null` なら消す。書く前に、書き換えた後の索引を索引の Schema で検査する。
+  - name: 異常系（関連が Schema に合わない・ツールのエラー）
+    summary: when の無い関連と知らない type の関連を、関連の場所を示して拒む
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 合わない関連
+        description: '1 回目は `related` が `[{to: a, type: requires}]`、2 回目は `related` が `[{to: a, type: depends_on, when: 前提を確かめるとき}]` の文書 `b` の項目'
+        notes: 書き換える前と後で索引のファイルの中身が同じであることを確かめる
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: doc、id: b、item: when の無い関連）
+        S->>F: 索引を読む
+        S->>S: 書き換えた索引を Schema で検査する
+        S-->>C: isError（docs[1].related[0].when）
+        C->>S: update_index（kind: doc、id: b、item: 知らない type の関連）
+        S->>S: 書き換えた索引を Schema で検査する
+        S-->>C: isError（docs[1].related[0].type）
+      ```
+    expected:
+      - どちらも `isError` が立つ
+      - 1 回目の内容に `docs[1].related[0].when` の行がある
+      - 2 回目の内容に `docs[1].related[0].type` の行があり、許す 5 つの値が出る
+      - 索引のファイルの中身が書き換える前と同じ
+    test: test_error_when_related_invalid
+  - name: 正常系（関連を書く）
+    summary: 文書の related を to・type・when のオブジェクトの並びで書く
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ。索引に載っているのは文書 `a` だけ
+      - name: Mock
+        description: 正常系と同じ
+      - name: 関連を持つ項目
+        description: '`related` が `[{to: a, type: requires, when: 前提を確かめるとき}]` の文書 `b` の項目'
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 索引のファイル
+        C->>S: update_index（kind: doc、id: b、item: 関連を持つ項目）
+        S->>F: 索引を読む
+        S->>S: b を末尾に足して検査する
+        S->>F: 一時ファイルに書いて置き換える
+        S-->>C: action: added
+      ```
+    expected:
+      - '`action` が `added`'
+      - 索引の `b` の `related` が、渡した `to`・`type`・`when` のオブジェクト 1 つの並び
+      - 書き換えた索引で `mdmark check` のずれが 0 件
+    test: test_normal_when_related
+  - name: 異常系（作業のフォルダが無い・ツールのエラー）
+    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読まずにエラーにする'
+    setup:
+      - name: Mock
+        description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: update_index（project_dir なし）
+        S->>S: 引数を検査する
+        S-->>C: isError（project_dir が無いこととプラグインから呼ぶこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
+    test: test_error_when_project_dir_missing
+lead: 索引の文書・用語の ID かタグの語彙の名前の項目を置き換え、無ければ足し、`null` なら消す。書く前に、書き換えた後の索引を索引の Schema で検査する。
 idempotent: true
 side_effects: 設定の `index` の索引のファイルを書き換える
 exclusivity: 同じ索引への書き込みは 1 つずつ行う。読み込み・検査・置き換えを同じロックの中で行う
 request:
   - name: kind
-    type: "'doc' | 'term'"
+    type: "'doc' | 'term' | 'tag'"
     required: true
     location: argument
-    description: 書き換えるのが文書（`docs`）か用語（`terms`）か
-    notes: 文書と用語の ID はそれぞれの一覧の中でだけ一意のため、どちらかを渡す
+    description: 書き換えるのが文書（`docs`）・用語（`terms`）・タグの語彙（`tags`）のどれか
+    notes: 文書・用語の ID とタグの名前はそれぞれの一覧の中でだけ一意のため、どれかを渡す
   - name: id
     type: string
     required: true
     location: argument
-    description: 文書か用語の ID
+    description: 文書か用語の ID。`kind` が `tag` のときはタグの `name`
     constraints: 空でない
   - name: item
     type: object | null
     required: true
     location: argument
-    description: その ID の項目の中身（`id` を除くキー）。項目ごと置き換える。`null` なら項目を消す
-    notes: キーは ER 図『索引』の `docs`・`terms` のカラム
+    description: その ID の項目の中身（文書・用語は `id`、タグは `name` を除くキー）。項目ごと置き換える。`null` なら項目を消す
+    notes: キーは ER 図『索引』の `docs`・`terms`・`tags` のカラム。文書の `related` は `to`・`type`・`when`（と任意の `paths`）を持つオブジェクトの並びで渡す
   - name: config
     type: string
     required: false
-    default: なし（MCP サーバーの作業のフォルダから上へ `mdmark.config.yaml` を探す）
+    default: なし（`project_dir` から上へ `mdmark.config.yaml` を探す）
     location: argument
     description: 使う設定ファイルのパス
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
 request_example: |-
   ```json
   {"kind": "doc", "id": "b", "item": {"path": "b.md", "title": "文書 B", "tags": ["設計"]}}
@@ -157,12 +261,15 @@ exceptions:
     notes: 索引のファイルを書き換えない。合わないところごとに場所と直し方を並べる
   - name: ツールのエラー（消す項目が無い）
     condition: '`item` が `null` で、その ID の項目が無い'
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを書く。索引を書き換えない
 error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。Schema に合わないときは `{場所}: {内容}` の行を合わないところの数だけ並べる。'
 constraints:
   - item: 書き方
     constraint: 一時ファイルに書いてから置き換える。渡した ID の項目の前後の項目と、その他のキーは書き換えない
   - item: 足す位置
-    constraint: 索引に無い ID は、その一覧の末尾に足す
+    constraint: 索引に無い ID は、その一覧の末尾に足す。索引がその一覧のキー（`terms`・`tags`）を持たないときは、最上位の末尾にキーを作って足す。`tags` の最後の 1 つを消したときは `tags` のキーも消す
   - item: 検査
     constraint: 書き換えた後の索引全体を、`mdmark check` が使う索引の形の検査に通す。索引と文書のずれ（`checkIndex`）は検査しない
   - item: 設定ファイルと索引を読めないとき

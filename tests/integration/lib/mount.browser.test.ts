@@ -36,6 +36,10 @@ type Built = typeof import("../../../src/index.ts");
 // 外部ライブラリの代役のモジュールの URL（手元の開発サーバーが配る）
 const TEST_LIB_PATH = "/fixtures/test-lib.js";
 const MISSING_LIB_PATH = "/fixtures/missing.js";
+// 色分けのライブラリ（`@highlightjs/cdn-assets` の `es/`）を手元の開発サーバーが配る URL。名前ごとに別の URL にして、ページの中の読み込み済みのモジュールを分ける
+const HIGHLIGHT_BASE = "/fixtures/highlightjs/";
+// 色分けのライブラリを配らない URL（404 を返す）
+const MISSING_HIGHLIGHT_URL = "/fixtures/missing/";
 // 読み込み中の枠の文言
 const LOADING_TEXT = "図を読み込んでいます";
 // ダークとライトの `--mdmark-color-bg` の値
@@ -116,6 +120,54 @@ function countRequests(path: string): number {
   return performance
     .getEntriesByType("resource")
     .filter((entry) => entry.name.endsWith(path)).length;
+}
+
+/** 色分けのライブラリを `name` の名前で配る `es/` フォルダの URL（`syntax.url` に渡す） */
+function highlightUrl(name: string): string {
+  return `${HIGHLIGHT_BASE}${name}/es/`;
+}
+
+/** 色分けのライブラリを読んだ要求の URL を、並べ替えて返す */
+function highlightRequests(name: string): string[] {
+  const prefix = `${location.origin}${highlightUrl(name)}`;
+  return performance
+    .getEntriesByType("resource")
+    .map((entry) => entry.name)
+    .filter((url) => url.startsWith(prefix))
+    .sort();
+}
+
+/** 色分けの対象の見本: 印を持たない `ts`、`<!-- code: lines -->` の直後に 3 行のブロックスカラーを持つ `yml`、色分けしない `text` のコードブロック */
+const HIGHLIGHT_MARKDOWN = [
+  "```ts",
+  "const count: number = 1;",
+  "```",
+  "",
+  "<!-- code: lines -->",
+  "",
+  "```yml",
+  "body: |",
+  "  一行目",
+  "  二行目",
+  "  三行目",
+  "```",
+  "",
+  "```text",
+  "plain",
+  "```",
+  "",
+].join("\n");
+
+/** `code` の HTML を、文書の順に並べて返す */
+function codeHtmls(el: Element): string[] {
+  return [...el.querySelectorAll("code")].map((code) => code.outerHTML);
+}
+
+/** class が `hljs-` で始まる `span` を持つ `code` の言語の class を、文書の順に並べて返す */
+function coloredLanguages(el: Element): string[] {
+  return [...el.querySelectorAll("code")]
+    .filter((code) => code.querySelector('span[class^="hljs-"]') !== null)
+    .map((code) => code.className);
 }
 
 afterEach(() => {
@@ -1215,6 +1267,99 @@ test("test_normal_when_avoided_term", async () => {
   expect(document.activeElement).toBe(avoided);
 });
 
+// 全角と半角・大文字と小文字だけが違う本文の語と図の `{{語}}` にも、用語の下線とツールチップを付ける（正常系）
+test("test_normal_when_notation_differs", async () => {
+  // 準備
+  const el = createElement();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
+    terms: [
+      {
+        id: "ws",
+        term: "ワークスペース",
+        aliases: ["WS"],
+        meaning: "作業の置き場所",
+        avoid: ["workplace"],
+      },
+      { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
+    ],
+  };
+  const flow = [
+    "{",
+    '  "title": "受け取り",',
+    '  "scope": "範囲",',
+    '  "updated": "2026-10-23",',
+    '  "width": 520,',
+    '  "height": 160,',
+    '  "nodes": [',
+    '    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "{{ｍｃｐ}}", "sub": "" }',
+    "  ],",
+    '  "wires": []',
+    "}",
+  ].join("\n");
+  const markdown = [
+    "## 一つ目",
+    "",
+    "ＷＳを開く。",
+    "",
+    "## 二つ目",
+    "",
+    "ws と WorkPlace を書く。",
+    "",
+    wrapDirective("flow", flow),
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown, index, docId: "cur" });
+  // 検証
+  // 本文の下線の語は、本文に記載したままの文字
+  const body = [...el.querySelectorAll<HTMLElement>("p .mdmark-term")].filter(
+    (term) => term.closest(".mdmark-diagram") === null,
+  );
+  expect(body.map((term) => term.textContent)).toEqual([
+    "ＷＳ",
+    "ws",
+    "WorkPlace",
+  ]);
+  const [first, second, avoided] = body as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  for (const term of [first, second]) {
+    expect(term.classList.contains("mdmark-term-avoided")).toBe(false);
+    term.focus();
+    const tip = document.getElementById(
+      term.getAttribute("aria-describedby") ?? "",
+    ) as HTMLElement;
+    expect(isOpen(tip)).toBe(true);
+    expect(find<HTMLElement>(tip, ".mdmark-term-tip-meaning").textContent).toBe(
+      "作業の置き場所",
+    );
+  }
+  // やめた言い方は波線のマーカーで、代わりの用語を出す
+  expect(avoided.classList.contains("mdmark-term-avoided")).toBe(true);
+  avoided.focus();
+  const avoidedTip = document.getElementById(
+    avoided.getAttribute("aria-describedby") ?? "",
+  ) as HTMLElement;
+  expect(
+    find<HTMLElement>(avoidedTip, ".mdmark-term-tip-replacement").textContent,
+  ).toBe("ワークスペース");
+  // 図の箱の `{{語}}` も用語の下線で、意味が出る
+  const boxTerm = find<HTMLElement>(el, ".mdmark-diagram-node .mdmark-term");
+  expect(boxTerm.textContent).toBe("ｍｃｐ");
+  boxTerm.focus();
+  expect(tipOfTerm(boxTerm).textContent).toContain("Model Context Protocol");
+});
+
+/** 語の `aria-describedby` が指すツールチップ */
+function tipOfTerm(term: Element): HTMLElement {
+  return document.getElementById(
+    term.getAttribute("aria-describedby") ?? "",
+  ) as HTMLElement;
+}
+
 // ブラウザで配布物の render を呼んでも、やめた言い方つきの出力が固定値と等しい（正常系）
 test("test_normal_when_avoided_term_in_browser", async () => {
   // 準備
@@ -1226,6 +1371,101 @@ test("test_normal_when_avoided_term_in_browser", async () => {
   });
   // 検証
   expect(stripSourceLine(html)).toBe(AVOID_EXPECTED_HTML);
+});
+
+// 描く文書とほかの文書の用語集の表のやめた言い方にマーカーを付け、索引の用語を先に代わりの用語にする（正常系）
+test("test_normal_when_glossary_avoid_column", async () => {
+  // 準備
+  const { collectReferences } = await loadBuilt();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [
+      { id: "glossary", path: "glossary.md", title: "用語集" },
+      { id: "guide", path: "guide.md", title: "ガイド" },
+    ],
+    terms: [
+      {
+        id: "folder",
+        term: "フォルダ",
+        meaning: "ファイルの入れ物",
+        avoid: ["作業場"],
+      },
+    ],
+  };
+  const glossaryMarkdown = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+  ].join("\n");
+  const markdown = [
+    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    "",
+    "| 用語 | 意味 | やめた言い方 |",
+    "| --- | --- | --- |",
+    "| 下書き | 公開前の文書 | 草稿、ワーク場 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+    "## 節",
+    "",
+    "作業場、ワーク場、草稿を書く。",
+    "",
+  ].join("\n");
+  const references = collectReferences({
+    index,
+    documents: { "glossary.md": glossaryMarkdown, "guide.md": markdown },
+  });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown, index, docId: "guide", references });
+  // 検証
+  // 段落の 3 つの語が、どれもマーカーの要素になる（表の中は照合しない）
+  const avoided = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-term.mdmark-term-avoided"),
+  ];
+  expect(avoided.map((term) => term.textContent)).toEqual([
+    "作業場",
+    "ワーク場",
+    "草稿",
+  ]);
+  expect(el.querySelector("table .mdmark-term")).toBeNull();
+  // フォーカスすると、「代わりの用語」の下に代わりの用語の語と意味が出る
+  const replacementOf = (term: HTMLElement): string[] => {
+    const tip = document.getElementById(
+      term.getAttribute("aria-describedby") ?? "",
+    ) as HTMLElement;
+    term.focus();
+    expect(isOpen(tip)).toBe(true);
+    expect(
+      [...tip.querySelectorAll(".mdmark-term-tip-heading")].map(
+        (heading) => heading.textContent,
+      ),
+    ).toEqual(["代わりの用語"]);
+    return [
+      find<HTMLElement>(tip, ".mdmark-term-tip-replacement").textContent ?? "",
+      find<HTMLElement>(tip, ".mdmark-term-tip-meaning").textContent ?? "",
+    ];
+  };
+  // 索引の用語が、表の用語より先になる
+  expect(replacementOf(avoided[0] as HTMLElement)).toEqual([
+    "フォルダ",
+    "ファイルの入れ物",
+  ]);
+  // 描く文書の表より、索引の `docs` で先に並ぶほかの文書の表が先になる
+  expect(replacementOf(avoided[1] as HTMLElement)).toEqual([
+    "ワークスペース",
+    "作業の置き場所",
+  ]);
+  // 描く文書の表だけが持つやめた言い方は、描く文書の表の用語になる
+  expect(replacementOf(avoided[2] as HTMLElement)).toEqual([
+    "下書き",
+    "公開前の文書",
+  ]);
 });
 
 /** 参照の表: `arch` を `api`・`guide` が参照している */
@@ -3045,6 +3285,139 @@ test("test_error_when_part_module_unavailable", async () => {
   expect(store.load).not.toHaveBeenCalled();
 });
 
+/** ツールチップの置く側を確かめる索引: 用語 `索引` */
+const PLACEMENT_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [{ id: "arch", path: "設計/arch.md", title: "アーキテクチャ" }],
+  terms: [
+    {
+      id: "index",
+      term: "索引",
+      meaning: "文書と用語を並べた YAML のファイル",
+    },
+  ],
+};
+
+/** ツールチップの置く側を確かめる文書: 1 行目の用語、2 つ目の節の用語・`tip` を持つ線のフロー図・`data-hint` を持つ `div`。`tail` を渡すと、末尾に用語を足す */
+function placementMarkdown(options: { tail: boolean }): string {
+  const filler = Array.from({ length: 80 }, (_, i) => `詰め物の段落 ${i}\n`);
+  return [
+    "索引を 1 行目に置く。",
+    "",
+    "## 節",
+    "",
+    "索引を 2 つ目の節に置く。",
+    "",
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapHtml(
+      '<div data-hint="ブロックの説明" style="width: 20rem; padding: 1rem">ブロックの文字</div>',
+    ),
+    ...(options.tail ? [...filler, "## 末尾", "", "末尾の索引。", ""] : []),
+  ].join("\n");
+}
+
+/** 持ち主が指すツールチップ（用語は同じ枠の中のツールチップ） */
+function tooltipOf(owner: HTMLElement): HTMLElement {
+  const tip = owner.classList.contains("mdmark-term")
+    ? owner.closest(".mdmark-term-wrap")?.querySelector(".mdmark-term-tip")
+    : document.getElementById(owner.getAttribute("aria-describedby") ?? "");
+  if (!(tip instanceof HTMLElement)) {
+    throw new Error("ツールチップが無い");
+  }
+  return tip;
+}
+
+/** 持ち主を画面の中ほど（`block` が `end` なら下端）へ送り、ポインターを乗せて、持ち主とツールチップの枠を返す */
+async function hoverAndMeasure(
+  owner: HTMLElement,
+  block: "center" | "end",
+): Promise<{ owner: DOMRect; tip: DOMRect }> {
+  owner.scrollIntoView({ block });
+  await userEvent.hover(owner);
+  return {
+    owner: owner.getBoundingClientRect(),
+    tip: tooltipOf(owner).getBoundingClientRect(),
+  };
+}
+
+/** 文書の持ち主: 用語の並びと、2 つ目の節の線のラベル・ヒントの印 */
+function placementOwners(el: HTMLElement): {
+  terms: HTMLElement[];
+  label: HTMLElement;
+  mark: HTMLElement;
+} {
+  return {
+    terms: [...el.querySelectorAll<HTMLElement>(".mdmark-term")],
+    label: find<HTMLElement>(el, ".mdmark-diagram-label.has-tip"),
+    mark: find<HTMLElement>(el, ".mdmark-hint-mark"),
+  };
+}
+
+// ツールチップを持ち主の上に出し、上に収まらない語だけ下に出す（正常系（ツールチップを上に出す））
+test("test_normal_when_tooltip_above", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: placementMarkdown({ tail: false }),
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+  });
+  const { terms, label, mark } = placementOwners(el);
+  const [firstTerm, sectionTerm] = terms as [HTMLElement, HTMLElement];
+  // 実行・検証: 2 つ目の節の用語・線のラベル・ヒントの印は、持ち主の上に出る
+  for (const owner of [sectionTerm, label, mark]) {
+    const rects = await hoverAndMeasure(owner, "center");
+    expect(rects.tip.bottom).toBeLessThanOrEqual(rects.owner.top);
+  }
+  // 実行・検証: 1 行目の用語は上に収まらないので、語の下に出る
+  window.scrollTo(0, 0);
+  await userEvent.hover(firstTerm);
+  const termRect = firstTerm.getBoundingClientRect();
+  const tipRect = tooltipOf(firstTerm).getBoundingClientRect();
+  expect(tipRect.height).toBeGreaterThan(0);
+  expect(tipRect.top).toBeGreaterThanOrEqual(termRect.bottom);
+  expect(tipRect.top).toBeGreaterThanOrEqual(0);
+});
+
+// tooltips.placement が bottom のときは持ち主の下に出し、下に収まらない語だけ上に出す。知らない値は top として扱う（正常系（ツールチップを下に出す設定））
+test("test_normal_when_tooltip_placement_bottom", async () => {
+  // 準備
+  const markdown = placementMarkdown({ tail: true });
+  const el = createElement();
+  await mountTracked(el, {
+    markdown,
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+    config: { tooltips: { placement: "bottom" } },
+  });
+  const { terms, label, mark } = placementOwners(el);
+  const [, sectionTerm, tailTerm] = terms as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  // 実行・検証: 2 つ目の節の用語・線のラベル・ヒントの印は、持ち主の下に出る
+  for (const owner of [sectionTerm, label, mark]) {
+    const rects = await hoverAndMeasure(owner, "center");
+    expect(rects.tip.top).toBeGreaterThanOrEqual(rects.owner.bottom);
+  }
+  // 実行・検証: 画面の下端にある末尾の用語は下に収まらないので、語の上に出る
+  const tail = await hoverAndMeasure(tailTerm, "end");
+  expect(tail.tip.bottom).toBeLessThanOrEqual(tail.owner.top);
+  expect(tail.tip.bottom).toBeLessThanOrEqual(window.innerHeight);
+  // 実行・検証: 知らない値は top として扱い、語の上に出る
+  const el2 = createElement();
+  await mountTracked(el2, {
+    markdown,
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+    config: { tooltips: { placement: "left" } },
+  });
+  const unknownTerm = placementOwners(el2).terms[1] as HTMLElement;
+  const unknown = await hoverAndMeasure(unknownTerm, "center");
+  expect(unknown.tip.bottom).toBeLessThanOrEqual(unknown.owner.top);
+});
+
 /** 元の行番号を持つ要素の位置と色 */
 function snapshotBlocks(el: Element): Array<{
   top: number;
@@ -3182,4 +3555,147 @@ test("test_normal_when_parent_class_dark_printed", async () => {
   } finally {
     await resetThemed();
   }
+});
+
+// 色分けの対象のコードブロックがあるときだけ、本体と使う言語のモジュールを読んで、行に分けた形と分けない形の両方を色分けする（正常系）
+test("test_normal_when_syntax_highlighted", async () => {
+  // 準備
+  const el = createElement();
+  const config = { syntax: { url: highlightUrl("highlighted") } };
+  // 実行
+  await mountTracked(el, { markdown: HIGHLIGHT_MARKDOWN, config });
+  const before = [...el.querySelectorAll("pre, code")].map((node) => ({
+    tag: node.tagName,
+    attributes: node
+      .getAttributeNames()
+      .map((name) => [name, node.getAttribute(name)]),
+    text: node.textContent,
+  }));
+  const lineCount = el.querySelectorAll(".mdmark-code-line").length;
+  const dataLines = [...el.querySelectorAll(".mdmark-code-line")].map((line) =>
+    line.getAttribute("data-line"),
+  );
+  const [ts, yml, text] = [...el.querySelectorAll("code")];
+  // 検証
+  await vi.waitFor(() => {
+    expect(coloredLanguages(el)).toHaveLength(2);
+  });
+  const base = `${location.origin}${highlightUrl("highlighted")}`;
+  expect(highlightRequests("highlighted")).toEqual(
+    [
+      `${base}core.min.js`,
+      `${base}languages/typescript.min.js`,
+      `${base}languages/yaml.min.js`,
+    ].sort(),
+  );
+  expect(coloredLanguages(el)).toEqual(["language-ts", "language-yml"]);
+  expect(text?.querySelector('span[class^="hljs-"]')).toBeNull();
+  expect(ts?.querySelector(".hljs-keyword")?.textContent).toBe("const");
+  const lines = [...(yml?.querySelectorAll(".mdmark-code-line") ?? [])];
+  expect(lines).toHaveLength(lineCount);
+  expect(lines.map((line) => line.getAttribute("data-line"))).toEqual(
+    dataLines,
+  );
+  for (const line of lines.slice(1)) {
+    const code = find(line, ".mdmark-code-text");
+    expect(
+      code.querySelector(":scope > .hljs-string"),
+      line.outerHTML,
+    ).not.toBeNull();
+  }
+  const after = [...el.querySelectorAll("pre, code")].map((node) => ({
+    tag: node.tagName,
+    attributes: node
+      .getAttributeNames()
+      .map((name) => [name, node.getAttribute(name)]),
+    text: node.textContent,
+  }));
+  expect(after).toEqual(before);
+});
+
+// 色分けの対象が無い文書と、機能 `syntax` を外した文書では、色分けのライブラリを読まない（正常系）
+test("test_normal_when_no_syntax_target", async () => {
+  // 準備
+  const config = { syntax: { url: highlightUrl("no-target") } };
+  const plain = createElement();
+  const disabled = createElement();
+  const plainMarkdown = [
+    "```",
+    "言語の無いコード",
+    "```",
+    "",
+    "```tree",
+    "├── a.ts",
+    "└── b.ts",
+    "```",
+    "",
+  ].join("\n");
+  const disabledMarkdown = [
+    "<!-- features: -syntax -->",
+    "",
+    "```ts",
+    "const count: number = 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(plain, { markdown: plainMarkdown, config });
+  await mountTracked(disabled, { markdown: disabledMarkdown, config });
+  // 検証: 読み込みは描いた後に始まるため、少し待ってから要求が無いことを確かめる
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(highlightRequests("no-target")).toEqual([]);
+  expect(coloredLanguages(plain)).toEqual([]);
+  expect(coloredLanguages(disabled)).toEqual([]);
+  expect(find(disabled, "code").textContent).toBe("const count: number = 1;\n");
+});
+
+// 色分けのライブラリの本体を読めないとき、コードブロックを色分けせずに残す（異常系）
+test("test_error_when_highlighter_not_found", async () => {
+  // 準備
+  const el = createElement();
+  const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const config = { syntax: { url: MISSING_HIGHLIGHT_URL } };
+  const { mount } = await loadBuilt();
+  let handle: MountHandle | undefined;
+  // 実行
+  expect(() => {
+    handle = mount(el, { markdown: HIGHLIGHT_MARKDOWN, config });
+  }).not.toThrow();
+  if (handle) {
+    handles.push(handle);
+  }
+  const before = codeHtmls(el);
+  // 検証
+  await vi.waitFor(() => {
+    expect(errorSpy).toHaveBeenCalled();
+  });
+  expect(codeHtmls(el)).toEqual(before);
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  const output = errorSpy.mock.calls.flat().map(String).join("\n");
+  expect(output).toContain(
+    `${location.origin}${MISSING_HIGHLIGHT_URL}core.min.js`,
+  );
+});
+
+// 言語のモジュールの一部を読めないとき、読めた言語のコードブロックだけを色分けする（異常系）
+test("test_error_when_language_module_not_found", async () => {
+  // 準備
+  const el = createElement();
+  const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const config = { syntax: { url: highlightUrl("no-yaml") } };
+  // 実行
+  await mountTracked(el, { markdown: HIGHLIGHT_MARKDOWN, config });
+  const [, yml] = [...el.querySelectorAll("code")];
+  const ymlBefore = yml?.outerHTML;
+  // 検証
+  await vi.waitFor(() => {
+    expect(coloredLanguages(el)).toEqual(["language-ts"]);
+  });
+  await vi.waitFor(() => {
+    expect(errorSpy).toHaveBeenCalled();
+  });
+  expect(yml?.outerHTML).toBe(ymlBefore);
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  const output = errorSpy.mock.calls.flat().map(String).join("\n");
+  expect(output).toContain("languages/yaml.min.js");
 });

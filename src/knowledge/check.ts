@@ -1,13 +1,26 @@
 import type { Token } from "markdown-it";
 import { DEFAULT_FEATURES } from "../config.ts";
-import { findWords, forEachInline, matchableChildren } from "./dictionary.ts";
 import {
+  findWords,
+  forEachInline,
+  matchableChildren,
+  normalizeWord,
+} from "./dictionary.ts";
+import {
+  type MdmarkIndex,
   type MdmarkIndexDoc,
   type MdmarkIndexTerm,
   normalizeIndex,
+  readRelated,
 } from "./index-shape.ts";
 import { normalizePath } from "./paths.ts";
-import { parseDocument } from "./references.ts";
+import { linkedPaths, parseDocument } from "./references.ts";
+import {
+  buildTagVocabulary,
+  nearestTag,
+  readDocTag,
+  resolveTag,
+} from "./tags.ts";
 
 /** `checkIndex` が返すずれ 1 件 */
 export type MdmarkIndexIssue = {
@@ -21,8 +34,17 @@ export type MdmarkIndexIssue = {
     | "missing_doc"
     | "orphan_doc"
     | "broken_ref"
+    | "untyped_related"
+    | "one_sided_change_together"
+    | "related_link_overlap"
+    | "missed_change_together"
     | "duplicate_term"
-    | "avoided_term";
+    | "avoided_term"
+    | "duplicate_tag"
+    | "tag_alias_conflict"
+    | "broken_tag_replacement"
+    | "unregistered_tag"
+    | "deprecated_tag";
   /** ずれの内容と直し方 */
   message: string;
 };
@@ -40,29 +62,34 @@ type TermSite = {
 /** 索引のずれを点検する既定の索引のファイル名 */
 const DEFAULT_INDEX_FILE = "index.yaml";
 
-/** ずれに書く用語の場所を、`{ファイル} の {場所}` の形にする */
+/** 正規化した語に当たる、用語の語か別名の位置 */
+function positionOfWord(site: TermSite, word: string): number {
+  return site.words.findIndex((candidate) => normalizeWord(candidate) === word);
+}
+
+/** ずれに書く用語の場所を、`{ファイル} の {場所}` の形にする。`word` は正規化した語 */
 function describeSite(site: TermSite, word: string): string {
-  const position = Math.max(site.words.indexOf(word), 0);
+  const position = Math.max(positionOfWord(site, word), 0);
   return `\`${site.file}\` の \`${site.wheres[position]}\``;
 }
 
-/** 重なった用語のずれを返す。後に出た用語ごとに、語か別名が重なる先の用語のうち最初の 1 つとの組を 1 件にする */
+/** 重なった用語のずれを返す。後に出た用語ごとに、語か別名が正規化した後に重なる先の用語のうち最初の 1 つとの組を 1 件にする */
 function duplicateTerms(sites: TermSite[]): MdmarkIndexIssue[] {
   const issues: MdmarkIndexIssue[] = [];
   sites.forEach((site, position) => {
-    for (const word of site.words) {
+    for (const [wordPosition, word] of site.words.entries()) {
+      const key = normalizeWord(word);
       const earlier = sites
         .slice(0, position)
-        .find((candidate) => candidate.words.includes(word));
+        .find((candidate) => positionOfWord(candidate, key) !== -1);
       if (!earlier) {
         continue;
       }
-      const where = site.wheres[site.words.indexOf(word)] ?? "";
       issues.push({
         file: site.file,
-        where,
+        where: site.wheres[wordPosition] ?? "",
         kind: "duplicate_term",
-        message: `用語 \`${word}\` が ${describeSite(earlier, word)} と重なっています。どちらかを消すか、語を変えてください。`,
+        message: `用語 \`${word}\` が ${describeSite(earlier, key)} と重なっています。どちらかを消すか、語を変えてください。`,
       });
       // 1 つの用語につき、重なりは最初の 1 件だけ返す
       break;
@@ -98,12 +125,13 @@ export function findAvoidedTerms(options: {
   terms: AvoidableTerm[];
 }): MdmarkIndexIssue[] {
   const { file, tokens, terms } = options;
-  // やめた言い方から、代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
-  const avoidedBy = new Map<string, string>();
+  // 正規化したやめた言い方から、記載した表記と代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
+  const avoidedBy = new Map<string, { written: string; term: string }>();
   for (const term of terms) {
     for (const word of term.avoid ?? []) {
-      if (!avoidedBy.has(word)) {
-        avoidedBy.set(word, term.term);
+      const key = normalizeWord(word);
+      if (key !== "" && !avoidedBy.has(key)) {
+        avoidedBy.set(key, { written: word, term: term.term });
       }
     }
   }
@@ -112,7 +140,9 @@ export function findAvoidedTerms(options: {
   }
   // 用語の語・別名を先に渡し、同じ長さならそちらを当てる。やめた言い方の一部に当たる用語の語を、やめた言い方として数えないため
   const termWords = new Set(
-    terms.flatMap((term) => [term.term, ...(term.aliases ?? [])]),
+    terms.flatMap((term) =>
+      [term.term, ...(term.aliases ?? [])].map(normalizeWord),
+    ),
   );
   const words = [...termWords, ...avoidedBy.keys()];
   const rows = rowStarts(tokens);
@@ -152,11 +182,235 @@ export function findAvoidedTerms(options: {
       file,
       where: `${line} 行目`,
       kind: "avoided_term" as const,
-      message: `\`${word}\` はやめた言い方です。用語 \`${avoidedBy.get(word)}\` に書き換えてください。`,
+      message: `\`${avoidedBy.get(word)?.written}\` はやめた言い方です。用語 \`${avoidedBy.get(word)?.term}\` に書き換えてください。`,
     }));
 }
 
-/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`duplicate_term`・`avoided_term` のずれをこの順で返す */
+/** 索引のタグの語彙と文書のタグから、`duplicate_tag`・`tag_alias_conflict`・`broken_tag_replacement`・`unregistered_tag`・`deprecated_tag` のずれをこの順で返す。語彙が無い索引では空 */
+export function findTagIssues(input: {
+  /** 形に合う要素だけの索引 */
+  index: MdmarkIndex;
+  /** 索引の YAML を読んだ値。ずれの場所は、この値の `tags`・`docs` の並びで数える */
+  raw: unknown;
+  /** ずれの `file` に出す索引のファイルの名前 */
+  indexFile: string;
+}): MdmarkIndexIssue[] {
+  const { index, raw, indexFile } = input;
+  const vocabulary = buildTagVocabulary(index.tags);
+  if (vocabulary === undefined) {
+    return [];
+  }
+  const tags = index.tags ?? [];
+  const rawTags = (raw as { tags?: unknown }).tags;
+  const rawDocs = (raw as { docs?: unknown }).docs;
+  const tagPosition = (tag: object): number =>
+    Array.isArray(rawTags) ? rawTags.indexOf(tag) : -1;
+  const issue = (
+    where: string,
+    kind: MdmarkIndexIssue["kind"],
+    message: string,
+  ): MdmarkIndexIssue => ({ file: indexFile, where, kind, message });
+
+  // 先に出た同じ `name` と重なる 2 つ目以降のタグ
+  const duplicates: MdmarkIndexIssue[] = [];
+  const firstOf = new Map<string, number>();
+  for (const tag of tags) {
+    const position = tagPosition(tag);
+    const first = firstOf.get(tag.name);
+    if (first === undefined) {
+      firstOf.set(tag.name, position);
+      continue;
+    }
+    duplicates.push(
+      issue(
+        `tags[${position}].name`,
+        "duplicate_tag",
+        `タグ \`${tag.name}\` が \`tags[${first}]\` と重なっています。どちらかを消すか、名前を変えてください。`,
+      ),
+    );
+  }
+
+  // 別名が、ほかのタグの `name` か、先のほかのタグの別名と重なる
+  const conflicts: MdmarkIndexIssue[] = [];
+  tags.forEach((tag, position) => {
+    (tag.aliases ?? []).forEach((alias, aliasPosition) => {
+      const target =
+        tags.find((other) => other.name !== tag.name && other.name === alias) ??
+        tags
+          .slice(0, position)
+          .find(
+            (other) =>
+              other.name !== tag.name && (other.aliases ?? []).includes(alias),
+          );
+      if (target) {
+        conflicts.push(
+          issue(
+            `tags[${tagPosition(tag)}].aliases[${aliasPosition}]`,
+            "tag_alias_conflict",
+            `別名 \`${alias}\` がタグ \`${target.name}\` と重なっています。どちらかの別名を消すか、変えてください。`,
+          ),
+        );
+      }
+    });
+  });
+
+  // 振り替え先が語彙の `name` に無い
+  const broken: MdmarkIndexIssue[] = [];
+  for (const tag of tags) {
+    if (tag.deprecated !== undefined && !vocabulary.order.has(tag.deprecated)) {
+      broken.push(
+        issue(
+          `tags[${tagPosition(tag)}].deprecated`,
+          "broken_tag_replacement",
+          `振り替え先 \`${tag.deprecated}\` が語彙にありません。語彙にあるタグの名前に直すか、語彙に \`${tag.deprecated}\` を追加してください。`,
+        ),
+      );
+    }
+  }
+
+  // 文書のタグが語彙に無い・やめたタグ
+  const used: MdmarkIndexIssue[] = [];
+  for (const doc of index.docs) {
+    const docPosition = Array.isArray(rawDocs) ? rawDocs.indexOf(doc) : -1;
+    (doc.tags ?? []).forEach((docTag, tagPos) => {
+      const { name } = readDocTag(docTag);
+      const where = `docs[${docPosition}].tags[${tagPos}]`;
+      const found = resolveTag({ vocabulary, name });
+      if (found === undefined) {
+        const near = nearestTag({ vocabulary, tag: name });
+        used.push(
+          issue(
+            where,
+            "unregistered_tag",
+            near === undefined
+              ? `タグ \`${name}\` が語彙になく、近いタグもありません。語彙に \`${name}\` を追加するか、語彙にあるタグに直してください。`
+              : `タグ \`${name}\` が語彙にありません。近いタグは \`${near}\` です。\`${near}\` に直すか、語彙に \`${name}\` を追加してください。`,
+          ),
+        );
+      } else if (found.deprecated !== undefined) {
+        used.push(
+          issue(
+            where,
+            "deprecated_tag",
+            `タグ \`${name}\` はやめたタグです。\`${found.deprecated}\` に直してください。`,
+          ),
+        );
+      }
+    });
+  }
+  return [...duplicates, ...conflicts, ...broken, ...used];
+}
+
+/** 文書が `change_together` で記載している関連の相手の `id` の並び */
+function changeTogetherTargets(doc: MdmarkIndexDoc): string[] {
+  return (doc.related ?? [])
+    .map(readRelated)
+    .filter((related) => related.type === "change_together")
+    .map((related) => related.to);
+}
+
+/** 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返す。同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び */
+export function findRelatedIssues(options: {
+  /** 検査で合う要素だけにした索引 */
+  index: MdmarkIndex;
+  /** 文書の `id` から、本文のリンクが指す文書のパス。本文を持たない文書はキーを持たない */
+  links: Record<string, string[]>;
+  /** ずれの `file` に出す索引のファイルの名前 */
+  indexFile: string;
+  /** `where` に出す文書の位置。省くと `index.docs` の位置 */
+  positionOf?: (doc: MdmarkIndexDoc) => number;
+}): MdmarkIndexIssue[] {
+  const { index, links, indexFile } = options;
+  const positionOf =
+    options.positionOf ?? ((doc: MdmarkIndexDoc) => index.docs.indexOf(doc));
+  const byId = new Map(index.docs.map((doc) => [doc.id, doc]));
+  const untyped: MdmarkIndexIssue[] = [];
+  const oneSided: MdmarkIndexIssue[] = [];
+  const overlap: MdmarkIndexIssue[] = [];
+  for (const doc of index.docs) {
+    const position = positionOf(doc);
+    const linked = Object.hasOwn(links, doc.id)
+      ? new Set((links[doc.id] ?? []).map(normalizePath))
+      : undefined;
+    (doc.related ?? []).forEach((item, relatedPosition) => {
+      const where = `docs[${position}].related[${relatedPosition}]`;
+      if (typeof item === "string") {
+        untyped.push({
+          file: indexFile,
+          where,
+          kind: "untyped_related",
+          message: `\`${where}\`（\`${item}\`）が文字列です。\`to\`・\`type\`・\`when\` を持つ関連に書き換えてください。`,
+        });
+      }
+      const related = readRelated(item);
+      const target = byId.get(related.to);
+      if (target === undefined) {
+        return;
+      }
+      if (related.type === "change_together") {
+        if (!changeTogetherTargets(target).includes(doc.id)) {
+          oneSided.push({
+            file: indexFile,
+            where,
+            kind: "one_sided_change_together",
+            message: `\`${doc.id}\` が \`${target.id}\` を \`change_together\` で記載していますが、\`${target.id}\` は \`${doc.id}\` を記載していません。\`${target.id}\` の \`related\` にも \`${doc.id}\` への \`change_together\` を記載してください。`,
+          });
+        }
+        return;
+      }
+      if (linked?.has(normalizePath(target.path))) {
+        overlap.push({
+          file: indexFile,
+          where,
+          kind: "related_link_overlap",
+          message: `\`${doc.id}\` の本文が \`${target.id}\`（\`${target.path}\`）をリンクしているため、\`${where}\` と重なります。\`related\` から外すか、本文のリンクを外してください。`,
+        });
+      }
+    });
+  }
+  return [...untyped, ...oneSided, ...overlap];
+}
+
+/** `change_together` の組のうち、片方の文書だけが `changedPaths` にある組を `missed_change_together` で返す。組は向きを問わず 1 回だけ確かめ、先に記載した側の文書の索引の並びで返す */
+export function findMissedChangeTogether(options: {
+  /** 検査で合う要素だけにした索引 */
+  index: MdmarkIndex;
+  /** 比べる基準から変わった文書のパス */
+  changedPaths: string[];
+}): MdmarkIndexIssue[] {
+  const { index } = options;
+  const changed = new Set(options.changedPaths.map(normalizePath));
+  const byId = new Map(index.docs.map((doc) => [doc.id, doc]));
+  const checked = new Set<string>();
+  const issues: MdmarkIndexIssue[] = [];
+  for (const doc of index.docs) {
+    for (const id of changeTogetherTargets(doc)) {
+      const target = byId.get(id);
+      const pair = [doc.id, id].sort().join("\n");
+      if (target === undefined || checked.has(pair)) {
+        continue;
+      }
+      checked.add(pair);
+      const docChanged = changed.has(normalizePath(doc.path));
+      const targetChanged = changed.has(normalizePath(target.path));
+      if (docChanged === targetChanged) {
+        continue;
+      }
+      const [changedDoc, unchangedDoc] = docChanged
+        ? [doc, target]
+        : [target, doc];
+      issues.push({
+        file: unchangedDoc.path,
+        where: "",
+        kind: "missed_change_together",
+        message: `\`${changedDoc.path}\` が変わっていますが、\`change_together\` の相手の \`${unchangedDoc.path}\` は変わっていません。\`${unchangedDoc.path}\` も直すか確かめてください。`,
+      });
+    }
+  }
+  return issues;
+}
+
+/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term`・`duplicate_tag`・`tag_alias_conflict`・`broken_tag_replacement`・`unregistered_tag`・`deprecated_tag` のずれをこの順で返す */
 export function checkIndex(input: {
   /** 索引の値（形を確かめる前のもの） */
   index: unknown;
@@ -164,6 +418,8 @@ export function checkIndex(input: {
   documents: Record<string, string>;
   /** ずれの `file` に出す索引のファイルの名前（既定 `index.yaml`） */
   indexFile?: string;
+  /** 比べる基準から変わった文書のパス。渡したときだけ `change_together` の直し忘れを確かめる */
+  changedPaths?: string[];
 }): MdmarkIndexIssue[] {
   const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
   const { index, problems } = normalizeIndex(input.index);
@@ -205,13 +461,16 @@ export function checkIndex(input: {
         message: `\`${doc.path}\` が見つかりません。文書を戻すか、索引の \`docs[${position}]\` を消してください。`,
       });
     }
-    (doc.related ?? []).forEach((id, relatedPosition) => {
-      if (!ids.has(id)) {
+    (doc.related ?? []).forEach((item, relatedPosition) => {
+      const { to } = readRelated(item);
+      if (!ids.has(to)) {
+        // オブジェクトの要素は、相手を指す `to` の場所を示す
+        const where = `docs[${position}].related[${relatedPosition}]${typeof item === "string" ? "" : ".to"}`;
         broken.push({
           file: indexFile,
-          where: `docs[${position}].related[${relatedPosition}]`,
+          where,
           kind: "broken_ref",
-          message: `\`related\` の \`${id}\` が索引の文書にありません。\`docs[${position}].related[${relatedPosition}]\` を直すか消してください。`,
+          message: `\`related\` の \`${to}\` が索引の文書にありません。\`${where}\` を直すか消してください。`,
         });
       }
     });
@@ -229,6 +488,7 @@ export function checkIndex(input: {
 
   // 文書は先に全て読む（やめた言い方は、表を持たない文書の本文からも探すため）
   const parsedDocs: Array<{
+    doc: MdmarkIndexDoc;
     path: string;
     parsed: ReturnType<typeof parseDocument>;
   }> = [];
@@ -236,6 +496,7 @@ export function checkIndex(input: {
     const entry = documents.get(normalizePath(doc.path));
     if (entry) {
       parsedDocs.push({
+        doc,
         path: entry.path,
         parsed: parseDocument({
           body: entry.body,
@@ -261,14 +522,21 @@ export function checkIndex(input: {
     };
   });
   const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
-  for (const { path, parsed } of parsedDocs) {
-    for (const { entry: term, line, avoid } of parsed.glossary) {
+  // 本文のリンクが指す文書のパス（関連と重なるかの確認に使う）
+  const links: Record<string, string[]> = {};
+  for (const { doc, path, parsed } of parsedDocs) {
+    links[doc.id] = [...linkedPaths(doc, parsed.tokens)];
+    for (const { entry: term, line } of parsed.glossary) {
       sites.push({
         file: path,
         words: [term.term, ...term.aliases],
         wheres: [term.term, ...term.aliases].map(() => `${line} 行目`),
       });
-      avoidable.push({ term: term.term, aliases: term.aliases, avoid });
+      avoidable.push({
+        term: term.term,
+        aliases: term.aliases,
+        avoid: term.avoid ?? [],
+      });
     }
   }
   // やめた言い方は、索引の `docs` の順に文書ごとに探す
@@ -280,7 +548,12 @@ export function checkIndex(input: {
     ...missing,
     ...orphan,
     ...broken,
+    ...findRelatedIssues({ index, links, indexFile, positionOf }),
+    ...(input.changedPaths === undefined
+      ? []
+      : findMissedChangeTogether({ index, changedPaths: input.changedPaths })),
     ...duplicateTerms(sites),
     ...avoided,
+    ...findTagIssues({ index, raw: input.index, indexFile }),
   ];
 }

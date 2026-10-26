@@ -5,17 +5,17 @@ import { useTempDirs, writeFiles } from "../cli.ts";
 import {
   builtPluginDir,
   callTool,
-  copyBuiltPlugin,
-  useMcpClients,
+  copyBuiltPackage,
+  useMcpServers,
 } from "../plugin.ts";
 
 const createTempDir = useTempDirs();
-const { connectInMemory, connectStdio } = useMcpClients();
+const { connectHttp } = useMcpServers();
 
-// 索引の名前 2 つの本文を返す。束ねたサーバーを子プロセスで起動してつなぐ（正常系）
+// 索引の名前 2 つの本文を返す（正常系）
 test("test_normal", async () => {
   // 準備
-  const client = await connectStdio({ projectDir: await createTempDir() });
+  const client = await connectHttp();
   const index = JSON.parse(
     await readFile(join(builtPluginDir(), "guide", "index.json"), "utf8"),
   ) as { guides: { name: string; page: string }[] };
@@ -37,10 +37,7 @@ test("test_normal", async () => {
 // 索引に無い名前を、近い名前を添えてエラーにする（異常系）
 test("test_error_when_name_unknown", async () => {
   // 準備
-  const client = await connectInMemory({
-    projectDir: await createTempDir(),
-    pluginDir: builtPluginDir(),
-  });
+  const client = await connectHttp();
   // 実行
   const result = await callTool(client, "read_guide", {
     names: ["notatoin", "extension"],
@@ -57,15 +54,15 @@ test("test_error_when_name_unknown", async () => {
 // 本文の合計が上限を超えるときは読まずに分けて呼ぶよう返す（異常系）
 test("test_error_when_result_too_large", async () => {
   // 準備
-  const pluginDir = join(await createTempDir(), "plugin");
-  await copyBuiltPlugin(pluginDir);
+  const packageDir = await createTempDir();
+  await copyBuiltPackage(packageDir);
   const entry = (name: string) => ({
     name,
     when: `${name} を書くとき`,
     summary: `${name} の概要`,
     page: `docs/${name}.md`,
   });
-  await writeFiles(join(pluginDir, "guide"), {
+  await writeFiles(join(packageDir, "plugin", "guide"), {
     "index.json": JSON.stringify({
       schema: 1,
       guides: [entry("large-a"), entry("large-b")],
@@ -73,10 +70,7 @@ test("test_error_when_result_too_large", async () => {
     "docs/large-a.md": "あ".repeat(30_000),
     "docs/large-b.md": "あ".repeat(30_000),
   });
-  const client = await connectInMemory({
-    projectDir: await createTempDir(),
-    pluginDir,
-  });
+  const client = await connectHttp({ packageDir });
   // 実行
   const result = await callTool(client, "read_guide", {
     names: ["large-a", "large-b"],

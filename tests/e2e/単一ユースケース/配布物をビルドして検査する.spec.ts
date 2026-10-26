@@ -129,8 +129,15 @@ test("test_normal", async () => {
   expect(declarations).toContain("MdmarkExtension");
   expect(await readBuiltVersion()).toBe(CLONE_VERSION);
   // Claude Code のプラグインの生成物と、バージョン
-  for (const path of ["server/mcp.js", "guide/index.json"]) {
+  for (const path of [
+    "scripts/session-start.js",
+    "scripts/pre-tool-use.js",
+    "guide/index.json",
+  ]) {
     expect(existsSync(join(root, "plugin", path)), path).toBe(true);
+  }
+  for (const path of ["server", "dist"]) {
+    expect(existsSync(join(root, "plugin", path)), path).toBe(false);
   }
   expect(await readPluginVersion()).toBe(CLONE_VERSION);
   expect((await run("npm", ["test"])).code).toBe(0);
@@ -213,9 +220,31 @@ test("test_error_when_guide_index_too_long", async () => {
   // 検証
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
   expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
   expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
+});
+
+// 対応ブラウザの下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常シナリオ）
+// 後のテストが同じ作業ツリーを使うため、足した行は終わりに元へ戻す
+test("test_error_when_api_missing_in_baseline_browser", async () => {
+  // 準備
+  const entry = join(root, "src", "index.ts");
+  const original = await readFile(entry, "utf8");
+  await writeFile(entry, `${original}\nnew Intl.Segmenter("ja");\n`);
+  // 実行
+  let result: { code: number; stderr: string };
+  try {
+    result = await run("npm", ["run", "build"]);
+  } finally {
+    await writeFile(entry, original);
+  }
+  // 検証
+  expect(result.code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  for (const expected of ["Intl.Segmenter", "dist/index.js", "Firefox 98"]) {
+    expect(result.stderr).toContain(expected);
+  }
 });
 
 // 最新の版のタグ（シナリオのセットアップの `version.ini` もこの版）

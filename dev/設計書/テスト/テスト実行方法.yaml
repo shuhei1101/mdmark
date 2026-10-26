@@ -26,9 +26,10 @@ layers:
     description: Vitest の `integration-node`（ビルドの入口を子プロセスで流す・ビルドした配布物を Node で読む・Claude Code プラグインの MCP サーバーとフックを流す）と `integration-browser`（ビルドした配布物を Chromium で読む）と `integration-storybook`（部品の描画の口と Storybook を空きポートで立て、ストーリーを Playwright で開く。起動に約 40 秒）の 3 つで流す。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に流す
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
-      - Claude Code プラグインの結合テスト（`tests/integration/ClaudeCodeプラグイン/`）は、ビルドした `plugin/` の MCP サーバーとフックを流す。Claude Code を起動しない
-      - MCP サーバーは `createMcpServer` で作ったサーバーを `InMemoryTransport` で MCP のクライアントとつなぐ。`StdioClientTransport` は、外部ライブラリ『MCP-SDK』の不具合一覧のとおり、束ねたサーバーが起動してツールを返すかを確かめるケースだけに使う（設定ファイルを探す起点は `CLAUDE_PROJECT_DIR` に作業のフォルダーを渡す）
-      - フックは `hooks/hooks.json` の SessionStart のコマンドを、`CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流す
+      - Claude Code プラグインの結合テスト（`tests/integration/ClaudeCodeプラグイン/`）は、ビルドした `dist/cli.js` の MCP サーバーと `plugin/` のフックを流す。Claude Code を起動しない
+      - MCP サーバーは、ビルドした `dist/cli.js` の `serve` を `MDMARK_PORT` に空きポートを渡して子プロセスで起動し、`StreamableHTTPClientTransport` で MCP のクライアントとつなぐ（作業のフォルダーはツールの引数 `project_dir` で渡す）。ポートの上書き・使用中・不正な値を確かめるケースは、`MDMARK_PORT` を指定して起動する
+      - 既定のポートで起動するケース（`serve.test.ts` の `test_normal`）があるため、8782 を別の `mdmark serve` が使っていない
+      - フックは `hooks/hooks.json` の SessionStart と PreToolUse のコマンドを、`CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流す
     run_all: |-
       ```bash
       npm run test:integration

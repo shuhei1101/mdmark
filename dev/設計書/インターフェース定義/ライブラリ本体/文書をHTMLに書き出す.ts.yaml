@@ -112,9 +112,52 @@ flows:
       - 標準エラーに `blocked/guide.html` と直し方が出る
       - '`blocked` が変わっておらず、HTML がどこにも書かれていない'
     test: test_error_when_output_unwritable
+  - name: 正常系（ツールチップを下に出す設定）
+    summary: 設定の `tooltips.placement` を埋める設定に写し、開いた HTML で用語のツールチップを下に出す
+    setup:
+      - name: 下に出す設定
+        description: '`tooltips.placement: bottom` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目の節の段落に出る文書を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 書き出した HTML
+        W->>C: mdmark export {文書}
+        C->>H: tooltips を写した設定を埋めて書く
+        W->>H: 開いて用語にポインターを乗せる
+        H-->>W: 語の下にツールチップを出す
+    expected:
+      - 終了コードが 0
+      - 開いた HTML で、用語のツールチップの `top` が語の `bottom` 以上
+    test: test_normal_when_tooltip_placement
+  - name: 正常系（色分けするコードブロック）
+    summary: 文書が使う言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする
+    setup:
+      - name: 色分けするコードブロックを持つフォルダ
+        description: 言語 `ts` と `python` のコードブロックを 1 つずつ持つ文書と、`syntax.url` に手元の `vendor/highlightjs/es/` を書いた設定
+        notes: '`vendor/highlightjs/es/` には `@highlightjs/cdn-assets@11.12.0` の `es/` を置き、`languages/yaml.min.js` も含める'
+      - name: Mock
+        description: 差し替える依存は無い（`syntax.url` を手元のフォルダに向け、書き出しがネットワークを読まない）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export {文書}
+        C->>C: コードブロックの言語から typescript と python を拾い、本体と 2 言語のモジュールを読む
+        C->>H: 色分けのモジュールを埋めて書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で、標準エラーに警告が無い
+      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と `blob:`・`data:` のほかの要求が 0 件
+      - '`ts` と `python` の `code` の中に class が `hljs-` で始まる `span` がある'
+      - 書き出した HTML に `yaml` の言語のモジュールが埋まっていない（`name:"YAML"` を含まない）
+    test: test_normal_when_syntax_highlighted
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
-side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む
+side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#
 request:
@@ -201,4 +244,10 @@ constraints:
   - item: 開くブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
+  - item: ツールチップを出す場所
+    constraint: 設定の `tooltips.placement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`top`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
+  - item: 埋める色分け
+    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを 1 つずつ ES モジュールとして埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
+    notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確かめた（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
 test_file: tests/integration/lib/export.test.ts

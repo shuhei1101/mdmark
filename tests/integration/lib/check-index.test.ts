@@ -8,6 +8,7 @@ type Built = {
     index: unknown;
     documents: Record<string, string>;
     indexFile?: string;
+    changedPaths?: string[];
   }) => MdmarkIndexIssue[];
 };
 
@@ -39,7 +40,18 @@ test("test_normal", async () => {
     schema: 1,
     docs: [
       { id: "arch", path: "arch.md", title: "アーキテクチャ" },
-      { id: "api", path: "api.md", title: "API", related: ["arch"] },
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        related: [
+          {
+            to: "arch",
+            type: "requires",
+            when: "API の前提の構成を確かめるとき",
+          },
+        ],
+      },
     ],
     terms: [
       { id: "ws", term: "ワークスペース", meaning: "記録を置くフォルダ" },
@@ -52,6 +64,49 @@ test("test_normal", async () => {
   expect(issues).toEqual([]);
 });
 
+// 正規化すると同じになる用語の語・別名を用語の重複に、表記の違うやめた言い方を本文のずれにする（正常系）
+test("test_normal_when_normalized_words", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "手引き" }],
+    terms: [
+      { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
+      {
+        id: "mcp-kana",
+        term: "エムシーピー",
+        aliases: ["ｍｃｐ"],
+        meaning: "MCP の読み",
+      },
+      {
+        id: "ws",
+        term: "ワークスペース",
+        meaning: "記録を置くフォルダ",
+        avoid: ["workplace"],
+      },
+    ],
+  };
+  const documents = { "guide.md": "WorkPlace を開く。\n" };
+  // 実行
+  const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "docs/index.yaml",
+      where: "terms[1].aliases[0]",
+      kind: "duplicate_term",
+    },
+    { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+  ]);
+  expect(issues[0]?.message).toContain("ｍｃｐ");
+  expect(issues[0]?.message).toContain("terms[0].term");
+  expect(issues[1]?.message).toContain("workplace");
+  expect(issues[1]?.message).toContain("ワークスペース");
+});
+
 // 消えた文書・索引に無い文書・切れた id・用語の重複を返す（正常系）
 test("test_normal_when_drift", async () => {
   // 準備
@@ -59,7 +114,14 @@ test("test_normal_when_drift", async () => {
   const index = {
     schema: 1,
     docs: [
-      { id: "api", path: "api.md", title: "API", related: ["gone"] },
+      {
+        id: "api",
+        path: "api.md",
+        title: "API",
+        related: [
+          { to: "gone", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
       { id: "old", path: "old.md", title: "旧" },
       { id: "guide", path: "guide.md", title: "使い方" },
     ],
@@ -96,7 +158,7 @@ test("test_normal_when_drift", async () => {
   const broken = issues.find((issue) => issue.kind === "broken_ref");
   expect(broken).toMatchObject({
     file: "docs/index.yaml",
-    where: "docs[0].related[0]",
+    where: "docs[0].related[0].to",
   });
   expect(broken?.message).toContain("gone");
   expect(
@@ -233,4 +295,157 @@ test("test_normal_when_invalid_schema", async () => {
     }),
   );
   expect(issues.every((issue) => issue.kind === "schema")).toBe(true);
+});
+
+// タグの語彙の重なり・切れた振り替え先・語彙に無いタグ・やめたタグを返す（正常系）
+test("test_normal_when_tag_drift", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        tags: [{ name: "topic:mcp", main: true }, "topic:mcq", "topic:old"],
+      },
+    ],
+    tags: [
+      { name: "topic:mcp", aliases: ["MCP"] },
+      { name: "topic:yaml", aliases: ["MCP"] },
+      { name: "topic:yaml" },
+      { name: "topic:old", deprecated: "topic:mcp" },
+      { name: "topic:gone", deprecated: "topic:none" },
+    ],
+  };
+  const documents = { "a.md": "# A\n" };
+  // 実行
+  const issues = checkIndex({ index, documents });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "index.yaml", where: "tags[2].name", kind: "duplicate_tag" },
+    {
+      file: "index.yaml",
+      where: "tags[1].aliases[0]",
+      kind: "tag_alias_conflict",
+    },
+    {
+      file: "index.yaml",
+      where: "tags[4].deprecated",
+      kind: "broken_tag_replacement",
+    },
+    { file: "index.yaml", where: "docs[0].tags[1]", kind: "unregistered_tag" },
+    { file: "index.yaml", where: "docs[0].tags[2]", kind: "deprecated_tag" },
+  ]);
+  const unregistered = issues.find(
+    (issue) => issue.kind === "unregistered_tag",
+  );
+  expect(unregistered?.message).toContain("topic:mcq");
+  expect(unregistered?.message).toContain("topic:mcp");
+  const deprecated = issues.find((issue) => issue.kind === "deprecated_tag");
+  expect(deprecated?.message).toContain("topic:old");
+  expect(deprecated?.message).toContain("topic:mcp");
+});
+
+// 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返す（正常系（関連がずれる））
+test("test_normal_when_related_drift", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 1,
+    docs: [
+      {
+        id: "a",
+        path: "a.md",
+        title: "A",
+        related: [
+          {
+            to: "b",
+            type: "change_together",
+            when: "索引の Schema を変えるとき",
+          },
+          { to: "c", type: "references", when: "使い方を確かめるとき" },
+        ],
+      },
+      { id: "b", path: "b.md", title: "B" },
+      { id: "c", path: "c.md", title: "C", related: ["a"] },
+    ],
+  };
+  // `a.md` の本文が `c.md` へリンクする
+  const documents = {
+    "a.md": "# A\n\n[C](c.md)\n",
+    "b.md": "# B\n",
+    "c.md": "# C\n",
+  };
+  // 実行
+  const issues = checkIndex({ index, documents });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "index.yaml",
+      where: "docs[2].related[0]",
+      kind: "untyped_related",
+    },
+    {
+      file: "index.yaml",
+      where: "docs[0].related[0]",
+      kind: "one_sided_change_together",
+    },
+    {
+      file: "index.yaml",
+      where: "docs[0].related[1]",
+      kind: "related_link_overlap",
+    },
+  ]);
+  expect(issues[1]?.message).toContain("b");
+  expect(issues[1]?.message).toContain("a");
+  expect(issues[0]?.message).toContain("to");
+  expect(issues[0]?.message).toContain("type");
+  expect(issues[0]?.message).toContain("when");
+});
+
+// changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す missed_change_together を返す（正常系（change_together の直し忘れ））
+test("test_normal_when_change_together_missed", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const together = (to: string) => [
+    { to, type: "change_together", when: "索引の Schema を変えるとき" },
+  ];
+  const index = {
+    schema: 1,
+    docs: [
+      { id: "a", path: "a.md", title: "A", related: together("b") },
+      { id: "b", path: "b.md", title: "B", related: together("a") },
+      {
+        id: "c",
+        path: "c.md",
+        title: "C",
+        related: [{ to: "a", type: "references", when: "前提を確かめるとき" }],
+      },
+    ],
+  };
+  const documents = { "a.md": "# A\n", "b.md": "# B\n", "c.md": "# C\n" };
+  // 実行
+  const unchecked = checkIndex({ index, documents });
+  const missed = checkIndex({ index, documents, changedPaths: ["a.md"] });
+  const bothChanged = checkIndex({
+    index,
+    documents,
+    changedPaths: ["a.md", "b.md"],
+  });
+  // 検証
+  expect(unchecked).toEqual([]);
+  expect(missed).toHaveLength(1);
+  expect(missed[0]).toMatchObject({
+    file: "b.md",
+    where: "",
+    kind: "missed_change_together",
+  });
+  expect(missed[0]?.message).toContain("a.md");
+  expect(bothChanged).toEqual([]);
 });

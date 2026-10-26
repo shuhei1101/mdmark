@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 import {
   GREET_SOURCE,
@@ -13,6 +14,19 @@ import {
   useTempDirs,
   writeFiles,
 } from "../cli.ts";
+
+/** 色分けのライブラリ（`@highlightjs/cdn-assets@11.12.0` の `es/`）の場所 */
+const HIGHLIGHT_ES_ROOT = fileURLToPath(
+  new URL("../../../node_modules/@highlightjs/cdn-assets/es/", import.meta.url),
+);
+
+/** 色分けのライブラリの本体と、書き出しの試験で使う言語のモジュール（`typescript`・`python` を文書が使い、`yaml` は使わない） */
+const HIGHLIGHT_FILES = [
+  "core.min.js",
+  "languages/typescript.min.js",
+  "languages/python.min.js",
+  "languages/yaml.min.js",
+];
 
 const createTempDir = useTempDirs();
 const browser = useBrowser(createTempDir);
@@ -213,4 +227,112 @@ test("test_error_when_output_unwritable", async () => {
   expect(result.stderr).toContain("確かめて");
   expect(await readFile(join(dir, "blocked"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
+});
+
+// 設定の tooltips を埋める設定に写し、開いた HTML で用語のツールチップを下に出す（正常系（ツールチップを下に出す設定））
+test("test_normal_when_tooltip_placement", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const filler = Array.from({ length: 40 }, (_, i) => `詰め物の段落 ${i}\n`);
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      "tooltips:",
+      "  placement: bottom",
+      "",
+    ].join("\n"),
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: guide",
+      "    path: guide.md",
+      "    title: ガイド",
+      "terms:",
+      "  - id: index",
+      "    term: 索引",
+      "    meaning: 文書と用語を並べた YAML のファイル",
+      "",
+    ].join("\n"),
+    "guide.md": [
+      "# ガイド",
+      "",
+      ...filler,
+      "## 2 つ目の節",
+      "",
+      "索引を読む。",
+      "",
+      ...filler,
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "guide.html"));
+  await page.waitForSelector(".mdmark-term");
+  // 持ち主を画面の中ほどへ送り、ポインターを乗せる
+  const term = page.locator(".mdmark-term");
+  await term.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await term.hover();
+  const rects = await page.evaluate(() => {
+    const word = document.querySelector(".mdmark-term");
+    const tip = document.querySelector(".mdmark-term-tip");
+    return {
+      termBottom: word?.getBoundingClientRect().bottom ?? Number.NaN,
+      tipTop: tip?.getBoundingClientRect().top ?? Number.NaN,
+    };
+  });
+  expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
+  await page.close();
+});
+
+// 文書が使う言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする（正常系（色分けするコードブロック））
+test("test_normal_when_syntax_highlighted", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const vendor: Record<string, string> = {};
+  for (const file of HIGHLIGHT_FILES) {
+    vendor[`vendor/highlightjs/es/${file}`] = await readFile(
+      join(HIGHLIGHT_ES_ROOT, file),
+      "utf8",
+    );
+  }
+  // 使わない言語のモジュールを見分けられる文字が、手元のモジュールにあること
+  expect(vendor["vendor/highlightjs/es/languages/yaml.min.js"]).toContain(
+    'name:"YAML"',
+  );
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "syntax:\n  url: vendor/highlightjs/es/\n",
+    "guide.md": [
+      "# ガイド",
+      "",
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+      "```python",
+      "def greet(name):",
+      "    return name",
+      "```",
+      "",
+    ].join("\n"),
+    ...vendor,
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(result.stderr).toBe("");
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  expect(html).not.toContain('name:"YAML"');
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "guide.html"),
+  );
+  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
+  await page.waitForSelector(
+    'article code.language-python span[class^="hljs-"]',
+  );
+  expect(externalRequests()).toEqual([]);
+  await page.close();
 });

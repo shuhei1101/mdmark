@@ -68,10 +68,10 @@ overview:
       label: 依頼
     - from: cc
       to: plugin
-      label: フック・MCP（標準入出力）
-    - from: plugin
+      label: フック（標準入出力）
+    - from: cc
       to: lib
-      label: 同じ処理を束ねる
+      label: MCP（HTTP。mdmark serve）
   subgraphs:
     - id: mdmark
       label: mdmark
@@ -94,7 +94,7 @@ repository:
     | `migrations/` | 版ごとの移行の手順とスクリプト（`v{版}/`）、出していない版の手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{版}/` を読む（`next/` と `no-steps.yaml` は配布物のビルドだけが読む） | #10 |
     | `guide/` | 使い方集の索引（`index.yaml`。本文は `docs/` のページを指す） | 配布物のビルドが `plugin/guide/` に写し、フックと MCP が読む | #11 |
     | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を載せる） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
-    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`・`package.json`）と、配布物のビルドが書く束ねた MCP サーバー・フック・配布物の写し・使い方集（`dist/` と同じく release と hotfix でだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる | #11 |
+    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが書く束ねたフック・使い方集（`dist/` と同じく release と hotfix でだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる | #11 |
     | `vscode/` | VS Code 拡張機能（独自の `package.json`。版は `vscode-v{版}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX | #22 |
     | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添えるワークフロー | 届けない | #22 |
 
@@ -104,7 +104,7 @@ subsystems:
     scope: lib
     role: Markdown の表示に使う JavaScript と CSS をビルドして配り、同じ版の CLI で文書を 1 枚の HTML に書き出す
     runtime: TypeScript 7
-    runs_on: 使う側のページを開いたブラウザ（`mount`・`render`）と、使う側の Node の処理（`render`）と、文書を書く人の手元の Node 24（CLI の `dist/cli.js`。`npx github:shuhei1101/mdmark#v{版}` で入れ、実行時の依存の yaml と esbuild を `dependencies` から読む）
+    runs_on: 使う側のページを開いたブラウザ（`mount`・`render`）と、使う側の Node の処理（`render`）と、文書を書く人の手元の Node 24（CLI の `dist/cli.js`。`npx github:shuhei1101/mdmark#v{版}` で入れ、実行時の依存の yaml と esbuild を `dependencies` から読む。`mdmark serve` は 127.0.0.1 で Claude Code プラグインの MCP サーバーとして常駐する）
     status: planned
   - name: VS Code 拡張機能
     scope: vscode
@@ -118,9 +118,9 @@ subsystems:
       pr: 69
   - name: Claude Code プラグイン
     scope: claude-code-plugin
-    role: Claude Code に使い方集の索引を渡し、使い方集の本文・書き出し・まとめ・点検・索引の検索と書き換えを MCP のツールで呼ばせる。ツールの処理はライブラリ本体の CLI と同じソースを束ねる
+    role: Claude Code に使い方集の索引を渡し、使い方集の本文・書き出し・まとめ・点検・索引の検索と書き換えを MCP のツールで呼ばせる。MCP のツールは、ライブラリ本体の CLI の `mdmark serve` が常駐の HTTP サーバーとして返す
     runtime: TypeScript 7（Node 24）
-    runs_on: 文書を書く人の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと標準入出力の MCP サーバー（実行時の依存の esbuild は `plugin/package.json` から Claude Code が入れる）
+    runs_on: 文書を書く人の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと、`.mcp.json` の URL へ HTTP でつなぐ `mdmark serve` の MCP サーバー（文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン} serve` で起動しておく）
     reason: Claude Code の版と仕様に依る部分を、ブラウザと Node で動くライブラリ本体と分けて確かめる
     status: planned
     introduced:
@@ -180,9 +180,9 @@ external_systems:
     introduced:
       pr: 69
   - name: Claude Code
-    purpose: マーケットプレイスからプラグインを入れ、セッションの開始でフックを流して使い方集の索引を受け取り、MCP サーバーを起動してツールを呼ぶ
+    purpose: マーケットプレイスからプラグインを入れ、セッションの開始でフックを流して使い方集の索引を受け取り、常駐の MCP サーバーへ HTTP でつないでツールを呼ぶ
     direction: 双方向
-    protocol: 子プロセスの標準入出力（フックは JSON、MCP は JSON-RPC）
+    protocol: フックは子プロセスの標準入出力（JSON）、MCP は 127.0.0.1 への Streamable HTTP（JSON-RPC）
     detail: dev/設計書/外部ライブラリ/ClaudeCode#
     cost: mdmark の側には無い（Claude Code の利用料は使う側が持つ）。`update_index`・`export_html`・`build_site` は使う側の作業のフォルダに書く
     refs:

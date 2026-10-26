@@ -5,6 +5,7 @@ import {
   cp,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   symlink,
@@ -44,13 +45,20 @@ async function createRoot(versionIni: string): Promise<string> {
   return root;
 }
 
-/** 作業ツリーの node_modules へのリンクと tsconfig を一時フォルダに置く（型定義を書く tsc を流せるようにする） */
-async function linkTooling(root: string): Promise<void> {
-  await symlink(
-    join(process.cwd(), "node_modules"),
-    join(root, "node_modules"),
-    "dir",
-  );
+/** 作業ツリーの node_modules へのリンクと tsconfig を一時フォルダに置く（型定義を書く tsc を流せるようにする）。`entriesOnly` なら、中身を 1 つずつリンクした node_modules を置き、一時フォルダにだけパッケージを足せるようにする */
+async function linkTooling(
+  root: string,
+  options: { entriesOnly?: boolean } = {},
+): Promise<void> {
+  const source = join(process.cwd(), "node_modules");
+  if (options.entriesOnly) {
+    await mkdir(join(root, "node_modules"));
+    for (const name of await readdir(source)) {
+      await symlink(join(source, name), join(root, "node_modules", name));
+    }
+  } else {
+    await symlink(source, join(root, "node_modules"), "dir");
+  }
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     if (existsSync(join(process.cwd(), name))) {
       await copyFile(join(process.cwd(), name), join(root, name));
@@ -256,8 +264,6 @@ test("test_main_when_guide_index_too_long", async () => {
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
   const files: Record<string, string> = {
-    "package.json": JSON.stringify({ dependencies: { esbuild: "0.28.2" } }),
-    "src/plugin/mcp.ts": "export {};\n",
     "src/plugin/session-start.ts": "export {};\n",
     "guide/index.yaml": [
       "schema: 1",
@@ -271,10 +277,6 @@ test("test_main_when_guide_index_too_long", async () => {
     "docs/a.md": "# A\n",
     "plugin/.claude-plugin/plugin.json":
       '{"name":"mdmark","version":"v0.0.0"}\n',
-    "plugin/package.json": JSON.stringify({
-      dependencies: { esbuild: "0.28.2" },
-    }),
-    "plugin/package-lock.json": "{}\n",
   };
   for (const [path, content] of Object.entries(files)) {
     await mkdir(dirname(join(root, path)), { recursive: true });
@@ -290,8 +292,28 @@ test("test_main_when_guide_index_too_long", async () => {
   // 検証
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "server"))).toBe(false);
+  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
   expect(stderr()).toContain("上限 1 文字");
+});
+
+// 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる（異常系）
+test("test_main_when_api_missing_in_baseline_browser", async () => {
+  // 準備
+  const { main } = await loadBuild();
+  const root = await createBuildRoot("v0.0.0\n");
+  await writeFile(
+    join(root, "src", "index.ts"),
+    'new Intl.Segmenter("ja");\nexport const a = 1;\n',
+  );
+  const stderr = captureStderr();
+  // 実行
+  const code = await main([], { root, maxBytes: MAX_BYTES });
+  // 検証
+  expect(code).toBe(1);
+  expect(existsSync(join(root, "dist"))).toBe(false);
+  for (const expected of ["dist/index.js", "Intl.Segmenter", "Firefox 98"]) {
+    expect(stderr()).toContain(expected);
+  }
 });
 
 // version.ini の先頭行を返す（正常系）
@@ -417,6 +439,45 @@ test("test_build_dist_when_cli_and_viewer", async () => {
   expect(viewer).not.toContain("</script>");
 });
 
+// CLI に束ねたパッケージのライセンスも書く（正常系）
+test("test_build_dist_when_cli_bundles_package", async () => {
+  // 準備
+  const { buildDist } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await linkTooling(root, { entriesOnly: true });
+  await createPackage(root, "cli-only-pkg", {
+    version: "2.0.0",
+    license: "MIT",
+    licenseText: "Copyright CLI holder",
+  });
+  await writeFile(
+    join(root, "node_modules", "cli-only-pkg", "index.js"),
+    "export const name = 'cli-only-pkg';\n",
+  );
+  await mkdir(join(root, "src", "cli"));
+  await writeFile(
+    join(root, "src", "cli", "main.ts"),
+    [
+      "// @ts-expect-error 型定義の無い一時のパッケージ",
+      'import { name } from "cli-only-pkg";',
+      "",
+      "export function main(): string {",
+      "  return name;",
+      "}",
+      "",
+    ].join("\n"),
+  );
+  // 実行
+  await buildDist("v0.0.1", root);
+  // 検証
+  const text = await readFile(
+    join(root, "dist", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  expect(text).toContain("cli-only-pkg");
+  expect(text).toContain("Copyright CLI holder");
+});
+
 // 束ねたパッケージごとに名前・版・ライセンス・本文を書く（正常系）
 test("test_write_third_party_licenses", async () => {
   // 準備
@@ -440,7 +501,7 @@ test("test_write_third_party_licenses", async () => {
     "src/index.ts",
   ]);
   // 実行
-  await writeThirdPartyLicenses({ metafile, root });
+  await writeThirdPartyLicenses({ metafiles: [metafile], root });
   // 検証
   const text = await readFile(
     join(root, "dist", "THIRD_PARTY_LICENSES.txt"),
@@ -465,8 +526,64 @@ test("test_write_third_party_licenses_when_license_missing", async () => {
   await createPackage(root, "b", { version: "4.5.6", license: "ISC" });
   const metafile = createMetafile(["node_modules/b/index.js"]);
   // 実行・検証
-  await expect(writeThirdPartyLicenses({ metafile, root })).rejects.toThrow(
-    "ライセンスの本文が無い: b",
+  await expect(
+    writeThirdPartyLicenses({ metafiles: [metafile], root }),
+  ).rejects.toThrow("ライセンスの本文が無い: b");
+});
+
+// 複数の metafile をまとめ、取り込まれたパッケージの本文も書く（正常系）
+test("test_write_third_party_licenses_when_embedded", async () => {
+  // 準備
+  const { writeThirdPartyLicenses } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await mkdir(join(root, "dist"));
+  await createPackage(root, "b", {
+    version: "4.5.6",
+    license: "ISC",
+    licenseText: "Copyright B holder",
+  });
+  await createPackage(root, "pkg", {
+    version: "1.0.0",
+    license: "MIT",
+    licenseText: "Copyright PKG holder",
+  });
+  await mkdir(join(root, "node_modules", "pkg", "dist"), { recursive: true });
+  await writeFile(
+    join(root, "node_modules", "pkg", "dist", "a.mjs"),
+    "export {};\n",
+  );
+  await writeFile(
+    join(root, "node_modules", "pkg", "dist", "a.mjs.map"),
+    JSON.stringify({
+      version: 3,
+      sources: ["../../node_modules/.pnpm/ajv@8.18.0/node_modules/ajv/x.js"],
+    }),
+  );
+  await mkdir(join(root, "scripts", "licenses"), { recursive: true });
+  await writeFile(
+    join(root, "scripts", "licenses", "ajv.txt"),
+    "Copyright AJV holder",
+  );
+  const first = createMetafile(["node_modules/b/index.js"]);
+  const second = createMetafile([
+    "node_modules/b/index.js",
+    "node_modules/pkg/dist/a.mjs",
+  ]);
+  // 実行
+  await writeThirdPartyLicenses({ metafiles: [first, second], root });
+  // 検証
+  const text = await readFile(
+    join(root, "dist", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  for (const holder of ["AJV", "B", "PKG"]) {
+    expect(text.split(`Copyright ${holder} holder`)).toHaveLength(2);
+  }
+  expect(text.indexOf("Copyright AJV holder")).toBeLessThan(
+    text.indexOf("Copyright B holder"),
+  );
+  expect(text.indexOf("Copyright B holder")).toBeLessThan(
+    text.indexOf("Copyright PKG holder"),
   );
 });
 

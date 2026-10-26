@@ -1,10 +1,48 @@
+import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { createBrowserHolder, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();
 
+// スクリプトが動かないときも語の上に開く広い画面（狭い画面は語の直後に出す）
+const WIDE_VIEWPORT = { width: 1280, height: 800 };
+
 beforeAll(holder.launch);
 afterAll(holder.close);
+
+/** ツールチップと語の画面に対する上端・下端 */
+function tipAndTermRects(page: Page) {
+  return page.evaluate(() => {
+    const tip = document.querySelector(".mdmark-term-tip");
+    const term = document.querySelector(".mdmark-term");
+    if (!tip || !term) {
+      throw new Error("ツールチップか語が無い");
+    }
+    const t = tip.getBoundingClientRect();
+    const w = term.getBoundingClientRect();
+    return {
+      tipTop: t.top,
+      tipBottom: t.bottom,
+      termTop: w.top,
+      termBottom: w.bottom,
+    };
+  });
+}
+
+/** 広い画面でストーリーを開き、開いたツールチップが語の上にあり、透明な線が下側にあることを確かめる */
+async function expectOpenedAbove(id: string): Promise<void> {
+  const page = await holder.openStory(id, WIDE_VIEWPORT);
+  const rects = await tipAndTermRects(page);
+  expect(rects.tipBottom).toBeLessThanOrEqual(rects.termTop);
+  const borders = await page.locator(".mdmark-term-tip").evaluate((tip) => ({
+    bottom: getComputedStyle(tip).borderBlockEndColor,
+    bottomWidth: parseFloat(getComputedStyle(tip).borderBlockEndWidth),
+    top: getComputedStyle(tip).borderBlockStartColor,
+  }));
+  expect(borders.bottom).toBe("rgba(0, 0, 0, 0)");
+  expect(borders.bottomWidth).toBeGreaterThan(1);
+  expect(borders.top).not.toBe("rgba(0, 0, 0, 0)");
+}
 
 // 用語だけに一致した語は、意味だけを持つ role="tooltip" のツールチップを開く（TermOnly）
 test("test_term_only", async () => {
@@ -23,6 +61,7 @@ test("test_term_only", async () => {
   const term = page.locator(".mdmark-term");
   await expect(term.getAttribute("tabindex")).resolves.toBe("0");
   await expect(term.getAttribute("aria-describedby")).resolves.toBe("tip-term");
+  await expectOpenedAbove("parts-termtip--term-only");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -51,6 +90,7 @@ test("test_docs_only", async () => {
   await expect(
     page.locator(".mdmark-term").getAttribute("aria-details"),
   ).resolves.toBe("tip-docs");
+  await expectOpenedAbove("parts-termtip--docs-only");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -71,6 +111,27 @@ test("test_both", async () => {
   await expect(
     page.locator(`[id="tip-both-meaning"]`).innerText(),
   ).resolves.toBe("文書と用語を並べた YAML のファイル");
+  await expectOpenedAbove("parts-termtip--both");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 上に収まらず語の下に開いた状態は、is-below が付き、ツールチップが語の下、透明な線が上側にある（Below）
+test("test_below", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--below", WIDE_VIEWPORT);
+  // 検証
+  const wrap = page.locator(".mdmark-term-wrap");
+  await expect(wrap.getAttribute("class")).resolves.toContain("is-below");
+  const rects = await tipAndTermRects(page);
+  expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
+  const borders = await page.locator(".mdmark-term-tip").evaluate((tip) => ({
+    top: getComputedStyle(tip).borderBlockStartColor,
+    topWidth: parseFloat(getComputedStyle(tip).borderBlockStartWidth),
+    bottom: getComputedStyle(tip).borderBlockEndColor,
+  }));
+  expect(borders.top).toBe("rgba(0, 0, 0, 0)");
+  expect(borders.topWidth).toBeGreaterThan(1);
+  expect(borders.bottom).not.toBe("rgba(0, 0, 0, 0)");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -170,6 +231,7 @@ test("test_avoided", async () => {
   await expect(
     term.evaluate((element) => getComputedStyle(element).textDecorationStyle),
   ).resolves.toBe("wavy");
+  await expectOpenedAbove("parts-termtip--avoided");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 

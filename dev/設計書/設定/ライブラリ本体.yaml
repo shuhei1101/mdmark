@@ -144,7 +144,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: 索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、索引の `terms[].avoid` のやめた言い方に波線のマーカーと代わりの用語のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く
+    description: 索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、索引の `terms[].avoid` と用語集の表のやめた言い方の列のやめた言い方に波線のマーカーと代わりの用語のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く
     reload: reload
     status: planned
     refs:
@@ -364,5 +364,47 @@ settings:
     status: planned
     introduced:
       pr: 65
+  - key: tooltips.placement
+    title: ツールチップを出す場所
+    file: mdmark.config.yaml
+    type: '"top" | "bottom"'
+    required: false
+    default: '`top`'
+    description: 用語・図・ヒントのツールチップを、持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す
+    reload: reload
+    allowed: '`top` / `bottom`。`mount` は他の値を無視して `top` にし、CLI は他の値を設定ファイルの誤りにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.tooltips.placement]
+    implementation: src/config.ts#resolveConfig
+    introduced:
+      pr: 83
+  - key: features.syntax
+    title: 色分けの機能
+    file: mdmark.config.yaml
+    type: boolean
+    default: 'true'
+    description: 情報文字列の言語が色分けの対応表にあるコードブロックを、描いた後に言語に応じて色分けする。オフのときは色分けのライブラリを読まず、コードブロックを色分けせずに描く
+    reload: reload
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの対象]
+    status: planned
+    introduced:
+      pr: 97
+  - key: syntax.url
+    title: 色分けのライブラリの読み込み先
+    file: mdmark.config.yaml
+    type: string
+    default: '`https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/`'
+    description: 色分けのライブラリ（highlight.js）の `es/` フォルダの URL。本体を `{url}core.min.js`、言語を `{url}languages/{言語}.min.js` から読む。`mount` はページの `document.baseURI` を、CLI は `mdmark.config.yaml` のあるフォルダを基準に解決する
+    missing: 既定の jsDelivr の URL から読む
+    reload: reload
+    allowed: 末尾が `/` の URL かパス。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.syntax.url]
+      - dev/設計書/外部ライブラリ/highlight.js#
+    reason: 印の名前の対応表 `libraries` と分け、文書に色分けの印を書かせない。本体と言語のモジュールは同じフォルダに並ぶため、URL は 1 つで足りる
+    status: planned
+    introduced:
+      pr: 97
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

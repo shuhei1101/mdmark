@@ -1,12 +1,10 @@
 import type { StateCore, Token } from "markdown-it";
 import type { MdmarkMarkArgs } from "../../extensions.ts";
 import type { MdmarkGlossaryEntry } from "../../knowledge/references.ts";
-/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から）・やめた言い方 */
+/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から） */
 export type GlossaryRow = {
     entry: MdmarkGlossaryEntry;
     line: number;
-    /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空 */
-    avoid: string[];
 };
 /** 範囲の中のトークンの表から、用語・意味・別名・やめた言い方の列を読んで行ごとの用語を返す。誤りがあれば表ごとに用語を入れず、最初の誤りを警告にする */
 export declare function readGlossaryRows(options: {
@@ -29,5 +27,5 @@ export declare function readGlossaryTable(options: {
     entries: MdmarkGlossaryEntry[];
     warning?: string;
 };
-/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す（行番号は `env.glossaryLines`、やめた言い方は `env.glossaryAvoid` に同じ並びで足す） */
+/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す（行番号は `env.glossaryLines` に同じ並びで足す） */
 export declare function glossaryRule(state: StateCore): void;

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, posix } from "node:path";
 import { build, type Metafile } from "esbuild";
 import { parse } from "yaml";
@@ -15,24 +15,18 @@ import {
   NODE_MODULES_SEGMENT,
   NODE_TARGET,
   packageNameAfter,
-  postcssStubPlugin,
+  readEmbeddedLicenseBlock,
   readLicenseBlock,
 } from "./bundle.ts";
 
 /** プラグインに束ねるソースと書く先 */
 const PLUGIN_ENTRY_POINTS = [
-  { in: "src/plugin/mcp.ts", out: "server/mcp" },
   { in: "src/plugin/session-start.ts", out: "scripts/session-start" },
+  { in: "src/plugin/pre-tool-use.ts", out: "scripts/pre-tool-use" },
 ];
-/** 束ねず、`plugin/package.json` から Claude Code が入れる依存 */
-const PLUGIN_EXTERNALS = ["esbuild"];
-/** `dist/` から `plugin/dist/` へ写す、書き出しが埋めるファイル */
-const PLUGIN_DIST_ASSETS = ["index.css", "viewer.js", "viewer.css", "view.js"];
 /** ビルドの最初と失敗したときに消す、`plugin/` の中の生成物 */
 const PLUGIN_OUTPUTS = [
-  "plugin/server",
   "plugin/scripts",
-  "plugin/dist",
   "plugin/guide",
   "plugin/THIRD_PARTY_LICENSES.txt",
 ];
@@ -40,8 +34,6 @@ const PLUGIN_OUTPUTS = [
 const GUIDE_SOURCE = "guide/index.yaml";
 /** バージョンを書くプラグインの定義のパス */
 const PLUGIN_MANIFEST = "plugin/.claude-plugin/plugin.json";
-/** 束ねたパッケージの配布物の中に取り込まれ、`node_modules` に無いパッケージのライセンスの本文を置くフォルダ */
-const EMBEDDED_LICENSES_DIR = "scripts/licenses";
 /** 索引に無いページへのリンクを書き換える GitHub の URL の頭 */
 const GUIDE_LINK_BASE = "https://github.com/shuhei1101/mdmark/blob";
 /** 束ねたプラグインのライセンスを書く、プラグインの直下のファイル名 */
@@ -99,34 +91,6 @@ export async function checkGuideSource(options: {
   return { entries, problems };
 }
 
-/** `package.json` の `dependencies` を読む。ファイルが無ければ空 */
-function readDependencies(path: string): Record<string, string> {
-  if (!existsSync(path)) {
-    return {};
-  }
-  return JSON.parse(readFileSync(path, "utf8")).dependencies ?? {};
-}
-
-/** `plugin/package.json` の束ねない依存のバージョンが作業ツリーの `package.json` と同じで、`plugin/package-lock.json` があるかを確かめる。問題の行を返す */
-export async function checkPluginDependencies(root: string): Promise<string[]> {
-  const problems: string[] = [];
-  const own = readDependencies(join(root, "package.json"));
-  const plugin = readDependencies(join(root, "plugin", "package.json"));
-  for (const name of PLUGIN_EXTERNALS) {
-    if (plugin[name] !== own[name]) {
-      problems.push(
-        `plugin/package.json の ${name} が ${plugin[name] ?? "なし"} で、package.json の ${own[name] ?? "なし"} と違う`,
-      );
-    }
-  }
-  if (!existsSync(join(root, "plugin", "package-lock.json"))) {
-    problems.push(
-      "plugin/package-lock.json が無い（plugin/ で npm install を流す）",
-    );
-  }
-  return problems;
-}
-
 /** 束ねた入力のソースマップの `sources` から、パッケージの配布物に取り込まれた別のパッケージの名前を、名前の順に返す。束ねたパッケージ自身は含めない */
 export function listEmbeddedPackages(options: {
   /** esbuild の出力 */
@@ -176,14 +140,7 @@ export async function writePluginLicenses(options: {
     readLicenseBlock({ root, name }),
   );
   for (const name of listEmbeddedPackages({ metafile, root })) {
-    const file = `${name.replace("/", "__")}.txt`;
-    const path = join(root, EMBEDDED_LICENSES_DIR, file);
-    if (!existsSync(path)) {
-      throw new Error(
-        `ライセンスの本文が無い: ${name}（${EMBEDDED_LICENSES_DIR}/${file} を置く）`,
-      );
-    }
-    blocks.push(`${name}\n\n${readFileSync(path, "utf8")}`);
+    blocks.push(readEmbeddedLicenseBlock({ root, name }));
   }
   await mkdir(dirname(join(root, PLUGIN_LICENSES_FILE)), { recursive: true });
   await writeFile(join(root, PLUGIN_LICENSES_FILE), blocks.join("\n\n"));
@@ -318,7 +275,7 @@ export function removePluginOutputs(root: string): void {
   }
 }
 
-/** 使い方集の索引と依存を検査し、合えば MCP サーバーとフックを束ね、配布物・使い方集・バージョン・ライセンスを `plugin/` に書く。問題があれば `plugin/` に何も書かずに問題の行を返す。`src/plugin/mcp.ts` が無ければ何もしない */
+/** 使い方集の索引を検査し、合えばフックを束ね、使い方集・バージョン・ライセンスを `plugin/` に書く。問題があれば `plugin/` に何も書かずに問題の行を返す。`src/plugin/session-start.ts` が無ければ何もしない */
 export async function buildPlugin(options: {
   /** 埋めるバージョン */
   version: string;
@@ -328,16 +285,12 @@ export async function buildPlugin(options: {
   contextLimit: number;
 }): Promise<string[]> {
   const { version, root, contextLimit } = options;
-  if (!existsSync(join(root, "src", "plugin", "mcp.ts"))) {
+  if (!existsSync(join(root, "src", "plugin", "session-start.ts"))) {
     return [];
   }
   const guide = await checkGuideSource({ root, contextLimit });
-  const problems = [
-    ...guide.problems,
-    ...(await checkPluginDependencies(root)),
-  ];
-  if (problems.length > 0) {
-    return problems;
+  if (guide.problems.length > 0) {
+    return guide.problems;
   }
   const result = await build({
     absWorkingDir: root,
@@ -348,19 +301,10 @@ export async function buildPlugin(options: {
     platform: "node",
     target: NODE_TARGET,
     banner: { js: NODE_BANNER },
-    external: PLUGIN_EXTERNALS,
-    plugins: [postcssStubPlugin],
     define: { __MDMARK_VERSION__: JSON.stringify(version) },
     metafile: true,
     logLevel: "silent",
   });
-  for (const asset of PLUGIN_DIST_ASSETS) {
-    const source = join(root, "dist", asset);
-    if (existsSync(source)) {
-      await mkdir(join(root, "plugin", "dist"), { recursive: true });
-      await copyFile(source, join(root, "plugin", "dist", asset));
-    }
-  }
   await writePluginGuide({ root, entries: guide.entries, version });
   await writePluginManifest({ root, version });
   await writePluginLicenses({ metafile: result.metafile, root });

@@ -8,6 +8,7 @@ import {
   useTempDirs,
   writeFiles,
 } from "../../helpers/cli.ts";
+import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 
 /** 点検の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCheck = () => import("../../../../src/cli/check.ts");
@@ -396,4 +397,64 @@ test("test_run_check_when_unknown_mark", async () => {
   ).toHaveLength(1);
   expect(stdout).toHaveLength(2);
   expect(stdout[1]).toBe("ずれ 1 件");
+});
+
+// `--base` から片方だけが変わった change_together の組を出す（正常系）
+test("test_run_check_when_base_given", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const dir = await createTempDir();
+  await setUpChangeTogetherRepository(dir);
+  const withBase = createIo(dir);
+  const withoutBase = createIo(dir);
+  // 実行
+  const codeWithBase = await runCheck({ base: BASE_TAG }, withBase.io);
+  const codeWithoutBase = await runCheck({}, withoutBase.io);
+  // 検証
+  expect(codeWithBase).toBe(1);
+  expect(withBase.stdout).toHaveLength(2);
+  expect(withBase.stdout[0]).toMatch(/^b\.md: missed_change_together: /);
+  expect(withBase.stdout[0]).toContain("a.md");
+  expect(withBase.stdout[1]).toBe("ずれ 1 件");
+  expect(codeWithoutBase).toBe(0);
+  expect(withoutBase.stdout).toEqual(["ずれ 0 件"]);
+});
+
+// 引けない `--base` は、ずれを点検せずに止める（異常系）
+test("test_run_check_when_base_unknown", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const { CliError } = await import("../../../../src/cli/errors.ts");
+  const dir = await createTempDir();
+  await setUpChangeTogetherRepository(dir);
+  const { io, stdout } = createIo(dir);
+  // 実行・検証
+  const error = await runCheck({ base: "no-such-ref" }, io).catch(
+    (caught: unknown) => caught,
+  );
+  expect(error).toBeInstanceOf(CliError);
+  expect((error as Error).message).toContain("no-such-ref");
+  expect(stdout.some((line) => line.startsWith("ずれ"))).toBe(false);
+});
+
+// 設定に `index` が無ければ `base` を使わない（正常系）
+test("test_collect_check_issues_when_base_without_index", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+  });
+  const path = join(dir, "mdmark.config.yaml");
+  // 実行
+  const withoutBase = await collectCheckIssues(path);
+  const withBase = await collectCheckIssues(path, { base: "no-such-ref" });
+  // 検証
+  expect(withBase).toEqual(withoutBase);
 });
