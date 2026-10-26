@@ -30,3 +30,4 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
+| [tests/e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.8.0/tests/e2e/%E8%A4%87%E5%90%88%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/ClaudeCode%E3%81%A7%E7%B4%A2%E5%BC%95%E3%82%92%E6%9B%B8%E3%81%8D%E6%8F%9B%E3%81%88%E3%81%A6%E7%82%B9%E6%A4%9C%E3%81%97%E3%81%A6%E3%81%8B%E3%82%89%E9%85%8D%E3%82%8B.spec.ts) | 全実行 | 変更 | ✅ | 2 テスト pass（Chromium。Firefox は対象外で skip）<br>`テスト結果/20261026221304_0ab1554_E2Eテスト.log` |
