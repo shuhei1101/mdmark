@@ -97,7 +97,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 同じ組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書。`group=os` の `macOS` の中身は `#### macOS の注意` と段落を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -115,9 +115,14 @@ scenarios:
         M->>S: os の組に残したタブ名を読む
         M-->>P: group=os のタブ群を Windows を選んで描く
         P-->>U: Windows の中身を表示
+        U->>P: URL の末尾に #macos-の注意 を付けて読み直す
+        P->>M: 同じ Markdown を渡して描かせる
+        M-->>P: URL の ID を優先して macOS のタブを選び、見出しへ移る
+        P-->>U: macOS の中身を表示
     expected:
       - 読み直した後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
       - '`group` の無いタブ群は、読み直した後に `macOS` を選んでいる'
+      - '`#macos-の注意` を付けて読み直した後、覚えた `Windows` より URL の ID を優先し、`group=os` のタブ群の `macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている'
     test: test_normal_when_reloaded
   - name: 異常シナリオ（選んだタブを覚えられない）
     setup:

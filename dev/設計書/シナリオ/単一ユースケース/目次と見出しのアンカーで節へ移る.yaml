@@ -62,6 +62,35 @@ scenarios:
     expected:
       - 描いた後、`使い方` の見出しが画面に入っている
     test: test_normal_when_opened_with_fragment
+  - name: 正常シナリオ（タブの中の見出しへ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: ページの URL の末尾に `#windows-の注意` を付けて開く
+      - name: タブの中に見出しを持つ Markdown
+        description: '長い段落の後に、`## 導入` とその直後の `<!-- section: closed -->` を持ち、その節の中に `<!-- tabs -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ文書'
+        notes: '`macOS` の中身は `#### macOS の注意` と段落、`Windows` の中身は `#### Windows の注意` と段落'
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: #windows-の注意 付きの URL を開く
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: ID が選ばれていないタブの中の見出しを指す
+        M-->>P: 外側の節を開き、Windows のタブを選んでから見出しへ移る
+        P-->>U: 「Windows の注意」の見出しを表示
+        U->>P: URL の #ID を #macos-の注意 に変える
+        M-->>P: macOS のタブを選んでから見出しへ移る
+        P-->>U: 「macOS の注意」の見出しを表示
+    expected:
+      - ページを開いた後、`導入` の節が開き、`Windows` のタブの `aria-selected` が `true` で、`Windows の注意` の見出しが画面に入っている
+      - URL の `#ID` を `#macos-の注意` に変えた後（`hashchange`）、`macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている
+      - 選ばれたタブの中身だけが表示されている
+    test: test_normal_when_fragment_in_tab
 lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所に見出しの目次を置く。読む人は目次や見出しのリンクから節へ移り、節の URL を人へ渡す。
 issue: 4
 primary_actor: 文書を読む人

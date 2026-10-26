@@ -83,6 +83,27 @@ scenarios:
       - 範囲の上に、手順にする番号付きリストが無いことを書いた書き方の警告がある
       - 範囲の中のリストが、書いたとおりの番号の無いリストで表示されている
     test: test_error_when_steps_without_ordered_list
+  - name: 正常シナリオ（中身の無い badge:）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: '中身の無い badge: を持つ Markdown'
+        description: 行内のコード `` `badge:` `` と、`badge:` の後ろが空白だけの行内のコードを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: badge: の後ろが空か空白だけのためバッジにしない
+        M-->>P: 行内のコードをそのまま描く
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの行内のコードが札にならず、書いたとおりの文字（`badge:` とその後ろの空白）の行内のコードで出ている
+      - 中身の無い札が無く、書き方の警告も出ていない
+    test: test_normal_when_badge_empty
 lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。
 issue: 4
 primary_actor: 文書を書く人
