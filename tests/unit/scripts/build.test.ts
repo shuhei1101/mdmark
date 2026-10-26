@@ -24,9 +24,9 @@ const loadBuild = () => import("../../../scripts/build.ts");
 const MAX_BYTES = 20 * 1024 * 1024;
 
 // ビルドを丸ごと流すテスト 1 件の待つ上限（ミリ秒）。
-// WSL2 の /mnt/c 上で、このファイル単独 5 回と test:unit 全件 3 回を流した所要時間の最大は 37.3 秒（test_main）。
-// 37.3 秒 × 1.5 = 56.0 秒を 10 秒単位で切り上げて 60 秒にした
-const MAIN_BUILD_TIMEOUT_MS = 60_000;
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と test:unit 全件 6 回を流した所要時間の最大は 40.8 秒（test_main）。
+// 40.8 秒 × 1.5 = 61.2 秒を 10 秒単位で切り上げて 70 秒にした
+const MAIN_BUILD_TIMEOUT_MS = 70_000;
 
 const entryScript = [
   "declare const __MDMARK_VERSION__: string;",
