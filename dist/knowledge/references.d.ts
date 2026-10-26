@@ -1,6 +1,6 @@
 import type { Token } from "markdown-it";
 import { type MdmarkConfig } from "../config.ts";
-import { type MdmarkIndex } from "./index-shape.ts";
+import { type MdmarkIndex, type MdmarkIndexDoc } from "./index-shape.ts";
 /** 用語集の表の 1 行から入れた用語 */
 export type MdmarkGlossaryEntry = {
     /** 用語の列の文字 */
@@ -11,6 +11,8 @@ export type MdmarkGlossaryEntry = {
     meaning: string;
     /** 表を持つ文書の `id` */
     docId: string;
+    /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
+    avoid?: string[] | undefined;
 };
 /** `collectReferences` が返し、`mount`・`render` の `opts.references` が受け取る参照の表 */
 export type MdmarkReferences = {
@@ -25,11 +27,10 @@ export type ParsedDocument = {
     tokens: Token[];
     /** 文書の印を重ねて決まった機能のオン・オフ */
     features: Record<string, boolean>;
-    /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から）・やめた言い方 */
+    /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
     glossary: Array<{
         entry: MdmarkGlossaryEntry;
         line: number;
-        avoid: string[];
     }>;
 };
 /** 文書の本文を、印・機能・用語集の表を読んだトークンにする */
@@ -41,6 +42,8 @@ export declare function parseDocument(options: {
     /** 設定の `features` */
     defaults: Record<string, boolean>;
 }): ParsedDocument;
+/** 本文のリンクが指す、索引のパスの集まり */
+export declare function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string>;
 /** 索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語を返す */
 export declare function collectReferences(input: {
     /** 索引 */

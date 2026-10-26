@@ -22,4 +22,6 @@ export declare function renderTermTip(props: {
         term: string;
         meaning: string;
     };
+    /** 語の下に開いた見た目にするか。ストーリーが下に開いた状態を出すために使い、`render` は渡さない */
+    below?: boolean;
 }): string;

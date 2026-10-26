@@ -1,3 +1,5 @@
+/** 色分けの対象の `code` に付ける属性。値は色分けの言語のモジュール名。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に書いた生の HTML の `code` は色分けの対象にならない */
+export declare const SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
 /** コードの行 1 つ */
 export type CodeLine = {
     /** コードの行の印を外した行の文字（エスケープ前） */
@@ -15,4 +17,6 @@ export declare function renderCodeBlock(options: {
     lineNumbers: boolean;
     /** コードの行 */
     lines: CodeLine[];
+    /** 色分けする言語のモジュール名。渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける */
+    syntax?: string | undefined;
 }): string;

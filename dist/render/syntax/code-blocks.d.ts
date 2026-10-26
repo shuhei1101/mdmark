@@ -18,5 +18,9 @@ export declare function readLineMarks(source: string): {
     lines: CodeLine[];
     warnings: WarningItem[];
 };
-/** `code` がオンなら、残っている `fence` のトークンごとに `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む。題・行番号・行の種類のどれかを持つコードブロックを部品『コードブロック』に置き換える。置き換えないコードブロックも、`fence` の `content` を行の文字でつなぎ直す（打ち消した印の `\` が外れる）。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む */
+/** 色分けの言語の対応表: 情報文字列の最初の語（小文字）から、highlight.js の言語のモジュール名を引く。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に当たる */
+export declare const SYNTAX_LANGUAGES: Readonly<Record<string, string>>;
+/** 情報文字列の言語の語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返す。表に無ければ `undefined` */
+export declare function syntaxLanguageOf(language: string): string | undefined;
+/** `code` か `syntax` がオンなら、残っている `fence` のトークンごとに次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む（オフのときは行の印を外さず中身の行をそのまま使う）。`syntax` がオンのときは情報文字列の言語を `syntaxLanguageOf` で引く。題・行番号・行の種類・色分けの言語のどれかを持つコードブロックを部品『コードブロック』（色分けの言語を `syntax` に渡す）に置き換える。置き換えないコードブロックも、`code` がオンなら `fence` の `content` を行の文字でつなぎ直す（打ち消した印の `\` が外れる）。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ） */
 export declare function buildCodeBlocks(state: StateCore): void;

@@ -24,16 +24,26 @@ export type MdmarkMatch = MdmarkMatchTarget & {
     /** その行の中の終わり（含まない）。実体参照やエスケープで書いた文字は、本文に書いたままの範囲を指す */
     end: number;
 };
+/** 本文に出たやめた言い方 1 つと、代わりの用語 */
+export type MdmarkAvoidedMatch = Omit<MdmarkMatch, "kind"> & {
+    /** 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ */
+    kind: "term" | "glossary";
+};
 /** `collectMatches` の戻り値 */
 export type MdmarkMatches = {
     /** 文書の `id` から、本文の一致を本文の頭からの順に並べたもの。本文のある索引の文書だけをキーに持つ */
     byDocument: Record<string, MdmarkMatch[]>;
+    /** 文書の `id` から、本文に出たやめた言い方を本文の頭からの順に並べたもの。キーは `byDocument` と同じで、やめた言い方が無い文書と `glossary` がオフの文書は空の並び */
+    avoided: Record<string, MdmarkAvoidedMatch[]>;
     /** 全ての文書の参照先を `kind` と `id` の組で重なりを除いたもの */
     targets: MdmarkMatchTarget[];
 };
 /** 本文の頭からの位置で表した、一致した語の範囲 */
 type Found = {
+    /** 辞書に記載した表記（本文の表記とは限らない） */
     word: string;
+    /** 辞書を引く正規化した語 */
+    key: string;
     offset: number;
     end: number;
     /** 図の部品の `{{語}}` の一致か（用語だけを引き、文書の別名は引かない） */
