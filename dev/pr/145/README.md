@@ -1,0 +1,1 @@
+# ビルドのテスト（結合 build.test.ts・単体 scripts/build.test.ts）が負荷のばらつきでタイムアウトしないようにする
