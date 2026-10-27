@@ -864,7 +864,7 @@ functions:
       - name: test_attach_sticky_rows_when_script
         case: 正常
         summary: animation-timeline を持たないブラウザではスクロールに合わせてずらす量を入れる
-        condition: 画面より高い本文 60 行と集計の行を持つ表を付け、表の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ
+        condition: 画面より高い本文 60 行と集計の行を持つ表を付け、見出し行の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ
         mock: '`CSS.supports` を `false` を返す関数に差し替える'
         expected: '`root` が `data-mdmark-sticky="script"`、表の `--mdmark-sticky-head-shift` が 300px、`--mdmark-sticky-foot-reach` が `2px`、見出し行の上端が画面の上端と揃い、集計の行の下端が画面の下端と揃う'
       - name: test_attach_sticky_rows_when_detached
