@@ -1,6 +1,6 @@
 // 右側の目次とまとめての開閉の操作（実装の interact のモック）。
 // [data-mode]（hover・fixed）を持つ .mdmark-side-toc に、隣の本文の列（.mdmark-content）の h1〜h3 から目次を組み立て、目次を出すボタン・ピン止め・今いる節を受け持つ。
-// すべて展開・すべて折りたたむ（[data-fold-all]）と、Shift を押しながらの入れ子の節の開閉は、右側の目次の有無によらず受け持つ。
+// 目次の上部のすべて展開・すべて折りたたむ（[data-fold-all]）と、Shift を押しながらの入れ子の節の開閉も受け持つ。
 // refs/19/assets/syntax.js の後に読む（1 つの節の開閉と、URL の #ID の見出しを囲む節を開く処理は syntax.js が持つ）
 
 // sample.js と同じ大域に読むため、宣言をブロックに閉じる
@@ -18,10 +18,10 @@
     collapse: '<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>',
   };
 
-  /** すべて展開・すべて折りたたむのボタンの HTML を返す。 */
+  /** すべて展開・すべて折りたたむのボタンの HTML を返す。文字を持たず、読み上げ名とツールチップで操作を伝える。 */
   const foldAllButtons = () =>
-    `<button class="mdmark-fold-all" type="button" data-fold-all="open">${ICON.expand}すべて展開</button>` +
-    `<button class="mdmark-fold-all" type="button" data-fold-all="close">${ICON.collapse}すべて折りたたむ</button>`;
+    `<button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">${ICON.expand}</button>` +
+    `<button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">${ICON.collapse}</button>`;
 
   /** 節の中身の開閉を切り替え、見出しのボタンの aria-expanded を合わせる（syntax.js の setSectionOpen と同じ）。 */
   const setSectionOpen = (toggle, open) => {
@@ -64,8 +64,6 @@
     aside.hidden = headings.length === 0;
     const titleId = `mdmark-side-toc-title-${index}`;
     const panelId = `mdmark-side-toc-panel-${index}`;
-    // [data-actions="none"]: まとめて開閉するボタンを目次の上部に置かない（文書の先頭に置く案 B）
-    const actions = aside.dataset.actions === "none" ? "" : `<div class="mdmark-side-toc-actions">${foldAllButtons()}</div>`;
     const bars = headings.map((heading) => `<span class="mdmark-side-toc-bar" data-level="${heading.tagName[1]}"></span>`).join("");
     aside.innerHTML =
       `<button class="mdmark-side-toc-toggle" type="button" aria-expanded="${"open" in aside.dataset}" aria-controls="${panelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current"></span>${ICON.ellipsis}</button>` +
@@ -73,7 +71,7 @@
       `<nav class="mdmark-side-toc-panel" id="${panelId}" aria-labelledby="${titleId}">` +
       `<div class="mdmark-side-toc-head"><p class="mdmark-side-toc-title" id="${titleId}">目次</p>` +
       `<button class="mdmark-side-toc-pin" type="button" aria-pressed="${"pinned" in aside.dataset}" aria-label="目次をピン止め" title="目次をピン止め">${ICON.pin}</button></div>` +
-      `${actions}</nav>`;
+      `<div class="mdmark-side-toc-actions">${foldAllButtons()}</div></nav>`;
     aside.querySelector(".mdmark-side-toc-panel").append(buildList(headings, aside.dataset.hrefPrefix ?? "#"));
     entries.set(aside, {
       headings,
@@ -154,15 +152,12 @@
     }).observe(content, { childList: true });
   }
 
-  // 文書の先頭のまとめて開閉するボタンの並び（案 B）
-  for (const bar of document.querySelectorAll(".mdmark-fold-bar")) bar.innerHTML = foldAllButtons();
-
-  // すべて展開・すべて折りたたむ: 押したボタンの文書の全ての節を同じ状態にする
+  // すべて展開: 押したボタンの文書の全ての節を開く。すべて折りたたむ: H1 の節を開き、H2 以下の全ての節を閉じて見出しを並べる
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-fold-all]");
     if (!button) return;
     const open = button.dataset.foldAll === "open";
-    for (const toggle of button.closest(".mdmark").querySelectorAll(".mdmark-section-toggle")) setSectionOpen(toggle, open);
+    for (const toggle of button.closest(".mdmark").querySelectorAll(".mdmark-section-toggle")) setSectionOpen(toggle, open || toggle.closest("h1") !== null);
   });
 
   // Shift を押しているか（Enter・Space で押したときは click の shiftKey が立たないブラウザがあるため、キーの状態からも読む）

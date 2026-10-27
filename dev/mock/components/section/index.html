@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- この PR で追加する右側の目次とまとめて開閉するボタンの規則（#166 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/166/assets/side-toc.css">
+  <!-- 節のカタログだけの規則 -->
+  <link rel="stylesheet" href="./style.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
@@ -130,11 +132,11 @@
         </article>
       </section>
 
-      <!-- 文書の先頭のまとめて開閉するボタン（案 B）と入れ子の節。「補足」を Shift を押しながら押すと、中の「注意」「例」も同じ状態にする。案 A（右側の目次の上部）は components/toc の「ポインターかフォーカスで出ている」に置く -->
+      <!-- 右側の目次の上部のすべて展開・すべて折りたたむ（fixed で開いた目次）と入れ子の節。すべて折りたたむは H1 の節を開いたまま H2 以下を閉じる。「補足」を Shift を押しながら押すと、中の「注意」「例」も同じ状態にする -->
       <section aria-labelledby="state-fold-all">
-        <h2 class="catalog-label" id="state-fold-all">すべて展開・すべて折りたたむ（案 B: 文書の先頭）と、Shift を押しながらの入れ子の開閉</h2>
+        <h2 class="catalog-label" id="state-fold-all">すべて展開・すべて折りたたむ（右側の目次の上部）と、Shift を押しながらの入れ子の開閉</h2>
         <article class="mdmark">
-<div class="mdmark-fold-bar"></div>
+<div class="mdmark-content">
 <h1 class="mdmark-heading" id="fold-手引き"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-fold-手引き">在庫の点検の手引き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
 <div class="mdmark-section-body" id="section-fold-手引き">
 <p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
@@ -159,6 +161,8 @@
 </div>
 </div>
 </div>
+</div>
+<div class="mdmark-side-toc" data-mode="fixed" data-open></div>
         </article>
       </section>
 

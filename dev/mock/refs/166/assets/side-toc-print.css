@@ -14,9 +14,8 @@
   }
 
   .mdmark {
-    /* 右側の目次・目次を出すボタン・文書の先頭のまとめて開閉するボタン: 紙に出さない */
-    .mdmark-side-toc,
-    .mdmark-fold-bar {
+    /* 右側の目次（目次を出すボタン・まとめて開閉するボタンを含む）: 紙に出さない */
+    .mdmark-side-toc {
       display: none;
     }
   }

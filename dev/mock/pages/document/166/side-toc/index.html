@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="../../../../refs/166/assets/side-toc-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../../../refs/16/assets/sample.js" defer></script>
-  <!-- 案の切り替え（モックだけの仕組み。右側の目次を組み立てる前に出し方とボタンの置き場所を当てる） -->
+  <!-- 案の切り替え（モックだけの仕組み。右側の目次を組み立てる前に出し方を当てる） -->
   <script src="./app.js" defer></script>
   <!-- 拡張記法の操作（タブ・節の開閉・移る先の節を開く処理・印刷の前後の展開） -->
   <script src="../../../../refs/19/assets/syntax.js" defer></script>
@@ -50,10 +50,6 @@
       <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="fixed">fixed</a>
       <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="left">left（知らない値）</a>
     </div>
-    <div class="mock-bar-group" role="group" aria-label="まとめて開閉するボタンの置き場所">
-      <a class="mock-bar-item" data-scene-axis="fold" data-scene-value="a">ボタン A: 目次の上部</a>
-      <a class="mock-bar-item" data-scene-axis="fold" data-scene-value="b">ボタン B: 文書の先頭</a>
-    </div>
     <!-- 移る先のリンク: URL の #ID を変え、閉じた節の中・選ばれていないタブの中の見出しへ移る -->
     <div class="mock-bar-group" role="group" aria-label="移る先">
       <a class="mock-bar-item" href="#注意">#注意</a>
@@ -75,8 +71,6 @@
     <article class="mdmark">
       <!-- 本文の列: render の本文 -->
       <div class="mdmark-content">
-<!-- 文書の先頭のまとめて開閉するボタン（案 B）: side-toc.js がボタンを入れる。案 A では app.js が取り除く -->
-<div class="mdmark-fold-bar"></div>
 <h1 class="mdmark-heading" id="在庫の点検の手引き"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-在庫の点検の手引き">在庫の点検の手引き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#在庫の点検の手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
 <div class="mdmark-section-body" id="section-在庫の点検の手引き">
 <p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順をまとめた文書です。数は毎朝 9 時の棚卸しの結果で更新します。</p>

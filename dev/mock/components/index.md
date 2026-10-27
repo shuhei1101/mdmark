@@ -25,7 +25,7 @@
 | [preview-status](./preview-status/index.html) | VS Code 拡張機能のプレビューのパネルに出す読み込み中・描けない理由と「リロード」・設定ファイルを読めない帯と「設定ファイルを開く」 |
 | [revision-picker](./revision-picker/index.html) | 文書の右上の「変更を見る」と、前と後のリビジョンを日時・label・author で選ぶ欄と、本文を取り出せない場面 |
 | [row-detail](./row-detail/index.html) | 表の行の下に開閉して出す行の詳細 |
-| [section](./section/index.html) | 見出しのアンカーと、見出しから開閉する節（h1 の節を含む）・文書の先頭のすべて展開とすべて折りたたむ・Shift を押しながらの入れ子の開閉 |
+| [section](./section/index.html) | 見出しのアンカーと、見出しから開閉する節（h1 の節を含む）・右側の目次の上部のすべて展開とすべて折りたたむ・Shift を押しながらの入れ子の開閉 |
 | [sequence-diagram](./sequence-diagram/index.html) | 相手を左から右、メッセージを時刻の順に並べ、繰り返しの戻りを持つシーケンス図 |
 | [steps](./steps/index.html) | 番号と線でつないだ手順 |
 | [syntax-warning](./syntax-warning/index.html) | 読めない指定とその直し方を書く人へ知らせる書き方の警告 |

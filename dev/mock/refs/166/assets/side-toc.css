@@ -185,7 +185,7 @@
       }
     }
 
-    /* 目次の上部のまとめて開閉するボタンの並び（案 A） */
+    /* 目次の上部のまとめて開閉するボタンの並び */
     .mdmark-side-toc-actions {
       display: flex;
       flex-wrap: wrap;
@@ -242,44 +242,29 @@
 
     /* ---------- まとめて開閉するボタン ---------- */
 
-    /* すべて展開・すべて折りたたむのボタン: アイコンと文言を並べ、線で囲む */
+    /* すべて展開・すべて折りたたむのボタン: 文字を持たないアイコンだけの正方形のボタンを線で囲む（操作は読み上げ名と title で伝える） */
     .mdmark-fold-all {
-      display: inline-flex;
-      gap: 0.3em;
-      align-items: center;
-      min-height: 1.75rem;
-      padding: 0 0.55em;
+      display: inline-grid;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: calc(var(--mdmark-radius) - 1px);
       background: transparent;
-      color: var(--mdmark-color-text);
-      font: inherit;
-      font-size: 0.8125rem;
-      line-height: 1.2;
-      white-space: nowrap;
+      color: var(--mdmark-color-muted);
+      font-size: 0.9375rem;
       cursor: pointer;
 
       &:hover {
         background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
       }
 
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);
         outline-offset: 1px;
       }
-
-      /* ボタンのアイコン: 文言より控えめな色 */
-      .mdmark-icon {
-        color: var(--mdmark-color-muted);
-      }
-    }
-
-    /* 文書の先頭のまとめて開閉するボタンの並び（案 B）: 本文の右上に寄せる */
-    .mdmark-fold-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.375rem;
-      justify-content: flex-end;
     }
 
     /* ---------- 出し方ごとの見え方 ---------- */
