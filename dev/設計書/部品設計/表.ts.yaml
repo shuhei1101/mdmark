@@ -246,7 +246,7 @@ states:
       - name: openColumns
         value: 'true'
   - name: Totals
-    description: 集計の行（`個数 4`・`合計 45`・`平均 250`。数量の `-` は合計から除く）
+    description: 計算ごとの集計の行（`合計 45`・`平均 250`・`件数 4` の順に 1 行ずつ。数量の空のセルは合計から除く）
     args:
       - name: kind
         value: data
@@ -255,13 +255,13 @@ states:
       - name: columns
         value: '["名前","数量","単価"]'
       - name: rows
-        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
       - name: filters
         value: '[{"column":0,"kind":"text"}]'
       - name: totals
         value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: TotalsFiltered
-    description: 名前を `りんご` で絞り込んだ集計の行（`個数 2`・`合計 43`・`平均 200`）
+    description: 名前を `りんご` で絞り込んだ集計の行（`合計 43`・`平均 200`・`件数 2`）
     args:
       - name: kind
         value: data
@@ -270,7 +270,7 @@ states:
       - name: columns
         value: '["名前","数量","単価"]'
       - name: rows
-        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
       - name: filters
         value: '[{"column":0,"kind":"text"}]'
       - name: filterValues
@@ -278,7 +278,7 @@ states:
       - name: totals
         value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: TotalsEmpty
-    description: 一致する行が無い集計の行（`個数 0`・`合計 0`・`平均 —`）
+    description: 一致する行が無い集計の行（`合計 0`・`平均 —`・`件数 0`）
     args:
       - name: kind
         value: data
@@ -287,7 +287,7 @@ states:
       - name: columns
         value: '["名前","数量","単価"]'
       - name: rows
-        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
       - name: filters
         value: '[{"column":0,"kind":"text"}]'
       - name: filterValues
@@ -352,7 +352,156 @@ states:
         value: '[{"column":2,"calc":"sum"}]'
       - name: rowIds
         value: '["なつめ","かりん","ざくろ"]'
-lead: Markdown の表を囲み、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表の中で縦にスクロールしても上端に留める。
+  - name: TotalsUnreadable
+    description: 数量の列に数として読めないセル（`-`・`約 3`）がある。合計の行の数量のセルは空で、平均の行の単価のセルは `250`
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","total"]'
+      - name: columns
+        value: '["名前","数量","単価"]'
+      - name: rows
+        value: '[["りんご","10","100"],["みかん","約 3","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      - name: filters
+        value: '[{"column":0,"kind":"text"}]'
+      - name: totals
+        value: '[{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+  - name: TotalsMenuOpen
+    description: 集計のメニュー（`出す集計`）を開いた。`合計`・`平均`・`件数` のチェックボックスに全てチェックが入っている
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","total"]'
+      - name: columns
+        value: '["名前","数量","単価"]'
+      - name: rows
+        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
+      - name: totals
+        value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+      - name: openTotals
+        value: 'true'
+  - name: TotalsHidden
+    description: 集計のメニューで `平均` と `件数` のチェックを外した。`合計` の行だけを出し、`集計` のボタンが隠している見た目
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","total"]'
+      - name: columns
+        value: '["名前","数量","単価"]'
+      - name: rows
+        value: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
+      - name: totals
+        value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+      - name: shownTotals
+        value: '["sum"]'
+  - name: CopyMenuOpen
+    description: コピーの形式のメニューを開いた。`Markdown の表`（文書に貼るとそのまま表になる）と `TSV`（表計算ソフトに貼るとセルに分かれる）
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","copy"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]'
+      - name: openCopy
+        value: 'true'
+  - name: CopyFallback
+    description: クリップボードに書けず、手でコピーするパネルを出した。`表をコピー` は `コピーできませんでした`
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","copy"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]'
+      - name: copyState
+        value: failed
+      - name: copyFallback
+        value: '{"format":"markdown","text":"| 名前 | 説明 | 更新日 |\n| --- | --- | --- |\n| りんご | 描画を速くする | 2026-10-01 |\n| みかん | 印刷を直す | 2026-10-10 |"}'
+  - name: RowLinkCopied
+    description: 2 行目の行へのリンクの印を押し、URL をコピーした。印の横に `リンクをコピーしました`
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","rowlink"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      - name: rowIds
+        value: '["りんご","みかん","りんご飴"]'
+      - name: targetRow
+        value: '1'
+      - name: rowLinkNotice
+        value: copied
+  - name: RowLinkFailed
+    description: 2 行目の行へのリンクの印を押し、URL をコピーできなかった。印の横に `リンクをコピーできませんでした`
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","rowlink"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      - name: rowIds
+        value: '["りんご","みかん","りんご飴"]'
+      - name: targetRow
+        value: '1'
+      - name: rowLinkNotice
+        value: failed
+  - name: Folded
+    description: 最終列（説明）を畳んだ。説明の列は出さず、各行の先頭のセルに開閉のボタンが付く
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","更新日","説明"]'
+      - name: rows
+        value: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]'
+      - name: folded
+        value: 'true'
+  - name: FoldedOpen
+    description: 最終列を畳み、1 行目を開いた。行の直後に `説明` の見出しと中身が出る
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","更新日","説明"]'
+      - name: rows
+        value: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]'
+      - name: folded
+        value: 'true'
+      - name: unfoldedRows
+        value: '[0]'
+  - name: StickyRows
+    description: 30 行と集計の行を持つ表。ストーリーの枠を縦にスクロールすると、表が枠に残っている間、見出し行が枠の上端に、集計の行が枠の下端に留まる
+    screenshot: false
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","total"]'
+      - name: columns
+        value: '["番号","数量"]'
+      - name: rows
+        value: '[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"],["6","6"],["7","7"],["8","8"],["9","9"],["10","10"],["11","11"],["12","12"],["13","13"],["14","14"],["15","15"],["16","16"],["17","17"],["18","18"],["19","19"],["20","20"],["21","21"],["22","22"],["23","23"],["24","24"],["25","25"],["26","26"],["27","27"],["28","28"],["29","29"],["30","30"]]'
+      - name: totals
+        value: '[{"column":1,"calc":"sum"}]'
+lead: Markdown の表を囲み、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
 args:
   - name: kind
     type: 列挙
@@ -435,14 +584,14 @@ args:
     required: false
     default: '[]'
     enabled_when: '`features` に `total` を含むとき'
-    description: 集計する列（`{ column, calc }`。`calc` は `sum`・`avg`・`count`）。空でなければ `tfoot` に集計の行を置き、`filterValues` に合う行で計算した値を題 `合計`・`平均`・`個数` と一緒に出す
+    description: 集計する列（`{ column, calc }`。`calc` は `sum`・`avg`・`count`）。空でなければ `tfoot` に計算ごとに 1 行（`合計`・`平均`・`件数` の順。行は `data-total-kind="{計算}"`）を置き、行の先頭のセルに計算の名前を、その計算を持つ列のセルに `filterValues` に合う行で集計した値を出す（先頭の列を集計する行は、名前を左、値をセルの末尾に寄せる）。`sum`・`avg` は空のセルを除き、桁区切りを付けて小数を 2 桁までに丸める（平均する値が無いときは `—`）。`sum`・`avg` の列に空でなく数として読めないセルが 1 つでもあれば、その計算のセルを空にする
   - name: copyState
     type: 列挙
     required: false
     default: idle
     choices: '`idle`（`表をコピー`）・`copied`（`コピーしました`）・`failed`（`コピーできませんでした`）'
     enabled_when: '`features` に `copy` を含むとき'
-    description: コピーのボタンの状態。ボタンの `data-state` と文言・アイコン（`copy`・`check`・`circle-alert`）を切り替える
+    description: '`表をコピー` のボタンの状態。ボタンの `data-state` と文言・アイコン（`copy`・`check`・`circle-alert`）を切り替える。どの状態でもボタンは文言の後ろに、形式のメニューを開くことを示す `chevron-down` のアイコンを持つ'
   - name: rowIds
     type: 配列
     required: false
@@ -455,6 +604,41 @@ args:
     default: なし（強調しない）
     enabled_when: '`features` に `rowlink` を含むとき'
     description: URL の `#ID` が指す行の位置。その行に `data-target` を付けて強調し、行へのリンクの印を出す
+  - name: shownTotals
+    type: 配列
+    default: '`totals` の全ての計算'
+    enabled_when: '`features` に `total` を含むとき'
+    description: 出している集計の行の計算（`sum`・`avg`・`count` のうち）。含まない計算の行に `hidden` を付けて集計のメニューのチェックを外し、`集計` のボタンを隠している見た目（`is-active`）にして、読み上げの名前に `（{隠している数} 件を隠しています）` を加える
+  - name: openTotals
+    type: 真偽値
+    default: 'false'
+    enabled_when: '`features` に `total` を含むとき'
+    description: 集計のメニュー（`出す集計`）を開いているか
+  - name: openCopy
+    type: 真偽値
+    default: 'false'
+    enabled_when: '`features` に `copy` を含むとき'
+    description: コピーの形式のメニュー（`Markdown の表`・`TSV`）を開いているか
+  - name: copyFallback
+    type: オブジェクト
+    default: なし（パネルを出さない）
+    enabled_when: '`features` に `copy` を含むとき'
+    description: クリップボードに書けなかったときに手でコピーさせるパネルの中身（`{ format, text }`。`format` は `markdown`・`tsv`、`text` はコピーする文字）。渡すと帯の直後に、題 `クリップボードにコピーできませんでした`・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`text` を入れた読み取り専用の `textarea`・閉じるボタンを持つパネルを出す
+  - name: rowLinkNotice
+    type: 列挙
+    default: なし（知らせを出さない）
+    choices: '`copied`（`リンクをコピーしました`）・`failed`（`リンクをコピーできませんでした`）'
+    enabled_when: '`targetRow` を渡したとき'
+    description: '`targetRow` の行の URL をコピーした結果。その行の行へのリンクの印の横の `role="status"` の要素に、文言とアイコン（`check`・`circle-alert`）を出す'
+  - name: folded
+    type: 真偽値
+    default: 'false'
+    description: 最終列を畳んでいるか（`mount` が描く先の要素の幅と最終列のセルの折り返しを測って決める）。`true` のとき最終列の見出しとセルを隠し、本文の各行の先頭のセルに最終列を開閉するボタンを置く。列の表示で最終列を隠しているときは畳まない
+  - name: unfoldedRows
+    type: 配列
+    default: '[]'
+    enabled_when: '`folded` が `true` のとき'
+    description: 畳んだ最終列を開いた本文の行の位置。行の直後の開閉の行に最終列の見出しの文字とその行のセルの中身を出し、ボタンを `aria-expanded="true"` にする
 events:
   - name: 並べ替える
     when: 列の見出しのボタンを押す
@@ -471,19 +655,35 @@ events:
   - name: 列の表示を切り替える
     when: 列の表示のメニューのチェックボックスを入れる・外す
     value: チェックボックスの `value`（列の位置）と `checked`
-    description: '`mount` がその列の見出し・セル・集計のセルの `hidden` を切り替える'
+    description: '`mount` がその列の見出し・セル・集計のセルの `hidden` を切り替え、最終列を畳むかを決め直す'
   - name: 既定に戻す
     when: 列の表示のメニューの「既定に戻す」を押す
     value: 表の `data-hide`
     description: '`mount` が `data-hide` の列だけを隠した状態に戻す'
   - name: 表をコピーする
-    when: '`表をコピー` のボタンを押す'
-    value: ボタンの `data-state`
-    description: '`mount` が表示している行と列を TSV でクリップボードへ写し、結果を `data-state` と読み上げで知らせる'
+    when: '`表をコピー` のボタンでコピーの形式のメニューを開き、`Markdown の表`・`TSV` のどちらかを押す'
+    value: 形式のボタンの `data-format`（`markdown`・`tsv`）と、`表をコピー` のボタンの `data-state`
+    description: '`mount` がメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の表示している列を選んだ形式でクリップボードへ写し、結果を `data-state` と読み上げで知らせる。写せないときはコピーできないときのパネルを出す'
   - name: 行へ移る
     when: URL の `#ID` が行の `id` を指す（描いたときと `hashchange`）
     value: 行の `id`
     description: '`mount` が閉じた表・節を開き、絞り込みで隠れていれば外してから行へ移り、その行に `data-target` を付ける'
+  - name: 集計の行を切り替える
+    when: 集計のメニューのチェックボックスを入れる・外す
+    value: チェックボックスの `value`（計算）と `checked`
+    description: '`mount` がその計算の集計の行の `hidden` を切り替え、出したこと・隠したことを読み上げで知らせる'
+  - name: コピーのパネルを閉じる
+    when: コピーできないときのパネルの閉じるボタンを押すか、パネルの中にフォーカスがある間に Esc を押す
+    value: なし
+    description: '`mount` がパネルを取り除き、フォーカスを `表をコピー` に戻す'
+  - name: 行の URL をコピーする
+    when: 行へのリンクの印を押す
+    value: 印の解決済みの `href`
+    description: '`mount` が行へ移る動きはそのままに、行を指す絶対 URL をクリップボードへ写し、印の横の `role="status"` の要素に結果を 2 秒出す'
+  - name: 最終列を開閉する
+    when: 畳んだ最終列の開閉のボタンを押す（Enter・Space を含む）
+    value: ボタンの `aria-expanded`
+    description: '`mount` が行の直後の開閉の行の `hidden` を付け外しする。行の詳細を持つ行では、行の詳細の開閉のボタンが最終列と詳細を一緒に開閉する'
 css_properties:
   - name: --mdmark-color-table-head
     syntax: <color>
@@ -493,10 +693,6 @@ css_properties:
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
     description: 見出し行で `--mdmark-color-table-head` を上書きしないときの面の色。本文の行は面で塗らず地の色（`--mdmark-color-bg`）のままにする
-  - name: --mdmark-table-max-height
-    syntax: <length>
-    default: 28rem
-    description: 表の高さの上限。超える表は表の中で縦にスクロールし、見出し行を上端に留める
   - name: --mdmark-table-rule-inline
     syntax: <length>
     default: 1px
@@ -505,19 +701,26 @@ css_properties:
     syntax: <length>
     default: 4px
     description: 表の外枠の角丸は、この値の 2 倍にする。外枠・見出しの下・行の間・集計の上の線はどれも 1px の `--mdmark-color-border`。文書全体の角丸を変えると表の角丸も変わる
+  - name: --mdmark-sticky-top
+    syntax: <length>
+    default: 0px
+    description: 見出し行を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す
 accessibility:
   - 並べ替えのボタンは列名を読み上げの名前にし、並べた列の `th` は `aria-sort` で向きを示す
   - 絞り込みのボタンは `「{列名}」で絞り込む` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
   - ピン止めのボタンは `「{列名}」の列までピン止め` を読み上げの名前に持ち、`aria-pressed` で状態を示す
-  - 表は `tabindex="0"` で、キーボードで縦横にスクロールできる
+  - 表は `tabindex="0"` で、キーボードで横にスクロールできる。留めた見出し行と集計の行は元のセルをずらしたもので複製を作らず、読み上げとフォーカスの順は 1 組のまま
   - 件数は `aria-live="polite"` で書き換えを知らせ、読み上げには `{全ての行の数} 件中 {表示している行の数} 件を表示` を渡す
   - 列の表示のメニューは絞り込みのドロワーと同じ開閉の作法（`aria-expanded`・`aria-controls`、開いたら最初の入力欄へフォーカス、Esc で閉じてボタンへ戻す）。押せない先頭の列のチェックボックスは、理由をメニューの中に出す
-  - コピーの結果は `role="status"` の要素で読み上げ、写せなかった知らせは自動で消さない
-  - 行へのリンクは `「{先頭のセルの文字}」の行へのリンク` を読み上げの名前に持ち、フォーカスしたときは印を出す。指せない端末では印を常に薄く出す
+  - 集計のメニュー（`role="dialog"`・`aria-label="出す集計"`）とコピーの形式のメニュー（`aria-label="コピーの形式"`）も列の表示のメニューと同じ開閉の作法。集計の行を隠しているときは、`集計` のボタンの見た目に加えて読み上げの名前に `（{隠している数} 件を隠しています）` を含める
+  - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書けなかったことと手でコピーできること）は、帯の `role="status"` の要素で読み上げる
+  - コピーできないときのパネルは `role="group"` で題を名前に持ち、出したら `textarea` へフォーカスを移して中身を全て選択する。閉じるボタンは `閉じる` を読み上げの名前に持ち、閉じるとフォーカスを `表をコピー` に戻す
+  - 行へのリンクは `「{先頭のセルの文字}」の行へのリンク` を読み上げの名前に持ち、フォーカスしたときは印を出す。指せない端末では印を常に薄く出す。URL をコピーした結果は、描くときに印の横へ置いた `role="status"` の要素で読み上げる
+  - 畳んだ最終列の開閉のボタンは `「{先頭のセルの文字}」の{最終列の見出しの文字}` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
 status: planned
 notes:
-  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>表を開く</summary>` に入れる。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「含む文字」の欄、`date` が「開始日」「終了日」の欄で、どれも題 `「{列名}」で絞り込む` と「絞り込みを外す」を持つ。表の見た目は確認ログの決定（拡張記法のモック・直した表のモック）。モックは `dev/mock/components/table/`。`count`・`columns`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle" aria-expanded aria-controls>列の表示</button><button class="mdmark-table-tool mdmark-copy" data-state="idle">表をコピー</button></div><span class="mdmark-copy-status" role="status"></span></div>` を置き、`<table>` の後ろに `<div class="mdmark-columns-menu" role="dialog" hidden>`（`mdmark-columns-title`・`mdmark-columns-options` のチェックボックス・`mdmark-columns-note`・`mdmark-columns-reset`）を置く。集計の行は `<tfoot><tr class="mdmark-table-total">` で、集計する列のセルが `data-total="{計算}"` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}">` で、強調する行は `data-target` を持つ。アイコンは全て lucide（`columns-3`・`copy`・`check`・`circle-alert`・`link`）。印刷では帯のボタンと行へのリンクの印を出さない'
+  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>表を開く</summary>` に入れる。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「含む文字」の欄、`date` が「開始日」「終了日」の欄で、どれも題 `「{列名}」で絞り込む` と「絞り込みを外す」を持つ。表の見た目は確認ログの決定（拡張記法のモック・直した表のモック）。モックは `dev/mock/components/table/`。`count`・`columns`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle" aria-expanded aria-controls>列の表示</button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を置き、`<table>` の後ろに `<div class="mdmark-columns-menu" role="dialog" hidden>`（`mdmark-columns-title`・`mdmark-columns-options` のチェックボックス・`mdmark-columns-note`・`mdmark-columns-reset`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="出す集計" hidden>`（題と、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を置く。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、知らせの要素はコピーの結果で `data-state` を持つ。畳んだ最終列は、最終列のセルに `mdmark-fold-col`、表の外側に `is-folded` を付け、先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label>{セルの中身}</span>` にし、行の直後に `<tr class="mdmark-row-detail mdmark-fold-detail" hidden><td colspan><div class="mdmark-fold-part"><p class="mdmark-fold-name">{最終列の見出し}</p><div class="mdmark-fold-value">{セルの中身}</div></div></td></tr>` を置く（行の詳細を持つ行は詳細の中身の先頭に `mdmark-fold-part` を置く）。アイコンは全て lucide（`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクの印と畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす'
