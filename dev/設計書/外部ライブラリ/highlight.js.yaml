@@ -53,6 +53,18 @@ catalogs:
       - name: es/languages/sql.min.js
         kind: ES モジュール
         purpose: sql
+      - name: es/languages/dockerfile.min.js
+        kind: ES モジュール
+        purpose: dockerfile（別名 docker）
+        status: planned
+        introduced:
+          pr: 151
+      - name: es/languages/diff.min.js
+        kind: ES モジュール
+        purpose: diff（別名 patch）。足した行を `hljs-addition`、消した行を `hljs-deletion` にする
+        status: planned
+        introduced:
+          pr: 151
 lead: コードの文字を言語の文法で色分けし、`hljs-*` の class を付けた HTML 文字列を返すシンタックスハイライタ。`@highlightjs/cdn-assets` は、import を持たない ES モジュールを本体と言語ごとのファイルに分けて配る。
 purl: pkg:npm/%40highlightjs/cdn-assets@11.12.0
 supplier: highlight.js の保守者（Josh Goebel ほか）
