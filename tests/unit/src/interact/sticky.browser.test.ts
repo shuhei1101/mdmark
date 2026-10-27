@@ -12,6 +12,9 @@ const loadSticky = (): Promise<
     ).href
   );
 
+/** 集計の行を置く表の操作を読み込む */
+const loadTables = () => import("../../../../src/interact/tables.ts");
+
 const detachers: Array<() => void> = [];
 
 /** 行の数と集計の行を持つ data の表の文書 */
@@ -82,7 +85,9 @@ test("test_attach_sticky_rows_when_timeline", async () => {
   addStyles();
   vi.spyOn(CSS, "supports").mockReturnValue(true);
   const { attachStickyRows } = await loadSticky();
+  const { attachTables } = await loadTables();
   const { root } = createRoot(longTable(30));
+  detachers.push(attachTables(root));
   // 実行
   const detach = attachStickyRows(root);
   // 検証: 付けた後は動く範囲が入る
@@ -106,7 +111,9 @@ test("test_attach_sticky_rows_when_script", async () => {
   addStyles();
   vi.spyOn(CSS, "supports").mockReturnValue(false);
   const { attachStickyRows } = await loadSticky();
+  const { attachTables } = await loadTables();
   const { root } = createRoot(longTable(60));
+  detachers.push(attachTables(root));
   const head = headCell(root);
   const headTop = head.getBoundingClientRect().top + window.scrollY;
   detachers.push(attachStickyRows(root));
@@ -132,7 +139,9 @@ test("test_attach_sticky_rows_when_detached", async () => {
   addStyles();
   vi.spyOn(CSS, "supports").mockReturnValue(false);
   const { attachStickyRows } = await loadSticky();
+  const { attachTables } = await loadTables();
   const { root } = createRoot(longTable(60));
+  detachers.push(attachTables(root));
   const headTop = headCell(root).getBoundingClientRect().top + window.scrollY;
   const detach = attachStickyRows(root);
   detach();

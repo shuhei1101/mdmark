@@ -849,7 +849,9 @@ test("test_attach_tables_when_copied_markdown", async () => {
   expect(writeText).toHaveBeenCalledWith(
     "| 名前 | 式 |\n| --- | --- |\n| a | x \\| y |",
   );
-  expect(statusText(root)).toBe("Markdown の表をコピーしました");
+  await vi.waitFor(() => {
+    expect(statusText(root)).toBe("Markdown の表をコピーしました");
+  });
 });
 
 // 並べ替えた表は、画面の並びで写す（正常系）

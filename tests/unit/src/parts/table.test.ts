@@ -621,7 +621,9 @@ test("test_render_table_when_folded", async () => {
   // 検証: 囲みと最終列のセル
   expect(findTag(html, 'class="mdmark-table')).toContain("is-folded");
   const bodyRows = rowsOf(innerHtml(html, "<tbody")).filter(
-    (row) => !row.includes("mdmark-fold-detail"),
+    (row) =>
+      !row.includes("mdmark-fold-detail") &&
+      !row.includes("mdmark-table-empty"),
   );
   expect(bodyRows).toHaveLength(2);
   for (const row of bodyRows) {

@@ -226,7 +226,9 @@ test("test_mark_source_lines_when_table_and_code", async () => {
   expect(html).toMatch(/<table[^>]*data-source-line="0"/);
   expect(html).toMatch(/<tr[^>]*data-source-line="2"/);
   expect(html).toMatch(/<tr[^>]*data-source-line="3"/);
-  expect(html).toMatch(/<pre[^>]*data-source-line="5"/);
+  expect(html).toMatch(
+    /<div(?=[^>]*class="mdmark-code")[^>]*data-source-line="5"/,
+  );
 });
 
 // 印の範囲を囲む要素と注意書きに開きの印の行を付け、中のブロックにもそれぞれの行を付ける（正常系）

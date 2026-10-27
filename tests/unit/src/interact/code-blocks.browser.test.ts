@@ -140,5 +140,5 @@ test("test_attach_code_copy_when_detached", async () => {
   detach();
   // 検証: 帯にボタンが残らず、タイマーが走っても例外が出ない
   expect(root.querySelector(".mdmark-code-meta")).toBeNull();
-  await expect(vi.advanceTimersByTimeAsync(2000)).resolves.toBeUndefined();
+  await vi.advanceTimersByTimeAsync(2000);
 });
