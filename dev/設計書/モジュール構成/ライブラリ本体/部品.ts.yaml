@@ -268,7 +268,7 @@ functions:
         summary: 数として読めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す
         condition: 部品設計の `TotalsUnreadable`（数量の列に `-`・`約 3`）
         mock: なし
-        expected: '`tfoot` に `data-total-kind` が `sum`・`avg`・`count` の 3 行がこの順にあり、合計の行の数量のセルが空、平均の行の単価のセルが `250`'
+        expected: '`tfoot` に `data-total-kind` が `sum`・`avg` の 2 行がこの順にあり、合計の行の数量のセルが空、平均の行の単価のセルが `250`'
       - name: test_render_table_when_totals_hidden
         case: 正常
         summary: 出さない計算の集計の行を隠す
