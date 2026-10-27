@@ -645,7 +645,7 @@ handle.destroy();
 | `--mdmark-heading-weight` | `700` | 見出しの太さ |
 | `--mdmark-heading-rule-width` | `0px` | 見出し 1・見出し 2 の下の線の太さ。`0` のままだと線が出ない |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
-| `--mdmark-sticky-top` | `0px` | 表の見出し行を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
+| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |
@@ -684,7 +684,7 @@ handle.destroy();
 | `--mdmark-color-callout-important` | `#6d28d9` | `#c4a7ff` | 重要の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
-| `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景 |
+| `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いる節の項目と、目次を出しているときの目次を出すボタンの背景 |
 | `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM の箱と LLM の層の色 |
 | `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルの箱の色 |
 | `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトの箱の色 |
