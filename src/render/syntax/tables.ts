@@ -12,7 +12,9 @@ import {
 import {
   FILTER_KINDS,
   type FilterKind,
+  findUnreadableTotals,
   TOTAL_CALCS,
+  TOTAL_LABELS,
   type TotalCalc,
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
@@ -168,12 +170,12 @@ function readTotals(
         message: `の計算 \`${calc}\` は使えません。\`total=列名:計算\` の形で書き、使える計算は ${codes(TOTAL_CALCS)} です。\`${name}\` の列は集計せずに描いています。`,
       });
     } else {
-      const next = { column, calc: calc as TotalCalc };
-      const position = totals.findIndex((total) => total.column === column);
-      if (position < 0) {
-        totals.push(next);
-      } else {
-        totals[position] = next;
+      // 同じ列に別の計算を書けるため、列と計算が同じ指定だけを重ねない
+      const duplicated = totals.some(
+        (total) => total.column === column && total.calc === calc,
+      );
+      if (!duplicated) {
+        totals.push({ column, calc: calc as TotalCalc });
       }
     }
   }
@@ -399,6 +401,43 @@ function decorateAttributes(state: StateCore): void {
   }
 }
 
+/** 表の本文の各行のセルの文字を集める */
+function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
+  const rows: string[][] = [];
+  let inBody = false;
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.type === "table_close") {
+      break;
+    }
+    if (token?.type === "tbody_open") {
+      inBody = true;
+    } else if (inBody && token?.type === "tr_open") {
+      rows.push([]);
+    } else if (inBody && token?.type === "td_open") {
+      const inline = tokens[index + 1];
+      rows.at(-1)?.push(inline ? textOf(inline) : "");
+    }
+  }
+  return rows;
+}
+
+/** 集計する列に数として読めないセルがあるときの警告を、列と計算ごとに作る */
+function unreadableTotalWarnings(options: {
+  tokens: Token[];
+  tableOpen: number;
+  totals: TableTotal[];
+}): SyntaxWarning[] {
+  const { tokens, tableOpen, totals } = options;
+  const headers = headersOf(tokens, tableOpen);
+  return findUnreadableTotals({
+    rows: bodyCellsOf(tokens, tableOpen),
+    totals,
+  }).map((item) => ({
+    message: `「${headers[item.column] ?? ""}」の列に数として読めない値 ${codes(item.values)} があるため、${TOTAL_LABELS[item.calc]}を出していません。数を書くか、セルを空にしてください。`,
+  }));
+}
+
 /** 表の見出しの文字を集める */
 export function headersOf(tokens: Token[], tableOpen: number): string[] {
   const headers: string[] = [];
@@ -485,9 +524,20 @@ export function decorateTables(state: StateCore): void {
     // 警告は、囲みの頭（折り畳みの外）に差し込む
     const divEnd = head.indexOf(">") + 1;
     const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
+
     if (range && range.close < 0 && !range.warned) {
       range.warned = true;
       warnings.push(unclosedWarning(range.mark));
+    }
+    // 集計できない列の警告は、表の囲みの直前に置く
+    if (spec.features.includes("total")) {
+      for (const warning of unreadableTotalWarnings({
+        tokens,
+        tableOpen: index,
+        totals: spec.totals,
+      })) {
+        out.push(warningBlock(state, warning));
+      }
     }
     const open = ownBlock(
       state,

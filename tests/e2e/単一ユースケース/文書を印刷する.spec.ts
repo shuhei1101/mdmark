@@ -238,11 +238,18 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   const doc = page.locator("#doc");
   await expect(doc.locator("button.mdmark-columns-toggle")).toBeHidden();
   await expect(doc.locator("button.mdmark-copy")).toBeHidden();
+  await expect(doc.locator("button.mdmark-totals-toggle")).toBeHidden();
   await expect(doc.locator(".mdmark-row-anchor").first()).toBeHidden();
   await expect(doc.locator(".mdmark-table-count")).toBeVisible();
   await expect(doc.locator(".mdmark-table-count")).toContainText("3 / 3 件");
   await expect(doc.locator("tfoot tr")).toBeVisible();
+  await expect(doc.locator("tfoot td").nth(0)).toContainText("合計");
   await expect(doc.locator("tfoot td").nth(2)).toContainText("6");
+  // 見出し行は 1 組だけで、画面の上端に留めるずれが当たっていない
+  await expect(doc.locator("thead")).toHaveCount(1);
+  for (const cell of await doc.locator("thead th:visible").all()) {
+    await expect(cell).toHaveCSS("transform", "none");
+  }
   await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
 });
 
@@ -275,7 +282,10 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
   // 検証
   const doc = page.locator("#doc");
   await expect(doc.locator(".mdmark-code-title")).toBeVisible();
-  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  await expect(doc.locator(".mdmark-code-title")).toContainText("app.ts");
+  await expect(doc.locator(".mdmark-code-lang-name")).toBeVisible();
+  await expect(doc.locator(".mdmark-code-lang-name")).toHaveText("ts");
+  await expect(doc.locator(".mdmark-code-copy")).toBeHidden();
   const lines = doc.locator(".mdmark-code-line");
   await expect(lines).toHaveCount(3);
   const printed = await lines.evaluateAll((elements) =>
@@ -307,4 +317,57 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
     elements.map((element) => getComputedStyle(element).printColorAdjust),
   );
   expect(new Set(spanAdjust)).toEqual(new Set(["exact"]));
+});
+
+/** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表の Markdown */
+const FOLD_TABLE = [
+  "<!-- table: data -->",
+  "",
+  "| 名前 | 状態 | 説明 |",
+  "| --- | --- | --- |",
+  "| りんご | 新規 | 描画を速くするために、見出しの ID を作る処理を 1 回にまとめる改善の説明 |",
+  "| みかん | 進行 | 印刷で折り畳みを開き、リンクの URL を併記して紙に収める変更の説明 |",
+  "| ぶどう | 完了 | 表の見出し行を画面の上端に留めて、縦に長い表を読みやすくする変更の説明 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+// 畳んだ最終列を、印刷では畳まずに列として出し、開閉のボタンを出さず、印刷の後に畳んだ表示へ戻す（正常シナリオ（畳んだ最終列を開いて出す））
+test("test_normal_when_collapsed_column_printed", async ({ page }) => {
+  // 準備: 描く先の要素の幅は 390px のまま、印刷の用紙の幅は画面より広い
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPage(page, builtRoot, {
+    hostCss: "body { margin: 0 } #doc { width: 390px }",
+  });
+  await mountDocument(page, { markdown: FOLD_TABLE });
+  const doc = page.locator("#doc");
+  const toggles = doc.locator("button.mdmark-fold-toggle");
+  const lastCells = doc.locator(
+    "tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty) td:nth-child(3)",
+  );
+  await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
+  await expect(toggles).toHaveCount(3);
+  // 実行: 印刷の前
+  await page.setViewportSize({ width: 794, height: 1123 });
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 説明の列の見出しと全ての行のセルが出ていて、開閉のボタンが出ていない
+  await expect(doc.locator("thead th", { hasText: "説明" })).toBeVisible();
+  for (const cell of await lastCells.all()) {
+    await expect(cell).toBeVisible();
+  }
+  for (const toggle of await toggles.all()) {
+    await expect(toggle).toBeHidden();
+  }
+  // 実行: 印刷の後
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証: 説明の列が畳まれ、行に開閉のボタンがある
+  await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
+  await expect(lastCells.first()).toBeHidden();
+  for (const toggle of await toggles.all()) {
+    await expect(toggle).toBeVisible();
+  }
 });

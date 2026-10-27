@@ -1,4 +1,5 @@
 import { rowIdFromHash } from "../table-logic.ts";
+import { revealTabTarget } from "./tabs.ts";
 import { visibleText } from "./text.ts";
 
 /** 節の開閉を切り替える関数。節の中身の要素から引く */
@@ -43,7 +44,7 @@ function attachSection(
   };
 }
 
-/** URL の `#ID`（まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素を囲む閉じた節を、外側から開く */
+/** URL の `#ID`（まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選ぶ */
 function revealHashTarget(
   root: HTMLElement,
   setters: Map<HTMLElement, SetOpen>,
@@ -65,6 +66,8 @@ function revealHashTarget(
   ) {
     setters.get(body)?.(true);
   }
+  // 選ばれていないタブの中にあれば、そのタブも選ぶ
+  revealTabTarget(target);
   // 表の行へは、`attachTables` が絞り込みを外してから送る
   if (target.tagName !== "TR") {
     target.scrollIntoView();

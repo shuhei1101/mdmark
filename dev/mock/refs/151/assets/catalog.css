@@ -1,0 +1,13 @@
+/* 部品のカタログのモック専用の追加分（#151）: 開いたまま見せる集計・コピーの形式のメニューの置き方と、狭い描く先の見本 */
+
+/* 開いたまま見せる集計・コピーの形式のメニュー: 実装と同じくボタンの下に重ねるが、画面に留めずに表の入れ物の右端に置く */
+.mdmark .mdmark-table[data-mock-open] :is(.mdmark-totals-menu, .mdmark-copy-menu) {
+  position: absolute;
+  top: 2.25rem;
+  right: 0;
+}
+
+/* 狭い描く先の見本: 描いた文書の幅が狭いときの見え方を、画面の幅によらず見せる */
+.catalog-narrow {
+  max-width: 560px;
+}

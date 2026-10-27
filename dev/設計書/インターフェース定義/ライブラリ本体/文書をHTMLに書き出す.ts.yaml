@@ -248,6 +248,6 @@ constraints:
     constraint: 設定の `tooltips.placement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`top`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
   - item: 埋める色分け
-    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを 1 つずつ ES モジュールとして埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
+    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを 1 つずつ ES モジュールとして埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
     notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確かめた（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
 test_file: tests/integration/lib/export.test.ts

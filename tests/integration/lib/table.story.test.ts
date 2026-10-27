@@ -264,7 +264,7 @@ test("test_no_match", async () => {
   await expect(empty.innerText()).resolves.toBe("一致する行がありません");
 });
 
-// 幅からはみ出す既定の種類の表は、各列にピン止めのボタンが出て、見出し行が上端に留まる（DefaultOverflow）
+// 幅からはみ出す既定の種類の表は、各列にピン止めのボタンが出て、表の中で横にスクロールする（DefaultOverflow）
 test("test_default_overflow", async () => {
   // 準備・実行
   const page = await open("default-overflow");
@@ -272,11 +272,6 @@ test("test_default_overflow", async () => {
   await expect(page.locator("button.mdmark-pin:visible").count()).resolves.toBe(
     10,
   );
-  const sticky = await page
-    .locator("#storybook-root thead th")
-    .first()
-    .evaluate((el) => getComputedStyle(el).position);
-  expect(sticky).toBe("sticky");
   const scrolls = await page
     .locator(".mdmark-table table")
     .evaluate((el) => el.scrollWidth > el.clientWidth);
@@ -404,11 +399,13 @@ function hiddenCells(page: Page, column: number): Promise<boolean[]> {
   }, column);
 }
 
-/** 集計の行のセルの文字を、空白を除いて左から並べて返す */
-function totalTexts(page: Page): Promise<string[]> {
+/** 集計の行ごとに、セルの文字を空白を除いて左から並べて返す */
+function totalRows(page: Page): Promise<string[][]> {
   return page.evaluate(() =>
-    [...document.querySelectorAll("#storybook-root tfoot td")].map((cell) =>
-      (cell.textContent ?? "").replace(/\s+/g, ""),
+    [...document.querySelectorAll("#storybook-root tfoot tr")].map((row) =>
+      [...row.querySelectorAll("td")].map((cell) =>
+        (cell.textContent ?? "").replace(/\s+/g, ""),
+      ),
     ),
   );
 }
@@ -483,13 +480,16 @@ test("test_columns_menu_open", async () => {
 
 // 集計の行を表の末尾に出す（Totals）
 test("test_totals", async () => {
-  // 準備・実行
-  const page = await open("totals");
+  // 準備・実行: 表が画面に収まる高さにする（集計の行を画面の下端に留めず、元の位置で線を測る）
+  const page = await holder.openStory("parts-table--totals", {
+    width: 420,
+    height: 800,
+  });
   // 検証
-  await expect(totalTexts(page)).resolves.toEqual([
-    "個数4",
-    "合計45",
-    "平均250",
+  await expect(totalRows(page)).resolves.toEqual([
+    ["合計", "45", ""],
+    ["平均", "", "250"],
+    ["件数4", "", ""],
   ]);
   // 集計の行の上と、表の下端の線は 1px（下は表の枠でなく集計の行が描く）
   await expect(footerTopLineWidth(page)).resolves.toBe(1);
@@ -509,10 +509,10 @@ test("test_totals_filtered", async () => {
   // 準備・実行
   const page = await open("totals-filtered");
   // 検証
-  await expect(totalTexts(page)).resolves.toEqual([
-    "個数2",
-    "合計43",
-    "平均200",
+  await expect(totalRows(page)).resolves.toEqual([
+    ["合計", "43", ""],
+    ["平均", "", "200"],
+    ["件数2", "", ""],
   ]);
 });
 
@@ -521,7 +521,11 @@ test("test_totals_empty", async () => {
   // 準備・実行
   const page = await open("totals-empty");
   // 検証
-  await expect(totalTexts(page)).resolves.toEqual(["個数0", "合計0", "平均—"]);
+  await expect(totalRows(page)).resolves.toEqual([
+    ["合計", "0", ""],
+    ["平均", "", "—"],
+    ["件数0", "", ""],
+  ]);
   await expect(countText(page)).resolves.toBe("0 / 4 件");
 });
 
@@ -533,7 +537,7 @@ test("test_copied", async () => {
   const button = page.locator(".mdmark-copy");
   await expect(button.getAttribute("data-state")).resolves.toBe("copied");
   await expect(button.innerText()).resolves.toContain("コピーしました");
-  await expect(page.locator(".mdmark-copy-status").innerText()).resolves.toBe(
+  await expect(page.locator(".mdmark-table-status").innerText()).resolves.toBe(
     "コピーしました",
   );
 });
@@ -572,8 +576,299 @@ test("test_all_features", async () => {
   await expect(countText(page)).resolves.toBe("3 / 3 件");
   await expect(page.locator(".mdmark-columns-toggle").count()).resolves.toBe(1);
   await expect(page.locator(".mdmark-copy").count()).resolves.toBe(1);
-  await expect(totalTexts(page)).resolves.toEqual(["", "", "合計25"]);
+  await expect(totalRows(page)).resolves.toEqual([["合計", "", "25"]]);
   expect((await hiddenCells(page, 1)).every(Boolean)).toBe(true);
   await expect(page.locator(".mdmark-row-anchor").count()).resolves.toBe(3);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 数として読めないセルを持つ列は、合計の行のセルを空にし、平均の行のセルは読めた値で出す（TotalsUnreadable）
+test("test_totals_unreadable", async () => {
+  // 準備・実行
+  const page = await open("totals-unreadable");
+  // 検証
+  await expect(totalRows(page)).resolves.toEqual([
+    ["合計", "", ""],
+    ["平均", "", "250"],
+  ]);
+});
+
+// 集計のメニューを開くと、合計・平均・件数のチェックボックスに全てチェックが入っている（TotalsMenuOpen）
+test("test_totals_menu_open", async () => {
+  // 準備・実行
+  const page = await open("totals-menu-open");
+  // 検証
+  const menu = page.locator(".mdmark-totals-menu:not([hidden])");
+  await expect(menu.count()).resolves.toBe(1);
+  await expect(menu.getAttribute("aria-label")).resolves.toBe("出す集計");
+  await expect(menu.innerText()).resolves.toContain("出す集計");
+  const boxes = menu.locator("input[type='checkbox']");
+  await expect(boxes.count()).resolves.toBe(3);
+  await expect(
+    boxes.evaluateAll((inputs) =>
+      inputs.map((input) => ({
+        value: (input as HTMLInputElement).value,
+        checked: (input as HTMLInputElement).checked,
+        label: input.parentElement?.textContent?.trim(),
+      })),
+    ),
+  ).resolves.toEqual([
+    { value: "sum", checked: true, label: "合計" },
+    { value: "avg", checked: true, label: "平均" },
+    { value: "count", checked: true, label: "件数" },
+  ]);
+  await expect(
+    page.locator(".mdmark-totals-toggle").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 平均と件数のチェックを外すと、合計の行だけを出し、集計のボタンが隠していることを示す（TotalsHidden）
+test("test_totals_hidden", async () => {
+  // 準備・実行
+  const page = await open("totals-hidden");
+  // 検証
+  const rows = page.locator("#storybook-root tfoot tr");
+  await expect(
+    rows.evaluateAll((elements) =>
+      elements.map((element) => ({
+        kind: element.getAttribute("data-total-kind"),
+        hidden: element.hasAttribute("hidden"),
+      })),
+    ),
+  ).resolves.toEqual([
+    { kind: "sum", hidden: false },
+    { kind: "avg", hidden: true },
+    { kind: "count", hidden: true },
+  ]);
+  await expect(rows.locator("visible=true").count()).resolves.toBe(1);
+  const toggle = page.locator(".mdmark-totals-toggle");
+  await expect(
+    toggle.evaluate((el) => el.classList.contains("is-active")),
+  ).resolves.toBe(true);
+  await expect(
+    toggle.locator(".mdmark-visually-hidden").innerText(),
+  ).resolves.toBe("（2 件を隠しています）");
+});
+
+// コピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを使いどころと並べて出す（CopyMenuOpen）
+test("test_copy_menu_open", async () => {
+  // 準備・実行
+  const page = await open("copy-menu-open");
+  // 検証
+  const menu = page.locator(".mdmark-copy-menu:not([hidden])");
+  await expect(menu.count()).resolves.toBe(1);
+  await expect(
+    menu.locator(".mdmark-copy-format").evaluateAll((buttons) =>
+      buttons.map((button) => ({
+        format: button.getAttribute("data-format"),
+        name: button.querySelector(".mdmark-copy-format-name")?.textContent,
+        note: button.querySelector(".mdmark-copy-format-note")?.textContent,
+      })),
+    ),
+  ).resolves.toEqual([
+    {
+      format: "markdown",
+      name: "Markdown の表",
+      note: "文書に貼るとそのまま表になる",
+    },
+    {
+      format: "tsv",
+      name: "TSV",
+      note: "表計算ソフトに貼るとセルに分かれる",
+    },
+  ]);
+  await expect(
+    page.locator(".mdmark-copy").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// クリップボードに書けないときは、手でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
+test("test_copy_fallback", async () => {
+  // 準備・実行
+  const page = await open("copy-fallback");
+  // 検証
+  const button = page.locator(".mdmark-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("failed");
+  await expect(button.innerText()).resolves.toContain("コピーできませんでした");
+  const panel = page.locator(".mdmark-copy-panel");
+  await expect(panel.count()).resolves.toBe(1);
+  await expect(panel.getAttribute("role")).resolves.toBe("group");
+  await expect(
+    page
+      .locator(".mdmark-table-bar")
+      .evaluate((bar) => bar.nextElementSibling?.className),
+  ).resolves.toBe("mdmark-copy-panel");
+  await expect(panel.innerText()).resolves.toContain(
+    "クリップボードにコピーできませんでした",
+  );
+  await expect(
+    panel.locator(".mdmark-copy-panel-close").getAttribute("aria-label"),
+  ).resolves.toBe("閉じる");
+  const textarea = panel.locator("textarea");
+  await expect(
+    textarea.evaluate((el) => (el as HTMLTextAreaElement).readOnly),
+  ).resolves.toBe(true);
+  await expect(textarea.inputValue()).resolves.toBe(
+    [
+      "| 名前 | 説明 | 更新日 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 2026-10-01 |",
+      "| みかん | 印刷を直す | 2026-10-10 |",
+    ].join("\n"),
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+/** 行へのリンクの知らせの、行の ID・状態・文字・画面に出ているかを返す */
+function rowLinkNotice(page: Page): Promise<{
+  row: string | undefined;
+  state: string | null;
+  text: string;
+  visible: boolean;
+}> {
+  return page.evaluate(() => {
+    const row = document.querySelector<HTMLElement>(
+      "#storybook-root tr[data-target]",
+    );
+    const notice = row?.querySelector<HTMLElement>(".mdmark-row-link-notice");
+    return {
+      row: row?.id,
+      state: notice?.getAttribute("data-state") ?? null,
+      text: notice?.textContent ?? "",
+      visible: (notice?.getClientRects().length ?? 0) > 0,
+    };
+  });
+}
+
+// 2 行目の行へのリンクの URL をコピーすると、印の横に「リンクをコピーしました」を出す（RowLinkCopied）
+test("test_row_link_copied", async () => {
+  // 準備・実行
+  const page = await open("row-link-copied");
+  // 検証
+  await expect(rowLinkNotice(page)).resolves.toEqual({
+    row: "みかん",
+    state: "copied",
+    text: "リンクをコピーしました",
+    visible: true,
+  });
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 2 行目の行へのリンクの URL をコピーできないと、印の横に「リンクをコピーできませんでした」を出す（RowLinkFailed）
+test("test_row_link_failed", async () => {
+  // 準備・実行
+  const page = await open("row-link-failed");
+  // 検証
+  await expect(rowLinkNotice(page)).resolves.toEqual({
+    row: "みかん",
+    state: "failed",
+    text: "リンクをコピーできませんでした",
+    visible: true,
+  });
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+/** 畳んだ表の最終列の見出しとセルが画面に出ているかを、見出し・本文の行の順に返す */
+function lastColumnShown(page: Page): Promise<boolean[]> {
+  return page.evaluate(() => {
+    const cells = [
+      document.querySelector("#storybook-root thead th:last-child"),
+      ...[
+        ...document.querySelectorAll(
+          "#storybook-root tbody tr:not(.mdmark-fold-detail):not(.mdmark-table-empty)",
+        ),
+      ].map((row) => row.querySelector("td:last-child")),
+    ];
+    return cells.map((cell) => (cell?.getClientRects().length ?? 0) > 0);
+  });
+}
+
+// 最終列を畳むと、説明の列を出さず、各行の先頭のセルに開閉のボタンが付く（Folded）
+test("test_folded", async () => {
+  // 準備・実行
+  const page = await open("folded");
+  // 検証
+  await expect(
+    page
+      .locator(".mdmark-table")
+      .evaluate((el) => el.classList.contains("is-folded")),
+  ).resolves.toBe(true);
+  await expect(lastColumnShown(page)).resolves.toEqual([false, false, false]);
+  const toggles = page.locator("button.mdmark-fold-toggle");
+  await expect(toggles.count()).resolves.toBe(2);
+  await expect(
+    toggles.evaluateAll((buttons) =>
+      buttons.map((button) => ({
+        expanded: button.getAttribute("aria-expanded"),
+        label: button.getAttribute("aria-label"),
+        inFirstCell:
+          button.closest("td") === button.closest("tr")?.querySelector("td"),
+      })),
+    ),
+  ).resolves.toEqual([
+    { expanded: "false", label: "「りんご」の説明", inFirstCell: true },
+    { expanded: "false", label: "「みかん」の説明", inFirstCell: true },
+  ]);
+  await expect(
+    page.locator("tr.mdmark-fold-detail:visible").count(),
+  ).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 最終列を畳み、1 行目を開くと、行の直後に説明の見出しと中身を出す（FoldedOpen）
+test("test_folded_open", async () => {
+  // 準備・実行
+  const page = await open("folded-open");
+  // 検証
+  const toggles = page.locator("button.mdmark-fold-toggle");
+  await expect(
+    toggles.evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute("aria-expanded")),
+    ),
+  ).resolves.toEqual(["true", "false"]);
+  const detail = page.locator("tr.mdmark-fold-detail:visible");
+  await expect(detail.count()).resolves.toBe(1);
+  await expect(
+    detail.evaluate(
+      (el) => el.previousElementSibling?.querySelector("td")?.textContent,
+    ),
+  ).resolves.toContain("りんご");
+  await expect(detail.locator(".mdmark-fold-name").innerText()).resolves.toBe(
+    "説明",
+  );
+  await expect(
+    detail.locator(".mdmark-fold-value").innerText(),
+  ).resolves.toContain("見出しの ID を作る処理を 1 回にまとめる");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 30 行と集計の行を持つ表は、枠を縦にスクロールすると、表が枠に残っている間、見出し行が上端に、集計の行が下端に留まる（StickyRows）
+test("test_sticky_rows", async () => {
+  // 準備
+  const page = await open("sticky-rows");
+  const tableTop = await page
+    .locator(".mdmark-table table")
+    .evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+  const viewportHeight = page.viewportSize()?.height ?? 0;
+  const headTop = (): Promise<number> =>
+    page
+      .locator("#storybook-root thead th")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().top);
+  const footBottom = (): Promise<number> =>
+    page
+      .locator("#storybook-root tfoot td")
+      .last()
+      .evaluate((el) => el.getBoundingClientRect().bottom);
+  // 実行: 表の途中までスクロールする
+  await page.evaluate((top) => window.scrollTo(0, top), tableTop + 300);
+  // 検証
+  await expect
+    .poll(async () => Math.abs((await headTop()) - 0))
+    .toBeLessThanOrEqual(1);
+  await expect
+    .poll(async () => Math.abs((await footBottom()) - viewportHeight))
+    .toBeLessThanOrEqual(1);
 });

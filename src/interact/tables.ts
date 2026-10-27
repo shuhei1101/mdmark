@@ -1,10 +1,14 @@
 import { iconSvg } from "../parts/icons.ts";
 import {
-  COPY_STATES,
+  COPY_FORMATS,
+  type CopyFormat,
   type CopyState,
+  renderCopyButtonContent,
+  renderCopyPanel,
+  renderFoldedColumn,
   renderTableBar,
   renderTableTools,
-  renderTotalRow,
+  renderTotalRows,
   type TableTotal,
 } from "../parts/table.ts";
 import {
@@ -13,12 +17,18 @@ import {
   FILTER_KINDS,
   type FilterKind,
   type FilterValue,
+  FOLD_MAX_WIDTH,
+  findUnreadableTotals,
   matchesFilter,
   rowIdFromHash,
+  shouldFold,
   TOTAL_CALCS,
+  TOTAL_LABELS,
   type TotalCalc,
+  tableToMarkdown,
   tableToTsv,
 } from "../table-logic.ts";
+import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
@@ -29,9 +39,6 @@ const SORT_CYCLE = ["none", "ascending", "descending"] as const;
 // ドロワーとボタンの間の隙間と、画面の端に残す余白（px）
 const DRAWER_GAP = 4;
 const VIEWPORT_GUTTER = 16;
-
-// コピーしたことの知らせをボタンに出しておく時間（ミリ秒）。できなかったことの知らせは次に押すまで残す
-const COPIED_NOTICE_MS = 2000;
 
 // 表の id を文書の中で重ならせないための通し番号
 let tableCounter = 0;
@@ -83,6 +90,23 @@ function detailsOf(row: HTMLTableRowElement): HTMLTableRowElement[] {
   return details;
 }
 
+/** 行の直後に続く行の詳細の行のうち、畳んだ最終列の開閉の行を除いたもの */
+function ownDetailsOf(row: HTMLTableRowElement): HTMLTableRowElement[] {
+  return detailsOf(row).filter(
+    (detail) => !detail.classList.contains("mdmark-fold-detail"),
+  );
+}
+
+/** 要素の中身の幅（内側の余白を除く） */
+function contentWidthOf(element: HTMLElement): number {
+  const style = getComputedStyle(element);
+  return (
+    element.clientWidth -
+    (Number.parseFloat(style.paddingLeft) || 0) -
+    (Number.parseFloat(style.paddingRight) || 0)
+  );
+}
+
 /** 表の本文の行（行の詳細の行と一致なしの行を除く）を返す */
 function bodyRows(table: HTMLTableElement): HTMLTableRowElement[] {
   return [...(table.tBodies[0]?.rows ?? [])].filter(
@@ -96,6 +120,7 @@ function bodyRows(table: HTMLTableElement): HTMLTableRowElement[] {
 function attachTable(
   wrapper: HTMLElement,
   table: HTMLTableElement,
+  root: HTMLElement,
 ): () => void {
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
@@ -115,6 +140,7 @@ function attachTable(
   const totalSpecs = features.includes("total")
     ? readTotalSpecs(wrapper.dataset.total)
     : [];
+  const shownCalcs = new Set<TotalCalc>(totalSpecs.map((total) => total.calc));
   const cleanups: Array<() => void> = [];
   /** 行の指定した列のセルの文字 */
   const cellText = (row: HTMLTableRowElement, column: number): string => {
@@ -176,6 +202,7 @@ function attachTable(
     shown: originalRows.length,
     total: originalRows.length,
     hiddenColumns: [...hiddenColumns],
+    totals: totalSpecs.map((total) => total.calc),
   });
   if (barParts.bar) {
     table.insertAdjacentHTML("beforebegin", barParts.bar);
@@ -184,14 +211,26 @@ function attachTable(
       cleanups.push(() => bar.remove());
     }
   }
-  if (barParts.menu) {
-    table.insertAdjacentHTML("afterend", barParts.menu);
-    const menuElement = table.nextElementSibling;
-    if (menuElement) {
-      cleanups.push(() => menuElement.remove());
-    }
+  if (barParts.menus) {
+    const before = new Set(wrapper.children);
+    table.insertAdjacentHTML("afterend", barParts.menus);
+    const added = [...wrapper.children].filter((child) => !before.has(child));
+    cleanups.push(() => {
+      for (const menuElement of added) {
+        menuElement.remove();
+      }
+    });
   }
   const menu = wrapper.querySelector<HTMLElement>(".mdmark-columns-menu");
+  const totalsMenu = wrapper.querySelector<HTMLElement>(".mdmark-totals-menu");
+  const copyMenu = wrapper.querySelector<HTMLElement>(".mdmark-copy-menu");
+  /** 帯の読み上げの要素に知らせを入れる */
+  const announce = (message: string): void => {
+    const status = wrapper.querySelector(".mdmark-table-status");
+    if (status) {
+      status.textContent = message;
+    }
+  };
 
   // ─── 並べ替え ───
   /** 見出しの並べ替えの向きを `aria-sort` に当てる */
@@ -336,10 +375,12 @@ function attachTable(
   /** ドロワーを押したボタンの下に置き、画面の端からはみ出さないようにする */
   const placeDrawer = (drawer: HTMLElement, button: HTMLElement): void => {
     const rect = button.getBoundingClientRect();
-    // 列の表示のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に揃える
-    const start = drawer.classList.contains("mdmark-columns-menu")
-      ? rect.left
-      : rect.right - drawer.offsetWidth;
+    // 帯のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に揃える
+    const start =
+      drawer.classList.contains("mdmark-columns-menu") ||
+      drawer.classList.contains("mdmark-table-menu")
+        ? rect.left
+        : rect.right - drawer.offsetWidth;
     const left = Math.min(
       Math.max(start, VIEWPORT_GUTTER),
       window.innerWidth - drawer.offsetWidth - VIEWPORT_GUTTER,
@@ -412,7 +453,7 @@ function attachTable(
     button.setAttribute("aria-expanded", "true");
     placeDrawer(drawer, button);
     drawer
-      .querySelector<HTMLInputElement>("input:not(:disabled)")
+      .querySelector<HTMLElement>("input:not(:disabled), .mdmark-copy-format")
       ?.focus({ preventScroll: true });
     openState = { drawer, button };
     document.addEventListener("pointerdown", onPointerDown);
@@ -478,6 +519,13 @@ function attachTable(
   };
 
   // ─── 件数と集計の行 ───
+  // 数として読めないセルを持つ列と計算は、絞り込んでも集計のセルを空にする
+  const unreadableTotals = findUnreadableTotals({
+    rows: originalRows.map((row) =>
+      labels.map((_, column) => cellText(row, column)),
+    ),
+    totals: totalSpecs,
+  });
   /** 表の上の件数を、表示している行の数と全ての行の数に書き換える */
   const updateCount = (): void => {
     const [visible, spoken] = wrapper.querySelectorAll(
@@ -499,28 +547,34 @@ function attachTable(
     const shownRows = originalRows.filter((row) => !row.hidden);
     table.insertAdjacentHTML(
       "beforeend",
-      renderTotalRow({
+      renderTotalRows({
         columns: headCells.length,
         totals: totalSpecs.map((total) => ({
           ...total,
-          value: computeTotal(
-            shownRows.map((row) => cellText(row, total.column)),
-            total.calc,
-          ),
+          value: unreadableTotals.some(
+            (item) => item.column === total.column && item.calc === total.calc,
+          )
+            ? ""
+            : computeTotal(
+                shownRows.map((row) => cellText(row, total.column)),
+                total.calc,
+              ),
         })),
+        shown: [...shownCalcs],
         hiddenColumns: [...hiddenColumns],
         labels,
       }),
     );
     // 列の揃えは、本文のセルから写す
-    const cells = [...(table.tFoot?.rows[0]?.cells ?? [])];
-    cells.forEach((cell, index) => {
-      for (const name of originalRows[0]?.cells[index]?.classList ?? []) {
-        if (name.startsWith("mdmark-align-")) {
-          cell.classList.add(name);
+    for (const footRow of table.tFoot?.rows ?? []) {
+      [...footRow.cells].forEach((cell, index) => {
+        for (const name of originalRows[0]?.cells[index]?.classList ?? []) {
+          if (name.startsWith("mdmark-align-")) {
+            cell.classList.add(name);
+          }
         }
-      }
-    });
+      });
+    }
     if (pinned > 0) {
       pinColumns(pinned);
     }
@@ -531,6 +585,152 @@ function attachTable(
     renderTotals();
   };
   cleanups.push(() => table.tFoot?.remove());
+
+  /** 集計のメニューのチェックボックスに合わせて、計算の行を出す・隠す */
+  const toggleTotal = (calc: TotalCalc, shown: boolean): void => {
+    if (shown) {
+      shownCalcs.add(calc);
+    } else {
+      shownCalcs.delete(calc);
+    }
+    for (const footRow of table.tFoot?.rows ?? []) {
+      footRow.hidden = !shownCalcs.has(footRow.dataset.totalKind as TotalCalc);
+    }
+    const hiding = totalSpecs
+      .map((total) => total.calc)
+      .filter((value, index, all) => all.indexOf(value) === index)
+      .filter((value) => !shownCalcs.has(value)).length;
+    const toggle = wrapper.querySelector(".mdmark-totals-toggle");
+    toggle?.classList.toggle("is-active", hiding > 0);
+    const spoken = toggle?.querySelector(".mdmark-visually-hidden");
+    if (spoken) {
+      spoken.textContent = hiding > 0 ? `（${hiding} 件を隠しています）` : "";
+    }
+    announce(
+      `${TOTAL_LABELS[calc]}の行を${shown ? "出しました" : "隠しました"}`,
+    );
+  };
+
+  // ─── 最終列を畳む ───
+  /** 畳んでいる最終列の位置（畳んでいなければ `undefined`）と、畳むために足したものを元に戻す関数 */
+  let foldedColumn: number | undefined;
+  let unfoldRows: Array<() => void> = [];
+  /** 表示している最終列の位置 */
+  const lastVisibleColumn = (): number => {
+    for (let column = headCells.length - 1; column > 0; column -= 1) {
+      if (!hiddenColumns.has(column)) {
+        return column;
+      }
+    }
+    return 0;
+  };
+  /** 最終列のセルのどれかが 1 行に収まらないか */
+  const lastColumnWraps = (column: number): boolean =>
+    originalRows.some((row) => {
+      const cell = row.cells[column];
+      if (!cell || cell.hidden) {
+        return false;
+      }
+      const style = getComputedStyle(cell);
+      const lineHeight =
+        Number.parseFloat(style.lineHeight) ||
+        Number.parseFloat(style.fontSize) * 1.5;
+      const content =
+        cell.scrollHeight -
+        (Number.parseFloat(style.paddingTop) || 0) -
+        (Number.parseFloat(style.paddingBottom) || 0);
+      return content > lineHeight * 1.5;
+    });
+  /** 最終列を畳んで、各行に開閉のボタンと開閉の行を置く */
+  const foldColumn = (column: number): void => {
+    foldedColumn = column;
+    wrapper.classList.add("is-folded");
+    const shownCount = headCells.length - hiddenColumns.size;
+    const name = labels[column] ?? "";
+    for (const cell of [
+      headCells[column],
+      ...originalRows.map((row) => row.cells[column]),
+    ]) {
+      cell?.classList.add("mdmark-fold-col");
+    }
+    originalRows.forEach((row, index) => {
+      const lastCell = row.cells[column];
+      const firstCell = row.cells[0];
+      if (!lastCell || !firstCell) {
+        return;
+      }
+      const parts = renderFoldedColumn({
+        id: `${id}-fold-${index}`,
+        columns: shownCount,
+        label: cellText(row, 0),
+        name,
+        html: lastCell.innerHTML,
+      });
+      const template = document.createElement("template");
+      template.innerHTML = `<table><tbody>${parts.row}</tbody></table>`;
+      const foldRow = template.content.querySelector("tr");
+      const part = foldRow?.querySelector(".mdmark-fold-part");
+      const details = ownDetailsOf(row);
+      const ownDetail = details[0]?.cells[0];
+      // 行の詳細を持つ行は、詳細の中身の上に最終列を置き、詳細のボタンだけで開閉する
+      if (ownDetail && part) {
+        ownDetail.prepend(part);
+        unfoldRows.push(() => part.remove());
+        return;
+      }
+      if (!foldRow) {
+        return;
+      }
+      foldRow.hidden = row.hidden || foldRow.hidden;
+      const head = document.createElement("span");
+      head.className = "mdmark-row-head";
+      head.insertAdjacentHTML("beforeend", parts.toggle);
+      head.append(...firstCell.childNodes);
+      firstCell.append(head);
+      const lastRow = details.at(-1) ?? row;
+      lastRow.after(foldRow);
+      unfoldRows.push(() => {
+        firstCell.append(...[...head.childNodes].slice(1));
+        head.remove();
+        foldRow.remove();
+      });
+    });
+  };
+  /** 畳むために足したものを取り除く */
+  const unfoldColumn = (): void => {
+    for (const restore of unfoldRows) {
+      restore();
+    }
+    unfoldRows = [];
+    for (const cell of wrapper.querySelectorAll(".mdmark-fold-col")) {
+      cell.classList.remove("mdmark-fold-col");
+    }
+    wrapper.classList.remove("is-folded");
+    foldedColumn = undefined;
+  };
+  /** 畳むかを、描く先の要素の幅と最終列の折り返しで決め直す */
+  const updateFold = (): void => {
+    const column = lastVisibleColumn();
+    const width = contentWidthOf(root);
+    // 畳んでいる間は最終列が隠れているため、一度出して測る
+    const wasFolded = wrapper.classList.contains("is-folded");
+    wrapper.classList.remove("is-folded");
+    const next = shouldFold({
+      width,
+      lastColumn: column,
+      wraps: width < FOLD_MAX_WIDTH && column > 0 && lastColumnWraps(column),
+    });
+    if (wasFolded) {
+      wrapper.classList.add("is-folded");
+    }
+    if (foldedColumn !== undefined && (!next || foldedColumn !== column)) {
+      unfoldColumn();
+    }
+    if (next && foldedColumn === undefined) {
+      foldColumn(column);
+    }
+  };
+  cleanups.push(unfoldColumn);
 
   // ─── 列の表示の切り替え ───
   /** 隠している列を見出し・セル・集計のセルに当て、メニューとボタンの状態を合わせる */
@@ -573,6 +773,7 @@ function attachTable(
     if (pinned > 0) {
       pinColumns(pinned);
     }
+    updateFold();
   };
   if (features.includes("columns")) {
     applyColumns();
@@ -594,23 +795,25 @@ function attachTable(
 
   // ─── 表のコピー ───
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
-  /** コピーのボタンに状態の文言とアイコンを当て、読み上げにも知らせる */
+  const copyButton = wrapper.querySelector<HTMLElement>(".mdmark-copy");
+  /** コピーのボタンに状態の文言とアイコンを当てる */
   const setCopyState = (state: CopyState): void => {
-    const button = wrapper.querySelector<HTMLElement>(".mdmark-copy");
-    if (!button) {
-      return;
-    }
-    const { label, icon } = COPY_STATES[state];
-    button.dataset.state = state;
-    button.innerHTML = `${iconSvg(icon)}${label}`;
-    const status = wrapper.querySelector(".mdmark-copy-status");
-    if (status) {
-      status.textContent = state === "idle" ? "" : label;
+    if (copyButton) {
+      copyButton.dataset.state = state;
+      copyButton.innerHTML = renderCopyButtonContent(state);
     }
   };
-  /** 見出しの行と、画面の並びで表示している行の、表示している列をクリップボードへ写し、結果をボタンで知らせる */
-  const copyTable = async (): Promise<void> => {
+  /** 手でコピーさせるパネルを取り除く。`returnFocus` が真なら `表をコピー` へフォーカスを戻す */
+  const closeCopyPanel = (returnFocus: boolean): void => {
+    wrapper.querySelector(".mdmark-copy-panel")?.remove();
+    if (returnFocus) {
+      copyButton?.focus();
+    }
+  };
+  /** 見出しの行と、画面の並びで表示している行の、表示している列を選んだ形式でクリップボードへ写し、結果をボタンと読み上げで知らせる。書けなければ手でコピーさせるパネルを出す */
+  const copyTable = async (format: CopyFormat): Promise<void> => {
     clearTimeout(copyTimer);
+    closeCopyPanel(false);
     const columns = labels.flatMap((_, column) =>
       hiddenColumns.has(column) ? [] : [column],
     );
@@ -620,29 +823,44 @@ function attachTable(
         .filter((row) => !row.hidden)
         .map((row) => columns.map((column) => cellText(row, column))),
     ];
-    try {
-      await navigator.clipboard.writeText(tableToTsv(rows));
+    const text =
+      format === "markdown" ? tableToMarkdown(rows) : tableToTsv(rows);
+    const name = COPY_FORMATS[format].name;
+    if (await copyText(text)) {
       setCopyState("copied");
+      announce(`${name}をコピーしました`);
       copyTimer = setTimeout(() => setCopyState("idle"), COPIED_NOTICE_MS);
-    } catch {
-      // 拒まれたことはボタンで知らせ、例外は外へ出さない
-      setCopyState("failed");
+      return;
     }
+    // 書けなかったことはボタンで知らせ、中身を選択したパネルで手でコピーさせる
+    setCopyState("failed");
+    wrapper
+      .querySelector(".mdmark-table-bar")
+      ?.insertAdjacentHTML(
+        "afterend",
+        renderCopyPanel({ id: `${id}-panel`, format, text }),
+      );
+    const textarea = wrapper.querySelector<HTMLTextAreaElement>(
+      ".mdmark-copy-panel-text",
+    );
+    textarea?.focus();
+    textarea?.select();
+    announce(
+      `クリップボードにコピーできませんでした。選択した${name}を手でコピーできます`,
+    );
   };
-  cleanups.push(() => clearTimeout(copyTimer));
+  cleanups.push(() => {
+    clearTimeout(copyTimer);
+    closeCopyPanel(false);
+  });
 
   // ─── 行へのリンク ───
-  /** URL の `#ID` がこの表の行を指すとき、閉じた表を開き、絞り込みで隠れていれば外してから行へ移り、その行だけを強調する */
-  const revealRow = (): void => {
-    const id = rowIdFromHash(location.hash);
-    const target = id ? originalRows.find((row) => row.id === id) : undefined;
+  /** 行を強調して画面に出す。閉じた表を開き、絞り込みで隠れていれば外してから移り、その行だけを強調する */
+  const revealTarget = (target: HTMLTableRowElement): void => {
     for (const row of originalRows) {
       if (row !== target) {
         row.removeAttribute("data-target");
       }
-    }
-    if (!target) {
-      return;
     }
     for (
       let details = target.closest("details");
@@ -657,10 +875,52 @@ function attachTable(
     target.setAttribute("data-target", "");
     target.scrollIntoView({ block: "center" });
   };
+  /** URL の `#ID` がこの表の行を指すとき、その行へ移る。指さないときは強調を外す */
+  const revealRow = (): void => {
+    const id = rowIdFromHash(location.hash);
+    const target = id ? originalRows.find((row) => row.id === id) : undefined;
+    if (target) {
+      revealTarget(target);
+      return;
+    }
+    for (const row of originalRows) {
+      row.removeAttribute("data-target");
+    }
+  };
+  const noticeTimers = new Map<Element, ReturnType<typeof setTimeout>>();
+  /** 行へのリンクの印を押したとき、行へ移る動きはそのままに、行を指す絶対 URL を写して結果を印の横に出す */
+  const copyRowLink = async (anchor: HTMLAnchorElement): Promise<void> => {
+    const row = anchor.closest("tr");
+    if (row && originalRows.includes(row)) {
+      revealTarget(row);
+    }
+    const notice = anchor.parentElement?.querySelector<HTMLElement>(
+      ".mdmark-row-link-notice",
+    );
+    if (!notice) {
+      return;
+    }
+    clearTimeout(noticeTimers.get(notice));
+    const copied = await copyText(anchor.href);
+    notice.dataset.state = copied ? "copied" : "failed";
+    notice.innerHTML = copied
+      ? `${iconSvg("check")}リンクをコピーしました`
+      : `${iconSvg("circle-alert")}リンクをコピーできませんでした`;
+    noticeTimers.set(
+      notice,
+      setTimeout(() => {
+        notice.textContent = "";
+        delete notice.dataset.state;
+      }, COPIED_NOTICE_MS),
+    );
+  };
   if (features.includes("rowlink")) {
     window.addEventListener("hashchange", revealRow);
     cleanups.push(() => {
       window.removeEventListener("hashchange", revealRow);
+      for (const timer of noticeTimers.values()) {
+        clearTimeout(timer);
+      }
       for (const row of originalRows) {
         row.removeAttribute("data-target");
       }
@@ -677,6 +937,11 @@ function attachTable(
     const columnsToggle = target.closest<HTMLElement>(".mdmark-columns-toggle");
     const columnsReset = target.closest<HTMLElement>(".mdmark-columns-reset");
     const copy = target.closest<HTMLElement>(".mdmark-copy");
+    const copyFormat = target.closest<HTMLElement>(".mdmark-copy-format");
+    const totalsToggle = target.closest<HTMLElement>(".mdmark-totals-toggle");
+    const panelClose = target.closest<HTMLElement>(".mdmark-copy-panel-close");
+    const rowAnchor = target.closest<HTMLAnchorElement>(".mdmark-row-anchor");
+    const foldToggle = target.closest<HTMLElement>(".mdmark-fold-toggle");
     const cell = target.closest<HTMLTableCellElement>("th");
     if (sort && cell) {
       sortBy(cell);
@@ -711,13 +976,53 @@ function attachTable(
         hiddenColumns.add(column);
       }
       applyColumns();
-    } else if (copy) {
-      void copyTable();
+    } else if (totalsToggle && totalsMenu) {
+      toggleMenu(totalsMenu, totalsToggle);
+    } else if (copy && copyMenu) {
+      toggleMenu(copyMenu, copy);
+    } else if (copyFormat) {
+      closeDrawer(true);
+      void copyTable(copyFormat.dataset.format === "tsv" ? "tsv" : "markdown");
+    } else if (panelClose) {
+      closeCopyPanel(true);
+    } else if (rowAnchor) {
+      void copyRowLink(rowAnchor);
+    } else if (foldToggle) {
+      const open = foldToggle.getAttribute("aria-expanded") !== "true";
+      foldToggle.setAttribute("aria-expanded", String(open));
+      const foldRow = wrapper.querySelector<HTMLElement>(
+        `[id="${foldToggle.getAttribute("aria-controls")}"]`,
+      );
+      if (foldRow) {
+        foldRow.hidden = !open;
+      }
     }
   };
-  /** 列の表示のメニューのチェックボックスに合わせて、列を隠す・出す */
+  /** 帯のメニューを開く・閉じる */
+  const toggleMenu = (menuElement: HTMLElement, button: HTMLElement): void => {
+    if (menuElement.hidden) {
+      openDrawer(menuElement, button);
+    } else {
+      closeDrawer(false);
+    }
+  };
+  /** 手でコピーさせるパネルの中の Esc で、パネルを閉じる */
+  const onPanelKeyDown = (event: KeyboardEvent): void => {
+    if (
+      event.key === "Escape" &&
+      event.target instanceof Element &&
+      event.target.closest(".mdmark-copy-panel")
+    ) {
+      closeCopyPanel(true);
+    }
+  };
+  /** 列の表示のメニューのチェックボックスに合わせて列を隠す・出し、集計のメニューのチェックボックスに合わせて計算の行を出す・隠す */
   const onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement;
+    if (input.closest(".mdmark-totals-options")) {
+      toggleTotal(input.value as TotalCalc, input.checked);
+      return;
+    }
     if (!input.closest(".mdmark-columns-options")) {
       return;
     }
@@ -742,6 +1047,7 @@ function attachTable(
     }
   };
   wrapper.addEventListener("click", onClick);
+  wrapper.addEventListener("keydown", onPanelKeyDown);
   wrapper.addEventListener("input", onInput);
   wrapper.addEventListener("change", onChange);
   const observer = new ResizeObserver(() => {
@@ -753,6 +1059,10 @@ function attachTable(
   });
   observer.observe(table);
   observer.observe(wrapper);
+  // 描く先の要素の幅が変わるたびに、最終列を畳むかを決め直す
+  const foldObserver = new ResizeObserver(updateFold);
+  foldObserver.observe(root);
+  updateFold();
   updatePinVisibility();
   updateVisibleWidth();
   if (features.includes("rowlink")) {
@@ -761,6 +1071,8 @@ function attachTable(
   cleanups.push(() => {
     closeDrawer(false);
     observer.disconnect();
+    foldObserver.disconnect();
+    wrapper.removeEventListener("keydown", onPanelKeyDown);
     wrapper.removeEventListener("click", onClick);
     wrapper.removeEventListener("input", onInput);
     wrapper.removeEventListener("change", onChange);
@@ -793,7 +1105,7 @@ export function attachTables(root: HTMLElement): () => void {
   for (const wrapper of root.querySelectorAll<HTMLElement>(".mdmark-table")) {
     const table = wrapper.querySelector("table");
     if (table) {
-      detachers.push(attachTable(wrapper, table));
+      detachers.push(attachTable(wrapper, table, root));
     }
   }
   return () => {

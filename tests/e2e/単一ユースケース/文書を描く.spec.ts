@@ -190,11 +190,11 @@ test("test_normal_when_source_lines", async ({ page }) => {
   expect(await sourceLine("h1")).toBe("0");
   expect(await sourceLine("p")).toBe("2");
   expect(await sourceLine(".mdmark-table")).toBe("4");
-  expect(await sourceLine("pre")).toBe("8");
+  expect(await sourceLine(".mdmark-code")).toBe("8");
   // 属性を取り除いても、要素の位置と色は変わらない
   const snapshot = () =>
     doc.evaluate((root) =>
-      ["h1", "p", ".mdmark-table", "pre"].map((selector) => {
+      ["h1", "p", ".mdmark-table", ".mdmark-code"].map((selector) => {
         const element = root.querySelector(selector) as HTMLElement;
         const rect = element.getBoundingClientRect();
         return {

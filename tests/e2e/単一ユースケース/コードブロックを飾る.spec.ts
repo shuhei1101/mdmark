@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { stubClipboard, writtenTexts } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -92,7 +93,8 @@ test("test_normal", async ({ page }) => {
   });
   // 検証
   const doc = page.locator("#doc");
-  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  await expect(doc.locator(".mdmark-code-title")).toContainText("app.ts");
+  await expect(doc.locator(".mdmark-code-lang-name")).toHaveText("ts");
   const lines = doc.locator(".mdmark-code-line");
   await expect(lines).toHaveCount(3);
   for (const [index, number] of ["1", "2", "3"].entries()) {
@@ -196,6 +198,8 @@ test("test_normal_when_feature_off", async ({ page }) => {
   const doc = page.locator("#doc");
   await expect(doc.locator(".mdmark-code-title")).toHaveCount(0);
   await expect(doc.locator(".mdmark-code-line")).toHaveCount(0);
+  await expect(doc.locator(".mdmark-code-lang")).toHaveCount(0);
+  await expect(doc.locator(".mdmark-code-copy")).toHaveCount(0);
   await expect(doc.getByText("app.ts")).toHaveCount(0);
   await expect(doc.locator("pre").nth(1)).toContainText("// [!code ++]");
 });
@@ -222,7 +226,7 @@ test("test_error_when_unknown_key", async ({ page }) => {
   for (const key of ["title=", "lines", "highlight="]) {
     await expect(warning).toContainText(key);
   }
-  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  await expect(doc.locator(".mdmark-code-title")).toContainText("app.ts");
   const order = await doc.evaluate((element) => {
     const box = element.querySelector(".mdmark-syntax-warning");
     const code = element.querySelector(".mdmark-code");
@@ -409,7 +413,7 @@ test("test_normal_when_highlighted_with_line_marks", async ({ page }) => {
   const doc = page.locator("#doc");
   await expect(doc.locator(".mdmark-code-line .hljs-comment")).toHaveCount(3);
   expect(requests()).toEqual(["core.min.js", "languages/typescript.min.js"]);
-  await expect(doc.locator(".mdmark-code-title")).toHaveText("app.ts");
+  await expect(doc.locator(".mdmark-code-title")).toContainText("app.ts");
   const lines = doc.locator(".mdmark-code-line");
   await expect(lines).toHaveCount(6);
   for (const [index, number] of ["1", "2", "3", "4", "5", "6"].entries()) {
@@ -541,4 +545,270 @@ test("test_error_when_language_module_not_found", async ({ page }) => {
     .toBe(true);
   expect(await selectedTexts(page)).toEqual(HIGHLIGHT_TEXTS);
   await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
+});
+
+// 言語の指定があるコードブロックの上の帯の左端に言語のラベルを出し、選んだ文字に入れず、読み上げの名前は変えない（正常シナリオ（言語のラベルを出す））
+test("test_normal_when_language_label_shown", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "```ts",
+      "const a = 1;",
+      "```",
+      "",
+      "```bash title",
+      "echo hi",
+      "```",
+      "",
+      "```",
+      "言語の無い文字",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 言語のあるコードブロックに、帯の左端のラベルがある
+  const blocks = page.locator("#doc .mdmark-code");
+  await expect(blocks).toHaveCount(3);
+  await expect(blocks.nth(0).locator(".mdmark-code-lang-name")).toHaveText(
+    "ts",
+  );
+  await expect(blocks.nth(1).locator(".mdmark-code-lang-name")).toHaveText(
+    "bash",
+  );
+  await expect(blocks.nth(2).locator(".mdmark-code-lang")).toHaveCount(0);
+  const placement = await blocks.nth(0).evaluate((block) => {
+    const bar = block
+      .querySelector(".mdmark-code-bar")
+      ?.getBoundingClientRect();
+    const label = block
+      .querySelector(".mdmark-code-lang")
+      ?.getBoundingClientRect();
+    const pre = block.querySelector("pre")?.getBoundingClientRect();
+    return {
+      aboveCode: (bar?.bottom ?? 0) <= (pre?.top ?? 0) + 1,
+      atLeft: (label?.left ?? 99) - (bar?.left ?? 0) < 24,
+    };
+  });
+  expect(placement).toEqual({ aboveCode: true, atLeft: true });
+  // 検証: コードブロックを全て選んだ文字に、ラベルが入っていない
+  const selected = await blocks.nth(1).evaluate((block) => {
+    const selection = window.getSelection();
+    selection?.selectAllChildren(block);
+    return selection?.toString() ?? "";
+  });
+  expect(selected).toContain("echo hi");
+  expect(selected).not.toContain("bash");
+  // 検証: 読み上げの名前は今のまま
+  await expect(blocks.nth(0).locator("pre")).toHaveAttribute(
+    "aria-label",
+    "コード: ts",
+  );
+  await expect(blocks.nth(1).locator("pre")).toHaveAttribute(
+    "aria-label",
+    "コード: bash",
+  );
+  await expect(blocks.nth(2).locator("pre")).toHaveAttribute(
+    "aria-label",
+    "コード",
+  );
+});
+
+// コピーボタンで、消した行を含めない変更後のコードをコピーし、ボタンで知らせ、しばらくすると元に戻す（正常シナリオ（変更後のコードをコピーする））
+test("test_normal_when_code_copied", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "```ts",
+      "const a = 1; // [!code --]",
+      "const a = 2; // [!code ++]",
+      "count += 1; // 数える [!code highlight]",
+      "return a;",
+      "```",
+      "",
+      "```tree",
+      "src/",
+      "  index.ts",
+      "```",
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  const buttons = page.locator("#doc button.mdmark-code-copy");
+  // 検証: ファイルツリーのコードブロックにはコピーボタンが無い
+  await expect(buttons).toHaveCount(1);
+  // 実行: キーボードでコピーボタンにフォーカスして押す
+  await page.keyboard.press("Tab");
+  await expect(buttons).toBeFocused();
+  await page.keyboard.press("Enter");
+  // 検証: 消した行と印、行番号と行頭の `+`・`-` を含まない変更後のコードをコピーする
+  await expect(buttons).toContainText("コピーしました");
+  expect(await writtenTexts(page)).toEqual([
+    "const a = 2;\ncount += 1; // 数える\nreturn a;",
+  ]);
+  await expect(page.locator("#doc .mdmark-code-status")).toContainText(
+    "コードをコピーしました",
+  );
+  // 検証: しばらくするとボタンの文言が元に戻る
+  await expect(buttons).toHaveText("コピー");
+});
+
+// 色分けのライブラリを `dockerfile`・`diff` の言語のモジュールまで読み、別名のコードブロックも色分けし、足した行の印と両立する（正常シナリオ（Dockerfile と diff を色分けする））
+test("test_normal_when_dockerfile_and_diff_highlighted", async ({ page }) => {
+  // 準備
+  const requests = await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "```dockerfile",
+      "FROM node:20",
+      "RUN npm ci",
+      "```",
+      "",
+      "```docker",
+      "FROM node:20",
+      "```",
+      "",
+      "```diff",
+      "-removed",
+      "+added",
+      "+marked # [!code ++]",
+      "```",
+      "",
+      "```patch",
+      "-old",
+      "+new",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const code = (language: string) =>
+    page.locator(`#doc code.language-${language}`);
+  await expect(code("patch").locator(".hljs-addition")).toHaveCount(1);
+  // 色分けのライブラリへの要求は、本体 1 件と言語のモジュール 1 件ずつ
+  expect(requests()).toEqual([
+    "core.min.js",
+    "languages/diff.min.js",
+    "languages/dockerfile.min.js",
+  ]);
+  // 命令が、地の文字と違う色で出ている
+  for (const language of ["dockerfile", "docker"]) {
+    const keyword = code(language).locator(".hljs-keyword").first();
+    await expect(keyword).toBeVisible();
+    expect(
+      await keyword.evaluate(
+        (el, base) => getComputedStyle(el).color !== base,
+        await code(language).evaluate((el) => getComputedStyle(el).color),
+      ),
+    ).toBe(true);
+  }
+  // `+` で始まる行と `-` で始まる行が、地の文字とも互いとも違う色で出ている
+  for (const language of ["diff", "patch"]) {
+    const base = await code(language).evaluate(
+      (el) => getComputedStyle(el).color,
+    );
+    const added = await code(language)
+      .locator(".hljs-addition")
+      .first()
+      .evaluate((el) => getComputedStyle(el).color);
+    const deleted = await code(language)
+      .locator(".hljs-deletion")
+      .first()
+      .evaluate((el) => getComputedStyle(el).color);
+    expect(new Set([base, added, deleted]).size).toBe(3);
+  }
+  // `[!code ++]` を付けた行が足した行の地の色と行頭の `+` で出ていて、行の中の文字は色分けされている
+  const marked = page.locator(
+    '#doc code.language-diff .mdmark-code-line[data-kind="add"]',
+  );
+  await expect(marked).toHaveCount(1);
+  expect(await hasBackground(marked)).toBe(true);
+  expect(
+    await marked.evaluate((el) => getComputedStyle(el, "::after").content),
+  ).toContain("+");
+  await expect(marked.locator("span[class*='hljs-']")).not.toHaveCount(0);
+  // 各コードブロックのラベルは書いた情報文字列のとおり
+  await expect(page.locator("#doc .mdmark-code-lang-name")).toHaveText([
+    "dockerfile",
+    "docker",
+    "diff",
+    "patch",
+  ]);
+});
+
+// クリップボードへの書き込みが拒まれたら、ボタンで知らせ、コードブロックの文字は選んで手でコピーできる（異常シナリオ（クリップボードに書けない））
+test("test_error_when_clipboard_denied", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "deny");
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: ["```ts", "const a = 1;", "```", ""].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  const button = page.locator("#doc button.mdmark-code-copy");
+  // 実行
+  await button.click();
+  // 検証: ボタンと読み上げで、コピーできなかったことが知らされる
+  await expect(button).toContainText("コピーできませんでした");
+  await expect(button).toHaveAttribute("data-state", "failed");
+  await expect(page.locator("#doc .mdmark-code-status")).toContainText(
+    "コードをコピーできませんでした",
+  );
+  // 検証: コードブロックの文字を選べる
+  expect(await selectedCode(page)).toContain("const a = 1;");
+});
+
+// 情報文字列の `:` の前を言語、後ろをファイル名として、帯の左端に並べて出し、言語で色分けする（正常シナリオ（言語とファイル名をラベルに出す））
+test("test_normal_when_language_and_file_name_label_shown", async ({
+  page,
+}) => {
+  // 準備
+  await routeSyntax(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "```python:hoge.py",
+      "def hello():",
+      "    return 1",
+      "```",
+      "",
+      "```ts",
+      "const a = 1;",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const blocks = page.locator("#doc .mdmark-code");
+  await expect(blocks).toHaveCount(2);
+  await expect(blocks.nth(0).locator(".mdmark-code-lang-name")).toHaveText(
+    "python",
+  );
+  await expect(blocks.nth(0).locator(".mdmark-code-file")).toHaveText(
+    "hoge.py",
+  );
+  const order = await blocks.nth(0).evaluate((block) => {
+    const name = block
+      .querySelector(".mdmark-code-lang-name")
+      ?.getBoundingClientRect();
+    const file = block
+      .querySelector(".mdmark-code-file")
+      ?.getBoundingClientRect();
+    return (file?.left ?? 0) >= (name?.right ?? 1);
+  });
+  expect(order).toBe(true);
+  await expect(blocks.nth(0).locator("pre code")).toHaveClass(
+    "language-python",
+  );
+  await expect(blocks.nth(0).locator(".hljs-keyword").first()).toBeVisible();
+  await expect(blocks.nth(1).locator(".mdmark-code-lang-name")).toHaveText(
+    "ts",
+  );
+  await expect(blocks.nth(1).locator(".mdmark-code-file")).toHaveCount(0);
 });

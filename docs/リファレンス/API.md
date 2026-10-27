@@ -638,14 +638,14 @@ handle.destroy();
 | `--mdmark-font-mono` | `ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace` | コードの書体 |
 | `--mdmark-font-size` | `0.875rem` | 本文の文字の大きさ |
 | `--mdmark-line-height` | `1.8` | 本文の行間 |
-| `--mdmark-content-width` | `46rem` | 行の長さの上限 |
+| `--mdmark-content-width` | `none` | 行の長さの上限。既定は上限が無く、描く先の要素の幅を使う。行の長さを抑えたいときに `46rem` などの長さを渡す |
 | `--mdmark-space` | `0.875rem` | ブロックの間隔の基準 |
 | `--mdmark-padding` | `1.5rem` | 描く先の要素の内側の余白 |
 | `--mdmark-radius` | `4px` | 角丸の大きさ（描く先の要素・コードブロック・引用・折り畳み・読み込み中の枠・知らせの枠・書き方の警告・注意書き）。表の外側の枠は 2 倍 |
 | `--mdmark-heading-weight` | `700` | 見出しの太さ |
 | `--mdmark-heading-rule-width` | `0px` | 見出し 1・見出し 2 の下の線の太さ。`0` のままだと線が出ない |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
-| `--mdmark-table-max-height` | `28rem` | 表の高さの上限。超える表は表の中で縦にスクロールし、見出し行を上端に留める |
+| `--mdmark-sticky-top` | `0px` | 表の見出し行を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |

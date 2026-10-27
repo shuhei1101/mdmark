@@ -116,7 +116,7 @@ functions:
       type: http.Server
       description: 待ち受けていないサーバー
     process: |-
-      1. `/render/index.css` は、`src/index.css` を読んで `text/css; charset=utf-8` の 200 で返す。`/render/vscode.css` は、`vscode/src/webview/preview.css` を同じ形で返す
+      1. `/render/index.css` は、`src/index.css` を読んで `text/css; charset=utf-8` の 200 で返す。`/render/vscode.css` は、`vscode/src/webview/preview.css` を同じ形で返す。`/render/diagram.js`・`/render/sticky.js` は、`src/interact/diagrams.ts`・`src/interact/sticky.ts` を esbuild で束ねた ES モジュールを `text/javascript; charset=utf-8` の 200 で返す（束ねられなければ 500）
       2. `/render/{部品の id}` は、部品の HTML を返す（部品の HTML を返す）
          - HTML があれば `text/html; charset=utf-8` の 200 で返す
          - 無ければ `知らない部品: {部品の id}` を 404 で返す
@@ -142,6 +142,12 @@ functions:
         condition: '`GET /render/missing`'
         mock: なし（`127.0.0.1:0` で待ち受けて要求する）
         expected: 404、本文に `missing`
+      - name: test_create_render_server_when_sticky_script
+        case: 正常
+        summary: 見出し行と集計の行を留める処理を束ねて返す
+        condition: '`GET /render/sticky.js`'
+        mock: なし（`127.0.0.1:0` で待ち受けて要求する）
+        expected: 200、`Content-Type` が `text/javascript; charset=utf-8`、本文に `attachStickyRows`
   - name: main
     title: 描画の口を立てる
     container: scripts/storybook-render.ts
@@ -194,7 +200,7 @@ functions:
         type: express.Router
         description: Storybook の開発サーバーのルーター
 notes:
-  ストーリーの場所: '`src/parts/*.stories.yaml`（部品『部品』）。`preview-head.html` は `<link rel="stylesheet" href="/render/index.css">` を持ち、ストーリーに本文の CSS を当てる。CSS の入れ子はビルドを通さずに読むため、入れ子を解するブラウザで見る'
+  ストーリーの場所: '`src/parts/*.stories.yaml`（部品『部品』）。`preview-head.html` は `<link rel="stylesheet" href="/render/index.css">` を持ち、ストーリーに本文の CSS を当てる。CSS の入れ子はビルドを通さずに読むため、入れ子を解するブラウザで見る。`preview.js` は、描いた直後のストーリーの `.mdmark` に、`data-story-fit` の印を持つ図なら `/render/diagram.js` の `attachDiagrams` を、表の部品（`.mdmark-table`）を持つなら `/render/sticky.js` の `attachStickyRows` を付ける（`mount` が全ての表に付けるのと同じ）'
   起動: '描画の口を `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で立て、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で立てる'
   依存: '`storybook`・`@storybook/server-webpack5`・`@storybook/server` を `10.6.2` で開発の依存に足す。`package.json` の `overrides` で `webpack-dev-middleware` を `^7.4.6` にする（Storybook の開発サーバーが引く版の脆弱性 GHSA-g84c-rxfj-3j2c を避ける）。ストーリーの色分けに npm の `highlight.js` を `11.12.0` で開発の依存に足す（`src/` は型だけを `import type` で使う）。どれも配布物には入らない'
   単体テストの場所: '`renderPart`・`createRenderServer`・`main` は `tests/unit/scripts/storybook-render.test.ts`（`unit` プロジェクト）。`.storybook/` の中は Storybook を立てて確かめる'

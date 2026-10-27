@@ -3,7 +3,9 @@ import {
   computeTotal,
   type FilterKind,
   type FilterValue,
+  findUnreadableTotals,
   matchesFilter,
+  TOTAL_CALCS,
   TOTAL_LABELS,
   type TotalCalc,
 } from "../table-logic.ts";
@@ -34,6 +36,9 @@ export type TableTotal = {
 
 /** コピーのボタンの状態 */
 export type CopyState = "idle" | "copied" | "failed";
+
+/** コピーの形式 */
+export type CopyFormat = "markdown" | "tsv";
 
 /** 絞り込みを付ける列 */
 export type TableFilter = {
@@ -81,6 +86,20 @@ export type TableOptions = {
   rowIds?: string[];
   /** URL の `#ID` が指す行の位置 */
   targetRow?: number;
+  /** 出している集計の行の計算（既定は `totals` の全ての計算） */
+  shownTotals?: TotalCalc[];
+  /** 集計のメニューを開いているか */
+  openTotals?: boolean;
+  /** コピーの形式のメニューを開いているか */
+  openCopy?: boolean;
+  /** クリップボードに書けなかったときに手でコピーさせるパネルの中身 */
+  copyFallback?: { format: CopyFormat; text: string };
+  /** `targetRow` の行の URL をコピーした結果 */
+  rowLinkNotice?: "copied" | "failed";
+  /** 最終列を畳んでいるか */
+  folded?: boolean;
+  /** 畳んだ最終列を開いている本文の行の位置 */
+  unfoldedRows?: number[];
   /** 表の代わりに置く HTML（`SLOT_MARKER` を渡せる） */
   body?: string;
   /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を渡す */
@@ -220,12 +239,37 @@ export const COPY_STATES = {
   failed: { label: "コピーできませんでした", icon: "circle-alert" },
 } as const;
 
+/** コピーのボタンの中身（状態のアイコン・文言・形式のメニューを開くことを示す下向きの矢印）の HTML */
+export function renderCopyButtonContent(state: CopyState): string {
+  const { icon, label } = COPY_STATES[state];
+  return `${iconSvg(icon)}<span class="mdmark-copy-label">${label}</span><span class="mdmark-copy-caret" data-icon="chevron-down">${iconSvg("chevron-down")}</span>`;
+}
+
+/** コピーの形式の名前と使いどころ */
+export const COPY_FORMATS = {
+  markdown: {
+    name: "Markdown の表",
+    note: "文書に貼るとそのまま表になる",
+  },
+  tsv: { name: "TSV", note: "表計算ソフトに貼るとセルに分かれる" },
+} as const;
+
 /** 列の表示のメニューの id */
 function menuId(id: string): string {
   return `${id}-columns`;
 }
 
-/** 表の上の帯（件数・列の表示のボタン・コピーのボタン）と列の表示のメニューの HTML を返す。付けた機能が無ければ空 */
+/** 集計のメニューの id */
+function totalsMenuId(id: string): string {
+  return `${id}-totals`;
+}
+
+/** コピーの形式のメニューの id */
+function copyMenuId(id: string): string {
+  return `${id}-copy`;
+}
+
+/** 表の上の帯（件数・列の表示・集計・コピーのボタン）と、列の表示・集計・コピーの形式のメニューの HTML を返す。付けた機能が無ければ空 */
 export function renderTableBar(options: {
   /** メニューの id の頭 */
   id: string;
@@ -239,83 +283,176 @@ export function renderTableBar(options: {
   total: number;
   /** 隠している列の位置 */
   hiddenColumns: number[];
-  /** メニューを開いているか（既定 `false`） */
+  /** 列の表示のメニューを開いているか（既定 `false`） */
   openColumns?: boolean;
   /** コピーのボタンの状態（既定 `idle`） */
   copyState?: CopyState;
-}): { bar: string; menu: string } {
+  /** 集計する計算 */
+  totals?: TotalCalc[];
+  /** 出している集計の行の計算（既定は `totals` の全て） */
+  shownTotals?: TotalCalc[];
+  /** 集計のメニューを開いているか（既定 `false`） */
+  openTotals?: boolean;
+  /** コピーの形式のメニューを開いているか（既定 `false`） */
+  openCopy?: boolean;
+}): { bar: string; menus: string } {
   const { id, features, labels, shown, total, hiddenColumns } = options;
   const copyState = options.copyState ?? "idle";
   const open = options.openColumns ?? false;
   const hidden = new Set(hiddenColumns);
+  const calcs = TOTAL_CALCS.filter((calc) => options.totals?.includes(calc));
+  const shownCalcs = new Set(options.shownTotals ?? calcs);
+  const hiddenCalcs = calcs.filter((calc) => !shownCalcs.has(calc));
   const counting = features.includes("count");
   const columns = features.includes("columns");
+  const totaling = features.includes("total") && calcs.length > 0;
   const copying = features.includes("copy");
   const count = counting
     ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} 件</span><span class="mdmark-visually-hidden">${total} 件中 ${shown} 件を表示</span></p>`
     : "";
-  const toggle = columns
+  const columnsToggle = columns
     ? `<button class="mdmark-table-tool mdmark-columns-toggle${hidden.size > 0 ? " is-active" : ""}" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}">${iconSvg("columns-3")}列の表示<span class="mdmark-visually-hidden">${hidden.size > 0 ? `（${hidden.size} 列を隠しています）` : ""}</span></button>`
     : "";
+  const totalsToggle = totaling
+    ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml(totalsMenuId(id))}">${iconSvg("sigma")}集計<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `（${hiddenCalcs.length} 件を隠しています）` : ""}</span></button>`
+    : "";
   const copy = copying
-    ? `<button class="mdmark-table-tool mdmark-copy" type="button" data-state="${copyState}">${iconSvg(COPY_STATES[copyState].icon)}${COPY_STATES[copyState].label}</button>`
+    ? `<button class="mdmark-table-tool mdmark-copy" type="button" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>`
     : "";
   const tools =
-    toggle || copy
-      ? `<div class="mdmark-table-tools">${toggle}${copy}</div>`
+    columnsToggle || totalsToggle || copy
+      ? `<div class="mdmark-table-tools">${columnsToggle}${totalsToggle}${copy}</div>`
       : "";
-  const status = copying
-    ? `<span class="mdmark-visually-hidden mdmark-copy-status" role="status">${copyState === "idle" ? "" : COPY_STATES[copyState].label}</span>`
-    : "";
+  const status =
+    totaling || copying
+      ? `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copying && copyState !== "idle" ? COPY_STATES[copyState].label : ""}</span>`
+      : "";
   const items = labels
     .map(
       (label, index) =>
         `<li><label><input type="checkbox" value="${index}"${hidden.has(index) ? "" : " checked"}${index === 0 ? " disabled" : ""}>${escapeHtml(label)}</label></li>`,
     )
     .join("");
-  const menu = columns
+  const columnsMenu = columns
     ? `<div class="mdmark-columns-menu" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="表示する列"${open ? "" : " hidden"}><p class="mdmark-columns-title">表示する列</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">先頭の列は隠せません</p><button class="mdmark-columns-reset" type="button">既定に戻す</button></div>`
+    : "";
+  const totalItems = calcs
+    .map(
+      (calc) =>
+        `<li><label><input type="checkbox" value="${calc}"${shownCalcs.has(calc) ? " checked" : ""}>${TOTAL_LABELS[calc]}</label></li>`,
+    )
+    .join("");
+  const totalsMenu = totaling
+    ? `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml(totalsMenuId(id))}" role="dialog" aria-label="出す集計"${options.openTotals ? "" : " hidden"}><p class="mdmark-totals-title">出す集計</p><ul class="mdmark-totals-options">${totalItems}</ul></div>`
+    : "";
+  const formats = (["markdown", "tsv"] as const)
+    .map(
+      (format) =>
+        `<button class="mdmark-copy-format" type="button" data-format="${format}"><span class="mdmark-copy-format-name">${COPY_FORMATS[format].name}</span><span class="mdmark-copy-format-note">${COPY_FORMATS[format].note}</span></button>`,
+    )
+    .join("");
+  const copyMenu = copying
+    ? `<div class="mdmark-copy-menu mdmark-table-menu" id="${escapeHtml(copyMenuId(id))}" role="dialog" aria-label="コピーの形式"${options.openCopy ? "" : " hidden"}>${formats}</div>`
     : "";
   return {
     bar:
       count || tools
         ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>`
         : "",
-    menu,
+    menus: `${columnsMenu}${totalsMenu}${copyMenu}`,
   };
 }
 
-/** 集計の行（`<tfoot>`）の HTML を返す。列の数だけセルを持ち、集計する列は題と値を出し、隠している列のセルは隠す */
-export function renderTotalRow(options: {
+/** 集計の行（`<tfoot>`）の HTML を返す。計算ごとに 1 行（`sum`・`avg`・`count` の順）で、列の数だけセルを持つ。先頭のセルに計算の名前、集計する列のセルに値を出し、隠している列のセルと出さない計算の行は隠す */
+export function renderTotalRows(options: {
   /** 列の数 */
   columns: number;
   /** 集計する列と計算と整えた値 */
   totals: Array<TableTotal & { value: string }>;
+  /** 出す計算（既定は全て） */
+  shown?: TotalCalc[];
   /** 隠している列の位置 */
   hiddenColumns: number[];
   /** 列名（`data-label`） */
   labels: string[];
 }): string {
-  const { columns, totals, hiddenColumns, labels } = options;
-  const cells = Array.from({ length: columns }, (_, column) => {
-    const total = totals.find((candidate) => candidate.column === column);
-    const hidden = hiddenColumns.includes(column) ? " hidden" : "";
-    const label = ` data-label="${escapeHtml(labels[column] ?? "")}"`;
-    if (!total) {
-      return `<td${label}${hidden}></td>`;
-    }
-    return `<td${label} data-total="${total.calc}"${hidden}><span class="mdmark-total-label">${TOTAL_LABELS[total.calc]}</span><span class="mdmark-total-value">${escapeHtml(total.value)}</span></td>`;
+  const { columns, totals, shown, hiddenColumns, labels } = options;
+  const rows = TOTAL_CALCS.filter((calc) =>
+    totals.some((total) => total.calc === calc),
+  ).map((calc) => {
+    const own = totals.filter((total) => total.calc === calc);
+    const cells = Array.from({ length: columns }, (_, column) => {
+      const total = own.find((candidate) => candidate.column === column);
+      const hidden = hiddenColumns.includes(column) ? " hidden" : "";
+      const label = ` data-label="${escapeHtml(labels[column] ?? "")}"`;
+      const name =
+        column === 0
+          ? `<span class="mdmark-total-name">${TOTAL_LABELS[calc]}</span>`
+          : "";
+      if (!total) {
+        return `<td${label}${hidden}>${name}</td>`;
+      }
+      return `<td${label} data-total="${calc}"${hidden}>${name}<span class="mdmark-total-value">${escapeHtml(total.value)}</span></td>`;
+    });
+    const rowHidden =
+      shown !== undefined && !shown.includes(calc) ? " hidden" : "";
+    return `<tr class="mdmark-table-total" data-total-kind="${calc}"${rowHidden}>${cells.join("")}</tr>`;
   });
-  return `<tfoot><tr class="mdmark-table-total">${cells.join("")}</tr></tfoot>`;
+  return `<tfoot>${rows.join("")}</tfoot>`;
 }
 
-/** 行へのリンクの印を持つ先頭のセルの HTML を返す。`content` は先頭のセルの中身（`SLOT_MARKER` を渡して前後に分けられる） */
+/** クリップボードに書けなかったときに、帯の直後へ置く手でコピーさせるパネルの HTML を返す */
+export function renderCopyPanel(options: {
+  /** 題の id の頭 */
+  id: string;
+  /** コピーの形式 */
+  format: CopyFormat;
+  /** コピーする文字 */
+  text: string;
+}): string {
+  const { id, format, text } = options;
+  const titleId = `${id}-title`;
+  const noteId = `${id}-note`;
+  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">「${COPY_FORMATS[format].name}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
+}
+
+/** 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに置く開閉のボタンと、行の直後に置く開閉の行の HTML を返す */
+export function renderFoldedColumn(options: {
+  /** 開閉の行の id（ボタンの `aria-controls` が指す） */
+  id: string;
+  /** 表の列の数 */
+  columns: number;
+  /** 行の先頭のセルの文字 */
+  label: string;
+  /** 最終列の見出しの文字 */
+  name: string;
+  /** 行の最終列のセルの中身の HTML */
+  html: string;
+  /** 開いているか（既定 `false`） */
+  open?: boolean;
+}): { toggle: string; row: string } {
+  const { id, columns, label, name, html, open = false } = options;
+  return {
+    toggle: `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の${escapeHtml(name)}"></button>`,
+    row: `<tr class="mdmark-row-detail mdmark-fold-detail" id="${escapeHtml(id)}"${open ? "" : " hidden"}><td colspan="${columns}"><div class="mdmark-fold-part"><p class="mdmark-fold-name">${escapeHtml(name)}</p><div class="mdmark-fold-value">${html}</div></div></td></tr>`,
+  };
+}
+
+/** 行へのリンクの印を持つ先頭のセルの HTML を返す。`content` は先頭のセルの中身（`SLOT_MARKER` を渡して前後に分けられる）。`notice` を渡すと、URL をコピーした結果を印の横の知らせに出す */
 export function renderRowLink(
   content: string,
   id: string,
   label: string,
+  notice?: "copied" | "failed",
 ): string {
-  return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の行へのリンク">${iconSvg("link")}</a></span>`;
+  const message =
+    notice === "copied"
+      ? `${iconSvg("check")}リンクをコピーしました`
+      : notice === "failed"
+        ? `${iconSvg("circle-alert")}リンクをコピーできませんでした`
+        : "";
+  const state = notice === undefined ? "" : ` data-state="${notice}"`;
+  return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の行へのリンク">${iconSvg("link")}</a><span class="mdmark-row-link-notice" role="status"${state}>${message}</span></span>`;
 }
 
 /** 列と行から表の HTML を作る（Storybook 用。操作を付けた後の見た目になる） */
@@ -332,15 +469,21 @@ function renderTableBody(options: TableOptions, id: string): string {
   );
   const hiddenAttribute = (column: number): string =>
     hidden.has(column) ? " hidden" : "";
+  const lastColumn = columns.length - 1;
+  const folded = isFolded(options, hidden);
+  const unfolded = new Set(options.unfoldedRows ?? []);
   const drawers: string[] = [];
-  /** セルの class（ピン止めした列） */
-  const pinClass = (column: number): string => {
-    if (column >= pinned) {
-      return "";
-    }
-    return column === pinned - 1
-      ? ' class="is-pinned-col is-pinned-edge"'
-      : ' class="is-pinned-col"';
+  /** セルの class 属性（ピン止めした列・畳んだ最終列） */
+  const cellClass = (column: number): string => {
+    const names = [
+      ...(column < pinned
+        ? column === pinned - 1
+          ? ["is-pinned-col", "is-pinned-edge"]
+          : ["is-pinned-col"]
+        : []),
+      ...(folded && column === lastColumn ? ["mdmark-fold-col"] : []),
+    ];
+    return names.length > 0 ? ` class="${names.join(" ")}"` : "";
   };
   const head = columns
     .map((column, index) => {
@@ -372,10 +515,11 @@ function renderTableBody(options: TableOptions, id: string): string {
         options.features.includes("pin")
           ? tools.header
           : escapeHtml(plainText(column));
-      return `<th${pinClass(index)}${sorted}${hiddenAttribute(index)}>${header}</th>`;
+      return `<th${cellClass(index)}${sorted}${hiddenAttribute(index)}>${header}</th>`;
     })
     .join("");
   const rowLinking = options.features.includes("rowlink");
+  const labels = columns.map(plainText);
   const shownRows: string[][] = [];
   const body = sortedIndexes(options)
     .map((rowIndex) => {
@@ -394,43 +538,73 @@ function renderTableBody(options: TableOptions, id: string): string {
         shownRows.push(row);
       }
       const rowId = rowLinking ? options.rowIds?.[rowIndex] : undefined;
+      const targeted = rowLinking && options.targetRow === rowIndex;
+      const foldId = `${id}-fold-${rowIndex}`;
+      const fold = folded
+        ? renderFoldedColumn({
+            id: foldId,
+            columns: columns.length - hidden.size,
+            label: plainText(row[0] ?? ""),
+            name: labels[lastColumn] ?? "",
+            html: row[lastColumn] ?? "",
+            open: unfolded.has(rowIndex),
+          })
+        : undefined;
       const cells = row
         .map((cell, index) => {
-          const content =
+          const linked =
             index === 0 && rowId !== undefined
-              ? renderRowLink(cell, rowId, plainText(cell))
+              ? renderRowLink(
+                  cell,
+                  rowId,
+                  plainText(cell),
+                  targeted ? options.rowLinkNotice : undefined,
+                )
               : cell;
-          return `<td${pinClass(index)} data-label="${escapeHtml(plainText(columns[index] ?? ""))}"${hiddenAttribute(index)}>${content}</td>`;
+          const content =
+            index === 0 && fold
+              ? `<span class="mdmark-row-head">${fold.toggle}${linked}</span>`
+              : linked;
+          return `<td${cellClass(index)} data-label="${escapeHtml(labels[index] ?? "")}"${hiddenAttribute(index)}>${content}</td>`;
         })
         .join("");
       const idAttribute =
         rowId === undefined ? "" : ` id="${escapeHtml(rowId)}"`;
-      const target =
-        rowLinking && options.targetRow === rowIndex ? " data-target" : "";
-      return `<tr${idAttribute}${target}${match ? "" : " hidden"}>${cells}</tr>`;
+      const target = targeted ? " data-target" : "";
+      const line = `<tr${idAttribute}${target}${match ? "" : " hidden"}>${cells}</tr>`;
+      return fold ? `${line}${fold.row}` : line;
     })
     .join("");
   const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">一致する行がありません</td></tr>`;
-  const labels = columns.map(plainText);
   const totals = options.features.includes("total")
     ? (options.totals ?? [])
     : [];
+  const unreadable = findUnreadableTotals({
+    rows: rows.map((row) => row.map(plainText)),
+    totals,
+  });
   const footer =
     totals.length > 0
-      ? renderTotalRow({
+      ? renderTotalRows({
           columns: columns.length,
           totals: totals.map((total) => ({
             ...total,
-            value: computeTotal(
-              shownRows.map((row) => plainText(row[total.column] ?? "")),
-              total.calc,
-            ),
+            value: unreadable.some(
+              (item) =>
+                item.column === total.column && item.calc === total.calc,
+            )
+              ? ""
+              : computeTotal(
+                  shownRows.map((row) => plainText(row[total.column] ?? "")),
+                  total.calc,
+                ),
           })),
+          shown: options.shownTotals,
           hiddenColumns: [...hidden],
           labels,
         })
       : "";
-  const { bar, menu } = renderTableBar({
+  const { bar, menus } = renderTableBar({
     id,
     features: options.features,
     labels,
@@ -439,8 +613,21 @@ function renderTableBody(options: TableOptions, id: string): string {
     hiddenColumns: [...hidden],
     openColumns: options.openColumns ?? false,
     copyState: options.copyState ?? "idle",
+    totals: totals.map((total) => total.calc),
+    shownTotals: options.shownTotals,
+    openTotals: options.openTotals ?? false,
+    openCopy: options.openCopy ?? false,
   });
-  return `${bar}<table tabindex="0" aria-label="表"><thead><tr>${head}</tr></thead><tbody>${body}${empty}</tbody>${footer}</table>${menu}${drawers.join("")}`;
+  const panel = options.copyFallback
+    ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
+    : "";
+  return `${bar}${panel}<table tabindex="0" aria-label="表"><thead><tr>${head}</tr></thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
+}
+
+/** 最終列を畳んだ表として描くか。列が 2 つ以上あり、最終列を隠していないときだけ */
+function isFolded(options: TableOptions, hidden: Set<number>): boolean {
+  const lastColumn = (options.columns ?? []).length - 1;
+  return options.folded === true && lastColumn > 0 && !hidden.has(lastColumn);
 }
 
 /** 表を囲む HTML を返す。`body` を渡すと囲みだけを作り、渡さなければ `columns`・`rows` から表を作る */
@@ -467,5 +654,14 @@ export function renderTable(options: TableOptions): string {
     collapse === "none"
       ? content
       : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>表を開く</summary>${content}</details>`;
-  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}>${inner}</div>`;
+  const hiddenColumns = new Set(
+    options.features.includes("columns")
+      ? (options.hiddenColumns ?? options.hide ?? [])
+      : [],
+  );
+  const foldedClass =
+    options.body === undefined && isFolded(options, hiddenColumns)
+      ? " is-folded"
+      : "";
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}>${inner}</div>`;
 }

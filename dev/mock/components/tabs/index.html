@@ -14,10 +14,14 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 移る先のリンクの並べ方（#57 で共有するカタログの追加分） -->
+  <link rel="stylesheet" href="../../refs/57/assets/catalog.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- URL の #ID が選ばれていないタブの中の見出しを指すとき、そのタブを選んでから移る（#151 で共有するアセット） -->
+  <script src="../../refs/151/assets/tabs.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -153,6 +157,31 @@
   <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を書いてください。範囲の中身はそのまま描いています。</p>
 </div>
 <p>macOS では Homebrew、Windows では winget で入れます。</p>
+        </article>
+      </section>
+
+      <!-- URL の #ID が選ばれていないタブの中の見出しを指す（開いたときと hashchange で、そのタブを選んでから見出しへ移る） -->
+      <section aria-labelledby="state-url">
+        <h2 class="catalog-label" id="state-url">URL の #ID が選ばれていないタブの中の見出しを指す（開いたときと hashchange で、そのタブを選んでから見出しへ移る）</h2>
+        <p class="catalog-links">移る先: <a href="#url-macos-の注意">#url-macos-の注意</a> / <a href="#url-windows-の注意">#url-windows-の注意</a></p>
+        <article class="mdmark">
+<div class="mdmark-tabs" data-group="catalog-os">
+  <div class="mdmark-tablist" role="tablist" aria-label="導入">
+    <button class="mdmark-tab" type="button" role="tab" id="tu-tab-0" aria-selected="true" aria-controls="tu-panel-0" tabindex="0">Windows</button>
+    <button class="mdmark-tab" type="button" role="tab" id="tu-tab-1" aria-selected="false" aria-controls="tu-panel-1" tabindex="-1">macOS</button>
+  </div>
+  <div role="tabpanel" id="tu-panel-0" aria-labelledby="tu-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">Windows</p>
+    <h3 class="mdmark-heading" id="url-windows-の注意">Windows の注意<a class="mdmark-anchor" href="#url-windows-の注意" aria-label="「Windows の注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+    <p>PowerShell の実行ポリシーで npx が止まるときは、管理者でない端末から実行します。</p>
+  </div>
+  <!-- 選ばれていないタブの中身: URL の #url-macos-の注意 で開くと tabs.js がこのタブを選ぶ -->
+  <div role="tabpanel" id="tu-panel-1" aria-labelledby="tu-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">macOS</p>
+    <h3 class="mdmark-heading" id="url-macos-の注意">macOS の注意<a class="mdmark-anchor" href="#url-macos-の注意" aria-label="「macOS の注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+    <p>Apple シリコンの端末では、Homebrew の入る場所が /opt/homebrew になります。</p>
+  </div>
+</div>
         </article>
       </section>
     </div>

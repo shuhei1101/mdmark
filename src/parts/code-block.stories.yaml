@@ -77,3 +77,53 @@ stories:
       lineNumbers: 'true'
       highlight: 'true'
       lines: '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書の題"},{"text":"    title: str = \"README\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]'
+  - name: LanguageLabel
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      copyState: idle
+      lines: '[{"text":"import { mount } from \"mdmark\";"},{"text":"mount(document.querySelector(\"#doc\"), \"# 見出し\");"}]'
+  - name: FileName
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: python
+      fileName: hoge.py
+      copyState: idle
+      lines: '[{"text":"def hello():"},{"text":"    print(\"hello\")"}]'
+  - name: LongFileName
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      fileName: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts
+      title: 色分けの対象を探す
+      copyState: idle
+      lines: '[{"text":"export const findTargets = (root: Element) => root.querySelectorAll(\"code[data-mdmark-syntax]\");"}]'
+  - name: NoLanguage
+    parameters:
+      server:
+        id: code-block
+    args:
+      copyState: idle
+      lines: '[{"text":"npm install mdmark"}]'
+  - name: Copied
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      copyState: copied
+      lines: '[{"text":"import { mount } from \"mdmark\";"}]'
+  - name: CopyFailed
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: ts
+      copyState: failed
+      lines: '[{"text":"import { mount } from \"mdmark\";"}]'

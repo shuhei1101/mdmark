@@ -1,4 +1,6 @@
+import type { Locator } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
+import { iconSvg } from "../../../src/parts/icons.ts";
 import { createBrowserHolder, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();
@@ -14,7 +16,7 @@ test("test_title_and_line_numbers", async () => {
   );
   // 検証
   await expect(page.locator(".mdmark-code-title").innerText()).resolves.toBe(
-    "app.ts",
+    "ts\napp.ts",
   );
   const lines = page.locator(".mdmark-code-line");
   await expect(lines.count()).resolves.toBe(3);
@@ -81,7 +83,7 @@ test("test_title_only", async () => {
   const page = await holder.openStory("parts-codeblock--title-only");
   // 検証
   await expect(page.locator(".mdmark-code-title").innerText()).resolves.toBe(
-    "mdmark.config.yaml",
+    "yaml\nmdmark.config.yaml",
   );
   await expect(page.locator(".mdmark-code-line").count()).resolves.toBe(0);
   await expect(
@@ -155,5 +157,163 @@ test("test_long_line_and_title", async () => {
       ),
     );
   expect(new Set(widths).size).toBe(1);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+/** ボタンの中の `svg` の中身が、アイコンの HTML の中身と同じか */
+function hasIcon(button: Locator, icon: Parameters<typeof iconSvg>[0]) {
+  return button.locator("svg").evaluate((svg, expected) => {
+    const template = document.createElement("template");
+    template.innerHTML = expected;
+    return (
+      svg.innerHTML === (template.content.querySelector("svg")?.innerHTML ?? "")
+    );
+  }, iconSvg(icon));
+}
+
+/** 帯の左端の言語のラベルと右端のコピーのボタンの、帯の中での位置を返す */
+function barLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
+  return page.locator(".mdmark-code-bar").evaluate((bar) => {
+    const rect = bar.getBoundingClientRect();
+    const lang = bar
+      .querySelector(".mdmark-code-lang")
+      ?.getBoundingClientRect();
+    const copy = bar
+      .querySelector(".mdmark-code-copy")
+      ?.getBoundingClientRect();
+    return {
+      langLeft: lang ? lang.left - rect.left : undefined,
+      copyRight: copy ? rect.right - copy.right : undefined,
+      lineHeight: Number.parseFloat(getComputedStyle(bar).lineHeight),
+      height: rect.height,
+    };
+  });
+}
+
+// 言語のラベルを帯の左端に、コピーのボタンを右端に置く（LanguageLabel）
+test("test_language_label", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--language-label");
+  // 検証
+  await expect(
+    page.locator(".mdmark-code-lang-name").innerText(),
+  ).resolves.toBe("ts");
+  await expect(
+    page.locator(".mdmark-code-lang-name").getAttribute("aria-hidden"),
+  ).resolves.toBe("true");
+  await expect(page.locator(".mdmark-code-file").count()).resolves.toBe(0);
+  await expect(page.locator(".mdmark-code-title").count()).resolves.toBe(0);
+  await expect(page.locator(".mdmark-code-copy").innerText()).resolves.toBe(
+    "コピー",
+  );
+  const layout = await barLayout(page);
+  expect(layout.langLeft).toBeLessThan(16);
+  expect(layout.copyRight).toBeLessThan(16);
+  await expect(
+    page.locator("#storybook-root pre").getAttribute("aria-label"),
+  ).resolves.toBe("コード: ts");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// `言語:ファイル名` のコードブロックは、帯の左端に言語と、縦線で区切ったファイル名を出す（FileName）
+test("test_file_name", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--file-name");
+  // 検証
+  await expect(
+    page.locator(".mdmark-code-lang-name").innerText(),
+  ).resolves.toBe("python");
+  await expect(page.locator(".mdmark-code-file").innerText()).resolves.toBe(
+    "hoge.py",
+  );
+  const separator = await page.locator(".mdmark-code-file").evaluate((el) => ({
+    width: getComputedStyle(el).borderInlineStartWidth,
+    style: getComputedStyle(el).borderInlineStartStyle,
+  }));
+  expect(separator).toEqual({ width: "1px", style: "solid" });
+  await expect(
+    page.locator("#storybook-root pre").getAttribute("aria-label"),
+  ).resolves.toBe("コード: hoge.py");
+  const layout = await barLayout(page);
+  expect(layout.langLeft).toBeLessThan(16);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 帯の幅を超えるファイル名と題は帯の中で折り返し、コピーのボタンは右端に残る（LongFileName）
+test("test_long_file_name", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--long-file-name");
+  // 検証
+  const bar = await page.locator(".mdmark-code-bar").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const file = element.querySelector(".mdmark-code-file");
+    const copy = element
+      .querySelector(".mdmark-code-copy")
+      ?.getBoundingClientRect();
+    return {
+      height: rect.height,
+      fileFits: (file?.scrollWidth ?? 1) <= (file?.clientWidth ?? 0),
+      fileWraps:
+        (file?.getBoundingClientRect().height ?? 0) >
+        Number.parseFloat(getComputedStyle(file as Element).lineHeight) * 1.5,
+      copyRight: copy ? rect.right - copy.right : undefined,
+      copyInside: copy
+        ? copy.left >= rect.left && copy.right <= rect.right
+        : false,
+      barFits: element.scrollWidth <= element.clientWidth,
+    };
+  });
+  expect(bar.fileFits).toBe(true);
+  expect(bar.fileWraps).toBe(true);
+  expect(bar.barFits).toBe(true);
+  expect(bar.copyInside).toBe(true);
+  expect(bar.copyRight).toBeLessThan(16);
+  await expect(
+    page.locator(".mdmark-code-title").innerText(),
+  ).resolves.toContain("色分けの対象を探す");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 言語の無いコードブロックは、言語のラベルを出さず、帯はコピーのボタンだけを持つ（NoLanguage）
+test("test_no_language", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--no-language");
+  // 検証
+  await expect(page.locator(".mdmark-code-lang").count()).resolves.toBe(0);
+  await expect(page.locator(".mdmark-code-copy").count()).resolves.toBe(1);
+  await expect(
+    page.locator("#storybook-root pre").getAttribute("aria-label"),
+  ).resolves.toBe("コード");
+  const layout = await barLayout(page);
+  expect(layout.copyRight).toBeLessThan(16);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// コードをコピーしたとき、ボタンを「コピーしました」と check のアイコンにする（Copied）
+test("test_copied", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--copied");
+  // 検証
+  const button = page.locator(".mdmark-code-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("copied");
+  await expect(button.innerText()).resolves.toBe("コピーしました");
+  await expect(hasIcon(button, "check")).resolves.toBe(true);
+  await expect(page.locator(".mdmark-code-status").innerText()).resolves.toBe(
+    "コードをコピーしました",
+  );
+});
+
+// コードをコピーできなかったとき、ボタンを「コピーできませんでした」と circle-alert のアイコンにする（CopyFailed）
+test("test_copy_failed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--copy-failed");
+  // 検証
+  const button = page.locator(".mdmark-code-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("failed");
+  await expect(button.innerText()).resolves.toBe("コピーできませんでした");
+  await expect(hasIcon(button, "circle-alert")).resolves.toBe(true);
+  await expect(page.locator(".mdmark-code-status").innerText()).resolves.toBe(
+    "コードをコピーできませんでした",
+  );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });

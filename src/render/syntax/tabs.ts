@@ -8,7 +8,7 @@ import {
   featureOn,
   findClose,
   markOf,
-  ownBlock,
+  tabBoundaryBlock,
   textOf,
 } from "./tokens.ts";
 import {
@@ -131,13 +131,24 @@ export function buildTabs(state: StateCore): void {
     out.push(...content.slice(0, firstPosition));
     separators.forEach(({ position }, panel) => {
       out.push(
-        ownBlock(state, pieces[panel] ?? "", panel === 0 ? token : undefined),
+        tabBoundaryBlock({
+          state,
+          html: pieces[panel] ?? "",
+          boundary: panel === 0 ? "start" : "between",
+          source: panel === 0 ? token : undefined,
+        }),
       );
       const next = separators[panel + 1]?.position ?? content.length;
       // 区切りの見出しの 3 つのトークンは、タブ名になるので出さない
       out.push(...content.slice(position + 3, next));
     });
-    out.push(ownBlock(state, pieces[separators.length] ?? ""));
+    out.push(
+      tabBoundaryBlock({
+        state,
+        html: pieces[separators.length] ?? "",
+        boundary: "end",
+      }),
+    );
     index = end;
   }
   state.tokens = out;

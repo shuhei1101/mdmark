@@ -615,7 +615,7 @@ functions:
     container: src/render/parser.ts
     usecase: 文書を描く
     summary: コアルール。`map` を持つブロックの開始のトークンに、`map[0]` を `data-source-line` で付ける
-    description: 対象は `block` が `true` で `map` を持ち、`nesting` が `1`（見出し・段落・リスト・リストの項目・表・表の行・引用）か `0`（`hr`・`code_block`）のトークンで、`attrSet("data-source-line", String(map[0]))` を呼ぶ。`fence` は `createParser` が包んだ `renderer.rules.fence` が `pre` に付ける。記法のコアルールが印の範囲を置き換えた `html_block`（`ownBlock`。開きの印のトークンの `map` を写す）は、HTML の最初の開始タグに属性を差し込む。文書に書いた生の HTML の `html_block` は変えない
+    description: 対象は `block` が `true` で `map` を持ち、`nesting` が `1`（見出し・段落・リスト・リストの項目・表・表の行・引用）か `0`（`hr`・`code_block`）のトークンで、`attrSet("data-source-line", String(map[0]))` を呼ぶ。`fence` は `createParser` が包んだ `renderer.rules.fence` が、帯で包むコードブロックでは外側の `div.mdmark-code` に、帯で包まないコードブロック（`code` がオフ）では `pre` に付ける。記法のコアルールが印の範囲を置き換えた `html_block`（`ownBlock`。開きの印のトークンの `map` を写す）は、HTML の最初の開始タグに属性を差し込む。文書に書いた生の HTML の `html_block` は変えない
     scope: internal
     side_effects: '`state.tokens` の属性と `html_block` の `content` を書き換える'
     args:
@@ -635,7 +635,7 @@ functions:
         summary: 表と表の行、コードブロックに付ける
         condition: 1 行目から見出し行と 2 行の表、6 行目から情報文字列 `ts` のコードブロック
         mock: なし
-        expected: '`<table data-source-line="0"`、本体の `tr` が `data-source-line="2"` と `"3"`、`<pre` が `data-source-line="5"`'
+        expected: '`<table data-source-line="0"`、本体の `tr` が `data-source-line="2"` と `"3"`、コードブロックを包む `div.mdmark-code` が `data-source-line="5"`'
       - name: test_mark_source_lines_when_mark_range
         case: 正常
         summary: 印の範囲を囲む要素と注意書きに開きの印の行を付け、中のブロックにもそれぞれの行を付ける

@@ -152,3 +152,45 @@ test("test_attach_sections_when_row_has_term", async () => {
     root.remove();
   }
 });
+
+// 選ばれていないタブの中の ID への hashchange でそのタブを選ぶ（正常系）
+test("test_attach_sections_when_hash_in_tab", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { attachTabs } = await import("../../../../src/interact/tabs.ts");
+  const { root } = createRoot(
+    [
+      "<!-- tabs -->",
+      "",
+      "### macOS",
+      "",
+      "macOS の手順",
+      "",
+      "### Windows",
+      "",
+      "#### 補足",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "##### 注意",
+      "",
+      "本文",
+      "",
+      "<!-- /tabs -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  detachers.push(attachTabs(root));
+  const closed = sectionBody(root, "補足");
+  const windows = [...root.querySelectorAll<HTMLElement>('[role="tab"]')].find(
+    (tab) => tab.textContent === "Windows",
+  );
+  // 実行
+  location.hash = "#注意";
+  // 検証
+  await vi.waitFor(() => {
+    expect(windows?.getAttribute("aria-selected")).toBe("true");
+  });
+  expect(closed.hasAttribute("hidden")).toBe(false);
+});

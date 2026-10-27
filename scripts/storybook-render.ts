@@ -76,9 +76,11 @@ const CSS_PATH = "/render/index.css";
 const VSCODE_CSS_PATH = "/render/vscode.css";
 const VSCODE_CSS_SOURCE = join("vscode", "src", "webview", "preview.css");
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
-// 図のストーリーが読む、拡大・縮小の操作を付ける処理の経路と、その元のソース
-const DIAGRAM_SCRIPT_PATH = "/render/diagram.js";
-const DIAGRAM_SOURCE = "src/interact/diagrams.ts";
+// ストーリーが読む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理）
+const SCRIPT_SOURCES: Record<string, string> = {
+  "/render/diagram.js": "src/interact/diagrams.ts",
+  "/render/sticky.js": "src/interact/sticky.ts",
+};
 // 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
 const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
@@ -484,7 +486,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: String(args.title ?? ""),
       lineNumbers: args.lineNumbers === true,
       lines,
+      ...(typeof args.fileName === "string" ? { fileName: args.fileName } : {}),
       ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
+      ...(typeof args.copyState === "string"
+        ? { copyState: args.copyState as "idle" | "copied" | "failed" }
+        : {}),
     });
     return args.highlight === true
       ? highlightCodeBlock(html, language, lines)
@@ -508,6 +514,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       columns,
       label: String(args.label),
       open: args.open as boolean | undefined,
+      foldedColumn: args.foldedColumn as
+        | { name: string; html: string }
+        | undefined,
       body: bodyOf(args, SAMPLE_BODY),
     });
     const head = `<td><span class="mdmark-row-head">${toggle}${String(args.label)}</span></td>`;
@@ -772,21 +781,30 @@ export function renderPart(options: {
   return `<div class="mdmark">${renderer(args)}</div>`;
 }
 
-/** 図の操作（`src/interact/diagrams.ts`）をブラウザの ES モジュールに束ねた文字。初めて求められたときに束ねる */
-let diagramScriptCode: Promise<string> | undefined;
-function diagramScript(root: string): Promise<string> {
-  diagramScriptCode ??= build({
-    absWorkingDir: root,
-    entryPoints: [DIAGRAM_SOURCE],
-    bundle: true,
-    format: "esm",
-    write: false,
-    logLevel: "silent",
-  }).then((result) => result.outputFiles[0]?.text ?? "");
-  return diagramScriptCode;
+/** 操作の処理（`source`）をブラウザの ES モジュールに束ねた文字。経路ごとに、初めて求められたときに束ねる */
+const scriptCodes = new Map<string, Promise<string>>();
+function bundledScript(options: {
+  root: string;
+  path: string;
+  source: string;
+}): Promise<string> {
+  const key = `${options.root}\0${options.path}`;
+  let code = scriptCodes.get(key);
+  if (code === undefined) {
+    code = build({
+      absWorkingDir: options.root,
+      entryPoints: [options.source],
+      bundle: true,
+      format: "esm",
+      write: false,
+      logLevel: "silent",
+    }).then((result) => result.outputFiles[0]?.text ?? "");
+    scriptCodes.set(key, code);
+  }
+  return code;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/diagram.js`・`GET /render/sticky.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
   root: string;
@@ -805,8 +823,13 @@ export function createRenderServer(options: {
       response.end(css);
       return;
     }
-    if (url.pathname === DIAGRAM_SCRIPT_PATH) {
-      diagramScript(options.root).then(
+    const scriptSource = SCRIPT_SOURCES[url.pathname];
+    if (scriptSource !== undefined) {
+      bundledScript({
+        root: options.root,
+        path: url.pathname,
+        source: scriptSource,
+      }).then(
         (code) => {
           response.writeHead(200, {
             "Content-Type": "text/javascript; charset=utf-8",

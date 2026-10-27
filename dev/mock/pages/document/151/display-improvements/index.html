@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / display-improvements（表示の改善） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・留めたトップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法・表の道具・コードブロックの飾り・色分けの規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../../../refs/57/assets/table-tools.css">
+  <link rel="stylesheet" href="../../../../refs/65/assets/code-block.css">
+  <link rel="stylesheet" href="../../../../refs/97/assets/syntax-highlight.css">
+  <!-- この PR で変える表とコードブロックの規則（#151 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/151/assets/table.css">
+  <link rel="stylesheet" href="../../../../refs/151/assets/code-block.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/65/assets/code-block-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/97/assets/syntax-highlight-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/151/assets/table-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/151/assets/code-block-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 案の切り替え（モックだけの仕組み。表を組み立てる前に html の data-* と本文の幅を当てる） -->
+  <script src="./app.js" defer></script>
+  <!-- 表の見本の定義と組み立て（モックだけの仕組み） -->
+  <script src="../../../../refs/151/assets/samples.js" defer></script>
+  <script src="../../../../refs/151/assets/table-build.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉・印刷の前後の展開） -->
+  <script src="../../../../refs/19/assets/syntax.js" defer></script>
+  <!-- 表の道具・見出し行と集計の行の留め方・最終列の畳み方、コードブロックの帯、タブの中の見出しへの移動 -->
+  <script src="../../../../refs/151/assets/table.js" defer></script>
+  <script src="../../../../refs/151/assets/code-block.js" defer></script>
+  <script src="../../../../refs/151/assets/tabs.js" defer></script>
+  <!-- 印刷の見え方（モックだけの仕組み） -->
+  <script src="../../../../refs/151/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色・印刷の見え方、未確定の案の切り替え、移る先のリンク -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色と印刷">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+      <!-- [data-preview-toggle]: preview.js が印刷の規則を画面にも当てる -->
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+    <!-- [data-scene-axis] [data-scene-value]: app.js が行き先の URL（?{軸}=）と今の案の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="本文の幅の既定">
+      <a class="mock-bar-item" data-scene-axis="width" data-scene-value="a">幅 A: 制限なし</a>
+      <a class="mock-bar-item" data-scene-axis="width" data-scene-value="b">幅 B: 72rem</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="最終列を畳む条件">
+      <a class="mock-bar-item" data-scene-axis="fold" data-scene-value="a">畳む A: 文書の幅・収まらない列</a>
+      <a class="mock-bar-item" data-scene-axis="fold" data-scene-value="b">畳む B: 画面の幅・全ての表</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="畳んだ最終列の開き方">
+      <a class="mock-bar-item" data-scene-axis="open" data-scene-value="a">開き方 A: 詳細と 1 つのボタン</a>
+      <a class="mock-bar-item" data-scene-axis="open" data-scene-value="b">開き方 B: 別のボタン</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="見出し行の留め方">
+      <a class="mock-bar-item" data-scene-axis="sticky" data-scene-value="d">留め方 D</a>
+      <a class="mock-bar-item" data-scene-axis="sticky" data-scene-value="c">留め方 C</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="クリップボード">
+      <a class="mock-bar-item" data-scene-axis="clipboard" data-scene-value="ok">コピーできる</a>
+      <a class="mock-bar-item" data-scene-axis="clipboard" data-scene-value="fail">コピーできない</a>
+    </div>
+    <!-- 移る先のリンク: URL の #ID を変え、選ばれていないタブの中の見出しと行へ移る -->
+    <div class="mock-bar-group" role="group" aria-label="移る先">
+      <a class="mock-bar-item" href="#macos-の注意">#macos-の注意</a>
+      <a class="mock-bar-item" href="#windows-の注意">#windows-の注意</a>
+      <a class="mock-bar-item" href="#シャインマスカット">#シャインマスカット</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外）: 画面の上端に留める -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">151</a> / display-improvements
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書 -->
+    <article class="mdmark">
+<h1 id="倉庫の在庫を確かめる">倉庫の在庫を確かめる</h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめるための文書です。数は毎朝 9 時の棚卸しの結果で更新します。</p>
+<nav class="mdmark-toc" aria-labelledby="toc-title">
+  <p class="mdmark-toc-title" id="toc-title">目次</p>
+  <ul><li><a href="#在庫の一覧">在庫の一覧</a></li><li><a href="#出荷の集計">出荷の集計</a></li><li><a href="#機能の状態">機能の状態</a></li><li><a href="#点検のコマンド">点検のコマンド</a></li><li><a href="#導入">導入</a><ul><li><a href="#windows-の注意">Windows の注意</a></li><li><a href="#macos-の注意">macOS の注意</a></li></ul></li><li><a href="#書き方のメモ">書き方のメモ</a></li></ul>
+</nav>
+
+<h2 class="mdmark-heading" id="在庫の一覧"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-在庫の一覧">在庫の一覧<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#在庫の一覧" aria-label="「在庫の一覧」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-在庫の一覧">
+<p>第一倉庫・第二倉庫・冷蔵室の 3 か所の在庫です。</p>
+<!-- [data-mock-table]: table-build.js が samples.js の定義から表を組み立てる -->
+<div data-mock-table="stock"></div>
+<p>品切れの品は、次の入荷の予定を備考に書きます。</p>
+</div>
+
+<h2 class="mdmark-heading" id="出荷の集計"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-出荷の集計">出荷の集計<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#出荷の集計" aria-label="「出荷の集計」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-出荷の集計">
+<p>今日の便ごとの出荷です。臨時便の数量はまだ決まっていません。</p>
+<div data-mock-table="shipment"></div>
+</div>
+
+<h2 class="mdmark-heading" id="機能の状態"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-機能の状態">機能の状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#機能の状態" aria-label="「機能の状態」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-機能の状態">
+<p>在庫の文書で使う表示の機能です。</p>
+<div data-mock-table="status"></div>
+</div>
+
+<h2 class="mdmark-heading" id="点検のコマンド"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-点検のコマンド">点検のコマンド<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#点検のコマンド" aria-label="「点検のコマンド」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-点検のコマンド">
+<p>在庫の文書を描く処理です。</p>
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>stock.ts</figcaption>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: stock.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-comment">// 在庫の文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="4"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> element = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#stock&quot;</span>);</span></span>
+<span class="mdmark-code-line" data-line="5" data-kind="del"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(element, markdown);</span></span>
+<span class="mdmark-code-line" data-line="6" data-kind="add"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(element, markdown, { <span class="hljs-attr">features</span>: { <span class="hljs-attr">syntax</span>: <span class="hljs-literal">true</span> } });</span></span>
+<span class="mdmark-code-line" data-line="7" data-kind="highlight"><span class="mdmark-code-text">element.<span class="hljs-property">dataset</span>.<span class="hljs-property">ready</span> = <span class="hljs-string">&quot;true&quot;</span>;</span></span></code></pre>
+</figure>
+<p>点検の前に、索引と文書のずれを確かめてから 1 枚の HTML にまとめます。</p>
+<pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
+npx mdmark build --out dist/stock.html</code></pre>
+<pre tabindex="0" aria-label="コード: dockerfile"><code class="language-dockerfile"><span class="hljs-keyword">FROM</span> node:22-slim
+<span class="hljs-keyword">WORKDIR</span> /app
+<span class="hljs-keyword">COPY</span> package.json ./
+<span class="hljs-keyword">RUN</span> npm ci
+<span class="hljs-keyword">CMD</span> [<span class="hljs-string">&quot;npx&quot;</span>, <span class="hljs-string">&quot;mdmark&quot;</span>, <span class="hljs-string">&quot;build&quot;</span>]</code></pre>
+<pre tabindex="0" aria-label="コード: diff"><code class="language-diff"><span class="hljs-meta">@@ -1,3 +1,3 @@</span>
+ features:
+<span class="hljs-deletion">-  copy: false</span>
+<span class="hljs-addition">+  copy: true</span></code></pre>
+<p>在庫の数を合計する処理です。</p>
+<pre tabindex="0" aria-label="コード: python"><code class="language-python:stock.py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">total</span>(<span class="hljs-params">rows</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(row[<span class="hljs-string">&quot;count&quot;</span>] <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows)</code></pre>
+<p>今朝の点検の記録です。</p>
+<pre tabindex="0" aria-label="コード"><code>08:30 第一倉庫 点検済み
+09:10 冷蔵室 点検済み</code></pre>
+<p>文書の置き場所です。</p>
+<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>stock/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>在庫.md</span></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>mdmark.config.yaml</span></li></ul></li></ul>
+</div>
+
+<h2 class="mdmark-heading" id="導入"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-導入">導入<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-導入" hidden="until-found">
+<p>Node.js 22 以降を入れてから、mdmark の CLI を使います。</p>
+<!-- [data-group]: tabs.js が選んだタブを group ごとに覚え、URL の ID が指すタブはそれより優先して選ぶ -->
+<div class="mdmark-tabs" data-group="os">
+  <div class="mdmark-tablist" role="tablist" aria-label="導入">
+    <button class="mdmark-tab" type="button" role="tab" id="os-tab-0" aria-selected="true" aria-controls="os-panel-0" tabindex="0">Windows</button>
+    <button class="mdmark-tab" type="button" role="tab" id="os-tab-1" aria-selected="false" aria-controls="os-panel-1" tabindex="-1">macOS</button>
+  </div>
+  <div role="tabpanel" id="os-panel-0" aria-labelledby="os-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+    <h3 class="mdmark-heading" id="windows-の注意">Windows の注意<a class="mdmark-anchor" href="#windows-の注意" aria-label="「Windows の注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+    <p>PowerShell の実行ポリシーで npx が止まるときは、管理者でない端末から実行します。</p>
+  </div>
+  <!-- 選ばれていないタブの中身: URL の #macos-の注意 で開くと tabs.js がこのタブを選ぶ -->
+  <div role="tabpanel" id="os-panel-1" aria-labelledby="os-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+    <h3 class="mdmark-heading" id="macos-の注意">macOS の注意<a class="mdmark-anchor" href="#macos-の注意" aria-label="「macOS の注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+    <p>Apple シリコンの端末では、Homebrew の入る場所が /opt/homebrew になります。</p>
+  </div>
+</div>
+</div>
+
+<h2 class="mdmark-heading" id="書き方のメモ"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-書き方のメモ">書き方のメモ<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#書き方のメモ" aria-label="「書き方のメモ」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-書き方のメモ">
+<p>点検の状態は <span class="mdmark-badge">点検済み</span> と書きます。状態が決まっていない行は <code>badge:</code> の後ろを空けておき、決まったら追記します（<code>badge: </code> も同じです）。</p>
+</div>
+    </article>
+  </main>
+</body>
+</html>

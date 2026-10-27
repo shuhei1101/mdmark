@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, expect, test, vi } from "vitest";
 
 /** 描画の口のスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -232,6 +232,22 @@ test("test_create_render_server_when_css", async () => {
   expect(response.status).toBe(200);
   expect(response.headers.get("content-type")).toBe("text/css; charset=utf-8");
   expect(await response.text()).toBe(css);
+});
+
+// 見出し行と集計の行を留める処理を束ねて返す（正常系）
+test("test_create_render_server_when_sticky_script", async () => {
+  // 準備
+  const { createRenderServer } = await loadRender();
+  const root = resolve(import.meta.dirname, "../../..");
+  const port = await listen(createRenderServer({ root }));
+  // 実行
+  const response = await fetch(`http://127.0.0.1:${port}/render/sticky.js`);
+  // 検証
+  expect(response.status).toBe(200);
+  expect(response.headers.get("content-type")).toBe(
+    "text/javascript; charset=utf-8",
+  );
+  expect(await response.text()).toContain("attachStickyRows");
 });
 
 // 知らない部品は 404 を返す（正常系）

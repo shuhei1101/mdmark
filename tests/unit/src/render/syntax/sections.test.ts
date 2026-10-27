@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { findTag, innerHtml } from "../../../helpers/html.ts";
+import { findTag, findTags, innerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 // h2 と h3 の節を入れ子に囲み、closed の節も中身を隠さない（正常系）
@@ -56,4 +56,45 @@ test("test_wrap_sections_when_feature_off", () => {
   expect(html).not.toContain("mdmark-heading");
   expect(html).not.toContain("mdmark-section-body");
   expect(html).toContain('id="a"');
+});
+
+// タブの中身の中で開いた節を、その中身の終わりで閉じる（正常系）
+test("test_wrap_sections_when_in_tab", () => {
+  // 準備
+  const markdown = [
+    "## 導入",
+    "",
+    "<!-- tabs -->",
+    "",
+    "### macOS",
+    "",
+    "#### macOS の注意",
+    "",
+    "macOS の段落",
+    "",
+    "### Windows",
+    "",
+    "#### Windows の注意",
+    "",
+    "Windows の段落",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const tabs = innerHtml(html, 'class="mdmark-tabs"');
+  const panels = findTags(tabs, 'class="mdmark-tab-panel"');
+  expect(panels).toHaveLength(2);
+  expect(tabs.indexOf('id="section-windows-の注意"')).toBeGreaterThan(
+    tabs.lastIndexOf('class="mdmark-tab-panel"'),
+  );
+  expect(innerHtml(tabs, 'class="mdmark-tab-panel"')).toContain(
+    'id="section-macos-の注意"',
+  );
+  expect(innerHtml(tabs, 'class="mdmark-tab-panel"')).not.toContain(
+    'id="section-windows-の注意"',
+  );
+  expect(innerHtml(html, 'id="section-導入"')).toContain('class="mdmark-tabs"');
 });

@@ -496,6 +496,12 @@ functions:
         condition: '`setSyntaxModuleUrls({ core: "blob:core", languages: { typescript: "blob:ts" } })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setSyntaxModuleUrls(undefined)`'
         mock: '`importModule` が `blob:core` に本体、`blob:ts` に typescript を返す。`console.error` を見張る'
         expected: '`importModule` が `blob:core` と `blob:ts` の 2 回だけ。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+      - name: test_highlight_code_blocks_when_dockerfile_and_diff
+        case: 正常
+        summary: dockerfile と、行の印を持つ diff を色分けする
+        condition: '`render` で描いた `dockerfile` のコードブロック（`FROM node:22`）と、`diff` のコードブロック（`-old`・`+new // [!code ++]`）。`url` は `/hl/`'
+        mock: '`importModule` が `test_highlight_code_blocks` と同じく npm の `highlight.js` の本体と言語を返す'
+        expected: '`importModule` が `/hl/languages/dockerfile.min.js` と `/hl/languages/diff.min.js` を読む。`dockerfile` の `code` に `hljs-keyword` の `span`、`diff` の行に `hljs-deletion` と `hljs-addition` の `span` があり、`+new` の行は `data-kind="add"` のまま'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの読み込み]
       - dev/設計書/外部ライブラリ/highlight.js#

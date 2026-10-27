@@ -357,7 +357,7 @@ flows:
       - 2 列の表には、表示されたピン止めのボタンが無い
       - 押した後、ボタンの `aria-pressed` が `true` で、1・2 列目のセルの `position` の計算値が `sticky`、3 列目は `sticky` でない
       - もう一度押した後、`aria-pressed` が `false` で、1・2 列目のセルが `sticky` でない
-      - 見出し行の `th` の `position` の計算値が、ピン止めの前後とも `sticky`
+      - 10 列の表の `mdmark-table` の `max-height` の計算値が `none` で、表の中で縦にスクロールしない（`scrollHeight` と `clientHeight` が等しい）
     test: test_normal_when_table_pinned
   - name: 正常系（タブを切り替える）
     summary: タブの範囲にタブの並びを付け、押すか矢印キーで切り替える
@@ -1059,13 +1059,13 @@ flows:
       - Esc でメニューが `hidden` を持ち、列の表示のボタンにフォーカスがある
     test: test_normal_when_table_counted_and_columns_toggled
   - name: 正常系（表の集計の行）
-    summary: 表示している行で集計した tfoot の行を置き、絞り込みで計算し直し、並べ替えでは動かさない
+    summary: 表示している行で集計した tfoot の行を計算ごとに置き、絞り込みで計算し直し、並べ替えでは動かさない
     setup:
       - name: 配布物を読んだページ
         description: 正常系と同じ
       - name: 集計の行の表を持つ Markdown
         description: '`<!-- table: data +total +columns total=数量:sum,単価:avg,名前:count filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 4 行の表を囲んだ文書'
-        notes: 名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量は `10`・`2`・`33`・`-`、単価は `100`・`200`・`300`・`400`
+        notes: 名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量は `10`・`2`・`33`・空、単価は `100`・`200`・`300`・`400`
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -1081,14 +1081,16 @@ flows:
         P->>M: 列の表示で単価を外す
         M->>P: 単価の列と集計のセルを隠す
     expected:
-      - 描いた直後、`tfoot` の行のセルが左から `個数 4`・`合計 45`・`平均 250`
-      - 「りんご」で絞り込んだ後、`tfoot` の行のセルが `個数 2`・`合計 43`・`平均 200`
-      - 一致する行が無い絞り込みでは、`個数 0`・`合計 0`・`平均 —`
-      - 並べ替えた後も、集計の行は `tfoot` にあり、`tbody` の行に入っていない
-      - 単価を外した後、単価の列の `th`・`td` と `tfoot` の単価のセルが `hidden` を持つ
+      - 描いた直後、`tfoot` に `data-total-kind` が上から `sum`・`avg`・`count` の 3 行があり、先頭のセルの計算の名前が `合計`・`平均`・`件数`
+      - 描いた直後、合計の行の数量のセルが `45`（空のセルを除いた合計）、平均の行の単価のセルが `250`、件数の行の先頭のセルの値が計算の名前と分かれた `4` で、各行のほかの列のセルは空
+      - 「りんご」で絞り込んだ後、合計が `43`、平均が `200`、件数が `2`
+      - 一致する行が無い絞り込みでは、合計が `0`、平均が `—`、件数が `0`
+      - 並べ替えた後も、集計の 3 行は `tfoot` にあり、`tbody` の行に入っていない
+      - 単価を外した後、単価の列の `th`・`td` と 3 行の `tfoot` の単価のセルが `hidden` を持つ
+      - 書き方の警告が無い（空のセルは数として読めないセルに数えない）
     test: test_normal_when_table_totals
   - name: 正常系（表をコピーする）
-    summary: 表示している行と列を TSV でクリップボードへ写し、ボタンで知らせる
+    summary: コピーの形式のメニューで TSV を選び、表示している行と列をクリップボードへ書き、ボタンで知らせる
     setup:
       - name: 配布物を読んだページ
         description: 正常系と同じ
@@ -1103,18 +1105,23 @@ flows:
         participant M as mdmark
         P->>M: mount(el, { markdown })
         P->>M: 名前の列を「りんご」で絞り込み、表をコピーを押す
-        M->>P: 表示している行と列を TSV で写し、ボタンで知らせる
+        M->>P: コピーの形式のメニューを開く
+        P->>M: TSV を押す
+        M->>P: 表示している行と列を TSV で書き、ボタンで知らせる
     expected:
+      - 表をコピーを押した後、ボタンの `aria-expanded` が `true` で、メニューに `Markdown の表`・`TSV` の 2 つのボタンがあり、最初のボタンにフォーカスがある
       - '`navigator.clipboard.writeText` が `名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれる'
-      - 押した後、ボタンの文字が `コピーしました` で、2 秒後に `表をコピー` に戻る
+      - TSV を押した後、メニューが `hidden` を持ち、表をコピーのボタンにフォーカスがある
+      - ボタンの文字が `コピーしました` で、2 秒後に `表をコピー` に戻る
+      - 読み上げの要素に TSV をコピーしたことが出る
     test: test_normal_when_table_copied
   - name: 正常系（表をコピーできない）
-    summary: クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す
+    summary: クリップボードへの書き込みが拒まれたら、コピーする中身を選択したパネルを出し、閉じるとボタンへフォーカスを戻す
     setup:
       - name: 配布物を読んだページ
         description: 正常系と同じ
       - name: コピーできる表を持つ Markdown
-        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で、列 `名前`・`更新日` の 3 行の表を囲んだ文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
     flow: |-
@@ -1122,13 +1129,17 @@ flows:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        P->>M: 表をコピーを押す
+        P->>M: 表をコピーを押し、TSV を押す
         M->>M: 書き込みが拒まれる
-        M->>P: ボタンで写せなかったことを知らせる
+        M->>P: コピーする中身を選択したパネルを出す
+        P->>M: Esc を押す
+        M->>P: パネルを閉じ、表をコピーへフォーカスを戻す
     expected:
-      - 押した後、ボタンの文字が `コピーできませんでした` で、2 秒後も変わらない
+      - TSV を押した後、表の上の帯の直後に `role="group"` のパネルがあり、中の読み取り専用の `textarea` の値が見出しの行と 3 行の TSV で、値の全てが選択され、`textarea` にフォーカスがある
+      - 読み上げの要素に、コピーできなかったことと手でコピーできることが出る
       - ページに捕まえられない例外（`unhandledrejection`）が出ていない
-      - もう一度押すと、書き込みをもう一度試す
+      - Esc を押した後、パネルが無く、表をコピーのボタンにフォーカスがある
+      - もう一度コピーすると、書き込みをもう一度試し、パネルは 1 つだけ
     test: test_normal_when_table_copy_denied
   - name: 正常系（行へのリンクで行へ移る）
     summary: 'URL の #ID が指す行を囲む閉じた表・節を開き、絞り込みを外して行へ移り、その行を強調する'
@@ -1854,9 +1865,329 @@ flows:
       - '`WorkPlace` が class `mdmark-term mdmark-term-avoided` の要素で、「代わりの用語」に `ワークスペース` が出る'
       - 図の箱の `ｍｃｐ` が class `mdmark-term` の要素で、ツールチップに `MCP` の意味が出る
     test: test_normal_when_notation_differs
+  - name: 正常系（表を Markdown の表でコピーする）
+    summary: 列の表示と絞り込みの後に見えている行と列を、セルの `|` を戻して Markdown の表で書く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コピーできる表を持つ Markdown
+        description: 正常系（表をコピーする）と同じ表で、説明の列を持つ文書
+        notes: 説明は `赤い \| 甘い`（セルの中の `|`）・`黄色い`・`祭りの菓子`
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を記録して解決する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 列の表示で説明を出して更新日を隠し、名前の列を「りんご」で絞り込む
+        P->>M: 表をコピーを押し、Markdown の表を押す
+        M->>P: 見えている行と列を Markdown の表で書き、ボタンで知らせる
+    expected:
+      - '`navigator.clipboard.writeText` が `| 名前 | 説明 |\n| --- | --- |\n| りんご | 赤い \| 甘い |\n| りんご飴 | 祭りの菓子 |` で 1 回呼ばれる'
+      - ボタンの文字が `コピーしました` で、読み上げの要素に Markdown の表をコピーしたことが出る
+    test: test_normal_when_table_copied_as_markdown
+  - name: 正常系（出す集計を選ぶ）
+    summary: 「集計」のメニューでチェックを外した計算の行を隠し、入れ直すと戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 集計の行の表を持つ Markdown
+        description: 正常系（表の集計の行）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表の上の帯に集計のボタンを置く
+        P->>M: 集計を押し、平均のチェックを外す
+        M->>P: 平均の行を隠す
+        P->>M: 平均にチェックを入れ、Esc を押す
+        M->>P: 平均の行を戻し、メニューを閉じる
+        P->>M: update(同じ markdown)
+        M->>P: 全ての計算の行で描き直す
+    expected:
+      - 集計を押した後、ボタンの `aria-expanded` が `true` で、メニューに `合計`・`平均`・`件数` のチェックボックスが並び、全てチェックが入っている
+      - 平均のチェックを外した後、`data-total-kind="avg"` の行が `hidden` を持ち、ほかの 2 行は持たない。読み上げの要素に平均の行を隠したことが出る
+      - 平均にチェックを入れた後、`data-total-kind="avg"` の行が `hidden` を持たない
+      - Esc でメニューが `hidden` を持ち、集計のボタンにフォーカスがある
+      - 平均のチェックを外して `update` した後も、集計の 3 行がどれも `hidden` を持たない（選択を覚えない）
+    test: test_normal_when_totals_selected
+  - name: 正常系（数として読めないセルを集計する）
+    summary: 数として読めないセルを持つ列の sum・avg のセルを、絞り込みに関わらず空にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 読めないセルを持つ表の Markdown
+        description: '`<!-- table: data +total total=数量:sum,単価:avg filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 3 行の表を囲んだ文書'
+        notes: 名前は `りんご`・`みかん`・`ぶどう`、数量は `10`・`2`・`-`、単価は `100`・`200`・`300`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: 数量の列に数として読めないセルがある
+        M->>P: 数量の合計を空にした集計の行と、表の上の書き方の警告を描く
+        P->>M: 名前の列を「りんご」で絞り込む
+        M->>P: 平均だけを計算し直す
+    expected:
+      - 合計の行の数量のセルが空で、読めたセルだけの合計 `12` を出していない
+      - 平均の行の単価のセルが `200`
+      - 表の前に `mdmark-syntax-warning` の警告が 1 つあり、本文に `数量` と `-` を含む
+      - 「りんご」で絞り込んだ後（表示している行に読めないセルが無くても）、合計の行の数量のセルが空で、平均の行の単価のセルが `100`
+    test: test_normal_when_total_cell_not_number
+  - name: 正常系（行の URL をコピーする）
+    summary: 行へのリンクの印を押すと、行へ移る動きはそのままに、解決済みの href を書いて知らせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 行へのリンクの表を持つ Markdown
+        description: '`<!-- table: data +rowlink -->` 〜 `<!-- /table -->` で、名前 `りんご`・`みかん`・`りんご飴` の 3 行の表を囲んだ文書'
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を記録して解決する関数に差し替える。時計をテストの時計に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: みかんの行の行へのリンクの印を押す
+        M->>M: 印の href をクリップボードへ書く
+        M->>P: 印の横に知らせを出し、みかんの行へ移って強調する
+        P->>P: 2 秒進める
+        M->>P: 知らせを消す
+    expected:
+      - '`navigator.clipboard.writeText` が、みかんの行の印の `href` プロパティの値（ページの URL で解決した絶対 URL）で 1 回呼ばれる'
+      - 押した後、印の横に `role="status"` の要素があり、文字が `リンクをコピーしました`
+      - 押した後、`location.hash` がみかんの行の `id` を指し、`id="みかん"` の行だけが `data-target` を持つ
+      - 2 秒後、知らせの要素が無い
+    test: test_normal_when_row_url_copied
+  - name: 正常系（行の URL をコピーできない）
+    summary: クリップボードへの書き込みが拒まれても、行へ移り、書けなかったことを知らせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 行へのリンクの表を持つ Markdown
+        description: 正常系（行の URL をコピーする）と同じ文書
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: みかんの行の行へのリンクの印を押す
+        M->>M: 書き込みが拒まれる
+        M->>P: 印の横に書けなかったことを出し、みかんの行へ移る
+    expected:
+      - 印の横の `role="status"` の要素の文字が `リンクをコピーできませんでした`
+      - '`location.hash` がみかんの行の `id` を指し、`id="みかん"` の行が `data-target` を持つ'
+      - ページに捕まえられない例外（`unhandledrejection`）が出ていない
+    test: test_normal_when_row_url_copy_denied
+  - name: 正常系（見出し行と集計の行を留める）
+    summary: ページのスクロールで、見出し行を画面の上端からずれの分だけ下に、集計の行を画面の下端に留め、表が外れると一緒に外す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 600px で、高さは決めずページが縦にスクロールする。画面は 1280x800
+        notes: Chromium（`animation-timeline` を持つ）と Firefox（持たない）の両方で走らせる
+      - name: 留める位置のずれ
+        description: '描く先の `div` に `--mdmark-sticky-top: 48px` を当てる'
+      - name: 大きい表を持つ Markdown
+        description: '長い段落の後に `<!-- table: data +total total=数量:sum -->` 〜 `<!-- /table -->` で 10 列 60 行の表を囲み、表の後に長い段落を持つ文書'
+        notes: 1 列目は名前、2 列目は数量（全て数）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 縦の高さに上限の無い表を描く
+        P->>M: 2 列目のピン止めを押し、ページを表の途中までスクロールする
+        M->>P: 見出し行を画面の上端から 48px、集計の行を画面の下端に留める
+        P->>M: 表を横にスクロールし、留めた見出し行の数量の並べ替えを押す
+        M->>P: 並べ替えた表
+        P->>M: ページを表の後の段落までスクロールする
+        M->>P: 見出し行と集計の行も画面から外す
+    expected:
+      - 表の `mdmark-table` の `max-height` の計算値が `none` で、表の中で縦にスクロールしない
+      - 表の途中までスクロールした後、見出し行の各 `th` の上端が画面の上端から 48px ±1px、集計の行の各セルの下端が画面の下端 ±1px
+      - 表を横にスクロールした後も、見出し行と集計の行の各セルの左端と幅が同じ列の本文のセルと ±1px で揃い、1・2 列目のセルが表の左端にある
+      - 留めた見出し行の並べ替えを押した後、数量の列が昇順に並び、数量の `th` の `aria-sort` が `ascending`
+      - 表の後の段落までスクロールした後、見出し行と集計の行のセルが画面の外（下端が画面の上端より上）にある
+      - 文書の中の `thead` は 1 つだけで、Tab で見出し行の各ボタンへ 1 回ずつ移る
+      - 印刷の媒体では、見出し行と集計の行のセルの `transform` の計算値が `none`
+    test: test_normal_when_table_header_stuck
+  - name: 正常系（最終列を畳む）
+    summary: 描く先の要素が 720px 未満で最終列が 1 行に収まらないとき、最終列を畳み、行の開閉のボタンで開き、広げると畳まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 390px
+      - name: 最終列の長い表を持つ Markdown
+        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表と、名前・状態の 2 列で短い文字の表を囲んだ文書'
+        notes: 説明は、どの行も 390px の幅で 1 行に収まらない長さ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 説明の列を畳み、各行に開閉のボタンを置く
+        P->>M: 2 行目の開閉のボタンを押す
+        M->>P: 2 行目の直後に説明の見出しと中身を出す
+        P->>M: 名前の列で並べ替える
+        M->>P: 開いた行を 2 行目に付けて動かす
+        P->>M: もう一度開閉のボタンを押す
+        M->>P: 開いた行を閉じる
+        P->>P: 描く先の div の幅を 1280px にする
+        M->>P: 説明の列を出し、開閉のボタンを外す
+    expected:
+      - 描いた直後、説明の列の `th` と `td` が表示されておらず、名前と状態の列が表示されている
+      - 描いた直後、各行の先頭のセルに `aria-expanded="false"`・`aria-controls` を持ち、読み上げの名前が `「{名前}」の説明` のボタンが 1 つずつある
+      - 2 列で短い文字の表は畳まず、開閉のボタンが無い
+      - 2 行目のボタンを押した後、`aria-expanded` が `true` で、`aria-controls` の指す行が 2 行目の直後にあり、文字 `説明` と 2 行目の説明の中身を持ち、`hidden` を持たない
+      - 並べ替えた後も、開いた行は 2 行目だった行の直後にある
+      - もう一度押した後、`aria-expanded` が `false` で、開いた行が `hidden` を持つ
+      - ボタンにフォーカスして Enter と Space を押しても開閉する
+      - 幅を 1280px にした後、説明の列が表示され、開閉のボタンと開いた行が表示されていない
+      - 印刷の媒体では、390px でも説明の列が表示され、開閉のボタンが表示されていない
+    test: test_normal_when_last_column_collapsed
+  - name: 正常系（畳んだ最終列と行の詳細）
+    summary: 行の詳細を持つ行は、行の詳細の開閉のボタン 1 つで最終列と詳細を一緒に開閉する
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 390px
+      - name: 最終列の長い表と行の詳細を持つ Markdown
+        description: '正常系（最終列を畳む）の 3 列 3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 最終列を畳み、各行に開閉のボタンを 1 つずつ置く
+        P->>M: 2 行目の開閉のボタンを押す
+        M->>P: 2 行目の直後に最終列の中身と行の詳細を出す
+    expected:
+      - 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
+      - 2 行目のボタンを押した後、2 行目の直後の `mdmark-row-detail` の行が `hidden` を持たず、その中に文字 `説明` と 2 行目の説明の中身、その下に行の詳細の段落がある
+      - もう一度押すと、最終列の中身と行の詳細が一緒に `hidden` になる
+    test: test_normal_when_row_detail_with_collapsed_column
+  - name: 正常系（コードブロックをコピーする）
+    summary: コピーボタンで、消した行を含めない変更後のコードをクリップボードへ書き、ボタンで知らせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コードの行の印を持つ Markdown
+        description: 行末に `// [!code --]` を付けた `const a = 1;`、行末に `// [!code ++]` を付けた `const a = 2;`、`count += 1; // 数える [!code highlight]`、印の無い `return a;` の 4 行を持つ言語 `ts` のコードブロックと、言語の無い 1 行のコードブロックと、言語 `tree` のコードブロックを持つ文書
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を記録して解決する関数に差し替える。色分けは機能 `syntax` を外して読ませない'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: コードブロックの帯にコピーボタンを置く
+        P->>M: ts のコードブロックのコピーボタンを押す
+        M->>M: 消した行を除いたコードをクリップボードへ書く
+        M->>P: ボタンで知らせる
+        P->>M: 言語の無いコードブロックのコピーボタンを押す
+        M->>M: コードをクリップボードへ書く
+    expected:
+      - '`navigator.clipboard.writeText` の 1 回目が `const a = 2;\ncount += 1; // 数える\nreturn a;`（行番号と行頭の `+`・`-` を含まない）'
+      - 2 回目が言語の無いコードブロックの 1 行で、末尾に改行が無い
+      - 押した後、ボタンの文字が `コピーしました` で、`role="status"` の要素にコードをコピーしたことが出て、2 秒後にボタンの文字が `コピー` に戻る
+      - コピーボタンは `type="button"` で、Tab でフォーカスして Enter で押せる
+      - ファイルツリーに描いた `tree` のコードブロックにコピーボタンが無い
+      - 印刷の媒体では、コピーボタンが表示されていない
+    test: test_normal_when_code_copied
+  - name: 正常系（コードブロックをコピーできない）
+    summary: クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コードブロックを持つ Markdown
+        description: 言語 `ts` のコードブロックを持つ文書
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: コピーボタンを押す
+        M->>M: 書き込みが拒まれる
+        M->>P: ボタンでコピーできなかったことを知らせる
+    expected:
+      - 押した後、ボタンの文字が `コピーできませんでした` で、2 秒後も変わらない
+      - '`role="status"` の要素にコードをコピーできなかったことが出る'
+      - ページに捕まえられない例外（`unhandledrejection`）が出ていない
+      - '`navigator.clipboard` が無いページでも、押すと同じ知らせになる'
+    test: test_normal_when_code_copy_denied
+  - name: 正常系（タブの中の要素へ移る）
+    summary: URL の ID が選ばれていないタブの中の見出しを指すとき、描いたときと hashchange で、残したタブ名より優先してそのタブを選び、節を開いてから移る
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: タブの中に見出しを持つ Markdown
+        description: '長い段落の後に、`## 導入` とその直後の `<!-- section: closed -->` を持ち、その節の中に `<!-- tabs: group=os -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ文書'
+        notes: '`macOS` の中身は `#### macOS の注意` と段落、`Windows` の中身は `#### Windows の注意` と段落'
+      - name: 残したタブ名
+        description: '`mount` の前に localStorage の `mdmark-tabs:os` を `macOS` にし、`location.hash` を `#windows-の注意` にする'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 導入の節を開き、Windows のタブを選んでから見出しへ移る
+        P->>M: location.hash を #macos-の注意 にする
+        M->>P: macOS のタブを選んでから見出しへ移る
+        P->>M: location.hash を #/a.md#windows-の注意 にする
+        M->>P: Windows のタブを選んでから見出しへ移る
+    expected:
+      - 描いた後、導入の節の中身が `hidden` を持たず、`Windows` のタブの `aria-selected` が `true` で、`Windows の注意` の見出しが画面の中にある
+      - 描いた後も localStorage の `mdmark-tabs:os` は `macOS` のまま
+      - '`#macos-の注意` にした後（`hashchange`）、`macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面の中にある'
+      - '`#/a.md#windows-の注意` にした後、`Windows` のタブの `aria-selected` が `true`（まとめた HTML の `#` の形）'
+      - どの時点も、選ばれたタブの中身だけが `hidden` を持たない
+    test: test_normal_when_fragment_in_tab
+  - name: 正常系（Dockerfile と diff を色分けする）
+    summary: dockerfile・diff と別名のコードブロックを、言語ごとに 1 回読んだモジュールで色分けし、コードの行の印と両立させる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: Dockerfile と diff のコードブロックを持つ Markdown
+        description: 言語 `dockerfile`・`docker`・`patch` のコードブロックを 1 つずつと、`+` で始まる行・`-` で始まる行・行末に `# [!code ++]` を付けた行を持つ言語 `diff` のコードブロックを持つ文書
+      - name: 設定
+        description: 正常系（コードブロックを色分けする）と同じ
+      - name: Mock
+        description: 正常系（コードブロックを色分けする）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: mount(el, { markdown, config })
+        M->>P: コードブロックを色分けせずに描く
+        M->>X: import(core.min.js)・import(languages/dockerfile.min.js)・import(languages/diff.min.js)
+        X-->>M: モジュール
+        M->>P: 4 つのコードブロックの中身を色分けした HTML に置き換える
+    expected:
+      - 色分けのライブラリへの要求が `core.min.js`・`languages/dockerfile.min.js`・`languages/diff.min.js` の 3 件
+      - '`dockerfile` と `docker` の `code` の中に `hljs-keyword` の `span` がある'
+      - '`diff` と `patch` の `code` の中に `hljs-addition` と `hljs-deletion` の `span` があり、その文字の色の計算値がそれぞれ `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` の値'
+      - '`[!code ++]` を付けた行の `mdmark-code-line` が `data-kind="add"` を持ち、その `mdmark-code-text` の中に `hljs-` で始まる `span` がある'
+    test: test_normal_when_dockerfile_and_diff_highlighted
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタンでクリップボードに書く。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -1867,6 +2198,7 @@ callers:
   - dev/設計書/シナリオ/単一ユースケース/注意書きを書く#
   - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#
   - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#
+  - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#
   - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る#
   - dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する#
   - dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する#
@@ -2037,7 +2369,7 @@ constraints:
     constraint: Chrome 99・Firefox 98・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
   - item: 表の操作
-    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`copy` の表は、表の上に `mdmark-table-bar` の帯を置く。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（読み上げは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示は `aria-expanded`・`aria-controls` を持つ `列の表示` のボタンで、列名のチェックボックスと `先頭の列は隠せません`・「既定に戻す」を並べたメニュー（絞り込みのドロワーと同じ開閉の作法）を開く。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、先頭の列のチェックボックスは `disabled` にする。「既定に戻す」は `data-hide` の状態に戻す。`total` の表は、`data-total` の列を表示している行で集計した `tfoot` の行を置き、絞り込みのたびに計算し直す（題は `合計`・`平均`・`個数`。`sum`・`avg` は数として読めないセルを除き、桁区切りを付けて小数は 2 桁までに丸める。平均する値が無いときは `—`）。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の `表をコピー` のボタンは、見出しの行と表示している行の、表示している列のセルの文字を、セルをタブで、行を改行で区切って `navigator.clipboard.writeText` で写す（集計の行と行の詳細は含めない）。写せたらボタンを `コピーしました` にして 2 秒で戻し、拒まれたら `コピーできませんでした` にして次に押すまで残す（どちらも読み上げで知らせ、例外を外へ出さない）。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じた節を開き、行が絞り込みで隠れていればその表の絞り込みを外してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクの印は、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。印刷では表の上のボタンと行へのリンクの印を出さず、件数と集計の行を出し、隠した列は隠したままにする'
+    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに昇順 → 降順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、押し直すと外す。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` は含む文字の欄、`date` は開始日と終了日の欄と、どれも「絞り込みを外す」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`total`・`copy` の表は、表の上に `mdmark-table-bar` の帯を置く。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（読み上げは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示は `aria-expanded`・`aria-controls` を持つ `列の表示` のボタンで、列名のチェックボックスと `先頭の列は隠せません`・「既定に戻す」を並べたメニュー（絞り込みのドロワーと同じ開閉の作法）を開く。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、先頭の列のチェックボックスは `disabled` にする。「既定に戻す」は `data-hide` の状態に戻す。`total` の表は、`data-total` に書いた計算ごとに 1 行ずつ、`合計`（`sum`）・`平均`（`avg`）・`件数`（`count`）の順に `tfoot` の行（`data-total-kind="{計算}"`）を置く。各行の先頭のセルに計算の名前を、その計算を持つ列のセルに表示している行で集計した値を出し、ほかのセルは空にする（先頭の列を集計する行は、名前を左、値をセルの末尾に寄せる）。絞り込みのたびに計算し直す。`sum`・`avg` は空のセルを除いて計算し、桁区切りを付けて小数は 2 桁までに丸める（平均する値が無いときは `—`）。`count` は空でないセルの数。`sum`・`avg` の列の本文の行（絞り込みに関わらず全ての行）に数として読めないセル（空のセルは数えない）が 1 つでもあれば、その列のその計算のセルを空にする（警告は `render` が表の上に置く）。帯に `aria-expanded`・`aria-controls` を持つ `集計` のボタンを置き、`出す集計` のメニュー（`data-total` に書いた計算の名前のチェックボックス。開閉の作法は列の表示のメニューと同じ）で出す行を選ばせる。描いたときは全ての計算にチェックを入れ、チェックを外した計算の行を `hidden` にし、出したこと・隠したことを読み上げで知らせる。選択は覚えず、描き直すと全ての計算に戻す。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の帯の `表をコピー` のボタンは `aria-expanded`・`aria-controls` を持ち、`コピーの形式` のメニュー（`Markdown の表`・`TSV` のボタン。開閉の作法は列の表示のメニューと同じ）を開く。形式を押すとメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の、表示している列のセルの文字を、選んだ形式で `navigator.clipboard.writeText` に書く（集計の行・行の詳細・畳んだ最終列の開閉の行は含めない）。Markdown の表は見出しの行・`| --- |` の区切りの行・本文の行を `| セル | セル |` の形で改行で並べ、セルの中の `|` を `\|` にする。TSV はセルをタブで、行を改行で区切る。書けたらボタンを `コピーしました` にして 2 秒で戻し、コピーした形式を読み上げで知らせる。書けないとき（`navigator.clipboard` が無いか拒まれた）は、帯の直後に `role="group"` のパネル（題・手でコピーする案内・コピーする中身を入れた読み取り専用の `textarea`・閉じるボタン）を出し、`textarea` へフォーカスを移して中身を全て選択し、書けなかったことと手でコピーできることを読み上げで知らせる。パネルは閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから書く。どちらも例外を外へ出さない。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じた節を開き、行が絞り込みで隠れていればその表の絞り込みを外してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクの印は、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。印を押すと、移る動き（アドレスバーの URL を行を指す URL にする）はそのままに、印の解決済みの `href`（`rewriteLinks` が書き換えた後の値をページの URL で解決した絶対 URL）を `navigator.clipboard.writeText` に書き、描くときに印の横へ置いておいた空の `role="status"` の要素の文字を、書けたら `リンクをコピーしました`、書けなければ `リンクをコピーできませんでした` に書き換え、2 秒後に空に戻す（例外を外へ出さない）。印刷では表の上のボタンと行へのリンクの印を出さず、件数と出している集計の行を出し、隠した列は隠したままにする'
   - item: タブの操作
     constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを置き、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読む人が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と揃えて切り替わった選択は残さない。localStorage を取り出す・読み書きするときに例外が出たら、`console.warn` に出して残さず・読まずに揃える動きと切り替えを続ける'
   - item: 節と行の詳細の開閉
@@ -2133,16 +2465,31 @@ constraints:
     constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ正規化・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、点検の `avoided_term` と同じく、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
     notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences` の `backlinks`・`collectMatches` の結果と関連文書の一覧は変わらない
   - item: 色分けの対象
-    constraint: 機能 `syntax` がオンの文書で、情報文字列の最初の語が色分けの言語の対応表にある、フェンスのコードブロックの `pre > code`。文書に書いた生の HTML の `pre > code` は、`language-*` の class を持っていても当たらない。記法が描いたもの（ファイルツリー・図の部品の定義・埋め込んだ HTML）は `pre > code` でないため当たらず、記法がコードブロックのまま残したものは当たる
-    notes: '対応表（情報文字列の語 → 言語のモジュール）: `typescript`・`ts`・`tsx` → typescript／`javascript`・`js`・`jsx`・`mjs`・`cjs` → javascript／`json` → json／`yaml`・`yml` → yaml／`python`・`py` → python／`bash`・`sh`・`shell`・`zsh` → bash／`html`・`xml` → xml／`css` → css／`markdown`・`md` → markdown／`sql` → sql。語は大文字と小文字を区別しない'
+    constraint: 機能 `syntax` がオンの文書で、情報文字列の最初の語の言語（`言語:ファイル名` の形なら `:` の前）が色分けの言語の対応表にある、フェンスのコードブロックの `pre > code`。文書に書いた生の HTML の `pre > code` は、`language-*` の class を持っていても当たらない。記法が描いたもの（ファイルツリー・図の部品の定義・埋め込んだ HTML）は `pre > code` でないため当たらず、記法がコードブロックのまま残したものは当たる
+    notes: '対応表（情報文字列の語 → 言語のモジュール）: `typescript`・`ts`・`tsx` → typescript／`javascript`・`js`・`jsx`・`mjs`・`cjs` → javascript／`json` → json／`yaml`・`yml` → yaml／`python`・`py` → python／`bash`・`sh`・`shell`・`zsh` → bash／`html`・`xml` → xml／`css` → css／`markdown`・`md` → markdown／`sql` → sql／`dockerfile`・`docker` → dockerfile／`diff`・`patch` → diff。語は大文字と小文字を区別しない'
   - item: 色分けの読み込み
     constraint: 描いた後に、色分けの対象が 1 つ以上あるときだけ、`syntax.url` の本体と文書が使う言語のモジュールを `import()` で読む。言語のモジュールは並べて読み、読めたものだけを登録する。同じ `mount` の中で同じモジュールは 1 回だけ読む。読み終わる前に `update`・`destroy` したときは、前の描画に色を当てない。読み込みの完了は待たずに `mount` を返す
     decided_by: dev/設計書/非機能要件/非機能要件#
     notes: 配布物 `dist/index.js` に色分けのライブラリを束ねない（非機能要件『配布ファイル 1 つのサイズ』）
   - item: 色分けの当て方
-    constraint: 行に分けたコードブロック（`mdmark-code-line` を持つ）は各 `mdmark-code-text` の中を、分けないものは `code` の中を、highlight.js の `highlight` が返す HTML に置き換える。行をまたいで開いている `span` は行末で閉じ、次の行の頭で開き直す。`pre`・`code`・`mdmark-code-line` の属性と `code` の `textContent` は変えない。色は `hljs-*` の class に CSS 変数 `--mdmark-color-syntax-{keyword,string,number,type,name,comment}` を当てる
+    constraint: 行に分けたコードブロック（`mdmark-code-line` を持つ）は各 `mdmark-code-text` の中を、分けないものは `code` の中を、highlight.js の `highlight` が返す HTML に置き換える。行をまたいで開いている `span` は行末で閉じ、次の行の頭で開き直す。`pre`・`code`・`mdmark-code-line` の属性と `code` の `textContent` は変えない。色は `hljs-*` の class に CSS 変数 `--mdmark-color-syntax-{keyword,string,number,type,name,comment}` を当てる。`diff` の `hljs-addition`・`hljs-deletion` には、差分の行と同じ `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` を当てる。`[!code ++]`・`[!code --]` の行は、行の地の色と行頭の `+`・`-` を保ったまま行の中の文字を色分けする
     notes: 色分けの HTML は sanitize を通さない（`hljs-*` は sanitize の許可に無い）。highlight.js はコードの文字をエスケープしてから `span` を付ける。種類ごとの class の当て方はモック `dev/mock/refs/97/assets/syntax-highlight.css` のとおり
   - item: 色分けを読めないとき
     constraint: 本体を読めないときは全てのコードブロックを、言語のモジュールを読めないときはその言語のコードブロックを、色分けせずに描いたまま残す。例外を投げず、知らせの枠も出さない。読めなかった URL と元のエラーを `console.error` に出す
     notes: コードは色分けが無くても欠けずに読めるため、外部ライブラリの印と違って本文を枠で置き換えない
+  - item: 見出し行と集計の行を留める
+    constraint: 表は縦の高さの上限を持たず、表を囲む `mdmark-table` は横にはみ出すときだけ表の中で横にスクロールする。表が画面に残っている間、見出し行のセルを、ページのスクロールで画面の上端から `--mdmark-sticky-top` だけ下の位置まで（本文の最後の行を越えない範囲で）下げ、集計の行のセルを画面の下端まで（本文の最初の行を越えない範囲で）上げる。ずらすのは元の見出し行と集計の行のセル（`transform`）で複製を作らず、横のスクロール・列の幅・ピン止め・並べ替え・絞り込みのボタンと状態・フォーカス・読み上げは 1 組のまま揃う。ずらしたセルは背景を持ち、本文の行より手前に描く。`animation-timeline` と `animation-range` を持つブラウザでは、ずらす量を `view-timeline` と CSS のアニメーションでスクロールの位置から決め、表の大きさが変わったとき（`ResizeObserver`）だけ動く範囲の CSS 変数を入れ直す。持たないブラウザでは、`window` と文書の中の `scroll`・`window` の `resize`・表の大きさの変化のたびに、ずらす量を JS で入れ直す。表が画面から外れると、見出し行と集計の行も一緒に外れる。印刷ではずらさない。`update` で付け直し、`destroy` で受け取りと監視を外す
+    notes: PoC 検証で `animation-timeline` を持つブラウザは案 D、持たないブラウザは案 C に決定（計画書の `## PoC 結果`・確認ログ）。動く範囲の変数の名前はモジュール構成設計
+  - item: 最終列を畳む
+    constraint: 描く先の要素の中身の幅が 720px 未満で、表示している最終列（先頭の列を除く）のセルのどれかが 1 行に収まらないとき、最終列の見出しとセルを隠し、本文の各行の先頭のセルの頭に `aria-expanded`（描いた直後は `false`）・`aria-controls` を持つ開閉のボタン（読み上げの名前 `「{先頭のセルの文字}」の{最終列の見出しの文字}`）を置く。ボタンを押すと（Enter・Space を含む）、行の直後の行に最終列の見出しの文字とその行のセルの中身を出し、押し直すと閉じる。行の詳細を持つ行は、行の詳細の中身の上に最終列の見出しと中身を置き、行の詳細の開閉のボタンだけで両方を開閉する。並べ替え・絞り込みでは開閉の行もその行に付いて動き、行が隠れると開閉の行も隠す。描く先の要素の幅の変化（`ResizeObserver`）と列の表示の切り替えのたびに畳むかを決め直し、畳まないときは開閉のボタンと開閉の行を出さない。列の表示で最終列を隠しているときは畳まない。印刷では畳まずに全ての列を出し、開閉のボタンを出さない
+    notes: 幅と開き方はモック作成で案 A に決定（確認ログ）
+  - item: コードブロックのコピー
+    constraint: '`render` が帯（`mdmark-code-bar`）を付けたコードブロックの帯の右端に、`コピー` のボタン（`type="button"`）と `role="status"` の要素を置く。押すと、行に分けたコードブロックは `data-kind="del"` の行を除く各行の `mdmark-code-text` の文字を改行でつないだもの、分けないものは `code` の文字から末尾の改行を 1 つ除いたものを `navigator.clipboard.writeText` に書く（行の印と印だけを持つ行コメントの頭は `render` が外してあり、行番号と行頭の `+`・`-` は文字に入っていない）。書けたらボタンを `コピーしました` にして 2 秒で戻し、書けないとき（`navigator.clipboard` が無いか拒まれた）は `コピーできませんでした` にして次に押すまで残す。どちらも `role="status"` で読み上げて知らせ、例外を外へ出さない。印刷ではボタンを出さない。`update` で付け直す'
+    notes: 帯を付けるコードブロックは dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts の制約『コードブロック』
+  - item: 本文の幅と見出し行を留める位置
+    constraint: '`--mdmark-content-width` の既定は `none` で、本文の幅に上限を持たず描く先の要素の幅を使う。使う側が長さを渡すと、本文の幅をその値までにする。`--mdmark-sticky-top` は見出し行を留める位置の画面の上端からのずれで、既定は `0px`。長さ（`px`・`rem` など）を受ける。`--mdmark-table-max-height` は廃止し、渡しても表の高さを抑えない'
+    notes: 本文の幅はモック作成で案 A に決定（確認ログ）。`--mdmark-table-max-height` は設定と索引の Schema（`schemas/`）の項目でないため移行の手順を置かず、変更履歴で廃止を知らせる
+  - item: URL の ID でタブの中へ移る
+    constraint: URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` した ID（読めないときはそのまま）が、選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指すとき（描いたときと `hashchange`）、外側のタブから順にその要素を含むタブを選び、外側の閉じた節を開いてから要素へスクロールする。見出し・表の行を含め、`id` を持つ全ての要素に当てる。描いたときは localStorage に残したタブ名より URL の ID を優先する。URL の ID で選んだタブは localStorage に残さず、同じ `group` のほかのタブ群も切り替えない
+    notes: '`src/interact/sections.ts` の `revealHashTarget` は、タブの中の要素の処理をタブの操作に任せる（受付判断のレビュー）'
 test_file: tests/integration/lib/mount.browser.test.ts

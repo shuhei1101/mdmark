@@ -111,6 +111,31 @@ scenarios:
       - 表の後に詳細の段落が表示されている
       - 表の行に開閉のボタンが無い
     test: test_error_when_row_out_of_range
+  - name: 正常シナリオ（畳んだ最終列と行の詳細）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 最終列の長い表と行の詳細を持つ Markdown
+        description: '名前・状態・説明の 3 列 3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+        notes: 最終列の説明は、どの行も 390px の幅で 1 行に収まらない長さ
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 最終列を畳み、各行に開閉を 1 つずつ付けた表を描く
+        U->>P: 2 行目の開閉を押す
+        P-->>U: 2 行目の下に最終列の中身と行の詳細を表示
+    expected:
+      - 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
+      - 2 行目の開閉を押した後、2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
+      - もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
+    test: test_normal_when_row_detail_with_collapsed_column
 lead: '読む人が、見出し（h2〜h4）の節と、表の行の下に出す行の詳細を開閉する。文書を書く人は見出しの直後の `<!-- section: closed -->` で節を閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を書く。'
 issue: 4
 primary_actor: 文書を読む人

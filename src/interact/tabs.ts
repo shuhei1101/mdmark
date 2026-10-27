@@ -1,3 +1,5 @@
+import { rowIdFromHash } from "../table-logic.ts";
+
 // 矢印キーで移る向き
 const ARROW_STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
 
@@ -9,6 +11,12 @@ let tabsCounter = 0;
 
 /** 操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を引く控え。別の `mount` のタブも同じ控えから引いて揃える */
 const tabSelectors = new WeakMap<HTMLElement, (name: string) => void>();
+
+/** 操作を付けた `mdmark-tabs` から、中身（`mdmark-tab-panel`）を渡してそのタブを選ぶ関数を引く控え。選んだタブ名は残さず、同じ組のほかのタブ群も切り替えない */
+const tabPanelSelectors = new WeakMap<
+  HTMLElement,
+  (panel: HTMLElement) => void
+>();
 
 /** localStorage に残したタブ名を読む。取り出しと読み出しで例外が出たら `console.warn` に出して `undefined` を返す */
 export function loadTabChoice(group: string): string | undefined {
@@ -141,6 +149,12 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   // 組を持つタブは、残したタブ名のタブ（無ければ 1 つ目）を選ぶ。描いたときの選択は残さない
   const saved = group === undefined ? undefined : loadTabChoice(group);
   select(Math.max(0, titles.indexOf(saved ?? "")), false);
+  tabPanelSelectors.set(tabs, (panel) => {
+    const position = panels.indexOf(panel);
+    if (position >= 0) {
+      select(position, false);
+    }
+  });
   if (group !== undefined) {
     // 揃えて切り替えるときは、フォーカスを動かさず残しもしない
     tabSelectors.set(tabs, (name) => {
@@ -152,6 +166,7 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   }
   return () => {
     tabSelectors.delete(tabs);
+    tabPanelSelectors.delete(tabs);
     tablist.remove();
     for (const panel of panels) {
       panel.removeAttribute("role");
@@ -162,11 +177,40 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   };
 }
 
-/** 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。タブの並びを取り除き、中身を `render` の形に戻す関数を返す */
+/** 要素を含む `role="tabpanel"` を外側から順にたどり、その中身のタブを選ぶ。選んだタブ名は残さず、同じ組のタブも揃えない。タブの中に無ければ何もしない */
+export function revealTabTarget(target: Element): void {
+  const panels: HTMLElement[] = [];
+  for (
+    let panel = target.closest<HTMLElement>('[role="tabpanel"]');
+    panel;
+    panel =
+      panel.parentElement?.closest<HTMLElement>('[role="tabpanel"]') ?? null
+  ) {
+    panels.unshift(panel);
+  }
+  for (const panel of panels) {
+    const tabs = panel.parentElement;
+    if (tabs) {
+      tabPanelSelectors.get(tabs)?.(panel);
+    }
+  }
+}
+
+/** 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。URL の `#ID` が選ばれていない中身の中を指すときは、残したタブ名より先にそのタブを選んで要素へ移る。タブの並びを取り除き、中身を `render` の形に戻す関数を返す */
 export function attachTabs(root: HTMLElement): () => void {
   const detachers = [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")].map(
     attachTabGroup,
   );
+  const id = rowIdFromHash(location.hash);
+  const target = id
+    ? [...root.querySelectorAll<HTMLElement>("[id]")].find(
+        (element) => element.id === id,
+      )
+    : undefined;
+  if (target?.closest('[role="tabpanel"][hidden]')) {
+    revealTabTarget(target);
+    target.scrollIntoView();
+  }
   return () => {
     for (const detach of detachers) {
       detach();

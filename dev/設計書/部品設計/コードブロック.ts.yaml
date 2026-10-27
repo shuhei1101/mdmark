@@ -93,18 +93,76 @@ states:
         value: 'true'
       - name: lines
         value: '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書の題"},{"text":"    title: str = \"README\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]'
-lead: 題・行番号・行の強調・足した行と消した行と、言語に応じた色分けを付けたコードブロック。
+  - name: LanguageLabel
+    description: 題も行の印も持たない ts のコードブロック。帯の左端に `ts`、右端に `コピー` のボタン
+    args:
+      - name: language
+        value: ts
+      - name: copyState
+        value: idle
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"mount(document.querySelector(\"#doc\"), \"# 見出し\");"}]'
+  - name: FileName
+    description: '```python:hoge.py のコードブロック。帯の左端に `python` と、縦線で区切った `hoge.py`'
+    args:
+      - name: language
+        value: python
+      - name: fileName
+        value: hoge.py
+      - name: copyState
+        value: idle
+      - name: lines
+        value: '[{"text":"def hello():"},{"text":"    print(\"hello\")"}]'
+  - name: LongFileName
+    description: 帯の幅を超えるファイル名と題。ファイル名と題は帯の中で折り返し、コピーのボタンは右端に残る
+    args:
+      - name: language
+        value: ts
+      - name: fileName
+        value: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts
+      - name: title
+        value: 色分けの対象を探す
+      - name: copyState
+        value: idle
+      - name: lines
+        value: '[{"text":"export const findTargets = (root: Element) => root.querySelectorAll(\"code[data-mdmark-syntax]\");"}]'
+  - name: NoLanguage
+    description: 言語の無いコードブロック。言語のラベルを出さず、帯はコピーのボタンだけを持つ
+    args:
+      - name: copyState
+        value: idle
+      - name: lines
+        value: '[{"text":"npm install mdmark"}]'
+  - name: Copied
+    description: コードをコピーした。ボタンが `コピーしました`（`check` のアイコン）
+    args:
+      - name: language
+        value: ts
+      - name: copyState
+        value: copied
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"}]'
+  - name: CopyFailed
+    description: コードをコピーできなかった。ボタンが `コピーできませんでした`（`circle-alert` のアイコン）
+    args:
+      - name: language
+        value: ts
+      - name: copyState
+        value: failed
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"}]'
+lead: 左端に言語のラベルと題、右端にコピーのボタンを置いた帯と、行番号・行の強調・足した行と消した行と、言語に応じた色分けを付けたコードブロック。
 args:
   - name: language
     type: 文字列
     required: false
     default: 空（言語の無いコードブロック）
-    description: '情報文字列の言語。`code` の class `language-{言語}` と、題が無いときの読み上げの名前 `コード: {言語}` に使う'
+    description: '情報文字列の最初の語の、最初の `:` より前。`code` の class `language-{言語}` と、帯の左端の言語のラベルと、題もファイル名も無いときの読み上げの名前 `コード: {言語}` に使う。空のときはラベルを出さない'
   - name: title
     type: 文字列
     required: false
     default: 空（題を出さない）
-    description: '題。空でなければ `figure` の `figcaption` に出し、`pre` の読み上げの名前を `コード: {題}` にする'
+    description: '題。空でなければコードブロックを `figure` で囲み、帯を `figcaption` にして言語のラベルの後ろに出し、`pre` の読み上げの名前を `コード: {題}` にする'
   - name: lineNumbers
     type: 真偽値
     required: false
@@ -125,6 +183,16 @@ args:
     default: 空
     description: 色分けする言語のモジュール名（`typescript`・`yaml` など）。渡すと `code` に `data-mdmark-syntax="{モジュール名}"` を付け、`mount` が色分けする対象をこの属性で探す。見た目は変えない
     status: planned
+  - name: fileName
+    type: 文字列
+    default: 空（ファイル名を出さない）
+    enabled_when: '`language` が空でないとき'
+    description: '情報文字列の最初の語の、最初の `:` より後ろ（```python:hoge.py の `hoge.py`）。言語のラベルの言語の後ろに細い縦線で区切って本文の色で出し、長い名前は帯の中で折り返す。題が無いときは読み上げの名前を `コード: {ファイル名}` にする'
+  - name: copyState
+    type: 列挙
+    default: なし（コピーのボタンを付けない）
+    choices: '`idle`（`コピー`、`copy` のアイコン）・`copied`（`コピーしました`、`check`）・`failed`（`コピーできませんでした`、`circle-alert`）'
+    description: 帯の右端のコピーのボタンの状態（`mount` が付けた状態）。渡すとボタンと `role="status"` の要素を置き、ボタンの `data-state` と文言・アイコンを切り替える。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>
@@ -175,11 +243,13 @@ css_properties:
     default: '#52525b（ダーク #c8c8cf）'
     description: 色分けのコメントの色。コメントは斜体でも示す
 accessibility:
-  - '`pre` は `tabindex="0"` と読み上げの名前（題があれば `コード: {題}`、無ければ `コード: {言語}`）を持ち、キーボードで横にスクロールできる'
+  - '`pre` は `tabindex="0"` と読み上げの名前（題があれば `コード: {題}`、ファイル名があれば `コード: {ファイル名}`、言語があれば `コード: {言語}`、どれも無ければ `コード`）を持ち、キーボードで横にスクロールできる'
+  - 言語のラベルの言語は `aria-hidden="true"` で読み上げず（`pre` の名前が持つ）、ファイル名だけを読ませる。ラベルは選んで写す中身に入れない
+  - コピーのボタンは文言を読み上げの名前に持ち、結果を `role="status"` の要素で `コードをコピーしました`・`コードをコピーできませんでした` と読み上げる。状態は文言とアイコンで示し、色だけに頼らない
   - 足した行・消した行・強調した行は、色に加えて左端の 2px の線（足した行・消した行は行頭の `+`・`-` も）で分ける。強調の線は隣り合う地の色と 3:1 以上
   - '行頭の印は擬似要素の代わりの文字で読み上げる（足した行は `足した行`、消した行は `消した行`、強調した行は見た目の文字を持たず `強調した行`）。代わりの文字を読めないブラウザ（Firefox 128・Safari 17.4 より前）でも行番号と `+`・`-` が出るよう、代わりの文字の無い `content` を先に書き、代わりの文字付きの `content` を後ろに重ねる（例: `content: "+"; content: "+" / "足した行";`）'
   - '行番号と行頭の `+`・`-` は擬似要素で出し、文字を選んで写す中身に入れない。行は `inline-block` で並べ、写した行の間に空行を入れない。空の行は `min-height: 1.55em` で高さを取る（`lh` 単位は対応ブラウザの一部で効かない）'
-  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。題・行番号・強調・行の色と `+`・`-` はそのまま出す
+  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。題・言語のラベル・行番号・強調・行の色と `+`・`-` はそのまま出し、コピーのボタンは出さない
   - 色分けは見た目だけで、読み上げの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、地（`--mdmark-color-surface` と、足した行・消した行・強調した行の半透明の地を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
   - '印刷ではダークを解除した明るい配色の色分けの色を、`print-color-adjust: exact` で色を省くブラウザの設定でも紙に出す'
 refs:
@@ -189,7 +259,12 @@ status: planned
 introduced:
   pr: 65
 notes:
-  出す HTML: 形はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。題の前のファイルのアイコンは CSS で付ける。題が無く、行番号も行の種類も無いときは今の `pre` のまま描く。モックは `dev/mock/components/code-block/`
+  出す HTML: '形はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。コードブロックを `<div class="mdmark-code">`（題を持てば `<figure class="mdmark-code">`）で囲み、`pre` の前に帯 `<div class="mdmark-code-bar">`（題を持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を置く。帯は左から `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`・題の文字・`<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{copyState}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>`（`mdmark-code-meta` は `mount` が付ける）。題の前のファイルのアイコンは CSS で付ける。題が無く、行番号も行の種類も無いときは、帯で囲むほかは今の `pre` のまま描く。言語のラベルは本文より淡い `--mdmark-color-muted` の文字で、ファイル名は `--mdmark-color-border` の縦線で区切って本文の色で出し、`overflow-wrap: anywhere` で折り返す。コピーのボタンは折り返さず帯の右端に置き、アイコンは lucide（`copy`・`check`・`circle-alert`）。印刷ではコピーのボタンを出さない。モックは `dev/mock/components/code-block/`'
   行の地の色: '足した行・消した行・強調した行の地は、不透明の変数をそのまま当てた後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が効くブラウザでは `pre` の横スクロールの影が行の地を透けて見え、効かないブラウザ（Chrome 99〜110）では不透明の地になる。半透明の地と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭の印と線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭の印と線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
   色分けの種類: '色分けのライブラリが付ける `hljs-*` の class を 6 つの CSS 変数へ寄せる。キーワード: `hljs-keyword`・`hljs-meta`・`hljs-variable.language_`・`hljs-doctag`／文字列: `hljs-string`・`hljs-regexp`・`hljs-char`・`hljs-link`／数値: `hljs-number`・`hljs-literal`・`hljs-symbol`・`hljs-bullet`／型: `hljs-type`・`hljs-title.class_`・`hljs-built_in`・`hljs-name`・`hljs-selector-*`／名前: `hljs-title`・`hljs-attr`・`hljs-attribute`・`hljs-property`・`hljs-section`／コメント: `hljs-comment`・`hljs-quote`。テンプレート文字列に埋めた式 `hljs-subst` は本文の色に戻し、Markdown の `hljs-strong` は太字、`hljs-emphasis` は斜体にする。ここに無い class（変数名・引数・記号）は本文の色のまま。モックは `dev/mock/components/code-block/` と `dev/mock/refs/97/assets/syntax-highlight.css`'
 test_file: tests/integration/lib/code-block.story.test.ts
+events:
+  - name: コードをコピーする
+    when: 帯の右端の `コピー` のボタンを押す
+    value: ボタンの `data-state`
+    description: '`mount` が消した行を除いたコードの文字をクリップボードへ写し、書けたら `copied` にして 2 秒で `idle` に戻し、書けなければ次に押すまで `failed` にする'

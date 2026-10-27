@@ -199,9 +199,26 @@ function pushWarnings(
   );
 }
 
-/** 情報文字列の言語 */
-function languageOf(token: Token): string {
-  return token.info.trim().split(/\s+/)[0] ?? "";
+/** 情報文字列の最初の語を最初の `:` で分け、前を言語、後ろをファイル名にする。`:` が無ければ語の全てが言語でファイル名は空。`:` の前が空なら言語もファイル名も空にする */
+export function splitInfoString(info: string): {
+  language: string;
+  fileName: string;
+} {
+  const word = info.trim().split(/\s+/)[0] ?? "";
+  const colon = word.indexOf(":");
+  if (colon < 0) {
+    return { language: word, fileName: "" };
+  }
+  if (colon === 0) {
+    return { language: "", fileName: "" };
+  }
+  return { language: word.slice(0, colon), fileName: word.slice(colon + 1) };
+}
+
+/** `fence` のまま描くとき、情報文字列の最初の語を言語だけにする（`ts:app.ts` は `ts`、`:a.txt` は最初の語を外す） */
+function keepLanguageOnly(token: Token, language: string): void {
+  const rest = token.info.trim().split(/\s+/).slice(1);
+  token.info = [language, ...rest].filter(Boolean).join(" ");
 }
 
 /** 色分けの言語の対応表: 情報文字列の最初の語（小文字）から、highlight.js の言語のモジュール名を引く。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に当たる */
@@ -229,6 +246,10 @@ export const SYNTAX_LANGUAGES: Readonly<Record<string, string>> = {
   markdown: "markdown",
   md: "markdown",
   sql: "sql",
+  dockerfile: "dockerfile",
+  docker: "dockerfile",
+  diff: "diff",
+  patch: "diff",
 };
 
 /** 情報文字列の言語の語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返す。表に無ければ `undefined` */
@@ -248,13 +269,10 @@ function plainLines(source: string): CodeLine[] {
   return body.split("\n").map((text): CodeLine => ({ text }));
 }
 
-/** `code` か `syntax` がオンなら、残っている `fence` のトークンごとに次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む（オフのときは行の印を外さず中身の行をそのまま使う）。`syntax` がオンのときは情報文字列の言語を `syntaxLanguageOf` で引く。題・行番号・行の種類・色分けの言語のどれかを持つコードブロックを部品『コードブロック』（色分けの言語を `syntax` に渡す）に置き換える。置き換えないコードブロックも、`code` がオンなら `fence` の `content` を行の文字でつなぎ直す（打ち消した印の `\` が外れる）。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ） */
+/** 残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語）に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ） */
 export function buildCodeBlocks(state: StateCore): void {
   const codeOn = featureOn(state, "code");
   const syntaxOn = featureOn(state, "syntax");
-  if (!codeOn && !syntaxOn) {
-    return;
-  }
   const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -313,25 +331,27 @@ export function buildCodeBlocks(state: StateCore): void {
     }
     const title = options?.title ?? "";
     const lineNumbers = options?.lineNumbers ?? false;
-    const language = languageOf(token);
+    const { language, fileName } = splitInfoString(token.info);
     const syntax = syntaxOn ? syntaxLanguageOf(language) : undefined;
-    if (
-      title ||
-      lineNumbers ||
-      lines.some((line) => line.kind !== undefined) ||
-      syntax !== undefined
-    ) {
+    if (codeOn || syntax !== undefined) {
       out.push(
         ownBlock(
           state,
-          renderCodeBlock({ language, title, lineNumbers, lines, syntax }),
+          renderCodeBlock({
+            language,
+            fileName,
+            title,
+            lineNumbers,
+            lines,
+            syntax,
+            bar: codeOn,
+          }),
           token,
         ),
       );
       continue;
     }
-    token.content =
-      lines.length > 0 ? `${lines.map((line) => line.text).join("\n")}\n` : "";
+    keepLanguageOnly(token, language);
     out.push(token);
   }
   state.tokens = out;

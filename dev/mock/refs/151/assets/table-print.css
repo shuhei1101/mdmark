@@ -1,0 +1,71 @@
+/* 表の見た目の追加分の印刷の規則（#151 で共有するアセット）。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる。refs/57/assets/table-tools-print.css の後に読む */
+
+/* mdmark の層: 印刷のときの表 */
+@layer mdmark {
+  .mdmark {
+    /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（案 D のアニメーションと案 C のずれを外す） */
+    .mdmark-table:is(.is-sticky-timeline, .is-sticky-shift) :is(thead th, tfoot td) {
+      --mdmark-mock-foot-reach: 0px;
+      animation: none;
+      transform: none;
+    }
+
+    /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の知らせ、最終列の開閉）: 出さない */
+    :is(.mdmark-table-menu, .mdmark-copy-panel, .mdmark-row-link-notice, .mdmark-fold-toggle, .mdmark-fold-detail, .mdmark-fold-part) {
+      display: none;
+    }
+
+    /* 畳んだ最終列: 紙では畳まずに列として出す */
+    .mdmark-table.is-folded .mdmark-fold-col {
+      display: table-cell;
+    }
+  }
+
+  /* 紙の幅が狭く、表を行ごとの「見出し: 値」の並びに積むとき */
+  @media (max-width: 40rem) {
+    .mdmark {
+      /* 画面で隠している行（一致する行が無いときの知らせなど）: 積んだときも出さない */
+      .mdmark-table tr[hidden] {
+        display: none;
+      }
+
+      /* 集計の行: 計算の名前と、値のある列だけを 1 行に並べる */
+      .mdmark-table tfoot {
+        display: block;
+      }
+
+      /* 集計の行の 1 行: 名前と値を横に並べ、入りきらなければ折り返す */
+      .mdmark-table tfoot tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 1.5em;
+      }
+
+      /* 集計の行のセル（ピン止めした列を含む）: 面の色と線を外す */
+      .mdmark-table tfoot td:is(*, .is-pinned-col) {
+        display: block;
+        border: 0;
+        background: none;
+        box-shadow: none;
+      }
+
+      /* 集計の行の値の無いセル（畳んだ最終列を含む）: 出さない */
+      .mdmark-table tfoot td:not(:has(.mdmark-total-name, .mdmark-total-value, .mdmark-total-unreadable)),
+      .mdmark-table.is-folded tfoot td.mdmark-fold-col:not(:has(.mdmark-total-value, .mdmark-total-unreadable)) {
+        display: none;
+      }
+
+      /* 2 行目からと最後の集計の行の面と線: 積んだ並びでは面を敷かないので出さない */
+      .mdmark-table tfoot td::after {
+        content: none;
+      }
+
+      /* 集計の行の先頭のセル: 計算の名前が見出しになるので、列名を出さない */
+      .mdmark-table tfoot td:first-child::before {
+        content: none;
+      }
+    }
+  }
+}

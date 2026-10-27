@@ -10,7 +10,7 @@
       ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --mdmark-font-size: 0.875rem;
     --mdmark-line-height: 1.8;
-    --mdmark-content-width: 46rem;
+    --mdmark-content-width: none;
     --mdmark-space: 0.875rem;
     --mdmark-padding: 1.5rem;
     --mdmark-radius: 4px;
@@ -35,7 +35,7 @@
     --mdmark-color-callout-warning: #b45309;
     --mdmark-color-callout-caution: #b91c1c;
     --mdmark-color-current-bg: #e6f3f1;
-    --mdmark-table-max-height: 28rem;
+    --mdmark-sticky-top: 0px;
     --mdmark-color-term-underline: var(--mdmark-color-muted);
     --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
     --mdmark-tooltip-max-width: 22rem;
@@ -678,13 +678,12 @@
       gap: calc(var(--mdmark-space) / 2);
       justify-items: start;
 
-      /* 表: 高さを抑えて表の中で縦にもスクロールし、見出し行を上端に留める */
+      /* 表: 縦の高さに上限は無く、横にはみ出すときだけ表の中で横にスクロールする */
       table {
-        max-height: var(--mdmark-table-max-height);
         overflow: auto;
       }
 
-      /* 見出し行: 本文の行（地の色）と面の色・見出しの色で分け、縦にスクロールしても上端に留める。
+      /* 見出し行: 本文の行（地の色）と面の色・見出しの色で分ける。留め方は下の「表の高さと、見出し行・集計の行の留め方」。
          重ねた罫線は留まらず隙間ができるので、下の罫線を外し、下の線を影で描く（上の線は外側の枠に任せる） */
       thead th {
         position: sticky;
@@ -913,15 +912,15 @@
       }
     }
 
-    /* メニューの題 */
-    .mdmark-columns-title {
+    /* メニューの題（列の表示・出す集計） */
+    :is(.mdmark-columns-title, .mdmark-totals-title) {
       margin: 0;
       color: var(--mdmark-color-heading);
       font-weight: 600;
     }
 
-    /* 列名のチェックボックス: 表の列の順に縦に並べる */
-    .mdmark-columns-options {
+    /* 列名・計算のチェックボックス: 表の列・計算の順に縦に並べる */
+    :is(.mdmark-columns-options, .mdmark-totals-options) {
       margin: 0;
       padding: 0;
       list-style: none;
@@ -974,7 +973,7 @@
       }
     }
 
-    /* 集計の行: 見出し行と同じ面の色を敷き、縦にスクロールしても下端に留める。上の線は直前の行の下の線と同じ位置に影で重ねて 1px に保ち、表の下の線は引かないので下の線もここで描く */
+    /* 集計の行: 見出し行と同じ面の色を敷く。上の線は直前の行の下の線と同じ位置に影で重ねて 1px に保ち、表の下の線は引かないので下の線もここで描く */
     .mdmark-table tfoot td {
       position: sticky;
       bottom: 0;
@@ -991,13 +990,6 @@
     .mdmark-table tfoot td.is-pinned-col {
       z-index: 2;
       background: var(--mdmark-color-table-head);
-    }
-
-    /* 集計の種類（合計・平均・個数）: 値の前に小さく控えめに出す */
-    .mdmark-total-label {
-      margin-inline-end: 0.5em;
-      color: var(--mdmark-color-muted);
-      font-size: 0.8em;
     }
 
     /* 集計の値: 太字にして本文の行の値と見分ける */
@@ -1052,6 +1044,369 @@
       flex: none;
       width: 1em;
       height: 1em;
+    }
+
+    /* 表の追加分: 縦の高さの上限を外した表、ページのスクロールで留める見出し行と集計の行、計算ごとの集計の行と集計のメニュー、コピーの形式のメニューとコピーできないときのパネル、行の URL の知らせ、狭い幅で畳む最終列。`dev/mock/refs/151/assets/table.css` から取る */
+    /* ---------- 表の高さと、見出し行・集計の行の留め方 ---------- */
+
+    /* 表: 縦の高さの上限を外し、縦はページのスクロールで読む（横にはみ出す表は今のまま表の中で横にスクロールする） */
+    .mdmark-table table {
+      max-height: none;
+    }
+
+    /* 見出し行と集計の行のセル: 表の中で上端・下端に留める動きを外し、ずらしたときに本文の行の前に出す（ピン止めした列は左端に留めたまま） */
+    .mdmark-table :is(thead th, tfoot td):not(.is-pinned-col) {
+      position: relative;
+      z-index: 3;
+    }
+
+    /* ピン止めした列の見出し行と集計の行のセル: 左端に留めたまま、ずらしたときに前に出す */
+    .mdmark-table :is(thead th, tfoot td).is-pinned-col {
+      z-index: 4;
+    }
+
+    /* ずらす集計の行のセル: 行の間の罫線を外して面の色を隙間なくつなぎ、後ろの本文の行を透かさない（行の区切りは影の線で引く） */
+    &[data-mdmark-sticky] .mdmark-table tfoot td {
+      border-block-width: 0;
+    }
+
+    /* animation-timeline は animation-timeline と範囲の指定を持つブラウザだけに当てる（持たないブラウザで時間のアニメーションとして走らせない） */
+    @supports (animation-timeline: view()) and (animation-range: 0% 100%) {
+      /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る） */
+      &[data-mdmark-sticky="timeline"] .mdmark-table table {
+        view-timeline: --mdmark-table block;
+        view-timeline-inset: var(--mdmark-sticky-top, 0px) 0px;
+      }
+
+      /* animation-timeline の見出し行: 表の上端が留める位置を過ぎた量だけ下げ、本文の最後の行で止める */
+      &[data-mdmark-sticky="timeline"] .mdmark-table thead th {
+        animation: mdmark-table-head linear both;
+        animation-timeline: --mdmark-table;
+        animation-range: exit-crossing var(--mdmark-sticky-head-start)
+          exit-crossing
+          calc(var(--mdmark-sticky-head-start) + var(--mdmark-sticky-head-max));
+      }
+
+      /* animation-timeline の集計の行: 表の下端が画面の下端より下にある間は上げ、本文の最初の行で止める */
+      &[data-mdmark-sticky="timeline"] .mdmark-table tfoot td {
+        animation: mdmark-table-foot linear both;
+        animation-timeline: --mdmark-table;
+        animation-range: entry-crossing
+          calc(
+            100% -
+            var(--mdmark-sticky-foot-end) -
+            var(--mdmark-sticky-foot-max)
+          )
+          entry-crossing calc(100% - var(--mdmark-sticky-foot-end));
+      }
+    }
+
+    /* スクリプト の見出し行: スクロールに合わせて処理が求めたずれだけ下げる */
+    &[data-mdmark-sticky="script"] .mdmark-table thead th {
+      transform: translateY(var(--mdmark-sticky-head-shift, 0px));
+    }
+
+    /* スクリプト の集計の行: スクロールに合わせて処理が求めたずれだけ上げる */
+    &[data-mdmark-sticky="script"] .mdmark-table tfoot td {
+      transform: translateY(var(--mdmark-sticky-foot-shift, 0px));
+    }
+
+    /* ---------- 集計の行 ---------- */
+
+    /* 集計の行: 1 行目の上にだけ 2px の線を引いて本文の行と分け、2 行目からは 1px の線で区切る */
+    .mdmark-table tfoot tr + tr td {
+      box-shadow: inset 0 -1px var(--mdmark-color-border);
+    }
+
+    /* 2 行目からと最後の集計の行の面: セルの面の上・文字の後ろに 1 枚の面を敷く（上下の線の幅は空ける） */
+    .mdmark-table tfoot :where(tr + tr, tr:last-child) td::after {
+      position: absolute;
+      inset: 2px 0 1px;
+      z-index: -1;
+      background: var(--mdmark-color-table-head);
+      content: "";
+    }
+
+    /* 2 行目からの集計の行の面: 1 つ上の行へ 2px 重ね、上の行の下端の線を引き直す。
+       行の境目が画素の途中に来ても、2 つの行の面の継ぎ目から後ろの本文の行を透かさない */
+    .mdmark-table tfoot tr + tr td::after {
+      inset-block-start: -2px;
+      background: linear-gradient(
+        var(--mdmark-color-table-head) 1px,
+        var(--mdmark-color-border) 1px 2px,
+        var(--mdmark-color-table-head) 2px
+      );
+    }
+
+    /* 最後の集計の行の面: 下端に留めている間だけ下へ 2px はみ出させ、画面の最下端の画素まで塗る（留めていないときは表の外へ出さない） */
+    .mdmark-table tfoot tr:last-child td::after {
+      inset-block-end: calc(1px - var(--mdmark-sticky-foot-reach, 0px));
+    }
+
+    /* 狭い画面の集計の行のセル: 下端に留めた行が本文の行を覆う高さを減らすため、上下の余白を詰める */
+    @media (max-width: 768px) {
+      .mdmark-table tfoot td {
+        padding-block: 0.2em;
+      }
+    }
+
+    /* 集計の行の先頭のセルの計算の名前（合計・平均・件数）: 行の見出しとして太字にする */
+    .mdmark-total-name {
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* 先頭の列も集計するときの値: 計算の名前と分けてセルの末尾に寄せ、細い縦線で名前と区切る */
+    .mdmark-total-name + .mdmark-total-value {
+      float: inline-end;
+      margin-inline-start: 1.5em;
+      padding-inline-start: 0.75em;
+      box-shadow: inset 1px 0 var(--mdmark-color-border);
+    }
+
+    /* ---------- 道具の帯のメニュー（集計・コピーの形式） ---------- */
+
+    /* 集計のボタン: 計算を隠している間は、列の表示のボタンと同じく本文の地と塗ったアイコンで示す */
+    .mdmark-totals-toggle.is-active .mdmark-diagram-icon {
+      fill: none;
+      stroke-width: 3;
+    }
+
+    /* 集計・コピーの形式のメニュー: 列の表示のメニューと同じ見た目で、押したボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
+    .mdmark-table-menu {
+      position: fixed;
+      z-index: 10;
+      box-sizing: border-box;
+      width: min(16rem, calc(100vw - 32px));
+      max-height: min(24rem, calc(100vh - 32px));
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.75);
+      overflow: auto;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.875rem;
+      line-height: 1.5;
+
+      /* メニューの中のまとまり同士の間隔 */
+      > * + * {
+        margin-block-start: 0.6em;
+      }
+    }
+
+    /* コピーのボタン: 形式のメニューを開くことを後ろの下向きの印で示す */
+    .mdmark-copy .mdmark-copy-caret .mdmark-diagram-icon {
+      margin-inline-start: 0.1em;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* コピーの形式のボタン: 形式の名前と、貼った先でどうなるかの説明を縦に並べ、行全体を押せるようにする */
+    .mdmark-copy-format {
+      display: grid;
+      gap: 0.1em;
+      width: 100%;
+      min-height: 2.75rem;
+      padding: 0.4em 0.6em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-text);
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* 形式の名前 */
+    .mdmark-copy-format-name {
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* 形式の説明: 控えめな文字 */
+    .mdmark-copy-format-note {
+      color: var(--mdmark-color-muted);
+      font-size: 0.9em;
+    }
+
+    /* ---------- コピーできないときのパネル ---------- */
+
+    /* パネル: 道具の帯の下に、注意の色の線で囲んで出す（自動で閉じない） */
+    .mdmark-copy-panel {
+      display: grid;
+      gap: 0.5em;
+      box-sizing: border-box;
+      width: 100%;
+      padding: calc(var(--mdmark-space) * 0.75);
+      border: 1px solid var(--mdmark-color-callout-caution);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      font-size: 0.875rem;
+    }
+
+    /* パネルの題の行: 題と閉じるボタンを横に並べる */
+    .mdmark-copy-panel-head {
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* パネルの題: 注意の色のアイコンと、コピーできなかったこと */
+    .mdmark-copy-panel-title {
+      display: flex;
+      gap: 0.4em;
+      align-items: center;
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+
+      .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* パネルの説明: 手でコピーする方法 */
+    .mdmark-copy-panel-note {
+      margin: 0;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* コピーする中身: 選択した状態で出す。等幅で、パネルの幅いっぱいに広げる */
+    .mdmark-copy-panel-text {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 7.5rem;
+      padding: 0.5em 0.65em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-mono);
+      font-size: max(0.8125rem, 16px);
+      line-height: 1.5;
+      resize: vertical;
+      white-space: pre;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* パネルの閉じるボタン: アイコンだけの四角のボタン */
+    .mdmark-copy-panel-close {
+      display: inline-grid;
+      flex: none;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font: inherit;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* ---------- 行の URL の知らせ ---------- */
+
+    /* 知らせを置く基準: 先頭のセルの中身 */
+    .mdmark-row-link-cell {
+      position: relative;
+    }
+
+    /* 行のリンクの印の横の知らせ: 押した印のすぐ右に小さな札で重ね（列の幅を変えない）、2 秒で消す（読み上げにも知らせる） */
+    .mdmark-row-link-notice {
+      position: absolute;
+      inset-inline-start: calc(100% + 0.25em);
+      z-index: 2;
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-size: 0.8em;
+      font-weight: 400;
+      white-space: nowrap;
+
+      /* コピーした: 成功の色のアイコン */
+      &[data-state="copied"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-tip);
+      }
+
+      /* コピーできなかった: 注意の色のアイコン */
+      &[data-state="failed"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* 知らせを出している行: リンクの印を出したままにする */
+    .mdmark-row-link-cell:has(.mdmark-row-link-notice) .mdmark-row-anchor {
+      opacity: 1;
+    }
+
+    /* ---------- 狭い幅で畳む最終列 ---------- */
+
+    /* 畳んでいない間: 最終列を開くボタンと、開いたときの中身を出さない */
+    .mdmark-table:not(.is-folded)
+      :is(.mdmark-fold-toggle, .mdmark-fold-detail, .mdmark-fold-part) {
+      display: none;
+    }
+
+    /* 畳んだ表: 最終列の見出しとセルを出さない */
+    .mdmark-table.is-folded .mdmark-fold-col {
+      display: none;
+    }
+
+    /* 畳んだ最終列の中身: 列名を小さな見出しにし、その下に中身を出す */
+    .mdmark-fold-part {
+      display: grid;
+      gap: 0.15em;
+    }
+
+    /* 畳んだ最終列の中身の後に行の詳細が続くとき: 間を空けて線で分ける */
+    .mdmark-fold-part + * {
+      padding-block-start: calc(var(--mdmark-space) / 2);
+      border-block-start: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 畳んだ最終列の名前 */
+    .mdmark-fold-name {
+      margin: 0;
+      color: var(--mdmark-color-muted);
+      font-size: 0.85em;
+      font-weight: 600;
+    }
+
+    /* 畳んだ最終列の中身の段落 */
+    .mdmark-fold-value > * {
+      margin: 0;
     }
 
     /* 絞り込みのドロワー: 押した見出しのボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
@@ -1861,6 +2216,34 @@
     }
   }
 
+  /* 見出し行を下げるアニメーション（animation-timeline） */
+  @keyframes mdmark-table-head {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(var(--mdmark-sticky-head-max));
+    }
+  }
+
+  /* 集計の行を上げるアニメーション（animation-timeline）。元の位置に戻りきるまでは、最後の行の面を下へはみ出させる */
+  @keyframes mdmark-table-foot {
+    from {
+      --mdmark-sticky-foot-reach: 2px;
+      transform: translateY(calc(-1 * var(--mdmark-sticky-foot-max)));
+    }
+
+    99.9% {
+      --mdmark-sticky-foot-reach: 2px;
+    }
+
+    to {
+      --mdmark-sticky-foot-reach: 0px;
+      transform: translateY(0);
+    }
+  }
+
   /* 印刷のとき（記法）: 押せない操作を出さず、折り畳み・タブ・表の留めを紙向きにする */
   @media print {
     .mdmark {
@@ -1876,6 +2259,30 @@
           .mdmark-row-anchor
         ) {
         display: none;
+      }
+
+      /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（`animation-timeline` のアニメーションとスクリプトのずれを外す）。`dev/mock/refs/151/assets/table-print.css` から取る */
+      &[data-mdmark-sticky] .mdmark-table :is(thead th, tfoot td) {
+        --mdmark-sticky-foot-reach: 0px;
+        animation: none;
+        transform: none;
+      }
+
+      /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の知らせ、最終列の開閉）: 出さない */
+      :is(
+          .mdmark-table-menu,
+          .mdmark-copy-panel,
+          .mdmark-row-link-notice,
+          .mdmark-fold-toggle,
+          .mdmark-fold-detail,
+          .mdmark-fold-part
+        ) {
+        display: none;
+      }
+
+      /* 畳んだ最終列: 紙では畳まずに列として出す */
+      .mdmark-table.is-folded .mdmark-fold-col {
+        display: table-cell;
       }
 
       /* 集計の行: 紙では縦にスクロールしないので下端に留めない */
@@ -1895,10 +2302,8 @@
         display: none;
       }
 
-      /* 表: 高さの上限と、見出し行・ピン止めした列を留める指定を外し、全ての行を紙に出す */
+      /* 表: 見出し行・ピン止めした列を留める指定を外し、全ての行を紙に出す */
       .mdmark-table table {
-        max-height: none;
-
         /* セル: 留める指定と、描く処理が付けた列の最小の幅（style 属性）を外し、余白を詰めて列の多い表も紙の幅に収める */
         :is(th, td) {
           position: static;
@@ -2001,6 +2406,66 @@
         content: attr(data-label);
         font-size: 0.85em;
         font-weight: 600;
+      }
+    }
+  }
+
+  /* 紙の幅が 40rem 以下のとき（表の追加分）: 集計の行を計算の名前と値の並びにする。`dev/mock/refs/151/assets/table-print.css` から取る */
+  /* 紙の幅が狭く、表を行ごとの「見出し: 値」の並びに積むとき */
+  @media print and (max-width: 40rem) {
+    .mdmark {
+      /* 画面で隠している行（一致する行が無いときの知らせなど）: 積んだときも出さない */
+      .mdmark-table tr[hidden] {
+        display: none;
+      }
+
+      /* 集計の行: 計算の名前と、値のある列だけを 1 行に並べる */
+      .mdmark-table tfoot {
+        display: block;
+      }
+
+      /* 集計の行の 1 行: 名前と値を横に並べ、入りきらなければ折り返す */
+      .mdmark-table tfoot tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 1.5em;
+      }
+
+      /* 集計の行のセル（ピン止めした列を含む）: 面の色と線を外す */
+      .mdmark-table tfoot td:is(*, .is-pinned-col) {
+        display: block;
+        border: 0;
+        background: none;
+        box-shadow: none;
+      }
+
+      /* 集計の行の値の無いセル（畳んだ最終列を含む）: 出さない */
+      .mdmark-table
+        tfoot
+        td:not(
+          :has(
+            .mdmark-total-name,
+            .mdmark-total-value,
+            .mdmark-total-unreadable
+          )
+        ),
+      .mdmark-table.is-folded
+        tfoot
+        td.mdmark-fold-col:not(
+          :has(.mdmark-total-value, .mdmark-total-unreadable)
+        ) {
+        display: none;
+      }
+
+      /* 2 行目からと最後の集計の行の面と線: 積んだ並びでは面を敷かないので出さない */
+      .mdmark-table tfoot td::after {
+        content: none;
+      }
+
+      /* 集計の行の先頭のセル: 計算の名前が見出しになるので、列名を出さない */
+      .mdmark-table tfoot td:first-child::before {
+        content: none;
       }
     }
   }
@@ -4229,16 +4694,16 @@
 
     /* 飾ったコードブロックの入れ物: 題と pre を 1 つの枠にまとめる */
     .mdmark-code {
-      /* 題の下に続く pre: 題と枠をつなげ、上の角を丸めない */
-      .mdmark-code-title + pre {
+      /* 帯の下に続く pre: 帯と枠をつなげ、上の角を丸めない */
+      :is(.mdmark-code-title, .mdmark-code-bar) + pre {
         margin: 0;
         border-start-start-radius: 0;
         border-start-end-radius: 0;
       }
     }
 
-    /* コードブロックの題: ファイルのアイコンと題。長い題は折り返す */
-    .mdmark-code-title {
+    /* コードブロックの帯（題を持つコードブロックは題の行）: 長い題は折り返す */
+    :is(.mdmark-code-title, .mdmark-code-bar) {
       display: flex;
       gap: 0.4em;
       align-items: center;
@@ -4255,9 +4720,118 @@
       overflow-wrap: anywhere;
 
       /* 題の前のファイルのアイコン */
-      &::before {
+      &.mdmark-code-title::before {
         color: var(--mdmark-color-muted);
       }
+    }
+
+    /* コードブロックの言語のラベルとコピーボタン、diff の色分け。`dev/mock/refs/151/assets/code-block.css` から取る */
+    /* コードブロックの帯: 左端に言語のラベル、続けて題（題の無いコードブロックは無し）、右端にコピーボタンを置く */
+    .mdmark-code-bar {
+      flex-wrap: wrap;
+      min-height: 2rem;
+      padding-block: 0.15em;
+      padding-inline: 0.5em 0.35em;
+    }
+
+    /* 帯の右の塊（コピーボタンと読み上げの知らせ）: 題が長くても右端に寄せ、折り返さない */
+    .mdmark-code-meta {
+      display: inline-flex;
+      flex: none;
+      gap: 0.5em;
+      align-items: center;
+      margin-inline-start: auto;
+    }
+
+    /* 言語のラベル: 帯の左端に置く小さな札。言語とファイル名を並べ、選んだ文字には入れない */
+    .mdmark-code-lang {
+      display: inline-flex;
+      flex: 0 1 auto;
+      align-items: center;
+      min-width: 0;
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* ラベルの言語: 控えめの色で出す */
+    .mdmark-code-lang-name {
+      flex: none;
+      color: var(--mdmark-color-muted);
+      overflow-wrap: normal;
+      white-space: nowrap;
+    }
+
+    /* ラベルのファイル名: 言語の後ろに細い縦線で区切り、本文の色で出す。長い名前は折り返す */
+    .mdmark-code-file {
+      min-width: 0;
+      margin-inline-start: 0.5em;
+      padding-inline-start: 0.5em;
+      border-inline-start: 1px solid var(--mdmark-color-border);
+      color: var(--mdmark-color-text);
+      overflow-wrap: anywhere;
+    }
+
+    /* コピーボタン: 枠を持たない小さなボタン。押せる大きさは 24px 以上を取る */
+    .mdmark-code-copy {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-diagram-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: 足した行と同じ緑で知らせる */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      /* コピーできなかった: エラーの色で知らせる */
+      &[data-state="failed"] {
+        color: var(--mdmark-color-error);
+      }
+    }
+
+    /* diff の言語で色分けした行: 足した行と消した行を差分の表示と同じ色で出す */
+    pre code .hljs-addition {
+      color: var(--mdmark-color-diff-add-sign);
+    }
+
+    pre code .hljs-deletion {
+      color: var(--mdmark-color-diff-del-sign);
     }
 
     /* 行に分けたコードブロック: 行の地を枠の端まで敷くため、左右の余白を行へ移す */
@@ -4467,8 +5041,13 @@
       }
 
       /* 題・行の地と行頭の印: 背景を省くブラウザの設定でも紙に出す */
-      :is(.mdmark-code-title, .mdmark-code-line) {
+      :is(.mdmark-code-title, .mdmark-code-bar, .mdmark-code-line) {
         print-color-adjust: exact;
+      }
+
+      /* コピーボタン: 紙では押せないので出さない。言語のラベルは残す（`dev/mock/refs/151/assets/code-block-print.css`） */
+      .mdmark-code-copy {
+        display: none;
       }
 
       /* 色分けの色: 色を省くブラウザの設定でも紙に出す */

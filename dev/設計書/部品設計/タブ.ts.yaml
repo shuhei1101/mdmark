@@ -39,7 +39,7 @@ states:
         value: '0'
       - name: group
         value: os
-lead: '`<!-- tabs -->` の範囲を見出しで区切った中身を、見出しの文字をタブ名にしたタブで切り替えて見せる。`render` は全ての中身を順に出し、`mount` がタブの並びを付ける。'
+lead: '`<!-- tabs -->` の範囲を見出しで区切った中身を、見出しの文字をタブ名にしたタブで切り替えて見せる。`render` は全ての中身を順に出し、`mount` がタブの並びを付ける。URL の `#ID` が選ばれていないタブの中の要素を指すときは、`mount` がそのタブを選んでから要素へ移る。'
 args:
   - name: titles
     type: 配列
@@ -64,6 +64,10 @@ events:
     when: タブを押すか、タブにフォーカスがあるときに左右の矢印・Home・End を押す
     value: 選んだタブの `aria-selected`
     description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする。`data-group` を持つときは、ページの同じ `data-group` で同じタブ名を持つ `mdmark-tabs` もそのタブ名へ切り替え、タブ名を localStorage に残す'
+  - name: URL の ID でタブを選ぶ
+    when: URL の `#ID` が選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指す（描いたときと `hashchange`）
+    value: URL の `#ID`
+    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じた節を開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない'
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>

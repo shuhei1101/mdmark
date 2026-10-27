@@ -23,6 +23,19 @@ states:
         value: table
       - name: open
         value: 'true'
+  - name: OpenWithFoldedColumn
+    description: 最終列を畳んだ表で開いた行の詳細。詳細の中身の上に `説明` の見出しと中身が出る
+    args:
+      - name: row
+        value: '1'
+      - name: columns
+        value: '3'
+      - name: label
+        value: table
+      - name: open
+        value: 'true'
+      - name: foldedColumn
+        value: '{"name":"説明","html":"並べ替え・ピン止め・絞り込みを付けた表を描く"}'
 lead: '表の直後の `<!-- row-detail: 行の位置 -->` の中身を、その行の下に開閉して出す行。詳細を持つ行の先頭のセルに開閉のボタンを置く。'
 args:
   - name: row
@@ -47,6 +60,10 @@ args:
     required: false
     default: 'true'
     description: 開閉のボタンを付けるか（`render` は `false` で出し、`mount` が付ける）
+  - name: foldedColumn
+    type: オブジェクト
+    default: なし（最終列を置かない）
+    description: 表が最終列を畳んだときの、その行の最終列（`{ name, html }`。`name` は最終列の見出しの文字、`html` はその行のセルの中身）。渡すと詳細の中身の上に `mdmark-fold-part` で見出しと中身を置き、行の詳細の開閉のボタンだけで両方を開閉する（表はこの行に最終列の開閉のボタンを置かない）
 slots:
   - name: default
     description: 詳細の中身の HTML
