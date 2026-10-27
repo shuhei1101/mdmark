@@ -412,7 +412,8 @@ export function renderCopyPanel(options: {
 }): string {
   const { id, format, text } = options;
   const titleId = `${id}-title`;
-  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note">「${COPY_FORMATS[format].name}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6">${escapeHtml(text)}</textarea></div>`;
+  const noteId = `${id}-note`;
+  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">「${COPY_FORMATS[format].name}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
 }
 
 /** 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに置く開閉のボタンと、行の直後に置く開閉の行の HTML を返す */

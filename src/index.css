@@ -912,15 +912,15 @@
       }
     }
 
-    /* メニューの題 */
-    .mdmark-columns-title {
+    /* メニューの題（列の表示・出す集計） */
+    :is(.mdmark-columns-title, .mdmark-totals-title) {
       margin: 0;
       color: var(--mdmark-color-heading);
       font-weight: 600;
     }
 
-    /* 列名のチェックボックス: 表の列の順に縦に並べる */
-    .mdmark-columns-options {
+    /* 列名・計算のチェックボックス: 表の列・計算の順に縦に並べる */
+    :is(.mdmark-columns-options, .mdmark-totals-options) {
       margin: 0;
       padding: 0;
       list-style: none;
@@ -4728,6 +4728,7 @@
     /* コードブロックの言語のラベルとコピーボタン、diff の色分け。`dev/mock/refs/151/assets/code-block.css` から取る */
     /* コードブロックの帯: 左端に言語のラベル、続けて題（題の無いコードブロックは無し）、右端にコピーボタンを置く */
     .mdmark-code-bar {
+      flex-wrap: wrap;
       min-height: 2rem;
       padding-block: 0.15em;
       padding-inline: 0.5em 0.35em;
@@ -4760,7 +4761,10 @@
 
     /* ラベルの言語: 控えめの色で出す */
     .mdmark-code-lang-name {
+      flex: none;
       color: var(--mdmark-color-muted);
+      overflow-wrap: normal;
+      white-space: nowrap;
     }
 
     /* ラベルのファイル名: 言語の後ろに細い縦線で区切り、本文の色で出す。長い名前は折り返す */
