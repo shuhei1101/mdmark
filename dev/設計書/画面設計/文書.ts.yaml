@@ -116,18 +116,19 @@ elements:
     component: dev/設計書/部品設計/節.ts#
     args:
       - name: level
-        value: 見出しの階層（2〜4）
+        value: 見出しの階層（1〜4）
       - name: id
         value: GitHub と同じ規則の見出しの ID
       - name: title
         value: 見出しの中身
     position: 描く先の要素
-    description: h2〜h4 の見出しとその節。`anchors` がオンのとき見出しに ID へのアンカーを、`sections` がオンのとき開閉のボタンを付ける。h1・h5・h6 は ID とアンカーだけを付ける
+    description: h1〜h4 の見出しとその節。`anchors` がオンのとき見出しに ID へのアンカーを、`sections` がオンのとき開閉のボタンを付ける。h5・h6 は ID とアンカーだけを付ける
     visible_when: 文書に見出しがあるとき
     initial_value: '開いた状態。見出しの直後に `<!-- section: closed -->` がある節は閉じた状態'
-    action: 開閉のボタンで節を開閉する。URL の `#ID` が閉じた節の中を指すときはその節を開く
+    action: 開閉のボタンで節を開閉する。Shift を押しながら押す（Shift+Enter・Shift+Space を含む）と、その節と中の入れ子の節を全て同じ状態にする。URL の `#ID` が閉じた節の中を指すときはその節を開く
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[入れ子をまとめて開閉]
     status: planned
   - name: 目次
     id: toc
@@ -779,5 +780,99 @@ elements:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コードブロックのコピー]
     status: planned
+  - name: 本文の列
+    id: content
+    kind: container
+    position: 描く先の要素
+    description: 右側の目次を置くとき、`render` の HTML を入れる `div.mdmark-content`。`--mdmark-content-width` はこの列に当てる。印刷では紙の幅いっぱいに出す
+    visible_when: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき（それ以外は描く先の要素に本文を直に入れる）'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 右側の目次
+    id: side-toc
+    kind: aside
+    component: dev/設計書/部品設計/右側の目次.ts#
+    args:
+      - name: headings
+        value: 文書の h1・h2・h3 の階層・ID・文字（閉じた節と選ばれていないタブの中も含める）
+      - name: mode
+        value: 文書を描く.request.opts.config.side-toc.mode（hover・fixed 以外は hover）
+      - name: sections
+        value: '`sections` の機能がオンで、文書に節が 1 つ以上あるか'
+    position: 描く先の要素 > 本文の列の右（狭い幅では本文の列の上の帯）
+    description: 本文の列の右に置き、画面に留める目次。hover は右端の線だけを出し、指すかフォーカスで目次を本文に重ねて出す。fixed は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときは、`--mdmark-sticky-top` の位置に留める帯で今いる節の見出しと目次を出すボタンを出し、目次は帯の下に本文へ重ねて開く。パネルの `nav` は `aria-label="右側の目次"` で、本文の目次（`aria-label="目次"`）とランドマークの名前を分ける。印刷では出さない
+    label: 目次
+    io: 表示
+    visible_when: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき。印刷では出さない'
+    initial_value: 目次を出していない・ピン止めしていない状態（`mount` のたびに戻し、`update` では保つ）。今いる節は画面の高さの 25% の線より上の最後の見出し
+    action: 項目を押すと URL の `#ID` で移るのと同じく、閉じた節を開きタブを選んでその見出しへ移る（URL が同じでも移る）。本文に重ねて開いた目次は項目を押すと閉じる。出している目次の中で Esc を押すと隠し、目次を出すボタンへフォーカスを戻す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[狭い幅の右側の目次]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[今いる節]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次から移る]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 目次を出すボタン
+    id: side-toc-toggle
+    kind: button
+    position: 描く先の要素 > 右側の目次
+    description: 三点リーダーのアイコンのボタン。`aria-expanded`・`aria-controls` で目次を出しているかを示す。狭い幅では帯いっぱいに広げ、今いる節の見出しの文字を並べる（1 行に収め、収まらない分は `…` で省く）
+    label: 目次を表示（`aria-label`・`title`）
+    visible_when: 'fixed の出し方、ポインターを置けない端末（`hover: none`）の hover の出し方、または狭い幅のとき'
+    initial_value: '`aria-expanded="false"`'
+    action: 目次を出すか隠すかを切り替える
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 目次のピン止めのボタン
+    id: side-toc-pin
+    kind: button
+    position: 描く先の要素 > 右側の目次 > タイトルの横
+    description: ピンのアイコンだけのボタン。`aria-pressed` でピン止めしているかを示す
+    label: 目次をピン止め（`aria-label`・`title`）
+    visible_when: hover の出し方で目次を出しているとき（狭い幅では出さない）
+    initial_value: '`aria-pressed="false"`'
+    action: ピン止めすると目次を本文の右の列に出したままにし、本文の列をその分狭める。押し直すと外す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+    status: planned
+    introduced:
+      pr: 166
+  - name: すべて展開のボタン
+    id: fold-all-open
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上部
+    description: 文字を持たず、上下に開く矢印のアイコンだけを持つボタン
+    label: すべて展開（`aria-label`・`title`）
+    visible_when: 右側の目次を出していて、`sections` がオンで文書に節が 1 つ以上あるとき
+    action: 文書の全ての節（h1〜h4）を開く。フォーカスはこのボタンに残す
+    reason: アイコンだけにし、右側の目次の上部に置くのは確認ログの決定
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
+    status: planned
+    introduced:
+      pr: 166
+  - name: すべて折りたたむのボタン
+    id: fold-all-close
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上部
+    description: 文字を持たず、内側へ閉じる矢印のアイコンだけを持つボタン
+    label: すべて折りたたむ（`aria-label`・`title`）
+    visible_when: すべて展開のボタンと同じ
+    action: h1 の節を開き、h2〜h4 の全ての節を閉じて見出しを並べる。フォーカスはこのボタンに残す
+    reason: H1 の節を閉じないのは確認ログの決定
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
+    status: planned
+    introduced:
+      pr: 166
 mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。
