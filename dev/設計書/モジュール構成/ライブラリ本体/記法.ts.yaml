@@ -88,7 +88,7 @@ constants:
   - name: TOTAL_CALCS
     title: 集計の計算
     container: src/table-logic.ts
-    summary: '`total=列名:計算` に書ける計算。集計の行の題はそれぞれ `合計`・`平均`・`個数`'
+    summary: '`total=列名:計算` に書ける計算。集計の行の題はそれぞれ `合計`・`平均`・`件数`'
     value: '["sum", "avg", "count"]'
   - name: LINE_COMMENT_HEADS
     title: 行コメントの頭
@@ -111,7 +111,7 @@ constants:
     title: 色分けの言語の対応表
     container: src/render/syntax/code-blocks.ts
     summary: 情報文字列の最初の語（小文字）から、highlight.js の言語のモジュール名を引く表。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に当たる
-    value: '{ typescript: "typescript", ts: "typescript", tsx: "typescript", javascript: "javascript", js: "javascript", jsx: "javascript", mjs: "javascript", cjs: "javascript", json: "json", yaml: "yaml", yml: "yaml", python: "python", py: "python", bash: "bash", sh: "bash", shell: "bash", zsh: "bash", html: "xml", xml: "xml", css: "css", markdown: "markdown", md: "markdown", sql: "sql" }'
+    value: '{ typescript: "typescript", ts: "typescript", tsx: "typescript", javascript: "javascript", js: "javascript", jsx: "javascript", mjs: "javascript", cjs: "javascript", json: "json", yaml: "yaml", yml: "yaml", python: "python", py: "python", bash: "bash", sh: "bash", shell: "bash", zsh: "bash", html: "xml", xml: "xml", css: "css", markdown: "markdown", md: "markdown", sql: "sql", dockerfile: "dockerfile", docker: "dockerfile", diff: "diff", patch: "diff" }'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの対象]
     status: planned
@@ -259,7 +259,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -296,6 +296,12 @@ functions:
         condition: '`## みかん` の後の `<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`・`数量`、名前 `りんご`・`みかん`・`みかん`）'
         mock: なし
         expected: '`data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
+      - name: test_decorate_tables_when_total_unreadable
+        case: 異常
+        summary: 集計する列の数として読めないセルを、列と計算ごとの警告にして表の上に差し込む
+        condition: '`<!-- table: data +total total=数量:sum,数量:avg,数量:count -->` 〜 `<!-- /table -->` の表（列 `名前`・`数量`、数量 `12`・`約3`・空・`-`）'
+        mock: なし
+        expected: 表の前に警告が 2 つあり、本文が `「数量」の列に数として読めない値 <code>約3</code>・<code>-</code> があるため、合計を出していません。数を書くか、セルを空にしてください。` と、`平均` の同じ文。`count` の警告は無い
     refs:
       - '#functions[readTableSpec]'
       - '#functions[rowIdOf]'
@@ -479,7 +485,7 @@ functions:
     container: src/render/syntax/badges.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`badge` がオンなら、頭が `badge:` の `code_inline` を部品『バッジ』にし、頭が `badge\:` のものは `\` を外したコードにする
+    summary: コアルール。`badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ `code_inline` を部品『バッジ』にし、頭が `badge\:` のものは `\` を外したコードにする。`badge:` の後ろが空か空白だけのものはコードのまま残す
     args:
       - name: state
         type: StateCore
@@ -495,6 +501,12 @@ functions:
         condition: '`` `badge:v0.1.0` `` と `` `badge\:v0.1.0` ``'
         mock: なし
         expected: '`<span class="mdmark-badge">v0.1.0</span>` と `<code>badge:v0.1.0</code>`'
+      - name: test_build_badges_when_empty
+        case: 正常
+        summary: '`badge:` の後ろが空か空白だけならコードのまま残す'
+        condition: '`` `badge:` `` と `` `badge:  ` ``'
+        mock: なし
+        expected: どちらも `<code>` のままで、`mdmark-badge` が無い
   - name: numberFigures
     title: 図表に番号を付ける
     container: src/render/syntax/figures.ts
@@ -849,7 +861,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`code` か `syntax` がオンなら、残っている `fence` のトークンごとに次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読む（オフのときは行の印を外さず中身の行をそのまま使う）。`syntax` がオンのときは情報文字列の言語を `syntaxLanguageOf` で引く。題・行番号・行の種類・色分けの言語のどれかを持つコードブロックを、部品『コードブロック』（色分けの言語を `syntax` に渡す）の `ownBlock` に置き換える。置き換えないコードブロックも、`code` がオンなら `fence` の `content` を `readLineMarks` の行の文字でつなぎ直す（打ち消した印の `\` が外れる）。`readCodeSpec` と `readLineMarks` の読めない指定は、置き換えたかどうかに関わらずコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが `fence` でなくしているため当たらない
+    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`readCodeSpec` と `readLineMarks` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
     args:
       - name: state
         type: StateCore
@@ -862,25 +874,38 @@ functions:
       - '#functions[pushWarning]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeBlock]
       - '#functions[syntaxLanguageOf]'
+      - '#functions[splitInfoString]'
     unit_tests:
       - name: test_build_code_blocks
         case: 正常
-        summary: 印と行の印を持つコードブロックを部品にし、何も持たないコードブロックは `fence` のままにする
-        condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行のコードブロックと、印も行の印も持たない言語 `text` のコードブロック'
+        summary: 印と行の印を持つコードブロックも何も持たないコードブロックも帯を持つ部品にする
+        condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行の言語 `ts` のコードブロックと、印も行の印も持たない言語 `text` のコードブロック。`syntax` はオフ'
         mock: なし
-        expected: 1 つ目が `<figure class="mdmark-code">` の `html_block`、2 つ目は `fence` のまま
+        expected: 1 つ目が `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">` を持つ `html_block`、2 つ目が `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` の中の `mdmark-code-lang-name` が `text` の `html_block`。どちらも `mdmark-code-copy` を持たない
+      - name: test_build_code_blocks_when_file_name
+        case: 正常
+        summary: 情報文字列の `言語:ファイル名` を言語のラベルとファイル名と読み上げの名前に分ける
+        condition: 言語 `python:hoge.py` のコードブロックと、言語 `:a.txt` のコードブロック
+        mock: なし
+        expected: '1 つ目が `mdmark-code-lang-name` が `python`・`mdmark-code-file` が `hoge.py`・`code` の class が `language-python`・`pre` の `aria-label` が `コード: hoge.py`。2 つ目は `mdmark-code-lang` を持たず、`code` が class を持たず、`aria-label` が `コード`'
+      - name: test_build_code_blocks_when_tree_with_file_name
+        case: 正常
+        summary: '`tree:src` はファイルツリーにせず普通のコードブロックにする'
+        condition: 言語 `tree:src` で罫線のフォルダ構成を書いたコードブロック
+        mock: なし
+        expected: '`mdmark-tree` が無く、`mdmark-code-lang-name` が `tree`・`mdmark-code-file` が `src` の部品'
       - name: test_build_code_blocks_when_escaped
         case: 正常
-        summary: 打ち消した印だけのコードブロックは `fence` のまま `\` を外した中身にする
+        summary: 打ち消した印は `\` を外した文字の行にする
         condition: '`let count = 1; // [\!code ++]` だけのコードブロック'
         mock: なし
-        expected: '`fence` のままで、`content` が `let count = 1; // [!code ++]` を持ち `\` が無い'
+        expected: 部品の中身が `let count = 1; // [!code ++]` を持ち `\` が無く、`mdmark-code-line` に分けていない
       - name: test_build_code_blocks_when_unknown_line_mark
         case: 異常
         summary: 知らない印だけのコードブロックの前に警告を差し込む
         condition: '`foo(); // [!code focus]` だけのコードブロック'
         mock: なし
-        expected: コードブロックの前に警告（本文に `[!code focus]`）があり、`fence` の `content` は `foo(); // [!code focus]` のまま
+        expected: コードブロックの前に警告（本文に `[!code focus]`）があり、部品の中身は `foo(); // [!code focus]` のまま
       - name: test_build_code_blocks_when_no_fence
         case: 異常
         summary: 後ろにコードブロックの無い印を警告にする
@@ -889,28 +914,34 @@ functions:
         expected: 印の場所に警告があり、段落が残る
       - name: test_build_code_blocks_when_disabled
         case: 正常
-        summary: '`code` がオフなら何もしない'
-        condition: '`features.code` が `false` で、行末に `// [!code ++]` を持つコードブロック'
+        summary: '`code` も `syntax` もオフなら `fence` のまま、情報文字列を言語だけにする'
+        condition: '`features.code` と `features.syntax` が `false` で、行末に `// [!code ++]` を持つ言語 `ts:app.ts` のコードブロック'
         mock: なし
-        expected: '`fence` のままで、中身に `// [!code ++]` が残る'
+        expected: '`fence` のままで、`info` の最初の語が `ts`、中身に `// [!code ++]` が残り、`mdmark-code-bar` が無い'
       - name: test_build_code_blocks_when_syntax
         case: 正常
-        summary: 色分けの対象を部品にして色分けの属性を付け、対象外は `fence` のままにする
+        summary: 色分けの対象に色分けの属性を付け、対象外には付けない
         condition: 印も行の印も持たない言語 `yml` のコードブロックと、言語 `text` のコードブロック。`syntax` はオン
         mock: なし
-        expected: 1 つ目が `<code class="language-yml" data-mdmark-syntax="yaml">` を含む `html_block`、2 つ目は `fence` のまま
+        expected: 1 つ目が `<code class="language-yml" data-mdmark-syntax="yaml">` を含む帯を持つ部品、2 つ目は `data-mdmark-syntax` の無い帯を持つ部品
       - name: test_build_code_blocks_when_syntax_disabled
         case: 正常
         summary: '`syntax` がオフなら色分けの属性を付けない'
         condition: '`<!-- features: -syntax -->` と、印も行の印も持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後の言語 `ts` のコードブロック'
         mock: なし
-        expected: 1 つ目は `fence` のまま、2 つ目は行番号を持つ部品で、どちらにも `data-mdmark-syntax` が無い
+        expected: 1 つ目は帯を持つ部品、2 つ目は行番号を持つ部品で、どちらにも `data-mdmark-syntax` が無い
       - name: test_build_code_blocks_when_code_disabled_with_syntax
         case: 正常
-        summary: '`code` がオフでも `syntax` がオンなら、行の印を外さずに色分けの属性を付ける'
-        condition: '`features.code` が `false` で、行末に `// [!code ++]` を持つ言語 `ts` のコードブロック'
+        summary: '`code` がオフでも `syntax` がオンなら、行の印を外さず帯を持たない部品で色分けの属性を付ける'
+        condition: '`features.code` が `false` で、行末に `// [!code ++]` を持つ言語 `ts:app.ts` のコードブロック'
         mock: なし
-        expected: '`data-mdmark-syntax="typescript"` を持つ `html_block` で、行に分けず、中身に `// [!code ++]` が残る'
+        expected: '`<code class="language-ts" data-mdmark-syntax="typescript">` を持つ `html_block` で、`mdmark-code-bar` が無く、行に分けず、中身に `// [!code ++]` が残る'
+      - name: test_build_code_blocks_when_dockerfile_and_diff
+        case: 正常
+        summary: dockerfile・diff と別名を色分けの言語に引く
+        condition: 言語 `dockerfile`・`docker`・`diff`・`patch` のコードブロック。`syntax` はオン
+        mock: なし
+        expected: '`data-mdmark-syntax` が順に `dockerfile`・`dockerfile`・`diff`・`diff`'
     reason: 色分けの対象を、mdmark が出した要素だけが持ち続ける属性 `data-mdmark-syntax` で示すため、印も行の印も持たない色分けの対象も部品に置き換える（`fence` のままだと `code` の属性は sanitize が生の HTML と同じく落とす）。部品は `pre` に同じ読み上げの名前と `tabindex` を付け、`markSourceLines` が元の行番号を付けるため、出力は `fence` のときと属性 1 つだけ違う
   - name: syntaxLanguageOf
     title: 色分けの言語を引く
@@ -940,9 +971,45 @@ functions:
         condition: '`text`・`tree`・空・`constructor`'
         mock: なし
         expected: どれも `undefined`
+      - name: test_syntax_language_of_when_dockerfile_and_diff
+        case: 正常
+        summary: dockerfile・diff と別名を引く
+        condition: '`Dockerfile`・`docker`・`diff`・`patch`'
+        mock: なし
+        expected: '`dockerfile`・`dockerfile`・`diff`・`diff`'
     status: planned
     introduced:
       pr: 97
+  - name: splitInfoString
+    title: 情報文字列を言語とファイル名に分ける
+    container: src/render/syntax/code-blocks.ts
+    summary: 情報文字列の最初の語を最初の `:` で分け、前を言語、後ろをファイル名にする。`:` が無ければ語の全てが言語でファイル名は空。`:` の前が空なら言語もファイル名も空にする
+    kind: 関数
+    scope: public
+    args:
+      - name: info
+        type: string
+        required: true
+        description: '`fence` のトークンの情報文字列（前後の空白も受ける）'
+    returns:
+      type: '{ language: string; fileName: string }'
+      description: 言語とファイル名（無ければ空）
+    unit_tests:
+      - name: test_split_info_string
+        case: 正常
+        summary: 最初の `:` で言語とファイル名に分ける
+        condition: '`python:hoge.py`・`ts:src/app.ts`・`ts`・`a:b:c.txt`・`ts:app.ts extra`'
+        mock: なし
+        expected: '`{ language: "python", fileName: "hoge.py" }`・`{ language: "ts", fileName: "src/app.ts" }`・`{ language: "ts", fileName: "" }`・`{ language: "a", fileName: "b:c.txt" }`・`{ language: "ts", fileName: "app.ts" }`'
+      - name: test_split_info_string_when_no_language
+        case: 正常
+        summary: 空と `:` の前が空のときは言語もファイル名も持たない
+        condition: 空・`:a.txt`
+        mock: なし
+        expected: 'どちらも `{ language: "", fileName: "" }`'
+    status: planned
+    introduced:
+      pr: 151
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → コードブロック → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける

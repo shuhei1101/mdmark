@@ -1625,6 +1625,12 @@ functions:
         condition: '`ts` のコードブロックを持つ文書と、`features.syntax: false` の設定'
         mock: なし
         expected: '`[]`'
+      - name: test_used_syntax_languages_when_aliases_and_file_name
+        case: 正常
+        summary: 別名とファイル名付きの言語をモジュール名にして拾う
+        condition: '`dockerfile`・`patch`・`ts:app.ts` のコードブロックを持つ文書。設定は空'
+        mock: なし
+        expected: '`["diff", "dockerfile", "typescript"]`'
     status: planned
     introduced:
       pr: 97
