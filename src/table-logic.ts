@@ -18,8 +18,8 @@ export type FilterValue = {
   to?: string | undefined;
 };
 
-/** 数として読めるセルの文字（`,` を除く）を数にする。読めなければ `undefined` */
-function toNumber(text: string): number | undefined {
+/** セルの文字の前後の空白と `,` を除いて数にする。空か数として読めなければ `undefined` */
+export function parseNumberCell(text: string): number | undefined {
   const normalized = text.replaceAll(",", "").trim();
   if (normalized === "" || !Number.isFinite(Number(normalized))) {
     return undefined;
@@ -32,8 +32,8 @@ const collator = new Intl.Collator("ja", { numeric: true });
 
 /** 並べ替えの比較。両方が数値なら数の大きさ、それ以外は辞書の順で比べる */
 export function compareCells(a: string, b: string): number {
-  const left = toNumber(a);
-  const right = toNumber(b);
+  const left = parseNumberCell(a);
+  const right = parseNumberCell(b);
   if (left !== undefined && right !== undefined) {
     return left - right;
   }
@@ -82,7 +82,7 @@ export const TOTAL_CALCS: readonly TotalCalc[] = ["sum", "avg", "count"];
 export const TOTAL_LABELS: Readonly<Record<TotalCalc, string>> = {
   sum: "合計",
   avg: "平均",
-  count: "個数",
+  count: "件数",
 };
 
 /** 平均する値が無いときの表示 */
@@ -99,7 +99,7 @@ export function computeTotal(cells: string[], calc: TotalCalc): string {
     );
   }
   const numbers = cells
-    .map(toNumber)
+    .map(parseNumberCell)
     .filter((value): value is number => value !== undefined);
   const sum = numbers.reduce((total, value) => total + value, 0);
   if (calc === "sum") {
@@ -110,11 +110,121 @@ export function computeTotal(cells: string[], calc: TotalCalc): string {
     : NO_VALUE;
 }
 
+/** 集計する列と計算 */
+export type TotalSpec = { column: number; calc: TotalCalc };
+
+/** 数として読めない値を持つ、集計する列と計算 */
+export type UnreadableTotal = {
+  column: number;
+  calc: "sum" | "avg";
+  /** 読めないセルの文字（重なりを除いて現れた順） */
+  values: string[];
+};
+
+/** `sum`・`avg` の列ごとに、空でなく数として読めないセルの文字を集める。読めないセルが無い列と計算、`count` は返さない */
+export function findUnreadableTotals(options: {
+  rows: string[][];
+  totals: TotalSpec[];
+}): UnreadableTotal[] {
+  const { rows, totals } = options;
+  const found: UnreadableTotal[] = [];
+  for (const { column, calc } of totals) {
+    if (calc === "count") {
+      continue;
+    }
+    const values = new Set<string>();
+    for (const row of rows) {
+      const cell = row[column] ?? "";
+      if (cell.trim() !== "" && parseNumberCell(cell) === undefined) {
+        values.add(cell);
+      }
+    }
+    if (values.size > 0) {
+      found.push({ column, calc, values: [...values] });
+    }
+  }
+  return found;
+}
+
 /** 行ごとのセルの文字を、セルをタブで、行を改行で区切った文字にする。セルの中のタブと改行は空白 1 つにする */
 export function tableToTsv(rows: string[][]): string {
   return rows
     .map((row) => row.map((cell) => cell.replace(/[\t\r\n]+/g, " ")).join("\t"))
     .join("\n");
+}
+
+/** 行ごとのセルの文字を、先頭の行を見出しの行にした Markdown の表にする。セルの中の `|` は `\|` にし、改行は空白 1 つにする */
+export function tableToMarkdown(rows: string[][]): string {
+  const line = (row: string[]): string =>
+    `| ${row.map((cell) => cell.replace(/[\r\n]+/g, " ").replaceAll("|", "\\|")).join(" | ")} |`;
+  const [head, ...body] = rows;
+  if (head === undefined) {
+    return "";
+  }
+  const separator = `| ${head.map(() => "---").join(" | ")} |`;
+  return [line(head), separator, ...body.map(line)].join("\n");
+}
+
+/** 描く先の要素の中身の幅（px）がこの値未満のときだけ最終列を畳む */
+export const FOLD_MAX_WIDTH = 720;
+
+/** 最終列を畳むか。幅が `FOLD_MAX_WIDTH` 未満で、表示している最終列が先頭の列でなく、そのセルのどれかが 1 行に収まらないときだけ `true` */
+export function shouldFold(options: {
+  width: number;
+  lastColumn: number;
+  wraps: boolean;
+}): boolean {
+  const { width, lastColumn, wraps } = options;
+  return width < FOLD_MAX_WIDTH && lastColumn > 0 && wraps;
+}
+
+/** `animation-timeline` を持たないブラウザで、見出し行を下げる量（0 以上）と集計の行を動かす量（0 以下。集計の行が無ければ 0）を、ずらす前の位置から求める */
+export function stickyShift(options: {
+  stickyTop: number;
+  viewportBottom: number;
+  headTop: number;
+  headBottom: number;
+  bodyTop: number;
+  bodyBottom: number;
+  footTop?: number | undefined;
+  footBottom?: number | undefined;
+}): { head: number; foot: number } {
+  const { stickyTop, viewportBottom, headTop, headBottom } = options;
+  const { bodyTop, bodyBottom, footTop, footBottom } = options;
+  const headMax = Math.max(bodyBottom - headBottom, 0);
+  const head = Math.min(Math.max(stickyTop - headTop, 0), headMax);
+  if (footTop === undefined || footBottom === undefined) {
+    return { head, foot: 0 };
+  }
+  const footMin = Math.min(bodyTop - footTop, 0);
+  const foot = Math.max(Math.min(viewportBottom - footBottom, 0), footMin);
+  return { head, foot };
+}
+
+/** `animation-timeline` を持つブラウザで、CSS のアニメーションが使う動く範囲（px）を求める。集計の行が無ければ `footMax`・`footEnd` は 0 */
+export function stickyRange(options: {
+  tableTop: number;
+  tableBottom: number;
+  headTop: number;
+  headBottom: number;
+  bodyTop: number;
+  bodyBottom: number;
+  footTop?: number | undefined;
+  footBottom?: number | undefined;
+}): { headStart: number; headMax: number; footMax: number; footEnd: number } {
+  const { tableTop, tableBottom, headTop, headBottom } = options;
+  const { bodyTop, bodyBottom, footTop, footBottom } = options;
+  const headStart = headTop - tableTop;
+  const headMax = Math.max(bodyBottom - headBottom, 0);
+  if (footTop === undefined || footBottom === undefined) {
+    return { headStart, headMax, footMax: 0, footEnd: 0 };
+  }
+  return {
+    headStart,
+    headMax,
+    footMax: Math.max(footTop - bodyTop, 0),
+    footEnd: tableBottom - footBottom,
+  };
 }
 
 /** `location.hash` の最後の `#` の後ろを戻した文字を返す。戻せないときはそのまま、`#` が無ければ空文字 */
