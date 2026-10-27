@@ -480,8 +480,11 @@ test("test_columns_menu_open", async () => {
 
 // 集計の行を表の末尾に出す（Totals）
 test("test_totals", async () => {
-  // 準備・実行
-  const page = await open("totals");
+  // 準備・実行: 表が画面に収まる高さにする（集計の行を画面の下端に留めず、元の位置で線を測る）
+  const page = await holder.openStory("parts-table--totals", {
+    width: 420,
+    height: 800,
+  });
   // 検証
   await expect(totalRows(page)).resolves.toEqual([
     ["合計", "45", ""],
