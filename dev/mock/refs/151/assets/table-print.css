@@ -1,0 +1,23 @@
+/* 表の見た目の追加分の印刷の規則（#151 で共有するアセット）。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる。refs/57/assets/table-tools-print.css の後に読む */
+
+/* mdmark の層: 印刷のときの表 */
+@layer mdmark {
+  .mdmark {
+    /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（案 D のアニメーションと案 C のずれを外す） */
+    .mdmark-table :is(thead th, tfoot td) {
+      animation: none;
+      transform: none;
+    }
+
+    /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の知らせ、最終列の開閉）: 出さない */
+    :is(.mdmark-table-menu, .mdmark-copy-panel, .mdmark-row-link-notice, .mdmark-fold-toggle, .mdmark-fold-detail, .mdmark-fold-part) {
+      display: none;
+    }
+
+    /* 畳んだ最終列: 紙では畳まずに列として出す */
+    .mdmark-table.is-folded .mdmark-fold-col {
+      display: table-cell;
+    }
+  }
+}
