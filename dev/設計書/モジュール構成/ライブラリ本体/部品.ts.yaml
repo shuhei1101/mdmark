@@ -878,6 +878,7 @@ test_files:
   - tests/unit/src/parts/badge.test.ts
   - tests/unit/src/parts/toc.test.ts
   - tests/unit/src/parts/section.test.ts
+  - tests/unit/src/parts/side-toc.test.ts
   - tests/unit/src/parts/row-detail.test.ts
   - tests/unit/src/parts/figure.test.ts
   - tests/unit/src/parts/doc-list.test.ts

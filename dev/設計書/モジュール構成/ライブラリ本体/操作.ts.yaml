@@ -1189,9 +1189,9 @@ functions:
       - name: test_attach_side_toc_when_heading_in_unselected_tab
         case: 正常
         summary: 選ばれていないタブの中の見出しを今いる節に数えない
-        condition: '`## 導入` の後に、`### macOS` と `### Windows` を `tabs` の印で囲んだ長い本文を `attachInteractions` で操作にしてから付け、`macOS` のタブが選ばれたまま `macOS` の見出しを線より上へスクロールして次の描画を待つ'
+        condition: '`## 導入` の後に、タブ名を `## macOS`・`## Windows`、中身を `### macOS の手順`・`### Windows の手順` にして `tabs` の印で囲んだ長い本文を `attachInteractions` で操作にしてから付け、`macOS` のタブが選ばれたまま `macOS の手順` の見出しを線より上へスクロールして次の描画を待つ'
         mock: なし
-        expected: '`#macOS` の項目だけが `aria-current="location"` で、`#Windows` の項目は持たない'
+        expected: '`macOS の手順` の項目だけが `aria-current="location"` で、`Windows の手順` の項目は持たない'
       - name: test_attach_side_toc_when_fold_all_moves_current
         case: 正常
         summary: すべて折りたたむと、閉じた節に入った見出しから今いる節を決め直す
@@ -1206,6 +1206,7 @@ test_files:
   - tests/unit/src/interact/tables.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
+  - tests/unit/src/interact/side-toc.browser.test.ts
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
   - tests/unit/src/interact/placement.test.ts
