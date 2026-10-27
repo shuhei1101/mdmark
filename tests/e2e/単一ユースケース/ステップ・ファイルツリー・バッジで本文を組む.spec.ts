@@ -134,3 +134,19 @@ test("test_error_when_steps_without_ordered_list", async ({ page }) => {
     "ビルドする",
   ]);
 });
+
+// 後ろが空か空白だけの `badge:` は札にせず、書いたとおりの行内のコードで出し、警告も出さない（正常シナリオ（中身の無い badge:））
+test("test_normal_when_badge_empty", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "空は `badge:` と `badge: ` と書きます。\n",
+  });
+  // 検証
+  const codes = page.locator("#doc code");
+  await expect(codes).toHaveCount(2);
+  expect(await codes.allTextContents()).toEqual(["badge:", "badge: "]);
+  await expect(page.locator("#doc .mdmark-badge")).toHaveCount(0);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+});

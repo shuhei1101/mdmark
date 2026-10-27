@@ -158,11 +158,26 @@ test("test_normal_when_same_group", async ({ page }) => {
   await expect(windows).toBeFocused();
 });
 
-// 読み直したとき、選んだタブで開く（正常シナリオ（読み直して選んだタブで開く））
+// 読み直したとき、選んだタブで開き、URL の ID を付けて読み直すと、覚えたタブより URL の ID のタブを優先する（正常シナリオ（読み直して選んだタブで開く））
 test("test_normal_when_reloaded", async ({ page }) => {
   // 準備
   const markdown = [
-    tabsRange(["macOS", "Windows"], "group=os"),
+    [
+      "<!-- tabs: group=os -->",
+      "",
+      "### macOS",
+      "",
+      "#### macOS の注意",
+      "",
+      "macOS の段落",
+      "",
+      "### Windows",
+      "",
+      "Windows の段落",
+      "",
+      "<!-- /tabs -->",
+      "",
+    ].join("\n"),
     tabsRange(["macOS", "Windows"]),
   ].join("\n");
   await openPage(page, builtRoot);
@@ -176,6 +191,16 @@ test("test_normal_when_reloaded", async ({ page }) => {
   // 検証
   await expectSelected(tabGroup(page, 0), "Windows", ["macOS"]);
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
+  // 実行: URL の末尾に #macos-の注意 を付けて読み直し、同じ Markdown を描かせる
+  await page.evaluate(() => {
+    location.hash = "#macos-の注意";
+  });
+  await page.reload();
+  await page.waitForFunction(() => "mdmark" in window);
+  await mountDocument(page, { markdown });
+  // 検証: 覚えた Windows より URL の ID を優先し、macOS の見出しが画面に入っている
+  await expectSelected(tabGroup(page, 0), "macOS", ["Windows"]);
+  await expect(page.locator('#doc [id="macos-の注意"]')).toBeInViewport();
 });
 
 // localStorage が使えなくても、同じ組のタブを揃えて切り替える（異常シナリオ（選んだタブを覚えられない））

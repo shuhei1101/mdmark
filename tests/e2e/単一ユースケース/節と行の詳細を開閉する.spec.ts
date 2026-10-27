@@ -122,3 +122,61 @@ test("test_error_when_row_out_of_range", async ({ page }) => {
   await expect(page.getByText("詳細の段落")).toBeVisible();
   await expect(page.locator("#doc button.mdmark-row-toggle")).toHaveCount(0);
 });
+
+/** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表の Markdown */
+const FOLD_TABLE = [
+  "| 名前 | 状態 | 説明 |",
+  "| --- | --- | --- |",
+  "| りんご | 新規 | 描画を速くするために、見出しの ID を作る処理を 1 回にまとめる改善の説明 |",
+  "| みかん | 進行 | 印刷で折り畳みを開き、リンクの URL を併記して紙に収める変更の説明 |",
+  "| ぶどう | 完了 | 表の見出し行を画面の上端に留めて、縦に長い表を読みやすくする変更の説明 |",
+  "",
+].join("\n");
+
+// 最終列を畳んだ表の行の詳細は、開閉のボタン 1 つで、最終列の中身と行の詳細を一緒に開閉する（正常シナリオ（畳んだ最終列と行の詳細））
+test("test_normal_when_row_detail_with_collapsed_column", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPage(page, builtRoot, { hostCss: "body { margin: 0 }" });
+  await mountDocument(page, {
+    markdown: `${FOLD_TABLE}\n<!-- row-detail: 2 -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
+  });
+  const rows = page.locator(
+    "#doc tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty)",
+  );
+  await expect(rows).toHaveCount(3);
+  // 検証: 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
+  for (const row of await rows.all()) {
+    await expect(row.locator("button.mdmark-row-toggle")).toHaveCount(1);
+  }
+  const toggle = rows.nth(1).locator("button.mdmark-row-toggle");
+  const detail = rows.nth(1).locator("xpath=following-sibling::tr[1]");
+  await expect(detail).toBeHidden();
+  // 実行
+  await toggle.click();
+  // 検証: 2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示される
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(detail).toBeVisible();
+  await expect(detail.locator(".mdmark-fold-name")).toHaveText("説明");
+  await expect(detail.locator(".mdmark-fold-value")).toContainText(
+    "印刷で折り畳みを開き",
+  );
+  await expect(detail.locator("p", { hasText: "みかんの詳細" })).toBeVisible();
+  const order = await detail.evaluate((row) => {
+    const part = row.querySelector(".mdmark-fold-part");
+    const body = [...row.querySelectorAll("p")].find(
+      (p) => p.textContent === "みかんの詳細",
+    );
+    return Boolean(
+      part &&
+        body &&
+        part.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+  expect(order).toBe(true);
+  // 実行・検証: もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(detail).toBeHidden();
+  await expect(detail.locator(".mdmark-fold-part")).toBeHidden();
+});
