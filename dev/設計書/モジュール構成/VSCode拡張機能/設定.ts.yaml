@@ -1,5 +1,5 @@
 title: "VS Code 拡張機能 / 設定"
-lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・`features`・`libraries` の取り出し・雛形の作成。
+lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・`features`・`libraries`・`side-toc` の取り出し・雛形の作成。
 directory: |-
   ```tree
   vscode/src/
@@ -45,7 +45,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`side-toc`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -53,6 +53,9 @@ data_models:
       - name: libraries
         type: Record<string, unknown> | undefined
         description: 書いた値のまま。URL は呼ぶ側が直す（libraries の URL を直す）
+      - name: side-toc
+        type: Record<string, unknown> | undefined
+        description: 書いた値のまま（`mode` の知らない値は mdmark が `hover` で描く）
     status: planned
   - name: ConfigLoad
     title: 設定ファイルの読み取りの結果
@@ -194,7 +197,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries` を取り出す
+    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`side-toc` を取り出す
     scope: public
     args:
       - name: text
@@ -208,14 +211,14 @@ functions:
       1. `parse(text)` を呼ぶ
          - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
-      3. `features`・`libraries` のうち値がマップのキーだけを `config` に入れて返す。他のキーは読まない
+      3. `features`・`libraries`・`side-toc` のうち値がマップのキーだけを `config` に入れて返す。他のキーは読まない
     unit_tests:
       - name: test_parse_config
         case: 正常
-        summary: features と libraries だけを取り出す
-        condition: '`features: { callout: false }`・`libraries: { chart: ./chart.js }`・`theme: x`・`build: {}` の YAML'
+        summary: features・libraries・side-toc だけを取り出す
+        condition: '`features: { callout: false }`・`libraries: { chart: ./chart.js }`・`side-toc: { mode: fixed }`・`theme: x`・`build: {}` の YAML'
         mock: なし
-        expected: '`{ kind: "ok", config: { features: { callout: false }, libraries: { chart: "./chart.js" } } }`'
+        expected: '`{ kind: "ok", config: { features: { callout: false }, libraries: { chart: "./chart.js" }, "side-toc": { mode: "fixed" } } }`'
       - name: test_parse_config_when_not_map
         case: 正常
         summary: 最上位がマップでない・空・キーの値がマップでないときは渡さない

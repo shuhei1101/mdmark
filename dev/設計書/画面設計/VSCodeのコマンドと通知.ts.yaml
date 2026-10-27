@@ -42,7 +42,7 @@ elements:
     description: 「作る」で書く YAML。キーは書かず、書き方をコメントで示す
     label: |-
       ```yaml
-      # mdmark の設定。VS Code のプレビューは features と libraries を読みます
+      # mdmark の設定。VS Code のプレビューは features・libraries・side-toc を読みます
 
       # 機能のオン・オフ（使うときは次の 2 行の # を外す）
       # features:
