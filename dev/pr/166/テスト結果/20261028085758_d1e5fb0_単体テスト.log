@@ -1,0 +1,14 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-side-toc-and-section-folding
+
+
+ Test Files  152 passed (152)
+      Tests  1041 passed (1041)
+   Start at  08:56:52
+   Duration  42.88s (worker 39%, tests 38%, import 20%, transform 3%)
+
+unit_exit=0
