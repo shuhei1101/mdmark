@@ -314,6 +314,29 @@
           position: static;
         }
       }
+
+      /* ポインターを置けない端末（タッチ）: 右端の線の代わりに目次を出すボタンを置き、押すと目次の枠を本文に重ねて出す */
+      @media (hover: none) {
+        .mdmark-side-toc-toggle {
+          display: inline-grid;
+        }
+
+        .mdmark-side-toc-rail {
+          display: none;
+        }
+
+        &:is(:hover, :focus-within) .mdmark-side-toc-panel {
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        /* 目次の枠: ボタンの下に重ねる */
+        &[data-open] .mdmark-side-toc-panel {
+          inset-block-start: calc(2.25rem + 0.5rem);
+          opacity: 1;
+          pointer-events: auto;
+        }
+      }
     }
 
     /* fixed の出し方: 目次を出すボタンを出し、押すと目次の枠をサイドバーとして右の列に出し続ける */
@@ -342,6 +365,7 @@
         order: -1;
         z-index: 1;
         flex-basis: 100%;
+        min-width: 0;
         inset-block-start: var(--mdmark-sticky-top, 0px);
         padding-block: 0.25rem;
         background: var(--mdmark-color-bg);
@@ -384,7 +408,9 @@
           pointer-events: auto;
         }
 
+        /* 開いたとき: ポインターを置けない端末の hover の出し方でも帯の下に重ねる */
         &[data-open] .mdmark-side-toc-panel {
+          inset-block-start: calc(100% - 0.25rem);
           display: flex;
         }
 
