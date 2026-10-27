@@ -518,10 +518,10 @@ flows:
         M-->>C: HTML 文字列
       ```
     expected:
-      - '1 つ目のコードブロックが `<figure class="mdmark-code">` に入り、`<figcaption class="mdmark-code-title">app.ts</figcaption>` と、`aria-label="コード: app.ts"` と class `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` を持つ `pre` がある'
-      - '1 つ目の `code` が `style="--mdmark-code-digits:1"` を持ち、`data-line` が 1〜3 の `mdmark-code-line` が 3 つあり、1 行目が `data-kind="highlight"`・2 行目が `data-kind="add"`・3 行目が `data-kind="del"` を持つ'
+      - '1 つ目のコードブロックが `<figure class="mdmark-code">` に入り、`<figcaption class="mdmark-code-title mdmark-code-bar">` の中に言語 `ts` の `mdmark-code-lang` と題の文字 `app.ts` がこの順にあり、`aria-label="コード: app.ts"` と class `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` を持つ `pre` がある'
+      - 1 つ目の `code` が `style="--mdmark-code-digits:1"` を持ち、`data-line` が 1〜3 の `mdmark-code-line` が 3 つあり、1 行目が `data-kind="highlight"`・2 行目が `data-kind="add"`・3 行目が `data-kind="del"` を持つ
       - 2 行目の `mdmark-code-text` が `let count = 1;` で終わり（行末に空白が無い）、3 行目の `mdmark-code-text` が `foo(); // 消す` で終わる
-      - 2 つ目のコードブロックの 1 行目が `data-kind="highlight"` を持ち、`#` と `[!code highlight]` が無い。`pre` は `figure` に入らず、`mdmark-code-numbered`・`mdmark-code-signs` を持たない
+      - 2 つ目のコードブロックの 1 行目が `data-kind="highlight"` を持ち、`#` と `[!code highlight]` が無い。`pre` は `figure` に入らず `<div class="mdmark-code">` に入り、`mdmark-code-numbered`・`mdmark-code-signs` を持たない
       - 3 つ目のコードブロックが `mdmark-code-line` を持たず、`// [!code ++]` の文字のまま出ている
       - 文字列に `<!--` が無い
     test: test_normal_when_code_block_decorated
@@ -621,6 +621,75 @@ flows:
       - 文字列に `script` 要素が無い
       - Node とブラウザで同じ文字列を返す。期待する HTML 文字列をテストの固定値にし、Node の `render` と、ブラウザ（Chromium）で配布物の `render` を呼んだ結果がどちらもその値と等しい
     test: test_normal_when_avoided_term
+  - name: 正常系（コードブロックのラベル）
+    summary: 情報文字列の `言語:ファイル名` を言語とファイル名に分け、全てのコードブロックを帯で囲んで左端に言語とファイル名のラベルを置く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: ラベルを持つ Markdown
+        description: '情報文字列が `python:hoge.py` のコードブロック、`ts` のコードブロック、情報文字列の無いコードブロック、`:a.txt` のコードブロック、`tree:src` のコードブロック、`<!-- code: title=app.ts -->` の直後の `ts:src/app.ts` のコードブロックを持つ文書'
+        notes: '`opts` は渡さない（`code` は既定でオン）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 情報文字列を言語とファイル名に分ける
+        M->>M: コードブロックを帯で囲み、ラベルを置く
+        M-->>C: HTML 文字列
+    expected:
+      - '`python:hoge.py` のコードブロックが `<div class="mdmark-code">` に入り、`<div class="mdmark-code-bar">` の中に `mdmark-code-lang` があり、`aria-hidden="true"` を持つ `mdmark-code-lang-name` が `python`、`mdmark-code-file` が `hoge.py`。`code` の class が `language-python`、`pre` の `aria-label` が `コード: hoge.py`'
+      - '`ts` のコードブロックの帯に `mdmark-code-lang-name` `ts` があり `mdmark-code-file` が無く、`pre` の `aria-label` が `コード: ts`'
+      - 情報文字列の無いコードブロックと `:a.txt` のコードブロックが `mdmark-code` の帯を持ち、帯に `mdmark-code-lang` が無く、`pre` の `aria-label` が `コード`
+      - '`tree:src` のコードブロックがファイルツリーにならず、帯の `mdmark-code-lang-name` が `tree`、`mdmark-code-file` が `src` のコードブロックで出る'
+      - '題を持つコードブロックが `<figure class="mdmark-code">` に入り、`figcaption` の中に `mdmark-code-lang`（`ts` と `src/app.ts`）と題の文字 `app.ts` がこの順にあり、`pre` の `aria-label` が `コード: app.ts`'
+      - 文字列に `mdmark-code-copy` が無い（コピーのボタンは `mount` が付ける）
+    test: test_normal_when_code_block_labeled
+  - name: 正常系（空のバッジ）
+    summary: '`badge:` の後ろが空か空白だけの行内のコードを、空のバッジにせず `<code>` のまま出す'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 空のバッジを持つ Markdown
+        description: '`` `badge:` ``・`` `badge: ` ``・`` `badge:v1` `` を持つ段落の文書'
+        notes: '`opts` は渡さない'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 行内のコードの頭を読む
+        M-->>C: HTML 文字列
+    expected:
+      - '`<code>badge:</code>` と `<code>badge: </code>` があり、中身の空な `mdmark-badge` が無い'
+      - '`<span class="mdmark-badge">v1</span>` が 1 つある'
+    test: test_normal_when_badge_empty
+  - name: 正常系（数として読めないセルの集計）
+    summary: '`total` の表の `sum`・`avg` の列に数として読めないセルがあるとき、表の前に書き方の警告を置く'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 読めないセルを持つ表の Markdown
+        description: '`<!-- table: data +total total=数量:sum,単価:avg,名前:count -->` 〜 `<!-- /table -->` で、名前・数量・単価の 3 列 3 行の表を囲んだ文書'
+        notes: 数量の 2 行目は `約 3`、単価の 3 行目は空、名前の 1 行目は `-`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 集計する列のセルを数として読む
+        M-->>C: 表の前に書き方の警告を置いた HTML 文字列
+    expected:
+      - 表の `mdmark-table` の直前に `mdmark-syntax-warning` が 1 つだけあり、本文に列名 `数量` と値 `約 3` と `合計` がある
+      - 単価の空のセルと、`count` の名前の列の `-` は警告にならない
+      - '`mdmark-table` は `data-total="1:sum 2:avg 0:count"` を持つ'
+    test: test_normal_when_total_cell_not_number
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -691,7 +760,7 @@ constraints:
   - item: タブ
     constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの文字}</p>` に替え、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。`<!-- tabs: group=名前 -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない'
   - item: ステップ・ファイルツリー・バッジ
-    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<ul class="mdmark-tree" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする'
+    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<ul class="mdmark-tree" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
   - item: 見出しの ID とアンカー
     constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を足す
   - item: 目次
@@ -703,7 +772,7 @@ constraints:
   - item: 図と表の番号
     constraint: '`<!-- fig: {ID} -->` の直後の画像の段落と表を `<figure class="mdmark-figure" id="fig-{ID}">` に入れ、文書の頭から種類ごとに数えた番号を付ける。画像は下に `<figcaption class="mdmark-figure-caption"><b>図 {番号}</b>{画像の title}</figcaption>`、表は上に `<figcaption class="mdmark-figure-caption"><b>表 {番号}</b></figcaption>` を置く。本文の `#fig-{ID}` へのリンクの文字を、その図表の `図 {番号}`・`表 {番号}` に替える'
   - item: 書き手の誤り
-    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類・知らない集計の計算・`hide=` の先頭の列、`+total` の無い表の `total=`・`+columns` の無い表の `hide=` を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、タブの印の値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定（値の無い `group=` は組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリー、コードブロックの印の知らないキー・読めない `highlight=` の番号・コードブロックに無い行の番号、直後にコードブロックの無いコードブロックの印、知らないコードの行の印（`[!code focus]` など。その行には当てず、書いた文字のまま出す）では、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
+    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類・知らない集計の計算・`hide=` の先頭の列、`+total` の無い表の `total=`・`+columns` の無い表の `hide=` を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、タブの印の値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定（値の無い `group=` は組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリー、コードブロックの印の知らないキー・読めない `highlight=` の番号・コードブロックに無い行の番号、直後にコードブロックの無いコードブロックの印、知らないコードの行の印（`[!code focus]` など。その行には当てず、書いた文字のまま出す）、`total` の表の `sum`・`avg` の列にある空でなく数として読めないセル（読み方は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
     constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` 〜 閉じの印の範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み、形（`dist/index.d.ts` の `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`）を確かめて、`<figure class="mdmark-diagram" data-diagram="{種類}">` に題（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（箱の名前・補足・線のラベル・ツールチップの中身）は文字として出し、`{{語}}` はその語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に置き、拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter` で、棒と円は系列を色と塗りの模様の組、散布図は色と点の形の組で描き分け、円は扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。縦の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
@@ -736,12 +805,12 @@ constraints:
     constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、印の引数を読んだ指定を `data-view` に JSON（`group` は分ける列の位置か `null`、`mode` は `board`・`table`、`boardDisabled` は `group=` の列が表に無いときの書き方の警告の `id` か空、`icons` は読めた `icons=` の対応）で持たせ、中に範囲の表を記法の表と同じ形（`filter=` は表の `data-filter`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読む表示では表のまま読める。書き方の誤りは書き方の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
     notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューの印」
   - item: コードブロック
-    constraint: '`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読む。引数は `title=題`（題。印の引数は空白で区切るため題に空白は書けず、空白の後ろは別の引数として読む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類（`add`・`del`・`highlight`）として読んで印を外し、行コメントが印だけなら印の直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字のまま出す。行番号・強調・行の種類のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`add`・`del` の行を持てば `mdmark-code-signs` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を置く。題を持つコードブロックは `<figure class="mdmark-code">` に `<figcaption class="mdmark-code-title">{題}</figcaption>` と `pre` を入れ、`pre` の読み上げの名前を `コード: {題}` にする。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには当てない。印も行の印も持たないコードブロックは今のとおり描く。`code` がオフのときは印を取り除き、コードブロックを今のとおり描く（行の印は書いた文字のまま出す）'
+    constraint: 'コードブロックの情報文字列の最初の語を最初の `:` で分け、前を言語、後ろをファイル名として読み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を置く）。`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読む。引数は `title=題`（題。印の引数は空白で区切るため題に空白は書けず、空白の後ろは別の引数として読む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類（`add`・`del`・`highlight`）として読んで印を外し、行コメントが印だけなら印の直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字のまま出す。行番号・強調・行の種類のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`add`・`del` の行を持てば `mdmark-code-signs` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を置く。コードブロックを `<div class="mdmark-code">`（題を持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（題を持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を置く。帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を置き、題を持つときはその後ろに題の文字を置く。`pre` の読み上げの名前は、題を持てば `コード: {題}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。コピーのボタンは `mount` が帯の右端に付ける。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには当てない。印も行の印も持たないコードブロックは、帯で囲むほかは今のとおり描く。`code` がオフのときは印を取り除き、コードブロックを今のとおり描く（行の印は書いた文字のまま出す）'
     notes: 見た目はモック `dev/mock/components/code-block/`。題の前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、`mount` が描いた後に色分けした HTML に置き換える（制約『コードブロックの色分け』）
   - item: 元の行番号
     constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
     notes: 番号は markdown-it のトークンの `map` の開始の行で、VS Code のエディタの行番号（0 始まり）とそのまま比べられる。コードブロックの行の `data-line`（コードの中の 1 始まりの行番号）・図の線の `data-line`（線の種類）とは別の属性にする
   - item: コードブロックの色分け
-    constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"` を手掛かりに行う（文書に書いた生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
+    constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"`（言語は制約『コードブロック』の `:` の前）を手掛かりに行う（文書に書いた生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
     notes: '`render` を同期のまま保ち、外部ライブラリの印を `mount` だけが描く今の役割分担と揃える（要件.md の推奨案 A）。色分けの中身は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『色分けの対象』〜『色分けを読めないとき』'
 test_file: tests/integration/lib/render.test.ts
