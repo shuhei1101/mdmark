@@ -2185,9 +2185,300 @@ flows:
       - '`diff` と `patch` の `code` の中に `hljs-addition` と `hljs-deletion` の `span` があり、その文字の色の計算値がそれぞれ `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` の値'
       - '`[!code ++]` を付けた行の `mdmark-code-line` が `data-kind="add"` を持ち、その `mdmark-code-text` の中に `hljs-` で始まる `span` がある'
     test: test_normal_when_dockerfile_and_diff_highlighted
+  - name: 正常系（右側の目次をホバーで出してピン止めする）
+    summary: 右端の線にポインターを乗せると右側の目次を出し、項目で見出しへ移り、ピン止めで出し続ける
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 描く先の要素の幅は 1280px。`opts.config` は渡さない（出し方は既定の `hover`）
+      - name: 見出しを持つ Markdown
+        description: '`# 手引き`・`## 導入`・`### 前提`・`## 使い方` と、それぞれ画面の高さより長い段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 本文の列と、隠した右側の目次を置く
+        P->>M: 右端の線にポインターを乗せる
+        M->>P: 右側の目次を出す
+        P->>M: 「使い方」の項目を押す
+        M->>P: 「使い方」の見出しへ移る
+        P->>M: ピン止めのボタンを押し、ポインターを本文へ動かす
+        M->>P: 右側の目次を出し続ける
+        P->>M: ピン止めのボタンを押し直し、ポインターを本文へ動かす
+        M->>P: 右側の目次を隠す
+    expected:
+      - 描いた直後、`el` の子が `mdmark-content` と `mdmark-side-toc` で、右側の目次のパネルが透明でポインターを受けない
+      - パネルの `nav` が、`手引き` の下に `導入`（その下に `前提`）と `使い方` を入れ子にした項目を持ち、項目のリンクが `#手引き`・`#導入`・`#前提`・`#使い方` を指す
+      - 目次を出すボタンが表示されていない
+      - 右端の線にポインターを乗せた後、パネルが不透明で、上部にすべて展開・すべて折りたたむのボタンがある
+      - '`使い方` を押した後、`location.hash` が `#使い方` で、`使い方` の見出しが画面に入っている'
+      - ピン止めのボタンを押した後、`aria-pressed` が `true` で、ポインターを本文へ動かしてもパネルが不透明で、本文の列の右端がパネルの左端より左にある
+      - ピン止めのボタンを押し直した後、`aria-pressed` が `false` で、ポインターを本文へ動かすとパネルが透明になる
+    test: test_normal_when_side_toc_hovered_and_pinned
+  - name: 正常系（右側の目次をキーボードで出す）
+    summary: '`hover` の右側の目次を、フォーカスが入っている間だけ出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+      - name: 見出しを持つ Markdown
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: Tab でフォーカスを右側の目次の項目へ移す
+        M->>P: 右側の目次を出す
+        P->>M: Enter で「使い方」を押す
+        M->>P: 「使い方」の見出しへ移る
+        P->>M: フォーカスを右側の目次の外へ移す
+        M->>P: 右側の目次を隠す
+    expected:
+      - フォーカスが項目に入った後、パネルが不透明
+      - Enter で `使い方` を押した後、`location.hash` が `#使い方` で、`使い方` の見出しが画面に入っている
+      - フォーカスが右側の目次の外へ出た後、パネルが透明
+    test: test_normal_when_side_toc_focused
+  - name: 正常系（右側の目次をサイドバーで出す）
+    summary: '`fixed` では目次を出すボタンで、右側の目次を本文に重ねず右の列に出し続ける'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+        notes: '`opts.config` は `{ "side-toc": { "mode": "fixed" } }`'
+      - name: 見出しを持つ Markdown
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: 本文の列と、目次を出すボタンを置く
+        P->>M: 目次を出すボタンを押す
+        M->>P: 右側の目次を右の列に出す
+        P->>M: パネルの中で Esc を押す
+        M->>P: 右側の目次を隠し、目次を出すボタンへフォーカスを戻す
+    expected:
+      - 描いた直後、目次を出すボタンが `aria-expanded="false"` とパネルの `id` を指す `aria-controls` を持ち、右端の線が無く、パネルが出ていない
+      - 目次を出すボタンを押した後、`aria-expanded` が `true` で、パネルが出て、本文の列の右端がパネルの左端より左にある
+      - パネルの項目にフォーカスして Esc を押した後、パネルが出ておらず、`aria-expanded` が `false` で、フォーカスが目次を出すボタンにある
+    test: test_normal_when_side_toc_fixed
+  - name: 正常系（今いる節をハイライトする）
+    summary: スクロールの位置で今いる節を決め、その項目と右端の線だけをハイライトする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+      - name: 見出しを持つ Markdown
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い。スクロールは `window.scrollTo` で見出しを画面の上端に合わせ、次の描画まで待つ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 「手引き」の項目をハイライトする
+        P->>M: 「使い方」の見出しまでスクロールする
+        M->>P: 「使い方」の項目をハイライトする
+        P->>M: 「前提」の見出しまで戻る
+        M->>P: 「前提」の項目をハイライトする
+    expected:
+      - 描いた直後、`手引き` の項目のリンクだけが `aria-current="location"` を持ち、右端の線は `手引き` の線だけが `data-current` を持つ
+      - '`使い方` の見出しまでスクロールした後、`使い方` の項目だけが `aria-current` を持つ'
+      - '`前提` の見出しまで戻った後、`前提` の項目だけが `aria-current` を持つ'
+    test: test_normal_when_current_section_highlighted
+  - name: 正常系（右側の目次から閉じた節の中へ移る）
+    summary: 閉じた節の中の見出しの項目を押すと、節を開いてから移る。URL が変わらないときも同じ
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+      - name: 閉じた節の中に見出しを持つ Markdown
+        description: '`## 概要` と画面の高さより長い段落、`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` と段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 右側の目次の「注意」を押す
+        M->>P: 補足の節を開いてから「注意」の見出しへ移る
+        P->>M: 補足の節を閉じ、「注意」をもう一度押す
+        M->>P: 補足の節を開いてから「注意」の見出しへ移る
+    expected:
+      - 右側の目次に、閉じた節の中の `注意` の項目がある
+      - '`注意` を押した後、`補足` の開閉のボタンの `aria-expanded` が `true` で、`location.hash` が `#注意` で、`注意` の見出しが画面に入っている'
+      - '`補足` を閉じてから `注意` をもう一度押した後（URL は変わらない）も、`補足` の `aria-expanded` が `true` で、`注意` の見出しが画面に入っている'
+    test: test_normal_when_side_toc_into_closed_section
+  - name: 正常系（すべて展開・すべて折りたたむ）
+    summary: H1 を含む全ての節を開き、H1 の節を開いたまま H2 以下の全ての節を閉じる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+        notes: ボタンを押す前に、右端の線にポインターを乗せてパネルを出す
+      - name: 入れ子の節を持つ Markdown
+        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` とその直後の `<!-- section: closed -->` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: H1 と H2 以下の見出しに開閉のボタンを付け、補足・注意・付録を閉じる
+        P->>M: すべて展開を押す
+        M->>P: 全ての節を開く
+        P->>M: すべて折りたたむを押す
+        M->>P: H1 の節を開いたまま、H2 以下の全ての節を閉じる
+    expected:
+      - 描いた直後、`手引き`・`付録` の `h1` が開閉のボタンを持ち、`付録` の `mdmark-section-body` が `hidden="until-found"` を持つ
+      - すべて展開とすべて折りたたむのボタンはパネルの項目の一覧より前にあり、文字を持たず、`aria-label` と `title` を持つ
+      - すべて展開を押した後、全ての開閉のボタンの `aria-expanded` が `true` で、`注意` と `付録` の段落が表示されている
+      - すべて折りたたむを押した後、`手引き`・`付録` の `aria-expanded` が `true`、`概要`・`補足`・`注意` が `false` で、`概要` の見出しが表示され `概要` の段落が表示されていない
+      - どちらを押した後も、フォーカスが押したボタンに残っている
+    test: test_normal_when_all_sections_toggled
+  - name: 正常系（Shift で入れ子をまとめて開閉）
+    summary: Shift を押しながらの押下と Enter・Space で、その節と中の入れ子の節を同じ状態にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 入れ子の閉じた節を持つ Markdown
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` とその直後の `<!-- section: closed -->`、さらにその中の `#### 例` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: Shift を押しながら補足の開閉を押す
+        M->>P: 補足・注意・例を開く
+        P->>M: 補足の開閉のボタンで Shift と Enter を押す
+        M->>P: 補足・注意・例を閉じる
+        P->>M: 補足の開閉のボタンで Shift と Space を押す
+        M->>P: 補足・注意・例を開く
+        P->>M: Shift を押さずに補足の開閉を押す
+        M->>P: 補足だけを閉じる
+    expected:
+      - Shift を押しながら `補足` の開閉を押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `true` で、`例` の段落が表示されている
+      - Shift と Enter を押した後、`補足`・`注意`・`例` の `aria-expanded` が `false`
+      - Shift と Space を押した後、`補足`・`注意`・`例` の `aria-expanded` が `true`
+      - Shift を押さずに `補足` を押した後、`補足` の `aria-expanded` だけが `false` になり、`注意`・`例` は `true` のまま
+      - '`概要` の `aria-expanded` はどの操作の後も `true`'
+    test: test_normal_when_nested_sections_toggled_with_shift
+  - name: 正常系（狭い幅の右側の目次）
+    summary: 描く先の要素が狭いとき、本文の上端の帯から右側の目次を開き、項目を押すと閉じる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 画面と描く先の要素の幅は 390px。`opts.config` は渡さない
+      - name: 見出しを持つ Markdown
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 本文の上端に、今いる節の見出しと目次を出すボタンの帯を置く
+        P->>M: 目次を出すボタンを押す
+        M->>P: 帯の下に右側の目次を開く
+        P->>M: 「使い方」の項目を押す
+        M->>P: 右側の目次を閉じ、「使い方」の見出しへ移る
+    expected:
+      - 描いた直後、本文の上端に帯があり、帯に文字 `手引き` と目次を出すボタン（`aria-expanded="false"`）があり、右端の線が表示されていない
+      - ページに横スクロールが出ておらず、本文の段落がパネルに覆われていない
+      - 目次を出すボタンを押した後、`aria-expanded` が `true` で、パネルの上端が帯の下端より下にあり、パネルの幅が描く先の要素の幅に収まっている
+      - '`使い方` を押した後、`aria-expanded` が `false` で、`使い方` の見出しの上端が帯の下端より下にあって画面に入っており、帯の文字が `使い方`'
+    test: test_normal_when_side_toc_in_narrow_width
+  - name: 正常系（右側の目次を描き直して片付ける）
+    summary: '`update` で項目を作り直してピン止めを保ち、`destroy` で右側の目次と見出しの監視を外し、もう一度の `mount` はピン止めを外して始める'
+    setup:
+      - name: 文書を描いた要素
+        description: 正常系（右側の目次をホバーで出してピン止めする）の Markdown を `mount` で描き、ピン止めのボタンを押した要素
+      - name: 差し替える Markdown
+        description: 見出し `## 新しい節` と段落だけを持つ文書
+      - name: Mock
+        description: '`IntersectionObserver` を、`disconnect` の呼び出しを数える関数で包む'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: update(markdown)
+        M->>P: 右側の目次の項目を作り直し、ピン止めを保つ
+        P->>M: destroy()
+        M->>M: 右側の目次と見出しの監視を外す
+        P->>M: mount(el, { markdown })
+        M->>P: ピン止めを外した右側の目次を置く
+    expected:
+      - '`update` の後、右側の目次の項目が `新しい節` だけで、前の見出しの項目が残っておらず、ピン止めのボタンの `aria-pressed` が `true` のまま'
+      - '`update` の後、`mdmark-content` の中に前の本文の段落が残っていない'
+      - '`destroy` の後、`el` の中が空で、`disconnect` が呼ばれ、`window` をスクロールしても例外が出ない'
+      - もう一度 `mount` した後、ピン止めのボタンの `aria-pressed` が `false`
+    test: test_normal_when_side_toc_updated_and_destroyed
+  - name: 正常系（右側の目次を置かない）
+    summary: 見出しの無い文書と `side-toc` がオフの文書では右側の目次を置かず、文書のマーカーでオンにした文書では置く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。文書ごとに別の要素へ描く
+      - name: 見出しの無い Markdown
+        description: 段落だけを持つ文書
+      - name: 右側の目次を外す Markdown
+        description: '先頭に `<!-- features: -side-toc -->` を持ち、`## 導入`・`## 使い方` と段落を持つ文書'
+      - name: 右側の目次を追加する Markdown
+        description: '先頭に `<!-- features: +side-toc -->` を持ち、`## 導入`・`## 使い方` と段落を持つ文書'
+        notes: '`opts.config` は `{ "features": { "side-toc": false } }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el1, { markdown: 見出しの無い文書 })
+        M->>P: 本文だけを描く
+        P->>M: mount(el2, { markdown: -side-toc の文書 })
+        M->>P: 本文だけを描く
+        P->>M: mount(el3, { markdown: +side-toc の文書, config })
+        M->>P: 本文の列と右側の目次を置く
+    expected:
+      - 見出しの無い文書の要素に `mdmark-side-toc` も `mdmark-content` も無く、段落が要素の子
+      - '`-side-toc` の文書の要素に `mdmark-side-toc` が無く、見出しのアンカーと節の開閉のボタンはある'
+      - '`+side-toc` の文書の要素に `mdmark-side-toc` があり、項目が `導入`・`使い方`'
+      - どの文書の本文にもマーカーの文字が出ていない
+    test: test_normal_when_side_toc_not_placed
+  - name: 異常系（知らない出し方・既定の出し方）
+    summary: 知らない `side-toc.mode` は例外を投げず `hover` として描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+        notes: '`opts.config` は `{ "side-toc": { "mode": "left" } }`'
+      - name: 見出しを持つ Markdown
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>M: 知らない出し方を hover にする
+        M->>P: 本文の列と、隠した右側の目次を置く
+        P->>M: 右端の線にポインターを乗せる
+        M->>P: 右側の目次を出す
+    expected:
+      - '`mount` が例外を投げず、文書が描かれている'
+      - 描いた直後、パネルが透明で、目次を出すボタンが表示されていない
+      - 右端の線にポインターを乗せた後、パネルが不透明
+    test: test_error_when_unknown_side_toc_mode
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -2238,7 +2529,7 @@ request:
     default: '`comments` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`anchors`・`sections`・`row-details`・`figures`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -2302,6 +2593,13 @@ request:
     constraints: 末尾は `/`。URL はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる
     example: '"/vendor/highlightjs/es/"'
     notes: 印の名前の対応表 `libraries` とは分け、文書に `<!-- syntax -->` のような印を書かせない
+  - name: opts.config.side-toc.mode
+    type: '"hover" | "fixed"'
+    required: false
+    default: '`hover`'
+    location: argument
+    description: 右側の目次の出し方。`hover` は右端にポインターかフォーカスがある間だけ出し、`fixed` は目次を出すボタンで出し続ける
+    notes: 他の値は無視して `hover` にする。`side-toc` がオフのときは使わない
 request_example: |-
   ```json
   {
@@ -2348,6 +2646,9 @@ exceptions:
   - name: なし（色分けなし）
     condition: 色分けのライブラリの本体か言語のモジュールを読めない
     notes: 例外を投げず、読めなかった分のコードブロックを色分けせずに残す。URL と元のエラーを `console.error` に出す
+  - name: なし（既定の出し方）
+    condition: '`opts.config.side-toc.mode` が `hover`・`fixed` のどちらでもない'
+    notes: 例外を投げず、`hover` として描く
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -2492,4 +2793,23 @@ constraints:
   - item: URL の ID でタブの中へ移る
     constraint: URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` した ID（読めないときはそのまま）が、選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指すとき（描いたときと `hashchange`）、外側のタブから順にその要素を含むタブを選び、外側の閉じた節を開いてから要素へスクロールする。見出し・表の行を含め、`id` を持つ全ての要素に当てる。描いたときは localStorage に残したタブ名より URL の ID を優先する。URL の ID で選んだタブは localStorage に残さず、同じ `group` のほかのタブ群も切り替えない
     notes: '`src/interact/sections.ts` の `revealHashTarget` は、タブの中の要素の処理をタブの操作に任せる（受付判断のレビュー）'
+  - item: 右側の目次
+    constraint: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき、`el` の中を、本文（`render` の HTML）を入れた `div.mdmark-content` と、その右の `aside.mdmark-side-toc` に分ける。`aside` には、右端の線（見出しごとの短い線。`aria-hidden`）・目次を出すボタン・パネル（`nav`。タイトル `目次`・ピン止めのボタン・すべて展開とすべて折りたたむのボタン・項目の一覧）を置く。項目は h1〜h3 の見出しを階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクで、閉じた節と選ばれていないタブの中の見出しも載せる。見出しが無いか `side-toc` がオフのときは分けず、`el` の中は本文だけにする。`--mdmark-content-width` は本文の列に当てる。印刷では `aside` を出さず、本文の列を紙の幅いっぱいに出す'
+    notes: 読み上げ名・ボタンの文言・アイコンは画面設計『文書』と部品設計。本文の中の目次（`<!-- toc -->`）と読み上げ名を分けるかは画面設計で決める
+  - item: 右側の目次の出し方
+    constraint: '`side-toc.mode` が `hover` のとき、パネルは隠して置き（透明にしてポインターを受けない。Tab では項目へ移れる）、右端の線にポインターを乗せている間と、パネルの中にフォーカスがある間だけ出す。ピン止めのボタン（`aria-pressed`）を押すと、ポインターとフォーカスが外れても出し続け、パネルを本文に重ねず右の列に置く。押し直すと外す。ポインターを乗せられない端末（`hover: none`）では、右端の線の代わりに目次を出すボタンを置く。`fixed` のときは右端の線を置かず、目次を出すボタン（三点リーダーのアイコン・`aria-expanded`・`aria-controls`）を押すとパネルを右の列に出し続け、押し直すと隠す。目次を出すボタンで出したパネルの中にフォーカスがある間の Esc は、パネルを隠してフォーカスを目次を出すボタンへ戻す。ピン止めと目次を出すボタンの状態は保存せず、`mount` のたびに外した状態で始め、`update` では保つ'
+    notes: ピン止めで右の列に置くのと、ポインターを乗せられない端末のボタンは、モック作成で案 A に決定（確認ログ）
+  - item: 狭い幅の右側の目次
+    constraint: 描く先の要素の幅が 48rem 未満のとき、出し方によらず右端の線を置かず、本文の上端の `--mdmark-sticky-top` の位置に留める帯に、今いる節の見出しの文字と目次を出すボタンを置く。目次を出すボタンを押すと、パネルを帯の下に本文へ重ねて開き、幅は描く先の要素に収める。パネルの項目を押すとパネルを隠す。見出しへ移ったときは、見出しが帯に覆われない位置までスクロールする
+    notes: 境目と出し方はモック作成で案 A に決定（確認ログ）。幅はコンテナクエリで判定するため、コンテナクエリを持たないブラウザ（Chrome 105・Firefox 110 未満。対応ブラウザの下限は Chrome 99・Firefox 98）では帯を出さず、広い幅の出し方になることを許す
+  - item: 今いる節
+    constraint: 画面の上端から高さの 25% の線より上にある最後の見出し（線より上に無いときは画面にある最初の見出し）を今いる節にし、その項目のリンクに `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、狭い幅の帯にその見出しの文字を出す。閉じた節と選ばれていないタブの中の見出しは数えない。見出しが線を越えたとき（`IntersectionObserver`）・節の開閉・タブの切り替え・`hashchange` のたびに決め直し、スクロールのたびに全ての見出しを測らない
+  - item: 右側の目次から移る
+    constraint: 項目を押すと、URL の `#ID` で移るとき（制約の「節と行の詳細の開閉」「URL の ID でタブの中へ移る」）と同じく、外側の閉じた節を開き、選ばれていないタブを選んでから見出しへ移り、URL の `#` の後ろを見出しの ID にする。URL がすでにその ID のとき（`hashchange` が起きない）も、同じく開いてから移る
+  - item: すべて展開・すべて折りたたむ
+    constraint: '`sections` がオンで文書に節が 1 つ以上あるとき、右側の目次のパネルの上部に、文字を持たずアイコンと `aria-label`・`title` を持つ、すべて展開とすべて折りたたむのボタンを置く。すべて展開は文書の全ての節（h1〜h4）を開き、すべて折りたたむは h1 の節を開いて h2〜h4 の全ての節を閉じる。開閉のボタンの `aria-expanded` を合わせ、フォーカスは押したボタンに残す'
+    notes: アイコンだけにするのと H1 の節を閉じないのは確認ログの決定
+  - item: 入れ子をまとめて開閉
+    constraint: Shift を押しながら節の開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンにフォーカスして Shift を押しながら Enter・Space を押したとき（ボタンの `keydown` の `shiftKey`。既定の動きを止め、`click` を起こさない）、その節を今と逆の状態にし、中の入れ子の全ての節を同じ状態にする。外側の節とほかの節は変えない
+    notes: Firefox ではキーで押した `click` の `shiftKey` が立たないため、キーは `keydown` で受ける（計画書）
 test_file: tests/integration/lib/mount.browser.test.ts
