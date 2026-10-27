@@ -403,21 +403,34 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 言語のラベルとコピーボタン（題の無いコードブロックにも帯を作る。案 A: コードの上の帯） -->
+      <!-- 言語のラベルとコピーボタン（題の無いコードブロックにも帯を作り、左端に言語のラベル、右端にコピーボタンを置く） -->
       <section aria-labelledby="bar-label">
-        <h2 class="catalog-label" id="bar-label">言語のラベルとコピーボタン（題の無いコードブロックにも帯を作る。案 A: コードの上の帯）</h2>
+        <h2 class="catalog-label" id="bar-label">言語のラベルとコピーボタン（題の無いコードブロックにも帯を作り、左端に言語のラベル、右端にコピーボタンを置く）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>
         </article>
       </section>
 
-      <!-- 言語のラベルとコピーボタン（案 B: コードの右上に重ねる） -->
-      <section aria-labelledby="bar-overlay">
-        <h2 class="catalog-label" id="bar-overlay">言語のラベルとコピーボタン（案 B: コードの右上に重ねる）</h2>
+      <!-- 言語とファイル名のラベル（情報文字列 python:hoge.py。: の前の python で色分けし、ラベルに言語とファイル名を並べる） -->
+      <section aria-labelledby="bar-file-name">
+        <h2 class="catalog-label" id="bar-file-name">言語とファイル名のラベル（情報文字列 python:hoge.py。: の前の python で色分けし、ラベルに言語とファイル名を並べる）</h2>
         <article class="mdmark">
-<pre tabindex="0" aria-label="コード: bash" data-mock-placement="overlay"><code class="language-bash">npx mdmark check
-npx mdmark build --out dist/stock.html</code></pre>
+<pre tabindex="0" aria-label="コード: python"><code class="language-python:hoge.py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">total</span>(<span class="hljs-params">rows</span>):
+    <span class="hljs-string">&quot;&quot;&quot;在庫の数を合計する。&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(row[<span class="hljs-string">&quot;count&quot;</span>] <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows)</code></pre>
+        </article>
+      </section>
+
+      <!-- 題と言語のラベル（code の印 title=app.ts と言語 ts。左端に言語のラベル、続けて題を置く） -->
+      <section aria-labelledby="bar-title">
+        <h2 class="catalog-label" id="bar-title">題と言語のラベル（&lt;!-- code: title=app.ts --&gt; と言語 ts。左端に言語のラベル、続けて題を置く）</h2>
+        <article class="mdmark">
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre tabindex="0" aria-label="コード: app.ts"><code class="language-ts"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;
+<span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</code></pre>
+</figure>
         </article>
       </section>
 

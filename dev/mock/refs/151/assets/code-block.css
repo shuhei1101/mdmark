@@ -4,14 +4,14 @@
 /* mdmark の層: コードブロックの帯 */
 @layer mdmark {
   .mdmark {
-    /* コードブロックの帯: 左に題（題の無いコードブロックは空）、右に言語のラベルとコピーボタンを置く */
+    /* コードブロックの帯: 左端に言語のラベル、続けて題（題の無いコードブロックは無し）、右端にコピーボタンを置く */
     .mdmark-code-bar {
       min-height: 2rem;
       padding-block: 0.15em;
-      padding-inline-end: 0.35em;
+      padding-inline: 0.5em 0.35em;
     }
 
-    /* 帯の右の塊: 題が長くても右端に寄せ、折り返さない */
+    /* 帯の右の塊（コピーボタンと読み上げの知らせ）: 題が長くても右端に寄せ、折り返さない */
     .mdmark-code-meta {
       display: inline-flex;
       flex: none;
@@ -20,12 +20,35 @@
       margin-inline-start: auto;
     }
 
-    /* 言語のラベル: 情報文字列の最初の語を控えめの色で出す */
+    /* 言語のラベル: 帯の左端に置く小さな札。言語とファイル名を並べ、選んだ文字には入れない */
     .mdmark-code-lang {
-      color: var(--mdmark-color-muted);
+      display: inline-flex;
+      flex: 0 1 auto;
+      align-items: center;
+      min-width: 0;
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
       font-family: var(--mdmark-font-mono);
       font-size: 0.75rem;
+      line-height: 1.5;
       user-select: none;
+    }
+
+    /* ラベルの言語: 控えめの色で出す */
+    .mdmark-code-lang-name {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* ラベルのファイル名: 言語の後ろに細い縦線で区切り、本文の色で出す。長い名前は折り返す */
+    .mdmark-code-file {
+      min-width: 0;
+      margin-inline-start: 0.5em;
+      padding-inline-start: 0.5em;
+      border-inline-start: 1px solid var(--mdmark-color-border);
+      color: var(--mdmark-color-text);
+      overflow-wrap: anywhere;
     }
 
     /* コピーボタン: 枠を持たない小さなボタン。押せる大きさは 24px 以上を取る */
@@ -73,31 +96,6 @@
       /* コピーできなかった: エラーの色で知らせる */
       &[data-state="failed"] {
         color: var(--mdmark-color-error);
-      }
-    }
-
-    /* 比べる案 B（コードの右上に重ねる）: 帯を作らず、題の無いコードブロックの右上にラベルとボタンを載せる */
-    .mdmark-code[data-mock-placement="overlay"] {
-      position: relative;
-
-      .mdmark-code-bar {
-        position: absolute;
-        inset-block-start: 0.25em;
-        inset-inline-end: 0.25em;
-        z-index: 1;
-        min-height: 0;
-        padding: 0;
-        border: 0;
-        background: none;
-      }
-
-      .mdmark-code-bar + pre {
-        border-start-start-radius: var(--mdmark-radius);
-        border-start-end-radius: var(--mdmark-radius);
-      }
-
-      .mdmark-code-copy {
-        background: var(--mdmark-color-surface);
       }
     }
 

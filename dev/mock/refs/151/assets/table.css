@@ -89,6 +89,13 @@
       inset-block-end: calc(1px - var(--mdmark-mock-foot-reach, 0px));
     }
 
+    /* 狭い画面の集計の行のセル: 下端に留めた行が本文の行を覆う高さを減らすため、上下の余白を詰める */
+    @media (max-width: 768px) {
+      .mdmark-table tfoot td {
+        padding-block: 0.2em;
+      }
+    }
+
     /* 集計の行の先頭のセルの計算の名前（合計・平均・件数）: 行の見出しとして太字にする */
     .mdmark-total-name {
       color: var(--mdmark-color-heading);

@@ -1,8 +1,9 @@
 // コードブロックの言語のラベルとコピーボタン（実装の mount が付ける振る舞いのモック）。
-// 描いた文書の直下のコードブロック（pre）に、題の帯（題があれば題・言語のラベル・コピーボタン）を付ける。
-// 言語は code の class（language-*）を情報文字列の最初の語として読む。埋め込んだ HTML・図の中の pre には付けない。
+// 描いた文書の直下のコードブロック（pre）に、題の帯（左端に言語のラベル、続けて題、右端にコピーボタン）を付ける。
+// 言語は code の class（language-*）を情報文字列の最初の語として読み、`言語:ファイル名` の形なら : の前を言語、後ろをファイル名にする。
+// 埋め込んだ HTML・図の中の pre には付けない。
 // モックだけの指定: html の data-mock-clipboard="fail"（クリップボードに書けなくする）、
-// コードブロックの data-mock-copy（"copied" / "failed" の知らせを出したまま見せる）・data-mock-placement（"overlay" でコードの右上に重ねる案）
+// コードブロックの data-mock-copy（"copied" / "failed" の知らせを出したまま見せる）
 
 // sample.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -57,7 +58,9 @@
   for (const pre of document.querySelectorAll(".mdmark pre")) {
     // 埋め込んだ HTML・図・差分の中の pre には付けない
     if (pre.closest(".mdmark-embed, .mdmark-diagram, .mdmark-diff")) continue;
-    const language = [...pre.querySelector("code")?.classList ?? []].find((name) => name.startsWith("language-"))?.slice("language-".length);
+    const info = [...pre.querySelector("code")?.classList ?? []].find((name) => name.startsWith("language-"))?.slice("language-".length);
+    // 情報文字列の最初の語: 最初の : の前を言語、後ろをファイル名にする
+    const [language, fileName] = info?.includes(":") ? [info.slice(0, info.indexOf(":")), info.slice(info.indexOf(":") + 1)] : [info, ""];
     // 題の帯: 題を持つコードブロックは題の行を帯にし、持たないコードブロックは帯を作ってコードブロックを囲む
     let block = pre.closest(".mdmark-code");
     let bar = block?.querySelector(".mdmark-code-title");
@@ -65,7 +68,6 @@
       const holder = document.createElement("div");
       holder.className = "mdmark-code";
       if (pre.dataset.mockCopy) holder.dataset.mockCopy = pre.dataset.mockCopy;
-      if (pre.dataset.mockPlacement) holder.dataset.mockPlacement = pre.dataset.mockPlacement;
       pre.before(holder);
       bar = document.createElement("div");
       bar.className = "mdmark-code-title";
@@ -73,10 +75,16 @@
       block = holder;
     }
     bar.classList.add("mdmark-code-bar");
+    // 言語のラベル: 帯の左端に置く。言語の読み上げは pre の名前が持つので重ねず、ファイル名だけを読ませる。選んだ文字には入れない
+    if (language) {
+      const label = document.createElement("span");
+      label.className = "mdmark-code-lang";
+      label.innerHTML = `<span class="mdmark-code-lang-name" aria-hidden="true">${language}</span>${fileName ? `<span class="mdmark-code-file">${fileName}</span>` : ""}`;
+      bar.prepend(label);
+    }
     const meta = document.createElement("span");
     meta.className = "mdmark-code-meta";
-    // 言語のラベル: 情報文字列の最初の語をそのまま出す。読み上げは pre の名前が持つので重ねず、選んだ文字にも入れない
-    meta.innerHTML = `${language ? `<span class="mdmark-code-lang" aria-hidden="true">${language}</span>` : ""}<button class="mdmark-code-copy" type="button" data-state="idle"></button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span>`;
+    meta.innerHTML = `<button class="mdmark-code-copy" type="button" data-state="idle"></button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span>`;
     bar.append(meta);
     setState(block, "idle");
     meta.querySelector(".mdmark-code-copy").addEventListener("click", () => copyCode(block, pre));

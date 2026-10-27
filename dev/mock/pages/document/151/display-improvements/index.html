@@ -148,6 +148,9 @@ npx mdmark build --out dist/stock.html</code></pre>
  features:
 <span class="hljs-deletion">-  copy: false</span>
 <span class="hljs-addition">+  copy: true</span></code></pre>
+<p>在庫の数を合計する処理です。</p>
+<pre tabindex="0" aria-label="コード: python"><code class="language-python:stock.py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">total</span>(<span class="hljs-params">rows</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(row[<span class="hljs-string">&quot;count&quot;</span>] <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows)</code></pre>
 <p>今朝の点検の記録です。</p>
 <pre tabindex="0" aria-label="コード"><code>08:30 第一倉庫 点検済み
 09:10 冷蔵室 点検済み</code></pre>
