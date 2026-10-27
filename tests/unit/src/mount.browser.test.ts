@@ -136,8 +136,8 @@ test("test_mount_when_remounted", async () => {
   // 実行
   first.update("# C");
   // 検証
-  expect(el.children).toHaveLength(1);
-  expect(el.querySelector("h1")?.textContent).toBe("B");
+  expect(el.querySelectorAll(":scope > .mdmark-content")).toHaveLength(1);
+  expect(el.querySelector(".mdmark-content h1")?.textContent).toBe("B");
 });
 
 // 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない（正常系）
