@@ -5,7 +5,7 @@
 @layer mdmark {
   .mdmark {
     /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（案 D のアニメーションと案 C のずれを外す） */
-    .mdmark-table :is(thead th, tfoot td) {
+    .mdmark-table:is(.is-sticky-timeline, .is-sticky-shift) :is(thead th, tfoot td) {
       animation: none;
       transform: none;
     }
