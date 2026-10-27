@@ -28,6 +28,34 @@ export function ownBlock(
   return token;
 }
 
+/** タブの中身の境目: タブの先頭（`start`）・中身の間（`between`）・タブの終わり（`end`） */
+export type TabBoundary = "start" | "between" | "end";
+
+/** タブの中身の境目として `ownBlock` に付ける `meta` のキー */
+const TAB_BOUNDARY_KEY = "tabBoundary";
+
+/** `ownBlock` と同じ HTML のトークンに、タブの中身の境目の目印を付ける */
+export function tabBoundaryBlock(options: {
+  state: StateCore;
+  html: string;
+  boundary: TabBoundary;
+  source?: Token | undefined;
+}): Token {
+  const token = ownBlock(options.state, options.html, options.source);
+  token.meta = { [TAB_BOUNDARY_KEY]: options.boundary };
+  return token;
+}
+
+/** タブの中身の境目のトークンなら、その境目を返す */
+export function tabBoundaryOf(
+  token: Token | undefined,
+): TabBoundary | undefined {
+  const meta = token?.meta as Record<string, unknown> | null | undefined;
+  return token?.type === "html_block"
+    ? (meta?.[TAB_BOUNDARY_KEY] as TabBoundary | undefined)
+    : undefined;
+}
+
 /** 印のトークンなら、その印を返す */
 export function markOf(token: Token | undefined): Mark | undefined {
   return token?.type === MARK_TOKEN ? (token.meta as Mark) : undefined;
