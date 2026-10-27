@@ -345,7 +345,7 @@ scenarios:
         M-->>P: 言語の指定があるコードブロックに言語のラベルを付けて描く
         P-->>U: 文書を表示
     expected:
-      - 1 つ目のコードブロックにラベル `ts`、2 つ目にラベル `bash`（情報文字列の最初の語）が出ている
+      - 1 つ目のコードブロックにラベル `ts`、2 つ目にラベル `bash`（情報文字列の最初の語）が、コードの上の帯の左端に出ている
       - 言語の無い 3 つ目のコードブロックにラベルが無い
       - コードブロックの文字を全て選んだときの選んだ文字に、ラベルが入っていない
       - 'コードブロックの読み上げの名前は今のまま（`コード: {言語}`）'
@@ -432,6 +432,27 @@ scenarios:
       - ボタンの文言でコピーできなかったことが知らされ、読み上げでも知らされる
       - コードブロックの文字はそのまま選んで手でコピーできる
     test: test_error_when_clipboard_denied
+  - name: 正常シナリオ（言語とファイル名をラベルに出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 言語とファイル名を持つ Markdown
+        description: 情報文字列が `python:hoge.py` のコードブロックと、`ts` のコードブロックを置いた文書
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 情報文字列の : の前を言語、後ろをファイル名としてラベルに出して描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目のコードブロックの上の帯の左端に、言語 `python` とファイル名 `hoge.py` を並べたラベルが出ている
+      - 1 つ目のコードブロックの中身が言語 `python` として色分けされている
+      - 2 つ目のコードブロックの上の帯の左端に、ラベル `ts` だけが出ている
+    test: test_normal_when_language_and_file_name_label_shown
 lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。言語の指定があれば言語のラベルを出し、読む人はコピーボタンで変更後のコードをコピーする。'
 issue: 25
 primary_actor: 文書を書く人
