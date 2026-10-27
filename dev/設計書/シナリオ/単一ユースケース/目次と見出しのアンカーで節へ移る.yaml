@@ -91,7 +91,209 @@ scenarios:
       - URL の `#ID` を `#macos-の注意` に変えた後（`hashchange`）、`macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている
       - 選ばれたタブの中身だけが表示されている
     test: test_normal_when_fragment_in_tab
-lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所に見出しの目次を置く。読む人は目次や見出しのリンクから節へ移り、節の URL を人へ渡す。
+  - name: 正常シナリオ（見出しの無い文書）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 見出しの無い Markdown
+        description: 段落だけを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 右側の目次を置かずに描く
+        P-->>U: 段落を表示
+    expected:
+      - 右側の目次と目次を出すボタンが無い
+      - 段落が描かれている
+    test: test_normal_when_no_headings
+  - name: 正常シナリオ（右側の目次をホバーで出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面の幅は 1280px。設定に `sideToc` を書かない（出し方は既定の `hover`）
+      - name: 見出しを持つ Markdown
+        description: '`# 手引き`・`## 導入`・`### 前提`・`## 使い方` の見出しとそれぞれの段落を持つ、画面より長い文書'
+        notes: '`<!-- toc -->` のマーカーは書かない'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 文書と、隠した右側の目次を描く
+        U->>P: 描いた文書の右端にポインターを置く
+        P-->>U: 右側の目次を表示
+        U->>P: 右側の目次の「使い方」を押す
+        P-->>U: 「使い方」の見出しへ移る
+        U->>P: ポインターを本文へ動かす
+        P-->>U: 右側の目次を隠す
+    expected:
+      - 描いた直後、右側の目次が表示されていない
+      - 右端にポインターを置いた後、右側の目次が表示され、`手引き`・`導入`・`前提`・`使い方` を見出しの階層どおりに入れ子にした項目が `#手引き`・`#導入`・`#前提`・`#使い方` を指す
+      - '`使い方` を押した後、URL の末尾が `#使い方` で、`使い方` の見出しが画面に入っている'
+      - ポインターを本文へ動かした後、右側の目次が表示されていない
+      - 本文の中に目次が無い
+    test: test_normal_when_side_toc_hovered
+  - name: 正常シナリオ（右側の目次をピン止めする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: 右端にポインターを置く
+        P-->>U: 右側の目次を表示
+        U->>P: ピン止めのボタンを押す
+        U->>P: ポインターを本文へ動かす
+        P-->>U: 右側の目次を出し続ける
+        U->>P: ピン止めのボタンをもう一度押し、ポインターを本文へ動かす
+        P-->>U: 右側の目次を隠す
+    expected:
+      - ピン止めのボタンを押した後、ボタンの `aria-pressed` が `true`
+      - ピン止めした後にポインターを本文へ動かしても、右側の目次が表示されている
+      - ピン止めのボタンをもう一度押してポインターを本文へ動かした後、ボタンの `aria-pressed` が `false` で、右側の目次が表示されていない
+    test: test_normal_when_side_toc_pinned
+  - name: 正常シナリオ（右側の目次をサイドバーで出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ
+        notes: 設定の `sideToc.mode` は `fixed`
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 文書と、目次を出すボタンを描く
+        U->>P: 右端にポインターを置く
+        P-->>U: 右側の目次を出さない
+        U->>P: 目次を出すボタン（三点リーダー）を押す
+        P-->>U: 右側の目次をサイドバーとして表示
+        U->>P: 目次を出すボタンをもう一度押す
+        P-->>U: 右側の目次を隠す
+    expected:
+      - 描いた直後、目次を出すボタンがあり、`aria-expanded` が `false` で、右側の目次が表示されていない
+      - 右端にポインターを置いても、右側の目次が表示されていない
+      - 目次を出すボタンを押した後、`aria-expanded` が `true` で、右側の目次が表示され、ポインターを本文へ動かしても表示されている
+      - 目次を出すボタンをもう一度押した後、`aria-expanded` が `false` で、右側の目次が表示されていない
+    test: test_normal_when_side_toc_fixed
+  - name: 正常シナリオ（キーボードで右側の目次を出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: Tab キーでフォーカスを右側の目次の項目へ移す
+        P-->>U: 右側の目次を表示
+        U->>P: Enter キーで「使い方」を押す
+        P-->>U: 「使い方」の見出しへ移る
+        U->>P: フォーカスを右側の目次の外へ移す
+        P-->>U: 右側の目次を隠す
+    expected:
+      - フォーカスが右側の目次の項目に入った後、右側の目次が表示されている
+      - Enter キーで `使い方` を押した後、URL の末尾が `#使い方` で、`使い方` の見出しが画面に入っている
+      - フォーカスが右側の目次の外へ出た後、右側の目次が表示されていない
+    test: test_normal_when_side_toc_focused
+  - name: 正常シナリオ（今いる節をハイライトする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をサイドバーで出す）と同じ
+        notes: 描いた後に目次を出すボタンを押して、右側の目次を出しておく
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+        notes: 各節の段落は、画面の高さより長い
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 先頭の節の項目をハイライトする
+        U->>P: 「使い方」の節までスクロールする
+        M-->>P: 「使い方」の項目をハイライトする
+        U->>P: 「前提」の節まで戻る
+        M-->>P: 「前提」の項目をハイライトする
+    expected:
+      - 描いた直後、右側の目次の `手引き` の項目だけが `aria-current` を持つ
+      - '`使い方` の節までスクロールした後、`使い方` の項目だけが `aria-current` を持つ'
+      - '`前提` の節まで戻った後、`前提` の項目だけが `aria-current` を持つ'
+    test: test_normal_when_current_section_highlighted
+  - name: 正常シナリオ（右側の目次から閉じた節の中へ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ
+      - name: 閉じた節の中に見出しを持つ Markdown
+        description: '長い段落の後に、`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: 右端にポインターを置く
+        P-->>U: 右側の目次を表示
+        U->>P: 右側の目次の「注意」を押す
+        M-->>P: 補足の節を開いてから見出しへ移る
+        P-->>U: 「注意」の見出しを表示
+    expected:
+      - 右側の目次に、閉じた節の中の `注意` の項目がある
+      - '`注意` を押した後、`補足` の節が開き、見出しのボタンの `aria-expanded` が `true` で、`注意` の見出しが画面に入っている'
+      - URL の末尾が `#注意`
+    test: test_normal_when_side_toc_into_closed_section
+  - name: 異常シナリオ（知らない出し方）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ
+        notes: 設定の `sideToc.mode` は `left`
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 知らない出し方を hover にする
+        U->>P: 右端にポインターを置く
+        P-->>U: 右側の目次を表示
+    expected:
+      - 描いた直後、右側の目次が表示されておらず、目次を出すボタンが無い
+      - 右端にポインターを置いた後、右側の目次が表示されている
+      - 文書が描かれている
+    test: test_error_when_unknown_side_toc_mode
+lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所と描いた文書の右側に見出しの目次を置く。読む人は目次や見出しのリンクから節へ移り、右側の目次で今いる節を確かめ、節の URL を人へ渡す。
 issue: 4
 primary_actor: 文書を読む人
 stakeholders:
@@ -100,6 +302,9 @@ stakeholders:
 trigger: 読む人が、文書の目次か見出しのリンクを押す
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
-  - 目次と見出しのアンカーの機能（`toc`・`anchors`）がオン（既定）
-success_guarantee: 全ての見出しが GitHub と同じ ID を持ち、目次と見出しのリンクがその ID を指す。
+  - 目次・見出しのアンカー・右側の目次の機能（`toc`・`anchors`・`side-toc`）がオン（既定）
+success_guarantee: |-
+  全ての見出しが GitHub と同じ ID を持ち、目次と見出しのリンクがその ID を指す。
+
+  右側の目次は設定の `sideToc.mode` の出し方で出し、今いる節の項目だけをハイライトする。
 test_file: tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts
