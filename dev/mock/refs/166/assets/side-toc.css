@@ -1,0 +1,403 @@
+/* 右側の目次とまとめての開閉のボタン: 描いた文書の右の列に置く目次（hover・fixed の出し方）・今いる節のハイライト・すべて展開とすべて折りたたむ。
+   本文の規則（refs/16/assets/sample.css）・採用スタイルの変数（assets/style.css）・拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  /* 右側の目次を持つ描く先の要素: 本文と右側の目次を横に並べ、右側の目次を要素の右端に寄せる。要素の幅で右側の目次の出し方を変える。行の長さの上限は本文の列が持つ */
+  .mdmark:has(> .mdmark-side-toc) {
+    container: mdmark / inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mdmark-space);
+    align-items: flex-start;
+    justify-content: space-between;
+    max-width: none;
+  }
+
+  /* 本文の列: 残りの幅を使い、行の長さの上限を持つ */
+  .mdmark-content {
+    flex: 1;
+    min-width: 0;
+    max-width: var(--mdmark-content-width);
+
+    /* ブロック同士の間隔: 描く先の要素の直下と同じ（詳細度を上げず、見出しの上の広い余白を残す） */
+    > :where(* + *) {
+      margin-block-start: var(--mdmark-space);
+    }
+  }
+
+  .mdmark {
+    /* ---------- 右側の目次 ---------- */
+
+    /* 右側の目次: 本文の右の列。文書を読み進めても、使う側が留めた帯の下で画面に留める */
+    .mdmark-side-toc {
+      position: sticky;
+      inset-block-start: calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space));
+      display: flex;
+      flex: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+      margin-block-start: 0;
+      font-family: var(--mdmark-font-body);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+
+      /* 見出しの無い文書: 右側の目次も目次を出すボタンも置かない */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 目次を出すボタン（三点リーダー）: fixed の出し方と、狭い幅の帯で出す */
+    .mdmark-side-toc-toggle {
+      display: none;
+      place-items: center;
+      box-sizing: border-box;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-muted);
+      font-size: 1rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 目次を出しているとき: 押した後の見た目にし、押す前と見分ける */
+      &[aria-expanded="true"] {
+        background: var(--mdmark-color-current-bg);
+        color: var(--mdmark-color-link);
+      }
+    }
+
+    /* 今いる節の見出し（狭い幅の帯だけで出す） */
+    .mdmark-side-toc-current {
+      display: none;
+    }
+
+    /* 右端の線（hover の出し方で目次を隠している間）: 見出しごとの短い線を階層の長さで並べ、ポインターを置く場所を示す */
+    .mdmark-side-toc-rail {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+      box-sizing: border-box;
+      width: 1.5rem;
+      height: calc(100dvh - var(--mdmark-sticky-top, 0px) - var(--mdmark-space) * 2);
+      padding-block: 0.5rem;
+      overflow: hidden;
+    }
+
+    /* 右端の線の 1 本: 見出しの階層ほど短くする */
+    .mdmark-side-toc-bar {
+      flex: none;
+      width: 1rem;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--mdmark-color-border);
+
+      &[data-level="2"] {
+        width: 0.75rem;
+      }
+
+      &[data-level="3"] {
+        width: 0.5rem;
+      }
+
+      /* 今いる節の線: 印の色にする */
+      &[data-current] {
+        background: var(--mdmark-color-link);
+      }
+    }
+
+    /* 目次の枠: 題・ボタン・項目の並びを縦に並べ、画面の高さに収まらない項目は枠の中でスクロールする */
+    .mdmark-side-toc-panel {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      width: 15rem;
+      max-height: calc(100dvh - var(--mdmark-sticky-top, 0px) - var(--mdmark-space) * 2);
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+    }
+
+    /* 目次の頭: 題とピン止めのボタン */
+    .mdmark-side-toc-head {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 1.75rem;
+      padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+    }
+
+    /* 目次の題 */
+    .mdmark-side-toc-title {
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* ピン止めのボタン（hover の出し方だけ）: 押した後は線と塗ったアイコンで、押す前と見分ける */
+    .mdmark-side-toc-pin {
+      display: inline-grid;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font-size: 0.9375rem;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      &[aria-pressed="true"] {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-link);
+
+        .mdmark-icon {
+          fill: currentColor;
+        }
+      }
+    }
+
+    /* 目次の上部のまとめて開閉するボタンの並び（案 A） */
+    .mdmark-side-toc-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      padding: 0 0.75rem 0.5rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 目次の項目の並び: 見出しの階層どおりに入れ子にし、収まらない分は枠の中でスクロールする */
+    .mdmark-side-toc-list {
+      margin: 0;
+      padding: 0.375rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      list-style: none;
+
+      ul {
+        margin: 0;
+        padding-inline-start: 0.75rem;
+        list-style: none;
+      }
+
+      /* 項目同士の間隔 */
+      li + li,
+      li > ul {
+        margin-block-start: 1px;
+      }
+
+      /* 項目のリンク: 行の全体を押せるようにし、長い見出しは折り返す */
+      a {
+        display: block;
+        padding: 0.25rem 0.5rem;
+        border-radius: calc(var(--mdmark-radius) - 1px);
+        color: var(--mdmark-color-muted);
+        text-decoration: none;
+
+        &:hover {
+          background: var(--mdmark-color-surface);
+          color: var(--mdmark-color-text);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: -2px;
+        }
+
+        /* 今いる節の項目: 行の背景と印の色の文字で示す（太さは変えない） */
+        &[aria-current="location"] {
+          background: var(--mdmark-color-current-bg);
+          color: var(--mdmark-color-link);
+        }
+      }
+    }
+
+    /* ---------- まとめて開閉するボタン ---------- */
+
+    /* すべて展開・すべて折りたたむのボタン: アイコンと文言を並べ、線で囲む */
+    .mdmark-fold-all {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.55em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 1px);
+      background: transparent;
+      color: var(--mdmark-color-text);
+      font: inherit;
+      font-size: 0.8125rem;
+      line-height: 1.2;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* ボタンのアイコン: 文言より控えめな色 */
+      .mdmark-icon {
+        color: var(--mdmark-color-muted);
+      }
+    }
+
+    /* 文書の先頭のまとめて開閉するボタンの並び（案 B）: 本文の右上に寄せる */
+    .mdmark-fold-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      justify-content: flex-end;
+    }
+
+    /* ---------- 出し方ごとの見え方 ---------- */
+
+    /* hover の出し方（広い幅）: 右端の線だけを出し、目次の枠は本文の上に重ねて隠しておく（フォーカスを受けられるよう、消さずに透明にする） */
+    .mdmark-side-toc[data-mode="hover"] {
+      .mdmark-side-toc-rail {
+        display: flex;
+      }
+
+      .mdmark-side-toc-panel {
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline-end: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* 右端にポインターかフォーカスが入ったとき・ピン止めしたとき: 目次の枠を出す */
+      &:is(:hover, :focus-within, [data-pinned]) .mdmark-side-toc-panel {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* ピン止めしたとき: 目次の枠を本文に重ねず、右の列の幅を取って出し続ける */
+      &[data-pinned] {
+        .mdmark-side-toc-rail {
+          display: none;
+        }
+
+        .mdmark-side-toc-panel {
+          position: static;
+        }
+      }
+    }
+
+    /* fixed の出し方: 目次を出すボタンを出し、押すと目次の枠をサイドバーとして右の列に出し続ける */
+    .mdmark-side-toc[data-mode="fixed"] {
+      .mdmark-side-toc-toggle {
+        display: inline-grid;
+      }
+
+      .mdmark-side-toc-pin {
+        display: none;
+      }
+
+      .mdmark-side-toc-panel {
+        display: none;
+      }
+
+      &[data-open] .mdmark-side-toc-panel {
+        display: flex;
+      }
+    }
+
+    /* 狭い幅（描く先の要素が 48rem 未満）: どちらの出し方も、文書の上端に留めた帯に今いる節の見出しと目次を出すボタンを置き、押すと帯の下に本文へ重ねて開く */
+    @container mdmark (width < 48rem) {
+      /* 帯: 本文の列の上の 1 行を幅いっぱいに取り、文書を読み進めても使う側が留めた帯の下に留める */
+      .mdmark-side-toc[data-mode] {
+        order: -1;
+        z-index: 1;
+        flex-basis: 100%;
+        inset-block-start: var(--mdmark-sticky-top, 0px);
+        padding-block: 0.25rem;
+        background: var(--mdmark-color-bg);
+
+        /* 目次を出すボタン: 帯の幅いっぱいに広げ、今いる節の見出しを左、三点リーダーを右に置く */
+        .mdmark-side-toc-toggle {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          height: 2.75rem;
+          padding: 0 0.75rem;
+        }
+
+        /* 今いる節の見出し: 1 行に収め、収まらない分は省く（押すと開く目次で全文を読める） */
+        .mdmark-side-toc-current {
+          display: block;
+          min-width: 0;
+          overflow: hidden;
+          color: var(--mdmark-color-text);
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .mdmark-side-toc-rail,
+        .mdmark-side-toc-pin {
+          display: none;
+        }
+
+        /* 目次の枠: 帯の下に、帯と同じ幅で重ねる */
+        .mdmark-side-toc-panel {
+          position: absolute;
+          inset-block-start: calc(100% - 0.25rem);
+          inset-inline: 0;
+          display: none;
+          width: auto;
+          max-height: calc(100dvh - var(--mdmark-sticky-top, 0px) - 4rem);
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        &[data-open] .mdmark-side-toc-panel {
+          display: flex;
+        }
+
+        /* 広い幅でピン止めしたまま狭くなったとき: ピン止めを効かせず、帯の下に重ねる */
+        &[data-pinned] .mdmark-side-toc-panel {
+          position: absolute;
+        }
+      }
+
+      /* 移る先の見出し: 上端に留めた帯に隠れない位置で止める */
+      .mdmark-content [id] {
+        scroll-margin-block-start: calc(var(--mdmark-sticky-top, 0px) + 3.5rem);
+      }
+    }
+  }
+}

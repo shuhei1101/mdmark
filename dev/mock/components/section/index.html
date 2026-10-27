@@ -14,10 +14,14 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- この PR で追加する右側の目次とまとめて開閉するボタンの規則（#166 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/166/assets/side-toc.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- 右側の目次・今いる節・すべて展開とすべて折りたたむ・Shift での入れ子の開閉 -->
+  <script src="../../refs/166/assets/side-toc.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -95,6 +99,69 @@
 </div>
         </article>
       </section>
+
+      <!-- h1 の見出しから開閉する節: 開いているとき -->
+      <section aria-labelledby="state-h1-open">
+        <h2 class="catalog-label" id="state-h1-open">h1 の節（開いている）</h2>
+        <article class="mdmark">
+<h1 class="mdmark-heading" id="h1-open"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-h1-open">在庫の点検の手引き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#h1-open" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<div class="mdmark-section-body" id="section-h1-open">
+<p>h1 の見出しにも開閉のボタンを付け、文書の全体を 1 つの節として開閉します。</p>
+<h2 class="mdmark-heading" id="h1-open-導入"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-h1-open-導入">導入<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#h1-open-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-h1-open-導入">
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- h1 の見出しから開閉する節: 閉じているとき（見出しだけが残る） -->
+      <section aria-labelledby="state-h1-closed">
+        <h2 class="catalog-label" id="state-h1-closed">h1 の節（閉じている）</h2>
+        <article class="mdmark">
+<h1 class="mdmark-heading" id="h1-closed"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-h1-closed">在庫の点検の手引き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#h1-closed" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<div class="mdmark-section-body" id="section-h1-closed" hidden="until-found">
+<p>閉じた h1 の節の中身です。</p>
+<h2 class="mdmark-heading" id="h1-closed-導入"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-h1-closed-導入">導入<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#h1-closed-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-h1-closed-導入">
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- 文書の先頭のまとめて開閉するボタン（案 B）と入れ子の節。「補足」を Shift を押しながら押すと、中の「注意」「例」も同じ状態にする。案 A（右側の目次の上部）は components/toc の「ポインターかフォーカスで出ている」に置く -->
+      <section aria-labelledby="state-fold-all">
+        <h2 class="catalog-label" id="state-fold-all">すべて展開・すべて折りたたむ（案 B: 文書の先頭）と、Shift を押しながらの入れ子の開閉</h2>
+        <article class="mdmark">
+<div class="mdmark-fold-bar"></div>
+<h1 class="mdmark-heading" id="fold-手引き"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-fold-手引き">在庫の点検の手引き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<div class="mdmark-section-body" id="section-fold-手引き">
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="fold-導入"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-fold-導入">導入<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-fold-導入">
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="fold-前提"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-fold-前提">前提<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-fold-前提">
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+</div>
+</div>
+<h2 class="mdmark-heading" id="fold-補足"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-fold-補足">補足<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-補足" aria-label="「補足」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-fold-補足" hidden="until-found">
+<p>点検の手順に書いていない場面の扱いです。</p>
+<h3 class="mdmark-heading" id="fold-注意"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-fold-注意">注意<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-注意" aria-label="「注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-fold-注意" hidden="until-found">
+<p>停電で在庫の文書を開けないときは、紙の点検表に書きます。</p>
+<h4 class="mdmark-heading" id="fold-例"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-fold-例">例<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#fold-例" aria-label="「例」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h4>
+<div class="mdmark-section-body" id="section-fold-例" hidden="until-found">
+<p>停電の朝は、前日の紙の点検表を使って第一倉庫から回ります。</p>
+</div>
+</div>
+</div>
+</div>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

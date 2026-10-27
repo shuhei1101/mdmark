@@ -1,0 +1,35 @@
+/* まとめた HTML の右側の目次のモックだけの規則 */
+
+/* パンくず: モックの階層を遡るリンク列。画面の帯と分けるため、文書の地の上に小さく置く */
+.mock-breadcrumb {
+  padding: 8px 16px;
+  border-block-end: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+
+  /* パンくずのリンク: 文字の色のまま下線で示す */
+  a {
+    color: inherit;
+  }
+}
+
+/* mdmark の層: まとめた HTML の画面の規則と同じ層に置く */
+@layer mdmark {
+  /* 狭い幅: 上に留まる文書の一覧の帯の高さを、右側の目次を留める位置として渡す（mdmark build が書き出す HTML の規則） */
+  @media (width < 60rem) {
+    /* 開いている文書 */
+    .mdmark-bundle-main .mdmark {
+      --mdmark-sticky-top: calc(3.25rem + 1px);
+    }
+  }
+}
+
+/* 紙に出すとき: モック専用の操作列を出さない（「印刷の見え方」では切り替えのために残す） */
+@media print {
+  /* モック専用の操作列 */
+  .mock-bar {
+    display: none;
+  }
+}

@@ -1,0 +1,23 @@
+/* 右側の目次とまとめての開閉のボタンの印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときの文書 */
+@layer mdmark {
+  /* 右側の目次を持つ描く先の要素: 本文の列だけを紙の幅いっぱいに並べる */
+  .mdmark:has(> .mdmark-side-toc) {
+    display: block;
+  }
+
+  /* 本文の列: 行の長さの上限を外す */
+  .mdmark-content {
+    max-width: none;
+  }
+
+  .mdmark {
+    /* 右側の目次・目次を出すボタン・文書の先頭のまとめて開閉するボタン: 紙に出さない */
+    .mdmark-side-toc,
+    .mdmark-fold-bar {
+      display: none;
+    }
+  }
+}
