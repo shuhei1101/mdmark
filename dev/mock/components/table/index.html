@@ -17,15 +17,24 @@
   <!-- 表の機能の追加分の規則（件数・列の表示の切り替え・集計の行・表のコピー・行へのリンク）とカタログの追加分 -->
   <link rel="stylesheet" href="../../refs/57/assets/table-tools.css">
   <link rel="stylesheet" href="../../refs/57/assets/catalog.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で table-tools.js が media を all に切り替える -->
+  <!-- 見出し行と集計の行の留め方・集計の行・コピーの形式・最終列の畳み方の規則とカタログの追加分（#151 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/151/assets/table.css">
+  <link rel="stylesheet" href="../../refs/151/assets/catalog.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../refs/151/assets/table-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 表の見本の定義と組み立て（モックだけの仕組み。syntax.js より先に組み立てる） -->
+  <script src="../../refs/151/assets/samples.js" defer></script>
+  <script src="../../refs/151/assets/table-build.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
-  <!-- 表の機能の追加分の操作と、モックの「印刷の見え方」の切り替え -->
-  <script src="../../refs/57/assets/table-tools.js" defer></script>
+  <!-- 表の機能の追加分の操作（件数・列の表示・集計・コピー・行へのリンク・見出し行と集計の行の留め方・最終列の畳み方） -->
+  <script src="../../refs/151/assets/table.js" defer></script>
+  <!-- モックの「印刷の見え方」の切り替え -->
+  <script src="../../refs/151/assets/preview.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
@@ -35,7 +44,7 @@
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
     </div>
-    <!-- [data-preview-toggle]: table-tools.js が印刷の規則を画面にも当て、閉じた記法を開いて明るい配色にする（モックだけの仕組み） -->
+    <!-- [data-preview-toggle]: preview.js が印刷の規則を画面にも当て、閉じた記法を開いて明るい配色にする（モックだけの仕組み） -->
     <div class="mock-bar-group">
       <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
     </div>
@@ -889,6 +898,96 @@
     </tbody>
   </table>
 </div>
+        </article>
+      </section>
+
+      <!-- 見出し行と集計の行を画面の上端と下端に留める（表の中で縦にスクロールさせない。animation-timeline を持つブラウザは案 D、持たないブラウザは案 C） -->
+      <section aria-labelledby="state-sticky">
+        <h2 class="catalog-label" id="state-sticky">見出し行と集計の行を画面の上端と下端に留める（表の中で縦にスクロールさせない。animation-timeline を持つブラウザは案 D、持たないブラウザは案 C）</h2>
+        <article class="mdmark">
+<div data-mock-table="stock-catalog"></div>
+        </article>
+      </section>
+
+      <!-- 集計のメニューを開いた（total= に書いた計算を 1 行ずつ出し、出す計算を選ぶ） -->
+      <section aria-labelledby="state-totals-open">
+        <h2 class="catalog-label" id="state-totals-open">集計のメニューを開いた（total= に書いた計算を 1 行ずつ出し、出す計算を選ぶ）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-totals-open" data-mock-open="totals"></div>
+        </article>
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- 平均を外した（外した計算の行を出さない） -->
+      <section aria-labelledby="state-totals-unchecked">
+        <h2 class="catalog-label" id="state-totals-unchecked">平均を外した（外した計算の行を出さない）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-uncheck" data-mock-uncheck="avg"></div>
+        </article>
+      </section>
+
+      <!-- 数として読めないセルを持つ列（案 A: 表の上の書き方の警告で知らせ、その列の合計を出さない。異常シナリオ） -->
+      <section aria-labelledby="state-unreadable-box">
+        <h2 class="catalog-label" id="state-unreadable-box">数として読めないセルを持つ列（案 A: 表の上の書き方の警告で知らせ、その列の合計を出さない。異常シナリオ）</h2>
+        <article class="mdmark">
+<div data-mock-table="shipment"></div>
+        </article>
+      </section>
+
+      <!-- 数として読めないセルを持つ列（案 B: 集計の行のセルで知らせる。異常シナリオ） -->
+      <section aria-labelledby="state-unreadable-cell">
+        <h2 class="catalog-label" id="state-unreadable-cell">数として読めないセルを持つ列（案 B: 集計の行のセルで知らせる。異常シナリオ）</h2>
+        <article class="mdmark">
+<div data-mock-table="shipment-cell" data-mock-unreadable="cell"></div>
+        </article>
+      </section>
+
+      <!-- コピーの形式のメニューを開いた（Markdown の表・TSV） -->
+      <section aria-labelledby="state-copy-open">
+        <h2 class="catalog-label" id="state-copy-open">コピーの形式のメニューを開いた（Markdown の表・TSV）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-copy-open" data-mock-open="copy"></div>
+        </article>
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す） -->
+      <section aria-labelledby="state-copy-done">
+        <h2 class="catalog-label" id="state-copy-done">コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-copied" data-mock-copy="copied"></div>
+        </article>
+      </section>
+
+      <!-- クリップボードにコピーできなかった（中身を選んだ欄を出し、手でコピーさせる。異常シナリオ） -->
+      <section aria-labelledby="state-copy-panel">
+        <h2 class="catalog-label" id="state-copy-panel">クリップボードにコピーできなかった（中身を選んだ欄を出し、手でコピーさせる。異常シナリオ）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-copy-panel" data-mock-copy-panel="markdown"></div>
+        </article>
+      </section>
+
+      <!-- 行の URL をコピーした（リンクのアイコンの横で 2 秒知らせる） -->
+      <section aria-labelledby="state-row-copied">
+        <h2 class="catalog-label" id="state-row-copied">行の URL をコピーした（リンクのアイコンの横で 2 秒知らせる）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-row-copied" data-mock-row-notice="copied"></div>
+        </article>
+      </section>
+
+      <!-- 行の URL をコピーできなかった（異常シナリオ） -->
+      <section aria-labelledby="state-row-failed">
+        <h2 class="catalog-label" id="state-row-failed">行の URL をコピーできなかった（異常シナリオ）</h2>
+        <article class="mdmark">
+<div data-mock-table="fruits-row-failed" data-mock-row-notice="failed"></div>
+        </article>
+      </section>
+
+      <!-- 描いた文書の幅が 720px より狭いとき、1 行に収まらない最終列を畳む（案 A。行の詳細と 1 つのボタンで開く） -->
+      <section aria-labelledby="state-fold">
+        <h2 class="catalog-label" id="state-fold">描いた文書の幅が 720px より狭いとき、1 行に収まらない最終列を畳む（案 A。行の詳細と 1 つのボタンで開く）</h2>
+        <article class="mdmark catalog-narrow">
+<div data-mock-table="status-narrow"></div>
         </article>
       </section>
     </div>

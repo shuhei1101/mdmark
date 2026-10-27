@@ -22,10 +22,15 @@
   <link rel="stylesheet" href="../../refs/97/assets/syntax-highlight.css">
   <!-- 色分けの印刷の規則: 紙に出すときだけ当てる。「印刷の見え方」で code-block.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/97/assets/syntax-highlight-print.css" media="print" data-print-styles>
+  <!-- コードブロックの帯（言語のラベルとコピーボタン）の規則（#151 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/151/assets/code-block.css">
+  <link rel="stylesheet" href="../../refs/151/assets/code-block-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/65/assets/code-block.js" defer></script>
+  <!-- コードブロックの帯（言語のラベルとコピーボタン）の操作 -->
+  <script src="../../refs/151/assets/code-block.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
@@ -395,6 +400,74 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
   <p><code>&lt;!-- code: title=app.ts --&gt;</code> の直後にコードブロックがありません。印の次の行にコードブロックを書いてください。</p>
 </div>
 <p>mount にはコードブロックの題を付けられます。</p>
+        </article>
+      </section>
+
+      <!-- 言語のラベルとコピーボタン（題の無いコードブロックにも帯を作る。案 A: コードの上の帯） -->
+      <section aria-labelledby="bar-label">
+        <h2 class="catalog-label" id="bar-label">言語のラベルとコピーボタン（題の無いコードブロックにも帯を作る。案 A: コードの上の帯）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
+npx mdmark build --out dist/stock.html</code></pre>
+        </article>
+      </section>
+
+      <!-- 言語のラベルとコピーボタン（案 B: コードの右上に重ねる） -->
+      <section aria-labelledby="bar-overlay">
+        <h2 class="catalog-label" id="bar-overlay">言語のラベルとコピーボタン（案 B: コードの右上に重ねる）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: bash" data-mock-placement="overlay"><code class="language-bash">npx mdmark check
+npx mdmark build --out dist/stock.html</code></pre>
+        </article>
+      </section>
+
+      <!-- コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す） -->
+      <section aria-labelledby="bar-copied">
+        <h2 class="catalog-label" id="bar-copied">コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: bash" data-mock-copy="copied"><code class="language-bash">npx mdmark check
+npx mdmark build --out dist/stock.html</code></pre>
+        </article>
+      </section>
+
+      <!-- コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す） -->
+      <section aria-labelledby="bar-failed">
+        <h2 class="catalog-label" id="bar-failed">コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: bash" data-mock-copy="failed"><code class="language-bash">npx mdmark check
+npx mdmark build --out dist/stock.html</code></pre>
+        </article>
+      </section>
+
+      <!-- 言語を書かないコードブロック（ラベルを出さず、コピーボタンだけを置く） -->
+      <section aria-labelledby="bar-no-language">
+        <h2 class="catalog-label" id="bar-no-language">言語を書かないコードブロック（ラベルを出さず、コピーボタンだけを置く）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード"><code>08:30 第一倉庫 点検済み
+09:10 冷蔵室 点検済み</code></pre>
+        </article>
+      </section>
+
+      <!-- dockerfile の色分け -->
+      <section aria-labelledby="bar-dockerfile">
+        <h2 class="catalog-label" id="bar-dockerfile">dockerfile の色分け</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: dockerfile"><code class="language-dockerfile"><span class="hljs-keyword">FROM</span> node:22-slim
+<span class="hljs-keyword">WORKDIR</span> /app
+<span class="hljs-keyword">COPY</span> package.json ./
+<span class="hljs-keyword">RUN</span> npm ci
+<span class="hljs-keyword">CMD</span> [<span class="hljs-string">&quot;npx&quot;</span>, <span class="hljs-string">&quot;mdmark&quot;</span>, <span class="hljs-string">&quot;build&quot;</span>]</code></pre>
+        </article>
+      </section>
+
+      <!-- diff の色分け（足した行と消した行を差分の表示と同じ色で出す） -->
+      <section aria-labelledby="bar-diff">
+        <h2 class="catalog-label" id="bar-diff">diff の色分け（足した行と消した行を差分の表示と同じ色で出す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: diff"><code class="language-diff"><span class="hljs-meta">@@ -1,3 +1,3 @@</span>
+ features:
+<span class="hljs-deletion">-  copy: false</span>
+<span class="hljs-addition">+  copy: true</span></code></pre>
         </article>
       </section>
     </div>
