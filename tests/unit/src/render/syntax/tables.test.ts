@@ -234,6 +234,58 @@ test("test_decorate_tables_when_features", () => {
   expect(hrefs).toEqual(["#りんご", "#みかん-1", "#みかん-2"]);
 });
 
+// 集計する列の数として読めないセルを、列と計算ごとの警告にして表の上に差し込む（異常系）
+test("test_decorate_tables_when_total_unreadable", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data +total total=数量:sum,数量:avg,数量:count -->",
+    "",
+    "| 名前 | 数量 |",
+    "| --- | --- |",
+    "| a | 12 |",
+    "| b | 約3 |",
+    "| c |  |",
+    "| d | - |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 警告は合計と平均の 2 つで、どちらも表の前にある
+  expect(matches(html, /<div class="mdmark-syntax-warning"/g)).toHaveLength(2);
+  const table = html.indexOf('<div class="mdmark-table"');
+  expect(table).toBeGreaterThan(0);
+  expect(html.lastIndexOf("mdmark-syntax-warning")).toBeLessThan(table);
+  // 検証: 読めない値は行内のコードで並び、計算の名前を書く
+  const message = (calc: string): string =>
+    `「数量」の列に数として読めない値 <code>約3</code>・<code>-</code> があるため、${calc}を出していません。数を書くか、セルを空にしてください。`;
+  expect(html).toContain(message("合計"));
+  expect(html).toContain(message("平均"));
+  // 検証: count の警告は無い
+  expect(html).not.toContain("件数を出していません");
+});
+
+// 数として読めないセルが無ければ警告を差し込まない（正常系）
+test("test_decorate_tables_when_total_readable", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data +total total=数量:sum,数量:avg -->",
+    "",
+    "| 名前 | 数量 |",
+    "| --- | --- |",
+    "| a | 1,000 |",
+    "| b |  |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
 // table がオフなら今の表のままにする（正常系）
 test("test_decorate_tables_when_feature_off", () => {
   // 準備

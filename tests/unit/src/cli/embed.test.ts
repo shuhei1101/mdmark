@@ -213,6 +213,31 @@ test("test_used_syntax_languages", async () => {
   expect(languages).toEqual(["typescript", "yaml"]);
 });
 
+// 別名とファイル名付きの言語をモジュール名にして拾う（正常系）
+test("test_used_syntax_languages_when_aliases_and_file_name", async () => {
+  // 準備
+  const { usedSyntaxLanguages } = await loadEmbed();
+  const markdown = [
+    "```dockerfile",
+    "FROM node:22",
+    "```",
+    "",
+    "```patch",
+    "-a",
+    "+b",
+    "```",
+    "",
+    "```ts:app.ts",
+    "const a = 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const languages = usedSyntaxLanguages({ markdowns: [markdown], config: {} });
+  // 検証
+  expect(languages).toEqual(["diff", "dockerfile", "typescript"]);
+});
+
 // 設定で機能を外すと何も拾わない（正常系）
 test("test_used_syntax_languages_when_disabled", async () => {
   // 準備

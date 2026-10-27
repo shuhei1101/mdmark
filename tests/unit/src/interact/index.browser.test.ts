@@ -142,3 +142,52 @@ test("test_attach_interactions_when_hints_off", async () => {
   offMark.focus();
   expect(offTip?.hidden).toBe(true);
 });
+
+/** 要素かその中に行を留める方法の属性があるか */
+function hasStickyMode(root: HTMLElement): boolean {
+  return (
+    root.hasAttribute("data-mdmark-sticky") ||
+    root.querySelector("[data-mdmark-sticky]") !== null
+  );
+}
+
+// code がオフならコードブロックにコピーのボタンを付けず、table がオフなら行を留めない（正常系）
+test("test_attach_interactions_when_code_off", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const markdown = [
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "<!-- table: data +total total=値:sum -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  const on = createRoot(markdown);
+  const off = createRoot(markdown);
+  // 実行
+  detachers.push(
+    attachInteractions({
+      root: on.root,
+      features: on.features,
+      placement: "top",
+    }),
+    attachInteractions({
+      root: off.root,
+      features: { ...off.features, code: false, table: false },
+      placement: "top",
+    }),
+  );
+  // 検証: オンではコピーのボタンを付け、行を留める
+  expect(on.root.querySelector(".mdmark-code-copy")).not.toBeNull();
+  expect(hasStickyMode(on.root)).toBe(true);
+  // 検証: オフではどちらも付けない
+  expect(off.root.querySelector(".mdmark-code-copy")).toBeNull();
+  expect(hasStickyMode(off.root)).toBe(false);
+});

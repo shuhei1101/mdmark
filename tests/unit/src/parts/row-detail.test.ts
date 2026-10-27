@@ -22,3 +22,23 @@ test("test_render_row_detail", async () => {
   expect(toggle).toContain('aria-expanded="false"');
   expect(toggle).toContain('aria-label="「table」の詳細"');
 });
+
+// 畳んだ最終列を詳細の中身の上に置く（正常系）
+test("test_render_row_detail_when_folded_column", async () => {
+  // 準備
+  const { renderRowDetail } = await loadRowDetail();
+  // 実行
+  const { row } = renderRowDetail({
+    id: "r1",
+    row: 1,
+    columns: 3,
+    label: "table",
+    foldedColumn: { name: "説明", html: "描画を速くする" },
+    body: "<p>詳細</p>",
+  });
+  // 検証
+  const part = row.indexOf("mdmark-fold-part");
+  expect(part).toBeGreaterThanOrEqual(0);
+  expect(row.slice(part)).toContain('<p class="mdmark-fold-name">説明</p>');
+  expect(part).toBeLessThan(row.indexOf("<p>詳細</p>"));
+});

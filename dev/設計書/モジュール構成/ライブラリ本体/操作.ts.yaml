@@ -964,6 +964,9 @@ test_files:
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
   - tests/unit/src/interact/placement.test.ts
+  - tests/unit/src/interact/sticky.browser.test.ts
+  - tests/unit/src/interact/clipboard.browser.test.ts
+  - tests/unit/src/interact/code-blocks.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭
