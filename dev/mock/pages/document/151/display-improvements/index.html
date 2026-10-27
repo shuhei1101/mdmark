@@ -97,7 +97,7 @@
     <!-- 描く先の要素: mdmark が描いた文書 -->
     <article class="mdmark">
 <h1 id="倉庫の在庫を確かめる">倉庫の在庫を確かめる</h1>
-<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめるための文書です。表は見出し行を押すと並べ替えでき、表の上のボタンで列の表示・集計・コピーを切り替えられます。長い表をスクロールしている間も、見出し行と集計の行は画面の上端と下端に留まります。</p>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめるための文書です。数は毎朝 9 時の棚卸しの結果で更新します。</p>
 <nav class="mdmark-toc" aria-labelledby="toc-title">
   <p class="mdmark-toc-title" id="toc-title">目次</p>
   <ul><li><a href="#在庫の一覧">在庫の一覧</a></li><li><a href="#出荷の集計">出荷の集計</a></li><li><a href="#機能の状態">機能の状態</a></li><li><a href="#点検のコマンド">点検のコマンド</a></li><li><a href="#導入">導入</a><ul><li><a href="#windows-の注意">Windows の注意</a></li><li><a href="#macos-の注意">macOS の注意</a></li></ul></li><li><a href="#書き方のメモ">書き方のメモ</a></li></ul>
@@ -105,27 +105,27 @@
 
 <h2 class="mdmark-heading" id="在庫の一覧"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-在庫の一覧">在庫の一覧<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#在庫の一覧" aria-label="「在庫の一覧」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-在庫の一覧">
-<p>品名の右のリンクのアイコンを押すと、その行を指す URL をコピーします。</p>
+<p>第一倉庫・第二倉庫・冷蔵室の 3 か所の在庫です。</p>
 <!-- [data-mock-table]: table-build.js が samples.js の定義から表を組み立てる -->
 <div data-mock-table="stock"></div>
-<p>表の後ろの段落です。集計の行は表の最後の行の下に戻り、ここから先では留まりません。</p>
+<p>品切れの品は、次の入荷の予定を備考に書きます。</p>
 </div>
 
 <h2 class="mdmark-heading" id="出荷の集計"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-出荷の集計">出荷の集計<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#出荷の集計" aria-label="「出荷の集計」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-出荷の集計">
-<p>数として読めないセルを持つ列は、合計と平均を出しません。</p>
+<p>今日の便ごとの出荷です。臨時便の数量はまだ決まっていません。</p>
 <div data-mock-table="shipment"></div>
 </div>
 
 <h2 class="mdmark-heading" id="機能の状態"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-機能の状態">機能の状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#機能の状態" aria-label="「機能の状態」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-機能の状態">
-<p>最後の列（説明）は、描いた文書の幅が狭いと畳まれ、行の詳細と一緒に開きます。</p>
+<p>在庫の文書で使う表示の機能です。</p>
 <div data-mock-table="status"></div>
 </div>
 
 <h2 class="mdmark-heading" id="点検のコマンド"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-点検のコマンド">点検のコマンド<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#点検のコマンド" aria-label="「点検のコマンド」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-点検のコマンド">
-<p>題を付けたコードブロックは、題の帯の右端に言語のラベルとコピーのボタンを置きます。消した行はコピーしません。</p>
+<p>在庫の文書を描く処理です。</p>
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>stock.ts</figcaption>
   <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: stock.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
@@ -136,7 +136,7 @@
 <span class="mdmark-code-line" data-line="6" data-kind="add"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(element, markdown, { <span class="hljs-attr">features</span>: { <span class="hljs-attr">syntax</span>: <span class="hljs-literal">true</span> } });</span></span>
 <span class="mdmark-code-line" data-line="7" data-kind="highlight"><span class="mdmark-code-text">element.<span class="hljs-property">dataset</span>.<span class="hljs-property">ready</span> = <span class="hljs-string">&quot;true&quot;</span>;</span></span></code></pre>
 </figure>
-<p>題の無いコードブロックにも帯を作ります。</p>
+<p>点検の前に、索引と文書のずれを確かめてから 1 枚の HTML にまとめます。</p>
 <pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>
 <pre tabindex="0" aria-label="コード: dockerfile"><code class="language-dockerfile"><span class="hljs-keyword">FROM</span> node:22-slim
@@ -148,16 +148,16 @@ npx mdmark build --out dist/stock.html</code></pre>
  features:
 <span class="hljs-deletion">-  copy: false</span>
 <span class="hljs-addition">+  copy: true</span></code></pre>
-<p>言語を書かないコードブロックは、ラベルを出さずにコピーのボタンだけを置きます。</p>
+<p>今朝の点検の記録です。</p>
 <pre tabindex="0" aria-label="コード"><code>08:30 第一倉庫 点検済み
 09:10 冷蔵室 点検済み</code></pre>
-<p>ファイルツリーにはコピーのボタンを置きません。</p>
+<p>文書の置き場所です。</p>
 <ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>stock/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>在庫.md</span></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>mdmark.config.yaml</span></li></ul></li></ul>
 </div>
 
 <h2 class="mdmark-heading" id="導入"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-導入">導入<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-導入" hidden="until-found">
-<p>使う端末に合わせてタブを選びます。選んだタブは次に開いたときも選ばれます。</p>
+<p>Node.js 22 以降を入れてから、mdmark の CLI を使います。</p>
 <!-- [data-group]: tabs.js が選んだタブを group ごとに覚え、URL の ID が指すタブはそれより優先して選ぶ -->
 <div class="mdmark-tabs" data-group="os">
   <div class="mdmark-tablist" role="tablist" aria-label="導入">
@@ -182,7 +182,7 @@ npx mdmark build --out dist/stock.html</code></pre>
 
 <h2 class="mdmark-heading" id="書き方のメモ"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-書き方のメモ">書き方のメモ<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#書き方のメモ" aria-label="「書き方のメモ」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 <div class="mdmark-section-body" id="section-書き方のメモ">
-<p>点検の状態は <span class="mdmark-badge">点検済み</span> のようにバッジで書きます。頭の後ろが空の <code>badge:</code> と <code>badge: </code> はバッジにせず、インラインコードのまま出ます。</p>
+<p>点検の状態は <span class="mdmark-badge">点検済み</span> と書きます。状態が決まっていない行は <code>badge:</code> の後ろを空けておき、決まったら追記します（<code>badge: </code> も同じです）。</p>
 </div>
     </article>
   </main>
