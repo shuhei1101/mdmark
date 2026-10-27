@@ -1126,6 +1126,17 @@ function codeBlocks(html: string): string[] {
   return html.match(/<pre[\s\S]*?<\/pre>/g) ?? [];
 }
 
+/** HTML 文字列の中の、題を持つコードブロックの題の文字（`figcaption` から言語とファイル名のラベルを除いたもの）を書いた順に全て返す */
+function codeTitles(html: string): string[] {
+  return [...html.matchAll(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/g)].map(
+    ([, inner = ""]) =>
+      inner.replace(
+        /<span class="mdmark-code-lang">[\s\S]*?<\/span><\/span>/,
+        "",
+      ),
+  );
+}
+
 /** HTML 文字列の中の、書き方の警告の枠を書いた順に全て返す */
 function warnings(html: string): string[] {
   return html.match(/<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g) ?? [];
@@ -1160,8 +1171,8 @@ test("test_normal_when_code_block_decorated", async () => {
   const [first = "", second = "", third = ""] = codeBlocks(html);
   expect(html).toContain('<figure class="mdmark-code"');
   expect(matches(html, /<figure/g)).toHaveLength(1);
-  expect(html).toContain(
-    '<figcaption class="mdmark-code-title">app.ts</figcaption>',
+  expect(html).toMatch(
+    /<figcaption class="mdmark-code-title mdmark-code-bar"><span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">ts<\/span><\/span>app\.ts<\/figcaption>/,
   );
   expect(first).toContain('aria-label="コード: app.ts"');
   expect(first).toContain(
@@ -1178,9 +1189,132 @@ test("test_normal_when_code_block_decorated", async () => {
   expect(second).not.toContain("#");
   expect(second).not.toContain("mdmark-code-numbered");
   expect(second).not.toContain("mdmark-code-signs");
+  expect(html).toContain(
+    '<div class="mdmark-code"><div class="mdmark-code-bar">',
+  );
   expect(third).not.toContain("mdmark-code-line");
   expect(third).toContain("// [!code ++]");
   expect(html).not.toContain("<!--");
+});
+
+// 情報文字列の `言語:ファイル名` を言語とファイル名に分け、全てのコードブロックを帯で囲んで言語とファイル名のラベルを置く（正常系）
+test("test_normal_when_code_block_labeled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "```python:hoge.py",
+    "print(1)",
+    "```",
+    "",
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "```",
+    "plain",
+    "```",
+    "",
+    "```:a.txt",
+    "text",
+    "```",
+    "",
+    "```tree:src",
+    "src/",
+    "```",
+    "",
+    "<!-- code: title=app.ts -->",
+    "",
+    "```ts:src/app.ts",
+    "const b = 2;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [
+    python = "",
+    ts = "",
+    plain = "",
+    fileOnly = "",
+    tree = "",
+    titled = "",
+  ] = html.split(/(?=<(?:div|figure) class="mdmark-code")/);
+  const label = (language: string, file?: string): string =>
+    `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">${language}</span>${file === undefined ? "" : `<span class="mdmark-code-file">${file}</span>`}</span>`;
+  expect(python).toMatch(/^<div class="mdmark-code">/);
+  expect(python).toContain(
+    `<div class="mdmark-code-bar">${label("python", "hoge.py")}</div>`,
+  );
+  expect(python).toContain('<code class="language-python"');
+  expect(python).toContain('aria-label="コード: hoge.py"');
+  expect(ts).toContain(`<div class="mdmark-code-bar">${label("ts")}</div>`);
+  expect(ts).not.toContain("mdmark-code-file");
+  expect(ts).toContain('aria-label="コード: ts"');
+  for (const block of [plain, fileOnly]) {
+    expect(block).toMatch(
+      /^<div class="mdmark-code"><div class="mdmark-code-bar"><\/div>/,
+    );
+    expect(block).not.toContain("mdmark-code-lang");
+    expect(block).toContain('aria-label="コード"');
+  }
+  expect(tree).toContain(
+    `<div class="mdmark-code-bar">${label("tree", "src")}</div>`,
+  );
+  expect(tree).toContain('<code class="language-tree"');
+  expect(tree).not.toContain("mdmark-tree");
+  expect(titled).toMatch(/^<figure class="mdmark-code">/);
+  expect(titled).toContain(
+    `<figcaption class="mdmark-code-title mdmark-code-bar">${label("ts", "src/app.ts")}app.ts</figcaption>`,
+  );
+  expect(titled).toContain('aria-label="コード: app.ts"');
+  expect(html).not.toContain("mdmark-code-copy");
+});
+
+// `badge:` の後ろが空か空白だけの行内のコードを、空のバッジにせずそのままコードで出す（正常系）
+test("test_normal_when_badge_empty", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = "`badge:` と `badge: ` と `badge:v1`\n";
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain("<code>badge:</code>");
+  expect(html).toContain("<code>badge: </code>");
+  expect(html).not.toMatch(/<span class="mdmark-badge"><\/span>/);
+  expect(matches(html, /<span class="mdmark-badge">/g)).toHaveLength(1);
+  expect(html).toContain('<span class="mdmark-badge">v1</span>');
+});
+
+// 集計する列に数として読めないセルがあるとき、表の前に書き方の警告を置く（正常系）
+test("test_normal_when_total_cell_not_number", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data +total total=数量:sum,単価:avg,名前:count -->",
+    "",
+    "| 名前 | 数量 | 単価 |",
+    "| --- | --- | --- |",
+    "| - | 10 | 100 |",
+    "| b | 約 3 | 200 |",
+    "| c | 5 |  |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(1);
+  const [box = ""] = boxes;
+  const text = plainText(box);
+  for (const word of ["数量", "約 3", "合計"]) {
+    expect(text).toContain(word);
+  }
+  expect(html.indexOf(box)).toBeLessThan(html.indexOf('class="mdmark-table"'));
+  expect(matches(html, /<div class="mdmark-syntax-warning"/g)).toHaveLength(1);
+  expect(html).toContain('data-total="1:sum 2:avg 0:count"');
 });
 
 // コードブロックの印と行の印の読めない指定を書き方の警告にし、読めた指定で描く（正常系）
@@ -1230,12 +1364,7 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
   expect(markBox).toContain("[!code ++]");
   expect(fenceBox).toContain("直後にコードブロックがありません");
   expect(spaceBox).toContain("App.ts");
-  expect(html).toContain(
-    '<figcaption class="mdmark-code-title">app.ts</figcaption>',
-  );
-  expect(html).toContain(
-    '<figcaption class="mdmark-code-title">My</figcaption>',
-  );
+  expect(codeTitles(html)).toEqual(["app.ts", "My"]);
   expect(matches(html, /<figure/g)).toHaveLength(2);
   const [, highlighted = "", focused = ""] = codeBlocks(html);
   expect(matches(highlighted, /data-kind=/g)).toHaveLength(1);
@@ -1304,7 +1433,8 @@ test("test_normal_when_source_lines", async () => {
   expect(lineOf("p")).toBe("2");
   expect(html).toMatch(/<div data-source-line="4" class="mdmark-table"/);
   expect(lineOf("tr", 1)).toBe("6");
-  expect(lineOf("pre")).toBe("8");
+  expect(html).toMatch(/<div data-source-line="8" class="mdmark-code"/);
+  expect(lineOf("pre")).toBeUndefined();
   expect(lineOf("ul")).toBe("12");
   expect(lineOf("li", 0)).toBe("12");
   expect(lineOf("li", 1)).toBe("13");
