@@ -237,6 +237,28 @@ test("test_prepare_embeds_when_tooltip_placement", async () => {
   expect(withoutTooltips.payload.config).not.toHaveProperty("tooltips");
 });
 
+// 設定の side-toc を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_side_toc_mode", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const withSideToc = await prepare({ "side-toc": { mode: "fixed" } });
+  const withoutSideToc = await prepare({ features: { print: true } });
+  // 検証
+  expect(withSideToc.payload.config["side-toc"]).toEqual({ mode: "fixed" });
+  expect(withoutSideToc.payload.config).not.toHaveProperty("side-toc");
+});
+
 /** 色分けのライブラリの代役のモジュールを書く（`hl/` の下に本体と言語の分を置く） */
 const SYNTAX_MODULES = {
   "hl/core.min.js":

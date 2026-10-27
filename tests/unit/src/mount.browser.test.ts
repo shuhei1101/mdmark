@@ -105,8 +105,9 @@ test("test_mount_when_updated", async () => {
   // 実行
   handle.update("# B");
   // 検証
-  expect(el.children).toHaveLength(1);
-  expect(el.querySelector("h1")?.textContent).toBe("B");
+  const headings = el.querySelectorAll(".mdmark-content h1");
+  expect(headings).toHaveLength(1);
+  expect(headings[0]?.textContent).toBe("B");
   expect(el.classList.contains("mdmark")).toBe(true);
 });
 
@@ -290,10 +291,20 @@ test("test_mount_when_diff_source", async () => {
     diffSource,
   });
   // 検証
-  const next = el.querySelector("h1")?.nextElementSibling;
+  const content = el.querySelector(".mdmark-content");
+  const next = content?.querySelector("h1")?.nextElementSibling;
   expect(
     next?.matches(".mdmark-diff-toggle") ||
       next?.querySelector(".mdmark-diff-toggle"),
+  ).toBeTruthy();
+  const toggle = content?.querySelector(".mdmark-diff-toggle");
+  const sectionBody = content?.querySelector('[id="section-見出し"]');
+  if (!toggle || !sectionBody) {
+    throw new Error("差分を開くボタンか節の中身が無い");
+  }
+  expect(
+    toggle.compareDocumentPosition(sectionBody) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
   expect(revisionsCalls).toEqual([]);
   handle.destroy();
@@ -419,4 +430,58 @@ test("test_mount_when_diff_preview_zoomed", async () => {
   );
   const labelId = viewport?.getAttribute("aria-labelledby") ?? "";
   expect(after.querySelector(`#${CSS.escape(labelId)}`)).not.toBeNull();
+});
+
+// 見出しのある文書に右側の目次を置き、記法の操作を本文の列に付ける（正常系）
+test("test_mount_when_side_toc", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: `# 手引き\n\n## 導入\n\n${TABLE_MARKDOWN}`,
+  });
+  // 検証
+  expect(el.children).toHaveLength(2);
+  expect(el.children[0]?.matches("div.mdmark-content")).toBe(true);
+  expect(
+    el.children[1]?.matches('aside.mdmark-side-toc[data-mode="hover"]'),
+  ).toBe(true);
+  const content = el.querySelector(".mdmark-content");
+  expect(content?.querySelector("th button")).not.toBeNull();
+  expect(content?.querySelector(".mdmark-section-toggle")).not.toBeNull();
+});
+
+// 描き直しても右側の目次を 1 つだけ置き、ピン止めを保つ（正常系）
+test("test_mount_when_side_toc_kept_on_update", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "# A\n\n## X",
+    config: { "side-toc": { mode: "hover" } },
+  });
+  el.querySelector<HTMLButtonElement>(".mdmark-side-toc-pin")?.click();
+  // 実行
+  handle.update("# B\n\n## C");
+  // 検証
+  const asides = el.querySelectorAll("aside.mdmark-side-toc");
+  expect(asides).toHaveLength(1);
+  expect(asides[0]?.hasAttribute("data-pinned")).toBe(true);
+  const hrefs = [...el.querySelectorAll(".mdmark-side-toc-list a")].map(
+    (link) => link.getAttribute("href"),
+  );
+  expect(hrefs).toEqual(["#b", "#c"]);
+});
+
+// 機能をオフにすると右側の目次を置かず、本文を列に包まない（正常系）
+test("test_mount_when_side_toc_off", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: "<!-- features: -side-toc -->\n\n# 手引き\n\n## 導入\n",
+  });
+  // 検証
+  expect(el.querySelector("aside.mdmark-side-toc")).toBeNull();
+  expect(el.querySelector("div.mdmark-content")).toBeNull();
+  expect(el.querySelector(":scope > h1")).not.toBeNull();
 });
