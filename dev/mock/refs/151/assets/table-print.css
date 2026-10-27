@@ -6,6 +6,7 @@
   .mdmark {
     /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（案 D のアニメーションと案 C のずれを外す） */
     .mdmark-table:is(.is-sticky-timeline, .is-sticky-shift) :is(thead th, tfoot td) {
+      --mdmark-mock-foot-reach: 0px;
       animation: none;
       transform: none;
     }
@@ -56,8 +57,8 @@
         display: none;
       }
 
-      /* 2 行目からの集計の行の面と線: 積んだ並びでは面を敷かないので出さない */
-      .mdmark-table tfoot tr + tr td::after {
+      /* 2 行目からと最後の集計の行の面と線: 積んだ並びでは面を敷かないので出さない */
+      .mdmark-table tfoot td::after {
         content: none;
       }
 

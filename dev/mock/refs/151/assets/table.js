@@ -628,6 +628,8 @@
       const footMin = Math.min(0, body.top - foot.top);
       const footShift = Math.max(Math.min(0, window.innerHeight - foot.bottom), footMin);
       table.style.setProperty("--mdmark-mock-foot-shift", `${footShift}px`);
+      // 下端に留めている間だけ、最後の行の面を下へはみ出させる
+      table.style.setProperty("--mdmark-mock-foot-reach", footShift < 0 ? "2px" : "0px");
     }
   };
 
