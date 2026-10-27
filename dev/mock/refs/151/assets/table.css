@@ -68,6 +68,16 @@
       box-shadow: inset 0 -1px var(--mdmark-color-border);
     }
 
+    /* 2 行目からの集計の行の面: 1 つ上の行へ 2px 重ねた 1 枚の面にし、上の行の下端の線を引き直す。
+       行の境目が画素の途中に来ても、2 つの行の面の継ぎ目から後ろの本文の行を透かさない */
+    .mdmark-table tfoot tr + tr td::after {
+      position: absolute;
+      inset: -2px 0 1px;
+      z-index: -1;
+      background: linear-gradient(var(--mdmark-color-table-head) 1px, var(--mdmark-color-border) 1px 2px, var(--mdmark-color-table-head) 2px);
+      content: "";
+    }
+
     /* 集計の行の先頭のセルの計算の名前（合計・平均・件数）: 行の見出しとして太字にする */
     .mdmark-total-name {
       color: var(--mdmark-color-heading);

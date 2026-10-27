@@ -598,38 +598,35 @@
 
   /** 案 D: 見出し行と集計の行の動く範囲だけを変数で渡し、ずらすのは CSS のスクロール連動のアニメーションに任せる。 */
   const updateTimelineRange = (table) => {
-    const head = table.tHead;
-    const body = table.tBodies[0];
-    const foot = table.tFoot;
+    // 位置と高さは端数を丸めずに測る（丸めると留めた行が画面の端から端数の分だけずれ、後ろの本文の行が透ける）
+    const tableRect = table.getBoundingClientRect();
+    const head = table.tHead.getBoundingClientRect();
+    const body = table.tBodies[0].getBoundingClientRect();
     // 表の上端から見出し行の上端まで（枠の太さ）と、見出し行を下げられる量（本文の最後の行の下端まで）
-    table.style.setProperty("--mdmark-mock-head-start", `${table.clientTop + head.offsetTop}px`);
-    table.style.setProperty("--mdmark-mock-head-max", `${Math.max(0, body.offsetTop + body.offsetHeight - head.offsetTop - head.offsetHeight)}px`);
-    if (foot) {
+    table.style.setProperty("--mdmark-mock-head-start", `${head.top - tableRect.top}px`);
+    table.style.setProperty("--mdmark-mock-head-max", `${Math.max(0, body.bottom - head.bottom)}px`);
+    if (table.tFoot) {
+      const foot = table.tFoot.getBoundingClientRect();
       // 集計の行を上げられる量（本文の最初の行の上端まで）と、表の下端から集計の行の下端まで
-      table.style.setProperty("--mdmark-mock-foot-max", `${foot.offsetTop - body.offsetTop}px`);
-      table.style.setProperty("--mdmark-mock-foot-end", `${table.offsetHeight - table.clientTop - foot.offsetTop - foot.offsetHeight}px`);
+      table.style.setProperty("--mdmark-mock-foot-max", `${foot.top - body.top}px`);
+      table.style.setProperty("--mdmark-mock-foot-end", `${tableRect.bottom - foot.bottom}px`);
     }
   };
 
   /** 案 C: 見出し行と集計の行の、ずらす前の画面上の位置からずれを求めて変数で渡す。 */
   const updateShift = (table) => {
-    const rect = table.getBoundingClientRect();
-    const origin = rect.top + table.clientTop;
-    const head = table.tHead;
-    const body = table.tBodies[0];
-    const foot = table.tFoot;
-    const headTop = origin + head.offsetTop;
-    const bodyTop = origin + body.offsetTop;
-    const bodyBottom = bodyTop + body.offsetHeight;
+    // 位置と高さは端数を丸めずに測る（ずらすのはセルなので、行のまとまりの位置はずらす前のまま）
+    const head = table.tHead.getBoundingClientRect();
+    const body = table.tBodies[0].getBoundingClientRect();
     // 見出し行: 画面の上端（ずれの分だけ下）より上に出た分だけ下げ、本文の最後の行より下へは下げない
-    const headMax = Math.max(0, bodyBottom - headTop - head.offsetHeight);
-    const headShift = Math.min(Math.max(0, stickyTop(table) - headTop), headMax);
+    const headMax = Math.max(0, body.bottom - head.bottom);
+    const headShift = Math.min(Math.max(0, stickyTop(table) - head.top), headMax);
     table.style.setProperty("--mdmark-mock-head-shift", `${headShift}px`);
-    if (foot) {
+    if (table.tFoot) {
+      const foot = table.tFoot.getBoundingClientRect();
       // 集計の行: 画面の下端より下に出た分だけ上げ、本文の最初の行より上へは上げない
-      const footTop = origin + foot.offsetTop;
-      const footMin = Math.min(0, bodyTop - footTop);
-      const footShift = Math.max(Math.min(0, window.innerHeight - footTop - foot.offsetHeight), footMin);
+      const footMin = Math.min(0, body.top - foot.top);
+      const footShift = Math.max(Math.min(0, window.innerHeight - foot.bottom), footMin);
       table.style.setProperty("--mdmark-mock-foot-shift", `${footShift}px`);
     }
   };

@@ -56,6 +56,11 @@
         display: none;
       }
 
+      /* 2 行目からの集計の行の面と線: 積んだ並びでは面を敷かないので出さない */
+      .mdmark-table tfoot tr + tr td::after {
+        content: none;
+      }
+
       /* 集計の行の先頭のセル: 計算の名前が見出しになるので、列名を出さない */
       .mdmark-table tfoot td:first-child::before {
         content: none;
