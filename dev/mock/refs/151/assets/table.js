@@ -193,7 +193,7 @@
     for (const row of table.tFoot?.rows ?? []) {
       const kind = row.dataset.totalKind;
       if (!kind) continue;
-      // 先頭のセル: 計算の名前。先頭の列も集計するときは名前の後ろに値を続ける
+      // 先頭のセル: 計算の名前。先頭の列も集計するときは、名前と分けて値をセルの末尾に置く
       const first = row.cells[0];
       for (const cell of row.cells) {
         const parts = [];

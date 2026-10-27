@@ -20,4 +20,46 @@
       display: table-cell;
     }
   }
+
+  /* 紙の幅が狭く、表を行ごとの「見出し: 値」の並びに積むとき */
+  @media (max-width: 40rem) {
+    .mdmark {
+      /* 画面で隠している行（一致する行が無いときの知らせなど）: 積んだときも出さない */
+      .mdmark-table tr[hidden] {
+        display: none;
+      }
+
+      /* 集計の行: 計算の名前と、値のある列だけを 1 行に並べる */
+      .mdmark-table tfoot {
+        display: block;
+      }
+
+      /* 集計の行の 1 行: 名前と値を横に並べ、入りきらなければ折り返す */
+      .mdmark-table tfoot tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 1.5em;
+      }
+
+      /* 集計の行のセル（ピン止めした列を含む）: 面の色と線を外す */
+      .mdmark-table tfoot td:is(*, .is-pinned-col) {
+        display: block;
+        border: 0;
+        background: none;
+        box-shadow: none;
+      }
+
+      /* 集計の行の値の無いセル（畳んだ最終列を含む）: 出さない */
+      .mdmark-table tfoot td:not(:has(.mdmark-total-name, .mdmark-total-value, .mdmark-total-unreadable)),
+      .mdmark-table.is-folded tfoot td.mdmark-fold-col:not(:has(.mdmark-total-value, .mdmark-total-unreadable)) {
+        display: none;
+      }
+
+      /* 集計の行の先頭のセル: 計算の名前が見出しになるので、列名を出さない */
+      .mdmark-table tfoot td:first-child::before {
+        content: none;
+      }
+    }
+  }
 }

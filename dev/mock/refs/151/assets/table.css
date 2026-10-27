@@ -23,6 +23,11 @@
       z-index: 4;
     }
 
+    /* ずらす集計の行のセル: 行の間の罫線を外して面の色を隙間なくつなぎ、後ろの本文の行を透かさない（行の区切りは影の線で引く） */
+    .mdmark-table:is(.is-sticky-timeline, .is-sticky-shift) tfoot td {
+      border-block-width: 0;
+    }
+
     /* 案 D は animation-timeline と範囲の指定を持つブラウザだけに当てる（持たないブラウザで時間のアニメーションとして走らせない） */
     @supports (animation-timeline: view()) and (animation-range: 0% 100%) {
       /* 案 D: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る） */
@@ -69,9 +74,12 @@
       font-weight: 600;
     }
 
-    /* 先頭の列も集計するときの、名前と値の間 */
+    /* 先頭の列も集計するときの値: 計算の名前と分けてセルの末尾に寄せ、細い縦線で名前と区切る */
     .mdmark-total-name + .mdmark-total-value {
-      margin-inline-start: 0.75em;
+      float: inline-end;
+      margin-inline-start: 1.5em;
+      padding-inline-start: 0.75em;
+      box-shadow: inset 1px 0 var(--mdmark-color-border);
     }
 
     /* 集計できない列のセル（セルで知らせる案）: 注意の色のアイコンと理由の文字 */
