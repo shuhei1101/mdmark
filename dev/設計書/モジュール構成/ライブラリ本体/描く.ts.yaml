@@ -223,7 +223,7 @@ functions:
         summary: 同じ要素へもう一度描くと、前の描画を片付けてから描く
         condition: '`mount(el, A)` の後に `mount(el, B)`、続けて 1 回目の戻り値の `update("# C")`'
         mock: なし
-        expected: '`el` の中が B の本文のまま'
+        expected: '`el` の中の本文の列（`div.mdmark-content`）が 1 つだけで、その中の見出しが文字 `B` の `h1` のまま'
       - name: test_mount_when_print_disabled_by_mark
         case: 正常
         summary: 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない
