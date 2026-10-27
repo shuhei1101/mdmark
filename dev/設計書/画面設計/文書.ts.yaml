@@ -223,6 +223,8 @@ elements:
         value: 表の列の数
       - name: label
         value: その行の先頭のセルの文字
+      - name: foldedColumn
+        value: 表が最終列を畳んでいるときの、最終列の見出しの文字とその行の最終列のセルの中身（`{ name, html }`）。畳んでいないときは渡さない
     slots:
       - name: default
         value: '`<!-- row-detail -->` の範囲の中身'
