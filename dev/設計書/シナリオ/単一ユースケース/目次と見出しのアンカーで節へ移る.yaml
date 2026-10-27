@@ -115,7 +115,7 @@ scenarios:
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
-        notes: 画面の幅は 1280px。設定に `sideToc` を書かない（出し方は既定の `hover`）
+        notes: 画面の幅は 1280px。設定に `side-toc.mode` を書かない（出し方は既定の `hover`）
       - name: 見出しを持つ Markdown
         description: '`# 手引き`・`## 導入`・`### 前提`・`## 使い方` の見出しとそれぞれの段落を持つ、画面より長い文書'
         notes: '`<!-- toc -->` のマーカーは書かない'
@@ -171,7 +171,7 @@ scenarios:
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオ（右側の目次をホバーで出す）と同じ
-        notes: 設定の `sideToc.mode` は `fixed`
+        notes: 設定の `side-toc.mode` は `fixed`
       - name: 見出しを持つ Markdown
         description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
       - name: Mock
@@ -274,7 +274,7 @@ scenarios:
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオ（右側の目次をホバーで出す）と同じ
-        notes: 設定の `sideToc.mode` は `left`
+        notes: 設定の `side-toc.mode` は `left`
       - name: 見出しを持つ Markdown
         description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
       - name: Mock
@@ -293,6 +293,33 @@ scenarios:
       - 右端にポインターを置いた後、右側の目次が表示されている
       - 文書が描かれている
     test: test_error_when_unknown_side_toc_mode
+  - name: 正常シナリオ（狭い幅で右側の目次を出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をサイドバーで出す）と同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: 目次を出すボタンを押す
+        P-->>U: 右側の目次を表示
+        U->>P: 右側の目次の「使い方」を押す
+        P-->>U: 「使い方」の見出しへ移る
+        U->>P: 目次を出すボタンをもう一度押す
+        P-->>U: 右側の目次を隠し、本文を表示
+    expected:
+      - 描いた直後、本文の段落が右側の目次に覆われておらず、ページに横スクロールが出ていない
+      - 目次を出すボタンを押した後、右側の目次が表示され、その項目が画面の幅に収まっている
+      - '`使い方` を押した後、`使い方` の見出しが画面に入っている'
+      - 目次を出すボタンをもう一度押した後、右側の目次が表示されておらず、`使い方` の段落がどの要素にも覆われていない
+    test: test_normal_when_side_toc_in_narrow_width
 lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所と描いた文書の右側に見出しの目次を置く。読む人は目次や見出しのリンクから節へ移り、右側の目次で今いる節を確かめ、節の URL を人へ渡す。
 issue: 4
 primary_actor: 文書を読む人
@@ -306,5 +333,5 @@ preconditions:
 success_guarantee: |-
   全ての見出しが GitHub と同じ ID を持ち、目次と見出しのリンクがその ID を指す。
 
-  右側の目次は設定の `sideToc.mode` の出し方で出し、今いる節の項目だけをハイライトする。
+  右側の目次は設定の `side-toc.mode` の出し方で出し、今いる節の項目だけをハイライトする。
 test_file: tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts

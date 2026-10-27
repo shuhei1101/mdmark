@@ -174,7 +174,7 @@ scenarios:
     setup:
       - name: 文書を描いたページ
         description: 版を固定した URL で mdmark を読み、文書を描いた HTML
-        notes: 設定の `sideToc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出しておく
+        notes: 設定の `side-toc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出しておく
       - name: H1 の閉じた節を持つ Markdown
         description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
       - name: Mock
