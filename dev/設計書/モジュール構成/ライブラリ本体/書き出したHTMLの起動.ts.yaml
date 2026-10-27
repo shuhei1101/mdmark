@@ -7,7 +7,7 @@ directory: |-
   ├── modules.ts # 埋めたモジュールの blob: URL と拡張の登録
   ├── route.ts   # URL の # の読み取りと、描いた文書のリンクの書き換え
   ├── bundle.ts  # まとめた HTML の文書の行き来と一覧のパネル
-  └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）
+  └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を渡し、右側の目次の帯と表の見出し行を上の帯の下に留める
   ```
 constants:
   - name: DOC_HASH_PREFIX

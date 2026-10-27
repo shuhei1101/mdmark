@@ -121,6 +121,14 @@ constants:
     container: src/diff/minimap.ts
     summary: 差分の行の計算値から読み、`document.body` の直下の帯の `style` に写す CSS 変数。使う側が `.mdmark` に書いた上書きを帯にも当てる
     value: '["--mdmark-color-diff-del-sign", "--mdmark-color-diff-add-sign", "--mdmark-color-border", "--mdmark-color-surface", "--mdmark-color-muted", "--mdmark-color-text", "--mdmark-diff-minimap-width", "--mdmark-diff-minimap-z-index"]'
+  - name: DIFF_HIDDEN_ATTRIBUTE
+    title: 差分で隠した要素の属性
+    container: src/diff/panel.ts
+    summary: '差分を開いている間に隠す本文の要素と右側の目次に付ける属性。`index.css` が `display: none !important` で隠す'
+    value: '"data-mdmark-diff-hidden"'
+    status: planned
+    introduced:
+      pr: 166
 function_types:
   - name: DiffEngine
     title: 差分の計算の関数型
@@ -255,32 +263,32 @@ functions:
     summary: 描いた文書に「変更を見る」と差分の場所を置き、開く・選び直す・閉じるを受け取って取り出し元を呼び、差分を描く。外す関数を返す
     kind: 関数
     scope: internal
-    side_effects: '`root` の中に要素を置き、本文の要素の `hidden` を書き換える。取り出し元を呼ぶ。取り出せないときは `console.error` に出す'
+    side_effects: '`root` の中に要素を置き、本文の要素と `hideWith` の要素に `DIFF_HIDDEN_ATTRIBUTE` を付け外しする。取り出し元を呼ぶ。取り出せないときは `console.error` に出す'
     args:
       - name: options
-        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer }'
+        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer; hideWith?: HTMLElement[] }'
         required: true
-        description: '`root` は描いた要素、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数'
+        description: '`root` は描いた本文（右側の目次を置いたときは本文の列）、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数、`hideWith` は差分を開いている間、`root` の外で一緒に隠す要素（右側の目次）'
     returns:
       type: () => void
       description: 差分を閉じ、待ちと受け取りとミニマップを片付け、置いた要素を取り除く関数
     process: |-
-      1. `root` の先頭の `h1` の後ろ（無ければ先頭）に、差分を開くボタン（`renderDiffToggle`）と `hidden` の差分の場所を置く。場所の `id` はモジュールの通し番号でページの中で一意にする
-      2. ボタンを押すと開くか閉じる。開くときは、`h1`・ボタン・場所以外の `root` の子を `hidden` にし、開いた世代を 1 進め、手順 3 を行う。閉じるときは世代を 1 進め、ミニマップを外し、場所を空にして `hidden` にし、隠した子を戻す
+      1. `root` の直下の最初の `h1` の後ろ（H1 の節では見出しと節の中身の間。無ければ先頭）に、差分を開くボタン（`renderDiffToggle`）と `hidden` の差分の場所を置く。場所の `id` はモジュールの通し番号でページの中で一意にする
+      2. ボタンを押すと開くか閉じる。開くときは、`h1`・ボタン・場所以外の `root` の子と `hideWith` の要素に `DIFF_HIDDEN_ATTRIBUTE` を付けて隠し（`hidden` は書き換えないため、節の開閉と影響し合わない）、開いた世代を 1 進め、手順 3 を行う。閉じるときは世代を 1 進め、ミニマップを外し、場所を空にして `hidden` にし、付けた `DIFF_HIDDEN_ATTRIBUTE` を外す（節はそのときの開閉のまま）
       3. 待ちの間、`LOADING_DELAY_MS` を過ぎたら場所に `renderDiffMessage({ kind: "loading" })`、`SPINNER_DELAY_MS` を過ぎたら `spinner: true` に替える。`source.revisions(docId)` を待ち、世代が変わっていたら何もしない。拒否か `checkRevisions` が投げたら、場所を `renderNotice({ name: docId, source: "diff-revisions" })` にして終わる
          - `[error]` リビジョンの一覧を取り出せない（`revisions`・`docId`・元のエラーを `console.error` の引数に並べる）
       4. リビジョンが 1 つなら `renderDiffMessage({ kind: "single" })` を出して終わる。2 つ以上なら、前に 2 番目・後に 1 番目を選んでリビジョンの選択（`renderRevisionPicker`）を置き、手順 5 を行う。前を選び直したら後の選べない項目を直し、後が前以前なら前の 1 つ新しいリビジョンに移す。選び直すたびに手順 5 を行う
       5. 選んだ 2 つの `source.content({ docId, revisionId })` を並んで待ち（選び直しの世代を進め、古い待ちの結果は描かない）、待ちの間は手順 3 と同じタイマーで、`LOADING_DELAY_MS` を過ぎたら行の場所を `renderDiffMessage({ kind: "loading" })` にして数の文とミニマップを外し、`SPINNER_DELAY_MS` を過ぎたら `spinner: true` に替える。拒否か文字列でないものがあれば、選択を残して行の場所を `renderNotice({ name: 取り出せなかったリビジョンの説明, source: "diff-content" })` にし、数の文とミニマップを外す
          - `[error]` 本文を取り出せない（`content`・`docId`・リビジョンの `id`・元のエラーか合わなかった値を並べる）
       6. `computeDiff` で比べる（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）。数がどちらも 0 なら `renderDiffMessage({ kind: "same" })` を出す。そうでなければ `renderDiffLines` で行を描き（`html` の塊の `before`・`after` は `renderHtml` を通す）、置いた前と後のプレビューの中身ごとに `scopeIds` で `id` に側ごとの頭（`{場所の id}-{範囲の番号}-{before か after}-`）を付けてから `renderHtml` の `attach` で操作を付け、外す関数を控える（描き直す・閉じる・外すときに呼ぶ）。数の文を書き換え、埋め込んだ HTML の見方のボタンに受け取りを付け、`attachMinimap` でミニマップを付ける
-      7. 外す関数は、世代を進め、待ちのタイマー・受け取り・ミニマップを外し、置いたボタンと場所を取り除いて隠した子を戻す
+      7. 外す関数は、世代を進め、待ちのタイマー・受け取り・ミニマップを外し、置いたボタンと場所を取り除いて付けた `DIFF_HIDDEN_ATTRIBUTE` を外す
     unit_tests:
       - name: test_attach_diff
         case: 正常
         summary: 開くと一覧と 2 つの本文を取り出して差分を描く
         condition: '`h1` と段落を描いた `root`。`r3`・`r2`・`r1` を返す取り出し元'
         mock: 取り出し元は呼ばれた引数を控える関数
-        expected: 開く前は `revisions` が呼ばれない。開くと `content` が `r2`・`r3` で呼ばれ、段落が `hidden`、`mdmark-diff-line` がある
+        expected: 開く前は `revisions` が呼ばれない。開くと `content` が `r2`・`r3` で呼ばれ、段落が `data-mdmark-diff-hidden` を持ち、`mdmark-diff-line` がある
       - name: test_attach_diff_when_reselected
         case: 正常
         summary: 前を選び直すと後の選択を直して描き直す
@@ -316,7 +324,7 @@ functions:
         summary: 外すと置いた要素を取り除き、本文を戻す
         condition: 開いた後に外す関数を呼ぶ
         mock: なし
-        expected: ボタンと場所が無く、段落が `hidden` を持たない。ミニマップの帯が無い
+        expected: ボタンと場所が無く、段落が `data-mdmark-diff-hidden` を持たない。ミニマップの帯が無い
       - name: test_attach_diff_when_content_loading
         case: 正常
         summary: 選び直した本文の待ちが 1 秒を過ぎると、前の差分に替えて読み込み中を出す
@@ -329,6 +337,12 @@ functions:
         condition: 変えた埋め込んだ HTML の範囲を 1 つ持つ 2 つの本文。開いた後に選び直し、閉じる
         mock: '`renderHtml` は、`attach` に渡された要素と外す関数を呼んだ回数を控える偽物'
         expected: 開くと `attach` が前と後のプレビューの中身で 1 回ずつ呼ばれる。選び直すと前の 2 つが外され、閉じると全て外される
+      - name: test_attach_diff_when_h1_section
+        case: 正常
+        summary: H1 の節では見出しと節の中身の間に置き、開いている間は右側の目次も隠し、閉じても節の開閉を変えない
+        condition: '`# 手引き` の節と、閉じた `## 導入` の節を `attachSections` で開閉にした `root`。`hideWith` に `aside` を渡し、開いてから閉じる'
+        mock: 取り出し元は `r2`・`r1` を返す関数
+        expected: ボタンが `h1` の直後で `section-手引き` の前。開いている間は `section-手引き` と `aside` が `data-mdmark-diff-hidden` を持つ。閉じた後はどちらも持たず、`section-導入` は `hidden="until-found"` のまま
     callees:
       - '#functions[checkRevisions]'
       - '#functions[computeDiff]'

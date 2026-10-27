@@ -106,6 +106,15 @@ styles:
         target: コードブロックの色分け
         value: '`--mdmark-color-syntax-{keyword,string,number,type,name,comment}` の既定とダークの値を `:root` に置き（部品設計『コードブロック』の CSS カスタムプロパティ）、`hljs-*` の class を 6 つの変数へ寄せる（部品設計の補足『色分けの種類』。コメントは斜体、`hljs-subst` は本文の色、`hljs-strong` は太字、`hljs-emphasis` は斜体）。`diff` の色分けの `hljs-addition`・`hljs-deletion` は差分の `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` にする（`dev/mock/refs/151/assets/code-block.css`）。値は `dev/mock/refs/97/assets/syntax-highlight.css`。`@media print` では色分けした `code` に `print-color-adjust: exact` を当て、明るい配色の色で印刷する'
         notes: 色分けの HTML は `mount` が描いた後に入れるため、規則は描いた文書の class `.mdmark` の下で当てる
+      - class_name: .mdmark:has(> .mdmark-side-toc) と .mdmark-content・.mdmark-side-toc-*・.mdmark-fold-all
+        target: 右側の目次と本文の列
+        value: '部品設計（右側の目次）の HTML に当てる規則。`dev/mock/refs/166/assets/side-toc.css` から取る。右側の目次を持つ描く先の要素を `container: mdmark / inline-size` の flex にして本文の列と右側の目次を並べ、行の長さの上限（`--mdmark-content-width`）は本文の列が持つ。右側の目次は `position: sticky` で `calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))` に留め、`data-mode`・`data-open`・`data-pinned` で出し方を切り替える。`@container mdmark (width < 48rem)` では右側の目次を本文の上の狭い幅の帯にして `var(--mdmark-sticky-top, 0px)` に留め、見出しに `scroll-margin-block-start: calc(var(--mdmark-sticky-top, 0px) + 3.5rem)` を付ける。広い幅の見出しは `scroll-margin-block-start: var(--mdmark-sticky-top, 0px)`'
+      - class_name: '@media print（右側の目次）'
+        target: 右側の目次の印刷
+        value: '右側の目次を隠し、描く先の要素を `display: block`、本文の列を `max-width: none` にして紙の幅いっぱいに並べる（`dev/mock/refs/166/assets/side-toc-print.css`）'
+      - class_name: .mdmark [data-mdmark-diff-hidden]
+        target: 差分を開いている間に隠す要素
+        value: '`display: none !important`（`DIFF_HIDDEN_ATTRIBUTE`）'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

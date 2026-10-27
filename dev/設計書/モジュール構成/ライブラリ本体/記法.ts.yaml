@@ -182,7 +182,7 @@ functions:
     container: src/render/syntax/sections.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`sections` がオンなら h2〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『節』の中身の要素（`toggle: false`）で囲む。部品『タブ』の中身の中で開いた節は、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いた節はタブをまたいで続く）。見出しの直後の `section` の印で `data-section` を決め、知らない値は警告を差し込んで `open` にする'
+    summary: 'コアルール。`sections` がオンなら h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『節』の中身の要素（`toggle: false`）で囲む。部品『タブ』の中身の中で開いた節は、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いた節はタブをまたいで続く）。見出しの直後の `section` の印で `data-section` を決め、知らない値は警告を差し込んで `open` にする'
     args:
       - name: state
         type: StateCore
@@ -217,6 +217,12 @@ functions:
         condition: '`## 導入` の後に、`### macOS`・`#### macOS の注意`・段落、`### Windows`・`#### Windows の注意`・段落を `tabs` の印で囲んだ範囲（`buildTabs` を先に当てる）'
         mock: なし
         expected: '`mdmark-tabs` の直下の中身が 2 つあり、1 つ目の中に `section-macos-の注意`、2 つ目の中に `section-windows-の注意` がある。`section-導入` の中に `mdmark-tabs` がある'
+      - name: test_wrap_sections_when_h1
+        case: 正常
+        summary: h1 の節も囲み、h2 の節をその入れ子にする
+        condition: '`# 手引き`・段落・`## 導入`・段落・`# 付録`'
+        mock: なし
+        expected: '`h1` が `mdmark-heading` を持ち、`section-手引き` の中に `section-導入` があり、`section-付録` は `section-手引き` の外'
   - name: readTableSpec
     title: 表の印を読む
     container: src/render/syntax/tables.ts

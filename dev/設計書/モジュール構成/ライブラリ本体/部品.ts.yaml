@@ -19,6 +19,7 @@ directory: |-
   ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy
   ├── toc.ts                       # 目次の renderToc
   ├── section.ts                   # 節の renderSection
+  ├── side-toc.ts                  # 右側の目次の renderSideToc
   ├── row-detail.ts                # 行の詳細の renderRowDetail
   ├── figure.ts                    # 図表の番号の renderFigure
   ├── doc-list.ts                  # 文書の一覧の renderDocList
@@ -480,7 +481,7 @@ functions:
     summary: 部品設計『節』の HTML を返す。`toggle` が `false` のときは開閉のボタンを置かず中身を隠さない
     args:
       - name: options
-        type: '{ level: 2 | 3 | 4; id: string; title: string; open?: boolean; toggle?: boolean; anchor?: boolean; body: string }'
+        type: '{ level: 1 | 2 | 3 | 4; id: string; title: string; open?: boolean; toggle?: boolean; anchor?: boolean; body: string }'
         required: true
         description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）
     returns:
@@ -499,6 +500,12 @@ functions:
         condition: '`open: false`、`toggle: false`'
         mock: なし
         expected: '`<button` が無く、`data-section="closed"` で `hidden` が無い'
+      - name: test_render_section_when_h1
+        case: 正常
+        summary: h1 の節も見出しと開閉のボタンを描く
+        condition: '`level: 1`、`open: true`、`toggle: true`'
+        mock: なし
+        expected: '`<h1 id="{id}"` の中に `mdmark-section-toggle` のボタンが `aria-expanded="true"` であり、中身が `data-section="open"`'
   - name: renderRowDetail
     title: 行の詳細を描く
     container: src/parts/row-detail.ts
@@ -802,6 +809,58 @@ functions:
     status: planned
     introduced:
       pr: 151
+  - name: renderSideToc
+    title: 右側の目次を描く
+    container: src/parts/side-toc.ts
+    summary: 部品設計『右側の目次』の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。`sections` が `false` ならすべて展開・すべて折りたたむを置かない。アイコンは lucide の ellipsis・pin・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に Ellipsis と ChevronsDownUp を追加する）
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ headings: SideTocHeading[]; mode?: SideTocMode; sections?: boolean; open?: boolean; pinned?: boolean; current?: string; panelId?: string }'
+        required: true
+        description: 部品設計の引数と、パネルの ID（既定 `mdmark-side-toc-panel`。目次を出すボタンの `aria-controls` に写す）
+    returns:
+      type: string
+      description: '`<aside class="mdmark-side-toc" data-mode="{mode}">` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_side_toc
+        case: 正常
+        summary: 見出しを入れ子にし、右端の線と読み上げ名を付ける
+        condition: '`手引き`（h1）・`導入`（h2）・`前提`（h3）・`使い方`（h2）を既定の引数で渡す'
+        mock: なし
+        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使い方`、`導入` の `li` の中に `#前提` のリンク。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"`、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある'
+      - name: test_render_side_toc_when_fixed_open
+        case: 正常
+        summary: 出し方と出している状態を属性に写す
+        condition: '`mode: "fixed"`、`open: true`、`pinned: true`'
+        mock: なし
+        expected: '`data-mode="fixed"`・`data-open`・`data-pinned` を持ち、ボタンが `aria-expanded="true"` と `aria-pressed="true"`'
+      - name: test_render_side_toc_when_without_sections
+        case: 正常
+        summary: sections が false ならすべて展開・すべて折りたたむを置かない
+        condition: '`sections: false`'
+        mock: なし
+        expected: '`data-fold-all` を持つボタンが無い'
+      - name: test_render_side_toc_when_current
+        case: 正常
+        summary: 今いる節の項目・線・狭い幅の帯の文字を付ける
+        condition: '`test_render_side_toc` の見出しに `current: "前提"`'
+        mock: なし
+        expected: '`#前提` のリンクだけが `aria-current="location"`、3 本目の線だけが `data-current`、`mdmark-side-toc-current` が `前提`'
+      - name: test_render_side_toc_when_text_has_html
+        case: 正常
+        summary: 見出しの文字と ID をエスケープする
+        condition: '`text: "<b>太字</b>"`、`id: "a\"b"` の見出し'
+        mock: なし
+        expected: '`&lt;b&gt;太字&lt;/b&gt;` と `href="#a&quot;b"` を含み、`<b>` を含まない'
+    refs:
+      - dev/設計書/部品設計/右側の目次.ts#
+    status: planned
+    introduced:
+      pr: 166
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -835,3 +894,20 @@ data_models:
       - name: kind
         type: '"add" | "del" | "highlight" | undefined'
         description: 行の種類。無ければ飾らない行
+  - name: SideTocHeading
+    title: 右側の目次の見出し
+    container: src/parts/side-toc.ts
+    summary: 右側の目次に並べる見出し 1 つ
+    properties:
+      - name: level
+        type: 1 | 2 | 3
+        description: 見出しのレベル
+      - name: id
+        type: string
+        description: 見出しの ID
+      - name: text
+        type: string
+        description: 目次に出す見出しの文字
+    status: planned
+    introduced:
+      pr: 166
