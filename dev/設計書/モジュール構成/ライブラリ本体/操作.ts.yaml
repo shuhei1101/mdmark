@@ -1085,7 +1085,7 @@ functions:
       - name: options
         type: '{ headings: { id: string; top: number }[]; line: number; viewportHeight: number }'
         required: true
-        description: 閉じた節の中に無い見出しの ID と、画面の上端からの位置（文書の順）、線の位置、画面の高さ
+        description: 閉じた節と選ばれていないタブの中に無い見出しの ID と、画面の上端からの位置（文書の順）、線の位置、画面の高さ
     returns:
       type: string | undefined
       description: 今いる節の見出しの ID
@@ -1114,7 +1114,7 @@ functions:
   - name: attachSideToc
     title: 右側の目次を付ける
     container: src/interact/side-toc.ts
-    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと `revealTarget` で見出しへ移り（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup` を受けて次の描画のタイミングに `pickCurrentHeading` で今いる節を決め直し、その項目に `aria-current="location"`、狭い幅の帯に `data-current`、目次を出すボタンに見出しの文字を置く。外す関数は包む前の子の並びへ戻す
+    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと `revealTarget` で見出しへ移り（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。外す関数は包む前の子の並びへ戻す
     kind: 関数
     scope: internal
     side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'
@@ -1179,13 +1179,25 @@ functions:
         summary: スクロールすると今いる節の項目を付け替える
         condition: 見出しが 3 つある長い本文で、2 つ目の見出しを線より上へスクロールして次の描画を待つ
         mock: なし
-        expected: 2 つ目の項目だけが `aria-current="location"` で、目次を出すボタンに 2 つ目の見出しの文字が出る
+        expected: 2 つ目の項目だけが `aria-current="location"`、右端の線の 2 本目だけが `data-current` を持ち、目次を出すボタンに 2 つ目の見出しの文字が出る
       - name: test_attach_side_toc_when_detached
         case: 正常
         summary: 外すと包む前の子の並びへ戻す
         condition: 付けてから外す
         mock: なし
         expected: '`el` の子が付ける前と同じ並びで、`aside` が無い'
+      - name: test_attach_side_toc_when_heading_in_unselected_tab
+        case: 正常
+        summary: 選ばれていないタブの中の見出しを今いる節に数えない
+        condition: '`## 導入` の後に、`### macOS` と `### Windows` を `tabs` の印で囲んだ長い本文を `attachInteractions` で操作にしてから付け、`macOS` のタブが選ばれたまま `macOS` の見出しを線より上へスクロールして次の描画を待つ'
+        mock: なし
+        expected: '`#macOS` の項目だけが `aria-current="location"` で、`#Windows` の項目は持たない'
+      - name: test_attach_side_toc_when_fold_all_moves_current
+        case: 正常
+        summary: すべて折りたたむと、閉じた節に入った見出しから今いる節を決め直す
+        condition: '`# 手引き`・`## 導入`・`### 前提` の長い本文で `前提` を今いる節にした後、すべて折りたたむを押して次の描画を待つ'
+        mock: なし
+        expected: '`#前提` の項目が `aria-current` を持たず、閉じていない節の見出しの項目が `aria-current="location"` を持つ'
     status: planned
     introduced:
       pr: 166
