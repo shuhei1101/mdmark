@@ -51,6 +51,10 @@ elements:
       # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
       # libraries:
       #   my-chart: ./libs/my-chart.js
+
+      # 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
+      # side-toc:
+      #   mode: fixed
       ```
     visible_when: 雛形を作ったとき
     refs:
