@@ -135,6 +135,8 @@
       // 今の URL と同じ #ID の項目: URL が変わらず hashchange が起きないので、移る処理を呼び直す
       const link = event.target.closest(".mdmark-side-toc-list a");
       if (link && decodeURIComponent(location.hash) === link.getAttribute("href")) window.dispatchEvent(new HashChangeEvent("hashchange"));
+      // 本文に重ねて開いた目次（狭い幅・ポインターを置けない端末）で項目を押したとき: 移った先を隠さないよう閉じる
+      if (link && "open" in aside.dataset && getComputedStyle(aside.querySelector(".mdmark-side-toc-panel")).position === "absolute") setOpen(aside, false);
     });
 
     // 出している目次の中で Esc: 目次を隠し、目次を出すボタンへフォーカスを戻す
