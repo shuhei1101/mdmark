@@ -10,7 +10,7 @@ const TITLE_MARKER = "\u0000mdmark-title\u0000";
 /** 節の開閉の指定 */
 const SECTION_STATES = ["closed", "open"];
 
-/** `sections` がオンなら、h2〜h4 の見出しの後ろから次の同じか上の階層の見出しの前までを節の中身の要素で囲む。タブの中身の中で開いた節は、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いた節はタブをまたいで続く） */
+/** `sections` がオンなら、h1〜h4 の見出しの後ろから次の同じか上の階層の見出しの前までを節の中身の要素で囲む。タブの中身の中で開いた節は、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いた節はタブをまたいで続く） */
 export function wrapSections(state: StateCore): void {
   if (!featureOn(state, "sections")) {
     return;
@@ -57,7 +57,7 @@ export function wrapSections(state: StateCore): void {
     }
     const inline = tokens[index + 1];
     const mark = markOf(tokens[index + 3]);
-    if (level < 2 || level > 4 || !inline) {
+    if (level > 4 || !inline) {
       out.push(token);
       continue;
     }
@@ -66,7 +66,7 @@ export function wrapSections(state: StateCore): void {
     const value = section?.args.args[0];
     const known = value === undefined || SECTION_STATES.includes(value);
     const html = renderSection({
-      level: level as 2 | 3 | 4,
+      level: level as 1 | 2 | 3 | 4,
       id: String(token.attrGet("id") ?? ""),
       title: TITLE_MARKER,
       open: value !== "closed",

@@ -342,6 +342,13 @@ export function validateConfig(
     delete config.syntax;
   }
 
+  if (
+    raw["side-toc"] !== undefined &&
+    !isValidSideToc(raw["side-toc"], file, issues)
+  ) {
+    delete config["side-toc"];
+  }
+
   if (raw.check !== undefined) {
     const check = validateCheck(raw.check, file, issues);
     if (check) {
@@ -380,6 +387,39 @@ function isValidTooltips(
         file,
         "tooltips.placement",
         "`tooltips.placement` は `top` か `bottom` で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `side-toc` を検める。キーと値の形でなければ、`mode` が `hover` と `fixed` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
+function isValidSideToc(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "side-toc",
+        "`side-toc` は `mode` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.mode !== undefined &&
+    value.mode !== "hover" &&
+    value.mode !== "fixed"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "side-toc.mode",
+        "`side-toc.mode` は `hover` か `fixed` で書いてください。",
       ),
     );
     return false;

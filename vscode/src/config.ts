@@ -1,12 +1,14 @@
 import { isAbsolute, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`side-toc` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
   /** 記載した値のまま。URL は呼ぶ側が直す */
   libraries?: Record<string, unknown>;
+  /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
+  "side-toc"?: Record<string, unknown>;
 };
 
 /** 設定ファイルの読み取りの結果 */
@@ -19,7 +21,7 @@ export type ConfigLoad =
 export type ReadTextFile = (path: string) => Promise<string>;
 
 /** `mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す */
-export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビューは features と libraries を読みます
+export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビューは features・libraries・side-toc を読みます
 
 # 機能のオン・オフ（使うときは次の 2 行の # を外す）
 # features:
@@ -28,6 +30,10 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビュー�
 # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
 # libraries:
 #   my-chart: ./libs/my-chart.js
+
+# 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
+# side-toc:
+#   mode: fixed
 `;
 
 /** `http:`・`https:` の URL か */
@@ -49,7 +55,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** YAML を読み、最上位がマップのときだけ `features`・`libraries` を取り出す */
+/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc` を取り出す */
 export function parseConfig(text: string): ConfigLoad {
   let parsed: unknown;
   try {
@@ -71,6 +77,9 @@ export function parseConfig(text: string): ConfigLoad {
     }
     if (isMap(parsed.libraries)) {
       config.libraries = parsed.libraries;
+    }
+    if (isMap(parsed["side-toc"])) {
+      config["side-toc"] = parsed["side-toc"];
     }
   }
   return { kind: "ok", config };

@@ -51,6 +51,9 @@ const ID_PREFIX = "mdmark-diff-panel-";
 /** 差分の場所の `id` に使う通し番号 */
 let serial = 0;
 
+/** 差分を開いている間に隠す本文の要素と右側の目次に付ける属性。`index.css` が `display: none !important` で隠す */
+export const DIFF_HIDDEN_ATTRIBUTE = "data-mdmark-diff-hidden";
+
 /** HTML 文字列から要素を作る */
 function parseElement(html: string): HTMLElement {
   const template = document.createElement("template");
@@ -140,7 +143,7 @@ function renderBlocks(
 
 /** 描いた文書に「変更を見る」と差分の場所を置き、開く・選び直す・閉じるを受け取って取り出し元を呼び、差分を描く。差分を閉じ、待ちと受け取りとミニマップを片付け、置いた要素を取り除く関数を返す */
 export function attachDiff(options: {
-  /** 描いた要素 */
+  /** 描いた本文（右側の目次を置いたときは本文の列） */
   root: HTMLElement;
   /** 使う側の取り出し元 */
   source: DiffSource;
@@ -148,8 +151,10 @@ export function attachDiff(options: {
   docId: string;
   /** 埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数 */
   renderHtml: DiffHtmlRenderer;
+  /** 差分を開いている間、`root` の外で一緒に隠す要素（右側の目次） */
+  hideWith?: HTMLElement[];
 }): () => void {
-  const { root, source, docId, renderHtml } = options;
+  const { root, source, docId, renderHtml, hideWith = [] } = options;
   serial += 1;
   const panelId = `${ID_PREFIX}${serial}`;
   const bar = parseElement(renderDiffToggle({ controls: panelId }));
@@ -170,6 +175,14 @@ export function attachDiff(options: {
 
   // 開いている間に隠した本文の要素
   let hidden: HTMLElement[] = [];
+
+  /** 開いている間に隠した要素と `hideWith` の要素の属性を外す */
+  const showHidden = (): void => {
+    for (const element of [...hidden, ...hideWith]) {
+      element.removeAttribute(DIFF_HIDDEN_ATTRIBUTE);
+    }
+    hidden = [];
+  };
   // 開いた世代と選び直しの世代: 進めるたびに、前の待ちの結果を捨てる
   let openGeneration = 0;
   let selectGeneration = 0;
@@ -312,11 +325,10 @@ export function attachDiff(options: {
         child instanceof HTMLElement &&
         child !== title &&
         child !== bar &&
-        child !== panel &&
-        !child.hidden,
+        child !== panel,
     );
-    for (const child of hidden) {
-      child.hidden = true;
+    for (const element of [...hidden, ...hideWith]) {
+      element.setAttribute(DIFF_HIDDEN_ATTRIBUTE, "");
     }
     panel.hidden = false;
     panel.replaceChildren();
@@ -399,10 +411,7 @@ export function attachDiff(options: {
     panel.replaceChildren();
     panel.hidden = true;
     toggle.setAttribute("aria-expanded", "false");
-    for (const child of hidden) {
-      child.hidden = false;
-    }
-    hidden = [];
+    showHidden();
   };
 
   /** 埋め込んだ HTML の「ソース」「プレビュー」のボタンを押したとき、押した見方の中身だけを出す */

@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 import { build } from "esbuild";
 import type { HLJSApi, LanguageFn } from "highlight.js";
+import type { SideTocMode } from "../src/config.ts";
 import {
   type DiagramDirective,
   definitionWarning,
@@ -47,6 +48,7 @@ import { type CopyState, renderParam } from "../src/parts/param.ts";
 import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
 import { renderRowDetail } from "../src/parts/row-detail.ts";
 import { renderSection } from "../src/parts/section.ts";
+import { renderSideToc, type SideTocHeading } from "../src/parts/side-toc.ts";
 import { renderSteps } from "../src/parts/steps.ts";
 import { renderSyntaxWarning } from "../src/parts/syntax-warning.ts";
 import { renderTable, type TableOptions } from "../src/parts/table.ts";
@@ -497,9 +499,18 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       : html;
   },
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
+  "side-toc": (args) =>
+    renderSideToc({
+      headings: args.headings as SideTocHeading[],
+      mode: args.mode as SideTocMode | undefined,
+      sections: args.sections as boolean | undefined,
+      open: args.open as boolean | undefined,
+      pinned: args.pinned as boolean | undefined,
+      current: args.current as string | undefined,
+    }),
   section: (args) =>
     renderSection({
-      level: args.level as 2 | 3 | 4,
+      level: args.level as 1 | 2 | 3 | 4,
       id: String(args.id),
       title: String(args.title),
       open: args.open as boolean | undefined,
