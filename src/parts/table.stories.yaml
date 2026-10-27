@@ -192,7 +192,7 @@ stories:
       kind: data
       features: '["sort","pin","filter","total"]'
       columns: '["名前","数量","単価"]'
-      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
       filters: '[{"column":0,"kind":"text"}]'
       totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: TotalsFiltered
@@ -203,7 +203,7 @@ stories:
       kind: data
       features: '["sort","pin","filter","total"]'
       columns: '["名前","数量","単価"]'
-      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
       filters: '[{"column":0,"kind":"text"}]'
       filterValues: '[{"column":0,"text":"りんご"}]'
       totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
@@ -215,7 +215,7 @@ stories:
       kind: data
       features: '["sort","pin","filter","count","total"]'
       columns: '["名前","数量","単価"]'
-      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
       filters: '[{"column":0,"kind":"text"}]'
       filterValues: '[{"column":0,"text":"存在しない"}]'
       totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
@@ -262,3 +262,112 @@ stories:
       hide: '[1]'
       totals: '[{"column":2,"calc":"sum"}]'
       rowIds: '["なつめ","かりん","ざくろ"]'
+  - name: TotalsUnreadable
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","total"]'
+      columns: '["名前","数量","単価"]'
+      rows: '[["りんご","10","100"],["みかん","約 3","200"],["りんご飴","33","300"],["ぶどう","-","400"]]'
+      filters: '[{"column":0,"kind":"text"}]'
+      totals: '[{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+  - name: TotalsMenuOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","total"]'
+      columns: '["名前","数量","単価"]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
+      totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+      openTotals: 'true'
+  - name: TotalsHidden
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","total"]'
+      columns: '["名前","数量","単価"]'
+      rows: '[["りんご","10","100"],["みかん","2","200"],["りんご飴","33","300"],["ぶどう","","400"]]'
+      totals: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
+      shownTotals: '["sum"]'
+  - name: CopyMenuOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]'
+      openCopy: 'true'
+  - name: CopyFallback
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]'
+      copyState: failed
+      copyFallback: '{"format":"markdown","text":"| 名前 | 説明 | 更新日 |\n| --- | --- | --- |\n| りんご | 描画を速くする | 2026-10-01 |\n| みかん | 印刷を直す | 2026-10-10 |"}'
+  - name: RowLinkCopied
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","rowlink"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      rowIds: '["りんご","みかん","りんご飴"]'
+      targetRow: '1'
+      rowLinkNotice: copied
+  - name: RowLinkFailed
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","rowlink"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      rowIds: '["りんご","みかん","りんご飴"]'
+      targetRow: '1'
+      rowLinkNotice: failed
+  - name: Folded
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","更新日","説明"]'
+      rows: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]'
+      folded: 'true'
+  - name: FoldedOpen
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","更新日","説明"]'
+      rows: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]'
+      folded: 'true'
+      unfoldedRows: '[0]'
+  - name: StickyRows
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","total"]'
+      columns: '["番号","数量"]'
+      rows: '[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"],["6","6"],["7","7"],["8","8"],["9","9"],["10","10"],["11","11"],["12","12"],["13","13"],["14","14"],["15","15"],["16","16"],["17","17"],["18","18"],["19","19"],["20","20"],["21","21"],["22","22"],["23","23"],["24","24"],["25","25"],["26","26"],["27","27"],["28","28"],["29","29"],["30","30"]]'
+      totals: '[{"column":1,"calc":"sum"}]'

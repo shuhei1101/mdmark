@@ -484,7 +484,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: String(args.title ?? ""),
       lineNumbers: args.lineNumbers === true,
       lines,
+      ...(typeof args.fileName === "string" ? { fileName: args.fileName } : {}),
       ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
+      ...(typeof args.copyState === "string"
+        ? { copyState: args.copyState as "idle" | "copied" | "failed" }
+        : {}),
     });
     return args.highlight === true
       ? highlightCodeBlock(html, language, lines)
@@ -508,6 +512,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       columns,
       label: String(args.label),
       open: args.open as boolean | undefined,
+      foldedColumn: args.foldedColumn as
+        | { name: string; html: string }
+        | undefined,
       body: bodyOf(args, SAMPLE_BODY),
     });
     const head = `<td><span class="mdmark-row-head">${toggle}${String(args.label)}</span></td>`;
