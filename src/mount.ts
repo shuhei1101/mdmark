@@ -9,6 +9,7 @@ import type { DiffSource } from "./diff/source.ts";
 import { highlightCodeBlocks } from "./highlight.ts";
 import { attachInteractions } from "./interact/index.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
+import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
@@ -28,6 +29,8 @@ export type MountOptions = {
   docId?: string;
   /** `collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
   references?: MdmarkReferences;
+  /** `buildAliases` が作ったエイリアス。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使えないエイリアス（`env` を含む）は照合せず、知らせの枠も出さない */
+  aliases?: MdmarkAlias[];
   /** 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る */
   diffSource?: DiffSource;
   /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
@@ -74,6 +77,7 @@ function createDiffHtmlRenderer(options: {
       index: opts.index,
       docId: opts.docId,
       references: opts.references,
+      aliases: opts.aliases,
     });
     const template = document.createElement("template");
     template.innerHTML = rendered.html;
@@ -150,6 +154,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       index: opts.index,
       docId: opts.docId,
       references: opts.references,
+      aliases: opts.aliases,
     });
     el.innerHTML = rendered.html;
     el.classList.add(ROOT_CLASS);

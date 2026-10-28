@@ -112,14 +112,20 @@ scenarios:
   - name: 正常シナリオ（用語と被参照の機能を外す）
     setup:
       - name: mdmark を読むページ
-        description: 索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く。ほかは正常シナリオと同じ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照・読み込んだエイリアスを渡して文書を描く。ほかは正常シナリオと同じ
         notes: 設定の `features` は `glossary`・`backlinks` を書かない（既定のオン）
       - name: 用語と被参照を持つ索引
         description: 用語 `ワークスペース`（`avoid` に `作業場`）を持ち、ほかの文書の `related` が描く文書を指す索引
+        notes: '-'
+      - name: エイリアス
+        description: '`command` の `単体テスト`（コマンド `npm run test:unit`）'
+        notes: '-'
       - name: 機能を外す Markdown
-        description: '先頭に `<!-- features: -glossary -backlinks -->` を持ち、段落に `ワークスペース` とやめた言い方 `作業場` が出て、`<!-- glossary: term=用語 meaning=意味 -->` で囲んだ表を持つ文書'
+        description: '先頭に `<!-- features: -glossary -backlinks -->` を持ち、段落に `ワークスペース`・やめた言い方 `作業場`・`単体テスト` が出て、`<!-- glossary: term=用語 meaning=意味 -->` で囲んだ表を持つ文書'
+        notes: '-'
       - name: Mock
         description: 正常シナリオと同じ
+        notes: '-'
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -132,6 +138,7 @@ scenarios:
     expected:
       - '`ワークスペース` に下線が付いていない'
       - やめた言い方 `作業場` にマーカーが付いていない
+      - エイリアスの `単体テスト` に下線が付いていない
       - 被参照の一覧が無い
       - 用語集の表が普通の表として描かれ、本文に印の文字が出ていない
     test: test_normal_when_glossary_disabled

@@ -15,6 +15,7 @@ import {
   collectReferences,
   type MdmarkReferences,
 } from "../knowledge/references.ts";
+import { loadAliases } from "./aliases.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
@@ -230,6 +231,13 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     warnings,
   });
 
+  // 設定の `aliases` の YAML を読み、使えない行・レコードを警告にする
+  const aliasResult = await loadAliases(loaded);
+  for (const issue of aliasResult.issues) {
+    const where = issue.where === "" ? "" : `:${issue.where}`;
+    warnings.push(`${issue.file}${where}: ${issue.kind}: ${issue.message}`);
+  }
+
   const refs = await prepareReferences({ ...options, markdowns: originals });
   const payload: ExportPayload = {
     kind,
@@ -263,6 +271,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     modules,
     extensions,
     ...(syntax ? { syntax } : {}),
+    ...(aliasResult.aliases ? { aliases: aliasResult.aliases } : {}),
   };
   return { payload, themeCss, warnings };
 }

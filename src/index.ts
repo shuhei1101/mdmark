@@ -18,6 +18,13 @@ export type {
   MdmarkMarkArgs,
 } from "./extensions.ts";
 export { registerExtension } from "./extensions.ts";
+export type {
+  MdmarkAlias,
+  MdmarkAliasProblem,
+  MdmarkAliasSource,
+  MdmarkAliasType,
+} from "./knowledge/aliases.ts";
+export { buildAliases } from "./knowledge/aliases.ts";
 export type { MdmarkIndexIssue } from "./knowledge/check.ts";
 export { checkIndex } from "./knowledge/check.ts";
 export type {

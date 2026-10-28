@@ -29,5 +29,5 @@ entries:
     reason: 最上位に省いてよい tags と、文書の tags の要素に name を持つオブジェクトと、文書の related の要素に to・type・when を持つオブジェクトを足しただけで、文字列の要素は読めるまま件数の上限も置かないので、古い索引もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.config.schema.json
-    sha256: c1ee8b7f3494c2bf312727294f9cc542d007e50a2c8d7071e504db1db3e12184
-    reason: features に省いてよい side-toc と、省いてよい side-toc を足しただけで、古い設定もそのまま新しい Schema に合う
+    sha256: a5ecf36c8fe2279ed315689b10a89cddaeb29e52e78c2983aa7885a5d2e0e946
+    reason: features に省いてよい side-toc と、省いてよい side-toc と、省いてよい aliases を足しただけで、古い設定もそのまま新しい Schema に合う

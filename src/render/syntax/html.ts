@@ -210,9 +210,10 @@ function termsFilter(state: StateCore): (text: string) => string {
     docId: env.docId,
     ownGlossary: env.ownGlossary,
     references: env.mdmarkReferences,
+    aliases: env.aliases,
     features: env.features,
   });
-  if (dictionary.words.length === 0) {
+  if (dictionary.words.length === 0 && dictionary.avoided.size === 0) {
     return (text) => text;
   }
   const ownPath = env.index?.docs.find((doc) => doc.id === env.docId)?.path;

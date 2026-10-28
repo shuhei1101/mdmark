@@ -599,7 +599,7 @@ functions:
       置き換える HTML は次の順で作る。
 
       1. 中身の `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` を正規表現で拾い、中身の文字を `readDefinition` に渡す（`diagrams` がオフなら要素を中身ごと消す）。読めたら図の部品の HTML（`buildDiagrams` と同じ作りで `markOwn` を掛ける）、読めなければ書き方の警告の HTML を、その場所へ一時的な印（`<!--mdmark-part:{n}-->`）で預ける
-      2. 残りを `sanitizeEmbedded` で落とす。`onText` は `buildDictionary`・`findWords`・`renderTermTip` で用語と文書の別名に下線を引く（範囲ごとに語の最初の 1 回だけ。`glossary` と `backlinks` が両方オフなら文字のまま）
+      2. 残りを `sanitizeEmbedded` で落とす。`onText` は `buildDictionary`・`findWords`・`renderTermTip` で用語・エイリアス（`env.aliases`。`termsRule` と同じく種類のツールチップにする）・文書の別名に下線を引く（範囲ごとに語の最初の 1 回だけ。`glossary` と `backlinks` が両方オフなら文字のまま）
       3. `hints` がオンなら `data-hint` を持つ要素に `renderHintMarkup` を当て、オフなら `data-hint` を消す
       4. 預けた印を図の部品と書き方の警告の HTML に戻し、`<div class="mdmark-html">`（`markOwn`）で囲む
       5. 書いた人の要素にも `markOwn` を掛け、最後の `sanitize` で下線・ヒントの class と `style` を残す（中身は 2. で落とし済み）
@@ -654,6 +654,12 @@ functions:
         condition: 索引の用語 `ワークスペース`（`avoid` に `作業場`）と、範囲の HTML の `p` に `作業場` が 2 回
         mock: なし
         expected: '`div.mdmark-html .mdmark-term-avoided` が 1 つ'
+      - name: test_build_embedded_html_when_alias
+        case: 正常
+        summary: 中の文字のエイリアスに下線を引き、種類のツールチップを置く
+        condition: '`env.aliases` に `url` の `課題の一覧`（URL `https://github.com/shuhei1101/mdmark/issues`）と、範囲の HTML の `p` に `課題の一覧` が 2 回'
+        mock: なし
+        expected: '`div.mdmark-html .mdmark-term-wrap` が 1 つで、中に `a.mdmark-term-tip-link` の `href` がその URL'
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[sanitizeEmbedded]
       - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]

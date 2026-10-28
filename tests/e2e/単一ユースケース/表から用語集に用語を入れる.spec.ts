@@ -4,6 +4,7 @@ import {
   buildDistRoot,
   mountDocument,
   openPage,
+  rawAliases,
   removeDistRoot,
 } from "../dist-page.ts";
 
@@ -256,5 +257,54 @@ test("test_normal_when_other_document_avoid_column", async ({ page }) => {
   );
   await expect(tip.locator(".mdmark-term-tip-meaning")).toHaveText(
     "作業の置き場所",
+  );
+});
+
+// 索引・エイリアス・表に同じ語があるとき、索引 → エイリアス → 表の順で先の意味をツールチップに出す（正常シナリオ（索引とエイリアスと表に同じ語がある））
+test("test_normal_when_aliases_have_same_term", async ({ page }) => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "doc", path: "doc.md", title: "描く文書" }],
+    terms: [{ id: "mark", term: "印", meaning: "索引に書いた意味" }],
+  };
+  const aliases = rawAliases([
+    {
+      alias_type: "term",
+      id: "mark",
+      name: "印",
+      aliases: [],
+      description: "エイリアスに書いた意味",
+    },
+    {
+      alias_type: "term",
+      id: "mark-word",
+      name: "マーク",
+      aliases: [],
+      description: "エイリアスに書いたマークの意味",
+    },
+  ]);
+  const markdown = `${GLOSSARY_TABLE}\n印、マーク、オン・オフの印を書く。\n`;
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown, index, docId: "doc", aliases });
+  // 検証
+  await expect(page.locator("#doc p .mdmark-term")).toHaveText([
+    "印",
+    "マーク",
+    "オン・オフの印",
+  ]);
+  const meanings = [
+    "索引に書いた意味",
+    "エイリアスに書いたマークの意味",
+    "HTML コメントで書く指定",
+  ];
+  for (const [position, meaning] of meanings.entries()) {
+    const wrap = page.locator("#doc p .mdmark-term-wrap").nth(position);
+    await wrap.locator(".mdmark-term").hover();
+    await expect(wrap.locator(".mdmark-term-tip-meaning")).toHaveText(meaning);
+  }
+  await expect(page.locator("#doc")).not.toContainText(
+    "エイリアスに書いた意味",
   );
 });

@@ -6,6 +6,8 @@ directory: |-
   ├── main.ts       # 引数の読み取りとコマンドの振り分け
   ├── errors.ts     # CLI の誤りと入出力の型
   ├── config.ts     # 設定ファイルの探索・読み取り・形の検査
+  ├── alias-schema.ts # 設定の aliases の行の JSON Schema での検査
+  ├── aliases.ts    # aliases の行の paths の YAML の読み取りとエイリアスの組み立て
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
   ├── embed.ts      # 外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
   ├── html.ts       # 書き出す HTML の組み立て
@@ -16,6 +18,7 @@ directory: |-
   ├── build.ts      # mdmark build
   └── index-file.ts # 索引のファイルの項目の書き換え
   templates/        # init が置く雛形の正本
+  schemas/alias-inject/v0.2.0/aliases.schema.json # 取り込んだ alias-inject の行の Schema
   ```
 data_models:
   - name: CliIo
@@ -57,7 +60,7 @@ data_models:
         description: 設定ファイルのあるフォルダ（設定のパスと glob の基準）
       - name: config
         type: CliConfig
-        description: 読んだ値。`MdmarkConfig` に `index`・`theme`・`extensions`・`build` を足した形
+        description: 読んだ値。`MdmarkConfig` に `index`・`theme`・`extensions`・`build`・`aliases`（Schema に合わない行は `null`）を足した形
   - name: CheckIssue
     title: 点検のずれ
     container: src/cli/check.ts
@@ -71,7 +74,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind'] | 'unknown_mark'"
+        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'unknown_mark'"
         description: ずれの種類
       - name: message
         type: string
@@ -112,6 +115,9 @@ data_models:
       - name: syntax
         type: '{ core: string; languages: Record<string, string> } | undefined'
         description: 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        description: '`loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない'
 functions:
   - name: main
     title: CLI を実行する
@@ -255,7 +261,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。知らない最上位のキーは拒まない。形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -325,6 +331,12 @@ functions:
         condition: '`side-toc.mode` が `left` の値と、`fixed` の値'
         mock: なし
         expected: '`left` は `where` が `side-toc.mode` の `schema` のずれが 1 件で `config["side-toc"]` が無い。`fixed` は `issues` が空で `config["side-toc"].mode` が `fixed`'
+      - name: test_validate_config_when_aliases_invalid
+        case: 異常
+        summary: aliases の Schema に合わない行を schema のずれにし、行の位置を保つ
+        condition: '`aliases` に、Schema に合う行と、`metadata.alias_type` が `{type: custom, value: memo}` の行'
+        mock: なし
+        expected: '`schema` のずれが 1 件で `where` が `aliases[1].metadata.alias_type.value`、`config.aliases` の長さが 2 で 2 番目が `null`'
     status: planned
     introduced:
       pr: 32
@@ -819,7 +831,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -881,6 +893,12 @@ functions:
         condition: '`side-toc.mode: fixed` を持つ設定と、`side-toc` を持たない設定'
         mock: 一時フォルダ
         expected: '前者の `payload.config["side-toc"]` が `{ mode: "fixed" }`、後者は `payload.config` が `side-toc` を持たない'
+      - name: test_prepare_embeds_when_aliases
+        case: 正常
+        summary: エイリアスを payload に入れ、ずれを警告にする
+        condition: インターフェース定義『文書をHTMLに書き出す』の「正常系（エイリアスを読む）」のフォルダ
+        mock: 一時フォルダ
+        expected: '`payload.aliases` が `command` の `run-test` の 1 件だけで `dev-server` を含まず、`warnings` に `alias_required_empty` の 1 件がある'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[bundleModule]'
@@ -888,6 +906,7 @@ functions:
       - '#functions[readIndexWithDocuments]'
       - '#functions[documentTitle]'
       - '#functions[usedSyntaxLanguages]'
+      - '#functions[loadAliases]'
     status: planned
     introduced:
       pr: 32
@@ -1063,7 +1082,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -1109,6 +1128,12 @@ functions:
         condition: '`index` の無い設定を持ち git のリポジトリでない一時フォルダ、`{ base: "no-such-ref" }`'
         mock: 一時フォルダ
         expected: 例外を投げず、`base` を渡さないときと同じずれを返す
+      - name: test_collect_check_issues_when_alias_drift
+        case: 正常
+        summary: エイリアスのずれを checkIndex の後・unknown_mark の前に置く
+        condition: インターフェース定義『設定と索引を点検する』の「正常系（エイリアスにずれがある）」のフォルダに、知らない印のある文書を加える
+        mock: 一時フォルダ
+        expected: ずれの並びが `alias_no_files`（`missing/*.yaml`）→ `alias_required_empty`（`description`）→ `unknown_mark` で、`env` のレコードを指すずれが無い
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
@@ -1706,6 +1731,112 @@ functions:
     status: planned
     introduced:
       pr: 127
+  - name: validateAliasRows
+    title: エイリアスの行を Schema で検める
+    container: src/cli/alias-schema.ts
+    usecase: 共通
+    summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で当て、ずれを日本語の 1 文の `schema` のずれにする
+    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.2.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使わない）。この Schema は alias-inject v0.2.0 の `aliases.schema.yaml` を内容を変えず JSON にして置き（他の `schemas/` と同じく JSON で持ち、esbuild がそのまま束ねる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。Schema を変えるので `migrations/no-steps.yaml` に `next` の行を置く。ajv のエラーのうち、`anyOf` の枝のエラーは、枝の判別子（`type` の `const`）に合う枝のものだけを残す（`schemaPath` の枝の番号で絞る。判別子に合う枝が無ければ、判別子の `const` の値を並べた 1 件にする）。`instancePath` の `/1/metadata/alias_type` を `aliases[1].metadata.alias_type` の形にして `where` にする。`message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。記載してください。``、`type` は ``\`{where}\`（{title}）は{型}にしてください。``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。記載してください。``、`const`・`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。消してください。``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。``（`where` が空なら `aliases`）。1 つの場所に同じ文が重なるときは 1 件にする。ずれのある行は返す行で `null` に置き換え、行の位置を保つ。引数を書き換えない'
+    kind: 関数
+    scope: public
+    args:
+      - name: rows
+        type: unknown[]
+        required: true
+        description: 設定の `aliases` の配列
+      - name: file
+        type: string
+        required: true
+        description: ずれの `file` に出す設定ファイルの名前
+    returns:
+      type: '{ rows: unknown[]; issues: CheckIssue[] }'
+      description: Schema に合わない行を `null` にした行の並びと、`schema` のずれ（並びは行の順、行の中は ajv が返した順）
+    refs:
+      - dev/設計書/外部ライブラリ/ajv.yaml#
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[エイリアスの点検]
+    unit_tests:
+      - name: test_validate_alias_rows
+        case: 正常
+        summary: Schema に合う行はずれにせず、そのまま返す
+        condition: '`{id: terms, paths: [aliases/*.yaml], metadata: {alias_type: {type: ref, field: alias_type}}}` の 1 行'
+        mock: なし
+        expected: '`issues` が空、`rows` が渡した行と同じ'
+      - name: test_validate_alias_rows_when_required_missing
+        case: 異常
+        summary: 必須のキーが無い行を、キーの title を入れた 1 文にする
+        condition: '`paths` の無い行'
+        mock: なし
+        expected: '`where` が `aliases[0]`、`message` に `paths` と `読む YAML` が入り、`rows[0]` が `null`'
+      - name: test_validate_alias_rows_when_any_of_branch
+        case: 異常
+        summary: anyOf の枝のエラーを判別子に合う枝のものだけにする
+        condition: '`metadata.alias_type` が `{type: ref}`（`field` が無い）'
+        mock: なし
+        expected: ずれが 1 件で `where` が `aliases[0].metadata.alias_type`、`message` に `field` が入り、`custom` の枝の `value` を求める文が無い
+      - name: test_validate_alias_rows_when_discriminator_unknown
+        case: 異常
+        summary: 判別子がどの枝にも合わなければ、許す値を並べた 1 件にする
+        condition: '`metadata.alias_type` が `{type: copy, field: alias_type}`'
+        mock: なし
+        expected: ずれが 1 件で、`message` に `ref` と `custom` が入る
+    status: planned
+    introduced:
+      pr: 176
+  - name: loadAliases
+    title: エイリアスを読む
+    container: src/cli/aliases.ts
+    usecase: 共通
+    summary: 設定の `aliases` の行の `paths` を設定ファイルのフォルダから引いて YAML を読み、`buildAliases` に渡して、エイリアスとずれを返す
+    description: '`check`・`export`・`build` が共通で使う。オブジェクトで `enabled` が `false` でない行ごとに、`paths` の各 glob を `node:fs/promises` の `glob`（`cwd` は設定ファイルのフォルダ。`globFiles` と同じやり方）で引き、当たったファイルを重ねずパスの順に並べる。当たるファイルが 0 件の行は `alias_no_files`（`file` は設定ファイル、`where` は `aliases[{行の位置}].paths`、`message` は ```{paths を `・` で並べた}` に当たるファイルがありません。`paths` を直してください。``）にする。当たったファイルは `yaml` で読み、読めないファイルは `alias_unreadable`（`file` はそのファイル、`where` は空、`message` は `loadConfig` と同じ形の ``{行} 行目を YAML として読めません（{理由}）。字下げと書き方を直してください。``）にしてそのファイルを使わない。読めたファイルを `MdmarkAliasSource`（`path` は設定ファイルのフォルダからの相対パス）にして、`config.aliases` の行と一緒に `buildAliases`（`configFile` は設定ファイルの名前）に渡し、返った `problems` を `CheckIssue` にする。ずれの並びは行の順で、行ごとに `alias_no_files`・`alias_unreadable` をその行の場所に置き、`buildAliases` の `problems` はその後ろに返った順で置く。設定に `aliases` が無ければファイルを読まず `{ aliases: undefined, issues: [] }` を返す'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 読んだ設定（`config.aliases` は `validateConfig` が Schema に合わない行を `null` にしたもの）
+    returns:
+      type: 'Promise<{ aliases: MdmarkAlias[] | undefined; issues: CheckIssue[] }>'
+      description: 作ったエイリアス（`env` を含まない）と、エイリアスのずれ
+    callees:
+      - 索引と用語.ts#functions[buildAliases]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[エイリアスの点検]
+    unit_tests:
+      - name: test_load_aliases
+        case: 正常
+        summary: 行の paths の YAML を読んでエイリアスを作る
+        condition: '`aliases` に `paths: [aliases/*.yaml]` の 1 行、`aliases/a.yaml` に `command` のレコード 1 件と `env` のレコード 1 件'
+        mock: 一時フォルダ
+        expected: '`aliases` が `command` の 1 件、`issues` が空'
+      - name: test_load_aliases_when_no_files
+        case: 異常
+        summary: 当たるファイルが無い行を alias_no_files にする
+        condition: '`paths: [missing/*.yaml]` の行'
+        mock: 一時フォルダ
+        expected: '`issues` が 1 件で `kind` が `alias_no_files`、`where` が `aliases[0].paths`、`message` に `missing/*.yaml` が入る'
+      - name: test_load_aliases_when_unreadable
+        case: 異常
+        summary: YAML として読めないファイルを alias_unreadable にして使わない
+        condition: '`aliases/a.yaml` が字下げの崩れた YAML、`aliases/b.yaml` が読める YAML'
+        mock: 一時フォルダ
+        expected: '`alias_unreadable` が 1 件で `file` が `aliases/a.yaml`、`aliases` に `b.yaml` のレコードだけが入る'
+      - name: test_load_aliases_when_disabled_or_null
+        case: 正常
+        summary: enabled が false の行と null の行は読まない
+        condition: '`enabled: false` で当たるファイルの無い行と、`null` の行'
+        mock: 一時フォルダ
+        expected: '`issues` が空、`aliases` が空の配列'
+      - name: test_load_aliases_when_no_aliases
+        case: 正常
+        summary: 設定に aliases が無ければ何も読まない
+        condition: '`aliases` の無い設定'
+        mock: なし
+        expected: '`aliases` が `undefined`、`issues` が空'
+    status: planned
+    introduced:
+      pr: 176
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -1759,3 +1890,5 @@ test_files:
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/index-file.test.ts
+  - tests/unit/src/cli/alias-schema.test.ts
+  - tests/unit/src/cli/aliases.test.ts

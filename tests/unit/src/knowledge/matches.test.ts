@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DEFAULT_FEATURES } from "../../../../src/config.ts";
+import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
 import { buildDictionary } from "../../../../src/knowledge/dictionary.ts";
 import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import { parseDocument } from "../../../../src/knowledge/references.ts";
@@ -586,4 +587,124 @@ test("test_diagram_term_matches_when_notation_differs", async () => {
   // 検証
   expect(found).toHaveLength(1);
   expect(body.slice(found[0]?.offset, found[0]?.end)).toBe("ｍｃｐ");
+});
+
+/** 文書 `guide`（`使い方/guide.md`）だけを持ち、用語を持たない索引 */
+const GUIDE_ONLY_INDEX: MdmarkIndex = {
+  schema: 1,
+  docs: [{ id: "guide", path: "使い方/guide.md", title: "使い方" }],
+};
+
+// 渡したエイリアスの一致を alias の参照先として返し、avoid の種類を avoided に返す（正常系）
+test("test_collect_matches_when_aliases", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      description: "ライブラリ本体の単体テストを流す",
+      command: "npm run test:unit",
+    },
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: [],
+      replacement: "ワークスペース",
+    },
+    // `env` は `buildAliases` を通さずに渡されても照合しない
+    {
+      alias_type: "env",
+      id: "dev-server",
+      name: "開発サーバー",
+      aliases: [],
+      url: "http://127.0.0.1:8767/",
+    } as unknown as MdmarkAlias,
+  ];
+  const documents = {
+    "使い方/guide.md":
+      "# 使い方\n\n単体テストを流す。もう一度単体テストを流す。作業場と開発サーバーは使わない。\n",
+  };
+  const before = structuredClone({
+    index: GUIDE_ONLY_INDEX,
+    documents,
+    aliases,
+  });
+  // 実行
+  const result = collectMatches({
+    index: GUIDE_ONLY_INDEX,
+    documents,
+    aliases,
+  });
+  // 検証
+  // 単体テストの 2 件は同じ参照先で、開発サーバーは返らない
+  const guide = result.byDocument.guide ?? [];
+  expect(guide.map((match) => match.text)).toEqual([
+    "単体テスト",
+    "単体テスト",
+  ]);
+  for (const match of guide) {
+    expect(match).toMatchObject({
+      kind: "alias",
+      aliasType: "command",
+      id: "unit-test",
+      title: "単体テスト",
+      description: "ライブラリ本体の単体テストを流す",
+    });
+  }
+  expect(result.targets.map((target) => target.id)).toEqual(["unit-test"]);
+  // avoid の種類は avoided に返し、置き換え先を title にして description を持たない
+  const avoided = result.avoided.guide ?? [];
+  expect(avoided).toHaveLength(1);
+  expect(avoided[0]).toMatchObject({
+    kind: "alias",
+    aliasType: "avoid",
+    id: "workplace",
+    title: "ワークスペース",
+    text: "作業場",
+  });
+  expect(avoided[0]).not.toHaveProperty("description");
+  expect(JSON.stringify(result)).not.toContain("開発サーバー");
+  expect({ index: GUIDE_ONLY_INDEX, documents, aliases }).toEqual(before);
+});
+
+// 図の部品の {{語}} はエイリアスを引かない（正常系）
+test("test_collect_matches_when_diagram_term_is_alias_word", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "term",
+      id: "fn",
+      name: "公開関数",
+      aliases: [],
+      description: "配布物から呼べる関数",
+    },
+  ];
+  const body = [
+    "<!-- flow -->",
+    "",
+    "```json",
+    ...flowDefinition("{{公開関数}}"),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+    "公開関数を呼ぶ。",
+    "",
+  ].join("\n");
+  // 実行
+  const result = collectMatches({
+    index: GUIDE_ONLY_INDEX,
+    documents: { "使い方/guide.md": body },
+    aliases,
+  });
+  // 検証
+  // 段落の `公開関数` の 1 件だけで、定義の `{{公開関数}}` の位置は無い
+  const guide = result.byDocument.guide ?? [];
+  expect(guide.map((match) => cut(body, match))).toEqual(["公開関数"]);
+  expect(guide[0]?.line).toBe(body.split("\n").indexOf("公開関数を呼ぶ。") + 1);
 });

@@ -435,5 +435,21 @@ settings:
     status: planned
     introduced:
       pr: 166
+  - key: aliases
+    title: エイリアスの元の行
+    file: mdmark.config.yaml
+    type: object[]
+    required: false
+    default: '[]'
+    description: エイリアスを作る YAML と、その列からエイリアスのキーへの当て方の行の並び（行の構造は ER 図『エイリアスの元の行』）。`paths` は `mdmark.config.yaml` のあるフォルダからの相対パスか glob。CLI の `export`・`build` が読み、`buildAliases` で作ったエイリアスを書き出す HTML に埋める。`mount`・`render` はこのキーを読まず、使う側が `buildAliases` で作った配列を `opts.aliases` に渡す
+    missing: エイリアスを使わない
+    reload: reload
+    allowed: 読めない行・使えない行は書き出しを止めず警告に出す。`mdmark check` がスキーマのずれとエイリアスのずれを返す
+    status: planned
+    introduced:
+      pr: 176
+    refs:
+      - dev/設計書/ER図/エイリアス#tables[aliases]
+      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

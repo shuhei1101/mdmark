@@ -246,3 +246,31 @@ test("test_validate_config_when_side_toc_mode_invalid", async () => {
   expect(valid.issues).toEqual([]);
   expect(valid.config["side-toc"]?.mode).toBe("fixed");
 });
+
+// aliases の Schema に合わない行を schema のずれにし、行の位置を保つ（異常系）
+test("test_validate_config_when_aliases_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const valid = {
+    id: "terms",
+    paths: ["terms/*.yaml"],
+    metadata: { alias_type: { type: "custom", value: "term" } },
+  };
+  const invalid = {
+    id: "memos",
+    paths: ["memos/*.yaml"],
+    metadata: { alias_type: { type: "custom", value: "memo" } },
+  };
+  // 実行
+  const { config, issues } = validateConfig(
+    { aliases: [valid, invalid] },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]?.kind).toBe("schema");
+  expect(issues[0]?.where).toBe("aliases[1].metadata.alias_type.value");
+  expect(config.aliases).toHaveLength(2);
+  expect(config.aliases?.[0]).toEqual(valid);
+  expect(config.aliases?.[1]).toBeNull();
+});

@@ -1,4 +1,9 @@
-import type { MdmarkIndex, MdmarkReferences } from "../../../src/index.ts";
+import type {
+  MdmarkAlias,
+  MdmarkIndex,
+  MdmarkReferences,
+} from "../../../src/index.ts";
+import { iconSvg } from "../../../src/parts/icons.ts";
 
 /** 索引つきの `render` の結合テストが使う索引: 文書 3 つと用語 1 つ */
 export const INDEX: MdmarkIndex = {
@@ -56,3 +61,31 @@ export const AVOID_MARKDOWN = "ワークスペースと作業場を置く。\n";
 /** 上の入力で `render` が返す HTML 文字列 */
 export const AVOID_EXPECTED_HTML =
   '<p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span><span class="mdmark-term-tip" id="mdmark-term-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>と<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="mdmark-term-2">作業場</span><span class="mdmark-term-tip" id="mdmark-term-2" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>を置く。</p>\n';
+
+/** エイリアスの `render` の結合テストが使うエイリアス: `term` の `ワークスペース` と `command` の `単体テスト` */
+export const ALIASES: MdmarkAlias[] = [
+  {
+    alias_type: "term",
+    id: "ws",
+    name: "ワークスペース",
+    aliases: [],
+    description: "話し合いの記録を置くフォルダ",
+  },
+  {
+    alias_type: "command",
+    id: "unit-test",
+    name: "単体テスト",
+    aliases: [],
+    description: "ライブラリ本体の単体テストを流す",
+    command: "npm run test:unit",
+  },
+];
+
+/** エイリアスの名前が出る Markdown */
+export const ALIAS_MARKDOWN = "ワークスペース、単体テストを流す。\n";
+
+/** コピーのボタンのアイコン。`render` は sanitize で属性名を小文字にするため `viewBox` は `viewbox` になる（ブラウザの解析が `viewBox` に直す） */
+const COPY_ICON = iconSvg("copy").replace("viewBox", "viewbox");
+
+/** 上の入力で `render` が返す HTML 文字列（コピーのボタンのアイコンは部品のものを使う） */
+export const ALIAS_EXPECTED_HTML = `<p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span><span class="mdmark-term-tip" id="mdmark-term-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-name">ワークスペース</span><span class="mdmark-term-tip-meaning" id="mdmark-term-1-meaning">話し合いの記録を置くフォルダ</span></span></span></span>、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-2-meaning" aria-details="mdmark-term-2">単体テスト</span><span class="mdmark-term-tip" id="mdmark-term-2" role="group" aria-label="「単体テスト」のコマンド"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">コマンド</span><span class="mdmark-term-tip-name">単体テスト</span><span class="mdmark-term-tip-meaning" id="mdmark-term-2-meaning">ライブラリ本体の単体テストを流す</span><span class="mdmark-term-tip-command"><code>npm run test:unit</code><button class="mdmark-term-tip-copy" type="button" data-state="idle">${COPY_ICON}コピー</button></span><span class="mdmark-visually-hidden mdmark-term-tip-status" role="status"></span></span></span></span>を流す。</p>\n`;

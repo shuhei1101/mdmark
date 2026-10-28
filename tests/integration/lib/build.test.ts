@@ -40,6 +40,10 @@ async function createWorkTree(versionIni: string): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI が束ねる設定の Schema と取り込んだ alias-inject の Schema
+  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
+    recursive: true,
+  });
   // CLI の `init` が写す雛形の正本
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,

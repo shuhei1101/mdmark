@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
+import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 import {
   addStyles,
   createRootFromHtml,
@@ -39,6 +40,8 @@ afterEach(() => {
     detach();
   }
   removeRoots();
+  vi.useRealTimers();
+  restoreClipboard();
 });
 
 // フォーカスで開き Esc で閉じる（正常系）
@@ -136,4 +139,89 @@ test("test_attach_term_tips_when_no_room_above", async () => {
     expect(topWrap.classList.contains("is-open")).toBe(false);
   });
   expect(topWrap.classList.contains("is-below")).toBe(false);
+});
+
+/** `command` のエイリアスの語とツールチップの HTML */
+async function commandHtml(): Promise<string> {
+  const { renderTermTip } = await loadTermTip();
+  return renderTermTip({
+    text: "単体テスト",
+    id: "tip-command",
+    alias: {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      description: "ライブラリ本体の単体テストを流す",
+      command: "npm run test:unit",
+    },
+  });
+}
+
+// コピーのボタンでコマンドを書き、ボタンと読み上げの要素で知らせ、待った後に戻す（正常系）
+test("test_attach_term_tips_copy_command", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachTermTips } = await loadTerms();
+  const root = createRootFromHtml(await commandHtml());
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const wrap = root.querySelector<HTMLElement>(".mdmark-term-wrap");
+  const button = root.querySelector<HTMLButtonElement>(
+    "button.mdmark-term-tip-copy",
+  );
+  const status = root.querySelector<HTMLElement>('[role="status"]');
+  // 実行
+  root.querySelector<HTMLElement>(".mdmark-term")?.focus();
+  button?.focus();
+  button?.click();
+  await vi.advanceTimersByTimeAsync(0);
+  // 検証: 書いて、コピーしたことをボタンと読み上げの要素で知らせ、ツールチップを開いたままにする
+  expect(writeText).toHaveBeenCalledTimes(1);
+  expect(writeText).toHaveBeenCalledWith("npm run test:unit");
+  expect(button?.dataset.state).toBe("copied");
+  expect(button?.textContent).toContain("コピーしました");
+  expect(status?.textContent).toBe("コマンドをコピーしました");
+  expect(wrap?.classList.contains("is-open")).toBe(true);
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(button?.dataset.state).toBe("idle");
+  expect(button?.textContent).toContain("コピー");
+  expect(button?.textContent).not.toContain("コピーしました");
+  expect(status?.textContent).toBe("");
+});
+
+// コマンドを書けなければ failed にして残し、例外を外へ出さない（正常系）
+test("test_attach_term_tips_copy_command_denied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  stubClipboard(() =>
+    Promise.reject(new DOMException("denied", "NotAllowedError")),
+  );
+  const rejections: PromiseRejectionEvent[] = [];
+  const onRejection = (event: PromiseRejectionEvent): void => {
+    rejections.push(event);
+  };
+  window.addEventListener("unhandledrejection", onRejection);
+  const { attachTermTips } = await loadTerms();
+  const root = createRootFromHtml(await commandHtml());
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const button = root.querySelector<HTMLButtonElement>(
+    "button.mdmark-term-tip-copy",
+  );
+  const status = root.querySelector<HTMLElement>('[role="status"]');
+  // 実行
+  root.querySelector<HTMLElement>(".mdmark-term")?.focus();
+  button?.focus();
+  button?.click();
+  await vi.advanceTimersByTimeAsync(0);
+  await vi.advanceTimersByTimeAsync(2000);
+  window.removeEventListener("unhandledrejection", onRejection);
+  // 検証: 失敗の知らせが 2 秒たっても残り、未処理の例外が無い
+  expect(button?.dataset.state).toBe("failed");
+  expect(button?.textContent).toContain("コピーできませんでした");
+  expect(status?.textContent).toBe("コマンドをコピーできませんでした");
+  expect(rejections).toHaveLength(0);
 });

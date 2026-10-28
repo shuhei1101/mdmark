@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { MdmarkAlias } from "../../../../../src/knowledge/aliases.ts";
 import type { MdmarkIndex } from "../../../../../src/knowledge/index-shape.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../../../helpers/charts.ts";
 import {
@@ -93,6 +94,31 @@ test("test_build_embedded_html_when_terms", () => {
   const embedded = innerHtml(html, 'class="mdmark-html"');
   expect(matches(embedded, /class="mdmark-term-wrap"/g)).toHaveLength(1);
   expect(matches(html, /class="mdmark-term-wrap"/g)).toHaveLength(1);
+});
+
+// 中の文字のエイリアスに下線を引き、種類のツールチップを置く（正常系）
+test("test_build_embedded_html_when_alias", () => {
+  // 準備
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "url",
+      id: "issues",
+      name: "課題の一覧",
+      aliases: [],
+      description: "Issue を並べたページ",
+      url: "https://github.com/shuhei1101/mdmark/issues",
+    },
+  ];
+  const markdown = wrapHtml("<p>課題の一覧と課題の一覧</p>");
+  // 実行
+  const { html } = renderDoc(markdown, {}, { aliases });
+  // 検証
+  // 範囲ごとに語の最初の 1 回だけで、ツールチップのリンクが URL を指す
+  const embedded = innerHtml(html, 'class="mdmark-html"');
+  expect(matches(embedded, /class="mdmark-term-wrap"/g)).toHaveLength(1);
+  expect(findTag(embedded, 'class="mdmark-term-tip-link"')).toContain(
+    'href="https://github.com/shuhei1101/mdmark/issues"',
+  );
 });
 
 // 中の文字のやめた言い方にマーカーを付ける（正常系）

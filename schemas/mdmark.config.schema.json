@@ -308,6 +308,11 @@
           "default": []
         }
       }
+    },
+    "aliases": {
+      "title": "エイリアスの元の行",
+      "description": "プロジェクトの YAML の列からエイリアス（用語・文書・コマンド・URL など）を作る行の並び。行の構造は alias-inject v0.2.0 の `schemas/aliases.schema.yaml` を取り込んだ Schema が決める。CLI の `export`・`build` が `paths` の YAML を読んで書き出す HTML に埋め、`mdmark check` が行とレコードのずれを返す。`mount`・`render` はこのキーを読まない。",
+      "$ref": "alias-inject/v0.2.0/aliases.schema.json"
     }
   },
   "additionalProperties": true

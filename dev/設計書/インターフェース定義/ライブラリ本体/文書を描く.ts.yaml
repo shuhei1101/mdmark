@@ -2483,6 +2483,219 @@ flows:
       - 描いた直後、パネルが透明で、目次を出すボタンが表示されていない
       - 右端の線にポインターを乗せた後、パネルが不透明
     test: test_error_when_unknown_side_toc_mode
+  - name: 正常系（エイリアス）
+    summary: 渡したエイリアスの名前と別名に下線を引き、種類ごとのツールチップを出す。env は照合しない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 種類の違うエイリアス
+        description: '`term` の `レビュー`（ID `review`、別名 `査読`、説明 `変更を別の人が確かめること`）、`doc` の `設計書`（説明 `仕様を記載した文書`）、`url` の `課題の一覧`（説明 `Issue を並べたページ`、URL `https://github.com/shuhei1101/mdmark/issues`）、`skill` の `記録の取り込み`（スキル名 `mindstella:session`）、`tool` の `点検のツール`（ツール名 `check`）、`path` の `設定ファイル`（パス `mdmark.config.yaml`）、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）'
+        notes: '`env` は `buildAliases` を通さずに `opts.aliases` へ直接入れる'
+      - name: エイリアスが出る Markdown
+        description: 1 つ目の節の段落に 7 つのエイリアスの名前と 2 回目の `レビュー`、別の見出しの下の 2 つ目の節の段落に `査読` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        M->>P: エイリアスの名前と別名に下線を引いて描く
+        P->>P: 査読にポインターを乗せる
+        P->>P: 課題の一覧にフォーカスし、Tab を押す
+        P->>P: Esc を押す
+    expected:
+      - '`開発サーバー` を除く 6 つの名前と `査読` が class `mdmark-term` の要素で、1 つ目の節の 2 回目の `レビュー` はその要素でない'
+      - '`査読` のツールチップに、「用語」の下の名前 `レビュー` と `変更を別の人が確かめること` がある'
+      - '`設計書` のツールチップに「文書」の下の `仕様を記載した文書` がある'
+      - '`課題の一覧` のツールチップに「URL」の下の説明と、文字と `href` が `https://github.com/shuhei1101/mdmark/issues` のリンクがある'
+      - '`記録の取り込み`・`点検のツール`・`設定ファイル` のツールチップに、「スキル」「ツール」「パス」の下の `code` 要素で `mindstella:session`・`check`・`mdmark.config.yaml` がある'
+      - '`開発サーバー` が下線の要素でなく、`el` の中に `http://127.0.0.1:8767/` が無い'
+      - '`課題の一覧` から Tab でツールチップのリンクへフォーカスが移り、Esc でツールチップが消えてフォーカスが `課題の一覧` に戻る'
+    test: test_normal_when_aliases
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ（エイリアスを渡す）]
+  - name: 正常系（エイリアスのコマンドをコピーする）
+    summary: コマンドのツールチップのコピーのボタンで、コマンドをクリップボードへ書き、ボタンで知らせる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コマンドのエイリアス
+        description: '`command` の `単体テスト`（説明 `ライブラリ本体の単体テストを流す`、コマンド `npm run test:unit`、実行場所 `リポジトリの直下`）'
+      - name: コマンドが出る Markdown
+        description: 段落に `単体テスト` が出る文書
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、渡された文字を記録して解決する関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        P->>P: 単体テストにフォーカスし、Tab でコピーのボタンへ移る
+        P->>M: Enter でコピーのボタンを押す
+        M->>M: コマンドをクリップボードへ書く
+        M->>P: ボタンで知らせる
+    expected:
+      - '`単体テスト` のツールチップに、「コマンド」の下の説明・`code` 要素の `npm run test:unit`・実行場所 `リポジトリの直下`・`type="button"` の `コピー` のボタンがある'
+      - Tab でコピーのボタンへフォーカスが移り、ツールチップが出たまま
+      - '`navigator.clipboard.writeText` が `npm run test:unit` で 1 回呼ばれる'
+      - 押した後、ボタンの文字が `コピーしました` で、`role="status"` の要素にコマンドをコピーしたことが出て、2 秒後にボタンの文字が `コピー` に戻る
+      - 押した後もツールチップが出たまま
+    test: test_normal_when_copy_command
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ（コマンドをコピーする）]
+  - name: 正常系（エイリアスのコマンドをコピーできない）
+    summary: クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: コマンドのエイリアスと Markdown
+        description: 正常系（エイリアスのコマンドをコピーする）と同じ
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        P->>M: ツールチップのコピーのボタンを押す
+        M->>M: 書き込みが拒まれる
+        M->>P: ボタンでコピーできなかったことを知らせる
+    expected:
+      - 押した後、ボタンの文字が `コピーできませんでした` で、2 秒後も変わらない
+      - '`role="status"` の要素にコマンドをコピーできなかったことが出る'
+      - ページに捕まえられない例外（`unhandledrejection`）が出ていない
+      - '`navigator.clipboard` が無いページでも、押すと同じ知らせになる'
+    test: test_normal_when_copy_command_denied
+  - name: 正常系（やめた言い方のエイリアス）
+    summary: avoid の種類と term の avoid の語に波線のマーカーを付け、代わりの用語のツールチップを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: やめた言い方のエイリアス
+        description: '`avoid` の `作業場`（置き換え先 `ワークスペース`）と、`term` の `ブランチ`（説明 `作業を分ける線`、`avoid` に `枝`）'
+      - name: やめた言い方が出る Markdown
+        description: 1 つの節の段落に `作業場` が 2 回と `枝` が出て、行内のコードにも `作業場` を書いた文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        M->>P: やめた言い方に波線の下線を引いて描く
+        P->>P: 作業場と枝にフォーカスする
+    expected:
+      - 最初の `作業場` と `枝` が class `mdmark-term mdmark-term-avoided` の要素で、2 回目の `作業場` と行内のコードの `作業場` はその要素でない
+      - '`作業場` のツールチップの「代わりの用語」の下に `ワークスペース` がある'
+      - '`枝` のツールチップの「代わりの用語」の下に `ブランチ` と `作業を分ける線` がある'
+    test: test_normal_when_avoid_alias
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ（やめた言い方のエイリアス）]
+  - name: 正常系（索引とエイリアスと表に同じ語がある）
+    summary: 同じ語が索引・エイリアス・表にあるとき、索引 → エイリアス → 描く文書の表の順で先の意味を出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 同じ語を持つ索引
+        description: 用語 `印`（意味 `索引に書いた意味`）と、描く文書 `guide`（`guide.md`）を持つ索引
+        notes: '`opts.docId` は `guide`'
+      - name: 同じ語を持つエイリアス
+        description: '`term` の `印`（説明 `エイリアスに書いた意味`）と `term` の `マーク`（説明 `エイリアスに書いたマークの意味`）'
+      - name: 用語集の表を持つ Markdown
+        description: '`<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` で、用語 `印`（別名 `マーク、オン・オフの印`、意味 `HTML コメントで書く指定`）の行を持つ表を囲み、表の後の段落に `印`・`マーク`・`オン・オフの印` が出る文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index, docId, aliases })
+        M->>M: 索引の terms・エイリアス・描く文書の表の順で辞書に入れる
+        M->>P: 本文の語に下線を引いて描く
+    expected:
+      - 段落の `印` のツールチップが `索引に書いた意味` で、`エイリアスに書いた意味` を持たない
+      - 段落の `マーク` のツールチップが `エイリアスに書いたマークの意味`
+      - 段落の `オン・オフの印` のツールチップが `HTML コメントで書く指定`
+    test: test_normal_when_aliases_have_same_term
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#scenarios[正常シナリオ（索引とエイリアスと表に同じ語がある）]
+  - name: 正常系（文書の印でエイリアスを外す）
+    summary: 文書の印で glossary をオフにした文書では、渡したエイリアスを照合しない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: エイリアス
+        description: '`command` の `単体テスト`（コマンド `npm run test:unit`）と `avoid` の `作業場`（置き換え先 `ワークスペース`）'
+      - name: 機能を外す Markdown
+        description: '先頭に `<!-- features: -glossary -->` を持ち、段落に `単体テスト` と `作業場` が出る文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        M->>M: 文書の印で glossary がオフになる
+        M->>P: エイリアスを照合せずに描く
+    expected:
+      - '`el` の中に class `mdmark-term` の要素が無い'
+      - '`el` の中に `role="tooltip"` の要素が無く、`npm run test:unit` の文字が段落の外に無い'
+    test: test_normal_when_aliases_glossary_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（用語と被参照の機能を外す）]
+  - name: 正常系（エイリアスを渡して本文を差し替える）
+    summary: update で本文を差し替えても、描いたときのエイリアスで照合し直す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: エイリアス
+        description: '`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）'
+      - name: 2 つの Markdown
+        description: 段落に `ワークスペース` が出る文書と、別の段落に `ワークスペース` が出る差し替え先の文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        M->>P: エイリアスの語に下線を引いて描く
+        P->>M: update(差し替え先の Markdown)
+        M->>P: 同じエイリアスで描き直す
+    expected:
+      - 描いた直後、`ワークスペース` が class `mdmark-term` の要素で、ツールチップに `話し合いの記録を置くフォルダ` がある
+      - '`update` の後、差し替え先の段落の `ワークスペース` が class `mdmark-term` の要素で、ツールチップが同じ説明を持つ'
+    test: test_normal_when_aliases_updated
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（エイリアスを渡す）]
+  - name: 異常系（使えないエイリアス・照合しない）
+    summary: 必須のキーが空・知らない種類・重なった ID のエイリアスを除いて描き、http・https でない URL はリンクにしない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 使えないエイリアスを含むエイリアス
+        description: 正しい `term` の `レビュー`（ID `review`）、`command` を持たない `command` の `ビルド`、`alias_type` が `memo` の `メモ`、ID が `review` の `term` の `査定`、URL が `javascript:alert(1)` の `url` の `危ないリンク`
+        notes: 使えない理由ごとに 1 つずつ置いて決定的に起こす
+      - name: エイリアスが出る Markdown
+        description: 段落に `レビュー`・`ビルド`・`メモ`・`査定`・`危ないリンク` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        M->>M: 使えないエイリアスを除いて辞書を作る
+        M->>P: 使えるエイリアスだけに下線を引いて描く
+        P->>P: 危ないリンクにフォーカスする
+    expected:
+      - '`mount` が例外を投げず、段落が描かれ、知らせの枠が無い'
+      - '`レビュー` と `危ないリンク` が class `mdmark-term` の要素で、`ビルド`・`メモ`・`査定` はその要素でない'
+      - '`危ないリンク` のツールチップに `javascript:alert(1)` が文字で出て、ツールチップの中に `a` 要素が無い'
+    test: test_error_when_invalid_alias
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[異常シナリオ（使えないエイリアス）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -2607,6 +2820,14 @@ request:
     location: argument
     description: 右側の目次の出し方。`hover` は右端にポインターかフォーカスがある間だけ出し、`fixed` は目次を出すボタンで出し続ける
     notes: 他の値は無視して `hover` にする。`side-toc` がオフのときは使わない
+  - name: opts.aliases
+    type: MdmarkAlias[]
+    required: false
+    default: なし（エイリアスを照合しない）
+    location: argument
+    description: 使う側が `buildAliases` で作ったエイリアスの並び。形は ER 図『エイリアス』
+    notes: 使えないエイリアスは除いて使い、例外を投げない。`update` は描いたときのエイリアスを使う
+    status: planned
 request_example: |-
   ```json
   {
@@ -2688,10 +2909,10 @@ constraints:
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
   - item: 用語と文書の別名の下線
-    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。照合の前に、語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に引く。図の部品の `{{語}}` も同じ正規化で用語を引く。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
+    constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。照合の前に、語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に引く。図の部品の `{{語}}` も同じ正規化で用語を引く。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる語が複数の用語に当たるときは、索引の `terms`・`opts.aliases`（並びの順）・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
     notes: 下線の要素の形は部品設計で決める
   - item: ツールチップの操作
-    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書を持つツールチップは、語から Tab で中のリンクへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
+    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書・エイリアスのリンク・コマンドのコピーのボタンを持つツールチップは、語から Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 関連文書と被参照の一覧
     constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` の要素の相手（オブジェクトは `to`、文字列はその値）に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない
@@ -2770,7 +2991,7 @@ constraints:
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
   - item: やめた言い方のマーカー
-    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ正規化・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、点検の `avoided_term` と同じく、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
+    constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、`opts.aliases` の `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ正規化・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、索引の `terms`、`opts.aliases` の並び、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
     notes: マーカーとツールチップの要素の形は部品設計で決める。やめた言い方は参照先を持たないため、`collectReferences` の `backlinks`・`collectMatches` の結果と関連文書の一覧は変わらない
   - item: 色分けの対象
     constraint: 機能 `syntax` がオンの文書で、情報文字列の最初の語の言語（`言語:ファイル名` の形なら `:` の前）が色分けの言語の対応表にある、フェンスのコードブロックの `pre > code`。文書に書いた生の HTML の `pre > code` は、`language-*` の class を持っていても当たらない。記法が描いたもの（ファイルツリー・図の部品の定義・埋め込んだ HTML）は `pre > code` でないため当たらず、記法がコードブロックのまま残したものは当たる
@@ -2819,4 +3040,15 @@ constraints:
   - item: 入れ子をまとめて開閉
     constraint: Shift を押しながら節の開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンにフォーカスして Shift を押しながら Enter・Space を押したとき（ボタンの `keydown` の `shiftKey`。既定の動きを止め、`click` を起こさない）、その節を今と逆の状態にし、中の入れ子の全ての節を同じ状態にする。外側の節とほかの節は変えない
     notes: Firefox ではキーで押した `click` の `shiftKey` が立たないため、キーは `keydown` で受ける（計画書）
+  - item: エイリアスの照合
+    constraint: '`glossary` がオンのとき、`opts.aliases` のエイリアスの `name` と `aliases` を、制約の「用語と文書の別名の下線」と同じ区切り・正規化・範囲で照合し、エイリアスの `id` ごとに節（h2〜h4）ごとに最初に出たところだけに下線を引く（`avoid` の種類は制約の「やめた言い方のマーカー」）。`alias_type` が `env` のもの・`term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`avoid` に無いもの・種類の必須のキーが空のもの・`id` が前のエイリアスと同じものは照合せず、知らせの枠も出さない。図の部品の `{{語}}` はエイリアスを引かない'
+    notes: '`env` は値にシークレットキーを含みうるため、`buildAliases` を通さずに渡されても照合しない。種類ごとの必須のキーは ER 図『エイリアス』の補足'
+  - item: エイリアスのツールチップ
+    constraint: 種類ごとの区分の見出し（`term` は「用語」、`doc` は「文書」、`command` は「コマンド」、`url` は「URL」、`skill` は「スキル」、`tool` は「ツール」、`path` は「パス」）の下に名前と `description` を出す。`command` はコマンドをコードで出してコピーのボタンを置き、`cwd` があれば実行場所を出す。`url` は URL の文字列にリンクを埋め、長い URL は 1 行に収めて末尾を「...」で省略する。`skill`・`tool`・`path` はスキル名・ツール名・パスをコードで出す。`avoid` は「代わりの用語」に `replacement` を、`term` の `avoid` は「代わりの用語」にそのエイリアスの名前と `description` を出す。値は制約の「索引の値の出し方」と同じく文字として出す
+    notes: 区分と要素の形は部品設計で決める
+  - item: エイリアスの URL
+    constraint: '`url` の URL は http・https のものだけをリンクにし、ほかの URL（`javascript:` など）は `a` 要素にせず文字で出す'
+  - item: コマンドのコピー
+    constraint: '`command` のツールチップの `コピー` のボタン（`type="button"`）を押すと、`command` の文字を `navigator.clipboard.writeText` に書く。書けたらボタンを `コピーしました` にして 2 秒で戻し、書けないとき（`navigator.clipboard` が無いか拒まれた）は `コピーできませんでした` にして次に押すまで残す。どちらも `role="status"` で読み上げて知らせ、例外を外へ出さない。押した後もツールチップは出したままにする'
+    notes: 知らせ方は制約の「コードブロックのコピー」と同じ
 test_file: tests/integration/lib/mount.browser.test.ts

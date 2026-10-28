@@ -1,10 +1,12 @@
 import { readFile, stat } from "node:fs/promises";
 import { basename, join, relative, resolve, sep } from "node:path";
 import { MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import { normalizePath } from "../knowledge/paths.ts";
 import { FEATURES_MARK, SYNTAX_MARKS } from "../render/marks.ts";
 import { findMarks } from "../render/parser.ts";
+import { loadAliases } from "./aliases.ts";
 import {
   type CliConfig,
   findConfigFile,
@@ -24,7 +26,14 @@ export type CheckIssue = {
   /** キーのパスか行。ファイル全体は空文字 */
   where: string;
   /** ずれの種類 */
-  kind: "schema" | "no_documents" | "unknown_mark" | MdmarkIndexIssue["kind"];
+  kind:
+    | "schema"
+    | "no_documents"
+    | "unknown_mark"
+    | "alias_no_files"
+    | "alias_unreadable"
+    | MdmarkAliasProblem["kind"]
+    | MdmarkIndexIssue["kind"];
   /** 内容と直し方の 1 文 */
   message: string;
 };
@@ -303,6 +312,7 @@ export async function collectCheckIssues(
   const referenced = await checkReferencedFiles(loaded, file);
   const build = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded, options.base);
+  const aliasIssues = (await loadAliases(loaded)).issues;
   const checkMarks = options.unknownMarks !== false;
   const extensions = checkMarks
     ? await loadExtensionDirectives(loaded, file)
@@ -321,6 +331,7 @@ export async function collectCheckIssues(
     ...extensions.issues,
     ...build.noDocuments,
     ...indexIssues,
+    ...aliasIssues,
     ...unknownMarks,
   ];
 }

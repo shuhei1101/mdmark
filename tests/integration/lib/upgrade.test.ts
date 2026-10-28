@@ -35,6 +35,9 @@ const packages = new Map<string, string>();
 async function buildPackage(version: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-integration-upgrade-"));
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
+    recursive: true,
+  });
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,
   });

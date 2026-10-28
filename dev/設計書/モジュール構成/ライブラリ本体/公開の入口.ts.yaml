@@ -3,7 +3,7 @@ lead: 配布物の入口の JavaScript と CSS。JavaScript は公開関数と�
 directory: |-
   ```tree
   src/
-  ├── index.ts   # 公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex() と公開の型の export
+  ├── index.ts   # 公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex()・buildAliases() と公開の型の export
   └── index.css  # 描いた文書と記法の CSS（@layer mdmark）
   ```
 functions:
@@ -27,14 +27,14 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts#
 notes:
-  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`collectMatches`（`src/knowledge/matches.ts`）・`checkIndex`（`src/knowledge/check.ts`）・`mountView`・`mountComments`（`src/mount-parts.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkIndexDocTag`・`MdmarkIndexTag`・`MdmarkIndexRelated`・`MdmarkRelationType`・`MdmarkReferences`・`MdmarkMatches`・`MdmarkMatch`・`MdmarkMatchTarget`・`MdmarkAvoidedMatch`・`MdmarkIndexIssue`・`DiffSource`・`DiffRevision`（`src/diff/source.ts`）・`MdmarkViewOptions`・`MdmarkViewHandle`（`src/views/spec.ts`）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentStore`・`MdmarkCommentsHandle`（`src/comments/spec.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
+  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`collectMatches`（`src/knowledge/matches.ts`）・`checkIndex`（`src/knowledge/check.ts`）・`buildAliases`（`src/knowledge/aliases.ts`）・`mountView`・`mountComments`（`src/mount-parts.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkIndexDocTag`・`MdmarkIndexTag`・`MdmarkIndexRelated`・`MdmarkRelationType`・`MdmarkReferences`・`MdmarkMatches`・`MdmarkMatch`・`MdmarkMatchTarget`・`MdmarkAvoidedMatch`・`MdmarkIndexIssue`・`MdmarkAlias`・`MdmarkAliasType`・`MdmarkAliasSource`・`MdmarkAliasProblem`・`DiffSource`・`DiffRevision`（`src/diff/source.ts`）・`MdmarkViewOptions`・`MdmarkViewHandle`（`src/views/spec.ts`）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentStore`・`MdmarkCommentsHandle`（`src/comments/spec.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
 styles:
   - name: index
     title: 入口の CSS
     container: src/index.css
     summary: 描いた文書の CSS。全ての規則を `@layer mdmark` に入れ、見た目の値を `--mdmark-` の CSS 変数で配る。版の CSS 変数 `--mdmark-version` はビルドが先頭に `:root` の宣言として差し込む
     description: |-
-      採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
+      採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、エイリアスのツールチップの規則は `dev/mock/refs/176/assets/alias-tip.css` の `@layer mdmark` の中身から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
 
       ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。描く先の祖先の class で決める配色も `:root` に値を置き、使う側が層の外で `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色が届くようにする。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
     values:

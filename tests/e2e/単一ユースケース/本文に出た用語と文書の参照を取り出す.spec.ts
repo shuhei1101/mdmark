@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
-import type { MdmarkIndex, MdmarkMatch } from "../../../src/index.ts";
+import type {
+  MdmarkAlias,
+  MdmarkIndex,
+  MdmarkMatch,
+} from "../../../src/index.ts";
 import {
   buildDistRoot,
   collectMatchesInNode,
@@ -72,7 +76,10 @@ function flowDefinition(name: string): string[] {
 }
 
 /** 一致の行・始まり・終わりで本文を切り出した文字 */
-function cut(body: string, match: MdmarkMatch): string {
+function cut(
+  body: string,
+  match: Pick<MdmarkMatch, "line" | "start" | "end">,
+): string {
   return (body.split("\n")[match.line - 1] ?? "").slice(match.start, match.end);
 }
 
@@ -351,4 +358,61 @@ test("test_normal_when_width_and_case_differ", async () => {
   });
   expect(cut(guide, avoided[0] as MdmarkMatch)).toBe("WorkPlace");
   expect(matches.targets).toEqual([WS_TARGET]);
+});
+
+// 渡したエイリアスの一致を種類つきで返し、やめた言い方は代わりの用語を持つ一致にして、引数を書き換えない（正常シナリオ（エイリアスを渡す））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
+  };
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      description: "ライブラリ本体の単体テストを流す",
+      command: "npm run test:unit",
+    },
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: [],
+      replacement: "ワークスペース",
+    },
+  ];
+  const guide = "# 使い方\n\n単体テストを流す。作業場は使わない。\n";
+  const documents = { "guide.md": guide };
+  const before = structuredClone({ index, documents, aliases });
+  // 実行
+  const matches = await collectMatchesInNode(builtRoot, {
+    index,
+    documents,
+    aliases,
+  });
+  // 検証
+  const inGuide = matches.byDocument.guide ?? [];
+  expect(inGuide).toHaveLength(1);
+  expect(inGuide[0]).toMatchObject({
+    kind: "alias",
+    aliasType: "command",
+    id: "unit-test",
+    title: "単体テスト",
+    description: "ライブラリ本体の単体テストを流す",
+    text: "単体テスト",
+  });
+  expect(matches.targets.map((target) => target.id)).toEqual(["unit-test"]);
+  const avoided = matches.avoided.guide ?? [];
+  expect(avoided).toHaveLength(1);
+  expect(avoided[0]).toMatchObject({
+    kind: "alias",
+    aliasType: "avoid",
+    id: "workplace",
+    title: "ワークスペース",
+    text: "作業場",
+  });
+  expect({ index, documents, aliases }).toEqual(before);
 });

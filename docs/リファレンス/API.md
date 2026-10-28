@@ -15,6 +15,7 @@
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返す |
 | [本文の参照を取り出す](#本文の参照を取り出す) | `collectMatches(input)` | 索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返す |
 | [索引を点検する](#索引を点検する) | `checkIndex(input)` | 索引と文書のずれの一覧を返す |
+| [エイリアスを作る](#エイリアスを作る) | `buildAliases(input)` | 設定の `aliases` の行と読んだ YAML から、エイリアスと使えない行・レコードのずれを返す |
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 使う側が自分の印と、その印を描くモジュールの読み方を登録する |
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
 | [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 使う側の要素の中の選んだ箇所に、コメントを付けられるようにする |
@@ -73,6 +74,8 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 文書に書いたスクリプト（`script` 要素・`on` で始まる属性・`javascript:` の URL）は落とし、実行しない。
 索引を渡すと、本文に出た用語と文書の別名に破線の下線を引き、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を置く。
 索引の用語の `avoid` と用語集の表の `avoid=` の列に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の語と意味のツールチップを出す（`glossary` がオンのときだけ）。
+`opts.aliases` に渡したエイリアス（[`buildAliases`](#エイリアスを作る) が作る）の名前と別名にも同じ下線を引き、種類ごとのツールチップを出す（`glossary` がオンのときだけ）。
+コマンドのエイリアスのツールチップには、コマンドをコピーするボタンを付ける。
 ツールチップの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
 書き方は [索引と用語集を書く](../使い方/書く/索引と用語集を書く.md)。
 図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
@@ -103,6 +106,7 @@ handle.destroy();
 | `opts.index` | 任意 | 使う側のサーバーが、設定の `index` のパスの索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて使う。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を渡すときは必須で、コメントの読み書きの関数に渡す対象の ID にもなる |
 | `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使う。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
+| `opts.aliases` | 任意 | [`buildAliases`](#エイリアスを作る) が作ったエイリアスの並び（`MdmarkAlias[]`）。使えないエイリアス（必須のキーが空・知らない種類・重なった `id`）は除いて使い、`env` の種類は直接渡されても照合しない。`update` は描いたときのエイリアスを使う。省くと、エイリアスを照合しない |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
 
@@ -196,6 +200,7 @@ const html = render("# 見出し\n\n本文");
 | `opts.index` | 任意 | `mount` の `opts.index` と同じ |
 | `opts.docId` | 任意 | `mount` の `opts.docId` と同じ |
 | `opts.references` | 任意 | `mount` の `opts.references` と同じ |
+| `opts.aliases` | 任意 | `mount` の `opts.aliases` と同じ |
 
 ### レスポンス
 
@@ -206,8 +211,8 @@ const html = render("# 見出し\n\n本文");
 同じ引数には、ブラウザでも Node でも同じ文字列を返す。
 各記法の中身（全てのタブの中身・閉じた節の中身を含む）は、スクリプトを動かさなくても読める。
 並べ替え・タブの切り替えなどの操作は `mount` が付ける。
-用語の意味と関連文書、やめた言い方の代わりの用語、文書の末尾の被参照の一覧も、スクリプトを動かさなくても読める。
-ツールチップを開閉する操作は `mount` が付ける。
+用語の意味と関連文書、やめた言い方の代わりの用語、エイリアスの種類ごとの説明、文書の末尾の被参照の一覧も、スクリプトを動かさなくても読める。
+ツールチップを開閉する操作と、コマンドをコピーするボタンの操作は `mount` が付ける。
 図の部品の定義は、題・図・凡例の HTML にし、定義の JSON は残さない。図の操作は `mount` が付ける。
 
 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素には、そのブロックが Markdown で始まる行の番号を `data-source-line` で付ける。
@@ -301,6 +306,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | `input.index` | 必須 | 使う側が索引の YAML を読んだオブジェクト。形は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて照合する |
 | `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を引く表。複数の文書を渡せる。索引に無いパスの文書は無視する。ほかの文書の用語集の表の用語も、この表にある本文から読む |
 | `input.config` | 任意 | `mount` の `opts.config` と同じ。読むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める |
+| `input.aliases` | 任意 | `mount` の `opts.aliases` と同じ。使えないエイリアス（`env` を含む）は `mount` と同じく除いて照合する。省くと、エイリアスを照合しない |
 
 ### レスポンス
 
@@ -314,10 +320,11 @@ const { byDocument, avoided, targets } = collectMatches({
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `kind` | `'term' \| 'glossary' \| 'doc'` | 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書 |
-| `id` | `string` | 参照先の `id`。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id` |
-| `title` | `string` | 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title` |
-| `description` | `string` | 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。`doc` で `description` を持たないときは、このキーを持たない |
+| `kind` | `'term' \| 'glossary' \| 'doc' \| 'alias'` | 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は `input.aliases` のエイリアス |
+| `aliasType` | `'term' \| 'doc' \| 'command' \| 'url' \| 'skill' \| 'tool' \| 'path'` | エイリアスの `alias_type`。`kind` が `alias` のときだけ持つ |
+| `id` | `string` | 参照先の `id`。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`、`alias` はエイリアスの `id` |
+| `title` | `string` | 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`、`alias` はエイリアスの `name` |
+| `description` | `string` | 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`、`alias` はエイリアスの `description`。`doc` と `alias` で `description` を持たないときは、このキーを持たない |
 | `text` | `string` | 一致した文字列。照合した辞書の語で、別名で一致したときはその別名。索引・用語集の表に記載した表記で返し、本文の表記は `line`・`start`・`end` から引く |
 | `line` | `number` | 一致した本文の Markdown の行。1 から数える |
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
@@ -327,7 +334,8 @@ const { byDocument, avoided, targets } = collectMatches({
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `kind` | `'term' \| 'glossary'` | 代わりの用語の種類。`byDocument` の要素の `term`・`glossary` と同じ |
+| `kind` | `'term' \| 'glossary' \| 'alias'` | 代わりの用語の種類。`byDocument` の要素の `term`・`glossary` と同じ。`alias` は、`term` の種類のエイリアスの `avoid` か、`avoid` の種類のエイリアス。`avoid` の種類は、`title` を `replacement` にし、`description` を持たない |
+| `aliasType` | `'term' \| 'avoid'` | エイリアスの `alias_type`。`kind` が `alias` のときだけ持つ |
 | `id` | `string` | 代わりの用語の `id`。`byDocument` の要素の `id` と同じ書き方 |
 | `title` | `string` | 代わりの用語のタイトル。`byDocument` の要素の `title` と同じ書き方 |
 | `description` | `string` | 代わりの用語の短い説明。`byDocument` の要素の `description` と同じ書き方 |
@@ -336,7 +344,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | `start` | `number` | `byDocument` の要素の `start` と同じ |
 | `end` | `number` | `byDocument` の要素の `end` と同じ |
 
-`targets` の要素（`MdmarkMatchTarget`）は、`kind`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
+`targets` の要素（`MdmarkMatchTarget`）は、`kind`・`aliasType`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
 
 ```json
 {
@@ -362,14 +370,14 @@ const { byDocument, avoided, targets } = collectMatches({
 
 用語のツールチップと同じ辞書と照合を使う。
 
-- 辞書は、索引の `terms`、照合する文書の用語集の表、ほかの文書の表の順に優先する。文書の別名は、照合する文書自身の別名を除く
+- 辞書は、索引の `terms`、`input.aliases`（並びの順）、照合する文書の用語集の表、ほかの文書の表の順に優先する。文書の別名は、照合する文書自身の別名を除く
 - 語の始まりと終わりが本文の語の区切りに揃うところだけを取り、重なるときは長い語を先に取る。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
 - 照合の前に、辞書の語と本文の文字の両方を、NFKC・英字の小文字化・前後の空白の除去で正規化する。正規化した後に同じになる語は 1 つの語として扱い、優先の順で先の用語を使う。`line`・`start`・`end` は、正規化する前の本文の位置を指す
 - 照合するのは本文の地の文で、コード・リンク・見出し・用語集の表の中は除く
 - `html` がオンの文書は、`<!-- html -->` の範囲の `html` のコードブロックに書いた HTML の文字も照合する。`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・`script` のように中身ごと落ちる要素は除く
 - `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{語}}` の語が正規化した後に用語に一致し、意味が空でないとき、その用語の参照にする。文書の別名は引かない
-- 文書の印で `glossary` がオフの文書は用語とやめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
-- やめた言い方（索引の用語の `avoid` と、用語集の表の `avoid=` の列。用語の語・別名と同じ語は除く）は、用語・文書の別名の語に追加して照合し、やめた言い方に当たったところを `avoided` に返す。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない。用語・別名の一部として出たやめた言い方は返さない
+- 文書の印で `glossary` がオフの文書は用語・エイリアス・やめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+- やめた言い方（索引の用語の `avoid` と、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の `avoid=` の列。用語の語・別名と同じ語は除く）は、用語・文書の別名の語に追加して照合し、やめた言い方に当たったところを `avoided` に返す。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない。用語・別名の一部として出たやめた言い方は返さない
 
 ツールチップの、節ごとに同じ参照先の最初の 1 回だけに下線を付ける制限は下線の出し方のためで、取り出しには効かない。
 やめた言い方のマーカーの、節ごとに言い方ごとの最初の 1 回だけに付ける制限も、取り出しには効かない。
@@ -452,6 +460,96 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 
 例外は投げない。
 索引が Schema に合わないときは、合わないところごとに `schema` のずれを返し、読めた文書・用語でほかのずれも確かめる。
+
+## エイリアスを作る
+
+設定の `aliases` の行と、行の `paths` に当たった YAML を読んだ中身から、`metadata` を当てたエイリアスの並びと、使えない行・レコードのずれの一覧を返す。
+CLI の `export`・`build`・`check` と、使う側の処理が同じ関数を使い、返したエイリアスを `mount`・`render`・`collectMatches` の `aliases` に渡す。
+ファイルを読むのは呼ぶ側で、mdmark は渡された値だけからエイリアスを作る。
+引数を書き換えず、ファイルとネットワークを読まない。
+DOM に頼らず、Node とブラウザのどちらでも同じ結果を返す。
+
+### リクエスト
+
+```js
+import { buildAliases } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const { aliases, problems } = buildAliases({
+  rows: [{ id: "terms", paths: ["terms/*.yaml"], records: "terms", metadata: { alias_type: { type: "custom", value: "term" }, name: { type: "ref", field: "term" } } }],
+  sources: [{ rowId: "terms", path: "terms/glossary.yaml", data: { terms: [{ id: "ws", term: "ワークスペース", description: "話し合いの記録を置くフォルダ" }] } }],
+});
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`metadata.alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
+| `input.sources` | 必須 | 行の `paths` に当たったファイルを YAML として読んだ中身（`MdmarkAliasSource`）の並び。行ごとに `paths` に記載した順、glob の中はパスの順に並べる。読めなかったファイルと、どのファイルにも当たらなかった `paths` は呼ぶ側が扱い、ここには入れない |
+| `input.configFile` | 任意 | 行のずれの `file` に出す設定ファイルの名前。既定は `mdmark.config.yaml` |
+
+`MdmarkAliasSource` の形。
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| `rowId` | `string` | そのファイルを指した行の `id` |
+| `path` | `string` | ファイルのパス（設定ファイルのフォルダからの相対パス。区切りは `/`）。ずれの `file` と、`name` を持たないときの名前に使う |
+| `data` | `unknown` | ファイルを YAML として読んだ値 |
+
+行の `records` を記載した行はファイルのそのキーの配列の要素ごとに、記載しない行はファイルの値を 1 件にして、レコード 1 つからエイリアスを 1 つ作る。
+値の取り方と種類ごとの必須のキーは [設定](./設定.md#エイリアスの元の行)。
+
+### レスポンス
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `aliases` | `MdmarkAlias[]` | 作ったエイリアスの並び。並びは行の並び、行の中は `sources` の並び、ファイルの中は `records` の配列の並びで、この並びが同じ語に当たったときの優先の順になる。`env` と、使えないエイリアスは入らない |
+| `problems` | `MdmarkAliasProblem[]` | 使えなかった行・レコードのずれの一覧。ずれが無ければ空 |
+
+`MdmarkAlias` は、次のキーを持つ。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `alias_type` | `MdmarkAliasType` | 種類。`'term' \| 'doc' \| 'command' \| 'url' \| 'skill' \| 'tool' \| 'path' \| 'avoid'`。`env` は含めない |
+| `id` | `string` | エイリアスの `id`。渡したエイリアスの中で一意 |
+| `name` | `string` | 照合する語で、ツールチップに出す名前。`avoid` の種類ではやめた言い方 |
+| `aliases` | `string[]` | 名前と同じく照合する語。無ければ空の並び |
+| `description` | `string` | ツールチップの説明。`term`・`doc` では必須 |
+| `command` | `string` | `command` の種類のコマンド |
+| `cwd` | `string` | `command` の種類の実行場所 |
+| `url` | `string` | `url` の種類の URL |
+| `skill` | `string` | `skill` の種類のスキル名 |
+| `tool` | `string` | `tool` の種類のツール名 |
+| `path` | `string` | `path` の種類のパス |
+| `avoid` | `string[]` | `term` の種類の、使わないことにした言い方 |
+| `replacement` | `string` | `avoid` の種類の置き換え先の語 |
+| `related` | `string[]` | `term` の関連する語。受け取るだけで、使わない |
+
+`MdmarkAliasProblem` は、次のキーを持つ。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `file` | `string` | ずれのあるファイル。行のずれは `configFile`、レコードのずれはそのレコードのファイルの `path` |
+| `where` | `string` | 行のずれは設定のキーのパス（`aliases[1].id`）。レコードのずれはファイルの中のパス（`records` を記載した行は `terms[2].command`、記載しない行は `command`）。ファイル全体のずれは空文字 |
+| `kind` | `'duplicate_alias_row_id' \| 'alias_records_missing' \| 'alias_field_missing' \| 'alias_unknown_type' \| 'alias_required_empty' \| 'duplicate_alias_id'` | ずれの種類。意味は [CLI](./CLI.md#設定と索引を点検する) |
+| `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
+
+ずれの並びは `aliases` と同じ順で、同じ行・レコードの中は `metadata` のキーの順。
+型 `MdmarkAlias`・`MdmarkAliasType`・`MdmarkAliasSource`・`MdmarkAliasProblem` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+
+```json
+{
+  "aliases": [
+    { "alias_type": "term", "id": "ws", "name": "ワークスペース", "aliases": [], "description": "話し合いの記録を置くフォルダ" }
+  ],
+  "problems": []
+}
+```
+
+### エラー
+
+例外は投げない。
+使えない行・レコードは、除いてずれにし、ほかの行・レコードからエイリアスを作る。
+`env` のレコードは種類と必須のキーを確かめてずれを返すが、`aliases` には入れない。
+上限は無く、渡された全ての行とファイルを使う。
 
 ## 拡張を登録する
 

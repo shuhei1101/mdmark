@@ -95,6 +95,33 @@ scenarios:
       - '`ts` と `python` のコードブロックが色分けされている'
       - 手元のフォルダにある言語のモジュールのうち、文書が使わない言語（`yaml`）のモジュールは埋められていない
     test: test_normal_when_code_highlighted
+  - name: 正常シナリオ（エイリアスを読む）
+    setup:
+      - name: エイリアスを読む設定
+        description: '`aliases` に、`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）と、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）を持つ YAML を指す行と、無いファイルを指す行を持つ設定'
+      - name: エイリアスが出る文書
+        description: 段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: 設定の aliases を読む（読めない行は飛ばす）
+        C->>F: 読めたエイリアスを埋めた HTML を書く
+        C-->>W: 読めなかった行の警告・終了コード 0
+        R->>F: file:// で開く
+        F-->>R: エイリアスの語に下線を引いた文書
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - 出力の警告に、読めなかった行のパスが出る
+      - file:// で開くと、`ワークスペース` に下線が付き、ツールチップに `話し合いの記録を置くフォルダ` が出る
+      - 書き出した HTML のソースに、`env` の `開発サーバー`・`http://127.0.0.1:8767/` が入っていない
+      - 外への要求が 0 件
+    test: test_normal_when_aliases
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9
 primary_actor: 文書を書く人

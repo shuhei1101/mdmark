@@ -2,6 +2,7 @@ import { afterEach, expect, inject, test, vi } from "vitest";
 import { cdp, page, userEvent } from "vitest/browser";
 import type {
   DiffRevision,
+  MdmarkAlias,
   MdmarkComment,
   MdmarkIndex,
   MdmarkReferences,
@@ -20,6 +21,9 @@ import {
 } from "../../unit/helpers/diagrams.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
+  ALIAS_EXPECTED_HTML,
+  ALIAS_MARKDOWN,
+  ALIASES,
   AVOID_DOC_ID,
   AVOID_EXPECTED_HTML,
   AVOID_INDEX,
@@ -2316,6 +2320,16 @@ test("test_normal_when_avoided_term_in_browser", async () => {
   });
   // 検証
   expect(stripSourceLine(html)).toBe(AVOID_EXPECTED_HTML);
+});
+
+// ブラウザで配布物の render を呼んでも、エイリアスつきの出力が固定値と等しい（正常系）
+test("test_normal_when_aliases_in_browser", async () => {
+  // 準備
+  const { render } = await loadBuilt();
+  // 実行
+  const html = render(ALIAS_MARKDOWN, { aliases: ALIASES });
+  // 検証
+  expect(stripSourceLine(html)).toBe(ALIAS_EXPECTED_HTML);
 });
 
 // 描く文書とほかの文書の用語集の表のやめた言い方にマーカーを付け、索引の用語を先に代わりの用語にする（正常系）
@@ -5262,4 +5276,500 @@ test("test_error_when_unknown_side_toc_mode", async () => {
       expect(panelOpacity(panel)).toBe("1");
     });
   });
+});
+
+/** 使えないエイリアス（`env` を含む）を、型の検査を通さずに `aliases` へ渡す形にする */
+function rawAliases(aliases: unknown[]): MdmarkAlias[] {
+  return aliases as MdmarkAlias[];
+}
+
+/** ツールチップの区分の見出しの文字を並べて返す */
+function tipHeadings(tip: Element): string[] {
+  return [...tip.querySelectorAll(".mdmark-term-tip-heading")].map(
+    (heading) => heading.textContent ?? "",
+  );
+}
+
+/** 語に付いたツールチップを返す */
+function tipInWrap(term: Element): HTMLElement {
+  return find<HTMLElement>(
+    term.closest(".mdmark-term-wrap") as HTMLElement,
+    ".mdmark-term-tip",
+  );
+}
+
+// 渡したエイリアスの名前と別名に下線を引き、種類ごとのツールチップを出す。env は照合しない（正常系）
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "## 節 1",
+    "",
+    "レビュー、設計書、課題の一覧、記録の取り込み、点検のツール、設定ファイル、開発サーバーを並べ、レビューをもう一度書く。",
+    "",
+    "## 節 2",
+    "",
+    "査読を書く。",
+    "",
+  ].join("\n");
+  const aliases = rawAliases([
+    {
+      alias_type: "term",
+      id: "review",
+      name: "レビュー",
+      aliases: ["査読"],
+      description: "変更を別の人が確かめること",
+    },
+    {
+      alias_type: "doc",
+      id: "design-doc",
+      name: "設計書",
+      aliases: [],
+      description: "仕様を記載した文書",
+    },
+    {
+      alias_type: "url",
+      id: "issues",
+      name: "課題の一覧",
+      aliases: [],
+      description: "Issue を並べたページ",
+      url: "https://github.com/shuhei1101/mdmark/issues",
+    },
+    {
+      alias_type: "skill",
+      id: "session",
+      name: "記録の取り込み",
+      aliases: [],
+      skill: "mindstella:session",
+    },
+    {
+      alias_type: "tool",
+      id: "check-tool",
+      name: "点検のツール",
+      aliases: [],
+      tool: "check",
+    },
+    {
+      alias_type: "path",
+      id: "config-file",
+      name: "設定ファイル",
+      aliases: [],
+      path: "mdmark.config.yaml",
+    },
+    {
+      alias_type: "env",
+      id: "dev-server",
+      name: "開発サーバー",
+      aliases: [],
+      url: "http://127.0.0.1:8767/",
+      port: "8767",
+    },
+  ]);
+  // 実行
+  await mountTracked(el, { markdown, aliases });
+  // 検証
+  // env を除く 6 つの名前と、2 つ目の節の `査読` に下線が付き、1 つ目の節の 2 回目の `レビュー` には付かない
+  const terms = [...el.querySelectorAll<HTMLElement>(".mdmark-term")];
+  expect(terms.map((term) => term.textContent)).toEqual([
+    "レビュー",
+    "設計書",
+    "課題の一覧",
+    "記録の取り込み",
+    "点検のツール",
+    "設定ファイル",
+    "査読",
+  ]);
+  // env: 下線もツールチップも無く、値が文書に入らない
+  expect(el.textContent).toContain("開発サーバー");
+  expect(el.innerHTML).not.toContain("http://127.0.0.1:8767/");
+  // 査読: ポインターを乗せると「用語」の下に名前と説明が出る
+  const review = terms[6] as HTMLElement;
+  const reviewTip = tipInWrap(review);
+  expect(isOpen(reviewTip)).toBe(false);
+  await userEvent.hover(review);
+  await vi.waitFor(() => {
+    expect(isOpen(reviewTip)).toBe(true);
+  });
+  expect(tipHeadings(reviewTip)).toEqual(["用語"]);
+  expect(find(reviewTip, ".mdmark-term-tip-name").textContent).toBe("レビュー");
+  expect(find(reviewTip, ".mdmark-term-tip-meaning").textContent).toBe(
+    "変更を別の人が確かめること",
+  );
+  await userEvent.unhover(review);
+  // 設計書: 「文書」の下に説明が出る
+  const docTip = tipInWrap(terms[1] as HTMLElement);
+  expect(tipHeadings(docTip)).toEqual(["文書"]);
+  expect(find(docTip, ".mdmark-term-tip-meaning").textContent).toBe(
+    "仕様を記載した文書",
+  );
+  // スキル・ツール・パス: 「スキル」「ツール」「パス」の下の code に値が出る
+  const codes = [3, 4, 5].map((position) => {
+    const tip = tipInWrap(terms[position] as HTMLElement);
+    return [tipHeadings(tip)[0], find(tip, "code").textContent];
+  });
+  expect(codes).toEqual([
+    ["スキル", "mindstella:session"],
+    ["ツール", "check"],
+    ["パス", "mdmark.config.yaml"],
+  ]);
+  // 課題の一覧: 「URL」の下に説明とリンクが出る。Tab でリンクへ移り、Esc で閉じて語へ戻る
+  const issues = terms[2] as HTMLElement;
+  const issuesTip = tipInWrap(issues);
+  issues.focus();
+  expect(isOpen(issuesTip)).toBe(true);
+  expect(tipHeadings(issuesTip)).toEqual(["URL"]);
+  expect(find(issuesTip, ".mdmark-term-tip-meaning").textContent).toBe(
+    "Issue を並べたページ",
+  );
+  const link = find<HTMLAnchorElement>(issuesTip, "a");
+  expect(link.textContent).toBe("https://github.com/shuhei1101/mdmark/issues");
+  expect(link.getAttribute("href")).toBe(
+    "https://github.com/shuhei1101/mdmark/issues",
+  );
+  await userEvent.keyboard("{Tab}");
+  expect(document.activeElement).toBe(link);
+  expect(isOpen(issuesTip)).toBe(true);
+  await userEvent.keyboard("{Escape}");
+  expect(isOpen(issuesTip)).toBe(false);
+  expect(document.activeElement).toBe(issues);
+});
+
+/** コマンドのエイリアス `単体テスト` */
+const UNIT_TEST_ALIAS: MdmarkAlias = {
+  alias_type: "command",
+  id: "unit-test",
+  name: "単体テスト",
+  aliases: [],
+  description: "ライブラリ本体の単体テストを流す",
+  command: "npm run test:unit",
+  cwd: "リポジトリの直下",
+};
+
+// コマンドのツールチップのコピーのボタンで、コマンドをクリップボードへ書き、ボタンで知らせる（正常系）
+test("test_normal_when_copy_command", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: "手元で単体テストを流す。\n",
+    aliases: [UNIT_TEST_ALIAS],
+  });
+  const term = find<HTMLElement>(el, ".mdmark-term");
+  const tip = tipInWrap(term);
+  const button = find<HTMLButtonElement>(tip, "button.mdmark-term-tip-copy");
+  const status = find(tip, '[role="status"]');
+  // 検証: ツールチップの中身
+  term.focus();
+  expect(isOpen(tip)).toBe(true);
+  expect(tipHeadings(tip)).toEqual(["コマンド"]);
+  expect(find(tip, ".mdmark-term-tip-meaning").textContent).toBe(
+    "ライブラリ本体の単体テストを流す",
+  );
+  expect(find(tip, "code").textContent).toBe("npm run test:unit");
+  expect(tip.textContent).toContain("実行場所");
+  expect(tip.textContent).toContain("リポジトリの直下");
+  expect(button.getAttribute("type")).toBe("button");
+  expect(button.textContent?.trim()).toBe("コピー");
+  // 実行: Tab でコピーのボタンへ移り、Enter で押す
+  await userEvent.keyboard("{Tab}");
+  expect(document.activeElement).toBe(button);
+  expect(isOpen(tip)).toBe(true);
+  await userEvent.keyboard("{Enter}");
+  await vi.advanceTimersByTimeAsync(0);
+  // 検証: 書いて、ボタンと読み上げの要素で知らせ、ツールチップは出たまま
+  expect(writeText).toHaveBeenCalledTimes(1);
+  expect(writeText).toHaveBeenCalledWith("npm run test:unit");
+  expect(button.textContent?.trim()).toBe("コピーしました");
+  expect(status.textContent).toContain("コマンドをコピーしました");
+  expect(isOpen(tip)).toBe(true);
+  // 検証: 2 秒後に戻る
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(button.textContent?.trim()).toBe("コピー");
+  expect(status.textContent).toBe("");
+  expect(isOpen(tip)).toBe(true);
+});
+
+// クリップボードへの書き込みが拒まれたら、ボタンで知らせて次に押すまで残す（正常系）
+test("test_normal_when_copy_command_denied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  stubClipboard(() =>
+    Promise.reject(new DOMException("denied", "NotAllowedError")),
+  );
+  const rejections: PromiseRejectionEvent[] = [];
+  const onRejection = (event: PromiseRejectionEvent): void => {
+    rejections.push(event);
+  };
+  window.addEventListener("unhandledrejection", onRejection);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: "手元で単体テストを流す。\n",
+    aliases: [UNIT_TEST_ALIAS],
+  });
+  const term = find<HTMLElement>(el, ".mdmark-term");
+  const tip = tipInWrap(term);
+  const button = find<HTMLButtonElement>(tip, "button.mdmark-term-tip-copy");
+  const status = find(tip, '[role="status"]');
+  term.focus();
+  try {
+    // 実行・検証: 押すと失敗を知らせ、2 秒たっても戻らない
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(button.textContent).toContain("コピーできませんでした");
+    expect(status.textContent).toContain("コマンドをコピーできませんでした");
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(button.textContent).toContain("コピーできませんでした");
+    expect(rejections).toHaveLength(0);
+    // 実行・検証: クリップボードが無いページでも、押すと同じ知らせになる
+    Object.defineProperty(navigator, "clipboard", {
+      value: undefined,
+      configurable: true,
+    });
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(button.textContent).toContain("コピーできませんでした");
+    expect(status.textContent).toContain("コマンドをコピーできませんでした");
+    expect(rejections).toHaveLength(0);
+  } finally {
+    window.removeEventListener("unhandledrejection", onRejection);
+  }
+});
+
+// avoid の種類と term の avoid の語に波線のマーカーを付け、代わりの用語のツールチップを出す（正常系）
+test("test_normal_when_avoid_alias", async () => {
+  // 準備
+  const el = createElement();
+  const aliases = rawAliases([
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: [],
+      replacement: "ワークスペース",
+    },
+    {
+      alias_type: "term",
+      id: "branch",
+      name: "ブランチ",
+      aliases: [],
+      description: "作業を分ける線",
+      avoid: ["枝"],
+    },
+  ]);
+  const markdown =
+    "## 節\n\n作業場と作業場と枝を書く。行内のコードは `作業場` と書く。\n";
+  // 実行
+  await mountTracked(el, { markdown, aliases });
+  // 検証
+  const terms = [...el.querySelectorAll<HTMLElement>(".mdmark-term")];
+  expect(terms.map((term) => term.textContent)).toEqual(["作業場", "枝"]);
+  for (const term of terms) {
+    expect(term.classList.contains("mdmark-term-avoided")).toBe(true);
+    expect(getComputedStyle(term).textDecorationStyle).toBe("wavy");
+  }
+  expect(find<HTMLElement>(el, "code").closest(".mdmark-term")).toBeNull();
+  // 作業場: 「代わりの用語」の下に置き換え先だけが出る
+  const [workplace, branch] = terms as [HTMLElement, HTMLElement];
+  workplace.focus();
+  const workplaceTip = tipInWrap(workplace);
+  expect(isOpen(workplaceTip)).toBe(true);
+  expect(tipHeadings(workplaceTip)).toEqual(["代わりの用語"]);
+  expect(find(workplaceTip, ".mdmark-term-tip-replacement").textContent).toBe(
+    "ワークスペース",
+  );
+  expect(workplaceTip.querySelector(".mdmark-term-tip-meaning")).toBeNull();
+  // 枝: 「代わりの用語」の下に term の名前と説明が出る
+  branch.focus();
+  const branchTip = tipInWrap(branch);
+  expect(isOpen(branchTip)).toBe(true);
+  expect(tipHeadings(branchTip)).toEqual(["代わりの用語"]);
+  expect(find(branchTip, ".mdmark-term-tip-replacement").textContent).toBe(
+    "ブランチ",
+  );
+  expect(find(branchTip, ".mdmark-term-tip-meaning").textContent).toBe(
+    "作業を分ける線",
+  );
+});
+
+// 同じ語が索引・エイリアス・表にあるとき、索引 → エイリアス → 描く文書の表の順で先の意味を出す（正常系）
+test("test_normal_when_aliases_have_same_term", async () => {
+  // 準備
+  const el = createElement();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "ガイド" }],
+    terms: [{ id: "mark", term: "印", meaning: "索引に書いた意味" }],
+  };
+  const aliases = rawAliases([
+    {
+      alias_type: "term",
+      id: "mark",
+      name: "印",
+      aliases: [],
+      description: "エイリアスに書いた意味",
+    },
+    {
+      alias_type: "term",
+      id: "mark-word",
+      name: "マーク",
+      aliases: [],
+      description: "エイリアスに書いたマークの意味",
+    },
+  ]);
+  const markdown = [
+    "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
+    "",
+    "| 用語 | 別名 | 意味 |",
+    "| --- | --- | --- |",
+    "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 |",
+    "",
+    "<!-- /glossary -->",
+    "",
+    "印、マーク、オン・オフの印を書く。",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown, index, docId: "guide", aliases });
+  // 検証
+  const terms = [...el.querySelectorAll<HTMLElement>(".mdmark-term")];
+  expect(terms.map((term) => term.textContent)).toEqual([
+    "印",
+    "マーク",
+    "オン・オフの印",
+  ]);
+  const meanings = terms.map(
+    (term) => find(tipInWrap(term), ".mdmark-term-tip-meaning").textContent,
+  );
+  expect(meanings).toEqual([
+    "索引に書いた意味",
+    "エイリアスに書いたマークの意味",
+    "HTML コメントで書く指定",
+  ]);
+  expect(el.textContent).not.toContain("エイリアスに書いた意味");
+});
+
+// 文書の印で glossary をオフにした文書では、渡したエイリアスを照合しない（正常系）
+test("test_normal_when_aliases_glossary_disabled", async () => {
+  // 準備
+  const el = createElement();
+  const aliases = rawAliases([
+    UNIT_TEST_ALIAS,
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: [],
+      replacement: "ワークスペース",
+    },
+  ]);
+  const markdown =
+    "<!-- features: -glossary -->\n\n単体テストと作業場を書く。\n";
+  // 実行
+  await mountTracked(el, { markdown, aliases });
+  // 検証
+  expect(el.querySelector(".mdmark-term")).toBeNull();
+  expect(el.querySelector('[role="tooltip"]')).toBeNull();
+  expect(el.textContent).not.toContain("npm run test:unit");
+  expect(paragraphTexts(el)).toEqual(["単体テストと作業場を書く。"]);
+});
+
+// update で本文を差し替えても、描いたときのエイリアスで照合し直す（正常系）
+test("test_normal_when_aliases_updated", async () => {
+  // 準備
+  const el = createElement();
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "term",
+      id: "ws",
+      name: "ワークスペース",
+      aliases: [],
+      description: "話し合いの記録を置くフォルダ",
+    },
+  ];
+  const handle = await mountTracked(el, {
+    markdown: "ここがワークスペース。\n",
+    aliases,
+  });
+  // 検証: 描いた直後
+  const first = find<HTMLElement>(el, ".mdmark-term");
+  expect(first.textContent).toBe("ワークスペース");
+  expect(find(tipInWrap(first), ".mdmark-term-tip-meaning").textContent).toBe(
+    "話し合いの記録を置くフォルダ",
+  );
+  // 実行
+  handle.update("別の段落のワークスペース。\n");
+  // 検証: 差し替えた後
+  const second = find<HTMLElement>(el, ".mdmark-term");
+  expect(el.querySelectorAll(".mdmark-term")).toHaveLength(1);
+  expect(second.textContent).toBe("ワークスペース");
+  expect(find(tipInWrap(second), ".mdmark-term-tip-meaning").textContent).toBe(
+    "話し合いの記録を置くフォルダ",
+  );
+  expect(el.textContent).toContain("別の段落の");
+});
+
+// 必須のキーが空・知らない種類・重なった ID のエイリアスを除いて描き、http・https でない URL はリンクにしない（異常系）
+test("test_error_when_invalid_alias", async () => {
+  // 準備
+  const el = createElement();
+  const aliases = rawAliases([
+    {
+      alias_type: "term",
+      id: "review",
+      name: "レビュー",
+      aliases: [],
+      description: "変更を別の人が確かめること",
+    },
+    { alias_type: "command", id: "build", name: "ビルド", aliases: [] },
+    { alias_type: "memo", id: "memo", name: "メモ", aliases: [] },
+    {
+      alias_type: "term",
+      id: "review",
+      name: "査定",
+      aliases: [],
+      description: "重なった ID",
+    },
+    {
+      alias_type: "url",
+      id: "bad-link",
+      name: "危ないリンク",
+      aliases: [],
+      url: "javascript:alert(1)",
+    },
+  ]);
+  const markdown = "レビュー、ビルド、メモ、査定、危ないリンクを書く。\n";
+  const { mount } = await loadBuilt();
+  let handle: MountHandle | undefined;
+  // 実行
+  expect(() => {
+    handle = mount(el, { markdown, aliases });
+  }).not.toThrow();
+  if (handle) {
+    handles.push(handle);
+  }
+  // 検証
+  const body = find(el, ":scope > p").cloneNode(true) as Element;
+  for (const tip of body.querySelectorAll(".mdmark-term-tip")) {
+    tip.remove();
+  }
+  expect(body.textContent).toBe(
+    "レビュー、ビルド、メモ、査定、危ないリンクを書く。",
+  );
+  expect(el.querySelector(".mdmark-notice")).toBeNull();
+  const terms = [...el.querySelectorAll<HTMLElement>(".mdmark-term")];
+  expect(terms.map((term) => term.textContent)).toEqual([
+    "レビュー",
+    "危ないリンク",
+  ]);
+  // 危ないリンク: URL を文字で出し、リンクにしない
+  const bad = terms[1] as HTMLElement;
+  bad.focus();
+  const tip = tipInWrap(bad);
+  expect(isOpen(tip)).toBe(true);
+  expect(tip.textContent).toContain("javascript:alert(1)");
+  expect(tip.querySelector("a")).toBeNull();
 });

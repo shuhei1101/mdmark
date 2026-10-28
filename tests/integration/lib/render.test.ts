@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, inject, test, vi } from "vitest";
 import type {
+  MdmarkAlias,
   MdmarkConfig,
   MdmarkExtension,
   MdmarkFlowDefinition,
@@ -26,6 +27,9 @@ import {
 import { matches, plainText } from "../../unit/helpers/html.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
+  ALIAS_EXPECTED_HTML,
+  ALIAS_MARKDOWN,
+  ALIASES,
   AVOID_DOC_ID,
   AVOID_EXPECTED_HTML,
   AVOID_INDEX,
@@ -45,6 +49,7 @@ type Built = {
       index?: MdmarkIndex;
       docId?: string;
       references?: MdmarkReferences;
+      aliases?: MdmarkAlias[];
     },
   ) => string;
   registerExtension: (extension: MdmarkExtension) => void;
@@ -1490,4 +1495,25 @@ test("test_normal_when_h1_sections", async () => {
     '<div class="mdmark-section-body" id="section-付録" data-section="closed"',
   );
   expect(html).not.toContain("section: closed");
+});
+
+// 渡したエイリアスの下線と種類ごとのツールチップを、スクリプト無しで読める HTML 文字列にする（正常系）
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(ALIAS_MARKDOWN, { aliases: ALIASES });
+  // 検証
+  expect(typeof document).toBe("undefined");
+  expect(html).toBe(ALIAS_EXPECTED_HTML);
+  // 用語は「用語」の下に説明を持つ role="tooltip" のツールチップ、コマンドは「コマンド」の下に code とコピーのボタンを持つ
+  expect(html).toMatch(
+    /<span class="mdmark-term"[^>]*>ワークスペース<\/span><span class="mdmark-term-tip"[^>]*role="tooltip"[^>]*>[\s\S]*?>用語<[\s\S]*?話し合いの記録を置くフォルダ/,
+  );
+  expect(html).toMatch(
+    /<span class="mdmark-term"[^>]*>単体テスト<\/span><span class="mdmark-term-tip"[^>]*>[\s\S]*?>コマンド<[\s\S]*?<code>npm run test:unit<\/code><button[^>]*type="button"[^>]*>[\s\S]*?コピー<\/button>/,
+  );
+  // スクリプトも印の文字も含まない
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
 });

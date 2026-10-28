@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
   <!-- やめた言い方のマーカーと代わりの用語のツールチップの規則（#79 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/79/assets/avoided-term.css">
+  <!-- エイリアスの種類ごとの区分とコマンドのコピーのボタンの規則（#176 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/176/assets/alias-tip.css">
   <!-- この部品のモックの固有の規則（見本の高さ） -->
   <link rel="stylesheet" href="./style.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で avoided-term.js が media を all に切り替える -->
@@ -29,6 +31,8 @@
   <script src="../../refs/27/assets/glossary.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/79/assets/avoided-term.js" defer></script>
+  <!-- コマンドのエイリアスのコピーのボタンの操作 -->
+  <script src="../../refs/176/assets/alias-tip.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
@@ -132,6 +136,136 @@
         <h2 class="catalog-label" id="state-avoided-mixed">用語の下線とやめた言い方のマーカーが同じ段落に並ぶ（2 回目の「作業場」には付けない）</h2>
         <article class="mdmark catalog-tip-space">
 <p>新しい<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-mixed-term">ワークスペース</span><span class="mdmark-term-tip" id="tip-mixed-term" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>を作ると、古い<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-mixed-avoided">作業場</span><span class="mdmark-term-tip" id="tip-mixed-avoided" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>の記録は読み込まれません。作業場の名前は日付から付けます。</p>
+        </article>
+      </section>
+
+      <!-- エイリアス（開く前）: 設定の aliases から登録したエイリアスの名前と別名にも、用語と同じ破線の下線を引く。ポインターを乗せるか Tab でフォーカスすると種類ごとのツールチップが開き、リンクとコピーのボタンへは続けて Tab -->
+      <section aria-labelledby="alias-closed">
+        <h2 class="catalog-label" id="alias-closed">エイリアス（開く前。種類によらず用語と同じ破線の下線。ポインターを乗せるか Tab でフォーカスすると開く）</h2>
+        <article class="mdmark catalog-tip-space-both">
+<p>変更は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-review">レビュー</span><span class="mdmark-term-tip" id="tip-a-review" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-name">レビュー</span><span class="mdmark-term-tip-meaning">変更を別の人が確かめること</span></span></span></span>の後に<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-doc">設計書</span><span class="mdmark-term-tip" id="tip-a-doc" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">文書</span><span class="mdmark-term-tip-name">設計書</span><span class="mdmark-term-tip-meaning">仕様を記載した文書</span></span></span></span>へ反映し、残りは<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-url-desc" aria-details="tip-a-url">課題の一覧</span><span class="mdmark-term-tip" id="tip-a-url" role="group" aria-label="「課題の一覧」の URL"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">URL</span><span class="mdmark-term-tip-name">課題の一覧</span><span class="mdmark-term-tip-meaning" id="tip-a-url-desc">Issue を並べたページ</span><a class="mdmark-term-tip-link" href="https://github.com/shuhei1101/mdmark/issues">https://github.com/shuhei1101/mdmark/issues</a></span></span></span>に記録します。
+記録は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-skill">記録の取り込み</span><span class="mdmark-term-tip" id="tip-a-skill" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">スキル</span><span class="mdmark-term-tip-name">記録の取り込み</span><code class="mdmark-term-tip-code">mindstella:session</code></span></span></span>で読み込み、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-tool">点検のツール</span><span class="mdmark-term-tip" id="tip-a-tool" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">ツール</span><span class="mdmark-term-tip-name">点検のツール</span><span class="mdmark-term-tip-meaning">設定と索引のずれを返す</span><code class="mdmark-term-tip-code">check</code></span></span></span>で<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-path">設定ファイル</span><span class="mdmark-term-tip" id="tip-a-path" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">パス</span><span class="mdmark-term-tip-name">設定ファイル</span><code class="mdmark-term-tip-code">mdmark.config.yaml</code></span></span></span>を確かめます。
+手元では<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-details="tip-a-env">開発サーバー</span><span class="mdmark-term-tip" id="tip-a-env" role="group" aria-label="「開発サーバー」の環境変数"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">環境変数</span><span class="mdmark-term-tip-name">開発サーバー</span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">URL</span><span class="mdmark-term-tip-value"><a href="http://127.0.0.1:8767/">http://127.0.0.1:8767/</a></span><span class="mdmark-term-tip-label">ポート</span><span class="mdmark-term-tip-value">8767</span></span></span></span></span>で<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-a-cmd-desc" aria-details="tip-a-cmd">単体テスト</span><span class="mdmark-term-tip" id="tip-a-cmd" role="group" aria-label="「単体テスト」のコマンド"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">コマンド</span><span class="mdmark-term-tip-name">単体テスト</span><span class="mdmark-term-tip-meaning" id="tip-a-cmd-desc">ライブラリ本体の単体テストを流す</span><span class="mdmark-term-tip-command"><code>npm run test:unit</code><button class="mdmark-term-tip-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>コピー</button></span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">リポジトリの直下</span></span><span class="mdmark-visually-hidden mdmark-term-tip-status" role="status"></span></span></span></span>を流し、<span class="mdmark-term-wrap"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-a-avoid">作業場</span><span class="mdmark-term-tip" id="tip-a-avoid" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span></span></span></span>の記録を残します。</p>
+        </article>
+      </section>
+
+      <!-- term のエイリアス（別名に一致して開いた）: 名前・説明を出す。本文の語が別名のときも名前で何の用語かが分かる -->
+      <section aria-labelledby="alias-term">
+        <h2 class="catalog-label" id="alias-term">term（別名「査読」に一致して開いた。名前と説明）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>公開する前に<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-term-alias">査読</span><span class="mdmark-term-tip" id="tip-term-alias" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-name">レビュー</span><span class="mdmark-term-tip-meaning">変更を別の人が確かめること</span></span></span></span>を受けます。</p>
+        </article>
+      </section>
+
+      <!-- doc のエイリアス: 名前・概要を出す -->
+      <section aria-labelledby="alias-doc">
+        <h2 class="catalog-label" id="alias-doc">doc（名前と概要）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>決めた内容は<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-doc-alias">設計書</span><span class="mdmark-term-tip" id="tip-doc-alias" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">文書</span><span class="mdmark-term-tip-name">設計書</span><span class="mdmark-term-tip-meaning">仕様を記載した文書</span></span></span></span>へ反映します。</p>
+        </article>
+      </section>
+
+      <!-- command のエイリアス: 名前・説明・コマンド（コピーのボタン）・実行場所を出す。コピーのボタンがあるので role="group" -->
+      <section aria-labelledby="alias-command">
+        <h2 class="catalog-label" id="alias-command">command（名前・説明・コマンドとコピーのボタン・実行場所。押すとコピーする）</h2>
+        <article class="mdmark catalog-tip-space-alias-tall">
+<p>手元で<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-cmd-desc" aria-details="tip-cmd">単体テスト</span><span class="mdmark-term-tip" id="tip-cmd" role="group" aria-label="「単体テスト」のコマンド"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">コマンド</span><span class="mdmark-term-tip-name">単体テスト</span><span class="mdmark-term-tip-meaning" id="tip-cmd-desc">ライブラリ本体の単体テストを流す</span><span class="mdmark-term-tip-command"><code>npm run test:unit</code><button class="mdmark-term-tip-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>コピー</button></span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">リポジトリの直下</span></span><span class="mdmark-visually-hidden mdmark-term-tip-status" role="status"></span></span></span></span>を流してから変更を送信します。</p>
+        </article>
+      </section>
+
+      <!-- command のエイリアス（コピーした）: ボタンの中で文言とアイコンで知らせ、2 秒で元の文言に戻す -->
+      <section aria-labelledby="alias-command-copied">
+        <h2 class="catalog-label" id="alias-command-copied">command（コピーした。ボタンの中で文言とアイコンで知らせ、2 秒で元の文言に戻す）</h2>
+        <article class="mdmark catalog-tip-space-alias-tall">
+<p>手元で<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-cmd-copied-desc" aria-details="tip-cmd-copied">単体テスト</span><span class="mdmark-term-tip" id="tip-cmd-copied" role="group" aria-label="「単体テスト」のコマンド"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">コマンド</span><span class="mdmark-term-tip-name">単体テスト</span><span class="mdmark-term-tip-meaning" id="tip-cmd-copied-desc">ライブラリ本体の単体テストを流す</span><span class="mdmark-term-tip-command"><code>npm run test:unit</code><button class="mdmark-term-tip-copy" type="button" data-state="idle" data-mock-copy="copied"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>コピー</button></span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">リポジトリの直下</span></span><span class="mdmark-visually-hidden mdmark-term-tip-status" role="status"></span></span></span></span>を流してから変更を送信します。</p>
+        </article>
+      </section>
+
+      <!-- command のエイリアス（コピーできなかった）: クリップボードに書けない。次に押すまで知らせを残す -->
+      <section aria-labelledby="alias-command-failed">
+        <h2 class="catalog-label" id="alias-command-failed">command（コピーできなかった。クリップボードに書けない。次に押すまで知らせを残す）</h2>
+        <article class="mdmark catalog-tip-space-alias-tall">
+<p>手元で<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-cmd-failed-desc" aria-details="tip-cmd-failed">単体テスト</span><span class="mdmark-term-tip" id="tip-cmd-failed" role="group" aria-label="「単体テスト」のコマンド"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">コマンド</span><span class="mdmark-term-tip-name">単体テスト</span><span class="mdmark-term-tip-meaning" id="tip-cmd-failed-desc">ライブラリ本体の単体テストを流す</span><span class="mdmark-term-tip-command"><code>npm run test:unit</code><button class="mdmark-term-tip-copy" type="button" data-state="idle" data-mock-copy="failed"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>コピー</button></span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">リポジトリの直下</span></span><span class="mdmark-visually-hidden mdmark-term-tip-status" role="status"></span></span></span></span>を流してから変更を送信します。</p>
+        </article>
+      </section>
+
+      <!-- command のエイリアス（長いコマンド）: コマンドの面の幅で折り返し、ツールチップの幅の上限を超えない -->
+      <section aria-labelledby="alias-command-long">
+        <h2 class="catalog-label" id="alias-command-long">command（長いコマンド。コマンドの面の幅で折り返す）</h2>
+        <article class="mdmark catalog-tip-space-alias-tall">
+<p>配る前に<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-cmd-long-desc" aria-details="tip-cmd-long">まとめた HTML の書き出し</span><span class="mdmark-term-tip" id="tip-cmd-long" role="group" aria-label="「まとめた HTML の書き出し」のコマンド"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">コマンド</span><span class="mdmark-term-tip-name">まとめた HTML の書き出し</span><span class="mdmark-term-tip-meaning" id="tip-cmd-long-desc">設定の build の文書を 1 枚の HTML にまとめる</span><span class="mdmark-term-tip-command"><code>npx mdmark build --config docs/mdmark.config.yaml --out dist/handbook/index.html --title "開発ハンドブック"</code><button class="mdmark-term-tip-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>コピー</button></span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">リポジトリの直下</span></span><span class="mdmark-visually-hidden mdmark-term-tip-status" role="status"></span></span></span></span>を流します。</p>
+        </article>
+      </section>
+
+      <!-- url のエイリアス: 名前・説明・リンク（URL の文字）を出す。リンクがあるので role="group" -->
+      <section aria-labelledby="alias-url">
+        <h2 class="catalog-label" id="alias-url">url（名前・説明・リンク）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>残りは<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-url-desc" aria-details="tip-url">課題の一覧</span><span class="mdmark-term-tip" id="tip-url" role="group" aria-label="「課題の一覧」の URL"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">URL</span><span class="mdmark-term-tip-name">課題の一覧</span><span class="mdmark-term-tip-meaning" id="tip-url-desc">Issue を並べたページ</span><a class="mdmark-term-tip-link" href="https://github.com/shuhei1101/mdmark/issues">https://github.com/shuhei1101/mdmark/issues</a></span></span></span>に記録します。</p>
+        </article>
+      </section>
+
+      <!-- url のエイリアス（長い URL）: リンクの文字を 1 行に収め、末尾を「...」で省略する -->
+      <section aria-labelledby="alias-url-long">
+        <h2 class="catalog-label" id="alias-url-long">url（長い URL。1 行に収めて末尾を「...」で省略する）</h2>
+        <article class="mdmark catalog-tip-space-alias-tall">
+<p>手順は<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-url-long-desc" aria-details="tip-url-long">移行の手順書</span><span class="mdmark-term-tip" id="tip-url-long" role="group" aria-label="「移行の手順書」の URL"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">URL</span><span class="mdmark-term-tip-name">移行の手順書</span><span class="mdmark-term-tip-meaning" id="tip-url-long-desc">設定・索引・文書を新しいバージョンに合わせる手順</span><a class="mdmark-term-tip-link" href="https://github.com/shuhei1101/mdmark/blob/develop/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E5%B0%8E%E5%85%A5/%E7%89%88%E3%82%92%E4%B8%8A%E3%81%92%E3%82%8B.md?plain=1#L12-L48">https://github.com/shuhei1101/mdmark/blob/develop/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E5%B0%8E%E5%85%A5/%E7%89%88%E3%82%92%E4%B8%8A%E3%81%92%E3%82%8B.md?plain=1#L12-L48</a></span></span></span>に従います。</p>
+        </article>
+      </section>
+
+      <!-- skill のエイリアス: 名前・説明（あれば）・スキル名を出す -->
+      <section aria-labelledby="alias-skill">
+        <h2 class="catalog-label" id="alias-skill">skill（名前・スキル名。説明が空のときは説明を出さない）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>話し合いの記録は<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-skill">記録の取り込み</span><span class="mdmark-term-tip" id="tip-skill" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">スキル</span><span class="mdmark-term-tip-name">記録の取り込み</span><code class="mdmark-term-tip-code">mindstella:session</code></span></span></span>で読み込みます。</p>
+        </article>
+      </section>
+
+      <!-- tool のエイリアス: 名前・説明・ツール名を出す -->
+      <section aria-labelledby="alias-tool">
+        <h2 class="catalog-label" id="alias-tool">tool（名前・説明・ツール名）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>配る前に<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-tool">点検のツール</span><span class="mdmark-term-tip" id="tip-tool" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">ツール</span><span class="mdmark-term-tip-name">点検のツール</span><span class="mdmark-term-tip-meaning">設定と索引のずれを返す</span><code class="mdmark-term-tip-code">check</code></span></span></span>を呼びます。</p>
+        </article>
+      </section>
+
+      <!-- path のエイリアス: 名前・説明・パスを出す -->
+      <section aria-labelledby="alias-path">
+        <h2 class="catalog-label" id="alias-path">path（名前・説明・パス）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>機能のオン・オフは<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-path">設定ファイル</span><span class="mdmark-term-tip" id="tip-path" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">パス</span><span class="mdmark-term-tip-name">設定ファイル</span><span class="mdmark-term-tip-meaning">機能のオン・オフと読む文書を記載する</span><code class="mdmark-term-tip-code">mdmark.config.yaml</code></span></span></span>に記載します。</p>
+        </article>
+      </section>
+
+      <!-- env のエイリアス: 名前・説明・URL（リンク）・ポートを出す。リンクがあるので role="group" -->
+      <section aria-labelledby="alias-env">
+        <h2 class="catalog-label" id="alias-env">env（名前・説明・URL・ポート）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>手元では<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-env-desc" aria-details="tip-env">開発サーバー</span><span class="mdmark-term-tip" id="tip-env" role="group" aria-label="「開発サーバー」の環境変数"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">環境変数</span><span class="mdmark-term-tip-name">開発サーバー</span><span class="mdmark-term-tip-meaning" id="tip-env-desc">描いた文書を手元で確かめるサーバー</span><span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">URL</span><span class="mdmark-term-tip-value"><a href="http://127.0.0.1:8767/">http://127.0.0.1:8767/</a></span><span class="mdmark-term-tip-label">ポート</span><span class="mdmark-term-tip-value">8767</span></span></span></span></span>で確かめます。</p>
+        </article>
+      </section>
+
+      <!-- avoid のエイリアス: 索引のやめた言い方と同じ波線の下線。代わりの用語の区分に置き換え先を出す -->
+      <section aria-labelledby="alias-avoid">
+        <h2 class="catalog-label" id="alias-avoid">avoid（索引のやめた言い方と同じ波線。置き換え先）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>話し合いの記録は<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-avoid-alias">作業場</span><span class="mdmark-term-tip" id="tip-avoid-alias" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ワークスペース</span></span></span></span>の中に日付ごとに置きます。</p>
+        </article>
+      </section>
+
+      <!-- term のエイリアスの avoid: 索引の terms[].avoid と同じく、代わりの用語として term の名前と説明を出す -->
+      <section aria-labelledby="alias-term-avoid">
+        <h2 class="catalog-label" id="alias-term-avoid">term の avoid（代わりの用語として term の名前と説明）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p>作業は<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="tip-term-avoid">枝</span><span class="mdmark-term-tip" id="tip-term-avoid" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">代わりの用語</span><span class="mdmark-term-tip-replacement">ブランチ</span><span class="mdmark-term-tip-meaning">作業を分ける線</span></span></span></span>ごとに分けます。</p>
+        </article>
+      </section>
+
+      <!-- 使えないエイリアス（異常シナリオ）: 必須のキーが空の「ビルド」と知らない種類の「メモ」には下線を引かない。http・https でない URL はリンクにせず文字で出す -->
+      <section aria-labelledby="alias-invalid">
+        <h2 class="catalog-label" id="alias-invalid">使えないエイリアス（「ビルド」「メモ」は下線なし。http・https でない URL はリンクにせず文字で出す）</h2>
+        <article class="mdmark catalog-tip-space-alias">
+<p><span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-invalid-review">レビュー</span><span class="mdmark-term-tip" id="tip-invalid-review" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-name">レビュー</span><span class="mdmark-term-tip-meaning">変更を別の人が確かめること</span></span></span></span>の前にビルドを流し、メモを残します。詳しくは<span class="mdmark-term-wrap is-open is-above" data-mock-static data-mock-side="above"><span class="mdmark-term" tabindex="0" aria-describedby="tip-invalid-url">危ないリンク</span><span class="mdmark-term-tip" id="tip-invalid-url" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">URL</span><span class="mdmark-term-tip-name">危ないリンク</span><span class="mdmark-term-tip-link">javascript:alert(1)</span></span></span></span>を見てください。</p>
         </article>
       </section>
 

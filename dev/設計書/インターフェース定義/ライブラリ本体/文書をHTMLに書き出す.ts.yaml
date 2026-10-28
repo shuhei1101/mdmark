@@ -155,6 +155,31 @@ flows:
       - '`ts` と `python` の `code` の中に class が `hljs-` で始まる `span` がある'
       - 書き出した HTML に `yaml` の言語のモジュールが埋まっていない（`name:"YAML"` を含まない）
     test: test_normal_when_syntax_highlighted
+  - name: 正常系（エイリアスを読む）
+    summary: 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す
+    setup:
+      - name: エイリアスを持つフォルダ
+        description: '設定に `aliases` の 1 行（`paths: aliases/*.yaml`・`metadata` に `alias_type: {type: ref, field: alias_type}`）を記載し、`aliases/` に `alias_type: command` のレコード（`id: run-test`・`name: テストを流す`・`command: npm test`）と、`alias_type: env` のレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）と、`alias_type: term` で `id`・`name` を持ち `description` が空のレコードを置いたフォルダ。文書 `guide.md` の本文に `テストを流す` と `開発サーバー` がある'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant B as buildAliases
+        participant H as 出力の HTML
+        W->>C: mdmark export guide.md
+        C->>C: 設定の aliases の YAML を読む
+        C->>B: 行・読んだ中身
+        B-->>C: エイリアス・alias_required_empty のずれ
+        C->>H: エイリアスを埋めた guide.html を書く
+        C-->>W: 書き出した: guide.html・警告 1 行・終了コード 0
+    expected:
+      - 終了コードが 0 で、標準エラーに `alias_required_empty` の警告が 1 行ある
+      - 開いた文書の `テストを流す` に下線が付き、ツールチップに `npm test` とコピーのボタンが出る
+      - '`開発サーバー` に下線が付かない'
+      - '`guide.html` のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っておらず、埋めたエイリアスが `run-test` だけ'
+    test: test_normal_when_aliases
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -253,4 +278,7 @@ constraints:
   - item: 右側の目次の出し方
     constraint: 設定の `side-toc` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[side-toc.mode]
+  - item: エイリアス
+    constraint: 設定に `aliases` があるとき、インターフェース定義『設定と索引を点検する』のエイリアスの点検と同じく行の `paths` の YAML を読んで `buildAliases` に渡し、返った `aliases`（`env` を含まない）を埋めて `mount` の `opts.aliases` に渡す。返った `problems` と、当たるファイルが無い行・読めないファイルは警告に出し、終了コードは 0 のまま
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
 test_file: tests/integration/lib/export.test.ts

@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { MdmarkMarkArgs } from "../../../src/extensions.ts";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../helpers/charts.ts";
 import { addStyles } from "../helpers/dom.ts";
@@ -109,6 +110,34 @@ test("test_mount_when_updated", async () => {
   expect(headings).toHaveLength(1);
   expect(headings[0]?.textContent).toBe("B");
   expect(el.classList.contains("mdmark")).toBe(true);
+});
+
+// update で描き直しても、最初に渡したエイリアスで下線を付ける（正常系）
+test("test_mount_when_aliases_updated", async () => {
+  // 準備
+  const el = createElement();
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      description: "ライブラリ本体の単体テストを流す",
+      command: "npm run test:unit",
+    },
+  ];
+  const handle = await mountTracked(el, {
+    markdown: "単体テストを流す。",
+    aliases,
+  });
+  // 実行
+  handle.update("もう一度単体テストを流す。");
+  // 検証
+  expect(el.querySelectorAll(".mdmark-term-wrap")).toHaveLength(1);
+  expect(el.querySelector(".mdmark-term-tip code")?.textContent).toBe(
+    "npm run test:unit",
+  );
+  expect(el.querySelector("button.mdmark-term-tip-copy")).not.toBeNull();
 });
 
 // destroy で片付け、その後の update と 2 回目の destroy は何もしない（正常系）

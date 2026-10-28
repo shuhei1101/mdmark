@@ -65,7 +65,23 @@ export function termSegments(options: {
       html = renderTermTip({
         text: text.slice(found.start, found.end),
         id: nextTipId(),
-        replacement,
+        replacement: {
+          term: replacement.term,
+          ...(replacement.meaning === undefined
+            ? {}
+            : { meaning: replacement.meaning }),
+        },
+      });
+    } else if (term?.alias !== undefined) {
+      // エイリアスは、文書の別名と同じ語でも関連文書を出さず、エイリアスごとに最初の 1 回だけ下線を付ける
+      if (seen.terms.has(term.id)) {
+        continue;
+      }
+      seen.terms.add(term.id);
+      html = renderTermTip({
+        text: text.slice(found.start, found.end),
+        id: nextTipId(),
+        alias: term.alias,
       });
     } else {
       const activeTerm =
@@ -118,9 +134,10 @@ export function termsRule(state: StateCore): void {
     docId: env.docId,
     ownGlossary: env.ownGlossary,
     references: env.mdmarkReferences,
+    aliases: env.aliases,
     features: env.features,
   });
-  if (dictionary.words.length === 0) {
+  if (dictionary.words.length === 0 && dictionary.avoided.size === 0) {
     return;
   }
   const ownPath = env.index?.docs.find((doc) => doc.id === env.docId)?.path;
