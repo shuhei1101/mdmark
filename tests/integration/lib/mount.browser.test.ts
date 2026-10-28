@@ -239,8 +239,9 @@ test("test_normal_when_updated", async () => {
   // 実行
   handle.update("# 新しい見出し");
   // 検証
-  expect(el.children).toHaveLength(1);
-  expect(find(el, "h1").textContent).toBe("新しい見出し");
+  const headings = el.querySelectorAll(".mdmark-content h1");
+  expect(headings).toHaveLength(1);
+  expect(headings[0]?.textContent).toBe("新しい見出し");
   expect(el.classList.contains("mdmark")).toBe(true);
 });
 
@@ -2440,7 +2441,7 @@ test("test_normal_when_backlinks", async () => {
   });
   /** 末尾の一覧の題とリンクを返す */
   const readList = (): { title: string; links: Array<string | null> } => {
-    const nav = el.lastElementChild as HTMLElement;
+    const nav = find<HTMLElement>(el, "nav.mdmark-backlinks");
     const titleId = nav.getAttribute("aria-labelledby") ?? "";
     return {
       title: document.getElementById(titleId)?.textContent ?? "",
@@ -3052,6 +3053,14 @@ async function mountDiff(
   return el;
 }
 
+/** 差分を開いている間に、隠した要素に付く属性 */
+const DIFF_HIDDEN_ATTRIBUTE = "data-mdmark-diff-hidden";
+
+/** `mountDiff` の文書の `h1` の節の中身 */
+function diffSectionBody(el: HTMLElement): HTMLElement {
+  return find<HTMLElement>(el, '[id="section-ガイド"]');
+}
+
 /** 「変更を見る」のボタン */
 function diffToggle(el: HTMLElement): HTMLButtonElement {
   return find<HTMLButtonElement>(el, ".mdmark-diff-toggle");
@@ -3097,13 +3106,31 @@ test("test_normal_when_diff_opened", async () => {
   expect(source.revisionsCalls).toEqual([]);
   expect(toggle.getAttribute("aria-expanded")).toBe("false");
   expect(find(el, "h1").nextElementSibling?.contains(toggle)).toBe(true);
+  expect(
+    toggle.compareDocumentPosition(diffSectionBody(el)) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(toggle.closest(".mdmark-content")).not.toBeNull();
   // 実行
   toggle.click();
   await waitForDiffLines(el);
-  // 検証: 本文が隠れ、見出しは残る
+  // 検証: h1 の節の中身と右側の目次が隠れ、見出しは残る
   expect(toggle.getAttribute("aria-expanded")).toBe("true");
-  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(true);
-  expect(find<HTMLElement>(el, "h1").hidden).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(true);
+  expect(find(el, "h1").hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
+  // 差分を開いたまま h1 の開閉を 2 回押しても、節の中身は隠れたまま
+  const sectionToggle = find<HTMLButtonElement>(
+    el,
+    "h1 .mdmark-section-toggle",
+  );
+  sectionToggle.click();
+  sectionToggle.click();
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  expect(find(el, ".mdmark-diff").hasAttribute("hidden")).toBe(false);
   // 取り出し元の呼び出し
   expect(source.revisionsCalls).toEqual(["guide"]);
   expect(source.contentCalls).toHaveLength(2);
@@ -3152,6 +3179,15 @@ test("test_normal_when_diff_opened", async () => {
     ).not.toBeNull();
   });
   expect(minimapBands()[0]?.getAttribute("aria-hidden")).toBe("true");
+  // 押し直すと、差分の場所が隠れ、右側の目次が戻り、節は 2 回押した後の開いた状態で出る
+  toggle.click();
+  expect(find(el, ".mdmark-diff").hasAttribute("hidden")).toBe(true);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
+  expect(sectionToggle.getAttribute("aria-expanded")).toBe("true");
+  expect(diffSectionBody(el).hasAttribute("hidden")).toBe(false);
 });
 
 // 前のリビジョンを選び直すと、その 2 つの差分に描き直す（正常系）
@@ -3423,7 +3459,7 @@ test("test_normal_when_diff_closed", async () => {
   expect(el.querySelector(".mdmark-diff-line")).toBeNull();
   expect(el.querySelector("select")).toBeNull();
   expect(minimapBands()).toHaveLength(0);
-  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
 });
 
 // 取り出し元の待ちの間に destroy すると、後から返った結果を描かない（正常系）
@@ -3490,7 +3526,7 @@ test("test_error_when_revisions_rejected", async () => {
   expect(source.contentCalls).toEqual([]);
   // 押し直すと、本文が開く前と同じに出る
   diffToggle(el).click();
-  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
   expect(consoleError).toHaveBeenCalledTimes(1);
   const args = consoleError.mock.calls.flat();
   expect(args).toContain(error);
@@ -4309,6 +4345,8 @@ test("test_normal_when_tooltip_above", async () => {
     markdown: placementMarkdown({ tail: false }),
     index: PLACEMENT_INDEX,
     docId: "arch",
+    // 狭い幅の右側の目次の帯が 1 行目の用語を下げないよう、右側の目次を置かない
+    config: { features: { "side-toc": false } },
   });
   const { terms, label, mark } = placementOwners(el);
   const [firstTerm, sectionTerm] = terms as [HTMLElement, HTMLElement];
