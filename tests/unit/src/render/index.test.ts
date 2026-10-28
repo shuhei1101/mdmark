@@ -81,3 +81,41 @@ test("test_render_document_when_raw_html_imitates_syntax", async () => {
   expect(html).toContain("markdown-alert-note");
   expect(html).not.toContain("data-mdmark-own");
 });
+
+// 渡したエイリアスに下線と種類のツールチップを付けた文字列を返す（正常系）
+test("test_render_when_aliases", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const aliases = [
+    {
+      alias_type: "term",
+      id: "ws",
+      name: "ワークスペース",
+      aliases: [],
+      description: "話し合いの記録を置くフォルダ",
+    },
+    {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      description: "ライブラリ本体の単体テストを流す",
+      command: "npm run test:unit",
+    },
+  ];
+  // 実行
+  const html = render("ワークスペースと単体テストを流す。\n", { aliases });
+  // 検証
+  // 下線の語の隣に、種類の区分と内容を持つツールチップがある
+  expect(html).toMatch(/<span class="mdmark-term"[^>]*>ワークスペース<\/span>/);
+  expect(html).toMatch(/<span class="mdmark-term"[^>]*>単体テスト<\/span>/);
+  const [, term, command] = html.split('class="mdmark-term-wrap"');
+  expect(term).toContain(">用語<");
+  expect(term).toContain("話し合いの記録を置くフォルダ");
+  expect(command).toContain(">コマンド<");
+  expect(command).toMatch(/<code[^>]*>npm run test:unit<\/code>/);
+  expect(command).toMatch(/<button[^>]*type="button"[^>]*>[\s\S]*?コピー/);
+  // スクリプトも印の文字も残らない
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
+});

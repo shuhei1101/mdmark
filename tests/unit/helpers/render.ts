@@ -4,11 +4,12 @@ import type { MdmarkReferences } from "../../../src/knowledge/references.ts";
 import { renderDocument } from "../../../src/render/index.ts";
 import { stripSourceLine } from "./source-line.ts";
 
-/** 索引・描く文書の `id`・参照の表（どれも省ける） */
+/** 索引・描く文書の `id`・参照の表・エイリアス（どれも省ける） */
 export type IndexOptions = {
   index?: MdmarkIndex;
   docId?: string;
   references?: MdmarkReferences;
+  aliases?: readonly unknown[];
 };
 
 /** 機能のオン・オフを重ねた設定で Markdown を描き、元の行番号の属性を除いた HTML と機能を返す */

@@ -310,3 +310,115 @@ test("test_terms_rule_avoided_when_glossary_off", () => {
   expect(on.html).toContain("mdmark-term-avoided");
   expect(off.html).not.toContain("mdmark-term-avoided");
 });
+
+/** `command` の `単体テスト`（別名 `ユニットテスト`、コマンド `npm run test:unit`） */
+const UNIT_TEST_ALIAS = {
+  alias_type: "command",
+  id: "unit-test",
+  name: "単体テスト",
+  aliases: ["ユニットテスト"],
+  description: "ライブラリ本体の単体テストを流す",
+  command: "npm run test:unit",
+};
+
+/** エイリアスの `単体テスト` と `ユニットテスト` を、1 つ目の節に 2 つ・2 つ目の節に 1 つ書いた Markdown */
+const ALIAS_MARKDOWN = [
+  "## 一つ目",
+  "",
+  "単体テストとユニットテストを流す。",
+  "",
+  "## 二つ目",
+  "",
+  "ユニットテストを流す。",
+  "",
+].join("\n");
+
+// エイリアスに節ごとに最初の 1 回だけ下線を付け、種類のツールチップを置く（正常系）
+test("test_terms_rule_aliases", () => {
+  // 実行
+  const { html } = renderDoc(
+    ALIAS_MARKDOWN,
+    {},
+    { aliases: [UNIT_TEST_ALIAS] },
+  );
+  // 検証
+  expect(matches(html, /class="mdmark-term-wrap"/g)).toHaveLength(2);
+  const sections = html.split(/<h2\b/).slice(1);
+  expect(sections).toHaveLength(2);
+  for (const section of sections) {
+    // 節の最初の語の位置に、語とその直後のツールチップの組がある
+    expect(matches(section, /class="mdmark-term-wrap"/g)).toHaveLength(1);
+    expect(innerHtml(section, "mdmark-term-wrap")).toMatch(
+      /^<span class="mdmark-term"[^>]*>(?:単体テスト|ユニットテスト)<\/span><span class="mdmark-term-tip"/,
+    );
+    const tip = outerHtml(section, "mdmark-term-tip");
+    expect(tip).toContain(">コマンド<");
+    expect(tip).toMatch(/<code[^>]*>npm run test:unit<\/code>/);
+  }
+  // 1 つ目の節の 2 つ目の語は文字のまま
+  expect(sections[0]).toContain("</span></span>とユニットテストを流す。");
+});
+
+// 索引の用語と同じ語のエイリアスは、索引の用語のツールチップにする（正常系）
+test("test_terms_rule_aliases_prefer_index_term", () => {
+  // 準備
+  const aliases = [
+    { alias_type: "term", id: "mark", name: "印", description: "別の意味" },
+    {
+      alias_type: "term",
+      id: "sign",
+      name: "目印",
+      description: "エイリアスだけの意味",
+    },
+  ];
+  // 実行
+  const { html } = renderDoc(
+    "印と目印を書く。\n",
+    {},
+    { index: MARK_INDEX, docId: "cur", aliases },
+  );
+  // 検証
+  // 索引の用語の `印` は索引の意味で、エイリアスだけの `目印` はエイリアスの意味
+  const [, mark, sign] = html.split('class="mdmark-term-wrap"');
+  expect(mark).toContain("HTML コメントで書く指定");
+  expect(mark).not.toContain("別の意味");
+  expect(sign).toContain("エイリアスだけの意味");
+});
+
+// avoid の種類のエイリアスにやめた言い方のマーカーを付け、置き換え先だけを出す（正常系）
+test("test_terms_rule_alias_avoid", () => {
+  // 準備
+  const aliases = [
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      replacement: "ワークスペース",
+    },
+  ];
+  // 実行
+  const { html } = renderDoc("作業場を使う。\n", {}, { aliases });
+  // 検証
+  expect(html).toMatch(
+    /<span class="mdmark-term mdmark-term-avoided"[^>]*>作業場<\/span>/,
+  );
+  const tip = outerHtml(html, "mdmark-term-tip");
+  expect(tip).toContain(">代わりの用語<");
+  expect(tip).toContain("ワークスペース");
+  expect(tip).not.toContain("mdmark-term-tip-meaning");
+});
+
+// glossary がオフならエイリアスを照合しない（正常系）
+test("test_terms_rule_aliases_when_glossary_off", () => {
+  // 実行
+  const on = renderDoc(ALIAS_MARKDOWN, {}, { aliases: [UNIT_TEST_ALIAS] });
+  const off = renderDoc(
+    `<!-- features: -glossary -->\n\n${ALIAS_MARKDOWN}`,
+    {},
+    { aliases: [UNIT_TEST_ALIAS] },
+  );
+  // 検証
+  // 印が無ければ付く同じ入力で、印があると付かない
+  expect(on.html).toContain("mdmark-term-wrap");
+  expect(off.html).not.toContain("mdmark-term-wrap");
+});

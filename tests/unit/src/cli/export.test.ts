@@ -342,3 +342,47 @@ test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
   expect(result.warnings[0]).toContain("hl/languages/yaml.min.js");
   expect(result.warnings[0]).toContain("syntax.url");
 });
+
+// エイリアスを payload に入れ、ずれを警告にする（正常系）
+test("test_prepare_embeds_when_aliases", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.md": "テストを流すと開発サーバーを使う。\n",
+    "aliases/command.yaml":
+      "alias_type: command\nid: run-test\nname: テストを流す\ncommand: npm test\n",
+    "aliases/env.yaml":
+      "alias_type: env\nid: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
+    "aliases/term.yaml": "alias_type: term\nid: empty-term\nname: 空の用語\n",
+  });
+  const loaded = createLoaded(dir, {
+    aliases: [
+      {
+        id: "records",
+        paths: ["aliases/*.yaml"],
+        metadata: { alias_type: { type: "ref", field: "alias_type" } },
+      },
+    ],
+  });
+  // 実行
+  const result = await prepareEmbeds({
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+  });
+  // 検証
+  // env は埋めず、使えるコマンドだけが入る
+  expect(result.payload.aliases).toHaveLength(1);
+  expect(result.payload.aliases?.[0]).toMatchObject({
+    alias_type: "command",
+    id: "run-test",
+  });
+  expect(JSON.stringify(result.payload)).not.toContain("dev-server");
+  // description が空の用語は、`{ファイル}:{場所}: {種類}: {内容}` の警告 1 件
+  expect(result.warnings).toHaveLength(1);
+  expect(result.warnings[0]).toContain(
+    "aliases/term.yaml:description: alias_required_empty: ",
+  );
+});

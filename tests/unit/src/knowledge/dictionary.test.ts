@@ -347,6 +347,160 @@ test("test_build_dictionary_avoided_when_glossary_entry_without_avoid", async ()
   expect(dictionary.words).toContain("ワークスペース");
 });
 
+/** `command` の `単体テスト`（別名 `ユニットテスト`） */
+const UNIT_TEST_ALIAS = {
+  alias_type: "command",
+  id: "unit-test",
+  name: "単体テスト",
+  aliases: ["ユニットテスト"],
+  description: "ライブラリ本体の単体テストを流す",
+  command: "npm run test:unit",
+};
+
+// エイリアスの名前と別名を、索引の後・描く文書の表の前の優先で入れ、term では引かない（正常系）
+test("test_build_dictionary_when_aliases", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [],
+    terms: [{ id: "index-mark", term: "印", meaning: "索引の意味" }],
+  };
+  const aliases = [
+    {
+      alias_type: "term",
+      id: "mark",
+      name: "印",
+      description: "エイリアスの意味",
+    },
+    UNIT_TEST_ALIAS,
+  ];
+  // 実行
+  const dictionary = buildDictionary({
+    index,
+    ownGlossary: [
+      { term: "単体テスト", aliases: [], meaning: "表の意味", docId: "" },
+    ],
+    aliases,
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  // 索引の用語が先で、エイリアスを持たない
+  expect(dictionary.terms.get("印")).toEqual({
+    id: "index-mark",
+    meaning: "索引の意味",
+  });
+  // エイリアスが描く文書の表より先で、名前と別名の両方の語から引ける
+  for (const word of ["単体テスト", "ユニットテスト"]) {
+    expect(dictionary.terms.get(word)).toMatchObject({
+      id: "alias:unit-test",
+      meaning: "ライブラリ本体の単体テストを流す",
+      alias: UNIT_TEST_ALIAS,
+    });
+  }
+  // term は、エイリアスを入れずに描く文書の表の用語を引く
+  expect(dictionary.term("単体テスト")).toEqual({
+    id: "glossary::単体テスト",
+    meaning: "表の意味",
+  });
+});
+
+// avoid の種類と term の種類の avoid をやめた言い方に入れ、索引のやめた言い方を先にする（正常系）
+test("test_build_dictionary_avoided_from_aliases", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [],
+    terms: [
+      {
+        id: "folder",
+        term: "フォルダ",
+        meaning: "置き場所",
+        avoid: ["作業場"],
+      },
+    ],
+  };
+  const aliases = [
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: ["作業所"],
+      replacement: "ワークスペース",
+    },
+    {
+      alias_type: "term",
+      id: "review",
+      name: "レビュー",
+      description: "変更を別の人が確かめること",
+      avoid: ["査読会"],
+    },
+  ];
+  // 実行
+  const dictionary = buildDictionary({
+    index,
+    ownGlossary: [],
+    aliases,
+    features: { ...DEFAULT_FEATURES },
+  });
+  // 検証
+  // 同じ `作業場` は索引の用語が先で、`作業所` の代わりの用語は意味を持たない
+  expect(Object.fromEntries(dictionary.avoided)).toEqual({
+    作業場: { id: "folder", term: "フォルダ", meaning: "置き場所" },
+    作業所: { id: "alias:workplace", term: "ワークスペース" },
+    査読会: {
+      id: "alias:review",
+      term: "レビュー",
+      meaning: "変更を別の人が確かめること",
+    },
+  });
+  expect(dictionary.avoided.get("作業所")).not.toHaveProperty("meaning");
+  for (const word of ["作業場", "作業所", "査読会"]) {
+    expect(dictionary.words).not.toContain(word);
+  }
+});
+
+// 使えないエイリアスと、glossary がオフのときのエイリアスを入れない（正常系）
+test("test_build_dictionary_skips_unusable_aliases", async () => {
+  // 準備
+  const { buildDictionary } = await loadDictionary();
+  const aliases = [
+    {
+      alias_type: "env",
+      id: "dev-server",
+      name: "開発サーバー",
+      url: "http://127.0.0.1:8767/",
+    },
+    {
+      alias_type: "command",
+      id: "empty-command",
+      name: "単体テスト",
+      command: "",
+    },
+    {
+      alias_type: "url",
+      id: "issues",
+      name: "課題の一覧",
+      url: "https://github.com/shuhei1101/mdmark/issues",
+    },
+  ];
+  // 実行
+  const enabled = buildDictionary({
+    ownGlossary: [],
+    aliases,
+    features: { ...DEFAULT_FEATURES },
+  });
+  const disabled = buildDictionary({
+    ownGlossary: [],
+    aliases,
+    features: { ...DEFAULT_FEATURES, glossary: false },
+  });
+  // 検証
+  expect(enabled.words).toEqual(["課題の一覧"]);
+  expect(disabled.words).toEqual([]);
+});
+
 // 語の区切りに揃う語だけを返す（正常系）
 test("test_find_words", async () => {
   // 準備
