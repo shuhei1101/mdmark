@@ -1,0 +1,125 @@
+/* エイリアスのツールチップ: 種類ごとの区分の名前・説明・項目と、コマンドのコピーのボタン（#176 で共有するアセット）。
+   用語のツールチップの規則（refs/27/assets/glossary.css）・やめた言い方の規則（refs/79/assets/avoided-term.css）の後に読み、
+   組・開閉・置き場所・区分の見出しは用語のツールチップの規則のまま使う。実装では src/index.css の mdmark の層に追加する */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* エイリアスの名前: 区分の見出しの下に本文の太字で出す（やめた言い方の代わりの用語と同じ見た目） */
+    .mdmark-term-tip-name {
+      display: block;
+      font-weight: 600;
+    }
+
+    /* 種類ごとの項目（実行場所・スキル名・URL・ポートなど）: 名前と説明の下に、項目名と値を 2 列に並べる */
+    .mdmark-term-tip-fields {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 0.15em 0.75em;
+      margin-block-start: 0.4em;
+    }
+
+    /* 項目名: 控えめな文字で出す */
+    .mdmark-term-tip-label {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 項目の値: 長い URL・パスは列の幅で折り返す */
+    .mdmark-term-tip-value {
+      min-width: 0;
+      overflow-wrap: anywhere;
+
+      code {
+        font-family: var(--mdmark-font-mono);
+        font-size: 0.8125rem;
+      }
+    }
+
+    /* パスの種類のパス: 区分の見出しと同じ語の項目名を付けず、説明の下に等幅で出す。長いパスは折り返す */
+    .mdmark-term-tip-code {
+      display: block;
+      margin-block-start: 0.4em;
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.8125rem;
+      overflow-wrap: anywhere;
+    }
+
+    /* URL の種類のリンク: 説明の下に置き、長い URL は折り返す */
+    .mdmark-term-tip-link {
+      display: block;
+      margin-block-start: 0.4em;
+      overflow-wrap: anywhere;
+    }
+
+    /* コマンドの面: ツールチップの枠の中に枠を重ねず、コードと同じ面の色だけで区切る。等幅でコマンドを出し、右上にコピーのボタンを置く */
+    .mdmark-term-tip-command {
+      display: flex;
+      gap: 0.5em;
+      align-items: flex-start;
+      margin-block-start: 0.4em;
+      padding: 0.25em 0.25em 0.25em 0.6em;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+
+      /* コマンドの文字: 改行と空白を書いたまま出し、長いコマンドは枠の幅で折り返す */
+      code {
+        flex: 1;
+        min-width: 0;
+        padding-block: 0.2em;
+        font-family: var(--mdmark-font-mono);
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    /* コマンドのコピーのボタン: コードブロックのコピーのボタンと同じ見た目。押せる大きさは 24px 以上を取る */
+    .mdmark-term-tip-copy {
+      display: inline-flex;
+      flex: none;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: コードブロックのコピーのボタンと同じ緑で、文言とアイコンでも示す */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      /* コピーできなかった: エラーの色で、文言とアイコンでも示す */
+      &[data-state="failed"] {
+        color: var(--mdmark-color-error);
+      }
+    }
+  }
+}
