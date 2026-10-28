@@ -22,7 +22,7 @@ flows:
         M->>M: 許可していない要素・属性・URL を落とす
         M-->>C: HTML 文字列
     expected:
-      - '`<h1 id="…">`・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
+      - '`id` を持つ `<h1>`（class `mdmark-heading` も持つ）・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
       - '`<td>` が同じ列の見出しの文言を `data-label`（`列A`・`列B`）に持つ'
       - '`列B` の `<th>` と `<td>` が class `mdmark-align-right` を持ち、文字列に `style=` が無い'
       - 文字列を描く先の要素（class `mdmark`）は含まない
