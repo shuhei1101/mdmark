@@ -2285,7 +2285,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 1 つのレコードに行の `metadata` を当てて、エイリアスのキーごとの値と、`ref` の列が無いキーを返す
-    description: '`ALIAS_KEYS` のキーごとに、`metadata` のそのキーが `{type: ref, field}` ならレコードの `field` の列、`{type: custom, value}` なら `value`、どちらでもなければレコードの同じ名前の列を取る（`ref` の列がレコードに無ければ `missing` に入れ、同じ名前の列が無ければキーを持たない）。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びに、並びなら文字列・数・真偽値の要素だけを文字列にして残す。ほかのキーは、文字列・数・真偽値を文字列にして前後の空白を除き、それ以外の値と空文字は持たない。`name` が無ければ `fallbackName` にする。`metadata` のほかのキーとレコードのほかの列は使わない'
+    description: '`ALIAS_KEYS` のキーごとに、`metadata` のそのキーが `{type: ref, field}` ならレコードの `field` の列、`{type: custom, value}` なら `value`、どちらでもなければレコードの同じ名前の列を取る（`ref` の列がレコードに無ければ `missing` に入れ、同じ名前の列が無ければキーを持たない）。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びに、並びなら文字列の要素だけを残す（数・真偽値・`null` の要素は捨てる）。ほかのキーは、文字列・数・真偽値を文字列にして前後の空白を除き、それ以外の値と空文字は持たない。`name` が無ければ `fallbackName` にする。`metadata` のほかのキーとレコードのほかの列は使わない'
     args:
       - name: options
         type: '{ record: Record<string, unknown>; metadata: Record<string, unknown>; fallbackName: string }'
