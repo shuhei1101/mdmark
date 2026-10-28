@@ -72,7 +72,7 @@ scenarios:
       - name: 見本の文書群
         description: 正常シナリオと同じ文書 3 つと索引
       - name: エイリアスを読む設定
-        description: 正常シナリオの build の設定に、`command` の `単体テスト`（コマンド `npm run test:unit`）を持つ YAML を指す `aliases` を加えたもの
+        description: 正常シナリオの build の設定に、`command` の `単体テスト`（コマンド `npm run test:unit`）と、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`）を持つ YAML を指す `aliases` を加えたもの
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
@@ -91,6 +91,7 @@ scenarios:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - file:// で開くと、入口の文書と、一覧から開いたほかの文書のどちらでも `単体テスト` に下線が付く
       - '`単体テスト` のツールチップに、コード `npm run test:unit` とコピーのボタンが出る'
+      - まとめた HTML のソースに、`env` の `開発サーバー`・`http://127.0.0.1:8767/` が入っていない
       - 外への要求が 0 件
     test: test_normal_when_aliases
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
