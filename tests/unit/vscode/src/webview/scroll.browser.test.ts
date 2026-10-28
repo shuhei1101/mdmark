@@ -1,4 +1,6 @@
 import { afterEach, expect, test } from "vitest";
+import { mount } from "../../../../../src/mount.ts";
+import { addStyles } from "../../../helpers/dom.ts";
 
 /** スクロールの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadScroll = () => import("../../../../../vscode/src/webview/scroll.ts");
@@ -25,11 +27,30 @@ function block(line: number, height: number): HTMLElement {
   return element;
 }
 
+const handles: Array<{ destroy: () => void }> = [];
+
 afterEach(() => {
+  for (const handle of handles.splice(0)) {
+    handle.destroy();
+  }
   for (const element of placed.splice(0)) {
     element.remove();
   }
 });
+
+/** 幅 `width`（px）の要素に `markdown` を `mount` で描き、描いた要素を返す */
+function mountDocument(markdown: string, width: number): HTMLElement {
+  addStyles();
+  const element = place(document.createElement("div"));
+  element.style.width = `${width}px`;
+  handles.push(mount(element, { markdown }));
+  return element;
+}
+
+/** スクロールする要素 */
+function pageScroller(): Element {
+  return document.scrollingElement ?? document.documentElement;
+}
 
 // 行と位置が増えていく並びにする（正常系）
 test("test_collect_anchors", async () => {
@@ -89,4 +110,41 @@ test("test_line_for_top", async () => {
   const lines = [210, 900].map((top) => lineForTop(anchors, top));
   // 検証
   expect(lines).toEqual([5, 10]);
+});
+
+// 狭い幅の帯の下端までの高さを返す（正常系）
+test("test_top_inset_when_band", async () => {
+  // 準備
+  const { topInset } = await loadScroll();
+  const root = mountDocument("# 手引き\n\n## 導入\n\n段落\n", 390);
+  const band = root.querySelector(".mdmark-side-toc") as HTMLElement;
+  // 実行
+  const inset = topInset({ root, scroller: pageScroller() });
+  // 検証
+  expect(inset).toBeGreaterThan(0);
+  expect(inset).toBe(band.getBoundingClientRect().bottom);
+});
+
+// 広い幅の右の列では 0（正常系）
+test("test_top_inset_when_wide", async () => {
+  // 準備
+  const { topInset } = await loadScroll();
+  const root = mountDocument("# 手引き\n\n## 導入\n\n段落\n", 1280);
+  // 実行
+  const inset = topInset({ root, scroller: pageScroller() });
+  // 検証
+  expect(root.querySelector(".mdmark-side-toc")).not.toBeNull();
+  expect(inset).toBe(0);
+});
+
+// 右側の目次が無い文書では 0（正常系）
+test("test_top_inset_when_no_side_toc", async () => {
+  // 準備
+  const { topInset } = await loadScroll();
+  const root = mountDocument("段落だけの文書\n", 390);
+  // 実行
+  const inset = topInset({ root, scroller: pageScroller() });
+  // 検証
+  expect(root.querySelector(".mdmark-side-toc")).toBeNull();
+  expect(inset).toBe(0);
 });
