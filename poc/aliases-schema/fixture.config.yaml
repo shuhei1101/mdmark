@@ -1,0 +1,35 @@
+aliases:
+  - id: terms
+    paths:
+      - terms/*.yaml
+    records: terms
+    metadata:
+      alias_type:
+        type: custom
+        value: term
+      name:
+        type: ref
+        field: title
+      description:
+        type: custom
+        value: 用語
+  - id: no-alias-type
+    paths:
+      - commands.yaml
+    metadata:
+      name:
+        type: ref
+        field: title
+  - id: empty-paths
+    paths: []
+    metadata:
+      alias_type:
+        type: custom
+        value: command
+  - id: unknown-type
+    paths:
+      - memo.yaml
+    metadata:
+      alias_type:
+        type: custom
+        value: memo

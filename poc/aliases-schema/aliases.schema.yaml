@@ -1,0 +1,167 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: エイリアスの元の行
+description: 用語・文書のエイリアス・コマンド・URL・スキル・ツール・パス・環境・避ける語を、どの YAML のどの列から取るかを定義する行の並び。行は dev-docs.yaml の documents の行と同じ構造で、metadata にエイリアスのキーを置く。取り込む側は、エイリアスの元の行を並べるキーからこのルートを $ref で指す。
+type: array
+items:
+  $ref: "#/$defs/alias"
+$defs:
+  alias:
+    title: エイリアスの元の行
+    description: paths に当たる各ファイルを 1 件の文書にし、metadata でエイリアスのキーの値の取り方を定義する行。records を書いた行は、ファイルのその配列の各要素を 1 件の文書にする。id の一意はスキーマで表せないため、読む側が確かめる。行と metadata は他のキー（type・schema・tags・status など）も書ける。
+    type: object
+    required:
+      - id
+      - paths
+      - metadata
+    properties:
+      id:
+        title: 行の ID
+        description: 行の主キー。
+        type: string
+        minLength: 1
+        examples:
+          - terms
+      enabled:
+        title: 有効
+        description: false のとき、この行を使わない。
+        type: boolean
+        default: true
+        examples:
+          - true
+      paths:
+        title: 読む YAML
+        description: 読む YAML のパスか glob。ファイルと glob を混ぜてよい。
+        type: array
+        minItems: 1
+        items:
+          type: string
+          minLength: 1
+        examples:
+          - - terms/*.yaml
+      records:
+        title: 文書の並びのキー
+        description: 文書の並びを持つ配列のキー。書かないとき、各ファイルを 1 件の文書にする。
+        type: string
+        minLength: 1
+        examples:
+          - terms
+      metadata:
+        title: エイリアスのキーの値の取り方
+        description: エイリアスのキーごとに、文書の列から取るか行の全文書に同じ値を使うかを定義する。書かないキーは、同じ名前の列の ref とみなす。alias_type だけは必ず書く。
+        type: object
+        required:
+          - alias_type
+        properties:
+          alias_type:
+            title: 引用の種類
+            description: 引用の種類の取り方。custom のときは 9 つの種類のどれかを値にする。ref のときは、文書ごとに読む側が確かめる。
+            anyOf:
+              - $ref: "#/$defs/refValue"
+              - $ref: "#/$defs/aliasTypeValue"
+          id:
+            $ref: "#/$defs/metadataValue"
+          name:
+            $ref: "#/$defs/metadataValue"
+          aliases:
+            $ref: "#/$defs/metadataValue"
+          description:
+            $ref: "#/$defs/metadataValue"
+          related:
+            $ref: "#/$defs/metadataValue"
+          command:
+            $ref: "#/$defs/metadataValue"
+          cwd:
+            $ref: "#/$defs/metadataValue"
+          url:
+            $ref: "#/$defs/metadataValue"
+          avoid:
+            $ref: "#/$defs/metadataValue"
+          skill:
+            $ref: "#/$defs/metadataValue"
+          tool:
+            $ref: "#/$defs/metadataValue"
+          path:
+            $ref: "#/$defs/metadataValue"
+          port:
+            $ref: "#/$defs/metadataValue"
+          replacement:
+            $ref: "#/$defs/metadataValue"
+        examples:
+          - alias_type:
+              type: custom
+              value: term
+  metadataValue:
+    title: metadata の値
+    description: metadata の 1 キーの値の取り方。type が判別子で、ref は文書の列から取り、custom は行の全文書に同じ値を使う。
+    anyOf:
+      - $ref: "#/$defs/refValue"
+      - $ref: "#/$defs/customValue"
+  refValue:
+    title: 文書の列から取る値
+    description: 文書の field の列の値を使う。
+    type: object
+    additionalProperties: false
+    required:
+      - type
+      - field
+    properties:
+      type:
+        title: 値の取り方
+        description: 文書の列から取ることを表す。
+        const: ref
+      field:
+        title: 列の名前
+        description: 値を取る文書の列の名前。
+        type: string
+        minLength: 1
+    examples:
+      - type: ref
+        field: title
+  customValue:
+    title: 行で固定する値
+    description: 行の全文書に同じ value を使う。
+    type: object
+    additionalProperties: false
+    required:
+      - type
+      - value
+    properties:
+      type:
+        title: 値の取り方
+        description: 行の全文書に同じ値を使うことを表す。
+        const: custom
+      value:
+        title: 値
+        description: 行の全文書に使う値。
+    examples:
+      - type: custom
+        value: 開発
+  aliasTypeValue:
+    title: 固定する引用の種類
+    description: 行の全文書に同じ引用の種類を使う。値は 9 つの種類のどれか。
+    type: object
+    additionalProperties: false
+    required:
+      - type
+      - value
+    properties:
+      type:
+        title: 値の取り方
+        description: 行の全文書に同じ値を使うことを表す。
+        const: custom
+      value:
+        title: 引用の種類
+        description: 引用の種類。文脈に並べる列とセクションが種類ごとに決まる。
+        enum:
+          - term
+          - doc
+          - command
+          - url
+          - skill
+          - tool
+          - path
+          - env
+          - avoid
+    examples:
+      - type: custom
+        value: term
