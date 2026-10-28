@@ -528,7 +528,7 @@ const { aliases, problems } = buildAliases({
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。行のずれは `configFile`、レコードのずれはそのレコードのファイルの `path` |
-| `where` | `string` | 行のずれは設定のキーのパス（`aliases[1].records`）。レコードのずれはファイルの中のパス（`records` を記載した行は `terms[2].command`、記載しない行は `command`）。ファイル全体のずれは空文字 |
+| `where` | `string` | 行のずれは設定のキーのパス（`aliases[1].id`）。レコードのずれはファイルの中のパス（`records` を記載した行は `terms[2].command`、記載しない行は `command`）。ファイル全体のずれは空文字 |
 | `kind` | `'duplicate_alias_row_id' \| 'alias_records_missing' \| 'alias_field_missing' \| 'alias_unknown_type' \| 'alias_required_empty' \| 'duplicate_alias_id'` | ずれの種類。意味は [CLI](./CLI.md#設定と索引を点検する) |
 | `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
 
