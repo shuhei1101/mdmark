@@ -5390,8 +5390,8 @@
         pointer-events: none;
       }
 
-      /* 右端にポインターかフォーカスが入ったとき・ピン止めしたとき: 目次の枠を出す */
-      &:is(:hover, :focus-within, [data-pinned]) .mdmark-side-toc-panel {
+      /* 右端にポインターが入ったとき・キーボードのフォーカスが入ったとき・ピン止めしたとき: 目次の枠を出す */
+      &:is(:hover, :has(:focus-visible), [data-pinned]) .mdmark-side-toc-panel {
         opacity: 1;
         pointer-events: auto;
       }
@@ -5417,7 +5417,7 @@
           display: none;
         }
 
-        &:is(:hover, :focus-within) .mdmark-side-toc-panel {
+        &:is(:hover, :has(:focus-visible)) .mdmark-side-toc-panel {
           opacity: 0;
           pointer-events: none;
         }

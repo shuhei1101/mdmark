@@ -10,7 +10,7 @@ import {
   type PreviewStatusState,
   renderPreviewStatus,
 } from "./parts/preview-status.ts";
-import { collectAnchors, lineForTop, topForLine } from "./scroll.ts";
+import { collectAnchors, lineForTop, topForLine, topInset } from "./scroll.ts";
 
 /** HTML を入れてからこのミリ秒が経っても描けていなければ読み込み中を出す */
 export const LOADING_DELAY_MS = 1000;
@@ -156,7 +156,10 @@ export class PreviewView {
       scroller: element,
     });
     const before = element.scrollTop;
-    element.scrollTop = topForLine(anchors, line);
+    // 狭い幅で右側の目次が上端の帯のときは、帯の下端に置く
+    element.scrollTop =
+      topForLine(anchors, line) -
+      topInset({ root: this.documentElement, scroller: element });
     if (element.scrollTop !== before) {
       this.pendingScrollTop = element.scrollTop;
     }
@@ -175,7 +178,11 @@ export class PreviewView {
       root: this.documentElement,
       scroller: element,
     });
-    return lineForTop(anchors, element.scrollTop);
+    return lineForTop(
+      anchors,
+      element.scrollTop +
+        topInset({ root: this.documentElement, scroller: element }),
+    );
   }
 
   /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる） */
