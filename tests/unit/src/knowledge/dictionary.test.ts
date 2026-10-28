@@ -448,11 +448,16 @@ test("test_build_dictionary_avoided_from_aliases", async () => {
   // 同じ `作業場` は索引の用語が先で、`作業所` の代わりの用語は意味を持たない
   expect(Object.fromEntries(dictionary.avoided)).toEqual({
     作業場: { id: "folder", term: "フォルダ", meaning: "置き場所" },
-    作業所: { id: "alias:workplace", term: "ワークスペース" },
+    作業所: {
+      id: "alias:workplace",
+      term: "ワークスペース",
+      alias: expect.objectContaining({ id: "workplace" }),
+    },
     査読会: {
       id: "alias:review",
       term: "レビュー",
       meaning: "変更を別の人が確かめること",
+      alias: expect.objectContaining({ id: "review" }),
     },
   });
   expect(dictionary.avoided.get("作業所")).not.toHaveProperty("meaning");

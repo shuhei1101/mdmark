@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { MdmarkAlias } from "../../../../../src/knowledge/aliases.ts";
 import type { MdmarkIndex } from "../../../../../src/knowledge/index-shape.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../../../helpers/charts.ts";
 import {
@@ -98,7 +99,7 @@ test("test_build_embedded_html_when_terms", () => {
 // 中の文字のエイリアスに下線を引き、種類のツールチップを置く（正常系）
 test("test_build_embedded_html_when_alias", () => {
   // 準備
-  const aliases = [
+  const aliases: MdmarkAlias[] = [
     {
       alias_type: "url",
       id: "issues",

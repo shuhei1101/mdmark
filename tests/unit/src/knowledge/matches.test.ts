@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DEFAULT_FEATURES } from "../../../../src/config.ts";
+import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
 import { buildDictionary } from "../../../../src/knowledge/dictionary.ts";
 import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import { parseDocument } from "../../../../src/knowledge/references.ts";
@@ -598,7 +599,7 @@ const GUIDE_ONLY_INDEX: MdmarkIndex = {
 test("test_collect_matches_when_aliases", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
-  const aliases = [
+  const aliases: MdmarkAlias[] = [
     {
       alias_type: "command",
       id: "unit-test",
@@ -614,13 +615,14 @@ test("test_collect_matches_when_aliases", async () => {
       aliases: [],
       replacement: "ワークスペース",
     },
+    // `env` は `buildAliases` を通さずに渡されても照合しない
     {
       alias_type: "env",
       id: "dev-server",
       name: "開発サーバー",
       aliases: [],
       url: "http://127.0.0.1:8767/",
-    },
+    } as unknown as MdmarkAlias,
   ];
   const documents = {
     "使い方/guide.md":
@@ -673,7 +675,7 @@ test("test_collect_matches_when_aliases", async () => {
 test("test_collect_matches_when_diagram_term_is_alias_word", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
-  const aliases = [
+  const aliases: MdmarkAlias[] = [
     {
       alias_type: "term",
       id: "fn",

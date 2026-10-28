@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { ResolvedConfig } from "../../../../src/config.ts";
+import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
 
 /** 描画の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRender = () => import("../../../../src/render/index.ts");
@@ -86,7 +87,7 @@ test("test_render_document_when_raw_html_imitates_syntax", async () => {
 test("test_render_when_aliases", async () => {
   // 準備
   const { render } = await loadRender();
-  const aliases = [
+  const aliases: MdmarkAlias[] = [
     {
       alias_type: "term",
       id: "ws",

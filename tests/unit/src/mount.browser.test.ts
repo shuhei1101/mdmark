@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { MdmarkMarkArgs } from "../../../src/extensions.ts";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../helpers/charts.ts";
 import { addStyles } from "../helpers/dom.ts";
@@ -115,7 +116,7 @@ test("test_mount_when_updated", async () => {
 test("test_mount_when_aliases_updated", async () => {
   // 準備
   const el = createElement();
-  const aliases = [
+  const aliases: MdmarkAlias[] = [
     {
       alias_type: "command",
       id: "unit-test",

@@ -25,6 +25,14 @@ export async function createBuiltRoot(): Promise<{
   await cp(resolve(import.meta.dirname, "../../src"), join(root, "src"), {
     recursive: true,
   });
+  // 設定の Schema と取り込んだ alias-inject の Schema（CLI が束ねる）
+  await cp(
+    resolve(import.meta.dirname, "../../schemas"),
+    join(root, "schemas"),
+    {
+      recursive: true,
+    },
+  );
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   // CLI が配布物と雛形を探す、パッケージの直下の印と雛形の正本
   await writeRootPackageJson(root);

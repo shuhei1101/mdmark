@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
 import { findTag } from "../../helpers/html.ts";
 
 /** 用語のツールチップの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -140,23 +141,25 @@ test("test_render_term_tip_below", async () => {
 });
 
 /** 部品設計『用語のツールチップ』の `AliasCommand` の `alias` */
-const COMMAND_ALIAS = {
+const COMMAND_ALIAS: MdmarkAlias = {
   alias_type: "command",
   id: "unit-test",
   name: "単体テスト",
+  aliases: [],
   description: "ライブラリ本体の単体テストを流す",
   command: "npm run test:unit",
   cwd: "リポジトリの直下",
-} as const;
+};
 
 /** 部品設計『用語のツールチップ』の `AliasUrl` の `alias` */
-const URL_ALIAS = {
+const URL_ALIAS: MdmarkAlias = {
   alias_type: "url",
   id: "issues",
   name: "課題の一覧",
+  aliases: [],
   description: "Issue を並べたページ",
   url: "https://github.com/shuhei1101/mdmark/issues",
-} as const;
+};
 
 /** HTML の見出し（`mdmark-term-tip-heading`）の文字を、現れた順に返す */
 function headings(html: string): string[] {
@@ -169,7 +172,13 @@ function headings(html: string): string[] {
 test("test_render_term_tip_alias", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
-  const cases = [
+  const cases: Array<{
+    id: string;
+    text: string;
+    heading: string;
+    role: string;
+    alias: MdmarkAlias;
+  }> = [
     {
       id: "tip-alias-term",
       text: "査読",
@@ -192,6 +201,7 @@ test("test_render_term_tip_alias", async () => {
         alias_type: "doc",
         id: "design-doc",
         name: "設計書",
+        aliases: [],
         description: "仕様を記載した文書",
       },
     },
@@ -218,6 +228,7 @@ test("test_render_term_tip_alias", async () => {
         alias_type: "skill",
         id: "session",
         name: "記録の取り込み",
+        aliases: [],
         skill: "mindstella:session",
       },
     },
@@ -230,6 +241,7 @@ test("test_render_term_tip_alias", async () => {
         alias_type: "tool",
         id: "check-tool",
         name: "点検のツール",
+        aliases: [],
         description: "設定と索引のずれを返す",
         tool: "check",
       },
@@ -243,6 +255,7 @@ test("test_render_term_tip_alias", async () => {
         alias_type: "path",
         id: "config-file",
         name: "設定ファイル",
+        aliases: [],
         description: "機能のオン・オフと読む文書を記載する",
         path: "mdmark.config.yaml",
       },
@@ -318,6 +331,7 @@ test("test_render_term_tip_alias_url_not_http", async () => {
       alias_type: "url",
       id: "bad-link",
       name: "危ないリンク",
+      aliases: [],
       url: "javascript:alert(1)",
     },
   });
@@ -342,6 +356,7 @@ test("test_render_term_tip_alias_escapes", async () => {
       alias_type: "command",
       id: "danger",
       name: danger,
+      aliases: [],
       description: danger,
       command: danger,
       cwd: danger,
@@ -354,6 +369,7 @@ test("test_render_term_tip_alias_escapes", async () => {
       alias_type: "url",
       id: "danger-url",
       name: "危険な URL",
+      aliases: [],
       url: 'https://example.com/"><script>',
     },
   });

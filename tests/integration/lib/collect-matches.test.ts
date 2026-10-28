@@ -83,7 +83,10 @@ function flowDefinition(name: string): string[] {
 }
 
 /** 一致の行・始まり・終わりで本文を切り出した文字 */
-function cut(body: string, match: MdmarkMatch): string {
+function cut(
+  body: string,
+  match: Pick<MdmarkMatch, "line" | "start" | "end">,
+): string {
   return (body.split("\n")[match.line - 1] ?? "").slice(match.start, match.end);
 }
 

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { MdmarkAlias } from "../../../../../src/knowledge/aliases.ts";
 import type { MdmarkIndex } from "../../../../../src/knowledge/index-shape.ts";
 import {
   innerHtml,
@@ -312,7 +313,7 @@ test("test_terms_rule_avoided_when_glossary_off", () => {
 });
 
 /** `command` の `単体テスト`（別名 `ユニットテスト`、コマンド `npm run test:unit`） */
-const UNIT_TEST_ALIAS = {
+const UNIT_TEST_ALIAS: MdmarkAlias = {
   alias_type: "command",
   id: "unit-test",
   name: "単体テスト",
@@ -362,12 +363,19 @@ test("test_terms_rule_aliases", () => {
 // 索引の用語と同じ語のエイリアスは、索引の用語のツールチップにする（正常系）
 test("test_terms_rule_aliases_prefer_index_term", () => {
   // 準備
-  const aliases = [
-    { alias_type: "term", id: "mark", name: "印", description: "別の意味" },
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "term",
+      id: "mark",
+      name: "印",
+      aliases: [],
+      description: "別の意味",
+    },
     {
       alias_type: "term",
       id: "sign",
       name: "目印",
+      aliases: [],
       description: "エイリアスだけの意味",
     },
   ];
@@ -388,11 +396,12 @@ test("test_terms_rule_aliases_prefer_index_term", () => {
 // avoid の種類のエイリアスにやめた言い方のマーカーを付け、置き換え先だけを出す（正常系）
 test("test_terms_rule_alias_avoid", () => {
   // 準備
-  const aliases = [
+  const aliases: MdmarkAlias[] = [
     {
       alias_type: "avoid",
       id: "workplace",
       name: "作業場",
+      aliases: [],
       replacement: "ワークスペース",
     },
   ];

@@ -151,6 +151,7 @@ async function commandHtml(): Promise<string> {
       alias_type: "command",
       id: "unit-test",
       name: "単体テスト",
+      aliases: [],
       description: "ライブラリ本体の単体テストを流す",
       command: "npm run test:unit",
     },

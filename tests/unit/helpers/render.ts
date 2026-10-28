@@ -1,4 +1,5 @@
 import { resolveConfig } from "../../../src/config.ts";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { MdmarkIndex } from "../../../src/knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../../../src/knowledge/references.ts";
 import { renderDocument } from "../../../src/render/index.ts";
@@ -9,7 +10,7 @@ export type IndexOptions = {
   index?: MdmarkIndex;
   docId?: string;
   references?: MdmarkReferences;
-  aliases?: readonly unknown[];
+  aliases?: MdmarkAlias[];
 };
 
 /** 機能のオン・オフを重ねた設定で Markdown を描き、元の行番号の属性を除いた HTML と機能を返す */
