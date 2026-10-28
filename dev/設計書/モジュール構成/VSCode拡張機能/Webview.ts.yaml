@@ -314,7 +314,7 @@ functions:
       6. `message` を受けて `type` ごとに `PreviewView` へ渡す
          - `render` の場合、描いて `rendered` を送る
          - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
-      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
+      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ（`openLink` は送らない）。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
       8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る
     callees:
       - '#classes[PreviewView]'
@@ -331,6 +331,12 @@ functions:
         condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`window` に `click` の記録のリスナーを置く。本文の `https://example.com/`・`./other.md`・`#末尾` のリンクを Playwright の `userEvent.click`（`isTrusted` が true）で押す'
         mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
         expected: '`window` のリスナーにどの押下も届かない。`openLink` が `https://example.com/` と `./other.md` で 1 回ずつ送られ、`#末尾` では送られない'
+      - name: test_start_preview_when_side_toc_link_clicked
+        case: 正常
+        summary: 右側の目次の項目の押下を右側の目次へ届け、window へは伝えない
+        condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`aside.mdmark-side-toc` の中の `#注意` のリンクと、`aside` に `click` の記録のリスナー、`window` に `click` の記録のリスナーを置く。リンクを Playwright の `userEvent.click` で押す'
+        mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
+        expected: '`aside` のリスナーに押下が 1 回届き、`window` のリスナーには届かない。`openLink` が送られない'
   - name: classifyLoadFailure
     title: 読めない理由を見分ける
     kind: 関数

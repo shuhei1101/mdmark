@@ -95,7 +95,7 @@ events:
     description: '`mount` が aside の `data-pinned` を付け外しし、目次を本文の右の列に出したままにする'
   - name: 項目へ移る
     when: 目次の項目のリンクを押す
-    value: リンクの `href`（`#{id}`）
+    value: リンクの `data-heading-id`（見出しの ID）。`href` は `#{id}` だが、使う側が書き換えてもよい
     description: '`mount` が URL の `#ID` で移るのと同じ処理を呼ぶ（URL が同じでも呼ぶ）。本文に重ねて開いた目次は閉じる'
   - name: すべて開閉する
     when: すべて展開・すべて折りたたむのボタンを押す

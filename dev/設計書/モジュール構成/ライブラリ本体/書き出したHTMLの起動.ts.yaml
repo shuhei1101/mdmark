@@ -226,6 +226,12 @@ functions:
         condition: '`#/下書き/メモ.md`'
         mock: Chromium の `document`（`.browser.test.ts` で流す）に画面の骨組みを置く
         expected: '`a.md` が描かれ、`location.hash` が `#/a.md`'
+      - name: test_start_bundle_when_side_toc_link_into_closed_section
+        case: 正常
+        summary: 右側の目次の項目を押すと、閉じた節を開いて見出しへ移る
+        condition: '`#/b.md` で、`b.md` が `## 導入`（節の印で閉じた状態）とその中の `### 注意` を持つ。右側の目次の `注意` の項目を押す'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に画面の骨組みを置く
+        expected: '`導入` の中身が `hidden` を持たず、`location.hash` が `#/b.md#注意`'
     callees:
       - '#functions[resolveRoute]'
       - '#functions[rewriteLinks]'
