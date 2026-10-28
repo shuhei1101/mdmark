@@ -4,14 +4,15 @@ import { findFreePort, useMcpServers } from "../plugin.ts";
 
 const { startServe, runServeToExit, connectUrl } = useMcpServers();
 
-// 既定のポートで待ち受ける URL を出す。ツールの数 7 つ（正常系）
+// 空きポートで待ち受ける URL を出す。ツールの数 7 つ（正常系）
 test("test_normal", async () => {
   // 準備・実行
-  const serve = await startServe({ env: {} });
+  const port = await findFreePort();
+  const serve = await startServe({ env: { MDMARK_PORT: String(port) } });
   const client = await connectUrl(serve.url);
   const { tools } = await client.listTools();
   // 検証
-  expect(serve.stdout()).toContain("http://127.0.0.1:8782/mcp");
+  expect(serve.stdout()).toContain(`http://127.0.0.1:${port}/mcp`);
   expect(tools).toHaveLength(7);
   for (const tool of tools) {
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
