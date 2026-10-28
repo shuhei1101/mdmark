@@ -1,0 +1,862 @@
+$ xvfb-run -a npx playwright test <64 files>
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 716 tests using 4 workers
+
+  ✓    3 [chromium] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:56:1 › test_normal (1.2s)
+  ✓    1 [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:46:1 › test_normal (1.4s)
+  ✓    5 [chromium] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:82:1 › test_normal_when_query (1.2s)
+  ✓    6 [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:75:1 › test_normal_when_url_points_heading (1.2s)
+  ✓    7 [chromium] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:97:1 › test_normal_when_no_vocabulary (1.4s)
+  ✓    8 [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:93:1 › test_normal_when_narrow (1.5s)
+  ✓    9 [chromium] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:123:1 › test_normal_when_query_width_differs (1.3s)
+  ✓   10 [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:123:1 › test_error_when_url_points_missing_document (1.3s)
+  ✓   12 [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts:25:1 › test_normal (210ms)
+  ✓   11 [chromium] › tests/e2e/単一ユースケース/使い方集を読む.spec.ts:24:1 › test_normal (1.2s)
+  ✓   13 [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts:49:1 › test_normal_when_export (1.3s)
+  ✓   15 [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts:85:1 › test_normal_when_other_place (286ms)
+  ✓   14 [chromium] › tests/e2e/単一ユースケース/使い方集を読む.spec.ts:46:1 › test_error_when_name_unknown (1.2s)
+  ✓   16 [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:76:1 › test_normal (1.5s)
+  ✓   17 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:102:1 › test_normal (1.4s)
+  ✓   19 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:130:1 › test_normal_when_no_match (1.0s)
+  ✓   18 [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:122:1 › test_normal_when_unreadable_assets (1.2s)
+  ✓   21 [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:159:1 › test_error_when_output_unwritable (1.1s)
+  ✓   20 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:144:1 › test_normal_when_tags_and_or (1.3s)
+  ✓   23 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:174:1 › test_normal_when_tag_vocabulary (1.2s)
+  ✓   22 [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:179:1 › test_normal_when_code_highlighted (1.4s)
+  ✓   24 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:199:1 › test_normal_when_paged (1.1s)
+  ✓   25 [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:267:1 › test_normal_when_aliases (1.1s)
+  ✓   26 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:234:1 › test_normal_when_count_only (1.4s)
+  ✓    2 [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:47:1 › test_normal (2.5s)
+  ✓   27 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:260:1 › test_normal_when_view_and_format (1.9s)
+  ✓   28 [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:76:1 › test_normal_when_drift (2.5s)
+  ✓   29 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:290:1 › test_normal_when_related_to (921ms)
+  ✓   30 [chromium] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:38:1 › test_normal (1.1s)
+  ✓   32 [chromium] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:368:1 › test_normal_when_width_differs (917ms)
+  ✓   31 [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:110:1 › test_normal_when_single_document (1.7s)
+  ✓   33 [chromium] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:59:1 › test_normal_when_removed (914ms)
+  ✓   34 [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:15:1 › test_normal (1.6s)
+  ✓   35 [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:133:1 › test_error_when_config_missing (1.2s)
+  ✓   36 [chromium] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:76:1 › test_error_when_schema_invalid (1.2s)
+  ✓   39 [chromium] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:97:1 › test_normal_when_related (672ms)
+  ✓   37 [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:48:1 › test_normal_when_link_outside_bundle (1.0s)
+  ✓   40 [chromium] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:131:1 › test_normal_when_tag (774ms)
+  ✓   41 [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:90:1 › test_error_when_no_documents (879ms)
+  ✓   38 [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:148:1 › test_normal_when_base_given (2.2s)
+  ✓   42 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:51:1 › test_normal (1.4s)
+  ✓    4 [chromium] › tests/e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts:16:1 › test_normal (98ms)
+  ✓   43 [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:106:1 › test_normal_when_aliases (1.6s)
+  ✓   44 [chromium] › tests/e2e/単一ユースケース/足すJavaScriptを型で点検する.spec.ts:24:1 › test_normal (1.1s)
+  ✓   45 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:64:1 › test_normal_when_drift (1.5s)
+  ✓   46 [chromium] › tests/e2e/単一ユースケース/足すJavaScriptを型で点検する.spec.ts:37:1 › test_error_when_type_mismatch (1.1s)
+  ✓   48 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:93:1 › test_error_when_config_missing (832ms)
+  ✓   47 [chromium] › tests/e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts:38:1 › test_normal (1.7s)
+  ✓   49 [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:149:1 › test_normal (2.2s)
+  ✓   52 [chromium] › tests/e2e/単一ユースケース/雛形を置く.spec.ts:20:1 › test_normal (1.0s)
+  ✓   50 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:106:1 › test_normal_when_unknown_mark (1.9s)
+  ✓   51 [chromium] › tests/e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts:70:1 › test_error_when_drift (2.0s)
+  ✓   56 [chromium] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:55:1 › test_normal (518ms)
+  ✓   54 [chromium] › tests/e2e/単一ユースケース/雛形を置く.spec.ts:45:1 › test_normal_when_javascript (1.9s)
+  ✓   57 [chromium] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:101:1 › test_normal_when_exported (1.3s)
+  ✓   59 [chromium] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:136:1 › test_normal_when_called_from_javascript (288ms)
+  ✓   53 [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:201:1 › test_normal_when_exported (2.9s)
+  ✓   58 [chromium] › tests/e2e/単一ユースケース/雛形を置く.spec.ts:75:1 › test_normal_when_file_exists (993ms)
+  ✓   55 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:130:1 › test_normal_when_base_given (3.2s)
+  ✓   60 [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:40:1 › test_normal (2.3s)
+  ✓   62 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:158:1 › test_error_when_base_unknown (2.3s)
+  ✓   61 [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:19:1 › test_normal (3.5s)
+  ✓   63 [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:150:1 › test_normal_when_interactive (1.4s)
+  ✓   64 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:187:1 › test_normal_when_alias_drift (2.3s)
+  ✓   66 [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:184:1 › test_error_when_type_mismatch (1.9s)
+  ✓   65 [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:64:1 › test_normal_when_single_document (2.5s)
+  ✓   67 [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:97:1 › test_error_when_drift (6.4s)
+  ✓   68 [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:48:1 › test_normal (16.7s)
+  ✓   69 [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:39:1 › test_normal (20.3s)
+  ✓   70 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:22:1 › test_normal (18.5s)
+  ✓   72 [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:88:1 › test_normal_when_open_in_browser (13.7s)
+  ✓   73 [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:74:1 › test_error_when_output_unwritable (15.4s)
+  ✓   74 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:62:1 › test_normal_when_same_column (13.9s)
+  ✓   75 [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:113:1 › test_error_when_output_unwritable (14.8s)
+  ✓   77 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:81:1 › test_normal_when_version_pinned (10.9s)
+  ✓   79 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable (16.1s)
+  ✓   71 [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:64:1 › test_normal (14.6s)
+  ✓   80 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:132:1 › test_error_when_distribution_unreachable (14.2s)
+  ✓   81 [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:80:1 › test_normal_when_from_preview (15.6s)
+  ✓   82 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:163:1 › test_error_when_version_missing (13.8s)
+  ✓   83 [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:95:1 › test_normal_when_sync_off (15.8s)
+  ✓   84 [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:180:1 › test_error_when_version_undecidable (12.6s)
+  ✓   76 [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:36:1 › test_normal (241ms)
+  ✓   87 [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:82:1 › test_normal_when_feature_off (124ms)
+  ✓   88 [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:100:1 › test_error_when_block_count_invalid (179ms)
+  ✓   78 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:82:1 › test_normal (189ms)
+  ✓   90 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:116:1 › test_normal_when_line_marks (193ms)
+  ✓   91 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:158:1 › test_normal_when_line_mark_escaped (123ms)
+  ✓   92 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:179:1 › test_normal_when_feature_off (131ms)
+  ✓   93 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:208:1 › test_error_when_unknown_key (172ms)
+  ✓   94 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:243:1 › test_error_when_highlight_line_missing (185ms)
+  ✓   95 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:268:1 › test_error_when_unknown_line_mark (165ms)
+  ✓   96 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:288:1 › test_error_when_no_code_block (134ms)
+  ✓   97 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:348:1 › test_normal_when_syntax_highlighted (273ms)
+  ✓   98 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:392:1 › test_normal_when_highlighted_with_line_marks (245ms)
+  ✓   99 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:456:1 › test_normal_when_language_not_highlighted (612ms)
+  ✓  100 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:481:1 › test_normal_when_syntax_feature_off (658ms)
+  ✓  101 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:512:1 › test_error_when_highlighter_not_found (241ms)
+  ✓  102 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:530:1 › test_error_when_language_module_not_found (229ms)
+  ✓  103 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:551:1 › test_normal_when_language_label_shown (181ms)
+  ✓  104 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:619:1 › test_normal_when_code_copied (2.5s)
+  ✓  105 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:660:1 › test_normal_when_dockerfile_and_diff_highlighted (210ms)
+  ✓  106 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:745:1 › test_error_when_clipboard_denied (147ms)
+  ✓  107 [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:767:1 › test_normal_when_language_and_file_name_label_shown (133ms)
+  ✓   86 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:37:1 › test_normal (242ms)
+  ✓   85 [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:25:1 › test_normal (737ms)
+  ✓  109 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:57:1 › test_normal_when_keyboard (160ms)
+  ✓  110 [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:92:1 › test_normal_when_badge_escaped (153ms)
+  ✓  111 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:73:1 › test_error_when_no_heading (206ms)
+  ✓  112 [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:103:1 › test_error_when_tree_line_invalid (171ms)
+  ✓  114 [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:120:1 › test_error_when_steps_without_ordered_list (143ms)
+  ✓  113 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:134:1 › test_normal_when_same_group (214ms)
+  ✓  115 [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:139:1 › test_normal_when_badge_empty (125ms)
+  ✓  116 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:162:1 › test_normal_when_reloaded (292ms)
+  ✓  118 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:207:1 › test_error_when_storage_unavailable (180ms)
+  ✓  119 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:237:1 › test_error_when_empty_group (174ms)
+  ✓  120 [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:259:1 › test_error_when_unknown_option (217ms)
+  ✓   89 [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:36:1 › test_normal (192ms)
+  ✓  122 [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:84:1 › test_error_when_definition_invalid (196ms)
+  ✓  108 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:30:1 › test_normal (158ms)
+  ✓  124 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:44:1 › test_normal_when_not_overridden (123ms)
+  ✓  125 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:55:1 › test_normal_when_dark (196ms)
+  ✓  126 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:69:1 › test_normal_when_diagram (289ms)
+  ✓  127 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:97:1 › test_normal_when_parent_class_dark (245ms)
+  ✓  128 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:116:1 › test_normal_when_parent_class_light (169ms)
+  ✓  129 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:155:1 › test_normal_when_layout_overridden (375ms)
+  ✓  130 [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:191:1 › test_normal_when_content_width_default (187ms)
+  ✓  121 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:68:1 › test_normal_when_external_link (18.1s)
+  ✓  132 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:84:1 › test_normal_when_markdown_link (12.1s)
+  ✓  123 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:19:1 › test_normal (14.9s)
+  ✓  117 [chromium] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:28:1 › test_normal (411ms)
+  ✓  135 [chromium] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:103:1 › test_normal_when_opened_as_table (242ms)
+  ✓  136 [chromium] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:126:1 › test_normal_when_disabled (473ms)
+  ✓  137 [chromium] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:144:1 › test_error_when_group_column_missing (210ms)
+  ✓  138 [chromium] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:165:1 › test_error_when_no_table (167ms)
+  ✓  133 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:99:1 › test_normal_when_anchor_link (12.9s)
+  ✓  134 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:46:1 › test_normal_when_theme_fixed (12.3s)
+  ✓  140 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:131:1 › test_normal_when_relative_image (11.8s)
+  ✓  142 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:149:1 › test_error_when_image_outside_workspace (12.8s)
+  ✓  131 [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:31:1 › test_normal (194ms)
+  ✓  144 [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:71:1 › test_error_when_reference_missing (136ms)
+  ✓  145 [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:88:1 › test_error_when_id_duplicated (152ms)
+  ✓  139 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:64:1 › test_normal (1.5s)
+  ✓  147 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:111:1 › test_normal_when_keyboard (253ms)
+  ✓  148 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:144:1 › test_normal_when_term (274ms)
+  ✓  149 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:173:1 › test_normal_when_data_hint (946ms)
+  ✘  141 [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:51:1 › test_normal (187ms)
+  ✓  150 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:234:1 › test_normal_when_node_hint (780ms)
+  ✓  151 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:259:1 › test_normal_when_hints_off (878ms)
+  ✓  152 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:294:1 › test_normal_when_no_room_above (265ms)
+  ✘  153 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:309:1 › test_normal_when_placement_bottom (265ms)
+  ✓  143 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:87:1 › test_normal (819ms)
+  ✓  156 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:179:1 › test_normal_when_sequence (220ms)
+  ✓  157 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:225:1 › test_normal_when_graph (180ms)
+  ✓  158 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:254:1 › test_error_when_definition_invalid (261ms)
+  ✓  159 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:307:1 › test_normal_when_bar (271ms)
+  ✓  160 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:356:1 › test_normal_when_pie (149ms)
+  ✓  161 [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:386:1 › test_normal_when_scatter (153ms)
+  ✓  146 [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:57:1 › test_normal (308ms)
+  ✓  163 [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:95:1 › test_normal_when_range_only_on_one_side (273ms)
+  ✓  164 [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:123:1 › test_normal_when_range_unchanged (228ms)
+  ✓  165 [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:152:1 › test_normal_when_script_in_range (288ms)
+  ✓  155 [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:342:1 › test_normal_when_term_width_and_case_differ (238ms)
+  ✓  154 [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:115:1 › test_normal_when_wheel (637ms)
+  ✓  168 [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:152:1 › test_normal_when_drag (479ms)
+  ✓  169 [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:202:1 › test_normal_when_keyboard (290ms)
+  ✘  170 [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:229:1 › test_normal_when_embedded_chart (453ms)
+  ✓  162 [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:32:1 › test_normal (184ms)
+  ✓  172 [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:46:1 › test_normal_when_no_mark (618ms)
+  ✓  173 [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:61:1 › test_error_when_library_not_found (169ms)
+  ✓  174 [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:74:1 › test_normal_when_code_highlighted (199ms)
+  ✓  166 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:51:1 › test_normal (217ms)
+  ✓  176 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:81:1 › test_normal_when_no_source (127ms)
+  ✓  177 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:113:1 › test_normal_when_git_sample (329ms)
+  ✓  178 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:187:1 › test_normal_when_yaml_sample (602ms)
+  ✓  179 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:252:1 › test_normal_when_single_revision (205ms)
+  ✓  180 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:272:1 › test_error_when_revisions_unavailable (253ms)
+  ✓  181 [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:299:1 › test_error_when_content_unavailable (294ms)
+  ✓  167 [chromium] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:26:1 › test_normal (138ms)
+  ✓  183 [chromium] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:42:1 › test_normal_when_no_mark (420ms)
+  ✓  184 [chromium] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:56:1 › test_error_when_args_invalid (442ms)
+  ✓  185 [chromium] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:76:1 › test_error_when_module_not_found (155ms)
+  ✓  186 [chromium] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:91:1 › test_normal_when_definition (173ms)
+  ✓  175 [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:44:1 › test_normal (230ms)
+  ✓  188 [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:75:1 › test_error_when_clipboard_denied (235ms)
+  ✓  182 [chromium] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:54:1 › test_normal (322ms)
+  ✓  190 [chromium] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:103:1 › test_normal_when_revisions_changed (216ms)
+  ✓  191 [chromium] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:141:1 › test_normal_when_no_change (193ms)
+  ✓  192 [chromium] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:172:1 › test_normal_when_no_segmenter (220ms)
+  ✓  193 [chromium] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:192:1 › test_normal_when_closed (259ms)
+  ✓  194 [chromium] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:209:1 › test_normal_when_scrolled_by_minimap (406ms)
+  ✓  171 [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal (6.5s)
+  ✓  196 [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:204:1 › test_error_when_version_mismatch (150ms)
+  ✓  187 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:28:1 › test_normal (96ms)
+  ✓  197 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:50:1 › test_normal_when_in_browser (248ms)
+  ✓  198 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:63:1 › test_normal_when_syntax (124ms)
+  ✓  199 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:141:1 › test_normal_when_index (81ms)
+  ✓  200 [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:157:1 › test_normal_when_aliases (73ms)
+  ✓  189 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:39:1 › test_normal (179ms)
+  ✓  203 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:64:1 › test_normal_when_print_finished (163ms)
+  ✓  204 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:83:1 › test_normal_when_syntax_expanded (241ms)
+  ✓  205 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:185:1 › test_normal_when_glossary_and_backlinks (183ms)
+  ✓  206 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:217:1 › test_normal_when_table_features_printed (188ms)
+  ✓  207 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:257:1 › test_normal_when_code_block_printed (195ms)
+  ✓  208 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:337:1 › test_normal_when_collapsed_column_printed (208ms)
+  ✓  209 [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:376:1 › test_normal_when_side_toc_hidden_in_print (205ms)
+  ✓  195 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal (226ms)
+  ✓  211 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:50:1 › test_normal_when_updated (205ms)
+  ✓  212 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:66:1 › test_normal_when_destroyed (167ms)
+  ✓  213 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:78:1 › test_normal_when_unknown_mark (118ms)
+  ✓  214 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:94:1 › test_normal_when_script_in_markdown (181ms)
+  ✓  215 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:145:1 › test_normal_when_index (149ms)
+  ✓  216 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:169:1 › test_normal_when_source_lines (182ms)
+  ✓  217 [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:219:1 › test_normal_when_aliases (173ms)
+  ✓  202 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:17:1 › test_normal (13.6s)
+  ✓  201 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:95:1 › test_normal (92ms)
+  ✓  220 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:147:1 › test_normal_when_same_target_in_documents (105ms)
+  ✓  221 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:166:1 › test_normal_when_glossary_table (102ms)
+  ✓  222 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:209:1 › test_normal_when_feature_off (63ms)
+  ✓  223 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:236:1 › test_normal_when_avoided_term (70ms)
+  ✓  224 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:276:1 › test_normal_when_embedded_html_and_diagram (65ms)
+  ✓  225 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:321:1 › test_normal_when_width_and_case_differ (66ms)
+  ✓  226 [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:364:1 › test_normal_when_aliases (65ms)
+  ✓  219 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:54:1 › test_normal_when_live_update_off (13.4s)
+  ✓  210 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:27:1 › test_normal (104ms)
+  ✓  229 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:42:1 › test_normal_when_enabled_by_mark (122ms)
+  ✓  230 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:57:1 › test_normal_when_no_mark (131ms)
+  ✓  231 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:72:1 › test_normal_when_unknown_feature (117ms)
+  ✓  232 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:88:1 › test_normal_when_syntax_disabled (137ms)
+  ✓  228 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:77:1 › test_normal_when_config_saved (9.6s)
+  ✓  233 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:143:1 › test_normal_when_glossary_disabled (155ms)
+  ✓  235 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:189:1 › test_normal_when_backlinks_disabled (148ms)
+  ✓  236 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:240:1 › test_normal_when_side_toc_disabled (150ms)
+  ✓  237 [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:262:1 › test_normal_when_side_toc_enabled_by_mark (171ms)
+  ✓  218 [chromium] › tests/e2e/単一ユースケース/注意書きを書く.spec.ts:30:1 › test_normal (181ms)
+  ✓  239 [chromium] › tests/e2e/単一ユースケース/注意書きを書く.spec.ts:65:1 › test_normal_when_collapsed (139ms)
+  ✓  240 [chromium] › tests/e2e/単一ユースケース/注意書きを書く.spec.ts:81:1 › test_normal_when_unknown_kind (104ms)
+  ✓  234 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:100:1 › test_normal_when_revealed (12.5s)
+  ✓  242 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:121:1 › test_normal_when_reloaded (12.5s)
+  ✓  243 [chromium] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:153:1 › test_error_when_config_unreadable (14.0s)
+  ✓  227 [chromium] › tests/e2e/単一ユースケース/版を固定して配布物を読み込む.spec.ts:61:1 › test_normal (96ms)
+  ✓  245 [chromium] › tests/e2e/単一ユースケース/版を固定して配布物を読み込む.spec.ts:86:1 › test_error_when_dist_not_found (59ms)
+  ✓  238 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:61:1 › test_normal (229ms)
+  ✓  247 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:98:1 › test_normal_when_keyboard (149ms)
+  ✓  248 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:130:1 › test_normal_when_excluded_place (130ms)
+  ✓  249 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:154:1 › test_normal_when_no_index (128ms)
+  ✓  250 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:165:1 › test_error_when_invalid_index (144ms)
+  ✓  251 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:198:1 › test_normal_when_embedded_html (150ms)
+  ✓  252 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:264:1 › test_normal_when_avoided_term (443ms)
+  ✓  253 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:334:1 › test_normal_when_no_room_above (166ms)
+  ✓  254 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:354:1 › test_normal_when_placement_bottom (197ms)
+  ✓  255 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:375:1 › test_normal_when_width_and_case_differ (236ms)
+  ✓  256 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:453:1 › test_normal_when_aliases (313ms)
+  ✓  257 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:594:1 › test_normal_when_copy_command (197ms)
+  ✓  258 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:634:1 › test_normal_when_avoid_alias (312ms)
+  ✓  259 [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:686:1 › test_error_when_invalid_alias (268ms)
+  ✓  241 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:43:1 › test_normal (190ms)
+  ✓  261 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:79:1 › test_normal_when_github_ids (115ms)
+  ✓  262 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:94:1 › test_normal_when_opened_with_fragment (151ms)
+  ✓  263 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:130:1 › test_normal_when_fragment_in_tab (180ms)
+  ✓  264 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:212:1 › test_normal_when_no_headings (104ms)
+  ✓  265 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:223:1 › test_normal_when_side_toc_hovered (274ms)
+  ✓  266 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:260:1 › test_normal_when_side_toc_pinned (397ms)
+  ✓  267 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:281:1 › test_normal_when_side_toc_fixed (309ms)
+  ✓  268 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:306:1 › test_normal_when_side_toc_focused (192ms)
+  ✓  269 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:341:1 › test_normal_when_current_section_highlighted (278ms)
+  ✓  270 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:364:1 › test_normal_when_side_toc_into_closed_section (216ms)
+  ✓  271 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:392:1 › test_error_when_unknown_side_toc_mode (193ms)
+  ✓  272 [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:405:1 › test_normal_when_side_toc_in_narrow_width (249ms)
+  ✓  244 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:24:1 › test_normal (271ms)
+  ✓  274 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:49:1 › test_normal_when_fragment_in_closed_section (178ms)
+  ✓  275 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:68:1 › test_normal_when_row_detail (198ms)
+  ✓  276 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:95:1 › test_error_when_unknown_section_value (176ms)
+  ✓  277 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:111:1 › test_error_when_row_out_of_range (234ms)
+  ✓  278 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:137:1 › test_normal_when_row_detail_with_collapsed_column (305ms)
+  ✓  279 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:185:1 › test_normal_when_h1_section (172ms)
+  ✓  280 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:207:1 › test_normal_when_all_toggled (268ms)
+  ✓  281 [chromium] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:260:1 › test_normal_when_nested_toggled_with_shift (201ms)
+  ✓  246 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:30:1 › test_normal (78ms)
+  ✓  283 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:67:1 › test_normal_when_drift (76ms)
+  ✓  284 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:137:1 › test_normal_when_invalid_schema (86ms)
+  ✓  285 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:166:1 › test_normal_when_avoided_term (90ms)
+  ✓  286 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:210:1 › test_normal_when_glossary_avoided_term (99ms)
+  ✓  287 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:259:1 › test_normal_when_tag_drift (59ms)
+  ✓  288 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:312:1 › test_normal_when_normalized_words (65ms)
+  ✓  289 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:357:1 › test_normal_when_related_drift (53ms)
+  ✓  290 [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:421:1 › test_normal_when_change_together_missed (163ms)
+  ✓  260 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:35:1 › test_normal (178ms)
+  ✓  292 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:65:1 › test_normal_when_index_has_same_term (158ms)
+  ✓  293 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:86:1 › test_error_when_unknown_column (133ms)
+  ✓  294 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:115:1 › test_normal_when_other_document (167ms)
+  ✓  295 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:146:1 › test_normal_when_avoid_column (233ms)
+  ✓  296 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:211:1 › test_normal_when_other_document_avoid_column (182ms)
+  ✓  297 [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:264:1 › test_normal_when_aliases_have_same_term (278ms)
+  ✓  273 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:53:1 › test_normal (238ms)
+  ✓  299 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:78:1 › test_normal_when_filtered_by_values (347ms)
+  ✓  300 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:129:1 › test_normal_when_filtered_by_text (187ms)
+  ✓  301 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:150:1 › test_normal_when_filtered_by_date (198ms)
+  ✓  302 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:173:1 › test_normal_when_pinned (330ms)
+  ✓  303 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:203:1 › test_normal_when_closed (176ms)
+  ✓  304 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:225:1 › test_normal_when_feature_removed (230ms)
+  ✓  305 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:240:1 › test_error_when_unknown_kind (451ms)
+  ✓  306 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:260:1 › test_error_when_range_end_missing (243ms)
+  ✓  307 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:277:1 › test_error_when_unknown_feature_or_key (355ms)
+  ✓  308 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:297:1 › test_error_when_unknown_filter_kind (173ms)
+  ✓  309 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:378:1 › test_normal_when_counting_rows (296ms)
+  ✓  310 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:401:1 › test_normal_when_columns_toggled (317ms)
+  ✓  311 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:440:1 › test_normal_when_totals_shown (243ms)
+  ✓  312 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:469:1 › test_normal_when_table_copied (263ms)
+  ✓  313 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:506:1 › test_normal_when_table_copied_as_markdown (374ms)
+  ✓  314 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:539:1 › test_normal_when_row_link_opened (371ms)
+  ✓  315 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:613:1 › test_error_when_unknown_total_or_hidden_column (212ms)
+  ✓  316 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:675:1 › test_error_when_clipboard_denied (493ms)
+  ✓  317 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:804:1 › test_normal_when_header_stuck (491ms)
+  ✓  318 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:892:1 › test_normal_when_last_column_collapsed (335ms)
+  ✓  319 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:952:1 › test_normal_when_totals_selected (195ms)
+  ✓  320 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:988:1 › test_error_when_total_cell_not_number (180ms)
+  ✓  321 [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1023:1 › test_normal_when_row_url_copied (2.5s)
+  ✓  282 [chromium] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:32:1 › test_normal (396ms)
+  ✓  323 [chromium] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:80:1 › test_normal_when_filtered_by_text (218ms)
+  ✓  324 [chromium] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:102:1 › test_error_when_filter_kind_unknown (170ms)
+  ✓  291 [chromium] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:53:1 › test_normal (200ms)
+  ✓  326 [chromium] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:86:1 › test_normal_when_not_referenced (132ms)
+  ✓  327 [chromium] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:103:1 › test_normal_when_document_alias (253ms)
+  ✓  328 [chromium] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:163:1 › test_normal_when_alias_width_and_case_differ (133ms)
+  ✓  298 [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:80:1 › test_normal (328ms)
+  ✓  330 [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:130:1 › test_normal_when_loaded (151ms)
+  ✓  331 [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:153:1 › test_normal_when_updated (147ms)
+  ✓  332 [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:186:1 › test_normal_when_disabled (419ms)
+  ✓  333 [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:204:1 › test_error_when_save_failed (354ms)
+  ✓  334 [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:234:1 › test_error_when_store_missing (458ms)
+  ✓  322 [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:48:1 › test_normal (181ms)
+  ✓  336 [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:102:1 › test_normal_when_called_from_extension (267ms)
+  ✓  337 [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:147:1 › test_error_when_arguments_invalid (107ms)
+  ✓  338 [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:173:1 › test_normal_when_comments_attached (554ms)
+  ✓  329 [chromium] › tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts:47:1 › test_normal (14.4s)
+  ✓  335 [chromium] › tests/e2e/複合ユースケース/取り出し元を渡して文書の差分を読む.spec.ts:35:1 › test_normal (406ms)
+  ✓  341 [chromium] › tests/e2e/複合ユースケース/取り出し元を渡して文書の差分を読む.spec.ts:90:1 › test_error_when_content_unavailable (264ms)
+  ✓  340 [chromium] › tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts:105:1 › test_error_when_distribution_unreachable (11.2s)
+  -  342 [firefox] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:47:1 › test_normal
+  -  343 [firefox] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:76:1 › test_normal_when_drift
+  -  344 [firefox] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:110:1 › test_normal_when_single_document
+  -  345 [firefox] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:133:1 › test_error_when_config_missing
+  -  346 [firefox] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:148:1 › test_normal_when_base_given
+  -  347 [firefox] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:56:1 › test_normal
+  -  348 [firefox] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:82:1 › test_normal_when_query
+  -  349 [firefox] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:97:1 › test_normal_when_no_vocabulary
+  -  350 [firefox] › tests/e2e/単一ユースケース/タグの語彙を見る.spec.ts:123:1 › test_normal_when_query_width_differs
+  -  352 [firefox] › tests/e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts:16:1 › test_normal
+  -  353 [firefox] › tests/e2e/単一ユースケース/使い方集を読む.spec.ts:24:1 › test_normal
+  -  354 [firefox] › tests/e2e/単一ユースケース/使い方集を読む.spec.ts:46:1 › test_error_when_name_unknown
+  ✓  339 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:169:1 › test_normal (2.8s)
+  ✓  356 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:223:1 › test_normal_when_plan (1.6s)
+  ✓  355 [firefox] › tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts:25:1 › test_normal (2.0s)
+  ✓  351 [firefox] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:46:1 › test_normal (6.8s)
+  ✓  358 [firefox] › tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts:49:1 › test_normal_when_export (4.2s)
+  ✓  360 [firefox] › tests/e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts:85:1 › test_normal_when_other_place (1.7s)
+  ✓  359 [firefox] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:75:1 › test_normal_when_url_points_heading (2.5s)
+  ✓  361 [firefox] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:76:1 › test_normal (3.0s)
+  ✓  362 [firefox] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:93:1 › test_normal_when_narrow (2.8s)
+  ✓  363 [firefox] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:122:1 › test_normal_when_unreadable_assets (1.9s)
+  ✓  364 [firefox] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:123:1 › test_error_when_url_points_missing_document (2.2s)
+  -  366 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:102:1 › test_normal
+  -  367 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:130:1 › test_normal_when_no_match
+  -  368 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:144:1 › test_normal_when_tags_and_or
+  -  369 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:174:1 › test_normal_when_tag_vocabulary
+  -  370 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:199:1 › test_normal_when_paged
+  -  371 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:234:1 › test_normal_when_count_only
+  -  372 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:260:1 › test_normal_when_view_and_format
+  -  373 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:290:1 › test_normal_when_related_to
+  -  374 [firefox] › tests/e2e/単一ユースケース/索引から文書を探す.spec.ts:368:1 › test_normal_when_width_differs
+  -  375 [firefox] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:38:1 › test_normal
+  -  376 [firefox] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:59:1 › test_normal_when_removed
+  -  377 [firefox] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:76:1 › test_error_when_schema_invalid
+  -  378 [firefox] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:97:1 › test_normal_when_related
+  -  379 [firefox] › tests/e2e/単一ユースケース/索引を書き換える.spec.ts:131:1 › test_normal_when_tag
+  ✓  365 [firefox] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:159:1 › test_error_when_output_unwritable (2.0s)
+  ✓  380 [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:15:1 › test_normal (3.3s)
+  ✓  381 [firefox] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:179:1 › test_normal_when_code_highlighted (3.3s)
+  ✓  382 [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:48:1 › test_normal_when_link_outside_bundle (2.7s)
+  ✓  383 [firefox] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:267:1 › test_normal_when_aliases (2.8s)
+  ✓  384 [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:90:1 › test_error_when_no_documents (1.4s)
+  ✓  385 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:51:1 › test_normal (3.4s)
+  ✓  386 [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:106:1 › test_normal_when_aliases (3.5s)
+  ✓  388 [firefox] › tests/e2e/単一ユースケース/足すJavaScriptを型で点検する.spec.ts:24:1 › test_normal (2.3s)
+  ✓  387 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:64:1 › test_normal_when_drift (3.6s)
+  ✓  390 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:93:1 › test_error_when_config_missing (1.2s)
+  ✓  389 [firefox] › tests/e2e/単一ユースケース/足すJavaScriptを型で点検する.spec.ts:37:1 › test_error_when_type_mismatch (2.1s)
+  ✓  391 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:106:1 › test_normal_when_unknown_mark (3.2s)
+  ✓  393 [firefox] › tests/e2e/単一ユースケース/雛形を置く.spec.ts:20:1 › test_normal (1.5s)
+  ✓  394 [firefox] › tests/e2e/単一ユースケース/雛形を置く.spec.ts:45:1 › test_normal_when_javascript (2.6s)
+  ✓  392 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:130:1 › test_normal_when_base_given (4.3s)
+  ✓  395 [firefox] › tests/e2e/単一ユースケース/雛形を置く.spec.ts:75:1 › test_normal_when_file_exists (1.4s)
+  -  397 [firefox] › tests/e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts:38:1 › test_normal
+  -  398 [firefox] › tests/e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts:70:1 › test_error_when_drift
+  ✓  396 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:158:1 › test_error_when_base_unknown (3.5s)
+  ✓  399 [firefox] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:149:1 › test_normal (4.9s)
+  ✓  400 [firefox] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:187:1 › test_normal_when_alias_drift (3.4s)
+  ✓  402 [firefox] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:55:1 › test_normal (949ms)
+  ✓  403 [firefox] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:101:1 › test_normal_when_exported (1.9s)
+  ✓  401 [firefox] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:201:1 › test_normal_when_exported (3.9s)
+  ✓  404 [firefox] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:136:1 › test_normal_when_called_from_javascript (1.0s)
+  ✓  325 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal (3.3m)
+  ✓  405 [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:40:1 › test_normal (2.9s)
+  ✓  408 [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:150:1 › test_normal_when_interactive (1.8s)
+  ✓  406 [firefox] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:19:1 › test_normal (4.5s)
+  ✓  409 [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:184:1 › test_error_when_type_mismatch (2.4s)
+  ✓  410 [firefox] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:64:1 › test_normal_when_single_document (3.1s)
+  ✓  407 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:147:1 › test_normal_when_version_given (7.4s)
+  ✓  412 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:163:1 › test_error_when_version_format_invalid (619ms)
+  ✓  413 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:180:1 › test_error_when_dist_file_too_large (1.4s)
+  ✓  414 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:202:1 › test_error_when_guide_index_too_long (2.6s)
+  ✓  411 [firefox] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:97:1 › test_error_when_drift (8.0s)
+  ✓  357 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:247:1 › test_normal_when_value_asked (1.3s)
+  ✓  415 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:230:1 › test_error_when_api_missing_in_baseline_browser (2.9s)
+  ✓  416 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:272:1 › test_normal_when_version_missing (2.6s)
+  ✓  417 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:305:1 › test_normal_when_schema_change_listed (3.1s)
+  ✓  418 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:293:1 › test_normal_when_up_to_date (1.5s)
+  ✓  419 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:331:1 › test_error_when_schema_changed_without_steps (483ms)
+  ✓  420 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:309:1 › test_normal_when_destructive_declined (1.2s)
+  ✓  421 [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:349:1 › test_error_when_next_steps_left_in_release (501ms)
+  ✓  422 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:330:1 › test_error_when_step_fails (1.2s)
+  ✓  423 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:361:1 › test_error_when_check_fails (1.1s)
+  -  425 [firefox] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:48:1 › test_normal
+  -  426 [firefox] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:88:1 › test_normal_when_open_in_browser
+  -  427 [firefox] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:113:1 › test_error_when_output_unwritable
+  -  428 [firefox] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:64:1 › test_normal
+  -  429 [firefox] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:80:1 › test_normal_when_from_preview
+  -  430 [firefox] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:95:1 › test_normal_when_sync_off
+  ✓  424 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:394:1 › test_error_when_local_version_newer (891ms)
+  ✓  432 [chromium] › tests/e2e/単一ユースケース/版を上げる.spec.ts:412:1 › test_normal_when_destructive_with_yes (1.8s)
+  -  434 [firefox] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:39:1 › test_normal
+  -  435 [firefox] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:74:1 › test_error_when_output_unwritable
+  -  437 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:22:1 › test_normal
+  -  438 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:62:1 › test_normal_when_same_column
+  -  439 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:81:1 › test_normal_when_version_pinned
+  -  440 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:98:1 › test_normal_when_tags_unreachable
+  -  441 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:132:1 › test_error_when_distribution_unreachable
+  -  442 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:163:1 › test_error_when_version_missing
+  -  443 [firefox] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:180:1 › test_error_when_version_undecidable
+  ✓  431 [firefox] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:36:1 › test_normal (1.7s)
+  ✓  445 [firefox] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:82:1 › test_normal_when_feature_off (389ms)
+  ✓  446 [firefox] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:100:1 › test_error_when_block_count_invalid (397ms)
+  ✓  433 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:82:1 › test_normal (1.4s)
+  ✓  448 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:116:1 › test_normal_when_line_marks (386ms)
+  ✓  449 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:158:1 › test_normal_when_line_mark_escaped (360ms)
+  ✓  450 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:179:1 › test_normal_when_feature_off (371ms)
+  ✓  451 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:208:1 › test_error_when_unknown_key (365ms)
+  ✓  452 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:243:1 › test_error_when_highlight_line_missing (355ms)
+  ✓  453 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:268:1 › test_error_when_unknown_line_mark (280ms)
+  ✓  436 [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:25:1 › test_normal (1.8s)
+  ✓  454 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:288:1 › test_error_when_no_code_block (359ms)
+  ✓  455 [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:92:1 › test_normal_when_badge_escaped (315ms)
+  ✓  457 [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:103:1 › test_error_when_tree_line_invalid (404ms)
+  ✓  456 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:348:1 › test_normal_when_syntax_highlighted (559ms)
+  ✓  458 [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:120:1 › test_error_when_steps_without_ordered_list (319ms)
+  ✓  460 [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:139:1 › test_normal_when_badge_empty (341ms)
+  ✓  459 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:392:1 › test_normal_when_highlighted_with_line_marks (1.1s)
+  ✓  462 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:456:1 › test_normal_when_language_not_highlighted (793ms)
+  ✓  463 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:481:1 › test_normal_when_syntax_feature_off (798ms)
+  ✓  464 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:512:1 › test_error_when_highlighter_not_found (372ms)
+  ✓  465 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:530:1 › test_error_when_language_module_not_found (388ms)
+  ✓  466 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:551:1 › test_normal_when_language_label_shown (340ms)
+  ✓  467 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:619:1 › test_normal_when_code_copied (2.6s)
+  ✓  468 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:660:1 › test_normal_when_dockerfile_and_diff_highlighted (589ms)
+  ✓  469 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:745:1 › test_error_when_clipboard_denied (447ms)
+  ✓  470 [firefox] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:767:1 › test_normal_when_language_and_file_name_label_shown (506ms)
+  ✓  444 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:37:1 › test_normal (1.4s)
+  ✓  472 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:57:1 › test_normal_when_keyboard (378ms)
+  ✓  473 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:73:1 › test_error_when_no_heading (355ms)
+  ✓  474 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:134:1 › test_normal_when_same_group (549ms)
+  ✓  475 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:162:1 › test_normal_when_reloaded (959ms)
+  ✓  476 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:207:1 › test_error_when_storage_unavailable (443ms)
+  ✓  477 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:237:1 › test_error_when_empty_group (711ms)
+  ✓  478 [firefox] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:259:1 › test_error_when_unknown_option (614ms)
+  -  479 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:68:1 › test_normal_when_external_link
+  -  480 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:84:1 › test_normal_when_markdown_link
+  -  481 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:99:1 › test_normal_when_anchor_link
+  -  482 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:131:1 › test_normal_when_relative_image
+  -  483 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:149:1 › test_error_when_image_outside_workspace
+  -  484 [firefox] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:19:1 › test_normal
+  -  485 [firefox] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:46:1 › test_normal_when_theme_fixed
+  ✓  447 [firefox] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:36:1 › test_normal (478ms)
+  ✓  487 [firefox] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:84:1 › test_error_when_definition_invalid (395ms)
+  ✓  461 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:30:1 › test_normal (484ms)
+  ✓  489 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:44:1 › test_normal_when_not_overridden (461ms)
+  ✓  490 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:55:1 › test_normal_when_dark (558ms)
+  ✓  491 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:69:1 › test_normal_when_diagram (699ms)
+  ✓  492 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:97:1 › test_normal_when_parent_class_dark (1.1s)
+  ✓  493 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:116:1 › test_normal_when_parent_class_light (370ms)
+  ✓  494 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:155:1 › test_normal_when_layout_overridden (435ms)
+  ✓  495 [firefox] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:191:1 › test_normal_when_content_width_default (382ms)
+  ✓  471 [firefox] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:28:1 › test_normal (905ms)
+  ✓  497 [firefox] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:103:1 › test_normal_when_opened_as_table (442ms)
+  ✓  498 [firefox] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:126:1 › test_normal_when_disabled (618ms)
+  ✓  499 [firefox] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:144:1 › test_error_when_group_column_missing (483ms)
+  ✓  500 [firefox] › tests/e2e/単一ユースケース/ビューで項目を見る.spec.ts:165:1 › test_error_when_no_table (524ms)
+  ✓  486 [firefox] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:31:1 › test_normal (467ms)
+  ✓  502 [firefox] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:71:1 › test_error_when_reference_missing (664ms)
+  ✓  503 [firefox] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:88:1 › test_error_when_id_duplicated (408ms)
+  ✓  488 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:64:1 › test_normal (1.6s)
+  ✓  505 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:111:1 › test_normal_when_keyboard (410ms)
+  ✓  506 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:144:1 › test_normal_when_term (452ms)
+  ✓  507 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:173:1 › test_normal_when_data_hint (1.1s)
+  ✓  508 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:234:1 › test_normal_when_node_hint (1.4s)
+  ✓  509 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:259:1 › test_normal_when_hints_off (1.2s)
+  ✓  510 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:294:1 › test_normal_when_no_room_above (524ms)
+  ✘  511 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:309:1 › test_normal_when_placement_bottom (760ms)
+  ✘  496 [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:51:1 › test_normal (516ms)
+  ✓  501 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:87:1 › test_normal (1.0s)
+  ✓  514 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:179:1 › test_normal_when_sequence (458ms)
+  ✓  515 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:225:1 › test_normal_when_graph (376ms)
+  ✓  516 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:254:1 › test_error_when_definition_invalid (345ms)
+  ✓  517 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:307:1 › test_normal_when_bar (447ms)
+  ✓  518 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:356:1 › test_normal_when_pie (1.1s)
+  ✓  519 [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:386:1 › test_normal_when_scatter (396ms)
+  ✓  504 [firefox] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:57:1 › test_normal (621ms)
+  ✓  521 [firefox] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:95:1 › test_normal_when_range_only_on_one_side (626ms)
+  ✓  522 [firefox] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:123:1 › test_normal_when_range_unchanged (485ms)
+  ✓  523 [firefox] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:152:1 › test_normal_when_script_in_range (495ms)
+  ✓  512 [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:342:1 › test_normal_when_term_width_and_case_differ (1.1s)
+  ✓  513 [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:115:1 › test_normal_when_wheel (1.8s)
+  ✓  526 [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:152:1 › test_normal_when_drag (739ms)
+  ✓  527 [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:202:1 › test_normal_when_keyboard (663ms)
+  ✘  528 [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:229:1 › test_normal_when_embedded_chart (755ms)
+  -  529 [firefox] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal
+  -  530 [firefox] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:204:1 › test_error_when_version_mismatch
+  ✓  520 [firefox] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:32:1 › test_normal (377ms)
+  ✓  532 [firefox] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:46:1 › test_normal_when_no_mark (773ms)
+  ✓  533 [firefox] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:61:1 › test_error_when_library_not_found (296ms)
+  ✓  534 [firefox] › tests/e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts:74:1 › test_normal_when_code_highlighted (330ms)
+  ✓  524 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:51:1 › test_normal (424ms)
+  ✓  536 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:81:1 › test_normal_when_no_source (318ms)
+  ✓  537 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:113:1 › test_normal_when_git_sample (656ms)
+  ✓  538 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:187:1 › test_normal_when_yaml_sample (1.0s)
+  ✓  539 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:252:1 › test_normal_when_single_revision (925ms)
+  ✓  540 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:272:1 › test_error_when_revisions_unavailable (469ms)
+  ✓  541 [firefox] › tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts:299:1 › test_error_when_content_unavailable (574ms)
+  ✓  525 [firefox] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:26:1 › test_normal (390ms)
+  ✓  543 [firefox] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:42:1 › test_normal_when_no_mark (670ms)
+  ✓  544 [firefox] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:56:1 › test_error_when_args_invalid (665ms)
+  ✓  545 [firefox] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:76:1 › test_error_when_module_not_found (342ms)
+  ✓  546 [firefox] › tests/e2e/単一ユースケース/拡張を登録して印を足す.spec.ts:91:1 › test_normal_when_definition (354ms)
+  ✓  531 [firefox] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:44:1 › test_normal (1.5s)
+  ✓  548 [firefox] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:75:1 › test_error_when_clipboard_denied (467ms)
+  ✓  535 [firefox] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:54:1 › test_normal (575ms)
+  ✓  550 [firefox] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:103:1 › test_normal_when_revisions_changed (507ms)
+  ✓  551 [firefox] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:141:1 › test_normal_when_no_change (352ms)
+  ✓  552 [firefox] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:172:1 › test_normal_when_no_segmenter (386ms)
+  ✓  553 [firefox] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:192:1 › test_normal_when_closed (855ms)
+  ✓  554 [firefox] › tests/e2e/単一ユースケース/文書の差分を見る.spec.ts:209:1 › test_normal_when_scrolled_by_minimap (638ms)
+  ✓  542 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:28:1 › test_normal (87ms)
+  ✓  555 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:50:1 › test_normal_when_in_browser (461ms)
+  ✓  556 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:63:1 › test_normal_when_syntax (91ms)
+  ✓  557 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:141:1 › test_normal_when_index (75ms)
+  ✓  558 [firefox] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:157:1 › test_normal_when_aliases (82ms)
+  ✓  547 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:39:1 › test_normal (386ms)
+  ✓  560 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:64:1 › test_normal_when_print_finished (344ms)
+  -  562 [firefox] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:17:1 › test_normal
+  -  563 [firefox] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:54:1 › test_normal_when_live_update_off
+  -  564 [firefox] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:77:1 › test_normal_when_config_saved
+  -  565 [firefox] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:100:1 › test_normal_when_revealed
+  -  566 [firefox] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:121:1 › test_normal_when_reloaded
+  ✓  561 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:83:1 › test_normal_when_syntax_expanded (467ms)
+  -  567 [firefox] › tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts:153:1 › test_error_when_config_unreadable
+  ✓  568 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:185:1 › test_normal_when_glossary_and_backlinks (741ms)
+  ✓  570 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:217:1 › test_normal_when_table_features_printed (405ms)
+  ✓  571 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:257:1 › test_normal_when_code_block_printed (503ms)
+  ✓  572 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:337:1 › test_normal_when_collapsed_column_printed (446ms)
+  ✓  573 [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:376:1 › test_normal_when_side_toc_hidden_in_print (417ms)
+  ✓  549 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal (405ms)
+  ✓  575 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:50:1 › test_normal_when_updated (335ms)
+  ✓  576 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:66:1 › test_normal_when_destroyed (342ms)
+  ✓  577 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:78:1 › test_normal_when_unknown_mark (260ms)
+  ✓  578 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:94:1 › test_normal_when_script_in_markdown (449ms)
+  ✓  579 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:145:1 › test_normal_when_index (337ms)
+  ✓  580 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:169:1 › test_normal_when_source_lines (490ms)
+  ✓  581 [firefox] › tests/e2e/単一ユースケース/文書を描く.spec.ts:219:1 › test_normal_when_aliases (1.1s)
+  ✓  559 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:95:1 › test_normal (63ms)
+  ✓  583 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:147:1 › test_normal_when_same_target_in_documents (60ms)
+  ✓  584 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:166:1 › test_normal_when_glossary_table (54ms)
+  ✓  585 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:209:1 › test_normal_when_feature_off (51ms)
+  ✓  586 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:236:1 › test_normal_when_avoided_term (53ms)
+  ✓  587 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:276:1 › test_normal_when_embedded_html_and_diagram (58ms)
+  ✓  588 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:321:1 › test_normal_when_width_and_case_differ (53ms)
+  ✓  589 [firefox] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:364:1 › test_normal_when_aliases (52ms)
+  ✓  569 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:27:1 › test_normal (380ms)
+  ✓  591 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:42:1 › test_normal_when_enabled_by_mark (253ms)
+  ✓  592 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:57:1 › test_normal_when_no_mark (301ms)
+  ✓  593 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:72:1 › test_normal_when_unknown_feature (380ms)
+  ✓  594 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:88:1 › test_normal_when_syntax_disabled (336ms)
+  ✓  595 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:143:1 › test_normal_when_glossary_disabled (700ms)
+  ✓  596 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:189:1 › test_normal_when_backlinks_disabled (501ms)
+  ✓  597 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:240:1 › test_normal_when_side_toc_disabled (555ms)
+  ✓  574 [firefox] › tests/e2e/単一ユースケース/注意書きを書く.spec.ts:30:1 › test_normal (741ms)
+  ✓  599 [firefox] › tests/e2e/単一ユースケース/注意書きを書く.spec.ts:65:1 › test_normal_when_collapsed (432ms)
+  ✓  600 [firefox] › tests/e2e/単一ユースケース/注意書きを書く.spec.ts:81:1 › test_normal_when_unknown_kind (355ms)
+  ✓  598 [firefox] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:262:1 › test_normal_when_side_toc_enabled_by_mark (1.4s)
+  ✓  582 [firefox] › tests/e2e/単一ユースケース/版を固定して配布物を読み込む.spec.ts:61:1 › test_normal (353ms)
+  ✓  603 [firefox] › tests/e2e/単一ユースケース/版を固定して配布物を読み込む.spec.ts:86:1 › test_error_when_dist_not_found (211ms)
+  ✓  590 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:61:1 › test_normal (624ms)
+  ✓  601 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:43:1 › test_normal (545ms)
+  ✓  605 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:98:1 › test_normal_when_keyboard (417ms)
+  ✓  606 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:79:1 › test_normal_when_github_ids (308ms)
+  ✓  607 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:130:1 › test_normal_when_excluded_place (363ms)
+  ✓  609 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:154:1 › test_normal_when_no_index (486ms)
+  ✓  608 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:94:1 › test_normal_when_opened_with_fragment (1.1s)
+  ✓  610 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:165:1 › test_error_when_invalid_index (512ms)
+  ✓  612 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:198:1 › test_normal_when_embedded_html (501ms)
+  ✓  611 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:130:1 › test_normal_when_fragment_in_tab (693ms)
+  ✓  614 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:212:1 › test_normal_when_no_headings (337ms)
+  ✓  615 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:223:1 › test_normal_when_side_toc_hovered (555ms)
+  ✓  613 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:264:1 › test_normal_when_avoided_term (1.6s)
+  ✓  616 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:260:1 › test_normal_when_side_toc_pinned (769ms)
+  ✓  617 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:334:1 › test_normal_when_no_room_above (480ms)
+  ✓  618 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:281:1 › test_normal_when_side_toc_fixed (717ms)
+  ✓  619 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:354:1 › test_normal_when_placement_bottom (512ms)
+  ✓  621 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:375:1 › test_normal_when_width_and_case_differ (516ms)
+  ✓  620 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:306:1 › test_normal_when_side_toc_focused (700ms)
+  ✓  623 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:341:1 › test_normal_when_current_section_highlighted (629ms)
+  ✓  622 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:453:1 › test_normal_when_aliases (709ms)
+  ✓  602 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:24:1 › test_normal (740ms)
+  ✓  625 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:594:1 › test_normal_when_copy_command (549ms)
+  ✓  624 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:364:1 › test_normal_when_side_toc_into_closed_section (724ms)
+  ✓  626 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:49:1 › test_normal_when_fragment_in_closed_section (626ms)
+  ✓  627 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:634:1 › test_normal_when_avoid_alias (687ms)
+  ✓  628 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:392:1 › test_error_when_unknown_side_toc_mode (642ms)
+  ✓  629 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:68:1 › test_normal_when_row_detail (599ms)
+  ✓  630 [firefox] › tests/e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts:686:1 › test_error_when_invalid_alias (625ms)
+  ✓  632 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:95:1 › test_error_when_unknown_section_value (411ms)
+  ✓  634 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:111:1 › test_error_when_row_out_of_range (384ms)
+  ✓  631 [firefox] › tests/e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts:405:1 › test_normal_when_side_toc_in_narrow_width (1.5s)
+  ✓  635 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:137:1 › test_normal_when_row_detail_with_collapsed_column (496ms)
+  ✓  637 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:185:1 › test_normal_when_h1_section (351ms)
+  ✓  638 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:207:1 › test_normal_when_all_toggled (495ms)
+  ✓  639 [firefox] › tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts:260:1 › test_normal_when_nested_toggled_with_shift (469ms)
+  ✓  604 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:30:1 › test_normal (51ms)
+  ✓  641 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:67:1 › test_normal_when_drift (56ms)
+  ✓  642 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:137:1 › test_normal_when_invalid_schema (54ms)
+  ✓  643 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:166:1 › test_normal_when_avoided_term (55ms)
+  ✓  644 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:210:1 › test_normal_when_glossary_avoided_term (60ms)
+  ✓  645 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:259:1 › test_normal_when_tag_drift (61ms)
+  ✓  646 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:312:1 › test_normal_when_normalized_words (65ms)
+  ✓  647 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:357:1 › test_normal_when_related_drift (58ms)
+  ✓  633 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:35:1 › test_normal (417ms)
+  ✓  648 [firefox] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:421:1 › test_normal_when_change_together_missed (183ms)
+  ✓  636 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:53:1 › test_normal (555ms)
+  ✓  649 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:65:1 › test_normal_when_index_has_same_term (371ms)
+  ✓  651 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:78:1 › test_normal_when_filtered_by_values (697ms)
+  ✓  652 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:86:1 › test_error_when_unknown_column (773ms)
+  ✓  653 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:129:1 › test_normal_when_filtered_by_text (412ms)
+  ✓  654 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:115:1 › test_normal_when_other_document (437ms)
+  ✓  655 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:150:1 › test_normal_when_filtered_by_date (443ms)
+  ✓  656 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:146:1 › test_normal_when_avoid_column (425ms)
+  ✓  657 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:173:1 › test_normal_when_pinned (461ms)
+  ✓  658 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:211:1 › test_normal_when_other_document_avoid_column (400ms)
+  ✓  659 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:203:1 › test_normal_when_closed (429ms)
+  ✓  660 [firefox] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:264:1 › test_normal_when_aliases_have_same_term (510ms)
+  ✓  661 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:225:1 › test_normal_when_feature_removed (363ms)
+  ✓  663 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:240:1 › test_error_when_unknown_kind (379ms)
+  ✓  664 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:260:1 › test_error_when_range_end_missing (382ms)
+  ✓  665 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:277:1 › test_error_when_unknown_feature_or_key (1.1s)
+  ✓  666 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:297:1 › test_error_when_unknown_filter_kind (382ms)
+  ✓  667 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:378:1 › test_normal_when_counting_rows (446ms)
+  ✓  668 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:401:1 › test_normal_when_columns_toggled (538ms)
+  ✓  669 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:440:1 › test_normal_when_totals_shown (461ms)
+  ✓  670 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:469:1 › test_normal_when_table_copied (444ms)
+  ✓  671 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:506:1 › test_normal_when_table_copied_as_markdown (672ms)
+  ✓  672 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:539:1 › test_normal_when_row_link_opened (677ms)
+  ✓  673 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:613:1 › test_error_when_unknown_total_or_hidden_column (352ms)
+  ✓  674 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:675:1 › test_error_when_clipboard_denied (672ms)
+  ✓  675 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:804:1 › test_normal_when_header_stuck (1.4s)
+  ✓  676 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:892:1 › test_normal_when_last_column_collapsed (539ms)
+  ✓  677 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:952:1 › test_normal_when_totals_selected (368ms)
+  ✓  678 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:988:1 › test_error_when_total_cell_not_number (327ms)
+  ✓  679 [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1023:1 › test_normal_when_row_url_copied (2.7s)
+  ✓  640 [firefox] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:32:1 › test_normal (1.2s)
+  ✓  681 [firefox] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:80:1 › test_normal_when_filtered_by_text (556ms)
+  ✓  682 [firefox] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:102:1 › test_error_when_filter_kind_unknown (327ms)
+  -  683 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal
+  -  684 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:147:1 › test_normal_when_version_given
+  -  685 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:163:1 › test_error_when_version_format_invalid
+  -  686 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:180:1 › test_error_when_dist_file_too_large
+  -  687 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:202:1 › test_error_when_guide_index_too_long
+  -  688 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:230:1 › test_error_when_api_missing_in_baseline_browser
+  -  689 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:305:1 › test_normal_when_schema_change_listed
+  -  690 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:331:1 › test_error_when_schema_changed_without_steps
+  -  691 [firefox] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:349:1 › test_error_when_next_steps_left_in_release
+  -  692 [firefox] › tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts:47:1 › test_normal
+  -  693 [firefox] › tests/e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts:105:1 › test_error_when_distribution_unreachable
+  ✓  650 [firefox] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:53:1 › test_normal (673ms)
+  ✓  695 [firefox] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:86:1 › test_normal_when_not_referenced (509ms)
+  ✓  696 [firefox] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:103:1 › test_normal_when_document_alias (654ms)
+  ✓  697 [firefox] › tests/e2e/単一ユースケース/被参照を見る.spec.ts:163:1 › test_normal_when_alias_width_and_case_differ (396ms)
+  ✓  662 [firefox] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:80:1 › test_normal (604ms)
+  ✓  698 [firefox] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:130:1 › test_normal_when_loaded (421ms)
+  -  699 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:169:1 › test_normal
+  -  701 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:223:1 › test_normal_when_plan
+  -  702 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:247:1 › test_normal_when_value_asked
+  -  703 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:272:1 › test_normal_when_version_missing
+  -  704 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:293:1 › test_normal_when_up_to_date
+  -  705 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:309:1 › test_normal_when_destructive_declined
+  -  706 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:330:1 › test_error_when_step_fails
+  -  707 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:361:1 › test_error_when_check_fails
+  -  708 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:394:1 › test_error_when_local_version_newer
+  -  709 [firefox] › tests/e2e/単一ユースケース/版を上げる.spec.ts:412:1 › test_normal_when_destructive_with_yes
+  ✓  700 [firefox] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:153:1 › test_normal_when_updated (343ms)
+  ✓  710 [firefox] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:186:1 › test_normal_when_disabled (617ms)
+  ✓  711 [firefox] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:204:1 › test_error_when_save_failed (597ms)
+  ✓  712 [firefox] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:234:1 › test_error_when_store_missing (1.3s)
+  ✓  680 [firefox] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:48:1 › test_normal (452ms)
+  ✓  713 [firefox] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:102:1 › test_normal_when_called_from_extension (549ms)
+  ✓  714 [firefox] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:147:1 › test_error_when_arguments_invalid (347ms)
+  ✓  715 [firefox] › tests/e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts:173:1 › test_normal_when_comments_attached (1.1s)
+  ✓  694 [firefox] › tests/e2e/複合ユースケース/取り出し元を渡して文書の差分を読む.spec.ts:35:1 › test_normal (650ms)
+  ✓  716 [firefox] › tests/e2e/複合ユースケース/取り出し元を渡して文書の差分を読む.spec.ts:90:1 › test_error_when_content_unavailable (524ms)
+
+
+  1) [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:309:1 › test_normal_when_placement_bottom 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 659.1875
+    Received:    573.0625
+
+       at tooltip.ts:44
+
+      42 |   const tip = await boxOf(options.tip);
+      43 |   const owner = await boxOf(options.owner);
+    > 44 |   expect(tip.y).toBeGreaterThanOrEqual(
+         |                 ^
+      45 |     owner.y + owner.height - EDGE_TOLERANCE_PX,
+      46 |   );
+      47 | }
+        at expectBelow (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/tooltip.ts:44:17)
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:332:3
+
+    Error Context: test-results/単一ユースケース-図の要素のツールチップを見る-test-normal-when-placement-bottom-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図の要素のツールチップを見る-test-normal-when-placement-bottom-chromium/error-context.md
+
+  2) [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:51:1 › test_normal ───────────────────────
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Expected: < 100
+    Received:   100
+
+      55 |   const viewport = viewportOf(page);
+      56 |   const fit = await zoomPercent(page);
+    > 57 |   expect(fit).toBeLessThan(100);
+         |               ^
+      58 |   const sizer = page.locator("#doc .mdmark-diagram-sizer");
+      59 |   const frameWidth = await viewport.evaluate((element) => element.clientWidth);
+      60 |   const sizerWidth = await sizer.evaluate(
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:57:15
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-chromium/error-context.md
+
+  3) [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:229:1 › test_normal_when_embedded_chart ──
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      272 |   expect(
+      273 |     await viewport.evaluate((element) => element.scrollLeft),
+    > 274 |   ).toBeGreaterThan(start);
+          |     ^
+      275 |   // 検証: 拡大しても線と文字は SVG のまま描かれ、画像に置き換わらない
+      276 |   await expect(figure.locator("svg[role=img]")).toHaveCount(1);
+      277 |   await expect(figure.locator("svg[role=img] text").first()).toBeVisible();
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:274:5
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-embedded-chart-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-embedded-chart-chromium/error-context.md
+
+  4) [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:309:1 › test_normal_when_placement_bottom 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 659.2000122070312
+    Received:    573.0499877929688
+
+       at tooltip.ts:44
+
+      42 |   const tip = await boxOf(options.tip);
+      43 |   const owner = await boxOf(options.owner);
+    > 44 |   expect(tip.y).toBeGreaterThanOrEqual(
+         |                 ^
+      45 |     owner.y + owner.height - EDGE_TOLERANCE_PX,
+      46 |   );
+      47 | }
+        at expectBelow (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/tooltip.ts:44:17)
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:332:3
+
+    Error Context: test-results/単一ユースケース-図の要素のツールチップを見る-test-normal-when-placement-bottom-firefox/error-context.md
+
+    Error Context: test-results/単一ユースケース-図の要素のツールチップを見る-test-normal-when-placement-bottom-firefox/error-context.md
+
+  5) [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:51:1 › test_normal ────────────────────────
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Expected: < 100
+    Received:   100
+
+      55 |   const viewport = viewportOf(page);
+      56 |   const fit = await zoomPercent(page);
+    > 57 |   expect(fit).toBeLessThan(100);
+         |               ^
+      58 |   const sizer = page.locator("#doc .mdmark-diagram-sizer");
+      59 |   const frameWidth = await viewport.evaluate((element) => element.clientWidth);
+      60 |   const sizerWidth = await sizer.evaluate(
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:57:15
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-firefox/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-firefox/error-context.md
+
+  6) [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:229:1 › test_normal_when_embedded_chart ───
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      272 |   expect(
+      273 |     await viewport.evaluate((element) => element.scrollLeft),
+    > 274 |   ).toBeGreaterThan(start);
+          |     ^
+      275 |   // 検証: 拡大しても線と文字は SVG のまま描かれ、画像に置き換わらない
+      276 |   await expect(figure.locator("svg[role=img]")).toHaveCount(1);
+      277 |   await expect(figure.locator("svg[role=img] text").first()).toBeVisible();
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:274:5
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-embedded-chart-firefox/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-embedded-chart-firefox/error-context.md
+
+  6 failed
+    [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:309:1 › test_normal_when_placement_bottom 
+    [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:51:1 › test_normal ────────────────────────
+    [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:229:1 › test_normal_when_embedded_chart ───
+    [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:309:1 › test_normal_when_placement_bottom 
+    [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:51:1 › test_normal ─────────────────────────
+    [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:229:1 › test_normal_when_embedded_chart ────
+  79 skipped
+  631 passed (30.3m)
+
+EXIT=1
