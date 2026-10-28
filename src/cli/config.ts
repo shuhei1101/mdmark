@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "../config.ts";
+import { validateAliasRows } from "./alias-schema.ts";
 import type { CheckIssue } from "./check.ts";
 import { CliError } from "./errors.ts";
 import { VERSION_PATTERN } from "./versions.ts";
@@ -34,6 +35,8 @@ export type CliConfig = MdmarkConfig & {
   build?: BuildConfig;
   /** `mdmark check` の設定 */
   check?: CheckConfig;
+  /** エイリアスの元の行の並び。Schema に合わない行は `null` */
+  aliases?: unknown[];
 };
 
 /** `mdmark check` が読む設定の `check` */
@@ -347,6 +350,23 @@ export function validateConfig(
     !isValidSideToc(raw["side-toc"], file, issues)
   ) {
     delete config["side-toc"];
+  }
+
+  if (raw.aliases !== undefined) {
+    if (Array.isArray(raw.aliases)) {
+      const checked = validateAliasRows(raw.aliases, file);
+      issues.push(...checked.issues);
+      config.aliases = checked.rows;
+    } else {
+      issues.push(
+        schemaIssue(
+          file,
+          "aliases",
+          "`aliases` はエイリアスの元の行の並びで書いてください。",
+        ),
+      );
+      delete config.aliases;
+    }
   }
 
   if (raw.check !== undefined) {

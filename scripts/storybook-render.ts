@@ -17,6 +17,7 @@ import {
 import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
+import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
@@ -53,7 +54,11 @@ import { renderSteps } from "../src/parts/steps.ts";
 import { renderSyntaxWarning } from "../src/parts/syntax-warning.ts";
 import { renderTable, type TableOptions } from "../src/parts/table.ts";
 import { renderTabs } from "../src/parts/tabs.ts";
-import { renderTermTip, type TermTipDoc } from "../src/parts/term-tip.ts";
+import {
+  renderTermTip,
+  type TermTipCopyState,
+  type TermTipDoc,
+} from "../src/parts/term-tip.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
@@ -412,8 +417,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       meaning: args.meaning as string | undefined,
       docs: args.docs as TermTipDoc[] | undefined,
       replacement: args.replacement as
-        | { term: string; meaning: string }
+        | { term: string; meaning?: string }
         | undefined,
+      alias: args.alias as MdmarkAlias | undefined,
+      copy: args.copy as TermTipCopyState | undefined,
       below: args.below === true,
     });
     // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの上と下に余白を取る

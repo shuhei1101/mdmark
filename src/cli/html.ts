@@ -1,4 +1,5 @@
 import type { MdmarkConfig } from "../config.ts";
+import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
@@ -30,6 +31,8 @@ export type ExportPayload = {
   parts?: Partial<Record<"view", string>>;
   /** 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
   syntax?: { core: string; languages: Record<string, string> } | undefined;
+  /** `loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない */
+  aliases?: MdmarkAlias[] | undefined;
 };
 
 /** 書き出しの中身を入れる `script` 要素の `id`（起動の処理が読む） */
