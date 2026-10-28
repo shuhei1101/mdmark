@@ -35,8 +35,8 @@ flows:
       - name: 配布物を読む Node の処理
         description: 正常系と同じ
       - name: 使えない行とレコードを混ぜた中身
-        description: 正しい行 `terms` と、`records` が `items` でファイルにそのキーが無い行・`description` を `ref` の `missing_col` で取る行・`alias_type` を `ref` で取り値が `memo` のレコードを持つ行・`command` が空の `command` のレコードを持つ行・`id` が `terms` と同じ行・`id` が `ws`（`terms` のレコードと同じ）のレコードを持つ行
-        notes: ずれの種類ごとに 1 つずつ置いて決定的に起こす
+        description: 正しい行 `terms`（リクエスト例と同じ）と、次の 6 行。`records` が `items` でファイルにそのキーが無い行（`alias_type` は `custom` の `term`）・`description` を `ref` の `missing_col` で取る行（`alias_type` は `custom` の `term`）・`alias_type` を `ref` の `alias_type` で取り値が `memo` のレコードを持つ行・`id`・`name` を持ち `command` が空のレコードを持つ行（`alias_type` は `custom` の `command`）・`id` が `terms` と同じ行（`alias_type` は `custom` の `term`）・`id` が `ws`（`terms` のレコードと同じ）で `name`・`description` を持つレコードを持つ行（`alias_type` は `custom` の `term`）
+        notes: ずれの種類ごとに 1 つずつ置いて決定的に起こす。`missing_col` の行のレコードは `id`・`name` を持ち、`alias_field_missing` の 1 件だけを出す
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -175,7 +175,7 @@ constraints:
     constraint: '`records` を持つ行は、ファイルの値のそのキーの配列の要素ごとに 1 件、持たない行はファイルの値を 1 件にする。配列の要素とファイルの値がオブジェクトでないものは使わない'
     notes: キーが無いか配列でないファイルは `alias_records_missing`
   - item: metadata の当て方
-    constraint: エイリアスのキーごとに、`ref` はレコードの `field` の列の値、`custom` は `value` を取る。`metadata` に無いキーはレコードの同じ名前の列の値を取る（列が無ければ持たない）。`ref` の列がレコードに無いときは `alias_field_missing`
+    constraint: エイリアスのキーごとに、`ref` はレコードの `field` の列の値、`custom` は `value` を取る。`metadata` に無いキーはレコードの同じ名前の列の値を取る（列が無ければ持たない）。`ref` の列がレコードに無いときは、無い列ごとに `alias_field_missing` にし、そのレコードは種類と必須のキーを確かめずに使わない
     notes: キーは ER 図『エイリアス』の列と `port`。ほかのキーは取らない
   - item: 値の形
     constraint: 文字列のキーは、文字列・数・真偽値を文字列にし、前後の空白を除く。それ以外の値は空として扱う。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びにし、並びなら文字列の要素だけを残す

@@ -159,7 +159,7 @@ flows:
     summary: 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す
     setup:
       - name: エイリアスを持つフォルダ
-        description: '設定に `aliases` の 1 行（`paths: aliases/*.yaml`）を書き、`aliases/` に `alias_type: command` のレコード（`name: テストを流す`・`command: npm test`）と、`alias_type: env` のレコード（`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）と、`name` が空の `term` のレコードを置いたフォルダ。文書 `guide.md` の本文に `テストを流す` と `開発サーバー` がある'
+        description: '設定に `aliases` の 1 行（`paths: aliases/*.yaml`・`metadata` に `alias_type: {type: ref, field: alias_type}`）を記載し、`aliases/` に `alias_type: command` のレコード（`id: run-test`・`name: テストを流す`・`command: npm test`）と、`alias_type: env` のレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）と、`alias_type: term` で `id`・`name` を持ち `description` が空のレコードを置いたフォルダ。文書 `guide.md` の本文に `テストを流す` と `開発サーバー` がある'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
