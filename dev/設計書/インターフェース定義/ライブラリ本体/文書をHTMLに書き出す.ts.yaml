@@ -178,7 +178,7 @@ flows:
       - 終了コードが 0 で、標準エラーに `alias_required_empty` の警告が 1 行ある
       - 開いた文書の `テストを流す` に下線が付き、ツールチップに `npm test` とコピーのボタンが出る
       - '`開発サーバー` に下線が付かない'
-      - '`guide.html` のソースに `開発サーバー`・`http://127.0.0.1:8767/` が入っていない'
+      - '`guide.html` のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っておらず、埋めたエイリアスが `run-test` だけ'
     test: test_normal_when_aliases
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
