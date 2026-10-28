@@ -225,7 +225,7 @@ classes:
       - name: scrollToLine
         title: 行まで動かす
         kind: メソッド
-        summary: 元の行番号の位置を先頭に置く。動かす `scrollTop` が今の値と違うときだけ動かし、`pendingScrollTop` に覚える
+        summary: 元の行番号の位置を先頭（上端の帯があればその下端）に置く。動かす `scrollTop` が今の値と違うときだけ動かし、`pendingScrollTop` に覚える
         args:
           - name: line
             type: number
@@ -237,6 +237,7 @@ classes:
         callees:
           - '#functions[collectAnchors]'
           - '#functions[topForLine]'
+          - '#functions[topInset]'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[往復の止め方]
       - name: takeScroll
@@ -248,7 +249,7 @@ classes:
           description: '`revealLine` で送る行'
         process: |-
           1. `scrollTop` が `pendingScrollTop` と等しければ、`pendingScrollTop` を消して `undefined` を返す
-          2. `pendingScrollTop` を消し、今の `scrollTop` を行にして返す（行の印を集める、位置を行にする）
+          2. `pendingScrollTop` を消し、今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を行にして返す（行の印を集める、位置を行にする）
         unit_tests:
           - name: test_take_scroll_when_own_scroll
             case: 正常
@@ -259,6 +260,7 @@ classes:
         callees:
           - '#functions[collectAnchors]'
           - '#functions[lineForTop]'
+          - '#functions[topInset]'
       - name: inspect
         title: 要素を調べる
         kind: メソッド
@@ -507,6 +509,46 @@ functions:
         expected: '`role="status"` の要素に `h2` の題「設定ファイルを読み込めません」、`<code>a&lt;b&gt;.yaml</code>` と `4 行目`、`data-action="openConfig"` の `button`'
     refs:
       - dev/設計書/部品設計/設定ファイルを読めない帯.ts#
+    status: planned
+  - name: topInset
+    title: 上端の帯の高さを測る
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: 狭い幅で右側の目次（`.mdmark-side-toc`）を描いた文書の上端の帯にしているとき、帯の下端からスクロールする要素の上端までの高さを返す。帯が無いときは 0
+    scope: public
+    args:
+      - name: options
+        type: '{ root: HTMLElement; scroller: Element }'
+        required: true
+        description: 描いた文書の要素と、スクロールする要素
+    returns:
+      type: number
+      description: 見えている先頭を下げる高さ（px）
+    process: |-
+      1. `root` の中の `.mdmark-side-toc` が無いか、その幅が `root` の中の `.mdmark` の幅より狭い（広い幅の右の列）ときは 0 を返す
+      2. 帯の `getBoundingClientRect().bottom` から、スクロールする要素の上端（画面がスクロールするときは 0）を引いた値を返す（負なら 0）
+    unit_tests:
+      - name: test_top_inset_when_band
+        case: 正常
+        summary: 狭い幅の帯の下端までの高さを返す
+        condition: 幅 390px の要素に右側の目次を持つ文書を描く
+        mock: なし
+        expected: 帯の高さ（`getBoundingClientRect().bottom`）と等しい値
+      - name: test_top_inset_when_wide
+        case: 正常
+        summary: 広い幅の右の列では 0
+        condition: 幅 1280px の要素に右側の目次を持つ文書を描く
+        mock: なし
+        expected: '`0`'
+      - name: test_top_inset_when_no_side_toc
+        case: 正常
+        summary: 右側の目次が無い文書では 0
+        condition: 見出しの無い文書を描く
+        mock: なし
+        expected: '`0`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[プレビューから合わせる]
     status: planned
 styles:
   - name: preview
