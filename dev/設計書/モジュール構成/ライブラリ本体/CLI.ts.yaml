@@ -1890,3 +1890,5 @@ test_files:
   - tests/unit/src/cli/export.test.ts
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/index-file.test.ts
+  - tests/unit/src/cli/alias-schema.test.ts
+  - tests/unit/src/cli/aliases.test.ts

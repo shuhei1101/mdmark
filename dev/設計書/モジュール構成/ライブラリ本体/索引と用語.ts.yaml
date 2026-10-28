@@ -2508,6 +2508,7 @@ test_files:
   - tests/unit/src/interact/terms.browser.test.ts
   - tests/unit/src/knowledge/find.test.ts
   - tests/unit/src/knowledge/tags.test.ts
+  - tests/unit/src/knowledge/aliases.test.ts
 enums:
   - name: MdmarkRelationType
     title: 関係の種類
