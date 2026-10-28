@@ -6,6 +6,7 @@ directory: |-
   ├── knowledge/
   │   ├── index-shape.ts   # 索引の型と形の検査（normalizeIndex）
   │   ├── paths.ts         # 索引のパスの正規化・リンクの解決・相対パス
+  │   ├── aliases.ts       # エイリアスの型と、設定の行と YAML の中身からエイリアスを作る buildAliases
   │   ├── dictionary.ts    # 用語と文書の別名の辞書・語の正規化・語の区切りでの照合
   │   ├── references.ts    # 参照の表（collectReferences）
   │   ├── matches.ts       # 本文の参照の取り出し（collectMatches）
@@ -81,20 +82,20 @@ data_models:
         type: string[]
         description: 照合する語。`normalizeWord` で正規化した語を、長い語から並べる
       - name: terms
-        type: 'Map<string, { id: string; meaning: string }>'
-        description: 正規化した語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語
+        type: 'Map<string, { id: string; meaning: string; alias?: MdmarkAlias }>'
+        description: 正規化した語から、優先の順（索引の `terms` → エイリアス（渡した並び） → 描く文書の表 → ほかの文書の表）で選んだ用語。エイリアスは `id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）にし、`alias` にそのエイリアスを持つ
       - name: docs
         type: Map<string, MdmarkIndexDoc[]>
         description: 正規化した語から、その語を `aliases` に持つ文書（索引の `docs` の順）
       - name: avoided
-        type: 'Map<string, { id: string; term: string; meaning: string }>'
-        description: 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
+        type: 'Map<string, { id: string; term: string; meaning?: string; alias?: MdmarkAlias }>'
+        description: 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid`、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、エイリアスの並び、索引の `docs` の順の文書の表の順で先の用語）。`avoid` の種類は `term` を `replacement` にして `meaning` を持たず、`term` の種類は `term` を名前、`meaning` を `description` にする。エイリアスの代わりの用語は `id` を `alias:{エイリアスの id}` にし、`alias` にそのエイリアスを持つ。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す
       - name: written
         type: Map<string, string>
         description: 正規化した語から、索引・用語集の表・文書の `aliases` に記載した表記。`words` と `avoided` の語を持ち、同じ正規化の語は `terms`・`avoided` と同じ優先の順で先の表記
       - name: term
         type: '(word: string) => { id: string; meaning: string } | undefined'
-        description: 語を `normalizeWord` で正規化してから `terms` を引く。`findWords` を通らずに書いた語で用語を引く箇所（図の箱・埋め込んだ HTML のチャートの `{{語}}`）が使う
+        description: 語を `normalizeWord` で正規化してから、エイリアスを除いた用語を引く。`findWords` を通らずに書いた語で用語を引く箇所（図の箱・埋め込んだ HTML のチャートの `{{語}}`）が使う。エイリアスの語は引かない（図の部品の `{{語}}` はエイリアスを引かない）
   - name: MdmarkGlossaryEntry
     title: 用語集の表の用語
     container: src/knowledge/references.ts
@@ -123,17 +124,20 @@ data_models:
     summary: '`collectMatches` が返す参照先 1 つ（公開の型）'
     properties:
       - name: kind
-        type: '"term" | "glossary" | "doc"'
-        description: 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書
+        type: '"term" | "glossary" | "doc" | "alias"'
+        description: 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は渡したエイリアス
       - name: id
         type: string
-        description: '`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`'
+        description: '`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`、`alias` はエイリアスの `id`'
       - name: title
         type: string
-        description: '`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`'
+        description: '`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`、`alias` はエイリアスの `name`'
       - name: description
         type: string | undefined
-        description: '`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。無いときはキーを持たない'
+        description: '`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`、`alias` はエイリアスの `description`。無いときはキーを持たない'
+      - name: aliasType
+        type: Exclude<MdmarkAliasType, "avoid"> | undefined
+        description: エイリアスの `alias_type`。`kind` が `alias` のときだけ持つ
   - name: MdmarkMatch
     title: 本文の一致
     container: src/knowledge/matches.ts
@@ -186,8 +190,8 @@ data_models:
     summary: 本文に出たやめた言い方 1 つと代わりの用語（公開の型）
     properties:
       - name: kind
-        type: '"term" | "glossary"'
-        description: 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ
+        type: '"term" | "glossary" | "alias"'
+        description: 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ。`alias` は `term` の種類のエイリアスの `avoid` か `avoid` の種類のエイリアスで、`avoid` の種類は `title` を `replacement` にし `description` を持たない
       - name: id
         type: string
         description: 代わりの用語の ID。`MdmarkMatchTarget` の `id` と同じ書き方
@@ -209,6 +213,9 @@ data_models:
       - name: end
         type: number
         description: '`MdmarkMatch` の `end` と同じ'
+      - name: aliasType
+        type: '"term" | "avoid" | undefined'
+        description: エイリアスの `alias_type`。`kind` が `alias` のときだけ持つ
   - name: MdmarkIndexDocTag
     title: 文書のタグ
     container: src/knowledge/index-shape.ts
@@ -355,6 +362,103 @@ data_models:
     status: planned
     introduced:
       pr: 127
+  - name: MdmarkAlias
+    title: エイリアス
+    container: src/knowledge/aliases.ts
+    role: DTO
+    summary: 設定の行の `metadata` を当てて作ったエイリアス 1 件（公開の型）。`buildAliases` が返し、`mount`・`render`・`collectMatches` の `aliases` に並べて渡す
+    description: キーと意味は ER 図『エイリアス』の `MdmarkAlias`。値の無いキーは持たない（`aliases` だけは空の並びでも持つ）
+    properties:
+      - name: alias_type
+        type: MdmarkAliasType
+        description: エイリアスの種類。ツールチップの区分と照合したときの扱いを決める
+      - name: id
+        type: string
+        description: エイリアスの ID。渡したエイリアスの中で一意
+      - name: name
+        type: string
+        description: 照合する語で、ツールチップに出す名前。`avoid` の種類ではやめた言い方
+      - name: aliases
+        type: string[]
+        description: 名前と同じく照合する語
+      - name: description
+        type: string | undefined
+        description: ツールチップの説明
+      - name: related
+        type: string[] | undefined
+        description: '`term` の関連する語。受け取るだけで使わない'
+      - name: command
+        type: string | undefined
+        description: '`command` の種類のコマンド'
+      - name: cwd
+        type: string | undefined
+        description: '`command` の種類の実行場所'
+      - name: url
+        type: string | undefined
+        description: '`url` の種類の URL'
+      - name: skill
+        type: string | undefined
+        description: '`skill` の種類のスキル名'
+      - name: tool
+        type: string | undefined
+        description: '`tool` の種類のツール名'
+      - name: path
+        type: string | undefined
+        description: '`path` の種類のパス'
+      - name: avoid
+        type: string[] | undefined
+        description: '`term` の種類のやめた言い方'
+      - name: replacement
+        type: string | undefined
+        description: '`avoid` の種類の置き換え先の語'
+    refs:
+      - dev/設計書/ER図/エイリアス#tables[MdmarkAlias]
+    status: planned
+    introduced:
+      pr: 176
+  - name: MdmarkAliasSource
+    title: エイリアスの元のファイル
+    container: src/knowledge/aliases.ts
+    role: DTO
+    summary: 行の `paths` に当たったファイルを YAML として読んだ中身 1 つ（公開の型）
+    properties:
+      - name: rowId
+        type: string
+        description: そのファイルを指した行の `id`
+      - name: path
+        type: string
+        description: ファイルのパス（設定ファイルのフォルダからの相対パス。区切りは `/`）
+      - name: data
+        type: unknown
+        description: ファイルを YAML として読んだ値
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#request[input.sources]
+    status: planned
+    introduced:
+      pr: 176
+  - name: MdmarkAliasProblem
+    title: エイリアスのずれ
+    container: src/knowledge/aliases.ts
+    role: DTO
+    summary: '`buildAliases` が返す、使えなかった行・レコードのずれ 1 件（公開の型）'
+    properties:
+      - name: file
+        type: string
+        description: ずれのあるファイル。行のずれは `configFile`、レコードのずれはそのレコードのファイルの `path`
+      - name: where
+        type: string
+        description: 行のずれは設定のキーのパス（`aliases[1].id`）、レコードのずれはファイルの中のパス（`terms[2].command`。`records` を持たない行は `command`）。ファイル全体のずれは空文字
+      - name: kind
+        type: "'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id'"
+        description: ずれの種類。意味はインターフェース定義『エイリアスを作る』の `problems[].kind`
+      - name: message
+        type: string
+        description: ずれの内容と直し方の日本語の 1 文
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#response[problems]
+    status: planned
+    introduced:
+      pr: 176
 functions:
   - name: normalizeIndex
     title: 索引の形を検査する
@@ -497,12 +601,12 @@ functions:
     kind: 関数
     scope: internal
     summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
-    description: 語は `normalizeWord` で正規化してから入れ、正規化した後に同じになる語は同じ語として扱う。同じ語が複数の用語に当たるときは、索引の `terms`・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語もやめた言い方も入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・語・意味、用語集の表の用語なら `glossary:{docId}:{語}`・用語・意味にする。同じやめた言い方は、索引の `terms`、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使う。やめた言い方が用語の語・別名と同じかも正規化した語で比べる。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
+    description: 語は `normalizeWord` で正規化してから入れ、正規化した後に同じになる語は同じ語として扱う。同じ語が複数の用語に当たるときは、索引の `terms`・`aliases`（並びの順）・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{語}`。`aliases` は `usableAliases` で使えるものだけにし、`avoid` でない種類の `name`・`aliases` を語にして、`id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）、`alias` をそのエイリアスにする。`term` はエイリアスを入れずに同じ優先の順で用語を引く。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語・エイリアス・やめた言い方を入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・語・意味、用語集の表の用語なら `glossary:{docId}:{語}`・用語・意味にする。エイリアスのやめた言い方は、`avoid` の種類の `name`・`aliases`（代わりの用語は `alias:{id}`・`replacement` で、意味を持たない）と `term` の種類の `avoid`（代わりの用語は `alias:{id}`・`name`・`description`）から入れ、どちらも `alias` にそのエイリアスを持つ。同じやめた言い方は、索引の `terms`、`aliases` の並び、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使う。やめた言い方が用語の語・別名と同じかも正規化した語で比べる。やめた言い方は `avoided` にだけ入れて `words` に足さないので、`words` を使う `collectMatches`・図の箱の `{{語}}` の照合はやめた言い方に当たらない
     args:
       - name: options
-        type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; features: Record<string, boolean> }'
+        type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; aliases?: readonly unknown[]; features: Record<string, boolean> }'
         required: true
-        description: 索引・描く文書の `id`・描く文書の表の用語・参照の表・文書の機能
+        description: 索引・描く文書の `id`・描く文書の表の用語・参照の表・使う側が渡したエイリアス・文書の機能
     returns:
       type: Dictionary
       description: 照合の辞書
@@ -561,6 +665,24 @@ functions:
         condition: 索引の用語 `MCP`（`mcp`）と、`ownGlossary` の用語 `ｍｃｐ`。文書 `api` の別名 `ＡＰＩ`。索引の用語 `ワークスペース`（別名 `WS`、`avoid` に `ws`）
         mock: なし
         expected: '`words` に `mcp` と `api` があり `MCP`・`ｍｃｐ` が無い。`terms.get("mcp")` と `term("Ｍｃｐ")` が索引の `mcp` の用語、`written.get("mcp")` が `MCP`、`docs.get("api")` が `api` の文書。`avoided` が空（`ws` は別名 `WS` と同じ語）'
+      - name: test_build_dictionary_when_aliases
+        case: 正常
+        summary: エイリアスの名前と別名を、索引の後・描く文書の表の前の優先で入れ、term では引かない
+        condition: 索引の用語 `印`。`aliases` が `term` の `印`（`mark`）と `command` の `単体テスト`（`unit-test`、別名 `ユニットテスト`）。`ownGlossary` が用語 `単体テスト`
+        mock: なし
+        expected: '`terms.get("印")` が索引の用語で `alias` を持たない。`terms.get("単体テスト")` と `terms.get("ユニットテスト")` が `id` `alias:unit-test` で `alias` がそのエイリアス。`term("単体テスト")` が `glossary::単体テスト` の用語'
+      - name: test_build_dictionary_avoided_from_aliases
+        case: 正常
+        summary: avoid の種類と term の種類の avoid をやめた言い方に入れ、索引のやめた言い方を先にする
+        condition: 索引の用語 `フォルダ`（`avoid` に `作業場`）。`aliases` が `avoid` の `作業場`（`workplace`、別名 `作業所`、置き換え先 `ワークスペース`）と `term` の `レビュー`（`review`、`avoid` に `査読会`）
+        mock: なし
+        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`作業所` → `{ id: "alias:workplace", term: "ワークスペース" }`（`meaning` を持たない）、`査読会` → `{ id: "alias:review", term: "レビュー", meaning: … }` の 3 件で、`words` にどれも無い'
+      - name: test_build_dictionary_skips_unusable_aliases
+        case: 正常
+        summary: 使えないエイリアスと、glossary がオフのときのエイリアスを入れない
+        condition: '`aliases` が `env` の `開発サーバー`・`command` が空の `command` の `単体テスト`・`url` の `課題の一覧`。もう 1 つは同じ `aliases` で `features.glossary` が `false`'
+        mock: なし
+        expected: 前者の `words` が `課題の一覧` だけを持ち、後者の `words` が空
   - name: findWords
     title: 語の区切りで語を照合する
     container: src/knowledge/dictionary.ts
@@ -825,7 +947,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を語とツールチップの組（`renderTermTip`）に置き換える
-    description: 辞書は `buildDictionary` で、索引の `terms`・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。下線の語は辞書の語ではなく、テキストの一致した範囲の本文の表記のまま出す。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。`glossary` と `backlinks` が両方オフのときは何もしない
+    description: 辞書は `buildDictionary` で、索引の `terms`・エイリアス（`env.aliases`）・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。下線の語は辞書の語ではなく、テキストの一致した範囲の本文の表記のまま出す。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。辞書の用語が `alias` を持つ語は `renderTermTip` に `alias` を渡し（`meaning`・`docs` は渡さない。文書の別名と同じ語でも関連文書を出さない）、辞書の `id`（`alias:{id}`）ごとに節ごとの最初の 1 回だけ下線を付ける。代わりの用語が `alias` を持つやめた言い方は、`replacement` を `{ term, meaning }`（`avoid` の種類は `meaning` を渡さない）にする。`glossary` と `backlinks` が両方オフのときは何もしない
     args:
       - name: state
         type: StateCore
@@ -900,6 +1022,30 @@ functions:
         condition: 索引の用語 `ワークスペース` と `MCP`。本文 `ﾜｰｸｽﾍﾟｰｽとｍｃｐを使う。`
         mock: なし
         expected: '`mdmark-term-wrap` の要素が 2 つで、下線の語が `ﾜｰｸｽﾍﾟｰｽ` と `ｍｃｐ`。ツールチップにそれぞれの用語の意味がある'
+      - name: test_terms_rule_aliases
+        case: 正常
+        summary: エイリアスに節ごとに最初の 1 回だけ下線を付け、種類のツールチップを置く
+        condition: '`env.aliases` に `command` の `単体テスト`（別名 `ユニットテスト`、コマンド `npm run test:unit`）。1 つ目の節に `単体テスト` と `ユニットテスト`、2 つ目の節に `ユニットテスト`'
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が 2 つで、各節の最初の語の位置にあり、ツールチップに見出し `コマンド` と `code` の `npm run test:unit` がある'
+      - name: test_terms_rule_aliases_prefer_index_term
+        case: 正常
+        summary: 索引の用語と同じ語のエイリアスは、索引の用語のツールチップにする
+        condition: 索引の用語 `印`（意味 `HTML コメントで書く指定`）と、`env.aliases` の `term` の `印`（説明 `別の意味`）。本文に `印`
+        mock: なし
+        expected: ツールチップに `HTML コメントで書く指定` があり、`別の意味` が無い
+      - name: test_terms_rule_alias_avoid
+        case: 正常
+        summary: avoid の種類のエイリアスにやめた言い方のマーカーを付け、置き換え先だけを出す
+        condition: '`env.aliases` に `avoid` の `作業場`（置き換え先 `ワークスペース`）。本文に `作業場`'
+        mock: なし
+        expected: '`作業場` が `mdmark-term-avoided` の要素で、ツールチップが見出し `代わりの用語` と `ワークスペース` だけを持ち、`mdmark-term-tip-meaning` が無い'
+      - name: test_terms_rule_aliases_when_glossary_off
+        case: 正常
+        summary: glossary がオフならエイリアスを照合しない
+        condition: '`test_terms_rule_aliases` と同じ入力に `<!-- features: -glossary -->`'
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が無い'
   - name: backlinksRule
     title: 関連文書の一覧のコアルール
     container: src/render/syntax/backlinks.ts
@@ -943,10 +1089,10 @@ functions:
     kind: 関数
     scope: internal
     summary: 語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の語とツールチップの組の HTML（`mdmark-term-wrap` の中に語と、その直後のツールチップ）を返す
-    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し、語の `aria-describedby` でツールチップを指す。`below` が `true` のときは `mdmark-term-wrap` に `is-below` を付ける（ストーリーが下に開いた見た目を出すため。`render` は渡さない）。文字はエスケープする
+    description: 意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `dev/mock/components/term-tooltip/` のとおり）。`hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。`replacement` があるときは `meaning`・`docs` を使わず、語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを置いて `mdmark-term-tip-replacement`（代わりの用語の語）と `mdmark-term-tip-meaning`（意味）を出し（`meaning` が無ければ意味を置かない）、語の `aria-describedby` でツールチップを指す。`alias` があるときは `meaning`・`docs` を使わず、`ALIAS_HEADINGS` の見出しの区分 1 つに `mdmark-term-tip-name`（`name`）と、あれば `mdmark-term-tip-meaning`（`description`、`id` は `{id}-meaning`）を出す。`command` は `mdmark-term-tip-command` の中に `code` とコピーのボタン（`button.mdmark-term-tip-copy`、`type="button"`・`data-state` は `copy`（既定 `idle`）、中身は `renderTermTipCopy`）を並べ、`cwd` があれば `mdmark-term-tip-fields` にラベル `実行場所` と値を置き、`role="status"` の `mdmark-visually-hidden mdmark-term-tip-status`（`copied`・`failed` のとき `コマンドを{文言}`、`idle` は空）を置く。`url` は http・https の URL だけを `a.mdmark-term-tip-link`（`href` に URL）にし、ほかは `span.mdmark-term-tip-link` の文字にする。`skill`・`tool`・`path` は値を `code.mdmark-term-tip-code` に出す。コマンドとリンクにした URL を持つツールチップは `role="group"` と `aria-label`（`「{text}」のコマンド`・`「{text}」の URL`）にして語の `aria-details` で指し、説明があれば語の `aria-describedby` で説明の要素を指す。ほかの種類は `role="tooltip"` で語の `aria-describedby` がツールチップを指す。`below` が `true` のときは `mdmark-term-wrap` に `is-below` を付ける（ストーリーが下に開いた見た目を出すため。`render` は渡さない）。文字はエスケープする
     args:
       - name: props
-        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning: string }; below?: boolean }'
+        type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning?: string }; alias?: MdmarkAlias; copy?: "idle" | "copied" | "failed"; below?: boolean }'
         required: true
         description: 部品設計の引数
     returns:
@@ -977,8 +1123,40 @@ functions:
         condition: 部品設計『用語のツールチップ』の `Below` と `TermOnly` の引数
         mock: なし
         expected: '`Below` の `mdmark-term-wrap` が `is-below` を持ち、`TermOnly` は持たない'
+      - name: test_render_term_tip_alias
+        case: 正常
+        summary: エイリアスの種類ごとの区分と role を返す
+        condition: 部品設計『用語のツールチップ』の `AliasTerm`・`AliasDoc`・`AliasCommand`・`AliasUrl`・`AliasSkill`・`AliasTool`・`AliasPath` の引数に、`meaning`・`docs` も渡したもの
+        mock: なし
+        expected: 見出しが順に `用語`・`文書`・`コマンド`・`URL`・`スキル`・`ツール`・`パス` の 1 つだけで、渡した `meaning`・`docs` は出ない。`AliasCommand` と `AliasUrl` が `role="group"`、ほかは `role="tooltip"`。`AliasCommand` に `code` の `npm run test:unit`・`data-state="idle"` の `コピー` のボタン・`実行場所`・空の `role="status"` がある。`AliasSkill` は `mdmark-term-tip-meaning` を持たない
+      - name: test_render_term_tip_alias_copy
+        case: 正常
+        summary: copy の状態をボタンと読み上げの要素に出す
+        condition: 部品設計『用語のツールチップ』の `AliasCommandCopied`・`AliasCommandFailed` の引数
+        mock: なし
+        expected: ボタンの `data-state` と文言が `copied` と `コピーしました`、`failed` と `コピーできませんでした` で、`role="status"` が `コマンドをコピーしました`・`コマンドをコピーできませんでした`
+      - name: test_render_term_tip_alias_url_not_http
+        case: 正常
+        summary: http・https でない URL をリンクにしない
+        condition: 部品設計『用語のツールチップ』の `AliasUrlNotHttp` の引数
+        mock: なし
+        expected: '`a` 要素が無く、`span.mdmark-term-tip-link` の文字が `javascript:alert(1)` で、`role="tooltip"`'
+      - name: test_render_term_tip_alias_escapes
+        case: 正常
+        summary: エイリアスの値をエスケープする
+        condition: '`command` のエイリアスの `name`・`description`・`command`・`cwd` と、`url` のエイリアスの `url` に `<script>` と `"`'
+        mock: なし
+        expected: 出力に `<script>` が無く `&lt;script&gt;` があり、`href` の `"` が `&quot;` になる
+      - name: test_render_term_tip_avoided_without_meaning
+        case: 正常
+        summary: replacement の meaning が無ければ代わりの用語の語だけを出す
+        condition: 部品設計『用語のツールチップ』の `AliasAvoid` の引数
+        mock: なし
+        expected: 見出し `代わりの用語` と `ワークスペース` があり、`mdmark-term-tip-meaning` が無い
     refs:
       - dev/設計書/部品設計/用語のツールチップ.ts#
+    callees:
+      - '#functions[renderTermTipCopy]'
   - name: renderBacklinks
     title: 関連文書の一覧の HTML を返す
     container: src/parts/backlinks.ts
@@ -1014,7 +1192,7 @@ functions:
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
-    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に置いて `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書のあるツールチップは語の次の Tab で中のリンクへ移れる。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作を外し、付けた class を消す'
+    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に置いて `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書・エイリアスのリンク・コマンドのコピーのボタンのあるツールチップは語の次の Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。コピーのボタン（`button.mdmark-term-tip-copy`）を押したら、同じ区分の `code` の文字を `copyText` で書き、書けたらボタンを `copied`（`data-state` と中身を `renderTermTipCopy` で替える）にして `COPIED_NOTICE_MS` 後に `idle` に戻し、書けなければ `failed` にして次に押すまで残す。`copied`・`failed` にしたときは同じ区分の `role="status"` の要素に `コマンドを{文言}` を入れ、`idle` に戻したときは空にする。押した後もツールチップを出したままにし、例外を外へ出さない。押し直したときは前の戻す待ちを止める。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作と戻す待ちを外し、付けた class を消す'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement }'
@@ -1043,6 +1221,21 @@ functions:
         condition: '`placement` が `top` で、要素の上端に置いた語と、画面の中ほどに置いた語にそれぞれフォーカスする'
         mock: なし（Chromium）
         expected: 中ほどの語は `is-below` を持たずツールチップの `bottom` が語の `top` 以下、上端の語は `is-below` を持ちツールチップの `top` が語の `bottom` 以上。閉じた後は `is-below` が残らない
+      - name: test_attach_term_tips_copy_command
+        case: 正常
+        summary: コピーのボタンでコマンドを書き、ボタンと読み上げの要素で知らせ、待った後に戻す
+        condition: '`command` のエイリアスの語とツールチップの組 1 つを持つ要素。語にフォーカスし、Tab でボタンへ移って Enter'
+        mock: Chromium の `navigator.clipboard.writeText` を、渡した文字を控えて解決する関数に差し替える。時計を偽のタイマーにする
+        expected: 控えた文字が `npm run test:unit`、ボタンが `data-state="copied"` で文言 `コピーしました`、`role="status"` が `コマンドをコピーしました`、`mdmark-term-wrap` が `is-open` を持つ。2000 ミリ秒進めた後は `data-state="idle"` で文言 `コピー`、`role="status"` が空
+      - name: test_attach_term_tips_copy_command_denied
+        case: 正常
+        summary: コマンドを書けなければ failed にして残し、例外を外へ出さない
+        condition: '`test_attach_term_tips_copy_command` と同じ要素でボタンを押す'
+        mock: '`navigator.clipboard.writeText` を reject する関数に差し替える。時計を偽のタイマーにする'
+        expected: ボタンが `data-state="failed"` で文言 `コピーできませんでした`、`role="status"` が `コマンドをコピーできませんでした`。2000 ミリ秒進めても変わらず、未処理の例外が無い
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[copyText]
+      - '#functions[renderTermTipCopy]'
   - name: wordStarts
     title: 語の区切りの位置を返す
     container: src/knowledge/dictionary.ts
@@ -1125,12 +1318,12 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す
-    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`features` に文書の印を重ねた機能）で辞書を作る。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。辞書の `avoided` が空でない文書は、`words` に `avoided` の語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の語の一致だけを、`avoided` の用語の `id` で引いた参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。`collectReferences` を呼ばず、本文を 2 回解析しない。一致の `text` は、一致した語を辞書の `written` で引いた索引・用語集の表に記載した表記'
+    description: '`normalizeIndex` で合う文書・用語だけを使う。本文のある索引の文書を `parseDocument` で 1 回ずつ読み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`aliases` に `input.aliases`、`features` に文書の印を重ねた機能）で辞書を作る。辞書の用語が `alias` を持つ一致は、参照先を `kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に `name`・`description` に `description`（無ければキーを持たない）にする。`avoided` の代わりの用語が `alias` を持つときは、`kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に代わりの用語の語・`description` に意味（`avoid` の種類はキーを持たない）にする。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を足す。辞書の `avoided` が空でない文書は、`words` に `avoided` の語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の語の一致だけを、`avoided` の用語の `id` で引いた参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。`collectReferences` を呼ばず、本文を 2 回解析しない。一致の `text` は、一致した語を辞書の `written` で引いた索引・用語集の表に記載した表記'
     args:
       - name: input
-        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
+        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig; aliases?: MdmarkAlias[] }'
         required: true
-        description: 索引・文書のパスから本文を引く表・設定
+        description: 索引・文書のパスから本文を引く表・設定・エイリアス
     returns:
       type: MdmarkMatches
       description: 文書ごとの一致と、まとめた参照先
@@ -1214,6 +1407,18 @@ functions:
         condition: インターフェース定義『本文の参照を取り出す』の「正常系（表記の違う語）」の索引と文書
         mock: なし
         expected: '`byDocument`・`targets`・`avoided` がそのフローの期待値と等しい'
+      - name: test_collect_matches_when_aliases
+        case: 正常
+        summary: 渡したエイリアスの一致を alias の参照先として返し、avoid の種類を avoided に返す
+        condition: インターフェース定義『本文の参照を取り出す』の「正常系（エイリアス）」の索引・エイリアス・本文
+        mock: なし
+        expected: '`byDocument`・`targets`・`avoided` がそのフローの期待値と等しく、引数が書き換わっていない'
+      - name: test_collect_matches_when_diagram_term_is_alias_word
+        case: 正常
+        summary: 図の部品の `{{語}}` はエイリアスを引かない
+        condition: '`aliases` に `term` の `公開関数`（`fn`）だけを渡し、索引に用語が無い。`guide` の `<!-- flow -->` の定義の箱の `name` に `{{公開関数}}`、段落に `公開関数`'
+        mock: なし
+        expected: '`byDocument.guide` が段落の `公開関数` の 1 件だけで、`{{公開関数}}` の位置が無い'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts#
   - name: alignText
@@ -1998,6 +2203,182 @@ functions:
     status: planned
     introduced:
       pr: 127
+  - name: buildAliases
+    title: エイリアスを作る
+    container: src/knowledge/aliases.ts
+    kind: 関数
+    scope: public
+    summary: 公開関数。設定の `aliases` の行と、行の `paths` に当たった YAML を読んだ中身から、`metadata` を当てたエイリアスの並びと、使えない行・レコードのずれの一覧を返す
+    description: '行を頭から見て、オブジェクトで `id`（空でない文字列）・`paths`・`metadata.alias_type` を持つ行だけを使う（持たない行は使わず、ずれにもしない）。`enabled` が `false` の行は読まない。行の `id` が前の行と同じなら、その行を読まず `duplicate_alias_row_id`（`file` は `configFile`、`where` は `aliases[{行の位置}].id`）にする。読む行ごとに `sources` のうち `rowId` がその行のものを並びの順に見て、`records` を持つ行はファイルの値のそのキーの配列の要素ごとに、持たない行はファイルの値を 1 件のレコードにする（キーが無いか配列でないファイルは `alias_records_missing`。配列の要素とファイルの値がオブジェクトでないものは使わない）。レコードごとに `readAliasRecord` で値を取り、`ref` の列が無ければ無い列ごとに `alias_field_missing` にしてそのレコードを使わない。続けて `checkAliasFields` で種類と必須のキーを確かめ、`alias_unknown_type`・`alias_required_empty`（空のキーごとに 1 件）にしたレコードは使わない。残ったレコードの `id` が前のレコード（`env` を含む）と同じなら `duplicate_alias_id` にして使わない。`env` のレコードは確かめるだけで `aliases` に入れない。レコードのずれの `file` はファイルの `path`、`where` はレコードのパス（`records` を持つ行は `{records}[{配列の位置}]`、持たない行は空）にキーを `.` で続けたもの（末尾のキーは `metadata` の `ref` の `field`、`ref` でなければエイリアスのキー。レコードのパスが空ならキーだけ）。`message` は次の 1 文: `duplicate_alias_row_id` は ``行の `id` `{id}` が前の行と同じです。`id` を変えてください。``、`alias_records_missing` は ```{records}` の配列がありません。ファイルに `{records}` の配列を記載するか、`records` を直してください。``、`alias_field_missing` は ```metadata.{キー}` が指す列 `{field}` がレコードにありません。列を記載するか、`metadata.{キー}` を直してください。``、`alias_unknown_type` は ```alias_type` の `{値}` は種類にありません。`term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`env`・`avoid` のどれかにしてください。``、`alias_required_empty` は ``\`{path}\` の \`{レコードのパス}\` の \`{キー}\` が空です。{ALIAS_KEY_LABELS のラベル}を記載してください。``（レコードのパスが空なら ``\`{path}\` の \`{キー}\` が空です。…``。`env` の `url` と `port` が両方空なら、キーを `url` にして ``… の `url` と `port` が両方空です。URL かポートを記載してください。``）、`duplicate_alias_id` は ``エイリアスの `id` `{id}` が前のエイリアスと同じです。`id` を変えてください。``。引数を書き換えない'
+    args:
+      - name: input
+        type: '{ rows: unknown[]; sources: MdmarkAliasSource[]; configFile?: string }'
+        required: true
+        description: 設定の `aliases` の行・行の `paths` に当たったファイルの中身・行のずれの `file` に出す設定ファイルの名前（既定 `mdmark.config.yaml`）
+    args_example: |-
+      ```ts
+      const { aliases, problems } = buildAliases({ rows: config.aliases, sources });
+      ```
+    returns:
+      type: '{ aliases: MdmarkAlias[]; problems: MdmarkAliasProblem[] }'
+      description: 作ったエイリアス（行の並び、行の中は `sources` の並び、ファイルの中は `records` の配列の並び）と、同じ順のずれ
+    callees:
+      - '#functions[readAliasRecord]'
+      - '#functions[checkAliasFields]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+    unit_tests:
+      - name: test_build_aliases
+        case: 正常
+        summary: records を持つ行と持たない行から、metadata を当てたエイリアスを並びの順に作り、env と読まない行を除く
+        condition: インターフェース定義『エイリアスを作る』の「正常系」の 4 つの行とその中身
+        mock: なし
+        expected: そのフローの期待値と等しく、引数が書き換わっていない
+      - name: test_build_aliases_when_invalid_rows
+        case: 正常
+        summary: 使えない行とレコードを除いてずれにし、残りからエイリアスを作る
+        condition: インターフェース定義『エイリアスを作る』の「正常系（使えない行とレコード）」の行と中身
+        mock: なし
+        expected: そのフローの期待値と等しく、`problems` の並びが行の順
+      - name: test_build_aliases_when_rows_not_usable
+        case: 正常
+        summary: id・paths・metadata.alias_type を持たない行と、オブジェクトでない行をずれにせずに飛ばす
+        condition: '`null`・文字列・`metadata` を持たない行・`id` が空文字の行と、正しい行 `terms` の 5 行。`rowId` が `terms` でない `sources` も 1 つ渡す'
+        mock: なし
+        expected: '`aliases` が `terms` の行のエイリアスだけで、`problems` が空'
+      - name: test_build_aliases_when_values_coerced
+        case: 正常
+        summary: 数・真偽値を文字列にし、前後の空白を除き、別名を並びにする
+        condition: '`id` が `42`、`name` が ` 単体テスト `、`aliases` が `["ユニットテスト", 3, null]`、`command` が `true` の `command` のレコード'
+        mock: なし
+        expected: '`id` が `"42"`、`name` が `単体テスト`、`aliases` が `["ユニットテスト"]`、`command` が `"true"`'
+      - name: test_build_aliases_when_name_missing
+        case: 正常
+        summary: name が空のとき、records を持つ行はレコードの id、持たない行はファイル名から拡張子を除いたものにする
+        condition: '`records` を持つ行の `name` の無いレコード（`id` が `ws`）と、`records` を持たない行の `commands/unit-test.yaml`'
+        mock: なし
+        expected: 名前が `ws` と `unit-test`
+      - name: test_build_aliases_when_fields_missing
+        case: 正常
+        summary: ref の列が無いレコードは、無い列ごとにずれにし、種類と必須のキーを確かめない
+        condition: '`description` を `ref` の `meaning`、`command` を `ref` の `cmd` で取る `command` の行で、`meaning`・`cmd` の無いレコード'
+        mock: なし
+        expected: '`problems` が `alias_field_missing` の 2 件だけで、`where` が `meaning`・`cmd` の順。`alias_required_empty` が無い'
+      - name: test_build_aliases_when_env_has_no_url_and_port
+        case: 正常
+        summary: env の url と port が両方空なら 1 件のずれにし、env を aliases に入れない
+        condition: '`url`・`port` を持たない `env` のレコードと、`port` だけを持つ `env` のレコード'
+        mock: なし
+        expected: '`problems` が `where` `url` の `alias_required_empty` の 1 件で、`message` に `url` と `port` がある。`aliases` が空'
+      - name: test_build_aliases_when_id_same_as_env
+        case: 正常
+        summary: env のレコードと同じ id のエイリアスを duplicate_alias_id にする
+        condition: '`env` の `dev-server` の後に `url` の `dev-server`'
+        mock: なし
+        expected: '`problems` が `duplicate_alias_id` の 1 件で、`aliases` が空'
+    status: planned
+    introduced:
+      pr: 176
+  - name: readAliasRecord
+    title: レコードから値を取る
+    container: src/knowledge/aliases.ts
+    kind: 関数
+    scope: internal
+    summary: 1 つのレコードに行の `metadata` を当てて、エイリアスのキーごとの値と、`ref` の列が無いキーを返す
+    description: '`ALIAS_KEYS` のキーごとに、`metadata` のそのキーが `{type: ref, field}` ならレコードの `field` の列、`{type: custom, value}` なら `value`、どちらでもなければレコードの同じ名前の列を取る（`ref` の列がレコードに無ければ `missing` に入れ、同じ名前の列が無ければキーを持たない）。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びに、並びなら文字列・数・真偽値の要素だけを文字列にして残す。ほかのキーは、文字列・数・真偽値を文字列にして前後の空白を除き、それ以外の値と空文字は持たない。`name` が無ければ `fallbackName` にする。`metadata` のほかのキーとレコードのほかの列は使わない'
+    args:
+      - name: options
+        type: '{ record: Record<string, unknown>; metadata: Record<string, unknown>; fallbackName: string }'
+        required: true
+        description: レコード・行の `metadata`・`name` が無いときの名前（`records` を持つ行はレコードの `id`、持たない行はファイルのパスの最後の名前から拡張子を除いたもの）
+    returns:
+      type: '{ values: Partial<Record<(typeof ALIAS_KEYS)[number], string | string[]>>; missing: Array<{ key: string; field: string }> }'
+      description: キーごとの値と、`metadata` のキーの順の `ref` の列が無いキー
+    unit_tests:
+      - name: test_read_alias_record
+        case: 正常
+        summary: ref・custom・同じ名前の列の順で値を取る
+        condition: '`metadata` が `alias_type` を `custom` の `term`、`name` を `ref` の `term`。レコードが `term`・`description`・`memo` を持つ'
+        mock: なし
+        expected: '`values` が `alias_type`・`name`・`description` だけを持ち、`memo` を持たない。`missing` が空'
+    status: planned
+    introduced:
+      pr: 176
+  - name: checkAliasFields
+    title: 種類と必須のキーを確かめる
+    container: src/knowledge/aliases.ts
+    kind: 関数
+    scope: internal
+    summary: レコードから取った値の `alias_type` が `ALIAS_TYPES` にあるかと、種類の必須のキー（`ALIAS_REQUIRED_KEYS`）が空でないかを返す
+    description: '`alias_type` が `ALIAS_TYPES` に無ければ `alias_unknown_type` を返し、必須のキーは確かめない。種類ごとに `id`・`name` と `ALIAS_REQUIRED_KEYS` のキーのうち空のものを並びの順に返す。`env` は `url` と `port` が両方空のときだけ `url` を返す'
+    args:
+      - name: values
+        type: Partial<Record<(typeof ALIAS_KEYS)[number], string | string[]>>
+        required: true
+        description: '`readAliasRecord` の `values`'
+    returns:
+      type: '{ kind: "alias_unknown_type"; value: string } | { kind: "alias_required_empty"; keys: string[] } | undefined'
+      description: ずれ。無ければ `undefined`
+    unit_tests:
+      - name: test_check_alias_fields
+        case: 正常
+        summary: 種類ごとに必須のキーの空を返す
+        condition: '`description` の無い `term`、`command` の無い `command`、`replacement` の無い `avoid`、`alias_type` が `memo` の値、全てを持つ `url`'
+        mock: なし
+        expected: 順に `keys` が `["description"]`・`["command"]`・`["replacement"]`、`alias_unknown_type` の `memo`、`undefined`
+    status: planned
+    introduced:
+      pr: 176
+  - name: usableAliases
+    title: 使えるエイリアスに絞る
+    container: src/knowledge/aliases.ts
+    kind: 関数
+    scope: internal
+    summary: '`mount`・`render`・`collectMatches` に渡されたエイリアスから、照合に使えるものだけを並びの順に返す'
+    description: オブジェクトで、`alias_type` が `MdmarkAliasType` の値（`env` と知らない種類を除く）、`id`・`name` が空でない文字列、種類の必須のキー（`ALIAS_REQUIRED_KEYS`）が空でない文字列で、`id` が前に残したエイリアスと同じでないものだけを残す。`aliases`・`avoid` は空でない文字列の要素だけにした並びにする（無ければ空の並び）。知らせの枠も警告も出さない。引数を書き換えない
+    args:
+      - name: aliases
+        type: readonly unknown[]
+        required: true
+        description: 使う側が渡したエイリアス
+    returns:
+      type: MdmarkAlias[]
+      description: 照合に使うエイリアス
+    unit_tests:
+      - name: test_usable_aliases
+        case: 正常
+        summary: env・知らない種類・必須のキーが空・同じ id の後のものを除く
+        condition: '`command` の `unit-test`、`env` の `dev-server`、`alias_type` が `memo`、`command` が空の `command`、2 つ目の `unit-test`、文字列 `x` の 6 つ'
+        mock: なし
+        expected: 1 つ目の `unit-test` だけを返す
+    status: planned
+    introduced:
+      pr: 176
+  - name: renderTermTipCopy
+    title: コマンドのコピーのボタンの中身を返す
+    container: src/parts/term-tip.ts
+    kind: 関数
+    scope: internal
+    summary: コピーのボタンの状態から、ボタンの中に置くアイコンと文言の HTML を返す
+    description: '`COMMAND_COPY_STATES` の状態のアイコン（`iconSvg`）と文言を並べる。`renderTermTip` と、押した後に状態を変える `attachTermTips` が使う'
+    args:
+      - name: state
+        type: '"idle" | "copied" | "failed"'
+        required: true
+        description: ボタンの状態
+    returns:
+      type: string
+      description: ボタンの中身の HTML
+    unit_tests:
+      - name: test_render_term_tip_copy
+        case: 正常
+        summary: 状態ごとのアイコンと文言を返す
+        condition: '`idle`・`copied`・`failed`'
+        mock: なし
+        expected: 文言が順に `コピー`・`コピーしました`・`コピーできませんでした` で、それぞれ `svg` を持つ
+    status: planned
+    introduced:
+      pr: 176
 constants:
   - name: INDEX_SHAPE
     title: 索引の形
@@ -2054,6 +2435,62 @@ constants:
     status: planned
     introduced:
       pr: 127
+  - name: ALIAS_TYPES
+    title: エイリアスの種類
+    container: src/knowledge/aliases.ts
+    summary: '`buildAliases` が受け付ける `alias_type` の値。`env` を含む'
+    value: '`["term", "doc", "command", "url", "skill", "tool", "path", "env", "avoid"]`'
+    status: planned
+    introduced:
+      pr: 176
+  - name: ALIAS_KEYS
+    title: エイリアスのキー
+    container: src/knowledge/aliases.ts
+    summary: '`readAliasRecord` がレコードから取るキー。ER 図『エイリアス』の列と、`env` の必須の確かめにだけ使う `port`'
+    value: '`["alias_type", "id", "name", "aliases", "description", "related", "command", "cwd", "url", "avoid", "skill", "tool", "path", "port", "replacement"]`'
+    refs:
+      - dev/設計書/ER図/エイリアス#tables[aliases].columns[metadata]
+    status: planned
+    introduced:
+      pr: 176
+  - name: ALIAS_REQUIRED_KEYS
+    title: 種類ごとの必須のキー
+    container: src/knowledge/aliases.ts
+    summary: '`id`・`name` のほかに、種類ごとに空にできないキー。`env` は `url` と `port` の 1 つ以上で、`checkAliasFields` が別に確かめる'
+    value: '`{ term: ["description"], doc: ["description"], command: ["command"], url: ["url"], skill: ["skill"], tool: ["tool"], path: ["path"], avoid: ["replacement"], env: [] }`'
+    refs:
+      - dev/設計書/ER図/エイリアス#tables[MdmarkAlias]
+    status: planned
+    introduced:
+      pr: 176
+  - name: ALIAS_KEY_LABELS
+    title: 必須のキーのラベル
+    container: src/knowledge/aliases.ts
+    summary: '`alias_required_empty` の `message` の直し方に出すキーの名前'
+    value: '`{ id: "ID", name: "名前", description: "説明", command: "コマンド", url: "URL", skill: "スキル名", tool: "ツール名", path: "パス", replacement: "置き換え先" }`'
+    status: planned
+    introduced:
+      pr: 176
+  - name: ALIAS_HEADINGS
+    title: エイリアスの区分の見出し
+    container: src/parts/term-tip.ts
+    summary: '`renderTermTip` がエイリアスの種類ごとに置く区分の見出し'
+    value: '`{ term: "用語", doc: "文書", command: "コマンド", url: "URL", skill: "スキル", tool: "ツール", path: "パス" }`'
+    refs:
+      - dev/設計書/部品設計/用語のツールチップ.ts#args[alias]
+    status: planned
+    introduced:
+      pr: 176
+  - name: COMMAND_COPY_STATES
+    title: コマンドのコピーのボタンの状態
+    container: src/parts/term-tip.ts
+    summary: コピーのボタンの状態ごとの文言とアイコン（コードブロックのコピーと同じ）
+    value: '`{ idle: { text: "コピー", icon: "copy" }, copied: { text: "コピーしました", icon: "check" }, failed: { text: "コピーできませんでした", icon: "circle-alert" } }`'
+    refs:
+      - dev/設計書/部品設計/用語のツールチップ.ts#args[copy]
+    status: planned
+    introduced:
+      pr: 176
 test_files:
   - tests/unit/src/knowledge/index-shape.test.ts
   - tests/unit/src/knowledge/paths.test.ts
@@ -2098,3 +2535,38 @@ enums:
     status: planned
     introduced:
       pr: 127
+  - name: MdmarkAliasType
+    title: エイリアスの種類
+    container: src/knowledge/aliases.ts
+    role: DTO
+    summary: '`MdmarkAlias` の `alias_type` の値（公開の型）。`env` は `buildAliases` が作らないため含めない'
+    values:
+      - value: term
+        title: 用語
+        description: 「用語」の区分に名前と説明を出す
+      - value: doc
+        title: 文書
+        description: 「文書」の区分に名前と説明を出す
+      - value: command
+        title: コマンド
+        description: コマンドをコードとコピーのボタンで出す
+      - value: url
+        title: URL
+        description: http・https の URL だけをリンクにする
+      - value: skill
+        title: スキル
+        description: スキル名を等幅の 1 行で出す
+      - value: tool
+        title: ツール
+        description: ツール名を等幅の 1 行で出す
+      - value: path
+        title: パス
+        description: パスを等幅の 1 行で出す
+      - value: avoid
+        title: やめた言い方
+        description: 名前と別名をやめた言い方にし、置き換え先を代わりの用語に出す
+    refs:
+      - dev/設計書/ER図/エイリアス#tables[MdmarkAlias].columns[alias_type]
+    status: planned
+    introduced:
+      pr: 176

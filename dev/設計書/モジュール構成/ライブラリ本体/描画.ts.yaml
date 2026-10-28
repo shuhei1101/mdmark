@@ -66,6 +66,9 @@ data_models:
       - name: glossaryLines
         type: number[] | undefined
         description: 用語集の表の用語ごとの文書の中の行番号（`ownGlossary` と同じ並び。`checkIndex` が `duplicate_term` の `where` に使う）
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        description: 使う側が渡したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に渡す
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts
@@ -188,10 +191,10 @@ functions:
         required: true
         description: HTML にする Markdown
       - name: opts
-        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences }'
+        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[] }'
         required: false
         default: '{}'
-        description: 設定・索引・描く文書の `id`・参照の表
+        description: 設定・索引・描く文書の `id`・参照の表・エイリアス
     returns:
       type: string
       description: 本文の HTML 文字列
@@ -207,6 +210,12 @@ functions:
         condition: '`# 見出し` だけの Markdown、`opts` 無し'
         mock: なし
         expected: 文字が `見出し` の `h1` を含む文字列
+      - name: test_render_when_aliases
+        case: 正常
+        summary: 渡したエイリアスに下線と種類のツールチップを付けた文字列を返す
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（エイリアス）」のエイリアスと Markdown
+        mock: なし
+        expected: そのフローの期待値のうち、下線・ツールチップ・`script` と `<!--` が無いことが成り立つ
   - name: renderDocument
     title: 文書を描く
     container: src/render/index.ts
@@ -216,9 +225,9 @@ functions:
     description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から外すため、同じ入力には同じ文字列を返す'
     args:
       - name: options
-        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences }'
+        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[] }'
         required: true
-        description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる）'
+        description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う）'
     returns:
       type: RenderedDocument
       description: 本文の HTML と機能のオン・オフ

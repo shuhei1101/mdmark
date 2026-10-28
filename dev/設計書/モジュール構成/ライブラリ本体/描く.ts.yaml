@@ -58,6 +58,9 @@ data_models:
       - name: commentStore
         type: MdmarkCommentStore | undefined
         description: コメントの読み書きの関数。`comments` がオンのときだけ使う。渡すときは `docId` も要る
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        description: エイリアス（`buildAliases` の戻り値の `aliases`）。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使えないエイリアス（`env` を含む）は照合せず、知らせの枠も出さない
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -175,16 +178,16 @@ functions:
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数と右側の目次を外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
       4. 文書を描く。描くたびに次を行う
          - 世代を 1 進め、前の操作を外す関数と右側の目次を外す関数があれば呼ぶ
-         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
+         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
          - 機能のオン・オフを控える
          - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。既定を当てた設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
          - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、外す関数を控える。前の外す関数は描き直す前に呼ぶ
-         - `diffSource` を渡していれば、前の差分を外す関数を呼んでから差分を付け（差分を付ける。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
+         - `diffSource` を渡していれば、前の差分を外す関数を呼んでから差分を付け（差分を付ける。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
-      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references` は最初に渡したもののまま）
+      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
       7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
       8. `mounted` に `el` と戻り値を控えて返す
     callees:
@@ -296,6 +299,12 @@ functions:
         condition: '先頭に `<!-- features: -side-toc -->` を持つ `# 手引き`・`## 導入`'
         mock: なし
         expected: '`aside.mdmark-side-toc` と `div.mdmark-content` が無く、`el` の直下に `h1` がある'
+      - name: test_mount_when_aliases_updated
+        case: 正常
+        summary: update で描き直しても、最初に渡したエイリアスで下線を付ける
+        condition: '`aliases` に `command` の `単体テスト` を渡して `単体テストを流す。` を描き、`update("もう一度単体テストを流す。")`'
+        mock: なし
+        expected: '`update` の後も `mdmark-term-wrap` が 1 つあり、ツールチップに `npm run test:unit` とコピーのボタンがある'
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts
