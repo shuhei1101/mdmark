@@ -14,10 +14,16 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- この PR で追加する右側の目次とまとめて開閉するボタンの規則（#166 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/166/assets/side-toc.css">
+  <!-- このカタログの規則（見本の幅・狭い幅の見本・ポインターを置いたときの見え方） -->
+  <link rel="stylesheet" href="./style.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- 右側の目次・今いる節・すべて展開とすべて折りたたむ・Shift での入れ子の開閉 -->
+  <script src="../../refs/166/assets/side-toc.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -65,6 +71,192 @@
 </nav>
         </article>
       </section>
+
+      <!-- hover の出し方で目次を隠している間: 見出しごとの短い線を右端に並べ、今いる節の線を印の色にする -->
+      <section aria-labelledby="state-hover-rail">
+        <h2 class="catalog-label" id="state-hover-rail">右側の目次（hover）: 隠れている（右端の線）</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="a-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#a-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="a-導入">導入<a class="mdmark-anchor" href="#a-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="a-前提">前提<a class="mdmark-anchor" href="#a-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="a-使い方">使い方<a class="mdmark-anchor" href="#a-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="a-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#a-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="a-付録">付録<a class="mdmark-anchor" href="#a-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="hover"></div>
+        </article>
+      </section>
+
+      <!-- 右端にポインターかフォーカスが入ったとき: 目次の枠を本文に重ねて出す。[data-mock-shown]: ポインターを置いたときの見え方をカタログに出し続ける（モックだけの属性） -->
+      <section aria-labelledby="state-hover-shown">
+        <h2 class="catalog-label" id="state-hover-shown">右側の目次（hover）: ポインターかフォーカスで出ている</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="b-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#b-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="b-導入">導入<a class="mdmark-anchor" href="#b-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="b-前提">前提<a class="mdmark-anchor" href="#b-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="b-使い方">使い方<a class="mdmark-anchor" href="#b-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="b-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#b-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="b-付録">付録<a class="mdmark-anchor" href="#b-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="hover" data-mock-shown></div>
+        </article>
+      </section>
+
+      <!-- ピン止めしたとき: 目次の枠を本文に重ねず、右の列の幅を取って出し続ける -->
+      <section aria-labelledby="state-hover-pinned">
+        <h2 class="catalog-label" id="state-hover-pinned">右側の目次（hover）: ピン止めしている</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="c-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#c-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="c-導入">導入<a class="mdmark-anchor" href="#c-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="c-前提">前提<a class="mdmark-anchor" href="#c-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="c-使い方">使い方<a class="mdmark-anchor" href="#c-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="c-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#c-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="c-付録">付録<a class="mdmark-anchor" href="#c-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="hover" data-pinned></div>
+        </article>
+      </section>
+
+      <!-- fixed の出し方でサイドバーを閉じているとき: 目次を出すボタン（三点リーダー）だけを置く -->
+      <section aria-labelledby="state-fixed-closed">
+        <h2 class="catalog-label" id="state-fixed-closed">右側の目次（fixed）: サイドバーを閉じている</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="d-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#d-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="d-導入">導入<a class="mdmark-anchor" href="#d-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="d-前提">前提<a class="mdmark-anchor" href="#d-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="d-使い方">使い方<a class="mdmark-anchor" href="#d-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="d-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#d-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="d-付録">付録<a class="mdmark-anchor" href="#d-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="fixed"></div>
+        </article>
+      </section>
+
+      <!-- fixed の出し方でサイドバーを開いているとき: 右の列の幅を取り、今いる節の項目を背景と文字の色で示す -->
+      <section aria-labelledby="state-fixed-open">
+        <h2 class="catalog-label" id="state-fixed-open">右側の目次（fixed）: サイドバーを開いている（今いる節のハイライト）</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="e-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#e-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="e-導入">導入<a class="mdmark-anchor" href="#e-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="e-前提">前提<a class="mdmark-anchor" href="#e-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="e-使い方">使い方<a class="mdmark-anchor" href="#e-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="e-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#e-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="e-付録">付録<a class="mdmark-anchor" href="#e-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="fixed" data-open></div>
+        </article>
+      </section>
+
+      <!-- 目次の枠の幅に収まらない見出し: 項目の中で折り返す -->
+      <section aria-labelledby="state-side-long">
+        <h2 class="catalog-label" id="state-side-long">右側の目次: 長い見出し（折り返す）</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="long-手引き">使う側のページで版を固定した URL から配布物を読み込み、要素に文書を描くまでの手順<a class="mdmark-anchor" href="#long-手引き" aria-label="「使う側のページで版を固定した URL から配布物を読み込み、要素に文書を描くまでの手順」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>見出しが目次の枠の幅に収まらないときの見本です。</p>
+<h2 class="mdmark-heading" id="long-読み込み">読み込みに失敗したときに知らせの枠が出る箇所と、ほかの本文の扱い<a class="mdmark-anchor" href="#long-読み込み" aria-label="「読み込みに失敗したときに知らせの枠が出る箇所と、ほかの本文の扱い」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>知らせの枠は、読めなかった記法の場所にだけ出ます。</p>
+<h3 class="mdmark-heading" id="long-再読み込み">社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使う手順<a class="mdmark-anchor" href="#long-再読み込み" aria-label="「社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使う手順」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>書き出した HTML は外を読みません。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="fixed" data-open></div>
+        </article>
+      </section>
+
+      <!-- 描く先の要素が 48rem 未満のとき: 文書の上端に留めた帯に、今いる節の見出しと目次を出すボタンを置く -->
+      <section aria-labelledby="state-narrow-closed">
+        <h2 class="catalog-label" id="state-narrow-closed">右側の目次: 狭い幅（390px）で閉じている</h2>
+        <div class="catalog-narrow">
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="f-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#f-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="f-導入">導入<a class="mdmark-anchor" href="#f-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="f-前提">前提<a class="mdmark-anchor" href="#f-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="f-使い方">使い方<a class="mdmark-anchor" href="#f-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="f-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#f-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="f-付録">付録<a class="mdmark-anchor" href="#f-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="hover"></div>
+        </article>
+        </div>
+      </section>
+
+      <!-- 狭い幅で目次を出すボタンを押したとき: 帯の下に本文へ重ねて目次の枠を開く -->
+      <section aria-labelledby="state-narrow-open">
+        <h2 class="catalog-label" id="state-narrow-open">右側の目次: 狭い幅（390px）で開いている</h2>
+        <div class="catalog-narrow">
+        <article class="mdmark">
+<div class="mdmark-content">
+<h1 class="mdmark-heading" id="g-手引き">在庫の点検の手引き<a class="mdmark-anchor" href="#g-手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順です。</p>
+<h2 class="mdmark-heading" id="g-導入">導入<a class="mdmark-anchor" href="#g-導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を順に回って行います。</p>
+<h3 class="mdmark-heading" id="g-前提">前提<a class="mdmark-anchor" href="#g-前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>担当者は、倉庫の入館証と在庫の文書を開ける端末を持っています。</p>
+<h2 class="mdmark-heading" id="g-使い方">使い方<a class="mdmark-anchor" href="#g-使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>毎朝の点検と、出荷の前の点検の 2 つに分かれます。</p>
+<h3 class="mdmark-heading" id="g-毎朝の点検">毎朝の点検<a class="mdmark-anchor" href="#g-毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。</p>
+<h2 class="mdmark-heading" id="g-付録">付録<a class="mdmark-anchor" href="#g-付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="hover" data-open></div>
+        </article>
+        </div>
+      </section>
+
+      <!-- 見出しの無い文書: 右側の目次も目次を出すボタンも置かない -->
+      <section aria-labelledby="state-no-heading">
+        <h2 class="catalog-label" id="state-no-heading">右側の目次: 見出しの無い文書（何も出さない）</h2>
+        <article class="mdmark">
+<div class="mdmark-content">
+<p>見出しを持たない短い文書です。本文の列だけが描く先の要素の幅を使います。</p>
+</div>
+<div class="mdmark-side-toc" data-mode="hover"></div>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

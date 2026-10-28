@@ -156,6 +156,11 @@
       display: flex;
     }
 
+    /* 開いている文書: 右側の目次の帯と表の見出し行を、上に留まる帯の下に留める */
+    .mdmark-bundle-main .mdmark {
+      --mdmark-sticky-top: calc(3.25rem + 1px);
+    }
+
     /* 見出しへ移ったとき: 上に留まる帯に隠れない位置で止める */
     .mdmark-bundle-main .mdmark-heading {
       scroll-margin-block-start: 4.5rem;

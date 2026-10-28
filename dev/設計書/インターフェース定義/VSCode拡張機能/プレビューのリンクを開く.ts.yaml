@@ -78,6 +78,23 @@ flows:
       - エディタの数が変わらず、`env.openExternal` の代役も呼ばれない
       - 拡張機能が例外を投げない
     test: test_error_when_link_target_missing
+  - name: 正常系（右側の目次の項目）
+    summary: 右側の目次の項目を押すと、閉じた節を開いて見出しへ移り、拡張機能へは送らない
+    setup:
+      - name: 閉じた節を持つ文書のプレビュー
+        description: '`## 導入` を閉じた状態で描き、その中に `### 注意` を持つ `guide.md` のプレビューを開いた状態。右側の目次は既定の出し方'
+      - name: Mock
+        description: 正常系（外部の URL）と同じ。拡張機能が受けたメッセージを記録する
+    flow: |
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant PV as Webview
+        U->>PV: 右側の目次の「注意」を押す
+        PV->>PV: 「導入」の節を開いて見出しへ scrollIntoView
+    expected:
+      - '`導入` の節が開き、Webview の見えている範囲に `注意` の見出しが入る'
+      - 拡張機能が `openLink` を受けず、エディタが開き直されない
+    test: test_normal_when_side_toc_link
 lead: プレビューで押したリンクを、外部の URL は既定のブラウザ、Markdown へのリンクは VS Code のエディタ、`#` で始まるリンクはプレビューの中で開く。
 idempotent: true
 side_effects: 既定のブラウザか VS Code のエディタでリンク先を開く。プレビューの文書とスクロールの位置は変えない（`#` のリンクを除く）
@@ -97,6 +114,6 @@ exceptions:
     notes: 何もしない。スキームは mdmark の sanitize が `http`・`https`・`mailto` と相対 URL だけを残すため、ほかのスキームは届かない
 constraints:
   - item: リンクの見分け方
-    constraint: Webview は本文の `a` の `click` を `document` のキャプチャで受け、`preventDefault` と `stopPropagation` を呼んで `openLink` を送る（VS Code の Webview の外枠は `window` の `click` でリンクを開くため、伝えると 2 回開く）。`#` で始まるリンクだけは送らず、Webview の中でその `id` の要素へ `scrollIntoView` する。拡張機能は `http:`・`https:`・`mailto:` を `env.openExternal` で開き、相対パスは Markdown のフォルダから解決して、`.md` は `window.showTextDocument`、それ以外のファイルは `vscode.open` で開く。相対パスの `#` 以降は使わない
+    constraint: Webview は本文の `a` の `click` を `document` のキャプチャで受け、`preventDefault` と `stopPropagation` を呼んで `openLink` を送る（VS Code の Webview の外枠は `window` の `click` でリンクを開くため、伝えると 2 回開く）。`#` で始まるリンクだけは送らず、Webview の中でその `id` の要素へ `scrollIntoView` する。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次へ届け（閉じた節を開いて移り、狭い幅ではパネルを隠す）、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ。拡張機能は `http:`・`https:`・`mailto:` を `env.openExternal` で開き、相対パスは Markdown のフォルダから解決して、`.md` は `window.showTextDocument`、それ以外のファイルは `vscode.open` で開く。相対パスの `#` 以降は使わない
   - item: 開く列
     constraint: Markdown へのリンクは、元の Markdown のエディタと同じ列に開く。プレビューは閉じない

@@ -1,0 +1,147 @@
+title: "右側の目次"
+implementation: "src/parts/side-toc.ts#renderSideToc"
+story: "Parts/SideToc"
+states:
+  - name: HoverRail
+    description: hover の出し方で目次を隠し、右端に見出しの数の線だけを出す
+  - name: HoverShown
+    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）
+    args:
+      - name: open
+        value: 'true'
+      - name: current
+        value: 使い方
+  - name: HoverPinned
+    description: hover の出し方でピン止めし、目次を本文の右の列に出している
+    args:
+      - name: pinned
+        value: 'true'
+      - name: current
+        value: 使い方
+  - name: FixedClosed
+    description: fixed の出し方でサイドバーを閉じ、目次を出すボタンだけを出す
+    args:
+      - name: mode
+        value: fixed
+  - name: FixedOpen
+    description: fixed の出し方でサイドバーを開き、今いる節の項目をハイライトしている
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: current
+        value: 前提
+  - name: WithoutSections
+    description: '`sections` がオフで、すべて展開・すべて折りたたむのボタンが無い'
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: sections
+        value: 'false'
+  - name: LongHeading
+    description: 見出しが長く、目次の項目が折り返す
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: headings
+        value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに知らせの枠が出る箇所と、ほかの本文の扱い"},{"level":3,"id":"long-2","text":"社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使う手順"}]'
+lead: |-
+  描いた文書の右側に置き、h1〜h3 を入れ子にした目次・右端の線・目次を出すボタン・ピン止め・すべて展開とすべて折りたたむを持つ。
+  出し方（hover・fixed）と、描く先の要素の幅 48rem 未満の狭い幅の帯を CSS で切り替える。
+args:
+  - name: headings
+    type: オブジェクトの配列
+    required: true
+    description: 文書の頭からの h1・h2・h3（`{ level, id, text }`）。閉じた節と選ばれていないタブの中の見出しも含める。深い階層は直前の浅い階層の入れ子にする
+  - name: mode
+    type: 列挙
+    required: false
+    default: hover
+    choices: hover / fixed
+    description: 出し方。hover は右端の線を出し、指すかフォーカスで目次を重ねて出す。fixed は目次を出すボタンでサイドバーを開閉する
+  - name: sections
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: すべて展開・すべて折りたたむのボタンを置くか（`sections` の機能）
+  - name: open
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 目次を出しているか。目次を出すボタンの `aria-expanded` と aside の `data-open` に写す。`mount` は出していない状態で描く
+  - name: pinned
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`mode` が `hover` のとき'
+    description: ピン止めしているか。ピン止めのボタンの `aria-pressed` と aside の `data-pinned` に写す。`mount` は外した状態で描く
+  - name: current
+    type: 文字列
+    required: false
+    description: 今いる節の見出しの ID。その項目に `aria-current="location"`、右端の線の対応する線に `data-current` を付け、狭い幅の帯にその見出しの文字を出す。省くと付けない
+events:
+  - name: 目次を出す・隠す
+    when: 目次を出すボタン（三点リーダー）を押す、または出している目次の中で Esc を押す
+    value: ボタンの `aria-expanded`
+    description: '`mount` が aside の `data-open` を付け外しし、Esc のときは目次を出すボタンへフォーカスを戻す'
+  - name: ピン止めする
+    when: ピン止めのボタンを押す
+    value: ボタンの `aria-pressed`
+    description: '`mount` が aside の `data-pinned` を付け外しし、目次を本文の右の列に出したままにする'
+  - name: 項目へ移る
+    when: 目次の項目のリンクを押す
+    value: リンクの `data-heading-id`（見出しの ID）。`href` は `#{id}` だが、使う側が書き換えてもよい
+    description: '`mount` が URL の `#ID` で移るのと同じ処理を呼ぶ（URL が同じでも呼ぶ）。本文に重ねて開いた目次は閉じる'
+  - name: すべて開閉する
+    when: すべて展開・すべて折りたたむのボタンを押す
+    value: ボタンの `data-fold-all`（`open` / `close`）
+    description: '`mount` が文書の全ての節を開く。折りたたむときは h1 の節を開き、h2〜h4 の節を閉じる'
+css_properties:
+  - name: --mdmark-color-link
+    syntax: <color>
+    default: '#0f766e（ダーク #2dd4bf）'
+    description: 今いる節の項目の文字と右端の線の色
+  - name: --mdmark-color-current-bg
+    syntax: <color>
+    default: '#e6f3f1（ダーク #10302c）'
+    description: 今いる節の項目と、目次を出しているときの目次を出すボタンの背景
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#e4e4e7（ダーク #26262b）'
+    description: 目次の枠・ボタンの枠・今いる節でない右端の線の色
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#52525b（ダーク #b4b4bc）'
+    description: 目次のタイトルとボタンのアイコンの色
+  - name: --mdmark-sticky-top
+    syntax: <length>
+    default: 0px
+    description: 右側の目次と狭い幅の帯を画面に留める位置の、画面の上端からのずれ
+accessibility:
+  - 目次のパネルは `nav` で、`aria-label="右側の目次"` を持つ。見えるタイトルは「目次」のままにし、本文の `<!-- toc -->` の目次（`aria-label="目次"`）とランドマークの名前を分ける
+  - 目次を出すボタンは `aria-label`・`title` を「目次を表示」にし、`aria-expanded`・`aria-controls` で目次を出しているかを示す
+  - ピン止めのボタンは `aria-label`・`title` を「目次をピン止め」にし、`aria-pressed` で状態を示す
+  - すべて展開・すべて折りたたむのボタンは文字を持たず、`aria-label`・`title` を「すべて展開」「すべて折りたたむ」にする
+  - 今いる節の項目は `aria-current="location"` を持ち、背景と文字の色で示す（太さは変えない）
+  - 右端の線は `aria-hidden="true"` で読み上げない。hover の出し方でも、キーボードのフォーカス（`:focus-visible` の要素）が目次の中に入れば目次を出す。ポインターで押したボタンに残るフォーカスでは出し続けない
+  - 出している目次の中で Esc を押すと目次を隠し、目次を出すボタンへフォーカスを戻す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[狭い幅の右側の目次]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[今いる節]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
+status: planned
+introduced:
+  pr: 166
+aliases:
+  - サイドの目次
+  - side-toc
+notes:
+  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いる節の見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><p class="mdmark-side-toc-title">目次</p><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピンのアイコン}</button></div><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav></aside>`。アイコンは lucide の ellipsis・pin・chevrons-up-down・chevrons-down-up。狭い幅の帯は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確かめる。ストーリーの結合テストは `tests/integration/lib/side-toc.story.test.ts`。モックは `dev/mock/components/toc/` と `dev/mock/refs/166/assets/side-toc.js`'
+test_file: tests/integration/lib/side-toc.story.test.ts

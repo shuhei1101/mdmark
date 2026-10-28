@@ -57,7 +57,9 @@ test("test_normal_when_updated", async ({ page }) => {
   const doc = page.locator("#doc");
   await expect(doc.locator("h1")).toHaveText("新しい見出し");
   await expect(doc.locator("h1")).toHaveCount(1);
-  await expect(doc.locator("p, table")).toHaveCount(0);
+  await expect(
+    doc.locator(".mdmark-content p, .mdmark-content table"),
+  ).toHaveCount(0);
 });
 
 // 描いたものを片付け、片付けた後の差し替えは何も描かない（正常シナリオ（片付ける））

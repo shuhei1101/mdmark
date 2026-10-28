@@ -8,6 +8,7 @@ import { attachDiff, type DiffHtmlRenderer } from "./diff/panel.ts";
 import type { DiffSource } from "./diff/source.ts";
 import { highlightCodeBlocks } from "./highlight.ts";
 import { attachInteractions } from "./interact/index.ts";
+import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
@@ -123,6 +124,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let detachDiff: (() => void) | undefined;
   // 今の文書に付けたビューとコメントの部品を外す関数
   let detachParts: (() => void) | undefined;
+  // 今の文書に付けた右側の目次を外す関数
+  let detachSideToc: (() => void) | undefined;
+  // 右側の目次の状態（`mount` ごとに 1 つ。描き直しでも保つ）
+  const sideTocState: SideTocState = { open: false, pinned: false };
   // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
   const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
   // コメントの機能に読み書きの関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
@@ -133,6 +138,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     generation += 1;
     const current = generation;
     detachInteractions?.();
+    detachSideToc?.();
+    detachSideToc = undefined;
     detachDiff?.();
     detachDiff = undefined;
     detachParts?.();
@@ -147,28 +154,42 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     el.innerHTML = rendered.html;
     el.classList.add(ROOT_CLASS);
     features = rendered.features;
+    // 右側の目次を付けたときは、以降の操作と部品を本文の列に付ける
+    let body = el;
+    let aside: HTMLElement | undefined;
+    if (features["side-toc"] === true) {
+      const sideToc = attachSideToc({
+        el,
+        mode: config.sideToc.mode,
+        sections: features.sections === true,
+        state: sideTocState,
+      });
+      body = sideToc.content;
+      aside = sideToc.aside;
+      detachSideToc = sideToc.detach;
+    }
     detachInteractions = attachInteractions({
-      root: el,
+      root: body,
       features,
       paramDefinitions: rendered.paramDefinitions,
       placement: config.tooltips.placement,
     });
     // 読み込みの完了は待たない
     void loadLibraries({
-      root: el,
+      root: body,
       libraries: config.libraries,
       isCurrent: () => !destroyed && generation === current,
       definitions: rendered.extensionDefinitions,
     });
     // 色分けの対象があるときだけ読む。読み込みの完了は待たない
     void highlightCodeBlocks({
-      root: el,
+      root: body,
       url: config.syntax.url,
       isCurrent: () => !destroyed && generation === current,
       modules: syntaxModules,
     });
     detachParts = attachParts({
-      root: el,
+      root: body,
       features,
       commentStore,
       docId,
@@ -177,10 +198,11 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     });
     if (diffSource !== undefined && docId !== undefined) {
       detachDiff = attachDiff({
-        root: el,
+        root: body,
         source: diffSource,
         docId,
         renderHtml: renderDiffHtml,
+        hideWith: aside ? [aside] : [],
       });
     }
   };
@@ -202,6 +224,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       }
       destroyed = true;
       detachInteractions?.();
+      detachSideToc?.();
       detachDiff?.();
       detachParts?.();
       detachPrint();

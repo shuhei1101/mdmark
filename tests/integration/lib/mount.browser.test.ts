@@ -239,8 +239,9 @@ test("test_normal_when_updated", async () => {
   // 実行
   handle.update("# 新しい見出し");
   // 検証
-  expect(el.children).toHaveLength(1);
-  expect(find(el, "h1").textContent).toBe("新しい見出し");
+  const headings = el.querySelectorAll(".mdmark-content h1");
+  expect(headings).toHaveLength(1);
+  expect(headings[0]?.textContent).toBe("新しい見出し");
   expect(el.classList.contains("mdmark")).toBe(true);
 });
 
@@ -2440,7 +2441,7 @@ test("test_normal_when_backlinks", async () => {
   });
   /** 末尾の一覧の題とリンクを返す */
   const readList = (): { title: string; links: Array<string | null> } => {
-    const nav = el.lastElementChild as HTMLElement;
+    const nav = find<HTMLElement>(el, "nav.mdmark-backlinks");
     const titleId = nav.getAttribute("aria-labelledby") ?? "";
     return {
       title: document.getElementById(titleId)?.textContent ?? "",
@@ -3052,6 +3053,14 @@ async function mountDiff(
   return el;
 }
 
+/** 差分を開いている間に、隠した要素に付く属性 */
+const DIFF_HIDDEN_ATTRIBUTE = "data-mdmark-diff-hidden";
+
+/** `mountDiff` の文書の `h1` の節の中身 */
+function diffSectionBody(el: HTMLElement): HTMLElement {
+  return find<HTMLElement>(el, '[id="section-ガイド"]');
+}
+
 /** 「変更を見る」のボタン */
 function diffToggle(el: HTMLElement): HTMLButtonElement {
   return find<HTMLButtonElement>(el, ".mdmark-diff-toggle");
@@ -3097,13 +3106,31 @@ test("test_normal_when_diff_opened", async () => {
   expect(source.revisionsCalls).toEqual([]);
   expect(toggle.getAttribute("aria-expanded")).toBe("false");
   expect(find(el, "h1").nextElementSibling?.contains(toggle)).toBe(true);
+  expect(
+    toggle.compareDocumentPosition(diffSectionBody(el)) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(toggle.closest(".mdmark-content")).not.toBeNull();
   // 実行
   toggle.click();
   await waitForDiffLines(el);
-  // 検証: 本文が隠れ、見出しは残る
+  // 検証: h1 の節の中身と右側の目次が隠れ、見出しは残る
   expect(toggle.getAttribute("aria-expanded")).toBe("true");
-  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(true);
-  expect(find<HTMLElement>(el, "h1").hidden).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(true);
+  expect(find(el, "h1").hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
+  // 差分を開いたまま h1 の開閉を 2 回押しても、節の中身は隠れたまま
+  const sectionToggle = find<HTMLButtonElement>(
+    el,
+    "h1 .mdmark-section-toggle",
+  );
+  sectionToggle.click();
+  sectionToggle.click();
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  expect(find(el, ".mdmark-diff").hasAttribute("hidden")).toBe(false);
   // 取り出し元の呼び出し
   expect(source.revisionsCalls).toEqual(["guide"]);
   expect(source.contentCalls).toHaveLength(2);
@@ -3152,6 +3179,15 @@ test("test_normal_when_diff_opened", async () => {
     ).not.toBeNull();
   });
   expect(minimapBands()[0]?.getAttribute("aria-hidden")).toBe("true");
+  // 押し直すと、差分の場所が隠れ、右側の目次が戻り、節は 2 回押した後の開いた状態で出る
+  toggle.click();
+  expect(find(el, ".mdmark-diff").hasAttribute("hidden")).toBe(true);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
+  expect(sectionToggle.getAttribute("aria-expanded")).toBe("true");
+  expect(diffSectionBody(el).hasAttribute("hidden")).toBe(false);
 });
 
 // 前のリビジョンを選び直すと、その 2 つの差分に描き直す（正常系）
@@ -3423,7 +3459,7 @@ test("test_normal_when_diff_closed", async () => {
   expect(el.querySelector(".mdmark-diff-line")).toBeNull();
   expect(el.querySelector("select")).toBeNull();
   expect(minimapBands()).toHaveLength(0);
-  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
 });
 
 // 取り出し元の待ちの間に destroy すると、後から返った結果を描かない（正常系）
@@ -3490,7 +3526,7 @@ test("test_error_when_revisions_rejected", async () => {
   expect(source.contentCalls).toEqual([]);
   // 押し直すと、本文が開く前と同じに出る
   diffToggle(el).click();
-  expect(find<HTMLElement>(el, ":scope > p").hidden).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
   expect(consoleError).toHaveBeenCalledTimes(1);
   const args = consoleError.mock.calls.flat();
   expect(args).toContain(error);
@@ -4309,6 +4345,8 @@ test("test_normal_when_tooltip_above", async () => {
     markdown: placementMarkdown({ tail: false }),
     index: PLACEMENT_INDEX,
     docId: "arch",
+    // 狭い幅の右側の目次の帯が 1 行目の用語を下げないよう、右側の目次を置かない
+    config: { features: { "side-toc": false } },
   });
   const { terms, label, mark } = placementOwners(el);
   const [firstTerm, sectionTerm] = terms as [HTMLElement, HTMLElement];
@@ -4646,4 +4684,582 @@ test("test_error_when_language_module_not_found", async () => {
   expect(el.querySelector(".mdmark-notice")).toBeNull();
   const output = errorSpy.mock.calls.flat().map(String).join("\n");
   expect(output).toContain("languages/yaml.min.js");
+});
+
+/** 画面の高さより長くなる段落の並び（見出しを画面の上端まで送れるようにする） */
+function sideTocFiller(): string {
+  return Array.from({ length: 30 }, (_, i) => `段落 ${i + 1}\n`).join("\n");
+}
+
+/** 見出しを持つ Markdown: `# 手引き`・`## 導入`・`### 前提`・`#### 手順`・`## 使い方` と、それぞれ画面の高さより長い段落 */
+const SIDE_TOC_MARKDOWN = [
+  "# 手引き",
+  "",
+  sideTocFiller(),
+  "## 導入",
+  "",
+  sideTocFiller(),
+  "### 前提",
+  "",
+  sideTocFiller(),
+  "#### 手順",
+  "",
+  sideTocFiller(),
+  "## 使い方",
+  "",
+  sideTocFiller(),
+].join("\n");
+
+/** 画面を `width`×800 にして `run` を流し、終わったら元の大きさに戻す */
+async function withViewport(width: number, run: () => Promise<void>) {
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(width, 800);
+  try {
+    await run();
+  } finally {
+    window.scrollTo(0, 0);
+    history.replaceState(null, "", location.pathname);
+    await page.viewport(original.width, original.height);
+  }
+}
+
+/** 右側の目次の要素と、よく使う部分を返す */
+function sideTocOf(el: HTMLElement) {
+  const aside = find<HTMLElement>(el, "aside.mdmark-side-toc");
+  return {
+    aside,
+    content: find<HTMLElement>(el, ":scope > .mdmark-content"),
+    panel: find<HTMLElement>(aside, ".mdmark-side-toc-panel"),
+    toggle: find<HTMLButtonElement>(aside, ".mdmark-side-toc-toggle"),
+    pin: find<HTMLButtonElement>(aside, ".mdmark-side-toc-pin"),
+    rail: find<HTMLElement>(aside, ".mdmark-side-toc-rail"),
+    linkOf: (id: string) =>
+      find<HTMLAnchorElement>(aside, `a[data-heading-id="${id}"]`),
+  };
+}
+
+/** パネルの不透明度を返す */
+function panelOpacity(panel: HTMLElement): string {
+  return getComputedStyle(panel).opacity;
+}
+
+/** 見出しが画面の中にあるか */
+function inViewport(element: Element): boolean {
+  const { top } = element.getBoundingClientRect();
+  return top >= -1 && top < window.innerHeight;
+}
+
+/** 節の開閉のボタンの `aria-expanded` を、渡した ID の順に返す */
+function expandedOf(el: HTMLElement, ids: string[]): (string | null)[] {
+  return ids.map((id) =>
+    find(el, `[aria-controls="section-${id}"]`).getAttribute("aria-expanded"),
+  );
+}
+
+// 右端の線にポインターを乗せると右側の目次を出し、項目で見出しへ移り、ピン止めで出し続ける（正常系（右側の目次をホバーで出してピン止めする））
+test("test_normal_when_side_toc_hovered_and_pinned", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+    const { aside, content, panel, toggle, pin, rail, linkOf } = sideTocOf(el);
+    // 検証: 描いた直後
+    expect([...el.children]).toEqual([content, aside]);
+    expect(panelOpacity(panel)).toBe("0");
+    expect(getComputedStyle(panel).pointerEvents).toBe("none");
+    const items = [...panel.querySelectorAll(".mdmark-side-toc-list a")];
+    expect(items.map((a) => a.getAttribute("href"))).toEqual([
+      "#手引き",
+      "#導入",
+      "#前提",
+      "#使い方",
+    ]);
+    const nested = (id: string) =>
+      linkOf(id).parentElement?.querySelector(":scope > ul");
+    expect(
+      nested("手引き")?.querySelector(":scope > li > a")?.textContent,
+    ).toBe("導入");
+    expect(nested("導入")?.textContent).toBe("前提");
+    expect(getComputedStyle(toggle).display).toBe("none");
+    // 実行・検証: 右端の線にポインターを乗せる
+    await userEvent.hover(rail);
+    await vi.waitFor(() => {
+      expect(panelOpacity(panel)).toBe("1");
+    });
+    const actions = find(panel, ".mdmark-side-toc-actions");
+    const list = find(panel, ".mdmark-side-toc-list");
+    expect(
+      actions.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(actions.querySelectorAll("[data-fold-all]")).toHaveLength(2);
+    // 実行・検証: 「使い方」の項目を押す
+    await userEvent.click(linkOf("使い方"));
+    await vi.waitFor(() => {
+      expect(decodeURIComponent(location.hash)).toBe("#使い方");
+      expect(inViewport(find(el, '[id="使い方"]'))).toBe(true);
+    });
+    // 実行・検証: ピン止めして、ポインターを本文へ動かす
+    await userEvent.click(pin);
+    expect(pin.getAttribute("aria-pressed")).toBe("true");
+    await userEvent.hover(find(content, "p"));
+    expect(panelOpacity(panel)).toBe("1");
+    expect(content.getBoundingClientRect().right).toBeLessThanOrEqual(
+      panel.getBoundingClientRect().left,
+    );
+    // 実行・検証: ピン止めを外して、ポインターを本文へ動かす
+    await userEvent.click(pin);
+    expect(pin.getAttribute("aria-pressed")).toBe("false");
+    await userEvent.hover(find(content, "p"));
+    await vi.waitFor(() => {
+      expect(panelOpacity(panel)).toBe("0");
+    });
+  });
+});
+
+// hover の右側の目次を、フォーカスが入っている間だけ出す（正常系（右側の目次をキーボードで出す））
+test("test_normal_when_side_toc_focused", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+    const { aside, content, panel, linkOf } = sideTocOf(el);
+    await userEvent.hover(find(content, "p"));
+    (document.activeElement as HTMLElement | null)?.blur();
+    // 実行・検証: Tab で右側の目次の中へ入る
+    for (let i = 0; i < 60 && !aside.contains(document.activeElement); i += 1) {
+      await userEvent.tab();
+    }
+    expect(aside.contains(document.activeElement)).toBe(true);
+    expect(panelOpacity(panel)).toBe("1");
+    // 実行・検証: 「使い方」の項目へ Tab で移り、Enter で押す
+    for (
+      let i = 0;
+      i < 20 && document.activeElement !== linkOf("使い方");
+      i += 1
+    ) {
+      await userEvent.tab();
+    }
+    expect(document.activeElement).toBe(linkOf("使い方"));
+    await userEvent.keyboard("{Enter}");
+    await vi.waitFor(() => {
+      expect(decodeURIComponent(location.hash)).toBe("#使い方");
+      expect(inViewport(find(el, '[id="使い方"]'))).toBe(true);
+    });
+    // 実行・検証: フォーカスを右側の目次の外へ移す
+    (document.activeElement as HTMLElement).blur();
+    await vi.waitFor(() => {
+      expect(panelOpacity(panel)).toBe("0");
+    });
+  });
+});
+
+// fixed では目次を出すボタンで、右側の目次を本文に重ねず右の列に出し続ける（正常系（右側の目次をサイドバーで出す））
+test("test_normal_when_side_toc_fixed", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: SIDE_TOC_MARKDOWN,
+      config: { "side-toc": { mode: "fixed" } },
+    });
+    const { content, panel, toggle, rail, linkOf } = sideTocOf(el);
+    // 検証: 描いた直後
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(panel.id);
+    expect(getComputedStyle(rail).display).toBe("none");
+    expect(getComputedStyle(panel).display).toBe("none");
+    // 実行・検証: 目次を出すボタンを押す
+    await userEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(getComputedStyle(panel).display).not.toBe("none");
+    expect(content.getBoundingClientRect().right).toBeLessThanOrEqual(
+      panel.getBoundingClientRect().left,
+    );
+    // 実行・検証: パネルの項目にフォーカスして Esc を押す
+    linkOf("導入").focus();
+    await userEvent.keyboard("{Escape}");
+    expect(getComputedStyle(panel).display).toBe("none");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(toggle);
+  });
+});
+
+// スクロールの位置で今いる節を決め、その項目と右端の線だけをハイライトする（正常系（今いる節をハイライトする））
+test("test_normal_when_current_section_highlighted", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+    const { aside } = sideTocOf(el);
+    const currentLinks = () =>
+      [...aside.querySelectorAll('a[aria-current="location"]')].map((a) =>
+        a.getAttribute("data-heading-id"),
+      );
+    const currentBars = () =>
+      [...aside.querySelectorAll(".mdmark-side-toc-bar")].map((bar) =>
+        bar.hasAttribute("data-current"),
+      );
+    const scrollToHeading = async (id: string) => {
+      find(el, `[id="${id}"]`).scrollIntoView();
+      await nextFrames();
+    };
+    // 検証: 描いた直後
+    await vi.waitFor(() => {
+      expect(currentLinks()).toEqual(["手引き"]);
+    });
+    expect(currentBars()).toEqual([true, false, false, false]);
+    // 実行・検証: 「使い方」まで進む
+    await scrollToHeading("使い方");
+    await vi.waitFor(() => {
+      expect(currentLinks()).toEqual(["使い方"]);
+    });
+    // 実行・検証: 「手順」（h4）まで戻る
+    await scrollToHeading("手順");
+    await vi.waitFor(() => {
+      expect(currentLinks()).toEqual(["前提"]);
+    });
+    expect(aside.querySelector('a[data-heading-id="手順"]')).toBeNull();
+    expect(aside.querySelectorAll(".mdmark-side-toc-bar")).toHaveLength(4);
+    // 実行・検証: 「前提」まで戻る
+    await scrollToHeading("前提");
+    await vi.waitFor(() => {
+      expect(currentLinks()).toEqual(["前提"]);
+    });
+  });
+});
+
+// 閉じた節の中の見出しの項目を押すと、節を開いてから移る。URL が変わらないときも同じ（正常系（右側の目次から閉じた節の中へ移る））
+test("test_normal_when_side_toc_into_closed_section", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: [
+        "## 概要",
+        "",
+        sideTocFiller(),
+        "## 補足",
+        "",
+        "<!-- section: closed -->",
+        "",
+        "### 注意",
+        "",
+        sideTocFiller(),
+      ].join("\n"),
+    });
+    const { rail, linkOf } = sideTocOf(el);
+    const toggleOf = (id: string) =>
+      find<HTMLButtonElement>(el, `[aria-controls="section-${id}"]`);
+    expect(linkOf("注意")).toBeTruthy();
+    expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("false");
+    await userEvent.hover(rail);
+    // 実行・検証: 「注意」を押す
+    await userEvent.click(linkOf("注意"));
+    await vi.waitFor(() => {
+      expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("true");
+      expect(decodeURIComponent(location.hash)).toBe("#注意");
+      expect(inViewport(find(el, '[id="注意"]'))).toBe(true);
+    });
+    // 実行・検証: 補足を閉じ、URL が同じまま「注意」をもう一度押す
+    toggleOf("補足").click();
+    expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("false");
+    window.scrollTo(0, 0);
+    await userEvent.hover(rail);
+    await userEvent.click(linkOf("注意"));
+    await vi.waitFor(() => {
+      expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("true");
+      expect(inViewport(find(el, '[id="注意"]'))).toBe(true);
+    });
+  });
+});
+
+// H1 を含む全ての節を開き、H1 の節を開いたまま H2 以下の全ての節を閉じる（正常系（すべて展開・すべて折りたたむ））
+test("test_normal_when_all_sections_toggled", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: [
+        "# 手引き",
+        "",
+        "## 概要",
+        "",
+        "概要の段落",
+        "",
+        "## 補足",
+        "",
+        "<!-- section: closed -->",
+        "",
+        "補足の段落",
+        "",
+        "### 注意",
+        "",
+        "<!-- section: closed -->",
+        "",
+        "注意の段落",
+        "",
+        "# 付録",
+        "",
+        "<!-- section: closed -->",
+        "",
+        "付録の段落",
+        "",
+      ].join("\n"),
+    });
+    const { panel, rail } = sideTocOf(el);
+    const ids = ["手引き", "概要", "補足", "注意", "付録"];
+    const bodyOf = (id: string) =>
+      find<HTMLElement>(el, `[id="section-${id}"]`);
+    const shown = (text: string) =>
+      [...el.querySelectorAll("p")]
+        .find((p) => p.textContent === text)
+        ?.checkVisibility();
+    // 検証: 描いた直後
+    expect(find(el, "h1 .mdmark-section-toggle")).toBeTruthy();
+    expect(bodyOf("付録").getAttribute("hidden")).toBe("until-found");
+    const open = find<HTMLButtonElement>(panel, '[data-fold-all="open"]');
+    const close = find<HTMLButtonElement>(panel, '[data-fold-all="close"]');
+    const list = find(panel, ".mdmark-side-toc-list");
+    for (const button of [open, close]) {
+      expect(button.textContent?.trim()).toBe("");
+      expect(button.getAttribute("aria-label")).toBeTruthy();
+      expect(button.getAttribute("title")).toBeTruthy();
+      expect(
+        button.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+    await userEvent.hover(rail);
+    // 実行・検証: すべて展開
+    await userEvent.click(open);
+    expect(expandedOf(el, ids)).toEqual([
+      "true",
+      "true",
+      "true",
+      "true",
+      "true",
+    ]);
+    expect(shown("注意の段落")).toBe(true);
+    expect(shown("付録の段落")).toBe(true);
+    expect(document.activeElement).toBe(open);
+    // 実行・検証: すべて折りたたむ
+    await userEvent.click(close);
+    expect(expandedOf(el, ids)).toEqual([
+      "true",
+      "false",
+      "false",
+      "false",
+      "true",
+    ]);
+    expect(shown("概要の段落")).toBe(false);
+    expect(find(el, '[id="概要"]').checkVisibility()).toBe(true);
+    expect(document.activeElement).toBe(close);
+  });
+});
+
+// Shift を押しながらの押下と Enter・Space で、その節と中の入れ子の節を同じ状態にする（正常系（Shift で入れ子をまとめて開閉））
+test("test_normal_when_nested_sections_toggled_with_shift", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "## 概要",
+      "",
+      "概要の段落",
+      "",
+      "## 補足",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "### 注意",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "#### 例",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "例の段落",
+      "",
+    ].join("\n"),
+  });
+  const toggleOf = (id: string) =>
+    find<HTMLButtonElement>(el, `[aria-controls="section-${id}"]`);
+  const ids = ["補足", "注意", "例"];
+  // 実行・検証: Shift を押しながら補足の開閉を押す
+  await userEvent.keyboard("{Shift>}");
+  await userEvent.click(toggleOf("補足"));
+  await userEvent.keyboard("{/Shift}");
+  expect(expandedOf(el, ids)).toEqual(["true", "true", "true"]);
+  expect(
+    [...el.querySelectorAll("p")]
+      .find((p) => p.textContent === "例の段落")
+      ?.checkVisibility(),
+  ).toBe(true);
+  // 実行・検証: 補足の開閉のボタンで Shift と Enter を押す
+  toggleOf("補足").focus();
+  await userEvent.keyboard("{Shift>}{Enter}{/Shift}");
+  expect(expandedOf(el, ids)).toEqual(["false", "false", "false"]);
+  // 実行・検証: Shift と Space を押す
+  await userEvent.keyboard("{Shift>}[Space]{/Shift}");
+  expect(expandedOf(el, ids)).toEqual(["true", "true", "true"]);
+  // 実行・検証: Shift を押さずに補足を押す
+  await userEvent.click(toggleOf("補足"));
+  expect(expandedOf(el, ids)).toEqual(["false", "true", "true"]);
+  expect(expandedOf(el, ["概要"])).toEqual(["true"]);
+});
+
+// 描く先の要素が狭いとき、本文の上端の帯から右側の目次を開き、項目を押すと閉じる（正常系（狭い幅の右側の目次））
+test("test_normal_when_side_toc_in_narrow_width", async () => {
+  await withViewport(390, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+    const { aside, content, panel, toggle, rail, linkOf } = sideTocOf(el);
+    const label = find(aside, ".mdmark-side-toc-current");
+    // 検証: 描いた直後
+    await vi.waitFor(() => {
+      expect(label.textContent).toBe("手引き");
+    });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(getComputedStyle(rail).display).toBe("none");
+    expect(aside.getBoundingClientRect().top).toBeLessThanOrEqual(
+      content.getBoundingClientRect().top,
+    );
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+    // 実行・検証: 目次を出すボタンを押す
+    await userEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    const bandBottom = toggle.getBoundingClientRect().bottom;
+    const panelRect = panel.getBoundingClientRect();
+    expect(panelRect.top).toBeGreaterThanOrEqual(bandBottom - 1);
+    expect(panelRect.right).toBeLessThanOrEqual(
+      el.getBoundingClientRect().right,
+    );
+    expect(panelRect.left).toBeGreaterThanOrEqual(
+      el.getBoundingClientRect().left,
+    );
+    // 実行・検証: 「使い方」を押す
+    await userEvent.click(linkOf("使い方"));
+    await vi.waitFor(() => {
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(label.textContent).toBe("使い方");
+    });
+    const heading = find(el, '[id="使い方"]').getBoundingClientRect();
+    expect(heading.top).toBeGreaterThanOrEqual(
+      toggle.getBoundingClientRect().bottom,
+    );
+    expect(heading.top).toBeLessThan(window.innerHeight);
+  });
+});
+
+// update で項目を作り直してピン止めを保ち、destroy で右側の目次と見出しの監視を外し、もう一度の mount はピン止めを外して始める（正常系（右側の目次を描き直して片付ける））
+test("test_normal_when_side_toc_updated_and_destroyed", async () => {
+  // 準備
+  const disconnect = vi.fn();
+  const Original = window.IntersectionObserver;
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class extends Original {
+      override disconnect(): void {
+        disconnect();
+        super.disconnect();
+      }
+    },
+  );
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+  sideTocOf(el).pin.click();
+  expect(sideTocOf(el).pin.getAttribute("aria-pressed")).toBe("true");
+  // 実行・検証: update
+  handle.update("## 新しい節\n\n新しい段落\n");
+  const after = sideTocOf(el);
+  expect(
+    [...after.aside.querySelectorAll(".mdmark-side-toc-list a")].map(
+      (a) => a.textContent,
+    ),
+  ).toEqual(["新しい節"]);
+  expect(after.pin.getAttribute("aria-pressed")).toBe("true");
+  expect(el.querySelectorAll("aside.mdmark-side-toc")).toHaveLength(1);
+  expect(after.content.textContent).not.toContain("段落 1");
+  // 実行・検証: destroy
+  disconnect.mockClear();
+  handle.destroy();
+  expect(el.innerHTML).toBe("");
+  expect(disconnect).toHaveBeenCalled();
+  expect(() => {
+    window.scrollTo(0, 100);
+  }).not.toThrow();
+  await nextFrames();
+  window.scrollTo(0, 0);
+  // 実行・検証: もう一度 mount
+  await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+  expect(sideTocOf(el).pin.getAttribute("aria-pressed")).toBe("false");
+});
+
+// 見出しの無い文書と side-toc がオフの文書では右側の目次を置かず、文書のマーカーでオンにした文書では置く（正常系（右側の目次を置かない））
+test("test_normal_when_side_toc_not_placed", async () => {
+  // 準備
+  const [plain, off, on] = [
+    createElement(),
+    createElement(),
+    createElement(),
+  ] as [HTMLElement, HTMLElement, HTMLElement];
+  // 実行
+  await mountTracked(plain, { markdown: "段落だけ\n" });
+  await mountTracked(off, {
+    markdown:
+      "<!-- features: -side-toc -->\n\n## 導入\n\n段落\n\n## 使い方\n\n段落\n",
+  });
+  await mountTracked(on, {
+    markdown:
+      "<!-- features: +side-toc -->\n\n## 導入\n\n段落\n\n## 使い方\n\n段落\n",
+    config: { features: { "side-toc": false } },
+  });
+  // 検証
+  expect(plain.querySelector(".mdmark-side-toc, .mdmark-content")).toBeNull();
+  expect(plain.querySelector(":scope > p")?.textContent).toBe("段落だけ");
+  expect(off.querySelector(".mdmark-side-toc")).toBeNull();
+  expect(off.querySelector(".mdmark-anchor")).not.toBeNull();
+  expect(off.querySelector(".mdmark-section-toggle")).not.toBeNull();
+  expect(
+    [
+      ...find(on, "aside.mdmark-side-toc").querySelectorAll(
+        ".mdmark-side-toc-list a",
+      ),
+    ].map((a) => a.textContent),
+  ).toEqual(["導入", "使い方"]);
+  for (const target of [plain, off, on]) {
+    expect(target.textContent).not.toContain("features");
+  }
+});
+
+// 知らない side-toc.mode は例外を投げず hover として描く（異常系（知らない出し方・既定の出し方））
+test("test_error_when_unknown_side_toc_mode", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    const { mount } = await loadBuilt();
+    let handle: MountHandle | undefined;
+    // 実行
+    expect(() => {
+      handle = mount(el, {
+        markdown: SIDE_TOC_MARKDOWN,
+        config: { "side-toc": { mode: "left" } },
+      });
+    }).not.toThrow();
+    if (handle) {
+      handles.push(handle);
+    }
+    // 検証
+    const { content, panel, toggle, rail } = sideTocOf(el);
+    expect(content).toBeTruthy();
+    expect(panelOpacity(panel)).toBe("0");
+    expect(getComputedStyle(toggle).display).toBe("none");
+    await userEvent.hover(rail);
+    await vi.waitFor(() => {
+      expect(panelOpacity(panel)).toBe("1");
+    });
+  });
 });

@@ -8,10 +8,15 @@ export type MdmarkConfig = {
   tooltips?: { placement?: string };
   /** 色分けのライブラリの設定。`url` は highlight.js の `es/` フォルダの URL（末尾 `/`） */
   syntax?: { url?: string };
+  /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
+  "side-toc"?: { mode?: string };
 };
 
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
 export type TooltipPlacement = "top" | "bottom";
+
+/** 右側の目次の出し方。`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する */
+export type SideTocMode = "hover" | "fixed";
 
 /** 対応表の行: 印 1 つのモジュールの URL と、図の印か */
 export type LibraryEntry = {
@@ -31,6 +36,8 @@ export type ResolvedConfig = {
   tooltips: { placement: TooltipPlacement };
   /** 設定の `syntax.url` が文字列ならその値、それ以外は `DEFAULT_SYNTAX_URL` */
   syntax: { url: string };
+  /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
+  sideToc: { mode: SideTocMode };
 };
 
 /** この版が知っている機能とその既定 */
@@ -56,6 +63,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   hints: true,
   views: true,
   comments: false,
+  "side-toc": true,
 };
 
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */
@@ -105,5 +113,14 @@ export function resolveConfig(options: {
   // 色分けのライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
   const url = config?.syntax?.url;
   const syntax = { url: typeof url === "string" ? url : DEFAULT_SYNTAX_URL };
-  return { features, libraries, tooltips: { placement }, syntax };
+  // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
+  const mode: SideTocMode =
+    config?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
+  return {
+    features,
+    libraries,
+    tooltips: { placement },
+    syntax,
+    sideToc: { mode },
+  };
 }

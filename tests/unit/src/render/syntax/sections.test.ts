@@ -31,6 +31,34 @@ test("test_wrap_sections", () => {
   expect(closed).not.toMatch(/\shidden\b/);
 });
 
+// h1 の節も囲み、h2 の節をその入れ子にする（正常系）
+test("test_wrap_sections_when_h1", () => {
+  // 準備
+  const markdown = [
+    "# 手引き",
+    "",
+    "手引きの段落",
+    "",
+    "## 導入",
+    "",
+    "導入の段落",
+    "",
+    "# 付録",
+    "",
+    "付録の段落",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(findTag(html, '<h1 class="mdmark-heading"')).toContain('id="手引き"');
+  expect(innerHtml(html, 'id="section-手引き"')).toContain('id="section-導入"');
+  expect(innerHtml(html, 'id="section-手引き"')).not.toContain(
+    'id="section-付録"',
+  );
+  expect(html).toContain('id="section-付録"');
+});
+
 // 知らない開閉の指定は警告を差し込み、開いた節にする（正常系）
 test("test_wrap_sections_when_unknown_value", () => {
   // 準備

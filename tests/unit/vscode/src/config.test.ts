@@ -21,13 +21,14 @@ test("test_resolve_config_path", async () => {
   expect(absolute).toBe("/etc/mdmark.yaml");
 });
 
-// features と libraries だけを取り出す（正常系）
+// features・libraries・side-toc だけを取り出す（正常系）
 test("test_parse_config", async () => {
   // 準備
   const { parseConfig } = await loadModule();
   const text = [
     "features: { callout: false }",
     "libraries: { chart: ./chart.js }",
+    "side-toc: { mode: fixed }",
     "theme: x",
     "build: {}",
   ].join("\n");
@@ -39,6 +40,7 @@ test("test_parse_config", async () => {
     config: {
       features: { callout: false },
       libraries: { chart: "./chart.js" },
+      "side-toc": { mode: "fixed" },
     },
   });
 });

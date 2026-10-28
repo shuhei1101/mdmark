@@ -4,12 +4,12 @@ entry:
   value: '`mdmark serve`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} serve` で呼ぶ）'
 flows:
   - name: 正常系
-    summary: 既定のポートで起動し、ツールの一覧を返す
+    summary: 起動して待ち受ける URL を出し、ツールの一覧を返す
     setup:
       - name: Mock
         description: ビルドしたこのリポジトリの CLI を子プロセスで流し、HTTP でつなぐ MCP のクライアントで `tools/list` を呼ぶ
       - name: 空いているポート
-        description: 8782 を使うプロセスが無い
+        description: '`MDMARK_PORT` に空きポートを渡す。手元の `mdmark serve` が使う 8782 はテストで使わない（既定のポートの値は単体テスト `test_read_port` で確かめる）'
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
@@ -20,7 +20,7 @@ flows:
         C->>S: POST /mcp（tools/list）
         S-->>C: 7 つのツール
     expected:
-      - 標準出力に `http://127.0.0.1:8782/mcp` を含む 1 行が出る
+      - 標準出力に `http://127.0.0.1:{渡したポート}/mcp` を含む 1 行が出る
       - '`tools/list` が 7 つのツールを返し、どのツールの `inputSchema` も `project_dir` を持たない'
       - プロセスが動き続けている
     test: test_normal

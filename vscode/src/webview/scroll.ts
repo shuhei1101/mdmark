@@ -83,3 +83,29 @@ export function lineForTop(anchors: Anchor[], top: number): number {
   const ratio = (top - before.top) / (after.top - before.top);
   return Math.floor(before.line + ratio * (after.line - before.line));
 }
+
+/** 狭い幅で右側の目次を文書の上端の帯にしているとき、帯の下端からスクロールする要素の上端までの高さを返す。帯が無い（右側の目次が無い・広い幅の右の列）ときは 0 */
+export function topInset(options: {
+  /** 描いた文書の要素 */
+  root: HTMLElement;
+  /** スクロールする要素 */
+  scroller: Element;
+}): number {
+  const { root, scroller } = options;
+  const aside = root.querySelector<HTMLElement>(".mdmark-side-toc");
+  const content = root.querySelector<HTMLElement>(".mdmark-content");
+  // 広い幅の右の列は本文の列より狭く、狭い幅の帯は本文の列と同じ幅を取る
+  if (
+    aside === null ||
+    content === null ||
+    aside.getBoundingClientRect().width < content.getBoundingClientRect().width
+  ) {
+    return 0;
+  }
+  // 画面がスクロールするときは、画面の上端を基準にする
+  const page =
+    scroller === document.scrollingElement ||
+    scroller === document.documentElement;
+  const origin = page ? 0 : scroller.getBoundingClientRect().top;
+  return Math.max(0, aside.getBoundingClientRect().bottom - origin);
+}

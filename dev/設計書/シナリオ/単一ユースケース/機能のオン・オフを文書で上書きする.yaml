@@ -161,6 +161,52 @@ scenarios:
       - 文書の別名だけに一致する `公開関数` に下線が付いていない
       - 文書の末尾に「関連文書」の一覧が無い
     test: test_normal_when_backlinks_disabled
+  - name: 正常シナリオ（右側の目次の機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `side-toc` を書かない（既定のオン）。画面の幅は 1280px
+      - name: 右側の目次を外す Markdown
+        description: '先頭に `<!-- features: -side-toc -->` を持ち、`## 導入`・`## 使い方` の見出しと段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 右側の目次を置かずに本文を描く
+        U->>P: 描いた文書の右端にポインターを置く
+        P-->>U: 右側の目次を出さない
+    expected:
+      - 右側の目次と、目次を出すボタン・ピン止めのボタンが無い
+      - 見出しのアンカーと節の開閉のボタンはある
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_side_toc_disabled
+  - name: 正常シナリオ（設定でオフにした右側の目次を文書でオンにする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.side-toc` は `false`。画面の幅は 1280px
+      - name: 右側の目次を追加する Markdown
+        description: '先頭に `<!-- features: +side-toc -->` を持ち、`## 導入`・`## 使い方` の見出しと段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 右側の目次を置いて本文を描く
+        U->>P: 描いた文書の右端にポインターを置く
+        P-->>U: 右側の目次を表示
+    expected:
+      - 右端にポインターを置いた後、`導入`・`使い方` の項目を持つ右側の目次が表示されている
+    test: test_normal_when_side_toc_enabled_by_mark
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人

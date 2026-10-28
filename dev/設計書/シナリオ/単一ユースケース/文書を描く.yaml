@@ -29,7 +29,7 @@ scenarios:
       - name: 文書を描いたページ
         description: 正常シナリオで見本の Markdown を描いた後のページ
       - name: 差し替える Markdown
-        description: 見出しを 1 つだけ持つ文書
+        description: 見出し `## 新しい節` を 1 つだけ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -42,8 +42,9 @@ scenarios:
         M-->>P: 要素の中を新しい本文にする
         P-->>U: 新しい文書を表示
     expected:
-      - 描く先の要素の中が、差し替えた Markdown の見出しだけになる
+      - 描いた文書の本文（右側の目次とそのボタンを除く）が、差し替えた Markdown の見出しだけになる
       - 前の本文の段落・表が残っていない
+      - 右側の目次の項目が `新しい節` だけになり、前の本文の見出しの項目が残っていない
     test: test_normal_when_updated
   - name: 正常シナリオ（片付ける）
     setup:
@@ -60,6 +61,7 @@ scenarios:
         M-->>P: 要素の中を空にする
     expected:
       - 描く先の要素の中が空になる
+      - ページに右側の目次と目次を出すボタンが残っていない
       - 片付けた後に本文の差し替えを呼んでも、要素の中に何も描かれない
     test: test_normal_when_destroyed
   - name: 正常シナリオ（未知の印がある）

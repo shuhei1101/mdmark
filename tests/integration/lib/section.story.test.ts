@@ -58,6 +58,19 @@ test("test_level_4", async () => {
   await expect(page.locator("h4.mdmark-heading").count()).resolves.toBe(1);
 });
 
+// h1 の節は、h2 の節と同じ開閉のボタンとアンカーを持つ（Level1）
+test("test_level_1", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-section--level-1");
+  // 検証
+  await expect(page.locator("h1.mdmark-heading").count()).resolves.toBe(1);
+  await expect(
+    page.locator("h1 .mdmark-section-toggle").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  await expect(page.locator("h1 .mdmark-anchor").count()).resolves.toBe(1);
+  await expect(markTransform(page)).resolves.toBe("none");
+});
+
 // 見出しが長く折り返しても、開閉の印とアンカーが見出しの文字に重ならない（LongTitle）
 test("test_long_title", async () => {
   // 準備・実行

@@ -180,3 +180,119 @@ test("test_normal_when_row_detail_with_collapsed_column", async ({ page }) => {
   await expect(detail).toBeHidden();
   await expect(detail.locator(".mdmark-fold-part")).toBeHidden();
 });
+
+// h1 の見出しも節になり、閉じた h1 の節を開閉のボタンで開く（正常シナリオ（H1 の節））
+test("test_normal_when_h1_section", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown:
+      "# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: closed -->\n\n付録の段落\n",
+  });
+  const appendix = page.getByRole("button", { name: "付録" });
+  // 検証: 描いた直後
+  await expect(page.getByText("手引きの段落")).toBeVisible();
+  await expect(page.getByText("付録の段落")).toBeHidden();
+  await expect(page.getByRole("button", { name: "手引き" })).toBeVisible();
+  await expect(appendix).toBeVisible();
+  // 実行
+  await appendix.click();
+  // 検証
+  await expect(page.getByText("付録の段落")).toBeVisible();
+  await expect(appendix).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#doc")).not.toContainText("section:");
+});
+
+// すべて展開で H1 を含む全ての節を開き、すべて折りたたむで H1 の節を開いたまま H2 以下を閉じる（正常シナリオ（すべて展開・すべて折りたたむ））
+test("test_normal_when_all_toggled", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "# 手引き",
+      "",
+      "## 概要",
+      "",
+      "概要の段落",
+      "",
+      "## 補足",
+      "<!-- section: closed -->",
+      "",
+      "補足の段落",
+      "",
+      "### 注意",
+      "<!-- section: closed -->",
+      "",
+      "注意の段落",
+      "",
+    ].join("\n"),
+    config: { "side-toc": { mode: "fixed" } },
+  });
+  await page.locator("#doc .mdmark-side-toc-toggle").click();
+  const expandAll = page.locator('#doc [data-fold-all="open"]');
+  const collapseAll = page.locator('#doc [data-fold-all="close"]');
+  const toggleOf = (id: string) =>
+    page.locator(`#doc button[aria-controls="section-${id}"]`);
+  // 検証: 描いた直後
+  for (const button of [expandAll, collapseAll]) {
+    await expect(button).toBeVisible();
+    await expect(button).toHaveText("");
+    expect(await button.getAttribute("aria-label")).toBeTruthy();
+  }
+  // 実行・検証: すべて展開
+  await expandAll.click();
+  for (const id of ["手引き", "概要", "補足", "注意"]) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "true");
+  }
+  await expect(page.getByText("注意の段落")).toBeVisible();
+  // 実行・検証: すべて折りたたむ
+  await collapseAll.click();
+  await expect(toggleOf("手引き")).toHaveAttribute("aria-expanded", "true");
+  for (const id of ["概要", "補足", "注意"]) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "false");
+  }
+  await expect(page.locator('#doc [id="概要"]')).toBeVisible();
+  await expect(page.getByText("概要の段落")).toBeHidden();
+});
+
+// Shift を押しながら開閉を押すか Enter を押すと、その節と中の入れ子の節を同じ状態にする（正常シナリオ（Shift で入れ子をまとめて開閉））
+test("test_normal_when_nested_toggled_with_shift", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "## 概要",
+      "",
+      "概要の段落",
+      "",
+      "## 補足",
+      "<!-- section: closed -->",
+      "",
+      "### 注意",
+      "<!-- section: closed -->",
+      "",
+      "#### 例",
+      "<!-- section: closed -->",
+      "",
+      "例の段落",
+      "",
+    ].join("\n"),
+  });
+  const toggleOf = (id: string) =>
+    page.locator(`#doc button[aria-controls="section-${id}"]`);
+  const nested = ["補足", "注意", "例"];
+  // 実行・検証: Shift を押しながら補足の開閉を押す
+  await toggleOf("補足").click({ modifiers: ["Shift"] });
+  for (const id of nested) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "true");
+  }
+  await expect(page.getByText("例の段落")).toBeVisible();
+  // 実行・検証: 補足の開閉ボタンにフォーカスし、Shift を押しながら Enter を押す
+  await toggleOf("補足").focus();
+  await page.keyboard.press("Shift+Enter");
+  for (const id of nested) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "false");
+  }
+  await expect(toggleOf("概要")).toHaveAttribute("aria-expanded", "true");
+});

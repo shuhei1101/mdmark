@@ -371,3 +371,36 @@ test("test_normal_when_collapsed_column_printed", async ({ page }) => {
     await expect(toggle).toBeVisible();
   }
 });
+
+// 印刷では右側の目次と節のボタンを出さず、閉じた H1 の節を開き、印刷の後は画面の表示に戻る（正常シナリオ（右側の目次と節のボタンを印刷に出さない））
+test("test_normal_when_side_toc_hidden_in_print", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown:
+      "# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: closed -->\n\n付録の段落\n",
+    config: { "side-toc": { mode: "fixed" } },
+  });
+  const doc = page.locator("#doc");
+  await doc.locator(".mdmark-side-toc-toggle").click();
+  await expect(doc.locator(".mdmark-side-toc-panel")).toBeVisible();
+  await expect(page.getByText("付録の段落")).toBeHidden();
+  // 実行: 印刷の前
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  await expect(doc.locator(".mdmark-side-toc")).toBeHidden();
+  await expect(doc.locator(".mdmark-side-toc-toggle")).toBeHidden();
+  await expect(doc.locator("[data-fold-all]").first()).toBeHidden();
+  await expect(page.getByText("付録の段落")).toBeVisible();
+  // 実行: 印刷の後
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(doc.locator(".mdmark-side-toc-panel")).toBeVisible();
+  await expect(
+    doc.locator('button[aria-controls="section-付録"]'),
+  ).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByText("付録の段落")).toBeHidden();
+});

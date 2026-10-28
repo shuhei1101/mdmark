@@ -74,7 +74,7 @@ test("test_normal", async ({ page }) => {
     .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
   expect(hrefs).toEqual(["../api.md", "../使い方/guide.md"]);
   // 一覧は文書の末尾にある
-  await expect(doc.locator(":scope > :last-child")).toHaveClass(
+  await expect(doc.locator(".mdmark-content > :last-child")).toHaveClass(
     /mdmark-backlinks/,
   );
   // 題を押すと、その文書へのリンクが開く

@@ -22,7 +22,7 @@ flows:
         M->>M: 許可していない要素・属性・URL を落とす
         M-->>C: HTML 文字列
     expected:
-      - '`<h1 id="…">`・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
+      - '`id` を持つ `<h1>`（class `mdmark-heading` も持つ）・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
       - '`<td>` が同じ列の見出しの文言を `data-label`（`列A`・`列B`）に持つ'
       - '`列B` の `<th>` と `<td>` が class `mdmark-align-right` を持ち、文字列に `style=` が無い'
       - 文字列を描く先の要素（class `mdmark`）は含まない
@@ -690,6 +690,28 @@ flows:
       - 単価の空のセルと、`count` の名前の列の `-` は警告にならない
       - '`mdmark-table` は `data-total="1:sum 2:avg 0:count"` を持つ'
     test: test_normal_when_total_cell_not_number
+  - name: 正常系（H1 の節）
+    summary: h1 の見出しも節にし、次の h1 の前までを節の中身で囲む
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: H1 の節を持つ Markdown
+        description: '`# 手引き` と段落と `## 概要` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: h1〜h4 の見出しの後ろを節の中身で囲む
+        M-->>C: HTML 文字列
+    expected:
+      - '`手引き`・`付録` の `h1` が class `mdmark-heading` を持つ'
+      - '`手引き` の後ろが `<div class="mdmark-section-body" id="section-手引き" data-section="open">` に入り、その中に `概要` の `h2` と `id="section-概要"` の節の中身がある'
+      - '`付録` の後ろが `id="section-付録"`・`data-section="closed"` の節の中身に入り、`section-手引き` の中に `付録` の `h1` が無い'
+      - '文字列に `section: closed` が無い'
+    test: test_normal_when_h1_sections
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -766,7 +788,7 @@ constraints:
   - item: 目次
     constraint: '`<!-- toc -->` の場所に `<nav class="mdmark-toc" aria-label="目次">` と題 `<p class="mdmark-toc-title">目次</p>` を置き、文書の h2〜h3 を階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクを並べる'
   - item: 節
-    constraint: '`sections` がオンのとき、h2〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを `<div class="mdmark-section-body" id="section-{見出しの ID}" data-section="{open か closed}">` で囲む。見出しの直後の `<!-- section: closed -->` は `closed`、それ以外は `open`。中身は隠さずに出す（開閉は `mount` が付ける）'
+    constraint: '`sections` がオンのとき、h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを `<div class="mdmark-section-body" id="section-{見出しの ID}" data-section="{open か closed}">` で囲む。見出しの直後の `<!-- section: closed -->` は `closed`、それ以外は `open`。中身は隠さずに出す（開閉は `mount` が付ける）'
   - item: 行の詳細
     constraint: '表の直後の `<!-- row-detail: {行の位置} -->` 〜 `<!-- /row-detail -->` の中身を、表の行の位置（見出し行を除いて 1 から）の行の直後に `<tr class="mdmark-row-detail" data-row="{行の位置}"><td colspan="{列の数}">…</td></tr>` で入れる。中身は隠さずに出す（開閉は `mount` が付ける）'
   - item: 図と表の番号

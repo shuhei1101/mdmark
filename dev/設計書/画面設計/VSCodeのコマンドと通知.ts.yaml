@@ -42,7 +42,7 @@ elements:
     description: 「作る」で書く YAML。キーは書かず、書き方をコメントで示す
     label: |-
       ```yaml
-      # mdmark の設定。VS Code のプレビューは features と libraries を読みます
+      # mdmark の設定。VS Code のプレビューは features・libraries・side-toc を読みます
 
       # 機能のオン・オフ（使うときは次の 2 行の # を外す）
       # features:
@@ -51,6 +51,10 @@ elements:
       # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
       # libraries:
       #   my-chart: ./libs/my-chart.js
+
+      # 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
+      # side-toc:
+      #   mode: fixed
       ```
     visible_when: 雛形を作ったとき
     refs:

@@ -83,7 +83,7 @@
         },
         "sections": {
           "title": "節の開閉の機能",
-          "description": "h2〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く。",
+          "description": "h1〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く。",
           "type": "boolean",
           "default": true
         },
@@ -140,6 +140,12 @@
           "description": "読む人が本文の選んだ箇所にコメントを付けられるようにする。使う側が `mount` にコメントの読み書きの関数（`commentStore`）を渡したときだけ効く。コメントは使う側の保存先が要り、使わない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする。",
           "type": "boolean",
           "default": false
+        },
+        "side-toc": {
+          "title": "右側の目次の機能",
+          "description": "描いた文書の右側に h1〜h3 の目次を置く。見出しが無い文書には置かない。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": {
@@ -166,7 +172,8 @@
         "html": true,
         "hints": true,
         "views": true,
-        "comments": false
+        "comments": false,
+        "side-toc": true
       }
     },
     "index": {
@@ -196,6 +203,19 @@
           "description": "持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す。`mount` は他の値を無視して `top` にし、CLI は他の値を設定ファイルの誤りにする。",
           "enum": ["top", "bottom"],
           "default": "top"
+        }
+      }
+    },
+    "side-toc": {
+      "title": "右側の目次の設定",
+      "description": "描いた文書の右側に置く目次の出し方。",
+      "type": "object",
+      "properties": {
+        "mode": {
+          "title": "右側の目次の出し方",
+          "description": "`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときはどちらも狭い幅の帯で出す。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする。",
+          "enum": ["hover", "fixed"],
+          "default": "hover"
         }
       }
     },

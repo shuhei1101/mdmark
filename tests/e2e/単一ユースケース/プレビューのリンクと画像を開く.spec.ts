@@ -113,7 +113,7 @@ test("test_normal_when_anchor_link", async () => {
   ).toBeGreaterThan(viewport);
   const tabs = await session.win.locator(".tab").count();
   // 実行
-  await frame.locator('a[href="#末尾"]').click();
+  await frame.getByRole("link", { name: "ページ内" }).click();
   // 検証
   await expect
     .poll(() =>

@@ -85,7 +85,9 @@ test("test_normal_when_no_source", async ({ page }) => {
   await mountDocument(page, { markdown: DIFF_PAGE_MARKDOWN });
   // 検証
   await expect(page.locator("#doc h1")).toBeVisible();
-  await expect(page.locator("#doc p")).toHaveText("本文の段落。");
+  await expect(page.locator("#doc .mdmark-content p")).toHaveText(
+    "本文の段落。",
+  );
   await expect(toggleOf(page)).toHaveCount(0);
 });
 
@@ -263,7 +265,7 @@ test("test_normal_when_single_revision", async ({ page }) => {
   );
   expect((await readDiffCalls(page)).content).toEqual([]);
   await toggleOf(page).click();
-  await expect(page.locator("#doc p")).toBeVisible();
+  await expect(page.locator("#doc .mdmark-content p")).toBeVisible();
 });
 
 // `revisions` を返せないときは、差分の場所に知らせの枠を出し、文書は描いたまま残す（異常シナリオ（一覧を取り出せない））
@@ -288,7 +290,9 @@ test("test_error_when_revisions_unavailable", async ({ page }) => {
   expect((await readDiffCalls(page)).content).toEqual([]);
   await expect(page.locator("#doc h1")).toBeVisible();
   await toggleOf(page).click();
-  await expect(page.locator("#doc p")).toHaveText("本文の段落。");
+  await expect(page.locator("#doc .mdmark-content p")).toHaveText(
+    "本文の段落。",
+  );
 });
 
 // `content` を返せないリビジョンを選ぶと知らせの枠が出て、選び直すと差分が出る（異常シナリオ（本文を取り出せない））

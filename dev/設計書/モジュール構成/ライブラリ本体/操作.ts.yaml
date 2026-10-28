@@ -1,5 +1,5 @@
 title: "ライブラリ本体 / 操作"
-lead: '`mount` が描いた記法に操作を付け、外す処理。表の並べ替え・ピン止め・絞り込み、タブ、節と行の詳細の開閉、表の見出し行と集計の行を留める処理、コードブロックのコピーを受け持ち、付ける関数はどれも外す関数を返す。ブラウザでだけ動く。'
+lead: '`mount` が描いた記法に操作を付け、外す処理。表の並べ替え・ピン止め・絞り込み、タブ、節と行の詳細の開閉、表の見出し行と集計の行を留める処理、コードブロックのコピー、右側の目次を受け持ち、付ける関数はどれも外す関数を返す。ブラウザでだけ動く。'
 directory: |-
   ```tree
   src/
@@ -12,7 +12,8 @@ directory: |-
       ├── clipboard.ts   # クリップボードへ書く（表・行の URL・コードブロックが使う）
       ├── code-blocks.ts # コードブロックのコピー
       ├── tabs.ts        # タブの切り替えと、URL の #ID の指すタブを選ぶ処理
-      └── sections.ts    # 節と行の詳細の開閉、URL の #ID で開く
+      ├── sections.ts    # 節と行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く
+      └── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
   ```
 data_models:
   - name: FilterValue
@@ -35,6 +36,20 @@ data_models:
       - name: to
         type: string | undefined
         description: '`date` の終了日（`YYYY-MM-DD`）'
+  - name: SideTocState
+    title: 右側の目次の状態
+    container: src/interact/side-toc.ts
+    summary: '`mount` ごとに 1 つ作り、`update` で描き直しても保つ右側の目次の状態。`attachSideToc` が読んで描き、押されるたびに書き換える'
+    properties:
+      - name: open
+        type: boolean
+        description: 目次を出すボタンで目次を出しているか
+      - name: pinned
+        type: boolean
+        description: ピン止めしているか
+    status: planned
+    introduced:
+      pr: 166
 functions:
   - name: attachInteractions
     title: 記法の操作を付ける
@@ -365,7 +380,7 @@ functions:
     container: src/interact/sections.ts
     kind: 関数
     scope: internal
-    summary: '`sections` がオンなら節の見出しを開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID`（`rowIdFromHash` で読む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が閉じた節の中を指すとき（付けたときと `hashchange`）と `beforematch` でその節を開く。`hashchange` では、指す要素が選ばれていないタブの中にあれば `revealTabTarget` でそのタブも選ぶ'
+    summary: '`sections` がオンなら節の見出し（h1〜h4）を開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。節の開閉の関数を `sectionSetters` に控える。Shift を押しながら開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンで Shift を押しながら Enter・Space を押したとき（`keydown` の `shiftKey`。既定の動きを止め、`click` を起こさない）は、その節を今と逆の状態にし、中の入れ子の全ての節（中身の中の `mdmark-section-body`）を同じ状態にする。URL の `#ID`（`rowIdFromHash` で読む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素があるとき（付けたときと `hashchange`）は `revealTarget` を呼び、`beforematch` でその節を開く'
     args:
       - name: options
         type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean }'
@@ -417,6 +432,30 @@ functions:
         condition: '`attachTabs` を付けた `macOS`・`Windows` のタブの `Windows` の中身にある閉じた節の中の `### 注意`、`location.hash` を `#注意`'
         mock: なし
         expected: '`Windows` が `aria-selected="true"` で、節の中身が `hidden` を持たない'
+      - name: test_attach_sections_when_h1
+        case: 正常
+        summary: H1 の節も開閉する
+        condition: '`# 手引き`・段落・`## 概要`・段落を `render` で描いた要素に付け、`手引き` の開閉のボタンを押す'
+        mock: なし
+        expected: '`手引き` のボタンが `aria-expanded="false"` で `section-手引き` が `hidden="until-found"`、`概要` の見出しも隠れる'
+      - name: test_attach_sections_when_shift_click
+        case: 正常
+        summary: Shift を押しながら押すと、その節と入れ子の節を同じ状態にし、外の節は変えない
+        condition: '`## A`（中に `### B`、その中に閉じた `#### C`）と `## D` の節で、`A` のボタンを `shiftKey: true` の `click` で押し、もう一度押す'
+        mock: なし
+        expected: 1 回目の後は `A`・`B`・`C` のボタンが `aria-expanded="false"`、2 回目の後は 3 つとも `true` で `C` の中身が `hidden` を持たない。`D` はどちらも `true`
+      - name: test_attach_sections_when_shift_key
+        case: 正常
+        summary: Shift を押しながら Enter・Space を押しても入れ子をまとめて開閉し、click を起こさない
+        condition: '`test_attach_sections_when_shift_click` の節で、`A` のボタンに `shiftKey: true` の Enter の `keydown` を送信し、続けて Space の `keydown` を送信する'
+        mock: ボタンの `click` を数える関数を付ける
+        expected: Enter の後は `A`・`B`・`C` が閉じ、Space の後は 3 つとも開く。`keydown` の `defaultPrevented` が `true` で、`click` は 0 回
+      - name: test_attach_sections_when_detached
+        case: 正常
+        summary: 外すと節の開閉の関数の控えから取り除く
+        condition: 節を付けて外し、`foldAllSections` で閉じる
+        mock: なし
+        expected: 中身が `hidden` を持たないまま
     refs:
       - '#functions[rowIdFromHash]'
   - name: visibleText
@@ -956,11 +995,224 @@ functions:
     status: planned
     introduced:
       pr: 151
+  - name: revealTarget
+    title: 要素へ移る
+    container: src/interact/sections.ts
+    summary: 要素を囲む閉じた節を外側から `sectionSetters` の関数で開き、選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使う
+    kind: 関数
+    scope: internal
+    side_effects: 節の中身の `hidden`・タブの選択を書き換え、スクロールする
+    args:
+      - name: target
+        type: HTMLElement
+        required: true
+        description: 移る先の要素
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_reveal_target
+        case: 正常
+        summary: 入れ子の閉じた節を外側から開いて移る
+        condition: 閉じた `## A` の中の閉じた `### B` の中の `#### C` を渡す
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: '`A`・`B` の中身が `hidden` を持たず、ボタンが `aria-expanded="true"`。`C` で `scrollIntoView` が 1 回呼ばれる'
+      - name: test_reveal_target_when_row
+        case: 正常
+        summary: 表の行へはスクロールしない
+        condition: 閉じた節の中の表の `tr` を渡す
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: 節が開き、`scrollIntoView` は呼ばれない
+    status: planned
+    introduced:
+      pr: 166
+  - name: foldAllSections
+    title: すべての節を開閉する
+    container: src/interact/sections.ts
+    summary: '`root` の中の `sectionSetters` に控えた全ての節を、`open` が `true` なら開く。`false` なら、見出しが `h1` の節を開き、h2〜h4 の節を閉じる'
+    kind: 関数
+    scope: internal
+    side_effects: 節の中身の `hidden` と開閉のボタンの `aria-expanded` を書き換える
+    args:
+      - name: options
+        type: '{ root: HTMLElement; open: boolean }'
+        required: true
+        description: 描いた本文と、開くか
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_fold_all_sections
+        case: 正常
+        summary: すべて展開は全てを開き、すべて折りたたむは H1 だけ開く
+        condition: '`# 手引き` の中に `## 導入`（中に閉じた `### 注意`）と `## 付録`。`open: true` で呼び、次に `open: false` で呼ぶ'
+        mock: なし
+        expected: 1 回目の後は全てのボタンが `aria-expanded="true"`。2 回目の後は `手引き` だけが `true` で、`導入`・`注意`・`付録` は `false`
+    status: planned
+    introduced:
+      pr: 166
+  - name: collectSideTocHeadings
+    title: 右側の目次の見出しを集める
+    container: src/interact/side-toc.ts
+    summary: 本文の中の `SIDE_TOC_HEADING_SELECTOR` に当たる見出しを文書の順に集め、レベル・ID・表示する文字（`visibleText`。開閉のボタンとアンカーを除いた見出しの文字）を返す。`.mdmark-html` の中の見出しは除く
+    kind: 関数
+    scope: internal
+    args:
+      - name: content
+        type: HTMLElement
+        required: true
+        description: 本文の列（`div.mdmark-content`）
+    returns:
+      type: SideTocHeading[]
+      description: 見出しの並び。無ければ空の配列
+    unit_tests:
+      - name: test_collect_side_toc_headings
+        case: 正常
+        summary: h1〜h3 を文書の順に集め、h4 と埋め込んだ HTML の中の見出しを除く
+        condition: '`# 手引き`・`## 導入`・`### 注意`・`#### 細目` と、`.mdmark-html` の中の `h2` を持つ本文を `attachSections` で開閉にしてから渡す'
+        mock: なし
+        expected: '`[{level: 1, id: "手引き", text: "手引き"}, {level: 2, id: "導入", text: "導入"}, {level: 3, id: "注意", text: "注意"}]`'
+    status: planned
+    introduced:
+      pr: 166
+  - name: pickCurrentHeading
+    title: 今いる節の見出しを決める
+    container: src/interact/side-toc.ts
+    summary: 画面に出ている見出しの位置から今いる節の見出しを決める。上端が線（`line`）以下の見出しのうち最後のものを返し、無ければ画面の中にある最初の見出しを返す。どちらも無ければ `undefined`
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ headings: { id: string; top: number }[]; line: number; viewportHeight: number }'
+        required: true
+        description: 閉じた節と選ばれていないタブの中に無い見出しの ID と、画面の上端からの位置（文書の順）、線の位置、画面の高さ
+    returns:
+      type: string | undefined
+      description: 今いる節の見出しの ID
+    unit_tests:
+      - name: test_pick_current_heading
+        case: 正常
+        summary: 線より上にある最後の見出しを選ぶ
+        condition: '`[{id: "a", top: -300}, {id: "b", top: 100}, {id: "c", top: 400}]`、`line: 200`、`viewportHeight: 800`'
+        mock: なし
+        expected: '`"b"`'
+      - name: test_pick_current_heading_when_below_line
+        case: 正常
+        summary: 線より上に見出しが無ければ画面の中の最初の見出しを選ぶ
+        condition: '`[{id: "a", top: 300}, {id: "b", top: 600}]`、`line: 200`、`viewportHeight: 800`'
+        mock: なし
+        expected: '`"a"`'
+      - name: test_pick_current_heading_when_none
+        case: 正常
+        summary: 線より上にも画面の中にも見出しが無ければ選ばない
+        condition: '`[{id: "a", top: 900}]`、`line: 200`、`viewportHeight: 800`'
+        mock: なし
+        expected: '`undefined`'
+    status: planned
+    introduced:
+      pr: 166
+  - name: attachSideToc
+    title: 右側の目次を付ける
+    container: src/interact/side-toc.ts
+    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。外す関数は包む前の子の並びへ戻す
+    kind: 関数
+    scope: internal
+    side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'
+    args:
+      - name: options
+        type: '{ el: HTMLElement; mode: SideTocMode; sections: boolean; state: SideTocState }'
+        required: true
+        description: 描く先の要素・出し方・すべて展開とすべて折りたたみを出すか（`features.sections`）・`mount` が保つ状態
+    returns:
+      type: '{ content: HTMLElement; aside?: HTMLElement; detach: () => void }'
+      description: 本文の列（見出しが無ければ `el`）・右側の目次の要素・外す関数
+    callees:
+      - '#functions[collectSideTocHeadings]'
+      - '#functions[pickCurrentHeading]'
+      - '#functions[revealTarget]'
+      - '#functions[foldAllSections]'
+    unit_tests:
+      - name: test_attach_side_toc
+        case: 正常
+        summary: 本文を列に包み、見出しを入れ子にした右側の目次を置く
+        condition: '`# 手引き`・`## 導入`・`### 注意` を描いた要素に `mode: "hover"` で付ける'
+        mock: なし
+        expected: '`el` の子が `div.mdmark-content` と `aside.mdmark-side-toc` の 2 つ。目次の項目が `#手引き`・`#導入`・`#注意` へのリンクで、`aside` が `data-mode="hover"`'
+      - name: test_attach_side_toc_when_no_headings
+        case: 正常
+        summary: 見出しが無ければ何も置かない
+        condition: 段落だけを描いた要素に付ける
+        mock: なし
+        expected: '`content` が `el`、`aside` が `undefined` で、`el` の子は変わらない'
+      - name: test_attach_side_toc_when_toggled
+        case: 正常
+        summary: 目次を出すボタン・ピン止め・Esc で状態を切り替えて控える
+        condition: 目次を出すボタンを押し、ピン止めを押し、パネルで Esc を押す
+        mock: なし
+        expected: '押した後に `data-open` と `aria-expanded="true"`、ピン止めの後に `data-pinned` と `aria-pressed="true"`、Esc の後に `data-open` が無くフォーカスが目次を出すボタン。`state` が `{open: false, pinned: true}`'
+      - name: test_attach_side_toc_when_state_kept
+        case: 正常
+        summary: 保った状態で付け直すと同じ出し方で出す
+        condition: '`state` を `{open: true, pinned: true}` にして付ける'
+        mock: なし
+        expected: '`aside` が `data-open` と `data-pinned` を持つ'
+      - name: test_attach_side_toc_when_link_into_closed_section
+        case: 正常
+        summary: 閉じた節の中の見出しの項目を押すと節を開いて移る
+        condition: '`attachSections` で閉じた `## 導入` の中の `### 注意` の項目を押す'
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: '`導入` の中身が `hidden` を持たず、`注意` で `scrollIntoView` が呼ばれ、`click` の `defaultPrevented` が `false`'
+      - name: test_attach_side_toc_when_fold_all
+        case: 正常
+        summary: すべて折りたたみ・すべて展開で節をまとめて開閉する
+        condition: '`sections: true` で付け、すべて折りたたみを押してからすべて展開を押す'
+        mock: なし
+        expected: 折りたたみの後は H1 の節だけが開き、展開の後は全ての節が開く
+      - name: test_attach_side_toc_when_sections_off
+        case: 正常
+        summary: 節の開閉がオフならすべて展開・すべて折りたたみを置かない
+        condition: '`sections: false` で付ける'
+        mock: なし
+        expected: '`aside` の中にすべて展開・すべて折りたたみのボタンが無い'
+      - name: test_attach_side_toc_when_scrolled
+        case: 正常
+        summary: スクロールすると今いる節の項目を付け替える
+        condition: 見出しが 3 つある長い本文で、2 つ目の見出しを線より上へスクロールして次の描画を待つ
+        mock: なし
+        expected: 2 つ目の項目だけが `aria-current="location"`、右端の線の 2 本目だけが `data-current` を持ち、目次を出すボタンに 2 つ目の見出しの文字が出る
+      - name: test_attach_side_toc_when_detached
+        case: 正常
+        summary: 外すと包む前の子の並びへ戻す
+        condition: 付けてから外す
+        mock: なし
+        expected: '`el` の子が付ける前と同じ並びで、`aside` が無い'
+      - name: test_attach_side_toc_when_heading_in_unselected_tab
+        case: 正常
+        summary: 選ばれていないタブの中の見出しを今いる節に数えない
+        condition: '`## 導入` の後に、タブ名を `## macOS`・`## Windows`、中身を `### macOS の手順`・`### Windows の手順` にして `tabs` の印で囲んだ長い本文を `attachInteractions` で操作にしてから付け、`macOS` のタブが選ばれたまま `macOS の手順` の見出しを線より上へスクロールして次の描画を待つ'
+        mock: なし
+        expected: '`macOS の手順` の項目だけが `aria-current="location"` で、`Windows の手順` の項目は持たない'
+      - name: test_attach_side_toc_when_fold_all_moves_current
+        case: 正常
+        summary: すべて折りたたむと、閉じた節に入った見出しから今いる節を決め直す
+        condition: '`# 手引き`・`## 導入`・`### 前提` の長い本文で `前提` を今いる節にした後、すべて折りたたむを押して次の描画を待つ'
+        mock: なし
+        expected: '`#前提` の項目が `aria-current` を持たず、閉じていない節の見出しの項目が `aria-current="location"` を持つ'
+      - name: test_attach_side_toc_when_href_rewritten
+        case: 正常
+        summary: 項目の href を書き換えても、data-heading-id の見出しへ節を開いて移る
+        condition: '`attachSections` で閉じた `## 導入` の中の `### 注意` の項目の `href` を `#/a.md#注意` に書き換えてから押す'
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: '`導入` の中身が `hidden` を持たず、`注意` で `scrollIntoView` が呼ばれる'
+    status: planned
+    introduced:
+      pr: 166
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
+  - tests/unit/src/interact/side-toc.browser.test.ts
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
   - tests/unit/src/interact/placement.test.ts
@@ -1006,3 +1258,35 @@ constants:
     status: planned
     introduced:
       pr: 151
+  - name: sectionSetters
+    title: 節の開閉の関数の控え
+    container: src/interact/sections.ts
+    summary: '`attachSections` が操作を付けた節の中身（`mdmark-section-body`）から、その節を開くか閉じる関数を引く。`revealTarget`・`foldAllSections` と Shift での入れ子の開閉が使い、外す関数が取り除く'
+    value: 'new WeakMap<HTMLElement, (open: boolean) => void>()'
+    status: planned
+    introduced:
+      pr: 166
+  - name: CURRENT_LINE_RATIO
+    title: 今いる節を決める線の位置
+    container: src/interact/side-toc.ts
+    summary: 画面の上端から、今いる節を決める線までの高さの、画面の高さに対する割合
+    value: '0.25'
+    status: planned
+    introduced:
+      pr: 166
+  - name: NARROW_WIDTH_REM
+    title: 狭い幅の境目
+    container: src/interact/side-toc.ts
+    summary: 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の帯で出す。CSS のコンテナクエリと同じ値で、項目を押した後にパネルを隠すかを決めるのに使う
+    value: '48'
+    status: planned
+    introduced:
+      pr: 166
+  - name: SIDE_TOC_HEADING_SELECTOR
+    title: 右側の目次に並べる見出し
+    container: src/interact/side-toc.ts
+    summary: 右側の目次に並べる見出しのセレクタ。埋め込んだ HTML（`.mdmark-html`）の中の見出しは除く
+    value: '"h1[id], h2[id], h3[id]"'
+    status: planned
+    introduced:
+      pr: 166

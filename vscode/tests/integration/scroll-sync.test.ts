@@ -37,6 +37,9 @@ function longDocument(): string {
   ).join("\n");
 }
 
+/** 狭い幅の帯とみなす右側の目次の高さの上限（px） */
+const BAND_MAX_HEIGHT = 120;
+
 /** `n` 番目の節（1 始まり）の見出しの行（0 始まり） */
 function headingLine(n: number): number {
   return (n - 1) * SECTION_LINES;
@@ -81,6 +84,15 @@ async function blockAt(line: number) {
   return blocks.sort((x, y) => y.source - x.source)[0];
 }
 
+/** 狭い幅で右側の目次を上端の帯にしているときの、帯の下端（帯が無いときは 0） */
+async function bandBottom(): Promise<number> {
+  const [aside] = await inspect(".mdmark-side-toc");
+  // 広い幅の右の列は画面の高さいっぱいの縦長で、帯は 1 行分の高さ
+  return aside !== undefined && aside.height < BAND_MAX_HEIGHT
+    ? aside.top + aside.height
+    : 0;
+}
+
 /** `scrollToLine` を送った数 */
 function scrollCount(record: RecordedPanel): number {
   return record.sent.filter((message) => message.type === "scrollToLine")
@@ -114,12 +126,15 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
     await waitFor(() => lastScrollLine(record) === start, {
       message: "止まった先頭の行を送っていない",
     });
-    // 先頭の行を含むブロックが、プレビューの先頭に来る
+    // 先頭の行を含むブロックが、プレビューの先頭（狭い幅の帯があればその下端）に来る
     await waitFor(
       async () => {
         const block = await blockAt(start);
+        const inset = await bandBottom();
         return (
-          block !== undefined && block.top <= 5 && block.top + block.height > 0
+          block !== undefined &&
+          block.top - inset <= 5 &&
+          block.top + block.height > inset
         );
       },
       { message: "ブロックがプレビューの先頭に来ない" },

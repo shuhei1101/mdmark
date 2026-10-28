@@ -198,7 +198,9 @@ test("test_normal_when_closed", async ({ page }) => {
   // 検証
   await expect(page.locator("#doc .mdmark-diff-line")).toHaveCount(0);
   await expect(page.locator("body > .mdmark-diff-minimap")).toHaveCount(0);
-  await expect(page.locator("#doc p")).toHaveText("本文の段落。");
+  await expect(page.locator("#doc .mdmark-content p")).toHaveText(
+    "本文の段落。",
+  );
   await expect(toggleOf(page)).toBeFocused();
   await expect(toggleOf(page)).toHaveAttribute("aria-expanded", "false");
 });

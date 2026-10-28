@@ -13,6 +13,7 @@ function resolvedConfig(
     libraries,
     tooltips: { placement: "top" },
     syntax: { url: "https://example.test/hl/" },
+    sideToc: { mode: "hover" },
   };
 }
 

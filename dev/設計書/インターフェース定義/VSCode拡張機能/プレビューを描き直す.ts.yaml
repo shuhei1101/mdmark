@@ -207,7 +207,7 @@ constraints:
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送る。範囲の外の値は既定の値として扱う
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
   - item: 送る中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`、`mdmark.preview.theme`。差分は送らない'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`、`mdmark.preview.theme`。差分は送らない'
   - item: 背面のパネル
     constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る
     notes: '背面の間の `postMessage` は届かない（PoC #70）'
@@ -215,7 +215,7 @@ constraints:
     constraint: '`mdmark.configPath` を Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決する。無ければ設定なしで描き、知らせは出さない'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 設定の取り出し方
-    constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
+    constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`side-toc` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
     constraint: '`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'

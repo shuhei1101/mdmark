@@ -170,6 +170,32 @@ scenarios:
       - 行の開閉のボタンが出ていない
       - 印刷の後のイベントの後、説明の列が畳まれ、行に開閉のボタンがある
     test: test_normal_when_collapsed_column_printed
+  - name: 正常シナリオ（右側の目次と節のボタンを印刷に出さない）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        notes: 設定の `side-toc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出しておく
+      - name: H1 の閉じた節を持つ Markdown
+        description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 閉じた H1 の節を開く
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 右側の目次とボタンの無い印刷の出力
+        B->>M: 印刷の後のイベント
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、右側の目次・目次を出すボタン・すべて展開とすべて折りたたむのボタンが出ていない
+      - 印刷の前のイベントの後、`付録` の段落が表示されている
+      - 印刷の後のイベントの後、右側の目次が表示され、`付録` の節が閉じている
+    test: test_normal_when_side_toc_hidden_in_print
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

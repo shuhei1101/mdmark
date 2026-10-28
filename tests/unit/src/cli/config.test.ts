@@ -222,3 +222,27 @@ test("test_validate_config_when_syntax_url_invalid", async () => {
   expect(valid.issues).toEqual([]);
   expect(valid.config.syntax?.url).toBe("/vendor/hl/");
 });
+
+// hover・fixed 以外の side-toc.mode を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_side_toc_mode_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { "side-toc": { mode: "left" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { "side-toc": { mode: "fixed" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "side-toc.mode",
+    kind: "schema",
+  });
+  expect(invalid.config["side-toc"]).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config["side-toc"]?.mode).toBe("fixed");
+});

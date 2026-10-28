@@ -117,7 +117,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: h2〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く
+    description: h1〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く
     reload: reload
     status: planned
   - key: features.row-details
@@ -406,5 +406,34 @@ settings:
     status: planned
     introduced:
       pr: 97
+  - key: features.side-toc
+    title: 右側の目次の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 描いた文書の右側に h1〜h3 の目次を置く。見出しが無い文書には置かない。文書の `features` の印でその文書だけオン・オフできる
+    reload: reload
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+    implementation: src/config.ts#DEFAULT_FEATURES
+    status: planned
+    introduced:
+      pr: 166
+  - key: side-toc.mode
+    title: 右側の目次の出し方
+    file: mdmark.config.yaml
+    type: '"hover" | "fixed"'
+    required: false
+    default: '`hover`'
+    description: 右側の目次の出し方。`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときはどちらも狭い幅の帯で出す
+    reload: reload
+    allowed: '`hover` / `fixed`。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+    implementation: src/config.ts#resolveConfig
+    status: planned
+    introduced:
+      pr: 166
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
