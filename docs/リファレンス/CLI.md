@@ -70,12 +70,17 @@ Markdown を 1 つ、CDN を読まない 1 枚の HTML に書き出す。
 警告の対象は、読めない画像・外部ライブラリのモジュール・拡張・`theme` の CSS と、埋めずに残した絶対 URL の画像。
 文書間のリンクは書いたままの `href` で残し、警告に出さない。
 
+設定に `aliases` があるときは、行の `paths` の YAML を読み、[`buildAliases`](./API.md#エイリアスを作る) で作ったエイリアスから `env` を除いて、書き出す HTML に埋める。
+当たるファイルが無い行・読めない YAML・使えない行とレコードは、書き出しを止めず、警告（`警告: {ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `警告: {ファイル}: {種類}: {内容}`）に出す。
+種類と意味は [設定と索引を点検する](#設定と索引を点検する) と同じ。
+
 ```text
 書き出した: docs/使い方/guide.html
 ```
 
 ```text
 警告: docs/使い方/guide.md: 画像 `img/missing.png` を読めません。パスを直すか画像を置いてください。
+警告: aliases/terms.yaml:terms[2].description: alias_required_empty: `aliases/terms.yaml` の `terms[2]` の `description` が空です。説明を記載してください。
 ```
 
 ### 使い方
@@ -109,7 +114,7 @@ npx github:shuhei1101/mdmark#v{版} export {文書} [--out {出力}] [--config {
 手順は [文書を1枚にまとめる](../使い方/書き出す/文書を1枚にまとめる.md)。
 
 標準出力に `書き出した: {build.out}（文書 {件数} 件）` の 1 行を出す。
-警告は、[文書を HTML に書き出す](#文書を-html-に書き出す) の警告に、まとめた HTML に含まれない文書へのリンクと、`build.glossary` と `build.entry` がまとめる文書に当たらないことを足して出す。
+警告は、[文書を HTML に書き出す](#文書を-html-に書き出す) の警告（設定の `aliases` の警告を含む。エイリアスはまとめた全ての文書で効く）に、まとめた HTML に含まれない文書へのリンクと、`build.glossary` と `build.entry` がまとめる文書に当たらないことを追加して出す。
 
 ```text
 書き出した: dist/docs.html（文書 3 件）
@@ -142,13 +147,13 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 ## 設定と索引を点検する
 
-設定の形・索引と文書のずれ・`build` の対象の有無・文書の本文にある知らない印を点検する。
-ずれの一覧を標準出力に出し、設定・索引・文書は書き換えない。
+設定の形・索引と文書のずれ・`build` の対象の有無・設定の `aliases` のずれ・文書の本文にある知らない印を点検する。
+ずれの一覧を標準出力に出し、設定・索引・文書・エイリアスの YAML は書き換えない。
 手順は [点検する](../使い方/書き出す/点検する.md)。
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `no_documents` → `checkIndex` が返した並び → `unknown_mark`。
+並びは `schema` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark`。
 内容は、何が合わないかと直し方の日本語の 1 文。
 
 ```text
@@ -163,7 +168,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 | 種類 | 意味 |
 | --- | --- |
-| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルが無いもの、`extensions` の拡張を読み込めないものを含む |
+| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].metadata.alias_type` の形）を含む |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
 | `orphan_doc` | 文書があって、索引に無い |
@@ -179,13 +184,23 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `broken_tag_replacement` | タグの語彙の `deprecated` の振り替え先が、語彙に無い |
 | `unregistered_tag` | 文書のタグが、語彙の `name` にも `aliases` にも無い。近いタグを添える |
 | `deprecated_tag` | 文書のタグが、やめたタグに当たる。振り替え先を添える |
+| `alias_no_files` | `aliases` の行の `paths` に当たるファイルが 0 件。場所は `aliases[1].paths` |
+| `alias_unreadable` | `paths` に当たったファイルを YAML として読めない |
+| `duplicate_alias_row_id` | `aliases` の行の `id` が、前の行と重なっている。重なった後の行は読まない |
+| `alias_records_missing` | 行の `records` のキーの配列が、ファイルに無い |
+| `alias_field_missing` | `metadata` の `ref` が指す列が、レコードに無い |
+| `alias_unknown_type` | `ref` で取った `alias_type` が、9 つの種類に無い |
+| `alias_required_empty` | 種類の必須のキーが空。`env` は `url` と `port` が両方空のとき |
+| `duplicate_alias_id` | エイリアスの `id` が、前のエイリアス（`env` を含む）と重なっている |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
 
 <!-- /table -->
 
 `missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`duplicate_alias_row_id` から `duplicate_alias_id` までは、`buildAliases` が返す `kind` と同じ（[エイリアスを作る](./API.md#エイリアスを作る)）。
 タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
 `missed_change_together` は、`--base` を渡したときだけ出る。
+エイリアスのずれは、設定に `aliases` があるときだけ出る。`enabled` が `false` の行は読まない。`env` のレコードも種類と必須のキーを確かめ、ずれがあれば出す。
 
 ### 使い方
 
