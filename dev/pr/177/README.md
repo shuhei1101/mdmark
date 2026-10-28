@@ -1,0 +1,1 @@
+# PoC: 取り込んだ alias-inject のスキーマで設定の aliases を検証し、ずれの文にする
