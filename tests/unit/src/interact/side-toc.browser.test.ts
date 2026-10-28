@@ -299,6 +299,49 @@ test("test_attach_side_toc_when_link_into_closed_section", async () => {
   expect(click.defaultPrevented).toBe(false);
 });
 
+// 項目の href を書き換えても、data-heading-id の見出しへ節を開いて移る（正常系）
+test("test_attach_side_toc_when_href_rewritten", async () => {
+  // 準備
+  const { attachSideToc } = await loadSideToc();
+  const { attachSections } = await loadSections();
+  const { root } = createRoot(
+    "## 導入\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+  );
+  const result = attachSideToc({
+    el: root,
+    mode: "hover",
+    sections: true,
+    state: createState(),
+  });
+  track(result.detach);
+  track(
+    attachSections({
+      root: result.content,
+      sections: true,
+      rowDetails: true,
+    }),
+  );
+  const scrollIntoView = vi
+    .spyOn(Element.prototype, "scrollIntoView")
+    .mockImplementation(() => {});
+  const link = find<HTMLAnchorElement>(
+    result.aside as HTMLElement,
+    'a[data-heading-id="注意"]',
+  );
+  link.setAttribute("href", "#/a.md#注意");
+  // 実行
+  link.dispatchEvent(
+    new MouseEvent("click", { bubbles: true, cancelable: true }),
+  );
+  // 検証
+  expect(queryContent(root, '[id="section-導入"]').hasAttribute("hidden")).toBe(
+    false,
+  );
+  expect(scrollIntoView.mock.contexts).toContain(
+    queryContent(root, '[id="注意"]'),
+  );
+});
+
 // すべて折りたたみ・すべて展開で節をまとめて開閉する（正常系）
 test("test_attach_side_toc_when_fold_all", async () => {
   // 準備

@@ -48,7 +48,7 @@ function renderItems(
   return items
     .map(({ heading, children }) => {
       const mark = heading.id === current ? ' aria-current="location"' : "";
-      const link = `<a href="#${escapeHtml(heading.id)}"${mark}>${escapeHtml(heading.text)}</a>`;
+      const link = `<a href="#${escapeHtml(heading.id)}" data-heading-id="${escapeHtml(heading.id)}"${mark}>${escapeHtml(heading.text)}</a>`;
       const nested = children.length
         ? `<ul>${renderItems(children, current)}</ul>`
         : "";

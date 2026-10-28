@@ -27,7 +27,7 @@ test("test_render_side_toc", async () => {
   expect(findTag(html, "<aside")).toContain('data-mode="hover"');
   expect(findTag(html, "<nav")).toContain('aria-label="右側の目次"');
   expect(html).toContain(
-    '<li><a href="#手引き">手引き</a><ul><li><a href="#導入">導入</a><ul><li><a href="#前提">前提</a></li></ul></li><li><a href="#使い方">使い方</a></li></ul></li>',
+    '<li><a href="#手引き" data-heading-id="手引き">手引き</a><ul><li><a href="#導入" data-heading-id="導入">導入</a><ul><li><a href="#前提" data-heading-id="前提">前提</a></li></ul></li><li><a href="#使い方" data-heading-id="使い方">使い方</a></li></ul></li>',
   );
   expect(findTags(html, 'class="mdmark-side-toc-bar"')).toHaveLength(4);
   expect(findTag(html, "mdmark-side-toc-rail")).toContain('aria-hidden="true"');
@@ -104,5 +104,6 @@ test("test_render_side_toc_when_text_has_html", async () => {
   // 検証
   expect(html).toContain("&lt;b&gt;太字&lt;/b&gt;");
   expect(html).toContain('href="#a&quot;b"');
+  expect(html).toContain('data-heading-id="a&quot;b"');
   expect(html).not.toContain("<b>");
 });

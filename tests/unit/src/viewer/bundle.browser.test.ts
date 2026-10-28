@@ -72,3 +72,36 @@ test("test_start_bundle_when_missing_document", async () => {
   ).toContain("文書A");
   expect(location.hash).toBe("#/a.md");
 });
+
+// 右側の目次の項目を押すと、閉じた節を開いて見出しへ移る（正常系）
+test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  const payload = {
+    ...PAYLOAD,
+    docs: [
+      { path: "a.md", title: "A", markdown: "# 文書A\n" },
+      {
+        path: "b.md",
+        title: "B",
+        markdown: "## 導入\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+      },
+    ],
+  };
+  history.replaceState(null, "", "#/b.md");
+  startBundle(document, payload, {});
+  const body = document.querySelector<HTMLElement>('[id="section-導入"]');
+  const link = document.querySelector<HTMLAnchorElement>(
+    '.mdmark-side-toc a[data-heading-id="注意"]',
+  );
+  if (body === null || link === null) {
+    throw new Error("節の中身か右側の目次の項目が無い");
+  }
+  expect(body.hasAttribute("hidden")).toBe(true);
+  // 実行
+  link.click();
+  // 検証
+  expect(body.hasAttribute("hidden")).toBe(false);
+  expect(decodeURIComponent(location.hash)).toBe("#/b.md#注意");
+});

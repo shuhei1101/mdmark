@@ -255,6 +255,10 @@ export function startPreview(): void {
       if (link === null || link === undefined) {
         return;
       }
+      // 右側の目次のリンクは右側の目次へ届け、下のバブリングで止める
+      if (link.closest(".mdmark-side-toc") !== null) {
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       const href = link.getAttribute("href") ?? "";
@@ -269,6 +273,16 @@ export function startPreview(): void {
     },
     true,
   );
+  // 右側の目次のリンク: 右側の目次の操作が節を開いて移った後に、リンクの既定の動きと window への伝播を止める
+  document.addEventListener("click", (event) => {
+    if (
+      event.target instanceof Element &&
+      event.target.closest(".mdmark-side-toc a[href]") !== null
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
   window.addEventListener("message", (event: MessageEvent<HostMessage>) => {
     const message = event.data;
     if (message.type === "render") {

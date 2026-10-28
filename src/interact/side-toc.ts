@@ -179,7 +179,8 @@ export function attachSideToc(options: {
       });
       requestUpdate();
     } else if (link) {
-      const id = (link.getAttribute("href") ?? "").slice(1);
+      // 呼ぶ側が href を書き換えても引けるよう、見出しは data-heading-id で引く
+      const id = link.dataset.headingId;
       const target = targets.find((heading) => heading.id === id);
       // 既定の動き（URL の # を変える）は止めず、URL が同じでも節を開いて移る
       if (target) {

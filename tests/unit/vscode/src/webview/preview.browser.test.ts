@@ -307,3 +307,36 @@ test("test_start_preview_when_link_clicked", async () => {
     { type: "openLink", href: "./other.md" },
   ]);
 });
+
+// 右側の目次の項目の押下を右側の目次へ届け、window へは伝えない（正常系）
+test("test_start_preview_when_side_toc_link_clicked", async () => {
+  // 準備
+  const { startPreview } = await loadPreview();
+  const postMessage = vi.fn();
+  vi.stubGlobal("acquireVsCodeApi", () => ({ postMessage }));
+  createRoot();
+  const holder = document.createElement("div");
+  holder.innerHTML =
+    '<aside class="mdmark-side-toc"><a href="#注意" data-heading-id="注意">注意</a></aside><h3 id="注意">注意</h3>';
+  document.body.append(holder);
+  placed.push(holder);
+  startPreview();
+  const aside = holder.querySelector("aside") as HTMLElement;
+  const reachedAside = vi.fn();
+  const reachedWindow = vi.fn();
+  aside.addEventListener("click", reachedAside);
+  window.addEventListener("click", reachedWindow);
+  try {
+    // 実行
+    await userEvent.click(holder.querySelector("a") as HTMLElement);
+  } finally {
+    window.removeEventListener("click", reachedWindow);
+  }
+  // 検証
+  expect(reachedAside).toHaveBeenCalledTimes(1);
+  expect(reachedWindow).not.toHaveBeenCalled();
+  const opened = postMessage.mock.calls
+    .map(([message]) => message)
+    .filter((message) => message.type === "openLink");
+  expect(opened).toEqual([]);
+});
