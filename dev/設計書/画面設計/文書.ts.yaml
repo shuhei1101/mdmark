@@ -285,18 +285,23 @@ elements:
       - name: id
         value: '`render` は描くごとに文書の中で一意な値（`mdmark-term-{通し番号}`）。`mount` はページの中で一意な値（`mdmark-term-{mount の通し番号}-{通し番号}`）に振り直し、語の `aria-describedby`・`aria-details` も合わせて直す'
       - name: meaning
-        value: 一致した用語の意味（索引の `terms[].meaning`、描く文書の用語集の表の意味の列、参照の表の `glossary[].meaning` の優先の順）。用語に一致しないときは空
+        value: 一致した用語の意味（索引の `terms[].meaning`、描く文書の用語集の表の意味の列、参照の表の `glossary[].meaning` の優先の順）。用語に一致しないときと、エイリアスを選んだときは空
       - name: docs
         value: 語に `aliases` が一致した索引の文書（描く文書自身を除く）の `title`・描く文書の `path` から見た相対パス・`description`。`backlinks` がオフのときは空
+      - name: alias
+        value: 語が `opts.aliases` の `avoid` 以外の種類のエイリアスの `name`・`aliases` に一致し、照合の優先の順（索引の `terms`・`opts.aliases`・描く文書の表・ほかの文書の表）でそのエイリアスを選んだとき、そのエイリアス。選ばなかったときは渡さない
+      - name: copy
+        value: '`command` のエイリアスのとき `idle`。コピーのボタンを押した後は `mount` が `copied`・`failed` に切り替える'
       - name: replacement
-        value: 語が索引の `terms[].avoid`、描く文書の用語集の表のやめた言い方の列、参照の表の `glossary[].avoid` のどれかに一致したとき、その用語の `term` と `meaning`（用語集の表はその行の用語の列と意味の列。同じ言い方を複数の用語が持つときは、索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。一致しないときは渡さない
+        value: 語が索引の `terms[].avoid`、`opts.aliases` の `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、描く文書の用語集の表のやめた言い方の列、参照の表の `glossary[].avoid` のどれかに一致したとき、その用語の `term` と `meaning`（`avoid` の種類のエイリアスは `replacement` を `term` にし `meaning` を渡さない。`term` の種類の `avoid` はそのエイリアスの `name` と `description`。用語集の表はその行の用語の列と意味の列。同じ言い方を複数の用語が持つときは、索引の `terms`、`opts.aliases` の並び、索引の `docs` の順の文書の表の順で先の用語）。一致しないときは渡さない
     position: 描く先の要素 > 本文の文字
-    description: 本文に出た用語と文書の別名に破線の下線を引き、ポインターとフォーカスで「用語」「関連文書」のツールチップを出す。用語のやめた言い方には波線の下線を引き、「代わりの用語」のツールチップを出す。描いた直後はツールチップを閉じている
-    visible_when: 用語・文書の別名・用語のやめた言い方が本文に出て、`glossary`（文書の別名は `backlinks`）がオンのとき。用語は用語の `id`、文書の別名は文書の `id`、やめた言い方は言い方ごとに、節で最初に出たところだけ。コード・リンク・見出し・用語集の表の中には置かない
-    action: ポインターを乗せるかフォーカスすると開き、ツールチップの上へ移っても開いたまま。Esc で閉じてフォーカスを語に戻す。関連文書のあるときは Tab で中のリンクへ移る。語の上に開き、上に収まらなければ下に開く（設定の `tooltips.placement` が `bottom` のときは下に開き、下に収まらなければ上に開く）
+    description: 本文に出た用語と文書の別名に破線の下線を引き、ポインターとフォーカスで「用語」「関連文書」のツールチップを出す。エイリアスにも破線の下線を引き、種類ごとの区分のツールチップを出す。用語のやめた言い方には波線の下線を引き、「代わりの用語」のツールチップを出す。描いた直後はツールチップを閉じている
+    visible_when: 用語・文書の別名・エイリアス・用語のやめた言い方が本文に出て、`glossary`（文書の別名は `backlinks`）がオンのとき。用語は用語の `id`、文書の別名は文書の `id`、エイリアスはエイリアスの `id`、やめた言い方は言い方ごとに、節で最初に出たところだけ。コード・リンク・見出し・用語集の表の中には置かない
+    action: ポインターを乗せるかフォーカスすると開き、ツールチップの上へ移っても開いたまま。Esc で閉じてフォーカスを語に戻す。関連文書・エイリアスの URL のリンク・コマンドのコピーのボタンのあるときは Tab で中のリンクとボタンへ移る。語の上に開き、上に収まらなければ下に開く（設定の `tooltips.placement` が `bottom` のときは下に開き、下に収まらなければ上に開く）
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[用語と文書の別名の下線]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[やめた言い方のマーカー]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[エイリアスのツールチップ]
     status: planned
   - name: 用語集の表
     id: glossary-table
@@ -874,5 +879,18 @@ elements:
     status: planned
     introduced:
       pr: 166
+  - name: エイリアスのコマンドのコピーのボタン
+    id: alias-copy
+    kind: button
+    position: 描く先の要素 > 本文の文字 > 用語のツールチップ > コマンド
+    description: '`command` のエイリアスのツールチップで、コマンドの右に置くコピーのボタン（アイコンと文言）と、結果を読み上げる `role="status"` の要素。文言とアイコンは `コピー`（`copy`）・`コピーしました`（`check`）・`コピーできませんでした`（`circle-alert`）で切り替え、読み上げには `コマンドを{文言}` を渡す'
+    label: コピー
+    visible_when: '`command` のエイリアスのツールチップを開いたとき'
+    initial_state: 活性
+    initial_value: '`コピー`（`data-state="idle"`）'
+    action: 押すとエイリアスの `command` の文字をクリップボードへ書く。書けたら `コピーしました` にして 2 秒で戻し、書けなければ次に押すまで `コピーできませんでした` にする。押してもツールチップを閉じない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コマンドのコピー]
+    status: planned
 mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。
