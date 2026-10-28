@@ -255,6 +255,114 @@ scenarios:
       - '`ＷＳ` にポインターを乗せると `話し合いの記録を置くフォルダ` のツールチップが出る'
       - '`WorkPlace` にやめた言い方のマーカーが付き、ポインターを乗せると代わりの用語 `ワークスペース` と意味 `話し合いの記録を置くフォルダ` のツールチップが出る'
     test: test_normal_when_width_and_case_differ
+  - name: 正常シナリオ（エイリアスを渡す）
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引を渡さずに、読み込んだエイリアスを渡して文書を描く HTML
+      - name: 種類の違うエイリアス
+        description: '`term` の `レビュー`（説明 `変更を別の人が確かめること`）、`doc` の `設計書`（説明 `仕様を記載した文書`）、`url` の `課題の一覧`（説明 `Issue を並べたページ`、URL `https://github.com/shuhei1101/mdmark/issues`）、`skill` の `記録の取り込み`（スキル名 `mindstella:session`）、`tool` の `点検のツール`（ツール名 `check`）、`path` の `設定ファイル`（パス `mdmark.config.yaml`）、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）'
+        notes: '`term` の `レビュー` は別名 `査読` も持つ'
+      - name: エイリアスが出る Markdown
+        description: 段落ごとに、7 つのエイリアスの名前と、`レビュー` の別名 `査読` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を渡して描かせる
+        M->>M: エイリアスの名前と別名を、用語と同じ規則で照合する
+        M-->>P: 節ごとに最初に出たところだけに下線を引いて描く
+        U->>P: 下線の付いた語にポインターを乗せる
+        P-->>U: エイリアスの種類ごとの内容のツールチップを表示
+    expected:
+      - 7 つのエイリアスの名前と別名 `査読` に、用語と同じ破線の下線が付いている
+      - '`査読` のツールチップに名前 `レビュー` と説明 `変更を別の人が確かめること` が出る'
+      - '`設計書` のツールチップに名前と概要 `仕様を記載した文書` が出る'
+      - '`課題の一覧` のツールチップに名前・説明と、`href` が `https://github.com/shuhei1101/mdmark/issues` のリンクが出る'
+      - '`記録の取り込み`・`点検のツール`・`設定ファイル` のツールチップに、それぞれスキル名 `mindstella:session`・ツール名 `check`・パス `mdmark.config.yaml` がコードとして出る'
+      - '`開発サーバー` のツールチップに、`href` が `http://127.0.0.1:8767/` のリンクとポート `8767` が出る'
+      - Tab でツールチップの中のリンクへフォーカスが移り、Esc を押すとツールチップが消える
+    test: test_normal_when_aliases
+  - name: 正常シナリオ（コマンドをコピーする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（エイリアスを渡す）と同じ
+      - name: コマンドのエイリアス
+        description: '`command` の `単体テスト`（説明 `ライブラリ本体の単体テストを流す`、コマンド `npm run test:unit`、実行場所 `リポジトリの直下`）'
+      - name: コマンドが出る Markdown
+        description: 段落に `単体テスト` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。クリップボードの読み書きを許可したブラウザで開く
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を渡して描かせる
+        M-->>P: コマンドのエイリアスに下線を引いて描く
+        U->>P: 下線の付いた語にフォーカスし、ツールチップのコピーのボタンを押す
+        P-->>U: コマンドをクリップボードへコピーし、コピーしたことを表示
+    expected:
+      - '`単体テスト` のツールチップに、説明 `ライブラリ本体の単体テストを流す`・コマンド `npm run test:unit`（コードとして出る）・実行場所 `リポジトリの直下` が出る'
+      - コピーのボタンを押すと、クリップボードの文字が `npm run test:unit` になる
+      - 押した後、ボタンにコピーしたことが文字で出る（色だけで示さない）
+      - Tab でコピーのボタンへフォーカスが移り、Enter で押せる
+    test: test_normal_when_copy_command
+  - name: 正常シナリオ（やめた言い方のエイリアス）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（エイリアスを渡す）と同じ
+      - name: やめた言い方のエイリアス
+        description: '`avoid` の `作業場`（置き換え先 `ワークスペース`）と、`term` の `ブランチ`（説明 `作業を分ける線`、`avoid` に `枝`）'
+      - name: やめた言い方が出る Markdown
+        description: 段落に `作業場` と `枝` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を渡して描かせる
+        M->>M: やめた言い方のエイリアスと term の avoid を、やめた言い方として照合する
+        M-->>P: やめた言い方にマーカーを付けて描く
+        U->>P: マーカーの付いた語にポインターを乗せる
+        P-->>U: 置き換え先のツールチップを表示
+    expected:
+      - '`作業場` と `枝` に、索引のやめた言い方と同じマーカーが付いている（用語の破線の下線と形で見分けられる）'
+      - '`作業場` のツールチップに置き換え先 `ワークスペース` が出る'
+      - '`枝` のツールチップに代わりの用語 `ブランチ` と説明 `作業を分ける線` が出る'
+    test: test_normal_when_avoid_alias
+  - name: 異常シナリオ（使えないエイリアス）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（エイリアスを渡す）と同じ
+      - name: 使えないエイリアスを含むエイリアス
+        description: 正しい `term` の `レビュー`、コマンドを持たない `command` の `ビルド`、9 つの種類に無い `alias_type`（`memo`）の `メモ`、URL が `javascript:alert(1)` の `url` の `危ないリンク`
+        notes: 種類の必須のキーが空・知らない種類・http と https でない URL を 1 つずつ置いて決定的に起こす
+      - name: エイリアスが出る Markdown
+        description: 段落に `レビュー`・`ビルド`・`メモ`・`危ないリンク` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を渡して描かせる
+        M->>M: 種類の必須のキーが空のエイリアスと知らない種類のエイリアスを除く
+        M-->>P: 使えるエイリアスだけに下線を引いて描く
+        U->>P: 危ないリンクの下線の語にポインターを乗せる
+        P-->>U: URL をリンクにせず文字で出したツールチップを表示
+    expected:
+      - 段落が描かれている
+      - '`レビュー` に下線が付き、ツールチップが出る'
+      - '`ビルド` と `メモ` に下線が付いていない'
+      - '`危ないリンク` のツールチップの URL は `a` 要素ではなく文字で出る'
+      - 描く処理が例外を投げず、知らせの枠も出ない
+    test: test_error_when_invalid_alias
 lead: 使う側が索引に書いた用語の語・別名が本文に出ると、mdmark が破線の下線を引き、読む人がポインターを乗せるかフォーカスすると意味のツールチップが出る。
 issue: 5
 primary_actor: 文書を読む人
@@ -267,7 +375,9 @@ trigger: 使う側のページが、索引と描く文書の `id` を渡して�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 用語のツールチップの機能（`glossary`）がオン（既定）
-success_guarantee: 本文に出た用語の語・別名に破線の下線が付き、ポインターを乗せたときとフォーカスしたときに、その用語の意味のツールチップが出る。ツールチップは語の上に出て、上に収まらないときだけ語の下に出る。本文に出た用語のやめた言い方にはマーカーが付き、同じ操作で代わりの用語とその意味のツールチップが出る。用語の語・別名・やめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに照合する。
+success_guarantee: |-
+  本文に出た用語の語・別名に破線の下線が付き、ポインターを乗せたときとフォーカスしたときに、その用語の意味のツールチップが出る。ツールチップは語の上に出て、上に収まらないときだけ語の下に出る。本文に出た用語のやめた言い方にはマーカーが付き、同じ操作で代わりの用語とその意味のツールチップが出る。用語の語・別名・やめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに照合する。
+  使う側が読み込んだエイリアスを渡すと、エイリアスの名前・別名にも同じ下線が付き、ツールチップにエイリアスの種類ごとの内容（コマンドとコピーのボタン・リンク・置き換え先など）が出る。
 minimal_guarantee: 索引を渡さないときも、索引の一部が Schema に合わないときも、本文は描かれる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#

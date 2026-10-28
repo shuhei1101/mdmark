@@ -81,6 +81,27 @@ scenarios:
       - 文字列に、`API` へのリンクを持つ被参照の一覧がある
       - 文字列に `script` 要素と印の文字（`<!--`）が無い
     test: test_normal_when_index
+  - name: 正常シナリオ（エイリアスを渡す）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、読み込んだエイリアスを渡して HTML 文字列にする
+      - name: エイリアス
+        description: '`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）と、`command` の `単体テスト`（コマンド `npm run test:unit`）'
+      - name: エイリアスが出る Markdown
+        description: 段落に `ワークスペース` と `単体テスト` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 読み込んだエイリアスと Markdown を渡して HTML 文字列にさせる
+        M-->>C: エイリアスの下線とツールチップを持つ HTML 文字列
+    expected:
+      - 文字列に、`ワークスペース` の下線の要素と、説明 `話し合いの記録を置くフォルダ` を持つ要素がある
+      - 文字列に、`単体テスト` の下線の要素と、コード `npm run test:unit` とコピーのボタンを持つ要素がある
+      - 文字列に `script` 要素と印の文字（`<!--`）が無い
+    test: test_normal_when_aliases
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返す。
 issue: 3
 primary_actor: mdmark で HTML を書き出す使う側の処理

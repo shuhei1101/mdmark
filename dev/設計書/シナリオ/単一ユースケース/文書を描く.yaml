@@ -154,6 +154,30 @@ scenarios:
       - 見出し・段落・表・コードブロックの要素が、それぞれ Markdown で始まる行の番号を元の行番号の属性に持つ
       - 見た目（要素の位置と色の計算値）は、元の行番号の属性が無いときと同じ
     test: test_normal_when_source_lines
+  - name: 正常シナリオ（エイリアスを渡す）
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引を渡さずに、読み込んだエイリアスを渡して文書を描く HTML
+      - name: エイリアス
+        description: '`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）'
+      - name: 用語が出る Markdown
+        description: 段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を渡して描かせる
+        M-->>P: エイリアスの語に下線を引いて描く
+        P->>M: 本文を差し替える
+        M-->>P: 同じエイリアスで描き直す
+        P-->>U: 差し替えた本文を表示
+    expected:
+      - 描いた直後、`ワークスペース` に下線が付き、ツールチップに `話し合いの記録を置くフォルダ` が出る
+      - 本文を `ワークスペース` が出る別の段落に差し替えた後も、下線が付いている
+    test: test_normal_when_aliases
 lead: 使う側のページが、要素と Markdown と設定を mdmark に渡し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
 issue: 3
 primary_actor: mdmark を使うアプリのページ
