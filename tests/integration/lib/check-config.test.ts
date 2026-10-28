@@ -262,3 +262,66 @@ test("test_error_when_base_unknown", async () => {
   expect(result.stderr).toContain("fetch-depth");
   expect(await snapshot(dir)).toEqual(before);
 });
+
+// エイリアスの行とレコードのずれを出し、終了コード 1 で終わる（正常系（エイリアスにずれがある））
+test("test_normal_when_alias_drift", async () => {
+  // 準備
+  const dir = await createCleanDir();
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}${[
+      "aliases:",
+      "  - id: records",
+      "    paths: [aliases/*.yaml]",
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+      "  - id: missing",
+      "    paths: [missing/*.yaml]",
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+      "",
+    ].join("\n")}`,
+    "aliases/term.yaml": [
+      "alias_type: term",
+      "id: empty-term",
+      "name: 空の用語",
+      "description: ''",
+      "",
+    ].join("\n"),
+    "aliases/env.yaml": [
+      "alias_type: env",
+      "id: dev-server",
+      "name: 開発サーバー",
+      "url: http://127.0.0.1:8767/",
+      "",
+    ].join("\n"),
+  });
+  const before = [
+    ...(await snapshot(dir)),
+    await readFile(join(dir, "aliases/term.yaml"), "utf8"),
+    await readFile(join(dir, "aliases/env.yaml"), "utf8"),
+  ];
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  expect(
+    lines.some(
+      (line) =>
+        line.includes("alias_no_files") && line.includes("missing/*.yaml"),
+    ),
+  ).toBe(true);
+  expect(
+    lines.some((line) =>
+      line.startsWith("aliases/term.yaml:description: alias_required_empty"),
+    ),
+  ).toBe(true);
+  expect(lines.some((line) => line.includes("aliases/env.yaml"))).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 2 件");
+  expect([
+    ...(await snapshot(dir)),
+    await readFile(join(dir, "aliases/term.yaml"), "utf8"),
+    await readFile(join(dir, "aliases/env.yaml"), "utf8"),
+  ]).toEqual(before);
+});

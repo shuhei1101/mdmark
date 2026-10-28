@@ -336,3 +336,86 @@ test("test_normal_when_syntax_highlighted", async () => {
   expect(externalRequests()).toEqual([]);
   await page.close();
 });
+
+/** エイリアスを読む試験の設定の行: `aliases/` の YAML を `alias_type` の列で種類を決めて読む */
+const ALIAS_CONFIG_LINES = [
+  "aliases:",
+  "  - id: records",
+  "    paths: [aliases/*.yaml]",
+  "    metadata:",
+  "      alias_type: { type: ref, field: alias_type }",
+];
+
+/** エイリアスを読む試験のレコード: 使える `command`・値に URL を持つ `env`・説明が空の `term` */
+const ALIAS_RECORD_FILES: Record<string, string> = {
+  "aliases/command.yaml": [
+    "alias_type: command",
+    "id: run-test",
+    "name: テストを流す",
+    "command: npm test",
+    "",
+  ].join("\n"),
+  "aliases/env.yaml": [
+    "alias_type: env",
+    "id: dev-server",
+    "name: 開発サーバー",
+    "url: http://127.0.0.1:8767/",
+    "",
+  ].join("\n"),
+  "aliases/term.yaml": [
+    "alias_type: term",
+    "id: empty-term",
+    "name: 空の用語",
+    "description: ''",
+    "",
+  ].join("\n"),
+};
+
+/** 書き出した HTML に埋めたエイリアスの `id` を並べて返す */
+function embeddedAliasIds(html: string): string[] {
+  const payload =
+    /<script[^>]*id="mdmark-payload"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1];
+  const parsed = JSON.parse(payload ?? "{}") as {
+    aliases?: Array<{ id: string }>;
+  };
+  return (parsed.aliases ?? []).map((alias) => alias.id);
+}
+
+// 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す（正常系（エイリアスを読む））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${ALIAS_CONFIG_LINES.join("\n")}\n`,
+    "guide.md": "# ガイド\n\nテストを流す、開発サーバーを使う。\n",
+    ...ALIAS_RECORD_FILES,
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const warnings = linesOf(result.stderr);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]).toContain("aliases/term.yaml");
+  expect(warnings[0]).toContain("alias_required_empty");
+  // env は埋めない: 値の URL と id が HTML のソースに無い
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  expect(html).not.toContain("http://127.0.0.1:8767/");
+  expect(html).not.toContain("dev-server");
+  expect(embeddedAliasIds(html)).toEqual(["run-test"]);
+  // 開いた文書: コマンドの名前に下線が付き、ツールチップにコマンドとコピーのボタンが出る
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "guide.html"),
+  );
+  await page.waitForSelector(".mdmark-term");
+  await expect(page.locator(".mdmark-term").allTextContents()).resolves.toEqual(
+    ["テストを流す"],
+  );
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.locator("code").textContent()).resolves.toBe("npm test");
+  await expect(
+    tip.locator("button.mdmark-term-tip-copy").textContent(),
+  ).resolves.toContain("コピー");
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
