@@ -4809,7 +4809,6 @@ test("test_normal_when_side_toc_hovered_and_pinned", async () => {
     // 実行・検証: ピン止めを外して、ポインターを本文へ動かす
     await userEvent.click(pin);
     expect(pin.getAttribute("aria-pressed")).toBe("false");
-    (document.activeElement as HTMLElement).blur();
     await userEvent.hover(find(content, "p"));
     await vi.waitFor(() => {
       expect(panelOpacity(panel)).toBe("0");

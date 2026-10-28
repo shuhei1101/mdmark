@@ -35,11 +35,29 @@ function heading(frame: Frame, n: number) {
   return frame.locator(`h2[data-source-line="${headingLine(n) - 1}"]`);
 }
 
-/** プレビューの `n` 番目の節の見出しの、見えている範囲の先頭からの位置 */
+/** 狭い幅で右側の目次を上端の帯にしているときの、帯の下端（帯が無いときは 0） */
+function bandBottom(frame: Frame): Promise<number> {
+  return frame.evaluate(() => {
+    const aside = document.querySelector(".mdmark-side-toc");
+    const content = document.querySelector(".mdmark-content");
+    if (
+      !aside ||
+      !content ||
+      aside.getBoundingClientRect().width <
+        content.getBoundingClientRect().width
+    ) {
+      return 0;
+    }
+    return aside.getBoundingClientRect().bottom;
+  });
+}
+
+/** プレビューの `n` 番目の節の見出しの、見えている先頭（右側の目次が上端の帯のときは帯の下端）からの位置 */
 async function headingTop(frame: Frame, n: number): Promise<number> {
-  return heading(frame, n).evaluate(
+  const top = await heading(frame, n).evaluate(
     (element) => element.getBoundingClientRect().top,
   );
+  return top - (await bandBottom(frame));
 }
 
 // エディタをスクロールすると、その行のブロックをプレビューの先頭に置き、エディタを動かし直さない（正常シナリオ）

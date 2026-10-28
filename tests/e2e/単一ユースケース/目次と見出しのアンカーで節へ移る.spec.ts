@@ -272,8 +272,6 @@ test("test_normal_when_side_toc_pinned", async ({ page }) => {
   // 実行・検証: もう一度押して、ポインターを本文へ動かす
   await pin.hover();
   await pin.click();
-  // ピン止めのボタンにフォーカスが残るとパネルが出続けるため、フォーカスを外してからポインターを動かす
-  await pin.evaluate((button) => button.blur());
   await body.hover();
   await expect(pin).toHaveAttribute("aria-pressed", "false");
   await expectPanelShown(page, false);
