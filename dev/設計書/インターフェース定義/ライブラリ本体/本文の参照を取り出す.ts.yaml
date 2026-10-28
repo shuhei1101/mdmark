@@ -216,6 +216,35 @@ flows:
     test: test_normal_when_notation_differs
     refs:
       - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（全角と半角・大文字と小文字だけが違う語）]
+  - name: 正常系（エイリアス）
+    summary: 渡したエイリアスの一致を alias の参照先として返し、avoid の種類を avoided に返す
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 索引
+        description: 文書 `guide`（`guide.md`）だけを持ち、`terms` を持たない索引
+      - name: エイリアス
+        description: '`command` の `単体テスト`（ID `unit-test`、説明 `ライブラリ本体の単体テストを流す`、コマンド `npm run test:unit`）、`avoid` の `作業場`（ID `workplace`、置き換え先 `ワークスペース`）、`env` の `開発サーバー`（ID `dev-server`、URL `http://127.0.0.1:8767/`）'
+      - name: エイリアスが出る本文
+        description: '`guide` の本文。段落に `単体テスト` を 2 回と `作業場`・`開発サーバー` を書く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: collectMatches({ index, documents, aliases })
+        M->>M: 用語・文書の別名・エイリアスを語の区切りに揃えて照合する
+        M-->>C: { byDocument, avoided, targets }
+    expected:
+      - '`byDocument.guide` が `単体テスト` の 2 件を持ち、どちらも `kind` が `alias`、`aliasType` が `command`、`id` が `unit-test`、`title` が `単体テスト`、`description` が `ライブラリ本体の単体テストを流す`'
+      - '`targets` が `unit-test` を 1 回だけ持ち、`dev-server` と `workplace` を持たない'
+      - '`avoided.guide` が `作業場` の 1 件を持ち、`kind` が `alias`、`aliasType` が `avoid`、`id` が `workplace`、`title` が `ワークスペース`'
+      - '`byDocument.guide` と `avoided.guide` が `開発サーバー` を持たない'
+      - 引数の `index`・`documents`・`aliases` が書き換わっていない
+    test: test_normal_when_aliases
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（エイリアスを渡す）]
 lead: 使う側の処理（AI へ本文を返す MCP・サーバー）が、索引と文書の本文を渡し、画面を出さずに、本文に出た用語・文書の別名の一致とその参照先を受け取る。一致の規則は描いた文書の用語の下線とツールチップと同じ。
 identifier: collectMatches
 idempotent: true
@@ -240,6 +269,14 @@ request:
     default: なし（全てのキーに既定を当てる）
     location: argument
     description: '`mount` の `opts.config` と同じ。読むのは `features`（文書ごとの `<!-- features: … -->` を重ねて、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める）だけ'
+  - name: input.aliases
+    type: MdmarkAlias[]
+    required: false
+    default: なし（エイリアスを照合しない）
+    location: argument
+    description: '`mount` の `opts.aliases` と同じ。形は ER 図『エイリアス』'
+    notes: 使えないエイリアス（`env` を含む）は `mount` と同じく除いて照合する
+    status: planned
 request_example: |-
   ```json
   {
@@ -263,17 +300,21 @@ response:
     constraints: キーは `documents` に本文がある索引の文書だけ。一致が無い文書は空の並び
     notes: 並びは本文の頭からの順（行の順、同じ行は始まりの順）。同じ参照先の出現を全て並べる
   - name: byDocument[].kind
-    type: '"term" | "glossary" | "doc"'
-    description: 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書
+    type: '"term" | "glossary" | "doc" | "alias"'
+    description: 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は `input.aliases` のエイリアス
+  - name: byDocument[].aliasType?
+    type: '"term" | "doc" | "command" | "url" | "skill" | "tool" | "path"'
+    description: エイリアスの `alias_type`
+    notes: '`kind` が `alias` のときだけ持つ'
   - name: byDocument[].id
     type: string
-    description: 参照先の ID。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`
+    description: 参照先の ID。`term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`、`alias` はエイリアスの `id`
   - name: byDocument[].title
     type: string
-    description: 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`
+    description: 参照先のタイトル。`term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`、`alias` はエイリアスの `name`
   - name: byDocument[].description?
     type: string
-    description: 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`
+    description: 参照先の短い説明。`term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`、`alias` はエイリアスの `description`
     notes: '`doc` で `docs[].description` を持たないときはキーを持たない'
   - name: byDocument[].text
     type: string
@@ -298,8 +339,11 @@ response:
     constraints: 同じ参照先は 1 回だけ入る
     notes: 並びは索引の `docs` の順に文書を見て、その文書の中の初出の順
   - name: targets[].kind
-    type: '"term" | "glossary" | "doc"'
+    type: '"term" | "glossary" | "doc" | "alias"'
     description: '`byDocument[].kind` と同じ'
+  - name: targets[].aliasType?
+    type: '"term" | "doc" | "command" | "url" | "skill" | "tool" | "path"'
+    description: '`byDocument[].aliasType` と同じ'
   - name: targets[].id
     type: string
     description: '`byDocument[].id` と同じ'
@@ -315,8 +359,12 @@ response:
     constraints: キーは `byDocument` と同じ。やめた言い方が無い文書と `glossary` がオフの文書は空の並び
     notes: 並びは本文の頭からの順。同じやめた言い方の出現を全て並べる
   - name: avoided[].kind
-    type: '"term" | "glossary"'
-    description: 代わりの用語の種類。`byDocument[].kind` の `term`・`glossary` と同じ
+    type: '"term" | "glossary" | "alias"'
+    description: 代わりの用語の種類。`byDocument[].kind` の `term`・`glossary` と同じ。`alias` は `term` の種類のエイリアスの `avoid` か `avoid` の種類のエイリアスで、`avoid` の種類は `title` を `replacement` にし `description` を持たない
+  - name: avoided[].aliasType?
+    type: '"term" | "avoid"'
+    description: エイリアスの `alias_type`
+    notes: '`kind` が `alias` のときだけ持つ'
   - name: avoided[].id
     type: string
     description: 代わりの用語の ID。`byDocument[].id` と同じ書き方
@@ -368,19 +416,19 @@ constraints:
   - item: 実行する環境
     constraint: Node とブラウザで動き、DOM に頼らない。語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返す
   - item: 照合の規則
-    constraint: 用語のツールチップと同じ辞書（索引の `terms` → 照合する文書の用語集の表 → ほかの文書の表。文書の別名は照合する文書自身の別名を除く）と、語の区切りに揃う一致を長い語から取る照合を使う。照合の前に、語と本文の文字の両方を用語のツールチップと同じく正規化する
+    constraint: 用語のツールチップと同じ辞書（索引の `terms` → `input.aliases` → 照合する文書の用語集の表 → ほかの文書の表。文書の別名は照合する文書自身の別名を除く）と、語の区切りに揃う一致を長い語から取る照合を使う。照合の前に、語と本文の文字の両方を用語のツールチップと同じく正規化する
     notes: 節ごとの最初の 1 回の制限は下線のもので、取り出しには効かない
   - item: 照合する範囲
     constraint: 本文の地の文（コード・リンク・見出し・用語集の表の中を除く）、`html` がオンなら埋め込んだ HTML の文字（`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・中身ごと落ちる要素を除く）、`diagrams` がオンなら図の部品の範囲の定義と埋め込んだ HTML の中の custom element の定義の `{{語}}`
     notes: 図の部品の `{{語}}` は、語を正規化した後に用語に一致し、意味が空でないときだけ参照にする（文書の別名は引かない）
   - item: 機能のオフ
-    constraint: 文書の印で `glossary` がオフの文書は用語とやめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
+    constraint: 文書の印で `glossary` がオフの文書は用語・エイリアス・やめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
   - item: 位置の数え方
     constraint: 行は 1 から、行の中の位置は 0 から数える UTF-16 の位置。改行は `\n` で数える
   - item: 計算の量
     constraint: 全ての文書の本文を 1 回ずつ解析する。結果は使う側が持ち、文書を書き換えたときに作り直す
   - item: やめた言い方
-    constraint: 照合の辞書のやめた言い方（索引の `terms[].avoid`。用語の語・別名と同じ語は除く）を用語・文書の別名の語に加えて照合し、やめた言い方の語に当たったところを `avoided` に入れる。照合する範囲は地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない
+    constraint: 照合の辞書のやめた言い方（索引の `terms[].avoid` と、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`。用語の語・別名と同じ語は除く）を用語・文書の別名の語に加えて照合し、やめた言い方の語に当たったところを `avoided` に入れる。照合する範囲は地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{語}}` は照合しない
     notes: 長い語から取るため、用語・別名の一部として出たやめた言い方は返さない。`byDocument` はやめた言い方を加えない照合のまま変えない
 refs:
   - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#

@@ -1,0 +1,196 @@
+title: "エイリアスを作る"
+entry:
+  kind: operation
+  value: '`buildAliases(input)`（配布物 `dist/index.js` の公開関数）'
+flows:
+  - name: 正常系
+    summary: records を持つ行と持たない行から、metadata を当てたエイリアスを並びの順に作り、env と読まない行を除く
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、`buildAliases` を呼ぶ
+      - name: 4 つの行とその中身
+        description: 'リクエスト例の 2 つの行に、`enabled: false` の行 `off` と、`alias_type` を `custom` の `env` にした行 `servers` を加えたもの。`sources` はリクエスト例の 2 つに、`servers` の `servers/dev.yaml`（`id` が `dev-server`、`url` が `http://127.0.0.1:8767/`、`port` が `8767`）と `off` の `off/memo.yaml` を加える'
+        notes: '`terms` のレコードの `aliases` を文字列 `WS` で書き、並びに直ることを確かめる。`commands` のレコードは `name` を持たない'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: buildAliases({ rows, sources })
+        M->>M: 読む行ごとにレコードを取り出し、metadata を当てる
+        M->>M: 種類と必須のキーを確かめ、env を除く
+        M-->>C: { aliases, problems }
+    expected:
+      - '`aliases` が `ws`・`unit-test` の 2 件をこの順に持つ'
+      - '`ws` の `alias_type` が `term`、`name` が `ワークスペース`、`aliases` が `["WS"]`、`description` が `話し合いの記録を置くフォルダ`'
+      - '`unit-test` の `name` が `unit-test`（ファイル名から拡張子を除いたもの）、`command` が `npm run test:unit`'
+      - '`aliases` が `dev-server` と `off` の行のレコードを持たない'
+      - '`problems` が空'
+      - 引数の `rows` と `sources` が書き換わっていない
+    test: test_normal
+  - name: 正常系（使えない行とレコード）
+    summary: 使えない行とレコードを除いてずれにし、残りからエイリアスを作る
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: 使えない行とレコードを混ぜた中身
+        description: 正しい行 `terms` と、`records` が `items` でファイルにそのキーが無い行・`description` を `ref` の `missing_col` で取る行・`alias_type` を `ref` で取り値が `memo` のレコードを持つ行・`command` が空の `command` のレコードを持つ行・`id` が `terms` と同じ行・`id` が `ws`（`terms` のレコードと同じ）のレコードを持つ行
+        notes: ずれの種類ごとに 1 つずつ置いて決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: buildAliases({ rows, sources })
+        M->>M: 使えない行・レコードを除いてずれにする
+        M-->>C: { aliases, problems }
+    expected:
+      - 例外を投げない
+      - '`aliases` が `terms` の行のエイリアスだけを持つ'
+      - '`problems` が `alias_records_missing`・`alias_field_missing`・`alias_unknown_type`・`alias_required_empty`・`duplicate_alias_row_id`・`duplicate_alias_id` を 1 件ずつ持つ'
+      - '`duplicate_alias_row_id` の `file` が `mdmark.config.yaml`、`where` が後の行の `aliases[5].id`'
+      - '`alias_required_empty` の `file` がレコードのファイルのパス、`where` が `command` を指し、`message` に直し方がある'
+    test: test_normal_when_invalid_rows
+lead: 使う側の処理（`mdmark export`・`build`・`check` と dev-docs）が、設定の `aliases` の行と、行の `paths` に当たった YAML を読んだ中身を渡し、`metadata` を当てたエイリアスの配列と、使えない行・レコードのずれの一覧を受け取る。ファイルを読むのは呼ぶ側で、mdmark は渡された値だけからエイリアスを作る。
+identifier: buildAliases
+idempotent: true
+side_effects: なし（引数を書き換えず、ファイルとネットワークを読まない）
+callers:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+  - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+  - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+request:
+  - name: input.rows
+    type: unknown[]
+    required: true
+    location: argument
+    description: 使う側が設定の `aliases` を読んだ配列。形は ER 図『エイリアスの元の行』
+    notes: '`id`・`paths`・`metadata.alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` の `schema` が確かめる）'
+  - name: input.sources
+    type: MdmarkAliasSource[]
+    required: true
+    location: argument
+    description: 行の `paths` に当たったファイルを YAML として読んだ中身の並び。行ごとに `paths` に記載した順、glob の中はパスの順に並べる
+    notes: 読めなかったファイルと、どのファイルにも当たらなかった `paths` は呼ぶ側が扱い、ここには入れない
+  - name: input.sources[].rowId
+    type: string
+    required: true
+    location: argument
+    description: そのファイルを指した行の `id`
+    example: terms
+  - name: input.sources[].path
+    type: string
+    required: true
+    location: argument
+    description: ファイルのパス（設定ファイルのフォルダからの相対パス。区切りは `/`）。ずれの `file` と、`name` を持たないときの名前に使う
+    example: terms/glossary.yaml
+  - name: input.sources[].data
+    type: unknown
+    required: true
+    location: argument
+    description: ファイルを YAML として読んだ値
+  - name: input.configFile
+    type: string
+    required: false
+    default: '`mdmark.config.yaml`'
+    location: argument
+    description: 行のずれの `file` に出す設定ファイルの名前
+    example: docs/mdmark.config.yaml
+request_example: |-
+  ```json
+  {
+    "rows": [
+      {
+        "id": "terms",
+        "paths": ["terms/*.yaml"],
+        "records": "terms",
+        "metadata": {
+          "alias_type": { "type": "custom", "value": "term" },
+          "name": { "type": "ref", "field": "term" },
+          "description": { "type": "ref", "field": "meaning" }
+        }
+      },
+      {
+        "id": "commands",
+        "paths": ["commands/unit-test.yaml"],
+        "metadata": { "alias_type": { "type": "custom", "value": "command" } }
+      }
+    ],
+    "sources": [
+      { "rowId": "terms", "path": "terms/glossary.yaml", "data": { "terms": [{ "id": "ws", "term": "ワークスペース", "aliases": "WS", "meaning": "話し合いの記録を置くフォルダ" }] } },
+      { "rowId": "commands", "path": "commands/unit-test.yaml", "data": { "id": "unit-test", "description": "ライブラリ本体の単体テストを流す", "command": "npm run test:unit" } }
+    ]
+  }
+  ```
+response:
+  - name: aliases
+    type: MdmarkAlias[]
+    description: 作ったエイリアスの並び。形は ER 図『エイリアス』
+    constraints: '`env` と、使えないエイリアス（ずれにしたもの）を含まない'
+    notes: 並びは行の並び、行の中は `sources` の並び、ファイルの中は `records` の配列の並び。この並びが照合で同じ語が当たったときの優先の順になる
+  - name: problems
+    type: MdmarkAliasProblem[]
+    description: 使えなかった行・レコードのずれの一覧。ずれが無ければ空
+    notes: 並びは `aliases` と同じ順で、同じ行・レコードの中は `metadata` のキーの順
+  - name: problems[].file
+    type: string
+    description: ずれのあるファイル。行のずれは `configFile`、レコードのずれはそのレコードのファイルの `path`
+    example: terms/glossary.yaml
+  - name: problems[].where
+    type: string
+    description: 行のずれは設定のキーのパス（`aliases[1].records`）、レコードのずれはファイルの中のパス（`records` を持つ行は `terms[2].command`、持たない行は `command`）。ファイル全体のずれは空文字
+    example: terms[2].command
+  - name: problems[].kind
+    type: "'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id'"
+    description: ずれの種類
+    notes: '`duplicate_alias_row_id` は 2 つ目以降に出た行の `id`、`alias_records_missing` はファイルに `records` のキーの配列が無い、`alias_field_missing` は `ref` の `field` の列がレコードに無い、`alias_unknown_type` は `alias_type` が 9 つの種類に無い、`alias_required_empty` は種類の必須のキーが空、`duplicate_alias_id` は 2 つ目以降に出たエイリアスの `id`'
+  - name: problems[].message
+    type: string
+    description: ずれの内容と直し方。日本語の 1 文
+    example: '`terms/glossary.yaml` の `terms[2]` の `command` が空です。コマンドを記載してください。'
+response_example: |-
+  ```json
+  {
+    "aliases": [
+      { "alias_type": "term", "id": "ws", "name": "ワークスペース", "aliases": ["WS"], "description": "話し合いの記録を置くフォルダ" },
+      { "alias_type": "command", "id": "unit-test", "name": "unit-test", "aliases": [], "description": "ライブラリ本体の単体テストを流す", "command": "npm run test:unit" }
+    ],
+    "problems": []
+  }
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 作ったエイリアスとずれの一覧を返す
+  - name: なし（使えない行・レコード）
+    condition: 行・レコードが使えない
+    notes: 例外を投げず、その行・レコードを除いてずれにし、ほかの行・レコードからエイリアスを作る
+constraints:
+  - item: 実行する環境
+    constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
+  - item: 読む行
+    constraint: '`enabled` が `false` の行は読まない（ずれにもしない）。`sources` のうち `rowId` が読む行に当たらないものは使わない'
+  - item: レコード
+    constraint: '`records` を持つ行は、ファイルの値のそのキーの配列の要素ごとに 1 件、持たない行はファイルの値を 1 件にする。配列の要素とファイルの値がオブジェクトでないものは使わない'
+    notes: キーが無いか配列でないファイルは `alias_records_missing`
+  - item: metadata の当て方
+    constraint: エイリアスのキーごとに、`ref` はレコードの `field` の列の値、`custom` は `value` を取る。`metadata` に無いキーはレコードの同じ名前の列の値を取る（列が無ければ持たない）。`ref` の列がレコードに無いときは `alias_field_missing`
+    notes: キーは ER 図『エイリアス』の列と `port`。ほかのキーは取らない
+  - item: 値の形
+    constraint: 文字列のキーは、文字列・数・真偽値を文字列にし、前後の空白を除く。それ以外の値は空として扱う。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びにし、並びなら文字列の要素だけを残す
+  - item: 名前の既定
+    constraint: '`name` が空のとき、`records` を持つ行はレコードの `id`、持たない行はファイルのパスの最後の名前から拡張子を除いたものにする'
+  - item: 種類と必須のキー
+    constraint: '`alias_type` が `term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`env`・`avoid` に無いレコードは `alias_unknown_type`、種類の必須のキー（ER 図『エイリアス』の補足。`env` は `id`・`name` と、`url`・`port` の 1 つ以上）が空のレコードは `alias_required_empty` にして使わない'
+    notes: '`url` の URL が http・https かは確かめない（`mount` がリンクにするかを決める）'
+  - item: env
+    constraint: '`env` のレコードも種類と必須のキーを確かめてずれを返すが、`aliases` には入れない'
+    notes: 値にシークレットキーを含みうるため、照合にも書き出しの埋め込みにも使わない
+  - item: ID の重なり
+    constraint: 行の `id` が前の行と同じときは、後の行を読まず `duplicate_alias_row_id` にする。エイリアスの `id` が前のエイリアス（`env` を含む）と同じときは、後のレコードを使わず `duplicate_alias_id` にする
+  - item: 上限
+    constraint: 制限なし（渡された全ての行とファイルを使う）
+refs:
+  - dev/設計書/ER図/エイリアス#
+  - dev/設計書/設定/ライブラリ本体#settings[aliases]

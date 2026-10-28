@@ -229,6 +229,32 @@ flows:
       - 標準エラーに `no-such-ref` と `fetch-depth` が出る
       - 設定・索引・文書が変わっていない
     test: test_error_when_base_unknown
+  - name: 正常系（エイリアスにずれがある）
+    summary: エイリアスの行とレコードのずれを出し、終了コード 1 で終わる
+    setup:
+      - name: エイリアスにずれを持つフォルダ
+        description: '正常系のフォルダの設定に `aliases` の 2 行を加えたフォルダ。1 行目は `paths: aliases/*.yaml` で、`aliases/` に `alias_type: term` で `name` が空のレコードを 1 件持つ YAML と、`env` のレコードを 1 件持つ YAML を置く。2 行目は `paths: missing/*.yaml` で、当たるファイルが無い'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant B as buildAliases
+        W->>C: mdmark check
+        C->>C: 設定の Schema を確かめる
+        C->>C: 行の paths を引いて YAML を読む
+        C->>B: 行・読んだ中身
+        B-->>C: alias_required_empty のずれ
+        C-->>W: ずれ 2 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`alias_no_files` の行があり、内容に `missing/*.yaml` を含む'
+      - '`aliases/` の YAML を指す `alias_required_empty` の行がある'
+      - '`env` のレコードを指すずれの行が無い'
+      - 最後の行が `ずれ 2 件`
+      - 設定・エイリアスの YAML が変わっていない
+    test: test_normal_when_alias_drift
 lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -253,10 +279,10 @@ response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
-    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び → `unknown_mark`（文書のパスの順、同じ文書の中は行の順）
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark`（文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'unknown_mark'"
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないものを含む）、`no_documents` は `build.include` に当たる文書が 0 件、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある。ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark'"
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -303,4 +329,7 @@ constraints:
   - item: 変わった文書
     constraint: '`--base` を渡したときだけ、設定ファイルのフォルダで `--base` と HEAD の merge-base を引き、merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイル（無視するファイルを除く）を、索引のファイルからの相対パスにして `checkIndex` の `changedPaths` に渡す。設定に `index` が無いときは `--base` を使わない'
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[直し忘れ]
+  - item: エイリアスの点検
+    constraint: 設定に `aliases` があるときだけ行う。Schema に合う行だけを使い、行の `paths` を設定ファイルのフォルダから引いて YAML として読み、`buildAliases` に渡して返った `problems` をそのまま出す。`enabled` が `false` の行は読まない。`paths` に当たるファイルが 0 件の行は `alias_no_files`、YAML として読めないファイルは `alias_unreadable` のずれにする
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
 test_file: tests/integration/lib/check-config.test.ts

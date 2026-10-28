@@ -109,6 +109,31 @@ flows:
       - 標準エラーに `dist/docs.html` と直し方が出る
       - ファイル `dist` が変わっていない
     test: test_error_when_output_unwritable
+  - name: 正常系（エイリアスを読む）
+    summary: 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で効かせる
+    setup:
+      - name: エイリアスを持つフォルダ
+        description: '正常系のフォルダの設定に `aliases` の 1 行（`paths: aliases/*.yaml`）を書き、`aliases/` に `alias_type: command` のレコード（`name: テストを流す`・`command: npm test`）と、`alias_type: env` のレコード（`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）を置いたフォルダ。まとめる 2 つの文書の本文に `テストを流す` と `開発サーバー` がある'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant B as buildAliases
+        participant H as 出力の HTML
+        W->>C: mdmark build
+        C->>C: 設定の aliases の YAML を読む
+        C->>B: 行・読んだ中身
+        B-->>C: エイリアス
+        C->>H: エイリアスを埋めた 1 枚の HTML を書く
+        C-->>W: 書き出した・終了コード 0
+    expected:
+      - 終了コードが 0
+      - まとめた 2 つの文書のどちらでも、`テストを流す` に下線が付き、ツールチップに `npm test` が出る
+      - '`開発サーバー` に下線が付かない'
+      - 書き出した HTML のソースに `開発サーバー`・`http://127.0.0.1:8767/` が入っていない
+    test: test_normal_when_aliases
 lead: 文書を書く人が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが効き、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
 side_effects: '`build.out` に HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの URL の先を読む'

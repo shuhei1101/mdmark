@@ -712,6 +712,31 @@ flows:
       - '`付録` の後ろが `id="section-付録"`・`data-section="closed"` の節の中身に入り、`section-手引き` の中に `付録` の `h1` が無い'
       - '文字列に `section: closed` が無い'
     test: test_normal_when_h1_sections
+  - name: 正常系（エイリアス）
+    summary: 渡したエイリアスの下線と種類ごとのツールチップを、スクリプト無しで読める HTML 文字列にする
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常系と同じ
+      - name: エイリアス
+        description: '`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）と、`command` の `単体テスト`（コマンド `npm run test:unit`）'
+      - name: エイリアスが出る Markdown
+        description: 段落に `ワークスペース` と `単体テスト` が出る文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { aliases })
+        M-->>C: HTML 文字列
+    expected:
+      - '`ワークスペース` が class `mdmark-term` の要素で、その隣に「用語」と `話し合いの記録を置くフォルダ` を持つ `role="tooltip"` の要素がある'
+      - '`単体テスト` が class `mdmark-term` の要素で、その隣のツールチップに「コマンド」と `code` 要素の `npm run test:unit` と `type="button"` の `コピー` のボタンがある'
+      - 文字列に `script` 要素と印の文字（`<!--`）が無い
+      - Node とブラウザで同じ文字列を返す
+    test: test_normal_when_aliases
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（エイリアスを渡す）]
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -748,6 +773,13 @@ request:
     default: なし
     location: argument
     description: '`mount` の `opts.references` と同じ'
+  - name: opts.aliases
+    type: MdmarkAlias[]
+    required: false
+    default: なし
+    location: argument
+    description: '`mount` の `opts.aliases` と同じ'
+    status: planned
 response:
   - name: '-'
     type: string

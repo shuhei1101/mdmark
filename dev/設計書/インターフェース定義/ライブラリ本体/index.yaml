@@ -30,3 +30,5 @@ items:
     summary: 使う側のページが、自分の要素と読み書きの関数を渡し、要素の中の選んだ箇所にコメントを付ける（mountComments）
   - page: 本文の参照を取り出す.ts.yaml
     summary: 使う側の処理が、索引と文書の本文から、本文に出た用語・文書の別名の一致と参照先を取り出す（collectMatches）
+  - page: エイリアスを作る.ts.yaml
+    summary: 設定の aliases の行と読んだ YAML の中身から、metadata を当てたエイリアスの配列を作る（buildAliases）
