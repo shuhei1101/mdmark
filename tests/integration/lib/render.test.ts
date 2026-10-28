@@ -99,7 +99,6 @@ test("test_normal", async () => {
   // 検証
   expect(typeof document).toBe("undefined");
   for (const expected of [
-    '<h1 id="',
     "<p>",
     "<ul>",
     "<table",
@@ -108,6 +107,7 @@ test("test_normal", async () => {
   ]) {
     expect(html).toContain(expected);
   }
+  expect(html).toMatch(/<h1[^>]* id="/);
   expect(html).toMatch(/<pre[^>]*><code class="language-ts"[^>]*>/);
   expect(
     startTags(html, "td").map((tag) => /data-label="([^"]*)"/.exec(tag)?.[1]),
@@ -1449,4 +1449,45 @@ test("test_normal_when_source_lines", async () => {
   expect(html).toContain(
     '<td data-label="列B" class="mdmark-align-right">2</td>',
   );
+});
+
+// h1 の見出しも節にし、次の h1 の前までを節の中身で囲む（正常系（H1 の節））
+test("test_normal_when_h1_sections", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "# 手引き",
+    "",
+    "手引きの段落",
+    "",
+    "## 概要",
+    "",
+    "概要の段落",
+    "",
+    "# 付録",
+    "",
+    "<!-- section: closed -->",
+    "",
+    "付録の段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toMatch(/<h1 class="mdmark-heading" id="手引き">/);
+  expect(html).toMatch(/<h1 class="mdmark-heading" id="付録">/);
+  const outer = html.slice(
+    html.indexOf('<div class="mdmark-section-body" id="section-手引き"'),
+    html.indexOf('<h1 class="mdmark-heading" id="付録">'),
+  );
+  expect(outer).toContain(
+    '<div class="mdmark-section-body" id="section-手引き" data-section="open">',
+  );
+  expect(outer).toContain('<h2 class="mdmark-heading" id="概要">');
+  expect(outer).toContain('id="section-概要"');
+  expect(outer).not.toContain('id="付録"');
+  expect(html).toContain(
+    '<div class="mdmark-section-body" id="section-付録" data-section="closed"',
+  );
+  expect(html).not.toContain("section: closed");
 });
