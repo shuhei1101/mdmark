@@ -500,14 +500,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   },
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
   "side-toc": (args) =>
-    renderSideToc({
+    // 本文の列を左に置き、右側の目次を描く先の要素の右端に寄せる（`mount` が描く並びと同じ）
+    `<div class="mdmark-content">${SAMPLE_BODY}</div>${renderSideToc({
       headings: args.headings as SideTocHeading[],
       mode: args.mode as SideTocMode | undefined,
       sections: args.sections as boolean | undefined,
       open: args.open as boolean | undefined,
       pinned: args.pinned as boolean | undefined,
       current: args.current as string | undefined,
-    }),
+    })}`,
   section: (args) =>
     renderSection({
       level: args.level as 1 | 2 | 3 | 4,
