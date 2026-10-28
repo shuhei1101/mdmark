@@ -676,7 +676,7 @@ functions:
         summary: avoid の種類と term の種類の avoid をやめた言い方に入れ、索引のやめた言い方を先にする
         condition: 索引の用語 `フォルダ`（`avoid` に `作業場`）。`aliases` が `avoid` の `作業場`（`workplace`、別名 `作業所`、置き換え先 `ワークスペース`）と `term` の `レビュー`（`review`、`avoid` に `査読会`）
         mock: なし
-        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`作業所` → `{ id: "alias:workplace", term: "ワークスペース" }`（`meaning` を持たない）、`査読会` → `{ id: "alias:review", term: "レビュー", meaning: … }` の 3 件で、`words` にどれも無い'
+        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`作業所` → `id` が `alias:workplace`・`term` が `ワークスペース`・`alias` が `workplace` のエイリアスで `meaning` を持たないもの、`査読会` → `id` が `alias:review`・`term` が `レビュー`・`meaning` がその説明・`alias` が `review` のエイリアスのものの 3 件で、`words` にどれも無い'
       - name: test_build_dictionary_skips_unusable_aliases
         case: 正常
         summary: 使えないエイリアスと、glossary がオフのときのエイリアスを入れない
