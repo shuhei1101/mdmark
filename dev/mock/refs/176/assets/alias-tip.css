@@ -24,7 +24,7 @@
       color: var(--mdmark-color-muted);
     }
 
-    /* 項目の値: 長い URL・パスは列の幅で折り返す */
+    /* 項目の値: 長い値は列の幅で折り返す */
     .mdmark-term-tip-value {
       min-width: 0;
       overflow-wrap: anywhere;
@@ -32,6 +32,14 @@
       code {
         font-family: var(--mdmark-font-mono);
         font-size: 0.8125rem;
+      }
+
+      /* URL のリンク: URL の種類のリンクと同じく 1 行に収め、末尾を「...」で省略する */
+      a {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
     }
 
@@ -44,11 +52,13 @@
       overflow-wrap: anywhere;
     }
 
-    /* URL の種類のリンク: 説明の下に置き、長い URL は折り返す */
+    /* URL の種類のリンク: 説明の下に置き、長い URL は 1 行に収めて末尾を「...」で省略する（押すと全体の URL を開く） */
     .mdmark-term-tip-link {
       display: block;
       margin-block-start: 0.4em;
-      overflow-wrap: anywhere;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     /* コマンドの面: ツールチップの枠の中に枠を重ねず、コードと同じ面の色だけで区切る。等幅でコマンドを出し、右上にコピーのボタンを置く */
