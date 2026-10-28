@@ -7,8 +7,8 @@
 
 
  Test Files  152 passed (152)
-      Tests  1044 passed (1044)
-   Start at  11:10:48
-   Duration  47.13s (tests 39%, worker 33%, import 24%, transform 3%)
+      Tests  1047 passed (1047)
+   Start at  13:41:07
+   Duration  44.87s (tests 43%, worker 36%, import 19%, transform 3%)
 
 unit_exit=0
