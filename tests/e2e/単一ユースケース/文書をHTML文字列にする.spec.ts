@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
-import type { MdmarkIndex, MdmarkReferences } from "../../../src/index.ts";
+import type {
+  MdmarkAlias,
+  MdmarkIndex,
+  MdmarkReferences,
+} from "../../../src/index.ts";
 import {
   buildDistRoot,
   openPage,
@@ -145,6 +149,43 @@ test("test_normal_when_index", async () => {
   expect(html).toContain('class="mdmark-term"');
   expect(html).toContain("話し合いの記録を置くフォルダ");
   expect(html).toContain('<a href="../api.md">API</a>');
+  expect(html).not.toContain("<script");
+  expect(html).not.toContain("<!--");
+});
+
+// 読み込んだエイリアスを渡すと、下線とツールチップ（説明・コマンド・コピーのボタン）を持つ HTML 文字列を返す（正常シナリオ（エイリアスを渡す））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "term",
+      id: "workspace",
+      name: "ワークスペース",
+      aliases: [],
+      description: "話し合いの記録を置くフォルダ",
+    },
+    {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      command: "npm run test:unit",
+    },
+  ];
+  // 実行
+  const html = await renderInNode(
+    builtRoot,
+    "ワークスペースと単体テストを置く。\n",
+    {
+      aliases,
+    },
+  );
+  // 検証
+  expect(html).toMatch(/<[^>]*class="mdmark-term"[^>]*>ワークスペース</);
+  expect(html).toContain("話し合いの記録を置くフォルダ");
+  expect(html).toMatch(/<[^>]*class="mdmark-term"[^>]*>単体テスト</);
+  expect(html).toContain("<code>npm run test:unit</code>");
+  expect(html).toContain("mdmark-term-tip-copy");
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
 });

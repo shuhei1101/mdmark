@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { MdmarkIndex } from "../../../src/index.ts";
+import type { MdmarkAlias, MdmarkIndex } from "../../../src/index.ts";
 import {
   buildDistRoot,
   destroyDocument,
@@ -213,4 +213,34 @@ test("test_normal_when_source_lines", async ({ page }) => {
     }
   });
   expect(await snapshot()).toEqual(withAttributes);
+});
+
+// 読み込んだエイリアスを渡して描くと下線とツールチップが付き、本文を差し替えた後も同じエイリアスで描き直す（正常シナリオ（エイリアスを渡す））
+test("test_normal_when_aliases", async ({ page }) => {
+  // 準備
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "term",
+      id: "workspace",
+      name: "ワークスペース",
+      aliases: [],
+      description: "話し合いの記録を置くフォルダ",
+    },
+  ];
+  await openPage(page, builtRoot);
+  // 実行（描く）
+  await mountDocument(page, { markdown: "ワークスペースを置く。\n", aliases });
+  // 検証（描いた直後）
+  const doc = page.locator("#doc");
+  const term = doc.locator(".mdmark-term");
+  await expect(term).toHaveText(["ワークスペース"]);
+  await term.hover();
+  await expect(doc.locator(".mdmark-term-tip")).toContainText(
+    "話し合いの記録を置くフォルダ",
+  );
+  // 実行（本文を差し替える）
+  await updateDocument(page, "別の段落にもワークスペースを書く。\n");
+  // 検証（差し替えた後）
+  await expect(doc.locator("p")).toContainText("別の段落");
+  await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
 });

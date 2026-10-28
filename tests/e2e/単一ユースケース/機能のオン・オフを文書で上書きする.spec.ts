@@ -4,6 +4,7 @@ import {
   buildDistRoot,
   mountDocument,
   openPage,
+  rawAliases,
   removeDistRoot,
   sendPrintEvent,
 } from "../dist-page.ts";
@@ -144,7 +145,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
   const markdown = [
     "<!-- features: -glossary -backlinks -->",
     "",
-    "ワークスペースと作業場を置く。",
+    "ワークスペースと作業場と単体テストを置く。",
     "",
     "<!-- glossary: term=用語 meaning=意味 -->",
     "",
@@ -162,9 +163,19 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
     index: INDEX,
     docId: "arch",
     documents: DOCUMENTS,
+    aliases: rawAliases([
+      {
+        alias_type: "command",
+        id: "unit-test",
+        name: "単体テスト",
+        aliases: [],
+        command: "npm run test:unit",
+      },
+    ]),
   });
   // 検証
   const doc = page.locator("#doc");
+  // エイリアスの `単体テスト` にも下線が付かない
   await expect(doc.locator(".mdmark-term")).toHaveCount(0);
   await expect(doc.locator(".mdmark-term-avoided")).toHaveCount(0);
   await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
