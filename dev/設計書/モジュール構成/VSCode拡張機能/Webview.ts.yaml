@@ -526,7 +526,7 @@ functions:
       type: number
       description: 見えている先頭を下げる高さ（px）
     process: |-
-      1. `root` の中の `.mdmark-side-toc` が無いか、その幅が `root` の中の `.mdmark` の幅より狭い（広い幅の右の列）ときは 0 を返す
+      1. `root` の中の `.mdmark-side-toc` が無いか、その幅が `root` の中の本文の列（`.mdmark-content`）の幅より狭い（広い幅の右の列）ときは 0 を返す
       2. 帯の `getBoundingClientRect().bottom` から、スクロールする要素の上端（画面がスクロールするときは 0）を引いた値を返す（負なら 0）
     unit_tests:
       - name: test_top_inset_when_band
