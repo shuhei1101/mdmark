@@ -63,6 +63,7 @@ elements:
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features]
       - dev/設計書/設定/ライブラリ本体#settings[libraries]
+      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
     status: planned
     introduced:
       pr: 69
