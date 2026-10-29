@@ -1,0 +1,1 @@
+# VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する
