@@ -63,4 +63,12 @@
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/open-settings.test.ts` | 全実行 | 新規 | ✅ | `test_normal`・`test_normal_when_command_palette`<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |
+| [vscode/tests/integration/commands.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/commands.test.ts) | `test_normal_when_command_titles`・`test_normal_when_editor_title_button`・`test_normal_when_command_palette_conditions`・`test_normal_when_settings_button` | 変更 | ✅ | 設定を開くコマンドと歯車のボタンの分を期待値に足し、`test_normal_when_settings_button` を追加<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_color_theme_changed` | 変更 | ✅ | 1 テストを追加<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |
+| [vscode/tests/integration/export.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/export.test.ts) | `test_normal_when_color_theme_selected`（HTML に書き出す・PDF に印刷の各 1 件） | 変更 | ✅ | 2 テストを追加<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |
+| [vscode/tests/integration/helpers.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/helpers.ts) | - | 変更 | ✅ | `resetEnvironment` が `colorTheme` の設定も戻す<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_tags_unreachable` | 実行のみ | ❌ | 要求まで 1734 ms（期待は 2800 ms 以上）。変更前の develop（a6abcb1）でも同じ値で落ちる既存の失敗<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |
+| 上記以外の `vscode/tests/integration/` | 全実行 | 実行のみ | ✅ | 57 テスト中 56 が pass（VS Code 1.141.0 と stable の両方）<br>`テスト結果/20261030053626_9b47953_結合テスト.log` |

@@ -38,5 +38,5 @@ VS Code 拡張機能の設定は `mdmark.preview.theme`（`auto` / `light` / `da
 - [x] ドキュメント修正
 - [x] 単体テスト作成
 - [x] 実装
-- [ ] 結合テスト作成
+- [x] 結合テスト作成
 - [ ] E2E テスト作成
