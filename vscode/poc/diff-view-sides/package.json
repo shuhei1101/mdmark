@@ -1,0 +1,10 @@
+{
+  "name": "mdmark-poc-diff-view-sides",
+  "version": "0.0.0",
+  "publisher": "poc",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "vscode": "^1.141.0"
+  }
+}
