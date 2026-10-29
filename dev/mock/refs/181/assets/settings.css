@@ -1,0 +1,442 @@
+/* #181 のモック: 歯車のボタン（エディタのタイトルバー・Webview の中）・テーマのメニュー・VS Code の設定画面と、2 つのエディタの列を並べる枠 */
+
+/* VS Code の配色の仮の値（モックの枠だけに使う。実装では VS Code が --vscode-* の変数を渡す） */
+:root {
+  --vsc-muted: #616161;
+  --vsc-input-bg: #ffffff;
+  --vsc-input-border: #cecece;
+  --vsc-focus: #005fb8;
+  --vsc-hover-bg: rgb(184 184 184 / 0.31);
+  --vsc-row-focus-bg: #e8f0fb;
+  --vsc-tooltip-bg: #f8f8f8;
+}
+
+/* VS Code のテーマがダーク */
+.vscode-dark {
+  --vsc-muted: #ababab;
+  --vsc-input-bg: #313131;
+  --vsc-input-border: #3c3c3c;
+  --vsc-focus: #0078d4;
+  --vsc-hover-bg: rgb(90 93 94 / 0.31);
+  --vsc-row-focus-bg: #04395e;
+  --vsc-tooltip-bg: #202020;
+}
+
+/* 2 つのエディタの列を横に並べる枠（設定画面とプレビュー） */
+.vsc-workbench {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  /* 枠の中のエディタの列: 幅を等分し、中身で広がらない */
+  > .vsc-column {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+  }
+
+  /* 2 つ目の列: 左の列との境の線を 1 本にする */
+  > .vsc-column + .vsc-column {
+    border-inline-start: 0;
+  }
+
+  /* 今の場面に当たらない列: 上の display の指定より後に置いて隠す */
+  > [hidden] {
+    display: none;
+  }
+}
+
+/* 2 つの列を並べる画面のパンくず: 枠と同じ幅にする */
+.mock-breadcrumb:has(+ .vsc-workbench) {
+  max-width: 1200px;
+}
+
+/* 開いていないタブ */
+.vsc-tab.is-inactive {
+  background: transparent;
+  color: var(--vsc-muted);
+}
+
+/* Markdown のエディタ: 等幅の文字で原文を出す */
+.vsc-editor {
+  min-height: 480px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--vsc-tab-bg);
+  color: var(--vsc-tab-text);
+  font-family: var(--mdmark-font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* エディタのタイトルバーの操作の帯: タブの帯の右端に置く */
+.vsc-title-actions {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-inline-start: auto;
+  padding-inline: 6px;
+}
+
+/* VS Code のアイコンだけのボタン（エディタのタイトルバーの操作） */
+.vsc-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--vsc-tab-text);
+  cursor: pointer;
+
+  &:hover,
+  &.is-hover {
+    background: var(--vsc-hover-bg);
+  }
+
+  &:focus-visible,
+  &.is-focus {
+    outline: 1px solid var(--vsc-focus);
+    outline-offset: -1px;
+  }
+
+  &:active,
+  &.is-active {
+    background: var(--vsc-hover-bg);
+    translate: 0 1px;
+  }
+}
+
+/* VS Code のボタンのアイコン: 線で描く 16px の図形 */
+.vsc-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ボタンのツールチップ（部品のカタログで hover の状態を見せる） */
+.vsc-tooltip {
+  position: absolute;
+  inset-block-start: calc(100% + 4px);
+  inset-inline-end: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  background: var(--vsc-tooltip-bg);
+  color: var(--vsc-tab-text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Webview の中の操作の帯: プレビューの右上に留める */
+.preview-toolbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 8px 0;
+  pointer-events: none;
+
+  /* 帯の中のボタンだけを押せるようにし、帯の下の本文の選択を妨げない */
+  > * {
+    pointer-events: auto;
+  }
+}
+
+/* Webview の中の歯車のボタン: 文書の配色に合わせる */
+.preview-gear {
+  anchor-name: --preview-gear;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  cursor: pointer;
+
+  &:hover,
+  &.is-hover {
+    background: var(--mdmark-color-surface);
+    color: var(--mdmark-color-text);
+  }
+
+  &:focus-visible,
+  &.is-focus {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+
+  /* メニューを開いている間: 押された見た目にする */
+  &:has(+ .preview-theme-menu:popover-open),
+  &.is-open {
+    background: var(--mdmark-color-surface);
+    color: var(--mdmark-color-text);
+  }
+}
+
+/* テーマのメニュー: 歯車の下に右端を揃えて開く（入らないときは上に開く） */
+.preview-theme-menu {
+  position-anchor: --preview-gear;
+  inset: auto;
+  inset-block-start: anchor(bottom);
+  inset-inline-end: anchor(right);
+  position-try-fallbacks: flip-block;
+  min-width: 220px;
+  margin: 4px 0 0;
+  padding: 6px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  font-family: var(--mdmark-font-body);
+  font-size: 0.9rem;
+}
+
+/* カタログの中で開いた状態を見せるメニュー: 浮かせず、その場に置く */
+.preview-theme-menu.is-static {
+  position: static;
+  display: block;
+  margin: 0;
+}
+
+/* メニューの見出し（テーマ） */
+.preview-theme-menu-title {
+  margin: 0;
+  padding: 4px 8px 6px;
+  color: var(--mdmark-color-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* メニューの項目の並び */
+.preview-theme-menu-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* メニューの項目のボタン: チェックの欄と名前を並べる */
+.preview-theme-menu-item {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: calc(var(--mdmark-radius) / 2);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover,
+  &.is-hover {
+    background: var(--mdmark-color-surface);
+  }
+
+  &:focus-visible,
+  &.is-focus {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: -2px;
+  }
+
+  /* 項目のチェック: 選んでいるテーマだけに出す */
+  .preview-theme-menu-check {
+    visibility: hidden;
+  }
+
+  /* 選んでいるテーマ: チェックと背景で示す */
+  &[aria-pressed="true"] {
+    background: var(--mdmark-color-current-bg);
+
+    .preview-theme-menu-check {
+      visibility: visible;
+    }
+  }
+}
+
+/* メニューの区切り線 */
+.preview-theme-menu-separator {
+  margin: 6px 4px;
+  border: 0;
+  border-block-start: 1px solid var(--mdmark-color-border);
+}
+
+/* VS Code の設定画面 */
+.vsc-settings {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 480px;
+  padding: 16px 20px 24px;
+  background: var(--vsc-tab-bg);
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* 設定画面の検索欄 */
+.vsc-settings-search {
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 8px;
+  border: 1px solid var(--vsc-focus);
+  border-radius: 2px;
+  background: var(--vsc-input-bg);
+  color: inherit;
+  font: inherit;
+  font-family: var(--mdmark-font-mono);
+}
+
+/* 設定画面の範囲のタブ（ユーザー・ワークスペース）と件数 */
+.vsc-settings-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  align-items: center;
+  border-block-end: 1px solid var(--vsc-border);
+}
+
+/* 範囲のタブ */
+.vsc-settings-scope {
+  padding: 4px 2px 6px;
+  border-block-end: 1px solid transparent;
+  color: var(--vsc-muted);
+
+  /* 開いている範囲 */
+  &[aria-current="page"] {
+    border-block-end-color: var(--vsc-tab-text);
+    color: var(--vsc-tab-text);
+  }
+}
+
+/* 見つかった設定の件数 */
+.vsc-settings-count {
+  margin-inline-start: auto;
+  color: var(--vsc-muted);
+}
+
+/* 設定の項目の並び */
+.vsc-settings-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 設定の 1 項目: 名前・説明・入力欄を縦に並べる */
+.vsc-setting {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 2px;
+
+  /* 入力欄にフォーカスがある項目と、追加した項目: 背景で示し、色の付いた背景の上では灰色の文字をやめる */
+  &:focus-within,
+  &.is-highlight {
+    --vsc-muted: var(--vsc-tab-text);
+    background: var(--vsc-row-focus-bg);
+  }
+}
+
+/* 設定の名前: 分類は細く、名前は太く */
+.vsc-setting-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+
+  /* 名前の分類（Mdmark › Preview:） */
+  span {
+    color: var(--vsc-muted);
+  }
+
+  /* 名前の本体 */
+  strong {
+    font-weight: 600;
+  }
+}
+
+/* 設定の説明 */
+.vsc-setting-description {
+  margin: 0;
+  color: var(--vsc-muted);
+
+  /* 説明の中のキー・値 */
+  code {
+    font-family: var(--mdmark-font-mono);
+    font-size: 0.95em;
+  }
+}
+
+/* 設定の入力欄（選択・文字・数値） */
+.vsc-setting-control {
+  justify-self: start;
+  width: min(100%, 320px);
+  min-height: 26px;
+  padding: 2px 6px;
+  border: 1px solid var(--vsc-input-border);
+  border-radius: 2px;
+  background: var(--vsc-input-bg);
+  color: inherit;
+  font: inherit;
+
+  &:focus-visible {
+    outline: 1px solid var(--vsc-focus);
+    outline-offset: -1px;
+  }
+}
+
+/* 真偽値の設定: チェックボックスと説明を横に並べる */
+.vsc-setting-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--vsc-muted);
+
+  /* チェックボックス */
+  input {
+    margin: 2px 0 0;
+  }
+}
+
+/* スマホ幅: 2 つの列を縦に積み、入力欄の文字を 16px にする */
+@media (max-width: 768px) {
+  /* 2 つのエディタの列を並べる枠 */
+  .vsc-workbench {
+    flex-direction: column;
+
+    /* 2 つ目の列: 上の列との境の線を 1 本にする */
+    > .vsc-column + .vsc-column {
+      border-inline-start: 1px solid var(--vsc-border);
+      border-block-start: 0;
+    }
+  }
+
+  /* 設定画面の検索欄と入力欄 */
+  .vsc-settings-search,
+  .vsc-setting-control {
+    font-size: 16px;
+  }
+}

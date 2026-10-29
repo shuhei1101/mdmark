@@ -27,6 +27,7 @@
 | [row-detail](./row-detail/index.html) | 表の行の下に開閉して出す行の詳細 |
 | [section](./section/index.html) | 見出しのアンカーと、見出しから開閉する節（h1 の節を含む）・右側の目次の上部のすべて展開とすべて折りたたむ・Shift を押しながらの入れ子の開閉 |
 | [sequence-diagram](./sequence-diagram/index.html) | 相手を左から右、メッセージを時刻の順に並べ、繰り返しの戻りを持つシーケンス図 |
+| [settings-gear](./settings-gear/index.html) | VS Code 拡張機能のプレビューから設定を開く歯車のボタン（エディタのタイトルバーの歯車と、プレビューの中の歯車とテーマのメニュー）の通常・ホバー・フォーカス・押下・メニューを開いた状態 |
 | [steps](./steps/index.html) | 番号と線でつないだ手順 |
 | [syntax-warning](./syntax-warning/index.html) | 読めない指定とその直し方を書く人へ知らせる書き方の警告 |
 | [table](./table/index.html) | 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列 |
