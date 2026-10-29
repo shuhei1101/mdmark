@@ -61,6 +61,25 @@ flows:
     expected:
       - '`showErrorMessage` に書き出す先のパスと理由が入り、`env.openExternal` の代役は呼ばれない'
     test: test_error_when_output_unwritable
+  - name: 正常系（選んだテーマで印刷する）
+    summary: '`mdmark.colorTheme` で選んだテーマで書き出し、ブラウザがダークでも印刷の間はそのテーマの明るい配色にする'
+    setup:
+      - name: テーマを選んだワークスペース
+        description: 正常系と同じ文書を開き、`mdmark.colorTheme` は `theme-slate`
+      - name: Mock
+        description: '正常系と同じ。書き出した HTML は配色をダーク（`prefers-color-scheme: dark`）にして開き、`window.print` の代役が呼ばれた時のリンクの色の計算値を記録する'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as 既定のブラウザ
+        U->>EX: mdmark.printToPdf
+        EX->>EX: colorTheme: theme-slate を埋めた HTML を書き出す
+        EX->>BR: env.openExternal
+        BR->>BR: 描き終えたら window.print()
+    expected:
+      - 印刷の間、描く先の要素のリンクの色の計算値が theme-slate の明るい配色の `--mdmark-color-link` の値
+    test: test_normal_when_color_theme_selected
 lead: 開いている Markdown を、描き終えた後に印刷のダイアログを出す HTML に書き出し、既定のブラウザで開く。PDF はそのダイアログで作る。
 idempotent: true
 side_effects: HTMLに書き出す.ts と同じ場所に、印刷のダイアログを出す処理を足した HTML を書き、`env.openExternal` で開く

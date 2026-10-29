@@ -81,6 +81,27 @@ flows:
       - 戻り値が `undefined` で、`.html` が書かれない
       - '`showErrorMessage` が 1 回呼ばれる'
     test: test_error_when_version_undecidable
+  - name: 正常系（選んだテーマで書き出す）
+    summary: 設定ファイルの `colorTheme` を `mdmark.colorTheme` で上書きしたテーマで、書き出した HTML を描く
+    setup:
+      - name: テーマを選んだワークスペース
+        description: '正常系と同じ `docs/guide.md` を開き、`mdmark.config.yaml` は `colorTheme: theme-paper`、`mdmark.colorTheme` は `theme-slate`'
+      - name: Mock
+        description: '正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開き、配色はライト（`prefers-color-scheme: light`）にする'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant H as 書き出した HTML
+        U->>EX: mdmark.exportHtml
+        EX->>EX: colorTheme を mdmark.colorTheme で上書きした config で HTML を組む
+        EX->>H: docs/guide.html を書く
+        U->>H: 開く
+        H-->>U: theme-slate で描く
+    expected:
+      - 書き出した HTML に埋めた `config` の `colorTheme` が `theme-slate`
+      - 開いた HTML で、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+    test: test_normal_when_color_theme_selected
 lead: 開いている Markdown を、jsDelivr の配布物を読んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で知らせる。
 idempotent: true
 side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。Markdown は書き換えない
@@ -114,7 +135,7 @@ constraints:
   - item: 書き出す中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
   - item: 設定と相対パス
-    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`libraries` の相対パスは設定ファイルのフォルダから解決した `file:` の URL にする。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
+    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。`libraries` の相対パスは設定ファイルのフォルダから解決した `file:` の URL にする。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
     notes: ブラウザは `file:` のページから `file:` の ES モジュールを読まないため、相対パスの `libraries` の印は mdmark が知らせの枠にする。`http:`・`https:` の `libraries` は読める
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない
