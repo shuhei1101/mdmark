@@ -268,6 +268,37 @@ suite("ブラウザで開く", () => {
     assertExportFailedNotice(messages.error[0]);
     assert.deepStrictEqual(opened, []);
   });
+
+  // 設定ファイルの colorTheme を mdmark.colorTheme で上書きしたテーマで、書き出した HTML を描く
+  test("test_normal_when_color_theme_selected", async () => {
+    // 準備
+    await writeFixture("mdmark.config.yaml", "colorTheme: theme-paper\n");
+    await openGuide();
+    await setSetting("colorTheme", "theme-slate");
+    trackFile("docs/guide.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.exportHtml");
+    // 検証
+    const path = join(workspaceDir(), "docs", "guide.html");
+    await waitFor(() => existsSync(path), { message: "書き出されない" });
+    assert.match(
+      await readFixture("docs/guide.html"),
+      /"config":\{"colorTheme":"theme-slate"\}/,
+    );
+    const exported = await openExported(path, async (page) => {
+      await page.emulateMedia({ colorScheme: "light" });
+    });
+    try {
+      await exported.page.waitForSelector(".mdmark h1");
+      const background = await exported.page.evaluate(() => {
+        const root = document.querySelector(".mdmark");
+        return root ? getComputedStyle(root).backgroundColor : "";
+      });
+      assert.strictEqual(background, "rgb(248, 250, 252)");
+    } finally {
+      await exported.close();
+    }
+  });
 });
 
 /** `window.print` を呼ばれた時刻と、その時の `details` の開閉を記録する */
@@ -399,6 +430,49 @@ suite("PDF に印刷", () => {
       });
       await sleep(300);
       assert.strictEqual((await prints(exported.page)).length, 1);
+    } finally {
+      await exported.close();
+    }
+  });
+
+  // mdmark.colorTheme で選んだテーマで書き出し、ブラウザがダークでも印刷の間はそのテーマの明るい配色にする
+  test("test_normal_when_color_theme_selected", async () => {
+    // 準備
+    await setSetting("colorTheme", "theme-slate");
+    await openGuide({ extra: "[リンク](https://example.com/)\n" });
+    trackFile("docs/guide.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.printToPdf");
+    // 検証
+    const path = join(workspaceDir(), "docs", "guide.html");
+    const exported = await openExported(path, async (page) => {
+      await page.emulateMedia({ colorScheme: "dark" });
+      // 印刷のダイアログの代わりに、呼ばれたことだけを記録する
+      await page.addInitScript(() => {
+        const target = window as unknown as { __printed: boolean };
+        target.__printed = false;
+        window.print = () => {
+          target.__printed = true;
+        };
+      });
+    });
+    /** リンクの色の計算値 */
+    const readLinkColor = () =>
+      exported.page.evaluate(() => {
+        const link = document.querySelector(
+          '.mdmark a[href^="https://example.com"]',
+        );
+        return link ? getComputedStyle(link).color : "";
+      });
+    try {
+      await exported.page.waitForFunction(
+        () => (window as unknown as { __printed: boolean }).__printed,
+      );
+      // ダークの画面では theme-slate の暗い配色（印刷にする前に確かめる）
+      assert.strictEqual(await readLinkColor(), "rgb(125, 211, 252)");
+      // 印刷のメディアでは、OS がダークでも theme-slate の明るい配色
+      await exported.page.emulateMedia({ media: "print", colorScheme: "dark" });
+      assert.strictEqual(await readLinkColor(), "rgb(29, 78, 216)");
     } finally {
       await exported.close();
     }
