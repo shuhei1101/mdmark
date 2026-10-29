@@ -28,6 +28,19 @@ test("test_read_settings", async () => {
   });
 });
 
+// 入っているテーマの名前だけを読み、他の値は空に戻す（正常系）
+test("test_read_settings_when_color_theme", async () => {
+  // 準備
+  const { readSettings } = await loadSettings();
+  const values = ["theme-slate", "sepia", 1];
+  // 実行
+  const themes = values.map(
+    (value) => readSettings(createGet({ colorTheme: value })).colorTheme,
+  );
+  // 検証
+  expect(themes).toEqual(["theme-slate", "", ""]);
+});
+
 // 範囲の外・整数でない待ちと知らない配色は既定に戻す（正常系）
 test("test_read_settings_when_out_of_range", async () => {
   // 準備

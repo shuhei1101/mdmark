@@ -259,6 +259,33 @@ test("test_prepare_embeds_when_side_toc_mode", async () => {
   expect(withoutSideToc.payload.config).not.toHaveProperty("side-toc");
 });
 
+// 設定の colorTheme を埋める設定に写し、知らない名前は写して警告する（正常系）
+test("test_prepare_embeds_when_color_theme", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const known = await prepare({ colorTheme: "theme-slate" });
+  const unknown = await prepare({ colorTheme: "sepia" });
+  const omitted = await prepare({ features: { print: true } });
+  // 検証
+  expect(known.payload.config.colorTheme).toBe("theme-slate");
+  expect(known.warnings).toEqual([]);
+  expect(unknown.payload.config.colorTheme).toBe("sepia");
+  expect(unknown.warnings).toHaveLength(1);
+  expect(unknown.warnings[0]).toContain("sepia");
+  expect(omitted.payload.config).not.toHaveProperty("colorTheme");
+});
+
 /** 色分けのライブラリの代役のモジュールを書く（`hl/` の下に本体と言語の分を置く） */
 const SYNTAX_MODULES = {
   "hl/core.min.js":

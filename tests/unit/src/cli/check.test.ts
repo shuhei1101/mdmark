@@ -363,6 +363,52 @@ test("test_collect_check_issues_when_unknown_mark", async () => {
   expect(issues[1]).toMatchObject({ file: "a.md", where: "3" });
 });
 
+// 知らないテーマの名前を schema の後・no_documents の前に返す（正常系）
+test("test_collect_check_issues_when_unknown_color_theme", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  // build.out が無いと build ごと落ちて no_documents が出ないため、schema は存在しない拡張で作る
+  const buildLines = [
+    "extensions: [missing.js]",
+    "build:",
+    '  include: ["nothing/**/*.md"]',
+    "  out: dist/docs.html",
+  ];
+  const unknownDir = await createRootDir({
+    configLines: ["colorTheme: sepia", ...buildLines],
+  });
+  const knownDir = await createRootDir({
+    configLines: ["colorTheme: theme-slate", ...buildLines],
+  });
+  // 実行
+  const unknownIssues = await collectCheckIssues(
+    join(unknownDir, "mdmark.config.yaml"),
+  );
+  const knownIssues = await collectCheckIssues(
+    join(knownDir, "mdmark.config.yaml"),
+  );
+  // 検証
+  expect(unknownIssues.map((issue) => issue.kind)).toEqual([
+    "schema",
+    "unknown_color_theme",
+    "no_documents",
+  ]);
+  expect(unknownIssues[1]).toMatchObject({ where: "colorTheme" });
+  for (const text of [
+    "sepia",
+    "dev-swiss",
+    "theme-paper",
+    "theme-slate",
+    "theme-contrast",
+  ]) {
+    expect(unknownIssues[1]?.message).toContain(text);
+  }
+  expect(knownIssues.map((issue) => issue.kind)).toEqual([
+    "schema",
+    "no_documents",
+  ]);
+});
+
 // エイリアスのずれを checkIndex の後・unknown_mark の前に置く（正常系）
 test("test_collect_check_issues_when_alias_drift", async () => {
   // 準備

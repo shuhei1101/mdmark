@@ -47,6 +47,7 @@ test("test_resolve_config", async () => {
     tooltips: { placement: "top" },
     syntax: { url: DEFAULT_SYNTAX_URL },
     sideToc: { mode: "hover" },
+    colorTheme: "dev-swiss",
   });
 });
 
@@ -141,4 +142,25 @@ test("test_resolve_config_when_side_toc_mode_given", async () => {
   expect(resolvedUnknown.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.features["side-toc"]).toBe(true);
+});
+
+// COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
+test("test_resolve_config_when_color_theme_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { colorTheme: "theme-slate" },
+    { colorTheme: "sepia" },
+    { colorTheme: 1 },
+    {},
+  ] as MdmarkConfig[];
+  // 実行
+  const themes = configs.map((config) => resolveConfig({ config }).colorTheme);
+  // 検証
+  expect(themes).toEqual([
+    "theme-slate",
+    "dev-swiss",
+    "dev-swiss",
+    "dev-swiss",
+  ]);
 });
