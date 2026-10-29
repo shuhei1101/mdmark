@@ -186,6 +186,33 @@ scenarios:
       - 文書の本文は描かれたまま残る
       - 前に `r2` を選び直すと、知らせの枠が消えて `r2` と `r3` の差分が出る
     test: test_error_when_content_unavailable
+  - name: 正常シナリオ（開いた状態で描く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じページで、取り出し元と、差分を開いた状態で描く指定を渡して文書を描く
+      - name: 見本の文書の 3 つのリビジョン
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 要素・Markdown・docId・取り出し元・開いた状態で描く指定を渡して描かせる
+        M->>S: revisions(docId)
+        S-->>M: リビジョンの一覧（新しい順）
+        M->>S: content({ docId, revisionId: 一番新しいリビジョン })・content({ docId, revisionId: その 1 つ前 })
+        S-->>M: 2 つの Markdown
+        M-->>U: 押される前から 2 つのリビジョンの差分を出す
+      ```
+    expected:
+      - 読む人が「変更を見る」を押さないうちに、`revisions` が `guide` を受けて 1 回呼ばれる
+      - '`content` が `{ docId: guide, revisionId: r3 }` と `{ docId: guide, revisionId: r2 }` を受けて呼ばれる'
+      - 描き終えた時点で、`r2` と `r3` の差分が開いた状態で出る
+    test: test_normal_when_opened_on_mount
 lead: 使う側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に渡して文書を描く。読む人が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。
 issue: 7
 primary_actor: mdmark を使うアプリのページ

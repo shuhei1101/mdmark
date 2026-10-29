@@ -1,0 +1,122 @@
+title: "差分ビューの変更をプレビューで見る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本のリポジトリ
+        description: 見出し・段落・表を持つ `a.md` をコミットした Git のリポジトリ。作業ツリーで、段落の語を 1 つ書き換え、表の後に段落を 1 つ足し、別の段落を 1 つ消す（ステージしない）
+      - name: 差分ビュー
+        description: Source Control のビューの変更から `a.md` の作業ツリーの変更を開いた状態
+      - name: Mock
+        description: jsDelivr の代わりに、このブランチでビルドした配布物をバージョン付きの形の URL で配る手元のサーバー。GitHub のタグ一覧は差分に対応するバージョンを最新として返す代役
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as 差分ビュー（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>ED: Shift+Alt+D を押す
+        ED->>EX: mdmark.openPreviewToSide
+        EX->>ED: アクティブなタブの変更前と変更後の URI を取る
+        EX->>EX: 変更前と変更後の Markdown を読む
+        EX->>PV: 横の列にパネルを開く
+        PV->>CDN: 配布物を読む
+        CDN-->>PV: dist/index.js・dist/index.css
+        PV-->>EX: ready
+        EX->>PV: 変更後と変更前の Markdown と設定を送る
+        PV->>PV: 変更後の文書を描き、ブロックごとに変更前と比べて色を当てる
+        PV-->>W: 変更を色分けした文書を表示
+      ```
+    expected:
+      - 差分ビューの横の列にプレビューのパネルが開き、変更後の文書が mdmark で描かれる（見出し・表は Markdown のソースではなく描いた形で出る）
+      - 語を書き換えた段落と足した段落が、追加の色とマーカーで出て、読み上げの名前で追加と分かる
+      - 消した段落が、変更前の文書での位置に削除の色とマーカーで出て、読み上げの名前で削除と分かる
+      - 変えていない見出し・段落・表は、色とマーカーを持たずに出る
+      - 色は `--mdmark-color-diff-*` の CSS 変数の値で出る
+    test: test_normal
+  - name: 正常シナリオ（コミットの差分）
+    setup:
+      - name: 見本のリポジトリ
+        description: 正常シナリオの見本のリポジトリで、作業ツリーの変更をコミットした状態
+      - name: 差分ビュー
+        description: タイムラインの「変更を開く」で、最後のコミットとその 1 つ前の `a.md` の差分を開いた状態（両側とも `git:` の URI）
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as 差分ビュー（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: Shift+Alt+D を押す
+        ED->>EX: mdmark.openPreviewToSide
+        EX->>EX: 2 つのコミットの Markdown を読む
+        EX->>PV: 横の列にパネルを開き、2 つの Markdown を送る
+        PV-->>W: 変更を色分けした文書を表示
+      ```
+    expected:
+      - 正常シナリオと同じブロックが、同じ色とマーカーで出る
+    test: test_normal_when_commit_diff
+  - name: 正常シナリオ（変更後の側を書き換える）
+    setup:
+      - name: 差分のプレビュー
+        description: 正常シナリオでプレビューを開いた後の状態。`mdmark.preview.liveUpdate` は既定の `true`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as 差分ビュー（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 変更後の側の末尾に段落を 1 つ書き足す
+        ED->>EX: 文書の書き換え
+        EX->>EX: mdmark.preview.updateDelayMs だけ待つ
+        EX->>PV: 書き換えた変更後と変更前の Markdown を送る
+        PV-->>W: 描き直した文書を表示
+      ```
+    expected:
+      - 書き足した段落が、追加の色とマーカーで出る
+      - 正常シナリオで色を当てたブロックは、同じ色とマーカーのまま出る
+      - パネルは閉じ直さず、同じパネルで描き直される
+    test: test_normal_when_modified_side_edited
+  - name: 異常シナリオ（差分に対応しないバージョン）
+    setup:
+      - name: 見本のリポジトリと差分ビュー
+        description: 正常シナリオと同じ。ワークスペースの設定で `mdmark.version` を、差分で描く指定を持たない `v0.8.0` にする
+      - name: Mock
+        description: 配布物を配る手元のサーバーは、`v0.8.0` のタグの配布物を返す
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>EX: 差分ビューでプレビューを横に開く
+        EX->>PV: v0.8.0 でパネルを開く
+        PV->>CDN: v0.8.0 の配布物を読む
+        CDN-->>PV: dist/index.js・dist/index.css
+        PV->>PV: 差分で描く指定を持たないことを確かめる
+        PV-->>W: 描けない理由と「リロード」のボタンを表示
+      ```
+    expected:
+      - パネルに、読んだバージョン `v0.8.0` が差分の表示に対応しないことを示す理由と「リロード」のボタンが出る
+      - 変更後の文書だけを描いた表示は出ない
+      - '`a.md` と差分ビューは書き換わらない'
+    test: test_error_when_version_without_diff
+lead: 文書を書く人が、VS Code の差分ビューで見ている Markdown の変更を、mdmark で描いたプレビューで読む。変更後の文書を描き、追加・変更したブロックを追加の色、削除したブロックを削除の色でその位置に出す。
+issue: 121
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: 見出し・表・図の変更を、描いた見た目のまま確かめられる。色を見分けられなくても、追加と削除を区別できる
+trigger: 文書を書く人が、変更前と変更後が Markdown の差分ビューを開いているときに、`Shift+Alt+D`・エディタのタイトルのボタン・コマンドパレットのどれかでプレビューを横に開く
+preconditions:
+  - VS Code に mdmark の拡張機能を入れている
+  - Git のリポジトリのフォルダを開き、Markdown の変更を差分ビューで開いている
+success_guarantee: 差分ビューの横の列にプレビューのパネルが開き、変更後の文書が mdmark で描かれる。追加・変更したブロックは追加の色とマーカー、削除したブロックは削除の色とマーカーで、変更前の文書での位置に出る。
+minimal_guarantee: 差分を描けないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と差分ビューは変えない。
