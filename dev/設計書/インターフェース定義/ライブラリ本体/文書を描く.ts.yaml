@@ -3129,5 +3129,5 @@ constraints:
   - item: 選んだテーマ
     constraint: '`opts.config.colorTheme` のテーマの `--mdmark-color-*` の値の組を、描く先の要素の中だけに当てる（同じページの別の要素に描いた文書は、それぞれの設定のテーマで描く）。値の組はテーマごとに明るい配色と暗い配色を持ち、どちらを使うかは制約「配色の切り替え」で決める。印刷では選んだテーマの明るい配色にする。値の組は `@layer mdmark` の中に置き、使う側が層の外で上書きした変数は選んだテーマに勝つ。`destroy` で当てたテーマを外し、`update` は `mount` に渡したテーマのまま描く'
     decided_by: dev/設計書/デザイン方針#
-    notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先への当て方（class か属性か）はモジュール構成設計で決める
+    notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先へは属性 `data-mdmark-color-theme` で当てる（モジュール構成『描く』の `COLOR_THEME_ATTRIBUTE`）
 test_file: tests/integration/lib/mount.browser.test.ts
