@@ -96,3 +96,40 @@ test("test_error_when_output_unwritable", async () => {
   await session.win.waitForTimeout(1000);
   expect(await session.openedUrls()).toEqual([]);
 });
+
+// VS Code の設定のテーマで書き出し、ダークのブラウザでも印刷の間はそのテーマの明るい配色になる（正常シナリオ（選んだテーマで印刷する））
+test("test_normal_when_theme_selected", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "docs/guide.md": [
+        await guideMarkdown(),
+        "[リンク](https://example.com/)",
+        "",
+      ].join("\n"),
+    },
+    settings: { "mdmark.colorTheme": "theme-slate" },
+  });
+  await session.openFile("docs/guide.md");
+  const url = pathToFileURL(
+    join(session.workspaceDir, "docs", "guide.html"),
+  ).href;
+  // 実行
+  await session.runCommand("mdmark: PDF に印刷");
+  // 検証
+  await expect.poll(() => session.openedUrls()).toEqual([url]);
+  const page = await browser.newPage();
+  await page.emulateMedia({ colorScheme: "dark" });
+  await recordPrint(page);
+  await page.goto(url);
+  await expect
+    .poll(async () => (await printCalls(page)).length)
+    .toBeGreaterThan(0);
+  const link = page.locator('.mdmark a[href^="https://example.com"]');
+  // ダークの画面では theme-slate の暗い配色（印刷にする前に確かめる）
+  await expect(link).toHaveCSS("color", "rgb(125, 211, 252)");
+  // 印刷のメディアでは、ブラウザがダークでも theme-slate の明るい配色
+  await page.emulateMedia({ colorScheme: "dark", media: "print" });
+  await expect(link).toHaveCSS("color", "rgb(29, 78, 216)");
+  await page.close();
+});

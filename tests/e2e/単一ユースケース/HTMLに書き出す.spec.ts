@@ -135,3 +135,31 @@ test("test_error_when_output_unwritable", async () => {
   await session.win.waitForTimeout(1000);
   expect(await session.openedUrls()).toEqual([]);
 });
+
+// 設定ファイルのテーマを VS Code の設定のテーマで上書きして書き出し、開いたブラウザで同じテーマの明るい配色になる（正常シナリオ（選んだテーマで書き出す））
+test("test_normal_when_theme_selected", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      ...(await files()),
+      "mdmark.config.yaml": "colorTheme: theme-paper\n",
+    },
+    settings: { "mdmark.colorTheme": "theme-slate" },
+  });
+  await session.openFile("docs/guide.md");
+  const path = join(session.workspaceDir, "docs", "guide.html");
+  // 実行
+  await session.runCommand("mdmark: HTML に書き出す");
+  // 検証
+  await expect
+    .poll(() => session.notifications())
+    .toContain(`HTML を書き出しました: ${path}`);
+  const page = await browser.newPage();
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto(pathToFileURL(path).href);
+  await expect(page.locator(".mdmark").first()).toHaveCSS(
+    "background-color",
+    "rgb(248, 250, 252)",
+  );
+  await page.close();
+});

@@ -222,3 +222,22 @@ test("test_normal_when_content_width_default", async ({ page }) => {
     .toBeLessThanOrEqual(1);
   expect((await widths()).paragraph).toBeGreaterThan(narrow.paragraph);
 });
+
+// 選んだテーマの上から、使う側の CSS の上書きが勝ち、上書きしていない地の色は選んだテーマのまま（正常シナリオ（選んだテーマの上から上書きする））
+test("test_normal_when_theme_selected", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  const hostCss = ".mdmark { --mdmark-color-link: rgb(255, 0, 0) }";
+  await openPage(page, builtRoot, { hostCss });
+  // 実行
+  await mountDocument(page, {
+    markdown: MARKDOWN,
+    config: { colorTheme: "theme-slate" },
+  });
+  // 検証
+  await expect(page.locator("#doc a")).toHaveCSS("color", "rgb(255, 0, 0)");
+  await expect(page.locator("#doc")).toHaveCSS(
+    "background-color",
+    "rgb(248, 250, 252)",
+  );
+});

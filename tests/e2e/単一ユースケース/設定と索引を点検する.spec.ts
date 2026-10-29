@@ -284,3 +284,46 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   const after = await read();
   expect(after).toEqual(before);
 });
+
+// 設定のテーマの知らない名前を、そのキーを指すずれの行で出し、選べる名前とテーマを選ばない設定では出さない（正常シナリオ（知らないテーマの名前がある））
+test("test_normal_when_unknown_theme", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const unknownDir = await createCleanDir(builtRoot, tempDir);
+  const knownDir = await createCleanDir(builtRoot, tempDir);
+  const notSelectedDir = await createCleanDir(builtRoot, tempDir);
+  for (const [dir, name] of [
+    [unknownDir, "sepia"],
+    [knownDir, "theme-slate"],
+  ] as const) {
+    const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+    await writeFiles(dir, {
+      "mdmark.config.yaml": `${config}colorTheme: ${name}\n`,
+    });
+  }
+  const before = await snapshot(unknownDir);
+  // 実行
+  const unknown = await runCli(builtRoot, ["check"], unknownDir);
+  const known = await runCli(builtRoot, ["check"], knownDir);
+  const notSelected = await runCli(builtRoot, ["check"], notSelectedDir);
+  // 検証
+  expect(unknown.code).not.toBe(0);
+  const lines = linesOf(unknown.stdout);
+  const themeLines = lines.filter((line) =>
+    line.startsWith("mdmark.config.yaml:colorTheme: unknown_color_theme:"),
+  );
+  expect(themeLines).toHaveLength(1);
+  for (const text of [
+    "sepia",
+    "dev-swiss",
+    "theme-paper",
+    "theme-slate",
+    "theme-contrast",
+  ]) {
+    expect(themeLines[0]).toContain(text);
+  }
+  expect(await snapshot(unknownDir)).toEqual(before);
+  for (const result of [known, notSelected]) {
+    expect(result.code).toBe(0);
+    expect(result.stdout).not.toContain("unknown_color_theme");
+  }
+});

@@ -165,3 +165,39 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   await expect(page.locator("article .mdmark-term")).toHaveText(["単体テスト"]);
   expect(opened.externalRequests()).toEqual([]);
 });
+
+// 設定のテーマを描く先に当てた 1 枚を書き出し、ダークのブラウザで入口の文書と一覧から開いた文書を選んだテーマの暗い配色で読む（正常シナリオ（テーマを選ぶ））
+test("test_normal_when_theme_selected", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeSampleDocs(dir);
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}colorTheme: theme-paper\n`,
+  });
+  await page.emulateMedia({ colorScheme: "dark" });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  const article = page.locator("article.mdmark");
+  // theme-paper の暗い配色（入口の文書）
+  await expect(article.locator("h1")).toContainText("入口");
+  await expect(article).toHaveCSS("background-color", "rgb(28, 25, 21)");
+  // 一覧から開いたほかの文書も同じ
+  await page
+    .locator('.mdmark-bundle-side .mdmark-doc-list a[href="#/使い方/guide.md"]')
+    .click();
+  await expect(article.locator("h1")).toContainText("使い方");
+  await expect(article).toHaveCSS("background-color", "rgb(28, 25, 21)");
+  expect(opened.externalRequests()).toEqual([]);
+});
