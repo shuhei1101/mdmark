@@ -209,8 +209,8 @@ flows:
         EX->>PV: render（colorTheme: theme-paper）
         PV->>EX: rendered
     expected:
-      - '`mdmark.colorTheme` を `theme-slate` にした後の `render` の `config.colorTheme` が `theme-slate`、Webview の文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値'
-      - 空に戻した後の `render` の `config.colorTheme` が `theme-paper`
+      - '`mdmark.colorTheme` を `theme-slate` にした後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-slate`（地の色の計算値はライブラリ本体の『文書を描く』の結合テストが確かめる）'
+      - 空に戻した後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-paper`
       - 設定ファイルの中身が変わっていない
     test: test_normal_when_color_theme_changed
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
