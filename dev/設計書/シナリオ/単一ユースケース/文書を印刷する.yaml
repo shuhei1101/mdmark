@@ -196,6 +196,28 @@ scenarios:
       - 印刷の前のイベントの後、`付録` の段落が表示されている
       - 印刷の後のイベントの後、右側の目次が表示され、`付録` の節が閉じている
     test: test_normal_when_side_toc_hidden_in_print
+  - name: 正常シナリオ（テーマを選んだ文書）
+    setup:
+      - name: テーマを選んで描いたページ
+        description: テーマを選ぶキーに theme-slate を書いた設定で、正常シナリオと同じ文書を描いたページ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷する
+        B->>M: 印刷の前のイベント
+        M->>M: ダークを解除し、選んだテーマの明るい配色にする
+        B-->>U: theme-slate の明るい配色で印刷
+    expected:
+      - 描く先の要素のリンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値（既定のテーマに戻らない）
+      - 地の色は正常シナリオと同じく外れる
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

@@ -38,6 +38,70 @@ scenarios:
     expected:
       - VS Code のテーマがダークでも、描く先の要素の地の色の計算値がライトの `--mdmark-color-bg` の値
     test: test_normal_when_theme_fixed
+  - name: 正常シナリオ（設定ファイルのテーマで描く）
+    setup:
+      - name: テーマを選んだ設定ファイル
+        description: 開いた Markdown のワークスペースの `mdmark.config.yaml` のテーマを選ぶキーに theme-paper を書く
+        notes: VS Code の設定のテーマを選ぶ項目は空（既定）。項目の名前はインターフェース定義で決める
+      - name: ダークのテーマで開いたプレビュー
+        description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` は既定の `auto`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>EX: VS Code の設定が空なので設定ファイルのテーマを使う
+        EX->>PV: theme-paper で描かせる
+        PV-->>W: theme-paper の暗い配色で表示
+    expected:
+      - 描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+    test: test_normal_when_config_theme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
+  - name: 正常シナリオ（VS Code の設定でテーマを選ぶ）
+    setup:
+      - name: テーマを選んだ設定ファイル
+        description: 正常シナリオ（設定ファイルのテーマで描く）と同じ（theme-paper）
+      - name: 明るい配色に固定したプレビュー
+        description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` を `light` にしてプレビューを開き、本文を途中までスクロールした状態
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant VS as VS Code
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>VS: VS Code の設定のテーマを theme-slate にする
+        VS->>EX: 設定の変更を知らせる
+        EX->>PV: theme-slate で描き直させる
+        PV-->>W: theme-slate の明るい配色で表示
+    expected:
+      - プレビューを開き直さずリロードもせずに、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる（VS Code の設定が設定ファイルに勝ち、明暗は `mdmark.preview.theme` のまま）
+      - 本文とスクロールの位置は切り替える前と同じ
+    test: test_normal_when_setting_theme
+  - name: 正常シナリオ（設定ファイルのテーマを書き換える）
+    setup:
+      - name: 設定ファイルのテーマで開いたプレビュー
+        description: 正常シナリオ（設定ファイルのテーマで描く）を終えた状態
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: mdmark.config.yaml のテーマを theme-contrast に書き換えて保存する
+        EX->>PV: theme-contrast で描き直させる
+        PV-->>W: theme-contrast の暗い配色で表示
+    expected:
+      - リロードせずに、描く先の要素の地の色の計算値が theme-contrast の暗い配色の `--mdmark-color-bg` の値になる
+    test: test_normal_when_config_theme_changed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#
 lead: プレビューの配色が、VS Code のライト・ダークのテーマに合わせて切り替わる。設定で配色を固定もできる。
 issue: 22
 primary_actor: 文書を書く人
