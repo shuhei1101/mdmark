@@ -1149,7 +1149,7 @@ functions:
       - name: test_collect_check_issues_when_unknown_color_theme
         case: 正常
         summary: 知らないテーマの名前を schema の後・no_documents の前に返す
-        condition: '`colorTheme: sepia` と、`build.out` の無い `build`、当たる文書の無い `build.include` を持つ設定。別に `colorTheme: theme-slate` の設定'
+        condition: '`colorTheme: sepia` と、無いファイルを指す `extensions`、`build.out` と当たる文書の無い `build.include` を持つ `build` を持つ設定。別に `colorTheme: theme-slate` の設定'
         mock: 一時フォルダ
         expected: 前者の `kind` が `schema`・`unknown_color_theme`・`no_documents` の順で、`unknown_color_theme` の `where` が `colorTheme`、`message` に `sepia` と 4 つの名前を含む。後者は `unknown_color_theme` が無い
     refs:
