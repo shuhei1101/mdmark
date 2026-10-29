@@ -2720,7 +2720,7 @@ flows:
     expected:
       - el の地の色の計算値が、デザイン方針の theme-slate の明るい配色の `--mdmark-color-bg` の値
       - el のリンクの色の計算値が、使う側が `:root` に書いた `rgb(1, 2, 3)`
-      - '`destroy` の後、el の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値'
+      - '`destroy` の後、`getComputedStyle(document.documentElement)` の `--mdmark-color-bg` が dev-swiss の明るい配色の値'
     test: test_normal_when_color_theme_selected
   - name: 正常系（テーマの暗い配色）
     summary: 選んだテーマの中で、OS のダークでは暗い配色、親の `mdmark-theme-light` では明るい配色、印刷では明るい配色を使う
