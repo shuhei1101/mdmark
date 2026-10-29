@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
   guideMarkdown,
+  longDocument,
   updateWorkspaceSettings,
   useVscodeE2E,
   type VscodeSession,
@@ -34,20 +35,33 @@ async function openGuidePreview(session: VscodeSession): Promise<void> {
   await session.guideFrame();
 }
 
-// プレビューの歯車のボタンを押すと、VS Code の設定画面が mdmark の項目に絞って開き、プレビューは閉じない（正常シナリオ）
+// プレビューの歯車のボタンを押すと、VS Code の設定画面が mdmark の項目に絞って開き、プレビューは閉じず、本文とスクロールの位置は押す前と同じ（正常シナリオ）
 test("test_normal", async () => {
-  // 準備
+  // 準備: プレビューを途中までスクロールし、本文とスクロールの位置を控える
   const session = await e2e.launch({
-    files: { "guide.md": await guideMarkdown() },
+    files: { "long.md": longDocument() },
   });
-  await openGuidePreview(session);
+  await session.openFile("long.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith("h2");
+  await frame
+    .locator('h2[data-source-line="328"]')
+    .evaluate((element) => element.scrollIntoView());
+  const scrollTop = await frame.evaluate(() => window.scrollY);
+  const heading = await frame.locator("h2").first().innerText();
   // 実行
   await gearButton(session).click();
-  // 検証
+  // 検証: 設定画面が絞って開き、プレビューのタブが 1 つ残る
   await expectSettingsFiltered(session);
-  await expect(
-    session.win.locator('.tab[aria-label*="プレビュー guide.md"]'),
-  ).toHaveCount(1);
+  const previewTab = session.win.locator(
+    '.tab[aria-label*="プレビュー long.md"]',
+  );
+  await expect(previewTab).toHaveCount(1);
+  // プレビューのタブを表に戻すと、本文とスクロールの位置が押す前と同じ
+  await previewTab.first().click();
+  const shown = await session.frameWith("h2");
+  await expect.poll(() => shown.evaluate(() => window.scrollY)).toBe(scrollTop);
+  expect(await shown.locator("h2").first().innerText()).toBe(heading);
 });
 
 // プレビューを開いていなくても、コマンドパレットから同じ絞り込みで設定画面を開き、YAML の設定ファイルは開かない（正常シナリオ（コマンドパレットから開く））
