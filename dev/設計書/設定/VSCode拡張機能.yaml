@@ -5,7 +5,7 @@ files:
     manages: 読む mdmark の版・設定ファイルの場所・プレビューの描き直しとスクロールの同期と配色・書き出す先
     notes: VS Code の利用者の設定とワークスペースの設定（`.vscode/settings.json`）。後者が前者に勝つ
   - file: mdmark.config.yaml
-    manages: 機能のオン・オフの既定・外部ライブラリの対応表・右側の目次の出し方（拡張機能はこの 3 つだけを読む）
+    manages: 機能のオン・オフの既定・外部ライブラリの対応表・右側の目次の出し方・選ぶテーマ（拡張機能はこの 4 つだけを読む）
     notes: 場所は `mdmark.configPath`。他のキーは読まない。キーの意味は設定『ライブラリ本体』
   - file: 環境変数
     manages: 結合テストのときだけ差し替える配布物の配信元とタグ一覧の取得先
@@ -32,7 +32,7 @@ settings:
     type: string
     required: false
     default: mdmark.config.yaml
-    description: 拡張機能が `features`・`libraries`・`side-toc` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
+    description: 拡張機能が `features`・`libraries`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
     reload: immediate
     allowed: 相対パスか絶対パス
     status: planned
@@ -190,3 +190,34 @@ settings:
     visibility: user
     introduced:
       pr: 166
+  - key: mdmark.colorTheme
+    title: プレビューと書き出しのテーマ
+    file: settings.json
+    type: '"" | "dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"'
+    required: false
+    default: '""'
+    description: 'プレビューと、`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が書き出す HTML の配色のテーマ。空のときは設定ファイルの `colorTheme` に従い、そこにも無ければ mdmark の既定（dev-swiss）で描く。設定画面の表示は「Mdmark: Color Theme」、空の選択肢の文言は「（設定ファイルに従う）」（`package.json` の `enumItemLabels`）。明暗は `mdmark.preview.theme` が決める'
+    reload: immediate
+    allowed: '`package.json` の `enum` の値だけ'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
+      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+    reason: 選んだテーマは書き出す HTML にも当たるため、`mdmark.preview.*` の下に置かない（確認ログ「テーマの設定のキーと設定画面の表示名」）
+    status: planned
+    visibility: user
+    introduced:
+      pr: 181
+  - key: colorTheme
+    title: 選ぶテーマ（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    default: なし（`mount` に渡さず mdmark の既定の dev-swiss で描く）
+    description: '`mdmark.colorTheme` が空のときだけ、拡張機能は書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。`mdmark.colorTheme` が空でないときはその値で置き換える'
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 181
