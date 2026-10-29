@@ -1,0 +1,63 @@
+title: "設定を開く"
+entry:
+  kind: operation
+  value: コマンド `mdmark.openSettings` と、プレビューのエディタのタイトルの帯（`editor/title`）の歯車のボタン
+flows:
+  - name: 正常系
+    summary: プレビューの歯車のボタンから、mdmark の項目に絞って設定画面を開く
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: '`guide.md` を開き、mdmark のプレビューを横に開いてアクティブにした状態'
+      - name: Mock
+        description: '`commands.executeCommand` を、`workbench.action.openSettings` の呼び出しだけ引数を記録して解決する代役に差し替える（他のコマンドは元のものを呼ぶ）'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant VS as VS Code
+        U->>EX: 歯車のボタン（mdmark.openSettings）
+        EX->>VS: workbench.action.openSettings（@ext:ShuheiNishikawa.mdmark）
+    expected:
+      - 代役が 1 回だけ、引数 `@ext:ShuheiNishikawa.mdmark` で呼ばれる
+      - プレビューのパネルが開いたままで、Webview へ `render` が送信されない
+    test: test_normal
+  - name: 正常系（コマンドパレットから開く）
+    summary: プレビューを開いていなくても、コマンドから同じ絞り込みで設定画面を開き、YAML の設定ファイルは開かない
+    setup:
+      - name: プレビューを開いていないワークスペース
+        description: '`mdmark.config.yaml` と `guide.md` を置いたフォルダで `guide.md` を開き、プレビューは開いていない状態'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant VS as VS Code
+        U->>EX: mdmark.openSettings
+        EX->>VS: workbench.action.openSettings（@ext:ShuheiNishikawa.mdmark）
+    expected:
+      - 代役が 1 回だけ、引数 `@ext:ShuheiNishikawa.mdmark` で呼ばれる
+      - アクティブなエディタの文書が `guide.md` のままで、`mdmark.config.yaml` が開かれていない
+    test: test_normal_when_command_palette
+lead: VS Code の設定画面を、mdmark の拡張機能の項目だけに絞って開く。
+idempotent: true
+side_effects: なし（設定画面を開くだけで、設定も設定ファイルも書き換えない）
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く#scenarios[正常シナリオ]
+  - dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く#scenarios[正常シナリオ（コマンドパレットから開く）]
+response:
+  - name: '-'
+    type: Promise<void>
+    description: 設定画面を開くコマンドを呼び終えたら解決する
+exceptions:
+  - name: なし（正常終了）
+    condition: 設定画面を mdmark の項目に絞って開く
+constraints:
+  - item: 開き方
+    constraint: '`commands.executeCommand("workbench.action.openSettings", "@ext:ShuheiNishikawa.mdmark")` を呼ぶ。拡張機能の ID は `package.json` の `publisher`.`name` から作る。YAML の設定ファイルは開かない（それは `mdmark.openConfig`）'
+    decided_by: dev/設計書/設定/VSCode拡張機能#
+  - item: 歯車のボタン
+    constraint: '`contributes.menus` の `editor/title` に `mdmark.openSettings` を置き、mdmark のプレビューのパネルがアクティブなときだけ出す（`when` はプレビューの Webview の `activeWebviewPanelId`）。アイコンは `$(gear)`。表示名・ツールチップの文言は画面設計で決める'
+    notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に置くことに決めた（dev/pr/181/確認ログ.md）
+  - item: プレビューへの影響
+    constraint: プレビューのパネルを閉じず、Webview へメッセージを送信しない

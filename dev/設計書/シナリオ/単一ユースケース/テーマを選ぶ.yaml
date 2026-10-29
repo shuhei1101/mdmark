@@ -4,7 +4,7 @@ scenarios:
     setup:
       - name: テーマを選ぶ設定
         description: テーマを選ぶキーに theme-slate を書いた設定のオブジェクト
-        notes: 'キーの名前とテーマの名前の値はインターフェース定義で決める。OS の配色はライト（`prefers-color-scheme: light`）'
+        notes: 'キーは `colorTheme`、値は `dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`（インターフェース定義『文書を描く』）。OS の配色はライト（`prefers-color-scheme: light`）'
       - name: 見本の Markdown
         description: 段落とリンクを持つ文書
       - name: Mock

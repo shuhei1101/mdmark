@@ -4,7 +4,7 @@ scenarios:
     setup:
       - name: 開いたプレビュー
         description: Markdown のプレビューを横に開いた状態（VSCodeでプレビューを開くの正常シナリオ）
-        notes: 歯車のボタンの置き場所は画面設計で決める
+        notes: 歯車のボタンはエディタのタイトルの帯（`editor/title`）に置き、押すとコマンド `mdmark.openSettings` を呼ぶ（インターフェース定義『設定を開く』）
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-

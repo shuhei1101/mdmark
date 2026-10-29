@@ -165,7 +165,7 @@ scenarios:
     setup:
       - name: 知らないテーマの名前を書いたフォルダ
         description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` のテーマを選ぶキーに mdmark に入っていない名前 `sepia` を書く
-        notes: キーの名前とずれの種類の名前はインターフェース定義で決める
+        notes: キーは `colorTheme`、ずれの種類は `unknown_color_theme`（インターフェース定義『設定と索引を点検する』）
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

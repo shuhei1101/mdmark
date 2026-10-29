@@ -188,6 +188,31 @@ flows:
       - 別の配信元が `my-chart.js` の要求を受ける
       - '`rendered` を受けた後、印の場所が `data-mdmark-drawn` を持ち、知らせの枠が無い'
     test: test_normal_when_library_origin_added
+  - name: 正常系（テーマの設定を変える）
+    summary: '`mdmark.colorTheme` を変えると、設定ファイルの `colorTheme` を上書きした config で描き直し、空に戻すと設定ファイルのテーマで描く'
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: '正常系と同じ。`mdmark.config.yaml` に `colorTheme: theme-paper` を記載し、`mdmark.colorTheme` は空'
+        notes: '`mdmark.preview.theme` は `light`'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.colorTheme を theme-slate にする
+        EX->>PV: render（colorTheme: theme-slate）
+        PV->>PV: destroy して mount
+        PV->>EX: rendered
+        U->>EX: mdmark.colorTheme を空に戻す
+        EX->>PV: render（colorTheme: theme-paper）
+        PV->>EX: rendered
+    expected:
+      - '`mdmark.colorTheme` を `theme-slate` にした後の `render` の `config.colorTheme` が `theme-slate`、Webview の文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値'
+      - 空に戻した後の `render` の `config.colorTheme` が `theme-paper`
+      - 設定ファイルの中身が変わっていない
+    test: test_normal_when_color_theme_changed
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送る。Markdown と設定ファイルは書き換えない
