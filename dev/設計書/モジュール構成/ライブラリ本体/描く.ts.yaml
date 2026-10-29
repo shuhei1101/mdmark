@@ -149,9 +149,9 @@ constants:
   - name: COLOR_THEME_ATTRIBUTE
     title: テーマの属性
     container: src/mount.ts
-    summary: 描く先の要素に、既定を当てた設定の `colorTheme` を値にして付ける属性。`src/index.css` はこの属性の値でテーマの配色の値をその要素の中だけに当てる。`document.body` の直下に置く部品（コメントの入力欄・吹き出し、差分のミニマップ）は、持ち主の属性の値を写す
+    summary: 描く先の要素に、既定を当てた設定の `colorTheme` を値にして付ける属性。`src/index.css` は `:root:has()` でこの属性の値を見て、テーマの配色の値を `:root` に当てる
     value: '"data-mdmark-color-theme"'
-    reason: 同じページの別の要素に別のテーマで描けるよう、`:root` でなく描く先の要素に当てる。明暗の class（`mdmark-theme-*`）と名前を分けるため class でなく属性にする
+    reason: '`:root` に当て、使う側が `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色を届ける。明暗の class（`mdmark-theme-*`）と名前を分けるため class でなく属性にする'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[選んだテーマ]
     status: planned
