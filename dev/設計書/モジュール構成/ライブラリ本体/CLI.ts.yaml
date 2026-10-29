@@ -74,7 +74,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'unknown_mark'"
+        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'unknown_mark'"
         description: ずれの種類
       - name: message
         type: string
@@ -261,7 +261,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme` が文字列・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -337,6 +337,12 @@ functions:
         condition: '`aliases` に、Schema に合う行と、`metadata.alias_type` が `{type: custom, value: memo}` の行'
         mock: なし
         expected: '`schema` のずれが 1 件で `where` が `aliases[1].metadata.alias_type.value`、`config.aliases` の長さが 2 で 2 番目が `null`'
+      - name: test_validate_config_when_color_theme_invalid
+        case: 正常
+        summary: 文字列でない `colorTheme` を schema のずれにして落とし、知らない名前はそのまま残す
+        condition: '`colorTheme` が `1` の値と、`sepia` の値'
+        mock: なし
+        expected: '`1` は `where` が `colorTheme` の `schema` のずれが 1 件で `config.colorTheme` が無い。`sepia` は `issues` が空で `config.colorTheme` が `sepia`'
     status: planned
     introduced:
       pr: 32
@@ -831,7 +837,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc` をあるときだけ写す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 知らないテーマの名前 {名前} です。既定の dev-swiss で描きます。` を 1 件出す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -899,6 +905,12 @@ functions:
         condition: インターフェース定義『文書をHTMLに書き出す』の「正常系（エイリアスを読む）」のフォルダ
         mock: 一時フォルダ
         expected: '`payload.aliases` が `command` の `run-test` の 1 件だけで `dev-server` を含まず、`warnings` に `alias_required_empty` の 1 件がある'
+      - name: test_prepare_embeds_when_color_theme
+        case: 正常
+        summary: 設定の `colorTheme` を埋める設定に写し、知らない名前は写して警告する
+        condition: '`colorTheme: theme-slate` の設定、`colorTheme: sepia` の設定、`colorTheme` を持たない設定'
+        mock: 一時フォルダ
+        expected: 1 つ目の `payload.config.colorTheme` が `theme-slate` で `warnings` が空。2 つ目は `sepia` で `warnings` に `sepia` を含む 1 件。3 つ目は `payload.config` が `colorTheme` を持たない
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[bundleModule]'
@@ -1082,7 +1094,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `知らないテーマの名前 {名前} です。{COLOR_THEMES を「・」で結んだもの} のどれかに直してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -1134,6 +1146,12 @@ functions:
         condition: インターフェース定義『設定と索引を点検する』の「正常系（エイリアスにずれがある）」のフォルダに、知らない印のある文書を加える
         mock: 一時フォルダ
         expected: ずれの並びが `alias_no_files`（`missing/*.yaml`）→ `alias_required_empty`（`description`）→ `unknown_mark` で、`env` のレコードを指すずれが無い
+      - name: test_collect_check_issues_when_unknown_color_theme
+        case: 正常
+        summary: 知らないテーマの名前を schema の後・no_documents の前に返す
+        condition: '`colorTheme: sepia` と、`build.out` の無い `build`、当たる文書の無い `build.include` を持つ設定。別に `colorTheme: theme-slate` の設定'
+        mock: 一時フォルダ
+        expected: 前者の `kind` が `schema`・`unknown_color_theme`・`no_documents` の順で、`unknown_color_theme` の `where` が `colorTheme`、`message` に `sepia` と 4 つの名前を含む。後者は `unknown_color_theme` が無い
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]

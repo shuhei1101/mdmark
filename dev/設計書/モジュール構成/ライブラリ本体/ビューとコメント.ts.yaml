@@ -881,7 +881,7 @@ functions:
       1. `store.load({ docId })` を待つ。reject するか、配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、コメントを空にする
       2. `commentText(root)` と `locateComments` で箇所を探し、箇所ごとに文字の節を分けて `renderCommentMark` の形の `mark` で包み、付いたコメントを控える。見つからないコメントがあれば `root` の末尾に `renderCommentOrphans` を置く。読み上げの説明 `コメントが付いた箇所` を `document.body` に 1 つ置く
       3. `selectionchange` を受け、選びの始まりと終わりが `root` の中の同じ `COMMENT_BLOCKS` に入り、`COMMENT_EXCLUDED` に入らず、文字が空白だけでないときに、`renderCommentButton` をそのブロックの直後に置き、選んだ文字の終わりの下（収まらなければ上）に置く。条件を外れたらボタンを隠す（フォーカス中は隠さない）
-      4. ボタンを押すと、`renderCommentForm` の入力欄を `document.body` に置いて選んだ範囲の下に置き、本文の欄へフォーカスを移し、`CSS.highlights` があれば範囲を `PENDING_HIGHLIGHT` に入れる
+      4. ボタンを押すと、`renderCommentForm` の入力欄を `document.body` に置いて（`root` の `closest("[data-mdmark-color-theme]")` があればその属性の値を入力欄に写す。吹き出しも同じ）選んだ範囲の下に置き、本文の欄へフォーカスを移し、`CSS.highlights` があれば範囲を `PENDING_HIGHLIGHT` に入れる
       5. 保存のボタンで、本文が空なら `state: empty` の知らせを出す。空でなければ `state: saving` にして `store.save({ docId, comment: draftFromRange(...) })` を待つ。reject するか `isComment` でなければ `save`・`docId`・元のエラーを `console.error` に出して `state: failed` にし、本文を残す。保存できたら入力欄を閉じ、範囲を印で包んで印へフォーカスを移す
       6. キャンセルと Esc で入力欄を閉じる。本文があれば `window.confirm(DISCARD_MESSAGE)` で確かめ、捨てないときは残す。閉じたらボタンへフォーカスを戻す。外側の押下では閉じない
       7. 印の押下・Enter・Space で `renderCommentBubble` の吹き出しを開いて印の `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。閉じるボタンと Esc で閉じて印へフォーカスを戻し、外側の押下でも閉じる
@@ -936,6 +936,12 @@ functions:
         condition: 印を付けた後に外す関数を呼ぶ
         mock: なし
         expected: '`root` の `innerHTML` が付ける前と同じで、ボタン・一覧・説明が無い'
+      - name: test_attach_comments_when_color_theme
+        case: 正常
+        summary: body に置く入力欄と吹き出しに、範囲の要素のテーマを写す
+        condition: '`data-mdmark-color-theme="theme-slate"` を持つ要素の中の段落を `root` にし、文字を選んでボタンを押す。別に、読んだコメントの印を押す'
+        mock: '`store` はメモリーで返す'
+        expected: 入力欄と吹き出しの `data-mdmark-color-theme` が `theme-slate`。属性を持つ祖先が無いときは属性を付けない
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#

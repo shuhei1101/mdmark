@@ -146,6 +146,17 @@ constants:
     status: planned
     introduced:
       pr: 97
+  - name: COLOR_THEME_ATTRIBUTE
+    title: テーマの属性
+    container: src/mount.ts
+    summary: 描く先の要素に、既定を当てた設定の `colorTheme` を値にして付ける属性。`src/index.css` はこの属性の値でテーマの配色の値をその要素の中だけに当てる。`document.body` の直下に置く部品（コメントの入力欄・吹き出し、差分のミニマップ）は、持ち主の属性の値を写す
+    value: '"data-mdmark-color-theme"'
+    reason: 同じページの別の要素に別のテーマで描けるよう、`:root` でなく描く先の要素に当てる。明暗の class（`mdmark-theme-*`）と名前を分けるため class でなく属性にする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[選んだテーマ]
+    status: planned
+    introduced:
+      pr: 181
 functions:
   - name: mount
     title: 文書を要素に描く
@@ -178,7 +189,7 @@ functions:
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数と右側の目次を外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
       4. 文書を描く。描くたびに次を行う
          - 世代を 1 進め、前の操作を外す関数と右側の目次を外す関数があれば呼ぶ
-         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付ける
+         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` に既定を当てた設定の `colorTheme` を付ける
          - 機能のオン・オフを控える
          - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。既定を当てた設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す）、外す関数を控える
@@ -188,7 +199,7 @@ functions:
          - `diffSource` を渡していれば、前の差分を外す関数を呼んでから差分を付け（差分を付ける。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
       6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
-      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` を外し、`mounted` の `el` が自分なら消す
+      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` と `COLOR_THEME_ATTRIBUTE` を外し、`mounted` の `el` が自分なら消す
       8. `mounted` に `el` と戻り値を控えて返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
@@ -305,6 +316,18 @@ functions:
         condition: '`aliases` に `command` の `単体テスト` を渡して `単体テストを流す。` を描き、`update("もう一度単体テストを流す。")`'
         mock: なし
         expected: '`update` の後も `mdmark-term-wrap` が 1 つあり、ツールチップに `npm run test:unit` とコピーのボタンがある'
+      - name: test_mount_when_color_theme
+        case: 正常
+        summary: 選んだテーマを描く先の属性に付け、`update` でも保ち、`destroy` で外す
+        condition: '`config` に `{ colorTheme: "theme-slate" }` を渡して `# A` を描き、`update("# B")` の後に `destroy`'
+        mock: なし
+        expected: 描いた後と `update` の後の `el` の `data-mdmark-color-theme` が `theme-slate`。`destroy` の後は属性を持たない
+      - name: test_mount_when_color_theme_unknown
+        case: 正常
+        summary: 知らないテーマの名前と省いたときは dev-swiss を付ける
+        condition: '`config` に `{ colorTheme: "sepia" }` を渡して描く要素と、`config` を省いて描く要素'
+        mock: なし
+        expected: どちらの `el` も `data-mdmark-color-theme` が `dev-swiss`。例外を投げない
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts
