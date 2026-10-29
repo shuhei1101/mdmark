@@ -42,7 +42,8 @@ scenarios:
   - name: 正常シナリオ（変えた設定がプレビューに映る）
     setup:
       - name: 設定画面を開いた状態
-        description: 正常シナリオを終え、プレビューを横に残した状態。プレビューは既定のテーマ（dev-swiss）で描かれている
+        description: 正常シナリオを終え、プレビューを横に残した状態。プレビューは既定のテーマ（dev-swiss）の明るい配色で描かれている
+        notes: VS Code のテーマは Default Light Modern、`mdmark.preview.theme` は既定の `auto`
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -54,9 +55,9 @@ scenarios:
         W->>VS: 設定画面でテーマを theme-slate にする
         VS->>EX: 設定の変更を知らせる
         EX->>PV: theme-slate で描き直させる
-        PV-->>W: theme-slate の配色で表示
+        PV-->>W: theme-slate の明るい配色で表示
     expected:
-      - リロードせずに、プレビューの描く先の要素の地の色の計算値が theme-slate の配色の `--mdmark-color-bg` の値になる
+      - リロードせずに、プレビューの描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる
     test: test_normal_when_setting_changed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]
