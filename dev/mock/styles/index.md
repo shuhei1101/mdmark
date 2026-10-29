@@ -10,6 +10,6 @@ mdmark が描いた文書の既定の見た目（テーマの既定の値）の�
 | [flat](./flat/index.html) | フラット。mindstella の色で、見出しの下の線と表の縦の罫線を引かず、面の明るさの差で区切る |
 | [modern](./modern/index.html) | モダン。白地に灰の面と青のリンク、見出しの下に細い区切り線を引く、技術文書で見慣れた見た目 |
 | [soft-modern](./soft-modern/index.html) | モダン × mindstella の色。線・余白・文字の大きさは今のまま、色だけを mindstella のトークンに揃える |
-| [theme-contrast](./theme-contrast/index.html) | 選べるテーマの候補（#181）。高コントラスト: 白と黒の地に、黒の文字・濃い罫線・濃い青のリンク。書体・余白は dev-swiss のまま |
-| [theme-paper](./theme-paper/index.html) | 選べるテーマの候補（#181）。紙: 生成りの地に墨色の文字と臙脂のリンク、暗い配色は焦げ茶の地に生成りの文字。書体・余白は dev-swiss のまま |
-| [theme-slate](./theme-slate/index.html) | 選べるテーマの候補（#181）。青灰: 青みの灰の地と面に青のリンク、暗い配色は紺の地。書体・余白は dev-swiss のまま |
+| [theme-contrast](./theme-contrast/index.html) `badge:採用` | 選べるテーマ（#181）。高コントラスト: 白と黒の地に、黒の文字・濃い罫線・濃い青のリンク。書体・余白は dev-swiss のまま |
+| [theme-paper](./theme-paper/index.html) `badge:採用` | 選べるテーマ（#181）。紙: 生成りの地に墨色の文字と臙脂のリンク、暗い配色は焦げ茶の地に生成りの文字。書体・余白は dev-swiss のまま |
+| [theme-slate](./theme-slate/index.html) `badge:採用` | 選べるテーマ（#181）。青灰: 青みの灰の地と面に青のリンク、暗い配色は紺の地。書体・余白は dev-swiss のまま |

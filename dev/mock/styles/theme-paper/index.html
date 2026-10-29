@@ -6,27 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
   <meta name="color-scheme" content="light dark">
-  <title>theme-paper | mdmark のテーマの候補の見本</title>
+  <title>theme-paper | mdmark のテーマの見本</title>
   <!-- 見本の土台（本文の規則とモック専用の操作列） -->
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 土台に無い部品（注意書き・差分・図・グラフ・文書の一覧）の規則 -->
   <link rel="stylesheet" href="../../refs/80/assets/parts.css">
   <!-- 採用スタイル本体の変数の値 -->
   <link rel="stylesheet" href="../../assets/style.css">
-  <!-- テーマの候補の配色の値（配色の変数だけを上書きする） -->
-  <link rel="stylesheet" href="./style.css">
+  <!-- テーマの配色の値（配色の変数だけを上書きする） -->
+  <link rel="stylesheet" href="../../assets/themes/theme-paper.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
 </head>
 <body>
-  <!-- モック専用の操作列: テーマの候補のタブと配色の切り替え -->
+  <!-- モック専用の操作列: テーマのタブと配色の切り替え -->
   <div class="mock-bar">
-    <nav aria-label="テーマの候補">
+    <nav aria-label="テーマ">
       <ul class="mock-bar-group">
         <li><a class="mock-bar-item" href="../dev-swiss/index.html">dev-swiss<span class="mock-badge">既定</span></a></li>
-        <li><a class="mock-bar-item" href="../theme-paper/index.html" aria-current="page">theme-paper</a></li>
-        <li><a class="mock-bar-item" href="../theme-slate/index.html">theme-slate</a></li>
-        <li><a class="mock-bar-item" href="../theme-contrast/index.html">theme-contrast</a></li>
+        <li><a class="mock-bar-item" href="../theme-paper/index.html" aria-current="page">theme-paper<span class="mock-badge">採用</span></a></li>
+        <li><a class="mock-bar-item" href="../theme-slate/index.html">theme-slate<span class="mock-badge">採用</span></a></li>
+        <li><a class="mock-bar-item" href="../theme-contrast/index.html">theme-contrast<span class="mock-badge">採用</span></a></li>
       </ul>
     </nav>
     <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
