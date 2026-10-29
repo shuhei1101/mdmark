@@ -11,6 +11,7 @@ VS Code 組み込みのプレビューでは出ない拡張記法を、書きな
 - 打つたびにプレビューを描き直す。保存したときだけ描き直す設定もある
 - エディタとプレビューのスクロールを両方向に合わせる
 - VS Code のテーマの明暗に合わせて配色を切り替える。ライト・ダークに固定もできる
+- 配色のテーマを選べる。プレビューのタイトルの歯車のボタンから、mdmark の設定を開ける
 - 外部の URL は既定のブラウザ、`.md` へのリンクは VS Code で開く。相対パスの画像も出る
 - `mdmark.config.yaml` の `features`・`libraries` で、機能のオン・オフと外部ライブラリを決める
 - 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する
@@ -26,6 +27,7 @@ Markdown を開き、`Shift+Alt+D`（Mac は `Shift+Option+D`）か、エディ�
 | `mdmark: プレビューを開く` | Markdown と同じ列にプレビューを開く |
 | `mdmark: プレビューをリロード` | 設定ファイルと読むバージョンを決め直し、配布物を読み直して描く |
 | `mdmark: 設定ファイルを開く` | `mdmark.config.yaml` を開く。無ければ雛形を作るかを尋ねる |
+| `mdmark: 設定を開く` | VS Code の設定画面を、mdmark の項目に絞って開く。プレビューのタイトルの歯車のボタンも同じ |
 | `mdmark: HTML に書き出す` | 開いている Markdown を HTML に書き出す |
 | `mdmark: ブラウザで開く` | 書き出し直した HTML を既定のブラウザで開く |
 | `mdmark: PDF に印刷` | 書き出し直した HTML をブラウザで開き、印刷のダイアログを出す |
@@ -43,6 +45,7 @@ PDF は、印刷のダイアログの送信先で「PDF に保存」を選んで
 | `mdmark.preview.scrollPreviewWithEditor` | `true` | エディタに合わせてプレビューを動かす |
 | `mdmark.preview.scrollEditorWithPreview` | `true` | プレビューに合わせてエディタを動かす |
 | `mdmark.preview.theme` | `auto` | `auto` は VS Code のテーマに合わせ、`light`・`dark` は固定する |
+| `mdmark.colorTheme` | 空 | 配色のテーマ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` から選ぶ。空のときは設定ファイルの `colorTheme` に従う。書き出す HTML にも当たる |
 | `mdmark.export.outputDir` | 空 | 書き出す先のフォルダ。空のときは Markdown と同じフォルダ |
 
 ## 必要なもの

@@ -70,6 +70,10 @@ Markdown を 1 つ、CDN を読まない 1 枚の HTML に書き出す。
 警告の対象は、読めない画像・外部ライブラリのモジュール・拡張・`theme` の CSS と、埋めずに残した絶対 URL の画像。
 文書間のリンクは書いたままの `href` で残し、警告に出さない。
 
+設定の `colorTheme` が選べるテーマの名前に無いときは、書き出しを止めず、既定の `dev-swiss` で描く。
+警告は `警告: {設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` で出す。
+選べるテーマは [選ぶテーマ](./設定.md#選ぶテーマ)。
+
 設定に `aliases` があるときは、行の `paths` の YAML を読み、[`buildAliases`](./API.md#エイリアスを作る) で作ったエイリアスから `env` を除いて、書き出す HTML に埋める。
 当たるファイルが無い行・読めない YAML・使えない行とレコードは、書き出しを止めず、警告（`警告: {ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `警告: {ファイル}: {種類}: {内容}`）に出す。
 種類と意味は [設定と索引を点検する](#設定と索引を点検する) と同じ。
@@ -153,7 +157,7 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark`。
+並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark`。
 内容は、何が合わないかと直し方の日本語の 1 文。
 
 ```text
@@ -169,6 +173,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | 種類 | 意味 |
 | --- | --- |
 | `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].metadata.alias_type` の形）を含む |
+| `unknown_color_theme` | 設定の `colorTheme` が選べるテーマの名前に無い。場所は `colorTheme`。内容は `不明なテーマ名 {名前} です。dev-swiss・theme-paper・theme-slate・theme-contrast のいずれかに修正してください。` |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
 | `orphan_doc` | 文書があって、索引に無い |

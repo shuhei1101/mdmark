@@ -837,6 +837,205 @@ handle.destroy();
 印刷では、class によらず明るい配色にする。
 使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ。
 
+#### 選べるテーマ
+
+配色の変数の値の組を、mdmark に入れたテーマから選べる。
+テーマは設定の `colorTheme`（[選ぶテーマ](./設定.md#選ぶテーマ)）で選ぶ。
+`mount` は選んだテーマの名前を、描く先の要素の属性 `data-mdmark-color-theme` に付ける。
+使う側がこの属性を付ける必要はない。
+
+<!-- table: data -->
+
+| テーマ | 内容 |
+| --- | --- |
+| `dev-swiss` | 既定。上の表の値で、属性が付いても値の組を追加しない |
+| `theme-paper` | 紙。生成りの地に墨色の文字と臙脂のリンク。ダークの配色は焦げ茶の地に生成りの文字 |
+| `theme-slate` | 青灰。青みの灰の地と面に青のリンク。ダークの配色は紺の地に青みの白の文字 |
+| `theme-contrast` | 高コントラスト。白と黒の地に濃い文字・濃い罫線・濃い青のリンク |
+
+<!-- /table -->
+
+テーマが替えるのは `--mdmark-color-*` の変数と `color-scheme` だけで、書体・余白・角丸と配置の変数は全テーマで共通。
+明るい配色とダークの配色は、[配色を切り替える class](#配色を切り替える-class) と `prefers-color-scheme` が、選んだテーマの中で選ぶ。
+印刷では、選んだテーマの明るい配色にする。
+値は `:root` に当たるため、`document.body` の直下の部品にも同じ配色が届く。
+使う側が層の外で上書きした変数は、選んだテーマの値に勝つ。
+同じページに別のテーマの文書が並ぶと、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる。
+
+テーマごとの変数の値は次のとおり。変数の使う場所は上の表と同じ。
+
+<!-- tabs -->
+
+##### theme-paper
+
+<!-- table: data -->
+
+| 変数 | 明るい配色 | ダークの配色 |
+| --- | --- | --- |
+| `--mdmark-color-bg` | `#fbf8f1` | `#1c1915` |
+| `--mdmark-color-text` | `#2a2520` | `#e8e0d2` |
+| `--mdmark-color-heading` | `#1f1a15` | `#f1eadc` |
+| `--mdmark-color-muted` | `#5c5247` | `#b8ad9c` |
+| `--mdmark-color-link` | `#9b2c2c` | `#f0a39a` |
+| `--mdmark-color-current-bg` | `#f6e6e2` | `#3a2523` |
+| `--mdmark-color-border` | `#e3dacb` | `#36302a` |
+| `--mdmark-color-surface` | `#f2ece1` | `#25211c` |
+| `--mdmark-color-table-head` | `#f2ece1` | `#25211c` |
+| `--mdmark-color-scroll-shadow` | `rgb(42 37 32 / 0.14)` | `rgb(0 0 0 / 0.6)` |
+| `--mdmark-color-term-underline` | `#5c5247` | `#b8ad9c` |
+| `--mdmark-color-notice-bg` | `#f8eadf` | `#2d261c` |
+| `--mdmark-color-notice-border` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-notice-text` | `#2a2520` | `#e8e0d2` |
+| `--mdmark-color-callout-note` | `#1e4f8c` | `#8fb4e8` |
+| `--mdmark-color-callout-tip` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-callout-important` | `#6b3fa0` | `#c9a8ec` |
+| `--mdmark-color-callout-warning` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-callout-caution` | `#a3261f` | `#f0928a` |
+| `--mdmark-color-diagram-llm` | `#6b3fa0` | `#c9a8ec` |
+| `--mdmark-color-diagram-dm` | `#1e4f8c` | `#8fb4e8` |
+| `--mdmark-color-diagram-script` | `#5c5247` | `#b8ad9c` |
+| `--mdmark-color-diagram-mcp` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-diagram-data` | `#9b2c2c` | `#f0a39a` |
+| `--mdmark-color-diagram-external` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-diagram-line` | `#857a6c` | `#9a8f80` |
+| `--mdmark-color-series-1` | `#9b2c2c` | `#f0a39a` |
+| `--mdmark-color-series-2` | `#1e4f8c` | `#8fb4e8` |
+| `--mdmark-color-series-3` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-series-4` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-code-highlight-bg` | `#f7ecc8` | `#4d3d16` |
+| `--mdmark-color-code-highlight-line` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-diff-del-bg` | `#f6e1dc` | `#33211e` |
+| `--mdmark-color-diff-del-word` | `#e6b3aa` | `#643a33` |
+| `--mdmark-color-diff-del-sign` | `#a3261f` | `#f0928a` |
+| `--mdmark-color-diff-add-bg` | `#e3ead8` | `#222b1d` |
+| `--mdmark-color-diff-add-word` | `#b6cba0` | `#3e5530` |
+| `--mdmark-color-diff-add-sign` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-syntax-keyword` | `#8b2252` | `#f0a3c0` |
+| `--mdmark-color-syntax-string` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-syntax-number` | `#8a4b08` | `#e8b04a` |
+| `--mdmark-color-syntax-type` | `#1e4f8c` | `#8fb4e8` |
+| `--mdmark-color-syntax-name` | `#24557a` | `#a9c6e6` |
+| `--mdmark-color-syntax-comment` | `#5c5247` | `#c2b8a8` |
+| `--mdmark-color-comment-bg` | `#efe8f5` | `#2a2430` |
+| `--mdmark-color-comment-line` | `#6b3fa0` | `#c9a8ec` |
+| `--mdmark-color-error` | `#a3261f` | `#f0928a` |
+
+<!-- /table -->
+
+##### theme-slate
+
+<!-- table: data -->
+
+| 変数 | 明るい配色 | ダークの配色 |
+| --- | --- | --- |
+| `--mdmark-color-bg` | `#f8fafc` | `#0f172a` |
+| `--mdmark-color-text` | `#0f172a` | `#e2e8f0` |
+| `--mdmark-color-heading` | `#0f172a` | `#f1f5f9` |
+| `--mdmark-color-muted` | `#475569` | `#a3b1c6` |
+| `--mdmark-color-link` | `#1d4ed8` | `#7dd3fc` |
+| `--mdmark-color-current-bg` | `#e0e9fb` | `#12304a` |
+| `--mdmark-color-border` | `#dbe2ec` | `#26334a` |
+| `--mdmark-color-surface` | `#edf1f7` | `#172136` |
+| `--mdmark-color-table-head` | `#edf1f7` | `#172136` |
+| `--mdmark-color-scroll-shadow` | `rgb(15 23 42 / 0.14)` | `rgb(0 0 0 / 0.6)` |
+| `--mdmark-color-term-underline` | `#475569` | `#a3b1c6` |
+| `--mdmark-color-notice-bg` | `#fbefe4` | `#2a2418` |
+| `--mdmark-color-notice-border` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-notice-text` | `#0f172a` | `#e2e8f0` |
+| `--mdmark-color-callout-note` | `#1d4ed8` | `#93b4ff` |
+| `--mdmark-color-callout-tip` | `#047857` | `#5eead4` |
+| `--mdmark-color-callout-important` | `#6d28d9` | `#c4b5fd` |
+| `--mdmark-color-callout-warning` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-callout-caution` | `#b91c1c` | `#fca5a5` |
+| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4b5fd` |
+| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#f9a8d4` |
+| `--mdmark-color-diagram-script` | `#475569` | `#a3b1c6` |
+| `--mdmark-color-diagram-mcp` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-diagram-data` | `#0e7490` | `#7dd3fc` |
+| `--mdmark-color-diagram-external` | `#047857` | `#5eead4` |
+| `--mdmark-color-diagram-line` | `#64748b` | `#8391a7` |
+| `--mdmark-color-series-1` | `#1d4ed8` | `#7dd3fc` |
+| `--mdmark-color-series-2` | `#047857` | `#6ee7b7` |
+| `--mdmark-color-series-3` | `#6d28d9` | `#c4b5fd` |
+| `--mdmark-color-series-4` | `#a24a06` | `#fdba74` |
+| `--mdmark-color-code-highlight-bg` | `#fdf2c4` | `#4d3f12` |
+| `--mdmark-color-code-highlight-line` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-diff-del-bg` | `#fbe4e4` | `#2e1c24` |
+| `--mdmark-color-diff-del-word` | `#efb1b1` | `#6a2f3a` |
+| `--mdmark-color-diff-del-sign` | `#b91c1c` | `#fca5a5` |
+| `--mdmark-color-diff-add-bg` | `#ddeee6` | `#13302c` |
+| `--mdmark-color-diff-add-word` | `#a3d0bc` | `#245c4f` |
+| `--mdmark-color-diff-add-sign` | `#047857` | `#5eead4` |
+| `--mdmark-color-syntax-keyword` | `#6d28d9` | `#d4c8ff` |
+| `--mdmark-color-syntax-string` | `#047857` | `#5eead4` |
+| `--mdmark-color-syntax-number` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-syntax-type` | `#be185d` | `#f9a8d4` |
+| `--mdmark-color-syntax-name` | `#1e40af` | `#a5c3ff` |
+| `--mdmark-color-syntax-comment` | `#475569` | `#b3bfd0` |
+| `--mdmark-color-comment-bg` | `#efebfd` | `#221f3a` |
+| `--mdmark-color-comment-line` | `#6d28d9` | `#c4b5fd` |
+| `--mdmark-color-error` | `#b91c1c` | `#fca5a5` |
+
+<!-- /table -->
+
+##### theme-contrast
+
+<!-- table: data -->
+
+| 変数 | 明るい配色 | ダークの配色 |
+| --- | --- | --- |
+| `--mdmark-color-bg` | `#ffffff` | `#000000` |
+| `--mdmark-color-text` | `#000000` | `#ffffff` |
+| `--mdmark-color-heading` | `#000000` | `#ffffff` |
+| `--mdmark-color-muted` | `#333333` | `#d6d6d6` |
+| `--mdmark-color-link` | `#0037a8` | `#9cc0ff` |
+| `--mdmark-color-current-bg` | `#dde7fb` | `#0f2a55` |
+| `--mdmark-color-border` | `#767676` | `#8a8a8a` |
+| `--mdmark-color-surface` | `#f0f0f0` | `#161616` |
+| `--mdmark-color-table-head` | `#e6e6e6` | `#222222` |
+| `--mdmark-color-scroll-shadow` | `rgb(0 0 0 / 0.25)` | `rgb(0 0 0 / 0.8)` |
+| `--mdmark-color-term-underline` | `#333333` | `#d6d6d6` |
+| `--mdmark-color-notice-bg` | `#fff4d6` | `#2b2200` |
+| `--mdmark-color-notice-border` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-notice-text` | `#000000` | `#ffffff` |
+| `--mdmark-color-callout-note` | `#0037a8` | `#9cc0ff` |
+| `--mdmark-color-callout-tip` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-callout-important` | `#5b21b6` | `#d0b3ff` |
+| `--mdmark-color-callout-warning` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-callout-caution` | `#a3001c` | `#ff9090` |
+| `--mdmark-color-diagram-llm` | `#5b21b6` | `#d0b3ff` |
+| `--mdmark-color-diagram-dm` | `#0037a8` | `#9cc0ff` |
+| `--mdmark-color-diagram-script` | `#333333` | `#d6d6d6` |
+| `--mdmark-color-diagram-mcp` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-diagram-data` | `#006a6a` | `#4fd1c5` |
+| `--mdmark-color-diagram-external` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-diagram-line` | `#4d4d4d` | `#a6a6a6` |
+| `--mdmark-color-series-1` | `#0037a8` | `#9cc0ff` |
+| `--mdmark-color-series-2` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-series-3` | `#5b21b6` | `#d0b3ff` |
+| `--mdmark-color-series-4` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-code-highlight-bg` | `#fff1b8` | `#4a3d00` |
+| `--mdmark-color-code-highlight-line` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-diff-del-bg` | `#ffe0e0` | `#3a0d0d` |
+| `--mdmark-color-diff-del-word` | `#f2a3a3` | `#7a2323` |
+| `--mdmark-color-diff-del-sign` | `#a3001c` | `#ff9090` |
+| `--mdmark-color-diff-add-bg` | `#dcf0dc` | `#0d2e0d` |
+| `--mdmark-color-diff-add-word` | `#9fd39f` | `#1f5f1f` |
+| `--mdmark-color-diff-add-sign` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-syntax-keyword` | `#5b21b6` | `#d0b3ff` |
+| `--mdmark-color-syntax-string` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-syntax-number` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-syntax-type` | `#9d174d` | `#ff9cd0` |
+| `--mdmark-color-syntax-name` | `#0037a8` | `#a8c8ff` |
+| `--mdmark-color-syntax-comment` | `#333333` | `#d6d6d6` |
+| `--mdmark-color-comment-bg` | `#efe6ff` | `#241a33` |
+| `--mdmark-color-comment-line` | `#5b21b6` | `#d0b3ff` |
+| `--mdmark-color-error` | `#a3001c` | `#ff9090` |
+
+<!-- /table -->
+
+<!-- /tabs -->
+
 ### エラー
 
 なし。書かなかった変数は既定の値になる。
