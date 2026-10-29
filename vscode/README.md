@@ -39,7 +39,7 @@ PDF は、印刷のダイアログの送信先で「PDF に保存」を選んで
 | 設定 | 既定 | 内容 |
 | --- | --- | --- |
 | `mdmark.version` | `latest` | 読む mdmark のバージョン。`latest` は最新の `v{X}.{Y}.{Z}`、`v0.6.0` のように記載するとそのバージョンに固定する |
-| `mdmark.configPath` | `mdmark.config.yaml` | `features`・`libraries` を読む設定ファイルのパス |
+| `mdmark.configPath` | `mdmark.config.yaml` | `features`・`libraries`・`side-toc`・`colorTheme` を読む設定ファイルのパス |
 | `mdmark.preview.liveUpdate` | `true` | `true` は打つたびに、`false` は保存したときに描き直す |
 | `mdmark.preview.updateDelayMs` | `300` | 最後に打ってから描き直すまでのミリ秒（0〜5000） |
 | `mdmark.preview.scrollPreviewWithEditor` | `true` | エディタに合わせてプレビューを動かす |

@@ -199,7 +199,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 | 設定 | 型 | 既定 | 許す値 | 説明 | 反映 |
 | --- | --- | --- | --- | --- | --- |
 | `mdmark.version` | 文字列 | `latest` | `latest` か `v{X}.{Y}.{Z}` | `latest` のときは、プレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定し、タグ一覧を取らない | プレビューを開き直すかリロードしたとき |
-| `mdmark.configPath` | 文字列 | `mdmark.config.yaml` | 相対パスか絶対パス | `features` と `libraries` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
+| `mdmark.configPath` | 文字列 | `mdmark.config.yaml` | 相対パスか絶対パス | `features`・`libraries`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
 | `mdmark.preview.liveUpdate` | 真偽値 | `true` | `true`・`false` | `true` のときは Markdown を打つたびに描き直す。`false` のときは保存したときだけ描き直す | 即時 |
 | `mdmark.preview.updateDelayMs` | 整数 | `300` | 0〜5000 | 最後に打ってから描き直すまでのミリ秒。範囲の外の値は既定の値として扱う | 即時 |
 | `mdmark.preview.scrollPreviewWithEditor` | 真偽値 | `true` | `true`・`false` | エディタをスクロールしたときに、プレビューを同じ箇所まで動かす | 即時 |
