@@ -25,7 +25,7 @@
   --mdmark-color-diagram-dm: #1d4ed8;
   --mdmark-color-diagram-script: #475569;
   --mdmark-color-diagram-mcp: #a24a06;
-  --mdmark-color-diagram-data: #1d4ed8;
+  --mdmark-color-diagram-data: #0e7490;
   --mdmark-color-diagram-external: #047857;
   --mdmark-color-diagram-line: #64748b;
   --mdmark-color-series-1: #1d4ed8;
@@ -76,16 +76,16 @@
     --mdmark-color-callout-warning: #fbbf24;
     --mdmark-color-callout-caution: #fca5a5;
     --mdmark-color-diagram-llm: #c4b5fd;
-    --mdmark-color-diagram-dm: #93b4ff;
+    --mdmark-color-diagram-dm: #f9a8d4;
     --mdmark-color-diagram-script: #a3b1c6;
     --mdmark-color-diagram-mcp: #fbbf24;
     --mdmark-color-diagram-data: #7dd3fc;
     --mdmark-color-diagram-external: #5eead4;
     --mdmark-color-diagram-line: #8391a7;
     --mdmark-color-series-1: #7dd3fc;
-    --mdmark-color-series-2: #fbbf24;
+    --mdmark-color-series-2: #6ee7b7;
     --mdmark-color-series-3: #c4b5fd;
-    --mdmark-color-series-4: #93b4ff;
+    --mdmark-color-series-4: #fdba74;
     --mdmark-color-code-highlight-bg: #4d3f12;
     --mdmark-color-code-highlight-line: #fbbf24;
     --mdmark-color-diff-del-bg: #2e1c24;
