@@ -51,4 +51,16 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/src/settings.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/settings.test.ts) | 全実行 | 変更 | ✅ | `test_read_settings_when_color_theme` を追加<br>`テスト結果/20261030044045_85e021b_単体テスト.log` |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `test_parse_config_when_color_theme`・`test_apply_color_theme` を追加<br>`テスト結果/20261030044045_85e021b_単体テスト.log` |
+| 上記以外の単体テスト | 全実行 | 実行のみ | ✅ | VS Code 拡張機能の残りの単体テスト<br>`テスト結果/20261030044045_85e021b_単体テスト.log` |
+
+全体は 155 ファイル・1100 テストが pass。lint（Biome の check と tsc の型検査）は違反 0 件で、ログは `テスト結果/20261030044045_85e021b_lint.log`。
+
+### 結合
+
 なし
