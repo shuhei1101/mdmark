@@ -3,7 +3,7 @@ elements:
   - name: 描く先の要素
     id: mdmark-root
     kind: container
-    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）。配色は祖先の class と `prefers-color-scheme` でライトかダークにし、印刷では明るい配色にする（文書を描く.ts の制約「配色の切り替え」）
+    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）。配色は祖先の class と `prefers-color-scheme` でライトかダークにし、印刷では明るい配色にする（文書を描く.ts の制約「配色の切り替え」）。配色の値の組は `opts.config.colorTheme` で選んだテーマのものをこの要素の中だけに当てる（同じ制約「選んだテーマ」）
     visible_when: 常時
     source: 文書を描く.request.el
     refs:
