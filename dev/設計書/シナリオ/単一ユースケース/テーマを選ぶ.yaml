@@ -123,3 +123,4 @@ preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
 success_guarantee: 選んだテーマの配色の値が描いた文書に当たり、明暗は OS の設定・親の class の決め方のまま選ばれる。
 minimal_guarantee: テーマを選ばないときと、知らないテーマの名前を書いたときは、既定のテーマ（dev-swiss）の配色で文書が描かれる。
+test_file: tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts
