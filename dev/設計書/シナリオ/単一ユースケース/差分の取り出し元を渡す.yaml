@@ -213,7 +213,7 @@ scenarios:
       - '`content` が `{ docId: guide, revisionId: r3 }` と `{ docId: guide, revisionId: r2 }` を受けて呼ばれる'
       - 描き終えた時点で、`r2` と `r3` の差分が開いた状態で出る
     test: test_normal_when_opened_on_mount
-lead: 使う側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に渡して文書を描く。読む人が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。
+lead: 使う側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に渡して文書を描く。読む人が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。差分を開いた状態で描く指定を渡したときは、読む人が開かなくても描いた時点で差分を出す。
 issue: 7
 primary_actor: mdmark を使うアプリのページ
 stakeholders:
@@ -225,6 +225,6 @@ trigger: 使う側のページが、取り出し元を渡して文書を描か�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - 描く先の要素がページにある
-success_guarantee: 読む人が差分を開くと、取り出し元が返したリビジョンが新しい順に選べ、一番新しいリビジョンとその 1 つ前の差分が出る。
+success_guarantee: 読む人が差分を開くと、取り出し元が返したリビジョンが新しい順に選べ、一番新しいリビジョンとその 1 つ前の差分が出る。差分を開いた状態で描く指定を渡したときは、描いた時点で一番新しいリビジョンとその 1 つ前の差分が出る。
 minimal_guarantee: 取り出し元がリビジョンの一覧か本文を返せないときは、差分の場所に知らせの枠を出し、文書の本文は描いたまま残す。
 test_file: tests/e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts
