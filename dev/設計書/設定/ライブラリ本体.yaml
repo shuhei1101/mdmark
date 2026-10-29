@@ -451,5 +451,21 @@ settings:
     refs:
       - dev/設計書/ER図/エイリアス#tables[aliases]
       - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+  - key: colorTheme
+    title: 選ぶテーマ
+    file: mdmark.config.yaml
+    type: '"dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"'
+    required: false
+    default: dev-swiss
+    description: 描いた文書の配色の値の組を、mdmark に入れたテーマから選ぶ。明暗は今の決め方（OS の設定・`mdmark-theme-light` / `mdmark-theme-dark` の class）のまま、選んだテーマの中で明るい配色と暗い配色を選ぶ。印刷では選んだテーマの明るい配色を使う。`mount` は `opts.config.colorTheme` を読み、CLI の `mdmark export`・`mdmark build` は書き出す HTML の `mount` に渡す。使う側の CSS の `theme` とは別のキー
+    missing: 既定のテーマ（dev-swiss）で描く
+    reload: reload
+    allowed: '`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`。Schema の型は文字列で、知らない名前は既定のテーマで描き、`mdmark check` が `unknown_color_theme` のずれにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.colorTheme]
+      - dev/設計書/デザイン方針#
+    status: planned
+    introduced:
+      pr: 181
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

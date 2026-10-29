@@ -181,6 +181,30 @@ scenarios:
     expected:
       - 1280px のとき、1920px に広げたときのどちらも、段落の幅が描く先の要素の中身の幅と同じ（本文の幅に既定の上限が無い）
     test: test_normal_when_content_width_default
+  - name: 正常シナリオ（選んだテーマの上から上書きする）
+    setup:
+      - name: 上書きの CSS を読むページ
+        description: 正常シナリオと同じ使う側の CSS を読み、テーマを選ぶキーに theme-slate を書いた設定を `opts.config` に渡して文書を描く HTML
+        notes: 使う側の CSS は `--mdmark-color-link` だけを赤（`rgb(255, 0, 0)`）にし、`--mdmark-color-bg` は書かない。OS の配色はライト
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: テーマを選んだ設定を渡して文書を描かせる
+        M-->>P: 選んだテーマの値が当たった本文
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: 選んだテーマの上に上書きを重ねた見た目で表示
+    expected:
+      - リンクの色の計算値が `rgb(255, 0, 0)`
+      - 描く先の要素の地の色の計算値が、theme-slate の明るい配色の `--mdmark-color-bg` の値
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（dev-swiss）で描かれる。
 issue: 3
 primary_actor: mdmark を使うアプリの開発者

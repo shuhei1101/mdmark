@@ -178,6 +178,32 @@ scenarios:
       - 描いた直後、`ワークスペース` に下線が付き、ツールチップに `話し合いの記録を置くフォルダ` が出る
       - 本文を `ワークスペース` が出る別の段落に差し替えた後も、下線が付いている
     test: test_normal_when_aliases
+  - name: 正常シナリオ（テーマを選ぶ）
+    setup:
+      - name: テーマを選ぶ設定
+        description: テーマを選ぶキーに theme-paper を書いた `opts.config`
+        notes: OS の配色はライト
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(要素, Markdown, opts.config にテーマ)
+        M-->>P: 選んだテーマの値が当たった本文
+        P->>M: 本文を差し替える
+        M-->>P: 同じテーマのままの本文
+        P-->>U: theme-paper の配色で表示
+    expected:
+      - 描いた直後、描く先の要素の地の色の計算値が theme-paper の明るい配色の `--mdmark-color-bg` の値
+      - 本文を差し替えた後も、地の色の計算値が同じ値
+      - 片付けた後、描く先の要素とページにテーマを示す class か属性が残っていない
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
 lead: 使う側のページが、要素と Markdown と設定を mdmark に渡し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
 issue: 3
 primary_actor: mdmark を使うアプリのページ

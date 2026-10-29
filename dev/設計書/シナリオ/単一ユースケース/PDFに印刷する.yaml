@@ -40,6 +40,27 @@ scenarios:
       - 通知に、書き出し先のパスと書き込めない理由が出る
       - ブラウザで開く代役は呼ばれない
     test: test_error_when_output_unwritable
+  - name: 正常シナリオ（選んだテーマで印刷する）
+    setup:
+      - name: テーマを選んだ VS Code
+        description: 正常シナリオと同じ Markdown を開き、VS Code の設定のテーマは theme-slate
+        notes: 書き出した HTML を開くブラウザの配色はダーク
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant B as ブラウザ
+        W->>EX: PDF に印刷する
+        EX->>B: 選んだテーマで書き出した HTML を開く
+        B->>B: 印刷の前にダークを解除する
+        B-->>W: theme-slate の明るい配色で印刷のダイアログ
+    expected:
+      - 印刷の間、描く先の要素のリンクの色の計算値が theme-slate の明るい配色の `--mdmark-color-link` の値
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（テーマを選んだ文書）]
 lead: 文書を書く人が、開いている Markdown をコマンドパレットから印刷する。拡張機能は HTML を書き出して既定のブラウザで開き、ブラウザの印刷のダイアログを出す。PDF はそのダイアログで作る。
 issue: 22
 primary_actor: 文書を書く人

@@ -132,7 +132,7 @@ response:
     type: string
     description: 行かキーのパス。無いときは空の文字列
   - name: issues[].kind
-    type: "'schema' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark'"
+    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark'"
     description: ずれの種類。意味は『設定と索引を点検する』の「種類」
   - name: issues[].message
     type: string

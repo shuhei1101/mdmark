@@ -419,3 +419,26 @@ test("test_normal_when_aliases", async () => {
   expect(externalRequests()).toEqual([]);
   await page.close();
 });
+
+// 設定の colorTheme を埋める設定に写し、開いた HTML を選んだテーマで描く（正常系（テーマを選ぶ設定））
+test("test_normal_when_color_theme", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "colorTheme: theme-slate\n",
+    "guide.md": "# ガイド\n\n[リンク](https://example.com/) を含む段落。\n",
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "guide.html"));
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.waitForSelector(".mdmark");
+  const background = await page.evaluate(() => {
+    const root = document.querySelector(".mdmark");
+    return root ? getComputedStyle(root).backgroundColor : "";
+  });
+  expect(background).toBe("rgb(248, 250, 252)");
+  await page.close();
+});

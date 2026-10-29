@@ -137,7 +137,7 @@ classes:
       - name: handleConfigChange
         title: 設定の変更を振り分ける
         kind: メソッド
-        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
+        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
         args:
           - name: event
             type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
@@ -281,7 +281,7 @@ classes:
       - name: renderNow
         title: 今すぐ送る
         kind: メソッド
-        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config`・`mdmark.preview.theme` で `render` を送る。見えていなければ送らない
+        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きした設定（テーマの設定で上書きする）・`mdmark.preview.theme` で `render` を送る。見えていなければ送らない
         returns:
           type: void
           description: '-'

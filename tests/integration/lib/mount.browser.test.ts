@@ -4557,6 +4557,105 @@ test("test_normal_when_parent_class_dark_printed", async () => {
   }
 });
 
+/** リンクを持つ段落の見本 */
+const THEME_MARKDOWN = "[リンク](https://example.com/) を含む段落。\n";
+
+/** theme-slate の明るい配色とダークの配色の `--mdmark-color-bg` の値 */
+const SLATE_LIGHT_BG = "#f8fafc";
+const SLATE_DARK_BG = "#0f172a";
+
+/** OS の配色を切り替える */
+async function emulateColorScheme(scheme: "light" | "dark"): Promise<void> {
+  await cdp().send("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-color-scheme", value: scheme }],
+  });
+}
+
+// `opts.config.colorTheme` で選んだテーマの明るい配色で描き、使う側の CSS が勝ち、destroy でテーマを外す（正常系）
+test("test_normal_when_color_theme_selected", async () => {
+  // 準備
+  const el = createElement();
+  const style = document.createElement("style");
+  style.textContent = ":root { --mdmark-color-link: rgb(1, 2, 3) }";
+  document.head.append(style);
+  addedStyles.push(style);
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    const handle = await mountTracked(el, {
+      markdown: THEME_MARKDOWN,
+      config: { colorTheme: "theme-slate" },
+    });
+    // 検証
+    expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+    expect(getComputedStyle(el).backgroundColor).toBe("rgb(248, 250, 252)");
+    expect(getComputedStyle(find(el, "a")).color).toBe("rgb(1, 2, 3)");
+    // 実行: destroy でテーマを外す
+    handle.destroy();
+    // 検証
+    expect(readBackground(document.documentElement)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 選んだテーマの中で、OS のダークでは暗い配色、親の `mdmark-theme-light` では明るい配色、印刷では明るい配色を使う（正常系）
+test("test_normal_when_color_theme_dark", async () => {
+  // 準備
+  const wrap = createElement();
+  const el = document.createElement("div");
+  wrap.append(el);
+  await emulateColorScheme("dark");
+  try {
+    // 実行・検証: 描いた直後は暗い配色
+    await mountTracked(el, {
+      markdown: THEME_MARKDOWN,
+      config: { colorTheme: "theme-slate" },
+    });
+    expect(readBackground(el)).toBe(SLATE_DARK_BG);
+    expect(getComputedStyle(el).backgroundColor).toBe("rgb(15, 23, 42)");
+    // 実行・検証: 親に mdmark-theme-light を付けると明るい配色
+    wrap.className = "mdmark-theme-light";
+    expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+    // 実行・検証: 親の class を外して印刷のメディアにすると、OS がダークでも明るい配色
+    wrap.className = "";
+    expect(readBackground(el)).toBe(SLATE_DARK_BG);
+    await cdp().send("Emulation.setEmulatedMedia", {
+      media: "print",
+      features: [{ name: "prefers-color-scheme", value: "dark" }],
+    });
+    expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 知らないテーマの名前は無視し、例外を出さずに dev-swiss で描く（正常系）
+test("test_normal_when_color_theme_unknown", async () => {
+  // 準備
+  const el = createElement();
+  const { mount } = await loadBuilt();
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    let handle: MountHandle | undefined;
+    expect(() => {
+      handle = mount(el, {
+        markdown: THEME_MARKDOWN,
+        config: { colorTheme: "sepia" },
+      });
+    }).not.toThrow();
+    // 検証
+    if (handle) {
+      handles.push(handle);
+    }
+    expect(find(el, "a").textContent).toBe("リンク");
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
 // 色分けの対象のコードブロックがあるときだけ、本体と使う言語のモジュールを読んで、行に分けた形と分けない形の両方を色分けする（正常系）
 test("test_normal_when_syntax_highlighted", async () => {
   // 準備

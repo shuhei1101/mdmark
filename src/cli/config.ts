@@ -314,6 +314,18 @@ export function validateConfig(
     }
   }
 
+  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が知らせる）
+  if (raw.colorTheme !== undefined && typeof raw.colorTheme !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "colorTheme",
+        "`colorTheme` はテーマの名前の文字列で書いてください。",
+      ),
+    );
+    delete config.colorTheme;
+  }
+
   if (raw.extensions !== undefined && !isStringArray(raw.extensions)) {
     issues.push(
       schemaIssue(

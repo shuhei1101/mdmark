@@ -1,6 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import { basename, join, relative, resolve, sep } from "node:path";
-import { MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import { COLOR_THEMES, MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
 import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import { normalizePath } from "../knowledge/paths.ts";
@@ -28,6 +28,7 @@ export type CheckIssue = {
   /** ずれの種類 */
   kind:
     | "schema"
+    | "unknown_color_theme"
     | "no_documents"
     | "unknown_mark"
     | "alias_no_files"
@@ -239,6 +240,22 @@ export async function loadExtensionDirectives(
   return { directives, issues };
 }
 
+/** 設定の `colorTheme` が選べるテーマの名前に無いときの、`unknown_color_theme` のずれを返す */
+function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
+  const name = config.colorTheme;
+  if (name === undefined || COLOR_THEMES.some((theme) => theme === name)) {
+    return [];
+  }
+  return [
+    {
+      file,
+      where: "colorTheme",
+      kind: "unknown_color_theme",
+      message: `不明なテーマ名 ${name} です。${COLOR_THEMES.join("・")} のいずれかに修正してください。`,
+    },
+  ];
+}
+
 /** 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて読む */
 export async function collectCheckDocuments(
   loaded: LoadedConfig,
@@ -329,6 +346,7 @@ export async function collectCheckIssues(
     ...referenced,
     ...build.schema,
     ...extensions.issues,
+    ...checkColorTheme(config, file),
     ...build.noDocuments,
     ...indexIssues,
     ...aliasIssues,

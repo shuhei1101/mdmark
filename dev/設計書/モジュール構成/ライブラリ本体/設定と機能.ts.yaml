@@ -31,6 +31,9 @@ data_models:
       - name: '"side-toc"'
         type: '{ mode?: string } | undefined'
         description: 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string`
+      - name: colorTheme
+        type: string | undefined
+        description: 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string`
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -64,6 +67,9 @@ data_models:
       - name: sideToc
         type: '{ mode: SideTocMode }'
         description: 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover`
+      - name: colorTheme
+        type: ColorTheme
+        description: 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME`
   - name: TooltipPlacement
     title: ツールチップを出す場所
     container: src/config.ts
@@ -79,6 +85,14 @@ data_models:
     status: planned
     introduced:
       pr: 166
+  - name: ColorTheme
+    title: 配色のテーマ
+    container: src/config.ts
+    usecase: 共通
+    summary: mdmark に入れた配色のテーマの名前（`"dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"`）
+    status: planned
+    introduced:
+      pr: 181
 constants:
   - name: DEFAULT_FEATURES
     title: 機能の既定
@@ -107,6 +121,24 @@ constants:
     status: planned
     introduced:
       pr: 97
+  - name: COLOR_THEMES
+    title: 選べるテーマ
+    container: src/config.ts
+    summary: mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす
+    value: '["dev-swiss", "theme-paper", "theme-slate", "theme-contrast"] as const'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+    status: planned
+    introduced:
+      pr: 181
+  - name: DEFAULT_COLOR_THEME
+    title: 既定のテーマ
+    container: src/config.ts
+    summary: 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま
+    value: '"dev-swiss"'
+    status: planned
+    introduced:
+      pr: 181
 functions:
   - name: resolveConfig
     title: 設定に既定を当てる
@@ -114,7 +146,7 @@ functions:
     kind: 関数
     scope: public
     summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。渡されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。渡されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
@@ -129,7 +161,7 @@ functions:
         summary: 設定が無ければ既定を返す
         condition: '`config` が `undefined`'
         mock: なし
-        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top" }, syntax: { url: DEFAULT_SYNTAX_URL }, sideToc: { mode: "hover" } }`（`comments` を除く全ての機能が `true`）'
+        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top" }, syntax: { url: DEFAULT_SYNTAX_URL }, sideToc: { mode: "hover" }, colorTheme: "dev-swiss" }`（`comments` を除く全ての機能が `true`）'
       - name: test_resolve_config_when_features_given
         case: 正常
         summary: 知っている機能の真偽値だけを置き換える
@@ -166,6 +198,12 @@ functions:
         condition: '`{ "side-toc": { mode: "fixed" } }`、`{ "side-toc": { mode: "left" } }`、`{}`'
         mock: なし
         expected: 1 つ目の `sideToc.mode` が `fixed`、残りは `hover`。`{}` の `features["side-toc"]` が `true`
+      - name: test_resolve_config_when_color_theme_given
+        case: 正常
+        summary: '`COLOR_THEMES` の名前だけを受け、他の値と無いときは `dev-swiss` にする'
+        condition: '`{ colorTheme: "theme-slate" }`、`{ colorTheme: "sepia" }`、`{ colorTheme: 1 }`、`{}`'
+        mock: なし
+        expected: 1 つ目の `colorTheme` が `theme-slate`、残りは `dev-swiss`。例外を投げない
   - name: resolveFeatures
     title: 文書の印で機能のオン・オフを決める
     container: src/features.ts
@@ -207,7 +245,7 @@ functions:
         mock: なし
         expected: '`{ print: true }`'
 notes:
-  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を置く。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
+  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返す）。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を置く。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
 test_files:
   - tests/unit/src/config.test.ts
   - tests/unit/src/features.test.ts

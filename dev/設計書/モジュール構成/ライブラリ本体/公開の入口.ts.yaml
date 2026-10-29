@@ -36,7 +36,7 @@ styles:
     description: |-
       採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、エイリアスのツールチップの規則は `dev/mock/refs/176/assets/alias-tip.css` の `@layer mdmark` の中身から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
 
-      ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。描く先の祖先の class で決める配色も `:root` に値を置き、使う側が層の外で `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色が届くようにする。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
+      ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。描く先の祖先の class で決める配色も `:root` に値を置き、使う側が層の外で `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色が届くようにする。選んだテーマの配色も、描く先の属性 `data-mdmark-color-theme` を `:root:has()` で見て `:root` に置く。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
     values:
       - class_name: ':root'
         target: 変数の既定
@@ -115,6 +115,14 @@ styles:
       - class_name: .mdmark [data-mdmark-diff-hidden]
         target: 差分を開いている間に隠す要素
         value: '`display: none !important`（`DIFF_HIDDEN_ATTRIBUTE`）'
+      - class_name: :root:has(.mdmark[data-mdmark-color-theme="{テーマ}"])
+        target: 選んだテーマの明るい配色
+        value: '`theme-paper`・`theme-slate`・`theme-contrast` のそれぞれに、そのテーマの `--mdmark-color-*` の明るい配色の値と `color-scheme: light` を `:root` に置く。値は `dev/mock/assets/themes/{テーマ}.css` の `:root`。`dev-swiss` の規則は置かず、`:root` の既定の値のままにする'
+        notes: 属性は `mount` が描く先の要素に付ける（`COLOR_THEME_ATTRIBUTE`）。印刷でもこの値を使う。同じページに別のテーマの文書が並んだときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる（`dev-swiss` は規則を持たないため他のテーマに負ける）
+      - class_name: :root:has(.mdmark[data-mdmark-color-theme="{テーマ}"])（暗い配色）
+        target: 選んだテーマの暗い配色（画面のとき）
+        value: '`@media screen and (prefers-color-scheme: dark)` の中と、暗い class の下に属性を持つ `.mdmark` があるときは、そのテーマの暗い配色の値と `color-scheme: dark` を、明るい class の下では明るい配色の値を `:root` に置く。class の種類・`mdmark-theme-*` が `vscode-*` に勝つ優先・入れ子は内側に従う決まりは `:root:has({class} .mdmark)` の行と同じで、その行のセレクタの `.mdmark` に属性を重ねる。値は `dev/mock/assets/themes/{テーマ}.css` の `@media screen` の中'
+        notes: '`@media screen` の中にだけ置き、印刷は明るい配色のまま。`prefers-color-scheme` の規則は明るい配色の規則の後に置く。class の規則は属性を重ねた分だけ `:root:has({class} .mdmark)` の規則より詳細度が高く、既定の明暗の値に勝つ。`@layer mdmark` の中なので、使う側が層の外で `:root` や `.mdmark` に書いた変数には負ける'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

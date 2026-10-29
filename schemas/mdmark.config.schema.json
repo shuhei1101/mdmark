@@ -219,6 +219,12 @@
         }
       }
     },
+    "colorTheme": {
+      "title": "選ぶテーマ",
+      "description": "描いた文書の配色を、mdmark に入れたテーマから選ぶ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` のどれか。明暗は今の決め方（OS の設定・class）のまま、選んだテーマの中で明るい配色とダークの配色を選ぶ。`mount` は知らない名前を無視して `dev-swiss` で描き、CLI は知らない名前を `mdmark check` のずれ（`unknown_color_theme`）と書き出しの警告にする。使う側の CSS の `theme` とは別のキー。",
+      "type": "string",
+      "default": "dev-swiss"
+    },
     "syntax": {
       "title": "色分けの設定",
       "description": "コードブロックの色分けに使うライブラリの設定。",

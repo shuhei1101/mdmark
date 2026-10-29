@@ -140,6 +140,41 @@ test("test_mount_when_aliases_updated", async () => {
   expect(el.querySelector("button.mdmark-term-tip-copy")).not.toBeNull();
 });
 
+// 選んだテーマを描く先の属性に付け、update でも保ち、destroy で外す（正常系）
+test("test_mount_when_color_theme", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "# A",
+    config: { colorTheme: "theme-slate" },
+  });
+  const afterMount = el.getAttribute("data-mdmark-color-theme");
+  // 実行
+  handle.update("# B");
+  const afterUpdate = el.getAttribute("data-mdmark-color-theme");
+  handle.destroy();
+  // 検証
+  expect(afterMount).toBe("theme-slate");
+  expect(afterUpdate).toBe("theme-slate");
+  expect(el.hasAttribute("data-mdmark-color-theme")).toBe(false);
+});
+
+// 知らないテーマの名前と省いたときは dev-swiss を付ける（正常系）
+test("test_mount_when_color_theme_unknown", async () => {
+  // 準備
+  const unknownEl = createElement();
+  const omittedEl = createElement();
+  // 実行
+  await mountTracked(unknownEl, {
+    markdown: "# A",
+    config: { colorTheme: "sepia" },
+  });
+  await mountTracked(omittedEl, { markdown: "# A" });
+  // 検証
+  expect(unknownEl.getAttribute("data-mdmark-color-theme")).toBe("dev-swiss");
+  expect(omittedEl.getAttribute("data-mdmark-color-theme")).toBe("dev-swiss");
+});
+
 // destroy で片付け、その後の update と 2 回目の destroy は何もしない（正常系）
 test("test_mount_when_destroyed", async () => {
   // 準備

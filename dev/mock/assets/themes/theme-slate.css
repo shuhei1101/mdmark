@@ -1,0 +1,108 @@
+/* テーマ「theme-slate」の配色の値: 青灰: 青みの灰の地と面に、青のリンク。暗い配色は紺の地に青みの白の文字。書体・余白・角丸は採用スタイル本体（dev/mock/assets/style.css）のまま */
+
+/* 明るい配色。印刷でもこの値を使う */
+:root {
+  --mdmark-color-bg: #f8fafc;
+  --mdmark-color-text: #0f172a;
+  --mdmark-color-heading: #0f172a;
+  --mdmark-color-muted: #475569;
+  --mdmark-color-link: #1d4ed8;
+  --mdmark-color-current-bg: #e0e9fb;
+  --mdmark-color-border: #dbe2ec;
+  --mdmark-color-surface: #edf1f7;
+  --mdmark-color-table-head: #edf1f7;
+  --mdmark-color-scroll-shadow: rgb(15 23 42 / 0.14);
+  --mdmark-color-term-underline: #475569;
+  --mdmark-color-notice-bg: #fbefe4;
+  --mdmark-color-notice-border: #a24a06;
+  --mdmark-color-notice-text: #0f172a;
+  --mdmark-color-callout-note: #1d4ed8;
+  --mdmark-color-callout-tip: #047857;
+  --mdmark-color-callout-important: #6d28d9;
+  --mdmark-color-callout-warning: #a24a06;
+  --mdmark-color-callout-caution: #b91c1c;
+  --mdmark-color-diagram-llm: #6d28d9;
+  --mdmark-color-diagram-dm: #1d4ed8;
+  --mdmark-color-diagram-script: #475569;
+  --mdmark-color-diagram-mcp: #a24a06;
+  --mdmark-color-diagram-data: #0e7490;
+  --mdmark-color-diagram-external: #047857;
+  --mdmark-color-diagram-line: #64748b;
+  --mdmark-color-series-1: #1d4ed8;
+  --mdmark-color-series-2: #047857;
+  --mdmark-color-series-3: #6d28d9;
+  --mdmark-color-series-4: #a24a06;
+  --mdmark-color-code-highlight-bg: #fdf2c4;
+  --mdmark-color-code-highlight-line: #a24a06;
+  --mdmark-color-diff-del-bg: #fbe4e4;
+  --mdmark-color-diff-del-word: #efb1b1;
+  --mdmark-color-diff-del-sign: #b91c1c;
+  --mdmark-color-diff-add-bg: #ddeee6;
+  --mdmark-color-diff-add-word: #a3d0bc;
+  --mdmark-color-diff-add-sign: #047857;
+  --mdmark-color-syntax-keyword: #6d28d9;
+  --mdmark-color-syntax-string: #047857;
+  --mdmark-color-syntax-number: #a24a06;
+  --mdmark-color-syntax-type: #be185d;
+  --mdmark-color-syntax-name: #1e40af;
+  --mdmark-color-syntax-comment: #475569;
+  --mdmark-color-comment-bg: #efebfd;
+  --mdmark-color-comment-line: #6d28d9;
+  --mdmark-color-error: #b91c1c;
+  color-scheme: light;
+}
+
+/* 暗い配色。画面のときだけ当てる */
+@media screen {
+  /* ダークを選んだページ */
+  :root[data-scheme="dark"] {
+    --mdmark-color-bg: #0f172a;
+    --mdmark-color-text: #e2e8f0;
+    --mdmark-color-heading: #f1f5f9;
+    --mdmark-color-muted: #a3b1c6;
+    --mdmark-color-link: #7dd3fc;
+    --mdmark-color-current-bg: #12304a;
+    --mdmark-color-border: #26334a;
+    --mdmark-color-surface: #172136;
+    --mdmark-color-table-head: #172136;
+    --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.6);
+    --mdmark-color-term-underline: #a3b1c6;
+    --mdmark-color-notice-bg: #2a2418;
+    --mdmark-color-notice-border: #fbbf24;
+    --mdmark-color-notice-text: #e2e8f0;
+    --mdmark-color-callout-note: #93b4ff;
+    --mdmark-color-callout-tip: #5eead4;
+    --mdmark-color-callout-important: #c4b5fd;
+    --mdmark-color-callout-warning: #fbbf24;
+    --mdmark-color-callout-caution: #fca5a5;
+    --mdmark-color-diagram-llm: #c4b5fd;
+    --mdmark-color-diagram-dm: #f9a8d4;
+    --mdmark-color-diagram-script: #a3b1c6;
+    --mdmark-color-diagram-mcp: #fbbf24;
+    --mdmark-color-diagram-data: #7dd3fc;
+    --mdmark-color-diagram-external: #5eead4;
+    --mdmark-color-diagram-line: #8391a7;
+    --mdmark-color-series-1: #7dd3fc;
+    --mdmark-color-series-2: #6ee7b7;
+    --mdmark-color-series-3: #c4b5fd;
+    --mdmark-color-series-4: #fdba74;
+    --mdmark-color-code-highlight-bg: #4d3f12;
+    --mdmark-color-code-highlight-line: #fbbf24;
+    --mdmark-color-diff-del-bg: #2e1c24;
+    --mdmark-color-diff-del-word: #6a2f3a;
+    --mdmark-color-diff-del-sign: #fca5a5;
+    --mdmark-color-diff-add-bg: #13302c;
+    --mdmark-color-diff-add-word: #245c4f;
+    --mdmark-color-diff-add-sign: #5eead4;
+    --mdmark-color-syntax-keyword: #d4c8ff;
+    --mdmark-color-syntax-string: #5eead4;
+    --mdmark-color-syntax-number: #fbbf24;
+    --mdmark-color-syntax-type: #f9a8d4;
+    --mdmark-color-syntax-name: #a5c3ff;
+    --mdmark-color-syntax-comment: #b3bfd0;
+    --mdmark-color-comment-bg: #221f3a;
+    --mdmark-color-comment-line: #c4b5fd;
+    --mdmark-color-error: #fca5a5;
+    color-scheme: dark;
+  }
+}

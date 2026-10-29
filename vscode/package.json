@@ -54,6 +54,12 @@
         "category": "mdmark"
       },
       {
+        "command": "mdmark.openSettings",
+        "title": "設定を開く",
+        "category": "mdmark",
+        "icon": "$(gear)"
+      },
+      {
         "command": "mdmark.exportHtml",
         "title": "HTML に書き出す",
         "category": "mdmark"
@@ -75,6 +81,11 @@
           "command": "mdmark.openPreviewToSide",
           "when": "editorLangId == markdown",
           "group": "navigation"
+        },
+        {
+          "command": "mdmark.openSettings",
+          "when": "activeWebviewPanelId == 'mdmark.preview'",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -92,6 +103,9 @@
         },
         {
           "command": "mdmark.openConfig"
+        },
+        {
+          "command": "mdmark.openSettings"
         },
         {
           "command": "mdmark.exportHtml",
@@ -130,7 +144,7 @@
           "type": "string",
           "default": "mdmark.config.yaml",
           "scope": "resource",
-          "description": "拡張機能が features と libraries を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから解決する"
+          "description": "拡張機能が features・libraries・side-toc・colorTheme を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから解決する"
         },
         "mdmark.preview.liveUpdate": {
           "type": "boolean",
@@ -168,6 +182,26 @@
           "default": "auto",
           "scope": "resource",
           "description": "プレビューの配色。auto は VS Code のテーマの明暗に合わせ、light・dark はその配色に固定する"
+        },
+        "mdmark.colorTheme": {
+          "type": "string",
+          "enum": [
+            "",
+            "dev-swiss",
+            "theme-paper",
+            "theme-slate",
+            "theme-contrast"
+          ],
+          "enumItemLabels": [
+            "（設定ファイルに従う）",
+            "dev-swiss",
+            "theme-paper",
+            "theme-slate",
+            "theme-contrast"
+          ],
+          "default": "",
+          "scope": "resource",
+          "description": "プレビューと書き出す HTML の配色のテーマ。空のときは設定ファイルの colorTheme に従い、そこにも無ければ dev-swiss で描く。明暗は mdmark.preview.theme が決める"
         },
         "mdmark.export.outputDir": {
           "type": "string",

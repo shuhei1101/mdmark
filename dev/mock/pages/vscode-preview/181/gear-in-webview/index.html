@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>vscode-preview / gear-in-webview（プレビューの中の歯車） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <link rel="stylesheet" data-color-theme-css="../../../../assets/themes/{theme}.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット。注意書き） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- モックの VS Code の枠（#69 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/69/assets/preview.css">
+  <!-- 歯車のボタンと VS Code の設定画面（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/181/assets/settings.css">
+  <!-- VS Code のテーマと場面の切り替え（モックだけの仕組み） -->
+  <script src="../../../../refs/69/assets/preview.js" defer></script>
+  <!-- 文書のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../../../refs/181/assets/theme.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 案・VS Code のテーマ・文書のテーマ・場面 -->
+  <div class="mock-bar">
+    <nav aria-label="案">
+      <ul class="mock-bar-group">
+        <li><a class="mock-bar-item" href="../gear-editor-title/index.html">A: タイトルバーの歯車</a></li>
+        <li><a class="mock-bar-item" href="../gear-in-webview/index.html" aria-current="page">B: プレビューの中の歯車</a></li>
+      </ul>
+    </nav>
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+    </div>
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="mdmark のテーマ">
+      <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-slate">theme-slate</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-contrast">theme-contrast</a>
+    </div>
+    <!-- [data-scene-value]: preview.js が行き先の URL（?scene=）と今の場面の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="場面">
+      <a class="mock-bar-item" data-scene-value="preview">プレビュー</a>
+      <a class="mock-bar-item" data-scene-value="menu">テーマの一覧を開いた</a>
+      <a class="mock-bar-item" data-scene-value="settings">設定画面を開いた</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">vscode-preview</a> / <a href="../index.md">181</a> / gear-in-webview
+    </nav>
+
+    <!-- モックの VS Code の 2 つのエディタの列 -->
+    <div class="vsc-workbench">
+      <!-- 左の列（プレビューの場面）: Markdown のエディタ -->
+      <div class="vsc-column" data-scene="preview menu">
+        <div class="vsc-tabs">
+          <span class="vsc-tab">手順書.md</span>
+        </div>
+        <pre class="vsc-editor" tabindex="0" aria-label="手順書.md の原文"># リリースの手順
+
+タグを打ってから配布物が届くまでの手順と、確かめる項目をまとめます。
+
+## 確かめる項目
+
+| 項目 | 確かめ方 | 担当 |
+| --- | --- | --- |
+| テスト | `npm test` がすべて通る | 開発者 |
+| 配布物 | `dist/` にバージョンが埋まっている | 開発者 |
+| 変更履歴 | 今回の PR が載っている | レビュアー |
+
+&gt; [!WARNING]
+&gt; 打ったタグは消さないでください。jsDelivr に届いた配布物は消えません。
+
+## 手順
+
+1. `version.ini` のバージョンを上げる
+2. release ブランチを develop へマージする
+3. タグ `v0.7.0` を打って push する</pre>
+      </div>
+
+      <!-- 左の列（設定画面を開いた場面）: 「すべての設定を開く」が開いた VS Code の設定画面。Markdown の列に開き、プレビューは右に残す -->
+      <div class="vsc-column" data-scene="settings">
+        <div class="vsc-tabs">
+          <span class="vsc-tab is-inactive">手順書.md</span>
+          <span class="vsc-tab">設定</span>
+        </div>
+        <div class="vsc-settings">
+          <input class="vsc-settings-search" type="search" value="@ext:ShuheiNishikawa.mdmark" aria-label="設定の検索">
+          <div class="vsc-settings-head">
+            <a class="vsc-settings-scope" aria-current="page">ユーザー</a>
+            <a class="vsc-settings-scope">ワークスペース</a>
+            <span class="vsc-settings-count">9 個の設定が見つかりました</span>
+          </div>
+          <!-- mdmark の設定: キーの名前の順（VS Code の並び） -->
+          <ul class="vsc-settings-list">
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark: </span><strong>Config Path</strong></div>
+              <p class="vsc-setting-description">拡張機能が features と libraries を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから解決する</p>
+              <input class="vsc-setting-control" type="text" value="mdmark.config.yaml" aria-label="Config Path">
+            </li>
+            <!-- 追加するテーマの設定: 背景で示す -->
+            <li class="vsc-setting is-highlight">
+              <div class="vsc-setting-title"><span>Mdmark: </span><strong>Color Theme</strong></div>
+              <p class="vsc-setting-description">プレビューと書き出す HTML の配色のテーマ。空のときは <code>mdmark.config.yaml</code> の <code>colorTheme</code> に従い、そこにも無ければ dev-swiss を使う</p>
+              <!-- [data-color-theme-select]: theme.js が今の値を出し、変えたら描き直した場面へ移る -->
+              <select class="vsc-setting-control" data-color-theme-select aria-label="Color Theme">
+                <option value="">（設定ファイルに従う）</option>
+                <option value="dev-swiss">dev-swiss</option>
+                <option value="theme-paper">theme-paper</option>
+                <option value="theme-slate">theme-slate</option>
+                <option value="theme-contrast">theme-contrast</option>
+              </select>
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark › Export: </span><strong>Output Dir</strong></div>
+              <p class="vsc-setting-description">HTML を書き出すフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する</p>
+              <input class="vsc-setting-control" type="text" value="" aria-label="Output Dir">
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark › Preview: </span><strong>Live Update</strong></div>
+              <label class="vsc-setting-check"><input type="checkbox" checked>true のときは Markdown を打つたびに描き直す。false のときは保存したときだけ描き直す</label>
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark › Preview: </span><strong>Scroll Editor With Preview</strong></div>
+              <label class="vsc-setting-check"><input type="checkbox" checked>プレビューをスクロールしたときに、エディタを同じ箇所まで動かす</label>
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark › Preview: </span><strong>Scroll Preview With Editor</strong></div>
+              <label class="vsc-setting-check"><input type="checkbox" checked>エディタをスクロールしたときに、プレビューを同じ箇所まで動かす</label>
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark › Preview: </span><strong>Theme</strong></div>
+              <p class="vsc-setting-description">プレビューの配色。auto は VS Code のテーマの明暗に合わせ、light・dark はその配色に固定する</p>
+              <select class="vsc-setting-control" aria-label="Theme">
+                <option>auto</option>
+                <option>light</option>
+                <option>dark</option>
+              </select>
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark › Preview: </span><strong>Update Delay Ms</strong></div>
+              <p class="vsc-setting-description">最後に打ってから描き直すまでのミリ秒</p>
+              <input class="vsc-setting-control" type="number" value="300" aria-label="Update Delay Ms">
+            </li>
+            <li class="vsc-setting">
+              <div class="vsc-setting-title"><span>Mdmark: </span><strong>Version</strong></div>
+              <p class="vsc-setting-description">読む mdmark のバージョン。latest のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から最新の v{X}.{Y}.{Z} を選ぶ。バージョンを記載するとそのバージョンに固定する</p>
+              <input class="vsc-setting-control" type="text" value="latest" aria-label="Version">
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 右の列: プレビュー。設定画面を開いても閉じない -->
+      <div class="vsc-column" data-scene="preview menu settings">
+        <div class="vsc-tabs">
+          <span class="vsc-tab">プレビュー 手順書.md</span>
+        </div>
+
+        <!-- Webview の中: mdmark が選んだテーマで描く（拡張機能は手を加えない） -->
+        <div class="preview">
+          <!-- Webview の中の操作の帯: 歯車と、テーマのメニュー -->
+          <div class="preview-toolbar">
+            <button class="preview-gear" type="button" popovertarget="theme-menu" aria-label="テーマと設定" title="テーマと設定">
+              <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <!-- テーマのメニュー: 歯車で開き、外側のクリックと Esc で閉じる。[data-open-on-menu-scene]: theme.js が「テーマの一覧を開いた」場面で開く -->
+            <div class="preview-theme-menu" id="theme-menu" popover data-open-on-menu-scene>
+              <p class="preview-theme-menu-title" id="theme-menu-title">テーマ</p>
+              <!-- [data-color-theme-choose]: theme.js が選んでいる値のボタンを押された状態にし、押したら VS Code の設定を書き換えた場面へ移る -->
+              <ul class="preview-theme-menu-list" aria-labelledby="theme-menu-title">
+                <li><button class="preview-theme-menu-item" type="button" data-color-theme-choose=""><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>設定ファイルに従う</button></li>
+                <li><button class="preview-theme-menu-item" type="button" data-color-theme-choose="dev-swiss"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>dev-swiss</button></li>
+                <li><button class="preview-theme-menu-item" type="button" data-color-theme-choose="theme-paper"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>theme-paper</button></li>
+                <li><button class="preview-theme-menu-item" type="button" data-color-theme-choose="theme-slate"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>theme-slate</button></li>
+                <li><button class="preview-theme-menu-item" type="button" data-color-theme-choose="theme-contrast"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>theme-contrast</button></li>
+              </ul>
+              <hr class="preview-theme-menu-separator">
+              <!-- [data-scene-go]: theme.js が押したら設定画面を開いた場面へ移す -->
+              <button class="preview-theme-menu-item" type="button" data-scene-go="settings"><svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>すべての設定を開く</button>
+            </div>
+          </div>
+          <article class="mdmark">
+<h1>リリースの手順</h1>
+<p>タグを打ってから配布物が届くまでの手順と、確かめる項目をまとめます。</p>
+<h2>確かめる項目</h2>
+<table tabindex="0" aria-label="確かめる項目">
+  <thead>
+    <tr><th>項目</th><th>確かめ方</th><th>担当</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>テスト</td><td><code>npm test</code> がすべて通る</td><td>開発者</td></tr>
+    <tr><td>配布物</td><td><code>dist/</code> にバージョンが埋まっている</td><td>開発者</td></tr>
+    <tr><td>変更履歴</td><td>今回の PR が載っている</td><td>レビュアー</td></tr>
+  </tbody>
+</table>
+<div class="markdown-alert markdown-alert-warning">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>警告</p>
+  <p>打ったタグは消さないでください。jsDelivr に届いた配布物は消えません。</p>
+</div>
+<h2>手順</h2>
+<ol>
+  <li><code>version.ini</code> のバージョンを上げる</li>
+  <li>release ブランチを develop へマージする</li>
+  <li>タグ <code>v0.7.0</code> を打って push する</li>
+</ol>
+<p>詳しくは<a href="#">配布物を読み込む</a>を参照してください。</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

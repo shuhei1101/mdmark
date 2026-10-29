@@ -2696,6 +2696,75 @@ flows:
     test: test_error_when_invalid_alias
     refs:
       - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[異常シナリオ（使えないエイリアス）]
+  - name: 正常系（テーマを選ぶ）
+    summary: '`opts.config.colorTheme` で選んだテーマの明るい配色で描き、`destroy` でテーマを外す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 'OS の配色はライト（`prefers-color-scheme: light`）'
+      - name: 使う側の CSS
+        description: 層の外で `:root` に `--mdmark-color-link` を書く
+        notes: 値は `rgb(1, 2, 3)`
+      - name: リンクを持つ Markdown
+        description: リンクを持つ段落を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config: { colorTheme: "theme-slate" } })
+        M->>P: el を theme-slate で描く
+        P->>M: destroy()
+        M->>P: テーマを外す
+    expected:
+      - el の地の色の計算値が、デザイン方針の theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - el のリンクの色の計算値が、使う側が `:root` に書いた `rgb(1, 2, 3)`
+      - '`destroy` の後、`getComputedStyle(document.documentElement)` の `--mdmark-color-bg` が dev-swiss の明るい配色の値'
+    test: test_normal_when_color_theme_selected
+  - name: 正常系（テーマの暗い配色）
+    summary: 選んだテーマの中で、OS のダークでは暗い配色、親の `mdmark-theme-light` では明るい配色、印刷では明るい配色を使う
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: リンクを持つ Markdown
+        description: 正常系（テーマを選ぶ）と同じ
+      - name: Mock
+        description: '差し替える依存は無い。印刷は Playwright の `emulateMedia({ media: "print" })` で切り替える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config: { colorTheme: "theme-slate" } })
+        M->>P: theme-slate の暗い配色で描く
+        P->>P: el の親に mdmark-theme-light を付ける
+        P->>P: 親の class を外し、印刷のメディアにする
+    expected:
+      - 描いた直後の el の地の色の計算値が theme-slate の暗い配色の `--mdmark-color-bg` の値
+      - 親に `mdmark-theme-light` を付けると、el の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - 印刷のメディアでは、OS がダークでも el の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+    test: test_normal_when_color_theme_dark
+  - name: 正常系（知らないテーマの名前）
+    summary: 知らないテーマの名前は無視し、例外を出さずに dev-swiss で描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: OS の配色はライト
+      - name: リンクを持つ Markdown
+        description: 正常系（テーマを選ぶ）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config: { colorTheme: "sepia" } })
+        M->>P: dev-swiss で描く
+    expected:
+      - '`mount` が例外を投げず、段落とリンクが描かれる'
+      - el の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
+    test: test_normal_when_color_theme_unknown
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -2827,6 +2896,14 @@ request:
     location: argument
     description: 使う側が `buildAliases` で作ったエイリアスの並び。形は ER 図『エイリアス』
     notes: 使えないエイリアスは除いて使い、例外を投げない。`update` は描いたときのエイリアスを使う
+    status: planned
+  - name: opts.config.colorTheme
+    type: '"dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"'
+    required: false
+    default: '`dev-swiss`'
+    location: argument
+    description: 描いた文書の配色の値の組を選ぶテーマの名前。明暗は制約「配色の切り替え」のまま、選んだテーマの中で選ぶ
+    notes: 知らない名前と文字列でない値は無視して `dev-swiss` で描く（例外を出さない）。使う側の CSS のパスの `theme` とは別のキー
     status: planned
 request_example: |-
   ```json
@@ -3051,4 +3128,8 @@ constraints:
   - item: コマンドのコピー
     constraint: '`command` のツールチップの `コピー` のボタン（`type="button"`）を押すと、`command` の文字を `navigator.clipboard.writeText` に書く。書けたらボタンを `コピーしました` にして 2 秒で戻し、書けないとき（`navigator.clipboard` が無いか拒まれた）は `コピーできませんでした` にして次に押すまで残す。どちらも `role="status"` で読み上げて知らせ、例外を外へ出さない。押した後もツールチップは出したままにする'
     notes: 知らせ方は制約の「コードブロックのコピー」と同じ
+  - item: 選んだテーマ
+    constraint: '`opts.config.colorTheme` のテーマの `--mdmark-color-*` の値の組を、ページ全体（`:root`）に当てる。同じページに別のテーマの文書を並べたときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる（`dev-swiss` は他のテーマに負ける）。値の組はテーマごとに明るい配色と暗い配色を持ち、どちらを使うかは制約「配色の切り替え」で決める。印刷では選んだテーマの明るい配色にする。値の組は `@layer mdmark` の中に置き、使う側が層の外で上書きした変数は選んだテーマに勝つ。`destroy` で当てたテーマを外し、`update` は `mount` に渡したテーマのまま描く'
+    decided_by: dev/設計書/デザイン方針#
+    notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先に属性 `data-mdmark-color-theme` を付け、`:root:has()` で当てる（モジュール構成『描く』の `COLOR_THEME_ATTRIBUTE`）
 test_file: tests/integration/lib/mount.browser.test.ts

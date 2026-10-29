@@ -1,0 +1,17 @@
+$ npm run test:unit
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-theme-select-color-theme-and-open-settings
+
+
+ Test Files  155 passed (155)
+      Tests  1100 passed (1100)
+   Start at  04:40:58
+   Duration  59.16s (tests 44%, worker 34%, import 20%, transform 2%)
+
+
+exit=0

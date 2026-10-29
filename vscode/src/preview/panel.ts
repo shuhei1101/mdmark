@@ -14,6 +14,7 @@ import {
 } from "vscode";
 import type { PreviewConfig } from "../config.ts";
 import {
+  applyColorTheme,
   libraryOrigins,
   loadConfig,
   resolveConfigPath,
@@ -277,7 +278,7 @@ export class PreviewPanel {
     }, settings.updateDelayMs);
   }
 
-  /** 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の全文・`config`・配色で `render` を送る。見えていなければ送らない */
+  /** 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の全文・`config` を `mdmark.colorTheme` で上書きした設定・配色で `render` を送る。見えていなければ送らない */
   renderNow(): void {
     clearTimeout(this.timer);
     this.timer = undefined;
@@ -289,7 +290,10 @@ export class PreviewPanel {
     void this.post({
       type: "render",
       markdown: this.document.getText(),
-      config: this.config,
+      config: applyColorTheme({
+        config: this.config,
+        colorTheme: settings.colorTheme,
+      }),
       theme: settings.theme,
     });
   }

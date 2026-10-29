@@ -31,7 +31,7 @@ elements:
     position: 描く先を包む要素
     description: mdmark の `mount` に渡す描く先の要素。中身と見た目は画面設計『文書』のままで、拡張機能は手を加えない
     visible_when: 配布物を読み終え、最初の `rendered` を送った後
-    source: プレビューを描き直すの送る中身（全文・`features`・`libraries`・`side-toc`）
+    source: プレビューを描き直すの送る中身（全文・`features`・`libraries`・`side-toc`・`colorTheme`）
     action: 本文のリンクを押すと `#` で始まるリンクはこの中で移り、それ以外は `openLink` を送る。スクロールすると `revealLine` を送る
     action_ref: dev/設計書/画面設計/文書.ts#
     refs:

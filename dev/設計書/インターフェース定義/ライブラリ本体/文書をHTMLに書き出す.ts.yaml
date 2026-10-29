@@ -180,6 +180,26 @@ flows:
       - '`開発サーバー` に下線が付かない'
       - '`guide.html` のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っておらず、埋めたエイリアスが `run-test` だけ'
     test: test_normal_when_aliases
+  - name: 正常系（テーマを選ぶ設定）
+    summary: 設定の `colorTheme` を埋める設定に写し、開いた HTML を選んだテーマで描く
+    setup:
+      - name: テーマを選ぶ設定
+        description: '`colorTheme: theme-slate` を持つ設定と、リンクを持つ段落の文書を持つフォルダ'
+      - name: Mock
+        description: '差し替える依存は無い。書き出した HTML は Playwright で file:// として開き、OS の配色はライト（`prefers-color-scheme: light`）にする'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 書き出した HTML
+        W->>C: mdmark export {文書}
+        C->>H: colorTheme を写した設定を埋めて書く
+        W->>H: 開く
+        H-->>W: theme-slate で描く
+    expected:
+      - 終了コードが 0
+      - 開いた HTML で、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+    test: test_normal_when_color_theme
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -213,7 +233,7 @@ response:
   - name: 標準エラー
     type: string
     description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
-    notes: 読めない画像・モジュール・拡張・`theme`、埋めずに残した絶対 URL の画像
+    notes: 読めない画像・モジュール・拡張・`theme`、知らない `colorTheme` の名前、埋めずに残した絶対 URL の画像
   - name: 終了コード
     type: 0 | 1
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
@@ -281,4 +301,7 @@ constraints:
   - item: エイリアス
     constraint: 設定に `aliases` があるとき、インターフェース定義『設定と索引を点検する』のエイリアスの点検と同じく行の `paths` の YAML を読んで `buildAliases` に渡し、返った `aliases`（`env` を含まない）を埋めて `mount` の `opts.aliases` に渡す。返った `problems` と、当たるファイルが無い行・読めないファイルは警告に出し、終了コードは 0 のまま
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+  - item: 選ぶテーマ
+    constraint: 設定の `colorTheme` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前も写したうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
 test_file: tests/integration/lib/export.test.ts

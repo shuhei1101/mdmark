@@ -756,3 +756,16 @@ export async function scrollEditorTo(
   }
   throw new Error(`エディタの先頭が ${line} 行目にならない`);
 }
+
+/** ワークスペースの設定（`.vscode/settings.json`）に `patch` を重ねて書く。VS Code が設定ファイルの変更を読み、設定画面で値を変えたときと同じ変更の知らせが拡張機能に届く */
+export async function updateWorkspaceSettings(
+  session: VscodeSession,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const path = join(session.workspaceDir, ".vscode", "settings.json");
+  const current = JSON.parse(await readFile(path, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  await writeFile(path, JSON.stringify({ ...current, ...patch }, null, 2));
+}

@@ -1,0 +1,75 @@
+title: "プレビューから設定を開く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 開いたプレビュー
+        description: Markdown のプレビューを横に開いた状態（VSCodeでプレビューを開くの正常シナリオ）
+        notes: 歯車のボタンはエディタのタイトルの帯（`editor/title`）に置き、押すとコマンド `mdmark.openSettings` を呼ぶ（インターフェース定義『設定を開く』）
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant PV as プレビュー
+        participant EX as 拡張機能
+        participant VS as VS Code
+        W->>PV: 歯車のボタンを押す
+        PV->>EX: 設定を開くコマンドを呼ぶ
+        EX->>VS: mdmark の項目に絞って設定画面を開かせる
+        VS-->>W: mdmark の項目だけを並べた設定画面
+    expected:
+      - VS Code の設定画面が開き、検索欄が mdmark の拡張機能の項目への絞り込み（`@ext:` に拡張機能の ID）になっている
+      - プレビューは閉じず、本文とスクロールの位置は押す前と同じ
+    test: test_normal
+  - name: 正常シナリオ（コマンドパレットから開く）
+    setup:
+      - name: プレビューを開いていない VS Code
+        description: Markdown をエディタで開き、プレビューは開いていない状態
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant VS as VS Code
+        W->>EX: コマンドパレットから設定を開くコマンドを実行する
+        EX->>VS: mdmark の項目に絞って設定画面を開かせる
+        VS-->>W: mdmark の項目だけを並べた設定画面
+    expected:
+      - 正常シナリオと同じ絞り込みで設定画面が開く
+      - YAML の設定ファイル（`mdmark.openConfig` が開くもの）は開かれない
+    test: test_normal_when_command_palette
+  - name: 正常シナリオ（変えた設定がプレビューに映る）
+    setup:
+      - name: 設定画面を開いた状態
+        description: 正常シナリオを終え、プレビューを横に残した状態。プレビューは既定のテーマ（dev-swiss）の明るい配色で描かれている
+        notes: VS Code のテーマは Default Light Modern、`mdmark.preview.theme` は既定の `auto`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant VS as VS Code
+        participant EX as 拡張機能
+        participant PV as プレビュー
+        W->>VS: 設定画面でテーマを theme-slate にする
+        VS->>EX: 設定の変更を知らせる
+        EX->>PV: theme-slate で描き直させる
+        PV-->>W: theme-slate の明るい配色で表示
+    expected:
+      - リロードせずに、プレビューの描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる
+    test: test_normal_when_setting_changed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]
+lead: 文書を書く人が、プレビューの歯車のボタンかコマンドパレットから VS Code の設定画面を mdmark の項目に絞って開き、変えた設定をプレビューで確かめる。
+issue: 120
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: プレビューを見ながら、mdmark の設定を探さずに変えられる
+trigger: 文書を書く人がプレビューの歯車のボタンを押すか、コマンドパレットから設定を開くコマンドを実行する
+preconditions:
+  - VS Code に mdmark の拡張機能を入れている
+success_guarantee: VS Code の設定画面が mdmark の拡張機能の項目に絞って開き、そこで変えた設定がリロードせずにプレビューに映る。
+minimal_guarantee: 設定画面を開いてもプレビューは閉じず、本文とスクロールの位置は変わらない。
+test_file: tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts

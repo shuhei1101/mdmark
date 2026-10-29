@@ -390,6 +390,7 @@ export async function resetEnvironment(): Promise<void> {
     "preview.scrollPreviewWithEditor",
     "preview.scrollEditorWithPreview",
     "preview.theme",
+    "colorTheme",
     "export.outputDir",
   ]) {
     await setSetting(key, undefined);
