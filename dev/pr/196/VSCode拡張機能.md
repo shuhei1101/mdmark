@@ -29,7 +29,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 差分ビューの判定 | プレビューを開くとき、アクティブなタブの入力が `TabInputTextDiff` で、変更前と変更後の両方の文書の `languageId` が `markdown` なら差分ビューとして扱う | 判定と読み取りが Git の作業ツリー・ステージ・コミットの差分で通るかは PoC 検証で確かめる |
+| 差分ビューの判定 | プレビューを開くとき、アクティブなタブの入力が `TabInputTextDiff` で、変更前と変更後の両方の文書の `languageId` が `markdown` なら差分ビューとして扱う | Git の作業ツリー・ステージ・コミットの差分で通ることを `## PoC 結果` で確かめた |
 | パネルの対象 | パネルは変更後の側の URI で持ち、変更前の側の URI を添える。同じ変更後の URI で差分でないパネルがあっても、差分のパネルは別に持つ | 差分のパネルのタブの題は画面設計で決める |
 | 変更前と変更後の読み取り | 2 つの側の URI を `workspace.openTextDocument` で読む。`git:` の URI も VS Code の Git の機能が返す内容をそのまま使う | 拡張機能は Git を呼ばない |
 | Webview への受け渡し | `render` のメッセージに変更前の Markdown を加える。Webview は変更前と変更後の 2 つのリビジョンを返す `DiffSource` を作り、`mount` に開いた状態で描く指定と一緒に渡す | 指定の名前はライブラリ本体のインターフェース定義で決める |
@@ -40,6 +40,39 @@
 | 既存機能への影響 | 差分ビューでないエディタから開いたプレビュー・書き出し・印刷は変えない | 書き出し・印刷を差分のパネルから呼んだときは、変更後の文書を対象にする |
 
 <!-- /table -->
+
+## PoC 結果
+
+<!-- table: data -->
+
+| 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
+| --- | --- | --- | --- | --- |
+| 作業ツリーの変更: ステージせずに書き換え、`git.openChange(Uri)` | `TabInputTextDiff` で、`original` が `git show :a.md`、`modified` が作業ツリーと一致 | ✅ 一致 | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | `original` は `git:` の `ref` が `~`（インデックス）、`modified` は `file:` |
+| ステージした変更: `git add` の後に `git.openChange(Uri)` | `original` が `git show HEAD:a.md`、`modified` が `git show :a.md` と一致 | ✅ 一致 | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 両側とも `git:`（`ref` が `HEAD` と空） |
+| コミットの差分（タイムライン）: `vscode.diff` を `getAPI(1)` の `toGitUri(uri, {SHA})` の 2 つで呼ぶ | `original`・`modified` がそれぞれのコミットの `git show` と一致 | ✅ 一致 | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 両側とも `git:`（`ref` が SHA） |
+| 両側の言語 | 上の 3 つで `languageId` がどちらも `markdown` | ✅ markdown | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | `git:` の文書も `markdown` |
+| フォーカスが移ったとき: 横の列に Webview のパネルを表に出す | `window.tabGroups.all` から差分のタブを引け、同じ `original`・`modified` を取れる | ✅ 取れた | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | アクティブなタブは Webview |
+| コミットの差分（Source Control のグラフ）: `git.viewCommit(rootUri, {SHA})` | 記録のみ（成立の条件に含めない） | - | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | タブの入力は stable API に無いクラスで、実行時は `textDiffs[]` の `original`・`modified` を持つ。`window.activeTextEditor` は変更後の側だけ |
+| 待ち | 記録のみ | 0 ms | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 差分ビューが開いた時点で両側の文書は読み込み済みで、`openTextDocument` はすぐ返る |
+
+<!-- /table -->
+
+VS Code 1.141.0 と 1.144.0（stable）の両方で同じ結果で、成立。
+1 ファイルの差分ビューは、作業ツリー・ステージ・コミットのどれでも、アクティブなタブの `TabInputTextDiff` から 2 つの URI を取り、`workspace.openTextDocument` で読める。
+Source Control のグラフから開く複数ファイルの差分エディターは、stable API の型で変更前と変更後を引けないため、合意した PoC 方針のとおり [要件](./要件.md) の `## スコープ外` に回した。
+
+最小再現コードの要点（[vscode/poc/diff-view-sides/suite.mjs](https://github.com/shuhei1101/mdmark/blob/b9f8683/vscode/poc/diff-view-sides/suite.mjs)）:
+
+```js
+const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+if (input instanceof vscode.TabInputTextDiff) {
+  const original = await vscode.workspace.openTextDocument(input.original);
+  const modified = await vscode.workspace.openTextDocument(input.modified);
+  // original.getText()・modified.getText() が変更前と変更後の Markdown
+}
+```
+
+- diff の見どころ: `run.mjs` は `--disable-extensions` を渡さず `--extensions-dir` を空のフォルダにして、組み込みの Git の拡張機能を有効にしたまま起動する（既存の結合テストの `run.ts` は `--disable-extensions` で Git の拡張機能も止める）
 
 ## テスト結果
 
