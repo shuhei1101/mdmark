@@ -41,12 +41,15 @@ export type MountOptions = {
 export type MountHandle = {
   /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない */
   update: (markdown: string) => void;
-  /** 要素の中を空にして class `mdmark` を外し、印刷の受け取りを外す。2 回目以降は何もしない */
+  /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
   destroy: () => void;
 };
 
 /** 描く先の要素に付ける class。本文の CSS はこの class の下に当たる */
 const ROOT_CLASS = "mdmark";
+
+/** 描く先の要素に、既定を当てた設定の `colorTheme` を値にして付ける属性。`src/index.css` は `:root:has()` でこの属性を見て、テーマの配色の値を `:root` に当てる */
+const COLOR_THEME_ATTRIBUTE = "data-mdmark-color-theme";
 
 /** 印刷の機能の名前 */
 const PRINT_FEATURE = "print";
@@ -158,6 +161,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     });
     el.innerHTML = rendered.html;
     el.classList.add(ROOT_CLASS);
+    el.setAttribute(COLOR_THEME_ATTRIBUTE, config.colorTheme);
     features = rendered.features;
     // 右側の目次を付けたときは、以降の操作と部品を本文の列に付ける
     let body = el;
@@ -235,6 +239,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       detachPrint();
       el.innerHTML = "";
       el.classList.remove(ROOT_CLASS);
+      el.removeAttribute(COLOR_THEME_ATTRIBUTE);
       if (mounted.get(el) === handle) {
         mounted.delete(el);
       }

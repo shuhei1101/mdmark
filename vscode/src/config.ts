@@ -1,7 +1,8 @@
 import { isAbsolute, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
+import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`side-toc` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -9,6 +10,8 @@ export type PreviewConfig = {
   libraries?: Record<string, unknown>;
   /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
   "side-toc"?: Record<string, unknown>;
+  /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
+  colorTheme?: string;
 };
 
 /** 設定ファイルの読み取りの結果 */
@@ -21,7 +24,7 @@ export type ConfigLoad =
 export type ReadTextFile = (path: string) => Promise<string>;
 
 /** `mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す */
-export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビューは features・libraries・side-toc を読みます
+export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビューは features・libraries・side-toc・colorTheme を読みます
 
 # 機能のオン・オフ（使うときは次の 2 行の # を外す）
 # features:
@@ -34,6 +37,9 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビュー�
 # 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
 # side-toc:
 #   mode: fixed
+
+# 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
+# colorTheme: theme-paper
 `;
 
 /** `http:`・`https:` の URL か */
@@ -55,7 +61,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc` を取り出す */
+/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・文字列の `colorTheme` を取り出す */
 export function parseConfig(text: string): ConfigLoad {
   let parsed: unknown;
   try {
@@ -80,6 +86,9 @@ export function parseConfig(text: string): ConfigLoad {
     }
     if (isMap(parsed["side-toc"])) {
       config["side-toc"] = parsed["side-toc"];
+    }
+    if (typeof parsed.colorTheme === "string") {
+      config.colorTheme = parsed.colorTheme;
     }
   }
   return { kind: "ok", config };
@@ -139,4 +148,15 @@ export function libraryOrigins(
     }
   }
   return [...origins];
+}
+
+/** `mdmark.colorTheme` が空でなければ、設定ファイルから取り出した設定の `colorTheme` をその値に置き換えた設定を返す。空のときは `config` をそのまま返し、渡された `config` は書き換えない */
+export function applyColorTheme(options: {
+  /** 設定ファイルから取り出した設定 */
+  config: PreviewConfig;
+  /** `readSettings` の `colorTheme` */
+  colorTheme: PreviewSettings["colorTheme"];
+}): PreviewConfig {
+  const { config, colorTheme } = options;
+  return colorTheme === "" ? config : { ...config, colorTheme };
 }

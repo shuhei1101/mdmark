@@ -8,7 +8,7 @@ import {
   resolve,
   sep,
 } from "node:path";
-import { resolveConfig } from "../config.ts";
+import { COLOR_THEMES, DEFAULT_COLOR_THEME, resolveConfig } from "../config.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import { normalizePath } from "../knowledge/paths.ts";
 import {
@@ -238,6 +238,14 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     warnings.push(`${issue.file}${where}: ${issue.kind}: ${issue.message}`);
   }
 
+  // 知らないテーマの名前は埋める設定にも写し、開いたときに `mount` が既定のテーマで描く
+  const colorTheme = loaded.config.colorTheme;
+  if (colorTheme !== undefined && !COLOR_THEMES.some((t) => t === colorTheme)) {
+    warnings.push(
+      `${basename(loaded.path)}: 不明なテーマ名 ${colorTheme} です。既定の ${DEFAULT_COLOR_THEME} で描画します。`,
+    );
+  }
+
   const refs = await prepareReferences({ ...options, markdowns: originals });
   const payload: ExportPayload = {
     kind,
@@ -247,6 +255,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       ...(loaded.config["side-toc"]
         ? { "side-toc": loaded.config["side-toc"] }
         : {}),
+      ...(colorTheme !== undefined ? { colorTheme } : {}),
       // 埋めたモジュールは開いたときに URL に替えるため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),

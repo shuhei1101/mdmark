@@ -3,7 +3,12 @@ import { basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { env, type TextDocument, Uri, window, workspace } from "vscode";
 import type { PreviewConfig } from "../config.ts";
-import { loadConfig, resolveConfigPath, resolveLibraries } from "../config.ts";
+import {
+  applyColorTheme,
+  loadConfig,
+  resolveConfigPath,
+  resolveLibraries,
+} from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
 import { distUrl } from "../preview/html.ts";
 import { readSettings } from "../settings.ts";
@@ -109,10 +114,13 @@ export async function exportMarkdown(options: {
   if (decision.fetched) {
     await deps.context.globalState.update(LAST_VERSION_KEY, decision.version);
   }
-  const config = await readExportConfig({
-    document,
-    configPath: settings.configPath,
-    deps,
+  const config = applyColorTheme({
+    config: await readExportConfig({
+      document,
+      configPath: settings.configPath,
+      deps,
+    }),
+    colorTheme: settings.colorTheme,
   });
   // 書き出す先を決め、全文（保存していない書き換えを含む）で HTML を組んで書く
   const markdownPath = document.uri.fsPath;
