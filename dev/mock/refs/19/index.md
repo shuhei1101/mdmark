@@ -2,6 +2,8 @@
 
 HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る PR のモック。
 
+<!-- table: data -->
+
 | 見るもの | リンク |
 | --- | --- |
 | 描いた文書 | [document / modern](../../pages/document/19/modern/index.html) |
@@ -16,3 +18,5 @@ HTML コメントの印で表・注意書き・タブなどの表示を付ける
 | 行の詳細 | [row-detail](../../components/row-detail/index.html) |
 | 図表の番号 | [figure](../../components/figure/index.html) |
 | 書き方の警告 | [syntax-warning](../../components/syntax-warning/index.html) |
+
+<!-- /table -->

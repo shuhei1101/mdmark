@@ -9,6 +9,8 @@ VS Code の拡張機能 mdmark のコマンドと設定。
 
 ## 一覧
 
+<!-- table: data -->
+
 | 名前 | コマンド | 説明 |
 | --- | --- | --- |
 | [プレビューを横に開く](#プレビューを横に開く) | `mdmark.openPreviewToSide` | Markdown の横の列に、mdmark で描いたプレビューを開く |
@@ -21,6 +23,8 @@ VS Code の拡張機能 mdmark のコマンドと設定。
 | [PDF に印刷](#pdf-に印刷) | `mdmark.printToPdf` | 書き出し直した HTML をブラウザで開き、印刷のダイアログを出す |
 | [設定](#設定) | `mdmark.*` | 拡張機能の動きを決める VS Code の設定 |
 | [設定ファイルのキー](#設定ファイルのキー) | `mdmark.config.yaml` | 拡張機能が設定ファイルから読むキー |
+
+<!-- /table -->
 
 ## プレビューを横に開く
 

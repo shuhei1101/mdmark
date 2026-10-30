@@ -35,6 +35,8 @@ const handle = await mountView(document.querySelector("#tasks"), {
 要素の中身は空にして、class `mdmark` の要素を 1 つ置き、その中に描く。
 列名と項目の値は文字として出し、HTML として解釈しない。
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素 |
@@ -44,6 +46,8 @@ const handle = await mountView(document.querySelector("#tasks"), {
 | `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`group` があればボード表示、無ければ表形式 |
 | `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列名と種類（`select`・`text`・`date`）のオブジェクト |
 | `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を引くオブジェクト。既定のアイコンに重ねて上書きする |
+
+<!-- /table -->
 
 ビューの操作は、文書のビューの印と同じ（[ビューとコメントを使う](../書く/ビューとコメントを使う.md)）。
 アイコンの名前は、[ボードの列の見出しのアイコン](../書く/ビューとコメントを使う.md#ボードの列の見出しのアイコンを変える) の使えるアイコンから選ぶ。
