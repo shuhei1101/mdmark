@@ -515,3 +515,37 @@ test("test_scope_ids", async () => {
     "url(#p-1-before-d-1-arrow)",
   );
 });
+
+// open では置いた時点で開き、押すと閉じる（正常系）
+test("test_attach_diff_when_open", async () => {
+  // 準備
+  const root = createRoot();
+  const source = createSource({}, REVISIONS.slice(1));
+  const { attachDiff } = await loadPanel();
+  // 実行: 押さずに、置いた時点で開く
+  const detach = attachDiff({
+    root,
+    source,
+    docId: "guide",
+    renderHtml: (html) => ({ html, attach: () => () => {} }),
+    open: true,
+  });
+  detaches.push(detach);
+  // 検証: 押す前に取り出し元が呼ばれ、開いた状態で差分が出る
+  await vi.waitFor(() => {
+    expect(root.querySelector(".mdmark-diff-line")).not.toBeNull();
+  });
+  expect(source.revisionsCalls).toEqual(["guide"]);
+  expect(source.contentCalls.map((call) => call.revisionId).sort()).toEqual([
+    "r1",
+    "r2",
+  ]);
+  const toggle = root.querySelector(".mdmark-diff-toggle");
+  expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(true);
+  // 実行: 押すと閉じる
+  clickToggle(root);
+  // 検証
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
+});
