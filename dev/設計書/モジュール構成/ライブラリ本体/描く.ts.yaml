@@ -514,6 +514,8 @@ functions:
         condition: 操作を付けた、`src/` が閉じたファイルツリー。`isEnabled` は `true`
         mock: なし
         expected: '`beforeprint` の後に `src/` の入れ子の `ul` が `hidden` を持たず `src/` のボタンが `aria-expanded="true"`、`afterprint` の後に `ul` が `hidden="until-found"` を持ちボタンが `aria-expanded="false"`'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[setFolderOpen]
   - name: highlightCodeBlocks
     title: 色分けの対象を色分けする
     container: src/highlight.ts

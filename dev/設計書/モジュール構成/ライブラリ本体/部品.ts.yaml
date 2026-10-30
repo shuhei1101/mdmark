@@ -1020,6 +1020,23 @@ functions:
     status: planned
     introduced:
       pr: 225
+  - name: renderTreeCopyContent
+    title: ツリーのコピーボタンの中身を描く
+    container: src/parts/tree.ts
+    summary: コピーボタンの中身を状態ごとに返す（`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`）。`renderTreeBar` と、コピーの後にボタンを書き換える `attachFileTrees` が使う
+    kind: 関数
+    scope: internal
+    args:
+      - name: state
+        type: '"idle" | "copied"'
+        required: true
+        description: コピーボタンの状態
+    returns:
+      type: string
+      description: アイコンの SVG と文言の HTML
+    status: planned
+    introduced:
+      pr: 225
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける

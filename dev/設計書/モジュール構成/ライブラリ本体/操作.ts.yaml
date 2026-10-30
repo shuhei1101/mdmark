@@ -1284,6 +1284,48 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[folderOpenByDefault]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTreeBar]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCopyPanel]
+      - '#functions[setFolderOpen]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTreeCopyContent]
+    status: planned
+    introduced:
+      pr: 225
+  - name: setFolderOpen
+    title: フォルダを開閉する
+    container: src/interact/trees.ts
+    summary: '`mdmark-tree-toggle` の `aria-expanded` を書き換え、開くときはそのフォルダの入れ子の `ul` の `hidden` を外し、閉じるときは `hidden="until-found"` にする。`attachFileTrees` と印刷の前後の `attachPrint` が使う'
+    kind: 関数
+    scope: internal
+    side_effects: ボタンの `aria-expanded` と入れ子の `ul` の `hidden` を書き換える
+    args:
+      - name: toggle
+        type: Element
+        required: true
+        description: フォルダの `mdmark-tree-toggle` のボタン
+      - name: open
+        type: boolean
+        required: true
+        description: 開くか
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 225
+  - name: alignFileTreeNotes
+    title: ファイルツリーの注釈の列を揃える
+    container: src/interact/trees.ts
+    summary: '`render` が出した `div.mdmark-tree` の注釈の列の位置を測り、`--mdmark-tree-note-start` に入れる。`attachFileTrees` と同じ測り方で、Storybook の `preview.js` がファイルツリーのストーリーに使う（`/render/trees.js`）'
+    kind: 関数
+    scope: internal
+    side_effects: ツリーの要素のスタイルに CSS 変数を書く
+    args:
+      - name: tree
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-tree` の要素'
+    returns:
+      type: void
+      description: なし
     status: planned
     introduced:
       pr: 225
