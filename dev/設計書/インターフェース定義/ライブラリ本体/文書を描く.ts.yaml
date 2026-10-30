@@ -3129,7 +3129,7 @@ exceptions:
     notes: 例外を投げず、`button` として描く
   - name: なし（ブロックの色分けを出せない）
     condition: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、返した値が制約「差分の取り出し元」の形に合わない'
-    notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に知らせの枠（題 `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を置く。`console.error` は差分の知らせの枠と同じ。題と本文の文言は未確定（承認確認でユーザーへ確かめる）
+    notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に知らせの枠（題 `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を置く。`console.error` は差分の知らせの枠と同じ。文言は一覧と本文のどちらの失敗でも同じ（確認ログの決定）
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
