@@ -204,21 +204,44 @@ test("test_normal_when_closed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown:
-      "<!-- table: data closed -->\n\n| 名前 | 数 |\n| --- | --- |\n| a | 1 |\n| b | 2 |\n| c | 3 |\n\n<!-- /table -->\n",
+    markdown: [
+      "<!-- table: data closed -->",
+      "",
+      "| 名前 | 数 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "| b | 2 |",
+      "| c | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- table: data open title=リリースの一覧 -->",
+      "",
+      "| 名前 | 数 |",
+      "| --- | --- |",
+      "| d | 4 |",
+      "| e | 5 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
   });
-  const rows = page.locator("#doc tbody tr");
+  const folds = page.locator("#doc details.mdmark-table-details");
+  const closedRows = folds.nth(0).locator("tbody tr:not(.mdmark-table-empty)");
+  const openRows = folds.nth(1).locator("tbody tr:not(.mdmark-table-empty)");
   // 検証: 描いた直後
-  await expect(
-    page.locator("#doc details.mdmark-table-details"),
-  ).not.toHaveAttribute("open", "");
-  await expect(rows.first()).toBeHidden();
+  await expect(folds.nth(0)).not.toHaveAttribute("open", "");
+  await expect(folds.nth(0).locator("summary")).toHaveText("表（3 行）");
+  await expect(closedRows.first()).toBeHidden();
+  await expect(folds.nth(1).locator("summary")).toHaveText("リリースの一覧");
+  await expect(openRows).toHaveCount(2);
+  await expect(openRows.first()).toBeVisible();
   // 実行
-  await page.locator("#doc details.mdmark-table-details > summary").click();
+  await folds.nth(0).locator("summary").click();
   // 検証
-  await expect(rows).toHaveCount(3);
-  await expect(rows.first()).toBeVisible();
-  await expect(rows.last()).toBeVisible();
+  await expect(closedRows).toHaveCount(3);
+  await expect(closedRows.first()).toBeVisible();
+  await expect(closedRows.last()).toBeVisible();
 });
 
 // 印で並べ替えを外した表は、並べ替えのボタンが無く、ピン止めのボタンがある（正常シナリオ（機能を外す））
