@@ -924,7 +924,7 @@ functions:
     introduced:
       pr: 196
 notes:
-  単体テストの実行場所: '`checkRevisions`・`normalizeDiffMode`・`computeDiff` と `render*` は DOM を使わず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで流す。`attachDiff`・`attachMinimap`・`src/diff/blocks.ts` の関数は `tests/unit/src/diff/{panel,minimap,blocks}.browser.test.ts` で `unit-browser` プロジェクトで流す。`blocks.browser.test.ts` と `tests/unit/src/parts/diff-blocks.test.ts` は単体テスト作成で作り、作った後に対応テストファイルに追加する'
+  単体テストの実行場所: '`checkRevisions`・`normalizeDiffMode`・`computeDiff` と `render*` は DOM を使わず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで流す。`attachDiff`・`attachMinimap`・`src/diff/blocks.ts` の関数は `tests/unit/src/diff/{panel,minimap,blocks}.browser.test.ts` で `unit-browser` プロジェクトで流す'
   配布物の大きさ: jsdiff は `diffLines`・`diffWords`・`diffChars` だけを名前で import し、使わない関数を束ねない。足した後の `dist/index.js` が非機能要件の上限に収まることを、ビルドのサイズの検査で確かめる
 test_files:
   - tests/unit/src/diff/source.test.ts
