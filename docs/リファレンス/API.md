@@ -838,6 +838,13 @@ handle.destroy();
 | `--mdmark-color-series-4` | `#1d4ed8` | `#7aa2ff` | グラフの 4 つ目の系列の色 |
 | `--mdmark-color-code-highlight-bg` | `#fef3c7` | `#5c4a12` | コードブロックの強調した行の背景 |
 | `--mdmark-color-code-highlight-line` | `#b45309` | `#fbbf24` | コードブロックの強調した行の左端の線 |
+| `--mdmark-color-file-text` | `#1d4ed8` | `#7aa2ff` | ファイルツリーの文書（`md`・`txt` など）のファイルのアイコンの色 |
+| `--mdmark-color-file-code` | `#6d28d9` | `#c4a7ff` | ファイルツリーのコード（`ts`・`py` など）のファイルのアイコンの色 |
+| `--mdmark-color-file-config` | `#c2410c` | `#fb923c` | ファイルツリーの設定（`json`・`yaml` など）のファイルのアイコンの色 |
+| `--mdmark-color-file-image` | `#0f766e` | `#2dd4bf` | ファイルツリーの画像のファイルのアイコンの色 |
+| `--mdmark-color-file-sheet` | `#15803d` | `#4ade80` | ファイルツリーの表（`csv` など）のファイルのアイコンの色 |
+| `--mdmark-color-file-archive` | `#a16207` | `#facc15` | ファイルツリーのアーカイブ（`zip` など）のファイルのアイコンの色 |
+| `--mdmark-color-file-script` | `#be185d` | `#f472b6` | ファイルツリーのスクリプト（`sh`・`Dockerfile` など）のファイルのアイコンの色 |
 | `--mdmark-color-syntax-keyword` | `#6d28d9` | `#d6c2ff` | コードブロックの色分けのキーワード（予約語・デコレーター・`document` や `self` などの言語の変数）の色 |
 | `--mdmark-color-syntax-string` | `#166534` | `#4ade80` | コードブロックの色分けの文字列（文字列・正規表現・エスケープ・Markdown のリンクの文字）の色 |
 | `--mdmark-color-syntax-number` | `#92400e` | `#fbbf24` | コードブロックの色分けの数値（数値・`true`・`false`・`null`・YAML と Markdown の箇条書きの `-`）の色 |

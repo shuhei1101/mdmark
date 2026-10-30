@@ -84,10 +84,11 @@ const CSS_PATH = "/render/index.css";
 const VSCODE_CSS_PATH = "/render/vscode.css";
 const VSCODE_CSS_SOURCE = join("vscode", "src", "webview", "preview.css");
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
-// ストーリーが読む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理）
+// ストーリーが読む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を揃える処理）
 const SCRIPT_SOURCES: Record<string, string> = {
   "/render/diagram.js": "src/interact/diagrams.ts",
   "/render/sticky.js": "src/interact/sticky.ts",
+  "/render/trees.js": "src/interact/trees.ts",
 };
 // 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
 const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
@@ -499,10 +500,25 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       panels: titles.map((title) => `<p>${title} の中身の見本です。</p>`),
       selected: args.selected as number | undefined,
       group: args.group as string | undefined,
+      collapse: args.collapse as "none" | "closed" | "open" | undefined,
+      title: args.title as string | undefined,
     });
   },
-  steps: (args) => renderSteps({ items: args.items as string[] }),
-  tree: (args) => renderTree({ nodes: args.nodes as TreeNode[] }),
+  steps: (args) =>
+    renderSteps({
+      items: args.items as string[],
+      collapse: args.collapse as "none" | "closed" | "open" | undefined,
+      title: args.title as string | undefined,
+    }),
+  tree: (args) =>
+    renderTree({
+      nodes: args.nodes as TreeNode[],
+      source: String(args.source ?? ""),
+      open: args.open === undefined ? undefined : String(args.open),
+      interactive: args.interactive === true,
+      copyState: args.copyState as "idle" | "copied" | undefined,
+      copyFallback: args.copyFallback === true,
+    }),
   badge: (args) => renderBadge({ label: String(args.label ?? "") }),
   "code-block": (args) => {
     const language = String(args.language ?? "");
@@ -841,7 +857,7 @@ function bundledScript(options: {
   return code;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/diagram.js`・`GET /render/sticky.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
   root: string;

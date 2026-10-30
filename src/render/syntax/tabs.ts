@@ -3,6 +3,7 @@ import type { WarningItem } from "../../extensions.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
 import type { Mark } from "../marks.ts";
+import { type CollapseMode, readCollapse } from "./collapse.ts";
 import {
   envOf,
   featureOn,
@@ -20,18 +21,29 @@ import {
 /** タブの印で読めるキー */
 const GROUP_KEY = "group";
 
-/** タブの印の引数から `group` を読む。値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定は、1 つの書き方の警告にまとめる */
+/** タブの印で読める指定を、書き方の警告の案内に並べる文 */
+const USABLE_ARGS = "`group=名前`・`closed`・`open`・`title=見出し`";
+
+/** タブの印の引数から `group` と折り畳みの指定を読む。値の無い `group=`・読めないキー・`キー=値` の形でない指定は、1 つの書き方の警告にまとめる */
 export function readTabsOptions(mark: Mark): {
   group?: string;
+  collapse: CollapseMode;
+  title?: string | undefined;
   warning?: SyntaxWarning;
 } {
-  const items: WarningItem[] = [];
+  const {
+    collapse,
+    title,
+    items: collapseItems,
+    rest,
+  } = readCollapse(mark.args);
+  const items: WarningItem[] = [...collapseItems];
   let group: string | undefined;
-  for (const [key, value] of Object.entries(mark.args.keys)) {
+  for (const [key, value] of Object.entries(rest.keys)) {
     if (key !== GROUP_KEY) {
       items.push({
         label: `${key}=`,
-        message: `使えないキーです。使えるキーは \`${GROUP_KEY}=\` です`,
+        message: `使えないキーです。使えるキーは \`${GROUP_KEY}=\`・\`title=\` です`,
       });
     } else if (value === "") {
       items.push({
@@ -43,17 +55,19 @@ export function readTabsOptions(mark: Mark): {
     }
   }
   // `キー=値` の形でない指定
-  for (const arg of mark.args.args) {
+  for (const arg of rest.args) {
     items.push({
       label: arg,
-      message: `使えない指定です。使える指定は \`${GROUP_KEY}=名前\` です`,
+      message: `使えない指定です。使える指定は ${USABLE_ARGS} です`,
     });
   }
   if (items.length === 0) {
-    return { group };
+    return { group, collapse, title };
   }
   return {
     group,
+    collapse,
+    title,
     warning: {
       mark: mark.raw,
       message: "の読めない指定を当てずに描いています。",
@@ -79,7 +93,7 @@ export function buildTabs(state: StateCore): void {
       }
       continue;
     }
-    const { group, warning } = readTabsOptions(mark);
+    const { group, collapse, title, warning } = readTabsOptions(mark);
     if (warning) {
       out.push(warningBlock(state, warning));
     }
@@ -125,6 +139,8 @@ export function buildTabs(state: StateCore): void {
       titles,
       panels: titles.map(() => SLOT_MARKER),
       group,
+      collapse,
+      title,
     });
     const pieces = html.split(SLOT_MARKER);
     const firstPosition = separators[0]?.position ?? 0;
