@@ -26,13 +26,61 @@ type MountHandle = {
   destroy: () => void;
 };
 
-/** `import()` で読んだ mdmark の配布物のうち、この入口が使うもの */
+/** 差分の取り出し元（mdmark の `DiffSource` のうち、この入口が作るもの） */
+type DiffSourceLike = {
+  revisions: (docId: string) => Promise<{ id: string; at: string }[]>;
+  content: (target: { docId: string; revisionId: string }) => Promise<string>;
+};
+
+/** `import()` で読んだ mdmark の配布物のうち、この入口が使うもの。`diffModes` を持たない前のバージョンもある */
 export type Mdmark = {
   mount: (
     element: HTMLElement,
-    options: { markdown: string; config?: unknown },
+    options: {
+      markdown: string;
+      config?: unknown;
+      diffSource?: DiffSourceLike;
+      docId?: string;
+      diffMode?: "blocks";
+    },
   ) => MountHandle;
+  diffModes?: unknown;
 };
+
+/** 差分のパネルで取り出し元に渡す、最後に受けた `render` の全文。書き換えられる入れ物 */
+export type DiffTexts = {
+  /** 変更後の全文（`render` の `markdown`） */
+  modified: string;
+  /** 変更前の全文（`render` の `previous`） */
+  original: string;
+};
+
+/** 差分の取り出し元に使う docId */
+const DIFF_DOC_ID = "diff";
+
+/** `revisions` が `modified`・`original` の 2 つをこの順に返し、`content` が呼ばれた時点の全文を返す取り出し元を作る。`content` は知らない `revisionId` で reject する */
+export function createDiffSource(texts: DiffTexts): DiffSourceLike {
+  return {
+    revisions: async () => {
+      const at = new Date().toISOString();
+      return [
+        { id: "modified", at },
+        { id: "original", at },
+      ];
+    },
+    content: async ({ revisionId }) => {
+      if (revisionId === "modified" || revisionId === "original") {
+        return texts[revisionId];
+      }
+      throw new Error(`知らないリビジョン: ${revisionId}`);
+    },
+  };
+}
+
+/** 読んだ配布物の `diffModes` が配列で `blocks` を含むとき、差分の色分けに対応する */
+export function supportsDiffBlocks(mdmark: { diffModes?: unknown }): boolean {
+  return Array.isArray(mdmark.diffModes) && mdmark.diffModes.includes("blocks");
+}
 
 /** 描く先を包む要素の `data-*` に置かれた、パネルの始め方 */
 type PreviewBoot = {
@@ -88,6 +136,8 @@ export class PreviewView {
   private statusElement: HTMLElement | undefined;
   /** 設定ファイルを読めない帯の要素 */
   private bandElement: HTMLElement | undefined;
+  /** 差分のパネルで取り出し元に渡した全文。`previous` を持つ `render` を初めて受けたときに作る */
+  private diffTexts: DiffTexts | undefined;
 
   constructor(options: { root: HTMLElement; mdmark?: Mdmark }) {
     this.root = options.root;
@@ -111,6 +161,11 @@ export class PreviewView {
     // 描き直しでスクロールの位置が動かないよう、描く前の位置を控える
     const scrollTop = scroller().scrollTop;
     const configKey = JSON.stringify(message.config);
+    if (message.previous !== undefined) {
+      this.diffTexts ??= { modified: "", original: "" };
+      this.diffTexts.modified = message.markdown;
+      this.diffTexts.original = message.previous;
+    }
     if (this.handle !== undefined && configKey === this.configKey) {
       this.handle.update(message.markdown);
     } else {
@@ -118,6 +173,13 @@ export class PreviewView {
       this.handle = mdmark.mount(this.documentElement, {
         markdown: message.markdown,
         config: message.config,
+        ...(this.diffTexts === undefined
+          ? {}
+          : {
+              diffSource: createDiffSource(this.diffTexts),
+              docId: DIFF_DOC_ID,
+              diffMode: "blocks" as const,
+            }),
       });
       this.configKey = configKey;
     }
@@ -247,6 +309,8 @@ export function startPreview(): void {
   const view = new PreviewView({ root });
   /** 最初の `rendered` を送ったか、描けない理由を出したか */
   let settled = false;
+  /** `import()` で読んだ mdmark の配布物 */
+  let loaded: Mdmark | undefined;
   // 本文のリンクと状態の表示のボタンの押下。VS Code の Webview の外枠は `window` の `click` でもリンクを開くため、キャプチャで受けて伝播を止める
   document.addEventListener(
     "click",
@@ -293,6 +357,21 @@ export function startPreview(): void {
   window.addEventListener("message", (event: MessageEvent<HostMessage>) => {
     const message = event.data;
     if (message.type === "render") {
+      // 差分のパネルで、読んだ配布物が差分の色分けに対応しないときは、変更後の文書だけの表示を出さずに理由を出す
+      if (
+        message.previous !== undefined &&
+        loaded !== undefined &&
+        !supportsDiffBlocks(loaded)
+      ) {
+        settled = true;
+        view.showStatus(
+          boot.version === undefined
+            ? { state: "diffUnsupported" }
+            : { state: "diffUnsupported", version: boot.version },
+        );
+        api.postMessage({ type: "loadFailed", reason: "diffUnsupported" });
+        return;
+      }
       view.render(message);
       settled = true;
       api.postMessage({ type: "rendered" });
@@ -342,6 +421,7 @@ export function startPreview(): void {
   }, LOADING_DELAY_MS);
   import(/* @vite-ignore */ distJs).then(
     (mdmark: Mdmark) => {
+      loaded = mdmark;
       view.useMdmark(mdmark);
       api.postMessage({ type: "ready" });
     },

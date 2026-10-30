@@ -4,8 +4,17 @@ import {
   type ResolvedConfig,
   resolveConfig,
 } from "./config.ts";
-import { attachDiff, type DiffHtmlRenderer } from "./diff/panel.ts";
-import type { DiffSource } from "./diff/source.ts";
+import { colorDiffBlocks, loadDiffPair } from "./diff/blocks.ts";
+import {
+  attachDiff,
+  createSegmenter,
+  type DiffHtmlRenderer,
+} from "./diff/panel.ts";
+import {
+  type DiffMode,
+  type DiffSource,
+  normalizeDiffMode,
+} from "./diff/source.ts";
 import { highlightCodeBlocks } from "./highlight.ts";
 import { attachInteractions } from "./interact/index.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
@@ -14,6 +23,7 @@ import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
 import { attachParts } from "./mount-parts.ts";
+import { renderNotice } from "./parts/notice.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
 
@@ -33,6 +43,8 @@ export type MountOptions = {
   aliases?: MdmarkAlias[];
   /** 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る */
   diffSource?: DiffSource;
+  /** 差分の出し方。`button`（既定）は「変更を見る」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を渡さないときは使わない。知らない値は `button` にする */
+  diffMode?: DiffMode;
   /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
   commentStore?: MdmarkCommentStore;
 };
@@ -97,6 +109,36 @@ function createDiffHtmlRenderer(options: {
   };
 }
 
+/** HTML 文字列から要素を 1 つ作る */
+function parseElement(html: string): HTMLElement {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return template.content.firstElementChild as HTMLElement;
+}
+
+/** 後の文書を描いた HTML を、前の文書と比べて追加と削除の色を当てた中身にする。前の文書は `render` で同じ引数で描く */
+function drawColoredBlocks(options: {
+  /** 後の文書を描いた HTML */
+  rendered: string;
+  /** 後の Markdown */
+  after: string;
+  /** 前の Markdown */
+  before: string;
+  /** Markdown を同じ引数で描いた HTML にする関数 */
+  render: (markdown: string) => string;
+}): DocumentFragment {
+  const afterTemplate = document.createElement("template");
+  afterTemplate.innerHTML = options.rendered;
+  const beforeTemplate = document.createElement("template");
+  beforeTemplate.innerHTML = options.render(options.before);
+  colorDiffBlocks({
+    before: { root: beforeTemplate.content, markdown: options.before },
+    after: { root: afterTemplate.content, markdown: options.after },
+    segmenter: createSegmenter(),
+  });
+  return afterTemplate.content;
+}
+
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore` が `load`・`save` の関数を持たないときは、何も描かずに `TypeError` を投げる */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const { diffSource, commentStore, docId } = opts;
@@ -118,6 +160,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   }
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
+  const diffMode = normalizeDiffMode(opts.diffMode);
   const config = resolveConfig({ config: opts.config });
   const renderDiffHtml = createDiffHtmlRenderer({ config, opts });
   // 描く世代: 描き直すたびに進め、古い描画の読み込みの結果を捨てるのに使う
@@ -140,8 +183,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   // コメントの機能に読み書きの関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
-  /** 文書を描く */
-  const draw = (markdown: string): void => {
+  /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後） */
+  const draw = (markdown: string, coloredFrom?: string): void => {
     generation += 1;
     const current = generation;
     detachInteractions?.();
@@ -159,7 +202,26 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       references: opts.references,
       aliases: opts.aliases,
     });
-    el.innerHTML = rendered.html;
+    if (coloredFrom === undefined) {
+      el.innerHTML = rendered.html;
+    } else {
+      el.replaceChildren(
+        drawColoredBlocks({
+          rendered: rendered.html,
+          after: markdown,
+          before: coloredFrom,
+          render: (source) =>
+            renderDocument({
+              markdown: source,
+              config,
+              index: opts.index,
+              docId: opts.docId,
+              references: opts.references,
+              aliases: opts.aliases,
+            }).html,
+        }),
+      );
+    }
     el.classList.add(ROOT_CLASS);
     el.setAttribute(COLOR_THEME_ATTRIBUTE, config.colorTheme);
     features = rendered.features;
@@ -206,13 +268,32 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       warned,
     });
     if (diffSource !== undefined && docId !== undefined) {
-      detachDiff = attachDiff({
-        root: body,
-        source: diffSource,
-        docId,
-        renderHtml: renderDiffHtml,
-        hideWith: aside ? [aside] : [],
-      });
+      if (diffMode !== "blocks") {
+        detachDiff = attachDiff({
+          root: body,
+          source: diffSource,
+          docId,
+          renderHtml: renderDiffHtml,
+          hideWith: aside ? [aside] : [],
+          open: diffMode === "open",
+        });
+      } else if (coloredFrom === undefined) {
+        // 色分けせずに描いたときだけ、比べる 2 つの本文を取り出す。取り出しの完了は待たない
+        void loadDiffPair({ source: diffSource, docId }).then((pair) => {
+          if (destroyed || generation !== current) {
+            return;
+          }
+          if (pair.kind === "pair" && pair.before !== pair.after) {
+            draw(pair.after, pair.before);
+          } else if (pair.kind === "failed") {
+            body.prepend(
+              parseElement(
+                renderNotice({ name: docId, source: "diff-blocks" }),
+              ),
+            );
+          }
+        });
+      }
     }
   };
 

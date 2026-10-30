@@ -1,4 +1,5 @@
 import {
+  TabInputTextDiff,
   type TextDocument,
   type TextEditorVisibleRangesChangeEvent,
   Uri,
@@ -11,6 +12,7 @@ import type { ExtensionDeps } from "../deps.ts";
 import type { InspectedElement } from "../messages.ts";
 import { readSettings } from "../settings.ts";
 import { baseDirOf } from "../workspace.ts";
+import { panelKey, pickDiffTarget } from "./diff-target.ts";
 import { PreviewPanel } from "./panel.ts";
 
 /** `window.createWebviewPanel` に渡す viewType */
@@ -24,9 +26,9 @@ export type ConfigChange =
   | { kind: "file"; path: string }
   | { kind: "setting"; affects: (section: string, scope: Uri) => boolean };
 
-/** Markdown の URI ごとに 1 つの `PreviewPanel` を持ち、コマンドの対象を決め、エディタ・設定・設定ファイルの変更をパネルへ振り分ける */
+/** Markdown の URI ごとに 1 つの `PreviewPanel` と、変更前と変更後の URI の組ごとに 1 つの差分の `PreviewPanel` を持ち、コマンドの対象を決め、エディタ・設定・設定ファイルの変更をパネルへ振り分ける */
 export class PreviewManager {
-  /** Markdown の URI の文字列 → パネル */
+  /** パネルのキー（通常のパネルは Markdown の URI の文字列、差分のパネルは変更前と変更後の組）→ パネル */
   private readonly panels = new Map<string, PreviewPanel>();
   /** 拡張機能の共通の依存 */
   private readonly deps: ExtensionDeps;
@@ -54,27 +56,55 @@ export class PreviewManager {
     return focused?.uri ?? window.activeTextEditor?.document.uri;
   }
 
-  /** プレビューを開く。同じ Markdown のパネルがあれば今の列のまま表に出し、無ければ作って読み込ませる */
+  /** プレビューを開く。差分ビューのときは変更後の文書を色分けする差分のパネルを開く。同じ Markdown（差分は変更前と変更後の組）のパネルがあれば今の列のまま表に出し、無ければ作って読み込ませる */
   async open(options: { uri?: Uri; column: OpenColumn }): Promise<void> {
-    const uri = this.targetUri(options.uri);
-    if (uri === undefined) {
-      return;
+    const input = window.tabGroups.activeTabGroup.activeTab?.input;
+    const diff = pickDiffTarget({
+      tab:
+        input instanceof TabInputTextDiff
+          ? {
+              original: input.original.toString(),
+              modified: input.modified.toString(),
+            }
+          : undefined,
+      uri: options.uri?.toString(),
+    });
+    let document: TextDocument;
+    let original: TextDocument | undefined;
+    if (diff === undefined) {
+      const uri = this.targetUri(options.uri);
+      if (uri === undefined) {
+        return;
+      }
+      document = await workspace.openTextDocument(uri);
+    } else {
+      [original, document] = await Promise.all([
+        workspace.openTextDocument(Uri.parse(diff.original)),
+        workspace.openTextDocument(Uri.parse(diff.modified)),
+      ]);
+      if (original.languageId !== "markdown") {
+        return;
+      }
     }
-    const document = await workspace.openTextDocument(uri);
     if (document.languageId !== "markdown") {
       return;
     }
-    const key = uri.toString();
+    const key = panelKey({
+      uri: document.uri.toString(),
+      ...(diff === undefined ? {} : { original: diff.original }),
+    });
     const existing = this.panels.get(key);
     if (existing !== undefined) {
       existing.reveal();
       this.lastActive = existing;
       return;
     }
-    const folder = baseDirOf(uri);
+    const folder = baseDirOf(
+      original === undefined ? document.uri : Uri.file(document.uri.fsPath),
+    );
     const webviewPanel = window.createWebviewPanel(
       VIEW_TYPE,
-      `プレビュー ${uriBaseName(document)}`,
+      `${original === undefined ? "プレビュー" : "差分プレビュー"} ${uriBaseName(document)}`,
       options.column,
       {
         enableScripts: true,
@@ -88,6 +118,7 @@ export class PreviewManager {
     const panel = new PreviewPanel({
       webviewPanel,
       document,
+      ...(original === undefined ? {} : { original }),
       deps: this.deps,
     });
     this.panels.set(key, panel);
@@ -108,12 +139,21 @@ export class PreviewManager {
     await panel.load();
   }
 
-  /** 対象のパネルを読み込み直す。パネルが無ければ何もしない */
+  /** 対象のパネルを読み込み直す。フォーカスのあるパネル、無ければ対象の Markdown のパネル。パネルが無ければ何もしない */
   async refresh(uri?: Uri): Promise<void> {
+    const focused = [...this.panels.values()].find((panel) => panel.active);
     const target = this.targetUri(uri);
     const panel =
-      target === undefined ? undefined : this.panels.get(target.toString());
+      focused ??
+      (target === undefined ? undefined : this.findPanels(target)[0]);
     await panel?.load();
+  }
+
+  /** Markdown（差分のパネルは変更後）の URI が渡した URI と同じパネルを全て返す。通常のパネルと差分のパネルの両方が当たる。変更前の文書は当たらない */
+  private findPanels(uri: Uri): PreviewPanel[] {
+    return [...this.panels.values()].filter(
+      (panel) => panel.uri.toString() === uri.toString(),
+    );
   }
 
   /** 文書の変更を、その Markdown のパネルへ渡す。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送る */
@@ -121,26 +161,21 @@ export class PreviewManager {
     document: TextDocument;
     saved: boolean;
   }): void {
-    const panel = this.panels.get(event.document.uri.toString());
-    if (panel === undefined) {
-      return;
-    }
-    const configuration = workspace.getConfiguration(
-      "mdmark",
-      event.document.uri,
-    );
-    const settings = readSettings((key) => configuration.get(key));
-    if (settings.liveUpdate && !event.saved) {
-      panel.scheduleRender();
-    } else if (!settings.liveUpdate && event.saved) {
-      panel.renderNow();
+    for (const panel of this.findPanels(event.document.uri)) {
+      const configuration = workspace.getConfiguration("mdmark", panel.scope);
+      const settings = readSettings((key) => configuration.get(key));
+      if (settings.liveUpdate && !event.saved) {
+        panel.scheduleRender();
+      } else if (!settings.liveUpdate && event.saved) {
+        panel.renderNow();
+      }
     }
   }
 
   /** 設定ファイルの作成・変更・削除と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりが CSP に入れたものと違うパネルは、HTML を入れ直す */
   handleConfigChange(change: ConfigChange): void {
     for (const panel of this.panels.values()) {
-      if (!this.affects(change, panel.uri)) {
+      if (!this.affects(change, panel.scope)) {
         continue;
       }
       void panel.applyConfigChange();
@@ -168,12 +203,13 @@ export class PreviewManager {
 
   /** エディタの見えている範囲を、その文書のパネルに渡す */
   handleVisibleRanges(event: TextEditorVisibleRangesChangeEvent): void {
-    const panel = this.panels.get(event.textEditor.document.uri.toString());
     const range = event.visibleRanges[0];
-    if (panel === undefined || range === undefined) {
+    if (range === undefined) {
       return;
     }
-    panel.syncFromEditor({ start: range.start.line, end: range.end.line });
+    for (const panel of this.findPanels(event.textEditor.document.uri)) {
+      panel.syncFromEditor({ start: range.start.line, end: range.end.line });
+    }
   }
 
   /** 最後に表に出たパネルの要素を調べる（テストのときだけ `activate` が返す） */
