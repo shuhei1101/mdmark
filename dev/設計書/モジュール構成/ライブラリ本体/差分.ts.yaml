@@ -1,18 +1,20 @@
 title: "ライブラリ本体 / 差分"
-lead: '`mount` に渡した取り出し元から 2 つのリビジョンの本文を受け、行と語を比べて描き、ミニマップで送る処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と比較は Node でも動く）。'
+lead: '`mount` に渡した取り出し元から 2 つのリビジョンの本文を受け、行と語を比べて描き、ミニマップで送る処理と、描いた文書のブロックを追加と削除の色で塗り分ける処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と比較は Node でも動く）。'
 directory: |-
   ```tree
   src/
   ├── diff/
-  │   ├── source.ts   # 公開の型 DiffSource・DiffRevision と、取り出し元が返した値の検査
+  │   ├── source.ts   # 公開の型 DiffSource・DiffRevision・DiffMode と対応する差分の出し方 diffModes、取り出し元が返した値の検査
   │   ├── compute.ts  # 行と語の比較（jsdiff を差分の計算の関数型の後ろに置く）
   │   ├── panel.ts    # 差分を開く UI・待ち・選び直し・知らせの枠を付ける attachDiff
+  │   ├── blocks.ts   # 比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks
   │   └── minimap.ts  # 送り先ごとに 1 本のミニマップを置く attachMinimap
   └── parts/
       ├── diff-toggle.ts      # 差分を開くボタンの HTML
       ├── revision-picker.ts  # リビジョンの選択の HTML
       ├── diff-lines.ts       # 差分の行の HTML
       ├── diff-html.ts        # 埋め込んだ HTML の差分の HTML
+      ├── diff-blocks.ts      # 差分のブロックの HTML
       ├── diff-minimap.ts     # ミニマップの HTML
       └── diff-message.ts     # 差分の状態の文の HTML
   ```
@@ -22,6 +24,8 @@ diagrams:
       classDiagram
         direction LR
         class 差分を付ける
+        class 比べる2つの本文を取り出す
+        class ブロックを色分けする
         class 取り出し元の値を検める
         class 差分を計算する
         class 差分の計算の関数型
@@ -30,6 +34,9 @@ diagrams:
         class 部品のHTML
         差分を付ける --> 取り出し元の値を検める : 戻り値を検める
         差分を付ける --> 差分を計算する : 本文を渡す
+        比べる2つの本文を取り出す --> 取り出し元の値を検める : 戻り値を検める
+        ブロックを色分けする --> 差分を計算する : 本文を渡す
+        ブロックを色分けする --> 部品のHTML : 色を当てる
         差分を計算する --> 差分の計算の関数型 : 使う
         jsdiffの計算 ..|> 差分の計算の関数型
         差分を付ける --> ミニマップを付ける : 行を描いたら付ける
@@ -100,6 +107,48 @@ data_models:
       - name: counts
         type: '{ del: number; add: number }'
         description: 削除した行と追加した行の数。どちらも 0 なら変更が無い
+  - name: DiffMode
+    title: 差分の出し方
+    container: src/diff/source.ts
+    usecase: 使う側のページが差分の取り出し元を渡す
+    role: DTO
+    summary: '`mount` の `opts.diffMode` の値（公開の型）'
+    description: '`(typeof diffModes)[number]`（`"button" | "open" | "blocks"`）'
+    status: planned
+    introduced:
+      pr: 196
+  - name: DiffPair
+    title: 比べる 2 つの本文
+    container: src/diff/blocks.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    role: DTO
+    summary: ブロックの色分けのために取り出した結果
+    description: '`{ kind: "pair"; before: string; after: string } | { kind: "single" } | { kind: "failed" }`。`pair` は 2 番目（前）と 1 番目（後）のリビジョンの Markdown、`single` はリビジョンが 1 つ以下、`failed` は一覧か本文を取り出せなかった'
+    status: planned
+    introduced:
+      pr: 196
+  - name: BlockRange
+    title: ブロックの行の範囲
+    container: src/diff/blocks.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    role: DTO
+    summary: 色分けの単位のブロック 1 つと、その元の行の範囲
+    properties:
+      - name: element
+        type: HTMLElement
+        description: ブロックの要素（本文か節の中身の直下の要素、いちばん外の `li`、`tbody` の `tr`）
+      - name: unit
+        type: '"block" | "item" | "row"'
+        description: 部品『差分のブロック』の `unit` に渡す値
+      - name: start
+        type: number
+        description: ブロックの `data-source-line`（0 始まり）
+      - name: end
+        type: number
+        description: 次のブロックの `data-source-line` の 1 つ前。最後のブロックは文書の最後の行
+    status: planned
+    introduced:
+      pr: 196
 constants:
   - name: LOADING_DELAY_MS
     title: 読み込み中を出すまでの待ち
@@ -129,6 +178,14 @@ constants:
     status: planned
     introduced:
       pr: 166
+  - name: diffModes
+    title: 対応する差分の出し方
+    container: src/diff/source.ts
+    summary: 配布物が対応する `opts.diffMode` の値の並び。`src/index.ts` が名前付きで公開し、使う側が差分の出し方に対応するバージョンかを見分ける
+    value: '["button", "open", "blocks"] as const'
+    status: planned
+    introduced:
+      pr: 196
 function_types:
   - name: DiffEngine
     title: 差分の計算の関数型
@@ -266,14 +323,14 @@ functions:
     side_effects: '`root` の中に要素を置き、本文の要素と `hideWith` の要素に `DIFF_HIDDEN_ATTRIBUTE` を付け外しする。取り出し元を呼ぶ。取り出せないときは `console.error` に出す'
     args:
       - name: options
-        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer; hideWith?: HTMLElement[] }'
+        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer; hideWith?: HTMLElement[]; open?: boolean }'
         required: true
-        description: '`root` は描いた本文（右側の目次を置いたときは本文の列）、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数、`hideWith` は差分を開いている間、`root` の外で一緒に隠す要素（右側の目次）'
+        description: '`root` は描いた本文（右側の目次を置いたときは本文の列）、`source` と `docId` は `mount` に渡されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数、`hideWith` は差分を開いている間、`root` の外で一緒に隠す要素（右側の目次）、`open` は置いた時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`）'
     returns:
       type: () => void
       description: 差分を閉じ、待ちと受け取りとミニマップを片付け、置いた要素を取り除く関数
     process: |-
-      1. `root` の直下の最初の `h1` の後ろ（H1 の節では見出しと節の中身の間。無ければ先頭）に、差分を開くボタン（`renderDiffToggle`）と `hidden` の差分の場所を置く。場所の `id` はモジュールの通し番号でページの中で一意にする
+      1. `root` の直下の最初の `h1` の後ろ（H1 の節では見出しと節の中身の間。無ければ先頭）に、差分を開くボタン（`renderDiffToggle`）と `hidden` の差分の場所を置く。場所の `id` はモジュールの通し番号でページの中で一意にする。`open` が `true` なら、置いた後に手順 2 の開くときと同じことを行う
       2. ボタンを押すと開くか閉じる。開くときは、`h1`・ボタン・場所以外の `root` の子と `hideWith` の要素に `DIFF_HIDDEN_ATTRIBUTE` を付けて隠し（`hidden` は書き換えないため、節の開閉と影響し合わない）、開いた世代を 1 進め、手順 3 を行う。閉じるときは世代を 1 進め、ミニマップを外し、場所を空にして `hidden` にし、付けた `DIFF_HIDDEN_ATTRIBUTE` を外す（節はそのときの開閉のまま）
       3. 待ちの間、`LOADING_DELAY_MS` を過ぎたら場所に `renderDiffMessage({ kind: "loading" })`、`SPINNER_DELAY_MS` を過ぎたら `spinner: true` に替える。`source.revisions(docId)` を待ち、世代が変わっていたら何もしない。拒否か `checkRevisions` が投げたら、場所を `renderNotice({ name: docId, source: "diff-revisions" })` にして終わる
          - `[error]` リビジョンの一覧を取り出せない（`revisions`・`docId`・元のエラーを `console.error` の引数に並べる）
@@ -343,6 +400,12 @@ functions:
         condition: '`# 手引き` の節と、閉じた `## 導入` の節を `attachSections` で開閉にした `root`。`hideWith` に `aside` を渡し、開いてから閉じる'
         mock: 取り出し元は `r2`・`r1` を返す関数
         expected: ボタンが `h1` の直後で `section-手引き` の前。開いている間は `section-手引き` と `aside` が `data-mdmark-diff-hidden` を持つ。閉じた後はどちらも持たず、`section-導入` は `hidden="until-found"` のまま
+      - name: test_attach_diff_when_open
+        case: 正常
+        summary: open では置いた時点で開き、押すと閉じる
+        condition: '`h1` と段落を描いた `root`。`open: true`。`r2`・`r1` を返す取り出し元。開いた後に「変更を見る」を押す'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: 押す前に `revisions` が 1 回、`content` が `r1`・`r2` で呼ばれ、ボタンが `aria-expanded="true"` で段落が `data-mdmark-diff-hidden` を持つ。押した後は `aria-expanded="false"` で段落が属性を持たない
     callees:
       - '#functions[checkRevisions]'
       - '#functions[computeDiff]'
@@ -609,8 +672,259 @@ functions:
         condition: '`<figcaption id="d-1-title">`・`aria-labelledby="d-1-title"`・`marker-end="url(#d-1-arrow)"` と `<marker id="d-1-arrow">`、範囲の外を指す `aria-describedby="outside"` を持つ要素。`prefix` は `p-1-before-`'
         mock: なし
         expected: '`id` が `p-1-before-d-1-title`・`p-1-before-d-1-arrow` になり、`aria-labelledby` と `marker-end` もそれを指す。`aria-describedby="outside"` は変わらない'
+  - name: normalizeDiffMode
+    title: 差分の出し方を決める
+    container: src/diff/source.ts
+    summary: '`opts.diffMode` の値が `diffModes` にあればそのまま、無いか知らない値なら `button` を返す'
+    kind: 関数
+    scope: internal
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: '`opts.diffMode` に渡された値'
+    returns:
+      type: DiffMode
+      description: 使う差分の出し方
+    unit_tests:
+      - name: test_normalize_diff_mode
+        case: 正常
+        summary: 対応する値をそのまま返す
+        condition: '`button`・`open`・`blocks`'
+        mock: なし
+        expected: それぞれ同じ値を返す
+      - name: test_normalize_diff_mode_when_unknown
+        case: 異常
+        summary: 知らない値と省いた値は button にする
+        condition: '`undefined`・`"side"`・`1`'
+        mock: なし
+        expected: どれも `button` を返し、例外を投げない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の出し方]
+    status: planned
+    introduced:
+      pr: 196
+  - name: loadDiffPair
+    title: 比べる 2 つの本文を取り出す
+    container: src/diff/blocks.ts
+    summary: 取り出し元の一覧を 1 回、前と後の本文を 1 回ずつ呼び、ブロックの色分けに使う 2 つの Markdown を返す
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: 取り出し元を呼ぶ。取り出せないときは `console.error` に出す
+    args:
+      - name: options
+        type: '{ source: DiffSource; docId: string }'
+        required: true
+        description: '`mount` に渡された取り出し元と文書の `id`'
+    returns:
+      type: Promise<DiffPair>
+      description: 取り出した結果。reject しない
+    process: |-
+      1. `source.revisions(docId)` を待ち、`checkRevisions` で検める。拒否か投げたら `{ kind: "failed" }` を返す
+         - `[error]` リビジョンの一覧を取り出せない（`revisions`・`docId`・元のエラーを `console.error` の引数に並べる。`attachDiff` と同じ）
+      2. リビジョンが 1 つ以下なら `{ kind: "single" }` を返す
+      3. 2 番目（前）と 1 番目（後）の `source.content({ docId, revisionId })` を並んで待つ。拒否か文字列でないものがあれば `{ kind: "failed" }` を返す
+         - `[error]` 本文を取り出せない（`content`・`docId`・リビジョンの `id`・元のエラーか合わなかった値を並べる。`attachDiff` と同じ）
+      4. `{ kind: "pair", before, after }` を返す
+    unit_tests:
+      - name: test_load_diff_pair
+        case: 正常
+        summary: 2 番目を前、1 番目を後にして取り出す
+        condition: '`modified`・`original` を返し、`content` がリビジョンごとの全文を返す取り出し元'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: '`revisions` が 1 回、`content` が `original`・`modified` で 1 回ずつ呼ばれ、`{ kind: "pair" }` の `before` が `original`、`after` が `modified` の全文'
+      - name: test_load_diff_pair_when_single
+        case: 正常
+        summary: リビジョンが 1 つなら本文を取り出さない
+        condition: '`revisions` が 1 つを返す'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: '`{ kind: "single" }` を返し、`content` が呼ばれない'
+      - name: test_load_diff_pair_when_content_rejected
+        case: 異常
+        summary: 本文を取り出せなければ failed を返す
+        condition: '`content` が `original` で拒否する'
+        mock: '`console.error` を控える関数で包む'
+        expected: '`{ kind: "failed" }` を返し、`console.error` の引数に `content`・`docId`・`original`・元のエラーを含む'
+      - name: test_load_diff_pair_when_revisions_invalid
+        case: 異常
+        summary: 一覧の形が合わなければ failed を返す
+        condition: '`revisions` が `{}` を返す'
+        mock: '`console.error` を控える関数で包む'
+        expected: '`{ kind: "failed" }` を返し、`content` が呼ばれない'
+    callees:
+      - '#functions[checkRevisions]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の出し方]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の取り出し元]
+    status: planned
+    introduced:
+      pr: 196
+  - name: collectBlockRanges
+    title: ブロックに分ける
+    container: src/diff/blocks.ts
+    summary: 描いた文書の要素を色分けの単位のブロックに分け、元の行の範囲を付けて上から順に返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ root: ParentNode; lineCount: number }'
+        required: true
+        description: '`root` は描いた文書の中身、`lineCount` はその Markdown の行の数'
+    returns:
+      type: BlockRange[]
+      description: 上から順のブロック
+    process: |-
+      1. `root` の直下と `div.mdmark-section-body` の直下の要素を文書の順に辿る。`mdmark-section-body` はその中に入り、`data-source-line` を自分か子孫に持たない要素は飛ばす
+      2. `ul`・`ol` は直下の `li` ごとに `unit: "item"`、`data-source-line` を持つ表（`table` か表の記法の外側）は見出し行を `unit: "block"` の表そのもの、`tbody` の `tr` ごとに `unit: "row"`、それ以外は要素ごとに `unit: "block"` のブロックにする
+      3. ブロックの `start` は要素（無ければ最初の子孫）の `data-source-line`、`end` は次のブロックの `start` の 1 つ前（最後は `lineCount - 1`）にする
+    unit_tests:
+      - name: test_collect_block_ranges
+        case: 正常
+        summary: 節の中身の中のブロックと、リストの項目・表の行を分ける
+        condition: '`# 題`・`## 節` の下に段落・3 つの項目の番号付きリスト・2 行の表を持つ Markdown を既定の設定で描いた要素'
+        mock: なし
+        expected: '`h1`・`h2`・段落・`li` 3 つ・表・`tr` 2 つの順で、`unit` が `block`・`item`・`row`。`mdmark-section-body` は含まない。各 `start`・`end` が Markdown の行と合う'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[描いた文書のブロックの色分け]
+    status: planned
+    introduced:
+      pr: 196
+  - name: colorDiffBlocks
+    title: ブロックを色分けする
+    container: src/diff/blocks.ts
+    summary: 後の文書を描いた中身に、追加の色を当て、前の文書から削除したブロックを差し込む
+    kind: 関数
+    scope: internal
+    side_effects: '`after` の子孫を書き換える。`before` の要素を `after` へ移す'
+    args:
+      - name: options
+        type: '{ before: { root: ParentNode; markdown: string }; after: { root: ParentNode; markdown: string }; segmenter: Intl.Segmenter | undefined; engine?: DiffEngine }'
+        required: true
+        description: '`before`・`after` は前と後の Markdown と、それを今の描き方で描いた中身（画面に置く前の `template` の中身）。`segmenter` と `engine` は `computeDiff` に渡す'
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. `computeDiff` で前と後の Markdown を比べ、全ての塗の行を上から読んで、前の行番号ごとに消したか、後の行番号ごとに足したか、`same` の行の前から後への行番号の対応を作る。`same` でない行が続くところを 1 つの変えた塗にする
+      2. `collectBlockRanges` で前と後をブロックに分ける。後のブロックで範囲に足した行を持つものを追加、前のブロックで範囲の行が全て消した行のものを削除の候補にする。前のブロックで見出しの節が丸ごと削除の候補なら、見出しと節の中身を 1 つの候補にまとめる。リスト・表の全ての項目・行が候補で、後にそのリスト・表が無いときはリスト・表ごと 1 つの候補にする
+      3. 同じ変えた塗の候補と追加のブロックを前から順に対にし、`isRewrite` が true の対は候補を外す。残った候補を削除したブロックにする
+      4. 追加のブロックを `renderDiffBlock({ kind: "add", unit, html: 要素の outerHTML })` の要素に置き換える
+      5. 削除したブロックごとに、`renderDiffBlock({ kind: "del", ... })` の要素を作り、差し込む場所を決める。前の文書で同じ親の直前にあった変えていないブロックの `start` を行の対応で後の行番号にし、その行を範囲に持つ後のブロックの後ろ（その後ろに先に差し込んだ削除のブロックがあればその後ろ）に置く。直前に無ければ、前の文書で属していた節の見出しを同じ対応で引いた後の節の中身の先頭、節に属さなければ `after.root` の先頭に置く。リストの項目と表の行は、前の文書で直前の項目・行の後ろ（無ければ対応するリスト・`tbody` の先頭）に置く
+    unit_tests:
+      - name: test_color_diff_blocks
+        case: 正常
+        summary: 足した・書き換えた段落に追加の色、消した段落を前の位置に削除の色で差し込む
+        condition: '前: `# 題`・段落 A・`## 節`・段落 C・段落 D。後: 段落 A の語を 1 つ書き換え、段落 C を消し、段落 D を別の文の段落 E に入れ替える。どちらも既定の設定で描いた中身'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 段落 A と E が `data-kind="add"` の `div.mdmark-diff-block` に包まれる。段落 C が `## 節` の `mdmark-section-body` の先頭、段落 D が E の直前に `data-kind="del"` である。段落 A の削除は無い。削除のブロックの中に `data-source-line` と `id` が無い
+      - name: test_color_diff_blocks_when_list_and_table
+        case: 正常
+        summary: リストの項目と表の行の単位で色を当てる
+        condition: '前: 5 つの項目の番号付きリストと 3 行の表。後: 4 番目の項目を消し、項目を 1 つ足し、表の 2 行目の全てのセルを書き換える'
+        mock: なし
+        expected: リストと表は包まれない。消した `li` が 3 番目の項目の後ろに `data-kind="del"`、足した `li` が `data-kind="add"` で、どちらも class `mdmark-diff-block`。表の 2 行目は削除の `tr` と追加の `tr` がこの順
+      - name: test_color_diff_blocks_when_section_deleted
+        case: 正常
+        summary: 見出しごと消した節を 1 つの削除のブロックにする
+        condition: '前: `## 一`・段落・`## 二`・段落 2 つ・`## 三`・段落。後: `## 二` の節を丸ごと消す'
+        mock: なし
+        expected: '`## 一` の節の後ろに `data-kind="del"` のブロックが 1 つだけあり、その中に `h2` と段落 2 つを持ち、`h2` が `id` を持たない'
+      - name: test_color_diff_blocks_when_same
+        case: 正常
+        summary: 同じ本文なら何も変えない
+        condition: 前と後が同じ Markdown
+        mock: なし
+        expected: '`after.root` の HTML が呼ぶ前と同じ'
+    callees:
+      - '#functions[computeDiff]'
+      - '#functions[collectBlockRanges]'
+      - '#functions[isRewrite]'
+      - '#functions[renderDiffBlock]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[描いた文書のブロックの色分け]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を当てたブロックの要素]
+    status: planned
+    introduced:
+      pr: 196
+  - name: isRewrite
+    title: 書き換えかを見分ける
+    container: src/diff/blocks.ts
+    summary: 対の 2 つのブロックの文字を語ごとに比べ、同じ文字の数が長い方の文字の数の半分以上なら true を返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ before: string; after: string; segmenter: Intl.Segmenter | undefined; engine: DiffEngine }'
+        required: true
+        description: '`before`・`after` は削除の候補と追加のブロックの `textContent`'
+    returns:
+      type: boolean
+      description: 書き換えなら true、入れ替えなら false。どちらも空なら true
+    unit_tests:
+      - name: test_is_rewrite
+        case: 正常
+        summary: 語を 1 つ書き換えた文は書き換え
+        condition: '`差分を確かめる手順です。` と `変更を確かめる手順です。`'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 'true'
+      - name: test_is_rewrite_when_replaced
+        case: 正常
+        summary: 別の文は入れ替え
+        condition: 共通する語が句点だけの 2 つの文
+        mock: なし
+        expected: 'false'
+      - name: test_is_rewrite_when_half
+        case: 正常
+        summary: 同じ文字がちょうど半分なら書き換え
+        condition: '`segmenter` が `undefined` で、`abcd` と `abxy`'
+        mock: なし
+        expected: 'true'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[書き換えと入れ替えの見分け]
+    status: planned
+    introduced:
+      pr: 196
+  - name: renderDiffBlock
+    title: 差分のブロックを描く
+    container: src/parts/diff-blocks.ts
+    summary: 部品設計『差分のブロック』の HTML を返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ kind: "add" | "del"; unit: "block" | "item" | "row"; html: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`block` は `html` を `div.mdmark-diff-block` で包んだ HTML、`item`・`row` は `html` の `li`・`tr` に class `mdmark-diff-block` を足した HTML。どれも `data-kind` を持ち、先頭（`row` は 1 つ目のセルの先頭）に見えない `追加:`・`削除:` と `aria-hidden` の `+`・`−` を置く。`del` は中の要素の `data-source-line` と `id` を外す'
+    unit_tests:
+      - name: test_render_diff_block
+        case: 正常
+        summary: 本文のブロックを包み、記号と読み上げの文字を置く
+        condition: 部品設計の状態 `AddParagraph` の引数
+        mock: なし
+        expected: '`div.mdmark-diff-block[data-kind="add"]` の中に `追加:` と `aria-hidden` の `+` と元の `p` がある'
+      - name: test_render_diff_block_when_deleted
+        case: 正常
+        summary: 削除したブロックから行番号と id を外す
+        condition: 状態 `DelParagraph` の引数に、`id` を持つ見出しを足した `html`
+        mock: なし
+        expected: '`data-kind="del"`、`削除:` と `−` を持ち、中に `data-source-line` と `id` が無い'
+      - name: test_render_diff_block_when_row
+        case: 正常
+        summary: 表の行は tr に class を付け、1 つ目のセルに記号を置く
+        condition: 状態 `TableRowDel` の引数
+        mock: なし
+        expected: 一番外が `tr.mdmark-diff-block[data-kind="del"]` で、包む `div` が無く、1 つ目の `td` の先頭に `削除:` と `−` がある
+    refs:
+      - dev/設計書/部品設計/差分のブロック.ts#
+    status: planned
+    introduced:
+      pr: 196
 notes:
-  単体テストの実行場所: '`checkRevisions`・`computeDiff` と `render*` は DOM を使わず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで流す。`attachDiff`・`attachMinimap` は `tests/unit/src/diff/{panel,minimap}.browser.test.ts` で `unit-browser` プロジェクトで流す'
+  単体テストの実行場所: '`checkRevisions`・`normalizeDiffMode`・`computeDiff` と `render*` は DOM を使わず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで流す。`attachDiff`・`attachMinimap`・`src/diff/blocks.ts` の関数は `tests/unit/src/diff/{panel,minimap,blocks}.browser.test.ts` で `unit-browser` プロジェクトで流す。`blocks.browser.test.ts` と `tests/unit/src/parts/diff-blocks.test.ts` は単体テスト作成で作り、作った後に対応テストファイルに追加する'
   配布物の大きさ: jsdiff は `diffLines`・`diffWords`・`diffChars` だけを名前で import し、使わない関数を束ねない。足した後の `dist/index.js` が非機能要件の上限に収まることを、ビルドのサイズの検査で確かめる
 test_files:
   - tests/unit/src/diff/source.test.ts
