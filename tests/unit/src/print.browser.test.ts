@@ -149,3 +149,29 @@ test("test_attach_print_when_syntax", async () => {
   expect(panels[0].hasAttribute("hidden")).toBe(true);
   expect(panels[1].hasAttribute("hidden")).toBe(false);
 });
+
+// 印刷の前にファイルツリーの閉じたフォルダを開き、後に閉じ直す（正常系）
+test("test_attach_print_when_tree", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createDocumentRoot(
+    ["```tree", "app/", "└── src/", "    └── index.ts", "```", ""].join("\n"),
+  );
+  detachers.push(attachInteractions({ root, features, placement: "top" }));
+  await attachTracked(root, () => true);
+  const button = [
+    ...root.querySelectorAll<HTMLElement>(".mdmark-tree-toggle"),
+  ].find((candidate) => candidate.textContent?.trim() === "src/");
+  const list = button?.closest("li")?.querySelector<HTMLElement>(":scope > ul");
+  expect(button?.getAttribute("aria-expanded")).toBe("false");
+  // 実行
+  window.dispatchEvent(new Event("beforeprint"));
+  // 検証
+  expect(list?.hasAttribute("hidden")).toBe(false);
+  expect(button?.getAttribute("aria-expanded")).toBe("true");
+  // 実行
+  window.dispatchEvent(new Event("afterprint"));
+  // 検証
+  expect(list?.getAttribute("hidden")).toBe("until-found");
+  expect(button?.getAttribute("aria-expanded")).toBe("false");
+});

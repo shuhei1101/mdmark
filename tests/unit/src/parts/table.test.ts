@@ -48,11 +48,12 @@ test("test_render_table_when_closed", async () => {
   const html = renderTable({
     features: [],
     collapse: "closed",
+    rowCount: 3,
     body: SLOT_MARKER,
   });
   // 検証
   expect(html).toContain(
-    '<details class="mdmark-table-details"><summary>表を開く</summary>',
+    '<details class="mdmark-table-details"><summary>表（3 行）</summary>',
   );
   expect(findTag(html, "<details")).not.toMatch(/\sopen\b/);
 });
@@ -639,4 +640,44 @@ test("test_render_table_when_folded", async () => {
   expect(details[0]).not.toMatch(/\shidden\b/);
   expect(details[1]).toMatch(/\shidden\b/);
   expect(innerHtml(html, "mdmark-fold-name")).toBe("説明");
+});
+
+// 開いた折り畳みの見出しを title にし、エスケープする（正常系）
+test("test_render_table_when_title", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  const { SLOT_MARKER } = await loadOwn();
+  // 実行
+  const opened = renderTable({
+    features: [],
+    collapse: "open",
+    title: "リリースの一覧",
+    body: SLOT_MARKER,
+  });
+  const escaped = renderTable({
+    features: [],
+    collapse: "closed",
+    title: "a<b",
+    body: SLOT_MARKER,
+  });
+  // 検証
+  expect(opened).toContain(
+    '<details class="mdmark-table-details" open><summary>リリースの一覧</summary>',
+  );
+  expect(escaped).toContain("<summary>a&lt;b</summary>");
+});
+
+// ツリーのパネルはツリーの案内を出す（正常系）
+test("test_render_copy_panel_when_tree", async () => {
+  // 準備
+  const { renderCopyPanel } = await loadTable();
+  // 実行
+  const html = renderCopyPanel({
+    id: "p1",
+    format: "tree",
+    text: "src/\n└── index.ts",
+  });
+  // 検証
+  expect(plainText(html)).toContain("ツリーのテキストを選択しています。");
+  expect(innerHtml(html, "<textarea")).toBe("src/\n└── index.ts");
 });

@@ -191,3 +191,23 @@ test("test_attach_interactions_when_code_off", async () => {
   expect(off.root.querySelector(".mdmark-code-copy")).toBeNull();
   expect(hasStickyMode(off.root)).toBe(false);
 });
+
+// tree がオフならファイルツリーに開閉とコピーを付けない（正常系）
+test("test_attach_interactions_when_tree_off", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createRoot(
+    ["```tree", "app/", "└── src/", "    └── index.ts", "```", ""].join("\n"),
+  );
+  // 実行
+  detachers.push(
+    attachInteractions({
+      root,
+      features: { ...features, tree: false },
+      placement: "top",
+    }),
+  );
+  // 検証
+  expect(root.querySelector(".mdmark-tree-bar")).toBeNull();
+  expect(root.querySelector(".mdmark-tree-toggle")).toBeNull();
+});
