@@ -2904,7 +2904,7 @@ flows:
     expected:
       - '`mount` が例外を投げず、本文は `opts.markdown` を描いたままで `mdmark-diff-block` を持たない'
       - 本文の先頭に class `mdmark-notice` と `role="status"` の要素があり、題が `変更を表示できません`、本文が `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`
-      - '`console.error` が 1 回呼ばれ、引数に `content`・`guide`・元のエラーを含む'
+      - '`console.error` が取り出せなかった本文ごとに 1 回（前と後の 2 回）呼ばれ、それぞれの引数に `content`・`guide`・そのリビジョンの `id`・元のエラーを含む'
     test: test_error_when_diff_blocks_content_rejected
   - name: 異常系（知らない差分の出し方・既定の出し方）
     summary: 知らない `diffMode` は例外を投げず `button` として描く
