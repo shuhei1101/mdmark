@@ -271,15 +271,32 @@ export function readTableSpec(
   return { kind, features, filters, collapse, title, warnings, hide, totals };
 }
 
+/** `tableOpen` の表の直下のトークンの位置を返す（中の表のトークンと、自分の `table_open`・`table_close` を含まない） */
+function ownTokenIndexes(tokens: Token[], tableOpen: number): number[] {
+  const indexes: number[] = [];
+  let depth = 0;
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const type = tokens[index]?.type;
+    if (type === "table_open") {
+      depth += 1;
+    } else if (type === "table_close") {
+      depth -= 1;
+      if (depth === 0) {
+        break;
+      }
+    } else if (depth === 1) {
+      indexes.push(index);
+    }
+  }
+  return indexes;
+}
+
 /** `tableOpen` の表の本文の行の数を数える */
 function bodyRowCount(tokens: Token[], tableOpen: number): number {
   let count = 0;
   let inBody = false;
-  for (let index = tableOpen; index < tokens.length; index++) {
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
     const type = tokens[index]?.type;
-    if (type === "table_close") {
-      break;
-    }
     if (type === "tbody_open") {
       inBody = true;
     } else if (type === "tbody_close") {
@@ -302,7 +319,7 @@ export function rowIdOf(text: string, taken: Set<string>): string {
   return id;
 }
 
-/** `table_open` から `table_close` までの本文の各行に、行の ID と先頭のセルの行へのリンクを付ける */
+/** `table_open` から対応する `table_close` までの本文の各行に、行の ID と先頭のセルの行へのリンクを付ける */
 function linkRows(
   state: StateCore,
   tokens: Token[],
@@ -317,11 +334,8 @@ function linkRows(
     return token;
   };
   let inBody = false;
-  for (let index = tableOpen; index < tokens.length; index++) {
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
     const token = tokens[index];
-    if (token?.type === "table_close") {
-      break;
-    }
     if (token?.type === "tbody_open") {
       inBody = true;
     } else if (inBody && token?.type === "tr_open") {
@@ -391,6 +405,8 @@ function decorateAttributes(state: StateCore): void {
   let heading = "";
   let headers: string[] = [];
   let column = 0;
+  // 中の表を読む間、外の表の見出しと列の位置を控える
+  const outers: Array<{ headers: string[]; column: number }> = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const next = tokens[index + 1];
@@ -402,7 +418,10 @@ function decorateAttributes(state: StateCore): void {
     } else if (token.type === "table_open") {
       token.attrSet("tabindex", "0");
       token.attrSet("aria-label", heading ? `表: ${heading}` : "表");
+      outers.push({ headers, column });
       headers = [];
+    } else if (token.type === "table_close") {
+      ({ headers, column } = outers.pop() ?? { headers: [], column: 0 });
     } else if (token.type === "tr_open") {
       column = 0;
     } else if (token.type === "th_open") {
@@ -418,11 +437,8 @@ function decorateAttributes(state: StateCore): void {
 function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
   const rows: string[][] = [];
   let inBody = false;
-  for (let index = tableOpen; index < tokens.length; index++) {
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
     const token = tokens[index];
-    if (token?.type === "table_close") {
-      break;
-    }
     if (token?.type === "tbody_open") {
       inBody = true;
     } else if (inBody && token?.type === "tr_open") {
@@ -494,6 +510,8 @@ export function decorateTables(state: StateCore): void {
   // 行の ID が重ならないよう、見出しの ID と前の行の ID を文書の頭から控える
   const taken = new Set(envOf(state).headings.map((heading) => heading.id));
   const out: Token[] = [];
+  // 囲みに入れて閉じていない表の `table_open` の位置と、閉じるときに置く囲みの終わり
+  const openTables: Array<{ open: number; tail: string }> = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     if (!token) {
@@ -504,6 +522,15 @@ export function decorateTables(state: StateCore): void {
       // 表の印は、ここで使い切る
       continue;
     }
+    const outer = openTables.at(-1);
+    if (token.type === "table_close" && outer) {
+      openTables.pop();
+      out.push(token);
+      const close = ownBlock(state, outer.tail);
+      close.meta = { role: "table-close" };
+      out.push(close);
+      continue;
+    }
     if (token.type !== "table_open") {
       out.push(token);
       continue;
@@ -512,6 +539,7 @@ export function decorateTables(state: StateCore): void {
       .filter(
         (candidate) =>
           candidate.open < index &&
+          candidate.open > (outer?.open ?? -1) &&
           (candidate.close < 0 || index < candidate.close),
       )
       .pop();
@@ -565,19 +593,9 @@ export function decorateTables(state: StateCore): void {
       out.push(warningBlock(state, warning));
     }
     out.push(ownBlock(state, head.slice(divEnd)));
-    // 表のトークンを、閉じるところまでそのまま移す
-    let end = index;
-    while (end < tokens.length && tokens[end]?.type !== "table_close") {
-      out.push(tokens[end] as Token);
-      end += 1;
-    }
-    if (tokens[end]) {
-      out.push(tokens[end] as Token);
-    }
-    const close = ownBlock(state, tail);
-    close.meta = { role: "table-close" };
-    out.push(close);
-    index = end;
+    // 中のトークンは、対応する `table_close` までこの繰り返しで移す（中の表も囲みに入れる）
+    out.push(token);
+    openTables.push({ open: index, tail });
   }
   state.tokens = out;
 }
