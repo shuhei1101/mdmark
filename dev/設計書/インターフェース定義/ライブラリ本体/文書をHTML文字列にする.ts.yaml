@@ -117,12 +117,12 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
-      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表を開く</summary>` を持つ
+      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
       - タブの範囲が `<div class="mdmark-tabs" data-group="os">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
       - '`[!WARNING]` の引用が `<div class="markdown-alert markdown-alert-warning">` と題 `警告` になり、文字列に `[!WARNING]` が無い'
       - '`[!NOTE]-` の引用が `<details class="markdown-alert markdown-alert-note">` と `<summary class="markdown-alert-title">補足</summary>` になる'
       - ステップの範囲の `ol` が class `mdmark-steps` を持つ
-      - ファイルツリーが `<ul class="mdmark-tree">` になり、`src/` が `mdmark-tree-folder`、`index.ts` が `mdmark-tree-file` の `li` になる
+      - ファイルツリーが `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` になり、`src/` が `mdmark-tree-folder`、`index.ts` が `data-file-icon="file-code"` を持つ `mdmark-tree-file` の `li` になる。`src/` の下の `ul` は `hidden` を持たない
       - '`<span class="mdmark-badge">v1</span>` があり、文字列に `badge:` が無い'
       - '`補足` の後ろが `<div class="mdmark-section-body" id="section-補足" data-section="closed">` に入り、中身の段落が文字列にある'
       - 2 行の表の 1 行目の直後に `<tr class="mdmark-row-detail" data-row="1"><td colspan="{列の数}">` と詳細の段落があり、表の後ろに詳細の段落が残っていない
@@ -178,7 +178,7 @@ flows:
       - name: 配布物を読んだ Node の処理
         description: 正常系と同じ
       - name: 書き方を誤った Markdown
-        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で囲んだ表、見出しの無い `<!-- tabs -->` 〜 `<!-- /tabs -->` の範囲、`### macOS`・`### Windows` を持つ `<!-- tabs: group= grop=os closed -->` の範囲、`[図](#fig-missing)` のリンク、文書の終わりまで閉じの印の無い `<!-- table: data -->` とその後の表を持つ文書'
+        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で囲んだ表、見出しの無い `<!-- tabs -->` 〜 `<!-- /tabs -->` の範囲、`### macOS`・`### Windows` を持つ `<!-- tabs: group= grop=os fold -->` の範囲、`[図](#fig-missing)` のリンク、文書の終わりまで閉じの印の無い `<!-- table: data -->` とその後の表を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -193,7 +193,7 @@ flows:
       - '`<div class="mdmark-syntax-warning" role="note">` が 5 つあり、それぞれに題 `書き方の警告` がある'
       - 1 つ目の表が `data-kind="default"` と `data-features="pin sort"` を持ち、警告の本文に `unknown` と使える種類 `data`・`plain` がある
       - 見出しの無いタブの範囲の段落がある
-      - '`group= grop=os closed` のタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に `group=`・`grop=`・`closed` がある'
+      - '`group= grop=os fold` のタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に `group=`・`grop=`・`fold` がある'
       - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
       - 閉じの印の無い表が `data-kind="data"` を持ち、警告の本文に `<!-- /table -->` がある
     test: test_normal_when_syntax_errors
@@ -737,6 +737,85 @@ flows:
     test: test_normal_when_aliases
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（エイリアスを渡す）]
+  - name: 正常系（表・タブ・ステップの折りたたみ）
+    summary: '`closed`・`open` の表・タブ・ステップを、`title=` か中身から作った見出しの `details` に入れる'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 折りたたみを持つ Markdown
+        description: '`<!-- table: data closed -->` で 3 行の表、`<!-- table: data open title=リリースの一覧 -->` で 2 行の表、`<!-- tabs: closed -->` で `### uv`・`### pip`、`<!-- tabs: open title=入れ方 -->` で `### macOS`・`### Windows`、`<!-- steps: closed -->` で 2 項目の番号付きリスト、`<!-- steps: open title=準備 -->` で 3 項目の番号付きリストを囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: closed・open と title= を読む
+        M->>M: 範囲を details に入れ、見出しを title= か中身から作る
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目の表が `<details class="mdmark-table-details">` に入り、`open` を持たず、`<summary>表（3 行）</summary>` を持つ
+      - 2 つ目の表の `details` が `open` を持ち、`<summary>リリースの一覧</summary>` を持つ
+      - 1 つ目のタブが `<details class="mdmark-collapsible">` の中の `<div class="mdmark-tabs">` になり、`details` が `open` を持たず、`<summary>タブ（uv・pip）</summary>` を持つ
+      - 2 つ目のタブの `details` が `open` を持ち、`<summary>入れ方</summary>` を持つ
+      - 1 つ目のステップが `<details class="mdmark-collapsible">` の中の `<ol class="mdmark-steps">` になり、`details` が `open` を持たず、`<summary>手順（2 ステップ）</summary>` を持つ
+      - 2 つ目のステップの `details` が `open` を持ち、`<summary>準備</summary>` を持つ
+      - 文字列に `mdmark-syntax-warning` が無い
+    test: test_normal_when_syntax_folded
+  - name: 正常系（ファイルツリーの注釈と項目）
+    summary: ファイルツリーの名前と注釈を分け、拡張子ごとのアイコンの種類・「ほかにもある」の項目・ASCII の罫線・開く階層・元の罫線のテキストを HTML に持たせる
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: ファイルツリーを持つ Markdown
+        description: '`<!-- tree: open=all -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`photo.PNG`・`Dockerfile`・`font.woff2`・`...` を罫線で書いた言語 `tree` のコードブロックと、マーカーの無い、`\|-- `・`` `-- ``・`\|   ` で `src/` の下に `index.ts` と `parts/` を書いた言語 `tree` のコードブロックを並べた文書'
+        notes: '`index.ts` は `src/` の下。そのほかは `mdmark/` の直下'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 罫線から段を数え、名前と注釈を分ける
+        M->>M: 項目の種類と拡張子ごとのアイコンの種類を決める
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目のツリーの `<div class="mdmark-tree">` が `data-open="all"` を持ち、2 つ目は `data-open` を持たない
+      - どちらの `<div class="mdmark-tree">` も、コードブロックに書いた罫線のテキストそのものを `data-source` に持つ
+      - '`src/`・`index.ts`・`README.md` の `<span class="mdmark-tree-name">` に `#` とその後ろが無く、注釈が同じ行の `<span class="mdmark-tree-note">` に入る'
+      - 注釈の中が、`<code>mount</code>`・`<strong>必読</strong>`・`<span class="mdmark-badge">新規</span>` になる
+      - '`C#/` が名前 `C#/` の `mdmark-tree-folder`、`#notes.md` が名前 `#notes.md` の `mdmark-tree-file` になり、どちらも `mdmark-tree-note` を持たない'
+      - ファイルの `li` の `data-file-icon` が、`index.ts` は `file-code`、`README.md` は `file-text`、`photo.PNG` は `file-image`、`Dockerfile` は `file-terminal`、`font.woff2` は `file`
+      - '`...` が `<li class="mdmark-tree-more">` になり、読み上げの文 `ほかにもあります` を持つ'
+      - 2 つ目のツリーで `src/`・`parts/` が `mdmark-tree-folder`、`index.ts` が `mdmark-tree-file` になり、名前に `\|`・`` ` ``・`--` が無い
+      - 文字列に `mdmark-syntax-warning`・`<button` が無い
+    test: test_normal_when_tree_annotated
+  - name: 正常系（折りたたみとツリーの書き方の誤り）
+    summary: '`closed` と `open` の両方・`closed` も `open` も無い `title=`・読めない `open=` に書き方の警告を置き、読めた指定で描く'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 書き方を誤った Markdown
+        description: '`<!-- tabs: closed open -->` で `### macOS`・`### Windows`、`<!-- steps: closed open -->`・`<!-- steps: fold -->`・`<!-- steps: title=準備 -->` でそれぞれ 2 項目の番号付きリストを囲んだ範囲と、`<!-- tree: open=deep -->` の後ろの言語 `tree` のコードブロックを並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 読めた指定だけを当てる
+        M->>M: 読めない指定の範囲の前に書き方の警告を置く
+        M-->>C: HTML 文字列
+    expected:
+      - '`<div class="mdmark-syntax-warning" role="note">` が 5 つある'
+      - タブの範囲の前の警告の本文に `closed` と `open` があり、タブが `open` を持たない `<details class="mdmark-collapsible">` に入り、`<summary>タブ（macOS・Windows）</summary>` を持つ
+      - 1 つ目のステップの前の警告の本文に `closed` と `open` があり、ステップが `open` を持たない `<details class="mdmark-collapsible">` に入る
+      - 2 つ目のステップの前の警告の本文に `fold` があり、3 つ目のステップの前の警告の本文に `title=` と `closed`・`open` がある。2 つ目と 3 つ目の `<ol class="mdmark-steps">` は `details` に入らない
+      - ツリーの前の警告の本文に `open=deep` と、書ける値 `all`・階層の数があり、`<div class="mdmark-tree">` が `data-open` を持たない
+    test: test_normal_when_fold_and_tree_errors
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
