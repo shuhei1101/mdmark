@@ -390,8 +390,17 @@ export function colorDiffBlocks(options: {
     });
   }
 
-  // 追加のブロックを、色を当てた要素に置き換える
+  // 追加のブロックに色を当てる。本文のブロックは元の要素を包みの中へ移し（中の項目・行の範囲が指す要素を保つ）、項目と行は要素そのものに色を当てる
   for (const range of outermostAdded) {
+    if (range.unit === "block") {
+      const wrapper = parseElement(
+        renderDiffBlock({ kind: "add", unit: "block", html: "" }),
+      );
+      range.element.replaceWith(wrapper);
+      wrapper.append(range.element);
+      range.element = wrapper;
+      continue;
+    }
     const colored = parseElement(
       renderDiffBlock({
         kind: "add",

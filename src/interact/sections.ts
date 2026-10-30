@@ -13,13 +13,34 @@ function nestedBodies(body: HTMLElement): HTMLElement[] {
   return [...body.querySelectorAll<HTMLElement>(".mdmark-section-body")];
 }
 
-/** 節の中身の見出しを返す。見出しと中身の間に差分を開くボタンなどが入っていても、手前の見出しをたどる */
+/** 差分のブロック（見出しを包む `div`） */
+const DIFF_BLOCK = ".mdmark-diff-block";
+
+/** 節の中身の見出しを返す。見出しと中身の間に差分を開くボタンなどが入っていても、手前の見出しをたどる。見出しが差分のブロックに包まれているときは、そのブロックの中の見出しを返す */
 function headingOf(body: HTMLElement): Element | null {
   let sibling = body.previousElementSibling;
   while (sibling && !sibling.classList.contains("mdmark-heading")) {
+    const wrapped = sibling.matches(DIFF_BLOCK)
+      ? sibling.querySelector(":scope > .mdmark-heading")
+      : null;
+    if (wrapped !== null) {
+      return wrapped;
+    }
     sibling = sibling.previousElementSibling;
   }
   return sibling;
+}
+
+/** 見出しの節の中身を返す。見出しが差分のブロックに包まれているときは、そのブロックの次の兄弟を見る */
+function bodyOf(heading: HTMLElement): HTMLElement | null {
+  const wrapper = heading.parentElement?.matches(DIFF_BLOCK)
+    ? heading.parentElement
+    : null;
+  const body = (wrapper ?? heading).nextElementSibling;
+  return body instanceof HTMLElement &&
+    body.classList.contains("mdmark-section-body")
+    ? body
+    : null;
 }
 
 /** 節の見出し 1 つを開閉のボタンにし、閉じた節の中身を隠す。外す関数を返す */
@@ -203,11 +224,8 @@ export function attachSections(options: {
     for (const heading of root.querySelectorAll<HTMLElement>(
       ".mdmark-heading",
     )) {
-      const body = heading.nextElementSibling;
-      if (
-        body instanceof HTMLElement &&
-        body.classList.contains("mdmark-section-body")
-      ) {
+      const body = bodyOf(heading);
+      if (body !== null) {
         cleanups.push(attachSection(heading, body));
       }
     }
