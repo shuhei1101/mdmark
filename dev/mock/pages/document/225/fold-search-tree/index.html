@@ -19,8 +19,8 @@
   <link rel="stylesheet" href="../../../../refs/65/assets/code-block.css">
   <link rel="stylesheet" href="../../../../refs/151/assets/table.css">
   <link rel="stylesheet" href="../../../../refs/151/assets/code-block.css">
-  <!-- この PR で追加する規則: 表の語の欄と条件のチップ・タブとステップの折りたたみ・ファイルツリー（#225 で共有するアセット） -->
-  <link rel="stylesheet" href="../../../../refs/225/assets/search-collapse.css">
+  <!-- この PR で追加する規則: 閉じた表・タブとステップの折りたたみ・ファイルツリー（#225 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/225/assets/collapse.css">
   <link rel="stylesheet" href="../../../../refs/225/assets/tree.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="../../../../refs/65/assets/code-block-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../../../refs/151/assets/table-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../../../refs/151/assets/code-block-print.css" media="print" data-print-styles>
-  <link rel="stylesheet" href="../../../../refs/225/assets/search-collapse-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/225/assets/collapse-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../../../refs/225/assets/tree-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../../../refs/16/assets/sample.js" defer></script>
@@ -44,9 +44,8 @@
   <script src="../../../../refs/19/assets/syntax.js" defer></script>
   <!-- ファイルツリー（code-block.js がコードブロックに帯を付ける前に、罫線の pre をツリーに置き換える） -->
   <script src="../../../../refs/225/assets/tree.js" defer></script>
-  <!-- 表の道具・語の欄と条件のチップ・コードブロックの帯・タブ -->
+  <!-- 表の道具・コードブロックの帯・タブ -->
   <script src="../../../../refs/151/assets/table.js" defer></script>
-  <script src="../../../../refs/225/assets/table-search.js" defer></script>
   <script src="../../../../refs/151/assets/code-block.js" defer></script>
   <script src="../../../../refs/151/assets/tabs.js" defer></script>
   <!-- 印刷の見え方（モックだけの仕組み） -->
@@ -75,10 +74,6 @@
       <a class="mock-bar-item" data-scene-axis="clipboard" data-scene-value="ok">コピーできる</a>
       <a class="mock-bar-item" data-scene-axis="clipboard" data-scene-value="fail">コピーできない</a>
     </div>
-    <div class="mock-bar-group" role="group" aria-label="語の条件のチップの名前">
-      <a class="mock-bar-item" data-scene-axis="chip" data-scene-value="search">チップ: 検索</a>
-      <a class="mock-bar-item" data-scene-axis="chip" data-scene-value="keyword">チップ: キーワード</a>
-    </div>
   </div>
 
   <!-- 使う側のページのトップバー（mdmark の外）: 画面の上端に留める -->
@@ -94,21 +89,11 @@
     <!-- 描く先の要素: mdmark が描いた文書 -->
     <article class="mdmark">
 <h1 id="開発の進め方">開発の進め方</h1>
-<p>作業の一覧・リリース・導入の手順・ファイルの置き場所をまとめた文書です。</p>
-
-<h2 id="作業の一覧">作業の一覧</h2>
-<p>表の指定に <code>+search</code> を書いた表です。語の欄と列の絞り込みの両方を満たす行だけを残します。</p>
-<!-- [data-mock-table]: table-build.js が samples.js の定義から表を組み立てる。[data-mock-search]: table-search.js が語の欄とチップを付ける -->
-<div data-mock-table="tasks" data-mock-search></div>
-<p>状態を「済」で絞り込み、語の欄に「描画」と入れた表です。</p>
-<!-- [data-mock-conditions]: 列の位置 → 当てておく条件。[data-mock-search-value]: 入れておく語 -->
-<div data-mock-table="tasks-chips" data-mock-search data-mock-search-value="描画" data-mock-conditions='{"2":["済"]}'></div>
-<p>語に当たる行が無い表です。</p>
-<div data-mock-table="tasks-empty" data-mock-search data-mock-search-value="翻訳"></div>
+<p>リリース・導入の手順・ファイルの置き場所をまとめた文書です。</p>
 
 <h2 id="リリース">リリース</h2>
 <p>表の指定に <code>closed</code> を書いた表と、<code>open</code> と <code>title=リリースの一覧</code> を書いた表です。</p>
-<!-- [data-mock-collapse]: table-collapse.js が道具の帯と表を details に入れる。[data-mock-title]: title= の値 -->
+<!-- [data-mock-table]: table-build.js が samples.js の定義から表を組み立てる。[data-mock-collapse]: table-collapse.js が道具の帯と表を details に入れる。[data-mock-title]: title= の値 -->
 <div data-mock-table="releases-closed" data-mock-collapse="closed"></div>
 <div data-mock-table="releases-open" data-mock-collapse="open" data-mock-title="リリースの一覧"></div>
 
