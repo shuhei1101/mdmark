@@ -1770,7 +1770,7 @@ functions:
       type: '{ rows: unknown[]; issues: CheckIssue[] }'
       description: Schema に合わない行を `null` にした行の並びと、`schema` のずれ（並びは行の順、行の中は ajv が返した順）
     refs:
-      - dev/設計書/外部ライブラリ/ajv.yaml#
+      - dev/設計書/外部ライブラリ/ajv#
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[エイリアスの点検]
     unit_tests:
       - name: test_validate_alias_rows
@@ -1818,7 +1818,7 @@ functions:
       type: 'Promise<{ aliases: MdmarkAlias[] | undefined; issues: CheckIssue[] }>'
       description: 作ったエイリアス（`env` を含まない）と、エイリアスのずれ
     callees:
-      - 索引と用語.ts#functions[buildAliases]
+      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[buildAliases]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[エイリアスの点検]
     unit_tests:

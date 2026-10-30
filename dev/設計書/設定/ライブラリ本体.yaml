@@ -463,7 +463,6 @@ settings:
     allowed: '`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`。Schema の型は文字列で、知らない名前は既定のテーマで描き、`mdmark check` が `unknown_color_theme` のずれにする'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.colorTheme]
-      - dev/設計書/デザイン方針#
     status: planned
     introduced:
       pr: 181
