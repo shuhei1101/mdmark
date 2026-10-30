@@ -6,21 +6,21 @@
 - Resolving version...
 ✔ Validated version: 1.141.0
 ✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0
-[main 2026-10-30T06:26:23.965Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
-[main 2026-10-30T06:26:24.363Z] StorageMainService: creating application shared storage
-[main 2026-10-30T06:26:24.858Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
-[main 2026-10-30T06:26:24.859Z] [shared storage] Initializing fallback application storage (path: in-memory)
-[34729:1030/152624.936584:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
-[main 2026-10-30T06:26:25.033Z] [shared storage] Fallback application storage initialized with 3 items
-[main 2026-10-30T06:26:25.034Z] update#setState disabled
-[main 2026-10-30T06:26:25.035Z] update#ctor - updates are disabled by the environment
+[main 2026-10-30T07:23:55.272Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[main 2026-10-30T07:23:55.396Z] StorageMainService: creating application shared storage
+[main 2026-10-30T07:23:55.640Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-10-30T07:23:55.640Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[93236:1030/162355.713653:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-10-30T07:23:55.751Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-10-30T07:23:55.751Z] update#setState disabled
+[main 2026-10-30T07:23:55.751Z] update#ctor - updates are disabled by the environment
 [RemoteAgentHost] Reconciling: desired=[], current=[]
 [AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-10-30T07:23:56.933Z] AgentHostProcessManager: agent host started
+[AgentHost:renderer] MessagePort acquired, creating client...
+Started local extension host with pid 93515.
 [AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
 [RemoteAgentHost] Reconciling: desired=[], current=[]
-[main 2026-10-30T06:26:28.169Z] AgentHostProcessManager: agent host started
-[AgentHost:renderer] MessagePort acquired, creating client...
-Started local extension host with pid 35097.
 Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode
 Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
 package.json (LOSES): agentSessionsWorkspace
@@ -159,20 +159,39 @@ DELTA: authIssuers
 Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
 Settings Sync: Account status changed from uninitialized to unavailable
 [CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
-[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
-[main 2026-10-30T06:26:34.800Z] [AgentHost:stderr] (node:35091) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+[main 2026-10-30T07:24:00.899Z] [AgentHost:stderr] (node:93445) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `exe --trace-deprecation ...` to show where the warning was created)
 
-[RemoteAgentHostProtocol] Sending initialize: address=local clientId=f3ff1466-c085-4a69-8f6f-c91a32dcd9e5 requestId=1
-[RemoteAgentHostProtocol] Initialized: address=local clientId=f3ff1466-c085-4a69-8f6f-c91a32dcd9e5 durationMs=8261
-[AgentHost:renderer] Protocol connection established; clientId=f3ff1466-c085-4a69-8f6f-c91a32dcd9e5
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=1eefb265-f194-49ba-b7fc-de2194c1eb21 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=1eefb265-f194-49ba-b7fc-de2194c1eb21 durationMs=3978
+[AgentHost:renderer] Protocol connection established; clientId=1eefb265-f194-49ba-b7fc-de2194c1eb21
 Unknown channel: agentHostClientByokLm
 Unknown channel: agentHostClientProxy
 Unknown channel: agentHostClientProxy
-Extension host (LocalProcess pid: 35097) is unresponsive.
-Extension host (LocalProcess pid: 35097) is responsive.
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
 Unknown channel: agentHostClientProxy
 
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
@@ -180,26 +199,7 @@ Unknown channel: agentHostClientProxy
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
   バージョンを決められない（前回のバージョンが空）
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
@@ -238,40 +238,23 @@ Unknown channel: agentHostClientProxy
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-(node:35097) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:93515) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
@@ -280,38 +263,54 @@ Unknown channel: agentHostClientProxy
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
-    ✔ test_error_when_version_undecidable (7045ms)
-Extension host (LocalProcess pid: 35097) is unresponsive.
-Extension host (LocalProcess pid: 35097) is responsive.
-    ✔ test_error_when_version_undecidable_on_export (3055ms)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+    ✔ test_error_when_version_undecidable (4803ms)
+    ✔ test_error_when_version_undecidable_on_export (3052ms)
   コマンドと通知の入口
     ✔ test_normal_when_command_titles
     ✔ test_normal_when_editor_title_button
     ✔ test_normal_when_settings_button
     ✔ test_normal_when_command_palette_conditions
   HTML に書き出す
-    ✔ test_normal (714ms)
-    ✔ test_normal_when_output_dir (796ms)
-    ✔ test_error_when_output_unwritable (256ms)
+    ✔ test_normal (359ms)
+    ✔ test_normal_when_output_dir (337ms)
+    ✔ test_error_when_output_unwritable (92ms)
   ブラウザで開く
-    ✔ test_normal (563ms)
-    ✔ test_error_when_output_unwritable (187ms)
-    ✔ test_normal_when_color_theme_selected (501ms)
+    ✔ test_normal (321ms)
+    ✔ test_error_when_output_unwritable (128ms)
+    ✔ test_normal_when_color_theme_selected (291ms)
   PDF に印刷
-    ✔ test_normal (3602ms)
-    ✔ test_normal_when_wait_limit_reached (926ms)
-    ✔ test_normal_when_color_theme_selected
-    ✔ test_error_when_output_unwritable (257ms)
+    ✔ test_normal (1130ms)
+    ✔ test_normal_when_wait_limit_reached (846ms)
+    ✔ test_normal_when_color_theme_selected (432ms)
+    ✔ test_error_when_output_unwritable (230ms)
   設定ファイルを開く
-    ✔ test_normal (232ms)
-    ✔ test_normal_when_template_created (71ms)
-    ✔ test_error_when_template_declined (48ms)
+    ✔ test_normal (226ms)
+    ✔ test_normal_when_template_created (59ms)
+    ✔ test_error_when_template_declined
   設定を開く
-    ✔ test_normal (787ms)
+    ✔ test_normal (777ms)
     ✔ test_normal_when_command_palette
   差分ビューの変更をプレビューで見る
-    ✔ test_normal_when_opened_from_diff_view (588ms)
-    ✔ test_normal_when_commit_diff (557ms)
+    ✔ test_normal_when_opened_from_diff_view (482ms)
 Error: spawn git ENOENT
 	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
 	at onErrorNT (node:internal/child_process:525:16)
@@ -319,7 +318,26 @@ Error: spawn git ENOENT
 Error: Unexpected SIGPIPE
 	at process.<anonymous> (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
 	at process.emit (node:events:514:28)
-    ✔ test_error_when_version_without_diff (540ms)
+    ✔ test_normal_when_commit_diff (450ms)
+    ✔ test_error_when_version_without_diff (385ms)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
 Error: spawn git ENOENT
 	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
 	at onErrorNT (node:internal/child_process:525:16)
@@ -358,87 +376,109 @@ stack trace: Error: spawn git ENOENT
 	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
 	at onErrorNT (node:internal/child_process:525:16)
 	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
-    ✔ test_normal_when_diff_modified_side_edited (1328ms)
-    ✔ test_normal_when_diff_preview (1619ms)
+    ✔ test_normal_when_diff_modified_side_edited (1351ms)
+An unknown error occurred. Please consult the log for more details.: EntryNotFound (FileSystemError): 
+	at kl.readFile (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:20642)
+    ✔ test_normal_when_diff_preview (1488ms)
   プレビューのリンクを開く
-    ✔ test_normal_when_external_link (347ms)
-    ✔ test_normal_when_markdown_link (264ms)
-    ✔ test_normal_when_anchor_link (622ms)
-    ✔ test_normal_when_side_toc_link (786ms)
-    ✔ test_error_when_link_target_missing (1095ms)
+    ✔ test_normal_when_external_link (343ms)
+    ✔ test_normal_when_markdown_link (313ms)
+    ✔ test_normal_when_anchor_link (618ms)
+    ✔ test_normal_when_side_toc_link (791ms)
+    ✔ test_error_when_link_target_missing (1024ms)
   プレビューを開く
-    ✔ test_normal (3467ms)
-    ✔ test_normal_when_same_column (299ms)
-    ✔ test_normal_when_already_open (381ms)
-    ✔ test_normal_when_version_pinned (4849ms)
-    ✔ test_normal_when_tags_unreachable (4759ms)
-    ✔ test_normal_when_theme_fixed (361ms)
-    ✔ test_normal_when_relative_image (398ms)
-    ✔ test_error_when_image_outside_workspace (822ms)
-    ✔ test_error_when_distribution_unreachable (200ms)
-    ✔ test_normal_when_loading_shown (9997ms)
-    ✔ test_error_when_version_missing (341ms)
-    ✔ test_error_when_not_markdown (533ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3477ms)
+    ✔ test_normal_when_same_column (168ms)
+    ✔ test_normal_when_already_open (326ms)
+    ✔ test_normal_when_version_pinned (4747ms)
+    ✔ test_normal_when_tags_unreachable (4693ms)
+    ✔ test_normal_when_theme_fixed (434ms)
+    ✔ test_normal_when_relative_image
+    ✔ test_error_when_image_outside_workspace (829ms)
+    ✔ test_error_when_distribution_unreachable (204ms)
+    ✔ test_normal_when_loading_shown (12205ms)
+    ✔ test_error_when_version_missing (222ms)
+    ✔ test_error_when_not_markdown (528ms)
   プレビューをリロードする
-    ✔ test_normal (479ms)
-    ✔ test_normal_when_from_command (473ms)
-    ✔ test_error_when_no_preview (586ms)
+    ✔ test_normal (365ms)
+    ✔ test_normal_when_from_command (359ms)
+    ✔ test_error_when_no_preview (526ms)
   プレビューを描き直す
-    ✔ test_normal (1375ms)
-    ✔ test_normal_when_live_update_off (1074ms)
-    ✔ test_normal_when_config_saved (578ms)
-    ✔ test_normal_when_config_missing (261ms)
-    ✔ test_normal_when_revealed (1434ms)
-    ✔ test_normal_when_relative_library (441ms)
-    ✔ test_error_when_config_unreadable (917ms)
-    ✔ test_normal_when_config_fixed (421ms)
-    ✔ test_normal_when_library_origin_added (528ms)
-    ✔ test_normal_when_color_theme_changed (654ms)
+    ✔ test_normal (1362ms)
+    ✔ test_normal_when_live_update_off (1021ms)
+    ✔ test_normal_when_config_saved (600ms)
+    ✔ test_normal_when_config_missing (238ms)
+    ✔ test_normal_when_revealed (1353ms)
+    ✔ test_normal_when_relative_library (340ms)
+    ✔ test_error_when_config_unreadable (900ms)
+    ✔ test_normal_when_config_fixed (398ms)
+    ✔ test_normal_when_library_origin_added (522ms)
+    ✔ test_normal_when_color_theme_changed (601ms)
   拡張機能の配布物を作る
-    ✔ test_normal (14656ms)
-    ✔ test_error_when_version_mismatch (418ms)
+    ✔ test_normal (9812ms)
+    ✔ test_error_when_version_mismatch (308ms)
   エディタとプレビューのスクロールを合わせる
-    ✔ test_normal (1535ms)
-    ✔ test_normal_when_from_preview (1118ms)
-    ✔ test_normal_when_sync_off (2894ms)
-    ✔ test_error_when_editor_hidden (934ms)
-  62 passing (2m)
-[main 2026-10-30T06:28:15.506Z] Extension host with pid 35097 exited with code: 0, signal: unknown.
+    ✔ test_normal (1483ms)
+    ✔ test_normal_when_from_preview (1091ms)
+    ✔ test_normal_when_sync_off (2851ms)
+    ✔ test_error_when_editor_hidden (854ms)
+  62 passing (1m)
+[main 2026-10-30T07:25:23.624Z] Extension host with pid 93515 exited with code: 0, signal: unknown.
 Exit code:   0
 - Resolving version...
 ✔ Validated version: 1.144.0
 ✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.144.0
-[main 2026-10-30T06:28:16.885Z] [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/node-compile-cache/main, active: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/node-compile-cache/main/v24.22.1-x64-60e4fe36)
-[main 2026-10-30T06:28:17.255Z] StorageMainService: creating application shared storage
-[main 2026-10-30T06:28:17.450Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
-[main 2026-10-30T06:28:17.450Z] [shared storage] Initializing fallback application storage (path: in-memory)
-[39047:1030/152817.476379:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
-[main 2026-10-30T06:28:17.511Z] [shared storage] Fallback application storage initialized with 3 items
-[main 2026-10-30T06:28:17.512Z] update#setState disabled
-[main 2026-10-30T06:28:17.512Z] update#ctor - updates are disabled by the environment
+[main 2026-10-30T07:25:24.755Z] [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/node-compile-cache/main, active: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/node-compile-cache/main/v24.22.1-x64-60e4fe36)
+[main 2026-10-30T07:25:25.058Z] StorageMainService: creating application shared storage
+[main 2026-10-30T07:25:25.233Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-10-30T07:25:25.233Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[96986:1030/162525.258080:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-10-30T07:25:25.298Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-10-30T07:25:25.298Z] update#setState disabled
+[main 2026-10-30T07:25:25.298Z] update#ctor - updates are disabled by the environment
 Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
 [RemoteAgentHost] Reconciling: desired=[], current=[]
 [AgentHost:renderer] Acquiring MessagePort to agent host...
-[main 2026-10-30T06:28:18.490Z] AgentHostProcessManager: agent host started
+[main 2026-10-30T07:25:26.381Z] AgentHostProcessManager: agent host started
 [AgentHost:renderer] MessagePort acquired, creating client...
-Started local extension host with pid 39321.
+Started local extension host with pid 97272.
 [AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
 [RemoteAgentHost] Reconciling: desired=[], current=[]
 Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview/vscode
 Settings Sync: Account status changed from uninitialized to unavailable
 [CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
 [AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
-[main 2026-10-30T06:28:26.878Z] [AgentHost:stderr] (node:39264) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+[main 2026-10-30T07:25:32.177Z] [AgentHost:stderr] (node:97212) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `exe --trace-deprecation ...` to show where the warning was created)
 
-[RemoteAgentHostProtocol] Sending initialize: address=local clientId=83cc0701-e2ac-41c0-ba00-c5adcc072005 requestId=1
-[RemoteAgentHostProtocol] Initialized: address=local clientId=83cc0701-e2ac-41c0-ba00-c5adcc072005 durationMs=8401
-[AgentHost:renderer] Protocol connection established; clientId=83cc0701-e2ac-41c0-ba00-c5adcc072005
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=e84ddd67-dc5c-471b-98c2-c3bf30468fe1 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=e84ddd67-dc5c-471b-98c2-c3bf30468fe1 durationMs=5809
+[AgentHost:renderer] Protocol connection established; clientId=e84ddd67-dc5c-471b-98c2-c3bf30468fe1
 Unknown channel: agentHostClientByokLm
 Unknown channel: agentHostClientProxy
 Unknown channel: agentHostClientProxy
 
-(node:39321) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:97272) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `exe --trace-deprecation ...` to show where the warning was created)
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
 [AgentHost] No signed-in session resolved for resource: https://api.github.com
@@ -606,45 +646,45 @@ Unknown channel: agentHostClientProxy
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 [AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
 Unknown channel: agentHostClientProxy
-    ✔ test_error_when_version_undecidable (4933ms)
-    ✔ test_error_when_version_undecidable_on_export (3050ms)
+    ✔ test_error_when_version_undecidable (4460ms)
+    ✔ test_error_when_version_undecidable_on_export (3047ms)
   コマンドと通知の入口
     ✔ test_normal_when_command_titles
     ✔ test_normal_when_editor_title_button
     ✔ test_normal_when_settings_button
     ✔ test_normal_when_command_palette_conditions
   HTML に書き出す
-    ✔ test_normal (428ms)
-    ✔ test_normal_when_output_dir (355ms)
-    ✔ test_error_when_output_unwritable (104ms)
+    ✔ test_normal (451ms)
+    ✔ test_normal_when_output_dir (379ms)
+    ✔ test_error_when_output_unwritable (118ms)
   ブラウザで開く
-    ✔ test_normal (375ms)
-    ✔ test_error_when_output_unwritable (145ms)
-    ✔ test_normal_when_color_theme_selected (377ms)
+    ✔ test_normal (315ms)
+    ✔ test_error_when_output_unwritable (136ms)
+    ✔ test_normal_when_color_theme_selected (300ms)
   PDF に印刷
-    ✔ test_normal (3428ms)
-    ✔ test_normal_when_wait_limit_reached (952ms)
-    ✔ test_normal_when_color_theme_selected (509ms)
-    ✔ test_error_when_output_unwritable (261ms)
+    ✔ test_normal (3396ms)
+    ✔ test_normal_when_wait_limit_reached (843ms)
+    ✔ test_normal_when_color_theme_selected (442ms)
+    ✔ test_error_when_output_unwritable (264ms)
   設定ファイルを開く
-    ✔ test_normal (204ms)
-    ✔ test_normal_when_template_created (74ms)
-    ✔ test_error_when_template_declined (45ms)
+    ✔ test_normal (270ms)
+    ✔ test_normal_when_template_created (86ms)
+    ✔ test_error_when_template_declined (47ms)
   設定を開く
-    ✔ test_normal (778ms)
+    ✔ test_normal (736ms)
     ✔ test_normal_when_command_palette
   差分ビューの変更をプレビューで見る
-    ✔ test_normal_when_opened_from_diff_view (518ms)
-    ✔ test_normal_when_commit_diff (501ms)
-    ✔ test_error_when_version_without_diff (379ms)
-    ✔ test_normal_when_diff_modified_side_edited (1359ms)
-    ✔ test_normal_when_diff_preview (1509ms)
+    ✔ test_normal_when_opened_from_diff_view (522ms)
+    ✔ test_normal_when_commit_diff (422ms)
+    ✔ test_error_when_version_without_diff (387ms)
+    ✔ test_normal_when_diff_modified_side_edited (1269ms)
+    ✔ test_normal_when_diff_preview (1459ms)
   プレビューのリンクを開く
-    ✔ test_normal_when_external_link (279ms)
-    ✔ test_normal_when_markdown_link (248ms)
-    ✔ test_normal_when_anchor_link (611ms)
-    ✔ test_normal_when_side_toc_link (703ms)
-    ✔ test_error_when_link_target_missing
+    ✔ test_normal_when_external_link (337ms)
+    ✔ test_normal_when_markdown_link (287ms)
+    ✔ test_normal_when_anchor_link (719ms)
+    ✔ test_normal_when_side_toc_link (756ms)
+    ✔ test_error_when_link_target_missing (981ms)
   プレビューを開く
 rejected promise not handled within 1 second: spawn git ENOENT {
   "gitErrorCode": "NotAGitRepository"
@@ -666,42 +706,42 @@ spawn git ENOENT: Error: spawn git ENOENT
 	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
 	at onErrorNT (node:internal/child_process:554:16)
 	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
-    ✔ test_normal (3461ms)
-    ✔ test_normal_when_same_column (227ms)
-    ✔ test_normal_when_already_open (321ms)
-    ✔ test_normal_when_version_pinned (4764ms)
-    ✔ test_normal_when_tags_unreachable (4737ms)
-    ✔ test_normal_when_theme_fixed (348ms)
-    ✔ test_normal_when_relative_image (319ms)
-    ✔ test_error_when_image_outside_workspace (869ms)
-    ✔ test_error_when_distribution_unreachable (236ms)
-    ✔ test_normal_when_loading_shown (12208ms)
-    ✔ test_error_when_version_missing (262ms)
-    ✔ test_error_when_not_markdown (527ms)
+    ✔ test_normal (3481ms)
+    ✔ test_normal_when_same_column (322ms)
+    ✔ test_normal_when_already_open (324ms)
+    ✔ test_normal_when_version_pinned (2342ms)
+    ✔ test_normal_when_tags_unreachable (4625ms)
+    ✔ test_normal_when_theme_fixed (350ms)
+    ✔ test_normal_when_relative_image (320ms)
+    ✔ test_error_when_image_outside_workspace (885ms)
+    ✔ test_error_when_distribution_unreachable (177ms)
+    ✔ test_normal_when_loading_shown (12277ms)
+    ✔ test_error_when_version_missing (213ms)
+    ✔ test_error_when_not_markdown (528ms)
   プレビューをリロードする
-    ✔ test_normal
-    ✔ test_normal_when_from_command (302ms)
-    ✔ test_error_when_no_preview (530ms)
+    ✔ test_normal (342ms)
+    ✔ test_normal_when_from_command (591ms)
+    ✔ test_error_when_no_preview (529ms)
   プレビューを描き直す
-    ✔ test_normal (1358ms)
-    ✔ test_normal_when_live_update_off (960ms)
-    ✔ test_normal_when_config_saved (503ms)
-    ✔ test_normal_when_config_missing (242ms)
-    ✔ test_normal_when_revealed (1379ms)
-    ✔ test_normal_when_relative_library (429ms)
-    ✔ test_error_when_config_unreadable (968ms)
-    ✔ test_normal_when_config_fixed (413ms)
-    ✔ test_normal_when_library_origin_added (543ms)
-    ✔ test_normal_when_color_theme_changed (640ms)
+    ✔ test_normal (1310ms)
+    ✔ test_normal_when_live_update_off (1049ms)
+    ✔ test_normal_when_config_saved (594ms)
+    ✔ test_normal_when_config_missing (244ms)
+    ✔ test_normal_when_revealed (1398ms)
+    ✔ test_normal_when_relative_library (349ms)
+    ✔ test_error_when_config_unreadable
+    ✔ test_normal_when_config_fixed (405ms)
+    ✔ test_normal_when_library_origin_added (524ms)
+    ✔ test_normal_when_color_theme_changed (580ms)
   拡張機能の配布物を作る
-    ✔ test_normal (14041ms)
-    ✔ test_error_when_version_mismatch (334ms)
+    ✔ test_normal (12715ms)
+    ✔ test_error_when_version_mismatch (387ms)
   エディタとプレビューのスクロールを合わせる
-    ✔ test_normal (1465ms)
-    ✔ test_normal_when_from_preview (1093ms)
-    ✔ test_normal_when_sync_off (555ms)
-    ✔ test_error_when_editor_hidden (931ms)
+    ✔ test_normal (1507ms)
+    ✔ test_normal_when_from_preview (1333ms)
+    ✔ test_normal_when_sync_off (3236ms)
+    ✔ test_error_when_editor_hidden (928ms)
   62 passing (1m)
-[main 2026-10-30T06:29:50.003Z] Extension host with pid 39321 exited with code: 0, signal: unknown.
+[main 2026-10-30T07:26:55.716Z] Extension host with pid 97272 exited with code: 0, signal: unknown.
 Exit code:   0
 exit=0
