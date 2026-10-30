@@ -1391,3 +1391,61 @@ test("test_attach_tables_when_nested_table", async () => {
   // 検証: 中の表の囲みに親の表のドロワーが置かれない
   expect(nested.querySelector(`[id="${controls}"]`)).toBeNull();
 });
+
+// 行の詳細の中の表の並べ替えのボタンを押しても、親の表を並べ替えない（正常系）
+test("test_attach_tables_when_nested_table_sorted", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { attachSections } = await import(
+    "../../../../src/interact/sections.ts"
+  );
+  const { root } = createRoot(
+    [
+      "<!-- table: data -filter -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "| b | 2 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- row-detail: 1 -->",
+      "",
+      "<!-- table: data -filter -->",
+      "",
+      "| 引数 | 値 |",
+      "| --- | --- |",
+      "| y | 1 |",
+      "| x | 2 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- /row-detail -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  detachers.push(attachTables(root));
+  const parent = root.querySelector<HTMLElement>(".mdmark-table");
+  const nested = parent?.querySelector<HTMLElement>(".mdmark-table");
+  const parentTable = parent?.querySelector("table");
+  const nestedHead = nested?.querySelector("th");
+  if (!parentTable || !nested || !nestedHead) {
+    throw new Error("親の表か中の表が無い");
+  }
+  // 実行: 中の表の 1 列目の並べ替えのボタンを押す
+  findButtonLike(nestedHead, "button.mdmark-sort").click();
+  // 検証: 中の表だけが昇順になり、親の表の行の並びと見出しは変わらない
+  expect(nestedHead.getAttribute("aria-sort")).toBe("ascending");
+  const parentRows = [...(parentTable.tBodies[0]?.rows ?? [])].filter(
+    (row) => !row.classList.contains("mdmark-row-detail"),
+  );
+  expect(parentRows.map((row) => row.cells[0]?.textContent)).toEqual([
+    "a",
+    "b",
+  ]);
+  for (const cell of parentTable.tHead?.rows[0]?.cells ?? []) {
+    expect(cell.hasAttribute("aria-sort")).toBe(false);
+  }
+});
