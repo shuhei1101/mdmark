@@ -371,6 +371,32 @@ test("test_color_diff_blocks_when_section_deleted", async () => {
   expect(colored.querySelector("#section-一")?.nextElementSibling).toBe(del);
 });
 
+// 見出し行を変えて行を消した表でも、消した行を差し込む（正常系）
+test("test_color_diff_blocks_when_table_header_changed", async () => {
+  // 準備
+  const table = (header: string, rows: string[]) =>
+    [header, "| --- | --- |", ...rows, ""].join("\n");
+  const before = table("| 名前 | 値 |", [
+    "| a | 1 |",
+    "| b | 2 |",
+    "| c | 3 |",
+  ]);
+  const after = table("| 名前 | 数 |", ["| a | 1 |", "| c | 3 |"]);
+  // 実行
+  const colored = await colorBlocks({ before, after });
+  // 検証: 表が追加のブロックに包まれ、行 a の後ろに行 b が削除の行である
+  expect(
+    colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"] table'),
+  ).toHaveLength(1);
+  const rows = [...colored.querySelectorAll("tbody > tr")];
+  expect(rows.map((row) => row.getAttribute("data-kind"))).toEqual([
+    null,
+    "del",
+    null,
+  ]);
+  expect(rows[1]?.textContent).toContain("b");
+});
+
 // 同じ本文なら何も変えない（正常系）
 test("test_color_diff_blocks_when_same", async () => {
   // 準備

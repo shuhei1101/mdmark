@@ -4,6 +4,9 @@ import { createRoot, removeRoots } from "../../helpers/dom.ts";
 /** 節の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSections = () => import("../../../../src/interact/sections.ts");
 
+/** 差分のブロックの処理を読み込む（見出しを包む `div` を作る） */
+const loadDiffBlocks = () => import("../../../../src/parts/diff-blocks.ts");
+
 const detachers: Array<() => void> = [];
 
 /** 節の ID の中身の要素を返す */
@@ -253,6 +256,40 @@ test("test_attach_sections_when_h1", async () => {
   );
   expect(body.getAttribute("hidden")).toBe("until-found");
   expect(body.contains(root.querySelector("h2"))).toBe(true);
+});
+
+// 差分のブロックに包まれた見出しの節も開閉する（正常系）
+test("test_attach_sections_when_diff_block", async () => {
+  // 準備: 見出しを追加のブロックの `div` で包む
+  const { attachSections } = await loadSections();
+  const { renderDiffBlock } = await loadDiffBlocks();
+  const { root } = createRoot("## 新しい節\n\n段落\n");
+  const heading = root.querySelector("h2");
+  if (heading === null) {
+    throw new Error("見出しが描かれていない");
+  }
+  const template = document.createElement("template");
+  template.innerHTML = renderDiffBlock({
+    kind: "add",
+    unit: "block",
+    html: heading.outerHTML,
+  });
+  const wrapper = template.content.firstElementChild;
+  if (wrapper === null) {
+    throw new Error("包みが作れていない");
+  }
+  heading.replaceWith(wrapper);
+  // 実行
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  // 検証
+  expect(wrapper.querySelector("h2 .mdmark-section-toggle")).not.toBeNull();
+  sectionToggle(root, "新しい節").click();
+  expect(sectionToggle(root, "新しい節").getAttribute("aria-expanded")).toBe(
+    "false",
+  );
+  const body = wrapper.nextElementSibling;
+  expect(body?.classList.contains("mdmark-section-body")).toBe(true);
+  expect(body?.getAttribute("hidden")).toBe("until-found");
 });
 
 // Shift を押しながら押すと、その節と入れ子の節を同じ状態にし、外の節は変えない（正常系）
