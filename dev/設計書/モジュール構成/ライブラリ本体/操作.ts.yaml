@@ -380,7 +380,7 @@ functions:
     container: src/interact/sections.ts
     kind: 関数
     scope: internal
-    summary: '`sections` がオンなら節の見出し（h1〜h4）を開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。節の開閉の関数を `sectionSetters` に控える。Shift を押しながら開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンで Shift を押しながら Enter・Space を押したとき（`keydown` の `shiftKey`。既定の動きを止め、`click` を起こさない）は、その節を今と逆の状態にし、中の入れ子の全ての節（中身の中の `mdmark-section-body`）を同じ状態にする。URL の `#ID`（`rowIdFromHash` で読む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素があるとき（付けたときと `hashchange`）は `revealTarget` を呼び、`beforematch` でその節を開く'
+    summary: '`sections` がオンなら節の見出し（h1〜h4）を開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。見出しが差分のブロック（`div.mdmark-diff-block`）の中にあるときは、そのブロックの次の兄弟の `mdmark-section-body` を節の中身にする。節の開閉の関数を `sectionSetters` に控える。Shift を押しながら開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンで Shift を押しながら Enter・Space を押したとき（`keydown` の `shiftKey`。既定の動きを止め、`click` を起こさない）は、その節を今と逆の状態にし、中の入れ子の全ての節（中身の中の `mdmark-section-body`）を同じ状態にする。URL の `#ID`（`rowIdFromHash` で読む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素があるとき（付けたときと `hashchange`）は `revealTarget` を呼び、`beforematch` でその節を開く'
     args:
       - name: options
         type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean }'
@@ -456,6 +456,12 @@ functions:
         condition: 節を付けて外し、`foldAllSections` で閉じる
         mock: なし
         expected: 中身が `hidden` を持たないまま
+      - name: test_attach_sections_when_diff_block
+        case: 正常
+        summary: 差分のブロックに包まれた見出しの節も開閉する
+        condition: '`## 新しい節`・段落を描き、`h2` を `renderDiffBlock({ kind: "add", unit: "block" })` の `div` で包んだ要素に付け、`新しい節` の開閉のボタンを押す'
+        mock: なし
+        expected: '`h2` が `.mdmark-section-toggle` を持ち、押した後にボタンが `aria-expanded="false"` で、`div` の次の `mdmark-section-body` が `hidden="until-found"`'
     refs:
       - '#functions[rowIdFromHash]'
   - name: visibleText
