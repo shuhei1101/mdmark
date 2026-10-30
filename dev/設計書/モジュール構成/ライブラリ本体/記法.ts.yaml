@@ -306,7 +306,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も、表の印の指定を当てず `default` の部品『表』の囲みに入れる。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -355,6 +355,18 @@ functions:
         condition: '`<!-- table: data closed -->` 〜 `<!-- /table -->` の 3 行の表と、`<!-- table: data open title=リリースの一覧 -->` 〜 `<!-- /table -->` の 2 行の表'
         mock: なし
         expected: 1 つ目が `open` を持たない `<details class="mdmark-table-details">` と `<summary>表（3 行）</summary>`、2 つ目が `<details class="mdmark-table-details" open>` と `<summary>リリースの一覧</summary>`
+      - name: test_decorate_tables_when_row_detail_has_table
+        case: 正常
+        summary: 行の詳細の中に表を置いても、親の表の行を全て親の表の囲みに残し、列名・行の数・行へのリンク・集計を親の表の行だけで付ける
+        condition: '`<!-- table: data closed +rowlink +total total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`数量`、名前 `Todo`・`Done`、数量 `1`・`2`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の表（列 `引数`・`値`、1 行 `status`・`todo`）'
+        mock: なし
+        expected: 親の表の `<table>`〜`</table>` の中に `Done` の行と詳細の行があり、親の囲みの `</div>` の後ろに `<tr` が無い。`Done` の行のセルの `data-label` が `名前`・`数量`。親の囲みが `<summary>表（2 行）</summary>` を持ち、親の行の `id` が `todo`・`done`。詳細の行の中の表が `data-kind="default"` の囲みに入り、セルの `data-label` が `引数`・`値` で、行に `id` が無い。数として読めない値の警告が無い
+      - name: test_decorate_tables_when_row_detail_has_table_without_mark
+        case: 正常
+        summary: 表の印の外の表でも、行の詳細の中の表の後ろの親の行を親の表の囲みに残す
+        condition: '表の印の無い表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の表（列 `引数`・`値`、1 行）'
+        mock: なし
+        expected: 親の表が `data-kind="default"` の囲みに入り、`Done` の行が親の表の `</table>` の前にあり、セルの `data-label` が `名前`・`説明`
     refs:
       - '#functions[readTableSpec]'
       - '#functions[rowIdOf]'
