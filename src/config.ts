@@ -10,6 +10,8 @@ export type MdmarkConfig = {
   syntax?: { url?: string };
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
+  /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
+  colorTheme?: string;
 };
 
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
@@ -17,6 +19,13 @@ export type TooltipPlacement = "top" | "bottom";
 
 /** 右側の目次の出し方。`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する */
 export type SideTocMode = "hover" | "fixed";
+
+/** mdmark に入れた配色のテーマの名前 */
+export type ColorTheme =
+  | "dev-swiss"
+  | "theme-paper"
+  | "theme-slate"
+  | "theme-contrast";
 
 /** 対応表の行: 印 1 つのモジュールの URL と、図の印か */
 export type LibraryEntry = {
@@ -38,7 +47,20 @@ export type ResolvedConfig = {
   syntax: { url: string };
   /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
   sideToc: { mode: SideTocMode };
+  /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
+  colorTheme: ColorTheme;
 };
+
+/** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
+export const COLOR_THEMES: readonly ColorTheme[] = [
+  "dev-swiss",
+  "theme-paper",
+  "theme-slate",
+  "theme-contrast",
+];
+
+/** 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま */
+export const DEFAULT_COLOR_THEME: ColorTheme = "dev-swiss";
 
 /** この版が知っている機能とその既定 */
 export const DEFAULT_FEATURES: Record<string, boolean> = {
@@ -116,11 +138,16 @@ export function resolveConfig(options: {
   // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
   const mode: SideTocMode =
     config?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
+  // テーマは、COLOR_THEMES にある名前だけを受け、他の値は既定にする
+  const colorTheme =
+    COLOR_THEMES.find((name) => name === config?.colorTheme) ??
+    DEFAULT_COLOR_THEME;
   return {
     features,
     libraries,
     tooltips: { placement },
     syntax,
     sideToc: { mode },
+    colorTheme,
   };
 }

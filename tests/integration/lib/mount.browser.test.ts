@@ -3637,6 +3637,405 @@ test("test_error_when_doc_id_missing", async () => {
   expect(source.revisionsCalls).toEqual([]);
 });
 
+// `diffMode: "open"` で、押される前から一番新しい 2 つのリビジョンの差分を出す（正常系）
+test("test_normal_when_diff_opened_on_mount", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = createElement();
+  const markdown = "# ガイド\n\n本文の段落。\n";
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "open",
+  });
+  await waitForDiffLines(el);
+  // 検証: 押さないうちに取り出し元が呼ばれ、開いた状態で差分が出ている
+  expect(source.revisionsCalls).toEqual(["guide"]);
+  expect(source.contentCalls).toHaveLength(2);
+  expect(source.contentCalls).toContainEqual({
+    docId: "guide",
+    revisionId: "r2",
+  });
+  expect(source.contentCalls).toContainEqual({
+    docId: "guide",
+    revisionId: "r3",
+  });
+  expect(diffToggle(el).getAttribute("aria-expanded")).toBe("true");
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(true);
+  // 実行: 描き直す
+  handle.update(markdown);
+  // 検証: 開いたままで、取り出し元をもう 1 回呼ぶ
+  await vi.waitFor(() => {
+    expect(source.revisionsCalls).toEqual(["guide", "guide"]);
+  });
+  await waitForDiffLines(el);
+  expect(diffToggle(el).getAttribute("aria-expanded")).toBe("true");
+  // 実行: 押すと閉じる
+  diffToggle(el).click();
+  // 検証: 差分の場所が隠れ、本文と右側の目次が戻る
+  expect(find(el, ".mdmark-diff").hasAttribute("hidden")).toBe(true);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(false);
+});
+
+// 描いた文書のブロックを色分けして試すリビジョンの本文。`BLOCKS_BEFORE` から `BLOCKS_AFTER` で、段落 A の語を 1 つ書き換え、表の後に段落 B を足し、段落 C を消し、段落 D を共通する語の無い段落 E に入れ替える
+const BLOCKS_BEFORE = [
+  "# ガイド",
+  "",
+  "差分を確かめる手順です。",
+  "",
+  "## 手順",
+  "",
+  "古い注意書きを消します。",
+  "",
+  "配布物が届くまで数分かかります。",
+  "",
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| 行一 | 1 |",
+  "",
+].join("\n");
+const BLOCKS_AFTER = [
+  "# ガイド",
+  "",
+  "変更を確かめる手順です。",
+  "",
+  "## 手順",
+  "",
+  "表の列を増やす案をまとめました。",
+  "",
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| 行一 | 1 |",
+  "",
+  "最後に確認する段落です。",
+  "",
+].join("\n");
+
+/** 新しい順に `r2`・`r1` を返し、リビジョンごとの本文を返す取り出し元を作る */
+function createBlocksSource(
+  contents: Record<string, string>,
+  override: Partial<RecordingSource> = {},
+): RecordingSource {
+  return createDiffSource(
+    override,
+    [DIFF_REVISIONS[1], DIFF_REVISIONS[2]].map((revision, index) => ({
+      ...revision,
+      id: `r${2 - index}`,
+    })),
+    contents,
+  );
+}
+
+/** 追加の色で包まれたブロック */
+function addedBlocks(el: HTMLElement): HTMLElement[] {
+  return [
+    ...el.querySelectorAll<HTMLElement>(
+      'div.mdmark-diff-block[data-kind="add"]',
+    ),
+  ];
+}
+
+/** 要素の最初の段落の文字 */
+function firstParagraph(el: Element): string {
+  return el.querySelector("p")?.textContent ?? "";
+}
+
+/** 要素の中の読み上げにだけ出す文字と、`aria-hidden` の記号 */
+function marksOf(el: Element): { name: string; sign: string } {
+  return {
+    name: find(el, ".mdmark-visually-hidden").textContent ?? "",
+    sign: find(el, '[aria-hidden="true"]').textContent ?? "",
+  };
+}
+
+// `diffMode: "blocks"` で、後のリビジョンを描いた文書のブロックを追加と削除の色で塗り分ける（正常系）
+test("test_normal_when_diff_blocks", async () => {
+  // 準備
+  const source = createBlocksSource({ r1: BLOCKS_BEFORE, r2: BLOCKS_AFTER });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: BLOCKS_AFTER,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "blocks",
+  });
+  await vi.waitFor(() => {
+    expect(addedBlocks(el).length).toBeGreaterThan(0);
+  });
+  // 検証: 「変更を見る」と差分の場所とミニマップの帯が無い
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+  expect(el.querySelector(".mdmark-diff")).toBeNull();
+  expect(minimapBands()).toHaveLength(0);
+  expect(source.revisionsCalls).toEqual(["guide"]);
+  // 検証: 段落 A・E・B が追加の色のブロックに包まれ、先頭に読み上げの名前と記号を持つ
+  const adds = addedBlocks(el);
+  expect(adds.map(firstParagraph)).toEqual([
+    "変更を確かめる手順です。",
+    "表の列を増やす案をまとめました。",
+    "最後に確認する段落です。",
+  ]);
+  for (const add of adds) {
+    expect(marksOf(add)).toEqual({ name: "追加:", sign: "+" });
+  }
+  // 検証: 段落 C が h2 の節の中身の先頭、段落 D が段落 E の直前に、削除の色のブロックで入る
+  const dels = [
+    ...el.querySelectorAll<HTMLElement>(
+      'div.mdmark-diff-block[data-kind="del"]',
+    ),
+  ];
+  expect(dels.map(firstParagraph)).toEqual([
+    "古い注意書きを消します。",
+    "配布物が届くまで数分かかります。",
+  ]);
+  for (const del of dels) {
+    expect(marksOf(del)).toEqual({ name: "削除:", sign: "−" });
+    expect(del.querySelector("[data-source-line], [id]")).toBeNull();
+  }
+  expect(find(el, '[id="section-手順"]').firstElementChild).toBe(dels[0]);
+  expect(adds[1]?.previousElementSibling).toBe(dels[1]);
+  // 検証: 段落 A の削除のブロックは無い
+  expect(dels.some((del) => del.textContent?.includes("差分を確かめる"))).toBe(
+    false,
+  );
+  // 検証: h1・h2・表・節の中身は包まれず、`data-source-line` は `opts.markdown` の行番号のまま
+  for (const selector of [
+    "h1",
+    "h2",
+    ".mdmark-table",
+    ".mdmark-section-body",
+  ]) {
+    expect(find(el, selector).closest(".mdmark-diff-block")).toBeNull();
+  }
+  expect(
+    adds.map((add) => find(add, "p").getAttribute("data-source-line")),
+  ).toEqual(["2", "6", "12"]);
+  // 検証: 背景色の計算値が差分の色の変数の値
+  expect(getComputedStyle(adds[0] as HTMLElement).backgroundColor).toBe(
+    resolvedColor(el, "--mdmark-color-diff-add-bg"),
+  );
+  expect(getComputedStyle(dels[0] as HTMLElement).backgroundColor).toBe(
+    resolvedColor(el, "--mdmark-color-diff-del-bg"),
+  );
+});
+
+// リストと表は項目・行の単位で色を当て、削除した項目は番号を使わない（正常系）
+test("test_normal_when_diff_blocks_list_and_table", async () => {
+  // 準備: 番号付きリストの番号は全て 1 にして、行の違いを項目の文字だけにする
+  const table = (cell: string) =>
+    [
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| 行一 | 1 |",
+      `| 行二 | ${cell} |`,
+      "| 行三 | 3 |",
+    ].join("\n");
+  const before = `# ガイド\n\n${["甲", "乙", "丙", "丁"].map((item) => `1. ${item}`).join("\n")}\n\n${table("古い手順を消す")}\n`;
+  const after = `# ガイド\n\n${["甲", "新", "乙", "丁"].map((item) => `1. ${item}`).join("\n")}\n\n${table("表を増やす案")}\n`;
+  const source = createBlocksSource({ r1: before, r2: after });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: after,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "blocks",
+  });
+  await vi.waitFor(() => {
+    expect(el.querySelector("li.mdmark-diff-block")).not.toBeNull();
+  });
+  // 検証: リストと表は包まれず、足した項目と消した項目が `li` に class と `data-kind` を持つ
+  const list = find(el, "ol");
+  const grid = find(el, "table");
+  expect(list.closest(".mdmark-diff-block")).toBeNull();
+  expect(grid.closest(".mdmark-diff-block")).toBeNull();
+  const items = [...list.querySelectorAll(":scope > li")];
+  expect(items.map((item) => item.getAttribute("data-kind"))).toEqual([
+    null,
+    "add",
+    null,
+    "del",
+    null,
+  ]);
+  for (const item of [items[1], items[3]]) {
+    expect(item?.classList.contains("mdmark-diff-block")).toBe(true);
+  }
+  // 検証: 消した項目は `r1` の 2 番目の項目（乙）の後ろにあり、番号を出さない
+  expect(items[2]?.textContent).toContain("乙");
+  expect(items[3]?.textContent).toContain("丙");
+  const deleted = getComputedStyle(items[3] as Element);
+  expect(deleted.listStyleType).toBe("none");
+  expect(deleted.counterIncrement).toBe("list-item 0");
+  // 検証: 消した項目の後ろの項目の番号の表示が `r2` の文書と同じ（4.）。番号は `::marker` を読めないため、
+  // 番号を進める項目（`counter-increment` が `list-item 0` でない項目）を先頭から数えて求める
+  expect(items[4]?.textContent).toContain("丁");
+  const displayedNumber = items
+    .slice(0, 5)
+    .filter(
+      (item) => getComputedStyle(item).counterIncrement !== "list-item 0",
+    ).length;
+  expect(displayedNumber).toBe(4);
+  // 検証: 表の 2 行目は削除の行と追加の行がこの順で、1 つ目のセルの先頭に名前と記号を持つ
+  const rows = [...grid.querySelectorAll("tbody > tr")];
+  expect(rows.map((row) => row.getAttribute("data-kind"))).toEqual([
+    null,
+    "del",
+    "add",
+    null,
+  ]);
+  expect(marksOf(find(rows[1] as Element, "td"))).toEqual({
+    name: "削除:",
+    sign: "−",
+  });
+  expect(marksOf(find(rows[2] as Element, "td"))).toEqual({
+    name: "追加:",
+    sign: "+",
+  });
+  // 検証: 変えていない項目と行は色を当てない
+  for (const unchanged of [items[0], items[2], items[4], rows[0], rows[3]]) {
+    expect(unchanged?.classList.contains("mdmark-diff-block")).toBe(false);
+  }
+});
+
+// `blocks` で `update` すると取り出し元を呼び直し、待つ間にもう一度差し替えたら古い結果を描かない（正常系）
+test("test_normal_when_diff_blocks_updated", async () => {
+  // 準備: `update` の回数で答えを変える取り出し元
+  let updates = 0;
+  const paragraphF = "\n段落 F を足した。\n";
+  const paragraphG = "\n段落 G を足した。\n";
+  const source = createBlocksSource(
+    { r1: BLOCKS_BEFORE, r2: BLOCKS_AFTER },
+    {
+      content: async ({ revisionId }) => {
+        if (revisionId === "r1") {
+          return BLOCKS_BEFORE;
+        }
+        if (updates === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return `${BLOCKS_AFTER}${paragraphF}`;
+        }
+        return updates === 2
+          ? `${BLOCKS_AFTER}${paragraphF}${paragraphG}`
+          : BLOCKS_AFTER;
+      },
+    },
+  );
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: BLOCKS_AFTER,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "blocks",
+  });
+  await vi.waitFor(() => {
+    expect(addedBlocks(el)).toHaveLength(3);
+  });
+  const kinds = (): (string | null)[] =>
+    [...el.querySelectorAll(".mdmark-diff-block")].map((block) =>
+      block.getAttribute("data-kind"),
+    );
+  const initial = kinds();
+  // 実行: 1 回目の `update` の結果が届く前に、もう一度 `update` する
+  updates = 1;
+  handle.update(`${BLOCKS_AFTER}${paragraphF}`);
+  updates = 2;
+  handle.update(`${BLOCKS_AFTER}${paragraphF}${paragraphG}`);
+  // 検証: 2 回目の結果で、段落 F と G が追加のブロックで出る
+  await vi.waitFor(() => {
+    expect(addedBlocks(el).map(firstParagraph)).toEqual([
+      "変更を確かめる手順です。",
+      "表の列を増やす案をまとめました。",
+      "最後に確認する段落です。",
+      "段落 F を足した。",
+      "段落 G を足した。",
+    ]);
+  });
+  // 検証: 遅れて届いた 1 回目の結果で描き直されない
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  expect(addedBlocks(el).map(firstParagraph).slice(-2)).toEqual([
+    "段落 F を足した。",
+    "段落 G を足した。",
+  ]);
+  // 検証: 最初に色を当てたブロックが同じ `data-kind` のまま出ている
+  expect(kinds().slice(0, initial.length)).toEqual(initial);
+});
+
+// `blocks` で `content` が reject すると、色を当てない本文を残して先頭に知らせの枠を置く（異常系）
+test("test_error_when_diff_blocks_content_rejected", async () => {
+  // 準備
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  const error = new Error("network");
+  const source = createBlocksSource(
+    {},
+    {
+      content: async () => {
+        throw error;
+      },
+    },
+  );
+  const el = createElement();
+  // 実行: 例外を投げない
+  await mountTracked(el, {
+    markdown: BLOCKS_AFTER,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "blocks",
+  });
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-notice")).not.toBeNull();
+  });
+  // 検証: 本文は色を当てずに描いたまま、先頭に知らせの枠がある
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+  expect(find(el, "h1").textContent).toContain("ガイド");
+  const notice = find(el, ".mdmark-notice");
+  expect(notice.getAttribute("role")).toBe("status");
+  expect(find(notice, ".mdmark-notice-title").textContent).toBe(
+    "変更を表示できません",
+  );
+  expect(find(notice, "p").textContent).toBe(
+    "比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。",
+  );
+  expect(find(el, ".mdmark-content").firstElementChild).toBe(notice);
+  // 検証: `console.error` が取り出せなかった本文ごとに 1 回（前と後の 2 回）呼ばれる
+  expect(consoleError).toHaveBeenCalledTimes(2);
+  // 検証: それぞれの引数に `content`・`guide`・そのリビジョンの `id`・元のエラーを含む
+  for (const [call, revisionId] of consoleError.mock.calls.map(
+    (args, index) => [args, ["r1", "r2"][index]] as const,
+  )) {
+    for (const word of ["content", "guide", revisionId]) {
+      expect(call.some((arg) => String(arg).includes(word))).toBe(true);
+    }
+    expect(call).toContain(error);
+  }
+});
+
+// 知らない `diffMode` は例外を投げず `button` として描く（異常系）
+test("test_error_when_unknown_diff_mode", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = createElement();
+  // 実行・検証: 例外を投げない
+  await expect(
+    mountTracked(el, {
+      markdown: "# ガイド\n\n本文の段落。\n",
+      docId: "guide",
+      diffSource: source,
+      diffMode: "inline" as never,
+    }),
+  ).resolves.toBeDefined();
+  // 検証: 「変更を見る」が閉じた状態で、押すまで取り出し元を呼ばない
+  expect(diffToggle(el).getAttribute("aria-expanded")).toBe("false");
+  expect(source.revisionsCalls).toEqual([]);
+});
+
 /** `### {タイトル}` で区切ったタブの範囲の Markdown。`group` が無ければ組を持たない */
 function tabsRange(titles: string[], group?: string): string {
   return [
@@ -4551,6 +4950,105 @@ test("test_normal_when_parent_class_dark_printed", async () => {
     expect(readBackground(el)).toBe(DARK_BG);
     await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
     // 検証
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+/** リンクを持つ段落の見本 */
+const THEME_MARKDOWN = "[リンク](https://example.com/) を含む段落。\n";
+
+/** theme-slate の明るい配色とダークの配色の `--mdmark-color-bg` の値 */
+const SLATE_LIGHT_BG = "#f8fafc";
+const SLATE_DARK_BG = "#0f172a";
+
+/** OS の配色を切り替える */
+async function emulateColorScheme(scheme: "light" | "dark"): Promise<void> {
+  await cdp().send("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-color-scheme", value: scheme }],
+  });
+}
+
+// `opts.config.colorTheme` で選んだテーマの明るい配色で描き、使う側の CSS が勝ち、destroy でテーマを外す（正常系）
+test("test_normal_when_color_theme_selected", async () => {
+  // 準備
+  const el = createElement();
+  const style = document.createElement("style");
+  style.textContent = ":root { --mdmark-color-link: rgb(1, 2, 3) }";
+  document.head.append(style);
+  addedStyles.push(style);
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    const handle = await mountTracked(el, {
+      markdown: THEME_MARKDOWN,
+      config: { colorTheme: "theme-slate" },
+    });
+    // 検証
+    expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+    expect(getComputedStyle(el).backgroundColor).toBe("rgb(248, 250, 252)");
+    expect(getComputedStyle(find(el, "a")).color).toBe("rgb(1, 2, 3)");
+    // 実行: destroy でテーマを外す
+    handle.destroy();
+    // 検証
+    expect(readBackground(document.documentElement)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 選んだテーマの中で、OS のダークでは暗い配色、親の `mdmark-theme-light` では明るい配色、印刷では明るい配色を使う（正常系）
+test("test_normal_when_color_theme_dark", async () => {
+  // 準備
+  const wrap = createElement();
+  const el = document.createElement("div");
+  wrap.append(el);
+  await emulateColorScheme("dark");
+  try {
+    // 実行・検証: 描いた直後は暗い配色
+    await mountTracked(el, {
+      markdown: THEME_MARKDOWN,
+      config: { colorTheme: "theme-slate" },
+    });
+    expect(readBackground(el)).toBe(SLATE_DARK_BG);
+    expect(getComputedStyle(el).backgroundColor).toBe("rgb(15, 23, 42)");
+    // 実行・検証: 親に mdmark-theme-light を付けると明るい配色
+    wrap.className = "mdmark-theme-light";
+    expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+    // 実行・検証: 親の class を外して印刷のメディアにすると、OS がダークでも明るい配色
+    wrap.className = "";
+    expect(readBackground(el)).toBe(SLATE_DARK_BG);
+    await cdp().send("Emulation.setEmulatedMedia", {
+      media: "print",
+      features: [{ name: "prefers-color-scheme", value: "dark" }],
+    });
+    expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 知らないテーマの名前は無視し、例外を出さずに dev-swiss で描く（正常系）
+test("test_normal_when_color_theme_unknown", async () => {
+  // 準備
+  const el = createElement();
+  const { mount } = await loadBuilt();
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    let handle: MountHandle | undefined;
+    expect(() => {
+      handle = mount(el, {
+        markdown: THEME_MARKDOWN,
+        config: { colorTheme: "sepia" },
+      });
+    }).not.toThrow();
+    // 検証
+    if (handle) {
+      handles.push(handle);
+    }
+    expect(find(el, "a").textContent).toBe("リンク");
     expect(readBackground(el)).toBe(LIGHT_BG);
   } finally {
     await resetThemed();

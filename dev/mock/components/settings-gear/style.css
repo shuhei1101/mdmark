@@ -1,0 +1,75 @@
+/* 設定を開く歯車のボタンのカタログ: 状態を縦に並べる（この部品のモックだけの規則） */
+
+/* カタログの外枠: VS Code の枠と同じ幅で中央に置く */
+.catalog {
+  display: grid;
+  gap: 32px;
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+
+  /* カタログのタイトル */
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  /* 案ごとの見出し */
+  h2 {
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+  }
+}
+
+/* 状態の並び */
+.catalog-states {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 状態 1 つ: 状態の名前と見本を縦に並べる */
+.catalog-state {
+  display: grid;
+  gap: 6px;
+}
+
+/* 状態の名前 */
+.catalog-label {
+  color: var(--vsc-tab-text);
+  font-size: 13px;
+}
+
+/* 案 A の見本: タイトルバー 1 本分の枠 */
+.catalog-bar {
+  border: 1px solid var(--vsc-border);
+}
+
+/* ツールチップの位置の基準 */
+.catalog-anchor {
+  position: relative;
+}
+
+/* 案 B の見本: 文書の地の上に置く */
+.catalog-surface {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px;
+  border: 1px solid var(--vsc-border);
+  background: var(--mdmark-color-bg);
+}
+
+/* メニューを開いた見本: 歯車の下にメニューを右端で揃える */
+.catalog-surface-menu {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* ツールチップを出した状態: 下に出るツールチップの分だけ次の状態との間を空ける */
+.catalog-state:has(.vsc-tooltip) {
+  padding-block-end: 24px;
+}

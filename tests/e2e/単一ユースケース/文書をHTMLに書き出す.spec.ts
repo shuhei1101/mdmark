@@ -299,3 +299,48 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   );
   expect(opened.externalRequests()).toEqual([]);
 });
+
+// 設定のテーマを描く先に当てた HTML を書き出し、file:// で開いて選んだテーマの配色で読む（正常シナリオ（テーマを選ぶ））
+test("test_normal_when_theme_selected", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "colorTheme: theme-contrast",
+      "libraries:",
+      "  chart: lib/chart.js",
+      "",
+    ].join("\n"),
+    "lib/chart.js": CHART_SOURCE,
+    "guide.md": GUIDE,
+    "api.md": "# API\n",
+    "img/a.png": PNG_BYTES,
+  });
+  await page.emulateMedia({ colorScheme: "light" });
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "out", "guide.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "out", "guide.html"),
+  });
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("h1")).toContainText("ガイド");
+  // theme-contrast の明るい配色（地は白、リンクは濃い青）
+  await expect(article).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(article.locator('a[href="api.md"]')).toHaveCSS(
+    "color",
+    "rgb(0, 55, 168)",
+  );
+  expect(opened.externalRequests()).toEqual([]);
+});

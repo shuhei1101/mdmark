@@ -404,3 +404,23 @@ test("test_normal_when_side_toc_hidden_in_print", async ({ page }) => {
   ).toHaveAttribute("aria-expanded", "false");
   await expect(page.getByText("付録の段落")).toBeHidden();
 });
+
+// テーマを選んだ文書を印刷すると、ダークを解除して選んだテーマの明るい配色にする（正常シナリオ（テーマを選んだ文書））
+test("test_normal_when_theme_selected", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "dark" });
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: MARKDOWN,
+    config: { colorTheme: "theme-slate" },
+  });
+  const doc = page.locator("#doc");
+  // ダークの画面では theme-slate の暗い配色（印刷にする前に確かめる）
+  await expect(doc.locator("a")).toHaveCSS("color", "rgb(125, 211, 252)");
+  // 実行
+  await page.emulateMedia({ colorScheme: "dark", media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 既定のテーマに戻らず、theme-slate の明るい配色のリンクの色になり、地の色は外れる
+  await expect(doc.locator("a")).toHaveCSS("color", "rgb(29, 78, 216)");
+  await expect(doc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+});

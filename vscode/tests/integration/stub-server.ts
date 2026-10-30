@@ -52,7 +52,12 @@ const SLOW_DIST_MS = 6000;
 /** 配布物が無いバージョン: `@v9.9.9` の配布物には 404 を返す */
 const MISSING_VERSION = "v9.9.9";
 
-/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンでも `distDir` のファイルに引く。`MISSING_VERSION` だけ 404 を返す */
+/** 差分の色分けに対応しない配布物を返すバージョン: `@v0.8.0` の `index.js` は `diffModes` を持たず `mount` だけを持つ */
+const NO_DIFF_VERSION = "v0.8.0";
+const NO_DIFF_DIST_JS =
+  "export function mount() { return { update() {}, destroy() {} }; }\n";
+
+/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンでも `distDir` のファイルに引く。`MISSING_VERSION` だけ 404 を返し、`NO_DIFF_VERSION` の `index.js` は差分に対応しない配布物を返す */
 async function serveDist(
   path: string,
   distDir: string,
@@ -72,7 +77,10 @@ async function serveDist(
     return;
   }
   try {
-    const body = await readFile(target);
+    const body =
+      match[1] === NO_DIFF_VERSION && file === "index.js"
+        ? Buffer.from(NO_DIFF_DIST_JS)
+        : await readFile(target);
     // Webview が前のテストで読んだ配布物を使い回さないよう、キャッシュさせない
     response.writeHead(200, {
       "Content-Type":

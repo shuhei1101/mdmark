@@ -140,6 +140,41 @@ test("test_mount_when_aliases_updated", async () => {
   expect(el.querySelector("button.mdmark-term-tip-copy")).not.toBeNull();
 });
 
+// 選んだテーマを描く先の属性に付け、update でも保ち、destroy で外す（正常系）
+test("test_mount_when_color_theme", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "# A",
+    config: { colorTheme: "theme-slate" },
+  });
+  const afterMount = el.getAttribute("data-mdmark-color-theme");
+  // 実行
+  handle.update("# B");
+  const afterUpdate = el.getAttribute("data-mdmark-color-theme");
+  handle.destroy();
+  // 検証
+  expect(afterMount).toBe("theme-slate");
+  expect(afterUpdate).toBe("theme-slate");
+  expect(el.hasAttribute("data-mdmark-color-theme")).toBe(false);
+});
+
+// 知らないテーマの名前と省いたときは dev-swiss を付ける（正常系）
+test("test_mount_when_color_theme_unknown", async () => {
+  // 準備
+  const unknownEl = createElement();
+  const omittedEl = createElement();
+  // 実行
+  await mountTracked(unknownEl, {
+    markdown: "# A",
+    config: { colorTheme: "sepia" },
+  });
+  await mountTracked(omittedEl, { markdown: "# A" });
+  // 検証
+  expect(unknownEl.getAttribute("data-mdmark-color-theme")).toBe("dev-swiss");
+  expect(omittedEl.getAttribute("data-mdmark-color-theme")).toBe("dev-swiss");
+});
+
 // destroy で片付け、その後の update と 2 回目の destroy は何もしない（正常系）
 test("test_mount_when_destroyed", async () => {
   // 準備
@@ -513,4 +548,174 @@ test("test_mount_when_side_toc_off", async () => {
   expect(el.querySelector("aside.mdmark-side-toc")).toBeNull();
   expect(el.querySelector("div.mdmark-content")).toBeNull();
   expect(el.querySelector(":scope > h1")).not.toBeNull();
+});
+
+/** 知らせの枠の処理を読み込む（blocks で本文を取り出せない知らせの枠を期待値にする） */
+const loadNotice = () => import("../../../src/parts/notice.ts");
+
+// 新しい順に並べた 2 つのリビジョン（後 r2・前 r1）
+const DIFF_REVISIONS = [
+  { id: "r2", at: "2026-10-19T07:40:00Z" },
+  { id: "r1", at: "2026-10-18T00:12:00Z" },
+];
+
+/** 追加の色で包まれたブロックの最初の段落の文字を、上から順に返す */
+function addedParagraphs(el: HTMLElement): (string | undefined)[] {
+  return [...el.querySelectorAll('div.mdmark-diff-block[data-kind="add"]')].map(
+    (block) => block.querySelector("p")?.textContent ?? undefined,
+  );
+}
+
+// open では描いた時点で差分を開き、update の後も開いたままにする（正常系）
+test("test_mount_when_diff_mode_open", async () => {
+  // 準備
+  const el = createElement();
+  const revisionsCalls: string[] = [];
+  const diffSource = {
+    revisions: async (docId: string) => {
+      revisionsCalls.push(docId);
+      return DIFF_REVISIONS;
+    },
+    content: async () => "",
+  };
+  const expanded = () =>
+    el.querySelector(".mdmark-diff-toggle")?.getAttribute("aria-expanded");
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown: "# 見出し",
+    docId: "guide",
+    diffSource,
+    diffMode: "open",
+  });
+  // 検証: 押さずに取り出し元が呼ばれ、開いている
+  await vi.waitFor(() => {
+    expect(revisionsCalls).toEqual(["guide"]);
+  });
+  expect(expanded()).toBe("true");
+  // 実行
+  handle.update("# 次");
+  // 検証: 描き直しても開いたままで、取り出し元を呼び直す
+  await vi.waitFor(() => {
+    expect(revisionsCalls).toEqual(["guide", "guide"]);
+  });
+  expect(expanded()).toBe("true");
+});
+
+// blocks ではボタンを置かず、取り出した 2 つの本文で色分けして描き直す（正常系）
+test("test_mount_when_diff_blocks", async () => {
+  // 準備
+  const el = createElement();
+  const before = `# 見出し\n\n既存の段落\n\n${TABLE_MARKDOWN}`;
+  const after = `${before}\n追加した段落\n`;
+  const contents: Record<string, string> = { r1: before, r2: after };
+  const revisionsCalls: string[] = [];
+  const contentCalls: { docId: string; revisionId: string }[] = [];
+  const diffSource = {
+    revisions: async (docId: string) => {
+      revisionsCalls.push(docId);
+      return DIFF_REVISIONS;
+    },
+    content: async (target: { docId: string; revisionId: string }) => {
+      contentCalls.push(target);
+      return contents[target.revisionId] ?? "";
+    },
+  };
+  // 実行
+  await mountTracked(el, {
+    markdown: after,
+    docId: "guide",
+    diffSource,
+    diffMode: "blocks",
+  });
+  // 検証: 取り出しを終えた後に、足した段落が追加の色で包まれる
+  await vi.waitFor(() => {
+    expect(addedParagraphs(el)).toEqual(["追加した段落"]);
+  });
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+  expect(revisionsCalls).toEqual(["guide"]);
+  expect(contentCalls.map((call) => call.revisionId).sort()).toEqual([
+    "r1",
+    "r2",
+  ]);
+  // 検証: 記法の操作が色分けした本文に付いている
+  expect(el.querySelector("button.mdmark-filter")).not.toBeNull();
+});
+
+// blocks で update した後に届いた古い取り出しの結果で描き直さない（正常系）
+test("test_mount_when_diff_blocks_stale", async () => {
+  // 準備: 呼ばれた順に控え、合図で返す取り出し元
+  const el = createElement();
+  const pending: { revisionId: string; resolve: (text: string) => void }[] = [];
+  const diffSource = {
+    revisions: async () => DIFF_REVISIONS,
+    content: ({ revisionId }: { revisionId: string }) =>
+      new Promise<string>((resolve) => {
+        pending.push({ revisionId, resolve });
+      }),
+  };
+  const base = "# 見出し\n\n最初の段落\n";
+  const first = `${base}\n一回目の追加\n`;
+  const second = `${base}\n二回目の追加\n`;
+  /** 控えた呼び出しに、前は共通の本文、後は渡した本文を返す */
+  const answer = (calls: typeof pending, afterText: string) => {
+    for (const call of calls) {
+      call.resolve(call.revisionId === "r1" ? base : afterText);
+    }
+  };
+  const handle = await mountTracked(el, {
+    markdown: first,
+    docId: "guide",
+    diffSource,
+    diffMode: "blocks",
+  });
+  await vi.waitFor(() => {
+    expect(pending).toHaveLength(2);
+  });
+  // 実行: 1 回目の本文を待たせたまま update し、2 回目を先に返してから 1 回目を返す
+  handle.update(second);
+  await vi.waitFor(() => {
+    expect(pending).toHaveLength(4);
+  });
+  answer(pending.slice(2), second);
+  await vi.waitFor(() => {
+    expect(addedParagraphs(el)).toEqual(["二回目の追加"]);
+  });
+  answer(pending.slice(0, 2), first);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  // 検証
+  expect(addedParagraphs(el)).toEqual(["二回目の追加"]);
+});
+
+// blocks で本文を取り出せなければ、色分けせずに知らせの枠を先頭に置く（異常系）
+test("test_mount_when_diff_blocks_failed", async () => {
+  // 準備
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  const { renderNotice } = await loadNotice();
+  const el = createElement();
+  const error = new Error("本文を返せない");
+  const diffSource = {
+    revisions: async () => DIFF_REVISIONS,
+    content: async () => {
+      throw error;
+    },
+  };
+  // 実行: 例外を投げない
+  await mountTracked(el, {
+    markdown: "# 見出し\n\n本文",
+    docId: "guide",
+    diffSource,
+    diffMode: "blocks",
+  });
+  // 検証
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-notice")).not.toBeNull();
+  });
+  const content = el.querySelector(".mdmark-content");
+  expect(
+    content?.innerHTML.startsWith(
+      renderNotice({ name: "guide", source: "diff-blocks" }),
+    ),
+  ).toBe(true);
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+  expect(consoleError.mock.calls.flat()).toContain(error);
 });

@@ -247,6 +247,24 @@ test("test_validate_config_when_side_toc_mode_invalid", async () => {
   expect(valid.config["side-toc"]?.mode).toBe("fixed");
 });
 
+// 文字列でない colorTheme を schema のずれにして落とし、知らない名前はそのまま残す（正常系）
+test("test_validate_config_when_color_theme_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig({ colorTheme: 1 }, "mdmark.config.yaml");
+  const unknown = validateConfig({ colorTheme: "sepia" }, "mdmark.config.yaml");
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "colorTheme",
+    kind: "schema",
+  });
+  expect(invalid.config.colorTheme).toBeUndefined();
+  expect(unknown.issues).toEqual([]);
+  expect(unknown.config.colorTheme).toBe("sepia");
+});
+
 // aliases の Schema に合わない行を schema のずれにし、行の位置を保つ（異常系）
 test("test_validate_config_when_aliases_invalid", async () => {
   // 準備

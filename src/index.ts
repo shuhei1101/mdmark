@@ -11,7 +11,8 @@ export type {
   MdmarkParamDefinition,
   MdmarkSequenceDefinition,
 } from "./diagram/definition.ts";
-export type { DiffRevision, DiffSource } from "./diff/source.ts";
+export type { DiffMode, DiffRevision, DiffSource } from "./diff/source.ts";
+export { diffModes } from "./diff/source.ts";
 export type {
   MdmarkExtension,
   MdmarkExtensionModule,

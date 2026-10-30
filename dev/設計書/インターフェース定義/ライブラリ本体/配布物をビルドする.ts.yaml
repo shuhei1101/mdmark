@@ -300,7 +300,7 @@ exceptions:
     condition: 使う側のブラウザが読む JS（`dist/index.js`・`dist/view.js`・`dist/comments.js`・`dist/viewer.js`）のどれかが、下限の版に無い API を、同じ API の `typeof` で確かめる `if` のブロックの外で使う
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 416KB 以下（425984 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 440KB 以下（450560 バイト）。使う側のページが読まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4

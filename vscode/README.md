@@ -10,7 +10,9 @@ VS Code 組み込みのプレビューでは出ない拡張記法を、書きな
 - Markdown の横にプレビューを開く（`Shift+Alt+D`、Mac は `Shift+Option+D`）
 - 打つたびにプレビューを描き直す。保存したときだけ描き直す設定もある
 - エディタとプレビューのスクロールを両方向に合わせる
+- 差分ビューで開くと、変更後の文書を描き、追加・変更したブロックと削除したブロックを色分けして出す
 - VS Code のテーマの明暗に合わせて配色を切り替える。ライト・ダークに固定もできる
+- 配色のテーマを選べる。プレビューのタイトルの歯車のボタンから、mdmark の設定を開ける
 - 外部の URL は既定のブラウザ、`.md` へのリンクは VS Code で開く。相対パスの画像も出る
 - `mdmark.config.yaml` の `features`・`libraries` で、機能のオン・オフと外部ライブラリを決める
 - 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する
@@ -26,9 +28,15 @@ Markdown を開き、`Shift+Alt+D`（Mac は `Shift+Option+D`）か、エディ�
 | `mdmark: プレビューを開く` | Markdown と同じ列にプレビューを開く |
 | `mdmark: プレビューをリロード` | 設定ファイルと読むバージョンを決め直し、配布物を読み直して描く |
 | `mdmark: 設定ファイルを開く` | `mdmark.config.yaml` を開く。無ければ雛形を作るかを尋ねる |
+| `mdmark: 設定を開く` | VS Code の設定画面を、mdmark の項目に絞って開く。プレビューのタイトルの歯車のボタンも同じ |
 | `mdmark: HTML に書き出す` | 開いている Markdown を HTML に書き出す |
 | `mdmark: ブラウザで開く` | 書き出し直した HTML を既定のブラウザで開く |
 | `mdmark: PDF に印刷` | 書き出し直した HTML をブラウザで開き、印刷のダイアログを出す |
+
+差分ビュー（Source Control の変更・タイムラインの `変更を開く`・コミットの差分）で同じ操作をすると、変更後の文書を描いた差分のプレビューを開く。
+追加・変更したブロックは追加の色と左の余白の `+`、削除したブロックは変更前の位置に削除の色と `−` で出る。
+タブは `差分プレビュー {ファイル名}` で、変更後の側を書き換えると描き直す。
+読む mdmark が差分の表示に対応しないときは、理由と「リロード」のボタンが出る。
 
 PDF は、印刷のダイアログの送信先で「PDF に保存」を選んで作る。
 
@@ -37,12 +45,13 @@ PDF は、印刷のダイアログの送信先で「PDF に保存」を選んで
 | 設定 | 既定 | 内容 |
 | --- | --- | --- |
 | `mdmark.version` | `latest` | 読む mdmark のバージョン。`latest` は最新の `v{X}.{Y}.{Z}`、`v0.6.0` のように記載するとそのバージョンに固定する |
-| `mdmark.configPath` | `mdmark.config.yaml` | `features`・`libraries` を読む設定ファイルのパス |
+| `mdmark.configPath` | `mdmark.config.yaml` | `features`・`libraries`・`side-toc`・`colorTheme` を読む設定ファイルのパス |
 | `mdmark.preview.liveUpdate` | `true` | `true` は打つたびに、`false` は保存したときに描き直す |
 | `mdmark.preview.updateDelayMs` | `300` | 最後に打ってから描き直すまでのミリ秒（0〜5000） |
 | `mdmark.preview.scrollPreviewWithEditor` | `true` | エディタに合わせてプレビューを動かす |
 | `mdmark.preview.scrollEditorWithPreview` | `true` | プレビューに合わせてエディタを動かす |
 | `mdmark.preview.theme` | `auto` | `auto` は VS Code のテーマに合わせ、`light`・`dark` は固定する |
+| `mdmark.colorTheme` | 空 | 配色のテーマ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` から選ぶ。空のときは設定ファイルの `colorTheme` に従う。書き出す HTML にも当たる |
 | `mdmark.export.outputDir` | 空 | 書き出す先のフォルダ。空のときは Markdown と同じフォルダ |
 
 ## 必要なもの

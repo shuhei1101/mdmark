@@ -244,3 +244,41 @@ test("test_normal_when_aliases", async ({ page }) => {
   await expect(doc.locator("p")).toContainText("別の段落");
   await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
 });
+
+// テーマを選ぶ設定で描くと選んだテーマの配色になり、本文を差し替えても保たれ、片付けるとテーマが残らない（正常シナリオ（テーマを選ぶ））
+test("test_normal_when_theme_selected", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  await openPage(page, builtRoot);
+  const doc = page.locator("#doc");
+  // 実行・検証: 描いた直後
+  await mountDocument(page, {
+    markdown: SAMPLE_MARKDOWN,
+    config: { colorTheme: "theme-paper" },
+  });
+  await expect(doc).toHaveCSS("background-color", "rgb(251, 248, 241)");
+  // 実行・検証: 本文を差し替えた後も同じ
+  await updateDocument(page, "# 新しい見出し");
+  await expect(doc.locator("h1")).toHaveText("新しい見出し");
+  await expect(doc).toHaveCSS("background-color", "rgb(251, 248, 241)");
+  // 実行・検証: 片付けた後は、テーマを示す属性や class が要素にもページにも残らない
+  await destroyDocument(page);
+  const leftovers = await page.evaluate(() => {
+    const el = document.querySelector("#doc");
+    const root = document.documentElement;
+    return {
+      elementAttributes: el?.getAttributeNames().filter((n) => /theme/.test(n)),
+      elementClass: el?.className ?? "",
+      rootAttributes: root.getAttributeNames().filter((n) => /theme/.test(n)),
+      rootClass: root.className,
+      background: getComputedStyle(root)
+        .getPropertyValue("--mdmark-color-bg")
+        .trim(),
+    };
+  });
+  expect(leftovers.elementAttributes).toEqual([]);
+  expect(leftovers.elementClass).not.toMatch(/theme/);
+  expect(leftovers.rootAttributes).toEqual([]);
+  expect(leftovers.rootClass).not.toMatch(/theme/);
+  expect(leftovers.background).toBe("#ffffff");
+});

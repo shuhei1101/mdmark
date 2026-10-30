@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
+import type { DiffSource } from "../../../../../src/diff/source.ts";
 
 /** パネルの中の入口を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPreview = () =>
@@ -14,6 +15,27 @@ const PNG_1X1 =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
 const placed: HTMLElement[] = [];
+
+/** `startPreview` が `window`・`document` に付けた受け取り（次のテストの `message` に反応しないよう、テストの後に外す） */
+const listeners: {
+  target: EventTarget;
+  type: string;
+  listener: EventListenerOrEventListenerObject;
+  options: boolean | AddEventListenerOptions | undefined;
+}[] = [];
+
+/** `target` に付けた受け取りを控える */
+function trackListeners(target: EventTarget): void {
+  const add = target.addEventListener.bind(target);
+  vi.spyOn(target, "addEventListener").mockImplementation(
+    (type, listener, options) => {
+      if (listener !== null) {
+        listeners.push({ target, type, listener, options });
+      }
+      add(type, listener, options);
+    },
+  );
+}
 
 /** `mount` の代役が描いた先の要素と戻り値の記録 */
 type MountRecord = {
@@ -76,11 +98,13 @@ function renderMessage(
   options: {
     config?: Record<string, unknown>;
     theme?: "auto" | "light" | "dark";
+    previous?: string;
   } = {},
 ) {
   return {
     type: "render" as const,
     markdown,
+    ...(options.previous === undefined ? {} : { previous: options.previous }),
     config: options.config ?? {},
     theme: options.theme ?? "auto",
   };
@@ -95,9 +119,15 @@ beforeEach(() => {
   // 拡張機能の API を持たないページで読み込んでも動くようにする
   vi.stubGlobal("acquireVsCodeApi", () => ({ postMessage: vi.fn() }));
   document.body.style.margin = "0";
+  trackListeners(window);
+  trackListeners(document);
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
+  for (const { target, type, listener, options } of listeners.splice(0)) {
+    target.removeEventListener(type, listener, options);
+  }
   vi.unstubAllGlobals();
   scroller().scrollTop = 0;
   for (const element of placed.splice(0)) {
@@ -339,4 +369,145 @@ test("test_start_preview_when_side_toc_link_clicked", async () => {
     .map(([message]) => message)
     .filter((message) => message.type === "openLink");
   expect(opened).toEqual([]);
+});
+
+// 差分に対応しない配布物で previous つきの render を受けると、描かずに理由を出す（異常系）
+test("test_start_preview_when_diff_unsupported", async () => {
+  // 準備: diffModes を持たず、mount の呼び出しだけを控える配布物の代役
+  const { startPreview } = await loadPreview();
+  const postMessage = vi.fn();
+  vi.stubGlobal("acquireVsCodeApi", () => ({ postMessage }));
+  const mountCalls: unknown[][] = [];
+  vi.stubGlobal("__mdmarkDiffTestMounts", mountCalls);
+  const moduleUrl = URL.createObjectURL(
+    new Blob(
+      [
+        "export const mount = (...args) => { globalThis.__mdmarkDiffTestMounts.push(args); return { update() {}, destroy() {} }; };",
+      ],
+      { type: "text/javascript" },
+    ),
+  );
+  try {
+    const root = createRoot();
+    root.dataset.distJs = moduleUrl;
+    root.dataset.version = "v0.8.0";
+    startPreview();
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "ready" });
+    });
+    // 実行
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: renderMessage("A2", { previous: "A1" }),
+      }),
+    );
+    // 検証
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({
+        type: "loadFailed",
+        reason: "diffUnsupported",
+      });
+    });
+    expect(mountCalls).toEqual([]);
+    expect(postMessage).not.toHaveBeenCalledWith({ type: "rendered" });
+    expect(root.textContent).toContain("v0.8.0");
+    expect(root.querySelector('button[data-action="reload"]')).not.toBeNull();
+  } finally {
+    URL.revokeObjectURL(moduleUrl);
+  }
+});
+
+// previous を持つ render では取り出し元を渡して blocks で描き、次の render では取り出し元の全文を書き換えてから update する（正常系）
+test("test_render_when_diff", async () => {
+  // 準備
+  const { mdmark, record } = createMdmark();
+  const { view } = await createView(mdmark);
+  /** `update` が呼ばれた時点の取り出し元の全文（変更後・変更前） */
+  let contentsAtUpdate: Promise<string[]> | undefined;
+  record.update.mockImplementation(() => {
+    const options = record.mount.mock.calls[0]?.[1] as {
+      diffSource: DiffSource;
+    };
+    contentsAtUpdate = Promise.all(
+      ["modified", "original"].map((revisionId) =>
+        options.diffSource.content({ docId: "diff", revisionId }),
+      ),
+    );
+  });
+  // 実行: 1 回目
+  view.render(renderMessage("A2", { previous: "A1" }));
+  // 検証
+  const options = record.mount.mock.calls[0]?.[1] as {
+    docId: string;
+    diffMode: string;
+    diffSource: DiffSource;
+  };
+  expect(options).toMatchObject({ docId: "diff", diffMode: "blocks" });
+  const revisions = await options.diffSource.revisions("diff");
+  expect(revisions.map((revision) => revision.id)).toEqual([
+    "modified",
+    "original",
+  ]);
+  // 実行: 2 回目（設定は同じ）
+  view.render(renderMessage("A3", { previous: "A1" }));
+  // 検証
+  expect(record.mount).toHaveBeenCalledTimes(1);
+  expect(record.update).toHaveBeenCalledWith("A3");
+  expect(await contentsAtUpdate).toEqual(["A3", "A1"]);
+});
+
+// 呼ばれた時点の全文を返す（正常系）
+test("test_create_diff_source", async () => {
+  // 準備
+  const { createDiffSource } = await loadPreview();
+  const texts = { modified: "A2", original: "A1" };
+  const source = createDiffSource(texts);
+  // 実行
+  texts.modified = "A3";
+  const revisions = await source.revisions("diff");
+  const modified = await source.content({
+    docId: "diff",
+    revisionId: "modified",
+  });
+  const original = await source.content({
+    docId: "diff",
+    revisionId: "original",
+  });
+  const otherRejected = await source
+    .content({ docId: "diff", revisionId: "other" })
+    .then(
+      () => false,
+      () => true,
+    );
+  // 検証
+  expect(revisions.map((revision) => revision.id)).toEqual([
+    "modified",
+    "original",
+  ]);
+  expect(
+    revisions.every((revision) => !Number.isNaN(Date.parse(revision.at))),
+  ).toBe(true);
+  expect(modified).toBe("A3");
+  expect(original).toBe("A1");
+  expect(otherRejected).toBe(true);
+});
+
+// diffModes に blocks があれば対応する（正常系）
+test("test_supports_diff_blocks", async () => {
+  // 準備
+  const { supportsDiffBlocks } = await loadPreview();
+  // 実行・検証
+  expect(supportsDiffBlocks({ diffModes: ["button", "open", "blocks"] })).toBe(
+    true,
+  );
+});
+
+// diffModes が無いか blocks を含まなければ対応しない（正常系）
+test("test_supports_diff_blocks_when_missing", async () => {
+  // 準備
+  const { supportsDiffBlocks } = await loadPreview();
+  // 実行・検証
+  expect(supportsDiffBlocks({})).toBe(false);
+  expect(supportsDiffBlocks({ diffModes: ["button"] })).toBe(false);
+  expect(supportsDiffBlocks({ diffModes: "blocks" })).toBe(false);
 });

@@ -33,3 +33,10 @@ stories:
         id: preview-status
     args:
       state: versionUndecidable
+  - name: DiffUnsupported
+    parameters:
+      server:
+        id: preview-status
+    args:
+      state: diffUnsupported
+      version: v0.8.0

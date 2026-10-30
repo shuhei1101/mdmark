@@ -94,6 +94,30 @@ scenarios:
       - まとめた HTML のソースに、`env` の `開発サーバー`・`http://127.0.0.1:8767/` が入っていない
       - 外への要求が 0 件
     test: test_normal_when_aliases
+  - name: 正常シナリオ（テーマを選ぶ）
+    setup:
+      - name: テーマを選んだフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` のテーマを選ぶキーに theme-paper を書く
+        notes: まとめた HTML を開くブラウザの配色はダーク
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark build
+        participant B as ブラウザ
+        W->>C: mdmark build を流す
+        C->>C: 設定のテーマを描く先に当てる HTML を組み立てる
+        C-->>W: build.out に HTML を書く
+        W->>B: file:// で開き、一覧から別の文書を開く
+        B-->>W: どの文書も theme-paper の暗い配色で表示
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 入口の文書と、一覧から開いたほかの文書のどちらでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+      - 外への要求が 0 件
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書を書く人

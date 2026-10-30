@@ -18,5 +18,6 @@ VS Code 拡張機能のコマンド・Webview とのメッセージ・配布物�
 | [ブラウザで開く.ts](./ブラウザで開く.ts.yaml) | 書き出し直した HTML を既定のブラウザで開く（mdmark.openInBrowser） |
 | [PDFに印刷する.ts](./PDFに印刷する.ts.yaml) | 描き終えた後に印刷のダイアログを出す HTML を書き出して開く（mdmark.printToPdf） |
 | [拡張機能の配布物を作る.ts](./拡張機能の配布物を作る.ts.yaml) | `vscode-v*` のタグで .vsix を作り、GitHub Release に添える |
+| [設定を開く.ts](./設定を開く.ts.yaml) | VS Code の設定画面を mdmark の項目に絞って開く（mdmark.openSettings） |
 
 <!-- /table -->

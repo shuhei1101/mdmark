@@ -264,14 +264,93 @@ flows:
       - mdmark のパネルが 0 個で、タグ一覧の代役が 1 回も呼ばれない
       - '`package.json` の `contributes.menus`・`keybindings` の `when` に `editorLangId == markdown` がある'
     test: test_error_when_not_markdown
-lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。
+  - name: 正常系（差分ビューから開く）
+    summary: 作業ツリーの差分ビューから開くと、変更後の文書のブロックを色分けした差分のパネルを開く
+    setup:
+      - name: 差分を持つワークスペース
+        description: Git のリポジトリで、`guide.md` をコミットした後に段落を 1 つ追加・1 つ削除し、ソース管理の変更から差分ビューで開いた状態。変更後の側にフォーカスがある
+        notes: 差分ビューのタブの入力は `TabInputTextDiff`（`original` は `git:` の URI、`modified` は `file:` の URI）
+      - name: Mock
+        description: 正常系と同じ。配布物を配る手元のサーバーは、このブランチでビルドした `diffModes` を持つ配布物を配る。拡張機能と Webview の間のメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide（差分ビューの変更後の側）
+        EX->>EX: TabInputTextDiff の original・modified を読む
+        EX->>PV: 横の列に差分のパネルを開き HTML を入れる
+        PV->>EX: ready
+        EX->>PV: render（変更後の全文・previous に変更前の全文）
+        PV->>PV: mount（diffSource・diffMode: blocks）
+        PV->>EX: rendered
+    expected:
+      - パネルの題が `差分プレビュー guide.md` で、`ViewColumn.Beside` に開く
+      - '`render` の `markdown` が変更後の全文、`previous` がコミットした時点の全文'
+      - Webview の本文で、追加した段落が `div.mdmark-diff-block[data-kind="add"]`、削除した段落が `div.mdmark-diff-block[data-kind="del"]` にあり、「変更を見る」が無い
+      - 同じ `guide.md` を差分でない普通のエディタから開いたプレビューとは別のパネルになる
+    test: test_normal_when_opened_from_diff_view
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[正常シナリオ]
+  - name: 正常系（コミットの差分から開く）
+    summary: 両側が `git:` の URI の差分ビューでも、両方の内容を読んで差分のパネルを開く
+    setup:
+      - name: コミットの差分を開いたワークスペース
+        description: Git のリポジトリで `guide.md` を 2 回コミットし、タイムラインから 2 つのコミットの差分ビューを開いた状態
+        notes: '`original`・`modified` のどちらも `git:` の URI'
+      - name: Mock
+        description: 正常系（差分ビューから開く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>EX: git: の original・modified を openTextDocument で読む
+        EX->>PV: 差分のパネルを開く
+        PV->>EX: ready
+        EX->>PV: render（後のコミットの全文・previous に前のコミットの全文）
+        PV->>EX: rendered
+    expected:
+      - パネルの題が `差分プレビュー guide.md`
+      - Webview の本文に 2 つのコミットの間で変えたブロックだけが `mdmark-diff-block` で出る
+      - 拡張機能が Git のコマンドを実行していない（子プロセスを作らない）
+    test: test_normal_when_commit_diff
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[正常シナリオ（コミットの差分）]
+  - name: 異常系（差分に対応しないバージョン）
+    summary: 差分のパネルで読んだ配布物が `blocks` に対応しないとき、描けない理由と「リロード」を出す
+    setup:
+      - name: 差分を持つワークスペース
+        description: 正常系（差分ビューから開く）と同じ。`mdmark.version` を `v0.8.0` にする
+      - name: Mock
+        description: 配布物を配る手元のサーバーは、`@v0.8.0` に `diffModes` を持たない配布物を配る
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide（差分ビュー）
+        EX->>PV: v0.8.0 で差分のパネルを開く
+        PV->>EX: ready
+        EX->>PV: render（previous つき）
+        PV->>PV: diffModes が無い
+        PV->>EX: loadFailed（diffUnsupported）
+    expected:
+      - '`loadFailed` の `reason` が `diffUnsupported`'
+      - パネルに `v0.8.0` を含む `差分の表示に対応していません` の理由と「リロード」のボタンがあり、文書の本文が無い
+      - '`mount` が呼ばれていない（変更後の文書だけの表示を出さない）'
+    test: test_error_when_version_without_diff
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[異常シナリオ（差分に対応しないバージョン）]
+lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
-side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。Markdown と設定ファイルは書き換えない
+side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読む。Markdown・設定ファイル・Git のリポジトリは書き換えない
 callers:
   - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#
   - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#
   - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#
-exclusivity: 1 つの Markdown に 1 つのパネル。同じ Markdown のパネルが開いていれば、新しく作らずにそのパネルを今の列のまま表に出す
+exclusivity: 1 つの Markdown に 1 つのパネルと、変更前と変更後の URI の組ごとに 1 つの差分のパネル。同じ Markdown のパネルが開いていれば、新しく作らずにそのパネルを今の列のまま表に出す
 request:
   - name: uri
     type: vscode.Uri
@@ -302,6 +381,9 @@ exceptions:
   - name: なし（ワークスペースの外の画像）
     condition: 本文の画像が `localResourceRoots` の外を指す
     notes: Webview が読まず `alt` が出る。他の本文は描く
+  - name: なし（描けない理由・差分に対応しないバージョン）
+    condition: 差分のパネルで、読んだ配布物が `diffModes` を持たないか `blocks` を含まない
+    notes: 変更後の文書だけを描いた表示は出さない。Markdown と差分ビューは変えない
 constraints:
   - item: 配布物の URL
     constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{版}/dist/index.js` と `.../dist/index.css`。版なしの URL と `@latest` は使わない'
@@ -323,7 +405,7 @@ constraints:
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, config, theme }`（`config` は `{ features?, libraries? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline` か `versionMissing`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme }`（`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, colorTheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
@@ -336,3 +418,15 @@ constraints:
   - item: 対応する VS Code
     constraint: '`engines.vscode` の下限より古い VS Code には入らない'
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
+  - item: 差分ビューの判定
+    constraint: コマンドを呼んだとき、`window.tabGroups.activeTabGroup.activeTab` の入力が `TabInputTextDiff` で、コマンドに渡された `uri` がそのタブの `original` か `modified` と一致し（`uri` が無ければそのタブを使う）、`original`・`modified` の文書の `languageId` がどちらも `markdown` なら差分ビューとして扱う。当たらないときは、今のとおり 1 つの Markdown のプレビューを開く。差分ビューの変更前の側にフォーカスがあるときも、変更後の側を対象にする。複数ファイルの差分エディター（`TabInputTextDiff` でない入力）は差分ビューとして扱わない
+    notes: PoC で作業ツリー・ステージ・コミットの差分がどれも `TabInputTextDiff` で両側 `markdown` になることを確かめた（計画書）。複数ファイルの差分エディターは要件のスコープ外。ボタンとショートカットは今の `editorLangId == markdown` のまま差分ビューの両側に出る
+  - item: 差分のパネル
+    constraint: viewType は `mdmark.preview` のままで、タブの題は `差分プレビュー {変更後のファイル名}`。変更前と変更後の URI の組で持ち、同じ組のパネルが開いていれば作らずに表に出す。同じ変更後の URI の差分でないパネルとは別に持つ。`localResourceRoots`・相対パスの基準・設定ファイルの場所は、変更後の側が `file:` のときはそのファイル、`git:` のときはその URI の `path` のファイルを基準にする
+    notes: タブの題は確認ログの決定（A）
+  - item: 差分の受け渡し
+    constraint: 拡張機能は `original`・`modified` の URI を `workspace.openTextDocument` で読み、`render` の `markdown` に変更後、`previous` に変更前の全文を入れる。Webview は `previous` を持つ `render` を受けたら、`revisions` が `modified`・`original` の 2 つをこの順に返し、`content` がそれぞれその時点の変更後・変更前の全文を返す `DiffSource` を作り、`docId` を `diff`、`diffMode` を `blocks` にして `mount` に渡す。`update` で描き直すときは、取り出し元が返す全文を先に書き換えてから `update` を呼ぶ
+    notes: 拡張機能は Git を呼ばず、`git:` の URI も VS Code の Git の機能が返す内容を使う（計画書）。`revisions` の `at` は描くたびの時刻で、`blocks` では出さない
+  - item: 差分に対応しないバージョン
+    constraint: Webview は差分の `render` を受けたとき、読んだ配布物の `diffModes` が無いか `blocks` を含まなければ、`mount` を呼ばずに `loadFailed`（`diffUnsupported`）を知らせ、描けない理由 `読み込んだ mdmark（{バージョン}）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。` と「リロード」を出す
+    notes: 判定はライブラリ本体の文書を描く.ts の制約「対応する差分の出し方」。文言は確認ログの決定（A）。書き方（`code` の位置）は画面設計

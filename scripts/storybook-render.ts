@@ -31,6 +31,7 @@ import {
   renderCommentOrphans,
 } from "../src/parts/comment.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
+import { renderDiffBlock } from "../src/parts/diff-blocks.ts";
 import { renderDiffHtml } from "../src/parts/diff-html.ts";
 import { renderDiffLines } from "../src/parts/diff-lines.ts";
 import { renderDiffMessage } from "../src/parts/diff-message.ts";
@@ -399,6 +400,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       marks: args.marks as DiffMinimapMark[],
       view: args.view as { top: number; height: number },
     }),
+  "diff-blocks": (args) => {
+    const unit = args.unit as "block" | "item" | "row";
+    const html = renderDiffBlock({
+      kind: args.kind as "add" | "del",
+      unit,
+      html: String(args.html ?? ""),
+    });
+    // 項目と行はリスト・表の中に、ブロックは前後の段落の間に置き、変えていないブロックと文字の位置が揃うことを見せる
+    if (unit === "item") {
+      return `<ol><li>前の項目</li>${html}<li>後ろの項目</li></ol>`;
+    }
+    if (unit === "row") {
+      return `<table><thead><tr><th>項目</th><th>内容</th><th>担当</th></tr></thead><tbody><tr><td>前の行</td><td>前の内容</td><td>開発者</td></tr>${html}<tr><td>後ろの行</td><td>後ろの内容</td><td>開発者</td></tr></tbody></table>`;
+    }
+    return `<p>前の段落</p>${html}<p>後ろの段落</p>`;
+  },
   "diff-message": (args) =>
     renderDiffMessage({
       kind: args.kind as "same" | "single" | "loading",
@@ -776,7 +793,8 @@ export function renderPart(options: {
     const source =
       requested === "extension" ||
       requested === "diff-revisions" ||
-      requested === "diff-content"
+      requested === "diff-content" ||
+      requested === "diff-blocks"
         ? requested
         : "library";
     return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;

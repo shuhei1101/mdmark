@@ -280,3 +280,43 @@ test("test_normal_when_aliases", async () => {
   expect(externalRequests()).toEqual([]);
   await page.close();
 });
+
+// 設定の colorTheme を埋める設定に写し、まとめた全ての文書を選んだテーマで描く（正常系（テーマを選ぶ設定））
+test("test_normal_when_color_theme", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "colorTheme: theme-slate",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n\n[B へ](b.md)\n",
+    "b.md": "# B\n\nもう 1 つの文書。\n",
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"));
+  await page.emulateMedia({ colorScheme: "light" });
+  const readBackground = () =>
+    page.evaluate(() => {
+      const root = document.querySelector("article.mdmark");
+      return root ? getComputedStyle(root).backgroundColor : "";
+    });
+  // 最初に開いた文書
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("A"),
+  );
+  await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
+  // 文書の一覧から移った 2 つ目の文書
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
+  await page.close();
+});

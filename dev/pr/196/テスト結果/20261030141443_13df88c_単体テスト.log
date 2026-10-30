@@ -1,0 +1,13 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-vscode-diff-view-preview
+
+
+ Test Files  158 passed (158)
+      Tests  1133 passed (1133)
+   Start at  14:14:52
+   Duration  77.15s (tests 43%, worker 37%, import 17%, transform 3%)
+

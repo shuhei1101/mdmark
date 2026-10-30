@@ -26,19 +26,19 @@ constants:
         value: '`onLanguage:markdown`・`onWebviewPanel:mdmark.preview`'
         description: コマンドは `contributes.commands` から VS Code が足す
       - key: contributes.commands
-        value: '`mdmark.openPreviewToSide`・`mdmark.openPreview`・`mdmark.refreshPreview`・`mdmark.openConfig`・`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`'
-        description: '`category` は `mdmark`、`title` は画面設計の「コマンドの表示名」。`mdmark.openPreviewToSide` は `icon` に `$(open-preview)`'
+        value: '`mdmark.openPreviewToSide`・`mdmark.openPreview`・`mdmark.refreshPreview`・`mdmark.openConfig`・`mdmark.openSettings`・`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`'
+        description: '`category` は `mdmark`、`title` は画面設計の「コマンドの表示名」。`mdmark.openPreviewToSide` は `icon` に `$(open-preview)`、`mdmark.openSettings` は `icon` に `$(gear)`'
       - key: contributes.menus.editor/title
-        value: '`mdmark.openPreviewToSide`（`when`: `editorLangId == markdown`、`group`: `navigation`）'
+        value: '`mdmark.openPreviewToSide`（`when`: `editorLangId == markdown`、`group`: `navigation`）・`mdmark.openSettings`（`when`: `activeWebviewPanelId == ''mdmark.preview''`、`group`: `navigation`）'
         description: エディタのタイトルのボタン
       - key: contributes.menus.commandPalette
-        value: "`mdmark.refreshPreview` は `mdmark.previewOpen`、`mdmark.openConfig` は常時、他は `editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'`"
+        value: "`mdmark.refreshPreview` は `mdmark.previewOpen`、`mdmark.openConfig`・`mdmark.openSettings` は常時、他は `editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'`"
         description: コマンドパレットに出す条件。`mdmark.previewOpen` は `setContext` でパネルが 1 つ以上開いているかを書く
       - key: contributes.keybindings
         value: '`mdmark.openPreviewToSide` に `shift+alt+d`（`mac`: `shift+alt+d`）、`when`: `editorLangId == markdown`'
         description: 既定のショートカット（Mac は `Shift+Option+D`）
       - key: contributes.configuration
-        value: 設定『VS Code 拡張機能』の `settings.json` のキー。`mdmark.version` は `pattern` `^(latest|v\d+\.\d+\.\d+)$`、`mdmark.preview.updateDelayMs` は `minimum` 0・`maximum` 5000、`mdmark.preview.theme` は `enum`
+        value: 設定『VS Code 拡張機能』の `settings.json` のキー。`mdmark.version` は `pattern` `^(latest|v\d+\.\d+\.\d+)$`、`mdmark.preview.updateDelayMs` は `minimum` 0・`maximum` 5000、`mdmark.preview.theme` は `enum`、`mdmark.colorTheme` は `enum`（`""`・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`）と `enumItemLabels`（`""` は「（設定ファイルに従う）」、他は名前のまま）
         description: 既定は `SETTING_DEFAULTS` と同じ値
     refs:
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#
@@ -124,6 +124,7 @@ functions:
          - `mdmark.openPreviewToSide`・`mdmark.openPreview` は `PreviewManager.open`（`ViewColumn.Beside`・`ViewColumn.Active`）
          - `mdmark.refreshPreview` は `PreviewManager.refresh`
          - `mdmark.openConfig` は対象の Markdown の基準のフォルダで `openConfigFile`
+         - `mdmark.openSettings` は `commands.executeCommand("workbench.action.openSettings", "@ext:" + context.extension.id)`（`context.extension.id` は `package.json` の `publisher`.`name`）
          - `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` は `exportMarkdown`（`export`・`browser`・`print`）
       4. `workspace.onDidChangeTextDocument`・`onDidSaveTextDocument`・`onDidChangeConfiguration`・`window.onDidChangeTextEditorVisibleRanges` を `PreviewManager` へ、設定ファイルの `createFileSystemWatcher` の作成・変更・削除を `PreviewManager.handleConfigChange` へつなぐ
       5. テストのときだけ `{ inspectPreview }` を返す

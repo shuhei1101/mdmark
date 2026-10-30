@@ -63,6 +63,27 @@ scenarios:
       - 書き出し先に `.html` が残らない
       - ブラウザで開く代役は呼ばれない
     test: test_error_when_output_unwritable
+  - name: 正常シナリオ（選んだテーマで書き出す）
+    setup:
+      - name: テーマを選んだ VS Code
+        description: 正常シナリオと同じ Markdown を開き、`mdmark.config.yaml` のテーマを選ぶキーは theme-paper、VS Code の設定のテーマは theme-slate
+        notes: 書き出した HTML を開くブラウザの配色はライト
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant B as ブラウザ
+        W->>EX: HTML に書き出す
+        EX->>EX: プレビューと同じ優先の順でテーマを決めて HTML に書く
+        W->>B: 書き出した HTML を開く
+        B-->>W: theme-slate の明るい配色で表示
+    expected:
+      - 書き出した HTML をブラウザで開くと、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値（プレビューと同じテーマ）
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]
 lead: 文書を書く人が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
 primary_actor: 文書を書く人

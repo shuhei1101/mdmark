@@ -12,6 +12,7 @@ import {
   lastPanel,
   openMarkdown,
   type RecordedPanel,
+  readFixture,
   recordedPanels,
   renders,
   replaceFirstLine,
@@ -298,5 +299,43 @@ suite("プレビューを描き直す", () => {
     } finally {
       library.close();
     }
+  });
+
+  // mdmark.colorTheme を変えると設定ファイルの colorTheme を上書きして描き直し、空に戻すと設定ファイルのテーマで描く
+  test("test_normal_when_color_theme_changed", async () => {
+    // 準備
+    const config = "colorTheme: theme-paper\n";
+    await setSetting("preview.theme", "light");
+    const { record } = await openGuide({ config });
+    /** Webview の文書に付いたテーマの属性 */
+    const shownTheme = async () =>
+      (await inspect("[data-mdmark-color-theme]"))[0]?.attributes[
+        "data-mdmark-color-theme"
+      ];
+    await waitFor(async () => (await shownTheme()) === "theme-paper");
+    // 実行・検証: theme-slate にする
+    let before = renders(record).length;
+    await setSetting("colorTheme", "theme-slate");
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.strictEqual(
+      renders(record).at(-1)?.config.colorTheme,
+      "theme-slate",
+    );
+    await waitFor(async () => (await shownTheme()) === "theme-slate");
+    // 実行・検証: 空に戻す
+    before = renders(record).length;
+    await setSetting("colorTheme", "");
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.strictEqual(
+      renders(record).at(-1)?.config.colorTheme,
+      "theme-paper",
+    );
+    await waitFor(async () => (await shownTheme()) === "theme-paper");
+    // 設定ファイルは書き換わらない
+    assert.strictEqual(await readFixture("mdmark.config.yaml"), config);
   });
 });

@@ -118,3 +118,9 @@ items:
     summary: Claude Code が `list_tags` で、索引のタグの語彙を説明と付いている文書の数つきで受け取る
   - page: MCPサーバーを起動・停止する.yaml
     summary: 文書を書く人が `mdmark serve` で MCP の常駐サーバーを起動し、接続先を確かめ、使い終えたら止める
+  - page: テーマを選ぶ.yaml
+    summary: 設定で mdmark に入れたテーマを選び、明暗は今の決め方のままそのテーマの配色で描く
+  - page: プレビューから設定を開く.yaml
+    summary: プレビューの歯車のボタンかコマンドパレットから VS Code の設定画面を mdmark の項目に絞って開き、変えた設定をプレビューに映す
+  - page: 差分ビューの変更をプレビューで見る.yaml
+    summary: 文書を書く人が VS Code の差分ビューからプレビューを開き、追加・変更したブロックと削除したブロックを色分けした文書で読む

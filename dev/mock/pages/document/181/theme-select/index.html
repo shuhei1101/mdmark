@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / theme-select（テーマを選んで描いた文書） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 土台に無い部品（注意書き・差分・図・グラフ）の規則（#80 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/80/assets/parts.css">
+  <!-- 採用スタイル本体の変数の値（既定のテーマ dev-swiss） -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <link rel="stylesheet" data-color-theme-css="../../../../assets/themes/{theme}.css">
+  <!-- 印刷の見え方（この案だけの規則） -->
+  <link rel="stylesheet" href="style.css">
+  <!-- テーマと配色の切り替え（モックだけの仕組み） -->
+  <script src="../../../../refs/181/assets/theme.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 設定で選ぶテーマの名前と、明暗・印刷 -->
+  <div class="mock-bar">
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="設定で選ぶテーマ">
+      <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-slate">theme-slate</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-contrast">theme-contrast</a>
+      <a class="mock-bar-item" data-color-theme-value="sepia">sepia（知らない名前）</a>
+      <!-- [data-color-theme-applied]: theme.js が描いたテーマの名前を入れる -->
+      <span>描いたテーマ: <output data-color-theme-applied></output></span>
+    </div>
+    <!-- [data-scheme-value]: theme.js が行き先の URL（?scheme=）と今の配色の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <a class="mock-bar-item" data-scheme-value="light">明るい配色</a>
+      <a class="mock-bar-item" data-scheme-value="dark">ダーク</a>
+      <a class="mock-bar-item" data-scheme-value="parent-light">親の class で明るい配色（OS はダーク）</a>
+      <a class="mock-bar-item" data-scheme-value="print">印刷</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページの本文の領域。[data-mount-parent]: theme.js が「親の class」の配色で mdmark-theme-light を付ける -->
+  <main class="host" data-mount-parent>
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">181</a> / theme-select
+    </nav>
+
+    <!-- mdmark が描いた文書 -->
+    <article class="mdmark" id="top">
+      <h1>配布物を読み込んで文書を描く</h1>
+      <p>mdmark は、使う側のページが渡した Markdown をブラウザで文書として描きます。見た目の値は <code>--mdmark-</code> で始まる CSS 変数で配り、<a href="#theme">テーマの上書き</a>で変えられます。<span class="mdmark-term" tabindex="0">配布物</span>の版は <span class="mdmark-badge">v0.6.0</span> です。</p>
+
+      <!-- リスト -->
+      <h2>導入の流れ</h2>
+      <ol>
+        <li>配布物の <code>index.js</code> と <code>index.css</code> をページで読み込む</li>
+        <li>描く先の要素を用意する</li>
+        <li><code>mount</code> に要素と Markdown を渡す
+          <ul>
+            <li>本文だけを差し替えるときは <code>update</code> を呼ぶ</li>
+            <li>片付けるときは <code>destroy</code> を呼ぶ</li>
+          </ul>
+        </li>
+      </ol>
+
+      <!-- コードブロック: 強調した行を含む -->
+      <h2>文書を描く</h2>
+      <p>描く先の要素と、Markdown と設定を渡します。</p>
+      <pre tabindex="0"><code class="language-ts">import { mount } from "./mdmark/index.js";
+
+<span class="mdmark-code-highlight">const view = mount(document.querySelector("#doc"), {</span>  markdown: "# はじめに\n\n本文を書きます。",
+  config: { features: { table: true } },
+});</code></pre>
+
+      <!-- 表 -->
+      <h2 id="theme">テーマの上書き</h2>
+      <p>使う側のページの CSS で変数の値を書き換えます。</p>
+      <table tabindex="0">
+        <thead>
+          <tr>
+            <th>変数</th>
+            <th>役割</th>
+            <th style="text-align: right">既定の値</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--mdmark-color-bg</code></td>
+            <td>文書の地の色</td>
+            <td style="text-align: right">#ffffff</td>
+          </tr>
+          <tr>
+            <td><code>--mdmark-color-link</code></td>
+            <td>リンクの色</td>
+            <td style="text-align: right">#0f766e</td>
+          </tr>
+          <tr>
+            <td><code>--mdmark-color-border</code></td>
+            <td>枠と表の罫線の色</td>
+            <td style="text-align: right">#e4e4e7</td>
+          </tr>
+          <tr>
+            <td><code>--mdmark-color-table-head</code></td>
+            <td>表の見出し行の色</td>
+            <td style="text-align: right">#f4f4f5</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 注意書き: 5 つの種類 -->
+      <h2>注意書き</h2>
+      <div class="markdown-alert markdown-alert-note">
+        <p class="markdown-alert-title">補足</p>
+        <p>変数の名前は変わらないため、使う側の上書きはそのまま効きます。</p>
+      </div>
+      <div class="markdown-alert markdown-alert-tip">
+        <p class="markdown-alert-title">ヒント</p>
+        <p>層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝ちます。</p>
+      </div>
+      <div class="markdown-alert markdown-alert-important">
+        <p class="markdown-alert-title">重要</p>
+        <p>書き出した HTML は外のファイルを読みに行きません。</p>
+      </div>
+      <div class="markdown-alert markdown-alert-warning">
+        <p class="markdown-alert-title">警告</p>
+        <p>版を上げる前に <code>mdmark check</code> を通してください。</p>
+      </div>
+      <div class="markdown-alert markdown-alert-caution">
+        <p class="markdown-alert-title">注意</p>
+        <p>設定の版を手で書き換えると、移行の手順が当たりません。</p>
+      </div>
+
+      <!-- 引用 -->
+      <blockquote>
+        <p>印の無い引用は、面の色と字下げで本文と分けます。</p>
+      </blockquote>
+
+      <!-- 差分: 行と語の色分け、コメントを付けた範囲 -->
+      <h2>文書の差分</h2>
+      <p>2 つの版の間で変わった行と語を色で分けます。<span class="mdmark-comment-mark">コメントを付けた範囲</span>は面と下線で示します。</p>
+      <div class="mdmark-diff-lines">
+        <div class="mdmark-diff-line"><span class="mdmark-diff-sign"> </span><span>## テーマの上書き</span></div>
+        <div class="mdmark-diff-line" data-kind="del"><span class="mdmark-diff-sign">-</span><span>リンクの色は <del class="mdmark-diff-word">#0969da</del> です。</span></div>
+        <div class="mdmark-diff-line" data-kind="add"><span class="mdmark-diff-sign">+</span><span>リンクの色は <ins class="mdmark-diff-word">#0f766e</ins> です。</span></div>
+        <div class="mdmark-diff-line"><span class="mdmark-diff-sign"> </span><span>変数の名前は変わりません。</span></div>
+      </div>
+
+      <!-- 図: 層と箱 -->
+      <h2>構成図</h2>
+      <div class="mdmark-diagram" role="img" aria-label="使う側のページから mdmark を通して文書と索引へ至る構成図">
+        <div class="mdmark-diagram-lane" data-kind="external">
+          <span class="mdmark-diagram-lane-label">外部</span>
+          <div class="mdmark-diagram-row">
+            <div class="mdmark-diagram-node" data-kind="external"><span class="mdmark-diagram-node-kind">外部</span><span class="mdmark-diagram-node-name">使う側のページ</span></div>
+            <span class="mdmark-diagram-arrow" aria-hidden="true">→</span>
+            <div class="mdmark-diagram-node" data-kind="mcp"><span class="mdmark-diagram-node-kind">MCP</span><span class="mdmark-diagram-node-name">read_guide</span></div>
+          </div>
+        </div>
+        <div class="mdmark-diagram-lane" data-kind="script">
+          <span class="mdmark-diagram-lane-label">処理</span>
+          <div class="mdmark-diagram-row">
+            <div class="mdmark-diagram-node" data-kind="script"><span class="mdmark-diagram-node-kind">スクリプト</span><span class="mdmark-diagram-node-name">mount</span></div>
+            <span class="mdmark-diagram-arrow" aria-hidden="true">→</span>
+            <div class="mdmark-diagram-node" data-kind="llm"><span class="mdmark-diagram-node-kind">LLM</span><span class="mdmark-diagram-node-name">要約</span></div>
+            <span class="mdmark-diagram-arrow" aria-hidden="true">→</span>
+            <div class="mdmark-diagram-node" data-kind="dm"><span class="mdmark-diagram-node-kind">判断</span><span class="mdmark-diagram-node-name">機能の選択</span></div>
+          </div>
+        </div>
+        <div class="mdmark-diagram-lane" data-kind="data">
+          <span class="mdmark-diagram-lane-label">データ</span>
+          <div class="mdmark-diagram-row">
+            <div class="mdmark-diagram-node" data-kind="data"><span class="mdmark-diagram-node-kind">データ</span><span class="mdmark-diagram-node-name">索引</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- グラフ: 4 つの系列 -->
+      <h3>系列の色</h3>
+      <svg class="mdmark-chart" viewBox="0 0 280 140" role="img" aria-label="系列 1 から 4 の棒グラフ">
+        <line class="mdmark-chart-axis" x1="24" y1="116" x2="272" y2="116"></line>
+        <rect class="mdmark-chart-bar" data-series="1" x="40" y="36" width="36" height="80"></rect>
+        <rect class="mdmark-chart-bar" data-series="2" x="100" y="56" width="36" height="60"></rect>
+        <rect class="mdmark-chart-bar" data-series="3" x="160" y="26" width="36" height="90"></rect>
+        <rect class="mdmark-chart-bar" data-series="4" x="220" y="70" width="36" height="46"></rect>
+        <text class="mdmark-chart-label" x="58" y="132" text-anchor="middle">系列 1</text>
+        <text class="mdmark-chart-label" x="118" y="132" text-anchor="middle">系列 2</text>
+        <text class="mdmark-chart-label" x="178" y="132" text-anchor="middle">系列 3</text>
+        <text class="mdmark-chart-label" x="238" y="132" text-anchor="middle">系列 4</text>
+      </svg>
+
+      <!-- 折り畳み -->
+      <h3>対応ブラウザ</h3>
+      <details>
+        <summary>下限の版を見る</summary>
+        <ul>
+          <li>Chrome 99</li>
+          <li>Firefox 97</li>
+          <li>Safari 16.4</li>
+        </ul>
+      </details>
+
+      <hr>
+
+      <!-- 知らせの枠: 外部ライブラリを読めなかった箇所 -->
+      <h2>売上の推移</h2>
+      <p>図は、文書が使うときだけ外部ライブラリを読み込んで描きます。</p>
+      <div class="mdmark-notice" role="status">
+        <strong class="mdmark-notice-title">この箇所を表示できません</strong>
+        図を描くライブラリを読み込めませんでした。通信の状態を確かめて、ページを読み込み直してください。
+      </div>
+      <p>読み込めなかった箇所のほかは、そのまま描かれます。詳しくは <a href="https://www.jsdelivr.com/">jsDelivr</a> の案内を参照してください。</p>
+    </article>
+  </main>
+</body>
+</html>

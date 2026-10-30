@@ -1,0 +1,10 @@
+
+> lint
+> biome check .
+
+Checked 544 files in 3s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+lint_exit=0
