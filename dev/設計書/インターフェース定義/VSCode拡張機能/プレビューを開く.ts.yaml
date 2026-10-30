@@ -419,7 +419,7 @@ constraints:
     constraint: '`engines.vscode` の下限より古い VS Code には入らない'
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
   - item: 差分ビューの判定
-    constraint: コマンドを呼んだとき、`window.tabGroups.activeTabGroup.activeTab` の入力が `TabInputTextDiff` で、コマンドに渡された `uri`（無ければそのタブ）の `modified` と一致し、`original`・`modified` の文書の `languageId` がどちらも `markdown` なら差分ビューとして扱う。当たらないときは、今のとおり 1 つの Markdown のプレビューを開く。差分ビューの変更前の側にフォーカスがあるときも、変更後の側を対象にする。複数ファイルの差分エディター（`TabInputTextDiff` でない入力）は差分ビューとして扱わない
+    constraint: コマンドを呼んだとき、`window.tabGroups.activeTabGroup.activeTab` の入力が `TabInputTextDiff` で、コマンドに渡された `uri` がそのタブの `original` か `modified` と一致し（`uri` が無ければそのタブを使う）、`original`・`modified` の文書の `languageId` がどちらも `markdown` なら差分ビューとして扱う。当たらないときは、今のとおり 1 つの Markdown のプレビューを開く。差分ビューの変更前の側にフォーカスがあるときも、変更後の側を対象にする。複数ファイルの差分エディター（`TabInputTextDiff` でない入力）は差分ビューとして扱わない
     notes: PoC で作業ツリー・ステージ・コミットの差分がどれも `TabInputTextDiff` で両側 `markdown` になることを確かめた（計画書）。複数ファイルの差分エディターは要件のスコープ外。ボタンとショートカットは今の `editorLangId == markdown` のまま差分ビューの両側に出る
   - item: 差分のパネル
     constraint: viewType は `mdmark.preview` のままで、タブの題は `差分プレビュー {変更後のファイル名}`。変更前と変更後の URI の組で持ち、同じ組のパネルが開いていれば作らずに表に出す。同じ変更後の URI の差分でないパネルとは別に持つ。`localResourceRoots`・相対パスの基準・設定ファイルの場所は、変更後の側が `file:` のときはそのファイル、`git:` のときはその URI の `path` のファイルを基準にする
