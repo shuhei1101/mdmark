@@ -12,6 +12,8 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 
 ## 一覧
 
+<!-- table: data -->
+
 | 名前 | ツール | 説明 |
 | --- | --- | --- |
 | [使い方集を読む](#使い方集を読む) | `read_guide` | 使い方集の索引の名前ごとに、本文を返す |
@@ -21,6 +23,8 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | [文書を探す](#文書を探す) | `find_docs` | 設定の `index` の索引から、条件に当たる文書を、既定の件数ずつ返す |
 | [タグの語彙を見る](#タグの語彙を見る) | `list_tags` | 設定の `index` の索引のタグの語彙を、付いている文書の数つきで返す |
 | [索引を書き換える](#索引を書き換える) | `update_index` | 索引の文書・用語・タグの語彙の項目を置き換え、足し、消す |
+
+<!-- /table -->
 
 ## 接続先
 
@@ -192,6 +196,8 @@ MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
 { "tags": ["設計"], "include": ["path"], "format": "json" }
 ```
 
+<!-- table: data -->
+
 | フィールド | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `text` | 任意 | 題・別名・概要のどれかに含まれる語。語と題・別名・概要の両方を NFKC・英字の小文字化・前後の空白の除去で正規化して比べる |
@@ -206,6 +212,8 @@ MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
 | `count_only` | 任意 | `true` のとき、文書の行を返さず、総件数・合計文字数・タグごとの件数だけを返す。既定は `false` |
 | `format` | 任意 | 結果の形式。`markdown`（既定）は Markdown のテキストだけを返し、`json` は structuredContent と text に同じ JSON を入れる |
 | `config` | 任意 | 使う設定ファイルのパス |
+
+<!-- /table -->
 
 渡した条件を全て満たす文書を返す。
 条件を 1 つも渡さないと、全ての文書が当たり、既定の件数の先頭のページを返す。
@@ -234,6 +242,8 @@ MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
 }
 ```
 
+<!-- table: data -->
+
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `total` | 数値 | 条件に当たった文書の総件数 |
@@ -259,6 +269,8 @@ MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
 | `docs[].relations[].direction` | 文字列 | 関係の向き。`outgoing` は `related_to` の文書からこの行の文書へ、`incoming` はこの行の文書から `related_to` の文書へ。`related_to` を渡したときだけ `relations` を返す |
 | `docs[].relations[].type` | 文字列か null | `related_to` の文書から見た関係の種類。`outgoing` は記載した `type`、`incoming` は逆向きの名前（`requires` → `required_by`、`references` → `referenced_by`、`replaces` → `replaced_by`、`part_of` → `has_part`、`change_together` はそのまま）。本文のリンクと別名の出現だけで当たったものと、索引の文字列の要素は `null` |
 | `docs[].relations[].when` | 文字列か null | 索引の関連に記載した `when`。`type` が `null` の関係は `null` |
+
+<!-- /table -->
 
 `relations` の並びは `outgoing` → `incoming`、同じ向きの中は索引の関連の並び。
 索引の関連が無い向きだけ、本文のリンクか別名の出現による関係を 1 つ置く。
@@ -322,6 +334,8 @@ git の最終更新日時・最終更新者も返さない。
 { "tags": [{ "name": "topic:mcp", "group": "topic", "description": "含める: MCP のツール。含めない: Claude Code の設定。例: find_docs", "aliases": ["MCP"], "deprecated": null, "docs": 2 }] }
 ```
 
+<!-- table: data -->
+
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `tags[].name` | 文字列 | タグの名前 |
@@ -330,6 +344,8 @@ git の最終更新日時・最終更新者も返さない。
 | `tags[].aliases` | 文字列の並び | 別名。語彙に無いときは空 |
 | `tags[].deprecated` | 文字列か null | やめたタグの振り替え先の `name`。やめたタグでないときは `null` |
 | `tags[].docs` | 数値 | そのタグが付いている文書の数。文書のタグが `name` か `aliases` に当たる文書を数える |
+
+<!-- /table -->
 
 並びは索引の `tags` の並びで、同じ `name` が複数あるときは先の 1 つだけを返す。
 `format` が `markdown` のときは、タグの表だけのテキストを返し、structuredContent を返さない。

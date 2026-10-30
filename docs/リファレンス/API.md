@@ -6,6 +6,8 @@
 
 ## 一覧
 
+<!-- table: data -->
+
 | 名前 | 呼び出し | 説明 |
 | --- | --- | --- |
 | [版を返す](#版を返す) | `version()` | 読み込んだ配布物の版を返す |
@@ -21,6 +23,8 @@
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
 | [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 使う側の要素の中の選んだ箇所に、コメントを付けられるようにする |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 見た目の値を持つ変数。使う側が上書きする |
+
+<!-- /table -->
 
 ## 版を返す
 
@@ -100,6 +104,8 @@ handle.update("# 次の見出し");
 handle.destroy();
 ```
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。class `mdmark` が付く |
@@ -112,6 +118,8 @@ handle.destroy();
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を渡さないときは使わない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
+
+<!-- /table -->
 
 `opts.diffMode` の値。
 
@@ -235,6 +243,8 @@ import { render } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/d
 const html = render("# 見出し\n\n本文");
 ```
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `markdown` | 必須 | HTML にする Markdown |
@@ -243,6 +253,8 @@ const html = render("# 見出し\n\n本文");
 | `opts.docId` | 任意 | `mount` の `opts.docId` と同じ |
 | `opts.references` | 任意 | `mount` の `opts.references` と同じ |
 | `opts.aliases` | 任意 | `mount` の `opts.aliases` と同じ |
+
+<!-- /table -->
 
 ### レスポンス
 
@@ -360,6 +372,8 @@ const { byDocument, avoided, targets } = collectMatches({
 
 `byDocument` の要素（`MdmarkMatch`）は、次のキーを持つ。
 
+<!-- table: data -->
+
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `kind` | `'term' \| 'glossary' \| 'doc' \| 'alias'` | 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は `input.aliases` のエイリアス |
@@ -372,7 +386,11 @@ const { byDocument, avoided, targets } = collectMatches({
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
 | `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
 
+<!-- /table -->
+
 `avoided` の要素（`MdmarkAvoidedMatch`）は、次のキーを持つ。
+
+<!-- table: data -->
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
@@ -385,6 +403,8 @@ const { byDocument, avoided, targets } = collectMatches({
 | `line` | `number` | `byDocument` の要素の `line` と同じ |
 | `start` | `number` | `byDocument` の要素の `start` と同じ |
 | `end` | `number` | `byDocument` の要素の `end` と同じ |
+
+<!-- /table -->
 
 `targets` の要素（`MdmarkMatchTarget`）は、`kind`・`aliasType`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
 
@@ -548,6 +568,8 @@ const { aliases, problems } = buildAliases({
 
 `MdmarkAlias` は、次のキーを持つ。
 
+<!-- table: data -->
+
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `alias_type` | `MdmarkAliasType` | 種類。`'term' \| 'doc' \| 'command' \| 'url' \| 'skill' \| 'tool' \| 'path' \| 'avoid'`。`env` は含めない |
@@ -564,6 +586,8 @@ const { aliases, problems } = buildAliases({
 | `avoid` | `string[]` | `term` の種類の、使わないことにした言い方 |
 | `replacement` | `string` | `avoid` の種類の置き換え先の語 |
 | `related` | `string[]` | `term` の関連する語。受け取るだけで、使わない |
+
+<!-- /table -->
 
 `MdmarkAliasProblem` は、次のキーを持つ。
 
@@ -677,6 +701,8 @@ const handle = await mountView(document.querySelector("#tasks"), {
 handle.destroy();
 ```
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。中身を空にして、class `mdmark` の要素を 1 つ置き、その中に描く |
@@ -686,6 +712,8 @@ handle.destroy();
 | `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`opts.group` があれば `"board"`、無ければ `"table"`。`opts.group` が無いときは `"table"` だけ。印の `default=` に当たる |
 | `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列と種類（`select`・`text`・`date`）のオブジェクト。キーは `opts.columns` のどれか。省くと、どの列にも付けない。印の `filter=` に当たる |
 | `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を引くオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使えるアイコンは [ビュー](./記法.md#ビュー) のとおり。印の `icons=` に当たる |
+
+<!-- /table -->
 
 列名と項目の値は文字として出し、HTML として解釈しない。
 同じ要素へもう一度 `mountView` を呼ぶと、前の `mountView` の `destroy` を先に行う。

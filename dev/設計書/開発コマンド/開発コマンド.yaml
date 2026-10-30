@@ -105,22 +105,8 @@ categories:
     refs:
       - dev/設計書/テスト/テスト実行方法#
   - name: 静的検査
-    commands: |-
-      lint と整形（Biome）。
-
-      ```bash
-      npm run lint
-      ```
-
-      型検査（TypeScript）。
-
-      ```bash
-      npm run typecheck
-      ```
-    verification:
-      state: 済
-      date: '2026-10-13'
-      detail: どちらも違反・型エラー 0 件で終わることを確かめた
+    refs:
+      - dev/設計書/テスト/テスト実行方法#layers[lint]
   - name: ビルド・生成
     prerequisites:
       - '`npm ci` で依存を入れてある'
