@@ -1258,3 +1258,4 @@ test_files:
   - tests/unit/src/render/syntax/html.test.ts
   - tests/unit/src/render/syntax/views.test.ts
   - tests/unit/src/render/syntax/code-blocks.test.ts
+  - tests/unit/src/render/syntax/collapse.test.ts

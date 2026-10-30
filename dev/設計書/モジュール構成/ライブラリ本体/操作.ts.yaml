@@ -1299,6 +1299,7 @@ test_files:
   - tests/unit/src/interact/sticky.browser.test.ts
   - tests/unit/src/interact/clipboard.browser.test.ts
   - tests/unit/src/interact/code-blocks.browser.test.ts
+  - tests/unit/src/interact/trees.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭
