@@ -1,0 +1,232 @@
+/* #196 のモック: 描いた文書の上の差分の色分け（追加・削除したブロック）と、モックの VS Code の差分ビュー。
+   色は採用スタイル本体（assets/style.css）と選んだテーマの --mdmark-color-diff-* を使う */
+
+/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* 色を当てたブロックの内側の余白と、記号を置く列の幅 */
+    --mdmark-diff-block-pad-block: 0.375rem;
+    --mdmark-diff-block-pad-inline: 0.75rem;
+    --mdmark-diff-block-gutter: 1.75rem;
+
+    /* 読み上げにだけ出す文字（追加した箇所・削除した箇所の名前） */
+    .mdmark-visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      border: 0;
+      white-space: nowrap;
+    }
+
+    /* 色を当てたブロック: 面の色で囲み、中のブロックの文字の位置は前後の変えていないブロックと揃える */
+    .mdmark-diff-block {
+      position: relative;
+      margin-inline: calc(-1 * var(--mdmark-diff-block-pad-inline));
+      padding: var(--mdmark-diff-block-pad-block) var(--mdmark-diff-block-pad-inline);
+      border-radius: var(--mdmark-radius);
+
+      /* 中のブロック: 外側の余白は囲みが持つ */
+      > :not(.mdmark-visually-hidden) {
+        margin-block: 0;
+      }
+
+      /* 追加・変更したブロック */
+      &[data-kind="add"] {
+        background: var(--mdmark-color-diff-add-bg);
+      }
+
+      /* 削除したブロック（前のリビジョンでの位置に差し込む） */
+      &[data-kind="del"] {
+        background: var(--mdmark-color-diff-del-bg);
+      }
+    }
+
+    /* 見出しを囲んだブロック: 見出しの上の広い余白を囲みの外に出す */
+    .mdmark-diff-block:has(> h2) {
+      margin-block-start: calc(var(--mdmark-space) * 2.25);
+    }
+
+    /* 案 A（記号）: 囲みの左の余白に + と − を置く。文字の位置を揃えるため、記号の列の分だけ囲みを左へ広げる */
+    &[data-diff-marker="sign"] .mdmark-diff-block {
+      margin-inline-start: calc(-1 * var(--mdmark-diff-block-gutter));
+      padding-inline-start: var(--mdmark-diff-block-gutter);
+    }
+
+    /* 記号: 等幅の太字で、囲みの 1 行目の高さに置く */
+    .mdmark-diff-block-sign {
+      position: absolute;
+      inset-block-start: var(--mdmark-diff-block-pad-block);
+      inset-inline-start: 0;
+      width: var(--mdmark-diff-block-gutter);
+      font-family: var(--mdmark-font-mono);
+      font-weight: 700;
+      line-height: var(--mdmark-line-height);
+      text-align: center;
+      user-select: none;
+
+      [data-kind="add"] > & {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      [data-kind="del"] > & {
+        color: var(--mdmark-color-diff-del-sign);
+      }
+    }
+
+    /* 案 B（ラベル）: 囲みの全体に線を引き、右上に「追加」「削除」の札を置く */
+    &[data-diff-marker="label"] .mdmark-diff-block {
+      padding-block-start: calc(var(--mdmark-diff-block-pad-block) + 1.5rem);
+      border: 1px solid;
+
+      &[data-kind="add"] {
+        border-color: var(--mdmark-color-diff-add-sign);
+      }
+
+      &[data-kind="del"] {
+        border-color: var(--mdmark-color-diff-del-sign);
+      }
+    }
+
+    /* リストの項目と表の行: 項目・行の単位で色を当てる（リストや表を囲みで包まない） */
+    &[data-diff-marker] :is(li, tr).mdmark-diff-block {
+      margin-inline: 0;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    /* リストの項目の記号: 番号・点の左の余白に置く */
+    li.mdmark-diff-block > .mdmark-diff-block-sign {
+      inset-block-start: 0;
+      inset-inline-start: calc(-1 * (1.6em + var(--mdmark-diff-block-gutter)));
+    }
+
+    /* 表の行の記号: 行の 1 つ目のセルの左の余白に置く */
+    tr.mdmark-diff-block > td:first-child {
+      position: relative;
+    }
+
+    tr.mdmark-diff-block .mdmark-diff-block-sign {
+      inset-block-start: 0.45em;
+      inset-inline-start: 0;
+      width: 0.9em;
+    }
+
+    /* 案 B のリストの項目と表の行: 線は囲みの全体に引き、札は行の末尾に置く */
+    &[data-diff-marker="label"] :is(li, tr).mdmark-diff-block {
+      padding: 0;
+      border: 0;
+      outline: 1px solid;
+      outline-offset: -1px;
+
+      &[data-kind="add"] {
+        outline-color: var(--mdmark-color-diff-add-sign);
+      }
+
+      &[data-kind="del"] {
+        outline-color: var(--mdmark-color-diff-del-sign);
+      }
+    }
+
+    &[data-diff-marker="label"] :is(li, tr).mdmark-diff-block .mdmark-diff-block-label {
+      position: static;
+      margin-inline-start: 0.75em;
+    }
+
+    /* 札: 囲みの右上に置く小さな文字 */
+    .mdmark-diff-block-label {
+      position: absolute;
+      inset-block-start: 0.25rem;
+      inset-inline-end: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1.5;
+      user-select: none;
+
+      [data-kind="add"] > & {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      [data-kind="del"] > & {
+        color: var(--mdmark-color-diff-del-sign);
+      }
+    }
+  }
+}
+
+/* モックの VS Code の差分ビュー: 変更前と変更後を左右に並べ、削除した行と追加した行に色を当てる（実装では VS Code が描く） */
+.vsc-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 480px;
+  background: var(--vsc-tab-bg);
+
+  /* 狭い列: 変更前と変更後を縦に並べる */
+  @container diff (width < 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 差分ビューの列: 狭い列で縦に並べる判定に使う */
+.vsc-diff-host {
+  container: diff / inline-size;
+}
+
+/* 差分ビューの片側: 等幅の文字で原文を出す */
+.vsc-diff-side {
+  min-width: 0;
+  margin: 0;
+  padding-block: 12px;
+  color: var(--vsc-tab-text);
+  font-family: var(--mdmark-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+
+  /* 右の側: 左の側との境の線 */
+  & + & {
+    border-inline-start: 1px solid var(--vsc-border);
+  }
+}
+
+/* 差分ビューの 1 行: 長い行は折り返す */
+.vsc-diff-line {
+  display: block;
+  min-height: 1.6em;
+  padding-inline: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  /* 削除した行・追加した行: VS Code の差分の色の仮の値 */
+  &[data-kind="del"] {
+    background: var(--vsc-diff-del-bg);
+  }
+
+  &[data-kind="add"] {
+    background: var(--vsc-diff-add-bg);
+  }
+
+  /* 相手の側にだけある行の高さを空けた行 */
+  &[data-kind="pad"] {
+    background: repeating-linear-gradient(-45deg, transparent 0 4px, var(--vsc-border) 4px 5px);
+  }
+
+  /* 今の場面に当たらない行: 上の display の指定より後に置いて隠す */
+  &[hidden] {
+    display: none;
+  }
+}
+
+/* VS Code の差分の色の仮の値（モックの枠だけに使う） */
+:root {
+  --vsc-diff-del-bg: rgb(255 0 0 / 0.12);
+  --vsc-diff-add-bg: rgb(155 185 85 / 0.22);
+}
+
+/* VS Code のテーマがダーク */
+.vscode-dark {
+  --vsc-diff-del-bg: rgb(255 0 0 / 0.2);
+  --vsc-diff-add-bg: rgb(155 185 85 / 0.2);
+}
