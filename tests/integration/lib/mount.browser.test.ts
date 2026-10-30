@@ -3995,13 +3995,17 @@ test("test_error_when_diff_blocks_content_rejected", async () => {
     "比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。",
   );
   expect(find(el, ".mdmark-content").firstElementChild).toBe(notice);
-  // 検証: `console.error` が 1 回呼ばれ、引数に `content`・`guide`・元のエラーを含む
-  expect(consoleError).toHaveBeenCalledTimes(1);
-  const args = consoleError.mock.calls.flat();
-  for (const word of ["content", "guide"]) {
-    expect(args.some((arg) => String(arg).includes(word))).toBe(true);
+  // 検証: `console.error` が取り出せなかった本文ごとに 1 回（前と後の 2 回）呼ばれる
+  expect(consoleError).toHaveBeenCalledTimes(2);
+  // 検証: それぞれの引数に `content`・`guide`・そのリビジョンの `id`・元のエラーを含む
+  for (const [call, revisionId] of consoleError.mock.calls.map(
+    (args, index) => [args, ["r1", "r2"][index]] as const,
+  )) {
+    for (const word of ["content", "guide", revisionId]) {
+      expect(call.some((arg) => String(arg).includes(word))).toBe(true);
+    }
+    expect(call).toContain(error);
   }
-  expect(args).toContain(error);
 });
 
 // 知らない `diffMode` は例外を投げず `button` として描く（異常系）
