@@ -1,0 +1,17 @@
+/* 表の語の欄・条件のチップと、タブ・ステップの折りたたみの印刷の規則（#225 で共有するアセット）。実装では @media print で当てる。
+   折りたたみを開くのは印刷の前のスクリプト（refs/19/assets/syntax.js）が受け持つ */
+
+/* mdmark の層: 印刷のときの語の欄・チップ・折りたたみ */
+@layer mdmark {
+  .mdmark {
+    /* 紙では押せない操作（語の欄・チップの ×・全て解除）: 出さない。当てている条件はチップの文字で残す */
+    :is(.mdmark-table-search, .mdmark-chip-remove, .mdmark-chips-clear) {
+      display: none;
+    }
+
+    /* タブ・ステップの折りたたみの見出し: 開閉の印を外す */
+    .mdmark-collapsible > summary {
+      list-style: none;
+    }
+  }
+}

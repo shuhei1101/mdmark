@@ -1,0 +1,22 @@
+/* ファイルツリーの追加分の印刷の規則（#225 で共有するアセット）。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる。閉じたフォルダを開くのは印刷の前のスクリプト（tree.js）が受け持つ */
+
+/* mdmark の層: 印刷のときのファイルツリー */
+@layer mdmark {
+  .mdmark {
+    /* 紙では押せない操作（帯のコピーボタン・コピーできないときのパネル・開閉の印）: 出さない */
+    :is(.mdmark-tree-bar, .mdmark-tree > .mdmark-copy-panel, .mdmark-tree-chevron, .mdmark-tree-spacer) {
+      display: none;
+    }
+
+    /* 入れ子のリスト: 紙では横にスクロールしないので、長い名前と注釈を折り返す */
+    .mdmark-tree .mdmark-tree-list {
+      overflow: visible;
+      white-space: normal;
+
+      ul {
+        margin-inline-start: 0.5em;
+      }
+    }
+  }
+}
