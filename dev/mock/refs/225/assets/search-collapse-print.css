@@ -9,7 +9,7 @@
       display: none;
     }
 
-    /* タブ・ステップの折りたたみの見出し: 開閉の印を外す */
+    /* タブ・ステップの折りたたみの見出し: 開閉のマーカーを外す */
     .mdmark-collapsible > summary {
       list-style: none;
     }

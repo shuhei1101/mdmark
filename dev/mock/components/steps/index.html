@@ -14,6 +14,8 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 折りたたみの規則（#225 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/225/assets/search-collapse.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
@@ -79,6 +81,83 @@
   <p><code>&lt;!-- steps --&gt;</code> の範囲に、手順にする番号付きリストがありません。手順を <code>1.</code> から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。</p>
 </div>
 <ul><li>配布物を読み込む</li><li>描く先の要素を用意する</li></ul>
+        </article>
+      </section>
+
+      <!-- closed: 見出しを「手順（{手順の数} ステップ）」にした閉じた折りたたみ -->
+      <section aria-labelledby="state-closed">
+        <h2 class="catalog-label" id="state-closed">closed（閉じたステップ）</h2>
+        <article class="mdmark">
+<details class="mdmark-collapsible">
+<summary>手順（2 ステップ）</summary>
+<ol class="mdmark-steps">
+  <li>依存を入れる</li>
+  <li>ビルドする</li>
+</ol>
+</details>
+        </article>
+      </section>
+
+      <!-- open title=準備: 見出しを title= の値にした開いた折りたたみ -->
+      <section aria-labelledby="state-open-title">
+        <h2 class="catalog-label" id="state-open-title">open と title=（開いたステップ）</h2>
+        <article class="mdmark">
+<details class="mdmark-collapsible" open>
+<summary>準備</summary>
+<ol class="mdmark-steps">
+  <li>リポジトリをクローンする</li>
+  <li>依存を入れる</li>
+  <li>テストを流す</li>
+</ol>
+</details>
+        </article>
+      </section>
+
+      <!-- closed open: 書き方の警告を出し、closed として描く -->
+      <section aria-labelledby="state-closed-open">
+        <h2 class="catalog-label" id="state-closed-open">closed と open を両方書いた（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- steps: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。<code>closed</code> として描いています。</p>
+</div>
+<details class="mdmark-collapsible">
+<summary>手順（2 ステップ）</summary>
+<ol class="mdmark-steps">
+  <li>依存を入れる</li>
+  <li>ビルドする</li>
+</ol>
+</details>
+        </article>
+      </section>
+
+      <!-- fold: 書き方の警告を出し、fold を当てずに描く -->
+      <section aria-labelledby="state-fold">
+        <h2 class="catalog-label" id="state-fold">使えない指定 fold（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- steps: fold --&gt;</code> の <code>fold</code> はステップでは使えません。使える指定は <code>closed</code>・<code>open</code>・<code>title=</code> です。</p>
+</div>
+<ol class="mdmark-steps">
+  <li>依存を入れる</li>
+  <li>ビルドする</li>
+</ol>
+        </article>
+      </section>
+
+      <!-- title= だけ: 書き方の警告を出し、開閉しないステップとして描く -->
+      <section aria-labelledby="state-title-only">
+        <h2 class="catalog-label" id="state-title-only">title= だけを書いた（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- steps: title=準備 --&gt;</code> の <code>title=</code> は <code>closed</code> か <code>open</code> と一緒に書きます。タイトルを付けずに描いています。</p>
+</div>
+<ol class="mdmark-steps">
+  <li>依存を入れる</li>
+  <li>ビルドする</li>
+</ol>
         </article>
       </section>
     </div>

@@ -186,11 +186,6 @@
       color: var(--mdmark-color-muted);
     }
 
-    /* ほかにもある: 名前の代わりの … を控えめな色で出す */
-    .mdmark-tree-more .mdmark-tree-label {
-      color: var(--mdmark-color-muted);
-    }
-
     /* 注釈: 本文の書体で、行内のコード・太字・リンク・バッジを描く */
     .mdmark-tree-note {
       font-family: var(--mdmark-font-body);

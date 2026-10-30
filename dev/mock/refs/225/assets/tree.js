@@ -134,7 +134,7 @@
         const depthStyle = ` style="--mdmark-tree-depth: ${item.depth}"`;
         const note = noteHtml(item.note);
         if (kind === "more") {
-          return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"${depthStyle}><span class="mdmark-tree-head"><span class="mdmark-tree-spacer"></span>${icon("ellipsis")}<span class="mdmark-tree-label"><span aria-hidden="true">…</span><span class="mdmark-visually-hidden">ほかにもあります</span></span></span>${note}</span></li>`;
+          return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"${depthStyle}><span class="mdmark-tree-head"><span class="mdmark-tree-spacer"></span>${icon("ellipsis")}<span class="mdmark-tree-label mdmark-visually-hidden">ほかにもあります</span></span>${note}</span></li>`;
         }
         if (kind === "file") {
           return `<li class="mdmark-tree-file"><span class="mdmark-tree-row"${depthStyle}><span class="mdmark-tree-head"><span class="mdmark-tree-spacer"></span>${icon(fileIcon(item.name))}<span class="mdmark-tree-label">${escapeHtml(item.name)}</span></span>${note}</span></li>`;

@@ -142,7 +142,7 @@
 
     /* ---------- タブ・ステップの折りたたみ ---------- */
 
-    /* 折りたたみ: 閉じた表と同じ線の枠と見出し */
+    /* 折りたたみ: 閉じた表と同じく、中身の最小の幅で広がらず描く先の幅に収める */
     .mdmark-collapsible {
       box-sizing: border-box;
       min-width: 0;
@@ -150,7 +150,7 @@
     }
 
     /* 開いた折りたたみの見出し: 中身との間を空ける */
-    :is(.mdmark-collapsible, .mdmark-table-details)[open] > summary {
+    .mdmark-collapsible[open] > summary {
       margin-block-end: calc(var(--mdmark-space) / 2);
     }
   }
