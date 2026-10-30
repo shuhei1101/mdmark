@@ -220,6 +220,8 @@ export type LaunchOptions = {
   readOnlyDirs?: string[];
   /** 設定を足したユーザーデータを使い回さず、前回のバージョンを空にして始める（既定） */
   freshState?: boolean;
+  /** ファイルを置いた後、VS Code を起動する前に呼ぶ（Git のリポジトリを作るときなど）。引数はワークスペースのフォルダ */
+  prepare?: (workspaceDir: string) => Promise<void>;
 };
 
 /** 拡張機能を入れた VS Code を、手元の代役の配信につないで起動する */
@@ -258,6 +260,7 @@ export async function launchVscode(
     await mkdir(path, { recursive: true });
     await chmod(path, 0o555);
   }
+  await options.prepare?.(workspaceDir);
   // `http`・`https` の URL は VS Code が `xdg-open` を起こして開くため、渡された URL を記録するだけの代役を `PATH` の先頭に置く
   await mkdir(binDir, { recursive: true });
   const opener = join(binDir, "xdg-open");

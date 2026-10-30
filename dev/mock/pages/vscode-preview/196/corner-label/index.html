@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>vscode-preview / corner-label（枠と右上の札） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <link rel="stylesheet" data-color-theme-css="../../../../assets/themes/{theme}.css">
+  <!-- プレビューのパネルの状態の表示とモックの VS Code の枠（#69 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/69/assets/preview.css">
+  <!-- 2 つのエディタの列を並べる枠とタイトルバーのボタン（#181 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/181/assets/settings.css">
+  <!-- 描いた文書の上の差分の色分けとモックの差分ビュー（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/196/assets/diff-preview.css">
+  <!-- VS Code のテーマと場面の切り替え（モックだけの仕組み） -->
+  <script src="../../../../refs/69/assets/preview.js" defer></script>
+  <!-- 文書のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../../../refs/181/assets/theme.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 案・VS Code のテーマ・文書のテーマ・場面 -->
+  <div class="mock-bar">
+    <nav aria-label="案">
+      <ul class="mock-bar-group">
+        <li><a class="mock-bar-item" href="../sign-gutter/index.html">A: 左の余白の記号</a></li>
+        <li><a class="mock-bar-item" href="../corner-label/index.html" aria-current="page">B: 枠と右上の札</a></li>
+      </ul>
+    </nav>
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+    </div>
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="mdmark のテーマ">
+      <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-slate">theme-slate</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-contrast">theme-contrast</a>
+    </div>
+    <!-- [data-scene-value]: preview.js が行き先の URL（?scene=）と今の場面の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="場面">
+      <a class="mock-bar-item" data-scene-value="worktree">作業ツリーの変更</a>
+      <a class="mock-bar-item" data-scene-value="commit">コミットの差分</a>
+      <a class="mock-bar-item" data-scene-value="edited">変更後の側を書き換えた</a>
+      <a class="mock-bar-item" data-scene-value="unsupported">描けない（差分に対応しないバージョン）</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">vscode-preview</a> / <a href="../index.md">196</a> / corner-label
+    </nav>
+
+    <!-- モックの VS Code の 2 つのエディタの列 -->
+    <div class="vsc-workbench">
+      <!-- 左の列: VS Code の差分ビュー（左が変更前、右が変更後） -->
+      <div class="vsc-column vsc-diff-host">
+        <div class="vsc-tabs">
+          <span class="vsc-tab" data-scene="worktree edited unsupported">手順書.md (作業ツリー)</span>
+          <span class="vsc-tab" data-scene="commit">手順書.md (a1b2c3d) ↔ 手順書.md (e4f5a6b)</span>
+          <!-- エディタのタイトルバーの操作: 差分ビューでも「プレビューを横に開く」を出す -->
+          <div class="vsc-title-actions" role="toolbar" aria-label="エディタの操作">
+            <button class="vsc-icon-button" type="button" aria-label="プレビューを横に開く" title="プレビューを横に開く (Shift+Alt+D)">
+              <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/><path d="M15 9h3"/><path d="M15 13h3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="vsc-diff">
+          <!-- 変更前の側 -->
+          <div class="vsc-diff-side">
+            <span class="vsc-diff-line"># リリースの手順</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line" data-kind="del">タグを打ってから配布物が届くまでの手順と、確かめる項目をまとめます。</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line">## 確かめる項目</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line">| 項目 | 確かめ方 | 担当 |</span>
+            <span class="vsc-diff-line">| --- | --- | --- |</span>
+            <span class="vsc-diff-line">| テスト | `npm test` がすべて通る | 開発者 |</span>
+            <span class="vsc-diff-line">| 配布物 | `dist/` にバージョンが埋まっている | 開発者 |</span>
+            <span class="vsc-diff-line">| 変更履歴 | 今回の PR が載っている | レビュアー |</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line" data-kind="pad"></span>
+            <span class="vsc-diff-line" data-kind="pad"></span>
+            <span class="vsc-diff-line">## 手順</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line" data-kind="del">リリースの前日までに、変更履歴の下書きを用意しておきます。</span>
+            <span class="vsc-diff-line" data-kind="del"></span>
+            <span class="vsc-diff-line">1. `version.ini` のバージョンを上げる</span>
+            <span class="vsc-diff-line">2. release ブランチを develop へマージする</span>
+            <span class="vsc-diff-line">3. タグ `v0.7.0` を打って push する</span>
+            <span class="vsc-diff-line" data-kind="pad" data-scene="edited"></span>
+            <span class="vsc-diff-line" data-kind="pad" data-scene="edited"></span>
+          </div>
+          <!-- 変更後の側 -->
+          <div class="vsc-diff-side">
+            <span class="vsc-diff-line"># リリースの手順</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line" data-kind="add">タグを打ってから配布物が届くまでの手順と、確認する項目をまとめます。</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line">## 確かめる項目</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line">| 項目 | 確かめ方 | 担当 |</span>
+            <span class="vsc-diff-line">| --- | --- | --- |</span>
+            <span class="vsc-diff-line">| テスト | `npm test` がすべて通る | 開発者 |</span>
+            <span class="vsc-diff-line">| 配布物 | `dist/` にバージョンが埋まっている | 開発者 |</span>
+            <span class="vsc-diff-line">| 変更履歴 | 今回の PR が載っている | レビュアー |</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line" data-kind="add">担当がそろわない項目があるときは、リリースを翌日に回します。</span>
+            <span class="vsc-diff-line" data-kind="add"></span>
+            <span class="vsc-diff-line">## 手順</span>
+            <span class="vsc-diff-line"></span>
+            <span class="vsc-diff-line" data-kind="pad"></span>
+            <span class="vsc-diff-line" data-kind="pad"></span>
+            <span class="vsc-diff-line">1. `version.ini` のバージョンを上げる</span>
+            <span class="vsc-diff-line">2. release ブランチを develop へマージする</span>
+            <span class="vsc-diff-line">3. タグ `v0.7.0` を打って push する</span>
+            <span class="vsc-diff-line" data-kind="add" data-scene="edited"></span>
+            <span class="vsc-diff-line" data-kind="add" data-scene="edited">タグを打った後は、jsDelivr の配信を確かめます。</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右の列: 差分ビューから開いたプレビュー -->
+      <div class="vsc-column">
+        <div class="vsc-tabs">
+          <span class="vsc-tab">差分プレビュー 手順書.md</span>
+        </div>
+
+        <!-- Webview の中 -->
+        <div class="preview">
+          <!-- 変更後の文書を描き、追加・変更したブロックと削除したブロックを色の面と線で囲み、右上に札を置く -->
+          <article class="mdmark" data-diff-marker="label" data-scene="worktree commit edited">
+<h1>リリースの手順</h1>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <p>タグを打ってから配布物が届くまでの手順と、確認する項目をまとめます。</p>
+</div>
+<h2>確かめる項目</h2>
+<table tabindex="0" aria-label="確かめる項目">
+  <thead>
+    <tr><th>項目</th><th>確かめ方</th><th>担当</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>テスト</td><td><code>npm test</code> がすべて通る</td><td>開発者</td></tr>
+    <tr><td>配布物</td><td><code>dist/</code> にバージョンが埋まっている</td><td>開発者</td></tr>
+    <tr><td>変更履歴</td><td>今回の PR が載っている</td><td>レビュアー</td></tr>
+  </tbody>
+</table>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <p>担当がそろわない項目があるときは、リリースを翌日に回します。</p>
+</div>
+<h2>手順</h2>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-diff-block-label">削除</span>
+  <p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p>
+</div>
+<ol>
+  <li><code>version.ini</code> のバージョンを上げる</li>
+  <li>release ブランチを develop へマージする</li>
+  <li>タグ <code>v0.7.0</code> を打って push する</li>
+</ol>
+<div class="mdmark-diff-block" data-kind="add" data-scene="edited">
+  <span class="mdmark-diff-block-label">追加</span>
+  <p>タグを打った後は、jsDelivr の配信を確かめます。</p>
+</div>
+          </article>
+
+          <!-- 描けない（差分に対応しないバージョン）: 変更後の文書だけを描かず、理由とリロードを出す -->
+          <div class="preview-state" data-scene="unsupported">
+            <div class="preview-notice" role="status">
+              <h1>プレビューを表示できません</h1>
+              <p>読み込んだ mdmark（<code>v0.8.0</code>）は差分の表示に対応していません。設定 <code>mdmark.version</code> を差分の表示に対応したバージョンか <code>latest</code> に変更してから、リロードしてください。</p>
+              <button class="preview-button" type="button">リロード</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -52,3 +52,25 @@ test("test_check_revisions_when_id_duplicated", async () => {
   // 実行・検証
   expect(() => checkRevisions(revisions)).toThrow(TypeError);
 });
+
+// 対応する値をそのまま返す（正常系）
+test("test_normalize_diff_mode", async () => {
+  // 準備
+  const { normalizeDiffMode } = await loadSource();
+  // 実行
+  const modes = ["button", "open", "blocks"].map((value) =>
+    normalizeDiffMode(value),
+  );
+  // 検証
+  expect(modes).toEqual(["button", "open", "blocks"]);
+});
+
+// 知らない値と省いた値は button にする（異常系）
+test("test_normalize_diff_mode_when_unknown", async () => {
+  // 準備
+  const { normalizeDiffMode } = await loadSource();
+  // 実行・検証
+  for (const value of [undefined, "side", 1]) {
+    expect(normalizeDiffMode(value)).toBe("button");
+  }
+});

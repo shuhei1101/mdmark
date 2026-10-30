@@ -62,7 +62,7 @@ function parseElement(html: string): HTMLElement {
 }
 
 /** 語の区切り。`Intl.Segmenter` を持たないブラウザでは `undefined` */
-function createSegmenter(): Intl.Segmenter | undefined {
+export function createSegmenter(): Intl.Segmenter | undefined {
   if (typeof Intl.Segmenter !== "undefined") {
     return new Intl.Segmenter("ja", { granularity: "word" });
   }
@@ -153,8 +153,17 @@ export function attachDiff(options: {
   renderHtml: DiffHtmlRenderer;
   /** 差分を開いている間、`root` の外で一緒に隠す要素（右側の目次） */
   hideWith?: HTMLElement[];
+  /** 置いた時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`） */
+  open?: boolean;
 }): () => void {
-  const { root, source, docId, renderHtml, hideWith = [] } = options;
+  const {
+    root,
+    source,
+    docId,
+    renderHtml,
+    hideWith = [],
+    open: openAtStart = false,
+  } = options;
   serial += 1;
   const panelId = `${ID_PREFIX}${serial}`;
   const bar = parseElement(renderDiffToggle({ controls: panelId }));
@@ -440,6 +449,9 @@ export function attachDiff(options: {
     }
   });
   panel.addEventListener("click", switchView);
+  if (openAtStart) {
+    void open();
+  }
 
   return () => {
     if (!panel.hidden) {

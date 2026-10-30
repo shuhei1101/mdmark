@@ -8,6 +8,8 @@ export type HostMessage =
   | {
       type: "render";
       markdown: string;
+      /** 差分のパネルだけが持つ、変更前の全文 */
+      previous?: string;
       config: PreviewConfig;
       theme: PreviewTheme;
     }
@@ -35,7 +37,10 @@ export type InspectedElement = {
 };
 
 /** 配布物を読めない理由 */
-export type LoadFailureReason = "offline" | "versionMissing";
+export type LoadFailureReason =
+  | "offline"
+  | "versionMissing"
+  | "diffUnsupported";
 
 /** Webview から拡張機能へのメッセージ */
 export type WebviewMessage =

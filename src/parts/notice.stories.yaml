@@ -43,3 +43,10 @@ stories:
     args:
       name: 2026/10/18 09:12 初版（佐藤）
       source: diff-content
+  - name: DiffBlocks
+    parameters:
+      server:
+        id: notice
+    args:
+      name: guide
+      source: diff-blocks

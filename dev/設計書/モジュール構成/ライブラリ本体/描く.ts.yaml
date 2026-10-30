@@ -61,6 +61,9 @@ data_models:
       - name: aliases
         type: MdmarkAlias[] | undefined
         description: エイリアス（`buildAliases` の戻り値の `aliases`）。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使えないエイリアス（`env` を含む）は照合せず、知らせの枠も出さない
+      - name: diffMode
+        type: DiffMode | undefined
+        description: 差分の出し方。`button`（既定）・`open`・`blocks`。`diffSource` を渡さないときは使わない。知らない値は `button` にする
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -184,7 +187,7 @@ functions:
       type: MountHandle
       description: 描き直しと片付けの関数
     process: |-
-      1. `diffSource` か `commentStore` を渡して `docId` が無ければ `TypeError` を投げる。`commentStore` が `load`・`save` の関数を持たなければ `TypeError` を投げる（コメントの引数を検める）。`mounted` に `el` があれば、その `destroy` を呼ぶ
+      1. `diffSource` か `commentStore` を渡して `docId` が無ければ `TypeError` を投げる。`commentStore` が `load`・`save` の関数を持たなければ `TypeError` を投げる（コメントの引数を検める）。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
       2. 設定に既定を当てる（設定に既定を当てる）
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数と右側の目次を外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
       4. 文書を描く。描くたびに次を行う
@@ -196,7 +199,8 @@ functions:
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
          - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、外す関数を控える。前の外す関数は描き直す前に呼ぶ
-         - `diffSource` を渡していれば、前の差分を外す関数を呼んでから差分を付け（差分を付ける。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
+         - `diffSource` を渡し、差分の出し方が `button` か `open` なら、前の差分を外す関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` かを渡す。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
+         - `diffSource` を渡し、差分の出し方が `blocks` で、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で描き直す。そのときは本文の HTML を `el` に置く前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に置く。色分けして描いたときは取り出し元を呼び直さない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の知らせの枠を置く
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
       6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
       7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` と `COLOR_THEME_ATTRIBUTE` を外し、`mounted` の `el` が自分なら消す
@@ -208,6 +212,10 @@ functions:
       - '#functions[loadLibraries]'
       - '#functions[attachPrint]'
       - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[attachDiff]
+      - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[normalizeDiffMode]
+      - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[loadDiffPair]
+      - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[colorDiffBlocks]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
       - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#functions[attachParts]
       - '#functions[highlightCodeBlocks]'
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachSideToc]
@@ -328,6 +336,30 @@ functions:
         condition: '`config` に `{ colorTheme: "sepia" }` を渡して描く要素と、`config` を省いて描く要素'
         mock: なし
         expected: どちらの `el` も `data-mdmark-color-theme` が `dev-swiss`。例外を投げない
+      - name: test_mount_when_diff_mode_open
+        case: 正常
+        summary: open では描いた時点で差分を開き、update の後も開いたままにする
+        condition: '`# 見出し` と `docId: "guide"`・`diffSource`・`diffMode: "open"` を渡し、後で `update("# 次")`'
+        mock: 取り出し元は `r2`・`r1` を返し、呼ばれた引数を控える関数
+        expected: 描いた直後に `revisions` が 1 回呼ばれ、`mdmark-diff-toggle` が `aria-expanded="true"`。`update` の後も `aria-expanded="true"` で `revisions` が 2 回呼ばれている
+      - name: test_mount_when_diff_blocks
+        case: 正常
+        summary: blocks ではボタンを置かず、取り出した 2 つの本文で色分けして描き直す
+        condition: '`diffMode: "blocks"`。取り出し元は `r2`（段落を 1 つ足した全文。`opts.markdown` と同じ）と `r1` を返す。取り出し元の待ちを終えた後に確かめる'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: '`mdmark-diff-toggle` が無い。`revisions` が 1 回、`content` が `r1`・`r2` で 1 回ずつ呼ばれ、足した段落が `div.mdmark-diff-block[data-kind="add"]` に包まれる。表の操作のボタンなど記法の操作が色分けした本文に付いている'
+      - name: test_mount_when_diff_blocks_stale
+        case: 正常
+        summary: blocks で update した後に届いた古い取り出しの結果で描き直さない
+        condition: 1 回目の `content` を待たせたまま `update` し、2 回目を先に返してから 1 回目を返す
+        mock: 合図で返す取り出し元
+        expected: 本文が 2 回目の結果で色分けしたまま
+      - name: test_mount_when_diff_blocks_failed
+        case: 異常
+        summary: blocks で本文を取り出せなければ、色分けせずに知らせの枠を先頭に置く
+        condition: '`diffMode: "blocks"`。`content` が拒否する'
+        mock: '`console.error` を控える関数で包む'
+        expected: '例外を投げず、本文の列の最初の子が `renderNotice({ name: "guide", source: "diff-blocks" })` の知らせの枠で、`mdmark-diff-block` が無い'
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts

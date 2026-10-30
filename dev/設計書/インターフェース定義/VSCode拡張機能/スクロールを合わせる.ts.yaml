@@ -78,6 +78,28 @@ flows:
     expected:
       - アクティブなタブがプレビューのままで、エディタのタブが表に出ない
     test: test_error_when_editor_hidden
+  - name: 正常系（差分で描いたプレビュー）
+    summary: 差分ビューの変更後の側を動かすと、削除したブロックを飛ばしてその行のブロックをプレビューの先頭に置く
+    setup:
+      - name: 長い文書の差分のプレビュー
+        description: 正常系と同じ長い文書をコミットし、10 の節のうち 5 番目の節の段落を消し、8 番目の節に段落を足した差分ビューと、横の列の差分のプレビューを開いた状態
+      - name: Mock
+        description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。拡張機能と Webview の間のメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 変更後の側で 8 番目の節の見出しの行を先頭にする
+        EX->>PV: scrollToLine（変更後の文書の行）
+        PV->>PV: data-source-line から先頭に置く
+    expected:
+      - Webview の見えている先頭から 1 行分の高さの中に 8 番目の節の見出しがある
+      - '`scrollToLine` の `line` が変更後の文書の見出しの行番号'
+      - 5 番目の節の削除したブロックが `data-source-line` を持たない
+    test: test_normal_when_diff_preview
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ（差分で描いたプレビュー）]
 lead: エディタとプレビューのどちらかをスクロールすると、ブロックの元の行番号を手がかりにもう片方を同じ箇所まで動かす。
 idempotent: true
 side_effects: Webview へ `scrollToLine` を送る。エディタを `revealRange` で動かす。カーソルの位置と文書は変えない
@@ -100,3 +122,6 @@ constraints:
     notes: 時間で捨てないため、知らせが届くまでの間の長さによらず往復しない。`AtTop` は指定した行の 5 行前を先頭に置き、位置が変わらないときは知らせが届かないため、行の一致でなく範囲に含むかで比べ、動かないときは覚えを作らない（外部ライブラリ『vscode』の制限事項）
   - item: 知らせの間引き
     constraint: Webview はスクロールの知らせを `requestAnimationFrame` ごとに 1 回にまとめて送る
+  - item: 差分のパネルの合わせ方
+    constraint: 差分のパネルは差分ビューの変更後の側のエディタと合わせる。`data-source-line` は変更後の文書の行番号で、削除したブロックは `data-source-line` を持たないため、内分の前後の要素にならない。変更前の側のエディタのスクロールは送らず、プレビューからは変更後の側を動かす
+    notes: 差分ビューは両側のスクロールを VS Code が合わせる

@@ -5,7 +5,8 @@ export type PreviewStatusState =
   | "loading"
   | "offline"
   | "versionMissing"
-  | "versionUndecidable";
+  | "versionUndecidable"
+  | "diffUnsupported";
 
 /** 「リロード」のボタン */
 const RELOAD_BUTTON =
@@ -18,6 +19,9 @@ function reasonOf(
 ) {
   if (state === "offline") {
     return `mdmark（<code>${version}</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。`;
+  }
+  if (state === "diffUnsupported") {
+    return `読み込んだ mdmark（<code>${version}</code>）は差分の表示に対応していません。設定 <code>mdmark.version</code> を差分の表示に対応したバージョンか <code>latest</code> に変更してから、リロードしてください。`;
   }
   if (state === "versionMissing") {
     return `設定 <code>mdmark.version</code> に指定したバージョン <code>${version}</code> の mdmark が見つかりませんでした。存在するバージョンか <code>latest</code> に直してから、リロードしてください。`;

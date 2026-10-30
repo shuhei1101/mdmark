@@ -4812,6 +4812,106 @@
     font-weight: 600;
   }
 
+  /* 差分のブロック（`diffMode: "blocks"`）: 描いた文書のブロックを、追加・変更は追加の色、削除は削除の色の面で囲み、左の余白に + と − を置く。色は `--mdmark-color-diff-*` の変数で決まる */
+  .mdmark {
+    /* 色を当てたブロックの内側の余白と、記号を置く列の幅 */
+    --mdmark-diff-block-pad-block: 0.375rem;
+    --mdmark-diff-block-pad-inline: 0.75rem;
+    --mdmark-diff-block-gutter: 1.75rem;
+
+    /* 色を当てたブロック: 面の色で囲み、中のブロックの文字の位置は前後の変えていないブロックと揃える。記号の列の分だけ囲みを左へ広げる */
+    .mdmark-diff-block {
+      position: relative;
+      margin-inline: calc(-1 * var(--mdmark-diff-block-pad-inline));
+      margin-inline-start: calc(-1 * var(--mdmark-diff-block-gutter));
+      padding: var(--mdmark-diff-block-pad-block)
+        var(--mdmark-diff-block-pad-inline);
+      padding-inline-start: var(--mdmark-diff-block-gutter);
+      border-radius: var(--mdmark-radius);
+
+      /* 中のブロック: 外側の余白は囲みが持つ */
+      > :not(.mdmark-visually-hidden, .mdmark-diff-block-sign) {
+        margin-block: 0;
+      }
+
+      /* 注意書き: 自分の色のタイトルを読めるよう、面の色の上に本文の背景を敷く */
+      > .markdown-alert {
+        background: var(--mdmark-color-bg);
+      }
+
+      /* 追加・変更したブロック */
+      &[data-kind="add"] {
+        background: var(--mdmark-color-diff-add-bg);
+      }
+
+      /* 削除したブロック（前のリビジョンでの位置に差し込む） */
+      &[data-kind="del"] {
+        background: var(--mdmark-color-diff-del-bg);
+      }
+    }
+
+    /* 見出しを囲んだブロック: 見出しの上の広い余白を囲みの外に出す */
+    .mdmark-diff-block:has(> h2) {
+      margin-block-start: calc(var(--mdmark-space) * 2.25);
+    }
+
+    /* 記号: 等幅の太字で、囲みの 1 行目の高さに置く */
+    .mdmark-diff-block-sign {
+      position: absolute;
+      inset-block-start: var(--mdmark-diff-block-pad-block);
+      inset-inline-start: 0;
+      width: var(--mdmark-diff-block-gutter);
+      font-family: var(--mdmark-font-mono);
+      font-weight: 700;
+      line-height: var(--mdmark-line-height);
+      text-align: center;
+      user-select: none;
+
+      [data-kind="add"] > & {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      [data-kind="del"] > & {
+        color: var(--mdmark-color-diff-del-sign);
+      }
+    }
+
+    /* リストの項目と表の行: 項目・行の単位で色を当てる（リストや表を囲みで包まない） */
+    :is(li, tr).mdmark-diff-block {
+      margin-inline: 0;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    /* リストの項目の記号: 番号・点の左の余白に置く */
+    li.mdmark-diff-block > .mdmark-diff-block-sign {
+      inset-block-start: 0;
+      inset-inline-start: calc(-1 * (1.6em + var(--mdmark-diff-block-gutter)));
+    }
+
+    /* 番号付きリストの削除の項目: 番号を付けず、後ろの項目は変更後の文書の番号のまま出す */
+    ol > li.mdmark-diff-block[data-kind="del"] {
+      list-style-type: none;
+      counter-increment: list-item 0;
+    }
+
+    /* 表の行の記号: 行の 1 つ目のセルの左の余白に置く */
+    tr.mdmark-diff-block > td:first-child {
+      position: relative;
+    }
+
+    tr.mdmark-diff-block .mdmark-diff-block-sign {
+      inset-block-start: 0.45em;
+      inset-inline-start: 0;
+      width: 0.9em;
+    }
+
+    /* 長い URL など: 囲みの中で折り返し、横スクロールを出さない */
+    .mdmark-diff-block {
+      overflow-wrap: anywhere;
+    }
+  }
+
   /* 差分の表示: 文書の題の後ろの「変更を見る」・前と後のリビジョンの選択・差分の行・埋め込んだ HTML の切り替え。色は `--mdmark-color-diff-*` の変数で決まる */
   .mdmark {
     /* 「変更を見る」の帯: 文書の右上に置く */

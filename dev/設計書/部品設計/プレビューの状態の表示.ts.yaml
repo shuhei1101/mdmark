@@ -33,18 +33,25 @@ states:
     args:
       - name: state
         value: versionUndecidable
+  - name: DiffUnsupported
+    description: 差分のパネルで、読んだ配布物が差分の表示に対応しない。本文「読み込んだ mdmark（v0.8.0）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。」
+    args:
+      - name: state
+        value: diffUnsupported
+      - name: version
+        value: v0.8.0
 lead: VS Code 拡張機能のプレビューのパネルで、文書の代わりに出す読み込み中の表示と、描けない理由と「リロード」。mdmark の配布物を読む前にも出すため、拡張機能が HTML を作る。
 args:
   - name: state
     type: 列挙
     required: true
-    choices: '`loading`・`offline`・`versionMissing`・`versionUndecidable`'
+    choices: '`loading`・`offline`・`versionMissing`・`versionUndecidable`・`diffUnsupported`'
     description: 出す状態。`loading` は題「mdmark を読み込んでいます」だけを出し、他は題「プレビューを表示できません」と理由と「リロード」を出す
   - name: version
     type: 文字列
     required: false
     default: なし
-    enabled_when: '`state` が `offline` か `versionMissing` のとき'
+    enabled_when: '`state` が `offline` か `versionMissing`・`diffUnsupported` のとき'
     description: 読もうとした mdmark の版。理由の `code` に入れる（HTML として特別な文字はエスケープする）
 events:
   - name: リロード

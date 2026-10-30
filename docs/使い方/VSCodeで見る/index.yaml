@@ -2,5 +2,7 @@ summary: VS Code の拡張機能で Markdown を mdmark で描いたプレビュ
 items:
   - page: プレビューを開く.md
     summary: "拡張機能を入れ、Markdown の横にプレビューを出して、バージョン・設定ファイル・配色・スクロールを整える手順"
+  - page: 差分をプレビューで見る.md
+    summary: "VS Code の差分ビューで見ている Markdown の変更を、mdmark のプレビューで追加・削除の色分けにして読む手順"
   - page: HTMLとPDFにする.md
     summary: "開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順"

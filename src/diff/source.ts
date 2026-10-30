@@ -1,3 +1,9 @@
+/** `mount` の `opts.diffMode` に渡せる差分の出し方。使う側が差分の出し方に対応するバージョンかを見分けるため、配布物が公開する */
+export const diffModes = ["button", "open", "blocks"] as const;
+
+/** `mount` の `opts.diffMode` の値 */
+export type DiffMode = (typeof diffModes)[number];
+
 /** 文書の変更の 1 回分 */
 export type DiffRevision = {
   /** リビジョンの識別子。空でない文字列で、一覧の中で重ならない */
@@ -70,4 +76,9 @@ export function checkRevisions(value: unknown): DiffRevision[] {
     ids.add(revision.id);
   });
   return value as DiffRevision[];
+}
+
+/** `opts.diffMode` の値が `diffModes` にあればそのまま、無いか知らない値なら `button` を返す */
+export function normalizeDiffMode(value: unknown): DiffMode {
+  return diffModes.find((mode) => mode === value) ?? "button";
 }
