@@ -1,8 +1,11 @@
 import * as assert from "node:assert";
+import { execFile } from "node:child_process";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
+import { createRequire } from "node:module";
 import type { AddressInfo } from "node:net";
 import { dirname, join, resolve } from "node:path";
+import { promisify } from "node:util";
 import * as vscode from "vscode";
 import type { HostMessage, WebviewMessage } from "../../src/messages.ts";
 
@@ -523,5 +526,155 @@ export async function startLibraryServer(options: {
         }
         server.close(() => resolveClose());
       }),
+  };
+}
+
+/** Git のコマンドを `cwd` で実行し、標準出力の前後の空白を除いて返す（コミットの作者と署名はテスト用に固定する） */
+export async function git(cwd: string, args: string[]): Promise<string> {
+  const { stdout } = await promisify(execFile)(
+    "git",
+    [
+      "-c",
+      "user.name=mdmark-test",
+      "-c",
+      "user.email=mdmark-test@example.com",
+      "-c",
+      "commit.gpgsign=false",
+      ...args,
+    ],
+    { cwd },
+  );
+  return stdout.trim();
+}
+
+/** VS Code の Git 拡張の API のうち、テストが使うもの */
+type GitApi = {
+  toGitUri: (uri: vscode.Uri, ref: string) => vscode.Uri;
+  openRepository: (root: vscode.Uri) => Promise<unknown>;
+};
+
+/** VS Code の Git 拡張を動かして、API を返す */
+export async function gitApi(): Promise<GitApi> {
+  const extension = vscode.extensions.getExtension<{
+    getAPI: (version: 1) => GitApi;
+  }>("vscode.git");
+  assert.ok(extension, "Git 拡張が見つからない");
+  const exports = await extension.activate();
+  return exports.getAPI(1);
+}
+
+/** `createRepo` が作り、VS Code に開かせたリポジトリのフォルダ */
+const openedRepos: string[] = [];
+
+/** `createRepo` が開かせたリポジトリを VS Code の Git 拡張に閉じさせる。フォルダを消した後も Git 拡張が `git` を起こし続けないよう、後始末でフォルダを消す前に呼ぶ */
+export async function closeRepositories(): Promise<void> {
+  for (const dir of openedRepos.splice(0)) {
+    await vscode.commands.executeCommand("git.close", vscode.Uri.file(dir));
+  }
+}
+
+/** ワークスペースの下に Git のリポジトリを作り、`files` を最初のコミットにして VS Code に開かせる。リポジトリのフォルダの絶対パスを返す（後始末で消す） */
+export async function createRepo(
+  name: string,
+  files: Record<string, string>,
+): Promise<string> {
+  for (const [file, content] of Object.entries(files)) {
+    await writeFixture(join(name, file), content);
+  }
+  trackFile(name);
+  const dir = join(workspaceDir(), name);
+  await git(dir, ["init", "-q", "-b", "main"]);
+  await git(dir, ["add", "-A"]);
+  await git(dir, ["commit", "-q", "-m", "最初のコミット"]);
+  await (await gitApi()).openRepository(vscode.Uri.file(dir));
+  openedRepos.push(dir);
+  return dir;
+}
+
+/** リポジトリの変更を全てコミットし、コミットの ID を返す */
+export async function commitAll(dir: string, message: string): Promise<string> {
+  await git(dir, ["add", "-A"]);
+  await git(dir, ["commit", "-q", "-m", message]);
+  return git(dir, ["rev-parse", "HEAD"]);
+}
+
+/** `file` の `ref` の内容を指す Git の URI（`HEAD` やコミットの ID） */
+export async function gitUri(
+  file: vscode.Uri,
+  ref: string,
+): Promise<vscode.Uri> {
+  return (await gitApi()).toGitUri(file, ref);
+}
+
+/** 2 つの URI の差分ビューを開き、アクティブなタブが差分ビューになるまで待つ */
+export async function openDiffView(
+  original: vscode.Uri,
+  modified: vscode.Uri,
+): Promise<void> {
+  await vscode.commands.executeCommand(
+    "vscode.diff",
+    original,
+    modified,
+    "差分",
+  );
+  await waitFor(
+    () =>
+      vscode.window.tabGroups.activeTabGroup.activeTab?.input instanceof
+      vscode.TabInputTextDiff,
+    { message: "差分ビューが開かない" },
+  );
+}
+
+/** 変更後の側のエディタ */
+export function modifiedEditor(uri: vscode.Uri): vscode.TextEditor {
+  const editor = vscode.window.visibleTextEditors.find(
+    (candidate) => candidate.document.uri.toString() === uri.toString(),
+  );
+  assert.ok(editor, "変更後の側のエディタが見えていない");
+  return editor;
+}
+
+/** 拡張機能の束ね先。子プロセスを起こした呼び出しの出どころを見分けるのに使う */
+const EXTENSION_BUNDLE = join(REPO_ROOT, "vscode", "dist", "extension.cjs");
+
+/** `child_process` の起動の関数を包み、この拡張機能（mdmark）の束ね先から呼ばれた回数を数える。止めると元に戻す */
+export function watchChildProcesses(): {
+  fromExtension: () => number;
+  stop: () => void;
+} {
+  const childProcess = createRequire(import.meta.url)(
+    "node:child_process",
+  ) as Record<string, (...args: unknown[]) => unknown>;
+  const names = [
+    "spawn",
+    "exec",
+    "execFile",
+    "fork",
+    "spawnSync",
+    "execSync",
+    "execFileSync",
+  ];
+  const originals = new Map<string, (...args: unknown[]) => unknown>();
+  let count = 0;
+  for (const name of names) {
+    const original = childProcess[name];
+    if (original === undefined) {
+      continue;
+    }
+    originals.set(name, original);
+    childProcess[name] = function (this: unknown, ...args: unknown[]) {
+      if ((new Error().stack ?? "").includes(EXTENSION_BUNDLE)) {
+        count += 1;
+      }
+      return original.apply(this, args);
+    };
+  }
+  return {
+    fromExtension: () => count,
+    stop: () => {
+      for (const [name, original] of originals) {
+        childProcess[name] = original;
+      }
+    },
   };
 }
