@@ -137,7 +137,7 @@
           return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"${depthStyle}><span class="mdmark-tree-head"><span class="mdmark-tree-spacer"></span>${icon("ellipsis")}<span class="mdmark-tree-label mdmark-visually-hidden">ほかにもあります</span></span>${note}</span></li>`;
         }
         if (kind === "file") {
-          return `<li class="mdmark-tree-file"><span class="mdmark-tree-row"${depthStyle}><span class="mdmark-tree-head"><span class="mdmark-tree-spacer"></span>${icon(fileIcon(item.name))}<span class="mdmark-tree-label">${escapeHtml(item.name)}</span></span>${note}</span></li>`;
+          return `<li class="mdmark-tree-file" data-file-icon="${fileIcon(item.name)}"><span class="mdmark-tree-row"${depthStyle}><span class="mdmark-tree-head"><span class="mdmark-tree-spacer"></span>${icon(fileIcon(item.name))}<span class="mdmark-tree-label">${escapeHtml(item.name)}</span></span>${note}</span></li>`;
         }
         // 子を持たないフォルダ: 開閉するものが無いので、ボタンにしない
         if (!item.children.length) {

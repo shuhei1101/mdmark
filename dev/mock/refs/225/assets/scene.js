@@ -1,18 +1,19 @@
 // #225 のモックの未確定の案と場面の切り替え（画面と部品のカタログで共有する）。
-// URL の ?note=（注釈の列の見た目 a・b）・?toggle=（フォルダの開閉の示し方 a・b）・?clipboard=（ok・fail）で選ぶ。
-// ツリーと表を組み立てる前に読み、html の data-* を当てる
+// URL の ?note=（注釈の列の見た目 a・b）・?toggle=（フォルダの開閉の示し方 a・b）・?clipboard=（ok・fail）・
+// ?chip=（語の条件のチップの名前 search・keyword）で選ぶ。ツリーと表を組み立てる前に読み、html の data-* を当てる
 
 // sample.js と同じ大域に読むため、宣言をブロックに閉じる
 {
   const params = new URLSearchParams(location.search);
   // 案の既定（URL に無いときの値）
-  const DEFAULTS = { note: "a", toggle: "b", clipboard: "ok" };
+  const DEFAULTS = { note: "a", toggle: "b", clipboard: "ok", chip: "search" };
   const scene = Object.fromEntries(Object.keys(DEFAULTS).map((axis) => [axis, params.get(axis) ?? DEFAULTS[axis]]));
 
-  // tree.css・table.js・tree.js が読む html の data-*
+  // tree.css・table.js・tree.js・table-search.js が読む html の data-*
   const root = document.documentElement;
   root.dataset.mockNote = scene.note;
   root.dataset.mockToggle = scene.toggle;
+  root.dataset.mockChip = scene.chip;
   if (scene.clipboard === "fail") root.dataset.mockClipboard = "fail";
 
   /** 今の案を保ったまま、1 つの軸だけを変えた URL を返す。 */

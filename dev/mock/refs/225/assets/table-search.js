@@ -12,8 +12,9 @@
     close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   };
 
-  // 語の条件のチップの名前
-  const WORD_LABEL = "語";
+  // 語の条件のチップの名前（モックでは scene.js の ?chip= の案で切り替える）
+  const WORD_LABELS = { search: "検索", keyword: "キーワード" };
+  const WORD_LABEL = WORD_LABELS[document.documentElement.dataset.mockChip ?? "search"];
 
   // 値の候補を並べる区切りと、期間の区切り
   const VALUE_SEPARATOR = "・";

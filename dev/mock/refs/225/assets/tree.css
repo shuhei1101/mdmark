@@ -2,6 +2,30 @@
    実装では src/index.css の mdmark の層に足す。refs/19/assets/syntax.css の後に読む。
    モックだけの指定（html の data-*）: data-mock-note（注釈の見た目の案 "a" / "b"）・data-mock-toggle（開閉の印の案 "a" / "b"） */
 
+/* ファイルの種類の色（明るい配色）: 実装では src/index.css の変数の既定に足す。面に対して 4.5:1 以上 */
+:root {
+  --mdmark-color-file-text: #1d4ed8;
+  --mdmark-color-file-code: #6d28d9;
+  --mdmark-color-file-config: #c2410c;
+  --mdmark-color-file-image: #0f766e;
+  --mdmark-color-file-sheet: #15803d;
+  --mdmark-color-file-archive: #a16207;
+  --mdmark-color-file-script: #be185d;
+}
+
+/* ファイルの種類の色（ダーク）。画面のときだけ当てる */
+@media screen {
+  :root[data-scheme="dark"] {
+    --mdmark-color-file-text: #7aa2ff;
+    --mdmark-color-file-code: #c4a7ff;
+    --mdmark-color-file-config: #fb923c;
+    --mdmark-color-file-image: #2dd4bf;
+    --mdmark-color-file-sheet: #4ade80;
+    --mdmark-color-file-archive: #facc15;
+    --mdmark-color-file-script: #f472b6;
+  }
+}
+
 /* mdmark の層: ファイルツリー */
 @layer mdmark {
   .mdmark {
@@ -177,7 +201,7 @@
       width: var(--mdmark-tree-chevron);
     }
 
-    /* アイコン: フォルダは本文の色、ファイルとほかにもあるは控えめな色 */
+    /* アイコン: フォルダは本文の色、汎用のファイルとほかにもあるは控えめな色 */
     .mdmark-tree-folder > .mdmark-tree-row .mdmark-icon:not(.mdmark-tree-chevron) {
       color: var(--mdmark-color-text);
     }
@@ -185,6 +209,15 @@
     :is(.mdmark-tree-file, .mdmark-tree-more) > .mdmark-tree-row .mdmark-icon {
       color: var(--mdmark-color-muted);
     }
+
+    /* 種類のあるファイルのアイコン: 種類ごとの色。形でも種類が分かる */
+    .mdmark-tree-file[data-file-icon="file-text"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-text); }
+    .mdmark-tree-file[data-file-icon="file-code"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-code); }
+    .mdmark-tree-file[data-file-icon="file-json"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-config); }
+    .mdmark-tree-file[data-file-icon="file-image"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-image); }
+    .mdmark-tree-file[data-file-icon="file-spreadsheet"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-sheet); }
+    .mdmark-tree-file[data-file-icon="file-archive"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-archive); }
+    .mdmark-tree-file[data-file-icon="file-terminal"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-script); }
 
     /* 注釈: 本文の書体で、行内のコード・太字・リンク・バッジを描く */
     .mdmark-tree-note {

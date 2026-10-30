@@ -29,6 +29,8 @@
   <link rel="stylesheet" href="../../refs/225/assets/search-collapse-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 未確定の案の切り替え（語の条件のチップの名前） -->
+  <script src="../../refs/225/assets/scene.js" defer></script>
   <!-- 表の見本の定義と組み立て（モックだけの仕組み。syntax.js より先に組み立てる） -->
   <script src="../../refs/151/assets/samples.js" defer></script>
   <script src="../../refs/225/assets/samples.js" defer></script>
@@ -54,6 +56,11 @@
     <!-- [data-preview-toggle]: preview.js が印刷の規則を画面にも当て、閉じた記法を開いて明るい配色にする（モックだけの仕組み） -->
     <div class="mock-bar-group">
       <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+    <!-- [data-scene-axis] [data-scene-value]: scene.js が行き先の URL（?{軸}=）と今の案の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="語の条件のチップの名前">
+      <a class="mock-bar-item" data-scene-axis="chip" data-scene-value="search">チップ: 検索</a>
+      <a class="mock-bar-item" data-scene-axis="chip" data-scene-value="keyword">チップ: キーワード</a>
     </div>
   </div>
 
