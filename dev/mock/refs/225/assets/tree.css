@@ -189,14 +189,14 @@
     /* 注釈: 本文の書体で、行内のコード・太字・リンク・バッジを描く */
     .mdmark-tree-note {
       font-family: var(--mdmark-font-body);
-      font-size: 0.9375em;
 
       code {
         padding: 0.05em 0.35em;
-        font-size: 0.875em;
+        font-size: 0.9375em;
       }
 
       .mdmark-badge {
+        font-size: 0.6875rem;
         line-height: 1.4;
       }
     }
