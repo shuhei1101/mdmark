@@ -334,7 +334,7 @@ test("test_normal_when_tree_annotated", async ({ page }) => {
   await expect(
     tree
       .locator(".mdmark-tree-row", {
-        has: tree.locator(".mdmark-tree-name", {
+        has: page.locator(".mdmark-tree-name", {
           hasText: /^(C#\/|#notes\.md)$/,
         }),
       })
