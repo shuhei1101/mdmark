@@ -1,6 +1,7 @@
 {
   "name": "mdmark",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "bin": {
     "mdmark": "dist/cli.js"
