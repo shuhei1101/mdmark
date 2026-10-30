@@ -659,5 +659,6 @@ test_files:
   - tests/unit/vscode/src/preview/html.test.ts
   - tests/unit/vscode/src/preview/links.test.ts
   - tests/unit/vscode/src/preview/scroll-guard.test.ts
+  - tests/unit/vscode/src/preview/diff-target.test.ts
 notes:
   単体テストの追加先: 差分ビューの対象を決める・パネルのキーを組むの単体テストは `tests/unit/vscode/src/preview/diff-target.test.ts` に置き、テストを作った後に `test_files` へ追加する

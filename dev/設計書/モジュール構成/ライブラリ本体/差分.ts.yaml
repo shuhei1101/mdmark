@@ -937,3 +937,5 @@ test_files:
   - tests/unit/src/parts/diff-html.test.ts
   - tests/unit/src/parts/diff-minimap.test.ts
   - tests/unit/src/parts/diff-message.test.ts
+  - tests/unit/src/diff/blocks.browser.test.ts
+  - tests/unit/src/parts/diff-blocks.test.ts
