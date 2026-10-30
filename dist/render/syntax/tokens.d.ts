@@ -7,6 +7,17 @@ export declare function envOf(state: StateCore): RenderEnv;
 export declare function featureOn(state: StateCore, name: string): boolean;
 /** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする。`source` を渡すと、その `map`（元の行）を写す */
 export declare function ownBlock(state: StateCore, html: string, source?: Token): Token;
+/** タブの中身の境目: タブの先頭（`start`）・中身の間（`between`）・タブの終わり（`end`） */
+export type TabBoundary = "start" | "between" | "end";
+/** `ownBlock` と同じ HTML のトークンに、タブの中身の境目の目印を付ける */
+export declare function tabBoundaryBlock(options: {
+    state: StateCore;
+    html: string;
+    boundary: TabBoundary;
+    source?: Token | undefined;
+}): Token;
+/** タブの中身の境目のトークンなら、その境目を返す */
+export declare function tabBoundaryOf(token: Token | undefined): TabBoundary | undefined;
 /** 印のトークンなら、その印を返す */
 export declare function markOf(token: Token | undefined): Mark | undefined;
 /** `openIndex` の印に対する閉じの印の位置を返す。無ければ `-1` */

@@ -1,3 +1,23 @@
+import type { MdmarkAlias } from "../knowledge/aliases.ts";
+/** コマンドのコピーのボタンの状態 */
+export type TermTipCopyState = "idle" | "copied" | "failed";
+/** コピーのボタンの状態ごとの文言とアイコン（コードブロックのコピーと同じ） */
+export declare const COMMAND_COPY_STATES: {
+    readonly idle: {
+        readonly text: "コピー";
+        readonly icon: "copy";
+    };
+    readonly copied: {
+        readonly text: "コピーしました";
+        readonly icon: "check";
+    };
+    readonly failed: {
+        readonly text: "コピーできませんでした";
+        readonly icon: "circle-alert";
+    };
+};
+/** コピーのボタンの中に置く、状態のアイコンと文言の HTML を返す */
+export declare function renderTermTipCopy(state: TermTipCopyState): string;
 /** ツールチップの「関連文書」に並べる文書 1 つ */
 export type TermTipDoc = {
     /** 文書の題 */
@@ -17,11 +37,15 @@ export declare function renderTermTip(props: {
     meaning?: string;
     /** 「関連文書」に並べる文書。空なら「関連文書」の区分を出さない */
     docs?: TermTipDoc[];
-    /** `text` がやめた言い方のときの代わりの用語 */
+    /** `text` がやめた言い方のときの代わりの用語。`meaning` が無ければ意味を置かない */
     replacement?: {
         term: string;
-        meaning: string;
+        meaning?: string;
     };
+    /** `text` が一致したエイリアス。渡すと種類ごとの区分を出し、`meaning`・`docs` は使わない */
+    alias?: MdmarkAlias;
+    /** コマンドのコピーのボタンの状態（`mount` が付けた状態）。省くと `idle` */
+    copy?: TermTipCopyState;
     /** 語の下に開いた見た目にするか。ストーリーが下に開いた状態を出すために使い、`render` は渡さない */
     below?: boolean;
 }): string;
