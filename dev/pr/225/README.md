@@ -1,14 +1,15 @@
-# 表の絞り込み欄とチップ、表・タブ・ステップの折りたたみの title=・closed・open、ファイルツリーの注釈・アイコン・開閉・コピーを追加する
+# 表・タブ・ステップの折りたたみの title=・closed・open、ファイルツリーの注釈・アイコン・開閉・コピーを追加する
 
 ## 概要
 
-文書を読む人が、表を全ての列の語で絞り込んで当たっている条件をチップで外せ、表・タブ・ステップを見出し付きの折りたたみで読め、ファイルツリーを注釈・アイコン付きで開閉してコピーできるようにする。
+文書を読む人が、表・タブ・ステップを見出し付きの折りたたみで読め、ファイルツリーを注釈・アイコン付きで開閉してコピーできるようにする。
 
 ## 背景
 
 [Issue #224](https://github.com/shuhei1101/mdmark/issues/224) は、計画の未着手の行のうち、既存の記法への項目の追加で触る場所（`src/render`・`src/parts`・`src/index.css`・部品設計・記法の一覧）が重なる [#128](https://github.com/shuhei1101/mdmark/issues/128)・[#135](https://github.com/shuhei1101/mdmark/issues/135)・[#137](https://github.com/shuhei1101/mdmark/issues/137) を束ねた親 Issue。
 3 件とも、AI Monitor のドキュメントサイトの本文を mdmark の `mount` で描くように置き換える作業（[shuhei1101/ai-monitor#2990](https://github.com/shuhei1101/ai-monitor/pull/2990)）で、AI Monitor にあり mdmark に無い機能として起票された。
 #137 は 2026-10-29 の話し合い（D-13・D-14・D-22・D-23）で、アイコン・`...`・開閉・ASCII の罫線へ範囲を広げた。
+#128 の表全体の検索の欄とチップは、ユーザーの判断で対象外にした（[要件](./要件.md) のスコープ外）。
 今の表の折りたたみの見出しは「表を開く」で固定で（[src/parts/table.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/parts/table.ts)）、タブとステップは折りたたみを持たず、ファイルツリーは罫線の後ろを全て項目の名前にして開閉もコピーも持たない（[src/render/syntax/tree.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/render/syntax/tree.ts)）。
 
 ## 計画書
