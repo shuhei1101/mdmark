@@ -14,6 +14,30 @@ type FigureKind = "image" | "table";
 /** 番号を付けた図表 */
 type Numbered = { kind: FigureKind; number: number };
 
+/** `start` の開きに対応する閉じの位置を、入れ子の数を数えて返す（無ければ -1） */
+function matchingClose(
+  tokens: Token[],
+  start: number,
+  match: {
+    isOpen: (token: Token) => boolean;
+    isClose: (token: Token) => boolean;
+  },
+): number {
+  let depth = 0;
+  for (let index = start; index < tokens.length; index++) {
+    const token = tokens[index] as Token;
+    if (match.isOpen(token)) {
+      depth += 1;
+    } else if (match.isClose(token)) {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+  return -1;
+}
+
 /** 印の直後の図か表（画像だけの段落、表の囲み、囲まない表）の範囲を読む */
 function figureTarget(
   tokens: Token[],
@@ -36,17 +60,19 @@ function figureTarget(
     }
     return undefined;
   }
-  const closeType = first?.meta?.role === "table-open" ? "table-close" : "";
-  if (closeType) {
-    const end = tokens.findIndex(
-      (token, index) => index > start && token.meta?.role === closeType,
-    );
+  // 表の範囲は、中の表を入れ子の数で数えて、自分の開きに対応する閉じまでにする
+  if (first?.meta?.role === "table-open") {
+    const end = matchingClose(tokens, start, {
+      isOpen: (token) => token.meta?.role === "table-open",
+      isClose: (token) => token.meta?.role === "table-close",
+    });
     return end < 0 ? undefined : { kind: "table", end, caption: "" };
   }
   if (first?.type === "table_open") {
-    const end = tokens.findIndex(
-      (token, index) => index > start && token.type === "table_close",
-    );
+    const end = matchingClose(tokens, start, {
+      isOpen: (token) => token.type === "table_open",
+      isClose: (token) => token.type === "table_close",
+    });
     return end < 0 ? undefined : { kind: "table", end, caption: "" };
   }
   return undefined;

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { findTags, matches } from "../../../helpers/html.ts";
+import { findTags, matches, outerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** 表の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -352,4 +352,129 @@ test("test_decorate_tables_when_collapse_title", () => {
     '<details class="mdmark-table-details" open><summary>リリースの一覧</summary>',
   );
   expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 行の詳細の中に表を置いても、親の表の行を全て親の表の囲みに残し、列名・行の数・行へのリンク・集計を親の表の行だけで付ける（正常系）
+test("test_decorate_tables_when_row_detail_has_table", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data closed +rowlink +total total=数量:sum -->",
+    "",
+    "| 名前 | 数量 |",
+    "| --- | --- |",
+    "| Todo | 1 |",
+    "| Done | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- row-detail: 1 -->",
+    "",
+    "| 引数 | 値 |",
+    "| --- | --- |",
+    "| status | todo |",
+    "",
+    "<!-- /row-detail -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 親の囲みの外に行が出ない
+  const parent = outerHtml(html, 'data-kind="data"');
+  expect(html.slice(html.indexOf(parent) + parent.length)).not.toContain("<tr");
+  // 検証: 親の行のセルの列名が親の表の見出しになり、行の数と行へのリンクが親の行だけになる
+  const parentTable = outerHtml(parent, "<table ");
+  expect(parentTable).toContain('<td data-label="数量">2</td>');
+  expect(matches(parentTable, /data-label="名前"/g)).toHaveLength(2);
+  expect(matches(parentTable, /data-label="数量"/g)).toHaveLength(2);
+  expect(parent).toContain("<summary>表（2 行）</summary>");
+  expect(findTags(parentTable, 'id="todo"')).toHaveLength(1);
+  expect(findTags(parentTable, 'id="done"')).toHaveLength(1);
+  // 検証: 詳細の行の中の表は既定の種類の囲みに入り、中の表の見出しで列名を付け、行のリンクを持たない
+  const nested = outerHtml(parentTable, 'data-kind="default"');
+  expect(matches(nested, /data-label="引数"/g)).toHaveLength(1);
+  expect(matches(nested, /data-label="値"/g)).toHaveLength(1);
+  expect(findTags(nested, "<tr").filter((tag) => tag.includes(" id="))).toEqual(
+    [],
+  );
+  // 検証: 数として読めない値の警告が無い
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 表の印の外の表でも、行の詳細の中の表の後ろの親の行を親の表の囲みに残す（正常系）
+test("test_decorate_tables_when_row_detail_has_table_without_mark", () => {
+  // 準備
+  const markdown = [
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    "| Todo | a |",
+    "| Done | b |",
+    "",
+    "<!-- row-detail: 1 -->",
+    "",
+    "| 引数 | 値 |",
+    "| --- | --- |",
+    "| status | todo |",
+    "",
+    "<!-- /row-detail -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 親の表が既定の種類の囲みに入り、Done の行が親の表の中にある
+  const parent = outerHtml(html, 'data-kind="default"');
+  expect(html.slice(html.indexOf(parent) + parent.length)).not.toContain("<tr");
+  const parentTable = outerHtml(parent, "<table ");
+  expect(parentTable).toContain('<td data-label="説明">b</td>');
+  expect(matches(parentTable, /data-label="名前"/g)).toHaveLength(2);
+  expect(matches(parentTable, /data-label="説明"/g)).toHaveLength(2);
+});
+
+// 行の詳細の中の表には、その表を囲む表の印だけを当て、外の表の印の指定を当てない（正常系）
+test("test_decorate_tables_when_row_detail_has_marked_table", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data filter=名前 -->",
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    "| Todo | a |",
+    "| Done | b |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- row-detail: 1 -->",
+    "",
+    "<!-- table: plain -->",
+    "",
+    "| 引数 | 値 |",
+    "| --- | --- |",
+    "| status | todo |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- /row-detail -->",
+    "",
+    "<!-- row-detail: 2 -->",
+    "",
+    "| 引数 | 値 |",
+    "| --- | --- |",
+    "| mode | fast |",
+    "",
+    "<!-- /row-detail -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 親の表は外の表の印、1 つ目の中の表は中の印、2 つ目の中の表は既定の種類になる
+  const wrappers = findTags(html, 'class="mdmark-table"');
+  expect(wrappers).toHaveLength(3);
+  expect(wrappers[0]).toContain('data-kind="data"');
+  expect(wrappers[0]).toContain('data-filter="0:select"');
+  expect(wrappers[1]).toContain('data-kind="plain"');
+  expect(wrappers[2]).toContain('data-kind="default"');
+  expect(wrappers[2]).not.toContain("data-filter");
+  // 検証: 書き方の警告が無く、表の印のコメントが出力に残らない
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(html).not.toContain("<!-- table");
+  expect(html).not.toContain("<!-- /table");
 });

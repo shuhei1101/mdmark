@@ -176,7 +176,7 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける
+    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
     description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
 
@@ -319,6 +319,18 @@ functions:
         condition: 幅 390px の要素に `data-features="columns"` の 3 列の表（状態は短く、説明は 1 行に収まらない）を付け、列の表示で説明のチェックを外す
         mock: なし
         expected: 付けた後は `is-folded`、外した後は `is-folded`・開閉のボタン・開閉の行が無く、説明の列が `hidden`
+      - name: test_attach_tables_when_nested_table
+        case: 正常
+        summary: 行の詳細の中の表の要素を、親の表の操作が拾わない
+        condition: 幅 320px の要素に、`data-features="sort pin filter"`・`data-filter="0:select"` の 10 列の親の表を付ける。1 行目の行の詳細の中に `data-features="pin filter"`・`data-filter="0:select"` の 2 列の表の囲みを置き、`attachSections` の後に付ける。行の詳細は閉じたまま、付けた後に描く先の要素の幅を 300px に変えて `ResizeObserver` の呼び出しを待ち、さらに親の表の囲みの幅だけを 250px に変えて待ち、続けて親の表の 1 列目の絞り込みのボタンを押す
+        mock: なし
+        expected: 親の表のピン止めのボタンが `hidden` を持たず、中の表のピン止めのボタンが `hidden` を持つ。押した後に開くのは親の表の囲みの 1 列目のドロワーだけで、中の表のドロワーは `hidden` のまま。値の候補に中の表のセルの文字が無い。中の表の囲みに親の表のドロワーが置かれない
+      - name: test_attach_tables_when_nested_table_sorted
+        case: 正常
+        summary: 行の詳細の中の表の並べ替えのボタンを押しても、親の表を並べ替えない
+        condition: '`data-features="sort pin"` の 2 列の親の表（1 列目の値が上から `a`・`b`）を付ける。1 行目の行の詳細の中に `data-features="sort pin"` の 2 列の表の囲みを置き、`attachSections` の後に付け、中の表の 1 列目の並べ替えのボタンを押す'
+        mock: なし
+        expected: 親の表の本文の行の並びが `a`・`b` のままで、親の表の見出しのセルが `aria-sort` を持たない。中の表の 1 列目の見出しのセルの `aria-sort` が `ascending`
     refs:
       - '#functions[computeTotal]'
       - '#functions[tableToTsv]'

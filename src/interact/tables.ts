@@ -116,6 +116,24 @@ function bodyRows(table: HTMLTableElement): HTMLTableRowElement[] {
   );
 }
 
+/** 囲みの中の要素のうち、その囲み自身の表に属するもの（中の表の囲みの要素を除く）を返す */
+function ownElements<T extends Element>(
+  wrapper: HTMLElement,
+  selector: string,
+): T[] {
+  return [...wrapper.querySelectorAll<T>(selector)].filter(
+    (element) => element.closest(".mdmark-table") === wrapper,
+  );
+}
+
+/** 囲みの中の要素のうち、その囲み自身の表に属する最初のもの（無ければ `null`）を返す */
+function ownElement<T extends Element>(
+  wrapper: HTMLElement,
+  selector: string,
+): T | null {
+  return ownElements<T>(wrapper, selector)[0] ?? null;
+}
+
 /** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、外す関数を返す */
 function attachTable(
   wrapper: HTMLElement,
@@ -173,7 +191,8 @@ function attachTable(
         wrapper.insertAdjacentHTML("beforeend", parts.drawer);
       }
     });
-    for (const drawer of wrapper.querySelectorAll<HTMLElement>(
+    for (const drawer of ownElements<HTMLElement>(
+      wrapper,
       ".mdmark-filter-drawer",
     )) {
       drawers.set(Number(drawer.dataset.column), drawer);
@@ -221,12 +240,12 @@ function attachTable(
       }
     });
   }
-  const menu = wrapper.querySelector<HTMLElement>(".mdmark-columns-menu");
-  const totalsMenu = wrapper.querySelector<HTMLElement>(".mdmark-totals-menu");
-  const copyMenu = wrapper.querySelector<HTMLElement>(".mdmark-copy-menu");
+  const menu = ownElement<HTMLElement>(wrapper, ".mdmark-columns-menu");
+  const totalsMenu = ownElement<HTMLElement>(wrapper, ".mdmark-totals-menu");
+  const copyMenu = ownElement<HTMLElement>(wrapper, ".mdmark-copy-menu");
   /** 帯の読み上げの要素に知らせを入れる */
   const announce = (message: string): void => {
-    const status = wrapper.querySelector(".mdmark-table-status");
+    const status = ownElement(wrapper, ".mdmark-table-status");
     if (status) {
       status.textContent = message;
     }
@@ -302,7 +321,7 @@ function attachTable(
       const kind = filterKinds.get(column) ?? "select";
       const value = readFilterValue(column, kind, drawer);
       const active = isActive(value);
-      const button = wrapper.querySelector(`[aria-controls="${drawer.id}"]`);
+      const button = ownElement(wrapper, `[aria-controls="${drawer.id}"]`);
       button?.classList.toggle("is-active", active);
       const status = button?.querySelector(".mdmark-visually-hidden");
       if (status) {
@@ -504,13 +523,13 @@ function attachTable(
       table.scrollWidth > table.clientWidth ||
       table.scrollWidth > wrapper.clientWidth ||
       pinned > 0;
-    for (const pin of wrapper.querySelectorAll<HTMLElement>(".mdmark-pin")) {
+    for (const pin of ownElements<HTMLElement>(wrapper, ".mdmark-pin")) {
       pin.hidden = !overflow;
     }
   };
   /** 行の詳細を持つ表に、表の見えている幅を変数で渡す（詳細の中身をその幅に収める） */
   const updateVisibleWidth = (): void => {
-    if (table.querySelector(".mdmark-row-detail")) {
+    if (ownElement(wrapper, ".mdmark-row-detail")) {
       table.style.setProperty(
         "--mdmark-table-visible-width",
         `${table.clientWidth}px`,
@@ -528,9 +547,7 @@ function attachTable(
   });
   /** 表の上の件数を、表示している行の数と全ての行の数に書き換える */
   const updateCount = (): void => {
-    const [visible, spoken] = wrapper.querySelectorAll(
-      ".mdmark-table-count span",
-    );
+    const [visible, spoken] = ownElements(wrapper, ".mdmark-table-count span");
     if (!visible || !spoken) {
       return;
     }
@@ -600,7 +617,7 @@ function attachTable(
       .map((total) => total.calc)
       .filter((value, index, all) => all.indexOf(value) === index)
       .filter((value) => !shownCalcs.has(value)).length;
-    const toggle = wrapper.querySelector(".mdmark-totals-toggle");
+    const toggle = ownElement(wrapper, ".mdmark-totals-toggle");
     toggle?.classList.toggle("is-active", hiding > 0);
     const spoken = toggle?.querySelector(".mdmark-visually-hidden");
     if (spoken) {
@@ -702,7 +719,7 @@ function attachTable(
       restore();
     }
     unfoldRows = [];
-    for (const cell of wrapper.querySelectorAll(".mdmark-fold-col")) {
+    for (const cell of ownElements(wrapper, ".mdmark-fold-col")) {
       cell.classList.remove("mdmark-fold-col");
     }
     wrapper.classList.remove("is-folded");
@@ -760,7 +777,7 @@ function attachTable(
       // 先頭の列は隠せない
       input.disabled = column === 0;
     }
-    const toggle = wrapper.querySelector<HTMLElement>(".mdmark-columns-toggle");
+    const toggle = ownElement<HTMLElement>(wrapper, ".mdmark-columns-toggle");
     toggle?.classList.toggle("is-active", hiddenColumns.size > 0);
     const status = toggle?.querySelector(".mdmark-visually-hidden");
     if (status) {
@@ -795,7 +812,7 @@ function attachTable(
 
   // ─── 表のコピー ───
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
-  const copyButton = wrapper.querySelector<HTMLElement>(".mdmark-copy");
+  const copyButton = ownElement<HTMLElement>(wrapper, ".mdmark-copy");
   /** コピーのボタンに状態の文言とアイコンを当てる */
   const setCopyState = (state: CopyState): void => {
     if (copyButton) {
@@ -805,7 +822,7 @@ function attachTable(
   };
   /** 手でコピーさせるパネルを取り除く。`returnFocus` が真なら `表をコピー` へフォーカスを戻す */
   const closeCopyPanel = (returnFocus: boolean): void => {
-    wrapper.querySelector(".mdmark-copy-panel")?.remove();
+    ownElement(wrapper, ".mdmark-copy-panel")?.remove();
     if (returnFocus) {
       copyButton?.focus();
     }
@@ -840,7 +857,8 @@ function attachTable(
         "afterend",
         renderCopyPanel({ id: `${id}-panel`, format, text }),
       );
-    const textarea = wrapper.querySelector<HTMLTextAreaElement>(
+    const textarea = ownElement<HTMLTextAreaElement>(
+      wrapper,
       ".mdmark-copy-panel-text",
     );
     textarea?.focus();
@@ -930,6 +948,9 @@ function attachTable(
   // ─── 受け取り ───
   const onClick = (event: Event): void => {
     const target = event.target as HTMLElement;
+    if (target.closest(".mdmark-table") !== wrapper) {
+      return;
+    }
     const sort = target.closest<HTMLElement>(".mdmark-sort");
     const filter = target.closest<HTMLElement>(".mdmark-filter");
     const pin = target.closest<HTMLElement>(".mdmark-pin");
@@ -990,7 +1011,8 @@ function attachTable(
     } else if (foldToggle) {
       const open = foldToggle.getAttribute("aria-expanded") !== "true";
       foldToggle.setAttribute("aria-expanded", String(open));
-      const foldRow = wrapper.querySelector<HTMLElement>(
+      const foldRow = ownElement<HTMLElement>(
+        wrapper,
         `[id="${foldToggle.getAttribute("aria-controls")}"]`,
       );
       if (foldRow) {
@@ -1011,6 +1033,7 @@ function attachTable(
     if (
       event.key === "Escape" &&
       event.target instanceof Element &&
+      event.target.closest(".mdmark-table") === wrapper &&
       event.target.closest(".mdmark-copy-panel")
     ) {
       closeCopyPanel(true);
@@ -1019,6 +1042,9 @@ function attachTable(
   /** 列の表示のメニューのチェックボックスに合わせて列を隠す・出し、集計のメニューのチェックボックスに合わせて計算の行を出す・隠す */
   const onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement;
+    if (input.closest(".mdmark-table") !== wrapper) {
+      return;
+    }
     if (input.closest(".mdmark-totals-options")) {
       toggleTotal(input.value as TotalCalc, input.checked);
       return;
@@ -1037,7 +1063,7 @@ function attachTable(
   const onInput = (event: Event): void => {
     const input = event.target as HTMLInputElement;
     const drawer = input.closest<HTMLElement>(".mdmark-filter-drawer");
-    if (!drawer) {
+    if (!drawer || input.closest(".mdmark-table") !== wrapper) {
       return;
     }
     if (input.classList.contains("mdmark-filter-search")) {
