@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
+  BLOCKS_AFTER,
+  BLOCKS_BEFORE,
   DIFF_CONTENTS,
   DIFF_DOC_ID,
   DIFF_PAGE_MARKDOWN,
@@ -12,6 +14,7 @@ import {
   beforeSelect,
   diffLines,
   disabledValues,
+  expectBlockDiff,
   toggleOf,
   waitForDiff,
 } from "../diff-ui.ts";
@@ -97,6 +100,28 @@ test("test_normal", async ({ page }) => {
   await expect(band).toHaveCount(1);
   await expect(band.locator('[data-kind="del"]').first()).toBeAttached();
   await expect(band.locator('[data-kind="add"]').first()).toBeAttached();
+});
+
+// 描いた結果の上で色分けする指定を渡すと、後のリビジョンを描いたブロックごとに追加と削除の色を当てる（正常シナリオ（描いた結果の上で色分けする））
+test("test_normal_when_rendered", async ({ page }) => {
+  // 準備・実行: 開いた状態で描き、描いた結果の上で色分けする指定も渡す
+  await openPage(page, builtRoot);
+  await mountDiffDocument(page, {
+    markdown: BLOCKS_AFTER,
+    docId: DIFF_DOC_ID,
+    source: {
+      revisions: DIFF_REVISIONS.slice(1),
+      contents: { r1: BLOCKS_BEFORE, r2: BLOCKS_AFTER },
+    },
+    diffMode: "blocks",
+  });
+  // 検証
+  await expect(
+    page.locator('#doc div.mdmark-diff-block[data-kind="add"]').first(),
+  ).toBeVisible();
+  await expectBlockDiff(page);
+  // Markdown のソースの行は出さない
+  await expect(page.locator("#doc .mdmark-diff-line")).toHaveCount(0);
 });
 
 // 前のリビジョンを選び直すと、その 2 つの差分に描き直し、後の欄では古いリビジョンを選べない（正常シナリオ（リビジョンを選び直す））

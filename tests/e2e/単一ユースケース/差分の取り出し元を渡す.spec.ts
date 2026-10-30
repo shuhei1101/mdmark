@@ -77,6 +77,30 @@ test("test_normal", async ({ page }) => {
   await expect(diffLines(page, "add")).toHaveCount(1);
 });
 
+// 差分を開いた状態で描く指定を渡すと、押される前に一覧と 2 つの本文を取り出して差分を出す（正常シナリオ（開いた状態で描く））
+test("test_normal_when_opened_on_mount", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行: 「変更を見る」を押さずに描く
+  await mountDiffDocument(page, {
+    markdown: DIFF_PAGE_MARKDOWN,
+    docId: DIFF_DOC_ID,
+    source: { revisions: DIFF_REVISIONS, contents: DIFF_CONTENTS },
+    diffMode: "open",
+  });
+  await waitForDiff(page);
+  // 検証
+  const calls = await readDiffCalls(page);
+  expect(calls.revisions).toEqual(["guide"]);
+  expect(calls.content).toHaveLength(2);
+  expect(calls.content).toContainEqual({ docId: "guide", revisionId: "r3" });
+  expect(calls.content).toContainEqual({ docId: "guide", revisionId: "r2" });
+  await expect(beforeSelect(page)).toHaveValue("r2");
+  await expect(afterSelect(page)).toHaveValue("r3");
+  await expect(diffLines(page, "del")).toHaveCount(1);
+  await expect(diffLines(page, "add")).toHaveCount(1);
+});
+
 // 取り出し元を渡さずに描くと、差分を開く UI を付けず、文書を今までどおり描く（正常シナリオ（取り出し元を渡さない））
 test("test_normal_when_no_source", async ({ page }) => {
   // 準備
