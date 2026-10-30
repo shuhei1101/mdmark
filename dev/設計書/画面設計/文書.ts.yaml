@@ -60,6 +60,8 @@ elements:
         value: 印の `total=列名:計算,…`（`+total` の表だけ。列名を列の位置に読み替える）
       - name: rowIds
         value: '`+rowlink` の表の行ごとの、先頭のセルの文字から見出しと同じ規則で作った ID（文書の中の見出し・前の行と重なれば `-1`・`-2`）'
+      - name: title
+        value: 印の `title=` の値（`closed`・`open` を書いた表だけ。書かなければ渡さない）
   - name: 表のセル
     id: table-cell
     kind: label
@@ -168,13 +170,17 @@ elements:
         value: 範囲で最初に出る見出しの階層の見出しの文字
       - name: group
         value: タブの印の `group=` の値（書かないか値が無いときは渡さない）
+      - name: collapse
+        value: 印の `closed`・`open`（無ければ `none`。両方を書いたときは `closed`）
+      - name: title
+        value: 印の `title=` の値（`closed`・`open` を書いた範囲だけ。書かなければ渡さない）
     slots:
       - name: default
         value: 区切りの見出しから次の見出しの前までの中身
     position: 描く先の要素
     description: '`<!-- tabs -->` の範囲'
     visible_when: 文書にタブの範囲があり、`tabs` がオンのとき
-    initial_value: 1 つ目のタブを選んだ状態。`group` を持ち、localStorage にその組で残したタブ名のタブがあればそのタブを選んだ状態。URL の `#ID` がタブの中の要素を指すときは、localStorage より優先してその要素を含むタブを選んだ状態
+    initial_value: 1 つ目のタブを選んだ状態。`group` を持ち、localStorage にその組で残したタブ名のタブがあればそのタブを選んだ状態。URL の `#ID` がタブの中の要素を指すときは、localStorage より優先してその要素を含むタブを選んだ状態。`closed` の範囲は見出しだけを出した閉じた状態
     action: タブを押すか矢印キーで中身を切り替える。`group` を持つときは、ページの同じ `group` で同じタブ名を持つタブも切り替え、選んだタブ名を残す。URL の `#ID`（`hashchange` を含む）が選ばれていないタブの中の要素を指すときは、そのタブを選んでから要素へ移る（選んだタブ名は残さず、同じ `group` のほかのタブも切り替えない）
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
@@ -187,9 +193,14 @@ elements:
     args:
       - name: items
         value: 範囲の最初の番号付きリストの項目
+      - name: collapse
+        value: 印の `closed`・`open`（無ければ `none`。両方を書いたときは `closed`）
+      - name: title
+        value: 印の `title=` の値（`closed`・`open` を書いた範囲だけ。書かなければ渡さない）
     position: 描く先の要素
     description: '`<!-- steps -->` の範囲の番号付きリスト'
     visible_when: 文書にステップの範囲があり、`steps` がオンのとき
+    initial_value: '`closed` の範囲は見出しだけを出した閉じた状態、それ以外は全ての手順を出した状態'
     status: planned
   - name: ファイルツリー
     id: file-tree
@@ -197,10 +208,20 @@ elements:
     component: dev/設計書/部品設計/ファイルツリー.ts#
     args:
       - name: nodes
-        value: 言語 `tree` のコードブロックの罫線を読んだ項目
+        value: 言語 `tree` のコードブロックの罫線（`├── `・`└── `・`│   ` と `\|-- `・`` `-- ``・`\|   `）を読んだ項目。前に空白がある最初の `#` で名前と注釈を分け、注釈はインラインを描いた HTML
+      - name: source
+        value: コードブロックの中身
+      - name: open
+        value: '直前の `<!-- tree: open=… -->` の値（書かないか読めないときは渡さない）'
+      - name: interactive
+        value: '`render` は `false`、`mount` が付けた後は `true`'
     position: 描く先の要素
     description: 言語 `tree` のコードブロック
     visible_when: 文書に言語 `tree` のコードブロックがあり、`tree` がオンで、全ての行を読めたとき
+    initial_value: '`open=` の階層まで開いた状態（指定が無ければルートだけ開く）。コピーボタンは `コピー`'
+    action: フォルダの名前かアイコンを押すか Enter・Space で開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じたフォルダの中に当たるとそのフォルダを開く。コピーボタンで `source` をクリップボードへ書き、書けないときはツリーの下に手でコピーするパネルを出す。印刷の前に閉じたフォルダを開き、後に閉じ直す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ファイルツリーの開閉とコピー]
     status: planned
   - name: バッジ
     id: badge
