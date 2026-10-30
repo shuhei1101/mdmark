@@ -109,6 +109,12 @@
       inset-inline-start: calc(-1 * (1.6em + var(--mdmark-diff-block-gutter)));
     }
 
+    /* 番号付きリストの削除の項目: 番号を付けず、後ろの項目は変更後の文書の番号のまま出す */
+    ol > li.mdmark-diff-block[data-kind="del"] {
+      list-style-type: none;
+      counter-increment: list-item 0;
+    }
+
     /* 表の行の記号: 行の 1 つ目のセルの左の余白に置く */
     tr.mdmark-diff-block > td:first-child {
       position: relative;
@@ -134,6 +140,11 @@
       &[data-kind="del"] {
         outline-color: var(--mdmark-color-diff-del-sign);
       }
+    }
+
+    /* 案 B のリストの項目: 文字を線から離す */
+    &[data-diff-marker="label"] li.mdmark-diff-block {
+      padding-inline: 0.5rem;
     }
 
     &[data-diff-marker="label"] :is(li, tr).mdmark-diff-block .mdmark-diff-block-label {
