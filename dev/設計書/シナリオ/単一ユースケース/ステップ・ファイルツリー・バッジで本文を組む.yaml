@@ -131,7 +131,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 読めない指定のステップを持つ Markdown
-        description: '`<!-- steps: closed open -->` と `<!-- steps: fold -->` で、それぞれ 2 項目の番号付きリストを囲んだ範囲を並べた文書'
+        description: '`<!-- steps: closed open -->`・`<!-- steps: fold -->`・`<!-- steps: title=準備 -->` で、それぞれ 2 項目の番号付きリストを囲んだ範囲を並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -140,12 +140,12 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: closed と open の両方と、知らない指定がある
+        M->>M: closed と open の両方・知らない指定・closed も open も無い title= がある
         M-->>P: 書き方の警告と、読めた指定だけを当てた手順を描く
         P-->>U: 書き方の警告と手順を表示
     expected:
-      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、2 つ目の範囲の上に `fold` が使えない指定であることを書いた書き方の警告がある
-      - 1 つ目の手順は `closed` を当てた閉じた折りたたみに入り、2 つ目の手順は折りたたみに入らずに描かれている
+      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、2 つ目の範囲の上に `fold` が使えない指定であること、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
+      - 1 つ目の手順は `closed` を当てた閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
     test: test_error_when_steps_option_invalid
   - name: 正常シナリオ（ファイルツリーに注釈を書く）
     setup:
