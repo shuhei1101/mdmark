@@ -117,3 +117,4 @@ refs:
 status: planned
 notes:
   補足: 見た目は確認ログの決定（面の色と左の余白の + / −、リストと表は項目・行の単位）。モックは `dev/mock/components/diff-blocks/` の案 A。対応テストファイルはテスト作成で `tests/integration/lib/diff-blocks.story.test.ts` を作った後に `test_file` へ書く
+test_file: tests/integration/lib/diff-blocks.story.test.ts
