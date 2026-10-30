@@ -1645,6 +1645,9 @@ test("test_normal_when_code_copied", async () => {
   // 検証: ファイルツリーに描いた tree のコードブロックにはボタンが無い
   expect(codeCopyButtons(el)).toHaveLength(2);
   expect(find(el, ".mdmark-tree").closest(".mdmark-code")).toBeNull();
+  expect(
+    el.querySelectorAll(".mdmark-tree button.mdmark-tree-copy"),
+  ).toHaveLength(1);
   // 実行: Tab でフォーカスして Enter で押す
   await userEvent.tab();
   expect(document.activeElement).toBe(tsButton);
@@ -2017,6 +2020,32 @@ test("test_normal_when_printed_with_syntax", async () => {
     "> [!NOTE]-",
     "> 補足の本文",
     "",
+    "<!-- tabs: closed -->",
+    "",
+    "### uv",
+    "",
+    "uv で入れる",
+    "",
+    "### pip",
+    "",
+    "pip で入れる",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "<!-- steps: closed -->",
+    "",
+    "1. 一つ目",
+    "2. 二つ目",
+    "",
+    "<!-- /steps -->",
+    "",
+    "```tree",
+    "app/",
+    "└── src/",
+    "    └── parts/",
+    "        └── tree.ts",
+    "```",
+    "",
     "## 閉じた節",
     "",
     "<!-- section: closed -->",
@@ -2025,9 +2054,23 @@ test("test_normal_when_printed_with_syntax", async () => {
     "",
   ].join("\n");
   await mountTracked(el, { markdown });
-  const tabs = [...el.querySelectorAll<HTMLElement>('[role="tab"]')];
+  const firstTabs = find<HTMLElement>(el, ".mdmark-tabs");
+  const tabs = [...firstTabs.querySelectorAll<HTMLElement>('[role="tab"]')];
   tabs[1]?.click();
-  const panels = [...el.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+  const panels = [
+    ...firstTabs.querySelectorAll<HTMLElement>('[role="tabpanel"]'),
+  ];
+  const collapsibles = [
+    ...el.querySelectorAll<HTMLDetailsElement>("details.mdmark-collapsible"),
+  ];
+  expect(collapsibles).toHaveLength(2);
+  const folders = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-tree-toggle"),
+  ].slice(1);
+  expect(folders.map((f) => f.getAttribute("aria-expanded"))).toEqual([
+    "false",
+    "false",
+  ]);
   const section = find<HTMLElement>(el, "[id^='section-']");
   const detail = find<HTMLElement>(el, "tr.mdmark-row-detail");
   const details = [
@@ -2042,14 +2085,30 @@ test("test_normal_when_printed_with_syntax", async () => {
     expect(panel.hasAttribute("hidden")).toBe(false);
   }
   expect(
-    [...el.querySelectorAll(".mdmark-tab-title")].map(
+    [...firstTabs.querySelectorAll(".mdmark-tab-title")].map(
       (title) => title.textContent,
     ),
   ).toEqual(["一つ目", "二つ目"]);
   expect(section.hasAttribute("hidden")).toBe(false);
   expect(detail.hasAttribute("hidden")).toBe(false);
-  for (const element of details) {
+  for (const element of [...details, ...collapsibles]) {
     expect(element.open).toBe(true);
+  }
+  expect(folders.map((f) => f.getAttribute("aria-expanded"))).toEqual([
+    "true",
+    "true",
+  ]);
+  expect(isShown(find(el, ".mdmark-tree .mdmark-tree-list ul ul li"))).toBe(
+    true,
+  );
+  // 印刷の媒体では、ツリーのコピーのボタンを出さない
+  await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+  try {
+    await vi.waitFor(() => {
+      expect(isShown(find(el, ".mdmark-tree-copy"))).toBe(false);
+    });
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
   }
   // 実行・検証: 印刷の後
   sendPrintEvent("afterprint");
@@ -2059,9 +2118,13 @@ test("test_normal_when_printed_with_syntax", async () => {
   ]);
   expect(section.getAttribute("hidden")).toBe("until-found");
   expect(detail.hasAttribute("hidden")).toBe(true);
-  for (const element of details) {
+  for (const element of [...details, ...collapsibles]) {
     expect(element.open).toBe(false);
   }
+  expect(folders.map((f) => f.getAttribute("aria-expanded"))).toEqual([
+    "false",
+    "false",
+  ]);
 });
 
 // update の後も記法の操作が働き、destroy の後は document の受け取りが外れている（正常系）
@@ -6270,4 +6333,297 @@ test("test_error_when_invalid_alias", async () => {
   expect(isOpen(tip)).toBe(true);
   expect(tip.textContent).toContain("javascript:alert(1)");
   expect(tip.querySelector("a")).toBeNull();
+});
+
+/** `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つツリーのコードブロックの行 */
+const NESTED_TREE_LINES = [
+  "```tree",
+  "app/",
+  "└── src/",
+  "    └── parts/",
+  "        └── tree.ts",
+  "```",
+];
+
+/** ツリーの中の、名前のフォルダの開閉のボタンを返す */
+function folderToggle(tree: Element, name: string): HTMLButtonElement {
+  const toggle = [
+    ...tree.querySelectorAll<HTMLButtonElement>("button.mdmark-tree-toggle"),
+  ].find((candidate) => candidate.textContent?.trim().startsWith(name));
+  if (!toggle) {
+    throw new Error(`開閉のボタンが無い: ${name}`);
+  }
+  return toggle;
+}
+
+/** ツリーの中の、フォルダの開閉のボタンの `aria-expanded` を名前の順に返す */
+function foldersExpanded(tree: Element, names: string[]): Array<string | null> {
+  return names.map((name) =>
+    folderToggle(tree, name).getAttribute("aria-expanded"),
+  );
+}
+
+/** ボタンが開閉する入れ子の `ul` を返す */
+function foldedList(toggle: HTMLElement): HTMLElement {
+  const list = document.getElementById(
+    toggle.getAttribute("aria-controls") ?? "",
+  );
+  if (!list) {
+    throw new Error("aria-controls が指す ul が無い");
+  }
+  return list;
+}
+
+/** ボタンの `::before`（フォルダのアイコン）の `mask-image` */
+function folderIcon(toggle: HTMLElement): string {
+  return getComputedStyle(find(toggle, ".mdmark-tree-name"), "::before")
+    .maskImage;
+}
+
+/** Shift を押しながら要素を押す */
+function shiftClick(element: Element): void {
+  element.dispatchEvent(
+    new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+    }),
+  );
+}
+
+// ファイルツリーを open= の階層まで開いて描き、フォルダの名前・アイコンの押下と Enter で開閉し、Shift を押しながらなら入れ子も同じ状態にする（正常系）
+test("test_normal_when_tree_folders_toggled", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      ...NESTED_TREE_LINES,
+      "",
+      "<!-- tree: open=2 -->",
+      "",
+      ...NESTED_TREE_LINES,
+      "",
+    ].join("\n"),
+  });
+  const [first, second] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-tree"),
+  ] as [HTMLElement, HTMLElement];
+  const names = ["app/", "src/", "parts/"];
+  // 検証: mount の直後
+  for (const toggle of first.querySelectorAll<HTMLButtonElement>(
+    "button.mdmark-tree-toggle",
+  )) {
+    expect(toggle.type).toBe("button");
+    expect(foldedList(toggle).tagName).toBe("UL");
+  }
+  expect(foldersExpanded(first, names)).toEqual(["true", "false", "false"]);
+  expect(foldedList(folderToggle(first, "src/")).getAttribute("hidden")).toBe(
+    "until-found",
+  );
+  expect(foldersExpanded(second, names)).toEqual(["true", "true", "false"]);
+  // 検証: フォルダのアイコンは、開いたフォルダと閉じたフォルダで形が違う
+  expect(folderIcon(folderToggle(first, "app/"))).not.toBe(
+    folderIcon(folderToggle(first, "src/")),
+  );
+  // 実行: src/ の名前を押す
+  const src = folderToggle(first, "src/");
+  find<HTMLElement>(src, ".mdmark-tree-name").click();
+  // 検証
+  expect(foldersExpanded(first, names)).toEqual(["true", "true", "false"]);
+  expect(isShown(folderToggle(first, "parts/"))).toBe(true);
+  // 実行: src/ の開閉のボタンで Enter を押す
+  src.focus();
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  expect(src.getAttribute("aria-expanded")).toBe("false");
+  // 実行: Shift を押しながら src/ のボタンを押す
+  shiftClick(src);
+  // 検証
+  expect(foldersExpanded(first, names)).toEqual(["true", "true", "true"]);
+  expect(isShown(find(first, ".mdmark-tree-file .mdmark-tree-name"))).toBe(
+    true,
+  );
+  // 実行: もう一度 Shift を押しながら押すと、入れ子も閉じる
+  shiftClick(src);
+  expect(foldersExpanded(first, names)).toEqual(["true", "false", "false"]);
+  // 実行: ページ内検索が閉じたフォルダの中に当たる
+  foldedList(src).dispatchEvent(new Event("beforematch", { bubbles: true }));
+  // 検証
+  expect(src.getAttribute("aria-expanded")).toBe("true");
+  expect(foldedList(src).hasAttribute("hidden")).toBe(false);
+});
+
+/** コピーするツリーの Markdown と、`data-source` になる罫線のテキスト */
+const COPY_TREE_LINES = ["app/", "└── src/ # ソース", "    └── tree.ts"];
+
+// ツリーの帯のコピーボタンで、元の罫線のテキストをクリップボードへ書き、ボタンで知らせる（正常系）
+test("test_normal_when_tree_copied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: ["```tree", ...COPY_TREE_LINES, "```", ""].join("\n"),
+  });
+  const tree = find<HTMLElement>(el, ".mdmark-tree");
+  const bar = find(tree, ".mdmark-tree-bar");
+  const button = find<HTMLButtonElement>(bar, "button.mdmark-tree-copy");
+  expect(find(bar, ".mdmark-tree-kind").textContent).toBe("tree");
+  expect(button.type).toBe("button");
+  expect(button.textContent).toBe("コピー");
+  // 実行: フォルダが閉じている状態で押す
+  expect(folderToggle(tree, "src/").getAttribute("aria-expanded")).toBe(
+    "false",
+  );
+  button.click();
+  await vi.advanceTimersByTimeAsync(0);
+  // 検証
+  expect(writeText).toHaveBeenCalledTimes(1);
+  expect(writeText).toHaveBeenCalledWith(COPY_TREE_LINES.join("\n"));
+  expect(button.dataset.state).toBe("copied");
+  expect(button.textContent).toBe("コピーしました");
+  expect(find(tree, '[role="status"]').textContent).toContain("コピーしました");
+  // 実行・検証: 2 秒たつとボタンが戻る
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(button.dataset.state).toBe("idle");
+  expect(button.textContent).toBe("コピー");
+});
+
+// クリップボードに書けなければ、元の罫線のテキストを選択したパネルをツリーの下に出し、Esc と閉じるボタンで閉じてコピーボタンへフォーカスを戻す（正常系）
+test("test_normal_when_tree_copy_denied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.reject(new DOMException("denied", "NotAllowedError")),
+  );
+  stubClipboard(writeText);
+  const rejections: PromiseRejectionEvent[] = [];
+  const onRejection = (event: PromiseRejectionEvent): void => {
+    rejections.push(event);
+  };
+  window.addEventListener("unhandledrejection", onRejection);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: ["```tree", ...COPY_TREE_LINES, "```", ""].join("\n"),
+  });
+  const tree = find<HTMLElement>(el, ".mdmark-tree");
+  const button = find<HTMLButtonElement>(tree, "button.mdmark-tree-copy");
+  try {
+    // 実行
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    // 検証: ツリーの下にパネルがあり、元の罫線のテキストが全て選ばれている
+    const panel = find<HTMLElement>(tree, ".mdmark-copy-panel");
+    expect(panel.getAttribute("role")).toBe("group");
+    expect(find(tree, ".mdmark-tree-list").nextElementSibling).toBe(panel);
+    const textarea = find<HTMLTextAreaElement>(panel, "textarea");
+    expect(textarea.readOnly).toBe(true);
+    expect(textarea.value).toBe(COPY_TREE_LINES.join("\n"));
+    expect(textarea.selectionStart).toBe(0);
+    expect(textarea.selectionEnd).toBe(textarea.value.length);
+    expect(document.activeElement).toBe(textarea);
+    const status = find(tree, '[role="status"]').textContent ?? "";
+    expect(status).toContain("コピーできませんでした");
+    expect(status).toContain("手でコピー");
+    expect(rejections).toHaveLength(0);
+    // 実行・検証: Esc で閉じる
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+    expect(tree.querySelector(".mdmark-copy-panel")).toBeNull();
+    expect(document.activeElement).toBe(button);
+    // 実行・検証: もう一度コピーすると、書き込みをもう一度試し、パネルは 1 つだけ
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(writeText).toHaveBeenCalledTimes(2);
+    expect(tree.querySelectorAll(".mdmark-copy-panel")).toHaveLength(1);
+    // 実行・検証: 閉じるボタンでも閉じて、コピーボタンへフォーカスを戻す
+    find<HTMLButtonElement>(tree, 'button[aria-label="閉じる"]').click();
+    expect(tree.querySelector(".mdmark-copy-panel")).toBeNull();
+    expect(document.activeElement).toBe(button);
+    // 実行・検証: クリップボードが無いページでも、同じパネルが出る
+    Object.defineProperty(navigator, "clipboard", {
+      value: undefined,
+      configurable: true,
+    });
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(tree.querySelectorAll(".mdmark-copy-panel")).toHaveLength(1);
+    expect(rejections).toHaveLength(0);
+  } finally {
+    window.removeEventListener("unhandledrejection", onRejection);
+  }
+});
+
+/** 要素が見えているか。閉じた `details` の中身のように描かれない要素は見えていない（`checkVisibility` が描かれない祖先も見る） */
+function isVisible(element: Element | null | undefined): boolean {
+  return element?.checkVisibility() ?? false;
+}
+
+// 閉じたタブとステップを見出しだけで描き、見出しを押すと開き、開いたタブも切り替えられる（正常系）
+test("test_normal_when_folded_tabs_and_steps_opened", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "<!-- tabs: closed -->",
+      "",
+      "### uv",
+      "",
+      "uv で入れる",
+      "",
+      "### pip",
+      "",
+      "pip で入れる",
+      "",
+      "<!-- /tabs -->",
+      "",
+      "<!-- steps: closed title=準備 -->",
+      "",
+      "1. 一つ目",
+      "2. 二つ目",
+      "",
+      "<!-- /steps -->",
+      "",
+    ].join("\n"),
+  });
+  const [tabsFold, stepsFold] = [
+    ...el.querySelectorAll<HTMLDetailsElement>("details.mdmark-collapsible"),
+  ] as [HTMLDetailsElement, HTMLDetailsElement];
+  // 検証: mount の直後は見出しだけが見える
+  expect(tabsFold.open).toBe(false);
+  expect(stepsFold.open).toBe(false);
+  expect(find(tabsFold, "summary").textContent).toBe("タブ（uv・pip）");
+  expect(find(stepsFold, "summary").textContent).toBe("準備");
+  expect(isVisible(find(tabsFold, '[role="tablist"]'))).toBe(false);
+  expect(isVisible(find(stepsFold, "li"))).toBe(false);
+  // 実行: タブの見出しを押す
+  find<HTMLElement>(tabsFold, "summary").click();
+  // 検証: タブの並びと uv の中身が見える
+  expect(tabsFold.open).toBe(true);
+  expect(isVisible(find(tabsFold, '[role="tablist"]'))).toBe(true);
+  const [uv, pip] = [
+    ...tabsFold.querySelectorAll<HTMLElement>('[role="tab"]'),
+  ] as [HTMLElement, HTMLElement];
+  expect(uv.getAttribute("aria-selected")).toBe("true");
+  expect(isVisible(find(tabsFold, '[role="tabpanel"]'))).toBe(true);
+  // 実行: pip のタブを押す
+  pip.click();
+  // 検証
+  expect(pip.getAttribute("aria-selected")).toBe("true");
+  const panels = [
+    ...tabsFold.querySelectorAll<HTMLElement>('[role="tabpanel"]'),
+  ];
+  expect(panels.map((panel) => isVisible(panel))).toEqual([false, true]);
+  // 実行: ステップの見出しにフォーカスして Enter を押す
+  find<HTMLElement>(stepsFold, "summary").focus();
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  expect(stepsFold.open).toBe(true);
+  expect(
+    [...stepsFold.querySelectorAll("li")].map((item) => isVisible(item)),
+  ).toEqual([true, true]);
 });

@@ -342,7 +342,7 @@ test("test_plain", async () => {
   expect(border).toBe("0px");
 });
 
-// 閉じた表は、「表を開く」だけが見える（Closed）
+// 閉じた表は、本文の行の数の見出し「表（1 行）」だけが見える（Closed）
 test("test_closed", async () => {
   // 準備・実行
   const page = await open("closed");
@@ -352,9 +352,42 @@ test("test_closed", async () => {
     details.evaluate((el) => (el as HTMLDetailsElement).open),
   ).resolves.toBe(false);
   await expect(details.locator("summary").innerText()).resolves.toBe(
-    "表を開く",
+    "表（1 行）",
   );
   await expect(details.locator("table").isVisible()).resolves.toBe(false);
+});
+
+// 閉じた表に title= を付けると、その文字が見出しになり、表が見えない（ClosedTitle）
+test("test_closed_title", async () => {
+  // 準備・実行
+  const page = await open("closed-title");
+  // 検証
+  const details = page.locator("details.mdmark-table-details");
+  await expect(
+    details.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(false);
+  await expect(details.locator("summary").innerText()).resolves.toBe(
+    "リリースの一覧",
+  );
+  await expect(details.locator("table").isVisible()).resolves.toBe(false);
+});
+
+// 開いた表に title= を付けると、見出しの下に表が見える（OpenTitle）
+test("test_open_title", async () => {
+  // 準備・実行
+  const page = await open("open-title");
+  // 検証
+  const details = page.locator("details.mdmark-table-details");
+  await expect(
+    details.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(true);
+  await expect(details.locator("summary").innerText()).resolves.toBe(
+    "リリースの一覧",
+  );
+  await expect(details.locator("table").isVisible()).resolves.toBe(true);
+  await expect(
+    details.locator("tbody tr:not(.mdmark-table-empty)").count(),
+  ).resolves.toBe(2);
 });
 
 // 長い列名と値は、セルの中で折り返し、見出しのボタンが文字に重ならない（LongCells）

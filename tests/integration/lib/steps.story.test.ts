@@ -61,3 +61,36 @@ test("test_long", async () => {
   expect(lines).toBeGreaterThan(60);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 閉じたステップは、見出し「手順（3 ステップ）」だけが見える（Closed）
+test("test_closed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-steps--closed");
+  // 検証
+  const details = page.locator("details.mdmark-collapsible");
+  await expect(
+    details.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(false);
+  await expect(details.locator("summary").innerText()).resolves.toBe(
+    "手順（3 ステップ）",
+  );
+  await expect(page.locator("ol.mdmark-steps").isVisible()).resolves.toBe(
+    false,
+  );
+});
+
+// 開いたステップに title= を付けると、見出し「準備」の下に番号と項目が見える（OpenTitle）
+test("test_open_title", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-steps--open-title");
+  // 検証
+  const details = page.locator("details.mdmark-collapsible");
+  await expect(
+    details.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(true);
+  await expect(details.locator("summary").innerText()).resolves.toBe("準備");
+  const steps = page.locator("ol.mdmark-steps");
+  await expect(steps.isVisible()).resolves.toBe(true);
+  await expect(steps.locator("> li").count()).resolves.toBe(3);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
