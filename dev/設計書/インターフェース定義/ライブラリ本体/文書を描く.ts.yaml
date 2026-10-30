@@ -417,8 +417,8 @@ flows:
       - name: 配布物を読んだページ
         description: 正常系と同じ
       - name: 記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、`app/` の下に `src/`、その下に `tree.ts` を持つ言語 `tree` のコードブロックを持つ文書'
-        notes: '`opts.config` は渡さない。印刷の前に 2 つ目のタブを選んでおく。ツリーは既定の開き方（ルートだけ開く）で、`src/` が閉じている'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、`app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ言語 `tree` のコードブロックを持つ文書'
+        notes: '`opts.config` は渡さない。印刷の前に 2 つ目のタブを選んでおく。ツリーは既定の開き方（ルートだけ開く）で、`src/`・`parts/` が閉じている'
       - name: Mock
         description: 印刷は `window` へ `beforeprint`・`afterprint` のイベントを送ることで代える
     flow: |-
@@ -434,8 +434,8 @@ flows:
       - '`beforeprint` の後、タブの 2 つの `role="tabpanel"` がともに `hidden` を持たず、それぞれのタブ名の題が出ている'
       - '`beforeprint` の後、節の中身・行の詳細の行が `hidden` を持たず、表と注意書きの `details` が `open` を持つ'
       - '`beforeprint` の後、閉じたタブとステップの `details.mdmark-collapsible` が `open` を持つ'
-      - '`beforeprint` の後、ツリーの `src/` の開閉のボタンの `aria-expanded` が `true` で `tree.ts` が表示され、印刷の媒体ではツリーのコピーボタンが表示されていない'
-      - '`afterprint` の後、選んでいた 2 つ目のタブの中身だけが出ていて、節・行の詳細・表・注意書き・閉じたタブとステップ・ツリーの `src/` が閉じている'
+      - '`beforeprint` の後、ツリーの `src/`・`parts/` の開閉のボタンの `aria-expanded` がともに `true` で `tree.ts` が表示され、印刷の媒体ではツリーのコピーボタンが表示されていない'
+      - '`afterprint` の後、選んでいた 2 つ目のタブの中身だけが出ていて、節・行の詳細・表・注意書き・閉じたタブとステップ・ツリーの `src/`・`parts/` が閉じている'
     test: test_normal_when_printed_with_syntax
   - name: 正常系（本文を差し替えて操作を付け直す）
     summary: '`update` の後も記法の操作が働き、`destroy` の後は `document` の受け取りが外れている'
@@ -3041,7 +3041,7 @@ flows:
     test: test_normal_when_folded_tabs_and_steps_opened
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -3436,5 +3436,5 @@ constraints:
     constraint: 本文の直下と節の中身の直下のブロックは、その親の中で `div.mdmark-diff-block` で包み、リストの項目と表の行はその要素に class `mdmark-diff-block` を付ける。どちらも `data-kind`（`add` か `del`）を持ち、先頭（表の行は 1 つ目のセルの先頭）に読み上げにだけ出す `追加:`・`削除:` と、`aria-hidden` の `+`・`−` を置く。削除したブロックは、前の文書で直前にあった変えていないブロックと同じ親のその後ろに、同じ節に直前のブロックが無ければ、前の文書で属していた節の中身の先頭（節に属していなければ本文の先頭）に差し込む。見出しごと消した節は、見出しと節の中身を 1 つの削除したブロックにして同じ決まりで差し込む。リストの項目と表の行は前の文書で直前にあった項目・行の後ろ（無ければ同じリスト・表の先頭）に差し込み、後の文書にそのリスト・表が無いときはリスト・表ごと削除したブロックにする。削除したブロックの中の要素は `data-source-line` と `id` を持たず、番号付きリストの削除した項目は番号を使わない
     notes: 見た目は確認ログのモックへの合意（左の余白の + / −）。色は `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`・`--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign`。削除したブロックはスクロールを合わせる先と見出しのアンカーにしない
   - item: ファイルツリーの開閉とコピー
-    constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に種類 `tree` とコピーボタンの帯を置き、子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が `all` なら全て、数なら深さがその数より浅いフォルダ、無ければルートだけを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を書き、書けないときは表のコピーと同じパネルを出す'
+    constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に種類 `tree` とコピーボタンの帯を置き、子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が `all` なら全て、数ならルートの深さを 0 として深さがその数より浅いフォルダ、無ければルートだけを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を書き、書けないときは表のコピーと同じパネルを出す'
 test_file: tests/integration/lib/mount.browser.test.ts
