@@ -182,7 +182,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 知らない指定を持つ Markdown
-        description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os closed -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os fold -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
         notes: 1 つ目は `group` を書き損じたキー、2 つ目は `キー=値` の形でない指定
       - name: Mock
         description: 正常シナリオと同じ
@@ -197,11 +197,57 @@ scenarios:
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
     expected:
-      - 1 つ目のタブ群の上に `grop=` が使えないキーであること、2 つ目のタブ群の上に `closed` が使えない指定であることを書いた書き方の警告がある
+      - 1 つ目のタブ群の上に `grop=` が使えないキーであること、2 つ目のタブ群の上に `fold` が使えない指定であることを書いた書き方の警告がある
       - どちらのタブ群もタブに描かれている
       - 1 つ目のタブ群は `Windows` を選び、`group` を持つ 2 つ目のタブ群は `macOS` を選んだまま
     test: test_error_when_unknown_option
-lead: '文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が揃い、選んだタブ名を覚えて読み直しても同じタブで開く。'
+  - name: 正常シナリオ（折りたたみに入れたタブ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 折りたたみのタブを持つ Markdown
+        description: '`<!-- tabs: closed -->` で `### uv`・`### pip` を囲んだ範囲と、`<!-- tabs: open title=入れ方 -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 1 つ目のタブ群を閉じた折りたたみ、2 つ目を開いた折りたたみに入れて描く
+        U->>P: 1 つ目の折りたたみの見出しを押す
+        P-->>U: 開いたタブ群
+        U->>P: pip のタブを押す
+        P-->>U: pip の中身を表示
+    expected:
+      - 1 つ目の折りたたみの見出しが `タブ（uv・pip）` で、描いた直後はタブの並びと中身が表示されていない
+      - 2 つ目の折りたたみの見出しが `title=` の「入れ方」で、描いた直後から `macOS` の中身が表示されている
+      - 1 つ目の見出しを押した後、`uv` のタブが選ばれ、`pip` のタブを押すと `pip` の中身だけが表示される
+      - 書き方の警告は出ていない
+    test: test_normal_when_folded
+  - name: 異常シナリオ（closed と open を両方書いたタブ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: closed と open を両方持つ Markdown
+        description: '`<!-- tabs: closed open -->` で `### macOS`・`### Windows` を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: closed と open が両方ある
+        M-->>P: 書き方の警告と、閉じた折りたたみのタブ群を描く
+        P-->>U: 書き方の警告と閉じたタブ群を表示
+    expected:
+      - 範囲の上に、`closed` と `open` を同時に書けないことを書いた書き方の警告がある
+      - タブ群は `closed` を当てた閉じた折りたたみに入り、見出しが `タブ（macOS・Windows）`
+    test: test_error_when_closed_and_open
+lead: '文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が揃い、選んだタブ名を覚えて読み直しても同じタブで開く。`closed`・`open` を書いたタブは、見出し付きの折りたたみに入る。'
 issue: 4
 primary_actor: 文書を読む人
 stakeholders:
