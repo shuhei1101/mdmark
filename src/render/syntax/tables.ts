@@ -18,6 +18,7 @@ import {
   type TotalCalc,
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
+import { readCollapse } from "./collapse.ts";
 import { slugBase } from "./headings.ts";
 import {
   envOf,
@@ -68,6 +69,8 @@ export type TableSpec = {
   filters: TableFilter[];
   /** 折り畳み。`closed` と `open` を両方書いたら `closed` */
   collapse: "none" | "closed" | "open";
+  /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
+  title?: string | undefined;
   /** 読めなかった指定 */
   warnings: WarningItem[];
   /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */
@@ -189,16 +192,13 @@ export function readTableSpec(
 ): TableSpec {
   const warnings: WarningItem[] = [];
   let kind: TableKind = "default";
-  let closed = false;
-  let open = false;
   const featureArgs: string[] = [];
   const unknownKinds: string[] = [];
-  for (const arg of args?.args ?? []) {
-    if (arg === "closed") {
-      closed = true;
-    } else if (arg === "open") {
-      open = true;
-    } else if (arg.startsWith("+") || arg.startsWith("-")) {
+  const { collapse, title, items, rest } = readCollapse(
+    args ?? { args: [], keys: {} },
+  );
+  for (const arg of rest.args) {
+    if (arg.startsWith("+") || arg.startsWith("-")) {
       featureArgs.push(arg);
     } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
       kind = arg as TableKind;
@@ -247,7 +247,7 @@ export function readTableSpec(
     hide: "columns",
     total: "total",
   };
-  for (const [key, value] of Object.entries(args?.keys ?? {})) {
+  for (const [key, value] of Object.entries(rest.keys)) {
     const needed = keyFeatures[key];
     if (needed && !features.includes(needed)) {
       warnings.push({
@@ -267,15 +267,28 @@ export function readTableSpec(
       });
     }
   }
-  if (closed && open) {
-    warnings.push({
-      label: "closed と open",
-      message:
-        "の `closed` と `open` は同時に書けません。どちらか 1 つにしてください。`closed` を当てて描いています。",
-    });
+  warnings.push(...items);
+  return { kind, features, filters, collapse, title, warnings, hide, totals };
+}
+
+/** `tableOpen` の表の本文の行の数を数える */
+function bodyRowCount(tokens: Token[], tableOpen: number): number {
+  let count = 0;
+  let inBody = false;
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const type = tokens[index]?.type;
+    if (type === "table_close") {
+      break;
+    }
+    if (type === "tbody_open") {
+      inBody = true;
+    } else if (type === "tbody_close") {
+      inBody = false;
+    } else if (inBody && type === "tr_open") {
+      count += 1;
+    }
   }
-  const collapse = closed ? "closed" : open ? "open" : "none";
-  return { kind, features, filters, collapse, warnings, hide, totals };
+  return count;
 }
 
 /** 先頭のセルの文字から行の ID を作る。見出しの ID と同じ規則で、`taken` にあれば `-1`・`-2` と番号を上げる。作れないときは `row` を元にする。返した ID を `taken` に足す */
@@ -513,6 +526,8 @@ export function decorateTables(state: StateCore): void {
       features: spec.features,
       filters: filtering ? spec.filters : [],
       collapse: spec.collapse,
+      title: spec.title,
+      rowCount: bodyRowCount(tokens, index),
       hide: spec.hide,
       totals: spec.totals,
       body: SLOT_MARKER,

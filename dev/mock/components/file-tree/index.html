@@ -14,10 +14,18 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- コピーできないときの欄の規則（#151 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/151/assets/table.css">
+  <!-- ファイルツリーの規則（#225 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/225/assets/tree.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 案の切り替え（モックだけの仕組み。ツリーを組み立てる前に html の data-* を当てる） -->
+  <script src="../../refs/225/assets/scene.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- ファイルツリー（罫線の pre をツリーに置き換える） -->
+  <script src="../../refs/225/assets/tree.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -27,33 +35,170 @@
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
     </div>
+    <!-- [data-scene-axis] [data-scene-value]: scene.js が行き先の URL（?{軸}=）と今の案の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="注釈の列の見た目">
+      <a class="mock-bar-item" data-scene-axis="note" data-scene-value="a">注釈 A: 点線でつなぐ</a>
+      <a class="mock-bar-item" data-scene-axis="note" data-scene-value="b">注釈 B: # を残して色を付ける</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="フォルダの開閉の示し方">
+      <a class="mock-bar-item" data-scene-axis="toggle" data-scene-value="a">開閉 A: フォルダのアイコンだけ</a>
+      <a class="mock-bar-item" data-scene-axis="toggle" data-scene-value="b">開閉 B: 矢印とアイコン</a>
+    </div>
   </div>
 
   <main class="host">
     <div class="catalog">
       <h1 class="catalog-title">ファイルツリー</h1>
 
-      <!-- フォルダとファイル -->
+      <!-- [data-mock-tree]: tree.js が罫線の文字からツリーを組み立てる。[data-open]: open= の値 -->
       <section aria-labelledby="state-basic">
-        <h2 class="catalog-label" id="state-basic">フォルダとファイル</h2>
+        <h2 class="catalog-label" id="state-basic">指定なし（ルートだけを開く）</h2>
         <article class="mdmark">
-<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>src/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>index.ts</span></li><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>parts/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>notice.ts</span></li></ul></li></ul></li></ul>
+<pre data-mock-tree>src/
+├── index.ts
+└── parts/
+    └── notice.ts</pre>
         </article>
       </section>
 
-      <!-- 深い入れ子 -->
+      <!-- open=all: 全てのフォルダを開く -->
+      <section aria-labelledby="state-open-all">
+        <h2 class="catalog-label" id="state-open-all">open=all（全て開く）</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="all">src/
+├── index.ts
+└── parts/
+    └── notice.ts</pre>
+        </article>
+      </section>
+
+      <!-- open=2: ルートと 1 つ下のフォルダを開き、それより深いフォルダは閉じる -->
+      <section aria-labelledby="state-open-n">
+        <h2 class="catalog-label" id="state-open-n">open=2（2 階層目までを開く）</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="2">app/
+├── src/
+│   └── parts/
+│       └── tree.ts
+└── README.md</pre>
+        </article>
+      </section>
+
+      <!-- 行の空白の後ろの最初の # から後ろを注釈にする。C#/ と #notes.md は前に空白が無いため名前のまま -->
+      <section aria-labelledby="state-note">
+        <h2 class="catalog-label" id="state-note">注釈</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="all">mdmark/
+├── src/ # ソース
+│   └── index.ts # 入口の `mount`
+├── README.md # **必読** `badge:新規`
+├── docs/ # [使い方](https://example.com/docs)
+├── C#/
+└── #notes.md</pre>
+        </article>
+      </section>
+
+      <!-- 拡張子・名前ごとのアイコン。当たらないものは汎用のファイルのアイコン -->
+      <section aria-labelledby="state-icons">
+        <h2 class="catalog-label" id="state-icons">拡張子ごとのアイコン</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="all">icons/
+├── README.md
+├── index.ts
+├── style.css
+├── config.yaml
+├── package.json
+├── logo.svg
+├── data.csv
+├── release.zip
+├── build.sh
+├── Dockerfile
+├── LICENSE
+└── font.woff2</pre>
+        </article>
+      </section>
+
+      <!-- ... の行: 「ほかにもある」の項目として薄く描き、読み上げでもそう伝える -->
+      <section aria-labelledby="state-more">
+        <h2 class="catalog-label" id="state-more">ほかにもある項目（...）</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="all">src/
+├── index.ts
+├── parts/
+│   ├── notice.ts
+│   └── ...
+└── ...</pre>
+        </article>
+      </section>
+
+      <!-- |-- ・`-- ・|   で書いたツリー -->
+      <section aria-labelledby="state-ascii">
+        <h2 class="catalog-label" id="state-ascii">ASCII の罫線</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="all">site/
+|-- index.html
+|-- assets/
+|   `-- app.js
+`-- build.sh</pre>
+        </article>
+      </section>
+
+      <!-- 深い入れ子: open=all -->
       <section aria-labelledby="state-deep">
         <h2 class="catalog-label" id="state-deep">深い入れ子</h2>
         <article class="mdmark">
-<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>mdmark/</span><ul><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>dev/</span><ul><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>設計書/</span><ul><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>シナリオ/</span><ul><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>単一ユースケース/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>表を操作する.yaml</span></li></ul></li></ul></li></ul></li></ul></li><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>package.json</span></li></ul></li></ul>
+<pre data-mock-tree data-open="all">mdmark/
+├── dev/
+│   └── 設計書/
+│       └── シナリオ/
+│           └── 単一ユースケース/
+│               └── 表を操作する.yaml # 表の操作のシナリオ
+└── package.json</pre>
         </article>
       </section>
 
-      <!-- 長い名前 -->
+      <!-- 長い名前と注釈: ツリーの中で横にスクロールする -->
       <section aria-labelledby="state-long">
-        <h2 class="catalog-label" id="state-long">長い名前</h2>
+        <h2 class="catalog-label" id="state-long">長い名前と長い注釈</h2>
         <article class="mdmark">
-<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>very-long-folder-name-for-the-generated-design-documents/</span><ul><li class="mdmark-tree-file"><span class="mdmark-tree-name"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts</span></li></ul></li></ul>
+<pre data-mock-tree data-open="all">very-long-folder-name-for-the-generated-design-documents/
+└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅でも注釈は折り返さずに横へスクロールする</pre>
+        </article>
+      </section>
+
+      <!-- [data-mock-copy="copied"]: コピーのボタンを押して元の罫線のテキストを写した直後の知らせ -->
+      <section aria-labelledby="state-copied">
+        <h2 class="catalog-label" id="state-copied">コピーした</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-mock-copy="copied">src/
+├── index.ts
+└── parts/
+    └── notice.ts</pre>
+        </article>
+      </section>
+
+      <!-- [data-mock-copy="failed"]: クリップボードに書けないとき、元の罫線のテキストを選んだ欄を開く。Esc か閉じるボタンで閉じ、フォーカスをコピーのボタンへ戻す -->
+      <section aria-labelledby="state-copy-failed">
+        <h2 class="catalog-label" id="state-copy-failed">コピーできない（異常シナリオ）</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-mock-copy="failed">src/
+├── index.ts
+└── parts/
+    └── notice.ts</pre>
+        </article>
+      </section>
+
+      <!-- open=deep: 書き方の警告を出し、ルートだけを開く -->
+      <section aria-labelledby="state-open-invalid">
+        <h2 class="catalog-label" id="state-open-invalid">読めない open=（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- tree: open=deep --&gt;</code> の <code>open=</code> には <code>all</code> か階層の数を書きます。ルートだけを開いて描いています。</p>
+</div>
+<pre data-mock-tree data-open="deep">docs/
+└── guide/
+    └── start.md</pre>
         </article>
       </section>
 

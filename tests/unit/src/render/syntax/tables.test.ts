@@ -296,3 +296,60 @@ test("test_decorate_tables_when_feature_off", () => {
   expect(html).toMatch(/<table tabindex="0" aria-label="[^"]*">/);
   expect(html).not.toContain("mdmark-table");
 });
+
+// 折り畳みの見出しを読み、closed も open も無い title= を警告にする（正常系）
+test("test_read_table_spec_when_title", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  // 実行
+  const titled = readTableSpec(
+    { args: ["data", "closed"], keys: { title: "リリースの一覧" } },
+    ["名前"],
+  );
+  const alone = readTableSpec({ args: ["data"], keys: { title: "一覧" } }, [
+    "名前",
+  ]);
+  // 検証
+  expect(titled.collapse).toBe("closed");
+  expect(titled.title).toBe("リリースの一覧");
+  expect(titled.warnings).toEqual([]);
+  expect(alone.collapse).toBe("none");
+  expect(alone.title).toBeUndefined();
+  expect(alone.warnings.map((warning) => warning.label)).toEqual(["title="]);
+});
+
+// 折り畳みの見出しを title= か本文の行の数にする（正常系）
+test("test_decorate_tables_when_collapse_title", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data closed -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "| c | 3 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- table: data open title=リリースの一覧 -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain(
+    '<details class="mdmark-table-details"><summary>表（3 行）</summary>',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-table-details" open><summary>リリースの一覧</summary>',
+  );
+  expect(html).not.toContain("mdmark-syntax-warning");
+});

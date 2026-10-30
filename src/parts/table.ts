@@ -62,6 +62,10 @@ export type TableOptions = {
   filters?: TableFilter[];
   /** 折り畳みに入れるかと既定の開閉（既定 `none`） */
   collapse?: "none" | "closed" | "open";
+  /** 折り畳みの見出し（既定は `表（{本文の行の数} 行）`） */
+  title?: string | undefined;
+  /** `rows` を省いたときの本文の行の数。折り畳みの見出しに使う */
+  rowCount?: number;
   /** 並べ替えた列と向き */
   sort?: { column: number; direction: "ascending" | "descending" };
   /** 表が幅からはみ出しているか。`true` のときだけピン止めのボタンを出す */
@@ -401,19 +405,26 @@ export function renderTotalRows(options: {
   return `<tfoot>${rows.join("")}</tfoot>`;
 }
 
+/** 手でコピーさせるパネルの形式。`tree` はファイルツリーの元の罫線のテキスト */
+export type CopyPanelFormat = CopyFormat | "tree";
+
 /** クリップボードに書けなかったときに、帯の直後へ置く手でコピーさせるパネルの HTML を返す */
 export function renderCopyPanel(options: {
   /** 題の id の頭 */
   id: string;
   /** コピーの形式 */
-  format: CopyFormat;
+  format: CopyPanelFormat;
   /** コピーする文字 */
   text: string;
 }): string {
   const { id, format, text } = options;
   const titleId = `${id}-title`;
   const noteId = `${id}-note`;
-  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">「${COPY_FORMATS[format].name}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
+  const target =
+    format === "tree"
+      ? "ツリーのテキスト"
+      : `「${COPY_FORMATS[format].name}」の中身`;
+  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">${target}を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
 }
 
 /** 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに置く開閉のボタンと、行の直後に置く開閉の行の HTML を返す */
@@ -650,10 +661,13 @@ export function renderTable(options: TableOptions): string {
   const content =
     options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
   const collapse = options.collapse ?? "none";
+  const title =
+    options.title ??
+    `表（${options.rows?.length ?? options.rowCount ?? 0} 行）`;
   const inner =
     collapse === "none"
       ? content
-      : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>表を開く</summary>${content}</details>`;
+      : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml(title)}</summary>${content}</details>`;
   const hiddenColumns = new Set(
     options.features.includes("columns")
       ? (options.hiddenColumns ?? options.hide ?? [])

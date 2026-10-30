@@ -46,3 +46,19 @@ new MutationObserver(async () => {
     attachStickyRows(root);
   }
 }).observe(document.documentElement, { childList: true, subtree: true });
+
+// ファイルツリーのストーリー（`.mdmark-tree` を持つもの）は、描いた直後に注釈の列の位置を測って入れる（`mount` が測るのと同じ）
+const aligned = new WeakSet();
+new MutationObserver(async () => {
+  for (const tree of document.querySelectorAll(".mdmark-tree")) {
+    if (aligned.has(tree)) {
+      continue;
+    }
+    aligned.add(tree);
+    const { alignFileTreeNotes } = await import(
+      /* webpackIgnore: true */ `${window.location.origin}/render/trees.js`
+    );
+    await document.fonts.ready;
+    alignFileTreeNotes(tree);
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });

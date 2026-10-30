@@ -301,7 +301,7 @@ test("test_normal_when_syntax", async () => {
     /<nav class="mdmark-toc" aria-label="目次">[\s\S]*<a href="#補足">補足<\/a>[\s\S]*<\/nav>/,
   );
   expect(html).toMatch(
-    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表を開く<\/summary>/,
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表（3 行）<\/summary>/,
   );
   expect(html).not.toMatch(/<details class="mdmark-table-details"[^>]*\sopen/);
   expect(html).toContain('<div class="mdmark-tabs" data-group="os">');
@@ -317,12 +317,15 @@ test("test_normal_when_syntax", async () => {
     '<details class="markdown-alert markdown-alert-note"><summary class="markdown-alert-title">補足</summary>',
   );
   expect(html).toContain('<ol class="mdmark-steps">');
-  expect(html).toContain('<ul class="mdmark-tree"');
+  expect(html).toContain('<div class="mdmark-tree"');
   expect(html).toContain(
-    '<li class="mdmark-tree-folder"><span class="mdmark-tree-name">src/</span>',
+    '<ul class="mdmark-tree-list" aria-label="ファイルツリー">',
   );
   expect(html).toContain(
-    '<li class="mdmark-tree-file"><span class="mdmark-tree-name">index.ts</span>',
+    '<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><span class="mdmark-tree-name">src/</span>',
+  );
+  expect(html).toContain(
+    '<li class="mdmark-tree-file" data-file-icon="file-code"><span class="mdmark-tree-row"><span class="mdmark-tree-name">index.ts</span>',
   );
   expect(html).toContain('<span class="mdmark-badge">v1</span>');
   expect(html).not.toContain("badge:");
@@ -418,7 +421,7 @@ test("test_normal_when_syntax_errors", async () => {
     "",
     "<!-- /tabs -->",
     "",
-    "<!-- tabs: group= grop=os closed -->",
+    "<!-- tabs: group= grop=os fold -->",
     "",
     "### macOS",
     "",
@@ -463,7 +466,7 @@ test("test_normal_when_syntax_errors", async () => {
     ),
     html.indexOf('<div class="mdmark-tabs">'),
   );
-  for (const label of ["group=", "grop=", "closed"]) {
+  for (const label of ["group=", "grop=", "fold"]) {
     expect(tabsWarning).toContain(`<code>${label}</code>`);
   }
   expect(html).toContain('<a href="#fig-missing">図</a>');
@@ -1516,4 +1519,260 @@ test("test_normal_when_aliases", async () => {
   // スクリプトも印の文字も含まない
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
+});
+
+/** 書き方の警告の枠の中身を、現れた順に返す（警告の枠は入れ子の `div` を持たない） */
+function warningBodies(html: string): string[] {
+  return html
+    .split('<div class="mdmark-syntax-warning" role="note">')
+    .slice(1)
+    .map((part) => part.slice(0, part.indexOf("</div>")));
+}
+
+// closed・open の表・タブ・ステップを、title= か中身から作った見出しの details に入れる（正常系）
+test("test_normal_when_syntax_folded", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data closed -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "| c | 3 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- table: data open title=リリースの一覧 -->",
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- tabs: closed -->",
+    "",
+    "### uv",
+    "",
+    "uv で入れる",
+    "",
+    "### pip",
+    "",
+    "pip で入れる",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "<!-- tabs: open title=入れ方 -->",
+    "",
+    "### macOS",
+    "",
+    "macOS の手順",
+    "",
+    "### Windows",
+    "",
+    "Windows の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "<!-- steps: closed -->",
+    "",
+    "1. 一つ目",
+    "2. 二つ目",
+    "",
+    "<!-- /steps -->",
+    "",
+    "<!-- steps: open title=準備 -->",
+    "",
+    "1. 一つ目",
+    "2. 二つ目",
+    "3. 三つ目",
+    "",
+    "<!-- /steps -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = stripSourceLine(render(markdown));
+  // 検証
+  expect(html).toContain(
+    '<details class="mdmark-table-details"><summary>表（3 行）</summary>',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-table-details" open><summary>リリースの一覧</summary>',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-collapsible"><summary>タブ（uv・pip）</summary><div class="mdmark-tabs">',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-collapsible" open><summary>入れ方</summary><div class="mdmark-tabs">',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-collapsible"><summary>手順（2 ステップ）</summary><ol class="mdmark-steps">',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-collapsible" open><summary>準備</summary><ol class="mdmark-steps">',
+  );
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// ファイルツリーの名前と注釈を分け、アイコンの種類・ほかにもある項目・ASCII の罫線・開く階層・元の罫線のテキストを HTML に持たせる（正常系）
+test("test_normal_when_tree_annotated", async () => {
+  // 準備
+  const render = await loadRender();
+  const annotated = [
+    "mdmark/",
+    "├── src/ #ソース",
+    "│   └── index.ts # 入口の `mount`",
+    "├── README.md # **必読** `badge:新規`",
+    "├── C#/",
+    "├── #notes.md",
+    "├── photo.PNG",
+    "├── Dockerfile",
+    "├── font.woff2",
+    "└── ...",
+  ];
+  const ascii = ["src/", "|-- index.ts", "`-- parts/"];
+  const markdown = [
+    "<!-- tree: open=all -->",
+    "",
+    "```tree",
+    ...annotated,
+    "```",
+    "",
+    "```tree",
+    ...ascii,
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = stripSourceLine(render(markdown));
+  // 検証
+  const trees = html.split('<div class="mdmark-tree"').slice(1);
+  expect(trees).toHaveLength(2);
+  const [firstRaw = "", secondRaw = ""] = trees;
+  expect(firstRaw.startsWith(' data-open="all"')).toBe(true);
+  expect(secondRaw.startsWith(" data-open")).toBe(false);
+  expect(firstRaw).toContain(`data-source="${annotated.join("\n")}"`);
+  expect(secondRaw).toContain(`data-source="${ascii.join("\n")}"`);
+  // 名前と注釈は、元の罫線のテキストを持つ属性を除いた HTML で確かめる
+  const first = firstRaw.replace(/ data-source="[^"]*"/, "");
+  const second = secondRaw.replace(/ data-source="[^"]*"/, "");
+  const note = (name: string): RegExp =>
+    new RegExp(
+      `<span class="mdmark-tree-name">${name}</span><span class="mdmark-tree-note">`,
+    );
+  expect(first).toMatch(note("src/"));
+  expect(first).toMatch(note("index.ts"));
+  expect(first).toMatch(note("README.md"));
+  expect(first).not.toContain("#ソース");
+  expect(first).toContain("<code>mount</code>");
+  expect(first).toContain("<strong>必読</strong>");
+  expect(first).toContain('<span class="mdmark-badge">新規</span>');
+  expect(first).toContain(
+    '<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><span class="mdmark-tree-name">C#/</span></span></li>',
+  );
+  expect(first).toContain(
+    '<li class="mdmark-tree-file" data-file-icon="file-text"><span class="mdmark-tree-row"><span class="mdmark-tree-name">#notes.md</span></span></li>',
+  );
+  for (const [name, icon] of [
+    ["index.ts", "file-code"],
+    ["README.md", "file-text"],
+    ["photo.PNG", "file-image"],
+    ["Dockerfile", "file-terminal"],
+    ["font.woff2", "file"],
+  ] as const) {
+    expect(first).toContain(
+      `<li class="mdmark-tree-file" data-file-icon="${icon}"><span class="mdmark-tree-row"><span class="mdmark-tree-name">${name}</span>`,
+    );
+  }
+  expect(first).toContain('<li class="mdmark-tree-more">');
+  expect(first).toContain("ほかにもあります");
+  expect(second).toContain(
+    '<span class="mdmark-tree-name">parts/</span></span></li>',
+  );
+  expect(second).toMatch(/mdmark-tree-folder[\s\S]*mdmark-tree-name">src\//);
+  expect(second).toContain('data-file-icon="file-code"');
+  expect(second.split("</ul>")[0]).not.toMatch(
+    /mdmark-tree-name">[^<]*(\||`|--)/,
+  );
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(html).not.toContain("<button");
+});
+
+// closed と open の両方・closed も open も無い title=・読めない open= に書き方の警告を置き、読めた指定で描く（正常系）
+test("test_normal_when_fold_and_tree_errors", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- tabs: closed open -->",
+    "",
+    "### macOS",
+    "",
+    "macOS の手順",
+    "",
+    "### Windows",
+    "",
+    "Windows の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "<!-- steps: closed open -->",
+    "",
+    "1. 一つ目",
+    "2. 二つ目",
+    "",
+    "<!-- /steps -->",
+    "",
+    "<!-- steps: fold -->",
+    "",
+    "1. 一つ目",
+    "2. 二つ目",
+    "",
+    "<!-- /steps -->",
+    "",
+    "<!-- steps: title=準備 -->",
+    "",
+    "1. 一つ目",
+    "2. 二つ目",
+    "",
+    "<!-- /steps -->",
+    "",
+    "<!-- tree: open=deep -->",
+    "",
+    "```tree",
+    "src/",
+    "└── index.ts",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = stripSourceLine(render(markdown));
+  // 検証
+  const warnings = warningBodies(html);
+  expect(warnings).toHaveLength(5);
+  const [tabs = "", closedOpen = "", fold = "", titleAlone = "", open = ""] =
+    warnings;
+  expect(tabs).toContain("closed");
+  expect(tabs).toContain("open");
+  expect(html).toContain(
+    '<details class="mdmark-collapsible"><summary>タブ（macOS・Windows）</summary>',
+  );
+  expect(closedOpen).toContain("closed");
+  expect(closedOpen).toContain("open");
+  expect(html).toContain(
+    '<details class="mdmark-collapsible"><summary>手順（2 ステップ）</summary><ol class="mdmark-steps">',
+  );
+  expect(fold).toContain("fold");
+  expect(titleAlone).toContain("title=");
+  expect(titleAlone).toContain("closed");
+  expect(titleAlone).toContain("open");
+  expect(matches(html, /<details class="mdmark-collapsible"/g)).toHaveLength(2);
+  expect(matches(html, /<ol class="mdmark-steps">/g)).toHaveLength(3);
+  expect(open).toContain("open=deep");
+  expect(open).toContain("all");
+  expect(open).toContain("階層の数");
+  expect(html).toContain('<div class="mdmark-tree"');
+  expect(html).not.toContain("data-open");
 });

@@ -123,6 +123,32 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
       "> [!NOTE]-",
       "> 閉じた注意書きの中身",
       "",
+      "<!-- tabs: closed -->",
+      "",
+      "### uv",
+      "",
+      "閉じたタブの中身",
+      "",
+      "### pip",
+      "",
+      "pip の中身",
+      "",
+      "<!-- /tabs -->",
+      "",
+      "<!-- steps: closed -->",
+      "",
+      "1. 閉じたステップの中身",
+      "2. 二つ目の手順",
+      "",
+      "<!-- /steps -->",
+      "",
+      "```tree",
+      "root/",
+      "└── outer/",
+      "    └── inner/",
+      "        └── deep.ts",
+      "```",
+      "",
     ].join("\n"),
   });
   const doc = page.locator("#doc");
@@ -132,6 +158,10 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
     "行の詳細の中身",
     "閉じた表の中身",
     "閉じた注意書きの中身",
+    "閉じたタブの中身",
+    "閉じたステップの中身",
+    "inner/",
+    "deep.ts",
   ];
   for (const text of hiddenTexts) {
     await expect(doc.getByText(text), text).toBeHidden();
@@ -149,15 +179,22 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
   }
   await expect(doc.getByText("macOS の中身")).toBeVisible();
   for (const text of hiddenTexts) {
-    await expect(doc.getByText(text), text).toBeVisible();
+    await expect(
+      doc.getByText(text, { exact: true }).first(),
+      text,
+    ).toBeVisible();
   }
+  await expect(doc.locator("button.mdmark-tree-copy")).toBeHidden();
   // 実行: 印刷の後
   await page.emulateMedia({ media: "screen" });
   await sendPrintEvent(page, "afterprint");
   // 検証: 印刷の後のイベントの後
   await expect(doc.getByText("macOS の中身")).toBeVisible();
   for (const text of hiddenTexts) {
-    await expect(doc.getByText(text), text).toBeHidden();
+    await expect(
+      doc.getByText(text, { exact: true }).first(),
+      text,
+    ).toBeHidden();
   }
 });
 

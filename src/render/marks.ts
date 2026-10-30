@@ -19,6 +19,7 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   table: "table",
   tabs: "tabs",
   steps: "steps",
+  tree: "tree",
   section: "sections",
   "row-detail": "row-details",
   fig: "figures",

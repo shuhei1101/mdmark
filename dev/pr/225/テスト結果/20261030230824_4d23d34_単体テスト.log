@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-lib-table-tabs-steps-tree-options
+
+
+ Test Files  161 passed (161)
+      Tests  1173 passed (1173)
+   Start at  23:08:30
+   Duration  72.06s (worker 37%, tests 36%, import 23%, transform 3%)
+

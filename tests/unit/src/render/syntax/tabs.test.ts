@@ -91,12 +91,12 @@ test("test_build_tabs_when_group", () => {
 // 読めない指定は警告にしてタブにはする（正常系）
 test("test_build_tabs_when_unreadable_options", () => {
   // 準備
-  const markdown = tabsMarkdown("<!-- tabs: group= grop=os closed -->");
+  const markdown = tabsMarkdown("<!-- tabs: group= grop=os fold -->");
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
-  for (const label of ["group=", "grop=", "closed"]) {
+  for (const label of ["group=", "grop=", "fold"]) {
     expect(html).toContain(`<code>${label}</code>`);
   }
   expect(html).toContain('<div class="mdmark-tabs">');
@@ -134,25 +134,65 @@ test("test_read_tabs_options_when_unreadable", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
   // 実行
-  const options = readTabsOptions(tabsMark("group= grop=os closed"));
+  const options = readTabsOptions(tabsMark("group= grop=os fold"));
   // 検証
   expect(options.group).toBeUndefined();
   expect(options.warning?.message).toBe(
     "の読めない指定を当てずに描いています。",
   );
-  expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os closed -->");
+  expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os fold -->");
   const items = options.warning?.items ?? [];
   expect(items.map((item) => item.label).sort()).toEqual(
-    ["closed", "grop=", "group="].sort(),
+    ["fold", "grop=", "group="].sort(),
   );
   const message = (label: string): string =>
     items.find((item) => item.label === label)?.message ?? "";
   expect(message("group=")).toContain("組の名前がありません");
   expect(message("group=")).toContain("組を持たないタブとして描いています");
-  expect(message("grop=")).toMatch(
-    /使えないキーです。使えるキーは\s*`?group=`?\s*です/,
+  expect(message("grop=")).toContain("使えないキーです");
+  expect(message("fold")).toContain("使えない指定です");
+});
+
+// closed のタブをタブ名の見出しの折り畳みに入れる（正常系）
+test("test_build_tabs_when_collapsed", () => {
+  // 準備
+  const markdown = [
+    "<!-- tabs: closed -->",
+    "",
+    "### uv",
+    "",
+    "uv で入れる",
+    "",
+    "### pip",
+    "",
+    "pip で入れる",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain(
+    '<details class="mdmark-collapsible"><summary>タブ（uv・pip）</summary><div class="mdmark-tabs"',
   );
-  expect(message("closed")).toMatch(
-    /使えない指定です。使える指定は\s*`?group=名前`?\s*です/,
-  );
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 折り畳みの指定を group と一緒に読む（正常系）
+test("test_read_tabs_options_when_collapse", async () => {
+  // 準備
+  const { readTabsOptions } = await loadTabs();
+  // 実行
+  const opened = readTabsOptions(tabsMark("open title=入れ方 group=os"));
+  const conflict = readTabsOptions(tabsMark("closed open"));
+  // 検証
+  expect(opened.group).toBe("os");
+  expect(opened.collapse).toBe("open");
+  expect(opened.title).toBe("入れ方");
+  expect(opened.warning).toBeUndefined();
+  expect(conflict.collapse).toBe("closed");
+  expect((conflict.warning?.items ?? []).map((item) => item.label)).toEqual([
+    "closed と open",
+  ]);
 });

@@ -69,6 +69,13 @@
     --mdmark-color-diff-add-sign: #15803d;
     --mdmark-color-comment-bg: #f2effe;
     --mdmark-color-comment-line: #6d28d9;
+    --mdmark-color-file-text: #1d4ed8;
+    --mdmark-color-file-code: #6d28d9;
+    --mdmark-color-file-config: #c2410c;
+    --mdmark-color-file-image: #0f766e;
+    --mdmark-color-file-sheet: #15803d;
+    --mdmark-color-file-archive: #a16207;
+    --mdmark-color-file-script: #be185d;
     --mdmark-color-error: #b91c1c;
     --mdmark-view-column-width: 12rem;
     --mdmark-diff-minimap-width: 14px;
@@ -124,6 +131,13 @@
       --mdmark-color-diff-add-sign: #4ade80;
       --mdmark-color-comment-bg: #25222d;
       --mdmark-color-comment-line: #c4a7ff;
+      --mdmark-color-file-text: #7aa2ff;
+      --mdmark-color-file-code: #c4a7ff;
+      --mdmark-color-file-config: #fb923c;
+      --mdmark-color-file-image: #2dd4bf;
+      --mdmark-color-file-sheet: #4ade80;
+      --mdmark-color-file-archive: #facc15;
+      --mdmark-color-file-script: #f472b6;
       --mdmark-color-error: #f87171;
       color-scheme: dark;
     }
@@ -219,6 +233,13 @@
       --mdmark-color-diff-add-sign: #4ade80;
       --mdmark-color-comment-bg: #25222d;
       --mdmark-color-comment-line: #c4a7ff;
+      --mdmark-color-file-text: #7aa2ff;
+      --mdmark-color-file-code: #c4a7ff;
+      --mdmark-color-file-config: #fb923c;
+      --mdmark-color-file-image: #2dd4bf;
+      --mdmark-color-file-sheet: #4ade80;
+      --mdmark-color-file-archive: #facc15;
+      --mdmark-color-file-script: #f472b6;
       --mdmark-color-error: #f87171;
       color-scheme: dark;
     }
@@ -304,6 +325,13 @@
       --mdmark-color-diff-add-sign: #15803d;
       --mdmark-color-comment-bg: #f2effe;
       --mdmark-color-comment-line: #6d28d9;
+      --mdmark-color-file-text: #1d4ed8;
+      --mdmark-color-file-code: #6d28d9;
+      --mdmark-color-file-config: #c2410c;
+      --mdmark-color-file-image: #0f766e;
+      --mdmark-color-file-sheet: #15803d;
+      --mdmark-color-file-archive: #a16207;
+      --mdmark-color-file-script: #be185d;
       --mdmark-color-error: #b91c1c;
       color-scheme: light;
     }
@@ -2410,6 +2438,23 @@
       margin-block-end: calc(var(--mdmark-space) / 2);
     }
 
+    /* 閉じた表の中の帯: 表との間を本文と同じに空ける */
+    .mdmark-table-details > .mdmark-table-bar {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+
+    /* タブ・ステップの折り畳み: 閉じた表と同じく、中身の最小の幅で広がらず描く先の幅に収める */
+    .mdmark-collapsible {
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    /* 開いた折り畳みの見出し: 中身との間を空ける */
+    .mdmark-collapsible[open] > summary {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+
     /* ---------- 行の詳細 ---------- */
 
     /* 行の詳細を持つ先頭のセル: 開閉のボタンと値を横に並べる */
@@ -2673,21 +2718,118 @@
 
     /* ---------- ファイルツリー ---------- */
 
-    /* ファイルツリー: コードブロックと同じ面と線の中に、入れ子のリストで並べる */
+    /* ファイルツリー: コードブロックと同じ面と線の中に、帯と入れ子のリストを並べる */
     .mdmark-tree {
+      /* 山形・アイコン・名前の間の空きと、開閉の山形が取る幅（開閉のボタンが無いツリーは空けない） */
+      --mdmark-tree-gap: 0.4em;
+      --mdmark-tree-lead: calc(1em + var(--mdmark-tree-gap));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
       margin: 0;
-      padding: calc(var(--mdmark-space) * 0.75) var(--mdmark-space);
+      padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
       background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-body);
+      font-size: 1em;
+      line-height: var(--mdmark-line-height);
+
+      &:not(:has(.mdmark-tree-toggle)) {
+        --mdmark-tree-lead: 0px;
+      }
+
+      /* コピーできないときのパネル: ツリーの面の中に余白を取って置く */
+      > .mdmark-copy-panel {
+        width: auto;
+        margin: 0 var(--mdmark-space) var(--mdmark-space);
+      }
+    }
+
+    /* 帯: 左端に種類の札、右端にコピーのボタン */
+    .mdmark-tree-bar {
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 2rem;
+      padding-block: 0.15em;
+      padding-inline: 0.5em 0.35em;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 種類の札: コードブロックの言語のラベルと同じ小さな札 */
+    .mdmark-tree-kind {
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* 帯の右の塊（コピーのボタンと読み上げの知らせ） */
+    .mdmark-tree-meta {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+    }
+
+    /* コピーのボタン: 枠を持たない小さなボタン */
+    .mdmark-tree-copy {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-diagram-icon {
+        width: 1.1em;
+        height: 1.1em;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: 足した行と同じ緑で知らせる */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+    }
+
+    /* 入れ子のリスト: 等幅の文字で並べ、長い名前と注釈は折り返さずに横へスクロールする */
+    .mdmark-tree-list {
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.5) var(--mdmark-space)
+        calc(var(--mdmark-space) * 0.75);
+      overflow-x: auto;
       font-family: var(--mdmark-font-mono);
       font-size: 0.875em;
       line-height: 1.6;
       list-style: none;
+      white-space: nowrap;
 
-      /* 入れ子の段: 字下げし、段の線で親とつなぐ */
+      /* 入れ子の段: 親のフォルダのアイコンの下から段の線を引いて字下げする */
       ul {
-        margin: 0 0 0 0.5em;
+        margin: 0 0 0 calc(var(--mdmark-tree-lead) + 0.5em);
         padding-inline-start: 1em;
         border-inline-start: 1px solid var(--mdmark-color-border);
         list-style: none;
@@ -2699,21 +2841,175 @@
       }
     }
 
-    /* ファイルツリーの項目名: アイコンと名前を横に並べる */
-    .mdmark-tree-name {
+    /* 項目の行: 名前の塊と注釈を横に並べる */
+    .mdmark-tree-row {
+      display: flex;
+      align-items: center;
+      min-height: 1.5rem;
+    }
+
+    /* 名前の塊（開閉の山形・アイコン・名前）。フォルダはこの塊が開閉のボタン。注釈を持つ行は、注釈の左端が段によらず揃う幅を取る */
+    .mdmark-tree-row > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
       display: inline-flex;
-      gap: 0.45em;
+      flex: none;
+      gap: var(--mdmark-tree-gap);
       align-items: center;
     }
 
-    /* フォルダのアイコン: 本文の色で出す */
-    .mdmark-tree-folder > .mdmark-tree-name::before {
+    .mdmark-tree-row:has(.mdmark-tree-note)
+      > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
+      box-sizing: border-box;
+      min-width: calc(
+        var(--mdmark-tree-note-start, 0px) -
+        var(--mdmark-tree-depth, 0) *
+        var(--mdmark-tree-indent, 0px)
+      );
+    }
+
+    /* 開閉の山形を持たない項目（ファイル・子の無いフォルダ・ほかにもある）: 山形の分を空けて名前の左端を揃える */
+    .mdmark-tree-row > .mdmark-tree-name {
+      padding-inline-start: var(--mdmark-tree-lead);
+    }
+
+    /* 項目の名前: アイコンと名前を横に並べる */
+    .mdmark-tree-name {
+      display: inline-flex;
+      gap: var(--mdmark-tree-gap);
+      align-items: center;
+    }
+
+    .mdmark-tree-toggle > .mdmark-tree-name {
+      padding-inline-start: 0;
+    }
+
+    /* フォルダの開閉のボタン: 名前とアイコンを押せるようにし、見た目は文字のまま */
+    .mdmark-tree-toggle {
+      min-height: 1.5rem;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover .mdmark-tree-name {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* 開閉の山形: 閉じているときは右向き、開いているときは下向き */
+      &::before {
+        display: inline-block;
+        flex: none;
+        width: 1em;
+        height: 1em;
+        background: var(--mdmark-color-muted);
+        content: "";
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        transition: transform 0.15s;
+      }
+
+      &[aria-expanded="true"]::before {
+        transform: rotate(90deg);
+      }
+    }
+
+    /* 注釈: 名前から点線でつなぎ、本文の書体と控えめな色で、行内のコード・太字・リンク・バッジを描く */
+    .mdmark-tree-row:has(.mdmark-tree-note)
+      > :is(.mdmark-tree-toggle, .mdmark-tree-name)::after {
+      flex: 1;
+      min-width: 1em;
+      margin-inline: 0.4em 0.6em;
+      border-block-end: 1px dotted var(--mdmark-color-muted);
+      content: "";
+      opacity: 0.6;
+    }
+
+    .mdmark-tree-note {
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+
+      code {
+        padding: 0.05em 0.35em;
+        font-size: 0.9375em;
+      }
+
+      .mdmark-badge {
+        font-size: 0.6875rem;
+        line-height: 1.4;
+      }
+    }
+
+    /* フォルダのアイコン: 本文の色で出す。開いているとき（開閉のボタンが無いツリーは常に）は開いた形 */
+    .mdmark-tree-folder > .mdmark-tree-row .mdmark-tree-name::before {
       color: var(--mdmark-color-text);
     }
 
-    /* ファイルのアイコン: 控えめな色で出す */
-    .mdmark-tree-file > .mdmark-tree-name::before {
+    /* ファイルとほかにもあるのアイコン: 控えめな色で出す。種類のあるファイルは種類ごとの色で出す */
+    :is(.mdmark-tree-file, .mdmark-tree-more)
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
       color: var(--mdmark-color-muted);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-text"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-text);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-code"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-code);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-json"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-config);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-image"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-image);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-spreadsheet"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-sheet);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-archive"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-archive);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-terminal"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-script);
+    }
+
+    /* 動きを減らす設定: 開閉の山形を回すアニメーションを止める */
+    @media (prefers-reduced-motion: reduce) {
+      .mdmark-tree-toggle::before {
+        transition: none;
+      }
     }
 
     /* ---------- バッジ ---------- */
@@ -2987,13 +3283,73 @@
       height: 1.1em;
     }
 
-    /* ファイルツリーのフォルダとファイル */
-    .mdmark-tree-folder > .mdmark-tree-name::before {
+    /* ファイルツリーのフォルダ・ファイル・ほかにもある */
+    .mdmark-tree-folder > .mdmark-tree-row .mdmark-tree-name::before {
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
+      width: 1.1em;
+      height: 1.1em;
     }
 
-    .mdmark-tree-file > .mdmark-tree-name::before {
+    .mdmark-tree:not(:has(.mdmark-tree-toggle))
+      .mdmark-tree-folder
+      > .mdmark-tree-row
+      .mdmark-tree-name::before,
+    .mdmark-tree-toggle[aria-expanded="true"] > .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file > .mdmark-tree-row .mdmark-tree-name::before {
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3C/svg%3E");
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    .mdmark-tree-more > .mdmark-tree-row .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3Ccircle cx='19' cy='12' r='1'/%3E%3Ccircle cx='5' cy='12' r='1'/%3E%3C/svg%3E");
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    .mdmark-tree-file[data-file-icon="file-text"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M10 9H8'/%3E%3Cpath d='M16 13H8'/%3E%3Cpath d='M16 17H8'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-code"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M10 12.5 8 15l2 2.5'/%3E%3Cpath d='m14 12.5 2 2.5-2 2.5'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-json"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1'/%3E%3Cpath d='M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-image"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Ccircle cx='10' cy='12' r='2'/%3E%3Cpath d='m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-spreadsheet"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M8 13h2'/%3E%3Cpath d='M14 13h2'/%3E%3Cpath d='M8 17h2'/%3E%3Cpath d='M14 17h2'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-archive"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M8 12v-1'/%3E%3Cpath d='M8 18v-2'/%3E%3Cpath d='M8 7V6'/%3E%3Ccircle cx='8' cy='20' r='2'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-terminal"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='m8 16 2-2-2-2'/%3E%3Cpath d='M12 18h4'/%3E%3C/svg%3E");
     }
 
     /* コードブロックの題のアイコン: ファイル */
@@ -3202,9 +3558,32 @@
         max-width: none;
       }
 
-      /* 閉じた表・閉じた注意書きの見出し: 開閉の印を外す */
-      :is(.mdmark-table-details, details.markdown-alert) > summary {
+      /* 閉じた表・閉じた注意書き・タブとステップの折り畳みの見出し: 開閉の印を外す */
+      :is(.mdmark-table-details, .mdmark-collapsible, details.markdown-alert)
+        > summary {
         list-style: none;
+      }
+
+      /* ファイルツリー: 紙では押せない帯・コピーのパネル・開閉の山形を出さず、長い名前と注釈を折り返す */
+      :is(.mdmark-tree-bar, .mdmark-tree > .mdmark-copy-panel) {
+        display: none;
+      }
+
+      .mdmark-tree-toggle::before {
+        display: none;
+      }
+
+      .mdmark-tree-row > .mdmark-tree-name {
+        padding-inline-start: 0;
+      }
+
+      .mdmark-tree-list {
+        overflow: visible;
+        white-space: normal;
+
+        ul {
+          margin-inline-start: 0.5em;
+        }
       }
 
       /* 印刷の前にタブの全ての中身を出したとき: タブの並びを隠し、タブ名を題にして縦に並べる */

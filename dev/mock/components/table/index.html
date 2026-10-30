@@ -20,15 +20,20 @@
   <!-- 見出し行と集計の行の留め方・集計の行・コピーの形式・最終列の畳み方の規則とカタログの追加分（#151 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/151/assets/table.css">
   <link rel="stylesheet" href="../../refs/151/assets/catalog.css">
+  <!-- 閉じた表のタイトル（#225 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/225/assets/collapse.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/151/assets/table-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../refs/225/assets/collapse-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 表の見本の定義と組み立て（モックだけの仕組み。syntax.js より先に組み立てる） -->
   <script src="../../refs/151/assets/samples.js" defer></script>
+  <script src="../../refs/225/assets/samples.js" defer></script>
   <script src="../../refs/151/assets/table-build.js" defer></script>
+  <script src="../../refs/225/assets/table-collapse.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
   <!-- 表の機能の追加分の操作（件数・列の表示・集計・コピー・行へのリンク・見出し行と集計の行の留め方・最終列の畳み方） -->
@@ -264,11 +269,11 @@
 
       <!-- 閉じた表（closed） -->
       <section aria-labelledby="state-closed">
-        <h2 class="catalog-label" id="state-closed">閉じた表（closed）</h2>
+        <h2 class="catalog-label" id="state-closed">閉じた表（closed。見出しは「表（{本文の行の数} 行）」）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <details class="mdmark-table-details">
-    <summary>表を開く</summary>
+    <summary>表（3 行）</summary>
   <table tabindex="0" aria-label="表: 閉じた表">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「版」の列までピン止め" title="「版」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">日付<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「日付」の列までピン止め" title="「日付」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
@@ -746,7 +751,7 @@
 <p>表 A（closed）:</p>
 <div class="mdmark-table" data-kind="data">
   <details class="mdmark-table-details">
-    <summary>表を開く</summary>
+    <summary>表（3 行）</summary>
   <table tabindex="0" aria-label="表: 表 A">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
@@ -988,6 +993,22 @@
         <h2 class="catalog-label" id="state-fold">描いた文書の幅が 720px より狭いとき、1 行に収まらない最終列を畳む（案 A。行の詳細と 1 つのボタンで開く）</h2>
         <article class="mdmark catalog-narrow">
 <div data-mock-table="status-narrow"></div>
+        </article>
+      </section>
+
+      <!-- [data-mock-collapse] [data-mock-title]: table-collapse.js が見出しを title= の値にした開いた折りたたみに入れる -->
+      <section aria-labelledby="state-open-title">
+        <h2 class="catalog-label" id="state-open-title">開いた表と title=（open title=リリースの一覧）</h2>
+        <article class="mdmark">
+<div data-mock-table="releases-open" data-mock-collapse="open" data-mock-title="リリースの一覧"></div>
+        </article>
+      </section>
+
+      <!-- closed title=: 見出しを title= の値にした閉じた折りたたみ -->
+      <section aria-labelledby="state-closed-title">
+        <h2 class="catalog-label" id="state-closed-title">閉じた表と title=（closed title=リリースの一覧）</h2>
+        <article class="mdmark">
+<div data-mock-table="releases-closed" data-mock-collapse="closed" data-mock-title="リリースの一覧"></div>
         </article>
       </section>
     </div>

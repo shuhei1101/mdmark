@@ -131,6 +131,28 @@ stories:
       columns: '["版","日付","変更"]'
       rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"]]'
       collapse: closed
+  - name: ClosedTitle
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["版","日付","変更"]'
+      rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"],["v0.2.0","2026-10-20","表の機能を足した"]]'
+      collapse: closed
+      title: リリースの一覧
+  - name: OpenTitle
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["版","日付","変更"]'
+      rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"],["v0.2.0","2026-10-20","表の機能を足した"]]'
+      collapse: open
+      title: リリースの一覧
   - name: LongCells
     parameters:
       server:

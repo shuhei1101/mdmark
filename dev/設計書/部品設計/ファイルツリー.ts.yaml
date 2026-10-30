@@ -4,40 +4,243 @@ story: "Parts/FileTree"
 test_file: tests/integration/lib/tree.story.test.ts
 states:
   - name: Basic
-    description: フォルダとファイル
+    description: フォルダとファイルを `render` が出した状態。全ての項目が開いていて、帯と開閉のボタンを持たない（印刷もこの見え方）
     args:
       - name: nodes
         value: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
+      - name: source
+        value: |-
+          mdmark/
+          ├── src/
+          │   └── index.ts
+          └── package.json
+  - name: Interactive
+    description: '`mount` が付けた状態で、指定の無い開き方。ルートだけが開き、`src/` は閉じたアイコンで中身を隠す。上に種類 `tree` と `コピー` の帯'
+    args:
+      - name: nodes
+        value: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
+      - name: source
+        value: |-
+          mdmark/
+          ├── src/
+          │   └── index.ts
+          └── package.json
+      - name: interactive
+        value: 'true'
+  - name: OpenAll
+    description: '`open=all` で全てのフォルダが開いたアイコンで開いている'
+    args:
+      - name: nodes
+        value: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
+      - name: source
+        value: |-
+          app/
+          └── src/
+              └── parts/
+                  └── tree.ts
+      - name: open
+        value: all
+      - name: interactive
+        value: 'true'
+  - name: OpenLevels
+    description: '`open=2` で `app/`・`src/` が開き、`parts/` が閉じている'
+    args:
+      - name: nodes
+        value: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
+      - name: source
+        value: |-
+          app/
+          └── src/
+              └── parts/
+                  └── tree.ts
+      - name: open
+        value: '2'
+      - name: interactive
+        value: 'true'
+  - name: Notes
+    description: 注釈を持つ。注釈が全ての行で同じ位置の列に揃い、名前から注釈まで点線でつながり、`#` を出さない。注釈の中のコード・太字・バッジを描く
+    args:
+      - name: nodes
+        value: '[{"name":"mdmark/","children":[{"name":"src/","note":"ソース","children":[{"name":"index.ts","note":"入口の <code>mount</code>"}]},{"name":"README.md","note":"<strong>必読</strong> <span class=\"mdmark-badge\">新規</span>"}]}]'
+      - name: source
+        value: |-
+          mdmark/
+          ├── src/ # ソース
+          │   └── index.ts # 入口の `mount`
+          └── README.md # **必読** `badge:新規`
+      - name: open
+        value: all
+      - name: interactive
+        value: 'true'
+  - name: FileIcons
+    description: 拡張子ごとのアイコン。文書・コード・設定・画像・表・アーカイブ・スクリプトを種類ごとの色で、知らない拡張子を汎用のアイコンで出す
+    args:
+      - name: nodes
+        value: '[{"name":"files/","children":[{"name":"README.md"},{"name":"index.ts"},{"name":"package.json"},{"name":"photo.PNG"},{"name":"data.csv"},{"name":"dist.zip"},{"name":"Dockerfile"},{"name":"font.woff2"}]}]'
+      - name: source
+        value: |-
+          files/
+          ├── README.md
+          ├── index.ts
+          ├── package.json
+          ├── photo.PNG
+          ├── data.csv
+          ├── dist.zip
+          ├── Dockerfile
+          └── font.woff2
+      - name: interactive
+        value: 'true'
+  - name: More
+    description: 名前が `...` の項目を、省略のアイコンと読み上げの文 `ほかにもあります` で出す
+    args:
+      - name: nodes
+        value: '[{"name":"src/","children":[{"name":"index.ts"},{"name":"..."}]}]'
+      - name: source
+        value: |-
+          src/
+          ├── index.ts
+          └── ...
+      - name: interactive
+        value: 'true'
   - name: Deep
-    description: 5 段の深い入れ子
+    description: 5 段の深い入れ子を全て開いた
     args:
       - name: nodes
         value: '[{"name":"a/","children":[{"name":"b/","children":[{"name":"c/","children":[{"name":"d/","children":[{"name":"e.ts"}]}]}]}]}]'
+      - name: source
+        value: |-
+          a/
+          └── b/
+              └── c/
+                  └── d/
+                      └── e.ts
+      - name: open
+        value: all
+      - name: interactive
+        value: 'true'
   - name: LongName
-    description: 名前が長く幅を超える。名前が折り返し、横スクロールを出さない
+    description: 名前と注釈が長く幅を超える。名前と注釈は折り返さずにツリーの中で横にスクロールし、ページは横にスクロールしない（合意したモック `dev/mock/refs/225/assets/tree.css`）
     args:
       - name: nodes
-        value: '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts"}]}]'
-lead: 言語 `tree` のコードブロックに罫線で書いたフォルダ構成を、フォルダとファイルの入れ子のツリーにする。
+        value: '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts","note":"とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確かめる"}]}]'
+      - name: source
+        value: |-
+          src/
+          └── a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts # とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確かめる
+      - name: open
+        value: all
+      - name: interactive
+        value: 'true'
+  - name: Copied
+    description: コピーした。ボタンが `check` のアイコンと `コピーしました`
+    args:
+      - name: nodes
+        value: '[{"name":"src/","children":[{"name":"index.ts"}]}]'
+      - name: source
+        value: |-
+          src/
+          └── index.ts
+      - name: interactive
+        value: 'true'
+      - name: copyState
+        value: copied
+  - name: CopyFailed
+    description: クリップボードにコピーできなかった。ツリーの下に元の罫線のテキストを入れたパネルを出す
+    args:
+      - name: nodes
+        value: '[{"name":"src/","children":[{"name":"index.ts"}]}]'
+      - name: source
+        value: |-
+          src/
+          └── index.ts
+      - name: interactive
+        value: 'true'
+      - name: copyFallback
+        value: 'true'
+lead: 言語 `tree` のコードブロックに罫線で書いたフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` が種類とコピーボタンの帯とフォルダの開閉を付ける。
 args:
   - name: nodes
     type: オブジェクトの配列
     required: true
-    description: 罫線を読んだ項目（`{ name, children }`）。名前が `/` で終わるか `children` を持つ項目をフォルダ、それ以外をファイルにする
+    description: 罫線を読んだ項目（`{ name, note, children }`。`note` は注釈のインラインを描いた HTML）。名前が `...` の項目を「ほかにもある」の項目、名前が `/` で終わるか `children` を持つ項目をフォルダ、それ以外をファイルにする。ファイルは名前からアイコンの種類を決め、`data-file-icon` に入れる
+  - name: source
+    type: 文字列
+    required: true
+    description: コードブロックに書いた罫線のテキスト。`data-source` に入れ、コピーとコピーできないときのパネルの中身にする
+    status: planned
+  - name: open
+    type: 文字列
+    required: false
+    default: なし（ルートだけ開く）
+    choices: '`all`・1 以上の整数の文字列'
+    description: 既定で開く階層（`open=` の値）。`data-open` に入れる。`all` は全て、数はルートの深さを 0 として深さがその数より浅いフォルダを開く
+    status: planned
+  - name: interactive
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '`mount` が付けた状態にするか。`true` のとき、ツリーの上に種類 `tree` とコピーボタンの帯を置き、子を持つフォルダの名前とアイコンを開閉のボタンにし、`open` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする'
+    status: planned
+  - name: copyState
+    type: 列挙
+    required: false
+    default: idle
+    choices: '`idle`（`コピー`）・`copied`（`コピーしました`）'
+    enabled_when: '`interactive` が `true` のとき'
+    description: コピーボタンの状態。ボタンの `data-state` と文言・アイコン（`copy`・`check`）を切り替える
+    status: planned
+  - name: copyFallback
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`interactive` が `true` のとき'
+    description: クリップボードに書けなかったときのパネルを出すか。`true` のとき、ツリーの下に、題 `クリップボードにコピーできませんでした`・案内 `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`source` を入れた読み取り専用の `textarea`・閉じるボタンを持つ表のコピーと同じパネルを出す
+    status: planned
 css_properties:
   - name: --mdmark-color-muted
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'
-    description: フォルダとファイルのアイコンと、入れ子の線の色
+    description: 汎用のファイル・フォルダ・「ほかにもある」のアイコン、入れ子の線、注釈と点線の色
   - name: --mdmark-font-mono
     syntax: <family-name>#
     default: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace
     description: 名前の書体
+  - name: --mdmark-color-file-text
+    syntax: <color>
+    default: '#1d4ed8（ダーク #7aa2ff）'
+    description: 文書（`file-text`）のアイコンの色。ファイルの種類の色はどれも面に対して 3:1 以上
+  - name: --mdmark-color-file-code
+    syntax: <color>
+    default: '#6d28d9（ダーク #c4a7ff）'
+    description: コード（`file-code`）のアイコンの色
+  - name: --mdmark-color-file-config
+    syntax: <color>
+    default: '#c2410c（ダーク #fb923c）'
+    description: 設定（`file-json`）のアイコンの色
+  - name: --mdmark-color-file-image
+    syntax: <color>
+    default: '#0f766e（ダーク #2dd4bf）'
+    description: 画像（`file-image`）のアイコンの色
+  - name: --mdmark-color-file-sheet
+    syntax: <color>
+    default: '#15803d（ダーク #4ade80）'
+    description: 表（`file-spreadsheet`）のアイコンの色
+  - name: --mdmark-color-file-archive
+    syntax: <color>
+    default: '#a16207（ダーク #facc15）'
+    description: アーカイブ（`file-archive`）のアイコンの色
+  - name: --mdmark-color-file-script
+    syntax: <color>
+    default: '#be185d（ダーク #f472b6）'
+    description: スクリプト（`file-terminal`）のアイコンの色
 accessibility:
   - ツリーは `aria-label="ファイルツリー"` を持つ入れ子の `ul` で、読み上げが階層を読む
-  - フォルダとファイルは名前（フォルダは末尾の `/`）でも見分けられ、アイコンだけに頼らない
+  - フォルダとファイルは名前（フォルダは末尾の `/`）でも見分けられ、アイコンとその色だけに頼らない
+  - 開閉のボタンは `type="button"` で、`aria-expanded` と入れ子の `ul` を指す `aria-controls` を持ち、Tab で移って Enter・Space で開閉する
+  - 「ほかにもある」の項目はアイコンに読み上げの文 `ほかにもあります` を添える
+  - コピーの結果はボタンの文言と `role="status"` の要素で知らせる
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
 status: planned
 notes:
-  HTML: '`<ul class="mdmark-tree" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-name">{name}</span><ul>…</ul></li><li class="mdmark-tree-file"><span class="mdmark-tree-name">{name}</span></li></ul>`。アイコンは CSS で付ける。読めない行があるときはこの部品を使わず、書き方の警告と元のコードブロックを出す。モックは `dev/mock/components/file-tree/`'
+  HTML: '`<div class="mdmark-tree" data-open="{open}" data-source="{source}"><ul class="mdmark-tree-list" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-row"><span class="mdmark-tree-name">{name}</span><span class="mdmark-tree-note">{note}</span></span><ul>…</ul></li><li class="mdmark-tree-file" data-file-icon="{アイコン}">…</li><li class="mdmark-tree-more">…<span class="mdmark-visually-hidden">ほかにもあります</span></li></ul></div>`。`interactive` のときは `ul` の前に `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><button class="mdmark-tree-copy" type="button" data-state>…</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></div>` を置き、子を持つフォルダの名前を `<button class="mdmark-tree-toggle" type="button" aria-expanded aria-controls>` で包む。アイコンは CSS で付ける（フォルダは `aria-expanded` で開いた形・閉じた形、ファイルは `data-file-icon`。`render` だけのフォルダは開いた形）。アイコンの種類は lucide の `file-text`（md・mdx・txt・rst、名前 LICENSE）・`file-code`（ts・tsx・mts・cts・js・jsx・mjs・cjs・py・rb・go・rs・java・kt・swift・c・h・cpp・cs・php・css・scss・html・vue・svelte）・`file-json`（json・jsonc・yaml・yml・toml・xml・ini・env・lock）・`file-image`（png・jpg・jpeg・gif・svg・webp・avif・ico）・`file-spreadsheet`（csv・tsv・xlsx）・`file-archive`（zip・gz・tgz・tar・vsix）・`file-terminal`（sh・bash・zsh・ps1・bat、名前 Dockerfile・Makefile）、それ以外は `file`。拡張子は最後の `.` の後ろを小文字にして引く。注釈の列は `mount` が名前の幅を測って `--mdmark-tree-note-start` で揃える。印刷では帯とパネルを出さない。読めない行があるときはこの部品を使わず、書き方の警告と元のコードブロックを出す。見た目は確認ログの注釈・開閉の示し方・コピーボタン・アイコンの色の決定。モックは `dev/mock/components/file-tree/`'

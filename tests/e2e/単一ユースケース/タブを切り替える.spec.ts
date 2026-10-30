@@ -263,7 +263,7 @@ test("test_error_when_unknown_option", async ({ page }) => {
   await mountDocument(page, {
     markdown: [
       tabsRange(["macOS", "Windows"], "grop=os"),
-      tabsRange(["macOS", "Windows"], "group=os closed"),
+      tabsRange(["macOS", "Windows"], "group=os fold"),
     ].join("\n"),
   });
   await tabGroup(page, 0).getByRole("tab", { name: "Windows" }).click();
@@ -272,7 +272,7 @@ test("test_error_when_unknown_option", async ({ page }) => {
   await expect(warnings).toHaveCount(2);
   await expect(warnings.nth(0)).toContainText("grop=");
   await expect(warnings.nth(0)).toContainText("使えないキーです");
-  await expect(warnings.nth(1)).toContainText("closed");
+  await expect(warnings.nth(1)).toContainText("fold");
   await expect(warnings.nth(1)).toContainText("使えない指定です");
   await expectBefore(warnings.nth(0), tabGroup(page, 0));
   await expectBefore(tabGroup(page, 0), warnings.nth(1));
@@ -280,4 +280,52 @@ test("test_error_when_unknown_option", async ({ page }) => {
   await expect(page.locator("#doc [role=tablist]")).toHaveCount(2);
   await expectSelected(tabGroup(page, 0), "Windows", ["macOS"]);
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
+});
+
+// `closed`・`open`・`title=` のタブ群を、見出し付きの折り畳みに入れ、閉じたタブ群は見出しを押すと開き、開いたタブも切り替えられる（正常シナリオ（折りたたみに入れたタブ））
+test("test_normal_when_folded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      tabsRange(["uv", "pip"], "closed"),
+      tabsRange(["macOS", "Windows"], "open title=入れ方"),
+    ].join("\n"),
+  });
+  const folds = page.locator("#doc details.mdmark-collapsible");
+  // 検証: 描いた直後
+  await expect(folds.nth(0).locator("summary")).toHaveText("タブ（uv・pip）");
+  await expect(folds.nth(0).locator("[role=tablist]")).toBeHidden();
+  await expect(folds.nth(0).getByText("uv の段落")).toBeHidden();
+  await expect(folds.nth(1).locator("summary")).toHaveText("入れ方");
+  await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
+  // 実行: 1 つ目の見出しを押し、pip のタブを押す
+  await folds.nth(0).locator("summary").click();
+  // 検証
+  await expectSelected(tabGroup(page, 0), "uv", ["pip"]);
+  // 実行
+  await tabGroup(page, 0).getByRole("tab", { name: "pip" }).click();
+  // 検証
+  await expectSelected(tabGroup(page, 0), "pip", ["uv"]);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+});
+
+// closed と open を両方書くと、書き方の警告を出し、closed を当てた閉じた折り畳みにする（異常シナリオ（closed と open を両方書いたタブ））
+test("test_error_when_closed_and_open", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: tabsRange(["macOS", "Windows"], "closed open"),
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("closed");
+  await expect(warning).toContainText("open");
+  const fold = page.locator("#doc details.mdmark-collapsible");
+  await expect(fold).not.toHaveAttribute("open", "");
+  await expect(fold.locator("summary")).toHaveText("タブ（macOS・Windows）");
+  await expect(fold.locator("[role=tablist]")).toBeHidden();
 });

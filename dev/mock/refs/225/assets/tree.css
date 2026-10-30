@@ -1,0 +1,281 @@
+/* ファイルツリーの追加分（#225 で共有するアセット）: 帯とコピーボタン・注釈の列・拡張子ごとのアイコン・「ほかにもある」の項目・フォルダの開閉。
+   実装では src/index.css の mdmark の層に足す。refs/19/assets/syntax.css の後に読む。
+   モックだけの指定（html の data-*）: data-mock-note（注釈の見た目の案 "a" / "b"）・data-mock-toggle（開閉の印の案 "a" / "b"） */
+
+/* ファイルの種類の色（明るい配色）: 実装では src/index.css の変数の既定に足す。面に対して 4.5:1 以上 */
+:root {
+  --mdmark-color-file-text: #1d4ed8;
+  --mdmark-color-file-code: #6d28d9;
+  --mdmark-color-file-config: #c2410c;
+  --mdmark-color-file-image: #0f766e;
+  --mdmark-color-file-sheet: #15803d;
+  --mdmark-color-file-archive: #a16207;
+  --mdmark-color-file-script: #be185d;
+}
+
+/* ファイルの種類の色（ダーク）。画面のときだけ当てる */
+@media screen {
+  :root[data-scheme="dark"] {
+    --mdmark-color-file-text: #7aa2ff;
+    --mdmark-color-file-code: #c4a7ff;
+    --mdmark-color-file-config: #fb923c;
+    --mdmark-color-file-image: #2dd4bf;
+    --mdmark-color-file-sheet: #4ade80;
+    --mdmark-color-file-archive: #facc15;
+    --mdmark-color-file-script: #f472b6;
+  }
+}
+
+/* mdmark の層: ファイルツリー */
+@layer mdmark {
+  .mdmark {
+    /* ツリーの入れ物: コードブロックと同じ面と線で、帯と入れ子のリストを囲む（syntax.css のリストの余白・書体はリストへ移す） */
+    .mdmark-tree {
+      /* 開閉の印とアイコンの幅（ファイルは同じ幅を空けて、名前の左端を揃える） */
+      --mdmark-tree-chevron: 1em;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-body);
+      font-size: 1em;
+      line-height: var(--mdmark-line-height);
+    }
+
+    /* 帯: 左端に種類のラベル、右端にコピーボタン。コードブロックの帯と同じ高さ */
+    .mdmark-tree-bar {
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 2rem;
+      padding-block: 0.15em;
+      padding-inline: 0.5em 0.35em;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 種類のラベル: コードブロックの言語のラベルと同じ小さな札。選んだ文字には入れない */
+    .mdmark-tree-kind {
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* 帯の右の塊（コピーボタンと読み上げの知らせ） */
+    .mdmark-tree-meta {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+    }
+
+    /* コピーボタン: コードブロックのコピーボタンと同じ、枠を持たない小さなボタン。押せる大きさは 24px 以上を取る */
+    .mdmark-tree-copy {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-icon {
+        width: 1.1em;
+        height: 1.1em;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: 足した行と同じ緑で知らせる */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+    }
+
+    /* 入れ子のリスト: 等幅の文字で並べ、長い名前と注釈は折り返さずに横へスクロールする */
+    .mdmark-tree .mdmark-tree-list {
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.5) var(--mdmark-space) calc(var(--mdmark-space) * 0.75);
+      overflow-x: auto;
+      border: 0;
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.875em;
+      line-height: 1.6;
+      list-style: none;
+      white-space: nowrap;
+
+      /* 入れ子の段: 親のフォルダのアイコンの下から段の線を引いて字下げする */
+      ul {
+        margin: 0 0 0 calc(var(--mdmark-tree-chevron) + 0.5em);
+        padding-inline-start: 1em;
+        border-inline-start: 1px solid var(--mdmark-color-border);
+        list-style: none;
+      }
+
+      /* 項目同士の間隔: 詰める */
+      li + li {
+        margin-block-start: 0;
+      }
+    }
+
+    /* 項目の行: 名前の塊と注釈を横に並べる */
+    .mdmark-tree-row {
+      display: flex;
+      align-items: center;
+      min-height: 1.5rem;
+    }
+
+    /* 名前の塊（開閉の印・アイコン・名前）。フォルダはこの塊がボタン */
+    .mdmark-tree-head {
+      display: inline-flex;
+      flex: none;
+      gap: 0.4em;
+      align-items: center;
+    }
+
+    /* 注釈を持つ行の名前の塊: 注釈の左端がどの段でも同じ位置に来るよう、段の字下げの分を引いた幅を取る */
+    .mdmark-tree-row:has(.mdmark-tree-note) > .mdmark-tree-head {
+      min-width: calc(var(--mdmark-tree-note-start, 0px) - var(--mdmark-tree-depth) * var(--mdmark-tree-indent, 0px) + 2em);
+    }
+
+    /* フォルダの開閉のボタン: 名前とアイコンを押せるようにし、見た目は文字のまま */
+    .mdmark-tree-toggle {
+      min-height: 1.5rem;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover .mdmark-tree-label {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* 開閉の印: 閉じているときは右向き、開いているときは下向き */
+    .mdmark-tree-chevron {
+      width: var(--mdmark-tree-chevron);
+      color: var(--mdmark-color-muted);
+      transition: transform 0.15s;
+    }
+
+    .mdmark-tree-toggle[aria-expanded="true"] .mdmark-tree-chevron {
+      transform: rotate(90deg);
+    }
+
+    /* 開閉の印の場所: 開閉しない項目（ファイル・子の無いフォルダ・ほかにもある）は同じ幅を空ける */
+    .mdmark-tree-spacer {
+      flex: none;
+      width: var(--mdmark-tree-chevron);
+    }
+
+    /* アイコン: フォルダは本文の色、汎用のファイルとほかにもあるは控えめな色 */
+    .mdmark-tree-folder > .mdmark-tree-row .mdmark-icon:not(.mdmark-tree-chevron) {
+      color: var(--mdmark-color-text);
+    }
+
+    :is(.mdmark-tree-file, .mdmark-tree-more) > .mdmark-tree-row .mdmark-icon {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 種類のあるファイルのアイコン: 種類ごとの色。形でも種類が分かる */
+    .mdmark-tree-file[data-file-icon="file-text"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-text); }
+    .mdmark-tree-file[data-file-icon="file-code"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-code); }
+    .mdmark-tree-file[data-file-icon="file-json"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-config); }
+    .mdmark-tree-file[data-file-icon="file-image"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-image); }
+    .mdmark-tree-file[data-file-icon="file-spreadsheet"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-sheet); }
+    .mdmark-tree-file[data-file-icon="file-archive"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-archive); }
+    .mdmark-tree-file[data-file-icon="file-terminal"] > .mdmark-tree-row .mdmark-icon { color: var(--mdmark-color-file-script); }
+
+    /* 注釈: 本文の書体で、行内のコード・太字・リンク・バッジを描く */
+    .mdmark-tree-note {
+      font-family: var(--mdmark-font-body);
+
+      code {
+        padding: 0.05em 0.35em;
+        font-size: 0.9375em;
+      }
+
+      .mdmark-badge {
+        font-size: 0.6875rem;
+        line-height: 1.4;
+      }
+    }
+
+    /* 動きを減らす設定: 開閉の印を回すアニメーションを止める */
+    @media (prefers-reduced-motion: reduce) {
+      .mdmark-tree-chevron {
+        transition: none;
+      }
+    }
+  }
+
+  /* 開閉の印の案 A: 印を出さず、フォルダのアイコン（閉じた・開いた）だけで開閉を示す */
+  :root[data-mock-toggle="a"] .mdmark {
+    .mdmark-tree {
+      --mdmark-tree-chevron: 0px;
+    }
+
+    :is(.mdmark-tree-chevron, .mdmark-tree-spacer) {
+      display: none;
+    }
+  }
+
+  /* 注釈の見た目の案 A: # を出さず、名前から注釈まで点線でつなぎ、注釈を控えめな色で出す */
+  :root:not([data-mock-note="b"]) .mdmark {
+    .mdmark-tree-hash {
+      display: none;
+    }
+
+    /* 名前の後ろの空いた幅に点線を引く */
+    .mdmark-tree-row:has(.mdmark-tree-note) > .mdmark-tree-head::after {
+      flex: 1;
+      min-width: 1em;
+      margin-inline: 0.4em 0.6em;
+      border-block-end: 1px dotted var(--mdmark-color-muted);
+      content: "";
+      opacity: 0.6;
+    }
+
+    .mdmark-tree-note {
+      color: var(--mdmark-color-muted);
+    }
+  }
+
+  /* 注釈の見た目の案 B: # を残し、注釈を緑の文字で出す（AI Monitor の今のツリーと同じ見え方） */
+  :root[data-mock-note="b"] .mdmark .mdmark-tree-note {
+    color: var(--mdmark-color-syntax-string);
+  }
+}

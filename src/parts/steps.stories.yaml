@@ -18,3 +18,18 @@ stories:
         id: steps
     args:
       items: '["とても長い手順の説明で、画面の幅を超えて何行かに折り返すときに、番号と線の位置がずれないことを確かめる","短い手順"]'
+  - name: Closed
+    parameters:
+      server:
+        id: steps
+    args:
+      items: '["配布物を読み込む","描く先の要素を用意する","mount を呼ぶ"]'
+      collapse: closed
+  - name: OpenTitle
+    parameters:
+      server:
+        id: steps
+    args:
+      items: '["配布物を読み込む","描く先の要素を用意する","mount を呼ぶ"]'
+      collapse: open
+      title: 準備

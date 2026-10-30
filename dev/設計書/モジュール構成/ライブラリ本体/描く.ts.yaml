@@ -466,7 +466,7 @@ functions:
     container: src/print.ts
     kind: 関数
     scope: internal
-    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細を開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
+    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細・ファイルツリーの閉じたフォルダを開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
     side_effects: '`window` に受け取りを付ける。`details` の `open` を書き換える'
     args:
       - name: options
@@ -479,9 +479,9 @@ functions:
     process: |-
       1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、次を行い、変えたものを控える
          - `open` を持たない `details` を開く
-         - `hidden` を持つ `mdmark-section-body`・`mdmark-row-detail` の `hidden` を外す
+         - `hidden` を持つ `mdmark-section-body`・`mdmark-row-detail`・`div.mdmark-tree` の入れ子の `ul` の `hidden` を外す（ツリーの `ul` は、そのフォルダの `mdmark-tree-toggle` を `aria-expanded="true"` にする）
          - `role="tabpanel"` の `hidden` を外し、`mdmark-tabs` に `data-printing` を付ける（印刷の CSS がタブの並びを隠し、タブ名の題を出す）
-      2. `afterprint` を受けたとき、控えたものを元に戻し（節は `hidden="until-found"`、行の詳細とタブの中身は `hidden`、`data-printing` を外す）、控えを空にする
+      2. `afterprint` を受けたとき、控えたものを元に戻し（節とツリーの入れ子の `ul` は `hidden="until-found"`、ツリーの開閉のボタンは `aria-expanded="false"`、行の詳細とタブの中身は `hidden`、`data-printing` を外す）、控えを空にする
       3. 外す関数は、2 つの受け取りを `window` から外す
     unit_tests:
       - name: test_attach_print
@@ -508,6 +508,14 @@ functions:
         condition: 操作を付けた、閉じた節・閉じた行の詳細・2 つ目を選んだタブ
         mock: なし
         expected: '`beforeprint` の後にどれも `hidden` を持たず、`afterprint` の後に節が `hidden="until-found"`、行の詳細が `hidden`、1 つ目のタブの中身が `hidden`'
+      - name: test_attach_print_when_tree
+        case: 正常
+        summary: 印刷の前にファイルツリーの閉じたフォルダを開き、後に閉じ直す
+        condition: 操作を付けた、`src/` が閉じたファイルツリー。`isEnabled` は `true`
+        mock: なし
+        expected: '`beforeprint` の後に `src/` の入れ子の `ul` が `hidden` を持たず `src/` のボタンが `aria-expanded="true"`、`afterprint` の後に `ul` が `hidden="until-found"` を持ちボタンが `aria-expanded="false"`'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[setFolderOpen]
   - name: highlightCodeBlocks
     title: 色分けの対象を色分けする
     container: src/highlight.ts

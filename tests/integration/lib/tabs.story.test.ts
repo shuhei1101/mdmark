@@ -117,3 +117,39 @@ test("test_unmounted", async () => {
   expect(boxes[1]?.top).toBeGreaterThanOrEqual(boxes[0]?.bottom ?? Infinity);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 閉じたタブは、見出し「タブ（uv・pip）」だけが見え、タブの並びと中身が見えない（Closed）
+test("test_closed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-tabs--closed");
+  // 検証
+  const details = page.locator("details.mdmark-collapsible");
+  await expect(
+    details.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(false);
+  await expect(details.locator("summary").innerText()).resolves.toBe(
+    "タブ（uv・pip）",
+  );
+  await expect(page.locator("[role=tablist]").isVisible()).resolves.toBe(false);
+  await expect(
+    page.locator("[role=tabpanel]").first().isVisible(),
+  ).resolves.toBe(false);
+});
+
+// 開いたタブに title= を付けると、見出しの下にタブの並びと 1 つ目の中身が見える（OpenTitle）
+test("test_open_title", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-tabs--open-title");
+  // 検証
+  const details = page.locator("details.mdmark-collapsible");
+  await expect(
+    details.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(true);
+  await expect(details.locator("summary").innerText()).resolves.toBe("入れ方");
+  await expect(page.locator("[role=tablist]").isVisible()).resolves.toBe(true);
+  await expect(panelHidden(page)).resolves.toEqual([false, true]);
+  await expect(tabStates(page)).resolves.toEqual([
+    ["true", "0"],
+    ["false", "-1"],
+  ]);
+});

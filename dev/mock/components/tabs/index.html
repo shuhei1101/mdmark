@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 移る先のリンクの並べ方（#57 で共有するカタログの追加分） -->
   <link rel="stylesheet" href="../../refs/57/assets/catalog.css">
+  <!-- 折りたたみの規則（#225 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/225/assets/collapse.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
@@ -182,6 +184,82 @@
     <p>Apple シリコンの端末では、Homebrew の入る場所が /opt/homebrew になります。</p>
   </div>
 </div>
+        </article>
+      </section>
+
+      <!-- closed: 見出しを「タブ（{タブ名を・でつないだ文字}）」にした閉じた折りたたみ -->
+      <section aria-labelledby="state-closed">
+        <h2 class="catalog-label" id="state-closed">closed（閉じたタブ）</h2>
+        <article class="mdmark">
+<details class="mdmark-collapsible">
+<summary>タブ（uv・pip）</summary>
+<div class="mdmark-tabs" data-group="catalog-installer">
+  <div class="mdmark-tablist" role="tablist" aria-label="タブ（uv・pip）">
+    <button class="mdmark-tab" type="button" role="tab" id="catalog-installer-tab-0" aria-selected="true" aria-controls="catalog-installer-panel-0" tabindex="0">uv</button>
+    <button class="mdmark-tab" type="button" role="tab" id="catalog-installer-tab-1" aria-selected="false" aria-controls="catalog-installer-panel-1" tabindex="-1">pip</button>
+  </div>
+  <div role="tabpanel" id="catalog-installer-panel-0" aria-labelledby="catalog-installer-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">uv</p>
+    <p><code>uv add mdmark</code> で入れます。</p>
+  </div>
+  <div role="tabpanel" id="catalog-installer-panel-1" aria-labelledby="catalog-installer-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">pip</p>
+    <p><code>pip install mdmark</code> で入れます。</p>
+  </div>
+</div>
+</details>
+        </article>
+      </section>
+
+      <!-- open title=入れ方: 見出しを title= の値にした開いた折りたたみ -->
+      <section aria-labelledby="state-open-title">
+        <h2 class="catalog-label" id="state-open-title">open と title=（開いたタブ）</h2>
+        <article class="mdmark">
+<details class="mdmark-collapsible" open>
+<summary>入れ方</summary>
+<div class="mdmark-tabs" data-group="catalog-install-os">
+  <div class="mdmark-tablist" role="tablist" aria-label="入れ方">
+    <button class="mdmark-tab" type="button" role="tab" id="catalog-install-os-tab-0" aria-selected="true" aria-controls="catalog-install-os-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="catalog-install-os-tab-1" aria-selected="false" aria-controls="catalog-install-os-panel-1" tabindex="-1">Windows</button>
+  </div>
+  <div role="tabpanel" id="catalog-install-os-panel-0" aria-labelledby="catalog-install-os-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="catalog-install-os-panel-1" aria-labelledby="catalog-install-os-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+  </div>
+</div>
+</details>
+        </article>
+      </section>
+
+      <!-- closed open: 書き方の警告を出し、closed として描く -->
+      <section aria-labelledby="state-closed-open">
+        <h2 class="catalog-label" id="state-closed-open">closed と open を両方書いた（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- tabs: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。<code>closed</code> として描いています。</p>
+</div>
+<details class="mdmark-collapsible">
+<summary>タブ（macOS・Windows）</summary>
+<div class="mdmark-tabs" data-group="catalog-warning-os">
+  <div class="mdmark-tablist" role="tablist" aria-label="タブ（macOS・Windows）">
+    <button class="mdmark-tab" type="button" role="tab" id="catalog-warning-os-tab-0" aria-selected="true" aria-controls="catalog-warning-os-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="catalog-warning-os-tab-1" aria-selected="false" aria-controls="catalog-warning-os-panel-1" tabindex="-1">Windows</button>
+  </div>
+  <div role="tabpanel" id="catalog-warning-os-panel-0" aria-labelledby="catalog-warning-os-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="catalog-warning-os-panel-1" aria-labelledby="catalog-warning-os-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+  </div>
+</div>
+</details>
         </article>
       </section>
     </div>

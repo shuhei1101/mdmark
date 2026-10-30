@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / fold-search-tree（表・タブ・ステップ・ファイルツリーの指定） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・留めたトップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法・表の道具・コードブロックの飾りの規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../../../refs/57/assets/table-tools.css">
+  <link rel="stylesheet" href="../../../../refs/65/assets/code-block.css">
+  <link rel="stylesheet" href="../../../../refs/151/assets/table.css">
+  <link rel="stylesheet" href="../../../../refs/151/assets/code-block.css">
+  <!-- この PR で追加する規則: 閉じた表・タブとステップの折りたたみ・ファイルツリー（#225 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/225/assets/collapse.css">
+  <link rel="stylesheet" href="../../../../refs/225/assets/tree.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/65/assets/code-block-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/151/assets/table-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/151/assets/code-block-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/225/assets/collapse-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/225/assets/tree-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 案の切り替え（モックだけの仕組み。表を組み立てる前に html の data-* を当てる） -->
+  <script src="../../../../refs/225/assets/scene.js" defer></script>
+  <!-- 表の見本の定義と組み立て・表の折りたたみ（モックだけの仕組み） -->
+  <script src="../../../../refs/151/assets/samples.js" defer></script>
+  <script src="../../../../refs/225/assets/samples.js" defer></script>
+  <script src="../../../../refs/151/assets/table-build.js" defer></script>
+  <script src="../../../../refs/225/assets/table-collapse.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・絞り込み・タブ・開閉・印刷の前後の展開） -->
+  <script src="../../../../refs/19/assets/syntax.js" defer></script>
+  <!-- ファイルツリー（code-block.js がコードブロックに帯を付ける前に、罫線の pre をツリーに置き換える） -->
+  <script src="../../../../refs/225/assets/tree.js" defer></script>
+  <!-- 表の道具・コードブロックの帯・タブ -->
+  <script src="../../../../refs/151/assets/table.js" defer></script>
+  <script src="../../../../refs/151/assets/code-block.js" defer></script>
+  <script src="../../../../refs/151/assets/tabs.js" defer></script>
+  <!-- 印刷の見え方（モックだけの仕組み） -->
+  <script src="../../../../refs/151/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色・印刷の見え方と、未確定の案の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色と印刷">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+      <!-- [data-preview-toggle]: preview.js が印刷の規則を画面にも当てる -->
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+    <!-- [data-scene-axis] [data-scene-value]: app.js が行き先の URL（?{軸}=）と今の案の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="注釈の列の見た目">
+      <a class="mock-bar-item" data-scene-axis="note" data-scene-value="a">注釈 A: 点線でつなぐ</a>
+      <a class="mock-bar-item" data-scene-axis="note" data-scene-value="b">注釈 B: # を残して色を付ける</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="フォルダの開閉の示し方">
+      <a class="mock-bar-item" data-scene-axis="toggle" data-scene-value="a">開閉 A: フォルダのアイコンだけ</a>
+      <a class="mock-bar-item" data-scene-axis="toggle" data-scene-value="b">開閉 B: 矢印とアイコン</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="クリップボード">
+      <a class="mock-bar-item" data-scene-axis="clipboard" data-scene-value="ok">コピーできる</a>
+      <a class="mock-bar-item" data-scene-axis="clipboard" data-scene-value="fail">コピーできない</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外）: 画面の上端に留める -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">225</a> / fold-search-tree
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書 -->
+    <article class="mdmark">
+<h1 id="開発の進め方">開発の進め方</h1>
+<p>リリース・導入の手順・ファイルの置き場所をまとめた文書です。</p>
+
+<h2 id="リリース">リリース</h2>
+<p>表の指定に <code>closed</code> を書いた表と、<code>open</code> と <code>title=リリースの一覧</code> を書いた表です。</p>
+<!-- [data-mock-table]: table-build.js が samples.js の定義から表を組み立てる。[data-mock-collapse]: table-collapse.js が道具の帯と表を details に入れる。[data-mock-title]: title= の値 -->
+<div data-mock-table="releases-closed" data-mock-collapse="closed"></div>
+<div data-mock-table="releases-open" data-mock-collapse="open" data-mock-title="リリースの一覧"></div>
+
+<h2 id="導入">導入</h2>
+<p>タブの指定に <code>closed</code> を書いたタブと、<code>open</code> と <code>title=入れ方</code> を書いたタブです。</p>
+<details class="mdmark-collapsible">
+<summary>タブ（uv・pip）</summary>
+<div class="mdmark-tabs" data-group="installer">
+  <div class="mdmark-tablist" role="tablist" aria-label="タブ（uv・pip）">
+    <button class="mdmark-tab" type="button" role="tab" id="installer-tab-0" aria-selected="true" aria-controls="installer-panel-0" tabindex="0">uv</button>
+    <button class="mdmark-tab" type="button" role="tab" id="installer-tab-1" aria-selected="false" aria-controls="installer-panel-1" tabindex="-1">pip</button>
+  </div>
+  <div role="tabpanel" id="installer-panel-0" aria-labelledby="installer-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">uv</p>
+    <p><code>uv add mdmark</code> で入れます。</p>
+  </div>
+  <div role="tabpanel" id="installer-panel-1" aria-labelledby="installer-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">pip</p>
+    <p><code>pip install mdmark</code> で入れます。</p>
+  </div>
+</div>
+</details>
+<details class="mdmark-collapsible" open>
+<summary>入れ方</summary>
+<div class="mdmark-tabs" data-group="os">
+  <div class="mdmark-tablist" role="tablist" aria-label="入れ方">
+    <button class="mdmark-tab" type="button" role="tab" id="os-tab-0" aria-selected="true" aria-controls="os-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="os-tab-1" aria-selected="false" aria-controls="os-panel-1" tabindex="-1">Windows</button>
+  </div>
+  <div role="tabpanel" id="os-panel-0" aria-labelledby="os-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="os-panel-1" aria-labelledby="os-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+  </div>
+</div>
+</details>
+<p>ステップの指定に <code>closed</code> を書いたステップと、<code>open</code> と <code>title=準備</code> を書いたステップです。</p>
+<details class="mdmark-collapsible">
+<summary>手順（2 ステップ）</summary>
+<ol class="mdmark-steps">
+  <li>依存を入れる</li>
+  <li>ビルドする</li>
+</ol>
+</details>
+<details class="mdmark-collapsible" open>
+<summary>準備</summary>
+<ol class="mdmark-steps">
+  <li>リポジトリをクローンする</li>
+  <li>依存を入れる</li>
+  <li>テストを流す</li>
+</ol>
+</details>
+
+<h2 id="ファイルの置き場所">ファイルの置き場所</h2>
+<p>注釈を書き、ツリーの指定に <code>open=all</code> を書いたツリーです。<code>C#/</code> と <code>#notes.md</code> は前に空白が無いため、名前のまま残します。</p>
+<!-- [data-mock-tree]: tree.js が罫線の文字からツリーを組み立てる。[data-open]: open= の値（無ければルートだけを開く） -->
+<pre data-mock-tree data-open="all">mdmark/
+├── src/ # ソース
+│   ├── index.ts # 入口の `mount`
+│   └── tree.css
+├── README.md # **必読** `badge:新規`
+├── C#/
+│   └── Program.cs
+├── #notes.md
+├── package.json
+└── ...</pre>
+<p>指定の無いツリーです。ルートだけを開きます。</p>
+<pre data-mock-tree>app/
+├── src/
+│   └── parts/
+│       └── tree.ts
+├── docs/
+│   └── logo.svg
+├── data.csv
+└── LICENSE</pre>
+<p>ツリーの指定に <code>open=2</code> を書いたツリーです。2 階層目までを開きます。</p>
+<pre data-mock-tree data-open="2">app/
+├── src/
+│   └── parts/
+│       └── tree.ts
+└── build.sh</pre>
+<p>ASCII の罫線で書いたツリーです。</p>
+<pre data-mock-tree data-open="all">site/
+|-- index.html
+|-- assets/
+|   `-- app.js
+`-- dist.zip</pre>
+
+<h2 id="読めない指定">読めない指定</h2>
+<p>タブの指定に <code>closed</code> と <code>open</code> を両方書いたタブです。<code>closed</code> として描きます。</p>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- tabs: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。<code>closed</code> として描いています。</p>
+</div>
+<details class="mdmark-collapsible">
+<summary>タブ（macOS・Windows）</summary>
+<div class="mdmark-tabs" data-group="os-warning">
+  <div class="mdmark-tablist" role="tablist" aria-label="タブ（macOS・Windows）">
+    <button class="mdmark-tab" type="button" role="tab" id="os-warning-tab-0" aria-selected="true" aria-controls="os-warning-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="os-warning-tab-1" aria-selected="false" aria-controls="os-warning-panel-1" tabindex="-1">Windows</button>
+  </div>
+  <div role="tabpanel" id="os-warning-panel-0" aria-labelledby="os-warning-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="os-warning-panel-1" aria-labelledby="os-warning-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れます。</p>
+  </div>
+</div>
+</details>
+<p>ステップの指定に、ステップで使えない <code>fold</code> を書いたステップです。<code>fold</code> を当てずに描きます。</p>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- steps: fold --&gt;</code> の <code>fold</code> はステップでは使えません。使える指定は <code>closed</code>・<code>open</code>・<code>title=</code> です。</p>
+</div>
+<ol class="mdmark-steps">
+  <li>依存を入れる</li>
+  <li>ビルドする</li>
+</ol>
+<p>ステップの指定に <code>title=</code> だけを書いたステップです。開閉しないステップとして描きます。</p>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- steps: title=準備 --&gt;</code> の <code>title=</code> は <code>closed</code> か <code>open</code> と一緒に書きます。タイトルを付けずに描いています。</p>
+</div>
+<ol class="mdmark-steps">
+  <li>リポジトリをクローンする</li>
+  <li>依存を入れる</li>
+</ol>
+<p>ツリーの指定に読めない <code>open=deep</code> を書いたツリーです。ルートだけを開きます。</p>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- tree: open=deep --&gt;</code> の <code>open=</code> には <code>all</code> か階層の数を書きます。ルートだけを開いて描いています。</p>
+</div>
+<pre data-mock-tree>docs/
+└── guide/
+    └── start.md</pre>
+    </article>
+  </main>
+</body>
+</html>

@@ -18,6 +18,22 @@ states:
     args:
       - name: items
         value: '["とても長い手順の説明で、画面の幅を超えて何行かに折り返すときに、番号と線の位置がずれないことを確かめる","短い手順"]'
+  - name: Closed
+    description: 閉じたステップ（`closed`）。見出し `手順（3 ステップ）` だけが見える
+    args:
+      - name: items
+        value: '["配布物を読み込む","描く先の要素を用意する","mount を呼ぶ"]'
+      - name: collapse
+        value: closed
+  - name: OpenTitle
+    description: 開いたステップと `title=`。見出し `準備` の下に番号と項目が見える
+    args:
+      - name: items
+        value: '["配布物を読み込む","描く先の要素を用意する","mount を呼ぶ"]'
+      - name: collapse
+        value: open
+      - name: title
+        value: 準備
 lead: '`<!-- steps -->` の範囲の番号付きリストを、番号と項目をつなぐ線を持つ手順にする。'
 args:
   - name: items
@@ -29,6 +45,20 @@ args:
     required: false
     default: '1'
     description: 最初の番号（Markdown の番号付きリストの始まりの番号）。`ol` の `start` に入れる
+  - name: collapse
+    type: 列挙
+    required: false
+    default: none
+    choices: '`none`・`closed`・`open`'
+    description: 手順を折り畳みに入れるかと、既定の開閉
+    status: planned
+  - name: title
+    type: 文字列
+    required: false
+    default: なし（`手順（{手順の数} ステップ）`）
+    enabled_when: '`collapse` が `closed`・`open` のとき'
+    description: 折り畳みの見出し（`title=` の値）。`summary` の文字にする
+    status: planned
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
@@ -41,4 +71,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
 status: planned
 notes:
-  HTML: '`<ol class="mdmark-steps" start="{start}"><li>{項目}</li></ol>`（`start` が 1 のときは属性を省く）。モックは `dev/mock/components/steps/`'
+  HTML: '`<ol class="mdmark-steps" start="{start}"><li>{項目}</li></ol>`（`start` が 1 のときは属性を省く）。`collapse` が `closed`・`open` のときは `ol` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの見た目は表の `mdmark-table-details` と同じ。モックは `dev/mock/components/steps/`'

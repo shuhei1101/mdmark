@@ -139,7 +139,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 閉じた表を持つ Markdown
-        description: '`<!-- table: data closed -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+        description: '`<!-- table: data closed -->` 〜 `<!-- /table -->` で 3 行の表を囲み、続けて `<!-- table: data open title=リリースの一覧 -->` 〜 `<!-- /table -->` で 2 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -148,12 +148,14 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 表を閉じた折り畳みに入れて描く
-        U->>P: 折り畳みの見出しを押す
+        M-->>P: 1 つ目の表を閉じた折りたたみ、2 つ目の表を開いた折りたたみに入れて描く
+        U->>P: 1 つ目の折りたたみの見出しを押す
         P-->>U: 開いた表
     expected:
-      - 描いた直後、表が閉じた折り畳みの中にあり、表の行が表示されていない
-      - 見出しを押した後、表の 3 行が表示されている
+      - 描いた直後、1 つ目の表が閉じた折りたたみの中にあり、表の行が表示されていない
+      - 1 つ目の折りたたみの見出しが「表（3 行）」で、2 つ目の折りたたみの見出しが `title=` の「リリースの一覧」
+      - 2 つ目の表は描いた直後から 2 行が表示されている
+      - 1 つ目の見出しを押した後、表の 3 行が表示されている
     test: test_normal_when_closed
   - name: 正常シナリオ（機能を外す）
     setup:

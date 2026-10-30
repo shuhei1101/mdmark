@@ -61,3 +61,36 @@ test("test_render_tabs_when_group", async () => {
     html.startsWith('<div class="mdmark-tabs" data-group="os&quot;&amp;">'),
   ).toBe(true);
 });
+
+// 折り畳みの見出しをタブ名か title にする（正常系）
+test("test_render_tabs_when_collapsed", async () => {
+  // 準備
+  const { renderTabs } = await loadTabs();
+  // 実行
+  const closed = renderTabs({
+    id: "t",
+    titles: ["uv", "pip"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    selected: 0,
+    collapse: "closed",
+  });
+  const opened = renderTabs({
+    id: "t",
+    titles: ["macOS", "Windows"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    selected: 0,
+    collapse: "open",
+    title: "入れ方",
+  });
+  // 検証
+  expect(
+    closed.startsWith(
+      '<details class="mdmark-collapsible"><summary>タブ（uv・pip）</summary><div class="mdmark-tabs"',
+    ),
+  ).toBe(true);
+  expect(
+    opened.startsWith(
+      '<details class="mdmark-collapsible" open><summary>入れ方</summary>',
+    ),
+  ).toBe(true);
+});

@@ -1,0 +1,26 @@
+/* 閉じた表と、タブ・ステップの折りたたみの規則（#225 で共有するアセット）。
+   実装では src/index.css の mdmark の層に足す。refs/57/assets/table-tools.css・refs/151/assets/table.css の後に読む */
+
+/* mdmark の層: 折りたたみ */
+@layer mdmark {
+  .mdmark {
+    /* 閉じた表の中の帯: 表との間を本文と同じに空ける */
+    .mdmark-table-details > .mdmark-table-bar {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+
+    /* ---------- タブ・ステップの折りたたみ ---------- */
+
+    /* 折りたたみ: 閉じた表と同じく、中身の最小の幅で広がらず描く先の幅に収める */
+    .mdmark-collapsible {
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    /* 開いた折りたたみの見出し: 中身との間を空ける */
+    .mdmark-collapsible[open] > summary {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+  }
+}

@@ -638,8 +638,12 @@ test("test_normal_when_code_copied", async ({ page }) => {
     config: { features: { syntax: false } },
   });
   const buttons = page.locator("#doc button.mdmark-code-copy");
-  // 検証: ファイルツリーのコードブロックにはコピーボタンが無い
+  // 検証: ファイルツリーのコードブロックにはコードブロックの帯とコピーボタンが無く、ツリーの帯のコピーボタンだけがある
   await expect(buttons).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-tree .mdmark-code")).toHaveCount(0);
+  await expect(
+    page.locator("#doc .mdmark-tree button.mdmark-tree-copy"),
+  ).toHaveCount(1);
   // 実行: キーボードでコピーボタンにフォーカスして押す
   await page.keyboard.press("Tab");
   await expect(buttons).toBeFocused();

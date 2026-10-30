@@ -1,0 +1,12 @@
+/* タブ・ステップの折りたたみの印刷の規則（#225 で共有するアセット）。実装では @media print で当てる。
+   折りたたみを開くのは印刷の前のスクリプト（refs/19/assets/syntax.js）が受け持つ */
+
+/* mdmark の層: 印刷のときの折りたたみ */
+@layer mdmark {
+  .mdmark {
+    /* タブ・ステップの折りたたみの見出し: 開閉のマーカーを外す */
+    .mdmark-collapsible > summary {
+      list-style: none;
+    }
+  }
+}
