@@ -88,9 +88,9 @@ if (input instanceof vscode.TabInputTextDiff) {
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `vscode/tests/integration/preview-diff.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass（VS Code 1.141.0・stable 1.144.0）<br>`テスト結果/20261030162708_6696901_結合テスト_VSCode.log` |
-| `vscode/tests/integration/` のそのほか | 全実行 | 実行のみ | ✅ | 回帰確認。各バージョンで全体 62 テスト pass<br>`テスト結果/20261030162708_6696901_結合テスト_VSCode.log` |
+| `vscode/tests/integration/preview-diff.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass（VS Code 1.141.0・stable 1.144.0）<br>`テスト結果/20261030171134_73a802a_結合テスト_VSCode.log` |
+| `vscode/tests/integration/` のそのほか | 全実行 | 実行のみ | ✅ | 回帰確認。各バージョンで全体 62 テスト pass<br>`テスト結果/20261030171134_73a802a_結合テスト_VSCode.log` |
 | [tests/integration/vscode/preview-status.story.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/vscode/preview-status.story.test.ts) | `test_diff_unsupported` | 変更 | ✅ | 1 テスト追加。ライブラリ側の結合テストの実行で pass（ログはライブラリ本体の計画書を参照） |
 
 lint と型検査（`npm run lint`・`npm run typecheck`・`npm --prefix vscode run typecheck`）は違反なし。
-`テスト結果/20261030162708_6696901_lint.log`
+`テスト結果/20261030171134_73a802a_lint.log`
