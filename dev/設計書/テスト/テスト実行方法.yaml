@@ -79,10 +79,11 @@ layers:
   - name: 外部疎通テスト
     run_all: 未確定
   - name: lint
-    description: Biome の check（lint と整形）と、tsc の型検査
+    description: Biome の check（lint と整形）と、ルートと VS Code 拡張機能（`vscode/`）の tsc の型検査。どれかが失敗しても全てを最後まで回し、1 つでも失敗したら失敗で終える。
     prerequisites:
       - '`npm ci` で依存を入れてある'
+      - '`vscode/` の依存を入れてある（`npm --prefix vscode ci`）'
     run_all: |-
       ```bash
-      npm run lint && npm run typecheck
+      (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
       ```
