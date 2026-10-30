@@ -9,8 +9,9 @@ directory: |-
       ├── placement.ts   # ツールチップを持ち主の上と下のどちらに置くかを決める
       ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む
       ├── sticky.ts      # 表の見出し行と集計の行を画面の端に留める
-      ├── clipboard.ts   # クリップボードへ書く（表・行の URL・コードブロックが使う）
+      ├── clipboard.ts   # クリップボードへ書く（表・行の URL・コードブロック・ファイルツリーが使う）
       ├── code-blocks.ts # コードブロックのコピー
+      ├── trees.ts       # ファイルツリーのフォルダの開閉とコピー
       ├── tabs.ts        # タブの切り替えと、URL の #ID の指すタブを選ぶ処理
       ├── sections.ts    # 節と行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く
       └── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
@@ -56,7 +57,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` を、`tree` がオンなら `attachFileTrees` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement }'
@@ -72,6 +73,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[attachTermTips]
       - '#functions[attachStickyRows]'
       - '#functions[attachCodeCopy]'
+      - '#functions[attachFileTrees]'
     unit_tests:
       - name: test_attach_interactions
         case: 正常
@@ -97,6 +99,12 @@ functions:
         condition: 帯を持つコードブロックと表を描いた要素、`features` の `code` と `table` が `false`
         mock: なし
         expected: '`mdmark-code-copy` が無く、`table` が `data-mdmark-sticky` を持たない'
+      - name: test_attach_interactions_when_tree_off
+        case: 正常
+        summary: tree がオフならファイルツリーに開閉とコピーを付けない
+        condition: ファイルツリーを描いた要素と、`features` の `tree` が `false`
+        mock: なし
+        expected: '`mdmark-tree-bar` と `mdmark-tree-toggle` が無い'
   - name: compareCells
     title: セルを比べる
     container: src/table-logic.ts
@@ -1213,6 +1221,72 @@ functions:
     status: planned
     introduced:
       pr: 166
+  - name: attachFileTrees
+    title: ファイルツリーに開閉とコピーを付ける
+    container: src/interact/trees.ts
+    summary: '各 `div.mdmark-tree` の `ul` の前に `renderTreeBar` の帯を置き、子を持つフォルダの名前を `aria-expanded`・`aria-controls` を持つ `mdmark-tree-toggle` のボタンで包む。`data-open` とルートを 0 とした深さを `folderOpenByDefault` に渡し、開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする。注釈を持つツリーは、最も右で終わる名前の端を測って `--mdmark-tree-note-start` に入れる。ボタンを押すとそのフォルダを開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じた `ul` を開いたとき（`beforematch`）はそのフォルダを開いた状態にする。コピーボタンは `copyText` で `data-source` を書き、書けたら `data-state="copied"` と `role="status"` の知らせにして 2 秒で `idle` に戻し、書けなければツリーの下に `renderCopyPanel`（`format: tree`）のパネルを置いて文字を選んだ状態にする（閉じるボタンでパネルを取り除き、コピーボタンへフォーカスを戻す）'
+    kind: 関数
+    scope: internal
+    side_effects: ツリーに帯・ボタン・パネルを置き、クリップボードへ書く
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 帯・ボタン・パネル・タイマーを取り除き、入れ子の `ul` の `hidden` を外して `render` の出した状態に戻す関数
+    unit_tests:
+      - name: test_attach_file_trees
+        case: 正常
+        summary: 帯と開閉のボタンを置き、指定が無ければルートだけを開く
+        condition: '`mdmark/` の下に `src/`（子 `index.ts`、注釈 `ソース`）と `package.json` を描いた `data-open` の無いツリーに付ける'
+        mock: なし
+        expected: '`mdmark-tree-bar` があり、`mdmark/` の `mdmark-tree-toggle` が `aria-expanded="true"`、`src/` が `aria-expanded="false"` で入れ子の `ul` が `hidden="until-found"`。`package.json` はボタンを持たない。`div.mdmark-tree` が `--mdmark-tree-note-start` を持つ'
+      - name: test_attach_file_trees_when_open
+        case: 正常
+        summary: data-open の階層まで開く
+        condition: '`app/`・`src/`・`parts/`・`tree.ts` の入れ子を描いた `data-open="2"` と `data-open="all"` のツリーに付ける'
+        mock: なし
+        expected: 1 つ目は `app/`・`src/` が `aria-expanded="true"`、`parts/` が `aria-expanded="false"`。2 つ目は全て `aria-expanded="true"` で、`hidden` の `ul` が無い
+      - name: test_attach_file_trees_when_toggled
+        case: 正常
+        summary: 押すとそのフォルダだけを、Shift を押しながらなら入れ子も開閉する
+        condition: '`data-open="all"` の `app/`・`src/`・`parts/` のツリーで、`src/` を押し、次に `app/` を Shift を押しながら 2 回押す'
+        mock: なし
+        expected: 1 回目の後は `src/` だけが `aria-expanded="false"` で `parts/` は `true` のまま。2 回目の後は 3 つとも `false`、3 回目の後は 3 つとも `true` で入れ子の `ul` が `hidden` を持たない
+      - name: test_attach_file_trees_when_found
+        case: 正常
+        summary: ページ内検索で開いたフォルダを開いた状態にする
+        condition: 閉じた `src/` の入れ子の `ul` に `beforematch` を送る
+        mock: なし
+        expected: '`src/` のボタンが `aria-expanded="true"` で、入れ子の `ul` が `hidden` を持たない'
+      - name: test_attach_file_trees_when_copied
+        case: 正常
+        summary: 押すと元の罫線のテキストを写して 2 秒でボタンを戻す
+        condition: '`data-source="src/\n└── index.ts"` のツリーのコピーボタンを押す'
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
+        expected: '`src/\n└── index.ts` で 1 回呼ばれ、ボタンが `data-state="copied"` で `コピーしました` を持ち、`mdmark-tree-status` が `コピーしました`。2 秒進めると `idle`'
+      - name: test_attach_file_trees_when_copy_denied
+        case: 正常
+        summary: 書けなければツリーの下にパネルを出し、閉じると取り除く
+        condition: コピーボタンを押し、次にパネルの閉じるボタンを押す
+        mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒む関数に差し替える'
+        expected: 1 回目の後は `mdmark-tree-list` の後ろに `mdmark-copy-panel` があり、`textarea` の中身が `data-source` で全て選ばれている。閉じた後はパネルが無く、コピーボタンにフォーカスがある。`unhandledrejection` が起きない
+      - name: test_attach_file_trees_when_detached
+        case: 正常
+        summary: 外すと render の出した状態に戻す
+        condition: 閉じたフォルダを持つツリーでコピーボタンを押してすぐ外し、2 秒進める
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
+        expected: '`mdmark-tree-bar`・`mdmark-tree-toggle` が無く、入れ子の `ul` が `hidden` を持たず、例外が出ない'
+    callees:
+      - '#functions[copyText]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[folderOpenByDefault]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTreeBar]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCopyPanel]
+    status: planned
+    introduced:
+      pr: 225
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
