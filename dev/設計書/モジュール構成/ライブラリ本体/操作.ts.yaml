@@ -322,7 +322,7 @@ functions:
       - name: test_attach_tables_when_nested_table
         case: 正常
         summary: 行の詳細の中の表の要素を、親の表の操作が拾わない
-        condition: 幅 320px の要素に、`data-features="sort pin filter"`・`data-filter="0:select"` の 10 列の親の表を付ける。1 行目の行の詳細の中に `data-features="pin filter"`・`data-filter="0:select"` の 2 列の表の囲みを置き、`attachSections` の後に付ける。行の詳細は閉じたまま、付けた後に描く先の要素の幅を 300px に変えて `ResizeObserver` の呼び出しを待ち、続けて親の表の 1 列目の絞り込みのボタンを押す
+        condition: 幅 320px の要素に、`data-features="sort pin filter"`・`data-filter="0:select"` の 10 列の親の表を付ける。1 行目の行の詳細の中に `data-features="pin filter"`・`data-filter="0:select"` の 2 列の表の囲みを置き、`attachSections` の後に付ける。行の詳細は閉じたまま、付けた後に描く先の要素の幅を 300px に変えて `ResizeObserver` の呼び出しを待ち、さらに親の表の囲みの幅だけを 250px に変えて待ち、続けて親の表の 1 列目の絞り込みのボタンを押す
         mock: なし
         expected: 親の表のピン止めのボタンが `hidden` を持たず、中の表のピン止めのボタンが `hidden` を持つ。押した後に開くのは親の表の囲みの 1 列目のドロワーだけで、中の表のドロワーは `hidden` のまま。値の候補に中の表のセルの文字が無い。中の表の囲みに親の表のドロワーが置かれない
     refs:
