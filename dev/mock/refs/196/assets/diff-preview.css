@@ -34,6 +34,11 @@
         margin-block: 0;
       }
 
+      /* 注意書き: 自分の色のタイトルを読めるよう、面の色の上に本文の背景を敷く */
+      > .markdown-alert {
+        background: var(--mdmark-color-bg);
+      }
+
       /* 追加・変更したブロック */
       &[data-kind="add"] {
         background: var(--mdmark-color-diff-add-bg);
@@ -146,12 +151,13 @@
       line-height: 1.5;
       user-select: none;
 
+      /* 文字の色: 面の色の上で 4.5:1 を保つため、記号の色に本文の色を混ぜる */
       [data-kind="add"] > & {
-        color: var(--mdmark-color-diff-add-sign);
+        color: color-mix(in oklab, var(--mdmark-color-diff-add-sign) 70%, var(--mdmark-color-text));
       }
 
       [data-kind="del"] > & {
-        color: var(--mdmark-color-diff-del-sign);
+        color: color-mix(in oklab, var(--mdmark-color-diff-del-sign) 70%, var(--mdmark-color-text));
       }
     }
   }
