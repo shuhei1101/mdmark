@@ -53,7 +53,8 @@ export function prepareDiffRepo(
 }
 
 /** 差分ビューの変更後の側の文字を打つ場所 */
-const MODIFIED_LINES = ".monaco-diff-editor .editor.modified .view-lines";
+const MODIFIED_LINES =
+  ".monaco-diff-editor .editor.modified .view-lines:not(.line-delete) .view-line";
 
 /** 差分ビューが開くのを待つ */
 async function waitForDiffView(session: VscodeSession): Promise<void> {
