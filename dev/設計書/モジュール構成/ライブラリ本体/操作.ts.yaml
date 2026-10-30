@@ -328,9 +328,9 @@ functions:
       - name: test_attach_tables_when_nested_table_sorted
         case: 正常
         summary: 行の詳細の中の表の並べ替えのボタンを押しても、親の表を並べ替えない
-        condition: '`data-features="sort pin"` の 2 列の親の表（1 列目の値が上から `b`・`a`）を付ける。1 行目の行の詳細の中に `data-features="sort pin"` の 2 列の表の囲みを置き、`attachSections` の後に付け、中の表の 1 列目の並べ替えのボタンを押す'
+        condition: '`data-features="sort pin"` の 2 列の親の表（1 列目の値が上から `a`・`b`）を付ける。1 行目の行の詳細の中に `data-features="sort pin"` の 2 列の表の囲みを置き、`attachSections` の後に付け、中の表の 1 列目の並べ替えのボタンを押す'
         mock: なし
-        expected: 親の表の本文の行の並びが `b`・`a` のままで、親の表の見出しのセルが `aria-sort` を持たない。中の表の 1 列目の見出しのセルの `aria-sort` が `ascending`
+        expected: 親の表の本文の行の並びが `a`・`b` のままで、親の表の見出しのセルが `aria-sort` を持たない。中の表の 1 列目の見出しのセルの `aria-sort` が `ascending`
     refs:
       - '#functions[computeTotal]'
       - '#functions[tableToTsv]'
