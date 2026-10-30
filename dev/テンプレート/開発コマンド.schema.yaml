@@ -33,7 +33,7 @@ properties:
   categories:
     type: array
     title: 分類
-    description: 分類ごとの節。初期構築では全ての分類を作り、コマンドは差分が当たった実装・テスト作成の担当が確定させる（確定させるまでは `commands` を `未確定`）。テスト以外の節は `commands` か `refs` のどちらかを持つ。
+    description: 分類ごとの節。初期構築では全ての分類を作り、コマンドは差分が当たった実装・テスト作成の担当が確定させる（確定させるまでは `commands` を `未確定`）。テストと静的検査以外の節は `commands` か `refs` のどちらかを持つ。
     x-shape: sections
     x-key: name
     x-unique-in-kind: true
@@ -69,7 +69,7 @@ properties:
           title: コマンド
           description: |-
             実行の順序どおりに並べたコマンドのコードブロック（`bash`）。複数あるときは番号つきの手順にし、各コマンドの前に何をするかを 1 行で添える。
-            書けるまでは `未確定`。既に他のページが持つコマンドは書き写さず `refs` で指し、このページだけが持つコマンドを `commands` に書く。テストの節はコマンドを持たず、`refs` でテスト実行方法を指す。
+            書けるまでは `未確定`。既に他のページが持つコマンドは書き写さず `refs` で指し、このページだけが持つコマンドを `commands` に書く。テストと静的検査の節はコマンドを持たず、`refs` でテスト実行方法を指す。
         effects:
           type: string
           title: 料金・副作用・所要時間
@@ -112,14 +112,16 @@ properties:
         refs:
           type: array
           title: 参照
-          description: 他のページが持つコマンドの正本。テストの節はテスト実行方法（`dev/設計書/テスト/テスト実行方法#`）を指す。
+          description: 他のページが持つコマンドの正本。テストの節はテスト実行方法（`dev/設計書/テスト/テスト実行方法#`）を、静的検査の節はその `lint` 層（`dev/設計書/テスト/テスト実行方法#layers[lint]`）を指す。
           items:
             $ref: 共通.schema.yaml#/$defs/ref
       allOf:
       - if:
           properties:
             name:
-              const: テスト
+              enum:
+              - テスト
+              - 静的検査
         then:
           required:
           - refs
@@ -159,6 +161,9 @@ examples:
   - name: テスト
     refs:
     - dev/設計書/テスト/テスト実行方法#
+  - name: 静的検査
+    refs:
+    - dev/設計書/テスト/テスト実行方法#layers[lint]
   - name: 管理作業
     commands: |-
       ```bash
