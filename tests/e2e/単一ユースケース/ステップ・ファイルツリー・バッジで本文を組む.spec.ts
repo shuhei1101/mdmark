@@ -300,7 +300,11 @@ test("test_normal_when_tree_annotated", async ({ page }) => {
   // 検証: 名前に # と注釈が入らず、注釈が項目の右に出る
   for (const name of ["src/", "index.ts", "README.md"]) {
     await expect(
-      tree.locator(".mdmark-tree-row", { has: nameOf(tree, name) }).first(),
+      tree
+        .locator(".mdmark-tree-row", {
+          has: page.locator(".mdmark-tree-name", { hasText: name }),
+        })
+        .first(),
     ).not.toContainText("#");
   }
   const notes = tree.locator(".mdmark-tree-note");
@@ -318,10 +322,14 @@ test("test_normal_when_tree_annotated", async ({ page }) => {
   );
   // 検証: C#/ と #notes.md は名前のまま出て、注釈を持たない
   await expect(
-    tree.locator(".mdmark-tree-folder", { has: nameOf(tree, "C#/") }),
+    tree.locator(".mdmark-tree-folder > .mdmark-tree-row", {
+      has: page.locator(".mdmark-tree-name", { hasText: "C#/" }),
+    }),
   ).toHaveCount(1);
   await expect(
-    tree.locator(".mdmark-tree-file", { has: nameOf(tree, "#notes.md") }),
+    tree.locator(".mdmark-tree-file", {
+      has: page.locator(".mdmark-tree-name", { hasText: "#notes.md" }),
+    }),
   ).toHaveCount(1);
   await expect(
     tree
@@ -414,10 +422,9 @@ test("test_normal_when_tree_folders_toggled", async ({ page }) => {
   });
   // 検証: app/ と入れ子を全て閉じる
   for (const name of ["app/", "src/", "parts/"]) {
-    await expect(folderButton(first, name)).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    await expect(
+      first.getByRole("button", { name, exact: true, includeHidden: true }),
+    ).toHaveAttribute("aria-expanded", "false");
   }
   // 実行: もう一度 Shift を押しながら押す
   await folderButton(first, "app/").click({
@@ -499,7 +506,7 @@ test("test_error_when_tree_clipboard_denied", async ({ page }) => {
   // 検証: パネルの中に、元の罫線のテキストが全て選択された状態で出る
   const panel = tree.locator(".mdmark-copy-panel");
   await expect(panel).toBeVisible();
-  await expect(panel).toContainText("手でコピー");
+  await expect(panel).toContainText("クリップボードにコピーできませんでした");
   await expect(tree.locator('[role="status"]')).toContainText("手でコピー");
   const textarea = panel.locator("textarea");
   await expect(textarea).toHaveValue(NOTE_TREE.join("\n"));
