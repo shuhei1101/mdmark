@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-repo-add-mit-license
+
+
+ Test Files  161 passed (161)
+      Tests  1173 passed (1173)
+   Start at  00:32:46
+   Duration  79.83s (worker 67%, tests 20%, import 9%, transform 4%)
+
+exit=0
