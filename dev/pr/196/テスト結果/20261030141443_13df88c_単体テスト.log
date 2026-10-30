@@ -7,7 +7,7 @@
 
 
  Test Files  158 passed (158)
-      Tests  1131 passed (1131)
-   Start at  13:28:29
-   Duration  54.95s (tests 42%, worker 35%, import 20%, transform 3%)
+      Tests  1133 passed (1133)
+   Start at  14:14:52
+   Duration  77.15s (tests 43%, worker 37%, import 17%, transform 3%)
 

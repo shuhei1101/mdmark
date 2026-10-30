@@ -80,9 +80,9 @@ if (input instanceof vscode.TabInputTextDiff) {
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/vscode/src/preview/diff-target.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass<br>`テスト結果/20261030132826_28a1cf2_単体テスト.log` |
-| [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/preview.browser.test.ts) | 全実行 | 変更 | ✅ | 5 テスト追加<br>`テスト結果/20261030132826_28a1cf2_単体テスト.log` |
-| [tests/unit/vscode/src/webview/parts/preview-status.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/parts/preview-status.test.ts) | 全実行 | 変更 | ✅ | 1 テスト追加<br>`テスト結果/20261030132826_28a1cf2_単体テスト.log` |
+| `tests/unit/vscode/src/preview/diff-target.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass<br>`テスト結果/20261030141443_13df88c_単体テスト.log` |
+| [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/preview.browser.test.ts) | 全実行 | 変更 | ✅ | 5 テスト追加<br>`テスト結果/20261030141443_13df88c_単体テスト.log` |
+| [tests/unit/vscode/src/webview/parts/preview-status.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/parts/preview-status.test.ts) | 全実行 | 変更 | ✅ | 1 テスト追加<br>`テスト結果/20261030141443_13df88c_単体テスト.log` |
 
 ### 結合
 
