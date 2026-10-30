@@ -2765,9 +2765,171 @@ flows:
       - '`mount` が例外を投げず、段落とリンクが描かれる'
       - el の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme_unknown
+  - name: 正常系（開いた状態で描く）
+    summary: '`diffMode: "open"` で、押される前から一番新しい 2 つのリビジョンの差分を出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（差分を開く）と同じ
+      - name: 3 つのリビジョンの取り出し元
+        description: 正常系（差分を開く）と同じ
+        notes: '`opts.diffMode` は `open`'
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource, diffMode: "open" })
+        M->>S: revisions(guide)
+        S-->>M: r3・r2・r1
+        M->>S: content を r2 と r3 で
+        S-->>M: 2 つの Markdown
+        M->>P: 本文を隠し、差分を出す
+        P->>M: update(markdown)
+        M->>S: revisions(guide)・content を r2 と r3 で
+        M->>P: 開いたまま差分を出し直す
+    expected:
+      - '読む人が押さないうちに、`revisions` が `guide` で 1 回、`content` が `{ docId: "guide", revisionId: "r2" }` と `{ docId: "guide", revisionId: "r3" }` で 1 回ずつ呼ばれる'
+      - 「変更を見る」が `aria-expanded="true"` で、`h1` の節の中身と右側の目次が隠れ、差分の行が出ている
+      - '`update` の後も「変更を見る」が `aria-expanded="true"` のままで、`revisions` がもう 1 回呼ばれる'
+      - 「変更を見る」を押すと、差分の場所が隠れ、本文と右側の目次が戻る
+    test: test_normal_when_diff_opened_on_mount
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す#scenarios[正常シナリオ（開いた状態で描く）]
+  - name: 正常系（描いた文書のブロックを色分けする）
+    summary: '`diffMode: "blocks"` で、後のリビジョンを描いた文書のブロックを追加と削除の色で塗り分ける'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（差分を開く）と同じ
+        notes: '`opts.diffMode` は `blocks`。`opts.markdown` は `r2` の本文'
+      - name: 2 つのリビジョンの取り出し元
+        description: '`r2`・`r1` を新しい順に返す `DiffSource`。`r1` から `r2` で、段落 A の語を 1 つ書き換え、表の後に段落 B を足し、段落 C を消し、段落 D を共通する語の無い段落 E に入れ替える。`h1`・`h2`・表は変えない'
+        notes: '`opts.docId` は `guide`'
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource, diffMode: "blocks" })
+        M->>P: 色を当てない本文を描く
+        M->>S: revisions(guide)
+        S-->>M: r2・r1
+        M->>S: content を r1 と r2 で
+        S-->>M: 2 つの Markdown
+        M->>M: 2 つを描いてブロックごとに比べる
+        M->>P: ブロックを色分けした本文を描き直す
+    expected:
+      - 「変更を見る」と差分の場所とミニマップの帯が無い
+      - 段落 A・段落 B・段落 E が `div.mdmark-diff-block[data-kind="add"]` に包まれ、先頭に読み上げの `追加:` と `aria-hidden` の `+` を持つ
+      - 段落 C と段落 D が `r1` での位置に `div.mdmark-diff-block[data-kind="del"]` で差し込まれ、先頭に `削除:` と `−` を持つ。段落 D の削除は段落 E の追加の直前にある
+      - 段落 A の削除のブロックは無い（書き換えとして追加だけを出す）
+      - '`h1`・`h2`・表は `mdmark-diff-block` に包まれず、`data-source-line` が `opts.markdown` の行番号のまま'
+      - 削除したブロックの中の要素が `data-source-line` と `id` を持たない
+      - 追加のブロックの背景色の計算値が `--mdmark-color-diff-add-bg`、削除のブロックが `--mdmark-color-diff-del-bg` の値
+    test: test_normal_when_diff_blocks
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書の差分を見る#scenarios[正常シナリオ（描いた結果の上で色分けする）]
+  - name: 正常系（ブロックの色分けでリストの項目と表の行）
+    summary: リストと表は項目・行の単位で色を当て、削除した項目は番号を使わない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（描いた文書のブロックを色分けする）と同じ
+      - name: リストと表の 2 つのリビジョン
+        description: '`r1` の番号付きリスト 4 項目から、`r2` で 2 番目に項目を 1 つ足し 4 番目の項目を消す。3 行の表の 2 行目の 2 列目の語を入れ替える。一番外のリスト・表はどちらのリビジョンにもある'
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource, diffMode: "blocks" })
+        M->>S: revisions・content
+        S-->>M: 2 つの Markdown
+        M->>P: 項目と行を色分けした本文を描き直す
+    expected:
+      - リストと表は `div.mdmark-diff-block` に包まれず、足した項目の `li` が class `mdmark-diff-block` と `data-kind="add"`、消した項目の `li` が `data-kind="del"` を持ち、`r1` での位置（3 番目の項目の後ろ）にある
+      - 消した項目の後ろの項目の番号の表示が `r2` の文書と同じ（4.）で、消した項目は番号を出さない
+      - 表の 2 行目は、削除の `tr` と追加の `tr` がこの順で並び、1 つ目のセルの先頭に `削除:`・`追加:` と記号を持つ
+      - 変えていない項目と行は `mdmark-diff-block` を持たない
+    test: test_normal_when_diff_blocks_list_and_table
+  - name: 正常系（ブロックの色分けで本文を差し替える）
+    summary: '`blocks` で `update` すると取り出し元を呼び直し、待つ間にもう一度差し替えたら古い結果を描かない'
+    setup:
+      - name: ブロックを色分けしたページ
+        description: 正常系（描いた文書のブロックを色分けする）の後
+      - name: 差し替えで答えを変える取り出し元
+        description: 1 回目の `update` の後の `content` は 500 ms 待ってから、末尾に段落 F を足した `r2` を返し、2 回目の `update` の後はすぐに、段落 F と段落 G を足した `r2` を返す
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: update(段落 F を足した markdown)
+        M->>S: revisions・content
+        P->>M: update(段落 F と G を足した markdown)
+        M->>S: revisions・content
+        S-->>M: 段落 F と G を足した r2
+        M->>P: 色分けした本文を描き直す
+        S-->>M: 段落 F を足した r2（遅れて届く）
+        M->>M: 古い結果を捨てる
+    expected:
+      - 最後に、段落 F と段落 G がそれぞれ `data-kind="add"` のブロックで出ている
+      - 遅れて届いた 1 回目の結果で本文が描き直されない（段落 G が残っている）
+      - 正常系（描いた文書のブロックを色分けする）で色を当てたブロックが同じ `data-kind` のまま出ている
+    test: test_normal_when_diff_blocks_updated
+  - name: 異常系（ブロックの色分けで本文を取り出せない・知らせの枠）
+    summary: '`blocks` で `content` が reject すると、色を当てない本文を残して先頭に知らせの枠を置く'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（描いた文書のブロックを色分けする）と同じ
+      - name: 本文を返せない取り出し元
+        description: '`revisions` は `r2`・`r1` を返し、`content` が `Error("network")` で reject する `DiffSource`'
+      - name: Mock
+        description: 取り出し元はページの中で reject する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource, diffMode: "blocks" })
+        M->>S: revisions・content
+        S-->>M: reject
+        M->>P: 色を当てない本文の先頭に知らせの枠を置く
+    expected:
+      - '`mount` が例外を投げず、本文は `opts.markdown` を描いたままで `mdmark-diff-block` を持たない'
+      - 本文の先頭に class `mdmark-notice` と `role="status"` の要素があり、題が `変更を表示できません`、本文が `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`
+      - '`console.error` が 1 回呼ばれ、引数に `content`・`guide`・元のエラーを含む'
+    test: test_error_when_diff_blocks_content_rejected
+  - name: 異常系（知らない差分の出し方・既定の出し方）
+    summary: 知らない `diffMode` は例外を投げず `button` として描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（差分を開く）と同じ
+        notes: '`opts.diffMode` は `inline`'
+      - name: 3 つのリビジョンの取り出し元
+        description: 正常系（差分を開く）と同じ
+      - name: Mock
+        description: 取り出し元はページの中でメモリーから返す。外の依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, docId, diffSource, diffMode: "inline" })
+        M->>M: 知らない出し方を button にする
+        M->>P: 文書を描き、題の後ろに「変更を見る」を置く
+    expected:
+      - '`mount` が例外を投げず、`aria-expanded="false"` の「変更を見る」がある'
+      - 押すまで `revisions` が呼ばれない
+    test: test_error_when_unknown_diff_mode
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -2905,6 +3067,14 @@ request:
     description: 描いた文書の配色の値の組を選ぶテーマの名前。明暗は制約「配色の切り替え」のまま、選んだテーマの中で選ぶ
     notes: 知らない名前と文字列でない値は無視して `dev-swiss` で描く（例外を出さない）。使う側の CSS のパスの `theme` とは別のキー
     status: planned
+  - name: opts.diffMode
+    type: '"button" | "open" | "blocks"'
+    required: false
+    default: '`button`'
+    location: argument
+    description: 差分の出し方。`button` は読む人が「変更を見る」を押してから差分の行を出し、`open` は描いた時点で押した状態にして差分の行を出す。`blocks` は「変更を見る」と差分の場所を置かず、描いた文書のブロックを追加と削除の色で塗り分ける
+    notes: '`opts.diffSource` を渡さないときは使わない。他の値は無視して `button` にする（制約「差分の出し方」）'
+    status: planned
 request_example: |-
   ```json
   {
@@ -2954,6 +3124,12 @@ exceptions:
   - name: なし（既定の出し方）
     condition: '`opts.config.side-toc.mode` が `hover`・`fixed` のどちらでもない'
     notes: 例外を投げず、`hover` として描く
+  - name: なし（知らない差分の出し方）
+    condition: '`opts.diffMode` が `button`・`open`・`blocks` のどれでもない'
+    notes: 例外を投げず、`button` として描く
+  - name: なし（ブロックの色分けを出せない）
+    condition: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、返した値が制約「差分の取り出し元」の形に合わない'
+    notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に知らせの枠（題 `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を置く。`console.error` は差分の知らせの枠と同じ
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -3132,4 +3308,19 @@ constraints:
     constraint: '`opts.config.colorTheme` のテーマの `--mdmark-color-*` の値の組を、ページ全体（`:root`）に当てる。同じページに別のテーマの文書を並べたときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる（`dev-swiss` は他のテーマに負ける）。値の組はテーマごとに明るい配色と暗い配色を持ち、どちらを使うかは制約「配色の切り替え」で決める。印刷では選んだテーマの明るい配色にする。値の組は `@layer mdmark` の中に置き、使う側が層の外で上書きした変数は選んだテーマに勝つ。`destroy` で当てたテーマを外し、`update` は `mount` に渡したテーマのまま描く'
     decided_by: dev/設計書/デザイン方針#
     notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先に属性 `data-mdmark-color-theme` を付け、`:root:has()` で当てる（モジュール構成『描く』の `COLOR_THEME_ATTRIBUTE`）
+  - item: 差分の出し方
+    constraint: '`opts.diffMode` が `button` のときは制約「差分を開く UI」のとおり。`open` のときは、描いた時点で「変更を見る」を押した状態（`aria-expanded="true"`・本文を隠す）にし、制約「比べる 2 つのリビジョン」のとおり取り出し元を呼んで差分の行を出す。押し直すと閉じ、`update` の後は開いた状態で描き直して取り出し元を呼び直す。`blocks` のときは「変更を見る」と差分の場所・ミニマップを置かず、本文を描いた後に `revisions` を 1 回呼び、2 つ以上あれば 2 番目（前）と 1 番目（後）の `content` を 1 回ずつ呼び、制約「描いた文書のブロックの色分け」で本文を描き直す。取り出し元を待つ間・リビジョンが 1 つのとき・2 つの本文が同じときは、`opts.markdown` を色を当てずに描いた本文のまま出す。`update` のたびに取り出し元を呼び直し、制約「差分の待ち」と同じく古い結果は描かない'
+    notes: '`blocks` は確認ログのモックへの合意（差分のプレビューは文書を色分けして出し、ボタンと選ぶ欄を持たない）。VS Code 拡張機能が `blocks` で描く'
+  - item: 対応する差分の出し方
+    constraint: 配布物の `dist/index.js` は `diffModes`（`readonly ["button", "open", "blocks"]`）を名前付きで公開する。使う側は、読んだ配布物が `diffModes` を持たないか目的の出し方を含まないとき、その出し方に対応しないバージョンと見なす
+    notes: '`opts.diffMode` を知らない前のバージョンの `mount` は指定を黙って無視するため、使う側が描く前に見分けられるようにする（VS Code 拡張機能の差分に対応しないバージョンの理由）'
+  - item: 描いた文書のブロックの色分け
+    constraint: 前と後の Markdown をそれぞれ今の描き方で描き、ブロックに分ける。ブロックは本文の直下の要素（見出し・段落・リスト・表・コードブロック・注意書き・埋め込んだ HTML の範囲 等）で、リストはいちばん外の項目（`li`）、表は `tbody` の行（`tr`）を 1 つのブロックにする。ブロックの行の範囲は `data-source-line` から次のブロックの `data-source-line` の前まで。制約「差分の計算」の行の比べで、後のブロックの範囲に足した行があれば追加の色を当てる。前のブロックで範囲の行が全て消した行のものは削除の候補にし、制約「書き換えと入れ替えの見分け」で削除したブロックを決める
+    notes: 確認ログの色分けの描き方（B）とリストと表の単位（A）
+  - item: 書き換えと入れ替えの見分け
+    constraint: 同じ変えた塊の中で、削除の候補と追加の色を当てた後のブロックを前から順に対にし、対のブロックの文字を語ごとに比べる。同じ文字の数が長い方の文字の数の半分以上なら書き換えとして削除を出さず、半分未満なら入れ替えとして削除と追加の両方を出す。対にならない削除の候補は削除したブロックにする
+    notes: 確認ログのモックへの合意（語を書き換えた段落は追加だけ、別の段落に入れ替えたときは削除と追加が並ぶ）
+  - item: 色を当てたブロックの要素
+    constraint: 本文の直下のブロックは `div.mdmark-diff-block` で包み、リストの項目と表の行はその要素に class `mdmark-diff-block` を付ける。どちらも `data-kind`（`add` か `del`）を持ち、先頭（表の行は 1 つ目のセルの先頭）に読み上げにだけ出す `追加:`・`削除:` と、`aria-hidden` の `+`・`−` を置く。削除したブロックは前の文書で直前にあった変えていないブロックの後ろ（無ければ本文の先頭）に、リストの項目と表の行は前の文書で直前にあった項目・行の後ろ（無ければ同じリスト・表の先頭）に差し込み、後の文書にそのリスト・表が無いときはリスト・表ごと削除したブロックにする。削除したブロックの中の要素は `data-source-line` と `id` を持たず、番号付きリストの削除した項目は番号を使わない
+    notes: 見た目は確認ログのモックへの合意（左の余白の + / −）。色は `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`・`--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign`。削除したブロックはスクロールを合わせる先と見出しのアンカーにしない
 test_file: tests/integration/lib/mount.browser.test.ts

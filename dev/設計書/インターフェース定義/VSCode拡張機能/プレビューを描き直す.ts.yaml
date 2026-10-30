@@ -213,6 +213,30 @@ flows:
       - 空に戻した後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-paper`
       - 設定ファイルの中身が変わっていない
     test: test_normal_when_color_theme_changed
+  - name: 正常系（差分の変更後の側を書き換える）
+    summary: 差分ビューの変更後の側を書き換えると、待ってから変更前と変更後の全文で同じパネルを描き直す
+    setup:
+      - name: 差分のプレビュー
+        description: プレビューを開く.ts の正常系（差分ビューから開く）の後。`mdmark.preview.liveUpdate` は既定の `true`、`mdmark.preview.updateDelayMs` は既定の 300
+      - name: Mock
+        description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。Webview へ送ったメッセージを時刻つきで記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 変更後の側の末尾に段落を 1 つ書き足す（保存しない）
+        EX->>EX: 最後の変更から 300 ms 待つ
+        EX->>PV: render（変更後の全文・previous）
+        PV->>PV: update
+        PV->>EX: rendered
+    expected:
+      - 送った `render` が 1 回で、`markdown` が書き足した後の全文、`previous` が変更前の全文
+      - 書き足した段落が `data-kind="add"` のブロックで出、前に色を当てたブロックが同じ `data-kind` のまま出ている
+      - 差分のパネルが 1 つのままで、開き直していない
+    test: test_normal_when_diff_modified_side_edited
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[正常シナリオ（変更後の側を書き換える）]
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送る。Markdown と設定ファイルは書き換えない
@@ -232,7 +256,7 @@ constraints:
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送る。範囲の外の値は既定の値として扱う
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
   - item: 送る中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`。差分は送らない'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
   - item: 背面のパネル
     constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る
     notes: '背面の間の `postMessage` は届かない（PoC #70）'
@@ -249,3 +273,6 @@ constraints:
   - item: 設定が変わったときの描き方
     constraint: Webview は `config` が前と同じときは `update`、違うときは `destroy` してから `mount` で描く。スクロールの位置は描き直す前の位置を保つ
     notes: '`update` は `mount` に渡した設定を使う（文書を描く.ts のレスポンス）'
+  - item: 差分のパネルを描き直すきっかけ
+    constraint: 差分のパネルは、変更後の文書の変更・保存だけを制約「描き直すきっかけ」のとおり受け、変更前の文書の変更では描き直さない。設定ファイルと設定の変更は他のパネルと同じ
+    notes: 変更前の側は `git:` の読み取り専用の文書か、要件のスコープ外（変更前の側の書き換え）
