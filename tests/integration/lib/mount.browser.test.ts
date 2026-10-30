@@ -3839,7 +3839,7 @@ test("test_normal_when_diff_blocks_list_and_table", async () => {
       "| 行三 | 3 |",
     ].join("\n");
   const before = `# ガイド\n\n${["甲", "乙", "丙", "丁"].map((item) => `1. ${item}`).join("\n")}\n\n${table("古い手順を消す")}\n`;
-  const after = `# ガイド\n\n${["甲", "新", "乙", "丙"].map((item) => `1. ${item}`).join("\n")}\n\n${table("表を増やす案")}\n`;
+  const after = `# ガイド\n\n${["甲", "新", "乙", "丁"].map((item) => `1. ${item}`).join("\n")}\n\n${table("表を増やす案")}\n`;
   const source = createBlocksSource({ r1: before, r2: after });
   const el = createElement();
   // 実行
@@ -3862,18 +3862,27 @@ test("test_normal_when_diff_blocks_list_and_table", async () => {
     null,
     "add",
     null,
-    null,
     "del",
+    null,
   ]);
-  for (const item of [items[1], items[4]]) {
+  for (const item of [items[1], items[3]]) {
     expect(item?.classList.contains("mdmark-diff-block")).toBe(true);
   }
-  // 検証: 消した項目は 3 番目の項目（丙）の後ろにあり、番号を出さず後ろの項目の番号を進めない
+  // 検証: 消した項目は `r1` の 2 番目の項目（乙）の後ろにあり、番号を出さない
+  expect(items[2]?.textContent).toContain("乙");
   expect(items[3]?.textContent).toContain("丙");
-  expect(items[4]?.textContent).toContain("丁");
-  const deleted = getComputedStyle(items[4] as Element);
+  const deleted = getComputedStyle(items[3] as Element);
   expect(deleted.listStyleType).toBe("none");
   expect(deleted.counterIncrement).toBe("list-item 0");
+  // 検証: 消した項目の後ろの項目の番号の表示が `r2` の文書と同じ（4.）。番号は `::marker` を読めないため、
+  // 番号を進める項目（`counter-increment` が `list-item 0` でない項目）を先頭から数えて求める
+  expect(items[4]?.textContent).toContain("丁");
+  const displayedNumber = items
+    .slice(0, 5)
+    .filter(
+      (item) => getComputedStyle(item).counterIncrement !== "list-item 0",
+    ).length;
+  expect(displayedNumber).toBe(4);
   // 検証: 表の 2 行目は削除の行と追加の行がこの順で、1 つ目のセルの先頭に名前と記号を持つ
   const rows = [...grid.querySelectorAll("tbody > tr")];
   expect(rows.map((row) => row.getAttribute("data-kind"))).toEqual([
@@ -3891,7 +3900,7 @@ test("test_normal_when_diff_blocks_list_and_table", async () => {
     sign: "+",
   });
   // 検証: 変えていない項目と行は色を当てない
-  for (const unchanged of [items[0], items[2], items[3], rows[0], rows[3]]) {
+  for (const unchanged of [items[0], items[2], items[4], rows[0], rows[3]]) {
     expect(unchanged?.classList.contains("mdmark-diff-block")).toBe(false);
   }
 });
