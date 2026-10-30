@@ -459,9 +459,9 @@ elements:
     position: 描く先の要素 > 本文の列 > 題の後ろ（右側の目次を置かないときは描く先の要素 > 題の後ろ）
     description: 本文の直下の最初の `h1`（文書の題）の後ろ、`h1` が無ければ本文の先頭に、右に寄せて置く。題が節のときは題とその節の中身の間に置き、H1 の節を閉じても隠れない
     label: 変更を見る
-    visible_when: '`opts.diffSource` を渡したとき'
+    visible_when: '`opts.diffSource` を渡し、`opts.diffMode` が `blocks` でないとき'
     initial_state: 活性
-    initial_value: 閉じた状態（`aria-expanded="false"`）
+    initial_value: 閉じた状態（`aria-expanded="false"`）。`opts.diffMode` が `open` のときは開いた状態（`aria-expanded="true"`）
     action: 押すと、題を残して本文と右側の目次を隠し、差分の場所を開く。差分を開いている間は節の開閉で本文を出さない。押し直すと差分を片付け、本文（節は今の開閉の状態）と右側の目次に戻す
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
@@ -891,6 +891,41 @@ elements:
     action: 押すとエイリアスの `command` の文字をクリップボードへ書く。書けたら `コピーしました` にして 2 秒で戻し、書けなければ次に押すまで `コピーできませんでした` にする。押してもツールチップを閉じない
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コマンドのコピー]
+    status: planned
+  - name: 差分のブロック
+    id: diff-block
+    kind: region
+    component: dev/設計書/部品設計/差分のブロック.ts#
+    args:
+      - name: kind
+        value: 追加・変更したブロックは `add`、削除したブロックは `del`
+      - name: unit
+        value: リストの項目は `item`、表の行は `row`、それ以外は `block`
+      - name: html
+        value: 後のリビジョン（削除したブロックは前のリビジョン）を描いたブロックの HTML
+    position: 描く先の要素 > 本文（節の中身の中を含む）
+    description: '`opts.diffMode` が `blocks` のとき、前と後のリビジョンで変えたブロック。追加・変更したブロックはその場所に、削除したブロックは前のリビジョンでの位置に差し込む'
+    io: 表示
+    visible_when: '`opts.diffMode` が `blocks` で、取り出し元が 2 つ以上のリビジョンを返し、本文に変更があるとき'
+    source: 文書を描く.request.opts.diffSource
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[描いた文書のブロックの色分け]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を当てたブロックの要素]
+    status: planned
+  - name: 色分けの知らせの枠
+    id: diff-blocks-notice
+    kind: label
+    component: dev/設計書/部品設計/知らせの枠.ts#
+    args:
+      - name: name
+        value: 文書の `id`
+      - name: source
+        value: '`diff-blocks`'
+    position: 描く先の要素 > 本文の先頭
+    description: '`opts.diffMode` が `blocks` で、取り出し元が一覧か本文を返せないときに出す。本文は色を当てずに描いたまま残す'
+    visible_when: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ブロックの色分けを出せない）]
     status: planned
 mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。
