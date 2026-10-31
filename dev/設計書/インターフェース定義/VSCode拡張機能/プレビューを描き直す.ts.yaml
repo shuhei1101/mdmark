@@ -84,24 +84,28 @@ flows:
       - Webview に設定ファイルを読めない帯が無い
     test: test_normal_when_config_missing
   - name: 正常系（背面から戻る）
-    summary: 背面の間は送らず、`ready` を受けて最後の全文を送る
+    summary: 背面の間は送らず、`ready` を受けて最後の全文を送り、作り直した Webview を背面に回す前の位置へ戻す
     setup:
       - name: プレビューを開いたワークスペース
-        description: 正常系と同じ。プレビューのパネルを同じ列の別のタブの後ろに回す
+        description: 見出しを多く持つ長い Markdown を左の列のエディタで開き、右の列にプレビューを開いた状態。プレビューを見出し A が先頭に見えるまでスクロールし、見出し A の見えている範囲の先頭からの位置を控えてから、右の列で別の Markdown を開いてプレビューのパネルをその後ろに回す。エディタは左の列に見えたまま
+        notes: 書き換える見出し B は、エディタの見えている範囲にある見出し A より下の見出し。エディタのスクロールを動かさずに書き換える
       - name: Mock
-        description: 正常系と同じ
+        description: 正常系と同じ。Webview から届いたメッセージも記録する
     flow: |-
       sequenceDiagram
         participant U as 文書を書く人
         participant EX as 拡張機能
         participant PV as Webview
-        U->>EX: 背面の間に見出しを 3 回書き換える
+        U->>EX: 背面の間に見出し B を 3 回書き換える
         U->>EX: プレビューのタブを表に戻す
         PV->>EX: ready
         EX->>PV: render（3 回目の全文）
+        PV->>PV: 保存した元の行番号を先頭に置く
     expected:
       - 背面の間に送った `render` が 0 回
-      - 表に戻した後の `ready` を受けて送った `render` が 3 回目の全文で、Webview の見出しが 3 回目の文字
+      - 表に戻した後の `ready` を受けて送った `render` が 3 回目の全文で、Webview の見出し B が 3 回目の文字
+      - 表に戻した後の Webview で、見出し A の見えている範囲の先頭からの位置が、背面に回す前に控えた値と 1 px 以内で同じ
+      - 表に戻してから位置を戻した後、Webview から `revealLine` が届かず、エディタの `visibleRanges[0].start.line` が表に戻す直前と同じ
     test: test_normal_when_revealed
   - name: 正常系（相対パスの外部ライブラリ）
     summary: 設定ファイルからの相対パスの libraries を Webview で読める URL にして渡す
@@ -237,6 +241,26 @@ flows:
     test: test_normal_when_diff_modified_side_edited
     refs:
       - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[正常シナリオ（変更後の側を書き換える）]
+  - name: 正常系（差分のパネルが背面から戻る）
+    summary: 差分のパネルも、作り直した Webview を背面に回す前の位置へ戻す
+    setup:
+      - name: 差分のプレビューを開いたワークスペース
+        description: 見出しを多く持つ長い Markdown で、プレビューを開く.ts の正常系（差分ビューから開く）の後。差分のプレビューを見出し A が先頭に見えるまでスクロールし、見出し A の見えている範囲の先頭からの位置を控えてから、同じ列で別の Markdown を開いて差分のパネルをその後ろに回す
+      - name: Mock
+        description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。Webview から届いたメッセージも記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 差分のプレビューのタブを表に戻す
+        PV->>EX: ready
+        EX->>PV: render（変更後の全文と previous）
+        PV->>PV: 保存した元の行番号を先頭に置く
+    expected:
+      - 表に戻した後の `ready` を受けて送った `render` が `previous` を持つ
+      - 表に戻した後の Webview で、見出し A の見えている範囲の先頭からの位置が、背面に回す前に控えた値と 1 px 以内で同じ
+    test: test_normal_when_diff_revealed
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送る。Markdown と設定ファイルは書き換えない
@@ -258,8 +282,8 @@ constraints:
   - item: 送る中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
   - item: 背面のパネル
-    constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る
-    notes: '背面の間の `postMessage` は届かない（PoC #70）'
+    constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る。Webview は見えている先頭の元の行番号（スクロールを合わせる.ts の制約「プレビューから合わせる」と同じ求め方）を、スクロールの知らせと `render` を描いた後に Webview の状態（`setState`）へ保存する。作り直した Webview（HTML を入れ直したときを含む）は、最初の `render` を描いた後に `getState` の行を `scrollToLine` と同じ位置に置き、そのスクロールでは `revealLine` を送らない。保存した行が無いとき（開いた直後）は先頭から描く
+    notes: '背面の間の `postMessage` は届かない（PoC #70）。`retainContextWhenHidden` は `false` のままで、背面に回ると Webview が作り直される。位置を元の行番号で持つのは、背面の間の書き換えで文書の高さが変わっても同じ箇所へ戻すため'
   - item: 設定ファイルの場所
     constraint: '`mdmark.configPath` を Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決する。無ければ設定なしで描き、知らせは出さない'
     notes: dev/設計書/設定/VSCode拡張機能
