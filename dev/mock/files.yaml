@@ -268,7 +268,10 @@ files:
     description: '#257 の画面のモックの案『a-no-line』: 図の枠の線を常に外し、ボタンの帯の下の線と余白でまとまりを示す。文書の中の図・操作できる部品の中のグラフ・詳細パネルの中の図を配布物で描いて並べる。画面の見た目や振る舞いを決めるときに読む。'
     tags: [topic:モック, topic:図]
   - path: pages/document/257/b-css-property/index.html
-    description: '#257 の画面のモックの案『b-css-property』: 図の枠の線の太さを CSS カスタムプロパティで持ち、操作できる部品の中は mdmark が、詳細パネルの中は使う側が外す。画面の見た目や振る舞いを決めるときに読む。'
+    description: '#257 の画面のモックの案『b-css-property』: 図の枠の線の box-shadow の値を CSS カスタムプロパティで持ち、操作できる部品の中は mdmark が、詳細パネルの中は使う側が none にして外す。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: pages/document/257/current/index.html
+    description: '#257 の画面のモックの案『current』: 今の図の枠の見た目（文書の中の図・操作できる部品の中のグラフ・詳細パネルの中の図）。案 A / B と見比べるときに読む。'
     tags: [topic:モック, topic:図]
   - path: pages/document/257/index.md
     description: '#257（図の枠が、枠を持つ面や操作できる部品の枠の中で入れ子の枠にならないようにする）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
@@ -539,7 +542,7 @@ files:
     description: '#257 のモックが共通で読む素材: 案 A の図の枠の規則（線を常に外す。全画面のモーダルの中は今の線のまま）。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:図, tool:css]
   - path: refs/257/assets/frame-b.css
-    description: '#257 のモックが共通で読む素材: 案 B の図の枠の規則（線の太さを CSS カスタムプロパティで持ち、操作できる部品の中では外す）。複数のモックに効く見た目や動きを変えるときに読む。'
+    description: '#257 のモックが共通で読む素材: 案 B の図の枠の規則（線の box-shadow の値を CSS カスタムプロパティで持ち、操作できる部品の中では外す）。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:図, tool:css]
   - path: refs/257/assets/scene.css
     description: '#257 のモックが共通で読む素材: 使う側のページ（本文と枠を持つ詳細パネル）とモック専用の操作列の見た目。複数のモックに効く見た目や動きを変えるときに読む。'

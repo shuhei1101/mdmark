@@ -14,7 +14,7 @@
   <!-- 使う側が書く CSS: 枠を持つ面の中の図の枠の線を外す -->
   <style>
     .host-panel {
-      --mdmark-diagram-border-width: 0px;
+      --mdmark-diagram-box-shadow: none;
     }
   </style>
   <!-- 配布物の mount で本文と詳細パネルに文書を描く -->
@@ -25,6 +25,7 @@
   <nav class="mock-bar" aria-label="案">
     <a class="mock-bar-item" href="../a-no-line/index.html">案 A: 図の枠の線を常に外す</a>
     <a class="mock-bar-item" href="../b-css-property/index.html" aria-current="page">案 B: CSS カスタムプロパティで外す</a>
+    <a class="mock-bar-item" href="../current/index.html">今の見た目</a>
   </nav>
 
   <!-- 使う側のページのトップバー（mdmark の外） -->

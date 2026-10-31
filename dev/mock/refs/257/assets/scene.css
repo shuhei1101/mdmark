@@ -75,16 +75,21 @@ body {
   padding: 16px 24px 48px;
 
   @media (width < 64rem) {
-    grid-template-columns: minmax(0, 1fr);
+    display: block;
     padding-inline: 12px;
+
+    > * + * {
+      margin-block-start: 24px;
+    }
   }
 }
 
-/* 詳細パネル: 使う側の枠を持つ面 */
+/* 詳細パネル: 使う側の枠を持つ面（線と影で本文から浮かせる） */
 .host-panel {
   border: 1px solid #d4d4d8;
   border-radius: 8px;
   background: #ffffff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
 }
 
 /* 詳細パネルの見出し */
