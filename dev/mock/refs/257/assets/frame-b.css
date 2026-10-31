@@ -1,0 +1,15 @@
+/* 案 B: 図の枠の線の太さを CSS カスタムプロパティで持ち、操作できる部品の中では外す（ライブラリの層に重ねる） */
+@layer mdmark {
+  :root {
+    --mdmark-diagram-border-width: 1px;
+  }
+
+  .mdmark-diagram-box {
+    box-shadow: inset 0 0 0 var(--mdmark-diagram-border-width) var(--mdmark-color-border);
+  }
+
+  /* 操作できる部品の中の図の枠: 部品の枠の中で枠を重ねない */
+  .mdmark-param .mdmark-diagram-box {
+    box-shadow: none;
+  }
+}
