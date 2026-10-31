@@ -1,0 +1,64 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-viewport-height-beyond-max
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (10 tests | 2 failed) 708ms
+   × test_attach_diagrams_when_tall 146ms
+   × test_attach_diagrams_when_resized 103ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_tall
+AssertionError: expected '' to be '1200px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_tall.png
+
+- Expected
++ Received
+
+- 1200px
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:201:36
+    199|   const viewport = viewportOf(root);
+    200|   expect(viewport.clientHeight).toBe(576);
+    201|   expect(viewport.style.maxHeight).toBe("1200px");
+       |                                    ^
+    202| });
+    203|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=c02a90e9:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_resized
+AssertionError: expected 576 to be 1000 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_resized.png
+
+- Expected
++ Received
+
+- 1000
++ 576
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:214:33
+    212|   viewport.style.height = "1000px";
+    213|   // 検証
+    214|   expect(viewport.clientHeight).toBe(1000);
+       |                                 ^
+    215|   // 実行: 図の全体が収まる高さを超える高さにする
+    216|   viewport.style.height = "1500px";
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=c02a90e9:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 160 passed (161)
+      Tests  2 failed | 1186 passed (1188)
+   Start at  20:57:48
+   Duration  87.80s (tests 43%, worker 31%, import 18%, transform 7%)
+

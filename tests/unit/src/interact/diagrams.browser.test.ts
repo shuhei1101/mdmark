@@ -28,6 +28,27 @@ function createDiagramRoot(): HTMLElement {
   return root;
 }
 
+/** 幅 600・高さ 1200 のフロー図の定義（全体が収まる倍率が 1 になる縦長の図） */
+const TALL_TEXT = JSON.stringify({
+  title: "縦長の図",
+  scope: "表示する枠の高さを確かめる",
+  updated: "2026-10-31",
+  width: 600,
+  height: 1200,
+  nodes: [
+    { id: "top", kind: "script", x: 230, y: 20, w: 140, h: 64, name: "上" },
+  ],
+  wires: [],
+});
+
+/** 幅 600px の描く先の要素に、幅 600・高さ 1200 のフロー図を描く */
+function createTallDiagramRoot(): HTMLElement {
+  const { root } = createRoot(wrapDirective("flow", TALL_TEXT));
+  root.style.width = "600px";
+  root.style.setProperty("--mdmark-padding", "0");
+  return root;
+}
+
 /** 読み上げの名前でボタンを探す */
 function button(root: ParentNode, name: string): HTMLButtonElement {
   const found = root.querySelector<HTMLButtonElement>(
@@ -165,6 +186,46 @@ test("test_attach_diagrams_when_wheel", async () => {
   // 検証
   expect(zoomText(root)).toBe("55%");
   expect(event.defaultPrevented).toBe(false);
+});
+
+// 開いたときの高さを --mdmark-diagram-max-height で抑え、上限を図の全体が収まる高さにする（正常系）
+test("test_attach_diagrams_when_tall", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createTallDiagramRoot();
+  // 実行
+  detachers.push(attachDiagrams({ root, placement: "top" }));
+  // 検証
+  const viewport = viewportOf(root);
+  expect(viewport.clientHeight).toBe(576);
+  expect(viewport.style.maxHeight).toBe("1200px");
+});
+
+// 使う側が高さを変えると、36rem を超えて図の全体が収まる高さまで広がり、倍率に合わせて上限を付け替える（正常系）
+test("test_attach_diagrams_when_resized", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createTallDiagramRoot();
+  detachers.push(attachDiagrams({ root, placement: "top" }));
+  const viewport = viewportOf(root);
+  // 実行: 36rem を超える高さにする
+  viewport.style.height = "1000px";
+  // 検証
+  expect(viewport.clientHeight).toBe(1000);
+  // 実行: 図の全体が収まる高さを超える高さにする
+  viewport.style.height = "1500px";
+  // 検証: 上限で止まる
+  expect(viewport.clientHeight).toBe(1200);
+  // 実行: 拡大する
+  button(root, "拡大").click();
+  // 検証: 上限を今の倍率に合わせる
+  expect(viewport.style.maxHeight).toBe("1500px");
+  // 実行: 開いたときの倍率に戻す
+  viewport.focus();
+  await userEvent.keyboard("0");
+  // 検証
+  expect(viewport.clientHeight).toBe(576);
+  expect(viewport.style.maxHeight).toBe("1200px");
 });
 
 // 外すと監視も外れる（正常系）

@@ -94,3 +94,65 @@ test("test_fullscreen", async () => {
   await expect(tool(page, "全画面を閉じる").count()).resolves.toBe(1);
   await expect(tool(page, "全画面で開く").count()).resolves.toBe(0);
 });
+
+/** `--mdmark-diagram-max-height` の既定（36rem）の px */
+const MAX_HEIGHT_PX = 576;
+
+/** 表示する枠の今の倍率での図の高さ（大きさの箱の `style.height`）と、表示する枠の `clientHeight` */
+function viewportHeights(page: Page) {
+  return page.locator(".mdmark-diagram-viewport").evaluate((viewport) => {
+    const sizer = viewport.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+    return {
+      content: Number.parseFloat(sizer?.style.height ?? ""),
+      client: viewport.clientHeight,
+    };
+  });
+}
+
+// 使う側が高さを広げると、36rem を超えて定義の高さ × 倍率まで広がる（Fit から拡大した状態）
+test("test_fit_when_resized", async () => {
+  // 準備: 定義の高さ × 倍率が 36rem を超えるまで拡大する
+  const page = await openFrame("fit", true);
+  for (let i = 0; i < 10; i += 1) {
+    if ((await viewportHeights(page)).content > MAX_HEIGHT_PX) {
+      break;
+    }
+    await tool(page, "拡大").click();
+  }
+  const { content } = await viewportHeights(page);
+  expect(content).toBeGreaterThan(MAX_HEIGHT_PX);
+  // 実行: 表示する枠につまみを当て、高さを定義の高さ × 倍率にする
+  await page
+    .locator(".mdmark-diagram-viewport")
+    .evaluate((viewport, height) => {
+      viewport.style.resize = "vertical";
+      viewport.style.height = `${height}px`;
+    }, content);
+  // 検証
+  const { client } = await viewportHeights(page);
+  expect(client).toBeGreaterThan(MAX_HEIGHT_PX);
+  expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
+});
+
+// 印刷では、attachDiagrams が当てたインラインの高さと上限を外し、表示する枠の高さが定義の高さ × 倍率になる（Fit から拡大した状態）
+test("test_fit_when_printed", async () => {
+  // 準備: 大きさの箱の高さが、開いたときの枠のインラインの高さを超えるまで拡大する
+  const page = await openFrame("fit", true);
+  const viewport = page.locator(".mdmark-diagram-viewport");
+  const opened = await viewport.evaluate((element) =>
+    Number.parseFloat(element.style.height),
+  );
+  for (let i = 0; i < 10; i += 1) {
+    if ((await viewportHeights(page)).content > opened + 1) {
+      break;
+    }
+    await tool(page, "拡大").click();
+  }
+  const { content } = await viewportHeights(page);
+  expect(content).toBeGreaterThan(opened + 1);
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  // 検証
+  const { client } = await viewportHeights(page);
+  expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
+});

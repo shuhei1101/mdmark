@@ -664,7 +664,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement }'
@@ -713,6 +713,18 @@ functions:
         condition: 幅 600px の要素に幅 1100 のフロー図。拡大を 2 回押して表示する枠を `ArrowRight` で動かし、倍率のボタンを押す
         mock: なし
         expected: 押す前の読み上げの名前が `倍率 85%。全体が収まる倍率に戻す`、押した後に文字が `55%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
+      - name: test_attach_diagrams_when_tall
+        case: 正常
+        summary: 開いたときの高さを `--mdmark-diagram-max-height` で抑え、上限を図の全体が収まる高さにする
+        condition: 幅 600px の要素に幅 600・高さ 1200 のフロー図（`--mdmark-diagram-max-height` は既定の 36rem = 576px）
+        mock: なし
+        expected: 表示する枠の `clientHeight` が 576 で、`style.maxHeight` が `1200px`
+      - name: test_attach_diagrams_when_resized
+        case: 正常
+        summary: 使う側が高さを変えると、36rem を超えて図の全体が収まる高さまで広がり、倍率に合わせて上限を付け替える
+        condition: 幅 600px の要素に幅 600・高さ 1200 のフロー図。表示する枠の `style.height` を `1000px`、`1500px` の順にし、拡大を 1 回押し、`0` を押す
+        mock: なし
+        expected: '`clientHeight` が 1000、1200（上限で止まる）の順になり、拡大の後に `style.maxHeight` が `1500px`、`0` の後に `clientHeight` が 576 で `style.maxHeight` が `1200px`'
   - name: openDiagramDialog
     title: 図を全画面で開く
     container: src/interact/diagrams.ts
