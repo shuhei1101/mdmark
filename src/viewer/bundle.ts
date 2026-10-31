@@ -67,6 +67,7 @@ export function startBundle(
       ...(payload.index ? { index: payload.index } : {}),
       ...(item.docId ? { docId: item.docId } : {}),
       ...(payload.references ? { references: payload.references } : {}),
+      ...(payload.aliases ? { aliases: payload.aliases } : {}),
     });
     rewriteLinks(view, path, paths);
     currentPath = path;

@@ -3,7 +3,7 @@ lead: 配布物の入口の JavaScript と CSS。JavaScript は公開関数と�
 directory: |-
   ```tree
   src/
-  ├── index.ts   # 公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex() と公開の型の export
+  ├── index.ts   # 公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex()・buildAliases()・定数 diffModes と公開の型の export
   └── index.css  # 描いた文書と記法の CSS（@layer mdmark）
   ```
 functions:
@@ -27,20 +27,20 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts#
 notes:
-  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`collectMatches`（`src/knowledge/matches.ts`）・`checkIndex`（`src/knowledge/check.ts`）・`mountView`・`mountComments`（`src/mount-parts.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkIndexDocTag`・`MdmarkIndexTag`・`MdmarkIndexRelated`・`MdmarkRelationType`・`MdmarkReferences`・`MdmarkMatches`・`MdmarkMatch`・`MdmarkMatchTarget`・`MdmarkAvoidedMatch`・`MdmarkIndexIssue`・`DiffSource`・`DiffRevision`（`src/diff/source.ts`）・`MdmarkViewOptions`・`MdmarkViewHandle`（`src/views/spec.ts`）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentStore`・`MdmarkCommentsHandle`（`src/comments/spec.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
+  公開するもの: '`src/index.ts` は `version` に加えて、`mount`（`src/mount.ts`）・`render`（`src/render/index.ts`）・`registerExtension`（`src/extensions.ts`）・`collectReferences`（`src/knowledge/references.ts`）・`collectMatches`（`src/knowledge/matches.ts`）・`checkIndex`（`src/knowledge/check.ts`）・`buildAliases`（`src/knowledge/aliases.ts`）・`mountView`・`mountComments`（`src/mount-parts.ts`）と定数 `diffModes`（`src/diff/source.ts`）を export し、型 `MdmarkConfig`・`MountOptions`・`MountHandle`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkIndex`・`MdmarkIndexDocTag`・`MdmarkIndexTag`・`MdmarkIndexRelated`・`MdmarkRelationType`・`MdmarkReferences`・`MdmarkMatches`・`MdmarkMatch`・`MdmarkMatchTarget`・`MdmarkAvoidedMatch`・`MdmarkIndexIssue`・`MdmarkAlias`・`MdmarkAliasType`・`MdmarkAliasSource`・`MdmarkAliasProblem`・`DiffSource`・`DiffRevision`・`DiffMode`（`src/diff/source.ts`）・`MdmarkViewOptions`・`MdmarkViewHandle`（`src/views/spec.ts`）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentStore`・`MdmarkCommentsHandle`（`src/comments/spec.ts`）を `export type` で出す。他の関数は export しない。公開の型は markdown-it・sanitize-html の型を参照しない（`dist/index.d.ts` を使う側がその型を入れずに型検査できるようにする）'
 styles:
   - name: index
     title: 入口の CSS
     container: src/index.css
     summary: 描いた文書の CSS。全ての規則を `@layer mdmark` に入れ、見た目の値を `--mdmark-` の CSS 変数で配る。版の CSS 変数 `--mdmark-version` はビルドが先頭に `:root` の宣言として差し込む
     description: |-
-      採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
+      採用したモックの規則を写す。本文の規則は `dev/mock/refs/16/assets/sample.css` の `@layer mdmark` の中身、変数の値は `dev/mock/assets/style.css`、横スクロールの影は同じフォルダの `style.css`、印刷は `print.css` から取る。記法の規則は `dev/mock/refs/19/assets/syntax.css` と `syntax-print.css`（印刷）から取り、エイリアスのツールチップの規則は `dev/mock/refs/176/assets/alias-tip.css` の `@layer mdmark` の中身から取り、アイコンは `mask-image` の SVG の data URL で付ける。モック専用の規則（`.mock-*`・`.host*`・`.catalog*`・`body`・`--host-*`）は写さない。
 
-      ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。描く先の祖先の class で決める配色も `:root` に値を置き、使う側が層の外で `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色が届くようにする。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
+      ダークの配色は、モックの `:root[data-scheme="dark"]` を `@media screen and (prefers-color-scheme: dark)` の `:root` に置き換えて持つ（印刷では明るい配色のまま）。描く先の祖先の class で決める配色も `:root` に値を置き、使う側が層の外で `:root` に書いた上書きと `document.body` の直下の部品にも同じ配色が届くようにする。選んだテーマの配色も、描く先の属性 `data-mdmark-color-theme` を `:root:has()` で見て `:root` に置く。入れ子の規則はソースに書いたまま置き、ビルドが対象のブラウザに合わせて展開する。
     values:
       - class_name: ':root'
         target: 変数の既定
-        value: '`--mdmark-font-body`・`--mdmark-font-heading`・`--mdmark-font-mono`・`--mdmark-font-size`（`0.875rem`）・`--mdmark-line-height`（`1.8`）・`--mdmark-content-width`（`46rem`）・`--mdmark-space`（`0.875rem`）・`--mdmark-padding`（`1.5rem`）・`--mdmark-radius`（`4px`）・`--mdmark-heading-weight`・`--mdmark-heading-rule-width`・`--mdmark-table-rule-inline`・`--mdmark-h1-marker`・`--mdmark-h2-marker`・`--mdmark-h3-marker`（見出しの前の記号。既定は持たず、規則の側で空の文字列に落とす）と、`--mdmark-color-`（`bg`・`text`・`heading`・`muted`・`link`・`border`・`surface`・`scroll-shadow`・`notice-bg`・`notice-border`・`notice-text`）。値は `dev/mock/assets/style.css` の `:root`'
+        value: '`--mdmark-font-body`・`--mdmark-font-heading`・`--mdmark-font-mono`・`--mdmark-font-size`（`0.875rem`）・`--mdmark-line-height`（`1.8`）・`--mdmark-content-width`（`none`。行の長さを抑えたい使う側が上限を渡す）・`--mdmark-space`（`0.875rem`）・`--mdmark-padding`（`1.5rem`）・`--mdmark-radius`（`4px`）・`--mdmark-heading-weight`・`--mdmark-heading-rule-width`・`--mdmark-table-rule-inline`・`--mdmark-h1-marker`・`--mdmark-h2-marker`・`--mdmark-h3-marker`（見出しの前の記号。既定は持たず、規則の側で空の文字列に落とす）と、`--mdmark-color-`（`bg`・`text`・`heading`・`muted`・`link`・`border`・`surface`・`scroll-shadow`・`notice-bg`・`notice-border`・`notice-text`）。値は `dev/mock/assets/style.css` の `:root`（`--mdmark-content-width` だけはモック作成で決めた `none`）'
       - class_name: ':root'
         target: ダークの配色（画面で OS の設定がダークのとき）
         value: '`--mdmark-color-` の 11 個をダークの値にし、`color-scheme: dark`。値は `dev/mock/assets/style.css` の `:root[data-scheme="dark"]`'
@@ -67,13 +67,13 @@ styles:
         value: '表を行ごとに縦に積み、見出し行を隠し、`td::before` に `attr(data-label)` で列名を出す。セルの揃えは列の揃えの class より強い指定で `start` に戻す'
       - class_name: :root（記法）
         target: 記法の変数の既定
-        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-table-max-height`（`28rem`）・`--mdmark-color-code-highlight-bg`（`#fef3c7`、ダーク `#5c4a12`）・`--mdmark-color-code-highlight-line`（`#b45309`、ダーク `#fbbf24`）。値とダークの値は `dev/mock/assets/style.css`'
+        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-sticky-top`（`0px`。見出し行を留める画面の上端からのずれ）・`--mdmark-color-code-highlight-bg`（`#fef3c7`、ダーク `#5c4a12`）・`--mdmark-color-code-highlight-line`（`#b45309`、ダーク `#fbbf24`）・ファイルの種類のアイコンの色 `--mdmark-color-file-text`・`-code`・`-config`・`-image`・`-sheet`・`-archive`・`-script`（値とダークの値は `dev/mock/refs/225/assets/tree.css`）。値とダークの値は `dev/mock/assets/style.css`'
       - class_name: .mdmark .mdmark-table ほか記法の class
         target: 記法の部品
-        value: '部品設計（表・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・節・行の詳細・図表の番号・書き方の警告・コードブロック）の HTML に当てる規則。表は見出し行を `position: sticky` で上端に留め、高さを `--mdmark-table-max-height` に抑える。`plain` は縦の罫線と面を外す。表は本文の行を地の色にして見出し行だけを面の色で塗り、外側を `calc(var(--mdmark-radius) * 2)` の角丸の 1px の枠で囲む。セルの線は内側だけに引き、見出し行の下・集計の上の線も 1px（`dev/mock/refs/80/assets/table-options.css` の案 A〜C 共通と案 B。`plain` は外側の枠を引かず見出し行も地の色）。注意書きの面は種類の色を `--mdmark-color-bg` に 7%、線は 40% `color-mix(in oklab, …)` で混ぜる（`dev/mock/refs/80/assets/canvas-themes.css` の `.theme-dev-swiss .markdown-alert`）'
+        value: '部品設計（表・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・節・行の詳細・図表の番号・書き方の警告・コードブロック）の HTML に当てる規則。表は縦の高さの上限を持たず（横にはみ出す表は表の中で横にスクロールする）、見出し行と集計の行はページのスクロールで留める。留め方は `root` の `data-mdmark-sticky` で分け、`timeline` は `@supports (animation-timeline: view()) and (animation-range: 0% 100%)` の中で `view-timeline`（inset は `var(--mdmark-sticky-top, 0px) 0px`）と `--mdmark-sticky-head-start`・`-head-max`・`-foot-max`・`-foot-end` の `animation-range` で動かし、`script` は `--mdmark-sticky-head-shift`・`-foot-shift` の `transform: translateY()` で動かす。集計の行は計算ごとの行を面の色でつなぎ、`max-width: 768px` ではセルの上下の余白を `0.2em` に詰める。集計とコピーの形式のメニュー・コピーできないときのパネル・行の URL の知らせ・狭い幅で畳む最終列（`.is-folded`・`.mdmark-fold-*`）もここで当てる。値は `dev/mock/refs/151/assets/table.css`（モックの `--mdmark-mock-*` は `--mdmark-sticky-*`、`.is-sticky-timeline`・`.is-sticky-shift` は `[data-mdmark-sticky]` に読み替える）。コードブロックは全てのブロックに帯（左端に言語のラベル、続けて題かファイル名、右端にコピーのボタン）を置き、値は `dev/mock/refs/151/assets/code-block.css`。`plain` は縦の罫線と面を外す。表は本文の行を地の色にして見出し行だけを面の色で塗り、外側を `calc(var(--mdmark-radius) * 2)` の角丸の 1px の枠で囲む。セルの線は内側だけに引き、見出し行の下・集計の上の線も 1px（`dev/mock/refs/80/assets/table-options.css` の案 A〜C 共通と案 B。`plain` は外側の枠を引かず見出し行も地の色）。注意書きの面は種類の色を `--mdmark-color-bg` に 7%、線は 40% `color-mix(in oklab, …)` で混ぜる（`dev/mock/refs/80/assets/canvas-themes.css` の `.theme-dev-swiss .markdown-alert`）。表・タブ・ステップの折り畳み（`.mdmark-collapsible` と閉じた表の帯）は `dev/mock/refs/225/assets/collapse.css`、ファイルツリーの帯・注釈の列（`--mdmark-tree-note-start`）・`data-file-icon` ごとのアイコンと色・「ほかにもある」の項目・フォルダの開閉は `dev/mock/refs/225/assets/tree.css` から取る。モックのアイコンの要素（`.mdmark-icon`・`.mdmark-tree-chevron`）は、フォルダは開閉のボタンの `aria-expanded`、ファイルは `data-file-icon` で選ぶ `mask-image` に読み替える'
       - class_name: '@media print の記法'
         target: 印刷のときの記法
-        value: 表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行と列を留めず、表の高さの上限を外してセルの余白を詰める。飾ったコードブロックは題・行番号・行の地の色と `+`・`-` を出したまま行を折り返し、行番号は折り返した最初の 1 行にだけ出す（`dev/mock/refs/65/assets/code-block-print.css`）。`[data-printing]` のタブは全ての中身をタブ名を題にして縦に並べる
+        value: 表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行・集計の行・列を留めず（`animation` と `transform` を外す）、セルの余白を詰める。集計とコピーの形式のメニュー・コピーできないときのパネル・行の URL の知らせ・最終列の開閉を隠し、畳んだ最終列は元の列に戻す（`dev/mock/refs/151/assets/table-print.css`）。コードブロックのコピーのボタンを隠し、言語のラベルは残す（`dev/mock/refs/151/assets/code-block-print.css`）。飾ったコードブロックは題・行番号・行の地の色と `+`・`-` を出したまま行を折り返し、行番号は折り返した最初の 1 行にだけ出す（`dev/mock/refs/65/assets/code-block-print.css`）。`[data-printing]` のタブは全ての中身をタブ名を題にして縦に並べる。タブ・ステップの折り畳みの見出しの開閉のマーカーを外す（`dev/mock/refs/225/assets/collapse-print.css`）。ファイルツリーの帯（コピーボタン）・コピーできないときのパネル・開閉のアイコンを隠し、長い名前と注釈を折り返す（`dev/mock/refs/225/assets/tree-print.css`）
       - class_name: .mdmark .mdmark-html と .mdmark-hint-*
         target: 埋め込んだ HTML とヒント
         value: '部品設計（埋め込んだHTML・ヒント）の HTML に当てる規則。`dev/mock/refs/45/assets/embed.css` から取る。`.is-wide` の間だけ横にスクロールし、ブロックの印（`.mdmark-hint-mark`）は要素の右上に `position: absolute` で置き、アイコンは lucide の `info` を `mask-image` で付ける。行内（`.mdmark-hint-inline`）は破線の下線。ツールチップは図のツールチップと同じ規則。用語・ヒント・図の線のラベルと箱の印に `cursor: help` を付けない。印刷では印とツールチップを隠し、横のスクロールをやめて紙の幅に収める'
@@ -104,8 +104,28 @@ styles:
         value: '`.mdmark-term` の破線を波線（`text-decoration: underline wavy`）に替え、色を `--mdmark-color-avoided-underline`（既定 `var(--mdmark-color-notice-border)`、`:root` に置く）にする。代わりの用語の語 `mdmark-term-tip-replacement` は太字。印刷では波線を外す（`.mdmark-term` の印刷の規則より詳細度が高いので別に宣言する）。値は `dev/mock/refs/79/assets/avoided-term.css`・`avoided-term-print.css`'
       - class_name: :root（色分け）と .mdmark code [class^="hljs-"]
         target: コードブロックの色分け
-        value: '`--mdmark-color-syntax-{keyword,string,number,type,name,comment}` の既定とダークの値を `:root` に置き（部品設計『コードブロック』の CSS カスタムプロパティ）、`hljs-*` の class を 6 つの変数へ寄せる（部品設計の補足『色分けの種類』。コメントは斜体、`hljs-subst` は本文の色、`hljs-strong` は太字、`hljs-emphasis` は斜体）。値は `dev/mock/refs/97/assets/syntax-highlight.css`。`@media print` では色分けした `code` に `print-color-adjust: exact` を当て、明るい配色の色で印刷する'
+        value: '`--mdmark-color-syntax-{keyword,string,number,type,name,comment}` の既定とダークの値を `:root` に置き（部品設計『コードブロック』の CSS カスタムプロパティ）、`hljs-*` の class を 6 つの変数へ寄せる（部品設計の補足『色分けの種類』。コメントは斜体、`hljs-subst` は本文の色、`hljs-strong` は太字、`hljs-emphasis` は斜体）。`diff` の色分けの `hljs-addition`・`hljs-deletion` は差分の `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` にする（`dev/mock/refs/151/assets/code-block.css`）。値は `dev/mock/refs/97/assets/syntax-highlight.css`。`@media print` では色分けした `code` に `print-color-adjust: exact` を当て、明るい配色の色で印刷する'
         notes: 色分けの HTML は `mount` が描いた後に入れるため、規則は描いた文書の class `.mdmark` の下で当てる
+      - class_name: .mdmark:has(> .mdmark-side-toc) と .mdmark-content・.mdmark-side-toc-*・.mdmark-fold-all
+        target: 右側の目次と本文の列
+        value: '部品設計（右側の目次）の HTML に当てる規則。`dev/mock/refs/166/assets/side-toc.css` から取る。右側の目次を持つ描く先の要素を `container: mdmark / inline-size` の flex にして本文の列と右側の目次を並べ、行の長さの上限（`--mdmark-content-width`）は本文の列が持つ。右側の目次は `position: sticky` で `calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))` に留め、`data-mode`・`data-open`・`data-pinned` で出し方を切り替える。`@container mdmark (width < 48rem)` では右側の目次を本文の上の狭い幅の帯にして `var(--mdmark-sticky-top, 0px)` に留め、見出しに `scroll-margin-block-start: calc(var(--mdmark-sticky-top, 0px) + 3.5rem)` を付ける。広い幅の見出しは `scroll-margin-block-start: var(--mdmark-sticky-top, 0px)`'
+      - class_name: '@media print（右側の目次）'
+        target: 右側の目次の印刷
+        value: '右側の目次を隠し、描く先の要素を `display: block`、本文の列を `max-width: none` にして紙の幅いっぱいに並べる（`dev/mock/refs/166/assets/side-toc-print.css`）'
+      - class_name: .mdmark [data-mdmark-diff-hidden]
+        target: 差分を開いている間に隠す要素
+        value: '`display: none !important`（`DIFF_HIDDEN_ATTRIBUTE`）'
+      - class_name: :root:has(.mdmark[data-mdmark-color-theme="{テーマ}"])
+        target: 選んだテーマの明るい配色
+        value: '`theme-paper`・`theme-slate`・`theme-contrast` のそれぞれに、そのテーマの `--mdmark-color-*` の明るい配色の値と `color-scheme: light` を `:root` に置く。値は `dev/mock/assets/themes/{テーマ}.css` の `:root`。`dev-swiss` の規則は置かず、`:root` の既定の値のままにする'
+        notes: 属性は `mount` が描く先の要素に付ける（`COLOR_THEME_ATTRIBUTE`）。印刷でもこの値を使う。同じページに別のテーマの文書が並んだときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる（`dev-swiss` は規則を持たないため他のテーマに負ける）
+      - class_name: :root:has(.mdmark[data-mdmark-color-theme="{テーマ}"])（暗い配色）
+        target: 選んだテーマの暗い配色（画面のとき）
+        value: '`@media screen and (prefers-color-scheme: dark)` の中と、暗い class の下に属性を持つ `.mdmark` があるときは、そのテーマの暗い配色の値と `color-scheme: dark` を、明るい class の下では明るい配色の値を `:root` に置く。class の種類・`mdmark-theme-*` が `vscode-*` に勝つ優先・入れ子は内側に従う決まりは `:root:has({class} .mdmark)` の行と同じで、その行のセレクタの `.mdmark` に属性を重ねる。値は `dev/mock/assets/themes/{テーマ}.css` の `@media screen` の中'
+        notes: '`@media screen` の中にだけ置き、印刷は明るい配色のまま。`prefers-color-scheme` の規則は明るい配色の規則の後に置く。class の規則は属性を重ねた分だけ `:root:has({class} .mdmark)` の規則より詳細度が高く、既定の明暗の値に勝つ。`@layer mdmark` の中なので、使う側が層の外で `:root` や `.mdmark` に書いた変数には負ける'
+      - class_name: .mdmark .mdmark-diff-block
+        target: 差分のブロック
+        value: '部品設計（差分のブロック）の HTML に当てる規則。`dev/mock/refs/196/assets/diff-preview.css` の `@layer mdmark` の中身（`.mdmark-diff-block`・`.mdmark-diff-block-sign`・`.mdmark-diff-block-label`）から取る。`data-kind` ごとに地を `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`、左の余白の記号を `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` にする。削除した `li` は番号を出さず後ろの項目の番号を進めない（`list-style-type: none`・`counter-increment: list-item 0`）'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

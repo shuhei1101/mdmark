@@ -67,6 +67,57 @@ scenarios:
       - 出力に対象が 0 件であることと、設定の `build.include` を直すことが出る
       - '`build.out` に HTML が書かれていない'
     test: test_error_when_no_documents
+  - name: 正常シナリオ（エイリアスを読む）
+    setup:
+      - name: 見本の文書群
+        description: 正常シナリオと同じ文書 3 つと索引
+      - name: エイリアスを読む設定
+        description: 正常シナリオの build の設定に、`command` の `単体テスト`（コマンド `npm run test:unit`）と、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`）を持つ YAML を指す `aliases` を加えたもの
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as build.out
+        actor R as 読む人
+        W->>C: mdmark build
+        C->>C: 設定・索引・aliases・include の文書を読む
+        C->>F: 読めたエイリアスも埋めた HTML を書く
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+        R->>F: file:// で開き、文書を行き来する
+        F-->>R: どの文書でもエイリアスの語に下線を引いて描く
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - file:// で開くと、入口の文書と、一覧から開いたほかの文書のどちらでも `単体テスト` に下線が付く
+      - '`単体テスト` のツールチップに、コード `npm run test:unit` とコピーのボタンが出る'
+      - まとめた HTML のソースに、`env` の `開発サーバー`・`http://127.0.0.1:8767/` が入っていない
+      - 外への要求が 0 件
+    test: test_normal_when_aliases
+  - name: 正常シナリオ（テーマを選ぶ）
+    setup:
+      - name: テーマを選んだフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` のテーマを選ぶキーに theme-paper を書く
+        notes: まとめた HTML を開くブラウザの配色はダーク
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark build
+        participant B as ブラウザ
+        W->>C: mdmark build を流す
+        C->>C: 設定のテーマを描く先に当てる HTML を組み立てる
+        C-->>W: build.out に HTML を書く
+        W->>B: file:// で開き、一覧から別の文書を開く
+        B-->>W: どの文書も theme-paper の暗い配色で表示
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 入口の文書と、一覧から開いたほかの文書のどちらでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+      - 外への要求が 0 件
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書を書く人

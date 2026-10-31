@@ -144,6 +144,12 @@ export function activate(context: ExtensionContext): TestApi | undefined {
           : (workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd());
       await openConfigFile({ configPath: settings.configPath, baseDir, log });
     }),
+    commands.registerCommand("mdmark.openSettings", () =>
+      commands.executeCommand(
+        "workbench.action.openSettings",
+        `@ext:${context.extension.id}`,
+      ),
+    ),
     commands.registerCommand("mdmark.exportHtml", exportCommand("export")),
     commands.registerCommand("mdmark.openInBrowser", exportCommand("browser")),
     commands.registerCommand("mdmark.printToPdf", exportCommand("print")),

@@ -237,6 +237,55 @@ test("test_prepare_embeds_when_tooltip_placement", async () => {
   expect(withoutTooltips.payload.config).not.toHaveProperty("tooltips");
 });
 
+// 設定の side-toc を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_side_toc_mode", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const withSideToc = await prepare({ "side-toc": { mode: "fixed" } });
+  const withoutSideToc = await prepare({ features: { print: true } });
+  // 検証
+  expect(withSideToc.payload.config["side-toc"]).toEqual({ mode: "fixed" });
+  expect(withoutSideToc.payload.config).not.toHaveProperty("side-toc");
+});
+
+// 設定の colorTheme を埋める設定に写し、知らない名前は写して警告する（正常系）
+test("test_prepare_embeds_when_color_theme", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const known = await prepare({ colorTheme: "theme-slate" });
+  const unknown = await prepare({ colorTheme: "sepia" });
+  const omitted = await prepare({ features: { print: true } });
+  // 検証
+  expect(known.payload.config.colorTheme).toBe("theme-slate");
+  expect(known.warnings).toEqual([]);
+  expect(unknown.payload.config.colorTheme).toBe("sepia");
+  expect(unknown.warnings).toHaveLength(1);
+  expect(unknown.warnings[0]).toContain("sepia");
+  expect(omitted.payload.config).not.toHaveProperty("colorTheme");
+});
+
 /** 色分けのライブラリの代役のモジュールを書く（`hl/` の下に本体と言語の分を置く） */
 const SYNTAX_MODULES = {
   "hl/core.min.js":
@@ -319,4 +368,48 @@ test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
   expect(result.warnings).toHaveLength(1);
   expect(result.warnings[0]).toContain("hl/languages/yaml.min.js");
   expect(result.warnings[0]).toContain("syntax.url");
+});
+
+// エイリアスを payload に入れ、ずれを警告にする（正常系）
+test("test_prepare_embeds_when_aliases", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.md": "テストを流すと開発サーバーを使う。\n",
+    "aliases/command.yaml":
+      "alias_type: command\nid: run-test\nname: テストを流す\ncommand: npm test\n",
+    "aliases/env.yaml":
+      "alias_type: env\nid: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
+    "aliases/term.yaml": "alias_type: term\nid: empty-term\nname: 空の用語\n",
+  });
+  const loaded = createLoaded(dir, {
+    aliases: [
+      {
+        id: "records",
+        paths: ["aliases/*.yaml"],
+        metadata: { alias_type: { type: "ref", field: "alias_type" } },
+      },
+    ],
+  });
+  // 実行
+  const result = await prepareEmbeds({
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+  });
+  // 検証
+  // env は埋めず、使えるコマンドだけが入る
+  expect(result.payload.aliases).toHaveLength(1);
+  expect(result.payload.aliases?.[0]).toMatchObject({
+    alias_type: "command",
+    id: "run-test",
+  });
+  expect(JSON.stringify(result.payload)).not.toContain("dev-server");
+  // description が空の用語は、`{ファイル}:{場所}: {種類}: {内容}` の警告 1 件
+  expect(result.warnings).toHaveLength(1);
+  expect(result.warnings[0]).toContain(
+    "aliases/term.yaml:description: alias_required_empty: ",
+  );
 });

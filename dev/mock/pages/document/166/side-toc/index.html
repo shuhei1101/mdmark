@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / side-toc（右側の目次と節のまとめての開閉） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- この画面の規則（使う側のページの地・留めたトップバー・パンくず） -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット）: 見出しのアンカー・節の開閉・タブ -->
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax.css">
+  <!-- この PR で足す右側の目次とまとめて開閉するボタンの規則（#166 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/166/assets/side-toc.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <link rel="stylesheet" href="./print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../../../refs/166/assets/side-toc-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../../../refs/16/assets/sample.js" defer></script>
+  <!-- 案の切り替え（モックだけの仕組み。右側の目次を組み立てる前に出し方を当てる） -->
+  <script src="./app.js" defer></script>
+  <!-- 拡張記法の操作（タブ・節の開閉・移る先の節を開く処理・印刷の前後の展開） -->
+  <script src="../../../../refs/19/assets/syntax.js" defer></script>
+  <!-- タブの中の見出しへの移動（#151 で共有するアセット） -->
+  <script src="../../../../refs/151/assets/tabs.js" defer></script>
+  <!-- 右側の目次・今いる節・すべて展開とすべて折りたたむ・Shift での入れ子の開閉 -->
+  <script src="../../../../refs/166/assets/side-toc.js" defer></script>
+  <!-- 印刷の見え方（モックだけの仕組み。#151 で共有するアセット） -->
+  <script src="../../../../refs/151/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色・印刷の見え方、未確定の案の切り替え、移る先のリンク -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる（実装では OS の配色の設定に従う） -->
+    <div class="mock-bar-group" role="group" aria-label="配色と印刷">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+      <!-- [data-preview-toggle]: preview.js が印刷の規則を画面にも当てる -->
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+    <!-- [data-scene-axis] [data-scene-value]: app.js が行き先の URL（?{軸}=）と今の案の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="目次の出し方（side-toc.mode）">
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="hover">hover（既定）</a>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="fixed">fixed</a>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="left">left（知らない値）</a>
+    </div>
+    <!-- 移る先のリンク: URL の #ID を変え、閉じた節の中・選ばれていないタブの中の見出しへ移る -->
+    <div class="mock-bar-group" role="group" aria-label="移る先">
+      <a class="mock-bar-item" href="#注意">#注意</a>
+      <a class="mock-bar-item" href="#macos-の注意">#macos-の注意</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外）: 画面の上端に留める -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <!-- 使う側のページの本文の領域 -->
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">166</a> / side-toc
+    </nav>
+
+    <!-- 描く先の要素: mdmark が描いた文書。本文の列と右側の目次を並べる -->
+    <article class="mdmark">
+      <!-- 本文の列: render の本文 -->
+      <div class="mdmark-content">
+<h1 class="mdmark-heading" id="在庫の点検の手引き"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-在庫の点検の手引き">在庫の点検の手引き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#在庫の点検の手引き" aria-label="「在庫の点検の手引き」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+<div class="mdmark-section-body" id="section-在庫の点検の手引き">
+<p>倉庫ごとの在庫と出荷の数を、毎朝の点検で確かめる手順をまとめた文書です。数は毎朝 9 時の棚卸しの結果で更新します。</p>
+<h2 class="mdmark-heading" id="導入"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-導入">導入<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#導入" aria-label="「導入」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-導入">
+<p>点検は、第一倉庫・第二倉庫・冷蔵室の 3 か所を、担当者が順に回って行います。点検の結果は、その日の出荷の前までに記録します。</p>
+<p>初めて点検を担当する人は、この節を読んでから使い方の節へ進みます。点検の順番と記録の書き方は、倉庫によらず同じです。</p>
+<p>点検の途中で在庫の数が合わないときは、その場で数え直し、合わない数と棚の番号を記録に残します。</p>
+<h3 class="mdmark-heading" id="前提"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-前提">前提<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#前提" aria-label="「前提」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-前提">
+<p>点検の担当者は、倉庫の入館証と、在庫の文書を開ける端末を持っています。端末は社内の無線 LAN につながっている必要があります。</p>
+<p>冷蔵室の点検には防寒着が要ります。冷蔵室の中にいる時間は、1 回につき 15 分までにします。</p>
+<p>棚卸しの結果が 9 時までに出ていないときは、前日の数で点検し、記録にその旨を書きます。</p>
+</div>
+<h3 class="mdmark-heading" id="対応ブラウザ"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-対応ブラウザ">対応ブラウザ<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#対応ブラウザ" aria-label="「対応ブラウザ」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-対応ブラウザ">
+<p>在庫の文書は、Chrome と Edge の最新版で開きます。スマホでは閲覧だけができます。</p>
+<p>古いブラウザで開くと、表の並べ替えと右側の目次が使えないことがあります。</p>
+</div>
+</div>
+<h2 class="mdmark-heading" id="使い方"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-使い方">使い方<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#使い方" aria-label="「使い方」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-使い方">
+<p>点検は、毎朝の点検と、出荷の前の点検の 2 つに分かれます。どちらも同じ記録の表に書きます。</p>
+<p>毎朝の点検は全ての棚を回り、出荷の前の点検はその日に出荷する品の棚だけを回ります。</p>
+<p>記録の表は、倉庫ごとの節に置いてあります。点検が済んだ棚には、点検した時刻と担当者の名前を書きます。</p>
+<h3 class="mdmark-heading" id="毎朝の点検"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-毎朝の点検">毎朝の点検<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#毎朝の点検" aria-label="「毎朝の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-毎朝の点検">
+<p>9 時の棚卸しの結果が出たら、第一倉庫から順に回ります。棚の札と在庫の文書の数を見比べ、合わない棚を記録します。</p>
+<p>第一倉庫の次は第二倉庫、最後に冷蔵室を回ります。冷蔵室は温度の記録も合わせて確かめます。</p>
+<p>全ての棚を回ったら、合わなかった棚の数を倉庫ごとに合計し、記録の表の最後の行に書きます。</p>
+<p>合わなかった棚が 5 つを超えるときは、倉庫の責任者へ知らせ、棚卸しをやり直すかを決めてもらいます。</p>
+</div>
+<h3 class="mdmark-heading" id="出荷の前の点検"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-出荷の前の点検">出荷の前の点検<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#出荷の前の点検" aria-label="「出荷の前の点検」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-出荷の前の点検">
+<p>出荷の 1 時間前に、その日に出荷する品の棚を回ります。出荷する数が棚に揃っているかを確かめます。</p>
+<p>揃っていない品は、出荷の担当者へ知らせ、出荷の数を減らすか、別の倉庫から回すかを決めてもらいます。</p>
+<p>臨時便の出荷があるときは、臨時便の 30 分前にも同じ点検をします。</p>
+</div>
+</div>
+<h2 class="mdmark-heading" id="環境ごとの設定"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-環境ごとの設定">環境ごとの設定<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#環境ごとの設定" aria-label="「環境ごとの設定」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-環境ごとの設定">
+<p>点検の記録を CLI で 1 枚の HTML にまとめるときは、端末の環境ごとに Node.js を入れます。</p>
+<!-- [data-group]: tabs.js が選んだタブを group ごとに覚え、URL の ID が指すタブはそれより優先して選ぶ -->
+<div class="mdmark-tabs" data-group="os">
+  <div class="mdmark-tablist" role="tablist" aria-label="環境ごとの設定">
+    <button class="mdmark-tab" type="button" role="tab" id="os-tab-0" aria-selected="true" aria-controls="os-panel-0" tabindex="0">Windows</button>
+    <button class="mdmark-tab" type="button" role="tab" id="os-tab-1" aria-selected="false" aria-controls="os-panel-1" tabindex="-1">macOS</button>
+  </div>
+  <div role="tabpanel" id="os-panel-0" aria-labelledby="os-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">Windows</p>
+    <p>winget で Node.js を入れてから、点検の CLI を使います。</p>
+    <h3 class="mdmark-heading" id="windows-の注意">Windows の注意<a class="mdmark-anchor" href="#windows-の注意" aria-label="「Windows の注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+    <p>PowerShell の実行ポリシーで npx が止まるときは、管理者でない端末から実行します。</p>
+  </div>
+  <!-- 選ばれていないタブの中身: 右側の目次の「macOS の注意」を押すと tabs.js がこのタブを選ぶ -->
+  <div role="tabpanel" id="os-panel-1" aria-labelledby="os-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れてから、点検の CLI を使います。</p>
+    <h3 class="mdmark-heading" id="macos-の注意">macOS の注意<a class="mdmark-anchor" href="#macos-の注意" aria-label="「macOS の注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+    <p>Apple シリコンの端末では、Homebrew の入る場所が /opt/homebrew になります。</p>
+  </div>
+</div>
+</div>
+<h2 class="mdmark-heading" id="補足"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-補足">補足<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#補足" aria-label="「補足」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-補足" hidden="until-found">
+<p>点検の手順に書いていない場面の扱いです。普段の点検では開かなくて構いません。</p>
+<h3 class="mdmark-heading" id="注意"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-注意">注意<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#注意" aria-label="「注意」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-注意" hidden="until-found">
+<p>停電や端末の故障で在庫の文書を開けないときは、紙の点検表に書き、復旧してから記録の表へ写します。</p>
+<h4 class="mdmark-heading" id="例"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-例">例<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#例" aria-label="「例」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h4>
+<div class="mdmark-section-body" id="section-例" hidden="until-found">
+<p>停電で 9 時の棚卸しの結果が出ていない朝は、前日の紙の点検表を使って第一倉庫から回ります。</p>
+</div>
+</div>
+</div>
+<h2 class="mdmark-heading" id="付録"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-付録">付録<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#付録" aria-label="「付録」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
+<div class="mdmark-section-body" id="section-付録">
+<p>点検で使う言葉と、記録の表の列の意味です。</p>
+<h3 class="mdmark-heading" id="用語"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-用語">用語<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#用語" aria-label="「用語」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-用語">
+<p>棚卸しは、倉庫の全ての品の数を数え、在庫の文書の数を実際の数に合わせる作業です。毎朝 9 時に結果が出ます。</p>
+<p>点検は、棚卸しの結果と棚の札が合っているかを、担当者が見て確かめる作業です。</p>
+<p>臨時便は、決まった便の外に出す出荷です。数量は前日の夕方に決まります。</p>
+</div>
+<h3 class="mdmark-heading" id="記録の表の列"><button class="mdmark-section-toggle" type="button" aria-expanded="true" aria-controls="section-記録の表の列">記録の表の列<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><a class="mdmark-anchor" href="#記録の表の列" aria-label="「記録の表の列」へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h3>
+<div class="mdmark-section-body" id="section-記録の表の列">
+<p>倉庫・棚の番号・在庫の数・点検した時刻・担当者の 5 つの列を持ちます。</p>
+<p>合わなかった棚は、在庫の数の列に実際に数えた数を括弧で添えます。</p>
+</div>
+</div>
+</div>
+      </div>
+      <!-- 右側の目次: side-toc.js が本文の列の h1〜h3 から組み立てる。[data-mode]: 出し方（app.js が URL の ?mode= から当てる） -->
+      <div class="mdmark-side-toc" data-mode="hover"></div>
+    </article>
+  </main>
+</body>
+</html>

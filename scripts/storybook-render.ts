@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 import { build } from "esbuild";
 import type { HLJSApi, LanguageFn } from "highlight.js";
+import type { SideTocMode } from "../src/config.ts";
 import {
   type DiagramDirective,
   definitionWarning,
@@ -16,6 +17,7 @@ import {
 import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
+import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
@@ -29,6 +31,7 @@ import {
   renderCommentOrphans,
 } from "../src/parts/comment.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
+import { renderDiffBlock } from "../src/parts/diff-blocks.ts";
 import { renderDiffHtml } from "../src/parts/diff-html.ts";
 import { renderDiffLines } from "../src/parts/diff-lines.ts";
 import { renderDiffMessage } from "../src/parts/diff-message.ts";
@@ -47,11 +50,16 @@ import { type CopyState, renderParam } from "../src/parts/param.ts";
 import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
 import { renderRowDetail } from "../src/parts/row-detail.ts";
 import { renderSection } from "../src/parts/section.ts";
+import { renderSideToc, type SideTocHeading } from "../src/parts/side-toc.ts";
 import { renderSteps } from "../src/parts/steps.ts";
 import { renderSyntaxWarning } from "../src/parts/syntax-warning.ts";
 import { renderTable, type TableOptions } from "../src/parts/table.ts";
 import { renderTabs } from "../src/parts/tabs.ts";
-import { renderTermTip, type TermTipDoc } from "../src/parts/term-tip.ts";
+import {
+  renderTermTip,
+  type TermTipCopyState,
+  type TermTipDoc,
+} from "../src/parts/term-tip.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
@@ -76,9 +84,12 @@ const CSS_PATH = "/render/index.css";
 const VSCODE_CSS_PATH = "/render/vscode.css";
 const VSCODE_CSS_SOURCE = join("vscode", "src", "webview", "preview.css");
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
-// 図のストーリーが読む、拡大・縮小の操作を付ける処理の経路と、その元のソース
-const DIAGRAM_SCRIPT_PATH = "/render/diagram.js";
-const DIAGRAM_SOURCE = "src/interact/diagrams.ts";
+// ストーリーが読む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を揃える処理）
+const SCRIPT_SOURCES: Record<string, string> = {
+  "/render/diagram.js": "src/interact/diagrams.ts",
+  "/render/sticky.js": "src/interact/sticky.ts",
+  "/render/trees.js": "src/interact/trees.ts",
+};
 // 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
 const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
@@ -390,6 +401,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       marks: args.marks as DiffMinimapMark[],
       view: args.view as { top: number; height: number },
     }),
+  "diff-blocks": (args) => {
+    const unit = args.unit as "block" | "item" | "row";
+    const html = renderDiffBlock({
+      kind: args.kind as "add" | "del",
+      unit,
+      html: String(args.html ?? ""),
+    });
+    // 項目と行はリスト・表の中に、ブロックは前後の段落の間に置き、変えていないブロックと文字の位置が揃うことを見せる
+    if (unit === "item") {
+      return `<ol><li>前の項目</li>${html}<li>後ろの項目</li></ol>`;
+    }
+    if (unit === "row") {
+      return `<table><thead><tr><th>項目</th><th>内容</th><th>担当</th></tr></thead><tbody><tr><td>前の行</td><td>前の内容</td><td>開発者</td></tr>${html}<tr><td>後ろの行</td><td>後ろの内容</td><td>開発者</td></tr></tbody></table>`;
+    }
+    return `<p>前の段落</p>${html}<p>後ろの段落</p>`;
+  },
   "diff-message": (args) =>
     renderDiffMessage({
       kind: args.kind as "same" | "single" | "loading",
@@ -408,8 +435,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       meaning: args.meaning as string | undefined,
       docs: args.docs as TermTipDoc[] | undefined,
       replacement: args.replacement as
-        | { term: string; meaning: string }
+        | { term: string; meaning?: string }
         | undefined,
+      alias: args.alias as MdmarkAlias | undefined,
+      copy: args.copy as TermTipCopyState | undefined,
       below: args.below === true,
     });
     // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの上と下に余白を取る
@@ -471,10 +500,25 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       panels: titles.map((title) => `<p>${title} の中身の見本です。</p>`),
       selected: args.selected as number | undefined,
       group: args.group as string | undefined,
+      collapse: args.collapse as "none" | "closed" | "open" | undefined,
+      title: args.title as string | undefined,
     });
   },
-  steps: (args) => renderSteps({ items: args.items as string[] }),
-  tree: (args) => renderTree({ nodes: args.nodes as TreeNode[] }),
+  steps: (args) =>
+    renderSteps({
+      items: args.items as string[],
+      collapse: args.collapse as "none" | "closed" | "open" | undefined,
+      title: args.title as string | undefined,
+    }),
+  tree: (args) =>
+    renderTree({
+      nodes: args.nodes as TreeNode[],
+      source: String(args.source ?? ""),
+      open: args.open === undefined ? undefined : String(args.open),
+      interactive: args.interactive === true,
+      copyState: args.copyState as "idle" | "copied" | undefined,
+      copyFallback: args.copyFallback === true,
+    }),
   badge: (args) => renderBadge({ label: String(args.label ?? "") }),
   "code-block": (args) => {
     const language = String(args.language ?? "");
@@ -484,16 +528,30 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: String(args.title ?? ""),
       lineNumbers: args.lineNumbers === true,
       lines,
+      ...(typeof args.fileName === "string" ? { fileName: args.fileName } : {}),
       ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
+      ...(typeof args.copyState === "string"
+        ? { copyState: args.copyState as "idle" | "copied" | "failed" }
+        : {}),
     });
     return args.highlight === true
       ? highlightCodeBlock(html, language, lines)
       : html;
   },
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
+  "side-toc": (args) =>
+    // 本文の列を左に置き、右側の目次を描く先の要素の右端に寄せる（`mount` が描く並びと同じ）
+    `<div class="mdmark-content">${SAMPLE_BODY}</div>${renderSideToc({
+      headings: args.headings as SideTocHeading[],
+      mode: args.mode as SideTocMode | undefined,
+      sections: args.sections as boolean | undefined,
+      open: args.open as boolean | undefined,
+      pinned: args.pinned as boolean | undefined,
+      current: args.current as string | undefined,
+    })}`,
   section: (args) =>
     renderSection({
-      level: args.level as 2 | 3 | 4,
+      level: args.level as 1 | 2 | 3 | 4,
       id: String(args.id),
       title: String(args.title),
       open: args.open as boolean | undefined,
@@ -508,6 +566,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       columns,
       label: String(args.label),
       open: args.open as boolean | undefined,
+      foldedColumn: args.foldedColumn as
+        | { name: string; html: string }
+        | undefined,
       body: bodyOf(args, SAMPLE_BODY),
     });
     const head = `<td><span class="mdmark-row-head">${toggle}${String(args.label)}</span></td>`;
@@ -748,7 +809,8 @@ export function renderPart(options: {
     const source =
       requested === "extension" ||
       requested === "diff-revisions" ||
-      requested === "diff-content"
+      requested === "diff-content" ||
+      requested === "diff-blocks"
         ? requested
         : "library";
     return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;
@@ -772,21 +834,30 @@ export function renderPart(options: {
   return `<div class="mdmark">${renderer(args)}</div>`;
 }
 
-/** 図の操作（`src/interact/diagrams.ts`）をブラウザの ES モジュールに束ねた文字。初めて求められたときに束ねる */
-let diagramScriptCode: Promise<string> | undefined;
-function diagramScript(root: string): Promise<string> {
-  diagramScriptCode ??= build({
-    absWorkingDir: root,
-    entryPoints: [DIAGRAM_SOURCE],
-    bundle: true,
-    format: "esm",
-    write: false,
-    logLevel: "silent",
-  }).then((result) => result.outputFiles[0]?.text ?? "");
-  return diagramScriptCode;
+/** 操作の処理（`source`）をブラウザの ES モジュールに束ねた文字。経路ごとに、初めて求められたときに束ねる */
+const scriptCodes = new Map<string, Promise<string>>();
+function bundledScript(options: {
+  root: string;
+  path: string;
+  source: string;
+}): Promise<string> {
+  const key = `${options.root}\0${options.path}`;
+  let code = scriptCodes.get(key);
+  if (code === undefined) {
+    code = build({
+      absWorkingDir: options.root,
+      entryPoints: [options.source],
+      bundle: true,
+      format: "esm",
+      write: false,
+      logLevel: "silent",
+    }).then((result) => result.outputFiles[0]?.text ?? "");
+    scriptCodes.set(key, code);
+  }
+  return code;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
   root: string;
@@ -805,8 +876,13 @@ export function createRenderServer(options: {
       response.end(css);
       return;
     }
-    if (url.pathname === DIAGRAM_SCRIPT_PATH) {
-      diagramScript(options.root).then(
+    const scriptSource = SCRIPT_SOURCES[url.pathname];
+    if (scriptSource !== undefined) {
+      bundledScript({
+        root: options.root,
+        path: url.pathname,
+        source: scriptSource,
+      }).then(
         (code) => {
           response.writeHead(200, {
             "Content-Type": "text/javascript; charset=utf-8",

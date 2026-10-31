@@ -4,6 +4,9 @@ import { createRoot, removeRoots } from "../../helpers/dom.ts";
 /** 節の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSections = () => import("../../../../src/interact/sections.ts");
 
+/** 差分のブロックの処理を読み込む（見出しを包む `div` を作る） */
+const loadDiffBlocks = () => import("../../../../src/parts/diff-blocks.ts");
+
 const detachers: Array<() => void> = [];
 
 /** 節の ID の中身の要素を返す */
@@ -15,7 +18,48 @@ function sectionBody(root: HTMLElement, id: string): HTMLElement {
   return body;
 }
 
+/** 節の ID の開閉のボタンを返す */
+function sectionToggle(root: HTMLElement, id: string): HTMLButtonElement {
+  const toggle = root.querySelector<HTMLButtonElement>(
+    `[aria-controls="section-${id}"]`,
+  );
+  if (!toggle) {
+    throw new Error(`開閉のボタンが無い: ${id}`);
+  }
+  return toggle;
+}
+
+/** 節の ID の開閉のボタンの `aria-expanded` を、渡した順に返す */
+function expandedStates(root: HTMLElement, ids: string[]): string[] {
+  return ids.map(
+    (id) => sectionToggle(root, id).getAttribute("aria-expanded") ?? "",
+  );
+}
+
+// Shift の開閉の確かめに使う入れ子の節（A の中に B、B の中に閉じた C、A の外に D）
+const NESTED_MARKDOWN = [
+  "## A",
+  "",
+  "本文A",
+  "",
+  "### B",
+  "",
+  "本文B",
+  "",
+  "#### C",
+  "",
+  "<!-- section: closed -->",
+  "",
+  "本文C",
+  "",
+  "## D",
+  "",
+  "本文D",
+  "",
+].join("\n");
+
 afterEach(() => {
+  vi.restoreAllMocks();
   for (const detach of detachers.splice(0)) {
     detach();
   }
@@ -151,4 +195,288 @@ test("test_attach_sections_when_row_has_term", async () => {
     handle.destroy();
     root.remove();
   }
+});
+
+// 選ばれていないタブの中の ID への hashchange でそのタブを選ぶ（正常系）
+test("test_attach_sections_when_hash_in_tab", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { attachTabs } = await import("../../../../src/interact/tabs.ts");
+  const { root } = createRoot(
+    [
+      "<!-- tabs -->",
+      "",
+      "### macOS",
+      "",
+      "macOS の手順",
+      "",
+      "### Windows",
+      "",
+      "#### 補足",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "##### 注意",
+      "",
+      "本文",
+      "",
+      "<!-- /tabs -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  detachers.push(attachTabs(root));
+  const closed = sectionBody(root, "補足");
+  const windows = [...root.querySelectorAll<HTMLElement>('[role="tab"]')].find(
+    (tab) => tab.textContent === "Windows",
+  );
+  // 実行
+  location.hash = "#注意";
+  // 検証
+  await vi.waitFor(() => {
+    expect(windows?.getAttribute("aria-selected")).toBe("true");
+  });
+  expect(closed.hasAttribute("hidden")).toBe(false);
+});
+
+// H1 の節も開閉する（正常系）
+test("test_attach_sections_when_h1", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { root } = createRoot(
+    "# 手引き\n\n手引きの段落\n\n## 概要\n\n概要の段落\n",
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  // 実行
+  sectionToggle(root, "手引き").click();
+  // 検証
+  const body = sectionBody(root, "手引き");
+  expect(sectionToggle(root, "手引き").getAttribute("aria-expanded")).toBe(
+    "false",
+  );
+  expect(body.getAttribute("hidden")).toBe("until-found");
+  expect(body.contains(root.querySelector("h2"))).toBe(true);
+});
+
+// 差分のブロックに包まれた見出しの節も開閉する（正常系）
+test("test_attach_sections_when_diff_block", async () => {
+  // 準備: 見出しを追加のブロックの `div` で包む
+  const { attachSections } = await loadSections();
+  const { renderDiffBlock } = await loadDiffBlocks();
+  const { root } = createRoot("## 新しい節\n\n段落\n");
+  const heading = root.querySelector("h2");
+  if (heading === null) {
+    throw new Error("見出しが描かれていない");
+  }
+  const template = document.createElement("template");
+  template.innerHTML = renderDiffBlock({
+    kind: "add",
+    unit: "block",
+    html: heading.outerHTML,
+  });
+  const wrapper = template.content.firstElementChild;
+  if (wrapper === null) {
+    throw new Error("包みが作れていない");
+  }
+  heading.replaceWith(wrapper);
+  // 実行
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  // 検証
+  expect(wrapper.querySelector("h2 .mdmark-section-toggle")).not.toBeNull();
+  sectionToggle(root, "新しい節").click();
+  expect(sectionToggle(root, "新しい節").getAttribute("aria-expanded")).toBe(
+    "false",
+  );
+  const body = wrapper.nextElementSibling;
+  expect(body?.classList.contains("mdmark-section-body")).toBe(true);
+  expect(body?.getAttribute("hidden")).toBe("until-found");
+});
+
+// Shift を押しながら押すと、その節と入れ子の節を同じ状態にし、外の節は変えない（正常系）
+test("test_attach_sections_when_shift_click", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { root } = createRoot(NESTED_MARKDOWN);
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const shiftClick = () =>
+    sectionToggle(root, "a").dispatchEvent(
+      new MouseEvent("click", { shiftKey: true, bubbles: true }),
+    );
+  // 実行・検証
+  shiftClick();
+  expect(expandedStates(root, ["a", "b", "c", "d"])).toEqual([
+    "false",
+    "false",
+    "false",
+    "true",
+  ]);
+  shiftClick();
+  expect(expandedStates(root, ["a", "b", "c", "d"])).toEqual([
+    "true",
+    "true",
+    "true",
+    "true",
+  ]);
+  expect(sectionBody(root, "c").hasAttribute("hidden")).toBe(false);
+});
+
+// Shift を押しながら Enter・Space を押しても入れ子をまとめて開閉し、click を起こさない（正常系）
+test("test_attach_sections_when_shift_key", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { root } = createRoot(NESTED_MARKDOWN);
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const toggle = sectionToggle(root, "a");
+  let clicks = 0;
+  toggle.addEventListener("click", () => {
+    clicks += 1;
+  });
+  const press = (key: string): KeyboardEvent => {
+    const event = new KeyboardEvent("keydown", {
+      key,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    toggle.dispatchEvent(event);
+    return event;
+  };
+  // 実行・検証
+  const enter = press("Enter");
+  expect(expandedStates(root, ["a", "b", "c"])).toEqual([
+    "false",
+    "false",
+    "false",
+  ]);
+  const space = press(" ");
+  expect(expandedStates(root, ["a", "b", "c"])).toEqual([
+    "true",
+    "true",
+    "true",
+  ]);
+  expect(enter.defaultPrevented).toBe(true);
+  expect(space.defaultPrevented).toBe(true);
+  expect(clicks).toBe(0);
+});
+
+// 外すと節の開閉の関数の控えから取り除く（正常系）
+test("test_attach_sections_when_detached", async () => {
+  // 準備
+  const { attachSections, foldAllSections } = await loadSections();
+  const { root } = createRoot("# 手引き\n\n## 導入\n\n導入の段落\n");
+  const detach = attachSections({ root, sections: true, rowDetails: true });
+  detach();
+  // 実行
+  foldAllSections({ root, open: false });
+  // 検証
+  expect(sectionBody(root, "導入").hasAttribute("hidden")).toBe(false);
+});
+
+// 入れ子の閉じた節を外側から開いて移る（正常系）
+test("test_reveal_target", async () => {
+  // 準備
+  const { attachSections, revealTarget } = await loadSections();
+  const { root } = createRoot(
+    [
+      "## A",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "### B",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "#### C",
+      "",
+      "本文C",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const scrollIntoView = vi
+    .spyOn(Element.prototype, "scrollIntoView")
+    .mockImplementation(() => {});
+  const target = root.querySelector<HTMLElement>('h4[id="c"]');
+  if (!target) {
+    throw new Error("C の見出しが無い");
+  }
+  // 実行
+  revealTarget(target);
+  // 検証
+  expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(false);
+  expect(sectionBody(root, "b").hasAttribute("hidden")).toBe(false);
+  expect(expandedStates(root, ["a", "b"])).toEqual(["true", "true"]);
+  expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  expect(scrollIntoView.mock.contexts[0]).toBe(target);
+});
+
+// 表の行へはスクロールしない（正常系）
+test("test_reveal_target_when_row", async () => {
+  // 準備
+  const { attachSections, revealTarget } = await loadSections();
+  const { root } = createRoot(
+    [
+      "## A",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const scrollIntoView = vi
+    .spyOn(Element.prototype, "scrollIntoView")
+    .mockImplementation(() => {});
+  const row = root.querySelector<HTMLElement>("tbody tr");
+  if (!row) {
+    throw new Error("表の行が無い");
+  }
+  // 実行
+  revealTarget(row);
+  // 検証
+  expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(false);
+  expect(scrollIntoView).not.toHaveBeenCalled();
+});
+
+// すべて展開は全てを開き、すべて折りたたむは H1 だけ開く（正常系）
+test("test_fold_all_sections", async () => {
+  // 準備
+  const { attachSections, foldAllSections } = await loadSections();
+  const { root } = createRoot(
+    [
+      "# 手引き",
+      "",
+      "手引きの段落",
+      "",
+      "## 導入",
+      "",
+      "導入の段落",
+      "",
+      "### 注意",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "注意の段落",
+      "",
+      "## 付録",
+      "",
+      "付録の段落",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const ids = ["手引き", "導入", "注意", "付録"];
+  // 実行・検証
+  foldAllSections({ root, open: true });
+  expect(expandedStates(root, ids)).toEqual(["true", "true", "true", "true"]);
+  foldAllSections({ root, open: false });
+  expect(expandedStates(root, ids)).toEqual([
+    "true",
+    "false",
+    "false",
+    "false",
+  ]);
 });

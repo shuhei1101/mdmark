@@ -14,6 +14,7 @@ import {
 } from "vscode";
 import type { PreviewConfig } from "../config.ts";
 import {
+  applyColorTheme,
   libraryOrigins,
   loadConfig,
   resolveConfigPath,
@@ -44,8 +45,12 @@ const INSPECT_TIMEOUT_MS = 5000;
 export class PreviewPanel {
   /** VS Code のパネル */
   private readonly webviewPanel: WebviewPanel;
-  /** 対象の Markdown */
+  /** 対象の Markdown（差分のパネルは変更後の文書） */
   private readonly document: TextDocument;
+  /** 差分のパネルの変更前の文書。通常のパネルでは `undefined` */
+  private readonly original: TextDocument | undefined;
+  /** 設定のスコープ・設定ファイルの基準のフォルダを決める URI。差分の変更後が `git:` などの URI でも、ファイルの場所で決める */
+  private readonly fileUri: Uri;
   /** 拡張機能の共通の依存 */
   private readonly deps: ExtensionDeps;
   /** 最後に読めた設定（`libraries` は Webview で読める URL に直した値。読めたことが無ければ `{}`） */
@@ -77,10 +82,16 @@ export class PreviewPanel {
   constructor(options: {
     webviewPanel: WebviewPanel;
     document: TextDocument;
+    original?: TextDocument;
     deps: ExtensionDeps;
   }) {
     this.webviewPanel = options.webviewPanel;
     this.document = options.document;
+    this.original = options.original;
+    this.fileUri =
+      options.original === undefined
+        ? options.document.uri
+        : Uri.file(options.document.uri.fsPath);
     this.deps = options.deps;
     this.webviewPanel.webview.onDidReceiveMessage((message: WebviewMessage) => {
       void this.handleMessage(message);
@@ -100,9 +111,14 @@ export class PreviewPanel {
     return this.webviewPanel.active;
   }
 
-  /** 対象の Markdown の URI */
+  /** 対象の Markdown の URI（差分のパネルは変更後の URI） */
   get uri(): Uri {
     return this.document.uri;
+  }
+
+  /** 設定のスコープ・設定ファイルの基準のフォルダを決める URI */
+  get scope(): Uri {
+    return this.fileUri;
   }
 
   /** 今の列のまま表に出す */
@@ -116,7 +132,7 @@ export class PreviewPanel {
     const token = this.loadToken;
     const { deps } = this;
     const { log } = deps;
-    const configuration = workspace.getConfiguration("mdmark", this.uri);
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
     const decision = await decideVersion({
       setting: settings.version,
@@ -191,11 +207,11 @@ export class PreviewPanel {
   /** 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めなかったときは、前に読めた `libraries` を残す。読めた（無いときを含む）なら true、読めない・開けないなら false を返す */
   async reloadConfig(): Promise<boolean> {
     const { log } = this.deps;
-    const configuration = workspace.getConfiguration("mdmark", this.uri);
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
     const path = resolveConfigPath({
       configPath: settings.configPath,
-      baseDir: baseDirOf(this.uri),
+      baseDir: baseDirOf(this.fileUri),
     });
     let load: Awaited<ReturnType<typeof loadConfig>>;
     try {
@@ -270,26 +286,32 @@ export class PreviewPanel {
   /** 待ちを始め直し、`mdmark.preview.updateDelayMs` 後に送る */
   scheduleRender(): void {
     clearTimeout(this.timer);
-    const configuration = workspace.getConfiguration("mdmark", this.uri);
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
     this.timer = setTimeout(() => {
       this.renderNow();
     }, settings.updateDelayMs);
   }
 
-  /** 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の全文・`config`・配色で `render` を送る。見えていなければ送らない */
+  /** 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の全文・`config` を `mdmark.colorTheme` で上書きした設定・配色で `render` を送る。見えていなければ送らない */
   renderNow(): void {
     clearTimeout(this.timer);
     this.timer = undefined;
     if (!this.visible || !this.ready) {
       return;
     }
-    const configuration = workspace.getConfiguration("mdmark", this.uri);
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
     void this.post({
       type: "render",
       markdown: this.document.getText(),
-      config: this.config,
+      ...(this.original === undefined
+        ? {}
+        : { previous: this.original.getText() }),
+      config: applyColorTheme({
+        config: this.config,
+        colorTheme: settings.colorTheme,
+      }),
       theme: settings.theme,
     });
   }
@@ -315,11 +337,14 @@ export class PreviewPanel {
         await this.load();
         return;
       case "openConfig": {
-        const configuration = workspace.getConfiguration("mdmark", this.uri);
+        const configuration = workspace.getConfiguration(
+          "mdmark",
+          this.fileUri,
+        );
         const settings = readSettings((key) => configuration.get(key));
         await openConfigFile({
           configPath: settings.configPath,
-          baseDir: baseDirOf(this.uri),
+          baseDir: baseDirOf(this.fileUri),
           log,
         });
         return;
@@ -329,6 +354,10 @@ export class PreviewPanel {
         this.pendingInspects.delete(message.id);
         return;
       case "loadFailed":
+        if (message.reason === "diffUnsupported") {
+          log.warn("差分の色分けに対応しないバージョン", this.loaded?.version);
+          return;
+        }
         log.warn(
           "配布物を読めない",
           message.reason,
@@ -343,7 +372,7 @@ export class PreviewPanel {
 
   /** エディタが見えているときだけ、行をエディタの先頭に置く（エディタを開き直さない） */
   private revealEditorLine(line: number): void {
-    const configuration = workspace.getConfiguration("mdmark", this.uri);
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
     const editor = this.findEditor();
     if (!settings.scrollEditorWithPreview || editor === undefined) {
@@ -397,7 +426,7 @@ export class PreviewPanel {
 
   /** エディタの見えている範囲が変わったとき、自分が動かした知らせでなければ、設定がオンのときに先頭の行を `scrollToLine` で送る */
   syncFromEditor(range: { start: number; end: number }): void {
-    const configuration = workspace.getConfiguration("mdmark", this.uri);
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
     if (!settings.scrollPreviewWithEditor) {
       return;

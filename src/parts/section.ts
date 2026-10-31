@@ -8,7 +8,7 @@ function plainText(html: string): string {
 /** 節（見出しとその中身）の HTML を返す。`toggle` が `false` のときは開閉のボタンを置かず中身を隠さない */
 export function renderSection(options: {
   /** 見出しの階層 */
-  level: 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4;
   /** 見出しの ID。中身の `id` を `section-{id}` にする */
   id: string;
   /** 見出しの中身の HTML */

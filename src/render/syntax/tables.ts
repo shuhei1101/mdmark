@@ -12,10 +12,13 @@ import {
 import {
   FILTER_KINDS,
   type FilterKind,
+  findUnreadableTotals,
   TOTAL_CALCS,
+  TOTAL_LABELS,
   type TotalCalc,
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
+import { readCollapse } from "./collapse.ts";
 import { slugBase } from "./headings.ts";
 import {
   envOf,
@@ -66,6 +69,8 @@ export type TableSpec = {
   filters: TableFilter[];
   /** 折り畳み。`closed` と `open` を両方書いたら `closed` */
   collapse: "none" | "closed" | "open";
+  /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
+  title?: string | undefined;
   /** 読めなかった指定 */
   warnings: WarningItem[];
   /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */
@@ -168,12 +173,12 @@ function readTotals(
         message: `の計算 \`${calc}\` は使えません。\`total=列名:計算\` の形で書き、使える計算は ${codes(TOTAL_CALCS)} です。\`${name}\` の列は集計せずに描いています。`,
       });
     } else {
-      const next = { column, calc: calc as TotalCalc };
-      const position = totals.findIndex((total) => total.column === column);
-      if (position < 0) {
-        totals.push(next);
-      } else {
-        totals[position] = next;
+      // 同じ列に別の計算を書けるため、列と計算が同じ指定だけを重ねない
+      const duplicated = totals.some(
+        (total) => total.column === column && total.calc === calc,
+      );
+      if (!duplicated) {
+        totals.push({ column, calc: calc as TotalCalc });
       }
     }
   }
@@ -187,16 +192,13 @@ export function readTableSpec(
 ): TableSpec {
   const warnings: WarningItem[] = [];
   let kind: TableKind = "default";
-  let closed = false;
-  let open = false;
   const featureArgs: string[] = [];
   const unknownKinds: string[] = [];
-  for (const arg of args?.args ?? []) {
-    if (arg === "closed") {
-      closed = true;
-    } else if (arg === "open") {
-      open = true;
-    } else if (arg.startsWith("+") || arg.startsWith("-")) {
+  const { collapse, title, items, rest } = readCollapse(
+    args ?? { args: [], keys: {} },
+  );
+  for (const arg of rest.args) {
+    if (arg.startsWith("+") || arg.startsWith("-")) {
       featureArgs.push(arg);
     } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
       kind = arg as TableKind;
@@ -245,7 +247,7 @@ export function readTableSpec(
     hide: "columns",
     total: "total",
   };
-  for (const [key, value] of Object.entries(args?.keys ?? {})) {
+  for (const [key, value] of Object.entries(rest.keys)) {
     const needed = keyFeatures[key];
     if (needed && !features.includes(needed)) {
       warnings.push({
@@ -265,15 +267,45 @@ export function readTableSpec(
       });
     }
   }
-  if (closed && open) {
-    warnings.push({
-      label: "closed と open",
-      message:
-        "の `closed` と `open` は同時に書けません。どちらか 1 つにしてください。`closed` を当てて描いています。",
-    });
+  warnings.push(...items);
+  return { kind, features, filters, collapse, title, warnings, hide, totals };
+}
+
+/** `tableOpen` の表の直下のトークンの位置を返す（中の表のトークンと、自分の `table_open`・`table_close` を含まない） */
+function ownTokenIndexes(tokens: Token[], tableOpen: number): number[] {
+  const indexes: number[] = [];
+  let depth = 0;
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const type = tokens[index]?.type;
+    if (type === "table_open") {
+      depth += 1;
+    } else if (type === "table_close") {
+      depth -= 1;
+      if (depth === 0) {
+        break;
+      }
+    } else if (depth === 1) {
+      indexes.push(index);
+    }
   }
-  const collapse = closed ? "closed" : open ? "open" : "none";
-  return { kind, features, filters, collapse, warnings, hide, totals };
+  return indexes;
+}
+
+/** `tableOpen` の表の本文の行の数を数える */
+function bodyRowCount(tokens: Token[], tableOpen: number): number {
+  let count = 0;
+  let inBody = false;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const type = tokens[index]?.type;
+    if (type === "tbody_open") {
+      inBody = true;
+    } else if (type === "tbody_close") {
+      inBody = false;
+    } else if (inBody && type === "tr_open") {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 /** 先頭のセルの文字から行の ID を作る。見出しの ID と同じ規則で、`taken` にあれば `-1`・`-2` と番号を上げる。作れないときは `row` を元にする。返した ID を `taken` に足す */
@@ -287,7 +319,7 @@ export function rowIdOf(text: string, taken: Set<string>): string {
   return id;
 }
 
-/** `table_open` から `table_close` までの本文の各行に、行の ID と先頭のセルの行へのリンクを付ける */
+/** `table_open` から対応する `table_close` までの本文の各行に、行の ID と先頭のセルの行へのリンクを付ける */
 function linkRows(
   state: StateCore,
   tokens: Token[],
@@ -302,11 +334,8 @@ function linkRows(
     return token;
   };
   let inBody = false;
-  for (let index = tableOpen; index < tokens.length; index++) {
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
     const token = tokens[index];
-    if (token?.type === "table_close") {
-      break;
-    }
     if (token?.type === "tbody_open") {
       inBody = true;
     } else if (inBody && token?.type === "tr_open") {
@@ -376,6 +405,8 @@ function decorateAttributes(state: StateCore): void {
   let heading = "";
   let headers: string[] = [];
   let column = 0;
+  // 中の表を読む間、外の表の見出しと列の位置を控える
+  const outers: Array<{ headers: string[]; column: number }> = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const next = tokens[index + 1];
@@ -387,7 +418,10 @@ function decorateAttributes(state: StateCore): void {
     } else if (token.type === "table_open") {
       token.attrSet("tabindex", "0");
       token.attrSet("aria-label", heading ? `表: ${heading}` : "表");
+      outers.push({ headers, column });
       headers = [];
+    } else if (token.type === "table_close") {
+      ({ headers, column } = outers.pop() ?? { headers: [], column: 0 });
     } else if (token.type === "tr_open") {
       column = 0;
     } else if (token.type === "th_open") {
@@ -397,6 +431,40 @@ function decorateAttributes(state: StateCore): void {
       column += 1;
     }
   }
+}
+
+/** 表の本文の各行のセルの文字を集める */
+function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
+  const rows: string[][] = [];
+  let inBody = false;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const token = tokens[index];
+    if (token?.type === "tbody_open") {
+      inBody = true;
+    } else if (inBody && token?.type === "tr_open") {
+      rows.push([]);
+    } else if (inBody && token?.type === "td_open") {
+      const inline = tokens[index + 1];
+      rows.at(-1)?.push(inline ? textOf(inline) : "");
+    }
+  }
+  return rows;
+}
+
+/** 集計する列に数として読めないセルがあるときの警告を、列と計算ごとに作る */
+function unreadableTotalWarnings(options: {
+  tokens: Token[];
+  tableOpen: number;
+  totals: TableTotal[];
+}): SyntaxWarning[] {
+  const { tokens, tableOpen, totals } = options;
+  const headers = headersOf(tokens, tableOpen);
+  return findUnreadableTotals({
+    rows: bodyCellsOf(tokens, tableOpen),
+    totals,
+  }).map((item) => ({
+    message: `「${headers[item.column] ?? ""}」の列に数として読めない値 ${codes(item.values)} があるため、${TOTAL_LABELS[item.calc]}を出していません。数を書くか、セルを空にしてください。`,
+  }));
 }
 
 /** 表の見出しの文字を集める */
@@ -442,6 +510,8 @@ export function decorateTables(state: StateCore): void {
   // 行の ID が重ならないよう、見出しの ID と前の行の ID を文書の頭から控える
   const taken = new Set(envOf(state).headings.map((heading) => heading.id));
   const out: Token[] = [];
+  // 囲みに入れて閉じていない表の `table_open` の位置と、閉じるときに置く囲みの終わり
+  const openTables: Array<{ open: number; tail: string }> = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     if (!token) {
@@ -452,6 +522,15 @@ export function decorateTables(state: StateCore): void {
       // 表の印は、ここで使い切る
       continue;
     }
+    const outer = openTables.at(-1);
+    if (token.type === "table_close" && outer) {
+      openTables.pop();
+      out.push(token);
+      const close = ownBlock(state, outer.tail);
+      close.meta = { role: "table-close" };
+      out.push(close);
+      continue;
+    }
     if (token.type !== "table_open") {
       out.push(token);
       continue;
@@ -460,6 +539,7 @@ export function decorateTables(state: StateCore): void {
       .filter(
         (candidate) =>
           candidate.open < index &&
+          candidate.open > (outer?.open ?? -1) &&
           (candidate.close < 0 || index < candidate.close),
       )
       .pop();
@@ -474,6 +554,8 @@ export function decorateTables(state: StateCore): void {
       features: spec.features,
       filters: filtering ? spec.filters : [],
       collapse: spec.collapse,
+      title: spec.title,
+      rowCount: bodyRowCount(tokens, index),
       hide: spec.hide,
       totals: spec.totals,
       body: SLOT_MARKER,
@@ -485,9 +567,20 @@ export function decorateTables(state: StateCore): void {
     // 警告は、囲みの頭（折り畳みの外）に差し込む
     const divEnd = head.indexOf(">") + 1;
     const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
+
     if (range && range.close < 0 && !range.warned) {
       range.warned = true;
       warnings.push(unclosedWarning(range.mark));
+    }
+    // 集計できない列の警告は、表の囲みの直前に置く
+    if (spec.features.includes("total")) {
+      for (const warning of unreadableTotalWarnings({
+        tokens,
+        tableOpen: index,
+        totals: spec.totals,
+      })) {
+        out.push(warningBlock(state, warning));
+      }
     }
     const open = ownBlock(
       state,
@@ -500,19 +593,9 @@ export function decorateTables(state: StateCore): void {
       out.push(warningBlock(state, warning));
     }
     out.push(ownBlock(state, head.slice(divEnd)));
-    // 表のトークンを、閉じるところまでそのまま移す
-    let end = index;
-    while (end < tokens.length && tokens[end]?.type !== "table_close") {
-      out.push(tokens[end] as Token);
-      end += 1;
-    }
-    if (tokens[end]) {
-      out.push(tokens[end] as Token);
-    }
-    const close = ownBlock(state, tail);
-    close.meta = { role: "table-close" };
-    out.push(close);
-    index = end;
+    // 中のトークンは、対応する `table_close` までこの繰り返しで移す（中の表も囲みに入れる）
+    out.push(token);
+    openTables.push({ open: index, tail });
   }
   state.tokens = out;
 }

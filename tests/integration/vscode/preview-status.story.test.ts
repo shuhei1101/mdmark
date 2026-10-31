@@ -165,3 +165,27 @@ test("test_version_undecidable", async () => {
   );
   await expect(notice.locator("p code").count()).resolves.toBe(0);
 });
+
+// 差分に対応しないバージョンを読んだとき、読んだバージョンと直し方を伝え、「リロード」を出す（DiffUnsupported）
+test("test_diff_unsupported", async () => {
+  // 準備・実行
+  const page = await holder.openStory("vscode-previewstatus--diff-unsupported");
+  // 検証
+  const notice = page.locator(".mdmark-preview-notice");
+  await expect(notice.getAttribute("role")).resolves.toBe("status");
+  await expect(notice.locator("h1").innerText()).resolves.toBe(
+    "プレビューを表示できません",
+  );
+  await expect(notice.locator("p").innerText()).resolves.toBe(
+    "読み込んだ mdmark（v0.8.0）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。",
+  );
+  await expect(notice.locator("p code").allInnerTexts()).resolves.toEqual([
+    "v0.8.0",
+    "mdmark.version",
+    "latest",
+  ]);
+  await expect(
+    notice.locator('button[data-action="reload"]').innerText(),
+  ).resolves.toBe("リロード");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

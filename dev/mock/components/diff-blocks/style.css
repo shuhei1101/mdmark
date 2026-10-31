@@ -1,0 +1,41 @@
+/* 描いた文書の上の差分の色分けのカタログ: 状態ごとに案 A と案 B の見本を並べる */
+
+/* カタログ全体: 見本を縦に並べる */
+.catalog {
+  display: grid;
+  gap: 32px;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+/* カタログのタイトル（モック専用の見出し） */
+.catalog-title {
+  margin: 0;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 20px;
+}
+
+/* 状態の名前（モック専用の見出し）: Webview の外に置く */
+.catalog-label {
+  margin: 0 0 8px;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 案の名前（モック専用の見出し）: 見本の上に置く */
+.catalog-case {
+  margin: 12px 0 4px;
+  color: var(--vsc-tab-text);
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* 見本の Webview: 枠で囲み、カタログでは高さを詰める */
+.catalog .preview {
+  min-height: 0;
+  border: 1px solid var(--vsc-border);
+}

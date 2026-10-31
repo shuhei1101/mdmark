@@ -4,14 +4,19 @@ import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
+  closeRepositories,
+  createRepo,
+  gitUri,
   guideMarkdown,
   inspect,
   installMessages,
   installOpenExternal,
   installRecorder,
   lastPanel,
+  openDiffView,
   openMarkdown,
   type RecordedPanel,
+  readFixture,
   recordedPanels,
   renders,
   replaceFirstLine,
@@ -29,6 +34,101 @@ const LIBRARY_SOURCE = `export function draw(slot) {
   slot.textContent = "drawn";
 }
 `;
+
+/** 長い文書の見出し A の行（0 始まり）。前に 8 つの段落を置き、文書の先頭から離す */
+const HEADING_A_LINE = 18;
+/** 見えている範囲の先頭を見出し A の途中に置く位置（元の行番号）。見出し A と次の段落の間を 4 分の 1 だけ進めた位置 */
+const WITHIN_HEADING_A = HEADING_A_LINE + 0.5;
+/** 長い文書の見出し B の行（0 始まり）。見出し A の下で、エディタを先頭から動かさずに見える範囲にある */
+const HEADING_B_LINE = 26;
+
+/** 段落を `count` 個並べた行（段落ごとに空行を挟む） */
+function paragraphs(prefix: string, count: number): string[] {
+  return Array.from({ length: count }, (_, index) => [
+    `${prefix}-${index + 1} 段落の本文です。`,
+    "",
+  ]).flat();
+}
+
+/** 見出し A・B の後ろに画面の高さを大きく超える段落を持つ Markdown。`first` は最初の段落の文 */
+function longMarkdown(first = "最初の段落です。"): string {
+  const lines = [
+    "# 長い文書",
+    "",
+    first,
+    "",
+    ...paragraphs("前", 7),
+    "## 見出し A",
+    "",
+    ...paragraphs("A", 3),
+    "## 見出し B",
+    "",
+    ...paragraphs("B", 200),
+  ];
+  assert.strictEqual(lines[HEADING_A_LINE], "## 見出し A");
+  assert.strictEqual(lines[HEADING_B_LINE], "## 見出し B");
+  return lines.join("\n");
+}
+
+/** Webview で、`text` を含む見出し（h2）の見えている範囲の先頭からの位置 */
+async function headingTop(text: string): Promise<number | undefined> {
+  return (await inspect("h2")).find((item) => item.text.includes(text))?.top;
+}
+
+/** プレビューを `line` の位置が先頭に来るまでスクロールし、止まった後の見出し A の位置を返す（エディタは動かさない） */
+async function scrollPreviewTo(
+  record: RecordedPanel,
+  line: number,
+): Promise<number> {
+  const start = await headingTop("見出し A");
+  // 拡張機能を通さずに Webview へ送り、Webview の中だけでスクロールする
+  await record.postRaw({ type: "scrollToLine", line });
+  await waitFor(async () => (await headingTop("見出し A")) !== start, {
+    message: "プレビューがスクロールしない",
+  });
+  // スクロールの知らせで見えている先頭の行を保存し終えるまで待つ
+  await sleep(500);
+  const top = await headingTop("見出し A");
+  assert.ok(top !== undefined, "見出し A が無い");
+  return top;
+}
+
+/** 狭い幅の右側の目次を上端の帯にしているときの、帯の下端（帯が無いときは 0）。帯は 1 行分の高さで、広い幅の右の列は画面の高さいっぱいの縦長 */
+async function bandBottom(): Promise<number> {
+  const [aside] = await inspect(".mdmark-side-toc");
+  return aside !== undefined && aside.height < 120
+    ? aside.top + aside.height
+    : 0;
+}
+
+/** 見出し A の上端が、見えている範囲の先頭（上端の帯があればその下端）より上に出ていることを確かめる */
+async function assertWithinHeadingA(top: number): Promise<void> {
+  const inset = await bandBottom();
+  assert.ok(
+    top < inset,
+    `見出し A の上端が見えている範囲の先頭より上に出ていない: ${top}（先頭 ${inset}）`,
+  );
+}
+
+/** `panel` と同じ列で別の Markdown を開き、パネルを背面に回す */
+async function hidePanel(record: RecordedPanel): Promise<void> {
+  await writeFixture("other.md", "# 別の文書\n");
+  const other = await vscode.workspace.openTextDocument(
+    vscode.Uri.file(join(workspaceDir(), "other.md")),
+  );
+  await vscode.window.showTextDocument(other, record.panel.viewColumn);
+  await waitFor(() => !record.panel.visible, { message: "背面に回らない" });
+}
+
+/** Markdown の文書の `line` 行目を書き換える（保存はしない） */
+async function replaceLine(
+  editor: vscode.TextEditor,
+  line: number,
+  text: string,
+): Promise<void> {
+  const range = editor.document.lineAt(line).range;
+  await editor.edit((builder) => builder.replace(range, text));
+}
 
 /** 設定ファイルを持たず注意書きを持つ Markdown でプレビューを開き、最初の描画を待つ */
 async function openGuide(
@@ -54,7 +154,10 @@ suite("プレビューを描き直す", () => {
     installMessages();
     installOpenExternal();
   });
-  teardown(resetEnvironment);
+  teardown(async () => {
+    await closeRepositories();
+    await resetEnvironment();
+  });
 
   // 打つたびに待ち、最後の全文だけを送る
   test("test_normal", async () => {
@@ -133,33 +236,101 @@ suite("プレビューを描き直す", () => {
     assert.strictEqual((await inspect(".mdmark-config-band")).length, 0);
   });
 
-  // 背面の間は送らず、ready を受けて最後の全文を送る
-  test("test_normal_when_revealed", async () => {
-    // 準備: プレビューのパネルを同じ列の別のタブの後ろに回す
-    const { editor, record } = await openGuide();
-    await writeFixture("other.md", "# 別の文書\n");
-    const other = await vscode.workspace.openTextDocument(
-      vscode.Uri.file(join(workspaceDir(), "other.md")),
-    );
-    await vscode.window.showTextDocument(other, record.panel.viewColumn);
-    await waitFor(() => !record.panel.visible, { message: "背面に回らない" });
+  // 背面の間は送らず、ready を受けて最後の全文を送り、作り直した Webview を背面に回す前の位置へ戻す
+  test("test_normal_when_revealed", async function () {
+    // 長い文書の描画と、スクロールが止まるまでの待ちに時間がかかる
+    this.timeout(60000);
+    // 準備: 左の列のエディタと右の列のプレビューで長い文書を開き、プレビューを見えている範囲の先頭が見出し A の途中に当たるまでスクロールして位置を控える
+    await writeFixture("long.md", longMarkdown());
+    const editor = await openMarkdown("long.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    await sleep(500);
+    const savedTop = await scrollPreviewTo(record, WITHIN_HEADING_A);
+    await assertWithinHeadingA(savedTop);
+    // 右の列で別の Markdown を開き、プレビューのパネルをその後ろに回す
+    await hidePanel(record);
     const before = renders(record).length;
-    // 実行: 背面の間に 3 回書き換える
-    for (const text of ["# 見出し 1", "# 見出し 2", "# 見出し 3"]) {
-      await replaceFirstLine(editor, text);
+    // 実行: 背面の間に、エディタのスクロールを動かさずに見出し B を 3 回書き換える
+    for (const text of ["## 見出し B 1", "## 見出し B 2", "## 見出し B 3"]) {
+      await replaceLine(editor, HEADING_B_LINE, text);
       await sleep(100);
     }
     await sleep(700);
     assert.strictEqual(renders(record).length, before);
+    const editorStart = editor.visibleRanges[0]?.start.line;
+    const receivedBefore = record.received.length;
     // 表に戻す
     record.panel.reveal(record.panel.viewColumn);
     // 検証
     await waitFor(() => renders(record).length > before, {
       message: "戻した後に送られない",
     });
-    assert.ok(renders(record).at(-1)?.markdown.startsWith("# 見出し 3"));
-    await waitFor(async () =>
-      (await inspect("h1")).some((item) => item.text.includes("見出し 3")),
+    assert.ok(
+      renders(record).at(-1)?.markdown.includes("## 見出し B 3\n"),
+      "3 回目の全文を送っていない",
+    );
+    await waitFor(async () => (await headingTop("見出し B 3")) !== undefined, {
+      message: "見出し B が 3 回目の文字にならない",
+    });
+    await waitFor(
+      async () => {
+        const top = await headingTop("見出し A");
+        return top !== undefined && Math.abs(top - savedTop) <= 1;
+      },
+      { message: "見出し A が背面に回す前の位置に戻らない" },
+    );
+    // 戻したスクロールでは revealLine を送らず、エディタも動かない
+    await sleep(700);
+    const revealed = record.received
+      .slice(receivedBefore)
+      .filter((message) => message.type === "revealLine");
+    assert.deepStrictEqual(revealed, []);
+    assert.strictEqual(editor.visibleRanges[0]?.start.line, editorStart);
+  });
+
+  // 差分のパネルも、作り直した Webview を背面に回す前の位置へ戻す
+  test("test_normal_when_diff_revealed", async function () {
+    // 長い文書の差分の描画と、スクロールが止まるまでの待ちに時間がかかる
+    this.timeout(60000);
+    // 準備: 最初の段落だけを書き換えた長い文書の差分ビューから差分のプレビューを開き、見えている範囲の先頭が見出し A の途中に当たるまでスクロールして位置を控える
+    const dir = await createRepo("diff-repo-revealed", {
+      "guide.md": longMarkdown(),
+    });
+    const after = longMarkdown("書き換えた最初の段落です。");
+    await writeFixture(join("diff-repo-revealed", "guide.md"), after);
+    const modified = vscode.Uri.file(join(dir, "guide.md"));
+    await openDiffView(await gitUri(modified, "HEAD"), modified);
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    await waitFor(
+      async () => (await inspect(".mdmark-diff-block")).length > 0,
+      { message: "差分のブロックが出ない" },
+    );
+    await sleep(500);
+    const savedTop = await scrollPreviewTo(record, WITHIN_HEADING_A);
+    await assertWithinHeadingA(savedTop);
+    // 同じ列で別の Markdown を開き、差分のパネルをその後ろに回す
+    await hidePanel(record);
+    const before = renders(record).length;
+    // 実行
+    record.panel.reveal(record.panel.viewColumn);
+    // 検証
+    await waitFor(() => renders(record).length > before, {
+      message: "戻した後に送られない",
+    });
+    assert.ok(
+      renders(record).at(-1)?.previous !== undefined,
+      "previous を持たない",
+    );
+    await waitFor(
+      async () => {
+        const top = await headingTop("見出し A");
+        return top !== undefined && Math.abs(top - savedTop) <= 1;
+      },
+      { message: "見出し A が背面に回す前の位置に戻らない" },
     );
   });
 
@@ -298,5 +469,43 @@ suite("プレビューを描き直す", () => {
     } finally {
       library.close();
     }
+  });
+
+  // mdmark.colorTheme を変えると設定ファイルの colorTheme を上書きして描き直し、空に戻すと設定ファイルのテーマで描く
+  test("test_normal_when_color_theme_changed", async () => {
+    // 準備
+    const config = "colorTheme: theme-paper\n";
+    await setSetting("preview.theme", "light");
+    const { record } = await openGuide({ config });
+    /** Webview の文書に付いたテーマの属性 */
+    const shownTheme = async () =>
+      (await inspect("[data-mdmark-color-theme]"))[0]?.attributes[
+        "data-mdmark-color-theme"
+      ];
+    await waitFor(async () => (await shownTheme()) === "theme-paper");
+    // 実行・検証: theme-slate にする
+    let before = renders(record).length;
+    await setSetting("colorTheme", "theme-slate");
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.strictEqual(
+      renders(record).at(-1)?.config.colorTheme,
+      "theme-slate",
+    );
+    await waitFor(async () => (await shownTheme()) === "theme-slate");
+    // 実行・検証: 空に戻す
+    before = renders(record).length;
+    await setSetting("colorTheme", "");
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.strictEqual(
+      renders(record).at(-1)?.config.colorTheme,
+      "theme-paper",
+    );
+    await waitFor(async () => (await shownTheme()) === "theme-paper");
+    // 設定ファイルは書き換わらない
+    assert.strictEqual(await readFixture("mdmark.config.yaml"), config);
   });
 });

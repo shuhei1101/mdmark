@@ -35,3 +35,20 @@ stories:
       titles: '["macOS","Windows","Linux"]'
       selected: 0
       group: os
+  - name: Closed
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["uv","pip"]'
+      selected: 0
+      collapse: closed
+  - name: OpenTitle
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows"]'
+      selected: 0
+      collapse: open
+      title: 入れ方

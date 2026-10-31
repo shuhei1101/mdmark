@@ -1,12 +1,22 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { DiffHtmlRenderer } from "../../../../src/diff/panel.ts";
 import type { DiffRevision, DiffSource } from "../../../../src/diff/source.ts";
+import {
+  createRoot as createDocumentRoot,
+  removeRoots,
+} from "../../helpers/dom.ts";
 
 /** 差分を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPanel = () => import("../../../../src/diff/panel.ts");
 
+/** 節の操作を読み込む（H1 の節の中の差分を確かめる） */
+const loadSections = () => import("../../../../src/interact/sections.ts");
+
 /** 知らせの枠の処理を読み込む（差分の知らせの枠を期待値にする） */
 const loadNotice = () => import("../../../../src/parts/notice.ts");
+
+// 差分を開いている間に隠した要素に付ける属性
+const HIDDEN_ATTRIBUTE = "data-mdmark-diff-hidden";
 
 // 新しい順に並べた 3 つのリビジョン
 const REVISIONS: DiffRevision[] = [
@@ -131,6 +141,7 @@ afterEach(() => {
   for (const root of roots.splice(0)) {
     root.remove();
   }
+  removeRoots();
   for (const band of document.querySelectorAll(".mdmark-diff-minimap")) {
     band.remove();
   }
@@ -157,8 +168,8 @@ test("test_attach_diff", async () => {
   expect(source.contentCalls.every((call) => call.docId === "guide")).toBe(
     true,
   );
-  expect(root.querySelector("p")?.hidden).toBe(true);
-  expect(root.querySelector("h1")?.hidden).toBeFalsy();
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(root.querySelector("h1")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
 });
 
 // 前を選び直すと後の選択を直して描き直す（正常系）
@@ -328,8 +339,65 @@ test("test_attach_diff_when_detached", async () => {
   expect(root.querySelector(".mdmark-diff-toggle")).toBeNull();
   expect(root.querySelector(".mdmark-diff")).toBeNull();
   expect(root.querySelector(".mdmark-diff-line")).toBeNull();
-  expect(root.querySelector("p")?.hidden).toBeFalsy();
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
   expect(document.querySelector(".mdmark-diff-minimap")).toBeNull();
+});
+
+// H1 の節では見出しと節の中身の間に置き、開いている間は右側の目次も隠し、閉じても節の開閉を変えない（正常系）
+test("test_attach_diff_when_h1_section", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const { attachDiff } = await loadPanel();
+  const { root } = createDocumentRoot(
+    [
+      "# 手引き",
+      "",
+      "手引きの段落",
+      "",
+      "## 導入",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "導入の段落",
+      "",
+    ].join("\n"),
+  );
+  detaches.push(attachSections({ root, sections: true, rowDetails: true }));
+  const aside = document.createElement("aside");
+  document.body.append(aside);
+  roots.push(aside);
+  const source = createSource({}, REVISIONS.slice(1));
+  detaches.push(
+    attachDiff({
+      root,
+      source,
+      docId: "guide",
+      renderHtml: (html) => ({ html, attach: () => () => {} }),
+      hideWith: [aside],
+    }),
+  );
+  const toggle = root.querySelector<HTMLButtonElement>(".mdmark-diff-toggle");
+  const h1 = root.querySelector("h1");
+  const outer = root.querySelector<HTMLElement>('[id="section-手引き"]');
+  const inner = root.querySelector<HTMLElement>('[id="section-導入"]');
+  if (toggle === null || h1 === null || outer === null || inner === null) {
+    throw new Error("見出し・ボタン・節の中身のどれかが無い");
+  }
+  // 実行
+  toggle.click();
+  // 検証
+  expect(h1.compareDocumentPosition(toggle)).toBe(
+    Node.DOCUMENT_POSITION_FOLLOWING,
+  );
+  expect(toggle.compareDocumentPosition(outer)).toBe(
+    Node.DOCUMENT_POSITION_FOLLOWING,
+  );
+  expect(outer.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(aside.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(true);
+  toggle.click();
+  expect(outer.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
+  expect(aside.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
+  expect(inner.getAttribute("hidden")).toBe("until-found");
 });
 
 // 選び直した本文の待ちが 1 秒・2 秒を過ぎると、前の差分に替えて読み込み中と回る表示を出す（正常系）
@@ -446,4 +514,38 @@ test("test_scope_ids", async () => {
   expect(root.querySelector("line")?.getAttribute("marker-end")).toBe(
     "url(#p-1-before-d-1-arrow)",
   );
+});
+
+// open では置いた時点で開き、押すと閉じる（正常系）
+test("test_attach_diff_when_open", async () => {
+  // 準備
+  const root = createRoot();
+  const source = createSource({}, REVISIONS.slice(1));
+  const { attachDiff } = await loadPanel();
+  // 実行: 押さずに、置いた時点で開く
+  const detach = attachDiff({
+    root,
+    source,
+    docId: "guide",
+    renderHtml: (html) => ({ html, attach: () => () => {} }),
+    open: true,
+  });
+  detaches.push(detach);
+  // 検証: 押す前に取り出し元が呼ばれ、開いた状態で差分が出る
+  await vi.waitFor(() => {
+    expect(root.querySelector(".mdmark-diff-line")).not.toBeNull();
+  });
+  expect(source.revisionsCalls).toEqual(["guide"]);
+  expect(source.contentCalls.map((call) => call.revisionId).sort()).toEqual([
+    "r1",
+    "r2",
+  ]);
+  const toggle = root.querySelector(".mdmark-diff-toggle");
+  expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(true);
+  // 実行: 押すと閉じる
+  clickToggle(root);
+  // 検証
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
 });

@@ -27,3 +27,7 @@ entries:
     schema: mdmark.index.schema.json
     sha256: 6960cb8fde43ef2f22f289ddee81ca53e63e6c2092c1cbae7f70bb9bd6edbbc3
     reason: 最上位に省いてよい tags と、文書の tags の要素に name を持つオブジェクトと、文書の related の要素に to・type・when を持つオブジェクトを足しただけで、文字列の要素は読めるまま件数の上限も置かないので、古い索引もそのまま新しい Schema に合う
+  - version: v0.9.0
+    schema: mdmark.config.schema.json
+    sha256: 261633f2eeaf589d9a30cdabb41533f56be078f7c9839925304b31155497483f
+    reason: features に省いてよい side-toc と、省いてよい side-toc と、省いてよい aliases と、省いてよい colorTheme を足しただけで、古い設定もそのまま新しい Schema に合う

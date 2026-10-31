@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, inject, test } from "vitest";
 import type {
+  MdmarkAlias,
   MdmarkIndex,
   MdmarkMatch,
   MdmarkMatches,
@@ -11,6 +12,7 @@ type Built = {
   collectMatches: (input: {
     index: MdmarkIndex;
     documents: Record<string, string>;
+    aliases?: MdmarkAlias[];
   }) => MdmarkMatches;
 };
 
@@ -83,7 +85,10 @@ function flowDefinition(name: string): string[] {
 }
 
 /** 一致の行・始まり・終わりで本文を切り出した文字 */
-function cut(body: string, match: MdmarkMatch): string {
+function cut(
+  body: string,
+  match: Pick<MdmarkMatch, "line" | "start" | "end">,
+): string {
   return (body.split("\n")[match.line - 1] ?? "").slice(match.start, match.end);
 }
 
@@ -455,4 +460,72 @@ test("test_normal_when_invalid_index", async () => {
   // 検証
   expect(matches?.byDocument.guide?.map((match) => match.text)).toEqual(["WS"]);
   expect(matches?.targets.map((target) => target.id)).toEqual(["ws"]);
+});
+
+// 渡したエイリアスの一致を alias の参照先として返し、avoid の種類を avoided に返す（正常系（エイリアス））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const { collectMatches } = await loadBuilt();
+  const index: MdmarkIndex = {
+    schema: 1,
+    docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
+  };
+  const aliases = [
+    {
+      alias_type: "command",
+      id: "unit-test",
+      name: "単体テスト",
+      aliases: [],
+      description: "ライブラリ本体の単体テストを流す",
+      command: "npm run test:unit",
+    },
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: [],
+      replacement: "ワークスペース",
+    },
+    {
+      alias_type: "env",
+      id: "dev-server",
+      name: "開発サーバー",
+      aliases: [],
+      url: "http://127.0.0.1:8767/",
+    },
+  ] as unknown as MdmarkAlias[];
+  const guide =
+    "# 使い方\n\n単体テストを流し、単体テストをもう一度流す。作業場と開発サーバーは使わない。\n";
+  const documents = { "guide.md": guide };
+  const before = structuredClone({ index, documents, aliases });
+  // 実行
+  const matches = collectMatches({ index, documents, aliases });
+  // 検証
+  const inGuide = matches.byDocument.guide ?? [];
+  expect(inGuide).toHaveLength(2);
+  for (const match of inGuide) {
+    expect(match).toMatchObject({
+      kind: "alias",
+      aliasType: "command",
+      id: "unit-test",
+      title: "単体テスト",
+      description: "ライブラリ本体の単体テストを流す",
+      text: "単体テスト",
+    });
+    expect(cut(guide, match)).toBe("単体テスト");
+  }
+  expect(matches.targets.map((target) => target.id)).toEqual(["unit-test"]);
+  const avoided = matches.avoided.guide ?? [];
+  expect(avoided).toHaveLength(1);
+  expect(avoided[0]).toMatchObject({
+    kind: "alias",
+    aliasType: "avoid",
+    id: "workplace",
+    title: "ワークスペース",
+    text: "作業場",
+  });
+  expect(avoided[0]).not.toHaveProperty("description");
+  expect(JSON.stringify(matches)).not.toContain("開発サーバー");
+  expect(JSON.stringify(matches)).not.toContain("dev-server");
+  expect({ index, documents, aliases }).toEqual(before);
 });

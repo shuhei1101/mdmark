@@ -21,3 +21,5 @@ items:
     summary: 描き終えた後に印刷のダイアログを出す HTML を書き出して開く（mdmark.printToPdf）
   - page: 拡張機能の配布物を作る.ts.yaml
     summary: '`vscode-v*` のタグで .vsix を作り、GitHub Release に添える'
+  - page: 設定を開く.ts.yaml
+    summary: VS Code の設定画面を mdmark の項目に絞って開く（mdmark.openSettings）

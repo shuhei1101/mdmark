@@ -1,0 +1,111 @@
+title: "ajv"
+kind: "ライブラリ"
+version:
+  current: 8.20.0
+  latest: 8.20.0
+  checked_on: '2026-10-28'
+  source: package.json
+  pinning: 完全一致。`dependencies` に置き、`dist/cli.js` とプラグインに束ねる。`dist/index.js` には入れない
+catalogs:
+  - name: API
+    version: 8.20.0
+    entries:
+      - name: Ajv2020
+        kind: クラス
+        purpose: draft 2020-12 のスキーマを登録・コンパイルする検証器（`import { Ajv2020 } from "ajv/dist/2020.js"`）
+        params:
+          - name: options.allErrors
+            type: boolean
+            default: 'false'
+            description: 最初のエラーで止めず、全てのエラーを返すか
+            notes: '`true` で使う'
+          - name: options.strict
+            type: boolean | "log"
+            default: 'true'
+            description: スキーマの未知の keyword・曖昧な書き方をコンパイルの誤りにするか
+            notes: '`true` で使う'
+          - name: options.verbose
+            type: boolean
+            default: 'false'
+            description: エラーに `schema`・`parentSchema`・`data` を入れるか
+            notes: '`title` を取るため `true` で使う'
+          - name: options.$data
+            type: boolean
+            default: 'false'
+            description: スキーマの中で `$data` の参照を許すか
+            notes: 使わない（8.17.1 の ReDoS の前提）
+      - name: addSchema
+        kind: メソッド
+        purpose: スキーマを `$id` かキーで登録し、別のスキーマの `$ref` から指せるようにする
+        params:
+          - name: schema
+            type: object
+            required: true
+            description: 登録するスキーマ（YAML は `yaml` で読んだオブジェクトを渡す）
+          - name: key
+            type: string
+            description: 登録するキー。省くとスキーマの `$id`
+        returns:
+          - name: '-'
+            type: Ajv
+            description: 呼んだ検証器（続けて呼べる）
+      - name: compile
+        kind: メソッド
+        purpose: スキーマをコンパイルして検証の関数を返す
+        params:
+          - name: schema
+            type: object
+            required: true
+            description: コンパイルするスキーマ
+        returns:
+          - name: '-'
+            type: ValidateFunction
+            description: データを渡すと真偽値を返し、偽のときは関数の `errors` に `ErrorObject` の配列が入る
+            notes: '`strict` でスキーマに誤りがあると例外を投げる'
+      - name: ErrorObject
+        kind: 型
+        purpose: 検証の関数の `errors` の 1 件
+        returns:
+          - name: instancePath
+            type: string
+            description: 誤った値の場所の JSON Pointer（例 `/aliases/1/paths`）
+          - name: schemaPath
+            type: string
+            description: 誤りを出した keyword のスキーマの中の場所（例 `#/anyOf/0/required`）
+          - name: keyword
+            type: string
+            description: 誤りを出した keyword（`required`・`enum`・`minItems` など）
+          - name: params
+            type: object
+            description: keyword ごとの詳細（`required` は `missingProperty`、`enum` は `allowedValues`、`const` は `allowedValue`、`minItems` は `limit`）
+          - name: parentSchema?
+            type: object
+            description: keyword を持つスキーマ
+            notes: '`verbose: true` のときだけ入る'
+          - name: message
+            type: string
+            description: 英語の文
+            notes: 使わず、keyword と params から日本語の文を組む
+lead: JSON Schema でデータを検証するライブラリ。`ajv/dist/2020` の `Ajv2020` が draft 2020-12 を扱い、エラーごとに場所・keyword・params を返す。
+purl: pkg:npm/ajv@8.20.0
+supplier: ajv-validator
+dependency_scope: 必須
+adoption: 採用
+upstream: ajv-validator/ajv
+used_in:
+  - src/cli/
+verification:
+  state: 済
+  date: '2026-10-28'
+  detail: 'PoC #177 で、Node の ESM から 8.20.0 の `Ajv2020`（`allErrors: true`・`strict: true`・`verbose: true`）に、`yaml` で読んだ alias-inject v0.2.0 の `aliases.schema.yaml` を `addSchema(schema, id)` で登録し、設定のスキーマの `properties.aliases` を `{ $ref: id }` にして strict のエラー無しで `compile` できることを確かめた。正しい行はエラー 0 件、`alias_type` 欠け・`paths` が空・`alias_type` が `memo` の 3 行はそれぞれ `required`・`minItems`・`enum` のエラーになり、`instancePath` が `/aliases/{行の番号}/...` だった。`anyOf` の枝のエラーは `schemaPath` で判別子の `const` が合わない枝を落として 7 件から 3 件に絞れた。`parentSchema.title` と `params` から日本語の 1 文を組めた。esbuild で 1 ファイルに束ねた実行でも出力が一致し、検証の間の外への要求は 0 件だった'
+license: MIT（商用利用可）。推移の依存は fast-deep-equal（MIT）・fast-uri（BSD-3-Clause）・json-schema-traverse（MIT）・require-from-string（MIT）
+official_url: https://ajv.js.org/
+docs_url: https://ajv.js.org/api.html
+selection:
+  candidates: ajv 8.20.0・json-schema-library 11.6.16・@hyperjump/json-schema 1.18.0・@cfworker/json-schema 4.1.1・@exodus/schemasafe 1.3.0 を比べた（[比較表](https://github.com/shuhei1101/mdmark/pull/176#discussion_r4399765603)）。
+  decision: 'ずれの文に要る keyword・params・`title`（`verbose` の `parentSchema`）を自前の処理なしで取れるのは ajv だけで、PoC #177 で条件を全て確かめた。ほかの候補は params か `title` を得るためにスキーマを `$ref` 越しに引き直す処理を自前で持つことになる。@cfworker/json-schema と @exodus/schemasafe はリリースが止まっている。'
+  consequences: '`anyOf` の枝のエラーは、判別子の `const` が合わない枝を `schemaPath` で落とす処理を自前で持つ（ajv の `discriminator` は `oneOf` 専用）。8.17.1 の ReDoS は `$data` が前提のため、`$data` オプションを使わない。束ねたプラグインの `plugin/THIRD_PARTY_LICENSES.txt` に ajv と推移の依存のライセンスを記載する。'
+install: |-
+  ```bash
+  npm i -E ajv@8.20.0
+  ```

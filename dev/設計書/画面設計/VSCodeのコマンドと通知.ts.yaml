@@ -15,9 +15,9 @@ elements:
     id: command-titles
     kind: label
     position: コマンドパレット
-    description: '`contributes.commands` の `category` を `mdmark`、`title` を次にする。`mdmark.openPreviewToSide`: プレビューを横に開く（既定のショートカット `Shift+Alt+D`、Mac は `Shift+Option+D`）・`mdmark.openPreview`: プレビューを開く・`mdmark.refreshPreview`: プレビューをリロード・`mdmark.openConfig`: 設定ファイルを開く・`mdmark.exportHtml`: HTML に書き出す・`mdmark.openInBrowser`: ブラウザで開く・`mdmark.printToPdf`: PDF に印刷'
+    description: '`contributes.commands` の `category` を `mdmark`、`title` を次にする。`mdmark.openPreviewToSide`: プレビューを横に開く（既定のショートカット `Shift+Alt+D`、Mac は `Shift+Option+D`）・`mdmark.openPreview`: プレビューを開く・`mdmark.refreshPreview`: プレビューをリロード・`mdmark.openConfig`: 設定ファイルを開く・`mdmark.openSettings`: 設定を開く・`mdmark.exportHtml`: HTML に書き出す・`mdmark.openInBrowser`: ブラウザで開く・`mdmark.printToPdf`: PDF に印刷'
     label: 'mdmark: {title}'
-    visible_when: '`mdmark.refreshPreview` は mdmark のプレビューが開いているとき。他は `editorLangId == markdown` か mdmark のプレビューにフォーカスがあるとき（`mdmark.openConfig` は常時）'
+    visible_when: '`mdmark.refreshPreview` は mdmark のプレビューが開いているとき。他は `editorLangId == markdown` か mdmark のプレビューにフォーカスがあるとき（`mdmark.openConfig`・`mdmark.openSettings` は常時）'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#exceptions[なし（Markdown でない）]
     reason: 「プレビューをリロード」は確認ログの決定。「プレビューを開く」「HTML に書き出す」「ブラウザで開く」「PDF に印刷」は単一ユースケースのシナリオの表記
@@ -42,7 +42,7 @@ elements:
     description: 「作る」で書く YAML。キーは書かず、書き方をコメントで示す
     label: |-
       ```yaml
-      # mdmark の設定。VS Code のプレビューは features と libraries を読みます
+      # mdmark の設定。VS Code のプレビューは features・libraries・side-toc・colorTheme を読みます
 
       # 機能のオン・オフ（使うときは次の 2 行の # を外す）
       # features:
@@ -51,11 +51,19 @@ elements:
       # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
       # libraries:
       #   my-chart: ./libs/my-chart.js
+
+      # 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
+      # side-toc:
+      #   mode: fixed
+
+      # 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
+      # colorTheme: theme-paper
       ```
     visible_when: 雛形を作ったとき
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features]
       - dev/設計書/設定/ライブラリ本体#settings[libraries]
+      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
     status: planned
     introduced:
       pr: 69
@@ -91,6 +99,17 @@ elements:
     status: planned
     introduced:
       pr: 69
+  - name: 設定を開くボタン
+    id: editor-title-open-settings
+    kind: button
+    position: mdmark のプレビューのエディタのタイトル
+    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(gear)`、ポインターを当てるとコマンドの表示名を出し、読み上げの名前もコマンドの表示名になる。キーボードで押せる（VS Code のエディタのタイトルのボタンのまま）'
+    label: 'mdmark: 設定を開く'
+    visible_when: mdmark のプレビューのパネルがアクティブなとき（`activeWebviewPanelId`）
+    action: VS Code の設定画面を mdmark の項目に絞って開く
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定を開く.ts#
+    reason: 歯車の置き場所は確認ログ「プレビューの歯車のボタンの置き場所と押したときの動き」の決定
+    status: planned
 screen: vscode/package.json
 lead: VS Code 拡張機能が VS Code の画面に足す入口（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。見た目は VS Code のままで、モックは作らない。
 refs:

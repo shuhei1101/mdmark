@@ -17,6 +17,7 @@ declare const ICONS: {
     database: IconNode;
     globe: IconNode;
     server: IconNode;
+    sigma: IconNode;
     info: IconNode;
     copy: IconNode;
     "columns-3": IconNode;
@@ -29,6 +30,8 @@ declare const ICONS: {
     pencil: IconNode;
     pin: IconNode;
     "chevrons-up-down": IconNode;
+    "chevrons-down-up": IconNode;
+    ellipsis: IconNode;
     "arrow-up": IconNode;
     "arrow-down": IconNode;
     "arrow-right": IconNode;

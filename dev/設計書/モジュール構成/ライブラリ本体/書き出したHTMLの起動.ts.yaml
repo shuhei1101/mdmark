@@ -7,7 +7,7 @@ directory: |-
   ├── modules.ts # 埋めたモジュールの blob: URL と拡張の登録
   ├── route.ts   # URL の # の読み取りと、描いた文書のリンクの書き換え
   ├── bundle.ts  # まとめた HTML の文書の行き来と一覧のパネル
-  └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）
+  └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を渡し、右側の目次の帯と表の見出し行を上の帯の下に留める
   ```
 constants:
   - name: DOC_HASH_PREFIX
@@ -28,7 +28,7 @@ functions:
     container: src/viewer/index.ts
     usecase: 共通
     summary: '`#mdmark-payload` の JSON を読み、モジュールと拡張を用意してから、`kind` が `document` なら描く先の要素に `mount` で描き、`bundle` なら `startBundle` を呼ぶ'
-    description: '`src/viewer/index.ts` の末尾で `startViewer(document)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表を渡す'
+    description: '`src/viewer/index.ts` の末尾で `startViewer(document)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表、`opts.aliases` に `payload.aliases` を渡す'
     kind: 関数
     scope: public
     is_async: true
@@ -48,6 +48,12 @@ functions:
         condition: '`kind: document`、文書が `# 題`'
         mock: Chromium の `document`（`.browser.test.ts` で流す）に中身の `script` と `article.mdmark` を置く
         expected: '`article` に `h1` の `題` が描かれる'
+      - name: test_start_viewer_when_aliases
+        case: 正常
+        summary: 埋めたエイリアスで下線を付ける
+        condition: '`kind: document`、文書が `単体テストを流す。`、`aliases` に `command` の `単体テスト`'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に中身の `script` と `article.mdmark` を置く
+        expected: '`article` の `単体テスト` が `mdmark-term` の要素で、ツールチップにコマンドがある'
     callees:
       - '#functions[prepareModules]'
       - '#functions[startBundle]'
@@ -193,7 +199,7 @@ functions:
     container: src/viewer/bundle.ts
     usecase: まとめたHTMLで文書を行き来する
     summary: 横の一覧とパネルに `renderDocList` を置き、URL の `#` が指す文書を `mount` で描いて、`hashchange` で文書を行き来する
-    description: '文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）'
+    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を渡す。文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）'
     kind: 関数
     scope: public
     side_effects: 画面と履歴を書き換える
@@ -226,6 +232,12 @@ functions:
         condition: '`#/下書き/メモ.md`'
         mock: Chromium の `document`（`.browser.test.ts` で流す）に画面の骨組みを置く
         expected: '`a.md` が描かれ、`location.hash` が `#/a.md`'
+      - name: test_start_bundle_when_side_toc_link_into_closed_section
+        case: 正常
+        summary: 右側の目次の項目を押すと、閉じた節を開いて見出しへ移る
+        condition: '`#/b.md` で、`b.md` が `## 導入`（節の印で閉じた状態）とその中の `### 注意` を持つ。右側の目次の `注意` の項目を押す'
+        mock: Chromium の `document`（`.browser.test.ts` で流す）に画面の骨組みを置く
+        expected: '`導入` の中身が `hidden` を持たず、`location.hash` が `#/b.md#注意`'
     callees:
       - '#functions[resolveRoute]'
       - '#functions[rewriteLinks]'

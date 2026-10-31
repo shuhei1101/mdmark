@@ -5,11 +5,11 @@ elements:
     kind: label
     position: エディタの列のタブ
     description: パネルのタブに出す題
-    label: プレビュー {ファイル名}
+    label: プレビュー {ファイル名}（差分のパネルは `差分プレビュー {ファイル名}`）
     io: 表示
     type: 文字列
     visible_when: 常時
-    source: プレビューを開く.request.uri（ファイル名だけ）
+    source: プレビューを開く.request.uri（ファイル名だけ。差分のパネルは差分ビューの `modified` のファイル名）
     status: planned
     introduced:
       pr: 69
@@ -29,9 +29,9 @@ elements:
     id: preview-document
     kind: container
     position: 描く先を包む要素
-    description: mdmark の `mount` に渡す描く先の要素。中身と見た目は画面設計『文書』のままで、拡張機能は手を加えない
+    description: 'mdmark の `mount` に渡す描く先の要素。中身と見た目は画面設計『文書』のままで、拡張機能は手を加えない。差分のパネルは `diffMode: "blocks"` で描き、画面設計『文書』の差分のブロックを出す'
     visible_when: 配布物を読み終え、最初の `rendered` を送った後
-    source: プレビューを描き直すの送る中身（全文・`features`・`libraries`）
+    source: プレビューを描き直すの送る中身（全文・差分のパネルの `previous`・`features`・`libraries`・`side-toc`・`colorTheme`）
     action: 本文のリンクを押すと `#` で始まるリンクはこの中で移り、それ以外は `openLink` を送る。スクロールすると `revealLine` を送る
     action_ref: dev/設計書/画面設計/文書.ts#
     refs:
@@ -60,11 +60,11 @@ elements:
     component: dev/設計書/部品設計/プレビューの状態の表示.ts#
     args:
       - name: state
-        value: '`loadFailed` の `reason`（`offline` / `versionMissing`）か、バージョンを決められないとき `versionUndecidable`'
+        value: '`loadFailed` の `reason`（`offline` / `versionMissing` / `diffUnsupported`）か、バージョンを決められないとき `versionUndecidable`'
       - name: version
         value: 読もうとした版（`versionUndecidable` では渡さない）
     position: 描く先を包む要素
-    description: 配布物を読めないとき、文書の代わりに理由と「リロード」を出す
+    description: 配布物を読めないときと、差分のパネルで読んだ配布物が差分の表示に対応しないとき、文書の代わりに理由と「リロード」を出す
     visible_when: Webview が `loadFailed` を送ったときか、拡張機能がバージョンを決められず配布物を読まない HTML を入れたとき
     action: 「リロード」を押すと `reload` を送る
     action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#

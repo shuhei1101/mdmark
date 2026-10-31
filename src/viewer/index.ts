@@ -29,6 +29,7 @@ export async function startViewer(doc: Document): Promise<void> {
     ...(payload.index ? { index: payload.index } : {}),
     ...(entry.docId ? { docId: entry.docId } : {}),
     ...(payload.references ? { references: payload.references } : {}),
+    ...(payload.aliases ? { aliases: payload.aliases } : {}),
   });
 }
 

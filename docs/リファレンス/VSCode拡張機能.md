@@ -15,6 +15,7 @@ VS Code の拡張機能 mdmark のコマンドと設定。
 | [プレビューを開く](#プレビューを開く) | `mdmark.openPreview` | Markdown のエディタと同じ列に、プレビューを開く |
 | [プレビューをリロードする](#プレビューをリロードする) | `mdmark.refreshPreview` | 設定ファイルと読むバージョンを決め直し、配布物を読み直して描く |
 | [設定ファイルを開く](#設定ファイルを開く) | `mdmark.openConfig` | 拡張機能が読む設定ファイルを開く。無ければ雛形を作るかを尋ねる |
+| [設定を開く](#設定を開く) | `mdmark.openSettings` | VS Code の設定画面を、mdmark の項目に絞って開く |
 | [HTML に書き出す](#html-に書き出す) | `mdmark.exportHtml` | 開いている Markdown を、mdmark で描く HTML に書き出す |
 | [ブラウザで開く](#ブラウザで開く) | `mdmark.openInBrowser` | 書き出し直した HTML を既定のブラウザで開く |
 | [PDF に印刷](#pdf-に印刷) | `mdmark.printToPdf` | 書き出し直した HTML をブラウザで開き、印刷のダイアログを出す |
@@ -37,6 +38,19 @@ Markdown の横の列に、プレビューを開く。
 ショートカットとボタンは、Markdown を開いているとき（`editorLangId == markdown`）だけ効く。
 コマンドパレットには、Markdown を開いているか、mdmark のプレビューにフォーカスがあるときに出る。
 
+### 差分ビューで呼んだとき
+
+アクティブなタブが、変更前と変更後の両方が Markdown の差分ビューで、`uri` がその変更前か変更後の側と一致する（省いたときはそのタブ）なら、変更後の文書を描き、追加・変更したブロックと削除したブロックを色分けした差分のパネルを開く。
+変更前の側にフォーカスがあるときも、変更後の側を対象にする。
+
+- パネルのタブは `差分プレビュー {変更後のファイル名}`。変更前と変更後の組ごとに 1 つで、同じ組のパネルが開いていれば新しく作らず表に出す。差分でないプレビューとは別になる
+- 変更前と変更後の Markdown は、差分ビューの 2 つの側から読む。Git のコマンドは呼ばない
+- 変更後の側の書き換えは、`mdmark.preview.liveUpdate` と `mdmark.preview.updateDelayMs` に従って描き直す。変更前の側の書き換えでは描き直さない
+- 読んだ mdmark が差分の表示に対応しないときは、変更後の文書だけの表示を出さず、描けない理由と「リロード」を出す
+- 複数ファイルの差分エディター（Source Control のグラフから開くもの）は、差分ビューとして扱わない
+
+使い方は [差分をプレビューで見る](../使い方/VSCodeで見る/差分をプレビューで見る.md)。
+
 ### 引数
 
 | 引数 | 必須 / 任意 | 説明 |
@@ -54,6 +68,7 @@ Markdown のエディタと同じ列のタブに、プレビューを開く。
 | コマンドパレット | `mdmark: プレビューを開く` |
 
 出す条件は [プレビューを横に開く](#プレビューを横に開く) のコマンドパレットと同じ。
+差分ビューで呼んだときの振る舞いも同じ（[差分ビューで呼んだとき](#差分ビューで呼んだとき)）。
 
 ### 引数
 
@@ -92,12 +107,32 @@ Markdown のエディタと同じ列のタブに、プレビューを開く。
 
 コマンドパレットには常に出る。
 
-雛形は、`features` と `libraries` の記載例をコメントにした YAML で、キーは持たない。
+雛形は、`features`・`libraries`・`side-toc`・`colorTheme` の記載例をコメントにした YAML で、キーは持たない。
 作った直後のプレビューの見た目は変わらない。
 
 ### 引数
 
 [プレビューを横に開く](#プレビューを横に開く) と同じ。設定ファイルの場所を決める Markdown になる。
+
+## 設定を開く
+
+VS Code の設定画面を、mdmark の拡張機能の項目だけに絞って開く。
+YAML の設定ファイルは開かない（それは [設定ファイルを開く](#設定ファイルを開く)）。
+プレビューのパネルは閉じず、設定も設定ファイルも書き換えない。
+
+### 使い方
+
+| 呼び方 | 内容 |
+| --- | --- |
+| コマンドパレット | `mdmark: 設定を開く` |
+| エディタのタイトル | 歯車のボタン（ポインターを当てると `mdmark: 設定を開く`）。mdmark のプレビューがアクティブなときだけ出る |
+
+コマンドパレットには常に出る。
+歯車のボタンはキーボードで押せ、読み上げの名前も `mdmark: 設定を開く`。
+
+### 引数
+
+なし。
 
 ## HTML に書き出す
 
@@ -168,6 +203,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
   "mdmark.preview.scrollPreviewWithEditor": true,
   "mdmark.preview.scrollEditorWithPreview": true,
   "mdmark.preview.theme": "auto",
+  "mdmark.colorTheme": "",
   "mdmark.export.outputDir": ""
 }
 ```
@@ -177,12 +213,13 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 | 設定 | 型 | 既定 | 許す値 | 説明 | 反映 |
 | --- | --- | --- | --- | --- | --- |
 | `mdmark.version` | 文字列 | `latest` | `latest` か `v{X}.{Y}.{Z}` | `latest` のときは、プレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定し、タグ一覧を取らない | プレビューを開き直すかリロードしたとき |
-| `mdmark.configPath` | 文字列 | `mdmark.config.yaml` | 相対パスか絶対パス | `features` と `libraries` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
+| `mdmark.configPath` | 文字列 | `mdmark.config.yaml` | 相対パスか絶対パス | `features`・`libraries`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
 | `mdmark.preview.liveUpdate` | 真偽値 | `true` | `true`・`false` | `true` のときは Markdown を打つたびに描き直す。`false` のときは保存したときだけ描き直す | 即時 |
 | `mdmark.preview.updateDelayMs` | 整数 | `300` | 0〜5000 | 最後に打ってから描き直すまでのミリ秒。範囲の外の値は既定の値として扱う | 即時 |
 | `mdmark.preview.scrollPreviewWithEditor` | 真偽値 | `true` | `true`・`false` | エディタをスクロールしたときに、プレビューを同じ箇所まで動かす | 即時 |
 | `mdmark.preview.scrollEditorWithPreview` | 真偽値 | `true` | `true`・`false` | プレビューをスクロールしたときに、エディタを同じ箇所まで動かす | 即時 |
 | `mdmark.preview.theme` | 文字列 | `auto` | `auto`・`light`・`dark` | `auto` は VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する | 即時 |
+| `mdmark.colorTheme` | 文字列 | 空 | 空・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` | プレビューと、`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が書き出す HTML の配色のテーマ。空のときは設定ファイルの `colorTheme` に従い、そこにも無ければ `dev-swiss`。設定画面の表示は「Mdmark: Color Theme」で、空の選択肢は「（設定ファイルに従う）」。明暗は `mdmark.preview.theme` が決める | 即時 |
 | `mdmark.export.outputDir` | 文字列 | 空 | 空・相対パス・絶対パス | `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が HTML を書くフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する | 即時 |
 
 <!-- /table -->
@@ -208,12 +245,14 @@ features:
   callout: false
 libraries:
   my-chart: ./libs/my-chart.js
+colorTheme: theme-slate
 ```
 
 | キー | 説明 |
 | --- | --- |
 | `features` | 機能のオン・オフの既定。書いた値をそのまま `mount` の `opts.config.features` に渡す |
 | `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL は設定ファイルのあるフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す |
+| `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。空でないときは `mdmark.colorTheme` の値に置き換える |
 
 `theme`・`extensions`・`index`・`build` など、ほかのキーは読まない。
 最上位がマップでないファイルと空のファイルは、設定なしとして扱う。

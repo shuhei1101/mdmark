@@ -25,8 +25,10 @@ const execFileAsync = promisify(execFile);
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 
-// ビルド（型定義を書く `tsc` を含む）を子プロセスで流すテストの待つ上限（ミリ秒）
-const BUILD_TIMEOUT_MS = 120_000;
+// ビルド（型定義を書く `tsc` を含む）を子プロセスで流すテストの待つ上限（ミリ秒）。
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と integration-node 全件 3 回を流した所要時間の最大は 128.6 秒（test_normal_when_schema_change_listed）。
+// 128.6 秒 × 1.5 = 192.9 秒を 10 秒単位で切り上げて 200 秒にした
+const BUILD_TIMEOUT_MS = 200_000;
 
 const createdRoots: string[] = [];
 
@@ -38,6 +40,10 @@ async function createWorkTree(versionIni: string): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI が束ねる設定の Schema と取り込んだ alias-inject の Schema
+  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
+    recursive: true,
+  });
   // CLI の `init` が写す雛形の正本
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,

@@ -12,6 +12,9 @@ theme: theme.css
 # 書き出した HTML に埋める拡張のモジュール（使うときは次の行の # を外す）
 # extensions: [extensions/example.ts]
 
+# 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか（使うときは次の行の # を外す）
+# colorTheme: theme-paper
+
 # mdmark build がまとめる文書と、書き出す先
 build:
   include: ["**/*.md"]

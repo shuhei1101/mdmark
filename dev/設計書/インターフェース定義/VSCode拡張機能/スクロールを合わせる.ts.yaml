@@ -78,6 +78,28 @@ flows:
     expected:
       - アクティブなタブがプレビューのままで、エディタのタブが表に出ない
     test: test_error_when_editor_hidden
+  - name: 正常系（差分で描いたプレビュー）
+    summary: 差分ビューの変更後の側を動かすと、削除したブロックを飛ばしてその行のブロックをプレビューの先頭に置く
+    setup:
+      - name: 長い文書の差分のプレビュー
+        description: 正常系と同じ長い文書をコミットし、10 の節のうち 5 番目の節の段落を消し、8 番目の節に段落を足した差分ビューと、横の列の差分のプレビューを開いた状態
+      - name: Mock
+        description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。拡張機能と Webview の間のメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 変更後の側で 8 番目の節の見出しの行を先頭にする
+        EX->>PV: scrollToLine（変更後の文書の行）
+        PV->>PV: data-source-line から先頭に置く
+    expected:
+      - Webview の見えている先頭から 1 行分の高さの中に 8 番目の節の見出しがある
+      - '`scrollToLine` の `line` が変更後の文書の見出しの行番号'
+      - 5 番目の節の削除したブロックが `data-source-line` を持たない
+    test: test_normal_when_diff_preview
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ（差分で描いたプレビュー）]
 lead: エディタとプレビューのどちらかをスクロールすると、ブロックの元の行番号を手がかりにもう片方を同じ箇所まで動かす。
 idempotent: true
 side_effects: Webview へ `scrollToLine` を送る。エディタを `revealRange` で動かす。カーソルの位置と文書は変えない
@@ -92,11 +114,14 @@ exceptions:
     notes: 何もしない（エディタを開き直さない）
 constraints:
   - item: エディタから合わせる
-    constraint: '`mdmark.preview.scrollPreviewWithEditor` が `true` のとき、エディタの `visibleRanges[0].start.line` を `scrollToLine` で送る。Webview は `data-source-line` がその行以下の最後の要素と次の要素の間を、行の割合で内分した位置を先頭に置く'
+    constraint: '`mdmark.preview.scrollPreviewWithEditor` が `true` のとき、エディタの `visibleRanges[0].start.line` を `scrollToLine` で送る。Webview は `data-source-line` がその行以下の最後の要素と次の要素の間を、行の割合で内分した位置を先頭に置く。狭い幅で右側の目次を文書の上端の帯に留めているときは、帯の下端を先頭とする'
   - item: プレビューから合わせる
-    constraint: '`mdmark.preview.scrollEditorWithPreview` が `true` のとき、Webview は見えている先頭の位置を、前後の `data-source-line` の要素の間で内分した行番号（整数に切り捨てる）にして `revealLine` で送る。拡張機能はその行を `TextEditorRevealType.AtTop` で見せる'
+    constraint: '`mdmark.preview.scrollEditorWithPreview` が `true` のとき、Webview は見えている先頭の位置（狭い幅で右側の目次を文書の上端の帯に留めているときは帯の下端）を、前後の `data-source-line` の要素の間で内分した行番号（整数に切り捨てる）にして `revealLine` で送る。拡張機能はその行を `TextEditorRevealType.AtTop` で見せる'
   - item: 往復の止め方
-    constraint: 動かした側が、自分が起こしたスクロールの知らせだけを捨てる。拡張機能は `revealLine` で動かした行を覚え、次に届く `onDidChangeTextEditorVisibleRanges` の `visibleRanges[0]` がその行を含むなら `scrollToLine` を送らずに覚えを消す（含まないなら覚えを消して通常どおり送る）。動かす前からその行が `visibleRanges[0]` の先頭から 6 行以内にあるときは `revealRange` を呼ばず、覚えも作らない。Webview は `scrollToLine` で動かす `scrollTop` が今の値と違うときだけ動かしてその値を覚え、次に届く `scroll` の知らせで `scrollTop` がその値なら `revealLine` を送らずに覚えを消す
+    constraint: 動かした側が、自分が起こしたスクロールの知らせだけを捨てる。拡張機能は `revealLine` で動かした行を覚え、次に届く `onDidChangeTextEditorVisibleRanges` の `visibleRanges[0]` がその行を含むなら `scrollToLine` を送らずに覚えを消す（含まないなら覚えを消して通常どおり送る）。動かす前からその行が `visibleRanges[0]` の先頭から 6 行以内にあるときは `revealRange` を呼ばず、覚えも作らない。Webview は `scrollToLine` で動かす `scrollTop` が今の値と違うときだけ動かしてその値を覚え、次に届く `scroll` の知らせで `scrollTop` がその値なら `revealLine` を送らずに覚えを消す。作り直した Webview が保存した行へ戻すスクロール（プレビューを描き直す.ts の制約「背面のパネル」）も、`scrollToLine` と同じく動かした `scrollTop` を覚えて捨てる
     notes: 時間で捨てないため、知らせが届くまでの間の長さによらず往復しない。`AtTop` は指定した行の 5 行前を先頭に置き、位置が変わらないときは知らせが届かないため、行の一致でなく範囲に含むかで比べ、動かないときは覚えを作らない（外部ライブラリ『vscode』の制限事項）
   - item: 知らせの間引き
     constraint: Webview はスクロールの知らせを `requestAnimationFrame` ごとに 1 回にまとめて送る
+  - item: 差分のパネルの合わせ方
+    constraint: 差分のパネルは差分ビューの変更後の側のエディタと合わせる。`data-source-line` は変更後の文書の行番号で、削除したブロックは `data-source-line` を持たないため、内分の前後の要素にならない。変更前の側のエディタのスクロールは送らず、プレビューからは変更後の側を動かす
+    notes: 差分ビューは両側のスクロールを VS Code が合わせる

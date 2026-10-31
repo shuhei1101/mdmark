@@ -89,7 +89,128 @@ states:
         value: 話し合いの記録を置くフォルダ
       - name: below
         value: 'true'
-lead: 本文の用語と文書の別名に破線の下線を引き、隣に「用語」の意味と「関連文書」の並びを持つツールチップを置く。やめた言い方には波線の下線を引き、「代わりの用語」のツールチップを置く。HTML 文字列を返し、ブラウザと Node で同じ出力になる。開閉と置き場所は `mount` の操作が付ける。
+  - name: AliasTerm
+    description: term のエイリアスの別名「査読」に一致した語。「用語」の区分に名前「レビュー」と説明を持つ `role="tooltip"` のツールチップを開いた
+    args:
+      - name: text
+        value: 査読
+      - name: id
+        value: tip-alias-term
+      - name: alias
+        value: '{"alias_type":"term","id":"review","name":"レビュー","aliases":["査読"],"description":"変更を別の人が確かめること"}'
+  - name: AliasDoc
+    description: doc のエイリアス。「文書」の区分に名前と概要を持つ `role="tooltip"` のツールチップを開いた
+    args:
+      - name: text
+        value: 設計書
+      - name: id
+        value: tip-alias-doc
+      - name: alias
+        value: '{"alias_type":"doc","id":"design-doc","name":"設計書","description":"仕様を記載した文書"}'
+  - name: AliasCommand
+    description: command のエイリアス。「コマンド」の区分に名前・説明・コマンドとコピーのボタン・実行場所を持つ `role="group"` のツールチップを開いた
+    args:
+      - name: text
+        value: 単体テスト
+      - name: id
+        value: tip-alias-command
+      - name: alias
+        value: '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}'
+  - name: AliasCommandCopied
+    description: コマンドをコピーした。ボタンが `コピーしました`（`check` のアイコン）
+    args:
+      - name: text
+        value: 単体テスト
+      - name: id
+        value: tip-alias-command-copied
+      - name: alias
+        value: '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}'
+      - name: copy
+        value: copied
+  - name: AliasCommandFailed
+    description: コマンドをコピーできなかった。ボタンが `コピーできませんでした`（`circle-alert` のアイコン）
+    args:
+      - name: text
+        value: 単体テスト
+      - name: id
+        value: tip-alias-command-failed
+      - name: alias
+        value: '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}'
+      - name: copy
+        value: failed
+  - name: AliasCommandLong
+    description: コマンドが長く、コマンドの面の幅で折り返す。ツールチップの幅の上限を超えない
+    args:
+      - name: text
+        value: まとめた HTML の書き出し
+      - name: id
+        value: tip-alias-command-long
+      - name: alias
+        value: '{"alias_type":"command","id":"build-handbook","name":"まとめた HTML の書き出し","description":"設定の build の文書を 1 枚の HTML にまとめる","command":"npx mdmark build --config docs/mdmark.config.yaml --out dist/handbook/index.html --title \"開発ハンドブック\"","cwd":"リポジトリの直下"}'
+  - name: AliasUrl
+    description: url のエイリアス。「URL」の区分に名前・説明・URL の文字のリンクを持つ `role="group"` のツールチップを開いた
+    args:
+      - name: text
+        value: 課題の一覧
+      - name: id
+        value: tip-alias-url
+      - name: alias
+        value: '{"alias_type":"url","id":"issues","name":"課題の一覧","description":"Issue を並べたページ","url":"https://github.com/shuhei1101/mdmark/issues"}'
+  - name: AliasUrlLong
+    description: URL が長く、リンクの文字を 1 行に収めて末尾を「...」で省略する
+    args:
+      - name: text
+        value: 移行の手順書
+      - name: id
+        value: tip-alias-url-long
+      - name: alias
+        value: '{"alias_type":"url","id":"upgrade-guide","name":"移行の手順書","description":"設定・索引・文書を新しいバージョンに合わせる手順","url":"https://github.com/shuhei1101/mdmark/blob/develop/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E5%B0%8E%E5%85%A5/%E7%89%88%E3%82%92%E4%B8%8A%E3%81%92%E3%82%8B.md?plain=1#L12-L48"}'
+  - name: AliasUrlNotHttp
+    description: http・https でない URL。リンクにせず文字で出し、リンクが無いので `role="tooltip"`
+    args:
+      - name: text
+        value: 危ないリンク
+      - name: id
+        value: tip-alias-url-not-http
+      - name: alias
+        value: '{"alias_type":"url","id":"bad-link","name":"危ないリンク","url":"javascript:alert(1)"}'
+  - name: AliasSkill
+    description: skill のエイリアスで説明が空。「スキル」の区分に名前とスキル名の等幅の 1 行だけを出す
+    args:
+      - name: text
+        value: 記録の取り込み
+      - name: id
+        value: tip-alias-skill
+      - name: alias
+        value: '{"alias_type":"skill","id":"session","name":"記録の取り込み","skill":"mindstella:session"}'
+  - name: AliasTool
+    description: tool のエイリアス。「ツール」の区分に名前・説明・ツール名の等幅の 1 行を出す
+    args:
+      - name: text
+        value: 点検のツール
+      - name: id
+        value: tip-alias-tool
+      - name: alias
+        value: '{"alias_type":"tool","id":"check-tool","name":"点検のツール","description":"設定と索引のずれを返す","tool":"check"}'
+  - name: AliasPath
+    description: path のエイリアス。「パス」の区分に名前・説明・パスの等幅の 1 行を出す
+    args:
+      - name: text
+        value: 設定ファイル
+      - name: id
+        value: tip-alias-path
+      - name: alias
+        value: '{"alias_type":"path","id":"config-file","name":"設定ファイル","description":"機能のオン・オフと読む文書を記載する","path":"mdmark.config.yaml"}'
+  - name: AliasAvoid
+    description: avoid の種類のエイリアスに一致した語。波線の下線を引き、「代わりの用語」の区分に置き換え先の語だけを出す
+    args:
+      - name: text
+        value: 作業場
+      - name: id
+        value: tip-alias-avoid
+      - name: replacement
+        value: '{"term":"ワークスペース"}'
+lead: 本文の用語と文書の別名に破線の下線を引き、隣に「用語」の意味と「関連文書」の並びを持つツールチップを置く。エイリアスには種類ごとの区分を持つツールチップを置く。やめた言い方には波線の下線を引き、「代わりの用語」のツールチップを置く。HTML 文字列を返し、ブラウザと Node で同じ出力になる。開閉と置き場所は `mount` の操作が付ける。
 args:
   - name: text
     type: 文字列
@@ -109,11 +230,23 @@ args:
     description: 「関連文書」に並べる文書（`{ title, href, description }`。`description` は任意）。空なら「関連文書」の区分を出さない。`meaning` も `docs` も空なら、下線もツールチップも出さず `text` をそのまま返す
   - name: replacement
     type: オブジェクト
-    description: '`text` がやめた言い方のときの代わりの用語（`{ term, meaning }`）。渡すと、語に破線ではなく波線の下線を引き（class `mdmark-term-avoided`）、ツールチップには「代わりの用語」の区分だけを置いて `term` と `meaning` を出す。渡したときは `meaning`・`docs` を使わない'
+    description: '`text` がやめた言い方のときの代わりの用語（`{ term, meaning }`。`meaning` は任意で、`avoid` の種類のエイリアスでは `term` に `replacement` を渡し `meaning` を渡さない）。渡すと、語に破線ではなく波線の下線を引き（class `mdmark-term-avoided`）、ツールチップには「代わりの用語」の区分だけを置いて `term` と、あれば `meaning` を出す。渡したときは `meaning`・`docs`・`alias` を使わない'
   - name: below
     type: 真偽値
     default: 'false'
     description: 語の下に開いた見た目にするか。`true` なら `mdmark-term-wrap` に `is-below` を付ける（`mount` が上に収まらない語に付けるのと同じ class）。`render` は渡さない
+  - name: alias
+    type: オブジェクト
+    description: '`text` が一致したエイリアス（ER 図『エイリアス』の `MdmarkAlias`）。渡すと、種類の見出し（`term` は「用語」、`doc` は「文書」、`command` は「コマンド」、`url` は「URL」、`skill` は「スキル」、`tool` は「ツール」、`path` は「パス」）の区分 1 つだけを置き、`name` と、あれば `description` を出す。`command` はコマンドをコードとコピーのボタンで、あれば `cwd` を「実行場所」で出す。`url` は http・https の URL だけをリンクにし、ほかは文字で出す。`skill`・`tool`・`path` はその値を等幅の 1 行で出す。渡したときは `meaning`・`docs` を使わない。`avoid` の種類と `term` の `avoid` はこの引数ではなく `replacement` で渡す'
+    choices: '`alias_type` は `term`・`doc`・`command`・`url`・`skill`・`tool`・`path`'
+    status: planned
+  - name: copy
+    type: 列挙
+    default: '"idle"'
+    choices: '`idle`（`コピー`、`copy` のアイコン）・`copied`（`コピーしました`、`check`）・`failed`（`コピーできませんでした`、`circle-alert`）'
+    enabled_when: '`alias` の `alias_type` が `command` のとき'
+    description: コマンドのコピーのボタンの状態（`mount` が付けた状態）。ボタンの `data-state` と文言・アイコンを切り替え、`copied`・`failed` のときは `role="status"` の要素に `コマンドを{文言}` を入れる。`render` は渡さない
+    status: planned
 css_properties:
   - name: --mdmark-color-term-underline
     syntax: <color>
@@ -139,10 +272,14 @@ accessibility:
   - 用語であることは破線の下線の形でも示し、色だけに頼らない（リンクは実線）。語の上でポインターの形は変えない
   - やめた言い方であることは波線の下線の形で示し、用語の破線と色だけで分けない。代わりの用語のツールチップは `role="tooltip"` で、語の `aria-describedby` が指す
   - スクリプトが動かない HTML 文字列でも、語にポインターを乗せるかフォーカスすると CSS で語の上に開く
+  - コマンドとリンクにした URL を持つエイリアスのツールチップは `role="group"` と `aria-label`（「{語}」のコマンド・「{語}」の URL）で、語の `aria-details` が指し、説明を持つときは `aria-describedby` が説明の要素を指す。語の次の Tab でリンクとコピーのボタンへ移れる。ほかの種類は `role="tooltip"`
+  - コピーのボタンは文言を読み上げの名前に持ち、結果を `role="status"` の要素で `コマンドをコピーしました`・`コマンドをコピーできませんでした` と読み上げる。状態は文言とアイコンで示し、色だけに頼らない
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ツールチップの操作]
+  - dev/設計書/ER図/エイリアス#
 status: planned
 notes:
   出力の形: '`<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="{id}-meaning" aria-details="{id}">{text}</span><span class="mdmark-term-tip" id="{id}" role="group" aria-label="「{text}」の用語と関連文書">…</span></span>`。区分は `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`（「用語」「関連文書」）を置き、意味は `mdmark-term-tip-meaning`、関連文書は `mdmark-term-tip-docs` の中の `mdmark-term-tip-doc`（題の `a` と `mdmark-term-tip-doc-desc`）。意味だけのときは `role="tooltip"` で `aria-details` を持たない。`replacement` を渡したときは、語が `<span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="{id}">`、ツールチップが `role="tooltip"` で、見出し「代わりの用語」の区分に代わりの用語の語 `mdmark-term-tip-replacement` と意味 `mdmark-term-tip-meaning` を置く。開いたツールチップは既定で語の上に置き、ポインターが語から移るための透明な線をツールチップの下側に持つ。`mount` が語の下に置いたときは `mdmark-term-wrap` に `is-below` を付け、透明な線を上側に移す。狭い画面（71rem 以下）でスクリプトが動かないときは、上下とも描く先の要素の左端から語の直後に出す。モックは `dev/mock/components/term-tooltip/`'
   印刷: 印刷の CSS で破線・波線の下線とツールチップを外し、語を本文の文字として出す
+  エイリアスの出力の形: 区分 `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`、名前 `mdmark-term-tip-name`、説明 `mdmark-term-tip-meaning`（`id` は `{id}-meaning`）を置く。`command` は `mdmark-term-tip-command` の中に `code` とコピーのボタン `button.mdmark-term-tip-copy`（`type="button"`・`data-state`）を並べ、`cwd` は `mdmark-term-tip-fields` にラベル `mdmark-term-tip-label`（「実行場所」）と値 `mdmark-term-tip-value` を置き、読み上げの `mdmark-visually-hidden mdmark-term-tip-status`（`role="status"`）を置く。`url` は http・https なら `a.mdmark-term-tip-link`、ほかは `span.mdmark-term-tip-link` で URL の文字を 1 行に収め、あふれる分を「...」で省略する。`skill`・`tool`・`path` は値を `code.mdmark-term-tip-code` の 1 行で出す
 test_file: tests/integration/lib/term-tip.story.test.ts

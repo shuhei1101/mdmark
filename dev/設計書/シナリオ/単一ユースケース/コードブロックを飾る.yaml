@@ -87,6 +87,7 @@ scenarios:
     expected:
       - 題・行番号・行の強調が出ていない
       - 行が `// [!code ++]` の文字のまま出ている
+      - 言語のラベルとコピーボタンが出ていない
     test: test_normal_when_feature_off
   - name: 異常シナリオ（読めない指定）
     setup:
@@ -327,7 +328,132 @@ scenarios:
       - '`python` のコードブロックの文字が色分けされず、書いたとおりに出ている'
       - ブラウザのコンソールに、`python` の言語のモジュールを読めなかった旨が出ている
     test: test_error_when_language_module_not_found
-lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。'
+  - name: 正常シナリオ（言語のラベルを出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 言語の指定を持つ Markdown
+        description: 情報文字列が `ts`、`bash title`、空の 3 つのコードブロックを置いた文書
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 言語の指定があるコードブロックに言語のラベルを付けて描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目のコードブロックにラベル `ts`、2 つ目にラベル `bash`（情報文字列の最初の語）が、コードの上の帯の左端に出ている
+      - 言語の無い 3 つ目のコードブロックにラベルが無い
+      - コードブロックの文字を全て選んだときの選んだ文字に、ラベルが入っていない
+      - 'コードブロックの読み上げの名前は今のまま（`コード: {言語}`）'
+    test: test_normal_when_language_label_shown
+  - name: 正常シナリオ（変更後のコードをコピーする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: '-'
+      - name: コードの行の印を持つ Markdown
+        description: 行末に `// [!code --]` を付けた `const a = 1;`、行末に `// [!code ++]` を付けた `const a = 2;`、`count += 1; // 数える [!code highlight]`、印の無い `return a;` の 4 行を持つ言語 `ts` のコードブロックと、言語 `tree` のコードブロックを置いた文書
+        notes: '-'
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許す
+        notes: '-'
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コピーボタンを付けたコードブロックを描く
+        U->>P: ts のコードブロックのコピーボタンを押す
+        M->>M: 印と消した行を除いたコードをクリップボードへ書き込む
+        P-->>U: コピーしたことを知らせるボタン
+    expected:
+      - クリップボードの中身が `const a = 2;\ncount += 1; // 数える\nreturn a;`（`[!code --]` の行を含めず、印と、印だけを持つ行コメントの頭 `//` とその前の空白を除いたコード）
+      - クリップボードの中身に、行番号と行頭の `+`・`-` が入っていない
+      - ボタンの文言でコピーしたことが知らされ、読み上げでも知らされる。しばらくするとボタンの文言が元に戻る
+      - コピーボタンはキーボードでフォーカスして押せる
+      - ファイルツリーに描いた `tree` のコードブロックには、コードのコピーボタンが付かない（付くのはツリーのコピーボタンだけ）
+    test: test_normal_when_code_copied
+  - name: 正常シナリオ（Dockerfile と diff を色分けする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: Dockerfile と diff のコードブロックを持つ Markdown
+        description: 言語 `dockerfile`・`docker`・`diff`・`patch` のコードブロックを 1 つずつと、行末に `# [!code ++]` を付けた行を持つ言語 `diff` のコードブロックを置いた文書。diff のコードブロックは `+` で始まる行と `-` で始まる行を持つ
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as 色分けのライブラリ
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コードブロックを描く
+        M->>X: 本体と dockerfile・diff のモジュールを要求
+        X-->>M: モジュール
+        M-->>P: コードブロックの中身を色分けする
+        P-->>U: 色分けした文書を表示
+    expected:
+      - '`dockerfile` と `docker` のコードブロックの `FROM`・`RUN` などの命令が、地の文字と違う色で出ている'
+      - '`diff` と `patch` のコードブロックの `+` で始まる行と `-` で始まる行が、地の文字とも互いとも違う色で出ている'
+      - '`[!code ++]` を付けた diff の行が足した行の地の色と行頭の `+` で出ていて、行の中の文字は色分けされている'
+      - 色分けのライブラリへの要求が、本体 1 件と `dockerfile`・`diff` の言語のモジュール 1 件ずつ（別名の `docker`・`patch` は同じモジュールを使う）
+      - 各コードブロックのラベルは書いた情報文字列のとおり（`dockerfile`・`docker`・`diff`・`patch`）
+    test: test_normal_when_dockerfile_and_diff_highlighted
+  - name: 異常シナリオ（クリップボードに書けない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コードブロックを持つ Markdown
+        description: 言語 `ts` のコードブロックを置いた文書
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許さない
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コピーボタンを付けたコードブロックを描く
+        U->>P: コピーボタンを押す
+        M->>M: クリップボードへの書き込みが拒まれる
+        P-->>U: コピーできなかったことを知らせるボタン
+    expected:
+      - ボタンの文言でコピーできなかったことが知らされ、読み上げでも知らされる
+      - コードブロックの文字はそのまま選んで手でコピーできる
+    test: test_error_when_clipboard_denied
+  - name: 正常シナリオ（言語とファイル名をラベルに出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 言語とファイル名を持つ Markdown
+        description: 情報文字列が `python:hoge.py` のコードブロックと、`ts` のコードブロックを置いた文書
+      - name: Mock
+        description: 正常シナリオ（言語に応じて色分けする）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 情報文字列の : の前を言語、後ろをファイル名としてラベルに出して描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目のコードブロックの上の帯の左端に、言語 `python` とファイル名 `hoge.py` を並べたラベルが出ている
+      - 1 つ目のコードブロックの中身が言語 `python` として色分けされている
+      - 2 つ目のコードブロックの上の帯の左端に、ラベル `ts` だけが出ている
+    test: test_normal_when_language_and_file_name_label_shown
+lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。言語の指定があれば言語のラベルを出し、読む人はコピーボタンで変更後のコードをコピーする。'
 issue: 25
 primary_actor: 文書を書く人
 stakeholders:

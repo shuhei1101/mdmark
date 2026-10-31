@@ -83,7 +83,217 @@ scenarios:
       - 範囲の上に、手順にする番号付きリストが無いことを書いた書き方の警告がある
       - 範囲の中のリストが、書いたとおりの番号の無いリストで表示されている
     test: test_error_when_steps_without_ordered_list
-lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。
+  - name: 正常シナリオ（中身の無い badge:）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: '中身の無い badge: を持つ Markdown'
+        description: 行内のコード `` `badge:` `` と、`badge:` の後ろが空白だけの行内のコードを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: badge: の後ろが空か空白だけのためバッジにしない
+        M-->>P: 行内のコードをそのまま描く
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの行内のコードが札にならず、書いたとおりの文字（`badge:` とその後ろの空白）の行内のコードで出ている
+      - 中身の無い札が無く、書き方の警告も出ていない
+    test: test_normal_when_badge_empty
+  - name: 正常シナリオ（折りたたみに入れたステップ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 折りたたみのステップを持つ Markdown
+        description: '`<!-- steps: closed -->` で 2 項目の番号付きリストを囲んだ範囲と、`<!-- steps: open title=準備 -->` で 3 項目の番号付きリストを囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 1 つ目の手順を閉じた折りたたみ、2 つ目を開いた折りたたみに入れて描く
+        U->>P: 1 つ目の折りたたみの見出しを押す
+        P-->>U: 開いた手順
+    expected:
+      - 1 つ目の折りたたみの見出しが `手順（2 ステップ）` で、描いた直後は手順が表示されていない
+      - 2 つ目の折りたたみの見出しが `title=` の「準備」で、描いた直後から 3 つの手順が表示されている
+      - 1 つ目の見出しを押した後、手順に 1・2 の番号が出ている
+    test: test_normal_when_steps_folded
+  - name: 異常シナリオ（ステップの読めない指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない指定のステップを持つ Markdown
+        description: '`<!-- steps: closed open -->`・`<!-- steps: fold -->`・`<!-- steps: title=準備 -->` で、それぞれ 2 項目の番号付きリストを囲んだ範囲を並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: closed と open の両方・知らない指定・closed も open も無い title= がある
+        M-->>P: 書き方の警告と、読めた指定だけを当てた手順を描く
+        P-->>U: 書き方の警告と手順を表示
+    expected:
+      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、2 つ目の範囲の上に `fold` が使えない指定であること、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
+      - 1 つ目の手順は `closed` を当てた閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
+    test: test_error_when_steps_option_invalid
+  - name: 正常シナリオ（ファイルツリーに注釈を書く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 注釈を持つファイルツリーの Markdown
+        description: '`<!-- tree: open=all -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`...` を罫線で書いた言語 `tree` のコードブロックを持つ文書'
+        notes: '`index.ts` は `src/` の下。そのほかは `mdmark/` の直下'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 項目の名前と注釈を分ける
+        M-->>P: 注釈を列に揃え、拡張子ごとのアイコンを付けたツリーを描く
+        P-->>U: 文書を表示
+    expected:
+      - '`src/`・`index.ts`・`README.md` の項目の名前に `#` とその後ろが含まれず、注釈が項目の右に出ている'
+      - 3 つの注釈の左端が、階層の深さによらず同じ位置に揃っている
+      - 注釈の中の `mount` が行内のコード、`必読` が太字、`badge:新規` が文言 `新規` の札で描かれている
+      - '`C#/` が名前 `C#/` のフォルダ、`#notes.md` が名前 `#notes.md` のファイルとして出ていて、注釈を持たない'
+      - '`index.ts` と `README.md` のアイコンが、拡張子ごとに違うアイコンになっている'
+      - '`...` の項目が、ファイルでもフォルダでもない「ほかにもある」の項目として出ていて、読み上げでもそう知らされる'
+    test: test_normal_when_tree_annotated
+  - name: 正常シナリオ（ファイルツリーのフォルダを開閉する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子の深いファイルツリーの Markdown
+        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: open=2 -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 1 つ目はルートだけ、2 つ目は 2 階層まで開いたツリーを描く
+        U->>P: 1 つ目のツリーの src/ の名前を押す
+        P-->>U: src/ を開いたツリー
+        U->>P: 1 つ目のツリーの app/ のアイコンを Shift を押しながら押す
+        P-->>U: app/ と入れ子を全て閉じたツリー
+        U->>P: もう一度 Shift を押しながら app/ のアイコンを押す
+        P-->>U: 入れ子を全て開いたツリー
+    expected:
+      - 描いた直後、1 つ目のツリーは `app/` だけが開き、`src/` が閉じて `parts/` が表示されていない
+      - 描いた直後、2 つ目のツリーは `app/` と `src/` が開き、`parts/` が閉じて `tree.ts` が表示されていない
+      - '`src/` の名前を押した後、`parts/` が表示され、`src/` の開閉のボタンの `aria-expanded` が `true`'
+      - Shift を押しながら押すたびに、`app/` の入れ子のフォルダが全て閉じ、次に全て開いて `tree.ts` が表示される
+      - フォルダの開閉は、フォーカスして Enter でもできる
+    test: test_normal_when_tree_folders_toggled
+  - name: 正常シナリオ（ASCII の罫線のファイルツリー）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: ASCII の罫線の Markdown
+        description: '`tree --charset=ascii` の出力のように、`|-- `・`` `-- ``・`|   ` で `src/` の下に `index.ts` と `parts/` を書いた言語 `tree` のコードブロックを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: ASCII の罫線を今の罫線と同じ段で読む
+        M-->>P: 入れ子のツリーを描く
+        P-->>U: 文書を表示
+    expected:
+      - コードブロックが入れ子のツリーになり、`src/` と `parts/` がフォルダ、`index.ts` がファイルとして出ている
+      - 項目の名前に `|`・`` ` ``・`--` が含まれていない
+      - 書き方の警告は出ていない
+    test: test_normal_when_tree_ascii
+  - name: 正常シナリオ（ファイルツリーをコピーする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 注釈を持つファイルツリーの Markdown
+        description: 正常シナリオ（ファイルツリーに注釈を書く）のコードブロックを、マーカーを付けずに持つ文書
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みと読み取りを許す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コピーボタンを持つツリーを描く
+        U->>P: コピーボタンを押す
+        M->>M: 元の罫線のテキストをクリップボードへ書く
+        P-->>U: コピーしたことを知らせる
+    expected:
+      - クリップボードの中身が、コードブロックに書いた罫線・注釈を含むテキストと一致する（閉じたフォルダの中の行も含む）
+      - コピーしたことがボタンの表示と読み上げで知らされる
+    test: test_normal_when_tree_copied
+  - name: 異常シナリオ（ファイルツリーをクリップボードに書けない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: ファイルツリーの Markdown
+        description: 正常シナリオと同じ言語 `tree` のコードブロックを持つ文書
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許さない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: コピーボタンを持つツリーを描く
+        U->>P: コピーボタンを押す
+        M->>M: クリップボードへの書き込みが拒まれる
+        P-->>U: コピーする中身を選択したパネル
+    expected:
+      - コピーできなかったことと手でコピーできることが知らされ、読み上げでも知らされる
+      - パネルの中に、元の罫線のテキストが全て選択された状態で出ている
+      - パネルは閉じるボタンと Esc で閉じ、フォーカスがコピーボタンへ戻る
+    test: test_error_when_tree_clipboard_denied
+  - name: 異常シナリオ（ファイルツリーの読めない open=）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない open= の Markdown
+        description: '`<!-- tree: open=deep -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）と同じコードブロックを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: open= の値を読めない
+        M-->>P: 書き方の警告と、既定の開閉のツリーを描く
+        P-->>U: 書き方の警告とツリーを表示
+    expected:
+      - ツリーの上に、`open=` の値には `all` か階層の数を書くことを書いた書き方の警告がある
+      - ツリーは既定のとおり `app/` だけを開いて描かれている
+    test: test_error_when_tree_open_invalid
+lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に揃え、読む人がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
 primary_actor: 文書を書く人
 stakeholders:

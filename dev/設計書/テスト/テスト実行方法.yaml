@@ -28,7 +28,7 @@ layers:
       - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
       - Claude Code プラグインの結合テスト（`tests/integration/ClaudeCodeプラグイン/`）は、ビルドした `dist/cli.js` の MCP サーバーと `plugin/` のフックを流す。Claude Code を起動しない
       - MCP サーバーは、ビルドした `dist/cli.js` の `serve` を `MDMARK_PORT` に空きポートを渡して子プロセスで起動し、`StreamableHTTPClientTransport` で MCP のクライアントとつなぐ（作業のフォルダーはツールの引数 `project_dir` で渡す）。ポートの上書き・使用中・不正な値を確かめるケースは、`MDMARK_PORT` を指定して起動する
-      - 既定のポートで起動するケース（`serve.test.ts` の `test_normal`）があるため、8782 を別の `mdmark serve` が使っていない
+      - どのケースも 8782 を使わない（手元の `mdmark serve` が使う）
       - フックは `hooks/hooks.json` の SessionStart と PreToolUse のコマンドを、`CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで流す
     run_all: |-
       ```bash

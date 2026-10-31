@@ -1,10 +1,12 @@
 import { readFile, stat } from "node:fs/promises";
 import { basename, join, relative, resolve, sep } from "node:path";
-import { MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import { COLOR_THEMES, MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import { normalizePath } from "../knowledge/paths.ts";
 import { FEATURES_MARK, SYNTAX_MARKS } from "../render/marks.ts";
 import { findMarks } from "../render/parser.ts";
+import { loadAliases } from "./aliases.ts";
 import {
   type CliConfig,
   findConfigFile,
@@ -24,7 +26,15 @@ export type CheckIssue = {
   /** キーのパスか行。ファイル全体は空文字 */
   where: string;
   /** ずれの種類 */
-  kind: "schema" | "no_documents" | "unknown_mark" | MdmarkIndexIssue["kind"];
+  kind:
+    | "schema"
+    | "unknown_color_theme"
+    | "no_documents"
+    | "unknown_mark"
+    | "alias_no_files"
+    | "alias_unreadable"
+    | MdmarkAliasProblem["kind"]
+    | MdmarkIndexIssue["kind"];
   /** 内容と直し方の 1 文 */
   message: string;
 };
@@ -230,6 +240,22 @@ export async function loadExtensionDirectives(
   return { directives, issues };
 }
 
+/** 設定の `colorTheme` が選べるテーマの名前に無いときの、`unknown_color_theme` のずれを返す */
+function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
+  const name = config.colorTheme;
+  if (name === undefined || COLOR_THEMES.some((theme) => theme === name)) {
+    return [];
+  }
+  return [
+    {
+      file,
+      where: "colorTheme",
+      kind: "unknown_color_theme",
+      message: `不明なテーマ名 ${name} です。${COLOR_THEMES.join("・")} のいずれかに修正してください。`,
+    },
+  ];
+}
+
 /** 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて読む */
 export async function collectCheckDocuments(
   loaded: LoadedConfig,
@@ -303,6 +329,7 @@ export async function collectCheckIssues(
   const referenced = await checkReferencedFiles(loaded, file);
   const build = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded, options.base);
+  const aliasIssues = (await loadAliases(loaded)).issues;
   const checkMarks = options.unknownMarks !== false;
   const extensions = checkMarks
     ? await loadExtensionDirectives(loaded, file)
@@ -319,8 +346,10 @@ export async function collectCheckIssues(
     ...referenced,
     ...build.schema,
     ...extensions.issues,
+    ...checkColorTheme(config, file),
     ...build.noDocuments,
     ...indexIssues,
+    ...aliasIssues,
     ...unknownMarks,
   ];
 }

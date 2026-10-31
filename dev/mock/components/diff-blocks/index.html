@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>diff-blocks | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <link rel="stylesheet" data-color-theme-css="../../assets/themes/{theme}.css">
+  <!-- 拡張記法の規則（#19 で共有するアセット。注意書き） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <!-- プレビューのパネルとモックの VS Code の枠（#69 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/69/assets/preview.css">
+  <!-- 描いた文書の上の差分の色分け（#196 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/196/assets/diff-preview.css">
+  <!-- カタログの並べ方 -->
+  <link rel="stylesheet" href="./style.css">
+  <!-- VS Code のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../refs/69/assets/preview.js" defer></script>
+  <!-- 文書のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../refs/181/assets/theme.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: VS Code のテーマと文書のテーマ -->
+  <div class="mock-bar">
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+    </div>
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="mdmark のテーマ">
+      <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-slate">theme-slate</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-contrast">theme-contrast</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">描いた文書の上の差分の色分け</h1>
+
+      <!-- 追加・変更したブロックは追加の色、削除したブロックは削除の色。色に加えて案 A は記号、案 B は札で示す -->
+      <section aria-labelledby="state-paragraph-add">
+        <h2 class="catalog-label" id="state-paragraph-add">段落の追加・変更（語を書き換えた段落と足した段落）</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <p>確認する項目は表のとおりです。</p>
+</div>
+<p>手順は上から順に進めます。</p>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <p>確認する項目は表のとおりです。</p>
+</div>
+<p>手順は上から順に進めます。</p>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-paragraph-del">
+        <h2 class="catalog-label" id="state-paragraph-del">段落の削除（前のリビジョンでの位置に差し込む）</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span>
+  <p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p>
+</div>
+<p>手順は上から順に進めます。</p>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-diff-block-label">削除</span>
+  <p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p>
+</div>
+<p>手順は上から順に進めます。</p>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-del-then-add">
+        <h2 class="catalog-label" id="state-del-then-add">続けて並ぶ削除と追加（段落を別の段落に入れ替えた）</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span>
+  <p>リリースは毎週金曜日に行います。</p>
+</div>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <p>リリースの日は、担当がそろった日に決めます。</p>
+</div>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-diff-block-label">削除</span>
+  <p>リリースは毎週金曜日に行います。</p>
+</div>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <p>リリースの日は、担当がそろった日に決めます。</p>
+</div>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-heading-add">
+        <h2 class="catalog-label" id="state-heading-add">見出しの追加</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<p>手順は上から順に進めます。</p>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <h2>リリースの後</h2>
+</div>
+<p>配信を確かめてから、Issue を閉じます。</p>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<p>手順は上から順に進めます。</p>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <h2>リリースの後</h2>
+</div>
+<p>配信を確かめてから、Issue を閉じます。</p>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-table-row">
+        <h2 class="catalog-label" id="state-table-row">表の行の追加と削除（行の単位）</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<table tabindex="0" aria-label="確かめる項目"><thead><tr><th>項目</th><th>確かめ方</th><th>担当</th></tr></thead><tbody><tr><td>テスト</td><td><code>npm test</code> がすべて通る</td><td>開発者</td></tr><tr class="mdmark-diff-block" data-kind="del"><td><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span>配布物</td><td><code>dist/</code> にバージョンが埋まっている</td><td>開発者</td></tr><tr class="mdmark-diff-block" data-kind="add"><td><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>配布物</td><td><code>dist/index.js</code> にバージョンが埋まっている</td><td>開発者</td></tr><tr><td>変更履歴</td><td>今回の PR が載っている</td><td>レビュアー</td></tr></tbody></table>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<table tabindex="0" aria-label="確かめる項目"><thead><tr><th>項目</th><th>確かめ方</th><th>担当</th></tr></thead><tbody><tr><td>テスト</td><td><code>npm test</code> がすべて通る</td><td>開発者</td></tr><tr class="mdmark-diff-block" data-kind="del"><td>配布物</td><td><code>dist/</code> にバージョンが埋まっている</td><td>開発者<span class="mdmark-diff-block-label">削除</span></td></tr><tr class="mdmark-diff-block" data-kind="add"><td>配布物</td><td><code>dist/index.js</code> にバージョンが埋まっている</td><td>開発者<span class="mdmark-diff-block-label">追加</span></td></tr><tr><td>変更履歴</td><td>今回の PR が載っている</td><td>レビュアー</td></tr></tbody></table>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-list-item">
+        <h2 class="catalog-label" id="state-list-item">リストの項目の追加と削除（項目の単位）</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<ol>
+  <li><code>version.ini</code> のバージョンを上げる</li>
+  <li class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>変更履歴に今回の PR を載せる</li>
+  <li>release ブランチを develop へマージする</li>
+  <li class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span>release ブランチを消す</li>
+  <li>タグ <code>v0.7.0</code> を打って push する</li>
+</ol>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<ol>
+  <li><code>version.ini</code> のバージョンを上げる</li>
+  <li class="mdmark-diff-block" data-kind="add">変更履歴に今回の PR を載せる<span class="mdmark-diff-block-label">追加</span></li>
+  <li>release ブランチを develop へマージする</li>
+  <li class="mdmark-diff-block" data-kind="del">release ブランチを消す<span class="mdmark-diff-block-label">削除</span></li>
+  <li>タグ <code>v0.7.0</code> を打って push する</li>
+</ol>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-code-del">
+        <h2 class="catalog-label" id="state-code-del">コードブロックの削除</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<p>タグは次のコマンドで打ちます。</p>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span>
+  <pre><code>git tag v0.7.0
+git push origin v0.7.0</code></pre>
+</div>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<p>タグは次のコマンドで打ちます。</p>
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-diff-block-label">削除</span>
+  <pre><code>git tag v0.7.0
+git push origin v0.7.0</code></pre>
+</div>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-callout-add">
+        <h2 class="catalog-label" id="state-callout-add">注意書きの追加</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<p>タグを打ったら、配信を確かめます。</p>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <div class="markdown-alert markdown-alert-warning">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>警告</p>
+  <p>打ったタグは消さないでください。jsDelivr に届いた配布物は消えません。</p>
+</div>
+</div>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<p>タグを打ったら、配信を確かめます。</p>
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <div class="markdown-alert markdown-alert-warning">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>警告</p>
+  <p>打ったタグは消さないでください。jsDelivr に届いた配布物は消えません。</p>
+</div>
+</div>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-long">
+        <h2 class="catalog-label" id="state-long">長文（長い URL を持つ段落の追加）</h2>
+        <p class="catalog-case">案 A: 左の余白の記号</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <p>配信は <a href="#">https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js?cache-busting-query-string-for-long-url-check</a> を開いて確かめます。ファイルが返らないときは、jsDelivr の配信の反映を数分待ってから、もう一度開いてください。</p>
+</div>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 枠と右上の札</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="label">
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-diff-block-label">追加</span>
+  <p>配信は <a href="#">https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js?cache-busting-query-string-for-long-url-check</a> を開いて確かめます。ファイルが返らないときは、jsDelivr の配信の反映を数分待ってから、もう一度開いてください。</p>
+</div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

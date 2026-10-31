@@ -363,6 +363,94 @@ test("test_collect_check_issues_when_unknown_mark", async () => {
   expect(issues[1]).toMatchObject({ file: "a.md", where: "3" });
 });
 
+// 知らないテーマの名前を schema の後・no_documents の前に返す（正常系）
+test("test_collect_check_issues_when_unknown_color_theme", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  // build.out が無いと build ごと落ちて no_documents が出ないため、schema は存在しない拡張で作る
+  const buildLines = [
+    "extensions: [missing.js]",
+    "build:",
+    '  include: ["nothing/**/*.md"]',
+    "  out: dist/docs.html",
+  ];
+  const unknownDir = await createRootDir({
+    configLines: ["colorTheme: sepia", ...buildLines],
+  });
+  const knownDir = await createRootDir({
+    configLines: ["colorTheme: theme-slate", ...buildLines],
+  });
+  // 実行
+  const unknownIssues = await collectCheckIssues(
+    join(unknownDir, "mdmark.config.yaml"),
+  );
+  const knownIssues = await collectCheckIssues(
+    join(knownDir, "mdmark.config.yaml"),
+  );
+  // 検証
+  expect(unknownIssues.map((issue) => issue.kind)).toEqual([
+    "schema",
+    "unknown_color_theme",
+    "no_documents",
+  ]);
+  expect(unknownIssues[1]).toMatchObject({ where: "colorTheme" });
+  for (const text of [
+    "sepia",
+    "dev-swiss",
+    "theme-paper",
+    "theme-slate",
+    "theme-contrast",
+  ]) {
+    expect(unknownIssues[1]?.message).toContain(text);
+  }
+  expect(knownIssues.map((issue) => issue.kind)).toEqual([
+    "schema",
+    "no_documents",
+  ]);
+});
+
+// エイリアスのずれを checkIndex の後・unknown_mark の前に置く（正常系）
+test("test_collect_check_issues_when_alias_drift", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createRootDir({
+    configLines: [
+      "aliases:",
+      "  - id: missing",
+      '    paths: ["missing/*.yaml"]',
+      "    metadata:",
+      "      alias_type: { type: custom, value: term }",
+      "  - id: records",
+      '    paths: ["aliases/*.yaml"]',
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+    ],
+    aMarkdown: TABZ_MARKDOWN,
+    files: {
+      "aliases/term.yaml":
+        "alias_type: term\nid: empty-term\nname: 空の用語\ndescription: ''\n",
+      "aliases/env.yaml":
+        "alias_type: env\nid: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
+    },
+  });
+  // 実行
+  const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"));
+  // 検証
+  expect(issues.map((issue) => issue.kind)).toEqual([
+    "alias_no_files",
+    "alias_required_empty",
+    "unknown_mark",
+  ]);
+  expect(issues[0]?.where).toBe("aliases[0].paths");
+  expect(issues[0]?.message).toContain("missing/*.yaml");
+  expect(issues[1]).toMatchObject({
+    file: "aliases/term.yaml",
+    where: "description",
+  });
+  // env のレコードを指すずれは無い
+  expect(issues.some((issue) => issue.file === "aliases/env.yaml")).toBe(false);
+});
+
 // unknownMarks: false では知らない印を返さず、拡張を読み込まない（正常系）
 test("test_collect_check_issues_when_unknown_marks_off", async () => {
   // 準備

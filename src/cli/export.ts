@@ -8,13 +8,14 @@ import {
   resolve,
   sep,
 } from "node:path";
-import { resolveConfig } from "../config.ts";
+import { COLOR_THEMES, DEFAULT_COLOR_THEME, resolveConfig } from "../config.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import { normalizePath } from "../knowledge/paths.ts";
 import {
   collectReferences,
   type MdmarkReferences,
 } from "../knowledge/references.ts";
+import { loadAliases } from "./aliases.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
@@ -230,12 +231,31 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     warnings,
   });
 
+  // 設定の `aliases` の YAML を読み、使えない行・レコードを警告にする
+  const aliasResult = await loadAliases(loaded);
+  for (const issue of aliasResult.issues) {
+    const where = issue.where === "" ? "" : `:${issue.where}`;
+    warnings.push(`${issue.file}${where}: ${issue.kind}: ${issue.message}`);
+  }
+
+  // 知らないテーマの名前は埋める設定にも写し、開いたときに `mount` が既定のテーマで描く
+  const colorTheme = loaded.config.colorTheme;
+  if (colorTheme !== undefined && !COLOR_THEMES.some((t) => t === colorTheme)) {
+    warnings.push(
+      `${basename(loaded.path)}: 不明なテーマ名 ${colorTheme} です。既定の ${DEFAULT_COLOR_THEME} で描画します。`,
+    );
+  }
+
   const refs = await prepareReferences({ ...options, markdowns: originals });
   const payload: ExportPayload = {
     kind,
     config: {
       ...(loaded.config.features ? { features: loaded.config.features } : {}),
       ...(loaded.config.tooltips ? { tooltips: loaded.config.tooltips } : {}),
+      ...(loaded.config["side-toc"]
+        ? { "side-toc": loaded.config["side-toc"] }
+        : {}),
+      ...(colorTheme !== undefined ? { colorTheme } : {}),
       // 埋めたモジュールは開いたときに URL に替えるため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),
@@ -260,6 +280,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     modules,
     extensions,
     ...(syntax ? { syntax } : {}),
+    ...(aliasResult.aliases ? { aliases: aliasResult.aliases } : {}),
   };
   return { payload, themeCss, warnings };
 }

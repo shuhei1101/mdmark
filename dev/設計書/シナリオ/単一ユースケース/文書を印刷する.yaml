@@ -49,7 +49,7 @@ scenarios:
       - name: 文書を描いたページ
         description: 版を固定した URL で mdmark を読み、文書を描いた HTML
       - name: 閉じた記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、`<!-- row-detail: 1 -->` の行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書きを持つ文書'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、`<!-- row-detail: 1 -->` の行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
     flow: |-
@@ -67,7 +67,8 @@ scenarios:
     expected:
       - 印刷の前のイベントの後、タブの 2 つの中身がタブ名を題にして縦に並んで表示されている
       - 印刷の前のイベントの後、閉じた節・行の詳細・閉じた表・閉じた注意書きの中身が表示されている
-      - 印刷の後のイベントの後、印刷の前に選んでいたタブだけが表示され、閉じていた記法が閉じている
+      - 印刷の前のイベントの後、閉じたタブとステップの折りたたみの中身と、ファイルツリーの全ての入れ子が表示され、ファイルツリーのコピーボタンが印刷に出ていない
+      - 印刷の後のイベントの後、印刷の前に選んでいたタブだけが表示され、閉じていた記法とファイルツリーのフォルダが閉じている
     test: test_normal_when_syntax_expanded
   - name: 正常シナリオ（用語と被参照）
     setup:
@@ -113,9 +114,10 @@ scenarios:
         B->>B: 印刷向けの CSS を当てる
         B-->>U: 印刷の出力
     expected:
-      - 表の上の列の表示の切り替えとコピーのボタンが出ていない
+      - 表の上の列の表示の切り替え・コピー・「集計」のボタンが出ていない
       - 行へのリンクの印が出ていない
-      - 表の上の件数と、表の末尾の集計の行が出ている
+      - 表の上の件数と、表の末尾の `合計` の集計の行が出ている
+      - 見出し行は表の先頭に 1 組だけ出ていて、画面の上端に留めるずれが当たっていない
       - 隠した説明の列は隠したまま出ていない
     test: test_normal_when_table_features_printed
   - name: 正常シナリオ（コードブロックの題と行を印刷に出す）
@@ -140,7 +142,83 @@ scenarios:
       - 3 つの行の左に 1〜3 の行番号が出ている
       - 1 行目が強調の背景で、足した行と消した行がそれぞれの色と行頭の `+`・`-` で出ている
       - 行の中のキーワード・文字列などが、画面と同じ色分けの色で出ている
+      - 言語のラベル `ts` が出ていて、コピーボタンが出ていない
     test: test_normal_when_code_block_printed
+  - name: 正常シナリオ（畳んだ最終列を開いて出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 最終列の長い表を持つ Markdown
+        description: 『表を操作する』の正常シナリオ（狭い幅で最終列を畳む）と同じ文書
+        notes: '-'
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 最終列を畳まない印刷の出力
+        B->>M: 印刷の後のイベント
+        B-->>U: 最終列を畳んだ画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、説明の列の見出しと全ての行のセルが表の中に出ている
+      - 行の開閉のボタンが出ていない
+      - 印刷の後のイベントの後、説明の列が畳まれ、行に開閉のボタンがある
+    test: test_normal_when_collapsed_column_printed
+  - name: 正常シナリオ（右側の目次と節のボタンを印刷に出さない）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        notes: 設定の `side-toc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出しておく
+      - name: H1 の閉じた節を持つ Markdown
+        description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 閉じた H1 の節を開く
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 右側の目次とボタンの無い印刷の出力
+        B->>M: 印刷の後のイベント
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、右側の目次・目次を出すボタン・すべて展開とすべて折りたたむのボタンが出ていない
+      - 印刷の前のイベントの後、`付録` の段落が表示されている
+      - 印刷の後のイベントの後、右側の目次が表示され、`付録` の節が閉じている
+    test: test_normal_when_side_toc_hidden_in_print
+  - name: 正常シナリオ（テーマを選んだ文書）
+    setup:
+      - name: テーマを選んで描いたページ
+        description: テーマを選ぶキーに theme-slate を書いた設定で、正常シナリオと同じ文書を描いたページ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷する
+        B->>M: 印刷の前のイベント
+        M->>M: ダークを解除し、選んだテーマの明るい配色にする
+        B-->>U: theme-slate の明るい配色で印刷
+    expected:
+      - 描く先の要素のリンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値（既定のテーマに戻らない）
+      - 地の色は正常シナリオと同じく外れる
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

@@ -61,3 +61,34 @@ export const DIFF_CONTENTS: Record<string, string> = {
 /** 差分を載せるページの本文 */
 export const DIFF_PAGE_MARKDOWN =
   "# 問い合わせ窓口の週の報告\n\n本文の段落。\n";
+
+/** 描いた結果の上で色分けする見本の文書。ブロックごとに空行で区切り、`word` の語、`legacy` の段落、`phone` の段落を変える */
+export function blocksBody(options: {
+  word: string;
+  legacy: boolean;
+  phone: boolean;
+}): string {
+  const { word, legacy, phone } = options;
+  return `${[
+    "# 問い合わせ窓口の週の報告",
+    `よくある質問の${word}は、担当者が週に 1 回確かめます。`,
+    "| 窓口 | 件数 |\n| --- | --- |\n| メール | 120 |",
+    ...(legacy ? ["旧い注意の段落です。"] : []),
+    "自動返信は、よくある質問の表から答えを選びます。",
+    ...(phone ? ["電話の問い合わせは、受けたその日のうちに返します。"] : []),
+  ].join("\n\n")}\n`;
+}
+
+/** 色分けの前の見本の文書 */
+export const BLOCKS_BEFORE = blocksBody({
+  word: "差分",
+  legacy: true,
+  phone: false,
+});
+
+/** 色分けの後の見本の文書: 段落の語を 1 つ書き換え、表の後ろの段落を 1 つ消し、末尾に段落を 1 つ足す。見出しと表と最後から 2 番目の段落は変えない */
+export const BLOCKS_AFTER = blocksBody({
+  word: "変更",
+  legacy: false,
+  phone: true,
+});

@@ -1,4 +1,10 @@
 import type { TooltipPlacement } from "../config.ts";
+import {
+  COMMAND_COPY_STATES,
+  renderTermTipCopy,
+  type TermTipCopyState,
+} from "../parts/term-tip.ts";
+import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { chooseTipSide } from "./placement.ts";
 
 // ポインターが語とツールチップの間を移る間、閉じるのを待つ時間（ミリ秒）
@@ -106,6 +112,19 @@ function clearPlace(wrap: HTMLElement): void {
   }
 }
 
+/** コピーのボタンの状態・中身と、同じ区分の読み上げの要素の文字を当てる */
+function setCopyState(button: HTMLElement, state: TermTipCopyState): void {
+  button.dataset.state = state;
+  button.innerHTML = renderTermTipCopy(state);
+  const status = button
+    .closest(".mdmark-term-tip-section")
+    ?.querySelector(".mdmark-term-tip-status");
+  if (status) {
+    status.textContent =
+      state === "idle" ? "" : `コマンドを${COMMAND_COPY_STATES[state].text}`;
+  }
+}
+
 /** mount が描いた用語の下線に、ツールチップを開閉する操作を付け、外す関数を返す */
 export function attachTermTips(options: {
   /** 描いた文書の要素 */
@@ -198,6 +217,31 @@ export function attachTermTips(options: {
       close(wrap);
     }
   };
+  /** コマンドのコピーのボタン: 同じ区分のコマンドをクリップボードへ書き、ボタンと読み上げの要素で知らせる */
+  const copyTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
+  const onCopyClick = async (event: Event): Promise<void> => {
+    const button =
+      event.target instanceof Element
+        ? event.target.closest<HTMLElement>("button.mdmark-term-tip-copy")
+        : null;
+    if (!button) {
+      return;
+    }
+    clearTimeout(copyTimers.get(button));
+    const command =
+      button.closest(".mdmark-term-tip-command")?.querySelector("code")
+        ?.textContent ?? "";
+    if (await copyText(command)) {
+      setCopyState(button, "copied");
+      copyTimers.set(
+        button,
+        setTimeout(() => setCopyState(button, "idle"), COPIED_NOTICE_MS),
+      );
+    } else {
+      setCopyState(button, "failed");
+    }
+  };
+  root.addEventListener("click", onCopyClick);
   document.addEventListener("keydown", onKeydown);
   window.addEventListener("scroll", placeOpen, {
     capture: true,
@@ -207,6 +251,10 @@ export function attachTermTips(options: {
   window.addEventListener("beforeprint", closeAll);
 
   return () => {
+    root.removeEventListener("click", onCopyClick);
+    for (const timer of copyTimers.values()) {
+      clearTimeout(timer);
+    }
     document.removeEventListener("keydown", onKeydown);
     window.removeEventListener("scroll", placeOpen, { capture: true });
     window.removeEventListener("resize", placeOpen);

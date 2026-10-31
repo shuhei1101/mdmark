@@ -13,6 +13,7 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Page } from "@playwright/test";
 import type {
+  MdmarkAlias,
   MdmarkComment,
   MdmarkConfig,
   MdmarkExtension,
@@ -93,7 +94,14 @@ export type IndexOptions = {
   docId?: string;
   /** 参照の表 */
   references?: MdmarkReferences;
+  /** 読み込んだエイリアス */
+  aliases?: MdmarkAlias[];
 };
+
+/** 使えないエイリアス（`env` を含む）を、型の検査を通さずに `aliases` へ渡せる形にする */
+export function rawAliases(aliases: unknown[]): MdmarkAlias[] {
+  return aliases as MdmarkAlias[];
+}
 
 /** ページの中に作るコメントの読み書きの関数の仕様 */
 export type CommentStoreSpec = {
@@ -124,6 +132,7 @@ type MdmarkWindow = Window & {
         markdown: string;
         config?: MdmarkConfig;
         diffSource?: unknown;
+        diffMode?: string;
         commentStore?: unknown;
       } & IndexOptions,
     ) => { update: (markdown: string) => void; destroy: () => void };
@@ -184,6 +193,10 @@ export async function buildDistRoot(
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  // CLI が束ねる設定の Schema と取り込んだ alias-inject の Schema
+  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
+    recursive: true,
+  });
   // CLI の `init` が写す雛形の正本
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,
@@ -386,6 +399,7 @@ export async function mountDocument(
       docId,
       documents,
       references,
+      aliases,
       useCommentStore,
     }) => {
       const w = window as MdmarkWindow;
@@ -404,6 +418,7 @@ export async function mountDocument(
         index,
         docId,
         references: refs,
+        aliases,
         commentStore: useCommentStore ? w.commentStore : undefined,
       });
     },
@@ -619,6 +634,7 @@ export async function collectMatchesInNode(
   input: {
     index: unknown;
     documents: Record<string, string>;
+    aliases?: MdmarkAlias[];
   },
 ): Promise<MdmarkMatches> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
@@ -642,9 +658,15 @@ export async function sendPrintEvent(
 /** ページの中に、仕様どおりの取り出し元を作って文書を描かせる。取り出し元が受けた呼び出しは `window.diffCalls` に控える。`docId` を省くと渡さない */
 export async function mountDiffDocument(
   page: Page,
-  options: { markdown: string; docId?: string; source: DiffSourceSpec },
+  options: {
+    markdown: string;
+    docId?: string;
+    source: DiffSourceSpec;
+    /** 差分の出し方。省くと渡さない */
+    diffMode?: string;
+  },
 ): Promise<void> {
-  await page.evaluate(({ markdown, docId, source }) => {
+  await page.evaluate(({ markdown, docId, source, diffMode }) => {
     const w = window as MdmarkWindow;
     const el = document.querySelector<HTMLElement>("#doc");
     if (!w.mdmark || !el) {
@@ -677,7 +699,7 @@ export async function mountDiffDocument(
           : Promise.resolve(source.contents[target.revisionId] ?? "");
       },
     };
-    w.handle = w.mdmark.mount(el, { markdown, docId, diffSource });
+    w.handle = w.mdmark.mount(el, { markdown, docId, diffSource, diffMode });
   }, options);
 }
 

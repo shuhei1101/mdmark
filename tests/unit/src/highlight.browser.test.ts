@@ -1,9 +1,12 @@
 import core from "highlight.js/lib/core";
+import diff from "highlight.js/lib/languages/diff";
+import dockerfile from "highlight.js/lib/languages/dockerfile";
 import typescript from "highlight.js/lib/languages/typescript";
 import yaml from "highlight.js/lib/languages/yaml";
 import { afterEach, expect, test, vi } from "vitest";
 import type { SyntaxImport } from "../../../src/highlight.ts";
 import { renderCodeBlock } from "../../../src/parts/code-block.ts";
+import { renderDoc } from "../helpers/render.ts";
 
 /** 色分けの処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ち、ほかのテストも巻き込むため、URL を組んで読む） */
 const loadHighlight = (): Promise<typeof import("../../../src/highlight.ts")> =>
@@ -25,7 +28,12 @@ const TYPESCRIPT_URL = `${location.origin}/hl/languages/typescript.min.js`;
 const YAML_URL = `${location.origin}/hl/languages/yaml.min.js`;
 
 /** 言語のモジュール名から、npm の言語の定義を引く */
-const LANGUAGES = { typescript, yaml };
+const LANGUAGES: Record<string, unknown> = {
+  typescript,
+  yaml,
+  dockerfile,
+  diff,
+};
 
 /** 行に分けない typescript のコードブロックと、行番号を付けて 3 行に分けた yaml のコードブロックを持つ要素を作る */
 function createRoot(): HTMLElement {
@@ -60,9 +68,9 @@ function createImport(failing: Record<string, Error> = {}) {
       return { default: hljs };
     }
     const name =
-      url.endsWith("typescript.min.js") || url === "blob:ts"
+      url === "blob:ts"
         ? "typescript"
-        : "yaml";
+        : (/\/([a-z]+)\.min\.js$/.exec(url)?.[1] ?? "yaml");
     return { default: LANGUAGES[name] };
   });
 }
@@ -252,4 +260,47 @@ test("test_highlight_code_blocks_when_module_urls", async () => {
   expect(codes[0]?.querySelector('span[class^="hljs-"]')).not.toBeNull();
   expect(codes[1]?.innerHTML).toBe(yamlBefore);
   expect(consoleError).not.toHaveBeenCalled();
+});
+
+// dockerfile と、行の印を持つ diff を色分けする（正常系）
+test("test_highlight_code_blocks_when_dockerfile_and_diff", async () => {
+  // 準備
+  const { highlightCodeBlocks } = await loadHighlight();
+  const root = document.createElement("div");
+  root.innerHTML = renderDoc(
+    [
+      "```dockerfile",
+      "FROM node:22",
+      "```",
+      "",
+      "```diff",
+      "-old",
+      "+new // [!code ++]",
+      "```",
+      "",
+    ].join("\n"),
+  ).html;
+  const importModule = createImport();
+  // 実行
+  await highlightCodeBlocks({
+    root,
+    url: BASE_URL,
+    isCurrent: () => true,
+    modules: new Map(),
+    importModule,
+  });
+  // 検証: 言語のモジュールを読む
+  const urls = importModule.mock.calls.map(([url]) => url);
+  expect(urls).toContain(`${location.origin}/hl/languages/dockerfile.min.js`);
+  expect(urls).toContain(`${location.origin}/hl/languages/diff.min.js`);
+  // 検証: dockerfile の命令と、diff の消した行・足した行が色分けされる
+  const [dockerCode, diffCode] = [...root.querySelectorAll("code")];
+  expect(dockerCode.querySelector("span.hljs-keyword")).not.toBeNull();
+  expect(diffCode.querySelector("span.hljs-deletion")).not.toBeNull();
+  expect(diffCode.querySelector("span.hljs-addition")).not.toBeNull();
+  // 検証: 行の印は残る
+  const lines = [
+    ...diffCode.querySelectorAll<HTMLElement>(".mdmark-code-line"),
+  ];
+  expect(lines[1].dataset.kind).toBe("add");
 });

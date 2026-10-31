@@ -1,5 +1,5 @@
 title: "VS Code 拡張機能 / 設定"
-lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・`features`・`libraries` の取り出し・雛形の作成。
+lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・`features`・`libraries`・`side-toc`・`colorTheme` の取り出し・雛形の作成。
 directory: |-
   ```tree
   vscode/src/
@@ -38,6 +38,9 @@ data_models:
       - name: outputDir
         type: string
         description: '`mdmark.export.outputDir`'
+      - name: colorTheme
+        type: '"" | "dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"'
+        description: '`mdmark.colorTheme`。知らない値と文字列でない値は `""`（設定ファイルに従う）'
     refs:
       - dev/設計書/設定/VSCode拡張機能#
     status: planned
@@ -45,7 +48,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -53,6 +56,12 @@ data_models:
       - name: libraries
         type: Record<string, unknown> | undefined
         description: 書いた値のまま。URL は呼ぶ側が直す（libraries の URL を直す）
+      - name: side-toc
+        type: Record<string, unknown> | undefined
+        description: 書いた値のまま（`mode` の知らない値は mdmark が `hover` で描く）
+      - name: colorTheme
+        type: string | undefined
+        description: 設定ファイルに書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く）
     status: planned
   - name: ConfigLoad
     title: 設定ファイルの読み取りの結果
@@ -94,6 +103,8 @@ constants:
       - key: theme
         value: '"auto"'
       - key: outputDir
+        value: '""'
+      - key: colorTheme
         value: '""'
     refs:
       - dev/設計書/設定/VSCode拡張機能#
@@ -161,6 +172,12 @@ functions:
         condition: '`preview.updateDelayMs` が `-1`・`5001`・`12.5`・`"300"` の 4 通り、`preview.theme` が `sepia`'
         mock: なし
         expected: '`updateDelayMs` がどれも `300`、`theme` が `auto`。`0` と `5000` はそのまま読む'
+      - name: test_read_settings_when_color_theme
+        case: 正常
+        summary: 入っているテーマの名前だけを読み、他の値は空に戻す
+        condition: '`colorTheme` が `theme-slate`・`sepia`・`1` の 3 通り'
+        mock: なし
+        expected: 1 つ目の `colorTheme` が `theme-slate`、残りは `""`
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[描き直すまでの待ち]
     status: planned
@@ -194,7 +211,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries` を取り出す
+    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・`colorTheme` を取り出す
     scope: public
     args:
       - name: text
@@ -208,14 +225,14 @@ functions:
       1. `parse(text)` を呼ぶ
          - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
-      3. `features`・`libraries` のうち値がマップのキーだけを `config` に入れて返す。他のキーは読まない
+      3. `features`・`libraries`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme` だけを `config` に入れて返す。他のキーは読まない
     unit_tests:
       - name: test_parse_config
         case: 正常
-        summary: features と libraries だけを取り出す
-        condition: '`features: { callout: false }`・`libraries: { chart: ./chart.js }`・`theme: x`・`build: {}` の YAML'
+        summary: features・libraries・side-toc だけを取り出す
+        condition: '`features: { callout: false }`・`libraries: { chart: ./chart.js }`・`side-toc: { mode: fixed }`・`theme: x`・`build: {}` の YAML'
         mock: なし
-        expected: '`{ kind: "ok", config: { features: { callout: false }, libraries: { chart: "./chart.js" } } }`'
+        expected: '`{ kind: "ok", config: { features: { callout: false }, libraries: { chart: "./chart.js" }, "side-toc": { mode: "fixed" } } }`'
       - name: test_parse_config_when_not_map
         case: 正常
         summary: 最上位がマップでない・空・キーの値がマップでないときは渡さない
@@ -228,6 +245,12 @@ functions:
         condition: '4 行目に `features: {callout: false` と閉じの無い YAML'
         mock: なし
         expected: '`kind` が `error`、`line` が `4`、`message` が空でない'
+      - name: test_parse_config_when_color_theme
+        case: 正常
+        summary: 文字列の colorTheme だけを取り出す
+        condition: '`colorTheme: theme-paper` の YAML と、`colorTheme: [a]` の YAML'
+        mock: なし
+        expected: '前者は `{ kind: "ok", config: { colorTheme: "theme-paper" } }`、後者は `{ kind: "ok", config: {} }`'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
@@ -357,6 +380,35 @@ functions:
       - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[雛形を作るかの確認]
     status: planned
+  - name: applyColorTheme
+    title: テーマの設定で上書きする
+    container: vscode/src/config.ts
+    usecase: 共通
+    summary: '`mdmark.colorTheme` が空でなければ、設定ファイルから取り出した設定の `colorTheme` をその値に置き換えた設定を返す'
+    description: プレビューの `render` と書き出す HTML の `config` の両方が通す。空のときは `config` をそのまま返す。渡されたオブジェクトは書き換えない
+    kind: 関数
+    scope: public
+    args:
+      - name: options
+        type: '{ config: PreviewConfig; colorTheme: PreviewSettings["colorTheme"] }'
+        required: true
+        description: 設定ファイルから取り出した設定と、`readSettings` の `colorTheme`
+    returns:
+      type: PreviewConfig
+      description: '`mount` に渡す設定'
+    unit_tests:
+      - name: test_apply_color_theme
+        case: 正常
+        summary: 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま
+        condition: '`config` が `{ colorTheme: "theme-paper", features: { callout: false } }` で `colorTheme` が `theme-slate` と `""`。別に `config` が `{}` で `colorTheme` が `""`'
+        mock: なし
+        expected: '1 つ目は `{ colorTheme: "theme-slate", features: { callout: false } }`、2 つ目は `{ colorTheme: "theme-paper", features: { callout: false } }`、3 つ目は `{}`。渡した `config` は変わらない'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[送る中身]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
+    status: planned
+    introduced:
+      pr: 181
 test_files:
   - tests/unit/vscode/src/settings.test.ts
   - tests/unit/vscode/src/config.test.ts

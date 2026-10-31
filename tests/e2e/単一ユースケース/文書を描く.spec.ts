@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { MdmarkIndex } from "../../../src/index.ts";
+import type { MdmarkAlias, MdmarkIndex } from "../../../src/index.ts";
 import {
   buildDistRoot,
   destroyDocument,
@@ -57,7 +57,9 @@ test("test_normal_when_updated", async ({ page }) => {
   const doc = page.locator("#doc");
   await expect(doc.locator("h1")).toHaveText("新しい見出し");
   await expect(doc.locator("h1")).toHaveCount(1);
-  await expect(doc.locator("p, table")).toHaveCount(0);
+  await expect(
+    doc.locator(".mdmark-content p, .mdmark-content table"),
+  ).toHaveCount(0);
 });
 
 // 描いたものを片付け、片付けた後の差し替えは何も描かない（正常シナリオ（片付ける））
@@ -190,11 +192,11 @@ test("test_normal_when_source_lines", async ({ page }) => {
   expect(await sourceLine("h1")).toBe("0");
   expect(await sourceLine("p")).toBe("2");
   expect(await sourceLine(".mdmark-table")).toBe("4");
-  expect(await sourceLine("pre")).toBe("8");
+  expect(await sourceLine(".mdmark-code")).toBe("8");
   // 属性を取り除いても、要素の位置と色は変わらない
   const snapshot = () =>
     doc.evaluate((root) =>
-      ["h1", "p", ".mdmark-table", "pre"].map((selector) => {
+      ["h1", "p", ".mdmark-table", ".mdmark-code"].map((selector) => {
         const element = root.querySelector(selector) as HTMLElement;
         const rect = element.getBoundingClientRect();
         return {
@@ -211,4 +213,72 @@ test("test_normal_when_source_lines", async ({ page }) => {
     }
   });
   expect(await snapshot()).toEqual(withAttributes);
+});
+
+// 読み込んだエイリアスを渡して描くと下線とツールチップが付き、本文を差し替えた後も同じエイリアスで描き直す（正常シナリオ（エイリアスを渡す））
+test("test_normal_when_aliases", async ({ page }) => {
+  // 準備
+  const aliases: MdmarkAlias[] = [
+    {
+      alias_type: "term",
+      id: "workspace",
+      name: "ワークスペース",
+      aliases: [],
+      description: "話し合いの記録を置くフォルダ",
+    },
+  ];
+  await openPage(page, builtRoot);
+  // 実行（描く）
+  await mountDocument(page, { markdown: "ワークスペースを置く。\n", aliases });
+  // 検証（描いた直後）
+  const doc = page.locator("#doc");
+  const term = doc.locator(".mdmark-term");
+  await expect(term).toHaveText(["ワークスペース"]);
+  await term.hover();
+  await expect(doc.locator(".mdmark-term-tip")).toContainText(
+    "話し合いの記録を置くフォルダ",
+  );
+  // 実行（本文を差し替える）
+  await updateDocument(page, "別の段落にもワークスペースを書く。\n");
+  // 検証（差し替えた後）
+  await expect(doc.locator("p")).toContainText("別の段落");
+  await expect(doc.locator(".mdmark-term")).toHaveText(["ワークスペース"]);
+});
+
+// テーマを選ぶ設定で描くと選んだテーマの配色になり、本文を差し替えても保たれ、片付けるとテーマが残らない（正常シナリオ（テーマを選ぶ））
+test("test_normal_when_theme_selected", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  await openPage(page, builtRoot);
+  const doc = page.locator("#doc");
+  // 実行・検証: 描いた直後
+  await mountDocument(page, {
+    markdown: SAMPLE_MARKDOWN,
+    config: { colorTheme: "theme-paper" },
+  });
+  await expect(doc).toHaveCSS("background-color", "rgb(251, 248, 241)");
+  // 実行・検証: 本文を差し替えた後も同じ
+  await updateDocument(page, "# 新しい見出し");
+  await expect(doc.locator("h1")).toHaveText("新しい見出し");
+  await expect(doc).toHaveCSS("background-color", "rgb(251, 248, 241)");
+  // 実行・検証: 片付けた後は、テーマを示す属性や class が要素にもページにも残らない
+  await destroyDocument(page);
+  const leftovers = await page.evaluate(() => {
+    const el = document.querySelector("#doc");
+    const root = document.documentElement;
+    return {
+      elementAttributes: el?.getAttributeNames().filter((n) => /theme/.test(n)),
+      elementClass: el?.className ?? "",
+      rootAttributes: root.getAttributeNames().filter((n) => /theme/.test(n)),
+      rootClass: root.className,
+      background: getComputedStyle(root)
+        .getPropertyValue("--mdmark-color-bg")
+        .trim(),
+    };
+  });
+  expect(leftovers.elementAttributes).toEqual([]);
+  expect(leftovers.elementClass).not.toMatch(/theme/);
+  expect(leftovers.rootAttributes).toEqual([]);
+  expect(leftovers.rootClass).not.toMatch(/theme/);
+  expect(leftovers.background).toBe("#ffffff");
 });

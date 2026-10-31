@@ -155,6 +155,51 @@ flows:
       - '`ts` と `python` の `code` の中に class が `hljs-` で始まる `span` がある'
       - 書き出した HTML に `yaml` の言語のモジュールが埋まっていない（`name:"YAML"` を含まない）
     test: test_normal_when_syntax_highlighted
+  - name: 正常系（エイリアスを読む）
+    summary: 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す
+    setup:
+      - name: エイリアスを持つフォルダ
+        description: '設定に `aliases` の 1 行（`paths: aliases/*.yaml`・`metadata` に `alias_type: {type: ref, field: alias_type}`）を記載し、`aliases/` に `alias_type: command` のレコード（`id: run-test`・`name: テストを流す`・`command: npm test`）と、`alias_type: env` のレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）と、`alias_type: term` で `id`・`name` を持ち `description` が空のレコードを置いたフォルダ。文書 `guide.md` の本文に `テストを流す` と `開発サーバー` がある'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant B as buildAliases
+        participant H as 出力の HTML
+        W->>C: mdmark export guide.md
+        C->>C: 設定の aliases の YAML を読む
+        C->>B: 行・読んだ中身
+        B-->>C: エイリアス・alias_required_empty のずれ
+        C->>H: エイリアスを埋めた guide.html を書く
+        C-->>W: 書き出した: guide.html・警告 1 行・終了コード 0
+    expected:
+      - 終了コードが 0 で、標準エラーに `alias_required_empty` の警告が 1 行ある
+      - 開いた文書の `テストを流す` に下線が付き、ツールチップに `npm test` とコピーのボタンが出る
+      - '`開発サーバー` に下線が付かない'
+      - '`guide.html` のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っておらず、埋めたエイリアスが `run-test` だけ'
+    test: test_normal_when_aliases
+  - name: 正常系（テーマを選ぶ設定）
+    summary: 設定の `colorTheme` を埋める設定に写し、開いた HTML を選んだテーマで描く
+    setup:
+      - name: テーマを選ぶ設定
+        description: '`colorTheme: theme-slate` を持つ設定と、リンクを持つ段落の文書を持つフォルダ'
+      - name: Mock
+        description: '差し替える依存は無い。書き出した HTML は Playwright で file:// として開き、OS の配色はライト（`prefers-color-scheme: light`）にする'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 書き出した HTML
+        W->>C: mdmark export {文書}
+        C->>H: colorTheme を写した設定を埋めて書く
+        W->>H: 開く
+        H-->>W: theme-slate で描く
+    expected:
+      - 終了コードが 0
+      - 開いた HTML で、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+    test: test_normal_when_color_theme
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -188,7 +233,7 @@ response:
   - name: 標準エラー
     type: string
     description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
-    notes: 読めない画像・モジュール・拡張・`theme`、埋めずに残した絶対 URL の画像
+    notes: 読めない画像・モジュール・拡張・`theme`、知らない `colorTheme` の名前、埋めずに残した絶対 URL の画像
   - name: 終了コード
     type: 0 | 1
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
@@ -248,6 +293,15 @@ constraints:
     constraint: 設定の `tooltips.placement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`top`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
   - item: 埋める色分け
-    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを 1 つずつ ES モジュールとして埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
+    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを 1 つずつ ES モジュールとして埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
     notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確かめた（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
+  - item: 右側の目次の出し方
+    constraint: 設定の `side-toc` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[side-toc.mode]
+  - item: エイリアス
+    constraint: 設定に `aliases` があるとき、インターフェース定義『設定と索引を点検する』のエイリアスの点検と同じく行の `paths` の YAML を読んで `buildAliases` に渡し、返った `aliases`（`env` を含まない）を埋めて `mount` の `opts.aliases` に渡す。返った `problems` と、当たるファイルが無い行・読めないファイルは警告に出し、終了コードは 0 のまま
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+  - item: 選ぶテーマ
+    constraint: 設定の `colorTheme` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前も写したうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
 test_file: tests/integration/lib/export.test.ts

@@ -21,13 +21,14 @@ test("test_resolve_config_path", async () => {
   expect(absolute).toBe("/etc/mdmark.yaml");
 });
 
-// features と libraries だけを取り出す（正常系）
+// features・libraries・side-toc だけを取り出す（正常系）
 test("test_parse_config", async () => {
   // 準備
   const { parseConfig } = await loadModule();
   const text = [
     "features: { callout: false }",
     "libraries: { chart: ./chart.js }",
+    "side-toc: { mode: fixed }",
     "theme: x",
     "build: {}",
   ].join("\n");
@@ -39,8 +40,44 @@ test("test_parse_config", async () => {
     config: {
       features: { callout: false },
       libraries: { chart: "./chart.js" },
+      "side-toc": { mode: "fixed" },
     },
   });
+});
+
+// 文字列の colorTheme だけを取り出す（正常系）
+test("test_parse_config_when_color_theme", async () => {
+  // 準備
+  const { parseConfig } = await loadModule();
+  // 実行
+  const valid = parseConfig("colorTheme: theme-paper\n");
+  const invalid = parseConfig("colorTheme: [a]\n");
+  // 検証
+  expect(valid).toEqual({ kind: "ok", config: { colorTheme: "theme-paper" } });
+  expect(invalid).toEqual({ kind: "ok", config: {} });
+});
+
+// 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）
+test("test_apply_color_theme", async () => {
+  // 準備
+  const { applyColorTheme } = await loadModule();
+  const config = { colorTheme: "theme-paper", features: { callout: false } };
+  const snapshot = structuredClone(config);
+  // 実行
+  const overridden = applyColorTheme({ config, colorTheme: "theme-slate" });
+  const kept = applyColorTheme({ config, colorTheme: "" });
+  const empty = applyColorTheme({ config: {}, colorTheme: "" });
+  // 検証
+  expect(overridden).toEqual({
+    colorTheme: "theme-slate",
+    features: { callout: false },
+  });
+  expect(kept).toEqual({
+    colorTheme: "theme-paper",
+    features: { callout: false },
+  });
+  expect(empty).toEqual({});
+  expect(config).toEqual(snapshot);
 });
 
 // 最上位がマップでない・空・キーの値がマップでないときは渡さない（正常系）

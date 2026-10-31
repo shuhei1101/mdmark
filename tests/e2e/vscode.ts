@@ -220,6 +220,8 @@ export type LaunchOptions = {
   readOnlyDirs?: string[];
   /** 設定を足したユーザーデータを使い回さず、前回のバージョンを空にして始める（既定） */
   freshState?: boolean;
+  /** ファイルを置いた後、VS Code を起動する前に呼ぶ（Git のリポジトリを作るときなど）。引数はワークスペースのフォルダ */
+  prepare?: (workspaceDir: string) => Promise<void>;
 };
 
 /** 拡張機能を入れた VS Code を、手元の代役の配信につないで起動する */
@@ -258,6 +260,7 @@ export async function launchVscode(
     await mkdir(path, { recursive: true });
     await chmod(path, 0o555);
   }
+  await options.prepare?.(workspaceDir);
   // `http`・`https` の URL は VS Code が `xdg-open` を起こして開くため、渡された URL を記録するだけの代役を `PATH` の先頭に置く
   await mkdir(binDir, { recursive: true });
   const opener = join(binDir, "xdg-open");
@@ -755,4 +758,17 @@ export async function scrollEditorTo(
     await session.win.keyboard.press("Control+ArrowDown");
   }
   throw new Error(`エディタの先頭が ${line} 行目にならない`);
+}
+
+/** ワークスペースの設定（`.vscode/settings.json`）に `patch` を重ねて書く。VS Code が設定ファイルの変更を読み、設定画面で値を変えたときと同じ変更の知らせが拡張機能に届く */
+export async function updateWorkspaceSettings(
+  session: VscodeSession,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const path = join(session.workspaceDir, ".vscode", "settings.json");
+  const current = JSON.parse(await readFile(path, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  await writeFile(path, JSON.stringify({ ...current, ...patch }, null, 2));
 }

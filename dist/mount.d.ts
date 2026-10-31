@@ -1,6 +1,7 @@
 import type { MdmarkCommentStore } from "./comments/spec.ts";
 import { type MdmarkConfig } from "./config.ts";
-import type { DiffSource } from "./diff/source.ts";
+import { type DiffMode, type DiffSource } from "./diff/source.ts";
+import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 /** `mount` の第 2 引数 */
@@ -15,8 +16,12 @@ export type MountOptions = {
     docId?: string;
     /** `collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
     references?: MdmarkReferences;
+    /** `buildAliases` が作ったエイリアス。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使えないエイリアス（`env` を含む）は照合せず、知らせの枠も出さない */
+    aliases?: MdmarkAlias[];
     /** 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る */
     diffSource?: DiffSource;
+    /** 差分の出し方。`button`（既定）は「変更を見る」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を渡さないときは使わない。知らない値は `button` にする */
+    diffMode?: DiffMode;
     /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
     commentStore?: MdmarkCommentStore;
 };
@@ -24,7 +29,7 @@ export type MountOptions = {
 export type MountHandle = {
     /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない */
     update: (markdown: string) => void;
-    /** 要素の中を空にして class `mdmark` を外し、印刷の受け取りを外す。2 回目以降は何もしない */
+    /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
     destroy: () => void;
 };
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore` が `load`・`save` の関数を持たないときは、何も描かずに `TypeError` を投げる */

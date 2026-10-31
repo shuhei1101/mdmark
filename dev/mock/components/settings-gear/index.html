@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>settings-gear（設定を開く歯車のボタン） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <link rel="stylesheet" data-color-theme-css="../../assets/themes/{theme}.css">
+  <!-- モックの VS Code の枠（#69 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/69/assets/preview.css">
+  <!-- 歯車のボタンとテーマのメニュー（#181 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/181/assets/settings.css">
+  <!-- VS Code のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../refs/69/assets/preview.js" defer></script>
+  <!-- 文書のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../refs/181/assets/theme.js" defer></script>
+  <!-- カタログの並べ方（この部品のモックだけの規則） -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- モック専用の操作列: VS Code のテーマと文書のテーマ -->
+  <div class="mock-bar">
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+    </div>
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="mdmark のテーマ">
+      <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-slate">theme-slate</a>
+      <a class="mock-bar-item" data-color-theme-value="theme-contrast">theme-contrast</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../index.md">components</a> / settings-gear
+    </nav>
+
+    <div class="catalog">
+      <h1>設定を開く歯車のボタン</h1>
+
+      <!-- 案 A: エディタのタイトルバーの歯車。VS Code の配色で描く -->
+      <section class="catalog-section" aria-labelledby="catalog-a">
+        <h2 id="catalog-a">A: エディタのタイトルバーの歯車</h2>
+        <ul class="catalog-states">
+          <li class="catalog-state">
+            <span class="catalog-label">通常</span>
+            <div class="vsc-tabs catalog-bar">
+              <span class="vsc-tab">プレビュー 手順書.md</span>
+              <div class="vsc-title-actions">
+                <button class="vsc-icon-button" type="button" aria-label="設定を開く" title="設定を開く">
+                  <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </li>
+          <li class="catalog-state">
+            <span class="catalog-label">ホバー（ツールチップ）</span>
+            <div class="vsc-tabs catalog-bar">
+              <span class="vsc-tab">プレビュー 手順書.md</span>
+              <div class="vsc-title-actions catalog-anchor">
+                <button class="vsc-icon-button is-hover" type="button" aria-label="設定を開く">
+                  <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <span class="vsc-tooltip" aria-hidden="true">設定を開く</span>
+              </div>
+            </div>
+          </li>
+          <li class="catalog-state">
+            <span class="catalog-label">キーボードのフォーカス</span>
+            <div class="vsc-tabs catalog-bar">
+              <span class="vsc-tab">プレビュー 手順書.md</span>
+              <div class="vsc-title-actions">
+                <button class="vsc-icon-button is-focus" type="button" aria-label="設定を開く" title="設定を開く">
+                  <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </li>
+          <li class="catalog-state">
+            <span class="catalog-label">押下</span>
+            <div class="vsc-tabs catalog-bar">
+              <span class="vsc-tab">プレビュー 手順書.md</span>
+              <div class="vsc-title-actions">
+                <button class="vsc-icon-button is-active" type="button" aria-label="設定を開く" title="設定を開く">
+                  <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 案 B: プレビューの中の歯車とテーマのメニュー。文書のテーマの配色で描く -->
+      <section class="catalog-section" aria-labelledby="catalog-b">
+        <h2 id="catalog-b">B: プレビューの中の歯車とテーマのメニュー</h2>
+        <ul class="catalog-states">
+          <li class="catalog-state">
+            <span class="catalog-label">通常</span>
+            <div class="catalog-surface">
+              <button class="preview-gear" type="button" aria-label="テーマと設定" title="テーマと設定">
+                <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </li>
+          <li class="catalog-state">
+            <span class="catalog-label">ホバー</span>
+            <div class="catalog-surface">
+              <button class="preview-gear is-hover" type="button" aria-label="テーマと設定" title="テーマと設定">
+                <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </li>
+          <li class="catalog-state">
+            <span class="catalog-label">キーボードのフォーカス</span>
+            <div class="catalog-surface">
+              <button class="preview-gear is-focus" type="button" aria-label="テーマと設定" title="テーマと設定">
+                <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </li>
+          <li class="catalog-state">
+            <span class="catalog-label">メニューを開いた（theme-slate を選択中・項目にフォーカス）</span>
+            <div class="catalog-surface catalog-surface-menu">
+              <button class="preview-gear is-open" type="button" aria-label="テーマと設定" aria-expanded="true">
+                <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <!-- 開いた状態のメニュー: カタログでは浮かせずにその場へ置く -->
+              <div class="preview-theme-menu is-static">
+                <p class="preview-theme-menu-title" id="catalog-menu-title">テーマ</p>
+                <ul class="preview-theme-menu-list" aria-labelledby="catalog-menu-title">
+                  <li><button class="preview-theme-menu-item" type="button" aria-pressed="false"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>設定ファイルに従う</button></li>
+                  <li><button class="preview-theme-menu-item" type="button" aria-pressed="false"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>dev-swiss</button></li>
+                  <li><button class="preview-theme-menu-item is-hover" type="button" aria-pressed="false"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>theme-paper</button></li>
+                  <li><button class="preview-theme-menu-item" type="button" aria-pressed="true"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>theme-slate</button></li>
+                  <li><button class="preview-theme-menu-item is-focus" type="button" aria-pressed="false"><svg class="vsc-icon preview-theme-menu-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>theme-contrast</button></li>
+                </ul>
+                <hr class="preview-theme-menu-separator">
+                <button class="preview-theme-menu-item" type="button"><svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>すべての設定を開く</button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

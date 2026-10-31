@@ -15,3 +15,24 @@ test("test_render_steps", async () => {
   expect(matches(html, /<li>/g)).toHaveLength(3);
   expect(html).not.toContain("start=");
 });
+
+// 折り畳みの見出しを項目の数か title にする（正常系）
+test("test_render_steps_when_collapsed", async () => {
+  // 準備
+  const { renderSteps } = await loadSteps();
+  const items = ["配布物を読み込む", "描く先の要素を用意する", "mount を呼ぶ"];
+  // 実行
+  const closed = renderSteps({ items, collapse: "closed" });
+  const opened = renderSteps({ items, collapse: "open", title: "準備" });
+  // 検証
+  expect(
+    closed.startsWith(
+      '<details class="mdmark-collapsible"><summary>手順（3 ステップ）</summary><ol class="mdmark-steps">',
+    ),
+  ).toBe(true);
+  expect(
+    opened.startsWith(
+      '<details class="mdmark-collapsible" open><summary>準備</summary>',
+    ),
+  ).toBe(true);
+});

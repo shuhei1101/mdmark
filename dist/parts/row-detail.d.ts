@@ -12,6 +12,11 @@ export declare function renderRowDetail(options: {
     open?: boolean;
     /** 開閉のボタンを付けるか（既定 `true`） */
     toggle?: boolean;
+    /** 畳んだ最終列。渡すと詳細の中身の上に最終列の見出しと中身を置く */
+    foldedColumn?: {
+        name: string;
+        html: string;
+    } | undefined;
     /** 詳細の中身の HTML（`SLOT_MARKER` を渡せる） */
     body: string;
 }): {

@@ -43,3 +43,11 @@ stories:
       title: 補足
       toggle: false
       open: false
+  - name: Level1
+    parameters:
+      server:
+        id: section
+    args:
+      level: 1
+      id: はじめに
+      title: はじめに

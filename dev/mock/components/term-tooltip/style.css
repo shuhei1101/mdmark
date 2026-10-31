@@ -19,3 +19,13 @@
 .catalog-tip-space-long {
   padding-block-end: 20rem;
 }
+
+/* エイリアスの開いたツールチップを見せる見本: 語の上に開く、名前・説明・項目の並ぶツールチップの分の高さを取る */
+.catalog-tip-space-alias {
+  padding-block-start: 10rem;
+}
+
+/* コマンド・長い URL のエイリアスの見本: コマンドの面や折り返した URL の並ぶツールチップの分の高さを取る */
+.catalog-tip-space-alias-tall {
+  padding-block-start: 14rem;
+}

@@ -1,0 +1,16 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-document-display-improvements
+
+
+ Test Files  150 passed (150)
+      Tests  1005 passed (1005)
+   Start at  22:48:37
+   Duration  35.87s (tests 41%, worker 36%, import 20%, transform 3%)
+
+
+exit: 0

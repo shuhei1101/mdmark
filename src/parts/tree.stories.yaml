@@ -6,15 +6,91 @@ stories:
         id: tree
     args:
       nodes: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
+      source: "mdmark/\n├── src/\n│   └── index.ts\n└── package.json"
+  - name: Interactive
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
+      source: "mdmark/\n├── src/\n│   └── index.ts\n└── package.json"
+      interactive: true
+  - name: OpenAll
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
+      source: "app/\n└── src/\n    └── parts/\n        └── tree.ts"
+      open: "all"
+      interactive: true
+  - name: OpenLevels
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
+      source: "app/\n└── src/\n    └── parts/\n        └── tree.ts"
+      open: 2
+      interactive: true
+  - name: Notes
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"mdmark/","children":[{"name":"src/","note":"ソース","children":[{"name":"index.ts","note":"入口の <code>mount</code>"}]},{"name":"README.md","note":"<strong>必読</strong> <span class=\"mdmark-badge\">新規</span>"}]}]'
+      source: "mdmark/\n├── src/ # ソース\n│   └── index.ts # 入口の `mount`\n└── README.md # **必読** `badge:新規`"
+      open: "all"
+      interactive: true
+  - name: FileIcons
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"files/","children":[{"name":"README.md"},{"name":"index.ts"},{"name":"package.json"},{"name":"photo.PNG"},{"name":"data.csv"},{"name":"dist.zip"},{"name":"Dockerfile"},{"name":"font.woff2"}]}]'
+      source: "files/\n├── README.md\n├── index.ts\n├── package.json\n├── photo.PNG\n├── data.csv\n├── dist.zip\n├── Dockerfile\n└── font.woff2"
+      interactive: true
+  - name: More
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"src/","children":[{"name":"index.ts"},{"name":"..."}]}]'
+      source: "src/\n├── index.ts\n└── ..."
+      interactive: true
   - name: Deep
     parameters:
       server:
         id: tree
     args:
       nodes: '[{"name":"a/","children":[{"name":"b/","children":[{"name":"c/","children":[{"name":"d/","children":[{"name":"e.ts"}]}]}]}]}]'
+      source: "a/\n└── b/\n    └── c/\n        └── d/\n            └── e.ts"
+      open: "all"
+      interactive: true
   - name: LongName
     parameters:
       server:
         id: tree
     args:
-      nodes: '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts"}]}]'
+      nodes: '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts","note":"とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確かめる"}]}]'
+      source: "src/\n└── a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts # とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確かめる"
+      open: "all"
+      interactive: true
+  - name: Copied
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"src/","children":[{"name":"index.ts"}]}]'
+      source: "src/\n└── index.ts"
+      interactive: true
+      copyState: "copied"
+  - name: CopyFailed
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: '[{"name":"src/","children":[{"name":"index.ts"}]}]'
+      source: "src/\n└── index.ts"
+      interactive: true
+      copyFallback: true

@@ -82,3 +82,122 @@ stories:
       text: 作業場
       id: tip-avoided-closed
       replacement: '{"term":"ワークスペース","meaning":"話し合いの記録を置くフォルダ"}'
+  - name: AliasTerm
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 査読
+      id: tip-alias-term
+      alias: '{"alias_type":"term","id":"review","name":"レビュー","aliases":["査読"],"description":"変更を別の人が確かめること"}'
+      open: true
+  - name: AliasDoc
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 設計書
+      id: tip-alias-doc
+      alias: '{"alias_type":"doc","id":"design-doc","name":"設計書","description":"仕様を記載した文書"}'
+      open: true
+  - name: AliasCommand
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 単体テスト
+      id: tip-alias-command
+      alias: '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}'
+      open: true
+  - name: AliasCommandCopied
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 単体テスト
+      id: tip-alias-command-copied
+      alias: '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}'
+      copy: copied
+      open: true
+  - name: AliasCommandFailed
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 単体テスト
+      id: tip-alias-command-failed
+      alias: '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}'
+      copy: failed
+      open: true
+  - name: AliasCommandLong
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: まとめた HTML の書き出し
+      id: tip-alias-command-long
+      alias: '{"alias_type":"command","id":"build-handbook","name":"まとめた HTML の書き出し","description":"設定の build の文書を 1 枚の HTML にまとめる","command":"npx mdmark build --config docs/mdmark.config.yaml --out dist/handbook/index.html --title \"開発ハンドブック\"","cwd":"リポジトリの直下"}'
+      open: true
+  - name: AliasUrl
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 課題の一覧
+      id: tip-alias-url
+      alias: '{"alias_type":"url","id":"issues","name":"課題の一覧","description":"Issue を並べたページ","url":"https://github.com/shuhei1101/mdmark/issues"}'
+      open: true
+  - name: AliasUrlLong
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 移行の手順書
+      id: tip-alias-url-long
+      alias: '{"alias_type":"url","id":"upgrade-guide","name":"移行の手順書","description":"設定・索引・文書を新しいバージョンに合わせる手順","url":"https://github.com/shuhei1101/mdmark/blob/develop/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E5%B0%8E%E5%85%A5/%E7%89%88%E3%82%92%E4%B8%8A%E3%81%92%E3%82%8B.md?plain=1#L12-L48"}'
+      open: true
+  - name: AliasUrlNotHttp
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 危ないリンク
+      id: tip-alias-url-not-http
+      alias: '{"alias_type":"url","id":"bad-link","name":"危ないリンク","url":"javascript:alert(1)"}'
+      open: true
+  - name: AliasSkill
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 記録の取り込み
+      id: tip-alias-skill
+      alias: '{"alias_type":"skill","id":"session","name":"記録の取り込み","skill":"mindstella:session"}'
+      open: true
+  - name: AliasTool
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 点検のツール
+      id: tip-alias-tool
+      alias: '{"alias_type":"tool","id":"check-tool","name":"点検のツール","description":"設定と索引のずれを返す","tool":"check"}'
+      open: true
+  - name: AliasPath
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 設定ファイル
+      id: tip-alias-path
+      alias: '{"alias_type":"path","id":"config-file","name":"設定ファイル","description":"機能のオン・オフと読む文書を記載する","path":"mdmark.config.yaml"}'
+      open: true
+  - name: AliasAvoid
+    parameters:
+      server:
+        id: term-tip
+    args:
+      text: 作業場
+      id: tip-alias-avoid
+      replacement: '{"term":"ワークスペース"}'
+      open: true

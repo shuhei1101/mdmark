@@ -54,12 +54,21 @@ states:
         value: 'false'
       - name: open
         value: 'false'
-lead: h2〜h4 の見出しと、次の同じか上の階層の見出しまでの中身。見出しに ID へのアンカーと、中身を開閉するボタンを付ける。
+  - name: Level1
+    description: h1 の節。h2 の節と同じ開閉のボタンとアンカーを持つ
+    args:
+      - name: level
+        value: '1'
+      - name: id
+        value: はじめに
+      - name: title
+        value: はじめに
+lead: h1〜h4 の見出しと、次の同じか上の階層の見出しまでの中身。見出しに ID へのアンカーと、中身を開閉するボタンを付ける。
 args:
   - name: level
     type: 整数
     required: true
-    choices: 2〜4
+    choices: 1〜4
     description: 見出しの階層
   - name: id
     type: 文字列
@@ -92,6 +101,10 @@ events:
     when: 開閉のボタンを押す、節の中を指す URL の `#ID` で開く、またはページ内検索が閉じた中身に当たる
     value: ボタンの `aria-expanded`
     description: '`mount` が中身の `hidden` を付け外しする'
+  - name: 入れ子をまとめて開閉する
+    when: Shift を押しながら開閉のボタンを押す（クリック、またはボタンにフォーカスがある間の Shift+Enter・Shift+Space）
+    value: ボタンの `aria-expanded`
+    description: '`mount` がその節と中の入れ子の節を全て同じ状態（押す前のその節の反対）にする'
 css_properties:
   - name: --mdmark-color-heading
     syntax: <color>
@@ -105,9 +118,11 @@ accessibility:
   - 開閉のボタンは見出しの文字を読み上げの名前にし、`aria-expanded`・`aria-controls` で開閉の状態を示す
   - 閉じた中身は `hidden="until-found"` で、ページ内検索から開ける
   - アンカーは `「{見出しの文字}」へのリンク` を読み上げの名前に持つ
+  - 開閉のボタンで Shift+Enter・Shift+Space を押すと、Shift を押しながらのクリックと同じく入れ子の節をまとめて開閉する
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[節]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[入れ子をまとめて開閉]
 status: planned
 notes:
   HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}" data-section="{open なら open、そうでなければ closed}">{中身}</div>`。`toggle` が `false` のときは `button` を置かず見出しの文字をそのまま出す。モックは `dev/mock/components/section/`'

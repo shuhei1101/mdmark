@@ -222,3 +222,73 @@ test("test_validate_config_when_syntax_url_invalid", async () => {
   expect(valid.issues).toEqual([]);
   expect(valid.config.syntax?.url).toBe("/vendor/hl/");
 });
+
+// hover・fixed 以外の side-toc.mode を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_side_toc_mode_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { "side-toc": { mode: "left" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { "side-toc": { mode: "fixed" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "side-toc.mode",
+    kind: "schema",
+  });
+  expect(invalid.config["side-toc"]).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config["side-toc"]?.mode).toBe("fixed");
+});
+
+// 文字列でない colorTheme を schema のずれにして落とし、知らない名前はそのまま残す（正常系）
+test("test_validate_config_when_color_theme_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig({ colorTheme: 1 }, "mdmark.config.yaml");
+  const unknown = validateConfig({ colorTheme: "sepia" }, "mdmark.config.yaml");
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "colorTheme",
+    kind: "schema",
+  });
+  expect(invalid.config.colorTheme).toBeUndefined();
+  expect(unknown.issues).toEqual([]);
+  expect(unknown.config.colorTheme).toBe("sepia");
+});
+
+// aliases の Schema に合わない行を schema のずれにし、行の位置を保つ（異常系）
+test("test_validate_config_when_aliases_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const valid = {
+    id: "terms",
+    paths: ["terms/*.yaml"],
+    metadata: { alias_type: { type: "custom", value: "term" } },
+  };
+  const invalid = {
+    id: "memos",
+    paths: ["memos/*.yaml"],
+    metadata: { alias_type: { type: "custom", value: "memo" } },
+  };
+  // 実行
+  const { config, issues } = validateConfig(
+    { aliases: [valid, invalid] },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]?.kind).toBe("schema");
+  expect(issues[0]?.where).toBe("aliases[1].metadata.alias_type.value");
+  expect(config.aliases).toHaveLength(2);
+  expect(config.aliases?.[0]).toEqual(valid);
+  expect(config.aliases?.[1]).toBeNull();
+});

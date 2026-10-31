@@ -42,3 +42,5 @@ items:
     summary: 対応ブラウザの下限の版に無い API の使用を報告する
   - page: highlight.js.yaml
     summary: コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む）
+  - page: ajv.yaml
+    summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物に束ねない）

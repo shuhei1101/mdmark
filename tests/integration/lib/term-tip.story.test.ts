@@ -258,3 +258,288 @@ test("test_avoided_closed", async () => {
   await term.focus();
   await expect(tip.isVisible()).resolves.toBe(true);
 });
+
+/** ストーリーのツールチップの区分の見出しを並べて返す */
+function tipHeadings(page: Page): Promise<string[]> {
+  return page
+    .locator(".mdmark-term-tip .mdmark-term-tip-heading")
+    .allInnerTexts();
+}
+
+// term のエイリアスは、「用語」の区分に名前と説明を持つ role="tooltip" のツールチップを開く（AliasTerm）
+test("test_alias_term", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-term");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tipHeadings(page)).resolves.toEqual(["用語"]);
+  await expect(tip.locator(".mdmark-term-tip-name").innerText()).resolves.toBe(
+    "レビュー",
+  );
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("変更を別の人が確かめること");
+  const term = page.locator(".mdmark-term");
+  await expect(term.getAttribute("class")).resolves.toBe("mdmark-term");
+  await expect(term.getAttribute("aria-describedby")).resolves.toBe(
+    "tip-alias-term",
+  );
+  await expect(
+    term.evaluate((element) => getComputedStyle(element).textDecorationStyle),
+  ).resolves.toBe("dashed");
+  await expectOpenedAbove("parts-termtip--alias-term");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// doc のエイリアスは、「文書」の区分に名前と概要を持つ role="tooltip" のツールチップを開く（AliasDoc）
+test("test_alias_doc", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-doc");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tipHeadings(page)).resolves.toEqual(["文書"]);
+  await expect(tip.locator(".mdmark-term-tip-name").innerText()).resolves.toBe(
+    "設計書",
+  );
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("仕様を記載した文書");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// command のエイリアスは、「コマンド」の区分に名前・説明・コマンドとコピーのボタン・実行場所を持つ role="group" のツールチップを開く（AliasCommand）
+test("test_alias_command", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-command");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.getAttribute("role")).resolves.toBe("group");
+  await expect(tip.getAttribute("aria-label")).resolves.toBe(
+    "「単体テスト」のコマンド",
+  );
+  await expect(tipHeadings(page)).resolves.toEqual(["コマンド"]);
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("ライブラリ本体の単体テストを流す");
+  await expect(tip.locator("code").innerText()).resolves.toBe(
+    "npm run test:unit",
+  );
+  await expect(tip.innerText()).resolves.toContain("実行場所");
+  await expect(tip.innerText()).resolves.toContain("リポジトリの直下");
+  const button = tip.locator("button.mdmark-term-tip-copy");
+  await expect(button.getAttribute("type")).resolves.toBe("button");
+  await expect(button.getAttribute("data-state")).resolves.toBe("idle");
+  await expect(button.innerText()).resolves.toBe("コピー");
+  await expect(button.locator("svg").count()).resolves.toBe(1);
+  const term = page.locator(".mdmark-term");
+  await expect(term.getAttribute("aria-details")).resolves.toBe(
+    "tip-alias-command",
+  );
+  await expect(term.getAttribute("aria-describedby")).resolves.toBe(
+    "tip-alias-command-meaning",
+  );
+  await expect(tip.locator('[role="status"]').innerText()).resolves.toBe("");
+  await expectOpenedAbove("parts-termtip--alias-command");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// コマンドをコピーした状態は、ボタンが「コピーしました」と読み上げの要素の文を持つ（AliasCommandCopied）
+test("test_alias_command_copied", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-command-copied");
+  // 検証
+  const button = page.locator(".mdmark-term-tip button.mdmark-term-tip-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("copied");
+  await expect(button.innerText()).resolves.toBe("コピーしました");
+  await expect(
+    page.locator('.mdmark-term-tip [role="status"]').textContent(),
+  ).resolves.toBe("コマンドをコピーしました");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// コマンドをコピーできなかった状態は、ボタンが「コピーできませんでした」と読み上げの要素の文を持つ（AliasCommandFailed）
+test("test_alias_command_failed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-command-failed");
+  // 検証
+  const button = page.locator(".mdmark-term-tip button.mdmark-term-tip-copy");
+  await expect(button.getAttribute("data-state")).resolves.toBe("failed");
+  await expect(button.innerText()).resolves.toBe("コピーできませんでした");
+  await expect(
+    page.locator('.mdmark-term-tip [role="status"]').textContent(),
+  ).resolves.toBe("コマンドをコピーできませんでした");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 長いコマンドは、コマンドの面の幅で折り返し、ツールチップの幅の上限を超えない（AliasCommandLong）
+test("test_alias_command_long", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-command-long");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  const box = await tip.evaluate((element) => ({
+    width: element.getBoundingClientRect().width,
+    maxWidth: parseFloat(getComputedStyle(element).maxWidth),
+  }));
+  expect(box.width).toBeLessThanOrEqual(box.maxWidth + 1);
+  const command = tip.locator(".mdmark-term-tip-command");
+  const commandBox = await command.evaluate((element) => ({
+    right: element.getBoundingClientRect().right,
+    tipRight:
+      element.closest(".mdmark-term-tip")?.getBoundingClientRect().right ?? 0,
+  }));
+  expect(commandBox.right).toBeLessThanOrEqual(commandBox.tipRight);
+  const code = tip.locator("code");
+  const lineHeight = await code.evaluate((element) =>
+    parseFloat(getComputedStyle(element).lineHeight),
+  );
+  const height = await code.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  expect(height).toBeGreaterThan(lineHeight * 1.5);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// url のエイリアスは、「URL」の区分に名前・説明・URL の文字のリンクを持つ role="group" のツールチップを開く（AliasUrl）
+test("test_alias_url", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-url");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.getAttribute("role")).resolves.toBe("group");
+  await expect(tip.getAttribute("aria-label")).resolves.toBe(
+    "「課題の一覧」の URL",
+  );
+  await expect(tipHeadings(page)).resolves.toEqual(["URL"]);
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("Issue を並べたページ");
+  const link = tip.locator("a.mdmark-term-tip-link");
+  await expect(link.innerText()).resolves.toBe(
+    "https://github.com/shuhei1101/mdmark/issues",
+  );
+  await expect(link.getAttribute("href")).resolves.toBe(
+    "https://github.com/shuhei1101/mdmark/issues",
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 長い URL は、リンクの文字を 1 行に収めて末尾を「...」で省略する（AliasUrlLong）
+test("test_alias_url_long", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-url-long");
+  // 検証
+  const link = page.locator(".mdmark-term-tip a.mdmark-term-tip-link");
+  const style = await link.evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      whiteSpace: computed.whiteSpace,
+      textOverflow: computed.textOverflow,
+      overflow: computed.overflow,
+      truncated: element.scrollWidth > element.clientWidth,
+      height: element.getBoundingClientRect().height,
+      lineHeight: parseFloat(computed.lineHeight),
+    };
+  });
+  expect(style.whiteSpace).toBe("nowrap");
+  expect(style.textOverflow).toBe("ellipsis");
+  expect(style.overflow).toBe("hidden");
+  expect(style.truncated).toBe(true);
+  expect(style.height).toBeLessThan(style.lineHeight * 1.5);
+  await expect(link.getAttribute("href")).resolves.toContain(
+    "?plain=1#L12-L48",
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// http・https でない URL は、リンクにせず文字で出し、role="tooltip" になる（AliasUrlNotHttp）
+test("test_alias_url_not_http", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-url-not-http");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tip.locator("a").count()).resolves.toBe(0);
+  await expect(
+    tip.locator("span.mdmark-term-tip-link").innerText(),
+  ).resolves.toBe("javascript:alert(1)");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 説明が空の skill のエイリアスは、説明を出さず、名前とスキル名の等幅の 1 行だけを出す（AliasSkill）
+test("test_alias_skill", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-skill");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tipHeadings(page)).resolves.toEqual(["スキル"]);
+  await expect(tip.locator(".mdmark-term-tip-meaning").count()).resolves.toBe(
+    0,
+  );
+  const code = tip.locator("code.mdmark-term-tip-code");
+  await expect(code.innerText()).resolves.toBe("mindstella:session");
+  await expect(
+    code.evaluate((element) => getComputedStyle(element).fontFamily),
+  ).resolves.toMatch(/mono/i);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// tool のエイリアスは、「ツール」の区分に名前・説明・ツール名の等幅の 1 行を出す（AliasTool）
+test("test_alias_tool", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-tool");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tipHeadings(page)).resolves.toEqual(["ツール"]);
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("設定と索引のずれを返す");
+  await expect(
+    tip.locator("code.mdmark-term-tip-code").innerText(),
+  ).resolves.toBe("check");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// path のエイリアスは、「パス」の区分に名前・説明・パスの等幅の 1 行を出す（AliasPath）
+test("test_alias_path", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-path");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tipHeadings(page)).resolves.toEqual(["パス"]);
+  await expect(
+    tip.locator(".mdmark-term-tip-meaning").innerText(),
+  ).resolves.toBe("機能のオン・オフと読む文書を記載する");
+  await expect(
+    tip.locator("code.mdmark-term-tip-code").innerText(),
+  ).resolves.toBe("mdmark.config.yaml");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// avoid の種類のエイリアスは、波線の下線を引き、「代わりの用語」の区分に置き換え先の語だけを出す（AliasAvoid）
+test("test_alias_avoid", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-termtip--alias-avoid");
+  // 検証
+  const tip = page.locator(".mdmark-term-tip");
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tipHeadings(page)).resolves.toEqual(["代わりの用語"]);
+  await expect(
+    tip.locator(".mdmark-term-tip-replacement").innerText(),
+  ).resolves.toBe("ワークスペース");
+  await expect(tip.locator(".mdmark-term-tip-meaning").count()).resolves.toBe(
+    0,
+  );
+  const term = page.locator(".mdmark-term");
+  await expect(term.getAttribute("class")).resolves.toBe(
+    "mdmark-term mdmark-term-avoided",
+  );
+  await expect(
+    term.evaluate((element) => getComputedStyle(element).textDecorationStyle),
+  ).resolves.toBe("wavy");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

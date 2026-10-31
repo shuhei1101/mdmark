@@ -1,0 +1,11 @@
+/* コードブロックの帯の印刷の規則（#151 で共有するアセット）。実装では @media print で当てる（このファイルは link の media="print" で読む） */
+
+/* mdmark の層: 印刷のときのコードブロックの帯 */
+@layer mdmark {
+  .mdmark {
+    /* コピーボタン: 紙では押せないので出さない。言語のラベルは残す */
+    .mdmark-code-copy {
+      display: none;
+    }
+  }
+}

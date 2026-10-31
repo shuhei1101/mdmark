@@ -8,6 +8,7 @@ const COMMAND_TITLES: Record<string, string> = {
   "mdmark.openPreview": "プレビューを開く",
   "mdmark.refreshPreview": "プレビューをリロード",
   "mdmark.openConfig": "設定ファイルを開く",
+  "mdmark.openSettings": "設定を開く",
   "mdmark.exportHtml": "HTML に書き出す",
   "mdmark.openInBrowser": "ブラウザで開く",
   "mdmark.printToPdf": "PDF に印刷",
@@ -73,6 +74,11 @@ suite("コマンドと通知の入口", () => {
         when: "editorLangId == markdown",
         group: "navigation",
       },
+      {
+        command: "mdmark.openSettings",
+        when: "activeWebviewPanelId == 'mdmark.preview'",
+        group: "navigation",
+      },
     ]);
     assert.strictEqual(
       commands.find((item) => item.command === "mdmark.openPreviewToSide")
@@ -89,6 +95,25 @@ suite("コマンドと通知の入口", () => {
     ]);
   });
 
+  // 設定を開くボタン: プレビューがアクティブなときだけ出る歯車で、表示名がツールチップと読み上げの名前になる
+  test("test_normal_when_settings_button", () => {
+    const { menus, commands } = contributes();
+    const button = (menus["editor/title"] ?? []).find(
+      (item) => item.command === "mdmark.openSettings",
+    );
+    assert.deepStrictEqual(button, {
+      command: "mdmark.openSettings",
+      when: "activeWebviewPanelId == 'mdmark.preview'",
+      group: "navigation",
+    });
+    const command = commands.find(
+      (item) => item.command === "mdmark.openSettings",
+    );
+    assert.strictEqual(command?.icon, "$(gear)");
+    assert.strictEqual(command?.category, "mdmark");
+    assert.strictEqual(command?.title, "設定を開く");
+  });
+
   // コマンドパレットに出す条件
   test("test_normal_when_command_palette_conditions", () => {
     const palette = contributes().menus.commandPalette ?? [];
@@ -100,6 +125,7 @@ suite("コマンドと通知の入口", () => {
       "mdmark.openPreview": MARKDOWN_OR_PREVIEW,
       "mdmark.refreshPreview": "mdmark.previewOpen",
       "mdmark.openConfig": undefined,
+      "mdmark.openSettings": undefined,
       "mdmark.exportHtml": MARKDOWN_OR_PREVIEW,
       "mdmark.openInBrowser": MARKDOWN_OR_PREVIEW,
       "mdmark.printToPdf": MARKDOWN_OR_PREVIEW,

@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "../config.ts";
+import { validateAliasRows } from "./alias-schema.ts";
 import type { CheckIssue } from "./check.ts";
 import { CliError } from "./errors.ts";
 import { VERSION_PATTERN } from "./versions.ts";
@@ -34,6 +35,8 @@ export type CliConfig = MdmarkConfig & {
   build?: BuildConfig;
   /** `mdmark check` の設定 */
   check?: CheckConfig;
+  /** エイリアスの元の行の並び。Schema に合わない行は `null` */
+  aliases?: unknown[];
 };
 
 /** `mdmark check` が読む設定の `check` */
@@ -311,6 +314,18 @@ export function validateConfig(
     }
   }
 
+  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が知らせる）
+  if (raw.colorTheme !== undefined && typeof raw.colorTheme !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "colorTheme",
+        "`colorTheme` はテーマの名前の文字列で書いてください。",
+      ),
+    );
+    delete config.colorTheme;
+  }
+
   if (raw.extensions !== undefined && !isStringArray(raw.extensions)) {
     issues.push(
       schemaIssue(
@@ -340,6 +355,30 @@ export function validateConfig(
 
   if (raw.syntax !== undefined && !isValidSyntax(raw.syntax, file, issues)) {
     delete config.syntax;
+  }
+
+  if (
+    raw["side-toc"] !== undefined &&
+    !isValidSideToc(raw["side-toc"], file, issues)
+  ) {
+    delete config["side-toc"];
+  }
+
+  if (raw.aliases !== undefined) {
+    if (Array.isArray(raw.aliases)) {
+      const checked = validateAliasRows(raw.aliases, file);
+      issues.push(...checked.issues);
+      config.aliases = checked.rows;
+    } else {
+      issues.push(
+        schemaIssue(
+          file,
+          "aliases",
+          "`aliases` はエイリアスの元の行の並びで書いてください。",
+        ),
+      );
+      delete config.aliases;
+    }
   }
 
   if (raw.check !== undefined) {
@@ -380,6 +419,39 @@ function isValidTooltips(
         file,
         "tooltips.placement",
         "`tooltips.placement` は `top` か `bottom` で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `side-toc` を検める。キーと値の形でなければ、`mode` が `hover` と `fixed` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
+function isValidSideToc(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "side-toc",
+        "`side-toc` は `mode` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.mode !== undefined &&
+    value.mode !== "hover" &&
+    value.mode !== "fixed"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "side-toc.mode",
+        "`side-toc.mode` は `hover` か `fixed` で書いてください。",
       ),
     );
     return false;

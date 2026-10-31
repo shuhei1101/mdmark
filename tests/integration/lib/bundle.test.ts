@@ -209,3 +209,114 @@ test("test_error_when_output_unwritable", async () => {
   expect(result.stderr).toContain("確かめて");
   expect(await readFile(join(dir, "dist"), "utf8")).toBe("ファイル\n");
 });
+
+// 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で効かせる（正常系（エイリアスを読む））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "aliases:",
+      "  - id: records",
+      "    paths: [aliases/*.yaml]",
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n\nテストを流す、開発サーバーを使う。\n\n[B へ](b.md)\n",
+    "b.md": "# B\n\nここでもテストを流す、開発サーバーを使う。\n",
+    "aliases/command.yaml": [
+      "alias_type: command",
+      "id: run-test",
+      "name: テストを流す",
+      "command: npm test",
+      "",
+    ].join("\n"),
+    "aliases/env.yaml": [
+      "alias_type: env",
+      "id: dev-server",
+      "name: 開発サーバー",
+      "url: http://127.0.0.1:8767/",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const html = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  expect(html).not.toContain("http://127.0.0.1:8767/");
+  expect(html).not.toContain("dev-server");
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+  );
+  // 1 つ目の文書: コマンドの名前だけに下線が付き、ツールチップに npm test が出る
+  await page.waitForSelector("article .mdmark-term");
+  await expect(
+    page.locator("article .mdmark-term").allTextContents(),
+  ).resolves.toEqual(["テストを流す"]);
+  await expect(
+    page.locator("article .mdmark-term-tip code").textContent(),
+  ).resolves.toBe("npm test");
+  // 2 つ目の文書へ移っても同じ
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await page.waitForFunction(
+    () =>
+      document.querySelector("article .mdmark-term")?.textContent ===
+      "テストを流す",
+  );
+  await expect(
+    page.locator("article .mdmark-term").allTextContents(),
+  ).resolves.toEqual(["テストを流す"]);
+  await expect(
+    page.locator("article .mdmark-term-tip code").textContent(),
+  ).resolves.toBe("npm test");
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
+// 設定の colorTheme を埋める設定に写し、まとめた全ての文書を選んだテーマで描く（正常系（テーマを選ぶ設定））
+test("test_normal_when_color_theme", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "colorTheme: theme-slate",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n\n[B へ](b.md)\n",
+    "b.md": "# B\n\nもう 1 つの文書。\n",
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"));
+  await page.emulateMedia({ colorScheme: "light" });
+  const readBackground = () =>
+    page.evaluate(() => {
+      const root = document.querySelector("article.mdmark");
+      return root ? getComputedStyle(root).backgroundColor : "";
+    });
+  // 最初に開いた文書
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("A"),
+  );
+  await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
+  // 文書の一覧から移った 2 つ目の文書
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
+  await page.close();
+});

@@ -105,3 +105,19 @@ test("test_diff_content", async () => {
     "「2026/10/18 09:12 初版（佐藤）」の本文を取り出せませんでした。別のリビジョンを選んでください。",
   );
 });
+
+// 描いた文書のブロックを色分けできない知らせの枠は、題が「変更を表示できません」になる（DiffBlocks）
+test("test_diff_blocks", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-notice--diff-blocks");
+  // 検証
+  const notice = page.locator(".mdmark-notice");
+  await expect(notice.getAttribute("role")).resolves.toBe("status");
+  await expect(page.locator(".mdmark-notice-title").innerText()).resolves.toBe(
+    "変更を表示できません",
+  );
+  await expect(page.locator(".mdmark-notice p").innerText()).resolves.toBe(
+    "比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。",
+  );
+  await expect(page.locator(".mdmark-notice code").count()).resolves.toBe(0);
+});

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder } from "../story.ts";
+import { createBrowserHolder, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -46,4 +46,43 @@ test("test_open", async () => {
   });
   expect(layout.below).toBe(true);
   expect(layout.sameWidth).toBe(true);
+});
+
+// 最終列を畳んだ表で開いた行の詳細は、詳細の中身の上に説明の見出しと中身を出す（OpenWithFoldedColumn）
+test("test_open_with_folded_column", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-rowdetail--open-with-folded-column",
+  );
+  // 検証
+  await expect(
+    page.locator("button.mdmark-row-toggle").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  const detail = page.locator("tr.mdmark-row-detail");
+  await expect(detail.isVisible()).resolves.toBe(true);
+  const part = detail.locator(".mdmark-fold-part");
+  await expect(part.locator(".mdmark-fold-name").innerText()).resolves.toBe(
+    "説明",
+  );
+  await expect(part.locator(".mdmark-fold-value").innerText()).resolves.toBe(
+    "並べ替え・ピン止め・絞り込みを付けた表を描く",
+  );
+  // 最終列は詳細の中身の上に出る
+  const layout = await detail.evaluate((row) => {
+    const partRect = row
+      .querySelector(".mdmark-fold-part")
+      ?.getBoundingClientRect();
+    const cell = row.querySelector("td");
+    const body = [...(cell?.children ?? [])].find(
+      (child) => !child.classList.contains("mdmark-fold-part"),
+    );
+    return {
+      bodyExists: body !== undefined,
+      above:
+        (partRect?.bottom ?? 0) <= (body?.getBoundingClientRect().top ?? 0) + 1,
+    };
+  });
+  expect(layout.bodyExists).toBe(true);
+  expect(layout.above).toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });

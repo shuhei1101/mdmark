@@ -122,3 +122,177 @@ test("test_error_when_row_out_of_range", async ({ page }) => {
   await expect(page.getByText("詳細の段落")).toBeVisible();
   await expect(page.locator("#doc button.mdmark-row-toggle")).toHaveCount(0);
 });
+
+/** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表の Markdown */
+const FOLD_TABLE = [
+  "| 名前 | 状態 | 説明 |",
+  "| --- | --- | --- |",
+  "| りんご | 新規 | 描画を速くするために、見出しの ID を作る処理を 1 回にまとめる改善の説明 |",
+  "| みかん | 進行 | 印刷で折り畳みを開き、リンクの URL を併記して紙に収める変更の説明 |",
+  "| ぶどう | 完了 | 表の見出し行を画面の上端に留めて、縦に長い表を読みやすくする変更の説明 |",
+  "",
+].join("\n");
+
+// 最終列を畳んだ表の行の詳細は、開閉のボタン 1 つで、最終列の中身と行の詳細を一緒に開閉する（正常シナリオ（畳んだ最終列と行の詳細））
+test("test_normal_when_row_detail_with_collapsed_column", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPage(page, builtRoot, { hostCss: "body { margin: 0 }" });
+  await mountDocument(page, {
+    markdown: `${FOLD_TABLE}\n<!-- row-detail: 2 -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
+  });
+  const rows = page.locator(
+    "#doc tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty)",
+  );
+  await expect(rows).toHaveCount(3);
+  // 検証: 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
+  for (const row of await rows.all()) {
+    await expect(row.locator("button.mdmark-row-toggle")).toHaveCount(1);
+  }
+  const toggle = rows.nth(1).locator("button.mdmark-row-toggle");
+  const detail = rows.nth(1).locator("xpath=following-sibling::tr[1]");
+  await expect(detail).toBeHidden();
+  // 実行
+  await toggle.click();
+  // 検証: 2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示される
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(detail).toBeVisible();
+  await expect(detail.locator(".mdmark-fold-name")).toHaveText("説明");
+  await expect(detail.locator(".mdmark-fold-value")).toContainText(
+    "印刷で折り畳みを開き",
+  );
+  await expect(detail.locator("p", { hasText: "みかんの詳細" })).toBeVisible();
+  const order = await detail.evaluate((row) => {
+    const part = row.querySelector(".mdmark-fold-part");
+    const body = [...row.querySelectorAll("p")].find(
+      (p) => p.textContent === "みかんの詳細",
+    );
+    return Boolean(
+      part &&
+        body &&
+        part.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+  expect(order).toBe(true);
+  // 実行・検証: もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(detail).toBeHidden();
+  await expect(detail.locator(".mdmark-fold-part")).toBeHidden();
+});
+
+// h1 の見出しも節になり、閉じた h1 の節を開閉のボタンで開く（正常シナリオ（H1 の節））
+test("test_normal_when_h1_section", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown:
+      "# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: closed -->\n\n付録の段落\n",
+  });
+  const appendix = page.getByRole("button", { name: "付録" });
+  // 検証: 描いた直後
+  await expect(page.getByText("手引きの段落")).toBeVisible();
+  await expect(page.getByText("付録の段落")).toBeHidden();
+  await expect(page.getByRole("button", { name: "手引き" })).toBeVisible();
+  await expect(appendix).toBeVisible();
+  // 実行
+  await appendix.click();
+  // 検証
+  await expect(page.getByText("付録の段落")).toBeVisible();
+  await expect(appendix).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#doc")).not.toContainText("section:");
+});
+
+// すべて展開で H1 を含む全ての節を開き、すべて折りたたむで H1 の節を開いたまま H2 以下を閉じる（正常シナリオ（すべて展開・すべて折りたたむ））
+test("test_normal_when_all_toggled", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "# 手引き",
+      "",
+      "## 概要",
+      "",
+      "概要の段落",
+      "",
+      "## 補足",
+      "<!-- section: closed -->",
+      "",
+      "補足の段落",
+      "",
+      "### 注意",
+      "<!-- section: closed -->",
+      "",
+      "注意の段落",
+      "",
+    ].join("\n"),
+    config: { "side-toc": { mode: "fixed" } },
+  });
+  await page.locator("#doc .mdmark-side-toc-toggle").click();
+  const expandAll = page.locator('#doc [data-fold-all="open"]');
+  const collapseAll = page.locator('#doc [data-fold-all="close"]');
+  const toggleOf = (id: string) =>
+    page.locator(`#doc button[aria-controls="section-${id}"]`);
+  // 検証: 描いた直後
+  for (const button of [expandAll, collapseAll]) {
+    await expect(button).toBeVisible();
+    await expect(button).toHaveText("");
+    expect(await button.getAttribute("aria-label")).toBeTruthy();
+  }
+  // 実行・検証: すべて展開
+  await expandAll.click();
+  for (const id of ["手引き", "概要", "補足", "注意"]) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "true");
+  }
+  await expect(page.getByText("注意の段落")).toBeVisible();
+  // 実行・検証: すべて折りたたむ
+  await collapseAll.click();
+  await expect(toggleOf("手引き")).toHaveAttribute("aria-expanded", "true");
+  for (const id of ["概要", "補足", "注意"]) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "false");
+  }
+  await expect(page.locator('#doc [id="概要"]')).toBeVisible();
+  await expect(page.getByText("概要の段落")).toBeHidden();
+});
+
+// Shift を押しながら開閉を押すか Enter を押すと、その節と中の入れ子の節を同じ状態にする（正常シナリオ（Shift で入れ子をまとめて開閉））
+test("test_normal_when_nested_toggled_with_shift", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "## 概要",
+      "",
+      "概要の段落",
+      "",
+      "## 補足",
+      "<!-- section: closed -->",
+      "",
+      "### 注意",
+      "<!-- section: closed -->",
+      "",
+      "#### 例",
+      "<!-- section: closed -->",
+      "",
+      "例の段落",
+      "",
+    ].join("\n"),
+  });
+  const toggleOf = (id: string) =>
+    page.locator(`#doc button[aria-controls="section-${id}"]`);
+  const nested = ["補足", "注意", "例"];
+  // 実行・検証: Shift を押しながら補足の開閉を押す
+  await toggleOf("補足").click({ modifiers: ["Shift"] });
+  for (const id of nested) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "true");
+  }
+  await expect(page.getByText("例の段落")).toBeVisible();
+  // 実行・検証: 補足の開閉ボタンにフォーカスし、Shift を押しながら Enter を押す
+  await toggleOf("補足").focus();
+  await page.keyboard.press("Shift+Enter");
+  for (const id of nested) {
+    await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "false");
+  }
+  await expect(toggleOf("概要")).toHaveAttribute("aria-expanded", "true");
+});

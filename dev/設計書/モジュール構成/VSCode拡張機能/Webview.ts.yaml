@@ -23,7 +23,7 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "render"; markdown: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "inspect"; id: number; selector: string }`'
+    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "inspect"; id: number; selector: string }`'
     properties:
       - name: type
         type: '"render" | "scrollToLine" | "configError" | "configOk" | "inspect"'
@@ -38,7 +38,7 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "ready" }`・`{ type: "rendered" }`・`{ type: "loadFailed"; reason: "offline" | "versionMissing" }`・`{ type: "openLink"; href: string }`・`{ type: "revealLine"; line: number }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected"; id: number; elements: InspectedElement[] }`'
+    description: '`{ type: "ready" }`・`{ type: "rendered" }`・`{ type: "loadFailed"; reason: "offline" | "versionMissing" | "diffUnsupported" }`・`{ type: "openLink"; href: string }`・`{ type: "revealLine"; line: number }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected"; id: number; elements: InspectedElement[] }`'
     properties:
       - name: type
         type: '"ready" | "rendered" | "loadFailed" | "openLink" | "revealLine" | "reload" | "openConfig" | "inspected"'
@@ -110,6 +110,37 @@ data_models:
         type: number
         description: スクロールする要素の先頭からの位置（px）
     status: planned
+  - name: DiffTexts
+    title: 差分の全文
+    container: vscode/src/webview/preview.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    role: DTO
+    summary: 差分のパネルで取り出し元が返す、最後に受けた `render` の全文。書き換えられる入れ物
+    properties:
+      - name: modified
+        type: string
+        description: 変更後の全文（`render` の `markdown`）
+      - name: original
+        type: string
+        description: 変更前の全文（`render` の `previous`）
+    status: planned
+    introduced:
+      pr: 196
+  - name: PreviewState
+    title: Webview の状態
+    container: vscode/src/webview/preview.ts
+    usecase: 共通
+    role: DTO
+    summary: '`acquireVsCodeApi().setState` で保存し、作り直した Webview が `getState` で読む値'
+    properties:
+      - name: line
+        type: number
+        description: 見えている先頭の元の行番号（0 始まり）。整数に切り捨てず、小数部で行の途中の割合を持つ
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
+    status: planned
+    introduced:
+      pr: 243
 constants:
   - name: LOADING_DELAY_MS
     title: 読み込み中を出すまでの待ち
@@ -144,9 +175,17 @@ classes:
         access: private
         description: '`scrollToLine` で動かした `scrollTop`。次の `scroll` の知らせでその値なら `revealLine` を送らずに消す'
       - name: mdmark
-        type: '{ mount: typeof mount }'
+        type: '{ mount: typeof mount; diffModes?: readonly string[] }'
         access: private
-        description: '`import()` で読んだ mdmark の配布物。`startPreview` が作るときに渡し、単体テストは代役を渡す'
+        description: '`import()` で読んだ mdmark の配布物。`startPreview` が作るときに渡し、単体テストは代役を渡す。`diffModes` を持たない前のバージョンもある'
+      - name: diffTexts
+        type: DiffTexts | undefined
+        access: private
+        description: 差分のパネルで取り出し元に渡した全文。`previous` を持つ `render` を初めて受けたときに作る
+      - name: savedLine
+        type: number | undefined
+        access: private
+        description: 作り直した Webview が起動したときに `getState` で読んだ行。`startPreview` が作るときに渡し、最初の `render` でその行へ戻したら消す
     methods:
       - name: render
         title: 描く
@@ -163,8 +202,10 @@ classes:
         process: |-
           1. `theme` が `light`・`dark` なら `root` に class `mdmark-theme-light`・`mdmark-theme-dark` を付け、`auto` なら両方を外す
           2. 描き直す前の `scrollTop` を控える
-          3. `configKey` が同じで `handle` があれば `handle.update(markdown)`、違えば `handle?.destroy()` の後に描く先の要素へ `mount(el, { markdown, config })`
-          4. 状態の表示を消し、控えた `scrollTop` に戻す
+          3. `previous` を持つときは、`diffTexts` が無ければ作り、`modified` を `markdown`、`original` を `previous` に書き換える
+          4. `configKey` が同じで `handle` があれば `handle.update(markdown)`、違えば `handle?.destroy()` の後に描く先の要素へ `mount(el, { markdown, config })`。`diffTexts` があるときは `diffSource: createDiffSource(diffTexts)`・`docId: "diff"`・`diffMode: "blocks"` も渡す
+          5. 状態の表示を消す。`savedLine` があれば `scrollToLine(savedLine)` で置いて `savedLine` を消し（`pendingScrollTop` に覚えるため `revealLine` は送らない）、無ければ控えた `scrollTop` に戻す
+          6. `savedLine` で置いたときは、次の `requestAnimationFrame` で `scrollTop` が置いた値から動いていなければ、もう一度 `scrollToLine` で置き直す（差分のパネルは描いた後に色分けで描き直し、行より上の高さが変わる）
         unit_tests:
           - name: test_render
             case: 正常
@@ -184,8 +225,21 @@ classes:
             condition: '`theme` が `dark`、続けて `auto`'
             mock: mdmark を代役にする
             expected: 1 回目の後は `root` が `mdmark-theme-dark` を持ち、2 回目の後は `mdmark-theme-*` を持たない
+          - name: test_render_when_diff
+            case: 正常
+            summary: previous を持つ render では取り出し元を渡して blocks で描き、次の render では取り出し元の全文を書き換えてから update する
+            condition: '`markdown` が `A2`・`previous` が `A1` の `render` の後、`markdown` が `A3` の `render`（`config` は同じ）'
+            mock: mdmark を `mount` に渡された引数と `update` を記録する代役にする
+            expected: '`mount` に `docId: "diff"`・`diffMode: "blocks"` と `diffSource` が渡る。`diffSource.revisions("diff")` が `modified`・`original` の順。`update` が `A3` で呼ばれた時点で `content` の `modified` が `A3`、`original` が `A1`'
+          - name: test_render_when_saved_line
+            case: 正常
+            summary: 保存した行を持つ view は、最初の render の後だけその行へ戻し、自分が起こしたスクロールとして捨てる
+            condition: '`data-source-line` を持つ見出しを並べた長い文書を描く代役で、`savedLine` が 20 の view を作り `render`、続けて `takeScroll()`。その後 `scrollTop` を 100 にして同じ設定の `render`'
+            mock: mdmark を `markdown` の見出しを `data-source-line` つきで描く代役にする
+            expected: 1 回目の後の `scrollTop` が `scrollToLine(20)` で置く位置と同じで、`takeScroll()` が `undefined`。2 回目の後の `scrollTop` が 100
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定が変わったときの描き方]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配色]
       - name: showStatus
         title: 状態の表示を出す
@@ -225,7 +279,7 @@ classes:
       - name: scrollToLine
         title: 行まで動かす
         kind: メソッド
-        summary: 元の行番号の位置を先頭に置く。動かす `scrollTop` が今の値と違うときだけ動かし、`pendingScrollTop` に覚える
+        summary: 元の行番号の位置を先頭（上端の帯があればその下端）に置く。動かす `scrollTop` が今の値と違うときだけ動かし、`pendingScrollTop` に覚える
         args:
           - name: line
             type: number
@@ -234,9 +288,14 @@ classes:
         returns:
           type: void
           description: '-'
+        process: |-
+          1. 元の行番号の位置から上端の帯の高さ（`topInset`）を引いた値を `scrollTop` にする
+          2. 狭い幅で右側の目次の帯が上端に留まると帯の下端が変わるため、動かした後の `topInset` で 1 をもう一度行う
+          3. `scrollTop` が動かす前と違えば、`pendingScrollTop` に覚える
         callees:
           - '#functions[collectAnchors]'
           - '#functions[topForLine]'
+          - '#functions[topInset]'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[往復の止め方]
       - name: takeScroll
@@ -248,7 +307,7 @@ classes:
           description: '`revealLine` で送る行'
         process: |-
           1. `scrollTop` が `pendingScrollTop` と等しければ、`pendingScrollTop` を消して `undefined` を返す
-          2. `pendingScrollTop` を消し、今の `scrollTop` を行にして返す（行の印を集める、位置を行にする）
+          2. `pendingScrollTop` を消し、`currentLine()` を返す
         unit_tests:
           - name: test_take_scroll_when_own_scroll
             case: 正常
@@ -259,6 +318,51 @@ classes:
         callees:
           - '#functions[collectAnchors]'
           - '#functions[lineForTop]'
+          - '#functions[topInset]'
+      - name: currentLine
+        title: 先頭の行を返す
+        kind: メソッド
+        summary: 見えている先頭の位置（上端の帯があればその下端）を元の行番号にして返す。描く前は `undefined`
+        returns:
+          type: number | undefined
+          description: '`revealLine` で送る行'
+        process: |-
+          1. `handle` が無ければ `undefined` を返す
+          2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を行にして返す（行の印を集める、位置を行にする）
+        unit_tests:
+          - name: test_current_line
+            case: 正常
+            summary: 描く前は行を返さず、描いた後は先頭の行を返す
+            condition: '`render` の前に `currentLine()`、`render` の後に `scrollToLine(20)` して `currentLine()`'
+            mock: mdmark を `data-source-line` つきの見出しを描く代役にする
+            expected: 1 回目は `undefined`、2 回目は 20
+        callees:
+          - '#functions[collectAnchors]'
+          - '#functions[lineForTop]'
+          - '#functions[topInset]'
+      - name: currentPosition
+        title: 先頭の位置を返す
+        kind: メソッド
+        summary: 見えている先頭の位置（上端の帯があればその下端）を、整数に切り捨てない元の行番号にして返す。描く前は `undefined`
+        returns:
+          type: number | undefined
+          description: '`setState` で保存する位置'
+        process: |-
+          1. `handle` が無ければ `undefined` を返す
+          2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を、切り捨てない行にして返す（行の印を集める、位置を切り捨てない行にする）
+        unit_tests:
+          - name: test_current_position
+            case: 正常
+            summary: 描く前は位置を返さず、描いた後は行の途中の位置を切り捨てずに返す
+            condition: '`render` の前に `currentPosition()`、`render` の後に `scrollToLine(20.5)` して `currentPosition()` と `currentLine()`'
+            mock: mdmark を `data-source-line` つきの見出しを描く代役にする
+            expected: 1 回目は `undefined`、2 回目は 20.5 との差が 0.05 未満、`currentLine()` は 20
+        callees:
+          - '#functions[collectAnchors]'
+          - '#functions[fractionalLineForTop]'
+          - '#functions[topInset]'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
       - name: inspect
         title: 要素を調べる
         kind: メソッド
@@ -303,19 +407,19 @@ functions:
     description: ファイルの末尾で呼ぶ
     scope: public
     is_async: true
-    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`document` に `click`、`window` に `scroll`・`message` を受ける'
+    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`setState` で見えている先頭の位置（切り捨てない元の行番号）を保存する。`document` に `click`、`window` に `scroll`・`message` を受ける'
     process: |-
-      1. `#mdmark-preview` の `data-*` から `PreviewBoot` を読む
+      1. `#mdmark-preview` の `data-*` から `PreviewBoot` を読む。`acquireVsCodeApi().getState()` が `PreviewState` で `line` が数なら、作る `PreviewView` に `savedLine` として渡す
       2. `status` が `versionUndecidable` なら状態の表示を出して終わる（配布物を読まない。「リロード」は受ける）
       3. `LOADING_DELAY_MS` 後に、まだ描けておらず描けない理由も出ていなければ読み込み中を出す
       4. `import(distJs)` で mdmark を読む
          - 失敗した場合、理由を見分け（読めない理由を見分ける）、状態の表示を出して `loadFailed` を送る
       5. `ready` を送る
       6. `message` を受けて `type` ごとに `PreviewView` へ渡す
-         - `render` の場合、描いて `rendered` を送る
+         - `render` の場合、描いて `rendered` を送り、`currentPosition()` が数なら `setState({ line })` で保存する。`previous` を持ち、読んだ配布物が差分の色分けに対応しない（`supportsDiffBlocks` が false）ときは描かずに `showStatus({ state: "diffUnsupported", version })` を出し、`loadFailed`（`diffUnsupported`）を送る
          - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
-      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
-      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る
+      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ（`openLink` は送らない）。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
+      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る。続けて `currentPosition()` が数なら `setState({ line })` で保存する（自分が起こしたスクロールでも保存する。最初の `render` で `savedLine` へ戻すまでは `currentPosition()` が `undefined` のため保存しない）
     callees:
       - '#classes[PreviewView]'
       - '#functions[classifyLoadFailure]'
@@ -331,6 +435,30 @@ functions:
         condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`window` に `click` の記録のリスナーを置く。本文の `https://example.com/`・`./other.md`・`#末尾` のリンクを Playwright の `userEvent.click`（`isTrusted` が true）で押す'
         mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
         expected: '`window` のリスナーにどの押下も届かない。`openLink` が `https://example.com/` と `./other.md` で 1 回ずつ送られ、`#末尾` では送られない'
+      - name: test_start_preview_when_side_toc_link_clicked
+        case: 正常
+        summary: 右側の目次の項目の押下を右側の目次へ届け、window へは伝えない
+        condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`aside.mdmark-side-toc` の中の `#注意` のリンクと、`aside` に `click` の記録のリスナー、`window` に `click` の記録のリスナーを置く。リンクを Playwright の `userEvent.click` で押す'
+        mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
+        expected: '`aside` のリスナーに押下が 1 回届き、`window` のリスナーには届かない。`openLink` が送られない'
+      - name: test_start_preview_when_diff_unsupported
+        case: 異常
+        summary: 差分に対応しない配布物で previous つきの render を受けると、描かずに理由を出す
+        condition: '`data-version="v0.8.0"` の `#mdmark-preview` を置いて `startPreview` を呼び、`diffModes` を持たない配布物を読んだ後に `previous` つきの `render` を送る'
+        mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。`import()` で読む配布物を `mount` だけを持つ代役のモジュールの URL にする'
+        expected: '`mount` が呼ばれず、`loadFailed`（`diffUnsupported`）が送られ `rendered` は送られない。状態の表示に `v0.8.0` と `data-action="reload"` のボタンがある'
+      - name: test_start_preview_when_state_saved
+        case: 正常
+        summary: 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送らない
+        condition: '`getState` が `{ line: 20.5 }` を返す状態で `#mdmark-preview` を置いて `startPreview` を呼び、見出しを `data-source-line` つきで並べた長い文書の `render` を送り、次のフレームまで待つ'
+        mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録し `getState` が `{ line: 20.5 }` を返す代役にする。mdmark を代役にする'
+        expected: '`setState` が最初に呼ばれた引数の `line` が 20.5 との差が 0.05 未満で、`{ line: 0 }`・`{ line: 20 }` では呼ばれない。`revealLine` が送られない'
+      - name: test_start_preview_when_scrolled
+        case: 正常
+        summary: スクロールするたびに見えている先頭の行を保存し、描く前は保存しない
+        condition: '`getState` が `undefined` を返す状態で `startPreview` を呼ぶ。`render` の前に `scroll` を発火し、`render` の後に元の行番号 30 の見出しが先頭に来るまでスクロールして次のフレームまで待つ'
+        mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録する代役にする。mdmark を代役にする'
+        expected: '`render` の前の `scroll` では `setState` が呼ばれない。最後に呼ばれた `setState` の引数の `line` が 30 との差が 0.05 未満'
   - name: classifyLoadFailure
     title: 読めない理由を見分ける
     kind: 関数
@@ -425,6 +553,7 @@ functions:
     container: vscode/src/webview/scroll.ts
     usecase: エディタとプレビューのスクロールを合わせる
     summary: 位置の前後の印の間で内分した行番号を、整数に切り捨てて返す
+    description: '`fractionalLineForTop` の値を整数に切り捨てる'
     scope: public
     args:
       - name: anchors
@@ -445,7 +574,46 @@ functions:
         condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }]` で位置 210・位置 900'
         mock: なし
         expected: '`5`・`10`'
+    callees:
+      - '#functions[fractionalLineForTop]'
     status: planned
+  - name: fractionalLineForTop
+    title: 位置を切り捨てない行にする
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: 位置の前後の印の間で内分した行番号を、切り捨てずに返す
+    scope: public
+    args:
+      - name: anchors
+        type: Anchor[]
+        required: true
+        description: 行の印
+      - name: top
+        type: number
+        required: true
+        description: 見えている先頭の位置（`scrollTop`）
+    returns:
+      type: number
+      description: 小数部で行の途中の割合を持つ元の行番号。印が無いか最初の印より前は `0`、最後の印より後は最後の印の行
+    unit_tests:
+      - name: test_fractional_line_for_top
+        case: 正常
+        summary: 印の間を内分して切り捨てない
+        condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }]` で位置 210・位置 900・位置 -5'
+        mock: なし
+        expected: '`5.25`・`10`・`0`'
+      - name: test_fractional_line_for_top_when_round_trip
+        case: 正常
+        summary: 切り捨てない行を topForLine に渡すと元の位置に戻る
+        condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }, { line: 12, top: 1000 }]` で位置 210・位置 700 を行にしてから `topForLine` で位置に戻す'
+        mock: なし
+        expected: '`210`・`700`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
+    status: planned
+    introduced:
+      pr: 252
   - name: renderPreviewStatus
     title: プレビューの状態の表示の HTML を返す
     kind: 関数
@@ -457,7 +625,7 @@ functions:
       - name: options
         type: '{ state: PreviewStatusState; version?: string }'
         required: true
-        description: '`PreviewStatusState` は `"loading" | "offline" | "versionMissing" | "versionUndecidable"`'
+        description: '`PreviewStatusState` は `"loading" | "offline" | "versionMissing" | "versionUndecidable" \| "diffUnsupported"`'
     returns:
       type: string
       description: HTML 文字列
@@ -474,6 +642,12 @@ functions:
         condition: '`state` が `loading`'
         mock: なし
         expected: 題「mdmark を読み込んでいます」と `progress`（`aria-label="読み込み中"`）があり、`button` が無い
+      - name: test_render_preview_status_when_diff_unsupported
+        case: 正常
+        summary: 差分に対応しないバージョンの理由とリロードを出す
+        condition: '`state` が `diffUnsupported`、`version` が `v0.8.0`'
+        mock: なし
+        expected: 題「プレビューを表示できません」、部品設計の状態 `DiffUnsupported` の文言（`<code>v0.8.0</code>` と `<code>mdmark.version</code>`）、`data-action="reload"` の `button`
     refs:
       - dev/設計書/部品設計/プレビューの状態の表示.ts#
     status: planned
@@ -502,6 +676,105 @@ functions:
     refs:
       - dev/設計書/部品設計/設定ファイルを読めない帯.ts#
     status: planned
+  - name: topInset
+    title: 上端の帯の高さを測る
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: 狭い幅で右側の目次（`.mdmark-side-toc`）を描いた文書の上端の帯にしているとき、帯の下端からスクロールする要素の上端までの高さを返す。帯が無いときは 0
+    scope: public
+    args:
+      - name: options
+        type: '{ root: HTMLElement; scroller: Element }'
+        required: true
+        description: 描いた文書の要素と、スクロールする要素
+    returns:
+      type: number
+      description: 見えている先頭を下げる高さ（px）
+    process: |-
+      1. `root` の中の `.mdmark-side-toc` が無いか、その幅が `root` の中の本文の列（`.mdmark-content`）の幅より狭い（広い幅の右の列）ときは 0 を返す
+      2. 帯の `getBoundingClientRect().bottom` から、スクロールする要素の上端（画面がスクロールするときは 0）を引いた値を返す（負なら 0）
+    unit_tests:
+      - name: test_top_inset_when_band
+        case: 正常
+        summary: 狭い幅の帯の下端までの高さを返す
+        condition: 幅 390px の要素に右側の目次を持つ文書を描く
+        mock: なし
+        expected: 帯の高さ（`getBoundingClientRect().bottom`）と等しい値
+      - name: test_top_inset_when_wide
+        case: 正常
+        summary: 広い幅の右の列では 0
+        condition: 幅 1280px の要素に右側の目次を持つ文書を描く
+        mock: なし
+        expected: '`0`'
+      - name: test_top_inset_when_no_side_toc
+        case: 正常
+        summary: 右側の目次が無い文書では 0
+        condition: 見出しの無い文書を描く
+        mock: なし
+        expected: '`0`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[プレビューから合わせる]
+    status: planned
+  - name: createDiffSource
+    title: 差分の取り出し元を作る
+    container: vscode/src/webview/preview.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    summary: '`revisions` が `modified`・`original` の 2 つをこの順に返し、`content` が呼ばれた時点の `texts` の全文を返す `DiffSource` を作る'
+    kind: 関数
+    scope: internal
+    args:
+      - name: texts
+        type: DiffTexts
+        required: true
+        description: 書き換えられる全文の入れ物
+    returns:
+      type: DiffSource
+      description: mdmark の差分の取り出し元。`revisions` の `at` は呼ばれた時刻の ISO 8601、`content` は知らない `revisionId` で reject する
+    unit_tests:
+      - name: test_create_diff_source
+        case: 正常
+        summary: 呼ばれた時点の全文を返す
+        condition: '`{ modified: "A2", original: "A1" }` で作り、`modified` を `A3` に書き換えてから `content` を呼ぶ'
+        mock: なし
+        expected: '`revisions("diff")` の `id` が `modified`・`original` の順。`content` が `modified` で `A3`、`original` で `A1`、`other` で reject'
+    status: planned
+    introduced:
+      pr: 196
+  - name: supportsDiffBlocks
+    title: 差分の色分けに対応するかを見る
+    container: vscode/src/webview/preview.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    summary: 読んだ配布物の `diffModes` が配列で `blocks` を含むとき true を返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: mdmark
+        type: '{ diffModes?: unknown }'
+        required: true
+        description: '`import()` で読んだ配布物'
+    returns:
+      type: boolean
+      description: 対応すれば true
+    unit_tests:
+      - name: test_supports_diff_blocks
+        case: 正常
+        summary: diffModes に blocks があれば対応する
+        condition: '`{ diffModes: ["button", "open", "blocks"] }`'
+        mock: なし
+        expected: 'true'
+      - name: test_supports_diff_blocks_when_missing
+        case: 正常
+        summary: diffModes が無いか blocks を含まなければ対応しない
+        condition: '`{}`・`{ diffModes: ["button"] }`・`{ diffModes: "blocks" }`'
+        mock: なし
+        expected: どれも false
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分に対応しないバージョン]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[対応する差分の出し方]
+    status: planned
+    introduced:
+      pr: 196
 styles:
   - name: preview
     title: パネルの CSS

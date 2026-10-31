@@ -22,7 +22,7 @@ function toPosix(path: string): string {
 }
 
 /** `cwd` の下で `pattern` に当たり `exclude` に当たらないファイルの、`cwd` からの相対パスを `/` 区切りで返す */
-async function globFiles(options: {
+export async function globFiles(options: {
   cwd: string;
   pattern: string;
   exclude: string[];

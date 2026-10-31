@@ -1,0 +1,13 @@
+/* テーマを選んで描いた文書のモックだけの規則: 印刷の見え方を画面に出す（実装では @media print で当てる） */
+
+/* 印刷の見え方: 外へのリンクの後ろに URL を併記する */
+.is-print-preview .mdmark a[href^="http"]::after {
+  content: " (" attr(href) ")";
+  color: var(--mdmark-color-muted);
+  font-size: 0.9em;
+}
+
+/* 印刷の見え方: パンくずを出さない */
+.is-print-preview .mock-breadcrumb {
+  display: none;
+}

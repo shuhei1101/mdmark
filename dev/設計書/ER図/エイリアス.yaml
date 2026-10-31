@@ -1,0 +1,151 @@
+title: "ER 図: エイリアス"
+lead: 使う側が設定の `aliases` に並べるエイリアスの元の行と、その行と元の YAML から作ったエイリアス。元の行の構造は alias-inject v0.2.0 の `schemas/aliases.schema.yaml` を取り込んで縛り、作ったエイリアスを `mount`・`render`・`collectMatches` に渡す。
+er:
+  entities:
+    - name: エイリアスの元の行
+    - name: エイリアス
+  relations:
+    - from: エイリアスの元の行
+      to: エイリアス
+      cardinality: '||--o{'
+      label: paths と records から作る
+tables:
+  - name: aliases
+    title: エイリアスの元の行
+    datastore: YAML
+    summary: どの YAML のどの列からエイリアスを作るかを決める行。`mdmark.config.yaml` の `aliases` に並べる
+    primary_key: id
+    scale: ~100
+    access: 全件
+    columns:
+      - name: id
+        title: 行の ID
+        type: string
+        not_null: true
+        primary_key: true
+        unique: true
+        check: 空でない
+        description: 行の主キー。`aliases` の中で一意（重なりは `mdmark check` の `duplicate_alias_row_id`）
+        example: terms
+      - name: enabled
+        title: 有効
+        type: boolean
+        default: 'true'
+        description: '`false` のとき、この行からエイリアスを作らない'
+        example: 'true'
+      - name: paths
+        title: 読む YAML
+        type: array
+        not_null: true
+        check: 要素が 1 つ以上で、どれも空でない文字列
+        description: 読む YAML のパスか glob。設定ファイルのあるフォルダからの相対パスで、ファイルと glob を混ぜてよい。並びは書いた順、glob の中はパスの順
+        example: '[terms/*.yaml]'
+      - name: records
+        title: 文書の並びのキー
+        type: string
+        check: 空でない
+        description: ファイルの中のこのキーの配列の要素ごとに 1 件のエイリアスを作る。書かないとき、各ファイルを 1 件にする
+        example: terms
+      - name: metadata
+        title: エイリアスのキーの値の取り方
+        type: object
+        not_null: true
+        description: 'エイリアスのキーごとに `{type: ref, field: 列名}`（文書の列から取る）か `{type: custom, value: 値}`（行の全文書に同じ値）を置く。書かないキーは同じ名前の列の `ref` とみなす'
+        example: '{alias_type: {type: custom, value: term}}'
+        notes: '`alias_type` は必ず書く。キーは `alias_type`・`id`・`name`・`aliases`・`description`・`related`・`command`・`cwd`・`url`・`avoid`・`skill`・`tool`・`path`・`port`・`replacement`。行と `metadata` のほかのキーは拒まず使わない'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[aliases]
+    reason: 構造の正は alias-inject が持つ（D-120）。mdmark は取り込んだタグのスキーマで検証し、この表は読む側の使い方を書く
+  - name: MdmarkAlias
+    title: エイリアス
+    datastore: JSON
+    summary: 元の行の `metadata` を当てて作ったエイリアス 1 件。`buildAliases` が返し、`mount`・`render`・`collectMatches` の `aliases` に並べて渡す
+    primary_key: id
+    scale: ~1000
+    access: 全件
+    columns:
+      - name: alias_type
+        title: 種類
+        type: string
+        not_null: true
+        description: エイリアスの種類。ツールチップの区分と、照合したときの扱いを決める
+        enum_values: "'term'（用語）/ 'doc'（文書）/ 'command'（コマンド）/ 'url'（URL）/ 'skill'（スキル）/ 'tool'（ツール）/ 'path'（パス）/ 'avoid'（やめた言い方）"
+        notes: '`env` は値にシークレットキーを含みうるため `buildAliases` が作らない。`mount` などに直接渡されても照合しない'
+      - name: id
+        title: ID
+        type: string
+        not_null: true
+        unique: true
+        check: 空でない
+        description: エイリアスの ID。渡したエイリアスの中で一意。節ごとに最初の 1 回を数える単位
+        example: unit-test
+      - name: name
+        title: 名前
+        type: string
+        not_null: true
+        check: 空でない
+        description: 照合する語で、ツールチップに太字で出す名前。`avoid` の種類ではやめた言い方
+        example: 単体テスト
+      - name: aliases
+        title: 別名
+        type: array
+        default: '`[]`'
+        description: 名前と同じく照合する語
+        example: '[ユニットテスト]'
+        notes: 要素は空でない文字列
+      - name: description
+        title: 説明
+        type: string
+        description: ツールチップの説明。`term`・`doc` では必須
+        example: ライブラリ本体の単体テストを流す
+      - name: related
+        title: 関連
+        type: array
+        default: '`[]`'
+        description: '`term` の関連する語。ツールチップには出さない'
+        notes: alias-inject の任意のキーを受け取るだけで使わない
+      - name: command
+        title: コマンド
+        type: string
+        description: '`command` の種類のコマンド。ツールチップにコードとコピーのボタンで出す'
+        example: npm run test:unit
+      - name: cwd
+        title: 実行場所
+        type: string
+        description: '`command` の種類の実行場所'
+        example: リポジトリの直下
+      - name: url
+        title: URL
+        type: string
+        description: '`url` の種類の URL。http・https だけをリンクにし、ほかは文字で出す'
+        example: https://github.com/shuhei1101/mdmark/issues
+      - name: skill
+        title: スキル名
+        type: string
+        description: '`skill` の種類のスキル名'
+        example: mindstella:session
+      - name: tool
+        title: ツール名
+        type: string
+        description: '`tool` の種類のツール名'
+        example: check
+      - name: path
+        title: パス
+        type: string
+        description: '`path` の種類のパス'
+        example: mdmark.config.yaml
+      - name: avoid
+        title: やめた言い方
+        type: array
+        default: '`[]`'
+        description: '`term` の種類の、使わないことにした言い方。索引の `terms[].avoid` と同じく、代わりの用語としてこのエイリアスを出す'
+        example: '[枝]'
+      - name: replacement
+        title: 置き換え先
+        type: string
+        description: '`avoid` の種類の置き換え先の語'
+        example: ワークスペース
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#response[aliases]
+    notes:
+      種類ごとの必須のキー: '`term`・`doc`: `id`・`name`・`description`。`command`: `id`・`name`・`command`。`url`: `id`・`name`・`url`。`skill`: `id`・`name`・`skill`。`tool`: `id`・`name`・`tool`。`path`: `id`・`name`・`path`。`avoid`: `id`・`name`・`replacement`（alias-inject の定義のとおり）。必須のキーが空のエイリアスは照合しない'

@@ -29,7 +29,7 @@ scenarios:
       - name: 文書を描いたページ
         description: 正常シナリオで見本の Markdown を描いた後のページ
       - name: 差し替える Markdown
-        description: 見出しを 1 つだけ持つ文書
+        description: 見出し `## 新しい節` を 1 つだけ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -42,8 +42,9 @@ scenarios:
         M-->>P: 要素の中を新しい本文にする
         P-->>U: 新しい文書を表示
     expected:
-      - 描く先の要素の中が、差し替えた Markdown の見出しだけになる
+      - 描いた文書の本文（右側の目次とそのボタンを除く）が、差し替えた Markdown の見出しだけになる
       - 前の本文の段落・表が残っていない
+      - 右側の目次の項目が `新しい節` だけになり、前の本文の見出しの項目が残っていない
     test: test_normal_when_updated
   - name: 正常シナリオ（片付ける）
     setup:
@@ -60,6 +61,7 @@ scenarios:
         M-->>P: 要素の中を空にする
     expected:
       - 描く先の要素の中が空になる
+      - ページに右側の目次と目次を出すボタンが残っていない
       - 片付けた後に本文の差し替えを呼んでも、要素の中に何も描かれない
     test: test_normal_when_destroyed
   - name: 正常シナリオ（未知の印がある）
@@ -152,6 +154,56 @@ scenarios:
       - 見出し・段落・表・コードブロックの要素が、それぞれ Markdown で始まる行の番号を元の行番号の属性に持つ
       - 見た目（要素の位置と色の計算値）は、元の行番号の属性が無いときと同じ
     test: test_normal_when_source_lines
+  - name: 正常シナリオ（エイリアスを渡す）
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、索引を渡さずに、読み込んだエイリアスを渡して文書を描く HTML
+      - name: エイリアス
+        description: '`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）'
+      - name: 用語が出る Markdown
+        description: 段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を渡して描かせる
+        M-->>P: エイリアスの語に下線を引いて描く
+        P->>M: 本文を差し替える
+        M-->>P: 同じエイリアスで描き直す
+        P-->>U: 差し替えた本文を表示
+    expected:
+      - 描いた直後、`ワークスペース` に下線が付き、ツールチップに `話し合いの記録を置くフォルダ` が出る
+      - 本文を `ワークスペース` が出る別の段落に差し替えた後も、下線が付いている
+    test: test_normal_when_aliases
+  - name: 正常シナリオ（テーマを選ぶ）
+    setup:
+      - name: テーマを選ぶ設定
+        description: テーマを選ぶキーに theme-paper を書いた `opts.config`
+        notes: OS の配色はライト
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(要素, Markdown, opts.config にテーマ)
+        M-->>P: 選んだテーマの値が当たった本文
+        P->>M: 本文を差し替える
+        M-->>P: 同じテーマのままの本文
+        P-->>U: theme-paper の配色で表示
+    expected:
+      - 描いた直後、描く先の要素の地の色の計算値が theme-paper の明るい配色の `--mdmark-color-bg` の値
+      - 本文を差し替えた後も、地の色の計算値が同じ値
+      - 片付けた後、描く先の要素とページにテーマを示す class か属性が残っていない
+    test: test_normal_when_theme_selected
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
 lead: 使う側のページが、要素と Markdown と設定を mdmark に渡し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
 issue: 3
 primary_actor: mdmark を使うアプリのページ

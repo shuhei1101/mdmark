@@ -232,3 +232,115 @@ test("test_normal_when_code_highlighted", async ({
   }
   expect(opened.externalRequests()).toEqual([]);
 });
+
+// エイリアスを読む設定の行: `records` の配列を持つ YAML を指す行と、無いファイルを指す行
+const ALIAS_CONFIG_LINES = [
+  "aliases:",
+  "  - id: records",
+  "    paths: [aliases/records.yaml]",
+  "    records: records",
+  "    metadata:",
+  "      alias_type: { type: ref, field: alias_type }",
+  "  - id: missing",
+  "    paths: [aliases/missing.yaml]",
+  "    metadata:",
+  "      alias_type: { type: ref, field: alias_type }",
+  "",
+].join("\n");
+
+// `term` の `ワークスペース` と、値に URL とポートを持つ `env` の `開発サーバー`
+const ALIAS_RECORDS = [
+  "records:",
+  "  - alias_type: term",
+  "    id: workspace",
+  "    name: ワークスペース",
+  "    description: 話し合いの記録を置くフォルダ",
+  "  - alias_type: env",
+  "    id: dev-server",
+  "    name: 開発サーバー",
+  "    url: http://127.0.0.1:8767/",
+  '    port: "8767"',
+  "",
+].join("\n");
+
+// 設定の aliases の YAML から読めたエイリアスだけを埋めて書き出し、読めない行は警告にして終了コード 0 で終わり、env は HTML に入れない（正常シナリオ（エイリアスを読む））
+test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": ALIAS_CONFIG_LINES,
+    "aliases/records.yaml": ALIAS_RECORDS,
+    "guide.md": "# ガイド\n\nワークスペースを置く。\n",
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "guide.html"))).toBe(true);
+  // 読めなかった行のパスが警告に出る
+  const warnings = linesOf(result.stderr);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]).toContain("aliases/missing.yaml");
+  // env の名前・URL・id が HTML のソースに入っていない
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  expect(html).not.toContain("開発サーバー");
+  expect(html).not.toContain("http://127.0.0.1:8767/");
+  expect(html).not.toContain("dev-server");
+  // file:// で開くと、下線が付き、ツールチップに説明が出る
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "guide.html"),
+  });
+  const term = page.locator("article .mdmark-term");
+  await expect(term).toHaveText(["ワークスペース"]);
+  await term.hover();
+  await expect(page.locator("article .mdmark-term-tip")).toContainText(
+    "話し合いの記録を置くフォルダ",
+  );
+  expect(opened.externalRequests()).toEqual([]);
+});
+
+// 設定のテーマを描く先に当てた HTML を書き出し、file:// で開いて選んだテーマの配色で読む（正常シナリオ（テーマを選ぶ））
+test("test_normal_when_theme_selected", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "colorTheme: theme-contrast",
+      "libraries:",
+      "  chart: lib/chart.js",
+      "",
+    ].join("\n"),
+    "lib/chart.js": CHART_SOURCE,
+    "guide.md": GUIDE,
+    "api.md": "# API\n",
+    "img/a.png": PNG_BYTES,
+  });
+  await page.emulateMedia({ colorScheme: "light" });
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "out", "guide.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "out", "guide.html"),
+  });
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("h1")).toContainText("ガイド");
+  // theme-contrast の明るい配色（地は白、リンクは濃い青）
+  await expect(article).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(article.locator('a[href="api.md"]')).toHaveCSS(
+    "color",
+    "rgb(0, 55, 168)",
+  );
+  expect(opened.externalRequests()).toEqual([]);
+});

@@ -191,6 +191,33 @@ scenarios:
     test: test_normal_when_width_and_case_differ
     refs:
       - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る#scenarios[正常シナリオ（全角と半角・大文字と小文字だけが違う語）]
+  - name: 正常シナリオ（エイリアスを渡す）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: ビルドした `dist/index.js` を読み、索引・文書の本文・読み込んだエイリアスを渡して取り出しの処理を呼ぶ
+      - name: 索引
+        description: 文書 `guide` だけを持ち、`terms` を持たない索引
+      - name: エイリアス
+        description: '`command` の `単体テスト`（ID `unit-test`、説明 `ライブラリ本体の単体テストを流す`、コマンド `npm run test:unit`）と、`avoid` の `作業場`（ID `workplace`、置き換え先 `ワークスペース`）'
+      - name: エイリアスが出る本文
+        description: '`guide` の本文。段落に `単体テスト` と `作業場` を書く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: 索引・文書の本文・エイリアスを渡して参照を取り出させる
+        M->>M: 用語・文書の別名・エイリアスを語の区切りに揃えて照合する
+        M-->>C: 文書ごとの参照の一覧・まとめた参照の一覧・やめた言い方の一覧
+      ```
+    expected:
+      - '`guide` の参照の一覧の `単体テスト` の要素が、種類がエイリアス（`command`）・ID `unit-test`・タイトル `単体テスト`・短い説明 `ライブラリ本体の単体テストを流す` を持つ'
+      - まとめた参照の一覧が `unit-test` を 1 回持つ
+      - '`guide` のやめた言い方の一覧が、`作業場` と代わりの用語 `ワークスペース` を持つ'
+      - 引数の索引・本文・エイリアスが書き換わっていない
+    test: test_normal_when_aliases
 lead: 使う側の処理（AI へ本文を返す MCP・サーバー）が、索引と文書の本文を mdmark に渡し、画面を出さずに、本文に出た用語・文書の別名と、その参照先の一覧を受け取る。
 issue: 47
 primary_actor: 使う側の処理

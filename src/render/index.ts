@@ -5,6 +5,7 @@ import {
   resolveConfig,
 } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
@@ -45,6 +46,8 @@ export function renderDocument(options: {
   docId?: string | undefined;
   /** 参照の表 */
   references?: MdmarkReferences | undefined;
+  /** エイリアス。そのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う */
+  aliases?: MdmarkAlias[] | undefined;
 }): RenderedDocument {
   parser ??= createParser();
   const index =
@@ -64,6 +67,7 @@ export function renderDocument(options: {
       ? options.docId
       : undefined,
     mdmarkReferences: options.references,
+    aliases: options.aliases,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: [],
@@ -86,6 +90,8 @@ export function render(
     docId?: string;
     /** 省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
     references?: MdmarkReferences;
+    /** `buildAliases` が作ったエイリアス。省くと、エイリアスを照合しない */
+    aliases?: MdmarkAlias[];
   } = {},
 ): string {
   const config = resolveConfig({ config: opts.config });
@@ -95,5 +101,6 @@ export function render(
     index: opts.index,
     docId: opts.docId,
     references: opts.references,
+    aliases: opts.aliases,
   }).html;
 }

@@ -117,7 +117,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: h2〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く
+    description: h1〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く
     reload: reload
     status: planned
   - key: features.row-details
@@ -406,5 +406,66 @@ settings:
     status: planned
     introduced:
       pr: 97
+  - key: features.side-toc
+    title: 右側の目次の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 描いた文書の右側に h1〜h3 の目次を置く。見出しが無い文書には置かない。文書の `features` の印でその文書だけオン・オフできる
+    reload: reload
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+    implementation: src/config.ts#DEFAULT_FEATURES
+    status: planned
+    introduced:
+      pr: 166
+  - key: side-toc.mode
+    title: 右側の目次の出し方
+    file: mdmark.config.yaml
+    type: '"hover" | "fixed"'
+    required: false
+    default: '`hover`'
+    description: 右側の目次の出し方。`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときはどちらも狭い幅の帯で出す
+    reload: reload
+    allowed: '`hover` / `fixed`。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+    implementation: src/config.ts#resolveConfig
+    status: planned
+    introduced:
+      pr: 166
+  - key: aliases
+    title: エイリアスの元の行
+    file: mdmark.config.yaml
+    type: object[]
+    required: false
+    default: '[]'
+    description: エイリアスを作る YAML と、その列からエイリアスのキーへの当て方の行の並び（行の構造は ER 図『エイリアスの元の行』）。`paths` は `mdmark.config.yaml` のあるフォルダからの相対パスか glob。CLI の `export`・`build` が読み、`buildAliases` で作ったエイリアスを書き出す HTML に埋める。`mount`・`render` はこのキーを読まず、使う側が `buildAliases` で作った配列を `opts.aliases` に渡す
+    missing: エイリアスを使わない
+    reload: reload
+    allowed: 読めない行・使えない行は書き出しを止めず警告に出す。`mdmark check` がスキーマのずれとエイリアスのずれを返す
+    status: planned
+    introduced:
+      pr: 176
+    refs:
+      - dev/設計書/ER図/エイリアス#tables[aliases]
+      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+  - key: colorTheme
+    title: 選ぶテーマ
+    file: mdmark.config.yaml
+    type: '"dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"'
+    required: false
+    default: dev-swiss
+    description: 描いた文書の配色の値の組を、mdmark に入れたテーマから選ぶ。明暗は今の決め方（OS の設定・`mdmark-theme-light` / `mdmark-theme-dark` の class）のまま、選んだテーマの中で明るい配色と暗い配色を選ぶ。印刷では選んだテーマの明るい配色を使う。`mount` は `opts.config.colorTheme` を読み、CLI の `mdmark export`・`mdmark build` は書き出す HTML の `mount` に渡す。使う側の CSS の `theme` とは別のキー
+    missing: 既定のテーマ（dev-swiss）で描く
+    reload: reload
+    allowed: '`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`。Schema の型は文字列で、知らない名前は既定のテーマで描き、`mdmark check` が `unknown_color_theme` のずれにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.colorTheme]
+      - dev/設計書/デザイン方針#
+    status: planned
+    introduced:
+      pr: 181
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

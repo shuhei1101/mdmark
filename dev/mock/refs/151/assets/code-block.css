@@ -1,0 +1,111 @@
+/* コードブロックの言語のラベルとコピーボタンの規則（#151 で共有するアセット）。
+   実装では src/index.css の mdmark の層に足す。refs/65/assets/code-block.css の後に読む */
+
+/* mdmark の層: コードブロックの帯 */
+@layer mdmark {
+  .mdmark {
+    /* コードブロックの帯: 左端に言語のラベル、続けて題（題の無いコードブロックは無し）、右端にコピーボタンを置く */
+    .mdmark-code-bar {
+      min-height: 2rem;
+      padding-block: 0.15em;
+      padding-inline: 0.5em 0.35em;
+    }
+
+    /* 帯の右の塊（コピーボタンと読み上げの知らせ）: 題が長くても右端に寄せ、折り返さない */
+    .mdmark-code-meta {
+      display: inline-flex;
+      flex: none;
+      gap: 0.5em;
+      align-items: center;
+      margin-inline-start: auto;
+    }
+
+    /* 言語のラベル: 帯の左端に置く小さな札。言語とファイル名を並べ、選んだ文字には入れない */
+    .mdmark-code-lang {
+      display: inline-flex;
+      flex: 0 1 auto;
+      align-items: center;
+      min-width: 0;
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* ラベルの言語: 控えめの色で出す */
+    .mdmark-code-lang-name {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* ラベルのファイル名: 言語の後ろに細い縦線で区切り、本文の色で出す。長い名前は折り返す */
+    .mdmark-code-file {
+      min-width: 0;
+      margin-inline-start: 0.5em;
+      padding-inline-start: 0.5em;
+      border-inline-start: 1px solid var(--mdmark-color-border);
+      color: var(--mdmark-color-text);
+      overflow-wrap: anywhere;
+    }
+
+    /* コピーボタン: 枠を持たない小さなボタン。押せる大きさは 24px 以上を取る */
+    .mdmark-code-copy {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: 足した行と同じ緑で知らせる */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      /* コピーできなかった: エラーの色で知らせる */
+      &[data-state="failed"] {
+        color: var(--mdmark-color-error);
+      }
+    }
+
+    /* diff の言語で色分けした行: 足した行と消した行を差分の表示と同じ色で出す */
+    pre code .hljs-addition {
+      color: var(--mdmark-color-diff-add-sign);
+    }
+
+    pre code .hljs-deletion {
+      color: var(--mdmark-color-diff-del-sign);
+    }
+  }
+}

@@ -112,14 +112,20 @@ scenarios:
   - name: 正常シナリオ（用語と被参照の機能を外す）
     setup:
       - name: mdmark を読むページ
-        description: 索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描く。ほかは正常シナリオと同じ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照・読み込んだエイリアスを渡して文書を描く。ほかは正常シナリオと同じ
         notes: 設定の `features` は `glossary`・`backlinks` を書かない（既定のオン）
       - name: 用語と被参照を持つ索引
         description: 用語 `ワークスペース`（`avoid` に `作業場`）を持ち、ほかの文書の `related` が描く文書を指す索引
+        notes: '-'
+      - name: エイリアス
+        description: '`command` の `単体テスト`（コマンド `npm run test:unit`）'
+        notes: '-'
       - name: 機能を外す Markdown
-        description: '先頭に `<!-- features: -glossary -backlinks -->` を持ち、段落に `ワークスペース` とやめた言い方 `作業場` が出て、`<!-- glossary: term=用語 meaning=意味 -->` で囲んだ表を持つ文書'
+        description: '先頭に `<!-- features: -glossary -backlinks -->` を持ち、段落に `ワークスペース`・やめた言い方 `作業場`・`単体テスト` が出て、`<!-- glossary: term=用語 meaning=意味 -->` で囲んだ表を持つ文書'
+        notes: '-'
       - name: Mock
         description: 正常シナリオと同じ
+        notes: '-'
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -132,6 +138,7 @@ scenarios:
     expected:
       - '`ワークスペース` に下線が付いていない'
       - やめた言い方 `作業場` にマーカーが付いていない
+      - エイリアスの `単体テスト` に下線が付いていない
       - 被参照の一覧が無い
       - 用語集の表が普通の表として描かれ、本文に印の文字が出ていない
     test: test_normal_when_glossary_disabled
@@ -161,6 +168,52 @@ scenarios:
       - 文書の別名だけに一致する `公開関数` に下線が付いていない
       - 文書の末尾に「関連文書」の一覧が無い
     test: test_normal_when_backlinks_disabled
+  - name: 正常シナリオ（右側の目次の機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `side-toc` を書かない（既定のオン）。画面の幅は 1280px
+      - name: 右側の目次を外す Markdown
+        description: '先頭に `<!-- features: -side-toc -->` を持ち、`## 導入`・`## 使い方` の見出しと段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 右側の目次を置かずに本文を描く
+        U->>P: 描いた文書の右端にポインターを置く
+        P-->>U: 右側の目次を出さない
+    expected:
+      - 右側の目次と、目次を出すボタン・ピン止めのボタンが無い
+      - 見出しのアンカーと節の開閉のボタンはある
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_side_toc_disabled
+  - name: 正常シナリオ（設定でオフにした右側の目次を文書でオンにする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.side-toc` は `false`。画面の幅は 1280px
+      - name: 右側の目次を追加する Markdown
+        description: '先頭に `<!-- features: +side-toc -->` を持ち、`## 導入`・`## 使い方` の見出しと段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 右側の目次を置いて本文を描く
+        U->>P: 描いた文書の右端にポインターを置く
+        P-->>U: 右側の目次を表示
+    expected:
+      - 右端にポインターを置いた後、`導入`・`使い方` の項目を持つ右側の目次が表示されている
+    test: test_normal_when_side_toc_enabled_by_mark
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人

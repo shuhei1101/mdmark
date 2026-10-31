@@ -136,6 +136,53 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_error_when_base_unknown
+  - name: 正常シナリオ（エイリアスにずれがある）
+    setup:
+      - name: エイリアスを読むフォルダ
+        description: 正常シナリオのフォルダに、設定の `aliases` とエイリアスの元の YAML を置いたもの。正しい行 1 つと、誤った行を混ぜる
+      - name: 誤った行
+        description: エイリアスのスキーマに合わない行・`paths` に当たるファイルが無い行・YAML として読めないファイルを指す行・`records` の配列が無い行・`ref` の列がレコードに無い行・種類の必須のキーが空の行（`command` の `command` が空）・`alias_type` を `ref` で取り、値が 9 つの種類に無い（`memo`）レコードを持つ行・ほかの行と ID が重なる行・別のレコードとエイリアスの `id` が重なるレコードを持つ行
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定の Schema を確かめる
+        C->>C: aliases の行ごとにエイリアスの元を読んで確かめる
+        C->>M: checkIndex（索引・文書）
+        M-->>C: ずれの一覧
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 誤った行ごとに、その行かエイリアスの元のファイルを指すずれの行がある
+      - スキーマに合わない行・読めない行・必須のキーが空の行・`alias_type` が 9 つの種類に無い行・行の `id` が重なる行・エイリアスの `id` が重なる行の内容に、直し方が書かれている
+      - 正しい行を指すずれの行が無い
+      - 終了コードが 0 以外
+    test: test_normal_when_alias_drift
+  - name: 正常シナリオ（知らないテーマの名前がある）
+    setup:
+      - name: 知らないテーマの名前を書いたフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` のテーマを選ぶキーに mdmark に入っていない名前 `sepia` を書く
+        notes: キーは `colorTheme`、ずれの種類は `unknown_color_theme`（インターフェース定義『設定と索引を点検する』）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark check
+        W->>C: mdmark check を流す
+        C->>C: 設定のテーマの名前を mdmark に入っているテーマと照らす
+        C-->>W: テーマの名前を指すずれの行
+    expected:
+      - '`mdmark.config.yaml` のテーマを選ぶキーを指すずれの行が 1 つだけあり、内容に書いた名前 `sepia` と選べるテーマの名前の一覧が書かれている'
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+      - テーマを選ぶキーを持たない設定と、選べるテーマの名前を書いた設定では、このずれの行が出ない
+    test: test_normal_when_unknown_theme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（知らないテーマの名前）]
 lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印を、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人

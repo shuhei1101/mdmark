@@ -83,7 +83,7 @@
         },
         "sections": {
           "title": "節の開閉の機能",
-          "description": "h2〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く。",
+          "description": "h1〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く。",
           "type": "boolean",
           "default": true
         },
@@ -140,6 +140,12 @@
           "description": "読む人が本文の選んだ箇所にコメントを付けられるようにする。使う側が `mount` にコメントの読み書きの関数（`commentStore`）を渡したときだけ効く。コメントは使う側の保存先が要り、使わない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする。",
           "type": "boolean",
           "default": false
+        },
+        "side-toc": {
+          "title": "右側の目次の機能",
+          "description": "描いた文書の右側に h1〜h3 の目次を置く。見出しが無い文書には置かない。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": {
@@ -166,7 +172,8 @@
         "html": true,
         "hints": true,
         "views": true,
-        "comments": false
+        "comments": false,
+        "side-toc": true
       }
     },
     "index": {
@@ -198,6 +205,25 @@
           "default": "top"
         }
       }
+    },
+    "side-toc": {
+      "title": "右側の目次の設定",
+      "description": "描いた文書の右側に置く目次の出し方。",
+      "type": "object",
+      "properties": {
+        "mode": {
+          "title": "右側の目次の出し方",
+          "description": "`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときはどちらも狭い幅の帯で出す。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする。",
+          "enum": ["hover", "fixed"],
+          "default": "hover"
+        }
+      }
+    },
+    "colorTheme": {
+      "title": "選ぶテーマ",
+      "description": "描いた文書の配色を、mdmark に入れたテーマから選ぶ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` のどれか。明暗は今の決め方（OS の設定・class）のまま、選んだテーマの中で明るい配色とダークの配色を選ぶ。`mount` は知らない名前を無視して `dev-swiss` で描き、CLI は知らない名前を `mdmark check` のずれ（`unknown_color_theme`）と書き出しの警告にする。使う側の CSS の `theme` とは別のキー。",
+      "type": "string",
+      "default": "dev-swiss"
     },
     "syntax": {
       "title": "色分けの設定",
@@ -288,6 +314,11 @@
           "default": []
         }
       }
+    },
+    "aliases": {
+      "title": "エイリアスの元の行",
+      "description": "プロジェクトの YAML の列からエイリアス（用語・文書・コマンド・URL など）を作る行の並び。行の構造は alias-inject v0.2.0 の `schemas/aliases.schema.yaml` を取り込んだ Schema が決める。CLI の `export`・`build` が `paths` の YAML を読んで書き出す HTML に埋め、`mdmark check` が行とレコードのずれを返す。`mount`・`render` はこのキーを読まない。",
+      "$ref": "alias-inject/v0.2.0/aliases.schema.json"
     }
   },
   "additionalProperties": true

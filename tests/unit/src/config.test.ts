@@ -31,6 +31,7 @@ const DEFAULT_FEATURES = {
   hints: true,
   views: true,
   comments: false,
+  "side-toc": true,
 };
 
 // 設定が無ければ既定を返す（正常系）
@@ -45,6 +46,8 @@ test("test_resolve_config", async () => {
     libraries: {},
     tooltips: { placement: "top" },
     syntax: { url: DEFAULT_SYNTAX_URL },
+    sideToc: { mode: "hover" },
+    colorTheme: "dev-swiss",
   });
 });
 
@@ -122,4 +125,42 @@ test("test_resolve_config_when_syntax_url_given", async () => {
   // 検証
   expect(resolvedGiven.syntax.url).toBe("/vendor/highlightjs/es/");
   expect(resolvedInvalid.syntax.url).toBe(DEFAULT_SYNTAX_URL);
+});
+
+// fixed だけを受け、他の値と無いときは hover にする（正常系）
+test("test_resolve_config_when_side_toc_mode_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const fixed: MdmarkConfig = { "side-toc": { mode: "fixed" } };
+  const unknown: MdmarkConfig = { "side-toc": { mode: "left" } };
+  // 実行
+  const resolvedFixed = resolveConfig({ config: fixed });
+  const resolvedUnknown = resolveConfig({ config: unknown });
+  const resolvedEmpty = resolveConfig({ config: {} });
+  // 検証
+  expect(resolvedFixed.sideToc.mode).toBe("fixed");
+  expect(resolvedUnknown.sideToc.mode).toBe("hover");
+  expect(resolvedEmpty.sideToc.mode).toBe("hover");
+  expect(resolvedEmpty.features["side-toc"]).toBe(true);
+});
+
+// COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
+test("test_resolve_config_when_color_theme_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { colorTheme: "theme-slate" },
+    { colorTheme: "sepia" },
+    { colorTheme: 1 },
+    {},
+  ] as MdmarkConfig[];
+  // 実行
+  const themes = configs.map((config) => resolveConfig({ config }).colorTheme);
+  // 検証
+  expect(themes).toEqual([
+    "theme-slate",
+    "dev-swiss",
+    "dev-swiss",
+    "dev-swiss",
+  ]);
 });

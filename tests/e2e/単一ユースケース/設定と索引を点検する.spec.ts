@@ -171,3 +171,159 @@ test("test_error_when_base_unknown", async ({ builtRoot, tempDir }) => {
   expect(result.stderr).toContain("fetch-depth");
   expect(await snapshot(dir)).toEqual(before);
 });
+
+// エイリアスの元の行を 1 行ずつ作る設定の行: `metadata` は `alias_type` を列から取る
+function aliasRow(id: string, paths: string, extra: string[] = []): string[] {
+  return [
+    `  - id: ${id}`,
+    `    paths: [${paths}]`,
+    ...extra,
+    "    metadata:",
+    "      alias_type: { type: ref, field: alias_type }",
+  ];
+}
+
+// エイリアスの行とレコードのずれを、ファイル・場所・種類・内容で出し、正しい行は指さず、終了コード 0 以外で終わる（正常シナリオ（エイリアスにずれがある））
+test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  const aliasFiles: Record<string, string> = {
+    "aliases/valid.yaml": [
+      "alias_type: term",
+      "id: valid-term",
+      "name: 正しい用語",
+      "description: 説明",
+      "",
+    ].join("\n"),
+    "aliases/broken.yaml": "alias_type: [term\n",
+    "aliases/list.yaml": "title: 一覧\n",
+    "aliases/refcol.yaml": "id: ref-col\nname: 列が無い\n",
+    "aliases/cmd.yaml": [
+      "alias_type: command",
+      "id: build-cmd",
+      "name: ビルド",
+      "command: ''",
+      "",
+    ].join("\n"),
+    "aliases/types.yaml": [
+      "records:",
+      "  - alias_type: memo",
+      "    id: memo-1",
+      "    name: メモ",
+      "",
+    ].join("\n"),
+    "aliases/dup.yaml": [
+      "alias_type: term",
+      "id: valid-term",
+      "name: 重なる用語",
+      "description: 説明",
+      "",
+    ].join("\n"),
+  };
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}${[
+      "aliases:",
+      ...aliasRow("valid", "aliases/valid.yaml"),
+      // Schema に合わない行: `paths` が無い
+      "  - id: no-paths",
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+      ...aliasRow("no-files", "missing/*.yaml"),
+      ...aliasRow("broken", "aliases/broken.yaml"),
+      ...aliasRow("no-records", "aliases/list.yaml", ["    records: items"]),
+      ...aliasRow("no-column", "aliases/refcol.yaml").slice(0, 2),
+      "    metadata:",
+      "      alias_type: { type: ref, field: kind }",
+      ...aliasRow("empty-command", "aliases/cmd.yaml"),
+      ...aliasRow("unknown-type", "aliases/types.yaml", [
+        "    records: records",
+      ]),
+      ...aliasRow("valid", "aliases/valid.yaml"),
+      ...aliasRow("same-alias-id", "aliases/dup.yaml"),
+      "",
+    ].join("\n")}`,
+    ...aliasFiles,
+  });
+  const read = async (): Promise<string[]> => [
+    ...(await snapshot(dir)),
+    ...(await Promise.all(
+      Object.keys(aliasFiles).map((path) => readFile(join(dir, path), "utf8")),
+    )),
+  ];
+  const before = await read();
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  // 誤った行ごとに、その行か元のファイルを指すずれの行があり、内容に直し方がある
+  const kinds: Array<[string, string]> = [
+    ["mdmark.config.yaml", "schema"],
+    ["mdmark.config.yaml", "alias_no_files"],
+    ["aliases/broken.yaml", "alias_unreadable"],
+    ["aliases/list.yaml", "alias_records_missing"],
+    ["aliases/refcol.yaml", "alias_field_missing"],
+    ["aliases/cmd.yaml", "alias_required_empty"],
+    ["aliases/types.yaml", "alias_unknown_type"],
+    ["mdmark.config.yaml", "duplicate_alias_row_id"],
+    ["aliases/dup.yaml", "duplicate_alias_id"],
+  ];
+  for (const [file, kind] of kinds) {
+    const line = lines.find(
+      (candidate) =>
+        candidate.startsWith(file) && candidate.includes(`${kind}:`),
+    );
+    expect(line, `${file} ${kind}`).toBeDefined();
+    expect(line, `${file} ${kind}`).toContain("ください");
+  }
+  // 正しい行は指さない
+  expect(lines.some((line) => line.includes("aliases/valid.yaml"))).toBe(false);
+  expect(lines.at(-1)).toBe(`ずれ ${kinds.length} 件`);
+  // 設定・索引・文書・エイリアスの元が変わっていない（設定は書き足した後の中身）
+  const after = await read();
+  expect(after).toEqual(before);
+});
+
+// 設定のテーマの知らない名前を、そのキーを指すずれの行で出し、選べる名前とテーマを選ばない設定では出さない（正常シナリオ（知らないテーマの名前がある））
+test("test_normal_when_unknown_theme", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const unknownDir = await createCleanDir(builtRoot, tempDir);
+  const knownDir = await createCleanDir(builtRoot, tempDir);
+  const notSelectedDir = await createCleanDir(builtRoot, tempDir);
+  for (const [dir, name] of [
+    [unknownDir, "sepia"],
+    [knownDir, "theme-slate"],
+  ] as const) {
+    const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+    await writeFiles(dir, {
+      "mdmark.config.yaml": `${config}colorTheme: ${name}\n`,
+    });
+  }
+  const before = await snapshot(unknownDir);
+  // 実行
+  const unknown = await runCli(builtRoot, ["check"], unknownDir);
+  const known = await runCli(builtRoot, ["check"], knownDir);
+  const notSelected = await runCli(builtRoot, ["check"], notSelectedDir);
+  // 検証
+  expect(unknown.code).not.toBe(0);
+  const lines = linesOf(unknown.stdout);
+  const themeLines = lines.filter((line) =>
+    line.startsWith("mdmark.config.yaml:colorTheme: unknown_color_theme:"),
+  );
+  expect(themeLines).toHaveLength(1);
+  for (const text of [
+    "sepia",
+    "dev-swiss",
+    "theme-paper",
+    "theme-slate",
+    "theme-contrast",
+  ]) {
+    expect(themeLines[0]).toContain(text);
+  }
+  expect(await snapshot(unknownDir)).toEqual(before);
+  for (const result of [known, notSelected]) {
+    expect(result.code).toBe(0);
+    expect(result.stdout).not.toContain("unknown_color_theme");
+  }
+});

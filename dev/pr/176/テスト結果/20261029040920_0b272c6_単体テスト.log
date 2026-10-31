@@ -1,0 +1,16 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-knowledge-aliases-from-yaml
+
+
+ Test Files  155 passed (155)
+      Tests  1091 passed (1091)
+   Start at  03:08:30
+   Duration  50.40s (tests 44%, worker 34%, import 18%, transform 3%)
+
+
+EXIT=0

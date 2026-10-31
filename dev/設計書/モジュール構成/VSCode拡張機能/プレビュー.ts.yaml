@@ -7,7 +7,8 @@ directory: |-
   ├── panel.ts         # PreviewPanel（1 つのパネルの HTML・メッセージ・描き直しの待ち）
   ├── html.ts          # Webview の HTML と CSP（vscode を import しない）
   ├── scroll-guard.ts  # エディタを動かした直後の知らせを捨てる判定（vscode を import しない）
-  └── links.ts         # 押したリンクの開き先の見分け（vscode を import しない）
+  ├── links.ts         # 押したリンクの開き先の見分け（vscode を import しない）
+  └── diff-target.ts   # 差分ビューの対象とパネルのキー（vscode を import しない）
   ```
 diagrams:
   - name: 全体
@@ -64,7 +65,7 @@ classes:
       - name: panels
         type: Map<string, PreviewPanel>
         access: private
-        description: Markdown の URI の文字列 → パネル
+        description: パネルのキー（パネルのキーを組む）→ パネル。通常のパネルは Markdown の URI、差分のパネルは変更前と変更後の組
       - name: deps
         type: ExtensionDeps
         access: private
@@ -84,19 +85,23 @@ classes:
           type: Promise<void>
           description: HTML を入れたら解決する
         process: |-
-          1. 対象の Markdown を決める（対象を決める）
-             - 無いか `languageId` が `markdown` でない場合、何もしない
-          2. `panels` にあれば `reveal()` して終わる
-          3. `window.createWebviewPanel(VIEW_TYPE, "プレビュー {ファイル名}", column, { enableScripts: true, retainContextWhenHidden: false, localResourceRoots })` で開き、`PreviewPanel` を作って `panels` に入れ、読み込ませる（読み込む）。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と拡張機能の `media/`
+          1. アクティブなタブの `TabInputTextDiff` と渡された URI から差分ビューの対象を決める（差分ビューの対象を決める）
+             - 対象がある場合、変更前・変更後の文書を `workspace.openTextDocument` で開く。どちらかの `languageId` が `markdown` でなければ何もしない
+             - 対象が無い場合、対象の Markdown を決める（対象を決める）。無いか `languageId` が `markdown` でない場合、何もしない
+          2. パネルのキーを組み（パネルのキーを組む）、`panels` にあれば `reveal()` して終わる
+          3. `window.createWebviewPanel(VIEW_TYPE, "プレビュー {ファイル名}", column, { enableScripts: true, retainContextWhenHidden: false, localResourceRoots })` で開き、`PreviewPanel` を作って `panels` に入れ、読み込ませる（読み込む）。差分のパネルはタイトルを `差分プレビュー {ファイル名}` にし、`PreviewPanel` に変更前の文書も渡す。`localResourceRoots` は Markdown（差分では変更後の `fsPath`）を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と拡張機能の `media/`
           4. パネルが閉じたら `panels` から消す
         callees:
           - '#classes[PreviewPanel]'
+          - '#functions[pickDiffTarget]'
+          - '#functions[panelKey]'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[パネル]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分のパネル]
       - name: refresh
         title: プレビューをリロードする
         kind: メソッド
-        summary: '`mdmark.refreshPreview` と Webview の `reload` の本体。対象のパネルを読み込み直す。パネルが無ければ何もしない'
+        summary: '`mdmark.refreshPreview` と Webview の `reload` の本体。フォーカスのあるパネル、無ければ対象の Markdown のパネル（パネルを引く）を読み込み直す。パネルが無ければ何もしない'
         is_async: true
         args:
           - name: uri
@@ -123,7 +128,7 @@ classes:
       - name: handleDocumentChange
         title: 文書の変更を振り分ける
         kind: メソッド
-        summary: '`workspace.onDidChangeTextDocument`・`onDidSaveTextDocument` を受け、その Markdown のパネルへ渡す。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送る'
+        summary: '`workspace.onDidChangeTextDocument`・`onDidSaveTextDocument` を受け、その Markdown のパネル（パネルを引く）へ渡す。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送る'
         args:
           - name: event
             type: '{ document: TextDocument; saved: boolean }'
@@ -137,7 +142,7 @@ classes:
       - name: handleConfigChange
         title: 設定の変更を振り分ける
         kind: メソッド
-        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
+        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
         args:
           - name: event
             type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
@@ -149,7 +154,7 @@ classes:
       - name: handleVisibleRanges
         title: エディタのスクロールを振り分ける
         kind: メソッド
-        summary: '`window.onDidChangeTextEditorVisibleRanges` を受け、その文書のパネルに見えている範囲を渡す'
+        summary: '`window.onDidChangeTextEditorVisibleRanges` を受け、その文書のパネル（パネルを引く）に見えている範囲を渡す'
         args:
           - name: event
             type: TextEditorVisibleRangesChangeEvent
@@ -174,6 +179,20 @@ classes:
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
           - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#data_models[InspectedElement]
+      - name: findPanels
+        title: パネルを引く
+        kind: メソッド
+        summary: '`panels` のうち、Markdown（差分のパネルは変更後）の URI が渡した URI と同じパネルを全て返す。通常のパネルと差分のパネルの両方が当たる'
+        args:
+          - name: uri
+            type: Uri
+            required: true
+            description: 変わった・スクロールした文書の URI
+        returns:
+          type: PreviewPanel[]
+          description: 当たったパネル
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[差分のパネルを描き直すきっかけ]
     status: planned
   - name: PreviewPanel
     title: プレビューのパネル
@@ -222,6 +241,14 @@ classes:
         type: Record<string, unknown> | undefined
         access: private
         description: '`config` の `libraries` の URL を直す前の値（CSP に入れる origin の元）。読めなかったときは前に読めた値を残す'
+      - name: original
+        type: TextDocument | undefined
+        access: private
+        description: 差分のパネルの変更前の文書。通常のパネルでは `undefined`
+      - name: fileUri
+        type: Uri
+        access: private
+        description: '`Uri.file(document.uri.fsPath)`。設定のスコープ・設定ファイルと `<base>` の基準のフォルダ・リンクを解決するフォルダ・`localResourceRoots` に使う（差分の変更後が `git:` などの URI でもファイルの場所で決める）'
     methods:
       - name: load
         title: 読み込む
@@ -281,13 +308,14 @@ classes:
       - name: renderNow
         title: 今すぐ送る
         kind: メソッド
-        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config`・`mdmark.preview.theme` で `render` を送る。見えていなければ送らない
+        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きした設定（テーマの設定で上書きする）・`mdmark.preview.theme` で `render` を送る。差分のパネルでは `previous` に変更前の `getText()` の全文も入れる。見えていなければ送らない
         returns:
           type: void
           description: '-'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[送る中身]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分の受け渡し]
       - name: handleMessage
         title: Webview のメッセージを受ける
         kind: メソッド
@@ -311,7 +339,7 @@ classes:
              - `openConfig` の場合、設定ファイルを開く
              - `inspected` の場合、`pendingInspects` の同じ `id` に渡して消す
              - `loadFailed` の場合、描けない理由は Webview が出す
-               - `[warn]` 配布物を読めない（`reason`・バージョン・`index.js` の URL）
+               - `[warn]` 配布物を読めない（`reason`・バージョン・`index.js` の URL）。`reason` が `diffUnsupported` のときは `[warn]` 差分の色分けに対応しないバージョン（バージョン）
              - `rendered` は何もしない（結合テストが受けたことを `onDidReceiveMessage` で確かめる）
         callees:
           - '#classes[EditorScrollGuard]'
@@ -320,6 +348,7 @@ classes:
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#
           - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[プレビューから合わせる]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分に対応しないバージョン]
       - name: syncFromEditor
         title: エディタに合わせる
         kind: メソッド
@@ -566,7 +595,69 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#constraints[リンクの見分け方]
     status: planned
+  - name: pickDiffTarget
+    title: 差分ビューの対象を決める
+    kind: 関数
+    container: vscode/src/preview/diff-target.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    summary: アクティブなタブが差分ビューで、`uri` が無いか変更前・変更後のどちらかと同じとき、`{ original, modified }` を返す。それ以外は `undefined`
+    scope: public
+    args:
+      - name: options
+        type: '{ tab: { original: string; modified: string } | undefined; uri: string | undefined }'
+        required: true
+        description: アクティブなタブの `TabInputTextDiff` の変更前・変更後の URI の文字列（差分ビューでなければ `undefined`）と、コマンドに渡された URI の文字列
+    returns:
+      type: '{ original: string; modified: string } | undefined'
+      description: 差分のパネルで開く変更前・変更後
+    unit_tests:
+      - name: test_pick_diff_target
+        case: 正常
+        summary: 差分ビューでは uri が無いか、どちらかの側と同じなら対象にする
+        condition: '`tab` が `{ original: "git:/a.md", modified: "file:///a.md" }` で、`uri` が `undefined`・`file:///a.md`・`git:/a.md`'
+        mock: なし
+        expected: 'どれも `{ original: "git:/a.md", modified: "file:///a.md" }`'
+      - name: test_pick_diff_target_when_not_diff
+        case: 正常
+        summary: 差分ビューでないか、別の文書の uri なら対象にしない
+        condition: '`tab` が `undefined` で `uri` が `file:///a.md`、`tab` が上と同じで `uri` が `file:///b.md`'
+        mock: なし
+        expected: どちらも `undefined`
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分ビューの判定]
+    status: planned
+    introduced:
+      pr: 196
+  - name: panelKey
+    title: パネルのキーを組む
+    kind: 関数
+    container: vscode/src/preview/diff-target.ts
+    usecase: VS Code の差分ビューの変更をプレビューで見る
+    summary: '`original` が無ければ `uri` をそのまま、あれば `diff:{original}|{uri}` を返す。同じ Markdown の通常のパネルと差分のパネルを別に持つ'
+    scope: public
+    args:
+      - name: options
+        type: '{ uri: string; original?: string }'
+        required: true
+        description: Markdown（差分では変更後）の URI の文字列と、差分の変更前の URI の文字列
+    returns:
+      type: string
+      description: '`PreviewManager.panels` のキー'
+    unit_tests:
+      - name: test_panel_key
+        case: 正常
+        summary: 差分のパネルは変更前と変更後の組でキーを作る
+        condition: '`{ uri: "file:///a.md" }` と `{ uri: "file:///a.md", original: "git:/a.md" }`'
+        mock: なし
+        expected: '`file:///a.md` と `diff:git:/a.md|file:///a.md`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分のパネル]
+    status: planned
+    introduced:
+      pr: 196
 test_files:
   - tests/unit/vscode/src/preview/html.test.ts
   - tests/unit/vscode/src/preview/links.test.ts
   - tests/unit/vscode/src/preview/scroll-guard.test.ts
+  - tests/unit/vscode/src/preview/diff-target.test.ts
+notes: {}

@@ -10,7 +10,7 @@
       ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --mdmark-font-size: 0.875rem;
     --mdmark-line-height: 1.8;
-    --mdmark-content-width: 46rem;
+    --mdmark-content-width: none;
     --mdmark-space: 0.875rem;
     --mdmark-padding: 1.5rem;
     --mdmark-radius: 4px;
@@ -35,7 +35,7 @@
     --mdmark-color-callout-warning: #b45309;
     --mdmark-color-callout-caution: #b91c1c;
     --mdmark-color-current-bg: #e6f3f1;
-    --mdmark-table-max-height: 28rem;
+    --mdmark-sticky-top: 0px;
     --mdmark-color-term-underline: var(--mdmark-color-muted);
     --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
     --mdmark-tooltip-max-width: 22rem;
@@ -69,6 +69,13 @@
     --mdmark-color-diff-add-sign: #15803d;
     --mdmark-color-comment-bg: #f2effe;
     --mdmark-color-comment-line: #6d28d9;
+    --mdmark-color-file-text: #1d4ed8;
+    --mdmark-color-file-code: #6d28d9;
+    --mdmark-color-file-config: #c2410c;
+    --mdmark-color-file-image: #0f766e;
+    --mdmark-color-file-sheet: #15803d;
+    --mdmark-color-file-archive: #a16207;
+    --mdmark-color-file-script: #be185d;
     --mdmark-color-error: #b91c1c;
     --mdmark-view-column-width: 12rem;
     --mdmark-diff-minimap-width: 14px;
@@ -124,6 +131,13 @@
       --mdmark-color-diff-add-sign: #4ade80;
       --mdmark-color-comment-bg: #25222d;
       --mdmark-color-comment-line: #c4a7ff;
+      --mdmark-color-file-text: #7aa2ff;
+      --mdmark-color-file-code: #c4a7ff;
+      --mdmark-color-file-config: #fb923c;
+      --mdmark-color-file-image: #2dd4bf;
+      --mdmark-color-file-sheet: #4ade80;
+      --mdmark-color-file-archive: #facc15;
+      --mdmark-color-file-script: #f472b6;
       --mdmark-color-error: #f87171;
       color-scheme: dark;
     }
@@ -219,6 +233,13 @@
       --mdmark-color-diff-add-sign: #4ade80;
       --mdmark-color-comment-bg: #25222d;
       --mdmark-color-comment-line: #c4a7ff;
+      --mdmark-color-file-text: #7aa2ff;
+      --mdmark-color-file-code: #c4a7ff;
+      --mdmark-color-file-config: #fb923c;
+      --mdmark-color-file-image: #2dd4bf;
+      --mdmark-color-file-sheet: #4ade80;
+      --mdmark-color-file-archive: #facc15;
+      --mdmark-color-file-script: #f472b6;
       --mdmark-color-error: #f87171;
       color-scheme: dark;
     }
@@ -304,7 +325,883 @@
       --mdmark-color-diff-add-sign: #15803d;
       --mdmark-color-comment-bg: #f2effe;
       --mdmark-color-comment-line: #6d28d9;
+      --mdmark-color-file-text: #1d4ed8;
+      --mdmark-color-file-code: #6d28d9;
+      --mdmark-color-file-config: #c2410c;
+      --mdmark-color-file-image: #0f766e;
+      --mdmark-color-file-sheet: #15803d;
+      --mdmark-color-file-archive: #a16207;
+      --mdmark-color-file-script: #be185d;
       --mdmark-color-error: #b91c1c;
+      color-scheme: light;
+    }
+  }
+
+  /* 選んだテーマの配色: 描く先の属性 `data-mdmark-color-theme` を `:root:has()` で見て `:root` に当てる。既定のテーマ（dev-swiss）は規則を持たず `:root` の値のままにする。同じページに別のテーマの文書が並ぶと、後のテーマが全ての文書に当たる */
+  /* 選んだテーマの明るい配色: 印刷でもこの値を使う */
+  :root:has(.mdmark[data-mdmark-color-theme="theme-paper"]) {
+    --mdmark-color-bg: #fbf8f1;
+    --mdmark-color-text: #2a2520;
+    --mdmark-color-heading: #1f1a15;
+    --mdmark-color-muted: #5c5247;
+    --mdmark-color-link: #9b2c2c;
+    --mdmark-color-current-bg: #f6e6e2;
+    --mdmark-color-border: #e3dacb;
+    --mdmark-color-surface: #f2ece1;
+    --mdmark-color-table-head: #f2ece1;
+    --mdmark-color-scroll-shadow: rgb(42 37 32 / 0.14);
+    --mdmark-color-term-underline: #5c5247;
+    --mdmark-color-notice-bg: #f8eadf;
+    --mdmark-color-notice-border: #94540a;
+    --mdmark-color-notice-text: #2a2520;
+    --mdmark-color-callout-note: #1e4f8c;
+    --mdmark-color-callout-tip: #3f6b2a;
+    --mdmark-color-callout-important: #6b3fa0;
+    --mdmark-color-callout-warning: #94540a;
+    --mdmark-color-callout-caution: #a3261f;
+    --mdmark-color-diagram-llm: #6b3fa0;
+    --mdmark-color-diagram-dm: #1e4f8c;
+    --mdmark-color-diagram-script: #5c5247;
+    --mdmark-color-diagram-mcp: #94540a;
+    --mdmark-color-diagram-data: #9b2c2c;
+    --mdmark-color-diagram-external: #3f6b2a;
+    --mdmark-color-diagram-line: #857a6c;
+    --mdmark-color-series-1: #9b2c2c;
+    --mdmark-color-series-2: #1e4f8c;
+    --mdmark-color-series-3: #3f6b2a;
+    --mdmark-color-series-4: #94540a;
+    --mdmark-color-code-highlight-bg: #f7ecc8;
+    --mdmark-color-code-highlight-line: #94540a;
+    --mdmark-color-diff-del-bg: #f6e1dc;
+    --mdmark-color-diff-del-word: #e6b3aa;
+    --mdmark-color-diff-del-sign: #a3261f;
+    --mdmark-color-diff-add-bg: #e3ead8;
+    --mdmark-color-diff-add-word: #b6cba0;
+    --mdmark-color-diff-add-sign: #3f6b2a;
+    --mdmark-color-syntax-keyword: #8b2252;
+    --mdmark-color-syntax-string: #3f6b2a;
+    --mdmark-color-syntax-number: #8a4b08;
+    --mdmark-color-syntax-type: #1e4f8c;
+    --mdmark-color-syntax-name: #24557a;
+    --mdmark-color-syntax-comment: #5c5247;
+    --mdmark-color-comment-bg: #efe8f5;
+    --mdmark-color-comment-line: #6b3fa0;
+    --mdmark-color-error: #a3261f;
+    color-scheme: light;
+  }
+
+  :root:has(.mdmark[data-mdmark-color-theme="theme-slate"]) {
+    --mdmark-color-bg: #f8fafc;
+    --mdmark-color-text: #0f172a;
+    --mdmark-color-heading: #0f172a;
+    --mdmark-color-muted: #475569;
+    --mdmark-color-link: #1d4ed8;
+    --mdmark-color-current-bg: #e0e9fb;
+    --mdmark-color-border: #dbe2ec;
+    --mdmark-color-surface: #edf1f7;
+    --mdmark-color-table-head: #edf1f7;
+    --mdmark-color-scroll-shadow: rgb(15 23 42 / 0.14);
+    --mdmark-color-term-underline: #475569;
+    --mdmark-color-notice-bg: #fbefe4;
+    --mdmark-color-notice-border: #a24a06;
+    --mdmark-color-notice-text: #0f172a;
+    --mdmark-color-callout-note: #1d4ed8;
+    --mdmark-color-callout-tip: #047857;
+    --mdmark-color-callout-important: #6d28d9;
+    --mdmark-color-callout-warning: #a24a06;
+    --mdmark-color-callout-caution: #b91c1c;
+    --mdmark-color-diagram-llm: #6d28d9;
+    --mdmark-color-diagram-dm: #1d4ed8;
+    --mdmark-color-diagram-script: #475569;
+    --mdmark-color-diagram-mcp: #a24a06;
+    --mdmark-color-diagram-data: #0e7490;
+    --mdmark-color-diagram-external: #047857;
+    --mdmark-color-diagram-line: #64748b;
+    --mdmark-color-series-1: #1d4ed8;
+    --mdmark-color-series-2: #047857;
+    --mdmark-color-series-3: #6d28d9;
+    --mdmark-color-series-4: #a24a06;
+    --mdmark-color-code-highlight-bg: #fdf2c4;
+    --mdmark-color-code-highlight-line: #a24a06;
+    --mdmark-color-diff-del-bg: #fbe4e4;
+    --mdmark-color-diff-del-word: #efb1b1;
+    --mdmark-color-diff-del-sign: #b91c1c;
+    --mdmark-color-diff-add-bg: #ddeee6;
+    --mdmark-color-diff-add-word: #a3d0bc;
+    --mdmark-color-diff-add-sign: #047857;
+    --mdmark-color-syntax-keyword: #6d28d9;
+    --mdmark-color-syntax-string: #047857;
+    --mdmark-color-syntax-number: #a24a06;
+    --mdmark-color-syntax-type: #be185d;
+    --mdmark-color-syntax-name: #1e40af;
+    --mdmark-color-syntax-comment: #475569;
+    --mdmark-color-comment-bg: #efebfd;
+    --mdmark-color-comment-line: #6d28d9;
+    --mdmark-color-error: #b91c1c;
+    color-scheme: light;
+  }
+
+  :root:has(.mdmark[data-mdmark-color-theme="theme-contrast"]) {
+    --mdmark-color-bg: #ffffff;
+    --mdmark-color-text: #000000;
+    --mdmark-color-heading: #000000;
+    --mdmark-color-muted: #333333;
+    --mdmark-color-link: #0037a8;
+    --mdmark-color-current-bg: #dde7fb;
+    --mdmark-color-border: #767676;
+    --mdmark-color-surface: #f0f0f0;
+    --mdmark-color-table-head: #e6e6e6;
+    --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.25);
+    --mdmark-color-term-underline: #333333;
+    --mdmark-color-notice-bg: #fff4d6;
+    --mdmark-color-notice-border: #8a4b00;
+    --mdmark-color-notice-text: #000000;
+    --mdmark-color-callout-note: #0037a8;
+    --mdmark-color-callout-tip: #1a5e1a;
+    --mdmark-color-callout-important: #5b21b6;
+    --mdmark-color-callout-warning: #8a4b00;
+    --mdmark-color-callout-caution: #a3001c;
+    --mdmark-color-diagram-llm: #5b21b6;
+    --mdmark-color-diagram-dm: #0037a8;
+    --mdmark-color-diagram-script: #333333;
+    --mdmark-color-diagram-mcp: #8a4b00;
+    --mdmark-color-diagram-data: #006a6a;
+    --mdmark-color-diagram-external: #1a5e1a;
+    --mdmark-color-diagram-line: #4d4d4d;
+    --mdmark-color-series-1: #0037a8;
+    --mdmark-color-series-2: #8a4b00;
+    --mdmark-color-series-3: #5b21b6;
+    --mdmark-color-series-4: #1a5e1a;
+    --mdmark-color-code-highlight-bg: #fff1b8;
+    --mdmark-color-code-highlight-line: #8a4b00;
+    --mdmark-color-diff-del-bg: #ffe0e0;
+    --mdmark-color-diff-del-word: #f2a3a3;
+    --mdmark-color-diff-del-sign: #a3001c;
+    --mdmark-color-diff-add-bg: #dcf0dc;
+    --mdmark-color-diff-add-word: #9fd39f;
+    --mdmark-color-diff-add-sign: #1a5e1a;
+    --mdmark-color-syntax-keyword: #5b21b6;
+    --mdmark-color-syntax-string: #1a5e1a;
+    --mdmark-color-syntax-number: #8a4b00;
+    --mdmark-color-syntax-type: #9d174d;
+    --mdmark-color-syntax-name: #0037a8;
+    --mdmark-color-syntax-comment: #333333;
+    --mdmark-color-comment-bg: #efe6ff;
+    --mdmark-color-comment-line: #5b21b6;
+    --mdmark-color-error: #a3001c;
+    color-scheme: light;
+  }
+
+  /* 選んだテーマの暗い配色: 画面で OS の設定がダークのときだけ当て、明るい配色の規則の後に置く */
+  @media screen and (prefers-color-scheme: dark) {
+    :root:has(.mdmark[data-mdmark-color-theme="theme-paper"]) {
+      --mdmark-color-bg: #1c1915;
+      --mdmark-color-text: #e8e0d2;
+      --mdmark-color-heading: #f1eadc;
+      --mdmark-color-muted: #b8ad9c;
+      --mdmark-color-link: #f0a39a;
+      --mdmark-color-current-bg: #3a2523;
+      --mdmark-color-border: #36302a;
+      --mdmark-color-surface: #25211c;
+      --mdmark-color-table-head: #25211c;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.6);
+      --mdmark-color-term-underline: #b8ad9c;
+      --mdmark-color-notice-bg: #2d261c;
+      --mdmark-color-notice-border: #e8b04a;
+      --mdmark-color-notice-text: #e8e0d2;
+      --mdmark-color-callout-note: #8fb4e8;
+      --mdmark-color-callout-tip: #a3c98a;
+      --mdmark-color-callout-important: #c9a8ec;
+      --mdmark-color-callout-warning: #e8b04a;
+      --mdmark-color-callout-caution: #f0928a;
+      --mdmark-color-diagram-llm: #c9a8ec;
+      --mdmark-color-diagram-dm: #8fb4e8;
+      --mdmark-color-diagram-script: #b8ad9c;
+      --mdmark-color-diagram-mcp: #e8b04a;
+      --mdmark-color-diagram-data: #f0a39a;
+      --mdmark-color-diagram-external: #a3c98a;
+      --mdmark-color-diagram-line: #9a8f80;
+      --mdmark-color-series-1: #f0a39a;
+      --mdmark-color-series-2: #8fb4e8;
+      --mdmark-color-series-3: #a3c98a;
+      --mdmark-color-series-4: #e8b04a;
+      --mdmark-color-code-highlight-bg: #4d3d16;
+      --mdmark-color-code-highlight-line: #e8b04a;
+      --mdmark-color-diff-del-bg: #33211e;
+      --mdmark-color-diff-del-word: #643a33;
+      --mdmark-color-diff-del-sign: #f0928a;
+      --mdmark-color-diff-add-bg: #222b1d;
+      --mdmark-color-diff-add-word: #3e5530;
+      --mdmark-color-diff-add-sign: #a3c98a;
+      --mdmark-color-syntax-keyword: #f0a3c0;
+      --mdmark-color-syntax-string: #a3c98a;
+      --mdmark-color-syntax-number: #e8b04a;
+      --mdmark-color-syntax-type: #8fb4e8;
+      --mdmark-color-syntax-name: #a9c6e6;
+      --mdmark-color-syntax-comment: #c2b8a8;
+      --mdmark-color-comment-bg: #2a2430;
+      --mdmark-color-comment-line: #c9a8ec;
+      --mdmark-color-error: #f0928a;
+      color-scheme: dark;
+    }
+
+    :root:has(.mdmark[data-mdmark-color-theme="theme-slate"]) {
+      --mdmark-color-bg: #0f172a;
+      --mdmark-color-text: #e2e8f0;
+      --mdmark-color-heading: #f1f5f9;
+      --mdmark-color-muted: #a3b1c6;
+      --mdmark-color-link: #7dd3fc;
+      --mdmark-color-current-bg: #12304a;
+      --mdmark-color-border: #26334a;
+      --mdmark-color-surface: #172136;
+      --mdmark-color-table-head: #172136;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.6);
+      --mdmark-color-term-underline: #a3b1c6;
+      --mdmark-color-notice-bg: #2a2418;
+      --mdmark-color-notice-border: #fbbf24;
+      --mdmark-color-notice-text: #e2e8f0;
+      --mdmark-color-callout-note: #93b4ff;
+      --mdmark-color-callout-tip: #5eead4;
+      --mdmark-color-callout-important: #c4b5fd;
+      --mdmark-color-callout-warning: #fbbf24;
+      --mdmark-color-callout-caution: #fca5a5;
+      --mdmark-color-diagram-llm: #c4b5fd;
+      --mdmark-color-diagram-dm: #f9a8d4;
+      --mdmark-color-diagram-script: #a3b1c6;
+      --mdmark-color-diagram-mcp: #fbbf24;
+      --mdmark-color-diagram-data: #7dd3fc;
+      --mdmark-color-diagram-external: #5eead4;
+      --mdmark-color-diagram-line: #8391a7;
+      --mdmark-color-series-1: #7dd3fc;
+      --mdmark-color-series-2: #6ee7b7;
+      --mdmark-color-series-3: #c4b5fd;
+      --mdmark-color-series-4: #fdba74;
+      --mdmark-color-code-highlight-bg: #4d3f12;
+      --mdmark-color-code-highlight-line: #fbbf24;
+      --mdmark-color-diff-del-bg: #2e1c24;
+      --mdmark-color-diff-del-word: #6a2f3a;
+      --mdmark-color-diff-del-sign: #fca5a5;
+      --mdmark-color-diff-add-bg: #13302c;
+      --mdmark-color-diff-add-word: #245c4f;
+      --mdmark-color-diff-add-sign: #5eead4;
+      --mdmark-color-syntax-keyword: #d4c8ff;
+      --mdmark-color-syntax-string: #5eead4;
+      --mdmark-color-syntax-number: #fbbf24;
+      --mdmark-color-syntax-type: #f9a8d4;
+      --mdmark-color-syntax-name: #a5c3ff;
+      --mdmark-color-syntax-comment: #b3bfd0;
+      --mdmark-color-comment-bg: #221f3a;
+      --mdmark-color-comment-line: #c4b5fd;
+      --mdmark-color-error: #fca5a5;
+      color-scheme: dark;
+    }
+
+    :root:has(.mdmark[data-mdmark-color-theme="theme-contrast"]) {
+      --mdmark-color-bg: #000000;
+      --mdmark-color-text: #ffffff;
+      --mdmark-color-heading: #ffffff;
+      --mdmark-color-muted: #d6d6d6;
+      --mdmark-color-link: #9cc0ff;
+      --mdmark-color-current-bg: #0f2a55;
+      --mdmark-color-border: #8a8a8a;
+      --mdmark-color-surface: #161616;
+      --mdmark-color-table-head: #222222;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.8);
+      --mdmark-color-term-underline: #d6d6d6;
+      --mdmark-color-notice-bg: #2b2200;
+      --mdmark-color-notice-border: #ffd23f;
+      --mdmark-color-notice-text: #ffffff;
+      --mdmark-color-callout-note: #9cc0ff;
+      --mdmark-color-callout-tip: #7ee07e;
+      --mdmark-color-callout-important: #d0b3ff;
+      --mdmark-color-callout-warning: #ffd23f;
+      --mdmark-color-callout-caution: #ff9090;
+      --mdmark-color-diagram-llm: #d0b3ff;
+      --mdmark-color-diagram-dm: #9cc0ff;
+      --mdmark-color-diagram-script: #d6d6d6;
+      --mdmark-color-diagram-mcp: #ffd23f;
+      --mdmark-color-diagram-data: #4fd1c5;
+      --mdmark-color-diagram-external: #7ee07e;
+      --mdmark-color-diagram-line: #a6a6a6;
+      --mdmark-color-series-1: #9cc0ff;
+      --mdmark-color-series-2: #ffd23f;
+      --mdmark-color-series-3: #d0b3ff;
+      --mdmark-color-series-4: #7ee07e;
+      --mdmark-color-code-highlight-bg: #4a3d00;
+      --mdmark-color-code-highlight-line: #ffd23f;
+      --mdmark-color-diff-del-bg: #3a0d0d;
+      --mdmark-color-diff-del-word: #7a2323;
+      --mdmark-color-diff-del-sign: #ff9090;
+      --mdmark-color-diff-add-bg: #0d2e0d;
+      --mdmark-color-diff-add-word: #1f5f1f;
+      --mdmark-color-diff-add-sign: #7ee07e;
+      --mdmark-color-syntax-keyword: #d0b3ff;
+      --mdmark-color-syntax-string: #7ee07e;
+      --mdmark-color-syntax-number: #ffd23f;
+      --mdmark-color-syntax-type: #ff9cd0;
+      --mdmark-color-syntax-name: #a8c8ff;
+      --mdmark-color-syntax-comment: #d6d6d6;
+      --mdmark-color-comment-bg: #241a33;
+      --mdmark-color-comment-line: #d0b3ff;
+      --mdmark-color-error: #ff9090;
+      color-scheme: dark;
+    }
+  }
+
+  /* 選んだテーマの class で決める配色（画面のとき）: 属性を重ねた分だけ詳細度が高く、既定のテーマの class の規則と OS の設定に勝つ */
+  @media screen {
+    /* theme-paper のダークの配色 */
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-paper"]:is(
+            .mdmark-theme-dark,
+            .mdmark-theme-dark *
+          ):not(
+            :is(
+              .mdmark-theme-dark .mdmark-theme-light,
+              .mdmark-theme-dark .mdmark-theme-light *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-paper"]:is(
+            :is(
+              .vscode-dark,
+              .vscode-high-contrast:not(.vscode-high-contrast-light)
+            ),
+            :is(
+                .vscode-dark,
+                .vscode-high-contrast:not(.vscode-high-contrast-light)
+              )
+              *
+          ):not(
+            :is(
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light),
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light)
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #1c1915;
+      --mdmark-color-text: #e8e0d2;
+      --mdmark-color-heading: #f1eadc;
+      --mdmark-color-muted: #b8ad9c;
+      --mdmark-color-link: #f0a39a;
+      --mdmark-color-current-bg: #3a2523;
+      --mdmark-color-border: #36302a;
+      --mdmark-color-surface: #25211c;
+      --mdmark-color-table-head: #25211c;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.6);
+      --mdmark-color-term-underline: #b8ad9c;
+      --mdmark-color-notice-bg: #2d261c;
+      --mdmark-color-notice-border: #e8b04a;
+      --mdmark-color-notice-text: #e8e0d2;
+      --mdmark-color-callout-note: #8fb4e8;
+      --mdmark-color-callout-tip: #a3c98a;
+      --mdmark-color-callout-important: #c9a8ec;
+      --mdmark-color-callout-warning: #e8b04a;
+      --mdmark-color-callout-caution: #f0928a;
+      --mdmark-color-diagram-llm: #c9a8ec;
+      --mdmark-color-diagram-dm: #8fb4e8;
+      --mdmark-color-diagram-script: #b8ad9c;
+      --mdmark-color-diagram-mcp: #e8b04a;
+      --mdmark-color-diagram-data: #f0a39a;
+      --mdmark-color-diagram-external: #a3c98a;
+      --mdmark-color-diagram-line: #9a8f80;
+      --mdmark-color-series-1: #f0a39a;
+      --mdmark-color-series-2: #8fb4e8;
+      --mdmark-color-series-3: #a3c98a;
+      --mdmark-color-series-4: #e8b04a;
+      --mdmark-color-code-highlight-bg: #4d3d16;
+      --mdmark-color-code-highlight-line: #e8b04a;
+      --mdmark-color-diff-del-bg: #33211e;
+      --mdmark-color-diff-del-word: #643a33;
+      --mdmark-color-diff-del-sign: #f0928a;
+      --mdmark-color-diff-add-bg: #222b1d;
+      --mdmark-color-diff-add-word: #3e5530;
+      --mdmark-color-diff-add-sign: #a3c98a;
+      --mdmark-color-syntax-keyword: #f0a3c0;
+      --mdmark-color-syntax-string: #a3c98a;
+      --mdmark-color-syntax-number: #e8b04a;
+      --mdmark-color-syntax-type: #8fb4e8;
+      --mdmark-color-syntax-name: #a9c6e6;
+      --mdmark-color-syntax-comment: #c2b8a8;
+      --mdmark-color-comment-bg: #2a2430;
+      --mdmark-color-comment-line: #c9a8ec;
+      --mdmark-color-error: #f0928a;
+      color-scheme: dark;
+    }
+
+    /* theme-paper のライトの配色 */
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-paper"]:is(
+            .mdmark-theme-light,
+            .mdmark-theme-light *
+          ):not(
+            :is(
+              .mdmark-theme-light .mdmark-theme-dark,
+              .mdmark-theme-light .mdmark-theme-dark *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-paper"]:is(
+            :is(.vscode-light, .vscode-high-contrast-light),
+            :is(.vscode-light, .vscode-high-contrast-light) *
+          ):not(
+            :is(
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                ),
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #fbf8f1;
+      --mdmark-color-text: #2a2520;
+      --mdmark-color-heading: #1f1a15;
+      --mdmark-color-muted: #5c5247;
+      --mdmark-color-link: #9b2c2c;
+      --mdmark-color-current-bg: #f6e6e2;
+      --mdmark-color-border: #e3dacb;
+      --mdmark-color-surface: #f2ece1;
+      --mdmark-color-table-head: #f2ece1;
+      --mdmark-color-scroll-shadow: rgb(42 37 32 / 0.14);
+      --mdmark-color-term-underline: #5c5247;
+      --mdmark-color-notice-bg: #f8eadf;
+      --mdmark-color-notice-border: #94540a;
+      --mdmark-color-notice-text: #2a2520;
+      --mdmark-color-callout-note: #1e4f8c;
+      --mdmark-color-callout-tip: #3f6b2a;
+      --mdmark-color-callout-important: #6b3fa0;
+      --mdmark-color-callout-warning: #94540a;
+      --mdmark-color-callout-caution: #a3261f;
+      --mdmark-color-diagram-llm: #6b3fa0;
+      --mdmark-color-diagram-dm: #1e4f8c;
+      --mdmark-color-diagram-script: #5c5247;
+      --mdmark-color-diagram-mcp: #94540a;
+      --mdmark-color-diagram-data: #9b2c2c;
+      --mdmark-color-diagram-external: #3f6b2a;
+      --mdmark-color-diagram-line: #857a6c;
+      --mdmark-color-series-1: #9b2c2c;
+      --mdmark-color-series-2: #1e4f8c;
+      --mdmark-color-series-3: #3f6b2a;
+      --mdmark-color-series-4: #94540a;
+      --mdmark-color-code-highlight-bg: #f7ecc8;
+      --mdmark-color-code-highlight-line: #94540a;
+      --mdmark-color-diff-del-bg: #f6e1dc;
+      --mdmark-color-diff-del-word: #e6b3aa;
+      --mdmark-color-diff-del-sign: #a3261f;
+      --mdmark-color-diff-add-bg: #e3ead8;
+      --mdmark-color-diff-add-word: #b6cba0;
+      --mdmark-color-diff-add-sign: #3f6b2a;
+      --mdmark-color-syntax-keyword: #8b2252;
+      --mdmark-color-syntax-string: #3f6b2a;
+      --mdmark-color-syntax-number: #8a4b08;
+      --mdmark-color-syntax-type: #1e4f8c;
+      --mdmark-color-syntax-name: #24557a;
+      --mdmark-color-syntax-comment: #5c5247;
+      --mdmark-color-comment-bg: #efe8f5;
+      --mdmark-color-comment-line: #6b3fa0;
+      --mdmark-color-error: #a3261f;
+      color-scheme: light;
+    }
+
+    /* theme-slate のダークの配色 */
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-slate"]:is(
+            .mdmark-theme-dark,
+            .mdmark-theme-dark *
+          ):not(
+            :is(
+              .mdmark-theme-dark .mdmark-theme-light,
+              .mdmark-theme-dark .mdmark-theme-light *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-slate"]:is(
+            :is(
+              .vscode-dark,
+              .vscode-high-contrast:not(.vscode-high-contrast-light)
+            ),
+            :is(
+                .vscode-dark,
+                .vscode-high-contrast:not(.vscode-high-contrast-light)
+              )
+              *
+          ):not(
+            :is(
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light),
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light)
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #0f172a;
+      --mdmark-color-text: #e2e8f0;
+      --mdmark-color-heading: #f1f5f9;
+      --mdmark-color-muted: #a3b1c6;
+      --mdmark-color-link: #7dd3fc;
+      --mdmark-color-current-bg: #12304a;
+      --mdmark-color-border: #26334a;
+      --mdmark-color-surface: #172136;
+      --mdmark-color-table-head: #172136;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.6);
+      --mdmark-color-term-underline: #a3b1c6;
+      --mdmark-color-notice-bg: #2a2418;
+      --mdmark-color-notice-border: #fbbf24;
+      --mdmark-color-notice-text: #e2e8f0;
+      --mdmark-color-callout-note: #93b4ff;
+      --mdmark-color-callout-tip: #5eead4;
+      --mdmark-color-callout-important: #c4b5fd;
+      --mdmark-color-callout-warning: #fbbf24;
+      --mdmark-color-callout-caution: #fca5a5;
+      --mdmark-color-diagram-llm: #c4b5fd;
+      --mdmark-color-diagram-dm: #f9a8d4;
+      --mdmark-color-diagram-script: #a3b1c6;
+      --mdmark-color-diagram-mcp: #fbbf24;
+      --mdmark-color-diagram-data: #7dd3fc;
+      --mdmark-color-diagram-external: #5eead4;
+      --mdmark-color-diagram-line: #8391a7;
+      --mdmark-color-series-1: #7dd3fc;
+      --mdmark-color-series-2: #6ee7b7;
+      --mdmark-color-series-3: #c4b5fd;
+      --mdmark-color-series-4: #fdba74;
+      --mdmark-color-code-highlight-bg: #4d3f12;
+      --mdmark-color-code-highlight-line: #fbbf24;
+      --mdmark-color-diff-del-bg: #2e1c24;
+      --mdmark-color-diff-del-word: #6a2f3a;
+      --mdmark-color-diff-del-sign: #fca5a5;
+      --mdmark-color-diff-add-bg: #13302c;
+      --mdmark-color-diff-add-word: #245c4f;
+      --mdmark-color-diff-add-sign: #5eead4;
+      --mdmark-color-syntax-keyword: #d4c8ff;
+      --mdmark-color-syntax-string: #5eead4;
+      --mdmark-color-syntax-number: #fbbf24;
+      --mdmark-color-syntax-type: #f9a8d4;
+      --mdmark-color-syntax-name: #a5c3ff;
+      --mdmark-color-syntax-comment: #b3bfd0;
+      --mdmark-color-comment-bg: #221f3a;
+      --mdmark-color-comment-line: #c4b5fd;
+      --mdmark-color-error: #fca5a5;
+      color-scheme: dark;
+    }
+
+    /* theme-slate のライトの配色 */
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-slate"]:is(
+            .mdmark-theme-light,
+            .mdmark-theme-light *
+          ):not(
+            :is(
+              .mdmark-theme-light .mdmark-theme-dark,
+              .mdmark-theme-light .mdmark-theme-dark *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-slate"]:is(
+            :is(.vscode-light, .vscode-high-contrast-light),
+            :is(.vscode-light, .vscode-high-contrast-light) *
+          ):not(
+            :is(
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                ),
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #f8fafc;
+      --mdmark-color-text: #0f172a;
+      --mdmark-color-heading: #0f172a;
+      --mdmark-color-muted: #475569;
+      --mdmark-color-link: #1d4ed8;
+      --mdmark-color-current-bg: #e0e9fb;
+      --mdmark-color-border: #dbe2ec;
+      --mdmark-color-surface: #edf1f7;
+      --mdmark-color-table-head: #edf1f7;
+      --mdmark-color-scroll-shadow: rgb(15 23 42 / 0.14);
+      --mdmark-color-term-underline: #475569;
+      --mdmark-color-notice-bg: #fbefe4;
+      --mdmark-color-notice-border: #a24a06;
+      --mdmark-color-notice-text: #0f172a;
+      --mdmark-color-callout-note: #1d4ed8;
+      --mdmark-color-callout-tip: #047857;
+      --mdmark-color-callout-important: #6d28d9;
+      --mdmark-color-callout-warning: #a24a06;
+      --mdmark-color-callout-caution: #b91c1c;
+      --mdmark-color-diagram-llm: #6d28d9;
+      --mdmark-color-diagram-dm: #1d4ed8;
+      --mdmark-color-diagram-script: #475569;
+      --mdmark-color-diagram-mcp: #a24a06;
+      --mdmark-color-diagram-data: #0e7490;
+      --mdmark-color-diagram-external: #047857;
+      --mdmark-color-diagram-line: #64748b;
+      --mdmark-color-series-1: #1d4ed8;
+      --mdmark-color-series-2: #047857;
+      --mdmark-color-series-3: #6d28d9;
+      --mdmark-color-series-4: #a24a06;
+      --mdmark-color-code-highlight-bg: #fdf2c4;
+      --mdmark-color-code-highlight-line: #a24a06;
+      --mdmark-color-diff-del-bg: #fbe4e4;
+      --mdmark-color-diff-del-word: #efb1b1;
+      --mdmark-color-diff-del-sign: #b91c1c;
+      --mdmark-color-diff-add-bg: #ddeee6;
+      --mdmark-color-diff-add-word: #a3d0bc;
+      --mdmark-color-diff-add-sign: #047857;
+      --mdmark-color-syntax-keyword: #6d28d9;
+      --mdmark-color-syntax-string: #047857;
+      --mdmark-color-syntax-number: #a24a06;
+      --mdmark-color-syntax-type: #be185d;
+      --mdmark-color-syntax-name: #1e40af;
+      --mdmark-color-syntax-comment: #475569;
+      --mdmark-color-comment-bg: #efebfd;
+      --mdmark-color-comment-line: #6d28d9;
+      --mdmark-color-error: #b91c1c;
+      color-scheme: light;
+    }
+
+    /* theme-contrast のダークの配色 */
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-contrast"]:is(
+            .mdmark-theme-dark,
+            .mdmark-theme-dark *
+          ):not(
+            :is(
+              .mdmark-theme-dark .mdmark-theme-light,
+              .mdmark-theme-dark .mdmark-theme-light *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-contrast"]:is(
+            :is(
+              .vscode-dark,
+              .vscode-high-contrast:not(.vscode-high-contrast-light)
+            ),
+            :is(
+                .vscode-dark,
+                .vscode-high-contrast:not(.vscode-high-contrast-light)
+              )
+              *
+          ):not(
+            :is(
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light),
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light)
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #000000;
+      --mdmark-color-text: #ffffff;
+      --mdmark-color-heading: #ffffff;
+      --mdmark-color-muted: #d6d6d6;
+      --mdmark-color-link: #9cc0ff;
+      --mdmark-color-current-bg: #0f2a55;
+      --mdmark-color-border: #8a8a8a;
+      --mdmark-color-surface: #161616;
+      --mdmark-color-table-head: #222222;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.8);
+      --mdmark-color-term-underline: #d6d6d6;
+      --mdmark-color-notice-bg: #2b2200;
+      --mdmark-color-notice-border: #ffd23f;
+      --mdmark-color-notice-text: #ffffff;
+      --mdmark-color-callout-note: #9cc0ff;
+      --mdmark-color-callout-tip: #7ee07e;
+      --mdmark-color-callout-important: #d0b3ff;
+      --mdmark-color-callout-warning: #ffd23f;
+      --mdmark-color-callout-caution: #ff9090;
+      --mdmark-color-diagram-llm: #d0b3ff;
+      --mdmark-color-diagram-dm: #9cc0ff;
+      --mdmark-color-diagram-script: #d6d6d6;
+      --mdmark-color-diagram-mcp: #ffd23f;
+      --mdmark-color-diagram-data: #4fd1c5;
+      --mdmark-color-diagram-external: #7ee07e;
+      --mdmark-color-diagram-line: #a6a6a6;
+      --mdmark-color-series-1: #9cc0ff;
+      --mdmark-color-series-2: #ffd23f;
+      --mdmark-color-series-3: #d0b3ff;
+      --mdmark-color-series-4: #7ee07e;
+      --mdmark-color-code-highlight-bg: #4a3d00;
+      --mdmark-color-code-highlight-line: #ffd23f;
+      --mdmark-color-diff-del-bg: #3a0d0d;
+      --mdmark-color-diff-del-word: #7a2323;
+      --mdmark-color-diff-del-sign: #ff9090;
+      --mdmark-color-diff-add-bg: #0d2e0d;
+      --mdmark-color-diff-add-word: #1f5f1f;
+      --mdmark-color-diff-add-sign: #7ee07e;
+      --mdmark-color-syntax-keyword: #d0b3ff;
+      --mdmark-color-syntax-string: #7ee07e;
+      --mdmark-color-syntax-number: #ffd23f;
+      --mdmark-color-syntax-type: #ff9cd0;
+      --mdmark-color-syntax-name: #a8c8ff;
+      --mdmark-color-syntax-comment: #d6d6d6;
+      --mdmark-color-comment-bg: #241a33;
+      --mdmark-color-comment-line: #d0b3ff;
+      --mdmark-color-error: #ff9090;
+      color-scheme: dark;
+    }
+
+    /* theme-contrast のライトの配色 */
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-contrast"]:is(
+            .mdmark-theme-light,
+            .mdmark-theme-light *
+          ):not(
+            :is(
+              .mdmark-theme-light .mdmark-theme-dark,
+              .mdmark-theme-light .mdmark-theme-dark *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark[data-mdmark-color-theme="theme-contrast"]:is(
+            :is(.vscode-light, .vscode-high-contrast-light),
+            :is(.vscode-light, .vscode-high-contrast-light) *
+          ):not(
+            :is(
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                ),
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-color-bg: #ffffff;
+      --mdmark-color-text: #000000;
+      --mdmark-color-heading: #000000;
+      --mdmark-color-muted: #333333;
+      --mdmark-color-link: #0037a8;
+      --mdmark-color-current-bg: #dde7fb;
+      --mdmark-color-border: #767676;
+      --mdmark-color-surface: #f0f0f0;
+      --mdmark-color-table-head: #e6e6e6;
+      --mdmark-color-scroll-shadow: rgb(0 0 0 / 0.25);
+      --mdmark-color-term-underline: #333333;
+      --mdmark-color-notice-bg: #fff4d6;
+      --mdmark-color-notice-border: #8a4b00;
+      --mdmark-color-notice-text: #000000;
+      --mdmark-color-callout-note: #0037a8;
+      --mdmark-color-callout-tip: #1a5e1a;
+      --mdmark-color-callout-important: #5b21b6;
+      --mdmark-color-callout-warning: #8a4b00;
+      --mdmark-color-callout-caution: #a3001c;
+      --mdmark-color-diagram-llm: #5b21b6;
+      --mdmark-color-diagram-dm: #0037a8;
+      --mdmark-color-diagram-script: #333333;
+      --mdmark-color-diagram-mcp: #8a4b00;
+      --mdmark-color-diagram-data: #006a6a;
+      --mdmark-color-diagram-external: #1a5e1a;
+      --mdmark-color-diagram-line: #4d4d4d;
+      --mdmark-color-series-1: #0037a8;
+      --mdmark-color-series-2: #8a4b00;
+      --mdmark-color-series-3: #5b21b6;
+      --mdmark-color-series-4: #1a5e1a;
+      --mdmark-color-code-highlight-bg: #fff1b8;
+      --mdmark-color-code-highlight-line: #8a4b00;
+      --mdmark-color-diff-del-bg: #ffe0e0;
+      --mdmark-color-diff-del-word: #f2a3a3;
+      --mdmark-color-diff-del-sign: #a3001c;
+      --mdmark-color-diff-add-bg: #dcf0dc;
+      --mdmark-color-diff-add-word: #9fd39f;
+      --mdmark-color-diff-add-sign: #1a5e1a;
+      --mdmark-color-syntax-keyword: #5b21b6;
+      --mdmark-color-syntax-string: #1a5e1a;
+      --mdmark-color-syntax-number: #8a4b00;
+      --mdmark-color-syntax-type: #9d174d;
+      --mdmark-color-syntax-name: #0037a8;
+      --mdmark-color-syntax-comment: #333333;
+      --mdmark-color-comment-bg: #efe6ff;
+      --mdmark-color-comment-line: #5b21b6;
+      --mdmark-color-error: #a3001c;
       color-scheme: light;
     }
   }
@@ -678,13 +1575,12 @@
       gap: calc(var(--mdmark-space) / 2);
       justify-items: start;
 
-      /* 表: 高さを抑えて表の中で縦にもスクロールし、見出し行を上端に留める */
+      /* 表: 縦の高さに上限は無く、横にはみ出すときだけ表の中で横にスクロールする */
       table {
-        max-height: var(--mdmark-table-max-height);
         overflow: auto;
       }
 
-      /* 見出し行: 本文の行（地の色）と面の色・見出しの色で分け、縦にスクロールしても上端に留める。
+      /* 見出し行: 本文の行（地の色）と面の色・見出しの色で分ける。留め方は下の「表の高さと、見出し行・集計の行の留め方」。
          重ねた罫線は留まらず隙間ができるので、下の罫線を外し、下の線を影で描く（上の線は外側の枠に任せる） */
       thead th {
         position: sticky;
@@ -913,15 +1809,15 @@
       }
     }
 
-    /* メニューの題 */
-    .mdmark-columns-title {
+    /* メニューの題（列の表示・出す集計） */
+    :is(.mdmark-columns-title, .mdmark-totals-title) {
       margin: 0;
       color: var(--mdmark-color-heading);
       font-weight: 600;
     }
 
-    /* 列名のチェックボックス: 表の列の順に縦に並べる */
-    .mdmark-columns-options {
+    /* 列名・計算のチェックボックス: 表の列・計算の順に縦に並べる */
+    :is(.mdmark-columns-options, .mdmark-totals-options) {
       margin: 0;
       padding: 0;
       list-style: none;
@@ -974,7 +1870,7 @@
       }
     }
 
-    /* 集計の行: 見出し行と同じ面の色を敷き、縦にスクロールしても下端に留める。上の線は直前の行の下の線と同じ位置に影で重ねて 1px に保ち、表の下の線は引かないので下の線もここで描く */
+    /* 集計の行: 見出し行と同じ面の色を敷く。上の線は直前の行の下の線と同じ位置に影で重ねて 1px に保ち、表の下の線は引かないので下の線もここで描く */
     .mdmark-table tfoot td {
       position: sticky;
       bottom: 0;
@@ -991,13 +1887,6 @@
     .mdmark-table tfoot td.is-pinned-col {
       z-index: 2;
       background: var(--mdmark-color-table-head);
-    }
-
-    /* 集計の種類（合計・平均・個数）: 値の前に小さく控えめに出す */
-    .mdmark-total-label {
-      margin-inline-end: 0.5em;
-      color: var(--mdmark-color-muted);
-      font-size: 0.8em;
     }
 
     /* 集計の値: 太字にして本文の行の値と見分ける */
@@ -1052,6 +1941,369 @@
       flex: none;
       width: 1em;
       height: 1em;
+    }
+
+    /* 表の追加分: 縦の高さの上限を外した表、ページのスクロールで留める見出し行と集計の行、計算ごとの集計の行と集計のメニュー、コピーの形式のメニューとコピーできないときのパネル、行の URL の知らせ、狭い幅で畳む最終列。`dev/mock/refs/151/assets/table.css` から取る */
+    /* ---------- 表の高さと、見出し行・集計の行の留め方 ---------- */
+
+    /* 表: 縦の高さの上限を外し、縦はページのスクロールで読む（横にはみ出す表は今のまま表の中で横にスクロールする） */
+    .mdmark-table table {
+      max-height: none;
+    }
+
+    /* 見出し行と集計の行のセル: 表の中で上端・下端に留める動きを外し、ずらしたときに本文の行の前に出す（ピン止めした列は左端に留めたまま） */
+    .mdmark-table :is(thead th, tfoot td):not(.is-pinned-col) {
+      position: relative;
+      z-index: 3;
+    }
+
+    /* ピン止めした列の見出し行と集計の行のセル: 左端に留めたまま、ずらしたときに前に出す */
+    .mdmark-table :is(thead th, tfoot td).is-pinned-col {
+      z-index: 4;
+    }
+
+    /* ずらす集計の行のセル: 行の間の罫線を外して面の色を隙間なくつなぎ、後ろの本文の行を透かさない（行の区切りは影の線で引く） */
+    &[data-mdmark-sticky] .mdmark-table tfoot td {
+      border-block-width: 0;
+    }
+
+    /* animation-timeline は animation-timeline と範囲の指定を持つブラウザだけに当てる（持たないブラウザで時間のアニメーションとして走らせない） */
+    @supports (animation-timeline: view()) and (animation-range: 0% 100%) {
+      /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る） */
+      &[data-mdmark-sticky="timeline"] .mdmark-table table {
+        view-timeline: --mdmark-table block;
+        view-timeline-inset: var(--mdmark-sticky-top, 0px) 0px;
+      }
+
+      /* animation-timeline の見出し行: 表の上端が留める位置を過ぎた量だけ下げ、本文の最後の行で止める */
+      &[data-mdmark-sticky="timeline"] .mdmark-table thead th {
+        animation: mdmark-table-head linear both;
+        animation-timeline: --mdmark-table;
+        animation-range: exit-crossing var(--mdmark-sticky-head-start)
+          exit-crossing
+          calc(var(--mdmark-sticky-head-start) + var(--mdmark-sticky-head-max));
+      }
+
+      /* animation-timeline の集計の行: 表の下端が画面の下端より下にある間は上げ、本文の最初の行で止める */
+      &[data-mdmark-sticky="timeline"] .mdmark-table tfoot td {
+        animation: mdmark-table-foot linear both;
+        animation-timeline: --mdmark-table;
+        animation-range: entry-crossing
+          calc(
+            100% -
+            var(--mdmark-sticky-foot-end) -
+            var(--mdmark-sticky-foot-max)
+          )
+          entry-crossing calc(100% - var(--mdmark-sticky-foot-end));
+      }
+    }
+
+    /* スクリプト の見出し行: スクロールに合わせて処理が求めたずれだけ下げる */
+    &[data-mdmark-sticky="script"] .mdmark-table thead th {
+      transform: translateY(var(--mdmark-sticky-head-shift, 0px));
+    }
+
+    /* スクリプト の集計の行: スクロールに合わせて処理が求めたずれだけ上げる */
+    &[data-mdmark-sticky="script"] .mdmark-table tfoot td {
+      transform: translateY(var(--mdmark-sticky-foot-shift, 0px));
+    }
+
+    /* ---------- 集計の行 ---------- */
+
+    /* 集計の行: 1 行目の上にだけ 2px の線を引いて本文の行と分け、2 行目からは 1px の線で区切る */
+    .mdmark-table tfoot tr + tr td {
+      box-shadow: inset 0 -1px var(--mdmark-color-border);
+    }
+
+    /* 2 行目からと最後の集計の行の面: セルの面の上・文字の後ろに 1 枚の面を敷く（上下の線の幅は空ける） */
+    .mdmark-table tfoot :where(tr + tr, tr:last-child) td::after {
+      position: absolute;
+      inset: 2px 0 1px;
+      z-index: -1;
+      background: var(--mdmark-color-table-head);
+      content: "";
+    }
+
+    /* 2 行目からの集計の行の面: 1 つ上の行へ 2px 重ね、上の行の下端の線を引き直す。
+       行の境目が画素の途中に来ても、2 つの行の面の継ぎ目から後ろの本文の行を透かさない */
+    .mdmark-table tfoot tr + tr td::after {
+      inset-block-start: -2px;
+      background: linear-gradient(
+        var(--mdmark-color-table-head) 1px,
+        var(--mdmark-color-border) 1px 2px,
+        var(--mdmark-color-table-head) 2px
+      );
+    }
+
+    /* 最後の集計の行の面: 下端に留めている間だけ下へ 2px はみ出させ、画面の最下端の画素まで塗る（留めていないときは表の外へ出さない） */
+    .mdmark-table tfoot tr:last-child td::after {
+      inset-block-end: calc(1px - var(--mdmark-sticky-foot-reach, 0px));
+    }
+
+    /* 狭い画面の集計の行のセル: 下端に留めた行が本文の行を覆う高さを減らすため、上下の余白を詰める */
+    @media (max-width: 768px) {
+      .mdmark-table tfoot td {
+        padding-block: 0.2em;
+      }
+    }
+
+    /* 集計の行の先頭のセルの計算の名前（合計・平均・件数）: 行の見出しとして太字にする */
+    .mdmark-total-name {
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* 先頭の列も集計するときの値: 計算の名前と分けてセルの末尾に寄せ、細い縦線で名前と区切る */
+    .mdmark-total-name + .mdmark-total-value {
+      float: inline-end;
+      margin-inline-start: 1.5em;
+      padding-inline-start: 0.75em;
+      box-shadow: inset 1px 0 var(--mdmark-color-border);
+    }
+
+    /* ---------- 道具の帯のメニュー（集計・コピーの形式） ---------- */
+
+    /* 集計のボタン: 計算を隠している間は、列の表示のボタンと同じく本文の地と塗ったアイコンで示す */
+    .mdmark-totals-toggle.is-active .mdmark-diagram-icon {
+      fill: none;
+      stroke-width: 3;
+    }
+
+    /* 集計・コピーの形式のメニュー: 列の表示のメニューと同じ見た目で、押したボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
+    .mdmark-table-menu {
+      position: fixed;
+      z-index: 10;
+      box-sizing: border-box;
+      width: min(16rem, calc(100vw - 32px));
+      max-height: min(24rem, calc(100vh - 32px));
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.75);
+      overflow: auto;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.875rem;
+      line-height: 1.5;
+
+      /* メニューの中のまとまり同士の間隔 */
+      > * + * {
+        margin-block-start: 0.6em;
+      }
+    }
+
+    /* コピーのボタン: 形式のメニューを開くことを後ろの下向きの印で示す */
+    .mdmark-copy .mdmark-copy-caret .mdmark-diagram-icon {
+      margin-inline-start: 0.1em;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* コピーの形式のボタン: 形式の名前と、貼った先でどうなるかの説明を縦に並べ、行全体を押せるようにする */
+    .mdmark-copy-format {
+      display: grid;
+      gap: 0.1em;
+      width: 100%;
+      min-height: 2.75rem;
+      padding: 0.4em 0.6em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-text);
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* 形式の名前 */
+    .mdmark-copy-format-name {
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* 形式の説明: 控えめな文字 */
+    .mdmark-copy-format-note {
+      color: var(--mdmark-color-muted);
+      font-size: 0.9em;
+    }
+
+    /* ---------- コピーできないときのパネル ---------- */
+
+    /* パネル: 道具の帯の下に、注意の色の線で囲んで出す（自動で閉じない） */
+    .mdmark-copy-panel {
+      display: grid;
+      gap: 0.5em;
+      box-sizing: border-box;
+      width: 100%;
+      padding: calc(var(--mdmark-space) * 0.75);
+      border: 1px solid var(--mdmark-color-callout-caution);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      font-size: 0.875rem;
+    }
+
+    /* パネルの題の行: 題と閉じるボタンを横に並べる */
+    .mdmark-copy-panel-head {
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* パネルの題: 注意の色のアイコンと、コピーできなかったこと */
+    .mdmark-copy-panel-title {
+      display: flex;
+      gap: 0.4em;
+      align-items: center;
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+
+      .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* パネルの説明: 手でコピーする方法 */
+    .mdmark-copy-panel-note {
+      margin: 0;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* コピーする中身: 選択した状態で出す。等幅で、パネルの幅いっぱいに広げる */
+    .mdmark-copy-panel-text {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 7.5rem;
+      padding: 0.5em 0.65em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-mono);
+      font-size: max(0.8125rem, 16px);
+      line-height: 1.5;
+      resize: vertical;
+      white-space: pre;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* パネルの閉じるボタン: アイコンだけの四角のボタン */
+    .mdmark-copy-panel-close {
+      display: inline-grid;
+      flex: none;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font: inherit;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* ---------- 行の URL の知らせ ---------- */
+
+    /* 知らせを置く基準: 先頭のセルの中身 */
+    .mdmark-row-link-cell {
+      position: relative;
+    }
+
+    /* 行のリンクの印の横の知らせ: 押した印のすぐ右に小さな札で重ね（列の幅を変えない）、2 秒で消す（読み上げにも知らせる） */
+    .mdmark-row-link-notice {
+      position: absolute;
+      inset-inline-start: calc(100% + 0.25em);
+      z-index: 2;
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      font-size: 0.8em;
+      font-weight: 400;
+      white-space: nowrap;
+
+      /* コピーした: 成功の色のアイコン */
+      &[data-state="copied"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-tip);
+      }
+
+      /* コピーできなかった: 注意の色のアイコン */
+      &[data-state="failed"] .mdmark-diagram-icon {
+        color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* 知らせを出している行: リンクの印を出したままにする */
+    .mdmark-row-link-cell:has(.mdmark-row-link-notice) .mdmark-row-anchor {
+      opacity: 1;
+    }
+
+    /* ---------- 狭い幅で畳む最終列 ---------- */
+
+    /* 畳んでいない間: 最終列を開くボタンと、開いたときの中身を出さない */
+    .mdmark-table:not(.is-folded)
+      :is(.mdmark-fold-toggle, .mdmark-fold-detail, .mdmark-fold-part) {
+      display: none;
+    }
+
+    /* 畳んだ表: 最終列の見出しとセルを出さない */
+    .mdmark-table.is-folded .mdmark-fold-col {
+      display: none;
+    }
+
+    /* 畳んだ最終列の中身: 列名を小さな見出しにし、その下に中身を出す */
+    .mdmark-fold-part {
+      display: grid;
+      gap: 0.15em;
+    }
+
+    /* 畳んだ最終列の中身の後に行の詳細が続くとき: 間を空けて線で分ける */
+    .mdmark-fold-part + * {
+      padding-block-start: calc(var(--mdmark-space) / 2);
+      border-block-start: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 畳んだ最終列の名前 */
+    .mdmark-fold-name {
+      margin: 0;
+      color: var(--mdmark-color-muted);
+      font-size: 0.85em;
+      font-weight: 600;
+    }
+
+    /* 畳んだ最終列の中身の段落 */
+    .mdmark-fold-value > * {
+      margin: 0;
     }
 
     /* 絞り込みのドロワー: 押した見出しのボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
@@ -1183,6 +2435,23 @@
 
     /* 開いた閉じた表の見出し: 中の表との間を空ける */
     .mdmark-table-details[open] > summary {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+
+    /* 閉じた表の中の帯: 表との間を本文と同じに空ける */
+    .mdmark-table-details > .mdmark-table-bar {
+      margin-block-end: calc(var(--mdmark-space) / 2);
+    }
+
+    /* タブ・ステップの折り畳み: 閉じた表と同じく、中身の最小の幅で広がらず描く先の幅に収める */
+    .mdmark-collapsible {
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    /* 開いた折り畳みの見出し: 中身との間を空ける */
+    .mdmark-collapsible[open] > summary {
       margin-block-end: calc(var(--mdmark-space) / 2);
     }
 
@@ -1449,21 +2718,118 @@
 
     /* ---------- ファイルツリー ---------- */
 
-    /* ファイルツリー: コードブロックと同じ面と線の中に、入れ子のリストで並べる */
+    /* ファイルツリー: コードブロックと同じ面と線の中に、帯と入れ子のリストを並べる */
     .mdmark-tree {
+      /* 山形・アイコン・名前の間の空きと、開閉の山形が取る幅（開閉のボタンが無いツリーは空けない） */
+      --mdmark-tree-gap: 0.4em;
+      --mdmark-tree-lead: calc(1em + var(--mdmark-tree-gap));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
       margin: 0;
-      padding: calc(var(--mdmark-space) * 0.75) var(--mdmark-space);
+      padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
       background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-body);
+      font-size: 1em;
+      line-height: var(--mdmark-line-height);
+
+      &:not(:has(.mdmark-tree-toggle)) {
+        --mdmark-tree-lead: 0px;
+      }
+
+      /* コピーできないときのパネル: ツリーの面の中に余白を取って置く */
+      > .mdmark-copy-panel {
+        width: auto;
+        margin: 0 var(--mdmark-space) var(--mdmark-space);
+      }
+    }
+
+    /* 帯: 左端に種類の札、右端にコピーのボタン */
+    .mdmark-tree-bar {
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 2rem;
+      padding-block: 0.15em;
+      padding-inline: 0.5em 0.35em;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 種類の札: コードブロックの言語のラベルと同じ小さな札 */
+    .mdmark-tree-kind {
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* 帯の右の塊（コピーのボタンと読み上げの知らせ） */
+    .mdmark-tree-meta {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+    }
+
+    /* コピーのボタン: 枠を持たない小さなボタン */
+    .mdmark-tree-copy {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-diagram-icon {
+        width: 1.1em;
+        height: 1.1em;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: 足した行と同じ緑で知らせる */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+    }
+
+    /* 入れ子のリスト: 等幅の文字で並べ、長い名前と注釈は折り返さずに横へスクロールする */
+    .mdmark-tree-list {
+      margin: 0;
+      padding: calc(var(--mdmark-space) * 0.5) var(--mdmark-space)
+        calc(var(--mdmark-space) * 0.75);
+      overflow-x: auto;
       font-family: var(--mdmark-font-mono);
       font-size: 0.875em;
       line-height: 1.6;
       list-style: none;
+      white-space: nowrap;
 
-      /* 入れ子の段: 字下げし、段の線で親とつなぐ */
+      /* 入れ子の段: 親のフォルダのアイコンの下から段の線を引いて字下げする */
       ul {
-        margin: 0 0 0 0.5em;
+        margin: 0 0 0 calc(var(--mdmark-tree-lead) + 0.5em);
         padding-inline-start: 1em;
         border-inline-start: 1px solid var(--mdmark-color-border);
         list-style: none;
@@ -1475,21 +2841,175 @@
       }
     }
 
-    /* ファイルツリーの項目名: アイコンと名前を横に並べる */
-    .mdmark-tree-name {
+    /* 項目の行: 名前の塊と注釈を横に並べる */
+    .mdmark-tree-row {
+      display: flex;
+      align-items: center;
+      min-height: 1.5rem;
+    }
+
+    /* 名前の塊（開閉の山形・アイコン・名前）。フォルダはこの塊が開閉のボタン。注釈を持つ行は、注釈の左端が段によらず揃う幅を取る */
+    .mdmark-tree-row > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
       display: inline-flex;
-      gap: 0.45em;
+      flex: none;
+      gap: var(--mdmark-tree-gap);
       align-items: center;
     }
 
-    /* フォルダのアイコン: 本文の色で出す */
-    .mdmark-tree-folder > .mdmark-tree-name::before {
+    .mdmark-tree-row:has(.mdmark-tree-note)
+      > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
+      box-sizing: border-box;
+      min-width: calc(
+        var(--mdmark-tree-note-start, 0px) -
+        var(--mdmark-tree-depth, 0) *
+        var(--mdmark-tree-indent, 0px)
+      );
+    }
+
+    /* 開閉の山形を持たない項目（ファイル・子の無いフォルダ・ほかにもある）: 山形の分を空けて名前の左端を揃える */
+    .mdmark-tree-row > .mdmark-tree-name {
+      padding-inline-start: var(--mdmark-tree-lead);
+    }
+
+    /* 項目の名前: アイコンと名前を横に並べる */
+    .mdmark-tree-name {
+      display: inline-flex;
+      gap: var(--mdmark-tree-gap);
+      align-items: center;
+    }
+
+    .mdmark-tree-toggle > .mdmark-tree-name {
+      padding-inline-start: 0;
+    }
+
+    /* フォルダの開閉のボタン: 名前とアイコンを押せるようにし、見た目は文字のまま */
+    .mdmark-tree-toggle {
+      min-height: 1.5rem;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover .mdmark-tree-name {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* 開閉の山形: 閉じているときは右向き、開いているときは下向き */
+      &::before {
+        display: inline-block;
+        flex: none;
+        width: 1em;
+        height: 1em;
+        background: var(--mdmark-color-muted);
+        content: "";
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        transition: transform 0.15s;
+      }
+
+      &[aria-expanded="true"]::before {
+        transform: rotate(90deg);
+      }
+    }
+
+    /* 注釈: 名前から点線でつなぎ、本文の書体と控えめな色で、行内のコード・太字・リンク・バッジを描く */
+    .mdmark-tree-row:has(.mdmark-tree-note)
+      > :is(.mdmark-tree-toggle, .mdmark-tree-name)::after {
+      flex: 1;
+      min-width: 1em;
+      margin-inline: 0.4em 0.6em;
+      border-block-end: 1px dotted var(--mdmark-color-muted);
+      content: "";
+      opacity: 0.6;
+    }
+
+    .mdmark-tree-note {
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+
+      code {
+        padding: 0.05em 0.35em;
+        font-size: 0.9375em;
+      }
+
+      .mdmark-badge {
+        font-size: 0.6875rem;
+        line-height: 1.4;
+      }
+    }
+
+    /* フォルダのアイコン: 本文の色で出す。開いているとき（開閉のボタンが無いツリーは常に）は開いた形 */
+    .mdmark-tree-folder > .mdmark-tree-row .mdmark-tree-name::before {
       color: var(--mdmark-color-text);
     }
 
-    /* ファイルのアイコン: 控えめな色で出す */
-    .mdmark-tree-file > .mdmark-tree-name::before {
+    /* ファイルとほかにもあるのアイコン: 控えめな色で出す。種類のあるファイルは種類ごとの色で出す */
+    :is(.mdmark-tree-file, .mdmark-tree-more)
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
       color: var(--mdmark-color-muted);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-text"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-text);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-code"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-code);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-json"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-config);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-image"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-image);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-spreadsheet"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-sheet);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-archive"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-archive);
+    }
+
+    .mdmark-tree-file[data-file-icon="file-terminal"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      color: var(--mdmark-color-file-script);
+    }
+
+    /* 動きを減らす設定: 開閉の山形を回すアニメーションを止める */
+    @media (prefers-reduced-motion: reduce) {
+      .mdmark-tree-toggle::before {
+        transition: none;
+      }
     }
 
     /* ---------- バッジ ---------- */
@@ -1763,13 +3283,73 @@
       height: 1.1em;
     }
 
-    /* ファイルツリーのフォルダとファイル */
-    .mdmark-tree-folder > .mdmark-tree-name::before {
+    /* ファイルツリーのフォルダ・ファイル・ほかにもある */
+    .mdmark-tree-folder > .mdmark-tree-row .mdmark-tree-name::before {
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/svg%3E");
+      width: 1.1em;
+      height: 1.1em;
     }
 
-    .mdmark-tree-file > .mdmark-tree-name::before {
+    .mdmark-tree:not(:has(.mdmark-tree-toggle))
+      .mdmark-tree-folder
+      > .mdmark-tree-row
+      .mdmark-tree-name::before,
+    .mdmark-tree-toggle[aria-expanded="true"] > .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file > .mdmark-tree-row .mdmark-tree-name::before {
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3C/svg%3E");
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    .mdmark-tree-more > .mdmark-tree-row .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3Ccircle cx='19' cy='12' r='1'/%3E%3Ccircle cx='5' cy='12' r='1'/%3E%3C/svg%3E");
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    .mdmark-tree-file[data-file-icon="file-text"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M10 9H8'/%3E%3Cpath d='M16 13H8'/%3E%3Cpath d='M16 17H8'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-code"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M10 12.5 8 15l2 2.5'/%3E%3Cpath d='m14 12.5 2 2.5-2 2.5'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-json"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1'/%3E%3Cpath d='M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-image"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Ccircle cx='10' cy='12' r='2'/%3E%3Cpath d='m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-spreadsheet"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M8 13h2'/%3E%3Cpath d='M14 13h2'/%3E%3Cpath d='M8 17h2'/%3E%3Cpath d='M14 17h2'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-archive"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='M8 12v-1'/%3E%3Cpath d='M8 18v-2'/%3E%3Cpath d='M8 7V6'/%3E%3Ccircle cx='8' cy='20' r='2'/%3E%3C/svg%3E");
+    }
+
+    .mdmark-tree-file[data-file-icon="file-terminal"]
+      > .mdmark-tree-row
+      .mdmark-tree-name::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z'/%3E%3Cpath d='M14 2v5a1 1 0 0 0 1 1h5'/%3E%3Cpath d='m8 16 2-2-2-2'/%3E%3Cpath d='M12 18h4'/%3E%3C/svg%3E");
     }
 
     /* コードブロックの題のアイコン: ファイル */
@@ -1861,6 +3441,34 @@
     }
   }
 
+  /* 見出し行を下げるアニメーション（animation-timeline） */
+  @keyframes mdmark-table-head {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(var(--mdmark-sticky-head-max));
+    }
+  }
+
+  /* 集計の行を上げるアニメーション（animation-timeline）。元の位置に戻りきるまでは、最後の行の面を下へはみ出させる */
+  @keyframes mdmark-table-foot {
+    from {
+      --mdmark-sticky-foot-reach: 2px;
+      transform: translateY(calc(-1 * var(--mdmark-sticky-foot-max)));
+    }
+
+    99.9% {
+      --mdmark-sticky-foot-reach: 2px;
+    }
+
+    to {
+      --mdmark-sticky-foot-reach: 0px;
+      transform: translateY(0);
+    }
+  }
+
   /* 印刷のとき（記法）: 押せない操作を出さず、折り畳み・タブ・表の留めを紙向きにする */
   @media print {
     .mdmark {
@@ -1876,6 +3484,30 @@
           .mdmark-row-anchor
         ) {
         display: none;
+      }
+
+      /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（`animation-timeline` のアニメーションとスクリプトのずれを外す）。`dev/mock/refs/151/assets/table-print.css` から取る */
+      &[data-mdmark-sticky] .mdmark-table :is(thead th, tfoot td) {
+        --mdmark-sticky-foot-reach: 0px;
+        animation: none;
+        transform: none;
+      }
+
+      /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の知らせ、最終列の開閉）: 出さない */
+      :is(
+          .mdmark-table-menu,
+          .mdmark-copy-panel,
+          .mdmark-row-link-notice,
+          .mdmark-fold-toggle,
+          .mdmark-fold-detail,
+          .mdmark-fold-part
+        ) {
+        display: none;
+      }
+
+      /* 畳んだ最終列: 紙では畳まずに列として出す */
+      .mdmark-table.is-folded .mdmark-fold-col {
+        display: table-cell;
       }
 
       /* 集計の行: 紙では縦にスクロールしないので下端に留めない */
@@ -1895,10 +3527,8 @@
         display: none;
       }
 
-      /* 表: 高さの上限と、見出し行・ピン止めした列を留める指定を外し、全ての行を紙に出す */
+      /* 表: 見出し行・ピン止めした列を留める指定を外し、全ての行を紙に出す */
       .mdmark-table table {
-        max-height: none;
-
         /* セル: 留める指定と、描く処理が付けた列の最小の幅（style 属性）を外し、余白を詰めて列の多い表も紙の幅に収める */
         :is(th, td) {
           position: static;
@@ -1928,9 +3558,32 @@
         max-width: none;
       }
 
-      /* 閉じた表・閉じた注意書きの見出し: 開閉の印を外す */
-      :is(.mdmark-table-details, details.markdown-alert) > summary {
+      /* 閉じた表・閉じた注意書き・タブとステップの折り畳みの見出し: 開閉の印を外す */
+      :is(.mdmark-table-details, .mdmark-collapsible, details.markdown-alert)
+        > summary {
         list-style: none;
+      }
+
+      /* ファイルツリー: 紙では押せない帯・コピーのパネル・開閉の山形を出さず、長い名前と注釈を折り返す */
+      :is(.mdmark-tree-bar, .mdmark-tree > .mdmark-copy-panel) {
+        display: none;
+      }
+
+      .mdmark-tree-toggle::before {
+        display: none;
+      }
+
+      .mdmark-tree-row > .mdmark-tree-name {
+        padding-inline-start: 0;
+      }
+
+      .mdmark-tree-list {
+        overflow: visible;
+        white-space: normal;
+
+        ul {
+          margin-inline-start: 0.5em;
+        }
       }
 
       /* 印刷の前にタブの全ての中身を出したとき: タブの並びを隠し、タブ名を題にして縦に並べる */
@@ -2001,6 +3654,66 @@
         content: attr(data-label);
         font-size: 0.85em;
         font-weight: 600;
+      }
+    }
+  }
+
+  /* 紙の幅が 40rem 以下のとき（表の追加分）: 集計の行を計算の名前と値の並びにする。`dev/mock/refs/151/assets/table-print.css` から取る */
+  /* 紙の幅が狭く、表を行ごとの「見出し: 値」の並びに積むとき */
+  @media print and (max-width: 40rem) {
+    .mdmark {
+      /* 画面で隠している行（一致する行が無いときの知らせなど）: 積んだときも出さない */
+      .mdmark-table tr[hidden] {
+        display: none;
+      }
+
+      /* 集計の行: 計算の名前と、値のある列だけを 1 行に並べる */
+      .mdmark-table tfoot {
+        display: block;
+      }
+
+      /* 集計の行の 1 行: 名前と値を横に並べ、入りきらなければ折り返す */
+      .mdmark-table tfoot tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 1.5em;
+      }
+
+      /* 集計の行のセル（ピン止めした列を含む）: 面の色と線を外す */
+      .mdmark-table tfoot td:is(*, .is-pinned-col) {
+        display: block;
+        border: 0;
+        background: none;
+        box-shadow: none;
+      }
+
+      /* 集計の行の値の無いセル（畳んだ最終列を含む）: 出さない */
+      .mdmark-table
+        tfoot
+        td:not(
+          :has(
+            .mdmark-total-name,
+            .mdmark-total-value,
+            .mdmark-total-unreadable
+          )
+        ),
+      .mdmark-table.is-folded
+        tfoot
+        td.mdmark-fold-col:not(
+          :has(.mdmark-total-value, .mdmark-total-unreadable)
+        ) {
+        display: none;
+      }
+
+      /* 2 行目からと最後の集計の行の面と線: 積んだ並びでは面を敷かないので出さない */
+      .mdmark-table tfoot td::after {
+        content: none;
+      }
+
+      /* 集計の行の先頭のセル: 計算の名前が見出しになるので、列名を出さない */
+      .mdmark-table tfoot td:first-child::before {
+        content: none;
       }
     }
   }
@@ -2141,6 +3854,133 @@
     .mdmark-term-tip-doc-desc {
       display: block;
       color: var(--mdmark-color-muted);
+    }
+
+    /* エイリアスの名前: 区分の見出しの下に本文の太字で出す（やめた言い方の代わりの用語と同じ見た目） */
+    .mdmark-term-tip-name {
+      display: block;
+      font-weight: 600;
+    }
+
+    /* 種類ごとの項目（実行場所・スキル名・URL・ポートなど）: 名前と説明の下に、項目名と値を 2 列に並べる */
+    .mdmark-term-tip-fields {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 0.15em 0.75em;
+      margin-block-start: 0.4em;
+    }
+
+    /* 項目名: 控えめな文字で出す */
+    .mdmark-term-tip-label {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 項目の値: 長い値は列の幅で折り返す */
+    .mdmark-term-tip-value {
+      min-width: 0;
+      overflow-wrap: anywhere;
+
+      code {
+        font-family: var(--mdmark-font-mono);
+        font-size: 0.8125rem;
+      }
+
+      /* URL のリンク: URL の種類のリンクと同じく 1 行に収め、末尾を「...」で省略する */
+      a {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
+    /* 値を 1 つだけ持つ種類（スキル名・ツール名・パス）: 区分の見出しと同じ語の項目名を付けず、説明の下に等幅で出す。長い値は折り返す */
+    .mdmark-term-tip-code {
+      display: block;
+      margin-block-start: 0.4em;
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.8125rem;
+      overflow-wrap: anywhere;
+    }
+
+    /* URL の種類のリンク: 説明の下に置き、長い URL は 1 行に収めて末尾を「...」で省略する（押すと全体の URL を開く） */
+    .mdmark-term-tip-link {
+      display: block;
+      margin-block-start: 0.4em;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    /* コマンドの面: ツールチップの枠の中に枠を重ねず、コードと同じ面の色だけで区切る。等幅でコマンドを出し、右上にコピーのボタンを置く */
+    .mdmark-term-tip-command {
+      display: flex;
+      gap: 0.5em;
+      align-items: flex-start;
+      margin-block-start: 0.4em;
+      padding: 0.25em 0.25em 0.25em 0.6em;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+
+      /* コマンドの文字: 改行と空白を書いたまま出し、長いコマンドは枠の幅で折り返す */
+      code {
+        flex: 1;
+        min-width: 0;
+        padding-block: 0.2em;
+        font-family: var(--mdmark-font-mono);
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    /* コマンドのコピーのボタン: コードブロックのコピーのボタンと同じ見た目。押せる大きさは 24px 以上を取る */
+    .mdmark-term-tip-copy {
+      display: inline-flex;
+      flex: none;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-diagram-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-bg);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: コードブロックのコピーのボタンと同じ緑で、文言とアイコンでも示す */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      /* コピーできなかった: エラーの色で、文言とアイコンでも示す */
+      &[data-state="failed"] {
+        color: var(--mdmark-color-error);
+      }
     }
 
     /* 被参照の一覧（文書の末尾）: 本文と線で区切り、上の余白を節と同じに取る */
@@ -3351,6 +5191,106 @@
     font-weight: 600;
   }
 
+  /* 差分のブロック（`diffMode: "blocks"`）: 描いた文書のブロックを、追加・変更は追加の色、削除は削除の色の面で囲み、左の余白に + と − を置く。色は `--mdmark-color-diff-*` の変数で決まる */
+  .mdmark {
+    /* 色を当てたブロックの内側の余白と、記号を置く列の幅 */
+    --mdmark-diff-block-pad-block: 0.375rem;
+    --mdmark-diff-block-pad-inline: 0.75rem;
+    --mdmark-diff-block-gutter: 1.75rem;
+
+    /* 色を当てたブロック: 面の色で囲み、中のブロックの文字の位置は前後の変えていないブロックと揃える。記号の列の分だけ囲みを左へ広げる */
+    .mdmark-diff-block {
+      position: relative;
+      margin-inline: calc(-1 * var(--mdmark-diff-block-pad-inline));
+      margin-inline-start: calc(-1 * var(--mdmark-diff-block-gutter));
+      padding: var(--mdmark-diff-block-pad-block)
+        var(--mdmark-diff-block-pad-inline);
+      padding-inline-start: var(--mdmark-diff-block-gutter);
+      border-radius: var(--mdmark-radius);
+
+      /* 中のブロック: 外側の余白は囲みが持つ */
+      > :not(.mdmark-visually-hidden, .mdmark-diff-block-sign) {
+        margin-block: 0;
+      }
+
+      /* 注意書き: 自分の色のタイトルを読めるよう、面の色の上に本文の背景を敷く */
+      > .markdown-alert {
+        background: var(--mdmark-color-bg);
+      }
+
+      /* 追加・変更したブロック */
+      &[data-kind="add"] {
+        background: var(--mdmark-color-diff-add-bg);
+      }
+
+      /* 削除したブロック（前のリビジョンでの位置に差し込む） */
+      &[data-kind="del"] {
+        background: var(--mdmark-color-diff-del-bg);
+      }
+    }
+
+    /* 見出しを囲んだブロック: 見出しの上の広い余白を囲みの外に出す */
+    .mdmark-diff-block:has(> h2) {
+      margin-block-start: calc(var(--mdmark-space) * 2.25);
+    }
+
+    /* 記号: 等幅の太字で、囲みの 1 行目の高さに置く */
+    .mdmark-diff-block-sign {
+      position: absolute;
+      inset-block-start: var(--mdmark-diff-block-pad-block);
+      inset-inline-start: 0;
+      width: var(--mdmark-diff-block-gutter);
+      font-family: var(--mdmark-font-mono);
+      font-weight: 700;
+      line-height: var(--mdmark-line-height);
+      text-align: center;
+      user-select: none;
+
+      [data-kind="add"] > & {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      [data-kind="del"] > & {
+        color: var(--mdmark-color-diff-del-sign);
+      }
+    }
+
+    /* リストの項目と表の行: 項目・行の単位で色を当てる（リストや表を囲みで包まない） */
+    :is(li, tr).mdmark-diff-block {
+      margin-inline: 0;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    /* リストの項目の記号: 番号・点の左の余白に置く */
+    li.mdmark-diff-block > .mdmark-diff-block-sign {
+      inset-block-start: 0;
+      inset-inline-start: calc(-1 * (1.6em + var(--mdmark-diff-block-gutter)));
+    }
+
+    /* 番号付きリストの削除の項目: 番号を付けず、後ろの項目は変更後の文書の番号のまま出す */
+    ol > li.mdmark-diff-block[data-kind="del"] {
+      list-style-type: none;
+      counter-increment: list-item 0;
+    }
+
+    /* 表の行の記号: 行の 1 つ目のセルの左の余白に置く */
+    tr.mdmark-diff-block > td:first-child {
+      position: relative;
+    }
+
+    tr.mdmark-diff-block .mdmark-diff-block-sign {
+      inset-block-start: 0.45em;
+      inset-inline-start: 0;
+      width: 0.9em;
+    }
+
+    /* 長い URL など: 囲みの中で折り返し、横スクロールを出さない */
+    .mdmark-diff-block {
+      overflow-wrap: anywhere;
+    }
+  }
+
   /* 差分の表示: 文書の題の後ろの「変更を見る」・前と後のリビジョンの選択・差分の行・埋め込んだ HTML の切り替え。色は `--mdmark-color-diff-*` の変数で決まる */
   .mdmark {
     /* 「変更を見る」の帯: 文書の右上に置く */
@@ -4229,16 +6169,16 @@
 
     /* 飾ったコードブロックの入れ物: 題と pre を 1 つの枠にまとめる */
     .mdmark-code {
-      /* 題の下に続く pre: 題と枠をつなげ、上の角を丸めない */
-      .mdmark-code-title + pre {
+      /* 帯の下に続く pre: 帯と枠をつなげ、上の角を丸めない */
+      :is(.mdmark-code-title, .mdmark-code-bar) + pre {
         margin: 0;
         border-start-start-radius: 0;
         border-start-end-radius: 0;
       }
     }
 
-    /* コードブロックの題: ファイルのアイコンと題。長い題は折り返す */
-    .mdmark-code-title {
+    /* コードブロックの帯（題を持つコードブロックは題の行）: 長い題は折り返す */
+    :is(.mdmark-code-title, .mdmark-code-bar) {
       display: flex;
       gap: 0.4em;
       align-items: center;
@@ -4255,9 +6195,118 @@
       overflow-wrap: anywhere;
 
       /* 題の前のファイルのアイコン */
-      &::before {
+      &.mdmark-code-title::before {
         color: var(--mdmark-color-muted);
       }
+    }
+
+    /* コードブロックの言語のラベルとコピーボタン、diff の色分け。`dev/mock/refs/151/assets/code-block.css` から取る */
+    /* コードブロックの帯: 左端に言語のラベル、続けて題（題の無いコードブロックは無し）、右端にコピーボタンを置く */
+    .mdmark-code-bar {
+      flex-wrap: wrap;
+      min-height: 2rem;
+      padding-block: 0.15em;
+      padding-inline: 0.5em 0.35em;
+    }
+
+    /* 帯の右の塊（コピーボタンと読み上げの知らせ）: 題が長くても右端に寄せ、折り返さない */
+    .mdmark-code-meta {
+      display: inline-flex;
+      flex: none;
+      gap: 0.5em;
+      align-items: center;
+      margin-inline-start: auto;
+    }
+
+    /* 言語のラベル: 帯の左端に置く小さな札。言語とファイル名を並べ、選んだ文字には入れない */
+    .mdmark-code-lang {
+      display: inline-flex;
+      flex: 0 1 auto;
+      align-items: center;
+      min-width: 0;
+      padding: 0.1em 0.5em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-surface);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* ラベルの言語: 控えめの色で出す */
+    .mdmark-code-lang-name {
+      flex: none;
+      color: var(--mdmark-color-muted);
+      overflow-wrap: normal;
+      white-space: nowrap;
+    }
+
+    /* ラベルのファイル名: 言語の後ろに細い縦線で区切り、本文の色で出す。長い名前は折り返す */
+    .mdmark-code-file {
+      min-width: 0;
+      margin-inline-start: 0.5em;
+      padding-inline-start: 0.5em;
+      border-inline-start: 1px solid var(--mdmark-color-border);
+      color: var(--mdmark-color-text);
+      overflow-wrap: anywhere;
+    }
+
+    /* コピーボタン: 枠を持たない小さなボタン。押せる大きさは 24px 以上を取る */
+    .mdmark-code-copy {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      .mdmark-diagram-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* コピーした: 足した行と同じ緑で知らせる */
+      &[data-state="copied"] {
+        color: var(--mdmark-color-diff-add-sign);
+      }
+
+      /* コピーできなかった: エラーの色で知らせる */
+      &[data-state="failed"] {
+        color: var(--mdmark-color-error);
+      }
+    }
+
+    /* diff の言語で色分けした行: 足した行と消した行を差分の表示と同じ色で出す */
+    pre code .hljs-addition {
+      color: var(--mdmark-color-diff-add-sign);
+    }
+
+    pre code .hljs-deletion {
+      color: var(--mdmark-color-diff-del-sign);
     }
 
     /* 行に分けたコードブロック: 行の地を枠の端まで敷くため、左右の余白を行へ移す */
@@ -4467,8 +6516,13 @@
       }
 
       /* 題・行の地と行頭の印: 背景を省くブラウザの設定でも紙に出す */
-      :is(.mdmark-code-title, .mdmark-code-line) {
+      :is(.mdmark-code-title, .mdmark-code-bar, .mdmark-code-line) {
         print-color-adjust: exact;
+      }
+
+      /* コピーボタン: 紙では押せないので出さない。言語のラベルは残す（`dev/mock/refs/151/assets/code-block-print.css`） */
+      .mdmark-code-copy {
+        display: none;
       }
 
       /* 色分けの色: 色を省くブラウザの設定でも紙に出す */
@@ -4507,6 +6561,469 @@
     /* コメントの印: 地の色は紙に出ないことがあるので、下線だけで箇所を示す */
     .mdmark-comment-mark {
       background: none;
+    }
+  }
+}
+
+/* 右側の目次とまとめて開閉するボタン: `dev/mock/refs/166/assets/side-toc.css` から取る */
+@layer mdmark {
+  /* 広い幅の見出し: 移る先を、使う側が留めた帯に隠れない位置で止める */
+  .mdmark-content [id] {
+    scroll-margin-block-start: var(--mdmark-sticky-top, 0px);
+  }
+
+  /* 右側の目次を持つ描く先の要素: 本文と右側の目次を横に並べ、右側の目次を要素の右端に寄せる。要素の幅で右側の目次の出し方を変える。行の長さの上限は本文の列が持つ */
+  .mdmark:has(> .mdmark-side-toc) {
+    container: mdmark / inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mdmark-space);
+    align-items: flex-start;
+    justify-content: space-between;
+    max-width: none;
+  }
+
+  /* 本文の列: 残りの幅を使い、行の長さの上限を持つ */
+  .mdmark-content {
+    flex: 1;
+    min-width: 0;
+    max-width: var(--mdmark-content-width);
+
+    /* ブロック同士の間隔: 描く先の要素の直下と同じ（詳細度を上げず、見出しの上の広い余白を残す） */
+    > :where(* + *) {
+      margin-block-start: var(--mdmark-space);
+    }
+  }
+
+  .mdmark {
+    /* ---------- 右側の目次 ---------- */
+
+    /* 右側の目次: 本文の右の列。文書を読み進めても、使う側が留めた帯の下で画面に留める */
+    .mdmark-side-toc {
+      position: sticky;
+      inset-block-start: calc(
+        var(--mdmark-sticky-top, 0px) +
+        var(--mdmark-space)
+      );
+      display: flex;
+      flex: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+      margin-block-start: 0;
+      font-family: var(--mdmark-font-body);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+
+      /* 見出しの無い文書: 右側の目次も目次を出すボタンも置かない */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 目次を出すボタン（三点リーダー）: fixed の出し方と、狭い幅の帯で出す */
+    .mdmark-side-toc-toggle {
+      display: none;
+      place-items: center;
+      box-sizing: border-box;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-muted);
+      font-size: 1rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 目次を出しているとき: 押した後の見た目にし、押す前と見分ける */
+      &[aria-expanded="true"] {
+        background: var(--mdmark-color-current-bg);
+        color: var(--mdmark-color-link);
+      }
+    }
+
+    /* 今いる節の見出し（狭い幅の帯だけで出す） */
+    .mdmark-side-toc-current {
+      display: none;
+    }
+
+    /* 右端の線（hover の出し方で目次を隠している間）: 見出しごとの短い線を階層の長さで並べ、ポインターを置く場所を示す */
+    .mdmark-side-toc-rail {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+      box-sizing: border-box;
+      width: 1.5rem;
+      height: calc(
+        100dvh -
+        var(--mdmark-sticky-top, 0px) -
+        var(--mdmark-space) *
+        2
+      );
+      padding-block: 0.5rem;
+      overflow: hidden;
+    }
+
+    /* 右端の線の 1 本: 見出しの階層ほど短くする */
+    .mdmark-side-toc-bar {
+      flex: none;
+      width: 1rem;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--mdmark-color-border);
+
+      &[data-level="2"] {
+        width: 0.75rem;
+      }
+
+      &[data-level="3"] {
+        width: 0.5rem;
+      }
+
+      /* 今いる節の線: 印の色にする */
+      &[data-current] {
+        background: var(--mdmark-color-link);
+      }
+    }
+
+    /* 目次の枠: 題・ボタン・項目の並びを縦に並べ、画面の高さに収まらない項目は枠の中でスクロールする */
+    .mdmark-side-toc-panel {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      width: 15rem;
+      max-height: calc(
+        100dvh -
+        var(--mdmark-sticky-top, 0px) -
+        var(--mdmark-space) *
+        2
+      );
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+    }
+
+    /* 目次の頭: 題とピン止めのボタン */
+    .mdmark-side-toc-head {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 1.75rem;
+      padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+    }
+
+    /* 目次の題 */
+    .mdmark-side-toc-title {
+      margin: 0;
+      color: var(--mdmark-color-heading);
+      font-weight: 600;
+    }
+
+    /* ピン止めのボタン（hover の出し方だけ）: 押した後は線と塗ったアイコンで、押す前と見分ける */
+    .mdmark-side-toc-pin {
+      display: inline-grid;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font-size: 0.9375rem;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      &[aria-pressed="true"] {
+        border-color: var(--mdmark-color-border);
+        color: var(--mdmark-color-link);
+
+        .mdmark-diagram-icon {
+          fill: currentColor;
+        }
+      }
+    }
+
+    /* 目次の上部のまとめて開閉するボタンの並び */
+    .mdmark-side-toc-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      padding: 0 0.75rem 0.5rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 目次の項目の並び: 見出しの階層どおりに入れ子にし、収まらない分は枠の中でスクロールする */
+    .mdmark-side-toc-list {
+      margin: 0;
+      padding: 0.375rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      list-style: none;
+
+      ul {
+        margin: 0;
+        padding-inline-start: 0.75rem;
+        list-style: none;
+      }
+
+      /* 項目同士の間隔 */
+      li + li,
+      li > ul {
+        margin-block-start: 1px;
+      }
+
+      /* 項目のリンク: 行の全体を押せるようにし、長い見出しは折り返す */
+      a {
+        display: block;
+        padding: 0.25rem 0.5rem;
+        border-radius: calc(var(--mdmark-radius) - 1px);
+        color: var(--mdmark-color-muted);
+        text-decoration: none;
+
+        &:hover {
+          background: var(--mdmark-color-surface);
+          color: var(--mdmark-color-text);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: -2px;
+        }
+
+        /* 今いる節の項目: 行の背景と印の色の文字で示す（太さは変えない） */
+        &[aria-current="location"] {
+          background: var(--mdmark-color-current-bg);
+          color: var(--mdmark-color-link);
+        }
+      }
+    }
+
+    /* ---------- まとめて開閉するボタン ---------- */
+
+    /* すべて展開・すべて折りたたむのボタン: 文字を持たないアイコンだけの正方形のボタンを線で囲む（操作は読み上げ名と title で伝える） */
+    .mdmark-fold-all {
+      display: inline-grid;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 1px);
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      font-size: 0.9375rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* ---------- 出し方ごとの見え方 ---------- */
+
+    /* hover の出し方（広い幅）: 右端の線だけを出し、目次の枠は本文の上に重ねて隠しておく（フォーカスを受けられるよう、消さずに透明にする） */
+    .mdmark-side-toc[data-mode="hover"] {
+      .mdmark-side-toc-rail {
+        display: flex;
+      }
+
+      .mdmark-side-toc-panel {
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline-end: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* 右端にポインターが入ったとき・キーボードのフォーカスが入ったとき・ピン止めしたとき: 目次の枠を出す */
+      &:is(:hover, :has(:focus-visible), [data-pinned]) .mdmark-side-toc-panel {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* ピン止めしたとき: 目次の枠を本文に重ねず、右の列の幅を取って出し続ける */
+      &[data-pinned] {
+        .mdmark-side-toc-rail {
+          display: none;
+        }
+
+        .mdmark-side-toc-panel {
+          position: static;
+        }
+      }
+
+      /* ポインターを置けない端末（タッチ）: 右端の線の代わりに目次を出すボタンを置き、押すと目次の枠を本文に重ねて出す */
+      @media (hover: none) {
+        .mdmark-side-toc-toggle {
+          display: inline-grid;
+        }
+
+        .mdmark-side-toc-rail {
+          display: none;
+        }
+
+        &:is(:hover, :has(:focus-visible)) .mdmark-side-toc-panel {
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        /* 目次の枠: ボタンの下に重ねる */
+        &[data-open] .mdmark-side-toc-panel {
+          inset-block-start: calc(2.25rem + 0.5rem);
+          opacity: 1;
+          pointer-events: auto;
+        }
+      }
+    }
+
+    /* fixed の出し方: 目次を出すボタンを出し、押すと目次の枠をサイドバーとして右の列に出し続ける */
+    .mdmark-side-toc[data-mode="fixed"] {
+      .mdmark-side-toc-toggle {
+        display: inline-grid;
+      }
+
+      .mdmark-side-toc-pin {
+        display: none;
+      }
+
+      .mdmark-side-toc-panel {
+        display: none;
+      }
+
+      &[data-open] .mdmark-side-toc-panel {
+        display: flex;
+      }
+    }
+
+    /* 狭い幅（描く先の要素が 48rem 未満）: どちらの出し方も、文書の上端に留めた帯に今いる節の見出しと目次を出すボタンを置き、押すと帯の下に本文へ重ねて開く */
+    @container mdmark (width < 48rem) {
+      /* 帯: 本文の列の上の 1 行を幅いっぱいに取り、文書を読み進めても使う側が留めた帯の下に留める */
+      .mdmark-side-toc[data-mode] {
+        order: -1;
+        z-index: 1;
+        flex-basis: 100%;
+        min-width: 0;
+        inset-block-start: var(--mdmark-sticky-top, 0px);
+        padding-block: 0.25rem;
+        background: var(--mdmark-color-bg);
+
+        /* 目次を出すボタン: 帯の幅いっぱいに広げ、今いる節の見出しを左、三点リーダーを右に置く */
+        .mdmark-side-toc-toggle {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          height: 2.75rem;
+          padding: 0 0.75rem;
+        }
+
+        /* 今いる節の見出し: 1 行に収め、収まらない分は省く（押すと開く目次で全文を読める） */
+        .mdmark-side-toc-current {
+          display: block;
+          min-width: 0;
+          overflow: hidden;
+          color: var(--mdmark-color-text);
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .mdmark-side-toc-rail,
+        .mdmark-side-toc-pin {
+          display: none;
+        }
+
+        /* 目次の枠: 帯の下に、帯と同じ幅で重ねる */
+        .mdmark-side-toc-panel {
+          position: absolute;
+          inset-block-start: calc(100% - 0.25rem);
+          inset-inline: 0;
+          display: none;
+          width: auto;
+          max-height: calc(100dvh - var(--mdmark-sticky-top, 0px) - 4rem);
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        /* 開いたとき: ポインターを置けない端末の hover の出し方でも帯の下に重ねる */
+        &[data-open] .mdmark-side-toc-panel {
+          inset-block-start: calc(100% - 0.25rem);
+          display: flex;
+        }
+
+        /* 広い幅でピン止めしたまま狭くなったとき: ピン止めを効かせず、帯の下に重ねる */
+        &[data-pinned] .mdmark-side-toc-panel {
+          position: absolute;
+        }
+      }
+
+      /* 移る先の見出し: 上端に留めた帯に隠れない位置で止める */
+      .mdmark-content [id] {
+        scroll-margin-block-start: calc(var(--mdmark-sticky-top, 0px) + 3.5rem);
+      }
+    }
+  }
+
+  /* 右側の目次・まとめて開閉するボタンのアイコン: 文字の大きさに揃える */
+  .mdmark-diagram-icon:where(.mdmark-side-toc *) {
+    flex: none;
+    width: 1em;
+    height: 1em;
+  }
+
+  /* 差分を開いている間に隠す本文の要素と右側の目次 */
+  .mdmark [data-mdmark-diff-hidden] {
+    /* biome-ignore lint/complexity/noImportantStyles: 本文の要素と右側の目次の display の指定に負けずに隠す */
+    display: none !important;
+  }
+
+  /* 印刷のとき（右側の目次）: `dev/mock/refs/166/assets/side-toc-print.css` から取る */
+  @media print {
+    /* 右側の目次を持つ描く先の要素: 本文の列だけを紙の幅いっぱいに並べる */
+    .mdmark:has(> .mdmark-side-toc) {
+      display: block;
+    }
+
+    /* 本文の列: 行の長さの上限を外す */
+    .mdmark-content {
+      max-width: none;
+    }
+
+    .mdmark {
+      /* 右側の目次（目次を出すボタン・まとめて開閉するボタンを含む）: 紙に出さない */
+      .mdmark-side-toc {
+        display: none;
+      }
     }
   }
 }

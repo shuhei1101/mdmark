@@ -1,5 +1,6 @@
 import { type MdmarkConfig, type ResolvedConfig } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 /** 本文の HTML と、文書の印で決まった機能のオン・オフ */
@@ -25,6 +26,8 @@ export declare function renderDocument(options: {
     docId?: string | undefined;
     /** 参照の表 */
     references?: MdmarkReferences | undefined;
+    /** エイリアス。そのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う */
+    aliases?: MdmarkAlias[] | undefined;
 }): RenderedDocument;
 /** 画面を持たずに Markdown を本文の HTML 文字列にする */
 export declare function render(markdown: string, opts?: {
@@ -33,4 +36,6 @@ export declare function render(markdown: string, opts?: {
     docId?: string;
     /** 省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
     references?: MdmarkReferences;
+    /** `buildAliases` が作ったエイリアス。省くと、エイリアスを照合しない */
+    aliases?: MdmarkAlias[];
 }): string;

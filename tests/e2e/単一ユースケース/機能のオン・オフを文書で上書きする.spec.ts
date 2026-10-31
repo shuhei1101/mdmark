@@ -4,6 +4,7 @@ import {
   buildDistRoot,
   mountDocument,
   openPage,
+  rawAliases,
   removeDistRoot,
   sendPrintEvent,
 } from "../dist-page.ts";
@@ -144,7 +145,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
   const markdown = [
     "<!-- features: -glossary -backlinks -->",
     "",
-    "ワークスペースと作業場を置く。",
+    "ワークスペースと作業場と単体テストを置く。",
     "",
     "<!-- glossary: term=用語 meaning=意味 -->",
     "",
@@ -162,9 +163,19 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
     index: INDEX,
     docId: "arch",
     documents: DOCUMENTS,
+    aliases: rawAliases([
+      {
+        alias_type: "command",
+        id: "unit-test",
+        name: "単体テスト",
+        aliases: [],
+        command: "npm run test:unit",
+      },
+    ]),
   });
   // 検証
   const doc = page.locator("#doc");
+  // エイリアスの `単体テスト` にも下線が付かない
   await expect(doc.locator(".mdmark-term")).toHaveCount(0);
   await expect(doc.locator(".mdmark-term-avoided")).toHaveCount(0);
   await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
@@ -220,4 +231,50 @@ test("test_normal_when_backlinks_disabled", async ({ page }) => {
   await expect(tip).toContainText("文書と用語を並べた YAML のファイル");
   await expect(tip.locator(".mdmark-term-tip-heading")).toHaveText(["用語"]);
   await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
+});
+
+/** 見出しを持つ Markdown の本体（右側の目次を出す・出さない文書の先頭にマーカーを足して使う） */
+const SIDE_TOC_BODY = "## 導入\n\n導入の段落\n\n## 使い方\n\n使い方の段落\n";
+
+// 文書の印で右側の目次をオフにすると、右側の目次を置かず、見出しのアンカーと節の開閉は残る（正常シナリオ（右側の目次の機能を外す））
+test("test_normal_when_side_toc_disabled", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: `<!-- features: -side-toc -->\n\n${SIDE_TOC_BODY}`,
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-side-toc")).toHaveCount(0);
+  await expect(doc.locator(".mdmark-side-toc-toggle")).toHaveCount(0);
+  await expect(doc.locator(".mdmark-side-toc-pin")).toHaveCount(0);
+  await expect(doc.locator("a.mdmark-anchor")).toHaveCount(2);
+  await expect(doc.locator("button.mdmark-section-toggle")).toHaveCount(2);
+  await expect(doc).not.toContainText("features");
+  // 実行・検証: 右端にポインターを置いても出ない
+  await doc.hover({ position: { x: 1200, y: 100 } });
+  await expect(doc.locator(".mdmark-side-toc")).toHaveCount(0);
+});
+
+// 設定でオフにした右側の目次を、文書の印でその文書だけオンにする（正常シナリオ（設定でオフにした右側の目次を文書でオンにする））
+test("test_normal_when_side_toc_enabled_by_mark", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: `<!-- features: +side-toc -->\n\n${SIDE_TOC_BODY}`,
+    config: { features: { "side-toc": false } },
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await doc.locator(".mdmark-side-toc-rail").hover();
+  const panel = doc.locator(".mdmark-side-toc-panel");
+  await expect(panel).toHaveCSS("opacity", "1");
+  await expect(panel.locator(".mdmark-side-toc-list a")).toHaveText([
+    "導入",
+    "使い方",
+  ]);
 });

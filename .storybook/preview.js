@@ -30,3 +30,35 @@ new MutationObserver(async () => {
     attachDiagrams({ root, placement: "top" });
   }
 }).observe(document.documentElement, { childList: true, subtree: true });
+
+// 表のストーリー（`.mdmark-table` を持つもの）は、描いた直後に見出し行と集計の行を画面に留める操作を付ける（`mount` が全ての表に付けるのと同じ）
+const stuck = new WeakSet();
+new MutationObserver(async () => {
+  for (const table of document.querySelectorAll(".mdmark-table")) {
+    const root = table.closest(".mdmark");
+    if (!root || stuck.has(root)) {
+      continue;
+    }
+    stuck.add(root);
+    const { attachStickyRows } = await import(
+      /* webpackIgnore: true */ `${window.location.origin}/render/sticky.js`
+    );
+    attachStickyRows(root);
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });
+
+// ファイルツリーのストーリー（`.mdmark-tree` を持つもの）は、描いた直後に注釈の列の位置を測って入れる（`mount` が測るのと同じ）
+const aligned = new WeakSet();
+new MutationObserver(async () => {
+  for (const tree of document.querySelectorAll(".mdmark-tree")) {
+    if (aligned.has(tree)) {
+      continue;
+    }
+    aligned.add(tree);
+    const { alignFileTreeNotes } = await import(
+      /* webpackIgnore: true */ `${window.location.origin}/render/trees.js`
+    );
+    await document.fonts.ready;
+    alignFileTreeNotes(tree);
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });

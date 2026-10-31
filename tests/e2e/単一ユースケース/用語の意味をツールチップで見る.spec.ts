@@ -1,10 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import type { MdmarkIndex } from "../../../src/index.ts";
 import { wrapHtml } from "../chart.ts";
+import { stubClipboard, writtenTexts } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
   openPage,
+  rawAliases,
   removeDistRoot,
 } from "../dist-page.ts";
 import {
@@ -427,4 +429,314 @@ test("test_normal_when_width_and_case_differ", async ({ page }) => {
   await expect(avoidedTip).toBeVisible();
   await expect(avoidedTip).toContainText("ワークスペース");
   await expect(avoidedTip).toContainText("話し合いの記録を置くフォルダ");
+});
+
+/** コマンドのエイリアス `単体テスト` */
+const UNIT_TEST_ALIAS = {
+  alias_type: "command",
+  id: "unit-test",
+  name: "単体テスト",
+  aliases: [],
+  description: "ライブラリ本体の単体テストを流す",
+  command: "npm run test:unit",
+  cwd: "リポジトリの直下",
+};
+
+/** 下線を引いた語と、その語に付いたツールチップを包む要素を返す */
+function wrapOf(page: Page, word: string): Locator {
+  return page.locator("#doc .mdmark-term-wrap").filter({
+    has: page.locator(".mdmark-term", { hasText: new RegExp(`^${word}$`) }),
+  });
+}
+
+// 渡したエイリアスの名前と別名に下線を引き、種類ごとのツールチップを出す。env は照合しない（正常シナリオ（エイリアスを渡す））
+test("test_normal_when_aliases", async ({ page }) => {
+  // 準備
+  const aliases = rawAliases([
+    {
+      alias_type: "term",
+      id: "review",
+      name: "レビュー",
+      aliases: ["査読"],
+      description: "変更を別の人が確かめること",
+    },
+    {
+      alias_type: "doc",
+      id: "design-doc",
+      name: "設計書",
+      aliases: [],
+      description: "仕様を記載した文書",
+    },
+    {
+      alias_type: "url",
+      id: "issues",
+      name: "課題の一覧",
+      aliases: [],
+      description: "Issue を並べたページ",
+      url: "https://github.com/shuhei1101/mdmark/issues",
+    },
+    {
+      alias_type: "skill",
+      id: "session",
+      name: "記録の取り込み",
+      aliases: [],
+      skill: "mindstella:session",
+    },
+    {
+      alias_type: "tool",
+      id: "check-tool",
+      name: "点検のツール",
+      aliases: [],
+      tool: "check",
+    },
+    {
+      alias_type: "path",
+      id: "config-file",
+      name: "設定ファイル",
+      aliases: [],
+      path: "mdmark.config.yaml",
+    },
+    {
+      alias_type: "env",
+      id: "dev-server",
+      name: "開発サーバー",
+      aliases: [],
+      url: "http://127.0.0.1:8767/",
+      port: "8767",
+    },
+  ]);
+  const markdown = [
+    "## 一つ目",
+    "",
+    "レビュー、設計書、課題の一覧、記録の取り込み、点検のツール、設定ファイル、開発サーバーを並べる。",
+    "",
+    "## 二つ目",
+    "",
+    "査読を書く。",
+    "",
+  ].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown, aliases });
+  // 検証
+  const doc = page.locator("#doc");
+  // env を除く 6 つの名前と別名 `査読` に、用語と同じ破線の下線が付く
+  const terms = doc.locator(".mdmark-term");
+  await expect(terms).toHaveText([
+    "レビュー",
+    "設計書",
+    "課題の一覧",
+    "記録の取り込み",
+    "点検のツール",
+    "設定ファイル",
+    "査読",
+  ]);
+  for (const term of await terms.all()) {
+    await expect(term).toHaveCSS("text-decoration-style", "dashed");
+  }
+  // env: 下線もツールチップも無く、値が文書に入らない
+  await expect(doc.locator(".mdmark-term-tip")).toHaveCount(7);
+  await expect(doc).toContainText("開発サーバー");
+  expect(await doc.innerHTML()).not.toContain("http://127.0.0.1:8767/");
+  // 査読: ポインターを乗せると名前と説明が出る
+  const reviewTip = wrapOf(page, "査読").locator(".mdmark-term-tip");
+  await wrapOf(page, "査読").locator(".mdmark-term").hover();
+  await expect(reviewTip).toBeVisible();
+  await expect(reviewTip.locator(".mdmark-term-tip-name")).toHaveText(
+    "レビュー",
+  );
+  await expect(reviewTip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "変更を別の人が確かめること",
+  );
+  // 設計書: 名前と概要が出る
+  const docTip = wrapOf(page, "設計書").locator(".mdmark-term-tip");
+  await wrapOf(page, "設計書").locator(".mdmark-term").focus();
+  await expect(docTip.locator(".mdmark-term-tip-name")).toHaveText("設計書");
+  await expect(docTip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "仕様を記載した文書",
+  );
+  // スキル・ツール・パス: 値がコードとして出る
+  const codes: Array<[string, string]> = [
+    ["記録の取り込み", "mindstella:session"],
+    ["点検のツール", "check"],
+    ["設定ファイル", "mdmark.config.yaml"],
+  ];
+  for (const [word, code] of codes) {
+    await wrapOf(page, word).locator(".mdmark-term").focus();
+    await expect(
+      wrapOf(page, word).locator(".mdmark-term-tip code"),
+    ).toHaveText(code);
+  }
+  // 課題の一覧: 名前・説明とリンクが出る。Tab でリンクへ移り、Esc で消える
+  const issues = wrapOf(page, "課題の一覧").locator(".mdmark-term");
+  const issuesTip = wrapOf(page, "課題の一覧").locator(".mdmark-term-tip");
+  await issues.focus();
+  await expect(issuesTip).toBeVisible();
+  await expect(issuesTip.locator(".mdmark-term-tip-name")).toHaveText(
+    "課題の一覧",
+  );
+  await expect(issuesTip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "Issue を並べたページ",
+  );
+  const link = issuesTip.locator("a");
+  await expect(link).toHaveAttribute(
+    "href",
+    "https://github.com/shuhei1101/mdmark/issues",
+  );
+  await page.keyboard.press("Tab");
+  await expect(link).toBeFocused();
+  await expect(issuesTip).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(issuesTip).toBeHidden();
+});
+
+// コマンドのツールチップのコピーのボタンで、コマンドをクリップボードへ書き、ボタンの文字で知らせる（正常シナリオ（コマンドをコピーする））
+test("test_normal_when_copy_command", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: "手元で単体テストを流す。\n",
+    aliases: rawAliases([UNIT_TEST_ALIAS]),
+  });
+  const term = page.locator("#doc .mdmark-term");
+  const tip = page.locator("#doc .mdmark-term-tip");
+  const button = tip.locator("button.mdmark-term-tip-copy");
+  // 実行
+  await term.focus();
+  // 検証: ツールチップの中身
+  await expect(tip).toBeVisible();
+  await expect(tip.locator(".mdmark-term-tip-heading")).toHaveText([
+    "コマンド",
+  ]);
+  await expect(tip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "ライブラリ本体の単体テストを流す",
+  );
+  await expect(tip.locator("code")).toHaveText("npm run test:unit");
+  await expect(tip).toContainText("実行場所");
+  await expect(tip).toContainText("リポジトリの直下");
+  await expect(button).toHaveText("コピー");
+  // 実行: Tab でコピーのボタンへ移り、Enter で押す
+  await page.keyboard.press("Tab");
+  await expect(button).toBeFocused();
+  await page.keyboard.press("Enter");
+  // 検証: コマンドを書き、ボタンの文字と読み上げで知らせ、ツールチップは出たまま
+  await expect(button).toHaveText("コピーしました");
+  await expect(button).toHaveAttribute("data-state", "copied");
+  expect(await writtenTexts(page)).toEqual(["npm run test:unit"]);
+  await expect(tip.locator('[role="status"]')).toContainText(
+    "コマンドをコピーしました",
+  );
+  await expect(tip).toBeVisible();
+});
+
+// avoid の種類と term の avoid の語に波線のマーカーを付け、置き換え先のツールチップを出す（正常シナリオ（やめた言い方のエイリアス））
+test("test_normal_when_avoid_alias", async ({ page }) => {
+  // 準備
+  const aliases = rawAliases([
+    {
+      alias_type: "avoid",
+      id: "workplace",
+      name: "作業場",
+      aliases: [],
+      replacement: "ワークスペース",
+    },
+    {
+      alias_type: "term",
+      id: "branch",
+      name: "ブランチ",
+      aliases: [],
+      description: "作業を分ける線",
+      avoid: ["枝"],
+    },
+  ]);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: "作業場と枝を書く。\n", aliases });
+  // 検証
+  const terms = page.locator("#doc .mdmark-term");
+  await expect(terms).toHaveText(["作業場", "枝"]);
+  for (const term of await terms.all()) {
+    await expect(term).toHaveClass(/mdmark-term-avoided/);
+    await expect(term).toHaveCSS("text-decoration-style", "wavy");
+  }
+  // 作業場: 置き換え先だけが出る
+  const workplaceTip = wrapOf(page, "作業場").locator(".mdmark-term-tip");
+  await wrapOf(page, "作業場").locator(".mdmark-term").hover();
+  await expect(workplaceTip).toBeVisible();
+  await expect(workplaceTip.locator(".mdmark-term-tip-heading")).toHaveText([
+    "代わりの用語",
+  ]);
+  await expect(workplaceTip.locator(".mdmark-term-tip-replacement")).toHaveText(
+    "ワークスペース",
+  );
+  // 枝: term の名前と説明が出る
+  const branchTip = wrapOf(page, "枝").locator(".mdmark-term-tip");
+  await wrapOf(page, "枝").locator(".mdmark-term").hover();
+  await expect(branchTip).toBeVisible();
+  await expect(branchTip.locator(".mdmark-term-tip-replacement")).toHaveText(
+    "ブランチ",
+  );
+  await expect(branchTip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "作業を分ける線",
+  );
+});
+
+// 種類の必須のキーが空・知らない種類のエイリアスは照合せず、http と https でない URL は文字で出し、描く処理は止まらない（異常シナリオ（使えないエイリアス））
+test("test_error_when_invalid_alias", async ({ page }) => {
+  // 準備
+  const aliases = rawAliases([
+    {
+      alias_type: "term",
+      id: "review",
+      name: "レビュー",
+      aliases: [],
+      description: "変更を別の人が確かめること",
+    },
+    {
+      alias_type: "command",
+      id: "build",
+      name: "ビルド",
+      aliases: [],
+      command: "",
+    },
+    { alias_type: "memo", id: "memo", name: "メモ", aliases: [] },
+    {
+      alias_type: "url",
+      id: "danger",
+      name: "危ないリンク",
+      aliases: [],
+      description: "文字で出す URL",
+      url: "javascript:alert(1)",
+    },
+  ]);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "レビュー、ビルド、メモ、危ないリンクを書く。\n",
+    aliases,
+  });
+  // 検証
+  await expect(page.locator("#doc p")).toContainText("ビルド");
+  await expect(page.locator("#doc .mdmark-term")).toHaveText([
+    "レビュー",
+    "危ないリンク",
+  ]);
+  const reviewTip = wrapOf(page, "レビュー").locator(".mdmark-term-tip");
+  await wrapOf(page, "レビュー").locator(".mdmark-term").hover();
+  await expect(reviewTip).toBeVisible();
+  await expect(reviewTip.locator(".mdmark-term-tip-meaning")).toHaveText(
+    "変更を別の人が確かめること",
+  );
+  // 危ないリンク: URL はリンクにせず文字で出る
+  const dangerTip = wrapOf(page, "危ないリンク").locator(".mdmark-term-tip");
+  await wrapOf(page, "危ないリンク").locator(".mdmark-term").hover();
+  await expect(dangerTip).toBeVisible();
+  await expect(dangerTip).toContainText("javascript:alert(1)");
+  await expect(dangerTip.locator("a")).toHaveCount(0);
+  // 描く処理が例外を投げず、知らせの枠も出ない
+  expect(errors).toEqual([]);
+  await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
 });

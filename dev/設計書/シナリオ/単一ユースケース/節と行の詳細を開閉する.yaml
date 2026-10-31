@@ -111,7 +111,102 @@ scenarios:
       - 表の後に詳細の段落が表示されている
       - 表の行に開閉のボタンが無い
     test: test_error_when_row_out_of_range
-lead: '読む人が、見出し（h2〜h4）の節と、表の行の下に出す行の詳細を開閉する。文書を書く人は見出しの直後の `<!-- section: closed -->` で節を閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を書く。'
+  - name: 正常シナリオ（畳んだ最終列と行の詳細）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 最終列の長い表と行の詳細を持つ Markdown
+        description: '名前・状態・説明の 3 列 3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+        notes: 最終列の説明は、どの行も 390px の幅で 1 行に収まらない長さ
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 最終列を畳み、各行に開閉を 1 つずつ付けた表を描く
+        U->>P: 2 行目の開閉を押す
+        P-->>U: 2 行目の下に最終列の中身と行の詳細を表示
+    expected:
+      - 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
+      - 2 行目の開閉を押した後、2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
+      - もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
+    test: test_normal_when_row_detail_with_collapsed_column
+  - name: 正常シナリオ（H1 の節）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: H1 の節を持つ Markdown
+        description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 手引きの節を開き、付録の節を閉じて描く
+        U->>P: 「付録」の見出しの開閉を押す
+        P-->>U: 付録の節を開いて表示
+    expected:
+      - 描いた直後、`手引き` の段落が表示され、`付録` の段落が表示されていない
+      - '`手引き`・`付録` の見出しに開閉のボタンがある'
+      - '`付録` の開閉を押した後、`付録` の段落が表示され、ボタンの `aria-expanded` が `true`'
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_h1_section
+  - name: 正常シナリオ（すべて展開・すべて折りたたむ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子の節を持つ Markdown
+        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: すべて展開・すべて折りたたむのボタンと文書を描く
+        U->>P: すべて展開を押す
+        P-->>U: 全ての節を開いて表示
+        U->>P: すべて折りたたむを押す
+        P-->>U: H1 の節を開いたまま、H2 以下の全ての節を閉じる
+    expected:
+      - 描いた直後、すべて展開のボタンとすべて折りたたむのボタンがあり、どちらも文字を持たずアイコンと読み上げ名だけを持つ
+      - すべて展開を押した後、`手引き`・`概要`・`補足`・`注意` の全ての開閉のボタンの `aria-expanded` が `true` で、`注意` の段落が表示されている
+      - すべて折りたたむを押した後、`手引き` の開閉のボタンの `aria-expanded` が `true` のままで、`概要`・`補足`・`注意` の開閉のボタンの `aria-expanded` が `false` で、`概要` の見出しが表示され `概要` の段落が表示されていない
+    test: test_normal_when_all_toggled
+  - name: 正常シナリオ（Shift で入れ子をまとめて開閉）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子の閉じた節を持つ Markdown
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、その節の中の `### 注意` とその直後の `<!-- section: closed -->`、さらにその中の `#### 例` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: Shift を押しながら「補足」の見出しの開閉を押す
+        P-->>U: 補足・注意・例の節を開いて表示
+        U->>P: 「補足」の開閉ボタンにフォーカスし、Shift を押しながら Enter キーを押す
+        P-->>U: 補足・注意・例の節を閉じる
+    expected:
+      - Shift を押しながら `補足` の開閉を押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `true` で、`例` の段落が表示されている
+      - Shift を押しながら Enter キーを押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `false`
+      - '`概要` の節は開いたまま変わらない'
+    test: test_normal_when_nested_toggled_with_shift
+lead: '読む人が、見出し（h1〜h4）の節と、表の行の下に出す行の詳細を開閉し、全ての節や入れ子の節をまとめて開閉する。文書を書く人は見出しの直後の `<!-- section: closed -->` で節を閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を書く。'
 issue: 4
 primary_actor: 文書を読む人
 stakeholders:
@@ -121,6 +216,9 @@ trigger: 読む人が、見出しか表の行の開閉のボタンを押す
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
   - 節の開閉と行の詳細の機能（`sections`・`row-details`）がオン（既定）
-success_guarantee: 節と行の詳細が印のとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
+success_guarantee: |-
+  節と行の詳細がマーカーのとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
+
+  すべて展開・すべて折りたたむは文書の全ての節を、Shift を押しながらの開閉はその節と中の入れ子の節を同じ状態にする。
 minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれ、書き方の警告が出る。
 test_file: tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts
