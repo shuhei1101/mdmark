@@ -112,6 +112,37 @@ test("test_line_for_top", async () => {
   expect(lines).toEqual([5, 10]);
 });
 
+// 印の間を内分して切り捨てない（正常系）
+test("test_fractional_line_for_top", async () => {
+  // 準備
+  const { fractionalLineForTop } = await loadScroll();
+  const anchors = [
+    { line: 0, top: 0 },
+    { line: 10, top: 400 },
+  ];
+  // 実行
+  const lines = [210, 900, -5].map((top) => fractionalLineForTop(anchors, top));
+  // 検証
+  expect(lines).toEqual([5.25, 10, 0]);
+});
+
+// 切り捨てない行を topForLine に渡すと元の位置に戻る（正常系）
+test("test_fractional_line_for_top_when_round_trip", async () => {
+  // 準備
+  const { fractionalLineForTop, topForLine } = await loadScroll();
+  const anchors = [
+    { line: 0, top: 0 },
+    { line: 10, top: 400 },
+    { line: 12, top: 1000 },
+  ];
+  // 実行
+  const tops = [210, 700].map((top) =>
+    topForLine(anchors, fractionalLineForTop(anchors, top)),
+  );
+  // 検証
+  expect(tops).toEqual([210, 700]);
+});
+
 // 狭い幅の帯の下端までの高さを返す（正常系）
 test("test_top_inset_when_band", async () => {
   // 準備
