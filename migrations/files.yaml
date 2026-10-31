@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: no-steps.yaml
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「移行の手順が要らないスキーマの変更の一覧」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements

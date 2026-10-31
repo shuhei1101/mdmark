@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: main.js
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「Storybook の設定（@storybook/server-webpack5・ストーリーの場所・許すホスト）」を受け持つ。Storybook で部品を確かめる仕組みを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+        type: implements
+  - path: middleware.cjs
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「/render を描画の口へ中継する」を受け持つ。Storybook で部品を確かめる仕組みを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+        type: implements
+  - path: preview-head.html
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画の口の CSS を読む link」を受け持つ。Storybook で部品を確かめる仕組みを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+        type: implements
+  - path: preview.js
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「ストーリーの HTML を描画の口から取る fetchStoryHtml」を受け持つ。Storybook で部品を確かめる仕組みを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+        type: implements

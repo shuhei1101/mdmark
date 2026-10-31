@@ -1,0 +1,167 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: _theme/_includes/sidebar-source.html
+    description: 公開ドキュメントのサイトで、サイドバーの元になる目次の表を隠し要素として埋める Jekyll の部品。サイドバーに出す項目の決め方を変えるときに読む。
+    tags: [topic:サイドバー, topic:ナビゲーション, tool:html]
+  - path: _theme/_includes/tab-link.html
+    description: 公開ドキュメントのサイトで、上部のタブを 1 つ出す Jekyll の部品。タブの出し方や種別の決め方を変えるときに読む。
+    tags: [topic:タブ, topic:ナビゲーション, tool:html]
+  - path: _theme/_layouts/default.html
+    description: 公開ドキュメントのサイトの全ページに共通のレイアウト。ページの骨組み・読むスクリプトと CSS を変えるときに読む。
+    tags: [topic:レイアウト, tool:html]
+  - path: _theme/assets/app.js
+    description: 公開ドキュメントのサイトの全ページで読む共通のスクリプト。サイトのタブ・サイドバー・図の振る舞いを変えるときに読む。
+    tags: [topic:ナビゲーション, tool:javascript]
+  - path: _theme/assets/style.css
+    description: 公開ドキュメントのサイトの全ページで読む共通の見た目。サイトの見た目を変えるときに読む。
+    tags: [topic:スタイル, tool:css]
+  - path: rules.yaml
+    description: 公開ドキュメントに当てる rule-inject のルールの設定（当てる契機と、ルールの一覧）。公開ドキュメントを書くときに案内するルールを変えるときに読む。
+    tags: [topic:ルール, tool:rule-inject]
+  - path: はじめに/コアコンセプト/1枚にまとめる仕組み.md
+    description: 文書を集めて参照の表を作り、配布物・CSS・外部ライブラリ・画像と一緒に 1 枚に埋める流れ。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み, topic:書き出し]
+  - path: はじめに/コアコンセプト/ClaudeCodeに使い方を渡す仕組み.md
+    description: 索引だけを入れ、本文を必要な分だけ読ませ、CLI と同じ処理をツールで呼ぶ流れ。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み, tool:claude-code]
+  - path: はじめに/コアコンセプト/共通の定義と固有の定義.md
+    description: 基盤の部品と CSS、使う側の固有の部品と CSS の層と、当たる範囲。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み]
+  - path: はじめに/コアコンセプト/差分を表示する仕組み.md
+    description: 取り出し元から 2 つのリビジョンの本文を受け、行と文字を比べて描く流れと、埋め込んだ HTML の切り替え、描いた文書のブロックの色分け。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み, topic:差分]
+  - path: はじめに/コアコンセプト/文書を描く仕組み.md
+    description: Markdown と設定を渡してから描かれるまでの流れと、テーマの層・機能のオン・オフの優先順。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み]
+  - path: はじめに/コアコンセプト/版を上げる仕組み.md
+    description: バージョンごとの移行の手順をバージョンの順に当て、コピーから戻し、点検してからバージョンを書き換える流れ。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み, topic:バージョン, topic:移行]
+  - path: はじめに/コアコンセプト/索引と被参照.md
+    description: 索引を正にし、被参照を描くときに算出し、ずれを点検で見つける仕組み。mdmark の仕組みを理解するときに読む。
+    tags: [topic:仕組み, topic:索引]
+  - path: はじめに/変更履歴.md
+    description: バージョンごとの変更の一覧。バージョンごとの変更を確かめるときに読む。
+    tags: [topic:履歴, topic:バージョン]
+  - path: リファレンス/API.md
+    description: 公開関数と CSS 変数の一覧。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:api]
+  - path: リファレンス/CLI.md
+    description: コマンド・引数・出力・終了コードの一覧。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:cli]
+  - path: リファレンス/HTMLの書き方.md
+    description: AI が HTML を作るときの書き方の決まり。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, tool:html]
+  - path: リファレンス/MCP.md
+    description: MCP のツールの名前・引数・戻り値・エラーの一覧。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, tool:mcp]
+  - path: リファレンス/VSCode拡張機能.md
+    description: VS Code 拡張機能のコマンド・既定のショートカット・設定の一覧。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:拡張, tool:vscode]
+  - path: リファレンス/フローチャートの決まり.md
+    description: 処理の順番を描くフローチャートの見た目の決まり（時系列・ループの帯・分岐）。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:フローチャート]
+  - path: リファレンス/構成図の決まり.md
+    description: 構成図の見た目の決まり（枠・3 層・タイトルと凡例・線・交差・ツールチップ・操作）。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:図]
+  - path: リファレンス/用語集.md
+    description: マーカー・記法・テーマ・機能・知らせの枠・書き方の警告・行の強調・コードの行のマーカー・索引・被参照・本文の一致・参照先・点検・やめた言い方・タグの語彙・主題のタグ・関係の種類・逆向きの関連・書き出し・まとめた HTML・雛形・移行の手順・手元のバージョン・壊す手順・図の部品・埋め込んだ HTML・ヒント・差分・リビジョン・取り出し元・差分の出し方・差分のブロック・ビュー・ボード表示・コメント・共通の定義・固有の定義・使い方集・プラグイン・MCP のツール・常駐サーバー・VS Code 拡張機能・プレビュー・描けない理由・差分ビュー・差分のパネル・元の行番号の用語の意味。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:用語]
+  - path: リファレンス/索引.md
+    description: 索引のキー・型・必須・既定と、点検が返すずれの種類の一覧。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:索引]
+  - path: リファレンス/記法.md
+    description: マーカーと記法の一覧（書き方・引数・マーカーに対応しない表示での見え方）。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:構文]
+  - path: リファレンス/設定.md
+    description: 設定のキーと既定の一覧。名前から引いて確かめるときに読む。
+    tags: [topic:リファレンス, topic:設定]
+  - path: 使い方/ClaudeCodeで使う/MCPのツールを使う.md
+    description: 使い方集を読み、文書の書き出し・まとめ・点検・索引の検索と書き換えを Claude Code から呼ぶ手順。Claude Code から mdmark を使うときに読む。
+    tags: [tool:claude-code, tool:mcp]
+  - path: 使い方/ClaudeCodeで使う/MCPサーバーを起動する.md
+    description: MCP の常駐サーバーを起動・停止し、待ち受けているポートを確かめる手順。Claude Code から mdmark を使うときに読む。
+    tags: [tool:claude-code, tool:mcp]
+  - path: 使い方/ClaudeCodeで使う/プラグインを入れる.md
+    description: マーケットプレイスを追加してプラグインを入れ、次のセッションから使い方の索引とツールを受け取る手順。Claude Code から mdmark を使うときに読む。
+    tags: [tool:claude-code, tool:mcp, topic:プラグイン]
+  - path: 使い方/VSCodeで見る/HTMLとPDFにする.md
+    description: 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順。VS Code の拡張機能を使うときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:印刷, tool:html]
+  - path: 使い方/VSCodeで見る/プレビューを開く.md
+    description: 拡張機能を入れ、Markdown の横にプレビューを出して、バージョン・設定ファイル・配色・スクロールを整える手順。VS Code の拡張機能を使うときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:ビュー, topic:コメント]
+  - path: 使い方/VSCodeで見る/差分をプレビューで見る.md
+    description: VS Code の差分ビューで見ている Markdown の変更を、mdmark のプレビューで追加・削除の色分けにして読む手順。VS Code の拡張機能を使うときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:差分, topic:ビュー, topic:コメント]
+  - path: 使い方/カスタマイズ/テーマを上書きする.md
+    description: CSS 変数と層の外の CSS で、描いた文書の見た目を変える。見た目や機能を使う側で変えるときに読む。
+    tags: [topic:テーマ, topic:拡張]
+  - path: 使い方/カスタマイズ/印刷する.md
+    description: 印刷・PDF にしたときの文書の見え方。見た目や機能を使う側で変えるときに読む。
+    tags: [topic:テーマ, topic:拡張, topic:印刷]
+  - path: 使い方/カスタマイズ/拡張を登録する.md
+    description: '`registerExtension` でマーカーを追加する手順。TypeScript を推奨し、配る前に JavaScript へ変換する。見た目や機能を使う側で変えるときに読む。'
+    tags: [topic:テーマ, topic:拡張]
+  - path: 使い方/カスタマイズ/機能をオン・オフする.md
+    description: 設定の `features` と文書のマーカーで、機能のオン・オフを切り替える。見た目や機能を使う側で変えるときに読む。
+    tags: [topic:テーマ, topic:拡張]
+  - path: 使い方/カスタマイズ/部品をJavaScriptから使う.md
+    description: 使う側のページと拡張のモジュールから部品を描く関数を呼ぶ手順と、コメントの読み書きの関数の渡し方。見た目や機能を使う側で変えるときに読む。
+    tags: [topic:テーマ, topic:拡張]
+  - path: 使い方/図を描く/コードブロックのHTMLを描く.md
+    description: コードブロックの HTML を描かせるマーカー・チャートの custom element の置き方・`data-hint` の書き方の手順。文書に図や部品を描くときに読む。
+    tags: [topic:図, tool:html]
+  - path: 使い方/図を描く/図を描く.md
+    description: HTML の使いどころと、文書に部品の定義を書いてフロー図・シーケンス図・グラフを描く手順。文書に図や部品を描くときに読む。
+    tags: [topic:図]
+  - path: 使い方/図を描く/固有の部品とCSSを当てる.md
+    description: 使う側に固有の部品と CSS を、その場所の文書にだけ当てる手順。文書に図や部品を描くときに読む。
+    tags: [topic:図]
+  - path: 使い方/図を描く/描いた図を確かめる.md
+    description: 置いた部品を Playwright で動かし、スクリーンショットを撮って見る手順。文書に図や部品を描くときに読む。
+    tags: [topic:図]
+  - path: 使い方/図を描く/操作できる部品を作る.md
+    description: スライダー・グラフ・今の値をコピーするボタンの部品の定義を書く手順。文書に図や部品を描くときに読む。
+    tags: [topic:図]
+  - path: 使い方/図を描く/見本.md
+    description: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書。文書に図や部品を描くときに読む。
+    tags: [topic:図]
+  - path: 使い方/導入/差分を表示する.md
+    description: '`mount` の `diffSource` に取り出し元を渡し、文書の 2 つのリビジョンの差分を出す。使う側のページへ組み込むときに読む。'
+    tags: [topic:セットアップ手順, topic:差分]
+  - path: 使い方/導入/文書を描く.md
+    description: 配布物を読んだページで `mount` を呼び、要素の中に Markdown を描く。使う側のページへ組み込むときに読む。
+    tags: [topic:セットアップ手順]
+  - path: 使い方/導入/版を上げる.md
+    description: '`mdmark upgrade` で移行の手順を当てて、設定・索引・文書を新しいバージョンに合わせる。使う側のページへ組み込むときに読む。'
+    tags: [topic:セットアップ手順, topic:バージョン, topic:移行]
+  - path: 使い方/導入/配布物を読み込む.md
+    description: バージョンを固定した URL で JavaScript と CSS を読み込む。使う側のページへ組み込むときに読む。
+    tags: [topic:セットアップ手順]
+  - path: 使い方/書き出す/文書を1枚にまとめる.md
+    description: 設定の `build` を書き、`mdmark build` で複数の文書を 1 枚にまとめる手順。CLI で HTML に書き出すときに読む。
+    tags: [topic:cli, topic:書き出し]
+  - path: 使い方/書き出す/文書を書き出す.md
+    description: '`mdmark export` で 1 文書を 1 枚の HTML に書き出す手順。CLI で HTML に書き出すときに読む。'
+    tags: [topic:cli, topic:書き出し]
+  - path: 使い方/書き出す/点検する.md
+    description: '`mdmark check` で設定と索引を点検し、ずれを修正する手順。CLI で HTML に書き出すときに読む。'
+    tags: [topic:cli, topic:書き出し, topic:検査]
+  - path: 使い方/書き出す/雛形を置く.md
+    description: '`mdmark init` で設定・`theme.css`・索引・拡張のビルドの雛形を置く手順。CLI で HTML に書き出すときに読む。'
+    tags: [topic:cli, topic:書き出し, topic:テンプレート]
+  - path: 使い方/書く/ビューとコメントを使う.md
+    description: ビューのマーカーの書き方・ボードと表形式の切り替え・列の絞り込み・コメントを付ける手順。文書に記法を書くときに読む。
+    tags: [topic:markdown, topic:構文, topic:ビュー, topic:コメント]
+  - path: 使い方/書く/図と表に番号を付ける.md
+    description: '`fig` のマーカーと、番号を出すリンクの書き方。文書に記法を書くときに読む。'
+    tags: [topic:markdown, topic:構文, topic:テーブル, topic:図]
+  - path: 使い方/書く/本文を部品で組む.md
+    description: 注意書き・タブ・ステップ・ファイルツリー・バッジ・コードブロックの飾り・目次・セクションの開閉・行の詳細を書く手順。文書に記法を書くときに読む。
+    tags: [topic:markdown, topic:構文]
+  - path: 使い方/書く/索引と用語集を書く.md
+    description: 索引に文書と用語を書き、表から用語集に用語を入れる手順。文書に記法を書くときに読む。
+    tags: [topic:markdown, topic:構文, topic:索引, topic:用語]
+  - path: 使い方/書く/表に機能を付ける.md
+    description: 表をマーカーで囲み、種類と機能を選ぶ手順。文書に記法を書くときに読む。
+    tags: [topic:markdown, topic:構文, topic:テーブル]

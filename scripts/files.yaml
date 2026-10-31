@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: baseline.ts
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「使う側のブラウザが読む JS を minify せずに束ね、対応ブラウザの下限に無い API を拾う」を受け持つ。配布物のビルドや検査を変えるときに読む。
+    tags: [topic:バンドル, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
+        type: implements
+  - path: build-plugin.ts
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「プラグインのビルド」を受け持つ。プラグインの配布物の作り方を変えるときに読む。
+    tags: [topic:プラグイン, tool:claude-code, tool:esbuild, topic:バンドル]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
+        type: implements
+  - path: build.ts
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「バージョンの決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査」を受け持つ。配布物のビルドや検査を変えるときに読む。
+    tags: [topic:バンドル, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
+        type: implements
+  - path: bundle.ts
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「build.ts と build-plugin.ts が使う Node とブラウザの束ねの target・先頭の行・postcss の差し替え・束ねたパッケージとライセンスの引き方」を受け持つ。配布物のビルドや検査を変えるときに読む。
+    tags: [topic:バンドル, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
+        type: implements
+  - path: migrations.ts
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「スキーマを変えたバージョンに移行の手順があるかの点検」を受け持つ。配布物のビルドや検査を変えるときに読む。
+    tags: [topic:バンドル, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
+        type: implements
+  - path: storybook-render.ts
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画の口（部品の HTML と CSS を返す HTTP サーバー）」を受け持つ。Storybook で部品を確かめる仕組みを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+        type: implements

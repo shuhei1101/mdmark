@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=files.schema.yaml
+files:
+  - path: ER図.schema.yaml
+    description: ER 図の設計書のスキーマ。データストアの構造（DB・JSON・YAML）を分類ごとに書く。ER 図の設計書を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: files.schema.yaml
+    description: dev-docs の管理用の YAML（files.yaml）の 1 行の項目を定めるスキーマ。dev-docs の templates/files.schema.yaml のコピー。files.yaml に載せる項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:メタデータ, tool:dev-docs, tool:jsonschema]
+  - path: index.schema.yaml
+    description: フォルダの直下の目次（index.yaml）のスキーマ。README はここから作る。目次の行を追加・変更するときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: アーキテクチャ図.schema.yaml
+    description: アーキテクチャ図の設計書のスキーマ。システム全体図・リポジトリ構成・サブシステム一覧・外部システム連携を書く。アーキテクチャ図を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: インターフェース定義.schema.yaml
+    description: インターフェース定義の設計書のスキーマ。1 操作の入出力・制約・正常系と異常系のフローを書く。インターフェース定義を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: シナリオ.schema.yaml
+    description: シナリオの設計書のスキーマ。単一・複合ユースケースの正常・異常シナリオを書く。シナリオを書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: テスト実行方法.schema.yaml
+    description: テスト実行方法の設計書のスキーマ。テストの種別ごとの実行コマンドと前提を書く。テスト実行方法を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: データフロー.schema.yaml
+    description: データフローの設計書のスキーマ。1 つのデータがシステムの中をどう流れるかを書く。データフローの設計書を書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: モジュール構成.schema.yaml
+    description: モジュール構成の設計書のスキーマ。クラス・関数・関数型・定数をドメインの分類でまとめる。モジュール構成を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 共通.schema.yaml
+    description: 種別をまたいで使う型（本文・参照・共通の項目・状態遷移・フローチャート・ER 図）のスキーマ。複数の種別に効く項目を変えるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 外部API.schema.yaml
+    description: 外部 API の設計書のスキーマ。認証・エンドポイント・調べた不具合と対処を書く。外部 API の設計書を書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 外部ライブラリ.schema.yaml
+    description: 外部ライブラリの設計書のスキーマ。バージョン・動作確認・API・調べた不具合と対処を書く。外部ライブラリの設計書を書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 状態遷移.schema.yaml
+    description: 状態遷移の設計書のスキーマ。エンティティの取りうる状態と許可された遷移を書く。状態遷移の設計書を書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 画面設計.schema.yaml
+    description: 画面設計の設計書のスキーマ。1 画面ごとの要素と入力の検査を書く。画面設計を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 設定.schema.yaml
+    description: 設定の設計書のスキーマ。設定のキーと環境変数の一覧を書く。設定の設計書を書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 部品設計.schema.yaml
+    description: 部品設計の設計書のスキーマ。部品の引数・スロット・イベント・状態（Storybook のストーリー）を書く。部品設計を書くときや項目を確かめるときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 開発コマンド.schema.yaml
+    description: 開発コマンドの設計書のスキーマ。分類ごとの前提・順序・コマンド・料金や副作用・確かめた記録を書く。開発コマンドを書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: 非機能要件.schema.yaml
+    description: 非機能要件の設計書のスキーマ。外部の制約から逆算したアプリの決定値を書く。非機能要件を書くときに読む。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]

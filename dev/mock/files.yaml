@@ -1,0 +1,739 @@
+# yaml-language-server: $schema=../../dev/テンプレート/files.schema.yaml
+files:
+  - path: assets/style.css
+    description: 'モック『assets』の見た目: 採用スタイル（開発者ツール × スイス）の変数の値: mindstella の本文（13px）より 1 段大きい 14px の文字と、mindstella と同じ行間・角丸。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: assets/themes/theme-contrast.css
+    description: 'モック『themes』の見た目: テーマ「theme-contrast」の配色の値: 高コントラスト: 白と黒の地に、濃い文字・濃い罫線・濃い青のリンク。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: assets/themes/theme-paper.css
+    description: 'モック『themes』の見た目: テーマ「theme-paper」の配色の値: 紙: 生成りの地に墨色の文字と臙脂のリンク。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: assets/themes/theme-slate.css
+    description: 'モック『themes』の見た目: テーマ「theme-slate」の配色の値: 青灰: 青みの灰の地と面に、青のリンク。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: components/backlinks/index.html
+    description: '部品『backlinks』のモック: 描いた文書を参照している文書の一覧（文書の末尾の「関連文書」のセクション）。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/badge/index.html
+    description: '部品『badge』のモック: 頭に `badge:` を付けた行内のコードを描いた札と、頭の後ろが空でバッジにしない行内のコード。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/callout/index.html
+    description: '部品『callout』のモック: 種類ごとのタイトル・色・アイコンを持つ注意書きの枠と、閉じた注意書き。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/chart/index.html
+    description: '部品『chart』のモック: 系列を色と線の模様・点のマーカーの組で分けたグラフ（折れ線）と、色と塗りの模様の組で分けた棒・円、点のマーカーで分けた散布図。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: components/code-block/index.html
+    description: '部品『code-block』のモック: コードブロックのタイトル・行番号・行の強調と、コードの行のマーカーで分けた追加した行・削除した行・強調の行、言語に応じた色分け、言語のラベルとコピーボタン、印刷の見え方。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:コードブロック]
+  - path: components/comment/index.html
+    description: '部品『comment』のモック: 選んだ箇所のマーカー・文字を選んだときのコメントのボタン・入力欄と保存できない知らせ・吹き出しと、箇所が見つからないコメントの一覧。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:コメント]
+  - path: components/diagram-frame/index.html
+    description: '部品『diagram-frame』のモック: 図のタイトル・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: components/diagram-frame/style.css
+    description: 'モック『diagram-frame』の見た目: 図の枠の部品のモックの固有の規則: 狭い枠の見本の幅。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: components/diagram-tooltip/index.html
+    description: '部品『diagram-tooltip』のモック: 図の矢マーカーの詳細・箱の入力・処理・出力・箱の hint・箱の中の用語のツールチップと、ヒントを外した図。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: components/diff-blocks/index.html
+    description: '部品『diff-blocks』のモック: 描いた文書の上の差分の色分けで、追加・変更したブロックと削除したブロックを段落・見出し・表の行・リストの項目・コードブロック・注意書き・長い URL ごとに、案 A（左の余白の記号）と案 B（枠と右上の札）で並べたもの。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:差分]
+  - path: components/diff-blocks/style.css
+    description: 'モック『diff-blocks』の見た目: 描いた文書の上の差分の色分けのカタログ: 状態ごとに案 A と案 B の見本を並べる。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:差分, tool:css]
+  - path: components/diff-html-switch/index.html
+    description: '部品『diff-html-switch』のモック: 差分の中の埋め込んだ HTML の範囲を、ソースの色分けとプレビューの前と後で切り替える見方のボタンと、片側にだけある・変えていない・スクリプトを書いた範囲。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:差分]
+  - path: components/diff-lines/index.html
+    description: '部品『diff-lines』のモック: 削除した行の赤と `-`・追加した行の緑と `+`・行の中で変わった語の濃い色の差分の行・削除した行と追加した行の位置を示すミニマップと、変更が無い・比較対象のリビジョンが無い・読み込み中・一覧を取り出せない場面。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:差分]
+  - path: components/doc-list/index.html
+    description: '部品『doc-list』のモック: まとめた HTML の文書の一覧（フォルダごとに 1 段の見出しにパスを書き、開いている文書を示す）。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/doc-list/style.css
+    description: 'モック『doc-list』の見た目: 文書の一覧の部品のカタログだけの規則。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: components/embedded-html/index.html
+    description: '部品『embedded-html』のモック: マーカーの範囲のコードブロックの HTML を本文に溶け込ませて描いた場所と、チャートを含む・列より広い・機能がオフ・書き方の警告の場面。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/figure/index.html
+    description: '部品『figure』のモック: 図と表に付ける通し番号と、番号にした参照のリンク。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/file-tree/index.html
+    description: '部品『file-tree』のモック: 罫線で書いたフォルダ構成を描いた入れ子のツリーと、注釈・拡張子ごとのアイコン・ほかにもある項目・フォルダの開閉と `open=`・ASCII の罫線・元の罫線のテキストのコピー。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:ツリー]
+  - path: components/flow-diagram/index.html
+    description: '部品『flow-diagram』のモック: システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: components/hint/index.html
+    description: '部品『hint』のモック: `data-hint` を持つ要素の右上のマーカー・行内の破線の下線と、図のツールチップと同じ見た目のツールチップ。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/index.md
+    description: 新しく追加する・変える部品のモック。コンポーネント索引のモックを探すときに読む。
+    tags: [topic:モック]
+  - path: components/notice/index.html
+    description: '部品『notice』のモック: 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中のマーカーの場所。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/notice/style.css
+    description: 'モック『notice』の見た目: 知らせの枠のカタログ: 状態ごとの見本を縦に並べる。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: components/param-control/index.html
+    description: '部品『param-control』のモック: スライダー・グラフ・今の値をコピーするボタンを組み合わせた操作できる部品と、コピーた・コピーできなかったの知らせ。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/preview-status/index.html
+    description: '部品『preview-status』のモック: VS Code 拡張機能のプレビューのパネルに出す読み込み中・描けない理由（差分の表示に対応しないバージョンを含む）と「リロード」・設定ファイルを読めない帯と「設定ファイルを開く」。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/preview-status/style.css
+    description: 'モック『preview-status』の見た目: プレビューの状態の表示のカタログ: 状態ごとの見本を縦に並べる。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: components/revision-picker/index.html
+    description: '部品『revision-picker』のモック: 文書の右上の「変更を見る」と、前と後のリビジョンを日時・label・author で選ぶ欄と、本文を取り出せない場面。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/row-detail/index.html
+    description: '部品『row-detail』のモック: 表の行の下に開閉して出す行の詳細。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/section/index.html
+    description: '部品『section』のモック: 見出しのアンカーと、見出しから開閉するセクション（h1 のセクションを含む）・右側の目次の上部のすべて展開とすべて折りたたむ・Shift を押しながらの入れ子の開閉。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:セクション]
+  - path: components/section/style.css
+    description: 'モック『section』の見た目: セクションのカタログだけの規則。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:セクション, tool:css]
+  - path: components/sequence-diagram/index.html
+    description: '部品『sequence-diagram』のモック: 相手を左から右、メッセージを時刻の順に並べ、繰り返しの戻りを持つシーケンス図。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: components/settings-gear/index.html
+    description: '部品『settings-gear』のモック: VS Code 拡張機能のプレビューから設定を開く歯車のボタン（エディタのタイトルバーの歯車と、プレビューの中の歯車とテーマのメニュー）の通常・ホバー・フォーカス・押下・メニューを開いた状態。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/settings-gear/style.css
+    description: 'モック『settings-gear』の見た目: 設定を開く歯車のボタンのカタログ: 状態を縦に並べる（この部品のモックだけの規則）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: components/steps/index.html
+    description: '部品『steps』のモック: 番号と線でつないだ手順と、閉じたステップ・`title=` のタイトル・読めない指定の書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/syntax-warning/index.html
+    description: '部品『syntax-warning』のモック: 読めない指定とその直し方を書く人へ知らせる書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:構文]
+  - path: components/table/index.html
+    description: '部品『table』のモック: 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:テーブル]
+  - path: components/tabs/index.html
+    description: '部品『tabs』のモック: 見出しの文字をタブ名にしたタブと、URL の ID が指す見出しを持つタブを選ぶ処理、閉じたタブ・`title=` のタイトル。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:タブ]
+  - path: components/term-tooltip/index.html
+    description: '部品『term-tooltip』のモック: 用語と文書の別名の破線の下線・やめた言い方の波線の下線と、ポインター・フォーカスで開く用語・関連文書・代わりの用語のツールチップと、エイリアスの種類ごとのツールチップ・コマンドのコピーのボタン。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:用語]
+  - path: components/term-tooltip/style.css
+    description: 'モック『term-tooltip』の見た目: 用語のツールチップの部品のモックの固有の規則: 開いた状態を見せる見本の下にツールチップの分の高さを取る。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:用語, tool:css]
+  - path: components/toc/index.html
+    description: '部品『toc』のモック: 見出しを階層どおりに入れ子にした目次と、描いた文書の右側の目次（hover の右端の線・ピン止め、fixed のサイドバー、今いるセクションのハイライト、狭い幅の帯）。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:目次]
+  - path: components/toc/style.css
+    description: 'モック『toc』の見た目: 目次のカタログだけの規則。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:css]
+  - path: components/view/index.html
+    description: '部品『view』のモック: マーカーの表の行を列の値ごとに並べたボードと表のビュー、切り替え・列の見出しのアイコン・表の列の絞り込み。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:ビュー]
+  - path: index.md
+    description: mdmark のモックの入口。モック索引のモックを探すときに読む。
+    tags: [topic:モック]
+  - path: pages/bundle/166/index.md
+    description: '#166（描いた文書の右側に目次を出し、セクションの開閉を H1 とまとめての操作に広げる）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック, topic:書き出し]
+  - path: pages/bundle/166/side-toc/app.js
+    description: 'モック『side-toc』の動き: まとめた HTML の右側の目次のモックの操作: URL の # で開く文書と見出しを決め、文書の一覧のパネルとセクションを開閉する。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, topic:書き出し, tool:javascript]
+  - path: pages/bundle/166/side-toc/index.html
+    description: '#166 の画面のモックの案『side-toc』: 左に文書の一覧、中央に開いている文書、描く先の要素の中の右端に右側の目次を並べる。狭い幅では文書の一覧の帯の下に、右側の目次の帯を留める。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:目次, topic:書き出し]
+  - path: pages/bundle/166/side-toc/print.css
+    description: 'モック『side-toc』の印刷の見た目: まとめた HTML を紙に出すときの規則: 文書の一覧・帯・パネルを出さず、開いている文書だけを出す。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:目次, topic:印刷, topic:書き出し, tool:css]
+  - path: pages/bundle/166/side-toc/style.css
+    description: 'モック『side-toc』の見た目: まとめた HTML の右側の目次のモックだけの規則。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:目次, topic:書き出し, tool:css]
+  - path: pages/bundle/32/index.md
+    description: '#32（サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック, topic:書き出し]
+  - path: pages/bundle/32/side-list/app.js
+    description: 'モック『side-list』の動き: まとめた HTML のモックの操作: URL の # で開く文書と見出しを決め、文書の一覧のパネルを開閉し、印刷の見え方を切り替える。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:書き出し, tool:javascript]
+  - path: pages/bundle/32/side-list/index.html
+    description: '#32 の画面のモックの案『side-list』: 左に文書の一覧（フォルダごとに 1 段の見出しにパスを書く）、右に開いている文書。狭い幅では帯のボタンで一覧のパネルを重ねて開く。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:書き出し]
+  - path: pages/bundle/32/side-list/print.css
+    description: 'モック『side-list』の印刷の見た目: まとめた HTML を紙に出すときの規則: 文書の一覧・帯・パネルを出さず、開いている文書だけを出す。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:書き出し, tool:css]
+  - path: pages/bundle/32/side-list/style.css
+    description: 'モック『side-list』の見た目: まとめた HTML のモックだけの規則。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:書き出し, tool:css]
+  - path: pages/bundle/index.md
+    description: '`mdmark build` が複数の文書をまとめて書き出す 1 枚の HTML。bundle のモックを探すときに読む。'
+    tags: [topic:モック, topic:書き出し]
+  - path: pages/document/151/display-improvements/app.js
+    description: 'モック『display-improvements』の動き: 表示を改善した文書のモック: 未確定の案と場面の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: pages/document/151/display-improvements/index.html
+    description: '#151 の画面のモックの案『display-improvements』: 採用スタイル modern の文書に、画面の上端と下端に留める見出し行と集計の行、コピーの形式・集計のメニュー、コードブロックの言語のラベルとコピーボタン、タブの中の見出しへの移動、空の `badge:` を置く。本文の幅・最終列を畳む条件・畳んだ最終列の開き方・見出し行の留め方・クリップボードの可否を切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/151/display-improvements/print.css
+    description: 'モック『display-improvements』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: pages/document/151/display-improvements/style.css
+    description: 'モック『display-improvements』の見た目: 表示を改善した文書のモック: 使う側のページの中に描いた文書（表の見出し行と幅・表のコピーと集計・コードブロックのラベルとコピー・タブの中の見出しへの移動・空の badge:）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/151/index.md
+    description: '#151（描いた文書の表示を改善する（表の見出し行と幅・表のコピーと集計・コードブロックのラベルとコピー・タブの中の見出しへの移動・空の badge:））の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/16/index.md
+    description: '#16（Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/16/modern/app.js
+    description: 'モック『modern』の動き: 描いた文書のモックの印刷: 印刷の前後の折り畳みの開閉と、モックだけの「印刷の見え方」の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: pages/document/16/modern/index.html
+    description: '#16 の画面のモックの案『modern』: 採用スタイル modern で描いた文書。描く先の要素に地の色と内側の余白を当て、横スクロールする表とコードブロックの続く側に影を出す。印刷の見え方を切り替えられる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/16/modern/print.css
+    description: 'モック『modern』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: pages/document/16/modern/style.css
+    description: 'モック『modern』の見た目: 描いた文書のモック: 使う側のページの中に描いた文書と、印刷・知らせの枠・横スクロールの見え方。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/166/index.md
+    description: '#166（描いた文書の右側に目次を出し、セクションの開閉を H1 とまとめての操作に広げる）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/166/side-toc/app.js
+    description: 'モック『side-toc』の動き: 右側の目次とセクションのまとめての開閉のモック: 未確定の案と場面の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:javascript]
+  - path: pages/document/166/side-toc/index.html
+    description: '#166 の画面のモックの案『side-toc』: 採用スタイル（開発者ツール × スイス）の文書の右側に目次を置き、H1〜H4 のセクションの開閉・すべて展開とすべて折りたたむ・Shift での入れ子の開閉を付ける。目次の出し方（hover・fixed・知らない値）を切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:目次]
+  - path: pages/document/166/side-toc/print.css
+    description: 'モック『side-toc』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:目次, topic:印刷, tool:css]
+  - path: pages/document/166/side-toc/style.css
+    description: 'モック『side-toc』の見た目: 右側の目次とセクションのまとめての開閉のモック: 使う側のページの中に描いた文書。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:css]
+  - path: pages/document/181/index.md
+    description: '#181（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/181/theme-select/index.html
+    description: '#181 の画面のモックの案『theme-select』: 設定で選んだテーマ（選ばない・theme-paper・theme-slate・theme-contrast・知らない名前）で描いた文書を、明るい配色・ダーク・親の class で明るい配色・印刷で切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:テーマ]
+  - path: pages/document/181/theme-select/style.css
+    description: 'モック『theme-select』の見た目: テーマを選んで描いた文書のモックだけの規則: 印刷の見え方を画面に出す（実装では @media print で当てる）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: pages/document/19/index.md
+    description: '#19（HTML コメントのマーカーで表・注意書き・タブなどの表示を付ける拡張記法を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/19/modern/app.js
+    description: 'モック『modern』の動き: 拡張記法を描いた文書のモックの印刷: 印刷の前後の展開と、モックだけの「印刷の見え方」の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: pages/document/19/modern/images/arch.svg
+    description: モック『modern』が本文に置く図の画像。このモックの図を差し替えるときに読む。
+    tags: [topic:モック, tool:svg]
+  - path: pages/document/19/modern/images/flow.svg
+    description: モック『modern』が本文に置く図の画像。このモックの図を差し替えるときに読む。
+    tags: [topic:モック, topic:図, tool:svg]
+  - path: pages/document/19/modern/index.html
+    description: '#19 の画面のモックの案『modern』: 採用スタイル modern の文書に、表の操作・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・見出しのアンカー・セクションと行の詳細の開閉・図表の番号・拡張・書き方の警告を追加した。印刷の見え方を切り替えられる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/19/modern/page.css
+    description: 'モック『modern』のページの見た目: 拡張記法を描いた文書のモックの固有の規則: 使う側の拡張がマーカーの場所に描いた見本。このモックのページの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/19/modern/print.css
+    description: 'モック『modern』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: pages/document/19/modern/style.css
+    description: 'モック『modern』の見た目: 描いた文書のモック: 使う側のページの中に描いた文書と、印刷・知らせの枠・横スクロールの見え方。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/225/fold-search-tree/index.html
+    description: '#225 の画面のモックの案『fold-search-tree』: 採用スタイル modern の文書に、閉じた表・タブ・ステップと `title=` のタイトル、注釈・アイコン・開閉・コピーを持つファイルツリーを置く。注釈の列の見た目・フォルダの開閉の示し方・クリップボードの可否を切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:ツリー]
+  - path: pages/document/225/fold-search-tree/print.css
+    description: 'モック『fold-search-tree』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:ツリー, topic:印刷, tool:css]
+  - path: pages/document/225/fold-search-tree/style.css
+    description: 'モック『fold-search-tree』の見た目: 表・タブ・ステップ・ファイルツリーのマーカーのモック: 使う側のページの中に描いた文書（表とタブとステップの折りたたみ・ファイルツリーの注釈と開閉とコピー）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:ツリー, tool:css]
+  - path: pages/document/225/index.md
+    description: '#225（表の絞り込み欄とチップ、表・タブ・ステップの折りたたみの title=・closed・open、ファイルツリーの注釈・アイコン・開閉・コピーを追加する）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/27/backlinks-end/app.js
+    description: 'モック『backlinks-end』の動き: 拡張記法を描いた文書のモックの印刷: 印刷の前後の展開と、モックだけの「印刷の見え方」の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: pages/document/27/backlinks-end/index.html
+    description: '#27 の画面のモックの案『backlinks-end』: 採用スタイル modern の文書に、用語と文書の別名の破線の下線・用語と関連文書のツールチップ・用語集の表と列名の書き方の警告を足し、被参照を文書の末尾の「関連文書」のセクションで出す。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/27/backlinks-end/print.css
+    description: 'モック『backlinks-end』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: pages/document/27/backlinks-end/style.css
+    description: 'モック『backlinks-end』の見た目: 描いた文書のモック: 使う側のページの中に描いた文書と、印刷・知らせの枠・横スクロールの見え方。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/27/index.md
+    description: '#27（文書の索引・用語のツールチップ・被参照を表示する）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/32/export/app.js
+    description: 'モック『export』の動き: 拡張記法を描いた文書のモックの印刷: 印刷の前後の展開と、モックだけの「印刷の見え方」の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: pages/document/32/export/index.html
+    description: '#32 の画面のモックの案『export』: `mdmark export` が書き出す 1 枚の HTML。使う側のページを持たず、#27 の文書をそのまま描く。文書間のリンクは書いたままの `href` で残る。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/32/export/print.css
+    description: 'モック『export』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: pages/document/32/export/style.css
+    description: 'モック『export』の見た目: 1 文書を書き出した HTML のモック: 文書だけのページと、印刷・横スクロールの見え方。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/32/index.md
+    description: '#32（サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/42/diagram-doc/app.js
+    description: 'モック『diagram-doc』の動き: 使う側の固有の部品のモックと、モックの「固有の定義を当てる場所」の切り替え。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:図, tool:javascript]
+  - path: pages/document/42/diagram-doc/index.html
+    description: '#42 の画面のモックの案『diagram-doc』: 採用スタイル modern の文書に、フロー図・シーケンス図・グラフ・操作できる部品と、使う側の固有の部品と CSS を置く。固有の定義を当てる場所の文書と別の場所の文書を切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: pages/document/42/diagram-doc/style.css
+    description: 'モック『diagram-doc』の見た目: 図を置いた文書のモック: 使う側のページの中に描いた文書（図の部品・操作できる部品・固有の部品）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: pages/document/42/diagram-doc/team.css
+    description: 'モック『diagram-doc』の見た目: 使う側の固有の CSS（ワークスペースの theme.css に当たる）: mdmark の層の外に書き、図の LLM の色を使う側の色に変え、固有の部品の見た目を持つ。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: pages/document/42/index.md
+    description: '#42（図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/45/embedded-html/app.js
+    description: 'モック『embedded-html』の動き: モックの「HTML の表示」「ヒント」の切り替え（設定の features.html・features.hints に当たる）。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: pages/document/45/embedded-html/index.html
+    description: '#45 の画面のモックの案『embedded-html』: 採用スタイル modern の文書に、マーカーの範囲のコードブロックの HTML（`data-hint`・用語・チャート）を本文に溶け込ませて描く。HTML の表示とヒントのオン・オフを切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/45/embedded-html/style.css
+    description: 'モック『embedded-html』の見た目: 埋め込んだ HTML を置いた文書のモック: 使う側のページの中に描いた文書（埋め込んだ HTML・チャート・data-hint）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: pages/document/45/index.md
+    description: '#45（コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/49/diff/app.js
+    description: 'モック『diff』の動き: モックの操作列の切り替え（場面・差分の出し方・プレビューの並べ方）と、場面の取り出し元を渡して「変更を見る」を付ける。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:差分, tool:javascript]
+  - path: pages/document/49/diff/index.html
+    description: '#49 の画面のモックの案『diff』: 採用スタイル modern の文書の右上に「変更を見る」を置き、開くと前と後のリビジョンを選ぶ欄と、行と語を色分けした差分を文書の代わりに出す。埋め込んだ HTML の範囲はソースとプレビューを切り替える。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:差分]
+  - path: pages/document/49/diff/style.css
+    description: 'モック『diff』の見た目: 差分を開く文書のモック: 使う側のページの中に描いた文書と、文書の上の「変更を見る」から開く差分。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:差分, tool:css]
+  - path: pages/document/49/index.md
+    description: '#49（文書の変更を行と文字で色分けする差分表示を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/55/index.md
+    description: '#55（ビュー・検索・コメントの部品を文書と使う側の JavaScript・TypeScript から使えるようにする）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/55/views-comments/app.js
+    description: 'モック『views-comments』の動き: ビューとコメントを置いた文書のモック: 場面の切り替えと、モックだけの「印刷の見え方」。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:コメント, topic:ビュー, tool:javascript]
+  - path: pages/document/55/views-comments/index.html
+    description: '#55 の画面のモックの案『views-comments』: 採用スタイル modern の文書に、マーカーの表をボードと表で切り替え、表を列で絞り込むビューを置き、本文の選んだ箇所にコメントを付ける。ビューとコメントの場面（警告・機能のオフ・保存できない・描き直した後）を切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:コメント, topic:ビュー]
+  - path: pages/document/55/views-comments/print.css
+    description: 'モック『views-comments』の印刷の見た目: 印刷の規則。このモックの印刷の見た目を変えるときに読む。'
+    tags: [topic:モック, topic:コメント, topic:ビュー, topic:印刷, tool:css]
+  - path: pages/document/55/views-comments/style.css
+    description: 'モック『views-comments』の見た目: ビューとコメントを置いた文書のモック: 使う側のページの中に描いた文書（ボードと表のビュー・列の絞り込み・選んだ箇所のコメント）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:コメント, topic:ビュー, tool:css]
+  - path: pages/document/index.md
+    description: 使う側のページの中に mdmark が描いた文書。document のモックを探すときに読む。
+    tags: [topic:モック]
+  - path: pages/index.md
+    description: mdmark のモックの画面。画面索引のモックを探すときに読む。
+    tags: [topic:モック]
+  - path: pages/ui-canvas/80/index.md
+    description: '#80（mdmark の見た目を洗い出し、mindstella のデザイントークンに揃える）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック, topic:テーマ]
+  - path: pages/ui-canvas/80/side-by-side/app.js
+    description: 'モック『side-by-side』の動き: 洗い出しのキャンバス: 部品ごとに今の値の列と dev-swiss の列を作り、同じ Markdown を mount で描く。このモックの動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:javascript]
+  - path: pages/ui-canvas/80/side-by-side/index.html
+    description: '#80 の画面のモックの案『side-by-side』: 部品ごとに、今の値（modern）と採用した dev-swiss の値の列を左右に並べる。狭い幅では上下に並べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:テーマ]
+  - path: pages/ui-canvas/80/side-by-side/style.css
+    description: 'モック『side-by-side』の見た目: 洗い出しのキャンバスの並べ方: 部品ごとのセクションに、今の値の列と dev-swiss の列を並べる。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: pages/ui-canvas/index.md
+    description: mdmark が描く文書とまとめた HTML の UI を部品ごとに並べ、見た目の値の違いを見比べるキャンバス。ui-canvas のモックを探すときに読む。
+    tags: [topic:モック, topic:テーマ]
+  - path: pages/vscode-preview/181/gear-editor-title/index.html
+    description: '#181 の画面のモックの案『gear-editor-title』: 案 A。プレビューのエディタのタイトルバーに歯車のボタンを置き、押すと VS Code の設定画面を mdmark の項目に絞って Markdown の列に開く。設定画面でテーマを変えると、右に残したプレビューがその場で描き直る。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/181/gear-in-webview/index.html
+    description: '#181 の画面のモックの案『gear-in-webview』: 案 B。プレビューの中の右上に歯車のボタンを置き、押すとテーマの一覧と「すべての設定を開く」のメニューを開く。一覧から選ぶとその場で描き直り、「すべての設定を開く」は案 A と同じ設定画面を開く。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/181/index.md
+    description: '#181（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/196/corner-label/index.html
+    description: '#196 の画面のモックの案『corner-label』: 案 B。差分ビューから開いたプレビューで変更後の文書を描き、追加・変更したブロックと削除したブロックを背景の色と全周の枠で囲み、右上に「追加」「削除」の札を出す。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/196/index.md
+    description: '#196（VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/196/sign-gutter/index.html
+    description: '#196 の画面のモックの案『sign-gutter』: 案 A。差分ビューから開いたプレビューで変更後の文書を描き、追加・変更したブロックと削除したブロックを背景の色で塗り、左の余白に + と − の記号を出す。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/69/index.md
+    description: '#69（VS Code で mdmark のプレビューを出す拡張機能を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/69/panel/index.html
+    description: '#69 の画面のモックの案『panel』: VS Code の列に開いたプレビューのパネル。描いた文書・読み込み中・描けない（オフライン・バージョンが無い・バージョンを決められない）と「リロード」・設定ファイルを読めない帯と「設定ファイルを開く」を、VS Code のライトとダークで切り替えて見比べる。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/index.md
+    description: VS Code 拡張機能が Webview に出す、mdmark で描いたプレビューのパネル。vscode-preview のモックを探すときに読む。
+    tags: [topic:モック, tool:vscode]
+  - path: refs/151/assets/catalog.css
+    description: '#151 のモックが共通で読む素材: 部品のカタログのモック専用の追加分（#151）: 開いたまま見せる集計・コピーの形式のメニューの置き方と、狭い描く先の見本。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/151/assets/code-block-print.css
+    description: '#151 のモックが共通で読む素材: コードブロックの帯の印刷の規則（#151 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:コードブロック, tool:css]
+  - path: refs/151/assets/code-block.css
+    id: dev/mock/refs/151/assets/code-block.css
+    description: '#151 のモックが共通で読む素材: コードブロックの言語のラベルとコピーボタンの規則（#151 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コードブロック, tool:css]
+  - path: refs/151/assets/code-block.js
+    description: '#151 のモックが共通で読む素材: コードブロックの言語のラベルとコピーボタン（実装の mount が付ける振る舞いのモック）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コードブロック, tool:javascript]
+  - path: refs/151/assets/preview.js
+    description: '#151 のモックが共通で読む素材: モックだけの「印刷の見え方」と、印刷の前後の展開（#151 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/151/assets/samples.js
+    description: '#151 のモックが共通で読む素材: #151 の表の見本の定義（table-build.js が組み立てる）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/151/assets/table-build.js
+    description: '#151 のモックが共通で読む素材: 表の見本の組み立て（モックだけの仕組み）: window.mdmarkMockTables の定義から、実装の表の部品と同じ HTML を描く。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:javascript]
+  - path: refs/151/assets/table-print.css
+    description: '#151 のモックが共通で読む素材: 表の見た目の追加分の印刷の規則（#151 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, topic:印刷, tool:css]
+  - path: refs/151/assets/table.css
+    id: dev/mock/refs/151/assets/table.css
+    description: '#151 のモックが共通で読む素材: 表の見た目の追加分（#151 で共有するアセット）: 縦の高さの上限を外した表、ページのスクロールで留める見出し行と集計の行、 計算ごとの集計の行と集計のメニュー、コピーの形式のメニューとコピーできないときのパネル、行の URL の知らせ、狭い幅で畳む最終列。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:css]
+  - path: refs/151/assets/table.js
+    description: '#151 のモックが共通で読む素材: 表の操作（実装の mount が付ける振る舞いのモック）: 件数の表示・列の表示の切り替え・計算ごとの集計の行と集計のメニュー・ 形式を選ぶ表のコピーとコピーできないときのパネル・行の URL のコピー・狭い幅で畳む最終列・見出し行と集計の行をページのスクロールで留める処理。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:javascript]
+  - path: refs/151/assets/tabs.js
+    description: '#151 のモックが共通で読む素材: URL の #ID が選ばれていないタブの中の見出しを指すとき、そのタブを選んでから見出しへ移る処理（実装の tabs.ts のモック）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:タブ, tool:javascript]
+  - path: refs/151/index.md
+    description: '#151（描いた文書の表示を改善する（表の見出し行と幅・表のコピーと集計・コードブロックのラベルとコピー・タブの中の見出しへの移動・空の badge:））の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/16/assets/sample.css
+    id: dev/mock/refs/16/assets/sample.css
+    description: '#16 のモックが共通で読む素材: デザインスタイルの見本の土台。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/16/assets/sample.js
+    description: '#16 のモックが共通で読む素材: デザインスタイルの見本の配色の切り替え（モック専用の操作列のボタン）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/16/index.md
+    description: '#16（Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/166/assets/side-toc-print.css
+    description: '#166 のモックが共通で読む素材: 右側の目次とまとめての開閉のボタンの印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, topic:印刷, tool:css]
+  - path: refs/166/assets/side-toc.css
+    id: dev/mock/refs/166/assets/side-toc.css
+    description: '#166 のモックが共通で読む素材: 右側の目次とまとめての開閉のボタン: 描いた文書の右の列に置く目次（hover・fixed の出し方）・今いるセクションのハイライト・すべて展開とすべて折りたたむ。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:css]
+  - path: refs/166/assets/side-toc.js
+    description: '#166 のモックが共通で読む素材: 右側の目次とまとめての開閉の操作（実装の interact のモック）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:javascript]
+  - path: refs/166/index.md
+    description: '#166（描いた文書の右側に目次を出し、セクションの開閉を H1 とまとめての操作に広げる）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/176/assets/alias-tip.css
+    id: dev/mock/refs/176/assets/alias-tip.css
+    description: '#176 のモックが共通で読む素材: エイリアスのツールチップ: 種類ごとの区分の名前・説明・項目と、コマンドのコピーのボタン（#176 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:エイリアス, tool:css]
+  - path: refs/176/assets/alias-tip.js
+    description: '#176 のモックが共通で読む素材: コマンドのエイリアスのツールチップのコピーのボタン（実装の mount が付ける振る舞いのモック）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:エイリアス, tool:javascript]
+  - path: refs/176/index.md
+    description: '#176（エイリアス（用語・文書・コマンド・URL など）を Markdown の用語集に加えて設定の aliases で YAML からも登録できるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/181/assets/settings.css
+    description: '#181 のモックが共通で読む素材: #181 のモック: 歯車のボタン（エディタのタイトルバー・Webview の中）・テーマのメニュー・VS Code の設定画面と、2 つのエディタの列を並べる枠。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/181/assets/theme.js
+    description: '#181 のモックが共通で読む素材: #181 のモック: 文書のテーマ（?colorTheme=）と配色（?scheme=）を URL で切り替える（モックだけの仕組み） preview.js と同じページで読むため、名前がぶつからないようブロックの中に置く。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:javascript]
+  - path: refs/181/index.md
+    description: '#181（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/19/assets/catalog.css
+    description: '#19 のモックが共通で読む素材: 拡張記法の部品のカタログ: 状態ごとの見本を縦に並べる。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/19/assets/syntax-print.css
+    description: '#19 のモックが共通で読む素材: 拡張記法の印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:構文, tool:css]
+  - path: refs/19/assets/syntax.css
+    id: dev/mock/refs/19/assets/syntax.css
+    description: '#19 のモックが共通で読む素材: 拡張記法の表示: 表の操作・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・見出しのアンカー・セクションの開閉・行の詳細・図表の番号・書き方の警告。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:構文, tool:css]
+  - path: refs/19/assets/syntax.js
+    description: '#19 のモックが共通で読む素材: 拡張記法の操作（実装の mount が付ける振る舞いのモック）: 表の並べ替え・列ごとの絞り込み・ピン止め、タブ、セクションと行の詳細の開閉、 移る先のセクションを開く処理と、印刷の前後の展開。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:構文, tool:javascript]
+  - path: refs/19/index.md
+    description: '#19（HTML コメントのマーカーで表・注意書き・タブなどの表示を付ける拡張記法を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/196/assets/diff-preview.css
+    description: '#196 のモックが共通で読む素材: #196 のモック: 描いた文書の上の差分の色分け（追加・削除したブロック）と、モックの VS Code の差分ビュー。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:差分, tool:css]
+  - path: refs/196/index.md
+    description: '#196（VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/225/assets/collapse-print.css
+    description: '#225 のモックが共通で読む素材: タブ・ステップの折りたたみの印刷の規則（#225 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: refs/225/assets/collapse.css
+    description: '#225 のモックが共通で読む素材: 閉じた表と、タブ・ステップの折りたたみの規則（#225 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/225/assets/samples.js
+    description: '#225 のモックが共通で読む素材: #225 の表の見本の定義（refs/151/assets/table-build.js が組み立てる）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/225/assets/scene.js
+    description: '#225 のモックが共通で読む素材: #225 のモックの未確定の案と場面の切り替え（画面と部品のカタログで共有する）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/225/assets/table-collapse.js
+    description: '#225 のモックが共通で読む素材: 表の折りたたみ（実装の render が描く closed・open と title= のモック）: table-build.js が組み立てた表の入れ物のうち、 data-mock-collapse（"closed" / "open"）を持つものの道具の帯と表を details に入れ、見出しを title= か「表。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:javascript]
+  - path: refs/225/assets/tree-print.css
+    description: '#225 のモックが共通で読む素材: ファイルツリーの追加分の印刷の規則（#225 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:ツリー, topic:印刷, tool:css]
+  - path: refs/225/assets/tree.css
+    id: dev/mock/refs/225/assets/tree.css
+    description: '#225 のモックが共通で読む素材: ファイルツリーの追加分（#225 で共有するアセット）: 帯とコピーボタン・注釈の列・拡張子ごとのアイコン・「ほかにもある」の項目・フォルダの開閉。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:ツリー, tool:css]
+  - path: refs/225/assets/tree.js
+    description: '#225 のモックが共通で読む素材: ファイルツリー（実装の render と mount が付ける振る舞いのモック）: 言語 tree のコードブロックの罫線を読んで入れ子のツリーを描き、 注釈の列・拡張子ごとのアイコン・「ほかにもある」の項目・フォルダの開閉（Shift で入れ子を全部）・元の罫線のテキストのコピーを付ける。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:ツリー, tool:javascript]
+  - path: refs/225/index.md
+    description: '#225（表の絞り込み欄とチップ、表・タブ・ステップの折りたたみの title=・closed・open、ファイルツリーの注釈・アイコン・開閉・コピーを追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/27/assets/glossary-print.css
+    description: '#27 のモックが共通で読む素材: 用語と被参照の印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:用語, tool:css]
+  - path: refs/27/assets/glossary.css
+    id: dev/mock/refs/27/assets/glossary.css
+    description: '#27 のモックが共通で読む素材: 用語のツールチップと被参照の一覧: 用語と文書の別名の破線の下線・用語と関連文書のツールチップ・参照している文書の一覧。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:用語, tool:css]
+  - path: refs/27/assets/glossary.js
+    description: '#27 のモックが共通で読む素材: 用語と関連文書のツールチップの操作（実装の mount が付ける振る舞いのモック）: ポインターとフォーカスで開き、Esc で閉じ、 親の枠で切れないよう画面に対して置き、下に収まらないときは用語の上に開く。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:用語, tool:javascript]
+  - path: refs/27/index.md
+    description: '#27（文書の索引・用語のツールチップ・被参照を表示する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/32/assets/bundle.css
+    description: '#32 のモックが共通で読む素材: まとめた HTML の画面（bundle）と文書の一覧の部品（doc-list）の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:書き出し, tool:css]
+  - path: refs/32/index.md
+    description: '#32（サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/42/assets/diagram.css
+    id: dev/mock/refs/42/assets/diagram.css
+    description: '#42 のモックが共通で読む素材: 図の部品と操作できる部品: 図の枠（タイトル・範囲・更新日・凡例・右上のボタン）・フロー図・シーケンス図・グラフ・図のツールチップ・スライダーと今の値をコピーするボタン。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: refs/42/assets/diagram.js
+    description: '#42 のモックが共通で読む素材: 図の部品と操作できる部品のモック（実装の mount が描く形と、付ける操作）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:図, tool:javascript]
+  - path: refs/42/assets/samples.js
+    description: '#42 のモックが共通で読む素材: 図の部品の定義の見本（文書に書く部品の定義の JSON に当たる）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/42/index.md
+    description: '#42（図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/45/assets/embed.css
+    id: dev/mock/refs/45/assets/embed.css
+    description: '#45 のモックが共通で読む素材: 埋め込んだ HTML と data-hint のヒント: マーカーを付けたコードブロックの HTML を描いた場所と、data-hint を持つ要素のマーカー・下線・ツールチップ。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:html, tool:css]
+  - path: refs/45/assets/embed.js
+    description: '#45 のモックが共通で読む素材: 埋め込んだ HTML と data-hint のヒントのモック（実装の mount が埋め込んだ HTML に付ける振る舞い）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:html, tool:javascript]
+  - path: refs/45/assets/samples.js
+    description: '#45 のモックが共通で読む素材: #45 で追加する図の部品の定義の見本（文書に書く部品の定義と、埋め込んだ HTML の <mdmark-chart> の中身の JSON に当たる）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/45/index.md
+    description: '#45（コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/49/assets/catalog.css
+    id: dev/mock/refs/49/assets/catalog.css
+    description: '#49 のモックが共通で読む素材: 差分の部品のカタログ: 状態ごとの見本を縦に並べる（revision-picker・diff-lines・diff-html-switch で共有する）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/49/assets/catalog.js
+    description: '#49 のモックが共通で読む素材: 差分の部品のカタログ: [data-mock-case] の場所ごとに、場面の取り出し元から差分の場所を開いた状態で描く。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/49/assets/diff.css
+    id: dev/mock/refs/49/assets/diff.css
+    description: '#49 のモックが共通で読む素材: 差分の表示: 文書の上の「変更を見る」・前と後のリビジョンの選択・差分の行・埋め込んだ HTML の切り替え。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:差分, tool:css]
+  - path: refs/49/assets/diff.js
+    description: '#49 のモックが共通で読む素材: 差分のモック: 文書の上に「変更を見る」を置き、取り出し元から受けた 2 つのリビジョンの Markdown を行で比べ、 削除した行と追加した行の対を語で比べて描く（実装の jsdiff の diffLines・diffWords の代わり）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:差分, tool:javascript]
+  - path: refs/49/assets/samples.js
+    description: '#49 のモックが共通で読む素材: 差分のモックの見本: 文書のリビジョン（新しい順）と、場面ごとの取り出し元（DiffSource の代わり）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/49/index.md
+    description: '#49（文書の変更を行と文字で色分けする差分表示を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/55/assets/catalog.css
+    description: '#55 のモックが共通で読む素材: ビューとコメントの部品のカタログ: 使う側のページの要素（mdmark の外）に部品を描いた見本の枠。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/55/assets/comment.css
+    id: dev/mock/refs/55/assets/comment.css
+    description: '#55 のモックが共通で読む素材: コメントの表示: 選んだ箇所のマーカー・コメントのボタン・入力欄・吹き出し・箇所が見つからないコメントの一覧。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コメント, tool:css]
+  - path: refs/55/assets/comment.js
+    description: '#55 のモックが共通で読む素材: コメントのモック（実装の mount とコメントを付ける関数が付ける振る舞い）: 文字を選ぶとコメントのボタンを出し、入力欄で書いて保存すると箇所にマーカーを付け、 マーカーから吹き出しを開く。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コメント, tool:javascript]
+  - path: refs/55/assets/samples.js
+    description: '#55 のモックが共通で読む素材: ビューのモックの項目の定義（文書のマーカーの表の行、または使う側がビューを描く関数に渡す値）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/55/assets/view-print.css
+    description: '#55 のモックが共通で読む素材: ビュー・コメントの印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:ビュー, topic:印刷, tool:css]
+  - path: refs/55/assets/view.css
+    description: '#55 のモックが共通で読む素材: ビューの表示: ビューの切り替え・ボード・表のビュー。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:ビュー, tool:css]
+  - path: refs/55/index.md
+    description: '#55（ビュー・検索・コメントの部品を文書と使う側の JavaScript・TypeScript から使えるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/57/assets/catalog.css
+    description: '#57 のモックが共通で読む素材: 表の部品のカタログのモック専用の追加分: 開いたまま見せるメニューの置き方と余白、URL の #ID を変える移る先のリンク。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/57/assets/table-tools-print.css
+    description: '#57 のモックが共通で読む素材: 表の機能の追加分の印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, topic:印刷, tool:css]
+  - path: refs/57/assets/table-tools.css
+    id: dev/mock/refs/57/assets/table-tools.css
+    description: '#57 のモックが共通で読む素材: 表の機能の追加分: 件数の表示・列の表示の切り替え・集計の行・表のコピー・行へのリンク。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:css]
+  - path: refs/57/assets/table-tools.js
+    description: '#57 のモックが共通で読む素材: 表の機能の追加分の操作（実装の mount が付ける振る舞いのモック）: 件数の表示・列の表示の切り替え・集計の行・表のコピー・行へのリンクと、 モックだけの「印刷の見え方」の切り替え。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:javascript]
+  - path: refs/57/index.md
+    description: '#57（拡張記法の表に件数の表示・列の表示の切り替え・集計の行・表のコピー・行へのリンクを追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/65/assets/code-block-print.css
+    description: '#65 のモックが共通で読む素材: コードブロックの印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:コードブロック, tool:css]
+  - path: refs/65/assets/code-block.css
+    id: dev/mock/refs/65/assets/code-block.css
+    description: '#65 のモックが共通で読む素材: コードブロックのタイトル・行番号・行の強調・コードの行のマーカーの規則（#65 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コードブロック, tool:css]
+  - path: refs/65/assets/code-block.js
+    description: '#65 のモックが共通で読む素材: モックだけの「印刷の見え方」: 印刷の規則を画面にも当て、紙と同じく明るい配色にする。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コードブロック, tool:javascript]
+  - path: refs/65/index.md
+    description: '#65（拡張記法でコードブロックのタイトル・行番号・行の強調とコードの行のマーカーを書けるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/69/assets/preview.css
+    id: dev/mock/refs/69/assets/preview.css
+    description: '#69 のモックが共通で読む素材: VS Code 拡張機能のプレビューのパネル: 拡張機能が描く状態の表示（読み込み中・描けない・設定ファイルを読めない帯）と、モックの VS Code の枠。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/69/assets/preview.js
+    description: '#69 のモックが共通で読む素材: プレビューのパネルのモック: VS Code のテーマと場面を URL（?theme= / ?scene=）で切り替える（モックだけの仕組み）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/69/index.md
+    description: '#69（VS Code で mdmark のプレビューを出す拡張機能を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/79/assets/avoided-term-print.css
+    description: '#79 のモックが共通で読む素材: やめた言い方の印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:用語, tool:css]
+  - path: refs/79/assets/avoided-term.css
+    id: dev/mock/refs/79/assets/avoided-term.css
+    description: '#79 のモックが共通で読む素材: やめた言い方のマーカーと、代わりの用語のツールチップ。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:用語, tool:css]
+  - path: refs/79/assets/avoided-term.js
+    description: '#79 のモックが共通で読む素材: モックだけの「印刷の見え方」の切り替え: 印刷の規則の link を画面にも当て、紙と同じく明るい配色にする。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:用語, tool:javascript]
+  - path: refs/79/index.md
+    description: '#79（描いた文書の本文に出たやめた言い方に、代わりの用語を示すマーカーとツールチップを出す）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/80/assets/canvas-themes.css
+    description: '#80 のモックが共通で読む素材: 洗い出しのキャンバスの列ごとの値: 今の値（src/index.css の modern）と、採用した dev-swiss の値（dev/mock/assets/style.css）を、列の要素に当てる。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: refs/80/assets/figure.svg
+    description: モック『80』が本文に置く図の画像。このモックの図を差し替えるときに読む。
+    tags: [topic:モック, tool:svg]
+  - path: refs/80/assets/parts.css
+    description: '#80 のモックが共通で読む素材: PR #80 のスタイルの候補の見本で、土台（refs/16/assets/sample.css）に無い部品の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/80/assets/table-options.css
+    description: '#80 のモックが共通で読む素材: 洗い出しのキャンバスの表の案: dev-swiss の値の上に、表の囲み方だけを変える部品の CSS。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーブル, tool:css]
+  - path: refs/80/index.md
+    description: '#80（mdmark の見た目を洗い出し、mindstella のデザイントークンに揃える）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/97/assets/syntax-highlight-print.css
+    description: '#97 のモックが共通で読む素材: コードブロックの色分けの印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, topic:構文, tool:highlight.js, tool:css]
+  - path: refs/97/assets/syntax-highlight.css
+    description: '#97 のモックが共通で読む素材: コードブロックの色分けの規則（#97 で共有するアセット）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:構文, tool:highlight.js, tool:css]
+  - path: refs/97/index.md
+    description: '#97（コードブロックを言語に応じてシンタックスハイライトする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/index.md
+    description: Issue / PR ごとのモックへのリンク集。Issue 索引のモックを探すときに読む。
+    tags: [topic:モック]
+  - path: styles/dev-swiss/index.html
+    description: 'デザインスタイル『dev-swiss』の見本: 開発者ツール × スイス。mindstella と同じ色・行間・角丸で、文字は mindstella の本文（13px）より 1 段大きい 14px にし、見出しの下の線を引かず、注意書きを種類の色の薄い面と淡い線で囲む。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/developer-tool/index.html
+    description: 'デザインスタイル『developer-tool』の見本: 開発者ツール。小さめの文字と詰めた余白で 1 画面に多く載せ、見出しを等幅にして前に `#` を置く。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/developer-tool/style.css
+    description: 'モック『developer-tool』の見た目: 開発者ツール: 小さめの文字と詰めた余白。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, tool:css]
+  - path: styles/editorial/index.html
+    description: 'デザインスタイル『editorial』の見本: エディトリアル。白地に墨色の本文と臙脂のリンク、明朝の見出し、短い行と広い行間で読み物として読ませる。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/editorial/style.css
+    description: 'モック『editorial』の見た目: エディトリアル: 白地に墨色の本文と臙脂のリンク。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, tool:css]
+  - path: styles/flat/index.html
+    description: 'デザインスタイル『flat』の見本: フラット。mindstella の色で、見出しの下の線と表の縦の罫線を引かず、面の明るさの差で区切る。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/flat/style.css
+    description: 'モック『flat』の見た目: フラット: mindstella の色で、線を減らし面の明るさの差で区切る。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, tool:css]
+  - path: styles/index.md
+    description: mdmark が描いた文書の既定の見た目（テーマの既定の値）の採用案と候補。スタイル一覧のモックを探すときに読む。
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/modern/index.html
+    description: 'デザインスタイル『modern』の見本: モダン。白地に灰の面と青のリンク、見出しの下に細い区切り線を引く、技術文書で見慣れた見た目。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/modern/style.css
+    description: 'モック『modern』の見た目: モダン: 白地に灰の面と青のリンク。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, tool:css]
+  - path: styles/soft-modern/index.html
+    description: 'デザインスタイル『soft-modern』の見本: モダン × mindstella の色。線・余白・文字の大きさは今のまま、色だけを mindstella のトークンに揃える。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル]
+  - path: styles/soft-modern/style.css
+    description: 'モック『soft-modern』の見た目: モダン × mindstella の色: 線・余白・文字の大きさは今のまま、色だけを mindstella のトークンに揃える。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, tool:css]
+  - path: styles/theme-contrast/index.html
+    description: 'デザインスタイル『theme-contrast』の見本: 選べるテーマ（#181）。高コントラスト: 白と黒の地に、黒の文字・濃い罫線・濃い青のリンク。書体・余白は dev-swiss のまま。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, topic:テーマ]
+  - path: styles/theme-paper/index.html
+    description: 'デザインスタイル『theme-paper』の見本: 選べるテーマ（#181）。紙: 生成りの地に墨色の文字と臙脂のリンク、暗い配色は焦げ茶の地に生成りの文字。書体・余白は dev-swiss のまま。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, topic:テーマ]
+  - path: styles/theme-slate/index.html
+    description: 'デザインスタイル『theme-slate』の見本: 選べるテーマ（#181）。青灰: 青みの灰の地と面に青のリンク、暗い配色は紺の地。書体・余白は dev-swiss のまま。文書の既定の見た目を決めるときに読む。'
+    tags: [topic:モック, topic:デザインスタイル, topic:テーマ]
