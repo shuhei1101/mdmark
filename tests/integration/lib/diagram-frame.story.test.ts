@@ -134,14 +134,25 @@ test("test_fit_when_resized", async () => {
   expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
 });
 
-// 印刷では、表示する枠の高さが定義の高さ × 倍率になる（Max）
-test("test_max_when_printed", async () => {
-  // 準備
-  const page = await openFrame("max", false);
+// 印刷では、attachDiagrams が当てたインラインの高さと上限を外し、表示する枠の高さが定義の高さ × 倍率になる（Fit から拡大した状態）
+test("test_fit_when_printed", async () => {
+  // 準備: 大きさの箱の高さが、開いたときの枠のインラインの高さを超えるまで拡大する
+  const page = await openFrame("fit", true);
+  const viewport = page.locator(".mdmark-diagram-viewport");
+  const opened = await viewport.evaluate((element) =>
+    Number.parseFloat(element.style.height),
+  );
+  for (let i = 0; i < 10; i += 1) {
+    if ((await viewportHeights(page)).content > opened + 1) {
+      break;
+    }
+    await tool(page, "拡大").click();
+  }
+  const { content } = await viewportHeights(page);
+  expect(content).toBeGreaterThan(opened + 1);
   // 実行
   await page.emulateMedia({ media: "print" });
   // 検証
-  const { content, client } = await viewportHeights(page);
-  expect(content).toBe(560 * 3);
+  const { client } = await viewportHeights(page);
   expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
 });
