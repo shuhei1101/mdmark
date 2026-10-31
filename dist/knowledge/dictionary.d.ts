@@ -1,4 +1,5 @@
 import type { Token } from "markdown-it";
+import { type MdmarkAlias } from "./aliases.ts";
 import type { MdmarkIndex, MdmarkIndexDoc } from "./index-shape.ts";
 import type { MdmarkGlossaryEntry, MdmarkReferences } from "./references.ts";
 /** 照合・点検・検索の前に、語に NFKC・英字の小文字化・前後の空白の除去をかける */
@@ -7,22 +8,24 @@ export declare function normalizeWord(word: string): string;
 export type Dictionary = {
     /** 照合する語。`normalizeWord` で正規化した語を、長い語から並べる */
     words: string[];
-    /** 正規化した語から、優先の順（索引の `terms` → 描く文書の表 → ほかの文書の表）で選んだ用語 */
+    /** 正規化した語から、優先の順（索引の `terms` → エイリアス（渡した並び） → 描く文書の表 → ほかの文書の表）で選んだ用語。エイリアスは `id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）にし、`alias` にそのエイリアスを持つ */
     terms: Map<string, {
         id: string;
         meaning: string;
+        alias?: MdmarkAlias;
     }>;
     /** 正規化した語から、その語を `aliases` に持つ文書（索引の `docs` の順） */
     docs: Map<string, MdmarkIndexDoc[]>;
-    /** 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid` と用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、索引の `docs` の順の文書の表の順で先の用語）。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
+    /** 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid`、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、エイリアスの並び、索引の `docs` の順の文書の表の順で先の用語）。`avoid` の種類は `term` を `replacement` にして `meaning` を持たず、`term` の種類は `term` を名前、`meaning` を `description` にする。エイリアスの代わりの用語は `id` を `alias:{エイリアスの id}` にし、`alias` にそのエイリアスを持つ。用語の語・別名と同じ語は入れない。`words` には入れず、照合でやめた言い方を使う側だけが `words` に足す */
     avoided: Map<string, {
         id: string;
         term: string;
-        meaning: string;
+        meaning?: string;
+        alias?: MdmarkAlias;
     }>;
     /** 正規化した語から、索引・用語集の表・文書の `aliases` に記載した表記。`words` と `avoided` の語を持ち、同じ正規化の語は `terms`・`avoided` と同じ優先の順で先の表記 */
     written: Map<string, string>;
-    /** 語を `normalizeWord` で正規化してから `terms` を引く。`findWords` を通らずに書いた語で用語を引く箇所が使う */
+    /** 語を `normalizeWord` で正規化してから、エイリアスを除いた用語を引く。`findWords` を通らずに書いた語で用語を引く箇所（図の箱・埋め込んだ HTML のチャートの `{{語}}`）が使う。エイリアスの語は引かない */
     term: (word: string) => {
         id: string;
         meaning: string;
@@ -38,6 +41,8 @@ export declare function buildDictionary(options: {
     ownGlossary: MdmarkGlossaryEntry[];
     /** 参照の表 */
     references?: MdmarkReferences | undefined;
+    /** 使う側が渡したエイリアス。使えるものだけを照合する */
+    aliases?: readonly unknown[] | undefined;
     /** 文書で決まった機能のオン・オフ */
     features: Record<string, boolean>;
 }): Dictionary;

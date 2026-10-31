@@ -27,6 +27,8 @@ export type RenderEnv = {
     docId?: string | undefined;
     /** 参照の表（markdown-it が `env.references` にリンク参照定義を入れるため、別の名前にする） */
     mdmarkReferences?: MdmarkReferences | undefined;
+    /** 使う側が渡したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に渡す */
+    aliases?: readonly unknown[] | undefined;
     /** 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す） */
     ownGlossary: MdmarkGlossaryEntry[];
     /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */

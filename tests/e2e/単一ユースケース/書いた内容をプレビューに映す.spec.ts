@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Frame, test } from "@playwright/test";
 import {
   expectGuideRendered,
   guideMarkdown,
@@ -6,6 +6,7 @@ import {
   replaceFirstLine,
   saveEditor,
   useVscodeE2E,
+  type VscodeSession,
 } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
@@ -96,25 +97,165 @@ test("test_normal_when_config_saved", async () => {
   await expect(frame.locator("blockquote")).toHaveCount(1);
 });
 
-// 背面に回したプレビューは、表に戻したときに最後の全文で描く（正常シナリオ（背面から戻る））
-test("test_normal_when_revealed", async () => {
-  // 準備: 同じ列にプレビューを開き、別のタブの後ろに回す
-  const session = await e2e.launch({
-    files: { "guide.md": await guideMarkdown(), "other.md": "# 別の文書\n" },
+// 見出しを多く持つ長い文書の節の数と、1 つの節の行数（見出し 1 行・空行 1 行・6 の段落 × 2 行）
+const REVEAL_SECTIONS = 20;
+const REVEAL_SECTION_LINES = 14;
+const REVEAL_PARAGRAPHS = 6;
+// 見出し A と見出し B の節（1 始まり）。B は A のすぐ次の節で、A を先頭にしたエディタの見えている範囲にある
+const HEADING_A_SECTION = 5;
+const HEADING_B_SECTION = 6;
+
+// エディタの先頭の行が落ち着くのを待つ回数の上限
+const SETTLE_ATTEMPTS = 50;
+
+/** 見出しで区切った 20 の節を持つ長い Markdown */
+function revealDocument(): string {
+  return Array.from({ length: REVEAL_SECTIONS }, (_, section) =>
+    [
+      `## 見出し ${section + 1}`,
+      "",
+      ...Array.from({ length: REVEAL_PARAGRAPHS }, (_, paragraph) => [
+        `${section + 1}-${paragraph + 1} 段落の本文です。`,
+        "",
+      ]).flat(),
+    ].join("\n"),
+  ).join("\n");
+}
+
+/** `n` 番目の節（1 始まり）の見出しの行（エディタの行番号。1 始まり） */
+function revealHeadingLine(n: number): number {
+  return (n - 1) * REVEAL_SECTION_LINES + 1;
+}
+
+/** プレビューの `n` 番目の節の見出し（元の行番号で選ぶ） */
+function revealHeading(frame: Frame, n: number) {
+  return frame.locator(`h2[data-source-line="${revealHeadingLine(n) - 1}"]`);
+}
+
+/** プレビューの見えている先頭（右側の目次が上端の帯のときは帯の下端、無いときは 0） */
+function visibleTop(frame: Frame): Promise<number> {
+  return frame.evaluate(() => {
+    const aside = document.querySelector(".mdmark-side-toc");
+    const content = document.querySelector(".mdmark-content");
+    if (
+      !aside ||
+      !content ||
+      aside.getBoundingClientRect().width <
+        content.getBoundingClientRect().width
+    ) {
+      return 0;
+    }
+    return aside.getBoundingClientRect().bottom;
   });
-  await session.openFile("guide.md");
-  await session.runCommand("mdmark: プレビューを開く");
-  await expectGuideRendered(await session.previewFrame());
-  await session.win.getByRole("tab", { name: /^guide\.md/ }).click();
-  // 実行: パネルが背面の間に見出しを 3 回書き換える
-  for (const text of ["# 書き換え 1", "# 書き換え 2", "# 書き換え 3"]) {
-    await replaceFirstLine(session, text);
+}
+
+/** プレビューの見えている先頭にある見出しの文字 */
+async function firstVisibleHeading(frame: Frame): Promise<string | undefined> {
+  const top = await visibleTop(frame);
+  return frame.evaluate(
+    (top) =>
+      [...document.querySelectorAll("h2")]
+        .find((heading) => heading.getBoundingClientRect().bottom > top)
+        ?.textContent?.trim(),
+    top,
+  );
+}
+
+/** エディタの先頭の行が 300 ms 変わらなくなるまで待ち、その行を返す */
+async function settledEditorTop(session: VscodeSession): Promise<number> {
+  let last = await session.editorTopLine();
+  for (let attempt = 0; attempt < SETTLE_ATTEMPTS; attempt += 1) {
+    await session.win.waitForTimeout(300);
+    const current = await session.editorTopLine();
+    if (current === last) {
+      return current;
+    }
+    last = current;
+  }
+  throw new Error("エディタのスクロールが止まらない");
+}
+
+/** 左の列のエディタで `line` 行目（1 始まり）を `text` に打ち替える（見えている範囲の行なので、エディタはスクロールしない） */
+async function replaceLine(
+  session: VscodeSession,
+  line: number,
+  text: string,
+): Promise<void> {
+  await session.win.keyboard.press("Control+1");
+  await session.win.keyboard.press("Control+G");
+  await session.win.keyboard.type(String(line));
+  await session.win.keyboard.press("Enter");
+  await session.win.keyboard.press("Home");
+  await session.win.keyboard.press("Shift+End");
+  await session.win.keyboard.type(text);
+}
+
+/** 右の列に `relative` のファイルを開く */
+async function openFileInRightColumn(
+  session: VscodeSession,
+  relative: string,
+): Promise<void> {
+  await session.win.keyboard.press("Control+2");
+  await session.win.keyboard.press("Control+P");
+  const input = session.win.locator(".quick-input-box input");
+  await input.waitFor();
+  await input.fill(relative);
+  await session.win
+    .locator(`.quick-input-list .monaco-list-row[aria-label*="${relative}"]`)
+    .first()
+    .waitFor();
+  await session.win.keyboard.press("Enter");
+  await session.win
+    .locator(`.tab[aria-label*="${relative}"]`)
+    .first()
+    .waitFor();
+}
+
+// 背面に回したプレビューは、表に戻したときに最後の全文で、背面に回す前のスクロールの位置に描く（正常シナリオ（背面から戻る））
+test("test_normal_when_revealed", async () => {
+  // 準備: 左の列に長い文書、右の列にプレビューを開き、見出し A が先頭に見えるまでプレビューをスクロールする
+  const session = await e2e.launch({
+    files: { "long.md": revealDocument(), "other.md": "# 別の文書\n" },
+  });
+  await session.openFile("long.md");
+  await session.openPreviewWithShortcut();
+  const before = await session.frameWith("h2");
+  await expect(before.locator("h2")).toHaveCount(REVEAL_SECTIONS);
+  // 開いた直後の位置合わせが落ち着くまで待つ
+  await session.win.waitForTimeout(500);
+  const top = await visibleTop(before);
+  await revealHeading(before, HEADING_A_SECTION).evaluate((element, top) => {
+    window.scrollBy(0, element.getBoundingClientRect().top - top);
+  }, top);
+  await expect
+    .poll(async () =>
+      Math.abs(
+        (await session.editorTopLine()) - revealHeadingLine(HEADING_A_SECTION),
+      ),
+    )
+    .toBeLessThanOrEqual(1);
+  await settledEditorTop(session);
+  // 右の列で別の文書を開き、プレビューのタブを背面に回す
+  await openFileInRightColumn(session, "other.md");
+  // 実行: パネルが背面の間に、エディタのスクロールを動かさずに見出し B を 3 回書き換える
+  for (const text of ["## 書き換え 1", "## 書き換え 2", "## 書き換え 3"]) {
+    await replaceLine(session, revealHeadingLine(HEADING_B_SECTION), text);
     await session.win.waitForTimeout(500);
   }
-  await session.win.getByRole("tab", { name: /プレビュー guide\.md/ }).click();
+  const editorTop = await settledEditorTop(session);
+  await session.win.locator('.tab[aria-label*="プレビュー long.md"]').click();
   // 検証
-  const frame = await session.previewFrame();
-  await expect(frame.locator("h1").first()).toContainText("書き換え 3");
+  const frame = await session.frameWith(
+    `h2[data-source-line="${revealHeadingLine(HEADING_B_SECTION) - 1}"]`,
+  );
+  await expect(revealHeading(frame, HEADING_B_SECTION)).toHaveText(
+    "書き換え 3",
+  );
+  await expect
+    .poll(() => firstVisibleHeading(frame))
+    .toBe(`見出し ${HEADING_A_SECTION}`);
+  await session.win.waitForTimeout(500);
+  expect(await session.editorTopLine()).toBe(editorTop);
 });
 
 // 描けないプレビューを「リロード」で描き直し、コマンドパレットの「プレビューをリロード」でも同じになる（正常シナリオ（リロードする））

@@ -173,6 +173,8 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
   await expect(doc.locator(".mdmark-tab-title")).toHaveText([
     "macOS",
     "Windows",
+    "uv",
+    "pip",
   ]);
   for (const title of await doc.locator(".mdmark-tab-title").all()) {
     await expect(title).toBeVisible();

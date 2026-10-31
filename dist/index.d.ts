@@ -1,9 +1,12 @@
 export type { MdmarkComment, MdmarkCommentDraft, MdmarkCommentStore, MdmarkCommentsHandle, } from "./comments/spec.ts";
 export type { MdmarkConfig } from "./config.ts";
 export type { MdmarkChartDefinition, MdmarkFlowDefinition, MdmarkParamDefinition, MdmarkSequenceDefinition, } from "./diagram/definition.ts";
-export type { DiffRevision, DiffSource } from "./diff/source.ts";
+export type { DiffMode, DiffRevision, DiffSource } from "./diff/source.ts";
+export { diffModes } from "./diff/source.ts";
 export type { MdmarkExtension, MdmarkExtensionModule, MdmarkMarkArgs, } from "./extensions.ts";
 export { registerExtension } from "./extensions.ts";
+export type { MdmarkAlias, MdmarkAliasProblem, MdmarkAliasSource, MdmarkAliasType, } from "./knowledge/aliases.ts";
+export { buildAliases } from "./knowledge/aliases.ts";
 export type { MdmarkIndexIssue } from "./knowledge/check.ts";
 export { checkIndex } from "./knowledge/check.ts";
 export type { MdmarkIndex, MdmarkIndexDocTag, MdmarkIndexRelated, MdmarkIndexTag, MdmarkRelationType, } from "./knowledge/index-shape.ts";
