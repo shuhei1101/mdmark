@@ -38,3 +38,10 @@
 | `tests/unit/vscode/src/webview/preview.browser.test.ts` | `test_current_position` | 新規 | ✅ | 同上 |
 | `tests/unit/vscode/src/webview/preview.browser.test.ts` | `test_start_preview_when_state_saved`・`test_start_preview_when_scrolled` | 変更 | ✅ | 同上 |
 | 単体テスト全件（`npm run test:unit`） | 全実行 | 実行のみ | ✅ | 1186 テスト pass。lint: [20261031185249_c5217f4_lint.log](./テスト結果/20261031185249_c5217f4_lint.log) |
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/preview-rerender.test.ts` | `test_normal_when_revealed`・`test_normal_when_diff_revealed` | 変更 | ✅ | [20261031192241_11ddbf4_結合テスト.log](./テスト結果/20261031192241_11ddbf4_結合テスト.log) |
+| VS Code 拡張機能の結合テスト全件（`xvfb-run -a npm --prefix vscode run test:integration`） | 全実行 | 実行のみ | ✅ | VS Code 1.141.0・stable で各 63 テスト pass。lint: [20261031192241_11ddbf4_lint.log](./テスト結果/20261031192241_11ddbf4_lint.log) |
