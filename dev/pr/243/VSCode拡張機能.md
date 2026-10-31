@@ -38,4 +38,13 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.9.0/tests/unit/vscode/src/webview/preview.browser.test.ts) | 全実行 | 変更 | ✅ | 19 テスト pass（追加した 4 テストを含む）<br>`テスト結果/20261031141625_8144592_単体テスト.log` |
+| `tests/unit/` | 全実行 | 実行のみ | ✅ | 161 ファイル・1183 テスト pass<br>`テスト結果/20261031141625_8144592_単体テスト.log` |
+
+### 結合
+
 なし
