@@ -1,15 +1,15 @@
-# VS Code の差分ビューで Shift+Alt+D とタイトルのボタンから mdmark のプレビューを開けるようにする
+# 差分ビューの E2E のヘルパーが削除した行の view zone を押してフォーカスを入れられない不備を修正する
 
 ## 概要
 
-文書を書く人が、VS Code の Markdown の差分ビューから `Shift+Alt+D` とエディタのタイトルのボタンで、変更を色分けした mdmark のプレビューを開けるようになる。
+差分ビューから `Shift+Alt+D` でプレビューを開く E2E が、変更後の側の本文の行を押してエディタにフォーカスを入れ、VS Code 1.141.0 で pass するようになる。
 
 ## 背景
 
 [Issue #233](https://github.com/shuhei1101/mdmark/issues/233) の修正。
 [release PR #229](https://github.com/shuhei1101/mdmark/pull/229) の E2E（[E2E 実行 Issue #153](https://github.com/shuhei1101/mdmark/issues/153)）で、差分ビューから `Shift+Alt+D` でプレビューを開く 4 ケースが VS Code 1.141.0 で fail し、tester が実装バグと切り分けた。
 差分ビューで押した `Shift+Alt+D` は `no when clauses matched the context` で `mdmark.openPreviewToSide` が呼ばれず、コマンドパレットからは差分のパネルが開く。
-`vscode/package.json` のショートカットとボタンの `when`（`editorLangId == markdown`）は [#69](https://github.com/shuhei1101/mdmark/pull/69) からのもので、差分ビューから開く機能を追加した [#196](https://github.com/shuhei1101/mdmark/pull/196) は、この `when` が差分ビューでも当たる前提を置いていた。
+PoC（[#239](https://github.com/shuhei1101/mdmark/pull/239)）で、製品の `when` は差分ビューでも当たり、fail の原因は E2E のヘルパー `focusModifiedSide` のロケーターだと分かった（[確認ログ](./確認ログ.md)）。
 
 ## 計画書
 
@@ -29,12 +29,12 @@
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）
 - [x] ~~単一ユースケース設計~~（影響なし: シナリオは今も `Shift+Alt+D` で開くと書いており、記述を変えない）
 - [x] ~~モック作成~~（画面を変えない）
-- [ ] インターフェース定義設計
+- [x] ~~インターフェース定義設計~~（製品のコードを変えない）
 - [x] ~~部品設計~~（部品を変えない）
-- [ ] 画面設計
-- [ ] モジュール構成設計
-- [ ] ドキュメント修正（docs/リファレンス/VSCode拡張機能.md）
-- [x] ~~単体テスト作成~~（`package.json` の `when` だけを変え、単体テストの対象の関数を変えない）
-- [ ] 実装
-- [ ] 結合テスト作成
-- [x] ~~E2E テスト作成~~（既存の E2E が差分ビューから `Shift+Alt+D` で開くケースを持つ）
+- [x] ~~画面設計~~（製品のコードを変えない）
+- [x] ~~モジュール構成設計~~（製品のコードを変えない）
+- [x] ~~ドキュメント修正~~（更新ドキュメントなし）
+- [x] ~~単体テスト作成~~（製品のコードを変えない）
+- [x] ~~実装~~（製品のコードを変えない）
+- [x] ~~結合テスト作成~~（製品のコードを変えない）
+- [ ] E2E テスト作成（ヘルパー `focusModifiedSide` のロケーターの修正）
