@@ -398,7 +398,7 @@ constraints:
     constraint: タグ一覧から選んだ版を `globalState` の `mdmark.lastVersion` に書き、取れないときに読む。`latest` でない版を書いたときは書き換えない
   - item: パネル
     constraint: 'viewType `mdmark.preview`、タブの題 `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
-    notes: 背面に回したパネルは Webview が作り直され、`ready` を受けて最後の全文を送り直す（プレビューを描き直す.ts）
+    notes: 背面に回したパネルは Webview が作り直され、`ready` を受けて最後の全文を送り直し、背面に回す前のスクロールの位置へ戻す（プレビューを描き直す.ts）
   - item: CSP
     constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに作り直す。`libraries` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ"
     notes: "図とヒントの部品が HTML に `style` 属性を書くため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"

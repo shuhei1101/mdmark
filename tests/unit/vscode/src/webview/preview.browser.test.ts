@@ -82,12 +82,17 @@ function createRoot(): HTMLElement {
   return root;
 }
 
-/** パネルの表示を作る */
-async function createView(mdmark: unknown, root = createRoot()) {
+/** パネルの表示を作る。`savedLine` を渡すと、作り直した Webview が `getState` で読んだ行を持つ view にする */
+async function createView(
+  mdmark: unknown,
+  root = createRoot(),
+  options: { savedLine?: number } = {},
+) {
   const { PreviewView } = await loadPreview();
   const view = new PreviewView({
     root,
     mdmark: mdmark as ConstructorParameters<typeof PreviewView>[0]["mdmark"],
+    ...options,
   });
   return { view, root };
 }
@@ -113,6 +118,56 @@ function renderMessage(
 /** 画面がスクロールする要素 */
 function scroller(): Element {
   return document.scrollingElement ?? document.documentElement;
+}
+
+/** 描画の次のフレームまで待つ（`scroll` の知らせを 1 フレームにまとめる処理を通す） */
+async function nextFrames(count = 2): Promise<void> {
+  for (let frame = 0; frame < count; frame += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
+/** `startPreview` が `import()` で読む配布物の代役で縦に積むブロックの数（元の行番号 30 を先頭に置けるだけの高さにする） */
+const MODULE_BLOCK_COUNT = 80;
+
+/** 元の行番号を持つブロックを縦に積んで描く `mount` を持つ配布物の代役のモジュールの URL を作る */
+function createMdmarkModuleUrl(): string {
+  return URL.createObjectURL(
+    new Blob(
+      [
+        `export const diffModes = ["blocks"];
+export const mount = (element) => {
+  for (let line = 0; line < ${MODULE_BLOCK_COUNT}; line += 1) {
+    const block = document.createElement("div");
+    block.dataset.sourceLine = String(line);
+    block.style.height = "${BLOCK_HEIGHT}px";
+    element.append(block);
+  }
+  return { update() {}, destroy() { element.replaceChildren(); } };
+};`,
+      ],
+      { type: "text/javascript" },
+    ),
+  );
+}
+
+/** 元の行番号 `line` のブロックの先頭が画面の先頭に来る `scrollTop` */
+function topOfLine(line: number): number {
+  const block = document.querySelector(`[data-source-line="${line}"]`);
+  return (block?.getBoundingClientRect().top ?? 0) + scroller().scrollTop;
+}
+
+/** `getState` が `state` を返し、`postMessage`・`setState` を記録する拡張機能の API の代役を置く */
+function stubVsCodeApi(state: unknown) {
+  const postMessage = vi.fn();
+  const setState = vi.fn();
+  const getState = vi.fn(() => state);
+  vi.stubGlobal("acquireVsCodeApi", () => ({
+    postMessage,
+    setState,
+    getState,
+  }));
+  return { postMessage, setState };
 }
 
 beforeEach(() => {
@@ -233,6 +288,43 @@ test("test_take_scroll_when_own_scroll", async () => {
   // 検証
   expect(own).toBeUndefined();
   expect(moved).toBe(10);
+});
+
+// 保存した行を持つ view は、最初の render の後だけその行へ戻し、自分が起こしたスクロールとして捨てる（正常系）
+test("test_render_when_saved_line", async () => {
+  // 準備
+  const { mdmark } = createMdmark();
+  const { view } = await createView(mdmark, createRoot(), { savedLine: 20 });
+  // 実行: 1 回目
+  view.render(renderMessage("# 1 回目"));
+  const restored = scroller().scrollTop;
+  const own = view.takeScroll();
+  // scrollToLine(20) で置く位置と比べる（同じ位置なら動かない）
+  view.scrollToLine(20);
+  const placedAt = scroller().scrollTop;
+  // 実行: 2 回目（設定は同じ）
+  scroller().scrollTop = 100;
+  view.render(renderMessage("# 2 回目"));
+  // 検証
+  expect(restored).toBeGreaterThan(0);
+  expect(restored).toBe(placedAt);
+  expect(own).toBeUndefined();
+  expect(scroller().scrollTop).toBe(100);
+});
+
+// 描く前は行を返さず、描いた後は先頭の行を返す（正常系）
+test("test_current_line", async () => {
+  // 準備
+  const { mdmark } = createMdmark();
+  const { view } = await createView(mdmark);
+  // 実行
+  const beforeRender = view.currentLine();
+  view.render(renderMessage("# 本文"));
+  view.scrollToLine(20);
+  const afterRender = view.currentLine();
+  // 検証
+  expect(beforeRender).toBeUndefined();
+  expect(afterRender).toBe(20);
 });
 
 // 属性・文字・画像の幅・位置を返す（正常系）
@@ -412,6 +504,74 @@ test("test_start_preview_when_diff_unsupported", async () => {
     expect(postMessage).not.toHaveBeenCalledWith({ type: "rendered" });
     expect(root.textContent).toContain("v0.8.0");
     expect(root.querySelector('button[data-action="reload"]')).not.toBeNull();
+  } finally {
+    URL.revokeObjectURL(moduleUrl);
+  }
+});
+
+// 保存した行を持つ状態で始めると、最初の render の後にその行へ戻してから保存し、revealLine を送らない（正常系）
+test("test_start_preview_when_state_saved", async () => {
+  // 準備
+  const { startPreview } = await loadPreview();
+  const { postMessage, setState } = stubVsCodeApi({ line: 20 });
+  const moduleUrl = createMdmarkModuleUrl();
+  try {
+    const root = createRoot();
+    root.dataset.distJs = moduleUrl;
+    startPreview();
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "ready" });
+    });
+    // 実行
+    window.dispatchEvent(
+      new MessageEvent("message", { data: renderMessage("# 本文") }),
+    );
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "rendered" });
+    });
+    await nextFrames();
+    // 検証
+    expect(setState.mock.calls[0]?.[0]).toEqual({ line: 20 });
+    expect(setState).not.toHaveBeenCalledWith({ line: 0 });
+    const revealed = postMessage.mock.calls
+      .map(([message]) => message)
+      .filter((message) => message.type === "revealLine");
+    expect(revealed).toEqual([]);
+  } finally {
+    URL.revokeObjectURL(moduleUrl);
+  }
+});
+
+// スクロールするたびに見えている先頭の行を保存し、描く前は保存しない（正常系）
+test("test_start_preview_when_scrolled", async () => {
+  // 準備
+  const { startPreview } = await loadPreview();
+  const { postMessage, setState } = stubVsCodeApi(undefined);
+  const moduleUrl = createMdmarkModuleUrl();
+  try {
+    const root = createRoot();
+    root.dataset.distJs = moduleUrl;
+    startPreview();
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "ready" });
+    });
+    // 実行: 描く前のスクロールの知らせ
+    window.dispatchEvent(new Event("scroll"));
+    await nextFrames();
+    const callsBeforeRender = setState.mock.calls.length;
+    // 実行: 描いた後に元の行番号 30 のブロックを先頭へ動かす
+    window.dispatchEvent(
+      new MessageEvent("message", { data: renderMessage("# 本文") }),
+    );
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "rendered" });
+    });
+    scroller().scrollTop = topOfLine(30);
+    // 検証
+    expect(callsBeforeRender).toBe(0);
+    await vi.waitFor(() => {
+      expect(setState.mock.lastCall?.[0]).toEqual({ line: 30 });
+    });
   } finally {
     URL.revokeObjectURL(moduleUrl);
   }
