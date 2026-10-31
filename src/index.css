@@ -5110,8 +5110,12 @@
         display: none;
       }
 
+      /* 表示枠: attachDiagrams が当てたインラインの高さと上限を外し、図の全体の高さで出す */
       .mdmark-diagram-viewport {
-        max-height: none;
+        /* biome-ignore lint/complexity/noImportantStyles: インラインの style より強くする */
+        height: auto !important;
+        /* biome-ignore lint/complexity/noImportantStyles: インラインの style より強くする */
+        max-height: none !important;
         overflow: visible;
         cursor: auto;
       }

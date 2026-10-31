@@ -124,6 +124,10 @@ function attachView(
     stage.style.transform = `scale(${scale})`;
     sizer.style.width = `${content.width * scale}px`;
     sizer.style.height = `${content.height * scale}px`;
+    // 文書の中では、使う側が高さを変えたときに図の全体が収まる高さまで広げられるよう、上限を今の倍率の図の高さにする
+    if (!modal) {
+      viewport.style.maxHeight = `${content.height * scale}px`;
+    }
     stickHeads();
     // 倍率のボタン: 今の倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
     zoomText.textContent = `${Math.round(scale * 100)}%`;
@@ -155,12 +159,15 @@ function attachView(
     }
   };
 
-  /** 開いたときの倍率（全体が収まる倍率）と位置に戻す。文書の中では表示する枠の高さを全体が収まる高さにする */
+  /** 開いたときの倍率（全体が収まる倍率）と位置に戻す。文書の中では表示する枠の高さを、全体が収まる高さと `--mdmark-diagram-max-height` の小さいほうにする */
   const reset = (): void => {
     state.fit = computeFit();
     state.atFit = true;
     if (!modal) {
-      viewport.style.height = `${content.height * state.fit}px`;
+      viewport.style.maxHeight = "";
+      const cap = Number.parseFloat(getComputedStyle(viewport).maxHeight);
+      const height = content.height * state.fit;
+      viewport.style.height = `${Number.isNaN(cap) ? height : Math.min(height, cap)}px`;
     }
     apply(state.fit);
     viewport.scrollLeft = 0;
@@ -322,6 +329,7 @@ function prepareModalFigure(figure: HTMLElement): HTMLElement {
   const viewport = copy.querySelector<HTMLElement>(".mdmark-diagram-viewport");
   if (viewport) {
     viewport.style.height = "";
+    viewport.style.maxHeight = "";
   }
   const opener = copy.querySelector<HTMLButtonElement>(
     '[data-tool="fullscreen"]',
