@@ -205,6 +205,7 @@ classes:
           3. `previous` を持つときは、`diffTexts` が無ければ作り、`modified` を `markdown`、`original` を `previous` に書き換える
           4. `configKey` が同じで `handle` があれば `handle.update(markdown)`、違えば `handle?.destroy()` の後に描く先の要素へ `mount(el, { markdown, config })`。`diffTexts` があるときは `diffSource: createDiffSource(diffTexts)`・`docId: "diff"`・`diffMode: "blocks"` も渡す
           5. 状態の表示を消す。`savedLine` があれば `scrollToLine(savedLine)` で置いて `savedLine` を消し（`pendingScrollTop` に覚えるため `revealLine` は送らない）、無ければ控えた `scrollTop` に戻す
+          6. `savedLine` で置いたときは、次の `requestAnimationFrame` で `scrollTop` が置いた値から動いていなければ、もう一度 `scrollToLine` で置き直す（差分のパネルは描いた後に色分けで描き直し、行より上の高さが変わる）
         unit_tests:
           - name: test_render
             case: 正常
@@ -287,6 +288,10 @@ classes:
         returns:
           type: void
           description: '-'
+        process: |-
+          1. 元の行番号の位置から上端の帯の高さ（`topInset`）を引いた値を `scrollTop` にする
+          2. 狭い幅で右側の目次の帯が上端に留まると帯の下端が変わるため、動かした後の `topInset` で 1 をもう一度行う
+          3. `scrollTop` が動かす前と違えば、`pendingScrollTop` に覚える
         callees:
           - '#functions[collectAnchors]'
           - '#functions[topForLine]'
