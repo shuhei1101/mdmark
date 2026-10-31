@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: .claude-plugin/plugin.json
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「名前・説明・バージョン（バージョンはビルドが書く）」を受け持つ。プラグインの配布物の作り方を変えるときに読む。
+    tags: [topic:プラグイン, tool:claude-code, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
+        type: implements
+  - path: .mcp.json
+    description: 'モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ」を受け持つ。プラグインの配布物の作り方を変えるときに読む。'
+    tags: [topic:プラグイン, tool:claude-code, tool:esbuild, tool:mcp]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
+        type: implements
+  - path: hooks/hooks.json
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「SessionStart で scripts/session-start.js、6 つのツールの PreToolUse で scripts/pre-tool-use.js を流す」を受け持つ。プラグインの配布物の作り方を変えるときに読む。
+    tags: [topic:プラグイン, tool:claude-code, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
+        type: implements

@@ -1,0 +1,1191 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: cli/alias-schema.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「設定の aliases の行の JSON Schema での検査」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, tool:ajv]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/aliases.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「aliases の行の paths の YAML の読み取りとエイリアスの組み立て」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:エイリアス]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/backup.ts
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「当てる前のコピーとコピーからの戻し」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: cli/build.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark build」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:バンドル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/changelog.ts
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「変更履歴の表から範囲の行を抽き出す」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: cli/check.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark check」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:検査]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/config.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「設定ファイルの探索・読み取り・形の検査」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:設定]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/documents.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「build の対象の文書・索引と索引の文書の読み取り・文書のタイトル」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/embed.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/errors.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「CLI の誤りと入出力の型」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/export.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark export」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:書き出し]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/git.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「比べる基準から変わったファイルの引き出し」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/html.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「書き出す HTML の組み立て」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/index-file.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「索引のファイルの項目の書き換え」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/init.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark init」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/main.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「引数の読み取りとコマンドの振り分け」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: cli/migrations.ts
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「移行の手順の読み取り・形の検め・適用」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: cli/prompt.ts
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「標準入力の 1 行を回答にする質問」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: cli/upgrade.ts
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「mdmark upgrade」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: cli/versions.ts
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「バージョンの書式・比較・呼んだ CLI のバージョン」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: comments/anchor.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: comments/index.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「dist/comments.js の入口。attachComments」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: comments/spec.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの形の検査（dist/index.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: config.ts
+    description: モジュール構成『ライブラリ本体 / 設定と機能』のうち「設定の型・既定・既定を当てる resolveConfig」を受け持つ。設定のキーや機能のオン・オフの決め方を変えるときに読む。
+    tags: [topic:設定, topic:機能フラグ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts
+        type: implements
+  - path: diagram/definition.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「定義の型・JSON の読み取り・形の確かめ」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: diagram/geometry.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「収まる倍率・line jump・重なる線のずらし・軸の刻み」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: diff/blocks.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+  - path: diff/compute.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「行と語の比較（jsdiff を差分の計算の関数型の後ろに置く）」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分, tool:jsdiff]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+  - path: diff/minimap.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「送り先ごとに 1 本のミニマップを置く attachMinimap」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+  - path: diff/panel.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「差分を開く UI・待ち・選び直し・知らせの枠を付ける attachDiff」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+  - path: diff/source.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「公開の型 DiffSource・DiffRevision・DiffMode と対応する差分の出し方 diffModes、取り出し元が返した値の検査」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+  - path: extensions.ts
+    description: モジュール構成『ライブラリ本体 / 拡張』のうち「拡張の登録表と registerExtension、引数の検査」を受け持つ。registerExtension の登録や引数の検査を変えるときに読む。
+    tags: [topic:拡張, topic:スキーマ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/拡張.ts
+        type: implements
+  - path: features.ts
+    description: モジュール構成『ライブラリ本体 / 設定と機能』のうち「文書のマーカーを重ねる resolveFeatures」を受け持つ。設定のキーや機能のオン・オフの決め方を変えるときに読む。
+    tags: [topic:設定, topic:機能フラグ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts
+        type: implements
+  - path: highlight-lines.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
+    tags: [topic:dom, topic:markdown, tool:highlight.js]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
+  - path: highlight.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの URL の控え」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
+    tags: [topic:dom, topic:markdown, tool:highlight.js]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
+  - path: index.css
+    id: src/index.css
+    description: モジュール構成『ライブラリ本体 / 公開の入口』のうち「描いた文書と記法の CSS（@layer mdmark）」を受け持つ。公開関数や配布物の入口を変えるときに読む。
+    tags: [topic:api, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/公開の入口.ts
+        type: implements
+  - path: index.ts
+    description: モジュール構成『ライブラリ本体 / 公開の入口』のうち「公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex()・buildAliases()・定数 diffModes と公開の型の export」を受け持つ。公開関数や配布物の入口を変えるときに読む。
+    tags: [topic:api, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/公開の入口.ts
+        type: implements
+  - path: interact/clipboard.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「クリップボードへ書く（表・行の URL・コードブロック・ファイルツリーが使う）」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント, topic:クリップボード]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/code-blocks.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードブロックのコピー」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/diagram-tips.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「図のツールチップ」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: interact/diagrams.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「拡大・縮小・移動・全画面」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: interact/embedded-html.ts
+    description: 埋め込んだ HTML が列より広い間だけ、その中で横にスクロールさせる処理を受け持つ。埋め込んだ HTML の幅の扱いを変えるときに読む。
+    tags: [topic:dom, topic:横スクロール, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/index.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「attachInteractions」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/params.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「操作できる部品の値とコピーする」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: interact/placement.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「ツールチップを持ち主の上と下のどちらに置くかを決める」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/sections.ts
+    description: 'モジュール構成『ライブラリ本体 / 操作』のうち「セクションと行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く」を受け持つ。描いた文書での読む人の操作を変えるときに読む。'
+    tags: [topic:dom, topic:イベント, topic:セクション]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/side-toc.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いるセクションを付ける」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント, topic:目次]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/sticky.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「表の見出し行と集計の行を画面の端に留める」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/tables.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/tabs.ts
+    description: 'モジュール構成『ライブラリ本体 / 操作』のうち「タブの切り替えと、URL の #ID の指すタブを選ぶ処理」を受け持つ。描いた文書での読む人の操作を変えるときに読む。'
+    tags: [topic:dom, topic:イベント, topic:タブ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/terms.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「ツールチップの開閉・置き場所・id の振り直し」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: interact/text.ts
+    description: 要素の文字から用語のツールチップの文字を除いて取り出す処理を受け持つ。コピーや見出しの文字の取り出し方を変えるときに読む。
+    tags: [topic:dom, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/trees.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「ファイルツリーのフォルダの開閉とコピー」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント, topic:ツリー]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: knowledge/aliases.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「エイリアスの型と、設定の行と YAML の中身からエイリアスを作る buildAliases」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語, topic:エイリアス]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/check.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「索引の点検（checkIndex）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語, topic:検査]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/dictionary.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「用語と文書の別名の辞書・語の正規化・語の区切りでの照合」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/find.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「索引から文書を探す（findDocs）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/index-shape.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「索引の型と形の検査（normalizeIndex）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/matches.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「本文の参照の取り出し（collectMatches）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/paths.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「索引のパスの正規化・リンクの解決・相対パス」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/positions.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「照合した文字の位置を本文の行と行の中の位置へ戻す」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/references.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「参照の表（collectReferences）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語, topic:被参照]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: knowledge/tags.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「タグの語彙の照合・近いタグ・タグごとの件数・語彙の一覧（listTags）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語, topic:タグ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: libraries.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「マーカーの場所に外部ライブラリのモジュールを描かせる loadLibraries」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
+    tags: [topic:dom, topic:markdown]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
+  - path: mount-parts.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: mount.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「公開関数 mount と、描いた要素の控え」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
+    tags: [topic:dom, topic:markdown]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
+  - path: part-modules.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「部品のモジュールのファイル名・URL の差し替え・1 回だけ読む loadPartModule（dist/index.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: parts/backlinks.stories.yaml
+    description: 部品設計『関連文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:被参照]
+    related:
+      - to: dev/設計書/部品設計/関連文書の一覧.ts
+        type: implements
+  - path: parts/backlinks.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「関連文書の一覧の HTML」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語, topic:被参照]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+      - to: dev/設計書/部品設計/関連文書の一覧.ts
+        type: implements
+  - path: parts/badge.stories.yaml
+    description: 部品設計『バッジ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:バッジ]
+    related:
+      - to: dev/設計書/部品設計/バッジ.ts
+        type: implements
+  - path: parts/badge.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「バッジの renderBadge」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:バッジ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/バッジ.ts
+        type: implements
+  - path: parts/callout.stories.yaml
+    description: 部品設計『注意書き』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:注意書き]
+    related:
+      - to: dev/設計書/部品設計/注意書き.ts
+        type: implements
+  - path: parts/callout.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「注意書きの renderCallout」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:注意書き]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/注意書き.ts
+        type: implements
+  - path: parts/chart.stories.yaml
+    description: 部品設計『グラフ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/グラフ.ts
+        type: implements
+  - path: parts/code-block.stories.yaml
+    description: 部品設計『コードブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/コードブロック.ts
+        type: implements
+  - path: parts/code-block.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「コードブロックの renderCodeBlock と renderCodeCopy」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/コードブロック.ts
+        type: implements
+  - path: parts/collapsible.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「タブとステップの折り畳みの renderCollapsible」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+  - path: parts/comment-bubble.stories.yaml
+    description: 部品設計『コメントの吹き出し』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
+    related:
+      - to: dev/設計書/部品設計/コメントの吹き出し.ts
+        type: implements
+  - path: parts/comment-button.stories.yaml
+    description: 部品設計『コメントのボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
+    related:
+      - to: dev/設計書/部品設計/コメントのボタン.ts
+        type: implements
+  - path: parts/comment-form.stories.yaml
+    description: 部品設計『コメントの入力欄』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
+    related:
+      - to: dev/設計書/部品設計/コメントの入力欄.ts
+        type: implements
+  - path: parts/comment-mark.stories.yaml
+    description: 部品設計『コメントの印』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
+    related:
+      - to: dev/設計書/部品設計/コメントの印.ts
+        type: implements
+  - path: parts/comment-orphans.stories.yaml
+    description: 部品設計『箇所が見つからないコメントの一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
+    related:
+      - to: dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts
+        type: implements
+  - path: parts/comment.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+      - to: dev/設計書/部品設計/コメントのボタン.ts
+        type: implements
+      - to: dev/設計書/部品設計/コメントの入力欄.ts
+        type: implements
+      - to: dev/設計書/部品設計/コメントの印.ts
+        type: implements
+      - to: dev/設計書/部品設計/コメントの吹き出し.ts
+        type: implements
+      - to: dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts
+        type: implements
+  - path: parts/diagram-frame.stories.yaml
+    description: 部品設計『図の枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/図の枠.ts
+        type: implements
+  - path: parts/diagram-tooltip.stories.yaml
+    description: 部品設計『図のツールチップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/図のツールチップ.ts
+        type: implements
+  - path: parts/diagram.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「図の枠・フロー図・シーケンス図・グラフ・図のツールチップ・凡例」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+      - to: dev/設計書/部品設計/グラフ.ts
+        type: implements
+      - to: dev/設計書/部品設計/シーケンス図.ts
+        type: implements
+      - to: dev/設計書/部品設計/フロー図.ts
+        type: implements
+      - to: dev/設計書/部品設計/図のツールチップ.ts
+        type: implements
+      - to: dev/設計書/部品設計/図の枠.ts
+        type: implements
+  - path: parts/diff-blocks.stories.yaml
+    description: 部品設計『差分のブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
+    related:
+      - to: dev/設計書/部品設計/差分のブロック.ts
+        type: implements
+  - path: parts/diff-blocks.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「差分のブロックの HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/差分のブロック.ts
+        type: implements
+  - path: parts/diff-html.stories.yaml
+    description: 部品設計『埋め込んだHTML の差分』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html, topic:差分]
+    related:
+      - to: dev/設計書/部品設計/埋め込んだHTMLの差分.ts
+        type: implements
+  - path: parts/diff-html.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「埋め込んだ HTML の差分の HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/埋め込んだHTMLの差分.ts
+        type: implements
+  - path: parts/diff-lines.stories.yaml
+    description: 部品設計『差分の行』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
+    related:
+      - to: dev/設計書/部品設計/差分の行.ts
+        type: implements
+  - path: parts/diff-lines.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「差分の行の HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/差分の行.ts
+        type: implements
+  - path: parts/diff-message.stories.yaml
+    description: 部品設計『差分の状態の文』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
+    related:
+      - to: dev/設計書/部品設計/差分の状態の文.ts
+        type: implements
+  - path: parts/diff-message.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「差分の状態の文の HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/差分の状態の文.ts
+        type: implements
+  - path: parts/diff-minimap.stories.yaml
+    description: 部品設計『ミニマップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
+    related:
+      - to: dev/設計書/部品設計/ミニマップ.ts
+        type: implements
+  - path: parts/diff-minimap.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「ミニマップの HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/ミニマップ.ts
+        type: implements
+  - path: parts/diff-toggle.stories.yaml
+    description: 部品設計『差分を開くボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
+    related:
+      - to: dev/設計書/部品設計/差分を開くボタン.ts
+        type: implements
+  - path: parts/diff-toggle.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「差分を開くボタンの HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/差分を開くボタン.ts
+        type: implements
+  - path: parts/doc-list.stories.yaml
+    description: 部品設計『文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/文書の一覧.ts
+        type: implements
+  - path: parts/doc-list.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「文書の一覧の renderDocList」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/文書の一覧.ts
+        type: implements
+  - path: parts/embed.stories.yaml
+    description: 部品設計『読み込み中の枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
+    related:
+      - to: dev/設計書/部品設計/読み込み中の枠.ts
+        type: implements
+  - path: parts/embed.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「読み込み中の枠の renderEmbed」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/読み込み中の枠.ts
+        type: implements
+  - path: parts/embedded-html.stories.yaml
+    description: 部品設計『埋め込んだHTML』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
+    related:
+      - to: dev/設計書/部品設計/埋め込んだHTML.ts
+        type: implements
+  - path: parts/embedded-html.ts
+    description: 埋め込んだ HTML を包む枠の HTML を返す部品を受け持つ。埋め込んだ HTML の枠を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/部品設計/埋め込んだHTML.ts
+        type: implements
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: parts/escape.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「HTML の特別な文字をエスケープする escapeHtml」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+  - path: parts/figure.stories.yaml
+    description: 部品設計『図表の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図表の番号]
+    related:
+      - to: dev/設計書/部品設計/図表の番号.ts
+        type: implements
+  - path: parts/figure.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「図表の番号の renderFigure」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:図表の番号]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/図表の番号.ts
+        type: implements
+  - path: parts/flow-diagram.stories.yaml
+    description: 部品設計『フロー図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/フロー図.ts
+        type: implements
+  - path: parts/hint.stories.yaml
+    description: 部品設計『ヒント』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/ヒント.ts
+        type: implements
+  - path: parts/hint.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「埋め込んだ HTML のヒントのマーカーと中身」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+      - to: dev/設計書/部品設計/ヒント.ts
+        type: implements
+  - path: parts/icon-node.ts
+    description: lucide のアイコンの形を、24 の格子の svg の文字にする処理を受け持つ。アイコンの描き方を変えるときに読む。
+    tags: [topic:部品, tool:lucide, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: parts/icons.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「lucide のアイコンの svg」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg, tool:lucide]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: parts/notice.stories.yaml
+    description: 部品設計『知らせの枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/知らせの枠.ts
+        type: implements
+  - path: parts/notice.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「知らせの枠の renderNotice」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/知らせの枠.ts
+        type: implements
+  - path: parts/own.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+  - path: parts/param.stories.yaml
+    description: 部品設計『操作できる部品』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/操作できる部品.ts
+        type: implements
+  - path: parts/param.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「操作できる部品」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+      - to: dev/設計書/部品設計/操作できる部品.ts
+        type: implements
+  - path: parts/revision-picker.stories.yaml
+    description: 部品設計『リビジョンの選択』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/リビジョンの選択.ts
+        type: implements
+  - path: parts/revision-picker.ts
+    description: モジュール構成『ライブラリ本体 / 差分』のうち「リビジョンの選択の HTML」を受け持つ。差分の計算や表示を変えるときに読む。
+    tags: [topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/差分.ts
+        type: implements
+      - to: dev/設計書/部品設計/リビジョンの選択.ts
+        type: implements
+  - path: parts/row-detail.stories.yaml
+    description: 部品設計『行の詳細』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/行の詳細.ts
+        type: implements
+  - path: parts/row-detail.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「行の詳細の renderRowDetail」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/行の詳細.ts
+        type: implements
+  - path: parts/section.stories.yaml
+    description: 部品設計『節』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:セクション]
+    related:
+      - to: dev/設計書/部品設計/節.ts
+        type: implements
+  - path: parts/section.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「セクションの renderSection」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:セクション]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/節.ts
+        type: implements
+  - path: parts/sequence-diagram.stories.yaml
+    description: 部品設計『シーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/シーケンス図.ts
+        type: implements
+  - path: parts/side-toc.stories.yaml
+    description: 部品設計『右側の目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
+    related:
+      - to: dev/設計書/部品設計/右側の目次.ts
+        type: implements
+  - path: parts/side-toc.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「右側の目次の renderSideToc」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:目次]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/右側の目次.ts
+        type: implements
+  - path: parts/steps.stories.yaml
+    description: 部品設計『ステップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ステップ]
+    related:
+      - to: dev/設計書/部品設計/ステップ.ts
+        type: implements
+  - path: parts/steps.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「ステップの renderSteps」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:ステップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/ステップ.ts
+        type: implements
+  - path: parts/syntax-warning.stories.yaml
+    description: 部品設計『書き方の警告』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/書き方の警告.ts
+        type: implements
+  - path: parts/syntax-warning.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「書き方の警告の renderSyntaxWarning」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/書き方の警告.ts
+        type: implements
+  - path: parts/table.stories.yaml
+    description: 部品設計『表』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:テーブル]
+    related:
+      - to: dev/設計書/部品設計/表.ts
+        type: implements
+  - path: parts/table.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/表.ts
+        type: implements
+  - path: parts/tabs.stories.yaml
+    description: 部品設計『タブ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:タブ]
+    related:
+      - to: dev/設計書/部品設計/タブ.ts
+        type: implements
+  - path: parts/tabs.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「タブの renderTabs」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:タブ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/タブ.ts
+        type: implements
+  - path: parts/term-tip.stories.yaml
+    description: 部品設計『用語のツールチップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:用語]
+    related:
+      - to: dev/設計書/部品設計/用語のツールチップ.ts
+        type: implements
+  - path: parts/term-tip.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「用語のツールチップの HTML」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+      - to: dev/設計書/部品設計/用語のツールチップ.ts
+        type: implements
+  - path: parts/toc.stories.yaml
+    description: 部品設計『目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
+    related:
+      - to: dev/設計書/部品設計/目次.ts
+        type: implements
+  - path: parts/toc.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「目次の renderToc」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:目次]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/目次.ts
+        type: implements
+  - path: parts/tree.stories.yaml
+    description: 部品設計『ファイルツリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ツリー]
+    related:
+      - to: dev/設計書/部品設計/ファイルツリー.ts
+        type: implements
+  - path: parts/tree.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:ツリー]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/ファイルツリー.ts
+        type: implements
+  - path: parts/view.stories.yaml
+    description: 部品設計『ビュー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ビュー]
+    related:
+      - to: dev/設計書/部品設計/ビュー.ts
+        type: implements
+  - path: parts/view.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「ビューの HTML とアイコンの形（dist/view.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+      - to: dev/設計書/部品設計/ビュー.ts
+        type: implements
+  - path: plugin/arguments.ts
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「ツールの引数の検査・SDK に渡す素通しの検証器」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    tags: [tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
+        type: implements
+  - path: plugin/guide.ts
+    description: モジュール構成『ClaudeCodeプラグイン / 使い方集』のうち「使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前」を受け持つ。使い方集の索引や本文の読み方を変えるときに読む。
+    tags: [topic:使い方集, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts
+        type: implements
+  - path: plugin/http.ts
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    tags: [tool:mcp, tool:claude-code, topic:http]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
+        type: implements
+  - path: plugin/mcp.ts
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「MCP サーバーの組み立て・ツールの登録・instructions」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    tags: [tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
+        type: implements
+  - path: plugin/pre-tool-use.ts
+    description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「PreToolUse のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに読む。
+    tags: [topic:フック, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
+        type: implements
+  - path: plugin/results.ts
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「find_docs の cursor・行の項目の選択と、find_docs・list_tags の Markdown の組み立て」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    tags: [tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
+        type: implements
+  - path: plugin/session-start.ts
+    description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「SessionStart のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに読む。
+    tags: [topic:フック, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
+        type: implements
+  - path: plugin/tools.ts
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「7 つのツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    tags: [tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
+        type: implements
+  - path: print.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「印刷の前後で折り畳みを開いて戻す attachPrint」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
+    tags: [topic:dom, topic:markdown, topic:印刷]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
+  - path: render/index.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「render と renderDocument」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに読む。
+    tags: [topic:markdown, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
+  - path: render/marks.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「マーカーを読み、置き換えるコアルール」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに読む。
+    tags: [topic:markdown, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
+  - path: render/parser.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「markdown-it の解析器と、追加するコアルール」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに読む。
+    tags: [topic:markdown, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
+  - path: render/sanitize.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「sanitize-html の設定と sanitize」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに読む。
+    tags: [topic:markdown, tool:markdown-it, tool:sanitize-html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
+  - path: render/syntax/backlinks.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「末尾の関連文書の一覧を置くコアルール」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語, topic:被参照]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: render/syntax/badges.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「バッジ」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:バッジ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/callouts.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「注意書き」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:注意書き]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/code-blocks.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・色分けの対象の言語」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/collapse.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/diagrams.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「図の部品のマーカーの範囲を部品の HTML にするコアルール」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: render/syntax/figures.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「図表の番号と参照」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:図表の番号]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/glossary.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「glossary のマーカーで囲んだ表の読み取り」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: render/syntax/headings.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「見出しの ID とアンカー」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/html.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「埋め込んだ HTML」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/row-details.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「行の詳細」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/sections.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「セクションの囲み」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:セクション]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/steps.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「ステップ」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ステップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/tables.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「表の種類・機能・絞り込みと、表の属性」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/tabs.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「タブ」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:タブ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/terms.ts
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「本文の用語と文書の別名に下線を引くコアルール」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    tags: [topic:索引, topic:用語]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: render/syntax/toc.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「目次」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:目次]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/tokens.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「記法のコアルールが共有するトークンの助け（マーカーの読み取り・閉じのマーカーの探索・機能の判定）」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/tree.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「ファイルツリー」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ツリー]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/views.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「ビューのマーカーの囲み」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ビュー]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/warnings.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「書き方の警告を差し込む助け」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: standard-schema.ts
+    description: モジュール構成『ライブラリ本体 / 拡張』のうち「Standard Schema の型（仕様の型を書きコピーたもの）」を受け持つ。registerExtension の登録や引数の検査を変えるときに読む。
+    tags: [topic:拡張, topic:スキーマ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/拡張.ts
+        type: implements
+  - path: table-logic.ts
+    description: 'モジュール構成『ライブラリ本体 / 操作』のうち「表の並べ替えの比べ方・絞り込みの当てはめ・数の読み方・集計と読めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み方（部品の表と操作が使う）」を受け持つ。描いた文書での読む人の操作を変えるときに読む。'
+    tags: [topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: viewer/bundle.ts
+    description: モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の文書の行き来と一覧のパネル」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに読む。
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
+  - path: viewer/index.ts
+    description: モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「入口。埋めた中身を読んで 1 文書かまとめた HTML を起動する」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに読む。
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
+  - path: viewer/modules.ts
+    description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「埋めたモジュールの blob: URL と拡張の登録」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに読む。'
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
+  - path: viewer/route.ts
+    description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「URL の # の読み取りと、描いた文書のリンクの書き換え」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに読む。'
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
+  - path: viewer/viewer.css
+    description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の画面と印刷の規則（層 mdmark）。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を渡し、右側の目次の帯と表の見出し行を上の帯の下に留める」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに読む。'
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
+  - path: views/index.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「dist/view.js の入口。drawView・attachView」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: views/spec.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「公開の型 MdmarkViewOptions・MdmarkViewHandle、使えるアイコンと既定の対応、引数の検査（dist/index.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements

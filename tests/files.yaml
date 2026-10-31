@@ -1,0 +1,1979 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: e2e/chart.ts
+    description: E2E テストが使う見本のグラフの定義を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:図]
+  - path: e2e/cli.ts
+    description: E2E テストで CLI を子プロセスで流し、終了コードと出力を受け取る処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:cli]
+  - path: e2e/diagram.ts
+    description: E2E テストが使う図の見本の文書・固有の部品の代役・型の点検の実行と、図の倍率の読み取りを受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:図]
+  - path: e2e/diff-samples.ts
+    description: E2E テストが使う差分の見本の文書と 3 つのリビジョンを受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:差分]
+  - path: e2e/diff-ui.ts
+    description: E2E テストが差分の UI（変更を見るボタン・リビジョンを選ぶ欄）を探すロケーターを受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:差分, topic:ロケータ]
+  - path: e2e/dist-page.ts
+    description: E2E テストで、手元の配布物を jsDelivr の URL で返して使う側のページを開き、文書を描く・差分やコメントの取り出し元を渡す処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:cdn, topic:差分, topic:コメント]
+  - path: e2e/global-setup.ts
+    description: E2E テストのワーカーが並ぶ前に VS Code を 1 回だけ取得する処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:vscode]
+  - path: e2e/plugin.ts
+    description: E2E テストで MCP サーバーのツールを呼んで結果を受け取る処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:mcp, tool:claude-code]
+  - path: e2e/tooltip.ts
+    description: E2E テストでツールチップの置き場所を比べる処理と、上下に余白を取る CSS を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:用語, topic:図]
+  - path: e2e/view-samples.ts
+    description: E2E テストが使うビューの見本の項目を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:ビュー]
+  - path: e2e/vscode-binary.ts
+    description: E2E テストで流す VS Code のバージョンと、取得した実行ファイルの場所を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:vscode]
+  - path: e2e/vscode-diff.ts
+    description: E2E テストで Git のリポジトリを用意して VS Code の差分ビューと差分のプレビューを開き、スクロールする処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:vscode, tool:git, topic:差分]
+  - path: e2e/vscode.ts
+    description: E2E テストで VS Code と拡張機能を Test のモードで起動する処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:vscode]
+  - path: e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts
+    description: シナリオ『ClaudeCodeから点検と書き出しを呼ぶ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ
+        type: see_also
+  - path: e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts
+    description: シナリオ『ClaudeCode にプラグインを入れる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる
+        type: see_also
+  - path: e2e/単一ユースケース/HTMLに書き出す.spec.ts
+    description: シナリオ『HTML に書き出す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す
+        type: see_also
+  - path: e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts
+    description: シナリオ『MCPサーバーを起動・停止する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する
+        type: see_also
+  - path: e2e/単一ユースケース/PDFに印刷する.spec.ts
+    description: シナリオ『PDF に印刷する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/PDFに印刷する
+        type: see_also
+  - path: e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts
+    description: シナリオ『VSCode でプレビューを開く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く
+        type: see_also
+  - path: e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts
+    description: シナリオ『まとめたHTML で文書を行き来する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する
+        type: see_also
+  - path: e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts
+    description: シナリオ『エディタとプレビューのスクロールを合わせる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる
+        type: see_also
+  - path: e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts
+    description: シナリオ『コードブロックのHTML を描く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く
+        type: see_also
+  - path: e2e/単一ユースケース/コードブロックを飾る.spec.ts
+    description: シナリオ『コードブロックを飾る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る
+        type: see_also
+  - path: e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
+    description: シナリオ『ステップ・ファイルツリー・バッジで本文を組む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む
+        type: see_also
+  - path: e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts
+    description: シナリオ『セッションの開始で使い方集の索引を受け取る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集の索引を受け取る
+        type: see_also
+  - path: e2e/単一ユースケース/タグの語彙を見る.spec.ts
+    description: シナリオ『タグの語彙を見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/タグの語彙を見る
+        type: see_also
+  - path: e2e/単一ユースケース/タブを切り替える.spec.ts
+    description: シナリオ『タブを切り替える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/タブを切り替える
+        type: see_also
+  - path: e2e/単一ユースケース/チャートを描く.spec.ts
+    description: シナリオ『チャートを描く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/チャートを描く
+        type: see_also
+  - path: e2e/単一ユースケース/テーマを上書きする.spec.ts
+    description: シナリオ『テーマを上書きする』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする
+        type: see_also
+  - path: e2e/単一ユースケース/テーマを選ぶ.spec.ts
+    description: シナリオ『テーマを選ぶ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ
+        type: see_also
+  - path: e2e/単一ユースケース/ビューで項目を見る.spec.ts
+    description: シナリオ『ビューで項目を見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/ビューで項目を見る
+        type: see_also
+  - path: e2e/単一ユースケース/プレビューから設定を開く.spec.ts
+    description: シナリオ『プレビューから設定を開く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く
+        type: see_also
+  - path: e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts
+    description: シナリオ『プレビューのリンクと画像を開く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く
+        type: see_also
+  - path: e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts
+    description: シナリオ『プレビューをVSCode のテーマに合わせる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる
+        type: see_also
+  - path: e2e/単一ユースケース/使い方集を読む.spec.ts
+    description: シナリオ『使い方集を読む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/使い方集を読む
+        type: see_also
+  - path: e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts
+    description: シナリオ『図と表に番号を付けて参照する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する
+        type: see_also
+  - path: e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts
+    description: シナリオ『図の要素のツールチップを見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る
+        type: see_also
+  - path: e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts
+    description: シナリオ『図を拡大・縮小・移動する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する
+        type: see_also
+  - path: e2e/単一ユースケース/図を描く.spec.ts
+    description: シナリオ『図を描く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/図を描く
+        type: see_also
+  - path: e2e/単一ユースケース/固有の部品とCSSを当てる.spec.ts
+    description: シナリオ『固有の部品とCSS を当てる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを当てる
+        type: see_also
+  - path: e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts
+    description: シナリオ『埋め込んだHTML の差分を切り替える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/埋め込んだHTMLの差分を切り替える
+        type: see_also
+  - path: e2e/単一ユースケース/外部ライブラリを使うときだけ読み込む.spec.ts
+    description: シナリオ『外部ライブラリを使うときだけ読み込む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む
+        type: see_also
+  - path: e2e/単一ユースケース/差分の取り出し元を渡す.spec.ts
+    description: シナリオ『差分の取り出し元を渡す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す
+        type: see_also
+  - path: e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts
+    description: シナリオ『差分ビューの変更をプレビューで見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る
+        type: see_also
+  - path: e2e/単一ユースケース/拡張を登録して印を足す.spec.ts
+    description: シナリオ『拡張を登録して印を足す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/拡張を登録して印を足す
+        type: see_also
+  - path: e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts
+    description: シナリオ『拡張機能の配布物を作る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/拡張機能の配布物を作る
+        type: see_also
+  - path: e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts
+    description: シナリオ『操作できる部品で値を変えて写す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す
+        type: see_also
+  - path: e2e/単一ユースケース/文書の差分を見る.spec.ts
+    description: シナリオ『文書の差分を見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/文書の差分を見る
+        type: see_also
+  - path: e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts
+    description: シナリオ『文書をHTML に書き出す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す
+        type: see_also
+  - path: e2e/単一ユースケース/文書をHTML文字列にする.spec.ts
+    description: シナリオ『文書をHTML文字列にする』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする
+        type: see_also
+  - path: e2e/単一ユースケース/文書を印刷する.spec.ts
+    description: シナリオ『文書を印刷する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/文書を印刷する
+        type: see_also
+  - path: e2e/単一ユースケース/文書を描く.spec.ts
+    description: シナリオ『文書を描く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/文書を描く
+        type: see_also
+  - path: e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts
+    description: シナリオ『書いた内容をプレビューに映す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す
+        type: see_also
+  - path: e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts
+    description: シナリオ『本文に出た用語と文書の参照を取り出す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す
+        type: see_also
+  - path: e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts
+    description: シナリオ『機能のオン・オフを文書で上書きする』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする
+        type: see_also
+  - path: e2e/単一ユースケース/注意書きを書く.spec.ts
+    description: シナリオ『注意書きを書く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/注意書きを書く
+        type: see_also
+  - path: e2e/単一ユースケース/版を上げる.spec.ts
+    description: シナリオ『版を上げる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/版を上げる
+        type: see_also
+  - path: e2e/単一ユースケース/版を固定して配布物を読み込む.spec.ts
+    description: シナリオ『版を固定して配布物を読み込む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/版を固定して配布物を読み込む
+        type: see_also
+  - path: e2e/単一ユースケース/用語の意味をツールチップで見る.spec.ts
+    description: シナリオ『用語の意味をツールチップで見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る
+        type: see_also
+  - path: e2e/単一ユースケース/目次と見出しのアンカーで節へ移る.spec.ts
+    description: シナリオ『目次と見出しのアンカーで節へ移る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る
+        type: see_also
+  - path: e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts
+    description: シナリオ『節と行の詳細を開閉する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する
+        type: see_also
+  - path: e2e/単一ユースケース/索引から文書を探す.spec.ts
+    description: シナリオ『索引から文書を探す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/索引から文書を探す
+        type: see_also
+  - path: e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts
+    description: シナリオ『索引と文書のずれを点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する
+        type: see_also
+  - path: e2e/単一ユースケース/索引を書き換える.spec.ts
+    description: シナリオ『索引を書き換える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/索引を書き換える
+        type: see_also
+  - path: e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts
+    description: シナリオ『表から用語集に用語を入れる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる
+        type: see_also
+  - path: e2e/単一ユースケース/表を操作する.spec.ts
+    description: シナリオ『表を操作する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/表を操作する
+        type: see_also
+  - path: e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts
+    description: シナリオ『表形式のビューを列で絞り込む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む
+        type: see_also
+  - path: e2e/単一ユースケース/被参照を見る.spec.ts
+    description: シナリオ『被参照を見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/被参照を見る
+        type: see_also
+  - path: e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts
+    description: シナリオ『複数の文書を1枚のHTML にまとめる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる
+        type: see_also
+  - path: e2e/単一ユースケース/設定と索引を点検する.spec.ts
+    description: シナリオ『設定と索引を点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する
+        type: see_also
+  - path: e2e/単一ユースケース/足すJavaScriptを型で点検する.spec.ts
+    description: シナリオ『足すJavaScript を型で点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/足すJavaScriptを型で点検する
+        type: see_also
+  - path: e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts
+    description: シナリオ『選んだ箇所にコメントする』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする
+        type: see_also
+  - path: e2e/単一ユースケース/部品をJavaScriptから使う.spec.ts
+    description: シナリオ『部品をJavaScriptから使う』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使う
+        type: see_also
+  - path: e2e/単一ユースケース/配布物をビルドして検査する.spec.ts
+    description: シナリオ『配布物をビルドして検査する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する
+        type: see_also
+  - path: e2e/単一ユースケース/雛形を置く.spec.ts
+    description: シナリオ『雛形を置く』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/雛形を置く
+        type: see_also
+  - path: e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts
+    description: シナリオ『ClaudeCode で索引を書き換えて点検してから配る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る
+        type: see_also
+  - path: e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
+    description: シナリオ『MCPサーバーを起動してプラグインからつなぐ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ
+        type: see_also
+  - path: e2e/複合ユースケース/VSCodeで書きながら確かめてPDFにする.spec.ts
+    description: シナリオ『VSCode で書きながら確かめてPDF にする』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/VSCodeで書きながら確かめてPDFにする
+        type: see_also
+  - path: e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts
+    description: シナリオ『コードブロックのHTML でチャートとヒントを読む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む
+        type: see_also
+  - path: e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts
+    description: シナリオ『ビューで探してコメントを付ける』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/ビューで探してコメントを付ける
+        type: see_also
+  - path: e2e/複合ユースケース/取り出し元を渡して文書の差分を読む.spec.ts
+    description: シナリオ『取り出し元を渡して文書の差分を読む』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/取り出し元を渡して文書の差分を読む
+        type: see_also
+  - path: e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts
+    description: シナリオ『固有の部品で図の文書を描いて確かめる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確かめる
+        type: see_also
+  - path: e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts
+    description: シナリオ『雛形から1枚のHTML を配る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/build-site.test.ts
+    description: インターフェース定義『複数の文書を1枚のHTML にまとめる』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:バンドル]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/複数の文書を1枚のHTMLにまとめる.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/check.test.ts
+    description: インターフェース定義『点検する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:検査]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/点検する.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/export-html.test.ts
+    description: インターフェース定義『文書をHTML に書き出す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:書き出し, tool:html]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書をHTMLに書き出す.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/find-docs.test.ts
+    description: インターフェース定義『文書を探す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/list-tags.test.ts
+    description: インターフェース定義『タグの語彙を見る』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:タグ]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/タグの語彙を見る.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/pre-tool-use.test.ts
+    description: インターフェース定義『作業のフォルダを引数に入れる』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/read-guide.test.ts
+    description: インターフェース定義『使い方集を読む』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:使い方集]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/serve.test.ts
+    description: インターフェース定義『MCPサーバーを起動・停止する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/session-start.test.ts
+    description: インターフェース定義『使い方集の索引を渡す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/update-index.test.ts
+    description: インターフェース定義『索引を書き換える』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/索引を書き換える.ts
+        type: see_also
+  - path: integration/built-root.ts
+    description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:バンドル]
+  - path: integration/cli.ts
+    description: 結合テストで CLI を子プロセスで流し、終了コードと出力を受け取る処理を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:cli]
+  - path: integration/fixtures-plugin.ts
+    description: 結合テストが使う外部ライブラリと拡張のモジュールの代役を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:拡張, topic:モック]
+  - path: integration/global-setup.ts
+    description: ブラウザの結合テストが読む配布物を一時フォルダにビルドする処理を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:バンドル]
+  - path: integration/lib/backlinks.story.test.ts
+    description: 部品設計『関連文書の一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:被参照]
+    related:
+      - to: src/parts/backlinks
+        type: tests
+      - to: dev/設計書/部品設計/関連文書の一覧.ts
+        type: see_also
+  - path: integration/lib/badge.story.test.ts
+    description: 部品設計『バッジ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:バッジ]
+    related:
+      - to: src/parts/badge
+        type: tests
+      - to: dev/設計書/部品設計/バッジ.ts
+        type: see_also
+  - path: integration/lib/build.test.ts
+    description: インターフェース定義『配布物をビルドする』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:バンドル]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts
+        type: see_also
+  - path: integration/lib/bundle.test.ts
+    description: インターフェース定義『複数の文書を1枚のHTML にまとめる』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts
+        type: see_also
+  - path: integration/lib/callout.story.test.ts
+    description: 部品設計『注意書き』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:注意書き]
+    related:
+      - to: src/parts/callout
+        type: tests
+      - to: dev/設計書/部品設計/注意書き.ts
+        type: see_also
+  - path: integration/lib/chart.story.test.ts
+    description: 部品設計『グラフ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/diagram
+        type: tests
+      - to: dev/設計書/部品設計/グラフ.ts
+        type: see_also
+  - path: integration/lib/check-config.test.ts
+    description: インターフェース定義『設定と索引を点検する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:設定, topic:検査]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts
+        type: see_also
+  - path: integration/lib/check-index.test.ts
+    description: インターフェース定義『索引を点検する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:検査]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts
+        type: see_also
+  - path: integration/lib/code-block.story.test.ts
+    description: 部品設計『コードブロック』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/code-block
+        type: tests
+      - to: dev/設計書/部品設計/コードブロック.ts
+        type: see_also
+  - path: integration/lib/collect-matches.test.ts
+    description: インターフェース定義『本文の参照を取り出す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts
+        type: see_also
+  - path: integration/lib/collect-references.test.ts
+    description: インターフェース定義『参照の表を作る』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:被参照]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts
+        type: see_also
+  - path: integration/lib/comment-bubble.story.test.ts
+    description: 部品設計『コメントの吹き出し』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:コメント]
+    related:
+      - to: src/parts/comment
+        type: tests
+      - to: dev/設計書/部品設計/コメントの吹き出し.ts
+        type: see_also
+  - path: integration/lib/comment-button.story.test.ts
+    description: 部品設計『コメントのボタン』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:コメント]
+    related:
+      - to: src/parts/comment
+        type: tests
+      - to: dev/設計書/部品設計/コメントのボタン.ts
+        type: see_also
+  - path: integration/lib/comment-form.story.test.ts
+    description: 部品設計『コメントの入力欄』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:コメント]
+    related:
+      - to: src/parts/comment
+        type: tests
+      - to: dev/設計書/部品設計/コメントの入力欄.ts
+        type: see_also
+  - path: integration/lib/comment-mark.story.test.ts
+    description: 部品設計『コメントの印』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:コメント]
+    related:
+      - to: src/parts/comment
+        type: tests
+      - to: dev/設計書/部品設計/コメントの印.ts
+        type: see_also
+  - path: integration/lib/comment-orphans.story.test.ts
+    description: 部品設計『箇所が見つからないコメントの一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:コメント]
+    related:
+      - to: src/parts/comment
+        type: tests
+      - to: dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts
+        type: see_also
+  - path: integration/lib/diagram-frame.story.test.ts
+    description: 部品設計『図の枠』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/diagram
+        type: tests
+      - to: dev/設計書/部品設計/図の枠.ts
+        type: see_also
+  - path: integration/lib/diagram-tooltip.story.test.ts
+    description: 部品設計『図のツールチップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/diagram
+        type: tests
+      - to: dev/設計書/部品設計/図のツールチップ.ts
+        type: see_also
+  - path: integration/lib/diff-blocks.story.test.ts
+    description: 部品設計『差分のブロック』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-blocks
+        type: tests
+      - to: dev/設計書/部品設計/差分のブロック.ts
+        type: see_also
+  - path: integration/lib/diff-html.story.test.ts
+    description: 部品設計『埋め込んだHTML の差分』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, tool:html, topic:差分]
+    related:
+      - to: src/parts/diff-html
+        type: tests
+      - to: dev/設計書/部品設計/埋め込んだHTMLの差分.ts
+        type: see_also
+  - path: integration/lib/diff-lines.story.test.ts
+    description: 部品設計『差分の行』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-lines
+        type: tests
+      - to: dev/設計書/部品設計/差分の行.ts
+        type: see_also
+  - path: integration/lib/diff-message.story.test.ts
+    description: 部品設計『差分の状態の文』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-message
+        type: tests
+      - to: dev/設計書/部品設計/差分の状態の文.ts
+        type: see_also
+  - path: integration/lib/diff-minimap.story.test.ts
+    description: 部品設計『ミニマップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-minimap
+        type: tests
+      - to: dev/設計書/部品設計/ミニマップ.ts
+        type: see_also
+  - path: integration/lib/diff-toggle.story.test.ts
+    description: 部品設計『差分を開くボタン』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-toggle
+        type: tests
+      - to: dev/設計書/部品設計/差分を開くボタン.ts
+        type: see_also
+  - path: integration/lib/doc-list.story.test.ts
+    description: 部品設計『文書の一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/doc-list
+        type: tests
+      - to: dev/設計書/部品設計/文書の一覧.ts
+        type: see_also
+  - path: integration/lib/embed.story.test.ts
+    description: 部品設計『読み込み中の枠』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, tool:html]
+    related:
+      - to: src/parts/embed
+        type: tests
+      - to: dev/設計書/部品設計/読み込み中の枠.ts
+        type: see_also
+  - path: integration/lib/embedded-html.story.test.ts
+    description: 部品設計『埋め込んだHTML』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, tool:html]
+    related:
+      - to: src/parts/embedded-html
+        type: tests
+      - to: dev/設計書/部品設計/埋め込んだHTML.ts
+        type: see_also
+  - path: integration/lib/export.test.ts
+    description: インターフェース定義『文書をHTML に書き出す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:書き出し]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts
+        type: see_also
+  - path: integration/lib/figure.story.test.ts
+    description: 部品設計『図表の番号』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図表の番号]
+    related:
+      - to: src/parts/figure
+        type: tests
+      - to: dev/設計書/部品設計/図表の番号.ts
+        type: see_also
+  - path: integration/lib/flow-diagram.story.test.ts
+    description: 部品設計『フロー図』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/diagram
+        type: tests
+      - to: dev/設計書/部品設計/フロー図.ts
+        type: see_also
+  - path: integration/lib/hint.story.test.ts
+    description: 部品設計『ヒント』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/hint
+        type: tests
+      - to: dev/設計書/部品設計/ヒント.ts
+        type: see_also
+  - path: integration/lib/index-render.ts
+    description: 索引つきの render の結合テストが使う索引と参照の表を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:索引, topic:フィクスチャ]
+  - path: integration/lib/init.test.ts
+    description: インターフェース定義『雛形を置く』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: integration/lib/mount-comments.browser.test.ts
+    description: インターフェース定義『コメントを付ける』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:コメント]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts
+        type: see_also
+  - path: integration/lib/mount-view.browser.test.ts
+    description: インターフェース定義『ビューを描く』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:ビュー]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts
+        type: see_also
+  - path: integration/lib/mount.browser.test.ts
+    description: インターフェース定義『文書を描く』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
+        type: see_also
+  - path: integration/lib/notice.story.test.ts
+    description: 部品設計『知らせの枠』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/notice
+        type: tests
+      - to: dev/設計書/部品設計/知らせの枠.ts
+        type: see_also
+  - path: integration/lib/param.story.test.ts
+    description: 部品設計『操作できる部品』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/param
+        type: tests
+      - to: dev/設計書/部品設計/操作できる部品.ts
+        type: see_also
+  - path: integration/lib/register-extension.browser.test.ts
+    description: インターフェース定義『拡張を登録する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
+        type: see_also
+  - path: integration/lib/render.test.ts
+    description: インターフェース定義『文書をHTML文字列にする』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts
+        type: see_also
+  - path: integration/lib/revision-picker.story.test.ts
+    description: 部品設計『リビジョンの選択』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/revision-picker
+        type: tests
+      - to: dev/設計書/部品設計/リビジョンの選択.ts
+        type: see_also
+  - path: integration/lib/row-detail.story.test.ts
+    description: 部品設計『行の詳細』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/row-detail
+        type: tests
+      - to: dev/設計書/部品設計/行の詳細.ts
+        type: see_also
+  - path: integration/lib/section.story.test.ts
+    description: 部品設計『節』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:セクション]
+    related:
+      - to: src/parts/section
+        type: tests
+      - to: dev/設計書/部品設計/節.ts
+        type: see_also
+  - path: integration/lib/sequence-diagram.story.test.ts
+    description: 部品設計『シーケンス図』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/diagram
+        type: tests
+      - to: dev/設計書/部品設計/シーケンス図.ts
+        type: see_also
+  - path: integration/lib/side-toc.story.test.ts
+    description: 部品設計『右側の目次』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:目次]
+    related:
+      - to: src/parts/side-toc
+        type: tests
+      - to: dev/設計書/部品設計/右側の目次.ts
+        type: see_also
+  - path: integration/lib/steps.story.test.ts
+    description: 部品設計『ステップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:ステップ]
+    related:
+      - to: src/parts/steps
+        type: tests
+      - to: dev/設計書/部品設計/ステップ.ts
+        type: see_also
+  - path: integration/lib/syntax-warning.story.test.ts
+    description: 部品設計『書き方の警告』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/syntax-warning
+        type: tests
+      - to: dev/設計書/部品設計/書き方の警告.ts
+        type: see_also
+  - path: integration/lib/table.story.test.ts
+    description: 部品設計『表』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:テーブル]
+    related:
+      - to: src/parts/table
+        type: tests
+      - to: dev/設計書/部品設計/表.ts
+        type: see_also
+  - path: integration/lib/tabs.story.test.ts
+    description: 部品設計『タブ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:タブ]
+    related:
+      - to: src/parts/tabs
+        type: tests
+      - to: dev/設計書/部品設計/タブ.ts
+        type: see_also
+  - path: integration/lib/term-tip.story.test.ts
+    description: 部品設計『用語のツールチップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:用語]
+    related:
+      - to: src/parts/term-tip
+        type: tests
+      - to: dev/設計書/部品設計/用語のツールチップ.ts
+        type: see_also
+  - path: integration/lib/toc.story.test.ts
+    description: 部品設計『目次』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:目次]
+    related:
+      - to: src/parts/toc
+        type: tests
+      - to: dev/設計書/部品設計/目次.ts
+        type: see_also
+  - path: integration/lib/tree.story.test.ts
+    description: 部品設計『ファイルツリー』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:ツリー]
+    related:
+      - to: src/parts/tree
+        type: tests
+      - to: dev/設計書/部品設計/ファイルツリー.ts
+        type: see_also
+  - path: integration/lib/upgrade.test.ts
+    description: インターフェース定義『版を上げる』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts
+        type: see_also
+  - path: integration/lib/version.browser.test.ts
+    description: インターフェース定義『版を返す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:バージョン]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/版を返す.ts
+        type: see_also
+  - path: integration/lib/view.story.test.ts
+    description: 部品設計『ビュー』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:ビュー]
+    related:
+      - to: src/parts/view
+        type: tests
+      - to: dev/設計書/部品設計/ビュー.ts
+        type: see_also
+  - path: integration/plugin-inputs.ts
+    description: 結合テストで、プラグインのビルドに要るファイルを一時フォルダへコピーする処理を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:プラグイン, tool:claude-code]
+  - path: integration/plugin.ts
+    description: 結合テストで MCP サーバーのツールを呼んで結果を受け取る処理を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
+  - path: integration/story.ts
+    description: 結合テストでストーリーを開いて描画を確かめる処理と画面の大きさを受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
+  - path: integration/storybook-setup.ts
+    description: 結合テストの前に Storybook の開発サーバーを立てる処理を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
+    tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
+  - path: integration/vscode/config-band.story.test.ts
+    description: 部品設計『設定ファイルを読めない帯』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:設定]
+    related:
+      - to: vscode/src/webview/parts/config-band
+        type: tests
+      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+        type: see_also
+  - path: integration/vscode/preview-status.story.test.ts
+    description: 部品設計『プレビューの状態の表示』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: vscode/src/webview/parts/preview-status
+        type: tests
+      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
+        type: see_also
+  - path: unit/helpers/charts.ts
+    description: 単体テストが使う見本のグラフの定義（棒・円）の JSON を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/helpers/cli.ts
+    description: 単体テストが CLI に渡す入出力と質問への回答の代役・一時フォルダ・書き出した HTML から埋めた中身を取り出す処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:モック]
+  - path: unit/helpers/clipboard.ts
+    description: 単体テストで navigator.clipboard を差し替えて戻す処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:クリップボード, topic:モック]
+  - path: unit/helpers/css.d.ts
+    description: 単体テストが CSS のファイルを import するための型宣言を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:typescript, tool:css]
+  - path: unit/helpers/diagrams.ts
+    description: 単体テストが使う、見本の文書に書いた図の部品の定義を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/helpers/dom.ts
+    description: 単体テストで、描いた文書の CSS と描く先の要素をページに置く処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:フィクスチャ]
+  - path: unit/helpers/env.ts
+    description: 単体テストが markdown-it の解析器に渡す env と、機能を全てオフにした機能のオン・オフを受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
+  - path: unit/helpers/find-words-cases.ts
+    description: 語の区切りで語を照合する関数を、Node とブラウザの両方で同じケースで確かめる共通のケースを受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:用語]
+  - path: unit/helpers/git.ts
+    description: 単体テストで一時フォルダに Git のリポジトリを作り、コミットとタグを打つ処理と、一緒に変える文書の見本の索引を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:git, topic:フィクスチャ]
+  - path: unit/helpers/glob.d.ts
+    description: 単体テストが Vite の import.meta.glob を使うための型宣言を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vite, tool:typescript]
+  - path: unit/helpers/html.ts
+    description: 単体テストで HTML の文字から開始タグを取り出す処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:html]
+  - path: unit/helpers/index-fixtures.ts
+    description: 単体テストが使う、文書 3 つと用語 1 つを持つ見本の索引と本文を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:フィクスチャ]
+  - path: unit/helpers/lazy.ts
+    description: 実装が無い間もテストのファイルを読み込めるよう、import.meta.glob で実装を読む処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vite]
+  - path: unit/helpers/render.ts
+    description: 単体テストで、機能のオン・オフを重ねた設定で Markdown を描いて HTML を返す処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:フィクスチャ]
+  - path: unit/helpers/source-line.ts
+    description: 単体テストで HTML から元の行番号の属性を取り除く処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:html]
+  - path: unit/scripts/baseline.test.ts
+    description: scripts/baseline.ts（「使う側のブラウザが読む JS を minify せずに束ね、対応ブラウザの下限に無い API を拾う」）を確かめる単体テスト。baseline.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バンドル, tool:esbuild]
+    related:
+      - to: scripts/baseline
+        type: tests
+  - path: unit/scripts/build-plugin.test.ts
+    description: scripts/build-plugin.ts（「プラグインのビルド」）を確かめる単体テスト。build-plugin.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:プラグイン, tool:claude-code, tool:esbuild, topic:バンドル]
+    related:
+      - to: scripts/build-plugin
+        type: tests
+  - path: unit/scripts/build.test.ts
+    description: scripts/build.ts（「バージョンの決定と検査・esbuild の呼び出し・束ねたライブラリのライセンスの書き出し・サイズの検査」）を確かめる単体テスト。build.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バンドル, tool:esbuild]
+    related:
+      - to: scripts/build
+        type: tests
+  - path: unit/scripts/migrations.test.ts
+    description: scripts/migrations.ts（「スキーマを変えたバージョンに移行の手順があるかの点検」）を確かめる単体テスト。migrations.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バンドル, tool:esbuild]
+    related:
+      - to: scripts/migrations
+        type: tests
+  - path: unit/scripts/storybook-render.test.ts
+    description: scripts/storybook-render.ts（「描画の口（部品の HTML と CSS を返す HTTP サーバー）」）を確かめる単体テスト。storybook-render.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ストーリー, tool:storybook]
+    related:
+      - to: scripts/storybook-render
+        type: tests
+  - path: unit/src/cli/alias-schema.test.ts
+    description: src/cli/alias-schema.ts（「設定の aliases の行の JSON Schema での検査」）を確かめる単体テスト。alias-schema.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, tool:ajv]
+    related:
+      - to: src/cli/alias-schema
+        type: tests
+  - path: unit/src/cli/aliases.test.ts
+    description: src/cli/aliases.ts（「aliases の行の paths の YAML の読み取りとエイリアスの組み立て」）を確かめる単体テスト。aliases.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:エイリアス]
+    related:
+      - to: src/cli/aliases
+        type: tests
+  - path: unit/src/cli/backup.test.ts
+    description: src/cli/backup.ts（「当てる前のコピーとコピーからの戻し」）を確かめる単体テスト。backup.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: src/cli/backup
+        type: tests
+  - path: unit/src/cli/build.test.ts
+    description: src/cli/build.ts（「mdmark build」）を確かめる単体テスト。build.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:バンドル]
+    related:
+      - to: src/cli/build
+        type: tests
+  - path: unit/src/cli/changelog.test.ts
+    description: src/cli/changelog.ts（「変更履歴の表から範囲の行を抽き出す」）を確かめる単体テスト。changelog.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: src/cli/changelog
+        type: tests
+  - path: unit/src/cli/check.test.ts
+    description: src/cli/check.ts（「mdmark check」）を確かめる単体テスト。check.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:検査]
+    related:
+      - to: src/cli/check
+        type: tests
+  - path: unit/src/cli/config.test.ts
+    description: src/cli/config.ts（「設定ファイルの探索・読み取り・形の検査」）を確かめる単体テスト。config.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:設定]
+    related:
+      - to: src/cli/config
+        type: tests
+  - path: unit/src/cli/documents.test.ts
+    description: src/cli/documents.ts（「build の対象の文書・索引と索引の文書の読み取り・文書のタイトル」）を確かめる単体テスト。documents.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli]
+    related:
+      - to: src/cli/documents
+        type: tests
+  - path: unit/src/cli/embed.test.ts
+    description: src/cli/embed.ts（「外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク」）を確かめる単体テスト。embed.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, tool:html]
+    related:
+      - to: src/cli/embed
+        type: tests
+  - path: unit/src/cli/export.test.ts
+    description: src/cli/export.ts（「mdmark export」）を確かめる単体テスト。export.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:書き出し]
+    related:
+      - to: src/cli/export
+        type: tests
+  - path: unit/src/cli/git.test.ts
+    description: src/cli/git.ts（「比べる基準から変わったファイルの引き出し」）を確かめる単体テスト。git.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli]
+    related:
+      - to: src/cli/git
+        type: tests
+  - path: unit/src/cli/html.test.ts
+    description: src/cli/html.ts（「書き出す HTML の組み立て」）を確かめる単体テスト。html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, tool:html]
+    related:
+      - to: src/cli/html
+        type: tests
+  - path: unit/src/cli/index-file.test.ts
+    description: src/cli/index-file.ts（「索引のファイルの項目の書き換え」）を確かめる単体テスト。index-file.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli]
+    related:
+      - to: src/cli/index-file
+        type: tests
+  - path: unit/src/cli/init.test.ts
+    description: src/cli/init.ts（「mdmark init」）を確かめる単体テスト。init.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli]
+    related:
+      - to: src/cli/init
+        type: tests
+  - path: unit/src/cli/main.test.ts
+    description: src/cli/main.ts（「引数の読み取りとコマンドの振り分け」）を確かめる単体テスト。main.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli]
+    related:
+      - to: src/cli/main
+        type: tests
+  - path: unit/src/cli/migrations.test.ts
+    description: src/cli/migrations.ts（「移行の手順の読み取り・形の検め・適用」）を確かめる単体テスト。migrations.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: src/cli/migrations
+        type: tests
+  - path: unit/src/cli/prompt.test.ts
+    description: src/cli/prompt.ts（「標準入力の 1 行を回答にする質問」）を確かめる単体テスト。prompt.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: src/cli/prompt
+        type: tests
+  - path: unit/src/cli/upgrade.test.ts
+    description: src/cli/upgrade.ts（「mdmark upgrade」）を確かめる単体テスト。upgrade.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: src/cli/upgrade
+        type: tests
+  - path: unit/src/cli/versions.test.ts
+    description: src/cli/versions.ts（「バージョンの書式・比較・呼んだ CLI のバージョン」）を確かめる単体テスト。versions.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
+    related:
+      - to: src/cli/versions
+        type: tests
+  - path: unit/src/comments/anchor.browser.test.ts
+    description: src/comments/anchor.ts（「選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）」）を確かめるブラウザで流す単体テスト。anchor.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/anchor
+        type: tests
+  - path: unit/src/comments/anchor.test.ts
+    description: src/comments/anchor.ts（「選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）」）を確かめる単体テスト。anchor.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/anchor
+        type: tests
+  - path: unit/src/comments/index.browser.test.ts
+    description: src/comments/index.ts（「dist/comments.js の入口。attachComments」）を確かめるブラウザで流す単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/index
+        type: tests
+  - path: unit/src/comments/spec.test.ts
+    description: src/comments/spec.ts（「公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの形の検査（dist/index.js）」）を確かめる単体テスト。spec.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/spec
+        type: tests
+  - path: unit/src/config.test.ts
+    description: src/config.ts（「設定の型・既定・既定を当てる resolveConfig」）を確かめる単体テスト。config.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:設定, topic:機能フラグ]
+    related:
+      - to: src/config
+        type: tests
+  - path: unit/src/diagram/definition.test.ts
+    description: src/diagram/definition.ts（「定義の型・JSON の読み取り・形の確かめ」）を確かめる単体テスト。definition.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/diagram/definition
+        type: tests
+  - path: unit/src/diagram/geometry.test.ts
+    description: src/diagram/geometry.ts（「収まる倍率・line jump・重なる線のずらし・軸の刻み」）を確かめる単体テスト。geometry.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/diagram/geometry
+        type: tests
+  - path: unit/src/diff/blocks.browser.test.ts
+    description: src/diff/blocks.ts（「比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks」）を確かめるブラウザで流す単体テスト。blocks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/diff/blocks
+        type: tests
+  - path: unit/src/diff/compute.test.ts
+    description: src/diff/compute.ts（「行と語の比較（jsdiff を差分の計算の関数型の後ろに置く）」）を確かめる単体テスト。compute.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分, tool:jsdiff]
+    related:
+      - to: src/diff/compute
+        type: tests
+  - path: unit/src/diff/minimap.browser.test.ts
+    description: src/diff/minimap.ts（「送り先ごとに 1 本のミニマップを置く attachMinimap」）を確かめるブラウザで流す単体テスト。minimap.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/diff/minimap
+        type: tests
+  - path: unit/src/diff/panel.browser.test.ts
+    description: src/diff/panel.ts（「差分を開く UI・待ち・選び直し・知らせの枠を付ける attachDiff」）を確かめるブラウザで流す単体テスト。panel.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/diff/panel
+        type: tests
+  - path: unit/src/diff/source.test.ts
+    description: src/diff/source.ts（「公開の型 DiffSource・DiffRevision・DiffMode と対応する差分の出し方 diffModes、取り出し元が返した値の検査」）を確かめる単体テスト。source.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/diff/source
+        type: tests
+  - path: unit/src/extensions.test.ts
+    description: src/extensions.ts（「拡張の登録表と registerExtension、引数の検査」）を確かめる単体テスト。extensions.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:拡張, topic:スキーマ]
+    related:
+      - to: src/extensions
+        type: tests
+  - path: unit/src/features.test.ts
+    description: src/features.ts（「文書のマーカーを重ねる resolveFeatures」）を確かめる単体テスト。features.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:設定, topic:機能フラグ]
+    related:
+      - to: src/features
+        type: tests
+  - path: unit/src/highlight-lines.test.ts
+    description: src/highlight-lines.ts（「色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）」）を確かめる単体テスト。highlight-lines.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown, tool:highlight.js]
+    related:
+      - to: src/highlight-lines
+        type: tests
+  - path: unit/src/highlight.browser.test.ts
+    description: src/highlight.ts（「色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの URL の控え」）を確かめるブラウザで流す単体テスト。highlight.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown, tool:highlight.js]
+    related:
+      - to: src/highlight
+        type: tests
+  - path: unit/src/index.test.ts
+    description: src/index.ts（「公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex()・buildAliases()・定数 diffModes と公開の型の export」）を確かめる単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:api, topic:エントリポイント]
+    related:
+      - to: src/index
+        type: tests
+  - path: unit/src/interact/clipboard.browser.test.ts
+    description: src/interact/clipboard.ts（「クリップボードへ書く（表・行の URL・コードブロック・ファイルツリーが使う）」）を確かめるブラウザで流す単体テスト。clipboard.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:クリップボード]
+    related:
+      - to: src/interact/clipboard
+        type: tests
+  - path: unit/src/interact/code-blocks.browser.test.ts
+    description: src/interact/code-blocks.ts（「コードブロックのコピー」）を確かめるブラウザで流す単体テスト。code-blocks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/code-blocks
+        type: tests
+  - path: unit/src/interact/diagram-tips.browser.test.ts
+    description: src/interact/diagram-tips.ts（「図のツールチップ」）を確かめるブラウザで流す単体テスト。diagram-tips.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/interact/diagram-tips
+        type: tests
+  - path: unit/src/interact/diagrams.browser.test.ts
+    description: src/interact/diagrams.ts（「拡大・縮小・移動・全画面」）を確かめるブラウザで流す単体テスト。diagrams.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/interact/diagrams
+        type: tests
+  - path: unit/src/interact/embedded-html.browser.test.ts
+    description: src/interact/embedded-html.ts を確かめるブラウザで流す単体テスト。embedded-html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:html]
+    related:
+      - to: src/interact/embedded-html
+        type: tests
+  - path: unit/src/interact/index.browser.test.ts
+    description: src/interact/index.ts（「attachInteractions」）を確かめるブラウザで流す単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/index
+        type: tests
+  - path: unit/src/interact/params.browser.test.ts
+    description: src/interact/params.ts（「操作できる部品の値とコピーする」）を確かめるブラウザで流す単体テスト。params.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/interact/params
+        type: tests
+  - path: unit/src/interact/placement.test.ts
+    description: src/interact/placement.ts（「ツールチップを持ち主の上と下のどちらに置くかを決める」）を確かめる単体テスト。placement.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/placement
+        type: tests
+  - path: unit/src/interact/sections.browser.test.ts
+    description: 'src/interact/sections.ts（「セクションと行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く」）を確かめるブラウザで流す単体テスト。sections.ts を変えたときに、合わせて見修正するケースを探すときに読む。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:セクション]
+    related:
+      - to: src/interact/sections
+        type: tests
+  - path: unit/src/interact/side-toc.browser.test.ts
+    description: src/interact/side-toc.ts（「右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いるセクションを付ける」）を確かめるブラウザで流す単体テスト。side-toc.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:目次]
+    related:
+      - to: src/interact/side-toc
+        type: tests
+  - path: unit/src/interact/sticky.browser.test.ts
+    description: src/interact/sticky.ts（「表の見出し行と集計の行を画面の端に留める」）を確かめるブラウザで流す単体テスト。sticky.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/sticky
+        type: tests
+  - path: unit/src/interact/tables.browser.test.ts
+    description: src/interact/tables.ts（「表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む」）を確かめるブラウザで流す単体テスト。tables.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: src/interact/tables
+        type: tests
+  - path: unit/src/interact/tabs.browser.test.ts
+    description: 'src/interact/tabs.ts（「タブの切り替えと、URL の #ID の指すタブを選ぶ処理」）を確かめるブラウザで流す単体テスト。tabs.ts を変えたときに、合わせて見修正するケースを探すときに読む。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:タブ]
+    related:
+      - to: src/interact/tabs
+        type: tests
+  - path: unit/src/interact/terms.browser.test.ts
+    description: src/interact/terms.ts（「ツールチップの開閉・置き場所・id の振り直し」）を確かめるブラウザで流す単体テスト。terms.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/interact/terms
+        type: tests
+  - path: unit/src/interact/text.browser.test.ts
+    description: src/interact/text.ts を確かめるブラウザで流す単体テスト。text.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/interact/text
+        type: tests
+  - path: unit/src/interact/trees.browser.test.ts
+    description: src/interact/trees.ts（「ファイルツリーのフォルダの開閉とコピー」）を確かめるブラウザで流す単体テスト。trees.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:ツリー]
+    related:
+      - to: src/interact/trees
+        type: tests
+  - path: unit/src/knowledge/aliases.test.ts
+    description: src/knowledge/aliases.ts（「エイリアスの型と、設定の行と YAML の中身からエイリアスを作る buildAliases」）を確かめる単体テスト。aliases.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:エイリアス]
+    related:
+      - to: src/knowledge/aliases
+        type: tests
+  - path: unit/src/knowledge/check.test.ts
+    description: src/knowledge/check.ts（「索引の点検（checkIndex）」）を確かめる単体テスト。check.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:検査]
+    related:
+      - to: src/knowledge/check
+        type: tests
+  - path: unit/src/knowledge/dictionary.browser.test.ts
+    description: src/knowledge/dictionary.ts（「用語と文書の別名の辞書・語の正規化・語の区切りでの照合」）を確かめるブラウザで流す単体テスト。dictionary.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/dictionary
+        type: tests
+  - path: unit/src/knowledge/dictionary.test.ts
+    description: src/knowledge/dictionary.ts（「用語と文書の別名の辞書・語の正規化・語の区切りでの照合」）を確かめる単体テスト。dictionary.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/dictionary
+        type: tests
+  - path: unit/src/knowledge/find.test.ts
+    description: src/knowledge/find.ts（「索引から文書を探す（findDocs）」）を確かめる単体テスト。find.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/find
+        type: tests
+  - path: unit/src/knowledge/index-shape.test.ts
+    description: src/knowledge/index-shape.ts（「索引の型と形の検査（normalizeIndex）」）を確かめる単体テスト。index-shape.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/index-shape
+        type: tests
+  - path: unit/src/knowledge/matches.test.ts
+    description: src/knowledge/matches.ts（「本文の参照の取り出し（collectMatches）」）を確かめる単体テスト。matches.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/matches
+        type: tests
+  - path: unit/src/knowledge/paths.test.ts
+    description: src/knowledge/paths.ts（「索引のパスの正規化・リンクの解決・相対パス」）を確かめる単体テスト。paths.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/paths
+        type: tests
+  - path: unit/src/knowledge/positions.test.ts
+    description: src/knowledge/positions.ts（「照合した文字の位置を本文の行と行の中の位置へ戻す」）を確かめる単体テスト。positions.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/knowledge/positions
+        type: tests
+  - path: unit/src/knowledge/references.test.ts
+    description: src/knowledge/references.ts（「参照の表（collectReferences）」）を確かめる単体テスト。references.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:被参照]
+    related:
+      - to: src/knowledge/references
+        type: tests
+  - path: unit/src/knowledge/tags.test.ts
+    description: src/knowledge/tags.ts（「タグの語彙の照合・近いタグ・タグごとの件数・語彙の一覧（listTags）」）を確かめる単体テスト。tags.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:タグ]
+    related:
+      - to: src/knowledge/tags
+        type: tests
+  - path: unit/src/libraries.browser.test.ts
+    description: src/libraries.ts（「マーカーの場所に外部ライブラリのモジュールを描かせる loadLibraries」）を確かめるブラウザで流す単体テスト。libraries.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown]
+    related:
+      - to: src/libraries
+        type: tests
+  - path: unit/src/mount-parts.browser.test.ts
+    description: src/mount-parts.ts（「公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）」）を確かめるブラウザで流す単体テスト。mount-parts.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/mount-parts
+        type: tests
+  - path: unit/src/mount-view.browser.test.ts
+    description: mount が描いた文書のビューのマーカーを、部品のモジュールを読んでビューにする流れをブラウザで確かめる単体テスト。mount からビューを描く流れを変えたときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー]
+    related:
+      - to: src/mount
+        type: tests
+      - to: src/part-modules
+        type: tests
+  - path: unit/src/mount.browser.test.ts
+    description: src/mount.ts（「公開関数 mount と、描いた要素の控え」）を確かめるブラウザで流す単体テスト。mount.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown]
+    related:
+      - to: src/mount
+        type: tests
+  - path: unit/src/part-modules.test.ts
+    description: src/part-modules.ts（「部品のモジュールのファイル名・URL の差し替え・1 回だけ読む loadPartModule（dist/index.js）」）を確かめる単体テスト。part-modules.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/part-modules
+        type: tests
+  - path: unit/src/parts/backlinks.test.ts
+    description: src/parts/backlinks.ts（「関連文書の一覧の HTML」）を確かめる単体テスト。backlinks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:被参照]
+    related:
+      - to: src/parts/backlinks
+        type: tests
+  - path: unit/src/parts/badge.test.ts
+    description: src/parts/badge.ts（「バッジの renderBadge」）を確かめる単体テスト。badge.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:バッジ]
+    related:
+      - to: src/parts/badge
+        type: tests
+  - path: unit/src/parts/callout.test.ts
+    description: src/parts/callout.ts（「注意書きの renderCallout」）を確かめる単体テスト。callout.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:注意書き]
+    related:
+      - to: src/parts/callout
+        type: tests
+  - path: unit/src/parts/code-block.test.ts
+    description: src/parts/code-block.ts（「コードブロックの renderCodeBlock と renderCodeCopy」）を確かめる単体テスト。code-block.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/code-block
+        type: tests
+  - path: unit/src/parts/collapsible.test.ts
+    description: src/parts/collapsible.ts（「タブとステップの折り畳みの renderCollapsible」）を確かめる単体テスト。collapsible.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/collapsible
+        type: tests
+  - path: unit/src/parts/comment.test.ts
+    description: src/parts/comment.ts（「コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）」）を確かめる単体テスト。comment.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/parts/comment
+        type: tests
+  - path: unit/src/parts/diagram.test.ts
+    description: src/parts/diagram.ts（「図の枠・フロー図・シーケンス図・グラフ・図のツールチップ・凡例」）を確かめる単体テスト。diagram.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/parts/diagram
+        type: tests
+  - path: unit/src/parts/diff-blocks.test.ts
+    description: src/parts/diff-blocks.ts（「差分のブロックの HTML」）を確かめる単体テスト。diff-blocks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-blocks
+        type: tests
+  - path: unit/src/parts/diff-html.test.ts
+    description: src/parts/diff-html.ts（「埋め込んだ HTML の差分の HTML」）を確かめる単体テスト。diff-html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分, tool:html]
+    related:
+      - to: src/parts/diff-html
+        type: tests
+  - path: unit/src/parts/diff-lines.test.ts
+    description: src/parts/diff-lines.ts（「差分の行の HTML」）を確かめる単体テスト。diff-lines.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-lines
+        type: tests
+  - path: unit/src/parts/diff-message.test.ts
+    description: src/parts/diff-message.ts（「差分の状態の文の HTML」）を確かめる単体テスト。diff-message.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-message
+        type: tests
+  - path: unit/src/parts/diff-minimap.test.ts
+    description: src/parts/diff-minimap.ts（「ミニマップの HTML」）を確かめる単体テスト。diff-minimap.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-minimap
+        type: tests
+  - path: unit/src/parts/diff-toggle.test.ts
+    description: src/parts/diff-toggle.ts（「差分を開くボタンの HTML」）を確かめる単体テスト。diff-toggle.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/diff-toggle
+        type: tests
+  - path: unit/src/parts/doc-list.test.ts
+    description: src/parts/doc-list.ts（「文書の一覧の renderDocList」）を確かめる単体テスト。doc-list.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/doc-list
+        type: tests
+  - path: unit/src/parts/embed.test.ts
+    description: src/parts/embed.ts（「読み込み中の枠の renderEmbed」）を確かめる単体テスト。embed.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/embed
+        type: tests
+  - path: unit/src/parts/escape.test.ts
+    description: src/parts/escape.ts（「HTML の特別な文字をエスケープする escapeHtml」）を確かめる単体テスト。escape.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/escape
+        type: tests
+  - path: unit/src/parts/figure.test.ts
+    description: src/parts/figure.ts（「図表の番号の renderFigure」）を確かめる単体テスト。figure.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:図表の番号]
+    related:
+      - to: src/parts/figure
+        type: tests
+  - path: unit/src/parts/hint.test.ts
+    description: src/parts/hint.ts（「埋め込んだ HTML のヒントのマーカーと中身」）を確かめる単体テスト。hint.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/parts/hint
+        type: tests
+  - path: unit/src/parts/icons.test.ts
+    description: src/parts/icons.ts（「lucide のアイコンの svg」）を確かめる単体テスト。icons.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg, tool:lucide]
+    related:
+      - to: src/parts/icons
+        type: tests
+  - path: unit/src/parts/notice.test.ts
+    description: src/parts/notice.ts（「知らせの枠の renderNotice」）を確かめる単体テスト。notice.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/notice
+        type: tests
+  - path: unit/src/parts/own.test.ts
+    description: src/parts/own.ts（「mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER」）を確かめる単体テスト。own.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/own
+        type: tests
+  - path: unit/src/parts/param.test.ts
+    description: src/parts/param.ts（「操作できる部品」）を確かめる単体テスト。param.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/parts/param
+        type: tests
+  - path: unit/src/parts/revision-picker.test.ts
+    description: src/parts/revision-picker.ts（「リビジョンの選択の HTML」）を確かめる単体テスト。revision-picker.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:差分]
+    related:
+      - to: src/parts/revision-picker
+        type: tests
+  - path: unit/src/parts/row-detail.test.ts
+    description: src/parts/row-detail.ts（「行の詳細の renderRowDetail」）を確かめる単体テスト。row-detail.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/row-detail
+        type: tests
+  - path: unit/src/parts/section.test.ts
+    description: src/parts/section.ts（「セクションの renderSection」）を確かめる単体テスト。section.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:セクション]
+    related:
+      - to: src/parts/section
+        type: tests
+  - path: unit/src/parts/side-toc.test.ts
+    description: src/parts/side-toc.ts（「右側の目次の renderSideToc」）を確かめる単体テスト。side-toc.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:目次]
+    related:
+      - to: src/parts/side-toc
+        type: tests
+  - path: unit/src/parts/steps.test.ts
+    description: src/parts/steps.ts（「ステップの renderSteps」）を確かめる単体テスト。steps.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:ステップ]
+    related:
+      - to: src/parts/steps
+        type: tests
+  - path: unit/src/parts/syntax-warning.test.ts
+    description: src/parts/syntax-warning.ts（「書き方の警告の renderSyntaxWarning」）を確かめる単体テスト。syntax-warning.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/syntax-warning
+        type: tests
+  - path: unit/src/parts/table.test.ts
+    description: src/parts/table.ts（「表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn」）を確かめる単体テスト。table.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:テーブル]
+    related:
+      - to: src/parts/table
+        type: tests
+  - path: unit/src/parts/tabs.test.ts
+    description: src/parts/tabs.ts（「タブの renderTabs」）を確かめる単体テスト。tabs.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:タブ]
+    related:
+      - to: src/parts/tabs
+        type: tests
+  - path: unit/src/parts/term-tip.test.ts
+    description: src/parts/term-tip.ts（「用語のツールチップの HTML」）を確かめる単体テスト。term-tip.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/parts/term-tip
+        type: tests
+  - path: unit/src/parts/toc.test.ts
+    description: src/parts/toc.ts（「目次の renderToc」）を確かめる単体テスト。toc.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:目次]
+    related:
+      - to: src/parts/toc
+        type: tests
+  - path: unit/src/parts/tree.test.ts
+    description: src/parts/tree.ts（「ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault」）を確かめる単体テスト。tree.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:ツリー]
+    related:
+      - to: src/parts/tree
+        type: tests
+  - path: unit/src/parts/view.test.ts
+    description: src/parts/view.ts（「ビューの HTML とアイコンの形（dist/view.js）」）を確かめる単体テスト。view.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/parts/view
+        type: tests
+  - path: unit/src/plugin/arguments.test.ts
+    description: src/plugin/arguments.ts（「ツールの引数の検査・SDK に渡す素通しの検証器」）を確かめる単体テスト。arguments.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: src/plugin/arguments
+        type: tests
+  - path: unit/src/plugin/guide.test.ts
+    description: src/plugin/guide.ts（「使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前」）を確かめる単体テスト。guide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:使い方集, tool:claude-code]
+    related:
+      - to: src/plugin/guide
+        type: tests
+  - path: unit/src/plugin/http.test.ts
+    description: src/plugin/http.ts（「mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換」）を確かめる単体テスト。http.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code, topic:http]
+    related:
+      - to: src/plugin/http
+        type: tests
+  - path: unit/src/plugin/mcp.test.ts
+    description: src/plugin/mcp.ts（「MCP サーバーの組み立て・ツールの登録・instructions」）を確かめる単体テスト。mcp.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: src/plugin/mcp
+        type: tests
+  - path: unit/src/plugin/pre-tool-use.test.ts
+    description: src/plugin/pre-tool-use.ts（「PreToolUse のフックの入口」）を確かめる単体テスト。pre-tool-use.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
+    related:
+      - to: src/plugin/pre-tool-use
+        type: tests
+  - path: unit/src/plugin/results.test.ts
+    description: src/plugin/results.ts（「find_docs の cursor・行の項目の選択と、find_docs・list_tags の Markdown の組み立て」）を確かめる単体テスト。results.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: src/plugin/results
+        type: tests
+  - path: unit/src/plugin/session-start.test.ts
+    description: src/plugin/session-start.ts（「SessionStart のフックの入口」）を確かめる単体テスト。session-start.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
+    related:
+      - to: src/plugin/session-start
+        type: tests
+  - path: unit/src/plugin/tools.test.ts
+    description: src/plugin/tools.ts（「7 つのツールの定義と処理・ツールの結果への変換」）を確かめる単体テスト。tools.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
+    related:
+      - to: src/plugin/tools
+        type: tests
+  - path: unit/src/print.browser.test.ts
+    description: src/print.ts（「印刷の前後で折り畳みを開いて戻す attachPrint」）を確かめるブラウザで流す単体テスト。print.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown, topic:印刷]
+    related:
+      - to: src/print
+        type: tests
+  - path: unit/src/render/index.test.ts
+    description: src/render/index.ts（「render と renderDocument」）を確かめる単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
+    related:
+      - to: src/render/index
+        type: tests
+  - path: unit/src/render/marks.test.ts
+    description: src/render/marks.ts（「マーカーを読み、置き換えるコアルール」）を確かめる単体テスト。marks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
+    related:
+      - to: src/render/marks
+        type: tests
+  - path: unit/src/render/parser.test.ts
+    description: src/render/parser.ts（「markdown-it の解析器と、追加するコアルール」）を確かめる単体テスト。parser.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
+    related:
+      - to: src/render/parser
+        type: tests
+  - path: unit/src/render/sanitize.test.ts
+    description: src/render/sanitize.ts（「sanitize-html の設定と sanitize」）を確かめる単体テスト。sanitize.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it, tool:sanitize-html]
+    related:
+      - to: src/render/sanitize
+        type: tests
+  - path: unit/src/render/syntax/backlinks.test.ts
+    description: src/render/syntax/backlinks.ts（「末尾の関連文書の一覧を置くコアルール」）を確かめる単体テスト。backlinks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:被参照]
+    related:
+      - to: src/render/syntax/backlinks
+        type: tests
+  - path: unit/src/render/syntax/badges.test.ts
+    description: src/render/syntax/badges.ts（「バッジ」）を確かめる単体テスト。badges.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:バッジ]
+    related:
+      - to: src/render/syntax/badges
+        type: tests
+  - path: unit/src/render/syntax/callouts.test.ts
+    description: src/render/syntax/callouts.ts（「注意書き」）を確かめる単体テスト。callouts.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:注意書き]
+    related:
+      - to: src/render/syntax/callouts
+        type: tests
+  - path: unit/src/render/syntax/code-blocks.test.ts
+    description: src/render/syntax/code-blocks.ts（「コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・色分けの対象の言語」）を確かめる単体テスト。code-blocks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/code-blocks
+        type: tests
+  - path: unit/src/render/syntax/collapse.test.ts
+    description: src/render/syntax/collapse.ts（「表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り」）を確かめる単体テスト。collapse.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/collapse
+        type: tests
+  - path: unit/src/render/syntax/diagrams.test.ts
+    description: src/render/syntax/diagrams.ts（「図の部品のマーカーの範囲を部品の HTML にするコアルール」）を確かめる単体テスト。diagrams.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/render/syntax/diagrams
+        type: tests
+  - path: unit/src/render/syntax/figures.test.ts
+    description: src/render/syntax/figures.ts（「図表の番号と参照」）を確かめる単体テスト。figures.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:図表の番号]
+    related:
+      - to: src/render/syntax/figures
+        type: tests
+  - path: unit/src/render/syntax/glossary.test.ts
+    description: src/render/syntax/glossary.ts（「glossary のマーカーで囲んだ表の読み取り」）を確かめる単体テスト。glossary.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/render/syntax/glossary
+        type: tests
+  - path: unit/src/render/syntax/headings.test.ts
+    description: src/render/syntax/headings.ts（「見出しの ID とアンカー」）を確かめる単体テスト。headings.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/headings
+        type: tests
+  - path: unit/src/render/syntax/html.test.ts
+    description: src/render/syntax/html.ts（「埋め込んだ HTML」）を確かめる単体テスト。html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, tool:html]
+    related:
+      - to: src/render/syntax/html
+        type: tests
+  - path: unit/src/render/syntax/row-details.test.ts
+    description: src/render/syntax/row-details.ts（「行の詳細」）を確かめる単体テスト。row-details.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/row-details
+        type: tests
+  - path: unit/src/render/syntax/sections.test.ts
+    description: src/render/syntax/sections.ts（「セクションの囲み」）を確かめる単体テスト。sections.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:セクション]
+    related:
+      - to: src/render/syntax/sections
+        type: tests
+  - path: unit/src/render/syntax/steps.test.ts
+    description: src/render/syntax/steps.ts（「ステップ」）を確かめる単体テスト。steps.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:ステップ]
+    related:
+      - to: src/render/syntax/steps
+        type: tests
+  - path: unit/src/render/syntax/tables.test.ts
+    description: src/render/syntax/tables.ts（「表の種類・機能・絞り込みと、表の属性」）を確かめる単体テスト。tables.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
+    related:
+      - to: src/render/syntax/tables
+        type: tests
+  - path: unit/src/render/syntax/tabs.test.ts
+    description: src/render/syntax/tabs.ts（「タブ」）を確かめる単体テスト。tabs.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:タブ]
+    related:
+      - to: src/render/syntax/tabs
+        type: tests
+  - path: unit/src/render/syntax/terms.test.ts
+    description: src/render/syntax/terms.ts（「本文の用語と文書の別名に下線を引くコアルール」）を確かめる単体テスト。terms.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
+    related:
+      - to: src/render/syntax/terms
+        type: tests
+  - path: unit/src/render/syntax/toc.test.ts
+    description: src/render/syntax/toc.ts（「目次」）を確かめる単体テスト。toc.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:目次]
+    related:
+      - to: src/render/syntax/toc
+        type: tests
+  - path: unit/src/render/syntax/tree.test.ts
+    description: src/render/syntax/tree.ts（「ファイルツリー」）を確かめる単体テスト。tree.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:ツリー]
+    related:
+      - to: src/render/syntax/tree
+        type: tests
+  - path: unit/src/render/syntax/views.test.ts
+    description: src/render/syntax/views.ts（「ビューのマーカーの囲み」）を確かめる単体テスト。views.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:ビュー]
+    related:
+      - to: src/render/syntax/views
+        type: tests
+  - path: unit/src/viewer/bundle.browser.test.ts
+    description: src/viewer/bundle.ts（「まとめた HTML の文書の行き来と一覧のパネル」）を確かめるブラウザで流す単体テスト。bundle.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ナビゲーション, tool:html]
+    related:
+      - to: src/viewer/bundle
+        type: tests
+  - path: unit/src/viewer/index.browser.test.ts
+    description: src/viewer/index.ts（「入口。埋めた中身を読んで 1 文書かまとめた HTML を起動する」）を確かめるブラウザで流す単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ナビゲーション, tool:html]
+    related:
+      - to: src/viewer/index
+        type: tests
+  - path: unit/src/viewer/modules.test.ts
+    description: 'src/viewer/modules.ts（「埋めたモジュールの blob: URL と拡張の登録」）を確かめる単体テスト。modules.ts を変えたときに、合わせて見修正するケースを探すときに読む。'
+    tags: [topic:単体テスト, tool:vitest, topic:ナビゲーション, tool:html]
+    related:
+      - to: src/viewer/modules
+        type: tests
+  - path: unit/src/viewer/route.browser.test.ts
+    description: 'src/viewer/route.ts（「URL の # の読み取りと、描いた文書のリンクの書き換え」）を確かめるブラウザで流す単体テスト。route.ts を変えたときに、合わせて見修正するケースを探すときに読む。'
+    tags: [topic:単体テスト, tool:vitest, topic:ナビゲーション, tool:html]
+    related:
+      - to: src/viewer/route
+        type: tests
+  - path: unit/src/viewer/route.test.ts
+    description: 'src/viewer/route.ts（「URL の # の読み取りと、描いた文書のリンクの書き換え」）を確かめる単体テスト。route.ts を変えたときに、合わせて見修正するケースを探すときに読む。'
+    tags: [topic:単体テスト, tool:vitest, topic:ナビゲーション, tool:html]
+    related:
+      - to: src/viewer/route
+        type: tests
+  - path: unit/src/views/index.browser.test.ts
+    description: src/views/index.ts（「dist/view.js の入口。drawView・attachView」）を確かめるブラウザで流す単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/views/index
+        type: tests
+  - path: unit/src/views/spec.test.ts
+    description: src/views/spec.ts（「公開の型 MdmarkViewOptions・MdmarkViewHandle、使えるアイコンと既定の対応、引数の検査（dist/index.js）」）を確かめる単体テスト。spec.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/views/spec
+        type: tests
+  - path: unit/vscode/scripts/build.test.ts
+    description: vscode/scripts/build.ts（「dist/extension.cjs・media/preview.js・media/preview.css と、--tests のとき out/test/ を書く」）を確かめる単体テスト。build.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:ci, topic:バンドル]
+    related:
+      - to: vscode/scripts/build
+        type: tests
+  - path: unit/vscode/scripts/release-check.test.ts
+    description: vscode/scripts/release-check.ts（「タグと package.json の version を照合する」）を確かめる単体テスト。release-check.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:ci, topic:検査]
+    related:
+      - to: vscode/scripts/release-check
+        type: tests
+  - path: unit/vscode/src/config.test.ts
+    description: vscode/src/config.ts（「設定ファイルの場所・読み取り・features と libraries の取り出し・雛形（vscode を import しない）」）を確かめる単体テスト。config.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:設定]
+    related:
+      - to: vscode/src/config
+        type: tests
+  - path: unit/vscode/src/export/html.test.ts
+    description: vscode/src/export/html.ts（「書き出す先のパスと HTML の組み立て（vscode を import しない）」）を確かめる単体テスト。html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: vscode/src/export/html
+        type: tests
+  - path: unit/vscode/src/export/write.test.ts
+    description: vscode/src/export/write.ts（「一時ファイルからの置き換え（vscode を import しない）」）を確かめる単体テスト。write.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: vscode/src/export/write
+        type: tests
+  - path: unit/vscode/src/preview/diff-target.test.ts
+    description: vscode/src/preview/diff-target.ts（「差分ビューの対象とパネルのキー（vscode を import しない）」）を確かめる単体テスト。diff-target.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー, topic:差分]
+    related:
+      - to: vscode/src/preview/diff-target
+        type: tests
+  - path: unit/vscode/src/preview/html.test.ts
+    description: vscode/src/preview/html.ts（「Webview の HTML と CSP（vscode を import しない）」）を確かめる単体テスト。html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー, tool:html]
+    related:
+      - to: vscode/src/preview/html
+        type: tests
+  - path: unit/vscode/src/preview/links.test.ts
+    description: vscode/src/preview/links.ts（「押したリンクの開き先の見分け（vscode を import しない）」）を確かめる単体テスト。links.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー]
+    related:
+      - to: vscode/src/preview/links
+        type: tests
+  - path: unit/vscode/src/preview/scroll-guard.test.ts
+    description: vscode/src/preview/scroll-guard.ts（「エディタを動かした直後の知らせを捨てる判定（vscode を import しない）」）を確かめる単体テスト。scroll-guard.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー, topic:スクロール]
+    related:
+      - to: vscode/src/preview/scroll-guard
+        type: tests
+  - path: unit/vscode/src/settings.test.ts
+    description: vscode/src/settings.ts（「settings.json の mdmark.* を読み、範囲の外の値を既定に戻す（vscode を import しない）」）を確かめる単体テスト。settings.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:設定]
+    related:
+      - to: vscode/src/settings
+        type: tests
+  - path: unit/vscode/src/version.test.ts
+    description: vscode/src/version.ts（「タグ一覧の取得・最新のバージョンの選び方・読むバージョンの決め方」）を確かめる単体テスト。version.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:バージョン]
+    related:
+      - to: vscode/src/version
+        type: tests
+  - path: unit/vscode/src/webview/parts/config-band.test.ts
+    description: vscode/src/webview/parts/config-band.ts（「設定ファイルを読めない帯の HTML」）を確かめる単体テスト。config-band.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:設定]
+    related:
+      - to: vscode/src/webview/parts/config-band
+        type: tests
+  - path: unit/vscode/src/webview/parts/preview-status.test.ts
+    description: vscode/src/webview/parts/preview-status.ts（「プレビューの状態の表示の HTML」）を確かめる単体テスト。preview-status.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/parts/preview-status
+        type: tests
+  - path: unit/vscode/src/webview/preview.browser.test.ts
+    description: vscode/src/webview/preview.ts（「パネルの中の入口（配布物の読み込み・描く・リンク・スクロール・inspect）」）を確かめるブラウザで流す単体テスト。preview.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/preview
+        type: tests
+  - path: unit/vscode/src/webview/scroll.browser.test.ts
+    description: vscode/src/webview/scroll.ts（「元の行番号とスクロールの位置の内分」）を確かめるブラウザで流す単体テスト。scroll.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:スクロール]
+    related:
+      - to: vscode/src/webview/scroll
+        type: tests

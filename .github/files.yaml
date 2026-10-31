@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: workflows/vscode-release.yml
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「vscode-v* のタグで .vsix を作り Release に添える」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements

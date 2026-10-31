@@ -1,0 +1,296 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: .vscodeignore
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「.vsix に入れないもの（src/・tests/・scripts/・out/・node_modules/）」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: LICENSE
+    description: VS Code 拡張機能の .vsix に入れるライセンスの本文。ライセンスを確かめるときに読む。
+    tags: [tool:vscode, topic:ライセンス]
+  - path: README.md
+    description: VS Code 拡張機能のマーケットプレイスと .vsix に載る説明（機能・使い方・設定）。拡張機能の紹介の文を変えるときに読む。
+    tags: [tool:vscode, topic:readme]
+  - path: package.json
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「拡張機能の定義（main・engines・contributes・scripts・依存）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
+    tags: [tool:vscode, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts
+        type: implements
+      - to: dev/設計書/画面設計/VSCodeのコマンドと通知.ts
+        type: implements
+  - path: scripts/build.ts
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「dist/extension.cjs・media/preview.js・media/preview.css と、--tests のとき out/test/ を書く」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci, topic:バンドル]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: scripts/release-check.ts
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「タグと package.json の version を照合する」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci, topic:検査]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: src/config-file.ts
+    description: モジュール構成『VS Code 拡張機能 / 設定』のうち「mdmark.openConfig（設定ファイルを開く・雛形を作るか尋ねる）」を受け持つ。拡張機能の設定の読み方を変えるときに読む。
+    tags: [tool:vscode, topic:設定]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/設定.ts
+        type: implements
+  - path: src/config.ts
+    description: モジュール構成『VS Code 拡張機能 / 設定』のうち「設定ファイルの場所・読み取り・features と libraries の取り出し・雛形（vscode を import しない）」を受け持つ。拡張機能の設定の読み方を変えるときに読む。
+    tags: [tool:vscode, topic:設定]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/設定.ts
+        type: implements
+  - path: src/deps.ts
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「各処理が受ける共通の依存 ExtensionDeps と globalState のキー」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
+    tags: [tool:vscode, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts
+        type: implements
+  - path: src/escape.ts
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「HTML として特別な文字のエスケープ（vscode を import しない）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
+    tags: [tool:vscode, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts
+        type: implements
+  - path: src/export/export.ts
+    description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体」を受け持つ。HTML への書き出しや PDF への印刷を変えるときに読む。
+    tags: [tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/書き出し.ts
+        type: implements
+  - path: src/export/html.ts
+    description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「書き出す先のパスと HTML の組み立て（vscode を import しない）」を受け持つ。HTML への書き出しや PDF への印刷を変えるときに読む。
+    tags: [tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/書き出し.ts
+        type: implements
+  - path: src/export/write.ts
+    description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「一時ファイルからの置き換え（vscode を import しない）」を受け持つ。HTML への書き出しや PDF への印刷を変えるときに読む。
+    tags: [tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/書き出し.ts
+        type: implements
+  - path: src/extension.ts
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「activate（コマンドと知らせの登録、テストのときの戻り値）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
+    tags: [tool:vscode, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts
+        type: implements
+  - path: src/log.ts
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「ログの出力先の型（vscode を import しない）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
+    tags: [tool:vscode, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts
+        type: implements
+  - path: src/messages.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「拡張機能 ⇄ Webview のメッセージの型（型だけ）」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/preview/diff-target.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「差分ビューの対象とパネルのキー（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:差分]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
+  - path: src/preview/html.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「Webview の HTML と CSP（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
+  - path: src/preview/links.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「押したリンクの開き先の見分け（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
+  - path: src/preview/manager.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「PreviewManager（Markdown ごとのパネルと、エディタ・設定の変更の振り分け）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
+  - path: src/preview/panel.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「PreviewPanel（1 つのパネルの HTML・メッセージ・描き直しの待ち）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
+  - path: src/preview/scroll-guard.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「エディタを動かした直後の知らせを捨てる判定（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:スクロール]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
+  - path: src/settings.ts
+    description: モジュール構成『VS Code 拡張機能 / 設定』のうち「settings.json の mdmark.* を読み、範囲の外の値を既定に戻す（vscode を import しない）」を受け持つ。拡張機能の設定の読み方を変えるときに読む。
+    tags: [tool:vscode, topic:設定]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/設定.ts
+        type: implements
+  - path: src/version.ts
+    description: モジュール構成『VS Code 拡張機能 / 読むバージョン』のうち「タグ一覧の取得・最新のバージョンの選び方・読むバージョンの決め方」を受け持つ。プレビューが読む mdmark のバージョンの決め方を変えるときに読む。
+    tags: [tool:vscode, topic:バージョン]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts
+        type: implements
+  - path: src/webview/parts/config-band.stories.yaml
+    description: 部品設計『設定ファイルを読めない帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:設定]
+    related:
+      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+        type: implements
+  - path: src/webview/parts/config-band.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「設定ファイルを読めない帯の HTML」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, topic:設定]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+        type: implements
+  - path: src/webview/parts/preview-status.stories.yaml
+    description: 部品設計『プレビューの状態の表示』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
+        type: implements
+  - path: src/webview/parts/preview-status.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「プレビューの状態の表示の HTML」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
+        type: implements
+  - path: src/webview/preview.css
+    id: vscode/src/webview/preview.css
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルの状態の表示と帯の CSS」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/preview.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルの中の入口（配布物の読み込み・描く・リンク・スクロール・inspect）」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/画面設計/VSCodeのプレビュー.ts
+        type: implements
+  - path: src/webview/scroll.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「元の行番号とスクロールの位置の内分」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, topic:スクロール]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/workspace.ts
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「相対パスの設定の基準のフォルダ（baseDirOf）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
+    tags: [tool:vscode, topic:エントリポイント]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/拡張機能の入口.ts
+        type: implements
+  - path: tests/integration/00-undecidable.test.ts
+    description: 拡張機能ホストの中で「前回のバージョンが空でタグ一覧も取れず、読む mdmark のバージョンを決められない場面」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts
+        type: see_also
+  - path: tests/integration/commands.test.ts
+    description: 拡張機能ホストの中で「コマンドと通知の入口（コマンドの登録と表示名）」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/画面設計/VSCodeのコマンドと通知.ts
+        type: see_also
+  - path: tests/integration/export.test.ts
+    description: 拡張機能ホストの中で「HTML への書き出しとブラウザで開く」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts
+        type: see_also
+  - path: tests/integration/helpers.ts
+    description: 拡張機能の結合テストが共通で使う、パネルの記録・Webview へのメッセージ・描き終わりの待ち合わせ・設定の書き換え・代役の配信・Git の差分ビューの処理を受け持つ。結合テストの準備を変えるときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+  - path: tests/integration/index.ts
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「拡張機能ホストの中で mocha を動かす run()」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: tests/integration/open-config.test.ts
+    description: 拡張機能ホストの中で「設定ファイルを開く」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts
+        type: see_also
+  - path: tests/integration/open-settings.test.ts
+    description: 拡張機能ホストの中で「設定を開く」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/設定を開く.ts
+        type: see_also
+  - path: tests/integration/preview-diff.test.ts
+    description: 拡張機能ホストの中で「差分ビューの変更をプレビューで見る」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る
+        type: see_also
+  - path: tests/integration/preview-link.test.ts
+    description: 拡張機能ホストの中で「プレビューのリンクを開く」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts
+        type: see_also
+  - path: tests/integration/preview-open.test.ts
+    description: 拡張機能ホストの中で「プレビューを開く」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts
+        type: see_also
+  - path: tests/integration/preview-reload.test.ts
+    description: 拡張機能ホストの中で「プレビューをリロードする」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts
+        type: see_also
+  - path: tests/integration/preview-rerender.test.ts
+    description: 拡張機能ホストの中で「プレビューを描き修正する」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts
+        type: see_also
+  - path: tests/integration/release.test.ts
+    description: 拡張機能ホストの中で「拡張機能の配布物を作る」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/拡張機能の配布物を作る.ts
+        type: see_also
+  - path: tests/integration/run.ts
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「代役の配信を立て、runTests を 1.141.0 と stable で呼ぶ」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: tests/integration/scroll-sync.test.ts
+    description: 拡張機能ホストの中で「エディタとプレビューのスクロールを合わせる」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
+    tags: [topic:結合テスト, tool:vscode, tool:mocha]
+    related:
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts
+        type: see_also
+  - path: tests/integration/stub-server.ts
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「代役の配信（配布物とタグ一覧）。結合テストと E2E が使い、@vscode/test-electron を import しない」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。
+    tags: [tool:vscode, topic:ci]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: tsconfig.json
+    description: 'モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「型の検査（types: node・vscode・mocha）」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに読む。'
+    tags: [tool:vscode, topic:ci]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements

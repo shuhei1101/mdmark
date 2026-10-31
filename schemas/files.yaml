@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: alias-inject/v0.2.0/aliases.schema.json
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「取り込んだ alias-inject の行の Schema」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:エイリアス, tool:ajv]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: mdmark.config.schema.json
+    description: モジュール構成『ライブラリ本体 / 設定と機能』のうち「設定の JSON Schema」を受け持つ。設定のキーや機能のオン・オフの決め方を変えるときに読む。
+    tags: [topic:設定, topic:機能フラグ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts
+        type: implements
+  - path: mdmark.index.schema.json
+    description: 使う側が文書のメタデータ・用語・タグの語彙を書く索引の JSON Schema。索引のキーを追加・変更するときに読む。
+    tags: [topic:索引, topic:スキーマ, tool:jsonschema]
+    related:
+      - to: dev/設計書/ER図/索引
+        type: implements
+  - path: mdmark.steps.schema.json
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「steps.yaml の JSON Schema」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
