@@ -135,7 +135,7 @@ data_models:
     properties:
       - name: line
         type: number
-        description: 見えている先頭の元の行番号（0 始まり）
+        description: 見えている先頭の元の行番号（0 始まり）。整数に切り捨てず、小数部で行の途中の割合を持つ
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
     status: planned
@@ -325,7 +325,7 @@ classes:
         summary: 見えている先頭の位置（上端の帯があればその下端）を元の行番号にして返す。描く前は `undefined`
         returns:
           type: number | undefined
-          description: '`revealLine` で送る行と、保存する行'
+          description: '`revealLine` で送る行'
         process: |-
           1. `handle` が無ければ `undefined` を返す
           2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を行にして返す（行の印を集める、位置を行にする）
@@ -339,6 +339,27 @@ classes:
         callees:
           - '#functions[collectAnchors]'
           - '#functions[lineForTop]'
+          - '#functions[topInset]'
+      - name: currentPosition
+        title: 先頭の位置を返す
+        kind: メソッド
+        summary: 見えている先頭の位置（上端の帯があればその下端）を、整数に切り捨てない元の行番号にして返す。描く前は `undefined`
+        returns:
+          type: number | undefined
+          description: '`setState` で保存する位置'
+        process: |-
+          1. `handle` が無ければ `undefined` を返す
+          2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を、切り捨てない行にして返す（行の印を集める、位置を切り捨てない行にする）
+        unit_tests:
+          - name: test_current_position
+            case: 正常
+            summary: 描く前は位置を返さず、描いた後は行の途中の位置を切り捨てずに返す
+            condition: '`render` の前に `currentPosition()`、`render` の後に `scrollToLine(20.5)` して `currentPosition()` と `currentLine()`'
+            mock: mdmark を `data-source-line` つきの見出しを描く代役にする
+            expected: 1 回目は `undefined`、2 回目は 20.5 との差が 0.05 未満、`currentLine()` は 20
+        callees:
+          - '#functions[collectAnchors]'
+          - '#functions[fractionalLineForTop]'
           - '#functions[topInset]'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
@@ -386,7 +407,7 @@ functions:
     description: ファイルの末尾で呼ぶ
     scope: public
     is_async: true
-    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`setState` で見えている先頭の行を保存する。`document` に `click`、`window` に `scroll`・`message` を受ける'
+    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`setState` で見えている先頭の位置（切り捨てない元の行番号）を保存する。`document` に `click`、`window` に `scroll`・`message` を受ける'
     process: |-
       1. `#mdmark-preview` の `data-*` から `PreviewBoot` を読む。`acquireVsCodeApi().getState()` が `PreviewState` で `line` が数なら、作る `PreviewView` に `savedLine` として渡す
       2. `status` が `versionUndecidable` なら状態の表示を出して終わる（配布物を読まない。「リロード」は受ける）
@@ -395,10 +416,10 @@ functions:
          - 失敗した場合、理由を見分け（読めない理由を見分ける）、状態の表示を出して `loadFailed` を送る
       5. `ready` を送る
       6. `message` を受けて `type` ごとに `PreviewView` へ渡す
-         - `render` の場合、描いて `rendered` を送り、`currentLine()` が数なら `setState({ line })` で保存する。`previous` を持ち、読んだ配布物が差分の色分けに対応しない（`supportsDiffBlocks` が false）ときは描かずに `showStatus({ state: "diffUnsupported", version })` を出し、`loadFailed`（`diffUnsupported`）を送る
+         - `render` の場合、描いて `rendered` を送り、`currentPosition()` が数なら `setState({ line })` で保存する。`previous` を持ち、読んだ配布物が差分の色分けに対応しない（`supportsDiffBlocks` が false）ときは描かずに `showStatus({ state: "diffUnsupported", version })` を出し、`loadFailed`（`diffUnsupported`）を送る
          - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
       7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ（`openLink` は送らない）。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
-      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る。続けて `currentLine()` が数なら `setState({ line })` で保存する（自分が起こしたスクロールでも保存する。最初の `render` で `savedLine` へ戻すまでは `currentLine()` が `undefined` のため保存しない）
+      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る。続けて `currentPosition()` が数なら `setState({ line })` で保存する（自分が起こしたスクロールでも保存する。最初の `render` で `savedLine` へ戻すまでは `currentPosition()` が `undefined` のため保存しない）
     callees:
       - '#classes[PreviewView]'
       - '#functions[classifyLoadFailure]'
@@ -428,10 +449,10 @@ functions:
         expected: '`mount` が呼ばれず、`loadFailed`（`diffUnsupported`）が送られ `rendered` は送られない。状態の表示に `v0.8.0` と `data-action="reload"` のボタンがある'
       - name: test_start_preview_when_state_saved
         case: 正常
-        summary: 保存した行を持つ状態で始めると、最初の render の後にその行へ戻してから保存し、revealLine を送らない
-        condition: '`getState` が `{ line: 20 }` を返す状態で `#mdmark-preview` を置いて `startPreview` を呼び、見出しを `data-source-line` つきで並べた長い文書の `render` を送り、次のフレームまで待つ'
-        mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録し `getState` が `{ line: 20 }` を返す代役にする。mdmark を代役にする'
-        expected: '`setState` が最初に呼ばれた引数が `{ line: 20 }` で、`{ line: 0 }` では呼ばれない。`revealLine` が送られない'
+        summary: 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送らない
+        condition: '`getState` が `{ line: 20.5 }` を返す状態で `#mdmark-preview` を置いて `startPreview` を呼び、見出しを `data-source-line` つきで並べた長い文書の `render` を送り、次のフレームまで待つ'
+        mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録し `getState` が `{ line: 20.5 }` を返す代役にする。mdmark を代役にする'
+        expected: '`setState` が最初に呼ばれた引数の `line` が 20.5 との差が 0.05 未満で、`{ line: 0 }`・`{ line: 20 }` では呼ばれない。`revealLine` が送られない'
       - name: test_start_preview_when_scrolled
         case: 正常
         summary: スクロールするたびに見えている先頭の行を保存し、描く前は保存しない
@@ -532,6 +553,7 @@ functions:
     container: vscode/src/webview/scroll.ts
     usecase: エディタとプレビューのスクロールを合わせる
     summary: 位置の前後の印の間で内分した行番号を、整数に切り捨てて返す
+    description: '`fractionalLineForTop` の値を整数に切り捨てる'
     scope: public
     args:
       - name: anchors
@@ -552,7 +574,46 @@ functions:
         condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }]` で位置 210・位置 900'
         mock: なし
         expected: '`5`・`10`'
+    callees:
+      - '#functions[fractionalLineForTop]'
     status: planned
+  - name: fractionalLineForTop
+    title: 位置を切り捨てない行にする
+    kind: 関数
+    container: vscode/src/webview/scroll.ts
+    usecase: 書いた内容をプレビューに映す
+    summary: 位置の前後の印の間で内分した行番号を、切り捨てずに返す
+    scope: public
+    args:
+      - name: anchors
+        type: Anchor[]
+        required: true
+        description: 行の印
+      - name: top
+        type: number
+        required: true
+        description: 見えている先頭の位置（`scrollTop`）
+    returns:
+      type: number
+      description: 小数部で行の途中の割合を持つ元の行番号。印が無いか最初の印より前は `0`、最後の印より後は最後の印の行
+    unit_tests:
+      - name: test_fractional_line_for_top
+        case: 正常
+        summary: 印の間を内分して切り捨てない
+        condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }]` で位置 210・位置 900・位置 -5'
+        mock: なし
+        expected: '`5.25`・`10`・`0`'
+      - name: test_fractional_line_for_top_when_round_trip
+        case: 正常
+        summary: 切り捨てない行を topForLine に渡すと元の位置に戻る
+        condition: '`[{ line: 0, top: 0 }, { line: 10, top: 400 }, { line: 12, top: 1000 }]` で位置 210・位置 700 を行にしてから `topForLine` で位置に戻す'
+        mock: なし
+        expected: '`210`・`700`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
+    status: planned
+    introduced:
+      pr: 252
   - name: renderPreviewStatus
     title: プレビューの状態の表示の HTML を返す
     kind: 関数
