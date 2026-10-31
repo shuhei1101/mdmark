@@ -27,6 +27,7 @@ export async function runIntegrationTests(): Promise<void> {
     tags: ["v0.10.0"],
     mode: { tags: "ok", dist: "ok" },
     requests: [],
+    tagRequests: [],
   };
   // 配布物は、このブランチのソースを一時フォルダにビルドして配る（`dist/` は書き換えない）
   const built = await createBuiltRoot();
@@ -58,6 +59,8 @@ export async function runIntegrationTests(): Promise<void> {
           MDMARK_VSCODE_TAGS_URL: `${origin}/tags`,
           // 子プロセスの npm が、この入口と同じ Node を使うようにする
           MDMARK_TEST_NODE_DIR: dirname(process.execPath),
+          // 拡張機能のログ（出力チャネルが書くファイル）をテストが読めるようにする
+          MDMARK_TEST_USER_DATA_DIR: userDataDir,
         },
       });
       await rm(userDataDir, { recursive: true, force: true });

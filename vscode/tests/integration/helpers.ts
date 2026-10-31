@@ -1,6 +1,14 @@
 import * as assert from "node:assert";
 import { execFile } from "node:child_process";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import { createRequire } from "node:module";
 import type { AddressInfo } from "node:net";
@@ -8,6 +16,7 @@ import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import * as vscode from "vscode";
 import type { HostMessage, WebviewMessage } from "../../src/messages.ts";
+import type { TagRequestTiming } from "./stub-server.ts";
 
 /** 拡張機能の ID */
 export const EXTENSION_ID = "ShuheiNishikawa.mdmark";
@@ -326,7 +335,56 @@ export const stub = {
   async clear(): Promise<void> {
     await fetch(`${STUB_ORIGIN}/requests`, { method: "DELETE" });
   },
+  /** `/tags` の要求ごとの、受けた時刻と接続を閉じられた時刻 */
+  async tagRequests(): Promise<TagRequestTiming[]> {
+    return (await fetch(`${STUB_ORIGIN}/tag-requests`)).json() as Promise<
+      TagRequestTiming[]
+    >;
+  },
 };
+
+/** 拡張機能の出力チャネル `mdmark` を VS Code が書くログファイル（`{ユーザーデータ}/logs/{起動}/window*\/exthost/{拡張機能の ID}/mdmark.log`）のうち、最後に書かれたもの。見つからなければ `undefined` */
+async function extensionLogPath(): Promise<string | undefined> {
+  const userDataDir = process.env.MDMARK_TEST_USER_DATA_DIR;
+  if (userDataDir === undefined) {
+    return undefined;
+  }
+  const logsDir = join(userDataDir, "logs");
+  const entries = await readdir(logsDir, { recursive: true }).catch(
+    () => [] as string[],
+  );
+  let latest: { path: string; mtime: number } | undefined;
+  for (const entry of entries) {
+    if (!entry.endsWith(join("exthost", EXTENSION_ID, "mdmark.log"))) {
+      continue;
+    }
+    const path = join(logsDir, entry);
+    const { mtimeMs } = await stat(path);
+    if (latest === undefined || mtimeMs > latest.mtime) {
+      latest = { path, mtime: mtimeMs };
+    }
+  }
+  return latest?.path;
+}
+
+/** 拡張機能のログの今の長さ（バイト）。`extensionLogSince` に渡して、これより後に書かれた分を読む */
+export async function extensionLogSize(): Promise<number> {
+  const path = await extensionLogPath();
+  return path === undefined ? 0 : (await stat(path)).size;
+}
+
+/** 拡張機能のログのうち、`offset` バイトより後に書かれた行。ログファイルが無ければその旨を返す */
+export async function extensionLogSince(offset: number): Promise<string[]> {
+  const path = await extensionLogPath();
+  if (path === undefined) {
+    return ["（拡張機能のログファイルが見つからない）"];
+  }
+  return (await readFile(path))
+    .subarray(offset)
+    .toString("utf8")
+    .split("\n")
+    .filter((line) => line !== "");
+}
 
 /** 配布物の要求だけ（タグ一覧を除く） */
 export async function distRequests(): Promise<string[]> {
