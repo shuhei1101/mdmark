@@ -37,6 +37,8 @@ const LIBRARY_SOURCE = `export function draw(slot) {
 
 /** 長い文書の見出し A の行（0 始まり）。前に 8 つの段落を置き、文書の先頭から離す */
 const HEADING_A_LINE = 18;
+/** 見えている範囲の先頭を見出し A の途中に置く位置（元の行番号）。見出し A と次の段落の間を 4 分の 1 だけ進めた位置 */
+const WITHIN_HEADING_A = HEADING_A_LINE + 0.5;
 /** 長い文書の見出し B の行（0 始まり）。見出し A の下で、エディタを先頭から動かさずに見える範囲にある */
 const HEADING_B_LINE = 26;
 
@@ -73,7 +75,7 @@ async function headingTop(text: string): Promise<number | undefined> {
   return (await inspect("h2")).find((item) => item.text.includes(text))?.top;
 }
 
-/** プレビューを `line` の行が先頭に来るまでスクロールし、止まった後の見出し A の位置を返す（エディタは動かさない） */
+/** プレビューを `line` の位置が先頭に来るまでスクロールし、止まった後の見出し A の位置を返す（エディタは動かさない） */
 async function scrollPreviewTo(
   record: RecordedPanel,
   line: number,
@@ -221,14 +223,18 @@ suite("プレビューを描き直す", () => {
   test("test_normal_when_revealed", async function () {
     // 長い文書の描画と、スクロールが止まるまでの待ちに時間がかかる
     this.timeout(60000);
-    // 準備: 左の列のエディタと右の列のプレビューで長い文書を開き、プレビューを見出し A が先頭に見えるまでスクロールして位置を控える
+    // 準備: 左の列のエディタと右の列のプレビューで長い文書を開き、プレビューを見えている範囲の先頭が見出し A の途中に当たるまでスクロールして位置を控える
     await writeFixture("long.md", longMarkdown());
     const editor = await openMarkdown("long.md");
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     await waitForRendered(record);
     await sleep(500);
-    const savedTop = await scrollPreviewTo(record, HEADING_A_LINE);
+    const savedTop = await scrollPreviewTo(record, WITHIN_HEADING_A);
+    assert.ok(
+      savedTop < 0,
+      `見出し A の上端が先頭より上に出ていない: ${savedTop}`,
+    );
     // 右の列で別の Markdown を開き、プレビューのパネルをその後ろに回す
     await hidePanel(record);
     const before = renders(record).length;
@@ -274,7 +280,7 @@ suite("プレビューを描き直す", () => {
   test("test_normal_when_diff_revealed", async function () {
     // 長い文書の差分の描画と、スクロールが止まるまでの待ちに時間がかかる
     this.timeout(60000);
-    // 準備: 最初の段落だけを書き換えた長い文書の差分ビューから差分のプレビューを開き、見出し A が先頭に見えるまでスクロールして位置を控える
+    // 準備: 最初の段落だけを書き換えた長い文書の差分ビューから差分のプレビューを開き、見えている範囲の先頭が見出し A の途中に当たるまでスクロールして位置を控える
     const dir = await createRepo("diff-repo-revealed", {
       "guide.md": longMarkdown(),
     });
@@ -290,7 +296,11 @@ suite("プレビューを描き直す", () => {
       { message: "差分のブロックが出ない" },
     );
     await sleep(500);
-    const savedTop = await scrollPreviewTo(record, HEADING_A_LINE);
+    const savedTop = await scrollPreviewTo(record, WITHIN_HEADING_A);
+    assert.ok(
+      savedTop < 0,
+      `見出し A の上端が先頭より上に出ていない: ${savedTop}`,
+    );
     // 同じ列で別の Markdown を開き、差分のパネルをその後ろに回す
     await hidePanel(record);
     const before = renders(record).length;
