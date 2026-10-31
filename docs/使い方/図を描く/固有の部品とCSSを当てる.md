@@ -18,7 +18,7 @@
 #### `init` に `--js` を付ける
 
 ```bash
-npx github:shuhei1101/mdmark#v{版} init --js
+npx github:shuhei1101/mdmark#v{バージョン} init --js
 ```
 
 `extensions/example.js` と、JavaScript も点検する `tsconfig.json` が置かれる。
@@ -61,8 +61,8 @@ export default extension;
 ```
 
 JavaScript は変換せずにそのまま配る。
-`draw` の `value.definition` は、印の範囲に置いた `json` のコードブロックを読んだ値。
-形を確かめたいときは、拡張に `schema` を渡す（[拡張を登録する](../カスタマイズ/拡張を登録する.md)）。
+`draw` の `value.definition` は、マーカーの範囲に置いた `json` のコードブロックを読んだ値。
+構造を確かめたいときは、拡張に `schema` を渡す（[拡張を登録する](../カスタマイズ/拡張を登録する.md)）。
 
 ### 固有の CSS を書く
 
@@ -102,8 +102,8 @@ extensions/milestones.js(14,7): error TS2322: Type 'number' is not assignable to
 ```
 
 点検はファイルを書き換えず、JavaScript も出さない。
-直して、誤りが 0 件になるまで流す。
-mdmark の版を上げたときも、型定義を置き直して流す。
+修正して、誤りが 0 件になるまで流す。
+mdmark のバージョンを上げたときも、型定義を置き直して流す。
 
 ### その場所の文書に当てる
 
@@ -122,7 +122,7 @@ mount(document.querySelector("#doc"), { markdown });
 <link rel="stylesheet" href="/theme.css">
 ```
 
-`theme.css` は mdmark の CSS の後に、層の外で読む。
+`theme.css` は mdmark の CSS の後に、レイヤーの外で読む。
 `mount` と `update` の前に `registerExtension` を呼ぶ。
 
 #### 書き出すときは設定に書く
@@ -135,7 +135,7 @@ extensions: [extensions/milestones.js]
 `mdmark export` と `mdmark build` が、設定の `theme` と `extensions` を書き出した HTML に埋める。
 手順は [文書を書き出す](../書き出す/文書を書き出す.md)。
 
-#### 文書に印と定義を書く
+#### 文書にマーカーと定義を書く
 
 ````markdown
 <!-- milestones -->
@@ -153,7 +153,7 @@ extensions: [extensions/milestones.js]
 | --- | --- | --- |
 | `registerExtension` を呼び、CSS を読んだページで描いた文書 | 描かれる | 当たる |
 | 同じ設定ファイルで書き出した文書 | 描かれる | 当たる |
-| 読んでいない別のページや別の設定の文書 | 印が知らない印として取り除かれ、何も描かれず、定義の JSON も出ない | 当たらない。共通の部品は mdmark の既定の色のまま |
+| 読んでいない別のページや別の設定の文書 | マーカーが知らないマーカーとして取り除かれ、何も描かれず、定義の JSON も出ない | 当たらない。共通の部品は mdmark の既定の色のまま |
 
 文書に書いた `<script>` はどの文書でも動かない。
 
@@ -166,7 +166,7 @@ extensions: [extensions/milestones.js]
 
 #### 固有の部品が描かれている
 
-固有の部品の場所に、定義の題と項目が出ている。
+固有の部品の場所に、定義のタイトルと項目が出ている。
 定義の JSON の文字は出ていない。
 
 #### 固有の CSS が当たっている
@@ -176,7 +176,7 @@ getComputedStyle(document.querySelector(".team-milestones")).borderTopWidth
 ```
 
 `1px` が出る。
-`--mdmark-color-diagram-llm` を上書きしたとき、LLM の箱の色が変わっている。
+`--mdmark-color-diagram-llm` を上書きしたとき、LLM のノードの色が変わっている。
 
 #### 別の場所の文書に当たっていない
 
@@ -189,5 +189,5 @@ getComputedStyle(document.querySelector(".team-milestones")).borderTopWidth
 
 ## 元に戻す
 
-`registerExtension` の呼び出しと `<link>`（書き出すときは設定の `theme`・`extensions`）を消す。
-配った JavaScript と CSS のファイルは別に消す。
+`registerExtension` の呼び出しと `<link>`（書き出すときは設定の `theme`・`extensions`）を削除する。
+配った JavaScript と CSS のファイルは別に削除する。
