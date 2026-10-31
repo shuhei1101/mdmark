@@ -20,4 +20,17 @@
 
 ## テスト結果
 
-なし
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build-plugin.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261101022208_481a1a4_単体テスト.log` |
+| [tests/unit/src/plugin/guide.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/guide.test.ts) | 全実行 | 実行のみ | ✅ | 2 ファイル 34 テスト pass<br>`テスト結果/20261101022208_481a1a4_単体テスト.log` |
+
+lint（Biome の check と tsc の型検査）は違反 0 件。`テスト結果/20261101022509_481a1a4_lint.log`
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/ClaudeCodeプラグイン/read-guide.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/read-guide.test.ts) | 全実行 | 実行のみ | ✅ | 3 テスト pass<br>`テスト結果/20261101022319_481a1a4_結合テスト.log` |
