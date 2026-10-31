@@ -21,4 +21,15 @@
 
 ## テスト結果
 
-（implementer が記入）
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-unreachable-wait/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_tags_unreachable` | 変更 | ✅ | 期待を外したとき、`/tags` の要求を受けた・閉じられた時刻と、拡張機能のログの `タグ一覧を取れない` の行をメッセージに出す。期待の範囲は変えない<br>`テスト結果/20261031171324_582f356_結合テスト.log` |
+| [vscode/tests/integration/stub-server.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-unreachable-wait/vscode/tests/integration/stub-server.ts) | - | 変更 | ✅ | `/tags` の要求ごとに受けた時刻と `request` の `close` の時刻を記録し、`GET /tag-requests` で返す<br>`テスト結果/20261031171324_582f356_結合テスト.log` |
+| [vscode/tests/integration/helpers.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-unreachable-wait/vscode/tests/integration/helpers.ts) | - | 変更 | ✅ | `stub.tagRequests`・`extensionLogSize`・`extensionLogSince` を追加<br>`テスト結果/20261031171324_582f356_結合テスト.log` |
+| [vscode/tests/integration/run.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-unreachable-wait/vscode/tests/integration/run.ts) | - | 変更 | ✅ | 拡張機能のログファイルを探せるよう、ユーザーデータのフォルダを `MDMARK_TEST_USER_DATA_DIR` で渡す<br>`テスト結果/20261031171324_582f356_結合テスト.log` |
+| 上記以外の `vscode/tests/integration/` | 全実行 | 実行のみ | ✅ | 63 テストが全 pass（VS Code 1.141.0 と stable の 1.144.0 の両方）<br>`テスト結果/20261031171324_582f356_結合テスト.log` |
+
+lint（Biome の check とルート・`vscode/` の tsc の型検査）は違反 0 件で、ログは `テスト結果/20261031171807_582f356_lint.log`。
+E2E の代役の配信（`tests/e2e/vscode.ts`）は、代役の状態の型に合わせて記録の初期値と後始末を追加した。
