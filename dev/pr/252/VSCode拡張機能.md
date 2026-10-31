@@ -27,3 +27,14 @@
 | エディタとの連動 | `revealLine` で送る行は今のとおり `lineForTop` の切り捨てた整数。戻したスクロールで `revealLine` を送らないことも変えない | - |
 | 差分のパネル | 通常のパネルと同じ処理で戻す | - |
 | 既存機能への影響 | 以前に保存した整数の行も、そのまま同じ位置へ戻せる | - |
+
+## テスト結果
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/vscode/src/webview/scroll.browser.test.ts` | `test_fractional_line_for_top`・`test_fractional_line_for_top_when_round_trip` | 新規 | ✅ | [20261031185249_c5217f4_単体テスト.log](./テスト結果/20261031185249_c5217f4_単体テスト.log) |
+| `tests/unit/vscode/src/webview/preview.browser.test.ts` | `test_current_position` | 新規 | ✅ | 同上 |
+| `tests/unit/vscode/src/webview/preview.browser.test.ts` | `test_start_preview_when_state_saved`・`test_start_preview_when_scrolled` | 変更 | ✅ | 同上 |
+| 単体テスト全件（`npm run test:unit`） | 全実行 | 実行のみ | ✅ | 1186 テスト pass。lint: [20261031185249_c5217f4_lint.log](./テスト結果/20261031185249_c5217f4_lint.log) |

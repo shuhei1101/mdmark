@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-vscode-restore-preview-scroll-within-line
+
+
+ Test Files  161 passed (161)
+      Tests  1186 passed (1186)
+   Start at  18:51:00
+   Duration  84.95s (worker 41%, tests 39%, import 17%, transform 2%)
+
