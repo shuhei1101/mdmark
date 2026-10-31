@@ -215,6 +215,13 @@ export class PreviewView {
     const savedLine = this.savedLine;
     this.savedLine = undefined;
     this.scrollToLine(savedLine);
+    // 差分のパネルは描いた後に色分けで描き直して高さが変わるため、その間に動かされていなければ次の描画のタイミングで置き直す
+    const placedTop = scroller().scrollTop;
+    requestAnimationFrame(() => {
+      if (scroller().scrollTop === placedTop) {
+        this.scrollToLine(savedLine);
+      }
+    });
   }
 
   /** 描いた文書の代わりに、プレビューの状態の表示を入れる */
@@ -248,10 +255,12 @@ export class PreviewView {
       scroller: element,
     });
     const before = element.scrollTop;
-    // 狭い幅で右側の目次が上端の帯のときは、帯の下端に置く
-    element.scrollTop =
-      topForLine(anchors, line) -
-      topInset({ root: this.documentElement, scroller: element });
+    // 狭い幅で右側の目次が上端の帯のときは、帯の下端に置く。帯は動かした後に上端へ留まって下端が変わるため、留まった帯の下端で置き直す
+    for (let pass = 0; pass < 2; pass += 1) {
+      element.scrollTop =
+        topForLine(anchors, line) -
+        topInset({ root: this.documentElement, scroller: element });
+    }
     if (element.scrollTop !== before) {
       this.pendingScrollTop = element.scrollTop;
     }
