@@ -116,6 +116,7 @@ export async function startStub(distRoot: string): Promise<Stub> {
     tags: ["v0.7.0", "v0.6.0", "vscode-v0.1.0"],
     mode: { tags: "ok", dist: "ok" },
     requests: [],
+    tagRequests: [],
   };
   const server: Server = createStubServer(state, join(distRoot, "dist"));
   await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
@@ -135,6 +136,7 @@ export async function startStub(distRoot: string): Promise<Stub> {
     requests: () => [...state.requests],
     clear: () => {
       state.requests.length = 0;
+      state.tagRequests.length = 0;
     },
     close: () =>
       new Promise<void>((done) => {

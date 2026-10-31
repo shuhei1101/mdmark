@@ -5,6 +5,8 @@ import {
   distPath,
   distRequests,
   EXTENSION_ID,
+  extensionLogSince,
+  extensionLogSize,
   guideMarkdown,
   inspect,
   installMessages,
@@ -199,6 +201,7 @@ suite("プレビューを開く", () => {
     await stub.setMode({ tags: "hang", dist: "ok" });
     await stub.clear();
     await openMarkdown("guide.md");
+    const logOffset = await extensionLogSize();
     // 実行
     const start = Date.now();
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
@@ -209,10 +212,24 @@ suite("プレビューを開く", () => {
     const elapsed = Date.now() - start;
     await waitForRendered(record);
     // 検証: 待ちの上限（3 秒）を少し過ぎたところで要求される
-    assert.ok(
-      elapsed >= 2800 && elapsed < 6000,
-      `要求まで ${elapsed} ms ${JSON.stringify(await stub.requests())}`,
-    );
+    if (!(elapsed >= 2800 && elapsed < 6000)) {
+      // 出力チャネルがログファイルへ書き終えるのを待つ
+      await sleep(1000);
+      const timings = (await stub.tagRequests()).map(
+        ({ receivedAt, closedAt }) =>
+          `受けた +${receivedAt - start} ms・閉じられた ${closedAt === null ? "まだ" : `+${closedAt - start} ms`}`,
+      );
+      const reasons = (await extensionLogSince(logOffset)).filter((line) =>
+        line.includes("タグ一覧を取れない"),
+      );
+      assert.fail(
+        [
+          `要求まで ${elapsed} ms ${JSON.stringify(await stub.requests())}`,
+          `/tags の要求（開いた時刻から）: ${timings.join(" / ") || "なし"}`,
+          `拡張機能のログ: ${reasons.join(" / ") || "なし"}`,
+        ].join("\n"),
+      );
+    }
     assert.strictEqual((await inspect(".mdmark-preview-notice")).length, 0);
     // 403 を返す代役でも、待たずに前回のバージョンで描く
     await closePreviews();

@@ -21,6 +21,13 @@ type Mode = {
   dist: "ok" | "drop" | "slow";
 };
 
+/** タグ一覧の要求 1 つを受けた時刻と、拡張機能に接続を閉じられた時刻（ミリ秒） */
+export type TagRequestTiming = {
+  receivedAt: number;
+  /** まだ閉じられていなければ `null` */
+  closedAt: number | null;
+};
+
 /** 代役の配信が受けた要求と、テストが切り替える状態 */
 type Stub = {
   /** タグ一覧 */
@@ -29,6 +36,8 @@ type Stub = {
   mode: Mode;
   /** 受けた要求の経路（`/tags` と `/mdmark@{バージョン}/dist/{ファイル}`） */
   requests: string[];
+  /** `/tags` の要求ごとの時刻（`requests` と一緒に空にする） */
+  tagRequests: TagRequestTiming[];
 };
 
 /** 要求の本文を JSON として読む */
@@ -94,7 +103,7 @@ async function serveDist(
   }
 }
 
-/** 待ち受けを始めていない代役の配信のサーバーを作る。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests` を持つ */
+/** 待ち受けを始めていない代役の配信のサーバーを作る。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests`・`GET /tag-requests` を持つ */
 export function createStubServer(stub: Stub, distDir: string): Server {
   return createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
@@ -102,8 +111,13 @@ export function createStubServer(stub: Stub, distDir: string): Server {
     if (path === "/requests") {
       if (request.method === "DELETE") {
         stub.requests.length = 0;
+        stub.tagRequests.length = 0;
       }
       sendJson(response, stub.requests);
+      return;
+    }
+    if (path === "/tag-requests") {
+      sendJson(response, stub.tagRequests);
       return;
     }
     if (path === "/mode" && request.method === "PUT") {
@@ -118,6 +132,14 @@ export function createStubServer(stub: Stub, distDir: string): Server {
     }
     if (path === "/tags") {
       stub.requests.push(path);
+      const timing: TagRequestTiming = {
+        receivedAt: Date.now(),
+        closedAt: null,
+      };
+      stub.tagRequests.push(timing);
+      request.on("close", () => {
+        timing.closedAt = Date.now();
+      });
       if (stub.mode.tags === "hang") {
         return;
       }
