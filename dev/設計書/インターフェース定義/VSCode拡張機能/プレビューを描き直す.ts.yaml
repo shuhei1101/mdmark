@@ -282,7 +282,7 @@ constraints:
   - item: 送る中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
   - item: 背面のパネル
-    constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る。Webview は見えている先頭の元の行番号（スクロールを合わせる.ts の制約「プレビューから合わせる」と同じ求め方）を、スクロールの知らせと `render` を描いた後に Webview の状態（`setState`）へ保存する。作り直した Webview（HTML を入れ直したときを含む）は、最初の `render` を描いた後に `getState` の行を `scrollToLine` と同じ位置に置き、そのスクロールでは `revealLine` を送らない。保存した行が無いとき（開いた直後）は先頭から描く
+    constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る。Webview は見えている先頭の元の行番号（スクロールを合わせる.ts の制約「プレビューから合わせる」と同じ求め方）を、スクロールの知らせと `render` を描いた後に Webview の状態（`setState`）へ保存する。作り直した Webview（HTML を入れ直したときを含む）は、起動したときに `getState` の行を読んでおき、最初の `render` を描いた後にその行を `scrollToLine` と同じ位置に置いてから保存する。その行へ戻すまでは、スクロールの知らせでも `render` を描いた後でも保存しない。戻したスクロールでは `revealLine` を送らない。保存した行が無いとき（開いた直後）は先頭から描く
     notes: '背面の間の `postMessage` は届かない（PoC #70）。`retainContextWhenHidden` は `false` のままで、背面に回ると Webview が作り直される。位置を元の行番号で持つのは、背面の間の書き換えで文書の高さが変わっても同じ箇所へ戻すため'
   - item: 設定ファイルの場所
     constraint: '`mdmark.configPath` を Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決する。無ければ設定なしで描き、知らせは出さない'
