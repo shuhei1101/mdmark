@@ -12,7 +12,7 @@ states:
       - name: zoom
         value: '1.25'
   - name: Max
-    description: 上限の 300%。拡大は押せない
+    description: 上限の 300%。拡大は押せない。表示する枠の高さは開いたときのままで、使う側が高さを広げると `--mdmark-diagram-max-height` を超えて定義の高さ × 300% まで広がる
     args:
       - name: zoom
         value: '3'
@@ -68,7 +68,7 @@ events:
   - name: 拡大・縮小する
     when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す
     value: 倍率のボタンの文字と読み上げの名前
-    description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・読み上げの名前を付け替える'
+    description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・読み上げの名前と、文書の中の表示する枠の高さの上限（定義の高さ × 今の倍率）を付け替える'
   - name: 動かす
     when: 余白をドラッグする、矢印キーを押す、移動のボタンを押す
     value: 表示する枠の `scrollLeft`・`scrollTop`
@@ -81,7 +81,7 @@ css_properties:
   - name: --mdmark-diagram-max-height
     syntax: <length>
     default: 36rem
-    description: 文書の中の表示する枠の高さの上限。全体が収まる倍率はこの高さと枠の幅に収める
+    description: 文書の中の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、高さを定義の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。使う側が高さを変えたときはこの値で止めず、定義の高さ × 今の倍率を上限にする
 accessibility:
   - 題は `figcaption` で、表示する枠は `role="group"`・`aria-roledescription="図"`・`aria-labelledby`（題）・`aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"`・`tabindex="0"` を持ち、フォーカスの枠を見せる
   - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、読み上げの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
