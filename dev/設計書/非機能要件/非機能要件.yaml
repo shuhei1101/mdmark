@@ -155,8 +155,8 @@ requirements:
       pr: 72
     verification:
       device: ユーザーの手元の Claude Code（WSL2）
-      version: Claude Code 2.1.310
-      date: '2026-10-26'
+      version: Claude Code 2.1.316
+      date: '2026-10-31'
       result: 合格
   - name: MCP サーバーの接続の待ち
     english_name: mcp_connect_wait
