@@ -126,6 +126,21 @@ data_models:
     status: planned
     introduced:
       pr: 196
+  - name: PreviewState
+    title: Webview の状態
+    container: vscode/src/webview/preview.ts
+    usecase: 共通
+    role: DTO
+    summary: '`acquireVsCodeApi().setState` で保存し、作り直した Webview が `getState` で読む値'
+    properties:
+      - name: line
+        type: number
+        description: 見えている先頭の元の行番号（0 始まり）
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
+    status: planned
+    introduced:
+      pr: 243
 constants:
   - name: LOADING_DELAY_MS
     title: 読み込み中を出すまでの待ち
@@ -167,6 +182,10 @@ classes:
         type: DiffTexts | undefined
         access: private
         description: 差分のパネルで取り出し元に渡した全文。`previous` を持つ `render` を初めて受けたときに作る
+      - name: savedLine
+        type: number | undefined
+        access: private
+        description: 作り直した Webview が起動したときに `getState` で読んだ行。`startPreview` が作るときに渡し、最初の `render` でその行へ戻したら消す
     methods:
       - name: render
         title: 描く
@@ -185,7 +204,7 @@ classes:
           2. 描き直す前の `scrollTop` を控える
           3. `previous` を持つときは、`diffTexts` が無ければ作り、`modified` を `markdown`、`original` を `previous` に書き換える
           4. `configKey` が同じで `handle` があれば `handle.update(markdown)`、違えば `handle?.destroy()` の後に描く先の要素へ `mount(el, { markdown, config })`。`diffTexts` があるときは `diffSource: createDiffSource(diffTexts)`・`docId: "diff"`・`diffMode: "blocks"` も渡す
-          5. 状態の表示を消し、控えた `scrollTop` に戻す
+          5. 状態の表示を消す。`savedLine` があれば `scrollToLine(savedLine)` で置いて `savedLine` を消し（`pendingScrollTop` に覚えるため `revealLine` は送らない）、無ければ控えた `scrollTop` に戻す
         unit_tests:
           - name: test_render
             case: 正常
@@ -211,8 +230,15 @@ classes:
             condition: '`markdown` が `A2`・`previous` が `A1` の `render` の後、`markdown` が `A3` の `render`（`config` は同じ）'
             mock: mdmark を `mount` に渡された引数と `update` を記録する代役にする
             expected: '`mount` に `docId: "diff"`・`diffMode: "blocks"` と `diffSource` が渡る。`diffSource.revisions("diff")` が `modified`・`original` の順。`update` が `A3` で呼ばれた時点で `content` の `modified` が `A3`、`original` が `A1`'
+          - name: test_render_when_saved_line
+            case: 正常
+            summary: 保存した行を持つ view は、最初の render の後だけその行へ戻し、自分が起こしたスクロールとして捨てる
+            condition: '`data-source-line` を持つ見出しを並べた長い文書を描く代役で、`savedLine` が 20 の view を作り `render`、続けて `takeScroll()`。その後 `scrollTop` を 100 にして同じ設定の `render`'
+            mock: mdmark を `markdown` の見出しを `data-source-line` つきで描く代役にする
+            expected: 1 回目の後の `scrollTop` が `scrollToLine(20)` で置く位置と同じで、`takeScroll()` が `undefined`。2 回目の後の `scrollTop` が 100
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定が変わったときの描き方]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配色]
       - name: showStatus
         title: 状態の表示を出す
@@ -276,7 +302,7 @@ classes:
           description: '`revealLine` で送る行'
         process: |-
           1. `scrollTop` が `pendingScrollTop` と等しければ、`pendingScrollTop` を消して `undefined` を返す
-          2. `pendingScrollTop` を消し、今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を行にして返す（行の印を集める、位置を行にする）
+          2. `pendingScrollTop` を消し、`currentLine()` を返す
         unit_tests:
           - name: test_take_scroll_when_own_scroll
             case: 正常
@@ -288,6 +314,29 @@ classes:
           - '#functions[collectAnchors]'
           - '#functions[lineForTop]'
           - '#functions[topInset]'
+      - name: currentLine
+        title: 先頭の行を返す
+        kind: メソッド
+        summary: 見えている先頭の位置（上端の帯があればその下端）を元の行番号にして返す。描く前は `undefined`
+        returns:
+          type: number | undefined
+          description: '`revealLine` で送る行と、保存する行'
+        process: |-
+          1. `handle` が無ければ `undefined` を返す
+          2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を足した位置を行にして返す（行の印を集める、位置を行にする）
+        unit_tests:
+          - name: test_current_line
+            case: 正常
+            summary: 描く前は行を返さず、描いた後は先頭の行を返す
+            condition: '`render` の前に `currentLine()`、`render` の後に `scrollToLine(20)` して `currentLine()`'
+            mock: mdmark を `data-source-line` つきの見出しを描く代役にする
+            expected: 1 回目は `undefined`、2 回目は 20
+        callees:
+          - '#functions[collectAnchors]'
+          - '#functions[lineForTop]'
+          - '#functions[topInset]'
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[背面のパネル]
       - name: inspect
         title: 要素を調べる
         kind: メソッド
@@ -332,19 +381,19 @@ functions:
     description: ファイルの末尾で呼ぶ
     scope: public
     is_async: true
-    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`document` に `click`、`window` に `scroll`・`message` を受ける'
+    side_effects: '`acquireVsCodeApi().postMessage` で拡張機能へ送る。`setState` で見えている先頭の行を保存する。`document` に `click`、`window` に `scroll`・`message` を受ける'
     process: |-
-      1. `#mdmark-preview` の `data-*` から `PreviewBoot` を読む
+      1. `#mdmark-preview` の `data-*` から `PreviewBoot` を読む。`acquireVsCodeApi().getState()` が `PreviewState` で `line` が数なら、作る `PreviewView` に `savedLine` として渡す
       2. `status` が `versionUndecidable` なら状態の表示を出して終わる（配布物を読まない。「リロード」は受ける）
       3. `LOADING_DELAY_MS` 後に、まだ描けておらず描けない理由も出ていなければ読み込み中を出す
       4. `import(distJs)` で mdmark を読む
          - 失敗した場合、理由を見分け（読めない理由を見分ける）、状態の表示を出して `loadFailed` を送る
       5. `ready` を送る
       6. `message` を受けて `type` ごとに `PreviewView` へ渡す
-         - `render` の場合、描いて `rendered` を送る。`previous` を持ち、読んだ配布物が差分の色分けに対応しない（`supportsDiffBlocks` が false）ときは描かずに `showStatus({ state: "diffUnsupported", version })` を出し、`loadFailed`（`diffUnsupported`）を送る
+         - `render` の場合、描いて `rendered` を送り、`currentLine()` が数なら `setState({ line })` で保存する。`previous` を持ち、読んだ配布物が差分の色分けに対応しない（`supportsDiffBlocks` が false）ときは描かずに `showStatus({ state: "diffUnsupported", version })` を出し、`loadFailed`（`diffUnsupported`）を送る
          - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
       7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ（`openLink` は送らない）。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
-      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る
+      8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る。続けて `currentLine()` が数なら `setState({ line })` で保存する（自分が起こしたスクロールでも保存する。最初の `render` で `savedLine` へ戻すまでは `currentLine()` が `undefined` のため保存しない）
     callees:
       - '#classes[PreviewView]'
       - '#functions[classifyLoadFailure]'
@@ -372,6 +421,18 @@ functions:
         condition: '`data-version="v0.8.0"` の `#mdmark-preview` を置いて `startPreview` を呼び、`diffModes` を持たない配布物を読んだ後に `previous` つきの `render` を送る'
         mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。`import()` で読む配布物を `mount` だけを持つ代役のモジュールの URL にする'
         expected: '`mount` が呼ばれず、`loadFailed`（`diffUnsupported`）が送られ `rendered` は送られない。状態の表示に `v0.8.0` と `data-action="reload"` のボタンがある'
+      - name: test_start_preview_when_state_saved
+        case: 正常
+        summary: 保存した行を持つ状態で始めると、最初の render の後にその行へ戻してから保存し、revealLine を送らない
+        condition: '`getState` が `{ line: 20 }` を返す状態で `#mdmark-preview` を置いて `startPreview` を呼び、見出しを `data-source-line` つきで並べた長い文書の `render` を送り、次のフレームまで待つ'
+        mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録し `getState` が `{ line: 20 }` を返す代役にする。mdmark を代役にする'
+        expected: '`setState` が最初に呼ばれた引数が `{ line: 20 }` で、`{ line: 0 }` では呼ばれない。`revealLine` が送られない'
+      - name: test_start_preview_when_scrolled
+        case: 正常
+        summary: スクロールするたびに見えている先頭の行を保存し、描く前は保存しない
+        condition: '`getState` が `undefined` を返す状態で `startPreview` を呼ぶ。`render` の前に `scroll` を発火し、`render` の後に元の行番号 30 の見出しが先頭に来るまでスクロールして次のフレームまで待つ'
+        mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録する代役にする。mdmark を代役にする'
+        expected: '`render` の前の `scroll` では `setState` が呼ばれない。最後に呼ばれた `setState` の引数が `{ line: 30 }`'
   - name: classifyLoadFailure
     title: 読めない理由を見分ける
     kind: 関数
