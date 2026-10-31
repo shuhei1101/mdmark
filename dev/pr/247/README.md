@@ -1,0 +1,1 @@
+# VS Code 拡張機能の結合テスト test_normal_when_tags_unreachable の fail を、誤っている側を切り分けて修正する
