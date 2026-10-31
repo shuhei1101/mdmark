@@ -15,10 +15,26 @@ import { collectAnchors, lineForTop, topForLine, topInset } from "./scroll.ts";
 /** HTML を入れてからこのミリ秒が経っても描けていなければ読み込み中を出す */
 export const LOADING_DELAY_MS = 1000;
 
-/** VS Code が Webview に渡す API */
+/** VS Code が Webview に渡す API。状態の読み書きを持たない代役では、行を保存しない */
 declare function acquireVsCodeApi(): {
   postMessage: (message: WebviewMessage) => void;
+  getState?: () => unknown;
+  setState?: (state: PreviewState) => void;
 };
+
+/** `setState` で保存し、作り直した Webview が `getState` で読む値 */
+export type PreviewState = {
+  /** 見えている先頭の元の行番号（0 始まり） */
+  line: number;
+};
+
+/** `getState` で読んだ値が `PreviewState` なら、その行を返す */
+function savedLineFrom(state: unknown): number | undefined {
+  if (typeof state !== "object" || state === null || !("line" in state)) {
+    return undefined;
+  }
+  return typeof state.line === "number" ? state.line : undefined;
+}
 
 /** `mount` の戻り値 */
 type MountHandle = {
@@ -138,10 +154,17 @@ export class PreviewView {
   private bandElement: HTMLElement | undefined;
   /** 差分のパネルで取り出し元に渡した全文。`previous` を持つ `render` を初めて受けたときに作る */
   private diffTexts: DiffTexts | undefined;
+  /** 作り直した Webview が起動したときに `getState` で読んだ行。最初の `render` でその行へ戻したら消す */
+  private savedLine: number | undefined;
 
-  constructor(options: { root: HTMLElement; mdmark?: Mdmark }) {
+  constructor(options: {
+    root: HTMLElement;
+    mdmark?: Mdmark;
+    savedLine?: number;
+  }) {
     this.root = options.root;
     this.mdmark = options.mdmark;
+    this.savedLine = options.savedLine;
     this.documentElement = document.createElement("div");
     this.root.append(this.documentElement);
   }
@@ -184,7 +207,14 @@ export class PreviewView {
       this.configKey = configKey;
     }
     this.clearStatus();
-    scroller().scrollTop = scrollTop;
+    if (this.savedLine === undefined) {
+      scroller().scrollTop = scrollTop;
+      return;
+    }
+    // 作り直した Webview は、背面に回す前に保存した行へ戻す（`pendingScrollTop` に覚えるため `revealLine` は送らない）
+    const savedLine = this.savedLine;
+    this.savedLine = undefined;
+    this.scrollToLine(savedLine);
   }
 
   /** 描いた文書の代わりに、プレビューの状態の表示を入れる */
@@ -232,10 +262,19 @@ export class PreviewView {
     const element = scroller();
     const pending = this.pendingScrollTop;
     this.pendingScrollTop = undefined;
-    // 描く前は元の行番号の印が無いため、送る行も無い
-    if (this.handle === undefined || element.scrollTop === pending) {
+    if (element.scrollTop === pending) {
       return undefined;
     }
+    return this.currentLine();
+  }
+
+  /** 見えている先頭の位置（上端の帯があればその下端）を元の行番号にして返す。描く前は `undefined` */
+  currentLine(): number | undefined {
+    // 描く前は元の行番号の印が無いため、返す行も無い
+    if (this.handle === undefined) {
+      return undefined;
+    }
+    const element = scroller();
     const anchors = collectAnchors({
       root: this.documentElement,
       scroller: element,
@@ -306,7 +345,17 @@ export function startPreview(): void {
   }
   const boot = readBoot(root);
   const api = acquireVsCodeApi();
-  const view = new PreviewView({ root });
+  const savedLine = savedLineFrom(api.getState?.());
+  const view = new PreviewView(
+    savedLine === undefined ? { root } : { root, savedLine },
+  );
+  /** 見えている先頭の行を、作り直した Webview が読めるように保存する */
+  const saveLine = (): void => {
+    const line = view.currentLine();
+    if (line !== undefined) {
+      api.setState?.({ line });
+    }
+  };
   /** 最初の `rendered` を送ったか、描けない理由を出したか */
   let settled = false;
   /** `import()` で読んだ mdmark の配布物 */
@@ -375,6 +424,7 @@ export function startPreview(): void {
       view.render(message);
       settled = true;
       api.postMessage({ type: "rendered" });
+      saveLine();
     } else if (message.type === "scrollToLine") {
       view.scrollToLine(message.line);
     } else if (message.type === "configError") {
@@ -404,6 +454,7 @@ export function startPreview(): void {
         if (line !== undefined) {
           api.postMessage({ type: "revealLine", line });
         }
+        saveLine();
       });
     },
     { passive: true },
