@@ -93,6 +93,23 @@ async function scrollPreviewTo(
   return top;
 }
 
+/** 狭い幅の右側の目次を上端の帯にしているときの、帯の下端（帯が無いときは 0）。帯は 1 行分の高さで、広い幅の右の列は画面の高さいっぱいの縦長 */
+async function bandBottom(): Promise<number> {
+  const [aside] = await inspect(".mdmark-side-toc");
+  return aside !== undefined && aside.height < 120
+    ? aside.top + aside.height
+    : 0;
+}
+
+/** 見出し A の上端が、見えている範囲の先頭（上端の帯があればその下端）より上に出ていることを確かめる */
+async function assertWithinHeadingA(top: number): Promise<void> {
+  const inset = await bandBottom();
+  assert.ok(
+    top < inset,
+    `見出し A の上端が見えている範囲の先頭より上に出ていない: ${top}（先頭 ${inset}）`,
+  );
+}
+
 /** `panel` と同じ列で別の Markdown を開き、パネルを背面に回す */
 async function hidePanel(record: RecordedPanel): Promise<void> {
   await writeFixture("other.md", "# 別の文書\n");
@@ -231,10 +248,7 @@ suite("プレビューを描き直す", () => {
     await waitForRendered(record);
     await sleep(500);
     const savedTop = await scrollPreviewTo(record, WITHIN_HEADING_A);
-    assert.ok(
-      savedTop < 0,
-      `見出し A の上端が先頭より上に出ていない: ${savedTop}`,
-    );
+    await assertWithinHeadingA(savedTop);
     // 右の列で別の Markdown を開き、プレビューのパネルをその後ろに回す
     await hidePanel(record);
     const before = renders(record).length;
@@ -297,10 +311,7 @@ suite("プレビューを描き直す", () => {
     );
     await sleep(500);
     const savedTop = await scrollPreviewTo(record, WITHIN_HEADING_A);
-    assert.ok(
-      savedTop < 0,
-      `見出し A の上端が先頭より上に出ていない: ${savedTop}`,
-    );
+    await assertWithinHeadingA(savedTop);
     // 同じ列で別の Markdown を開き、差分のパネルをその後ろに回す
     await hidePanel(record);
     const before = renders(record).length;
