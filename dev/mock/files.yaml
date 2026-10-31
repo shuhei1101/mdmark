@@ -610,6 +610,10 @@ files:
   - path: refs/55/assets/view.css
     description: '#55 のモックが共通で読む素材: ビューの表示: ビューの切り替え・ボード・表のビュー。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:ビュー, tool:css]
+  - path: refs/55/assets/view.js
+    id: dev/mock/refs/55/assets/view.js
+    description: '#55 のモックが共通で読む素材: ビューのモック（実装の mount とビューを描く関数が付ける振る舞い）: 項目の定義から、ボードと表の切り替え・列の見出しのアイコン・表の列の絞り込みを描く。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:ビュー, tool:javascript]
   - path: refs/55/index.md
     description: '#55（ビュー・検索・コメントの部品を文書と使う側の JavaScript・TypeScript から使えるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
