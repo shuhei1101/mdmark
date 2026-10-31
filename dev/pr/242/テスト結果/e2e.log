@@ -1,0 +1,17 @@
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-e2e-fix-timeline-command-name/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 8 tests using 2 workers
+
+  -  1 [firefox] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:22:1 › test_normal
+  -  3 [firefox] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:38:1 › test_normal_when_commit_diff
+  -  4 [firefox] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:57:1 › test_normal_when_modified_side_edited
+  -  5 [firefox] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:84:1 › test_error_when_version_without_diff
+  ✓  2 [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:22:1 › test_normal (9.4s)
+  ✓  6 [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:38:1 › test_normal_when_commit_diff (9.6s)
+  ✓  7 [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:57:1 › test_normal_when_modified_side_edited (10.1s)
+  ✓  8 [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts:84:1 › test_error_when_version_without_diff (11.2s)
+
+  4 skipped
+  4 passed (2.2m)
