@@ -76,7 +76,7 @@ export async function openWorkingTreeDiff(
 /** `a.md` を開き、タイムラインの最後のコミットから、そのコミットと 1 つ前の差分ビューにする */
 export async function openCommitDiff(session: VscodeSession): Promise<void> {
   await session.openFile("a.md");
-  await session.runCommand("Timeline: Focus on Timeline View");
+  await session.runCommand("Explorer: Focus on Timeline View");
   await session.win
     .locator(`.monaco-list-row[aria-label*="${COMMIT_MESSAGE}"]`)
     .first()
