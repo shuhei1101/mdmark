@@ -18,6 +18,8 @@ export type TableSpec = {
     filters: TableFilter[];
     /** 折り畳み。`closed` と `open` を両方書いたら `closed` */
     collapse: "none" | "closed" | "open";
+    /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
+    title?: string | undefined;
     /** 読めなかった指定 */
     warnings: WarningItem[];
     /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */

@@ -1,17 +1,20 @@
 import type { Token } from "markdown-it";
 import { type MdmarkConfig } from "../config.ts";
+import type { MdmarkAlias, MdmarkAliasType } from "./aliases.ts";
 import { type Dictionary } from "./dictionary.ts";
 import { type MdmarkIndex } from "./index-shape.ts";
 /** `collectMatches` が返す参照先 1 つ */
 export type MdmarkMatchTarget = {
-    /** 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書 */
-    kind: "term" | "glossary" | "doc";
-    /** `term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id` */
+    /** 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は渡したエイリアス */
+    kind: "term" | "glossary" | "doc" | "alias";
+    /** `term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`、`alias` はエイリアスの `id` */
     id: string;
-    /** `term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title` */
+    /** `term` は `terms[].term`、`glossary` は用語の列、`doc` は `docs[].title`、`alias` はエイリアスの `name` */
     title: string;
-    /** `term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`。無いときはキーを持たない */
+    /** `term` は `terms[].meaning`、`glossary` は意味の列、`doc` は `docs[].description`、`alias` はエイリアスの `description`。無いときはキーを持たない */
     description?: string;
+    /** エイリアスの `alias_type`。`kind` が `alias` のときだけ持つ */
+    aliasType?: Exclude<MdmarkAliasType, "avoid">;
 };
 /** 本文の 1 つの一致とその参照先 */
 export type MdmarkMatch = MdmarkMatchTarget & {
@@ -25,9 +28,11 @@ export type MdmarkMatch = MdmarkMatchTarget & {
     end: number;
 };
 /** 本文に出たやめた言い方 1 つと、代わりの用語 */
-export type MdmarkAvoidedMatch = Omit<MdmarkMatch, "kind"> & {
-    /** 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ */
-    kind: "term" | "glossary";
+export type MdmarkAvoidedMatch = Omit<MdmarkMatch, "kind" | "aliasType"> & {
+    /** 代わりの用語の種類。`MdmarkMatchTarget` の `term`・`glossary` と同じ。`alias` は `term` の種類のエイリアスの `avoid` か `avoid` の種類のエイリアスで、`avoid` の種類は `title` を `replacement` にし `description` を持たない */
+    kind: "term" | "glossary" | "alias";
+    /** エイリアスの `alias_type`。`kind` が `alias` のときだけ持つ */
+    aliasType?: "term" | "avoid";
 };
 /** `collectMatches` の戻り値 */
 export type MdmarkMatches = {
@@ -70,5 +75,7 @@ export declare function collectMatches(input: {
     documents: Record<string, string>;
     /** 設定 */
     config?: MdmarkConfig;
+    /** エイリアス。使えないもの（`env` を含む）は除いて照合する */
+    aliases?: MdmarkAlias[];
 }): MdmarkMatches;
 export {};

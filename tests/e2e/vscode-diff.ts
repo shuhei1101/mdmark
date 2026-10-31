@@ -53,7 +53,8 @@ export function prepareDiffRepo(
 }
 
 /** 差分ビューの変更後の側の文字を打つ場所 */
-const MODIFIED_LINES = ".monaco-diff-editor .editor.modified .view-lines";
+const MODIFIED_LINES =
+  ".monaco-diff-editor .editor.modified .view-lines:not(.line-delete) .view-line";
 
 /** 差分ビューが開くのを待つ */
 async function waitForDiffView(session: VscodeSession): Promise<void> {
@@ -75,7 +76,7 @@ export async function openWorkingTreeDiff(
 /** `a.md` を開き、タイムラインの最後のコミットから、そのコミットと 1 つ前の差分ビューにする */
 export async function openCommitDiff(session: VscodeSession): Promise<void> {
   await session.openFile("a.md");
-  await session.runCommand("Timeline: Focus on Timeline View");
+  await session.runCommand("Explorer: Focus on Timeline View");
   await session.win
     .locator(`.monaco-list-row[aria-label*="${COMMIT_MESSAGE}"]`)
     .first()

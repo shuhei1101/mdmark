@@ -6,8 +6,8 @@
 
 ## 前提
 
-- [文書を描く](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/導入/文書を描く.md)
-- 設定の `features.html` がオン（既定）。ヒントを出すには `features.hints` もオン（既定）。オフにする手順は [機能をオン・オフする](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/カスタマイズ/機能をオン・オフする.md)
+- [文書を描く](https://github.com/shuhei1101/mdmark/blob/v0.9.0/docs/使い方/導入/文書を描く.md)
+- 設定の `features.html` がオン（既定）。ヒントを出すには `features.hints` もオン（既定）。オフにする手順は [機能をオン・オフする](https://github.com/shuhei1101/mdmark/blob/v0.9.0/docs/使い方/カスタマイズ/機能をオン・オフする.md)
 
 ## 手順
 
@@ -111,7 +111,7 @@ custom element の属性は読まない。
 
 部品の定義の箱の `hint` と `io`、線の `tip` も同じ見た目のツールチップで出る。
 ツールチップを出したくないときは、設定の `features.hints` か文書の `<!-- features: -hints -->` でまとめて外す。
-手順は [機能をオン・オフする](https://github.com/shuhei1101/mdmark/blob/v0.8.0/docs/使い方/カスタマイズ/機能をオン・オフする.md)。
+手順は [機能をオン・オフする](https://github.com/shuhei1101/mdmark/blob/v0.9.0/docs/使い方/カスタマイズ/機能をオン・オフする.md)。
 
 ### 用語を出す
 
