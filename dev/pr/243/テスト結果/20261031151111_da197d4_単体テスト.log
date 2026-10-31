@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-vscode-restore-preview-scroll-on-reveal
+
+
+ Test Files  161 passed (161)
+      Tests  1183 passed (1183)
+   Start at  15:11:26
+   Duration  106.39s (tests 40%, worker 37%, import 20%, transform 3%)
+
+exit: 0

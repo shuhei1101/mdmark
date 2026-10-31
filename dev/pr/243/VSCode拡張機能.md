@@ -42,9 +42,14 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.9.0/tests/unit/vscode/src/webview/preview.browser.test.ts) | 全実行 | 変更 | ✅ | 19 テスト pass（追加した 4 テストを含む）<br>`テスト結果/20261031141625_8144592_単体テスト.log` |
-| `tests/unit/` | 全実行 | 実行のみ | ✅ | 161 ファイル・1183 テスト pass<br>`テスト結果/20261031141625_8144592_単体テスト.log` |
+| [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.9.0/tests/unit/vscode/src/webview/preview.browser.test.ts) | 全実行 | 変更 | ✅ | 19 テスト pass（追加した 4 テストを含む）<br>`テスト結果/20261031151111_da197d4_単体テスト.log` |
+| `tests/unit/` | 全実行 | 実行のみ | ✅ | 161 ファイル・1183 テスト pass<br>`テスト結果/20261031151111_da197d4_単体テスト.log` |
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.9.0/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_revealed` | 変更 | ✅ | VS Code 1.141.0 と stable で pass<br>`テスト結果/20261031151319_da197d4_結合テスト.log` |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.9.0/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_diff_revealed` | 新規 | ✅ | VS Code 1.141.0 と stable で pass<br>`テスト結果/20261031151319_da197d4_結合テスト.log` |
+| `vscode/tests/integration/` | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable でそれぞれ 63 テスト pass<br>`テスト結果/20261031151319_da197d4_結合テスト.log` |
+| `tests/integration/` | 全実行 | 実行のみ | ✅ | 66 ファイル・565 テスト pass<br>`テスト結果/20261031151319_da197d4_結合テスト.log` |
