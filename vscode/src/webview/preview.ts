@@ -10,7 +10,14 @@ import {
   type PreviewStatusState,
   renderPreviewStatus,
 } from "./parts/preview-status.ts";
-import { collectAnchors, lineForTop, topForLine, topInset } from "./scroll.ts";
+import {
+  type Anchor,
+  collectAnchors,
+  fractionalLineForTop,
+  lineForTop,
+  topForLine,
+  topInset,
+} from "./scroll.ts";
 
 /** HTML を入れてからこのミリ秒が経っても描けていなければ読み込み中を出す */
 export const LOADING_DELAY_MS = 1000;
@@ -24,7 +31,7 @@ declare function acquireVsCodeApi(): {
 
 /** `setState` で保存し、作り直した Webview が `getState` で読む値 */
 export type PreviewState = {
-  /** 見えている先頭の元の行番号（0 始まり） */
+  /** 見えている先頭の元の行番号（0 始まり）。整数に切り捨てず、小数部で行の途中の割合を持つ */
   line: number;
 };
 
@@ -279,20 +286,34 @@ export class PreviewView {
 
   /** 見えている先頭の位置（上端の帯があればその下端）を元の行番号にして返す。描く前は `undefined` */
   currentLine(): number | undefined {
-    // 描く前は元の行番号の印が無いため、返す行も無い
+    const top = this.visibleTop();
+    return top === undefined ? undefined : lineForTop(top.anchors, top.top);
+  }
+
+  /** 見えている先頭の位置（上端の帯があればその下端）を、整数に切り捨てない元の行番号にして返す。描く前は `undefined` */
+  currentPosition(): number | undefined {
+    const top = this.visibleTop();
+    return top === undefined
+      ? undefined
+      : fractionalLineForTop(top.anchors, top.top);
+  }
+
+  /** 行の印と、見えている先頭の位置（上端の帯があればその下端）を返す。描く前は `undefined` */
+  private visibleTop(): { anchors: Anchor[]; top: number } | undefined {
+    // 描く前は元の行番号の印が無いため、返す位置も無い
     if (this.handle === undefined) {
       return undefined;
     }
     const element = scroller();
-    const anchors = collectAnchors({
-      root: this.documentElement,
-      scroller: element,
-    });
-    return lineForTop(
-      anchors,
-      element.scrollTop +
+    return {
+      anchors: collectAnchors({
+        root: this.documentElement,
+        scroller: element,
+      }),
+      top:
+        element.scrollTop +
         topInset({ root: this.documentElement, scroller: element }),
-    );
+    };
   }
 
   /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる） */
@@ -358,9 +379,9 @@ export function startPreview(): void {
   const view = new PreviewView(
     savedLine === undefined ? { root } : { root, savedLine },
   );
-  /** 見えている先頭の行を、作り直した Webview が読めるように保存する */
+  /** 見えている先頭の位置を、作り直した Webview が読めるように保存する */
   const saveLine = (): void => {
-    const line = view.currentLine();
+    const line = view.currentPosition();
     if (line !== undefined) {
       api.setState?.({ line });
     }

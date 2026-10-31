@@ -327,6 +327,24 @@ test("test_current_line", async () => {
   expect(afterRender).toBe(20);
 });
 
+// 描く前は位置を返さず、描いた後は行の途中の位置を切り捨てずに返す（正常系）
+test("test_current_position", async () => {
+  // 準備
+  const { mdmark } = createMdmark();
+  const { view } = await createView(mdmark);
+  // 実行
+  const beforeRender = view.currentPosition();
+  view.render(renderMessage("# 本文"));
+  view.scrollToLine(20.5);
+  const afterRender = view.currentPosition();
+  const line = view.currentLine();
+  // 検証
+  expect(beforeRender).toBeUndefined();
+  expect(afterRender).toBeDefined();
+  expect(Math.abs((afterRender ?? 0) - 20.5)).toBeLessThan(0.05);
+  expect(line).toBe(20);
+});
+
 // 属性・文字・画像の幅・位置を返す（正常系）
 test("test_inspect", async () => {
   // 準備
@@ -509,11 +527,11 @@ test("test_start_preview_when_diff_unsupported", async () => {
   }
 });
 
-// 保存した行を持つ状態で始めると、最初の render の後にその行へ戻してから保存し、revealLine を送らない（正常系）
+// 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送らない（正常系）
 test("test_start_preview_when_state_saved", async () => {
   // 準備
   const { startPreview } = await loadPreview();
-  const { postMessage, setState } = stubVsCodeApi({ line: 20 });
+  const { postMessage, setState } = stubVsCodeApi({ line: 20.5 });
   const moduleUrl = createMdmarkModuleUrl();
   try {
     const root = createRoot();
@@ -531,8 +549,11 @@ test("test_start_preview_when_state_saved", async () => {
     });
     await nextFrames();
     // 検証
-    expect(setState.mock.calls[0]?.[0]).toEqual({ line: 20 });
+    const firstLine = setState.mock.calls[0]?.[0]?.line;
+    expect(firstLine).toBeTypeOf("number");
+    expect(Math.abs(firstLine - 20.5)).toBeLessThan(0.05);
     expect(setState).not.toHaveBeenCalledWith({ line: 0 });
+    expect(setState).not.toHaveBeenCalledWith({ line: 20 });
     const revealed = postMessage.mock.calls
       .map(([message]) => message)
       .filter((message) => message.type === "revealLine");
@@ -570,7 +591,9 @@ test("test_start_preview_when_scrolled", async () => {
     // 検証
     expect(callsBeforeRender).toBe(0);
     await vi.waitFor(() => {
-      expect(setState.mock.lastCall?.[0]).toEqual({ line: 30 });
+      const lastLine = setState.mock.lastCall?.[0]?.line;
+      expect(lastLine).toBeTypeOf("number");
+      expect(Math.abs(lastLine - 30)).toBeLessThan(0.05);
     });
   } finally {
     URL.revokeObjectURL(moduleUrl);
