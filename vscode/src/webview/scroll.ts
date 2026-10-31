@@ -68,8 +68,8 @@ export function topForLine(anchors: Anchor[], line: number): number {
   return before.top + ratio * (after.top - before.top);
 }
 
-/** 位置の前後の印の間で内分した行番号を、整数に切り捨てて返す。印が無いか最初の印より前は 0、最後の印より後は最後の印の行 */
-export function lineForTop(anchors: Anchor[], top: number): number {
+/** 位置の前後の印の間で内分した行番号を、切り捨てずに返す。印が無いか最初の印より前は 0、最後の印より後は最後の印の行 */
+export function fractionalLineForTop(anchors: Anchor[], top: number): number {
   const first = anchors[0];
   if (first === undefined || top < first.top) {
     return 0;
@@ -81,7 +81,12 @@ export function lineForTop(anchors: Anchor[], top: number): number {
     return before.line;
   }
   const ratio = (top - before.top) / (after.top - before.top);
-  return Math.floor(before.line + ratio * (after.line - before.line));
+  return before.line + ratio * (after.line - before.line);
+}
+
+/** 位置の前後の印の間で内分した行番号を、整数に切り捨てて返す。印が無いか最初の印より前は 0、最後の印より後は最後の印の行 */
+export function lineForTop(anchors: Anchor[], top: number): number {
+  return Math.floor(fractionalLineForTop(anchors, top));
 }
 
 /** 狭い幅で右側の目次を文書の上端の帯にしているとき、帯の下端からスクロールする要素の上端までの高さを返す。帯が無い（右側の目次が無い・広い幅の右の列）ときは 0 */
