@@ -37,4 +37,4 @@ PoC（[#239](https://github.com/shuhei1101/mdmark/pull/239)）で、製品の `w
 - [x] ~~単体テスト作成~~（製品のコードを変えない）
 - [x] ~~実装~~（製品のコードを変えない）
 - [x] ~~結合テスト作成~~（製品のコードを変えない）
-- [ ] E2E テスト作成（ヘルパー `focusModifiedSide` のロケーターの修正）
+- [x] E2E テスト作成（ヘルパー `focusModifiedSide` のロケーターの修正）
