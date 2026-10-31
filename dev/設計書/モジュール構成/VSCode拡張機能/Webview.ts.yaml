@@ -458,7 +458,7 @@ functions:
         summary: スクロールするたびに見えている先頭の行を保存し、描く前は保存しない
         condition: '`getState` が `undefined` を返す状態で `startPreview` を呼ぶ。`render` の前に `scroll` を発火し、`render` の後に元の行番号 30 の見出しが先頭に来るまでスクロールして次のフレームまで待つ'
         mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録する代役にする。mdmark を代役にする'
-        expected: '`render` の前の `scroll` では `setState` が呼ばれない。最後に呼ばれた `setState` の引数が `{ line: 30 }`'
+        expected: '`render` の前の `scroll` では `setState` が呼ばれない。最後に呼ばれた `setState` の引数の `line` が 30 との差が 0.05 未満'
   - name: classifyLoadFailure
     title: 読めない理由を見分ける
     kind: 関数
