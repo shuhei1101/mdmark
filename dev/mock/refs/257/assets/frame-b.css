@@ -10,5 +10,10 @@
     .mdmark-param .mdmark-diagram-box {
       box-shadow: none;
     }
+
+    /* 全画面のモーダルの中の図の枠: 今の線のまま */
+    .mdmark-diagram-dialog .mdmark-diagram-box {
+      box-shadow: inset 0 0 0 1px var(--mdmark-color-border);
+    }
   }
 }
