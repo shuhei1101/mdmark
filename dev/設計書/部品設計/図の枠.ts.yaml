@@ -12,7 +12,7 @@ states:
       - name: zoom
         value: '1.25'
   - name: Max
-    description: 上限の 300%。拡大は押せない。表示する枠の高さは開いたときのままで、使う側が高さを広げると `--mdmark-diagram-max-height` を超えて定義の高さ × 300% まで広がる
+    description: 上限の 300%。拡大は押せない
     args:
       - name: zoom
         value: '3'
