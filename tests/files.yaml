@@ -477,18 +477,6 @@ files:
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書をHTMLに書き出す.ts
         type: see_also
-  - path: integration/ClaudeCodeプラグイン/find-docs.test.ts
-    description: インターフェース定義『文書を探す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts
-        type: see_also
-  - path: integration/ClaudeCodeプラグイン/list-tags.test.ts
-    description: インターフェース定義『タグの語彙を見る』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:タグ]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/タグの語彙を見る.ts
-        type: see_also
   - path: integration/ClaudeCodeプラグイン/pre-tool-use.test.ts
     description: インターフェース定義『作業のフォルダを引数に入れる』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
@@ -512,12 +500,6 @@ files:
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts
-        type: see_also
-  - path: integration/ClaudeCodeプラグイン/update-index.test.ts
-    description: インターフェース定義『索引を書き換える』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/索引を書き換える.ts
         type: see_also
   - path: integration/built-root.ts
     description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
