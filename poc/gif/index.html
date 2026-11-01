@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>GIF の停止・再生</title>
+<style>
+  .gif-box { position: relative; display: inline-block; }
+  .gif-box img { display: block; width: 160px; height: 120px; }
+  .gif-box canvas { position: absolute; inset: 0; width: 160px; height: 120px; }
+  .gif-box canvas[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="gif-box" id="box"><img data-gif src="../fixtures/anim.gif" alt="試験用の GIF" width="160" height="120"></div>
+<script type="module" src="./gif-pause.js"></script>
+</body>
+</html>

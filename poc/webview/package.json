@@ -1,0 +1,11 @@
+{
+  "name": "mdmark-poc-webview-media",
+  "version": "0.0.0",
+  "private": true,
+  "publisher": "poc",
+  "engines": {
+    "vscode": "^1.141.0"
+  },
+  "main": "./extension.cjs",
+  "activationEvents": []
+}

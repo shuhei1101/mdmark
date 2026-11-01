@@ -1,0 +1,89 @@
+{
+  "vscode": "1.144.0",
+  "electron": "43.8.3",
+  "chrome": "150.0.7871.250",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.144.0 Chrome/150.0.7871.250 Electron/43.8.3 Safari/537.36",
+  "results": [
+    {
+      "file": "video.mp4",
+      "canplay": true,
+      "error": null,
+      "play": "NotAllowedError → click ok",
+      "currentTime": 1.000117,
+      "audioDecodedBytes": 0,
+      "required": true
+    },
+    {
+      "file": "audio.m4a",
+      "canplay": false,
+      "error": "MediaError 4 PipelineStatus::DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no supported streams",
+      "play": null,
+      "currentTime": 0,
+      "audioDecodedBytes": 0,
+      "required": true
+    },
+    {
+      "file": "audio.mp3",
+      "canplay": true,
+      "error": null,
+      "play": "ok",
+      "currentTime": 0.920091,
+      "audioDecodedBytes": 10448,
+      "required": true
+    },
+    {
+      "file": "video.webm",
+      "canplay": false,
+      "error": "MediaError 4 PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN: FFmpegDemuxer: open context failed",
+      "play": null,
+      "currentTime": 0,
+      "audioDecodedBytes": 0,
+      "required": false
+    },
+    {
+      "file": "audio.ogg",
+      "canplay": true,
+      "error": null,
+      "play": "ok",
+      "currentTime": 0.792965,
+      "audioDecodedBytes": 2147,
+      "required": false
+    },
+    {
+      "file": "audio.wav",
+      "canplay": true,
+      "error": null,
+      "play": "ok",
+      "currentTime": 0.709324,
+      "audioDecodedBytes": 110592,
+      "required": false
+    },
+    {
+      "file": "video.mov",
+      "canplay": true,
+      "error": null,
+      "play": "ok",
+      "currentTime": 1.0001179999999998,
+      "audioDecodedBytes": 0,
+      "required": false
+    },
+    {
+      "file": "video-vp8.webm",
+      "canplay": false,
+      "error": "MediaError 4 PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN: FFmpegDemuxer: open context failed",
+      "play": null,
+      "currentTime": 0,
+      "audioDecodedBytes": 0,
+      "required": false
+    },
+    {
+      "file": "audio-aac.mp4",
+      "canplay": false,
+      "error": "MediaError 4 PipelineStatus::DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no supported streams",
+      "play": null,
+      "currentTime": 0,
+      "audioDecodedBytes": 0,
+      "required": false
+    }
+  ]
+}
