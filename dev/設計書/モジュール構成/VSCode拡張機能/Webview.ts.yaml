@@ -26,7 +26,7 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string }`'
+    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string; play?: boolean }`'
     properties:
       - name: type
         type: '"render" | "scrollToLine" | "configError" | "configOk" | "assetsResolved" | "inspect"'
@@ -80,6 +80,9 @@ data_models:
       - name: height
         type: number
         description: 高さ（px）
+      - name: currentTime
+        type: number | undefined
+        description: '`video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値'
     status: planned
   - name: PreviewBoot
     title: パネルの始め方
@@ -372,14 +375,19 @@ classes:
       - name: inspect
         title: 要素を調べる
         kind: メソッド
-        summary: '`selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）'
+        summary: '`selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる'
         args:
           - name: selector
             type: string
             required: true
             description: CSS セレクタ（`document` 全体に当てる）
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 当たった動画・音声を再生してから調べるか
         returns:
-          type: InspectedElement[]
+          type: Promise<InspectedElement[]>
           description: 当たった要素の並び
         unit_tests:
           - name: test_inspect
@@ -388,8 +396,16 @@ classes:
             condition: '`<h1 id="a" class="x">題</h1>` と読み終えた `<img alt="図">` を置き、`h1, img` で調べる'
             mock: なし
             expected: '`h1` は `className` が `x`・`attributes.id` が `a`・`text` が `題`・`naturalWidth` が無い。`img` は `naturalWidth` が画像の幅。どちらも `top`・`height` が数'
+          - name: test_inspect_when_play
+            case: 正常
+            summary: 動画を再生してから調べる
+            condition: '再生できる短い `webm` の `<video>` を置き、`video` と `play: true` で調べる'
+            mock: なし
+            expected: '`currentTime` が 0.5 以上'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#flows[正常系（相対パスとアセットのルートの動画・音声）]
+        is_async: true
       - name: useMdmark
         title: 配布物を渡す
         kind: メソッド

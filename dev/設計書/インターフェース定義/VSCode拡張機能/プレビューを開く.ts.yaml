@@ -351,7 +351,7 @@ flows:
       - name: 設定ファイル
         description: ワークスペースの `mdmark.config.yaml` の `assets.root` が `assets`
       - name: Mock
-        description: 正常系と同じ。音声と動画の再生は、Webview の要素の `play()` をテストから呼ぶ（画面を 1 回押した後）
+        description: '正常系と同じ。音声と動画の再生は、`inspectPreview` に `play: true` を渡して、Webview の要素の `play()` を呼ばせる'
     flow: |-
       sequenceDiagram
         participant U as 文書を書く人

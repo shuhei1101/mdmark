@@ -262,7 +262,7 @@ flows:
     expected:
       - 終了コードが 0 で、標準エラーが空
       - '`chart.png`・`dark.png`・`build.gif`・`poster.png`・`logo.png` が `data:` URL で埋まり、`dark.png` の `src` が `#only-dark` を持つ'
-      - '`docs/guide_files/media/demo.mp4` と `docs/guide_files/media/voice.mp3` があり、HTML の `video`・`audio` の `src` が `guide_files/media/demo.mp4`・`guide_files/media/voice.mp3`'
+      - '`docs/guide_files/docs/media/demo.mp4` と `docs/guide_files/docs/media/voice.mp3` があり、HTML の `video`・`audio` の `src` が `guide_files/docs/media/demo.mp4`・`guide_files/docs/media/voice.mp3`'
       - '`files/spec.pdf` はコピーされず、カードの `href` が `files/spec.pdf` のまま'
       - '`guide.html` と `guide_files/` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身・`guide_files/` の下のファイルと `blob:`・`data:` のほかの要求が 0 件'
     test: test_normal_when_media_embedded

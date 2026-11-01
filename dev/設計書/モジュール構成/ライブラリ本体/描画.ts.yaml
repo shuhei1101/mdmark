@@ -116,9 +116,9 @@ constants:
       - key: parseStyleAttributes
         value: '`false`（postcss を呼ばない）'
       - key: transformTags
-        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す。`data-source-line` は値が `^\d+$` の形でなければ消す / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の形でなければ `src` を消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
+        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す。`data-source-line` は値が `^\d+$` の形でなければ消す / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の形（末尾に `#only-light`・`#only-dark` のフラグメントを持ってよい）でなければ `src` を消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
       - key: allowedSchemesByTag
-        value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の形は `transformTags` が絞る） / `video`・`audio`: `http`・`https`（`src` と `poster`。`poster` の `data:` URL は `img` と同じ形だけを残す）'
+        value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の形は `transformTags` が絞る） / `video`・`audio`: `http`・`https`・`data`（`src` と `poster`。`data:` URL は `poster` の `img` と同じ形だけを残し、`src` の `data:` URL は消す）'
   - name: SYNTAX_MARKS
     title: 記法の印と機能
     container: src/render/marks.ts

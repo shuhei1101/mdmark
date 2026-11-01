@@ -174,12 +174,18 @@ classes:
             type: string
             required: true
             description: CSS セレクタ
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 当たった動画・音声を再生してから調べるか（`inspect` の `play` に渡す）
         returns:
           type: Promise<InspectedElement[]>
           description: 当たった要素の様子
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
           - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#data_models[InspectedElement]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#flows[正常系（相対パスとアセットのルートの動画・音声）]
       - name: findPanels
         title: パネルを引く
         kind: メソッド
@@ -384,9 +390,16 @@ classes:
             type: string
             required: true
             description: CSS セレクタ
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 当たった動画・音声を再生してから調べるか（`inspect` の `play` に渡す）
         returns:
           type: Promise<InspectedElement[]>
           description: 当たった要素の様子
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#flows[正常系（相対パスとアセットのルートの動画・音声）]
       - name: applyConfigChange
         title: 設定の変更を当てる
         kind: メソッド
