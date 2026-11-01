@@ -25,6 +25,11 @@ states:
         value: '8'
       - name: copy
         value: failed
+  - name: CustomCopyLabel
+    description: 写すボタンの文言を替えた。アイコンの後ろを「コピー」で描く
+    args:
+      - name: copyLabel
+        value: コピー
 lead: スライダー・今の値を写すボタン・グラフを組み合わせた部品。スライダーの値でグラフを描き直し、今の値を JSON にしてクリップボードへ写す。
 args:
   - name: definition
@@ -40,6 +45,11 @@ args:
     default: none
     choices: '`none`・`copied`（写した）・`failed`（写せなかった）'
     description: 写した結果の知らせ。`failed` のときは写すはずだった JSON を選んで写せる `pre` に出す
+  - name: copyLabel
+    type: 文字列
+    default: 今の値を写す
+    description: 今の値を写すボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる。HTML の特殊文字はエスケープして描く
+    status: planned
 events:
   - name: 値を変える
     when: スライダーを動かすか、フォーカスして矢印キーを押す
@@ -59,6 +69,7 @@ accessibility:
   - スライダーは `label` で名前を付け、今の値を `output` に出し、矢印キーでも動かせる
   - 写した結果は `role="status"` に出し、色とアイコンと文言で伝える
   - 写せなかった JSON の `pre` は `tabindex="0"` と `aria-label="写す JSON"` を持つ
+  - 写すボタンは `aria-label` を付けず、ボタンの文字（`copyLabel`）を読み上げの名前にする
 status: planned
 introduced:
   pr: 42

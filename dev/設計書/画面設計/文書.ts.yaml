@@ -428,8 +428,10 @@ elements:
     args:
       - name: definition
         value: '`<!-- param -->` の範囲の部品の定義'
+      - name: copyLabel
+        value: 文書を描く.opts.config.labels.paramCopy（空でない文字列でないときは `今の値を写す`）
     position: 描く先の要素
-    description: スライダー・今の値を写すボタン・グラフ。写した知らせは `クリップボードに写しました`、書けなかったときは `クリップボードへ書けませんでした。下の JSON を選んで写してください`
+    description: スライダー・今の値を写すボタン・グラフ。写すボタンの文言は設定 `labels.paramCopy` で替えられる。写した知らせは `クリップボードに写しました`、書けなかったときは `クリップボードへ書けませんでした。下の JSON を選んで写してください`
     visible_when: '`diagrams` がオンで、`<!-- param -->` の範囲に読める定義があるとき'
     initial_value: 定義の `knob.value`
     action: スライダーでグラフを描き直し、写すボタンで今の値を JSON にしてクリップボードへ写す
