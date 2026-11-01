@@ -39,7 +39,10 @@ export function distPath(
 
 /** 拡張機能が `activate` で返す、テストのときだけの口 */
 type TestApi = {
-  inspectPreview: (selector: string) => Promise<InspectedElement[]>;
+  inspectPreview: (
+    selector: string,
+    play?: boolean,
+  ) => Promise<InspectedElement[]>;
 };
 
 /** Webview の要素 1 つの様子 */
@@ -51,6 +54,7 @@ export type InspectedElement = {
   naturalWidth?: number;
   top: number;
   height: number;
+  currentTime?: number;
 };
 
 /** 開いたパネルと、拡張機能と Webview の間で行き来したメッセージ */
@@ -226,9 +230,12 @@ export async function api(): Promise<TestApi> {
   return (await extension.activate()) as TestApi;
 }
 
-/** Webview の要素を調べる */
-export async function inspect(selector: string): Promise<InspectedElement[]> {
-  return (await api()).inspectPreview(selector);
+/** Webview の要素を調べる。`play` のときは、当たった動画・音声を再生してから調べる */
+export async function inspect(
+  selector: string,
+  play = false,
+): Promise<InspectedElement[]> {
+  return (await api()).inspectPreview(selector, play);
 }
 
 /** `rendered` を `count` 回受けるまで待つ */

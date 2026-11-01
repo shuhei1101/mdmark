@@ -14,6 +14,12 @@ const BLOCK_COUNT = 40;
 const PNG_1X1 =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
+/** 再生できる 3 秒の webm（VP8） */
+const SHORT_WEBM = new URL(
+  "../../../../helpers/media/short.webm",
+  import.meta.url,
+).href;
+
 const placed: HTMLElement[] = [];
 
 /** `startPreview` が `window`・`document` に付けた受け取り（次のテストの `message` に反応しないよう、テストの後に外す） */
@@ -356,7 +362,7 @@ test("test_inspect", async () => {
   placed.push(holder);
   await (holder.querySelector("img") as HTMLImageElement).decode();
   // 実行
-  const [heading, image] = view.inspect("h1, img");
+  const [heading, image] = await view.inspect("h1, img");
   // 検証
   expect(heading?.tagName).toBe("h1");
   expect(heading?.className).toBe("x");
@@ -369,6 +375,22 @@ test("test_inspect", async () => {
     expect(typeof element?.top).toBe("number");
     expect(typeof element?.height).toBe("number");
   }
+});
+
+// 動画を再生してから調べる（正常系）
+test("test_inspect_when_play", async () => {
+  // 準備
+  const { mdmark } = createMdmark();
+  const { view } = await createView(mdmark);
+  const holder = document.createElement("div");
+  holder.innerHTML = `<video src="${SHORT_WEBM}" preload="auto"></video>`;
+  document.body.append(holder);
+  placed.push(holder);
+  // 実行
+  const [video] = await view.inspect("video", true);
+  // 検証
+  expect(video?.tagName).toBe("video");
+  expect(video?.currentTime).toBeGreaterThanOrEqual(0.5);
 });
 
 // 404 は指定したバージョンが無い（正常系）

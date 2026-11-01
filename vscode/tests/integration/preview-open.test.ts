@@ -498,6 +498,16 @@ suite("プレビューを開く", () => {
         JSON.stringify(await readSources()) === JSON.stringify(expected),
     ).catch(() => undefined);
     assert.deepStrictEqual(await readSources(), expected);
+    // 再生してから 1 秒後の位置
+    const played = Object.fromEntries(
+      (await inspect("audio, video", true)).map((element) => [
+        element.attributes["aria-label"],
+        element.currentTime ?? 0,
+      ]),
+    );
+    assert.ok((played.音声 ?? 0) >= 0.5, `音声: ${played.音声}`);
+    assert.ok((played.導入 ?? 0) >= 0.5, `導入: ${played.導入}`);
+    assert.ok((played.動画 ?? 0) > 0, `動画: ${played.動画}`);
     const csp = /Content-Security-Policy" content="([^"]*)"/.exec(
       record.panel.webview.html,
     )?.[1];

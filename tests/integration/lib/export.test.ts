@@ -506,10 +506,14 @@ test("test_normal_when_media_embedded", async () => {
   expect(result.stderr).toBe("");
   // 動画・音声をコピーし、添付はコピーしない
   expect(
-    await readFile(join(dir, "docs", "guide_files", "media", "demo.mp4")),
+    await readFile(
+      join(dir, "docs", "guide_files", "docs", "media", "demo.mp4"),
+    ),
   ).toEqual(media.mp4);
   expect(
-    await readFile(join(dir, "docs", "guide_files", "media", "voice.mp3")),
+    await readFile(
+      join(dir, "docs", "guide_files", "docs", "media", "voice.mp3"),
+    ),
   ).toEqual(media.mp3);
   expect(existsSync(join(dir, "docs", "guide_files", "files"))).toBe(false);
   const { page, externalRequests } = await browser.openWithFiles(
@@ -541,8 +545,8 @@ test("test_normal_when_media_embedded", async () => {
     expect(embedded[key], key).toMatch(/^data:/);
   }
   expect(embedded.dark).toMatch(/#only-dark$/);
-  expect(embedded.video).toBe("guide_files/media/demo.mp4");
-  expect(embedded.audio).toBe("guide_files/media/voice.mp3");
+  expect(embedded.video).toBe("guide_files/docs/media/demo.mp4");
+  expect(embedded.audio).toBe("guide_files/docs/media/voice.mp3");
   expect(embedded.card).toBe("files/spec.pdf");
   await page.waitForLoadState("networkidle");
   expect(externalRequests()).toEqual([]);
