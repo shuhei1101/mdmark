@@ -498,16 +498,18 @@ suite("プレビューを開く", () => {
         JSON.stringify(await readSources()) === JSON.stringify(expected),
     ).catch(() => undefined);
     assert.deepStrictEqual(await readSources(), expected);
-    // 再生してから 1 秒後の位置
+    // 再生してから 1 秒後: 動画は進み、音声は読み込めている
     const played = Object.fromEntries(
       (await inspect("audio, video", true)).map((element) => [
         element.attributes["aria-label"],
-        element.currentTime ?? 0,
+        element,
       ]),
     );
-    assert.ok((played.音声 ?? 0) >= 0.5, `音声: ${played.音声}`);
-    assert.ok((played.導入 ?? 0) >= 0.5, `導入: ${played.導入}`);
-    assert.ok((played.動画 ?? 0) > 0, `動画: ${played.動画}`);
+    const videoTime = played.動画?.currentTime ?? 0;
+    assert.ok(videoTime >= 0.5, `動画: ${videoTime}`);
+    assert.strictEqual(played.音声?.readyState, 4);
+    assert.strictEqual(played.導入?.readyState, 4);
+    assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
     const csp = /Content-Security-Policy" content="([^"]*)"/.exec(
       record.panel.webview.html,
     )?.[1];

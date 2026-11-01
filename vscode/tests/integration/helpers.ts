@@ -55,6 +55,7 @@ export type InspectedElement = {
   top: number;
   height: number;
   currentTime?: number;
+  readyState?: number;
 };
 
 /** 開いたパネルと、拡張機能と Webview の間で行き来したメッセージ */
