@@ -1250,7 +1250,7 @@ functions:
         summary: 途中の画像は前後に送れ、枚数を出す
         condition: 部品設計の `Middle`
         mock: なし
-        expected: '`前の画像`・`次の画像` のボタンが `disabled` を持たず、`mdmark-lightbox-count` が `2 / 5`、移動のまとまりが `hidden`'
+        expected: '`前の画像`・`次の画像` のボタンが `disabled` を持たず、`mdmark-lightbox-count` が `3 / 15`、移動のまとまりが `hidden`'
       - name: test_render_lightbox_when_edge
         case: 正常
         summary: 端の送りのボタンを押せなくする
