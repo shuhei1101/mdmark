@@ -600,6 +600,68 @@ test("test_start_preview_when_scrolled", async () => {
   }
 });
 
+// 描いた後に相対パスを問い合わせ、返った URL に替える（正常系）
+test("test_start_preview_when_assets", async () => {
+  // 準備: `![操作](m/demo.mp4)` を動画にして描く配布物の代役
+  const { startPreview } = await loadPreview();
+  const { postMessage } = stubVsCodeApi(undefined);
+  const moduleUrl = URL.createObjectURL(
+    new Blob(
+      [
+        `export const diffModes = ["blocks"];
+export const mount = (element) => {
+  element.innerHTML = '<figure class="mdmark-figure mdmark-media"><video src="m/demo.mp4" controls aria-label="操作"></video></figure>';
+  return { update() {}, destroy() { element.replaceChildren(); } };
+};`,
+      ],
+      { type: "text/javascript" },
+    ),
+  );
+  try {
+    const root = createRoot();
+    root.dataset.distJs = moduleUrl;
+    startPreview();
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "ready" });
+    });
+    // 実行: 描く
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: renderMessage("![操作](m/demo.mp4)"),
+      }),
+    );
+    // 検証: 相対パスを問い合わせる
+    const request = await vi.waitFor(() => {
+      const found = postMessage.mock.calls
+        .map(([message]) => message)
+        .find((message) => message.type === "resolveAssets");
+      if (!found) {
+        throw new Error("resolveAssets が送られていない");
+      }
+      return found;
+    });
+    expect(request.paths).toEqual(["m/demo.mp4"]);
+    // 実行: 同じ id で URL を返す
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: {
+          type: "assetsResolved",
+          id: request.id,
+          urls: { "m/demo.mp4": "https://w/demo.mp4" },
+        },
+      }),
+    );
+    // 検証
+    await vi.waitFor(() => {
+      expect(root.querySelector("video")?.getAttribute("src")).toBe(
+        "https://w/demo.mp4",
+      );
+    });
+  } finally {
+    URL.revokeObjectURL(moduleUrl);
+  }
+});
+
 // previous を持つ render では取り出し元を渡して blocks で描き、次の render では取り出し元の全文を書き換えてから update する（正常系）
 test("test_render_when_diff", async () => {
   // 準備

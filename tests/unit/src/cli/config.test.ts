@@ -317,3 +317,17 @@ test("test_validate_config_when_aliases_invalid", async () => {
   expect(config.aliases?.[0]).toEqual(valid);
   expect(config.aliases?.[1]).toBeNull();
 });
+
+// 形の違う assets.root を schema のずれにする（正常系）
+test("test_validate_config_when_assets_not_string", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const result = validateConfig({ assets: { root: 1 } }, "mdmark.config.yaml");
+  // 検証
+  expect(result.issues).toHaveLength(1);
+  expect(result.issues[0]).toMatchObject({
+    where: "assets.root",
+    kind: "schema",
+  });
+});

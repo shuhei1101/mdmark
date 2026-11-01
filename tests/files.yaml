@@ -931,6 +931,9 @@ files:
   - path: unit/helpers/clipboard.ts
     description: 単体テストで navigator.clipboard を差し替えて戻す処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:クリップボード, topic:モック]
+  - path: unit/helpers/core-rules.ts
+    description: 単体テストで、印を拾って機能を重ねた後に選んだコアルールだけを当てた markdown-it の解析器でトークンを作る処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
   - path: unit/helpers/css.d.ts
     description: 単体テストが CSS のファイルを import するための型宣言を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:typescript, tool:css]
@@ -1008,6 +1011,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:cli, topic:エイリアス]
     related:
       - to: src/cli/aliases
+        type: tests
+  - path: unit/src/cli/assets.test.ts
+    description: src/cli/assets.ts（「画像・動画・音声・添付の参照の拾い出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検」）を確かめる単体テスト。assets.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:画像, topic:動画]
+    related:
+      - to: src/cli/assets
         type: tests
   - path: unit/src/cli/backup.test.ts
     description: src/cli/backup.ts（「当てる前のコピーとコピーからの戻し」）を確かめる単体テスト。backup.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1237,11 +1246,23 @@ files:
     related:
       - to: src/interact/embedded-html
         type: tests
+  - path: unit/src/interact/gif.browser.test.ts
+    description: src/interact/gif.ts（「GIF を止める・再生するボタンを付ける」）を確かめるブラウザで流す単体テスト。gif.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:画像, topic:gif]
+    related:
+      - to: src/interact/gif
+        type: tests
   - path: unit/src/interact/index.browser.test.ts
     description: src/interact/index.ts（「attachInteractions」）を確かめるブラウザで流す単体テスト。index.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
     related:
       - to: src/interact/index
+        type: tests
+  - path: unit/src/interact/lightbox.browser.test.ts
+    description: src/interact/lightbox.ts（「画像を拡大のボタンで包み、ライトボックスで開いて送り・拡大・縮小・移動を付ける」）を確かめるブラウザで流す単体テスト。lightbox.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:画像, topic:ライトボックス]
+    related:
+      - to: src/interact/lightbox
         type: tests
   - path: unit/src/interact/params.browser.test.ts
     description: src/interact/params.ts（「操作できる部品の値とコピーする」）を確かめるブラウザで流す単体テスト。params.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1302,6 +1323,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:ツリー]
     related:
       - to: src/interact/trees
+        type: tests
+  - path: unit/src/interact/zoom.browser.test.ts
+    description: src/interact/zoom.ts（「図とライトボックスが共有する拡大・縮小・移動」）を確かめるブラウザで流す単体テスト。zoom.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:ライトボックス]
+    related:
+      - to: src/interact/zoom
         type: tests
   - path: unit/src/knowledge/aliases.test.ts
     description: src/knowledge/aliases.ts（「エイリアスの型と、設定の行と YAML の中身からエイリアスを作る buildAliases」）を確かめる単体テスト。aliases.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1413,6 +1440,12 @@ files:
     related:
       - to: src/parts/callout
         type: tests
+  - path: unit/src/parts/card.test.ts
+    description: src/parts/card.ts（「カードの renderCard」）を確かめる単体テスト。card.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:カード]
+    related:
+      - to: src/parts/card
+        type: tests
   - path: unit/src/parts/code-block.test.ts
     description: src/parts/code-block.ts（「コードブロックの renderCodeBlock と renderCodeCopy」）を確かめる単体テスト。code-block.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
@@ -1424,6 +1457,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
     related:
       - to: src/parts/collapsible
+        type: tests
+  - path: unit/src/parts/colors.test.ts
+    description: src/parts/colors.ts（「色の名前の COLOR_NAMES と isColorName」）を確かめる単体テスト。colors.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, topic:色]
+    related:
+      - to: src/parts/colors
         type: tests
   - path: unit/src/parts/comment.test.ts
     description: src/parts/comment.ts（「コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）」）を確かめる単体テスト。comment.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1497,6 +1536,18 @@ files:
     related:
       - to: src/parts/figure
         type: tests
+  - path: unit/src/parts/gallery.test.ts
+    description: src/parts/gallery.ts（「ギャラリーの renderGallery」）を確かめる単体テスト。gallery.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:画像]
+    related:
+      - to: src/parts/gallery
+        type: tests
+  - path: unit/src/parts/gif.test.ts
+    description: src/parts/gif.ts（「GIF の renderGif と止める・再生するボタンの renderGifToggle」）を確かめる単体テスト。gif.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:gif]
+    related:
+      - to: src/parts/gif
+        type: tests
   - path: unit/src/parts/hint.test.ts
     description: src/parts/hint.ts（「埋め込んだ HTML のヒントのマーカーと中身」）を確かめる単体テスト。hint.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
@@ -1508,6 +1559,24 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg, tool:lucide]
     related:
       - to: src/parts/icons
+        type: tests
+  - path: unit/src/parts/image.test.ts
+    description: src/parts/image.ts（「画像の図の renderImageFigure と拡大のボタンの renderImageOpener」）を確かめる単体テスト。image.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:画像]
+    related:
+      - to: src/parts/image
+        type: tests
+  - path: unit/src/parts/lightbox.test.ts
+    description: src/parts/lightbox.ts（「ライトボックスの renderLightbox」）を確かめる単体テスト。lightbox.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:ライトボックス]
+    related:
+      - to: src/parts/lightbox
+        type: tests
+  - path: unit/src/parts/media.test.ts
+    description: src/parts/media.ts（「動画と音声の renderMedia」）を確かめる単体テスト。media.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:動画]
+    related:
+      - to: src/parts/media
         type: tests
   - path: unit/src/parts/notice.test.ts
     description: src/parts/notice.ts（「知らせの枠の renderNotice」）を確かめる単体テスト。notice.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1580,6 +1649,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
     related:
       - to: src/parts/term-tip
+        type: tests
+  - path: unit/src/parts/text-color.test.ts
+    description: src/parts/text-color.ts（「文字の色の renderTextColor」）を確かめる単体テスト。text-color.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:色]
+    related:
+      - to: src/parts/text-color
         type: tests
   - path: unit/src/parts/toc.test.ts
     description: src/parts/toc.ts（「目次の renderToc」）を確かめる単体テスト。toc.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1689,6 +1764,12 @@ files:
     related:
       - to: src/render/syntax/callouts
         type: tests
+  - path: unit/src/render/syntax/cards.test.ts
+    description: src/render/syntax/cards.ts（「リンクと添付のカード」）を確かめる単体テスト。cards.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:記法, tool:markdown-it, topic:カード]
+    related:
+      - to: src/render/syntax/cards
+        type: tests
   - path: unit/src/render/syntax/code-blocks.test.ts
     description: src/render/syntax/code-blocks.ts（「コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・色分けの対象の言語」）を確かめる単体テスト。code-blocks.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
@@ -1713,6 +1794,12 @@ files:
     related:
       - to: src/render/syntax/figures
         type: tests
+  - path: unit/src/render/syntax/gallery.test.ts
+    description: src/render/syntax/gallery.ts（「ギャラリー」）を確かめる単体テスト。gallery.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:記法, tool:markdown-it, topic:画像]
+    related:
+      - to: src/render/syntax/gallery
+        type: tests
   - path: unit/src/render/syntax/glossary.test.ts
     description: src/render/syntax/glossary.ts（「glossary のマーカーで囲んだ表の読み取り」）を確かめる単体テスト。glossary.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
@@ -1730,6 +1817,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, tool:html]
     related:
       - to: src/render/syntax/html
+        type: tests
+  - path: unit/src/render/syntax/images.test.ts
+    description: src/render/syntax/images.ts（「画像の属性と種類・画像と動画と音声の図」）を確かめる単体テスト。images.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:記法, tool:markdown-it, topic:画像, topic:動画]
+    related:
+      - to: src/render/syntax/images
         type: tests
   - path: unit/src/render/syntax/row-details.test.ts
     description: src/render/syntax/row-details.ts（「行の詳細」）を確かめる単体テスト。row-details.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1766,6 +1859,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
     related:
       - to: src/render/syntax/terms
+        type: tests
+  - path: unit/src/render/syntax/text-color.test.ts
+    description: src/render/syntax/text-color.ts（「本文の文字の色」）を確かめる単体テスト。text-color.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:記法, tool:markdown-it, topic:色]
+    related:
+      - to: src/render/syntax/text-color
         type: tests
   - path: unit/src/render/syntax/toc.test.ts
     description: src/render/syntax/toc.ts（「目次」）を確かめる単体テスト。toc.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1857,6 +1956,12 @@ files:
     related:
       - to: vscode/src/export/write
         type: tests
+  - path: unit/vscode/src/preview/assets.test.ts
+    description: vscode/src/preview/assets.ts（「画像・動画・音声の探す場所の候補（vscode を import しない）」）を確かめる単体テスト。assets.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー, topic:動画]
+    related:
+      - to: vscode/src/preview/assets
+        type: tests
   - path: unit/vscode/src/preview/diff-target.test.ts
     description: vscode/src/preview/diff-target.ts（「差分ビューの対象とパネルのキー（vscode を import しない）」）を確かめる単体テスト。diff-target.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー, topic:差分]
@@ -1893,11 +1998,23 @@ files:
     related:
       - to: vscode/src/version
         type: tests
+  - path: unit/vscode/src/webview/assets.browser.test.ts
+    description: vscode/src/webview/assets.ts（「相対パスの画像・動画・音声の集めと URL の差し替え・再生できない要素の知らせ」）を確かめるブラウザで流す単体テスト。assets.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:動画]
+    related:
+      - to: vscode/src/webview/assets
+        type: tests
   - path: unit/vscode/src/webview/parts/config-band.test.ts
     description: vscode/src/webview/parts/config-band.ts（「設定ファイルを読めない帯の HTML」）を確かめる単体テスト。config-band.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:設定]
     related:
       - to: vscode/src/webview/parts/config-band
+        type: tests
+  - path: unit/vscode/src/webview/parts/media-error.test.ts
+    description: vscode/src/webview/parts/media-error.ts（「再生できない動画・音声の知らせの HTML」）を確かめる単体テスト。media-error.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:動画]
+    related:
+      - to: vscode/src/webview/parts/media-error
         type: tests
   - path: unit/vscode/src/webview/parts/preview-status.test.ts
     description: vscode/src/webview/parts/preview-status.ts（「プレビューの状態の表示の HTML」）を確かめる単体テスト。preview-status.ts を変えたときに、合わせて見修正するケースを探すときに読む。
