@@ -15,10 +15,8 @@ const PNG_1X1 =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
 /** 再生できる 3 秒の webm（VP8） */
-const SHORT_WEBM = new URL(
-  "../../../../helpers/media/short.webm",
-  import.meta.url,
-).href;
+const SHORT_WEBM = new URL("../../../helpers/media/short.webm", import.meta.url)
+  .href;
 
 const placed: HTMLElement[] = [];
 
