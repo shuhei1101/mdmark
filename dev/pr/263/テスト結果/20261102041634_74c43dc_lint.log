@@ -1,0 +1,32 @@
+## 作業 PR（74c43dc）
+$ (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+Checked 580 files in 2s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/render/syntax/gallery.test.ts(35,36): error TS2345: Argument of type 'Record<string, unknown> | null' is not assignable to parameter of type 'Mark'.
+  Type 'null' is not assignable to type 'Mark'.
+tests/unit/src/render/syntax/gallery.test.ts(36,37): error TS2345: Argument of type 'Record<string, unknown> | null' is not assignable to parameter of type 'Mark'.
+  Type 'null' is not assignable to type 'Mark'.
+tests/unit/src/render/syntax/gallery.test.ts(48,38): error TS2345: Argument of type 'Record<string, unknown> | null' is not assignable to parameter of type 'Mark'.
+  Type 'null' is not assignable to type 'Mark'.
+tests/unit/src/render/syntax/images.test.ts(162,40): error TS2339: Property 'align' does not exist on type '{}'.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit: 1
+
+## base ブランチ（origin/develop f942f1b）
+違反の出た 2 ファイルは作業 PR が追加したテストで、base ブランチには無い。
+$ git cat-file -e origin/develop:tests/unit/src/render/syntax/gallery.test.ts
+fatal: path 'tests/unit/src/render/syntax/gallery.test.ts' exists on disk, but not in 'origin/develop'
+exit: 128
+$ git cat-file -e origin/develop:tests/unit/src/render/syntax/images.test.ts
+fatal: path 'tests/unit/src/render/syntax/images.test.ts' exists on disk, but not in 'origin/develop'
+exit: 128
