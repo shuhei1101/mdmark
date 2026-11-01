@@ -8,6 +8,7 @@ import {
   GREET_SOURCE,
   linesOf,
   PNG_BYTES,
+  readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
   THEME_SOURCE,
@@ -461,4 +462,110 @@ test("test_normal_when_param_copy_label", async () => {
   await button.waitFor();
   expect(await button.textContent()).toBe("コピー");
   await page.close();
+});
+
+// 画像を data URL で埋め、動画・音声を出力の隣のフォルダへコピーし、文書からの相対パスに無いファイルをアセットのルートで探す（正常系（画像・動画・音声とアセットのルート））
+test("test_normal_when_media_embedded", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const media = await readMediaSamples();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "assets:\n  root: assets\n",
+    "docs/guide.md": [
+      "# ガイド",
+      "",
+      "![グラフ](images/chart.png)",
+      "",
+      "![暗い構成](images/dark.png#only-dark)",
+      "",
+      "![ビルド](images/build.gif)",
+      "",
+      "![操作](media/demo.mp4){poster=images/poster.png}",
+      "",
+      "![読み上げ](media/voice.mp3)",
+      "",
+      "![ロゴ](images/logo.png)",
+      "",
+      "[仕様書](files/spec.pdf)",
+      "",
+    ].join("\n"),
+    "docs/images/chart.png": PNG_BYTES,
+    "docs/images/dark.png": PNG_BYTES,
+    "docs/images/build.gif": media.gif,
+    "docs/images/poster.png": PNG_BYTES,
+    "docs/media/demo.mp4": media.mp4,
+    "docs/media/voice.mp3": media.mp3,
+    "docs/files/spec.pdf": "%PDF-1.4\n",
+    "assets/images/logo.png": PNG_BYTES,
+  });
+  // 実行
+  const result = await runCli(["export", "docs/guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual(["書き出した: docs/guide.html"]);
+  expect(result.stderr).toBe("");
+  // 動画・音声をコピーし、添付はコピーしない
+  expect(
+    await readFile(join(dir, "docs", "guide_files", "media", "demo.mp4")),
+  ).toEqual(media.mp4);
+  expect(
+    await readFile(join(dir, "docs", "guide_files", "media", "voice.mp3")),
+  ).toEqual(media.mp3);
+  expect(existsSync(join(dir, "docs", "guide_files", "files"))).toBe(false);
+  const { page, externalRequests } = await browser.openWithFiles(
+    join(dir, "docs", "guide.html"),
+    join(dir, "docs", "guide_files"),
+  );
+  await page.waitForSelector("article.mdmark figure.mdmark-media video");
+  const embedded = await page.evaluate(() => {
+    const src = (alt: string) =>
+      document
+        .querySelector(`article img[alt="${alt}"]`)
+        ?.getAttribute("src") ?? "";
+    const video = document.querySelector("article video");
+    return {
+      chart: src("グラフ"),
+      dark: src("暗い構成"),
+      gif: src("ビルド"),
+      logo: src("ロゴ"),
+      poster: video?.getAttribute("poster") ?? "",
+      video: video?.getAttribute("src") ?? "",
+      audio: document.querySelector("article audio")?.getAttribute("src") ?? "",
+      card:
+        document
+          .querySelector('article a.mdmark-card[data-card="file"]')
+          ?.getAttribute("href") ?? "",
+    };
+  });
+  for (const key of ["chart", "dark", "gif", "logo", "poster"] as const) {
+    expect(embedded[key], key).toMatch(/^data:/);
+  }
+  expect(embedded.dark).toMatch(/#only-dark$/);
+  expect(embedded.video).toBe("guide_files/media/demo.mp4");
+  expect(embedded.audio).toBe("guide_files/media/voice.mp3");
+  expect(embedded.card).toBe("files/spec.pdf");
+  await page.waitForLoadState("networkidle");
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
+// 動画・音声のコピー先の _files/ へ書けないと、HTML を書かずにパスと直し方を示して終わる（異常系（動画・音声のコピー先へ書けない））
+test("test_error_when_media_copy_unwritable", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const media = await readMediaSamples();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "assets:\n  root: .\n",
+    "guide.md": "# ガイド\n\n![操作](media/demo.mp4)\n",
+    "media/demo.mp4": media.mp4,
+    guide_files: "ファイル\n",
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("guide_files");
+  expect(result.stderr).toContain("確かめて");
+  expect(await readFile(join(dir, "guide_files"), "utf8")).toBe("ファイル\n");
+  expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
