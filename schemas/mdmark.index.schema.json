@@ -53,7 +53,7 @@
           },
           "tags": {
             "title": "タグ",
-            "description": "タグ。MCP の find_docs が絞り込みと並びに使う。要素はタグの名前の文字列か、主題のタグかを持つオブジェクト。文字列の要素は main が false のオブジェクトと同じ。",
+            "description": "タグ。要素はタグの名前の文字列か、主題のタグかを持つオブジェクト。文字列の要素は main が false のオブジェクトと同じ。",
             "type": "array",
             "items": {
               "anyOf": [
@@ -71,7 +71,7 @@
                     },
                     "main": {
                       "title": "主題のタグ",
-                      "description": "主題のタグか。省くと false。find_docs は、渡したタグが主題のタグに当たる文書を上に並べる。",
+                      "description": "主題のタグか。省くと false。",
                       "type": "boolean",
                       "default": false
                     }
@@ -177,7 +177,7 @@
     },
     "tags": {
       "title": "タグの語彙",
-      "description": "索引に載せるタグの語彙。文書の tags と、MCP の find_docs・list_tags に渡すタグは、ここの name と aliases に突き合わせる。",
+      "description": "索引に載せるタグの語彙。文書の tags は、ここの name と aliases に突き合わせる。",
       "type": "array",
       "items": {
         "type": "object",
@@ -198,12 +198,12 @@
           },
           "description": {
             "title": "説明",
-            "description": "タグを付ける文書の「含める / 含めない / 例」。MCP の list_tags が返す。",
+            "description": "タグを付ける文書の「含める / 含めない / 例」。",
             "type": "string"
           },
           "aliases": {
             "title": "別名",
-            "description": "タグの別名。文書の tags と find_docs に渡した別名は、このタグの name として扱う。別のタグの name か aliases と重なると、点検が tag_alias_conflict で知らせる。",
+            "description": "タグの別名。文書の tags に記載した別名は、このタグの name として扱う。別のタグの name か aliases と重なると、点検が tag_alias_conflict で知らせる。",
             "type": "array",
             "items": { "type": "string", "minLength": 1 },
             "default": []

@@ -120,7 +120,7 @@ subsystems:
       pr: 69
   - name: Claude Code プラグイン
     scope: claude-code-plugin
-    role: Claude Code に使い方集の索引を渡し、使い方集の本文・書き出し・まとめ・点検・索引の検索と書き換えを MCP のツールで呼ばせる。MCP のツールは、ライブラリ本体の CLI の `mdmark serve` が常駐の HTTP サーバーとして返す
+    role: Claude Code に使い方集の索引を渡し、使い方集の本文・書き出し・まとめ・点検を MCP のツールで呼ばせる。MCP のツールは、ライブラリ本体の CLI の `mdmark serve` が常駐の HTTP サーバーとして返す
     runtime: TypeScript 7（Node 24）
     runs_on: 文書を書く人の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと、`.mcp.json` の URL へ HTTP でつなぐ `mdmark serve` の MCP サーバー（文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン} serve` で起動しておく）
     reason: Claude Code の版と仕様に依る部分を、ブラウザと Node で動くライブラリ本体と分けて確かめる
@@ -186,7 +186,7 @@ external_systems:
     direction: 双方向
     protocol: フックは子プロセスの標準入出力（JSON）、MCP は 127.0.0.1 への Streamable HTTP（JSON-RPC）
     detail: dev/設計書/外部ライブラリ/ClaudeCode#
-    cost: mdmark の側には無い（Claude Code の利用料は使う側が持つ）。`update_index`・`export_html`・`build_site` は使う側の作業のフォルダに書く
+    cost: mdmark の側には無い（Claude Code の利用料は使う側が持つ）。`export_html`・`build_site` は使う側の作業のフォルダに書く
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts#
     status: planned

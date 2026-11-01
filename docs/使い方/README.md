@@ -14,6 +14,6 @@
 | [カスタマイズ](./カスタマイズ/) | 見た目と機能を使う側で変える手順 |
 | [書き出す](./書き出す/) | CLI で Markdown を、CDN を読まず 1 枚で完結する HTML に書き出す手順 |
 | [VSCodeで見る](./VSCodeで見る/) | VS Code の拡張機能で Markdown を mdmark で描いたプレビューを出し、HTML・PDF にする手順 |
-| [ClaudeCodeで使う](./ClaudeCodeで使う/) | Claude Code に mdmark の使い方の索引と、書き出し・点検・索引のツールを渡す手順 |
+| [ClaudeCodeで使う](./ClaudeCodeで使う/) | Claude Code に mdmark の使い方の索引と、書き出し・点検のツールを渡す手順 |
 
 <!-- /table -->
