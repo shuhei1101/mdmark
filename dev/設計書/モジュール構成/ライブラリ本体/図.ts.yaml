@@ -627,7 +627,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow` に `hints` のオン・オフを、`renderParam` に `env.labels.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow` に `hints` のオン・オフを、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore

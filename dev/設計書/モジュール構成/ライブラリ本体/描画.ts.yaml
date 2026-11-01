@@ -40,8 +40,8 @@ data_models:
         type: Record<string, boolean>
         description: 設定の `features`
       - name: labels
-        type: '{ paramCopy: string }'
-        description: 既定を当てた設定の `labels`（部品の文言。図の部品・埋め込んだ HTML のコアルールが `renderParam` に渡す）
+        type: '{ paramCopy: string } | undefined'
+        description: 既定を当てた設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に渡す）
       - name: featureArgs
         type: string[]
         description: '`features` の印の引数を書いた順に並べたもの（コアルールが足す）'
