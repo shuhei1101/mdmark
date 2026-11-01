@@ -1,0 +1,73 @@
+title: ギャラリー
+implementation: src/parts/gallery.ts#renderGallery
+story: Parts/Gallery
+test_file: tests/integration/lib/gallery.story.test.ts
+states:
+  - name: ThreeColumns
+    description: '`cols=3` に画像 4 枚。3 列で並べ、4 枚目を 2 段目に置く'
+    args:
+      - name: cols
+        value: '3'
+    notes:
+      定義: スロットに部品『画像の図』を 4 つ入れる（キャプションあり）
+  - name: TwoColumns
+    description: '`cols` を省いた既定の 2 列'
+    args:
+      - name: cols
+        value: '2'
+    notes:
+      定義: スロットに部品『画像の図』を 4 つ入れる
+  - name: NarrowTwo
+    description: 置き場所の幅が 32rem より狭い。`cols=3` でも 2 列に減らす
+    args:
+      - name: cols
+        value: '3'
+    notes:
+      定義: ストーリーはギャラリーを幅 30rem の要素で包む
+  - name: NarrowOne
+    description: 置き場所の幅が 20rem より狭い。1 列に減らす
+    args:
+      - name: cols
+        value: '3'
+    notes:
+      定義: ストーリーはギャラリーを幅 18rem の要素で包む
+  - name: Numbered
+    description: '`fig` のマーカーを付けたギャラリー。外側の図の下に `図 2`、中の画像に `図 2a`・`図 2b` を出す'
+    args:
+      - name: cols
+        value: '2'
+    notes:
+      定義: 部品『図表の番号』のスロットにこの部品を入れ、スロットに `id` と `label` を渡した部品『画像の図』を 2 つ入れる
+lead: '`gallery` のマーカーで囲んだ画像を `cols` 列の格子に並べる。置き場所の幅が狭いときは列を減らす。'
+args:
+  - name: cols
+    type: 整数
+    required: false
+    default: '2'
+    choices: '`1`〜`6`'
+    description: 列の数。`style` の `--mdmark-gallery-cols` に入れる
+slots:
+  - name: default
+    description: 並べる画像の図
+    accepts:
+      - dev/設計書/部品設計/画像の図.ts#
+css_properties:
+  - name: --mdmark-gallery-cols
+    syntax: <integer>
+    default: '2'
+    description: 列の数。置き場所の幅が 32rem より狭いときは 2 列まで、20rem より狭いときは 1 列に減らす（container query）
+  - name: --mdmark-space
+    syntax: <length>
+    default: 1rem
+    description: 画像の間隔と、ギャラリーの上下の余白
+uses:
+  - component: dev/設計書/部品設計/画像の図.ts#
+    how: 範囲の中の画像をそれぞれ画像の図にしてスロットに入れる
+accessibility:
+  - 画像は文書の順に並べ、読み上げとフォーカスの順を格子の見た目と揃える
+  - 列を減らしても画像を切り抜かず、縦横比を保つ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ギャラリー]
+status: planned
+notes:
+  HTML: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: {cols}"><div class="mdmark-gallery-grid">{画像の図}</div></div>`。列を減らす幅は確認ログのモックへの合意。モックは `dev/mock/components/figure/` のギャラリーの場面'
