@@ -202,6 +202,31 @@ test("test_validate_config_when_tooltip_placement_invalid", async () => {
   expect(valid.config.tooltips?.placement).toBe("bottom");
 });
 
+// オブジェクトでない labels と、空でない文字列でない labels.paramCopy を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_labels_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const validate = (labels: unknown) =>
+    validateConfig({ labels }, "mdmark.config.yaml");
+  // 実行
+  const notMap = validate("コピー");
+  const empty = validate({ paramCopy: "" });
+  const notString = validate({ paramCopy: 1 });
+  const valid = validate({ paramCopy: "コピー" });
+  // 検証
+  for (const [result, where] of [
+    [notMap, "labels"],
+    [empty, "labels.paramCopy"],
+    [notString, "labels.paramCopy"],
+  ] as const) {
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]).toMatchObject({ where, kind: "schema" });
+    expect(result.config.labels).toBeUndefined();
+  }
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.labels?.paramCopy).toBe("コピー");
+});
+
 // 文字列でない syntax.url を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_syntax_url_invalid", async () => {
   // 準備

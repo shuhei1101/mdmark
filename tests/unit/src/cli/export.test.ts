@@ -237,6 +237,28 @@ test("test_prepare_embeds_when_tooltip_placement", async () => {
   expect(withoutTooltips.payload.config).not.toHaveProperty("tooltips");
 });
 
+// 設定の labels を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_labels", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+    });
+  // 実行
+  const withLabels = await prepare({ labels: { paramCopy: "コピー" } });
+  const withoutLabels = await prepare({ features: { print: true } });
+  // 検証
+  expect(withLabels.payload.config.labels).toEqual({ paramCopy: "コピー" });
+  expect(withoutLabels.payload.config).not.toHaveProperty("labels");
+});
+
 // 設定の side-toc を埋める設定に写す（正常系）
 test("test_prepare_embeds_when_side_toc_mode", async () => {
   // 準備

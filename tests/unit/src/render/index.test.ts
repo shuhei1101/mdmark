@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
 import type { ResolvedConfig } from "../../../../src/config.ts";
 import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
+import { STRENGTH_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
+import { innerHtml, plainText } from "../../helpers/html.ts";
 
 /** 描画の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRender = () => import("../../../../src/render/index.ts");
@@ -16,6 +18,7 @@ function resolvedConfig(
     syntax: { url: "https://example.test/hl/" },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
+    labels: { paramCopy: "今の値を写す" },
   };
 }
 
@@ -120,4 +123,18 @@ test("test_render_when_aliases", async () => {
   // スクリプトも印の文字も残らない
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
+});
+
+// 設定の部品の文言で操作できる部品のボタンを描く（正常系）
+test("test_render_document_when_labels_given", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const { resolveConfig } = await import("../../../../src/config.ts");
+  const markdown = wrapDirective("param", STRENGTH_TEXT);
+  const config = { ...resolveConfig({}), labels: { paramCopy: "コピー" } };
+  // 実行
+  const { html } = renderDocument({ markdown, config });
+  // 検証
+  expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("コピー");
+  expect(html).not.toContain("今の値を写す");
 });
