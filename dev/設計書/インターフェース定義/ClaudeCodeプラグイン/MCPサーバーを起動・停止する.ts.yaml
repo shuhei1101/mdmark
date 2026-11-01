@@ -18,10 +18,10 @@ flows:
         W->>S: mdmark serve
         S-->>W: 待ち受ける URL
         C->>S: POST /mcp（tools/list）
-        S-->>C: 7 つのツール
+        S-->>C: 4 つのツール
     expected:
       - 標準出力に `http://127.0.0.1:{渡したポート}/mcp` を含む 1 行が出る
-      - '`tools/list` が 7 つのツールを返し、どのツールの `inputSchema` も `project_dir` を持たない'
+      - '`tools/list` が 4 つのツールを返し、どのツールの `inputSchema` も `project_dir` を持たない'
       - プロセスが動き続けている
     test: test_normal
   - name: 正常系（ポートを上書きする）
@@ -37,10 +37,10 @@ flows:
         W->>S: MDMARK_PORT=18782 mdmark serve
         S-->>W: 待ち受ける URL
         C->>S: POST :18782/mcp（tools/list）
-        S-->>C: 7 つのツール
+        S-->>C: 4 つのツール
     expected:
       - 標準出力に `http://127.0.0.1:18782/mcp` を含む 1 行が出る
-      - 18782 の `/mcp` への `tools/list` が 7 つのツールを返す
+      - 18782 の `/mcp` への `tools/list` が 4 つのツールを返す
     test: test_normal_when_port_overridden
   - name: 正常系（止める）
     summary: SIGINT を受けて待ち受けを閉じ、終了コード 0 で終わる

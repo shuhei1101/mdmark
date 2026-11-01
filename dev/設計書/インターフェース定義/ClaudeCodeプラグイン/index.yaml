@@ -5,12 +5,6 @@ items:
     summary: セッションの開始で、使い方集の索引だけを additionalContext で渡す（SessionStart）
   - page: 使い方集を読む.ts.yaml
     summary: 索引の名前ごとに使い方集の本文を返す（read_guide）
-  - page: 文書を探す.ts.yaml
-    summary: 索引から題・別名・概要・タグ・関係する文書で文書を引く（find_docs）
-  - page: タグの語彙を見る.ts.yaml
-    summary: 索引のタグの語彙を、説明と付いている文書の数つきで返す（list_tags）
-  - page: 索引を書き換える.ts.yaml
-    summary: 索引の文書・用語・タグの語彙の項目を、Schema で検査してから置き換え・足し・消す（update_index）
   - page: 点検する.ts.yaml
     summary: mdmark check と同じ点検をし、ずれの一覧を返す（check）
   - page: 文書をHTMLに書き出す.ts.yaml
