@@ -1,0 +1,14 @@
+develop の worktree の退避した変更の削除:
+  説明: develop の worktree（/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop）に退避した、この PR と同じ変更の stash（メッセージが「mdmark#157 の拡張機能の名前の変更」で始まるもの）を git stash drop で削除する（Issue #157 のユーザーのコメントの依頼）。drop が出力する commit の SHA を git stash store で戻せる
+  タグ: [ローカルの後片付け]
+  実行者: planner
+  時期: マージの後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: develop の worktree の git stash list に、メッセージが「mdmark#157 の拡張機能の名前の変更」で始まる行が無い
+  状態: "-"
