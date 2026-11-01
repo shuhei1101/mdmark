@@ -152,7 +152,7 @@ constants:
     value: '{ paramCopy: "今の値を写す" }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
-    status: planned
+    status: implemented
     introduced:
       pr: 258
 functions:

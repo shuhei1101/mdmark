@@ -49,7 +49,7 @@ args:
     type: 文字列
     default: 今の値を写す
     description: 今の値を写すボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる。HTML の特殊文字はエスケープして描く
-    status: planned
+    status: implemented
 events:
   - name: 値を変える
     when: スライダーを動かすか、フォーカスして矢印キーを押す

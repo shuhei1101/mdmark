@@ -478,6 +478,6 @@ settings:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.labels.paramCopy]
     implementation: src/config.ts#resolveConfig
-    status: planned
+    status: implemented
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

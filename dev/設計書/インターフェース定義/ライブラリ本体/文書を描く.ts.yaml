@@ -3223,7 +3223,7 @@ request:
     description: 操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる
     example: '"コピー"'
     notes: 空でない文字列だけを受け、省いたとき・空文字・文字列でない値は既定の文言で描く（例外を出さない）。`labels` の知らないキーは読まない。`update` で描き直したときも `mount` に渡した文言のまま描く
-    status: planned
+    status: implemented
 request_example: |-
   ```json
   {
