@@ -1,0 +1,126 @@
+title: "名前の色で表・バッジ・本文を強調する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 色の名前を書いた Markdown
+        description: '`<!-- table: data highlight=金額 row-color=状態:完了=green,保留=yellow -->` 〜 `<!-- /table -->` で、名前・状態・金額の 3 列 3 行（状態は 完了・保留・未着手）の表を囲み、行内のコード `` `badge:red:要確認` `` と、本文の `[決め手の 1 文]{color=blue}` を持つ文書'
+        notes: 引数名 `highlight=`・`row-color=` と本文の書き方は参考（インターフェース定義で決める）
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 色の名前をテーマの色のプリセットに当てる
+        M-->>P: 色を付けた表・バッジ・本文を描く
+        U->>P: 金額の列の見出しで並べ替える
+        P-->>U: 並べ替えた表
+    expected:
+      - 金額の列のセルの面の色が、テーマの強調の面の色で、金額の列の見出しのセルに下端の線がある
+      - 状態が 完了 の行の面が green、保留 の行の面が yellow の面の薄い色で、色を付けた 2 行に左端の線がある。未着手 の行は色も線も無い
+      - 並べ替えた後も、完了 と 保留 の行の色と線がその行に付いたまま動いている
+      - バッジが文言 `要確認` の札で、文字の色が red の文字の色になっている（`red:` は出ていない）
+      - 本文の `決め手の 1 文` が blue の文字の色で、角括弧と `{color=blue}` は出ていない
+      - 色を付けた全ての文字と、その面の色のコントラストが 4.5:1 以上
+      - 書き方の警告が出ていない
+    test: test_normal
+  - name: 正常シナリオ（ダークの配色）
+    setup:
+      - name: mdmark を読むページ
+        description: '正常シナリオと同じ。OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: 色の名前を書いた Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: ダークの色のプリセットで色を付けた表・バッジ・本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 列・行・バッジ・本文の色が、ダークの配色の色のプリセットの値になっている
+      - 色を付けた全ての文字と、その面の色のコントラストが 4.5:1 以上
+    test: test_normal_when_dark
+  - name: 正常シナリオ（行の位置で色を付ける）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 行の位置で色を付ける Markdown
+        description: 表のマーカーの引数で 2 行目に yellow を指定し、3 行の表を囲んだ文書
+        notes: 位置の書き方はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 2 行目に色を付けた表を描く
+        P-->>U: 文書を表示
+    expected:
+      - 2 行目の面が yellow の面の薄い色で、左端の線がある
+      - 1 行目と 3 行目には色も線も無い
+    test: test_normal_when_row_position
+  - name: 正常シナリオ（色の名前でない頭のバッジ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 色の名前でない頭のバッジを持つ Markdown
+        description: 行内のコード `` `badge:v1:beta` `` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 最初の : の前が色の名前でないため、全てをラベルにする
+        M-->>P: 今の見た目のバッジを描く
+        P-->>U: 文書を表示
+    expected:
+      - バッジが文言 `v1:beta` の札で、色の名前の無いバッジと同じ見た目になっている
+      - 書き方の警告が出ていない
+    test: test_normal_when_badge_prefix_not_color
+  - name: 異常シナリオ（知らない色の名前）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない色の名前を書いた Markdown
+        description: '`<!-- table: data row-color=状態:完了=pink -->` で囲んだ表と、本文の `[決め手の 1 文]{color=pink}` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: pink が色の名前の一覧に無い
+        M-->>P: 書き方の警告と、色を付けない表と本文を描く
+        P-->>U: 書き方の警告と文書を表示
+    expected:
+      - 表の上と本文の段落の上に、`pink` が使えない色の名前であることと使える色の名前を書いた書き方の警告がある
+      - 表の行に色も線も無く、本文の `決め手の 1 文` は本文の文字の色のまま出ている
+      - 本文に角括弧と `{color=pink}` は出ていない
+    test: test_error_when_color_unknown
+lead: 文書を書く人が、表のマーカーの引数・`badge:` の後ろ・本文の文字の後ろの属性に色の名前を書くと、mdmark がテーマの色のプリセットで表の列・行、バッジ、本文の文字に色を付け、色以外の見分けも付ける。
+issue: 158
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 強調した列・行・語を、色の見分けにくい環境でも見分けられる
+trigger: 使う側のページが、色の名前を書いた表・バッジ・本文を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 表・バッジ・本文の文字の色の機能がオン（既定）
+success_guarantee: 表の列は面の薄い色と見出しの下端の線、行は面の薄い色と左端の線、バッジと本文の文字はその色の名前の文字の色で描かれる。ライト・ダーク・選べるテーマのそれぞれで、文字と面のコントラストが 4.5:1 以上になる。
+minimal_guarantee: 知らない色の名前は色を付けずに書き方の警告で知らせ、文字は書いたとおりに描く。

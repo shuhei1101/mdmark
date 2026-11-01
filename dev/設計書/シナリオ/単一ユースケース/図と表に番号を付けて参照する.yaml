@@ -68,6 +68,29 @@ scenarios:
       - ID `fig-arch` を持つ要素は 1 つ目の図だけ
       - 2 つ目の図の上に、`arch` が他の図表と重なっていることを書いた書き方の警告がある
     test: test_error_when_id_duplicated
+  - name: 正常シナリオ（ギャラリーのサブ図とキャプション）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: ギャラリーとキャプションを持つ Markdown
+        description: '`<!-- fig: shots -->` の後ろに `<!-- gallery: cols=2 -->` 〜 `<!-- /gallery -->` で 2 つの画像を囲んだ範囲、`<!-- fig: arch -->` の後ろに title `構成` を持つ画像だけの段落、マーカーの無い title `写真` を持つ画像だけの段落を並べ、本文に `[図](#fig-shots)` のリンクを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: マーカーのある図だけを数え、ギャラリーの画像にサブ図の番号を付ける
+        M-->>P: 番号とキャプションを付けた図を描く
+        P-->>U: 文書を表示
+    expected:
+      - ギャラリーに `図 1` の番号が付き、2 つの画像に `図 1a`・`図 1b` のサブ図の番号が付いている
+      - title `構成` の画像のキャプションが `図 2` の番号と `構成` を持つ
+      - マーカーの無い画像のキャプションが `写真` だけで、番号を持たない
+      - 本文のリンクの文字が `図 1` になっている
+    test: test_normal_when_gallery_and_caption
 lead: '文書を書く人が図・表の直前に `<!-- fig: ID -->` を書くと、mdmark が種類ごとの通し番号（`図 1`・`表 1`）を付け、本文の `#fig-ID` へのリンクの文字をその番号にする。'
 issue: 4
 primary_actor: 文書を書く人

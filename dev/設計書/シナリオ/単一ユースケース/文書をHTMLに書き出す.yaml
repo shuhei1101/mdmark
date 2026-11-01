@@ -146,6 +146,31 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+  - name: 正常シナリオ（画像・動画・音声を埋める）
+    setup:
+      - name: 書き出す文書と添付のファイル
+        description: '`docs/guide.md` が相対パスで `images/chart.png`・`media/demo.mp4`・`media/voice.mp3`・`files/spec.pdf` を指し、`#only-dark` の画像と GIF を持つ。各ファイルは実在する'
+      - name: 設定
+        description: '`mdmark.config.yaml` が添付のファイルのルートのフォルダを指す'
+        notes: キー名は設定の設計書で決める
+      - name: Mock
+        description: なし（実ファイルを使う）。外へのネットワークの要求を記録する
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant C as mdmark CLI
+        participant F as ファイル
+        U->>C: mdmark export docs/guide.md
+        C->>F: 文書と添付のファイルを読む
+        C->>C: 画像を data URL で埋め、動画・音声・PDF を出力先のフォルダへコピーする
+        C->>F: 1 枚の HTML と、コピーしたファイルを書く
+        C-->>U: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 書き出した HTML の画像（`#only-dark` の画像と GIF を含む）が data URL で埋まっている
+      - 動画・音声・PDF が出力先のフォルダへコピーされ、HTML がそのコピーを相対パスで指している
+      - 書き出した HTML を file:// で開いたとき、外へのネットワークの要求が 0 件
+    test: test_normal_when_media_embedded
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9
 primary_actor: 文書を書く人

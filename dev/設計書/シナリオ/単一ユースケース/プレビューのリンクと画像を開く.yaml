@@ -89,6 +89,49 @@ scenarios:
       - 画像は読み込まれず、代わりの文字（`alt`）が出る
       - 他の本文は描かれる
     test: test_error_when_image_outside_workspace
+  - name: 正常シナリオ（相対パスの動画・音声）
+    setup:
+      - name: ワークスペースの Markdown
+        description: '`docs/guide.md` が相対パスで `media/demo.mp3` と `media/demo.mp4` を指す。各ファイルは実在する'
+      - name: Mock
+        description: なし（実ファイルを使う）
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant W as プレビュー
+        participant E as 拡張機能
+        U->>W: プレビューを開く
+        W->>E: 相対パスを Webview から読める URL に変える
+        E-->>W: 変えた URL
+        U->>W: 音声と動画の再生ボタンを押す
+        W-->>U: 再生する
+    expected:
+      - 音声と動画の要素の src が Webview から読める URL になっている
+      - 再生ボタンを押すと、音声と動画の再生位置が進む
+    test: test_normal_when_relative_media
+  - name: 異常シナリオ（プレビューで再生できない形式）
+    setup:
+      - name: ワークスペースの Markdown
+        description: '`docs/guide.md` が相対パスで `media/voice.m4a` と `media/clip.webm` を指す。各ファイルは実在する'
+      - name: Mock
+        description: なし（実ファイルを使う）
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant W as プレビュー
+        participant E as 拡張機能
+        participant O as OS
+        U->>W: プレビューを開く
+        W->>W: 音声・動画の要素が error になる
+        W-->>U: 知らせの枠と「既定のアプリで開く」のリンクを出す
+        U->>W: リンクを押す
+        W->>E: ファイルを開く要求
+        E->>O: 既定のアプリでファイルを開く
+    expected:
+      - 音声と動画の場所に、プレビューで再生できないことを示す知らせの枠が出る
+      - 知らせの枠に「既定のアプリで開く」のリンクがある
+      - リンクを押すと、拡張機能がそのファイルを OS の既定のアプリで開く
+    test: test_error_when_unsupported_media
 lead: 文書を書く人がプレビューのリンクを押すと、外部の URL は既定のブラウザで、Markdown へのリンクは VS Code で開き、`#` で始まるリンクはプレビューの中で移る。Markdown からの相対パスの画像もプレビューに出る。
 issue: 22
 primary_actor: 文書を書く人

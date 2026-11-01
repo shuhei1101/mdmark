@@ -1,0 +1,58 @@
+title: "リンクと添付のカードを置く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: リンクだけの行を持つ Markdown
+        description: '`https://example.com/docs/guide` だけの段落、`[設計の資料](https://example.com/design)` だけの段落、`[仕様書](files/spec.pdf)` だけの段落を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。`example.com` への要求を数える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: リンク 1 つだけの段落を拡張子でリンクと添付に分ける
+        M-->>P: リンクのカードと添付のカードを描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目がリンクのカードで、ドメイン `example.com` と URL `https://example.com/docs/guide` が出ている
+      - 2 つ目がリンクのカードで、書いた文字 `設計の資料`・ドメイン `example.com`・URL が出ている
+      - 3 つ目が添付のカードで、PDF の種類のアイコンとファイル名 `spec.pdf`、書いた文字 `仕様書` が出ている
+      - カードはそれぞれ、書いた URL とパスを `href` に持つ 1 つのリンクで、Tab でフォーカスできる
+      - '`example.com` への要求が 0 件'
+    test: test_normal
+  - name: 正常シナリオ（文の中のリンク）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 文の中にリンクを持つ Markdown
+        description: '`詳しくは https://example.com/docs を見る。` と `[仕様書](files/spec.pdf) と [導入の手順](https://example.com/setup)` の 2 つの段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: リンク 1 つだけの段落でないためカードにしない
+        M-->>P: 今のままのリンクを描く
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの段落にカードが無く、リンクは文の中のリンクとして描かれている
+    test: test_normal_when_link_in_sentence
+lead: 文書を書く人が URL だけの行とファイルへのリンクだけの行を書くと、mdmark がそれぞれ書いた文字・ドメイン・URL のリンクのカードと、種類のアイコン・ファイル名の添付のカードに描く。カードを描くために外へは要求しない。
+issue: 199
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 参考の URL と添付のファイルを、本文のリンクと見分けて押せる
+trigger: 使う側のページが、URL だけの行とファイルへのリンクだけの行を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - リンクと添付のカードの機能がオン（既定）
+success_guarantee: リンク 1 つだけの段落がカードになり、押すとそのリンク先へ移る。文の中のリンクは今のまま。GitHub ではリンクとして読める。
+minimal_guarantee: カードにできないリンクは、書いたとおりのリンクで描く。

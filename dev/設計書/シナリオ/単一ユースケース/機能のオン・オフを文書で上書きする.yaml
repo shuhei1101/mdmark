@@ -214,6 +214,31 @@ scenarios:
     expected:
       - 右端にポインターを置いた後、`導入`・`使い方` の項目を持つ右側の目次が表示されている
     test: test_normal_when_side_toc_enabled_by_mark
+  - name: 正常シナリオ（色・画像・カードの機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` はこれらの機能を書かない（既定のオン）
+      - name: 新しい記法の機能を外す Markdown
+        description: '先頭に、本文の文字の色・画像の属性・ライトボックス・リンクと添付のカードの機能を外す `<!-- features: ... -->` を持ち、`[決め手の 1 文]{color=blue}`、`![グラフ](chart.png){width=300}`、`https://example.com/docs` だけの段落を持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 外した記法を普通の Markdown として描く
+        P-->>U: 文書を表示
+    expected:
+      - 本文の文字に色が付いていない
+      - 画像に幅が当たらず、押してもライトボックスが開かない
+      - URL だけの段落がカードにならず、リンクとして描かれている
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_media_features_disabled
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人
