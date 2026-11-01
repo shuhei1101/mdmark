@@ -24,7 +24,13 @@ import {
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
-import { matches, plainText } from "../../unit/helpers/html.ts";
+import {
+  findTag,
+  findTags,
+  innerHtml,
+  matches,
+  plainText,
+} from "../../unit/helpers/html.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   ALIAS_EXPECTED_HTML,
@@ -96,7 +102,8 @@ test("test_normal", async () => {
     "const a = 1;",
     "```",
     "",
-    "[リンク](https://example.com/page)",
+    // リンク 1 つだけの段落はカードにするため、文の中にリンクを置く
+    "詳しくは [リンク](https://example.com/page) を見る。",
     "",
   ].join("\n");
   // 実行
@@ -336,7 +343,9 @@ test("test_normal_when_syntax", async () => {
     /<tr class="mdmark-row-detail" data-row="1"[^>]*><td colspan="2">\s*<p>詳細の段落<\/p>/,
   );
   expect(html.slice(html.lastIndexOf("</table>"))).not.toContain("詳細の段落");
-  expect(html).toContain('<figure class="mdmark-figure" id="fig-arch">');
+  expect(html).toContain(
+    '<figure class="mdmark-figure mdmark-image" id="fig-arch">',
+  );
   expect(html).toContain(
     '<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>',
   );
@@ -1775,4 +1784,351 @@ test("test_normal_when_fold_and_tree_errors", async () => {
   expect(open).toContain("階層の数");
   expect(html).toContain('<div class="mdmark-tree"');
   expect(html).not.toContain("data-open");
+});
+
+/** 色の名前の一覧（書き方の警告の本文に出す） */
+const COLOR_NAMES = [
+  "blue",
+  "red",
+  "green",
+  "yellow",
+  "orange",
+  "purple",
+  "gray",
+];
+
+// 表の列の強調と行の色・バッジの色・本文の文字の色を、色の名前の data-color を持つ要素にする（正常系）
+test("test_normal_when_named_colors", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data highlight=金額 row-color=状態:完了=green,保留=yellow row-at=3=red -->",
+    "",
+    "| 名前 | 状態 | 金額 |",
+    "| --- | --- | --- |",
+    "| 見積もり | 完了 | 120 |",
+    "| 契約 | 保留 | 80 |",
+    "| 請求 | 未着手 | 45 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "`badge:red:要確認` と `badge:v1:beta` と [決め手の 1 文]{color=blue}",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(findTags(html, "mdmark-col-highlight")).toHaveLength(4);
+  for (const tag of findTags(html, "mdmark-col-highlight")) {
+    expect(tag).toContain('data-color="blue"');
+  }
+  expect(startTags(html, "th")[2]).toContain("mdmark-col-highlight");
+  expect(
+    startTags(html, "tr")
+      .slice(1)
+      .map((tag) => /data-color="([a-z]+)"/.exec(tag)?.[1] ?? null),
+  ).toEqual(["green", "yellow", "red"]);
+  expect(html).toContain(
+    '<span class="mdmark-badge" data-color="red">要確認</span>',
+  );
+  expect(html).toContain('<span class="mdmark-badge">v1:beta</span>');
+  expect(html).toContain(
+    '<span class="mdmark-color" data-color="blue">決め手の 1 文</span>',
+  );
+  expect(html).not.toContain("{color=blue}");
+  expect(html).not.toContain("[決め手");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 色の名前の一覧に無い名前を書き方の警告にし、色を付けない（正常系）
+test("test_normal_when_color_unknown", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data row-color=状態:完了=pink -->",
+    "",
+    "| 名前 | 状態 |",
+    "| --- | --- |",
+    "| 見積もり | 完了 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "[決め手の 1 文]{color=pink}",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(2);
+  const [tableBox = "", paragraphBox = ""] = boxes;
+  // 表の警告は表の前、段落の警告は段落の前
+  expect(html.indexOf(tableBox)).toBeLessThan(
+    html.indexOf('class="mdmark-table"'),
+  );
+  const paragraph = html.indexOf("<p>決め手の 1 文</p>");
+  expect(paragraph).toBeGreaterThan(-1);
+  expect(html.lastIndexOf(paragraphBox, paragraph)).toBeGreaterThan(
+    html.indexOf("</table>"),
+  );
+  for (const box of boxes) {
+    expect(box).toContain("pink");
+    for (const name of COLOR_NAMES) {
+      expect(box).toContain(name);
+    }
+  }
+  for (const tag of startTags(html, "tr")) {
+    expect(tag).not.toContain("data-color");
+  }
+  expect(html).not.toContain("mdmark-color");
+  expect(html).not.toContain("{color=pink}");
+  expect(html).not.toContain("[決め手");
+});
+
+// 画像だけの段落の画像を図にし、後ろの属性・title・テーマごとのフラグメントを当てる（正常系）
+test("test_normal_when_image_attributes", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    '![グラフ](chart.png "売上の推移"){width=300 align=center}',
+    "",
+    "![写真](photo.png){width=40% align=left nolightbox}",
+    "",
+    "![構成](arch-dark.png#only-dark)",
+    "",
+    "押す前に ![アイコン](icon.png){width=16} を確かめる。",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const figures = startTags(html, "figure");
+  expect(figures).toHaveLength(3);
+  expect(figures[0]).toBe(
+    '<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">',
+  );
+  expect(innerHtml(html, 'data-align="center"')).toContain(
+    '<figcaption class="mdmark-figure-caption">売上の推移</figcaption>',
+  );
+  expect(figures[1]).toContain('data-align="left"');
+  expect(figures[1]).toContain("--mdmark-image-width: 40%");
+  expect(innerHtml(html, 'data-align="left"')).not.toContain("figcaption");
+  expect(findTag(html, 'src="photo.png"')).toContain("data-nolightbox");
+  expect(figures[2]).toContain("mdmark-only-dark");
+  expect(findTag(html, 'alt="構成"')).toContain(
+    'src="arch-dark.png#only-dark"',
+  );
+  // 文の中の画像は図にせず、幅を img に置く
+  const icon = findTag(html, 'src="icon.png"');
+  expect(icon).toContain('style="--mdmark-image-width: 16px"');
+  expect(html).toMatch(/<p>押す前に <img [^>]*src="icon.png"/);
+  expect(html).not.toContain("{width=");
+  expect(html).not.toContain("nolightbox}");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 読めない属性を書き方の警告にし、読めた属性だけを当てる（正常系）
+test("test_normal_when_image_attribute_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "![グラフ](chart.png){width=big align=center foo}",
+    "",
+    "押す前に ![アイコン](icon.png){align=left} を確かめる。",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(2);
+  const [figureBox = "", paragraphBox = ""] = boxes;
+  expect(html.indexOf(figureBox)).toBeLessThan(html.indexOf("<figure"));
+  expect(figureBox).toContain("width=big");
+  expect(figureBox).toContain("foo");
+  for (const name of ["width", "align", "nolightbox"]) {
+    expect(figureBox).toContain(`<code>${name}</code>`);
+  }
+  const figure = findTag(html, "<figure");
+  expect(figure).toContain('data-align="center"');
+  expect(figure).not.toContain("style=");
+  expect(html.indexOf(paragraphBox)).toBeGreaterThan(html.indexOf("</figure>"));
+  expect(html.indexOf(paragraphBox)).toBeLessThan(html.indexOf("<p>押す前に"));
+  expect(paragraphBox).toContain("align");
+  expect(paragraphBox).toContain("画像だけの段落");
+  expect(html).not.toContain("{width=big");
+  expect(html).not.toContain("{align=left}");
+});
+
+// ギャラリーのマーカーの範囲の画像を格子に並べ、fig のマーカーの番号にサブ図の番号を付ける（正常系）
+test("test_normal_when_gallery", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- fig: shots -->",
+    "<!-- gallery: cols=3 -->",
+    '![開いた画面](open.png "開く")',
+    '![書いた画面](write.png "書く")',
+    "<!-- /gallery -->",
+    "",
+    "<!-- gallery -->",
+    "![一覧](list.png)",
+    "![設定](settings.png)",
+    "<!-- /gallery -->",
+    "",
+    "[図](#fig-shots) を見る。",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const outer = innerHtml(html, 'id="fig-shots"');
+  expect(findTag(html, 'id="fig-shots"')).toBe(
+    '<figure class="mdmark-figure" id="fig-shots">',
+  );
+  expect(outer).toContain(
+    '<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">',
+  );
+  expect(outer).toMatch(
+    /<\/div><\/div><figcaption class="mdmark-figure-caption"><b>図 1<\/b><\/figcaption>$/,
+  );
+  expect(innerHtml(html, 'id="fig-shots-a"')).toContain(
+    '<figcaption class="mdmark-figure-caption"><b>図 1a</b>開く</figcaption>',
+  );
+  expect(innerHtml(html, 'id="fig-shots-b"')).toContain(
+    '<figcaption class="mdmark-figure-caption"><b>図 1b</b>書く</figcaption>',
+  );
+  const galleries = findTags(html, 'class="mdmark-gallery"');
+  expect(galleries).toHaveLength(2);
+  expect(galleries[1]).toContain("--mdmark-gallery-cols: 2");
+  const second = html.slice(html.lastIndexOf('<div class="mdmark-gallery"'));
+  expect(second).not.toContain("<b>図");
+  expect(second).not.toContain('id="fig-');
+  expect(html).toContain('<a href="#fig-shots">図 1</a>');
+});
+
+// 拡張子で動画・音声・GIF を分け、動画と音声を再生バー付きの要素にする（正常系）
+test("test_normal_when_video_audio_gif", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    '![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png width=480}',
+    "",
+    "![読み上げ](voice.mp3)",
+    "",
+    "![ビルド](build.gif)",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(findTag(html, "mdmark-media")).toBe(
+    '<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: 480px">',
+  );
+  const video = findTag(html, "<video");
+  for (const part of [
+    'src="demo.mp4"',
+    " controls",
+    " autoplay",
+    " muted",
+    " loop",
+    " playsinline",
+    'preload="metadata"',
+    'poster="demo.png"',
+    'aria-label="操作の様子"',
+  ]) {
+    expect(video).toContain(part);
+  }
+  expect(html).toMatch(
+    /<img class="mdmark-media-print" src="demo.png" alt="" ?\/?>/,
+  );
+  expect(innerHtml(html, "mdmark-media")).toContain(
+    '<figcaption class="mdmark-figure-caption">保存までの操作</figcaption>',
+  );
+  const audio = findTag(html, "<audio");
+  for (const part of [
+    'src="voice.mp3"',
+    " controls",
+    'preload="metadata"',
+    'aria-label="読み上げ"',
+  ]) {
+    expect(audio).toContain(part);
+  }
+  const audioFigure = html.slice(
+    html.indexOf("<audio"),
+    html.indexOf("</figure>", html.indexOf("<audio")),
+  );
+  expect(audioFigure).not.toContain("figcaption");
+  expect(html.lastIndexOf("<figure", html.indexOf("<audio"))).toBe(
+    html.indexOf('<figure class="mdmark-figure mdmark-media">'),
+  );
+  const gif = findTag(html, 'src="build.gif"');
+  expect(gif).toContain("data-gif");
+  expect(html.lastIndexOf("<figure", html.indexOf('src="build.gif"'))).toBe(
+    html.indexOf('<figure class="mdmark-figure mdmark-image">'),
+  );
+  expect(html).not.toContain("<button");
+  expect(html).not.toContain("<canvas");
+});
+
+// リンク 1 つだけの段落を、拡張子でリンクのカードと添付のカードにする（正常系）
+test("test_normal_when_cards", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "https://example.com/docs/guide",
+    "",
+    "[設計の資料](https://example.com/design)",
+    "",
+    "[仕様書](files/spec.pdf)",
+    "",
+    "詳しくは https://example.com/docs を見る。",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const cards = html.match(/<a class="mdmark-card"[\s\S]*?<\/a>/g) ?? [];
+  expect(cards).toHaveLength(3);
+  const [link = "", titled = "", file = ""] = cards;
+  expect(link).toMatch(
+    /^<a class="mdmark-card" data-card="link" href="https:\/\/example.com\/docs\/guide">/,
+  );
+  expect(link).toContain(
+    '<span class="mdmark-card-title">example.com/docs/guide</span>',
+  );
+  expect(link).toContain('<span class="mdmark-card-domain">example.com</span>');
+  expect(link).toContain(
+    '<span class="mdmark-card-url">https://example.com/docs/guide</span>',
+  );
+  expect(titled).toContain('<span class="mdmark-card-title">設計の資料</span>');
+  expect(file).toMatch(
+    /^<a class="mdmark-card" data-card="file" data-file-kind="pdf" href="files\/spec.pdf">/,
+  );
+  expect(file).toContain('<span class="mdmark-card-title">仕様書</span>');
+  expect(file).toContain('<span class="mdmark-card-domain">PDF</span>');
+  expect(file).toContain('<span class="mdmark-card-url">spec.pdf</span>');
+  expect(html).toContain(
+    '<p>詳しくは <a href="https://example.com/docs">https://example.com/docs</a> を見る。</p>',
+  );
+  expect(html).not.toContain("iframe");
+});
+
+// 文書のマーカーで外した新しい記法を、普通の Markdown として描く（正常系）
+test("test_normal_when_media_features_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- features: -text-color -images -cards -->",
+    "",
+    "[決め手の 1 文]{color=blue}",
+    "",
+    "![グラフ](chart.png){width=300}",
+    "",
+    "https://example.com/docs",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).not.toContain("mdmark-color");
+  expect(html).toContain("<p>[決め手の 1 文]{color=blue}</p>");
+  expect(html).not.toContain("<figure");
+  expect(html).toMatch(/<p><img [^>]*src="chart.png"[^>]*>\{width=300\}<\/p>/);
+  expect(html).not.toContain("mdmark-card");
+  expect(html).toContain(
+    '<a href="https://example.com/docs">https://example.com/docs</a>',
+  );
 });

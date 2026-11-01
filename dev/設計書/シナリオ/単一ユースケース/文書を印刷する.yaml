@@ -219,6 +219,30 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
+  - name: 正常シナリオ（色・画像・動画・カードを印刷に出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML。OS の配色はダーク
+      - name: 色・画像・動画・カードを持つ Markdown
+        description: 行に色を付けた表・色の名前を付けたバッジ・色を付けた本文、`#only-dark` と `#only-light` の画像、GIF、`poster` を持つ動画、URL だけの段落、ファイルへのリンクだけの段落を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 印刷の出力
+    expected:
+      - 表の行・バッジ・本文の文字の色が、ライトの色のプリセットの値で残っている
+      - '`#only-light` の画像が出て、`#only-dark` の画像が出ていない'
+      - GIF の止める・再生するボタンと、画像を拡大できることを示す表示が出ていない
+      - 動画の場所に `poster` の画像とキャプションが出て、再生バーが出ていない
+      - リンクと添付のカードに、リンク先の URL が文字で出ている
+    test: test_normal_when_colors_and_media_printed
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

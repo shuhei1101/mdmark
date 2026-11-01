@@ -1,0 +1,171 @@
+title: "画像・動画・音声を置く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: 属性とキャプションを持つ画像の Markdown
+        description: 画像だけの段落 `![グラフ](chart.png "売上の推移"){width=300 align=center}` と、本文の段落の前に置いた `![写真](photo.png){width=40% align=left}` を持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。画像は手元の応答で返す
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 画像の後ろの属性を読む
+        M-->>P: 幅と配置を当てた図と画像を描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目の画像が `figure` に入り、キャプションが `売上の推移`、画像の幅が 300px で、図が本文の列の中央にある
+      - 2 つ目の画像の幅が本文の列の 40% で左に置かれ、後ろの段落の文字が画像の右に回り込んでいる
+      - 本文に `{width=300 align=center}` などの属性の文字が出ていない
+      - 書き方の警告が出ていない
+    test: test_normal
+  - name: 正常シナリオ（ギャラリー）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。画面の幅は 1280px
+      - name: ギャラリーの Markdown
+        description: '`<!-- fig: shots -->` の後ろに、`<!-- gallery: cols=3 -->` 〜 `<!-- /gallery -->` で 6 つの画像を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 3 列の格子に並べ、サブ図の番号を付けた画像を描く
+        P-->>U: 文書を表示
+        U->>P: 画面の幅を 390px にする
+        P-->>U: 列を減らした格子
+    expected:
+      - 6 つの画像が 3 列 2 行の格子に並んでいる
+      - 画像に `図 1a`〜`図 1f` のサブ図の番号が付いている
+      - 画面の幅が 390px のとき、格子の列が 3 より少なく、横スクロールが出ない
+    test: test_normal_when_gallery
+  - name: 正常シナリオ（テーマごとの画像）
+    setup:
+      - name: mdmark を読むページ
+        description: '正常シナリオと同じ。OS の配色はライト（`prefers-color-scheme: light`）'
+      - name: テーマごとの画像の Markdown
+        description: '`![構成](arch-dark.png#only-dark)` と `![構成](arch-light.png#only-light)` を並べた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: テーマごとの class を付けた画像を描く
+        P-->>U: ライトに合う画像だけを表示
+        U->>P: OS の配色をダークにする
+        P-->>U: ダークに合う画像だけを表示
+    expected:
+      - ライトのとき、`arch-light.png` が表示され、`arch-dark.png` が表示されていない
+      - ダークにした後、`arch-dark.png` が表示され、`arch-light.png` が表示されていない
+    test: test_normal_when_theme_images
+  - name: 正常シナリオ（動画と音声）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 動画と音声の Markdown
+        description: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png}` と `![読み上げ](voice.mp3)` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。動画・音声・ポスターの画像は手元の応答で返す
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 拡張子で動画と音声を判断する
+        M-->>P: 再生バー付きの video と audio を描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目が `controls`・`autoplay`・`muted`・`loop` と `poster` に `demo.png` を持つ `video` で、キャプションが `保存までの操作`
+      - 2 つ目が `controls` を持つ `audio` で、キャプションは付いていない
+      - '`autoplay` に `muted` を書いていないが、`video` が `muted` を持つ'
+    test: test_normal_when_video_and_audio
+  - name: 正常シナリオ（GIF を止める・再生する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: GIF の Markdown
+        description: 無限ループで、フレームの間隔が 100ms の `anim.gif` の画像を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 止めるボタンを付けた GIF を描く
+        U->>P: 止めるボタンを押す
+        P-->>U: 止まった GIF
+        U->>P: 再生するボタンを押す
+        P-->>U: 動く GIF
+    expected:
+      - ボタンを押す前、500ms 空けて撮った 2 枚の GIF の範囲の画素が変わる
+      - 止めるボタンを押した後、500ms 空けて撮った 2 枚の画素が一致し、ボタンの `aria-pressed` が `true` で、文言が再生するに変わる
+      - もう一度押した後、2 枚の画素が変わり、`aria-pressed` が `false`
+      - ボタンは Tab でフォーカスでき、`aria-label` を持つ
+      - 止める・再生するで外への要求が増えない
+    test: test_normal_when_gif_toggled
+  - name: 正常シナリオ（動きを減らす設定の GIF）
+    setup:
+      - name: mdmark を読むページ
+        description: '正常シナリオと同じ。`prefers-reduced-motion: reduce`'
+      - name: GIF の Markdown
+        description: 正常シナリオ（GIF を止める・再生する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 止めた状態の GIF を描く
+        P-->>U: 止まった GIF
+    expected:
+      - 描いた直後、500ms 空けて撮った 2 枚の GIF の範囲の画素が一致する
+      - ボタンの `aria-pressed` が `true` で、文言が再生する
+    test: test_normal_when_reduced_motion
+  - name: 異常シナリオ（読めない属性）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない属性の Markdown
+        description: '`![グラフ](chart.png){width=big align=center foo}` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: width の値と foo を読めない
+        M-->>P: 書き方の警告と、読めた属性だけを当てた画像を描く
+        P-->>U: 書き方の警告と画像を表示
+    expected:
+      - 画像の上に、`width=big` の値と `foo` を読めないことと、書ける属性を書いた書き方の警告がある
+      - 画像は中央に置かれ、幅は指定していないときと同じ
+    test: test_error_when_attribute_invalid
+lead: 文書を書く人が、画像の後ろの属性でサイズと配置を指定し、title をキャプションにし、ギャラリーのマーカーで画像を格子に並べ、テーマごとに出す画像を分け、動画・音声・GIF を画像と同じ書き方で置くと、mdmark がそれぞれ図・格子・再生バー・止める・再生するボタンで描く。
+issue: 199
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 画像・動画・音声を本文の中で見て、聞ける。動く GIF を止められる
+trigger: 使う側のページが、画像・動画・音声を持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 画像の属性・ギャラリー・動画・音声・GIF の機能がオン（既定）
+success_guarantee: 属性のとおりの幅と配置で画像が描かれ、title がキャプションになる。ギャラリーは指定した列の格子に並ぶ。動画と音声は再生バー付きで描かれ、GIF は止める・再生するボタンを持つ。GitHub では画像とリンクとして読める。
+minimal_guarantee: 読めない属性は書き方の警告で知らせ、読めた属性だけを当てて描く。

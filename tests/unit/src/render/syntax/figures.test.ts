@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { parseWithRules } from "../../../helpers/core-rules.ts";
 import { matches, outerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
@@ -94,4 +95,49 @@ test("test_number_figures_when_table_has_nested_table", () => {
     // 検証: 番号は親の表の 1 つだけで、中の表に番号を付けない
     expect(matches(html, /<b>表 \d+<\/b>/g)).toEqual(["<b>表 1</b>"]);
   }
+});
+
+/** 図表の番号の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadFigures = () => import("../../../../../src/render/syntax/figures.ts");
+
+/** 画像の属性の処理を読み込む */
+const loadImages = () => import("../../../../../src/render/syntax/images.ts");
+
+// fig の画像を画像の図にし、ギャラリーに番号を渡す（正常系）
+test("test_number_figures_when_image_figure", async () => {
+  // 準備
+  const { numberFigures } = await loadFigures();
+  const { readImages } = await loadImages();
+  const markdown = [
+    "<!-- fig: arch -->",
+    "",
+    '![構成](arch.png "全体"){width=300}',
+    "",
+    "<!-- fig: shots -->",
+    "",
+    "<!-- gallery: cols=2 -->",
+    "",
+    '![開く](open.png "開く")',
+    "",
+    "<!-- /gallery -->",
+    "",
+    "[図](#fig-shots)",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  const tokens = parseWithRules(markdown, [readImages, numberFigures]);
+  // 検証
+  expect(html).toContain(
+    '<figure class="mdmark-figure mdmark-image" id="fig-arch" style="--mdmark-image-width: 300px">',
+  );
+  expect(html).toContain("<b>図 1</b>全体");
+  const gallery = tokens.find(
+    (token) =>
+      token.type === "mdmark_mark" &&
+      token.meta?.name === "gallery" &&
+      !token.meta?.closing,
+  );
+  expect(gallery?.meta?.figure).toEqual({ id: "shots", number: 2 });
+  expect(html).toContain('<a href="#fig-shots">図 2</a>');
 });

@@ -8,7 +8,8 @@ directory: |-
   ├── html.ts          # Webview の HTML と CSP（vscode を import しない）
   ├── scroll-guard.ts  # エディタを動かした直後の知らせを捨てる判定（vscode を import しない）
   ├── links.ts         # 押したリンクの開き先の見分け（vscode を import しない）
-  └── diff-target.ts   # 差分ビューの対象とパネルのキー（vscode を import しない）
+  ├── diff-target.ts   # 差分ビューの対象とパネルのキー（vscode を import しない）
+  └── assets.ts        # 画像・動画・音声の探す場所の候補（vscode を import しない）
   ```
 diagrams:
   - name: 全体
@@ -173,12 +174,18 @@ classes:
             type: string
             required: true
             description: CSS セレクタ
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 当たった動画・音声を再生してから調べるか（`inspect` の `play` に渡す）
         returns:
           type: Promise<InspectedElement[]>
           description: 当たった要素の様子
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
           - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#data_models[InspectedElement]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#flows[正常系（相対パスとアセットのルートの動画・音声）]
       - name: findPanels
         title: パネルを引く
         kind: メソッド
@@ -265,7 +272,8 @@ classes:
              - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
           3. 設定ファイルを読む（設定を読み直す）
           4. 控えた番号が今の `loadToken` と違えば、後の呼び出しに任せて終わる
-          5. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む）`webview.html` に入れる。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
+          5. `webview.options` の `localResourceRoots` に、設定ファイルの `assets.root` のフォルダがあれば加えて入れ直す
+          6. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む）`webview.html` に入れる。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
         callees:
           - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[decideVersion]
           - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[fetchLatestVersion]
@@ -274,6 +282,7 @@ classes:
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
       - name: reloadConfig
         title: 設定を読み直す
         kind: メソッド
@@ -337,6 +346,9 @@ classes:
                - `[warn]` リンク先が無い（`href`・解決したパス）。`none` のときは `[warn]` 開けないリンク（`href`）
              - `reload` の場合、読み込む
              - `openConfig` の場合、設定ファイルを開く
+             - `resolveAssets` の場合、パスごとに探す場所の候補（探す場所の候補を返す）を `workspace.fs.stat` で順に確かめ、最初にあったファイルの `asWebviewUri` に候補の `suffix` を付けた URL を、どれも無ければ `null` を、`assetsResolved` で同じ `id` に返す
+             - `openAsset` の場合、同じく探し、あったファイルだけを `env.openExternal(Uri.file(…))` で開く
+               - `[warn]` 開けないファイル（パス）
              - `inspected` の場合、`pendingInspects` の同じ `id` に渡して消す
              - `loadFailed` の場合、描けない理由は Webview が出す
                - `[warn]` 配布物を読めない（`reason`・バージョン・`index.js` の URL）。`reason` が `diffUnsupported` のときは `[warn]` 差分の色分けに対応しないバージョン（バージョン）
@@ -345,10 +357,13 @@ classes:
           - '#classes[EditorScrollGuard]'
           - '#functions[resolveLink]'
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[openConfigFile]
+          - '#functions[assetCandidates]'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#
           - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[プレビューから合わせる]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分に対応しないバージョン]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
       - name: syncFromEditor
         title: エディタに合わせる
         kind: メソッド
@@ -375,9 +390,16 @@ classes:
             type: string
             required: true
             description: CSS セレクタ
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 当たった動画・音声を再生してから調べるか（`inspect` の `play` に渡す）
         returns:
           type: Promise<InspectedElement[]>
           description: 当たった要素の様子
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#flows[正常系（相対パスとアセットのルートの動画・音声）]
       - name: applyConfigChange
         title: 設定の変更を当てる
         kind: メソッド
@@ -484,7 +506,7 @@ functions:
     kind: 関数
     container: vscode/src/preview/html.ts
     usecase: VSCodeでプレビューを開く
-    summary: インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む
+    summary: 'インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む。`media-src` は `img-src` と同じ `{cspSource} https: data:`'
     scope: public
     args:
       - name: options
@@ -500,7 +522,7 @@ functions:
         summary: スクリプトは nonce と配信元だけ、スタイルに unsafe-inline を足す
         condition: '`nonce` が `abc`、`distOrigin` が `https://cdn.jsdelivr.net`、`libraryOrigins` が `["https://cdn.example.com"]`、`cspSource` が `https://*.vscode-cdn.net`'
         mock: なし
-        expected: "`default-src 'none'; script-src 'nonce-abc' https://cdn.jsdelivr.net https://cdn.example.com https://*.vscode-cdn.net; style-src https://cdn.jsdelivr.net https://*.vscode-cdn.net 'unsafe-inline'; img-src https://*.vscode-cdn.net https: data:; font-src https://cdn.jsdelivr.net https://*.vscode-cdn.net; connect-src https://cdn.jsdelivr.net`"
+        expected: "`default-src 'none'; script-src 'nonce-abc' https://cdn.jsdelivr.net https://cdn.example.com https://*.vscode-cdn.net; style-src https://cdn.jsdelivr.net https://*.vscode-cdn.net 'unsafe-inline'; img-src https://*.vscode-cdn.net https: data:; media-src https://*.vscode-cdn.net https: data:; font-src https://cdn.jsdelivr.net https://*.vscode-cdn.net; connect-src https://cdn.jsdelivr.net`"
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
     status: planned
@@ -655,9 +677,47 @@ functions:
     status: planned
     introduced:
       pr: 196
+  - name: assetCandidates
+    title: 探す場所の候補を返す
+    kind: 関数
+    container: vscode/src/preview/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: 書いたパスからクエリとフラグメントを外し、Markdown のフォルダ、`assetsRoot` があればその後に `assetsRoot` を基準にした絶対パスを返す。解決したパスがワークスペースのフォルダのどれの配下にも無い候補は除く。外したクエリとフラグメントも返す
+    scope: public
+    args:
+      - name: path
+        type: string
+        required: true
+        description: 書いたパス
+      - name: options
+        type: '{ docDir: string; assetsRoot?: string; workspaceDirs: string[] }'
+        required: true
+        description: Markdown のフォルダ・`assets.root` の絶対パス・ワークスペースのフォルダ
+    returns:
+      type: '{ files: string[]; suffix: string }'
+      description: 探す順の絶対パスと、URL の後ろに戻すクエリとフラグメント
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+    unit_tests:
+      - name: test_asset_candidates
+        case: 正常
+        summary: Markdown のフォルダ、次にアセットのルートを返す
+        condition: '`m/demo.mp4?v=1#t=3`、`docDir` が `/w/docs`、`assetsRoot` が `/w/assets`、`workspaceDirs` が `["/w"]`'
+        mock: なし
+        expected: '`files` が `["/w/docs/m/demo.mp4", "/w/assets/m/demo.mp4"]`、`suffix` が `?v=1#t=3`'
+      - name: test_asset_candidates_when_outside
+        case: 正常
+        summary: ワークスペースの外へ出る候補を除く
+        condition: '`../../etc/passwd`、`docDir` が `/w/docs`、`workspaceDirs` が `["/w"]`'
+        mock: なし
+        expected: '`files` が空'
+    status: planned
+    introduced:
+      pr: 263
 test_files:
   - tests/unit/vscode/src/preview/html.test.ts
   - tests/unit/vscode/src/preview/links.test.ts
   - tests/unit/vscode/src/preview/scroll-guard.test.ts
   - tests/unit/vscode/src/preview/diff-target.test.ts
+  - tests/unit/vscode/src/preview/assets.test.ts
 notes: {}

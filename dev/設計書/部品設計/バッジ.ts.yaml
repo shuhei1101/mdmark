@@ -13,12 +13,42 @@ states:
     args:
       - name: label
         value: とても長い状態の名前で札の幅を超えるときの見え方を確かめる札
+  - name: Colored
+    description: '`badge:red:要確認`。面の薄い色と文字の色で描く'
+    args:
+      - name: label
+        value: 要確認
+      - name: color
+        value: red
+  - name: ColoredDark
+    description: 色のバッジの暗い配色
+    args:
+      - name: label
+        value: 完了
+      - name: color
+        value: green
+    notes:
+      定義: ストーリーは暗い配色で描く
+  - name: ColoredLong
+    description: 色のバッジの文言が長く行の幅を超える。札の中で折り返す
+    args:
+      - name: label
+        value: とても長い状態の名前で札の幅を超えるときの見え方を確かめる札
+      - name: color
+        value: yellow
 lead: 頭に `badge:` を付けた行内のコードを、頭を外した文言の札にする。頭の後ろが空（空白だけを含む）の `badge:` は札にせず、書いた文字のままの行内のコードで描く。
 args:
   - name: label
     type: 文字列
     required: true
     description: 札の文言（HTML として特別な文字はエスケープする）。空白を除いて 1 文字以上。空のときは部品を使わず `<code>badge:</code>` のままにする（文書をHTML文字列にする.ts の制約「ステップ・ファイルツリー・バッジ」）
+  - name: color
+    type: 列挙
+    required: false
+    default: なし（色を付けない札）
+    choices: '`blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`'
+    description: '`data-color` に入れる色の名前。札の地を `--mdmark-color-accent-{色}-bg`、文字を `--mdmark-color-accent-{色}-text` にする'
+    status: planned
 css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
@@ -28,10 +58,19 @@ css_properties:
     syntax: <color>
     default: '#e4e4e7（ダーク #26262b）'
     description: 札の線の色
+  - name: --mdmark-color-accent-blue-bg
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 色のバッジの地の色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
+  - name: --mdmark-color-accent-blue-text
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 色のバッジの文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ。地の色とのコントラストを 4.5:1 以上にする
 accessibility:
   - 札は文言をそのまま読み上げる `span` で、色だけで意味を持たせない
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[バッジの色]
 status: planned
 notes:
-  HTML: '`<span class="mdmark-badge">{label}</span>`。モックは `dev/mock/components/badge/`'
+  HTML: '`<span class="mdmark-badge">{label}</span>`。色のバッジは `<span class="mdmark-badge" data-color="{color}">{label}</span>`。モックは `dev/mock/components/badge/`'

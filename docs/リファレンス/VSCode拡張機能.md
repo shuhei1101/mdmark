@@ -257,6 +257,7 @@ colorTheme: theme-slate
 | `features` | 機能のオン・オフの既定。書いた値をそのまま `mount` の `opts.config.features` に渡す |
 | `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL は設定ファイルのあるフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。空でないときは `mdmark.colorTheme` の値に置き換える |
+| `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、設定ファイルのあるフォルダからのこのフォルダで同じ相対パスで探す。`mount` には渡さない |
 
 `theme`・`extensions`・`index`・`build` など、ほかのキーは読まない。
 最上位がマップでないファイルと空のファイルは、設定なしとして扱う。

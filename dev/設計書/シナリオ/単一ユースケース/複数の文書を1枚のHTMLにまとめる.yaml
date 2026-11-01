@@ -118,6 +118,30 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
+  - name: 正常シナリオ（画像・動画・音声を埋める）
+    setup:
+      - name: まとめる文書と画像・動画・音声のファイル
+        description: 設定の `build` の 2 つの文書が、同じ `images/chart.png` と別々の `media/demo.mp4`・`media/voice.mp3` を相対パスで指す。各ファイルは文書からの相対パスにある
+      - name: 設定
+        description: '`mdmark.config.yaml` のアセットのルートが `assets` を指す'
+      - name: Mock
+        description: なし（実ファイルを使う）。外へのネットワークの要求を記録する
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant C as mdmark CLI
+        participant F as ファイル
+        U->>C: mdmark build
+        C->>F: 文書と画像・動画・音声を読む
+        C->>C: 画像を 1 回だけ data URL で埋め、動画・音声を出力先のフォルダへコピーする
+        C->>F: 1 枚の HTML と、コピーしたファイルを書く
+        C-->>U: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 2 つの文書が指す同じ画像が、HTML の中に 1 回だけ埋まっている
+      - 動画・音声が出力先のフォルダへコピーされ、どちらの文書を開いても再生バーが出る
+      - まとめた HTML を file:// で開いたとき、外へのネットワークの要求が 0 件
+    test: test_normal_when_media_embedded
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書を書く人

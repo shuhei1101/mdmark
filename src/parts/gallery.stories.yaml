@@ -1,0 +1,35 @@
+title: Parts/Gallery
+stories:
+  - name: ThreeColumns
+    parameters:
+      server:
+        id: gallery
+    args:
+      cols: 3
+  - name: TwoColumns
+    parameters:
+      server:
+        id: gallery
+    args:
+      cols: 2
+  - name: NarrowTwo
+    parameters:
+      server:
+        id: gallery
+    args:
+      cols: 3
+      frameWidth: 30rem
+  - name: NarrowOne
+    parameters:
+      server:
+        id: gallery
+    args:
+      cols: 3
+      frameWidth: 18rem
+  - name: Numbered
+    parameters:
+      server:
+        id: gallery
+    args:
+      cols: 2
+      numbered: true

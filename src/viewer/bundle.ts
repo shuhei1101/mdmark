@@ -1,4 +1,4 @@
-import type { ExportPayload } from "../cli/html.ts";
+import { ASSET_SCHEME, type ExportPayload } from "../cli/html.ts";
 import type { MdmarkConfig } from "../config.ts";
 import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "../parts/doc-list.ts";
@@ -9,6 +9,22 @@ export const WIDE_QUERY = "(min-width: 60rem)";
 
 /** 開いている文書の行に付ける属性 */
 const CURRENT_ATTRIBUTE = "aria-current";
+
+/** 埋めた画像のキーと、後ろのフラグメントを読む正規表現 */
+const ASSET_PATTERN = new RegExp(`${ASSET_SCHEME}([A-Za-z0-9_-]+)`, "g");
+
+/** 文書の Markdown の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える。後ろのフラグメントは残し、`assets` に無いキーは替えない */
+export function restoreAssets(
+  markdown: string,
+  assets: Record<string, string> | undefined,
+): string {
+  if (assets === undefined) {
+    return markdown;
+  }
+  return markdown.replace(ASSET_PATTERN, (found, key: string) =>
+    Object.hasOwn(assets, key) ? (assets[key] as string) : found,
+  );
+}
 
 /** 画面の骨組みの要素を引く。無ければ例外を投げる */
 function requireElement<T extends Element>(
@@ -62,7 +78,7 @@ export function startBundle(
     }
     handle?.destroy();
     handle = mount(view, {
-      markdown: item.markdown,
+      markdown: restoreAssets(item.markdown, payload.assets),
       config,
       ...(payload.index ? { index: payload.index } : {}),
       ...(item.docId ? { docId: item.docId } : {}),

@@ -1,0 +1,26 @@
+title: VSCode/MediaError
+stories:
+  - name: Audio
+    parameters:
+      server:
+        id: media-error
+    args:
+      kind: audio
+      format: m4a
+      path: meeting.m4a
+  - name: Video
+    parameters:
+      server:
+        id: media-error
+    args:
+      kind: video
+      format: webm
+      path: media/demo.webm
+  - name: LongPath
+    parameters:
+      server:
+        id: media-error
+    args:
+      kind: video
+      format: webm
+      path: media/screen-recording-2026-11-01-very-long-file-name.webm

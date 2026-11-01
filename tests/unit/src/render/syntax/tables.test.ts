@@ -478,3 +478,115 @@ test("test_decorate_tables_when_row_detail_has_marked_table", () => {
   expect(html).not.toContain("<!-- table");
   expect(html).not.toContain("<!-- /table");
 });
+
+// 列の強調と行の色を属性にする（正常系）
+test("test_decorate_tables_when_colors", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data highlight=金額 row-color=状態:完了=green row-at=2=red -->",
+    "",
+    "| 名前 | 状態 | 金額 |",
+    "| --- | --- | --- |",
+    "| a | 完了 | 100 |",
+    "| b | 保留 | 200 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 金額の列の見出しと 2 つのセル
+  const highlighted = findTags(html, "mdmark-col-highlight");
+  expect(highlighted.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(highlighted.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
+  for (const tag of highlighted) {
+    expect(tag).toContain('data-color="blue"');
+  }
+  // 検証: 本文の行の色
+  const rows = matches(html, /<tr\b[^>]*data-color="[a-z]+"[^>]*>/g);
+  expect(rows.map((row) => /data-color="([a-z]+)"/.exec(row)?.[1])).toEqual([
+    "green",
+    "red",
+  ]);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 列の強調と、値と位置の行の色を読む（正常系）
+test("test_read_table_colors", async () => {
+  // 準備
+  const { readTableColors } = await loadTables();
+  const args = {
+    args: ["data"],
+    keys: {
+      highlight: "金額",
+      "row-color": "状態:完了=green,保留=yellow",
+      "row-at": "3=red",
+    },
+  };
+  const cells = [
+    ["a", "完了", "1"],
+    ["b", "保留", "2"],
+    ["c", "未着手", "3"],
+  ];
+  // 実行
+  const colors = readTableColors(args, ["名前", "状態", "金額"], cells);
+  // 検証
+  expect(colors.highlight).toEqual([{ column: 2, color: "blue" }]);
+  expect(colors.rows).toEqual(["green", "yellow", "red"]);
+  expect(colors.warnings).toEqual([]);
+});
+
+// 両方が当たる行は row-at= の色にし、範囲を読む（正常系）
+test("test_read_table_colors_when_overlap", async () => {
+  // 準備
+  const { readTableColors } = await loadTables();
+  const args = {
+    args: ["data"],
+    keys: {
+      highlight: "名前:red,金額",
+      "row-color": "状態:完了=green",
+      "row-at": "1-2=gray",
+    },
+  };
+  const cells = [
+    ["a", "完了", "1"],
+    ["b", "完了", "2"],
+    ["c", "完了", "3"],
+  ];
+  // 実行
+  const colors = readTableColors(args, ["名前", "状態", "金額"], cells);
+  // 検証
+  expect(colors.highlight).toEqual([
+    { column: 0, color: "red" },
+    { column: 2, color: "blue" },
+  ]);
+  expect(colors.rows).toEqual(["gray", "gray", "green"]);
+});
+
+// 読めない指定を警告にして当てない（異常系）
+test("test_read_table_colors_when_unreadable", async () => {
+  // 準備
+  const { readTableColors } = await loadTables();
+  const args = {
+    args: ["data"],
+    keys: {
+      highlight: "無い列",
+      "row-color": "状態:完了=pink,保留",
+      "row-at": "9=red",
+    },
+  };
+  const cells = [
+    ["a", "完了"],
+    ["b", "保留"],
+  ];
+  // 実行
+  const colors = readTableColors(args, ["名前", "状態"], cells);
+  // 検証
+  expect(colors.highlight).toEqual([]);
+  expect(colors.rows).toEqual([null, null]);
+  const labels = colors.warnings.map((warning) => warning.label);
+  expect(labels).toHaveLength(4);
+  expect(labels).toEqual(
+    expect.arrayContaining(["無い列", "pink", "保留", "9"]),
+  );
+});

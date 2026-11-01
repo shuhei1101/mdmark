@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -364,4 +365,63 @@ test("test_normal_when_unknown_color_theme", async () => {
   expect(known.code).toBe(0);
   expect(known.stdout).not.toContain("unknown_color_theme");
   expect(await snapshot(unknownDir)).toEqual(unknownBefore);
+});
+
+// 文書からの相対パスにもアセットのルートにも無い画像・動画・音声・添付のファイルを missing_file のずれにする（正常系（見つからないファイルがある））
+test("test_normal_when_files_missing", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const config = [
+    "assets:",
+    "  root: assets",
+    "build:",
+    '  include: ["docs/**/*.md"]',
+    "  out: dist/docs.html",
+    "",
+  ].join("\n");
+  const guide = [
+    "# ガイド",
+    "",
+    "![無い画像](images/missing.png)",
+    "",
+    "![無い動画](media/missing.mp4)",
+    "",
+    "![無い音声](media/missing.mp3)",
+    "",
+    "[仕様書](files/missing.pdf)",
+    "",
+    "![ロゴ](images/logo.png)",
+    "",
+    "![外の画像](https://example.com/a.png)",
+    "",
+  ].join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": config,
+    "docs/guide.md": guide,
+    "assets/images/logo.png": "png",
+  });
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  for (const [line, path] of [
+    [3, "images/missing.png"],
+    [5, "media/missing.mp4"],
+    [7, "media/missing.mp3"],
+    [9, "files/missing.pdf"],
+  ] as const) {
+    const found = lines.find((text) =>
+      text.startsWith(`docs/guide.md:${line}: missing_file:`),
+    );
+    expect(found, path).toContain(path);
+  }
+  expect(lines.some((text) => text.includes("images/logo.png"))).toBe(false);
+  expect(lines.some((text) => text.includes("https://example.com/a.png"))).toBe(
+    false,
+  );
+  expect(lines.at(-1)).toBe("ずれ 4 件");
+  expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(config);
+  expect(await readFile(join(dir, "docs", "guide.md"), "utf8")).toBe(guide);
+  expect(existsSync(join(dir, "dist"))).toBe(false);
 });

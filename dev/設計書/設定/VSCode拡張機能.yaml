@@ -221,3 +221,16 @@ settings:
     visibility: user
     introduced:
       pr: 181
+  - key: assets.root
+    title: アセットのルート（拡張機能が読む）
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    default: なし（Markdown のフォルダからの相対パスだけで探す）
+    description: プレビューで、Markdown のフォルダからの相対パスに無い画像・動画・音声を、設定ファイルのあるフォルダからのこのフォルダを基準に同じ相対パスで探す。`mount` には渡さない
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[assets.root]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+    status: planned
+    visibility: user

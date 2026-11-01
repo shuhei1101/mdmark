@@ -1,0 +1,31 @@
+title: Parts/TextColor
+stories:
+  - name: Blue
+    parameters:
+      server:
+        id: text-color
+    args:
+      color: blue
+      text: 版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。
+  - name: Red
+    parameters:
+      server:
+        id: text-color
+    args:
+      color: red
+      text: 最新の版を指す URL は、更新のたびに見た目が変わります。
+  - name: WithLink
+    parameters:
+      server:
+        id: text-color
+    args:
+      color: green
+      text: 詳しくは [配布物を読み込む](#) を見てください。
+  - name: Dark
+    parameters:
+      server:
+        id: text-color
+    args:
+      color: orange
+      text: 気をつける点
+      scheme: dark

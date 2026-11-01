@@ -97,3 +97,60 @@ export function pageOverflows(page: Page): Promise<boolean> {
       document.documentElement.clientWidth,
   );
 }
+
+/** 色の式を、`selector` に当たる要素の中で解決した computed の色の文字列にする（`.mdmark` の中だけで決まる CSS 変数を解決する） */
+export function resolveColorIn(
+  page: Page,
+  selector: string,
+  expression: string,
+): Promise<string> {
+  return page.evaluate(
+    ({ selector, value }) => {
+      const host = document.querySelector(selector) ?? document.body;
+      const probe = document.createElement("span");
+      probe.style.color = value;
+      host.append(probe);
+      const resolved = getComputedStyle(probe).color;
+      probe.remove();
+      return resolved;
+    },
+    { selector, value: expression },
+  );
+}
+
+/** 2 つの `rgb(r, g, b)` の色のコントラスト比（WCAG 2） */
+export function contrastRatio(first: string, second: string): number {
+  const luminance = (color: string) => {
+    const [r, g, b] = (color.match(/[\d.]+/g) ?? [])
+      .slice(0, 3)
+      .map((value) => {
+        const channel = Number(value) / 255;
+        return channel <= 0.03928
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+    return 0.2126 * (r ?? 0) + 0.7152 * (g ?? 0) + 0.0722 * (b ?? 0);
+  };
+  const [light, dark] = [luminance(first), luminance(second)].sort(
+    (a, b) => b - a,
+  );
+  return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+}
+
+/** 色の式を、明るい配色の `.mdmark` の中で解決した computed の色の文字列にする */
+export function resolveLightColor(
+  page: Page,
+  expression: string,
+): Promise<string> {
+  return page.evaluate((value) => {
+    const host = document.createElement("div");
+    host.className = "mdmark mdmark-theme-light";
+    const probe = document.createElement("span");
+    probe.style.color = value;
+    host.append(probe);
+    document.body.append(host);
+    const resolved = getComputedStyle(probe).color;
+    host.remove();
+    return resolved;
+  }, expression);
+}

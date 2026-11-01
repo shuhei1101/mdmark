@@ -546,3 +546,31 @@ test("test_collect_check_issues_when_base_without_index", async () => {
   // 検証
   expect(withBase).toEqual(withoutBase);
 });
+
+// 見つからないファイルを unknown_mark の前に返し、無い assets.root を schema にする（正常系）
+test("test_collect_check_issues_when_missing_file", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "assets:",
+      "  root: none",
+      "build:",
+      '  include: ["a.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": ["# A", "![図](x.png)", "", "<!-- tabz -->", ""].join("\n"),
+  });
+  // 実行
+  const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"));
+  // 検証
+  expect(
+    issues.map((issue) => ({ kind: issue.kind, where: issue.where })),
+  ).toEqual([
+    { kind: "schema", where: "assets.root" },
+    { kind: "missing_file", where: "2" },
+    { kind: "unknown_mark", where: "4" },
+  ]);
+});

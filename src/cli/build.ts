@@ -59,6 +59,7 @@ export async function buildSite(options: {
     }
   }
 
+  const out = resolve(loaded.dir, build.out);
   const {
     payload,
     themeCss,
@@ -68,6 +69,7 @@ export async function buildSite(options: {
     docs: paths.map((path) => ({ path, file: join(loaded.dir, path) })),
     kind: "bundle",
     entry,
+    out,
   });
   warnings.unshift(...embedWarnings);
   // 1 枚に含まれない文書へのリンクを持つ文書とリンク先
@@ -87,7 +89,6 @@ export async function buildSite(options: {
     markdowns: payload.docs.map((doc) => doc.markdown),
     view,
   });
-  const out = resolve(loaded.dir, build.out);
   await writeHtml({
     file: out,
     display: build.out,

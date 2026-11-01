@@ -45,13 +45,41 @@ const DIAGRAM_STYLE_PATTERN =
 /** コードブロックの `code` が持つ、行番号の桁の数の `style`（`--mdmark-code-digits: {数字}` だけ） */
 const CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
 
+/** 画像と動画の幅の `style`（`--mdmark-image-width: {整数}px` か `{整数}%` だけ） */
+const IMAGE_WIDTH_PATTERN =
+  /^\s*--mdmark-image-width\s*:\s*(\d+(?:px|%))\s*;?\s*$/;
+
+/** ギャラリーの列の数の `style`（`--mdmark-gallery-cols: {1〜6}` だけ） */
+const GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
+
+/** 記法が出したものだけを残す動画と音声の要素 */
+const MEDIA_TAGS = new Set(["video", "audio"]);
+
 /** 元の行番号の属性と、その値に許す形（0 以上の整数） */
 const SOURCE_LINE_ATTRIBUTE = "data-source-line";
 const SOURCE_LINE_PATTERN = /^\d+$/;
 
-/** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
+/** 画像の `src` と動画の `poster` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 と、配色ごとの画像のフラグメントだけ */
 const DATA_IMAGE_PATTERN =
-  /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*$/;
+  /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
+
+/** 許さない形の `data:` URL を消す: `img` の `src` と `video` の `poster` は画像の形だけを残し、`video`・`audio` の `src` は消す */
+function dropDataUrls(tagName: string, attribs: Record<string, string>): void {
+  const imageAttribute =
+    tagName === "img" ? "src" : tagName === "video" ? "poster" : undefined;
+  const imageUrl =
+    imageAttribute === undefined ? undefined : attribs[imageAttribute];
+  if (
+    imageAttribute !== undefined &&
+    imageUrl?.startsWith("data:") &&
+    !DATA_IMAGE_PATTERN.test(imageUrl)
+  ) {
+    delete attribs[imageAttribute];
+  }
+  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
+    delete attribs.src;
+  }
+}
 
 /** `tabindex` があれば 0 にする */
 function fixTabindex(
@@ -182,6 +210,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     "nav",
     "figure",
     "figcaption",
+    ...MEDIA_TAGS,
     ...DIAGRAM_ONLY_TAGS,
   ],
   allowedAttributes: {
@@ -201,6 +230,17 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     pre: ["tabindex"],
     table: ["tabindex"],
     span: ["tabindex"],
+    video: [
+      "src",
+      "controls",
+      "autoplay",
+      "muted",
+      "loop",
+      "playsinline",
+      "preload",
+      "poster",
+    ],
+    audio: ["src", "controls", "autoplay", "muted", "loop", "preload"],
   },
   // 図の部品の要素以外から取り除く要素は、印を付けた要素を中身ごと消す
   exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== undefined,
@@ -211,8 +251,12 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     li: ["task-list-item"],
   },
   allowedSchemes: ["http", "https", "mailto"],
-  // 画像の `src` だけ、`data:` URL も許す（種類は `transformTags` が絞る）
-  allowedSchemesByTag: { img: ["http", "https", "data"] },
+  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す形は `transformTags` が絞る）
+  allowedSchemesByTag: {
+    img: ["http", "https", "data"],
+    video: ["http", "https", "data"],
+    audio: ["http", "https", "data"],
+  },
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false,
 };
@@ -297,6 +341,15 @@ export function filterEmbeddedStyle(style: string): string {
 function ownStyle(style: string): string {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
+  }
+  // 画像の幅とギャラリーの列の数: ほかの宣言を重ねたものと読めない値は、全て落とす
+  if (style.includes("--mdmark-image-width")) {
+    const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
+    return width === undefined ? "" : `--mdmark-image-width: ${width}`;
+  }
+  if (style.includes("--mdmark-gallery-cols")) {
+    const cols = GALLERY_COLS_PATTERN.exec(style)?.[1];
+    return cols === undefined ? "" : `--mdmark-gallery-cols: ${cols}`;
   }
   // コードブロックの行番号の桁の数: ほかの宣言を重ねたものは、全て落とす
   if (style.includes("--mdmark-code-digits")) {
@@ -386,13 +439,7 @@ export function sanitizeEmbedded(
         if (tagName === "button") {
           next.type = "button";
         }
-        if (
-          tagName === "img" &&
-          next.src?.startsWith("data:") &&
-          !DATA_IMAGE_PATTERN.test(next.src)
-        ) {
-          delete next.src;
-        }
+        dropDataUrls(tagName, next);
         // 図の部品の要素は、書いたものを中身ごと落とす（`button` だけは残す）
         if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
           next[DROP_ATTRIBUTE] = "1";
@@ -422,14 +469,8 @@ export function sanitize(html: string, nonce: string): string {
         ) {
           delete next[SOURCE_LINE_ATTRIBUTE];
         }
-        // 画像の `data:` URL は、画像の種類と base64 の形のものだけ残す
-        if (
-          tagName === "img" &&
-          next.src?.startsWith("data:") &&
-          !DATA_IMAGE_PATTERN.test(next.src)
-        ) {
-          delete next.src;
-        }
+        // `data:` URL は、画像の形のものだけ残す
+        dropDataUrls(tagName, next);
         const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
         if (align && ALIGN_VALUES.includes(align)) {
           next.class = [next.class, `mdmark-align-${align}`]
@@ -444,8 +485,11 @@ export function sanitize(html: string, nonce: string): string {
         } else {
           next.style = kept;
         }
-        // 図の部品が出した要素だけが持つ要素は、文書に書いたものを取り除く
-        if (!own && DIAGRAM_ONLY_TAGS.has(tagName)) {
+        // 図の部品と動画・音声の要素は、文書に書いたものを中身ごと取り除く
+        if (
+          !own &&
+          (DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName))
+        ) {
           next[DROP_ATTRIBUTE] = "1";
         }
         return { tagName, attribs: next };

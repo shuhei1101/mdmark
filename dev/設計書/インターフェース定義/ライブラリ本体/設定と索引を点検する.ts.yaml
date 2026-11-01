@@ -279,7 +279,30 @@ flows:
       - 選べる名前のフォルダでは、終了コードが 0 で `unknown_color_theme` の行が無い
       - 設定・索引・文書が変わっていない
     test: test_normal_when_unknown_color_theme
-lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
+  - name: 正常系（見つからないファイルがある）
+    summary: 文書からの相対パスにもアセットのルートにも無い画像・動画・音声・添付のファイルを `missing_file` のずれにする
+    setup:
+      - name: 見つからないファイルを持つフォルダ
+        description: '`assets.root` が `assets` の設定と、`build.include` が当たる `docs/guide.md`。`guide.md` は、無い `images/missing.png`（3 行目）・`media/missing.mp4`（5 行目）・`media/missing.mp3`（7 行目）、リンクだけの段落 `[仕様書](files/missing.pdf)`（9 行目）、`assets/images/logo.png` にだけある `images/logo.png`、`https://example.com/a.png` を持つ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 文書の画像・動画・音声・添付のパスを、文書からの相対パスとアセットのルートで確かめる
+        C-->>W: missing_file の 4 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/guide.md:3: missing_file:`・`docs/guide.md:5: missing_file:`・`docs/guide.md:7: missing_file:`・`docs/guide.md:9: missing_file:` で始まる行があり、内容にそれぞれ `images/missing.png`・`media/missing.mp4`・`media/missing.mp3`・`files/missing.pdf` を含む'
+      - '`images/logo.png` と `https://example.com/a.png` を指す行が無い'
+      - 最後の行が `ずれ 4 件`
+      - 設定・文書が変わらず、書き出しのファイルが無い
+    test: test_normal_when_files_missing
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（見つからないファイルがある）]
+lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印・文書が指す見つからないファイルを点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
 callers:
@@ -303,10 +326,10 @@ response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
-    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark`（文書のパスの順、同じ文書の中は行の順）
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file`（どちらも文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark'"
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file'"
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -359,4 +382,7 @@ constraints:
   - item: テーマの名前の点検
     constraint: 設定に `colorTheme` があり、その値が `dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` のどれでもないとき、`unknown_color_theme` のずれを 1 つ出す。場所は `colorTheme`、内容には書いた名前と選べるテーマの名前の一覧を入れる。文字列でない値は `schema` のずれにする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+  - item: 見つからないファイルの点検
+    constraint: '制約「点検する文書」の文書ごとに、相対パスで指す画像（動画の `poster` を含む）・動画・音声と、添付のカードにするリンク（インターフェース定義『文書をHTML文字列にする』の制約「リンクと添付のカード」の添付の拡張子）のファイルを、インターフェース定義『文書をHTMLに書き出す』の制約「アセットのルート」と同じ順に探し、どちらにも無いものを 1 つにつき 1 件の `missing_file` のずれにする。ファイルは文書の相対パス、場所は書いた行の番号（1 から）、内容は書いたパスと種類（画像・動画・音声・添付）と、パスを直すかファイルを置くか `assets.root` を確かめる直し方の 1 文。コードブロックとインラインコードの中、絶対 URL、`#` で始まるリンクは点検しない。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれにする'
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[assets.root]
 test_file: tests/integration/lib/check-config.test.ts

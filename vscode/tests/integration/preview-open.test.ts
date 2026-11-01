@@ -1,7 +1,9 @@
 import * as assert from "node:assert";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
+  clickInPreview,
   distPath,
   distRequests,
   EXTENSION_ID,
@@ -13,7 +15,9 @@ import {
   installOpenExternal,
   installRecorder,
   lastPanel,
+  opened as openedUrls,
   openMarkdown,
+  REPO_ROOT,
   recordedPanels,
   resetEnvironment,
   STUB_ORIGIN,
@@ -102,6 +106,7 @@ suite("プレビューを開く", () => {
         `script-src 'nonce-${nonce}' ${STUB_ORIGIN} ${cspSource}`,
         `style-src ${STUB_ORIGIN} ${cspSource} 'unsafe-inline'`,
         `img-src ${cspSource} https: data:`,
+        `media-src ${cspSource} https: data:`,
         `font-src ${STUB_ORIGIN} ${cspSource}`,
         `connect-src ${STUB_ORIGIN}`,
       ].join("; "),
@@ -440,5 +445,133 @@ suite("プレビューを開く", () => {
         "editorLangId == markdown",
       ),
     );
+  });
+  // 動画・音声のパスを、文書のフォルダかアセットのルートにあるファイルの Webview の URL に替える
+  test("test_normal_when_relative_media", async () => {
+    // 準備
+    await writeFixture("mdmark.config.yaml", "assets:\n  root: assets\n");
+    const samples = join(REPO_ROOT, "dev/mock/refs/263/assets/media");
+    const mp3 = await readFile(join(samples, "voice.mp3"));
+    await writeFixture("docs/media/demo.mp3", mp3);
+    await writeFixture(
+      "docs/media/demo.mp4",
+      await readFile(join(samples, "demo.mp4")),
+    );
+    await writeFixture("assets/media/intro.mp3", mp3);
+    await writeFixture(
+      "docs/guide.md",
+      [
+        "# 見出し",
+        "",
+        "![音声](media/demo.mp3)",
+        "",
+        "![動画](media/demo.mp4)",
+        "",
+        "![導入](media/intro.mp3)",
+        "",
+      ].join("\n"),
+    );
+    await openMarkdown("docs/guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証
+    const webviewUrl = (relative: string) =>
+      record.panel.webview
+        .asWebviewUri(vscode.Uri.file(join(workspaceDir(), relative)))
+        .toString();
+    const expected = {
+      音声: webviewUrl("docs/media/demo.mp3"),
+      動画: webviewUrl("docs/media/demo.mp4"),
+      導入: webviewUrl("assets/media/intro.mp3"),
+    };
+    const readSources = async () =>
+      Object.fromEntries(
+        (await inspect("audio, video")).map((element) => [
+          element.attributes["aria-label"],
+          element.attributes.src,
+        ]),
+      );
+    await waitFor(
+      async () =>
+        JSON.stringify(await readSources()) === JSON.stringify(expected),
+    ).catch(() => undefined);
+    assert.deepStrictEqual(await readSources(), expected);
+    // 再生してから 1 秒後の位置
+    const played = Object.fromEntries(
+      (await inspect("audio, video", true)).map((element) => [
+        element.attributes["aria-label"],
+        element.currentTime ?? 0,
+      ]),
+    );
+    assert.ok((played.音声 ?? 0) >= 0.5, `音声: ${played.音声}`);
+    assert.ok((played.導入 ?? 0) >= 0.5, `導入: ${played.導入}`);
+    assert.ok((played.動画 ?? 0) > 0, `動画: ${played.動画}`);
+    const csp = /Content-Security-Policy" content="([^"]*)"/.exec(
+      record.panel.webview.html,
+    )?.[1];
+    assert.match(csp ?? "", /(?:^|;)\s*media-src /);
+  });
+
+  // 再生できない動画・音声を知らせの枠に替え、既定のアプリで開くリンクから開く
+  test("test_error_when_unsupported_media", async () => {
+    // 準備
+    await writeFixture("docs/media/voice.m4a", Buffer.from("m4a"));
+    await writeFixture("docs/media/clip.webm", Buffer.from("webm"));
+    await writeFixture(
+      "docs/guide.md",
+      [
+        "# 見出し",
+        "",
+        "![声](media/voice.m4a)",
+        "",
+        "![動き](media/clip.webm)",
+        "",
+        "本文の段落。",
+        "",
+      ].join("\n"),
+    );
+    await openMarkdown("docs/guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証: 2 つの要素の場所に知らせの枠を出す
+    await waitFor(async () => (await inspect(".mdmark-notice")).length === 2, {
+      message: "知らせの枠が 2 つにならない",
+    });
+    const notices = await inspect(".mdmark-notice");
+    assert.ok(
+      notices.some((notice) =>
+        notice.text.includes("この音声をプレビューで再生できません"),
+      ),
+    );
+    assert.ok(
+      notices.some((notice) =>
+        notice.text.includes("この動画をプレビューで再生できません"),
+      ),
+    );
+    const links = await inspect('a[data-action="openAsset"]');
+    assert.deepStrictEqual(
+      links.map((link) => [link.text, link.attributes["data-path"]]),
+      [
+        ["既定のアプリで開く", "media/voice.m4a"],
+        ["既定のアプリで開く", "media/clip.webm"],
+      ],
+    );
+    assert.strictEqual((await inspect("audio, video")).length, 0);
+    assert.ok(
+      (await inspect("p")).some((item) => item.text === "本文の段落。"),
+    );
+    // 実行: 音声の「既定のアプリで開く」を押す
+    clickInPreview(record, 'a[data-path="media/voice.m4a"]');
+    // 検証
+    await waitFor(() => openedUrls.length === 1, {
+      message: "openExternal が呼ばれない",
+    });
+    assert.deepStrictEqual(openedUrls, [
+      vscode.Uri.file(join(workspaceDir(), "docs/media/voice.m4a")).toString(),
+    ]);
   });
 });

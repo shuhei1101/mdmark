@@ -91,6 +91,25 @@ elements:
     status: planned
     introduced:
       pr: 69
+  - name: 再生できない動画・音声の知らせ
+    id: preview-media-error
+    kind: status
+    component: dev/設計書/部品設計/再生できない動画・音声の知らせ.ts#
+    args:
+      - name: kind
+        value: '`error` になった要素が `video` なら `video`、`audio` なら `audio`'
+      - name: format
+        value: 文書に書いたパスの拡張子
+      - name: path
+        value: 文書に書いたパス
+    position: 描く先を包む要素 > 描いた文書 > 再生できない動画・音声の場所
+    description: プレビューの Webview が再生できない動画・音声の要素を替える枠。再生できないことと「既定のアプリで開く」を出す
+    visible_when: '`video`・`audio` が `error` になったとき'
+    action: 「既定のアプリで開く」を押すと `openAsset` を送る
+    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
+    status: planned
 screen: vscode/src/webview/preview.ts
 mock: dev/mock/pages/vscode-preview/69/panel/
 lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。mdmark が描いた文書と、拡張機能が足す状態の表示を同じパネルの中で切り替える。

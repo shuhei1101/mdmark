@@ -104,7 +104,7 @@ constants:
     title: 機能の既定
     container: src/config.ts
     summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false, "side-toc": true }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false, "side-toc": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES

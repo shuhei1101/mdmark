@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
@@ -47,6 +47,7 @@ test("test_prepare_embeds", async () => {
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   expect(Object.keys(result.payload.modules)).toEqual(["test-lib"]);
@@ -71,6 +72,7 @@ test("test_prepare_embeds_when_unreadable", async () => {
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   expect(result.payload.modules).toEqual({});
@@ -110,6 +112,7 @@ test("test_prepare_embeds_when_index", async () => {
     ],
     kind: "bundle",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   expect(result.payload.references?.backlinks.guide).toContain("api");
@@ -226,6 +229,7 @@ test("test_prepare_embeds_when_tooltip_placement", async () => {
       docs,
       kind: "document",
       entry: "guide.md",
+      out: join(dir, "guide.html"),
     });
   // 実行
   const withTooltips = await prepare({ tooltips: { placement: "bottom" } });
@@ -250,6 +254,7 @@ test("test_prepare_embeds_when_labels", async () => {
       docs,
       kind: "document",
       entry: "guide.md",
+      out: join(dir, "guide.html"),
     });
   // 実行
   const withLabels = await prepare({ labels: { paramCopy: "コピー" } });
@@ -272,6 +277,7 @@ test("test_prepare_embeds_when_side_toc_mode", async () => {
       docs,
       kind: "document",
       entry: "guide.md",
+      out: join(dir, "guide.html"),
     });
   // 実行
   const withSideToc = await prepare({ "side-toc": { mode: "fixed" } });
@@ -294,6 +300,7 @@ test("test_prepare_embeds_when_color_theme", async () => {
       docs,
       kind: "document",
       entry: "guide.md",
+      out: join(dir, "guide.html"),
     });
   // 実行
   const known = await prepare({ colorTheme: "theme-slate" });
@@ -334,6 +341,7 @@ test("test_prepare_embeds_when_syntax", async () => {
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   expect(result.payload.syntax?.core).toBeTruthy();
@@ -357,6 +365,7 @@ test("test_prepare_embeds_when_syntax_unreadable", async () => {
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   expect(result.payload.syntax).toBeUndefined();
@@ -382,6 +391,7 @@ test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
@@ -420,6 +430,7 @@ test("test_prepare_embeds_when_aliases", async () => {
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
     entry: "guide.md",
+    out: join(dir, "guide.html"),
   });
   // 検証
   // env は埋めず、使えるコマンドだけが入る
@@ -434,4 +445,61 @@ test("test_prepare_embeds_when_aliases", async () => {
   expect(result.warnings[0]).toContain(
     "aliases/term.yaml:description: alias_required_empty: ",
   );
+});
+
+/** 中身を持たない PNG のファイル */
+const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+
+// 動画をコピーしてから画像を埋める（正常系）
+test("test_prepare_embeds_when_media", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.md": [
+      "![操作](demo.mp4){poster=demo.png}",
+      "",
+      "![図](a.png)",
+      "",
+    ].join("\n"),
+    "assets/demo.mp4": new Uint8Array([0, 0, 0, 24]),
+    "assets/demo.png": PNG_BYTES,
+    "assets/a.png": PNG_BYTES,
+  });
+  const loaded = createLoaded(dir, { assets: { root: "assets" } });
+  // 実行
+  const result = await prepareEmbeds({
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+    out: join(dir, "guide.html"),
+  });
+  // 検証
+  const copied = await readdir(join(dir, "guide_files"), { recursive: true });
+  expect(copied.some((path) => path.endsWith("demo.mp4"))).toBe(true);
+  const markdown = result.payload.docs[0]?.markdown ?? "";
+  expect(markdown).toMatch(/\]\(guide_files\/[^)\s]*demo\.mp4\)/);
+  expect(markdown).toMatch(/\{poster=data:image\/png;base64,[^}\s]+\}/);
+  expect(markdown).toMatch(/!\[図\]\(data:image\/png;base64,[^)\s]+\)/);
+});
+
+// 動画のコピー先へ書けなければ HTML を書かずに CliError（異常系）
+test("test_export_document_when_media_unwritable", async () => {
+  // 準備
+  const { exportDocument } = await loadExport();
+  const { CliError } = await import("../../../../src/cli/errors.ts");
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "features:\n  print: true\n",
+    "guide.md": "![操作](demo.mp4)\n",
+    "demo.mp4": new Uint8Array([0, 0, 0, 24]),
+    guide_files: "ファイル",
+  });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = exportDocument({ cwd: dir, file: "guide.md", distDir });
+  // 検証
+  await expect(result).rejects.toBeInstanceOf(CliError);
+  expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });

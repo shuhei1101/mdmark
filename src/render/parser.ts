@@ -22,18 +22,22 @@ import {
 import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
+import { buildCards } from "./syntax/cards.ts";
 import { buildCodeBlocks } from "./syntax/code-blocks.ts";
 import { buildDiagrams } from "./syntax/diagrams.ts";
 import { numberFigures } from "./syntax/figures.ts";
+import { buildGallery } from "./syntax/gallery.ts";
 import { glossaryRule } from "./syntax/glossary.ts";
 import { assignHeadingIds } from "./syntax/headings.ts";
 import { buildEmbeddedHtml } from "./syntax/html.ts";
+import { buildImageFigures, readImages } from "./syntax/images.ts";
 import { attachRowDetails } from "./syntax/row-details.ts";
 import { wrapSections } from "./syntax/sections.ts";
 import { buildSteps } from "./syntax/steps.ts";
 import { decorateTables } from "./syntax/tables.ts";
 import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
+import { buildTextColors } from "./syntax/text-color.ts";
 import { buildToc } from "./syntax/toc.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
 import { buildViews } from "./syntax/views.ts";
@@ -242,7 +246,7 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
@@ -256,10 +260,15 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_callouts", buildCallouts],
     ["mdmark_build_file_trees", buildFileTrees],
     ["mdmark_build_badges", buildBadges],
+    ["mdmark_build_text_colors", buildTextColors],
     ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
     ["mdmark_build_code_blocks", buildCodeBlocks],
+    ["mdmark_read_images", readImages],
     ["mdmark_number_figures", numberFigures],
+    ["mdmark_build_gallery", buildGallery],
+    ["mdmark_build_image_figures", buildImageFigures],
+    ["mdmark_build_cards", buildCards],
     ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],

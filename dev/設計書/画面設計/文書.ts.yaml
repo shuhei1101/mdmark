@@ -62,6 +62,10 @@ elements:
         value: '`+rowlink` の表の行ごとの、先頭のセルの文字から見出しと同じ規則で作った ID（文書の中の見出し・前の行と重なれば `-1`・`-2`）'
       - name: title
         value: 印の `title=` の値（`closed`・`open` を書いた表だけ。書かなければ渡さない）
+      - name: highlight
+        value: 印の `highlight=列名[:色],…`（列名を列の位置に読み替える。色を省いた列は `blue`）
+      - name: rowColors
+        value: 印の `row-color=` の値と `row-at=` の位置から決めた本文の行ごとの色（両方が当たる行は `row-at=` の色）
   - name: 表のセル
     id: table-cell
     kind: label
@@ -229,7 +233,9 @@ elements:
     component: dev/設計書/部品設計/バッジ.ts#
     args:
       - name: label
-        value: 行内のコードから頭の `badge:` を外した文言
+        value: 行内のコードから頭の `badge:` を外した文言（頭の後ろの最初の `:` の前が色の名前のときは、2 つ目の `:` の後ろ）
+      - name: color
+        value: 頭の後ろの最初の `:` の前が色の名前のときの色の名前
     position: 描く先の要素 > 段落・表のセル
     description: 頭に `badge:` を付けた行内のコード。頭の後ろが空（空白だけを含む）の `badge:` は札にせず、書いた文字のままの行内のコードで描く
     visible_when: 文書にその行内のコードがあり、`badge` がオンのとき
@@ -269,7 +275,7 @@ elements:
         value: 文書の頭から種類ごとに数えた番号
     slots:
       - name: default
-        value: 印の直後の画像か表
+        value: 印の直後の画像の図・ギャラリーか表
     position: 描く先の要素
     description: '`<!-- fig: ID -->` の直後の図と表'
     visible_when: 文書に `fig` の印があり、`figures` がオンのとき
@@ -949,6 +955,158 @@ elements:
     visible_when: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したとき'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ブロックの色分けを出せない）]
+    status: planned
+  - name: 本文の文字の色
+    id: text-color
+    kind: label
+    component: dev/設計書/部品設計/文字の色.ts#
+    args:
+      - name: color
+        value: '`{color=色}` の色の名前'
+      - name: text
+        value: 角括弧の中の文字
+    position: 描く先の要素 > 段落・リスト・表のセル
+    description: '`[文字]{color=色}` の文字を、色のプリセットの文字の色と太字で強調する。知らない色の名前は色を付けず、段落の前に書き方の警告を置く'
+    visible_when: 文書に `[文字]{color=色}` があり、`text-color` がオンのとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[本文の文字の色]
+    status: planned
+  - name: 画像の図
+    id: image-figure
+    kind: figure
+    component: dev/設計書/部品設計/画像の図.ts#
+    args:
+      - name: src
+        value: 画像の `src`（フラグメントを含む）
+      - name: alt
+        value: 画像の alt
+      - name: caption
+        value: 画像の title
+      - name: width
+        value: 属性の `width=`
+      - name: align
+        value: 属性の `align=`
+      - name: lightbox
+        value: 属性に `nolightbox` が無く、`lightbox` がオンのとき `true`
+      - name: only
+        value: '`src` のフラグメントが `#only-light` なら `light`、`#only-dark` なら `dark`'
+    position: 描く先の要素
+    description: 画像 1 つだけの段落の画像。title をキャプションにし、幅・配置を当て、今の配色に合わない `#only-*` の画像を隠す。拡大できる画像は拡大のボタンで包み、右上に拡大のアイコンを出す
+    visible_when: 文書に画像だけの段落があり、`images` がオンのとき
+    tab_order: 0
+    action: 拡大のボタンを押すとライトボックスを開く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の図とキャプション]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+    status: planned
+  - name: ギャラリー
+    id: gallery
+    kind: figure
+    component: dev/設計書/部品設計/ギャラリー.ts#
+    args:
+      - name: cols
+        value: 印の `cols=`（省いたときは `2`）
+    slots:
+      - name: default
+        value: 範囲の中の画像の、画像の図
+    position: 描く先の要素
+    description: '`<!-- gallery: cols=N -->` 〜 `<!-- /gallery -->` の中の画像を格子に並べる。`fig` の印の直後なら図表の番号のスロットに入り、中の画像にサブ図の番号（`図 2a`）を付ける'
+    visible_when: 文書に `gallery` の印があり、`gallery` がオンのとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ギャラリー]
+    status: planned
+  - name: ライトボックス
+    id: lightbox
+    kind: dialog
+    component: dev/設計書/部品設計/ライトボックス.ts#
+    args:
+      - name: src
+        value: 押した画像の `src`
+      - name: alt
+        value: 押した画像の alt
+      - name: caption
+        value: 押した画像の title
+      - name: index
+        value: 送りの並びの中の押した画像の位置
+      - name: total
+        value: 同じ文書の拡大できる画像のうち、今の配色で隠れていないものの数
+    position: 描く先の要素 > ライトボックス
+    description: 画像の拡大のボタンで開く `dialog` のモーダル。画像を全体が収まる倍率で出し、前後への送り・拡大と縮小・移動を図の全画面と同じ操作で行う
+    visible_when: 画像の拡大のボタンを押してから閉じるまで
+    action: 閉じるボタン・Esc・画像の外の背景で閉じ、フォーカスを押した画像の拡大のボタンへ戻す。文書のスクロールの位置は開く前のまま
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックスの拡大・縮小・移動]
+    status: planned
+  - name: 動画・音声
+    id: media
+    kind: figure
+    component: dev/設計書/部品設計/動画と音声.ts#
+    args:
+      - name: kind
+        value: '`src` の拡張子が動画なら `video`、音声なら `audio`'
+      - name: src
+        value: 画像の `src`
+      - name: alt
+        value: 画像の alt
+      - name: caption
+        value: 画像の title
+      - name: width
+        value: 属性の `width=`
+      - name: poster
+        value: 属性の `poster=`
+      - name: autoplay
+        value: 属性に `autoplay` があるとき `true`
+      - name: muted
+        value: 属性に `muted` か `autoplay` があるとき `true`
+      - name: loop
+        value: 属性に `loop` があるとき `true`
+    position: 描く先の要素
+    description: 拡張子が動画・音声の画像を、再生バーを持つ要素にして図に入れる。文の中に書いても段落の後ろに置く。印刷では動画の代わりに `poster` の画像を出す
+    visible_when: 文書に拡張子が動画・音声の画像があり、`media` がオンのとき
+    tab_order: 0
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[動画と音声]
+    status: planned
+  - name: GIF のボタン
+    id: gif-toggle
+    kind: button
+    component: dev/設計書/部品設計/GIF.ts#
+    args:
+      - name: src
+        value: GIF の `src`
+      - name: alt
+        value: GIF の alt
+      - name: paused
+        value: '`prefers-reduced-motion: reduce` のとき `true`'
+    position: 描く先の要素 > 画像の図の右上
+    description: GIF を止める・再生するボタン。止めると最初のフレームを重ねる
+    visible_when: 文書に GIF の画像があり、`gif` がオンで、`img.decode()` が成功したとき
+    tab_order: 0
+    action: 押すと止める・再生するを切り替える
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+    status: planned
+  - name: カード
+    id: card
+    kind: link
+    component: dev/設計書/部品設計/カード.ts#
+    args:
+      - name: kind
+        value: リンク先の拡張子が添付の拡張子の一覧にあれば `file`、それ以外の `http`・`https` の URL なら `link`
+      - name: href
+        value: リンク先
+      - name: title
+        value: リンクに書いた文字（URL をそのまま書いたときはスキームを除いた URL）
+      - name: fileKind
+        value: 添付の拡張子の種類
+    position: 描く先の要素
+    description: リンク 1 つだけの段落をリンクのカードか添付のカードにする。印刷ではリンク先の URL を文字で出す
+    visible_when: 文書にリンク 1 つだけの段落があり、`cards` がオンのとき
+    tab_order: 0
+    action: 押すとリンク先を開く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[リンクと添付のカード]
     status: planned
 mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。

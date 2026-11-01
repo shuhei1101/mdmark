@@ -1,10 +1,13 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import {
+  contrastRatio,
   countColorPixels,
   createBrowserHolder,
   pageOverflows,
   resolveColor,
+  resolveColorIn,
+  resolveLightColor,
 } from "../story.ts";
 
 const holder = createBrowserHolder();
@@ -904,4 +907,183 @@ test("test_sticky_rows", async () => {
   await expect
     .poll(async () => Math.abs((await footBottom()) - viewportHeight))
     .toBeLessThanOrEqual(1);
+});
+
+/** 本文の行ごとの色の名前と、各セルの面の色・文字の色・下の罫線の色・上の線（box-shadow） */
+function rowColors(page: Page) {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll(
+        "#storybook-root tbody tr:not(.mdmark-table-empty):not(.mdmark-row-detail)",
+      ),
+    ].map((row) => ({
+      name: row.querySelector("td")?.textContent ?? "",
+      color: row.getAttribute("data-color"),
+      cells: [...row.querySelectorAll("td")].map((cell) => {
+        const style = getComputedStyle(cell);
+        return {
+          background: style.backgroundColor,
+          text: style.color,
+          bottom: style.borderBottomColor,
+          shadow: style.boxShadow,
+          highlighted: cell.classList.contains("mdmark-col-highlight"),
+        };
+      }),
+    })),
+  );
+}
+
+/** 色のプリセットの面の薄い色と文字の色を、表の中で解決した色にする */
+async function accent(page: Page, color: string) {
+  return {
+    bg: await resolveColorIn(
+      page,
+      ".mdmark",
+      `var(--mdmark-color-accent-${color}-bg)`,
+    ),
+    text: await resolveColorIn(
+      page,
+      ".mdmark",
+      `var(--mdmark-color-accent-${color}-text)`,
+    ),
+  };
+}
+
+// highlight= の列は、セルを面の薄い色にし、見出しのセルの下端に線を付ける（Highlighted）
+test("test_highlighted", async () => {
+  // 準備・実行
+  const page = await open("highlighted");
+  // 検証
+  const blue = await accent(page, "blue");
+  const head = await page.evaluate(() =>
+    [...document.querySelectorAll("#storybook-root thead th")].map((th) => ({
+      highlighted: th.classList.contains("mdmark-col-highlight"),
+      color: th.getAttribute("data-color"),
+      background: getComputedStyle(th).backgroundColor,
+      shadow: getComputedStyle(th).boxShadow,
+    })),
+  );
+  expect(head.map((th) => th.highlighted)).toEqual([false, false, true]);
+  expect(head[2]?.color).toBe("blue");
+  expect(head[2]?.background).toBe(blue.bg);
+  // 見出しの下端の線は、色の文字の色の内側の影
+  expect(head[2]?.shadow).toContain(blue.text);
+  expect(head[2]?.shadow).toContain("inset");
+  const rows = await rowColors(page);
+  for (const row of rows) {
+    expect(row.cells.map((cell) => cell.highlighted)).toEqual([
+      false,
+      false,
+      true,
+    ]);
+    expect(row.cells[2]?.background).toBe(blue.bg);
+    expect(row.cells[0]?.background).not.toBe(blue.bg);
+    expect(
+      contrastRatio(row.cells[2]?.text ?? "", row.cells[2]?.background ?? ""),
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+// row-color= の行は、面の薄い色にし、行の上下に線を付ける（RowColors）
+test("test_row_colors", async () => {
+  // 準備・実行
+  const page = await open("row-colors");
+  // 検証
+  const green = await accent(page, "green");
+  const yellow = await accent(page, "yellow");
+  const rows = await rowColors(page);
+  expect(rows.map((row) => row.color)).toEqual([
+    "green",
+    "yellow",
+    null,
+    "green",
+  ]);
+  for (const cell of rows[0]?.cells ?? []) {
+    expect(cell.background).toBe(green.bg);
+    expect(cell.bottom).toBe(green.text);
+    // 先頭の行は上に線を付ける
+    expect(cell.shadow).toContain(green.text);
+    expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  }
+  for (const cell of rows[1]?.cells ?? []) {
+    expect(cell.background).toBe(yellow.bg);
+    expect(cell.bottom).toBe(yellow.text);
+    expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  }
+  // 色の無い行の後ろの色の行は、上に線を付ける
+  for (const cell of rows[3]?.cells ?? []) {
+    expect(cell.background).toBe(green.bg);
+    expect(cell.shadow).toContain(green.text);
+  }
+  for (const cell of rows[2]?.cells ?? []) {
+    expect(cell.background).not.toBe(green.bg);
+    expect(cell.background).not.toBe(yellow.bg);
+  }
+});
+
+// 並べ替えた後も、値で付けた色は行に付いたまま動く（RowColorsSorted）
+test("test_row_colors_sorted", async () => {
+  // 準備・実行
+  const page = await open("row-colors-sorted");
+  // 検証
+  const rows = await rowColors(page);
+  expect(rows.map((row) => [row.name, row.color])).toEqual([
+    ["納品の確認", "green"],
+    ["請求書の発行", null],
+    ["契約書の確認", "yellow"],
+    ["見積もりの作成", "green"],
+  ]);
+  const green = await accent(page, "green");
+  expect(rows[0]?.cells[0]?.background).toBe(green.bg);
+});
+
+// 列の強調と行の色が重なるセルは、行の色にする（HighlightAndRowColors）
+test("test_highlight_and_row_colors", async () => {
+  // 準備・実行
+  const page = await open("highlight-and-row-colors");
+  // 検証
+  const blue = await accent(page, "blue");
+  const red = await accent(page, "red");
+  const rows = await rowColors(page);
+  expect(rows.map((row) => row.color)).toEqual([null, "red", null, null]);
+  expect(rows[1]?.cells.map((cell) => cell.background)).toEqual([
+    red.bg,
+    red.bg,
+    red.bg,
+  ]);
+  for (const index of [0, 2, 3]) {
+    expect(rows[index]?.cells[2]?.background).toBe(blue.bg);
+  }
+});
+
+// 暗い配色では、暗い配色の色のプリセットで列と行を描く（RowColorsDark）
+test("test_row_colors_dark", async () => {
+  // 準備・実行
+  const page = await open("row-colors-dark");
+  // 検証
+  await expect(
+    page.locator(".mdmark").getAttribute("class"),
+  ).resolves.toContain("mdmark-theme-dark");
+  const green = await accent(page, "green");
+  const blue = await accent(page, "blue");
+  const rows = await rowColors(page);
+  expect(rows[0]?.cells[0]?.background).toBe(green.bg);
+  expect(rows[2]?.cells[2]?.background).toBe(blue.bg);
+  for (const row of rows) {
+    for (const cell of row.cells) {
+      expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    }
+  }
+  // 明るい配色の値と違う
+  const light = await resolveLightColor(
+    page,
+    "var(--mdmark-color-accent-green-bg)",
+  );
+  expect(green.bg).not.toBe(light);
 });

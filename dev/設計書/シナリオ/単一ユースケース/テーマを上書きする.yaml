@@ -205,6 +205,29 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+  - name: 正常シナリオ（色のプリセットを上書きする）
+    setup:
+      - name: 上書きの CSS を読むページ
+        description: 正常シナリオと同じページで、使う側の CSS が blue の文字の色の CSS 変数を `rgb(0, 0, 128)`、blue の面の色の CSS 変数を `rgb(230, 240, 255)` にする
+        notes: 変数名は `--mdmark-color-accent-blue-text`・`--mdmark-color-accent-blue-bg`（インターフェース定義『文書を描く』の制約「色のプリセット」）
+      - name: 色の名前を書いた Markdown
+        description: 行内のコード `` `badge:blue:参考` `` と、本文の `[決め手の 1 文]{color=blue}` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: 文書を描かせる
+        M-->>P: 色のプリセットの CSS 変数で色を付けた本文
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: 上書きした色で表示
+    expected:
+      - バッジと本文の `決め手の 1 文` の文字の色の計算値が `rgb(0, 0, 128)`
+      - バッジの面の色の計算値が `rgb(230, 240, 255)`
+    test: test_normal_when_color_preset_overridden
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（dev-swiss）で描かれる。
 issue: 3
 primary_actor: mdmark を使うアプリの開発者

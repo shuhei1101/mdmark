@@ -393,3 +393,57 @@ stories:
       columns: '["番号","数量"]'
       rows: '[["1","1"],["2","2"],["3","3"],["4","4"],["5","5"],["6","6"],["7","7"],["8","8"],["9","9"],["10","10"],["11","11"],["12","12"],["13","13"],["14","14"],["15","15"],["16","16"],["17","17"],["18","18"],["19","19"],["20","20"],["21","21"],["22","22"],["23","23"],["24","24"],["25","25"],["26","26"],["27","27"],["28","28"],["29","29"],["30","30"]]'
       totals: '[{"column":1,"calc":"sum"}]'
+  - name: Highlighted
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["案件","状態","金額（円）"]'
+      rows: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      highlight: '[{"column":2,"color":"blue"}]'
+  - name: RowColors
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["案件","状態","金額（円）"]'
+      rows: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      rowColors: '["green","yellow",null,"green"]'
+  - name: RowColorsSorted
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["案件","状態","金額（円）"]'
+      rows: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      rowColors: '["green","yellow",null,"green"]'
+      sort: '{"column":2,"direction":"ascending"}'
+  - name: HighlightAndRowColors
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["案件","状態","金額（円）"]'
+      rows: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      highlight: '[{"column":2,"color":"blue"}]'
+      rowColors: '[null,"red",null,null]'
+  - name: RowColorsDark
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["案件","状態","金額（円）"]'
+      rows: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      highlight: '[{"column":2,"color":"blue"}]'
+      rowColors: '["green","yellow",null,"green"]'
+      scheme: dark

@@ -5,6 +5,11 @@ import type {
   PreviewTheme,
   WebviewMessage,
 } from "../messages.ts";
+import {
+  applyAssetUrls,
+  attachMediaErrors,
+  collectAssetPaths,
+} from "./assets.ts";
 import { renderConfigBand } from "./parts/config-band.ts";
 import {
   type PreviewStatusState,
@@ -21,6 +26,9 @@ import {
 
 /** HTML を入れてからこのミリ秒が経っても描けていなければ読み込み中を出す */
 export const LOADING_DELAY_MS = 1000;
+
+/** `inspect` の `play` で、`play()` を呼んでから調べるまで待つミリ秒 */
+const INSPECT_PLAY_MS = 1000;
 
 /** VS Code が Webview に渡す API。状態の読み書きを持たない代役では、行を保存しない */
 declare function acquireVsCodeApi(): {
@@ -316,8 +324,19 @@ export class PreviewView {
     };
   }
 
-  /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる） */
-  inspect(selector: string): InspectedElement[] {
+  /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる */
+  async inspect(selector: string, play = false): Promise<InspectedElement[]> {
+    if (play) {
+      const media = [...document.querySelectorAll(selector)].filter(
+        (element): element is HTMLMediaElement =>
+          element instanceof HTMLMediaElement,
+      );
+      for (const element of media) {
+        element.muted = true;
+        await element.play().catch(() => undefined);
+      }
+      await new Promise((resolve) => setTimeout(resolve, INSPECT_PLAY_MS));
+    }
     return [...document.querySelectorAll(selector)].map((element) => {
       const rect = element.getBoundingClientRect();
       const inspected: InspectedElement = {
@@ -334,6 +353,9 @@ export class PreviewView {
       };
       if (element instanceof HTMLImageElement) {
         inspected.naturalWidth = element.naturalWidth;
+      }
+      if (element instanceof HTMLMediaElement) {
+        inspected.currentTime = element.currentTime;
       }
       return inspected;
     });
@@ -401,6 +423,14 @@ export function startPreview(): void {
         api.postMessage({ type: action });
         return;
       }
+      // 再生できない動画・音声の「既定のアプリで開く」は、`href` を見ずに書いたパスで開く
+      const opener = target?.closest<HTMLElement>('[data-action="openAsset"]');
+      if (opener) {
+        event.preventDefault();
+        event.stopPropagation();
+        api.postMessage({ type: "openAsset", path: opener.dataset.path ?? "" });
+        return;
+      }
       const link = target?.closest("a[href]");
       if (link === null || link === undefined) {
         return;
@@ -433,6 +463,8 @@ export function startPreview(): void {
       event.stopPropagation();
     }
   });
+  /** 最後に送った `resolveAssets` の番号 */
+  let assetsId = 0;
   window.addEventListener("message", (event: MessageEvent<HostMessage>) => {
     const message = event.data;
     if (message.type === "render") {
@@ -455,6 +487,16 @@ export function startPreview(): void {
       settled = true;
       api.postMessage({ type: "rendered" });
       saveLine();
+      // 相対パスの画像・動画・音声を、拡張機能に Webview の URL へ解決させる
+      const paths = collectAssetPaths(root);
+      if (paths.length) {
+        assetsId += 1;
+        api.postMessage({ type: "resolveAssets", id: assetsId, paths });
+      }
+    } else if (message.type === "assetsResolved") {
+      if (message.id === assetsId) {
+        applyAssetUrls(root, message.urls);
+      }
     } else if (message.type === "scrollToLine") {
       view.scrollToLine(message.line);
     } else if (message.type === "configError") {
@@ -462,13 +504,12 @@ export function startPreview(): void {
     } else if (message.type === "configOk") {
       view.clearConfigError();
     } else if (message.type === "inspect" && boot.test) {
-      api.postMessage({
-        type: "inspected",
-        id: message.id,
-        elements: view.inspect(message.selector),
+      void view.inspect(message.selector, message.play).then((elements) => {
+        api.postMessage({ type: "inspected", id: message.id, elements });
       });
     }
   });
+  attachMediaErrors(root);
   // スクロールの知らせは、描画の 1 フレームごとに 1 回にまとめて送る
   let scrollQueued = false;
   window.addEventListener(

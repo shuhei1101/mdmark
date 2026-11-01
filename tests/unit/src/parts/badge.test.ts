@@ -12,3 +12,15 @@ test("test_render_badge", async () => {
   // 検証
   expect(html).toBe('<span class="mdmark-badge">&lt;b&gt;v1&lt;/b&gt;</span>');
 });
+
+// 色の名前を data-color にする（正常系）
+test("test_render_badge_when_colored", async () => {
+  // 準備
+  const { renderBadge } = await loadBadge();
+  // 実行
+  const html = renderBadge({ label: "要確認", color: "red" });
+  // 検証
+  expect(html).toBe(
+    '<span class="mdmark-badge" data-color="red">要確認</span>',
+  );
+});

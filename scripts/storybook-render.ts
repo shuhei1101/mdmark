@@ -21,7 +21,9 @@ import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
+import { type AttachmentKind, renderCard } from "../src/parts/card.ts";
 import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
+import type { ColorName } from "../src/parts/colors.ts";
 import {
   type CommentFormState,
   renderCommentBubble,
@@ -44,7 +46,12 @@ import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
 import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
 import { renderFigure } from "../src/parts/figure.ts";
+import { renderGallery } from "../src/parts/gallery.ts";
+import { renderGif } from "../src/parts/gif.ts";
 import { type HintPlacement, renderHint } from "../src/parts/hint.ts";
+import { renderImageFigure } from "../src/parts/image.ts";
+import { renderLightbox } from "../src/parts/lightbox.ts";
+import { renderMedia } from "../src/parts/media.ts";
 import { renderNotice } from "../src/parts/notice.ts";
 import { type CopyState, renderParam } from "../src/parts/param.ts";
 import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
@@ -60,12 +67,14 @@ import {
   type TermTipCopyState,
   type TermTipDoc,
 } from "../src/parts/term-tip.ts";
+import { renderTextColor } from "../src/parts/text-color.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { renderConfigBand } from "../vscode/src/webview/parts/config-band.ts";
+import { renderMediaError } from "../vscode/src/webview/parts/media-error.ts";
 import {
   type PreviewStatusState,
   renderPreviewStatus,
@@ -263,6 +272,163 @@ function decodeValue(value: string): unknown {
 
 /** 部品の関数に渡す引数 */
 type PartArgs = Record<string, unknown>;
+
+// 画像・動画・音声のストーリーが `src` に書くファイルの置き場所（モックと同じ見本）
+const SAMPLE_MEDIA_DIR = join(
+  REPO_ROOT,
+  "dev",
+  "mock",
+  "refs",
+  "263",
+  "assets",
+  "media",
+);
+
+// 見本のファイルの拡張子ごとの MIME タイプ
+const SAMPLE_MEDIA_TYPES: Record<string, string> = {
+  svg: "image/svg+xml",
+  png: "image/png",
+  gif: "image/gif",
+  mp4: "video/mp4",
+  mp3: "audio/mpeg",
+};
+
+/** ストーリーの `src` に書いた見本のファイルを data: URL にする（`#` の後ろは除く）。見本に無い名前はそのまま返す */
+function sampleMedia(src: unknown): string {
+  const name = String(src ?? "").split("#", 1)[0] ?? "";
+  const type = SAMPLE_MEDIA_TYPES[name.slice(name.lastIndexOf(".") + 1)];
+  if (type === undefined || name.includes("/")) {
+    return String(src ?? "");
+  }
+  try {
+    const data = readFileSync(join(SAMPLE_MEDIA_DIR, name)).toString("base64");
+    return `data:${type};base64,${data}`;
+  } catch {
+    return name;
+  }
+}
+
+// 回り込みを見せるストーリーで図の後ろに置く段落
+const WRAP_PARAGRAPH =
+  "<p>図の横に回り込む本文の見本です。段落が図の高さを超えて続くときは、図の下から本文の幅いっぱいに戻ります。回り込みの幅と余白を確かめるため、何行かに折り返す長さの文を置いています。</p>";
+
+// ギャラリーの見本の列の数（部品の既定と同じ）
+const GALLERY_DEFAULT_COLS = 2;
+
+// 見本の SVG から大きさを読めないときの画像の大きさ
+const DEFAULT_SAMPLE_SIZE = { width: 320, height: 180 };
+
+// ギャラリーのストーリーに並べる画像
+const GALLERY_SAMPLES = [
+  "step-1.svg",
+  "step-2.svg",
+  "step-3.svg",
+  "step-4.svg",
+];
+
+// 番号を付けたギャラリーのストーリーに並べる画像と、その小さな番号の文字
+const NUMBERED_GALLERY_SAMPLES = [
+  { src: "screen-light.svg", caption: "明るい配色", letter: "a" },
+  { src: "screen-dark.svg", caption: "暗い配色", letter: "b" },
+];
+
+/** 画像の図のストーリーの引数から、見本の画像を当てた画像の図を描く */
+function storyImageFigure(args: PartArgs): string {
+  const align = args.align as "left" | "center" | "right" | undefined;
+  const html = renderImageFigure({
+    src: sampleMedia(args.src),
+    alt: String(args.alt ?? ""),
+    ...(args.caption === undefined ? {} : { caption: String(args.caption) }),
+    ...(args.width === undefined ? {} : { width: String(args.width) }),
+    ...(align === undefined ? {} : { align }),
+    lightbox: args.lightbox !== false,
+    ...(args.only === undefined ? {} : { only: args.only as "light" | "dark" }),
+    ...(args.id === undefined ? {} : { id: String(args.id) }),
+    ...(args.label === undefined ? {} : { label: String(args.label) }),
+  });
+  return align === "left" || align === "right"
+    ? `${html}${WRAP_PARAGRAPH}`
+    : html;
+}
+
+/** ギャラリーのストーリーの HTML（`numbered` のときは 2 枚に番号を付ける） */
+function storyGallery(cols: number, numbered: boolean): string {
+  const body = numbered
+    ? NUMBERED_GALLERY_SAMPLES.map(({ src, caption, letter }) =>
+        renderImageFigure({
+          src: sampleMedia(src),
+          alt: caption,
+          caption,
+          id: `fig-schemes-${letter}`,
+          label: `図 2${letter}`,
+        }),
+      ).join("")
+    : GALLERY_SAMPLES.map((src, index) =>
+        renderImageFigure({
+          src: sampleMedia(src),
+          alt: `手順 ${index + 1} の画面`,
+          caption: `手順 ${index + 1}`,
+        }),
+      ).join("");
+  return renderGallery({ cols, body });
+}
+
+/** ライトボックスのストーリー: 閉じた `dialog` を開いた状態で文書の中に置き、倍率を掛けた大きさで画像を描く */
+function storyLightbox(args: PartArgs): string {
+  const zoom = typeof args.zoom === "number" ? args.zoom : undefined;
+  const html = renderLightbox({
+    src: sampleMedia(args.src),
+    alt: String(args.alt ?? ""),
+    ...(args.caption === undefined ? {} : { caption: String(args.caption) }),
+    index: Number(args.index),
+    total: Number(args.total),
+    ...(zoom === undefined ? {} : { zoom }),
+  });
+  const scale = zoom ?? 1;
+  const size = sampleImageSize(args.src);
+  return html
+    .replace(
+      '<dialog class="mdmark-lightbox"',
+      '<dialog open class="mdmark-lightbox" style="position: static; width: 100%; height: 26rem"',
+    )
+    .replace(
+      'class="mdmark-lightbox-stage"',
+      `class="mdmark-lightbox-stage${scale > 1 ? " is-zoomed" : ""}"`,
+    )
+    .replace(
+      '<div class="mdmark-lightbox-sizer">',
+      `<div class="mdmark-lightbox-sizer" style="width: ${size.width * scale}px; height: ${size.height * scale}px">`,
+    )
+    .replace(
+      /(<div class="mdmark-lightbox-sizer"[^>]*><img )/,
+      `$1style="width: ${size.width}px; height: ${size.height}px; transform: scale(${scale})" `,
+    );
+}
+
+/** 見本の SVG の `width`・`height` を読む（読めなければ `DEFAULT_SAMPLE_SIZE`） */
+function sampleImageSize(src: unknown): { width: number; height: number } {
+  const name = String(src ?? "").split("#", 1)[0] ?? "";
+  try {
+    const svg = readFileSync(join(SAMPLE_MEDIA_DIR, name), "utf8");
+    const width = Number(/\bwidth="(\d+)"/.exec(svg)?.[1]);
+    const height = Number(/\bheight="(\d+)"/.exec(svg)?.[1]);
+    if (width > 0 && height > 0) {
+      return { width, height };
+    }
+  } catch {
+    // 見本に無い名前は既定の大きさにする
+  }
+  return DEFAULT_SAMPLE_SIZE;
+}
+
+/** 本文の文字の色のストーリー: 文字の中の `[文字](URL)` をリンクにする */
+function storyTextColor(args: PartArgs): string {
+  const text = String(args.text ?? "").replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2">$1</a>',
+  );
+  return `<p>${renderTextColor({ color: args.color as ColorName, text })}</p>`;
+}
 
 /** 中身を持つ部品の中身: ストーリーの引数 `body` があればそれ、無ければ見本 */
 function bodyOf(args: PartArgs, sample: string): string {
@@ -523,7 +689,63 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       copyState: args.copyState as "idle" | "copied" | undefined,
       copyFallback: args.copyFallback === true,
     }),
-  badge: (args) => renderBadge({ label: String(args.label ?? "") }),
+  badge: (args) =>
+    renderBadge({
+      label: String(args.label ?? ""),
+      ...(args.color === undefined ? {} : { color: args.color as ColorName }),
+    }),
+  "text-color": storyTextColor,
+  "image-figure": storyImageFigure,
+  gallery: (args) => {
+    const cols = Number(args.cols ?? GALLERY_DEFAULT_COLS);
+    // 番号を付けたギャラリーは、図表の番号の図に入れて全体の番号を下に出す
+    return args.numbered === true
+      ? renderFigure({
+          kind: "image",
+          id: "schemes",
+          number: 2,
+          caption: "配色ごとのプレビュー",
+          body: storyGallery(cols, true),
+        })
+      : storyGallery(cols, false);
+  },
+  lightbox: storyLightbox,
+  media: (args) =>
+    renderMedia({
+      kind: args.kind as "video" | "audio",
+      src: sampleMedia(args.src),
+      alt: String(args.alt ?? ""),
+      ...(args.caption === undefined ? {} : { caption: String(args.caption) }),
+      ...(args.width === undefined ? {} : { width: String(args.width) }),
+      ...(args.poster === undefined
+        ? {}
+        : { poster: sampleMedia(args.poster) }),
+      autoplay: args.autoplay === true,
+      loop: args.loop === true,
+    }),
+  // 文書と同じく画像の図の中に置く（`mount` は図の中の `img` を包む）
+  gif: (args) =>
+    `<figure class="mdmark-figure mdmark-image">${renderGif({
+      src: sampleMedia(args.src),
+      alt: String(args.alt ?? ""),
+      paused: args.paused === true,
+      lightbox: args.lightbox !== false,
+    })}</figure>`,
+  card: (args) =>
+    renderCard({
+      kind: args.kind as "link" | "file",
+      href: String(args.href ?? ""),
+      title: String(args.title ?? ""),
+      ...(args.fileKind === undefined
+        ? {}
+        : { fileKind: args.fileKind as AttachmentKind }),
+    }),
+  "media-error": (args) =>
+    renderMediaError({
+      kind: args.kind as "video" | "audio",
+      format: String(args.format ?? ""),
+      path: String(args.path ?? ""),
+    }),
   "code-block": (args) => {
     const language = String(args.language ?? "");
     const lines = args.lines as CodeLine[];
@@ -765,7 +987,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: args.id as string | undefined,
       number: Number(args.number),
       caption: args.caption as string | undefined,
-      body: bodyOf(args, args.kind === "table" ? SAMPLE_TABLE : SAMPLE_IMAGE),
+      body:
+        args.body === "gallery"
+          ? storyGallery(GALLERY_DEFAULT_COLS, true)
+          : bodyOf(args, args.kind === "table" ? SAMPLE_TABLE : SAMPLE_IMAGE),
     }),
 };
 
@@ -848,7 +1073,15 @@ export function renderPart(options: {
   for (const [key, value] of params) {
     args[key] = decodeValue(value);
   }
-  return `<div class="mdmark">${renderer(args)}</div>`;
+  // `scheme` が `dark` のストーリーは暗い配色で、`frameWidth` を持つストーリーはその幅の要素で包んで描く
+  const className =
+    args.scheme === "dark" ? "mdmark mdmark-theme-dark" : "mdmark";
+  const html = renderer(args);
+  const framed =
+    typeof args.frameWidth === "string"
+      ? `<div style="width: ${args.frameWidth}">${html}</div>`
+      : html;
+  return `<div class="${className}">${framed}</div>`;
 }
 
 /** 操作の処理（`source`）をブラウザの ES モジュールに束ねた文字。経路ごとに、初めて求められたときに束ねる */

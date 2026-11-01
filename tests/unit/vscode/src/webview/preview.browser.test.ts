@@ -14,6 +14,10 @@ const BLOCK_COUNT = 40;
 const PNG_1X1 =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
+/** 再生できる 3 秒の webm（VP8） */
+const SHORT_WEBM = new URL("../../../helpers/media/short.webm", import.meta.url)
+  .href;
+
 const placed: HTMLElement[] = [];
 
 /** `startPreview` が `window`・`document` に付けた受け取り（次のテストの `message` に反応しないよう、テストの後に外す） */
@@ -356,7 +360,7 @@ test("test_inspect", async () => {
   placed.push(holder);
   await (holder.querySelector("img") as HTMLImageElement).decode();
   // 実行
-  const [heading, image] = view.inspect("h1, img");
+  const [heading, image] = await view.inspect("h1, img");
   // 検証
   expect(heading?.tagName).toBe("h1");
   expect(heading?.className).toBe("x");
@@ -369,6 +373,22 @@ test("test_inspect", async () => {
     expect(typeof element?.top).toBe("number");
     expect(typeof element?.height).toBe("number");
   }
+});
+
+// 動画を再生してから調べる（正常系）
+test("test_inspect_when_play", async () => {
+  // 準備
+  const { mdmark } = createMdmark();
+  const { view } = await createView(mdmark);
+  const holder = document.createElement("div");
+  holder.innerHTML = `<video src="${SHORT_WEBM}" preload="auto"></video>`;
+  document.body.append(holder);
+  placed.push(holder);
+  // 実行
+  const [video] = await view.inspect("video", true);
+  // 検証
+  expect(video?.tagName).toBe("video");
+  expect(video?.currentTime).toBeGreaterThanOrEqual(0.5);
 });
 
 // 404 は指定したバージョンが無い（正常系）
@@ -594,6 +614,68 @@ test("test_start_preview_when_scrolled", async () => {
       const lastLine = setState.mock.lastCall?.[0]?.line;
       expect(lastLine).toBeTypeOf("number");
       expect(Math.abs(lastLine - 30)).toBeLessThan(0.05);
+    });
+  } finally {
+    URL.revokeObjectURL(moduleUrl);
+  }
+});
+
+// 描いた後に相対パスを問い合わせ、返った URL に替える（正常系）
+test("test_start_preview_when_assets", async () => {
+  // 準備: `![操作](m/demo.mp4)` を動画にして描く配布物の代役
+  const { startPreview } = await loadPreview();
+  const { postMessage } = stubVsCodeApi(undefined);
+  const moduleUrl = URL.createObjectURL(
+    new Blob(
+      [
+        `export const diffModes = ["blocks"];
+export const mount = (element) => {
+  element.innerHTML = '<figure class="mdmark-figure mdmark-media"><video src="m/demo.mp4" controls aria-label="操作"></video></figure>';
+  return { update() {}, destroy() { element.replaceChildren(); } };
+};`,
+      ],
+      { type: "text/javascript" },
+    ),
+  );
+  try {
+    const root = createRoot();
+    root.dataset.distJs = moduleUrl;
+    startPreview();
+    await vi.waitFor(() => {
+      expect(postMessage).toHaveBeenCalledWith({ type: "ready" });
+    });
+    // 実行: 描く
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: renderMessage("![操作](m/demo.mp4)"),
+      }),
+    );
+    // 検証: 相対パスを問い合わせる
+    const request = await vi.waitFor(() => {
+      const found = postMessage.mock.calls
+        .map(([message]) => message)
+        .find((message) => message.type === "resolveAssets");
+      if (!found) {
+        throw new Error("resolveAssets が送られていない");
+      }
+      return found;
+    });
+    expect(request.paths).toEqual(["m/demo.mp4"]);
+    // 実行: 同じ id で URL を返す
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: {
+          type: "assetsResolved",
+          id: request.id,
+          urls: { "m/demo.mp4": "https://w/demo.mp4" },
+        },
+      }),
+    );
+    // 検証
+    await vi.waitFor(() => {
+      expect(root.querySelector("video")?.getAttribute("src")).toBe(
+        "https://w/demo.mp4",
+      );
     });
   } finally {
     URL.revokeObjectURL(moduleUrl);

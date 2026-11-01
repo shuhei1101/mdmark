@@ -1,0 +1,74 @@
+title: GIF
+implementation: src/parts/gif.ts#renderGif
+story: Parts/Gif
+test_file: tests/integration/lib/gif.story.test.ts
+states:
+  - name: Playing
+    description: 再生している。右上に停止のボタンを出す
+    args:
+      - name: src
+        value: build.gif
+      - name: alt
+        value: ビルドの進み具合
+  - name: Paused
+    description: 止めた。最初のフレームを重ね、再生のボタンを押された状態で出す（動きを減らす設定のときもこの状態で始める）
+    args:
+      - name: src
+        value: build.gif
+      - name: alt
+        value: ビルドの進み具合
+      - name: paused
+        value: 'true'
+  - name: NoLightbox
+    description: '`{nolightbox}` の GIF。拡大のボタンで包まず、止める・再生するボタンだけを出す'
+    args:
+      - name: src
+        value: build.gif
+      - name: alt
+        value: ビルドの進み具合
+      - name: lightbox
+        value: 'false'
+lead: GIF の画像に、右上の止める・再生するボタンと、止めたときに重ねる最初のフレームの `canvas` を付ける。
+args:
+  - name: src
+    type: 文字列
+    required: true
+    description: GIF の URL
+  - name: alt
+    type: 文字列
+    required: true
+    description: 画像の代わりの文字
+  - name: paused
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '止めているか。`true` のとき `canvas` を出して `img` を `visibility: hidden` にし、ボタンを `aria-pressed="true"`・`GIF を再生` にする'
+  - name: lightbox
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`img` を部品『画像の図』の拡大のボタンで包むか'
+events:
+  - name: 止める・再生する
+    when: 止める・再生するボタンを押す（Enter・Space を含む）
+    value: ボタンの `aria-pressed`
+    description: '`mount` が `paused` を切り替える'
+css_properties:
+  - name: --mdmark-color-bg
+    syntax: <color>
+    default: '#ffffff（ダーク #111113）'
+    description: ボタンの地の色
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#e4e4e7（ダーク #26262b）'
+    description: ボタンの線の色
+accessibility:
+  - ボタンは読み上げの名前を `GIF を停止`（再生中）・`GIF を再生`（停止中）にし、`aria-pressed` で止めているかを示す。アイコンは lucide の `pause`・`play`
+  - '`prefers-reduced-motion: reduce` のときは止めた状態で始める'
+  - 止めたときの `canvas` は `aria-hidden` で、`img` の `alt` が名前を持つ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[GIF]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+status: planned
+notes:
+  HTML: '`<span class="mdmark-gif">{画像の図の拡大のボタンで包んだ img}<canvas aria-hidden="true" hidden></canvas><button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止" title="GIF を停止">{lucide の pause}</button></span>`。止め方は PoC 検証の案 A（止めると最初のフレームに戻る）。モックは `dev/mock/components/media/` の GIF の場面'

@@ -242,6 +242,55 @@ test("test_sanitize_when_source_line", async () => {
   expect(sanitized.match(/data-source-line/g) ?? []).toHaveLength(2);
 });
 
+// 記法の動画を残し、文書に書いた動画を落とす（正常系）
+test("test_sanitize_when_media", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const html = [
+    `<figure ${own}><video ${own} src="a.mp4" controls preload="metadata" playsinline aria-label="操作" poster="a.png"></video></figure>`,
+    '<video src="b.mp4"><source src="b.webm"></video>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized.match(/<video\b/g) ?? []).toHaveLength(1);
+  const video = /<video\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+  for (const attribute of [
+    'src="a.mp4"',
+    "controls",
+    'preload="metadata"',
+    "playsinline",
+    'aria-label="操作"',
+    'poster="a.png"',
+  ]) {
+    expect(video).toContain(attribute);
+  }
+  expect(sanitized).not.toContain("b.mp4");
+  expect(sanitized).not.toContain("<source");
+});
+
+// 画像の幅とギャラリーの列の数の style だけを残す（正常系）
+test("test_sanitize_when_image_style", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const html = [
+    `<figure ${own} style="--mdmark-image-width: 40%">a</figure>`,
+    `<div ${own} style="--mdmark-gallery-cols: 3">b</div>`,
+    `<figure ${own} style="--mdmark-image-width: calc(1px)">c</figure>`,
+    '<p style="--mdmark-image-width: 10px">d</p>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toMatch(/style="--mdmark-image-width:\s?40%"/);
+  expect(sanitized).toMatch(/style="--mdmark-gallery-cols:\s?3"/);
+  expect(sanitized).not.toContain("calc");
+  expect(sanitized.match(/style=/g) ?? []).toHaveLength(2);
+  expect(sanitized).toContain("<p>d</p>");
+});
+
 /** 埋め込んだ HTML を落とす処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadEmbedded = async () => {
   const { sanitizeEmbedded, filterEmbeddedStyle } = await import(

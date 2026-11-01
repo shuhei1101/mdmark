@@ -217,3 +217,26 @@ test("test_build_site_when_build_missing", async () => {
   await expect(result).rejects.toThrow("build.include");
   await expect(result).rejects.toThrow("build.out");
 });
+
+// 同じ画像を 1 回だけ埋める（正常系）
+test("test_build_site_when_shared_image", async () => {
+  // 準備
+  const { buildSite } = await loadBuild();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": createConfig([
+      '  include: ["**/*.md"]',
+      "  out: dist/docs.html",
+    ]),
+    "a.md": "# A\n\n![図](img/a.png)\n",
+    "b.md": "# B\n\n![図](img/a.png)\n",
+    "img/a.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+  });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = await buildSite({ cwd: dir, distDir });
+  // 検証
+  const html = await readFile(result.out, "utf8");
+  expect(html.match(/data:image\/png;base64,/g) ?? []).toHaveLength(1);
+  expect(Object.keys(readPayload(html).assets ?? {})).toHaveLength(1);
+});
