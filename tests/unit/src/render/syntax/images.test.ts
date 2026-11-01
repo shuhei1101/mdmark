@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { ImageAttributes } from "../../../../../src/render/syntax/images.ts";
 import { flattenTokens, parseWithRules } from "../../../helpers/core-rules.ts";
 import {
   findTag,
@@ -159,7 +160,9 @@ test("test_read_images_when_unreadable", async () => {
   for (const text of ["width=big", "foo", ...IMAGE_ATTRIBUTE_NAMES]) {
     expect(warning).toContain(text);
   }
-  expect(tokens[0]?.meta?.mdmarkImage?.align).toBe("center");
+  expect(
+    (tokens[0]?.meta?.mdmarkImage as ImageAttributes | undefined)?.align,
+  ).toBe("center");
 });
 
 // images がオフなら属性を読まない（正常系）

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { Mark } from "../../../../../src/render/marks.ts";
 import { parseWithRules } from "../../../helpers/core-rules.ts";
 import { findTag, findTags, innerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
@@ -14,7 +15,7 @@ async function galleryMark(markdown: string) {
   if (mark === undefined) {
     throw new Error("ギャラリーのマーカーが無い");
   }
-  return mark.meta;
+  return mark.meta as Mark;
 }
 
 /** `count` 枚の画像だけの段落を並べた Markdown を返す */
