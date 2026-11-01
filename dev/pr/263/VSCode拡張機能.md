@@ -35,13 +35,13 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| mp4（H.264・AAC）の動画 | `canplay` が来て、`play()` の 1 秒後に `currentTime` が 0.5 秒以上進む | ❌ 映像は 1.0 秒進むが、音声を復号しない | [#264](https://github.com/shuhei1101/mdmark/pull/264) | `webkitAudioDecodedByteCount` が 0 |
-| m4a（AAC）の音声 | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264) | `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`。AAC だけの mp4 も同じ |
-| mp3 の音声 | 同上 | ✅ 0.92 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | |
-| webm（記録だけ） | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264) | VP9・Opus と VP8・Vorbis のどちらも `DEMUXER_ERROR_COULD_NOT_OPEN` |
-| ogg（Vorbis。記録だけ） | 同上 | ✅ 0.79 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | |
-| wav（記録だけ） | 同上 | ✅ 0.70 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | |
-| mov（H.264・AAC。記録だけ） | 同上 | 映像だけ ✅ 1.0 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | mp4 と同じく音声を復号しない |
+| mp4（H.264・AAC）の動画 | `canplay` が来て、`play()` の 1 秒後に `currentTime` が 0.5 秒以上進む | ❌ 映像は 1.0 秒進むが、音声を復号しない | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | `webkitAudioDecodedByteCount` が 0 |
+| m4a（AAC）の音声 | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`。AAC だけの mp4 も同じ |
+| mp3 の音声 | 同上 | ✅ 0.92 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
+| webm（記録だけ） | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | VP9・Opus と VP8・Vorbis のどちらも `DEMUXER_ERROR_COULD_NOT_OPEN` |
+| ogg（Vorbis。記録だけ） | 同上 | ✅ 0.79 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
+| wav（記録だけ） | 同上 | ✅ 0.70 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
+| mov（H.264・AAC。記録だけ） | 同上 | 映像だけ ✅ 1.0 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | mp4 と同じく音声を復号しない |
 
 <!-- /table -->
 
