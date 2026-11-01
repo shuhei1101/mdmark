@@ -19,7 +19,7 @@ import type { HostMessage, WebviewMessage } from "../../src/messages.ts";
 import type { TagRequestTiming } from "./stub-server.ts";
 
 /** 拡張機能の ID */
-export const EXTENSION_ID = "ShuheiNishikawa.mdmark";
+export const EXTENSION_ID = "ShuheiNishikawa.mdmark-vscode";
 
 /** リポジトリの直下（`vscode/out/test/` の 3 つ上） */
 export const REPO_ROOT = resolve(import.meta.dirname, "..", "..", "..");
