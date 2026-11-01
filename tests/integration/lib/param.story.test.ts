@@ -71,3 +71,16 @@ test("test_failed", async () => {
   await expect(fallback.innerText()).resolves.toContain('"value": 8');
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 写すボタンの文言を替えると、アイコンの後ろの文字と読み上げの名前が替えた文言になる（CustomCopyLabel）
+test("test_custom_copy_label", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-paramcontrol--custom-copy-label");
+  // 検証
+  await expect(
+    page.locator("button.mdmark-param-copy").innerText(),
+  ).resolves.toBe("コピー");
+  await expect(
+    page.getByRole("button", { name: "コピー", exact: true }).count(),
+  ).resolves.toBe(1);
+});
