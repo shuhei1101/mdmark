@@ -922,9 +922,9 @@ functions:
     summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
     args:
       - name: options
-        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void }'
+        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; fitHeight?: boolean; dragIgnore?: string; keyTargets?: HTMLElement[] }'
         required: true
-        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数
+        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）
     returns:
       type: '{ reset(): void; fit(): number; detach(): void }'
       description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返す関数・付けた操作を外す関数

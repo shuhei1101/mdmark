@@ -1393,7 +1393,6 @@ functions:
       - '#functions[collectLightboxImages]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderImageOpener]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderLightbox]
-      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
       - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[attachZoom]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
@@ -1454,7 +1453,6 @@ functions:
       description: 包みとボタンを外し、`img` を元に戻す関数
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderGifToggle]
-      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
     unit_tests:

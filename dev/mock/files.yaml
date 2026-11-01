@@ -569,6 +569,7 @@ files:
     description: '#263 のモックが共通で読む素材: 画像・動画・GIF・カードの印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:印刷, tool:css]
   - path: refs/263/assets/media.css
+    id: dev/mock/refs/263/assets/media.css
     description: '#263 のモックが共通で読む素材: 画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え、動画・音声、GIF の止める・再生するボタン、リンクと添付のカードの規則。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/263/assets/media.js
