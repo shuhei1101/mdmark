@@ -74,4 +74,18 @@ diff の見どころ: `poc/webview/test.cjs`（Webview の CSP と、形式ご�
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | 12 テスト pass（2 テストは新規）<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+| `tests/unit/vscode/src/preview/assets.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+| [tests/unit/vscode/src/preview/html.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/preview/html.test.ts) | 全実行 | 変更 | ✅ | 6 テスト pass<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+| `tests/unit/vscode/src/webview/assets.browser.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+| `tests/unit/vscode/src/webview/parts/media-error.test.ts` | 全実行 | 新規 | ✅ | 1 テスト pass<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+| [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/preview.browser.test.ts) | 全実行 | 変更 | ✅ | 21 テスト pass（1 テストは新規）<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+| `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 177 ファイル・1230 テスト pass<br>lint（Biome・ルートと VS Code 拡張機能の tsc）も pass: `テスト結果/20261102042649_86877f7_lint.log`<br>`テスト結果/20261102042548_86877f7_単体テスト.log` |
+
+### 結合
+
 なし
