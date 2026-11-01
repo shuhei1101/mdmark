@@ -22,7 +22,7 @@ export type HostMessage =
       /** 書いたパスから Webview の URL を引く表。見つからないパスは `null` */
       urls: Record<string, string | null>;
     }
-  | { type: "inspect"; id: number; selector: string };
+  | { type: "inspect"; id: number; selector: string; play?: boolean };
 
 /** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確かめるために返す） */
 export type InspectedElement = {
@@ -40,6 +40,8 @@ export type InspectedElement = {
   top: number;
   /** 高さ（px） */
   height: number;
+  /** `video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値 */
+  currentTime?: number;
 };
 
 /** 配布物を読めない理由 */

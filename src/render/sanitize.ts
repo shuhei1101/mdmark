@@ -59,9 +59,27 @@ const MEDIA_TAGS = new Set(["video", "audio"]);
 const SOURCE_LINE_ATTRIBUTE = "data-source-line";
 const SOURCE_LINE_PATTERN = /^\d+$/;
 
-/** 画像の `src` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 だけ */
+/** 画像の `src` と動画の `poster` に許す `data:` URL（書き出しが埋める画像）: 画像の種類と base64 と、配色ごとの画像のフラグメントだけ */
 const DATA_IMAGE_PATTERN =
-  /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*$/;
+  /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
+
+/** 許さない形の `data:` URL を消す: `img` の `src` と `video` の `poster` は画像の形だけを残し、`video`・`audio` の `src` は消す */
+function dropDataUrls(tagName: string, attribs: Record<string, string>): void {
+  const imageAttribute =
+    tagName === "img" ? "src" : tagName === "video" ? "poster" : undefined;
+  const imageUrl =
+    imageAttribute === undefined ? undefined : attribs[imageAttribute];
+  if (
+    imageAttribute !== undefined &&
+    imageUrl?.startsWith("data:") &&
+    !DATA_IMAGE_PATTERN.test(imageUrl)
+  ) {
+    delete attribs[imageAttribute];
+  }
+  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
+    delete attribs.src;
+  }
+}
 
 /** `tabindex` があれば 0 にする */
 function fixTabindex(
@@ -233,11 +251,11 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     li: ["task-list-item"],
   },
   allowedSchemes: ["http", "https", "mailto"],
-  // 画像の `src` だけ、`data:` URL も許す（種類は `transformTags` が絞る）
+  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す形は `transformTags` が絞る）
   allowedSchemesByTag: {
     img: ["http", "https", "data"],
-    video: ["http", "https"],
-    audio: ["http", "https"],
+    video: ["http", "https", "data"],
+    audio: ["http", "https", "data"],
   },
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false,
@@ -421,13 +439,7 @@ export function sanitizeEmbedded(
         if (tagName === "button") {
           next.type = "button";
         }
-        if (
-          tagName === "img" &&
-          next.src?.startsWith("data:") &&
-          !DATA_IMAGE_PATTERN.test(next.src)
-        ) {
-          delete next.src;
-        }
+        dropDataUrls(tagName, next);
         // 図の部品の要素は、書いたものを中身ごと落とす（`button` だけは残す）
         if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
           next[DROP_ATTRIBUTE] = "1";
@@ -457,14 +469,8 @@ export function sanitize(html: string, nonce: string): string {
         ) {
           delete next[SOURCE_LINE_ATTRIBUTE];
         }
-        // 画像の `data:` URL は、画像の種類と base64 の形のものだけ残す
-        if (
-          tagName === "img" &&
-          next.src?.startsWith("data:") &&
-          !DATA_IMAGE_PATTERN.test(next.src)
-        ) {
-          delete next.src;
-        }
+        // `data:` URL は、画像の形のものだけ残す
+        dropDataUrls(tagName, next);
         const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
         if (align && ALIGN_VALUES.includes(align)) {
           next.class = [next.class, `mdmark-align-${align}`]

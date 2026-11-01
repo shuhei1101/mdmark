@@ -509,8 +509,8 @@ export class PreviewPanel {
     void this.post({ type: "scrollToLine", line: range.start });
   }
 
-  /** 新しい `id` で `inspect` を送り、`inspected` を受けたら解決する（テストのときだけ呼ばれる） */
-  inspect(selector: string): Promise<InspectedElement[]> {
+  /** 新しい `id` で `inspect` を送り、`inspected` を受けたら解決する（テストのときだけ呼ばれる）。`play` は `inspect` に渡す */
+  inspect(selector: string, play = false): Promise<InspectedElement[]> {
     const id = this.nextInspectId;
     this.nextInspectId += 1;
     return new Promise((resolve, reject) => {
@@ -522,7 +522,7 @@ export class PreviewPanel {
         clearTimeout(timeout);
         resolve(elements);
       });
-      void this.post({ type: "inspect", id, selector });
+      void this.post({ type: "inspect", id, selector, play });
     });
   }
 

@@ -803,15 +803,18 @@ export function decorateTables(state: StateCore): void {
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
     // 警告は、囲みの頭（折り畳みの外）に差し込む
     const divEnd = head.indexOf(">") + 1;
-    const warnings = range
-      ? warningsOf(range.mark.raw, [...spec.warnings, ...colors.warnings])
-      : [];
+    const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
 
     if (range && range.close < 0 && !range.warned) {
       range.warned = true;
       warnings.push(unclosedWarning(range.mark));
     }
-    // 集計できない列の警告は、表の囲みの直前に置く
+    // 色の指定の警告と集計できない列の警告は、表の囲みの直前に置く
+    if (range) {
+      for (const warning of warningsOf(range.mark.raw, colors.warnings)) {
+        out.push(warningBlock(state, warning));
+      }
+    }
     if (spec.features.includes("total")) {
       for (const warning of unreadableTotalWarnings({
         tokens,

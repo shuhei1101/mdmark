@@ -213,12 +213,15 @@ export class PreviewManager {
   }
 
   /** 最後に表に出たパネルの要素を調べる（テストのときだけ `activate` が返す） */
-  async inspectPreview(selector: string): Promise<InspectedElement[]> {
+  async inspectPreview(
+    selector: string,
+    play = false,
+  ): Promise<InspectedElement[]> {
     const panel = this.lastActive;
     if (panel === undefined) {
       throw new Error("開いているプレビューが無い");
     }
-    return panel.inspect(selector);
+    return panel.inspect(selector, play);
   }
 }
 

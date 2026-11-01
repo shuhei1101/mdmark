@@ -27,6 +27,9 @@ import {
 /** HTML を入れてからこのミリ秒が経っても描けていなければ読み込み中を出す */
 export const LOADING_DELAY_MS = 1000;
 
+/** `inspect` の `play` で、`play()` を呼んでから調べるまで待つミリ秒 */
+const INSPECT_PLAY_MS = 1000;
+
 /** VS Code が Webview に渡す API。状態の読み書きを持たない代役では、行を保存しない */
 declare function acquireVsCodeApi(): {
   postMessage: (message: WebviewMessage) => void;
@@ -321,8 +324,19 @@ export class PreviewView {
     };
   }
 
-  /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる） */
-  inspect(selector: string): InspectedElement[] {
+  /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる */
+  async inspect(selector: string, play = false): Promise<InspectedElement[]> {
+    if (play) {
+      const media = [...document.querySelectorAll(selector)].filter(
+        (element): element is HTMLMediaElement =>
+          element instanceof HTMLMediaElement,
+      );
+      for (const element of media) {
+        element.muted = true;
+        await element.play().catch(() => undefined);
+      }
+      await new Promise((resolve) => setTimeout(resolve, INSPECT_PLAY_MS));
+    }
     return [...document.querySelectorAll(selector)].map((element) => {
       const rect = element.getBoundingClientRect();
       const inspected: InspectedElement = {
@@ -339,6 +353,9 @@ export class PreviewView {
       };
       if (element instanceof HTMLImageElement) {
         inspected.naturalWidth = element.naturalWidth;
+      }
+      if (element instanceof HTMLMediaElement) {
+        inspected.currentTime = element.currentTime;
       }
       return inspected;
     });
@@ -487,10 +504,8 @@ export function startPreview(): void {
     } else if (message.type === "configOk") {
       view.clearConfigError();
     } else if (message.type === "inspect" && boot.test) {
-      api.postMessage({
-        type: "inspected",
-        id: message.id,
-        elements: view.inspect(message.selector),
+      void view.inspect(message.selector, message.play).then((elements) => {
+        api.postMessage({ type: "inspected", id: message.id, elements });
       });
     }
   });

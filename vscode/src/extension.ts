@@ -25,7 +25,10 @@ import { baseDirOf } from "./workspace.ts";
 /** テストのときの戻り値: 結合テストが Webview の DOM を確かめる口 */
 export type TestApi = {
   /** 最後に表に出たパネルの要素を調べる */
-  inspectPreview: (selector: string) => Promise<InspectedElement[]>;
+  inspectPreview: (
+    selector: string,
+    play?: boolean,
+  ) => Promise<InspectedElement[]>;
 };
 
 /** パネルが 1 つ以上開いているかを書くコンテキストキー */
@@ -175,5 +178,7 @@ export function activate(context: ExtensionContext): TestApi | undefined {
   if (!test) {
     return undefined;
   }
-  return { inspectPreview: (selector) => manager.inspectPreview(selector) };
+  return {
+    inspectPreview: (selector, play) => manager.inspectPreview(selector, play),
+  };
 }

@@ -3403,8 +3403,9 @@
       margin-block-end: 0;
     }
 
-    /* 図の中の画像: 幅に収め、寸法を先に確保する */
+    /* 図の中の画像: 枠線を含めて幅に収め、寸法を先に確保する */
     .mdmark-figure img {
+      box-sizing: border-box;
       max-width: 100%;
       height: auto;
       border: 1px solid var(--mdmark-color-border);
@@ -7388,8 +7389,8 @@
 
   /* 画像・動画・音声・GIF・リンクと添付のカード: 画像の図・拡大のボタン・ギャラリー・配色ごとの画像・再生バー・止める・再生するボタン・カード。`dev/mock/refs/263/assets/media.css` から取る */
   .mdmark {
-    /* 画像だけの段落の図: 幅は属性の width（px か %）を受け取る */
-    .mdmark-image {
+    /* 画像だけの段落の図・動画と音声の図: 幅は属性の width（px か %）を受け取る */
+    :is(.mdmark-image, .mdmark-media) {
       width: var(--mdmark-image-width, auto);
       max-width: 100%;
       margin-block: var(--mdmark-space);
@@ -7536,6 +7537,7 @@
     /* 動画: 再生バー付き。幅は属性の width、無ければ本文の幅に収める */
     .mdmark-media video {
       display: block;
+      box-sizing: border-box;
       width: 100%;
       height: auto;
       border: 1px solid var(--mdmark-color-border);
