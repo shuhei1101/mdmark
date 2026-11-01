@@ -753,6 +753,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         id: "story-param",
         ...(typeof args.value === "number" ? { value: args.value } : {}),
         ...(args.copy === undefined ? {} : { copy: args.copy as CopyState }),
+        ...(typeof args.copyLabel === "string"
+          ? { copyLabel: args.copyLabel }
+          : {}),
       }),
       args,
     ),

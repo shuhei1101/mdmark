@@ -24,3 +24,9 @@ stories:
     args:
       value: 8
       copy: failed
+  - name: CustomCopyLabel
+    parameters:
+      server:
+        id: param
+    args:
+      copyLabel: コピー

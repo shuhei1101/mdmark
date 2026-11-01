@@ -58,6 +58,7 @@ export function renderDocument(options: {
   const env: RenderEnv = {
     libraries: options.config.libraries,
     defaults: options.config.features,
+    labels: options.config.labels,
     featureArgs: [],
     features: {},
     headings: [],

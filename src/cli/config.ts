@@ -353,6 +353,10 @@ export function validateConfig(
     delete config.tooltips;
   }
 
+  if (raw.labels !== undefined && !isValidLabels(raw.labels, file, issues)) {
+    delete config.labels;
+  }
+
   if (raw.syntax !== undefined && !isValidSyntax(raw.syntax, file, issues)) {
     delete config.syntax;
   }
@@ -419,6 +423,38 @@ function isValidTooltips(
         file,
         "tooltips.placement",
         "`tooltips.placement` は `top` か `bottom` で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `labels` を検める。キーと値の形でなければ、`paramCopy` が空でない文字列でなければ、`schema` のずれを積んで `false` を返す（知らないキーは拒まない） */
+function isValidLabels(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "labels",
+        "`labels` は部品の文言のキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.paramCopy !== undefined &&
+    (typeof value.paramCopy !== "string" || value.paramCopy === "")
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "labels.paramCopy",
+        "`labels.paramCopy` は空でない文字列で書いてください。",
       ),
     );
     return false;

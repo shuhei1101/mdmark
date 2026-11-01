@@ -44,6 +44,8 @@ export type RenderEnv = {
   libraries: Record<string, LibraryEntry>;
   /** 設定の `features` */
   defaults: Record<string, boolean>;
+  /** 既定を当てた設定の `labels`（部品の文言） */
+  labels?: { paramCopy: string };
   /** `features` の印の引数を書いた順に並べたもの */
   featureArgs: string[];
   /** `defaults` に `featureArgs` を重ねたもの */

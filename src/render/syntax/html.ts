@@ -101,7 +101,10 @@ function takeParts(options: {
         if (directive === "param") {
           const param = definition as MdmarkParamDefinition;
           definitions.push(param);
-          part = renderParam(param, { id: `${PARAM_ID_PREFIX}-${count}` });
+          part = renderParam(param, {
+            id: `${PARAM_ID_PREFIX}-${count}`,
+            copyLabel: env.labels?.paramCopy,
+          });
         } else {
           part = renderDiagram({
             kind: directive,
