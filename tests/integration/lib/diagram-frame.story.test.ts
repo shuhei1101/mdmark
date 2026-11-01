@@ -1,6 +1,6 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import { createBrowserHolder, pageOverflows, resolveColor } from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -17,6 +17,19 @@ async function openFrame(id: string, fitted: boolean): Promise<Page> {
     );
   }
   return page;
+}
+
+/** 表示する箱の既定の線（`inset 0 0 0 1px` の `--mdmark-color-border`）の computed の `box-shadow` */
+async function defaultBoxShadow(page: Page): Promise<string> {
+  const border = await resolveColor(page, "var(--mdmark-color-border)");
+  return `${border} 0px 0px 0px 1px inset`;
+}
+
+/** 表示する箱（`selector` の中のもの）の computed の `box-shadow` */
+function boxShadow(page: Page, selector = ".mdmark-diagram-box") {
+  return page
+    .locator(selector)
+    .evaluate((box) => getComputedStyle(box).boxShadow);
 }
 
 /** 読み上げの名前を持つボタンの状態 */
@@ -45,6 +58,8 @@ test("test_fit", async () => {
     false,
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
+  // 面に包まない表示する箱は、既定の線で描く
+  await expect(boxShadow(page)).resolves.toBe(await defaultBoxShadow(page));
 });
 
 // 1 段拡大して動かした状態は、移動のボタンを出す（Zoomed）
@@ -93,6 +108,24 @@ test("test_fullscreen", async () => {
   // 検証
   await expect(tool(page, "全画面を閉じる").count()).resolves.toBe(1);
   await expect(tool(page, "全画面で開く").count()).resolves.toBe(0);
+});
+
+// 使う側の枠を持つ面で `--mdmark-diagram-box-shadow: none` を指定すると、表示する箱の線が無い（InFramedSurface）
+test("test_in_framed_surface", async () => {
+  // 準備・実行
+  const page = await openFrame("in-framed-surface", true);
+  // 検証
+  await expect(boxShadow(page)).resolves.toBe("none");
+});
+
+// 枠を持つ面の中の図を全画面で開くと、面の値を受け継がず、モーダルの中の表示する箱に既定の線がある（InFramedSurfaceFullscreen）
+test("test_in_framed_surface_fullscreen", async () => {
+  // 準備・実行
+  const page = await openFrame("in-framed-surface-fullscreen", false);
+  // 検証
+  await expect(
+    boxShadow(page, ".mdmark-diagram-dialog .mdmark-diagram-box"),
+  ).resolves.toBe(await defaultBoxShadow(page));
 });
 
 /** `--mdmark-diagram-max-height` の既定（36rem）の px */
