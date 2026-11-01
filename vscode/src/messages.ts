@@ -42,6 +42,8 @@ export type InspectedElement = {
   height: number;
   /** `video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値 */
   currentTime?: number;
+  /** `video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読めた） */
+  readyState?: number;
 };
 
 /** 配布物を読めない理由 */

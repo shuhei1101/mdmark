@@ -324,7 +324,7 @@ export class PreviewView {
     };
   }
 
-  /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる */
+  /** `selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる（`play()` が拒まれた要素もそのまま調べる） */
   async inspect(selector: string, play = false): Promise<InspectedElement[]> {
     if (play) {
       const media = [...document.querySelectorAll(selector)].filter(
@@ -356,6 +356,7 @@ export class PreviewView {
       }
       if (element instanceof HTMLMediaElement) {
         inspected.currentTime = element.currentTime;
+        inspected.readyState = element.readyState;
       }
       return inspected;
     });
