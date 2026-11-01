@@ -96,7 +96,7 @@ functions:
         summary: hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに当たる
         condition: '`plugin/hooks/hooks.json` の PreToolUse の `matcher` を読む'
         mock: なし
-        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、正規表現として `mcp__plugin_mdmark_mdmark__read_guide` に当たらず、`PROJECT_DIR_TOOLS` が `TOOLS` の `usesProjectDir: true` の名前と一致する'
+        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、正規表現として `mcp__plugin_mdmark_mdmark__read_guide` に当たらず、`PROJECT_DIR_TOOLS` が `TOOLS` の `usesProjectDir: true` の名前と一致し、並べ替えると `build_site`・`check`・`export_html` になる'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts#
     status: planned
