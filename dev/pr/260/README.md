@@ -39,4 +39,4 @@ mdmark の MCP サーバーから `find_docs`・`list_tags`・`update_index` の
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成
-- [ ] E2E テスト作成
+- [x] E2E テスト作成
