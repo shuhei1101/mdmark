@@ -37,6 +37,6 @@ Marketplace には `ShuheiNishikawa.mdmark-vscode`（表示名 `mdmark for VS Co
 - [x] ~~モジュール構成設計~~（モジュール構成は `package.json` の `name`・`displayName` の値を持たない）
 - [x] ドキュメント修正
 - [x] ~~単体テスト作成~~（拡張機能の ID を使う単体テストが無い）
-- [ ] 実装
+- [x] 実装
 - [ ] 結合テスト作成
 - [ ] E2E テスト作成
