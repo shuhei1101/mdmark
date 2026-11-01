@@ -261,7 +261,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -319,6 +319,12 @@ functions:
         condition: '`tooltips.placement` が `left` の値と、`bottom` の値'
         mock: なし
         expected: '`left` は `where` が `tooltips.placement` の `schema` のずれが 1 件で `config.tooltips` が無い。`bottom` は `issues` が空で `config.tooltips.placement` が `bottom`'
+      - name: test_validate_config_when_labels_invalid
+        case: 正常
+        summary: オブジェクトでない `labels` と、空でない文字列でない `labels.paramCopy` を schema のずれにし、設定から落とす
+        condition: '`labels` が `コピー`（文字列）の値、`labels.paramCopy` が `""` の値、`1` の値、`コピー` の値'
+        mock: なし
+        expected: 1 つ目は `where` が `labels`、2・3 つ目は `where` が `labels.paramCopy` の `schema` のずれがそれぞれ 1 件で `config.labels` が無い。4 つ目は `issues` が空で `config.labels.paramCopy` が `コピー`
       - name: test_validate_config_when_syntax_url_invalid
         case: 正常
         summary: 文字列でない `syntax.url` を schema のずれにし、設定から落とす
@@ -837,7 +843,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -875,6 +881,12 @@ functions:
         condition: '`tooltips.placement: bottom` を持つ設定と、`tooltips` を持たない設定'
         mock: 一時フォルダ
         expected: '前者の `payload.config.tooltips` が `{ placement: "bottom" }`、後者は `payload.config` が `tooltips` を持たない'
+      - name: test_prepare_embeds_when_labels
+        case: 正常
+        summary: 設定の `labels` を埋める設定に写す
+        condition: '`labels.paramCopy: コピー` を持つ設定と、`labels` を持たない設定'
+        mock: 一時フォルダ
+        expected: '前者の `payload.config.labels` が `{ paramCopy: "コピー" }`、後者は `payload.config` が `labels` を持たない'
       - name: test_prepare_embeds_when_syntax
         case: 正常
         summary: 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に `syntax` を写さない

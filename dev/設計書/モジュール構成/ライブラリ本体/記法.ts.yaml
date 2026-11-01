@@ -713,7 +713,7 @@ functions:
     description: |-
       置き換える HTML は次の順で作る。
 
-      1. 中身の `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` を正規表現で拾い、中身の文字を `readDefinition` に渡す（`diagrams` がオフなら要素を中身ごと消す）。読めたら図の部品の HTML（`buildDiagrams` と同じ作りで `markOwn` を掛ける）、読めなければ書き方の警告の HTML を、その場所へ一時的な印（`<!--mdmark-part:{n}-->`）で預ける
+      1. 中身の `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` を正規表現で拾い、中身の文字を `readDefinition` に渡す（`diagrams` がオフなら要素を中身ごと消す）。読めたら図の部品の HTML（`buildDiagrams` と同じ作りで、`renderParam` に `env.labels.paramCopy` を渡し、`markOwn` を掛ける）、読めなければ書き方の警告の HTML を、その場所へ一時的な印（`<!--mdmark-part:{n}-->`）で預ける
       2. 残りを `sanitizeEmbedded` で落とす。`onText` は `buildDictionary`・`findWords`・`renderTermTip` で用語・エイリアス（`env.aliases`。`termsRule` と同じく種類のツールチップにする）・文書の別名に下線を引く（範囲ごとに語の最初の 1 回だけ。`glossary` と `backlinks` が両方オフなら文字のまま）
       3. `hints` がオンなら `data-hint` を持つ要素に `renderHintMarkup` を当て、オフなら `data-hint` を消す
       4. 預けた印を図の部品と書き方の警告の HTML に戻し、`<div class="mdmark-html">`（`markOwn`）で囲む
@@ -775,6 +775,12 @@ functions:
         condition: '`env.aliases` に `url` の `課題の一覧`（URL `https://github.com/shuhei1101/mdmark/issues`）と、範囲の HTML の `p` に `課題の一覧` が 2 回'
         mock: なし
         expected: '`div.mdmark-html .mdmark-term-wrap` が 1 つで、中に `a.mdmark-term-tip-link` の `href` がその URL'
+      - name: test_build_embedded_html_when_param_copy_label
+        case: 正常
+        summary: 中の操作できる部品のボタンを `env.labels.paramCopy` の文言で描く
+        condition: '範囲の HTML に `<mdmark-param>` と `strength` の定義、`env.labels` が `{ paramCopy: "コピー" }`'
+        mock: なし
+        expected: '`div.mdmark-html button.mdmark-param-copy` の文字が `コピー`'
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[sanitizeEmbedded]
       - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
