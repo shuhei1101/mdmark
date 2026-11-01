@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import {
   basename,
   dirname,
@@ -16,6 +16,7 @@ import {
   type MdmarkReferences,
 } from "../knowledge/references.ts";
 import { loadAliases } from "./aliases.ts";
+import { copyMedia } from "./assets.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
@@ -54,6 +55,8 @@ type EmbedOptions = {
   kind: "document" | "bundle";
   /** 最初に開く文書のパス */
   entry: string;
+  /** 出力の HTML の絶対パス（動画と音声のコピー先を決める） */
+  out: string;
 };
 
 /** 索引と参照の表を用意する: 索引があれば読み、`bundle` では `build.glossary` の文書を足して参照の表を作る */
@@ -148,25 +151,69 @@ async function bundleSyntax(options: {
   return { core, languages: bundled };
 }
 
+/** 設定の `assets.root` を設定ファイルのフォルダから解決する。フォルダが無ければ警告にして `undefined` を返す */
+async function resolveAssetsRoot(
+  loaded: LoadedConfig,
+  warnings: string[],
+): Promise<string | undefined> {
+  const root = loaded.config.assets?.root;
+  if (root === undefined) {
+    return undefined;
+  }
+  const dir = resolve(loaded.dir, root);
+  try {
+    if ((await stat(dir)).isDirectory()) {
+      return dir;
+    }
+  } catch {
+    // 無いときは警告にする
+  }
+  warnings.push(
+    `${basename(loaded.path)}: \`assets.root\` のフォルダ \`${root}\` がありません。文書のフォルダだけで探します。`,
+  );
+  return undefined;
+}
+
 /** 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す */
 export async function prepareEmbeds(options: EmbedOptions): Promise<{
   payload: ExportPayload;
   themeCss?: string | undefined;
   warnings: string[];
 }> {
-  const { loaded, docs, kind, entry } = options;
+  const { loaded, docs, kind, entry, out } = options;
   const warnings: string[] = [];
   const configName = basename(loaded.path);
+  const assetsRoot = await resolveAssetsRoot(loaded, warnings);
 
-  // 文書を読み、画像を埋める
+  // 文書を読み、動画と音声をコピーしてから画像を埋める（`bundle` は同じ画像を 1 回だけ埋める）
   const originals = new Map<string, string>();
   const inlined = new Map<string, string>();
+  const copied = new Map<string, string>();
+  const assets =
+    kind === "bundle"
+      ? new Map<string, { key: string; url: string }>()
+      : undefined;
   for (const doc of docs) {
     const original = await readFile(doc.file, "utf8");
-    const result = await inlineImages(original, doc.file);
+    const media = await copyMedia({
+      markdown: original,
+      docFile: doc.file,
+      assetsRoot,
+      baseDir: loaded.dir,
+      out,
+      copied,
+    });
+    const result = await inlineImages(media.markdown, doc.file, {
+      assetsRoot,
+      ...(assets ? { assets } : {}),
+    });
     originals.set(doc.path, original);
     inlined.set(doc.path, result.markdown);
-    warnings.push(...result.warnings.map((text) => `${doc.path}: ${text}`));
+    warnings.push(
+      ...[...media.warnings, ...result.warnings].map(
+        (text) => `${doc.path}: ${text}`,
+      ),
+    );
   }
 
   // 文書に印のある外部ライブラリを、URL ごとに 1 回だけ束ねる
@@ -282,6 +329,13 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     extensions,
     ...(syntax ? { syntax } : {}),
     ...(aliasResult.aliases ? { aliases: aliasResult.aliases } : {}),
+    ...(assets
+      ? {
+          assets: Object.fromEntries(
+            [...assets.values()].map((asset) => [asset.key, asset.url]),
+          ),
+        }
+      : {}),
   };
   return { payload, themeCss, warnings };
 }
@@ -373,6 +427,7 @@ export async function exportDocument(options: {
     docs: [{ path, file: docFile }],
     kind: "document",
     entry: path,
+    out: outFile,
   });
   const { distCss, viewer, view } = await readDistAssets({
     distDir: options.distDir,

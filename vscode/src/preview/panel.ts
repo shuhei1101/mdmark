@@ -34,6 +34,7 @@ import {
   TAGS_TIMEOUT_MS,
 } from "../version.ts";
 import { baseDirOf } from "../workspace.ts";
+import { assetCandidates } from "./assets.ts";
 import { buildCsp, buildPreviewHtml, createNonce, distUrl } from "./html.ts";
 import { resolveLink } from "./links.ts";
 import { EditorScrollGuard } from "./scroll-guard.ts";
@@ -78,6 +79,10 @@ export class PreviewPanel {
   private loaded: { version: string; distJs: string } | undefined;
   /** 次の `inspect` の `id` */
   private nextInspectId = 1;
+  /** 設定ファイルの `assets.root` の絶対パス（無ければ `undefined`） */
+  private assetsRoot: string | undefined;
+  /** `localResourceRoots` に加えた `assets.root`（入れ直すときに外す） */
+  private addedResourceRoot: string | undefined;
 
   constructor(options: {
     webviewPanel: WebviewPanel;
@@ -157,6 +162,7 @@ export class PreviewPanel {
     this.ready = false;
     this.cspLibraryOrigins = libraryOrigins(this.rawLibraries);
     const webview = this.webviewPanel.webview;
+    this.updateResourceRoots();
     const nonce = createNonce();
     const csp = buildCsp({
       nonce,
@@ -230,6 +236,7 @@ export class PreviewPanel {
     if (load.kind === "missing") {
       this.config = {};
       this.rawLibraries = undefined;
+      this.assetsRoot = undefined;
       this.markConfigOk();
       return true;
     }
@@ -241,6 +248,7 @@ export class PreviewPanel {
     }
     const { libraries, ...rest } = load.config;
     this.rawLibraries = libraries;
+    this.assetsRoot = load.assetsRoot;
     this.config =
       libraries === undefined
         ? rest
@@ -349,6 +357,27 @@ export class PreviewPanel {
         });
         return;
       }
+      case "resolveAssets": {
+        const urls: Record<string, string | null> = {};
+        for (const path of message.paths) {
+          const found = await this.findAsset(path);
+          urls[path] =
+            found === undefined
+              ? null
+              : `${this.webviewPanel.webview.asWebviewUri(Uri.file(found.file)).toString()}${found.suffix}`;
+        }
+        void this.post({ type: "assetsResolved", id: message.id, urls });
+        return;
+      }
+      case "openAsset": {
+        const found = await this.findAsset(message.path);
+        if (found === undefined) {
+          log.warn("開けないファイル", message.path);
+          return;
+        }
+        await env.openExternal(Uri.file(found.file));
+        return;
+      }
       case "inspected":
         this.pendingInspects.get(message.id)?.(message.elements);
         this.pendingInspects.delete(message.id);
@@ -368,6 +397,49 @@ export class PreviewPanel {
       case "rendered":
         return;
     }
+  }
+
+  /** `localResourceRoots` に `assets.root` のフォルダを加えて入れ直す（前に加えたものは外す） */
+  private updateResourceRoots(): void {
+    const webview = this.webviewPanel.webview;
+    const base = (webview.options.localResourceRoots ?? []).filter(
+      (root) => root.fsPath !== this.addedResourceRoot,
+    );
+    const added =
+      this.assetsRoot !== undefined &&
+      !base.some((root) => root.fsPath === this.assetsRoot)
+        ? this.assetsRoot
+        : undefined;
+    this.addedResourceRoot = added;
+    webview.options = {
+      ...webview.options,
+      localResourceRoots:
+        added === undefined ? base : [...base, Uri.file(added)],
+    };
+  }
+
+  /** 書いたパスを Markdown のフォルダ、次に `assets.root` で探し、ワークスペースの中にあった最初のファイルと、URL の後ろに戻すクエリとフラグメントを返す */
+  private async findAsset(
+    path: string,
+  ): Promise<{ file: string; suffix: string } | undefined> {
+    const workspaceDirs = [
+      baseDirOf(this.fileUri),
+      ...(workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
+    ];
+    const { files, suffix } = assetCandidates(path, {
+      docDir: dirname(this.uri.fsPath),
+      assetsRoot: this.assetsRoot,
+      workspaceDirs,
+    });
+    for (const file of files) {
+      try {
+        await workspace.fs.stat(Uri.file(file));
+        return { file, suffix };
+      } catch {
+        // 無いときは次の候補を探す
+      }
+    }
+    return undefined;
   }
 
   /** エディタが見えているときだけ、行をエディタの先頭に置く（エディタを開き直さない） */

@@ -9,6 +9,7 @@ import {
   TOTAL_LABELS,
   type TotalCalc,
 } from "../table-logic.ts";
+import type { ColorName } from "./colors.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 
@@ -108,6 +109,10 @@ export type TableOptions = {
   body?: string;
   /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を渡す */
   id?: string;
+  /** 強調する列の位置と色 */
+  highlight?: Array<{ column: number; color: ColorName }>;
+  /** 本文の行ごとの色（色を付けない行は `null`） */
+  rowColors?: Array<ColorName | null>;
 };
 
 /** 見出しのボタンとドロワーを作る引数 */
@@ -484,7 +489,10 @@ function renderTableBody(options: TableOptions, id: string): string {
   const folded = isFolded(options, hidden);
   const unfolded = new Set(options.unfoldedRows ?? []);
   const drawers: string[] = [];
-  /** セルの class 属性（ピン止めした列・畳んだ最終列） */
+  /** 強調する列の色 */
+  const highlightOf = (column: number): ColorName | undefined =>
+    options.highlight?.find((item) => item.column === column)?.color;
+  /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列）と色 */
   const cellClass = (column: number): string => {
     const names = [
       ...(column < pinned
@@ -493,8 +501,11 @@ function renderTableBody(options: TableOptions, id: string): string {
           : ["is-pinned-col"]
         : []),
       ...(folded && column === lastColumn ? ["mdmark-fold-col"] : []),
+      ...(highlightOf(column) ? ["mdmark-col-highlight"] : []),
     ];
-    return names.length > 0 ? ` class="${names.join(" ")}"` : "";
+    const color = highlightOf(column);
+    const colorAttribute = color ? ` data-color="${color}"` : "";
+    return `${names.length > 0 ? ` class="${names.join(" ")}"` : ""}${colorAttribute}`;
   };
   const head = columns
     .map((column, index) => {
@@ -582,7 +593,9 @@ function renderTableBody(options: TableOptions, id: string): string {
       const idAttribute =
         rowId === undefined ? "" : ` id="${escapeHtml(rowId)}"`;
       const target = targeted ? " data-target" : "";
-      const line = `<tr${idAttribute}${target}${match ? "" : " hidden"}>${cells}</tr>`;
+      const rowColor = options.rowColors?.[rowIndex];
+      const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
+      const line = `<tr${idAttribute}${target}${colorAttribute}${match ? "" : " hidden"}>${cells}</tr>`;
       return fold ? `${line}${fold.row}` : line;
     })
     .join("");

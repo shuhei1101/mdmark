@@ -1,4 +1,4 @@
-import { isAbsolute, resolve } from "node:path";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import type { PreviewSettings } from "./settings.ts";
 
@@ -16,7 +16,12 @@ export type PreviewConfig = {
 
 /** 設定ファイルの読み取りの結果 */
 export type ConfigLoad =
-  | { kind: "ok"; config: PreviewConfig }
+  | {
+      kind: "ok";
+      config: PreviewConfig;
+      /** 設定ファイルの `assets.root`。`parseConfig` は書いた値、`loadConfig` は設定ファイルのフォルダを基準にした絶対パス。`mount` には渡さない */
+      assetsRoot?: string;
+    }
   | { kind: "missing" }
   | { kind: "error"; line: number; message: string };
 
@@ -61,7 +66,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・文字列の `colorTheme` を取り出す */
+/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・文字列の `colorTheme` と、文字列の `assets.root` を取り出す */
 export function parseConfig(text: string): ConfigLoad {
   let parsed: unknown;
   try {
@@ -90,6 +95,9 @@ export function parseConfig(text: string): ConfigLoad {
     if (typeof parsed.colorTheme === "string") {
       config.colorTheme = parsed.colorTheme;
     }
+    if (isMap(parsed.assets) && typeof parsed.assets.root === "string") {
+      return { kind: "ok", config, assetsRoot: parsed.assets.root };
+    }
   }
   return { kind: "ok", config };
 }
@@ -110,7 +118,14 @@ export async function loadConfig(options: {
     }
     throw error;
   }
-  return parseConfig(text);
+  const result = parseConfig(text);
+  if (result.kind === "ok" && result.assetsRoot !== undefined) {
+    return {
+      ...result,
+      assetsRoot: resolve(dirname(options.path), result.assetsRoot),
+    };
+  }
+  return result;
 }
 
 /** `http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す。文字列でない値はそのまま渡す */

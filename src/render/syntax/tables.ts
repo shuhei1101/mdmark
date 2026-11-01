@@ -1,5 +1,10 @@
 import type { StateCore, Token } from "markdown-it";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
+import {
+  COLOR_NAMES,
+  type ColorName,
+  isColorName,
+} from "../../parts/colors.ts";
 import { markOwn, SLOT_MARKER } from "../../parts/own.ts";
 import {
   renderRowLink,
@@ -78,6 +83,22 @@ export type TableSpec = {
   /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
   totals: TableTotal[];
 };
+
+/** 表の色の指定を読んだ結果 */
+export type TableColors = {
+  /** 強調する列の位置と色。色を省いた列は `blue` */
+  highlight: Array<{ column: number; color: ColorName }>;
+  /** 本文の行ごとの色。色を付けない行は `null` */
+  rows: Array<ColorName | null>;
+  /** 読めなかった指定 */
+  warnings: WarningItem[];
+};
+
+/** 表の色を指定するキー */
+const COLOR_KEYS = ["highlight", "row-color", "row-at"];
+
+/** `highlight=` で色を省いた列の色 */
+const DEFAULT_HIGHLIGHT_COLOR: ColorName = "blue";
 
 /** 並びをコードにして `・` でつなぐ */
 export function codes(values: readonly string[]): string {
@@ -260,15 +281,225 @@ export function readTableSpec(
       hide = readHide(value, headers, warnings);
     } else if (key === "total") {
       totals = readTotals(value, headers, warnings);
+    } else if (COLOR_KEYS.includes(key)) {
+      // 色の指定は `readTableColors` が読む
     } else {
       warnings.push({
         label: `${key}=`,
-        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total="])} です`,
+        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
       });
     }
   }
   warnings.push(...items);
   return { kind, features, filters, collapse, title, warnings, hide, totals };
+}
+
+/** 列名が表に無いときの警告の項目 */
+function unknownColumn(name: string): WarningItem {
+  return {
+    label: name,
+    message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+  };
+}
+
+/** 色の名前が一覧に無いときの警告の項目 */
+function unknownColor(name: string): WarningItem {
+  return {
+    label: name,
+    message: `の \`${name}\` は色の名前ではありません。使える色の名前は ${codes(COLOR_NAMES)} です。色を付けずに描いています。`,
+  };
+}
+
+/** `=` の無い項目の警告の項目 */
+function missingEquals(item: string, form: string): WarningItem {
+  return {
+    label: item,
+    message: `の \`${item}\` に \`=\` がありません。\`${form}\` の形で書いてください。`,
+  };
+}
+
+/** `highlight=` の値を、表の見出しの文字と照らして読む */
+function readHighlight(
+  value: string,
+  headers: string[],
+  warnings: WarningItem[],
+): TableColors["highlight"] {
+  const highlight: TableColors["highlight"] = [];
+  for (const item of value.split(",").map((part) => part.trim())) {
+    if (!item) {
+      continue;
+    }
+    // 列名に `:` を含む表もあるため、見出しの文字と一致するときは丸ごと列名にする
+    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
+    const name = colon > 0 ? item.slice(0, colon) : item;
+    const color = colon > 0 ? item.slice(colon + 1) : DEFAULT_HIGHLIGHT_COLOR;
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push(unknownColumn(name));
+    } else if (!isColorName(color)) {
+      warnings.push(unknownColor(color));
+    } else {
+      highlight.push({ column, color });
+    }
+  }
+  return highlight;
+}
+
+/** 項目の頭の `列名:` が表の見出しに当たれば、列の位置と残りの文字を返す */
+function splitColumnHead(
+  item: string,
+  headers: string[],
+): { column: number; rest: string } | undefined {
+  for (
+    let colon = item.indexOf(":");
+    colon > 0;
+    colon = item.indexOf(":", colon + 1)
+  ) {
+    const column = headers.indexOf(item.slice(0, colon));
+    if (column >= 0) {
+      return { column, rest: item.slice(colon + 1) };
+    }
+  }
+  return undefined;
+}
+
+/** `row-color=` の値を、見出しと本文のセルの文字と照らして読み、行の色を `rows` に書く */
+function readRowColor(
+  value: string,
+  headers: string[],
+  cells: string[][],
+  rows: TableColors["rows"],
+  warnings: WarningItem[],
+): void {
+  let column: number | undefined;
+  for (const item of value.split(",").map((part) => part.trim())) {
+    if (!item) {
+      continue;
+    }
+    const head = splitColumnHead(item, headers);
+    let pair = item;
+    if (head) {
+      column = head.column;
+      pair = head.rest;
+    } else if (column === undefined) {
+      const colon = item.indexOf(":");
+      warnings.push(unknownColumn(colon > 0 ? item.slice(0, colon) : item));
+      continue;
+    }
+    const equals = pair.lastIndexOf("=");
+    if (equals < 0) {
+      warnings.push(missingEquals(pair, "列名:値=色"));
+      continue;
+    }
+    const color = pair.slice(equals + 1);
+    if (!isColorName(color)) {
+      warnings.push(unknownColor(color));
+      continue;
+    }
+    const cell = pair.slice(0, equals);
+    for (const [row, values] of cells.entries()) {
+      if (values[column]?.trim() === cell) {
+        rows[row] = color;
+      }
+    }
+  }
+}
+
+/** `row-at=` の値を、本文の行の数と照らして読み、行の色を `rows` に書く */
+function readRowAt(
+  value: string,
+  rows: TableColors["rows"],
+  warnings: WarningItem[],
+): void {
+  for (const item of value.split(",").map((part) => part.trim())) {
+    if (!item) {
+      continue;
+    }
+    const equals = item.indexOf("=");
+    if (equals < 0) {
+      warnings.push(missingEquals(item, "位置=色"));
+      continue;
+    }
+    const position = item.slice(0, equals);
+    const color = item.slice(equals + 1);
+    const range = /^(\d+)(?:-(\d+))?$/.exec(position);
+    const first = Number(range?.[1]);
+    const last = Number(range?.[2] ?? range?.[1]);
+    if (!range || first < 1 || last < first || last > rows.length) {
+      warnings.push({
+        label: position,
+        message: `の行の位置 \`${position}\` は表にありません。表の本文は ${rows.length} 行です。行の位置を 1〜${rows.length} で書いてください。`,
+      });
+    } else if (!isColorName(color)) {
+      warnings.push(unknownColor(color));
+    } else {
+      rows.fill(color, first - 1, last);
+    }
+  }
+}
+
+/** 表の印の `highlight=`・`row-color=`・`row-at=` を、表の見出しと本文の行のセルの文字で照らして読む */
+export function readTableColors(
+  args: MdmarkMarkArgs | undefined,
+  headers: string[],
+  cells: string[][],
+): TableColors {
+  const warnings: WarningItem[] = [];
+  const keys = args?.keys ?? {};
+  const highlight =
+    keys.highlight === undefined
+      ? []
+      : readHighlight(keys.highlight, headers, warnings);
+  const rows: TableColors["rows"] = cells.map(() => null);
+  if (keys["row-color"] !== undefined) {
+    readRowColor(keys["row-color"], headers, cells, rows, warnings);
+  }
+  // `row-at=` は `row-color=` の後に読み、両方が当たる行を `row-at=` の色にする
+  if (keys["row-at"] !== undefined) {
+    readRowAt(keys["row-at"], rows, warnings);
+  }
+  return { highlight, rows, warnings };
+}
+
+/** 強調する列の `th`・`td` と、色を付ける本文の行の `tr` に色の属性を付ける */
+function applyTableColors(
+  state: StateCore,
+  tableOpen: number,
+  colors: TableColors,
+): void {
+  const tokens = state.tokens;
+  const nonce = envOf(state).nonce;
+  const colorOf = new Map(
+    colors.highlight.map((item) => [item.column, item.color]),
+  );
+  let inBody = false;
+  let row = -1;
+  let column = 0;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    if (token.type === "tbody_open") {
+      inBody = true;
+    } else if (token.type === "tr_open") {
+      column = 0;
+      row += inBody ? 1 : 0;
+      const color = inBody ? colors.rows[row] : null;
+      if (color) {
+        token.attrSet("data-color", color);
+        token.attrSet("data-mdmark-own", nonce);
+      }
+    } else if (token.type === "th_open" || token.type === "td_open") {
+      const color = colorOf.get(column);
+      if (color) {
+        token.attrJoin("class", "mdmark-col-highlight");
+        token.attrSet("data-color", color);
+        token.attrSet("data-mdmark-own", nonce);
+      }
+      column += 1;
+    }
+  }
 }
 
 /** `tableOpen` の表の直下のトークンの位置を返す（中の表のトークンと、自分の `table_open`・`table_close` を含まない） */
@@ -563,10 +794,18 @@ export function decorateTables(state: StateCore): void {
     if (spec.features.includes("rowlink")) {
       linkRows(state, tokens, index, taken);
     }
+    const colors = readTableColors(
+      range?.mark.args,
+      headersOf(tokens, index),
+      bodyCellsOf(tokens, index),
+    );
+    applyTableColors(state, index, colors);
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
     // 警告は、囲みの頭（折り畳みの外）に差し込む
     const divEnd = head.indexOf(">") + 1;
-    const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
+    const warnings = range
+      ? warningsOf(range.mark.raw, [...spec.warnings, ...colors.warnings])
+      : [];
 
     if (range && range.close < 0 && !range.warned) {
       range.warned = true;

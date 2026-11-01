@@ -7,6 +7,9 @@ import { resolveLink } from "../knowledge/paths.ts";
 import { SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "../render/index.ts";
 import { MARK_PATTERN } from "../render/marks.ts";
+import { mediaKindOf } from "../render/syntax/images.ts";
+import { findAssetRefs, resolveAssetFile } from "./assets.ts";
+import { ASSET_SCHEME } from "./html.ts";
 
 /** URL を読む関数 */
 export type FetchText = (url: string) => Promise<string>;
@@ -199,45 +202,78 @@ function imgSources(html: string): string[] {
   ].map((match) => match[1] ?? match[2] ?? "");
 }
 
-/** Markdown の画像の相対パスを、文書のフォルダを基準に読んだ `data:` URL に替える。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする */
+/** Markdown の画像の相対パス（画像の属性の `poster=` を含む）を、文書のフォルダか `assetsRoot` で探して読んだ `data:` URL に替える（フラグメントは後ろに残す）。`assets` を渡したときは `mdmark-asset:{キー}` に替え、`data:` URL を `assets` に入れる。動画・音声は替えない。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする */
 export async function inlineImages(
   markdown: string,
   docFile: string,
+  options: {
+    /** `assets.root` の絶対パス */
+    assetsRoot?: string | undefined;
+    /** `build` が文書をまたいで共有する、埋めた画像のファイルからキーと `data:` URL を引く表 */
+    assets?: Map<string, { key: string; url: string }>;
+  } = {},
 ): Promise<{ markdown: string; warnings: string[] }> {
-  const lines = markdown.split("\n");
   const warnings: string[] = [];
-  // 同じ `src` は 1 回だけ読む
-  const dataUrls = new Map<string, string | undefined>();
-  for (const { start, end, src } of findImageSources(markdown)) {
-    if (src.startsWith("data:")) {
-      continue;
-    }
-    if (!dataUrls.has(src)) {
-      dataUrls.set(src, await readImage(src, docFile, warnings));
-    }
-    const dataUrl = dataUrls.get(src);
-    if (dataUrl === undefined) {
-      continue;
-    }
-    for (let line = start; line < end; line += 1) {
-      lines[line] = (lines[line] ?? "").replaceAll(src, dataUrl);
+  const warned = new Set<string>();
+  for (const { src } of findImageSources(markdown)) {
+    const media = ["video", "audio"].includes(mediaKindOf(src));
+    if (isAbsoluteSrc(src) && !media && !warned.has(src)) {
+      warned.add(src);
+      warnings.push(
+        `画像 \`${src}\` は絶対 URL のため埋めません。開いたときに外へ要求します。`,
+      );
     }
   }
-  return { markdown: lines.join("\n"), warnings };
+  // 同じ `src` は 1 回だけ読む
+  const urls = new Map<string, string | undefined>();
+  const replacements: Array<{ offset: number; src: string; to: string }> = [];
+  for (const ref of findAssetRefs(markdown)) {
+    if (ref.kind !== "image" && ref.kind !== "poster") {
+      continue;
+    }
+    if (!urls.has(ref.src)) {
+      urls.set(ref.src, await readImage(ref.src, docFile, options, warnings));
+    }
+    const url = urls.get(ref.src);
+    if (url !== undefined && ref.offset >= 0) {
+      replacements.push({
+        offset: ref.offset,
+        src: ref.src,
+        to: `${url}${fragmentOf(ref.src)}`,
+      });
+    }
+  }
+  let result = markdown;
+  for (const { offset, src, to } of replacements.reverse()) {
+    result = `${result.slice(0, offset)}${to}${result.slice(offset + src.length)}`;
+  }
+  return { markdown: result, warnings };
 }
 
-/** 画像 1 つを読んで `data:` URL にする。埋められないときは理由を `warnings` に足して `undefined` を返す */
+/** 埋めない絶対 URL の画像か（`data:` を除く） */
+function isAbsoluteSrc(src: string): boolean {
+  return (
+    !src.startsWith("data:") &&
+    (EXTERNAL_PATTERN.test(src) || src.startsWith("/"))
+  );
+}
+
+/** 書いたパスのフラグメント（`#` から後ろ） */
+function fragmentOf(src: string): string {
+  const at = src.indexOf("#");
+  return at < 0 ? "" : src.slice(at);
+}
+
+/** 画像 1 つを探して読み、`data:` URL（`assets` を渡したときは `mdmark-asset:{キー}`）にする。埋められないときは理由を `warnings` に足して `undefined` を返す */
 async function readImage(
   src: string,
   docFile: string,
+  options: {
+    assetsRoot?: string | undefined;
+    assets?: Map<string, { key: string; url: string }>;
+  },
   warnings: string[],
 ): Promise<string | undefined> {
-  if (EXTERNAL_PATTERN.test(src) || src.startsWith("/")) {
-    warnings.push(
-      `画像 \`${src}\` は絶対 URL のため埋めません。開いたときに外へ要求します。`,
-    );
-    return undefined;
-  }
   const mime = IMAGE_MIME[extname(src.split(/[?#]/)[0] ?? "").toLowerCase()];
   if (mime === undefined) {
     warnings.push(
@@ -245,15 +281,26 @@ async function readImage(
     );
     return undefined;
   }
-  let decoded = src;
-  try {
-    decoded = decodeURI(src);
-  } catch {
-    // 戻せないときは、そのまま読む
+  const file = await resolveAssetFile(src, {
+    docDir: dirname(docFile),
+    assetsRoot: options.assetsRoot,
+  });
+  const shared = file === undefined ? undefined : options.assets?.get(file);
+  if (shared) {
+    return `${ASSET_SCHEME}${shared.key}`;
   }
   try {
-    const bytes = await readFile(resolve(dirname(docFile), decoded));
-    return `data:${mime};base64,${bytes.toString("base64")}`;
+    if (file === undefined) {
+      throw new Error("not found");
+    }
+    const bytes = await readFile(file);
+    const url = `data:${mime};base64,${bytes.toString("base64")}`;
+    if (options.assets === undefined) {
+      return url;
+    }
+    const key = String(options.assets.size + 1);
+    options.assets.set(file, { key, url });
+    return `${ASSET_SCHEME}${key}`;
   } catch {
     warnings.push(
       `画像 \`${src}\` を読めません。パスを直すか画像を置いてください。`,

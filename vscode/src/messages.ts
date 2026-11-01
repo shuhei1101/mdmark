@@ -16,6 +16,12 @@ export type HostMessage =
   | { type: "scrollToLine"; line: number }
   | { type: "configError"; line: number }
   | { type: "configOk" }
+  | {
+      type: "assetsResolved";
+      id: number;
+      /** 書いたパスから Webview の URL を引く表。見つからないパスは `null` */
+      urls: Record<string, string | null>;
+    }
   | { type: "inspect"; id: number; selector: string };
 
 /** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確かめるために返す） */
@@ -51,4 +57,6 @@ export type WebviewMessage =
   | { type: "revealLine"; line: number }
   | { type: "reload" }
   | { type: "openConfig" }
+  | { type: "resolveAssets"; id: number; paths: string[] }
+  | { type: "openAsset"; path: string }
   | { type: "inspected"; id: number; elements: InspectedElement[] };

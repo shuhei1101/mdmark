@@ -7,6 +7,7 @@ import { normalizePath } from "../knowledge/paths.ts";
 import { FEATURES_MARK, SYNTAX_MARKS } from "../render/marks.ts";
 import { findMarks } from "../render/parser.ts";
 import { loadAliases } from "./aliases.ts";
+import { checkMissingFiles } from "./assets.ts";
 import {
   type CliConfig,
   findConfigFile,
@@ -31,6 +32,7 @@ export type CheckIssue = {
     | "unknown_color_theme"
     | "no_documents"
     | "unknown_mark"
+    | "missing_file"
     | "alias_no_files"
     | "alias_unreadable"
     | MdmarkAliasProblem["kind"]
@@ -54,13 +56,54 @@ function toPosix(path: string): string {
   return path.split(sep).join("/");
 }
 
-/** 設定が指すファイル（`theme`・`extensions`）が在るかを確かめる */
+/** フォルダが在るか */
+async function isDirectory(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/** 文書が指すファイルのうち、文書のフォルダにも `assets.root` のフォルダにも無いものを集める */
+async function checkDocumentFiles(loaded: LoadedConfig): Promise<CheckIssue[]> {
+  const root = loaded.config.assets?.root;
+  const assetsRoot =
+    root !== undefined && (await isDirectory(resolve(loaded.dir, root)))
+      ? resolve(loaded.dir, root)
+      : undefined;
+  const issues: CheckIssue[] = [];
+  for (const doc of await collectCheckDocuments(loaded)) {
+    issues.push(
+      ...(await checkMissingFiles({
+        markdown: doc.markdown,
+        docFile: resolve(loaded.dir, doc.path),
+        file: doc.path,
+        assetsRoot,
+      })),
+    );
+  }
+  return issues;
+}
+
+/** 設定が指すファイル（`theme`・`extensions`・`assets.root`）が在るかを確かめる */
 async function checkReferencedFiles(
   loaded: LoadedConfig,
   file: string,
 ): Promise<CheckIssue[]> {
   const issues: CheckIssue[] = [];
-  const { theme, extensions } = loaded.config;
+  const { theme, extensions, assets } = loaded.config;
+  if (
+    assets?.root !== undefined &&
+    !(await isDirectory(resolve(loaded.dir, assets.root)))
+  ) {
+    issues.push({
+      file,
+      where: "assets.root",
+      kind: "schema",
+      message: `\`assets.root\` のフォルダ \`${assets.root}\` が見つかりません。パスを直すかフォルダを置いてください。`,
+    });
+  }
   if (theme !== undefined && !(await exists(resolve(loaded.dir, theme)))) {
     issues.push({
       file,
@@ -330,6 +373,7 @@ export async function collectCheckIssues(
   const build = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded, options.base);
   const aliasIssues = (await loadAliases(loaded)).issues;
+  const missingFiles = await checkDocumentFiles(loaded);
   const checkMarks = options.unknownMarks !== false;
   const extensions = checkMarks
     ? await loadExtensionDirectives(loaded, file)
@@ -350,6 +394,7 @@ export async function collectCheckIssues(
     ...build.noDocuments,
     ...indexIssues,
     ...aliasIssues,
+    ...missingFiles,
     ...unknownMarks,
   ];
 }

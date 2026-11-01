@@ -146,6 +146,48 @@
           "description": "描いた文書の右側に h1〜h3 の目次を置く。見出しが無い文書には置かない。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
           "type": "boolean",
           "default": true
+        },
+        "text-color": {
+          "title": "本文の文字の色の機能",
+          "description": "`[文字]{color=色}` の文字に名前の色を付ける。オフのときは書いた文字のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "images": {
+          "title": "画像の機能",
+          "description": "画像の後ろの `{…}` の属性を当て、画像だけの段落を図にし、`#only-dark`・`#only-light` の画像を配色に合わせて出す。オフのときは `{…}` を書いた文字のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "gallery": {
+          "title": "ギャラリーの機能",
+          "description": "`<!-- gallery -->` の範囲の画像を格子に並べる。オフのときは印を取り除き、画像を並べない。",
+          "type": "boolean",
+          "default": true
+        },
+        "lightbox": {
+          "title": "画像の拡大の機能",
+          "description": "画像を押すと拡大して開く。オフのときは画像を押しても拡大しない。",
+          "type": "boolean",
+          "default": true
+        },
+        "media": {
+          "title": "動画と音声の機能",
+          "description": "動画・音声の拡張子の画像を再生バー付きの動画と音声にする。オフのときは画像として描く。",
+          "type": "boolean",
+          "default": true
+        },
+        "gif": {
+          "title": "GIF の機能",
+          "description": "GIF に止める・再生するボタンを付ける。オフのときはボタンを付けない。",
+          "type": "boolean",
+          "default": true
+        },
+        "cards": {
+          "title": "リンクと添付のカードの機能",
+          "description": "リンク 1 つだけの段落をリンクと添付のカードにする。オフのときはリンクのまま描く。",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": {
@@ -173,7 +215,14 @@
         "hints": true,
         "views": true,
         "comments": false,
-        "side-toc": true
+        "side-toc": true,
+        "text-color": true,
+        "images": true,
+        "gallery": true,
+        "lightbox": true,
+        "media": true,
+        "gif": true,
+        "cards": true
       }
     },
     "index": {
@@ -333,6 +382,18 @@
       "title": "エイリアスの元の行",
       "description": "プロジェクトの YAML の列からエイリアス（用語・文書・コマンド・URL など）を作る行の並び。行の構造は alias-inject v0.2.0 の `schemas/aliases.schema.yaml` を取り込んだ Schema が決める。CLI の `export`・`build` が `paths` の YAML を読んで書き出す HTML に埋め、`mdmark check` が行とレコードのずれを返す。`mount`・`render` はこのキーを読まない。",
       "$ref": "alias-inject/v0.2.0/aliases.schema.json"
+    },
+    "assets": {
+      "title": "アセットの設定",
+      "description": "文書が指す画像・動画・音声・添付のファイルの探し方。CLI と VS Code 拡張機能が読み、`mount`・`render` は読まない。",
+      "type": "object",
+      "properties": {
+        "root": {
+          "title": "アセットのルート",
+          "description": "文書のフォルダからの相対パスにファイルが無いときに、同じ相対パスで探すフォルダ。`mdmark.config.yaml` のあるフォルダからの相対パス。無いフォルダは `mdmark check` が設定ファイルの誤りにする。",
+          "type": "string"
+        }
+      }
     }
   },
   "additionalProperties": true
