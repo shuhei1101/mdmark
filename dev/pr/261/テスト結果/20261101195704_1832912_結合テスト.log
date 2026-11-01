@@ -1,0 +1,1028 @@
+$ xvfb-run -a npm --prefix vscode run test:integration
+
+> mdmark-vscode@0.1.0 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[90m[main 2026-11-01T10:53:10.956Z][0m [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[90m[main 2026-11-01T10:53:11.047Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-11-01T10:53:11.219Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-11-01T10:53:11.219Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[90m[main 2026-11-01T10:53:11.282Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-11-01T10:53:11.283Z][0m update#setState disabled
+[90m[main 2026-11-01T10:53:11.283Z][0m update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-11-01T10:53:12.230Z][0m AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Started local extension host with pid 59570.
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[91m[main 2026-11-01T10:53:16.768Z][0m [AgentHost:stderr] (node:59478) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=3e01f56e-d17d-45aa-acab-1d1c58fc0195 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=3e01f56e-d17d-45aa-acab-1d1c58fc0195 durationMs=4550
+[AgentHost:renderer] Protocol connection established; clientId=3e01f56e-d17d-45aa-acab-1d1c58fc0195
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+(node:59570) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable (1905ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable_on_export (3038ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (308ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_output_dir (286ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (96ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  ブラウザで開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (287ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (94ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (266ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  PDF に印刷
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (3363ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_wait_limit_reached (851ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (421ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (236ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定ファイルを開く
+    ✔ test_normal (219ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_template_created (104ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_template_declined (39ms)
+  設定を開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (725ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで見る
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_opened_from_diff_view (495ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Unexpected SIGPIPE
+	at process.<anonymous> (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
+	at process.emit (node:events:514:28)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_commit_diff (389ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_without_diff (310ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Error: Repository not initialized
+	at ar.run (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_modified_side_edited (1272ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Repository not initialized: Error: Repository not initialized
+	at ar.run (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_preview (1478ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューのリンクを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_external_link (285ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_markdown_link (219ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_anchor_link (590ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_side_toc_link (687ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_link_target_missing (1022ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3459ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_same_column (170ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_already_open (264ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_version_pinned (1948ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tags_unreachable (4693ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_theme_fixed (348ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_image (317ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_image_outside_workspace (813ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_distribution_unreachable (192ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_loading_shown (12216ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_missing (277ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_not_markdown (524ms)
+  プレビューをリロードする
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (303ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_command (354ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_no_preview (526ms)
+  プレビューを描き直す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1350ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_live_update_off (979ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_saved (452ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_missing (193ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_revealed (2554ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_revealed (1572ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_library (362ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_config_unreadable (893ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_fixed (348ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_library_origin_added (513ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_changed (537ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (10636ms)
+    ✔ test_error_when_version_mismatch (293ms)
+  エディタとプレビューのスクロールを合わせる
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1450ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_preview (1114ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_sync_off (2889ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YzU1OTM1NDUtODNiZi00ZTI2LWIxNWMtY2JlOTZkZTIxNGY2" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_editor_hidden (916ms)
+  63 passing (1m)
+[90m[main 2026-11-01T10:54:39.625Z][0m Extension host with pid 59570 exited with code: 0, signal: unknown.
+Exit code:   0
+- Resolving version...
+✔ Validated version: 1.144.0
+- Found at https://update.code.visualstudio.com/1.144.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.144.0/linux-x64/stable?released=true
+- Downloading (355.94 MB)
+✔ Downloaded VS Code (b224f6bf5a4fcad5fa4c640ed10f179c3b613e48) into /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.144.0
+[90m[main 2026-11-01T10:55:13.047Z][0m [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/node-compile-cache/main, active: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/node-compile-cache/main/v24.22.1-x64-60e4fe36)
+[90m[main 2026-11-01T10:55:13.388Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-11-01T10:55:12.921Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-11-01T10:55:12.922Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[67014:1101/195512.948171:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[90m[main 2026-11-01T10:55:12.993Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-11-01T10:55:12.993Z][0m update#setState disabled
+[90m[main 2026-11-01T10:55:12.993Z][0m update#ctor - updates are disabled by the environment
+Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-11-01T10:55:11.881Z][0m AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+Started local extension host with pid 67290.
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[91m[main 2026-11-01T10:55:16.901Z][0m [AgentHost:stderr] (node:67230) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=09c306b8-2bae-4133-b384-e44da152b47d requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=09c306b8-2bae-4133-b384-e44da152b47d durationMs=5030
+[AgentHost:renderer] Protocol connection established; clientId=09c306b8-2bae-4133-b384-e44da152b47d
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+
+(node:67290) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Unknown channel: agentHostClientProxy
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable (4570ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable_on_export (3037ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (328ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_output_dir (283ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (120ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  ブラウザで開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (299ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (84ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (260ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  PDF に印刷
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (3367ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_wait_limit_reached (842ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (423ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (233ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定ファイルを開く
+    ✔ test_normal (217ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_template_created (56ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_template_declined
+  設定を開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (728ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで見る
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_opened_from_diff_view (562ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_commit_diff (395ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_without_diff (337ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_modified_side_edited (1254ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_preview
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューのリンクを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_external_link (279ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_markdown_link (224ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_anchor_link (604ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_side_toc_link (718ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_link_target_missing (1024ms)
+  プレビューを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id/vscode/.vscode-test/vscode-linux-x64-1.144.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3474ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_same_column (164ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_already_open (258ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_version_pinned (4597ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tags_unreachable (4622ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_theme_fixed (361ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_image (323ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_image_outside_workspace (847ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_distribution_unreachable (217ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_loading_shown (9537ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_missing (213ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_not_markdown (533ms)
+  プレビューをリロードする
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (318ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_command (371ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_no_preview (530ms)
+  プレビューを描き直す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1366ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_live_update_off (956ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_saved (512ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_missing (260ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_revealed (3384ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_revealed (1767ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_library (372ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_config_unreadable (839ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_fixed (413ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_library_origin_added (578ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_changed (607ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  拡張機能の配布物を作る
+    ✔ test_normal (11376ms)
+    ✔ test_error_when_version_mismatch (284ms)
+  エディタとプレビューのスクロールを合わせる
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_preview (1040ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_sync_off (3009ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/YTdlOTBlMmMtMDU2OC00MTg4LWE1MjQtZGMyNTVhMjdjNzc1" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_editor_hidden (909ms)
+  63 passing (1m)
+[90m[main 2026-11-01T10:56:39.138Z][0m Extension host with pid 67290 exited with code: 0, signal: unknown.
+Exit code:   0

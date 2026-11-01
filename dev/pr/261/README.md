@@ -38,5 +38,5 @@ Marketplace には `ShuheiNishikawa.mdmark-vscode`（表示名 `mdmark for VS Co
 - [x] ドキュメント修正
 - [x] ~~単体テスト作成~~（拡張機能の ID を使う単体テストが無い）
 - [x] 実装
-- [ ] 結合テスト作成
+- [x] 結合テスト作成
 - [ ] E2E テスト作成
