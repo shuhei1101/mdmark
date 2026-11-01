@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>media | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 選べるテーマの配色の値: media.js がモック専用の操作列で選んだテーマだけを有効にする -->
+  <link rel="stylesheet" href="../../assets/themes/theme-paper.css" data-theme-css="theme-paper" disabled>
+  <link rel="stylesheet" href="../../assets/themes/theme-slate.css" data-theme-css="theme-slate" disabled>
+  <link rel="stylesheet" href="../../assets/themes/theme-contrast.css" data-theme-css="theme-contrast" disabled>
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 色のプリセットと、画像・動画・音声・GIF・カードの規則（#263 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <link rel="stylesheet" href="../../refs/263/assets/media.css">
+  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../refs/263/assets/media-print.css" media="print" data-print-styles>
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（印刷の前後の展開を含む） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- モックの「印刷の見え方」の切り替え -->
+  <script src="../../refs/151/assets/preview.js" defer></script>
+  <!-- ライトボックス・GIF の止める・再生する・テーマの切り替え（#263 で共有するアセット） -->
+  <script src="../../refs/263/assets/media.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: テーマ・配色・印刷の見え方の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-theme-set]: media.js が押されたボタンのテーマの配色を有効にする -->
+    <div class="mock-bar-group" role="group" aria-label="テーマ">
+      <button class="mock-bar-item" type="button" data-theme-set="default" aria-pressed="false">dev-swiss（既定）</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-paper" aria-pressed="false">theme-paper</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
+    </div>
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+    <!-- [data-preview-toggle]: preview.js が印刷の規則を画面にも当て、明るい配色にする（モックだけの仕組み） -->
+    <div class="mock-bar-group">
+      <button class="mock-bar-item" type="button" data-preview-toggle aria-pressed="false">印刷の見え方</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">動画・音声・GIF</h1>
+
+      <!-- 動画: ![キャプション](a.mp4 "title"){poster=...} を再生バー付きで描き、title をキャプションにする -->
+      <section aria-labelledby="state-video">
+        <h2 class="catalog-label" id="state-video">動画（再生バーと poster。title をキャプションにする）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure mdmark-image mdmark-media">
+  <video controls preload="metadata" poster="../../refs/263/assets/media/demo-poster.png" width="480" height="270">
+    <source src="../../refs/263/assets/media/demo.mp4" type="video/mp4">
+  </video>
+  <img class="mdmark-media-print" src="../../refs/263/assets/media/demo-poster.png" alt="" width="480" height="270">
+  <figcaption class="mdmark-figure-caption">プレビューを開く操作</figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- 幅と autoplay・loop: autoplay には muted を追加する -->
+      <section aria-labelledby="state-video-autoplay">
+        <h2 class="catalog-label" id="state-video-autoplay">幅と autoplay・loop（<code>{width=320 autoplay loop}</code>。muted を追加する）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure mdmark-image mdmark-media" style="--mdmark-image-width: 320px">
+  <video controls autoplay muted loop playsinline preload="metadata" width="320" height="180">
+    <source src="../../refs/263/assets/media/demo.mp4" type="video/mp4">
+  </video>
+  <figcaption class="mdmark-figure-caption">繰り返し再生する短い操作</figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- キャプションの無い動画 -->
+      <section aria-labelledby="state-video-plain">
+        <h2 class="catalog-label" id="state-video-plain">キャプションの無い動画（title を書かない）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure mdmark-image mdmark-media" style="--mdmark-image-width: 60%">
+  <video controls preload="metadata" poster="../../refs/263/assets/media/demo-poster.png" width="480" height="270">
+    <source src="../../refs/263/assets/media/demo.mp4" type="video/mp4">
+  </video>
+  <img class="mdmark-media-print" src="../../refs/263/assets/media/demo-poster.png" alt="" width="480" height="270">
+</figure>
+        </article>
+      </section>
+
+      <!-- 音声 -->
+      <section aria-labelledby="state-audio">
+        <h2 class="catalog-label" id="state-audio">音声（再生バーと title のキャプション）</h2>
+        <article class="mdmark">
+<p>読み上げの見本です。</p>
+<figure class="mdmark-figure mdmark-image mdmark-media">
+  <audio controls preload="metadata">
+    <source src="../../refs/263/assets/media/voice.mp3" type="audio/mpeg">
+  </audio>
+  <figcaption class="mdmark-figure-caption">読み上げの見本（3 秒）</figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- GIF: 画像のまま描き、右上に止める・再生するボタンを置く -->
+      <section aria-labelledby="state-gif">
+        <h2 class="catalog-label" id="state-gif">GIF（再生している。右上のボタンで止める）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure mdmark-image" style="--mdmark-image-width: 360px">
+  <span class="mdmark-gif">
+    <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: ビルドの進み具合"><img src="../../refs/263/assets/media/build.gif" alt="ビルドの進み具合" width="360" height="200"></button>
+    <button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止" title="GIF を停止"><svg class="mdmark-icon mdmark-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg><svg class="mdmark-icon mdmark-icon-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg></button>
+  </span>
+  <figcaption class="mdmark-figure-caption">ビルドの進み具合</figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- GIF を止めた: 最初のフレームの絵を重ね、ボタンは押された状態 -->
+      <section aria-labelledby="state-gif-paused">
+        <h2 class="catalog-label" id="state-gif-paused">GIF を止めた（動きを減らす設定のときもこの状態で始める）</h2>
+        <article class="mdmark">
+<figure class="mdmark-figure mdmark-image" style="--mdmark-image-width: 360px">
+  <span class="mdmark-gif" data-mock-paused>
+    <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: ビルドの進み具合（止めた）"><img src="../../refs/263/assets/media/build.gif" alt="ビルドの進み具合（止めた）" width="360" height="200"></button>
+    <button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止" title="GIF を停止"><svg class="mdmark-icon mdmark-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg><svg class="mdmark-icon mdmark-icon-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg></button>
+  </span>
+  <figcaption class="mdmark-figure-caption">ビルドの進み具合</figcaption>
+</figure>
+        </article>
+      </section>
+
+      <!-- 読めない属性（異常シナリオ）: 読めた属性だけを当て、書き方の警告の枠で知らせる -->
+      <section aria-labelledby="state-unreadable">
+        <h2 class="catalog-label" id="state-unreadable">読めない属性を書いた（<code>{width=big loop}</code>。異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>width=big</code> は読めません。幅は <code>320</code>（px）か <code>50%</code> のように書いてください。ほかの属性（<code>loop</code>）は当てています。</p>
+</div>
+<figure class="mdmark-figure mdmark-image mdmark-media">
+  <video controls loop preload="metadata" poster="../../refs/263/assets/media/demo-poster.png" width="480" height="270">
+    <source src="../../refs/263/assets/media/demo.mp4" type="video/mp4">
+  </video>
+  <img class="mdmark-media-print" src="../../refs/263/assets/media/demo-poster.png" alt="" width="480" height="270">
+  <figcaption class="mdmark-figure-caption">プレビューを開く操作</figcaption>
+</figure>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <!-- ライトボックス（GIF の画像を押したとき）: 図の全画面と同じ閉じ方 -->
+  <!-- .mock-dialog-host: ライトボックスを描いた文書の中に置くための入れ物（モックだけ。箱を作らない） -->
+  <div class="mdmark mock-dialog-host">
+    <dialog class="mdmark-lightbox" closedby="any" aria-label="画像の拡大">
+      <div class="mdmark-lightbox-head">
+        <span class="mdmark-lightbox-count">1 / 1</span>
+        <span class="mdmark-lightbox-tools">
+          <button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+          <button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="拡大を閉じる" title="拡大を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        </span>
+      </div>
+      <div class="mdmark-lightbox-stage"><img src="" alt=""></div>
+      <p class="mdmark-lightbox-caption"></p>
+    </dialog>
+  </div>
+</body>
+</html>

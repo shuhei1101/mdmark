@@ -1,0 +1,43 @@
+/* 画像・動画・GIF・カードの印刷の規則（#263 で共有するアセット）: 押せない操作を出さず、動画はポスターとキャプションだけ、カードは URL を出す。テーマごとの画像は明るい配色として扱う */
+
+@layer mdmark {
+  .mdmark {
+    /* 押せない操作: 拡大のアイコンと GIF の止める・再生するボタンを出さない */
+    :is(.mdmark-image-open-icon, .mdmark-gif-toggle) {
+      display: none;
+    }
+
+    /* 拡大のボタン: 紙では画像のまま */
+    .mdmark-image-open {
+      cursor: auto;
+    }
+
+    /* 動画・音声の再生バー: 紙では出さない */
+    .mdmark-media :is(video, audio) {
+      display: none;
+    }
+
+    /* 動画の代わり: ポスターがあれば画像で出す。キャプションは図の規則のまま */
+    .mdmark-media-print {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+    }
+
+    /* テーマごとの画像: 紙では明るい配色の画像だけを出す */
+    .mdmark-only-light {
+      display: grid;
+    }
+
+    .mdmark-only-dark {
+      display: none;
+    }
+
+    /* カード: 面の色を付けず、線で囲んだまま改ページで割らない */
+    .mdmark-card {
+      break-inside: avoid;
+    }
+  }
+}

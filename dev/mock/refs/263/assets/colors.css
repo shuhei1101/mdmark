@@ -1,0 +1,260 @@
+/* 色のプリセット（#263 で共有するアセット）: 色の名前ごとの面の薄い色と文字の色の組と、表の列の強調・行の色・バッジの色・本文の文字の色の規則。
+   面の薄い色は文字の色を地に 12%（theme-contrast の暗い配色は 24%）混ぜた値。文字の色は、地と面の薄い色の両方に対して 4.5:1 以上、本文の文字は面の薄い色に対して 4.5:1 以上 */
+
+/* 既定のテーマ（dev-swiss）の明るい配色。印刷でもこの値を使う */
+:root {
+  --mdmark-color-accent-blue-bg: #e2ebfd;
+  --mdmark-color-accent-blue-text: #1d4ed8;
+  --mdmark-color-accent-red-bg: #fbe6e3;
+  --mdmark-color-accent-red-text: #b91c1c;
+  --mdmark-color-accent-green-bg: #e3ece5;
+  --mdmark-color-accent-green-text: #166534;
+  --mdmark-color-accent-yellow-bg: #f1e9e2;
+  --mdmark-color-accent-yellow-text: #854d0e;
+  --mdmark-color-accent-orange-bg: #f9e8e3;
+  --mdmark-color-accent-orange-text: #b53a0a;
+  --mdmark-color-accent-purple-bg: #ebe8fd;
+  --mdmark-color-accent-purple-text: #6d28d9;
+  --mdmark-color-accent-gray-bg: #e9e9ea;
+  --mdmark-color-accent-gray-text: #52525b;
+}
+
+/* 既定のテーマ（dev-swiss）の暗い配色。画面のときだけ当てる */
+@media screen {
+  :root[data-scheme="dark"] {
+    --mdmark-color-accent-blue-bg: #1e222d;
+    --mdmark-color-accent-blue-text: #7aa2ff;
+    --mdmark-color-accent-red-bg: #2a1e20;
+    --mdmark-color-accent-red-text: #f87171;
+    --mdmark-color-accent-green-bg: #1c2722;
+    --mdmark-color-accent-green-text: #4ade80;
+    --mdmark-color-accent-yellow-bg: #29261d;
+    --mdmark-color-accent-yellow-text: #facc15;
+    --mdmark-color-accent-orange-bg: #2a211d;
+    --mdmark-color-accent-orange-text: #fb923c;
+    --mdmark-color-accent-purple-bg: #25222d;
+    --mdmark-color-accent-purple-text: #c4a7ff;
+    --mdmark-color-accent-gray-bg: #232327;
+    --mdmark-color-accent-gray-text: #b4b4bc;
+  }
+}
+
+/* theme-paper の明るい配色。印刷でもこの値を使う */
+:root[data-theme="theme-paper"] {
+  --mdmark-color-accent-blue-bg: #dfe3e6;
+  --mdmark-color-accent-blue-text: #1e4f8c;
+  --mdmark-color-accent-red-bg: #f3dfd7;
+  --mdmark-color-accent-red-text: #a3261f;
+  --mdmark-color-accent-green-bg: #e3e6d8;
+  --mdmark-color-accent-green-text: #3f6b2a;
+  --mdmark-color-accent-yellow-bg: #ece5d6;
+  --mdmark-color-accent-yellow-text: #80600a;
+  --mdmark-color-accent-orange-bg: #f2e3d6;
+  --mdmark-color-accent-orange-text: #a4480d;
+  --mdmark-color-accent-purple-bg: #e8e1e8;
+  --mdmark-color-accent-purple-text: #6b3fa0;
+  --mdmark-color-accent-gray-bg: #e7e3dc;
+  --mdmark-color-accent-gray-text: #5c554c;
+}
+
+/* theme-paper の暗い配色。画面のときだけ当てる */
+@media screen {
+  :root[data-theme="theme-paper"][data-scheme="dark"] {
+    --mdmark-color-accent-blue-bg: #28292a;
+    --mdmark-color-accent-blue-text: #8fb4e8;
+    --mdmark-color-accent-red-bg: #322621;
+    --mdmark-color-accent-red-text: #f0928a;
+    --mdmark-color-accent-green-bg: #2a2b21;
+    --mdmark-color-accent-green-text: #a3c98a;
+    --mdmark-color-accent-yellow-bg: #302a1d;
+    --mdmark-color-accent-yellow-text: #e8c14a;
+    --mdmark-color-accent-orange-bg: #31271e;
+    --mdmark-color-accent-orange-text: #eba066;
+    --mdmark-color-accent-purple-bg: #2d282b;
+    --mdmark-color-accent-purple-text: #c9a8ec;
+    --mdmark-color-accent-gray-bg: #2c2823;
+    --mdmark-color-accent-gray-text: #b5ab9c;
+  }
+}
+
+/* theme-slate の明るい配色。印刷でもこの値を使う */
+:root[data-theme="theme-slate"] {
+  --mdmark-color-accent-blue-bg: #dce7fa;
+  --mdmark-color-accent-blue-text: #1d4ed8;
+  --mdmark-color-accent-red-bg: #f4e2e1;
+  --mdmark-color-accent-red-text: #b91c1c;
+  --mdmark-color-accent-green-bg: #dde8e5;
+  --mdmark-color-accent-green-text: #04694c;
+  --mdmark-color-accent-yellow-bg: #e8e5df;
+  --mdmark-color-accent-yellow-text: #7a5600;
+  --mdmark-color-accent-orange-bg: #f2e4e0;
+  --mdmark-color-accent-orange-text: #b4430b;
+  --mdmark-color-accent-purple-bg: #e5e3fa;
+  --mdmark-color-accent-purple-text: #6d28d9;
+  --mdmark-color-accent-gray-bg: #e1e5e9;
+  --mdmark-color-accent-gray-text: #475569;
+}
+
+/* theme-slate の暗い配色。画面のときだけ当てる */
+@media screen {
+  :root[data-theme="theme-slate"][data-scheme="dark"] {
+    --mdmark-color-accent-blue-bg: #1c2740;
+    --mdmark-color-accent-blue-text: #93b4ff;
+    --mdmark-color-accent-red-bg: #272638;
+    --mdmark-color-accent-red-text: #fca5a5;
+    --mdmark-color-accent-green-bg: #192c3a;
+    --mdmark-color-accent-green-text: #6ee7b7;
+    --mdmark-color-accent-yellow-bg: #262b33;
+    --mdmark-color-accent-yellow-text: #fcd34d;
+    --mdmark-color-accent-orange-bg: #272935;
+    --mdmark-color-accent-orange-text: #fdba74;
+    --mdmark-color-accent-purple-bg: #212740;
+    --mdmark-color-accent-purple-text: #c4b5fd;
+    --mdmark-color-accent-gray-bg: #1e273b;
+    --mdmark-color-accent-gray-text: #a3b1c6;
+  }
+}
+
+/* theme-contrast の明るい配色。印刷でもこの値を使う */
+:root[data-theme="theme-contrast"] {
+  --mdmark-color-accent-blue-bg: #dfe7f7;
+  --mdmark-color-accent-blue-text: #0037a8;
+  --mdmark-color-accent-red-bg: #f8e4e2;
+  --mdmark-color-accent-red-text: #a3001c;
+  --mdmark-color-accent-green-bg: #e3ebe2;
+  --mdmark-color-accent-green-text: #1a5e1a;
+  --mdmark-color-accent-yellow-bg: #ece8e1;
+  --mdmark-color-accent-yellow-text: #6b4a00;
+  --mdmark-color-accent-orange-bg: #f3e6e1;
+  --mdmark-color-accent-orange-text: #8f3300;
+  --mdmark-color-accent-purple-bg: #e9e6f8;
+  --mdmark-color-accent-purple-text: #5b21b6;
+  --mdmark-color-accent-gray-bg: #e6e6e7;
+  --mdmark-color-accent-gray-text: #3f3f46;
+}
+
+/* theme-contrast の暗い配色。画面のときだけ当てる */
+@media screen {
+  :root[data-theme="theme-contrast"][data-scheme="dark"] {
+    --mdmark-color-accent-blue-bg: #0f151f;
+    --mdmark-color-accent-blue-text: #9cc0ff;
+    --mdmark-color-accent-red-bg: #1f0d0d;
+    --mdmark-color-accent-red-text: #ff9090;
+    --mdmark-color-accent-green-bg: #0a1a0a;
+    --mdmark-color-accent-green-text: #7ee07e;
+    --mdmark-color-accent-yellow-bg: #1f1802;
+    --mdmark-color-accent-yellow-text: #ffd23f;
+    --mdmark-color-accent-orange-bg: #1f1106;
+    --mdmark-color-accent-orange-text: #ffad66;
+    --mdmark-color-accent-purple-bg: #17121f;
+    --mdmark-color-accent-purple-text: #d0b3ff;
+    --mdmark-color-accent-gray-bg: #161617;
+    --mdmark-color-accent-gray-text: #c8c8d0;
+  }
+}
+
+@layer mdmark {
+  .mdmark {
+    /* 色の名前ごとに、使う組を選ぶ（[data-color] を持つ要素とその中で使う） */
+    [data-color="blue"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-blue-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-blue-text);
+    }
+    [data-color="red"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-red-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-red-text);
+    }
+    [data-color="green"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-green-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-green-text);
+    }
+    [data-color="yellow"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-yellow-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-yellow-text);
+    }
+    [data-color="orange"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-orange-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-orange-text);
+    }
+    [data-color="purple"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-purple-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-purple-text);
+    }
+    [data-color="gray"] {
+      --mdmark-accent-bg: var(--mdmark-color-accent-gray-bg);
+      --mdmark-accent-text: var(--mdmark-color-accent-gray-text);
+    }
+
+    /* 色を付けた要素は、印刷でも面の色を残す */
+    [data-color] {
+      print-color-adjust: exact;
+    }
+
+    /* ---------- バッジの色 ---------- */
+
+    /* 色のバッジ: 面の薄い色に色の文字、線は文字の色を地に 40% 混ぜる。ラベルの文字でも意味を示す */
+    .mdmark-badge[data-color] {
+      border-color: color-mix(in oklab, var(--mdmark-accent-text) 40%, var(--mdmark-color-bg));
+      background: var(--mdmark-accent-bg);
+      color: var(--mdmark-accent-text);
+    }
+
+    /* 色の名前の一覧の面の見本（モックだけ）: 面の薄い色に本文の文字を置く */
+    .mock-accent-face {
+      background: var(--mdmark-accent-bg);
+    }
+
+    /* ---------- 本文の文字の色 ---------- */
+
+    /* 本文の文字の色（案 A）: 色の文字を太字にし、色が見分けられなくても強調が分かる */
+    .mdmark-color[data-color] {
+      color: var(--mdmark-accent-text);
+      font-weight: 700;
+    }
+
+    /* 案 B（モックだけの比較）: 太字にせず、色の実線の下線を文字から離して引く */
+    .mock-text-b .mdmark-color[data-color] {
+      font-weight: inherit;
+      text-decoration: underline 2px var(--mdmark-accent-text);
+      text-underline-offset: 0.3em;
+    }
+
+    /* 案 C（モックだけの比較）: 色だけで示す */
+    .mock-text-c .mdmark-color[data-color] {
+      font-weight: inherit;
+    }
+
+    /* ---------- 表の列の強調 ---------- */
+
+    /* 強調した列のセル: 面の薄い色を敷く */
+    :is(th, td).mdmark-col-highlight {
+      background: var(--mdmark-accent-bg);
+      print-color-adjust: exact;
+    }
+
+    /* 強調した列の見出し: 下端に色の 2px の線を引き、色が見分けられなくても強調した列が分かる */
+    th.mdmark-col-highlight {
+      box-shadow: inset 0 -2px 0 var(--mdmark-accent-text);
+    }
+
+    /* ---------- 表の行の色 ---------- */
+
+    /* 色を付けた行のセル: 面の薄い色を敷く（列の強調より行の色を先にする） */
+    tr[data-color] > td,
+    tr[data-color] > td.mdmark-col-highlight {
+      background: var(--mdmark-accent-bg);
+    }
+
+    /* 案 B: 色を付けた行の上下に色の 1px の線を引き、行のまとまりを枠の全体で示す */
+    .mock-row-b tr[data-color] > td {
+      box-shadow:
+        inset 0 1px 0 var(--mdmark-accent-text),
+        inset 0 -1px 0 var(--mdmark-accent-text);
+    }
+
+    /* 案 A（モックだけの比較）: 色を付けた行の左端に色の 3px の線を引く */
+    .mock-row-a tr[data-color] > td:first-child {
+      box-shadow: inset 3px 0 0 var(--mdmark-accent-text);
+    }
+  }
+}

@@ -22,6 +22,12 @@
   <link rel="stylesheet" href="../../refs/151/assets/catalog.css">
   <!-- 閉じた表のタイトル（#225 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/225/assets/collapse.css">
+  <!-- 選べるテーマの配色の値: media.js がモック専用の操作列で選んだテーマだけを有効にする -->
+  <link rel="stylesheet" href="../../assets/themes/theme-paper.css" data-theme-css="theme-paper" disabled>
+  <link rel="stylesheet" href="../../assets/themes/theme-slate.css" data-theme-css="theme-slate" disabled>
+  <link rel="stylesheet" href="../../assets/themes/theme-contrast.css" data-theme-css="theme-contrast" disabled>
+  <!-- 色のプリセットと、列の強調・行の色の規則（#263 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
@@ -40,10 +46,19 @@
   <script src="../../refs/151/assets/table.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/151/assets/preview.js" defer></script>
+  <!-- モック専用の操作列のテーマの切り替え（#263 で共有するアセット） -->
+  <script src="../../refs/263/assets/media.js" defer></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
+  <!-- モック専用の操作列: テーマ・配色と印刷の見え方の切り替え -->
   <div class="mock-bar">
+    <!-- [data-theme-set]: media.js が押されたボタンのテーマの配色を有効にする -->
+    <div class="mock-bar-group" role="group" aria-label="テーマ">
+      <button class="mock-bar-item" type="button" data-theme-set="default" aria-pressed="false">dev-swiss（既定）</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-paper" aria-pressed="false">theme-paper</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
+    </div>
     <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
@@ -1009,6 +1024,143 @@
         <h2 class="catalog-label" id="state-closed-title">閉じた表と title=（closed title=リリースの一覧）</h2>
         <article class="mdmark">
 <div data-mock-table="releases-closed" data-mock-collapse="closed" data-mock-title="リリースの一覧"></div>
+        </article>
+      </section>
+
+      <!-- 列の強調: 列のセルを面の薄い色にし、見出しの下端に色の線を引く -->
+      <section aria-labelledby="state-col-highlight">
+        <h2 class="catalog-label" id="state-col-highlight">列の強調（<code>highlight=金額（円）</code>。既定の色は blue。見出しの下端の線でも示す）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 列の強調">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right mdmark-col-highlight" data-color="blue"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">120,000</td></tr>
+      <tr><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">480,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">60,000</td></tr>
+      <tr><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">90,000</td></tr>
+      <tr><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">35,000</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 値で付けた行の色（案 B）: 面の薄い色と、行の上下の色の線 -->
+      <section aria-labelledby="state-row-color-b">
+        <h2 class="catalog-label" id="state-row-color-b">値で付けた行の色（<code>row-color=状態:完了=green,保留=yellow</code>。案 B: 行の上下の線。推奨）</h2>
+        <article class="mdmark mock-row-b">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 値で付けた行の色">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr data-color="green"><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">120,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">480,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right" data-label="金額（円）">60,000</td></tr>
+      <tr data-color="green"><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">90,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">35,000</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 値で付けた行の色（案 A）: 面の薄い色と、行の左端の色の線 -->
+      <section aria-labelledby="state-row-color-a">
+        <h2 class="catalog-label" id="state-row-color-a">値で付けた行の色（案 A: 左端の線）</h2>
+        <article class="mdmark mock-row-a">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 値で付けた行の色（案 A）">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr data-color="green"><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">120,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">480,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right" data-label="金額（円）">60,000</td></tr>
+      <tr data-color="green"><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">90,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">35,000</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 位置で付けた行の色（案 B） -->
+      <section aria-labelledby="state-row-position">
+        <h2 class="catalog-label" id="state-row-position">位置で付けた行の色（2 行目を red。案 B）</h2>
+        <article class="mdmark mock-row-b">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 位置で付けた行の色">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">120,000</td></tr>
+      <tr data-color="red"><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">480,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right" data-label="金額（円）">60,000</td></tr>
+      <tr><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">90,000</td></tr>
+      <tr><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">35,000</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 並べ替えた後: 値で付けた色は行と一緒に動く -->
+      <section aria-labelledby="state-row-sorted">
+        <h2 class="catalog-label" id="state-row-sorted">金額で並べ替えた後（値で付けた色は行に付いたまま動く。案 B）</h2>
+        <article class="mdmark mock-row-b">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 並べ替えた後の行の色">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right" aria-sort="ascending"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr data-color="yellow"><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">35,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right" data-label="金額（円）">60,000</td></tr>
+      <tr data-color="green"><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">90,000</td></tr>
+      <tr data-color="green"><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">120,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">480,000</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 列の強調と行の色の重なり: 重なるセルは行の色を先にし、列は見出しの線で示す -->
+      <section aria-labelledby="state-col-row">
+        <h2 class="catalog-label" id="state-col-row">列の強調と行の色を重ねた（重なるセルは行の色。案 B）</h2>
+        <article class="mdmark mock-row-b">
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 列の強調と行の色">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right mdmark-col-highlight" data-color="blue"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr data-color="green"><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">120,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">480,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">60,000</td></tr>
+      <tr data-color="green"><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">90,000</td></tr>
+      <tr data-color="yellow"><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right mdmark-col-highlight" data-color="blue" data-label="金額（円）">35,000</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 知らない色の名前（異常シナリオ）: 色を付けず、書き方の警告の枠で知らせる -->
+      <section aria-labelledby="state-row-unknown">
+        <h2 class="catalog-label" id="state-row-unknown">知らない色の名前を書いた（<code>row-color=状態:完了=pink</code>。異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>row-color=状態:完了=pink</code> の色の名前 <code>pink</code> はありません。<code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> のどれかを書いてください。この行には色を付けていません。</p>
+</div>
+<div class="mdmark-table" data-kind="data">
+  <table tabindex="0" aria-label="表: 知らない色の名前">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">案件<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「案件」の列までピン止め" title="「案件」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">状態<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「状態」の列までピン止め" title="「状態」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">金額（円）<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「金額（円）」の列までピン止め" title="「金額（円）」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="案件">ロゴの作成</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">120,000</td></tr>
+      <tr><td data-label="案件">サイトの改修</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">480,000</td></tr>
+      <tr><td data-label="案件">保守（10 月）</td><td data-label="状態">対応中</td><td class="mdmark-align-right" data-label="金額（円）">60,000</td></tr>
+      <tr><td data-label="案件">撮影</td><td data-label="状態">完了</td><td class="mdmark-align-right" data-label="金額（円）">90,000</td></tr>
+      <tr><td data-label="案件">翻訳</td><td data-label="状態">保留</td><td class="mdmark-align-right" data-label="金額（円）">35,000</td></tr>
+    </tbody>
+  </table>
+</div>
         </article>
       </section>
     </div>
