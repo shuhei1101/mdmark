@@ -256,6 +256,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         ? { "side-toc": loaded.config["side-toc"] }
         : {}),
       ...(colorTheme !== undefined ? { colorTheme } : {}),
+      ...(loaded.config.labels ? { labels: loaded.config.labels } : {}),
       // 埋めたモジュールは開いたときに URL に替えるため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),

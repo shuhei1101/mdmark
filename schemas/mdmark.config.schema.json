@@ -225,6 +225,20 @@
       "type": "string",
       "default": "dev-swiss"
     },
+    "labels": {
+      "title": "部品の文言",
+      "description": "mdmark が描く部品の文言。知らないキーは読まない。",
+      "type": "object",
+      "properties": {
+        "paramCopy": {
+          "title": "今の値をコピーするボタンの文言",
+          "description": "操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる。`mount` は空文字と文字列でない値を無視して既定の文言で描き、CLI は空でない文字列でない値を設定ファイルの誤りにする。",
+          "type": "string",
+          "minLength": 1,
+          "default": "今の値を写す"
+        }
+      }
+    },
     "syntax": {
       "title": "色分けの設定",
       "description": "コードブロックの色分けに使うライブラリの設定。",

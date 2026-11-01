@@ -833,7 +833,7 @@ request:
     required: false
     default: なし（全てのキーに既定を当てる）
     location: argument
-    description: '`mount` の `opts.config` と同じ。この操作が読むのは `features`（記法の機能のオン・オフ）と `libraries` の名前（どの印を印の場所の要素にするか）だけ'
+    description: '`mount` の `opts.config` と同じ。この操作が読むのは `features`（記法の機能のオン・オフ）・`libraries` の名前（どの印を印の場所の要素にするか）・`labels.paramCopy`（操作できる部品の今の値をコピーするボタンの文言。既定の当て方は `mount` と同じ）だけ'
   - name: opts.index
     type: MdmarkIndex
     required: false

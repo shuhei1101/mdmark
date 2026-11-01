@@ -578,9 +578,9 @@ functions:
         required: true
         description: 読めた定義
       - name: state
-        type: '{ value?: number; copy?: "none" | "copied" | "failed"; id: string }'
+        type: '{ value?: number; copy?: "none" | "copied" | "failed"; id: string; copyLabel?: string }'
         required: true
-        description: 今の値・写した結果・`id` の頭
+        description: 今の値・写した結果・`id` の頭・今の値をコピーするボタンの文言（既定 `DEFAULT_LABELS.paramCopy`。エスケープして出す）
     returns:
       type: string
       description: '`div.mdmark-param` の HTML'
@@ -590,7 +590,13 @@ functions:
         summary: 既定の値で描く
         condition: '`strength` の定義'
         mock: なし
-        expected: '`input type="range"` の `min`・`max`・`step`・`value` が 0・10・1・5 で、グラフの系列が `今の値（5）`・`既定の値（5）`'
+        expected: '`input type="range"` の `min`・`max`・`step`・`value` が 0・10・1・5 で、グラフの系列が `今の値（5）`・`既定の値（5）`。`button.mdmark-param-copy` の文字が `今の値を写す`'
+      - name: test_render_param_when_copy_label
+        case: 正常
+        summary: 渡した文言でボタンを描き、HTML の特別な文字をエスケープする
+        condition: '`strength` の定義と `copyLabel` が `コピー`。もう 1 つは `copyLabel` が `<b>写す</b>`'
+        mock: なし
+        expected: 前者の `button.mdmark-param-copy` の文字が `コピー` で `aria-label` を持たない。後者の出力に `&lt;b&gt;写す&lt;/b&gt;` があり `<b>` が無い
   - name: paramJson
     title: 今の値の JSON
     container: src/parts/param.ts
@@ -621,7 +627,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow` に `hints` のオン・オフを渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow` に `hints` のオン・オフを、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore
@@ -659,6 +665,12 @@ functions:
         condition: 閉じの `}` が無いフロー図の定義
         mock: なし
         expected: '`.mdmark-syntax-warning` の本文が `フロー図の部品の定義を JSON として読めません` で始まる'
+      - name: test_build_diagrams_when_param_copy_label
+        case: 正常
+        summary: 操作できる部品のボタンを `env.labels.paramCopy` の文言で描く
+        condition: '`<!-- param -->` の範囲に `strength` の定義を置いた文書と、`labels` が `{ paramCopy: "コピー" }` の `env`'
+        mock: なし
+        expected: '`button.mdmark-param-copy` の文字が `コピー`'
   - name: attachDiagrams
     title: 図の拡大・縮小・移動・全画面を付ける
     container: src/interact/diagrams.ts

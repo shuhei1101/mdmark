@@ -31,3 +31,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 261633f2eeaf589d9a30cdabb41533f56be078f7c9839925304b31155497483f
     reason: features に省いてよい side-toc と、省いてよい side-toc と、省いてよい aliases と、省いてよい colorTheme を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 0e2bb81d8f54adf319bdb32f9e8878ec2577f3ce125d889f69b5a52fa08ae990
+    reason: 省いてよい labels を足しただけで、古い設定もそのまま新しい Schema に合う

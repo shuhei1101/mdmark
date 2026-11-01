@@ -48,6 +48,7 @@ test("test_resolve_config", async () => {
     syntax: { url: DEFAULT_SYNTAX_URL },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
+    labels: { paramCopy: "今の値を写す" },
   });
 });
 
@@ -162,5 +163,26 @@ test("test_resolve_config_when_color_theme_given", async () => {
     "dev-swiss",
     "dev-swiss",
     "dev-swiss",
+  ]);
+});
+
+// 空でない文字列の `labels.paramCopy` だけを受け、空文字・他の型・無いときは既定にする（正常系）
+test("test_resolve_config_when_labels_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { labels: { paramCopy: "コピー" } },
+    { labels: { paramCopy: "" } },
+    { labels: { paramCopy: 1 } },
+    { labels: { other: "x" } },
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const labels = configs.map((config) => resolveConfig({ config }).labels);
+  // 検証
+  expect(labels).toEqual([
+    { paramCopy: "コピー" },
+    { paramCopy: "今の値を写す" },
+    { paramCopy: "今の値を写す" },
+    { paramCopy: "今の値を写す" },
   ]);
 });

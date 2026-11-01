@@ -2959,6 +2959,39 @@ test("test_error_when_clipboard_denied", async () => {
   );
 });
 
+// 設定の文言で今の値をコピーするボタンを描き、update で描き直しても同じ文言で描く（正常系）
+test("test_normal_when_param_copy_label_configured", async () => {
+  // 準備
+  const part = wrapDirective("param", STRENGTH_TEXT);
+  const markdown = `段落 A\n\n${part}`;
+  const el = createElement();
+  const el2 = createElement();
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown,
+    config: { labels: { paramCopy: "コピー" } },
+  });
+  const named = page.getByRole("button", { name: "コピー", exact: true });
+  const before = find<HTMLButtonElement>(el, "button.mdmark-param-copy");
+  const beforeText = before.textContent;
+  const beforeNamed = named.element();
+  handle.update(`段落 B\n\n${part}`);
+  await mountTracked(el2, {
+    markdown,
+    config: { labels: { paramCopy: "" } },
+  });
+  // 検証
+  expect(beforeText).toBe("コピー");
+  expect(beforeNamed).toBe(before);
+  expect(paragraphTexts(el)).toContain("段落 B");
+  const after = find<HTMLButtonElement>(el, "button.mdmark-param-copy");
+  expect(after.textContent).toBe("コピー");
+  expect(named.element()).toBe(after);
+  expect(find(el2, "button.mdmark-param-copy").textContent).toBe(
+    "今の値を写す",
+  );
+});
+
 /** 描く先の要素の幅を 600px にして、埋め込んだ HTML の文書を描く */
 async function mountEmbedded(markdown: string): Promise<HTMLElement> {
   const el = createElement();

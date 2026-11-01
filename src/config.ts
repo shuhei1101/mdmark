@@ -12,6 +12,8 @@ export type MdmarkConfig = {
   "side-toc"?: { mode?: string };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
   colorTheme?: string;
+  /** 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする */
+  labels?: { paramCopy?: string };
 };
 
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
@@ -49,6 +51,8 @@ export type ResolvedConfig = {
   sideToc: { mode: SideTocMode };
   /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
   colorTheme: ColorTheme;
+  /** 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy` */
+  labels: { paramCopy: string };
 };
 
 /** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
@@ -61,6 +65,11 @@ export const COLOR_THEMES: readonly ColorTheme[] = [
 
 /** 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま */
 export const DEFAULT_COLOR_THEME: ColorTheme = "dev-swiss";
+
+/** 設定の `labels.paramCopy` が空でない文字列でないときの部品の文言 */
+export const DEFAULT_LABELS: { paramCopy: string } = {
+  paramCopy: "今の値を写す",
+};
 
 /** この版が知っている機能とその既定 */
 export const DEFAULT_FEATURES: Record<string, boolean> = {
@@ -142,6 +151,14 @@ export function resolveConfig(options: {
   const colorTheme =
     COLOR_THEMES.find((name) => name === config?.colorTheme) ??
     DEFAULT_COLOR_THEME;
+  // 部品の文言は、空でない文字列だけを受け、他の値は既定にする
+  const paramCopy = config?.labels?.paramCopy;
+  const labels = {
+    paramCopy:
+      typeof paramCopy === "string" && paramCopy !== ""
+        ? paramCopy
+        : DEFAULT_LABELS.paramCopy,
+  };
   return {
     features,
     libraries,
@@ -149,5 +166,6 @@ export function resolveConfig(options: {
     syntax,
     sideToc: { mode },
     colorTheme,
+    labels,
   };
 }

@@ -39,6 +39,9 @@ data_models:
       - name: defaults
         type: Record<string, boolean>
         description: 設定の `features`
+      - name: labels
+        type: '{ paramCopy: string } | undefined'
+        description: 既定を当てた設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に渡す）
       - name: featureArgs
         type: string[]
         description: '`features` の印の引数を書いた順に並べたもの（コアルールが足す）'
@@ -227,7 +230,7 @@ functions:
       - name: options
         type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[] }'
         required: true
-        description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う）'
+        description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
     returns:
       type: RenderedDocument
       description: 本文の HTML と機能のオン・オフ
@@ -255,6 +258,12 @@ functions:
         condition: '`<div class="mdmark-tabs" data-kind="data"><p id="fig-x">偽り</p></div>` と `> [!NOTE]` の引用'
         mock: なし
         expected: '`偽り` の段落に class・`data-kind`・`id` が無く、注意書きが `markdown-alert-note` を持ち、出力に `data-mdmark-own` が無い'
+      - name: test_render_document_when_labels_given
+        case: 正常
+        summary: 設定の部品の文言で操作できる部品のボタンを描く
+        condition: '`<!-- param -->` の範囲に `strength` の定義を置いた文書。設定の `labels` は `{ paramCopy: "コピー" }`'
+        mock: なし
+        expected: '`button.mdmark-param-copy` の文字が `コピー` で、`今の値を写す` が無い'
   - name: createParser
     title: 解析器を作る
     container: src/render/parser.ts

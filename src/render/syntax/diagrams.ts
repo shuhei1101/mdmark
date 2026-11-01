@@ -95,7 +95,10 @@ export function buildDiagrams(state: StateCore): void {
       if (directive === "param") {
         const param = definition as MdmarkParamDefinition;
         env.paramDefinitions.push(param);
-        html = renderParam(param, { id: `${PARAM_ID_PREFIX}-${count}` });
+        html = renderParam(param, {
+          id: `${PARAM_ID_PREFIX}-${count}`,
+          copyLabel: env.labels?.paramCopy,
+        });
       } else {
         html = renderDiagram({
           kind: directive,

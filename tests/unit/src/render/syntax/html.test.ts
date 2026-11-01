@@ -2,6 +2,8 @@ import { expect, test } from "vitest";
 import type { MdmarkAlias } from "../../../../../src/knowledge/aliases.ts";
 import type { MdmarkIndex } from "../../../../../src/knowledge/index-shape.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../../../helpers/charts.ts";
+import { STRENGTH_TEXT } from "../../../helpers/diagrams.ts";
+import { createEnv } from "../../../helpers/env.ts";
 import {
   findTag,
   innerHtml,
@@ -9,6 +11,9 @@ import {
   plainText,
 } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
+
+/** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadParser = () => import("../../../../../src/render/parser.ts");
 
 /** 範囲の外に置く `html` のコードブロック */
 const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
@@ -203,4 +208,19 @@ test("test_build_embedded_html_when_disabled", () => {
   ).toHaveLength(2);
   expect(html).not.toContain("mdmark-html");
   expect(html).not.toContain("<!--");
+});
+
+// 中の操作できる部品のボタンを `env.labels.paramCopy` の文言で描く（正常系）
+test("test_build_embedded_html_when_param_copy_label", async () => {
+  // 準備
+  const { createParser } = await loadParser();
+  const markdown = wrapHtml(
+    `<mdmark-param>\n${STRENGTH_TEXT}\n</mdmark-param>`,
+  );
+  const env = createEnv({ labels: { paramCopy: "コピー" } });
+  // 実行
+  const html = createParser().render(markdown, env);
+  // 検証
+  const embedded = innerHtml(html, 'class="mdmark-html"');
+  expect(plainText(innerHtml(embedded, "mdmark-param-copy"))).toBe("コピー");
 });

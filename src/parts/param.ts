@@ -1,3 +1,4 @@
+import { DEFAULT_LABELS } from "../config.ts";
 import type {
   MdmarkChartDefinition,
   MdmarkParamDefinition,
@@ -55,7 +56,7 @@ export function renderCopyStatus(state: "copied" | "failed"): string {
 /** 操作できる部品を描く: 題・スライダー・今の値・写すボタン・知らせ・写せなかったときの `pre` と、今の値と既定の値の系列のグラフ */
 export function renderParam(
   definition: MdmarkParamDefinition,
-  state: { value?: number; copy?: CopyState; id: string },
+  state: { value?: number; copy?: CopyState; id: string; copyLabel?: string },
 ): string {
   const { knob } = definition;
   const value = state.value ?? knob.value;
@@ -71,5 +72,5 @@ export function renderParam(
     definition: paramChart(definition, value),
     id: `${state.id}-chart`,
   });
-  return `<div class="mdmark-param" role="group" aria-labelledby="${id}-title"><p class="mdmark-param-title" id="${id}-title">${escapeHtml(definition.title)}</p><div class="mdmark-param-controls"><div class="mdmark-param-knob"><label for="${id}-knob">${escapeHtml(knob.label)}</label><output for="${id}-knob" id="${id}-value">${value}</output><input type="range" id="${id}-knob" min="${knob.min}" max="${knob.max}" step="${knob.step}" value="${value}"><span class="mdmark-param-range" aria-hidden="true"><small>${knob.min}</small><small>${knob.max}</small></span></div><div class="mdmark-param-actions"><button class="mdmark-param-copy" type="button">${iconSvg("copy")}今の値を写す</button>${status}</div>${fallback}</div>${chart}</div>`;
+  return `<div class="mdmark-param" role="group" aria-labelledby="${id}-title"><p class="mdmark-param-title" id="${id}-title">${escapeHtml(definition.title)}</p><div class="mdmark-param-controls"><div class="mdmark-param-knob"><label for="${id}-knob">${escapeHtml(knob.label)}</label><output for="${id}-knob" id="${id}-value">${value}</output><input type="range" id="${id}-knob" min="${knob.min}" max="${knob.max}" step="${knob.step}" value="${value}"><span class="mdmark-param-range" aria-hidden="true"><small>${knob.min}</small><small>${knob.max}</small></span></div><div class="mdmark-param-actions"><button class="mdmark-param-copy" type="button">${iconSvg("copy")}${escapeHtml(state.copyLabel ?? DEFAULT_LABELS.paramCopy)}</button>${status}</div>${fallback}</div>${chart}</div>`;
 }

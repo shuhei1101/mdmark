@@ -466,5 +466,18 @@ settings:
     status: planned
     introduced:
       pr: 181
+  - key: labels.paramCopy
+    title: 今の値をコピーするボタンの文言
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    default: '`今の値を写す`'
+    description: 操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる。`labels` は部品の文言をまとめるマップで、知らないキーは読まない
+    reload: reload
+    allowed: 空でない文字列。`mount` は空文字と文字列でない値を無視して既定の文言にし、CLI は設定ファイルの誤りにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.labels.paramCopy]
+    implementation: src/config.ts#resolveConfig
+    status: implemented
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

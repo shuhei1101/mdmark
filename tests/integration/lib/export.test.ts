@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
+import { STRENGTH_TEXT, wrapDirective } from "../../unit/helpers/diagrams.ts";
 import {
   GREET_SOURCE,
   linesOf,
@@ -440,5 +441,24 @@ test("test_normal_when_color_theme", async () => {
     return root ? getComputedStyle(root).backgroundColor : "";
   });
   expect(background).toBe("rgb(248, 250, 252)");
+  await page.close();
+});
+
+// 設定の labels を埋める設定に写し、開いた HTML で操作できる部品のボタンを設定の文言で描く（正常系（部品の文言を替える設定））
+test("test_normal_when_param_copy_label", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "labels:\n  paramCopy: コピー\n",
+    "guide.md": `# ガイド\n\n${wrapDirective("param", STRENGTH_TEXT)}`,
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "guide.html"));
+  const button = page.locator("button.mdmark-param-copy");
+  await button.waitFor();
+  expect(await button.textContent()).toBe("コピー");
   await page.close();
 });
