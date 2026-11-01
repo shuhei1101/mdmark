@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 開いたときは既定の値 5 で、今の値と既定の値の 2 つの系列を描く（Default）
+// 開いたときは既定の値 5 で、今の値と既定の値の 2 つの系列を描き、グラフの表示する箱は部品の枠の中で線を持たない（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-paramcontrol--default");
@@ -18,6 +18,17 @@ test("test_default", async () => {
     page.locator("svg[role=img]").getAttribute("aria-label"),
   ).resolves.toContain("今の値（5）");
   await expect(pageOverflows(page)).resolves.toBe(false);
+  // 部品の枠の中のグラフの表示する箱は線を持たず、部品の枠（border）は残る
+  await expect(
+    page
+      .locator(".mdmark-param .mdmark-diagram-box")
+      .evaluate((box) => getComputedStyle(box).boxShadow),
+  ).resolves.toBe("none");
+  const border = await page.locator(".mdmark-param").evaluate((param) => {
+    const style = getComputedStyle(param);
+    return { width: style.borderTopWidth, style: style.borderTopStyle };
+  });
+  expect(border).toEqual({ width: "1px", style: "solid" });
 });
 
 // 値を 8 に変えると、グラフの今の値の系列が追従する（Changed）

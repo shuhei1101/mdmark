@@ -1,0 +1,106 @@
+/* 図の枠の入れ子を見比べる場面の、使う側のページの見た目（mdmark の層の外） */
+
+body {
+  margin: 0;
+  background: #f4f4f5;
+  color: #18181b;
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+/* モック専用の操作列: 実画面に無い帯。案のタブを並べる */
+.mock-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 16px;
+  background: #2d2a3d;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 操作列のタブ: 高さを揃え、今の案は背景を反転して示す */
+.mock-bar-item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #8f8aa8;
+  border-radius: 6px;
+  color: #ffffff;
+  text-decoration: none;
+
+  &:hover {
+    background: #45415c;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  &[aria-current="page"] {
+    border-color: #ffffff;
+    background: #ffffff;
+    color: #2d2a3d;
+  }
+}
+
+/* 使う側のページのトップバー */
+.host-bar {
+  padding: 12px 24px;
+  background: #ffffff;
+  border-block-end: 1px solid #e4e4e7;
+  font-weight: 700;
+}
+
+/* パンくず */
+.crumbs {
+  margin: 0;
+  padding: 12px 24px 0;
+  font-size: 13px;
+
+  a {
+    color: #0f766e;
+  }
+}
+
+/* 本文と詳細パネルを左右に並べる。狭い幅では縦に積む */
+.host {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  gap: 24px;
+  align-items: start;
+  padding: 16px 24px 48px;
+
+  @media (width < 64rem) {
+    display: block;
+    padding-inline: 12px;
+
+    > * + * {
+      margin-block-start: 24px;
+    }
+  }
+}
+
+/* 詳細パネル: 使う側の枠を持つ面（線と影で本文から浮かせる） */
+.host-panel {
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* 詳細パネルの見出し */
+.host-panel-title {
+  margin: 0;
+  padding: 12px 16px;
+  border-block-end: 1px solid #e4e4e7;
+  font-size: 15px;
+}
+
+/* 詳細パネルの中の文書: 面の内側の余白に合わせる */
+.host-panel .mdmark {
+  --mdmark-padding: 16px;
+}

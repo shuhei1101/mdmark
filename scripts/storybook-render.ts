@@ -93,6 +93,10 @@ const SCRIPT_SOURCES: Record<string, string> = {
 // 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
 const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
+/** 使う側の枠を持つ面（線と影で本文から浮かせる）。図の枠の線を外す値を指定する */
+const FRAMED_SURFACE_STYLE =
+  "padding:1rem;border:1px solid var(--mdmark-color-border);border-radius:0.5rem;box-shadow:0 1px 3px rgb(0 0 0 / 0.08);--mdmark-diagram-box-shadow:none";
+
 // 中身を持つ部品に渡す、部品ごとの見本の HTML
 const SAMPLE_BODY =
   "<p>中身の見本です。段落が続くときの間隔も確かめられます。</p>";
@@ -587,8 +591,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       docs: args.docs as DocListItem[],
       current: args.current as string | undefined,
     }),
-  "diagram-frame": (args) =>
-    fitted(
+  "diagram-frame": (args) => {
+    const frame = fitted(
       renderDiagram({
         kind: "flow",
         definition: sampleDefinition<MdmarkFlowDefinition>("inquiry"),
@@ -597,7 +601,17 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ...diagramArgs(args),
       }),
       args,
-    ),
+    );
+    if (args.surface !== true) {
+      return frame;
+    }
+    // 全画面は mount と同じく面の子の mdmark-diagram-dialog に描き、画面全体に置く
+    const body =
+      args.modal === true
+        ? `<dialog class="mdmark-diagram-dialog" open="open" style="position:fixed;inset:0">${frame}</dialog>`
+        : frame;
+    return `<div class="story-framed-surface" style="${FRAMED_SURFACE_STYLE}">${body}</div>`;
+  },
   "flow-diagram": (args) => {
     if (args.invalid === true) {
       return invalidDefinition("flow", "inquiry");

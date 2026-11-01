@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-frame-nesting
+
+
+ Test Files  161 passed (161)
+      Tests  1188 passed (1188)
+   Start at  11:50:33
+   Duration  81.87s (worker 67%, tests 20%, import 10%, transform 3%)
+
+exit=0

@@ -28,3 +28,16 @@ stories:
         id: diagram-frame
     args:
       modal: true
+  - name: InFramedSurface
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      surface: true
+  - name: InFramedSurfaceFullscreen
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      modal: true
+      surface: true
