@@ -79,7 +79,7 @@ tables:
           table: docs.id
         description: この文書から他の文書への関連。要素は `to`（相手の文書の `id`・必須）・`type`（`requires` / `references` / `replaces` / `part_of` / `change_together`・必須）・`when`（いつ読むかの 1 文・必須・空にできない）・`paths`（関連が当たるファイルの glob の並び・任意）を持ち、他のキーを持たないオブジェクト。件数の上限は置かない。`to` をこの文書からその文書への参照として数える
         example: '[{to: arch, type: requires, when: 公開関数の前提の構成を確かめるとき}]'
-        notes: 関連は片側だけに記載し、逆向き（`required_by` / `referenced_by` / `replaced_by` / `has_part`）は保存しない。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で知らせる
+        notes: 関連は片側だけに記載し、逆向きは保存しない。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で知らせる
   - name: terms
     title: 用語
     datastore: YAML
