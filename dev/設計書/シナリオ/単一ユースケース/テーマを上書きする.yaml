@@ -209,7 +209,7 @@ scenarios:
     setup:
       - name: 上書きの CSS を読むページ
         description: 正常シナリオと同じページで、使う側の CSS が blue の文字の色の CSS 変数を `rgb(0, 0, 128)`、blue の面の色の CSS 変数を `rgb(230, 240, 255)` にする
-        notes: '変数名はインターフェース定義で決める（参考: `--mdmark-color-accent-blue-text`・`--mdmark-color-accent-blue-bg`）'
+        notes: 変数名は `--mdmark-color-accent-blue-text`・`--mdmark-color-accent-blue-bg`（インターフェース定義『文書を描く』の制約「色のプリセット」）
       - name: 色の名前を書いた Markdown
         description: 行内のコード `` `badge:blue:参考` `` と、本文の `[決め手の 1 文]{color=blue}` を持つ文書
       - name: Mock
