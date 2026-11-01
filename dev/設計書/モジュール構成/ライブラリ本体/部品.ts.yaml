@@ -1122,12 +1122,12 @@ functions:
     container: src/parts/image.ts
     kind: 関数
     scope: internal
-    summary: '`img` の HTML を、読み上げの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`mount` が描いた `img` を包むときと、Storybook の部品が使う'
+    summary: '`img` の HTML を、読み上げの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`icon` が `false` のとき（GIF の画像。右上に止める・再生するボタンを置くため）はアイコンを置かない。`mount` が描いた `img` を包むときと、Storybook の部品が使う'
     args:
       - name: options
-        type: '{ alt: string; img: string }'
+        type: '{ alt: string; img: string; icon?: boolean }'
         required: true
-        description: 画像の代わりの文字と、`img` の HTML
+        description: 画像の代わりの文字と、`img` の HTML と、アイコンを置くか（既定 `true`）
     returns:
       type: string
       description: '`<button class="mdmark-image-open" type="button"` で始まる HTML'
@@ -1143,6 +1143,12 @@ functions:
         condition: '`alt: "売上<推移>"`、`img: "<img src=\"a.png\" alt=\"売上\">"`'
         mock: なし
         expected: '`aria-label="画像を拡大: 売上&lt;推移&gt;"` の `button` の中に `img` と `<span class="mdmark-image-open-icon" aria-hidden="true">` の `svg`'
+      - name: test_render_image_opener_when_no_icon
+        case: 正常
+        summary: icon が false ならアイコンを置かない
+        condition: '`alt: "ビルド"`、`img: "<img src=\"a.gif\" alt=\"ビルド\">"`、`icon: false`'
+        mock: なし
+        expected: '`button.mdmark-image-open` の中に `img` だけがあり、`mdmark-image-open-icon` が無い'
     status: planned
     introduced:
       pr: 263
@@ -1339,7 +1345,7 @@ functions:
     container: src/parts/gif.ts
     kind: 関数
     scope: internal
-    summary: '部品設計『GIF』の HTML を返す（Storybook が使う。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener` で包む。`paused` のときは `canvas` の `hidden` を外し、`img` を `visibility: hidden` にする'
+    summary: '部品設計『GIF』の HTML を返す（Storybook が使う。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。`paused` のときは `canvas` の `hidden` を外し、`img` を `visibility: hidden` にする'
     args:
       - name: options
         type: '{ src: string; alt: string; paused?: boolean; lightbox?: boolean }'

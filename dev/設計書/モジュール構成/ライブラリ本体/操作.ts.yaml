@@ -1380,7 +1380,7 @@ functions:
     container: src/interact/lightbox.ts
     kind: 関数
     scope: internal
-    summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に置いて `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送り（端では送らない）、送るたびに画像・キャプション・枚数・送りのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を外して `dialog` を消し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'
+    summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に置いて `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送り（端では送らない）、送るたびに画像・キャプション・枚数・送りのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を外して `dialog` を消し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'
     args:
       - name: root
         type: HTMLElement
@@ -1429,6 +1429,12 @@ functions:
         condition: 1 つ目を開いて戻り値を呼ぶ
         mock: なし
         expected: '`dialog` と `button.mdmark-image-open` が無く、`img` が `figure` の直下'
+      - name: test_attach_lightbox_when_gif
+        case: 正常
+        summary: GIF の画像の拡大のボタンにはアイコンを置かない
+        condition: GIF の画像を描いた要素
+        mock: なし
+        expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
     status: planned
     introduced:
       pr: 263

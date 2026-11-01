@@ -146,7 +146,7 @@ styles:
         value: '`video` を `--mdmark-image-width` の幅に収め、`audio` は列の幅にする。`mdmark-media-print` は画面では `display: none`。`dev/mock/components/media/` の `<style>` から取る'
       - class_name: .mdmark .mdmark-gif・.mdmark-gif-toggle
         target: GIF
-        value: '`canvas` を `img` に重ね、`canvas[hidden]` を `display: none` にする。ボタンは画像の右下に置き、`aria-pressed` で `pause` と `play` のアイコンを出し分ける。`dev/mock/components/media/` の `<style>` から取る'
+        value: '`canvas` を `img` に重ね、`canvas[hidden]` を `display: none` にする。ボタンは画像の右上に置き、`aria-pressed` で `pause` と `play` のアイコンを出し分ける。`dev/mock/components/media/` の `<style>` から取る'
       - class_name: .mdmark .mdmark-card
         target: リンクと添付のカード
         value: アイコン・タイトル・ドメインと URL を並べる枠。長い URL は折り返す。アイコンは `data-card` と `data-file-kind` ごとに `mask-image` の lucide（`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file`）で付ける。`dev/mock/components/link-card/` の `<style>` から取る
