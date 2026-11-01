@@ -38,3 +38,17 @@
 | 既存機能への影響 | 残る 4 つのツールの結合テストと E2E を回し、挙動が変わらないことを確かめる | - |
 
 ## テスト結果
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/results.test.ts` | - | 削除 | - | ファイルごと削除 |
+| [tests/unit/src/plugin/arguments.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/arguments.test.ts) | 全実行 | 変更 | ✅ | 11 テスト pass（6 テストは条件を変更）<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | 17 テスト pass（13 テストを削除）<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
+| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | 2 テスト pass（1 テストを削除・1 テストの期待値を変更）<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
+| [tests/unit/src/plugin/http.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/http.test.ts) | 全実行 | 変更 | ✅ | 11 テスト pass（1 テストの期待値を変更）<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
+| [tests/unit/src/plugin/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/pre-tool-use.test.ts) | 全実行 | 変更 | ✅ | 4 テスト pass（1 テストの期待値を変更）<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
+| `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 158 ファイル・1129 テスト pass<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
+
+lint と型検査は違反なし（`テスト結果/20261101180353_3d20cdf_lint.log`）。
