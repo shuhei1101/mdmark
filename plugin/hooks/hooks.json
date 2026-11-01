@@ -13,7 +13,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "mcp__plugin_mdmark_mdmark__find_docs|mcp__plugin_mdmark_mdmark__list_tags|mcp__plugin_mdmark_mdmark__update_index|mcp__plugin_mdmark_mdmark__check|mcp__plugin_mdmark_mdmark__export_html|mcp__plugin_mdmark_mdmark__build_site",
+        "matcher": "mcp__plugin_mdmark_mdmark__check|mcp__plugin_mdmark_mdmark__export_html|mcp__plugin_mdmark_mdmark__build_site",
         "hooks": [
           {
             "type": "command",

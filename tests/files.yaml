@@ -1111,12 +1111,6 @@ files:
     related:
       - to: src/cli/html
         type: tests
-  - path: unit/src/cli/index-file.test.ts
-    description: src/cli/index-file.ts（「索引のファイルの項目の書き換え」）を確かめる単体テスト。index-file.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:cli]
-    related:
-      - to: src/cli/index-file
-        type: tests
   - path: unit/src/cli/init.test.ts
     description: src/cli/init.ts（「mdmark init」）を確かめる単体テスト。init.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:cli]
@@ -1375,12 +1369,6 @@ files:
     related:
       - to: src/knowledge/dictionary
         type: tests
-  - path: unit/src/knowledge/find.test.ts
-    description: src/knowledge/find.ts（「索引から文書を探す（findDocs）」）を確かめる単体テスト。find.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
-    related:
-      - to: src/knowledge/find
-        type: tests
   - path: unit/src/knowledge/index-shape.test.ts
     description: src/knowledge/index-shape.ts（「索引の型と形の検査（normalizeIndex）」）を確かめる単体テスト。index-shape.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
@@ -1412,7 +1400,7 @@ files:
       - to: src/knowledge/references
         type: tests
   - path: unit/src/knowledge/tags.test.ts
-    description: src/knowledge/tags.ts（「タグの語彙の照合・近いタグ・タグごとの件数・語彙の一覧（listTags）」）を確かめる単体テスト。tags.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    description: src/knowledge/tags.ts（「タグの語彙の照合・近いタグ」）を確かめる単体テスト。tags.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:タグ]
     related:
       - to: src/knowledge/tags
@@ -1682,12 +1670,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
     related:
       - to: src/plugin/pre-tool-use
-        type: tests
-  - path: unit/src/plugin/results.test.ts
-    description: src/plugin/results.ts（「find_docs の cursor・行の項目の選択と、find_docs・list_tags の Markdown の組み立て」）を確かめる単体テスト。results.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: src/plugin/results
         type: tests
   - path: unit/src/plugin/session-start.test.ts
     description: src/plugin/session-start.ts（「SessionStart のフックの入口」）を確かめる単体テスト。session-start.ts を変えたときに、合わせて見修正するケースを探すときに読む。
