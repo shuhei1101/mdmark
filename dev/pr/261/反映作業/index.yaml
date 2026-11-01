@@ -5,10 +5,10 @@ develop の worktree の退避した変更の削除:
   時期: マージの後
   回数: 1 回限り
   可逆: true
-  疎通確認: null
-  実行: null
-  確認: null
-  切り戻し: null
+  疎通確認: develop の worktree の退避した変更の削除/疎通確認.sh
+  実行: develop の worktree の退避した変更の削除/実行.sh
+  確認: develop の worktree の退避した変更の削除/確認.sh
+  切り戻し: develop の worktree の退避した変更の削除/切り戻し.sh
   失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
   確認方法: develop の worktree の git stash list に、メッセージが「mdmark#157 の拡張機能の名前の変更」で始まる行が無い
   状態: "-"
