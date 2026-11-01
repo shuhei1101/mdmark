@@ -52,3 +52,17 @@
 | `tests/unit` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 158 ファイル・1129 テスト pass<br>`テスト結果/20261101180353_3d20cdf_単体テスト.log` |
 
 lint と型検査は違反なし（`テスト結果/20261101180353_3d20cdf_lint.log`）。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/find-docs.test.ts` | - | 削除 | - | ファイルごと削除 |
+| `tests/integration/ClaudeCodeプラグイン/list-tags.test.ts` | - | 削除 | - | ファイルごと削除 |
+| `tests/integration/ClaudeCodeプラグイン/update-index.test.ts` | - | 削除 | - | ファイルごと削除 |
+| [tests/integration/ClaudeCodeプラグイン/serve.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCodeプラグイン/serve.test.ts) | 全実行 | 変更 | ✅ | 5 テスト pass（2 テストのツールの数の期待値を 4 つに変更）<br>`テスト結果/20261101182813_a6f87b8_結合テスト.log` |
+| [tests/integration/plugin.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/plugin.ts) | - | 変更 | ✅ | ツールの結果から `structured` を削除<br>`テスト結果/20261101182813_a6f87b8_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>`テスト結果/20261101182813_a6f87b8_結合テスト.log` |
+| `tests/integration` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>全体 63 ファイル・545 テスト pass<br>`テスト結果/20261101182813_a6f87b8_結合テスト.log` |
+
+lint と型検査は違反なし（`テスト結果/20261101182813_a6f87b8_lint.log`）。
