@@ -26,6 +26,17 @@ states:
     args:
       - name: modal
         value: 'true'
+  - name: InFramedSurface
+    description: '使う側の枠を持つ面の中。面で `--mdmark-diagram-box-shadow: none` を指定し、表示する箱の線が無い'
+    notes:
+      定義: 'ストーリーは図の枠を線と影を持つ面の要素で包み、面に `--mdmark-diagram-box-shadow: none` を指定する'
+  - name: InFramedSurfaceFullscreen
+    description: '枠を持つ面の中の図を全画面で開いたとき。面に指定した `--mdmark-diagram-box-shadow: none` を受け継がず、モーダルの中の表示する箱に既定の線がある'
+    args:
+      - name: modal
+        value: 'true'
+    notes:
+      定義: '`InFramedSurface` と同じ面で包む'
 lead: 図の部品（フロー図・シーケンス図・グラフ）を囲む枠。題（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に置き、拡大・縮小・移動・全画面のモーダルを持つ。
 args:
   - name: kind
@@ -82,6 +93,10 @@ css_properties:
     syntax: <length>
     default: 36rem
     description: 文書の中の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、高さを定義の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。使う側が高さを変えたときはこの値で止めず、定義の高さ × 今の倍率を上限にする
+  - name: --mdmark-diagram-box-shadow
+    syntax: none | <shadow>
+    default: inset 0 0 0 1px var(--mdmark-color-border)
+    description: 表示する箱の線（`box-shadow` の値）。既定値は `:root` に置かず `var()` のフォールバックで持ち、描く先の要素で変えた `--mdmark-color-border` に追従する。使う側は枠を持つ面で `none` を指定して線を外す。操作できる部品の中は mdmark が `none` にし、全画面のモーダルの中はこの値を受け継がず既定の線で描く
 accessibility:
   - 題は `figcaption` で、表示する枠は `role="group"`・`aria-roledescription="図"`・`aria-labelledby`（題）・`aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"`・`tabindex="0"` を持ち、フォーカスの枠を見せる
   - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、読み上げの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする

@@ -51,7 +51,7 @@ events:
     description: '`mount` がクリップボードへ書き、結果を知らせる'
 uses:
   - component: dev/設計書/部品設計/図の枠.ts#
-    how: グラフを題・凡例・右上のボタンつきで置く
+    how: 'グラフを題・凡例・右上のボタンつきで置く。中の図の枠は表示する箱の線を引かず（`box-shadow: none`）、操作できる部品の枠で囲む'
   - component: dev/設計書/部品設計/グラフ.ts#
     how: 今の値と既定の値の系列を描く
 accessibility:
