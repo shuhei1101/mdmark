@@ -1,0 +1,1 @@
+# MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す
