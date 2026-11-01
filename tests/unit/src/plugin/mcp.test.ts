@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, expect, test } from "vitest";
-import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
+import { useTempDirs } from "../../helpers/cli.ts";
 
 /** MCP サーバーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMcp = () => import("../../../../src/plugin/mcp.ts");
@@ -41,7 +41,7 @@ async function connectClient(): Promise<Client> {
   return client;
 }
 
-// 7 つのツールと instructions と annotations を出す（正常系）
+// 4 つのツールと instructions と annotations を出す（正常系）
 test("test_create_mcp_server", async () => {
   // 準備
   const { INSTRUCTIONS } = await loadMcp();
@@ -53,13 +53,13 @@ test("test_create_mcp_server", async () => {
   expect(tools.map((tool) => tool.name).sort()).toEqual(
     TOOLS.map((tool) => tool.name).sort(),
   );
-  expect(tools).toHaveLength(7);
+  expect(tools).toHaveLength(4);
   for (const tool of tools) {
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
       "project_dir",
     );
   }
-  const readOnlyNames = ["read_guide", "check", "find_docs", "list_tags"];
+  const readOnlyNames = ["read_guide", "check"];
   for (const name of readOnlyNames) {
     const tool = tools.find((candidate) => candidate.name === name);
     expect(tool?.annotations?.readOnlyHint).toBe(true);
@@ -83,37 +83,4 @@ test("test_create_mcp_server_when_arguments_invalid", async () => {
     .join("\n");
   expect(text).not.toContain("Input validation error");
   expect(text).toContain("names");
-});
-
-// structuredContent がクライアントまで届く（正常系）
-test("test_create_mcp_server_when_structured", async () => {
-  // 準備
-  const projectDir = await createTempDir();
-  await writeFiles(projectDir, {
-    "mdmark.config.yaml": "index: index.yaml\n",
-    "index.yaml": [
-      "schema: 1",
-      "docs:",
-      "  - id: a",
-      "    path: a.md",
-      "    title: A",
-      "    tags: [topic:mcp]",
-      "tags:",
-      "  - name: topic:mcp",
-      "",
-    ].join("\n"),
-    "a.md": "# A\n",
-  });
-  const client = await connectClient();
-  // 実行
-  const result = await client.callTool({
-    name: "list_tags",
-    arguments: { format: "json", project_dir: projectDir },
-  });
-  // 検証
-  const structured = result.structuredContent as { tags: unknown } | undefined;
-  expect(Array.isArray(structured?.tags)).toBe(true);
-  const texts = result.content as { type: string; text: string }[];
-  expect(texts).toHaveLength(1);
-  expect(JSON.parse(texts[0]?.text ?? "")).toEqual(structured);
 });
