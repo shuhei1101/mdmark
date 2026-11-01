@@ -120,10 +120,10 @@ scenarios:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
   - name: 正常シナリオ（画像・動画・音声を埋める）
     setup:
-      - name: まとめる文書と添付のファイル
-        description: 設定の `build` の 2 つの文書が、同じ `images/chart.png` と別々の `media/demo.mp4`・`media/voice.mp3` を相対パスで指す。各ファイルは実在する
+      - name: まとめる文書と画像・動画・音声のファイル
+        description: 設定の `build` の 2 つの文書が、同じ `images/chart.png` と別々の `media/demo.mp4`・`media/voice.mp3` を相対パスで指す。各ファイルは文書からの相対パスにある
       - name: 設定
-        description: '`mdmark.config.yaml` が添付のファイルのルートのフォルダを指す'
+        description: '`mdmark.config.yaml` のアセットのルートが `assets` を指す'
       - name: Mock
         description: なし（実ファイルを使う）。外へのネットワークの要求を記録する
     flow: |-
@@ -132,7 +132,7 @@ scenarios:
         participant C as mdmark CLI
         participant F as ファイル
         U->>C: mdmark build
-        C->>F: 文書と添付のファイルを読む
+        C->>F: 文書と画像・動画・音声を読む
         C->>C: 画像を 1 回だけ data URL で埋め、動画・音声を出力先のフォルダへコピーする
         C->>F: 1 枚の HTML と、コピーしたファイルを書く
         C-->>U: 終了コード 0

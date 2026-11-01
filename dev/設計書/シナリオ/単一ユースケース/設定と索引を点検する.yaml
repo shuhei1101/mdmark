@@ -183,10 +183,13 @@ scenarios:
     test: test_normal_when_unknown_theme
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（知らないテーマの名前）]
-  - name: 正常シナリオ（見つからない添付のファイルがある）
+  - name: 正常シナリオ（見つからないファイルがある）
     setup:
       - name: 点検する文書
-        description: '`docs/guide.md` が実在しない `images/missing.png` と `media/missing.mp4` を相対パスで指す'
+        description: '`docs/guide.md` が、実在しない `images/missing.png`・`media/missing.mp4`・`media/missing.mp3` と、リンクだけの段落 `[仕様書](files/missing.pdf)` を持ち、`images/logo.png` を相対パスで指す'
+        notes: '`images/logo.png` は `docs/` の下には無く、`assets/images/logo.png` にだけある'
+      - name: 設定
+        description: '`mdmark.config.yaml` のアセットのルートが `assets` を指す'
       - name: Mock
         description: なし（実ファイルを使う）
     flow: |-
@@ -195,14 +198,15 @@ scenarios:
         participant C as mdmark CLI
         participant F as ファイル
         U->>C: mdmark check
-        C->>F: 文書を読み、画像・動画・音声・添付のパスを確かめる
+        C->>F: 文書を読み、画像・動画・音声・添付のパスを文書からの相対パスとアセットのルートで確かめる
         C-->>U: 見つからないファイルのずれの一覧と終了コード 1
     expected:
       - 終了コードが 1
-      - ずれの一覧に、`docs/guide.md` の行番号と `images/missing.png`・`media/missing.mp4` の 2 行が出る
+      - ずれの一覧に、`docs/guide.md` の行番号と `images/missing.png`・`media/missing.mp4`・`media/missing.mp3`・`files/missing.pdf` の 4 行が出る
+      - アセットのルートの下にある `images/logo.png` はずれの一覧に出ない
       - ずれの種類は見つからないファイルを表す種類
       - 書き出しは行わない
-    test: test_normal_when_media_missing
+    test: test_normal_when_files_missing
 lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印を、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人

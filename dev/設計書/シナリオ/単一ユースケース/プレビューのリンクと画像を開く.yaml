@@ -132,6 +132,30 @@ scenarios:
       - 知らせの枠に「既定のアプリで開く」のリンクがある
       - リンクを押すと、拡張機能がそのファイルを OS の既定のアプリで開く
     test: test_error_when_unsupported_media
+  - name: 正常シナリオ（アセットのルートの動画・音声）
+    setup:
+      - name: ワークスペースの Markdown
+        description: '`docs/guide.md` が相対パスで `media/intro.mp3` と `media/intro.mp4` を指す'
+        notes: 2 つのファイルは `docs/` の下には無く、`assets/media/` にだけある
+      - name: 設定ファイル
+        description: ワークスペースの `mdmark.config.yaml` のアセットのルートが `assets` を指す
+      - name: Mock
+        description: なし（実ファイルを使う）
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant W as プレビュー
+        participant E as 拡張機能
+        U->>W: プレビューを開く
+        W->>E: 相対パスを Webview から読める URL に変える
+        E->>E: 文書からの相対パスに無いため、アセットのルートで探す
+        E-->>W: アセットのルートのファイルの URL
+        U->>W: 音声と動画の再生ボタンを押す
+        W-->>U: 再生する
+    expected:
+      - 音声と動画の要素の src が、`assets/media/intro.mp3`・`assets/media/intro.mp4` を指す Webview から読める URL になっている
+      - 再生ボタンを押すと、音声と動画の再生位置が進む
+    test: test_normal_when_media_in_asset_root
 lead: 文書を書く人がプレビューのリンクを押すと、外部の URL は既定のブラウザで、Markdown へのリンクは VS Code で開き、`#` で始まるリンクはプレビューの中で移る。Markdown からの相対パスの画像もプレビューに出る。
 issue: 22
 primary_actor: 文書を書く人
