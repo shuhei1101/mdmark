@@ -27,6 +27,48 @@
 
 <!-- /table -->
 
+## PoC 結果
+
+<!-- table: data -->
+
+| 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
+| --- | --- | --- | --- | --- |
+| mp4（H.264・AAC）の動画 | `canplay` が来て、`play()` の 1 秒後に `currentTime` が 0.5 秒以上進む | ❌ 映像は 1.0 秒進むが、音声を復号しない | [#264](https://github.com/shuhei1101/mdmark/pull/264) | `webkitAudioDecodedByteCount` が 0 |
+| m4a（AAC）の音声 | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264) | `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`。AAC だけの mp4 も同じ |
+| mp3 の音声 | 同上 | ✅ 0.92 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | |
+| webm（記録だけ） | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264) | VP9・Opus と VP8・Vorbis のどちらも `DEMUXER_ERROR_COULD_NOT_OPEN` |
+| ogg（Vorbis。記録だけ） | 同上 | ✅ 0.79 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | |
+| wav（記録だけ） | 同上 | ✅ 0.70 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | |
+| mov（H.264・AAC。記録だけ） | 同上 | 映像だけ ✅ 1.0 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264) | mp4 と同じく音声を復号しない |
+
+<!-- /table -->
+
+VS Code 1.141.0（Electron 43.7.7）と stable の 1.144.0（Electron 43.8.3）で、結果は同じだった（どちらも Chrome 150）。
+
+結論: 不成立。プレビューの Webview は AAC の音声を再生できず、webm を開けない。
+
+- CSP に `media-src` を追加し、`asWebviewUri` の URI を `src` に入れれば、対応する形式は再生できる
+- ユーザーの操作なしの `play()` は、自動再生の制限で `NotAllowedError` になる。画面を 1 回クリックした後は再生できた
+
+最小再現コードの要点（`poc/webview/test.cjs`）:
+
+```js
+`img-src ${cspSource} https: data:`,
+`media-src ${cspSource} https: data:`,
+// ...
+const element = document.createElement(tag);
+const pending = Promise.race([canplay, error, wait(10000)]);
+element.src = webview.asWebviewUri(vscode.Uri.file(path)).toString();
+await pending;
+await element.play();
+const start = element.currentTime;
+await wait(1000);
+result.currentTime = element.currentTime - start;
+result.audioDecodedBytes = element.webkitAudioDecodedByteCount;
+```
+
+diff の見どころ: `poc/webview/test.cjs`（Webview の CSP と、形式ごとの再生の確かめ）、`poc/webview/run.ts`（`TEST_VSCODE_VERSIONS` の両方での起動）、`poc/webview/clicker.py`（Xvfb の画面へのクリック）。
+
 ## テスト結果
 
 なし
