@@ -111,12 +111,6 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集の索引を受け取る
         type: see_also
-  - path: e2e/単一ユースケース/タグの語彙を見る.spec.ts
-    description: シナリオ『タグの語彙を見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/タグの語彙を見る
-        type: see_also
   - path: e2e/単一ユースケース/タブを切り替える.spec.ts
     description: シナリオ『タブを切り替える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
@@ -327,23 +321,11 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する
         type: see_also
-  - path: e2e/単一ユースケース/索引から文書を探す.spec.ts
-    description: シナリオ『索引から文書を探す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/索引から文書を探す
-        type: see_also
   - path: e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts
     description: シナリオ『索引と文書のずれを点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する
-        type: see_also
-  - path: e2e/単一ユースケース/索引を書き換える.spec.ts
-    description: シナリオ『索引を書き換える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/索引を書き換える
         type: see_also
   - path: e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts
     description: シナリオ『表から用語集に用語を入れる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
@@ -410,12 +392,6 @@ files:
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/雛形を置く
-        type: see_also
-  - path: e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts
-    description: シナリオ『ClaudeCode で索引を書き換えて点検してから配る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
-    related:
-      - to: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る
         type: see_also
   - path: e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
     description: シナリオ『MCPサーバーを起動してプラグインからつなぐ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。

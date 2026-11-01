@@ -1,4 +1,5 @@
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { expect, runCli, test, writeFiles } from "../cli.ts";
 import {
   callTool,
@@ -41,28 +42,41 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
     await writeProject(builtRoot, dirB, ["a"], DOCUMENTS);
     // 実行
     const result = await withServe({ builtRoot, env: {} }, async (serve) => {
-      const found = await withMcpClient(
+      const sessionA = await withMcpClient(
         { builtRoot, projectDir: dirA, serverUrl: serve.url },
         async (client) => ({
-          found: await callTool(client, "find_docs", { text: "A" }),
+          checked: await callTool(client, "check"),
+          built: await callTool(client, "build_site"),
           inputs: hookInputs(client),
         }),
       );
-      const checked = await withMcpClient(
+      const sessionB = await withMcpClient(
         { builtRoot, projectDir: dirB, serverUrl: serve.url },
         async (client) => ({
           checked: await callTool(client, "check"),
           inputs: hookInputs(client),
         }),
       );
-      return { found, checked, listening: await isListening(DEFAULT_PORT) };
+      return {
+        sessionA,
+        sessionB,
+        listening: await isListening(DEFAULT_PORT),
+      };
     });
     // 検証
     // 2 つのセッションは、起動した 1 つの常駐サーバーのプロセスにつないだ
     expect(result.listening).toBe(true);
-    expect(result.found.found.isError).toBe(false);
-    expect(result.found.found.texts[0]).toContain("| a |");
-    const issues = JSON.parse(result.checked.checked.texts[0] ?? "").issues as {
+    expect(result.sessionA.checked.isError).toBe(false);
+    expect(JSON.parse(result.sessionA.checked.texts[0] ?? "")).toEqual({
+      issues: [],
+    });
+    expect(result.sessionA.built.isError).toBe(false);
+    const built = JSON.parse(result.sessionA.built.texts[0] ?? "");
+    expect(built.out).toBe(join(dirA, "dist", "docs.html"));
+    expect(existsSync(built.out)).toBe(true);
+    expect(built.docs).toBe(1);
+    const issues = JSON.parse(result.sessionB.checked.texts[0] ?? "")
+      .issues as {
       kind: string;
       file: string;
     }[];
@@ -70,11 +84,14 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
     expect(orphans).toHaveLength(1);
     expect(orphans[0]?.file).toBe("b.md");
     // フックの記録の `tool_input` に、作業のフォルダの引数が無い
-    for (const input of [...result.found.inputs, ...result.checked.inputs]) {
+    for (const input of [
+      ...result.sessionA.inputs,
+      ...result.sessionB.inputs,
+    ]) {
       expect(input).not.toHaveProperty("project_dir");
     }
-    expect(result.found.inputs).toHaveLength(1);
-    expect(result.checked.inputs).toHaveLength(1);
+    expect(result.sessionA.inputs).toHaveLength(2);
+    expect(result.sessionB.inputs).toHaveLength(1);
   } finally {
     await release();
   }
@@ -100,13 +117,21 @@ test("test_error_when_server_not_running", async ({ builtRoot, tempDir }) => {
     const after = await withServe({ builtRoot, env: {} }, () =>
       withMcpClient(
         { builtRoot, projectDir: dir, serverUrl: mcp.url },
-        (client) => callTool(client, "find_docs", { text: "A" }),
+        async (client) => ({
+          checked: await callTool(client, "check"),
+          built: await callTool(client, "build_site"),
+        }),
       ),
     );
     // 検証
     expect(before).toBeInstanceOf(Error);
-    expect(after.isError).toBe(false);
-    expect(after.texts[0]).toContain("| a |");
+    expect(after.checked.isError).toBe(false);
+    expect(JSON.parse(after.checked.texts[0] ?? "")).toEqual({ issues: [] });
+    expect(after.built.isError).toBe(false);
+    const built = JSON.parse(after.built.texts[0] ?? "");
+    expect(built.out).toBe(join(dir, "dist", "docs.html"));
+    expect(existsSync(built.out)).toBe(true);
+    expect(built.docs).toBe(1);
   } finally {
     await release();
   }
