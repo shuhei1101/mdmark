@@ -199,7 +199,7 @@ functions:
     container: src/viewer/bundle.ts
     usecase: まとめたHTMLで文書を行き来する
     summary: 横の一覧とパネルに `renderDocList` を置き、URL の `#` が指す文書を `mount` で描いて、`hashchange` で文書を行き来する
-    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を渡す。文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）'
+    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を渡す。文書を替えるときは前の `mount` の返り値で片付けてから描き直し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯の題とページの題を合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）。文書を描く前に `restoreAssets` で `payload.assets` の画像を戻す'
     kind: 関数
     scope: public
     side_effects: 画面と履歴を書き換える
@@ -242,11 +242,47 @@ functions:
       - '#functions[resolveRoute]'
       - '#functions[rewriteLinks]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderDocList]
+      - '#functions[restoreAssets]'
     refs:
       - dev/設計書/画面設計/まとめたHTML.ts#
     status: planned
     introduced:
       pr: 32
+  - name: restoreAssets
+    title: 埋めた画像を戻す
+    container: src/viewer/bundle.ts
+    usecase: まとめたHTMLで文書を行き来する
+    kind: 関数
+    scope: internal
+    summary: 文書の Markdown の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える（後ろのフラグメントは残す）。`assets` に無いキーは替えない
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 埋めた文書の Markdown
+      - name: assets
+        type: Record<string, string> | undefined
+        required: true
+        description: '`payload.assets`'
+    returns:
+      type: string
+      description: 替えた Markdown
+    unit_tests:
+      - name: test_restore_assets
+        case: 正常
+        summary: 'キーを data: URL に替え、フラグメントを残す'
+        condition: '`![図](mdmark-asset:a1#only-dark)` と `{ a1: "data:image/png;base64,AA==" }`'
+        mock: なし
+        expected: '`![図](data:image/png;base64,AA==#only-dark)`'
+      - name: test_restore_assets_when_unknown
+        case: 正常
+        summary: 知らないキーは替えない
+        condition: '`![図](mdmark-asset:zz)` と `{}`'
+        mock: なし
+        expected: 元のまま
+    status: planned
+    introduced:
+      pr: 263
 test_files:
   - tests/unit/src/viewer/index.browser.test.ts
   - tests/unit/src/viewer/modules.test.ts

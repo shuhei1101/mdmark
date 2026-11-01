@@ -102,7 +102,7 @@ constants:
   - name: SANITIZE_OPTIONS
     title: 落とす設定
     container: src/render/sanitize.ts
-    summary: sanitize-html に渡す設定。記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries
+    summary: sanitize-html に渡す設定。記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に書いた `video`・`audio`・`source` は `sanitize` が落とす）
     value: 下の entries
     entries:
       - key: allowedTags
@@ -118,7 +118,7 @@ constants:
       - key: transformTags
         value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す。`data-source-line` は値が `^\d+$` の形でなければ消す / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の形でなければ `src` を消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
       - key: allowedSchemesByTag
-        value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の形は `transformTags` が絞る）'
+        value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の形は `transformTags` が絞る） / `video`・`audio`: `http`・`https`（`src` と `poster`。`poster` の `data:` URL は `img` と同じ形だけを残す）'
   - name: SYNTAX_MARKS
     title: 記法の印と機能
     container: src/render/marks.ts
@@ -154,6 +154,8 @@ constants:
         value: views
       - key: code
         value: code
+      - key: gallery
+        value: gallery
   - name: EMBED_STYLES
     title: 埋め込んだ HTML の残す宣言
     container: src/render/sanitize.ts
@@ -270,7 +272,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 図表の番号 → 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色（`buildTextColors`）→ コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 用語の下線（`termsRule`）→ 節 → 目次 → 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -371,7 +373,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
     args:
       - name: html
         type: string
@@ -439,6 +441,18 @@ functions:
         condition: '`<p data-source-line="3">`・`<td data-source-line="12">`・`<p data-source-line="x">`'
         mock: なし
         expected: 1 つ目と 2 つ目は属性が残り、3 つ目は `data-source-line` を持たない
+      - name: test_sanitize_when_media
+        case: 正常
+        summary: 記法の動画を残し、文書に書いた動画を落とす
+        condition: '`nonce` を持つ `<figure data-mdmark-own><video src="a.mp4" controls preload="metadata" playsinline aria-label="操作" poster="a.png"></video></figure>` と、文書に書いた `<video src="b.mp4"><source src="b.webm"></video>`'
+        mock: なし
+        expected: 1 つ目の `video` と属性が残り、2 つ目の `video`・`source` が無い
+      - name: test_sanitize_when_image_style
+        case: 正常
+        summary: 画像の幅とギャラリーの列の数の style だけを残す
+        condition: '`nonce` を持つ `<figure style="--mdmark-image-width: 40%">`・`<div style="--mdmark-gallery-cols: 3">`・`<figure style="--mdmark-image-width: calc(1px)">` と、文書に書いた `<p style="--mdmark-image-width: 10px">`'
+        mock: なし
+        expected: 1 つ目と 2 つ目の `style` が残り、3 つ目と 4 つ目は `style` を持たない
   - name: parseMarkArgs
     title: 印の引数を読み分ける
     container: src/render/marks.ts

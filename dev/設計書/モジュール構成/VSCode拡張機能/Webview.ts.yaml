@@ -7,12 +7,15 @@ directory: |-
   └── webview/
       ├── preview.ts                   # パネルの中の入口（配布物の読み込み・描く・リンク・スクロール・inspect）
       ├── scroll.ts                    # 元の行番号とスクロールの位置の内分
+      ├── assets.ts                    # 相対パスの画像・動画・音声の集めと URL の差し替え・再生できない要素の知らせ
       ├── preview.css                  # パネルの状態の表示と帯の CSS
       └── parts/
           ├── preview-status.ts        # プレビューの状態の表示の HTML
           ├── preview-status.stories.yaml
           ├── config-band.ts           # 設定ファイルを読めない帯の HTML
-          └── config-band.stories.yaml
+          ├── config-band.stories.yaml
+          ├── media-error.ts           # 再生できない動画・音声の知らせの HTML
+          └── media-error.stories.yaml
   ```
 
   `preview.ts` はビルドが `vscode/media/preview.js`（ES モジュール）に、`preview.css` は `vscode/media/preview.css` に束ねる。mdmark の配布物は束ねず、実行時に `import()` で読む。
@@ -23,14 +26,15 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "inspect"; id: number; selector: string }`'
+    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark" }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string }`'
     properties:
       - name: type
-        type: '"render" | "scrollToLine" | "configError" | "configOk" | "inspect"'
+        type: '"render" | "scrollToLine" | "configError" | "configOk" | "assetsResolved" | "inspect"'
         description: メッセージの種類
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
       - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#data_models[PreviewConfig]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
     status: planned
   - name: WebviewMessage
     title: Webview から拡張機能へのメッセージ
@@ -38,13 +42,15 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "ready" }`・`{ type: "rendered" }`・`{ type: "loadFailed"; reason: "offline" | "versionMissing" | "diffUnsupported" }`・`{ type: "openLink"; href: string }`・`{ type: "revealLine"; line: number }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected"; id: number; elements: InspectedElement[] }`'
+    description: '`{ type: "ready" }`・`{ type: "rendered" }`・`{ type: "loadFailed"; reason: "offline" | "versionMissing" | "diffUnsupported" }`・`{ type: "openLink"; href: string }`・`{ type: "revealLine"; line: number }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets"; id: number; paths: string[] }`・`{ type: "openAsset"; path: string }`・`{ type: "inspected"; id: number; elements: InspectedElement[] }`'
     properties:
       - name: type
-        type: '"ready" | "rendered" | "loadFailed" | "openLink" | "revealLine" | "reload" | "openConfig" | "inspected"'
+        type: '"ready" | "rendered" | "loadFailed" | "openLink" | "revealLine" | "reload" | "openConfig" | "resolveAssets" | "openAsset" | "inspected"'
         description: メッセージの種類
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
     status: planned
   - name: InspectedElement
     title: 調べた要素
@@ -417,16 +423,24 @@ functions:
       5. `ready` を送る
       6. `message` を受けて `type` ごとに `PreviewView` へ渡す
          - `render` の場合、描いて `rendered` を送り、`currentPosition()` が数なら `setState({ line })` で保存する。`previous` を持ち、読んだ配布物が差分の色分けに対応しない（`supportsDiffBlocks` が false）ときは描かずに `showStatus({ state: "diffUnsupported", version })` を出し、`loadFailed`（`diffUnsupported`）を送る
+         - `render` で描いた後、`collectAssetPaths` が 1 つ以上返せば、`id` を増やして `resolveAssets` を送る
+         - `assetsResolved` の場合、`id` が最後に送った `id` と同じときだけ `applyAssetUrls` を呼ぶ
          - `inspect` の場合、`test` のときだけ調べて `inspected` を同じ `id` で送る
-      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ（`openLink` は送らない）。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る
+      7. 本文の `a` の `click` を `document` のキャプチャで受けて `preventDefault` と `stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送る。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ（`openLink` は送らない）。`data-action` が `reload`・`openConfig` のボタンはそのメッセージを送る。`data-action` が `openAsset` のリンクは、`href` を見ずに `data-path` で `openAsset` を送る
       8. `scroll` を `requestAnimationFrame` ごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送る。続けて `currentPosition()` が数なら `setState({ line })` で保存する（自分が起こしたスクロールでも保存する。最初の `render` で `savedLine` へ戻すまでは `currentPosition()` が `undefined` のため保存しない）
+      9. `attachMediaErrors` を付ける
     callees:
       - '#classes[PreviewView]'
       - '#functions[classifyLoadFailure]'
+      - '#functions[collectAssetPaths]'
+      - '#functions[applyAssetUrls]'
+      - '#functions[attachMediaErrors]'
     refs:
       - dev/設計書/画面設計/VSCodeのプレビュー.ts#
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#constraints[リンクの見分け方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[知らせの間引き]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
     status: planned
     unit_tests:
       - name: test_start_preview_when_link_clicked
@@ -459,6 +473,12 @@ functions:
         condition: '`getState` が `undefined` を返す状態で `startPreview` を呼ぶ。`render` の前に `scroll` を発火し、`render` の後に元の行番号 30 の見出しが先頭に来るまでスクロールして次のフレームまで待つ'
         mock: '`acquireVsCodeApi` を `postMessage`・`setState` を記録する代役にする。mdmark を代役にする'
         expected: '`render` の前の `scroll` では `setState` が呼ばれない。最後に呼ばれた `setState` の引数の `line` が 30 との差が 0.05 未満'
+      - name: test_start_preview_when_assets
+        case: 正常
+        summary: 描いた後に相対パスを問い合わせ、返った URL に替える
+        condition: '`#mdmark-preview` を置いて `startPreview` を呼び、`![操作](m/demo.mp4)` を描く代役の `render` を送り、送られた `id` で `assetsResolved` を返す'
+        mock: '`acquireVsCodeApi` を `postMessage` を記録する代役にする。mdmark を代役にする'
+        expected: '`resolveAssets` が `paths: ["m/demo.mp4"]` で送られ、`video` の `src` が返した URL'
   - name: classifyLoadFailure
     title: 読めない理由を見分ける
     kind: 関数
@@ -775,6 +795,122 @@ functions:
     status: planned
     introduced:
       pr: 196
+  - name: collectAssetPaths
+    title: 相対パスの画像・動画・音声を集める
+    kind: 関数
+    container: vscode/src/webview/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: 描いた文書の `img` の `src`、`video`・`audio` の `src` と `poster` のうち、スキームも `/` も `#` も持たない相対パスを、重ねずに書いた順で返す
+    scope: public
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+    returns:
+      type: string[]
+      description: 書いたままの相対パス（クエリとフラグメントを含む）
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+    unit_tests:
+      - name: test_collect_asset_paths
+        case: 正常
+        summary: 相対パスだけを重ねずに集める
+        condition: '`img src="a.png"`・`img src="https://x/b.png"`・`video src="m/demo.mp4" poster="a.png"`・`audio src="data:audio/mpeg;base64,AA=="`'
+        mock: なし
+        expected: '`["a.png", "m/demo.mp4"]`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: applyAssetUrls
+    title: Webview の URL に替える
+    kind: 関数
+    container: vscode/src/webview/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`assetsResolved` の `urls` で、書いたパスが一致する要素の `src`・`poster` を替える。`null` のパスの要素は替えない'
+    scope: public
+    side_effects: 要素の属性を書き換える
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+      - name: urls
+        type: Record<string, string | null>
+        required: true
+        description: 書いたパスから Webview の URL を引く表
+    returns:
+      type: void
+      description: '-'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+    unit_tests:
+      - name: test_apply_asset_urls
+        case: 正常
+        summary: URL のあるパスだけを替える
+        condition: '`video src="m/demo.mp4" poster="a.png"` と `img src="none.png"`、`urls` が `{ "m/demo.mp4": "https://w/demo.mp4", "a.png": "https://w/a.png", "none.png": null }`'
+        mock: なし
+        expected: '`video` の `src` と `poster` が替わり、`img` の `src` が `none.png` のまま'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachMediaErrors
+    title: 再生できない動画・音声を知らせに替える
+    kind: 関数
+    container: vscode/src/webview/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: 描いた文書の `video`・`audio` の `error` を受け、要素（`figure.mdmark-media` の中なら `figure`）を `renderMediaError` の枠に替える。枠の「既定のアプリで開く」の押下は `startPreview` のリンクの `click` が受け、`openAsset` を送る。替える前の要素が書いたパスは `data-mdmark-src` に控える（`applyAssetUrls` が `src` を替えるため）
+    scope: public
+    side_effects: 要素を枠に置き換える
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    callees:
+      - '#functions[renderMediaError]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
+    unit_tests:
+      - name: test_attach_media_errors
+        case: 正常
+        summary: error の動画を枠に替え、書いたパスをリンクに持たせる
+        condition: '`data-mdmark-src="media/clip.webm"` の `video` に `error` を送る'
+        mock: なし
+        expected: '`video` の場所に `mdmark-notice` の枠があり本文に `webm` と `media/clip.webm`、リンクが `data-path="media/clip.webm"`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderMediaError
+    title: 再生できない動画・音声の知らせを描く
+    kind: 関数
+    container: vscode/src/webview/parts/media-error.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: 部品設計『再生できない動画・音声の知らせ』の HTML を返す。「既定のアプリで開く」の `a` に `data-action="openAsset"` と `data-path` を付け、`startPreview` が `#` のリンクと見分けられるようにする
+    scope: public
+    args:
+      - name: options
+        type: '{ kind: "video" | "audio"; format: string; path: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: 知らせの枠の HTML
+    refs:
+      - dev/設計書/部品設計/再生できない動画・音声の知らせ.ts#
+    unit_tests:
+      - name: test_render_media_error
+        case: 正常
+        summary: 形式とパスをエスケープして出す
+        condition: '`kind: audio`、`format: m4a`、`path: "media/<voice>.m4a"`'
+        mock: なし
+        expected: 本文に `<code>m4a</code>` と `<code>media/&lt;voice&gt;.m4a</code>`、`data-action="openAsset"`・`data-path="media/&lt;voice&gt;.m4a"` の `a`
+    status: planned
+    introduced:
+      pr: 263
 styles:
   - name: preview
     title: パネルの CSS
@@ -797,3 +933,5 @@ test_files:
   - tests/unit/vscode/src/webview/scroll.browser.test.ts
   - tests/unit/vscode/src/webview/parts/preview-status.test.ts
   - tests/unit/vscode/src/webview/parts/config-band.test.ts
+  - tests/unit/vscode/src/webview/assets.browser.test.ts
+  - tests/unit/vscode/src/webview/parts/media-error.test.ts

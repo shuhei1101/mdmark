@@ -126,6 +126,33 @@ styles:
       - class_name: .mdmark .mdmark-diff-block
         target: 差分のブロック
         value: '部品設計（差分のブロック）の HTML に当てる規則。`dev/mock/refs/196/assets/diff-preview.css` の `@layer mdmark` の中身（`.mdmark-diff-block`・`.mdmark-diff-block-sign`・`.mdmark-diff-block-label`）から取る。`data-kind` ごとに地を `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`、左の余白の記号を `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` にする。削除した `li` は番号を出さず後ろの項目の番号を進めない（`list-style-type: none`・`counter-increment: list-item 0`）'
+      - class_name: :root（色のプリセット）
+        target: 色の名前ごとの面と文字の色
+        value: '`--mdmark-color-accent-{blue,red,green,yellow,orange,purple,gray}-{bg,text}` の明るい配色とダークの値。選んだテーマの配色の規則にも、そのテーマの値を置く。値は `dev/設計書/デザイン方針.md` と `dev/mock/components/color-preset/index.html` の `<style>`'
+      - class_name: .mdmark .mdmark-col-highlight[data-color]・.mdmark tr[data-color]・.mdmark-badge[data-color]・.mdmark-color[data-color]
+        target: 列と行の色・バッジの色・本文の文字の色
+        value: '強調した列のセルと色を付けた行のセルの地を `--mdmark-color-accent-{色}-bg` にし、強調した列の見出しのセルに下端の線、色を付けた行に上下の線（`-text`）を付ける。バッジは地と文字、`mdmark-color` は文字の色と `font-weight: 700`。`dev/mock/components/table/`・`dev/mock/components/badge/`・`dev/mock/components/color-preset/` の `<style>` から取る'
+      - class_name: .mdmark .mdmark-image・.mdmark-image-open・.mdmark-only-*
+        target: 画像の図
+        value: '`--mdmark-image-width` を `figure` の幅の上限にし、`data-align` で左・中央・右に寄せる。拡大のボタンは枠を持たず、ホバーとフォーカスで右上の `maximize-2` を出す。`mdmark-only-dark` は明るい配色で、`mdmark-only-light` は暗い配色（OS の設定・祖先の class・選んだテーマ）で `display: none`。`dev/mock/components/figure/` の `<style>` から取る'
+      - class_name: .mdmark .mdmark-gallery
+        target: ギャラリー
+        value: '`container-type: inline-size` を持ち、格子を `--mdmark-gallery-cols` 列にする。置き場所の幅が 32rem より狭いときは 2 列まで、20rem より狭いときは 1 列に減らす（`@container`）。画像は切り抜かず縦横比を保つ。`dev/mock/components/figure/` の `<style>` から取る'
+      - class_name: .mdmark .mdmark-lightbox
+        target: ライトボックス
+        value: '`dialog` を画面いっぱいに開き、`::backdrop` を暗くする。帯の送り・枚数・拡大の操作・閉じるのボタンは図の全画面のボタンと同じ見た目にする。`dev/mock/components/media/` の `<style>` から取る'
+      - class_name: .mdmark .mdmark-media・.mdmark-media-print
+        target: 動画と音声
+        value: '`video` を `--mdmark-image-width` の幅に収め、`audio` は列の幅にする。`mdmark-media-print` は画面では `display: none`。`dev/mock/components/media/` の `<style>` から取る'
+      - class_name: .mdmark .mdmark-gif・.mdmark-gif-toggle
+        target: GIF
+        value: '`canvas` を `img` に重ね、`canvas[hidden]` を `display: none` にする。ボタンは画像の右下に置き、`aria-pressed` で `pause` と `play` のアイコンを出し分ける。`dev/mock/components/media/` の `<style>` から取る'
+      - class_name: .mdmark .mdmark-card
+        target: リンクと添付のカード
+        value: アイコン・タイトル・ドメインと URL を並べる枠。長い URL は折り返す。アイコンは `data-card` と `data-file-kind` ごとに `mask-image` の lucide（`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file`）で付ける。`dev/mock/components/link-card/` の `<style>` から取る
+      - class_name: '@media print（画像と動画）'
+        target: 画像・動画・カードの印刷
+        value: 拡大のアイコンと GIF のボタンを隠し、`mdmark-only-light` を出して `mdmark-only-dark` を隠す。`video`・`audio` を隠して `mdmark-media-print` を出す。カードの後ろにリンク先の URL を出す。色のプリセットは選んだテーマの明るい配色の値で残す
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#

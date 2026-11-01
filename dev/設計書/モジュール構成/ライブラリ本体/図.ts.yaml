@@ -15,6 +15,7 @@ directory: |-
   │   └── diagrams.ts     # 図の部品の印の範囲を部品の HTML にするコアルール
   └── interact/
       ├── diagrams.ts     # 拡大・縮小・移動・全画面
+      ├── zoom.ts         # 図とライトボックスが共有する拡大・縮小・移動
       ├── diagram-tips.ts # 図のツールチップ
       └── params.ts       # 操作できる部品の値と写す
   ```
@@ -676,7 +677,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に任せ、表示する枠の高さの付け替えだけをこの関数が持つ'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement }'
@@ -688,6 +689,7 @@ functions:
     callees:
       - '#functions[fitScale]'
       - '#functions[openDiagramDialog]'
+      - '#functions[attachZoom]'
     unit_tests:
       - name: test_attach_diagrams
         case: 正常
@@ -912,6 +914,44 @@ functions:
     status: planned
     introduced:
       pr: 45
+  - name: attachZoom
+    title: 拡大・縮小・移動を付ける
+    container: src/interact/zoom.ts
+    kind: 関数
+    scope: internal
+    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
+    args:
+      - name: options
+        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void }'
+        required: true
+        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数
+    returns:
+      type: '{ reset(): void; fit(): number; detach(): void }'
+      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返す関数・付けた操作を外す関数
+    callees:
+      - '#functions[fitScale]'
+    unit_tests:
+      - name: test_attach_zoom
+        case: 正常
+        summary: 収まる倍率で始め、拡大・縮小と戻す
+        condition: 幅 600px の枠に幅 1100 の中身
+        mock: なし
+        expected: 倍率の文字が `55%` で縮小が `disabled`、拡大の後に `68%`、`0` の後に `55%`、`onChange` が倍率ごとに呼ばれる
+      - name: test_attach_zoom_when_panned
+        case: 正常
+        summary: 拡大中だけ移動のボタンを出し、矢印キーとドラッグで動かす
+        condition: 拡大を 2 回押し、枠で `ArrowRight` を押してから左へ 40px ドラッグ
+        mock: なし
+        expected: 移動のまとまりが `hidden` を持たず、`scrollLeft` が 80 増えた後に 40 増える
+      - name: test_attach_zoom_when_detached
+        case: 正常
+        summary: 外すと操作が効かない
+        condition: '`detach()` を呼んで拡大を押す'
+        mock: なし
+        expected: 倍率が変わらない
+    status: planned
+    introduced:
+      pr: 263
 test_files:
   - tests/unit/src/diagram/definition.test.ts
   - tests/unit/src/diagram/geometry.test.ts
@@ -923,3 +963,4 @@ test_files:
   - tests/unit/src/interact/diagrams.browser.test.ts
   - tests/unit/src/interact/diagram-tips.browser.test.ts
   - tests/unit/src/interact/params.browser.test.ts
+  - tests/unit/src/interact/zoom.browser.test.ts
