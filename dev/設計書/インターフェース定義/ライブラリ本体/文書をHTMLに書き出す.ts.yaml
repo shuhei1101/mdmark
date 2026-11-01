@@ -112,6 +112,25 @@ flows:
       - 標準エラーに `blocked/guide.html` と直し方が出る
       - '`blocked` が変わっておらず、HTML がどこにも書かれていない'
     test: test_error_when_output_unwritable
+  - name: 異常系（動画・音声のコピー先へ書けない・終了コード 1）
+    summary: 動画・音声のコピー先の `_files/` へ書けないと、HTML を書かずにパスと直し方を示して終わる
+    setup:
+      - name: 見本のフォルダ
+        description: '`guide.md` が相対パスで `media/demo.mp4` を指し、`guide.md` と同じフォルダにファイル `guide_files` を置く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark export guide.md
+        C->>C: 動画・音声を guide_files/ へコピーする（作れない）
+        C-->>W: 書けないパスと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `guide_files` と直し方が出る
+      - ファイル `guide_files` が変わっておらず、`guide.html` が書かれていない
+    test: test_error_when_media_copy_unwritable
   - name: 正常系（ツールチップを下に出す設定）
     summary: 設定の `tooltips.placement` を埋める設定に写し、開いた HTML で用語のツールチップを下に出す
     setup:
@@ -307,7 +326,7 @@ exceptions:
     condition: '`{文書}` のファイルが無い・読めない'
     notes: 標準エラーにパスと直し方を出す
   - name: 出力先へ書けない（終了コード 1）
-    condition: 出力のパスへ書けない（親がファイル・権限が無い）
+    condition: 出力のパスか、動画・音声のコピー先の `_files/` へ書けない（親がファイル・同じ名前のファイルがある・権限が無い）
     notes: 標準エラーに書けなかったパスと直し方を出す。HTML はどこにも書かない
 constraints:
   - item: 外部への要求
@@ -360,7 +379,7 @@ constraints:
     constraint: '文書が相対パスで指す画像・動画・音声・`poster` は、文書のフォルダを基準に探し、無ければ設定の `assets.root` を基準に同じ相対パスで探す。`src` のクエリとフラグメントは探すときに外し、書き出す値に残す'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[assets.root]
   - item: コピーする動画と音声
-    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは消さない。読めない動画・音声は書いたまま残して警告に出す。添付のファイルはコピーせず、書いたままのリンクで残す'
+    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。コピーは HTML を書く前に行い、`_files/` を作れない・書けないときは「出力先へ書けない」で終え、HTML を書かない。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは消さない。読めない動画・音声は書いたまま残して警告に出す。添付のファイルはコピーせず、書いたままのリンクで残す'
   - item: 書き出しの機能のオン・オフ
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
 test_file: tests/integration/lib/export.test.ts

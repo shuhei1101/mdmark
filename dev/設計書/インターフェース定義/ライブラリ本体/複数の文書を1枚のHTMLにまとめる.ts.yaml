@@ -109,6 +109,25 @@ flows:
       - 標準エラーに `dist/docs.html` と直し方が出る
       - ファイル `dist` が変わっていない
     test: test_error_when_output_unwritable
+  - name: 異常系（動画・音声のコピー先へ書けない・終了コード 1）
+    summary: 動画・音声のコピー先の `_files/` へ書けないと、HTML を書かずにパスと直し方を示して終わる
+    setup:
+      - name: 書けないコピー先
+        description: 正常系（画像・動画・音声を埋める）の文書群で、`dist/` にファイル `docs_files` を置いたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark build
+        C->>C: 動画・音声を docs_files/ へコピーする（作れない）
+        C-->>W: 書けないパスと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `dist/docs_files` と直し方が出る
+      - ファイル `dist/docs_files` が変わっておらず、`dist/docs.html` が書かれていない
+    test: test_error_when_media_copy_unwritable
   - name: 正常系（エイリアスを読む）
     summary: 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で効かせる
     setup:
@@ -224,8 +243,8 @@ exceptions:
     condition: '`build.include` に当たり `build.exclude` に当たらない文書が 0 件'
     notes: 標準エラーに、対象が 0 件であることと `build.include` を直すことを出す。HTML は書かない
   - name: 出力先へ書けない（終了コード 1）
-    condition: '`build.out` へ書けない'
-    notes: 標準エラーに書けなかったパスと直し方を出す
+    condition: '`build.out` か、動画・音声のコピー先の `_files/` へ書けない'
+    notes: 標準エラーに書けなかったパスと直し方を出す。HTML は書かない
 constraints:
   - item: まとめる文書
     constraint: '`build.include` の glob に当たり `build.exclude` に当たらない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
@@ -243,7 +262,7 @@ constraints:
     constraint: '`build.entry`。無いかまとめる文書に当たらないときは、まとめる文書の最初の 1 つ（当たらないときは警告に出す）'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[build.entry]
   - item: 埋めるもの
-    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリはまとめる文書のどれかに印があるものだけを、同じ URL は 1 つだけ埋める。画像・動画・音声はそれぞれの文書のフォルダを基準に探し、無ければ `assets.root` で探す。複数の文書が指す同じ画像は 1 回だけ埋め、文書からは同じ埋めた画像を指す。動画・音声は `build.out` と同じフォルダの `{build.out のファイル名から拡張子を除いた名前}_files/` へ、同じファイルを 1 回だけコピーする
+    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリはまとめる文書のどれかに印があるものだけを、同じ URL は 1 つだけ埋める。画像・動画・音声はそれぞれの文書のフォルダを基準に探し、無ければ `assets.root` で探す。複数の文書が指す同じ画像は 1 回だけ埋め、文書からは同じ埋めた画像を指す。動画・音声は `build.out` と同じフォルダの `{build.out のファイル名から拡張子を除いた名前}_files/` へ、同じファイルを 1 回だけ、HTML を書く前にコピーする
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
   - item: 外部への要求
     constraint: 開いてから、文書を移っても、ページ自身・`_files/` の下にコピーした動画と音声と `blob:`・`data:` のほかへ要求しない
