@@ -200,6 +200,26 @@ flows:
       - 終了コードが 0
       - 開いた HTML で、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
+  - name: 正常系（部品の文言を替える設定）
+    summary: 設定の `labels` を埋める設定に写し、開いた HTML で操作できる部品のボタンを設定の文言で描く
+    setup:
+      - name: 部品の文言を替える設定
+        description: '`labels.paramCopy: コピー` を持つ設定と、`<!-- param -->` の印で操作できる部品を 1 つ持つ文書を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 書き出した HTML
+        W->>C: mdmark export {文書}
+        C->>H: labels を写した設定を埋めて書く
+        W->>H: 開く
+        H-->>W: ボタンを「コピー」で描く
+    expected:
+      - 終了コードが 0
+      - 開いた HTML で、`button.mdmark-param-copy` の `textContent` が `コピー`
+    test: test_normal_when_param_copy_label
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -304,4 +324,7 @@ constraints:
   - item: 選ぶテーマ
     constraint: 設定の `colorTheme` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前も写したうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
     decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+  - item: 部品の文言
+    constraint: 設定の `labels` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定に任せる。`labels` がマップでない、または `labels.paramCopy` が空でない文字列でないときは設定ファイルの誤り（終了コード 1）にする
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
 test_file: tests/integration/lib/export.test.ts
