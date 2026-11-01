@@ -605,10 +605,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     if (args.surface !== true) {
       return frame;
     }
-    // 全画面は mount と同じく面の中の mdmark-diagram-dialog に描き、ストーリーでは面の中に流して置く
+    // 全画面は mount と同じく面の子の mdmark-diagram-dialog に描き、画面全体に置く
     const body =
       args.modal === true
-        ? `<dialog class="mdmark-diagram-dialog" open="open" style="position:static;width:auto;height:auto">${frame}</dialog>`
+        ? `<dialog class="mdmark-diagram-dialog" open="open" style="position:fixed;inset:0">${frame}</dialog>`
         : frame;
     return `<div class="story-framed-surface" style="${FRAMED_SURFACE_STYLE}">${body}</div>`;
   },
