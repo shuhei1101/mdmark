@@ -1,8 +1,8 @@
+import { DEFAULT_LABELS } from "../config.ts";
 import type {
   MdmarkChartDefinition,
   MdmarkParamDefinition,
 } from "../diagram/definition.ts";
-import { DEFAULT_LABELS } from "../config.ts";
 import { renderDiagram } from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
