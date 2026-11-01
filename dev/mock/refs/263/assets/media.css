@@ -171,7 +171,7 @@
     }
 
     /* 印刷の代わり: 画面では出さない（印刷の規則で出す） */
-    .mdmark-media-print {
+    .mdmark-media > .mdmark-media-print {
       display: none;
     }
 

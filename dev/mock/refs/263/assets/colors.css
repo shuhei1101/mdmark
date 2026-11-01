@@ -213,14 +213,14 @@
     }
 
     /* 案 B（モックだけの比較）: 太字にせず、色の実線の下線を文字から離して引く */
-    .mock-text-b .mdmark-color[data-color] {
+    &.mock-text-b .mdmark-color[data-color] {
       font-weight: inherit;
       text-decoration: underline 2px var(--mdmark-accent-text);
       text-underline-offset: 0.3em;
     }
 
     /* 案 C（モックだけの比較）: 色だけで示す */
-    .mock-text-c .mdmark-color[data-color] {
+    &.mock-text-c .mdmark-color[data-color] {
       font-weight: inherit;
     }
 
@@ -232,28 +232,36 @@
       print-color-adjust: exact;
     }
 
-    /* 強調した列の見出し: 下端に色の 2px の線を引き、色が見分けられなくても強調した列が分かる */
-    th.mdmark-col-highlight {
+    /* 強調した列の見出し: 下端に色の 2px の線を引き、色が見分けられなくても強調した列が分かる（見出し行の面の色と下の線の規則より先にする） */
+    .mdmark-table thead th.mdmark-col-highlight {
+      background: var(--mdmark-accent-bg);
       box-shadow: inset 0 -2px 0 var(--mdmark-accent-text);
     }
 
     /* ---------- 表の行の色 ---------- */
 
     /* 色を付けた行のセル: 面の薄い色を敷く（列の強調より行の色を先にする） */
-    tr[data-color] > td,
-    tr[data-color] > td.mdmark-col-highlight {
+    tr[data-color] > td {
       background: var(--mdmark-accent-bg);
     }
 
-    /* 案 B: 色を付けた行の上下に色の 1px の線を引き、行のまとまりを枠の全体で示す */
-    .mock-row-b tr[data-color] > td {
-      box-shadow:
-        inset 0 1px 0 var(--mdmark-accent-text),
-        inset 0 -1px 0 var(--mdmark-accent-text);
+    /* 色を付けた行の中の強調した列のセル: 列の色を捨て、行の色の組を使う */
+    tr[data-color] > td[data-color] {
+      --mdmark-accent-bg: inherit;
+      --mdmark-accent-text: inherit;
+    }
+
+    /* 案 B: 色を付けた行の上下に色の 1px の線を引き、行のまとまりを示す。下の線はセルの下の罫線の色を替え、上の線は前の行が色を持たないときだけ引く（色の行が続いても線を 1 本にする） */
+    &.mock-row-b tr[data-color] > td {
+      border-block-end-color: var(--mdmark-accent-text);
+    }
+
+    &.mock-row-b :is(tr:first-child, tr:not([data-color]) + tr)[data-color] > td {
+      box-shadow: inset 0 1px 0 var(--mdmark-accent-text);
     }
 
     /* 案 A（モックだけの比較）: 色を付けた行の左端に色の 3px の線を引く */
-    .mock-row-a tr[data-color] > td:first-child {
+    &.mock-row-a tr[data-color] > td:first-child {
       box-shadow: inset 3px 0 0 var(--mdmark-accent-text);
     }
   }

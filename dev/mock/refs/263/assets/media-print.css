@@ -18,7 +18,7 @@
     }
 
     /* 動画の代わり: ポスターがあれば画像で出す。キャプションは図の規則のまま */
-    .mdmark-media-print {
+    .mdmark-media > .mdmark-media-print {
       display: block;
       max-width: 100%;
       height: auto;
