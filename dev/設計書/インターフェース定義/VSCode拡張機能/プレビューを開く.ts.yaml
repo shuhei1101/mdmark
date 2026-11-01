@@ -365,7 +365,7 @@ flows:
         PV->>PV: src を替える
     expected:
       - '`demo.mp3`・`demo.mp4` の要素の `src` が `docs/media/` の、`intro.mp3` の要素の `src` が `assets/media/intro.mp3` の `asWebviewUri` の URL'
-      - '`play()` の 1 秒後に、`demo.mp3` と `intro.mp3` の `currentTime` が 0.5 秒以上進み、`demo.mp4` の映像の `currentTime` が進む'
+      - '`play()` の 1 秒後に、`demo.mp4` の映像の `currentTime` が 0.5 秒以上進む。`demo.mp3` と `intro.mp3` は `readyState` が 4 で、再生できない動画・音声の知らせに替わっていない（Webview は音声の `play()` に利用者の操作を求めるため、音声は読み込めたことで確かめる）'
       - Webview の HTML の CSP が `media-src` を持つ
     test: test_normal_when_relative_media
     refs:

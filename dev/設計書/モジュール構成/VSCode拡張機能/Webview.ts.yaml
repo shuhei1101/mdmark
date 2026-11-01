@@ -83,6 +83,9 @@ data_models:
       - name: currentTime
         type: number | undefined
         description: '`video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値'
+      - name: readyState
+        type: number | undefined
+        description: '`video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読めた）'
     status: planned
   - name: PreviewBoot
     title: パネルの始め方
@@ -375,7 +378,7 @@ classes:
       - name: inspect
         title: 要素を調べる
         kind: メソッド
-        summary: '`selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる'
+        summary: '`selector` に当たる要素ごとの `InspectedElement` を返す（テストのときだけ呼ばれる）。`play` のときは、当たった `video`・`audio` を `muted` にして `play()` を呼び、1 秒待ってから調べる（`play()` が拒まれた要素もそのまま調べる）'
         args:
           - name: selector
             type: string
