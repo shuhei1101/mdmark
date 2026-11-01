@@ -12,7 +12,7 @@ directory: |-
   plugin/
   ├── .claude-plugin/plugin.json  # 名前・説明・バージョン（バージョンはビルドが書く）
   ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
-  ├── hooks/hooks.json  # SessionStart で scripts/session-start.js、6 つのツールの PreToolUse で scripts/pre-tool-use.js を流す
+  ├── hooks/hooks.json  # SessionStart で scripts/session-start.js、`project_dir` を使うツールの PreToolUse で scripts/pre-tool-use.js を流す
   ├── scripts/          # 束ねたフック（session-start.js・pre-tool-use.js。生成）
   ├── guide/            # 使い方集の index.json と本文のページのコピー（生成。mdmark serve も読む）
   └── THIRD_PARTY_LICENSES.txt  # 束ねた依存のライセンス（生成）
