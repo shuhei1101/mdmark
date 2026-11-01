@@ -263,18 +263,39 @@
 
       <!-- ライトボックスを開いた見本: 上の帯に何枚目かと前後・閉じるのボタン、中央に画像、下にキャプション。上の画像を押すと実際に開く -->
       <section aria-labelledby="state-lightbox">
-        <h2 class="catalog-label" id="state-lightbox">ライトボックスを開いた（上の画像を押すと開き、← → で前後へ送り、Esc・閉じる・後ろを押すと閉じる）</h2>
+        <h2 class="catalog-label" id="state-lightbox">ライトボックスを開いた（上の画像を押すと開き、全体が収まる倍率では ← → で前後へ送り、Esc・閉じる・後ろを押すと閉じる）</h2>
         <article class="mdmark">
 <div class="mdmark-lightbox is-sample" role="group" aria-label="画像の拡大の見本">
   <div class="mdmark-lightbox-head">
     <span class="mdmark-lightbox-count">3 / 15</span>
-    <span class="mdmark-lightbox-tools">
-          <button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
-          <button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
-          <button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="拡大を閉じる" title="拡大を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    <span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">
+          <span class="mdmark-lightbox-group" data-group="pan" hidden><button class="mdmark-lightbox-tool" type="button" data-tool="left" aria-label="左へ動かす" title="左へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="up" aria-label="上へ動かす" title="上へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="down" aria-label="下へ動かす" title="下へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="right" aria-label="右へ動かす" title="右へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="zoom"><button class="mdmark-lightbox-tool" type="button" data-tool="out" aria-label="縮小" title="縮小" disabled><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button class="mdmark-lightbox-tool mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">100%</button><button class="mdmark-lightbox-tool" type="button" data-tool="in" aria-label="拡大" title="拡大"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="nav"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="screen"><button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="拡大を閉じる" title="拡大を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>
         </span>
   </div>
   <div class="mdmark-lightbox-stage"><img src="../../refs/263/assets/media/step-2.svg" alt="手順 2 の画面" width="480" height="300"></div>
+  <p class="mdmark-lightbox-caption">幅 240px</p>
+</div>
+        </article>
+      </section>
+
+      <!-- ライトボックスで拡大した見本: 図の枠と同じ倍率のボタンと移動のボタン。画像の場所をドラッグ・矢印キー・移動のボタンで動かす -->
+      <section aria-labelledby="state-lightbox-zoomed">
+        <h2 class="catalog-label" id="state-lightbox-zoomed">ライトボックスで拡大した（＋・－・0 と倍率のボタン。拡大中は移動のボタンが出て、ドラッグ・矢印キーで動かす）</h2>
+        <article class="mdmark">
+<div class="mdmark-lightbox is-sample" role="group" aria-label="画像の拡大の見本（拡大した）">
+  <div class="mdmark-lightbox-head">
+    <span class="mdmark-lightbox-count">3 / 15</span>
+    <span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">
+          <span class="mdmark-lightbox-group" data-group="pan"><button class="mdmark-lightbox-tool" type="button" data-tool="left" aria-label="左へ動かす" title="左へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="up" aria-label="上へ動かす" title="上へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="down" aria-label="下へ動かす" title="下へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="right" aria-label="右へ動かす" title="右へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="zoom"><button class="mdmark-lightbox-tool" type="button" data-tool="out" aria-label="縮小" title="縮小"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button class="mdmark-lightbox-tool mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 250%。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">250%</button><button class="mdmark-lightbox-tool" type="button" data-tool="in" aria-label="拡大" title="拡大"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="nav"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="screen"><button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="拡大を閉じる" title="拡大を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>
+        </span>
+  </div>
+  <div class="mdmark-lightbox-stage is-zoomed" data-mock-zoom="2.5" tabindex="0" aria-label="拡大した画像。ドラッグか矢印キーで動かす"><img src="../../refs/263/assets/media/step-2.svg" alt="手順 2 の画面" width="480" height="300"></div>
   <p class="mdmark-lightbox-caption">幅 240px</p>
 </div>
         </article>
@@ -302,13 +323,14 @@
     <dialog class="mdmark-lightbox" closedby="any" aria-label="画像の拡大">
       <div class="mdmark-lightbox-head">
         <span class="mdmark-lightbox-count">1 / 1</span>
-        <span class="mdmark-lightbox-tools">
-          <button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
-          <button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
-          <button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="拡大を閉じる" title="拡大を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        <span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">
+          <span class="mdmark-lightbox-group" data-group="pan" hidden><button class="mdmark-lightbox-tool" type="button" data-tool="left" aria-label="左へ動かす" title="左へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="up" aria-label="上へ動かす" title="上へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="down" aria-label="下へ動かす" title="下へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="right" aria-label="右へ動かす" title="右へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="zoom"><button class="mdmark-lightbox-tool" type="button" data-tool="out" aria-label="縮小" title="縮小" disabled><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button class="mdmark-lightbox-tool mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">100%</button><button class="mdmark-lightbox-tool" type="button" data-tool="in" aria-label="拡大" title="拡大"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="nav"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+          <span class="mdmark-lightbox-group" data-group="screen"><button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="拡大を閉じる" title="拡大を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>
         </span>
       </div>
-      <div class="mdmark-lightbox-stage"><img src="" alt=""></div>
+      <div class="mdmark-lightbox-stage" tabindex="0" aria-label="拡大した画像。拡大中はドラッグか矢印キーで動かす"><img src="" alt=""></div>
       <p class="mdmark-lightbox-caption"></p>
     </dialog>
   </div>
