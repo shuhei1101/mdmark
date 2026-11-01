@@ -95,7 +95,7 @@ repository:
     | `guide/` | 使い方集の索引（`index.yaml`。本文は `docs/` のページを指す） | 配布物のビルドが `plugin/guide/` に写し、フックと MCP が読む | #11 |
     | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を載せる） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
     | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが書く束ねたフック・使い方集（`dist/` と同じく release と hotfix でだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる | #11 |
-    | `vscode/` | VS Code 拡張機能（独自の `package.json`。版は `vscode-v{版}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX | #22 |
+    | `vscode/` | VS Code 拡張機能（独自の `package.json`。版は `vscode-v{版}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
     | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添えるワークフロー | 届けない | #22 |
     | `dev-docs.yaml` | dev-docs の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行） | 届けない | #178 |
     | 各フォルダの `files.yaml` | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `dev/テンプレート/files.schema.yaml`） | 届けない | #178 |

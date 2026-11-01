@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-vscode-fix-extension-id
+
+
+ Test Files  158 passed (158)
+      Tests  1129 passed (1129)
+   Start at  19:30:01
+   Duration  63.70s (tests 40%, worker 38%, import 19%, transform 2%)
+
