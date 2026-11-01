@@ -220,9 +220,38 @@ flows:
       - 終了コードが 0
       - 開いた HTML で、`button.mdmark-param-copy` の `textContent` が `コピー`
     test: test_normal_when_param_copy_label
+  - name: 正常系（画像・動画・音声とアセットのルート）
+    summary: 画像を data URL で埋め、動画・音声を出力の隣のフォルダへコピーし、文書からの相対パスに無いファイルをアセットのルートで探す
+    setup:
+      - name: 書き出す文書とファイル
+        description: '`docs/guide.md` が相対パスで `images/chart.png`・`images/dark.png#only-dark`・`images/build.gif`・`media/demo.mp4`（`poster=images/poster.png`）・`media/voice.mp3`・`images/logo.png` を指し、リンクだけの段落 `[仕様書](files/spec.pdf)` を持つ'
+        notes: '`images/logo.png` は `docs/` の下に無く、`assets/images/logo.png` にだけある。ほかのファイルは `docs/` からの相対パスにある'
+      - name: 設定
+        description: '`mdmark.config.yaml` の `assets.root` が `assets`'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export docs/guide.md
+        C->>C: 画像・動画・音声を文書からの相対パス、無ければアセットのルートで探す
+        C->>C: 画像を data URL に替え、動画・音声のパスを guide_files/ の相対パスに替える
+        C->>H: guide.html と guide_files/ を書く
+        C-->>W: 書き出した: docs/guide.html・終了コード 0
+    expected:
+      - 終了コードが 0 で、標準エラーが空
+      - '`chart.png`・`dark.png`・`build.gif`・`poster.png`・`logo.png` が `data:` URL で埋まり、`dark.png` の `src` が `#only-dark` を持つ'
+      - '`docs/guide_files/media/demo.mp4` と `docs/guide_files/media/voice.mp3` があり、HTML の `video`・`audio` の `src` が `guide_files/media/demo.mp4`・`guide_files/media/voice.mp3`'
+      - '`files/spec.pdf` はコピーされず、カードの `href` が `files/spec.pdf` のまま'
+      - '`guide.html` と `guide_files/` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身・`guide_files/` の下のファイルと `blob:`・`data:` のほかの要求が 0 件'
+    test: test_normal_when_media_embedded
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（画像・動画・音声を埋める）]
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
-side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
+side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#
 request:
@@ -253,7 +282,7 @@ response:
   - name: 標準エラー
     type: string
     description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
-    notes: 読めない画像・モジュール・拡張・`theme`、知らない `colorTheme` の名前、埋めずに残した絶対 URL の画像
+    notes: 読めない画像・動画・音声・モジュール・拡張・`theme`、知らない `colorTheme` の名前、埋めずに残した絶対 URL の画像・動画・音声
   - name: 終了コード
     type: 0 | 1
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
@@ -282,7 +311,7 @@ exceptions:
     notes: 標準エラーに書けなかったパスと直し方を出す。HTML はどこにも書かない
 constraints:
   - item: 外部への要求
-    constraint: 開いてから描き終えるまでに、ページ自身と `blob:`・`data:` のほかへ要求しない
+    constraint: 開いてから描き終えるまでに、ページ自身・`_files/` の下にコピーした動画と音声と `blob:`・`data:` のほかへ要求しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
   - item: 埋める外部ライブラリ
     constraint: 文書に印がある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読む。URL ごとに、そのモジュールが import する先も含めて 1 つの ES モジュールに束ねる。相対パスの URL は設定ファイルのあるフォルダを基準に読む。届かない・束ねられないものは埋めず警告に出し、開いたときその印の場所に知らせの枠を出す
@@ -290,7 +319,7 @@ constraints:
   - item: 埋める拡張
     constraint: 設定の `extensions` のモジュールを 1 つずつ ES モジュールに束ねて埋める（TypeScript は JavaScript に変える）。読めない・束ねられないものは埋めず警告に出す
   - item: 埋める画像
-    constraint: 文書が相対パスで指す画像を、文書のフォルダを基準に読んで `data:` URL に替える。読めない画像は書いたまま残して警告に出す。絶対 URL の画像は読まずに書いたまま残し、開いたときに外へ要求することを警告に出す
+    constraint: 文書が相対パスで指す画像（GIF・テーマごとの画像・動画の `poster` を含む）を、制約「アセットのルート」のとおりに探して読み、`data:` URL に替える（フラグメントは `data:` URL の後ろに残す）。読めない画像は書いたまま残して警告に出す。絶対 URL の画像は読まずに書いたまま残し、開いたときに外へ要求することを警告に出す
   - item: 使う側の CSS
     constraint: 設定の `theme` の CSS を配布物の CSS の後に埋める。読めないときは埋めず警告に出す
   - item: 索引と参照の表
@@ -327,4 +356,11 @@ constraints:
   - item: 部品の文言
     constraint: 設定の `labels` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定に任せる。`labels` がマップでない、または `labels.paramCopy` が空でない文字列でないときは設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
+  - item: アセットのルート
+    constraint: '文書が相対パスで指す画像・動画・音声・`poster` は、文書のフォルダを基準に探し、無ければ設定の `assets.root` を基準に同じ相対パスで探す。`src` のクエリとフラグメントは探すときに外し、書き出す値に残す'
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[assets.root]
+  - item: コピーする動画と音声
+    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは消さない。読めない動画・音声は書いたまま残して警告に出す。添付のファイルはコピーせず、書いたままのリンクで残す'
+  - item: 書き出しの機能のオン・オフ
+    constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
 test_file: tests/integration/lib/export.test.ts

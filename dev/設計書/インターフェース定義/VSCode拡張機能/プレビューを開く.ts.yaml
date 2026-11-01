@@ -343,6 +343,60 @@ flows:
     test: test_error_when_version_without_diff
     refs:
       - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[異常シナリオ（差分に対応しないバージョン）]
+  - name: 正常系（相対パスとアセットのルートの動画・音声）
+    summary: 動画・音声のパスを拡張機能に問い合わせ、文書のフォルダかアセットのルートにあるファイルの Webview の URL に替えて再生する
+    setup:
+      - name: 動画・音声を持つワークスペース
+        description: '`docs/guide.md` が相対パスで `media/demo.mp3`・`media/demo.mp4`・`media/intro.mp3` を指す。`demo.*` は `docs/media/` に、`intro.mp3` は `assets/media/` にだけある'
+      - name: 設定ファイル
+        description: ワークスペースの `mdmark.config.yaml` の `assets.root` が `assets`
+      - name: Mock
+        description: 正常系と同じ。音声と動画の再生は、Webview の要素の `play()` をテストから呼ぶ（画面を 1 回押した後）
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: render
+        PV->>EX: resolveAssets（media/demo.mp3・media/demo.mp4・media/intro.mp3）
+        EX->>EX: 文書のフォルダ、無ければアセットのルートで探す
+        EX-->>PV: assetsResolved（Webview の URL）
+        PV->>PV: src を替える
+    expected:
+      - '`demo.mp3`・`demo.mp4` の要素の `src` が `docs/media/` の、`intro.mp3` の要素の `src` が `assets/media/intro.mp3` の `asWebviewUri` の URL'
+      - '`play()` の 1 秒後に、`demo.mp3` と `intro.mp3` の `currentTime` が 0.5 秒以上進み、`demo.mp4` の映像の `currentTime` が進む'
+      - Webview の HTML の CSP が `media-src` を持つ
+    test: test_normal_when_relative_media
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（相対パスの動画・音声）]
+      - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（アセットのルートの動画・音声）]
+  - name: 異常系（プレビューで再生できない形式）
+    summary: 再生できない動画・音声を知らせの枠に替え、既定のアプリで開くリンクを出す
+    setup:
+      - name: 再生できない形式を持つワークスペース
+        description: '`docs/guide.md` が相対パスで `media/voice.m4a` と `media/clip.webm` を指し、各ファイルは実在する'
+      - name: Mock
+        description: 正常系と同じ。`vscode.env.openExternal` を記録するものに差し替える
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX-->>PV: render と assetsResolved
+        PV->>PV: 音声・動画の要素が error になる
+        PV->>PV: 要素を知らせの枠と「既定のアプリで開く」に替える
+        U->>PV: 既定のアプリで開くを押す
+        PV->>EX: openAsset（media/voice.m4a）
+        EX->>EX: openExternal（docs/media/voice.m4a の file の URI）
+    expected:
+      - 2 つの要素の場所に、プレビューで再生できないことを示す知らせの枠があり、それぞれ「既定のアプリで開く」のリンクを持つ
+      - リンクを押すと、`openExternal` が `docs/media/voice.m4a` の `file:` の URI で 1 回呼ばれる
+      - 他の本文は描かれている
+    test: test_error_when_unsupported_media
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[異常シナリオ（プレビューで再生できない形式）]
 lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
 side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読む。Markdown・設定ファイル・Git のリポジトリは書き換えない
@@ -400,12 +454,12 @@ constraints:
     constraint: 'viewType `mdmark.preview`、タブの題 `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
     notes: 背面に回したパネルは Webview が作り直され、`ready` を受けて最後の全文を送り直し、背面に回す前のスクロールの位置へ戻す（プレビューを描き直す.ts）
   - item: CSP
-    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに作り直す。`libraries` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ"
+    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに作り直す。`libraries` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ"
     notes: "図とヒントの部品が HTML に `style` 属性を書くため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme }`（`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, colorTheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme }`（`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, colorTheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
@@ -430,3 +484,9 @@ constraints:
   - item: 差分に対応しないバージョン
     constraint: Webview は差分の `render` を受けたとき、読んだ配布物の `diffModes` が無いか `blocks` を含まなければ、`mount` を呼ばずに `loadFailed`（`diffUnsupported`）を知らせ、描けない理由 `読み込んだ mdmark（{バージョン}）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。` と「リロード」を出す
     notes: 判定はライブラリ本体の文書を描く.ts の制約「対応する差分の出し方」。文言は確認ログの決定（A）。書き方（`code` の位置）は画面設計
+  - item: 動画・音声とアセットのルートの解決
+    constraint: '`mount` か `update` の後に、Webview は本文の `img` の `src`、`video`・`audio` の `src` と `poster` のうち相対パスのものを集め、`resolveAssets` で拡張機能に送る。拡張機能は、Markdown のフォルダを基準にしたファイル、無ければ設定ファイルの `assets.root` を基準にしたファイルがワークスペースの中にあれば、その `asWebviewUri` の URL（クエリとフラグメントは残す）を、どちらにも無ければ `null` を返す。Webview は URL を受け取った要素の属性を替え、`null` の要素は替えない。`localResourceRoots` に `assets.root` のフォルダを含める'
+    decided_by: dev/設計書/設定/VSCode拡張機能#settings[assets.root]
+  - item: 再生できない動画・音声
+    constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の知らせの枠の見た目の枠に替え、プレビューで再生できないことと、`openAsset` を送る「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
+    notes: PoC 結果で、プレビューの Webview は AAC の音声と webm を再生できない。mp4・mov は映像だけが再生される

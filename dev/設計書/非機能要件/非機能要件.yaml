@@ -39,8 +39,8 @@ requirements:
     source: https://github.com/shuhei1101/mdmark/pull/16#discussion_r4258211591
     value: '0'
     unit: 件
-    rationale: 開いてから描き終えるまでに、ページ自身と `blob:`・`data:` のほかへ要求しない。配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を HTML に埋める
-    measurement: E2E で書き出した HTML だけを空のフォルダへ写して file:// で開き、描き終えるまでの要求を数える
+    rationale: 開いてから描き終えるまでに、ページ自身・書き出しが隣の `_files/` へコピーした動画と音声と `blob:`・`data:` のほかへ要求しない。配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を HTML に埋める
+    measurement: E2E で書き出した HTML と隣の `_files/` だけを空のフォルダへ写して file:// で開き、描き終えるまでの要求を数える
     overflow: 読めない画像とモジュールは埋めずに書き出しの警告に出し、開いたときはその印の場所に知らせの枠を出す（要求はしない）
     status: planned
     introduced:

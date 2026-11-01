@@ -816,6 +816,206 @@ flows:
       - 2 つ目のステップの前の警告の本文に `fold` があり、3 つ目のステップの前の警告の本文に `title=` と `closed`・`open` がある。2 つ目と 3 つ目の `<ol class="mdmark-steps">` は `details` に入らない
       - ツリーの前の警告の本文に `open=deep` と、書ける値 `all`・階層の数があり、`<div class="mdmark-tree">` が `data-open` を持たない
     test: test_normal_when_fold_and_tree_errors
+  - name: 正常系（名前の色）
+    summary: 表の列の強調と行の色・バッジの色・本文の文字の色を、色の名前の `data-color` を持つ要素にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 色の名前を書いた Markdown
+        description: '`<!-- table: data highlight=金額 row-color=状態:完了=green,保留=yellow row-at=3=red -->` 〜 `<!-- /table -->` で名前・状態・金額の 3 列 3 行の表を囲み、`` `badge:red:要確認` ``・`` `badge:v1:beta` `` と `[決め手の 1 文]{color=blue}` を持つ段落の文書'
+        notes: 状態の列は上から `完了`・`保留`・`未着手`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 表のマーカーの highlight=・row-color=・row-at= を読む
+        M->>M: バッジの頭と本文の属性の色の名前を色の名前の一覧と照らす
+        M-->>C: HTML 文字列
+    expected:
+      - 金額の列の `th` と 3 つの `td` が class `mdmark-col-highlight` と `data-color="blue"` を持つ
+      - 本文の行の `tr` が上から `data-color="green"`・`data-color="yellow"`・`data-color="red"` を持つ
+      - '`<span class="mdmark-badge" data-color="red">要確認</span>` と、`data-color` を持たない `<span class="mdmark-badge">v1:beta</span>` がある'
+      - '`<span class="mdmark-color" data-color="blue">決め手の 1 文</span>` があり、文字列に `{color=blue}` と `[決め手` が無い'
+      - '`mdmark-syntax-warning` が無い'
+    test: test_normal_when_named_colors
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ]
+  - name: 正常系（知らない色の名前）
+    summary: 色の名前の一覧に無い名前を書き方の警告にし、色を付けない
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 知らない色の名前を書いた Markdown
+        description: '`<!-- table: data row-color=状態:完了=pink -->` 〜 `<!-- /table -->` で状態の列を持つ表を囲み、`[決め手の 1 文]{color=pink}` を持つ段落の文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: pink が色の名前の一覧に無い
+        M-->>C: 表と段落の前に書き方の警告を置いた HTML 文字列
+    expected:
+      - 表の `mdmark-table` の直前と段落の直前に `mdmark-syntax-warning` が 1 つずつあり、それぞれの本文に `pink` と `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray` がある
+      - 表の `tr` が `data-color` を持たない
+      - 段落に `決め手の 1 文` が `mdmark-color` に入らない文字で出て、`{color=pink}` と `[決め手` が無い
+    test: test_normal_when_color_unknown
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[異常シナリオ（知らない色の名前）]
+  - name: 正常系（画像の属性とキャプション）
+    summary: 画像だけの段落の画像を図にし、後ろの属性・title・テーマごとのフラグメントを当てる
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 画像を持つ Markdown
+        description: '`![グラフ](chart.png "売上の推移"){width=300 align=center}`・`![写真](photo.png){width=40% align=left nolightbox}`・`![構成](arch-dark.png#only-dark)` をそれぞれ画像だけの段落に持ち、`押す前に ![アイコン](icon.png){width=16} を確かめる。` の段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 画像の後ろの属性を読む
+        M->>M: 画像だけの段落の画像を図にする
+        M-->>C: HTML 文字列
+    expected:
+      - '1 つ目が `<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` に入り、`<figcaption class="mdmark-figure-caption">売上の推移</figcaption>` を持つ'
+      - '2 つ目の `figure` が `data-align="left"` と `--mdmark-image-width: 40%` を持ち、`figcaption` を持たない。`img` が `data-nolightbox` を持つ'
+      - 3 つ目の `figure` が class `mdmark-only-dark` を持ち、`img` の `src` が `arch-dark.png#only-dark`
+      - '文の中の `icon.png` の `img` は `figure` に入らず、`style="--mdmark-image-width: 16px"` を持つ'
+      - 文字列に `{width=` と `nolightbox}` が無く、`mdmark-syntax-warning` が無い
+    test: test_normal_when_image_attributes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ（テーマごとの画像）]
+  - name: 正常系（読めない画像の属性）
+    summary: 読めない属性を書き方の警告にし、読めた属性だけを当てる
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 読めない属性の Markdown
+        description: '`![グラフ](chart.png){width=big align=center foo}` だけの段落と、`押す前に ![アイコン](icon.png){align=left} を確かめる。` の段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: width の値と foo、文の中の画像の align を読めない
+        M-->>C: 書き方の警告と、読めた属性だけを当てた画像の HTML 文字列
+    expected:
+      - 1 つ目の `figure` の直前に `mdmark-syntax-warning` が 1 つあり、本文に `width=big`・`foo` と書ける属性の名前がある
+      - 1 つ目の `figure` が `data-align="center"` を持ち、`style` を持たない
+      - 2 つ目の段落の直前に `mdmark-syntax-warning` が 1 つあり、本文に `align` は画像だけの段落で使えることがある
+      - 文字列に `{width=big` と `{align=left}` が無い
+    test: test_normal_when_image_attribute_invalid
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[異常シナリオ（読めない属性）]
+  - name: 正常系（ギャラリー）
+    summary: ギャラリーのマーカーの範囲の画像を格子に並べ、`fig` のマーカーの番号にサブ図の番号を付ける
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: ギャラリーの Markdown
+        description: '`<!-- fig: shots -->` の後ろに `<!-- gallery: cols=3 -->` 〜 `<!-- /gallery -->` で title `開く`・`書く` を持つ 2 つの画像を囲み、続けて `<!-- gallery -->` 〜 `<!-- /gallery -->` で 2 つの画像を囲み、本文に `[図](#fig-shots)` のリンクを持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: ギャラリーの範囲の画像を格子に入れる
+        M->>M: fig のマーカーの番号と、範囲の中の順のサブ図の番号を付ける
+        M-->>C: HTML 文字列
+    expected:
+      - '1 つ目のギャラリーが `<figure class="mdmark-figure" id="fig-shots">` の中の `<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3">` と `<div class="mdmark-gallery-grid">` に入り、外の `figure` が `<b>図 1</b>` のキャプションを持つ'
+      - 1 つ目のギャラリーの 2 つの `figure` が `id="fig-shots-a"`・`id="fig-shots-b"` と、`<b>図 1a</b>開く`・`<b>図 1b</b>書く` のキャプションを持つ
+      - '2 つ目のギャラリーが `--mdmark-gallery-cols: 2` を持ち、番号を持たない'
+      - 本文のリンクの文字が `図 1`
+    test: test_normal_when_gallery
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ（ギャラリー）]
+      - dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する#scenarios[正常シナリオ（ギャラリーのサブ図とキャプション）]
+  - name: 正常系（動画・音声・GIF）
+    summary: 拡張子で動画・音声・GIF を分け、動画と音声を再生バー付きの要素にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 動画・音声・GIF の Markdown
+        description: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png width=480}`・`![読み上げ](voice.mp3)`・`![ビルド](build.gif)` をそれぞれ画像だけの段落に持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: src の拡張子で動画・音声・GIF を分ける
+        M-->>C: HTML 文字列
+    expected:
+      - '1 つ目が `<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: 480px">` に入り、`src="demo.mp4"`・`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload="metadata"`・`poster="demo.png"`・`aria-label="操作の様子"` を持つ `video` と、`<img class="mdmark-media-print" src="demo.png" alt="">` と、`保存までの操作` のキャプションを持つ'
+      - 2 つ目が `figure.mdmark-media` の中の、`src="voice.mp3"`・`controls`・`preload="metadata"`・`aria-label="読み上げ"` を持つ `audio` で、`figcaption` を持たない
+      - 3 つ目が `figure.mdmark-image` の中の、`data-gif` を持つ `img`
+      - 文字列に `button`・`canvas` が無い（GIF のボタンは `mount` が付ける）
+    test: test_normal_when_video_audio_gif
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ（動画と音声）]
+  - name: 正常系（リンクと添付のカード）
+    summary: リンク 1 つだけの段落を、拡張子でリンクのカードと添付のカードにする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: リンクだけの段落を持つ Markdown
+        description: '`https://example.com/docs/guide` だけの段落、`[設計の資料](https://example.com/design)` だけの段落、`[仕様書](files/spec.pdf)` だけの段落、`詳しくは https://example.com/docs を見る。` の段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: リンク 1 つだけの段落を拡張子でリンクと添付に分ける
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目が `<a class="mdmark-card" data-card="link" href="https://example.com/docs/guide">` で、`mdmark-card-title` が `example.com/docs/guide`、`mdmark-card-domain` が `example.com`、`mdmark-card-url` が `https://example.com/docs/guide`
+      - 2 つ目の `mdmark-card-title` が `設計の資料`
+      - 3 つ目が `<a class="mdmark-card" data-card="file" data-file-kind="pdf" href="files/spec.pdf">` で、`mdmark-card-title` が `仕様書`、`mdmark-card-domain` が `PDF`、`mdmark-card-url` が `spec.pdf`
+      - 4 つ目の段落は `mdmark-card` を持たず、今のままのリンクを持つ
+      - 文字列に `iframe` が無い
+    test: test_normal_when_cards
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを置く#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを置く#scenarios[正常シナリオ（文の中のリンク）]
+  - name: 正常系（色・画像・カードの機能を外す）
+    summary: 文書のマーカーで外した新しい記法を、普通の Markdown として描く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 新しい記法の機能を外す Markdown
+        description: '先頭に `<!-- features: -text-color -images -cards -->` を持ち、`[決め手の 1 文]{color=blue}`・`![グラフ](chart.png){width=300}`・`https://example.com/docs` をそれぞれ段落に持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>C: 外した記法を普通の Markdown として描いた HTML 文字列
+    expected:
+      - '`mdmark-color` が無く、段落の文字が `[決め手の 1 文]{color=blue}`'
+      - '`img` が `figure` に入らず、段落の文字に `{width=300}` が残る'
+      - '`mdmark-card` が無く、URL がリンクとして描かれている'
+    test: test_normal_when_media_features_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（色・画像・カードの機能を外す）]
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -871,7 +1071,7 @@ constraints:
   - item: 印の書式
     constraint: '1 か所に付ける印は `<!-- {名前}: {引数} -->`、範囲を持つ印は `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。引数の無い印は `<!-- {名前} -->` と書ける。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は空白で区切り、種類・`+機能`・`-機能`・`キー=値`・`closed`・`open` に読み分ける。コードブロックと行内のコードの中は印として扱わない'
   - item: 印の扱い
-    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。図の部品の印と同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どの印も出力にコメントとして残さない'
+    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。図の部品の印と同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どの印も出力にコメントとして残さない'
   - item: 印の場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`。登録した拡張の印も同じ要素にする。`render` は拡張の `load` も `schema` の検査も呼ばない'
   - item: 残す要素・属性
@@ -946,4 +1146,36 @@ constraints:
   - item: コードブロックの色分け
     constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"`（言語は制約『コードブロック』の `:` の前）を手掛かりに行う（文書に書いた生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
     notes: '`render` を同期のまま保ち、外部ライブラリの印を `mount` だけが描く今の役割分担と揃える（要件.md の推奨案 A）。色分けの中身は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『色分けの対象』〜『色分けを読めないとき』'
+  - item: 色の名前
+    constraint: '色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に書いた色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「書き手の誤り」と同じ書き方の警告を置き、本文に書いた名前と色の名前の一覧を出す'
+    notes: 色の名前の一覧は確認ログの決定。色の値は CSS 変数（インターフェース定義『文書を描く』の制約「色のプリセット」）
+  - item: 表の列と行の色
+    constraint: '表のマーカーの `highlight=列名[:色],…` は、見出しの文字が列名と一致する列の `th` と `td` に class `mdmark-col-highlight` と `data-color="{色}"`（省いたときは `blue`）を付ける。`row-color=列名:値=色,値=色,…` は、その列のセルの文字（タグを除いたもの）が値と一致する本文の行の `tr` に `data-color="{色}"` を付ける（`列名:` を書いた項目から次の `列名:` までが同じ列に当たる）。`row-at=位置=色,…` は、本文の行の位置（見出し行を除いて 1 から。`2-4` で範囲）の `tr` に `data-color` を付ける。1 つの行に `row-color=` と `row-at=` の両方が当たるときは `row-at=` の色にする。どの種類の表でも書ける。表に無い列名・表に無い行の位置・`=` の無い項目は、制約「書き手の誤り」と同じく当てずに書き方の警告にする'
+    notes: 色以外の見分け（見出しの下端の線・行の上下の線）は CSS で付ける。行の色は `tr` に付くので、並べ替え・絞り込みの後も行に付いたまま動く
+  - item: バッジの色
+    constraint: '頭が `badge:` の行内のコードで、`badge:` の後ろの最初の `:` の前が色の名前のときだけ、`<span class="mdmark-badge" data-color="{色}">{2 つ目の `:` の後ろ}</span>` にする。最初の `:` の前が色の名前でないときと `:` が無いときは、今のとおり `badge:` の後ろを全てラベルにする。色の名前の後ろが空か空白だけのときはバッジにせず、`<code>` のまま出す'
+    notes: '前のバージョンで ``badge:red:x`` と書いた文書は、ラベルが `red:x` から `x` に変わる（変更履歴で知らせる）。色の名前に当たらない頭は書き方の警告にしない'
+  - item: 本文の文字の色
+    constraint: '`text-color` がオンのとき、角括弧で囲んだ文字の直後の `{color=色}`（リンクの `[文字](URL)` を除く）を、`<span class="mdmark-color" data-color="{色}">{角括弧の中の文字}</span>` にする。角括弧の中は行内の Markdown として描く。知らない色の名前は、角括弧と属性を外した文字を色を付けずに出し、段落の前に書き方の警告を置く。`text-color` がオフのときは、書いた文字のまま出す'
+    notes: 色だけで意味を伝えないよう、太字は CSS で付ける（確認ログ）
+  - item: 画像の属性
+    constraint: '`images` がオンのとき、画像（動画・音声を含む）の直後の `{属性 …}` を空白で区切って読み、画像に当てて出力から外す。属性は `width=値`（`300` か `300px` の px と、`1`〜`100` の `%`）・`align=left|center|right`・`nolightbox`、動画・音声だけの `autoplay`・`muted`・`loop`・`poster=パス`。`width` は `--mdmark-image-width: {値}` を、画像だけの段落なら `figure` の `style`、文の中の画像なら `img` の `style` に置く。`align` は画像だけの段落の `figure` の `data-align` にする。`nolightbox` は `img` に `data-nolightbox` を付ける。知らない属性・読めない値・文の中の画像の `align`・画像に書いた動画と音声だけの属性は当てずに、画像の前（文の中の画像は段落の前）に書き方の警告を置き、本文に読めない属性と書ける属性を出す。`images` がオフのときは `{…}` を書いた文字のまま出す'
+  - item: 画像の図とキャプション
+    constraint: '`images` がオンのとき、画像 1 つだけの段落（前後の空白を除く）を `<figure class="mdmark-figure mdmark-image">` にし、title があれば `<figcaption class="mdmark-figure-caption">{title}</figcaption>` を画像の後ろに置く。`fig` のマーカーの直後の画像は制約「図と表の番号」のとおり番号を付ける（class `mdmark-image` も付ける）。リンクで囲んだ画像は図にしない'
+  - item: テーマごとの画像
+    constraint: '`images` がオンのとき、`src` のフラグメントが `#only-dark`・`#only-light` の画像の `figure`（文の中の画像は `img`）に class `mdmark-only-dark`・`mdmark-only-light` を付ける。`src` のフラグメントは残す'
+    notes: 今の配色に合わない画像を隠すのは CSS（`mount` の制約「配色の切り替え」の配色で判断し、印刷は明るい配色）
+  - item: ギャラリー
+    constraint: '`gallery` がオンのとき、`<!-- gallery: cols=列の数 -->` 〜 `<!-- /gallery -->` の範囲を `<div class="mdmark-gallery" style="--mdmark-gallery-cols: {列の数}">` と `<div class="mdmark-gallery-grid">` で囲み、範囲の中の画像をそれぞれ制約「画像の図とキャプション」の `figure` にする（範囲の中の画像以外の Markdown は出力に残さない）。列の数は `1`〜`6` で、省いたときは `2`。`fig` のマーカーの直後のギャラリーは、`<figure class="mdmark-figure" id="fig-{ID}">` で囲んで `図 {番号}` のキャプションを外の `figure` の下に置き、中の画像の `figure` に範囲の中の順に `id="fig-{ID}-{a, b, …}"` とキャプションの頭の `<b>図 {番号}{a, b, …}</b>` を付ける（画像の数は 26 まで）。範囲の中の画像が 0 件・27 件以上、読めない `cols=` は書き方の警告にする（27 件目からはサブ図の番号を付けない）。`gallery` がオフのときはマーカーだけを取り除く'
+    notes: 狭い幅で列を減らす幅は部品設計
+  - item: 動画と音声
+    constraint: '`media` がオンのとき、`src` の拡張子（クエリとフラグメントを除き、大文字と小文字を区別しない）が `mp4`・`m4v`・`webm`・`mov`・`ogv` の画像を `video`、`mp3`・`m4a`・`aac`・`ogg`・`oga`・`opus`・`wav`・`flac` の画像を `audio` にし、`<figure class="mdmark-figure mdmark-media">` に入れる（文の中でも段落を分けず、`figure` を段落の後ろに出す）。要素は `src`・`controls`・`preload="metadata"`・`aria-label="{alt}"` を持ち、`video` は `playsinline` も持つ。属性の `autoplay`・`muted`・`loop`・`poster` を写し、`autoplay` に `muted` が無いときは `muted` を足す。`poster` を持つ `video` の後ろに `<img class="mdmark-media-print" src="{poster}" alt="">` を置く。title は `figcaption` にする。`media` がオフのときは、今のとおり画像として描く'
+    notes: '`mdmark-media-print` は印刷のときだけ CSS で出す。プレビューで再生できない形式は VS Code 拡張機能が知らせる'
+  - item: GIF
+    constraint: '`src` の拡張子が `gif` の画像の `img` に `data-gif` を付ける。止める・再生するボタンは `mount` が付ける'
+  - item: リンクと添付のカード
+    constraint: '`cards` がオンのとき、リンク 1 つだけの段落（前後の空白を除く。リンクの自動検出の URL を含む）を `<a class="mdmark-card" data-card="{link か file}" href="{リンク先}">` にし、中に `<span class="mdmark-card-icon" aria-hidden="true">`・`<span class="mdmark-card-title">`・`<span class="mdmark-card-meta">` の `<span class="mdmark-card-domain">` と `<span class="mdmark-card-url">` を置く。リンク先のパスの拡張子が添付の拡張子の一覧にあるものは `file`、それ以外の `http`・`https` の URL は `link` にする（`#` で始まるリンク・`mailto`・拡張子 `md` のリンクはカードにしない）。`link` のタイトルは書いた文字（URL をそのまま書いたときはスキームを除いた URL）、ドメインは URL のホスト、URL は書いた URL。`file` のタイトルは書いた文字、ドメインは拡張子の大文字、URL はファイル名で、`data-file-kind` に種類を写す。添付の拡張子と種類は `pdf`（`pdf`）・`doc`・`docx`・`odt`・`rtf`（`doc`）・`xls`・`xlsx`・`ods`・`csv`・`tsv`（`sheet`）・`ppt`・`pptx`・`odp`・`key`（`slide`）・`zip`・`gz`・`tar`・`7z`（`archive`）・`txt`（`text`）。外へは要求しない。`cards` がオフのときは今のとおりリンクとして描く'
+    notes: 種類のアイコンは CSS で付ける（lucide）。`iframe` の埋め込みとタイトルの取得はしない（D-39）
+  - item: 新しい記法の要素と属性
+    constraint: 制約「残す要素・属性」の記法が出した要素だけに、`video`・`audio` と属性の `controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`、`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind`、`style` の `--mdmark-image-width`・`--mdmark-gallery-cols` を許す。`poster` の URL は制約「URL のスキーム」と同じ見分けで残す。文書に書いた生の HTML の `video`・`audio`・`source` は残さない
 test_file: tests/integration/lib/render.test.ts
