@@ -1,0 +1,1 @@
+# VS Code 拡張機能の ID を ShuheiNishikawa.mdmark-vscode・表示名を mdmark for VS Code に固定する
