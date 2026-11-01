@@ -12,22 +12,23 @@ scenarios:
     flow: |-
       flowchart TD
         A[MCPサーバーを起動・停止する:正常シナリオ（起動する）] --> B[ClaudeCodeにプラグインを入れる:正常シナリオ]
-        B --> C[索引から文書を探す:正常シナリオ]
+        B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
         click A "../単一ユースケース/MCPサーバーを起動・停止する.yaml#正常シナリオ起動する"
         click B "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
-        click C "../単一ユースケース/索引から文書を探す.yaml#正常シナリオ"
+        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
         click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
     expected:
       - 既定のポート 8782 で待ち受けるプロセスが 1 つだけある
-      - 作業のフォルダ A のクライアントの `find_docs` が、作業のフォルダ A の索引の文書を返す
+      - 作業のフォルダ A のクライアントの `check` が、空のずれの一覧を返す
+      - 作業のフォルダ A のクライアントの `build_site` が、作業のフォルダ A の `build.out` に 1 枚の HTML を書き、書き出したパスと入れた文書の数 1 を返す
       - 作業のフォルダ B のクライアントの `check` が、作業のフォルダ B の文書の `orphan_doc` を 1 件返す
       - 2 つのクライアントが送った引数（フックの記録の `tool_input`）に作業のフォルダの引数が無い
     test: test_normal
     uses:
       - dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する#scenarios[正常シナリオ（起動する）]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/索引から文書を探す#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
   - name: 異常シナリオ（常駐サーバーが起動していない）
     setup:
@@ -40,17 +41,18 @@ scenarios:
     flow: |-
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:異常シナリオ（常駐サーバーが起動していない）] --> B[MCPサーバーを起動・停止する:正常シナリオ（起動する）]
-        B --> C[索引から文書を探す:正常シナリオ]
+        B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#異常シナリオ常駐サーバーが起動していない"
         click B "../単一ユースケース/MCPサーバーを起動・停止する.yaml#正常シナリオ起動する"
-        click C "../単一ユースケース/索引から文書を探す.yaml#正常シナリオ"
+        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
     expected:
-      - 常駐サーバーを起動した後は、同じクライアントが接続し直して `find_docs` が作業のフォルダ A の索引の文書を返す
+      - 常駐サーバーを起動した後は、同じクライアントが接続し直して `check` が作業のフォルダ A の空のずれの一覧を返す
+      - 続けて `build_site` が、作業のフォルダ A の `build.out` に 1 枚の HTML を書き、入れた文書の数 1 を返す
     test: test_error_when_server_not_running
     uses:
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[異常シナリオ（常駐サーバーが起動していない）]
       - dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する#scenarios[正常シナリオ（起動する）]
-      - dev/設計書/シナリオ/単一ユースケース/索引から文書を探す#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
 lead: 文書を書く人が mdmark の MCP の常駐サーバーを 1 つ起動し、mdmark のプラグインを入れて並行に開いた 2 つのセッションから同じプロセスのツールを呼ぶ。
 issue: 111
 primary_actor: 文書を書く人
@@ -66,6 +68,4 @@ preconditions:
   - 作業のフォルダが 2 つあり、それぞれに mdmark の設定（`mdmark.config.yaml`）と索引がある
 success_guarantee: 常駐サーバーのプロセスが 1 つだけ待ち受け、2 つのセッションのツールの呼び出しがそれぞれの作業のフォルダに対して働く。
 minimal_guarantee: 常駐サーバーが起動していないときも Claude Code のセッションは開け、MCP サーバー `plugin:mdmark:mdmark` だけが接続の失敗になる。常駐サーバーを起動してから接続し直せば、セッションを開き直さずにツールを呼べる。
-refs:
-  - dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る#
 test_file: tests/e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts

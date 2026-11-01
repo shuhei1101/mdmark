@@ -55,7 +55,7 @@ tables:
       - name: description
         title: 概要
         type: string
-        description: 1 文の概要。ツールチップの関連文書と MCP の `find_docs`（#11）に出す
+        description: 1 文の概要。ツールチップの関連文書に出す
         example: 全体の構成と依存の向き
       - name: aliases
         title: 別名
@@ -68,7 +68,7 @@ tables:
         title: タグ
         type: array
         default: '`[]`'
-        description: タグ。MCP の `find_docs`（#11）が絞り込みに使う。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト
+        description: タグ。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト
         example: '[設計, {name: topic:mcp, main: true}]'
         notes: '文字列の要素は `main: false` と同じ。タグの語彙（`tags`）を記載した索引で、語彙の `name` にも `aliases` にも無いタグは `checkIndex` が `unregistered_tag`、`deprecated` のタグは `deprecated_tag` で知らせる'
       - name: related
@@ -79,7 +79,7 @@ tables:
           table: docs.id
         description: この文書から他の文書への関連。要素は `to`（相手の文書の `id`・必須）・`type`（`requires` / `references` / `replaces` / `part_of` / `change_together`・必須）・`when`（いつ読むかの 1 文・必須・空にできない）・`paths`（関連が当たるファイルの glob の並び・任意）を持ち、他のキーを持たないオブジェクト。件数の上限は置かない。`to` をこの文書からその文書への参照として数える
         example: '[{to: arch, type: requires, when: 公開関数の前提の構成を確かめるとき}]'
-        notes: 関連は片側だけに記載し、逆向き（`required_by` / `referenced_by` / `replaced_by` / `has_part`）は `find_docs` が出す。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で知らせる
+        notes: 関連は片側だけに記載し、逆向きは保存しない。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で知らせる
   - name: terms
     title: 用語
     datastore: YAML
@@ -140,7 +140,7 @@ tables:
         primary_key: true
         unique: true
         check: 空でない
-        description: タグの名前。文書の `tags` と MCP の `find_docs` に渡すタグと突き合わせる
+        description: タグの名前。文書の `tags` と突き合わせる
         example: topic:mcp
         notes: 重なった名前は Schema では拒まず、`checkIndex` が `duplicate_tag` で知らせる
       - name: group
@@ -152,13 +152,13 @@ tables:
       - name: description
         title: 説明
         type: string
-        description: タグを付ける文書の「含める / 含めない / 例」。MCP の `list_tags` が返す
-        example: '含める: MCP のツールの作り方。含めない: Claude Code の設定。例: find_docs の引数'
+        description: タグを付ける文書の「含める / 含めない / 例」
+        example: '含める: MCP のツールの作り方。含めない: Claude Code の設定。例: MCP のツールの引数'
       - name: aliases
         title: 別名
         type: array
         default: '`[]`'
-        description: タグの別名。文書の `tags` と `find_docs` に渡した別名は、このタグの `name` として扱う
+        description: タグの別名。文書の `tags` に記載した別名は、このタグの `name` として扱う
         example: '[MCP]'
         notes: 要素は空でない文字列。別のタグの `name` か `aliases` と重なると `checkIndex` が `tag_alias_conflict` で知らせる
       - name: deprecated
@@ -172,5 +172,3 @@ tables:
       pr: 114
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
-notes:
-  MCP からの書き換え: MCP の `update_index` は `docs`・`terms`・`tags` のどれかの要素を 1 つだけ置き換え・末尾へ足し・消す。渡した要素の前後の要素、最上位の他のキー、それらに付いたコメントは並びも含めて書き換えない。置き換えた要素は、渡した項目のキーの並び（先頭に、文書・用語は `id`、タグの語彙は `name`）になり、その要素の中のコメントは残らない

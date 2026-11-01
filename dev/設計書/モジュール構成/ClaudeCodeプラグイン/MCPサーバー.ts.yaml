@@ -1,12 +1,11 @@
 title: "ClaudeCodeプラグイン / MCPサーバー"
-lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`read_guide`・`export_html`・`build_site`・`check`・`find_docs`・`update_index`・`list_tags` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読まない。'
+lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`read_guide`・`export_html`・`build_site`・`check` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読まない。'
 directory: |-
   ```tree
   src/plugin/
   ├── mcp.ts        # MCP サーバーの組み立て・ツールの登録・instructions
   ├── http.ts       # mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換
-  ├── tools.ts      # 7 つのツールの定義と処理・ツールの結果への変換
-  ├── results.ts    # find_docs の cursor・行の項目の選択と、find_docs・list_tags の Markdown の組み立て
+  ├── tools.ts      # ツールの定義と処理・ツールの結果への変換
   └── arguments.ts  # ツールの引数の検査・SDK に渡す素通しの検証器
   ```
 diagrams:
@@ -50,7 +49,7 @@ data_models:
     summary: ツール 1 つの名前・説明・引数の形・処理
     properties:
       - name: name
-        type: "'read_guide' | 'export_html' | 'build_site' | 'check' | 'find_docs' | 'update_index' | 'list_tags'"
+        type: "'read_guide' | 'export_html' | 'build_site' | 'check'"
         description: ツールの名前
       - name: description
         type: string
@@ -63,7 +62,7 @@ data_models:
         description: 検査を通った引数で処理し、結果を返す。利用者に見せる誤りは `CliError` を投げる
       - name: annotations
         type: '{ readOnlyHint: boolean } | undefined'
-        description: '`tools/list` に出すツールの annotations。索引と文書を書き換えない `read_guide`・`check`・`find_docs`・`list_tags` だけが `{ readOnlyHint: true }` を持つ'
+        description: '`tools/list` に出すツールの annotations。索引と文書を書き換えない `read_guide`・`check` だけが `{ readOnlyHint: true }` を持つ'
       - name: usesProjectDir
         type: boolean
         description: 作業のフォルダを使うか。`true` のツールは引数の `project_dir` を必須にする。`project_dir` は `inputSchema` に含めない。`read_guide` だけが `false`
@@ -75,17 +74,14 @@ data_models:
     container: src/plugin/tools.ts
     usecase: 共通
     role: DTO
-    summary: ツールの処理が返す、テキストの並びか JSON にする値か structuredContent に入れる値
+    summary: ツールの処理が返す、テキストの並びか JSON にする値
     properties:
       - name: texts
         type: string[] | undefined
-        description: 'そのままの文字で返すテキスト（`read_guide` の名前ごとの本文と、`find_docs`・`list_tags` の `format: markdown` の結果）'
+        description: 'そのままの文字で返すテキスト（`read_guide` の名前ごとの本文）'
       - name: json
         type: Record<string, unknown> | undefined
-        description: JSON の文字列にして 1 つのテキストで返す値（`export_html`・`build_site`・`check`・`update_index`）
-      - name: structured
-        type: Record<string, unknown> | undefined
-        description: 'structuredContent に入れ、同じ値の JSON の文字列を 1 つのテキストでも返す値（`find_docs`・`list_tags` の `format: json` の結果）'
+        description: JSON の文字列にして 1 つのテキストで返す値（`export_html`・`build_site`・`check`）
     status: planned
     introduced:
       pr: 72
@@ -112,73 +108,6 @@ data_models:
     status: planned
     introduced:
       pr: 72
-  - name: FindDocsArgs
-    title: 文書を探す引数
-    container: src/plugin/tools.ts
-    usecase: 索引から文書を探す
-    role: DTO
-    summary: 検査を通った `find_docs` の引数
-    properties:
-      - name: text
-        type: string | undefined
-        description: 題・別名・概要のどれかに含まれる語
-      - name: tags
-        type: string[] | undefined
-        description: 全てを持つ文書に絞るタグ
-      - name: any_tags
-        type: string[] | undefined
-        description: どれかを持つ文書に絞るタグ
-      - name: related_to
-        type: string | undefined
-        description: 参照先と被参照を引く文書の ID
-      - name: limit
-        type: number | undefined
-        description: 1 回に返す文書の件数。無ければ `FIND_DOCS_DEFAULT_LIMIT`
-      - name: cursor
-        type: string | undefined
-        description: 前の結果の `next_cursor`
-      - name: view
-        type: "'brief' | 'standard' | 'full' | undefined"
-        description: 各行に返す項目の組。無ければ `brief`
-      - name: include
-        type: Array<'path' | 'aliases' | 'related' | 'referenced_by'> | undefined
-        description: '`view` の組に加える項目'
-      - name: exclude
-        type: Array<'path' | 'aliases' | 'related' | 'referenced_by'> | undefined
-        description: '`view` の組から除く項目'
-      - name: count_only
-        type: boolean | undefined
-        description: '`true` のとき文書の行を返さない'
-      - name: format
-        type: "'markdown' | 'json' | undefined"
-        description: 結果の形式。無ければ `markdown`
-      - name: config
-        type: string | undefined
-        description: 使う設定ファイルのパス
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#
-    status: planned
-    introduced:
-      pr: 114
-  - name: FindDocsCursor
-    title: 続きの位置
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: DTO
-    summary: '`next_cursor` に入れる、次の先頭の位置と絞り込みの条件'
-    description: JSON にして base64url（末尾の `=` を落とす）で文字列にする。`filter` は渡されなかった条件を持たない
-    properties:
-      - name: offset
-        type: number
-        description: 並べた後の文書の、次に返す先頭の位置（0 始まり）
-      - name: filter
-        type: '{ text?: string; tags?: string[]; any_tags?: string[]; related_to?: string }'
-        description: '`next_cursor` を返した呼び出しの絞り込みの条件'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[件数と続き]
-    status: planned
-    introduced:
-      pr: 114
   - name: ServerRoots
     title: サーバーの読む場所
     container: src/plugin/tools.ts
@@ -210,7 +139,7 @@ constants:
     container: src/plugin/mcp.ts
     usecase: 共通
     summary: MCP の `instructions` に渡す、何のためにどのツールを呼ぶかの事実の文
-    value: mdmark の記法・部品・図の描き方・拡張の仕方は、使い方集の索引の名前を read_guide に渡すと読める。文書の書き出しは export_html、まとめは build_site、点検は check、索引の文書の検索は find_docs、タグの語彙の一覧は list_tags、索引の書き換えは update_index で行える。
+    value: mdmark の記法・部品・図の描き方・拡張の仕方は、使い方集の索引の名前を read_guide に渡すと読める。文書の書き出しは export_html、まとめは build_site、点検は check で行える。
     status: planned
     introduced:
       pr: 72
@@ -229,7 +158,7 @@ constants:
     title: ツールの一覧
     container: src/plugin/tools.ts
     usecase: 共通
-    summary: 登録する 7 つのツールの定義（`ToolDefinition`）の並び
+    summary: 登録するツールの定義（`ToolDefinition`）の並び
     entries:
       - key: read_guide
         value: names（文字列の配列、1 件以上、必須）
@@ -243,84 +172,10 @@ constants:
       - key: check
         value: config・base（文字列）
         description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。`base` を渡すと `mdmark check --base` と同じ `change_together` の直し忘れも返す。点検は書き換えない。`annotations` は `readOnlyHint: true`'
-      - key: find_docs
-        value: text・related_to・cursor・config（文字列）・tags・any_tags（文字列の配列）・limit（1 以上 100 以下の整数）・view（brief・standard・full）・include・exclude（path・aliases・related・referenced_by の配列）・count_only（真偽値）・format（markdown・json）
-        description: '設定の `index` の索引から、題・別名・概要の語、タグの AND / OR、関係する文書で文書を引き、主題のタグが当たる文書を上にして `limit` 件ずつ返す。説明で、タグを渡す前に `list_tags` で語彙を確かめられることを案内する。`annotations` は `readOnlyHint: true`'
-      - key: update_index
-        value: kind（doc・term・tag、必須）・id（空でない文字列、必須）・item（オブジェクトか null、必須）・config（文字列）
-        description: 索引の文書・用語の ID かタグの語彙の名前の項目を置き換え（無ければ追加し、null なら消し）、索引の形で検査してから書く。説明で、文書の `related` は `to`・`type`・`when`（任意で `paths`）を持つオブジェクトの並びで渡すことと、`type` の 5 つの値を案内する。`action`（added・replaced・removed）と索引のパス `index` を返す
-      - key: list_tags
-        value: query・config（文字列）・format（markdown・json）
-        description: '設定の `index` の索引のタグの語彙を、タグごとの名前・グループ・説明・別名・振り替え先と付いている文書の数つきで返す。`annotations` は `readOnlyHint: true`'
     status: planned
     introduced:
       pr: 72
     description: '`read_guide` だけ `usesProjectDir: false`、他の 6 つは `true`'
-  - name: FIND_DOCS_DEFAULT_LIMIT
-    title: 既定の件数
-    container: src/plugin/tools.ts
-    usecase: 索引から文書を探す
-    summary: '`find_docs` が `limit` を渡されないときに 1 回に返す文書の件数'
-    value: '20'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#request[limit]
-    status: planned
-    introduced:
-      pr: 114
-  - name: FIND_DOCS_MAX_LIMIT
-    title: 件数の上限
-    container: src/plugin/tools.ts
-    usecase: 索引から文書を探す
-    summary: '`find_docs` の `limit` に渡せる最大の件数（引数の形の `maximum`）'
-    value: '100'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#request[limit]
-    status: planned
-    introduced:
-      pr: 114
-  - name: VIEW_FIELDS
-    title: 返す項目の組
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    summary: '`view` ごとに、ID・題・概要・タグ・文字数（常に返す）に加えて返す項目の並び'
-    description: 項目の並びは、返す行のキー・Markdown の表の列・`omitted` の並びにも使う
-    entries:
-      - key: brief
-        value: '[]'
-        description: ID・題・概要・タグ・文字数だけ
-      - key: standard
-        value: "['path', 'aliases']"
-        description: '`brief` にパス・別名を加える'
-      - key: full
-        value: "['path', 'aliases', 'related', 'referenced_by']"
-        description: '`standard` に関連する文書・被参照の数を加える'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#request[view]
-    status: planned
-    introduced:
-      pr: 114
-  - name: FIND_DOCS_HINT
-    title: 続きの案内
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    summary: 続きがあるときに `hint` に入れる文
-    value: 続きがあります。tags・any_tags・text で絞るか、count_only で件数だけを確かめてください。
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[hint]
-    status: planned
-    introduced:
-      pr: 114
-  - name: CURSOR_ERROR_MESSAGE
-    title: cursor を読めないときの文
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    summary: '`cursor` を読めないか、絞り込みの条件が `next_cursor` を返した呼び出しと違うときの `CliError` の文'
-    value: cursor を読めないか、絞り込みの条件が next_cursor を返した呼び出しと違います。cursor を省いて先頭から引き直してください。
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#exceptions[ツールのエラー（cursor を読めない）]
-    status: planned
-    introduced:
-      pr: 114
   - name: PROJECT_DIR_ARG
     title: 作業のフォルダの引数
     container: src/plugin/tools.ts
@@ -431,12 +286,12 @@ functions:
       1. 引数がオブジェクトでなければ「引数はオブジェクトで渡してください。」
       2. `required` の順に、無い引数があれば「引数 {名前} がありません。{名前} を渡してください。」
       3. `properties` に無い引数があれば「引数 {名前} は使えません。使える引数は {引数の並び} です。」
-      4. 引数ごとに、型（`string`・`integer`・`boolean`・`array`・`object`・`null`）・要素の型と要素の `enum`・`enum`・`minItems`・`minLength`・`minimum`・`maximum` に合わなければ「引数 {名前} は {合う値の説明} で渡してください。」（説明は「文字列」「文字列の配列」「オブジェクトか null」「doc か term か tag」「1 件以上の配列」「空でない文字列」「真偽値」「1 以上 100 以下の整数」「path か aliases か related か referenced_by の配列」など）
+      4. 引数ごとに、型（`string`・`integer`・`boolean`・`array`・`object`・`null`）・要素の型と要素の `enum`・`enum`・`minItems`・`minLength`・`minimum`・`maximum` に合わなければ「引数 {名前} は {合う値の説明} で渡してください。」（説明は「文字列」「文字列の配列」「オブジェクトか null」「{値} か {値}」「1 件以上の配列」「空でない文字列」「真偽値」「{最小} 以上 {最大} 以下の整数」「{値} か {値} の配列」など）
     unit_tests:
       - name: test_check_arguments
         case: 正常
         summary: 合う引数は undefined
-        condition: '`update_index` の形に `{ kind: "doc", id: "b", item: { path: "b.md" } }`'
+        condition: '`export_html` の形に `{ file: "a.md", out: "a.html" }`'
         mock: なし
         expected: '`undefined`'
       - name: test_check_arguments_when_required_missing
@@ -466,13 +321,13 @@ functions:
       - name: test_check_arguments_when_enum_mismatch
         case: 正常
         summary: 選べない値
-        condition: '`update_index` の形に `kind: "docs"`'
+        condition: 'テストの形（`kind` が `enum: ["doc", "term"]` の文字列）に `kind: "docs"`'
         mock: なし
         expected: '`kind` と `doc か term` を含む文'
       - name: test_check_arguments_when_null_allowed
         case: 正常
         summary: null を許す引数
-        condition: '`update_index` の形に `item: null`'
+        condition: 'テストの形（`item` が `type: ["object", "null"]`）に `item: null`'
         mock: なし
         expected: '`undefined`'
       - name: test_check_arguments_when_not_object
@@ -484,21 +339,21 @@ functions:
       - name: test_check_arguments_when_integer_out_of_range
         case: 正常
         summary: 範囲の外か整数でない数
-        condition: '`find_docs` の形に `limit: 101`、続けて `limit: 1.5`'
+        condition: 'テストの形（`limit` が `minimum: 1`・`maximum: 100` の整数）に `limit: 101`、続けて `limit: 1.5`'
         mock: なし
         expected: どちらも `limit` と `1 以上 100 以下の整数` を含む文
       - name: test_check_arguments_when_boolean_mismatch
         case: 正常
         summary: 真偽値でない値
-        condition: '`find_docs` の形に `count_only: "true"`'
+        condition: 'テストの形（`flag` が真偽値）に `flag: "true"`'
         mock: なし
-        expected: '`count_only` と `真偽値` を含む文'
+        expected: '`flag` と `真偽値` を含む文'
       - name: test_check_arguments_when_item_enum_mismatch
         case: 正常
         summary: 配列の要素が選べない値
-        condition: '`find_docs` の形に `include: ["body"]`'
+        condition: 'テストの形（`fields` が要素の `enum: ["path", "aliases"]` の配列）に `fields: ["body"]`'
         mock: なし
-        expected: '`include` と `path か aliases か related か referenced_by の配列` を含む文'
+        expected: '`fields` と `path か aliases の配列` を含む文'
     refs:
       - dev/設計書/外部ライブラリ/MCP-SDK#limitations[入力の検査のエラーの文]
     status: planned
@@ -521,14 +376,13 @@ functions:
         description: 呼ぶツール・渡された引数・サーバーの読む場所・標準エラーへ 1 行書く関数
     returns:
       type: Promise<CallToolResult>
-      description: '`content` にテキストを並べた MCP のツールの結果。`structured` を返したツールは `structuredContent` も持つ。誤りのときは `isError: true` と 1 つのテキスト'
+      description: '`content` にテキストを並べた MCP のツールの結果。誤りのときは `isError: true` と 1 つのテキスト'
     process: |-
       1. `usesProjectDir` のツールは、引数から `PROJECT_DIR_ARG` を取り出す。文字列でない・絶対パスでない・そのフォルダが無いときは `PROJECT_DIR_ERROR_MESSAGE` を `isError: true` で返す
       2. `PROJECT_DIR_ARG` を除いた引数を検査し、合わなければその 1 文を `isError: true` で返す（引数を検査する）
       3. 取り出した `projectDir` と `roots` でツールの前提を作り、ツールの処理を呼ぶ
          - `texts` があれば、各テキストを `{ type: "text", text }` にして並べる
          - `json` があれば、JSON の文字列にした 1 つのテキストにする
-         - `structured` があれば、`structuredContent` に入れ、同じ JSON の文字列を 1 つのテキストにする
       4. `CliError` を捕まえたら、そのメッセージを `isError: true` で返す
       5. それ以外の例外を捕まえたら、標準エラーに書き、例外のメッセージを `isError: true` で返す
          - `[error]` ツールの処理が想定しない例外で止まった（ツール名・メッセージ・スタック）
@@ -563,12 +417,6 @@ functions:
         condition: '`run` が `Error("boom")` を投げる'
         mock: 行を配列に貯める `stderr`
         expected: '`isError: true` でテキストに `boom`、`stderr` にツール名と `boom` とスタック'
-      - name: test_call_tool_when_structured
-        case: 正常
-        summary: structured を structuredContent と同じ JSON のテキストにする
-        condition: '`run` が `{ structured: { tags: [] } }` を返すツール'
-        mock: なし（テストの中で定義したツール）
-        expected: '`structuredContent` が `{ tags: [] }` で、テキストが 1 つで `JSON.parse` すると `{ tags: [] }`'
       - name: test_call_tool_when_project_dir
         case: 正常
         summary: project_dir を前提に入れ、引数から除いて処理を呼ぶ
@@ -780,152 +628,6 @@ functions:
     status: planned
     introduced:
       pr: 72
-  - name: runFindDocs
-    title: 文書を探す（find_docs）
-    kind: 関数
-    container: src/plugin/tools.ts
-    usecase: 索引から文書を探す
-    role: ツール
-    summary: 設定の索引を読み、条件に当たる文書を主題のタグが当たる文書を上にして `limit` 件ずつ、選んだ項目と形式で返す
-    scope: public
-    is_async: true
-    args:
-      - name: args
-        type: FindDocsArgs
-        required: true
-        description: 検査を通った引数
-      - name: context
-        type: ToolContext
-        required: true
-        description: ツールの前提
-    returns:
-      type: Promise<ToolOutput>
-      description: '`format: json` なら `structured` がインターフェース定義のレスポンス（`total`・`returned`・`total_chars`・`next_cursor`・`hint`・`tag_counts`・`warnings`・`omitted`・`docs` の順。`count_only` のときは `total`・`total_chars`・`tag_counts`・`warnings` だけ）、`markdown` なら `texts` が `formatFindDocs` の 1 つ'
-    process: |-
-      1. `projectDir` から設定を読み、索引と索引の文書を読む（設定を読んで形を検める・索引を必ず読む）
-      2. 索引を索引の形に合う要素だけにする（索引の形の検査）
-      3. `cursor` があれば、`text`・`tags`・`any_tags`・`related_to` を条件にして先頭の位置を読む（続きの位置を読む）。無ければ 0
-      4. 返す項目を決める（返す項目を決める）
-      5. `related_to` があるか、返す項目に `referenced_by` があるときだけ、設定の `features` で参照の表を作る（参照の表を作る）
-      6. 文書を探す（索引から文書を探す）
-      7. 当たった文書ごとに文字数を数える。索引の `path` を正規化して索引の文書から本文を引き、無ければ索引のフォルダからのパスでファイルを読む。本文のコードポイントの数、読めなければ `null`
-      8. `total`・`total_chars`（`null` を足さない）・`tag_counts`（タグごとの件数を数える）・`warnings`（語彙に無いタグの警告を作る）を、当たった全ての文書で作る
-      9. `count_only` なら、この 4 つだけを返す
-      10. それ以外は、先頭の位置から `limit`（無ければ `FIND_DOCS_DEFAULT_LIMIT`）件を行にし（文書の行を作る。`related_to` があれば `findDocs` の `relations` のその文書の並びを渡す）、続きがあれば `next_cursor`（続きの位置を文字列にする）と `hint`（`FIND_DOCS_HINT`）、無ければどちらも `null` にする
-      11. `format` が `json` なら `structured`、それ以外は Markdown にした `texts` で返す（文書を探した結果を Markdown にする）
-    unit_tests:
-      - name: test_run_find_docs
-        case: 正常
-        summary: 既定では Markdown の表を返す
-        condition: 索引に `a`（概要とタグ無し）だけと `a.md`、引数無し
-        mock: なし（一時フォルダ）
-        expected: '`texts` が 1 つで、先頭の行が総件数 1 件・返した件数 1 件を示し、`structured` が無い'
-      - name: test_run_find_docs_when_json
-        case: 正常
-        summary: '`format: json` で既定の項目の行と省いた項目を返す'
-        condition: '`test_run_find_docs` と同じフォルダ、`format: json`'
-        mock: なし（一時フォルダ）
-        expected: '`structured.docs` が `[{ id: "a", title, description: null, tags: [], chars: {a.md のコードポイントの数} }]`、`omitted` が 4 つ、`next_cursor` と `hint` が `null`'
-      - name: test_run_find_docs_when_related_to
-        case: 正常
-        summary: 参照の表を作って関係する文書を返す
-        condition: '`a` が `related` で `b` を指し、`c` の本文が `a` へリンクする。`related_to: a`、`format: json`'
-        mock: なし（一時フォルダ）
-        expected: '`structured.docs` の ID が `b`・`c` で、`b` の `relations` が `[{ direction: "outgoing", type: null, when: null }]`、`c` の `relations` が `[{ direction: "incoming", type: null, when: null }]`'
-      - name: test_run_find_docs_when_paged
-        case: 正常
-        summary: '`limit` 件ずつ返し、`next_cursor` で続きを返す'
-        condition: '文書 3 つ、`limit: 2`、`format: json`。続けて返った `next_cursor` を渡す'
-        mock: なし（一時フォルダ）
-        expected: 1 回目が 2 件で `total` 3・`hint` が `FIND_DOCS_HINT`、2 回目が残りの 1 件で `next_cursor` が `null`
-      - name: test_run_find_docs_when_count_only
-        case: 正常
-        summary: 件数だけを返す
-        condition: 'タグを持つ文書 2 つ、`count_only: true`、`format: json`'
-        mock: なし（一時フォルダ）
-        expected: '`structured` のキーが `total`・`total_chars`・`tag_counts`・`warnings` だけ'
-      - name: test_run_find_docs_when_unknown_tag
-        case: 正常
-        summary: 語彙に無いタグでも拒まず警告を添える
-        condition: '語彙に `topic:mcp` を持つ索引、`tags: ["topic:mcq"]`、`format: json`'
-        mock: なし（一時フォルダ）
-        expected: '`total` が 0 で、`warnings` が 1 つで `topic:mcq` と `topic:mcp` を含む'
-      - name: test_run_find_docs_when_document_missing
-        case: 正常
-        summary: ファイルの無い文書は文字数を null にして合計に足さない
-        condition: '索引に `a`（`a.md` がある）と `b`（`b.md` が無い）、`format: json`'
-        mock: なし（一時フォルダ）
-        expected: '`b` の `chars` が `null` で、`total_chars` が `a` の `chars` と等しい'
-    callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[requireConfig]
-      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[requireIndexWithDocuments]
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
-      - '#functions[decodeCursor]'
-      - '#functions[selectDocFields]'
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[collectReferences]
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[findDocs]
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[countTags]
-      - '#functions[unknownTagWarning]'
-      - '#functions[toDocRow]'
-      - '#functions[encodeCursor]'
-      - '#functions[formatFindDocs]'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#
-    status: planned
-    introduced:
-      pr: 72
-  - name: runUpdateIndex
-    title: 索引を書き換える（update_index）
-    kind: 関数
-    container: src/plugin/tools.ts
-    usecase: 索引を書き換える
-    role: ツール
-    summary: 設定の索引の項目を書き換え、したことと索引のパスを返す
-    scope: public
-    is_async: true
-    side_effects: 索引のファイルを書き換える
-    args:
-      - name: args
-        type: "{ kind: 'doc' | 'term' | 'tag'; id: string; item: Record<string, unknown> | null; config?: string }"
-        required: true
-        description: 検査を通った引数
-      - name: context
-        type: ToolContext
-        required: true
-        description: ツールの前提
-    returns:
-      type: Promise<ToolOutput>
-      description: '`json` が `{ action, index }`'
-    process: |-
-      1. `projectDir` から設定を読む（設定を読んで形を検める）
-      2. 索引のファイルを書き換え、`action` と `index` を返す（索引のファイルを書き換える）
-    unit_tests:
-      - name: test_run_update_index
-        case: 正常
-        summary: 書き換えて action と索引のパスを返す
-        condition: '索引に `a` だけ、`kind: doc`、`id: b`、`path`・`title` を持つ項目'
-        mock: なし（一時フォルダ）
-        expected: '`json` が `{ action: "added", index: "index.yaml" }`'
-      - name: test_run_update_index_when_tag
-        case: 正常
-        summary: タグの語彙にタグを追加する
-        condition: '`tags` を持たない索引、`kind: tag`、`id: topic:mcp`、`group` を持つ項目'
-        mock: なし（一時フォルダ）
-        expected: '`json` が `{ action: "added", index: "index.yaml" }` で、索引の `tags` が `[{ name: "topic:mcp", group }]`'
-      - name: test_run_update_index_when_related_invalid
-        case: 異常
-        summary: Schema に合わない関連の項目は書かずに誤りにする
-        condition: '索引に `a` だけ、`kind: doc`、`id: b`、`related` が `[{ to: "a", type: "depends_on", when: "前提を確かめるとき" }]` の項目'
-        mock: なし（一時フォルダ）
-        expected: '`CliError` を投げ、メッセージに `docs[1].related[0].type` と `change_together` が入り、索引のファイルの中身が変わらない'
-    callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[requireConfig]
-      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[updateIndexFile]
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/索引を書き換える.ts#
-    status: planned
-    introduced:
-      pr: 72
   - name: createMcpServer
     title: MCP サーバーを作る
     kind: 関数
@@ -950,22 +652,16 @@ functions:
     unit_tests:
       - name: test_create_mcp_server
         case: 正常
-        summary: 7 つのツールと instructions と annotations を出す
+        summary: 4 つのツールと instructions と annotations を出す
         condition: 作ったサーバーを `InMemoryTransport` でクライアントとつなぐ
         mock: なし（SDK の `Client`）
-        expected: '`listTools` の名前が `TOOLS` の 7 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`read_guide`・`check`・`find_docs`・`list_tags` の `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS`'
+        expected: '`listTools` の名前が `TOOLS` の 4 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`read_guide`・`check` の `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS`'
       - name: test_create_mcp_server_when_arguments_invalid
         case: 正常
         summary: 合わない引数は SDK でなく日本語の文で返る
         condition: '`read_guide` を `{ names: [] }` で呼ぶ'
         mock: なし（SDK の `Client`）
         expected: '`isError: true` で、テキストが `Input validation error` を含まず `names` を含む'
-      - name: test_create_mcp_server_when_structured
-        case: 正常
-        summary: structuredContent がクライアントまで届く
-        condition: '語彙を持つ索引の一時フォルダを `project_dir` に渡し、`list_tags` を `format: json` で呼ぶ'
-        mock: なし（SDK の `Client`）
-        expected: 結果の `structuredContent.tags` が配列で、テキストを `JSON.parse` した値と等しい
     callees:
       - '#functions[callTool]'
     refs:
@@ -973,331 +669,6 @@ functions:
     status: planned
     introduced:
       pr: 72
-  - name: encodeCursor
-    title: 続きの位置を文字列にする
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: 変換
-    summary: '`FindDocsCursor` を JSON にして base64url（末尾の `=` を落とす）の文字列にする'
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: cursor
-        type: FindDocsCursor
-        required: true
-        description: 次の先頭の位置と絞り込みの条件
-    returns:
-      type: string
-      description: '`next_cursor` に入れる文字列'
-    unit_tests:
-      - name: test_encode_cursor
-        case: 正常
-        summary: 読み戻すと同じ値になり、URL にそのまま置ける
-        condition: '`{ offset: 20, filter: { tags: ["設計"], text: "文書" } }`'
-        mock: なし
-        expected: '`decodeCursor` で読むと同じ値で、文字列が `[A-Za-z0-9_-]` だけからなる'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[件数と続き]
-    status: planned
-    introduced:
-      pr: 114
-  - name: decodeCursor
-    title: 続きの位置を読む
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: 変換
-    summary: '`cursor` を `FindDocsCursor` として読み、絞り込みの条件が今回の条件と同じときだけ位置を返す'
-    description: base64url として解けない・JSON として読めない・`offset` が 0 以上の整数でない・`filter` が今回の `text`・`tags`・`any_tags`・`related_to` と同じでない（配列は並びまで同じ、渡されない条件は無いものとして比べる）ときは `CURSOR_ERROR_MESSAGE` の `CliError` を投げる
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: options
-        type: "{ cursor: string; filter: FindDocsCursor['filter'] }"
-        required: true
-        description: 渡された `cursor` と今回の絞り込みの条件
-    returns:
-      type: number
-      description: 次に返す先頭の位置
-    unit_tests:
-      - name: test_decode_cursor
-        case: 正常
-        summary: 同じ条件なら位置を返す
-        condition: '`encodeCursor({ offset: 20, filter: { tags: ["設計"] } })` を、`filter: { tags: ["設計"] }` で読む'
-        mock: なし
-        expected: '20'
-      - name: test_decode_cursor_when_invalid
-        case: 異常
-        summary: 読めない cursor を拒む
-        condition: '`not-a-cursor`、JSON でない文字列の base64url、`offset` が `-1` の cursor'
-        mock: なし
-        expected: どれも `CURSOR_ERROR_MESSAGE` の `CliError`
-      - name: test_decode_cursor_when_filter_changed
-        case: 異常
-        summary: 条件を変えた cursor を拒む
-        condition: '`filter: { tags: ["設計"] }` で作った cursor を、`filter: { tags: ["設計"], text: "文書" }` で読む'
-        mock: なし
-        expected: '`CURSOR_ERROR_MESSAGE` の `CliError`'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#exceptions[ツールのエラー（cursor を読めない）]
-    status: planned
-    introduced:
-      pr: 114
-  - name: selectDocFields
-    title: 返す項目を決める
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: 変換
-    summary: '`view` の組に `include` を加え `exclude` を除いた項目と、返さない項目の取り方を返す'
-    description: '項目と `omitted` の並びは `VIEW_FIELDS.full` の並び。`how` は `include: ["{項目}"]`'
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: options
-        type: "{ view: 'brief' | 'standard' | 'full'; include: string[]; exclude: string[] }"
-        required: true
-        description: 項目の組と、加える・除く項目
-    returns:
-      type: "{ fields: Array<'path' | 'aliases' | 'related' | 'referenced_by'>; omitted: Array<{ field: string; how: string }> }"
-      description: 返す項目と、省いた項目
-    unit_tests:
-      - name: test_select_doc_fields
-        case: 正常
-        summary: '`brief` では 4 つとも省き、取り方を添える'
-        condition: '`view: brief`、`include`・`exclude` が空'
-        mock: なし
-        expected: '`fields` が空、`omitted` が `path`・`aliases`・`related`・`referenced_by` の順で、`path` の `how` が `include: ["path"]`'
-      - name: test_select_doc_fields_when_include_and_exclude
-        case: 正常
-        summary: '`include` を加えた後に `exclude` を除く'
-        condition: '`view: standard`、`include: ["referenced_by", "path"]`、`exclude: ["path"]`'
-        mock: なし
-        expected: '`fields` が `aliases`・`referenced_by`、`omitted` が `path`・`related`'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[返す項目]
-    status: planned
-    introduced:
-      pr: 114
-  - name: toDocRow
-    title: 文書の行を作る
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: 変換
-    summary: 索引の文書を、`id`・`title`・`description`・`tags`・`chars` と返す項目のキーと `relations` をこの順で持つ行にする
-    description: '`description` が無ければ `null`。`tags` は `readDocTag` で `{ name, main }` にそろえ、無ければ空。`aliases` は無ければ空。`related` は要素を `readRelated` で `{ to, type, when }`（`paths` は持つときだけ）にそろえ、無ければ空。`relations` は渡したときだけ持たせる。`referenced_by` は参照の表の `backlinks[id]` の数（無ければ 0）'
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: options
-        type: '{ doc: MdmarkIndexDoc; chars: number | null; fields: string[]; references: MdmarkReferences | undefined; relations?: DocRelation[] }'
-        required: true
-        description: 文書・文字数・返す項目・参照の表（`referenced_by` を返すときに要る）・`related_to` の文書との関係（`related_to` を渡したときだけ）
-    returns:
-      type: Record<string, unknown>
-      description: '`docs` の 1 行'
-    unit_tests:
-      - name: test_to_doc_row
-        case: 正常
-        summary: 既定の項目だけの行にする
-        condition: '概要を持たず、タグが `["設計", { name: "topic:mcp", main: true }]` の文書、`chars: 120`、`fields` が空'
-        mock: なし
-        expected: 'キーが `id`・`title`・`description`・`tags`・`chars` の順で、`description` が `null`、`tags` が `[{ name: "設計", main: false }, { name: "topic:mcp", main: true }]`'
-      - name: test_to_doc_row_when_full
-        case: 正常
-        summary: 全ての項目を持つ行にする
-        condition: '別名と `related` を持たない文書 `a`、`chars: null`、`fields` が `VIEW_FIELDS.full`、参照の表の `backlinks` が `{ a: ["b", "c"] }`'
-        mock: なし
-        expected: '`chars` が `null`、`path` が索引の `path`、`aliases`・`related` が空、`referenced_by` が 2'
-      - name: test_to_doc_row_when_related_and_relations
-        case: 正常
-        summary: 文字列とオブジェクトの関連をそろえ、関係を最後のキーにする
-        condition: '`related` が `["b", { to: "c", type: "requires", when: "前提を確かめるとき" }]` の文書、`fields: ["related"]`、`relations: [{ direction: "incoming", type: "has_part", when: "全体を確かめるとき" }]`'
-        mock: なし
-        expected: '`related` が `[{ to: "b", type: null, when: null }, { to: "c", type: "requires", when: "前提を確かめるとき" }]`、最後のキーが `relations` で渡した並びと等しい'
-    callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[readDocTag]
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#response[docs[].id]
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[readRelated]
-    status: planned
-    introduced:
-      pr: 114
-  - name: unknownTagWarning
-    title: 語彙に無いタグの警告を作る
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: 変換
-    summary: 語彙に無いタグ 1 つの `warnings` の文を作る
-    description: 近いタグがあるときは「タグ {タグ} は語彙にありません。近いタグは {近いタグ} です。」、無いときは「タグ {タグ} は語彙になく、近いタグもありません。list_tags で語彙を確かめてください。」
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: unknown
-        type: '{ tag: string; nearest: string | undefined }'
-        required: true
-        description: '`findDocs` の `unknownTags` の 1 つ'
-    returns:
-      type: string
-      description: 警告の文
-    unit_tests:
-      - name: test_unknown_tag_warning
-        case: 正常
-        summary: 近いタグの有無で文を分ける
-        condition: '`{ tag: "topic:mcq", nearest: "topic:mcp" }` と `{ tag: "kind:guide", nearest: undefined }`'
-        mock: なし
-        expected: 1 つ目が `topic:mcq` と `topic:mcp` を含み、2 つ目が `kind:guide` と `list_tags` を含む
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[語彙に無いタグ]
-    status: planned
-    introduced:
-      pr: 114
-  - name: formatFindDocs
-    title: 文書を探した結果を Markdown にする
-    container: src/plugin/results.ts
-    usecase: 索引から文書を探す
-    role: 変換
-    summary: '`find_docs` の結果のオブジェクトを、`format: markdown` のテキストにする'
-    description: 表のセルの `|` は `\|`、改行は空白にする。`null` と空の配列は `-`、配列は `・` でつなぐ
-    process: |-
-      1. 先頭の行: `count_only` の結果は「総件数 {total} 件・合計文字数 {total_chars}」、それ以外は「総件数 {total} 件・返した件数 {returned} 件・合計文字数 {total_chars}・next_cursor: {next_cursor か なし}」
-      2. `docs` が 1 件以上なら文書の表。列は ID・題・概要・タグ・文字数に、返す項目のパス・別名・関連する文書・被参照の数と、行が `relations` を持つときの関係を続ける。タグは主題のタグに `（主題）` を付ける。関連する文書は要素ごとに `{to}`（`type` があれば `{to}（{type}）`）、関係は要素ごとに `{direction} {type}`（`type` が null なら `{direction}`）
-      3. `tag_counts` があれば「タグごとの件数: {name} {count}・…」
-      4. `omitted` があれば「省いた項目: {field}（{how}）・…」
-      5. `warnings` を 1 つ 1 行
-      6. `hint` があればその文
-
-      各部分は空行で区切る
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: result
-        type: Record<string, unknown>
-        required: true
-        description: '`find_docs` の `format: json` と同じ結果のオブジェクト'
-    returns:
-      type: string
-      description: Markdown のテキスト
-    unit_tests:
-      - name: test_format_find_docs
-        case: 正常
-        summary: インターフェース定義の例のとおりに並べる
-        condition: 'インターフェース定義『文書を探す』の `format: json` のレスポンス例'
-        mock: なし
-        expected: '同じ定義の `format: markdown` のレスポンス例と等しい'
-      - name: test_format_find_docs_when_count_only
-        case: 正常
-        summary: 件数だけの結果は表を出さない
-        condition: '`{ total: 3, total_chars: 300, tag_counts: [{ name: "topic:mcp", count: 2 }], warnings: [] }`'
-        mock: なし
-        expected: '先頭の行が「総件数 3 件・合計文字数 300」で、表と `next_cursor` を含まず、「タグごとの件数: topic:mcp 2」を含む'
-      - name: test_format_find_docs_when_pipe_in_cell
-        case: 正常
-        summary: セルの `|` と改行で表を崩さない
-        condition: 概要が `a|b` と改行を含む行
-        mock: なし
-        expected: そのセルが `a\|b` で、行が 1 行
-      - name: test_format_find_docs_when_relations
-        case: 正常
-        summary: 関連する文書と関係をそれぞれ 1 つのセルにする
-        condition: '`related` が `[{ to: "b", type: "requires", when: "前提を確かめるとき" }, { to: "c", type: null, when: null }]`、`relations` が `[{ direction: "outgoing", type: "requires", when: "前提を確かめるとき" }, { direction: "incoming", type: null, when: null }]` の行'
-        mock: なし
-        expected: 関連する文書のセルが `b（requires）・c`、関係のセルが `outgoing requires・incoming`
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts#constraints[返す形式]
-    status: planned
-    introduced:
-      pr: 114
-  - name: formatListTags
-    title: タグの語彙を Markdown にする
-    container: src/plugin/results.ts
-    usecase: タグの語彙を見る
-    role: 変換
-    summary: '`list_tags` のタグの並びを、名前・グループ・説明・別名・振り替え先・文書の数の列の表だけのテキストにする'
-    description: セルの書き方は `formatFindDocs` と同じ。タグが 0 件なら見出しの行と区切りの行だけ
-    kind: 関数
-    scope: internal
-    is_async: false
-    args:
-      - name: tags
-        type: TagListEntry[]
-        required: true
-        description: '`listTags` の結果'
-    returns:
-      type: string
-      description: Markdown のテキスト
-    unit_tests:
-      - name: test_format_list_tags
-        case: 正常
-        summary: インターフェース定義の例のとおりに並べる
-        condition: 'インターフェース定義『タグの語彙を見る』の `format: json` のレスポンス例の `tags`'
-        mock: なし
-        expected: '同じ定義の `format: markdown` のレスポンス例と等しい'
-      - name: test_format_list_tags_when_empty
-        case: 正常
-        summary: タグが無ければ見出しだけの表
-        condition: '`[]`'
-        mock: なし
-        expected: 見出しの行と区切りの行の 2 行
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/タグの語彙を見る.ts#constraints[返す形式]
-    status: planned
-    introduced:
-      pr: 114
-  - name: runListTags
-    title: タグの語彙を見る（list_tags）
-    container: src/plugin/tools.ts
-    usecase: タグの語彙を見る
-    role: ツール
-    summary: 設定の索引を読み、タグの語彙を付いている文書の数つきで、選んだ形式で返す
-    kind: 関数
-    scope: public
-    is_async: true
-    args:
-      - name: args
-        type: "{ query?: string; format?: 'markdown' | 'json'; config?: string }"
-        required: true
-        description: 検査を通った引数
-      - name: context
-        type: ToolContext
-        required: true
-        description: ツールの前提
-    returns:
-      type: Promise<ToolOutput>
-      description: '`format: json` なら `structured` が `{ tags }`、`markdown` なら `texts` が `formatListTags` の 1 つ'
-    process: |-
-      1. `projectDir` から設定を読み、索引を読む（設定を読んで形を検める・索引を必ず読む）
-      2. 索引を索引の形に合う要素だけにする（索引の形の検査）
-      3. `query` でタグの語彙を並べる（タグの語彙を並べる）
-      4. `format` が `json` なら `structured`、それ以外は Markdown にした `texts` で返す（タグの語彙を Markdown にする）
-    unit_tests:
-      - name: test_run_list_tags
-        case: 正常
-        summary: 語彙を文書の数つきで返す
-        condition: '語彙に `topic:mcp`（`aliases` に `MCP`）・`topic:unused`、文書のタグが `MCP` と `topic:mcp`、`format: json`'
-        mock: なし（一時フォルダ）
-        expected: '`structured.tags` が `topic:mcp`（`docs` 2）・`topic:unused`（`docs` 0）の順'
-      - name: test_run_list_tags_when_markdown
-        case: 正常
-        summary: 既定では Markdown の表を返す
-        condition: '`test_run_list_tags` と同じフォルダ、引数無し'
-        mock: なし（一時フォルダ）
-        expected: '`texts` が 1 つで、見出しの行が名前・グループ・説明・別名・振り替え先・文書の数、`structured` が無い'
-    callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[requireConfig]
-      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[requireIndexWithDocuments]
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[listTags]
-      - '#functions[formatListTags]'
-    refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/タグの語彙を見る.ts#
-    status: planned
-    introduced:
-      pr: 114
   - name: readPort
     title: ポートを読む
     kind: 関数
@@ -1486,7 +857,7 @@ functions:
         summary: 待ち受けの URL を書き、tools/list に答え、合図で止まる
         condition: '`MDMARK_PORT` に空きポート、`packageDir` に索引の入った `plugin/guide`、`AbortController` の `signal`'
         mock: なし（SDK の `Client` と `StreamableHTTPClientTransport`）
-        expected: 標準出力に `http://127.0.0.1:{port}/mcp` を含む 1 行、`listTools` が 7 つ、`abort()` の後に 0 で解決し、同じポートへの接続が拒まれる
+        expected: 標準出力に `http://127.0.0.1:{port}/mcp` を含む 1 行、`listTools` が 4 つ、`abort()` の後に 0 で解決し、同じポートへの接続が拒まれる
       - name: test_run_serve_when_port_in_use
         case: 異常
         summary: ポートが使われていれば 1 を返す
@@ -1509,5 +880,4 @@ test_files:
   - tests/unit/src/plugin/mcp.test.ts
   - tests/unit/src/plugin/tools.test.ts
   - tests/unit/src/plugin/arguments.test.ts
-  - tests/unit/src/plugin/results.test.ts
   - tests/unit/src/plugin/http.test.ts

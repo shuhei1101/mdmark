@@ -111,12 +111,6 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集の索引を受け取る
         type: see_also
-  - path: e2e/単一ユースケース/タグの語彙を見る.spec.ts
-    description: シナリオ『タグの語彙を見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/タグの語彙を見る
-        type: see_also
   - path: e2e/単一ユースケース/タブを切り替える.spec.ts
     description: シナリオ『タブを切り替える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
@@ -327,23 +321,11 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する
         type: see_also
-  - path: e2e/単一ユースケース/索引から文書を探す.spec.ts
-    description: シナリオ『索引から文書を探す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/索引から文書を探す
-        type: see_also
   - path: e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts
     description: シナリオ『索引と文書のずれを点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する
-        type: see_also
-  - path: e2e/単一ユースケース/索引を書き換える.spec.ts
-    description: シナリオ『索引を書き換える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/索引を書き換える
         type: see_also
   - path: e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts
     description: シナリオ『表から用語集に用語を入れる』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
@@ -411,12 +393,6 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/雛形を置く
         type: see_also
-  - path: e2e/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る.spec.ts
-    description: シナリオ『ClaudeCode で索引を書き換えて点検してから配る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
-    related:
-      - to: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで索引を書き換えて点検してから配る
-        type: see_also
   - path: e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
     description: シナリオ『MCPサーバーを起動してプラグインからつなぐ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
@@ -477,18 +453,6 @@ files:
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書をHTMLに書き出す.ts
         type: see_also
-  - path: integration/ClaudeCodeプラグイン/find-docs.test.ts
-    description: インターフェース定義『文書を探す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書を探す.ts
-        type: see_also
-  - path: integration/ClaudeCodeプラグイン/list-tags.test.ts
-    description: インターフェース定義『タグの語彙を見る』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:タグ]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/タグの語彙を見る.ts
-        type: see_also
   - path: integration/ClaudeCodeプラグイン/pre-tool-use.test.ts
     description: インターフェース定義『作業のフォルダを引数に入れる』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
@@ -512,12 +476,6 @@ files:
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts
-        type: see_also
-  - path: integration/ClaudeCodeプラグイン/update-index.test.ts
-    description: インターフェース定義『索引を書き換える』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/索引を書き換える.ts
         type: see_also
   - path: integration/built-root.ts
     description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
@@ -1111,12 +1069,6 @@ files:
     related:
       - to: src/cli/html
         type: tests
-  - path: unit/src/cli/index-file.test.ts
-    description: src/cli/index-file.ts（「索引のファイルの項目の書き換え」）を確かめる単体テスト。index-file.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:cli]
-    related:
-      - to: src/cli/index-file
-        type: tests
   - path: unit/src/cli/init.test.ts
     description: src/cli/init.ts（「mdmark init」）を確かめる単体テスト。init.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:cli]
@@ -1375,12 +1327,6 @@ files:
     related:
       - to: src/knowledge/dictionary
         type: tests
-  - path: unit/src/knowledge/find.test.ts
-    description: src/knowledge/find.ts（「索引から文書を探す（findDocs）」）を確かめる単体テスト。find.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
-    related:
-      - to: src/knowledge/find
-        type: tests
   - path: unit/src/knowledge/index-shape.test.ts
     description: src/knowledge/index-shape.ts（「索引の型と形の検査（normalizeIndex）」）を確かめる単体テスト。index-shape.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語]
@@ -1412,7 +1358,7 @@ files:
       - to: src/knowledge/references
         type: tests
   - path: unit/src/knowledge/tags.test.ts
-    description: src/knowledge/tags.ts（「タグの語彙の照合・近いタグ・タグごとの件数・語彙の一覧（listTags）」）を確かめる単体テスト。tags.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    description: src/knowledge/tags.ts（「タグの語彙の照合・近いタグ」）を確かめる単体テスト。tags.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:タグ]
     related:
       - to: src/knowledge/tags
@@ -1682,12 +1628,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
     related:
       - to: src/plugin/pre-tool-use
-        type: tests
-  - path: unit/src/plugin/results.test.ts
-    description: src/plugin/results.ts（「find_docs の cursor・行の項目の選択と、find_docs・list_tags の Markdown の組み立て」）を確かめる単体テスト。results.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: src/plugin/results
         type: tests
   - path: unit/src/plugin/session-start.test.ts
     description: src/plugin/session-start.ts（「SessionStart のフックの入口」）を確かめる単体テスト。session-start.ts を変えたときに、合わせて見修正するケースを探すときに読む。

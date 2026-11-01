@@ -93,10 +93,10 @@ functions:
         expected: 0 を返し、`stdout` が空
       - name: test_run_pre_tool_use_when_matcher
         case: 正常
-        summary: hooks.json の matcher が 6 つのツールだけに当たる
+        summary: hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに当たる
         condition: '`plugin/hooks/hooks.json` の PreToolUse の `matcher` を読む'
         mock: なし
-        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、正規表現として `mcp__plugin_mdmark_mdmark__read_guide` に当たらず、`PROJECT_DIR_TOOLS` が `TOOLS` の `usesProjectDir: true` の名前と一致する'
+        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、正規表現として `mcp__plugin_mdmark_mdmark__read_guide` に当たらず、`PROJECT_DIR_TOOLS` が `TOOLS` の `usesProjectDir: true` の名前と一致し、並べ替えると `build_site`・`check`・`export_html` になる'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts#
     status: planned
@@ -130,8 +130,8 @@ constants:
     title: 作業のフォルダを使うツール
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
-    summary: '`project_dir` を入れる 6 つのツールの名前。`TOOLS` の `usesProjectDir: true` のツールと一致させ、`plugin/hooks/hooks.json` の PreToolUse の `matcher` はこの名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの'
-    value: find_docs・list_tags・update_index・check・export_html・build_site
+    summary: '`project_dir` を入れるツールの名前。`TOOLS` の `usesProjectDir: true` のツールと一致させ、`plugin/hooks/hooks.json` の PreToolUse の `matcher` はこの名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの'
+    value: check・export_html・build_site
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts#constraints
     status: planned

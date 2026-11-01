@@ -1,10 +1,4 @@
-import { normalizeWord } from "./dictionary.ts";
-import type {
-  MdmarkIndex,
-  MdmarkIndexDoc,
-  MdmarkIndexDocTag,
-  MdmarkIndexTag,
-} from "./index-shape.ts";
+import type { MdmarkIndexDocTag, MdmarkIndexTag } from "./index-shape.ts";
 
 /** 近いタグの編集距離の上限 */
 export const NEAR_TAG_MAX_DISTANCE = 2;
@@ -17,22 +11,6 @@ export type TagVocabulary = {
   byWord: Map<string, MdmarkIndexTag>;
   /** タグの `name` から、`tags` の中の位置 */
   order: Map<string, number>;
-};
-
-/** `listTags` が返す語彙のタグ 1 つ */
-export type TagListEntry = {
-  /** タグの名前 */
-  name: string;
-  /** グループ。語彙に無いときは null */
-  group: string | null;
-  /** 説明。語彙に無いときは null */
-  description: string | null;
-  /** 別名。語彙に無いときは空 */
-  aliases: string[];
-  /** 振り替え先。やめたタグでないときは null */
-  deprecated: string | null;
-  /** そのタグが付いている文書の数 */
-  docs: number;
 };
 
 /** `docs[].tags` の要素 1 つから、タグの名前と主題のタグかを返す */
@@ -134,86 +112,4 @@ export function nearestTag(options: {
     }
   }
   return nearest?.name;
-}
-
-/** 文書のタグを、語彙の `name` にそろえた名前の並びにする（同じタグは 1 つ、語彙に無いタグはそのまま） */
-function resolvedNames(
-  doc: MdmarkIndexDoc,
-  vocabulary: TagVocabulary | undefined,
-): string[] {
-  const names = (doc.tags ?? []).map((tag) => {
-    const { name } = readDocTag(tag);
-    return vocabulary?.byWord.get(name)?.name ?? name;
-  });
-  return [...new Set(names)];
-}
-
-/** 文書の並びが持つタグごとに、そのタグを持つ文書の数を、件数の多い順・語彙の並び・名前の文字の順で返す */
-export function countTags(options: {
-  /** 数える文書 */
-  docs: MdmarkIndexDoc[];
-  /** 語彙の引き表 */
-  vocabulary: TagVocabulary | undefined;
-}): Array<{ name: string; count: number }> {
-  const { docs, vocabulary } = options;
-  const counts = new Map<string, number>();
-  for (const doc of docs) {
-    for (const name of resolvedNames(doc, vocabulary)) {
-      counts.set(name, (counts.get(name) ?? 0) + 1);
-    }
-  }
-  return [...counts.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => {
-      if (a.count !== b.count) {
-        return b.count - a.count;
-      }
-      const orderA = vocabulary?.order.get(a.name);
-      const orderB = vocabulary?.order.get(b.name);
-      if (orderA !== undefined && orderB !== undefined) {
-        return orderA - orderB;
-      }
-      // 語彙にあるタグを、語彙に無いタグより先に並べる
-      if (orderA !== undefined || orderB !== undefined) {
-        return orderA === undefined ? 1 : -1;
-      }
-      return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-    });
-}
-
-/** 索引のタグの語彙を、タグごとに付いている文書の数つきで語彙の並びに返す。語彙が無い索引では空 */
-export function listTags(options: {
-  /** 形に合う要素だけの索引 */
-  index: MdmarkIndex;
-  /** 名前・別名・説明のどれかに、`normalizeWord` で正規化した後に含まれる語 */
-  query?: string;
-}): TagListEntry[] {
-  const { index, query } = options;
-  const vocabulary = buildTagVocabulary(index.tags);
-  if (vocabulary === undefined) {
-    return [];
-  }
-  const docCounts = new Map<string, number>();
-  for (const doc of index.docs) {
-    for (const name of resolvedNames(doc, vocabulary)) {
-      docCounts.set(name, (docCounts.get(name) ?? 0) + 1);
-    }
-  }
-  const word = query === undefined ? undefined : normalizeWord(query);
-  return vocabulary.tags
-    .filter(
-      (tag) =>
-        word === undefined ||
-        [tag.name, ...(tag.aliases ?? []), tag.description ?? ""].some(
-          (field) => normalizeWord(field).includes(word),
-        ),
-    )
-    .map((tag) => ({
-      name: tag.name,
-      group: tag.group ?? null,
-      description: tag.description ?? null,
-      aliases: tag.aliases ?? [],
-      deprecated: tag.deprecated ?? null,
-      docs: docCounts.get(tag.name) ?? 0,
-    }));
 }

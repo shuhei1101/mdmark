@@ -35,3 +35,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 0e2bb81d8f54adf319bdb32f9e8878ec2577f3ce125d889f69b5a52fa08ae990
     reason: 省いてよい labels を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.index.schema.json
+    sha256: 1cf45f581478557deb004716f1465256615411b9cb89f16f4a2819ec776cf700
+    reason: 説明文から MCP の find_docs・list_tags の記述を外しただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う

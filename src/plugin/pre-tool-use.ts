@@ -5,14 +5,7 @@ export const PROJECT_DIR_ENV = "CLAUDE_PROJECT_DIR";
 export const TOOL_NAME_PREFIX = "mcp__plugin_mdmark_mdmark__";
 
 /** `project_dir` を入れるツールの名前。`plugin/hooks/hooks.json` の PreToolUse の `matcher` は、この名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの */
-export const PROJECT_DIR_TOOLS = [
-  "find_docs",
-  "list_tags",
-  "update_index",
-  "check",
-  "export_html",
-  "build_site",
-];
+export const PROJECT_DIR_TOOLS = ["check", "export_html", "build_site"];
 
 /** 作業のフォルダを入れるツールの引数の名前 */
 const PROJECT_DIR_ARG = "project_dir";

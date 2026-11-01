@@ -72,7 +72,7 @@ test("test_run_pre_tool_use_when_project_dir_unknown", async () => {
   expect(stdout).toEqual([]);
 });
 
-// hooks.json の matcher が 6 つのツールだけに当たる（正常系）
+// hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに当たる（正常系）
 test("test_run_pre_tool_use_when_matcher", async () => {
   // 準備
   const { PROJECT_DIR_TOOLS, TOOL_NAME_PREFIX } = await loadPreToolUse();
@@ -93,6 +93,11 @@ test("test_run_pre_tool_use_when_matcher", async () => {
   for (const name of PROJECT_DIR_TOOLS) {
     expect(new RegExp(matcher).test(`${TOOL_NAME_PREFIX}${name}`)).toBe(true);
   }
+  expect([...PROJECT_DIR_TOOLS].sort()).toEqual([
+    "build_site",
+    "check",
+    "export_html",
+  ]);
   expect([...PROJECT_DIR_TOOLS].sort()).toEqual(
     TOOLS.filter((tool) => tool.usesProjectDir)
       .map((tool) => tool.name)

@@ -13,4 +13,4 @@ items:
   - page: VSCodeで見る/
     summary: VS Code の拡張機能で Markdown を mdmark で描いたプレビューを出し、HTML・PDF にする手順
   - page: ClaudeCodeで使う/
-    summary: Claude Code に mdmark の使い方の索引と、書き出し・点検・索引のツールを渡す手順
+    summary: Claude Code に mdmark の使い方の索引と、書き出し・点検のツールを渡す手順

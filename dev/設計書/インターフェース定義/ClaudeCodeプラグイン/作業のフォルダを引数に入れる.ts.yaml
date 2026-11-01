@@ -83,11 +83,11 @@ exceptions:
     notes: 標準出力に何も出さず、呼び出しを止めない。サーバーが `project_dir` の無い呼び出しをツールのエラーにする
 constraints:
   - item: 対象のツール
-    constraint: '`hooks.json` の PreToolUse の `matcher` を、作業のフォルダを使うツール（`find_docs`・`list_tags`・`update_index`・`check`・`export_html`・`build_site`）の完全名に絞る。`read_guide` は含めない'
+    constraint: '`hooks.json` の PreToolUse の `matcher` を、作業のフォルダを使うツール（`check`・`export_html`・`build_site`）の完全名に絞る。`read_guide` は含めない'
   - item: 許可
     constraint: '`permissionDecision` を返さず、`updatedInput` だけを返す。許可の判定はフックが無いときと同じ'
   - item: 公開の Schema
     constraint: Claude Code は `updatedInput` を `tools/list` の `inputSchema` で検査し直さない。`project_dir` は `inputSchema` に出さない
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/索引から文書を探す#
+  - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#
 test_file: tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts

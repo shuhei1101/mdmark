@@ -1,8 +1,8 @@
-summary: Claude Code に mdmark の使い方の索引と、書き出し・点検・索引のツールを渡す手順
+summary: Claude Code に mdmark の使い方の索引と、書き出し・点検のツールを渡す手順
 items:
   - page: プラグインを入れる.md
     summary: マーケットプレイスを追加してプラグインを入れ、次のセッションから使い方の索引とツールを受け取る手順
   - page: MCPサーバーを起動する.md
     summary: MCP の常駐サーバーを起動・停止し、待ち受けているポートを確かめる手順
   - page: MCPのツールを使う.md
-    summary: 使い方集を読み、文書の書き出し・まとめ・点検・索引の検索と書き換えを Claude Code から呼ぶ手順
+    summary: 使い方集を読み、文書の書き出し・まとめ・点検を Claude Code から呼ぶ手順

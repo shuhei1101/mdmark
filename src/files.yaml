@@ -78,12 +78,6 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
         type: implements
-  - path: cli/index-file.ts
-    description: モジュール構成『ライブラリ本体 / CLI』のうち「索引のファイルの項目の書き換え」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
-    tags: [topic:cli]
-    related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
-        type: implements
   - path: cli/init.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark init」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
     tags: [topic:cli]
@@ -337,12 +331,6 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
         type: implements
-  - path: knowledge/find.ts
-    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「索引から文書を探す（findDocs）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
-    tags: [topic:索引, topic:用語]
-    related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
-        type: implements
   - path: knowledge/index-shape.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「索引の型と形の検査（normalizeIndex）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
     tags: [topic:索引, topic:用語]
@@ -374,7 +362,7 @@ files:
       - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
         type: implements
   - path: knowledge/tags.ts
-    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「タグの語彙の照合・近いタグ・タグごとの件数・語彙の一覧（listTags）」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「タグの語彙の照合・近いタグ」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
     tags: [topic:索引, topic:用語, topic:タグ]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
@@ -961,12 +949,6 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
         type: implements
-  - path: plugin/results.ts
-    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「find_docs の cursor・行の項目の選択と、find_docs・list_tags の Markdown の組み立て」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
-    tags: [tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
-        type: implements
   - path: plugin/session-start.ts
     description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「SessionStart のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに読む。
     tags: [topic:フック, tool:claude-code]
@@ -974,7 +956,7 @@ files:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
         type: implements
   - path: plugin/tools.ts
-    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「7 つのツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「4 つのツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
     tags: [tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts

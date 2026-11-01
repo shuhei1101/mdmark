@@ -27,9 +27,6 @@ Claude Code は、これを超えた結果をファイルに逃がして本文�
 
 `export_html`・`build_site`・`check` は、CLI の `mdmark export`・`build`・`check` と同じ処理を呼ぶ。
 同じ文書・設定・索引では、CLI と同じ結果になる。
-`find_docs` と `list_tags` は設定の `index` の索引を引き、`update_index` は書き換える。
-`find_docs` は、全ての文書ではなく既定の件数ずつ返し、タグの全てを持つ（AND）かどれかを持つ（OR）かで絞り、返す量と形式を引数で選ばせる。
-`update_index` は、書く前に索引のスキーマで検査し、合わなければ書かない。
 
 作業のフォルダを使うツールは、作業のフォルダの絶対パスを引数 `project_dir` で受ける。
 常駐サーバーにはセッションの作業のフォルダが環境変数で渡らないため、プラグインの PreToolUse のフックが、ツールの呼び出しのたびにセッションのフォルダを `project_dir` に入れる。

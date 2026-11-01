@@ -76,7 +76,7 @@ files:
     description: 設定のキーと既定の一覧。名前から引いて確かめるときに読む。
     tags: [topic:リファレンス, topic:設定]
   - path: 使い方/ClaudeCodeで使う/MCPのツールを使う.md
-    description: 使い方集を読み、文書の書き出し・まとめ・点検・索引の検索と書き換えを Claude Code から呼ぶ手順。Claude Code から mdmark を使うときに読む。
+    description: 使い方集を読み、文書の書き出し・まとめ・点検を Claude Code から呼ぶ手順。Claude Code から mdmark を使うときに読む。
     tags: [tool:claude-code, tool:mcp]
   - path: 使い方/ClaudeCodeで使う/MCPサーバーを起動する.md
     description: MCP の常駐サーバーを起動・停止し、待ち受けているポートを確かめる手順。Claude Code から mdmark を使うときに読む。
