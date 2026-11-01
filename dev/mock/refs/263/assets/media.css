@@ -350,15 +350,22 @@
       height: 26rem;
     }
 
-    /* ライトボックスの上の帯: 何枚目かと、移動・拡大と縮小・前後・閉じるのボタン。狭い幅ではボタンを折り返す */
+    /* ライトボックスの上の帯: 左に前後の送りと何枚目か、右に移動・拡大と縮小・閉じるのボタン。狭い幅ではボタンを折り返す */
     .mdmark-lightbox-head {
       display: flex;
       flex-wrap: wrap;
       gap: 0.25rem 0.75rem;
       align-items: center;
       justify-content: space-between;
-      padding: 0.375rem 0.375rem 0.375rem 0.9rem;
+      padding: 0.375rem;
       border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 前後の送り: 何枚目かを前・次のボタンで挟む */
+    .mdmark-lightbox-nav {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
     }
 
     /* 何枚目か: 等幅数字で桁を揃える */
@@ -368,7 +375,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ボタンの帯: 図の枠と同じく、まとまり（移動・拡大と縮小・前後・閉じる）の間を空けて右に寄せる */
+    /* ボタンの帯: 図の枠と同じく、まとまり（移動・拡大と縮小・閉じる）の間を空けて右に寄せる */
     .mdmark-lightbox-tools {
       display: flex;
       flex-wrap: wrap;
