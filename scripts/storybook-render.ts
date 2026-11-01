@@ -723,13 +723,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       autoplay: args.autoplay === true,
       loop: args.loop === true,
     }),
+  // 文書と同じく画像の図の中に置く（`mount` は図の中の `img` を包む）
   gif: (args) =>
-    renderGif({
+    `<figure class="mdmark-figure mdmark-image">${renderGif({
       src: sampleMedia(args.src),
       alt: String(args.alt ?? ""),
       paused: args.paused === true,
       lightbox: args.lightbox !== false,
-    }),
+    })}</figure>`,
   card: (args) =>
     renderCard({
       kind: args.kind as "link" | "file",
