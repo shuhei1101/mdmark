@@ -9,6 +9,12 @@ const ICON =
 /** 同じ行とみなす、行の上端の差の上限（px） */
 const SAME_LINE_PX = 4;
 
+/** マーカーの高さを測れないとき（まだ 1 つも置いていないとき）の高さ（px）。CSS の --mdmark-comment-marker-size と同じ */
+const DEFAULT_MARKER_PX = 24;
+
+/** 上下に並んだマーカーの間に空ける幅（px） */
+const MARKER_GAP_PX = 4;
+
 /** 閉じた中の箇所を開くとき、開く処理を繰り返す上限（入れ子の閉じた中を外側から開く） */
 const MAX_OPEN_DEPTH = 4;
 
@@ -74,7 +80,7 @@ export function attachMarginMarkers(root, { same, closed }) {
   };
 
   /** マーカーを作る。index: 同じ行で横に並べるときの何番目か */
-  const createMarker = (group, { top, height }, index) => {
+  const createMarker = (group, center, index) => {
     const [first] = group;
     const quote = first.mark.textContent;
     const button = document.createElement("button");
@@ -87,7 +93,7 @@ export function attachMarginMarkers(root, { same, closed }) {
     button.innerHTML = group.length > 1 ? `${ICON}<span>${group.length}</span>` : ICON;
     if (first.kind) button.dataset.closed = first.kind;
     if (group.some(({ mark }) => mark.getAttribute("aria-expanded") === "true")) button.dataset.current = "";
-    button.style.top = `${top + height / 2}px`;
+    button.style.top = `${center}px`;
     button.style.setProperty("--mdmark-comment-marker-index", String(index));
     button.addEventListener("click", () => jump(first.mark));
     return button;
@@ -109,11 +115,16 @@ export function attachMarginMarkers(root, { same, closed }) {
       else lines.push({ line, group: [anchor] });
     }
     lines.sort((a, b) => a.line.top - b.line.top);
-    const markers = lines.flatMap(({ line, group }) =>
-      same === "merge"
-        ? [createMarker(group, line, 0)]
-        : group.map((anchor, index) => createMarker([anchor], line, index)),
-    );
+    // マーカーの中ほどを行の中ほどに合わせ、上のマーカーと重なるときは重ならない位置まで下げる
+    const size = margin.querySelector(".mdmark-comment-marker")?.offsetHeight ?? DEFAULT_MARKER_PX;
+    let lowest = Number.NEGATIVE_INFINITY;
+    const markers = lines.flatMap(({ line, group }) => {
+      const center = Math.max(line.top + line.height / 2, lowest + size + MARKER_GAP_PX);
+      lowest = center;
+      return same === "merge"
+        ? [createMarker(group, center, 0)]
+        : group.map((anchor, index) => createMarker([anchor], center, index));
+    });
     margin.replaceChildren(...markers);
   };
 
