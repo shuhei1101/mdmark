@@ -1750,10 +1750,14 @@
     /* 横スクロールする表: 地の色を敷き、続きがある側の端に影を出す（コードブロックと同じ重ね合わせを地の色で覆う） */
     table {
       background:
-        linear-gradient(to right, var(--mdmark-color-bg-opaque) 30%, transparent) left
-        / 2.5em 100% no-repeat local,
-        linear-gradient(to left, var(--mdmark-color-bg-opaque) 30%, transparent) right
-        / 2.5em 100% no-repeat local,
+        linear-gradient(
+          to right,
+          var(--mdmark-color-bg-opaque) 30%,
+          transparent
+        )
+        left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-bg-opaque) 30%, transparent)
+        right / 2.5em 100% no-repeat local,
         radial-gradient(
           farthest-side at 0 50%,
           var(--mdmark-color-scroll-shadow),
@@ -4444,7 +4448,11 @@
 
     /* 凡例の箱の見本: 種類の色の線と地。データは下の角が丸い */
     .mdmark-diagram-legend-sample[data-kind] {
-      fill: color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg-opaque));
+      fill: color-mix(
+        in srgb,
+        var(--node-color) 10%,
+        var(--mdmark-color-bg-opaque)
+      );
       stroke: var(--node-color);
       stroke-width: 1.5;
     }
@@ -5178,7 +5186,11 @@
     }
 
     .mdmark-diagram-pattern-tint {
-      fill: color-mix(in srgb, var(--series-color) 22%, var(--mdmark-color-bg-opaque));
+      fill: color-mix(
+        in srgb,
+        var(--series-color) 22%,
+        var(--mdmark-color-bg-opaque)
+      );
     }
 
     :is(.mdmark-diagram-pattern-solid, .mdmark-diagram-pattern-dot) {
