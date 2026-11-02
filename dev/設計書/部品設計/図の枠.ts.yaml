@@ -21,6 +21,8 @@ states:
     args:
       - name: zoom
         value: '0.6'
+      - name: fit
+        value: '0.48'
   - name: Fullscreen
     description: 全画面のモーダルの中。全画面のボタンの位置に閉じるボタンがある
     args:
@@ -65,7 +67,11 @@ args:
   - name: zoom
     type: 数値
     default: 全体が収まる倍率
-    description: 今の倍率。全体が収まる倍率より大きいときだけ移動のボタンを出す
+    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率より大きいときだけ移動のボタンを出す
+  - name: fit
+    type: 数値
+    default: '1'
+    description: 全体が収まる倍率（定義の大きさを 1 とする）。倍率のボタンの文字は `zoom / fit` を百分率にして出す
   - name: modal
     type: 真偽値
     default: 'false'
