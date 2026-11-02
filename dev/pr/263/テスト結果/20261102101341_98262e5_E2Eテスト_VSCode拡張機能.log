@@ -1,0 +1,26 @@
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-notation-named-colors-and-media/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 16 tests using 2 workers
+
+  -   2 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:71:1 › test_normal_when_external_link
+  -   3 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:87:1 › test_normal_when_markdown_link
+  -   4 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:102:1 › test_normal_when_anchor_link
+  -   5 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:134:1 › test_normal_when_relative_image
+  -   6 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:152:1 › test_error_when_image_outside_workspace
+  -   7 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:232:1 › test_normal_when_relative_media
+  -   8 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:263:1 › test_error_when_unsupported_media
+  -   9 [firefox] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:300:1 › test_normal_when_media_in_asset_root
+  ✓   1 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:71:1 › test_normal_when_external_link (9.0s)
+  ✓  10 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:87:1 › test_normal_when_markdown_link (11.6s)
+  ✓  11 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:102:1 › test_normal_when_anchor_link (8.9s)
+  ✓  12 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:134:1 › test_normal_when_relative_image (7.5s)
+  ✓  13 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:152:1 › test_error_when_image_outside_workspace (9.0s)
+  ✓  14 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:232:1 › test_normal_when_relative_media (7.6s)
+  ✓  15 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:263:1 › test_error_when_unsupported_media (7.5s)
+  ✓  16 [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:300:1 › test_normal_when_media_in_asset_root (7.5s)
+
+  8 skipped
+  8 passed (2.4m)
+exit=0
