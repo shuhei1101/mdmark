@@ -110,7 +110,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await page.mouse.move(0, 0);
   // 図は全体が収まる倍率で開き、右上のボタンとキーの + - 0 で拡大・縮小でき、ドラッグと矢印キーで動かせる
   const fit = await zoomPercent(page);
-  expect(fit).toBeLessThan(100);
+  expect(fit).toBe(100);
   await page.getByRole("button", { name: "拡大" }).click();
   expect(await zoomPercent(page)).toBeGreaterThan(fit);
   await tabToViewport(page);

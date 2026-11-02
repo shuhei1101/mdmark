@@ -54,7 +54,7 @@ test("test_normal", async ({ page }) => {
   // 検証: 開いたとき、図の全体が表示する枠の中に収まっている
   const viewport = viewportOf(page);
   const fit = await zoomPercent(page);
-  expect(fit).toBeLessThan(100);
+  expect(fit).toBe(100);
   const sizer = page.locator("#doc .mdmark-diagram-sizer");
   const frameWidth = await viewport.evaluate((element) => element.clientWidth);
   const sizerWidth = await sizer.evaluate(
