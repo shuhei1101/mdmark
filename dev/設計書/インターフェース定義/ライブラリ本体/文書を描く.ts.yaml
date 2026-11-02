@@ -644,6 +644,8 @@ flows:
         M->>P: ツールチップを消す
         P->>M: div の印をタップする
         M->>P: data-hint の文を出す
+        P->>M: 開いている div の印に mouse の pointerdown を発火する
+        M->>P: 出したままにする
         P->>M: ツールチップの中に pointerdown を発火する
         M->>P: 出したままにする
         P->>M: 図の外の段落に pointerdown だけを発火する
