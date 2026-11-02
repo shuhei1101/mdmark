@@ -38,9 +38,9 @@ export const DIAGRAM_ONLY_TAGS = new Set([
 /** 取り除く要素に付ける印の属性 */
 const DROP_ATTRIBUTE = "data-mdmark-drop";
 
-/** 図の部品が出した要素の `style` に許す宣言: 位置と大きさ（px）と、拡大の倍率だけ */
+/** 図の部品が出した要素の `style` に許す宣言: 位置と大きさ（px）と、名前を内接させる余白（0 以上の px の値 1 つか 2 つ）と、拡大の倍率だけ */
 const DIAGRAM_STYLE_PATTERN =
-  /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
+  /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|padding:\d+(?:\.\d+)?px(?: \d+(?:\.\d+)?px)?|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
 
 /** コードブロックの `code` が持つ、行番号の桁の数の `style`（`--mdmark-code-digits: {数字}` だけ） */
 const CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
