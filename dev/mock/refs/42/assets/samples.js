@@ -206,7 +206,7 @@ window.mdmarkMockDiagrams = {
       { id: "start", kind: "start", x: 354, y: 16, w: 112, h: 112, name: "表の見た目を揃えたい" },
       { id: "q", kind: "question", x: 230, y: 168, w: 360, h: 176, name: "表の列の幅と並び順を、文書ごとではなく全ての文書で同じにしたいか" },
       { id: "r", kind: "result", x: 280, y: 400, w: 260, h: 72, name: "設定の features で全ての文書の表に機能を付ける" },
-      { id: "a", kind: "action", x: 640, y: 212, w: 240, h: 88, name: "文書ごとに表の印へ列の幅と並び順の指定を書き足す" },
+      { id: "a", kind: "action", x: 640, y: 212, w: 240, h: 88, name: "文書ごとに表のマーカーへ列の幅と並び順の指定を追加する" },
     ],
     wires: [
       { id: "l-start", line: "flow", points: [[410, 128], [410, 168]] },

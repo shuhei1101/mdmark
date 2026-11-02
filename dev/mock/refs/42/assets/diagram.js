@@ -39,6 +39,9 @@
   const KIND_TAGS = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ", external: "外部", start: "開始", question: "質問", action: "アクション", result: "結果" };
   const KIND_LEGEND = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム", start: "開始", question: "質問", action: "アクション", result: "結果" };
 
+  // 円の直径に対する、内接する正方形の外の余白の割合（(1 - 1/√2) / 2）
+  const CIRCLE_INSET = (1 - Math.SQRT1_2) / 2;
+
   // 質問のノードの菱形: ノードの枠いっぱいに引き、線の太さは寸法によらず 1.5px にする
   const DIAMOND_SVG = '<svg class="mdmark-diagram-node-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="50,0 100,50 50,100 0,50"/></svg>';
 
@@ -201,8 +204,12 @@
       const id = tips.add(nodeTipHtml(node), `node:${node.id}`);
       info = `<button class="mdmark-diagram-info" type="button" aria-label="「${esc(node.name)}」の${node.io ? "入力・処理・出力" : "説明"}" aria-describedby="${id}" data-tip-owner="node:${esc(node.id)}">${icon("info")}</button>`;
     }
-    // 質問の菱形: 文字は菱形に内接する中央の四角（幅と高さの半分）に置く
-    const inset = node.kind === "question" && node.x !== undefined ? `;padding:${node.h / 4}px ${node.w / 4}px` : "";
+    // 文字を形に内接する四角に置く余白。質問の菱形は幅と高さの半分の四角、開始の円は円に内接する正方形
+    const insets = {
+      question: () => `;padding:${node.h / 4}px ${node.w / 4}px`,
+      start: () => `;padding:${(node.w * CIRCLE_INSET).toFixed(1)}px`,
+    };
+    const inset = node.x !== undefined && insets[node.kind] ? insets[node.kind]() : "";
     const style = node.x === undefined ? "" : ` style="left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px${inset}"`;
     return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node.kind}"${node.shape ? ` data-shape="${node.shape}"` : ""} data-node="${esc(node.id)}"${style}>
       ${node.kind === "question" ? DIAMOND_SVG : ""}
@@ -242,7 +249,8 @@
     const wires = def.wires.map((wire) => wireSvg(fid, wire, wirePath(wire, def.wires))).join("");
     parts.push(`<svg class="mdmark-diagram-wires" width="${def.width}" height="${def.height}" aria-hidden="true">${wires}</svg>`);
     for (const node of def.nodes) parts.push(nodeHtml(node, tips));
-    for (const wire of def.wires) parts.push(labelHtml(wire, wire.labelAt[0], wire.labelAt[1], tips));
+    // ラベルの無い線（開始から最初の質問へ入る線など）は labelAt を持たない
+    for (const wire of def.wires.filter((w) => w.label)) parts.push(labelHtml(wire, wire.labelAt[0], wire.labelAt[1], tips));
     return { html: parts.join(""), width: def.width, height: def.height };
   };
 
