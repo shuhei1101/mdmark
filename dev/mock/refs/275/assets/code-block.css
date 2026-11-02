@@ -4,7 +4,7 @@
 @layer mdmark {
   /* 畳めるコードブロック: 行を縦に積み（隠した行の改行を残さない）、行番号の右に畳むボタンの列を取る */
   .mdmark pre.mdmark-code-foldable code {
-    --mdmark-code-fold-width: 2.25ch;
+    --mdmark-code-fold-width: 2.75ch;
   }
 
   .mdmark pre.mdmark-code-foldable .mdmark-code-line {
