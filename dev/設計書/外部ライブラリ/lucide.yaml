@@ -168,7 +168,7 @@ docs_url: https://lucide.dev/icons/
 verification:
   state: 済
   date: '2026-11-02'
-  detail: lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確かめ、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、形を写した `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確かめた
+  detail: lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確かめ、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、形を写した `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確かめた。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確かめ、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確かめた
 used_in:
   - src/parts/icons.ts
   - src/index.css
