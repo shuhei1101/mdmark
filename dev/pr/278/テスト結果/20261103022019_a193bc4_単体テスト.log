@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-render-diagram-node-padding
+
+
+ Test Files  177 passed (177)
+      Tests  1236 passed (1236)
+   Start at  02:18:50
+   Duration  81.78s (worker 49%, tests 32%, import 17%, transform 2%)
+
+exit=0
