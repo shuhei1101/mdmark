@@ -631,7 +631,7 @@ flows:
       - name: ツールチップを持つ Markdown
         description: '`io` を持つ LLM の箱 1 つのフロー図と、`<!-- html -->` の範囲に `data-hint` を持つ `div` を置いた文書'
       - name: Mock
-        description: 差し替える依存は無い。タップは、持ち主に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` と `focus` をこの順に発火して起こす
+        description: 差し替える依存は無い。タップは、持ち主に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に発火し、持ち主の `focus()` を呼んで起こす（既にフォーカスを持つ持ち主へのタップでは `focus` は発火しない）
         notes: iOS の Safari のタップの後に `:hover` が残る状態を、外のタップで `pointerleave`・`blur` を発火させず、`pointerdown` だけを発火して起こす
     flow: |-
       sequenceDiagram

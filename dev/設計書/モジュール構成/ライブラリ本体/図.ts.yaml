@@ -875,7 +875,7 @@ functions:
       - name: test_attach_diagram_tips_when_touch_tapped
         case: 正常
         summary: タッチの 1 回のタップで開き、もう一度のタップで閉じる
-        condition: 閉じた箱の印に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` と `focus` をこの順に送り、続けて同じ順でもう一度送る
+        condition: 閉じた箱の印に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に送って印の `focus()` を呼び、続けて同じ 4 つをもう一度送って `focus()` を呼ぶ（既にフォーカスを持つ印では `focus` は発火しない）
         mock: タイマーを `vi.useFakeTimers` で進める
         expected: 1 回目の後にツールチップが `hidden` を持たず、2 回目の後に `hidden` を持つ
       - name: test_attach_diagram_tips_when_touch_outside
@@ -887,7 +887,7 @@ functions:
       - name: test_attach_diagram_tips_when_touch_embedded_hint
         case: 正常
         summary: 埋め込んだ HTML のヒントもタッチで開閉する
-        condition: '`div.mdmark-html` のブロックのヒントの印に、test_attach_diagram_tips_when_touch_tapped と同じ順でタップを 2 回送り、もう一度タップして開いてから外に `pointerdown` だけを送る'
+        condition: '`div.mdmark-html` のブロックのヒントの印に、test_attach_diagram_tips_when_touch_tapped と同じ手順（2 回目は `focus` を発火しない）でタップを 2 回送り、もう一度タップして開いてから外に `pointerdown` だけを送る'
         mock: タイマーを `vi.useFakeTimers` で進める
         expected: 1 回目で開き、2 回目で閉じ、外の `pointerdown` で閉じる
       - name: test_attach_diagram_tips_when_mouse_pressed
