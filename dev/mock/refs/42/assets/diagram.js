@@ -875,9 +875,9 @@
   /** 凡例の ER 図の項目（列の印と、関係の線の端の多重度の記号）。 */
   const erLegendItems = (def, item) => {
     const keys = ["pk", "fk", "nn"].filter((k) => def.tables.some((t) => t.columns.some((c) => c[k])));
-    // 種類: 種類の既定の色で描いたテーブルがある種類だけ、色の見本と名前を出す
-    const kinds = Object.keys(ER_KINDS).filter((k) => def.tables.some((t) => t.kind === k && !t.color));
-    const items = kinds.map((k) => item(`<span class="mdmark-diagram-legend-sample mdmark-diagram-er-kind-sample" data-color="${ER_KINDS[k].color}" aria-hidden="true"></span>`, `${ER_KINDS[k].label}のテーブル`));
+    // 種類: 図にある種類ごとに、テーブルの見出しと同じ札を見本にする（color= で色を上書きしたテーブルも札の文字で対応が取れる）
+    const kinds = Object.keys(ER_KINDS).filter((k) => def.tables.some((t) => t.kind === k));
+    const items = kinds.map((k) => item(`<span class="mdmark-diagram-er-kind mdmark-diagram-er-kind-sample" data-color="${ER_KINDS[k].color}" aria-hidden="true">${ER_KINDS[k].label}</span>`, `${ER_KINDS[k].label}のテーブル`));
     items.push(...keys.map((k) => item(`<abbr class="mdmark-diagram-er-key" data-key="${k}">${k.toUpperCase()}</abbr>`, ER_KEYS[k])));
     const cards = { 1: "1 つ", "0..1": "0 か 1 つ", "1..n": "1 つ以上", "0..n": "0 以上" };
     const used = new Set(def.relations.flatMap((r) => [r.fromCard, r.toCard]));

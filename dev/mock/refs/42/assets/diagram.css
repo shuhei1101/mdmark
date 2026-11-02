@@ -865,13 +865,8 @@
       }
     }
 
-    /* 凡例の種類の見本: テーブルの見出しと同じ面の薄い色と枠の色 */
+    /* 凡例の種類の見本: テーブルの見出しと同じ札を、種類の既定の色の面に出す */
     .mdmark-diagram-er-kind-sample {
-      display: inline-block;
-      width: 18px;
-      height: 12px;
-      border: 1.5px solid var(--er-color-text);
-      border-radius: 3px;
       background: var(--er-color-bg);
     }
 
