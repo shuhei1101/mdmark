@@ -211,7 +211,8 @@ test("test_sanitize_when_diagram_node_padding", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
   const own = 'data-mdmark-own="test-nonce"';
-  const question = "left:10px;top:20px;width:280px;height:136px;padding:34px 70px";
+  const question =
+    "left:10px;top:20px;width:280px;height:136px;padding:34px 70px";
   const start = "left:0px;top:0px;width:56px;height:56px;padding:14.6px";
   const html = [
     `<div class="mdmark-diagram-node" ${own} style="${question}">質問</div>`,
