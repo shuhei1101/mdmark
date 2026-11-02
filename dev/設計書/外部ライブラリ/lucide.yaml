@@ -57,6 +57,15 @@ catalogs:
       - name: globe
         kind: アイコン
         purpose: 図の箱の種類（外部のシステム）
+      - name: circle-question-mark
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートの質問）
+      - name: wrench
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートのアクション）
+      - name: flag
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートの結果）
       - name: server
         kind: アイコン
         purpose: 図のシステムの枠の題
@@ -128,7 +137,7 @@ catalogs:
           pr: 263
       - name: play
         kind: アイコン
-        purpose: GIF を再生するボタン
+        purpose: GIF を再生するボタンと、図のノードの種類（判定フローチャートの開始）
         status: planned
         introduced:
           pr: 263
