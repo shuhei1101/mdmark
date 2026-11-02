@@ -36,7 +36,7 @@ items:
   - page: 図の枠.ts.yaml
     summary: 図の題・右上のボタンの帯・表示する枠・凡例と、拡大・縮小・移動・全画面
   - page: フロー図.ts.yaml
-    summary: システムの枠と 3 つの層に箱と線を置く構成図
+    summary: システムの枠と 3 つの層にノードと線を置く構成図
   - page: シーケンス図.ts.yaml
     summary: 相手を左から右、メッセージを時刻の順に並べる図
   - page: グラフ.ts.yaml
