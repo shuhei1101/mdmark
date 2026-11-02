@@ -22,7 +22,7 @@ const HINT_TIP_CLASS = "mdmark-hint-tip";
 // 埋め込んだ HTML のヒントに操作を付けた回数の通し番号。`id` を重ならせないために使う
 let hintCounter = 0;
 
-/** 図のツールチップ（線の詳細・箱の説明と入力・処理・出力・箱の中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を渡したとき）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。箱は右上の印の上、ヒントはブロックの要素の印か行内の要素の上でだけ開く。置く側は `chooseTipSide` が決める */
+/** 図のツールチップ（線の詳細・箱の説明と入力・処理・出力・箱の中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を渡したとき）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。タッチは持ち主のタップで開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。箱は右上の印の上、ヒントはブロックの要素の印か行内の要素の上でだけ開く。置く側は `chooseTipSide` が決める */
 export function attachDiagramTips(options: {
   /** 図か、埋め込んだ HTML の `div.mdmark-html` */
   figure: HTMLElement;
@@ -168,15 +168,53 @@ export function attachDiagramTips(options: {
     }, CLOSE_DELAY_MS);
   };
 
+  // 持ち主の要素と名前。外の `pointerdown` を見分けるために使う
+  const ownerNames = new Map<Element, string>();
+
+  /** 持ち主にポインターとフォーカスの操作を付ける。タッチは `pointerenter`・`pointerleave` で開閉せず、`pointerdown` で切り替える（iOS の Safari はタップした持ち主に `:hover` を残すため） */
+  const bind = (owner: HTMLElement, name: string): void => {
+    ownerNames.set(owner, name);
+    owner.addEventListener(
+      "pointerenter",
+      (event) => {
+        if (event.pointerType !== "touch") {
+          open(name);
+        }
+      },
+      { signal },
+    );
+    owner.addEventListener(
+      "pointerleave",
+      (event) => {
+        if (event.pointerType !== "touch") {
+          closeLater();
+        }
+      },
+      { signal },
+    );
+    owner.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (event.pointerType !== "touch") {
+          return;
+        }
+        if (current === name) {
+          close();
+        } else {
+          open(name);
+        }
+      },
+      { signal },
+    );
+    owner.addEventListener("focus", () => open(name), { signal });
+    owner.addEventListener("blur", closeLater, { signal });
+  };
+
   // 持ち主: 線のラベル・透明の太い線・箱の印・箱の中の用語（埋め込んだ HTML の中の図は、図の側が扱う）
   for (const owner of embedded
     ? []
     : figure.querySelectorAll<HTMLElement>("[data-tip-owner]")) {
-    const name = owner.dataset.tipOwner ?? "";
-    owner.addEventListener("pointerenter", () => open(name), { signal });
-    owner.addEventListener("pointerleave", closeLater, { signal });
-    owner.addEventListener("focus", () => open(name), { signal });
-    owner.addEventListener("blur", closeLater, { signal });
+    bind(owner, owner.dataset.tipOwner ?? "");
   }
   // 埋め込んだ HTML のヒント: ツールチップの `id` を、ページの中で一意な値に振り直して持ち主と結ぶ
   if (embedded) {
@@ -196,10 +234,7 @@ export function attachDiagramTips(options: {
       owner.setAttribute("aria-describedby", name);
       tips.set(name, tip);
       hintOwners.set(name, owner);
-      owner.addEventListener("pointerenter", () => open(name), { signal });
-      owner.addEventListener("pointerleave", closeLater, { signal });
-      owner.addEventListener("focus", () => open(name), { signal });
-      owner.addEventListener("blur", closeLater, { signal });
+      bind(owner, name);
     });
   }
   for (const tip of tips.values()) {
@@ -215,6 +250,21 @@ export function attachDiagramTips(options: {
       event.preventDefault();
       close();
     }
+  };
+  /** 開いているツールチップと持ち主の外の `pointerdown`: 閉じる。持ち主の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  const onPointerdown = (event: PointerEvent): void => {
+    if (current === undefined || !(event.target instanceof Node)) {
+      return;
+    }
+    if (tips.get(current)?.contains(event.target)) {
+      return;
+    }
+    for (const [owner, name] of ownerNames) {
+      if (name === current && owner.contains(event.target)) {
+        return;
+      }
+    }
+    close();
   };
   /** 図を動かしたとき・画面をスクロールしたとき: 開いているツールチップを持ち主に付いて動かす */
   const follow = (): void => {
@@ -232,6 +282,7 @@ export function attachDiagramTips(options: {
   // 開いている間だけ受け取る。印刷の前は閉じる（紙には出さない）
   const watch = (): void => {
     document.addEventListener("keydown", onKeydown);
+    document.addEventListener("pointerdown", onPointerdown, { capture: true });
     // 横にスクロールする埋め込んだ HTML の中のスクロールも受けるため、捕捉の段で受ける
     window.addEventListener("scroll", follow, { capture: true, passive: true });
     window.addEventListener("resize", follow);
@@ -239,6 +290,9 @@ export function attachDiagramTips(options: {
   };
   const unwatch = (): void => {
     document.removeEventListener("keydown", onKeydown);
+    document.removeEventListener("pointerdown", onPointerdown, {
+      capture: true,
+    });
     window.removeEventListener("scroll", follow, { capture: true });
     window.removeEventListener("resize", follow);
     window.removeEventListener("beforeprint", close);
