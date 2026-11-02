@@ -243,6 +243,31 @@ scenarios:
       - 動画の場所に `poster` の画像とキャプションが出て、再生バーが出ていない
       - リンクと添付のカードに、リンク先の URL が文字で出ている
     test: test_normal_when_colors_and_media_printed
+  - name: 正常シナリオ（畳んだコードと入れ子の注意書きを開いて出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオ（記法を開いて出す）と同じ
+      - name: 畳んだコードと閉じた注意書きを持つ Markdown
+        description: '`<!-- code: fold=2 -->` で 2 行目を畳んだ言語 `yaml` のコードブロックと、`> [!NOTE]+` の注意書きの中に `> > [!TIP]-` の閉じた注意書きを入れ子にした文書'
+      - name: Mock
+        description: 正常シナリオ（記法を開いて出す）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 畳んだコードの行と閉じた注意書きを開く
+        B-->>U: 印刷の出力
+        B->>M: 印刷の後のイベント
+        M->>M: 印刷の前の表示に戻す
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、コードブロックの全ての行と、入れ子の閉じた注意書きの本文が表示されている
+      - 印刷の前のイベントの後、コードの開閉のボタンと ⋯ が印刷に出ていない
+      - 印刷の後のイベントの後、コードの 2 行目が畳まれ、入れ子の注意書きが閉じている
+    test: test_normal_when_code_folded
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人
