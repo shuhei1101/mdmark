@@ -10,6 +10,24 @@ stories:
         id: flow-diagram
     args:
       longNames: true
+  - name: Judgement
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      judgement: default
+  - name: JudgementLong
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      judgement: long
+  - name: UnknownKind
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      unknownKind: true
   - name: Invalid
     parameters:
       server:

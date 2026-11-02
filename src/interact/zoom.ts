@@ -55,6 +55,8 @@ export function attachZoom(options: {
   dragIgnore?: string;
   /** キーを受ける要素（既定は表示する枠とボタンを持つ要素） */
   keyTargets?: HTMLElement[];
+  /** 倍率の文字の基準（`fit` は全体が収まる倍率、`content` は中身の大きさを 100% とする。既定 `content`） */
+  percentBase?: "fit" | "content";
 }): ZoomControl {
   const {
     viewport,
@@ -65,6 +67,7 @@ export function attachZoom(options: {
     fitHeight = true,
     dragIgnore,
     keyTargets = [viewport, tools],
+    percentBase = "content",
   } = options;
   const sizer = content.parentElement ?? content;
   const zoomText = tools.querySelector<HTMLElement>('[data-tool="fit"]');
@@ -98,7 +101,8 @@ export function attachZoom(options: {
     sizer.style.height = `${size.height * scale}px`;
     onChange?.(scale, state.fit);
     if (zoomText) {
-      zoomText.textContent = `${Math.round(scale * 100)}%`;
+      const base = percentBase === "fit" ? state.fit : 1;
+      zoomText.textContent = `${Math.round((scale / base) * 100)}%`;
       zoomText.setAttribute(
         "aria-label",
         `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`,

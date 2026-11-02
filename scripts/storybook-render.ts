@@ -129,6 +129,99 @@ const SAMPLE_BLOCKS: Record<string, number> = {
   strength: 3,
 };
 
+// 使い方『図を描く』（判定フローチャートの定義の例を持つ）
+const GUIDE_DOCUMENT = join(
+  REPO_ROOT,
+  "docs",
+  "使い方",
+  "図を描く",
+  "図を描く.md",
+);
+
+// 判定フローチャートの長い題と文の見本。質問の文が長いので菱形を大きくする
+const JUDGEMENT_LONG_SAMPLE: MdmarkFlowDefinition = {
+  title:
+    "表の列の幅と並び順を文書ごとに指定するか、設定で全ての文書にそろえるかの判定（表を持つ文書だけ）",
+  scope: "表を持つ文書",
+  updated: "2026-11-02",
+  width: 900,
+  height: 490,
+  nodes: [
+    {
+      id: "start",
+      kind: "start",
+      x: 354,
+      y: 16,
+      w: 112,
+      h: 112,
+      name: "表の見た目を揃えたい",
+    },
+    {
+      id: "q",
+      kind: "question",
+      x: 230,
+      y: 168,
+      w: 360,
+      h: 176,
+      name: "表の列の幅と並び順を、文書ごとではなく全ての文書で同じにしたいか",
+    },
+    {
+      id: "r",
+      kind: "result",
+      x: 280,
+      y: 400,
+      w: 260,
+      h: 72,
+      name: "設定の features で全ての文書の表に機能を付ける",
+    },
+    {
+      id: "a",
+      kind: "action",
+      x: 640,
+      y: 212,
+      w: 240,
+      h: 88,
+      name: "文書ごとに表のマーカーへ列の幅と並び順の指定を追加する",
+    },
+  ],
+  wires: [
+    {
+      id: "l-start",
+      from: "start",
+      to: "q",
+      line: "flow",
+      points: [
+        [410, 128],
+        [410, 168],
+      ],
+    },
+    {
+      id: "l-yes",
+      from: "q",
+      to: "r",
+      line: "flow",
+      points: [
+        [410, 344],
+        [410, 400],
+      ],
+      label: "YES",
+      labelAt: [410, 372],
+    },
+    {
+      id: "l-no",
+      from: "q",
+      to: "a",
+      line: "flow",
+      points: [
+        [590, 256],
+        [640, 256],
+      ],
+      label: "NO",
+      labelAt: [615, 256],
+    },
+  ],
+};
+
 // グラフの種類ごとの見本の定義（棒・円・散布図）。`bar` の 4 系列は、色と塗りの模様の組を全て見せる
 const BAR_SAMPLE: MdmarkChartDefinition = {
   type: "bar",
@@ -213,10 +306,10 @@ const SAMPLE_TERMS: Record<string, string> = {
   よくある質問: "問い合わせの多い質問と、その答えをまとめた表",
 };
 
-// 長い題と箱の名前を見せるストーリーで足す文字
+// 長い題とノードの名前を見せるストーリーで足す文字
 const LONG_TITLE =
   "問い合わせのメールを受け取ってから、分類・下書き・送信を経て、担当者のチャットへ控えを流すまでの、とても長い題名の構成";
-const LONG_NAME_SUFFIX = "（箱の名前が長いときは箱の中で折り返す）";
+const LONG_NAME_SUFFIX = "（ノードの名前が長いときはノードの中で折り返す）";
 
 /** 見本の文書から、見本の定義の JSON の文字を取り出す */
 function sampleText(name: string): string {
@@ -237,6 +330,36 @@ function sampleDefinition<T>(name: string): T {
   return JSON.parse(sampleText(name)) as T;
 }
 
+/** 使い方『図を描く』の判定フローチャートの定義 */
+function judgementDefinition(): MdmarkFlowDefinition {
+  const text = [
+    ...readFileSync(GUIDE_DOCUMENT, "utf8").matchAll(
+      /```json\n([\s\S]*?)\n```/g,
+    ),
+  ]
+    .map((match) => match[1] ?? "")
+    .find((block) => block.includes('"kind": "question"'));
+  if (text === undefined) {
+    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+  }
+  return JSON.parse(text) as MdmarkFlowDefinition;
+}
+
+/** 知らない種類のノードを持つストーリーの書き方の警告: 見本の 3 つ目のノードの種類を `robot` にして読ませる */
+function unknownKindDefinition(): string {
+  const definition = sampleDefinition<MdmarkFlowDefinition>("inquiry");
+  const third = definition.nodes[2];
+  if (third === undefined) {
+    throw new Error("見本の 3 つ目のノードが無い");
+  }
+  Object.assign(third, { kind: "robot" });
+  const { message, items } = definitionWarning(
+    "flow",
+    readDefinition("flow", [JSON.stringify(definition)]).problems,
+  );
+  return renderSyntaxWarning({ message, items });
+}
+
 /** 定義を読めないストーリーの書き方の警告: 見本の閉じの `}` を落として読ませる */
 function invalidDefinition(directive: DiagramDirective, name: string): string {
   const text = sampleText(name);
@@ -254,9 +377,14 @@ function fitted(html: string, args: PartArgs): string {
 }
 
 /** 図の部品のストーリーの引数: 見本・状態 */
-function diagramArgs(args: PartArgs): { zoom?: number; modal?: boolean } {
+function diagramArgs(args: PartArgs): {
+  zoom?: number;
+  fit?: number;
+  modal?: boolean;
+} {
   return {
     ...(typeof args.zoom === "number" ? { zoom: args.zoom } : {}),
+    ...(typeof args.fit === "number" ? { fit: args.fit } : {}),
     ...(args.modal === true ? { modal: true } : {}),
   };
 }
@@ -838,7 +966,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     if (args.invalid === true) {
       return invalidDefinition("flow", "inquiry");
     }
-    const definition = sampleDefinition<MdmarkFlowDefinition>("inquiry");
+    if (args.unknownKind === true) {
+      return unknownKindDefinition();
+    }
+    const definition =
+      args.judgement === "long"
+        ? structuredClone(JUDGEMENT_LONG_SAMPLE)
+        : args.judgement === "default"
+          ? judgementDefinition()
+          : sampleDefinition<MdmarkFlowDefinition>("inquiry");
     if (args.longNames === true) {
       definition.title = LONG_TITLE;
       for (const node of definition.nodes) {

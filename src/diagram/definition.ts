@@ -1,16 +1,20 @@
-/** 箱の種類 */
+/** ノードの種類（`start`・`question`・`action`・`result` は判定フローチャートの開始・質問・アクション・結果） */
 export type MdmarkDiagramKind =
   | "llm"
   | "dm"
   | "script"
   | "mcp"
   | "data"
-  | "external";
+  | "external"
+  | "start"
+  | "question"
+  | "action"
+  | "result";
 
 /** 線の種類 */
 export type MdmarkDiagramLine = "flow" | "read" | "write" | "reply" | "loop";
 
-/** 箱の入力・処理・出力 */
+/** ノードの入力・処理・出力 */
 export type MdmarkDiagramIo = {
   /** 入力 */
   in: string;
@@ -20,11 +24,11 @@ export type MdmarkDiagramIo = {
   out: string;
 };
 
-/** フロー図の箱 */
+/** フロー図のノード */
 export type MdmarkDiagramNode = {
   /** 線が端に指す id */
   id: string;
-  /** 箱の種類 */
+  /** ノードの種類 */
   kind: MdmarkDiagramKind;
   /** 左上の x（px） */
   x: number;
@@ -40,9 +44,9 @@ export type MdmarkDiagramNode = {
   tag?: string;
   /** 補足 */
   sub?: string;
-  /** 入力・処理・出力。持つ箱に印を付ける */
+  /** 入力・処理・出力。持つノードに印を付ける */
   io?: MdmarkDiagramIo;
-  /** 箱の右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+  /** ノードの右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
   hint?: string;
 };
 
@@ -50,9 +54,9 @@ export type MdmarkDiagramNode = {
 export type MdmarkDiagramWire = {
   /** 線の id */
   id: string;
-  /** 元の箱の id */
+  /** 元のノードの id */
   from: string;
-  /** 先の箱の id */
+  /** 先のノードの id */
   to: string;
   /** 線の種類 */
   line: MdmarkDiagramLine;
@@ -80,14 +84,14 @@ export type MdmarkFlowDefinition = {
   height: number;
   /** システムの枠 */
   frame?: { title: string; x: number; y: number; w: number; h: number };
-  /** 枠の中の層。層の箱の色をうっすら敷く */
+  /** 枠の中の層。層のノードの色をうっすら敷く */
   lanes?: Array<{
     label: string;
     kind: "llm" | "mcp" | "data";
     y: number;
     h: number;
   }>;
-  /** 箱 */
+  /** ノード */
   nodes: MdmarkDiagramNode[];
   /** 線 */
   wires: MdmarkDiagramWire[];
@@ -208,7 +212,7 @@ export const DIAGRAM_DIRECTIVES: Readonly<
   param: { name: "操作できる部品", call: "この部品" },
 };
 
-/** 箱の種類の並び（書き方の警告にも出す） */
+/** ノードの種類の並び（書き方の警告にも出す） */
 const NODE_KINDS: readonly MdmarkDiagramKind[] = [
   "llm",
   "dm",
@@ -216,6 +220,10 @@ const NODE_KINDS: readonly MdmarkDiagramKind[] = [
   "mcp",
   "data",
   "external",
+  "start",
+  "question",
+  "action",
+  "result",
 ];
 
 /** 層に使える種類 */
@@ -386,7 +394,7 @@ function checkOptionalText(
   }
 }
 
-/** 箱の種類を確かめる */
+/** ノードの種類を確かめる */
 function checkKind(value: unknown, label: string, problems: Problems): void {
   if (typeof value !== "string") {
     problems.add(`${label}の種類（kind）がありません。文字で書いてください`);
@@ -417,7 +425,7 @@ function checkDuplicates(
   }
 }
 
-/** 箱 1 つを確かめて、`id` を返す */
+/** ノード 1 つを確かめて、`id` を返す */
 function checkNode(
   value: unknown,
   index: number,
@@ -428,7 +436,7 @@ function checkNode(
     return undefined;
   }
   const name = typeof node.name === "string" ? node.name : `${index + 1} つ目`;
-  const label = `箱「${name}」`;
+  const label = `ノード「${name}」`;
   problems.expect(node.name, "文字", `nodes[${index}].name`);
   const id = typeof node.id === "string" ? node.id : undefined;
   problems.expect(node.id, "文字", `${label}の id`);
@@ -516,11 +524,11 @@ function checkWire(
     const end = wire[key];
     if (typeof end !== "string") {
       problems.add(
-        `${label}の ${key} がありません。端の箱の id で書いてください`,
+        `${label}の ${key} がありません。端のノードの id で書いてください`,
       );
     } else if (!nodeIds.has(end)) {
       problems.add(
-        `${label}の端の箱 ${end} がありません。箱の id で書いてください`,
+        `${label}の端のノード ${end} がありません。ノードの id で書いてください`,
       );
     }
   }
@@ -585,7 +593,7 @@ function checkFlow(source: Record<string, unknown>, problems: Problems): void {
   );
   checkDuplicates(
     nodeIds.filter((id): id is string => id !== undefined),
-    "箱",
+    "ノード",
     problems,
   );
   const wires = asArray(source.wires, "wires", problems);
