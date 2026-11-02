@@ -337,7 +337,7 @@ export function filterEmbeddedStyle(style: string): string {
   return kept.join(";");
 }
 
-/** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・倍率はそのまま、コードブロックの行番号の桁の数だけを持つものはその宣言、それ以外は埋め込んだ HTML の許した宣言だけ */
+/** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・余白・倍率はそのまま、コードブロックの行番号の桁の数だけを持つものはその宣言、それ以外は埋め込んだ HTML の許した宣言だけ */
 function ownStyle(style: string): string {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
