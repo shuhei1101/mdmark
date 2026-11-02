@@ -232,7 +232,7 @@ scenarios:
     setup:
       - name: 周りの面になじませるページ
         description: body の地を `rgb(240, 240, 240)` にし、mdmark の CSS の後に使う側の CSS を読み、文書を描く HTML
-        notes: 使う側の CSS は `.mdmark` の `--mdmark-color-bg` を `transparent`、不透明を前提にした地の CSS カスタムプロパティ（名前はインターフェース定義で決める）を `rgb(240, 240, 240)` にする。OS の配色はライト、画面の幅は 1280px
+        notes: 使う側の CSS は `.mdmark` の `--mdmark-color-bg` を `transparent`、`--mdmark-color-bg-opaque` を `rgb(240, 240, 240)` にする。OS の配色はライト、画面の幅は 1280px
       - name: 表とフロー図を持つ Markdown
         description: 本文の幅に収まる 3 列 3 行の表と、『図を描く』の正常シナリオと同じフロー図を持つ文書
       - name: Mock

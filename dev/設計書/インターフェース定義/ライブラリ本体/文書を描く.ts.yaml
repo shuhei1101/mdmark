@@ -2767,6 +2767,84 @@ flows:
       - '`mount` が例外を投げず、段落とリンクが描かれる'
       - el の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme_unknown
+  - name: 正常系（地を透明にして不透明な地を指定する）
+    summary: 使う側が `--mdmark-color-bg` を透明にし `--mdmark-color-bg-opaque` に周りの面の色を指定すると、本文の地は透け、浮く部品と覆いはその色で描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じで、body の地を `rgb(240, 240, 240)` にする
+        notes: OS の配色はライト。画面の幅は 1280px
+      - name: 使う側の CSS
+        description: 層の外で `.mdmark` に `--mdmark-color-bg` と `--mdmark-color-bg-opaque` を書く
+        notes: '`--mdmark-color-bg` は `transparent`、`--mdmark-color-bg-opaque` は `rgb(240, 240, 240)`'
+      - name: 表とフロー図を持つ Markdown
+        description: 本文の幅に収まる 3 列 3 行の表と、フロー図の部品の定義を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表とフロー図を描く
+        P->>M: フロー図のノードにポインターを乗せる
+        M->>P: 図のツールチップを出す
+        P->>M: 図の全画面のボタンを押す
+        M->>P: 全画面の dialog を開く
+    expected:
+      - el の地の色の計算値が `rgba(0, 0, 0, 0)`
+      - 表の本文の行の高さの真ん中で、表の左右の枠の内側の画素の色が `rgb(240, 240, 240)`
+      - 図のツールチップ（`.mdmark-diagram-tip`）の地の色の計算値が `rgb(240, 240, 240)`
+      - 全画面の dialog（`.mdmark-diagram-dialog`）の地の色の計算値が `rgb(240, 240, 240)`
+    test: test_normal_when_bg_transparent_with_opaque
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（地を透明にして周りの面の色を指定する）]
+  - name: 正常系（地を不透明な色で上書きする）
+    summary: 使う側が `--mdmark-color-bg` だけを不透明な色で上書きすると、`--mdmark-color-bg-opaque` もその色になり、浮く部品と覆いの色が今と変わらない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: OS の配色はライト
+      - name: 使う側の CSS
+        description: 層の外で `.mdmark` に `--mdmark-color-bg` だけを書く
+        notes: 値は `rgb(34, 34, 34)`
+      - name: 表とフロー図を持つ Markdown
+        description: 正常系（地を透明にして不透明な地を指定する）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表とフロー図を描く
+        P->>M: フロー図のノードにポインターを乗せる
+        M->>P: 図のツールチップを出す
+    expected:
+      - el の地の色と、el の `--mdmark-color-bg-opaque` の計算値が `rgb(34, 34, 34)`
+      - 図のツールチップの地の色の計算値が `rgb(34, 34, 34)`
+    test: test_normal_when_bg_overridden
+  - name: 正常系（描く先の外に置く部品の地）
+    summary: body の直下に置くコメントの入力欄は、`--mdmark-color-bg-opaque` を `:root` と配色の class から継承し、透けない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+        notes: OS の配色はライト
+      - name: 段落を持つ Markdown
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        P->>M: 段落の文字を選び「コメント」を押す
+        M->>P: body の直下にコメントの入力欄を開く
+        P->>P: body に mdmark-theme-dark を付ける
+    expected:
+      - コメントの入力欄（`.mdmark-comment-popover`）の地の色の計算値が、dev-swiss の明るい配色の `--mdmark-color-bg` の値
+      - body に `mdmark-theme-dark` を付けると、入力欄の地の色の計算値が dev-swiss のダークの `--mdmark-color-bg` の値
+    test: test_normal_when_outside_mdmark
   - name: 正常系（開いた状態で描く）
     summary: '`diffMode: "open"` で、押される前から一番新しい 2 つのリビジョンの差分を出す'
     setup:
@@ -3706,6 +3784,9 @@ constraints:
   - item: 色のプリセット
     constraint: '色の名前ごとに、面の薄い色 `--mdmark-color-accent-{色}-bg` と文字の色 `--mdmark-color-accent-{色}-text` の CSS 変数を、選べるテーマのそれぞれの明るい配色と暗い配色で持つ（色の名前は インターフェース定義『文書をHTML文字列にする』の制約「色の名前」）。`data-color` を持つ強調した列のセルと行は面の薄い色、バッジは面の薄い色と文字の色、本文の文字の色の `mdmark-color` は文字の色と太字にする。強調した列の見出しのセルに下端の線、色を付けた行に上下の線を付ける。どの組も、文字と面のコントラストを 4.5:1 以上にする。印刷では選んだテーマの明るい配色の値で色を残す'
     notes: 値は dev/設計書/デザイン方針.md。使う側は層の外でこの変数を上書きできる（制約「テーマ」）
+  - item: 不透明な地
+    constraint: '`--mdmark-color-bg` は描く先の要素（`.mdmark`）とまとめた HTML（`.mdmark-bundle`）の地だけに使い、浮く部品・覆い・留める見出しの地と、地の色を混ぜた塗り・地の色の線と文字は `--mdmark-color-bg-opaque` を使う。`--mdmark-color-bg-opaque` の既定は `var(--mdmark-color-bg)` で、`:root`・`.mdmark`・`--mdmark-color-bg` を宣言する配色の規則のそれぞれで宣言する'
+    notes: 使う側が `--mdmark-color-bg` を透明にして周りの面になじませるときは、`--mdmark-color-bg-opaque` に周りの面の色を指定する（#167）。`.mdmark` で宣言するのは、`.mdmark` で上書きした `--mdmark-color-bg` を受けるため。`:root` と配色の規則で宣言するのは、body の直下のコメントの入力欄・吹き出しと、`.mdmark` の兄弟のまとめた HTML の帯・一覧のパネルが継承するため
   - item: ライトボックス
     constraint: '`lightbox` がオンのとき、`figure.mdmark-image` の中の `img` のうち `data-nolightbox` を持たないものを、`<button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}">` と右上の拡大のアイコン（`aria-hidden`）で包む（リンクの中の画像と、文の中の画像は包まない）。押すと、`<dialog class="mdmark-lightbox" aria-label="画像の拡大">` を `showModal()` で開き、押した画像と title のキャプションを出す。送りの並びは同じ文書の包んだ画像を文書の順に並べたもの（今の配色で隠れている `mdmark-only-*` の画像を除く）で、帯の左に前の画像・枚数（`{何枚目} / {全ての枚数}`）・次の画像のボタン、続けて図の全画面と同じ縮小・倍率・拡大と移動のボタン、右端に閉じるボタンを置く。画像が 1 枚のときは前後のボタンを出さない。左右の矢印キーで前後に送り（拡大中は送らず、制約「図の移動」と同じく動かす）、端では送らない。閉じるボタン・Esc・ダイアログの外の背景（`::backdrop`）を押すと閉じ（`closedby="any"`。持たないブラウザは `dialog` 自身を押したときに閉じる）、フォーカスを押した画像のボタンへ戻し、文書のスクロールの位置を開く前のままにする。ダイアログの中で Tab のフォーカスを循環させる。閉じたときに、開いている間に付けた受け取りを外す'
     notes: 操作は図の全画面と揃える（#199 の D-36）。帯の並びは確認ログのモックへの合意。ライトボックスの本体を配布物から分けて使うときだけ読むかはモジュール構成設計
