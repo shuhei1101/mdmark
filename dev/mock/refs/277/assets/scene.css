@@ -104,7 +104,7 @@ body {
 
 .catalog-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .catalog-note {
@@ -115,7 +115,7 @@ body {
 
 .catalog-label {
   margin: 0;
-  font-size: 14px;
+  font-size: 18px;
 }
 
 /* カタログの見本の文書: 描いた文書と同じく、本文の列と余白の列を横に並べる */
