@@ -9,8 +9,8 @@
     display: none;
   }
 
-  .mdmark .mdmark-code-line.is-folded > .mdmark-code-text::after {
-    content: none;
+  .mdmark .mdmark-code-fold-more {
+    display: none;
   }
 
   .mdmark pre.mdmark-code-has-focus .mdmark-code-line {

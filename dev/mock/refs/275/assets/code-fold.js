@@ -75,13 +75,21 @@
       button.setAttribute("aria-expanded", String(!folded));
       button.querySelector("svg").innerHTML = folded ? ICON.closed : ICON.open;
       lines[i].classList.toggle("is-folded", folded);
+      // 畳んだ行の後ろの ⋯: 押すと展開する。展開したら削除する
+      lines[i].querySelector(".mdmark-code-fold-more")?.remove();
+      if (folded) {
+        lines[i].insertAdjacentHTML(
+          "beforeend",
+          `<button class="mdmark-code-fold-more" type="button" aria-label="${i + 1} 行目から ${ranges[i] + 1} 行目を展開" data-fold-line="${i + 1}">⋯</button>`,
+        );
+      }
     };
 
     code.addEventListener("click", (event) => {
-      const button = event.target.closest(".mdmark-code-fold");
-      if (!button) return;
-      const i = Number(button.dataset.foldLine) - 1;
-      const folded = button.getAttribute("aria-expanded") === "true";
+      const target = event.target.closest(".mdmark-code-fold, .mdmark-code-fold-more");
+      if (!target) return;
+      const i = Number(target.dataset.foldLine) - 1;
+      const folded = target.classList.contains("mdmark-code-fold") && target.getAttribute("aria-expanded") === "true";
       setFolded(i, folded);
       // Shift を押しながら: 範囲の中の入れ子もまとめて畳む・開く
       if (event.shiftKey) for (let k = i + 1; k <= ranges[i]; k += 1) setFolded(k, folded);

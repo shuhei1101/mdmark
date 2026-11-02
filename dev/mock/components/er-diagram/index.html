@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
   <!-- 図の部品の規則（#42 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- #263 の色のプリセット: テーブルの色（data-color）の面の薄い色と文字の色 -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
@@ -42,16 +44,24 @@
     <div class="catalog">
       <h1 class="catalog-title">ER 図</h1>
 
-      <!-- 通常: テーブルの見出しに物理名と論理名、列の行に PK・FK・NN のマーカーと名前と型。関係の線の両端に多重度の記号とラベル。全ての列を出した状態で開く -->
+      <!-- 通常: テーブルの見出しに物理名と論理名と種類（マスター・トランザクション。種類の既定の色で見出しと枠を塗る）、列の行に PK・FK・NN のマーカーと名前と型。関係の線の両端に多重度の記号とラベル。全ての列を出した状態で開く -->
       <section aria-labelledby="state-normal">
-        <h2 class="catalog-label" id="state-normal">通常（全ての列を出す。関係の線の端に多重度）</h2>
+        <h2 class="catalog-label" id="state-normal">通常（全ての列を出す。テーブルの種類と色・関係の線の端に多重度）</h2>
         <article class="mdmark">
           <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
           <figure data-mock-diagram="shop-er"></figure>
         </article>
       </section>
 
-      <!-- 列を畳んだ: 見出しの右上のボタン（aria-expanded="false"）で、主キーと外部キーの列だけを出し、残りの列の数を出す。関係の線は残った列の行につなぐ -->
+      <!-- テーブルの色を指定した: color= で種類の既定の色を上書きする（商品を緑）。種類の無いテーブルにも色を付けられる（注文の明細を紫。種類の札は出さない） -->
+      <section aria-labelledby="state-colors">
+        <h2 class="catalog-label" id="state-colors">テーブルの色を指定した（color=。種類の既定の色を上書きする）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="shop-er-colors"></figure>
+        </article>
+      </section>
+
+      <!-- 列を畳んだ: 見出しの右上のボタン（aria-expanded="false"）で、主キーと外部キーの列だけを出し、非表示の列の数を出す。関係の線は残った列の行につなぐ -->
       <section aria-labelledby="state-folded">
         <h2 class="catalog-label" id="state-folded">注文のテーブルの列を畳んだ（主キーと外部キーの列だけ）</h2>
         <article class="mdmark">

@@ -14,7 +14,7 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
-  <!-- 表の機能の追加分の規則（件数・列の表示の切り替え・集計の行・表のコピー・行へのリンク）とカタログの追加分 -->
+  <!-- 表の機能の追加分の規則（件数・列設定・集計の行・表のコピー・行へのリンク）とカタログの追加分 -->
   <link rel="stylesheet" href="../../refs/57/assets/table-tools.css">
   <link rel="stylesheet" href="../../refs/57/assets/catalog.css">
   <!-- 見出し行と集計の行の留め方・集計の行・コピーの形式・最終列の畳み方の規則とカタログの追加分（#151 で共有するアセット） -->
@@ -151,17 +151,17 @@
     <label class="mdmark-filter-field">候補を検索<input class="mdmark-filter-search" type="search" autocomplete="off"></label>
     <ul class="mdmark-filter-options"><li><label><input type="checkbox" value="りんご">りんご</label></li><li><label><input type="checkbox" value="みかん">みかん</label></li><li><label><input type="checkbox" value="りんご飴">りんご飴</label></li><li><label><input type="checkbox" value="ぶどう">ぶどう</label></li></ul>
     <p class="mdmark-filter-none" hidden>一致する候補がありません</p>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
   <div class="mdmark-filter-drawer" id="t-filter-filter-1" role="dialog" hidden aria-label="「説明」で絞り込む" data-filter-kind="text" data-column="1">
     <p class="mdmark-filter-title">「説明」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
   <div class="mdmark-filter-drawer" id="t-filter-filter-2" role="dialog" hidden aria-label="「更新日」で絞り込む" data-filter-kind="date" data-column="2">
     <p class="mdmark-filter-title">「更新日」で絞り込む</p>
     <div class="mdmark-filter-range"><label class="mdmark-filter-field">開始日<input type="date"></label><label class="mdmark-filter-field">終了日<input type="date"></label></div>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -373,8 +373,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-unknown-filter-1" role="dialog" hidden aria-label="「説明」で絞り込む" data-filter-kind="text" data-column="1">
     <p class="mdmark-filter-title">「説明」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -396,8 +396,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-long-filter-0" role="dialog" hidden aria-label="「とても長い列名を持つ見出しのセル」で絞り込む" data-filter-kind="text" data-column="0">
     <p class="mdmark-filter-title">「とても長い列名を持つ見出しのセル」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -408,7 +408,7 @@
         <h2 class="catalog-label" id="state-count">件数の表示（+count filter=説明:text）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p>
   </div>
@@ -424,8 +424,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-count-filter-1" role="dialog" hidden aria-label="「説明」で絞り込む" data-filter-kind="text" data-column="1">
     <p class="mdmark-filter-title">「説明」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -436,7 +436,7 @@
         <h2 class="catalog-label" id="state-count-filtered">件数の表示（説明を「描画」で絞り込んだ後）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p>
   </div>
@@ -452,25 +452,25 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-count-filtered-filter-1" role="dialog" hidden aria-label="「説明」で絞り込む" data-filter-kind="text" data-column="1">
     <p class="mdmark-filter-title">「説明」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off" value="描画"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off" value="描画"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
       </section>
 
-      <!-- 列の表示の切り替え（+columns hide=説明。説明の列を最初から隠す） -->
+      <!-- 列設定（+columns hide=説明。説明の列を最初から隠す） -->
       <section aria-labelledby="state-columns">
-        <h2 class="catalog-label" id="state-columns">列の表示の切り替え（+columns hide=説明。説明の列を最初から隠す）</h2>
+        <h2 class="catalog-label" id="state-columns">列設定（+columns hide=説明。説明の列を最初から隠す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
     </div>
   </div>
-  <table tabindex="0" aria-label="表: 列の表示の切り替え">
+  <table tabindex="0" aria-label="表: 列設定">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
@@ -478,29 +478,29 @@
       <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
-  <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
+  <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-columns-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>
 </div>
         </article>
       </section>
 
-      <!-- 列の表示のメニューを開いた（説明だけチェックが外れている） -->
+      <!-- 列設定のメニューを開いた（説明だけチェックが外れている） -->
       <section aria-labelledby="state-columns-open">
-        <h2 class="catalog-label" id="state-columns-open">列の表示のメニューを開いた（説明だけチェックが外れている）</h2>
+        <h2 class="catalog-label" id="state-columns-open">列設定のメニューを開いた（説明だけチェックが外れている）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1" data-mock-open="columns">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-open-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-open-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
     </div>
   </div>
-  <table tabindex="0" aria-label="表: 列の表示のメニューを開いた">
+  <table tabindex="0" aria-label="表: 列設定のメニューを開いた">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
@@ -508,12 +508,12 @@
       <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
-  <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
+  <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-columns-open-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>
 </div>
         </article>
@@ -526,10 +526,10 @@
         <h2 class="catalog-label" id="state-columns-first">先頭の列は隠せない（説明を出し、更新日を外した。名前のチェックは外せない）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="2" data-mock-open="columns">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-first-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-first-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
     </div>
   </div>
   <table tabindex="0" aria-label="表: 先頭の列は隠せない">
@@ -540,12 +540,12 @@
       <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
-  <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
+  <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-columns-first-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1" checked>説明</label></li><li><label><input type="checkbox" value="2">更新日</label></li></ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>
 </div>
         </article>
@@ -573,8 +573,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-total-filter-0" role="dialog" hidden aria-label="「名前」で絞り込む" data-filter-kind="text" data-column="0">
     <p class="mdmark-filter-title">「名前」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -600,8 +600,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-total-filtered-filter-0" role="dialog" hidden aria-label="「名前」で絞り込む" data-filter-kind="text" data-column="0">
     <p class="mdmark-filter-title">「名前」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off" value="りんご"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off" value="りんご"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -612,7 +612,7 @@
         <h2 class="catalog-label" id="state-total-empty">集計の行（一致する行が無いとき。平均は値が無い）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">4 / 4 件</span><span class="mdmark-visually-hidden">4 件中 4 件を表示</span></p>
   </div>
@@ -631,8 +631,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-total-empty-filter-0" role="dialog" hidden aria-label="「名前」で絞り込む" data-filter-kind="text" data-column="0">
     <p class="mdmark-filter-title">「名前」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off" value="もも"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off" value="もも"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
         </article>
@@ -643,10 +643,10 @@
         <h2 class="catalog-label" id="state-copy">表のコピー（+copy +columns hide=説明 filter=名前:text）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-copy-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-copy-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
     </div>
     <!-- コピーした・できなかったの読み上げ: ボタンの文言の書き換えと一緒に入れる -->
@@ -664,15 +664,15 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-copy-filter-0" role="dialog" hidden aria-label="「名前」で絞り込む" data-filter-kind="text" data-column="0">
     <p class="mdmark-filter-title">「名前」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
-  <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
+  <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-copy-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>
 </div>
         </article>
@@ -683,7 +683,7 @@
         <h2 class="catalog-label" id="state-copied">コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-mock-copy="copied">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
@@ -708,7 +708,7 @@
         <h2 class="catalog-label" id="state-copy-failed">コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-mock-copy="failed">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
@@ -798,8 +798,8 @@
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-filter-drawer" id="t-rowlink-b-filter-0" role="dialog" hidden aria-label="「名前」で絞り込む" data-filter-kind="text" data-column="0">
     <p class="mdmark-filter-title">「名前」で絞り込む</p>
-    <label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off" value="ぶどう"></label>
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off" value="ぶどう"></label>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>
 </div>
 </div>
@@ -811,11 +811,11 @@
         <h2 class="catalog-label" id="state-all">5 つの機能を全て付けた表（+count +columns +total +copy +rowlink total=数量:sum hide=説明）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p>
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-all-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-all-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
     </div>
     <!-- コピーした・できなかったの読み上げ: ボタンの文言の書き換えと一緒に入れる -->
@@ -831,12 +831,12 @@
     <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前"></td><td data-label="説明"></td><td class="mdmark-align-right" data-label="数量" data-total="sum"></td></tr></tfoot>
   </table>
-  <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
+  <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-all-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>数量</label></li></ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>
 </div>
         </article>
@@ -852,10 +852,10 @@
   <p><code>&lt;!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 --&gt;</code>の読めない指定を当てずに描いています。</p>
   <ul><li><code>total=</code>: <code>数量:max</code> の計算 <code>max</code> は使えません。使える計算は <code>sum</code>・<code>avg</code>・<code>count</code> です</li><li><code>total=</code>: <code>価格</code> は表に無い列名です</li><li><code>hide=</code>: <code>備考</code> は表に無い列名です</li><li><code>hide=</code>: <code>名前</code> は先頭の列のため隠せません</li></ul>
 </div>
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列の表示の切り替え・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-total-warning-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列の表示<span class="mdmark-visually-hidden"></span></button>
+      <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-total-warning-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
     </div>
   </div>
   <table tabindex="0" aria-label="表: 読めない集計・隠す列">
@@ -869,12 +869,12 @@
     <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前"></td><td class="mdmark-align-right" data-label="数量"></td><td class="mdmark-align-right" data-label="単価" data-total="avg"></td></tr></tfoot>
   </table>
-  <!-- 列の表示のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
+  <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
   <div class="mdmark-columns-menu" id="t-total-warning-columns" role="dialog" hidden aria-label="表示する列">
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1" checked>数量</label></li><li><label><input type="checkbox" value="2" checked>単価</label></li></ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>
 </div>
         </article>
@@ -984,9 +984,9 @@
         </article>
       </section>
 
-      <!-- クリップボードにコピーできなかった（中身を選んだ欄を出し、手でコピーさせる。異常シナリオ） -->
+      <!-- クリップボードにコピーできなかった（中身を選んだ欄を出し、手動でコピーさせる。異常シナリオ） -->
       <section aria-labelledby="state-copy-panel">
-        <h2 class="catalog-label" id="state-copy-panel">クリップボードにコピーできなかった（中身を選んだ欄を出し、手でコピーさせる。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-copy-panel">クリップボードにコピーできなかった（中身を選んだ欄を出し、手動でコピーさせる。異常シナリオ）</h2>
         <article class="mdmark">
 <div data-mock-table="fruits-copy-panel" data-mock-copy-panel="markdown"></div>
         </article>

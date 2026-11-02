@@ -61,7 +61,7 @@ files:
     description: 'モック『doc-list』の見た目: 文書の一覧の部品のカタログだけの規則。このモックの見た目を変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: components/er-diagram/index.html
-    description: '部品『er-diagram』のモック: テーブル・列の PK・FK・NN のマーカー・多重度とラベルを持つ関係の線の ER 図と、列を畳んだテーブル・テーブルのツールチップ・定義を読めない書き方の警告。部品の見た目や状態を決めるときに読む。'
+    description: '部品『er-diagram』のモック: テーブル・テーブルの種類（マスター・トランザクション）と色・列の PK・FK・NN のマーカー・多重度とラベルを持つ関係の線の ER 図と、列を畳んだテーブル・テーブルのツールチップ・定義を読めない書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:図]
   - path: components/embedded-html/index.html
     description: '部品『embedded-html』のモック: マーカーの範囲のコードブロックの HTML を本文に溶け込ませて描いた場所と、チャートを含む・列より広い・機能がオフ・書き方の警告の場面。部品の見た目や状態を決めるときに読む。'

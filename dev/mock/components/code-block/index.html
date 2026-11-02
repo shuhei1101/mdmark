@@ -606,7 +606,7 @@ build:
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- code: fold=3,6 --&gt;</code> の 6 行目は畳めません（次の行が 6 行目より深くありません）。6 行目の指定を外して描いています。</p>
+  <p><code>&lt;!-- code: fold=3,6 --&gt;</code> の 6 行目は畳めません（次の行が 6 行目より深くありません）。6 行目の指定を無視して描いています。</p>
 </div>
 <pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3"><code class="language-ts">export function mount(element, markdown, options = {}) {
   const config = withDefaults(options);

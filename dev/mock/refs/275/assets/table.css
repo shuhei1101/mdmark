@@ -1,8 +1,19 @@
-/* #275 の表の追加分: 多段の見出し・行見出し・結合したセル・wide= の列・check= の ✓。
+/* #275 の表の追加分: 本文の行の地・多段の見出し・行見出し・結合したセル・wide= の列・check= の ✓。
    拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
 
 @layer mdmark {
   .mdmark {
+    /* 表の本文の行: 本文の地にし、見出し行（見出しの色）と区別する。横スクロールの端の影は出さない */
+    :is(.mdmark-table table, > table) {
+      background: var(--mdmark-color-bg);
+    }
+
+    /* ピン止めした列の本文のセル: 本文の行と同じ地 */
+    .mdmark-table td.is-pinned-col,
+    .mdmark-table tbody th.is-pinned-col {
+      background: var(--mdmark-color-bg);
+    }
+
     /* 複数の列にまたがる見出し（<< で結合）: またぐ列の中央に置く */
     .mdmark-table thead th[colspan] {
       text-align: center;

@@ -75,12 +75,12 @@
     } else if (column.filter === "date") {
       fields = '<div class="mdmark-filter-range"><label class="mdmark-filter-field">開始日<input type="date"></label><label class="mdmark-filter-field">終了日<input type="date"></label></div>';
     } else {
-      fields = '<label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off"></label>';
+      fields = '<label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off"></label>';
     }
     return `  <div class="mdmark-filter-drawer" id="${key}-filter-${index}" role="dialog" hidden aria-label="${title}" data-filter-kind="${column.filter}" data-column="${index}">
     <p class="mdmark-filter-title">${title}</p>
     ${fields}
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>`;
   };
 
@@ -90,7 +90,7 @@
     if (!count && !columns && !total && !copy) return "";
     const tools = [];
     if (columns) {
-      tools.push(`<button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="${key}-columns">${icon("columns")}列の表示<span class="mdmark-visually-hidden"></span></button>`);
+      tools.push(`<button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="${key}-columns">${icon("columns")}列設定<span class="mdmark-visually-hidden"></span></button>`);
     }
     if (total) {
       tools.push(`<button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="${key}-totals">${icon("total")}集計<span class="mdmark-visually-hidden"></span></button>`);
@@ -120,7 +120,7 @@
     <p class="mdmark-columns-title">表示する列</p>
     <ul class="mdmark-columns-options">${options}</ul>
     <p class="mdmark-columns-note">先頭の列は隠せません</p>
-    <button class="mdmark-columns-reset" type="button">既定に戻す</button>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
   </div>`);
     }
     if (total) {
@@ -129,8 +129,8 @@
       const labels = { sum: "合計", avg: "平均", count: "件数" };
       const options = kinds.map((kind) => `<li><label><input type="checkbox" value="${kind}" checked>${labels[kind]}</label></li>`).join("");
       parts.push(`  <!-- 集計のメニュー: 道具の帯の集計のボタンで開閉する。total= に書いた計算のうち出す計算を選ぶ -->
-  <div class="mdmark-totals-menu mdmark-table-menu" id="${key}-totals" role="dialog" hidden aria-label="出す集計">
-    <p class="mdmark-columns-title">出す集計</p>
+  <div class="mdmark-totals-menu mdmark-table-menu" id="${key}-totals" role="dialog" hidden aria-label="表示する集計">
+    <p class="mdmark-columns-title">表示する集計</p>
     <ul class="mdmark-columns-options">${options}</ul>
   </div>`);
     }

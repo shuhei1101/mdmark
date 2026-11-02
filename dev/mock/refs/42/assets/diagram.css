@@ -828,9 +828,62 @@
       }
     }
 
+    /* 論理名と種類の行 */
+    .mdmark-diagram-er-sub {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
     /* 論理名 */
     .mdmark-diagram-er-logical {
+      overflow: hidden;
       color: var(--mdmark-color-muted);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* テーブルの種類（マスター・トランザクション）: 論理名の後ろの札。色はテーブルの色の文字の色 */
+    .mdmark-diagram-er-kind {
+      flex: none;
+      padding: 0 4px;
+      border: 1px solid currentcolor;
+      border-radius: 3px;
+      color: var(--er-color-text, var(--mdmark-color-muted));
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* 色を指定したテーブル（data-color は色のプリセットの名前）: 見出しを面の薄い色、枠を文字の色にする */
+    .mdmark-diagram-er-table[data-color] {
+      border-color: var(--er-color-text);
+
+      .mdmark-diagram-er-head {
+        background: var(--er-color-bg);
+      }
+    }
+
+    /* 凡例の種類の見本: テーブルの見出しと同じ面の薄い色と枠の色 */
+    .mdmark-diagram-er-kind-sample {
+      display: inline-block;
+      width: 18px;
+      height: 12px;
+      border: 1.5px solid var(--er-color-text);
+      border-radius: 3px;
+      background: var(--er-color-bg);
+    }
+
+    /* 色のプリセットの名前ごとの面の薄い色と文字の色 */
+    :is(.mdmark-diagram-er-table, .mdmark-diagram-er-kind-sample) {
+      &[data-color="blue"] { --er-color-bg: var(--mdmark-color-accent-blue-bg); --er-color-text: var(--mdmark-color-accent-blue-text); }
+      &[data-color="red"] { --er-color-bg: var(--mdmark-color-accent-red-bg); --er-color-text: var(--mdmark-color-accent-red-text); }
+      &[data-color="green"] { --er-color-bg: var(--mdmark-color-accent-green-bg); --er-color-text: var(--mdmark-color-accent-green-text); }
+      &[data-color="yellow"] { --er-color-bg: var(--mdmark-color-accent-yellow-bg); --er-color-text: var(--mdmark-color-accent-yellow-text); }
+      &[data-color="orange"] { --er-color-bg: var(--mdmark-color-accent-orange-bg); --er-color-text: var(--mdmark-color-accent-orange-text); }
+      &[data-color="purple"] { --er-color-bg: var(--mdmark-color-accent-purple-bg); --er-color-text: var(--mdmark-color-accent-purple-text); }
+      &[data-color="gray"] { --er-color-bg: var(--mdmark-color-accent-gray-bg); --er-color-text: var(--mdmark-color-accent-gray-text); }
     }
 
     /* 見出しの右上のボタンの並び */

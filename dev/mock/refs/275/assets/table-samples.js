@@ -86,6 +86,6 @@ window.mdmarkMockTables275 = {};
     head: [["キー", "型", "必須", "既定"]],
     body: T.check.body,
     warning:
-      "<code>&lt;!-- table: check=必要 wide=説明 --&gt;</code> の列名 <code>必要</code>・<code>説明</code> は、この表にありません。列名はキー・型・必須・既定です。この 2 つの指定を外して描いています。",
+      "<code>&lt;!-- table: check=必要 wide=説明 --&gt;</code> の列名 <code>必要</code>・<code>説明</code> は、この表にありません。列名はキー・型・必須・既定です。この 2 つの指定を無視して描いています。",
   };
 }

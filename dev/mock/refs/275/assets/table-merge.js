@@ -11,7 +11,7 @@
     check: '<path d="M20 6 9 17l-5-5"/>',
     warning: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
   };
-  const SORT_CYCLE = ["none", "ascending", "descending"];
+  const SORT_CYCLE = ["none", "descending", "ascending"];
   const UP = "^^";
   const LEFT = "<<";
 
@@ -194,7 +194,7 @@
     for (const button of root.querySelectorAll(".mdmark-sort")) {
       button.addEventListener("click", () => {
         const col = Number(button.dataset.sortCol);
-        state.direction = state.sortCol === col ? SORT_CYCLE[(SORT_CYCLE.indexOf(state.direction) + 1) % 3] : "ascending";
+        state.direction = state.sortCol === col ? SORT_CYCLE[(SORT_CYCLE.indexOf(state.direction) + 1) % 3] : "descending";
         state.sortCol = col;
         sortBy(col, state.direction);
       });

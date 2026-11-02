@@ -759,7 +759,7 @@
     </div>`;
   };
 
-  // ER 図の寸法（px）: テーブルの見出しの高さ・列の行の高さ・畳んだときの「ほか n 列」の行の高さ・関係の線の端の記号の長さ
+  // ER 図の寸法（px）: テーブルの見出しの高さ・列の行の高さ・畳んだときの「非表示 n 列」の行の高さ・関係の線の端の記号の長さ
   const ER_HEAD_H = 44;
   const ER_ROW_H = 26;
   const ER_REST_H = 24;
@@ -767,6 +767,15 @@
 
   // ER 図の列の印の名前（凡例と読み上げ）
   const ER_KEYS = { pk: "主キー", fk: "外部キー", nn: "NOT NULL" };
+
+  // ER 図のテーブルの種類: 見出しに出す名前と、color を指定しないときの色（色のプリセットの名前）
+  const ER_KINDS = {
+    master: { label: "マスター", color: "blue" },
+    transaction: { label: "トランザクション", color: "orange" },
+  };
+
+  /** テーブルの色（color の指定、無ければ種類の既定の色。どちらも無ければ null）。 */
+  const erTableColor = (table) => table.color ?? ER_KINDS[table.kind]?.color ?? null;
 
   /** ER 図のテーブルで見せる列（畳んだテーブルは主キーと外部キーの列だけ）。 */
   const erVisibleColumns = (table) => (table.folded ? table.columns.filter((c) => c.pk || c.fk) : table.columns);
@@ -811,11 +820,13 @@
     const rows = shown
       .map((c) => `<li class="mdmark-diagram-er-column"${c.pk ? " data-pk" : ""}><span class="mdmark-diagram-er-keys">${mark(c)}</span><span class="mdmark-diagram-er-name">${esc(c.name)}</span><span class="mdmark-diagram-er-type">${esc(c.type)}</span></li>`)
       .join("");
-    const rest = table.folded ? `<li class="mdmark-diagram-er-rest">ほか ${hidden} 列</li>` : "";
-    return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${esc(table.id)}" style="left:${table.x}px;top:${table.y}px;width:${table.w}px">
+    const rest = table.folded ? `<li class="mdmark-diagram-er-rest">非表示 ${hidden} 列</li>` : "";
+    const color = erTableColor(table);
+    const kind = ER_KINDS[table.kind] ? `<span class="mdmark-diagram-er-kind">${ER_KINDS[table.kind].label}</span>` : "";
+    return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${esc(table.id)}"${color ? ` data-color="${esc(color)}"` : ""} style="left:${table.x}px;top:${table.y}px;width:${table.w}px">
       <div class="mdmark-diagram-er-head">${fold}
         <span class="mdmark-diagram-er-title">${icon("table")}<span class="mdmark-diagram-er-physical">${esc(table.name)}</span></span>
-        <span class="mdmark-diagram-er-logical">${esc(table.label)}</span>
+        <span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">${esc(table.label)}</span>${kind}</span>
         <span class="mdmark-diagram-er-actions">${info}</span>
       </div>
       <ul class="mdmark-diagram-er-columns" aria-label="「${esc(table.label)}」の列">${rows}${rest}</ul>
@@ -864,7 +875,10 @@
   /** 凡例の ER 図の項目（列の印と、関係の線の端の多重度の記号）。 */
   const erLegendItems = (def, item) => {
     const keys = ["pk", "fk", "nn"].filter((k) => def.tables.some((t) => t.columns.some((c) => c[k])));
-    const items = keys.map((k) => item(`<abbr class="mdmark-diagram-er-key" data-key="${k}">${k.toUpperCase()}</abbr>`, ER_KEYS[k]));
+    // 種類: 種類の既定の色で描いたテーブルがある種類だけ、色の見本と名前を出す
+    const kinds = Object.keys(ER_KINDS).filter((k) => def.tables.some((t) => t.kind === k && !t.color));
+    const items = kinds.map((k) => item(`<span class="mdmark-diagram-legend-sample mdmark-diagram-er-kind-sample" data-color="${ER_KINDS[k].color}" aria-hidden="true"></span>`, `${ER_KINDS[k].label}のテーブル`));
+    items.push(...keys.map((k) => item(`<abbr class="mdmark-diagram-er-key" data-key="${k}">${k.toUpperCase()}</abbr>`, ER_KEYS[k])));
     const cards = { 1: "1 つ", "0..1": "0 か 1 つ", "1..n": "1 つ以上", "0..n": "0 以上" };
     const used = new Set(def.relations.flatMap((r) => [r.fromCard, r.toCard]));
     for (const card of Object.keys(cards)) {
