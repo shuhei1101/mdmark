@@ -2612,12 +2612,12 @@ test("test_normal_when_diagram_zoomed", async () => {
   // 準備
   const { figure, viewport } = await mountFlow();
   const sizer = find<HTMLElement>(figure, ".mdmark-diagram-sizer");
-  // 描いた直後の倍率は収まる倍率で、図の幅が表示する枠の幅を超えない
+  // 描いた直後の倍率は収まる倍率で、倍率のボタンは 100% と出し、図の幅が表示する枠の幅を超えない
   await vi.waitFor(() => {
     expect(scaleOf(figure)).toBeLessThan(1);
   });
   const fit = scaleOf(figure);
-  expect(Number.parseInt(zoomText(figure), 10)).toBeLessThan(100);
+  expect(zoomText(figure)).toBe("100%");
   expect(sizer.getBoundingClientRect().width).toBeLessThanOrEqual(
     viewport.clientWidth + 1,
   );
