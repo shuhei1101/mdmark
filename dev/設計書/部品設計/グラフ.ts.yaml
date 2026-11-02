@@ -17,7 +17,7 @@ states:
   - name: BarFour
     description: 棒・系列 4 つ。塗りの模様（塗りつぶし・斜線・点・格子）の組の全て
   - name: Pie
-    description: 円・項目 3 つ。扇形の外に整数の割合、凡例に項目の名前と値。扇形は地の色の隙間で分ける
+    description: 円・項目 3 つ。扇形の外に整数の割合、凡例に項目の名前と値。扇形は `--mdmark-color-bg-opaque` の隙間で分ける
   - name: Scatter
     description: 散布図・系列 2 つ。横と縦の両方を数値の軸にし、系列を色と点の形（丸・四角・三角・菱形）で分ける
 lead: 折れ線・棒・円・散布図のグラフ。系列は色と、線の模様・塗りの模様・点の形の組で分ける。
@@ -36,6 +36,10 @@ status: planned
 introduced:
   pr: 42
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 模様の塗りで系列の色を混ぜる先の色と、散布図・折れ線の点の縁と円の項目を分ける隙間の色
   - name: --mdmark-color-series-1
     syntax: <color>
     default: '#0f766e（ダーク #2dd4bf）'
