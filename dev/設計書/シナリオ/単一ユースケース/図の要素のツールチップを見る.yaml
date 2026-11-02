@@ -175,6 +175,7 @@ scenarios:
     setup:
       - name: 図を描いたページ
         description: 正常シナリオのフロー図を、タッチの端末（`hasTouch`）として開いたページ
+        notes: Chromium のタッチの再現では `:hover` が残らないため、外のタップで閉じる期待値は今の実装でも pass する。iOS の `:hover` が残る状態は単体テストで、`pointerleave`・`blur` を発火させずに外の `pointerdown` だけで閉じることを確かめる
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
