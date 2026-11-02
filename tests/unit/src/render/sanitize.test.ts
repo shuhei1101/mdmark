@@ -206,6 +206,28 @@ test("test_sanitize_when_own_style", async () => {
   expect(sanitized).toContain("<div>書いた要素</div>");
 });
 
+// 自分が出した図のノードの余白の style を位置と大きさと一緒に残し、負の余白の style は図の部品の宣言として扱わない（正常系）
+test("test_sanitize_when_diagram_node_padding", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const question = "left:10px;top:20px;width:280px;height:136px;padding:34px 70px";
+  const start = "left:0px;top:0px;width:56px;height:56px;padding:14.6px";
+  const html = [
+    `<div class="mdmark-diagram-node" ${own} style="${question}">質問</div>`,
+    `<div class="mdmark-diagram-node" ${own} style="${start}">開始</div>`,
+    `<div class="mdmark-diagram-node" ${own} style="left:10px;top:20px;padding:-4px">負の余白</div>`,
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toContain(`style="${question}"`);
+  expect(sanitized).toContain(`style="${start}"`);
+  const negative = sanitized.slice(sanitized.indexOf("開始</div>"));
+  expect(negative).not.toContain("left:");
+  expect(negative).not.toContain("top:");
+});
+
 // 自分が出したコードブロックの行番号の桁の数だけを残す（正常系）
 test("test_sanitize_when_code_digits", async () => {
   // 準備
