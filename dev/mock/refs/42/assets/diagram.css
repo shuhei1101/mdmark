@@ -161,11 +161,10 @@
       text-align: center;
     }
 
-    /* 狭い図の枠（スマホ幅の文書）: 移動・拡大と縮小・全画面のボタンを 1 行に収める */
+    /* 狭い図の枠（スマホ幅の文書）: 間を詰めて移動・拡大と縮小・全画面のボタンを 1 行に収める。収まらない幅では折り返す */
     @container (width < 30rem) {
       .mdmark-diagram-tools {
-        flex-wrap: nowrap;
-        gap: 0.5rem;
+        gap: 0.25rem 0.5rem;
       }
 
       .mdmark-diagram-tools-group {
