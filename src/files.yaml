@@ -12,6 +12,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
         type: implements
+  - path: cli/assets.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「文書が指す画像・動画・音声・添付のファイルの拾い出しと、書き出し先へのコピー・見つからないファイルの点検」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    tags: [topic:cli, topic:ファイル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
   - path: cli/backup.ts
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「当てる前のコピーとコピーからの戻し」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
@@ -247,9 +253,21 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
+  - path: interact/gif.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「GIF を止める・再生するボタン」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント, topic:gif]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: interact/index.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「attachInteractions」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
     tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/lightbox.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「画像を拡大のボタンで包み、ライトボックスで開いて送り・拡大・縮小・移動を付ける処理」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント, topic:ライトボックス]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
@@ -312,6 +330,12 @@ files:
     tags: [topic:dom, topic:イベント, topic:ツリー]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/zoom.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「表示する枠と中身への拡大・縮小・移動（ボタン・キー・ドラッグ）」を受け持つ。図とライトボックスの拡大・縮小の操作を変えるときに読む。
+    tags: [topic:図, topic:拡大]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
         type: implements
   - path: knowledge/aliases.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「エイリアスの型と、設定の行と YAML の中身からエイリアスを作る buildAliases」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
@@ -433,6 +457,20 @@ files:
         type: implements
       - to: dev/設計書/部品設計/注意書き.ts
         type: implements
+  - path: parts/card.stories.yaml
+    description: 部品設計『カード』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:カード]
+    related:
+      - to: dev/設計書/部品設計/カード.ts
+        type: implements
+  - path: parts/card.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「リンクと添付のカードの renderCard」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:カード]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/カード.ts
+        type: implements
   - path: parts/chart.stories.yaml
     description: 部品設計『グラフ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
@@ -456,6 +494,12 @@ files:
   - path: parts/collapsible.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「タブとステップの折り畳みの renderCollapsible」を受け持つ。部品が返す HTML を変えるときに読む。
     tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+  - path: parts/colors.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「色の名前の一覧と見分け」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:色]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
@@ -685,6 +729,34 @@ files:
     related:
       - to: dev/設計書/部品設計/フロー図.ts
         type: implements
+  - path: parts/gallery.stories.yaml
+    description: 部品設計『ギャラリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ギャラリー]
+    related:
+      - to: dev/設計書/部品設計/ギャラリー.ts
+        type: implements
+  - path: parts/gallery.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「ギャラリーの renderGallery」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:ギャラリー]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/ギャラリー.ts
+        type: implements
+  - path: parts/gif.stories.yaml
+    description: 部品設計『GIF』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:gif]
+    related:
+      - to: dev/設計書/部品設計/GIF.ts
+        type: implements
+  - path: parts/gif.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「GIF の止める・再生するボタンの renderGifToggle と renderGif」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:gif]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/GIF.ts
+        type: implements
   - path: parts/hint.stories.yaml
     description: 部品設計『ヒント』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
@@ -710,6 +782,48 @@ files:
     tags: [topic:図, tool:svg, tool:lucide]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: parts/image-figure.stories.yaml
+    description: 部品設計『画像の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:画像]
+    related:
+      - to: dev/設計書/部品設計/画像の図.ts
+        type: implements
+  - path: parts/image.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「画像の図の renderImageFigure と拡大のボタンの renderImageOpener」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:画像]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/画像の図.ts
+        type: implements
+  - path: parts/lightbox.stories.yaml
+    description: 部品設計『ライトボックス』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ライトボックス]
+    related:
+      - to: dev/設計書/部品設計/ライトボックス.ts
+        type: implements
+  - path: parts/lightbox.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「ライトボックスの renderLightbox」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:ライトボックス]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/ライトボックス.ts
+        type: implements
+  - path: parts/media.stories.yaml
+    description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
+    related:
+      - to: dev/設計書/部品設計/動画と音声.ts
+        type: implements
+  - path: parts/media.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「動画と音声の renderMedia」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:動画, topic:音声]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/動画と音声.ts
         type: implements
   - path: parts/notice.stories.yaml
     description: 部品設計『知らせの枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
@@ -877,6 +991,20 @@ files:
         type: implements
       - to: dev/設計書/部品設計/用語のツールチップ.ts
         type: implements
+  - path: parts/text-color.stories.yaml
+    description: 部品設計『文字の色』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:色]
+    related:
+      - to: dev/設計書/部品設計/文字の色.ts
+        type: implements
+  - path: parts/text-color.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「本文の文字の色の renderTextColor」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:色]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/文字の色.ts
+        type: implements
   - path: parts/toc.stories.yaml
     description: 部品設計『目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
@@ -1009,6 +1137,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
+  - path: render/syntax/cards.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「リンクと添付のカード」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:カード]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
   - path: render/syntax/code-blocks.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・色分けの対象の言語」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
@@ -1033,6 +1167,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
+  - path: render/syntax/gallery.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「ギャラリー」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ギャラリー]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
   - path: render/syntax/glossary.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「glossary のマーカーで囲んだ表の読み取り」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
     tags: [topic:索引, topic:用語]
@@ -1048,6 +1188,12 @@ files:
   - path: render/syntax/html.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「埋め込んだ HTML」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
     tags: [topic:markdown, topic:構文, tool:markdown-it, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/images.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「画像・動画・音声の属性と画像の図」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:画像, topic:動画]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
@@ -1086,6 +1232,12 @@ files:
     tags: [topic:索引, topic:用語]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
+        type: implements
+  - path: render/syntax/text-color.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「本文の文字の色」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:色]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
   - path: render/syntax/toc.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「目次」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。

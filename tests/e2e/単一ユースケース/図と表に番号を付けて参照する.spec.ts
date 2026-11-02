@@ -105,3 +105,46 @@ test("test_error_when_id_duplicated", async ({ page }) => {
     "arch",
   );
 });
+
+// マーカーのある図だけを数えてギャラリーの画像にサブ図の番号を付け、title をキャプションにする（正常シナリオ（ギャラリーのサブ図とキャプション））
+test("test_normal_when_gallery_and_caption", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- fig: shots -->",
+      "<!-- gallery: cols=2 -->",
+      "![一](https://img.example.test/one.svg)",
+      "![二](https://img.example.test/two.svg)",
+      "<!-- /gallery -->",
+      "",
+      "<!-- fig: arch -->",
+      '![構成図](https://img.example.test/arch.svg "構成")',
+      "",
+      '![写真の画像](https://img.example.test/photo.svg "写真")',
+      "",
+      "本文の [図](#fig-shots) を見る。",
+      "",
+    ].join("\n"),
+  });
+  // 検証: ギャラリーの図 1 と、サブ図の図 1a・図 1b
+  await expect(
+    page.locator('#doc figure[id="fig-shots"] > figcaption'),
+  ).toHaveText("図 1");
+  await expect(
+    page.locator('#doc figure[id="fig-shots"] .mdmark-gallery figcaption b'),
+  ).toHaveText(["図 1a", "図 1b"]);
+  // 検証: マーカーのある画像は、番号と title のキャプション
+  const arch = page.locator('#doc figure[id="fig-arch"] figcaption');
+  await expect(arch.locator("b")).toHaveText("図 2");
+  await expect(arch).toHaveText("図 2構成");
+  // 検証: マーカーの無い画像は、title だけのキャプション
+  const photo = page.locator(
+    '#doc figure:has(img[alt="写真の画像"]) figcaption',
+  );
+  await expect(photo).toHaveText("写真");
+  await expect(photo.locator("b")).toHaveCount(0);
+  // 検証: 参照のリンクの文字
+  await expect(page.locator('#doc p a[href="#fig-shots"]')).toHaveText("図 1");
+});

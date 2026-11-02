@@ -10,6 +10,7 @@ directory: |-
   ├── aliases.ts    # aliases の行の paths の YAML の読み取りとエイリアスの組み立て
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
   ├── embed.ts      # 外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
+  ├── assets.ts     # 画像・動画・音声・添付の参照の拾い出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
@@ -73,7 +74,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'unknown_mark'"
+        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark'"
         description: ずれの種類
       - name: message
         type: string
@@ -98,7 +99,7 @@ data_models:
         description: '`collectReferences` の参照の表'
       - name: docs
         type: 'Array<{ path: string; title: string; markdown: string; docId?: string }>'
-        description: 埋める文書。`markdown` は画像を `data:` URL に替えたもの
+        description: 埋める文書。`markdown` は画像を `data:` URL に替え、動画・音声の `src` をコピーへの相対パスに替えたもの（`bundle` では画像を `mdmark-asset:{キー}` に替える）
       - name: entry
         type: string
         description: 最初に開く文書の `path`
@@ -117,6 +118,27 @@ data_models:
       - name: aliases
         type: MdmarkAlias[] | undefined
         description: '`loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない'
+      - name: assets
+        type: Record<string, string> | undefined
+        description: '`bundle` で埋めた画像のキーから `data:` URL を引く表。複数の文書が指す同じ画像を 1 回だけ持つ。`document` では持たない'
+  - name: AssetRef
+    title: ファイルの参照
+    container: src/cli/assets.ts
+    usecase: 共通
+    summary: 文書が相対パスで指す画像・動画・音声・`poster`・添付のファイル 1 つ
+    properties:
+      - name: src
+        type: string
+        description: 書いたパス（クエリとフラグメントを含む）
+      - name: kind
+        type: "'image' | 'video' | 'audio' | 'poster' | 'attachment'"
+        description: 種類。`mediaKindOf` と `ATTACHMENT_KINDS` で見分ける（GIF は `image`）
+      - name: line
+        type: number
+        description: 書いた行の番号（1 から）
+    status: planned
+    introduced:
+      pr: 263
 functions:
   - name: main
     title: CLI を実行する
@@ -260,7 +282,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -348,6 +370,12 @@ functions:
         condition: '`colorTheme` が `1` の値と、`sepia` の値'
         mock: なし
         expected: '`1` は `where` が `colorTheme` の `schema` のずれが 1 件で `config.colorTheme` が無い。`sepia` は `issues` が空で `config.colorTheme` が `sepia`'
+      - name: test_validate_config_when_assets_not_string
+        case: 正常
+        summary: 形の違う assets.root を schema のずれにする
+        condition: '`assets: { root: 1 }`'
+        mock: なし
+        expected: '`{ where: "assets.root", kind: "schema" }` の 1 件'
     status: planned
     introduced:
       pr: 32
@@ -590,7 +618,7 @@ functions:
     title: 画像を埋める
     container: src/cli/embed.ts
     usecase: 共通
-    summary: Markdown の画像（`![]()` と HTML の `img`）の相対パスを、文書のフォルダを基準に読んだ `data:` URL に替える
+    summary: Markdown の画像（`![]()` と HTML の `img`）の相対パスを、文書のフォルダを基準に読んだ `data:` URL に替える。`options.assetsRoot` があれば `resolveAssetFile` の順で探し、フラグメントは `data:` URL の後ろに残す。画像の属性の `poster=` も替え、動画・音声は替えない（`copyMedia` が扱う）。`options.assets` を渡したとき（`build`）は `data:` URL の代わりに `mdmark-asset:{キー}` に替え、同じファイルを同じキーにして `options.assets` に `data:` URL を入れる
     description: 画像の場所は markdown-it のトークン（`image` と `html_inline`・`html_block` の `src`）から拾い、その文字列だけを置き換える。MIME は拡張子（png・jpg・jpeg・gif・webp・svg）で決める。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする
     kind: 関数
     scope: public
@@ -604,6 +632,10 @@ functions:
         type: string
         required: true
         description: 文書の絶対パス
+      - name: options
+        type: '{ assetsRoot?: string; assets?: Map<string, { key: string; url: string }> }'
+        required: false
+        description: '`assets.root` の絶対パスと、`build` が文書をまたいで共有する埋めた画像の表'
     returns:
       type: 'Promise<{ markdown: string; warnings: string[] }>'
       description: 画像を替えた Markdown と警告の内容
@@ -626,9 +658,24 @@ functions:
         condition: '`![図](https://example.com/a.png)`'
         mock: なし
         expected: '`markdown` が元のままで、`warnings` に `https://example.com/a.png` が入る'
+      - name: test_inline_images_when_assets_root
+        case: 正常
+        summary: アセットのルートの画像とフラグメントと poster を替える
+        condition: '`assets/a.png` だけがあり `![図](a.png#only-dark)` と `![操作](demo.mp4){poster=a.png}`、`assetsRoot` が `assets`'
+        mock: 一時フォルダ
+        expected: '`data:image/png;base64,…#only-dark` と `poster=data:image/png;base64,…` に替わり、`demo.mp4` は元のまま'
+      - name: test_inline_images_when_shared
+        case: 正常
+        summary: build では同じ画像を 1 つのキーにする
+        condition: 2 つの文書が同じ `img/a.png` を指し、同じ `assets` を渡す
+        mock: 一時フォルダ
+        expected: どちらの `markdown` も同じ `mdmark-asset:{キー}` を持ち、`assets` が 1 件
     status: planned
     introduced:
       pr: 32
+    callees:
+      - '#functions[resolveAssetFile]'
+      - '#functions[collectAssetRefs]'
   - name: findOutsideLinks
     title: 1 枚に含まれない文書へのリンクを拾う
     container: src/cli/embed.ts
@@ -841,7 +888,7 @@ functions:
     title: 埋めるものを用意する
     container: src/cli/export.ts
     usecase: 共通
-    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す
+    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
     description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
@@ -849,9 +896,9 @@ functions:
     side_effects: 外部ライブラリの URL の先を読む
     args:
       - name: options
-        type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string }"
+        type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string; out: string }"
         required: true
-        description: 読んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書
+        description: 読んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書、出力の HTML の絶対パス
     returns:
       type: 'Promise<{ payload: ExportPayload; themeCss?: string; warnings: string[] }>'
       description: 書き出しの中身・使う側の CSS・警告
@@ -922,6 +969,12 @@ functions:
         condition: '`colorTheme: theme-slate` の設定、`colorTheme: sepia` の設定、`colorTheme` を持たない設定'
         mock: 一時フォルダ
         expected: 1 つ目の `payload.config.colorTheme` が `theme-slate` で `warnings` が空。2 つ目は `sepia` で `warnings` に `sepia` を含む 1 件。3 つ目は `payload.config` が `colorTheme` を持たない
+      - name: test_prepare_embeds_when_media
+        case: 正常
+        summary: 動画をコピーしてから画像を埋める
+        condition: '`assets.root: assets` の設定、文書に `![操作](demo.mp4){poster=demo.png}` と `![図](a.png)`、`assets/` に 3 つのファイル、`out` が `guide.html`'
+        mock: 一時フォルダ
+        expected: '`guide_files/` に `demo.mp4` があり、`payload.docs[0].markdown` の `src` がコピーへの相対パスで、`poster` と画像が `data:` URL'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[bundleModule]'
@@ -930,6 +983,8 @@ functions:
       - '#functions[documentTitle]'
       - '#functions[usedSyntaxLanguages]'
       - '#functions[loadAliases]'
+      - '#functions[copyMedia]'
+      - '#functions[inlineImages]'
     status: planned
     introduced:
       pr: 32
@@ -1105,7 +1160,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -1163,6 +1218,12 @@ functions:
         condition: '`colorTheme: sepia` と、無いファイルを指す `extensions`、`build.out` と当たる文書の無い `build.include` を持つ `build` を持つ設定。別に `colorTheme: theme-slate` の設定'
         mock: 一時フォルダ
         expected: 前者の `kind` が `schema`・`unknown_color_theme`・`no_documents` の順で、`unknown_color_theme` の `where` が `colorTheme`、`message` に `sepia` と 4 つの名前を含む。後者は `unknown_color_theme` が無い
+      - name: test_collect_check_issues_when_missing_file
+        case: 正常
+        summary: 見つからないファイルを unknown_mark の前に返し、無い assets.root を schema にする
+        condition: '`assets.root: none` の設定、文書 `a.md` の 2 行目に `![図](x.png)` と 4 行目に `<!-- tabz -->`'
+        mock: 一時フォルダ
+        expected: '`kind` が `schema`（`where` が `assets.root`）・`missing_file`（`where` が `2`）・`unknown_mark` の順'
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
@@ -1171,6 +1232,8 @@ functions:
     status: planned
     introduced:
       pr: 39
+    callees:
+      - '#functions[checkMissingFiles]'
   - name: loadExtensionDirectives
     title: 拡張の印の名前を読む
     container: src/cli/check.ts
@@ -1337,7 +1400,7 @@ functions:
     kind: 関数
     container: src/cli/export.ts
     usecase: 文書をHTMLに書き出す
-    summary: '文書 1 つを `kind: document` の中身にして HTML を書き、書いたパスと警告を返す'
+    summary: '文書 1 つを `kind: document` の中身にして HTML を書き、書いたパスと警告を返す。動画と音声は HTML を書く前に `_files/` へコピーする（埋めるものを用意する）'
     description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには書かない'
     scope: public
     is_async: true
@@ -1359,7 +1422,7 @@ functions:
     exceptions:
       - name: CliError
         condition: 設定の誤り・文書が無い・出力先へ書けない
-        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを直してください。／書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。）'
+        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを直してください。／書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。／コピー先へ書けない: `copyMedia` のメッセージ）'
     unit_tests:
       - name: test_export_document
         case: 正常
@@ -1373,6 +1436,13 @@ functions:
         condition: '`file: missing.md`'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `missing.md` が入り、`.html` が無い'
+        exception: 設定の誤り・文書が無い・出力先へ書けない
+      - name: test_export_document_when_media_unwritable
+        case: 異常
+        summary: 動画のコピー先へ書けなければ HTML を書かずに CliError
+        condition: 文書に `![操作](demo.mp4)`、出力のフォルダに `guide_files` という名前のファイル
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        expected: '`CliError` を投げ、`guide.html` が無い'
         exception: 設定の誤り・文書が無い・出力先へ書けない
     callees:
       - '#functions[requireConfig]'
@@ -1392,7 +1462,7 @@ functions:
     kind: 関数
     container: src/cli/build.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
-    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、書いたパス・文書の数・警告を返す'
+    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、書いたパス・文書の数・警告を返す。動画と音声は HTML を書く前に `_files/` へコピーする（埋めるものを用意する）'
     description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには書かない'
     scope: public
     is_async: true
@@ -1436,6 +1506,12 @@ functions:
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `build.include` と `build.out` が入る'
         exception: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書けない
+      - name: test_build_site_when_shared_image
+        case: 正常
+        summary: 同じ画像を 1 回だけ埋める
+        condition: '`a.md` と `b.md` が同じ `img/a.png` を指す'
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        expected: 書いた HTML の中の `data:image/png;base64,` が 1 つで、`payload.assets` が 1 件
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -1656,6 +1732,157 @@ functions:
     status: planned
     introduced:
       pr: 176
+  - name: collectAssetRefs
+    title: ファイルの参照を拾う
+    container: src/cli/assets.ts
+    usecase: 共通
+    kind: 関数
+    scope: internal
+    summary: markdown-it のトークン（`image`・`link_open` と `html_inline`・`html_block` の `img` の `src`）と画像の属性の `poster=` から、相対パスの参照を `AssetRef` で返す。絶対 URL・`data:`・`#` で始まるもの、コードブロックとインラインコードの中は拾わない。リンクは拡張子が `ATTACHMENT_KINDS` にあるものだけを `attachment` で拾う
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: AssetRef[]
+      description: 書いた順の参照
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[mediaKindOf]
+    unit_tests:
+      - name: test_collect_asset_refs
+        case: 正常
+        summary: 画像・動画・poster・添付を拾う
+        condition: 1 行目 `![図](a.png#only-dark)`、2 行目 `![操作](demo.mp4){poster=demo.png}`、3 行目 `[仕様](spec.pdf)`、4 行目 `[外](https://example.com/b.png)`
+        mock: なし
+        expected: '`a.png#only-dark`（image, 1）・`demo.mp4`（video, 2）・`demo.png`（poster, 2）・`spec.pdf`（attachment, 3）の 4 件'
+      - name: test_collect_asset_refs_when_code
+        case: 正常
+        summary: コードの中は拾わない
+        condition: コードブロックの中の `![図](a.png)` とインラインコードの `` `![図](b.png)` ``
+        mock: なし
+        expected: 空
+    status: planned
+    introduced:
+      pr: 263
+  - name: resolveAssetFile
+    title: アセットのルートでファイルを探す
+    container: src/cli/assets.ts
+    usecase: 共通
+    kind: 関数
+    scope: internal
+    summary: 書いたパスからクエリとフラグメントを外し、文書のフォルダを基準に探して、無ければ `assetsRoot` を基準に同じ相対パスで探す。見つかったファイルの絶対パスを返す
+    is_async: true
+    args:
+      - name: src
+        type: string
+        required: true
+        description: 書いたパス
+      - name: options
+        type: '{ docDir: string; assetsRoot?: string }'
+        required: true
+        description: 文書のフォルダと、設定ファイルのフォルダから解決した `assets.root` の絶対パス
+    returns:
+      type: Promise<string | undefined>
+      description: 見つかったファイルの絶対パス。どちらにも無ければ `undefined`
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[アセットのルート]
+    unit_tests:
+      - name: test_resolve_asset_file
+        case: 正常
+        summary: 文書のフォルダを先に、無ければアセットのルートで探す
+        condition: '`docs/a.png` と `assets/a.png` と `assets/b.png` があり、`docDir` が `docs`、`assetsRoot` が `assets` で `a.png?v=1#x` と `b.png` と `c.png`'
+        mock: 一時フォルダ
+        expected: '`docs/a.png`・`assets/b.png`・`undefined`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: copyMedia
+    title: 動画と音声をコピーする
+    container: src/cli/assets.ts
+    usecase: 共通
+    kind: 関数
+    scope: internal
+    summary: '`collectAssetRefs` の `video`・`audio` を `resolveAssetFile` で探し、`{出力のファイル名から拡張子を除いた名前}_files/` の下へコピーして、Markdown の `src` を HTML からの相対パス（クエリとフラグメントは残す）に替える。コピー先の中のパスは `baseDir` からの相対パスにし、`baseDir` の外のファイルは `external/{ファイル名}`（重なれば `-1`・`-2`）にする。`copied` に入っているファイルはコピーせず同じパスを使う。見つからないものは書いたまま残して警告にする'
+    is_async: true
+    side_effects: '`_files/` を作り、ファイルをコピーする'
+    args:
+      - name: options
+        type: '{ markdown: string; docFile: string; assetsRoot?: string; baseDir: string; out: string; copied: Map<string, string> }'
+        required: true
+        description: 文書の Markdown・文書の絶対パス・`assets.root`・設定ファイルのフォルダ（無ければ文書のフォルダ）・出力の HTML の絶対パス・この書き出しでコピーしたファイルからコピー先を引く表（文書をまたいで共有する）
+    returns:
+      type: 'Promise<{ markdown: string; warnings: string[] }>'
+      description: '`src` を替えた Markdown と警告'
+    exceptions:
+      - name: CliError
+        condition: '`_files/` を作れない・書けない'
+        message: '`{出力のフォルダ}/{名前}_files に書けません（{理由}）。出力先のフォルダを確かめてください。`'
+    callees:
+      - '#functions[collectAssetRefs]'
+      - '#functions[resolveAssetFile]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[コピーする動画と音声]
+    unit_tests:
+      - name: test_copy_media
+        case: 正常
+        summary: 動画をコピーして src を替え、同じファイルは 1 回だけコピーする
+        condition: '`docs/guide.md` の `![操作](media/demo.mp4#t=3)` と `![操作](media/demo.mp4)`、`out` が `out/guide.html`'
+        mock: 一時フォルダ
+        expected: '`out/guide_files/docs/media/demo.mp4` が 1 つあり、`markdown` の `src` が `guide_files/docs/media/demo.mp4#t=3` と `guide_files/docs/media/demo.mp4`、`copied` が 1 件'
+      - name: test_copy_media_when_outside
+        case: 正常
+        summary: 基準の外のファイルは external に名前を重ねずに置く
+        condition: '`baseDir` の外の `x/demo.mp4` と `y/demo.mp4` を指す文書'
+        mock: 一時フォルダ
+        expected: '`_files/external/demo.mp4` と `_files/external/demo-1.mp4`'
+      - name: test_copy_media_when_missing
+        case: 正常
+        summary: 見つからない動画は残して警告にする
+        condition: '`![操作](none.mp4)` でファイルが無い'
+        mock: 一時フォルダ
+        expected: '`markdown` が元のままで `warnings` に `none.mp4` が入り、`_files/` が無い'
+      - name: test_copy_media_when_unwritable
+        case: 異常
+        summary: コピー先を作れなければ CliError
+        condition: '`out/guide_files` という名前のファイルがある'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `guide_files` が入る'
+        exception: '`_files/` を作れない・書けない'
+    status: planned
+    introduced:
+      pr: 263
+  - name: checkMissingFiles
+    title: 見つからないファイルを点検する
+    container: src/cli/assets.ts
+    usecase: 設定と索引を点検する
+    kind: 関数
+    scope: internal
+    summary: '`collectAssetRefs` の参照ごとに `resolveAssetFile` で探し、見つからないものを 1 つにつき 1 件の `missing_file` のずれにする（`where` は行の番号、`message` は書いたパスと種類（画像・動画・音声・添付）と直し方の 1 文）'
+    is_async: true
+    args:
+      - name: options
+        type: '{ markdown: string; docFile: string; file: string; assetsRoot?: string }'
+        required: true
+        description: 文書の Markdown・絶対パス・ずれに出す相対パスと `assets.root`
+    returns:
+      type: Promise<CheckIssue[]>
+      description: ずれの並び
+    callees:
+      - '#functions[collectAssetRefs]'
+      - '#functions[resolveAssetFile]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[見つからないファイルの点検]
+    unit_tests:
+      - name: test_check_missing_files
+        case: 正常
+        summary: 見つからない画像と添付をずれにする
+        condition: 3 行目に `![図](none.png)`、5 行目に `[仕様](none.pdf)`、`a.png` だけがある文書で `![図](a.png)`
+        mock: 一時フォルダ
+        expected: '`missing_file` が 2 件で、`where` が `3`・`5`、`message` に `none.png` と `画像`、`none.pdf` と `添付` が入る'
+    status: planned
+    introduced:
+      pr: 263
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -1682,3 +1909,4 @@ test_files:
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/alias-schema.test.ts
   - tests/unit/src/cli/aliases.test.ts
+  - tests/unit/src/cli/assets.test.ts

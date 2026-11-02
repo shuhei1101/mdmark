@@ -92,6 +92,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
         type: implements
+  - path: src/preview/assets.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「文書が指すファイルを探す場所の候補（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:ファイル]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
   - path: src/preview/diff-target.ts
     description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「差分ビューの対象とパネルのキー（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
     tags: [tool:vscode, topic:プレビュー, topic:差分]
@@ -140,6 +146,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts
         type: implements
+  - path: src/webview/assets.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「画像・動画・音声の URL の差し替えと、再生できない動画・音声の知らせ」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, topic:動画]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
   - path: src/webview/parts/config-band.stories.yaml
     description: 部品設計『設定ファイルを読めない帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:設定]
@@ -153,6 +165,20 @@ files:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
         type: implements
       - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+        type: implements
+  - path: src/webview/parts/media-error.stories.yaml
+    description: 部品設計『再生できない動画・音声の知らせ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
+    related:
+      - to: dev/設計書/部品設計/再生できない動画・音声の知らせ.ts
+        type: implements
+  - path: src/webview/parts/media-error.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「再生できない動画・音声の知らせの HTML」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, topic:動画]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/部品設計/再生できない動画・音声の知らせ.ts
         type: implements
   - path: src/webview/parts/preview-status.stories.yaml
     description: 部品設計『プレビューの状態の表示』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。

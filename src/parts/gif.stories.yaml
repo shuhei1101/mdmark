@@ -1,0 +1,25 @@
+title: Parts/Gif
+stories:
+  - name: Playing
+    parameters:
+      server:
+        id: gif
+    args:
+      src: build.gif
+      alt: ビルドの進み具合
+  - name: Paused
+    parameters:
+      server:
+        id: gif
+    args:
+      src: build.gif
+      alt: ビルドの進み具合
+      paused: true
+  - name: NoLightbox
+    parameters:
+      server:
+        id: gif
+    args:
+      src: build.gif
+      alt: ビルドの進み具合
+      lightbox: false

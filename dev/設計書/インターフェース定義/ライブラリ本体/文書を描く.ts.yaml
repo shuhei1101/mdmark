@@ -3067,6 +3067,236 @@ flows:
       - '`update` の後も、el の `button.mdmark-param-copy` の `textContent` とアクセシブルネームが `コピー`'
       - el2 の `button.mdmark-param-copy` の `textContent` が `今の値を写す`
     test: test_normal_when_param_copy_label_configured
+  - name: 正常系（画像をライトボックスで拡大する）
+    summary: 画像を押すと全画面のダイアログで拡大し、前後に送り、Esc と背景で閉じて押した画像へフォーカスを戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 3 つの画像の Markdown
+        description: '`a.png`・`b.png`・`c.png` の画像だけの段落を、本文の段落を挟んで並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い（画像は手元の応答で返す）
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 画像を拡大のボタンで包む
+        P->>M: 2 つ目の画像を押す
+        M->>P: ダイアログを showModal() で開き、b.png を出す
+        P->>M: 右の矢印キー・前の画像のボタンを 2 回押す
+        M->>P: c.png・a.png に送る
+        P->>M: Esc を押す
+        M-->>P: ダイアログを閉じ、2 つ目の画像へフォーカスを戻す
+        P->>M: 2 つ目の画像を押し、ダイアログの外の背景を押す
+        M-->>P: ダイアログを閉じ、2 つ目の画像へフォーカスを戻す
+    expected:
+      - '3 つの画像が `<button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}">` に入っている'
+      - 2 つ目を押した後、`dialog.mdmark-lightbox` が開き、中の `img` の `src` が `b.png`、枚数の表示が `2 / 3`
+      - 右の矢印キーの後に `c.png`、前の画像のボタンを 2 回押した後に `a.png` が出ている
+      - Esc の後にダイアログが閉じ、`document.activeElement` が 2 つ目の画像のボタンで、`scrollY` が押す前と同じ
+      - 開き直してダイアログの外の背景を押した後にダイアログが閉じ、`document.activeElement` が 2 つ目の画像のボタン
+      - ダイアログの前の画像・次の画像・閉じるのボタンが読み上げの名前を持つ
+    test: test_normal_when_lightbox_opened
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ（キーで開く）]
+  - name: 正常系（ライトボックスで拡大・移動する）
+    summary: ライトボックスの画像を図の全画面と同じボタンとキーで拡大・縮小し、拡大中は矢印キーで動かす
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 2 つの画像の Markdown
+        description: 幅 1600・高さ 1000 の `a.png` と `b.png` の画像だけの段落を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 1 つ目の画像を押す
+        M->>P: 収まる倍率で a.png を出す
+        P->>M: + を 2 回押す
+        M->>P: 倍率を 1.25 倍ずつ上げ、移動のボタンを出す
+        P->>M: 右の矢印キーを押す
+        M->>P: 画像を動かす（送らない）
+        P->>M: 0 を押してから右の矢印キーを押す
+        M-->>P: 収まる倍率に戻し、b.png に送る
+    expected:
+      - 開いた直後の倍率のボタンの文字が、画像がダイアログに収まる倍率で、移動のボタンが出ていない
+      - '`+` を 2 回押した後、倍率が 1.25 倍ずつ上がり、移動のボタン（上・下・左・右）が出る'
+      - 拡大中の右の矢印キーで画像が動き、`img` の `src` が `a.png` のまま
+      - '`0` の後の右の矢印キーで `b.png` に送られ、倍率が収まる倍率に戻っている'
+    test: test_normal_when_lightbox_zoomed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ]
+  - name: 正常系（拡大しない画像）
+    summary: '`nolightbox` の画像を拡大のボタンで包まず、送りの並びから外す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: nolightbox を持つ Markdown
+        description: '`a.png`・`![アイコン](b.png){nolightbox}`・`c.png` の画像だけの段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 1 つ目の画像を押してから右の矢印キーを押す
+        M-->>P: c.png に送る
+    expected:
+      - '`b.png` の `img` が `mdmark-image-open` に入らず、Tab でフォーカスされない'
+      - 右の矢印キーの後に `c.png` が出て、枚数の表示が `2 / 2`
+    test: test_normal_when_nolightbox
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ（拡大しない画像）]
+  - name: 正常系（GIF を止める・再生する）
+    summary: GIF に止める・再生するボタンを付け、押すたびに最初のフレームで止めるか動かす
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: GIF の Markdown
+        description: 無限ループで、フレームの間隔が 100ms の `anim.gif` の画像だけの段落を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: GIF の最初のフレームを canvas に描き、ボタンを付ける
+        P->>M: ボタンを押す
+        M->>P: canvas を出し、img を隠す
+        P->>M: もう一度押す
+        M-->>P: img を出し、canvas を隠す
+    expected:
+      - '`img` が `<span class="mdmark-gif">` に入り、`aria-pressed="false"`・`aria-label="GIF を停止"` を持つ `button.mdmark-gif-toggle` がある'
+      - 押す前、500ms 空けて撮った 2 枚の GIF の範囲の画素が変わる
+      - 押した後、2 枚の画素が一致し、ボタンが `aria-pressed="true"`・`aria-label="GIF を再生"` を持つ
+      - もう一度押した後、2 枚の画素が変わり、`aria-pressed="false"`
+      - 止める・再生するで外への要求が増えない
+    test: test_normal_when_gif_toggled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ（GIF を止める・再生する）]
+  - name: 正常系（動きを減らす設定の GIF）
+    summary: '`prefers-reduced-motion: reduce` のとき、GIF を止めた状態で描く'
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`prefers-reduced-motion: reduce`'
+      - name: GIF の Markdown
+        description: 正常系（GIF を止める・再生する）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M-->>P: 止めた状態の GIF とボタン
+    expected:
+      - 描いた直後、500ms 空けて撮った 2 枚の画素が一致する
+      - ボタンが `aria-pressed="true"`・`aria-label="GIF を再生"` を持つ
+    test: test_normal_when_gif_reduced_motion
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ（動きを減らす設定の GIF）]
+  - name: 正常系（名前の色とテーマごとの画像の配色）
+    summary: 色の名前の要素に今の配色の色のプリセットを当て、今の配色に合わない画像を隠す
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`prefers-color-scheme: light` で描き、後で `dark` にする'
+      - name: 色とテーマごとの画像の Markdown
+        description: '`` `badge:green:完了` ``・`[決め手の 1 文]{color=red}`、`![構成](arch-dark.png#only-dark)`・`![構成](arch-light.png#only-light)` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M-->>P: 明るい配色の色のプリセットで描く
+        P->>P: prefers-color-scheme を dark にする
+        P-->>P: 暗い配色の色のプリセットと画像に切り替わる
+    expected:
+      - 明るい配色のとき、バッジの文字の色の計算値が `--mdmark-color-accent-green-text`、本文の文字の色の計算値が `--mdmark-color-accent-red-text` の明るい配色の値で、本文の文字の `font-weight` が 700
+      - 明るい配色のとき、`arch-light.png` が表示され、`arch-dark.png` の `figure` の `display` が `none`
+      - 暗い配色にした後、色の計算値が暗い配色の値になり、表示される画像が `arch-dark.png` だけになる
+      - 色を付けた文字とその面の色のコントラストが、どちらの配色でも 4.5:1 以上
+    test: test_normal_when_color_preset_and_theme_images
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ（ダークの配色）]
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く#scenarios[正常シナリオ（テーマごとの画像）]
+  - name: 正常系（色・画像・動画・カードを印刷する）
+    summary: 印刷では明るい配色の色のプリセットで色を残し、明るい配色の画像・動画の `poster`・カードの URL を出し、操作のボタンを出さない
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`prefers-color-scheme: dark` で描く'
+      - name: 色・画像・動画・カードの Markdown
+        description: '`row-color=` で行に色を付けた表・`` `badge:green:完了` ``・`[決め手の 1 文]{color=red}`、`![構成](arch-dark.png#only-dark)`・`![構成](arch-light.png#only-light)`、GIF の画像、`poster=poster.png` を持つ動画、URL だけの段落、`[仕様書](files/spec.pdf)` だけの段落を持つ文書'
+      - name: Mock
+        description: '画像・動画は手元のファイル。印刷は Playwright の `emulateMedia({ media: "print" })` で代える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M-->>P: 暗い配色で描く
+        P->>P: 印刷の media にする
+        P-->>P: 印刷向けの CSS が当たる
+    expected:
+      - 印刷の media の間、行の面の色・バッジと本文の文字の色の計算値が、色のプリセットの明るい配色の値
+      - '`arch-light.png` の `figure` が出て、`arch-dark.png` の `figure` の `display` が `none`'
+      - '`button.mdmark-gif-toggle` と拡大のアイコンの `display` が `none`'
+      - '`video` の `display` が `none` で、`img.mdmark-media-print`（`poster.png`）とキャプションが出ている'
+      - リンクのカードと添付のカードに、リンク先の URL の文字が出ている
+    test: test_normal_when_colors_and_media_printed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（色・画像・動画・カードを印刷に出す）]
+  - name: 正常系（選んだテーマの色のプリセット）
+    summary: '`opts.config.colorTheme` で選んだテーマの色のプリセットで色の名前の要素を描く'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 'OS の配色はライト（`prefers-color-scheme: light`）'
+      - name: 色の名前の Markdown
+        description: '`` `badge:green:完了` `` と `[決め手の 1 文]{color=red}` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config: { colorTheme: "theme-slate" } })
+        M-->>P: theme-slate の色のプリセットで描く
+    expected:
+      - バッジの文字の色の計算値が theme-slate の明るい配色の `--mdmark-color-accent-green-text` の値、本文の文字の色の計算値が `--mdmark-color-accent-red-text` の値
+      - 色を付けた文字とその面の色のコントラストが 4.5:1 以上
+    test: test_normal_when_color_preset_in_theme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（選んだテーマの色のプリセット）]
+  - name: 正常系（色のプリセットを上書きする）
+    summary: 使う側が層の外で書いた色のプリセットの CSS 変数が、色の名前の要素に当たる
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。加えて、層の外に `.mdmark { --mdmark-color-accent-blue-text: rgb(0, 0, 128); --mdmark-color-accent-blue-bg: rgb(230, 240, 255) }` を書いた `style` 要素を持つ'
+      - name: 色の名前の Markdown
+        description: '`` `badge:blue:参考` `` と `[決め手の 1 文]{color=blue}` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: el の中に本文を描く
+        P->>P: 層の外の変数の上書きが当たる
+    expected:
+      - バッジと本文の文字の色の計算値が `rgb(0, 0, 128)`
+      - バッジの面の色の計算値が `rgb(230, 240, 255)`
+    test: test_normal_when_color_preset_overridden
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（色のプリセットを上書きする）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
@@ -3473,4 +3703,17 @@ constraints:
     notes: 見た目は確認ログのモックへの合意（左の余白の + / −）。色は `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`・`--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign`。削除したブロックはスクロールを合わせる先と見出しのアンカーにしない
   - item: ファイルツリーの開閉とコピー
     constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に種類 `tree` とコピーボタンの帯を置き、子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が `all` なら全て、数ならルートの深さを 0 として深さがその数より浅いフォルダ、無ければルートだけを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を書き、書けないときは表のコピーと同じパネルを出す'
+  - item: 色のプリセット
+    constraint: '色の名前ごとに、面の薄い色 `--mdmark-color-accent-{色}-bg` と文字の色 `--mdmark-color-accent-{色}-text` の CSS 変数を、選べるテーマのそれぞれの明るい配色と暗い配色で持つ（色の名前は インターフェース定義『文書をHTML文字列にする』の制約「色の名前」）。`data-color` を持つ強調した列のセルと行は面の薄い色、バッジは面の薄い色と文字の色、本文の文字の色の `mdmark-color` は文字の色と太字にする。強調した列の見出しのセルに下端の線、色を付けた行に上下の線を付ける。どの組も、文字と面のコントラストを 4.5:1 以上にする。印刷では選んだテーマの明るい配色の値で色を残す'
+    notes: 値は dev/設計書/デザイン方針.md。使う側は層の外でこの変数を上書きできる（制約「テーマ」）
+  - item: ライトボックス
+    constraint: '`lightbox` がオンのとき、`figure.mdmark-image` の中の `img` のうち `data-nolightbox` を持たないものを、`<button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}">` と右上の拡大のアイコン（`aria-hidden`）で包む（リンクの中の画像と、文の中の画像は包まない）。押すと、`<dialog class="mdmark-lightbox" aria-label="画像の拡大">` を `showModal()` で開き、押した画像と title のキャプションを出す。送りの並びは同じ文書の包んだ画像を文書の順に並べたもの（今の配色で隠れている `mdmark-only-*` の画像を除く）で、帯の左に前の画像・枚数（`{何枚目} / {全ての枚数}`）・次の画像のボタン、続けて図の全画面と同じ縮小・倍率・拡大と移動のボタン、右端に閉じるボタンを置く。画像が 1 枚のときは前後のボタンを出さない。左右の矢印キーで前後に送り（拡大中は送らず、制約「図の移動」と同じく動かす）、端では送らない。閉じるボタン・Esc・ダイアログの外の背景（`::backdrop`）を押すと閉じ（`closedby="any"`。持たないブラウザは `dialog` 自身を押したときに閉じる）、フォーカスを押した画像のボタンへ戻し、文書のスクロールの位置を開く前のままにする。ダイアログの中で Tab のフォーカスを循環させる。閉じたときに、開いている間に付けた受け取りを外す'
+    notes: 操作は図の全画面と揃える（#199 の D-36）。帯の並びは確認ログのモックへの合意。ライトボックスの本体を配布物から分けて使うときだけ読むかはモジュール構成設計
+  - item: ライトボックスの拡大・縮小・移動
+    constraint: 開いたときは画像の全体がダイアログに収まる倍率（100% を超えない）で出し、制約「図の拡大・縮小」と同じ刻み・上限・キー（`+`・`-`・`0`）・倍率のボタンの読み上げの名前で拡大・縮小する。画像が収まらない間だけ移動のボタンを出し、ドラッグと矢印キーで制約「図の移動」と同じだけ動かす。前後に送ると、収まる倍率と位置に戻す
+  - item: GIF の止める・再生する
+    constraint: '`gif` がオンのとき、`data-gif` を持つ `img` を `<span class="mdmark-gif">` で包み、`img.decode()` の後に最初のフレームを同じ大きさの `canvas` に描いて `img` の後ろに `hidden` で置き、`<button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止">` を付ける。押すと、止めるときは `canvas` を出して `img` を `visibility: hidden` にし、ボタンを `aria-pressed="true"`・`aria-label="GIF を再生"` にする。再生するときは逆にする。`prefers-reduced-motion: reduce` のときは止めた状態で始める。`decode()` が失敗した GIF にはボタンを付けない。`canvas[hidden]` は `display: none` にする'
+    notes: 止め方は PoC 検証の案 A（止めると最初のフレームに戻る）
+  - item: 印刷の画像と動画
+    constraint: 印刷では、拡大のアイコンと GIF のボタンを出さず、`mdmark-only-light` の画像を出して `mdmark-only-dark` の画像を隠す。`video` と `audio` を出さず、`mdmark-media-print` の画像とキャプションを出す。リンクと添付のカードは、リンク先の URL を文字で出す
 test_file: tests/integration/lib/mount.browser.test.ts

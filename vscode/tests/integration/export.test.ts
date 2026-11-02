@@ -439,7 +439,10 @@ suite("PDF に印刷", () => {
   test("test_normal_when_color_theme_selected", async () => {
     // 準備
     await setSetting("colorTheme", "theme-slate");
-    await openGuide({ extra: "[リンク](https://example.com/)\n" });
+    // リンク 1 つだけの段落はカードにするため、文の中にリンクを置く
+    await openGuide({
+      extra: "詳しくは [リンク](https://example.com/) を見る。\n",
+    });
     trackFile("docs/guide.html");
     // 実行
     await vscode.commands.executeCommand("mdmark.printToPdf");

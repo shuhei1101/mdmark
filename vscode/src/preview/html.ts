@@ -33,6 +33,7 @@ export function buildCsp(options: {
     `script-src ${[`'nonce-${nonce}'`, distOrigin, ...libraryOrigins, cspSource].join(" ")}`,
     `style-src ${distOrigin} ${cspSource} 'unsafe-inline'`,
     `img-src ${cspSource} https: data:`,
+    `media-src ${cspSource} https: data:`,
     `font-src ${distOrigin} ${cspSource}`,
     `connect-src ${distOrigin}`,
   ].join("; ");

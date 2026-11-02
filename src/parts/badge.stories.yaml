@@ -12,3 +12,25 @@ stories:
         id: badge
     args:
       label: とても長い状態の名前で札の幅を超えるときの見え方を確かめる札
+  - name: Colored
+    parameters:
+      server:
+        id: badge
+    args:
+      label: 要確認
+      color: red
+  - name: ColoredDark
+    parameters:
+      server:
+        id: badge
+    args:
+      label: 完了
+      color: green
+      scheme: dark
+  - name: ColoredLong
+    parameters:
+      server:
+        id: badge
+    args:
+      label: とても長い状態の名前で札の幅を超えるときの見え方を確かめる札
+      color: yellow

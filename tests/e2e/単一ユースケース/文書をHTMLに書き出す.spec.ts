@@ -13,6 +13,7 @@ import {
   writeFiles,
 } from "../cli.ts";
 import { SYNTAX_ES_ROOT } from "../dist-page.ts";
+import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
 
 // 色分けのライブラリの本体と、手元に置く言語のモジュール（文書が使うのは `typescript` と `python`、`yaml` は使わない）
 const SYNTAX_FILES = [
@@ -342,5 +343,85 @@ test("test_normal_when_theme_selected", async ({
     "color",
     "rgb(0, 55, 168)",
   );
+  expect(opened.externalRequests()).toEqual([]);
+});
+
+// 画像を data URL で埋め、動画・音声を出力先のフォルダへコピーし、文書からの相対パスに無いファイルをアセットのルートで探す（正常シナリオ（画像・動画・音声を埋める））
+test("test_normal_when_media_embedded", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const media = await readMediaSamples();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "assets:\n  root: assets\n",
+    "docs/guide.md": [
+      "# ガイド",
+      "",
+      "![グラフ](images/chart.png)",
+      "",
+      "![暗い構成](images/dark.png#only-dark)",
+      "",
+      "![ビルド](images/build.gif)",
+      "",
+      "![操作](media/demo.mp4)",
+      "",
+      "![読み上げ](media/voice.mp3)",
+      "",
+      "![ロゴ](images/logo.png)",
+      "",
+      "[仕様書](files/spec.pdf)",
+      "",
+    ].join("\n"),
+    "docs/images/chart.png": PNG_BYTES,
+    "docs/images/dark.png": PNG_BYTES,
+    "docs/images/build.gif": media.gif,
+    "docs/media/demo.mp4": media.mp4,
+    "docs/media/voice.mp3": media.mp3,
+    "docs/files/spec.pdf": "%PDF-1.4\n",
+    "assets/images/logo.png": PNG_BYTES,
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["export", "docs/guide.md"], dir);
+  // 検証: 終了コード
+  expect(result.code).toBe(0);
+  // 検証: 動画・音声を出力先のフォルダへコピーし、添付はコピーしない
+  const filesDir = join(dir, "docs", "guide_files");
+  expect(await readFile(join(filesDir, "docs", "media", "demo.mp4"))).toEqual(
+    media.mp4,
+  );
+  expect(await readFile(join(filesDir, "docs", "media", "voice.mp3"))).toEqual(
+    media.mp3,
+  );
+  expect(existsSync(join(filesDir, "docs", "files"))).toBe(false);
+  // 検証: 開いた HTML の画像は data URL、動画・音声はコピーを相対パスで指し、添付は書いたパスのまま
+  const opened = await openStandaloneWithFiles(page, {
+    tempDir,
+    htmlFile: join(dir, "docs", "guide.html"),
+    filesDir,
+  });
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("video")).toHaveCount(1);
+  for (const alt of ["グラフ", "暗い構成", "ビルド", "ロゴ"]) {
+    await expect(article.locator(`img[alt="${alt}"]`), alt).toHaveAttribute(
+      "src",
+      /^data:/,
+    );
+  }
+  await expect(article.locator("video")).toHaveAttribute(
+    "src",
+    "guide_files/docs/media/demo.mp4",
+  );
+  await expect(article.locator("audio")).toHaveAttribute(
+    "src",
+    "guide_files/docs/media/voice.mp3",
+  );
+  await expect(
+    article.locator('a.mdmark-card[data-card="file"]'),
+  ).toHaveAttribute("href", "files/spec.pdf");
+  // 検証: 外へのネットワークの要求が 0 件
+  await page.waitForLoadState("networkidle");
   expect(opened.externalRequests()).toEqual([]);
 });

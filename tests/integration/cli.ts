@@ -1,8 +1,16 @@
 import { execFile } from "node:child_process";
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { basename, dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { type Browser, chromium, type Page } from "playwright";
 import { afterAll, afterEach, beforeAll, inject } from "vitest";
@@ -24,6 +32,25 @@ export const PNG_BYTES = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
   "base64",
 );
+
+/** 動画・音声・GIF の見本（モックの見本のファイル） */
+const MEDIA_SAMPLE_DIR = fileURLToPath(
+  new URL("../../dev/mock/refs/263/assets/media/", import.meta.url),
+);
+
+/** 見本の動画（mp4）・音声（mp3）・動く GIF の中身を読む */
+export async function readMediaSamples(): Promise<{
+  mp4: Buffer;
+  mp3: Buffer;
+  gif: Buffer;
+}> {
+  const [mp4, mp3, gif] = await Promise.all(
+    ["demo.mp4", "voice.mp3", "build.gif"].map((name) =>
+      readFile(join(MEDIA_SAMPLE_DIR, name)),
+    ),
+  );
+  return { mp4: mp4 as Buffer, mp3: mp3 as Buffer, gif: gif as Buffer };
+}
 
 /** 外部ライブラリの代役: `draw` で印の場所の文字を `drawn:` と引数を `,` で結んだものにする */
 export const TEST_LIB_SOURCE = `export function draw(slot, args) {
@@ -169,6 +196,7 @@ export function useBrowser(createTempDir: () => Promise<string>): {
     htmlFile: string,
     size?: { width: number; height: number },
   ) => Promise<OpenedHtml>;
+  openWithFiles: (htmlFile: string, filesDir: string) => Promise<OpenedHtml>;
 } {
   let browser: Browser | undefined;
   beforeAll(async () => {
@@ -196,6 +224,35 @@ export function useBrowser(createTempDir: () => Promise<string>): {
         }
       });
       await page.goto(`file://${alone}`);
+      return { page, externalRequests: () => requests };
+    },
+    // HTML と隣のコピー先のフォルダだけを空のフォルダへ写して開き、コピー先の下への要求も外への要求に数えない
+    openWithFiles: async (htmlFile, filesDir) => {
+      if (!browser) {
+        throw new Error("ブラウザを起動していない");
+      }
+      const dir = await createTempDir();
+      const html = join(dir, basename(htmlFile));
+      const files = join(dir, basename(filesDir));
+      await copyFile(htmlFile, html);
+      await cp(filesDir, files, { recursive: true });
+      const page = await browser.newPage({
+        viewport: { width: 1200, height: 800 },
+      });
+      const pageUrl = pathToFileURL(html).href;
+      const filesUrl = `${pathToFileURL(files).href}/`;
+      const requests: string[] = [];
+      page.on("request", (request) => {
+        const url = request.url().split("#")[0] ?? "";
+        if (
+          url !== pageUrl &&
+          !url.startsWith(filesUrl) &&
+          !/^(?:blob|data):/.test(url)
+        ) {
+          requests.push(url);
+        }
+      });
+      await page.goto(pageUrl);
       return { page, externalRequests: () => requests };
     },
   };

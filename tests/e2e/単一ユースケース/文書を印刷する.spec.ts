@@ -8,15 +8,16 @@ import {
   routeSyntax,
   sendPrintEvent,
 } from "../dist-page.ts";
+import { colorSvg, readMediaSamples, routePageFiles } from "../media.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
 
-// 閉じた折り畳みとリンクと表を持つ見本の Markdown
+// 閉じた折り畳みとリンクと表を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
 const MARKDOWN = [
   "<details><summary>閉</summary>x</details>",
   "",
-  "[リンク](https://example.com/page)",
+  "詳しくは [リンク](https://example.com/page) を見る。",
   "",
   "| 列A | 列B |",
   "| --- | --- |",
@@ -462,4 +463,98 @@ test("test_normal_when_theme_selected", async ({ page }) => {
   // 検証: 既定のテーマに戻らず、theme-slate の明るい配色のリンクの色になり、地の色は外れる
   await expect(doc.locator("a")).toHaveCSS("color", "rgb(29, 78, 216)");
   await expect(doc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+});
+
+// デザイン方針の dev-swiss の明るい配色の、色のプリセットの green の面・文字と red の文字の色
+const LIGHT_PRESET = {
+  greenBg: "rgb(203, 242, 210)",
+  greenText: "rgb(22, 101, 52)",
+  redText: "rgb(185, 28, 28)",
+};
+
+// ダークのページを印刷すると、色を明るい配色の色のプリセットで残し、明るい配色の画像・動画の poster・カードの URL を出し、操作のボタンを出さない（正常シナリオ（色・画像・動画・カードを印刷に出す））
+test("test_normal_when_colors_and_media_printed", async ({ page }) => {
+  // 準備
+  const media = await readMediaSamples();
+  await page.emulateMedia({ colorScheme: "dark" });
+  await openPage(page, builtRoot);
+  await routePageFiles(page, {
+    "dark.png": colorSvg({ width: 300, height: 160, color: "#111113" }),
+    "light.png": colorSvg({ width: 300, height: 160, color: "#f4f4f5" }),
+    "anim.gif": { body: media.gif, contentType: "image/gif" },
+    "demo.mp4": { body: media.mp4, contentType: "video/mp4" },
+    "demo.png": { body: media.poster, contentType: "image/png" },
+  });
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data row-color=状態:完了=green -->",
+      "",
+      "| 案件 | 状態 |",
+      "| --- | --- |",
+      "| 見積もり | 完了 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "`badge:green:完了` と [決め手の 1 文]{color=red}",
+      "",
+      "![暗い構成](dark.png#only-dark)",
+      "",
+      "![明るい構成](light.png#only-light)",
+      "",
+      "![ビルド](anim.gif)",
+      "",
+      '![操作](demo.mp4 "操作の動画"){poster=demo.png}',
+      "",
+      "https://example.com/docs",
+      "",
+      "[仕様書](files/spec.pdf)",
+      "",
+    ].join("\n"),
+  });
+  await expect(page.locator("#doc button.mdmark-gif-toggle")).toHaveCount(1);
+  // 実行
+  await page.emulateMedia({ colorScheme: "dark", media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 表の行・バッジ・本文の文字の色が、明るい配色の色のプリセットの値
+  const doc = page.locator("#doc");
+  await expect(doc.locator("tr[data-color] td").first()).toHaveCSS(
+    "background-color",
+    LIGHT_PRESET.greenBg,
+  );
+  await expect(doc.locator(".mdmark-badge[data-color]")).toHaveCSS(
+    "color",
+    LIGHT_PRESET.greenText,
+  );
+  await expect(doc.locator(".mdmark-color[data-color]")).toHaveCSS(
+    "color",
+    LIGHT_PRESET.redText,
+  );
+  // 検証: 明るい配色の画像を出し、暗い配色の画像を出さない
+  await expect(doc.locator('img[alt="明るい構成"]')).toBeVisible();
+  await expect(doc.locator('img[alt="暗い構成"]')).toBeHidden();
+  // 検証: GIF の止める・再生するボタンと、拡大できることを示す表示を出さない
+  await expect(doc.locator("button.mdmark-gif-toggle")).toBeHidden();
+  for (const icon of await doc.locator(".mdmark-image-open-icon").all()) {
+    await expect(icon).toBeHidden();
+  }
+  // 検証: 動画の場所に poster の画像とキャプションを出し、再生バーを出さない
+  await expect(doc.locator("video")).toBeHidden();
+  const printed = doc.locator("img.mdmark-media-print");
+  await expect(printed).toBeVisible();
+  await expect(printed).toHaveAttribute("src", "demo.png");
+  await expect(doc.locator(".mdmark-media figcaption")).toBeVisible();
+  await expect(doc.locator(".mdmark-media figcaption")).toHaveText(
+    "操作の動画",
+  );
+  // 検証: リンクと添付のカードに、リンク先の URL を文字で出す
+  for (const [kind, url] of [
+    ["link", "https://example.com/docs"],
+    ["file", "spec.pdf"],
+  ]) {
+    const text = doc.locator(
+      `a.mdmark-card[data-card="${kind}"] .mdmark-card-url`,
+    );
+    await expect(text).toBeVisible();
+    await expect(text).toHaveText(url ?? "");
+  }
 });

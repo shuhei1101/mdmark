@@ -531,6 +531,79 @@ states:
         value: open
       - name: title
         value: リリースの一覧
+  - name: Highlighted
+    description: '`highlight=金額（円）`。強調した列のセルを blue の面の薄い色にし、見出しのセルの下端に線を付ける'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: highlight
+        value: '[{"column":2,"color":"blue"}]'
+  - name: RowColors
+    description: '`row-color=状態:完了=green,保留=yellow`。色を付けた行を面の薄い色にし、行の上下に線を付ける'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: rowColors
+        value: '["green","yellow",null,"green"]'
+  - name: RowColorsSorted
+    description: 金額で昇順に並べ替えた後。値で付けた色は行に付いたまま動く
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: rowColors
+        value: '["green","yellow",null,"green"]'
+      - name: sort
+        value: '{"column":2,"direction":"ascending"}'
+  - name: HighlightAndRowColors
+    description: 列の強調と行の色を重ねた。重なるセルは行の色にする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: highlight
+        value: '[{"column":2,"color":"blue"}]'
+      - name: rowColors
+        value: '[null,"red",null,null]'
+  - name: RowColorsDark
+    description: 列の強調と行の色の暗い配色
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: highlight
+        value: '[{"column":2,"color":"blue"}]'
+      - name: rowColors
+        value: '["green","yellow",null,"green"]'
+    notes:
+      定義: ストーリーは暗い配色で描く
 lead: Markdown の表を囲み、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
 args:
   - name: kind
@@ -675,6 +748,16 @@ args:
     default: なし（`表（{本文の行の数} 行）`）
     enabled_when: '`collapse` が `closed`・`open` のとき'
     description: 折り畳みの見出し（`title=` の値）。`summary` の文字にする
+  - name: highlight
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 強調する列（`{ column, color }`。`color` は色の名前）。列の `th` と `td` に class `mdmark-col-highlight` と `data-color` を付け、セルを `--mdmark-color-accent-{色}-bg`、見出しのセルの下端の線を `--mdmark-color-accent-{色}-text` にする
+  - name: rowColors
+    type: 配列
+    required: false
+    default: '[]'
+    description: 本文の行ごとの色の名前（色を付けない行は `null`）。行の `tr` に `data-color` を付け、セルを `--mdmark-color-accent-{色}-bg` にし、行の上下に `--mdmark-color-accent-{色}-text` の線を付ける。強調した列と重なるセルは行の色にする。`tr` に付くので、並べ替え・絞り込みの後も行に付いたまま動く
     status: planned
 events:
   - name: 並べ替える
@@ -742,7 +825,16 @@ css_properties:
     syntax: <length>
     default: 0px
     description: 見出し行を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す
+  - name: --mdmark-color-accent-blue-bg
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 強調した列のセルと色を付けた行の面の薄い色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
+  - name: --mdmark-color-accent-blue-text
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 強調した列の見出しの下端の線と、色を付けた行の上下の線の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
 accessibility:
+  - 列の強調と行の色は、見出しの下端の線と行の上下の線でも示し、色だけに頼らない。セルの文字と面の色のコントラストを 4.5:1 以上にする
   - 並べ替えのボタンは列名を読み上げの名前にし、並べた列の `th` は `aria-sort` で向きを示す
   - 絞り込みのボタンは `「{列名}」で絞り込む` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
@@ -758,6 +850,7 @@ accessibility:
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表の列と行の色]
 status: planned
 notes:
   HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「含む文字」の欄、`date` が「開始日」「終了日」の欄で、どれも題 `「{列名}」で絞り込む` と「絞り込みを外す」を持つ。表の見た目は確認ログの決定（拡張記法のモック・直した表のモック）。モックは `dev/mock/components/table/`。`count`・`columns`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle" aria-expanded aria-controls>列の表示</button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を置き、`<table>` の後ろに `<div class="mdmark-columns-menu" role="dialog" hidden>`（`mdmark-columns-title`・`mdmark-columns-options` のチェックボックス・`mdmark-columns-note`・`mdmark-columns-reset`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="出す集計" hidden>`（題と、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を置く。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、知らせの要素はコピーの結果で `data-state` を持つ。畳んだ最終列は、最終列のセルに `mdmark-fold-col`、表の外側に `is-folded` を付け、先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label>{セルの中身}</span>` にし、行の直後に `<tr class="mdmark-row-detail mdmark-fold-detail" hidden><td colspan><div class="mdmark-fold-part"><p class="mdmark-fold-name">{最終列の見出し}</p><div class="mdmark-fold-value">{セルの中身}</div></div></td></tr>` を置く（行の詳細を持つ行は詳細の中身の先頭に `mdmark-fold-part` を置く）。アイコンは全て lucide（`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクの印と畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす'

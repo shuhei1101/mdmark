@@ -4,6 +4,9 @@ import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
 
+/** `bundle` で埋めた画像を指す `src` の頭 */
+export const ASSET_SCHEME = "mdmark-asset:";
+
 /** 書き出した HTML に JSON で埋め、開いたときに起動の処理が読む中身 */
 export type ExportPayload = {
   /** `export` は `document`、`build` は `bundle` */
@@ -14,7 +17,7 @@ export type ExportPayload = {
   index?: MdmarkIndex | undefined;
   /** `collectReferences` の参照の表 */
   references?: MdmarkReferences | undefined;
-  /** 埋める文書。`markdown` は画像を `data:` URL に替えたもの */
+  /** 埋める文書。`markdown` は画像を `data:` URL に替え、動画・音声の `src` をコピーへの相対パスに替えたもの（`bundle` では画像を `mdmark-asset:{キー}` に替える） */
   docs: Array<{
     path: string;
     title: string;
@@ -33,6 +36,8 @@ export type ExportPayload = {
   syntax?: { core: string; languages: Record<string, string> } | undefined;
   /** `loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない */
   aliases?: MdmarkAlias[] | undefined;
+  /** `bundle` で埋めた画像のキーから `data:` URL を引く表。`document` では持たない */
+  assets?: Record<string, string> | undefined;
 };
 
 /** 書き出しの中身を入れる `script` 要素の `id`（起動の処理が読む） */

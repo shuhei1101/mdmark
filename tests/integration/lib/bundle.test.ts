@@ -5,6 +5,7 @@ import { expect, test } from "vitest";
 import {
   linesOf,
   PNG_BYTES,
+  readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
   useBrowser,
@@ -319,4 +320,103 @@ test("test_normal_when_color_theme", async () => {
   );
   await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
   await page.close();
+});
+
+/** 2 つの文書が同じ画像と別々の動画・音声を指すフォルダを作る */
+async function createMediaDir(): Promise<string> {
+  const dir = await createTempDir();
+  const media = await readMediaSamples();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["**/*.md"]',
+      '  exclude: ["dist/**"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": [
+      "# A",
+      "",
+      "![グラフ](images/chart.png)",
+      "",
+      "![操作](media/demo.mp4)",
+      "",
+      "続きは [B](sub/b.md) を読む。",
+      "",
+    ].join("\n"),
+    "sub/b.md": [
+      "# B",
+      "",
+      "![グラフ](../images/chart.png)",
+      "",
+      "![読み上げ](media/voice.mp3)",
+      "",
+    ].join("\n"),
+    "images/chart.png": PNG_BYTES,
+    "media/demo.mp4": media.mp4,
+    "sub/media/voice.mp3": media.mp3,
+  });
+  return dir;
+}
+
+// 2 つの文書が指す同じ画像を 1 回だけ埋め、動画・音声を出力の隣のフォルダへコピーする（正常系（画像・動画・音声を埋める））
+test("test_normal_when_media_embedded", async () => {
+  // 準備
+  const dir = await createMediaDir();
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual([
+    "書き出した: dist/docs.html（文書 2 件）",
+  ]);
+  const html = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  const pngData = `data:image/png;base64,${PNG_BYTES.toString("base64")}`;
+  expect(html.split(pngData)).toHaveLength(2);
+  expect(existsSync(join(dir, "dist", "docs_files", "media", "demo.mp4"))).toBe(
+    true,
+  );
+  expect(
+    existsSync(join(dir, "dist", "docs_files", "sub", "media", "voice.mp3")),
+  ).toBe(true);
+  const { page, externalRequests } = await browser.openWithFiles(
+    join(dir, "dist", "docs.html"),
+    join(dir, "dist", "docs_files"),
+  );
+  const ready = async (selector: string) => {
+    await page.waitForSelector(`article ${selector}`);
+    await page.waitForFunction(
+      (target) =>
+        ((document.querySelector(`article ${target}`) as HTMLMediaElement)
+          ?.readyState ?? 0) >= 1,
+      selector,
+    );
+    return page.locator(`article ${selector}`).getAttribute("src");
+  };
+  await expect(ready("video")).resolves.toBe("docs_files/media/demo.mp4");
+  await page.locator('article p a[href="#/sub/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await expect(ready("audio")).resolves.toBe("docs_files/sub/media/voice.mp3");
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
+// 動画・音声のコピー先の _files/ へ書けないと、HTML を書かずにパスと直し方を示して終わる（異常系（動画・音声のコピー先へ書けない））
+test("test_error_when_media_copy_unwritable", async () => {
+  // 準備
+  const dir = await createMediaDir();
+  await writeFiles(dir, { "dist/docs_files": "ファイル\n" });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("dist/docs_files");
+  expect(result.stderr).toContain("確かめて");
+  expect(await readFile(join(dir, "dist", "docs_files"), "utf8")).toBe(
+    "ファイル\n",
+  );
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });

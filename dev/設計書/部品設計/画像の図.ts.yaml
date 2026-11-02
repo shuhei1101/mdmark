@@ -1,0 +1,224 @@
+title: 画像の図
+implementation: src/parts/image.ts#renderImageFigure
+story: Parts/ImageFigure
+test_file: tests/integration/lib/image-figure.story.test.ts
+states:
+  - name: Caption
+    description: title を持つ画像。下にキャプションを出し、右上に拡大のアイコンを出す
+    args:
+      - name: src
+        value: screen-light.svg
+      - name: alt
+        value: プレビューを開いた画面
+      - name: caption
+        value: プレビューを開いた画面
+  - name: NoCaption
+    description: title を持たない画像。キャプションを出さない
+    args:
+      - name: src
+        value: step-1.svg
+      - name: alt
+        value: 手順 1 の画面
+  - name: WidthPx
+    description: '`{width=240}`。幅 240px で出す'
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 手順 2 の画面
+      - name: caption
+        value: 幅 240px
+      - name: width
+        value: 240px
+  - name: WidthPercent
+    description: '`{width=50%}`。本文の幅の 50% で出す'
+    args:
+      - name: src
+        value: step-3.svg
+      - name: alt
+        value: 手順 3 の画面
+      - name: caption
+        value: 本文の幅の 50%
+      - name: width
+        value: 50%
+  - name: AlignLeft
+    description: '`{width=200 align=left}`。左に置き、右を本文が回り込む'
+    args:
+      - name: src
+        value: step-1.svg
+      - name: alt
+        value: 左に置いた画面
+      - name: caption
+        value: 左に置いた画面
+      - name: width
+        value: 200px
+      - name: align
+        value: left
+    notes:
+      定義: ストーリーは図の後ろに段落を 1 つ置く
+  - name: AlignRight
+    description: '`align=right`。右に置き、左を本文が回り込む'
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 右に置いた画面
+      - name: caption
+        value: 右に置いた画面
+      - name: width
+        value: 200px
+      - name: align
+        value: right
+    notes:
+      定義: ストーリーは図の後ろに段落を 1 つ置く
+  - name: AlignCenter
+    description: '`align=center`。中央に置き、回り込まない'
+    args:
+      - name: src
+        value: step-3.svg
+      - name: alt
+        value: 中央に置いた画面
+      - name: caption
+        value: 中央に置いた画面
+      - name: width
+        value: 240px
+      - name: align
+        value: center
+  - name: NoLightbox
+    description: '`{nolightbox}`。拡大のボタンで包まず、アイコンを出さない'
+    args:
+      - name: src
+        value: step-4.svg
+      - name: alt
+        value: 拡大しない画面
+      - name: caption
+        value: 拡大しない画面
+      - name: lightbox
+        value: 'false'
+  - name: OnlyLight
+    description: '`#only-light` の画像。暗い配色では出さない'
+    args:
+      - name: src
+        value: screen-light.svg#only-light
+      - name: alt
+        value: 明るい配色のときの画面
+      - name: caption
+        value: プレビューの画面（明るい配色）
+      - name: only
+        value: light
+  - name: OnlyDark
+    description: '`#only-dark` の画像。明るい配色では出さない'
+    args:
+      - name: src
+        value: screen-dark.svg#only-dark
+      - name: alt
+        value: 暗い配色のときの画面
+      - name: caption
+        value: プレビューの画面（暗い配色）
+      - name: only
+        value: dark
+    notes:
+      定義: ストーリーは暗い配色で描く
+  - name: SubFigure
+    description: 番号を付けたギャラリーの中の画像。キャプションの頭にサブ図の番号を出す
+    args:
+      - name: src
+        value: screen-dark.svg
+      - name: alt
+        value: 暗い配色の画面
+      - name: caption
+        value: 暗い配色
+      - name: id
+        value: fig-schemes-b
+      - name: label
+        value: 図 2b
+  - name: LongCaption
+    description: キャプションが長く、画像の幅を超える。キャプションを画像の幅の中で折り返す
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 手順 2 の画面
+      - name: caption
+        value: 設定ファイルを読めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから直せることを示す画面
+      - name: width
+        value: 240px
+lead: 画像 1 つだけの段落の画像を図にし、title のキャプション・幅・配置・テーマごとの出し分けを当てる。押すと拡大する画像は、ボタンで包んで右上に拡大のアイコンを出す。
+args:
+  - name: src
+    type: 文字列
+    required: true
+    description: 画像の URL。`#only-dark`・`#only-light` のフラグメントも残す
+  - name: alt
+    type: 文字列
+    required: true
+    description: 画像の代わりの文字。拡大のボタンの読み上げの名前にも使う
+  - name: caption
+    type: 文字列
+    required: false
+    default: '""'
+    description: 画像の title。空なら `figcaption` を出さない
+  - name: width
+    type: 文字列
+    required: false
+    default: なし（画像の元の幅。本文の幅を超えない）
+    choices: '`{数}px`・`{1〜100}%`'
+    description: '`figure` の `style` の `--mdmark-image-width` に入れる幅'
+  - name: align
+    type: 列挙
+    required: false
+    default: なし（本文の左端に置き、回り込まない）
+    choices: '`left`（左に置き、右を本文が回り込む）・`center`（中央に置く）・`right`（右に置き、左を本文が回り込む）'
+    description: '`figure` の `data-align` に入れる配置'
+  - name: lightbox
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 押すと拡大するか。`false` のとき `img` に `data-nolightbox` を付け、ボタンで包まない（`nolightbox` の属性と、`lightbox` の機能がオフのとき）
+  - name: only
+    type: 列挙
+    required: false
+    default: なし（どちらの配色でも出す）
+    choices: '`light`（class `mdmark-only-light`）・`dark`（class `mdmark-only-dark`）'
+    description: 出す配色。合わない配色では `figure` の `display` を `none` にする。印刷は明るい配色として扱う
+  - name: id
+    type: 文字列
+    required: false
+    default: なし
+    enabled_when: 番号を付けたギャラリーの中の画像のとき
+    description: '`figure` の `id`（`fig-{ID}-{a, b, …}`）'
+  - name: label
+    type: 文字列
+    required: false
+    default: '""'
+    enabled_when: '`id` を渡したとき'
+    description: キャプションの頭に `b` で置くサブ図の番号（`図 2a`）。`caption` が空でも出す
+events:
+  - name: 拡大を開く
+    when: 拡大のボタンを押す（Enter・Space を含む）
+    value: ボタンの中の `img`
+    description: '`mount` がライトボックスを開き、押した画像を出す（部品設計『ライトボックス』）'
+css_properties:
+  - name: --mdmark-image-width
+    syntax: <length-percentage>
+    default: なし
+    description: 図の幅。`width` の値を `figure` の `style` で渡す。本文の幅を超えない
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#52525b（ダーク #b4b4bc）'
+    description: キャプションの文字の色
+uses:
+  - component: dev/設計書/部品設計/図表の番号.ts#
+    how: '`fig` のマーカーの直後の画像は、図表の番号のスロットにこの部品を入れる'
+accessibility:
+  - '拡大のボタンは `画像を拡大: {alt}` を読み上げの名前に持ち、フォーカスの枠を見せる。右上の拡大のアイコンは `aria-hidden`'
+  - 画像の `alt` は文書に書いたまま残し、キャプションは `figcaption` で読み上げる
+  - 'テーマで隠す画像は `display: none` で、読み上げにも含めない'
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の属性]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の図とキャプション]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[テーマごとの画像]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+status: planned
+notes:
+  HTML: '`<figure class="mdmark-figure mdmark-image" data-align="{align}" style="--mdmark-image-width: {width}"><button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}"><img src="{src}" alt="{alt}"><span class="mdmark-image-open-icon" aria-hidden="true">{lucide の maximize-2}</span></button><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。拡大のボタンは `mount` が付ける（`render` は `img` だけを出す）。モックは `dev/mock/components/figure/`'

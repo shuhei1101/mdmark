@@ -251,3 +251,57 @@ test("test_used_syntax_languages_when_disabled", async () => {
   // 検証
   expect(languages).toEqual([]);
 });
+
+// アセットのルートの画像とフラグメントと poster を替える（正常系）
+test("test_inline_images_when_assets_root", async () => {
+  // 準備
+  const { inlineImages } = await loadEmbed();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "assets/a.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+  });
+  const markdown = [
+    "![図](a.png#only-dark)",
+    "",
+    "![操作](demo.mp4){poster=a.png}",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await inlineImages(markdown, join(dir, "doc.md"), {
+    assetsRoot: join(dir, "assets"),
+  });
+  // 検証
+  expect(result.markdown).toMatch(
+    /!\[図\]\(data:image\/png;base64,[A-Za-z0-9+/=]+#only-dark\)/,
+  );
+  expect(result.markdown).toMatch(
+    /\{poster=data:image\/png;base64,[A-Za-z0-9+/=]+\}/,
+  );
+  expect(result.markdown).toContain("](demo.mp4)");
+});
+
+// build では同じ画像を 1 つのキーにする（正常系）
+test("test_inline_images_when_shared", async () => {
+  // 準備
+  const { inlineImages } = await loadEmbed();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "img/a.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+  });
+  const assets = new Map<string, { key: string; url: string }>();
+  // 実行
+  const first = await inlineImages("![図](img/a.png)\n", join(dir, "a.md"), {
+    assets,
+  });
+  const second = await inlineImages(
+    "![同じ図](img/a.png)\n",
+    join(dir, "b.md"),
+    { assets },
+  );
+  // 検証
+  const keyOf = (markdown: string) =>
+    /\]\((mdmark-asset:[^)\s]+)\)/.exec(markdown)?.[1];
+  expect(keyOf(first.markdown)).toBeDefined();
+  expect(keyOf(second.markdown)).toBe(keyOf(first.markdown));
+  expect(assets.size).toBe(1);
+});

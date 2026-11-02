@@ -361,6 +361,10 @@ export function validateConfig(
     delete config.syntax;
   }
 
+  if (raw.assets !== undefined && !isValidAssets(raw.assets, file, issues)) {
+    delete config.assets;
+  }
+
   if (
     raw["side-toc"] !== undefined &&
     !isValidSideToc(raw["side-toc"], file, issues)
@@ -488,6 +492,35 @@ function isValidSideToc(
         file,
         "side-toc.mode",
         "`side-toc.mode` は `hover` か `fixed` で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `assets` を検める。キーと値の形でなければ、`root` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+function isValidAssets(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "assets",
+        "`assets` は `root` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.root !== undefined && typeof value.root !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "assets.root",
+        "`assets.root` は設定ファイルのフォルダからのフォルダのパスの文字列で書いてください。",
       ),
     );
     return false;

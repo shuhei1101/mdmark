@@ -1,0 +1,138 @@
+title: 動画と音声
+implementation: src/parts/media.ts#renderMedia
+story: Parts/Media
+test_file: tests/integration/lib/media.story.test.ts
+states:
+  - name: Video
+    description: '`poster` と title を持つ動画。再生バーを出し、下にキャプションを出す'
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: プレビューを開く操作
+      - name: caption
+        value: プレビューを開く操作
+      - name: poster
+        value: demo-poster.png
+  - name: VideoAutoplay
+    description: '`{width=320 autoplay loop}`。`muted` を足し、幅 320px で出す'
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 繰り返し再生する短い操作
+      - name: caption
+        value: 繰り返し再生する短い操作
+      - name: width
+        value: 320px
+      - name: autoplay
+        value: 'true'
+      - name: loop
+        value: 'true'
+  - name: VideoNoCaption
+    description: title を持たない動画。キャプションを出さない
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 操作の動画
+      - name: poster
+        value: demo-poster.png
+  - name: Audio
+    description: title を持つ音声。再生バーとキャプションを出す
+    args:
+      - name: kind
+        value: audio
+      - name: src
+        value: voice.mp3
+      - name: alt
+        value: 読み上げの見本
+      - name: caption
+        value: 読み上げの見本（3 秒）
+  - name: VideoPrint
+    description: '`poster` を持つ動画の印刷。再生バーを出さず、`poster` の画像とキャプションを出す'
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: プレビューを開く操作
+      - name: caption
+        value: プレビューを開く操作
+      - name: poster
+        value: demo-poster.png
+    notes:
+      定義: 'ストーリーは `emulateMedia({ media: "print" })` で見る'
+lead: 拡張子が動画・音声の画像を、再生バーを持つ `video`・`audio` にして図に入れ、title をキャプションにする。印刷では動画の代わりに `poster` の画像を出す。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`video`・`audio`'
+    description: 描く要素
+  - name: src
+    type: 文字列
+    required: true
+    description: 動画・音声の URL
+  - name: alt
+    type: 文字列
+    required: true
+    description: 要素の `aria-label` に入れる名前
+  - name: caption
+    type: 文字列
+    required: false
+    default: '""'
+    description: title。空なら `figcaption` を出さない
+  - name: width
+    type: 文字列
+    required: false
+    default: なし（要素の元の幅。本文の幅を超えない）
+    choices: '`{数}px`・`{1〜100}%`'
+    description: '`figure` の `style` の `--mdmark-image-width` に入れる幅'
+  - name: poster
+    type: 文字列
+    required: false
+    default: なし
+    enabled_when: '`kind` が `video` のとき'
+    description: 再生前に出す画像の URL。渡したとき、印刷用の `img.mdmark-media-print` も置く
+  - name: autoplay
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 自動で再生するか。`true` のとき `muted` も付ける
+  - name: muted
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 音を消して始めるか
+  - name: loop
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 繰り返し再生するか
+css_properties:
+  - name: --mdmark-image-width
+    syntax: <length-percentage>
+    default: なし
+    description: 図の幅。`width` の値を `figure` の `style` で渡す
+  - name: --mdmark-color-muted
+    syntax: <color>
+    default: '#52525b（ダーク #b4b4bc）'
+    description: キャプションの文字の色
+accessibility:
+  - 要素は `controls` を持ち、ブラウザの再生バーをキーボードで操作できる。`aria-label` に alt を入れる
+  - 自動で再生する動画は `muted` で始め、音を出さない
+  - 印刷用の `poster` の画像は `alt=""` で、キャプションが名前を持つ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[動画と音声]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[印刷の画像と動画]
+status: planned
+notes:
+  HTML: '`<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: {width}"><video src="{src}" controls preload="metadata" playsinline aria-label="{alt}" poster="{poster}"></video><img class="mdmark-media-print" src="{poster}" alt=""><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。音声は `audio`（`playsinline` を持たない）。モックは `dev/mock/components/media/`'

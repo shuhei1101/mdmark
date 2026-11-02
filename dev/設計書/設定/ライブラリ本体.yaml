@@ -45,7 +45,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: 表の印と、印で囲まない表に、種類ごとの並べ替え・ピン止め・絞り込みと開閉を付ける。オフのときは表の印を取り除いて普通の表を描く
+    description: 表の印と、印で囲まない表に、種類ごとの並べ替え・ピン止め・絞り込みと開閉を付け、印の `highlight=`・`row-color=`・`row-at=` で列と行に色を付ける。オフのときは表の印を取り除いて普通の表を描く
     reload: reload
     status: planned
   - key: features.callout
@@ -90,7 +90,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: 頭に `badge:` を付けた行内のコードを札にする。オフのときは行内のコードのまま描く
+    description: 頭に `badge:` を付けた行内のコードを札にし、`badge:` の後ろが色の名前と `:` のときは札にその色を付ける。オフのときは行内のコードのまま描く
     reload: reload
     status: planned
   - key: features.toc
@@ -160,6 +160,83 @@ settings:
     status: planned
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[backlinksRule]
+  - key: features.text-color
+    title: 本文の文字の色の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 角括弧で囲んだ文字の後ろの `{color=色}` で、本文の文字に色の名前の文字の色を付けて太字にする。オフのときは書いた文字のまま描く
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[本文の文字の色]
+  - key: features.images
+    title: 画像の属性とキャプションの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 画像の後ろの `{…}` の属性（幅・配置・`nolightbox`・動画と音声の属性）を当て、画像だけの段落を title のキャプションを持つ図にし、`#only-dark`・`#only-light` の画像を今の配色で出し分ける。オフのときは `{…}` を書いた文字のまま描き、画像を今のとおり描く
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の属性]
+  - key: features.gallery
+    title: ギャラリーの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`<!-- gallery: cols=列の数 -->` の範囲の画像を格子に並べ、`fig` のマーカーの番号にサブ図の番号を付ける。オフのときはマーカーを取り除く'
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ギャラリー]
+  - key: features.lightbox
+    title: ライトボックスの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 図の画像を押すと全画面のダイアログで拡大し、同じ文書の画像を前後に送る。オフのときは画像を押しても何もしない
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+  - key: features.media
+    title: 動画と音声の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 画像の書き方で書いた動画・音声のファイルを、拡張子で判断して再生バー付きの `video`・`audio` にする。オフのときは画像として描く
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[動画と音声]
+  - key: features.gif
+    title: GIF の止める・再生するボタンの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: GIF の画像に止める・再生するボタンを付ける。オフのときはボタンを付けない
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+  - key: features.cards
+    title: リンクと添付のカードの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: リンク 1 つだけの段落を、リンクのカードか添付のカードにする。オフのときはリンクのまま描く
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[リンクと添付のカード]
   - key: index
     title: 索引の場所
     file: mdmark.config.yaml
@@ -479,5 +556,30 @@ settings:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.labels.paramCopy]
     implementation: src/config.ts#resolveConfig
     status: implemented
+  - key: assets
+    title: アセットの設定
+    file: mdmark.config.yaml
+    type: object
+    required: false
+    description: 文書が指す画像・動画・音声・添付のファイルの探し方。`mount`・`render` はこのキーを読まない
+    missing: 文書のフォルダからの相対パスだけで探す
+    reload: reload
+    status: planned
+  - key: assets.root
+    title: アセットのルート
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    description: 文書のフォルダからの相対パスにファイルが無いときに、同じ相対パスで探すフォルダ。`mdmark.config.yaml` のあるフォルダからの相対パス。CLI の `mdmark export`・`mdmark build`・`mdmark check` と VS Code 拡張機能のプレビューが読む
+    missing: 文書のフォルダからの相対パスだけで探す
+    reload: reload
+    allowed: フォルダのパス。無いフォルダは `mdmark check` が `schema` のずれにし、書き出しは警告に出して文書のフォルダだけで探す
+    reason: 画像・動画を文書ごとのフォルダに置かず、リポジトリの 1 か所にまとめて置く使い方に合わせるため（#199）
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[アセットのルート]
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[見つからないファイルの点検]
+    status: planned
+    notes:
+      Schema の変更: '`schemas/mdmark.config.schema.json` にキーを足すので、`migrations/no-steps.yaml` に行を置く（書いていない設定はそのまま読める）'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

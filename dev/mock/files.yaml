@@ -16,7 +16,7 @@ files:
     description: '部品『backlinks』のモック: 描いた文書を参照している文書の一覧（文書の末尾の「関連文書」のセクション）。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
   - path: components/badge/index.html
-    description: '部品『badge』のモック: 頭に `badge:` を付けた行内のコードを描いた札と、頭の後ろが空でバッジにしない行内のコード。部品の見た目や状態を決めるときに読む。'
+    description: '部品『badge』のモック: 頭に `badge:` を付けた行内のコードを描いた札と、頭の後ろが空でバッジにしない行内のコード、色の名前を頭に付けた色のバッジ。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
   - path: components/callout/index.html
     description: '部品『callout』のモック: 種類ごとのタイトル・色・アイコンを持つ注意書きの枠と、閉じた注意書き。部品の見た目や状態を決めるときに読む。'
@@ -27,6 +27,9 @@ files:
   - path: components/code-block/index.html
     description: '部品『code-block』のモック: コードブロックのタイトル・行番号・行の強調と、コードの行のマーカーで分けた追加した行・削除した行・強調の行、言語に応じた色分け、言語のラベルとコピーボタン、印刷の見え方。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:コードブロック]
+  - path: components/color-preset/index.html
+    description: '部品『color-preset』のモック: 色の名前の一覧（7 色）のバッジ・本文の文字の色・面の薄い色と、本文の文字の色の色以外の見分けの案、知らない色の名前の書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:テーマ]
   - path: components/comment/index.html
     description: '部品『comment』のモック: 選んだ箇所のマーカー・文字を選んだときのコメントのボタン・入力欄と保存できない知らせ・吹き出しと、箇所が見つからないコメントの一覧。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:コメント]
@@ -61,7 +64,7 @@ files:
     description: '部品『embedded-html』のモック: マーカーの範囲のコードブロックの HTML を本文に溶け込ませて描いた場所と、チャートを含む・列より広い・機能がオフ・書き方の警告の場面。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
   - path: components/figure/index.html
-    description: '部品『figure』のモック: 図と表に付ける通し番号と、番号にした参照のリンク。部品の見た目や状態を決めるときに読む。'
+    description: '部品『figure』のモック: 図と表に付ける通し番号と、番号にした参照のリンク、画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
   - path: components/file-tree/index.html
     description: '部品『file-tree』のモック: 罫線で書いたフォルダ構成を描いた入れ子のツリーと、注釈・拡張子ごとのアイコン・ほかにもある項目・フォルダの開閉と `open=`・ASCII の罫線・元の罫線のテキストのコピー。部品の見た目や状態を決めるときに読む。'
@@ -75,8 +78,14 @@ files:
   - path: components/index.md
     description: 新しく追加する・変える部品のモック。コンポーネント索引のモックを探すときに読む。
     tags: [topic:モック]
+  - path: components/link-card/index.html
+    description: '部品『link-card』のモック: URL だけの行のリンクのカードと、ファイルへのリンクだけの行の添付のカード（種類ごとのアイコン・長い URL・カードにしないリンク）。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/media/index.html
+    description: '部品『media』のモック: 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン、読めない属性の書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
   - path: components/notice/index.html
-    description: '部品『notice』のモック: 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中のマーカーの場所。部品の見た目や状態を決めるときに読む。'
+    description: '部品『notice』のモック: 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中のマーカーの場所、VS Code のプレビューで再生できない動画・音声の知らせの枠。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
   - path: components/notice/style.css
     description: 'モック『notice』の見た目: 知らせの枠のカタログ: 状態ごとの見本を縦に並べる。このモックの見た目を変えるときに読む。'
@@ -118,7 +127,7 @@ files:
     description: '部品『syntax-warning』のモック: 読めない指定とその直し方を書く人へ知らせる書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:構文]
   - path: components/table/index.html
-    description: '部品『table』のモック: 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`。部品の見た目や状態を決めるときに読む。'
+    description: '部品『table』のモック: 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:テーブル]
   - path: components/tabs/index.html
     description: '部品『tabs』のモック: 見出しの文字をタブ名にしたタブと、URL の ID が指す見出しを持つタブを選ぶ処理、閉じたタブ・`title=` のタイトル。部品の見た目や状態を決めるときに読む。'
@@ -552,6 +561,52 @@ files:
     tags: [topic:モック, topic:図, tool:javascript]
   - path: refs/257/index.md
     description: '#257（図の枠が、枠を持つ面や操作できる部品の枠の中で入れ子の枠にならないようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/263/assets/colors.css
+    description: '#263 のモックが共通で読む素材: 色のプリセット（色の名前ごとの面の薄い色と文字の色の組を、既定のテーマと選べるテーマの明るい配色・暗い配色で持つ）と、表の列の強調・行の色・バッジの色・本文の文字の色の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:テーマ, tool:css]
+  - path: refs/263/assets/media-print.css
+    description: '#263 のモックが共通で読む素材: 画像・動画・GIF・カードの印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: refs/263/assets/media.css
+    id: dev/mock/refs/263/assets/media.css
+    description: '#263 のモックが共通で読む素材: 画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え、動画・音声、GIF の止める・再生するボタン、リンクと添付のカードの規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/263/assets/media.js
+    description: '#263 のモックが共通で読む素材: ライトボックスの開閉と前後の送り、GIF の止める・再生する、モック専用の操作列のテーマの切り替え。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/263/assets/media/build.gif
+    description: '#263 のモックが置く GIF の見本（ビルドの進み具合）。GIF の見本を差し替えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/263/assets/media/demo-poster.png
+    description: '#263 のモックが置く動画の poster の画像。動画の見本を差し替えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/263/assets/media/demo.mp4
+    description: '#263 のモックが置く動画の見本（4 秒）。動画の見本を差し替えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/263/assets/media/screen-dark.svg
+    description: '#263 のモックが置く暗い配色の画面の画像（#only-dark の見本）。画像の見本を差し替えるときに読む。'
+    tags: [topic:モック, tool:svg]
+  - path: refs/263/assets/media/screen-light.svg
+    description: '#263 のモックが置く明るい配色の画面の画像（#only-light の見本）。画像の見本を差し替えるときに読む。'
+    tags: [topic:モック, tool:svg]
+  - path: refs/263/assets/media/step-1.svg
+    description: '#263 のモックが置く手順 1 の画面の画像（サイズ・配置・ギャラリーの見本）。画像の見本を差し替えるときに読む。'
+    tags: [topic:モック, tool:svg]
+  - path: refs/263/assets/media/step-2.svg
+    description: '#263 のモックが置く手順 2 の画面の画像（サイズ・配置・ギャラリーの見本）。画像の見本を差し替えるときに読む。'
+    tags: [topic:モック, tool:svg]
+  - path: refs/263/assets/media/step-3.svg
+    description: '#263 のモックが置く手順 3 の画面の画像（サイズ・配置・ギャラリーの見本）。画像の見本を差し替えるときに読む。'
+    tags: [topic:モック, tool:svg]
+  - path: refs/263/assets/media/step-4.svg
+    description: '#263 のモックが置く手順 4 の画面の画像（nolightbox・ギャラリーの見本）。画像の見本を差し替えるときに読む。'
+    tags: [topic:モック, tool:svg]
+  - path: refs/263/assets/media/voice.mp3
+    description: '#263 のモックが置く音声の見本（3 秒）。音声の見本を差し替えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/263/index.md
+    description: '#263（表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/27/assets/glossary-print.css
     description: '#27 のモックが共通で読む素材: 用語と被参照の印刷の規則。複数のモックに効く見た目や動きを変えるときに読む。'

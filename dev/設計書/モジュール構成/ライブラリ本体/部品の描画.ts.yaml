@@ -33,7 +33,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`と、VS Code 拡張機能の `preview-status`・`config-band`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `preview-status`・`config-band`・`media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -57,6 +57,14 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderRowDetail]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFigure]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderDocList]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTextColor]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderImageFigure]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderGallery]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderLightbox]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderMedia]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderGif]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCard]
+      - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#functions[renderMediaError]
       - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[highlightLines]
     unit_tests:
       - name: test_render_part_when_notice

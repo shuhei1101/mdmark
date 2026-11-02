@@ -211,3 +211,24 @@ test("test_attach_interactions_when_tree_off", async () => {
   expect(root.querySelector(".mdmark-tree-bar")).toBeNull();
   expect(root.querySelector(".mdmark-tree-toggle")).toBeNull();
 });
+
+// lightbox がオフなら画像を包まず、gif がオフならボタンを付けない（正常系）
+test("test_attach_interactions_when_lightbox_off", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createRoot(
+    ["![グラフ](chart.png)", "", "![ビルド](build.gif)", ""].join("\n"),
+  );
+  // 実行
+  detachers.push(
+    attachInteractions({
+      root,
+      features: { ...features, lightbox: false, gif: false },
+      placement: "top",
+    }),
+  );
+  // 検証
+  expect(root.querySelector("img[data-gif]")).not.toBeNull();
+  expect(root.querySelector("button.mdmark-image-open")).toBeNull();
+  expect(root.querySelector("button.mdmark-gif-toggle")).toBeNull();
+});

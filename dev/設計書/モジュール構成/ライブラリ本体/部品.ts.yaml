@@ -16,7 +16,7 @@ directory: |-
   ├── steps.ts                     # ステップの renderSteps
   ├── collapsible.ts               # タブとステップの折り畳みの renderCollapsible
   ├── tree.ts                      # ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault
-  ├── badge.ts                     # バッジの renderBadge
+  ├── badge.ts                     # バッジの renderBadge（色を含む）
   ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy
   ├── toc.ts                       # 目次の renderToc
   ├── section.ts                   # 節の renderSection
@@ -24,6 +24,14 @@ directory: |-
   ├── row-detail.ts                # 行の詳細の renderRowDetail
   ├── figure.ts                    # 図表の番号の renderFigure
   ├── doc-list.ts                  # 文書の一覧の renderDocList
+  ├── colors.ts                    # 色の名前の COLOR_NAMES と isColorName
+  ├── text-color.ts                # 文字の色の renderTextColor
+  ├── image.ts                     # 画像の図の renderImageFigure と拡大のボタンの renderImageOpener
+  ├── gallery.ts                   # ギャラリーの renderGallery
+  ├── lightbox.ts                  # ライトボックスの renderLightbox
+  ├── media.ts                     # 動画と音声の renderMedia
+  ├── gif.ts                       # GIF の renderGif と止める・再生するボタンの renderGifToggle
+  ├── card.ts                      # カードの renderCard
   └── {部品}.stories.yaml         # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
   ```
 constants:
@@ -50,6 +58,16 @@ constants:
     status: planned
     introduced:
       pr: 97
+  - name: COLOR_NAMES
+    title: 色の名前
+    container: src/parts/colors.ts
+    summary: 表の列と行・バッジ・本文の文字に書ける色の名前。型 `ColorName` はこの要素の和。書き方の警告の本文に並べる
+    value: '["blue", "red", "green", "yellow", "orange", "purple", "gray"]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[色の名前]
+    status: planned
+    introduced:
+      pr: 263
 functions:
   - name: escapeHtml
     title: HTML の特別な文字をエスケープする
@@ -218,12 +236,12 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする
+    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の見た目にだけ使う）
     args:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を渡すと囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を渡すと囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -301,6 +319,12 @@ functions:
         condition: '部品設計の `OpenTitle`（`collapse: open`、`title: リリースの一覧`）と、`title: a<b` にしたもの'
         mock: なし
         expected: 1 つ目が `<details class="mdmark-table-details" open><summary>リリースの一覧</summary>`、2 つ目の `summary` が `a&lt;b`
+      - name: test_render_table_when_colors
+        case: 正常
+        summary: 強調する列と色を付ける行を属性にする
+        condition: 部品設計の `HighlightAndRowColors`
+        mock: なし
+        expected: 強調する列の見出しと各セルが class `mdmark-col-highlight` と `data-color` を持ち、色を付けた行の `tr` だけが `data-color` を持つ
   - name: renderTableTools
     title: 表の見出しのボタンとドロワーを描く
     container: src/parts/table.ts
@@ -477,12 +501,12 @@ functions:
     container: src/parts/badge.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『バッジ』の HTML を返す
+    summary: 部品設計『バッジ』の HTML を返す。`color` を渡したときは `data-color` を付ける
     args:
       - name: options
-        type: '{ label: string }'
+        type: '{ label: string; color?: ColorName }'
         required: true
-        description: 札の文言
+        description: 札の文言と色の名前
     returns:
       type: string
       description: '`<span class="mdmark-badge">` の HTML'
@@ -495,6 +519,12 @@ functions:
         condition: '`label: "<b>v1</b>"`'
         mock: なし
         expected: '`<span class="mdmark-badge">&lt;b&gt;v1&lt;/b&gt;</span>`'
+      - name: test_render_badge_when_colored
+        case: 正常
+        summary: 色の名前を data-color にする
+        condition: '`label: "要確認"`、`color: red`'
+        mock: なし
+        expected: '`<span class="mdmark-badge" data-color="red">要確認</span>`'
   - name: renderToc
     title: 目次を描く
     container: src/parts/toc.ts
@@ -1037,6 +1067,355 @@ functions:
     status: planned
     introduced:
       pr: 225
+  - name: isColorName
+    title: 色の名前か
+    container: src/parts/colors.ts
+    kind: 関数
+    scope: internal
+    summary: 文字が `COLOR_NAMES` のどれかと一致するか（大文字と小文字を区別する）を返す
+    args:
+      - name: value
+        type: string
+        required: true
+        description: 読んだ文字
+    returns:
+      type: value is ColorName
+      description: 色の名前なら `true`
+    unit_tests:
+      - name: test_is_color_name
+        case: 正常
+        summary: 7 つの名前だけを色の名前にする
+        condition: '`blue`・`gray`・`Blue`・`pink`・空の文字'
+        mock: なし
+        expected: '`true`・`true`・`false`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderTextColor
+    title: 文字の色を描く
+    container: src/parts/text-color.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『文字の色』の HTML を返す。`text` は描いた行内の HTML（`SLOT_MARKER` を渡せる）
+    args:
+      - name: options
+        type: '{ color: ColorName; text: string }'
+        required: true
+        description: 色の名前と中身の HTML
+    returns:
+      type: string
+      description: '`<span class="mdmark-color" data-color="{color}">` の HTML'
+    refs:
+      - dev/設計書/部品設計/文字の色.ts#
+    unit_tests:
+      - name: test_render_text_color
+        case: 正常
+        summary: 色の名前を data-color にして中身を包む
+        condition: '`color: blue`、`text: "<strong>重要</strong>"`'
+        mock: なし
+        expected: '`<span class="mdmark-color" data-color="blue"><strong>重要</strong></span>`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderImageOpener
+    title: 画像の拡大のボタンを描く
+    container: src/parts/image.ts
+    kind: 関数
+    scope: internal
+    summary: '`img` の HTML を、読み上げの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`icon` が `false` のとき（GIF の画像。右上に止める・再生するボタンを置くため）はアイコンを置かない。`mount` が描いた `img` を包むときと、Storybook の部品が使う'
+    args:
+      - name: options
+        type: '{ alt: string; img: string; icon?: boolean }'
+        required: true
+        description: 画像の代わりの文字と、`img` の HTML と、アイコンを置くか（既定 `true`）
+    returns:
+      type: string
+      description: '`<button class="mdmark-image-open" type="button"` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
+    refs:
+      - dev/設計書/部品設計/画像の図.ts#
+    unit_tests:
+      - name: test_render_image_opener
+        case: 正常
+        summary: 読み上げの名前を alt から作り、アイコンを置く
+        condition: '`alt: "売上<推移>"`、`img: "<img src=\"a.png\" alt=\"売上\">"`'
+        mock: なし
+        expected: '`aria-label="画像を拡大: 売上&lt;推移&gt;"` の `button` の中に `img` と `<span class="mdmark-image-open-icon" aria-hidden="true">` の `svg`'
+      - name: test_render_image_opener_when_no_icon
+        case: 正常
+        summary: icon が false ならアイコンを置かない
+        condition: '`alt: "ビルド"`、`img: "<img src=\"a.gif\" alt=\"ビルド\">"`、`icon: false`'
+        mock: なし
+        expected: '`button.mdmark-image-open` の中に `img` だけがあり、`mdmark-image-open-icon` が無い'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderImageFigure
+    title: 画像の図を描く
+    container: src/parts/image.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『画像の図』の HTML を返す。`width` を `style` の `--mdmark-image-width`、`align` を `data-align`、`only` を class `mdmark-only-{only}` にし、`caption` か `label` があれば `figcaption` を置く（`label` は頭の `b`）。`lightbox` が `false` のときは `img` に `data-nolightbox` を付ける。`opener` が `false` のとき（`render`）は拡大のボタンを付けず `img` だけを置き、`true` のとき（Storybook）は `lightbox` が `false` でなければ `renderImageOpener` で包む。`gif` が `true` のときは `img` に `data-gif` を付ける
+    args:
+      - name: options
+        type: '{ src: string; alt: string; caption?: string; width?: string; align?: "left" | "center" | "right"; lightbox?: boolean; only?: "light" | "dark"; id?: string; label?: string; opener?: boolean; gif?: boolean }'
+        required: true
+        description: 部品設計の引数と、内部で使う `opener`（既定 `true`）・`gif`（既定 `false`）
+    returns:
+      type: string
+      description: '`<figure class="mdmark-figure mdmark-image"` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+      - '#functions[renderImageOpener]'
+    refs:
+      - dev/設計書/部品設計/画像の図.ts#
+    unit_tests:
+      - name: test_render_image_figure
+        case: 正常
+        summary: 幅・配置・キャプションを当て、拡大のボタンで包む
+        condition: '部品設計の `Caption` に `width: "300px"`、`align: center`'
+        mock: なし
+        expected: '`<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` の中に `button.mdmark-image-open` と `figcaption`'
+      - name: test_render_image_figure_when_render
+        case: 正常
+        summary: opener が false なら img だけを置く
+        condition: '`opener: false`、`gif: true`、`only: dark`'
+        mock: なし
+        expected: '`button` が無く、`figure` が class `mdmark-only-dark`、`img` が `data-gif` を持つ'
+      - name: test_render_image_figure_when_no_lightbox
+        case: 正常
+        summary: lightbox が false ならボタンで包まない
+        condition: 部品設計の `NoLightbox`
+        mock: なし
+        expected: '`button` が無く、`img` が `data-nolightbox` を持つ'
+      - name: test_render_image_figure_when_sub_figure
+        case: 正常
+        summary: サブ図の番号と id を付ける
+        condition: 部品設計の `SubFigure`
+        mock: なし
+        expected: '`figure` が `id="fig-schemes-b"`、`figcaption` が `<b>図 2b</b>暗い配色`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderGallery
+    title: ギャラリーを描く
+    container: src/parts/gallery.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ギャラリー』の HTML を返す。`cols` を `style` の `--mdmark-gallery-cols` にし、`body`（画像の図の並び。`SLOT_MARKER` を渡せる）を格子の `div` に入れる
+    args:
+      - name: options
+        type: '{ cols?: number; body: string }'
+        required: true
+        description: 列の数（既定 `2`）と中身の HTML
+    returns:
+      type: string
+      description: '`<div class="mdmark-gallery"` で始まる HTML'
+    refs:
+      - dev/設計書/部品設計/ギャラリー.ts#
+    unit_tests:
+      - name: test_render_gallery
+        case: 正常
+        summary: 列の数を style に置き、中身を格子に入れる
+        condition: '`cols: 3`、`body: SLOT_MARKER`'
+        mock: なし
+        expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">` の中に `SLOT_MARKER`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderLightbox
+    title: ライトボックスを描く
+    container: src/parts/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ライトボックス』の `dialog` の HTML を返す。`total` が `1` のときは送りのボタンと枚数を出さず、`index` が端のときは端の送りのボタンを `disabled` にする。`zoom` が全体の収まる倍率（`fit`）のときは縮小を、`ZOOM.max` のときは拡大を `disabled` にし、`fit` より大きいときだけ移動のボタンのまとまりの `hidden` を外す。アイコンは `iconSvg`（`chevron-left`・`chevron-right`・`minus`・`plus`・`x` と移動の矢印）
+    args:
+      - name: options
+        type: '{ src: string; alt: string; caption?: string; index: number; total: number; zoom?: number; fit?: number }'
+        required: true
+        description: 部品設計の引数と、全体が収まる倍率（`fit`。既定 `1`）
+    returns:
+      type: string
+      description: '`<dialog class="mdmark-lightbox" aria-label="画像の拡大">` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
+    refs:
+      - dev/設計書/部品設計/ライトボックス.ts#
+    unit_tests:
+      - name: test_render_lightbox
+        case: 正常
+        summary: 途中の画像は前後に送れ、枚数を出す
+        condition: 部品設計の `Middle`
+        mock: なし
+        expected: '`前の画像`・`次の画像` のボタンが `disabled` を持たず、`mdmark-lightbox-count` が `3 / 15`、移動のまとまりが `hidden`'
+      - name: test_render_lightbox_when_edge
+        case: 正常
+        summary: 端の送りのボタンを押せなくする
+        condition: 部品設計の `First` と `Last`
+        mock: なし
+        expected: 1 つ目は `前の画像` だけ、2 つ目は `次の画像` だけが `disabled`
+      - name: test_render_lightbox_when_single
+        case: 正常
+        summary: 1 枚なら送りのボタンと枚数を出さない
+        condition: 部品設計の `Single`
+        mock: なし
+        expected: '`mdmark-lightbox-nav` が無い'
+      - name: test_render_lightbox_when_max
+        case: 正常
+        summary: 上限の倍率で拡大を押せなくし、移動のボタンを出す
+        condition: 部品設計の `Max`
+        mock: なし
+        expected: 拡大が `disabled`、倍率の文字が `300%`、移動のまとまりが `hidden` を持たない
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderMedia
+    title: 動画と音声を描く
+    container: src/parts/media.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『動画と音声』の HTML を返す。`video`・`audio` に `controls`・`preload="metadata"`・`aria-label`（`alt`）を付け、`video` には `playsinline` も付ける。`autoplay` のときは `muted` も付ける。`poster` を渡したときは `video` の `poster` と、印刷用の `img.mdmark-media-print`（`alt=""`）を置く
+    args:
+      - name: options
+        type: '{ kind: "video" | "audio"; src: string; alt: string; caption?: string; width?: string; poster?: string; autoplay?: boolean; muted?: boolean; loop?: boolean }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<figure class="mdmark-figure mdmark-media"` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    refs:
+      - dev/設計書/部品設計/動画と音声.ts#
+    unit_tests:
+      - name: test_render_media
+        case: 正常
+        summary: 動画に再生バーと印刷用の画像を付ける
+        condition: 部品設計の `Video`
+        mock: なし
+        expected: '`video` が `controls`・`preload="metadata"`・`playsinline`・`aria-label`・`poster` を持ち、`img.mdmark-media-print` の `alt` が空'
+      - name: test_render_media_when_autoplay
+        case: 正常
+        summary: 自動で再生するなら muted を付ける
+        condition: 部品設計の `VideoAutoplay`
+        mock: なし
+        expected: '`video` が `autoplay`・`muted`・`loop` を持ち、`figure` の `style` が `--mdmark-image-width: 320px`'
+      - name: test_render_media_when_audio
+        case: 正常
+        summary: 音声は playsinline を持たない
+        condition: 部品設計の `Audio`
+        mock: なし
+        expected: '`audio` が `controls` を持ち、`playsinline` と `img.mdmark-media-print` を持たない'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderGifToggle
+    title: GIF の止める・再生するボタンを描く
+    container: src/parts/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '`button.mdmark-gif-toggle` の HTML を返す。`paused` に合わせて `aria-pressed`・読み上げの名前と `title`（`GIF を停止`・`GIF を再生`）を出し、`pause` と `play` のアイコンを両方置く（出す側は CSS が `aria-pressed` で決める）'
+    args:
+      - name: options
+        type: '{ paused: boolean }'
+        required: true
+        description: 止めているか
+    returns:
+      type: string
+      description: '`<button class="mdmark-gif-toggle" type="button"` で始まる HTML'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
+    refs:
+      - dev/設計書/部品設計/GIF.ts#
+    unit_tests:
+      - name: test_render_gif_toggle
+        case: 正常
+        summary: 止めているかを aria-pressed と名前に出す
+        condition: '`paused: false` と `paused: true`'
+        mock: なし
+        expected: 1 つ目が `aria-pressed="false"`・`aria-label="GIF を停止"`、2 つ目が `aria-pressed="true"`・`aria-label="GIF を再生"`。どちらも `svg` を 2 つ持つ
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderGif
+    title: GIF を描く
+    container: src/parts/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『GIF』の HTML を返す（Storybook が使う。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。`paused` のときは `canvas` の `hidden` を外し、`img` を `visibility: hidden` にする'
+    args:
+      - name: options
+        type: '{ src: string; alt: string; paused?: boolean; lightbox?: boolean }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<span class="mdmark-gif">` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+      - '#functions[renderImageOpener]'
+      - '#functions[renderGifToggle]'
+    refs:
+      - dev/設計書/部品設計/GIF.ts#
+    unit_tests:
+      - name: test_render_gif
+        case: 正常
+        summary: 再生中は canvas を隠し、停止のボタンを置く
+        condition: 部品設計の `Playing`
+        mock: なし
+        expected: '`canvas` が `hidden`・`aria-hidden="true"` を持ち、`button.mdmark-image-open` の中に `img`、`button.mdmark-gif-toggle` が `aria-pressed="false"`'
+      - name: test_render_gif_when_paused
+        case: 正常
+        summary: 止めたときは canvas を出し img を隠す
+        condition: 部品設計の `Paused`
+        mock: なし
+        expected: '`canvas` が `hidden` を持たず、`img` が `visibility: hidden`、ボタンが `aria-pressed="true"`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderCard
+    title: カードを描く
+    container: src/parts/card.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『カード』の HTML を返す。`link` はドメインに URL のホスト、URL に `href` を出し、`file` はドメインに拡張子の大文字、URL にファイル名を出す。アイコンの `span` は中身を持たず、CSS が `data-card`・`data-file-kind` ごとに付ける
+    args:
+      - name: options
+        type: '{ kind: "link" | "file"; href: string; title: string; fileKind?: AttachmentKind }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<a class="mdmark-card"` で始まる HTML'
+    callees:
+      - '#functions[escapeHtml]'
+    refs:
+      - dev/設計書/部品設計/カード.ts#
+    unit_tests:
+      - name: test_render_card
+        case: 正常
+        summary: リンクのカードにホストと URL を出す
+        condition: 部品設計の `Link`
+        mock: なし
+        expected: '`data-card="link"`、`mdmark-card-domain` が URL のホスト、`mdmark-card-url` が `href`'
+      - name: test_render_card_when_file
+        case: 正常
+        summary: 添付のカードに拡張子とファイル名を出す
+        condition: 部品設計の `FilePdf`
+        mock: なし
+        expected: '`data-card="file"`・`data-file-kind="pdf"`、`mdmark-card-domain` が `PDF`、`mdmark-card-url` がファイル名'
+      - name: test_render_card_when_escaped
+        case: 正常
+        summary: タイトルと URL をエスケープする
+        condition: '`title: "<b>資料</b>"`、`href: "https://example.com/?a=1&b=2"`'
+        mock: なし
+        expected: '`&lt;b&gt;資料&lt;/b&gt;` と `href="https://example.com/?a=1&amp;b=2"`'
+    status: planned
+    introduced:
+      pr: 263
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -1060,6 +1439,14 @@ test_files:
   - tests/unit/src/parts/doc-list.test.ts
   - tests/unit/src/parts/code-block.test.ts
   - tests/unit/src/parts/collapsible.test.ts
+  - tests/unit/src/parts/colors.test.ts
+  - tests/unit/src/parts/text-color.test.ts
+  - tests/unit/src/parts/image.test.ts
+  - tests/unit/src/parts/gallery.test.ts
+  - tests/unit/src/parts/lightbox.test.ts
+  - tests/unit/src/parts/media.test.ts
+  - tests/unit/src/parts/gif.test.ts
+  - tests/unit/src/parts/card.test.ts
 data_models:
   - name: CodeLine
     title: コードの行

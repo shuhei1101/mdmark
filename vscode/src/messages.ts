@@ -16,7 +16,13 @@ export type HostMessage =
   | { type: "scrollToLine"; line: number }
   | { type: "configError"; line: number }
   | { type: "configOk" }
-  | { type: "inspect"; id: number; selector: string };
+  | {
+      type: "assetsResolved";
+      id: number;
+      /** 書いたパスから Webview の URL を引く表。見つからないパスは `null` */
+      urls: Record<string, string | null>;
+    }
+  | { type: "inspect"; id: number; selector: string; play?: boolean };
 
 /** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確かめるために返す） */
 export type InspectedElement = {
@@ -34,6 +40,10 @@ export type InspectedElement = {
   top: number;
   /** 高さ（px） */
   height: number;
+  /** `video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値 */
+  currentTime?: number;
+  /** `video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読めた） */
+  readyState?: number;
 };
 
 /** 配布物を読めない理由 */
@@ -51,4 +61,6 @@ export type WebviewMessage =
   | { type: "revealLine"; line: number }
   | { type: "reload" }
   | { type: "openConfig" }
+  | { type: "resolveAssets"; id: number; paths: string[] }
+  | { type: "openAsset"; path: string }
   | { type: "inspected"; id: number; elements: InspectedElement[] };

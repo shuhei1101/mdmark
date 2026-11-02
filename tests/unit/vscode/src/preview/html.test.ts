@@ -67,6 +67,7 @@ test("test_build_csp", async () => {
       "script-src 'nonce-abc' https://cdn.jsdelivr.net https://cdn.example.com https://*.vscode-cdn.net",
       "style-src https://cdn.jsdelivr.net https://*.vscode-cdn.net 'unsafe-inline'",
       "img-src https://*.vscode-cdn.net https: data:",
+      "media-src https://*.vscode-cdn.net https: data:",
       "font-src https://cdn.jsdelivr.net https://*.vscode-cdn.net",
       "connect-src https://cdn.jsdelivr.net",
     ].join("; "),

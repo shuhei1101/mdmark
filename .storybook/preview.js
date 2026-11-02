@@ -62,3 +62,25 @@ new MutationObserver(async () => {
     alignFileTreeNotes(tree);
   }
 }).observe(document.documentElement, { childList: true, subtree: true });
+
+// GIF の止めたストーリー（隠していない `canvas` を持つもの）は、画像を読み込んだ後に最初のフレームを `canvas` に描く（`mount` が描くのと同じ）
+const drawn = new WeakSet();
+new MutationObserver(() => {
+  for (const canvas of document.querySelectorAll(
+    ".mdmark-gif canvas:not([hidden])",
+  )) {
+    const img = canvas.parentElement?.querySelector("img");
+    if (!img || drawn.has(canvas)) {
+      continue;
+    }
+    drawn.add(canvas);
+    img.decode().then(
+      () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d")?.drawImage(img, 0, 0);
+      },
+      () => {},
+    );
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });

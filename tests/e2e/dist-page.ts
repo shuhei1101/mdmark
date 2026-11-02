@@ -32,7 +32,7 @@ const execFileAsync = promisify(execFile);
 // jsDelivr の GitHub エンドポイントの、版のタグまでの URL
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
 // ページを返す架空のオリジン
-const PAGE_URL = "https://app.example.test/";
+export const PAGE_URL = "https://app.example.test/";
 // 外部ライブラリの代役のモジュールを返す架空の URL
 export const LIB_URL = "https://libs.example.test/test-lib.js";
 // 拡張の代役のモジュールを返す架空の URL

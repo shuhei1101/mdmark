@@ -14,14 +14,29 @@
   <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 選べるテーマの配色の値: media.js がモック専用の操作列で選んだテーマだけを有効にする -->
+  <link rel="stylesheet" href="../../assets/themes/theme-paper.css" data-theme-css="theme-paper" disabled>
+  <link rel="stylesheet" href="../../assets/themes/theme-slate.css" data-theme-css="theme-slate" disabled>
+  <link rel="stylesheet" href="../../assets/themes/theme-contrast.css" data-theme-css="theme-contrast" disabled>
+  <!-- 色のプリセットとバッジの色の規則（#263 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- モック専用の操作列のテーマの切り替え（#263 で共有するアセット） -->
+  <script src="../../refs/263/assets/media.js" defer></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 配色の切り替え -->
+  <!-- モック専用の操作列: テーマと配色の切り替え -->
   <div class="mock-bar">
+    <!-- [data-theme-set]: media.js が押されたボタンのテーマの配色を有効にする -->
+    <div class="mock-bar-group" role="group" aria-label="テーマ">
+      <button class="mock-bar-item" type="button" data-theme-set="default" aria-pressed="false">dev-swiss（既定）</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-paper" aria-pressed="false">theme-paper</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
+      <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
+    </div>
     <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
@@ -78,6 +93,41 @@
         <h2 class="catalog-label" id="state-empty">頭の後ろが空の badge:（バッジにせず、インラインコードのまま出す）</h2>
         <article class="mdmark">
 <p>状態は <span class="mdmark-badge">点検済み</span> のように書きます。<code>badge:</code> と <code>badge: </code> はバッジになりません。</p>
+        </article>
+      </section>
+
+      <!-- 色のバッジ: badge: の後ろの最初の : の前が色の名前のとき、その色で描く -->
+      <section aria-labelledby="state-color">
+        <h2 class="catalog-label" id="state-color">色のバッジ（<code>badge:red:要確認</code>。7 色）</h2>
+        <article class="mdmark">
+<p><span class="mdmark-badge" data-color="blue">推奨</span> <span class="mdmark-badge" data-color="red">要確認</span> <span class="mdmark-badge" data-color="green">完了</span> <span class="mdmark-badge" data-color="yellow">保留</span> <span class="mdmark-badge" data-color="orange">注意</span> <span class="mdmark-badge" data-color="purple">実験的</span> <span class="mdmark-badge" data-color="gray">対象外</span></p>
+<p>この機能は <span class="mdmark-badge" data-color="purple">実験的</span> で、色を付けないバッジ <span class="mdmark-badge">v0.10.0</span> と並べても見分けられます。</p>
+        </article>
+      </section>
+
+      <!-- 表の中の色のバッジ -->
+      <section aria-labelledby="state-color-table">
+        <h2 class="catalog-label" id="state-color-table">表の中の色のバッジ</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="plain">
+  <table tabindex="0" aria-label="表: 色のバッジ">
+    <thead><tr><th>確認事項</th><th>状態</th></tr></thead>
+    <tbody>
+      <tr><td data-label="確認事項">色の名前の一覧</td><td data-label="状態"><span class="mdmark-badge" data-color="red">要確認</span></td></tr>
+      <tr><td data-label="確認事項">本文の文字の色の書き方</td><td data-label="状態"><span class="mdmark-badge" data-color="green">決定</span></td></tr>
+      <tr><td data-label="確認事項">プレビューで再生できない形式</td><td data-label="状態"><span class="mdmark-badge" data-color="green">決定</span></td></tr>
+      <tr><td data-label="確認事項">PDF をページの中に表示する</td><td data-label="状態"><span class="mdmark-badge" data-color="gray">対象外</span></td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- 色の名前でない頭: 今のまま全てをラベルにする（書き方の警告は出さない） -->
+      <section aria-labelledby="state-color-unknown">
+        <h2 class="catalog-label" id="state-color-unknown">色の名前でない頭（<code>badge:pink:要確認</code> と <code>badge:v1:beta</code>。全てをラベルにする）</h2>
+        <article class="mdmark">
+<p>状態は <span class="mdmark-badge">pink:要確認</span> で、対象は <span class="mdmark-badge">v1:beta</span> です。</p>
         </article>
       </section>
     </div>

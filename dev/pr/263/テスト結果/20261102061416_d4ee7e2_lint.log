@@ -1,0 +1,13 @@
+
+> lint
+> biome check .
+
+Checked 580 files in 2s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+

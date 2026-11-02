@@ -109,6 +109,25 @@ flows:
       - 標準エラーに `dist/docs.html` と直し方が出る
       - ファイル `dist` が変わっていない
     test: test_error_when_output_unwritable
+  - name: 異常系（動画・音声のコピー先へ書けない・終了コード 1）
+    summary: 動画・音声のコピー先の `_files/` へ書けないと、HTML を書かずにパスと直し方を示して終わる
+    setup:
+      - name: 書けないコピー先
+        description: 正常系（画像・動画・音声を埋める）の文書群で、`dist/` にファイル `docs_files` を置いたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark build
+        C->>C: 動画・音声を docs_files/ へコピーする（作れない）
+        C-->>W: 書けないパスと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `dist/docs_files` と直し方が出る
+      - ファイル `dist/docs_files` が変わっておらず、`dist/docs.html` が書かれていない
+    test: test_error_when_media_copy_unwritable
   - name: 正常系（エイリアスを読む）
     summary: 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で効かせる
     setup:
@@ -154,9 +173,34 @@ flows:
       - 終了コードが 0
       - 最初に開いた文書と、文書の一覧から移った 2 つ目の文書のどちらでも、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
+  - name: 正常系（画像・動画・音声を埋める）
+    summary: 2 つの文書が指す同じ画像を 1 回だけ埋め、動画・音声を出力の隣のフォルダへコピーする
+    setup:
+      - name: まとめる文書とファイル
+        description: 設定の `build` の `a.md` と `sub/b.md` が、同じ `images/chart.png`（`a.md` からは `images/chart.png`、`sub/b.md` からは `../images/chart.png`）と、別々の `media/demo.mp4`・`sub/media/voice.mp3` を相対パスで指す。`build.out` は `dist/docs.html`
+      - name: Mock
+        description: 差し替える依存は無い。まとめた HTML は Playwright の Chromium で file:// で開き、要求を記録する
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark build
+        C->>C: 画像を 1 回だけ data URL に替え、動画・音声を docs_files/ へコピーする
+        C->>H: docs.html と docs_files/ を書く
+        C-->>W: 書き出した: dist/docs.html（文書 2 件）・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`chart.png` の `data:` URL が HTML の中に 1 回だけある'
+      - '`dist/docs_files/media/demo.mp4` と `dist/docs_files/sub/media/voice.mp3` がある'
+      - どちらの文書を開いても、`video`・`audio` の `src` がコピーへの相対パスで、`readyState` が 1 以上になる
+      - '`docs.html` と `docs_files/` だけを空のフォルダへ写して file:// で開き、文書を移っても、ページ自身・`docs_files/` の下のファイルと `blob:`・`data:` のほかの要求が 0 件'
+    test: test_normal_when_media_embedded
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（画像・動画・音声を埋める）]
 lead: 文書を書く人が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが効き、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
-side_effects: '`build.out` に HTML を書く（既にあれば上書きする）。文書が使う外部ライブラリの URL の先を読む'
+side_effects: '`build.out` に HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使う外部ライブラリの URL の先を読む'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#
 request:
@@ -199,8 +243,8 @@ exceptions:
     condition: '`build.include` に当たり `build.exclude` に当たらない文書が 0 件'
     notes: 標準エラーに、対象が 0 件であることと `build.include` を直すことを出す。HTML は書かない
   - name: 出力先へ書けない（終了コード 1）
-    condition: '`build.out` へ書けない'
-    notes: 標準エラーに書けなかったパスと直し方を出す
+    condition: '`build.out` か、動画・音声のコピー先の `_files/` へ書けない'
+    notes: 標準エラーに書けなかったパスと直し方を出す。HTML は書かない
 constraints:
   - item: まとめる文書
     constraint: '`build.include` の glob に当たり `build.exclude` に当たらない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
@@ -218,10 +262,10 @@ constraints:
     constraint: '`build.entry`。無いかまとめる文書に当たらないときは、まとめる文書の最初の 1 つ（当たらないときは警告に出す）'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[build.entry]
   - item: 埋めるもの
-    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリはまとめる文書のどれかに印があるものだけを、同じ URL は 1 つだけ埋める。画像はそれぞれの文書のフォルダを基準に読む
+    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリはまとめる文書のどれかに印があるものだけを、同じ URL は 1 つだけ埋める。画像・動画・音声はそれぞれの文書のフォルダを基準に探し、無ければ `assets.root` で探す。複数の文書が指す同じ画像は 1 回だけ埋め、文書からは同じ埋めた画像を指す。動画・音声は `build.out` と同じフォルダの `{build.out のファイル名から拡張子を除いた名前}_files/` へ、同じファイルを 1 回だけ、HTML を書く前にコピーする
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
   - item: 外部への要求
-    constraint: 開いてから、文書を移っても、ページ自身と `blob:`・`data:` のほかへ要求しない
+    constraint: 開いてから、文書を移っても、ページ自身・`_files/` の下にコピーした動画と音声と `blob:`・`data:` のほかへ要求しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
   - item: 文書の数
     constraint: 制限なし

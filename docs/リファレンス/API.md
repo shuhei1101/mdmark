@@ -889,10 +889,26 @@ handle.destroy();
 | `--mdmark-color-comment-bg` | `#f2effe` | `#25222d` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
 | `--mdmark-color-comment-line` | `#6d28d9` | `#c4a7ff` | コメントの印の下線の色 |
 | `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |
+| `--mdmark-color-accent-blue-bg` | `#cce2fe` | `#1a314e` | 色の名前 `blue` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-blue-text` | `#1d4ed8` | `#7aa2ff` | 色の名前 `blue` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-red-bg` | `#ffd4d1` | `#472020` | 色の名前 `red` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-red-text` | `#b91c1c` | `#f87171` | 色の名前 `red` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-green-bg` | `#cbf2d2` | `#1a3821` | 色の名前 `green` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-green-text` | `#166534` | `#4ade80` | 色の名前 `green` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-yellow-bg` | `#fff2af` | `#40380e` | 色の名前 `yellow` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-yellow-text` | `#854d0e` | `#facc15` | 色の名前 `yellow` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-orange-bg` | `#fedbc4` | `#4a2a12` | 色の名前 `orange` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-orange-text` | `#b53a0a` | `#fb923c` | 色の名前 `orange` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-purple-bg` | `#edd8fd` | `#382446` | 色の名前 `purple` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-purple-text` | `#6d28d9` | `#c4a7ff` | 色の名前 `purple` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-gray-bg` | `#e4e6ea` | `#303033` | 色の名前 `gray` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-gray-text` | `#52525b` | `#b4b4bc` | 色の名前 `gray` の文字の色。バッジと本文の文字の色 |
 
 <!-- /table -->
 
 注意書きの面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
+色のプリセット（`--mdmark-color-accent-*`）は、どの組も文字と面のコントラストを 4.5:1 以上にしている。
+色の名前の書き方は [記法](./記法.md#色の名前)。
 
 #### 配色を切り替える class
 

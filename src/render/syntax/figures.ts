@@ -2,6 +2,7 @@ import type { StateCore, Token } from "markdown-it";
 import { renderFigure } from "../../parts/figure.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { DIAGRAM_META } from "./diagrams.ts";
+import { imageAttributesOf, imageFigureHtml } from "./images.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
 import { type SyntaxWarning, warningBlock } from "./warnings.ts";
 
@@ -38,12 +39,36 @@ function matchingClose(
   return -1;
 }
 
-/** 印の直後の図か表（画像だけの段落、表の囲み、囲まない表）の範囲を読む */
+/** 印の直後の図か表の範囲 */
+type FigureTarget = {
+  /** 図表の種類 */
+  kind: FigureKind;
+  /** 範囲の最後のトークンの位置 */
+  end: number;
+  /** 画像の title */
+  caption: string;
+  /** 画像の図にする画像（`images` がオンで画像だけの段落のとき） */
+  image?: Token;
+  /** ギャラリーの開きのマーカー（`gallery` がオンのとき） */
+  gallery?: Token;
+};
+
+/** 印の直後の図か表（画像だけの段落、ギャラリーの開きのマーカー、表の囲み、囲まない表）の範囲を読む */
 function figureTarget(
-  tokens: Token[],
+  state: StateCore,
   start: number,
-): { kind: FigureKind; end: number; caption: string } | undefined {
+): FigureTarget | undefined {
+  const tokens = state.tokens;
   const first = tokens[start];
+  const firstMark = markOf(first);
+  if (
+    first &&
+    firstMark?.name === "gallery" &&
+    !firstMark.closing &&
+    featureOn(state, "gallery")
+  ) {
+    return { kind: "image", end: start, caption: "", gallery: first };
+  }
   // 図の部品は画像と同じ「図」の番号にする
   if (first?.meta?.[DIAGRAM_META] === true) {
     return { kind: "image", end: start, caption: "" };
@@ -52,10 +77,15 @@ function figureTarget(
     const children = tokens[start + 1]?.children ?? [];
     const image = children.find((child) => child.type === "image");
     if (image && children.every((child) => child.type === "image")) {
+      const kind = imageAttributesOf(image)?.kind;
+      const still = kind !== "video" && kind !== "audio";
       return {
         kind: "image",
         end: start + 2,
         caption: String(image.attrGet("title") ?? ""),
+        ...(still && children.length === 1 && featureOn(state, "images")
+          ? { image }
+          : {}),
       };
     }
     return undefined;
@@ -140,7 +170,7 @@ export function numberFigures(state: StateCore): void {
     const mark = markOf(token);
     const target =
       mark?.name === "fig" && !mark.closing
-        ? figureTarget(tokens, index + 1)
+        ? figureTarget(state, index + 1)
         : undefined;
     if (!token || !mark || !target) {
       if (token) {
@@ -162,9 +192,32 @@ export function numberFigures(state: StateCore): void {
     } else {
       figures.set(id, { kind: target.kind, number });
     }
+    const figureId = duplicated ? undefined : id;
+    // ギャラリーは番号だけを渡し、囲むのはギャラリーの処理に任せる
+    if (target.gallery) {
+      target.gallery.meta = {
+        ...target.gallery.meta,
+        figure: { id: figureId, number },
+      };
+      continue;
+    }
+    if (target.image) {
+      out.push(
+        ownBlock(
+          state,
+          imageFigureHtml(target.image, {
+            ...(figureId === undefined ? {} : { id: `fig-${figureId}` }),
+            label: `図 ${number}`,
+          }),
+          token,
+        ),
+      );
+      index = target.end;
+      continue;
+    }
     const html = renderFigure({
       kind: target.kind,
-      id: duplicated ? undefined : id,
+      id: figureId,
       number,
       caption: target.caption,
       body: SLOT_MARKER,

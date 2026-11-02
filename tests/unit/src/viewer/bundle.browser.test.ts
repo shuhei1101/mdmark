@@ -105,3 +105,27 @@ test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
   expect(body.hasAttribute("hidden")).toBe(false);
   expect(decodeURIComponent(location.hash)).toBe("#/b.md#注意");
 });
+
+// キーを data: URL に替え、フラグメントを残す（正常系）
+test("test_restore_assets", async () => {
+  // 準備
+  const { restoreAssets } = await loadBundle();
+  const markdown = "![図](mdmark-asset:a1#only-dark)\n";
+  // 実行
+  const restored = restoreAssets(markdown, {
+    a1: "data:image/png;base64,AA==",
+  });
+  // 検証
+  expect(restored).toBe("![図](data:image/png;base64,AA==#only-dark)\n");
+});
+
+// 知らないキーは替えない（正常系）
+test("test_restore_assets_when_unknown", async () => {
+  // 準備
+  const { restoreAssets } = await loadBundle();
+  const markdown = "![図](mdmark-asset:zz)\n";
+  // 実行
+  const restored = restoreAssets(markdown, {});
+  // 検証
+  expect(restored).toBe(markdown);
+});

@@ -412,7 +412,10 @@ test("test_normal_when_feature_enabled_by_mark", async () => {
 test("test_normal_when_theme_overridden", async () => {
   // 準備
   const el = createElement();
-  await mountTracked(el, { markdown: "[リンク](https://example.com/)\n" });
+  // リンク 1 つだけの段落はカードにするため、文の中にリンクを置く
+  await mountTracked(el, {
+    markdown: "詳しくは [リンク](https://example.com/) を見る。\n",
+  });
   const style = document.createElement("style");
   style.textContent =
     "a { text-decoration-line: none } .mdmark { --mdmark-color-link: rgb(4, 5, 6) }";
@@ -6659,4 +6662,517 @@ test("test_normal_when_folded_tabs_and_steps_opened", async () => {
   expect(
     [...stepsFold.querySelectorAll("li")].map((item) => isVisible(item)),
   ).toEqual([true, true]);
+});
+
+/** 指定した大きさと色で塗った PNG の data: URL（手元の画像の応答の代わり） */
+function pngUrl(options: {
+  width: number;
+  height: number;
+  color: string;
+}): string {
+  const canvas = document.createElement("canvas");
+  canvas.width = options.width;
+  canvas.height = options.height;
+  const context = canvas.getContext("2d");
+  if (context) {
+    context.fillStyle = options.color;
+    context.fillRect(0, 0, options.width, options.height);
+  }
+  return canvas.toDataURL("image/png");
+}
+
+/** 無限ループで、フレームの間隔が 100ms の GIF（モックの見本） */
+const ANIMATED_GIF_URL = new URL(
+  "../../../dev/mock/refs/263/assets/media/build.gif",
+  import.meta.url,
+).href;
+
+/** 2 つの `rgb(r, g, b)` の色のコントラスト比（WCAG 2） */
+function contrastRatio(first: string, second: string): number {
+  const luminance = (color: string) => {
+    const [r = 0, g = 0, b = 0] = (color.match(/[\d.]+/g) ?? [])
+      .slice(0, 3)
+      .map((value) => {
+        const channel = Number(value) / 255;
+        return channel <= 0.03928
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [light = 0, dark = 0] = [luminance(first), luminance(second)].sort(
+    (a, b) => b - a,
+  );
+  return (light + 0.05) / (dark + 0.05);
+}
+
+/** 色の式を、要素の中で解決した computed の色の文字列にする */
+function resolveColorIn(el: HTMLElement, expression: string): string {
+  const probe = document.createElement("span");
+  probe.style.color = expression;
+  el.append(probe);
+  const resolved = getComputedStyle(probe).color;
+  probe.remove();
+  return resolved;
+}
+
+/** 開いているライトボックス（無ければ undefined） */
+function openLightbox(el: HTMLElement): HTMLDialogElement | undefined {
+  const dialog = el.querySelector<HTMLDialogElement>("dialog.mdmark-lightbox");
+  return dialog?.open ? dialog : undefined;
+}
+
+/** ライトボックスの画像の src と枚数の表示 */
+function lightboxState(el: HTMLElement): { src: string; count: string } {
+  const dialog = openLightbox(el);
+  if (!dialog) {
+    throw new Error("ライトボックスが開いていない");
+  }
+  return {
+    src: find<HTMLImageElement>(dialog, ".mdmark-lightbox-stage img").src,
+    count: find(dialog, ".mdmark-lightbox-count").textContent ?? "",
+  };
+}
+
+// 画像を押すと全画面のダイアログで拡大し、前後に送り、Esc と背景で閉じて押した画像へフォーカスを戻す（正常系）
+test("test_normal_when_lightbox_opened", async () => {
+  // 準備
+  const [a, b, c] = ["#0f766e", "#b45309", "#6d28d9"].map((color) =>
+    pngUrl({ width: 320, height: 200, color }),
+  ) as [string, string, string];
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      `![画像 a](${a})`,
+      "",
+      "本文の段落。",
+      "",
+      `![画像 b](${b})`,
+      "",
+      "本文の段落。",
+      "",
+      `![画像 c](${c})`,
+      "",
+    ].join("\n"),
+  });
+  const buttons = [
+    ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-image-open"),
+  ];
+  // 検証: 3 つの画像が拡大のボタンに入っている
+  expect(buttons).toHaveLength(3);
+  expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+    "画像を拡大: 画像 a",
+    "画像を拡大: 画像 b",
+    "画像を拡大: 画像 c",
+  ]);
+  expect(buttons.map((button) => button.type)).toEqual([
+    "button",
+    "button",
+    "button",
+  ]);
+  const second = buttons[1] as HTMLButtonElement;
+  const scrollY = window.scrollY;
+  // 実行: 2 つ目を押す
+  await userEvent.click(second);
+  // 検証
+  const dialog = openLightbox(el);
+  expect(dialog).toBeDefined();
+  expect(lightboxState(el)).toEqual({ src: b, count: "2 / 3" });
+  for (const [tool, label] of [
+    ["prev", "前の画像"],
+    ["next", "次の画像"],
+    ["close", "拡大を閉じる"],
+  ]) {
+    expect(
+      find(dialog as HTMLElement, `[data-tool="${tool}"]`).getAttribute(
+        "aria-label",
+      ),
+    ).toBe(label);
+  }
+  // 実行・検証: 右の矢印キーで次へ、前の画像のボタンを 2 回押して前へ送る
+  await userEvent.keyboard("{ArrowRight}");
+  expect(lightboxState(el)).toEqual({ src: c, count: "3 / 3" });
+  const prev = find<HTMLButtonElement>(
+    dialog as HTMLElement,
+    '[data-tool="prev"]',
+  );
+  await userEvent.click(prev);
+  await userEvent.click(prev);
+  expect(lightboxState(el)).toEqual({ src: a, count: "1 / 3" });
+  // 実行・検証: Esc で閉じ、押した画像へフォーカスを戻す
+  await userEvent.keyboard("{Escape}");
+  await vi.waitFor(() => expect(openLightbox(el)).toBeUndefined());
+  expect(document.activeElement).toBe(second);
+  expect(window.scrollY).toBe(scrollY);
+  // 実行・検証: 開き直し、ダイアログの外の背景を押して閉じる
+  await userEvent.click(second);
+  const reopened = openLightbox(el) as HTMLDialogElement;
+  expect(reopened).toBeDefined();
+  await userEvent.click(reopened, { position: { x: -6, y: -6 }, force: true });
+  await vi.waitFor(() => expect(openLightbox(el)).toBeUndefined());
+  expect(document.activeElement).toBe(second);
+});
+
+// ライトボックスの画像を図の全画面と同じボタンとキーで拡大・縮小し、拡大中は矢印キーで動かす（正常系）
+test("test_normal_when_lightbox_zoomed", async () => {
+  // 準備
+  const a = pngUrl({ width: 1600, height: 1000, color: "#0f766e" });
+  const b = pngUrl({ width: 1600, height: 1000, color: "#b45309" });
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: `![画像 a](${a})\n\n![画像 b](${b})\n`,
+  });
+  // 実行: 1 つ目の画像を押す
+  await userEvent.click(find(el, "button.mdmark-image-open"));
+  const dialog = openLightbox(el) as HTMLDialogElement;
+  const stage = find<HTMLElement>(dialog, ".mdmark-lightbox-stage");
+  const zoomButton = find(dialog, '[data-tool="fit"]');
+  const pan = find<HTMLElement>(dialog, '[data-group="pan"]');
+  const fit = Math.min(1, stage.clientWidth / 1600, stage.clientHeight / 1000);
+  // 検証: 収まる倍率で出し、移動のボタンを出さない
+  await vi.waitFor(() =>
+    expect(zoomButton.textContent).toBe(`${Math.round(fit * 100)}%`),
+  );
+  expect(pan.hidden).toBe(true);
+  // 実行・検証: + を 2 回押すと 1.25 倍ずつ上がり、移動のボタンを出す
+  await userEvent.keyboard("+");
+  expect(zoomButton.textContent).toBe(`${Math.round(fit * 1.25 * 100)}%`);
+  await userEvent.keyboard("+");
+  expect(zoomButton.textContent).toBe(
+    `${Math.round(fit * 1.25 * 1.25 * 100)}%`,
+  );
+  expect(pan.hidden).toBe(false);
+  expect(
+    [...pan.querySelectorAll("button")].map((button) =>
+      button.getAttribute("aria-label"),
+    ),
+  ).toEqual(["左へ動かす", "上へ動かす", "下へ動かす", "右へ動かす"]);
+  // 実行・検証: 拡大中の右の矢印キーは画像を動かし、送らない
+  const before = stage.scrollLeft;
+  await userEvent.keyboard("{ArrowRight}");
+  expect(stage.scrollLeft).toBeGreaterThan(before);
+  expect(lightboxState(el).src).toBe(a);
+  // 実行・検証: 0 で収まる倍率に戻してから右の矢印キーで送る
+  await userEvent.keyboard("0");
+  await userEvent.keyboard("{ArrowRight}");
+  expect(lightboxState(el).src).toBe(b);
+  await vi.waitFor(() =>
+    expect(zoomButton.textContent).toBe(`${Math.round(fit * 100)}%`),
+  );
+  expect(pan.hidden).toBe(true);
+});
+
+// nolightbox の画像を拡大のボタンで包まず、送りの並びから外す（正常系）
+test("test_normal_when_nolightbox", async () => {
+  // 準備
+  const [a, b, c] = ["#0f766e", "#b45309", "#6d28d9"].map((color) =>
+    pngUrl({ width: 320, height: 200, color }),
+  ) as [string, string, string];
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      `![画像 a](${a})`,
+      "",
+      `![アイコン](${b}){nolightbox}`,
+      "",
+      `![画像 c](${c})`,
+      "",
+    ].join("\n"),
+  });
+  // 検証: b の画像は包まず、フォーカスされない
+  const icon = find<HTMLImageElement>(el, 'img[alt="アイコン"]');
+  expect(icon.closest("button")).toBeNull();
+  expect(icon.tabIndex).toBe(-1);
+  expect(el.querySelectorAll("button.mdmark-image-open")).toHaveLength(2);
+  // 実行: 1 つ目を押してから右の矢印キーを押す
+  await userEvent.click(find(el, "button.mdmark-image-open"));
+  await userEvent.keyboard("{ArrowRight}");
+  // 検証
+  expect(lightboxState(el)).toEqual({ src: c, count: "2 / 2" });
+  await userEvent.keyboard("{Escape}");
+});
+
+/** GIF の範囲を撮った PNG の base64 */
+function snapGif(el: HTMLElement): Promise<string> {
+  return page.screenshot({
+    element: find(el, ".mdmark-gif"),
+    save: false,
+  });
+}
+
+/** 500ms 空けて GIF の範囲を 2 枚撮り、画素が同じかを返す */
+async function gifStill(el: HTMLElement): Promise<boolean> {
+  const first = await snapGif(el);
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const second = await snapGif(el);
+  return first === second;
+}
+
+// GIF に止める・再生するボタンを付け、押すたびに最初のフレームで止めるか動かす（正常系）
+test("test_normal_when_gif_toggled", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: `![ビルド](${ANIMATED_GIF_URL})\n` });
+  const toggle = await vi.waitFor(() =>
+    find<HTMLButtonElement>(el, "button.mdmark-gif-toggle"),
+  );
+  // 検証: GIF を包み、停止のボタンを付ける
+  expect(find(el, "img[data-gif]").closest(".mdmark-gif")).not.toBeNull();
+  expect(toggle.getAttribute("aria-pressed")).toBe("false");
+  expect(toggle.getAttribute("aria-label")).toBe("GIF を停止");
+  // 検証: 押す前は動いている
+  expect(await gifStill(el)).toBe(false);
+  const requests = performance.getEntriesByType("resource").length;
+  // 実行: ボタンを押す
+  await userEvent.click(toggle);
+  // 検証: 止まり、再生のボタンになる
+  expect(toggle.getAttribute("aria-pressed")).toBe("true");
+  expect(toggle.getAttribute("aria-label")).toBe("GIF を再生");
+  expect(await gifStill(el)).toBe(true);
+  // 実行: もう一度押す
+  await userEvent.click(toggle);
+  // 検証: 動き出す
+  expect(toggle.getAttribute("aria-pressed")).toBe("false");
+  expect(await gifStill(el)).toBe(false);
+  // 検証: 止める・再生するで外への要求が増えない
+  expect(performance.getEntriesByType("resource").length).toBe(requests);
+});
+
+// prefers-reduced-motion: reduce のとき、GIF を止めた状態で描く（正常系）
+test("test_normal_when_gif_reduced_motion", async () => {
+  // 準備
+  await cdp().send("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+  });
+  try {
+    const el = createElement();
+    // 実行
+    await mountTracked(el, { markdown: `![ビルド](${ANIMATED_GIF_URL})\n` });
+    const toggle = await vi.waitFor(() =>
+      find<HTMLButtonElement>(el, "button.mdmark-gif-toggle"),
+    );
+    // 検証
+    expect(await gifStill(el)).toBe(true);
+    expect(toggle.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle.getAttribute("aria-label")).toBe("GIF を再生");
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+  }
+});
+
+/** 色のプリセットの値（デザイン方針の既定のテーマ） */
+const PRESET = {
+  light: {
+    greenText: "rgb(22, 101, 52)",
+    greenBg: "rgb(203, 242, 210)",
+    redText: "rgb(185, 28, 28)",
+  },
+  dark: {
+    greenText: "rgb(74, 222, 128)",
+    greenBg: "rgb(26, 56, 33)",
+    redText: "rgb(248, 113, 113)",
+  },
+} as const;
+
+/** 色とテーマごとの画像を持つ見本の Markdown */
+function colorMarkdown(): string {
+  const dark = pngUrl({ width: 200, height: 120, color: "#111113" });
+  const light = pngUrl({ width: 200, height: 120, color: "#ffffff" });
+  return [
+    "`badge:green:完了` と [決め手の 1 文]{color=red}",
+    "",
+    `![暗い構成](${dark}#only-dark)`,
+    "",
+    `![明るい構成](${light}#only-light)`,
+    "",
+  ].join("\n");
+}
+
+/** バッジと本文の文字の色・太さと、テーマごとの画像の図の display */
+function readColors(el: HTMLElement) {
+  const badge = find(el, ".mdmark-badge[data-color]");
+  const text = find(el, ".mdmark-color[data-color]");
+  const figure = (alt: string) =>
+    getComputedStyle(
+      find(el, `img[alt="${alt}"]`).closest("figure") as HTMLElement,
+    ).display;
+  return {
+    badgeText: getComputedStyle(badge).color,
+    badgeBg: getComputedStyle(badge).backgroundColor,
+    text: getComputedStyle(text).color,
+    weight: getComputedStyle(text).fontWeight,
+    bg: resolveColorIn(el, "var(--mdmark-color-bg)"),
+    darkImage: figure("暗い構成"),
+    lightImage: figure("明るい構成"),
+  };
+}
+
+// 色の名前の要素に今の配色の色のプリセットを当て、今の配色に合わない画像を隠す（正常系）
+test("test_normal_when_color_preset_and_theme_images", async () => {
+  // 準備
+  await emulateColorScheme("light");
+  try {
+    const el = createElement();
+    // 実行
+    await mountTracked(el, { markdown: colorMarkdown() });
+    // 検証: 明るい配色
+    const light = readColors(el);
+    expect(light.badgeText).toBe(PRESET.light.greenText);
+    expect(light.text).toBe(PRESET.light.redText);
+    expect(light.weight).toBe("700");
+    expect(light.lightImage).not.toBe("none");
+    expect(light.darkImage).toBe("none");
+    expect(
+      contrastRatio(light.badgeText, light.badgeBg),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(light.text, light.bg)).toBeGreaterThanOrEqual(4.5);
+    // 実行: 暗い配色にする
+    await emulateColorScheme("dark");
+    // 検証
+    const dark = readColors(el);
+    expect(dark.badgeText).toBe(PRESET.dark.greenText);
+    expect(dark.text).toBe(PRESET.dark.redText);
+    expect(dark.darkImage).not.toBe("none");
+    expect(dark.lightImage).toBe("none");
+    expect(contrastRatio(dark.badgeText, dark.badgeBg)).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    expect(contrastRatio(dark.text, dark.bg)).toBeGreaterThanOrEqual(4.5);
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+  }
+});
+
+// 印刷では明るい配色の色のプリセットで色を残し、明るい配色の画像・動画の poster・カードの URL を出し、操作のボタンを出さない（正常系）
+test("test_normal_when_colors_and_media_printed", async () => {
+  // 準備
+  await emulateColorScheme("dark");
+  try {
+    const el = createElement();
+    const poster = pngUrl({ width: 160, height: 90, color: "#1d4ed8" });
+    const image = pngUrl({ width: 160, height: 90, color: "#0f766e" });
+    await mountTracked(el, {
+      markdown: [
+        "<!-- table: data row-color=状態:完了=green -->",
+        "",
+        "| 案件 | 状態 |",
+        "| --- | --- |",
+        "| 見積もり | 完了 |",
+        "",
+        "<!-- /table -->",
+        "",
+        colorMarkdown(),
+        `![拡大する画像](${image})`,
+        "",
+        `![ビルド](${ANIMATED_GIF_URL})`,
+        "",
+        `![操作](demo.mp4 "操作の動画"){poster=${poster}}`,
+        "",
+        "https://example.com/docs",
+        "",
+        "[仕様書](files/spec.pdf)",
+        "",
+      ].join("\n"),
+    });
+    await vi.waitFor(() => find(el, "button.mdmark-gif-toggle"));
+    // 実行: 印刷の media にする
+    await cdp().send("Emulation.setEmulatedMedia", {
+      media: "print",
+      features: [{ name: "prefers-color-scheme", value: "dark" }],
+    });
+    // 検証: 色は明るい配色の値
+    const colors = readColors(el);
+    expect(
+      getComputedStyle(find(el, "tr[data-color] td")).backgroundColor,
+    ).toBe(PRESET.light.greenBg);
+    expect(colors.badgeText).toBe(PRESET.light.greenText);
+    expect(colors.text).toBe(PRESET.light.redText);
+    // 検証: 明るい配色の画像を出す
+    expect(colors.lightImage).not.toBe("none");
+    expect(colors.darkImage).toBe("none");
+    // 検証: 操作のボタンを出さない
+    expect(getComputedStyle(find(el, "button.mdmark-gif-toggle")).display).toBe(
+      "none",
+    );
+    expect(getComputedStyle(find(el, ".mdmark-image-open-icon")).display).toBe(
+      "none",
+    );
+    // 検証: 動画の代わりに poster とキャプションを出す
+    expect(getComputedStyle(find(el, "video")).display).toBe("none");
+    const printed = find<HTMLImageElement>(el, "img.mdmark-media-print");
+    expect(printed.getAttribute("src")).toBe(poster);
+    expect(getComputedStyle(printed).display).not.toBe("none");
+    expect(
+      getComputedStyle(find(el, ".mdmark-media figcaption")).display,
+    ).not.toBe("none");
+    // 検証: リンクのカードと添付のカードに、リンク先の URL の文字を出す
+    for (const [kind, url] of [
+      ["link", "https://example.com/docs"],
+      ["file", "spec.pdf"],
+    ] as const) {
+      const text = find(
+        el,
+        `a.mdmark-card[data-card="${kind}"] .mdmark-card-url`,
+      );
+      expect(getComputedStyle(text).display, kind).not.toBe("none");
+      expect(text.textContent, kind).toBe(url);
+    }
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+  }
+});
+
+// opts.config.colorTheme で選んだテーマの色のプリセットで色の名前の要素を描く（正常系）
+test("test_normal_when_color_preset_in_theme", async () => {
+  // 準備
+  await emulateColorScheme("light");
+  try {
+    const el = createElement();
+    // 実行
+    await mountTracked(el, {
+      markdown: "`badge:green:完了` と [決め手の 1 文]{color=red}\n",
+      config: { colorTheme: "theme-slate" },
+    });
+    // 検証: theme-slate の明るい配色の値
+    const badge = find(el, ".mdmark-badge[data-color]");
+    const text = find(el, ".mdmark-color[data-color]");
+    expect(getComputedStyle(badge).color).toBe("rgb(4, 105, 76)");
+    expect(getComputedStyle(text).color).toBe("rgb(185, 28, 28)");
+    expect(
+      contrastRatio(
+        getComputedStyle(badge).color,
+        getComputedStyle(badge).backgroundColor,
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(
+        getComputedStyle(text).color,
+        resolveColorIn(el, "var(--mdmark-color-bg)"),
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+  }
+});
+
+// 使う側が層の外で書いた色のプリセットの CSS 変数が、色の名前の要素に当たる（正常系）
+test("test_normal_when_color_preset_overridden", async () => {
+  // 準備
+  const style = document.createElement("style");
+  style.textContent =
+    ".mdmark { --mdmark-color-accent-blue-text: rgb(0, 0, 128); --mdmark-color-accent-blue-bg: rgb(230, 240, 255) }";
+  document.head.append(style);
+  addedStyles.push(style);
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: "`badge:blue:参考` と [決め手の 1 文]{color=blue}\n",
+  });
+  // 検証
+  const badge = find(el, ".mdmark-badge[data-color]");
+  expect(getComputedStyle(badge).color).toBe("rgb(0, 0, 128)");
+  expect(getComputedStyle(badge).backgroundColor).toBe("rgb(230, 240, 255)");
+  expect(getComputedStyle(find(el, ".mdmark-color")).color).toBe(
+    "rgb(0, 0, 128)",
+  );
 });

@@ -32,6 +32,13 @@ const DEFAULT_FEATURES = {
   views: true,
   comments: false,
   "side-toc": true,
+  "text-color": true,
+  images: true,
+  gallery: true,
+  lightbox: true,
+  media: true,
+  gif: true,
+  cards: true,
 };
 
 // 設定が無ければ既定を返す（正常系）

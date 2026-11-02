@@ -1,0 +1,175 @@
+title: ライトボックス
+implementation: src/parts/lightbox.ts#renderLightbox
+story: Parts/Lightbox
+test_file: tests/integration/lib/lightbox.story.test.ts
+states:
+  - name: Middle
+    description: 15 枚の 3 枚目。全体が収まる倍率で、前後のボタンを押せ、縮小を押せず、移動のボタンを出さない
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 手順 2 の画面
+      - name: caption
+        value: 幅 240px
+      - name: index
+        value: '3'
+      - name: total
+        value: '15'
+  - name: First
+    description: 1 枚目。前の画像のボタンを押せない
+    args:
+      - name: src
+        value: step-1.svg
+      - name: alt
+        value: 手順 1 の画面
+      - name: index
+        value: '1'
+      - name: total
+        value: '15'
+  - name: Last
+    description: 最後の画像。次の画像のボタンを押せない
+    args:
+      - name: src
+        value: step-4.svg
+      - name: alt
+        value: 手順 4 の画面
+      - name: index
+        value: '15'
+      - name: total
+        value: '15'
+  - name: Single
+    description: 画像が 1 枚。前後のボタンと枚数を出さない
+    args:
+      - name: src
+        value: step-3.svg
+      - name: alt
+        value: 手順 3 の画面
+      - name: caption
+        value: 中央に置いた画面
+      - name: index
+        value: '1'
+      - name: total
+        value: '1'
+  - name: Zoomed
+    description: 250% に拡大した。移動のボタンを出し、画像の場所に `拡大した画像。ドラッグか矢印キーで動かす` の名前を付ける
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 手順 2 の画面
+      - name: caption
+        value: 幅 240px
+      - name: index
+        value: '3'
+      - name: total
+        value: '15'
+      - name: zoom
+        value: '2.5'
+  - name: Max
+    description: 上限の 300%。拡大を押せない
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 手順 2 の画面
+      - name: index
+        value: '3'
+      - name: total
+        value: '15'
+      - name: zoom
+        value: '3'
+  - name: LongCaption
+    description: キャプションが長く、画面の幅を超える。キャプションを折り返す
+    args:
+      - name: src
+        value: step-1.svg
+      - name: alt
+        value: 手順 1 の画面
+      - name: caption
+        value: 設定ファイルを読めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから直せることを示す画面。帯は文書と一緒にスクロールする
+      - name: index
+        value: '2'
+      - name: total
+        value: '4'
+  - name: Narrow
+    description: 幅の狭い画面。帯を折り返し、送りと閉じるのボタンを両端に残す
+    args:
+      - name: src
+        value: step-2.svg
+      - name: alt
+        value: 手順 2 の画面
+      - name: index
+        value: '3'
+      - name: total
+        value: '15'
+    notes:
+      定義: ストーリーの画面の幅を 390px にする
+lead: 画像を押したときに全画面のダイアログで拡大する。上の帯に前後の送り・枚数・拡大と縮小・移動・閉じるのボタン、中央に画像、下にキャプションを置く。操作は図の全画面と揃える。
+args:
+  - name: src
+    type: 文字列
+    required: true
+    description: 出す画像の URL
+  - name: alt
+    type: 文字列
+    required: true
+    description: 画像の代わりの文字
+  - name: caption
+    type: 文字列
+    required: false
+    default: '""'
+    description: 押した画像の title。空ならキャプションを出さない
+  - name: index
+    type: 整数
+    required: true
+    description: 送りの並びの中で何枚目か（1 から）。`1` のとき前の画像のボタンを、`total` と同じとき次の画像のボタンを `disabled` にする
+  - name: total
+    type: 整数
+    required: true
+    description: 送りの並びの枚数（同じ文書の拡大できる画像のうち、今の配色で隠れていないもの）。`1` のとき前後のボタンと枚数を出さない
+  - name: zoom
+    type: 数値
+    required: false
+    default: 全体が収まる倍率（100% を超えない）
+    description: 今の倍率。全体が収まる倍率のとき縮小を、上限の 3 のとき拡大を `disabled` にし、全体が収まる倍率より大きいときだけ移動のボタンを出す
+events:
+  - name: 前後へ送る
+    when: 前の画像・次の画像のボタンを押すか、全体が収まる倍率で左右の矢印キーを押す
+    value: '`index`'
+    description: '`mount` が送りの並びの前後の画像に替え、枚数とキャプションを書き換え、倍率と位置を全体が収まる倍率に戻す。端では送らない'
+  - name: 拡大・縮小する
+    when: 拡大・縮小・倍率のボタンを押すか、`+`・`-`・`0` を押す
+    value: 倍率のボタンの文字と読み上げの名前
+    description: '`mount` が部品設計『図の枠』と同じ刻み・上限で倍率を変える（倍率のボタンと `0` は全体が収まる倍率に戻す）'
+  - name: 動かす
+    when: 拡大中に画像をドラッグする、矢印キーを押す、移動のボタンを押す
+    value: 画像の場所の `scrollLeft`・`scrollTop`
+    description: '`mount` が部品設計『図の枠』と同じだけ画像の場所をスクロールさせる'
+  - name: 閉じる
+    when: 閉じるボタンを押すか、Esc を押すか、画像の外の背景を押す
+    value: '`dialog` の `open`'
+    description: '`mount` がダイアログを閉じて消し、フォーカスを押した画像の拡大のボタンへ戻す'
+css_properties:
+  - name: --mdmark-color-bg
+    syntax: <color>
+    default: '#ffffff（ダーク #111113）'
+    description: 帯とキャプションの地の色
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#e4e4e7（ダーク #26262b）'
+    description: 帯の下端の線とボタンの線の色
+uses:
+  - component: dev/設計書/部品設計/図の枠.ts#
+    how: 拡大・縮小・倍率・移動のボタンの並び・アイコン・読み上げの名前を図の全画面と揃える
+accessibility:
+  - '`dialog` は `aria-label="画像の拡大"` を持ち、`showModal()` で開いて、中で Tab のフォーカスを循環させる'
+  - 送りのボタンは `role="group"`・`aria-label="画像の送り"` の中に置き、読み上げの名前を `前の画像`・`次の画像` にする。枚数は `{何枚目} / {全ての枚数}` の文字で出す
+  - 操作のボタンは `role="toolbar"`・`aria-label="画像の拡大の操作"` の中に置き、読み上げの名前を `縮小`・`拡大`・`倍率 {今の倍率}。全体が収まる倍率に戻す`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす`・`拡大を閉じる` にする
+  - 拡大中の画像の場所は `tabindex="0"` と `拡大した画像。ドラッグか矢印キーで動かす` の読み上げの名前を持つ
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックスの拡大・縮小・移動]
+status: planned
+notes:
+  HTML: '`<dialog class="mdmark-lightbox" aria-label="画像の拡大"><div class="mdmark-lightbox-head"><span class="mdmark-lightbox-nav" role="group" aria-label="画像の送り"><button class="mdmark-lightbox-tool" data-tool="prev">…</button><span class="mdmark-lightbox-count">{index} / {total}</span><button class="mdmark-lightbox-tool" data-tool="next">…</button></span><span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作"><span class="mdmark-lightbox-group" data-group="pan" hidden>{左・上・下・右}</span><span class="mdmark-lightbox-group" data-group="zoom">{縮小・倍率（mdmark-lightbox-zoom）・拡大}</span><span class="mdmark-lightbox-group" data-group="screen">{閉じる}</span></span></div><div class="mdmark-lightbox-stage"><img src alt></div><p class="mdmark-lightbox-caption">{caption}</p></dialog>`。拡大中は `mdmark-lightbox-stage` に `is-zoomed` を付ける。帯の並びは確認ログのモックへの合意。モックは `dev/mock/components/figure/` のライトボックスの場面'

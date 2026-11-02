@@ -1,0 +1,72 @@
+title: 再生できない動画・音声の知らせ
+implementation: vscode/src/webview/parts/media-error.ts#renderMediaError
+story: VSCode/MediaError
+test_file: tests/integration/vscode/media-error.story.test.ts
+states:
+  - name: Audio
+    description: 再生できない音声（m4a）
+    args:
+      - name: kind
+        value: audio
+      - name: format
+        value: m4a
+      - name: path
+        value: meeting.m4a
+  - name: Video
+    description: 再生できない動画（webm）
+    args:
+      - name: kind
+        value: video
+      - name: format
+        value: webm
+      - name: path
+        value: media/demo.webm
+  - name: LongPath
+    description: ファイルのパスが長く、枠の幅を超える。パスを枠の中で折り返す
+    args:
+      - name: kind
+        value: video
+      - name: format
+        value: webm
+      - name: path
+        value: media/screen-recording-2026-11-01-very-long-file-name.webm
+lead: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に置く、知らせの枠の見た目の枠と「既定のアプリで開く」のリンク。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`video`（タイトル `この動画をプレビューで再生できません`）・`audio`（タイトル `この音声をプレビューで再生できません`）'
+    description: 再生できなかった要素
+  - name: format
+    type: 文字列
+    required: true
+    description: 拡張子。本文 `VS Code のプレビューは {format} の形式を再生できません。` の `code` に入れる
+  - name: path
+    type: 文字列
+    required: true
+    description: 文書に書いたパス。リンクの後ろの `（{path}）` の `code` に入れる
+events:
+  - name: 既定のアプリで開く
+    when: 「既定のアプリで開く」のリンクを押す
+    value: '`path`'
+    description: Webview が `openAsset` を送り、拡張機能がワークスペースの中のファイルだけを `vscode.env.openExternal` で開く
+css_properties:
+  - name: --mdmark-color-notice-bg
+    syntax: <color>
+    default: '#f9eee8（ダーク #2a251d）'
+    description: 枠の地の色
+  - name: --mdmark-color-notice-border
+    syntax: <color>
+    default: '#b45309（ダーク #fbbf24）'
+    description: 枠の線の色
+uses:
+  - component: dev/設計書/部品設計/知らせの枠.ts#
+    how: class `mdmark-notice` と題・本文の並びを知らせの枠と揃える
+accessibility:
+  - 枠は `role="status"` を持ち、読み上げがタイトルと本文を読む
+  - パスは長くても枠の中で折り返し、横スクロールを出さない
+refs:
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
+status: planned
+notes:
+  HTML: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{タイトル}</strong><p>VS Code のプレビューは <code>{format}</code> の形式を再生できません。<a href="#">既定のアプリで開く</a>（<code>{path}</code>）</p></div>`。文言は確認ログのモックへの合意。モックは `dev/mock/components/notice/` の再生できない場面'

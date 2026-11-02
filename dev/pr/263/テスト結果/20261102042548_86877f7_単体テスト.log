@@ -1,0 +1,15 @@
+$ MDMARK_PORT=60198 npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-notation-named-colors-and-media
+
+
+ Test Files  177 passed (177)
+      Tests  1230 passed (1230)
+   Start at  04:25:52
+   Duration  57.55s (tests 42%, worker 37%, import 19%, transform 2%)
+
+exit: 0

@@ -14,7 +14,9 @@ directory: |-
       ├── trees.ts       # ファイルツリーのフォルダの開閉とコピー
       ├── tabs.ts        # タブの切り替えと、URL の #ID の指すタブを選ぶ処理
       ├── sections.ts    # 節と行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く
-      └── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
+      ├── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
+      ├── lightbox.ts    # 画像を拡大のボタンで包み、ライトボックスで開いて送り・拡大・縮小・移動を付ける
+      └── gif.ts         # GIF を止める・再生するボタンを付ける
   ```
 data_models:
   - name: FilterValue
@@ -57,7 +59,7 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` を、`tree` がオンなら `attachFileTrees` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` を、`tree` がオンなら `attachFileTrees` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
     args:
       - name: options
         type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement }'
@@ -74,6 +76,8 @@ functions:
       - '#functions[attachStickyRows]'
       - '#functions[attachCodeCopy]'
       - '#functions[attachFileTrees]'
+      - '#functions[attachLightbox]'
+      - '#functions[attachGifs]'
     unit_tests:
       - name: test_attach_interactions
         case: 正常
@@ -105,6 +109,12 @@ functions:
         condition: ファイルツリーを描いた要素と、`features` の `tree` が `false`
         mock: なし
         expected: '`mdmark-tree-bar` と `mdmark-tree-toggle` が無い'
+      - name: test_attach_interactions_when_lightbox_off
+        case: 正常
+        summary: lightbox がオフなら画像を包まず、gif がオフならボタンを付けない
+        condition: 画像と GIF を描いた要素と、`features` の `lightbox` と `gif` が `false`
+        mock: なし
+        expected: '`button.mdmark-image-open` と `button.mdmark-gif-toggle` が無い'
   - name: compareCells
     title: セルを比べる
     container: src/table-logic.ts
@@ -1341,6 +1351,132 @@ functions:
     status: planned
     introduced:
       pr: 225
+  - name: collectLightboxImages
+    title: 送りの並びを集める
+    container: src/interact/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: '`root` の中の `button.mdmark-image-open` を文書の順に並べ、今の配色で隠れているもの（`getComputedStyle` の `display` が `none` の `figure` の中）を除いて返す'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: HTMLButtonElement[]
+      description: 送りの並びの拡大のボタン
+    unit_tests:
+      - name: test_collect_lightbox_images
+        case: 正常
+        summary: 隠れている配色の画像を除く
+        condition: 暗い配色で描いた要素に、画像 2 つと `#only-light` の画像 1 つ
+        mock: なし
+        expected: '`#only-light` 以外の 2 つのボタンを文書の順に返す'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachLightbox
+    title: 画像を拡大できるようにする
+    container: src/interact/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に置いて `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送り（端では送らない）、送るたびに画像・キャプション・枚数・送りのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を外して `dialog` を消し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 包んだボタンを外して `img` を元に戻し、開いているライトボックスを閉じる関数
+    callees:
+      - '#functions[collectLightboxImages]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderImageOpener]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderLightbox]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[attachZoom]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックスの拡大・縮小・移動]
+    unit_tests:
+      - name: test_attach_lightbox
+        case: 正常
+        summary: 画像を包み、押すと開いて送る
+        condition: 画像だけの段落 3 つを描いた要素で 2 つ目のボタンを押し、`ArrowRight` を押す
+        mock: なし
+        expected: '`img` が `button.mdmark-image-open` の中にあり、押した後に `dialog.mdmark-lightbox[open]` の枚数が `2 / 3`、`ArrowRight` の後に `3 / 3` で次の画像のボタンが `disabled`'
+      - name: test_attach_lightbox_when_zoomed
+        case: 正常
+        summary: 拡大中の矢印キーは送らず動かし、送ると倍率を戻す
+        condition: 幅 3000 の画像を開いて拡大を 2 回押し、`ArrowRight` を押してから次の画像のボタンを押す
+        mock: なし
+        expected: '`ArrowRight` の後も枚数が変わらず `scrollLeft` が 80 増え、次の画像の後に倍率が全体の収まる倍率'
+      - name: test_attach_lightbox_when_closed
+        case: 正常
+        summary: 閉じるとフォーカスを戻す
+        condition: 開いて Esc を押す（Playwright のキー操作）と、開いて背景を押す
+        mock: なし
+        expected: どちらも `dialog` が無く、フォーカスが押した画像のボタンで、`scrollY` が開く前と同じ
+      - name: test_attach_lightbox_when_not_wrapped
+        case: 正常
+        summary: 拡大しない画像は包まない
+        condition: '`{nolightbox}` の画像・リンクの中の画像・文の中の画像を描いた要素'
+        mock: なし
+        expected: '`button.mdmark-image-open` が無い'
+      - name: test_attach_lightbox_when_cleaned_up
+        case: 正常
+        summary: 外すと元に戻る
+        condition: 1 つ目を開いて戻り値を呼ぶ
+        mock: なし
+        expected: '`dialog` と `button.mdmark-image-open` が無く、`img` が `figure` の直下'
+      - name: test_attach_lightbox_when_gif
+        case: 正常
+        summary: GIF の画像の拡大のボタンにはアイコンを置かない
+        condition: GIF の画像を描いた要素
+        mock: なし
+        expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachGifs
+    title: GIF を止める・再生するボタンを付ける
+    container: src/interact/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '`img[data-gif]` ごとに `span.mdmark-gif` で包み、`img.decode()` の後に最初のフレームを同じ大きさの `canvas`（`aria-hidden`・`hidden`）に描いて `img` の後ろに置き、`renderGifToggle` のボタンを付ける。押すと `canvas` の `hidden` と `img` の `visibility` とボタンの状態を切り替える。`prefers-reduced-motion: reduce` のときは止めた状態で始める。`decode()` が失敗した GIF は包まずボタンを付けない。ライトボックスの拡大のボタンで包んだ `img` は、ボタンごと包む'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 包みとボタンを外し、`img` を元に戻す関数
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderGifToggle]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+    unit_tests:
+      - name: test_attach_gifs
+        case: 正常
+        summary: 包んでボタンで止める・再生する
+        condition: GIF の画像を描いた要素で、ボタンを押して、もう一度押す
+        mock: なし
+        expected: '`span.mdmark-gif` の中に `img`・`canvas[hidden]`・`button[aria-pressed="false"]`、1 回目の後に `canvas` が `hidden` を持たず `img` が `visibility: hidden` で `aria-label` が `GIF を再生`、2 回目の後に元に戻る'
+      - name: test_attach_gifs_when_reduced_motion
+        case: 正常
+        summary: 動きを減らす設定では止めて始める
+        condition: '`prefers-reduced-motion: reduce` をエミュレートして描く'
+        mock: なし
+        expected: ボタンが `aria-pressed="true"` で `canvas` が `hidden` を持たない
+      - name: test_attach_gifs_when_decode_failed
+        case: 異常
+        summary: decode に失敗した GIF にはボタンを付けない
+        condition: '`src` が GIF として読めないファイルの `img[data-gif]`'
+        mock: なし
+        expected: '`span.mdmark-gif` と `button.mdmark-gif-toggle` が無い'
+    status: planned
+    introduced:
+      pr: 263
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
@@ -1354,6 +1490,8 @@ test_files:
   - tests/unit/src/interact/clipboard.browser.test.ts
   - tests/unit/src/interact/code-blocks.browser.test.ts
   - tests/unit/src/interact/trees.browser.test.ts
+  - tests/unit/src/interact/lightbox.browser.test.ts
+  - tests/unit/src/interact/gif.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭
@@ -1425,3 +1563,13 @@ constants:
     status: planned
     introduced:
       pr: 166
+  - name: LIGHTBOX_IMAGE_SELECTOR
+    title: 拡大できる画像
+    container: src/interact/lightbox.ts
+    summary: ライトボックスで拡大のボタンで包む `img`。リンクの中の画像と文の中の画像は `figure.mdmark-image` の中に無いため当たらない
+    value: '"figure.mdmark-image img:not([data-nolightbox])"'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+    status: planned
+    introduced:
+      pr: 263

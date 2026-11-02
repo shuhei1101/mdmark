@@ -1,0 +1,494 @@
+/* 画像・動画・音声・GIF・リンクと添付のカード（#263 で共有するアセット）: キャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え・再生バー・止める・再生するボタン・カードの規則 */
+
+@layer mdmark {
+  .mdmark {
+    /* ---------- 画像の図とキャプション ---------- */
+
+    /* 画像だけの段落の図: fig のマーカーの図と同じ並べ方。幅は属性の width（px か %）を受け取る */
+    .mdmark-image {
+      width: var(--mdmark-image-width, auto);
+      max-width: 100%;
+      margin-block: var(--mdmark-space);
+
+      img {
+        display: block;
+        width: 100%;
+      }
+    }
+
+    /* キャプション: 番号を持たない図は title だけを控えめな色で出す */
+    .mdmark-image .mdmark-figure-caption {
+      overflow-wrap: anywhere;
+    }
+
+    /* 配置 center: 図を本文の中央に置き、キャプションも中央に揃える */
+    .mdmark-image[data-align="center"] {
+      justify-items: center;
+      margin-inline: auto;
+      text-align: center;
+    }
+
+    /* 配置 left・right: 本文を回り込ませる。図の幅は本文の半分まで */
+    .mdmark-image:is([data-align="left"], [data-align="right"]) {
+      max-width: 50%;
+      margin-block: 0.25em var(--mdmark-space);
+    }
+
+    .mdmark-image[data-align="left"] {
+      float: inline-start;
+      margin-inline-end: var(--mdmark-space);
+    }
+
+    .mdmark-image[data-align="right"] {
+      float: inline-end;
+      margin-inline-start: var(--mdmark-space);
+    }
+
+    /* 回り込みの後: 次の見出しと区切りは回り込みの下から始める */
+    :is(h1, h2, h3, h4, hr, .mdmark-clear) {
+      clear: both;
+    }
+
+    /* ---------- ライトボックスを開くボタン ---------- */
+
+    /* 画像を包むボタン: 押すと拡大する。見た目は画像のまま */
+    .mdmark-image-open {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mdmark-radius);
+      background: none;
+      color: inherit;
+      cursor: zoom-in;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 拡大のアイコン: 右上に置き、ポインターを乗せたときとフォーカスのときに出す */
+    .mdmark-image-open-icon {
+      position: absolute;
+      inset-block-start: 0.5rem;
+      inset-inline-end: 0.5rem;
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      opacity: 0;
+    }
+
+    .mdmark-image-open:is(:hover, :focus-visible) .mdmark-image-open-icon {
+      opacity: 1;
+    }
+
+    /* ---------- ギャラリー ---------- */
+
+    /* ギャラリー: 置き場所の幅で列を減らすため、幅の基準にする */
+    .mdmark-gallery {
+      container-type: inline-size;
+      margin-block: var(--mdmark-space);
+    }
+
+    /* ギャラリーの格子: cols の列で並べる */
+    .mdmark-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--mdmark-gallery-cols, 3), minmax(0, 1fr));
+      gap: var(--mdmark-space);
+      align-items: start;
+
+      .mdmark-image {
+        width: auto;
+        margin: 0;
+      }
+    }
+
+    /* 置き場所が 32rem より狭い: 2 列まで減らす */
+    @container (inline-size < 32rem) {
+      .mdmark-gallery-grid {
+        grid-template-columns: repeat(min(var(--mdmark-gallery-cols, 3), 2), minmax(0, 1fr));
+      }
+    }
+
+    /* 置き場所が 20rem より狭い: 1 列にする */
+    @container (inline-size < 20rem) {
+      .mdmark-gallery-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    /* fig のマーカーで番号を付けたギャラリー: 全体の番号のタイトルを格子の下に置く */
+    .mdmark-figure > .mdmark-gallery {
+      width: 100%;
+      margin: 0;
+    }
+
+    /* ---------- テーマごとの切り替え ---------- */
+
+    /* #only-dark の画像: 明るい配色では出さない */
+    .mdmark-only-dark {
+      display: none;
+    }
+  }
+
+  /* 暗い配色の画面: #only-dark の画像を出し、#only-light の画像を隠す */
+  @media screen {
+    :root[data-scheme="dark"] .mdmark {
+      .mdmark-only-dark {
+        display: grid;
+      }
+
+      .mdmark-only-light {
+        display: none;
+      }
+    }
+  }
+
+  .mdmark {
+    /* ---------- 動画・音声 ---------- */
+
+    /* 動画: 再生バー付き。幅は属性の width、無ければ本文の幅に収める */
+    .mdmark-media video {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+    }
+
+    /* 音声: 再生バーだけ。本文の幅に収め、長くしすぎない */
+    .mdmark-media audio {
+      display: block;
+      width: min(100%, 28rem);
+    }
+
+    /* 印刷の代わり: 画面では出さない（印刷の規則で出す） */
+    .mdmark-media > .mdmark-media-print {
+      display: none;
+    }
+
+    /* ---------- GIF の止める・再生するボタン ---------- */
+
+    /* GIF の入れ物: 画像と止めた絵を重ね、右上にボタンを置く */
+    .mdmark-gif {
+      position: relative;
+      display: block;
+
+      canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: var(--mdmark-radius);
+      }
+
+      canvas[hidden] {
+        display: none;
+      }
+    }
+
+    /* 止める・再生するボタン: 図の操作のボタンと同じ四角。読み上げの名前は aria-label が持つ */
+    .mdmark-gif-toggle {
+      position: absolute;
+      inset-block-start: 0.5rem;
+      inset-inline-end: 0.5rem;
+      display: inline-grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 今の状態で押したときの動きのアイコンだけを出す */
+      .mdmark-icon-play {
+        display: none;
+      }
+
+      &[aria-pressed="true"] {
+        .mdmark-icon-play {
+          display: block;
+        }
+
+        .mdmark-icon-pause {
+          display: none;
+        }
+      }
+    }
+
+    /* ---------- リンクのカード・添付のカード ---------- */
+
+    /* カード: 線で囲んだ 1 つのリンク。左にアイコン、右に文字を並べる */
+    .mdmark-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.25em 0.75em;
+      align-items: center;
+      max-width: 32rem;
+      margin-block: var(--mdmark-space);
+      padding: 0.65em 0.9em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      color: var(--mdmark-color-text);
+      text-decoration: none;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* カードのアイコン: 面の色の四角に入れる */
+    .mdmark-card-icon {
+      display: grid;
+      grid-row: span 2;
+      place-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+
+      .mdmark-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+
+    /* カードのタイトル: 書いた文字かファイル名。リンクと分かるようリンクの色と下線にする */
+    .mdmark-card-title {
+      color: var(--mdmark-color-link);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+      overflow-wrap: anywhere;
+    }
+
+    /* カードの補足: ドメインと URL、またはファイルの種類 */
+    .mdmark-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 0.6em;
+      min-width: 0;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125em;
+    }
+
+    /* URL: 長くても省略せずカードの中で折り返す */
+    .mdmark-card-url {
+      font-family: var(--mdmark-font-mono);
+      overflow-wrap: anywhere;
+    }
+
+    /* ドメイン・種類: 太字で URL と見分ける */
+    .mdmark-card-domain {
+      color: var(--mdmark-color-text);
+      font-weight: 600;
+    }
+  }
+}
+
+/* ---------- ライトボックス ---------- */
+
+@layer mdmark {
+  .mdmark {
+    /* ライトボックス: 図の全画面と同じく画面の端から 16px 空けて広げる */
+    .mdmark-lightbox {
+      box-sizing: border-box;
+      width: calc(100% - 2rem);
+      max-width: none;
+      height: calc(100dvh - 2rem);
+      max-height: none;
+      margin: auto;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+
+      &[open] {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+
+      /* 後ろの文書を暗くして、画像だけを見せる */
+      &::backdrop {
+        background: rgb(0 0 0 / 0.5);
+      }
+    }
+
+    /* モックの中に置いた開いた見本: 閉じた dialog と同じ見た目で文書の中に出す */
+    .mdmark-lightbox.is-sample {
+      position: static;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100%;
+      height: 26rem;
+    }
+
+    /* ライトボックスの上の帯: 左に前後の送りと何枚目か、右に移動・拡大と縮小・閉じるのボタン。狭い幅ではボタンを折り返す */
+    .mdmark-lightbox-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.375rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
+    }
+
+    /* 前後の送り: 何枚目かを前・次のボタンで挟む */
+    .mdmark-lightbox-nav {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    /* 何枚目か: 等幅数字で桁を揃える */
+    .mdmark-lightbox-count {
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ボタンの帯: 図の枠と同じく、まとまり（移動・拡大と縮小・閉じる）の間を空けて右に寄せる */
+    .mdmark-lightbox-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.75rem;
+      justify-content: flex-end;
+      margin-inline-start: auto;
+    }
+
+    /* ボタンのまとまり: 隙間なく並べる */
+    .mdmark-lightbox-group {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* ライトボックスのボタン: 図の操作のボタンと同じ四角 */
+    .mdmark-lightbox-tool {
+      display: inline-grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      /* 端の画像の前・次: 押せない理由は何枚目かで読める */
+      &:disabled {
+        color: var(--mdmark-color-muted);
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    /* 今の倍率のボタン: 図の枠と同じく、縮小と拡大の間に桁を揃えて出す。押すと全体が収まる倍率に戻す */
+    .mdmark-lightbox-tool.mdmark-lightbox-zoom {
+      width: auto;
+      min-width: 3.25rem;
+      padding: 0 0.375rem;
+      font: inherit;
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 画像の場所: 縦横どちらも収まる大きさで中央に置く */
+    .mdmark-lightbox-stage {
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      padding: 1rem;
+      overflow: hidden;
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* 拡大中: 画像を倍率の大きさで置き、はみ出た分をスクロールで動かす。余白はつかんで動かす形 */
+      &.is-zoomed {
+        display: block;
+        overflow: auto;
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+
+        img {
+          max-width: none;
+          max-height: none;
+          width: var(--mdmark-lightbox-image-width);
+          height: auto;
+        }
+      }
+
+      &.is-dragging {
+        cursor: grabbing;
+      }
+    }
+
+    /* 画像のキャプション: 本文の図と同じ控えめな色 */
+    .mdmark-lightbox-caption {
+      margin: 0;
+      padding: 0.5rem 0.9rem 0.75rem;
+      color: var(--mdmark-color-muted);
+      font-size: 0.875rem;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+
+/* ライトボックスを描いた文書の中に置くための入れ物（モックだけ）: 箱を作らない */
+.mdmark.mock-dialog-host {
+  display: contents;
+}

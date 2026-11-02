@@ -681,3 +681,41 @@ test("test_render_copy_panel_when_tree", async () => {
   expect(plainText(html)).toContain("ツリーのテキストを選択しています。");
   expect(innerHtml(html, "<textarea")).toBe("src/\n└── index.ts");
 });
+
+// 強調する列と色を付ける行を属性にする（正常系）
+test("test_render_table_when_colors", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行（部品設計の HighlightAndRowColors）
+  const html = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["案件", "状態", "金額（円）"],
+    rows: [
+      ["見積もりの作成", "完了", "120000"],
+      ["契約書の確認", "保留", "80000"],
+      ["請求書の発行", "進行中", "45000"],
+      ["納品の確認", "完了", "30000"],
+    ],
+    highlight: [{ column: 2, color: "blue" }],
+    rowColors: [null, "red", null, null],
+  });
+  // 検証: 強調する列の見出しと各セル
+  const highlighted = findTags(html, "mdmark-col-highlight");
+  expect(highlighted.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(highlighted.filter((tag) => tag.startsWith("<td"))).toHaveLength(4);
+  for (const tag of highlighted) {
+    expect(tag).toContain('data-color="blue"');
+  }
+  // 検証: 色を付けた行の tr だけが data-color を持つ
+  const body = innerHtml(html, "<tbody");
+  const rows = (body.match(/<tr\b[^>]*>/g) ?? []).filter(
+    (row) => !row.includes("mdmark-table-empty"),
+  );
+  expect(rows.map((row) => /data-color="([a-z]+)"/.exec(row)?.[1])).toEqual([
+    undefined,
+    "red",
+    undefined,
+    undefined,
+  ]);
+});

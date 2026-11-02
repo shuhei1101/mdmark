@@ -110,6 +110,27 @@ scenarios:
     test: test_normal_when_unknown_theme
     refs:
       - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（知らないテーマの名前がある）]
+  - name: 正常シナリオ（選んだテーマの色のプリセット）
+    setup:
+      - name: テーマを選ぶ設定
+        description: 正常シナリオと同じ（theme-slate、OS の配色はライト）
+      - name: 色の名前を書いた Markdown
+        description: 行内のコード `` `badge:green:完了` `` と、本文の `[決め手の 1 文]{color=red}` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: テーマを選んだ設定を渡して文書を描かせる
+        M-->>P: 選んだテーマの色のプリセットで色を付けた本文
+        P-->>U: 文書を表示
+    expected:
+      - バッジと本文の文字の色の計算値が、デザイン方針の theme-slate の明るい配色の green・red の文字の色の値
+      - 色を付けた文字と、その面の色のコントラストが 4.5:1 以上
+    test: test_normal_when_color_preset_in_theme
 lead: 文書を書く人が設定で mdmark に入れたテーマを選び、描いた文書の配色をそのテーマの値の組にする。明暗は今の決め方のまま、選んだテーマの中で明るい配色と暗い配色を選ぶ。
 issue: 120
 primary_actor: 文書を書く人

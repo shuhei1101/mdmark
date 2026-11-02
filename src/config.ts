@@ -8,6 +8,8 @@ export type MdmarkConfig = {
   tooltips?: { placement?: string };
   /** 色分けのライブラリの設定。`url` は highlight.js の `es/` フォルダの URL（末尾 `/`） */
   syntax?: { url?: string };
+  /** 文書が指すファイルの探し方（CLI と VS Code 拡張機能だけが読む） */
+  assets?: { root?: string };
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
@@ -95,6 +97,13 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   views: true,
   comments: false,
   "side-toc": true,
+  "text-color": true,
+  images: true,
+  gallery: true,
+  lightbox: true,
+  media: true,
+  gif: true,
+  cards: true,
 };
 
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */

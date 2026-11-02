@@ -1,0 +1,13 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-notation-named-colors-and-media
+
+
+ Test Files  177 passed (177)
+      Tests  1230 passed (1230)
+   Start at  06:13:31
+   Duration  47.27s (tests 40%, worker 38%, import 19%, transform 3%)
+

@@ -26,12 +26,15 @@ import {
   Info,
   Lightbulb,
   Link,
+  Maximize2,
   Menu,
   MessageSquareWarning,
   Minus,
   OctagonAlert,
+  Pause,
   Pencil,
   Pin,
+  Play,
   Plug,
   Plus,
   RotateCcw,
@@ -84,6 +87,9 @@ const ICONS = {
   "file-diff": FileDiff,
   folder: Folder,
   menu: Menu,
+  "maximize-2": Maximize2,
+  pause: Pause,
+  play: Play,
 } satisfies Record<string, IconNode>;
 
 /** 図と記法で使う lucide のアイコンの名前 */

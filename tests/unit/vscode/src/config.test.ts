@@ -173,3 +173,26 @@ test("test_library_origins", async () => {
   // 検証
   expect(origins).toEqual(["https://cdn.example.com"]);
 });
+
+// 文字列の assets.root を config に入れずに返す（正常系）
+test("test_parse_config_when_assets_root", async () => {
+  // 準備
+  const { parseConfig } = await loadModule();
+  // 実行
+  const text = parseConfig("assets: { root: assets }");
+  const number = parseConfig("assets: { root: 1 }");
+  // 検証
+  expect(text).toEqual({ kind: "ok", config: {}, assetsRoot: "assets" });
+  expect(number).toEqual({ kind: "ok", config: {} });
+});
+
+// assets.root を設定ファイルのフォルダから解決する（正常系）
+test("test_load_config_when_assets_root", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const readFile = vi.fn(async () => "assets: { root: ./assets }");
+  // 実行
+  const result = await load({ path: "/w/mdmark.config.yaml", readFile });
+  // 検証
+  expect(result).toMatchObject({ kind: "ok", assetsRoot: "/w/assets" });
+});

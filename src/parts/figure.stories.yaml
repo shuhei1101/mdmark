@@ -25,3 +25,13 @@ stories:
       kind: table
       id: list
       number: 1
+  - name: Gallery
+    parameters:
+      server:
+        id: figure
+    args:
+      kind: image
+      id: schemes
+      number: 2
+      caption: 配色ごとのプレビュー
+      body: gallery
