@@ -248,6 +248,10 @@ args:
     description: コマンドのコピーのボタンの状態（`mount` が付けた状態）。ボタンの `data-state` と文言・アイコンを切り替え、`copied`・`failed` のときは `role="status"` の要素に `コマンドを{文言}` を入れる。`render` は渡さない
     status: planned
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: ツールチップの地の色
   - name: --mdmark-color-term-underline
     syntax: <color>
     default: var(--mdmark-color-muted)

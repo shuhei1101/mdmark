@@ -805,6 +805,10 @@ events:
     value: ボタンの `aria-expanded`
     description: '`mount` が行の直後の開閉の行の `hidden` を付け外しする。行の詳細を持つ行では、行の詳細の開閉のボタンが最終列と詳細を一緒に開閉する'
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 本文の行の地、横スクロールの影を隠す覆い、ページのスクロールで留める見出し行とピン止めした列の地、列のメニュー・表のメニュー・コピーの形式のパネル・行の URL の知らせ・絞り込みの引き出しの地の色
   - name: --mdmark-color-table-head
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
@@ -812,7 +816,7 @@ css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
-    description: 見出し行で `--mdmark-color-table-head` を上書きしないときの面の色。本文の行は面で塗らず地の色（`--mdmark-color-bg`）のままにする
+    description: 見出し行で `--mdmark-color-table-head` を上書きしないときの面の色。本文の行は面で塗らず `--mdmark-color-bg-opaque` のままにする
   - name: --mdmark-table-rule-inline
     syntax: <length>
     default: 1px

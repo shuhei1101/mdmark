@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-theme-opaque-surface-token
+
+
+ Test Files  177 passed (177)
+      Tests  1235 passed (1235)
+   Start at  03:41:37
+   Duration  52.21s (worker 42%, tests 37%, import 18%, transform 3%)
+

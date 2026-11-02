@@ -29,6 +29,10 @@ args:
     required: true
     description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。ノードは `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: ノード・層・凡例の塗りで、ノードの種類の色を混ぜる先の色
   - name: --mdmark-color-diagram-llm
     syntax: <color>
     default: '#6d28d9（ダーク #c4a7ff）'
