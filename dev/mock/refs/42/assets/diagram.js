@@ -813,10 +813,10 @@
       .join("");
     const rest = table.folded ? `<li class="mdmark-diagram-er-rest">ほか ${hidden} 列</li>` : "";
     return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${esc(table.id)}" style="left:${table.x}px;top:${table.y}px;width:${table.w}px">
-      <div class="mdmark-diagram-er-head">
+      <div class="mdmark-diagram-er-head">${fold}
         <span class="mdmark-diagram-er-title">${icon("table")}<span class="mdmark-diagram-er-physical">${esc(table.name)}</span></span>
         <span class="mdmark-diagram-er-logical">${esc(table.label)}</span>
-        <span class="mdmark-diagram-er-actions">${info}${fold}</span>
+        <span class="mdmark-diagram-er-actions">${info}</span>
       </div>
       <ul class="mdmark-diagram-er-columns" aria-label="「${esc(table.label)}」の列">${rows}${rest}</ul>
     </div>`;

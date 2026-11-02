@@ -798,10 +798,15 @@
       display: grid;
       align-content: center;
       height: 44px;
-      padding: 4px 60px 4px 10px;
+      padding: 4px 34px 4px 10px;
       border-block-end: 1px solid var(--mdmark-color-border);
       border-radius: 6.5px 6.5px 0 0;
       background: var(--mdmark-color-surface);
+
+      /* 畳めるテーブル: 左端に畳む・開くボタンを置き、説明のボタンと離す */
+      &:has(.mdmark-diagram-er-fold) {
+        padding-inline-start: 32px;
+      }
     }
 
     /* 物理名の行: テーブルのアイコンと物理名 */
@@ -834,17 +839,23 @@
       inset-block-start: 50%;
       inset-inline-end: 4px;
       display: flex;
-      gap: 2px;
+      gap: 4px;
       transform: translateY(-50%);
 
       .mdmark-diagram-info {
         position: static;
+        width: 24px;
+        height: 24px;
         --node-color: var(--mdmark-color-muted);
       }
     }
 
-    /* 列を畳む・開くボタン: 説明の印と同じ大きさ。開いているかは aria-expanded とアイコンの向きで示す */
+    /* 列を畳む・開くボタン: テーブル名の左に置く。説明のボタンと同じ大きさ。開いているかは aria-expanded とアイコンの向きで示す */
     .mdmark-diagram-er-fold {
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-start: 4px;
+      transform: translateY(-50%);
       display: grid;
       place-items: center;
       width: 24px;
@@ -921,7 +932,7 @@
       padding: 0 3px;
       border: 1px solid currentcolor;
       border-radius: 3px;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       line-height: 1.4;
       text-decoration: none;
