@@ -52,6 +52,8 @@ export function attachDiagramTips(options: {
   const { signal } = controller;
   let current: string | undefined;
   let closeTimer: ReturnType<typeof setTimeout> | undefined;
+  // タッチのタップで開いたか。タッチで開いている間は、持ち主のタップ・外の `pointerdown`・Esc だけで閉じる
+  let touchOpened = false;
 
   /** 持ち主の名前から、ツールチップを置く基準の要素（フォーカスできる要素）を引く */
   const anchorOf = (owner: string): HTMLElement | null =>
@@ -132,6 +134,7 @@ export function attachDiagramTips(options: {
     wireOf(current)?.classList.remove(ACTIVE_CLASS);
     hintHostOf(current)?.classList.remove(HINT_OPEN_CLASS);
     current = undefined;
+    touchOpened = false;
     unwatch();
   };
 
@@ -157,6 +160,9 @@ export function attachDiagramTips(options: {
 
   /** ポインターもフォーカスも持ち主とツールチップを離れたら、少し待って閉じる */
   const closeLater = (): void => {
+    if (touchOpened) {
+      return;
+    }
     clearTimeout(closeTimer);
     closeTimer = setTimeout(() => {
       const tip = current === undefined ? undefined : tips.get(current);
@@ -202,6 +208,7 @@ export function attachDiagramTips(options: {
           close();
         } else {
           open(name);
+          touchOpened = current === name;
         }
       },
       { signal },
