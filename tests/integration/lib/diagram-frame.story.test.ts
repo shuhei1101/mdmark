@@ -11,9 +11,11 @@ afterAll(holder.close);
 async function openFrame(id: string, fitted: boolean): Promise<Page> {
   const page = await holder.openStory(`parts-diagramframe--${id}`);
   if (fitted) {
-    await page.waitForFunction(
-      () =>
-        document.querySelector(".mdmark-diagram-zoom")?.textContent !== "100%",
+    await page.waitForFunction(() =>
+      (
+        document.querySelector<HTMLElement>(".mdmark-diagram-stage")?.style
+          .transform ?? ""
+      ).startsWith("scale("),
     );
   }
   return page;
@@ -42,6 +44,14 @@ test("test_fit", async () => {
   // 準備・実行
   const page = await openFrame("fit", true);
   // 検証
+  await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
+    "100%",
+  );
+  const size = await tool(page, "拡大").evaluate((button) => {
+    const rect = button.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  });
+  expect(size).toEqual({ width: 28, height: 28 });
   await expect(tool(page, "縮小").isDisabled()).resolves.toBe(true);
   await expect(tool(page, "拡大").isDisabled()).resolves.toBe(false);
   // 戻すのボタンは倍率のボタンにまとまり、今の名前の一部で探せる
@@ -75,7 +85,7 @@ test("test_zoomed", async () => {
   );
 });
 
-// 上限の 300% では、拡大を押せない（Max）
+// 上限（定義の大きさの 3 倍）では、拡大を押せない（Max）
 test("test_max", async () => {
   // 準備・実行
   const page = await openFrame("max", false);
@@ -86,12 +96,26 @@ test("test_max", async () => {
   await expect(tool(page, "拡大").isDisabled()).resolves.toBe(true);
 });
 
-// 狭い枠では、ボタンの帯と凡例が折り返し、横にはみ出さない（Narrow）
+// 狭い枠では、凡例が折り返し、ボタンの帯は移動のボタンまで 1 行に収め、横にはみ出さない（Narrow）
 test("test_narrow", async () => {
   // 準備・実行
   const page = await openFrame("narrow", false);
   // 検証
   await expect(pageOverflows(page)).resolves.toBe(false);
+  await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
+    "125%",
+  );
+  const rows = await page
+    .locator(".mdmark-diagram-tools button")
+    .evaluateAll(
+      (buttons) =>
+        new Set(
+          buttons
+            .filter((button) => button.getClientRects().length > 0)
+            .map((button) => Math.round(button.getBoundingClientRect().top)),
+        ).size,
+    );
+  expect(rows).toBe(1);
   const legend = await page
     .locator(".mdmark-diagram-legend")
     .evaluate((element) => ({
