@@ -373,7 +373,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・倍率（`DIAGRAM_STYLE_PATTERN`）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
     args:
       - name: html
         type: string
@@ -429,6 +429,12 @@ functions:
         condition: '`data-mdmark-own` が `nonce` と等しい図の箱の `<div class="mdmark-diagram-node" style="left:10px;top:20px">` と、`div.mdmark-html` の中の `<div style="display:flex;position:fixed">`、持たない `<div style="display:flex">`'
         mock: なし
         expected: 図の箱が `style="left:10px;top:20px"`、埋め込んだ HTML の要素が `style="display:flex"`、書いた要素は `style` を持たない
+      - name: test_sanitize_when_diagram_node_padding
+        case: 正常
+        summary: 自分が出した図のノードの余白の style を位置と大きさと一緒に残し、負の余白の style は図の部品の宣言として扱わない
+        condition: '`data-mdmark-own` が `nonce` と等しい `<div class="mdmark-diagram-node" style="left:10px;top:20px;width:280px;height:136px;padding:34px 70px">`・`<div class="mdmark-diagram-node" style="left:0px;top:0px;width:56px;height:56px;padding:14.6px">`・`<div class="mdmark-diagram-node" style="left:10px;top:20px;padding:-4px">`'
+        mock: なし
+        expected: 1 つ目と 2 つ目の `style` が書いたとおり残り、3 つ目は `left`・`top` を持たない
       - name: test_sanitize_when_code_digits
         case: 正常
         summary: 自分が出したコードブロックの行番号の桁の数だけを残す
