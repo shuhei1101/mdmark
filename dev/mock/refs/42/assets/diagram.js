@@ -616,8 +616,8 @@
       sizer.style.width = `${state.width * scale}px`;
       sizer.style.height = `${state.height * scale}px`;
       stickHeads();
-      // 今の倍率のボタン: 倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
-      zoomText.textContent = `${Math.round(scale * 100)}%`;
+      // 今の倍率のボタン: 全体が収まる倍率を 100% とした倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
+      zoomText.textContent = `${Math.round((scale / state.fit) * 100)}%`;
       zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`);
       button("out").disabled = scale <= state.fit + ZOOM_EPSILON;
       button("in").disabled = scale >= ZOOM_MAX - ZOOM_EPSILON;
