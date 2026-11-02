@@ -8,6 +8,7 @@ import {
   removeDistRoot,
   sendPrintEvent,
 } from "../dist-page.ts";
+import { colorSvg, routePageFiles } from "../media.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -277,4 +278,48 @@ test("test_normal_when_side_toc_enabled_by_mark", async ({ page }) => {
     "導入",
     "使い方",
   ]);
+});
+
+// 文書のマーカーで外した本文の文字の色・画像の属性・ライトボックス・カードを、普通の Markdown として描く（正常シナリオ（色・画像・カードの機能を外す））
+test("test_normal_when_media_features_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await routePageFiles(page, {
+    "chart.png": colorSvg({ width: 600, height: 300, color: "#0f766e" }),
+  });
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- features: -text-color -images -lightbox -cards -->",
+      "",
+      "[決め手の 1 文]{color=blue}",
+      "",
+      "![グラフ](chart.png){width=300}",
+      "",
+      "https://example.com/docs",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 本文の文字に色を付けず、書いたとおりの文字で出す
+  await expect(page.locator("#doc .mdmark-color")).toHaveCount(0);
+  await expect(page.locator("#doc p", { hasText: "決め手の 1 文" })).toHaveText(
+    "[決め手の 1 文]{color=blue}",
+  );
+  // 検証: 画像に幅を当てず、属性を文字で出し、押してもライトボックスを開かない
+  const image = page.locator('#doc img[alt="グラフ"]');
+  await expect(
+    page.locator("#doc p", { has: page.locator('img[alt="グラフ"]') }),
+  ).toHaveText("{width=300}");
+  await expect(image).toHaveJSProperty("naturalWidth", 600);
+  expect((await image.boundingBox())?.width).not.toBeCloseTo(300, 0);
+  await expect(page.locator("#doc figure")).toHaveCount(0);
+  await image.click();
+  await expect(page.locator("#doc dialog.mdmark-lightbox")).toHaveCount(0);
+  // 検証: URL だけの段落をカードにせず、リンクで描く
+  await expect(page.locator("#doc .mdmark-card")).toHaveCount(0);
+  await expect(
+    page.locator('#doc p a[href="https://example.com/docs"]'),
+  ).toHaveText("https://example.com/docs");
+  // 検証: 機能のマーカーを本文に出さない
+  expect(await page.locator("#doc").innerText()).not.toContain("features");
 });

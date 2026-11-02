@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
@@ -326,4 +327,56 @@ test("test_normal_when_unknown_theme", async ({ builtRoot, tempDir }) => {
     expect(result.code).toBe(0);
     expect(result.stdout).not.toContain("unknown_color_theme");
   }
+});
+
+// 文書からの相対パスにもアセットのルートにも無い画像・動画・音声・添付のファイルを、見つからないファイルのずれにする（正常シナリオ（見つからないファイルがある））
+test("test_normal_when_files_missing", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "assets:",
+      "  root: assets",
+      "build:",
+      '  include: ["docs/**/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/guide.md": [
+      "# ガイド",
+      "",
+      "![無い画像](images/missing.png)",
+      "",
+      "![無い動画](media/missing.mp4)",
+      "",
+      "![無い音声](media/missing.mp3)",
+      "",
+      "[仕様書](files/missing.pdf)",
+      "",
+      "![ロゴ](images/logo.png)",
+      "",
+    ].join("\n"),
+    "assets/images/logo.png": "png",
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  for (const [line, path] of [
+    [3, "images/missing.png"],
+    [5, "media/missing.mp4"],
+    [7, "media/missing.mp3"],
+    [9, "files/missing.pdf"],
+  ] as const) {
+    const found = lines.find((text) =>
+      text.startsWith(`docs/guide.md:${line}: missing_file:`),
+    );
+    expect(found, path).toContain(path);
+  }
+  expect(lines.filter((text) => text.includes(": missing_file:"))).toHaveLength(
+    4,
+  );
+  expect(lines.some((text) => text.includes("images/logo.png"))).toBe(false);
+  expect(existsSync(join(dir, "dist"))).toBe(false);
 });

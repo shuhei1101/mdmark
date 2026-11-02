@@ -5,17 +5,23 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import { contrastRatio, resolveColor } from "../media.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
 
-// 段落とリンクを持つ見本の Markdown
-const MARKDOWN = "段落\n\n[リンク](https://example.com/page)\n";
+// 段落とリンクを持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+const MARKDOWN =
+  "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n";
 
 // デザイン方針の theme-slate の値（明るい配色とダークの配色の地の色と、明るい配色のリンクの色）
 const SLATE_LIGHT_BACKGROUND = "rgb(248, 250, 252)";
 const SLATE_DARK_BACKGROUND = "rgb(15, 23, 42)";
 const SLATE_LIGHT_LINK_COLOR = "rgb(29, 78, 216)";
+
+// デザイン方針の theme-slate の明るい配色の、色のプリセットの green・red の文字の色
+const SLATE_LIGHT_GREEN_TEXT = "rgb(4, 105, 76)";
+const SLATE_LIGHT_RED_TEXT = "rgb(185, 28, 28)";
 
 // デザイン方針の dev-swiss の値（明るい配色の地の色とリンクの色）
 const SWISS_LIGHT_BACKGROUND = "rgb(255, 255, 255)";
@@ -128,4 +134,33 @@ test("test_normal_when_unknown_theme", async ({ page }) => {
     SWISS_LIGHT_BACKGROUND,
   );
   expect(errors).toEqual([]);
+});
+
+// 選んだテーマの明るい配色の色のプリセットで、バッジと本文の文字の色を描く（正常シナリオ（選んだテーマの色のプリセット））
+test("test_normal_when_color_preset_in_theme", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "`badge:green:完了` と [決め手の 1 文]{color=red}\n",
+    config: { colorTheme: "theme-slate" },
+  });
+  // 検証: theme-slate の明るい配色の green・red の文字の色
+  const badge = page.locator("#doc .mdmark-badge[data-color]");
+  const text = page.locator("#doc .mdmark-color[data-color]");
+  await expect(badge).toHaveCSS("color", SLATE_LIGHT_GREEN_TEXT);
+  await expect(text).toHaveCSS("color", SLATE_LIGHT_RED_TEXT);
+  // 検証: 色を付けた文字と面のコントラスト
+  const badgeColors = await badge.evaluate((element) => [
+    getComputedStyle(element).color,
+    getComputedStyle(element).backgroundColor,
+  ]);
+  expect(
+    contrastRatio(badgeColors[0] ?? "", badgeColors[1] ?? ""),
+  ).toBeGreaterThanOrEqual(4.5);
+  const background = await resolveColor(page, "#doc", "var(--mdmark-color-bg)");
+  expect(
+    contrastRatio(SLATE_LIGHT_RED_TEXT, background),
+  ).toBeGreaterThanOrEqual(4.5);
 });

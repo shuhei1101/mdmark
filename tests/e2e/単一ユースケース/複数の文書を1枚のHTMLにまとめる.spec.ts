@@ -5,11 +5,13 @@ import {
   expect,
   linesOf,
   openStandalone,
+  PNG_BYTES,
   runCli,
   test,
   writeFiles,
   writeSampleDocs,
 } from "../cli.ts";
+import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
 
 // 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
@@ -199,5 +201,84 @@ test("test_normal_when_theme_selected", async ({
     .click();
   await expect(article.locator("h1")).toContainText("使い方");
   await expect(article).toHaveCSS("background-color", "rgb(28, 25, 21)");
+  expect(opened.externalRequests()).toEqual([]);
+});
+
+// 2 つの文書が指す同じ画像を 1 回だけ埋め、動画・音声を出力先のフォルダへコピーし、どちらの文書でも再生バーを出す（正常シナリオ（画像・動画・音声を埋める））
+test("test_normal_when_media_embedded", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const media = await readMediaSamples();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "assets:",
+      "  root: assets",
+      "build:",
+      '  include: ["**/*.md"]',
+      '  exclude: ["dist/**"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": [
+      "# A",
+      "",
+      "![グラフ](images/chart.png)",
+      "",
+      "![操作](media/demo.mp4)",
+      "",
+      "続きは [B](sub/b.md) を読む。",
+      "",
+    ].join("\n"),
+    "sub/b.md": [
+      "# B",
+      "",
+      "![グラフ](../images/chart.png)",
+      "",
+      "![読み上げ](media/voice.mp3)",
+      "",
+    ].join("\n"),
+    "images/chart.png": PNG_BYTES,
+    "media/demo.mp4": media.mp4,
+    "sub/media/voice.mp3": media.mp3,
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証: 終了コードと、同じ画像を 1 回だけ埋めたこと
+  expect(result.code).toBe(0);
+  const htmlFile = join(dir, "dist", "docs.html");
+  const html = await readFile(htmlFile, "utf8");
+  const pngData = `data:image/png;base64,${PNG_BYTES.toString("base64")}`;
+  expect(html.split(pngData)).toHaveLength(2);
+  // 検証: 動画・音声を出力先のフォルダへコピーする
+  const filesDir = join(dir, "dist", "docs_files");
+  expect(await readFile(join(filesDir, "media", "demo.mp4"))).toEqual(
+    media.mp4,
+  );
+  expect(await readFile(join(filesDir, "sub", "media", "voice.mp3"))).toEqual(
+    media.mp3,
+  );
+  // 検証: どちらの文書を開いても再生バーを出す
+  const opened = await openStandaloneWithFiles(page, {
+    tempDir,
+    htmlFile,
+    filesDir,
+  });
+  const video = page.locator("article.mdmark video");
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute("controls", "");
+  await expect(video).toHaveAttribute("src", "docs_files/media/demo.mp4");
+  await page.locator('article p a[href="#/sub/b.md"]').click();
+  await expect(page.locator("article.mdmark h1")).toContainText("B");
+  const audio = page.locator("article.mdmark audio");
+  await expect(audio).toBeVisible();
+  await expect(audio).toHaveAttribute("controls", "");
+  await expect(audio).toHaveAttribute("src", "docs_files/sub/media/voice.mp3");
+  // 検証: 外へのネットワークの要求が 0 件
+  await page.waitForLoadState("networkidle");
   expect(opened.externalRequests()).toEqual([]);
 });

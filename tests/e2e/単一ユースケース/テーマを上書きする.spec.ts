@@ -10,8 +10,9 @@ import {
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
 
-// 段落とリンクを持つ見本の Markdown
-const MARKDOWN = "段落\n\n[リンク](https://example.com/page)\n";
+// 段落とリンクを持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+const MARKDOWN =
+  "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n";
 
 // デザイン方針の dev-swiss の値（明るい配色のリンクの色と、ダークの配色の地の色）
 const LIGHT_LINK_COLOR = "rgb(15, 118, 110)";
@@ -240,4 +241,25 @@ test("test_normal_when_theme_selected", async ({ page }) => {
     "background-color",
     "rgb(248, 250, 252)",
   );
+});
+
+// 使う側が層の外で上書きした色のプリセットの CSS 変数で、バッジと本文の文字の色を描く（正常シナリオ（色のプリセットを上書きする））
+test("test_normal_when_color_preset_overridden", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  const hostCss =
+    ".mdmark { --mdmark-color-accent-blue-text: rgb(0, 0, 128); --mdmark-color-accent-blue-bg: rgb(230, 240, 255) }";
+  await openPage(page, builtRoot, { hostCss });
+  // 実行
+  await mountDocument(page, {
+    markdown: "`badge:blue:参考` と [決め手の 1 文]{color=blue}\n",
+  });
+  // 検証
+  const badge = page.locator("#doc .mdmark-badge[data-color]");
+  await expect(badge).toHaveText("参考");
+  await expect(badge).toHaveCSS("color", "rgb(0, 0, 128)");
+  await expect(badge).toHaveCSS("background-color", "rgb(230, 240, 255)");
+  const text = page.locator("#doc .mdmark-color[data-color]");
+  await expect(text).toHaveText("決め手の 1 文");
+  await expect(text).toHaveCSS("color", "rgb(0, 0, 128)");
 });
