@@ -15,6 +15,11 @@
     mcp: '<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
     data: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
     external: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+    // 判定フローチャートの種類: 開始 play・質問 circle-question-mark・アクション wrench・結果 flag
+    start: '<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>',
+    question: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+    action: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>',
+    result: '<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/>',
     frame: '<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/>',
     zoomIn: '<path d="M5 12h14"/><path d="M12 5v14"/>',
     zoomOut: '<path d="M5 12h14"/>',
@@ -31,8 +36,11 @@
   };
 
   // 箱の種類の既定の名前（定義の tag が無いときに種類の行に出す）と、凡例の並び
-  const KIND_TAGS = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ", external: "外部" };
-  const KIND_LEGEND = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム" };
+  const KIND_TAGS = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ", external: "外部", start: "開始", question: "質問", action: "アクション", result: "結果" };
+  const KIND_LEGEND = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム", start: "開始", question: "質問", action: "アクション", result: "結果" };
+
+  // 質問のノードの菱形: ノードの枠いっぱいに引き、線の太さは寸法によらず 1.5px にする
+  const DIAMOND_SVG = '<svg class="mdmark-diagram-node-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="50,0 100,50 50,100 0,50"/></svg>';
 
   // システムの枠を持つ図で、外部のシステムの凡例に添える置き場所
   const OUTSIDE_FRAME = "（枠の外）";
@@ -193,8 +201,11 @@
       const id = tips.add(nodeTipHtml(node), `node:${node.id}`);
       info = `<button class="mdmark-diagram-info" type="button" aria-label="「${esc(node.name)}」の${node.io ? "入力・処理・出力" : "説明"}" aria-describedby="${id}" data-tip-owner="node:${esc(node.id)}">${icon("info")}</button>`;
     }
-    const style = node.x === undefined ? "" : ` style="left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px"`;
+    // 質問の菱形: 文字は菱形に内接する中央の四角（幅と高さの半分）に置く
+    const inset = node.kind === "question" && node.x !== undefined ? `;padding:${node.h / 4}px ${node.w / 4}px` : "";
+    const style = node.x === undefined ? "" : ` style="left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px${inset}"`;
     return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node.kind}"${node.shape ? ` data-shape="${node.shape}"` : ""} data-node="${esc(node.id)}"${style}>
+      ${node.kind === "question" ? DIAMOND_SVG : ""}
       <span class="mdmark-diagram-node-kind">${icon(node.kind)}<span>${withTerms(tag, tips)}</span></span>
       <span class="mdmark-diagram-node-name">${esc(node.name)}</span>
       ${node.sub ? `<span class="mdmark-diagram-node-sub">${withTerms(node.sub, tips)}</span>` : ""}
@@ -433,7 +444,14 @@
 
   /** 凡例の箱の見本（種類の色の線と地。データは下の角を丸める）。 */
   const kindSample = (kind) => {
-    const shape = kind === "data" ? '<path d="M1,1 H17 V9 Q17,13 13,13 H5 Q1,13 1,9 Z"/>' : '<rect x="1" y="1" width="16" height="12" rx="3"/>';
+    const shapes = {
+      data: '<path d="M1,1 H17 V9 Q17,13 13,13 H5 Q1,13 1,9 Z"/>',
+      start: '<circle cx="9" cy="7" r="6"/>',
+      question: '<polygon points="9,0.5 17.5,7 9,13.5 0.5,7"/>',
+      action: '<rect x="1" y="1" width="16" height="12" rx="1"/>',
+      result: '<rect x="1" y="1" width="16" height="12" rx="6"/>',
+    };
+    const shape = shapes[kind] ?? '<rect x="1" y="1" width="16" height="12" rx="3"/>';
     return `<svg class="mdmark-diagram-legend-sample" data-kind="${kind}" width="18" height="14" aria-hidden="true" style="fill:color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg));stroke:var(--node-color);stroke-width:1.5">${shape}</svg>`;
   };
 

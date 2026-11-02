@@ -20,6 +20,8 @@
   <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- テーマごとの色の表 -->
+  <link rel="stylesheet" href="./style.css">
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
@@ -53,6 +55,61 @@
         <article class="mdmark">
           <figure data-mock-diagram="long-names"></figure>
         </article>
+      </section>
+
+      <!-- 判定フローチャート: 開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸いノード。上から下へ置き、質問から出る線に YES・NO。凡例には図に出る 4 種類だけ -->
+      <section aria-labelledby="state-judgement">
+        <h2 class="catalog-label" id="state-judgement">判定フローチャート（開始・質問・アクション・結果と YES / NO の線）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="judgement"></figure>
+        </article>
+      </section>
+
+      <!-- 判定フローチャートの長い文: 質問の菱形を大きくし、文字は菱形に内接する中央の四角で文節ごとに折り返す -->
+      <section aria-labelledby="state-judgement-long">
+        <h2 class="catalog-label" id="state-judgement-long">判定フローチャートの長い題と文（菱形を大きくして折り返す）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="judgement-long"></figure>
+        </article>
+      </section>
+
+      <!-- 判定フローチャートの説明: hint を持つ質問のノードは、菱形の右の端の中の印でツールチップを開く -->
+      <section aria-labelledby="state-judgement-tip">
+        <h2 class="catalog-label" id="state-judgement-tip">質問のノードの説明のツールチップ（開いた状態）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="judgement" data-mock-open="node:q1"></figure>
+        </article>
+      </section>
+
+      <!-- 知らない種類: 書き方の警告の「使える種類」に、追加した 4 種類が並ぶ -->
+      <section aria-labelledby="state-unknown-kind">
+        <h2 class="catalog-label" id="state-unknown-kind">知らない種類（書き方の警告の使える種類に追加した種類が並ぶ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>フロー図の部品の定義を読めません。箱「全ての使う側の既定を変える見た目か」の種類 decision は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です。この図は描いていません。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 種類の色: 全テーマのライト・ダークの値。既存の種類の色と同じ値を使い、テーマの地に対して 4.5:1 以上 -->
+      <section aria-labelledby="state-kind-colors">
+        <h2 class="catalog-label" id="state-kind-colors">判定フローチャートの種類の色（全テーマのライト・ダーク）</h2>
+          <div class="kind-colors-scroll" tabindex="0" role="region" aria-label="判定フローチャートの種類の色">
+          <table class="kind-colors">
+            <thead><tr><th scope="col">テーマ・配色</th><th scope="col"><code>--mdmark-color-diagram-start</code>（開始）</th><th scope="col"><code>--mdmark-color-diagram-question</code>（質問）</th><th scope="col"><code>--mdmark-color-diagram-action</code>（アクション）</th><th scope="col"><code>--mdmark-color-diagram-result</code>（結果）</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">既定・ライト</th><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#52525b"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#52525b</code></td><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#1d4ed8"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#1d4ed8</code></td><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#b45309"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#b45309</code></td><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#15803d"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#15803d</code></td></tr>
+              <tr><th scope="row">既定・ダーク</th><td class="kind-color" style="--cell-bg:#131316;--cell-color:#b4b4bc"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#b4b4bc</code></td><td class="kind-color" style="--cell-bg:#131316;--cell-color:#7aa2ff"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#7aa2ff</code></td><td class="kind-color" style="--cell-bg:#131316;--cell-color:#fbbf24"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#fbbf24</code></td><td class="kind-color" style="--cell-bg:#131316;--cell-color:#4ade80"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#4ade80</code></td></tr>
+              <tr><th scope="row">paper・ライト</th><td class="kind-color" style="--cell-bg:#fbf8f1;--cell-color:#5c5247"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#5c5247</code></td><td class="kind-color" style="--cell-bg:#fbf8f1;--cell-color:#1e4f8c"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#1e4f8c</code></td><td class="kind-color" style="--cell-bg:#fbf8f1;--cell-color:#94540a"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#94540a</code></td><td class="kind-color" style="--cell-bg:#fbf8f1;--cell-color:#3f6b2a"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#3f6b2a</code></td></tr>
+              <tr><th scope="row">paper・ダーク</th><td class="kind-color" style="--cell-bg:#1c1915;--cell-color:#b8ad9c"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#b8ad9c</code></td><td class="kind-color" style="--cell-bg:#1c1915;--cell-color:#8fb4e8"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#8fb4e8</code></td><td class="kind-color" style="--cell-bg:#1c1915;--cell-color:#e8b04a"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#e8b04a</code></td><td class="kind-color" style="--cell-bg:#1c1915;--cell-color:#a3c98a"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#a3c98a</code></td></tr>
+              <tr><th scope="row">slate・ライト</th><td class="kind-color" style="--cell-bg:#f8fafc;--cell-color:#475569"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#475569</code></td><td class="kind-color" style="--cell-bg:#f8fafc;--cell-color:#1d4ed8"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#1d4ed8</code></td><td class="kind-color" style="--cell-bg:#f8fafc;--cell-color:#a24a06"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#a24a06</code></td><td class="kind-color" style="--cell-bg:#f8fafc;--cell-color:#047857"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#047857</code></td></tr>
+              <tr><th scope="row">slate・ダーク</th><td class="kind-color" style="--cell-bg:#0f172a;--cell-color:#a3b1c6"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#a3b1c6</code></td><td class="kind-color" style="--cell-bg:#0f172a;--cell-color:#f9a8d4"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#f9a8d4</code></td><td class="kind-color" style="--cell-bg:#0f172a;--cell-color:#fbbf24"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#fbbf24</code></td><td class="kind-color" style="--cell-bg:#0f172a;--cell-color:#5eead4"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#5eead4</code></td></tr>
+              <tr><th scope="row">contrast・ライト</th><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#333333"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#333333</code></td><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#0037a8"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#0037a8</code></td><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#8a4b00"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#8a4b00</code></td><td class="kind-color" style="--cell-bg:#ffffff;--cell-color:#1a5e1a"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#1a5e1a</code></td></tr>
+              <tr><th scope="row">contrast・ダーク</th><td class="kind-color" style="--cell-bg:#000000;--cell-color:#d6d6d6"><span class="kind-color-sample" data-kind="start" aria-hidden="true"></span><code>#d6d6d6</code></td><td class="kind-color" style="--cell-bg:#000000;--cell-color:#9cc0ff"><span class="kind-color-sample" data-kind="question" aria-hidden="true"></span><code>#9cc0ff</code></td><td class="kind-color" style="--cell-bg:#000000;--cell-color:#ffd23f"><span class="kind-color-sample" data-kind="action" aria-hidden="true"></span><code>#ffd23f</code></td><td class="kind-color" style="--cell-bg:#000000;--cell-color:#7ee07e"><span class="kind-color-sample" data-kind="result" aria-hidden="true"></span><code>#7ee07e</code></td></tr>
+            </tbody>
+          </table>
+          </div>
       </section>
 
       <!-- 定義を読めない: JSON として読めない部品の定義の場所に書き方の警告を出し、ほかの図と段落は描く -->

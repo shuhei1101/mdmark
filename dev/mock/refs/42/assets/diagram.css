@@ -289,6 +289,23 @@
         --node-color: var(--mdmark-color-diagram-external);
         --lane-color: var(--mdmark-color-diagram-external);
       }
+
+      /* 判定フローチャートの種類: 層を持たないので箱の色だけ */
+      &[data-kind="start"] {
+        --node-color: var(--mdmark-color-diagram-start);
+      }
+
+      &[data-kind="question"] {
+        --node-color: var(--mdmark-color-diagram-question);
+      }
+
+      &[data-kind="action"] {
+        --node-color: var(--mdmark-color-diagram-action);
+      }
+
+      &[data-kind="result"] {
+        --node-color: var(--mdmark-color-diagram-result);
+      }
     }
 
     /* 箱: 種類の色の線で囲み、地は文書の地にして層の背景から浮かせる */
@@ -312,6 +329,83 @@
       /* ツールチップを持つ箱: 種類の行を右上の印と重ねない */
       &.has-tip .mdmark-diagram-node-kind {
         padding-inline-end: 22px;
+      }
+
+      /* 判定フローチャートのノード: 種類の行と名前を中央に揃え、名前は文節で折り返す */
+      &:is([data-kind="start"], [data-kind="question"], [data-kind="action"], [data-kind="result"]) {
+        align-items: center;
+        text-align: center;
+        word-break: auto-phrase;
+
+        & .mdmark-diagram-node-kind {
+          justify-content: center;
+        }
+
+        /* 説明の印: 右上の角は形の外になるので、右の端の中央に置き、種類の行は空けない */
+        &.has-tip {
+          padding-inline-end: 30px;
+
+          & .mdmark-diagram-node-kind {
+            padding-inline-end: 0;
+          }
+
+          & .mdmark-diagram-info {
+            inset-block-start: 50%;
+            inset-inline-end: 6px;
+            translate: 0 -50%;
+          }
+        }
+      }
+
+      /* 開始: 円。文字は円に内接する四角に置く（幅 = 高さで定義する） */
+      &[data-kind="start"] {
+        padding: 14.6%;
+        border-radius: 50%;
+      }
+
+      /* 質問: 菱形。枠は SVG の菱形が持ち、文字は菱形に内接する中央の四角に置く（余白は diagram.js が寸法から当てる） */
+      &[data-kind="question"] {
+        isolation: isolate;
+        border: 0;
+        background: transparent;
+
+        &.has-tip {
+          padding-inline-end: 0;
+
+          & .mdmark-diagram-info {
+            inset-inline-end: 12.5%;
+            translate: 50% -50%;
+          }
+        }
+      }
+
+      /* アクション: 角の丸くない四角 */
+      &[data-kind="action"] {
+        border-radius: 2px;
+      }
+
+      /* 結果: 両端の丸いノード */
+      &[data-kind="result"] {
+        padding-inline: 20px;
+        border-radius: 999px;
+      }
+    }
+
+    /* 質問の菱形の枠: ノードの枠いっぱいに引き、地は文書の地にして線から浮かせる */
+    .mdmark-diagram-node-shape {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      fill: var(--mdmark-color-bg);
+      stroke: var(--node-color);
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+
+      & polygon {
+        vector-effect: non-scaling-stroke;
       }
     }
 

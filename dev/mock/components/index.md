@@ -22,7 +22,7 @@
 | [doc-list](./doc-list/index.html) | まとめた HTML の文書の一覧（フォルダごとに 1 段の見出しにパスを書き、開いている文書を示す） |
 | [figure](./figure/index.html) | 図と表に付ける通し番号と、番号にした参照のリンク、画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え |
 | [file-tree](./file-tree/index.html) | 罫線で書いたフォルダ構成を描いた入れ子のツリーと、注釈・拡張子ごとのアイコン・ほかにもある項目・フォルダの開閉と `open=`・ASCII の罫線・元の罫線のテキストのコピー |
-| [flow-diagram](./flow-diagram/index.html) | システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図 |
+| [flow-diagram](./flow-diagram/index.html) | システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図と、開始・質問・アクション・結果のノードと YES / NO の線の判定フローチャート |
 | [hint](./hint/index.html) | `data-hint` を持つ要素の右上の印・行内の破線の下線と、図のツールチップと同じ見た目のツールチップ |
 | [link-card](./link-card/index.html) | URL だけの行のリンクのカードと、ファイルへのリンクだけの行の添付のカード |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
