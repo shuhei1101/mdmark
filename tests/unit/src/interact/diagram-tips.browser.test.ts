@@ -392,3 +392,24 @@ test("test_attach_diagram_tips_when_mouse_pressed", async () => {
   // 検証
   expect(tip.hidden).toBe(false);
 });
+
+// タッチで開いた後、ツールチップの中のタップでは閉じない（正常系）
+test("test_attach_diagram_tips_when_touch_tip_tapped", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachDiagramTips } = await loadTips();
+  const figure = createFigure();
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
+  detachers.push(detach);
+  const mark = infoMark(figure);
+  const tip = tipOf(mark);
+  tap(mark);
+  // 実行: ツールチップの中のタップ（フォーカスできない所なので、持ち主のフォーカスが外れる）
+  for (const type of ["pointerdown", "pointerup", "pointerleave"]) {
+    tip.dispatchEvent(pointer(type, "touch"));
+  }
+  mark.blur();
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(tip.hidden).toBe(false);
+});

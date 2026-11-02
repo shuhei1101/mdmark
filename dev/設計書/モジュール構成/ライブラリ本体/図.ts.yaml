@@ -826,7 +826,7 @@ functions:
     container: src/interact/diagram-tips.ts
     kind: 関数
     scope: internal
-    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）・`pointerdown` と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、`document` の `pointerdown` の対象が開いている持ち主とツールチップの外なら閉じる（iOS の Safari はタップした持ち主に `:hover` を残すため、`pointerleave`・`blur` だけでは閉じない）。同時に開くのは 1 つ。置く側は `chooseTipSide`（持ち主の上端・下端、箱の印は箱の上端・下端。`gap` は `TIP_GAP_PX`）で決め、横は持ち主の左端に揃えて画面の端から `VIEWPORT_MARGIN_PX` の内に収める。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
+    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）・`pointerdown` と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、タッチで開いている間は `pointerleave`・`blur` では閉じず、`document` の `pointerdown` の対象が開いている持ち主とツールチップの外なら閉じる（iOS の Safari はタップした持ち主に `:hover` を残すため、`pointerleave`・`blur` だけでは閉じない）。同時に開くのは 1 つ。置く側は `chooseTipSide`（持ち主の上端・下端、箱の印は箱の上端・下端。`gap` は `TIP_GAP_PX`）で決め、横は持ち主の左端に揃えて画面の端から `VIEWPORT_MARGIN_PX` の内に収める。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
     args:
       - name: options
         type: '{ figure: HTMLElement; placement: TooltipPlacement }'
@@ -884,6 +884,12 @@ functions:
         condition: 箱の印をタッチでタップして開き、ツールチップの中に `pointerdown` を送り、次に図の外の要素に `pointerType` が `touch` の `pointerdown` だけを送る（`pointerleave`・`blur` は送らない）
         mock: なし
         expected: ツールチップの中の後は `hidden` を持たず、外の後は `hidden` を持つ
+      - name: test_attach_diagram_tips_when_touch_tip_tapped
+        case: 正常
+        summary: タッチで開いた後、ツールチップの中のタップでは閉じない
+        condition: 箱の印をタッチでタップして開き、ツールチップに `pointerType` が `touch` の `pointerdown`・`pointerup`・`pointerleave` を送って印の `blur()` を呼ぶ
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: ツールチップが `hidden` を持たない
       - name: test_attach_diagram_tips_when_touch_embedded_hint
         case: 正常
         summary: 埋め込んだ HTML のヒントもタッチで開閉する
