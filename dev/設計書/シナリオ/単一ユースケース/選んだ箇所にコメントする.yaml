@@ -194,7 +194,7 @@ scenarios:
       - '保存を押すと、`update` が `{docId, id: "c1", body: 書き換えた本文}` を受けて 1 回呼ばれ、吹き出しに書き換えた本文が出る'
       - '`テーマの変数` の印は付いたまま'
       - '「削除」を押すと、`remove` が `{docId, id: "c2"}` を受けて 1 回呼ばれ、`CSS` の印が外れて文字が元の並びに戻る'
-      - 削除の後、フォーカスが本文のコメントの無い位置に残らず、文書の先頭の要素へ移る
+      - 削除の後、削除したマーカーを含んでいた段落に `tabindex="-1"` が付いてフォーカスが移り、スクロールの位置は変わらない
     test: test_normal_when_edited_and_removed
   - name: 正常シナリオ（読み直す）
     setup:
@@ -202,37 +202,8 @@ scenarios:
         description: 正常シナリオと同じ。`mount` の戻り値の `reloadComments` を呼べる
       - name: コメントの読み書きの関数
         description: 1 回目の読み込みで `テーマの変数` のコメント 1 件、2 回目以降で `テーマの変数` と `CSS` のコメント 2 件を返す手元の関数
-      - name: 段落を持つ Markdown
-        description: 正常シナリオ（コメントを修正・削除する）と同じ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        participant P as 使う側のページ
-        participant M as mdmark
-        participant S as 読み書きの関数
-        P->>M: 設定・読み書きの関数・Markdown を渡して描かせる
-        M->>S: コメントを読み込む
-        S-->>M: コメント 1 件
-        M-->>P: テーマの変数に印を付けた文書
-        P->>M: reloadComments()
-        M->>S: コメントを読み込む
-        S-->>M: コメント 2 件
-        M-->>P: テーマの変数と CSS に印を付けた文書
-    expected:
-      - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` の両方に印が付いている'
-      - 読み込みが 2 回呼ばれる
-      - 本文は描き直されず、表の並べ替えなどの操作の状態はそのまま
-    test: test_normal_when_reloaded
-  - name: 正常シナリオ（コメントの箇所へ移る）
-    setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ。`mount` の戻り値の `focusComment` を呼べる
-        notes: 描く先の要素の高さは、文書の末尾の段落が画面の外になる高さ
-      - name: コメントの読み書きの関数
-        description: 文書の末尾の段落の `末尾の語` に付いた `id` が `c9` のコメントを返す手元の関数
-      - name: 段落の多い Markdown
-        description: 30 の段落を持ち、末尾の段落に `末尾の語` を含む文書
+      - name: 段落と表を持つ Markdown
+        description: '正常シナリオ（コメントを修正・削除する）の段落の後に、`<!-- table: data +sort -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を置いた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -240,6 +211,39 @@ scenarios:
         actor U as 読む人
         participant P as 使う側のページ
         participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 設定・読み書きの関数・Markdown を渡して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: コメント 1 件
+        M-->>P: テーマの変数に印を付けた文書
+        U->>P: 表の名前の列の見出しを押して昇順に並べ替える
+        P->>M: reloadComments()
+        M->>S: コメントを読み込む
+        S-->>M: コメント 2 件
+        M-->>P: テーマの変数と CSS に印を付けた文書
+    expected:
+      - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` の両方に印が付いている'
+      - 読み込みが 2 回呼ばれる
+      - '`reloadComments()` の後も、表の行が並べ替えた順（`a`・`b`・`c`）のまま'
+    test: test_normal_when_reloaded
+  - name: 正常シナリオ（コメントの箇所へ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `focusComment` を呼べる
+        notes: 描く先の要素の高さは、文書の末尾の段落が画面の外になる高さ
+      - name: コメントの読み書きの関数
+        description: '文書の先頭の段落の `先頭の語` に付いた `id` が `c1` のコメントと、末尾の段落の `末尾の語` に付いた `id` が `c9` のコメントを返す手元の関数'
+      - name: 段落の多い Markdown
+        description: 30 の段落を持ち、先頭の段落に `先頭の語`、末尾の段落に `末尾の語` を含む文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: focusComment(c1)
+        M-->>P: 先頭の語の印を強調した文書
         P->>M: focusComment(c9)
         M-->>P: 末尾の語の印を画面に入れて強調した文書
         P-->>U: 強調した印
@@ -247,7 +251,8 @@ scenarios:
         M-->>P: 変わらない文書
     expected:
       - '`focusComment("c9")` の後、`末尾の語` の印が画面に入っている'
-      - 印が強調の状態になり、ほかの印は強調されていない
+      - '`focusComment("c1")` の後、`先頭の語` のマーカーが強調の状態になる'
+      - '`focusComment("c9")` の後、`先頭の語` のマーカーの強調が解除され、`末尾の語` のマーカーだけが強調されている'
       - 印にフォーカスが移り、吹き出しは開かない
       - 無い `id` で呼んでも、スクロールの位置と強調が変わらず、エラーも出ない
     test: test_normal_when_focused

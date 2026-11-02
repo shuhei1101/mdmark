@@ -334,16 +334,18 @@ scenarios:
         M-->>P: 2 つ目の表の備考の列を隠した文書
         U->>P: 1 つ目の +columns の表のメニューで説明のチェックを外す
         M->>P: onColumnsChange({tableIndex: 0, hidden: [説明]})
+        U->>P: 1 つ目の表のメニューで説明にチェックを入れ、更新日・説明の順にチェックを外す
+        M->>P: onColumnsChange({tableIndex: 0, hidden: [説明, 更新日]})
         U->>P: 2 つ目の +columns の表のメニューで備考にチェックを入れる
         M->>P: onColumnsChange({tableIndex: 1, hidden: []})
         U->>P: 2 つ目の表の「既定に戻す」を押す
         M->>P: onColumnsChange({tableIndex: 1, hidden: [備考]})
     expected:
       - 描いた直後には `onColumnsChange` が呼ばれていない
-      - '説明のチェックを外した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて 1 回呼ばれる'
+      - '説明のチェックを外した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて呼ばれる'
       - '備考にチェックを入れた後、`onColumnsChange` が `{tableIndex: 1, hidden: []}` を受けて呼ばれる'
       - '「既定に戻す」を押した後、`onColumnsChange` が `{tableIndex: 1, hidden: ["備考"]}` を受けて呼ばれる'
-      - '`hidden` の列の名前は、表の列の並びの順'
+      - '更新日・説明の順にチェックを外した後の最後の通知が `{tableIndex: 0, hidden: ["説明", "更新日"]}`（操作の順ではなく表の列の並びの順）'
     test: test_normal_when_columns_change_notified
   - name: 正常シナリオ（集計の行を読む）
     setup:
