@@ -78,15 +78,11 @@ body {
   }
 }
 
-/* 文書を描く面: 使う側の地の上に、文書の地の面を置く */
+/* 文書を描く面: 使う側の地の上に、文書の地の面を置く。狭い幅でも本文を画面の端から離す */
 .host {
   max-width: 64rem;
   margin: 16px auto 48px;
   padding-inline: 16px;
-
-  @media (width < 48rem) {
-    padding-inline: 8px;
-  }
 }
 
 #doc {
