@@ -33,7 +33,10 @@ const TOOLS_HTML = [
 ].join("");
 
 /** 幅 600px・高さ 400px の表示する枠に、幅 1100・高さ 300 の中身を置き、拡大・縮小・移動を付ける */
-async function setUp(onChange?: (zoom: number, fit: number) => void) {
+async function setUp(
+  onChange?: (zoom: number, fit: number) => void,
+  percentBase?: "fit" | "content",
+) {
   const { attachZoom } = await loadZoom();
   const root = createRootFromHtml(
     `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 1100px; height: 300px"></div></div></div>`,
@@ -50,6 +53,7 @@ async function setUp(onChange?: (zoom: number, fit: number) => void) {
     size: { width: 1100, height: 300 },
     tools,
     ...(onChange ? { onChange } : {}),
+    ...(percentBase ? { percentBase } : {}),
   });
   detachers.push(() => zoom.detach());
   return { root, tools, viewport, zoom };
@@ -90,6 +94,21 @@ test("test_attach_zoom", async () => {
   expect(zoomText(root)).toBe("55%");
   const zooms = onChange.mock.calls.map(([zoom]) => Math.round(zoom * 100));
   expect(zooms).toEqual(expect.arrayContaining([68, 55]));
+});
+
+// 全体が収まる倍率を 100% として出す（正常系）
+test("test_attach_zoom_when_percent_base_fit", async () => {
+  // 準備
+  const { root } = await setUp(undefined, "fit");
+  // 検証: 収まる倍率を 100% で始める
+  expect(zoomText(root)).toBe("100%");
+  // 実行
+  button(root, "拡大").click();
+  // 検証
+  expect(zoomText(root)).toBe("125%");
+  expect(
+    root.querySelector('[data-tool="fit"]')?.getAttribute("aria-label"),
+  ).toBe("倍率 125%。全体が収まる倍率に戻す");
 });
 
 // 拡大中だけ移動のボタンを出し、矢印キーとドラッグで動かす（正常系）

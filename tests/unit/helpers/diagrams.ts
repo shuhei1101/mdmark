@@ -1,3 +1,4 @@
+import guide from "../../../docs/使い方/図を描く/図を描く.md?raw";
 import sample from "../../../docs/使い方/図を描く/見本.md?raw";
 
 /** 見本の文書に書いた部品の定義（`json` のコードブロックを書いた順に） */
@@ -25,6 +26,17 @@ export const REPLY_TIME_TEXT: string = block(2);
 
 /** 見本の操作できる部品の定義（`strength`）の JSON */
 export const STRENGTH_TEXT: string = block(3);
+
+/** 使い方『図を描く』の判定フローチャートの定義（モックの `judgement` に線の端を加えたもの）の JSON */
+export const JUDGEMENT_TEXT: string = (() => {
+  const found = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)]
+    .map((match) => match[1] ?? "")
+    .find((text) => text.includes('"kind": "question"'));
+  if (found === undefined) {
+    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+  }
+  return found;
+})();
 
 /** 定義の JSON を読んだ値 */
 export function parsed<T>(text: string): T {

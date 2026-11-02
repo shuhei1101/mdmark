@@ -95,13 +95,13 @@ test("test_attach_diagrams", async () => {
   // 実行
   detachers.push(attachDiagrams({ root, placement: "top" }));
   // 検証
-  expect(zoomText(root)).toBe("55%");
+  expect(zoomText(root)).toBe("100%");
   expect(button(root, "縮小").disabled).toBe(true);
   button(root, "拡大").click();
-  expect(zoomText(root)).toBe("68%");
+  expect(zoomText(root)).toBe("125%");
   viewportOf(root).focus();
   await userEvent.keyboard("0");
-  expect(zoomText(root)).toBe("55%");
+  expect(zoomText(root)).toBe("100%");
 });
 
 // 上限で拡大を押せなくする（正常系）
@@ -115,7 +115,7 @@ test("test_attach_diagrams_when_max", async () => {
     button(root, "拡大").click();
   }
   // 検証
-  expect(zoomText(root)).toBe("300%");
+  expect(zoomText(root)).toBe("550%");
   expect(button(root, "拡大").disabled).toBe(true);
 });
 
@@ -152,21 +152,21 @@ test("test_attach_diagrams_when_zoom_button", async () => {
   await userEvent.keyboard("{ArrowRight}");
   expect(viewport.scrollLeft).toBeGreaterThan(0);
   expect(zoomButton(root).getAttribute("aria-label")).toBe(
-    "倍率 85%。全体が収まる倍率に戻す",
+    "倍率 156%。全体が収まる倍率に戻す",
   );
   // 実行
   zoomButton(root).click();
   // 検証
-  expect(zoomText(root)).toBe("55%");
+  expect(zoomText(root)).toBe("100%");
   expect(viewport.scrollLeft).toBe(0);
   expect(zoomButton(root).getAttribute("aria-label")).toBe(
-    "倍率 55%。全体が収まる倍率に戻す",
+    "倍率 100%。全体が収まる倍率に戻す",
   );
   // 実行: 開いたときの倍率のままでも押せる
   expect(zoomButton(root).disabled).toBe(false);
   zoomButton(root).click();
   // 検証
-  expect(zoomText(root)).toBe("55%");
+  expect(zoomText(root)).toBe("100%");
 });
 
 // ホイールで倍率を変えない（正常系）
@@ -184,7 +184,7 @@ test("test_attach_diagrams_when_wheel", async () => {
   // 実行
   viewport.dispatchEvent(event);
   // 検証
-  expect(zoomText(root)).toBe("55%");
+  expect(zoomText(root)).toBe("100%");
   expect(event.defaultPrevented).toBe(false);
 });
 
@@ -240,7 +240,7 @@ test("test_attach_diagrams_when_cleaned_up", async () => {
   button(root, "拡大").click();
   // 検証
   expect(disconnect).toHaveBeenCalledTimes(1);
-  expect(zoomText(root)).toBe("55%");
+  expect(zoomText(root)).toBe("100%");
 });
 
 // 全画面を開いて Esc で閉じ、フォーカスを全画面のボタンへ戻す（正常系）

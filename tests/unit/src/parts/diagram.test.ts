@@ -14,6 +14,7 @@ import {
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
+  JUDGEMENT_TEXT,
   parsed,
   REPLY_TIME_TEXT,
 } from "../../helpers/diagrams.ts";
@@ -150,6 +151,35 @@ test("test_render_flow", async () => {
   );
 });
 
+// 判定フローチャートのノードを種類ごとの形と余白で描く（正常系）
+test("test_render_flow_when_judgement", async () => {
+  // 準備
+  const { renderFlow } = await loadDiagram();
+  const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_TEXT);
+  // 実行
+  const { html } = renderFlow(definition, "d1", true);
+  // 検証
+  const counts = ["start", "question", "action", "result"].map(
+    (kind) =>
+      matches(
+        html,
+        new RegExp(`<div[^>]*class="mdmark-diagram-node[ "][^>]*data-kind="${kind}"`, "g"),
+      ).length,
+  );
+  expect(counts).toEqual([1, 2, 1, 2]);
+  const diamonds = matches(html, /<svg[^>]*viewBox="0 0 280 136"[^>]*>[\s\S]*?<\/svg>/g);
+  expect(diamonds).toHaveLength(2);
+  for (const diamond of diamonds) {
+    expect(diamond).toContain('aria-hidden="true"');
+    expect(diamond).toContain('points="140,0 280,68 140,136 0,68"');
+  }
+  expect(findTag(html, 'data-node="q0"')).toContain("padding:34px 70px");
+  expect(findTag(html, 'data-node="start"')).toContain("padding:14.6px");
+  expect(findTag(html, 'data-node="a1"')).not.toContain("padding:");
+  expect(html).toContain(">YES<");
+  expect(html).toContain(">NO<");
+});
+
 // 定義の文字の HTML を文字にする（異常系）
 test("test_render_flow_when_text_escaped", async () => {
   // 準備
@@ -255,6 +285,21 @@ test("test_legend_for", async () => {
   expect(labels.some((label) => label.includes("（枠の外）"))).toBe(false);
 });
 
+// 判定フローチャートは追加した種類だけを凡例に出す（正常系）
+test("test_legend_for_when_judgement", async () => {
+  // 準備
+  const { legendFor } = await loadDiagram();
+  const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_TEXT);
+  // 実行
+  const items = legendFor(definition, { jumps: false, terms: false });
+  // 検証
+  const labels = items.map((item) => item.label);
+  const kinds = ["開始", "質問", "アクション", "結果"];
+  expect(labels.filter((label) => kinds.includes(label))).toEqual(kinds);
+  expect(labels).not.toContain("意思決定モデル");
+  expect(labels).not.toContain("データ（下の角が丸いノード）");
+});
+
 // 入力・処理・出力を 3 行に出す（正常系）
 test("test_render_diagram_tip", async () => {
   // 準備
@@ -304,21 +349,22 @@ test("test_render_diagram_frame_when_zoom_button", async () => {
     scope: "範囲",
     updated: "2026-10-17",
     legend: [],
-    zoom: 0.55,
+    zoom: 0.6875,
+    fit: 0.55,
     id: "d1",
   };
-  const zoomName = "倍率 55%。全体が収まる倍率に戻す";
+  const zoomName = "倍率 125%。全体が収まる倍率に戻す";
   // 実行
   const html = renderDiagramFrame(frame, BODY);
   // 検証
   const names = matches(
     html,
-    /aria-label="(?:縮小|倍率 55%。全体が収まる倍率に戻す|拡大|全画面で開く)"/g,
+    /aria-label="(?:縮小|倍率 125%。全体が収まる倍率に戻す|拡大|全画面で開く)"/g,
   ).map((attribute) => attribute.slice('aria-label="'.length, -1));
   expect(names).toEqual(["縮小", zoomName, "拡大", "全画面で開く"]);
   const zoomButton = outerHtml(html, `aria-label="${zoomName}"`);
   expect(zoomButton.startsWith("<button")).toBe(true);
-  expect(plainText(zoomButton)).toBe("55%");
+  expect(plainText(zoomButton)).toBe("125%");
   expect(html).not.toContain(iconSvg("rotate-ccw"));
 });
 
