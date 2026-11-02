@@ -42,7 +42,7 @@
     align-items: center;
     padding: 0.5rem var(--mdmark-space);
     border-block-end: 1px solid var(--mdmark-color-border);
-    background: var(--mdmark-color-bg);
+    background: var(--mdmark-color-bg-opaque);
     color: var(--mdmark-color-text);
     font-family: var(--mdmark-font-body);
   }
@@ -66,7 +66,7 @@
     padding: 0 0.75em;
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
-    background: var(--mdmark-color-bg);
+    background: var(--mdmark-color-bg-opaque);
     color: var(--mdmark-color-text);
     font: inherit;
     font-size: 0.9375rem;
@@ -112,7 +112,7 @@
     padding: var(--mdmark-space) calc(var(--mdmark-space) * 0.75);
     border: 0;
     border-inline-end: 1px solid var(--mdmark-color-border);
-    background: var(--mdmark-color-bg);
+    background: var(--mdmark-color-bg-opaque);
     color: var(--mdmark-color-text);
 
     /* パネルの後ろ: 文書を暗くして、押すと閉じる面にする */
