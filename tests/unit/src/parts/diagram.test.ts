@@ -163,11 +163,17 @@ test("test_render_flow_when_judgement", async () => {
     (kind) =>
       matches(
         html,
-        new RegExp(`<div[^>]*class="mdmark-diagram-node[ "][^>]*data-kind="${kind}"`, "g"),
+        new RegExp(
+          `<div[^>]*class="mdmark-diagram-node[ "][^>]*data-kind="${kind}"`,
+          "g",
+        ),
       ).length,
   );
   expect(counts).toEqual([1, 2, 1, 2]);
-  const diamonds = matches(html, /<svg[^>]*viewBox="0 0 280 136"[^>]*>[\s\S]*?<\/svg>/g);
+  const diamonds = matches(
+    html,
+    /<svg[^>]*viewBox="0 0 280 136"[^>]*>[\s\S]*?<\/svg>/g,
+  );
   expect(diamonds).toHaveLength(2);
   for (const diamond of diamonds) {
     expect(diamond).toContain('aria-hidden="true"');
