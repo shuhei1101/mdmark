@@ -12,6 +12,9 @@ const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 見本の文書（見本のページはこの文書を描く）
 const SAMPLE_PATH = join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md");
 
+// 使い方『図を描く』（判定フローチャートの定義の例を持つ）
+const GUIDE_PATH = join(REPO_ROOT, "docs", "使い方", "図を描く", "図を描く.md");
+
 // 固有の部品のモジュールを返す架空の URL
 export const CARD_URL = "https://libs.example.test/card.js";
 
@@ -47,6 +50,18 @@ export function wrapDirective(directive: string, json: string): string {
     `<!-- /${directive} -->`,
     "",
   ].join("\n");
+}
+
+/** 使い方『図を描く』の判定フローチャートの定義を書いた文書 */
+export async function judgementMarkdown(): Promise<string> {
+  const guide = await readFile(GUIDE_PATH, "utf8");
+  const text = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)]
+    .map((match) => match[1] ?? "")
+    .find((block) => block.includes('"kind": "question"'));
+  if (text === undefined) {
+    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+  }
+  return wrapDirective("flow", text);
 }
 
 /** 見本のフロー図の部品の定義を書いた文書 */

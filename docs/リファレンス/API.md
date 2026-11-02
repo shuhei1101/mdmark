@@ -818,7 +818,7 @@ handle.destroy();
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
-| `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、箱の色の濃さ |
+| `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、ノードの色の濃さ |
 | `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、図の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。使う側が高さを変えたときはこの値で止めず、図の高さ × 今の倍率まで広げられる |
 | `--mdmark-diagram-box-shadow` | `inset 0 0 0 1px var(--mdmark-color-border)` | 図の表示する箱（右上のボタンの帯と表示する枠をまとめた箱）の線（`box-shadow` の値）。枠を持つ面に文書を描く使う側は、面で `none` を指定して線を外す。操作できる部品の中の図は線を引かず、全画面のモーダルの中の図はこの値を受け継がず既定の線で描く |
 | `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |
@@ -854,12 +854,16 @@ handle.destroy();
 | `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いる節の項目と、目次を出しているときの目次を出すボタンの背景 |
-| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM の箱と LLM の層の色 |
-| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルの箱の色 |
-| `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトの箱の色 |
-| `--mdmark-color-diagram-mcp` | `#b45309` | `#fbbf24` | 図の MCP の箱と処理の層の色 |
-| `--mdmark-color-diagram-data` | `#0f766e` | `#2dd4bf` | 図のデータの箱とデータの層の色 |
-| `--mdmark-color-diagram-external` | `#15803d` | `#4ade80` | 図の外部のシステムの箱の色 |
+| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM のノードと LLM の層の色 |
+| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルのノードの色 |
+| `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトのノードの色 |
+| `--mdmark-color-diagram-mcp` | `#b45309` | `#fbbf24` | 図の MCP のノードと処理の層の色 |
+| `--mdmark-color-diagram-data` | `#0f766e` | `#2dd4bf` | 図のデータのノードとデータの層の色 |
+| `--mdmark-color-diagram-external` | `#15803d` | `#4ade80` | 図の外部のシステムのノードの色 |
+| `--mdmark-color-diagram-start` | `#52525b` | `#b4b4bc` | 図の判定フローチャートの開始のノードの色 |
+| `--mdmark-color-diagram-question` | `#1d4ed8` | `#7aa2ff` | 図の判定フローチャートの質問のノードの色 |
+| `--mdmark-color-diagram-action` | `#b45309` | `#fbbf24` | 図の判定フローチャートのアクションのノードの色 |
+| `--mdmark-color-diagram-result` | `#15803d` | `#4ade80` | 図の判定フローチャートの結果のノードの色 |
 | `--mdmark-color-diagram-line` | `#71717a` | `#8f8f99` | 図の処理の流れ・戻る線の色 |
 | `--mdmark-color-series-1` | `#0f766e` | `#2dd4bf` | グラフの 1 つ目の系列の色（実線・丸の点） |
 | `--mdmark-color-series-2` | `#b45309` | `#fbbf24` | グラフの 2 つ目の系列の色 |
@@ -991,6 +995,10 @@ handle.destroy();
 | `--mdmark-color-diagram-mcp` | `#94540a` | `#e8b04a` |
 | `--mdmark-color-diagram-data` | `#9b2c2c` | `#f0a39a` |
 | `--mdmark-color-diagram-external` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-diagram-start` | `#5c5247` | `#b8ad9c` |
+| `--mdmark-color-diagram-question` | `#1e4f8c` | `#8fb4e8` |
+| `--mdmark-color-diagram-action` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-diagram-result` | `#3f6b2a` | `#a3c98a` |
 | `--mdmark-color-diagram-line` | `#857a6c` | `#9a8f80` |
 | `--mdmark-color-series-1` | `#9b2c2c` | `#f0a39a` |
 | `--mdmark-color-series-2` | `#1e4f8c` | `#8fb4e8` |
@@ -1047,6 +1055,10 @@ handle.destroy();
 | `--mdmark-color-diagram-mcp` | `#a24a06` | `#fbbf24` |
 | `--mdmark-color-diagram-data` | `#0e7490` | `#7dd3fc` |
 | `--mdmark-color-diagram-external` | `#047857` | `#5eead4` |
+| `--mdmark-color-diagram-start` | `#475569` | `#a3b1c6` |
+| `--mdmark-color-diagram-question` | `#1d4ed8` | `#f9a8d4` |
+| `--mdmark-color-diagram-action` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-diagram-result` | `#047857` | `#5eead4` |
 | `--mdmark-color-diagram-line` | `#64748b` | `#8391a7` |
 | `--mdmark-color-series-1` | `#1d4ed8` | `#7dd3fc` |
 | `--mdmark-color-series-2` | `#047857` | `#6ee7b7` |
@@ -1103,6 +1115,10 @@ handle.destroy();
 | `--mdmark-color-diagram-mcp` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-diagram-data` | `#006a6a` | `#4fd1c5` |
 | `--mdmark-color-diagram-external` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-diagram-start` | `#333333` | `#d6d6d6` |
+| `--mdmark-color-diagram-question` | `#0037a8` | `#9cc0ff` |
+| `--mdmark-color-diagram-action` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-diagram-result` | `#1a5e1a` | `#7ee07e` |
 | `--mdmark-color-diagram-line` | `#4d4d4d` | `#a6a6a6` |
 | `--mdmark-color-series-1` | `#0037a8` | `#9cc0ff` |
 | `--mdmark-color-series-2` | `#8a4b00` | `#ffd23f` |

@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-flowchart-question-result-kinds
+
+
+ Test Files  177 passed (177)
+      Tests  1235 passed (1235)
+   Start at  21:38:00
+   Duration  45.24s (worker 46%, tests 35%, import 16%, transform 3%)
+
+exit=0

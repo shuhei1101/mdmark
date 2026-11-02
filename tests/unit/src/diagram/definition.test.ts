@@ -12,6 +12,7 @@ import {
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
+  JUDGEMENT_TEXT,
   parsed,
   REPLY_TIME_TEXT,
   STRENGTH_TEXT,
@@ -68,14 +69,14 @@ test("test_read_definition", async () => {
   }
 });
 
-// 箱の種類が使えないときは使える種類を示す（異常系）
+// ノードの種類が使えないときは使える種類を示す（異常系）
 test("test_read_definition_when_kind_unknown", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
   const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
   const third = definition.nodes[2];
   if (third === undefined) {
-    throw new Error("見本の 3 つ目の箱が無い");
+    throw new Error("見本の 3 つ目のノードが無い");
   }
   Object.assign(third, { kind: "robot" });
   // 実行
@@ -83,8 +84,19 @@ test("test_read_definition_when_kind_unknown", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toBe(
-    "箱「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external です",
+    "ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です",
   );
+});
+
+// 判定フローチャートの種類のノードを読める（正常系）
+test("test_read_definition_when_judgement", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  // 実行
+  const result = readDefinition("flow", [JUDGEMENT_TEXT]);
+  // 検証
+  expect(result.problems).toEqual([]);
+  expect(result.ok).toBe(true);
 });
 
 // 系列の点の数が横の目盛りと合わないときは数を示す（異常系）
@@ -106,7 +118,7 @@ test("test_read_definition_when_points_mismatch", async () => {
   );
 });
 
-// 線の端が無い箱を指すときは線と箱の id を示す（異常系）
+// 線の端が無いノードを指すときは線とノードの id を示す（異常系）
 test("test_read_definition_when_wire_end_missing", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -121,11 +133,11 @@ test("test_read_definition_when_wire_end_missing", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toBe(
-    "線 w-mail の端の箱 recieve がありません。箱の id で書いてください",
+    "線 w-mail の端のノード recieve がありません。ノードの id で書いてください",
   );
 });
 
-// 箱の id が重なるときは重なった id を示す（異常系）
+// ノードの id が重なるときは重なった id を示す（異常系）
 test("test_read_definition_when_id_duplicated", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -147,7 +159,7 @@ test("test_read_definition_when_id_duplicated", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toBe(
-    "箱の id recv が 2 つあります。別の id にしてください",
+    "ノードの id recv が 2 つあります。別の id にしてください",
   );
 });
 

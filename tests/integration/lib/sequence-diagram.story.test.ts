@@ -10,9 +10,11 @@ afterAll(holder.close);
 test("test_default", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-sequencediagram--default");
-  await page.waitForFunction(
-    () =>
-      document.querySelector(".mdmark-diagram-zoom")?.textContent !== "100%",
+  await page.waitForFunction(() =>
+    (
+      document.querySelector<HTMLElement>(".mdmark-diagram-stage")?.style
+        .transform ?? ""
+    ).startsWith("scale("),
   );
   // 検証
   const lefts = await page

@@ -40,6 +40,10 @@
   --mdmark-color-diagram-mcp: #b45309;
   --mdmark-color-diagram-data: #0f766e;
   --mdmark-color-diagram-external: #15803d;
+  --mdmark-color-diagram-start: #52525b;
+  --mdmark-color-diagram-question: #1d4ed8;
+  --mdmark-color-diagram-action: #b45309;
+  --mdmark-color-diagram-result: #15803d;
   --mdmark-color-diagram-line: #71717a;
   --mdmark-color-series-1: #0f766e;
   --mdmark-color-series-2: #b45309;
@@ -96,6 +100,10 @@
     --mdmark-color-diagram-mcp: #fbbf24;
     --mdmark-color-diagram-data: #2dd4bf;
     --mdmark-color-diagram-external: #4ade80;
+    --mdmark-color-diagram-start: #b4b4bc;
+    --mdmark-color-diagram-question: #7aa2ff;
+    --mdmark-color-diagram-action: #fbbf24;
+    --mdmark-color-diagram-result: #4ade80;
     --mdmark-color-diagram-line: #8f8f99;
     --mdmark-color-series-1: #2dd4bf;
     --mdmark-color-series-2: #fbbf24;

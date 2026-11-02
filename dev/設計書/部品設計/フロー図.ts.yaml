@@ -7,42 +7,68 @@ states:
     notes:
       定義: モックの `inquiry`（`dev/mock/refs/42/assets/samples.js`）
   - name: LongNames
-    description: 長い題と箱の名前。箱の中で折り返す
+    description: 長い題とノードの名前。ノードの中で折り返す
     notes:
       定義: モックの `long-names`
+  - name: Judgement
+    description: 判定フローチャート。開始 1・質問 2・アクション 1・結果 2 のノードと YES / NO のラベルの線を持ち、システムの枠と層を持たない。凡例の種類は開始・質問・アクション・結果だけ
+    notes:
+      定義: モックの `judgement`
+  - name: JudgementLong
+    description: 判定フローチャートの長い題と文。ノードの名前は文節ごとに折り返し（Chromium 系。Firefox・Safari では文字ごとに折り返す）、質問の名前は菱形に内接する中央の四角に収める
+    notes:
+      定義: モックの `judgement-long`
+  - name: UnknownKind
+    description: 知らない種類のノード。書き方の警告の使える種類に、追加した 4 種類を含む 10 種類が並ぶ
   - name: Invalid
     description: 定義を読めない。図の代わりに書き方の警告を出す
-lead: システムの枠と3 つの層、箱と線を定義の座標に置く構成図。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
+lead: システムの枠と3 つの層、ノードと線を定義の座標に置く構成図。判定フローチャートは開始・質問・アクション・結果のノードを YES / NO のラベルの線でつなぐ。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
 args:
   - name: definition
     type: オブジェクト
     required: true
-    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。箱は `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ
+    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。ノードは `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ
 css_properties:
   - name: --mdmark-color-diagram-llm
     syntax: <color>
     default: '#6d28d9（ダーク #c4a7ff）'
-    description: LLM の箱と LLM の層の色
+    description: LLM のノードと LLM の層の色
   - name: --mdmark-color-diagram-dm
     syntax: <color>
     default: '#1d4ed8（ダーク #7aa2ff）'
-    description: 意思決定モデルの箱の色
+    description: 意思決定モデルのノードの色
   - name: --mdmark-color-diagram-script
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'
-    description: スクリプトの箱の色
+    description: スクリプトのノードの色
   - name: --mdmark-color-diagram-mcp
     syntax: <color>
     default: '#b45309（ダーク #fbbf24）'
-    description: MCP の箱と処理の層の色
+    description: MCP のノードと処理の層の色
   - name: --mdmark-color-diagram-data
     syntax: <color>
     default: '#0f766e（ダーク #2dd4bf）'
-    description: データの箱とデータの層の色
+    description: データのノードとデータの層の色
   - name: --mdmark-color-diagram-external
     syntax: <color>
     default: '#15803d（ダーク #4ade80）'
-    description: 外部のシステムの箱の色
+    description: 外部のシステムのノードの色
+  - name: --mdmark-color-diagram-start
+    syntax: <color>
+    default: '#52525b（ダーク #b4b4bc）'
+    description: 判定フローチャートの開始のノードの色。全テーマで `--mdmark-color-diagram-script` と同じ値
+  - name: --mdmark-color-diagram-question
+    syntax: <color>
+    default: '#1d4ed8（ダーク #7aa2ff）'
+    description: 判定フローチャートの質問のノードの色。全テーマで `--mdmark-color-diagram-dm` と同じ値
+  - name: --mdmark-color-diagram-action
+    syntax: <color>
+    default: '#b45309（ダーク #fbbf24）'
+    description: 判定フローチャートのアクションのノードの色。全テーマで `--mdmark-color-diagram-mcp` と同じ値
+  - name: --mdmark-color-diagram-result
+    syntax: <color>
+    default: '#15803d（ダーク #4ade80）'
+    description: 判定フローチャートの結果のノードの色。全テーマで `--mdmark-color-diagram-external` と同じ値
   - name: --mdmark-color-diagram-line
     syntax: <color>
     default: '#71717a（ダーク #8f8f99）'
@@ -50,16 +76,17 @@ css_properties:
   - name: --mdmark-diagram-lane-tint
     syntax: <percentage>
     default: 8%
-    description: 層の背景に敷く箱の色の濃さ
+    description: 層の背景に敷くノードの色の濃さ
 uses:
   - component: dev/設計書/部品設計/書き方の警告.ts#
     how: 定義を読めないときに図の代わりに置く
   - component: dev/設計書/部品設計/用語のツールチップ.ts#
-    how: 箱の中の `{{語}}` の下線と意味
+    how: ノードの中の `{{語}}` の下線と意味
 accessibility:
-  - 箱の種類は色だけでなく、箱の左上のアイコンと種類の名前でも示す。データの箱は下の角を丸くする
+  - ノードの種類は色だけでなく、ノードの左上のアイコンと種類の名前でも示す。データのノードは下の角を丸くし、判定フローチャートの開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸い形で描く
+  - 判定フローチャートのアイコンは開始 = play・質問 = circle-question-mark・アクション = wrench・結果 = flag。判定フローチャートのノードはアイコンと種類の名前の行を中央に置く
   - 線の種類は色と模様（破線の間隔・太さ・矢じり）の組で分ける
-  - 箱と線のラベルの文字は選べ、読み上げに出る。線の svg は `aria-hidden`
+  - ノードと線のラベルの文字は選べ、読み上げに出る。線の svg と質問の菱形の svg は `aria-hidden`
 status: planned
 introduced:
   pr: 42

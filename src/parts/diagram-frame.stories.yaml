@@ -22,6 +22,7 @@ stories:
         id: diagram-frame
     args:
       zoom: 0.6
+      fit: 0.48
   - name: Fullscreen
     parameters:
       server:

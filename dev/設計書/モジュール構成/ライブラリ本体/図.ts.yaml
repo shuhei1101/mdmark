@@ -51,7 +51,7 @@ data_models:
         description: 枠の中の層。層の箱の色をうっすら敷く
       - name: nodes
         type: MdmarkDiagramNode[]
-        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`）。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external`。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
+        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`）。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく定義に書く。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
       - name: wires
         type: MdmarkDiagramWire[]
         description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端の箱の `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
@@ -191,6 +191,41 @@ constants:
     container: src/diagram/geometry.ts
     summary: 同じ向きで重なる線をずらす幅（px）
     value: '4'
+  - name: NODE_KINDS
+    title: ノードの種類の並び
+    container: src/diagram/definition.ts
+    summary: '`MdmarkDiagramKind` の値の並び。知らない種類の書き方の警告の「使える種類」はこの順に `・` でつなぐ'
+    value: '`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`'
+  - name: KIND_STYLES
+    title: ノードの種類の描き方
+    container: src/parts/diagram.ts
+    summary: ノードの種類ごとの種類の行の既定の名前・凡例の名前・lucide のアイコン。色と形は CSS が `data-kind` で当てる
+    entries:
+      - key: llm
+        value: '{ tag: "LLM", legend: "LLM", icon: "bot" }'
+      - key: dm
+        value: '{ tag: "意思決定モデル", legend: "意思決定モデル", icon: "split" }'
+      - key: script
+        value: '{ tag: "スクリプト", legend: "スクリプト", icon: "code-xml" }'
+      - key: mcp
+        value: '{ tag: "MCP", legend: "MCP", icon: "plug" }'
+      - key: data
+        value: '{ tag: "データ", legend: "データ（下の角が丸いノード）", icon: "database" }'
+      - key: external
+        value: '{ tag: "外部", legend: "外部のシステム", icon: "globe" }'
+      - key: start
+        value: '{ tag: "開始", legend: "開始", icon: "play" }'
+      - key: question
+        value: '{ tag: "質問", legend: "質問", icon: "circle-question-mark" }'
+      - key: action
+        value: '{ tag: "アクション", legend: "アクション", icon: "wrench" }'
+      - key: result
+        value: '{ tag: "結果", legend: "結果", icon: "flag" }'
+  - name: CIRCLE_INSET
+    title: 円に内接する正方形の外の余白の割合
+    container: src/parts/diagram.ts
+    summary: 開始のノードの直径に対する、名前を置く内接の正方形の外の余白の割合（`(1 - 1/√2) / 2`）
+    value: '0.1464'
 functions:
   - name: parseDefinitionJson
     title: 定義の JSON を読む
@@ -224,7 +259,7 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・`table` の値の漏れ）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・`table` の値の漏れ）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
     args:
       - name: directive
         type: '"flow" | "sequence" | "chart" | "param"'
@@ -246,10 +281,16 @@ functions:
         expected: どれも `ok` が `true`
       - name: test_read_definition_when_kind_unknown
         case: 異常
-        summary: 箱の種類が使えない
-        condition: 3 つ目の箱（名前 `分類`）の `kind` が `robot`
+        summary: ノードの種類が使えない
+        condition: 3 つ目のノード（名前 `分類`）の `kind` が `robot`
         mock: なし
-        expected: '`problems[0]` が `箱「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external です`'
+        expected: '`problems[0]` が `ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です`'
+      - name: test_read_definition_when_judgement
+        case: 正常
+        summary: 判定フローチャートの種類のノードを読める
+        condition: モックの `judgement` と同じ定義（`frame`・`lanes` が無く、線に `from`・`to` を足したもの）
+        mock: なし
+        expected: '`ok` が `true` で `problems` が空'
       - name: test_read_definition_when_points_mismatch
         case: 異常
         summary: 系列の点の数が目盛りと合わない
@@ -261,13 +302,13 @@ functions:
         summary: 線の端が無い箱を指す
         condition: 線 `w-mail` の `to` が無い箱の `id` `recieve`
         mock: なし
-        expected: '`problems[0]` が `線 w-mail の端の箱 recieve がありません。箱の id で書いてください`'
+        expected: '`problems[0]` が `線 w-mail の端のノード recieve がありません。ノードの id で書いてください`'
       - name: test_read_definition_when_id_duplicated
         case: 異常
         summary: 箱の id が重なる
         condition: 2 つの箱の `id` が `recv`
         mock: なし
-        expected: '`problems[0]` が `箱の id recv が 2 つあります。別の id にしてください`'
+        expected: '`problems[0]` が `ノードの id recv が 2 つあります。別の id にしてください`'
       - name: test_read_definition_when_blocks_count
         case: 異常
         summary: json のコードブロックが 0 つ・2 つ
@@ -370,10 +411,10 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`id` は `render` の中の通し番号で文書の中で一意にする
+    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさの箱と中身の `scale()` に使う。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
-        type: '{ kind; title; scope; updated; legend; zoom?; modal?; id: string }'
+        type: '{ kind; title; scope; updated; legend; zoom?; fit?; modal?; id: string }'
         required: true
         description: 部品設計の引数と、題・ツールチップに使う `id` の頭
       - name: body
@@ -399,15 +440,15 @@ functions:
       - name: test_render_diagram_frame_when_zoom_button
         case: 正常
         summary: 戻すのボタンを置かず、倍率をボタンにする
-        condition: '`zoom` が `0.55`'
+        condition: '`zoom` が `0.6875`、`fit` が `0.55`'
         mock: なし
-        expected: 帯のボタンが `縮小`・`倍率 55%。全体が収まる倍率に戻す`・`拡大`・`全画面で開く` の順で、倍率のボタンの文字が `55%`、`rotate-ccw` のアイコンが無い
+        expected: 帯のボタンが `縮小`・`倍率 125%。全体が収まる倍率に戻す`・`拡大`・`全画面で開く` の順で、倍率のボタンの文字が `125%`、`rotate-ccw` のアイコンが無い
   - name: renderFlow
     title: フロー図を描く
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義の座標に枠・層・箱を置き、`jumpPaths` のパスで線を svg に描く。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・線のラベルを置き（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
+    summary: 定義の座標に枠・層・ノードを置き、`jumpPaths` のパスで線を svg に描く。判定フローチャートのノードは `data-kind` で CSS が形（開始は円・アクションは角の丸くない四角・結果は両端の丸い形）を当て、質問のノードにはノードの幅と高さを `viewBox` にした菱形の `polygon` の svg（`aria-hidden`）を置く。名前は形に内接する四角に置き、質問は上下に高さの 1/4・左右に幅の 1/4、開始は幅 × `CIRCLE_INSET` の余白を `style` に当てる。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・線のラベルを置き（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
     args:
       - name: definition
         type: MdmarkFlowDefinition
@@ -447,6 +488,12 @@ functions:
         condition: '`inquiry-hint` の定義を `hints` が `true` と `false` で描く'
         mock: なし
         expected: '`true` で箱 `mcp` の印が `aria-label="「窓口の MCP」の説明"` を持ち、`false` で `role="tooltip"` と箱の印が無く、線のラベルと箱の名前はある'
+      - name: test_render_flow_when_judgement
+        case: 正常
+        summary: 判定フローチャートのノードを種類ごとの形と余白で描く
+        condition: モックの `judgement` の定義
+        mock: なし
+        expected: '`data-kind` が `start`・`question`・`action`・`result` のノードが 1・2・1・2 つあり、質問のノードだけが `viewBox="0 0 280 136"` と `points="140,0 280,68 140,136 0,68"` の `aria-hidden="true"` の svg を持ち、質問のノードの `style` が `padding:34px 70px`、開始のノードの `style` が `padding:14.6px`、線のラベルに `YES`・`NO` がある'
   - name: renderSequence
     title: シーケンス図を描く
     container: src/parts/diagram.ts
@@ -520,7 +567,7 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義に出る箱の種類・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ
+    summary: 定義に出るノードの種類（名前は `KIND_STYLES` の `legend`）・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。層と印の項目の名前は `層の背景（層のノードの色）`・`説明や入力・処理・出力が出るノード`・`入力・処理・出力が出るノード`・`説明が出るノード`
     args:
       - name: definition
         type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition
@@ -540,6 +587,12 @@ functions:
         condition: '`flow` と `read` の線だけを持ち、枠も交差も無いフロー図'
         mock: なし
         expected: 線の項目が `処理の流れ`・`読む` の 2 つで、枠・交差の項目が無く、外部のシステムに `（枠の外）` が付かない
+      - name: test_legend_for_when_judgement
+        case: 正常
+        summary: 判定フローチャートは追加した種類だけを凡例に出す
+        condition: モックの `judgement` の定義
+        mock: なし
+        expected: 種類の項目が `開始`・`質問`・`アクション`・`結果` の 4 つで、`意思決定モデル`・`データ（下の角が丸いノード）` が無い
   - name: renderDiagramTip
     title: 図のツールチップを描く
     container: src/parts/diagram.ts
@@ -677,7 +730,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に任せ、表示する枠の高さの付け替えだけをこの関数が持つ'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement }'
@@ -696,13 +749,13 @@ functions:
         summary: 収まる倍率で開き、拡大と戻す
         condition: 幅 600px の要素に幅 1100 のフロー図
         mock: なし
-        expected: 倍率の表示が `55%` で縮小が `disabled`、拡大の後に `68%`、`0` の後に `55%`
+        expected: 倍率の表示が `100%` で縮小が `disabled`、拡大の後に `125%`、`0` の後に `100%`
       - name: test_attach_diagrams_when_max
         case: 正常
         summary: 上限で拡大を押せなくする
         condition: 拡大を 10 回押す
         mock: なし
-        expected: 倍率の表示が `300%` で拡大が `disabled`
+        expected: 倍率の表示が `550%`（定義の大きさの 3 倍）で拡大が `disabled`
       - name: test_attach_diagrams_when_panned
         case: 正常
         summary: 拡大した間だけ移動のボタンを出し、矢印キーで動かす
@@ -726,7 +779,7 @@ functions:
         summary: 倍率のボタンで開いたときの倍率と位置に戻す
         condition: 幅 600px の要素に幅 1100 のフロー図。拡大を 2 回押して表示する枠を `ArrowRight` で動かし、倍率のボタンを押す
         mock: なし
-        expected: 押す前の読み上げの名前が `倍率 85%。全体が収まる倍率に戻す`、押した後に文字が `55%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
+        expected: 押す前の読み上げの名前が `倍率 156%。全体が収まる倍率に戻す`、押した後に文字が `100%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
       - name: test_attach_diagrams_when_tall
         case: 正常
         summary: 開いたときの高さを `--mdmark-diagram-max-height` で抑え、上限を図の全体が収まる高さにする
@@ -919,12 +972,12 @@ functions:
     container: src/interact/zoom.ts
     kind: 関数
     scope: internal
-    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
+    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
     args:
       - name: options
-        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; fitHeight?: boolean; dragIgnore?: string; keyTargets?: HTMLElement[] }'
+        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; fitHeight?: boolean; dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content" }'
         required: true
-        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）
+        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）
     returns:
       type: '{ reset(): void; fit(): number; detach(): void }'
       description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返す関数・付けた操作を外す関数
@@ -949,6 +1002,12 @@ functions:
         condition: '`detach()` を呼んで拡大を押す'
         mock: なし
         expected: 倍率が変わらない
+      - name: test_attach_zoom_when_percent_base_fit
+        case: 正常
+        summary: 全体が収まる倍率を 100% として出す
+        condition: 幅 600px の枠に幅 1100 の中身、`percentBase` が `fit`。拡大を 1 回押す
+        mock: なし
+        expected: 倍率の文字が `100%` で始まり、拡大の後に `125%` で読み上げの名前が `倍率 125%。全体が収まる倍率に戻す`
     status: planned
     introduced:
       pr: 263

@@ -12,6 +12,7 @@ import {
   ChevronsUpDown,
   ChevronUp,
   CircleAlert,
+  CircleQuestionMark,
   CodeXml,
   Columns3,
   Copy,
@@ -20,6 +21,7 @@ import {
   Expand,
   File,
   FileDiff,
+  Flag,
   Folder,
   Funnel,
   Globe,
@@ -42,6 +44,7 @@ import {
   Sigma,
   Split,
   TriangleAlert,
+  Wrench,
   X,
 } from "lucide";
 
@@ -62,6 +65,9 @@ const ICONS = {
   plug: Plug,
   database: Database,
   globe: Globe,
+  "circle-question-mark": CircleQuestionMark,
+  wrench: Wrench,
+  flag: Flag,
   server: Server,
   sigma: Sigma,
   info: Info,

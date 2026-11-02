@@ -1,6 +1,11 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import { BAR_TEXT, PIE_TEXT, SCATTER_TEXT } from "../chart.ts";
-import { flowMarkdown, sampleBlock, wrapDirective } from "../diagram.ts";
+import {
+  flowMarkdown,
+  judgementMarkdown,
+  sampleBlock,
+  wrapDirective,
+} from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -141,7 +146,7 @@ test("test_normal", async ({ page }) => {
     "書く",
     "戻る（ループ）",
     "線の交差",
-    "入力・処理・出力が出る箱",
+    "入力・処理・出力が出るノード",
   ]) {
     expect(
       legend.some((text) => text.includes(label)),
@@ -173,6 +178,76 @@ test("test_normal", async ({ page }) => {
   // 図の部品の定義の json のコードブロックは色分けの対象にならず、色分けのライブラリを読まない
   await page.waitForTimeout(SETTLE_MS);
   expect(syntaxRequests()).toEqual([]);
+});
+
+// 判定フローチャートの開始・質問・アクション・結果のノードを互いに異なる形・アイコン・種類の名前で描き、凡例の種類はその 4 つだけ（正常シナリオ（判定フローチャート））
+test("test_normal_when_flowchart", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: await judgementMarkdown() });
+  // 検証
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  const figure = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="flow"]',
+  );
+  await expect(figure).toHaveCount(1);
+  const nodes = await figure
+    .locator(".mdmark-diagram-node")
+    .evaluateAll((elements) =>
+      elements.map((node) => {
+        const box = node.getBoundingClientRect();
+        const name = node
+          .querySelector(".mdmark-diagram-node-name")
+          ?.getBoundingClientRect();
+        return {
+          kind: node.getAttribute("data-kind") ?? "",
+          // 形: 角の丸み・菱形の svg の有無
+          shape: `${getComputedStyle(node).borderTopLeftRadius}|${node.querySelector(":scope > svg polygon") !== null}`,
+          icon:
+            node.querySelector(".mdmark-diagram-node-kind svg")?.innerHTML ??
+            "",
+          tag: (
+            node.querySelector(".mdmark-diagram-node-kind")?.textContent ?? ""
+          ).trim(),
+          inside: name
+            ? name.left >= box.left - 1 && name.right <= box.right + 1
+            : false,
+        };
+      }),
+    );
+  const kinds = ["start", "question", "action", "result"];
+  expect(
+    kinds.map((kind) => nodes.filter((node) => node.kind === kind).length),
+  ).toEqual([1, 2, 1, 2]);
+  // 種類ごとに形・アイコン・種類の名前が 1 つに決まり、4 種類で互いに異なる
+  for (const key of ["shape", "icon", "tag"] as const) {
+    const values = kinds.map((kind) => {
+      const set = new Set(
+        nodes.filter((node) => node.kind === kind).map((node) => node[key]),
+      );
+      expect(set.size, `${kind} の ${key}`).toBe(1);
+      return [...set][0];
+    });
+    expect(new Set(values).size, key).toBe(4);
+  }
+  expect(
+    kinds.map((kind) => nodes.find((node) => node.kind === kind)?.tag),
+  ).toEqual(["開始", "質問", "アクション", "結果"]);
+  // ノードの名前はノードの中に収まる（Firefox は文字ごとに折り返す）
+  expect(nodes.every((node) => node.inside)).toBe(true);
+  const labels = await figure.locator(".mdmark-diagram-label").allInnerTexts();
+  expect([...new Set(labels)].sort()).toEqual(["NO", "YES"]);
+  const legend = await figure
+    .locator('ul[aria-label="凡例"] li')
+    .allInnerTexts();
+  expect(legend.map((text) => text.trim())).toEqual([
+    "開始",
+    "質問",
+    "アクション",
+    "結果",
+    "処理の流れ",
+  ]);
 });
 
 // シーケンス図の相手とメッセージを、定義の順に左から右・上から下へ並べ、ループの戻りと凡例を持つ（正常シナリオ（シーケンス図））

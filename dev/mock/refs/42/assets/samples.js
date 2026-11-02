@@ -159,6 +159,61 @@ window.mdmarkMockDiagrams = {
       { name: "電話の折り返し", points: [55, 48, 57, 50, 46] },
     ],
   },
+
+  // 判定フローチャート: 開始 1・質問 2・アクション 1・結果 2 を上から下へ置き、質問から出る線に YES・NO のラベルを付ける。システムの枠と層を持たない
+  judgement: {
+    kind: "flow",
+    title: "見た目をどこで変えるかの判定",
+    scope: "描いた文書の見た目を変えたいとき",
+    updated: "2026-11-02",
+    width: 760,
+    height: 600,
+    nodes: [
+      { id: "start", kind: "start", x: 310, y: 16, w: 100, h: 100, name: "見た目を変える" },
+      { id: "q0", kind: "question", x: 220, y: 156, w: 280, h: 136, name: "全ての使う側の既定を変える見た目か" },
+      {
+        id: "q1",
+        kind: "question",
+        x: 220,
+        y: 340,
+        w: 280,
+        h: 136,
+        name: "テーマの CSS 変数で表せるか",
+        hint: "色・余白・角丸・フォントは CSS 変数で変えられる",
+      },
+      { id: "a1", kind: "action", x: 560, y: 188, w: 180, h: 72, name: "既定の変更を Issue で頼む" },
+      { id: "r1", kind: "result", x: 250, y: 524, w: 220, h: 60, name: "CSS 変数を上書きする" },
+      { id: "r2", kind: "result", x: 560, y: 378, w: 180, h: 60, name: "層の外の CSS を足す" },
+    ],
+    wires: [
+      { id: "j-start", line: "flow", points: [[360, 116], [360, 156]] },
+      { id: "j-q0-yes", line: "flow", points: [[500, 224], [560, 224]], label: "YES", labelAt: [530, 224] },
+      { id: "j-q0-no", line: "flow", points: [[360, 292], [360, 340]], label: "NO", labelAt: [360, 316] },
+      { id: "j-q1-yes", line: "flow", points: [[360, 476], [360, 524]], label: "YES", labelAt: [360, 500] },
+      { id: "j-q1-no", line: "flow", points: [[500, 408], [560, 408]], label: "NO", labelAt: [530, 408] },
+    ],
+  },
+
+  // 判定フローチャートの長い文: 質問の文が長いときは菱形を大きくし、文字は菱形に内接する中央の四角（幅と高さの半分）で文節ごとに折り返す
+  "judgement-long": {
+    kind: "flow",
+    title: "表の列の幅と並び順を文書ごとに指定するか、設定で全ての文書にそろえるかの判定（表を持つ文書だけ）",
+    scope: "表を持つ文書",
+    updated: "2026-11-02",
+    width: 900,
+    height: 490,
+    nodes: [
+      { id: "start", kind: "start", x: 354, y: 16, w: 112, h: 112, name: "表の見た目を揃えたい" },
+      { id: "q", kind: "question", x: 230, y: 168, w: 360, h: 176, name: "表の列の幅と並び順を、文書ごとではなく全ての文書で同じにしたいか" },
+      { id: "r", kind: "result", x: 280, y: 400, w: 260, h: 72, name: "設定の features で全ての文書の表に機能を付ける" },
+      { id: "a", kind: "action", x: 640, y: 212, w: 240, h: 88, name: "文書ごとに表のマーカーへ列の幅と並び順の指定を追加する" },
+    ],
+    wires: [
+      { id: "l-start", line: "flow", points: [[410, 128], [410, 168]] },
+      { id: "l-yes", line: "flow", points: [[410, 344], [410, 400]], label: "YES", labelAt: [410, 372] },
+      { id: "l-no", line: "flow", points: [[590, 256], [640, 256]], label: "NO", labelAt: [615, 256] },
+    ],
+  },
 };
 
 // 操作できる部品の見本: スライダー 1 つ（0〜10、既定 5）と、その値で線を引くグラフ

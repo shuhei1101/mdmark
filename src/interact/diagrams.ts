@@ -112,6 +112,7 @@ function attachView(
     fitHeight: modal,
     dragIgnore: TEXT_SELECTOR,
     keyTargets: [box],
+    percentBase: "fit",
   });
 
   return () => {

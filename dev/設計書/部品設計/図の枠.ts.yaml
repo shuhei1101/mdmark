@@ -3,7 +3,7 @@ implementation: "src/parts/diagram.ts#renderDiagramFrame"
 story: "Parts/DiagramFrame"
 states:
   - name: Fit
-    description: 開いたとき。全体が収まる倍率で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
+    description: 開いたとき。全体が収まる倍率（倍率のボタンは 100%）で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
     notes:
       定義: モックの `inquiry`（`dev/mock/refs/42/assets/samples.js`）
   - name: Zoomed
@@ -12,15 +12,17 @@ states:
       - name: zoom
         value: '1.25'
   - name: Max
-    description: 上限の 300%。拡大は押せない
+    description: 上限（定義の大きさの 3 倍）。拡大は押せない
     args:
       - name: zoom
         value: '3'
   - name: Narrow
-    description: 狭い枠。ボタンの帯と凡例を折り返す
+    description: 狭い枠で拡大した。凡例を折り返し、ボタンの帯は間を詰めて移動のボタンまで 1 行に収める（1 行に収まらない約 266px 未満の枠では折り返す）
     args:
       - name: zoom
         value: '0.6'
+      - name: fit
+        value: '0.48'
   - name: Fullscreen
     description: 全画面のモーダルの中。全画面のボタンの位置に閉じるボタンがある
     args:
@@ -39,7 +41,7 @@ states:
       定義: '`InFramedSurface` と同じ面で包む'
 lead: |-
   図の部品（フロー図・シーケンス図・グラフ）を囲む枠。題（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に置き、拡大・縮小・移動・全画面のモーダルを持つ。
-  右上のボタンの帯と表示する枠は、表示する箱（`.mdmark-diagram-box`）にまとめる。
+  右上のボタンの帯と表示する枠は、表示する箱（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
 args:
   - name: kind
     type: 列挙
@@ -65,7 +67,11 @@ args:
   - name: zoom
     type: 数値
     default: 全体が収まる倍率
-    description: 今の倍率。全体が収まる倍率より大きいときだけ移動のボタンを出す
+    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率より大きいときだけ移動のボタンを出す
+  - name: fit
+    type: 数値
+    default: '1'
+    description: 全体が収まる倍率（定義の大きさを 1 とする）。倍率のボタンの文字は `zoom / fit` を百分率にして出す
   - name: modal
     type: 真偽値
     default: 'false'
@@ -102,7 +108,7 @@ css_properties:
 accessibility:
   - 題は `figcaption` で、表示する枠は `role="group"`・`aria-roledescription="図"`・`aria-labelledby`（題）・`aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"`・`tabindex="0"` を持ち、フォーカスの枠を見せる
   - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、読み上げの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
-  - 倍率は縮小と拡大の間のボタンに `125%` の形（等幅の数字）で出し、読み上げの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
+  - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の形（等幅の数字）で出し、読み上げの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
 status: planned
 introduced:
