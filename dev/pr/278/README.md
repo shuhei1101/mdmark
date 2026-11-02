@@ -37,4 +37,4 @@ sanitize の図の部品向けの `style` の許可（`DIAGRAM_STYLE_PATTERN`）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] ~~結合テスト作成~~（`mount`・`render` の入出力は変えず、sanitize を通した位置は単体テストと E2E で確かめる）
-- [ ] E2E テスト作成
+- [x] E2E テスト作成
