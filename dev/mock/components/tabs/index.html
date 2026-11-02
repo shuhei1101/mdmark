@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="../../refs/57/assets/catalog.css">
   <!-- 折りたたみの規則（#225 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/225/assets/collapse.css">
+  <!-- タブ名の強調と入れ子のタブの規則（#275 の追加分） -->
+  <link rel="stylesheet" href="../../refs/275/assets/tabs.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
@@ -262,6 +264,80 @@
 </details>
         </article>
       </section>
+      <!-- #275 入れ子のタブ: 外側のタブ（h2 で区切る）の中身に、内側のタブ（h3 で区切る）を置く。内側のタブも矢印キーで選び、外側のタブの選択は変えない -->
+      <section aria-labelledby="state-nested">
+        <h2 class="catalog-label" id="state-nested">入れ子のタブ（外側は OS、内側はシェル）</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-label="インストール">
+    <button class="mdmark-tab" type="button" role="tab" id="t275n-tab-0" aria-selected="false" aria-controls="t275n-panel-0" tabindex="-1">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t275n-tab-1" aria-selected="true" aria-controls="t275n-panel-1" tabindex="0">Windows</button>
+  </div>
+  <div role="tabpanel" id="t275n-panel-0" aria-labelledby="t275n-tab-0" tabindex="0" hidden>
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で Node.js を入れます。</p>
+  </div>
+  <div role="tabpanel" id="t275n-panel-1" aria-labelledby="t275n-tab-1" tabindex="0">
+    <p class="mdmark-tab-title">Windows</p>
+    <p>使うシェルに合わせて入れます。</p>
+    <div class="mdmark-tabs">
+      <div class="mdmark-tablist" role="tablist" aria-label="Windows のシェル">
+        <button class="mdmark-tab" type="button" role="tab" id="t275n-in-tab-0" aria-selected="true" aria-controls="t275n-in-panel-0" tabindex="0">PowerShell</button>
+        <button class="mdmark-tab" type="button" role="tab" id="t275n-in-tab-1" aria-selected="false" aria-controls="t275n-in-panel-1" tabindex="-1">WSL</button>
+      </div>
+      <div role="tabpanel" id="t275n-in-panel-0" aria-labelledby="t275n-in-tab-0" tabindex="0">
+        <p class="mdmark-tab-title">PowerShell</p>
+        <pre><code>winget install OpenJS.NodeJS.LTS</code></pre>
+      </div>
+      <div role="tabpanel" id="t275n-in-panel-1" aria-labelledby="t275n-in-tab-1" tabindex="0" hidden>
+        <p class="mdmark-tab-title">WSL</p>
+        <pre><code>sudo apt install nodejs</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #275 太字のタブ名: 見出しの太字（### **案 A** SVG のまま）を、タブのボタンでも強調する。強調の色と太さはデザイントークン（--mdmark-tab-strong-color・--mdmark-tab-strong-weight）で変えられる -->
+      <section aria-labelledby="state-strong">
+        <h2 class="catalog-label" id="state-strong">太字のタブ名（見出しの太字をタブでも強調する）</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs">
+  <div class="mdmark-tablist" role="tablist" aria-label="グラフの描き方">
+    <button class="mdmark-tab" type="button" role="tab" id="t275s-tab-0" aria-selected="true" aria-controls="t275s-panel-0" tabindex="0"><strong>案 A</strong> SVG のまま</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t275s-tab-1" aria-selected="false" aria-controls="t275s-panel-1" tabindex="-1"><strong>案 B</strong> Chart.js</button>
+  </div>
+  <div role="tabpanel" id="t275s-panel-0" aria-labelledby="t275s-tab-0" tabindex="0">
+    <p class="mdmark-tab-title"><strong>案 A</strong> SVG のまま</p>
+    <p>今のグラフの部品のまま種類と系列を追加します。</p>
+  </div>
+  <div role="tabpanel" id="t275s-panel-1" aria-labelledby="t275s-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title"><strong>案 B</strong> Chart.js</p>
+    <p>グラフのある文書でだけ Chart.js を読みます。</p>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #275 入れ子の閉じが足りない: 外側の開きの位置に書き方の警告を出し、外側の範囲の中はタブにせず見出しのまま描く -->
+      <section aria-labelledby="state-unclosed">
+        <h2 class="catalog-label" id="state-unclosed">入れ子の閉じが足りない（異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>4 行目の <code>&lt;!-- tabs --&gt;</code> に対応する <code>&lt;!-- /tabs --&gt;</code> がありません。入れ子のタブは、内側と外側の両方を <code>&lt;!-- /tabs --&gt;</code> で閉じてください。この範囲はタブにせず、見出しのまま描いています。</p>
+</div>
+<h2>macOS</h2>
+<p>Homebrew で Node.js を入れます。</p>
+<h2>Windows</h2>
+<h3>PowerShell</h3>
+<pre><code>winget install OpenJS.NodeJS.LTS</code></pre>
+<h3>WSL</h3>
+<pre><code>sudo apt install nodejs</code></pre>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

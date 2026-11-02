@@ -690,6 +690,33 @@
         --series-color: var(--mdmark-color-series-4);
         stroke-dasharray: 9 3 1 3;
       }
+
+      &[data-series="5"] {
+        --series-color: var(--mdmark-color-series-5);
+        stroke-dasharray: 9 3 1 3 1 3;
+      }
+
+      &[data-series="6"] {
+        --series-color: var(--mdmark-color-series-6);
+        stroke-dasharray: 3 2;
+      }
+    }
+
+    /* 面（面・積み上げの面・レーダー）: 塗りは系列ごとに style で渡し、線は系列の線（.mdmark-diagram-series）が引く */
+    .mdmark-diagram-area {
+      stroke: none;
+    }
+
+    /* バブル: 系列の模様で塗り、系列の色の線で縁取る。重なりの下の円も読めるよう少し透かす */
+    .mdmark-diagram-bubble {
+      stroke: var(--series-color);
+      stroke-width: 1.5;
+      fill-opacity: 0.85;
+    }
+
+    /* ドーナツの中央の穴: 地の色で抜く */
+    .mdmark-diagram-donut-hole {
+      fill: var(--mdmark-color-bg);
     }
 
     /* 系列の点の印: 系列ごとの形（1 丸・2 四角・3 三角・4 菱形）を系列の色で塗る */
@@ -739,6 +766,202 @@
     /* 系列 4 の点の色 */
     g[data-series="4"] {
       --series-color: var(--mdmark-color-series-4);
+    }
+
+    /* 系列 5 の点の色 */
+    g[data-series="5"] {
+      --series-color: var(--mdmark-color-series-5);
+    }
+
+    /* 系列 6 の点の色 */
+    g[data-series="6"] {
+      --series-color: var(--mdmark-color-series-6);
+    }
+
+    /* ---------- ER 図 ---------- */
+
+    /* テーブル: 線の色の枠で囲み、見出しの行と列の行を縦に並べる */
+    .mdmark-diagram-er-table {
+      position: absolute;
+      box-sizing: border-box;
+      border: 1.5px solid var(--mdmark-color-diagram-line);
+      border-radius: 8px;
+      background: var(--mdmark-color-bg);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    /* テーブルの見出し: 物理名を太字、論理名を補足の色で 2 行に置き、右上に説明と列の畳みのボタンを置く */
+    .mdmark-diagram-er-head {
+      position: relative;
+      box-sizing: border-box;
+      display: grid;
+      align-content: center;
+      height: 44px;
+      padding: 4px 60px 4px 10px;
+      border-block-end: 1px solid var(--mdmark-color-border);
+      border-radius: 6.5px 6.5px 0 0;
+      background: var(--mdmark-color-surface);
+    }
+
+    /* 物理名の行: テーブルのアイコンと物理名 */
+    .mdmark-diagram-er-title {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      color: var(--mdmark-color-heading);
+      font-family: var(--mdmark-font-mono);
+      font-size: 13px;
+      font-weight: 600;
+
+      .mdmark-diagram-icon {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        stroke: var(--mdmark-color-muted);
+      }
+    }
+
+    /* 論理名 */
+    .mdmark-diagram-er-logical {
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 見出しの右上のボタンの並び */
+    .mdmark-diagram-er-actions {
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-end: 4px;
+      display: flex;
+      gap: 2px;
+      transform: translateY(-50%);
+
+      .mdmark-diagram-info {
+        position: static;
+        --node-color: var(--mdmark-color-muted);
+      }
+    }
+
+    /* 列を畳む・開くボタン: 説明の印と同じ大きさ。開いているかは aria-expanded とアイコンの向きで示す */
+    .mdmark-diagram-er-fold {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      cursor: pointer;
+
+      &:hover {
+        background: color-mix(in srgb, var(--mdmark-color-muted) 14%, transparent);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      .mdmark-diagram-icon {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    /* 列の行の並び */
+    .mdmark-diagram-er-columns {
+      margin: 0;
+      padding: 2px 0;
+      list-style: none;
+    }
+
+    /* 列の行: 印・名前・型の 3 列。型は右に寄せる */
+    .mdmark-diagram-er-column {
+      display: grid;
+      grid-template-columns: minmax(4.25em, auto) minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      height: 26px;
+      padding: 0 10px;
+    }
+
+    /* 主キーの列の名前: 太字にする */
+    .mdmark-diagram-er-column[data-pk] .mdmark-diagram-er-name {
+      font-weight: 600;
+    }
+
+    /* 列の名前 */
+    .mdmark-diagram-er-name {
+      overflow: hidden;
+      font-family: var(--mdmark-font-mono);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 列の型 */
+    .mdmark-diagram-er-type {
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-mono);
+      font-size: 11px;
+    }
+
+    /* 列の印の並び */
+    .mdmark-diagram-er-keys {
+      display: flex;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    /* 列の印（PK・FK・NN）: 文字で読める札にし、色は補助にする */
+    .mdmark-diagram-er-key {
+      padding: 0 3px;
+      border: 1px solid currentcolor;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.4;
+      text-decoration: none;
+
+      &[data-key="pk"] {
+        color: var(--mdmark-color-diagram-mcp);
+      }
+
+      &[data-key="fk"] {
+        color: var(--mdmark-color-diagram-dm);
+      }
+
+      &[data-key="nn"] {
+        color: var(--mdmark-color-muted);
+      }
+    }
+
+    /* 畳んだテーブルの残りの列の数 */
+    .mdmark-diagram-er-rest {
+      height: 24px;
+      padding: 0 10px;
+      border-block-start: 1px dashed var(--mdmark-color-border);
+      color: var(--mdmark-color-muted);
+      line-height: 24px;
+    }
+
+    /* 関係の線: 実線。端に多重度の記号を置くので矢じりは付けない */
+    .mdmark-diagram-wire[data-line="er"] {
+      --wire-color: var(--mdmark-color-diagram-line);
+    }
+
+    /* 多重度の記号: 線と同じ色の線で描き、丸は地の色で抜く */
+    .mdmark-diagram-er-end {
+      fill: none;
+      stroke: var(--mdmark-color-diagram-line);
+      stroke-width: 1.5;
+
+      &[data-ring] {
+        fill: var(--mdmark-color-bg);
+      }
     }
 
     /* ---------- 図のツールチップ ---------- */

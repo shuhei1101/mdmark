@@ -1,0 +1,137 @@
+/* #275 のコードブロックの追加分: focus・error・warning の行・畳む・開くボタン・畳んだ行の ⋯・インデントの縦線。
+   コードブロックの規則（refs/65/assets/code-block.css・refs/151/assets/code-block.css）の後に読む */
+
+@layer mdmark {
+  /* 畳めるコードブロック: 行を縦に積み（隠した行の改行を残さない）、行番号の右に畳むボタンの列を取る */
+  .mdmark pre.mdmark-code-foldable code {
+    --mdmark-code-fold-width: 2.25ch;
+  }
+
+  .mdmark pre.mdmark-code-foldable .mdmark-code-line {
+    display: block;
+    padding-inline-start: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width) + var(--mdmark-code-fold-width) + var(--mdmark-code-sign-width));
+
+    &[hidden] {
+      display: none;
+    }
+
+    /* 行頭のマーカー: 畳むボタンの列の右に置く */
+    &::after {
+      inset-inline-start: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width) + var(--mdmark-code-fold-width));
+    }
+  }
+
+  /* 畳む・開くボタン: 行番号の右に置く。開いている行はポインターを乗せたときとフォーカスのときだけ出し、畳んだ行は常に出す */
+  .mdmark .mdmark-code-fold {
+    position: absolute;
+    inset-block-start: 0.1em;
+    inset-inline-start: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width) - 0.25ch);
+    display: grid;
+    place-items: center;
+    width: 1.35em;
+    height: 1.35em;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--mdmark-color-muted);
+    cursor: pointer;
+    opacity: 0;
+
+    &:hover {
+      background: color-mix(in srgb, var(--mdmark-color-muted) 16%, transparent);
+      color: var(--mdmark-color-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 0;
+      opacity: 1;
+    }
+
+    .mdmark-icon {
+      width: 1em;
+      height: 1em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
+  .mdmark .mdmark-code-line:hover > .mdmark-code-fold,
+  .mdmark .mdmark-code-line.is-folded > .mdmark-code-fold {
+    opacity: 1;
+  }
+
+  /* ポインターで乗せられない端末: 畳むボタンを常に出す */
+  @media (hover: none) {
+    .mdmark .mdmark-code-fold {
+      opacity: 1;
+    }
+  }
+
+  /* 畳んだ行: 行の後ろに ⋯ の札を出す（隠した行の数は出さない） */
+  .mdmark .mdmark-code-line.is-folded > .mdmark-code-text::after {
+    margin-inline-start: 0.5ch;
+    padding: 0 0.6ch;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 4px;
+    background: var(--mdmark-color-surface);
+    color: var(--mdmark-color-muted);
+    content: "⋯" / "畳んだ行";
+  }
+
+  /* インデントの縦線: 1 レベルごとに細い線を引く。ポインターを乗せた行のブロックの線だけ濃くする */
+  .mdmark .mdmark-code-guide {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--mdmark-space) - 2px + var(--mdmark-code-number-width) + var(--mdmark-code-fold-width) + var(--mdmark-code-sign-width) + var(--mdmark-code-guide-level) * 2ch + 0.3ch);
+    width: 1px;
+    background: var(--mdmark-color-border);
+    pointer-events: none;
+
+    &.is-active {
+      background: var(--mdmark-color-muted);
+    }
+  }
+
+  /* focus の行を持つコードブロック: ほかの行を薄くする。ポインターを乗せるかフォーカスすると全ての行を戻す */
+  .mdmark pre.mdmark-code-has-focus .mdmark-code-line:not([data-kind="focus"]) {
+    opacity: 0.45;
+    transition: opacity 0.15s;
+  }
+
+  .mdmark pre.mdmark-code-has-focus:is(:hover, :focus-within) .mdmark-code-line {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mdmark pre.mdmark-code-has-focus .mdmark-code-line {
+      transition: none;
+    }
+  }
+
+  /* error の行: エラーの色の地と左の線、行頭の × */
+  .mdmark .mdmark-code-line[data-kind="error"] {
+    border-inline-start-color: var(--mdmark-color-error);
+    background: color-mix(in srgb, var(--mdmark-color-error) 12%, var(--mdmark-color-bg));
+
+    &::after {
+      color: var(--mdmark-color-error);
+      content: "×" / "エラーの行";
+    }
+  }
+
+  /* warning の行: 警告の色の地と左の線、行頭の ! */
+  .mdmark .mdmark-code-line[data-kind="warning"] {
+    border-inline-start-color: var(--mdmark-color-callout-warning);
+    background: color-mix(in srgb, var(--mdmark-color-callout-warning) 14%, var(--mdmark-color-bg));
+
+    &::after {
+      color: var(--mdmark-color-callout-warning);
+      content: "!" / "警告の行";
+    }
+  }
+}

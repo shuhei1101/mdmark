@@ -1,0 +1,19 @@
+/* #275 のコードブロックの印刷: 畳んだ行を開いて出し、畳むボタン・⋯・focus の薄い行を紙に出さない */
+
+@layer mdmark {
+  .mdmark pre.mdmark-code-foldable .mdmark-code-line[hidden] {
+    display: block;
+  }
+
+  .mdmark .mdmark-code-fold {
+    display: none;
+  }
+
+  .mdmark .mdmark-code-line.is-folded > .mdmark-code-text::after {
+    content: none;
+  }
+
+  .mdmark pre.mdmark-code-has-focus .mdmark-code-line {
+    opacity: 1;
+  }
+}

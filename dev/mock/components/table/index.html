@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="../../assets/themes/theme-contrast.css" data-theme-css="theme-contrast" disabled>
   <!-- 色のプリセットと、列の強調・行の色の規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <!-- 多段の見出し・行見出し・セルの結合・wide=・check= の規則（#275 の追加分） -->
+  <link rel="stylesheet" href="../../refs/275/assets/table.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
@@ -44,6 +46,9 @@
   <script src="../../refs/19/assets/syntax.js" defer></script>
   <!-- 表の機能の追加分の操作（件数・列の表示・集計・コピー・行へのリンク・見出し行と集計の行の留め方・最終列の畳み方） -->
   <script src="../../refs/151/assets/table.js" defer></script>
+  <!-- 多段の見出し・セルの結合と結合し直し・既定のピン止め・pin=・wide=・check= の見本の定義と操作（#275。syntax.js の後に読む） -->
+  <script src="../../refs/275/assets/table-samples.js" defer></script>
+  <script src="../../refs/275/assets/table-merge.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/151/assets/preview.js" defer></script>
   <!-- モック専用の操作列のテーマの切り替え（#263 で共有するアセット） -->
@@ -1163,6 +1168,96 @@
 </div>
         </article>
       </section>
+      <!-- #275 多段の見出しと行見出し: 上期・下期は << で 2 列にまたがり、地域は ^^ で縦に結合する。並べ替え・ピン止めのボタンは列ごとに分かれた最下段の見出しに置く -->
+      <section aria-labelledby="state-275-merge">
+        <h2 class="catalog-label" id="state-275-merge">多段の見出しと行見出し（header-rows=2 row-header=1。^^ で縦、&lt;&lt; で横に結合し、ボタンは最下段の見出しに置く）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="merge"></div>
+        </article>
+      </section>
+
+      <!-- #275 並べ替えの後: 隣り合う同じ値だけを結合し直す。離れた同じ地域は別々のセルになる -->
+      <section aria-labelledby="state-275-merge-sorted">
+        <h2 class="catalog-label" id="state-275-merge-sorted">並べ替えた後に結合し直す（下期の売上で降順。隣り合う同じ地域だけを結合する）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="merge-sorted"></div>
+        </article>
+      </section>
+
+      <!-- #275 絞り込みの後: 残った行の隣り合う同じ値を結合し直す -->
+      <section aria-labelledby="state-275-merge-filtered">
+        <h2 class="catalog-label" id="state-275-merge-filtered">絞り込んだ後に結合し直す（地域を東日本で絞り込んだ後）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="merge-filtered"></div>
+        </article>
+      </section>
+
+      <!-- #275 既定のピン止め: 表が幅からはみ出すとき、先頭の列を最初から留める。ボタンを押し直すと外す -->
+      <section aria-labelledby="state-275-default-pin">
+        <h2 class="catalog-label" id="state-275-default-pin">はみ出す表は先頭の列を既定でピン止めする</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="default-pin"></div>
+        </article>
+      </section>
+
+      <!-- #275 行見出しの列までのピン止め: row-header=2 の表は、分類と記法の 2 列を既定で留める -->
+      <section aria-labelledby="state-275-row-header-pin">
+        <h2 class="catalog-label" id="state-275-row-header-pin">row-header=2 のはみ出す表は行見出しの列までを留める</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="row-header-pin"></div>
+        </article>
+      </section>
+
+      <!-- #275 -pin: 既定のピン止めとピン止めのボタンを外す -->
+      <section aria-labelledby="state-275-no-pin">
+        <h2 class="catalog-label" id="state-275-no-pin">-pin でピン止めを外した表（留めず、ピン止めのボタンも出さない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="no-pin"></div>
+        </article>
+      </section>
+
+      <!-- #275 pin= と wide=: pin= の列までを留め、wide= の列は折り返さず広く取り、はみ出した分は表の中で横にスクロールする -->
+      <section aria-labelledby="state-275-pin-wide">
+        <h2 class="catalog-label" id="state-275-pin-wide">pin=担当 wide=概要（担当の列までを留め、概要を折り返さない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="pin-wide"></div>
+        </article>
+      </section>
+
+      <!-- #275 check=: 列の true を ✓、false を空欄で出す。並べ替え・絞り込み・コピーは true / false の値で動く -->
+      <section aria-labelledby="state-275-check">
+        <h2 class="catalog-label" id="state-275-check">check=必須（true を ✓、false を空欄で出す）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="check"></div>
+        </article>
+      </section>
+
+      <!-- #275 読めないセルの結合: 書き方の警告を出し、結合せず書いた文字のまま描く -->
+      <section aria-labelledby="state-275-merge-warning">
+        <h2 class="catalog-label" id="state-275-merge-warning">読めないセルの結合（1 行目の ^^・先頭の列の &lt;&lt;。異常シナリオ）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="merge-warning"></div>
+        </article>
+      </section>
+
+      <!-- #275 知らない列名: 書き方の警告を出し、その指定を外して描く -->
+      <section aria-labelledby="state-275-unknown-column">
+        <h2 class="catalog-label" id="state-275-unknown-column">知らない列名（check=必要 wide=説明。異常シナリオ）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table275="unknown-column"></div>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

@@ -1,0 +1,23 @@
+/* #275 のタブの追加分: タブ名の太字の強調と、その見た目のデザイントークン。
+   拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
+
+/* タブ名の強調のデザイントークン: 使う側が上書きする口 */
+:root {
+  --mdmark-tab-strong-weight: 700;
+  --mdmark-tab-strong-color: var(--mdmark-color-heading);
+}
+
+@layer mdmark {
+  .mdmark {
+    /* タブ名の太字（見出しの **案 A**）: 選んでいないタブでも見出しの色と太さで強調する */
+    [role="tab"] strong {
+      color: var(--mdmark-tab-strong-color);
+      font-weight: var(--mdmark-tab-strong-weight);
+    }
+
+    /* 入れ子のタブ: 外側のタブの中身の中に、同じ見た目で置く */
+    [role="tabpanel"] .mdmark-tabs {
+      margin-block-start: var(--mdmark-space);
+    }
+  }
+}
