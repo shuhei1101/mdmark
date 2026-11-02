@@ -316,6 +316,35 @@ scenarios:
       - 「既定に戻す」を押した後、`hide=` のとおり説明の列だけが隠れ、名前と更新日の列が表示されている
       - Esc でメニューが閉じ、フォーカスが列の表示の切り替えのボタンへ戻る
     test: test_normal_when_columns_toggled
+  - name: 正常シナリオ（列の表示の切り替えを受け取る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じページで、受けた引数を配列に記録する `onColumnsChange` を渡して文書を描く
+      - name: 列を隠す表を 2 つ持つ Markdown
+        description: '表の印で囲まない表を 1 つ置き、続けて `<!-- table: data +columns -->` で名前・説明・更新日の 3 列の表と、`<!-- table: data +columns hide=備考 -->` で名前・備考の 2 列の表を囲んだ文書'
+        notes: 表の番号は `+columns` の表だけを数え、1 つ目が `0`、2 つ目が `1`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定・onColumnsChange・Markdown を渡して描かせる
+        M-->>P: 2 つ目の表の備考の列を隠した文書
+        U->>P: 1 つ目の +columns の表のメニューで説明のチェックを外す
+        M->>P: onColumnsChange({tableIndex: 0, hidden: [説明]})
+        U->>P: 2 つ目の +columns の表のメニューで備考にチェックを入れる
+        M->>P: onColumnsChange({tableIndex: 1, hidden: []})
+        U->>P: 2 つ目の表の「既定に戻す」を押す
+        M->>P: onColumnsChange({tableIndex: 1, hidden: [備考]})
+    expected:
+      - 描いた直後には `onColumnsChange` が呼ばれていない
+      - '説明のチェックを外した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて 1 回呼ばれる'
+      - '備考にチェックを入れた後、`onColumnsChange` が `{tableIndex: 1, hidden: []}` を受けて呼ばれる'
+      - '「既定に戻す」を押した後、`onColumnsChange` が `{tableIndex: 1, hidden: ["備考"]}` を受けて呼ばれる'
+      - '`hidden` の列の名前は、表の列の並びの順'
+    test: test_normal_when_columns_change_notified
   - name: 正常シナリオ（集計の行を読む）
     setup:
       - name: mdmark を読むページ

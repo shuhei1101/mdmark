@@ -63,6 +63,7 @@ scenarios:
     expected:
       - 描いた時点で `テーマの変数` に印が付いている
       - 印を押すと、読み込んだコメントの本文の吹き出しが出る
+      - 読み書きの関数が `update`・`remove` を持たないので、吹き出しに「編集」「削除」のボタンが無い
     test: test_normal_when_loaded
   - name: 正常シナリオ（描き直した後に付き直す）
     setup:
@@ -161,6 +162,170 @@ scenarios:
       - コメントの機能に読み書きの関数が要ることが `console.error` に 1 回だけ出る
       - 文書の残りは描かれる
     test: test_error_when_store_missing
+  - name: 正常シナリオ（コメントを修正・削除する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み書きの関数
+        description: 読み込みで、選んだ文字 `テーマの変数` に付いた `id` が `c1` のコメントと、`CSS` に付いた `id` が `c2` のコメントを返し、`update`・`remove` で受けた引数を記録して配列を書き換える手元の関数
+      - name: 段落を持つ Markdown
+        description: '`描いた文書の見た目はテーマの変数で変える。CSS を書いて上書きする。` の段落を 1 つ持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        U->>P: テーマの変数の印を押す
+        P-->>U: 「編集」「削除」の付いた吹き出し
+        U->>P: 「編集」を押し、本文を書き換えて保存する
+        M->>S: update({docId, id: c1, body: 書き換えた本文})
+        S-->>M: 保存した
+        M-->>P: 書き換えた本文の吹き出し
+        U->>P: CSS の印の吹き出しの「削除」を押す
+        M->>S: remove({docId, id: c2})
+        S-->>M: 削除した
+        M-->>P: CSS の印を外した文書
+    expected:
+      - 吹き出しのコメントに「編集」「削除」のボタンがある
+      - 「編集」を押すと、吹き出しの中にコメントの本文を入れた入力欄が開く
+      - '保存を押すと、`update` が `{docId, id: "c1", body: 書き換えた本文}` を受けて 1 回呼ばれ、吹き出しに書き換えた本文が出る'
+      - '`テーマの変数` の印は付いたまま'
+      - '「削除」を押すと、`remove` が `{docId, id: "c2"}` を受けて 1 回呼ばれ、`CSS` の印が外れて文字が元の並びに戻る'
+      - 削除の後、フォーカスが本文のコメントの無い位置に残らず、文書の先頭の要素へ移る
+    test: test_normal_when_edited_and_removed
+  - name: 正常シナリオ（読み直す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `reloadComments` を呼べる
+      - name: コメントの読み書きの関数
+        description: 1 回目の読み込みで `テーマの変数` のコメント 1 件、2 回目以降で `テーマの変数` と `CSS` のコメント 2 件を返す手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 設定・読み書きの関数・Markdown を渡して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: コメント 1 件
+        M-->>P: テーマの変数に印を付けた文書
+        P->>M: reloadComments()
+        M->>S: コメントを読み込む
+        S-->>M: コメント 2 件
+        M-->>P: テーマの変数と CSS に印を付けた文書
+    expected:
+      - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` の両方に印が付いている'
+      - 読み込みが 2 回呼ばれる
+      - 本文は描き直されず、表の並べ替えなどの操作の状態はそのまま
+    test: test_normal_when_reloaded
+  - name: 正常シナリオ（コメントの箇所へ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `focusComment` を呼べる
+        notes: 描く先の要素の高さは、文書の末尾の段落が画面の外になる高さ
+      - name: コメントの読み書きの関数
+        description: 文書の末尾の段落の `末尾の語` に付いた `id` が `c9` のコメントを返す手元の関数
+      - name: 段落の多い Markdown
+        description: 30 の段落を持ち、末尾の段落に `末尾の語` を含む文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: focusComment(c9)
+        M-->>P: 末尾の語の印を画面に入れて強調した文書
+        P-->>U: 強調した印
+        P->>M: focusComment(無い id)
+        M-->>P: 変わらない文書
+    expected:
+      - '`focusComment("c9")` の後、`末尾の語` の印が画面に入っている'
+      - 印が強調の状態になり、ほかの印は強調されていない
+      - 印にフォーカスが移り、吹き出しは開かない
+      - 無い `id` で呼んでも、スクロールの位置と強調が変わらず、エラーも出ない
+    test: test_normal_when_focused
+  - name: 異常シナリオ（修正できない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み書きの関数
+        description: 正常シナリオ（コメントを修正・削除する）と同じで、`update` が失敗の Promise を返す手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        U->>P: 「編集」を押し、本文を書き換えて保存する
+        M->>S: update
+        S-->>M: 失敗
+        M-->>P: 保存できなかったことの知らせ
+    expected:
+      - 入力欄が閉じずに、書き換えた本文が残っている
+      - 入力欄のそばに、保存できなかったことの知らせが `role="alert"` で出る
+      - 吹き出しの本文は書き換える前のまま
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_update_failed
+  - name: 異常シナリオ（削除できない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み書きの関数
+        description: 正常シナリオ（コメントを修正・削除する）と同じで、`remove` が失敗の Promise を返す手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        U->>P: 吹き出しの「削除」を押す
+        M->>S: remove
+        S-->>M: 失敗
+        M-->>P: 削除できなかったことの知らせ
+    expected:
+      - 印が付いたままで、吹き出しにコメントの本文が残っている
+      - 吹き出しの中に、削除できなかったことの知らせが `role="alert"` で出る
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_remove_failed
+  - name: 異常シナリオ（読み直せない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（読み直す）と同じ
+      - name: コメントの読み書きの関数
+        description: 1 回目の読み込みで `テーマの変数` のコメント 1 件を返し、2 回目以降で失敗の Promise を返す手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: reloadComments()
+        M->>S: コメントを読み込む
+        S-->>M: 失敗
+        M-->>P: reject
+    expected:
+      - '`reloadComments()` の Promise が、読み込みの失敗の理由で reject される'
+      - '`テーマの変数` の印は付いたまま'
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_reload_failed
 lead: 読む人が、描いた文書の本文の文字を選んでコメントを付け、付いた箇所の印からコメントを開く。コメントは使う側が `mount` に渡した読み書きの関数で残る。
 issue: 8
 primary_actor: 文書を読む人
@@ -173,6 +338,6 @@ trigger: 読む人が、文書の中の気になった箇所に意見を残し�
 preconditions:
   - ページが `mount` で文書を描き、コメントの読み書きの関数を渡している
   - コメントの機能（`comments`）がオン（既定はオフ）
-success_guarantee: 選んだ文字と前後の文字・コメントの本文が読み書きの関数へ渡り、選んだ箇所に印が付く。本文を描き直した後も、同じ文字の箇所に印が付き直る。
+success_guarantee: 選んだ文字と前後の文字・コメントの本文が読み書きの関数へ渡り、選んだ箇所に印が付く。本文を描き直した後も、同じ文字の箇所に印が付き直る。読み書きの関数が `update`・`remove` を持つときは吹き出しからコメントを修正・削除でき、使う側は `reloadComments` で印を読み直し、`focusComment` でコメントの箇所へ移れる。
 minimal_guarantee: コメントを保存できないときは、書いたコメントを消さずに知らせ、文書の残りは今のとおり読める。
 test_file: tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts
