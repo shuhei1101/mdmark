@@ -52,3 +52,34 @@ stories:
     args:
       kind: note
       body: '<p>1 つ目の段落です。注意書きの中でも、本文と同じ間隔で段落が続きます。</p><p>2 つ目の段落です。長い文は枠の幅で折り返し、枠の中に収まります。長い文は枠の幅で折り返し、枠の中に収まります。</p><pre tabindex="0" aria-label="コード: ts"><code class="language-ts">const note = &quot;コードブロックも枠の中に収まる&quot;;</code></pre>'
+  - name: Titled
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: 'tip'
+      title: '設定を先に確認する'
+  - name: TitledCollapsed
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: 'warning'
+      title: '古いバージョンの設定'
+      collapsed: true
+  - name: OpenPlus
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: 'warning'
+      collapsed: true
+      open: true
+  - name: Nested
+    parameters:
+      server:
+        id: callout
+    args:
+      kind: 'warning'
+      title: '版を上げる前に'
+      nested: true

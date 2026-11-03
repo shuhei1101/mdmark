@@ -267,7 +267,7 @@
       if (clipboardFails || !navigator.clipboard) throw new Error("クリップボードに書けない");
       await navigator.clipboard.writeText(holder.dataset.source);
     } catch {
-      setCopyState(holder, "idle", "クリップボードにコピーできませんでした。選択したツリーのテキストを手でコピーできます");
+      setCopyState(holder, "idle", "クリップボードにコピーできませんでした。選択したツリーのテキストを手動でコピーできます");
       openCopyPanel(holder, true);
       return;
     }

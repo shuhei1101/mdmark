@@ -1,5 +1,11 @@
 import { expect, type Locator, test } from "@playwright/test";
-import { BAR_TEXT, chartElement, wrapHtml } from "../chart.ts";
+import {
+  BAR_TEXT,
+  COMBO_CHART,
+  chartElement,
+  DONUT_CHART,
+  wrapHtml,
+} from "../chart.ts";
 import { wrapDirective } from "../diagram.ts";
 import {
   buildDistRoot,
@@ -114,3 +120,52 @@ test("test_error_when_definition_invalid", async ({ page }) => {
   await expect(paragraph).toHaveCount(1);
   await expect(paragraph).toHaveText("後ろの段落");
 });
+
+// 埋め込んだ HTML の中のドーナツと組み合わせのチャートを、`<!-- chart -->` で描いたときと同じグラフにして図の枠に載せる（正常シナリオ（追加したグラフの種類））
+test("test_normal_when_more_chart_types", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const donut = JSON.stringify(DONUT_CHART);
+  const combo = JSON.stringify(COMBO_CHART);
+  const markdown = [
+    wrapHtml(`<div>\n${chartElement(donut)}\n${chartElement(combo)}\n</div>`),
+    wrapDirective("chart", donut),
+    wrapDirective("chart", combo),
+  ].join("\n");
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  const embedded = page.locator(
+    '#doc .mdmark-html figure.mdmark-diagram[data-diagram="chart"]',
+  );
+  await expect(embedded).toHaveCount(2);
+  const figures = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="chart"]',
+  );
+  await expect(figures).toHaveCount(4);
+  for (const [index, title] of ["返信の種類", "件数と解決数"].entries()) {
+    const fromHtml = figures.nth(index);
+    const fromMarker = figures.nth(index + 2);
+    await expect(fromHtml.locator(".mdmark-diagram-title")).toHaveText(title);
+    expect(await shapeOf(fromHtml)).toEqual(await shapeOf(fromMarker));
+    await expect(fromHtml.locator(".mdmark-diagram-legend")).toBeVisible();
+  }
+  await expect(
+    embedded.nth(0).locator("svg[role=img] .mdmark-diagram-slice"),
+  ).toHaveCount(2);
+  await expect(
+    embedded.nth(1).locator("svg[role=img] .mdmark-diagram-bar"),
+  ).toHaveCount(3);
+  await expect(
+    embedded.nth(1).locator("svg[role=img] path.mdmark-diagram-series"),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+});
+
+/** 図の凡例の文字と、グラフの読み上げの名前 */
+async function shapeOf(figure: Locator) {
+  return {
+    legend: await figure.locator(".mdmark-diagram-legend li").allInnerTexts(),
+    label: await figure.locator("svg[role=img]").getAttribute("aria-label"),
+  };
+}

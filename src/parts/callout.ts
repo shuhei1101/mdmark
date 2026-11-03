@@ -27,11 +27,16 @@ export function renderCallout(options: {
   collapsed?: boolean;
   /** 折り畳みが開いているか */
   open?: boolean;
+  /** タイトルの行内の HTML（エスケープ済み）。渡すと種類の名前は読み上げだけにする */
+  title?: string | undefined;
   /** 本文の HTML（`SLOT_MARKER` を渡せる） */
   body: string;
 }): string {
   const { kind, collapsed = false, open = false, body } = options;
-  const title = CALLOUT_TITLES[kind];
+  const title =
+    options.title === undefined
+      ? CALLOUT_TITLES[kind]
+      : `<span class="mdmark-visually-hidden">${CALLOUT_TITLES[kind]}: </span>${options.title}`;
   const classes = `markdown-alert markdown-alert-${kind}`;
   if (collapsed) {
     return `<details class="${classes}"${open ? " open" : ""}><summary class="markdown-alert-title">${title}</summary>${body}</details>`;

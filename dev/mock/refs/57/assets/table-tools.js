@@ -110,7 +110,7 @@
     }
     const button = wrapper.querySelector(`[aria-controls="${menu.id}"]`);
     button.classList.toggle("is-active", hidden.size > 0);
-    button.querySelector(".mdmark-visually-hidden").textContent = hidden.size ? `（${hidden.size} 列を隠しています）` : "";
+    button.querySelector(".mdmark-visually-hidden").textContent = hidden.size ? `（${hidden.size} 列を非表示にしています）` : "";
   };
 
   /** メニューを押したボタンの下に置き、画面の端からはみ出さないようにする。 */
@@ -240,7 +240,7 @@
       updateCount(wrapper, table);
       updateTotals(table);
     };
-    // 絞り込みの入力・絞り込みを外すボタン（syntax.js が行を出し分けた後）: 件数と集計を計算し直す
+    // 絞り込みの入力・絞り込みを解除ボタン（syntax.js が行を出し分けた後）: 件数と集計を計算し直す
     wrapper.addEventListener("input", () => setTimeout(update));
     wrapper.addEventListener("click", () => setTimeout(update));
     update();

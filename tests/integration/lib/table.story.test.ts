@@ -209,7 +209,7 @@ test("test_filter_select_open", async () => {
   );
   await expect(
     drawer.locator(".mdmark-filter-clear").innerText(),
-  ).resolves.toBe("絞り込みを外す");
+  ).resolves.toBe("絞り込みを解除");
   await expect(
     page.locator(".mdmark-filter[aria-expanded='true']").count(),
   ).resolves.toBe(1);
@@ -585,14 +585,14 @@ test("test_count_filtered", async () => {
   await expect(visibleRows(page)).resolves.toBe(2);
 });
 
-// hide= の列を隠し、帯に列の表示のボタンを出す（ColumnsHidden）
+// hide= の列を隠し、帯に列設定のボタンを出す（ColumnsHidden）
 test("test_columns_hidden", async () => {
   // 準備・実行
   const page = await open("columns-hidden");
   // 検証
   await expect(
     page.locator(".mdmark-columns-toggle").innerText(),
-  ).resolves.toContain("列の表示");
+  ).resolves.toContain("列設定");
   await expect(
     page.locator(".mdmark-columns-menu:not([hidden])").count(),
   ).resolves.toBe(0);
@@ -601,7 +601,7 @@ test("test_columns_hidden", async () => {
   expect((await hiddenCells(page, 0)).some(Boolean)).toBe(false);
 });
 
-// 列の表示のメニューを開くと、先頭の列は外せず理由が出る（ColumnsMenuOpen）
+// 列設定のメニューを開くと、先頭の列は外せず理由が出る（ColumnsMenuOpen）
 test("test_columns_menu_open", async () => {
   // 準備・実行
   const page = await open("columns-menu-open");
@@ -614,7 +614,7 @@ test("test_columns_menu_open", async () => {
   await expect(boxes.nth(1).isChecked()).resolves.toBe(true);
   await expect(boxes.nth(2).isChecked()).resolves.toBe(false);
   await expect(menu.innerText()).resolves.toContain("先頭の列は隠せません");
-  await expect(menu.innerText()).resolves.toContain("既定に戻す");
+  await expect(menu.innerText()).resolves.toContain("リセット");
   await expect(
     page.locator(".mdmark-columns-toggle").getAttribute("aria-expanded"),
   ).resolves.toBe("true");
@@ -750,8 +750,8 @@ test("test_totals_menu_open", async () => {
   // 検証
   const menu = page.locator(".mdmark-totals-menu:not([hidden])");
   await expect(menu.count()).resolves.toBe(1);
-  await expect(menu.getAttribute("aria-label")).resolves.toBe("出す集計");
-  await expect(menu.innerText()).resolves.toContain("出す集計");
+  await expect(menu.getAttribute("aria-label")).resolves.toBe("表示する集計");
+  await expect(menu.innerText()).resolves.toContain("表示する集計");
   const boxes = menu.locator("input[type='checkbox']");
   await expect(boxes.count()).resolves.toBe(3);
   await expect(
@@ -798,7 +798,7 @@ test("test_totals_hidden", async () => {
   ).resolves.toBe(true);
   await expect(
     toggle.locator(".mdmark-visually-hidden").innerText(),
-  ).resolves.toBe("（2 件を隠しています）");
+  ).resolves.toBe("（2 件を非表示にしています）");
 });
 
 // コピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを使いどころと並べて出す（CopyMenuOpen）
@@ -834,7 +834,7 @@ test("test_copy_menu_open", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// クリップボードに書けないときは、手でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
+// クリップボードに書けないときは、手動でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
 test("test_copy_fallback", async () => {
   // 準備・実行
   const page = await open("copy-fallback");
@@ -1200,4 +1200,164 @@ test("test_row_colors_dark", async () => {
     "var(--mdmark-color-accent-green-bg)",
   );
   expect(green.bg).not.toBe(light);
+});
+
+/** 表の本文の行の行見出し（`th`）について、文字・隠れているか・`rowspan` を上から並べて返す（隠れた行も含む） */
+function rowHeaders(
+  page: Page,
+): Promise<Array<{ text: string; hidden: boolean; rowSpan: number }>> {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLTableRowElement>(
+        "#storybook-root tbody tr:not(.mdmark-table-empty):not(.mdmark-row-detail)",
+      ),
+    ].map((row) => {
+      const cell = row.querySelector<HTMLTableCellElement>("th[scope=row]");
+      return {
+        text: cell?.textContent ?? "",
+        hidden: cell?.hidden === true,
+        rowSpan: cell?.rowSpan ?? 0,
+      };
+    }),
+  );
+}
+
+// 多段の見出しと行見出しは、上期・下期を 2 列にまたいで中央に寄せ、同じ地域を縦に結合して上に寄せる（Merged）
+test("test_merged", async () => {
+  // 準備・実行
+  const page = await open("merged");
+  // 検証: 見出しの 2 行と、2 列をまたぐ見出し
+  await expect(page.locator("#storybook-root thead tr").count()).resolves.toBe(
+    2,
+  );
+  const groups = page.locator("#storybook-root thead th[scope=colgroup]");
+  await expect(groups.allTextContents()).resolves.toEqual(["上期", "下期"]);
+  await expect(
+    groups.evaluateAll((cells) =>
+      cells.map((cell) => [
+        (cell as HTMLTableCellElement).colSpan,
+        getComputedStyle(cell).textAlign,
+      ]),
+    ),
+  ).resolves.toEqual([
+    [2, "center"],
+    [2, "center"],
+  ]);
+  // 検証: 地域の行見出しの縦の結合
+  await expect(rowHeaders(page)).resolves.toEqual([
+    { text: "東日本", hidden: false, rowSpan: 3 },
+    { text: "東日本", hidden: true, rowSpan: 1 },
+    { text: "東日本", hidden: true, rowSpan: 1 },
+    { text: "西日本", hidden: false, rowSpan: 2 },
+    { text: "西日本", hidden: true, rowSpan: 1 },
+  ]);
+  await expect(
+    page
+      .locator("#storybook-root tbody th.is-merged")
+      .first()
+      .evaluate((cell) => getComputedStyle(cell).verticalAlign),
+  ).resolves.toBe("top");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 降順に並べ替えた後は、隣り合う同じ地域だけを結合し直す（MergedSorted）
+test("test_merged_sorted", async () => {
+  // 準備・実行
+  const page = await open("merged-sorted");
+  // 検証
+  await expect(page.locator("th[aria-sort=descending]").count()).resolves.toBe(
+    1,
+  );
+  await expect(columnTexts(page, 3)).resolves.toEqual([
+    "342",
+    "248",
+    "151",
+    "135",
+    "102",
+  ]);
+  await expect(rowHeaders(page)).resolves.toEqual([
+    { text: "東日本", hidden: false, rowSpan: 1 },
+    { text: "西日本", hidden: false, rowSpan: 2 },
+    { text: "西日本", hidden: true, rowSpan: 1 },
+    { text: "東日本", hidden: false, rowSpan: 2 },
+    { text: "東日本", hidden: true, rowSpan: 1 },
+  ]);
+});
+
+// 東日本で絞り込んだ後は、表示している 3 行の地域を結合し直す（MergedFiltered）
+test("test_merged_filtered", async () => {
+  // 準備・実行
+  const page = await open("merged-filtered");
+  // 検証
+  await expect(visibleRows(page)).resolves.toBe(3);
+  await expect(
+    page.locator("button.mdmark-filter.is-active").count(),
+  ).resolves.toBe(1);
+  const headers = await rowHeaders(page);
+  expect(headers[0]).toEqual({ text: "東日本", hidden: false, rowSpan: 3 });
+  expect(headers.slice(1, 3).every((header) => header.hidden)).toBe(true);
+});
+
+// row-header=2 のはみ出す表は、描いた直後に 2 列目まで留め、2 列目のピン止めのボタンが押された状態（RowHeaderPinned）
+test("test_row_header_pinned", async () => {
+  // 準備・実行
+  const page = await open("row-header-pinned");
+  // 検証
+  await expect(
+    page
+      .locator("#storybook-root thead button.mdmark-pin")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => button.getAttribute("aria-pressed")),
+      ),
+  ).resolves.toEqual([
+    "false",
+    "true",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+  ]);
+  const sticky = await page.evaluate(() =>
+    [
+      ...(document
+        .querySelector("#storybook-root tbody tr")
+        ?.querySelectorAll("th, td") ?? []),
+    ].map((cell) => getComputedStyle(cell).position),
+  );
+  expect(sticky.slice(0, 2)).toEqual(["sticky", "sticky"]);
+  expect(sticky.slice(2).every((position) => position !== "sticky")).toBe(true);
+  // 表は枠より広い
+  await expect(
+    page
+      .locator("#storybook-root .mdmark-table table")
+      .evaluate((table) => table.scrollWidth > table.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// 結合する相手の無い ^^・<< は、表の前に書き方の警告を置き、セルを書いた文字のまま描く（MergeInvalid）
+test("test_merge_invalid", async () => {
+  // 準備・実行
+  const page = await open("merge-invalid");
+  // 検証
+  const items = page.locator(".mdmark-syntax-warning li");
+  await expect(items.count()).resolves.toBe(2);
+  await expect(items.nth(0).innerText()).resolves.toContain("^^");
+  await expect(items.nth(1).innerText()).resolves.toContain("<<");
+  await expect(columnTexts(page, 0)).resolves.toEqual(["^^", "<<", "東日本"]);
+  await expect(
+    page.locator("#storybook-root tbody .is-merged").count(),
+  ).resolves.toBe(0);
+  const order = await page.evaluate(() => {
+    const warning = document.querySelector(".mdmark-syntax-warning");
+    const table = document.querySelector(".mdmark-table");
+    return warning && table
+      ? warning.compareDocumentPosition(table) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      : 0;
+  });
+  expect(order).toBeGreaterThan(0);
 });

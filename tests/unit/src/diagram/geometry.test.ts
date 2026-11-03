@@ -103,3 +103,30 @@ test("test_nice_ticks_when_flat", async () => {
   expect(ticks.max).toBeGreaterThan(ticks.min);
   expect(ticks.step).toBeGreaterThan(0);
 });
+
+// 正の値を上へ、負の値を下へ積む（正常系）
+test("test_stack_series", async () => {
+  // 準備
+  const { stackSeries } = await loadGeometry();
+  // 実行
+  const stacked = stackSeries([
+    [3, 1],
+    [4, -2],
+    [-1, 2],
+  ]);
+  // 検証
+  expect(stacked).toEqual([
+    [
+      { from: 0, to: 3 },
+      { from: 0, to: 1 },
+    ],
+    [
+      { from: 3, to: 7 },
+      { from: 0, to: -2 },
+    ],
+    [
+      { from: 0, to: -1 },
+      { from: 1, to: 3 },
+    ],
+  ]);
+});

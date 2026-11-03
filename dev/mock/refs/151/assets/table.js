@@ -134,9 +134,9 @@
     menu.className = "mdmark-totals-menu mdmark-table-menu";
     menu.id = id;
     menu.setAttribute("role", "dialog");
-    menu.setAttribute("aria-label", "出す集計");
+    menu.setAttribute("aria-label", "表示する集計");
     menu.hidden = true;
-    menu.innerHTML = `<p class="mdmark-columns-title">出す集計</p><ul class="mdmark-columns-options">${kinds
+    menu.innerHTML = `<p class="mdmark-columns-title">表示する集計</p><ul class="mdmark-columns-options">${kinds
       .map((kind) => `<li><label><input type="checkbox" value="${kind}" checked>${TOTAL_LABELS[kind]}</label></li>`)
       .join("")}</ul>`;
     wrapper.append(menu);
@@ -317,10 +317,10 @@
     }
     const button = wrapper.querySelector(`[aria-controls="${menu.id}"]`);
     button.classList.toggle("is-active", hidden.size > 0);
-    button.querySelector(".mdmark-visually-hidden").textContent = hidden.size ? `（${hidden.size} 列を隠しています）` : "";
+    button.querySelector(".mdmark-visually-hidden").textContent = hidden.size ? `（${hidden.size} 列を非表示にしています）` : "";
   };
 
-  // ---------- 出す集計の選択 ----------
+  // ---------- 表示する集計の選択 ----------
 
   /** チェックを外した計算の集計の行を隠し、ボタンの状態を合わせる。 */
   const applyTotalKinds = (wrapper) => {
@@ -330,7 +330,7 @@
     for (const row of wrapper.querySelector("table").tFoot.rows) row.hidden = unchecked.includes(row.dataset.totalKind);
     const button = wrapper.querySelector(".mdmark-totals-toggle");
     button.classList.toggle("is-active", unchecked.length > 0);
-    button.querySelector(".mdmark-visually-hidden").textContent = unchecked.length ? `（${unchecked.length} 件を隠しています）` : "";
+    button.querySelector(".mdmark-visually-hidden").textContent = unchecked.length ? `（${unchecked.length} 件を非表示にしています）` : "";
   };
 
   // ---------- 表のコピー ----------
@@ -403,7 +403,7 @@
       await writeClipboard(text);
     } catch {
       setCopyState(wrapper, "idle");
-      announce(wrapper, `クリップボードにコピーできませんでした。選択した${FORMAT_NAMES[format]}を手でコピーできます`);
+      announce(wrapper, `クリップボードにコピーできませんでした。選択した${FORMAT_NAMES[format]}を手動でコピーできます`);
       openCopyPanel(wrapper, text, format);
       return;
     }
@@ -666,7 +666,7 @@
       updateCount(wrapper, table);
       updateTotals(wrapper, table, unreadable);
     };
-    // 絞り込みの入力・並べ替え・絞り込みを外すボタン（syntax.js が行を出し分けた後）: 件数と集計を計算し直す
+    // 絞り込みの入力・並べ替え・絞り込みを解除ボタン（syntax.js が行を出し分けた後）: 件数と集計を計算し直す
     wrapper.addEventListener("input", () => setTimeout(update));
     wrapper.addEventListener("click", () => setTimeout(update));
 
@@ -691,7 +691,7 @@
       });
     }
 
-    // 出す集計の選択
+    // 表示する集計の選択
     const totalsMenu = wrapper.querySelector(".mdmark-totals-menu");
     if (totalsMenu) {
       for (const input of totalsMenu.querySelectorAll("input")) {

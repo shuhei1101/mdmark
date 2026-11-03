@@ -102,7 +102,7 @@ constants:
   - name: SANITIZE_OPTIONS
     title: 落とす設定
     container: src/render/sanitize.ts
-    summary: sanitize-html に渡す設定。記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に書いた `video`・`audio`・`source` は `sanitize` が落とす）
+    summary: sanitize-html に渡す設定。記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に書いた `video`・`audio`・`source` は `sanitize` が落とす）
     value: 下の entries
     entries:
       - key: allowedTags
@@ -373,7 +373,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
     args:
       - name: html
         type: string
@@ -459,6 +459,12 @@ functions:
         condition: '`nonce` を持つ `<figure style="--mdmark-image-width: 40%">`・`<div style="--mdmark-gallery-cols: 3">`・`<figure style="--mdmark-image-width: calc(1px)">` と、文書に書いた `<p style="--mdmark-image-width: 10px">`'
         mock: なし
         expected: 1 つ目と 2 つ目の `style` が残り、3 つ目と 4 つ目は `style` を持たない
+      - name: test_sanitize_when_cell_span
+        case: 正常
+        summary: セルの結合と見出しの範囲は記法が出したセルにだけ残す
+        condition: '`data-mdmark-own` が `nonce` と等しい `<th rowspan="2" colspan="2" scope="colgroup">` と、文書に書いた `<td rowspan="9" scope="row">`'
+        mock: なし
+        expected: 前者が `rowspan`・`colspan`・`scope` を持ち、後者はどれも持たない
   - name: parseMarkArgs
     title: 印の引数を読み分ける
     container: src/render/marks.ts

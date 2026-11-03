@@ -41,3 +41,63 @@ stories:
         id: chart
     args:
       type: scatter
+  - name: SixSeries
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'reply-time-6'
+  - name: Area
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'visits-area'
+  - name: StackedArea
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'visits-stacked-area'
+  - name: StackedBar
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'inquiry-stacked'
+  - name: HorizontalBar
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'inquiry-horizontal'
+  - name: Donut
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'reply-kind-donut'
+  - name: Radar
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'review-radar'
+  - name: Bubble
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'inquiry-bubble'
+  - name: Combo
+    parameters:
+      server:
+        id: chart
+    args:
+      sample: 'inquiry-combo'
+  - name: TooManySeries
+    parameters:
+      server:
+        id: chart
+    args:
+      tooMany: true

@@ -8,6 +8,7 @@ import {
   useTempDirs,
   writeFiles,
 } from "../../helpers/cli.ts";
+import { INQUIRY_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
 import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 
 /** 点検の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -573,4 +574,115 @@ test("test_collect_check_issues_when_missing_file", async () => {
     { kind: "missing_file", where: "2" },
     { kind: "unknown_mark", where: "4" },
   ]);
+});
+
+/** 読めないグラフの定義の印（開きが先頭の行） */
+const BROKEN_CHART = wrapDirective("chart", '{ "type": "nope" }');
+
+/** 見本の `inquiry` の定義に、題を `受付` にして `chat` のノードに重なるノード `extra` を加えた JSON */
+const OVERLAP_FLOW = (() => {
+  const definition = JSON.parse(INQUIRY_TEXT) as {
+    title: string;
+    nodes: Array<Record<string, unknown>>;
+  };
+  definition.title = "受付";
+  definition.nodes.push({
+    id: "extra",
+    kind: "data",
+    x: 1000,
+    y: 230,
+    w: 80,
+    h: 40,
+    name: "追加",
+  });
+  return JSON.stringify(definition, null, 2);
+})();
+
+// 図の点検のずれを最後に返し、upgrade の呼び方でも点検する（正常系）
+test("test_collect_check_issues_when_diagram", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/a.md": [
+      "# A",
+      "",
+      wrapDirective("flow", "{ broken"),
+      "![図](x.png)",
+      "",
+    ].join("\n"),
+  });
+  const path = join(dir, "mdmark.config.yaml");
+  // 実行
+  const checked = await collectCheckIssues(path);
+  const upgraded = await collectCheckIssues(path, { unknownMarks: false });
+  // 検証
+  for (const issues of [checked, upgraded]) {
+    const kinds = issues.map((issue) => issue.kind);
+    expect(kinds.indexOf("missing_file")).toBeGreaterThanOrEqual(0);
+    const diagrams = issues.filter((issue) =>
+      issue.kind.startsWith("diagram_"),
+    );
+    expect(diagrams).toHaveLength(1);
+    expect(diagrams[0]).toMatchObject({
+      file: "docs/a.md",
+      where: "3",
+      kind: "diagram_invalid",
+    });
+    expect(kinds.indexOf("diagram_invalid")).toBeGreaterThan(
+      kinds.lastIndexOf("missing_file"),
+    );
+  }
+});
+
+// 読めない定義と配置のずれを返す（正常系）
+test("test_check_diagrams", async () => {
+  // 準備
+  const { checkDiagrams } = await loadCheck();
+  const chart = BROKEN_CHART.split("\n").slice(0, -1);
+  const markdown = [
+    "# A",
+    "",
+    ...chart,
+    wrapDirective("flow", OVERLAP_FLOW),
+  ].join("\n");
+  const flowLine = markdown.split("\n").indexOf("<!-- flow -->") + 1;
+  // 実行
+  const issues = checkDiagrams([{ path: "a.md", markdown }]);
+  // 検証
+  expect(flowLine).toBe(10);
+  expect(issues).toHaveLength(2);
+  expect(issues[0]).toMatchObject({
+    file: "a.md",
+    where: "3",
+    kind: "diagram_invalid",
+  });
+  expect(issues[1]).toMatchObject({
+    file: "a.md",
+    where: "10",
+    kind: "diagram_node_overlap",
+  });
+  for (const word of ["受付", "chat", "extra"]) {
+    expect(issues[1]?.message).toContain(word);
+  }
+});
+
+// 整った図と図の無い文書はずれを返さない（正常系）
+test("test_check_diagrams_when_clean", async () => {
+  // 準備
+  const { checkDiagrams } = await loadCheck();
+  const documents = [
+    { path: "a.md", markdown: `# A\n\n${wrapDirective("flow", INQUIRY_TEXT)}` },
+    { path: "b.md", markdown: "# B\n\n本文\n" },
+  ];
+  // 実行
+  const issues = checkDiagrams(documents);
+  // 検証
+  expect(issues).toEqual([]);
 });
