@@ -1,0 +1,102 @@
+title: 図と表を本文の幅より広げる
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+        notes: 画面と描く先の要素の幅は 1280px。使う側が `--mdmark-content-width` を `640px` にしている。右側の目次の機能はオフ
+      - name: wide の範囲を持つ Markdown
+        description: 段落、8 列の表を `<!-- wide -->` 〜 `<!-- /wide -->` で囲んだ範囲、幅 1200px の画像を囲んだ範囲、段落を並べた文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: wide の範囲を本文の幅より広げて描く
+        P-->>U: 文書を表示
+    expected:
+      - 段落の幅が 640px のままで、wide の範囲の幅が 640px より広く、描く先の要素の幅を越えていない
+      - wide の範囲が本文の列の中央にそろっている
+      - 表と画像が範囲の幅の中で描かれ、文書に横のスクロールが出ていない
+      - 範囲の class が、埋め込んだ HTML の `.is-wide` と別の名前である
+      - 本文にマーカーの文字が出ていない
+    test: test_normal
+  - name: 正常シナリオ（右側の目次と並ぶ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `side-toc.mode` は `fixed` で、右側の目次を出しておく
+      - name: wide の範囲と見出しを持つ Markdown
+        description: 正常シナリオの文書に `## 概要`・`## 詳細` の見出しを足したもの
+      - &id001
+        name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 右側の目次の列の内側で wide の範囲を広げて描く
+        P-->>U: 文書と右側の目次を表示
+    expected:
+      - wide の範囲が段落より広く描かれ、右側の目次に重なっていない
+      - 右側の目次の項目を押して、その見出しへ移れる
+    test: test_normal_when_side_toc_shown
+  - name: 正常シナリオ（狭い画面）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: wide の範囲を持つ Markdown
+        description: 正常シナリオと同じ
+      - *id001
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: wide の範囲を本文の幅で描く
+        U->>P: 表を横にスクロールする
+        P-->>U: 範囲の中で表が動く
+    expected:
+      - wide の範囲の幅が段落の幅と等しい
+      - 表は範囲の中で横にスクロールでき、文書に横のスクロールが出ていない
+    test: test_normal_when_narrow
+  - name: 異常シナリオ（wide の閉じのマーカーが無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じのマーカーの無い Markdown
+        description: '`<!-- wide -->` の後に 8 列の表を持ち、`<!-- /wide -->` を持たない文書'
+      - *id001
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: wide の閉じのマーカーが無い
+        M-->>P: 書き方の警告と、表を本文の幅で描く
+        P-->>U: 書き方の警告と表を表示
+    expected:
+      - マーカーの場所に、閉じのマーカー `<!-- /wide -->` が無いことを書いた書き方の警告がある
+      - 表が段落と同じ幅で描かれている
+    test: test_error_when_unclosed
+lead: 文書を書く人が `<!-- wide -->` 〜 `<!-- /wide -->` で図・表・画像を囲み、mdmark がその範囲を本文の幅（`--mdmark-content-width`）を越えて広げる。
+issue: 220
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を読む人
+    interest: 大きい図と表を狭い幅に押し込めずに読め、目次と文書の一覧も操作できる
+trigger: 使う側のページが、wide のマーカーを持つ文書を描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - wide の機能がオン（既定）
+success_guarantee: wide の範囲が本文の幅を越えて描く先の要素の幅まで広がり、右の目次とまとめた HTML の文書の一覧に重ならない。狭い画面では本文の幅に収まり、収まらない中身は範囲の中で横にスクロールする。
+minimal_guarantee: 閉じのマーカーが無い範囲は、書き方の警告を出して本文の幅で描く。
+test_file: tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts
