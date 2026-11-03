@@ -3550,7 +3550,7 @@ flows:
         M->>P: 追加と削除の色を当てたブロックで本文を描く
     expected:
       - 段落 A と段落 D が class `mdmark-diff-block`・`data-kind="add"` の要素に包まれ、段落 C は包まれていない
-      - 段落 A と段落 C の間に、段落 B を包んだ `data-kind="del"` の要素がある
+      - 段落 B を包んだ `data-kind="del"` の要素が段落 A の前（本文の先頭）にある（直前の段落 A は書き換えたブロックで、変えていないブロックではないため）
       - 「変更を見る」のボタンと差分の場所が無い
     test: test_normal_when_base_markdown
   - name: 正常系（比較元を差し替える）

@@ -7856,3 +7856,649 @@ test("test_normal_when_margin_marker_in_closed", async () => {
     ).toBeLessThanOrEqual(1);
   });
 });
+
+// ─── 比較元の Markdown・列の表示の知らせ・コメントの修正と削除と読み直しと移動 ───
+
+// 比較元: 段落 A・B・C。段落 C は空行どうしで合わないよう 2 行にする
+const BASE_MARKDOWN = [
+  "比較元の段落 A です。",
+  "",
+  "消す段落 B です。",
+  "",
+  "残す段落 C の 1 行目です。",
+  "残す段落 C の 2 行目です。",
+  "",
+].join("\n");
+
+// 描く Markdown: 段落 A の語を 1 つ書き換え、段落 B を削除し、段落 C の後に段落 D を追加する
+const BASE_TARGET = [
+  "書き換えた段落 A です。",
+  "",
+  "残す段落 C の 1 行目です。",
+  "残す段落 C の 2 行目です。",
+  "",
+  "足した段落 D です。",
+  "",
+].join("\n");
+
+/** 差分のブロックの種類ごとに、包んだ段落の文字を上から順に返す */
+function diffBlockTexts(el: HTMLElement, kind: "add" | "del"): string[] {
+  return [
+    ...el.querySelectorAll(`div.mdmark-diff-block[data-kind="${kind}"]`),
+  ].map((block) => block.querySelector("p")?.textContent ?? "");
+}
+
+/** 文字を含む段落 */
+function paragraphWith(el: HTMLElement, text: string): HTMLElement {
+  const found = [...el.querySelectorAll<HTMLElement>("p")].find((p) =>
+    p.textContent?.includes(text),
+  );
+  if (!found) {
+    throw new Error(`段落が見つからない: ${text}`);
+  }
+  return found;
+}
+
+// 比較元を渡すと、取り出し元を使わずに本文の中のブロックを追加と削除の色で塗り分ける（正常系）
+test("test_normal_when_base_markdown", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: BASE_TARGET,
+    baseMarkdown: BASE_MARKDOWN,
+  });
+  // 検証
+  expect(diffBlockTexts(el, "add")).toEqual([
+    "書き換えた段落 A です。",
+    "足した段落 D です。",
+  ]);
+  expect(
+    paragraphWith(el, "残す段落 C").closest(".mdmark-diff-block"),
+  ).toBeNull();
+  const del = [
+    ...el.querySelectorAll<HTMLElement>(
+      'div.mdmark-diff-block[data-kind="del"]',
+    ),
+  ].find((block) => block.textContent?.includes("消す段落 B です。"));
+  if (!del) {
+    throw new Error("段落 B の削除のブロックが無い");
+  }
+  expect(
+    del.compareDocumentPosition(paragraphWith(el, "書き換えた段落 A")) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+  expect(el.querySelector(".mdmark-diff")).toBeNull();
+});
+
+// update の第 2 引数で比較元を差し替え、省くと前の比較元を保ち、null で強調を外す（正常系）
+test("test_normal_when_base_replaced", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: BASE_TARGET,
+    baseMarkdown: BASE_MARKDOWN,
+  });
+  const nextBase = BASE_TARGET.replace("\n足した段落 D です。\n", "");
+  const plain = createElement();
+  await mountTracked(plain, { markdown: BASE_TARGET });
+  // 実行・検証: 次の比較元へ差し替える
+  handle.update(BASE_TARGET, { baseMarkdown: nextBase });
+  expect(diffBlockTexts(el, "add")).toEqual(["足した段落 D です。"]);
+  expect(el.querySelector('div.mdmark-diff-block[data-kind="del"]')).toBeNull();
+  // 実行・検証: 第 2 引数を省くと前の比較元のまま
+  handle.update(BASE_TARGET);
+  expect(diffBlockTexts(el, "add")).toEqual(["足した段落 D です。"]);
+  // 実行・検証: null で強調を外す
+  handle.update(BASE_TARGET, { baseMarkdown: null });
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+  expect(el.innerHTML).toBe(plain.innerHTML);
+});
+
+// 取り出し元と比較元を両方渡すと、本文の強調は比較元で行い、取り出し元は差分を開く UI にだけ使う（正常系）
+test("test_normal_when_base_with_diff_source", async () => {
+  // 準備
+  const blocksSource = createDiffSource();
+  const el = createElement();
+  // 実行: diffMode: "blocks"
+  await mountTracked(el, {
+    markdown: BASE_TARGET,
+    baseMarkdown: BASE_MARKDOWN,
+    docId: "guide",
+    diffSource: blocksSource,
+    diffMode: "blocks",
+  });
+  await settle();
+  // 検証
+  expect(diffBlockTexts(el, "add")).toEqual([
+    "書き換えた段落 A です。",
+    "足した段落 D です。",
+  ]);
+  expect(blocksSource.revisionsCalls).toEqual([]);
+  expect(blocksSource.contentCalls).toEqual([]);
+  // 実行: diffMode を省く
+  const source = createDiffSource();
+  const other = createElement();
+  await mountTracked(other, {
+    markdown: BASE_TARGET,
+    baseMarkdown: BASE_MARKDOWN,
+    docId: "guide",
+    diffSource: source,
+  });
+  // 検証
+  expect(diffBlockTexts(other, "add")).toEqual([
+    "書き換えた段落 A です。",
+    "足した段落 D です。",
+  ]);
+  const toggle = diffToggle(other);
+  expect(source.revisionsCalls).toEqual([]);
+  // 実行
+  toggle.click();
+  // 検証
+  await waitForDiffLines(other);
+  expect(source.revisionsCalls).toEqual(["guide"]);
+});
+
+// 比較元が文字列でも null でもないと、描かずに TypeError を投げる（異常系）
+test("test_error_when_base_not_string", async () => {
+  // 準備
+  const { mount } = await loadBuilt();
+  const el = createElement();
+  // 実行・検証: mount
+  expect(() =>
+    mount(el, {
+      markdown: BASE_TARGET,
+      baseMarkdown: 1 as unknown as string,
+    }),
+  ).toThrow(/baseMarkdown/);
+  expect(el.innerHTML).toBe("");
+  expect(el.classList.contains("mdmark")).toBe(false);
+  // 実行・検証: update
+  const handle = await mountTracked(el, { markdown: BASE_TARGET });
+  const before = el.innerHTML;
+  expect(() =>
+    handle.update(BASE_TARGET, { baseMarkdown: 1 as unknown as string }),
+  ).toThrow(TypeError);
+  expect(() =>
+    handle.update(BASE_TARGET, { baseMarkdown: 1 as unknown as string }),
+  ).toThrow(/baseMarkdown/);
+  expect(el.innerHTML).toBe(before);
+});
+
+// 表の印で囲まない表と、列の表示を持つ表を 2 つ持つ文書
+const COLUMNS_MARKDOWN = [
+  "| 項目 | 値 |",
+  "| --- | --- |",
+  "| x | 1 |",
+  "",
+  "<!-- table: data +columns -->",
+  "",
+  "| 名前 | 説明 | 更新日 |",
+  "| --- | --- | --- |",
+  "| りんご | 描画を速くする | 2026-10-01 |",
+  "",
+  "<!-- /table -->",
+  "",
+  "<!-- table: data +columns hide=備考 -->",
+  "",
+  "| 名前 | 備考 |",
+  "| --- | --- |",
+  "| みかん | 季節の果物 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+/** 指定した番号の列の表示の表のメニューを開き、チェックボックスを返す */
+function openColumnsMenu(
+  el: Element,
+  index: number,
+): { menu: HTMLElement; checkboxes: HTMLInputElement[] } {
+  const toggle = [
+    ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-columns-toggle"),
+  ][index];
+  if (!toggle) {
+    throw new Error(`列の表示のボタンが無い: ${index}`);
+  }
+  toggle.click();
+  const menu = find<HTMLElement>(
+    toggle.closest(".mdmark-table") ?? el,
+    ".mdmark-columns-menu",
+  );
+  return {
+    menu,
+    checkboxes: [
+      ...menu.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+    ],
+  };
+}
+
+// 列を出し入れするたびに、表の番号と隠している列の名前を onColumnsChange に渡す（正常系）
+test("test_normal_when_columns_changed", async () => {
+  // 準備
+  const calls: unknown[] = [];
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: COLUMNS_MARKDOWN,
+    onColumnsChange: (event) => {
+      calls.push(event);
+    },
+  });
+  // 検証: 描いた直後は呼ばない
+  expect(calls).toEqual([]);
+  // 実行: 1 つ目の表で更新日、説明の順にチェックを外す
+  const first = openColumnsMenu(el, 0);
+  first.checkboxes[2]?.click();
+  first.checkboxes[1]?.click();
+  // 検証
+  expect(calls).toEqual([
+    { tableIndex: 0, hidden: ["更新日"] },
+    { tableIndex: 0, hidden: ["説明", "更新日"] },
+  ]);
+  // 実行: 2 つ目の表で備考にチェックを入れ、既定に戻す
+  const second = openColumnsMenu(el, 1);
+  second.checkboxes[1]?.click();
+  find<HTMLButtonElement>(second.menu, "button.mdmark-columns-reset").click();
+  // 検証
+  expect(calls.slice(2)).toEqual([
+    { tableIndex: 1, hidden: [] },
+    { tableIndex: 1, hidden: ["備考"] },
+  ]);
+  // 実行: 描き直す
+  handle.update(COLUMNS_MARKDOWN);
+  // 検証
+  expect(calls).toHaveLength(4);
+});
+
+// onColumnsChange が例外を投げても、列の表示の切り替えは済ませて console.error に出す（異常系）
+test("test_error_when_columns_callback_throws", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const error = new Error("boom");
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: COLUMNS_MARKDOWN,
+    onColumnsChange: () => {
+      throw error;
+    },
+  });
+  const table = [...el.querySelectorAll<HTMLElement>(".mdmark-table")].find(
+    (candidate) =>
+      candidate.querySelector("button.mdmark-columns-toggle") !== null,
+  );
+  if (!table) {
+    throw new Error("列の表示の表が無い");
+  }
+  // 実行
+  const { checkboxes } = openColumnsMenu(el, 0);
+  expect(() => checkboxes[1]?.click()).not.toThrow();
+  // 検証
+  expect(
+    columnCells(table, 1).every((cell) => cell.hasAttribute("hidden")),
+  ).toBe(true);
+  expect(spy).toHaveBeenCalledTimes(1);
+  expect(loggedText(spy)).toContain("onColumnsChange");
+  expect(spy.mock.calls.flat()).toContain(error);
+});
+
+// 修正と削除を試す段落
+const EDIT_TEXT =
+  "描いた文書の見た目はテーマの変数で変える。CSS を書いて上書きする。";
+
+/** `テーマの変数` に付いたコメント */
+const EDIT_THEME_COMMENT: MdmarkComment = {
+  id: "c1",
+  quote: "テーマの変数",
+  prefix: "描いた文書の見た目は",
+  suffix: "で変える。",
+  body: "テーマのコメント",
+};
+
+/** `CSS` に付いたコメント */
+const EDIT_CSS_COMMENT: MdmarkComment = {
+  id: "c2",
+  quote: "CSS",
+  prefix: "で変える。",
+  suffix: " を書いて上書きする。",
+  body: "CSS のコメント",
+};
+
+/** `update`・`remove` を持つ読み書きの関数 */
+function createEditableStore(loaded: MdmarkComment[]) {
+  return {
+    ...createCommentStore(loaded),
+    update: vi.fn(
+      async (_target: { docId: string; id: string; body: string }) => {},
+    ),
+    remove: vi.fn(async (_target: { docId: string; id: string }) => {}),
+  };
+}
+
+/** 文字の印 */
+function commentMark(el: Element, text: string): HTMLElement {
+  const found = [
+    ...el.querySelectorAll<HTMLElement>("mark.mdmark-comment-mark"),
+  ].find((mark) => mark.textContent === text);
+  if (!found) {
+    throw new Error(`印が見つからない: ${text}`);
+  }
+  return found;
+}
+
+/** 印を押して開いた吹き出し */
+function openCommentBubble(mark: HTMLElement): HTMLElement {
+  mark.click();
+  return find<HTMLElement>(document.body, ".mdmark-comment-bubble");
+}
+
+/** 修正と削除の段落を、読み書きの関数を渡して描き、印が付くのを待つ */
+async function mountEditable(
+  store: ReturnType<typeof createEditableStore>,
+): Promise<HTMLElement> {
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: `${EDIT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelectorAll("mark.mdmark-comment-mark")).toHaveLength(2),
+  );
+  return el;
+}
+
+/** 吹き出しの「編集」を押し、本文を書き換えて保存する */
+function editAndSave(bubble: HTMLElement, body: string): HTMLTextAreaElement {
+  find<HTMLButtonElement>(bubble, 'button[aria-label="編集"]').click();
+  const field = find<HTMLTextAreaElement>(bubble, "textarea");
+  field.value = body;
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  find<HTMLButtonElement>(bubble, "button.is-primary").click();
+  return field;
+}
+
+// 吹き出しの「編集」から修正し、確認を経て削除する（正常系）
+test("test_normal_when_comment_edited_and_removed", async () => {
+  // 準備
+  const store = createEditableStore([EDIT_THEME_COMMENT, EDIT_CSS_COMMENT]);
+  const el = await mountEditable(store);
+  // 実行
+  const bubble = openCommentBubble(commentMark(el, "テーマの変数"));
+  // 検証
+  expect(bubble.querySelectorAll('button[aria-label="編集"]')).toHaveLength(1);
+  expect(bubble.querySelectorAll('button[aria-label="削除"]')).toHaveLength(1);
+  // 実行
+  find<HTMLButtonElement>(bubble, 'button[aria-label="編集"]').click();
+  // 検証
+  const field = find<HTMLTextAreaElement>(bubble, "textarea");
+  expect(field.value).toBe("テーマのコメント");
+  expect(document.activeElement).toBe(field);
+  // 実行
+  field.value = "書き換えたコメント";
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  find<HTMLButtonElement>(bubble, "button.is-primary").click();
+  // 検証
+  await vi.waitFor(() =>
+    expect(bubble.querySelector(".mdmark-comment-body")?.textContent).toBe(
+      "書き換えたコメント",
+    ),
+  );
+  expect(store.update).toHaveBeenCalledTimes(1);
+  expect(store.update).toHaveBeenCalledWith({
+    docId: "guide",
+    id: "c1",
+    body: "書き換えたコメント",
+  });
+  expect(document.activeElement).toBe(
+    bubble.querySelector('button[aria-label="編集"]'),
+  );
+  expect(commentMark(el, "テーマの変数")).toBeDefined();
+  // 実行
+  await userEvent.keyboard("{Escape}");
+  const cssBubble = openCommentBubble(commentMark(el, "CSS"));
+  find<HTMLButtonElement>(cssBubble, 'button[aria-label="削除"]').click();
+  // 検証
+  expect(cssBubble.textContent).toContain(
+    "このコメントを削除しますか? 削除すると元に戻せません。",
+  );
+  expect(document.activeElement).toBe(
+    cssBubble.querySelector('[data-action="cancel-remove"]'),
+  );
+  expect(store.remove).not.toHaveBeenCalled();
+  // 実行
+  find<HTMLButtonElement>(cssBubble, '[data-action="confirm-remove"]').click();
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelectorAll("mark.mdmark-comment-mark")).toHaveLength(1),
+  );
+  expect(store.remove).toHaveBeenCalledTimes(1);
+  expect(store.remove).toHaveBeenCalledWith({ docId: "guide", id: "c2" });
+  const paragraph = find<HTMLElement>(el, "p");
+  expect(paragraph.textContent).toBe(EDIT_TEXT);
+  expect(paragraph.getAttribute("tabindex")).toBe("-1");
+  expect(document.activeElement).toBe(paragraph);
+});
+
+// update・remove を持たない読み書きの関数では、吹き出しに「編集」「削除」を出さない（正常系）
+test("test_normal_when_comment_store_without_edit", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: `${COMMENT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: createCommentStore([THEME_COMMENT]),
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelector("mark.mdmark-comment-mark")).not.toBeNull(),
+  );
+  // 実行
+  const bubble = openCommentBubble(commentMark(el, "テーマの変数"));
+  // 検証
+  expect(bubble.querySelector('button[aria-label="編集"]')).toBeNull();
+  expect(bubble.querySelector('button[aria-label="削除"]')).toBeNull();
+  expect(spy).not.toHaveBeenCalled();
+});
+
+// update が reject すると、入力欄と書き換えた本文を残して知らせを出す（異常系）
+test("test_error_when_comment_update_rejected", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const store = createEditableStore([EDIT_THEME_COMMENT, EDIT_CSS_COMMENT]);
+  store.update.mockRejectedValue(new Error("network"));
+  const el = await mountEditable(store);
+  const bubble = openCommentBubble(commentMark(el, "テーマの変数"));
+  // 実行
+  editAndSave(bubble, "書き換えたコメント");
+  // 検証
+  await vi.waitFor(() =>
+    expect(find(bubble, '[role="alert"]').textContent).toBe(
+      "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。",
+    ),
+  );
+  const failedField = find<HTMLTextAreaElement>(bubble, "textarea");
+  expect(failedField.value).toBe("書き換えたコメント");
+  expect(failedField.getAttribute("aria-invalid")).toBe("true");
+  expect(spy).toHaveBeenCalledTimes(1);
+  const logged = loggedText(spy);
+  for (const text of ["update", "guide", "c1", "network"]) {
+    expect(logged).toContain(text);
+  }
+  // 実行
+  find<HTMLButtonElement>(bubble, '[data-action="cancel-edit"]').click();
+  // 検証
+  expect(bubble.querySelector(".mdmark-comment-body")?.textContent).toBe(
+    "テーマのコメント",
+  );
+});
+
+// remove が reject すると、コメントと印を残し、削除の確認を開いたまま知らせを出す（異常系）
+test("test_error_when_comment_remove_rejected", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const store = createEditableStore([EDIT_THEME_COMMENT, EDIT_CSS_COMMENT]);
+  store.remove.mockRejectedValue(new Error("network"));
+  const el = await mountEditable(store);
+  const bubble = openCommentBubble(commentMark(el, "CSS"));
+  // 実行
+  find<HTMLButtonElement>(bubble, 'button[aria-label="削除"]').click();
+  find<HTMLButtonElement>(bubble, '[data-action="confirm-remove"]').click();
+  // 検証
+  await vi.waitFor(() =>
+    expect(find(bubble, '[role="alert"]').textContent).toBe(
+      "コメントを削除できませんでした。もう一度「削除」を押してください。",
+    ),
+  );
+  expect(commentMark(el, "CSS")).toBeDefined();
+  expect(bubble.querySelector(".mdmark-comment-body")?.textContent).toBe(
+    "CSS のコメント",
+  );
+  expect(bubble.querySelector(".mdmark-comment-confirm")).not.toBeNull();
+  expect(spy).toHaveBeenCalledTimes(1);
+  const logged = loggedText(spy);
+  for (const text of ["remove", "guide", "c2", "network"]) {
+    expect(logged).toContain(text);
+  }
+});
+
+// reloadComments で load を呼び直し、本文を描き直さずに印だけを付け直す（正常系）
+test("test_normal_when_comments_reloaded", async () => {
+  // 準備
+  const store = createEditableStore([]);
+  store.load
+    .mockResolvedValueOnce([EDIT_THEME_COMMENT])
+    .mockResolvedValueOnce([EDIT_THEME_COMMENT, EDIT_CSS_COMMENT]);
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: [
+      EDIT_TEXT,
+      "",
+      "<!-- table: data +sort -->",
+      "",
+      "| 名前 |",
+      "| --- |",
+      "| b |",
+      "| a |",
+      "| c |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelectorAll("mark.mdmark-comment-mark")).toHaveLength(1),
+  );
+  find<HTMLButtonElement>(el, "th button.mdmark-sort").click();
+  expect(columnTexts(el, 0)).toEqual(["a", "b", "c"]);
+  // 実行
+  await handle.reloadComments();
+  // 検証
+  expect(
+    [...el.querySelectorAll("mark.mdmark-comment-mark")].map(
+      (mark) => mark.textContent,
+    ),
+  ).toEqual(["テーマの変数", "CSS"]);
+  expect(store.load).toHaveBeenCalledTimes(2);
+  expect(columnTexts(el, 0)).toEqual(["a", "b", "c"]);
+});
+
+// reloadComments の load が reject すると、今の印を残して Promise を reject する（異常系）
+test("test_error_when_comments_reload_rejected", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const error = new Error("network");
+  const store = createEditableStore([]);
+  store.load
+    .mockResolvedValueOnce([THEME_COMMENT])
+    .mockRejectedValueOnce(error);
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: `${COMMENT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelector("mark.mdmark-comment-mark")).not.toBeNull(),
+  );
+  // 実行・検証
+  await expect(handle.reloadComments()).rejects.toBe(error);
+  expect(commentMark(el, "テーマの変数")).toBeDefined();
+  expect(spy).toHaveBeenCalledTimes(1);
+  const logged = loggedText(spy);
+  for (const text of ["load", "guide", "network"]) {
+    expect(logged).toContain(text);
+  }
+});
+
+// focusComment で、そのコメントの印を画面に入れてフォーカスを移し、強調する（正常系）
+test("test_normal_when_comment_focused", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  window.scrollTo(0, 0);
+  const paragraphs = Array.from(
+    { length: 30 },
+    (_, index) => `${index + 1} 番目の段落です。`,
+  );
+  paragraphs[0] = "先頭の語を含む段落です。";
+  paragraphs[29] = "末尾の語を含む段落です。";
+  const store = createEditableStore([
+    {
+      id: "c1",
+      quote: "先頭の語",
+      prefix: "",
+      suffix: "を含む段落です。",
+      body: "先頭",
+    },
+    {
+      id: "c9",
+      quote: "末尾の語",
+      prefix: "",
+      suffix: "を含む段落です。",
+      body: "末尾",
+    },
+  ]);
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: `${paragraphs.join("\n\n")}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelectorAll("mark.mdmark-comment-mark")).toHaveLength(2),
+  );
+  const head = commentMark(el, "先頭の語");
+  const tail = commentMark(el, "末尾の語");
+  expect(tail.getBoundingClientRect().top).toBeGreaterThan(window.innerHeight);
+  // 実行
+  handle.focusComment("c1");
+  // 検証
+  expect(head.hasAttribute("data-focused")).toBe(true);
+  expect(document.activeElement).toBe(head);
+  // 実行
+  handle.focusComment("c9");
+  // 検証
+  const rect = tail.getBoundingClientRect();
+  expect(rect.top).toBeGreaterThanOrEqual(0);
+  // 小数の位置の丸めの分だけ許す
+  expect(rect.bottom).toBeLessThanOrEqual(window.innerHeight + 1);
+  expect(el.querySelectorAll("[data-focused]")).toHaveLength(1);
+  expect(tail.hasAttribute("data-focused")).toBe(true);
+  expect(document.querySelector(".mdmark-comment-bubble")).toBeNull();
+  // 実行
+  const scrollY = window.scrollY;
+  handle.focusComment("none");
+  // 検証
+  expect(window.scrollY).toBe(scrollY);
+  expect(document.activeElement).toBe(tail);
+  expect(tail.hasAttribute("data-focused")).toBe(true);
+  expect(el.querySelectorAll("[data-focused]")).toHaveLength(1);
+  expect(spy).not.toHaveBeenCalled();
+});
