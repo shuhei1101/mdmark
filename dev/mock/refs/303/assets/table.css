@@ -48,7 +48,9 @@
   /* 列のメニュー: 見出しの ⋯ のボタンから開く。左へ移動・右へ移動を並べる */
   .mdmark-col-menu {
     position: absolute;
-    z-index: 3;
+    inset-block-start: 100%;
+    inset-inline-end: 0;
+    z-index: 20;
     min-inline-size: 10rem;
     margin: 0;
     padding: calc(var(--mdmark-space) * 0.25) 0;
@@ -98,8 +100,9 @@
     background: var(--mdmark-color-surface);
     color: var(--mdmark-color-text);
   }
-  .mdmark-table th {
-    position: relative;
+  /* メニューを開いた見出しを、隣の見出しと本文の行より前に出す */
+  .mdmark-table th:has(.mdmark-col-menu-toggle[aria-expanded="true"]) {
+    z-index: 20;
   }
 
   /* ---- キーの列の階層 ---- */
