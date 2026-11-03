@@ -83,23 +83,9 @@
         moveColumn(table, columnIndexOf(dragged), columnIndexOf(th), th.classList.contains("is-drop-after"));
       });
 
-      // 列のメニュー: ⋯ で開閉し、Esc で閉じる
       const toggle = th.querySelector(".mdmark-col-menu-toggle");
       const menu = th.querySelector(".mdmark-col-menu");
       if (!toggle || !menu) continue;
-      toggle.addEventListener("click", () => {
-        const open = toggle.getAttribute("aria-expanded") !== "true";
-        toggle.setAttribute("aria-expanded", String(open));
-        menu.hidden = !open;
-        if (open) menu.querySelector("button:not(:disabled)")?.focus();
-      });
-      menu.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          toggle.setAttribute("aria-expanded", "false");
-          menu.hidden = true;
-          toggle.focus();
-        }
-      });
       for (const button of menu.querySelectorAll("[data-move]")) {
         button.addEventListener("click", () => {
           const index = columnIndexOf(th);
@@ -111,6 +97,25 @@
           toggle.focus();
         });
       }
+    }
+    // 列のメニュー: ⋯ で開閉し、Esc で閉じる（多段の見出しの上の段の列も含む）
+    for (const th of table.tHead.querySelectorAll("th")) {
+      const toggle = th.querySelector(".mdmark-col-menu-toggle");
+      const menu = th.querySelector(".mdmark-col-menu");
+      if (!toggle || !menu) continue;
+      toggle.addEventListener("click", () => {
+        const open = toggle.getAttribute("aria-expanded") !== "true";
+        toggle.setAttribute("aria-expanded", String(open));
+        menu.hidden = !open;
+        if (open) (menu.querySelector("button:not(:disabled)") ?? menu.querySelector("button"))?.focus();
+      });
+      menu.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          toggle.setAttribute("aria-expanded", "false");
+          menu.hidden = true;
+          toggle.focus();
+        }
+      });
     }
     refreshMenus(table);
   }
@@ -221,8 +226,9 @@
       }
       const exampleToggle = layout.parentElement.querySelector(".mdmark-tree-example-toggle");
       exampleToggle?.addEventListener("click", () => {
-        const shown = exampleToggle.getAttribute("aria-pressed") === "true";
-        exampleToggle.setAttribute("aria-pressed", String(!shown));
+        const shown = exampleToggle.getAttribute("aria-expanded") === "true";
+        exampleToggle.setAttribute("aria-expanded", String(!shown));
+        exampleToggle.textContent = shown ? "見本を表示" : "見本を隠す";
         layout.classList.toggle("is-example-hidden", shown);
       });
     }

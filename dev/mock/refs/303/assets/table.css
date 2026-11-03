@@ -284,23 +284,13 @@
 
   /* ---- YAML の見本 ---- */
 
-  /* 表と見本を横に並べる。狭い幅では見本を表の下へ回す */
+  /* 見本は表の下に置き、表は本文の幅を全て使う */
   .mdmark-tree-layout {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     gap: var(--mdmark-space);
-    align-items: start;
-  }
-  .mdmark-tree-layout.is-example-hidden {
-    grid-template-columns: minmax(0, 1fr);
   }
   .mdmark-tree-layout.is-example-hidden .mdmark-tree-example {
     display: none;
-  }
-  @media (max-width: 48rem) {
-    .mdmark-tree-layout {
-      grid-template-columns: minmax(0, 1fr);
-    }
   }
 
   /* 見本の表示を切り替えるボタン: 表の上の帯に置く */
@@ -317,9 +307,6 @@
     font: inherit;
     font-size: 0.875rem;
     cursor: pointer;
-  }
-  .mdmark-tree-example-toggle[aria-pressed="true"] {
-    background: var(--mdmark-color-surface);
   }
   .mdmark-tree-bar {
     display: flex;
