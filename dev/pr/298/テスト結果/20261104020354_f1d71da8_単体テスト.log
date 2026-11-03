@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram
+
+
+ Test Files  190 passed (190)
+      Tests  1396 passed (1396)
+   Start at  02:17:48
+   Duration  78.35s (worker 47%, tests 34%, import 17%, transform 3%)
+

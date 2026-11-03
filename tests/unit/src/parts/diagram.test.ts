@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import type {
   MdmarkChartDefinition,
+  MdmarkErDefinition,
   MdmarkFlowDefinition,
   MdmarkSequenceDefinition,
 } from "../../../../src/diagram/definition.ts";
@@ -18,6 +19,7 @@ import {
   parsed,
   REPLY_TIME_TEXT,
 } from "../../helpers/diagrams.ts";
+import { shopEr } from "../../helpers/er.ts";
 import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
 
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -505,4 +507,168 @@ test("test_legend_for_when_chart_types_added", async () => {
   expect(bubbleLabels).toContain("円の面積: 件数");
   expect(donutLabels).toContain("答えた: 186 件");
   expect(donutLabels).toContain("回した: 92 件");
+});
+
+// テーブル・関係の線・多重度・ラベルを描く（正常系）
+test("test_render_er", async () => {
+  // 準備
+  const { renderEr } = await loadDiagram();
+  const definition = shopEr();
+  // 実行
+  const { html, tips, width, height } = renderEr(definition, "d1", true);
+  // 検証
+  expect(matches(html, /class="mdmark-diagram-er-table/g)).toHaveLength(
+    definition.tables.length,
+  );
+  expect(matches(html, /<path[^>]*data-line="er"/g)).toHaveLength(
+    definition.relations.length,
+  );
+  expect(
+    matches(html, /class="mdmark-diagram-er-end"/g).length,
+  ).toBeGreaterThanOrEqual(definition.relations.length * 2);
+  for (const relation of definition.relations) {
+    expect(plainText(html)).toContain(relation.label ?? "");
+  }
+  expect(matches(html, /data-er-from="/g)).toHaveLength(
+    definition.relations.length,
+  );
+  expect(width).toBe(definition.width);
+  expect(height).toBeGreaterThan(0);
+  expect(plainText(tips)).toContain("注文（orders）");
+});
+
+// hints がオフなら説明のボタンとツールチップを置かない（正常系）
+test("test_render_er_when_hints_off", async () => {
+  // 準備
+  const { renderEr } = await loadDiagram();
+  // 実行
+  const { html, tips } = renderEr(shopEr(), "d1", false);
+  // 検証
+  expect(html).not.toContain("mdmark-diagram-info");
+  expect(tips).toBe("");
+});
+
+// ER 図は図にある種類・マーカー・多重度だけを凡例に出す（正常系）
+test("test_legend_for_when_er", async () => {
+  // 準備
+  const { legendFor } = await loadDiagram();
+  const definition: MdmarkErDefinition = {
+    title: "マスターだけ",
+    scope: "確かめ",
+    updated: "2026-11-03",
+    width: 600,
+    tables: [
+      {
+        id: "a",
+        name: "a",
+        label: "親",
+        kind: "master",
+        desc: "説明",
+        x: 0,
+        y: 0,
+        w: 200,
+        columns: [{ name: "id", type: "bigint", pk: true, nn: true }],
+      },
+      {
+        id: "b",
+        name: "b",
+        label: "子",
+        kind: "master",
+        x: 300,
+        y: 0,
+        w: 200,
+        columns: [{ name: "a_id", type: "bigint", nn: true }],
+      },
+    ],
+    relations: [
+      {
+        from: "a",
+        fromColumn: "id",
+        fromCard: "1",
+        to: "b",
+        toColumn: "a_id",
+        toCard: "0..n",
+      },
+    ],
+  };
+  // 実行
+  const items = legendFor(definition, { jumps: false, terms: false });
+  // 検証
+  expect(items.map((item) => item.label)).toEqual([
+    "マスターのテーブル",
+    "主キー",
+    "NOT NULL",
+    "1 つ",
+    "0 以上",
+  ]);
+});
+
+// テーブルの概要と列の説明を出す（正常系）
+test("test_render_diagram_tip_when_table", async () => {
+  // 準備
+  const { renderDiagramTip } = await loadDiagram();
+  // 実行
+  const html = renderDiagramTip({
+    id: "t1",
+    kind: "table",
+    label: "注文",
+    table: {
+      id: "orders",
+      name: "orders",
+      label: "注文",
+      desc: "1 回の注文",
+      x: 0,
+      y: 0,
+      w: 200,
+      columns: [
+        { name: "id", type: "bigint", pk: true },
+        { name: "status", type: "text", desc: "状態" },
+        { name: "total", type: "integer", desc: "合計" },
+      ],
+    },
+  });
+  // 検証
+  const text = plainText(html);
+  expect(text).toContain("注文（orders）");
+  expect(text.indexOf("1 回の注文")).toBeLessThan(text.indexOf("status"));
+  expect(text.indexOf("status")).toBeLessThan(text.indexOf("状態"));
+  expect(text.indexOf("状態")).toBeLessThan(text.indexOf("total"));
+  expect(html).not.toMatch(/<code>id<\/code>/);
+  expect(html).toContain('role="tooltip"');
+  expect(html).toMatch(/\bhidden\b/);
+});
+
+// 定義の文字の {{語}} を用語の下線にする（正常系）
+test("test_render_er_when_terms", async () => {
+  // 準備
+  const { renderEr } = await loadDiagram();
+  const definition = shopEr();
+  const customers = definition.tables.find((t) => t.id === "customers");
+  if (customers) {
+    customers.label = "{{顧客}}";
+    customers.columns.push({ name: "rank", type: "text" });
+  }
+  definition.relations = definition.relations.map((r) =>
+    r.label === "注文する" ? { ...r, label: "{{注文}}する" } : r,
+  );
+  const meanings: Record<string, string> = {
+    顧客: "注文する人",
+    注文: "1 回の買い物",
+  };
+  // 実行
+  const { html, tips, terms } = renderEr(
+    definition,
+    "d1",
+    true,
+    (word) => meanings[word],
+  );
+  // 検証
+  expect(matches(html, /class="mdmark-term"/g)).toHaveLength(2);
+  expect(plainText(html)).not.toContain("{{");
+  expect(plainText(html)).not.toContain("}}");
+  expect(plainText(tips)).toContain("注文する人");
+  expect(plainText(tips)).not.toContain("{{");
+  expect(terms).toBe(true);
+  expect(html).toContain('aria-label="「顧客」の説明"');
+  expect(html).toContain('aria-label="「顧客」の主キーと外部キー以外の列"');
 });

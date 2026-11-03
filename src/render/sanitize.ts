@@ -135,6 +135,7 @@ function dropSyntaxAttributes(
         next[name] = value;
       }
     } else if (
+      !(tagName === "abbr" && name === "title") &&
       name !== "id" &&
       name !== "hidden" &&
       name !== "colspan" &&
@@ -229,6 +230,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     ],
     a: ["href", "title"],
     img: ["src", "alt", "title"],
+    // ER 図の列のマーカーの名前（文書に書いた `abbr` の `title` は `dropSyntaxAttributes` が落とす）
+    abbr: ["title"],
     details: ["open"],
     input: ["type", "disabled", "checked"],
     pre: ["tabindex"],

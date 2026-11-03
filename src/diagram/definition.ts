@@ -1,3 +1,5 @@
+import { COLOR_NAMES, type ColorName, isColorName } from "../parts/colors.ts";
+
 /** ノードの種類（`start`・`question`・`action`・`result` は判定フローチャートの開始・質問・アクション・結果） */
 export type MdmarkDiagramKind =
   | "llm"
@@ -208,12 +210,97 @@ export type MdmarkParamDefinition = {
   table: Record<string, number[]>;
 };
 
+/** ER 図のテーブルの種類 */
+export type MdmarkErTableKind = "master" | "transaction";
+
+/** ER 図の関係の端の多重度 */
+export type MdmarkErCardinality = "1" | "0..1" | "1..n" | "0..n";
+
+/** ER 図の列 */
+export type MdmarkErColumn = {
+  /** 列の名前 */
+  name: string;
+  /** 型 */
+  type: string;
+  /** 主キーか */
+  pk?: boolean;
+  /** 外部キーか */
+  fk?: boolean;
+  /** NOT NULL か */
+  nn?: boolean;
+  /** 説明。テーブルのツールチップに出す */
+  desc?: string;
+};
+
+/** ER 図のテーブル */
+export type MdmarkErTable = {
+  /** 関係の `from`・`to` で指す名前 */
+  id: string;
+  /** 物理名 */
+  name: string;
+  /** 論理名 */
+  label: string;
+  /** 種類。見出しの札と既定の色を決める */
+  kind?: MdmarkErTableKind;
+  /** 色の名前。`kind` の既定の色より優先する */
+  color?: ColorName;
+  /** 概要。テーブルのツールチップに出す */
+  desc?: string;
+  /** 左端（px） */
+  x: number;
+  /** 上端（px） */
+  y: number;
+  /** 幅（px） */
+  w: number;
+  /** 主キーと外部キーの列だけを出した状態で開くか */
+  folded?: boolean;
+  /** 列。定義の順に並べる */
+  columns: MdmarkErColumn[];
+};
+
+/** ER 図の関係 */
+export type MdmarkErRelation = {
+  /** 元のテーブルの `id` */
+  from: string;
+  /** 元のテーブルの列の `name` */
+  fromColumn: string;
+  /** 元の端の多重度 */
+  fromCard: MdmarkErCardinality;
+  /** 先のテーブルの `id` */
+  to: string;
+  /** 先のテーブルの列の `name` */
+  toColumn: string;
+  /** 先の端の多重度 */
+  toCard: MdmarkErCardinality;
+  /** 縦の線の中ほどに出すラベル */
+  label?: string;
+  /** 縦の線の x（px）。省くと両端の中間 */
+  midX?: number;
+};
+
+/** ER 図の定義 */
+export type MdmarkErDefinition = {
+  /** 題名 */
+  title: string;
+  /** 範囲 */
+  scope: string;
+  /** 更新日 */
+  updated: string;
+  /** 図の幅（px）。高さはテーブルの位置と列の数から求める */
+  width: number;
+  /** テーブル */
+  tables: MdmarkErTable[];
+  /** 関係 */
+  relations: MdmarkErRelation[];
+};
+
 /** 読めた定義の種類 */
 export type MdmarkDefinition =
   | MdmarkFlowDefinition
   | MdmarkSequenceDefinition
   | MdmarkChartDefinition
-  | MdmarkParamDefinition;
+  | MdmarkParamDefinition
+  | MdmarkErDefinition;
 
 /** 定義を読んだ結果 */
 export type DefinitionResult = {
@@ -226,7 +313,7 @@ export type DefinitionResult = {
 };
 
 /** 図の部品の印の名前 */
-export type DiagramDirective = "flow" | "sequence" | "chart" | "param";
+export type DiagramDirective = "flow" | "sequence" | "chart" | "param" | "er";
 
 /** 図の部品の印の名前と、書き方の警告に出す図の種類の名前・呼び名 */
 export const DIAGRAM_DIRECTIVES: Readonly<
@@ -236,6 +323,7 @@ export const DIAGRAM_DIRECTIVES: Readonly<
   sequence: { name: "シーケンス図", call: "この図" },
   chart: { name: "グラフ", call: "このグラフ" },
   param: { name: "操作できる部品", call: "この部品" },
+  er: { name: "ER 図", call: "この ER 図" },
 };
 
 /** ノードの種類の並び（書き方の警告にも出す） */
@@ -1087,6 +1175,189 @@ function checkParam(source: Record<string, unknown>, problems: Problems): void {
   }
 }
 
+/** ER 図のテーブルの種類の並び（書き方の警告にも出す） */
+const ER_TABLE_KIND_LIST: readonly MdmarkErTableKind[] = [
+  "master",
+  "transaction",
+];
+
+/** ER 図の多重度の並び（書き方の警告にも出す） */
+const ER_CARDINALITY_LIST: readonly MdmarkErCardinality[] = [
+  "1",
+  "0..1",
+  "1..n",
+  "0..n",
+];
+
+/** 真偽値の項目を確かめる（省けるものは、あるときだけ） */
+function checkOptionalBoolean(
+  value: unknown,
+  path: string,
+  problems: Problems,
+): void {
+  if (value !== undefined) {
+    problems.expect(value, "真偽値", path);
+  }
+}
+
+/** ER 図のテーブル 1 つを確かめ、`id` と列の名前を返す */
+function checkErTable(
+  value: unknown,
+  index: number,
+  problems: Problems,
+): { id: string; columns: string[] } | undefined {
+  const table = asObject(value, `tables[${index}]`, problems);
+  if (!table) {
+    return undefined;
+  }
+  const name =
+    typeof table.label === "string" ? table.label : `${index + 1} つ目`;
+  const label = `テーブル「${name}」`;
+  problems.expect(table.id, "文字", `${label}の id`);
+  problems.expect(table.name, "文字", `${label}の name`);
+  problems.expect(table.label, "文字", `tables[${index}].label`);
+  for (const key of ["x", "y", "w"]) {
+    problems.expect(table[key], "数", `${label}の ${key}`);
+  }
+  checkOptionalText(table.desc, `${label}の desc`, problems);
+  checkOptionalBoolean(table.folded, `${label}の folded`, problems);
+  if (table.kind !== undefined) {
+    if (
+      typeof table.kind !== "string" ||
+      !(ER_TABLE_KIND_LIST as readonly string[]).includes(table.kind)
+    ) {
+      problems.add(
+        `${label}の種類 ${String(table.kind)} は使えません。使える種類は ${ER_TABLE_KIND_LIST.join("・")} です`,
+      );
+    }
+  }
+  if (table.color !== undefined && !isColorName(String(table.color))) {
+    problems.add(
+      `${label}の色 ${String(table.color)} は色の名前ではありません。使える色の名前は ${COLOR_NAMES.join("・")} です`,
+    );
+  }
+  const columns: string[] = [];
+  const list = asArray(table.columns, `${label}の columns`, problems) ?? [];
+  list.forEach((item, i) => {
+    const column = asObject(item, `${label}の columns[${i}]`, problems);
+    if (!column) {
+      return;
+    }
+    if (problems.expect(column.name, "文字", `${label}の columns[${i}].name`)) {
+      columns.push(column.name as string);
+    }
+    problems.expect(column.type, "文字", `${label}の columns[${i}].type`);
+    for (const key of ["pk", "fk", "nn"]) {
+      checkOptionalBoolean(
+        column[key],
+        `${label}の columns[${i}].${key}`,
+        problems,
+      );
+    }
+    checkOptionalText(column.desc, `${label}の columns[${i}].desc`, problems);
+  });
+  const seen = new Set<string>();
+  for (const column of columns) {
+    if (seen.has(column)) {
+      problems.add(
+        `${label}の列の名前 ${column} が 2 つ以上あります。別の名前にしてください`,
+      );
+      break;
+    }
+    seen.add(column);
+  }
+  return typeof table.id === "string" ? { id: table.id, columns } : undefined;
+}
+
+/** ER 図の関係 1 つの多重度を確かめる */
+function checkErCardinality(
+  value: unknown,
+  path: string,
+  problems: Problems,
+): void {
+  if (
+    typeof value !== "string" ||
+    !(ER_CARDINALITY_LIST as readonly string[]).includes(value)
+  ) {
+    problems.add(
+      value === undefined
+        ? `${path} がありません。${ER_CARDINALITY_LIST.join("・")} のどれかで書いてください`
+        : `${path} の ${String(value)} は使えません。使える多重度は ${ER_CARDINALITY_LIST.join("・")} です`,
+    );
+  }
+}
+
+/** ER 図の関係の端のテーブルと列を確かめる */
+function checkErEnd(
+  relation: Record<string, unknown>,
+  side: "from" | "to",
+  label: string,
+  tables: Map<string, string[]>,
+  problems: Problems,
+): void {
+  const tableId = relation[side];
+  const column = relation[side === "from" ? "fromColumn" : "toColumn"];
+  const where = side === "from" ? "元" : "先";
+  if (!problems.expect(tableId, "文字", `${label}の ${side}`)) {
+    return;
+  }
+  if (
+    !problems.expect(
+      column,
+      "文字",
+      `${label}の ${side === "from" ? "fromColumn" : "toColumn"}`,
+    )
+  ) {
+    return;
+  }
+  const columns = tables.get(tableId as string);
+  if (columns === undefined) {
+    problems.add(
+      `${label}の${where}のテーブル ${String(tableId)} がありません。テーブルの id で書いてください`,
+    );
+  } else if (!columns.includes(column as string)) {
+    problems.add(
+      `${label}の${where}の列 ${String(tableId)}.${String(column)} がテーブル ${String(tableId)} にありません`,
+    );
+  }
+}
+
+/** ER 図の定義を確かめる */
+function checkEr(source: Record<string, unknown>, problems: Problems): void {
+  checkHead(source, problems);
+  problems.expect(source.width, "数", "width");
+  const tables = new Map<string, string[]>();
+  const ids: string[] = [];
+  const list = asArray(source.tables, "tables", problems) ?? [];
+  list.forEach((value, index) => {
+    const table = checkErTable(value, index, problems);
+    if (table) {
+      ids.push(table.id);
+      tables.set(table.id, table.columns);
+    }
+  });
+  checkDuplicates(ids, "テーブル", problems);
+  const relations = asArray(source.relations, "relations", problems) ?? [];
+  relations.forEach((value, index) => {
+    const relation = asObject(value, `relations[${index}]`, problems);
+    if (!relation) {
+      return;
+    }
+    const label =
+      typeof relation.label === "string"
+        ? `関係「${relation.label}」`
+        : `${index + 1} つ目の関係`;
+    checkErEnd(relation, "from", label, tables, problems);
+    checkErEnd(relation, "to", label, tables, problems);
+    checkErCardinality(relation.fromCard, `${label}の fromCard`, problems);
+    checkErCardinality(relation.toCard, `${label}の toCard`, problems);
+    checkOptionalText(relation.label, `${label}の label`, problems);
+    if (relation.midX !== undefined) {
+      problems.expect(relation.midX, "数", `${label}の midX`);
+    }
+  });
+}
+
 /** 種類ごとの形の確かめ */
 const CHECKERS: Record<
   DiagramDirective,
@@ -1096,6 +1367,7 @@ const CHECKERS: Record<
   sequence: checkSequence,
   chart: checkChart,
   param: checkParam,
+  er: checkEr,
 };
 
 /** 印の範囲の `json` のコードブロックを読み、種類ごとの形を確かめる。読めない箇所は書き方の警告の文にして返す */

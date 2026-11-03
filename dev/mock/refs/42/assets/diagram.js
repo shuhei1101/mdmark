@@ -33,6 +33,10 @@
     copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
     alert: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+    // ER 図のテーブル（lucide の table）と、列を畳む・開くボタン（chevrons-down-up・chevrons-up-down）
+    table: '<path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/>',
+    foldColumns: '<path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/>',
+    unfoldColumns: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
   };
 
   // 箱の種類の既定の名前（定義の tag が無いときに種類の行に出す）と、凡例の並び
@@ -92,7 +96,7 @@
   const SCATTER_POINT_SIZE = 5.5;
 
   // 文字を選べる所（ここではドラッグを始めない）と、押せる所
-  const TEXT_SELECTOR = ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
+  const TEXT_SELECTOR = ".mdmark-diagram-er-head, .mdmark-diagram-er-columns, .mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
   const CONTROL_SELECTOR = "button, a, input";
 
   // 図ごとの id の通し番号
@@ -702,6 +706,7 @@
   /** 図の定義に出る色・形・線・矢じり・印を全て載せた凡例の項目。 */
   const legendItems = (def, fid) => {
     const item = (sample, text) => `<li class="mdmark-diagram-legend-item">${sample}<span>${text}</span></li>`;
+    if (def.kind === "er") return erLegendItems(def, item);
     if (def.kind === "chart") {
       const type = def.type ?? "line";
       if (type === "pie" || type === "donut") return def.items.map((it, i) => item(fillSample(fid, i + 1), `${esc(it.name)}（${esc(it.value)}${esc(def.unit ?? "")}）`));
@@ -754,10 +759,140 @@
     </div>`;
   };
 
+  // ER 図の寸法（px）: テーブルの見出しの高さ・列の行の高さ・畳んだときの「非表示 n 列」の行の高さ・関係の線の端の記号の長さ
+  const ER_HEAD_H = 44;
+  const ER_ROW_H = 26;
+  const ER_REST_H = 24;
+  const ER_END = 18;
+
+  // ER 図の列の印の名前（凡例と読み上げ）
+  const ER_KEYS = { pk: "主キー", fk: "外部キー", nn: "NOT NULL" };
+
+  // ER 図のテーブルの種類: 見出しに出す名前と、color を指定しないときの色（色のプリセットの名前）
+  const ER_KINDS = {
+    master: { label: "マスター", color: "blue" },
+    transaction: { label: "トランザクション", color: "orange" },
+  };
+
+  /** テーブルの色（color の指定、無ければ種類の既定の色。どちらも無ければ null）。 */
+  const erTableColor = (table) => table.color ?? ER_KINDS[table.kind]?.color ?? null;
+
+  /** ER 図のテーブルで見せる列（畳んだテーブルは主キーと外部キーの列だけ）。 */
+  const erVisibleColumns = (table) => (table.folded ? table.columns.filter((c) => c.pk || c.fk) : table.columns);
+
+  /** ER 図のテーブルの高さ。 */
+  const erTableHeight = (table) => {
+    const shown = erVisibleColumns(table);
+    return ER_HEAD_H + shown.length * ER_ROW_H + (table.folded ? ER_REST_H : 0) + 4;
+  };
+
+  /** ER 図の列の行の縦の中心（列が畳まれて見えないときは見出しの中心）。 */
+  const erColumnY = (table, name) => {
+    const index = erVisibleColumns(table).findIndex((c) => c.name === name);
+    return table.y + (index < 0 ? ER_HEAD_H / 2 : ER_HEAD_H + ER_ROW_H * (index + 0.5) + 2);
+  };
+
+  /** ER 図のテーブルのツールチップの中身（論理名と概要・列ごとの説明）。 */
+  const erTipHtml = (table) => {
+    const rows = table.columns.filter((c) => c.desc).map((c) => `<dt><code>${esc(c.name)}</code></dt><dd>${esc(c.desc)}</dd>`).join("");
+    return `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${esc(table.label)}（${esc(table.name)}）</span>${table.desc ? `<span class="mdmark-term-tip-meaning">${esc(table.desc)}</span>` : ""}${rows ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>` : ""}</span>`;
+  };
+
+  /** ER 図のテーブルの HTML（見出しの物理名・論理名と、列の印・名前・型の行）。 */
+  const erTableHtml = (table, tips) => {
+    const shown = erVisibleColumns(table);
+    const hidden = table.columns.length - shown.length;
+    const keyed = table.columns.filter((c) => c.pk || c.fk).length;
+    const foldable = keyed < table.columns.length;
+    let info = "";
+    if (hintsOn && (table.desc || table.columns.some((c) => c.desc))) {
+      const id = tips.add(erTipHtml(table), `table:${table.id}`);
+      info = `<button class="mdmark-diagram-info" type="button" aria-label="「${esc(table.label)}」の説明" aria-describedby="${id}" data-tip-owner="table:${esc(table.id)}">${icon("info")}</button>`;
+    }
+    const fold = foldable
+      ? `<button class="mdmark-diagram-er-fold" type="button" aria-expanded="${table.folded ? "false" : "true"}" aria-label="「${esc(table.label)}」の主キーと外部キー以外の列" data-er-fold="${esc(table.id)}">${icon(table.folded ? "unfoldColumns" : "foldColumns")}</button>`
+      : "";
+    const mark = (c) =>
+      ["pk", "fk", "nn"]
+        .filter((k) => c[k])
+        .map((k) => `<abbr class="mdmark-diagram-er-key" data-key="${k}" title="${ER_KEYS[k]}">${k.toUpperCase()}</abbr>`)
+        .join("");
+    const rows = shown
+      .map((c) => `<li class="mdmark-diagram-er-column"${c.pk ? " data-pk" : ""}><span class="mdmark-diagram-er-keys">${mark(c)}</span><span class="mdmark-diagram-er-name">${esc(c.name)}</span><span class="mdmark-diagram-er-type">${esc(c.type)}</span></li>`)
+      .join("");
+    const rest = table.folded ? `<li class="mdmark-diagram-er-rest">非表示 ${hidden} 列</li>` : "";
+    const color = erTableColor(table);
+    const kind = ER_KINDS[table.kind] ? `<span class="mdmark-diagram-er-kind">${ER_KINDS[table.kind].label}</span>` : "";
+    return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${esc(table.id)}"${color ? ` data-color="${esc(color)}"` : ""} style="left:${table.x}px;top:${table.y}px;width:${table.w}px">
+      <div class="mdmark-diagram-er-head">${fold}
+        <span class="mdmark-diagram-er-title">${icon("table")}<span class="mdmark-diagram-er-physical">${esc(table.name)}</span></span>
+        <span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">${esc(table.label)}</span>${kind}</span>
+        <span class="mdmark-diagram-er-actions">${info}</span>
+      </div>
+      <ul class="mdmark-diagram-er-columns" aria-label="「${esc(table.label)}」の列">${rows}${rest}</ul>
+    </div>`;
+  };
+
+  /** 関係の線の端の記号（多重度。1 は縦線 2 本・0..1 は丸と縦線・1..n は縦線と鳥の足・0..n は丸と鳥の足）。dir は線がテーブルから出る向き（1 右・-1 左）。 */
+  const erEndSvg = (x, y, dir, card) => {
+    const at = (d) => x + dir * d;
+    const bar = (d) => `<line class="mdmark-diagram-er-end" x1="${at(d)}" y1="${y - 6}" x2="${at(d)}" y2="${y + 6}"/>`;
+    const ring = (d) => `<circle class="mdmark-diagram-er-end" data-ring="" cx="${at(d)}" cy="${y}" r="4"/>`;
+    const crow = `<path class="mdmark-diagram-er-end" d="M${at(10)},${y} L${at(0)},${y - 7} M${at(10)},${y} L${at(0)},${y} M${at(10)},${y} L${at(0)},${y + 7}"/>`;
+    const shapes = { 1: [bar(6), bar(11)], "0..1": [bar(6), ring(14)], "1..n": [crow, bar(14)], "0..n": [crow, ring(15)] };
+    return (shapes[card] ?? shapes[1]).join("");
+  };
+
+  /** ER 図の本体（関係の線・多重度・ラベル・テーブル）を描き、図の大きさを返す。 */
+  const renderEr = (def, fid, tips) => {
+    const tables = new Map(def.tables.map((t) => [t.id, t]));
+    const height = Math.max(...def.tables.map((t) => t.y + erTableHeight(t))) + 32;
+    const svg = [];
+    const labels = [];
+    for (const rel of def.relations) {
+      const a = tables.get(rel.from);
+      const b = tables.get(rel.to);
+      // 縦に並んだテーブルどうしは、両方の右の辺から出して右の外を回す
+      const stacked = a.x === b.x;
+      const dir = b.x > a.x || stacked ? 1 : -1;
+      const x1 = dir > 0 ? a.x + a.w : a.x;
+      const x2 = stacked || dir < 0 ? b.x + b.w : b.x;
+      const y1 = erColumnY(a, rel.fromColumn);
+      const y2 = erColumnY(b, rel.toColumn);
+      const mid = rel.midX ?? (x1 + x2) / 2;
+      const d = `M${x1},${y1} H${mid} V${y2} H${x2}`;
+      svg.push(`<path class="mdmark-diagram-wire" data-line="er" d="${d}"/>`);
+      svg.push(erEndSvg(x1, y1, dir, rel.fromCard));
+      svg.push(erEndSvg(x2, y2, stacked ? 1 : -dir, rel.toCard));
+      if (rel.label) labels.push(`<span class="mdmark-diagram-label" data-line="er" style="left:${mid}px;top:${(y1 + y2) / 2}px">${esc(rel.label)}</span>`);
+    }
+    const parts = [`<svg class="mdmark-diagram-wires" width="${def.width}" height="${height}" aria-hidden="true">${svg.join("")}</svg>`];
+    for (const table of def.tables) parts.push(erTableHtml(table, tips));
+    parts.push(...labels);
+    return { html: parts.join(""), width: def.width, height };
+  };
+
+  /** 凡例の ER 図の項目（列の印と、関係の線の端の多重度の記号）。 */
+  const erLegendItems = (def, item) => {
+    const keys = ["pk", "fk", "nn"].filter((k) => def.tables.some((t) => t.columns.some((c) => c[k])));
+    // 種類: 図にある種類ごとに、テーブルの見出しと同じ札を見本にする（color= で色を上書きしたテーブルも札の文字で対応が取れる）
+    const kinds = Object.keys(ER_KINDS).filter((k) => def.tables.some((t) => t.kind === k));
+    const items = kinds.map((k) => item(`<span class="mdmark-diagram-er-kind mdmark-diagram-er-kind-sample" data-color="${ER_KINDS[k].color}" aria-hidden="true">${ER_KINDS[k].label}</span>`, `${ER_KINDS[k].label}のテーブル`));
+    items.push(...keys.map((k) => item(`<abbr class="mdmark-diagram-er-key" data-key="${k}">${k.toUpperCase()}</abbr>`, ER_KEYS[k])));
+    const cards = { 1: "1 つ", "0..1": "0 か 1 つ", "1..n": "1 つ以上", "0..n": "0 以上" };
+    const used = new Set(def.relations.flatMap((r) => [r.fromCard, r.toCard]));
+    for (const card of Object.keys(cards)) {
+      if (!used.has(card)) continue;
+      items.push(item(`<svg class="mdmark-diagram-legend-sample mdmark-diagram-er-sample" width="34" height="16" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="er" d="M8,8 H34"/>${erEndSvg(4, 8, 1, card)}</svg>`, cards[card]));
+    }
+    return items;
+  };
+
   /** 図の本体を種類ごとに描く。 */
   const renderBody = (def, fid, tips) => {
     if (def.kind === "sequence") return renderSequence(def, fid, tips);
     if (def.kind === "chart") return renderChart(def, fid);
+    if (def.kind === "er") return renderEr(def, fid, tips);
     return renderFlow(def, fid, tips);
   };
 
@@ -787,6 +922,15 @@
     const view = attachView(figure, body.width, body.height, modal);
     attachTips(figure);
     figure.querySelector('[data-tool="fullscreen"]')?.addEventListener("click", (event) => openFullscreen(getDef(), event.currentTarget));
+    // ER 図の列を畳む・開く: テーブルの状態を変えて描き直し、押したボタンへフォーカスを戻す
+    for (const button of figure.querySelectorAll("[data-er-fold]")) {
+      button.addEventListener("click", () => {
+        const table = def.tables.find((t) => t.id === button.dataset.erFold);
+        table.folded = !table.folded;
+        mountDiagram(figure, def, { getDef, modal });
+        figure.querySelector(`[data-er-fold="${CSS.escape(table.id)}"]`).focus();
+      });
+    }
     return { view, fid, tips };
   };
 
@@ -979,7 +1123,7 @@
 
     /** ツールチップを持ち主の下（収まらなければ上）に、画面からはみ出さないよう置く。 */
     const place = (tip, anchor) => {
-      const target = anchor.classList.contains("mdmark-diagram-info") ? anchor.closest(".mdmark-diagram-node") : anchor;
+      const target = anchor.classList.contains("mdmark-diagram-info") ? anchor.closest(".mdmark-diagram-node, .mdmark-diagram-er-table") : anchor;
       const a = target.getBoundingClientRect();
       const b = box.getBoundingClientRect();
       const { width, height } = tip.getBoundingClientRect();

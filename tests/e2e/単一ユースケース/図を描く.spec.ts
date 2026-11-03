@@ -22,6 +22,7 @@ import {
   removeDistRoot,
   routeSyntax,
 } from "../dist-page.ts";
+import { ER_DEFINITION, erMarkdown } from "../er.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -724,4 +725,96 @@ test("test_normal_when_many_series", async ({ page }) => {
   expect(await minSeriesContrast(line)).toBeGreaterThanOrEqual(3);
   await page.emulateMedia({ colorScheme: "dark" });
   expect(await minSeriesContrast(line)).toBeGreaterThanOrEqual(3);
+});
+
+// ER 図の部品の定義から、テーブル・列のマーカー・関係の線と多重度・ラベルを図の枠に描く（正常シナリオ（ER 図））
+test("test_normal_when_er_diagram", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: erMarkdown() });
+  // 検証
+  const figure = page.locator('#doc figure.mdmark-diagram[data-diagram="er"]');
+  await expect(figure).toHaveCount(1);
+  const tables = figure.locator(".mdmark-diagram-er-table");
+  await expect(tables).toHaveCount(3);
+  for (const table of ER_DEFINITION.tables) {
+    const node = figure.locator(
+      `.mdmark-diagram-er-table[data-node="${table.id}"]`,
+    );
+    await expect(node.locator(".mdmark-diagram-er-physical")).toHaveText(
+      table.name,
+    );
+    await expect(node.locator(".mdmark-diagram-er-logical")).toHaveText(
+      table.label,
+    );
+    await expect(node.locator(".mdmark-diagram-er-name")).toHaveText(
+      table.columns.map((column) => column.name),
+    );
+    await expect(node.locator(".mdmark-diagram-er-type")).toHaveText(
+      table.columns.map((column) => column.type),
+    );
+  }
+  const orders = figure.locator('.mdmark-diagram-er-table[data-node="orders"]');
+  await expect(
+    orders.locator('[data-column="id"] abbr[title="主キー"]'),
+  ).toHaveText("PK");
+  await expect(
+    orders.locator('[data-column="customer_id"] abbr[title="外部キー"]'),
+  ).toHaveText("FK");
+  await expect(
+    orders.locator('[data-column="ordered_at"] abbr[title="NOT NULL"]'),
+  ).toHaveText("NN");
+  const relations = figure.locator("g[data-er-relation]");
+  await expect(relations).toHaveCount(2);
+  for (const relation of ER_DEFINITION.relations) {
+    const group = figure.locator(
+      `g[data-er-from="${relation.from}"][data-er-to="${relation.to}"]`,
+    );
+    await expect(group.locator('path[data-line="er"]')).toHaveCount(1);
+    await expect(group.locator(".mdmark-diagram-er-end")).not.toHaveCount(0);
+    await expect(
+      figure.locator(".mdmark-diagram-label", { hasText: relation.label }),
+    ).toBeVisible();
+  }
+  await expect(figure.locator(".mdmark-diagram-title")).toHaveText(
+    ER_DEFINITION.title,
+  );
+  await expect(figure.locator('ul[aria-label="凡例"] li')).toHaveText([
+    /マスター/,
+    /トランザクション/,
+    /主キー/,
+    /外部キー/,
+    /NOT NULL/,
+    /1 つ$/,
+    /1 つ以上/,
+    /0 以上/,
+  ]);
+});
+
+// 読めない ER 図の定義の場所だけを書き方の警告にし、正しい定義の ER 図と段落は描く（異常シナリオ（ER 図の定義を読めない））
+test("test_error_when_er_definition_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const broken = {
+    ...ER_DEFINITION,
+    relations: ER_DEFINITION.relations.map((relation) =>
+      relation.label === "注文する"
+        ? { ...relation, to: "payments" }
+        : relation,
+    ),
+  };
+  // 実行
+  await mountDocument(page, {
+    markdown: [erMarkdown(broken), erMarkdown(), "後ろの段落", ""].join("\n"),
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("ER 図の部品の定義を読めません");
+  await expect(warning).toContainText("payments");
+  await expect(
+    page.locator('#doc figure.mdmark-diagram[data-diagram="er"]'),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc > p")).toHaveText("後ろの段落");
 });
