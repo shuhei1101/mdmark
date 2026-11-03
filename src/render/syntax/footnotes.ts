@@ -5,7 +5,6 @@ import type {
   StateInline,
   Token,
 } from "markdown-it";
-import { escapeHtml } from "../../parts/escape.ts";
 import {
   FOOTNOTE_BODY_OPEN,
   renderFootnoteRef,
@@ -13,12 +12,18 @@ import {
 } from "../../parts/footnote.ts";
 import { markOwn, SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import type { RenderEnv } from "../parser.ts";
-import { envOf, featureOn, ownBlock } from "./tokens.ts";
+import { envOf, featureOn } from "./tokens.ts";
 
 /** 脚注の定義の囲みの開きと閉じ、本文の参照のトークンの種類 */
-const DEF_OPEN = "mdmark_footnote_def_open";
-const DEF_CLOSE = "mdmark_footnote_def_close";
+export const DEF_OPEN = "mdmark_footnote_def_open";
+export const DEF_CLOSE = "mdmark_footnote_def_close";
 const REF = "mdmark_footnote_ref";
+
+/** 文書の末尾の脚注の一覧のトークンの種類 */
+const LIST = "mdmark_footnote_list";
+
+/** 行内の脚注の定義のキーの頭（ラベルの正規化の結果に現れない制御文字で始める） */
+const INLINE_KEY_PREFIX = "\u0000inline:";
 
 /** 定義の 2 段落目以降に要る字下げの幅 */
 const CONTINUATION_INDENT = 4;
@@ -35,7 +40,7 @@ const SPACE = 0x20;
 const TAB = 0x09;
 const NEWLINE = 0x0a;
 
-/** 参照した順の脚注 1 つ。`key` が `null` なら行内の脚注で、`inline` に中身のトークンを持つ */
+/** 参照した順の脚注 1 つ。行内の脚注は `collectFootnotes` が定義の囲みにするまで `key` が `null` で、`inline` に中身のトークンを持つ */
 export type FootnoteNote = {
   key: string | null;
   inline: Token[] | null;
@@ -310,14 +315,21 @@ function restoreReferences(state: StateCore, tokens: Token[]): void {
   }
 }
 
-/** 脚注の機能がオンなら定義を本文から取り除いて控え、オフなら参照と定義を書いた文字のまま書いた位置に戻す */
+/** 脚注の機能がオンなら行内の脚注の中身を定義の囲みにして文書の末尾に足し（後のコアルールを本文と同じく通すため）、オフなら参照と定義を書いた文字のまま書いた位置に戻す */
 export function collectFootnotes(state: StateCore): void {
   const env = envOf(state);
   const footnotes = env.mdmarkFootnotes;
   if (footnotes === undefined) {
     return;
   }
-  const on = featureOn(state, "footnotes");
+  if (featureOn(state, "footnotes")) {
+    footnotes.notes.forEach((note, id) => {
+      if (note.inline !== null) {
+        state.tokens.push(...inlineDefinition(state, note, id));
+      }
+    });
+    return;
+  }
   const out: Token[] = [];
   for (let index = 0; index < state.tokens.length; index++) {
     const token = state.tokens[index];
@@ -329,28 +341,91 @@ export function collectFootnotes(state: StateCore): void {
       continue;
     }
     const close = findDefinitionClose(state.tokens, index);
-    const inner = state.tokens.slice(index + 1, close);
     const meta = token.meta as DefinitionMeta;
-    if (!on) {
-      out.push(...restoreDefinition(state, meta.source, inner));
-    } else if (meta.first) {
-      footnotes.definitions.set(meta.key, inner);
+    out.push(
+      ...restoreDefinition(
+        state,
+        meta.source,
+        state.tokens.slice(index + 1, close),
+      ),
+    );
+    index = close;
+  }
+  state.tokens = out;
+  restoreReferences(state, out);
+  delete env.mdmarkFootnotes;
+}
+
+/** 行内の脚注の中身を 1 段落の定義の囲みにし、脚注に定義のキーを当てる */
+function inlineDefinition(
+  state: StateCore,
+  note: FootnoteNote,
+  id: number,
+): Token[] {
+  const key = `${INLINE_KEY_PREFIX}${id}`;
+  envOf(state).mdmarkFootnotes?.definitions.set(key, null);
+  const open = new state.Token(DEF_OPEN, "", 1);
+  open.meta = { key, first: true, source: "" } satisfies DefinitionMeta;
+  const paragraphOpen = new state.Token("paragraph_open", "p", 1);
+  paragraphOpen.block = true;
+  const inline = new state.Token("inline", "", 0);
+  inline.children = note.inline;
+  inline.content = (note.inline ?? []).map((child) => child.content).join("");
+  const paragraphClose = new state.Token("paragraph_close", "p", -1);
+  paragraphClose.block = true;
+  const close = new state.Token(DEF_CLOSE, "", -1);
+  note.key = key;
+  note.inline = null;
+  return [open, paragraphOpen, inline, paragraphClose, close];
+}
+
+/** 定義の囲みの外のトークンだけを返す（用語の下線を脚注の中身に付けないため） */
+export function outsideFootnoteDefinitions(tokens: Token[]): Token[] {
+  const out: Token[] = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.type === DEF_OPEN) {
+      index = findDefinitionClose(tokens, index);
+    } else if (token !== undefined) {
+      out.push(token);
+    }
+  }
+  return out;
+}
+
+/** 全てのコアルールを通した定義の囲みを本文から取り除き、ラベルごとの最初の定義を控える */
+export function takeFootnoteDefinitions(state: StateCore): void {
+  const footnotes = envOf(state).mdmarkFootnotes;
+  if (footnotes === undefined) {
+    return;
+  }
+  const out: Token[] = [];
+  for (let index = 0; index < state.tokens.length; index++) {
+    const token = state.tokens[index];
+    if (token === undefined) {
+      continue;
+    }
+    if (token.type !== DEF_OPEN) {
+      out.push(token);
+      continue;
+    }
+    const close = findDefinitionClose(state.tokens, index);
+    const meta = token.meta as DefinitionMeta;
+    if (meta.first) {
+      footnotes.definitions.set(meta.key, state.tokens.slice(index + 1, close));
     }
     index = close;
   }
   state.tokens = out;
-  if (!on) {
-    restoreReferences(state, out);
-    delete env.mdmarkFootnotes;
-  }
 }
 
-/** 段落でないブロックの文字を、ツールチップの 1 段落の文字にする */
-function blockText(tokens: Token[]): string {
-  return tokens
-    .map((token) => token.content.trim())
-    .filter((text) => text !== "")
-    .join(" ");
+/** 段落でないブロックを描いた HTML から要素を除き、ツールチップの 1 段落の文字にする（描いた文字はエスケープ済み） */
+function blockText(md: MarkdownIt, env: RenderEnv, tokens: Token[]): string {
+  return md.renderer
+    .render(tokens, md.options, env)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** 脚注 1 つの中身を、ツールチップの段落ごとの行内の HTML と、一覧のブロックの HTML にする */
@@ -360,10 +435,6 @@ export function footnoteBodies(options: {
   note: FootnoteNote;
 }): { bodies: string[]; html: string } {
   const { md, env, note } = options;
-  if (note.inline !== null) {
-    const body = md.renderer.renderInline(note.inline, md.options, env);
-    return { bodies: [body], html: `<p>${body}</p>` };
-  }
   const tokens =
     (note.key === null
       ? null
@@ -388,9 +459,9 @@ export function footnoteBodies(options: {
       end += 1;
       depth += tokens[end]?.nesting ?? -depth;
     }
-    const text = blockText(tokens.slice(index, end + 1));
+    const text = blockText(md, env, tokens.slice(index, end + 1));
     if (text !== "") {
-      bodies.push(escapeHtml(text));
+      bodies.push(text);
     }
     index = end;
   }
@@ -426,17 +497,11 @@ function renderReference(md: MarkdownIt, token: Token, env: RenderEnv): string {
   return markOwnAroundBodies(html, bodies, env.nonce);
 }
 
-/** 脚注が 1 つ以上あれば、文書の末尾に閉じた脚注の一覧を足す */
-export function buildFootnoteList(state: StateCore): void {
-  const env = envOf(state);
-  const notes = env.mdmarkFootnotes?.notes ?? [];
-  if (notes.length === 0) {
-    return;
-  }
+/** 脚注の一覧の HTML にする。戻るリンクを最後の段落の閉じの前に置かせるため、中身を閉じの前後の差し込み口に分けて部品に渡し、中身の外にだけ印を付ける */
+function renderList(md: MarkdownIt, env: RenderEnv): string {
   const fills: string[] = [];
-  const items = notes.map((note, index) => {
-    const { html } = footnoteBodies({ md: state.md, env, note });
-    // 戻るリンクを最後の段落の閉じの前に置かせるため、中身を閉じの前後の差し込み口に分ける
+  const items = (env.mdmarkFootnotes?.notes ?? []).map((note, index) => {
+    const { html } = footnoteBodies({ md, env, note });
     const at = html.lastIndexOf("</p>");
     if (at < 0) {
       fills.push(html);
@@ -449,11 +514,18 @@ export function buildFootnoteList(state: StateCore): void {
       refCount: note.refCount,
     };
   });
-  const token = ownBlock(state, renderFootnotes({ items }));
-  const parts = splitSlots(token.content);
-  token.content = parts
+  return splitSlots(markOwn(renderFootnotes({ items }), env.nonce))
     .map((part, index) => `${part}${fills[index] ?? ""}`)
     .join("");
+}
+
+/** 脚注が 1 つ以上あれば、文書の末尾に脚注の一覧のトークンを足す（中身は全てのコアルールの後に描く） */
+export function buildFootnoteList(state: StateCore): void {
+  if ((envOf(state).mdmarkFootnotes?.notes.length ?? 0) === 0) {
+    return;
+  }
+  const token = new state.Token(LIST, "", 0);
+  token.block = true;
   state.tokens.push(token);
 }
 
@@ -477,6 +549,8 @@ export function useFootnotes(parser: MarkdownIt): void {
     "mdmark_footnote_ref",
     readFootnoteReference,
   );
+  parser.renderer.rules[LIST] = (_tokens, _index, _options, env) =>
+    renderList(parser, env as RenderEnv);
   parser.renderer.rules[REF] = (tokens, index, _options, env) => {
     const token = tokens[index];
     if (token === undefined) {

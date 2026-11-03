@@ -1,5 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
 import { type AttachmentKind, renderCard } from "../../parts/card.ts";
+import { DEF_CLOSE, DEF_OPEN } from "./footnotes.ts";
 import { featureOn, ownBlock } from "./tokens.ts";
 
 /** 添付の拡張子（小文字）から添付の種類を引く */
@@ -101,10 +102,17 @@ export function buildCards(state: StateCore): void {
   }
   const tokens = state.tokens;
   const out: Token[] = [];
+  // 脚注の定義の中のリンクは、ツールチップでリンクのまま読めるようにカードにしない
+  let definitionDepth = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index] as Token;
+    if (token.type === DEF_OPEN) {
+      definitionDepth += 1;
+    } else if (token.type === DEF_CLOSE) {
+      definitionDepth -= 1;
+    }
     const link =
-      token.type === "paragraph_open"
+      token.type === "paragraph_open" && definitionDepth === 0
         ? soleLinkOf(tokens[index + 1])
         : undefined;
     const autolinked = AUTOLINK_MARKUPS.includes(link?.open.markup ?? "");

@@ -1,5 +1,6 @@
 import type { TooltipPlacement } from "../config.ts";
 import { chooseTipSide } from "./placement.ts";
+import { openEnclosing } from "./sections.ts";
 
 // ポインターが番号とツールチップの間を移る間、閉じるのを待つ時間（ミリ秒）
 const CLOSE_DELAY_MS = 150;
@@ -189,6 +190,8 @@ export function attachFootnotes(options: {
       }
       target.setAttribute("tabindex", "-1");
     }
+    // 移る先を囲む閉じた節・選ばれていないタブ・閉じた行の詳細を開く
+    openEnclosing(target);
     target.scrollIntoView({ block: "center" });
     target.focus();
   };
