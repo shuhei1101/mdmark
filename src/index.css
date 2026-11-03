@@ -42,6 +42,8 @@
     --mdmark-color-current-bg: #e6f3f1;
     --mdmark-sticky-top: 0px;
     --mdmark-color-term-underline: var(--mdmark-color-muted);
+    /* 本文と一覧の脚注の番号の色 */
+    --mdmark-color-footnote-ref: var(--mdmark-color-link);
     --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
     --mdmark-tooltip-max-width: 22rem;
     --mdmark-tooltip-max-height: 18rem;
@@ -4450,6 +4452,210 @@
       /* 被参照の一覧: 改ページで切らない */
       .mdmark-backlinks {
         break-inside: avoid;
+      }
+    }
+  }
+
+  /* 脚注: 本文の番号・番号のツールチップ・文書の末尾の脚注の一覧 */
+  .mdmark {
+    /* 番号とツールチップの組: ツールチップを番号の上に置く基準。上付きでも行の高さを広げない */
+    .mdmark-fn-ref {
+      position: relative;
+      font-size: 0.75em;
+      line-height: 0;
+      vertical-align: super;
+    }
+
+    /* 番号: 番号の色の上付きの数字を角括弧で囲む。用語の破線の下線を引かず、形で見分ける */
+    .mdmark-fn-link {
+      padding-inline: 0.1em;
+      border-radius: 2px;
+      color: var(--mdmark-color-footnote-ref);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      text-decoration: none;
+
+      &::before {
+        content: "[";
+      }
+
+      &::after {
+        content: "]";
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
+    /* 番号のツールチップ: 用語のツールチップと同じ枠・大きさで番号の上に置く。下の透明な線で番号との間を空ける。上付きの小さい文字を本文の大きさに戻す */
+    .mdmark-fn-tip {
+      display: none;
+      position: absolute;
+      inset-block: auto 100%;
+      inset-inline-start: 0;
+      z-index: 10;
+      box-sizing: border-box;
+      width: max-content;
+      max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
+      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5em 0.75em;
+      border: 1px solid var(--mdmark-color-muted);
+      border-block-end: 0.4em solid transparent;
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque) padding-box;
+      color: var(--mdmark-color-text);
+      font-size: 0.875rem;
+      font-weight: normal;
+      line-height: 1.6;
+      text-align: start;
+      vertical-align: baseline;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    /* 番号の下に開いたツールチップ（上に収まらないとき）: 透明な線を上に移す */
+    .mdmark-fn-ref.is-below .mdmark-fn-tip {
+      inset-block: 100% auto;
+      border-block-start: 0.4em solid transparent;
+      border-block-end: 1px solid var(--mdmark-color-muted);
+    }
+
+    /* 番号にポインターを乗せたかフォーカスしたときと、スクリプトが開いたとき: ツールチップを出す */
+    .mdmark-fn-ref:is(:hover, :focus-within) .mdmark-fn-tip,
+    .mdmark-fn-ref.is-open .mdmark-fn-tip {
+      display: block;
+    }
+
+    /* Esc で閉じたツールチップ: ポインターかフォーカスが番号を離れるまで出さない */
+    .mdmark-fn-ref.is-dismissed .mdmark-fn-tip {
+      display: none;
+    }
+
+    /* ツールチップのタイトル（「脚注 1」）: 用語のツールチップの区分の見出しと同じ控えめな太字 */
+    .mdmark-fn-tip-title {
+      display: block;
+      margin-block-end: 0.15em;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    /* ツールチップの中身: 定義の段落ごとに block で積み、段落の間を空ける */
+    .mdmark-fn-tip-body {
+      display: block;
+
+      & + & {
+        margin-block-start: 0.4em;
+      }
+    }
+
+    /* 脚注の一覧: 本文と間を空け、本文より 1 段小さい文字にする。既定で閉じる */
+    .mdmark-footnotes {
+      margin-block-start: calc(var(--mdmark-space) * 2.25);
+      font-size: 0.875em;
+    }
+
+    /* 一覧の見出し: 件数を添える */
+    .mdmark-footnotes > summary {
+      color: var(--mdmark-color-heading);
+    }
+
+    /* 一覧の項目の並び: 番号を本文の番号と同じ角括弧で出す */
+    .mdmark-footnotes-list {
+      margin: 0.5em 0 0;
+      padding-inline-start: 2.4em;
+      list-style: none;
+      counter-reset: mdmark-fn;
+    }
+
+    /* 一覧の項目 */
+    .mdmark-fn-item {
+      position: relative;
+      counter-increment: mdmark-fn;
+      border-radius: 2px;
+
+      &::before {
+        position: absolute;
+        inset-inline-start: -2.4em;
+        color: var(--mdmark-color-footnote-ref);
+        content: "[" counter(mdmark-fn) "]";
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+
+      & + & {
+        margin-block-start: 0.35em;
+      }
+
+      /* 番号から移ってきた項目: フォーカスの枠で示す */
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      > p {
+        margin: 0;
+      }
+    }
+
+    /* 本文へ戻るリンク: アイコンと、戻る先が 2 つ以上のときの a・b。読み上げの名前は aria-label */
+    .mdmark-fn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.1em;
+      margin-inline-start: 0.3em;
+      border-radius: 2px;
+      color: var(--mdmark-color-link);
+      font-size: 0.875em;
+      font-weight: 600;
+      text-decoration: none;
+      vertical-align: -0.1em;
+
+      svg {
+        width: 1em;
+        height: 1em;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  /* 印刷のとき（脚注）: ツールチップと戻るリンクを出さず、番号は上付きのまま残す */
+  @media print {
+    .mdmark {
+      /* 番号のツールチップ: 開いていても紙に出さない */
+      .mdmark-fn-ref .mdmark-fn-tip {
+        display: none !important;
+      }
+
+      /* 番号のリンク: 紙では押せないので、リンクの URL を併記しない */
+      .mdmark-fn-link::after {
+        content: "]" !important;
+      }
+
+      /* 戻るリンク: 紙では押せないので出さない */
+      .mdmark-fn-back {
+        display: none;
+      }
+
+      /* 一覧の見出し: 開閉のマーカーを出さない */
+      .mdmark-footnotes > summary {
+        list-style: none;
+
+        &::-webkit-details-marker {
+          display: none;
+        }
       }
     }
   }

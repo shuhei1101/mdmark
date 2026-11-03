@@ -39,6 +39,12 @@ import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
 import { buildTextColors } from "./syntax/text-color.ts";
 import { buildToc } from "./syntax/toc.ts";
+import {
+  buildFootnoteList,
+  collectFootnotes,
+  type FootnoteState,
+  useFootnotes,
+} from "./syntax/footnotes.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
 import { buildViews } from "./syntax/views.ts";
 
@@ -78,6 +84,8 @@ export type RenderEnv = {
   diagramCount?: number;
   /** 用語のツールチップの数（`id` の通し番号。埋め込んだ HTML と本文で共有する） */
   termTipCount?: number;
+  /** 読んだ脚注の定義と参照（定義の block のルールが作り、機能がオフなら `collectFootnotes` が消す） */
+  mdmarkFootnotes?: FootnoteState | undefined;
   /** ヒントのツールチップの数（`id` の通し番号） */
   hintCount?: number;
   /** ビューの書き方の警告の数（`id` の通し番号） */
@@ -246,10 +254,11 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 脚注の定義 → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
+    ["mdmark_collect_footnotes", collectFootnotes],
     ["mdmark_assign_heading_ids", assignHeadingIds],
     ["mdmark_glossary", glossaryRule],
     ["mdmark_attach_row_details", attachRowDetails],
@@ -272,6 +281,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],
+    ["mdmark_build_footnote_list", buildFootnoteList],
     ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
@@ -281,6 +291,7 @@ export function createParser(): MarkdownItParser {
   for (const [name, rule] of rules) {
     parser.core.ruler.push(name, rule);
   }
+  useFootnotes(parser);
   // 印のトークンは、残っていても何も出さない
   parser.renderer.rules[MARK_TOKEN] = () => "";
   // 取り消し線: markdown-it の `<s>` を GitHub と同じ `<del>` にする

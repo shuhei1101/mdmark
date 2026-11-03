@@ -1275,6 +1275,12 @@ files:
     related:
       - to: src/interact/er-folds
         type: tests
+  - path: unit/src/interact/footnotes.browser.test.ts
+    description: src/interact/footnotes.ts（「脚注のツールチップの開閉と、番号と末尾の一覧の行き来」）を確かめるブラウザで流す単体テスト。footnotes.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:脚注]
+    related:
+      - to: src/interact/footnotes
+        type: tests
   - path: unit/src/interact/gif.browser.test.ts
     description: src/interact/gif.ts（「GIF を止める・再生するボタンを付ける」）を確かめるブラウザで流す単体テスト。gif.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:画像, topic:gif]
@@ -1571,6 +1577,12 @@ files:
     related:
       - to: src/parts/figure
         type: tests
+  - path: unit/src/parts/footnote.test.ts
+    description: src/parts/footnote.ts（「脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes」）を確かめる単体テスト。footnote.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:脚注]
+    related:
+      - to: src/parts/footnote
+        type: tests
   - path: unit/src/parts/gallery.test.ts
     description: src/parts/gallery.ts（「ギャラリーの renderGallery」）を確かめる単体テスト。gallery.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:画像]
@@ -1822,6 +1834,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:図表の番号]
     related:
       - to: src/render/syntax/figures
+        type: tests
+  - path: unit/src/render/syntax/footnotes.test.ts
+    description: src/render/syntax/footnotes.ts（「脚注の定義・参照・行内の脚注の読み取りと、末尾の一覧・機能のオフの文字への戻し」）を確かめる単体テスト。footnotes.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:脚注]
+    related:
+      - to: src/render/syntax/footnotes
         type: tests
   - path: unit/src/render/syntax/gallery.test.ts
     description: src/render/syntax/gallery.ts（「ギャラリー」）を確かめる単体テスト。gallery.ts を変えたときに、合わせて見修正するケースを探すときに読む。

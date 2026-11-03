@@ -50,6 +50,7 @@ import {
 import { renderDiffToggle } from "../src/parts/diff-toggle.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
+import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
 import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
 import { renderFigure } from "../src/parts/figure.ts";
 import { renderGallery } from "../src/parts/gallery.ts";
@@ -964,6 +965,30 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     renderBadge({
       label: String(args.label ?? ""),
       ...(args.color === undefined ? {} : { color: args.color as ColorName }),
+    }),
+  "footnote-ref": (args) => {
+    const html = renderFootnoteRef({
+      number: Number(args.number),
+      refIndex: args.refIndex === undefined ? 0 : Number(args.refIndex),
+      bodies: args.bodies as string[],
+      below: args.below === true,
+    });
+    // 開いた状態を見せるストーリーは、番号に `is-open` を付け、ツールチップの上と下に余白を取る
+    const open = args.open === true;
+    const ref = open
+      ? html.replace('class="mdmark-fn-ref', 'class="mdmark-fn-ref is-open')
+      : html;
+    const space = open ? "12rem" : "0";
+    return `<p style="padding-block:${space}">本文の補足${ref}を読む。</p>`;
+  },
+  footnotes: (args) =>
+    renderFootnotes({
+      items: args.items as Array<{
+        number: number;
+        html: string;
+        refCount: number;
+      }>,
+      open: args.open === true,
     }),
   "text-color": storyTextColor,
   "image-figure": storyImageFigure,
