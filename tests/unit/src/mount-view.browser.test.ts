@@ -100,7 +100,11 @@ const COMMENTS_MODULE_CODE = `
 const rec = globalThis.__mdmarkMountTest;
 export async function attachComments({ root }) {
   rec.attached.push(root);
-  return () => { rec.detached += 1; };
+  return {
+    detach: () => { rec.detached += 1; },
+    reload: async () => {},
+    focus: () => {},
+  };
 }
 `;
 
