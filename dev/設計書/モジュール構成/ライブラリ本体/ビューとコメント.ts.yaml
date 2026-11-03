@@ -1109,6 +1109,12 @@ functions:
         condition: '`c1`・`c2` の 2 件を別の段落に付け、`focus("c1")`、`focus("c2")`、`focus("無い")` の順に呼ぶ'
         mock: '`reveal` は引数を控える関数。`Element.prototype.scrollIntoView` を引数を控える関数に差し替える'
         expected: '`focus("c1")` の後は `c1` の印にフォーカスと `data-focused` があり、`reveal` がその印で、`scrollIntoView` が `{ block: "nearest" }` で呼ばれる。`focus("c2")` の後は `c1` の印が `data-focused` を持たない。`focus("無い")` の後も `c2` の印が `data-focused` を持つ。吹き出しは開かない'
+      - name: test_attach_comments_when_reloaded_with_margin
+        case: 正常
+        summary: 余白のマーカーを置いたとき、読み直すと付け直した印の数に余白のマーカーを置き直す
+        condition: '`root` が `div.mdmark-content` で `margin: true`。`load` が 1 回目は 1 つ目の段落の 1 件、2 回目は 2 つの段落それぞれの 2 件を返す。`reload()` の後に次のフレームを待つ'
+        mock: '`store` はメモリーで返す'
+        expected: '`reload()` の前は `div.mdmark-comment-margin` の中のマーカーが 1 つ、後は 2 つ'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
