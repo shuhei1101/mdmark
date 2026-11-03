@@ -360,3 +360,43 @@ test("test_load_libraries_when_extension_fails", async () => {
     ),
   ).toBe(true);
 });
+
+// 埋めた外部ライブラリは URL を読まずに表の関数で読み、表に無い名前は知らせの枠にする（正常系）
+test("test_load_libraries_when_embedded", async () => {
+  // 準備
+  const { loadLibraries: load, setEmbeddedLibraries } = await loadLibraries();
+  const { renderEmbed } = await loadEmbed();
+  const { renderNotice } = await loadNotice();
+  const root = createRoot(
+    renderEmbed({ name: "test-lib" }) + renderEmbed({ name: "other" }),
+  );
+  const draw = vi.fn();
+  const importModule = vi.fn<ImportModule>();
+  spyConsoleError();
+  setEmbeddedLibraries({
+    "test-lib": async (): Promise<LibraryModule> => ({ draw }),
+  });
+  try {
+    // 実行
+    await load({
+      root,
+      libraries: {
+        ...TEST_LIB,
+        other: { url: "/fixtures/other.js", figure: true },
+      },
+      isCurrent: () => true,
+      importModule,
+    });
+  } finally {
+    setEmbeddedLibraries(undefined);
+  }
+  // 検証
+  expect(importModule).not.toHaveBeenCalled();
+  const drawn = root.querySelector('[data-mdmark-slot="test-lib"]');
+  expect(drawn?.hasAttribute("data-mdmark-drawn")).toBe(true);
+  expect(draw).toHaveBeenCalledWith(drawn, []);
+  expect(root.querySelector('[data-mdmark-slot="other"]')).toBeNull();
+  expect(root.innerHTML).toContain(
+    normalize(renderNotice({ name: "other", figure: true })),
+  );
+});

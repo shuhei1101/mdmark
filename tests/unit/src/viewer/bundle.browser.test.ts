@@ -15,8 +15,6 @@ const PAYLOAD = {
     { path: "b.md", title: "B", markdown: "# 文書B\n" },
   ],
   entry: "a.md",
-  modules: {},
-  extensions: [],
 };
 
 const ORIGINAL_URL = `${location.pathname}${location.search}`;
@@ -29,7 +27,7 @@ afterEach(() => {
 /** 書き出す HTML と同じ画面の骨組みをページに置く */
 async function placeSkeleton(): Promise<void> {
   const { assembleHtml } = await loadHtml();
-  const html = assembleHtml({ payload: PAYLOAD, distCss: "", viewer: "" });
+  const html = assembleHtml({ payload: PAYLOAD, distCss: "", script: "" });
   const parsed = new DOMParser().parseFromString(html, "text/html");
   for (const script of parsed.querySelectorAll("script")) {
     script.remove();

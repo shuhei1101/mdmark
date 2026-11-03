@@ -17,6 +17,11 @@ const loadMain = () => import("../../../../src/cli/main.ts");
 
 const createTempDir = useTempDirs();
 
+/** URL を読まない書き出しで使う、呼ばれたら拒否する URL を読む関数 */
+const NO_FETCH = async (url: string): Promise<string> => {
+  throw new Error(`URL を読まない: ${url}`);
+};
+
 /** 読んだ設定を作る */
 function createLoaded(dir: string, config: Record<string, unknown>) {
   return { path: join(dir, "mdmark.config.yaml"), dir, config };
@@ -43,6 +48,7 @@ test("test_prepare_embeds", async () => {
   });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
@@ -50,8 +56,8 @@ test("test_prepare_embeds", async () => {
     out: join(dir, "guide.html"),
   });
   // 検証
-  expect(Object.keys(result.payload.modules)).toEqual(["test-lib"]);
-  expect(result.payload.extensions).toHaveLength(1);
+  expect(Object.keys(result.embeds.libraries)).toEqual(["test-lib"]);
+  expect(result.embeds.extensions).toEqual([join(dir, "extensions/greet.js")]);
   expect(result.themeCss).toContain("--mdmark-radius");
   expect(result.warnings).toEqual([]);
 });
@@ -68,6 +74,7 @@ test("test_prepare_embeds_when_unreadable", async () => {
   });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
@@ -75,7 +82,7 @@ test("test_prepare_embeds_when_unreadable", async () => {
     out: join(dir, "guide.html"),
   });
   // 検証
-  expect(result.payload.modules).toEqual({});
+  expect(result.embeds.libraries).toEqual({});
   const warnings = result.warnings.join("\n");
   expect(warnings).toContain("test-lib");
   expect(warnings).toContain("missing.css");
@@ -105,6 +112,7 @@ test("test_prepare_embeds_when_index", async () => {
   const loaded = createLoaded(dir, { index: "index.yaml" });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [
       { path: "guide.md", file: join(dir, "guide.md") },
@@ -225,6 +233,7 @@ test("test_prepare_embeds_when_tooltip_placement", async () => {
   const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
   const prepare = (config: Record<string, unknown>) =>
     prepareEmbeds({
+      fetchText: NO_FETCH,
       loaded: createLoaded(dir, config),
       docs,
       kind: "document",
@@ -250,6 +259,7 @@ test("test_prepare_embeds_when_labels", async () => {
   const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
   const prepare = (config: Record<string, unknown>) =>
     prepareEmbeds({
+      fetchText: NO_FETCH,
       loaded: createLoaded(dir, config),
       docs,
       kind: "document",
@@ -273,6 +283,7 @@ test("test_prepare_embeds_when_side_toc_mode", async () => {
   const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
   const prepare = (config: Record<string, unknown>) =>
     prepareEmbeds({
+      fetchText: NO_FETCH,
       loaded: createLoaded(dir, config),
       docs,
       kind: "document",
@@ -296,6 +307,7 @@ test("test_prepare_embeds_when_color_theme", async () => {
   const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
   const prepare = (config: Record<string, unknown>) =>
     prepareEmbeds({
+      fetchText: NO_FETCH,
       loaded: createLoaded(dir, config),
       docs,
       kind: "document",
@@ -337,6 +349,7 @@ test("test_prepare_embeds_when_syntax", async () => {
   const loaded = createLoaded(dir, { syntax: { url: "hl/" } });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
@@ -344,8 +357,8 @@ test("test_prepare_embeds_when_syntax", async () => {
     out: join(dir, "guide.html"),
   });
   // 検証
-  expect(result.payload.syntax?.core).toBeTruthy();
-  expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
+  expect(result.embeds.syntax?.core).toBe(join(dir, "hl/core.min.js"));
+  expect(Object.keys(result.embeds.syntax?.languages ?? {})).toEqual([
     "typescript",
   ]);
   expect(result.payload.config).not.toHaveProperty("syntax");
@@ -361,6 +374,7 @@ test("test_prepare_embeds_when_syntax_unreadable", async () => {
   const loaded = createLoaded(dir, { syntax: { url: "missing/" } });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
@@ -368,7 +382,7 @@ test("test_prepare_embeds_when_syntax_unreadable", async () => {
     out: join(dir, "guide.html"),
   });
   // 検証
-  expect(result.payload.syntax).toBeUndefined();
+  expect(result.embeds.syntax).toBeUndefined();
   expect(result.warnings).toHaveLength(1);
   expect(result.warnings[0]).toContain("missing/core.min.js");
   expect(result.warnings[0]).toContain("syntax.url");
@@ -387,6 +401,7 @@ test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
   const loaded = createLoaded(dir, { syntax: { url: "hl/" } });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
@@ -394,12 +409,42 @@ test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
     out: join(dir, "guide.html"),
   });
   // 検証
-  expect(Object.keys(result.payload.syntax?.languages ?? {})).toEqual([
+  expect(Object.keys(result.embeds.syntax?.languages ?? {})).toEqual([
     "typescript",
   ]);
   expect(result.warnings).toHaveLength(1);
   expect(result.warnings[0]).toContain("hl/languages/yaml.min.js");
   expect(result.warnings[0]).toContain("syntax.url");
+});
+
+// 束ねた後に動的 import が残る拡張を入れたうえで警告にする（正常系）
+test("test_prepare_embeds_when_dynamic_import_left", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.md": "# 題\n",
+    "extensions/dynamic.js": [
+      'const name = "./part.js";',
+      'export default { name: "dynamic", directive: "dynamic", load: () => import(name) };',
+      "",
+    ].join("\n"),
+  });
+  const loaded = createLoaded(dir, { extensions: ["extensions/dynamic.js"] });
+  // 実行
+  const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+    out: join(dir, "guide.html"),
+  });
+  // 検証
+  expect(result.embeds.extensions).toHaveLength(1);
+  expect(result.warnings).toHaveLength(1);
+  expect(result.warnings[0]).toContain("extensions/dynamic.js");
+  expect(result.warnings[0]).toContain("動的 import()");
 });
 
 // エイリアスを payload に入れ、ずれを警告にする（正常系）
@@ -426,6 +471,7 @@ test("test_prepare_embeds_when_aliases", async () => {
   });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",
@@ -469,6 +515,7 @@ test("test_prepare_embeds_when_media", async () => {
   const loaded = createLoaded(dir, { assets: { root: "assets" } });
   // 実行
   const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
     loaded,
     docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
     kind: "document",

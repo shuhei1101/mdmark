@@ -3,6 +3,9 @@ import { afterEach, expect, test } from "vitest";
 /** 書き出した HTML の起動の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadViewer = () => import("../../../../src/viewer/index.ts");
 
+/** 埋めたモジュールが無い書き出しの起動に渡す値 */
+const EMBEDDED = { parts: {}, libraries: {}, extensions: [] };
+
 afterEach(() => {
   document.body.innerHTML = "";
 });
@@ -15,8 +18,6 @@ test("test_start_viewer", async () => {
     config: {},
     docs: [{ path: "a.md", title: "題", markdown: "# 題\n" }],
     entry: "a.md",
-    modules: {},
-    extensions: [],
   };
   const script = document.createElement("script");
   script.type = "application/json";
@@ -27,7 +28,7 @@ test("test_start_viewer", async () => {
   document.body.append(script, article);
   // 実行
   const { startViewer } = await loadViewer();
-  await startViewer(document);
+  await startViewer(document, EMBEDDED);
   // 検証
   expect(article.querySelector("h1")?.textContent).toContain("題");
 });
@@ -40,8 +41,6 @@ test("test_start_viewer_when_aliases", async () => {
     config: {},
     docs: [{ path: "a.md", title: "題", markdown: "単体テストを流す。\n" }],
     entry: "a.md",
-    modules: {},
-    extensions: [],
     aliases: [
       {
         alias_type: "command",
@@ -62,7 +61,7 @@ test("test_start_viewer_when_aliases", async () => {
   document.body.append(script, article);
   // 実行
   const { startViewer } = await loadViewer();
-  await startViewer(document);
+  await startViewer(document, EMBEDDED);
   // 検証
   expect(article.querySelector(".mdmark-term")?.textContent).toBe("単体テスト");
   expect(article.querySelector(".mdmark-term-tip code")?.textContent).toBe(

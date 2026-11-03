@@ -88,20 +88,16 @@ export function usedSyntaxLanguages(options: {
   return [...languages].sort();
 }
 
-/** 埋める文書にビューの印があれば、埋める部品のモジュールのコードを入れた表を返す。無ければ空。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない */
+/** 埋める文書にビューの印があれば `true` を返す。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない */
 export function usedParts(options: {
   /** 埋める文書の Markdown */
   markdowns: string[];
-  /** `dist/view.js` のコード */
-  view: string;
-}): Partial<Record<"view", string>> {
-  const { markdowns, view } = options;
-  const found = markdowns.some((markdown) =>
+}): boolean {
+  return options.markdowns.some((markdown) =>
     [...markdown.matchAll(MARK_PATTERN)].some(
       ([, closing, name]) => closing !== "/" && name === "view",
     ),
   );
-  return found ? { view } : {};
 }
 
 /** URL の import を `fetchText` で読んで束ねる esbuild のプラグイン。取得したモジュールの中の import は、そのモジュールの URL を基準に解く */
@@ -161,6 +157,111 @@ export async function bundleModule(
       error instanceof Error ? error.message.split("\n")[0] : String(error);
     return { error: `${entry}: ${reason}` };
   }
+}
+
+/** 束ねたコードに残った動的 `import()` の呼び出しの並び（`import` と `(` の間の空白を許す） */
+const DYNAMIC_IMPORT_PATTERN = /\bimport\s*\(/;
+
+/** 束ねたコードに動的 `import()` の呼び出しが残るかを返す。変数を渡す `import()` は esbuild が取り込めず、束ねた後も残る */
+export function hasDynamicImport(code: string): boolean {
+  return DYNAMIC_IMPORT_PATTERN.test(code);
+}
+
+/** 同じ URL を 1 回だけ読む `FetchText` を返す。拒否した読み込みも控え、読み直さない */
+export function cacheFetchText(fetchText: FetchText = fetchByUrl): FetchText {
+  const cache = new Map<string, Promise<string>>();
+  return (url) => {
+    let pending = cache.get(url);
+    if (!pending) {
+      pending = fetchText(url);
+      cache.set(url, pending);
+    }
+    return pending;
+  };
+}
+
+/** `prepareEmbeds` が束ねられることを確かめた、起動の処理と 1 つのスクリプトに束ねるモジュールの読み先（URL か絶対パス） */
+export type ViewerEmbeds = {
+  /** 文書に印があり束ねられた外部ライブラリの、印の名前から読み先を引く表 */
+  libraries: Record<string, string>;
+  /** 束ねられた設定の `extensions` の拡張の読み先。設定の順 */
+  extensions: string[];
+  /** 束ねられた色分けの本体の読み先と、言語のモジュール名から読み先を引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
+  syntax?: { core: string; languages: Record<string, string> } | undefined;
+  /** ビューの部品を束ねるか */
+  view: boolean;
+};
+
+/** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返す関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返す */
+export function createViewerEntry(options: {
+  /** `dist/viewer.js` の絶対パス */
+  viewer: string;
+  /** `dist/view.js` の絶対パス */
+  view: string;
+  /** 束ねるモジュールの読み先 */
+  embeds: ViewerEmbeds;
+}): string {
+  const { viewer, view, embeds } = options;
+  const literal = (value: string): string => JSON.stringify(value);
+  const lines = [`import { startViewer } from ${literal(viewer)};`];
+  if (embeds.view) {
+    lines.push(`import * as viewPart from ${literal(view)};`);
+  }
+  const languages = Object.entries(embeds.syntax?.languages ?? {});
+  if (embeds.syntax) {
+    lines.push(`import syntaxCore from ${literal(embeds.syntax.core)};`);
+    languages.forEach(([, path], position) => {
+      lines.push(`import syntaxLanguage${position} from ${literal(path)};`);
+    });
+  }
+  const lazy = (path: string): string => `() => import(${literal(path)})`;
+  const libraries = Object.entries(embeds.libraries)
+    .map(([name, path]) => `${literal(name)}: ${lazy(path)}`)
+    .join(", ");
+  const extensions = embeds.extensions.map(lazy).join(", ");
+  const syntax = embeds.syntax
+    ? `, syntax: { core: { default: syntaxCore }, languages: { ${languages
+        .map(
+          ([name], position) =>
+            `${literal(name)}: { default: syntaxLanguage${position} }`,
+        )
+        .join(", ")} } }`
+    : "";
+  lines.push(
+    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}, libraries: { ${libraries} }, extensions: [${extensions}] });`,
+  );
+  return `${lines.join("\n")}\n`;
+}
+
+/** `createViewerEntry` のソースを入口に、分割せずに 1 つの ES モジュールのスクリプトに束ね、`</script` を `<\/script` に、`<!--` を `<\x21--` に替えて返す。束ねる失敗は例外のまま投げる */
+export async function bundleViewer(options: {
+  /** `createViewerEntry` のソース */
+  entry: string;
+  /** 設定ファイルのあるフォルダ */
+  baseDir: string;
+  /** URL を読む関数 */
+  fetchText: FetchText;
+}): Promise<string> {
+  const { entry, baseDir, fetchText } = options;
+  const result = await build({
+    absWorkingDir: baseDir,
+    stdin: { contents: entry, resolveDir: baseDir, loader: "js" },
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: BROWSER_TARGETS,
+    minify: true,
+    write: false,
+    outfile: "viewer.js",
+    plugins: [urlPlugin(fetchText)],
+    logLevel: "silent",
+  });
+  const code = result.outputFiles[0]?.text;
+  if (code === undefined) {
+    throw new Error("起動の処理を束ねた結果がありません");
+  }
+  // `script` 要素が途中で閉じない・script data escaped state に入らないように替える（どちらも文字列・正規表現・コメントの中にしか現れない）
+  return code.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
 }
 
 /** Markdown の画像の場所の一覧: その場所を含む行の範囲と、`src` の文字 */

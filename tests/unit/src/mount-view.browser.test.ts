@@ -55,9 +55,9 @@ afterEach(async () => {
   for (const el of elements.splice(0)) {
     el.remove();
   }
-  const { partModules, partModuleUrls } = await loadPartModules();
+  const { partModules, partModuleLoaders } = await loadPartModules();
   partModules.clear();
-  partModuleUrls.clear();
+  partModuleLoaders.clear();
   if (moduleUrl !== undefined) {
     URL.revokeObjectURL(moduleUrl);
     moduleUrl = undefined;
@@ -70,14 +70,15 @@ test("test_mount_when_view_marked", async () => {
   // 準備
   const record: Recorder = { attached: [], detached: 0 };
   globalThis.__mdmarkMountTest = record;
-  const { partModules, partModuleUrls, setPartModuleUrl } =
+  const { partModules, partModuleLoaders, setPartModuleLoader } =
     await loadPartModules();
   partModules.clear();
-  partModuleUrls.clear();
-  moduleUrl = URL.createObjectURL(
+  partModuleLoaders.clear();
+  const url = URL.createObjectURL(
     new Blob([VIEW_MODULE_CODE], { type: "text/javascript" }),
   );
-  setPartModuleUrl("view", moduleUrl);
+  moduleUrl = url;
+  setPartModuleLoader("view", () => import(/* @vite-ignore */ url));
   const el = document.createElement("div");
   document.body.append(el);
   elements.push(el);
@@ -114,14 +115,15 @@ test("test_mount_when_comments_without_side_toc", async () => {
   addStyles();
   const record: Recorder = { attached: [], detached: 0 };
   globalThis.__mdmarkMountTest = record;
-  const { partModules, partModuleUrls, setPartModuleUrl } =
+  const { partModules, partModuleLoaders, setPartModuleLoader } =
     await loadPartModules();
   partModules.clear();
-  partModuleUrls.clear();
-  moduleUrl = URL.createObjectURL(
+  partModuleLoaders.clear();
+  const url = URL.createObjectURL(
     new Blob([COMMENTS_MODULE_CODE], { type: "text/javascript" }),
   );
-  setPartModuleUrl("comments", moduleUrl);
+  moduleUrl = url;
+  setPartModuleLoader("comments", () => import(/* @vite-ignore */ url));
   const el = document.createElement("div");
   document.body.append(el);
   elements.push(el);

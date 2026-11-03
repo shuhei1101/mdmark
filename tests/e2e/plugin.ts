@@ -1,7 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { connect, createServer } from "node:net";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   Client,
@@ -42,6 +41,8 @@ function expandPluginRoot(
 export type ServeProcess = {
   /** 待ち受けている URL（`/mcp` まで） */
   url: string;
+  /** 待ち受けているポート */
+  port: number;
   /** 今までの標準出力 */
   stdout: () => string;
   /** 今までの標準エラー */
@@ -101,19 +102,12 @@ const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT"];
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
 const LISTEN_HOST = "127.0.0.1";
-// 既定のポート
-export const DEFAULT_PORT = 8782;
 // 待ち受けの URL が出たかを確かめる間隔（ミリ秒）
 const POLL_INTERVAL_MS = 20;
 // 空きを確かめたポートを別のプロセスに取られたときの、起動し直す回数の上限
 const MAX_START_ATTEMPTS = 5;
 // ポートが使われているときに `mdmark serve` が標準エラーに出す文に含まれる語
 const PORT_IN_USE_WORD = "別のプロセスが使っています";
-// 既定のポートを使うテストの間で譲り合う、ロックのフォルダ
-const DEFAULT_PORT_LOCK = join(tmpdir(), "mdmark-e2e-default-port.lock");
-// ロックが空くのを確かめる間隔と、待つ上限（ミリ秒）
-const LOCK_POLL_MS = 200;
-const LOCK_TIMEOUT_MS = 240_000;
 // PreToolUse のフックの名前
 const PRE_TOOL_USE = "PreToolUse";
 // プラグインの MCP サーバーのツール名の頭
@@ -155,44 +149,6 @@ export async function isListening(port: number): Promise<boolean> {
     });
     socket.once("error", () => resolve(false));
   });
-}
-
-/** 既定のポート 8782 を使うテストの間で譲り合うロックを取り、手放す関数を返す。別のワーカーのテストが使っている間は待つ */
-export async function lockDefaultPort(): Promise<() => Promise<void>> {
-  const deadline = Date.now() + LOCK_TIMEOUT_MS;
-  for (;;) {
-    try {
-      await mkdir(DEFAULT_PORT_LOCK);
-      await writeFile(join(DEFAULT_PORT_LOCK, "pid"), String(process.pid));
-      return () => rm(DEFAULT_PORT_LOCK, { recursive: true, force: true });
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
-        throw error;
-      }
-    }
-    // 持ち主のプロセスが居ないロックは、落ちたテストの残りなので取り直す
-    const owner = Number(
-      await readFile(join(DEFAULT_PORT_LOCK, "pid"), "utf8").catch(() => "0"),
-    );
-    if (owner > 0 && !processExists(owner)) {
-      await rm(DEFAULT_PORT_LOCK, { recursive: true, force: true });
-      continue;
-    }
-    if (Date.now() > deadline) {
-      throw new Error("既定のポートのロックを取れなかった");
-    }
-    await new Promise((resolve) => setTimeout(resolve, LOCK_POLL_MS));
-  }
-}
-
-/** プロセスが動いているか */
-function processExists(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /** コマンドを子プロセスとして起動し、出力を溜める */
@@ -266,6 +222,7 @@ async function startServe(options: {
   });
   const serve: ServeProcess = {
     url,
+    port: Number(new URL(url).port),
     stdout: spawned.stdout,
     stderr: spawned.stderr,
     isRunning: () => isAlive(spawned),
@@ -277,12 +234,39 @@ async function startServe(options: {
   return { serve, spawned };
 }
 
-/** `dist/cli.js serve` を起動して `use` に渡し、終わったら動いていれば止める。`env` に `MDMARK_PORT` を渡さなければ既定のポートで待ち受ける */
+/** `dist/cli.js serve` を、`MDMARK_PORT` に空きポートを渡して起動する。空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す */
+async function startServeOnFreePort(options: {
+  builtRoot: string;
+  env: Record<string, string>;
+}): Promise<{ serve: ServeProcess; spawned: Spawned }> {
+  const { builtRoot, env } = options;
+  for (let attempt = 1; ; attempt++) {
+    const port = await findFreePort();
+    try {
+      return await startServe({
+        builtRoot,
+        env: { ...env, MDMARK_PORT: String(port) },
+      });
+    } catch (error) {
+      const taken =
+        error instanceof ServeExitedError &&
+        error.stderr.includes(PORT_IN_USE_WORD);
+      if (!taken || attempt >= MAX_START_ATTEMPTS) {
+        throw error;
+      }
+    }
+  }
+}
+
+/** `dist/cli.js serve` を起動して `use` に渡し、終わったら動いていれば止める。`env` に `MDMARK_PORT` を渡さなければ空きポートを渡して起動する */
 export async function withServe<T>(
   options: { builtRoot: string; env: Record<string, string> },
   use: (serve: ServeProcess) => Promise<T>,
 ): Promise<T> {
-  const { serve, spawned } = await startServe(options);
+  const { serve, spawned } =
+    options.env.MDMARK_PORT === undefined
+      ? await startServeOnFreePort(options)
+      : await startServe(options);
   try {
     return await use(serve);
   } finally {
@@ -328,26 +312,10 @@ export async function withMcpClient<T>(
   use: (client: Client) => Promise<T>,
 ): Promise<T> {
   const { builtRoot, projectDir, serverUrl } = options;
-  // 空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す
-  let started: { serve: ServeProcess; spawned: Spawned } | undefined;
-  if (serverUrl === undefined) {
-    for (let attempt = 1; started === undefined; attempt++) {
-      const port = await findFreePort();
-      try {
-        started = await startServe({
-          builtRoot,
-          env: { MDMARK_PORT: String(port) },
-        });
-      } catch (error) {
-        const taken =
-          error instanceof ServeExitedError &&
-          error.stderr.includes(PORT_IN_USE_WORD);
-        if (!taken || attempt >= MAX_START_ATTEMPTS) {
-          throw error;
-        }
-      }
-    }
-  }
+  const started =
+    serverUrl === undefined
+      ? await startServeOnFreePort({ builtRoot, env: {} })
+      : undefined;
   const client = new Client({ name: "e2e", version: "0.0.0" });
   try {
     await client.connect(

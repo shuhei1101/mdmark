@@ -3,7 +3,7 @@ lead: ビューとコメントの部品を `dist/index.js` と別の配布ファ
 directory: |-
   ```tree
   src/
-  ├── part-modules.ts      # 部品のモジュールのファイル名・URL の差し替え・1 回だけ読む loadPartModule（dist/index.js）
+  ├── part-modules.ts      # 部品のモジュールのファイル名・読み込みの差し替え・1 回だけ読む loadPartModule（dist/index.js）
   ├── mount-parts.ts       # 公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）
   ├── views/
   │   ├── spec.ts          # 公開の型 MdmarkViewOptions・MdmarkViewHandle、使えるアイコンと既定の対応、引数の検査（dist/index.js）
@@ -221,11 +221,14 @@ constants:
     container: src/part-modules.ts
     summary: 部品の名前から、`dist/index.js` の隣に置く配布ファイルの名前を引く
     value: '{ view: "view.js", comments: "comments.js" }'
-  - name: partModuleUrls
-    title: 部品のモジュールの URL の差し替え
+  - name: partModuleLoaders
+    title: 部品のモジュールの読み込みの差し替え
     container: src/part-modules.ts
-    summary: 書き出した HTML の起動の処理が、埋めたコードの `blob:` URL を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決する
-    value: new Map<PartName, string>()
+    summary: 書き出した HTML の起動の処理が、同じスクリプトに束ねた部品のモジュールを返す関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読む
+    value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
+    status: planned
+    introduced:
+      pr: 296
   - name: partModules
     title: 読んだ部品のモジュール
     container: src/part-modules.ts
@@ -334,8 +337,8 @@ functions:
       description: 読んだ URL とモジュール。読めない・形が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる
     process: |-
       1. `partModules` に名前があればその Promise を返す
-      2. URL を `partModuleUrls` の値、無ければ `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にする
-      3. `importModule(url)` を待ち、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確かめる。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
+      2. `partModuleLoaders` に名前があれば、URL を `PART_MODULE_FILES[name]` にしてその関数を待つ。無ければ URL を `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にして `importModule(url)` を待つ
+      3. 読んだモジュールで、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確かめる。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
       4. 手順 2〜3 の Promise を `partModules` に控えて返す
     unit_tests:
       - name: test_load_part_module
@@ -344,12 +347,12 @@ functions:
         condition: '`view` を 2 回読む'
         mock: '`importModule` は呼ばれた URL を控え、2 つの関数を持つオブジェクトを返す'
         expected: '`importModule` が 1 回だけ、`view.js` で終わる URL で呼ばれる。2 回とも同じモジュール'
-      - name: test_load_part_module_when_url_replaced
+      - name: test_load_part_module_when_loader
         case: 正常
-        summary: 差し替えた URL から読む
-        condition: '`partModuleUrls` に `comments` → `blob:x` を入れて読む'
-        mock: '`importModule` は URL を控える'
-        expected: '`blob:x` で呼ばれる'
+        summary: 差し替えた関数で読み、URL を読まない
+        condition: '`setPartModuleLoader("view", 関数)` の後に `view` を読む。関数は 2 つの関数を持つオブジェクトを返す'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれず、関数が返したモジュールと `url` の `view.js` を返す'
       - name: test_load_part_module_when_shape_mismatch
         case: 異常
         summary: 関数を export しないモジュールを拒む
@@ -365,10 +368,10 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#constraints[部品のモジュールの読み込み]
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#constraints[部品のモジュールの読み込み]
-  - name: setPartModuleUrl
-    title: 部品のモジュールの URL を差し替える
+  - name: setPartModuleLoader
+    title: 部品のモジュールの読み込みを差し替える
     container: src/part-modules.ts
-    summary: '`partModuleUrls` に部品の名前と URL を入れる。書き出した HTML の起動の処理が呼ぶ'
+    summary: '`partModuleLoaders` に部品の名前とモジュールを返す関数を入れる。書き出した HTML の起動の処理が呼ぶ'
     kind: 関数
     scope: internal
     args:
@@ -376,15 +379,18 @@ functions:
         type: PartName
         required: true
         description: 部品の名前
-      - name: url
-        type: string
+      - name: loader
+        type: '() => Promise<Record<string, unknown>>'
         required: true
-        description: 埋めたコードの `blob:` URL
+        description: 同じスクリプトに束ねた部品のモジュールを返す関数。埋めなかった部品は拒否する関数
     returns:
       type: void
       description: '-'
-    process: 1. `partModuleUrls` に `name` → `url` を入れる
+    process: 1. `partModuleLoaders` に `name` → `loader` を入れる
     unit_tests: []
+    status: planned
+    introduced:
+      pr: 296
   - name: mountView
     title: ビューを描く公開関数
     container: src/mount-parts.ts

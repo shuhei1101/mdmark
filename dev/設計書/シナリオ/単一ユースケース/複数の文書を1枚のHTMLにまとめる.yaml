@@ -1,4 +1,4 @@
-title: "複数の文書を1枚のHTMLにまとめる"
+title: 複数の文書を1枚のHTMLにまとめる
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -142,6 +142,31 @@ scenarios:
       - 動画・音声が出力先のフォルダへコピーされ、どちらの文書を開いても再生バーが出る
       - まとめた HTML を file:// で開いたとき、外へのネットワークの要求が 0 件
     test: test_normal_when_media_embedded
+  - name: '正常シナリオ（blob: と動的 import を許さない環境で開く）'
+    setup:
+      - name: 埋めるモジュールを使う文書群
+        description: 入口の文書（`extensions` の拡張の印と言語 `ts` のコードブロック）と、入口からリンクする文書（ビューの印と Chart.js の印）の 2 つ。`build` の設定と `extensions` に印を描く拡張のモジュールを書いた設定
+        notes: 拡張のモジュールは `load` の中で同じフォルダの別のファイルを動的 `import()` で読む
+      - name: Mock
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as build.out
+        actor R as 読む人
+        W->>C: mdmark build
+        C->>C: 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ねる
+        C->>F: 束ねたスクリプトを script 要素に入れた HTML を書く
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+        R->>F: blob: と動的 import を許さない環境で開き、リンクでもう 1 つの文書へ移る
+        F-->>R: どちらの文書も拡張の印・ビュー・図・色分けを描く
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 入口の文書で、拡張の印の場所に拡張が描いた要素があり、`ts` のコードブロックが色分けされている
+      - リンクで移った文書で、ビューが描かれ、Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
+      - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
+    test: test_normal_when_blob_and_dynamic_import_blocked
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書を書く人
@@ -149,6 +174,6 @@ trigger: 文書を書く人が、複数の文書を行き来できる形でサ�
 preconditions:
   - 文書を書く人の手元に Node 24 以降がある
   - 設定ファイルに `build` がある
-success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に当たり `exclude` に当たらない文書が全て入る。索引があれば、文書をまたぐ被参照と用語のツールチップが効く。1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは書いたままの `href` で残る。'
+success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に当たり `exclude` に当たらない文書が全て入る。索引があれば、文書をまたぐ被参照と用語のツールチップが効く。1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは書いたままの `href` で残る。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。'
 minimal_guarantee: 対象の文書が 0 件のときは HTML を書かず、原因と直し方の 1 文を出して 0 以外で終わる。CLI は文書と索引を書き換えない。
 test_file: tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts

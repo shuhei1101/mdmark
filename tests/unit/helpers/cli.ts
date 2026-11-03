@@ -96,7 +96,7 @@ export function readPayload(html: string): PayloadView {
 export async function writeDist(root: string): Promise<string> {
   await writeFiles(root, {
     "dist/index.css": "/* dist css */",
-    "dist/viewer.js": "console.log(1);",
+    "dist/viewer.js": "export async function startViewer() {}",
     "dist/view.js": "export const drawView = () => () => {};",
   });
   return join(root, "dist");
