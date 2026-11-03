@@ -1,0 +1,34 @@
+$ npx vitest run --project unit tests/unit/src/parts/diagram.test.ts tests/unit/src/parts/er.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram
+
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (22 tests | 1 failed) 97ms
+   × test_render_er_when_terms 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_er_when_terms
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/parts/diagram.test.ts:666:49
+    664|   );
+    665|   // 検証
+    666|   expect(matches(html, /class="mdmark-term"/g)).toHaveLength(2);
+       |                                                 ^
+    667|   expect(plainText(html)).not.toContain("{{");
+    668|   expect(plainText(html)).not.toContain("}}");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 25 passed (26)
+   Start at  01:34:10
+   Duration  1.04s (transform 40%, import 34%, tests 23%, worker 3%)
+

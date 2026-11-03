@@ -51,6 +51,9 @@ catalogs:
       - name: plug
         kind: アイコン
         purpose: 図の箱の種類（MCP）
+      - name: table
+        kind: アイコン
+        purpose: ER 図のテーブルの見出し
       - name: database
         kind: アイコン
         purpose: 図の箱の種類（データ）
@@ -101,7 +104,10 @@ catalogs:
         purpose: 表のピン止め
       - name: chevrons-up-down
         kind: アイコン
-        purpose: 表の並べ替え（並べていない）
+        purpose: 表の並べ替え（並べていない）・ER 図のテーブルの列を開く
+      - name: chevrons-down-up
+        kind: アイコン
+        purpose: ER 図のテーブルの列を畳む
       - name: arrow-up
         kind: アイコン
         purpose: 表の並べ替え（昇順）

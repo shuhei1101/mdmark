@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
+import { shopEr } from "../../unit/helpers/er.ts";
 import {
   BASE_TAG,
   createChangeTogetherDir,
@@ -523,10 +524,20 @@ test("test_normal_when_diagram_drift", async () => {
     wires: [],
   };
   const head = ["# A", "", ...flowLines(duplicated)];
+  const missingTable = shopEr();
+  missingTable.relations = missingTable.relations.map((relation) =>
+    relation.label === "注文する" ? { ...relation, to: "payments" } : relation,
+  );
   const a = [
     ...head,
     ...Array.from({ length: 19 - head.length }, () => ""),
     ...flowLines(BROKEN_FLOW),
+    "",
+    "",
+    "",
+    ...flowLines(missingTable).map((line) =>
+      line.replace("flow -->", "er -->"),
+    ),
     "",
   ];
   await writeFiles(dir, {
@@ -552,6 +563,7 @@ test("test_normal_when_diagram_drift", async () => {
   const result = await runCli(["check"], dir);
   // 検証
   expect(a.indexOf("<!-- flow -->", 3) + 1).toBe(20);
+  expect(a.indexOf("<!-- er -->") + 1).toBe(30);
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   const invalid = lines.filter((line) =>
@@ -573,7 +585,13 @@ test("test_normal_when_diagram_drift", async () => {
       expect(found[0]).toContain(id);
     }
   }
+  const erInvalid = lines.filter((line) =>
+    line.startsWith("docs/a.md:30: diagram_invalid:"),
+  );
+  expect(erInvalid).toHaveLength(1);
+  expect(erInvalid[0]).toContain("payments");
+  expect(lines.some((line) => line.includes("unknown_mark"))).toBe(false);
   expect(lines.some((line) => line.includes("docs/b.md"))).toBe(false);
-  expect(lines.at(-1)).toBe("ずれ 5 件");
+  expect(lines.at(-1)).toBe("ずれ 6 件");
   expect(await read()).toEqual(before);
 });

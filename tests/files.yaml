@@ -21,6 +21,9 @@ files:
   - path: e2e/dist-page.ts
     description: E2E テストで、手元の配布物を jsDelivr の URL で返して使う側のページを開き、文書を描く・差分やコメントの取り出し元を渡す処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, topic:cdn, topic:差分, topic:コメント]
+  - path: e2e/er.ts
+    description: E2E テストが使う ER 図の部品の定義の見本（テーブル 3 つと関係 2 本の定義、列の開閉を確かめる定義）を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:図]
   - path: e2e/global-setup.ts
     description: E2E テストのワーカーが並ぶ前に VS Code を 1 回だけ取得する処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, tool:vscode]
@@ -704,6 +707,14 @@ files:
         type: tests
       - to: dev/設計書/部品設計/図表の番号.ts
         type: see_also
+  - path: integration/lib/er-diagram.story.test.ts
+    description: 部品設計『ER 図』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/diagram
+        type: tests
+      - to: dev/設計書/部品設計/ER図.ts
+        type: see_also
   - path: integration/lib/flow-diagram.story.test.ts
     description: 部品設計『フロー図』のストーリーを実際のブラウザで開き、状態ごとの描画を確かめる結合テスト。部品の引数や状態を変えたときに読む。
     tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
@@ -937,6 +948,9 @@ files:
   - path: unit/helpers/diagrams.ts
     description: 単体テストが使う、見本の文書に書いた図の部品の定義を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/helpers/er.ts
+    description: 単体テストが使う、ER 図の部品の定義の見本（モックの shop-er と、列の開閉を確かめる定義）を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
   - path: unit/helpers/dom.ts
     description: 単体テストで、描いた文書の CSS と描く先の要素をページに置く処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:フィクスチャ]
@@ -1153,6 +1167,12 @@ files:
     related:
       - to: src/diagram/definition
         type: tests
+  - path: unit/src/diagram/er.test.ts
+    description: src/diagram/er.ts（「ER 図のテーブルの高さ・関係の線の経路」）を確かめる単体テスト。er.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/diagram/er
+        type: tests
   - path: unit/src/diagram/geometry.test.ts
     description: src/diagram/geometry.ts（「収まる倍率・line jump・重なる線のずらし・軸の刻み」）を確かめる単体テスト。geometry.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
@@ -1248,6 +1268,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:html]
     related:
       - to: src/interact/embedded-html
+        type: tests
+  - path: unit/src/interact/er-folds.browser.test.ts
+    description: src/interact/er-folds.ts（「ER 図の列の開閉」）を確かめるブラウザで流す単体テスト。er-folds.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/interact/er-folds
         type: tests
   - path: unit/src/interact/gif.browser.test.ts
     description: src/interact/gif.ts（「GIF を止める・再生するボタンを付ける」）を確かめるブラウザで流す単体テスト。gif.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1526,6 +1552,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
     related:
       - to: src/parts/embed
+        type: tests
+  - path: unit/src/parts/er.test.ts
+    description: src/parts/er.ts（「ER 図のテーブルと多重度の記号」）を確かめる単体テスト。er.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/parts/er
         type: tests
   - path: unit/src/parts/escape.test.ts
     description: src/parts/escape.ts（「HTML の特別な文字をエスケープする escapeHtml」）を確かめる単体テスト。escape.ts を変えたときに、合わせて見修正するケースを探すときに読む。

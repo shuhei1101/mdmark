@@ -1,16 +1,18 @@
 title: "ライブラリ本体 / 図"
-lead: 図の部品（フロー図・シーケンス図・グラフ・操作できる部品）の定義の型と確かめ、線の形の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使わず Node でも動き、操作はブラウザでだけ動く。
+lead: 図の部品（フロー図・シーケンス図・グラフ・ER 図・操作できる部品）の定義の型と確かめ、線の形の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使わず Node でも動き、操作はブラウザでだけ動く。
 directory: |-
   ```tree
   src/
   ├── diagram/
   │   ├── definition.ts   # 定義の型・JSON の読み取り・形の確かめ
   │   ├── check.ts        # フロー図の定義の配置の点検（重なり・はみ出し・線の横切り・ラベルの長さ）
+  │   ├── er.ts           # ER 図のテーブルの種類・多重度・寸法と、テーブルの高さ・関係の線の経路
   │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし・軸の刻み・積み上げ
   ├── parts/
   │   ├── icons.ts        # lucide のアイコンの svg
-  │   ├── diagram.ts      # 図の枠・フロー図・シーケンス図・図のツールチップ・凡例
+  │   ├── diagram.ts      # 図の枠・フロー図・シーケンス図・ER 図・図のツールチップ・凡例
   │   ├── chart.ts        # グラフの種類ごとの描き方と系列の見た目の組
+  │   ├── er.ts           # ER 図のテーブルと多重度の記号
   │   ├── param.ts        # 操作できる部品
   │   └── hint.ts         # 埋め込んだ HTML のヒントの印と中身
   ├── render/syntax/
@@ -19,11 +21,12 @@ directory: |-
       ├── diagrams.ts     # 拡大・縮小・移動・全画面
       ├── zoom.ts         # 図とライトボックスが共有する拡大・縮小・移動
       ├── diagram-tips.ts # 図のツールチップ
+      ├── er-folds.ts     # ER 図の列の開閉
       └── params.ts       # 操作できる部品の値と写す
   ```
 notes:
   単体テストのファイル: 物理ファイルごとに `tests/unit/src/{同じパス}.test.ts`（`interact/` は `.browser.test.ts`）を置き、単体テスト作成の段で `test_files` に載せる
-  他の分類への変更: 記法のコアルールの順では `buildDiagrams` を図表の番号の前に置き、`fig` の印が図の部品に番号を付けられるようにする。`mount` の `attachInteractions` は `diagrams` がオンなら `attachDiagrams`・`attachParams` を呼ぶ。描画の sanitize は `data-mdmark-own` を持つ要素にだけ図の部品の要素と属性（インターフェース定義『文書をHTML文字列にする』の `残す要素・属性`）を許す。svg の描画の属性は `d`・`viewBox`・`width`・`height`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`cx`・`cy`・`r`・`rx`・`ry`・`points`・`fill`・`stroke`・`stroke-width`・`stroke-dasharray`・`stroke-linecap`・`stroke-linejoin`・`marker-end`・`markerWidth`・`markerHeight`・`refX`・`refY`・`orient`・`transform`。記法の CSS のアイコン（`mask-image` の data URL）は lucide の形に置き換え、形が lucide@1.59.0 と一致することと、外部ライブラリ『lucide』の一覧のアイコンが使う要素と属性が全て sanitize の許可にあることを `tests/unit/src/parts/icons.test.ts` で確かめる。拡張の印の `definition` は分類『拡張』の `MdmarkMarkArgs` に足す
+  他の分類への変更: 記法のコアルールの順では `buildDiagrams` を図表の番号の前に置き、`fig` の印が図の部品に番号を付けられるようにする。`mount` の `attachInteractions` は `diagrams` がオンなら `attachDiagrams`・`attachParams` を呼ぶ。印刷の前後の `attachPrint`（分類『描く』）は、列を畳んだ ER 図のテーブルを `setErTableFolded` で開き、印刷の後に畳み直す。描画の sanitize は `data-mdmark-own` を持つ要素にだけ図の部品の要素と属性（インターフェース定義『文書をHTML文字列にする』の `残す要素・属性`）を許す。svg の描画の属性は `d`・`viewBox`・`width`・`height`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`cx`・`cy`・`r`・`rx`・`ry`・`points`・`fill`・`stroke`・`stroke-width`・`stroke-dasharray`・`stroke-linecap`・`stroke-linejoin`・`marker-end`・`markerWidth`・`markerHeight`・`refX`・`refY`・`orient`・`transform`。ER 図の列のマーカーの `abbr` の `title` も、図の部品が出した要素だけに許す。記法の CSS のアイコン（`mask-image` の data URL）は lucide の形に置き換え、形が lucide@1.59.0 と一致することと、外部ライブラリ『lucide』の一覧のアイコンが使う要素と属性が全て sanitize の許可にあることを `tests/unit/src/parts/icons.test.ts` で確かめる。拡張の印の `definition` は分類『拡張』の `MdmarkMarkArgs` に足す
 data_models:
   - name: MdmarkFlowDefinition
     title: フロー図の定義
@@ -135,6 +138,105 @@ data_models:
       - name: table
         type: Record<string, number[]>
         description: スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ
+  - name: MdmarkErDefinition
+    title: ER 図の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- er -->` の範囲に書く定義'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日
+      - name: width
+        type: number
+        description: 図の幅（px）。高さはテーブルの位置と列の数から求める
+      - name: tables
+        type: MdmarkErTable[]
+        description: テーブル。定義の座標に置く
+      - name: relations
+        type: MdmarkErRelation[]
+        description: 関係
+    status: planned
+    introduced:
+      pr: 298
+  - name: MdmarkErTable
+    title: ER 図のテーブル
+    container: src/diagram/definition.ts
+    summary: '`MdmarkErDefinition` の `tables` の 1 つ'
+    properties:
+      - name: id
+        type: string
+        description: 関係の `from`・`to` で指す名前
+      - name: name
+        type: string
+        description: 物理名
+      - name: label
+        type: string
+        description: 論理名
+      - name: kind
+        type: '"master" | "transaction" | undefined'
+        description: 種類。見出しの札と既定の色を決める
+      - name: color
+        type: ColorName | undefined
+        description: 色の名前（分類『部品』の `ColorName`。`dist/index.d.ts` は `src/index.ts` から辿れる型を書くため、`dist/parts/colors.d.ts` の `ColorName` も型の解決に含まれる）。`kind` の既定の色より優先する
+      - name: desc
+        type: string | undefined
+        description: 概要。テーブルのツールチップに出す
+      - name: x
+        type: number
+        description: 左端（px）
+      - name: y
+        type: number
+        description: 上端（px）
+      - name: w
+        type: number
+        description: 幅（px）
+      - name: folded
+        type: boolean | undefined
+        description: 主キーと外部キーの列だけを出した状態で開くか
+      - name: columns
+        type: '{ name: string; type: string; pk?: boolean; fk?: boolean; nn?: boolean; desc?: string }[]'
+        description: 列。定義の順に並べる
+    status: planned
+    introduced:
+      pr: 298
+  - name: MdmarkErRelation
+    title: ER 図の関係
+    container: src/diagram/definition.ts
+    summary: '`MdmarkErDefinition` の `relations` の 1 つ'
+    properties:
+      - name: from
+        type: string
+        description: 元のテーブルの `id`
+      - name: fromColumn
+        type: string
+        description: 元のテーブルの列の `name`
+      - name: fromCard
+        type: '"1" | "0..1" | "1..n" | "0..n"'
+        description: 元の端の多重度
+      - name: to
+        type: string
+        description: 先のテーブルの `id`
+      - name: toColumn
+        type: string
+        description: 先のテーブルの列の `name`
+      - name: toCard
+        type: '"1" | "0..1" | "1..n" | "0..n"'
+        description: 先の端の多重度
+      - name: label
+        type: string | undefined
+        description: 縦の線の中ほどに出すラベル
+      - name: midX
+        type: number | undefined
+        description: 縦の線の x（px）。省くと両端の中間
+    status: planned
+    introduced:
+      pr: 298
   - name: DefinitionResult
     title: 定義を読んだ結果
     container: src/diagram/definition.ts
@@ -144,7 +246,7 @@ data_models:
         type: boolean
         description: 読めたか
       - name: definition
-        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | undefined
+        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition | undefined
         description: 読めた定義
       - name: problems
         type: string[]
@@ -163,6 +265,8 @@ constants:
         value: '{ name: "グラフ", call: "このグラフ" }'
       - key: param
         value: '{ name: "操作できる部品", call: "この部品" }'
+      - key: er
+        value: '{ name: "ER 図", call: "この ER 図" }'
   - name: LINE_STYLES
     title: 線の種類の描き方
     container: src/parts/diagram.ts
@@ -250,6 +354,56 @@ constants:
     status: planned
     introduced:
       pr: 275
+  - name: ER_TABLE_KINDS
+    title: ER 図のテーブルの種類
+    container: src/diagram/er.ts
+    summary: テーブルの `kind` ごとの見出しの札の名前と、`color` を省いたときの色の名前。`readDefinition` の使える種類はこの順に `・` でつなぐ
+    entries:
+      - key: master
+        value: '{ label: "マスター", color: "blue" }'
+      - key: transaction
+        value: '{ label: "トランザクション", color: "orange" }'
+    status: planned
+    introduced:
+      pr: 298
+  - name: ER_CARDINALITIES
+    title: ER 図の多重度
+    container: src/diagram/er.ts
+    summary: 関係の端の多重度の値と、凡例に出す名前。`readDefinition` の使える多重度はこの順に `・` でつなぐ
+    entries:
+      - key: '1'
+        value: '"1 つ"'
+      - key: 0..1
+        value: '"0 か 1 つ"'
+      - key: 1..n
+        value: '"1 つ以上"'
+      - key: 0..n
+        value: '"0 以上"'
+    status: planned
+    introduced:
+      pr: 298
+  - name: ER_COLUMN_KEYS
+    title: ER 図の列のマーカー
+    container: src/diagram/er.ts
+    summary: 列の `pk`・`fk`・`nn` ごとのマーカーの文字と、`abbr` の `title`・凡例の名前
+    entries:
+      - key: pk
+        value: '{ text: "PK", title: "主キー" }'
+      - key: fk
+        value: '{ text: "FK", title: "外部キー" }'
+      - key: nn
+        value: '{ text: "NN", title: "NOT NULL" }'
+    status: planned
+    introduced:
+      pr: 298
+  - name: ER_METRICS
+    title: ER 図の寸法
+    container: src/diagram/er.ts
+    summary: テーブルの高さと列の行の位置を求める寸法。描いた文書の CSS の `.mdmark-diagram-er-*` と同じ値。CSS を修正したときは合わせて修正する
+    value: 見出しの高さ 44px・列の行の高さ 26px・`非表示 {数} 列` の行の高さ 24px・枠と余白 4px・図の下の余白 32px
+    status: planned
+    introduced:
+      pr: 298
 functions:
   - name: parseDefinitionJson
     title: 定義の JSON を読む
@@ -283,10 +437,10 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。書き方の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
     args:
       - name: directive
-        type: '"flow" | "sequence" | "chart" | "param"'
+        type: '"flow" | "sequence" | "chart" | "param" | "er"'
         required: true
         description: 印の名前
       - name: blocks
@@ -296,6 +450,8 @@ functions:
     returns:
       type: DefinitionResult
       description: 読めた定義か、読めない箇所の文
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[isColorName]
     unit_tests:
       - name: test_read_definition
         case: 正常
@@ -369,6 +525,24 @@ functions:
         condition: '`type` が `bubble` で、点が `[x, y]` の定義'
         mock: なし
         expected: '`ok` が `false` で、`problems[0]` が点の形 `[x, y, size]` を含む'
+      - name: test_read_definition_when_er
+        case: 正常
+        summary: ER 図のモックの見本を読める
+        condition: '`shop-er`・`shop-er-colors`・`shop-er-folded` と同じ定義'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_er_column_missing
+        case: 異常
+        summary: 関係がテーブルに無い列を指す
+        condition: 関係「注文する」の `toColumn` が、テーブル `orders` に無い `customer`
+        mock: なし
+        expected: '`problems[0]` が `関係「注文する」の先の列 orders.customer がテーブル orders にありません`'
+      - name: test_read_definition_when_er_invalid_values
+        case: 異常
+        summary: テーブルの id・列の名前の重なりと、使えない種類・色・多重度
+        condition: テーブルの `id` が重なる定義、同じテーブルに同じ列の名前がある定義、`kind` が `view`・`color` が `pink`・`toCard` が `many` の定義
+        mock: なし
+        expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使える種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
   - name: fitScale
     title: 全体が収まる倍率
     container: src/diagram/geometry.ts
@@ -666,10 +840,10 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: '定義に出るノードの種類（名前は `KIND_STYLES` の `legend`）・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。層と印の項目の名前は `層の背景（層のノードの色）`・`説明や入力・処理・出力が出るノード`・`入力・処理・出力が出るノード`・`説明が出るノード`'
+    summary: '定義に出るノードの種類（名前は `KIND_STYLES` の `legend`）・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。ER 図は図にあるテーブルの種類の札（名前は `{札}のテーブル`）・列のマーカー（`ER_COLUMN_KEYS` の `title`）・多重度の記号（`ER_CARDINALITIES` の名前）だけを並べる。層と印の項目の名前は `層の背景（層のノードの色）`・`説明や入力・処理・出力が出るノード`・`入力・処理・出力が出るノード`・`説明が出るノード`'
     args:
       - name: definition
-        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition
+        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkErDefinition
         required: true
         description: 読めた定義
       - name: drawn
@@ -698,6 +872,12 @@ functions:
         condition: '`y2` を持つ `combo`、`size.label` が `件数` の `bubble`、`unit` が ` 件` の `donut`'
         mock: なし
         expected: '`combo` の項目が `{系列名}（左の軸）`・`{系列名}（右の軸）`、`bubble` に `円の面積: 件数` の項目、`donut` の項目が `{名前}: {値} 件`'
+      - name: test_legend_for_when_er
+        case: 正常
+        summary: ER 図は図にある種類・マーカー・多重度だけを凡例に出す
+        condition: マスターのテーブルだけを持ち、列が `pk`・`nn` だけで、多重度が `1` と `0..n` だけの定義
+        mock: なし
+        expected: 項目が `マスターのテーブル`・`主キー`・`NOT NULL`・`1 つ`・`0 以上` の 5 つで、説明のボタンと用語の下線の項目が無い
   - name: renderDiagramTip
     title: 図のツールチップを描く
     container: src/parts/diagram.ts
@@ -706,9 +886,9 @@ functions:
     summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
     args:
       - name: tip
-        type: '{ id: string; kind: "wire" | "io" | "hint"; label: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string }'
+        type: '{ id: string; kind: "wire" | "io" | "hint" | "table"; label: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string; table?: MdmarkErTable }'
         required: true
-        description: 部品設計の引数。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す
+        description: 部品設計の引数。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す。`table` は題を `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
     returns:
       type: string
       description: ツールチップの HTML
@@ -725,6 +905,12 @@ functions:
         condition: '`kind` が `hint`、`hint` が `<b>太字</b>`'
         mock: なし
         expected: 見出しを持たず、文字が `&lt;b&gt;太字&lt;/b&gt;` で `hidden` を持つ
+      - name: test_render_diagram_tip_when_table
+        case: 正常
+        summary: テーブルの概要と列の説明を出す
+        condition: '`kind` が `table`、`desc` を持つ列が 2 つと持たない列が 1 つのテーブル'
+        mock: なし
+        expected: 題が `{論理名}（{物理名}）`、概要の後に `desc` を持つ 2 つの列の名前と説明だけが並び、`hidden` を持つ
   - name: renderParam
     title: 操作できる部品を描く
     container: src/parts/param.ts
@@ -786,7 +972,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow` に `hints` のオン・オフを、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore
@@ -798,6 +984,7 @@ functions:
     callees:
       - '#functions[readDefinition]'
       - '#functions[renderDiagramFrame]'
+      - '#functions[renderEr]'
       - '#functions[renderParam]'
     unit_tests:
       - name: test_build_diagrams
@@ -835,7 +1022,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement }'
@@ -848,6 +1035,7 @@ functions:
       - '#functions[fitScale]'
       - '#functions[openDiagramDialog]'
       - '#functions[attachZoom]'
+      - '#functions[attachErFolds]'
     unit_tests:
       - name: test_attach_diagrams
         case: 正常
@@ -902,7 +1090,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: 図の題・中身・凡例を写した `modal` の枠を `dialog` に入れて `root` の中に置き、`showModal()` で開き、拡大・縮小とツールチップを付ける。ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を起こさない。`cancel` を取り消す作りは、history-action activation を使い切ると 2 回目から取り消せないため使わない）。閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す
+    summary: 図の題・中身・凡例を写した `modal` の枠を `dialog` に入れて `root` の中に置き、`showModal()` で開き、拡大・縮小とツールチップ（ER 図は `attachErFolds` も。写した枠は開いたときの列の開閉の状態のまま）を付ける。ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を起こさない。`cancel` を取り消す作りは、history-action activation を使い切ると 2 回目から取り消せないため使わない）。閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す
     args:
       - name: options
         type: '{ figure: HTMLElement; opener: HTMLButtonElement; placement: TooltipPlacement }'
@@ -1175,14 +1363,14 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: Markdown を markdown-it で解析し、`flow`・`sequence`・`chart`・`param` の印の範囲ごとに、印の名前・開きの印の行の番号・範囲の `json` のコードブロックの中身を返す（`buildDiagrams` と同じ範囲の読み方。埋め込んだ HTML の中の custom element は返さない）
+    summary: Markdown を markdown-it で解析し、`flow`・`sequence`・`chart`・`param`・`er` の印の範囲ごとに、印の名前・開きの印の行の番号・範囲の `json` のコードブロックの中身を返す（`buildDiagrams` と同じ範囲の読み方。埋め込んだ HTML の中の custom element は返さない）
     args:
     - name: markdown
       type: string
       required: true
       description: 文書の本文
     returns:
-      type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param"; line: number; blocks: string[] }>'
+      type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param" | "er"; line: number; blocks: string[] }>'
       description: 範囲ごとの印の名前・行の番号（1 から）・`json` のコードブロック
     unit_tests:
     - name: test_find_diagram_blocks
@@ -1250,6 +1438,234 @@ functions:
     status: planned
     introduced:
       pr: 275
+  - name: erTableHeight
+    title: ER 図のテーブルの高さ
+    container: src/diagram/er.ts
+    kind: 関数
+    scope: internal
+    summary: '`ER_METRICS` で、見出し・出している列の行・畳んだときの `非表示 {数} 列` の行・枠と余白を足した高さを返す。畳んだテーブルは主キーと外部キーの列だけを数える'
+    args:
+      - name: options
+        type: '{ table: MdmarkErTable; folded: boolean }'
+        required: true
+        description: テーブルと、今畳んでいるか
+    returns:
+      type: number
+      description: 高さ（px）
+    unit_tests:
+      - name: test_er_table_height
+        case: 正常
+        summary: 畳んだときは主キーと外部キーの列と非表示の行だけを数える
+        condition: 列 5 つ（主キー 1 つ・外部キー 1 つ）のテーブルを、`folded` が `false` と `true` で
+        mock: なし
+        expected: '`false` は `44 + 26 × 5 + 4`、`true` は `44 + 26 × 2 + 24 + 4`'
+    status: planned
+    introduced:
+      pr: 298
+  - name: erRelationRoute
+    title: ER 図の関係の線の経路
+    container: src/diagram/er.ts
+    kind: 関数
+    scope: internal
+    summary: 元の列の行の縦の中心から先の列の行の縦の中心へ、横・縦・横の直角の線の経路を求める。縦の線の x は `midX`、省いたときは両端の中間。先が元より右なら元の右の辺から先の左の辺へ、左なら元の左の辺から先の右の辺へ結び、同じ `x` のテーブルどうしは両方の右の辺から出す。列が畳まれて見えないときは、見出しの縦の中ほどに結ぶ
+    args:
+      - name: options
+        type: '{ relation: MdmarkErRelation; from: MdmarkErTable; to: MdmarkErTable; folded: (id: string) => boolean }'
+        required: true
+        description: 関係・元と先のテーブル・テーブルを今畳んでいるか
+    returns:
+      type: '{ d: string; start: { x: number; y: number; dir: 1 | -1 }; end: { x: number; y: number; dir: 1 | -1 }; label: { x: number; y: number } }'
+      description: '`path` の `d`、両端の位置と線がテーブルから出る向き（1 は右、-1 は左）、ラベルの位置（縦の線の中ほど）'
+    unit_tests:
+      - name: test_er_relation_route
+        case: 正常
+        summary: 右のテーブルへ横・縦・横で結ぶ
+        condition: 元が `x` 40・`w` 200、先が `x` 400 の関係。`midX` を省く
+        mock: なし
+        expected: '`d` が `M240,{元の y} H320 V{先の y} H400` で、`start.dir` が `1`、`end.dir` が `-1`'
+      - name: test_er_relation_route_when_stacked
+        case: 正常
+        summary: 同じ x のテーブルどうしは両方の右の辺から出す
+        condition: 元と先の `x` が 40・`w` が 200、`midX` が 300
+        mock: なし
+        expected: '`d` の始点と終点の x が 240 で、縦の線の x が 300、`start.dir` と `end.dir` が `1`'
+      - name: test_er_relation_route_when_folded
+        case: 正常
+        summary: 畳んで見えない列へは見出しの中ほどに結ぶ
+        condition: 先の列が主キーでも外部キーでもなく、`folded` が先のテーブルで `true`
+        mock: なし
+        expected: '`end.y` が先のテーブルの `y + 22`'
+    status: planned
+    introduced:
+      pr: 298
+  - name: renderErTable
+    title: ER 図のテーブルを描く
+    container: src/parts/er.ts
+    kind: 関数
+    scope: internal
+    summary: テーブルの `div.mdmark-diagram-er-table`（`data-node`・`data-color`・`left`・`top`・`width` の位置）に、見出し（lucide の `table` のアイコンと物理名、論理名と種類の札、列の開閉のボタン、説明のボタン）と列の `ul`（列ごとに `data-column` を持つ `li`。マーカーは `ER_COLUMN_KEYS` の `abbr`）を置く。全ての列の行を出し、畳んだテーブルは主キーでも外部キーでもない列の行に `hidden` を付けて `非表示 {数} 列` の行を出す。色は `color`、無ければ `ER_TABLE_KINDS` の既定の色にする
+    args:
+      - name: options
+        type: '{ table: MdmarkErTable; tipId: string | undefined; text: (value: string) => string }'
+        required: true
+        description: テーブルと、説明のボタンが指すツールチップの `id`（`hints` がオフか、テーブルと列のどれも `desc` を持たないときは `undefined`）と、定義の文字（物理名・論理名・列の名前と型）を HTML にする関数（`renderEr` が `renderText` で `{{語}}` を用語の下線にする関数を渡す）。読み上げの名前（`aria-label`）は `{{` と `}}` を除いた論理名で作る
+    returns:
+      type: string
+      description: テーブルの HTML
+    unit_tests:
+      - name: test_render_er_table
+        case: 正常
+        summary: 見出しと列の行を出す
+        condition: モックの `shop-er` の注文のテーブル。`text` は文字を逃がすだけの関数
+        mock: なし
+        expected: 見出しに物理名 `orders`・論理名・札 `トランザクション`、`data-color="orange"`、列の行が定義の順で、主キーの列に `abbr[title="主キー"]` の `PK`
+      - name: test_render_er_table_when_folded
+        case: 正常
+        summary: 畳んだテーブルは主キーと外部キー以外の列の行を隠す
+        condition: モックの `shop-er-folded` の注文のテーブル
+        mock: なし
+        expected: 主キーと外部キー以外の列の行が `hidden` を持ち、`非表示 {数} 列` の行があり、開閉のボタンが `aria-expanded="false"`
+      - name: test_render_er_table_when_no_kind
+        case: 正常
+        summary: 種類と色の無いテーブルは札と `data-color` を持たない
+        condition: '`kind` と `color` を持たず、主キーと外部キーの列だけのテーブル'
+        mock: なし
+        expected: 札と `data-color` が無く、開閉のボタンが無い
+    status: planned
+    introduced:
+      pr: 298
+  - name: erEndSvg
+    title: ER 図の多重度の記号
+    container: src/parts/er.ts
+    kind: 関数
+    scope: internal
+    summary: 線の端の位置と向きから、多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）の svg の要素を返す。丸は `data-ring` を持つ
+    args:
+      - name: options
+        type: '{ x: number; y: number; dir: 1 | -1; card: MdmarkErRelation["fromCard"] }'
+        required: true
+        description: 端の位置・線がテーブルから出る向き・多重度
+    returns:
+      type: string
+      description: svg の要素の HTML
+    unit_tests:
+      - name: test_er_end_svg
+        case: 正常
+        summary: 多重度ごとの記号を出す
+        condition: '`card` が `1`・`0..1`・`1..n`・`0..n`'
+        mock: なし
+        expected: '`1` は `line` 2 つ、`0..1` は `line` と `circle[data-ring]`、`1..n` は鳥の足の `path` と `line`、`0..n` は鳥の足の `path` と `circle[data-ring]`'
+    status: planned
+    introduced:
+      pr: 298
+  - name: renderEr
+    title: ER 図を描く
+    container: src/parts/diagram.ts
+    kind: 関数
+    scope: internal
+    summary: '`renderErTable` でテーブルを置き（定義の文字は `renderText` に通し、`{{語}}` を意味のある用語なら下線とツールチップの持ち主にする）、`erRelationRoute` の経路で関係の線（`data-line="er"`）と `erEndSvg` の両端の記号を svg に描き、ラベルを縦の線の中ほどに置く。関係ごとの `g` は `data-er-from`・`data-er-from-column`・`data-er-to`・`data-er-to-column` を持ち、ラベル（`renderText` に通す）は同じ関係の番号の `data-er-relation` を持つ（`attachErFolds` が結び直す）。図の高さは `erTableHeight` で求めたテーブルの下端の最大に下の余白を足す。`hints` がオンなら、`desc` を持つテーブルと `desc` を持つ列のあるテーブルの `renderDiagramTip` の `kind: table` の中身を返す'
+    args:
+      - name: definition
+        type: MdmarkErDefinition
+        required: true
+        description: 読めた定義
+      - name: id
+        type: string
+        required: true
+        description: '`id` の頭'
+      - name: hints
+        type: boolean
+        required: true
+        description: '`hints` がオンか'
+      - name: lookup
+        type: TermLookup | undefined
+        required: false
+        description: 用語から意味を引く関数（`renderFlow`・`renderSequence` と同じ）
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string; jumps: boolean; terms: boolean }'
+      description: 図の中身と、用語の下線を引いた文字があるか（`terms`。`jumps` は常に `false`）
+    callees:
+      - '#functions[renderErTable]'
+      - '#functions[erRelationRoute]'
+      - '#functions[erEndSvg]'
+      - '#functions[erTableHeight]'
+      - '#functions[renderDiagramTip]'
+    unit_tests:
+      - name: test_render_er
+        case: 正常
+        summary: テーブル・関係の線・多重度・ラベルを描く
+        condition: モックの `shop-er` の定義、`hints` がオン
+        mock: なし
+        expected: テーブルが定義の数だけ、関係の `path[data-line="er"]` が関係の数だけあり、両端に多重度の記号とラベルがあり、`tips` に注文のテーブルの `{論理名}（orders）` がある
+      - name: test_render_er_when_hints_off
+        case: 正常
+        summary: '`hints` がオフなら説明のボタンとツールチップを置かない'
+        condition: モックの `shop-er` の定義、`hints` がオフ
+        mock: なし
+        expected: '`button.mdmark-diagram-info` が無く、`tips` が空'
+      - name: test_render_er_when_terms
+        case: 正常
+        summary: 定義の文字の `{{語}}` を用語の下線にする
+        condition: テーブルの論理名が `{{顧客}}`、関係のラベルが `{{注文}}する` の定義と、`顧客`・`注文` の意味を返す `lookup`。`hints` がオン
+        mock: なし
+        expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`tips` に `{{` が残らず、`terms` が `true`。説明のボタン・開閉のボタンの読み上げの名前が `「顧客」の…`
+    status: planned
+    introduced:
+      pr: 298
+  - name: attachErFolds
+    title: ER 図の列の開閉を付ける
+    container: src/interact/er-folds.ts
+    kind: 関数
+    scope: internal
+    summary: '`figure` の中の `button.mdmark-diagram-er-fold` の `click`（Enter・Space を含む）で `setErTableFolded` を呼び、フォーカスをボタンに残す。図の倍率は変えない'
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: '`data-diagram="er"` の `figure.mdmark-diagram`（全画面の枠を含む）'
+    returns:
+      type: () => void
+      description: 付けた受け取りを外す関数
+    callees:
+      - '#functions[setErTableFolded]'
+    unit_tests:
+      - name: test_attach_er_folds
+        case: 正常
+        summary: 開閉のボタンで列を畳み、関係の線を結び直す
+        condition: 主キー 1 つ・ほかの列 10 個・12 番目に外部キーを持つ `orders` と、その外部キーへ関係を持つ `customers` の ER 図（インターフェース定義『文書を描く』のフロー `正常系（ER 図の列を開閉する）` と同じ定義）で、`orders` の開閉のボタンを押し、もう一度押す
+        mock: なし（Chromium）
+        expected: 1 回目の後に主キーと外部キー以外の列の行が `hidden` を持ち、ボタンが `aria-expanded="false"`、12 番目の外部キーの列へ結ぶ線の端の y が変わる。2 回目の後に全ての列が出て、線の端の y が初めと同じ。フォーカスがボタンに残る
+    status: planned
+    introduced:
+      pr: 298
+  - name: setErTableFolded
+    title: ER 図のテーブルの列を畳む・開く
+    container: src/interact/er-folds.ts
+    kind: 関数
+    scope: internal
+    summary: テーブルの主キーでも外部キーでもない列の行の `hidden`・`非表示 {数} 列` の行・開閉のボタンの `aria-expanded` とアイコン（`chevrons-down-up`・`chevrons-up-down`）を切り替え、図の中の関係ごとに、テーブルの位置と大きさ（`style` の `left`・`top`・`width`）と列の行の並びから作った `MdmarkErTable` で `erRelationRoute` を求め直し、線の `d`・両端の記号（`erEndSvg`）・ラベルの位置を書き換え、図の高さを `erTableHeight` で求め直す。分類『描く』の `attachPrint` も使う
+    args:
+      - name: options
+        type: '{ table: HTMLElement; folded: boolean }'
+        required: true
+        description: '`div.mdmark-diagram-er-table` と、畳むか'
+    returns:
+      type: void
+      description: テーブルと図の関係の線を書き換える
+    callees:
+      - '#functions[erRelationRoute]'
+      - '#functions[erEndSvg]'
+      - '#functions[erTableHeight]'
+    unit_tests:
+      - name: test_set_er_table_folded
+        case: 正常
+        summary: 畳んだテーブルを開き、畳み直す
+        condition: モックの `shop-er-folded` を描いた図の注文のテーブルに `folded` を `false`、続けて `true`
+        mock: なし（Chromium）
+        expected: '`false` の後に全ての列の行が `hidden` を持たず `非表示 {数} 列` の行が無い。`true` の後に描いた直後と同じ HTML'
+    status: planned
+    introduced:
+      pr: 298
 test_files:
   - tests/unit/src/diagram/definition.test.ts
   - tests/unit/src/diagram/geometry.test.ts
@@ -1264,3 +1680,6 @@ test_files:
   - tests/unit/src/interact/zoom.browser.test.ts
   - tests/unit/src/parts/chart.test.ts
   - tests/unit/src/diagram/check.test.ts
+  - tests/unit/src/diagram/er.test.ts
+  - tests/unit/src/parts/er.test.ts
+  - tests/unit/src/interact/er-folds.browser.test.ts
