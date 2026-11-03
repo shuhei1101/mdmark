@@ -265,14 +265,35 @@
       background: color-mix(in srgb, var(--lane-color) var(--mdmark-diagram-lane-tint), var(--mdmark-color-bg));
     }
 
-    /* 層の見出し: 層の左上に控えめな文字で */
+    /* 層の見出し: 層の左上に控えめな文字で。hint を持つ層は名前の右に印を並べる */
     .mdmark-diagram-lane-label {
       position: absolute;
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
       color: var(--mdmark-color-muted);
       font-size: 12px;
       font-weight: 600;
       line-height: 1.4;
       white-space: nowrap;
+    }
+
+    /* グループ（システムの枠・層）の hint の印: タイトルの文字の右に並べる。箱の印と同じ形で、タイトルの文字の色にする */
+    .mdmark-diagram-group-info {
+      --node-color: var(--mdmark-color-muted);
+      position: static;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* 上端に留めたグループのタイトル: 下を流れるノードと線より前に出し、地の色の札で読めるようにする */
+    :is(.mdmark-diagram-frame-title, .mdmark-diagram-lane-label).is-stuck {
+      z-index: 2;
+      margin-inline-start: -0.375rem;
+      padding: 0 0.375rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
     }
 
     /* 種類ごとの色: 箱の線・種類の行・層の背景が読む */
@@ -572,6 +593,41 @@
       }
     }
 
+    /* 表示枠の高さを変えるリサイズハンドル: 表示の箱の右下の角に置き、縦にだけ動かす */
+    .mdmark-diagram-resize {
+      position: absolute;
+      inset-block-end: 3px;
+      inset-inline-end: 3px;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 16px;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-muted);
+      cursor: ns-resize;
+      touch-action: none;
+
+      &:hover,
+      &.is-resizing {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-heading);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      .mdmark-diagram-icon {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
     /* 線のツールチップを拾う太い透明の線 */
     .mdmark-diagram-wire-hit {
       fill: none;
@@ -730,6 +786,31 @@
     .mdmark-diagram-bar {
       stroke: var(--series-color);
       stroke-width: 1.5;
+    }
+
+    /* グラフの点のツールチップを拾う透明の円: 点の印より広い当たりの範囲。フォーカスした点は輪で示す */
+    .mdmark-diagram-item-hit {
+      fill: transparent;
+      stroke: none;
+      pointer-events: all;
+
+      &:focus-visible {
+        outline: none;
+        stroke: var(--mdmark-color-link);
+        stroke-width: 2;
+      }
+    }
+
+    /* ツールチップを持つ棒・扇形・バブル: ポインターを乗せた項目を濃くし、フォーカスした項目は枠で示す */
+    :is(.mdmark-diagram-bar, .mdmark-diagram-slice, .mdmark-diagram-bubble)[data-tip-owner] {
+      &:hover {
+        filter: brightness(0.92);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
     }
 
     /* 円の扇形: 系列の模様で塗り、隣の扇形とは地の色の隙間で分ける */

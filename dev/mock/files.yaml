@@ -701,6 +701,15 @@ files:
   - path: refs/298/index.md
     description: '#298（ER 図の部品を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
+  - path: refs/308/assets/samples.js
+    description: '#308 のモックが共通で読む素材: システムの枠と層の hint・タイトルを留めない図・縦に長い図・ノードと線の種類が 1 つずつの図の定義の見本。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/308/assets/table.css
+    description: '#308 のモックが共通で読む素材: 本文の幅に広げる表と、列のボタンの案 A・B・C（アイコンだけ・隠した列の数のバッジ・設定のメニュー）の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/308/index.md
+    description: '#308（描いた文書の表示を改善する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
   - path: refs/32/assets/bundle.css
     description: '#32 のモックが共通で読む素材: まとめた HTML の画面（bundle）と文書の一覧の部品（doc-list）の規則。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:書き出し, tool:css]

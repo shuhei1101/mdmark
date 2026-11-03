@@ -24,6 +24,8 @@
   <link rel="stylesheet" href="./style.css">
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
+  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読む） -->
+  <script src="../../refs/308/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
@@ -122,6 +124,22 @@
 </div>
 <p>受け取った問い合わせは、分類で返信の種類を決めてから下書きに回します。</p>
           <figure data-mock-diagram="long-names"></figure>
+        </article>
+      </section>
+
+      <!-- グループのタイトルの hint と、上端に留めたタイトル: 拡大して下へ動かすと、見えているシステムの枠と層のタイトルを表示枠の上端に留める -->
+      <section aria-labelledby="state-sticky">
+        <h2 class="catalog-label" id="state-sticky">拡大して下へ動かした（見えているシステムの枠と層のタイトルを上端に留める）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-groups" data-mock-zoom="1.6" data-mock-scroll="140,230"></figure>
+        </article>
+      </section>
+
+      <!-- タイトルを留めない（定義の stickyTitles: false）: タイトルも図と一緒に動く -->
+      <section aria-labelledby="state-sticky-off">
+        <h2 class="catalog-label" id="state-sticky-off">タイトルを留めない（stickyTitles: false。図と一緒に動く）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-groups-off" data-mock-zoom="1.6" data-mock-scroll="140,230"></figure>
         </article>
       </section>
     </div>

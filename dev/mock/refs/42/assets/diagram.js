@@ -3,7 +3,8 @@
 // [data-mock-param] の要素へ、スライダー・今の値を写すボタン・グラフを描く。
 // モックの見本だけの指定: data-mock-zoom（開いたときの倍率）・data-mock-scroll（開いたときの位置。図の座標の "x,y"）・
 // data-mock-open（開いたままにするツールチップの持ち主。線の id・"node:{箱の id}"・"term:{語}"）・data-mock-copy（"copied" / "failed" の知らせを出したまま）・
-// data-mock-hints="off"（機能 hints をオフにした文書。figure か祖先に書く。線の詳細・箱の入力・処理・出力・箱の hint のツールチップと印を出さない）
+// data-mock-hints="off"（機能 hints をオフにした文書。figure か祖先に書く。線の詳細・箱の入力・処理・出力・箱の hint のツールチップと印を出さない）・
+// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
 
 // sample.js・glossary.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -37,6 +38,8 @@
     table: '<path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/>',
     foldColumns: '<path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/>',
     unfoldColumns: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+    // リサイズハンドル（lucide の grip-horizontal）
+    grip: '<circle cx="12" cy="9" r="1"/><circle cx="19" cy="9" r="1"/><circle cx="5" cy="9" r="1"/><circle cx="12" cy="15" r="1"/><circle cx="19" cy="15" r="1"/><circle cx="5" cy="15" r="1"/>',
   };
 
   // 箱の種類の既定の名前（定義の tag が無いときに種類の行に出す）と、凡例の並び
@@ -65,6 +68,20 @@
 
   // 倍率を比べるときの誤差
   const ZOOM_EPSILON = 0.001;
+
+  // リサイズハンドル: 上下キーの 1 回の変化量・表示枠の最小の高さ（px）と、変えた高さを持つ sessionStorage のキーの頭
+  const RESIZE_STEP_PX = 32;
+  const RESIZE_MIN_PX = 120;
+  const HEIGHT_KEY_PREFIX = "mdmark-mock-diagram-height";
+
+  // ドラッグを始めるまでのポインターの移動の距離（px）。これより小さい間はツールチップを優先する
+  const DRAG_THRESHOLD_PX = 4;
+
+  // グラフの点のツールチップを拾う透明の円の半径（px）
+  const ITEM_HIT_RADIUS = 12;
+
+  // グループ（システムの枠・層）のタイトルを上端に留めるときの、表示枠の上端との間と、留めたタイトルどうしの間（px）
+  const STICKY_GAP_PX = 6;
 
   // 線の交差を飛び越える半円の半径（px）
   const JUMP_RADIUS = 6;
@@ -238,17 +255,25 @@
     `<path class="mdmark-diagram-wire" data-line="${wire.line}" data-wire="${esc(wire.id)}" d="${d}" marker-end="url(#${fid}-head-${wire.line})"/>` +
     (wire.tip && hintsOn ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${esc(wire.id)}" d="${d}"/>` : "");
 
+  /** グループ（システムの枠・層）の hint のツールチップを出す、タイトルの右の印。hint が無いか、ヒントを外した文書では何も出さない。 */
+  const groupInfoHtml = (group, label, owner, tips) => {
+    if (!hintsOn || !group.hint) return "";
+    const id = tips.add(`<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${esc(label)}</span><span class="mdmark-term-tip-meaning">${esc(group.hint)}</span></span>`, owner);
+    return `<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「${esc(label)}」の説明" aria-describedby="${id}" data-tip-owner="${esc(owner)}">${icon("info")}</button>`;
+  };
+
   /** フロー図の本体（枠・層・線・箱・ラベル）を描き、図の大きさを返す。 */
   const renderFlow = (def, fid, tips) => {
     const parts = [];
     const { frame } = def;
     if (frame) {
       parts.push(`<div class="mdmark-diagram-frame" style="left:${frame.x}px;top:${frame.y}px;width:${frame.w}px;height:${frame.h}px"></div>`);
+      // グループのタイトル: data-sticky-top・data-sticky-bottom はグループの上端と下端（attachView が見えている間だけ上端に留める）
+      parts.push(`<span class="mdmark-diagram-frame-title" data-sticky-top="${frame.y}" data-sticky-bottom="${frame.y + frame.h}" style="left:${frame.x + 12}px;top:${frame.y + 8}px">${icon("frame")}${esc(frame.title)}${groupInfoHtml(frame, frame.title, "frame", tips)}</span>`);
       for (const lane of def.lanes ?? []) {
         parts.push(`<div class="mdmark-diagram-lane" data-kind="${lane.kind}" style="left:${frame.x + 1.5}px;top:${lane.y}px;width:${frame.w - 3}px;height:${lane.h}px"></div>`);
-        parts.push(`<span class="mdmark-diagram-lane-label" style="left:${frame.x + 12}px;top:${lane.y + 6}px">${esc(lane.label)}</span>`);
+        parts.push(`<span class="mdmark-diagram-lane-label" data-sticky-top="${lane.y}" data-sticky-bottom="${lane.y + lane.h}" style="left:${frame.x + 12}px;top:${lane.y + 6}px">${esc(lane.label)}${groupInfoHtml(lane, lane.label, `lane:${lane.label}`, tips)}</span>`);
       }
-      parts.push(`<span class="mdmark-diagram-frame-title" style="left:${frame.x + 12}px;top:${frame.y + 8}px">${icon("frame")}${esc(frame.title)}</span>`);
     }
     const wires = def.wires.map((wire) => wireSvg(fid, wire, wirePath(wire, def.wires))).join("");
     parts.push(`<svg class="mdmark-diagram-wires" width="${def.width}" height="${def.height}" aria-hidden="true">${wires}</svg>`);
@@ -306,6 +331,17 @@
     }
     return `<path class="mdmark-diagram-point" d="M${x},${y - s - 1} L${x + s + 1},${y} L${x},${y + s + 1} L${x - s - 1},${y} z"/>`;
   };
+
+  /** グラフの項目（点・棒・扇形・バブル）をツールチップの持ち主にする属性。tips が無い（操作できる部品の描き直し）ときは何も付けない。 */
+  const itemAttrs = (tips, heading, text) => {
+    if (!tips) return "";
+    const owner = `item:${tips.list.length + 1}`;
+    const id = tips.add(`<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${esc(heading)}</span><span class="mdmark-term-tip-meaning">${esc(text)}</span></span>`, owner);
+    return ` tabindex="0" aria-describedby="${id}" data-tip-owner="${owner}"`;
+  };
+
+  /** 点の周りのツールチップを拾う透明の円（点の印より広い当たりの範囲）。 */
+  const itemHit = (attrs, x, y) => (attrs ? `<circle class="mdmark-diagram-item-hit" cx="${x}" cy="${y}" r="${ITEM_HIT_RADIUS}"${attrs}/>` : "");
 
   /** 軸の範囲を省いたとき: データの最小と最大を含む、1・2・5×10 のべき乗の刻みで目盛りを切る（目盛りは 5 本前後）。zero は 0 を範囲に含めるか。 */
   const niceAxis = (axis, values, zero) => {
@@ -365,7 +401,7 @@
   const xTicksSvg = (ticks, xAt, box) => ticks.map((t, i) => `<text class="mdmark-diagram-axis-text" x="${xAt(i)}" y="${box.bottom + 20}" text-anchor="middle">${esc(t)}</text>`);
 
   /** 折れ線: 系列を色と線の模様・点の印の組で引く。 */
-  const lineSvg = (def, box) => {
+  const lineSvg = (def, box, tips) => {
     const ticks = def.x.ticks;
     const y = niceAxis(def.y, def.series.flatMap((s) => s.points), true);
     const xAt = (i) => box.left + (i * (box.right - box.left)) / (ticks.length - 1);
@@ -375,13 +411,13 @@
       const n = i + 1;
       const pts = series.points.map((v, j) => [xAt(j), yAt(v)]);
       svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${pts.map((p) => p.join(",")).join(" L")}"/>`);
-      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}${pts.map(([px, py], j) => itemHit(itemAttrs(tips, series.name, `${ticks[j]}: ${series.points[j]}`), px, py)).join("")}</g>`);
     });
     return { svg, label: def.series.map((s) => `${s.name}: ${s.points.join("・")}`).join("。") };
   };
 
   /** 棒: 項目ごとに系列の棒を横に並べ、系列を色と塗りの模様の組で分ける。 */
-  const barSvg = (def, box, fid) => {
+  const barSvg = (def, box, fid, tips) => {
     const ticks = def.x.ticks;
     const y = niceAxis(def.y, def.series.flatMap((s) => s.points), true);
     const band = (box.right - box.left) / ticks.length;
@@ -394,7 +430,7 @@
       const bars = series.points.map((v, j) => {
         const x = xAt(j) - (barW * def.series.length) / 2 + barW * i;
         const top = Math.min(yAt(v), yAt(0));
-        return `<rect class="mdmark-diagram-bar" x="${x + 1}" y="${top}" width="${barW - 2}" height="${Math.abs(yAt(v) - yAt(0))}" fill="url(#${fid}-fill-${n})"/>`;
+        return `<rect class="mdmark-diagram-bar" x="${x + 1}" y="${top}" width="${barW - 2}" height="${Math.abs(yAt(v) - yAt(0))}" fill="url(#${fid}-fill-${n})"${itemAttrs(tips, series.name, `${ticks[j]}: ${v}`)}/>`;
       });
       svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
     });
@@ -403,7 +439,7 @@
   };
 
   /** 円: 項目の値の割合の角度で扇形を描き、扇形の外に割合を出す。項目の名前と値は凡例が持つ。 */
-  const pieSvg = (def, fid) => {
+  const pieSvg = (def, fid, tips) => {
     const cx = CHART_W / 2;
     const cy = CHART_H / 2;
     const r = 118;
@@ -417,7 +453,7 @@
       const at = (a, rr) => [cx + rr * Math.cos(a), cy + rr * Math.sin(a)];
       const [x1, y1] = at(angle, r);
       const [x2, y2] = at(end, r);
-      svg.push(`<g data-series="${n}"><path class="mdmark-diagram-slice" d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x2},${y2} Z" fill="url(#${fid}-fill-${n})"/></g>`);
+      svg.push(`<g data-series="${n}"><path class="mdmark-diagram-slice" d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x2},${y2} Z" fill="url(#${fid}-fill-${n})"${itemAttrs(tips, item.name, `${item.value}${def.unit ?? ""}（${percentOf(item.value, total)}）`)}/></g>`);
       const mid = angle + sweep / 2;
       const [lx, ly] = at(mid, r + 16);
       const anchor = Math.abs(Math.cos(mid)) < 0.2 ? "middle" : Math.cos(mid) > 0 ? "start" : "end";
@@ -431,7 +467,7 @@
   const percentOf = (value, total) => `${Math.round((value / total) * 100)}%`;
 
   /** 散布図: 横と縦の両方を数値の軸にし、系列の点の印だけを置く（線で結ばない）。 */
-  const scatterSvg = (def, box) => {
+  const scatterSvg = (def, box, tips) => {
     const x = niceAxis(def.x, def.series.flatMap((s) => s.points.map((p) => p[0])), false);
     const y = niceAxis(def.y, def.series.flatMap((s) => s.points.map((p) => p[1])), false);
     const xAt = (v) => box.left + ((v - x.min) * (box.right - box.left)) / (x.max - x.min);
@@ -444,7 +480,7 @@
     svg.push(...axisLinesSvg(def.x, box));
     def.series.forEach((series, i) => {
       const n = i + 1;
-      svg.push(`<g data-series="${n}">${series.points.map(([px, py]) => pointSvg(n, xAt(px), yAt(py), SCATTER_POINT_SIZE)).join("")}</g>`);
+      svg.push(`<g data-series="${n}">${series.points.map(([px, py]) => pointSvg(n, xAt(px), yAt(py), SCATTER_POINT_SIZE)).join("")}${series.points.map(([px, py]) => itemHit(itemAttrs(tips, series.name, `${def.x.label} ${px}・${def.y.label} ${py}`), xAt(px), yAt(py))).join("")}</g>`);
     });
     return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map(([px, py]) => `(${px}, ${py})`).join("・")}`).join("。") };
   };
@@ -456,7 +492,7 @@
   };
 
   /** 面: 系列の線の下を系列の色の薄い面で塗る。stacked は値を積み上げ、面を系列の塗りの模様で分ける。 */
-  const areaSvg = (def, box, fid, stacked) => {
+  const areaSvg = (def, box, fid, stacked, tips) => {
     const ticks = def.x.ticks;
     const tops = ticks.map((_, j) => def.series.reduce((sum, s) => sum + s.points[j], 0));
     const y = niceAxis(def.y, stacked ? tops : def.series.flatMap((s) => s.points), true);
@@ -473,7 +509,7 @@
       const fill = stacked ? `url(#${fid}-fill-${n})` : "color-mix(in srgb, var(--series-color) 14%, transparent)";
       svg.push(`<g data-series="${n}"><path class="mdmark-diagram-area" d="M${[...top, ...bottom].map((p) => p.join(",")).join(" L")} Z" style="fill:${fill}"/></g>`);
       svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${top.map((p) => p.join(",")).join(" L")}"/>`);
-      svg.push(`<g data-series="${n}">${top.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+      svg.push(`<g data-series="${n}">${top.map(([px, py]) => pointSvg(n, px, py)).join("")}${top.map(([px, py], j) => itemHit(itemAttrs(tips, series.name, `${ticks[j]}: ${series.points[j]}`), px, py)).join("")}</g>`);
       if (stacked) high.forEach((v, j) => (base[j] = v));
     });
     svg.push(...axisLinesSvg(def.x, box));
@@ -481,7 +517,7 @@
   };
 
   /** 積み上げの棒: 項目ごとに 1 本の棒に系列を積み、系列を色と塗りの模様の組で分ける。棒の上に合計を出す。 */
-  const stackedBarSvg = (def, box, fid) => {
+  const stackedBarSvg = (def, box, fid, tips) => {
     const ticks = def.x.ticks;
     const tops = ticks.map((_, j) => def.series.reduce((sum, s) => sum + s.points[j], 0));
     const y = niceAxis(def.y, tops, true);
@@ -493,7 +529,7 @@
     def.series.forEach((series, i) => {
       const n = i + 1;
       const bars = series.points.map((v, j) => {
-        const rect = `<rect class="mdmark-diagram-bar" data-stacked="" x="${xAt(j) - barW / 2}" y="${yAt(base[j] + v)}" width="${barW}" height="${yAt(base[j]) - yAt(base[j] + v)}" fill="url(#${fid}-fill-${n})"/>`;
+        const rect = `<rect class="mdmark-diagram-bar" data-stacked="" x="${xAt(j) - barW / 2}" y="${yAt(base[j] + v)}" width="${barW}" height="${yAt(base[j]) - yAt(base[j] + v)}" fill="url(#${fid}-fill-${n})"${itemAttrs(tips, series.name, `${ticks[j]}: ${v}`)}/>`;
         base[j] += v;
         return rect;
       });
@@ -505,7 +541,7 @@
   };
 
   /** 横棒: 項目を縦に並べ、値を横の長さで出す。項目の名前は左の余白に置く。 */
-  const horizontalBarSvg = (def, box, fid) => {
+  const horizontalBarSvg = (def, box, fid, tips) => {
     const ticks = def.x.ticks;
     const left = box.left + 64;
     const x = niceAxis(def.y, def.series.flatMap((s) => s.points), true);
@@ -523,7 +559,7 @@
       const n = i + 1;
       const bars = series.points.map((v, j) => {
         const y0 = yAt(j) - (barH * def.series.length) / 2 + barH * i;
-        return `<rect class="mdmark-diagram-bar" x="${xAt(0)}" y="${y0 + 1}" width="${xAt(v) - xAt(0)}" height="${barH - 2}" fill="url(#${fid}-fill-${n})"/>`;
+        return `<rect class="mdmark-diagram-bar" x="${xAt(0)}" y="${y0 + 1}" width="${xAt(v) - xAt(0)}" height="${barH - 2}" fill="url(#${fid}-fill-${n})"${itemAttrs(tips, series.name, `${ticks[j]}: ${v}`)}/>`;
       });
       svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
     });
@@ -535,8 +571,8 @@
   };
 
   /** ドーナツ: 円の中央を抜き、中央に合計を出す。割合は扇形の外に出す。 */
-  const donutSvg = (def, fid) => {
-    const { svg, label } = pieSvg(def, fid);
+  const donutSvg = (def, fid, tips) => {
+    const { svg, label } = pieSvg(def, fid, tips);
     const total = def.items.reduce((sum, item) => sum + item.value, 0);
     svg.push(`<circle class="mdmark-diagram-donut-hole" cx="${CHART_W / 2}" cy="${CHART_H / 2}" r="64"/>`);
     svg.push(`<text class="mdmark-diagram-value-text" x="${CHART_W / 2}" y="${CHART_H / 2 + 2}" text-anchor="middle" style="font-size:22px">${total}</text>`);
@@ -545,7 +581,7 @@
   };
 
   /** レーダー: 目盛りの項目を放射状の軸にし、系列を色と線の模様・点の印の多角形で引く。 */
-  const radarSvg = (def) => {
+  const radarSvg = (def, tips) => {
     const ticks = def.x.ticks;
     const cx = CHART_W / 2;
     const cy = CHART_H / 2 + 6;
@@ -574,13 +610,13 @@
       const pts = series.points.map((v, j) => at(j, v));
       svg.push(`<g data-series="${n}"><path class="mdmark-diagram-area" d="M${pts.map((p) => p.join(",")).join(" L")} Z" style="fill:color-mix(in srgb, var(--series-color) 10%, transparent)"/></g>`);
       svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${pts.map((p) => p.join(",")).join(" L")} Z"/>`);
-      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}${pts.map(([px, py], j) => itemHit(itemAttrs(tips, series.name, `${ticks[j]}: ${series.points[j]}`), px, py)).join("")}</g>`);
     });
     return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map((v, j) => `${ticks[j]} ${v}`).join("・")}`).join("。") };
   };
 
   /** バブル: 散布図の点を 3 つ目の値の面積の円にし、系列を色と塗りの模様の組で分ける。 */
-  const bubbleSvg = (def, box, fid) => {
+  const bubbleSvg = (def, box, fid, tips) => {
     const all = def.series.flatMap((s) => s.points);
     const x = niceAxis(def.x, all.map((p) => p[0]), false);
     const y = niceAxis(def.y, all.map((p) => p[1]), false);
@@ -596,13 +632,13 @@
     svg.push(...axisLinesSvg(def.x, box));
     def.series.forEach((series, i) => {
       const n = i + 1;
-      svg.push(`<g data-series="${n}">${series.points.map(([px, py, size]) => `<circle class="mdmark-diagram-bubble" cx="${xAt(px)}" cy="${yAt(py)}" r="${rOf(size)}" fill="url(#${fid}-fill-${n})"/>`).join("")}</g>`);
+      svg.push(`<g data-series="${n}">${series.points.map(([px, py, size]) => `<circle class="mdmark-diagram-bubble" cx="${xAt(px)}" cy="${yAt(py)}" r="${rOf(size)}" fill="url(#${fid}-fill-${n})"${itemAttrs(tips, series.name, `${def.x.label} ${px}・${def.y.label} ${py}・${def.size?.label ?? "大きさ"} ${size}`)}/>`).join("")}</g>`);
     });
     return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map(([px, py, size]) => `(${px}, ${py}, ${def.size?.label ?? "大きさ"} ${size})`).join("・")}`).join("。") };
   };
 
   /** 折れ線と棒の組み合わせ: as が bar の系列を棒、line の系列を折れ線で描く。axis が y2 の系列は右の縦の軸で読む。 */
-  const comboSvg = (def, box, fid) => {
+  const comboSvg = (def, box, fid, tips) => {
     const ticks = def.x.ticks;
     const right = def.y2 ? box.right - 40 : box.right;
     const inner = { ...box, right };
@@ -629,14 +665,14 @@
         const k = bars.indexOf(series);
         const rects = series.points.map((v, j) => {
           const x0 = xAt(j) - (barW * bars.length) / 2 + barW * k;
-          return `<rect class="mdmark-diagram-bar" x="${x0 + 1}" y="${axisAt(v)}" width="${barW - 2}" height="${axisAt(0) - axisAt(v)}" fill="url(#${fid}-fill-${n})"/>`;
+          return `<rect class="mdmark-diagram-bar" x="${x0 + 1}" y="${axisAt(v)}" width="${barW - 2}" height="${axisAt(0) - axisAt(v)}" fill="url(#${fid}-fill-${n})"${itemAttrs(tips, series.name, `${ticks[j]}: ${v}`)}/>`;
         });
         svg.push(`<g data-series="${n}">${rects.join("")}</g>`);
         return;
       }
       const pts = series.points.map((v, j) => [xAt(j), axisAt(v)]);
       svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${pts.map((p) => p.join(",")).join(" L")}"/>`);
-      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}${pts.map(([px, py], j) => itemHit(itemAttrs(tips, series.name, `${ticks[j]}: ${series.points[j]}`), px, py)).join("")}</g>`);
     });
     svg.push(...axisLinesSvg(def.x, inner));
     return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map((v, j) => `${ticks[j]} ${v}`).join("・")}`).join("。") };
@@ -646,23 +682,23 @@
   const FILL_TYPES = new Set(["bar", "pie", "stacked-bar", "stacked-area", "horizontal-bar", "donut", "bubble", "combo"]);
 
   /** グラフの本体（軸・目盛り・系列）を種類ごとに描き、図の大きさを返す。 */
-  const renderChart = (def, fid) => {
+  const renderChart = (def, fid, tips = null) => {
     const box = { left: CHART_PAD.left, right: CHART_W - CHART_PAD.right, top: CHART_PAD.top, bottom: CHART_H - CHART_PAD.bottom };
     const type = def.type ?? "line";
     const renderers = {
-      bar: () => barSvg(def, box, fid),
-      pie: () => pieSvg(def, fid),
-      scatter: () => scatterSvg(def, box),
-      area: () => areaSvg(def, box, fid, false),
-      "stacked-area": () => areaSvg(def, box, fid, true),
-      "stacked-bar": () => stackedBarSvg(def, box, fid),
-      "horizontal-bar": () => horizontalBarSvg(def, box, fid),
-      donut: () => donutSvg(def, fid),
-      radar: () => radarSvg(def),
-      bubble: () => bubbleSvg(def, box, fid),
-      combo: () => comboSvg(def, box, fid),
+      bar: () => barSvg(def, box, fid, tips),
+      pie: () => pieSvg(def, fid, tips),
+      scatter: () => scatterSvg(def, box, tips),
+      area: () => areaSvg(def, box, fid, false, tips),
+      "stacked-area": () => areaSvg(def, box, fid, true, tips),
+      "stacked-bar": () => stackedBarSvg(def, box, fid, tips),
+      "horizontal-bar": () => horizontalBarSvg(def, box, fid, tips),
+      donut: () => donutSvg(def, fid, tips),
+      radar: () => radarSvg(def, tips),
+      bubble: () => bubbleSvg(def, box, fid, tips),
+      combo: () => comboSvg(def, box, fid, tips),
     };
-    const body = (renderers[type] ?? (() => lineSvg(def, box)))();
+    const body = (renderers[type] ?? (() => lineSvg(def, box, tips)))();
     const defs = FILL_TYPES.has(type) ? `<defs>${fillDefs(fid)}</defs>` : "";
     return {
       html: `<svg class="mdmark-diagram-wires" width="${CHART_W}" height="${CHART_H}" role="img" aria-label="${esc(`${def.title}。${body.label}`)}">${defs}${body.svg.join("")}</svg>`,
@@ -703,7 +739,7 @@
   const bubbleSample = () =>
     `<svg class="mdmark-diagram-legend-sample" width="30" height="16" aria-hidden="true"><circle cx="6" cy="10" r="4" fill="none" stroke="var(--mdmark-color-muted)" stroke-width="1.5"/><circle cx="21" cy="8" r="7" fill="none" stroke="var(--mdmark-color-muted)" stroke-width="1.5"/></svg>`;
 
-  /** 図の定義に出る色・形・線・矢じり・印を全て載せた凡例の項目。 */
+  /** 凡例の項目（グラフは系列、ER 図は列の印と多重度、フロー図とシーケンス図は 2 種類以上あるノードの種類と線の種類）。 */
   const legendItems = (def, fid) => {
     const item = (sample, text) => `<li class="mdmark-diagram-legend-item">${sample}<span>${text}</span></li>`;
     if (def.kind === "er") return erLegendItems(def, item);
@@ -716,30 +752,14 @@
       if (FILL_TYPES.has(type)) return def.series.map((s, i) => item(fillSample(fid, i + 1), esc(s.name)));
       return def.series.map((s, i) => item(seriesSample(i + 1), esc(s.name)));
     }
+    // ノードの種類と線の種類は、図に 2 種類以上あるときだけ載せる（1 種類だけなら見分けが要らない）。枠・層・交差・ツールチップの印・下線は載せない
     const nodes = def.kind === "sequence" ? def.participants : def.nodes;
     const kinds = Object.keys(KIND_LEGEND).filter((k) => nodes.some((n) => n.kind === k));
     const lines = new Set(def.kind === "sequence" ? def.steps.map((s) => (s.reply ? "reply" : "flow")) : def.wires.map((w) => w.line));
     if (def.loop) lines.add("loop");
-    const items = kinds.map((k) => item(kindSample(k), k === "external" && def.frame ? KIND_LEGEND[k] + OUTSIDE_FRAME : KIND_LEGEND[k]));
-    if (def.frame) {
-      items.push(item('<svg class="mdmark-diagram-legend-sample" width="18" height="14" aria-hidden="true"><rect x="1" y="1" width="16" height="12" rx="4" fill="none" stroke="var(--mdmark-color-muted)" stroke-width="1.5"/></svg>', "システムの枠"));
-      items.push(item('<svg class="mdmark-diagram-legend-sample" width="18" height="14" aria-hidden="true"><rect x="0" y="0" width="18" height="14" rx="2" fill="color-mix(in srgb, var(--mdmark-color-diagram-llm) 14%, var(--mdmark-color-bg))"/></svg>', "層の背景（層の箱の色）"));
-    }
-    for (const line of Object.keys(LINE_LEGEND)) if (lines.has(line)) items.push(item(lineSample(fid, line), LINE_LEGEND[line]));
-    if (def.kind === "flow" && def.wires.some((w) => jumpsFor(w, def.wires).size)) {
-      items.push(item('<svg class="mdmark-diagram-legend-sample" width="34" height="14" aria-hidden="true"><path d="M17,0 V14" stroke="var(--mdmark-color-diagram-line)" stroke-width="1.5"/><path d="M1,9 H11 A6,6 0 0 1 23,9 H33" fill="none" stroke="var(--mdmark-color-diagram-line)" stroke-width="1.5"/></svg>', "線の交差（横の線が飛び越える）"));
-    }
-    if (hintsOn && nodes.some((n) => n.io || n.hint)) {
-      const io = nodes.some((n) => n.io);
-      const hint = nodes.some((n) => n.hint && !n.io);
-      const text = io && hint ? "説明や入力・処理・出力が出る箱" : io ? "入力・処理・出力が出る箱" : "説明が出る箱";
-      items.push(item(`<svg class="mdmark-diagram-legend-sample" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:var(--mdmark-color-muted);stroke-width:2.25;stroke-linecap:round">${ICONS.info}</svg>`, text));
-    }
-    // 下線: 箱の中の用語（意味が出る）と、線のラベル（送るものの詳細が出る）を 1 項目にまとめる
-    const hasTerm = nodes.some((n) => `${n.tag ?? ""}${n.sub ?? ""}`.includes("{{"));
-    const hasTip = hintsOn && (def.kind === "flow" ? def.wires.some((w) => w.tip) : def.steps.some((s) => s.tip));
-    const underline = hasTerm && hasTip ? "用語の意味・送るものの詳細が出る" : hasTerm ? "用語の意味が出る" : "送るものの詳細が出る";
-    if (hasTerm || hasTip) items.push(item("", `<span class="mdmark-diagram-legend-term">下線</span>（${underline}）`));
+    const lineKinds = Object.keys(LINE_LEGEND).filter((line) => lines.has(line));
+    const items = kinds.length >= 2 ? kinds.map((k) => item(kindSample(k), k === "external" && def.frame ? KIND_LEGEND[k] + OUTSIDE_FRAME : KIND_LEGEND[k])) : [];
+    if (lineKinds.length >= 2) for (const line of lineKinds) items.push(item(lineSample(fid, line), LINE_LEGEND[line]));
     return items;
   };
 
@@ -891,7 +911,7 @@
   /** 図の本体を種類ごとに描く。 */
   const renderBody = (def, fid, tips) => {
     if (def.kind === "sequence") return renderSequence(def, fid, tips);
-    if (def.kind === "chart") return renderChart(def, fid);
+    if (def.kind === "chart") return renderChart(def, fid, tips);
     if (def.kind === "er") return renderEr(def, fid, tips);
     return renderFlow(def, fid, tips);
   };
@@ -905,6 +925,11 @@
     const body = renderBody(def, fid, tips);
     figure.classList.add("mdmark-diagram");
     figure.dataset.kind = def.kind;
+    // グループのタイトルを上端に留めるか（定義の stickyTitles: false で切る）
+    figure.dataset.stickyTitles = def.stickyTitles === false ? "off" : "on";
+    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）
+    const resizable = !modal && !figure.closest('[data-mock-resize="off"]');
+    const legend = legendItems(def, fid);
     figure.innerHTML = `
       <figcaption class="mdmark-diagram-head" id="${fid}-title">
         <span class="mdmark-diagram-title">${esc(def.title)}</span>
@@ -915,9 +940,10 @@
         <div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${fid}-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight">
           <div class="mdmark-diagram-sizer"><div class="mdmark-diagram-stage" style="width:${body.width}px;height:${body.height}px">${body.html}</div></div>
         </div>
+        ${resizable ? `<button class="mdmark-diagram-resize" type="button" aria-label="「${esc(def.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${icon("grip")}</button>` : ""}
         ${tips.list.map((t) => `<div class="mdmark-diagram-tip" id="${t.id}" role="tooltip" data-tip-for="${esc(t.label)}" hidden>${t.html}</div>`).join("")}
       </div>
-      <ul class="mdmark-diagram-legend" aria-label="凡例">${legendItems(def, fid).join("")}</ul>
+      <ul class="mdmark-diagram-legend" aria-label="凡例"${legend.length ? "" : " hidden"}>${legend.join("")}</ul>
       <svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>${markerDefs(fid)}</defs></svg>`;
     const view = attachView(figure, body.width, body.height, modal);
     attachTips(figure);
@@ -973,8 +999,24 @@
     };
     viewport.addEventListener("scroll", stickHeads, { passive: true });
 
-    /** 枠に図の全体が収まる倍率。文書の中は幅だけ、モーダルの中は幅と高さで決める。 */
-    const fitScale = () => Math.min(1, viewport.clientWidth / state.width, modal ? viewport.clientHeight / state.height : 1);
+    /** グループ（システムの枠・層）のタイトルを、グループが表示枠に見えている間だけ上端に留める。システムの枠のタイトルの下に層のタイトルを重ねる。 */
+    const stickies = figure.dataset.stickyTitles === "off" ? [] : [...figure.querySelectorAll("[data-sticky-top]")];
+    const stickTitles = () => {
+      let top = viewport.scrollTop / state.scale + STICKY_GAP_PX;
+      for (const title of stickies) {
+        const base = Number.parseFloat(title.style.top);
+        const limit = Number(title.dataset.stickyBottom) - title.offsetHeight - STICKY_GAP_PX;
+        const shift = Math.max(0, Math.min(top, limit) - base);
+        title.style.transform = shift ? `translateY(${shift}px)` : "";
+        title.classList.toggle("is-stuck", shift > 0);
+        // システムの枠のタイトルを留めている間は、層のタイトルをその下に留める
+        if (shift > 0 && title.classList.contains("mdmark-diagram-frame-title")) top += title.offsetHeight + STICKY_GAP_PX;
+      }
+    };
+    viewport.addEventListener("scroll", stickTitles, { passive: true });
+
+    /** 枠に図の全体が収まる倍率。文書の中は幅だけ（リサイズハンドルで高さを変えた後は幅と高さ）、モーダルの中は幅と高さで決める。 */
+    const fitScale = () => Math.min(1, viewport.clientWidth / state.width, modal || state.userHeight ? viewport.clientHeight / state.height : 1);
 
     /** 倍率を当て、ボタンの有効・無効と移動のボタンの有無を合わせる。 */
     const apply = (scale) => {
@@ -983,6 +1025,7 @@
       sizer.style.width = `${state.width * scale}px`;
       sizer.style.height = `${state.height * scale}px`;
       stickHeads();
+      stickTitles();
       // 今の倍率のボタン: 全体が収まる倍率を 100% とした倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
       zoomText.textContent = `${Math.round((scale / state.fit) * 100)}%`;
       zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`);
@@ -998,9 +1041,11 @@
 
     /** 開いたときの倍率（全体が収まる倍率）と位置に戻す。文書の中では表示枠の高さを全体が収まる高さにする（モーダルの中はモーダルの高さに合わせる）。 */
     const reset = () => {
+      // リサイズハンドルで高さを変えた後は、その高さのまま全体が収まる倍率を計算し直す
+      if (!modal && state.userHeight) viewport.style.height = `${state.userHeight}px`;
       state.fit = fitScale();
       state.atFit = true;
-      if (!modal) viewport.style.height = `${state.height * state.fit}px`;
+      if (!modal && !state.userHeight) viewport.style.height = `${state.height * state.fit}px`;
       apply(state.fit);
       viewport.scrollLeft = 0;
       viewport.scrollTop = 0;
@@ -1047,15 +1092,22 @@
     });
 
     // ドラッグ: 文字と押せる所の外でつかんで動かす。ドラッグ中は文字を選ばせない
+    // 動かした距離が DRAG_THRESHOLD_PX より小さい間はドラッグにせず、グラフの項目などのツールチップを優先する
     let drag = null;
     viewport.addEventListener("pointerdown", (event) => {
       if (event.button !== 0 || event.target.closest(`${TEXT_SELECTOR}, ${CONTROL_SELECTOR}`)) return;
-      drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop, id: event.pointerId };
-      viewport.setPointerCapture(event.pointerId);
-      viewport.classList.add("is-dragging");
+      drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop, id: event.pointerId, started: false };
     });
     viewport.addEventListener("pointermove", (event) => {
       if (!drag || event.pointerId !== drag.id) return;
+      if (!drag.started) {
+        if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD_PX) return;
+        drag.started = true;
+        viewport.setPointerCapture(event.pointerId);
+        viewport.classList.add("is-dragging");
+        // ドラッグを始めたら、開いているツールチップを閉じる（attachTips が受ける）
+        figure.dispatchEvent(new Event("mdmark-mock-dragstart"));
+      }
       viewport.scrollLeft = drag.left - (event.clientX - drag.x);
       viewport.scrollTop = drag.top - (event.clientY - drag.y);
       if (event.clientX !== drag.x || event.clientY !== drag.y) {
@@ -1090,6 +1142,60 @@
       }
     }).observe(viewport);
 
+    // リサイズハンドル: ドラッグと上下キーで表示枠の高さを縦にだけ変え、ダブルクリックで定義から決まる高さに戻す。変えた高さは同じタブの間 sessionStorage に持つ
+    const handle = figure.querySelector(".mdmark-diagram-resize");
+    const heightKey = `${HEIGHT_KEY_PREFIX}:${location.pathname}:${[...document.querySelectorAll(".mdmark-diagram")].indexOf(figure)}`;
+    /** 表示枠の高さを変える。上限は、幅で決まる倍率と今の倍率の大きいほうで図の全体が収まる高さ。 */
+    const setHeight = (h) => {
+      const max = state.height * Math.max(state.scale, Math.min(1, viewport.clientWidth / state.width));
+      state.userHeight = Math.round(Math.max(RESIZE_MIN_PX, Math.min(max, h)));
+      viewport.style.maxHeight = "none";
+      viewport.style.height = `${state.userHeight}px`;
+      sessionStorage.setItem(heightKey, String(state.userHeight));
+      if (state.atFit) reset();
+      else {
+        state.fit = fitScale();
+        apply(Math.max(state.fit, state.scale));
+      }
+    };
+    if (handle) {
+      const saved = Number(figure.dataset.mockHeight ?? sessionStorage.getItem(heightKey));
+      if (saved) {
+        state.userHeight = saved;
+        viewport.style.maxHeight = "none";
+      }
+      let resizing = null;
+      handle.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        resizing = { y: event.clientY, height: viewport.offsetHeight, id: event.pointerId };
+        handle.setPointerCapture(event.pointerId);
+        handle.classList.add("is-resizing");
+      });
+      handle.addEventListener("pointermove", (event) => {
+        if (resizing && event.pointerId === resizing.id) setHeight(resizing.height + event.clientY - resizing.y);
+      });
+      const endResize = () => {
+        resizing = null;
+        handle.classList.remove("is-resizing");
+      };
+      handle.addEventListener("pointerup", endResize);
+      handle.addEventListener("pointercancel", endResize);
+      // 上下キー: 表示の箱の矢印キー（図を動かす）へ渡さない
+      handle.addEventListener("keydown", (event) => {
+        const delta = { ArrowUp: -RESIZE_STEP_PX, ArrowDown: RESIZE_STEP_PX }[event.key];
+        if (!delta) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setHeight(viewport.offsetHeight + delta);
+      });
+      handle.addEventListener("dblclick", () => {
+        state.userHeight = null;
+        viewport.style.maxHeight = "";
+        sessionStorage.removeItem(heightKey);
+        reset();
+      });
+    }
+
     reset();
 
     // モックの見本: 開いたときの倍率と位置を変えて見せる
@@ -1123,7 +1229,7 @@
 
     /** ツールチップを持ち主の下（収まらなければ上）に、画面からはみ出さないよう置く。 */
     const place = (tip, anchor) => {
-      const target = anchor.classList.contains("mdmark-diagram-info") ? anchor.closest(".mdmark-diagram-node, .mdmark-diagram-er-table") : anchor;
+      const target = anchor.classList.contains("mdmark-diagram-info") ? (anchor.closest(".mdmark-diagram-node, .mdmark-diagram-er-table") ?? anchor) : anchor;
       const a = target.getBoundingClientRect();
       const b = box.getBoundingClientRect();
       const { width, height } = tip.getBoundingClientRect();
@@ -1193,6 +1299,9 @@
     figure.querySelector(".mdmark-diagram-viewport").addEventListener("scroll", follow, { passive: true });
     window.addEventListener("scroll", follow, { passive: true });
     window.addEventListener("resize", follow);
+
+    // 図をドラッグで動かし始めたとき: 開いているツールチップを閉じる
+    figure.addEventListener("mdmark-mock-dragstart", close);
 
     // 印刷の前: 開いているツールチップを閉じる（紙には出さない）
     window.addEventListener("beforeprint", close);
