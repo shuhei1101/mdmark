@@ -1,4 +1,4 @@
-title: "文書"
+title: 文書
 elements:
   - name: 描く先の要素
     id: mdmark-root
@@ -721,11 +721,11 @@ elements:
       - name: draft
         value: 入力欄の本文の欄の文字
       - name: editState
-        value: '書いている間は `idle`、保存を待つ間は `saving`、空のまま保存したら `empty`、`update` が reject したら `failed`'
+        value: 書いている間は `idle`、保存を待つ間は `saving`、空のまま保存したら `empty`、`update` が reject したら `failed`
       - name: confirmIndex
         value: 「削除」を押したコメントの位置
       - name: removeState
-        value: '確かめている間は `idle`、削除を待つ間は `removing`、`remove` が reject したら `failed`'
+        value: 確かめている間は `idle`、削除を待つ間は `removing`、`remove` が reject したら `failed`
     position: コメントの吹き出し
     description: 題 `「{印の文字}」へのコメント`・閉じるボタン・コメントの本文の並び。読み書きの関数が `update`・`remove` を持つときは、コメントごとの本文の右上に「編集」「削除」のアイコンのボタンを置く。印の下（収まらなければ上）に開き、スクロールと幅の変化に付いていく
     io: 入力
@@ -1214,6 +1214,41 @@ elements:
     action: 押すとリンク先を開く
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[リンクと添付のカード]
+    status: planned
+  - name: 脚注の番号
+    id: footnote-ref
+    kind: tooltip
+    component: dev/設計書/部品設計/脚注の番号.ts#
+    args:
+      - name: number
+        value: 本文で最初に参照した順に 1 から振った脚注の番号
+      - name: refIndex
+        value: その脚注の何回目の参照か（0 から）。`mount` は番号・ツールチップの `id` をページの中で一意な値に振り直し、`href`・`aria-describedby`・`aria-details` も合わせて直す
+      - name: bodies
+        value: '定義（`[^ラベル]: 中身` と字下げ 4 で続く段落、行内の `^[中身]`）を描いた段落ごとの行内の HTML。用語の下線とやめた言い方のマーカーを付けない'
+    position: 描く先の要素 > 本文の文字
+    description: 脚注の参照の場所に、印の色で角括弧付きの上付きの番号を出し、ポインターとフォーカスで「脚注 {番号}」のツールチップを出す
+    label: 脚注 {番号}（ツールチップのタイトルと、番号のリンクの読み上げ名）
+    visible_when: '`footnotes` がオンで、定義のある参照か行内の脚注があるとき'
+    action: ポインターを乗せるかフォーカスするとツールチップを出し、Esc で消す。押すと（Enter を含む）閉じた脚注の一覧を開いて該当の項目へフォーカスを移す。印刷ではツールチップを出さず、番号を残す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
+    status: planned
+  - name: 脚注の一覧
+    id: footnotes
+    kind: nav
+    component: dev/設計書/部品設計/脚注の一覧.ts#
+    args:
+      - name: items
+        value: 参照された脚注を番号の順に並べたもの。`number` は本文の番号、`html` は定義を描いた HTML（用語の下線とやめた言い方のマーカーを付けない）、`refCount` は本文で参照した回数。参照されない定義は入れない
+    position: 描く先の要素 > 本文の後（関連文書の一覧の前）
+    description: 本文の脚注を、見出し「脚注（{件数} 件）」の閉じた一覧にまとめ、項目ごとに本文の参照へ戻るリンクを置く
+    label: 脚注（{件数} 件）
+    visible_when: '`footnotes` がオンで、参照された脚注が 1 つ以上あるとき'
+    action: 見出しを押すと開閉する。戻るリンクを押すと本文の参照の番号へフォーカスを移す。印刷では開いて出し、戻るリンクを出さない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[脚注]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
     status: planned
 mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。
