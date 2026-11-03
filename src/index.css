@@ -6382,7 +6382,7 @@
         background: color-mix(
           in oklab,
           var(--mdmark-color-comment-line) 18%,
-          var(--mdmark-color-bg)
+          var(--mdmark-color-bg-opaque)
         );
       }
 
@@ -6394,7 +6394,7 @@
       /* 吹き出しを開いている箇所のマーカー: 地と文字の色を反転する */
       &[data-current] {
         background: var(--mdmark-color-comment-line);
-        color: var(--mdmark-color-bg);
+        color: var(--mdmark-color-bg-opaque);
       }
 
       /* 閉じた中の箇所のマーカー: 線を破線にし、開くボタンの行にあることを示す */
