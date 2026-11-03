@@ -111,5 +111,5 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 /* 右の目次と並ぶ見本: 段落は本文の幅、wide の範囲は本文の列（目次の列を除いた幅）いっぱいにする */
 .demo-with-toc .demo-host { width: 100%; max-width: none; margin-inline: 0; }
 .demo-with-toc .demo-host > .mdmark { max-width: none; }
-.demo-with-toc .mdmark > p { max-width: 560px; margin-inline: auto; }
+.demo-with-toc .mdmark > p { max-width: 360px; margin-inline: auto; }
 .demo-with-toc .mdmark-wide { width: auto; max-width: none; margin-inline-start: 0; transform: none; }
