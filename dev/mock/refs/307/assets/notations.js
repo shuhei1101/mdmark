@@ -5,6 +5,5 @@ document.addEventListener("click", (event) => {
   const box = button.closest(".mdmark-table");
   const pressed = button.getAttribute("aria-pressed") === "true";
   button.setAttribute("aria-pressed", String(!pressed));
-  box.querySelector("table").hidden = !pressed;
-  box.querySelector(".mdmark-raw").hidden = pressed;
+  if (pressed) box.removeAttribute("data-view"); else box.dataset.view = "raw";
 });
