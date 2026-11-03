@@ -79,3 +79,13 @@
 | `tests/unit/src/plugin/session-start.test.ts` | 全実行 | 削除 | - | SessionStart のフックを削除したため |
 | `tests/unit/scripts/build-plugin.test.ts` | 全実行 | 修正 | ✅ | 使い方集を写す・リンクの書き換え・文字数のテストを削除 |
 | `tests/unit/scripts/build.test.ts` | 全実行 | 修正 | ✅ | `test_main_when_guide_index_too_long` を `test_main_when_guide_index_invalid` に置き換えた |
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `npm run test:integration` | 全実行 | 実行のみ | ✅ | 71 ファイル・661 テスト pass<br>`テスト結果/20261103215017_6290b1a8_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | `test_normal`・`test_normal_when_port_overridden` | 修正 | ✅ | instructions の一致と 4,096 文字以下・3 つのツールの名前 |
+| `tests/integration/lib/build.test.ts` | `test_normal` | 修正 | ✅ | `plugin/scripts/pre-tool-use.js` があり、`plugin/scripts/session-start.js`・`plugin/guide` が無い |
+| `tests/integration/lib/build.test.ts` | `test_error_when_guide_index_too_long` | 削除 | - | インターフェース定義で異常系を削除したため |
+| `tests/integration/ClaudeCodeプラグイン/read-guide.test.ts`・`session-start.test.ts` | 全て | 削除 | - | インターフェース定義を削除したため |
