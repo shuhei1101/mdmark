@@ -1,0 +1,86 @@
+$ node poc/footnotes/poc.ts
+PASS A 読み取り: 番号 1 と 2
+PASS A 読み取り: [^・^[ の文字が残らない
+PASS A 組み替え: ツールチップに中身
+PASS A 組み替え: 閉じた details の一覧
+PASS A 組み替え: 既定の section が残らない
+PASS A sanitize の後: 番号の href
+PASS A sanitize の後: 一覧の項目の id
+PASS A sanitize の後: 戻るリンクの href
+PASS A sanitize の後: aria-describedby
+PASS A 複数回: どちらも番号 1
+PASS A 複数回: 項目は 1 つで戻るリンクが 2 つ
+PASS A 定義の無い参照: 文字のまま・一覧なし
+PASS A 定義の複数段落: 2 段落がツールチップに入る
+FAIL A 設定でオフ: 文字のまま
+  <p data-source-line="0">本文の 1 つ目<a href="%E5%87%BA%E5%85%B8%E3%81%AE%E8%AA%AC%E6%98%8E">^src</a>。</p>
+  <p data-source-line="2">定義の段落の後の 2 つ目^[行内の補足]。</p>
+  <p data-source-line="6">終わりの段落。</p>
+  
+FAIL A 文書のマーカーでオフ: 文字のまま
+  
+  <p data-source-line="2">本文<a href="%E5%87%BA%E5%85%B8%E3%81%AE%E8%AA%AC%E6%98%8E">^src</a>。</p>
+  
+PASS A コードブロックの中のマーカーは数えない
+PASS A 交互の呼び出しで持ち越さない
+PASS B 読み取り: 番号 1 と 2
+PASS B 読み取り: [^・^[ の文字が残らない
+PASS B 組み替え: ツールチップに中身
+PASS B 組み替え: 閉じた details の一覧
+PASS B 組み替え: 既定の section が残らない
+PASS B sanitize の後: 番号の href
+PASS B sanitize の後: 一覧の項目の id
+PASS B sanitize の後: 戻るリンクの href
+PASS B sanitize の後: aria-describedby
+PASS B 複数回: どちらも番号 1
+PASS B 複数回: 項目は 1 つで戻るリンクが 2 つ
+PASS B 定義の無い参照: 文字のまま・一覧なし
+PASS B 定義の複数段落: 2 段落がツールチップに入る
+FAIL B 設定でオフ: 文字のまま
+  <p data-source-line="0">本文の 1 つ目<a href="%E5%87%BA%E5%85%B8%E3%81%AE%E8%AA%AC%E6%98%8E">^src</a>。</p>
+  <p data-source-line="2">定義の段落の後の 2 つ目^[行内の補足]。</p>
+  <p data-source-line="6">終わりの段落。</p>
+  
+FAIL B 文書のマーカーでオフ: 文字のまま
+  
+  <p data-source-line="2">本文<a href="%E5%87%BA%E5%85%B8%E3%81%AE%E8%AA%AC%E6%98%8E">^src</a>。</p>
+  
+PASS B コードブロックの中のマーカーは数えない
+PASS B 交互の呼び出しで持ち越さない
+PASS C 読み取り: 番号 1 と 2
+PASS C 読み取り: [^・^[ の文字が残らない
+PASS C 組み替え: ツールチップに中身
+PASS C 組み替え: 閉じた details の一覧
+PASS C 組み替え: 既定の section が残らない
+PASS C sanitize の後: 番号の href
+PASS C sanitize の後: 一覧の項目の id
+PASS C sanitize の後: 戻るリンクの href
+PASS C sanitize の後: aria-describedby
+PASS C 複数回: どちらも番号 1
+PASS C 複数回: 項目は 1 つで戻るリンクが 2 つ
+PASS C 定義の無い参照: 文字のまま・一覧なし
+PASS C 定義の複数段落: 2 段落がツールチップに入る
+PASS C 設定でオフ: 文字のまま
+PASS C 文書のマーカーでオフ: 文字のまま
+PASS C コードブロックの中のマーカーは数えない
+PASS C 交互の呼び出しで持ち越さない
+PASS B disable を戻さないと次のオンの呼び出しに持ち越す（finally が要る）
+
+48/52 pass
+
+--- 正常の文書の出力 ---
+<p data-source-line="0">本文の 1 つ目<sup class="mdmark-fn-ref"><a href="#mdmark-fn-1" id="mdmark-fnref-1-0" class="mdmark-fn-link" aria-describedby="mdmark-fn-tip-1-0">1</a><span role="tooltip" id="mdmark-fn-tip-1-0" class="mdmark-fn-tip"><span class="mdmark-fn-tip-title">脚注 1</span><p>出典の説明</p></span></sup>。</p>
+<p data-source-line="2">定義の段落の後の 2 つ目<sup class="mdmark-fn-ref"><a href="#mdmark-fn-2" id="mdmark-fnref-2-0" class="mdmark-fn-link" aria-describedby="mdmark-fn-tip-2-0">2</a><span role="tooltip" id="mdmark-fn-tip-2-0" class="mdmark-fn-tip"><span class="mdmark-fn-tip-title">脚注 2</span><p>行内の補足</p></span></sup>。</p>
+<p data-source-line="6">終わりの段落。</p>
+<details class="mdmark-footnotes"><summary>脚注</summary><ol class="mdmark-footnotes-list"><li id="mdmark-fn-1" class="mdmark-fn-item"><p data-source-line="4">出典の説明 <a href="#mdmark-fnref-1-0" class="mdmark-fn-back" aria-label="本文の脚注 1 へ戻る">↩</a></p>
+</li><li id="mdmark-fn-2" class="mdmark-fn-item"><p>行内の補足 <a href="#mdmark-fnref-2-0" class="mdmark-fn-back" aria-label="本文の脚注 2 へ戻る">↩</a></p>
+</li></ol></details>
+--- C でオフにした文書の出力 ---
+
+<p data-source-line="2">本文[^src]。</p>
+<p data-source-line="4">[^src]: 出典の説明</p>
+
+<p data-source-line="0">本文[^long]。</p>
+<p data-source-line="2">[^long]: 1 段落目</p>
+<p data-source-line="4">2 段落目</p>
+
