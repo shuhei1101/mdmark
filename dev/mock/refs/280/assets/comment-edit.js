@@ -90,7 +90,7 @@
         }
         button.disabled = false;
         button.textContent = "削除";
-        item.querySelector(".mdmark-comment-confirm").before(errorOf(`${item.id}-error`, "コメントを削除できませんでした。もう一度お試しください。"));
+        item.querySelector(".mdmark-comment-confirm").before(errorOf(`${item.id}-error`, "コメントを削除できませんでした。もう一度「削除」を押してください。"));
       }
     });
 
