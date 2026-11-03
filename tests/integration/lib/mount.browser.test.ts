@@ -8437,6 +8437,27 @@ test("test_error_when_comments_reload_rejected", async () => {
   }
 });
 
+// comments がオフか読み書きの関数を渡さないときの reloadComments は、load を呼ばずに解決する（正常系）
+test("test_normal_when_comments_reload_disabled", async () => {
+  // 準備: 読み書きの関数を渡さない側が console.error に出す知らせは、このテストでは見ない
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  const store = createCommentStore();
+  const handle = await mountTracked(createElement(), {
+    markdown: `${COMMENT_TEXT}\n`,
+    docId: "guide",
+    commentStore: store,
+  });
+  const withoutStore = await mountTracked(createElement(), {
+    markdown: `${COMMENT_TEXT}\n`,
+    config: { features: { comments: true } },
+    docId: "guide",
+  });
+  // 実行・検証
+  await expect(handle.reloadComments()).resolves.toBeUndefined();
+  await expect(withoutStore.reloadComments()).resolves.toBeUndefined();
+  expect(store.load).not.toHaveBeenCalled();
+});
+
 // focusComment で、そのコメントの印を画面に入れてフォーカスを移し、強調する（正常系）
 test("test_normal_when_comment_focused", async () => {
   // 準備
