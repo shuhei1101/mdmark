@@ -44,3 +44,5 @@ items:
     summary: コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む）
   - page: ajv.yaml
     summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物に束ねない）
+  - page: dev-docs.yaml
+    summary: 配信元の文書を MCP で検索・参照する（Claude Code が使い方集を参照する先）
