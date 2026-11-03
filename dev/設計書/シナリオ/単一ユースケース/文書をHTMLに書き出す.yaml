@@ -176,7 +176,7 @@ scenarios:
   - name: '正常シナリオ（blob: と動的 import を許さない環境で開く）'
     setup:
       - name: 埋めるモジュールを使う文書
-        description: '`extensions` の拡張の印・ビューの印・Chart.js の印・言語 `ts` のコードブロックを持つ文書 1 つと、`extensions` に印を描く拡張のモジュールを書いた設定'
+        description: '`extensions` の拡張の印・ビューの印・Chart.js の印・言語 `ts` のコードブロック・`libraries` に無いファイルのモジュールを書いた印を持つ文書 1 つと、`extensions` に印を描く拡張のモジュールを書いた設定'
         notes: 拡張のモジュールは `load` の中で同じフォルダの別のファイルを動的 `import()` で読む
       - name: Mock
         description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
@@ -198,6 +198,7 @@ scenarios:
       - ビューの印の場所にビューが描かれる
       - Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
       - '`ts` のコードブロックが色分けされている'
+      - '`libraries` に無いファイルのモジュールを書いた印の場所に知らせの枠が出る'
       - 開いてから描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。

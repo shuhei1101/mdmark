@@ -146,6 +146,7 @@ scenarios:
     setup:
       - name: 埋めるモジュールを使う文書群
         description: 入口の文書（`extensions` の拡張の印と言語 `ts` のコードブロック）と、入口からリンクする文書（ビューの印と Chart.js の印）の 2 つ。`build` の設定と `extensions` に印を描く拡張のモジュールを書いた設定
+        notes: 拡張のモジュールは `load` の中で同じフォルダの別のファイルを動的 `import()` で読む
       - name: Mock
         description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
     flow: |-
