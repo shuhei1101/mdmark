@@ -48,11 +48,11 @@ test("test_check_arguments", async () => {
 test("test_check_arguments_when_required_missing", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("read_guide");
+  const schema = await schemaOf("export_html");
   // 実行
   const result = checkArguments({ schema, args: {} });
   // 検証
-  expect(result).toContain("names");
+  expect(result).toContain("file");
 });
 
 // 知らない引数（正常系）
@@ -71,7 +71,10 @@ test("test_check_arguments_when_unknown_key", async () => {
 test("test_check_arguments_when_type_mismatch", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("read_guide");
+  const schema = schemaWith("names", {
+    type: "array",
+    items: { type: "string" },
+  });
   // 実行
   const result = checkArguments({ schema, args: { names: "notation" } });
   // 検証
@@ -83,7 +86,11 @@ test("test_check_arguments_when_type_mismatch", async () => {
 test("test_check_arguments_when_empty_array", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("read_guide");
+  const schema = schemaWith("names", {
+    type: "array",
+    items: { type: "string" },
+    minItems: 1,
+  });
   // 実行
   const result = checkArguments({ schema, args: { names: [] } });
   // 検証

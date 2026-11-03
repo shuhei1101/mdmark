@@ -22,10 +22,7 @@ async function connectClient(): Promise<Client> {
   const { createMcpServer } = await loadMcp();
   const packageDir = await createTempDir();
   const server = createMcpServer({
-    roots: {
-      guideDir: join(packageDir, "plugin", "guide"),
-      distDir: join(packageDir, "dist"),
-    },
+    roots: { distDir: join(packageDir, "dist") },
     version: "v0.0.0",
     stderr: () => {},
   });
@@ -41,7 +38,7 @@ async function connectClient(): Promise<Client> {
   return client;
 }
 
-// 4 つのツールと instructions と annotations を出す（正常系）
+// 3 つのツールと instructions と annotations を出す（正常系）
 test("test_create_mcp_server", async () => {
   // 準備
   const { INSTRUCTIONS } = await loadMcp();
@@ -53,28 +50,29 @@ test("test_create_mcp_server", async () => {
   expect(tools.map((tool) => tool.name).sort()).toEqual(
     TOOLS.map((tool) => tool.name).sort(),
   );
-  expect(tools).toHaveLength(4);
+  expect(tools).toHaveLength(3);
   for (const tool of tools) {
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
       "project_dir",
     );
   }
-  const readOnlyNames = ["read_guide", "check"];
-  for (const name of readOnlyNames) {
-    const tool = tools.find((candidate) => candidate.name === name);
-    expect(tool?.annotations?.readOnlyHint).toBe(true);
-  }
+  const readOnlyNames = tools
+    .filter((tool) => tool.annotations?.readOnlyHint === true)
+    .map((tool) => tool.name);
+  expect(readOnlyNames).toEqual(["check"]);
   expect(client.getInstructions()).toBe(INSTRUCTIONS);
+  expect(INSTRUCTIONS.length).toBeLessThanOrEqual(4096);
 });
 
 // 合わない引数は SDK でなく日本語の文で返る（正常系）
 test("test_create_mcp_server_when_arguments_invalid", async () => {
   // 準備
   const client = await connectClient();
+  const projectDir = await createTempDir();
   // 実行
   const result = await client.callTool({
-    name: "read_guide",
-    arguments: { names: [] },
+    name: "export_html",
+    arguments: { project_dir: projectDir },
   });
   // 検証
   expect(result.isError).toBe(true);
@@ -82,5 +80,5 @@ test("test_create_mcp_server_when_arguments_invalid", async () => {
     .map((item) => item.text)
     .join("\n");
   expect(text).not.toContain("Input validation error");
-  expect(text).toContain("names");
+  expect(text).toContain("file");
 });

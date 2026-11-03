@@ -35,7 +35,7 @@ items:
   - page: MCP-SDK.yaml
     summary: Claude Code のプラグインの MCP サーバーとテストのクライアント
   - page: ClaudeCode.yaml
-    summary: プラグインの導入・SessionStart のフック・プラグインの MCP サーバーの起動
+    summary: プラグインの導入・PreToolUse のフック・プラグインの MCP サーバーの起動
   - page: eslint.yaml
     summary: 束ねた JS を構文木にして規則を当てる（対応ブラウザの下限の確かめに使う）
   - page: eslint-plugin-compat.yaml
@@ -44,3 +44,5 @@ items:
     summary: コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む）
   - page: ajv.yaml
     summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物に束ねない）
+  - page: dev-docs.yaml
+    summary: 配信元の文書を MCP で検索・参照する（Claude Code が使い方集を参照する先）

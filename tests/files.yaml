@@ -6,6 +6,9 @@ files:
   - path: e2e/cli.ts
     description: E2E テストで CLI を子プロセスで流し、終了コードと出力を受け取る処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, topic:cli]
+  - path: e2e/dev-docs.ts
+    description: E2E テストでこのリポジトリを配信元に登録した dev-docs を空きポートで起動し、search_docs で文書を受け取る処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:mcp, topic:使い方集]
   - path: e2e/diagram.ts
     description: E2E テストが使う図の見本の文書・固有の部品の代役・型の点検の実行と、図の倍率の読み取りを受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, topic:図]
@@ -104,12 +107,6 @@ files:
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む
-        type: see_also
-  - path: e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts
-    description: シナリオ『セッションの開始で使い方集の索引を受け取る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集の索引を受け取る
         type: see_also
   - path: e2e/単一ユースケース/タブを切り替える.spec.ts
     description: シナリオ『タブを切り替える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
@@ -399,6 +396,12 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/雛形を置く
         type: see_also
+  - path: e2e/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する.spec.ts
+    description: シナリオ『ClaudeCodeで使い方集を参照して書き点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する
+        type: see_also
   - path: e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
     description: シナリオ『MCPサーバーを起動してプラグインからつなぐ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
@@ -465,23 +468,11 @@ files:
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts
         type: see_also
-  - path: integration/ClaudeCodeプラグイン/read-guide.test.ts
-    description: インターフェース定義『使い方集を読む』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:使い方集]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts
-        type: see_also
   - path: integration/ClaudeCodeプラグイン/serve.test.ts
     description: インターフェース定義『MCPサーバーを起動・停止する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts
-        type: see_also
-  - path: integration/ClaudeCodeプラグイン/session-start.test.ts
-    description: インターフェース定義『使い方集の索引を渡す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts
         type: see_also
   - path: integration/built-root.ts
     description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
@@ -1693,7 +1684,7 @@ files:
       - to: src/plugin/arguments
         type: tests
   - path: unit/src/plugin/guide.test.ts
-    description: src/plugin/guide.ts（「使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前」）を確かめる単体テスト。guide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    description: src/plugin/guide.ts（「使い方集の索引の検査」）を確かめる単体テスト。guide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:使い方集, tool:claude-code]
     related:
       - to: src/plugin/guide
@@ -1715,12 +1706,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
     related:
       - to: src/plugin/pre-tool-use
-        type: tests
-  - path: unit/src/plugin/session-start.test.ts
-    description: src/plugin/session-start.ts（「SessionStart のフックの入口」）を確かめる単体テスト。session-start.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
-    related:
-      - to: src/plugin/session-start
         type: tests
   - path: unit/src/plugin/tools.test.ts
     description: src/plugin/tools.ts（「7 つのツールの定義と処理・ツールの結果への変換」）を確かめる単体テスト。tools.ts を変えたときに、合わせて見修正するケースを探すときに読む。

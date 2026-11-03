@@ -1,16 +1,5 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js"]
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "mcp__plugin_mdmark_mdmark__check|mcp__plugin_mdmark_mdmark__export_html|mcp__plugin_mdmark_mdmark__build_site",

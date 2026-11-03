@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { expect, test } from "../cli.ts";
@@ -158,16 +159,25 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
     for (const path of [
       join("hooks", "hooks.json"),
       ".mcp.json",
-      join("scripts", "session-start.js"),
       join("scripts", "pre-tool-use.js"),
     ]) {
       expect(existsSync(join(installPath, path)), path).toBe(true);
     }
-    expect(existsSync(join(installPath, "node_modules"))).toBe(false);
+    for (const path of [
+      join("scripts", "session-start.js"),
+      "guide",
+      "node_modules",
+    ]) {
+      expect(existsSync(join(installPath, path)), path).toBe(false);
+    }
     expect(mcp.type).toBe("http");
     expect(mcp.url).toBe(`http://127.0.0.1:${DEFAULT_PORT}/mcp`);
     expect(mcp.hasCommand).toBe(false);
-    expect(tools).toContain("read_guide");
+    expect([...tools].sort()).toEqual(["build_site", "check", "export_html"]);
+    const hooks = JSON.parse(
+      await readFile(join(installPath, "hooks", "hooks.json"), "utf8"),
+    );
+    expect(hooks.hooks).not.toHaveProperty("SessionStart");
   } finally {
     await release();
   }

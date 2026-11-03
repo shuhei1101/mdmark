@@ -10,7 +10,6 @@ import {
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { build, type Metafile } from "esbuild";
-import { GUIDE_CONTEXT_LIMIT } from "../src/plugin/guide.ts";
 import { findBaselineViolations } from "./baseline.ts";
 import {
   buildPlugin,
@@ -279,14 +278,12 @@ export async function main(
   options: {
     root: string;
     maxBytes: number;
-    guideContextLimit?: number;
   } = {
     root: process.cwd(),
     maxBytes: MAX_DIST_FILE_BYTES,
   },
 ): Promise<0 | 1> {
   const { root, maxBytes } = options;
-  const guideContextLimit = options.guideContextLimit ?? GUIDE_CONTEXT_LIMIT;
   const distDir = join(root, "dist");
   // 失敗したときに前回の配布物が残らないよう、最初に消す
   rmSync(distDir, { recursive: true, force: true });
@@ -315,11 +312,7 @@ export async function main(
         console.error(`${file}:${line}:${column} ${message}`);
       }
       if (tooLarge.length === 0 && violations.length === 0) {
-        const pluginProblems = await buildPlugin({
-          version,
-          root,
-          contextLimit: guideContextLimit,
-        });
+        const pluginProblems = await buildPlugin({ version, root });
         for (const problem of pluginProblems) {
           console.error(problem);
         }
