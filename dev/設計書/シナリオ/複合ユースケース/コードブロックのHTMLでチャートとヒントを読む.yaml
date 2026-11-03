@@ -75,7 +75,7 @@ scenarios:
       - name: 設定
         description: 範囲のスクリプトの機能をオンにした設定。見本の HTML の文書を書き出す `mdmark.config.yaml` も同じ値を持つ
       - name: Mock
-        description: 正常シナリオと同じ。書き出した HTML を開くブラウザのコンテキストでは、外への要求を全て止める
+        description: 正常シナリオと同じ。加えて、`mount` の経路で範囲の `ts` の型を外す変換のライブラリを、手元のモジュールに差し替える（書き出した HTML は CLI の esbuild で変換するため対象外）。書き出した HTML を開くブラウザのコンテキストでは、外への要求を全て止める
     flow: |-
       flowchart TD
         A[コードブロックのHTMLを描く:正常シナリオ（範囲のスクリプトと CSS）] --> B[チャートを描く:正常シナリオ]
@@ -91,6 +91,7 @@ scenarios:
       - 範囲の中のチャートが描かれ、右上のボタンで拡大・縮小できる
       - 範囲の中の用語に下線が引かれ、フォーカスすると用語集の意味のツールチップが出る
       - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出し、外への要求を止めて開いても、範囲の箱の色と押したときの class の付け外しが同じように効く'
+      - HTML に記載した `script` 要素は、機能がオンでも描いた文書に残らず、実行されない
     test: test_normal_when_range_scripts
     uses:
       - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
