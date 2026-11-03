@@ -298,7 +298,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: アイコン・キー・ルビを持つ Markdown
-        description: 見出し `## `icon:rocket` はじめに`、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
+        description: 見出し ``## `icon:rocket` はじめに``、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
         notes: '`rocket`・`check` は配布物に束ねたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
       - name: Mock
         description: 正常シナリオと同じ。Lucide のアイコンへの要求を数える
