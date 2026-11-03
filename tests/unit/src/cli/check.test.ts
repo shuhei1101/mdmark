@@ -626,7 +626,9 @@ test("test_collect_check_issues_when_diagram", async () => {
   for (const issues of [checked, upgraded]) {
     const kinds = issues.map((issue) => issue.kind);
     expect(kinds.indexOf("missing_file")).toBeGreaterThanOrEqual(0);
-    const diagrams = issues.filter((issue) => issue.kind.startsWith("diagram_"));
+    const diagrams = issues.filter((issue) =>
+      issue.kind.startsWith("diagram_"),
+    );
     expect(diagrams).toHaveLength(1);
     expect(diagrams[0]).toMatchObject({
       file: "docs/a.md",
@@ -644,14 +646,23 @@ test("test_check_diagrams", async () => {
   // 準備
   const { checkDiagrams } = await loadCheck();
   const chart = BROKEN_CHART.split("\n").slice(0, -1);
-  const markdown = ["# A", "", ...chart, wrapDirective("flow", OVERLAP_FLOW)].join("\n");
+  const markdown = [
+    "# A",
+    "",
+    ...chart,
+    wrapDirective("flow", OVERLAP_FLOW),
+  ].join("\n");
   const flowLine = markdown.split("\n").indexOf("<!-- flow -->") + 1;
   // 実行
   const issues = checkDiagrams([{ path: "a.md", markdown }]);
   // 検証
   expect(flowLine).toBe(10);
   expect(issues).toHaveLength(2);
-  expect(issues[0]).toMatchObject({ file: "a.md", where: "3", kind: "diagram_invalid" });
+  expect(issues[0]).toMatchObject({
+    file: "a.md",
+    where: "3",
+    kind: "diagram_invalid",
+  });
   expect(issues[1]).toMatchObject({
     file: "a.md",
     where: "10",

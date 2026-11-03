@@ -18,15 +18,27 @@ function chartOf(rest: Partial<MdmarkChartDefinition>): MdmarkChartDefinition {
 
 /** 系列 `n` の `<g data-series>` の中身（無ければ空） */
 function seriesGroup(html: string, n: number): string {
-  return new RegExp(`<g data-series="${n}">([\\s\\S]*?)</g>`).exec(html)?.[1] ?? "";
+  return (
+    new RegExp(`<g data-series="${n}">([\\s\\S]*?)</g>`).exec(html)?.[1] ?? ""
+  );
 }
 
 /** `rect` の開始タグの `y` と `height` と `x` と `width` */
-function rectsOf(html: string): Array<{ x: number; y: number; width: number; height: number }> {
-  return matches(html, /<rect\b[^>]*class="mdmark-diagram-bar"[^>]*>/g).map((tag) => {
-    const attr = (name: string) => Number(new RegExp(`\\s${name}="(-?[\\d.]+)"`).exec(tag)?.[1]);
-    return { x: attr("x"), y: attr("y"), width: attr("width"), height: attr("height") };
-  });
+function rectsOf(
+  html: string,
+): Array<{ x: number; y: number; width: number; height: number }> {
+  return matches(html, /<rect\b[^>]*class="mdmark-diagram-bar"[^>]*>/g).map(
+    (tag) => {
+      const attr = (name: string) =>
+        Number(new RegExp(`\\s${name}="(-?[\\d.]+)"`).exec(tag)?.[1]);
+      return {
+        x: attr("x"),
+        y: attr("y"),
+        width: attr("width"),
+        height: attr("height"),
+      };
+    },
+  );
 }
 
 /** パスの `d` の座標の組を、現れた順に返す */
@@ -71,7 +83,9 @@ test("test_render_chart_when_stacked_bar", async () => {
   if (!first || !second) return;
   expect(near(second.y + second.height, first.y)).toBe(true);
   expect(near(first.height * 4, second.height * 3)).toBe(true);
-  const texts = matches(html, /<text[^>]*>[^<]*<\/text>/g).map((text) => plainText(text));
+  const texts = matches(html, /<text[^>]*>[^<]*<\/text>/g).map((text) =>
+    plainText(text),
+  );
   expect(texts).toContain("7");
 });
 
@@ -113,22 +127,37 @@ test("test_render_chart_when_area", async () => {
   };
   // 実行
   const area = renderChart(chartOf({ type: "area", ...base }), "d1").html;
-  const stacked = renderChart(chartOf({ type: "stacked-area", ...base }), "d2").html;
+  const stacked = renderChart(
+    chartOf({ type: "stacked-area", ...base }),
+    "d2",
+  ).html;
   // 検証
   for (const [html, id] of [
     [area, "d1"],
     [stacked, "d2"],
   ] as const) {
     for (const n of [1, 2]) {
-      expect(html).toMatch(new RegExp(`<path[^>]*fill="url\\(#${id}-fill-${n}\\)"`));
+      expect(html).toMatch(
+        new RegExp(`<path[^>]*fill="url\\(#${id}-fill-${n}\\)"`),
+      );
     }
   }
   const fills = (n: number) =>
-    pathPoints(attrOf(new RegExp(`<path[^>]*fill="url\\(#d2-fill-${n}\\)"[^>]*>`).exec(stacked)?.[0] ?? "", "d"));
+    pathPoints(
+      attrOf(
+        new RegExp(`<path[^>]*fill="url\\(#d2-fill-${n}\\)"[^>]*>`).exec(
+          stacked,
+        )?.[0] ?? "",
+        "d",
+      ),
+    );
   const lower = fills(1);
   const upper = fills(2);
   const topOfFirst = lower.slice(0, 3).map(([, y]) => y);
-  const bottomOfSecond = upper.slice(3).map(([, y]) => y).reverse();
+  const bottomOfSecond = upper
+    .slice(3)
+    .map(([, y]) => y)
+    .reverse();
   expect(bottomOfSecond).toHaveLength(3);
   for (const [index, y] of topOfFirst.entries()) {
     expect(near(y, bottomOfSecond[index] ?? Number.NaN)).toBe(true);
@@ -176,7 +205,9 @@ test("test_render_chart_when_donut", async () => {
   for (const slice of slices) {
     expect(matches(attrOf(slice, "d"), /A/g)).toHaveLength(2);
   }
-  const texts = matches(html, /<text[^>]*>[^<]*<\/text>/g).map((text) => plainText(text));
+  const texts = matches(html, /<text[^>]*>[^<]*<\/text>/g).map((text) =>
+    plainText(text),
+  );
   expect(texts).toContain("300");
   expect(texts).toContain("合計 件");
 });
@@ -197,9 +228,14 @@ test("test_render_chart_when_radar", async () => {
   // 実行
   const { html } = renderChart(definition, "d1");
   // 検証
-  expect(matches(html, /<line[^>]*class="mdmark-diagram-axis"/g)).toHaveLength(5);
+  expect(matches(html, /<line[^>]*class="mdmark-diagram-axis"/g)).toHaveLength(
+    5,
+  );
   for (const n of [1, 2]) {
-    const tag = new RegExp(`<path[^>]*class="mdmark-diagram-series"[^>]*data-series="${n}"[^>]*>`).exec(html)?.[0] ?? "";
+    const tag =
+      new RegExp(
+        `<path[^>]*class="mdmark-diagram-series"[^>]*data-series="${n}"[^>]*>`,
+      ).exec(html)?.[0] ?? "";
     const d = attrOf(tag, "d");
     expect(pathPoints(d)).toHaveLength(5);
     expect(d.trim().toLowerCase().endsWith("z")).toBe(true);
@@ -228,7 +264,9 @@ test("test_render_chart_when_bubble", async () => {
   // 実行
   const { html } = renderChart(definition, "d1");
   // 検証
-  const radii = matches(seriesGroup(html, 1), /<circle\b[^>]*>/g).map((tag) => Number(attrOf(tag, "r")));
+  const radii = matches(seriesGroup(html, 1), /<circle\b[^>]*>/g).map((tag) =>
+    Number(attrOf(tag, "r")),
+  );
   expect(radii).toHaveLength(2);
   expect(near(radii[1] ?? 0, (radii[0] ?? 0) * 2)).toBe(true);
 });
@@ -251,10 +289,13 @@ test("test_render_chart_when_combo", async () => {
   const { html } = renderChart(definition, "d1");
   // 検証
   expect(rectsOf(seriesGroup(html, 1))).toHaveLength(3);
-  expect(html).toMatch(/<path[^>]*class="mdmark-diagram-series"[^>]*data-series="2"/);
-  const numbers = matches(html, /<text[^>]*class="mdmark-diagram-axis-text"[^>]*>-?\d+(?:\.\d+)?<\/text>/g).map(
-    (text) => Number(plainText(text)),
+  expect(html).toMatch(
+    /<path[^>]*class="mdmark-diagram-series"[^>]*data-series="2"/,
   );
+  const numbers = matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-axis-text"[^>]*>-?\d+(?:\.\d+)?<\/text>/g,
+  ).map((text) => Number(plainText(text)));
   for (const tick of [0, 50, 100, 5, 10]) {
     expect(numbers).toContain(tick);
   }
@@ -268,25 +309,45 @@ test("test_render_chart_when_six_series", async () => {
     type: "line",
     x: { label: "週", ticks: ["1", "2", "3"] },
     y: { label: "件", min: 0, max: 10, step: 5 },
-    series: [1, 2, 3, 4, 5, 6].map((n) => ({ name: `系列${n}`, points: [n, n + 1, n + 2] })),
+    series: [1, 2, 3, 4, 5, 6].map((n) => ({
+      name: `系列${n}`,
+      points: [n, n + 1, n + 2],
+    })),
   });
-  const css = await readFile(new URL("../../../../src/index.css", import.meta.url), "utf8");
+  const css = await readFile(
+    new URL("../../../../src/index.css", import.meta.url),
+    "utf8",
+  );
   // 実行
   const { html } = renderChart(definition, "d1");
   // 検証
   for (const n of [1, 2, 3, 4, 5, 6]) {
-    expect(html).toMatch(new RegExp(`<path[^>]*class="mdmark-diagram-series"[^>]*data-series="${n}"`));
+    expect(html).toMatch(
+      new RegExp(
+        `<path[^>]*class="mdmark-diagram-series"[^>]*data-series="${n}"`,
+      ),
+    );
   }
   expect(css).toMatch(/\[data-series="5"\][^}]*stroke-dasharray: 9 3 1 3 1 3;/);
   expect(css).toMatch(/\[data-series="6"\][^}]*stroke-dasharray: 3 2;/);
-  const fifth = matches(seriesGroup(html, 5), /<path[^>]*class="mdmark-diagram-point"[^>]*>/g)[0] ?? "";
+  const fifth =
+    matches(
+      seriesGroup(html, 5),
+      /<path[^>]*class="mdmark-diagram-point"[^>]*>/g,
+    )[0] ?? "";
   const triangle = pathPoints(attrOf(fifth, "d"));
   expect(triangle).toHaveLength(3);
   const [apex, ...rest] = triangle;
   for (const [, y] of rest) {
     expect(apex?.[1] ?? 0).toBeGreaterThan(y);
   }
-  const sixth = matches(seriesGroup(html, 6), /<path[^>]*class="mdmark-diagram-point"[^>]*>/g)[0] ?? "";
+  const sixth =
+    matches(
+      seriesGroup(html, 6),
+      /<path[^>]*class="mdmark-diagram-point"[^>]*>/g,
+    )[0] ?? "";
   const cross = attrOf(sixth, "d");
-  expect(matches(cross, /M/g).length >= 2 || pathPoints(cross).length === 12).toBe(true);
+  expect(
+    matches(cross, /M/g).length >= 2 || pathPoints(cross).length === 12,
+  ).toBe(true);
 });

@@ -17,8 +17,24 @@ const BROKEN_FLOW: MdmarkFlowDefinition = {
     { id: "web", kind: "script", x: 40, y: 40, w: 100, h: 50, name: "Web" },
     { id: "db", kind: "data", x: 80, y: 60, w: 100, h: 50, name: "DB" },
     { id: "cache", kind: "data", x: 300, y: 200, w: 100, h: 50, name: "Cache" },
-    { id: "queue", kind: "script", x: 580, y: 200, w: 100, h: 50, name: "Queue" },
-    { id: "batch", kind: "script", x: 40, y: 300, w: 120, h: 48, name: "あ".repeat(30) },
+    {
+      id: "queue",
+      kind: "script",
+      x: 580,
+      y: 200,
+      w: 100,
+      h: 50,
+      name: "Queue",
+    },
+    {
+      id: "batch",
+      kind: "script",
+      x: 40,
+      y: 300,
+      w: 120,
+      h: 48,
+      name: "あ".repeat(30),
+    },
   ],
   wires: [
     {
@@ -66,11 +82,20 @@ test("test_check_flow_layout_when_broken", async () => {
   const issues = checkFlowLayout(BROKEN_FLOW);
   // 検証
   expect(issues).toHaveLength(4);
-  const byKind = (kind: string) => issues.filter((issue) => issue.kind === kind);
-  expect(byKind("diagram_node_overlap").map((issue) => [...issue.ids].sort())).toEqual([["db", "web"]]);
-  expect(byKind("diagram_node_overflow").map((issue) => issue.ids)).toEqual([["queue"]]);
-  expect(byKind("diagram_wire_crosses_node").map((issue) => [...issue.ids].sort())).toEqual([["cache", "w1"]]);
-  expect(byKind("diagram_label_too_long").map((issue) => issue.ids)).toEqual([["batch"]]);
+  const byKind = (kind: string) =>
+    issues.filter((issue) => issue.kind === kind);
+  expect(
+    byKind("diagram_node_overlap").map((issue) => [...issue.ids].sort()),
+  ).toEqual([["db", "web"]]);
+  expect(byKind("diagram_node_overflow").map((issue) => issue.ids)).toEqual([
+    ["queue"],
+  ]);
+  expect(
+    byKind("diagram_wire_crosses_node").map((issue) => [...issue.ids].sort()),
+  ).toEqual([["cache", "w1"]]);
+  expect(byKind("diagram_label_too_long").map((issue) => issue.ids)).toEqual([
+    ["batch"],
+  ]);
 });
 
 // 全角と半角の幅で折り返す（正常系）
@@ -78,7 +103,11 @@ test("test_label_line_count", async () => {
   // 準備
   const { labelLineCount } = await loadCheck();
   // 実行
-  const wide = labelLineCount({ text: "あいうえおか", fontSize: 14, width: 70 });
+  const wide = labelLineCount({
+    text: "あいうえおか",
+    fontSize: 14,
+    width: 70,
+  });
   const narrow = labelLineCount({ text: "abcdefgh", fontSize: 14, width: 70 });
   // 検証
   expect(wide).toBe(2);

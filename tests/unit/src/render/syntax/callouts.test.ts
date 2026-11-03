@@ -1,5 +1,5 @@
-import { expect, test } from "vitest";
 import type { StateCore } from "markdown-it";
+import { expect, test } from "vitest";
 import { parseWithRules } from "../../../helpers/core-rules.ts";
 import { innerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
@@ -85,8 +85,12 @@ test("test_build_callouts_when_titled_and_nested", () => {
   expect(html).toContain(
     '<p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>',
   );
-  expect(html).toContain('<details class="markdown-alert markdown-alert-note" open>');
-  expect(innerHtml(html, "markdown-alert-note")).toMatch(/<summary[^>]*>.*詳細.*<\/summary>/);
+  expect(html).toContain(
+    '<details class="markdown-alert markdown-alert-note" open>',
+  );
+  expect(innerHtml(html, "markdown-alert-note")).toMatch(
+    /<summary[^>]*>.*詳細.*<\/summary>/,
+  );
   const warning = innerHtml(html, "markdown-alert-warning");
   expect(warning).toContain("警告の本文");
   expect(warning).toContain("markdown-alert-tip");
@@ -131,7 +135,11 @@ test("test_read_callout", async () => {
     open: true,
     title: "詳細",
   });
-  expect(read[2]).toMatchObject({ kind: "warning", collapsed: true, open: false });
+  expect(read[2]).toMatchObject({
+    kind: "warning",
+    collapsed: true,
+    open: false,
+  });
   expect(read[2]?.title).toBeUndefined();
   expect(read[3]).toMatchObject({ kind: "note" });
 });

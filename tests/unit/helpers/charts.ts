@@ -155,8 +155,20 @@ export const ADDED_CHART_DEFINITIONS: Array<Record<string, unknown>> = [
     y: { label: "分" },
     size: { label: "件数" },
     series: [
-      { name: "自動返信", points: [[120, 6, 4], [260, 9, 16]] },
-      { name: "担当者", points: [[300, 30, 9], [500, 40, 1]] },
+      {
+        name: "自動返信",
+        points: [
+          [120, 6, 4],
+          [260, 9, 16],
+        ],
+      },
+      {
+        name: "担当者",
+        points: [
+          [300, 30, 9],
+          [500, 40, 1],
+        ],
+      },
     ],
   },
   {

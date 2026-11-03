@@ -258,7 +258,10 @@ test("test_read_definition_when_chart_series_too_many", async () => {
     type: "line",
     x: { label: "横", ticks: ["a", "b"] },
     y: { label: "縦" },
-    series: [1, 2, 3, 4, 5, 6, 7].map((n) => ({ name: `系列${n}`, points: [n, n] })),
+    series: [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+      name: `系列${n}`,
+      points: [n, n],
+    })),
   };
   const sevenItems = {
     ...base,

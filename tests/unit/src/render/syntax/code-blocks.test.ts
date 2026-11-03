@@ -473,13 +473,28 @@ test("test_read_line_marks_when_focus_error_warning", async () => {
 test("test_read_folds", async () => {
   // 準備
   const { readFolds } = await loadCodeBlocks();
-  const lines = [{ text: "a:" }, { text: "  b:" }, { text: "    c: 1" }, { text: "  d: 2" }];
+  const lines = [
+    { text: "a:" },
+    { text: "  b:" },
+    { text: "    c: 1" },
+    { text: "  d: 2" },
+  ];
   // 実行
   const read = readFolds({ lines, folds: new Set([2]) });
   // 検証
   expect(read.lines.map((line) => line.indent ?? 0)).toEqual([0, 1, 2, 1]);
-  expect(read.lines.map((line) => line.foldLines)).toEqual([3, 1, undefined, undefined]);
-  expect(read.lines.map((line) => line.folded === true)).toEqual([false, true, false, false]);
+  expect(read.lines.map((line) => line.foldLines)).toEqual([
+    3,
+    1,
+    undefined,
+    undefined,
+  ]);
+  expect(read.lines.map((line) => line.folded === true)).toEqual([
+    false,
+    true,
+    false,
+    false,
+  ]);
   expect(read.warnings).toEqual([]);
 });
 
@@ -502,7 +517,9 @@ function codeLineTags(html: string): string[][] {
   return html
     .split("<pre")
     .slice(1)
-    .map((block) => findTags(block.slice(0, block.indexOf("</pre>")), "mdmark-code-line\""));
+    .map((block) =>
+      findTags(block.slice(0, block.indexOf("</pre>")), 'mdmark-code-line"'),
+    );
 }
 
 // インデントのある行と畳める行を行に分け、fold= の行を畳んだ状態にする（正常系）
@@ -571,11 +588,20 @@ test("test_build_code_blocks_when_fold_invalid", () => {
   const { html } = renderDoc(markdown, { syntax: false });
   // 検証
   expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
-  const warning = html.slice(html.indexOf("mdmark-syntax-warning"), html.indexOf("<pre"));
+  const warning = html.slice(
+    html.indexOf("mdmark-syntax-warning"),
+    html.indexOf("<pre"),
+  );
   expect(warning).toContain("3");
   expect(warning).toContain("99");
   const [lines = []] = codeLineTags(html);
-  expect(lines.map((tag) => tag.includes("data-folded"))).toEqual([true, false, false, false, false]);
+  expect(lines.map((tag) => tag.includes("data-folded"))).toEqual([
+    true,
+    false,
+    false,
+    false,
+    false,
+  ]);
   for (const text of ["a:", "b: 1", "c: 2", "d: 3", "e: 4"]) {
     expect(html).toContain(text);
   }

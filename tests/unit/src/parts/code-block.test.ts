@@ -231,9 +231,16 @@ test("test_render_code_copy", async () => {
 /** 部品設計『コードブロック』の `Foldable` の行（`foldedLine` の行番号の行だけ `folded`） */
 function foldableLines(foldedLine?: number) {
   const lines = [
-    { text: "export function mount(element, markdown, options = {}) {", foldLines: 10 },
+    {
+      text: "export function mount(element, markdown, options = {}) {",
+      foldLines: 10,
+    },
     { text: "  const config = withDefaults(options);", indent: 1 },
-    { text: "  for (const block of parse(markdown)) {", indent: 1, foldLines: 4 },
+    {
+      text: "  for (const block of parse(markdown)) {",
+      indent: 1,
+      foldLines: 4,
+    },
     { text: '    if (block.kind === "table") {', indent: 2, foldLines: 1 },
     { text: "      attachTable(block, config.features);", indent: 3 },
     { text: "    }", indent: 2 },
@@ -320,14 +327,20 @@ test("test_render_code_block_when_fold_buttons", async () => {
   const lines = codeLinesOf(html);
   expect(lines).toHaveLength(12);
   const third = lines[2] ?? "";
-  expect(findTag(third, 'class="mdmark-code-fold"')).toContain('aria-expanded="false"');
+  expect(findTag(third, 'class="mdmark-code-fold"')).toContain(
+    'aria-expanded="false"',
+  );
   expect(third).toContain("mdmark-code-fold-more");
   for (const line of lines.slice(3, 7)) {
     expect(findTag(line, 'class="mdmark-code-line"')).toMatch(/\shidden\b/);
   }
-  expect(findTag(lines[7] ?? "", 'class="mdmark-code-line"')).not.toMatch(/\shidden\b/);
+  expect(findTag(lines[7] ?? "", 'class="mdmark-code-line"')).not.toMatch(
+    /\shidden\b/,
+  );
   const toggles = findTags(html, 'class="mdmark-code-fold"');
-  const others = toggles.filter((tag) => !tag.includes('aria-expanded="false"'));
+  const others = toggles.filter(
+    (tag) => !tag.includes('aria-expanded="false"'),
+  );
   expect(toggles.length).toBeGreaterThan(1);
   expect(others).toHaveLength(toggles.length - 1);
   for (const tag of others) {

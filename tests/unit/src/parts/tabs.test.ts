@@ -108,9 +108,14 @@ test("test_render_tabs_when_strong_title", async () => {
     collapse: "closed",
   });
   // 検証
-  const firstTab = html.slice(html.indexOf('id="t-tab-0"'), html.indexOf("</button>"));
+  const firstTab = html.slice(
+    html.indexOf('id="t-tab-0"'),
+    html.indexOf("</button>"),
+  );
   expect(firstTab).toContain("<strong>案 A</strong>");
-  expect(html).toContain('<p class="mdmark-tab-title"><strong>案 A</strong> SVG のまま</p>');
+  expect(html).toContain(
+    '<p class="mdmark-tab-title"><strong>案 A</strong> SVG のまま</p>',
+  );
   expect(html).toContain("<summary>タブ（案 A SVG のまま・案 B）</summary>");
   expect(html).not.toContain("&lt;strong&gt;");
 });

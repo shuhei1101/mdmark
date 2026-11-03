@@ -274,7 +274,9 @@ test("test_build_tabs_when_strong_title", () => {
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  expect(html).toContain('<p class="mdmark-tab-title"><strong>Windows</strong></p>');
+  expect(html).toContain(
+    '<p class="mdmark-tab-title"><strong>Windows</strong></p>',
+  );
   expect(html).not.toContain("**");
 });
 
@@ -286,13 +288,19 @@ test("test_build_tabs_when_nested_unclosed", () => {
   const { html } = renderDoc(markdown);
   // 検証
   expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
-  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(html.indexOf("<h3"));
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("<h3"),
+  );
   expect(html).not.toContain("mdmark-tabs");
   for (const title of ["macOS", "Windows"]) {
-    expect(matches(html, new RegExp(`<h3[^>]*>.*${title}`, "g"))).toHaveLength(1);
+    expect(matches(html, new RegExp(`<h3[^>]*>.*${title}`, "g"))).toHaveLength(
+      1,
+    );
   }
   for (const title of ["zsh", "bash"]) {
-    expect(matches(html, new RegExp(`<h4[^>]*>.*${title}`, "g"))).toHaveLength(1);
+    expect(matches(html, new RegExp(`<h4[^>]*>.*${title}`, "g"))).toHaveLength(
+      1,
+    );
   }
   for (const text of ["zsh の手順", "bash の手順", "Windows の手順"]) {
     expect(html).toContain(text);

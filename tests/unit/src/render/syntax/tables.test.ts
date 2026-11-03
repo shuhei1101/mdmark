@@ -617,11 +617,17 @@ test("test_read_table_spec_when_header_rows_invalid", async () => {
   // 検証
   expect(first.headRows).toBe(1);
   expect(first.rowHeader).toBe(0);
-  const headerRows = first.warnings.find((item) => item.label.includes("header-rows="));
+  const headerRows = first.warnings.find((item) =>
+    item.label.includes("header-rows="),
+  );
   expect(headerRows?.message).toContain("3");
-  expect(first.warnings.some((item) => item.label.includes("row-header="))).toBe(true);
+  expect(
+    first.warnings.some((item) => item.label.includes("row-header=")),
+  ).toBe(true);
   expect(second.rowHeader).toBe(0);
-  const rowHeader = second.warnings.find((item) => item.label.includes("row-header="));
+  const rowHeader = second.warnings.find((item) =>
+    item.label.includes("row-header="),
+  );
   expect(rowHeader?.message).toContain("3");
 });
 
@@ -649,7 +655,10 @@ test("test_decorate_tables_when_cells_merged", () => {
   const { html } = renderDoc(markdown);
   // 検証
   const marked = outerHtml(html, 'data-kind="data"');
-  const thead = marked.slice(marked.indexOf("<thead"), marked.indexOf("</thead>"));
+  const thead = marked.slice(
+    marked.indexOf("<thead"),
+    marked.indexOf("</thead>"),
+  );
   expect(matches(thead, /<tr/g)).toHaveLength(2);
   const firstRow = thead.slice(0, thead.indexOf("</tr>"));
   const headCells = findTags(firstRow, "<th");
@@ -664,7 +673,9 @@ test("test_decorate_tables_when_cells_merged", () => {
     expect(cell).toContain('data-merge="up"');
     expect(cell).toContain("hidden");
   }
-  expect(matches(tbody, /<th[^>]*data-merge="up"[^>]*>A<\/th>/g)).toHaveLength(2);
+  expect(matches(tbody, /<th[^>]*data-merge="up"[^>]*>A<\/th>/g)).toHaveLength(
+    2,
+  );
   expect(marked).toContain('data-merge-columns="0"');
   const plain = html.slice(html.lastIndexOf("<table"));
   expect(plain).toContain("^^");
@@ -693,7 +704,10 @@ test("test_decorate_tables_when_merge_invalid", () => {
   // 検証
   const warnings = findTags(html, "mdmark-syntax-warning");
   expect(warnings).toHaveLength(1);
-  const warning = html.slice(html.indexOf("mdmark-syntax-warning"), html.indexOf("<table"));
+  const warning = html.slice(
+    html.indexOf("mdmark-syntax-warning"),
+    html.indexOf("<table"),
+  );
   expect(warning).toContain("header-rows=");
   expect(warning).toContain("^^");
   expect(warning).toContain("&lt;&lt;");

@@ -67,7 +67,11 @@ function hiddenLineNumbers(lines: HTMLElement[]): number[] {
 /** Shift を押しながら要素を押す */
 function shiftClick(element: HTMLElement): void {
   element.dispatchEvent(
-    new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }),
+    new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+    }),
   );
 }
 

@@ -1,10 +1,14 @@
 import { expect, test } from "vitest";
 
 /** コードの行の畳みの計算を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
-const loadLogic = (): Promise<typeof import("../../../src/code-fold-logic.ts")> =>
+const loadLogic = (): Promise<
+  typeof import("../../../src/code-fold-logic.ts")
+> =>
   import(
-    /* @vite-ignore */ new URL("../../../src/code-fold-logic.ts", import.meta.url)
-      .href
+    /* @vite-ignore */ new URL(
+      "../../../src/code-fold-logic.ts",
+      import.meta.url,
+    ).href
   );
 
 // 最も小さい幅を 1 レベルにする（正常系）

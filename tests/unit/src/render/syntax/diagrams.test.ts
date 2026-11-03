@@ -87,7 +87,8 @@ test("test_build_diagrams_when_param_copy_label", async () => {
 });
 
 /** 図の部品の範囲を探す処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadDiagrams = () => import("../../../../../src/render/syntax/diagrams.ts");
+const loadDiagrams = () =>
+  import("../../../../../src/render/syntax/diagrams.ts");
 
 // 図の部品の範囲だけを返す（正常系）
 test("test_find_diagram_blocks", async () => {
@@ -113,7 +114,11 @@ test("test_find_diagram_blocks", async () => {
   const found = findDiagramBlocks(markdown);
   // 検証
   expect(found).toHaveLength(2);
-  expect(found[0]).toEqual({ directive: "flow", line: 3, blocks: [INQUIRY_TEXT] });
+  expect(found[0]).toEqual({
+    directive: "flow",
+    line: 3,
+    blocks: [INQUIRY_TEXT],
+  });
   expect(found[1]?.directive).toBe("chart");
   expect(found[1]?.blocks).toEqual(['{ "type": "bar" }']);
 });

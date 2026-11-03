@@ -1476,9 +1476,10 @@ test("test_attach_tables_when_merged_sorted", async () => {
   const { root } = createRoot(MERGED_TABLE);
   detachers.push(attachTables(root));
   const headRows = root.querySelectorAll<HTMLTableRowElement>("thead tr");
-  const sortButton = headRows[1]?.cells[1]?.querySelector<HTMLButtonElement>(
-    "button.mdmark-sort",
-  );
+  const sortButton =
+    headRows[1]?.cells[1]?.querySelector<HTMLButtonElement>(
+      "button.mdmark-sort",
+    );
   // 検証: ボタンは 2 段目の th にだけある
   expect(headRows[0]?.querySelector("button")).toBeNull();
   expect(sortButton).toBeTruthy();
@@ -1529,7 +1530,8 @@ test("test_attach_tables_when_row_header_pinned", async () => {
       `| ${headers.map(() => "---").join(" | ")} |`,
       ...Array.from(
         { length: 5 },
-        (_, row) => `| ${headers.map((_, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+        (_, row) =>
+          `| ${headers.map((_, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
       ),
       "",
       "<!-- /table -->",
