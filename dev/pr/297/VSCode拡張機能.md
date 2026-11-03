@@ -14,6 +14,12 @@
 | コピーの除外 | `cp` の `filter` で、コピー元の `vscode/` からの相対パスが `node_modules`・`.vscode-test`・`out`・`dist`・`media/preview.js`・`media/preview.css` のどれかか、その配下なら除外する | `source.includes` の部分一致をやめ、相対パスの先頭で判定する |
 | 設計書 | `test_build_extension` の `condition` に、生成物と取得物を除外してコピーすることを記載する | - |
 
+## 設計書の確定コミット
+
+| 工程 | 範囲 | 補足 |
+| --- | --- | --- |
+| モジュール構成設計 | `97c273d0..822a16c5` | - |
+
 ## テスト結果
 
 なし
