@@ -22,4 +22,13 @@
 
 ## テスト結果
 
-なし
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/vscode/scripts/build.test.ts` | `test_build_extension` | 変更 | ✅ | `vscode/out/`・`vscode/.vscode-test/`・`vscode/dist/`・`vscode/media/preview.{js,css}` を置いた作業ツリーでも成功する（修正前のテストは同じ状態で `out/` が無いことの検証で失敗する） |
+| 全テスト | 全実行 | 実行のみ | ✅ | 183 ファイル・1311 テスト pass<br>`テスト結果/20261103223723_57b049b8_単体テスト.log` |
+
+### lint
+
+`テスト結果/20261103223723_57b049b8_lint.log`（Biome の check・ルートと `vscode/` の tsc で違反なし）
