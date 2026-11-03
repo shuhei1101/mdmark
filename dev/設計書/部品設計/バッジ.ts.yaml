@@ -50,6 +50,10 @@ args:
     description: '`data-color` に入れる色の名前。札の地を `--mdmark-color-accent-{色}-bg`、文字を `--mdmark-color-accent-{色}-text` にする'
     status: planned
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 色のバッジの線で、文字の色を混ぜる先の色
   - name: --mdmark-color-surface
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
