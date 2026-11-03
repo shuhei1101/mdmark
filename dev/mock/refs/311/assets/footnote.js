@@ -74,7 +74,9 @@
       const item = target(ref, event.currentTarget.getAttribute("href"));
       if (!item) return;
       event.preventDefault();
+      // 移った先の項目に重ならないよう、ポインターが番号を離れるまで開き直さない
       close(ref);
+      ref.classList.add("is-dismissed");
       const list = item.closest("details");
       if (list) list.open = true;
       item.scrollIntoView({ block: "center" });
