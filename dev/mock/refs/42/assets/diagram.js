@@ -1007,10 +1007,12 @@
         const base = Number.parseFloat(title.style.top);
         const limit = Number(title.dataset.stickyBottom) - title.offsetHeight - STICKY_GAP_PX;
         const shift = Math.max(0, Math.min(top, limit) - base);
+        // 留めているのは、グループが表示枠の上端にかかっている間（グループの下端で止めた後は図と一緒に隠れる）
+        const stuck = shift > 0 && top <= limit;
         title.style.transform = shift ? `translateY(${shift}px)` : "";
-        title.classList.toggle("is-stuck", shift > 0);
+        title.classList.toggle("is-stuck", stuck);
         // システムの枠のタイトルを留めている間は、層のタイトルをその下に留める
-        if (shift > 0 && title.classList.contains("mdmark-diagram-frame-title")) top += title.offsetHeight + STICKY_GAP_PX;
+        if (stuck && title.classList.contains("mdmark-diagram-frame-title")) top += title.offsetHeight + STICKY_GAP_PX;
       }
     };
     viewport.addEventListener("scroll", stickTitles, { passive: true });

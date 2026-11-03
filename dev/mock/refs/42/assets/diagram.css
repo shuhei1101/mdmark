@@ -279,7 +279,7 @@
     }
 
     /* グループ（システムの枠・層）の hint の印: タイトルの文字の右に並べる。箱の印と同じ形で、タイトルの文字の色にする */
-    .mdmark-diagram-group-info {
+    .mdmark-diagram-info.mdmark-diagram-group-info {
       --node-color: var(--mdmark-color-muted);
       position: static;
       width: 18px;

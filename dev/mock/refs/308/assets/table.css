@@ -20,6 +20,7 @@
       /* 包んだ表: 表のまま描いて列を本文の幅まで広げる。列の最小幅と見出しの折り返さない指定は今のまま */
       > table {
         display: table;
+        box-sizing: border-box;
         width: 100%;
         max-width: none;
         overflow: visible;
