@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>er-diagram | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- #263 の色のプリセット: テーブルの色（data-color）の面の薄い色と文字の色 -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <!-- 棒・円・散布図の定義の見本（#45 で共有するアセット。diagram.js の前に読む） -->
+  <script src="../../refs/45/assets/samples.js" defer></script>
+  <!-- #298 で追加する ER 図の定義の見本（diagram.js の前に読む） -->
+  <script src="../../refs/298/assets/er-samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">ER 図</h1>
+
+      <!-- 通常: テーブルの見出しに物理名と論理名と種類（マスター・トランザクション。種類の既定の色で見出しと枠を塗る）、列の行に PK・FK・NN のマーカーと名前と型。関係の線の両端に多重度の記号とラベル。全ての列を出した状態で開く -->
+      <section aria-labelledby="state-normal">
+        <h2 class="catalog-label" id="state-normal">通常（全ての列を出す。テーブルの種類と色・関係の線の端に多重度）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
+          <figure data-mock-diagram="shop-er"></figure>
+        </article>
+      </section>
+
+      <!-- テーブルの色を指定した: color= で種類の既定の色を上書きする（商品を緑）。種類の無いテーブルにも色を付けられる（注文の明細を紫。種類の札は出さない） -->
+      <section aria-labelledby="state-colors">
+        <h2 class="catalog-label" id="state-colors">テーブルの色を指定した（color=。種類の既定の色を上書きする）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="shop-er-colors"></figure>
+        </article>
+      </section>
+
+      <!-- 列を畳んだ: 見出しの右上のボタン（aria-expanded="false"）で、主キーと外部キーの列だけを出し、非表示の列の数を出す。関係の線は残った列の行につなぐ -->
+      <section aria-labelledby="state-folded">
+        <h2 class="catalog-label" id="state-folded">注文のテーブルの列を畳んだ（主キーと外部キーの列だけ）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="shop-er-folded"></figure>
+        </article>
+      </section>
+
+      <!-- テーブルのツールチップ: 見出しの説明のボタンにポインターを乗せるかフォーカスすると、論理名と物理名・概要・列の説明を出す -->
+      <section aria-labelledby="state-tip">
+        <h2 class="catalog-label" id="state-tip">テーブルのツールチップ（概要と列の説明）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-open]: 開いたままにするツールチップの持ち主（モックだけの指定） -->
+          <figure data-mock-diagram="shop-er" data-mock-open="table:orders"></figure>
+        </article>
+      </section>
+
+      <!-- 定義を読めない: 関係が存在しない列を指す。書き方の警告を出し、この ER 図は描かない -->
+      <section aria-labelledby="state-invalid">
+        <h2 class="catalog-label" id="state-invalid">定義を読めない（書き方の警告）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>ER 図の部品の定義を読めません。関係「注文する」の先の列 <code>orders.customer</code> がテーブル <code>orders</code> にありません。この ER 図は描いていません。</p>
+</div>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
