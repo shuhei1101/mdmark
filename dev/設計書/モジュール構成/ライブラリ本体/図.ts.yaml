@@ -972,7 +972,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow`・`renderEr` に `hints` のオン・オフを、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore
@@ -1506,9 +1506,9 @@ functions:
     summary: テーブルの `div.mdmark-diagram-er-table`（`data-node`・`data-color`・`left`・`top`・`width` の位置）に、見出し（lucide の `table` のアイコンと物理名、論理名と種類の札、列の開閉のボタン、説明のボタン）と列の `ul`（列ごとに `data-column` を持つ `li`。マーカーは `ER_COLUMN_KEYS` の `abbr`）を置く。全ての列の行を出し、畳んだテーブルは主キーでも外部キーでもない列の行に `hidden` を付けて `非表示 {数} 列` の行を出す。色は `color`、無ければ `ER_TABLE_KINDS` の既定の色にする
     args:
       - name: options
-        type: '{ table: MdmarkErTable; tipId: string | undefined }'
+        type: '{ table: MdmarkErTable; tipId: string | undefined; text: (value: string) => string }'
         required: true
-        description: テーブルと、説明のボタンが指すツールチップの `id`（`hints` がオフか、テーブルと列のどれも `desc` を持たないときは `undefined`）
+        description: テーブルと、説明のボタンが指すツールチップの `id`（`hints` がオフか、テーブルと列のどれも `desc` を持たないときは `undefined`）と、定義の文字（物理名・論理名・列の名前と型）を HTML にする関数（`renderEr` が `renderText` で `{{語}}` を用語の下線にする関数を渡す）。読み上げの名前（`aria-label`）は `{{` と `}}` を除いた論理名で作る
     returns:
       type: string
       description: テーブルの HTML
@@ -1516,7 +1516,7 @@ functions:
       - name: test_render_er_table
         case: 正常
         summary: 見出しと列の行を出す
-        condition: モックの `shop-er` の注文のテーブル
+        condition: モックの `shop-er` の注文のテーブル。`text` は文字を逃がすだけの関数
         mock: なし
         expected: 見出しに物理名 `orders`・論理名・札 `トランザクション`、`data-color="orange"`、列の行が定義の順で、主キーの列に `abbr[title="主キー"]` の `PK`
       - name: test_render_er_table_when_folded
@@ -1563,7 +1563,7 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: '`renderErTable` でテーブルを置き、`erRelationRoute` の経路で関係の線（`data-line="er"`）と `erEndSvg` の両端の記号を svg に描き、ラベルを縦の線の中ほどに置く。関係ごとの `g` は `data-er-from`・`data-er-from-column`・`data-er-to`・`data-er-to-column` を持ち、ラベルは同じ関係の番号の `data-er-relation` を持つ（`attachErFolds` が結び直す）。図の高さは `erTableHeight` で求めたテーブルの下端の最大に下の余白を足す。`hints` がオンなら、`desc` を持つテーブルと `desc` を持つ列のあるテーブルの `renderDiagramTip` の `kind: table` の中身を返す'
+    summary: '`renderErTable` でテーブルを置き（定義の文字は `renderText` に通し、`{{語}}` を意味のある用語なら下線とツールチップの持ち主にする）、`erRelationRoute` の経路で関係の線（`data-line="er"`）と `erEndSvg` の両端の記号を svg に描き、ラベルを縦の線の中ほどに置く。関係ごとの `g` は `data-er-from`・`data-er-from-column`・`data-er-to`・`data-er-to-column` を持ち、ラベル（`renderText` に通す）は同じ関係の番号の `data-er-relation` を持つ（`attachErFolds` が結び直す）。図の高さは `erTableHeight` で求めたテーブルの下端の最大に下の余白を足す。`hints` がオンなら、`desc` を持つテーブルと `desc` を持つ列のあるテーブルの `renderDiagramTip` の `kind: table` の中身を返す'
     args:
       - name: definition
         type: MdmarkErDefinition
@@ -1577,9 +1577,13 @@ functions:
         type: boolean
         required: true
         description: '`hints` がオンか'
+      - name: lookup
+        type: TermLookup | undefined
+        required: false
+        description: 用語から意味を引く関数（`renderFlow`・`renderSequence` と同じ）
     returns:
-      type: '{ html: string; width: number; height: number; tips: string }'
-      description: 図の中身
+      type: '{ html: string; width: number; height: number; tips: string; jumps: boolean; terms: boolean }'
+      description: 図の中身と、用語の下線を引いた文字があるか（`terms`。`jumps` は常に `false`）
     callees:
       - '#functions[renderErTable]'
       - '#functions[erRelationRoute]'
@@ -1599,6 +1603,12 @@ functions:
         condition: モックの `shop-er` の定義、`hints` がオフ
         mock: なし
         expected: '`button.mdmark-diagram-info` が無く、`tips` が空'
+      - name: test_render_er_when_terms
+        case: 正常
+        summary: 定義の文字の `{{語}}` を用語の下線にする
+        condition: テーブルの論理名が `{{顧客}}`、関係のラベルが `{{注文}}する` の定義と、`顧客`・`注文` の意味を返す `lookup`。`hints` がオン
+        mock: なし
+        expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`terms` が `true`。説明のボタン・開閉のボタンの読み上げの名前が `「顧客」の…`
     status: planned
     introduced:
       pr: 298
