@@ -82,9 +82,11 @@
       // 押したボタンごとに表示を切り替える
       if (action === "edit") renderForm(item);
       if (action === "remove") renderConfirm(item);
+      // 入力欄のキャンセルは「編集」へ、削除の確認のキャンセルは「削除」へフォーカスを戻す
       if (action === "cancel") {
+        const fromConfirm = Boolean(button.closest(".mdmark-comment-confirm"));
         renderView(item, item.dataset.body);
-        item.querySelector('[data-action="edit"]').focus();
+        item.querySelector(`[data-action="${fromConfirm ? "remove" : "edit"}"]`).focus();
       }
       if (action === "confirm-remove") {
         button.disabled = true;
