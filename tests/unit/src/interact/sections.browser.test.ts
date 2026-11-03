@@ -480,3 +480,49 @@ test("test_fold_all_sections", async () => {
     "false",
   ]);
 });
+
+// 閉じた節と閉じた行の詳細を開き、スクロールしない（正常系）
+test("test_open_enclosing", async () => {
+  // 準備: 閉じた `## A` の中の表の、閉じた行の詳細の中の段落
+  const { attachSections, openEnclosing } = await loadSections();
+  const { root } = createRoot(
+    [
+      "## A",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+      "<!-- row-detail: 1 -->",
+      "",
+      "詳細の段落",
+      "",
+      "<!-- /row-detail -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  const scrollIntoView = vi
+    .spyOn(Element.prototype, "scrollIntoView")
+    .mockImplementation(() => {});
+  const detail = root.querySelector<HTMLElement>("tr.mdmark-row-detail");
+  const target = detail?.querySelector<HTMLElement>("p");
+  const rowToggle = root.querySelector<HTMLButtonElement>(
+    "button.mdmark-row-toggle",
+  );
+  if (!detail || !target || !rowToggle) {
+    throw new Error("行の詳細の段落か開閉のボタンが無い");
+  }
+  expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(true);
+  expect(detail.hasAttribute("hidden")).toBe(true);
+  // 実行
+  openEnclosing(target);
+  // 検証
+  expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(false);
+  expect(detail.hasAttribute("hidden")).toBe(false);
+  expect(expandedStates(root, ["a"])).toEqual(["true"]);
+  expect(rowToggle.getAttribute("aria-expanded")).toBe("true");
+  expect(scrollIntoView).not.toHaveBeenCalled();
+});

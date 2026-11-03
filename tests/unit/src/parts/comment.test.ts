@@ -1,5 +1,11 @@
 import { expect, test } from "vitest";
-import { findTag, innerHtml, matches, plainText } from "../../helpers/html.ts";
+import {
+  findTag,
+  findTags,
+  innerHtml,
+  matches,
+  plainText,
+} from "../../helpers/html.ts";
 
 /** コメントの部品の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadComment = () => import("../../../../src/parts/comment.ts");
@@ -81,7 +87,18 @@ test("test_render_comment_mark", async () => {
   expect(mark).toContain('role="button"');
   expect(mark).toContain('aria-haspopup="dialog"');
   expect(mark).toContain('aria-expanded="false"');
+  expect(mark).not.toContain("data-focused");
   expect(innerHtml(html, "mdmark-comment-mark")).toBe("手順");
+});
+
+// focused なら data-focused を持つ（正常系）
+test("test_render_comment_mark_when_focused", async () => {
+  // 準備
+  const { renderCommentMark } = await loadComment();
+  // 実行
+  const html = renderCommentMark({ text: "手順", focused: true });
+  // 検証
+  expect(findTag(html, "mdmark-comment-mark")).toMatch(/\sdata-focused\b/);
 });
 
 // 本文を文字のまま並べる（正常系）
@@ -100,6 +117,113 @@ test("test_render_comment_bubble", async () => {
   );
   expect(bodies).toEqual(["a", "&lt;b&gt;x&lt;/b&gt;"]);
   expect(html).not.toContain("<b>");
+  expect(html).not.toContain("mdmark-comment-icon-button");
+});
+
+// canEdit・canRemove ならコメントごとにアイコンのボタンと id を持つ（正常系）
+test("test_render_comment_bubble_when_editable", async () => {
+  // 準備
+  const { renderCommentBubble } = await loadComment();
+  // 実行
+  const html = renderCommentBubble({
+    quote: "手順",
+    bodies: ["a"],
+    ids: ["c1"],
+    canEdit: true,
+    canRemove: true,
+  });
+  // 検証
+  const item = findTag(html, "<li");
+  expect(item).toContain('class="mdmark-comment-item is-icon-actions"');
+  expect(item).toContain('data-comment-id="c1"');
+  const buttons = findTags(html, "mdmark-comment-icon-button");
+  expect(buttons).toHaveLength(2);
+  expect(buttons[0]).toContain('data-action="edit"');
+  expect(buttons[0]).toContain('aria-label="編集"');
+  expect(buttons[0]).toContain('title="編集"');
+  expect(buttons[1]).toContain('data-action="remove"');
+  expect(buttons[1]).toContain('aria-label="削除"');
+  expect(buttons[1]).toContain('title="削除"');
+});
+
+// 入力欄の状態ごとに知らせと保存のボタンを変える（正常系）
+test("test_render_comment_item_when_editing", async () => {
+  // 準備
+  const { renderCommentItem, COMMENT_MESSAGES } = await loadComment();
+  /** 状態を変えて入力欄の `li` を返す */
+  const render = (state: "idle" | "saving" | "empty" | "failed"): string =>
+    renderCommentItem({
+      body: "元の本文",
+      id: "c1",
+      canEdit: true,
+      canRemove: true,
+      edit: { draft: "<b>x</b>", state, fieldId: "e1" },
+    });
+  // 実行・検証: idle
+  const idle = render("idle");
+  expect(innerHtml(idle, "<textarea")).toBe("&lt;b&gt;x&lt;/b&gt;");
+  expect(findTag(idle, 'id="e1-error"')).toMatch(/\shidden\b/);
+  expect(idle).not.toContain("mdmark-comment-icon-button");
+  // 実行・検証: saving
+  const saving = render("saving");
+  expect(findTag(saving, 'type="submit"')).toMatch(/\sdisabled\b/);
+  expect(plainText(innerHtml(saving, 'type="submit"'))).toBe("保存しています…");
+  // 実行・検証: empty・failed
+  for (const [state, message] of [
+    ["empty", COMMENT_MESSAGES.empty],
+    ["failed", COMMENT_MESSAGES.updateFailed],
+  ] as const) {
+    const html = render(state);
+    expect(findTag(html, "<textarea")).toContain('aria-invalid="true"');
+    expect(findTag(html, 'id="e1-error"')).not.toMatch(/\shidden\b/);
+    expect(plainText(innerHtml(html, 'id="e1-error"'))).toBe(message);
+  }
+});
+
+// 削除の確認の状態ごとに知らせと削除のボタンを変える（正常系）
+test("test_render_comment_item_when_confirming", async () => {
+  // 準備
+  const { renderCommentItem } = await loadComment();
+  /** 状態を変えて削除の確認の `li` を返す */
+  const render = (state: "idle" | "removing" | "failed"): string =>
+    renderCommentItem({
+      body: "元の本文",
+      id: "c1",
+      canEdit: true,
+      canRemove: true,
+      confirm: { state },
+    });
+  // 実行・検証: どの状態も確認の文と削除のボタンを持ち、アイコンのボタンが無い
+  for (const state of ["idle", "removing", "failed"] as const) {
+    const html = render(state);
+    expect(plainText(html)).toContain(
+      "このコメントを削除しますか? 削除すると元に戻せません。",
+    );
+    expect(findTags(html, "is-danger")).toHaveLength(1);
+    expect(html).not.toContain("mdmark-comment-icon-button");
+  }
+  // 実行・検証: removing
+  const removing = render("removing");
+  expect(findTag(removing, "is-danger")).toMatch(/\sdisabled\b/);
+  expect(plainText(innerHtml(removing, "is-danger"))).toBe("削除しています…");
+  // 実行・検証: failed
+  const failed = render("failed");
+  expect(plainText(innerHtml(failed, 'role="alert"'))).toBe(
+    "コメントを削除できませんでした。もう一度「削除」を押してください。",
+  );
+  expect(render("idle")).not.toContain('role="alert"');
+});
+
+// canRemove だけなら削除のボタンだけを置く（正常系）
+test("test_render_comment_item_when_remove_only", async () => {
+  // 準備
+  const { renderCommentItem } = await loadComment();
+  // 実行
+  const html = renderCommentItem({ body: "本文", id: "c1", canRemove: true });
+  // 検証
+  const buttons = findTags(html, "mdmark-comment-icon-button");
+  expect(buttons).toHaveLength(1);
+  expect(buttons[0]).toContain('data-action="remove"');
 });
 
 // 空なら何も返さない（正常系）

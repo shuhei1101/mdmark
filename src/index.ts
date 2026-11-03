@@ -44,7 +44,11 @@ export type {
 export { collectMatches } from "./knowledge/matches.ts";
 export type { MdmarkReferences } from "./knowledge/references.ts";
 export { collectReferences } from "./knowledge/references.ts";
-export type { MountHandle, MountOptions } from "./mount.ts";
+export type {
+  MdmarkColumnsChange,
+  MountHandle,
+  MountOptions,
+} from "./mount.ts";
 export { mount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
 export { render } from "./render/index.ts";

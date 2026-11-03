@@ -87,10 +87,12 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 `opts.diffSource` を渡すと、文書の題の後ろに「変更を見る」のボタンを付け、押すと 2 つのリビジョンの差分を出す。
 `opts.diffMode` で差分の出し方を選べる。`open` はボタンを押した状態で描き、`blocks` はボタンを付けず、描いた文書のブロックを追加と削除の色で塗り分ける。
 差分の操作は `mount` が付け、`update` で閉じ、`destroy` で外す。
+`opts.baseMarkdown` に比較元の Markdown を渡すと、取り出し元なしで、本文の中の比較元から変えたブロックを `blocks` と同じ色で塗り分ける。
 仕組みは [差分を表示する仕組み](../はじめに/コアコンセプト/差分を表示する仕組み.md)、書き方は [差分を表示する](../使い方/導入/差分を表示する.md)。
 ビューの印（[ビュー](./記法.md#ビュー)）があると、ボード表示と表形式の切り替えと、表形式の列の絞り込みも付ける。
 `opts.commentStore` と `opts.docId` を渡して機能 `comments` をオンにすると、本文の選んだ箇所にコメントを付けられる。
 コメントのボタン・入力欄・印・吹き出しの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
+読み書きの関数が `update`・`remove` を持つと、吹き出しのコメントごとに「編集」「削除」のボタンを出す。
 書き方は [ビューとコメントを使う](../使い方/書く/ビューとコメントを使う.md)。
 ビューとコメントの部品のモジュール（`dist/view.js`・`dist/comments.js`）は、ビューの印のある文書とコメントの機能がオンのときにだけ、`dist/index.js` の隣から読む。
 
@@ -118,6 +120,8 @@ handle.destroy();
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を渡さないときは使わない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
+| `opts.baseMarkdown` | 任意 | 比較元の Markdown（文字列か `null`）。渡すと、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける。`opts.diffSource` は要らない。`opts.diffSource` も渡したときは、色分けに比較元を使い、取り出し元は「変更を見る」の差分にだけ使う（`blocks` では取り出し元を呼ばない）。`null` と省いたときは色分けしない。`update` の第 2 引数で差し替える |
+| `opts.onColumnsChange` | 任意 | `+columns` の表で列の表示を切り替えるたびに呼ぶ関数。`{ tableIndex, hidden }`（`MdmarkColumnsChange`）を受け取る。`tableIndex` は本文の中の `+columns` の表の出現順（0 から。削除したブロックの中の表は数えない）、`hidden` は隠している列の見出しの文字を列の順に並べた配列。描いたときの `hide=` の状態と、`update` で描き直したときは呼ばない |
 
 <!-- /table -->
 
@@ -154,6 +158,8 @@ handle.destroy();
 | --- | --- | --- |
 | `load({ docId })` | `(target: { docId: string }) => Promise<MdmarkComment[]>` | その文書に付いたコメントを返す。描くたび（`mount`・`update`）に 1 回呼ぶ |
 | `save({ docId, comment })` | `(target: { docId: string; comment: MdmarkCommentDraft }) => Promise<MdmarkComment>` | 下書きのコメントを保存し、`id` を加えたコメントを返す。読む人が「コメントを保存」を押すたびに呼ぶ |
+| `update({ docId, id, body })` | `(target: { docId: string; id: string; body: string }) => Promise<void>` | 任意。コメントの本文を書き換える。持つと吹き出しに「編集」を出し、読む人が入力欄の「保存」を押すたびに呼ぶ |
+| `remove({ docId, id })` | `(target: { docId: string; id: string }) => Promise<void>` | 任意。コメントを削除する。持つと吹き出しに「削除」を出し、読む人が削除の確認の「削除」を押すたびに呼ぶ |
 
 `MdmarkCommentDraft` の形。
 
@@ -165,7 +171,7 @@ handle.destroy();
 | `body` | `string` | コメントの本文 |
 
 `MdmarkComment` は、`MdmarkCommentDraft` に空でない文字列の `id` を加えたもの。
-型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkColumnsChange` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 `load` が配列でない・要素の形が合わないとき、`save` が形の合わない値を返すときは、reject と同じに扱う。
 mdmark はコメントを保存せず、保存先は使う側の関数に任せる。
 
@@ -176,13 +182,16 @@ mdmark はコメントを保存せず、保存先は使う側の関数に任せ�
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `update` | `(markdown: string) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない |
+| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null }) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。省くと前の比較元のまま描く。`destroy` の後は何もしない |
+| `reloadComments` | `() => Promise<void>` | 本文を描き直さずに `opts.commentStore.load` を呼び直し、コメントの印と「箇所が見つからないコメント」の一覧を付け直してから解決する。記法の操作の状態（並べ替え・絞り込み・開閉）は変えない。開いている吹き出しは閉じ、書いている入力欄は残す。コメントを付けていないとき（`comments` がオフ・`opts.commentStore` が無い・コメントの部品のモジュールを読めない）と `destroy` の後は、`load` を呼ばずに解決する |
+| `focusComment` | `(id: string) => void` | その `id` のコメントの印を、閉じた節・行の詳細の中なら開いてから画面に入れ、フォーカスを移して強調する（背景を濃くし、線で囲む）。強調は次の `focusComment` と、印を付け直す（描き直し・読み直し）まで残す。吹き出しは開かない。印が無い `id` と `destroy` の後は何もしない |
 | `destroy` | `() => void` | `el` の中を空にして class `mdmark` を外し、記法の操作と、印刷・`hashchange`・`document` の受け取りを外す。コメントのボタン・入力欄・吹き出しも外す。2 回目以降は何もしない |
 
 ### エラー
 
-`opts.diffSource` を渡して `opts.docId` を渡さないとき、`opts.commentStore` を渡して `opts.docId` を渡さないか `opts.commentStore` が `load`・`save` の関数を持たないときだけ、何も描かずに `TypeError` を投げる。
-メッセージに `docId` か `commentStore` を含める。
+`opts.diffSource` を渡して `opts.docId` を渡さないとき、`opts.commentStore` を渡して `opts.docId` を渡さないか `opts.commentStore` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つとき、`opts.baseMarkdown` が文字列でも `null` でもないとき、`opts.onColumnsChange` が関数でないときだけ、何も描かずに `TypeError` を投げる。
+メッセージに `docId`・`commentStore`・`baseMarkdown`・`onColumnsChange` のどれかを含める。
+`update` の `options.baseMarkdown` が文字列でも `null` でもないときは、前の本文を残して `TypeError` を投げる。
 それ以外は例外を投げない。
 取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したときは、差分の場所を [知らせの枠](./用語集.md) に替え、文書の本文は描いたまま残す。
 取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
@@ -191,6 +200,9 @@ mdmark はコメントを保存せず、保存先は使う側の関数に任せ�
 コメントの `save` が reject するか、形に合わない値を返したときは、入力欄に書いた本文を残して `role="alert"` の知らせを出し、印を付けない。
 `load` が reject するか、形に合わない値を返したときは、印を付けずに続け、新しいコメントは付けられる。
 どちらも読み書きの関数の名前・文書の `id`・元のエラーが `console.error` に出る。
+コメントの `update`・`remove` が reject したときは、修正は入力欄と書き換えた本文を残し、削除はコメントと印を残して削除の確認を開いたまま、`role="alert"` の知らせを出す。関数の名前・文書の `id`・コメントの `id`・元のエラーが `console.error` に出る。
+`reloadComments` の `load` が reject するか、形に合わない値を返したときは、今の印を残し、`reloadComments` の `Promise` を元のエラーで reject する。
+`opts.onColumnsChange` が例外を投げたときは、列の表示の切り替えは済ませ、`onColumnsChange` と元のエラーが `console.error` に出る。
 `comments` がオンで `opts.commentStore` を渡さないときは、コメントのボタンを出さず、読み書きの関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す。
 ビューかコメントの部品のモジュールを読めないときは、ビューの印の場所を `render` が出した表のまま残し、コメントはボタンを出さず `load` も呼ばない。
 読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーが `console.error` に出る。
@@ -773,9 +785,10 @@ handle.destroy();
 
 | 起きたこと | 動き |
 | --- | --- |
-| `el` が要素でない、`opts.store` が `load`・`save` の関数を持たない、`opts.docId` が空か文字列でない | `TypeError` を同期で投げる（`Promise` は返さない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
+| `el` が要素でない、`opts.store` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つ、`opts.docId` が空か文字列でない | `TypeError` を同期で投げる（`Promise` は返さない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
 | `load` が reject する、または返した値がコメントの形に合わない | 例外を投げず、印を付けずに解決する。新しいコメントは付けられる。`load`・`docId`・元のエラーか合わなかった値を `console.error` に出す |
 | `save` が reject する、または返した値がコメントの形に合わない | 例外を投げず、入力欄に書いた本文を残して知らせを出し、印を付けない。`save`・`docId`・元のエラーを `console.error` に出す |
+| `update`・`remove` が reject する | 例外を投げず、修正は入力欄と書き換えた本文を残し、削除はコメントと印を残して削除の確認を開いたまま知らせを出す。関数の名前・`docId`・コメントの `id`・元のエラーを `console.error` に出す |
 | コメントの部品のモジュールを読めない | `el` を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで reject する |
 
 ## テーマの CSS 変数

@@ -70,6 +70,8 @@ items:
     summary: 埋め込んだ HTML の custom element に書いた定義から、図の部品をその場所に図の枠に載せて描く
   - page: 差分の取り出し元を渡す.yaml
     summary: 使う側のページが `DiffSource` を渡して文書を描き、差分を開いたときにリビジョンの一覧と本文を取り出す
+  - page: 比較元のMarkdownを渡して変更を強調する.yaml
+    summary: 使う側のページが比較元の Markdown を文字列で渡し、本文の中で追加・変更・削除したブロックを強調する
   - page: 文書の差分を見る.yaml
     summary: 読む人が 2 つのリビジョンの差分を、消した行は赤・足した行は緑・変わった文字は濃い色で見、リビジョンを選び直す
   - page: 埋め込んだHTMLの差分を切り替える.yaml

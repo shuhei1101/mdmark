@@ -6450,6 +6450,17 @@
       outline: 2px solid var(--mdmark-color-comment-line);
       outline-offset: 1px;
     }
+
+    /* focusComment で移った印: 地の色を濃くして線で囲み、開いている吹き出しの線より目立たせる */
+    &[data-focused] {
+      background: color-mix(
+        in oklab,
+        var(--mdmark-color-comment-line) 22%,
+        var(--mdmark-color-bg)
+      );
+      outline: 2px solid var(--mdmark-color-comment-line);
+      outline-offset: 2px;
+    }
   }
 
   /* ボタン・入力欄・吹き出しのアイコン: 描いた文書の外（body の直下）に置くので、文書の中のアイコンと同じ規則をここでも当てる */
@@ -6686,6 +6697,75 @@
     /* 保存している間: 二重に押せないようにする。文言が「保存しています…」に変わるので、色は薄めず読めるまま残す */
     &:disabled {
       cursor: progress;
+    }
+
+    /* 削除のボタン: 誤りの色で塗り、取り消せない操作だと分かるようにする */
+    &.is-danger {
+      border-color: var(--mdmark-color-error);
+      background: var(--mdmark-color-error);
+      color: var(--mdmark-color-bg);
+      font-weight: 600;
+    }
+  }
+
+  /* 吹き出しの 1 件のコメント: 本文・知らせ・削除の確認を縦に並べる。`dev/mock/refs/280/assets/comment-edit.css` から取る */
+  .mdmark-comment-item {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  /* 編集・削除のアイコンのボタン: 枠を持たず、hover で面の色を付ける。押す範囲は 24px 以上 */
+  .mdmark-comment-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: calc(var(--mdmark-radius) - 2px);
+    background: transparent;
+    color: var(--mdmark-color-muted);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 1px;
+    }
+  }
+
+  /* 本文の右上に、アイコンだけのボタンを並べる。知らせと削除の確認は本文の下に全幅で置く */
+  .mdmark-comment-item.is-icon-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+
+    > :not(.mdmark-comment-body, .mdmark-comment-icon-actions) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .mdmark-comment-icon-actions {
+    display: flex;
+    gap: 0.125rem;
+    margin: -0.25rem -0.25rem 0 0;
+  }
+
+  /* 削除の確認: コメントの本文の下に、確認の文とキャンセル・削除のボタンを並べる */
+  .mdmark-comment-confirm {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: calc(var(--mdmark-radius) - 2px);
+    background: var(--mdmark-color-surface);
+
+    > p {
+      margin: 0;
     }
   }
 

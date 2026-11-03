@@ -1,5 +1,6 @@
 import type { TooltipPlacement } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import type { MdmarkColumnsChange } from "../mount.ts";
 import { attachCodeCopy } from "./code-blocks.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagrams } from "./diagrams.ts";
@@ -24,8 +25,16 @@ export function attachInteractions(options: {
   placement: TooltipPlacement;
   /** 描いた操作できる部品の定義。`div.mdmark-param` の並びと同じ順（既定 `[]`） */
   paramDefinitions?: MdmarkParamDefinition[];
+  /** 列の表示を切り替えたときに知らせる */
+  onColumnsChange?: (event: MdmarkColumnsChange) => void;
 }): () => void {
-  const { root, features, placement, paramDefinitions = [] } = options;
+  const {
+    root,
+    features,
+    placement,
+    paramDefinitions = [],
+    onColumnsChange,
+  } = options;
   const detachers: Array<() => void> = [];
   // 閉じた節の中の行へは、`attachTables` が行へ送る前に `attachSections` が節を開いておく
   const sections = features.sections === true;
@@ -34,7 +43,7 @@ export function attachInteractions(options: {
     detachers.push(attachSections({ root, sections, rowDetails }));
   }
   if (features.table === true) {
-    detachers.push(attachTables(root));
+    detachers.push(attachTables(root, { onColumnsChange }));
     detachers.push(attachStickyRows(root));
   }
   if (features.tabs === true) {
