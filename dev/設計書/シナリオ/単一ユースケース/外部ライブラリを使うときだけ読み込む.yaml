@@ -1,4 +1,4 @@
-title: "外部ライブラリを使うときだけ読み込む"
+title: 外部ライブラリを使うときだけ読み込む
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -98,6 +98,82 @@ scenarios:
       - 2 つのコードブロックが色分けされている
       - '`dist/index.js` に色分けのライブラリの本体が含まれていない（本体は別の要求で読まれる）'
     test: test_normal_when_code_highlighted
+  - name: 正常シナリオ（束ねていない名前のアイコン）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 束ねていない名前のアイコンを持つ Markdown
+        description: 見出しに `` `icon:sailboat` ``、段落に `` `icon:anchor` `` を持つ文書
+        notes: '`sailboat`・`anchor` は配布物に束ねていない Lucide のアイコンの名前'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` と Lucide のアイコンを同じパスで返す手元の応答に差し替える。Lucide への要求を数える
+        notes: 読む URL の形はライブラリ選定で決める
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as Lucide
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 束ねていないアイコンの名前を集める
+        M->>X: アイコンを要求
+        X-->>M: アイコンの形
+        M-->>P: アイコンの場所に描く
+        P-->>U: 文書を表示
+    expected:
+      - '`sailboat` と `anchor` のアイコンが描かれている'
+      - Lucide への要求が、文書が使う束ねていないアイコンを得る分だけで、文書が使わないアイコンの要求が無い
+      - アイコンの前後の本文が描かれている
+      - 束ねていない名前の `icon:` を持たない文書では、Lucide への要求が 0 件
+    test: test_normal_when_unbundled_icon
+  - name: 異常シナリオ（Lucide に無いアイコンの名前）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: Lucide に無い名前のアイコンを持つ Markdown
+        description: 段落に `` `icon:no-such-icon` `` と `` `icon:anchor` `` を持つ文書
+      - name: Mock
+        description: 正常シナリオ（束ねていない名前のアイコン）と同じ。`no-such-icon` は Lucide に無い
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as Lucide
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: アイコンを要求
+        X-->>M: anchor の形と、no-such-icon が無いこと
+        M-->>P: no-such-icon の場所に書き方の警告、anchor はアイコンで描く
+        P-->>U: 書き方の警告と文書を表示
+    expected:
+      - '`no-such-icon` の場所に、Lucide に無い名前であることを書いた書き方の警告と、書いたとおりの行内のコードがある'
+      - '`anchor` のアイコンが描かれている'
+      - 段落のほかの本文が描かれている
+    test: test_error_when_icon_not_in_lucide
+  - name: 異常シナリオ（Lucide を読めない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 束ねていない名前のアイコンを持つ Markdown
+        description: 正常シナリオ（束ねていない名前のアイコン）と同じ文書
+      - name: Mock
+        description: Lucide への要求が全て失敗する（応答しない）。ほかは正常シナリオと同じ
+        notes: 読めないことを知らせる表示（知らせの枠か書き方の警告か）は部品設計で決める
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as Lucide
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>X: アイコンを要求
+        X-->>M: 失敗
+        M-->>P: アイコンの場所を行内のコードのまま残し、ほかは本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - アイコンの場所に、書いたとおりの行内のコードが出ている
+      - 見出しと段落のほかの本文が描かれている
+    test: test_error_when_lucide_unavailable
 lead: mdmark が、文書に外部ライブラリを使う印があるときだけ、版を固定した URL からそのモジュールを読み込む。読めない箇所には知らせの枠を出し、ほかの本文は描く。
 issue: 3
 primary_actor: mdmark を使うアプリのページ

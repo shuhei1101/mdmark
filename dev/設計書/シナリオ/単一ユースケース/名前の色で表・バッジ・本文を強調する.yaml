@@ -1,4 +1,4 @@
-title: "名前の色で表・バッジ・本文を強調する"
+title: 名前の色で表・バッジ・本文を強調する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -112,6 +112,51 @@ scenarios:
       - 表の行に色も線も無く、本文の `決め手の 1 文` は本文の文字の色のまま出ている
       - 本文に角括弧と `{color=pink}` は出ていない
     test: test_error_when_color_unknown
+  - name: 正常シナリオ（蛍光ペンのマーカー）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 蛍光ペンのマーカーを持つ Markdown
+        description: 段落に `==決め手==` と `==例外=={color=green}` を持ち、選んだ箇所へのコメントを 1 つ付けた文書
+        notes: コメントは `mountComments` の読み書きの関数で 1 件返す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: == で囲んだ文字を蛍光ペンのマーカーにし、色の名前を当てる
+        M-->>P: 蛍光ペンのマーカーとコメントのマーカーを描く
+        P-->>U: 文書を表示
+    expected:
+      - '`決め手` が既定の色の蛍光ペンのマーカー、`例外` が green の蛍光ペンのマーカーで描かれ、`==` と `{color=green}` は出ていない'
+      - 蛍光ペンのマーカーは `<mark>` で、コメントのマーカーの class `mdmark-comment-mark` を持たない
+      - コメントのマーカーの見た目と、押して吹き出しを開く操作が変わらず、蛍光ペンのマーカーを押しても吹き出しが開かない
+      - 蛍光ペンのマーカーの文字と面の色のコントラストが 4.5:1 以上
+    test: test_normal_when_highlighter
+  - name: 異常シナリオ（蛍光ペンの知らない色の名前）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない色の名前の蛍光ペンを持つ Markdown
+        description: 段落に `==決め手=={color=pink}` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: pink が色の名前の一覧に無い
+        M-->>P: 書き方の警告と、既定の色の蛍光ペンのマーカーを描く
+        P-->>U: 書き方の警告と文書を表示
+    expected:
+      - 段落の上に、`pink` が使えない色の名前であることと使える色の名前を書いた書き方の警告がある
+      - '`決め手` が既定の色の蛍光ペンのマーカーで描かれ、`{color=pink}` は出ていない'
+    test: test_error_when_highlighter_color_unknown
 lead: 文書を書く人が、表のマーカーの引数・`badge:` の後ろ・本文の文字の後ろの属性に色の名前を書くと、mdmark がテーマの色のプリセットで表の列・行、バッジ、本文の文字に色を付け、色以外の見分けも付ける。
 issue: 158
 primary_actor: 文書を書く人
