@@ -1,0 +1,43 @@
+title: Parts/CommentMarginMarker
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: comment-marker
+    args:
+      quote: テーマの変数
+  - name: Merged
+    parameters:
+      server:
+        id: comment-marker
+    args:
+      quote: 担当者
+      count: '2'
+  - name: Current
+    parameters:
+      server:
+        id: comment-marker
+    args:
+      quote: テーマの変数
+      current: 'true'
+  - name: ClosedSection
+    parameters:
+      server:
+        id: comment-marker
+    args:
+      quote: 閉じた箇所
+      closed: section
+  - name: ClosedTab
+    parameters:
+      server:
+        id: comment-marker
+    args:
+      quote: タブの箇所
+      closed: tab
+  - name: ClosedRow
+    parameters:
+      server:
+        id: comment-marker
+    args:
+      quote: 行の箇所
+      closed: row

@@ -92,6 +92,9 @@ styles:
       - class_name: .mdmark-comment-* と ::highlight(mdmark-comment-pending)
         target: コメントの部品
         value: '部品設計（コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧）の HTML に当てる規則。`dev/mock/refs/55/assets/comment.css` から取る。印と一覧は `.mdmark` の下、ボタン（`.mdmark-comment-add`）・入力欄と吹き出し（`.mdmark-comment-popover`）は `document.body` に置くため `.mdmark` の外で当て、`position: fixed` にする。保存のボタン（`.is-primary`）は地と線を `--mdmark-color-text`、文字を `--mdmark-color-bg` にする（`dev/mock/refs/80/assets/canvas-themes.css` の `.theme-dev-swiss .mdmark-comment-button.is-primary`）。`::highlight(mdmark-comment-pending)` は入力欄を開いている間の選んだ文字に `--mdmark-color-comment-bg` を当てる'
+      - class_name: .mdmark .mdmark-comment-margin と .mdmark-comment-marker
+        target: 余白のマーカー
+        value: '部品設計『余白のマーカー』の HTML と余白の列に当てる規則。`dev/mock/refs/277/assets/margin.css` の案 A（`[data-place]` を持たない規則）から取る。`.mdmark` に `--mdmark-comment-margin-width`（`2.25rem`）を置く。右側の目次を持たず余白の列を持つ描く先の要素（`.mdmark:has(> .mdmark-comment-margin):not(:has(> .mdmark-side-toc))`）は、`display: flex`・`flex-wrap: nowrap`・`gap: var(--mdmark-space)`・`align-items: flex-start`・`max-width: none` にして本文の列と余白の列を横に並べる（行の長さの上限は本文の列が持つ）。この要素には `container: mdmark / inline-size` と `@container mdmark (width < 48rem)` の帯の規則を当てない（帯は右側の目次の規則）。右側の目次を持つときは、右側の目次の規則の flex の中で、本文の列と右側の目次の間に並ぶ。余白の列は `position: relative`・`flex: none`・`align-self: stretch` で本文の列の右に並べ、マーカーは `position: absolute` で縦の中ほどを `top` に合わせる（`translate: 0 -50%`）。`[data-current]` は地と文字の色を反転し（文字は `--mdmark-color-bg-opaque`。ホバーの地も `--mdmark-color-comment-line` と `--mdmark-color-bg-opaque` を混ぜる）、`[data-closed]` は線を破線にする。押せる範囲は `::before` で 0.375rem ずつ広げる。`@media print` では余白の列を出さない'
       - class_name: '@media print（ビューとコメント）'
         target: ビューとコメントの印刷
         value: '`dev/mock/refs/55/assets/view-print.css` から取る。ビューは今のビューを出し、切り替えを隠す（絞り込みのボタンは表の印刷の規則が隠す）。ボードは横のスクロールをやめ、紙の幅に収まる数の列で折り返し、列と項目を改ページで切らない。コメントのボタン・入力欄・吹き出しを隠し、印は地の色を外して下線だけで箇所を示す'

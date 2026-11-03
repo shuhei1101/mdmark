@@ -199,6 +199,7 @@ export function attachParts(options: {
             root,
             store: commentStore,
             docId,
+            margin: true,
           });
           // 待つ間に外したら、得た外す関数をすぐ呼ぶ
           if (active()) {
