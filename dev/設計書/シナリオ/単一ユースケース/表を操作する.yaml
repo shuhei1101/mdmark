@@ -932,7 +932,7 @@ scenarios:
       - キーの列に、表に無い親（`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type`）の行が薄い斜体のキーだけで補われ、補った行の他の列は空
       - 各行のキーの列は末尾の名前（`table`・`type` など）だけを出し、階層の深さのインデントと縦線で親子を示す
       - キーの列には行ごとの横線が無く、縦線が行をまたいでつながっている
-      - キーにポインターを乗せるとフォーカスでも、全体のパス `aliases[].metadata.alias_type.type` のツールチップが出る
+      - キーにポインターを乗せたとき、またはキーにフォーカスしたときに、全体のパス `aliases[].metadata.alias_type.type` のツールチップが出る
       - ⧉ を押すと全体のパスがクリップボードに入り、知らせが出る
       - 型の列は値ごとに色の違うバッジで、`a \| b` は値ごとのチップで出る
       - 必須の列は出ず、`features.table` のキーの後ろに赤い * がある
@@ -984,13 +984,17 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        U->>P: キーの列の絞り込みに type と入れる
-        M->>M: 当たった行と、その親の行を残す
+        U->>P: キーの列の絞り込みに id と入れる
+        M->>M: 末尾の名前が当たった行と、その親の行を残す
+        P-->>U: 絞り込んだ表
+        U->>P: 絞り込みを metadata に変える
+        M->>M: 補った親の行の末尾の名前に当たる
         P-->>U: 絞り込んだ表
     expected:
-      - '`aliases[].metadata.alias_type.type` の行と、その親の `aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行だけが出ている'
-      - 当たった単語 `type` の部分に色が付き、親の行の文字には付かない
-      - 件数の表示は当たった行の数を数え、残した親の行を数えない
+      - 絞り込みは各行のキーの末尾の名前で照合し、`id` では `aliases[].id` の行と、その親の `aliases[]` の行だけが出ている
+      - 当たった単語 `id` の部分に色が付き、残した親の行 `aliases[]` の文字には付かない
+      - 件数の表示は 1 件で、残した親の行を数えない
+      - '`metadata` では、補った親の行 `aliases[].metadata` が当たった行として色が付いて残り、その親の `aliases[]` も残る。当たった行の子は残らず、件数の表示は補った行を数えないため 0 件'
       - 絞り込みを解除すると、絞り込む前の開閉の状態に戻る
     test: test_normal_when_tree_filtered
   - name: 正常シナリオ（階層の行を選ぶ）
