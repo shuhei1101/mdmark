@@ -1,3 +1,4 @@
+import type { MdmarkColumnsChange } from "../mount.ts";
 import { iconSvg } from "../parts/icons.ts";
 import {
   COPY_FORMATS,
@@ -186,6 +187,7 @@ function attachTable(
   wrapper: HTMLElement,
   table: HTMLTableElement,
   root: HTMLElement,
+  notifyColumns?: (hidden: string[]) => void,
 ): () => void {
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
@@ -1118,6 +1120,7 @@ function attachTable(
         hiddenColumns.add(column);
       }
       applyColumns();
+      notifyHidden();
     } else if (totalsToggle && totalsMenu) {
       toggleMenu(totalsMenu, totalsToggle);
     } else if (copy && copyMenu) {
@@ -1160,6 +1163,14 @@ function attachTable(
       closeCopyPanel(true);
     }
   };
+  /** 隠している列の見出しを列の順に並べて知らせる */
+  const notifyHidden = (): void => {
+    notifyColumns?.(
+      [...hiddenColumns]
+        .sort((a, b) => a - b)
+        .map((column) => labels[column] ?? ""),
+    );
+  };
   /** 列の表示のメニューのチェックボックスに合わせて列を隠す・出し、集計のメニューのチェックボックスに合わせて計算の行を出す・隠す */
   const onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement;
@@ -1180,6 +1191,7 @@ function attachTable(
       hiddenColumns.add(column);
     }
     applyColumns();
+    notifyHidden();
   };
   const onInput = (event: Event): void => {
     const input = event.target as HTMLInputElement;
@@ -1258,14 +1270,45 @@ function attachTable(
   };
 }
 
-/** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
-export function attachTables(root: HTMLElement): () => void {
+/** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を渡したときは列の表示を切り替えるたびに知らせる。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
+export function attachTables(
+  root: HTMLElement,
+  options: {
+    /** 列の表示を切り替えたときに知らせる */
+    onColumnsChange?: ((event: MdmarkColumnsChange) => void) | undefined;
+  } = {},
+): () => void {
+  const { onColumnsChange } = options;
   const detachers: Array<() => void> = [];
+  // 列の表示を付けた表の、削除したブロックの中を除いた文書の順の位置
+  let columnsIndex = 0;
   for (const wrapper of root.querySelectorAll<HTMLElement>(".mdmark-table")) {
     const table = wrapper.querySelector("table");
-    if (table) {
-      detachers.push(attachTable(wrapper, table, root));
+    if (!table) {
+      continue;
     }
+    const counted =
+      (wrapper.dataset.features ?? "").split(/\s+/).includes("columns") &&
+      wrapper.closest('.mdmark-diff-block[data-kind="del"]') === null;
+    const tableIndex = columnsIndex;
+    if (counted) {
+      columnsIndex += 1;
+    }
+    const notify =
+      onColumnsChange && counted
+        ? (hidden: string[]): void => {
+            try {
+              onColumnsChange({ tableIndex, hidden });
+            } catch (error) {
+              console.error(
+                "[mdmark] 列の表示の知らせが例外を投げました",
+                "onColumnsChange",
+                error,
+              );
+            }
+          }
+        : undefined;
+    detachers.push(attachTable(wrapper, table, root, notify));
   }
   return () => {
     for (const detach of detachers) {

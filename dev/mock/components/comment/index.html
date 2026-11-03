@@ -17,10 +17,14 @@
   <!-- コメントの規則と、カタログの使う側の要素の枠・その場に置く見本（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/55/assets/comment.css">
   <link rel="stylesheet" href="../../refs/55/assets/catalog.css">
+  <!-- コメントの修正・削除と、箇所へ移ったマーカーの強調（#280 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/280/assets/comment-edit.css">
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- コメントの操作（文字を選ぶとボタン、保存で印、印から吹き出し） -->
   <script src="../../refs/55/assets/comment.js" defer></script>
+  <!-- コメントの修正・削除の操作（編集で入力欄、削除で確認） -->
+  <script src="../../refs/280/assets/comment-edit.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -137,6 +141,176 @@
               <li><p class="mdmark-comment-body">色だけでなく、文字の大きさと行間もテーマの変数で変えられるようにしたいです。
 使う側のページの本文と揃えたいときに、毎回 CSS を書き足すのは手間がかかります。</p></li>
               <li><p class="mdmark-comment-body">角丸は 6px のままでよいと思います。</p></li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 編集・削除のボタン: 読み書きの関数が update・remove を持つとき、各コメントの本文の右上にアイコンだけのボタンを出す（読み上げとツールチップに名前を付ける） -->
+      <section aria-labelledby="state-edit">
+        <h2 class="catalog-label" id="state-edit">編集・削除のボタン</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item is-icon-actions">
+                <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+                <div class="mdmark-comment-icon-actions">
+                  <button class="mdmark-comment-icon-button" type="button" aria-label="編集" title="編集"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
+                  <button class="mdmark-comment-icon-button" type="button" aria-label="削除" title="削除"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                </div>
+              </li>
+              <li class="mdmark-comment-item is-icon-actions">
+                <p class="mdmark-comment-body">角丸は 6px のままでよいと思います。</p>
+                <div class="mdmark-comment-icon-actions">
+                  <button class="mdmark-comment-icon-button" type="button" aria-label="編集" title="編集"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
+                  <button class="mdmark-comment-icon-button" type="button" aria-label="削除" title="削除"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- コメントを編集している: 押したコメントの場所を、本文を入れた入力欄に置き換える。ほかのコメントはそのまま -->
+      <section aria-labelledby="state-editing">
+        <h2 class="catalog-label" id="state-editing">コメントを編集している</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item"><form>
+                <label class="mdmark-comment-field">コメント<textarea rows="3">ここは &lt;b&gt;太字&lt;/b&gt; にしたい。見出しも同じにする</textarea></label>
+                <div class="mdmark-comment-actions">
+                  <button class="mdmark-comment-button" type="button">キャンセル</button>
+                  <button class="mdmark-comment-button is-primary" type="button">保存</button>
+                </div>
+              </form></li>
+              <li class="mdmark-comment-item is-icon-actions">
+                <p class="mdmark-comment-body">角丸は 6px のままでよいと思います。</p>
+                <div class="mdmark-comment-icon-actions">
+                  <button class="mdmark-comment-icon-button" type="button" data-action="edit" aria-label="編集" title="編集"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
+                  <button class="mdmark-comment-icon-button" type="button" data-action="remove" aria-label="削除" title="削除"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 編集を保存できない: 入力欄を閉じず、書き換えた本文を残して、保存できなかったことを role="alert" で出す -->
+      <section aria-labelledby="state-update-error">
+        <h2 class="catalog-label" id="state-update-error">編集を保存できない</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item"><form>
+                <label class="mdmark-comment-field">コメント<textarea rows="3" aria-invalid="true" aria-describedby="catalog-error-update">ここは &lt;b&gt;太字&lt;/b&gt; にしたい。見出しも同じにする</textarea></label>
+                <p class="mdmark-comment-error" id="catalog-error-update" role="alert"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。</span></p>
+                <div class="mdmark-comment-actions">
+                  <button class="mdmark-comment-button" type="button">キャンセル</button>
+                  <button class="mdmark-comment-button is-primary" type="button">保存</button>
+                </div>
+              </form></li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 削除の確認: 取り消せない操作なので、本文の下で削除してよいかを確かめる。フォーカスはキャンセルに置く -->
+      <section aria-labelledby="state-remove-confirm">
+        <h2 class="catalog-label" id="state-remove-confirm">削除の確認</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item is-icon-actions">
+                <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+                <div class="mdmark-comment-confirm">
+                  <p>このコメントを削除しますか? 削除すると元に戻せません。</p>
+                  <div class="mdmark-comment-actions">
+                    <button class="mdmark-comment-button" type="button">キャンセル</button>
+                    <button class="mdmark-comment-button is-danger" type="button">削除</button>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 削除できない: コメントとマーカーを残し、削除できなかったことを role="alert" で出す -->
+      <section aria-labelledby="state-remove-error">
+        <h2 class="catalog-label" id="state-remove-error">削除できない</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item is-icon-actions">
+                <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+                <p class="mdmark-comment-error" role="alert"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>コメントを削除できませんでした。もう一度「削除」を押してください。</span></p>
+                <div class="mdmark-comment-confirm">
+                  <p>このコメントを削除しますか? 削除すると元に戻せません。</p>
+                  <div class="mdmark-comment-actions">
+                    <button class="mdmark-comment-button" type="button">キャンセル</button>
+                    <button class="mdmark-comment-button is-danger" type="button">削除</button>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 箇所へ移ったマーカー: 使う側が focusComment を呼ぶと、そのマーカーを画面に入れて強調し、フォーカスを移す。ほかのマーカーは通常のまま -->
+      <section aria-labelledby="state-focused">
+        <h2 class="catalog-label" id="state-focused">箇所へ移ったマーカー（focusComment）</h2>
+        <article class="mdmark">
+          <p>描いた文書の見た目は<mark class="mdmark-comment-mark" role="button" tabindex="0" aria-haspopup="dialog" aria-expanded="false">テーマの変数</mark>で変える。色・余白・角丸の値は、使う側が<mark class="mdmark-comment-mark is-focused" role="button" tabindex="0" aria-haspopup="dialog" aria-expanded="false">自分の CSS で上書き</mark>します。</p>
+        </article>
+      </section>
+
+      <!-- 編集・削除を試す（保存・削除できる）: [data-mock-edit]: comment-edit.js が「編集」「削除」で表示を切り替える -->
+      <section aria-labelledby="state-try-edit">
+        <h2 class="catalog-label" id="state-try-edit">編集・削除を試す（保存・削除できる）</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント" data-mock-edit="on">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item is-icon-actions" id="try-edit-1" data-body="ここは &lt;b&gt;太字&lt;/b&gt; にしたい">
+                <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+                <div class="mdmark-comment-icon-actions">
+                  <button class="mdmark-comment-icon-button" type="button" data-action="edit" aria-label="編集" title="編集"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
+                  <button class="mdmark-comment-icon-button" type="button" data-action="remove" aria-label="削除" title="削除"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                </div>
+              </li>
+              <li class="mdmark-comment-item is-icon-actions" id="try-edit-2" data-body="角丸は 6px のままでよいと思います。">
+                <p class="mdmark-comment-body">角丸は 6px のままでよいと思います。</p>
+                <div class="mdmark-comment-icon-actions">
+                  <button class="mdmark-comment-icon-button" type="button" data-action="edit" aria-label="編集" title="編集"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
+                  <button class="mdmark-comment-icon-button" type="button" data-action="remove" aria-label="削除" title="削除"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 編集・削除を試す（保存・削除できない）: 保存と削除を押すと、失敗の知らせが出る -->
+      <section aria-labelledby="state-try-edit-error">
+        <h2 class="catalog-label" id="state-try-edit-error">編集・削除を試す（保存・削除できない）</h2>
+        <article class="mdmark catalog-static">
+          <div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント" data-mock-edit="error">
+            <div class="mdmark-comment-head"><p class="mdmark-comment-quote">「テーマの変数」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+            <ul class="mdmark-comment-list">
+              <li class="mdmark-comment-item is-icon-actions" id="try-error-1" data-body="ここは &lt;b&gt;太字&lt;/b&gt; にしたい">
+                <p class="mdmark-comment-body">ここは &lt;b&gt;太字&lt;/b&gt; にしたい</p>
+                <div class="mdmark-comment-icon-actions">
+                  <button class="mdmark-comment-icon-button" type="button" data-action="edit" aria-label="編集" title="編集"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
+                  <button class="mdmark-comment-icon-button" type="button" data-action="remove" aria-label="削除" title="削除"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                </div>
+              </li>
             </ul>
           </div>
         </article>

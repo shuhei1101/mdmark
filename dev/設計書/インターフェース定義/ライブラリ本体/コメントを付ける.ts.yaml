@@ -147,7 +147,7 @@ flows:
     test: test_error_when_module_unavailable
 lead: 使う側のページが、自分で書いた要素とコメントの読み書きの関数を渡し、要素の中の選んだ箇所にコメントを付けられるようにする。文書のコメントと同じ見た目と操作になる。
 idempotent: false
-side_effects: '`opts.store.load` を 1 回呼び、読んだコメントの箇所を印の要素で包む（`el` の文字は変えない）。`document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。保存で `opts.store.save` を呼ぶ'
+side_effects: '`opts.store.load` を 1 回呼び、読んだコメントの箇所を印の要素で包む（`el` の文字は変えない）。`document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。保存で `opts.store.save`、`opts.store` が持つときは吹き出しの修正で `opts.store.update`・削除で `opts.store.remove` を呼ぶ'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使う#
 exclusivity: 同じ要素へ 2 回目の `mountComments` を呼ぶと、前の `mountComments` の `destroy` を先に行う。保存を待つ間に `destroy` を呼ぶと、保存の結果で印を付けない
@@ -180,7 +180,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 読んだコメントに印を付け、`{ destroy }` で解決する
   - name: TypeError
-    condition: '`el` が HTMLElement でない、`opts.store` が `load`・`save` の関数を持たない、`opts.docId` が空か文字列でない'
+    condition: '`el` が HTMLElement でない、`opts.store` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つ、`opts.docId` が空か文字列でない'
     notes: 同期で投げ、`el` を書き換えない。メッセージに誤った引数の名前を含める
   - name: なし（読み込めない）
     condition: '`load` が reject するか、返した値がコメントの形に合わない'
@@ -188,16 +188,19 @@ exceptions:
   - name: なし（保存できない）
     condition: '`save` が reject するか、返した値がコメントの形に合わない'
     notes: 例外を投げず、入力欄に書いた本文を残して知らせを出し、印を付けない。`save`・`docId`・元のエラーを `console.error` に出す
+  - name: なし（修正・削除できない）
+    condition: '`update`・`remove` が reject する'
+    notes: インターフェース定義『文書を描く』の例外の「なし（コメントを修正・削除できない）」と同じ
   - name: なし（読み込みの失敗）
     condition: コメントの部品のモジュールを読めない
     notes: '`el` を書き換えず、`load` を呼ばずに、Promise を元のエラーで reject する'
 constraints:
   - item: コメントの操作
-    constraint: インターフェース定義『文書を描く』の制約の「コメントの操作」「コメントの箇所」と同じ要素と操作にする。範囲は `el` の中
+    constraint: インターフェース定義『文書を描く』の制約の「コメントの操作」「コメントの箇所」「コメントの修正と削除」と同じ要素と操作にする。範囲は `el` の中
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
   - item: 部品のモジュールの読み込み
     constraint: コメントの部品のモジュールは、初めて `mountComments` を呼んだときか、`mount` でコメントの機能がオンになったときに 1 回だけ読む
     notes: モジュールは `dist/index.js` の隣の `dist/comments.js`（モジュール構成『ビューとコメント』）。読めないときは例外の「なし（読み込みの失敗）」
   - item: 型の配布
-    constraint: '`mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
+    constraint: '`mountComments`・`MdmarkCommentStore`（省略可能な `update`・`remove` を含む）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
 test_file: tests/integration/lib/mount-comments.browser.test.ts

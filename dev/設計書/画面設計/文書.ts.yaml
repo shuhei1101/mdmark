@@ -78,6 +78,8 @@ elements:
         value: 印の `wide=列名,…`（列名を列の位置に読み替える）
       - name: check
         value: 印の `check=列名,…`（列名を列の位置に読み替える）
+    action: '`+columns` の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を渡す'
+    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の知らせ]
   - name: 表のセル
     id: table-cell
     kind: label
@@ -684,13 +686,16 @@ elements:
     args:
       - name: text
         value: '`load` が返したコメントの `quote` に一致した本文の文字'
+      - name: focused
+        value: '`focusComment` で移った印なら `true`'
     position: 描く先の要素 > 本文の文字
     description: コメントが付いた本文の文字を包む印。同じ箇所のコメントは 1 つの印にまとめる。本文の文字は変えない
     visible_when: '`load` が返したコメントの箇所が本文に見つかったときと、保存できたとき'
     source: コメントを付ける.request.opts.store（`load` の戻り値）
-    action: 押下・Enter・Space でコメントの吹き出しを開く。印刷では地の色を外し、下線だけを残す
+    action: 押下・Enter・Space でコメントの吹き出しを開く。`focusComment` で移ると画面に入れてフォーカスを受け、次の `focusComment` か印の付け直しまで強調する。印刷では地の色を外し、下線だけを残す
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所へ移る]
     status: planned
   - name: コメントの吹き出し
     id: comment-bubble
@@ -701,13 +706,33 @@ elements:
         value: 印の文字
       - name: bodies
         value: その印にまとめたコメントの `body`（保存した順）
+      - name: ids
+        value: その印にまとめたコメントの `id`（`bodies` と同じ順）
+      - name: canEdit
+        value: '`opts.commentStore` が `update` を持つか'
+      - name: canRemove
+        value: '`opts.commentStore` が `remove` を持つか'
+      - name: editIndex
+        value: 「編集」を押したコメントの位置
+      - name: draft
+        value: 入力欄の本文の欄の文字
+      - name: editState
+        value: '書いている間は `idle`、保存を待つ間は `saving`、空のまま保存したら `empty`、`update` が reject したら `failed`'
+      - name: confirmIndex
+        value: 「削除」を押したコメントの位置
+      - name: removeState
+        value: '確かめている間は `idle`、削除を待つ間は `removing`、`remove` が reject したら `failed`'
     position: コメントの吹き出し
-    description: 題 `「{印の文字}」へのコメント`・閉じるボタン・コメントの本文の並び。印の下（収まらなければ上）に開き、スクロールと幅の変化に付いていく
-    io: 表示
+    description: 題 `「{印の文字}」へのコメント`・閉じるボタン・コメントの本文の並び。読み書きの関数が `update`・`remove` を持つときは、コメントごとの本文の右上に「編集」「削除」のアイコンのボタンを置く。印の下（収まらなければ上）に開き、スクロールと幅の変化に付いていく
+    io: 入力
     visible_when: 印を押してから閉じるまで
-    action: 閉じるボタン・外側の押下・Esc で閉じる。閉じるボタンと Esc ではフォーカスを印へ戻す
+    error_message: '修正できない: `コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。` / 削除できない: `コメントを削除できませんでした。もう一度「削除」を押してください。`（理由は `console.error` に出す）'
+    target: 文書を描く.request.opts.commentStore（「保存」で `update` の `body`、確認の「削除」で `remove`）
+    action: 閉じるボタン・外側の押下・Esc で閉じる。閉じるボタンと Esc ではフォーカスを印へ戻す。「編集」でそのコメントを入力欄に替え、「保存」で `update` を呼ぶ。「削除」でそのコメントの下に削除の確認を出し、確認の「削除」で `remove` を呼ぶ。入力欄・削除の確認を開いている間の Esc は、それだけを閉じる
+    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
     status: planned
   - name: 箇所が見つからないコメントの一覧
     id: comment-orphans
@@ -991,11 +1016,12 @@ elements:
       - name: html
         value: 後のリビジョン（削除したブロックは前のリビジョン）を描いたブロックの HTML
     position: 描く先の要素 > 本文（節の中身の中を含む）
-    description: '`opts.diffMode` が `blocks` のとき、前と後のリビジョンで変えたブロック。追加・変更したブロックはその場所に、削除したブロックは前のリビジョンでの位置に差し込む'
+    description: '`opts.baseMarkdown` を渡したとき（比較元が前、本文が後）か、`opts.diffMode` が `blocks` のとき（前と後のリビジョン）に変えたブロック。追加・変更したブロックはその場所に、削除したブロックは前の文書での位置に差し込む'
     io: 表示
-    visible_when: '`opts.diffMode` が `blocks` で、取り出し元が 2 つ以上のリビジョンを返し、本文に変更があるとき'
-    source: 文書を描く.request.opts.diffSource
+    visible_when: '`opts.baseMarkdown` が文字列で本文に変更があるときか、`opts.baseMarkdown` を渡さず `opts.diffMode` が `blocks` で、取り出し元が 2 つ以上のリビジョンを返し、本文に変更があるとき'
+    source: 文書を描く.request.opts.baseMarkdown・文書を描く.request.opts.diffSource
     refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比較元の Markdown]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[描いた文書のブロックの色分け]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を当てたブロックの要素]
     status: planned

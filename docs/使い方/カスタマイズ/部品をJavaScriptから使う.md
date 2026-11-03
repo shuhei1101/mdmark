@@ -94,6 +94,26 @@ export async function draw(slot, value) {
 
 ### コメントを付ける
 
+#### `mount` の文書のコメントを読み直す・箇所へ移る
+
+`mount` で描いた文書のコメントは、戻り値の `reloadComments` と `focusComment` で操作する。
+
+```js
+const handle = mount(el, { markdown, docId: "guide", commentStore, config: { features: { comments: true } } });
+
+// 別の画面でコメントが変わったとき、本文を描き直さずに読み直す
+await handle.reloadComments();
+
+// 使う側のコメントの一覧から、そのコメントの箇所へ移る
+handle.focusComment(comment.id);
+```
+
+`reloadComments` は `commentStore.load` を呼び直してマーカーを付け直し、表の並べ替え・絞り込みや節の開閉はそのまま残す。
+`load` が失敗したときは今のマーカーを残し、`Promise` を元のエラーで拒否する。
+`focusComment` は、閉じた節・行の詳細の中のマーカーなら開いてから画面に入れ、フォーカスを移して強調する。
+マーカーが無い `id` では何もしない。
+形は [API](../../リファレンス/API.md#文書を描く) のレスポンス。
+
 #### `mountComments` を呼ぶ
 
 ```js
@@ -109,6 +129,14 @@ const handle = await mountComments(document.querySelector("#panel"), {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(comment),
       }).then((res) => res.json()),
+    update: ({ docId, id, body }) =>
+      fetch(`/api/comments/${docId}/${id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body }),
+      }).then(() => undefined),
+    remove: ({ docId, id }) =>
+      fetch(`/api/comments/${docId}/${id}`, { method: "DELETE" }).then(() => undefined),
   },
 });
 ```
@@ -120,7 +148,7 @@ const handle = await mountComments(document.querySelector("#panel"), {
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | コメントを付けられる範囲の要素 |
-| `opts.store` | 必須 | コメントの読み書きの関数 `load`・`save` |
+| `opts.store` | 必須 | コメントの読み書きの関数 `load`・`save` と、任意の `update`・`remove`。`update` を持つと吹き出しに「編集」、`remove` を持つと「削除」を出す |
 | `opts.docId` | 必須 | 読み書きの関数に渡す、コメントを付ける対象の ID。空でない文字列 |
 
 読み書きの関数の形と、読む人の操作は [ビューとコメントを使う](../書く/ビューとコメントを使う.md#コメントを付けられるようにする) と同じ。
@@ -144,9 +172,11 @@ handle.destroy();
 
 | 起きたこと | 動き |
 | --- | --- |
-| `el` が要素でない、`store` が `load`・`save` の関数を持たない、`docId` が空か文字列でない | `TypeError` を同期で投げる。メッセージに誤った引数の名前が入り、要素は書き換えず、`load` も呼ばない |
+| `el` が要素でない、`store` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つ、`docId` が空か文字列でない | `TypeError` を同期で投げる。メッセージに誤った引数の名前が入り、要素は書き換えず、`load` も呼ばない |
 | `load` が失敗する、または返した値がコメントの形に合わない | 例外を投げず、印を付けずに解決する。新しいコメントは付けられる。`console.error` に出る |
 | `save` が失敗する、または返した値がコメントの形に合わない | 例外を投げず、入力欄と本文を残して知らせを出し、印を付けない。`console.error` に出る |
+| `update` が失敗する | 例外を投げず、入力欄と書き換えた本文を残して知らせを出す。コメントは書き換える前のまま。`console.error` に出る |
+| `remove` が失敗する | 例外を投げず、コメントと印を残し、削除の確認を開いたまま知らせを出す。`console.error` に出る |
 | コメントの部品のモジュールを読めない | 要素を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで拒否する |
 
 ## 反映

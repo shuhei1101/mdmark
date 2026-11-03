@@ -109,6 +109,16 @@ export type CommentStoreSpec = {
   loaded?: MdmarkComment[];
   /** `save` が reject する */
   failSave?: boolean;
+  /** 呼ばれた回ごとに `load` が返すコメント（`loaded` より先に使い、尽きたら最後のものを返す） */
+  loadedByCall?: MdmarkComment[][];
+  /** 2 回目以降の `load` が reject する */
+  failReload?: boolean;
+  /** `update`・`remove` を持たせる */
+  editable?: boolean;
+  /** `update` が reject する */
+  failUpdate?: boolean;
+  /** `remove` が reject する */
+  failRemove?: boolean;
 };
 
 /** コメントの読み書きの関数が受けた呼び出し */
@@ -118,6 +128,16 @@ export type CommentCalls = {
     docId: string;
     comment: { quote: string; prefix: string; suffix: string; body: string };
   }>;
+  update: Array<{ docId: string; id: string; body: string }>;
+  remove: Array<{ docId: string; id: string }>;
+};
+
+/** `mount` の戻り値 */
+type PageHandle = {
+  update: (markdown: string, options?: { baseMarkdown?: unknown }) => void;
+  destroy: () => void;
+  reloadComments: () => Promise<void>;
+  focusComment: (id: string) => void;
 };
 
 type MdmarkWindow = Window & {
@@ -134,8 +154,10 @@ type MdmarkWindow = Window & {
         diffSource?: unknown;
         diffMode?: string;
         commentStore?: unknown;
+        baseMarkdown?: unknown;
+        onColumnsChange?: (event: unknown) => void;
       } & IndexOptions,
-    ) => { update: (markdown: string) => void; destroy: () => void };
+    ) => PageHandle;
     mountView: (
       el: HTMLElement,
       opts: unknown,
@@ -154,7 +176,8 @@ type MdmarkWindow = Window & {
       documents: Record<string, string>;
     }) => MdmarkReferences;
   };
-  handle?: { update: (markdown: string) => void; destroy: () => void };
+  handle?: PageHandle;
+  columnsCalls?: unknown[];
   diffCalls?: { revisions: string[]; content: DiffContentCall[] };
   releaseRevisions?: () => void;
 };
@@ -389,6 +412,10 @@ export async function mountDocument(
     documents?: Record<string, string>;
     /** `installCommentStore` で作った読み書きの関数を `mount` に渡す */
     useCommentStore?: boolean;
+    /** 比較元の Markdown */
+    baseMarkdown?: string | null;
+    /** 受けた引数を `window.columnsCalls` に控える `onColumnsChange` を渡す */
+    recordColumns?: boolean;
   } & IndexOptions,
 ): Promise<void> {
   await page.evaluate(
@@ -401,12 +428,15 @@ export async function mountDocument(
       references,
       aliases,
       useCommentStore,
+      baseMarkdown,
+      recordColumns,
     }) => {
       const w = window as MdmarkWindow;
       const el = document.querySelector<HTMLElement>("#doc");
       if (!w.mdmark || !el) {
         throw new Error("mdmark か描く先の要素が無い");
       }
+      w.columnsCalls = [];
       const refs =
         references ??
         (index && documents
@@ -420,6 +450,14 @@ export async function mountDocument(
         references: refs,
         aliases,
         commentStore: useCommentStore ? w.commentStore : undefined,
+        ...(baseMarkdown === undefined ? {} : { baseMarkdown }),
+        ...(recordColumns
+          ? {
+              onColumnsChange: (event: unknown) => {
+                w.columnsCalls?.push(JSON.parse(JSON.stringify(event)));
+              },
+            }
+          : {}),
       });
     },
     options,
@@ -433,11 +471,20 @@ export async function installCommentStore(
 ): Promise<void> {
   await page.evaluate((storeSpec) => {
     const w = window as MdmarkWindow;
-    const calls: CommentCalls = { load: [], save: [] };
+    const calls: CommentCalls = { load: [], save: [], update: [], remove: [] };
     w.commentCalls = calls;
-    w.commentStore = {
+    const byCall = storeSpec.loadedByCall;
+    const store: Record<string, unknown> = {
       load: (target: { docId: string }) => {
         calls.load.push({ docId: target.docId });
+        if (storeSpec.failReload && calls.load.length > 1) {
+          return Promise.reject(new Error("network"));
+        }
+        if (byCall && byCall.length > 0) {
+          return Promise.resolve(
+            byCall[Math.min(calls.load.length, byCall.length) - 1],
+          );
+        }
         return Promise.resolve(storeSpec.loaded ?? []);
       },
       save: (target: {
@@ -454,6 +501,21 @@ export async function installCommentStore(
         });
       },
     };
+    if (storeSpec.editable) {
+      store.update = (target: { docId: string; id: string; body: string }) => {
+        calls.update.push({ ...target });
+        return storeSpec.failUpdate
+          ? Promise.reject(new Error("network"))
+          : Promise.resolve();
+      };
+      store.remove = (target: { docId: string; id: string }) => {
+        calls.remove.push({ ...target });
+        return storeSpec.failRemove
+          ? Promise.reject(new Error("network"))
+          : Promise.resolve();
+      };
+    }
+    w.commentStore = store;
   }, spec);
 }
 
@@ -561,10 +623,47 @@ export async function selectText(
 export async function updateDocument(
   page: Page,
   markdown: string,
+  options?: { baseMarkdown?: string | null },
 ): Promise<void> {
-  await page.evaluate((next) => {
-    (window as MdmarkWindow).handle?.update(next);
-  }, markdown);
+  await page.evaluate(
+    ({ next, opts }) => {
+      const handle = (window as MdmarkWindow).handle;
+      if (opts === undefined) {
+        handle?.update(next);
+      } else {
+        handle?.update(next, opts);
+      }
+    },
+    { next: markdown, opts: options },
+  );
+}
+
+/** `onColumnsChange` が受けた引数を返す */
+export async function readColumnsCalls(page: Page): Promise<unknown[]> {
+  return page.evaluate(() => (window as MdmarkWindow).columnsCalls ?? []);
+}
+
+/** ページから `reloadComments` を呼ばせ、解決した値か reject の理由のメッセージを返す */
+export async function reloadComments(
+  page: Page,
+): Promise<{ resolved: unknown } | { rejected: string }> {
+  return page.evaluate(async () => {
+    try {
+      const value = await (window as MdmarkWindow).handle?.reloadComments();
+      return { resolved: value ?? null };
+    } catch (error) {
+      return {
+        rejected: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+}
+
+/** ページから `focusComment` を呼ばせる */
+export async function focusComment(page: Page, id: string): Promise<void> {
+  await page.evaluate((target) => {
+    (window as MdmarkWindow).handle?.focusComment(target);
+  }, id);
 }
 
 /** ページから、描いた文書を片付けさせる */
