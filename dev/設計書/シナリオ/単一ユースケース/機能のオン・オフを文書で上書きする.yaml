@@ -1,4 +1,4 @@
-title: "機能のオン・オフを文書で上書きする"
+title: 機能のオン・オフを文書で上書きする
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -266,6 +266,31 @@ scenarios:
       - URL だけの段落がカードにならず、リンクとして描かれている
       - '`<!-- features: ... -->` のマーカーは本文に出ていない'
     test: test_normal_when_media_features_disabled
+  - name: 正常シナリオ（脚注の機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `footnotes` を書かない（既定のオン）
+      - name: 脚注の機能を外す Markdown
+        description: '先頭に `<!-- features: -footnotes -->` を持ち、段落に `[^src]` と定義 `[^src]: 出典の説明` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 脚注を読まずに本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 本文に脚注の番号が無く、文書の末尾に脚注の一覧が無い
+      - 段落に `[^src]` が書いた文字のまま出ている
+      - '`<!-- features: -footnotes -->` のマーカーは本文に出ていない'
+    test: test_normal_when_footnotes_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人
