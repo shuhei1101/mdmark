@@ -372,7 +372,7 @@ functions:
     container: src/render/syntax/headings.ts
     kind: 関数
     scope: internal
-    summary: コアルール。全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
+    summary: コアルール。脚注の定義の囲みの外（`outsideFootnoteDefinitions`。定義の中の見出しを目次と右側の目次に載せないため）の全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
     args:
       - name: state
         type: StateCore
@@ -381,6 +381,7 @@ functions:
     side_effects: '`state.tokens` と `env.headings` を書き換える'
     callees:
       - '#functions[slugify]'
+      - '#functions[outsideFootnoteDefinitions]'
     unit_tests:
       - name: test_assign_heading_ids
         case: 正常
@@ -2411,16 +2412,16 @@ functions:
         expected: 本文・ツールチップ・一覧のどれでも `README.md` がリンクにならず、バッジが `span.mdmark-badge` になる
       - name: test_take_footnote_definitions_when_heading
         case: 正常
-        summary: 定義の中の見出しで節を作らず、一覧は節の外に置く
-        condition: '`## 節` の段落に `[^a]` と、定義 `[^a]: ## 定義の見出し`'
+        summary: 定義の中の見出しで節を作らず ID を振らず、一覧は節の外に置く
+        condition: '`<!-- toc -->` と `## 節` の段落に `[^a]` と、定義 `[^a]: 補足` と字下げ 4 の `### 定義の見出し`'
         mock: なし
-        expected: '`div.mdmark-section-body` が 1 つだけで、一覧がその後ろにあり、一覧の項目に `定義の見出し` がある'
+        expected: '`div.mdmark-section-body` が 1 つだけで、一覧がその後ろにあり、一覧の項目に `定義の見出し` があり、`id="定義の見出し"` が無く、`nav.mdmark-toc` に `定義の見出し` が無い'
   - name: outsideFootnoteDefinitions
     title: 脚注の定義の外のトークンを返す
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: '`mdmark_footnote_def_open`〜`close` の囲みを除いたトークンの並びを返す（用語の下線を脚注の中身に付けないために `termsRule` が使う）'
+    summary: '`mdmark_footnote_def_open`〜`close` の囲みを除いたトークンの並びを返す（用語の下線を脚注の中身に付けないために `termsRule` が、定義の中の見出しに ID を振らないために `assignHeadingIds` が使う）'
     args:
       - name: tokens
         type: Token[]
