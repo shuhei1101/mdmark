@@ -72,8 +72,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   expect(built.out).toBe(join(dirA, "dist", "docs.html"));
   expect(existsSync(built.out)).toBe(true);
   expect(built.docs).toBe(1);
-  const issues = JSON.parse(result.sessionB.checked.texts[0] ?? "")
-    .issues as {
+  const issues = JSON.parse(result.sessionB.checked.texts[0] ?? "").issues as {
     kind: string;
     file: string;
   }[];
@@ -81,10 +80,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   expect(orphans).toHaveLength(1);
   expect(orphans[0]?.file).toBe("b.md");
   // フックの記録の `tool_input` に、作業のフォルダの引数が無い
-  for (const input of [
-    ...result.sessionA.inputs,
-    ...result.sessionB.inputs,
-  ]) {
+  for (const input of [...result.sessionA.inputs, ...result.sessionB.inputs]) {
     expect(input).not.toHaveProperty("project_dir");
   }
   expect(result.sessionA.inputs).toHaveLength(2);
