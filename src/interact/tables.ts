@@ -12,6 +12,7 @@ import {
   type TableTotal,
 } from "../parts/table.ts";
 import {
+  bottomHeadCells,
   compareCells,
   computeTotal,
   FILTER_KINDS,
@@ -20,6 +21,7 @@ import {
   FOLD_MAX_WIDTH,
   findUnreadableTotals,
   matchesFilter,
+  mergeSpans,
   rowIdFromHash,
   shouldFold,
   TOTAL_CALCS,
@@ -34,7 +36,7 @@ import { visibleText } from "./text.ts";
 export { compareCells, type FilterValue, matchesFilter };
 
 // 並べ替えの向きの順番（押すたびに次へ進み、最後の次は先頭へ戻る）
-const SORT_CYCLE = ["none", "ascending", "descending"] as const;
+const SORT_CYCLE = ["none", "descending", "ascending"] as const;
 
 // ドロワーとボタンの間の隙間と、画面の端に残す余白（px）
 const DRAWER_GAP = 4;
@@ -134,6 +136,51 @@ function ownElement<T extends Element>(
   return ownElements<T>(wrapper, selector)[0] ?? null;
 }
 
+/** 見出しの行ごとのセルの左端の列の位置を、`rowspan`・`colspan` の格子から決める */
+function headColumnsOf(
+  table: HTMLTableElement,
+): Map<HTMLTableCellElement, number> {
+  const columns = new Map<HTMLTableCellElement, number>();
+  const taken: Array<Set<number>> = [];
+  for (const [row, line] of [...(table.tHead?.rows ?? [])].entries()) {
+    let column = 0;
+    for (const cell of line.cells) {
+      while (taken[row]?.has(column)) {
+        column += 1;
+      }
+      columns.set(cell, column);
+      for (let r = row; r < row + cell.rowSpan; r++) {
+        taken[r] ??= new Set();
+        for (let c = column; c < column + cell.colSpan; c++) {
+          taken[r]?.add(c);
+        }
+      }
+      column += cell.colSpan;
+    }
+  }
+  return columns;
+}
+
+/** 列ごとの、ボタンを置く見出しのセルを返す。見出しが多段なら `bottomHeadCells` で決めた最下段のセルで、複数の列をまたぐセルしか無い列は DOM に置かない空のセルにする */
+function columnHeadsOf(table: HTMLTableElement): HTMLTableCellElement[] {
+  const rows = [...(table.tHead?.rows ?? [])];
+  if (rows.length <= 1) {
+    return [...(rows[0]?.cells ?? [])];
+  }
+  return bottomHeadCells(
+    rows.map((row) =>
+      [...row.cells].map((cell) => ({
+        rowSpan: cell.rowSpan,
+        colSpan: cell.colSpan,
+      })),
+    ),
+  ).map(
+    (item) =>
+      (item ? rows[item.row]?.cells[item.cell] : undefined) ??
+      document.createElement("th"),
+  );
+}
+
 /** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、外す関数を返す */
 function attachTable(
   wrapper: HTMLElement,
@@ -146,7 +193,12 @@ function attachTable(
     .split(/\s+/)
     .filter(Boolean);
   const filterKinds = readFilterKinds(wrapper.dataset.filter);
-  const headCells = [...(table.tHead?.rows[0]?.cells ?? [])];
+  const headCells = columnHeadsOf(table);
+  const headColumns = headColumnsOf(table);
+  /** 見出しのセルの列の位置（`cellIndex` は多段の見出しで列と合わないため使わない） */
+  const columnOf = (cell: HTMLTableCellElement | null | undefined): number =>
+    cell ? headCells.indexOf(cell) : -1;
+  const mergeColumns = readColumnList(wrapper.dataset.mergeColumns);
   const tbody = table.tBodies[0];
   const originalRows = bodyRows(table);
   const originalHeads = headCells.map((cell) => cell.innerHTML);
@@ -165,6 +217,57 @@ function attachTable(
     const cell = row.cells[column];
     return cell ? visibleText(cell) : "";
   };
+  // 結合する列のセルの、描いたときの結合（外すときに戻す）
+  const originalMerges = originalRows.flatMap((row) =>
+    mergeColumns.flatMap((column) => {
+      const cell = row.cells[column];
+      return cell
+        ? [
+            {
+              cell,
+              rowSpan: cell.getAttribute("rowspan"),
+              merged: cell.classList.contains("is-merged"),
+              hidden: cell.hidden,
+            },
+          ]
+        : [];
+    }),
+  );
+  /** 表示している本文の行の並びで、結合する列の隣り合う同じ値を結合し直す。結合で隠したセルも値を持ったまま残す */
+  function applyMerges(): void {
+    if (mergeColumns.length === 0) {
+      return;
+    }
+    const shownRows = bodyRows(table).filter((row) => !row.hidden);
+    const spans = mergeSpans({
+      values: shownRows.map((row) =>
+        mergeColumns.map((column) => cellText(row, column)),
+      ),
+      columns: mergeColumns,
+    });
+    for (const row of originalRows) {
+      for (const column of mergeColumns) {
+        const cell = row.cells[column];
+        cell?.removeAttribute("rowspan");
+        cell?.classList.remove("is-merged");
+      }
+    }
+    shownRows.forEach((row, position) => {
+      mergeColumns.forEach((column, index) => {
+        const cell = row.cells[column];
+        const span = spans[position]?.[index] ?? 1;
+        if (!cell) {
+          return;
+        }
+        if (span > 1) {
+          cell.rowSpan = span;
+          cell.classList.add("is-merged");
+        }
+        cell.hidden = span === 0 || hiddenColumns.has(column);
+      });
+    });
+  }
+  applyMerges();
 
   // ─── 見出しのボタンとドロワー ───
   const drawers = new Map<number, HTMLElement>();
@@ -263,9 +366,9 @@ function attachTable(
       cell.setAttribute("aria-sort", direction);
     }
   };
-  /** 列の値で行を並べ替える。向きを昇順 → 降順 → 元の並びの順に進める */
+  /** 列の値で行を並べ替える。向きを降順 → 昇順 → 元の並びの順に進める */
   const sortBy = (cell: HTMLTableCellElement): void => {
-    const column = cell.cellIndex;
+    const column = columnOf(cell);
     const current = (cell.getAttribute("aria-sort") ??
       "none") as (typeof SORT_CYCLE)[number];
     const direction =
@@ -288,6 +391,7 @@ function attachTable(
     for (const other of headCells) {
       setSortState(other, other === cell ? direction : "none");
     }
+    applyMerges();
   };
 
   // ─── 絞り込み ───
@@ -349,6 +453,7 @@ function attachTable(
       }
     }
     empty.hidden = shown > 0;
+    applyMerges();
     updateSummary();
   };
   /** 値の候補を、検索欄の文字を含むものだけにする */
@@ -502,13 +607,13 @@ function attachTable(
         continue;
       }
       [...row.cells].forEach((cell, index) => {
-        const isPinned = index < count;
+        // 見出しのセルは格子の列で数え、またぐ列が全て留める範囲のときだけ留める
+        const start = headColumns.get(cell) ?? index;
+        const end = start + (headColumns.has(cell) ? cell.colSpan : 1) - 1;
+        const isPinned = end < count;
         cell.classList.toggle("is-pinned-col", isPinned);
-        cell.classList.toggle(
-          "is-pinned-edge",
-          isPinned && index === count - 1,
-        );
-        cell.style.left = isPinned ? `${lefts[index]}px` : "";
+        cell.classList.toggle("is-pinned-edge", isPinned && end === count - 1);
+        cell.style.left = isPinned ? `${lefts[start]}px` : "";
       });
     }
     headCells.forEach((cell, index) => {
@@ -517,12 +622,21 @@ function attachTable(
         ?.setAttribute("aria-pressed", String(index === count - 1));
     });
   };
+  // 行見出しの列の数。はみ出す表は、初めてはみ出したときにこの列まで留める
+  const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
+    (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
+  );
+  let rowHeadsPinned = false;
   /** 表が横にはみ出すときだけピン止めのボタンを出す（留めている間は戻せるよう出したまま） */
   const updatePinVisibility = (): void => {
-    const overflow =
+    const overflowing =
       table.scrollWidth > table.clientWidth ||
-      table.scrollWidth > wrapper.clientWidth ||
-      pinned > 0;
+      table.scrollWidth > wrapper.clientWidth;
+    if (overflowing && !rowHeadsPinned && rowHeadCount > 0) {
+      rowHeadsPinned = true;
+      pinColumns(rowHeadCount);
+    }
+    const overflow = overflowing || pinned > 0;
     for (const pin of ownElements<HTMLElement>(wrapper, ".mdmark-pin")) {
       pin.hidden = !overflow;
     }
@@ -621,7 +735,7 @@ function attachTable(
     toggle?.classList.toggle("is-active", hiding > 0);
     const spoken = toggle?.querySelector(".mdmark-visually-hidden");
     if (spoken) {
-      spoken.textContent = hiding > 0 ? `（${hiding} 件を隠しています）` : "";
+      spoken.textContent = hiding > 0 ? `（${hiding} 件を非表示にしています）` : "";
     }
     announce(
       `${TOTAL_LABELS[calc]}の行を${shown ? "出しました" : "隠しました"}`,
@@ -769,6 +883,7 @@ function attachTable(
         cell.hidden = hiddenColumns.has(index);
       });
     }
+    applyMerges();
     for (const input of menu?.querySelectorAll<HTMLInputElement>(
       ".mdmark-columns-options input",
     ) ?? []) {
@@ -864,7 +979,7 @@ function attachTable(
     textarea?.focus();
     textarea?.select();
     announce(
-      `クリップボードにコピーできませんでした。選択した${name}を手でコピーできます`,
+      `クリップボードにコピーできませんでした。選択した${name}を手動でコピーできます`,
     );
   };
   cleanups.push(() => {
@@ -967,7 +1082,7 @@ function attachTable(
     if (sort && cell) {
       sortBy(cell);
     } else if (filter) {
-      const drawer = drawers.get(Number(filter.closest("th")?.cellIndex));
+      const drawer = drawers.get(columnOf(filter.closest("th")));
       if (drawer) {
         if (drawer.hidden) {
           openDrawer(drawer, filter);
@@ -977,7 +1092,7 @@ function attachTable(
       }
     } else if (pin && cell) {
       pinColumns(
-        pin.getAttribute("aria-pressed") === "true" ? 0 : cell.cellIndex + 1,
+        pin.getAttribute("aria-pressed") === "true" ? 0 : columnOf(cell) + 1,
       );
     } else if (clear) {
       const drawer = clear.closest<HTMLElement>(".mdmark-filter-drawer");
@@ -1117,6 +1232,15 @@ function attachTable(
     }
     pinColumns(0);
     table.style.removeProperty("--mdmark-table-visible-width");
+    for (const { cell, rowSpan, merged, hidden } of originalMerges) {
+      if (rowSpan === null) {
+        cell.removeAttribute("rowspan");
+      } else {
+        cell.setAttribute("rowspan", rowSpan);
+      }
+      cell.classList.toggle("is-merged", merged);
+      cell.hidden = hidden;
+    }
   });
   return () => {
     for (const cleanup of cleanups) {

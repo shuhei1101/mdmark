@@ -138,6 +138,8 @@ function dropSyntaxAttributes(
       name !== "id" &&
       name !== "hidden" &&
       name !== "colspan" &&
+      name !== "rowspan" &&
+      name !== "scope" &&
       !name.startsWith("aria-") &&
       // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときに付け直した値）
       (!DIAGRAM_ATTRIBUTE_SET.has(name) ||
@@ -221,6 +223,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
       "data-*",
       "hidden",
       "colspan",
+      "rowspan",
+      "scope",
       ...DIAGRAM_ATTRIBUTES,
     ],
     a: ["href", "title"],

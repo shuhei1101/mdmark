@@ -1920,6 +1920,22 @@
       }
     }
 
+    /* 多段の見出しで複数の列をまたぐセル: またぐ列の中央に寄せる */
+    .mdmark-table thead th[scope="colgroup"] {
+      text-align: center;
+    }
+
+    /* 行見出しのセル: 見出しと同じ太さで左に寄せ、本文の地のまま折り返す */
+    .mdmark-table tbody th[scope="row"] {
+      text-align: start;
+      white-space: normal;
+    }
+
+    /* 縦に結合したセル: 中身を上に寄せる */
+    .mdmark-table :is(th, td).is-merged {
+      vertical-align: top;
+    }
+
     /* 見出しのセルの最小の幅: 描いたときの幅を描く処理が変数に入れ、絞り込み・並べ替えで列の幅が変わらないようにする（印刷では外す） */
     .mdmark-table thead th {
       min-width: var(--mdmark-column-min-width, 6em);

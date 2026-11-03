@@ -1221,6 +1221,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
+  - path: render/syntax/table-cells.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「表のセルの `^^`・`<<` の結合の計画」を受け持つ。セルの結合の決め方や警告を変えるときに読む。
+    tags: [topic:markdown, topic:構文, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
   - path: render/syntax/tabs.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「タブ」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:タブ]

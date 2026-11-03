@@ -1,10 +1,12 @@
 import {
+  bottomHeadCells,
   compareCells,
   computeTotal,
   type FilterKind,
   type FilterValue,
   findUnreadableTotals,
   matchesFilter,
+  mergeSpans,
   TOTAL_CALCS,
   TOTAL_LABELS,
   type TotalCalc,
@@ -113,6 +115,24 @@ export type TableOptions = {
   highlight?: Array<{ column: number; color: ColorName }>;
   /** 本文の行ごとの色（色を付けない行は `null`） */
   rowColors?: Array<ColorName | null>;
+  /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
+  headRows?: TableHeadCell[][];
+  /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
+  rowHeader?: number;
+  /** 表示している行の隣り合う同じ値を結合する列の位置（小さい順） */
+  mergeColumns?: number[];
+};
+
+/** 多段の見出しのセル */
+export type TableHeadCell = {
+  /** セルの HTML */
+  html: string;
+  /** セルの左端の列の位置 */
+  column: number;
+  /** 覆う行の数（既定 1） */
+  rowspan?: number;
+  /** 覆う列の数（既定 1） */
+  colspan?: number;
 };
 
 /** 見出しのボタンとドロワーを作る引数 */
@@ -207,7 +227,7 @@ export function renderTableTools(options: TableToolsOptions): {
       ? `<span class="mdmark-th-tools">${filterButton}${pinButton}</span>`
       : "";
   const drawer = filterable
-    ? `<div class="mdmark-filter-drawer" id="${escapeHtml(controls)}" role="dialog" aria-label="「${escapedLabel}」で絞り込む" data-filter-kind="${filter.kind}" data-column="${column}"${open ? "" : " hidden"}><p class="mdmark-filter-title">「${escapedLabel}」で絞り込む</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">絞り込みを外す</button></div>`
+    ? `<div class="mdmark-filter-drawer" id="${escapeHtml(controls)}" role="dialog" aria-label="「${escapedLabel}」で絞り込む" data-filter-kind="${filter.kind}" data-column="${column}"${open ? "" : " hidden"}><p class="mdmark-filter-title">「${escapedLabel}」で絞り込む</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">絞り込みを解除</button></div>`
     : "";
   return {
     header: `<span class="mdmark-th">${title}${tools}</span>`,
@@ -320,10 +340,10 @@ export function renderTableBar(options: {
     ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} 件</span><span class="mdmark-visually-hidden">${total} 件中 ${shown} 件を表示</span></p>`
     : "";
   const columnsToggle = columns
-    ? `<button class="mdmark-table-tool mdmark-columns-toggle${hidden.size > 0 ? " is-active" : ""}" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}">${iconSvg("columns-3")}列の表示<span class="mdmark-visually-hidden">${hidden.size > 0 ? `（${hidden.size} 列を隠しています）` : ""}</span></button>`
+    ? `<button class="mdmark-table-tool mdmark-columns-toggle${hidden.size > 0 ? " is-active" : ""}" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}">${iconSvg("columns-3")}列設定<span class="mdmark-visually-hidden">${hidden.size > 0 ? `（${hidden.size} 列を隠しています）` : ""}</span></button>`
     : "";
   const totalsToggle = totaling
-    ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml(totalsMenuId(id))}">${iconSvg("sigma")}集計<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `（${hiddenCalcs.length} 件を隠しています）` : ""}</span></button>`
+    ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml(totalsMenuId(id))}">${iconSvg("sigma")}集計<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `（${hiddenCalcs.length} 件を非表示にしています）` : ""}</span></button>`
     : "";
   const copy = copying
     ? `<button class="mdmark-table-tool mdmark-copy" type="button" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>`
@@ -343,7 +363,7 @@ export function renderTableBar(options: {
     )
     .join("");
   const columnsMenu = columns
-    ? `<div class="mdmark-columns-menu" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="表示する列"${open ? "" : " hidden"}><p class="mdmark-columns-title">表示する列</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">先頭の列は隠せません</p><button class="mdmark-columns-reset" type="button">既定に戻す</button></div>`
+    ? `<div class="mdmark-columns-menu" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="表示する列"${open ? "" : " hidden"}><p class="mdmark-columns-title">表示する列</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">先頭の列は隠せません</p><button class="mdmark-columns-reset" type="button">リセット</button></div>`
     : "";
   const totalItems = calcs
     .map(
@@ -352,7 +372,7 @@ export function renderTableBar(options: {
     )
     .join("");
   const totalsMenu = totaling
-    ? `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml(totalsMenuId(id))}" role="dialog" aria-label="出す集計"${options.openTotals ? "" : " hidden"}><p class="mdmark-totals-title">出す集計</p><ul class="mdmark-totals-options">${totalItems}</ul></div>`
+    ? `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml(totalsMenuId(id))}" role="dialog" aria-label="表示する集計"${options.openTotals ? "" : " hidden"}><p class="mdmark-totals-title">表示する集計</p><ul class="mdmark-totals-options">${totalItems}</ul></div>`
     : "";
   const formats = (["markdown", "tsv"] as const)
     .map(
@@ -477,7 +497,10 @@ function renderTableBody(options: TableOptions, id: string): string {
   const rows = options.rows ?? [];
   const filters = options.filters ?? [];
   const values = options.filterValues ?? [];
-  const pinned = options.overflow ? (options.pinned ?? 0) : 0;
+  const pinned = options.overflow
+    ? (options.pinned ?? options.rowHeader ?? 0)
+    : 0;
+  const rowHeader = options.rowHeader ?? 0;
   const hidden = new Set(
     options.features.includes("columns")
       ? (options.hiddenColumns ?? options.hide ?? [])
@@ -492,8 +515,8 @@ function renderTableBody(options: TableOptions, id: string): string {
   /** 強調する列の色 */
   const highlightOf = (column: number): ColorName | undefined =>
     options.highlight?.find((item) => item.column === column)?.color;
-  /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列）と色 */
-  const cellClass = (column: number): string => {
+  /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列・`extra`）と色 */
+  const cellClass = (column: number, extra: string[] = []): string => {
     const names = [
       ...(column < pinned
         ? column === pinned - 1
@@ -502,13 +525,14 @@ function renderTableBody(options: TableOptions, id: string): string {
         : []),
       ...(folded && column === lastColumn ? ["mdmark-fold-col"] : []),
       ...(highlightOf(column) ? ["mdmark-col-highlight"] : []),
+      ...extra,
     ];
     const color = highlightOf(column);
     const colorAttribute = color ? ` data-color="${color}"` : "";
     return `${names.length > 0 ? ` class="${names.join(" ")}"` : ""}${colorAttribute}`;
   };
-  const head = columns
-    .map((column, index) => {
+  /** 列の見出しのセルの中身（ボタンを付けるときはボタンとドロワー） */
+  const headCell = (column: string, index: number): string => {
       const filter = filters.find((candidate) => candidate.column === index);
       const value = values.find((candidate) => candidate.column === index);
       const tools = renderTableTools({
@@ -538,15 +562,16 @@ function renderTableBody(options: TableOptions, id: string): string {
           ? tools.header
           : escapeHtml(plainText(column));
       return `<th${cellClass(index)}${sorted}${hiddenAttribute(index)}>${header}</th>`;
-    })
-    .join("");
+  };
+  const head = options.headRows
+    ? renderHeadRows(options.headRows, columns, headCell)
+    : `<tr>${columns.map(headCell).join("")}</tr>`;
   const rowLinking = options.features.includes("rowlink");
   const labels = columns.map(plainText);
   const shownRows: string[][] = [];
-  const body = sortedIndexes(options)
-    .map((rowIndex) => {
-      const row = rows[rowIndex] ?? [];
-      const match = values.every((value) => {
+  /** 本文の行が絞り込みに合うか */
+  const matches = (row: string[]): boolean =>
+    values.every((value) => {
         const filter = filters.find((c) => c.column === value.column);
         return filter
           ? matchesFilter(
@@ -555,7 +580,23 @@ function renderTableBody(options: TableOptions, id: string): string {
               value,
             )
           : true;
-      });
+    });
+  const order = sortedIndexes(options);
+  const mergeColumns = options.mergeColumns ?? [];
+  const shownOrder = order.filter((rowIndex) => matches(rows[rowIndex] ?? []));
+  const spans = mergeSpans({
+    values: shownOrder.map((rowIndex) =>
+      mergeColumns.map((column) => plainText(rows[rowIndex]?.[column] ?? "")),
+    ),
+    columns: mergeColumns,
+  });
+  const spanOf = new Map(
+    shownOrder.map((rowIndex, position) => [rowIndex, spans[position] ?? []]),
+  );
+  const body = order
+    .map((rowIndex) => {
+      const row = rows[rowIndex] ?? [];
+      const match = matches(row);
       if (match) {
         shownRows.push(row);
       }
@@ -587,7 +628,17 @@ function renderTableBody(options: TableOptions, id: string): string {
             index === 0 && fold
               ? `<span class="mdmark-row-head">${fold.toggle}${linked}</span>`
               : linked;
-          return `<td${cellClass(index)} data-label="${escapeHtml(labels[index] ?? "")}"${hiddenAttribute(index)}>${content}</td>`;
+          const merge = mergeColumns.indexOf(index);
+          const span =
+            merge >= 0 ? spanOf.get(rowIndex)?.[merge] : undefined;
+          const spanAttribute =
+            span !== undefined && span > 1 ? ` rowspan="${span}"` : "";
+          const mergedHidden =
+            span === 0 && !hidden.has(index) ? " hidden" : "";
+          const classes = cellClass(index, spanAttribute ? ["is-merged"] : []);
+          const tag = index < rowHeader ? "th" : "td";
+          const scope = tag === "th" ? ' scope="row"' : "";
+          return `<${tag}${scope}${classes}${spanAttribute} data-label="${escapeHtml(labels[index] ?? "")}"${hiddenAttribute(index)}${mergedHidden}>${content}</${tag}>`;
         })
         .join("");
       const idAttribute =
@@ -645,7 +696,47 @@ function renderTableBody(options: TableOptions, id: string): string {
   const panel = options.copyFallback
     ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
     : "";
-  return `${bar}${panel}<table tabindex="0" aria-label="表"><thead><tr>${head}</tr></thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
+  return `${bar}${panel}<table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
+}
+
+/** 多段の見出しの行を描く。`bottomHeadCells` で決めた列ごとの最下段のセルは `headCell` で、ほかのセルは文字だけで描く */
+function renderHeadRows(
+  headRows: TableHeadCell[][],
+  columns: string[],
+  headCell: (column: string, index: number) => string,
+): string {
+  const bottom = bottomHeadCells(
+    headRows.map((cells) =>
+      cells.map((cell) => ({
+        rowSpan: cell.rowspan ?? 1,
+        colSpan: cell.colspan ?? 1,
+      })),
+    ),
+  );
+  return headRows
+    .map((cells, row) => {
+      const html = cells
+        .map((cell, index) => {
+          const column = bottom.findIndex(
+            (item) => item?.row === row && item.cell === index,
+          );
+          const rowspan = cell.rowspan ?? 1;
+          const colspan = cell.colspan ?? 1;
+          const spans = `${rowspan > 1 ? ` rowspan="${rowspan}"` : ""}${colspan > 1 ? ` colspan="${colspan}"` : ""}`;
+          const scope = colspan > 1 ? "colgroup" : "col";
+          if (column >= 0) {
+            // 列のボタンを持つセルに、段の結合の属性を足す
+            return headCell(columns[column] ?? cell.html, column).replace(
+              "<th",
+              `<th${spans} scope="${scope}"`,
+            );
+          }
+          return `<th${spans} scope="${scope}">${escapeHtml(plainText(cell.html))}</th>`;
+        })
+        .join("");
+      return `<tr>${html}</tr>`;
+    })
+    .join("");
 }
 
 /** 最終列を畳んだ表として描くか。列が 2 つ以上あり、最終列を隠していないときだけ */
@@ -690,5 +781,9 @@ export function renderTable(options: TableOptions): string {
     options.body === undefined && isFolded(options, hiddenColumns)
       ? " is-folded"
       : "";
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}>${inner}</div>`;
+  const mergeColumns = options.mergeColumns ?? [];
+  const mergeAttribute = mergeColumns.length
+    ? ` data-merge-columns="${mergeColumns.join(" ")}"`
+    : "";
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${mergeAttribute}>${inner}</div>`;
 }

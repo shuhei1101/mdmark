@@ -129,6 +129,8 @@ function readView(options: {
       totals: [],
       collapse: "none",
       warnings: [],
+      headRows: 1,
+      rowHeader: 0,
     },
     viewSpec: { group, mode, boardDisabled, icons },
     warnings,
