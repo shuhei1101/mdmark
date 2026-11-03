@@ -41,9 +41,9 @@ function areaRect(scroller) {
   };
 }
 
-/** 2 つの矩形が重なるか */
-function overlaps(a, b) {
-  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+/** ボタンの横の範囲が、避ける部品の横の範囲（左へ間の分だけ広げた範囲）にかかるか。縦の位置は見ず、スクロールの位置でボタンを動かさない */
+function overlapsInline(box, rect) {
+  return box.left < rect.right && rect.left - AVOID_GAP_PX < box.right;
 }
 
 /** 描く先の要素に先頭へ戻るボタンを付ける。threshold は出し始める量の案、avoidMargin は余白の列を避けるか */
@@ -71,17 +71,12 @@ export function attachBackToTop(root, { threshold, avoidMargin }) {
     const bottom = clientHeight - area.bottom + GAP_PX;
     const obstacles = [document.querySelector(".mdmark-diff-minimap")];
     if (avoidMargin) obstacles.push(root.querySelector(":scope > .mdmark-comment-margin"));
-    // 避ける部品と重なるときは、その部品の左へずらす（ミニマップ・余白の列の順に見る）
+    // 避ける部品と横の範囲がかかるときは、その部品の左から間を空けた位置へずらす（ミニマップ・余白の列の順に見る）
     for (const obstacle of obstacles) {
       if (!obstacle) continue;
       const rect = obstacle.getBoundingClientRect();
-      const box = {
-        left: clientWidth - right - size,
-        right: clientWidth - right,
-        top: clientHeight - bottom - size,
-        bottom: clientHeight - bottom,
-      };
-      if (overlaps(box, rect)) right = clientWidth - rect.left + AVOID_GAP_PX;
+      const box = { left: clientWidth - right - size, right: clientWidth - right };
+      if (overlapsInline(box, rect)) right = clientWidth - rect.left + AVOID_GAP_PX;
     }
     button.style.setProperty("--mdmark-back-to-top-right", `${right}px`);
     button.style.setProperty("--mdmark-back-to-top-bottom", `${bottom}px`);
