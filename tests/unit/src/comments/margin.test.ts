@@ -1,13 +1,7 @@
 import { expect, test } from "vitest";
-import { loadSource } from "../../helpers/lazy.ts";
 
 /** 余白のマーカーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadMargin = () =>
-  loadSource(
-    import.meta.glob<typeof import("../../../../src/comments/margin.ts")>(
-      "../../../../src/comments/margin.ts",
-    ),
-  );
+const loadMargin = () => import("../../../../src/comments/margin.ts");
 
 // 行の縦の中ほどを返す（正常系）
 test("test_layout_markers", async () => {
