@@ -24,16 +24,21 @@ function findScroller(root) {
   return null;
 }
 
-/** スクロールする場所の、画面の中の見えている矩形（スクロールバーを除く） */
+/** スクロールする場所の矩形（スクロールバーを除く）。right・bottom は画面の中に収め、画面からはみ出す要素でもボタンを画面の中に置く */
 function areaRect(scroller) {
+  const { clientWidth, clientHeight } = document.documentElement;
   if (!scroller) {
-    const { clientWidth, clientHeight } = document.documentElement;
     return { top: 0, right: clientWidth, bottom: clientHeight, height: clientHeight };
   }
   const rect = scroller.getBoundingClientRect();
   const top = rect.top + scroller.clientTop;
   const left = rect.left + scroller.clientLeft;
-  return { top, right: left + scroller.clientWidth, bottom: top + scroller.clientHeight, height: scroller.clientHeight };
+  return {
+    top,
+    right: Math.min(left + scroller.clientWidth, clientWidth),
+    bottom: Math.min(top + scroller.clientHeight, clientHeight),
+    height: scroller.clientHeight,
+  };
 }
 
 /** 2 つの矩形が重なるか */

@@ -2,6 +2,7 @@
 // URL の ?threshold=・?margin=・?with=・?host= で未確定の案と、重ねる部品・描く場所を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
+import { attachMarginMarkers } from "../../277/assets/margin.js";
 import { attachBackToTop } from "./back-to-top.js";
 
 /** 案の軸ごとの既定（URL に無いときの値。未確定の論点は推奨の案） */
@@ -39,11 +40,10 @@ function paragraphs(topic) {
 
 const TOPICS = ["導入", "窓口ごとの件数", "返信までの時間", "電話の折り返し", "チャットの時間帯", "受け持ちの組み替え", "案内のページ", "自動返信の文面", "来月の予定", "付録"];
 
-/** 描く文書: `## 導入` から `## 付録` までの 10 個の見出しと、末尾の画像 */
+/** 描く文書: `## 導入` から `## 付録` までの 10 個の見出し */
 const markdown = [
   "# 問い合わせ窓口の見直し",
   ...TOPICS.map((topic) => `## ${topic}\n\n${paragraphs(topic)}`),
-  "![返信までの時間のグラフ](../../../../refs/287/assets/chart.svg)",
 ].join("\n\n");
 
 /** 差分の取り出し元: 末尾の近くの段落を書き換えた 2 つのリビジョン */
@@ -81,10 +81,14 @@ async function waitFor(selector) {
   }
 }
 
-/** 描いた後に場面を作る操作: fixed は目次を出すボタンを押し、差分は「変更を見る」を押してミニマップが出るまで待つ */
+/** 描いた後に場面を作る操作: fixed は目次を出すボタンを押し、コメントは余白のマーカー（#277 のモック）を付け、差分は「変更を見る」を押してミニマップが出るまで待つ */
 const AFTER_MOUNT = {
   fixed: async () => (await waitFor(".mdmark-side-toc-toggle")).click(),
-  comments: () => waitFor(".mdmark-comment-marker"),
+  comments: async () => {
+    await waitFor(".mdmark-comment-mark");
+    attachMarginMarkers(root, { same: "merge", closed: "opener" });
+    await waitFor(".mdmark-comment-marker");
+  },
   diff: async () => {
     (await waitFor(".mdmark-diff-toggle")).click();
     await waitFor(".mdmark-diff-minimap");
