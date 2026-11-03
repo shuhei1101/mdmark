@@ -4698,7 +4698,7 @@ test("test_normal_when_comments_reanchored", async () => {
   );
   expect(el.querySelector("mark")).toBeNull();
   const orphans = find(el, ".mdmark-comment-orphans");
-  expect(el.lastElementChild).toBe(orphans);
+  expect(find(el, ".mdmark-content").lastElementChild).toBe(orphans);
   expect(orphans.textContent).toContain("テーマの変数");
   expect(orphans.textContent).toContain("読み込んだコメント");
 });
@@ -4838,9 +4838,11 @@ test("test_error_when_part_module_unavailable", async () => {
   for (const call of spy.mock.calls) {
     expect(call.at(-1)).toBeInstanceOf(Error);
   }
-  expect(find(el, ":scope > p:last-of-type").textContent).toBe(COMMENT_TEXT);
+  expect(
+    find(el, ":scope > .mdmark-content > p:last-of-type").textContent,
+  ).toBe(COMMENT_TEXT);
   // 実行
-  selectText(find(el, ":scope > p:last-of-type"), 10, 16);
+  selectText(find(el, ":scope > .mdmark-content > p:last-of-type"), 10, 16);
   await settle();
   // 検証
   expect(visibleCommentButton()).toBeUndefined();
