@@ -21,10 +21,16 @@ import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
   bundleModule,
+  bundleViewer,
+  cacheFetchText,
+  createViewerEntry,
+  type FetchText,
+  hasDynamicImport,
   inlineImages,
   usedLibraryMarks,
   usedParts,
   usedSyntaxLanguages,
+  type ViewerEmbeds,
 } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
@@ -57,7 +63,17 @@ type EmbedOptions = {
   entry: string;
   /** 出力の HTML の絶対パス（動画と音声のコピー先を決める） */
   out: string;
+  /** URL を読む関数（`bundleViewer` と共有する `cacheFetchText` の関数） */
+  fetchText: FetchText;
 };
+
+/** URL の先頭 */
+const URL_PATTERN = /^https?:\/\//;
+
+/** 束ねる読み先: URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス */
+function moduleSource(path: string, baseDir: string): string {
+  return URL_PATTERN.test(path) ? path : resolve(baseDir, path);
+}
 
 /** 索引と参照の表を用意する: 索引があれば読み、`bundle` では `build.glossary` の文書を足して参照の表を作る */
 async function prepareReferences(
@@ -115,22 +131,27 @@ async function prepareReferences(
   };
 }
 
-/** 色分けのライブラリの本体と、文書が使う言語のモジュールを `syntax.url` から束ねる。使う言語が無い、または本体を束ねられないときは `undefined`（束ねられなければ警告に積む）。言語のモジュールだけ束ねられなければ、その言語を入れずに警告に積む */
+/** 色分けのライブラリの本体と、文書が使う言語のモジュールを `syntax.url` から束ねられるか確かめ、読み先を返す。使う言語が無い、または本体を束ねられないときは `undefined`（束ねられなければ警告に積む）。言語のモジュールだけ束ねられなければ、その言語を入れずに警告に積む */
 async function bundleSyntax(options: {
   languages: string[];
   url: string;
   loaded: LoadedConfig;
   warnings: string[];
-}): Promise<ExportPayload["syntax"]> {
-  const { languages, url, loaded, warnings } = options;
+  fetchText: FetchText;
+}): Promise<ViewerEmbeds["syntax"]> {
+  const { languages, url, loaded, warnings, fetchText } = options;
   if (languages.length === 0) {
     return undefined;
   }
   const folder = url.endsWith("/") ? url : `${url}/`;
   const bundle = async (path: string): Promise<string | undefined> => {
-    const result = await bundleModule(`${folder}${path}`, loaded.dir);
+    const result = await bundleModule(
+      `${folder}${path}`,
+      loaded.dir,
+      fetchText,
+    );
     if ("code" in result) {
-      return result.code;
+      return moduleSource(`${folder}${path}`, loaded.dir);
     }
     warnings.push(
       `${basename(loaded.path)}: 色分けのライブラリ \`${folder}${path}\` を束ねられません（${result.error}）。\`syntax.url\` を直してください。`,
@@ -143,9 +164,9 @@ async function bundleSyntax(options: {
   }
   const bundled: Record<string, string> = {};
   for (const language of languages) {
-    const code = await bundle(`languages/${language}.min.js`);
-    if (code !== undefined) {
-      bundled[language] = code;
+    const source = await bundle(`languages/${language}.min.js`);
+    if (source !== undefined) {
+      bundled[language] = source;
     }
   }
   return { core, languages: bundled };
@@ -174,13 +195,14 @@ async function resolveAssetsRoot(
   return undefined;
 }
 
-/** 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す */
+/** 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す */
 export async function prepareEmbeds(options: EmbedOptions): Promise<{
   payload: ExportPayload;
+  embeds: ViewerEmbeds;
   themeCss?: string | undefined;
   warnings: string[];
 }> {
-  const { loaded, docs, kind, entry, out } = options;
+  const { loaded, docs, kind, entry, out, fetchText } = options;
   const warnings: string[] = [];
   const configName = basename(loaded.path);
   const assetsRoot = await resolveAssetsRoot(loaded, warnings);
@@ -216,7 +238,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     );
   }
 
-  // 文書に印のある外部ライブラリを、URL ごとに 1 回だけ束ねる
+  // 文書に印のある外部ライブラリを、URL ごとに 1 回だけ束ねてみる
   const libraries = resolveConfig({ config: loaded.config }).libraries;
   const urls = Object.fromEntries(
     Object.entries(libraries).map(([name, library]) => [name, library.url]),
@@ -228,12 +250,17 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     const url = urls[mark] ?? "";
     let pending = bundled.get(url);
     if (!pending) {
-      pending = bundleModule(url, loaded.dir);
+      pending = bundleModule(url, loaded.dir, fetchText);
       bundled.set(url, pending);
     }
     const result = await pending;
     if ("code" in result) {
-      modules[mark] = result.code;
+      modules[mark] = moduleSource(url, loaded.dir);
+      if (hasDynamicImport(result.code)) {
+        warnings.push(
+          dynamicImportWarning(configName, `外部ライブラリ \`${mark}\``),
+        );
+      }
     } else {
       warnings.push(
         `${configName}: 外部ライブラリ \`${mark}\` を束ねられません（${result.error}）。URL かパスを直してください。`,
@@ -241,12 +268,15 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     }
   }
 
-  // 設定の拡張を 1 つずつ束ねる
+  // 設定の拡張を 1 つずつ束ねてみる
   const extensions: string[] = [];
   for (const path of loaded.config.extensions ?? []) {
-    const result = await bundleModule(path, loaded.dir);
+    const result = await bundleModule(path, loaded.dir, fetchText);
     if ("code" in result) {
-      extensions.push(result.code);
+      extensions.push(moduleSource(path, loaded.dir));
+      if (hasDynamicImport(result.code)) {
+        warnings.push(dynamicImportWarning(configName, `拡張 \`${path}\``));
+      }
     } else {
       warnings.push(
         `${configName}: 拡張 \`${path}\` を束ねられません（${result.error}）。パスを直してください。`,
@@ -267,7 +297,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     }
   }
 
-  // 文書に色分けの対象があれば、色分けの本体と使う言語のモジュールを束ねる
+  // 文書に色分けの対象があれば、色分けの本体と使う言語のモジュールを束ねてみる
   const syntax = await bundleSyntax({
     languages: usedSyntaxLanguages({
       markdowns: [...originals.values()],
@@ -276,6 +306,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     url: resolveConfig({ config: loaded.config }).syntax.url,
     loaded,
     warnings,
+    fetchText,
   });
 
   // 設定の `aliases` の YAML を読み、使えない行・レコードを警告にする
@@ -304,7 +335,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         : {}),
       ...(colorTheme !== undefined ? { colorTheme } : {}),
       ...(loaded.config.labels ? { labels: loaded.config.labels } : {}),
-      // 埋めたモジュールは開いたときに URL に替えるため、値は印の名前にする（埋められなかった印が外へ要求しない）
+      // 埋めたモジュールは開いたときに束ねたモジュールを渡すため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),
       ),
@@ -325,9 +356,6 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       };
     }),
     entry,
-    modules,
-    extensions,
-    ...(syntax ? { syntax } : {}),
     ...(aliasResult.aliases ? { aliases: aliasResult.aliases } : {}),
     ...(assets
       ? {
@@ -337,10 +365,21 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         }
       : {}),
   };
-  return { payload, themeCss, warnings };
+  const embeds: ViewerEmbeds = {
+    libraries: modules,
+    extensions,
+    ...(syntax ? { syntax } : {}),
+    view: usedParts({ markdowns: [...originals.values()] }),
+  };
+  return { payload, embeds, themeCss, warnings };
 }
 
-/** 配布物の CSS・起動の処理・ビューの部品のモジュールを読む。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す */
+/** 束ねた後も動的 `import()` が残る外部ライブラリ・拡張の警告 */
+function dynamicImportWarning(configName: string, what: string): string {
+  return `${configName}: ${what} は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`;
+}
+
+/** 配布物の CSS を読み、起動の処理（`dist/viewer.js`）・ビューの部品のモジュール（`dist/view.js`）があることを確かめて絶対パスを返す。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す */
 export async function readDistAssets(options: {
   /** `dist/` の場所 */
   distDir: string;
@@ -349,12 +388,12 @@ export async function readDistAssets(options: {
 }): Promise<{ distCss: string; viewer: string; view: string }> {
   const { distDir, kind } = options;
   let distCss: string;
-  let viewer: string;
-  let view: string;
+  const viewer = resolve(distDir, "viewer.js");
+  const view = resolve(distDir, "view.js");
   try {
     distCss = await readFile(join(distDir, "index.css"), "utf8");
-    viewer = await readFile(join(distDir, "viewer.js"), "utf8");
-    view = await readFile(join(distDir, "view.js"), "utf8");
+    await stat(viewer);
+    await stat(view);
   } catch (error) {
     throw new CliError(
       `配布物を読めません（${reasonOf(error)}）。mdmark を入れ直してください。`,
@@ -422,25 +461,28 @@ export async function exportDocument(options: {
     ? resolve(cwd, options.out)
     : join(dirname(docFile), `${basename(docFile, extname(docFile))}.html`);
   const display = options.out ?? toPosix(relative(cwd, outFile));
-  const { payload, themeCss, warnings } = await prepareEmbeds({
+  const fetchText = cacheFetchText();
+  const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
     loaded,
     docs: [{ path, file: docFile }],
     kind: "document",
     entry: path,
     out: outFile,
+    fetchText,
   });
   const { distCss, viewer, view } = await readDistAssets({
     distDir: options.distDir,
     kind: "document",
   });
-  payload.parts = usedParts({
-    markdowns: payload.docs.map((doc) => doc.markdown),
-    view,
+  const script = await bundleViewer({
+    entry: createViewerEntry({ viewer, view, embeds }),
+    baseDir: loaded.dir,
+    fetchText,
   });
   await writeHtml({
     file: outFile,
     display,
-    html: assembleHtml({ payload, distCss, themeCss, viewer }),
+    html: assembleHtml({ payload, distCss, themeCss, script }),
   });
   return { out: outFile, display, warnings };
 }

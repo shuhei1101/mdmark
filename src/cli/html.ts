@@ -26,14 +26,6 @@ export type ExportPayload = {
   }>;
   /** 最初に開く文書の `path` */
   entry: string;
-  /** 印の名前から束ねたモジュールのコードを引く表 */
-  modules: Record<string, string>;
-  /** 束ねた拡張のモジュールのコード */
-  extensions: string[];
-  /** 埋めた部品のモジュールのコード。文書にビューの印があるときだけ `view` を持つ（コメントの部品は埋めない）。無ければ空として読む */
-  parts?: Partial<Record<"view", string>>;
-  /** 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
-  syntax?: { core: string; languages: Record<string, string> } | undefined;
   /** `loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない */
   aliases?: MdmarkAlias[] | undefined;
   /** `bundle` で埋めた画像のキーから `data:` URL を引く表。`document` では持たない */
@@ -85,7 +77,7 @@ function encodePayload(payload: ExportPayload): string {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
 
-/** 配布物の CSS・使う側の CSS・書き出しの中身・起動の処理を埋めた 1 枚の HTML を返す */
+/** 配布物の CSS・使う側の CSS・書き出しの中身・束ねたスクリプトを埋めた 1 枚の HTML を返す */
 export function assembleHtml(parts: {
   /** 埋める中身 */
   payload: ExportPayload;
@@ -93,10 +85,10 @@ export function assembleHtml(parts: {
   distCss: string;
   /** 使う側の CSS */
   themeCss?: string | undefined;
-  /** 起動の処理（`dist/viewer.js`） */
-  viewer: string;
+  /** `bundleViewer` が起動の処理と埋めるモジュールを束ねたスクリプト（`</script` と `<!--` の並びは替えてある） */
+  script: string;
 }): string {
-  const { payload, distCss, themeCss, viewer } = parts;
+  const { payload, distCss, themeCss, script } = parts;
   const entry = payload.docs.find((doc) => doc.path === payload.entry);
   const title = escapeHtml(entry?.title ?? payload.entry);
   const body = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
@@ -117,7 +109,7 @@ export function assembleHtml(parts: {
     "<body>",
     body,
     `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
-    `<script type="module">${viewer}</script>`,
+    `<script type="module">${script}</script>`,
     "</body>",
     "</html>",
     "",

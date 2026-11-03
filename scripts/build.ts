@@ -38,8 +38,6 @@ const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
 // CLI の実行時の依存: 束ねずに `package.json` の `dependencies` から読む
 const CLI_EXTERNALS = ["yaml", "esbuild"];
-// `script` 要素の中のコードに在ってはならない並び
-const SCRIPT_CLOSE_PATTERN = /<\/script/i;
 // 版を渡す引数の名前
 const VERSION_OPTION = "--version";
 // 型定義を書く tsc の設定
@@ -65,15 +63,6 @@ export function resolveVersion(argv: string[], root: string): string {
     );
   }
   return version;
-}
-
-/** コードに `</script` の並び（大文字と小文字を区別しない）があれば、書き出した HTML の `script` 要素が閉じるため例外を投げる */
-export function assertNoScriptClose(code: string, file: string): void {
-  if (SCRIPT_CLOSE_PATTERN.test(code)) {
-    throw new Error(
-      `${file} に </script の並びがあり、書き出した HTML の script 要素が閉じる`,
-    );
-  }
 }
 
 /** 束ねたパッケージと、その中に取り込まれたパッケージの名前・版・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書く。複数の `metafile` で同じパッケージは 1 回だけ書く */
@@ -172,10 +161,6 @@ async function buildViewer(
     metafile: true,
     logLevel: "silent",
   });
-  const viewerJs = join(root, "dist", "viewer.js");
-  if (existsSync(viewerJs)) {
-    assertNoScriptClose(readFileSync(viewerJs, "utf8"), "dist/viewer.js");
-  }
   return Object.fromEntries(
     Object.entries(result.metafile.outputs).map(([path, output]) => [
       path,
