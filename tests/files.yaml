@@ -465,23 +465,11 @@ files:
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts
         type: see_also
-  - path: integration/ClaudeCodeプラグイン/read-guide.test.ts
-    description: インターフェース定義『使い方集を読む』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:使い方集]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集を読む.ts
-        type: see_also
   - path: integration/ClaudeCodeプラグイン/serve.test.ts
     description: インターフェース定義『MCPサーバーを起動・停止する』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts
-        type: see_also
-  - path: integration/ClaudeCodeプラグイン/session-start.test.ts
-    description: インターフェース定義『使い方集の索引を渡す』の正常系と異常系のフローを確かめる結合テスト。この操作の入出力を変えたときに読む。
-    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
-    related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/使い方集の索引を渡す.ts
         type: see_also
   - path: integration/built-root.ts
     description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
