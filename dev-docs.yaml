@@ -187,7 +187,7 @@ documents:
   - id: plugin
     title: Claude Code プラグインの定義
     paths: [plugin/files.yaml]
-    exclude: [THIRD_PARTY_LICENSES.txt, index.json, "*.md", pre-tool-use.js, session-start.js]
+    exclude: [THIRD_PARTY_LICENSES.txt, pre-tool-use.js]
     records: files
     body_file: path
     schema: dev/テンプレート/files.schema.yaml

@@ -1060,7 +1060,7 @@ files:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
         type: implements
   - path: plugin/guide.ts
-    description: モジュール構成『ClaudeCodeプラグイン / 使い方集』のうち「使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前」を受け持つ。使い方集の索引や本文の読み方を変えるときに読む。
+    description: モジュール構成『ClaudeCodeプラグイン / 使い方集』のうち「使い方集の索引の検査」を受け持つ。使い方集の索引の形を変えるときに読む。
     tags: [topic:使い方集, tool:claude-code]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts
@@ -1083,14 +1083,8 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
         type: implements
-  - path: plugin/session-start.ts
-    description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「SessionStart のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに読む。
-    tags: [topic:フック, tool:claude-code]
-    related:
-      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
-        type: implements
   - path: plugin/tools.ts
-    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「4 つのツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「ツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
     tags: [tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
