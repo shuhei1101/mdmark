@@ -7,6 +7,8 @@ import {
 } from "../../parts/colors.ts";
 import { markOwn, SLOT_MARKER } from "../../parts/own.ts";
 import {
+  isCheckValue,
+  renderCheckCell,
   renderRowLink,
   renderTable,
   type TableFeature,
@@ -82,6 +84,12 @@ export type TableSpec = {
   hide: number[];
   /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
   totals: TableTotal[];
+  /** `pin=` で留める最後の列の位置。`pin` の無い表・表に無い列名では入れない */
+  pin?: number | undefined;
+  /** `wide=` で広く取る列の位置。表に無い列名は入れない */
+  wide: number[];
+  /** `check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない */
+  check: number[];
 };
 
 /** 表の色の指定を読んだ結果 */
@@ -165,6 +173,27 @@ function readHide(
     }
   }
   return hide;
+}
+
+/** `wide=`・`check=` の値を、表の見出しの文字と照らして列の位置にする */
+function readColumns(
+  value: string,
+  headers: string[],
+  warnings: WarningItem[],
+): number[] {
+  const columns: number[] = [];
+  for (const name of value.split(",").map((part) => part.trim())) {
+    if (!name) {
+      continue;
+    }
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push(unknownColumn(name));
+    } else if (!columns.includes(column)) {
+      columns.push(column);
+    }
+  }
+  return columns;
 }
 
 /** `total=` の値を、表の見出しの文字と照らして読む */
@@ -263,10 +292,14 @@ export function readTableSpec(
   let filters: TableFilter[] = [];
   let hide: number[] = [];
   let totals: TableTotal[] = [];
-  // `hide=` は `columns`、`total=` は `total` を付けた表でだけ読む
+  let pin: number | undefined;
+  let wide: number[] = [];
+  let check: number[] = [];
+  // `hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読む
   const keyFeatures: Record<string, TableFeature> = {
     hide: "columns",
     total: "total",
+    pin: "pin",
   };
   for (const [key, value] of Object.entries(rest.keys)) {
     const needed = keyFeatures[key];
@@ -281,17 +314,40 @@ export function readTableSpec(
       hide = readHide(value, headers, warnings);
     } else if (key === "total") {
       totals = readTotals(value, headers, warnings);
+    } else if (key === "pin") {
+      const column = headers.indexOf(value.trim());
+      if (column < 0) {
+        warnings.push(unknownColumn(value.trim()));
+      } else {
+        pin = column;
+      }
+    } else if (key === "wide") {
+      wide = readColumns(value, headers, warnings);
+    } else if (key === "check") {
+      check = readColumns(value, headers, warnings);
     } else if (COLOR_KEYS.includes(key)) {
       // 色の指定は `readTableColors` が読む
     } else {
       warnings.push({
         label: `${key}=`,
-        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
+        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
       });
     }
   }
   warnings.push(...items);
-  return { kind, features, filters, collapse, title, warnings, hide, totals };
+  return {
+    kind,
+    features,
+    filters,
+    collapse,
+    title,
+    warnings,
+    hide,
+    totals,
+    pin,
+    wide,
+    check,
+  };
 }
 
 /** 列名が表に無いときの警告の項目 */
@@ -496,6 +552,51 @@ function applyTableColors(
         token.attrJoin("class", "mdmark-col-highlight");
         token.attrSet("data-color", color);
         token.attrSet("data-mdmark-own", nonce);
+      }
+      column += 1;
+    }
+  }
+}
+
+/** 広く取る列と真偽値の列の `th`・`td` に class を付け、真偽値の列の `true`・`false` のセルの中身を ✓ と空欄にする */
+function applyColumnStyles(
+  state: StateCore,
+  tableOpen: number,
+  spec: Pick<TableSpec, "wide" | "check">,
+): void {
+  if (spec.wide.length === 0 && spec.check.length === 0) {
+    return;
+  }
+  const tokens = state.tokens;
+  const nonce = envOf(state).nonce;
+  let inBody = false;
+  let column = 0;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    if (token.type === "tbody_open") {
+      inBody = true;
+    } else if (token.type === "tr_open") {
+      column = 0;
+    } else if (token.type === "th_open" || token.type === "td_open") {
+      const checking = spec.check.includes(column);
+      if (spec.wide.includes(column)) {
+        token.attrJoin("class", "mdmark-wide");
+        token.attrSet("data-mdmark-own", nonce);
+      }
+      if (checking) {
+        token.attrJoin("class", "mdmark-align-center");
+        token.attrSet("data-mdmark-own", nonce);
+      }
+      const inline = tokens[index + 1];
+      const text = inline?.type === "inline" ? textOf(inline).trim() : "";
+      if (checking && inBody && inline && isCheckValue(text)) {
+        token.attrSet("data-value", text);
+        const html = new state.Token("html_inline", "", 0);
+        html.content = markOwn(renderCheckCell(text), nonce);
+        inline.children = [html];
       }
       column += 1;
     }
@@ -789,6 +890,8 @@ export function decorateTables(state: StateCore): void {
       rowCount: bodyRowCount(tokens, index),
       hide: spec.hide,
       totals: spec.totals,
+      pin: spec.pin,
+      check: spec.check,
       body: SLOT_MARKER,
     });
     if (spec.features.includes("rowlink")) {
@@ -800,6 +903,7 @@ export function decorateTables(state: StateCore): void {
       bodyCellsOf(tokens, index),
     );
     applyTableColors(state, index, colors);
+    applyColumnStyles(state, index, spec);
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
     // 警告は、囲みの頭（折り畳みの外）に差し込む
     const divEnd = head.indexOf(">") + 1;
