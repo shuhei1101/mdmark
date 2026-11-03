@@ -162,6 +162,10 @@ export function renderCodeBlock(options: {
         ...(lines.some((line) => line.kind === "focus")
           ? ["mdmark-code-has-focus"]
           : []),
+        // 開閉のボタンを置くときは、`mount` と同じく開閉のボタンの列の幅を取る
+        ...(foldButtons && lines.some((line) => line.foldLines !== undefined)
+          ? ["mdmark-code-foldable"]
+          : []),
       ]
     : [];
   const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";

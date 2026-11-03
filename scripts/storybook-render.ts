@@ -986,6 +986,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       ...(typeof args.copyState === "string"
         ? { copyState: args.copyState as "idle" | "copied" | "failed" }
         : {}),
+      // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を置いた状態で出す
+      foldButtons: lines.some((line) => line.foldLines !== undefined),
     });
     return args.highlight === true
       ? highlightCodeBlock(html, language, lines)

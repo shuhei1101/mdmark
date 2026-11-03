@@ -324,6 +324,7 @@ test("test_render_code_block_when_fold_buttons", async () => {
     foldButtons: true,
   });
   // 検証
+  expect(findTag(html, "<pre")).toContain("mdmark-code-foldable");
   const lines = codeLinesOf(html);
   expect(lines).toHaveLength(12);
   const third = lines[2] ?? "";

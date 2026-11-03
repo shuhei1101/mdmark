@@ -801,7 +801,7 @@ functions:
     container: src/parts/code-block.ts
     kind: 関数
     scope: internal
-    summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行に `renderCodeFoldToggle` を置き、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を置く（`mount` の操作の後の見た目。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、題を持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろに題の文字、`copyState` を渡したときは右端に `renderCodeCopy` を置く。`bar` が `false` なら今の `pre` だけを返す。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
+    summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を置き、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を置く（`mount` の操作の後の見た目。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、題を持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろに題の文字、`copyState` を渡したときは右端に `renderCodeCopy` を置く。`bar` が `false` なら今の `pre` だけを返す。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
     args:
       - name: options
         type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; lines: CodeLine[]; syntax?: string; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
@@ -882,7 +882,7 @@ functions:
         summary: 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を置く
         condition: 部品設計『コードブロック』の `Folded` の引数と、`foldButtons` が `true`
         mock: なし
-        expected: 3 行目の開閉のボタンが `aria-expanded="false"`、4〜7 行目が `hidden`、8 行目が `hidden` を持たず、3 行目の末尾に `mdmark-code-fold-more` がある。ほかの畳める行のボタンが `aria-expanded="true"`
+        expected: '`pre` が `mdmark-code-foldable` を持ち、3 行目の開閉のボタンが `aria-expanded="false"`、4〜7 行目が `hidden`、8 行目が `hidden` を持たず、3 行目の末尾に `mdmark-code-fold-more` がある。ほかの畳める行のボタンが `aria-expanded="true"`'
   - name: renderCopyPanel
     title: 表のコピーできないときのパネルを描く
     container: src/parts/table.ts

@@ -1110,7 +1110,7 @@ flows:
         M->>M: 読めない指定の箇所に書き方の警告を置く
         M-->>C: HTML 文字列
     expected:
-      - 表の前に書き方の警告があり、本文に `header-rows=5` と表の行の数、上に結合するセルの無い `^^`、左に結合するセルの無い `<<` がある
+      - 表の前に書き方の警告があり、本文に `header-rows=5` と表の行の数、見出しの行と本文の行をまたぐ `^^`、左に結合するセルの無い `<<` がある
       - '`thead` の `tr` が 1 つで、`^^` と `<<` のセルが書いた文字のまま出ていて、`rowspan`・`colspan` を持たない'
       - 表が `data-features="sort pin filter"` を持つ
     test: test_normal_when_table_merge_invalid
