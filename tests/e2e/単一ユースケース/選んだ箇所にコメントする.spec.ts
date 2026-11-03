@@ -508,9 +508,23 @@ test("test_normal_when_edited_and_removed", async ({ page }) => {
   const remove = bubble.getByRole("button", { name: "削除", exact: true });
   await expect(edit).toHaveAttribute("title", "編集");
   await expect(remove).toHaveAttribute("title", "削除");
-  const bodyBox = await bubble.locator(".mdmark-comment-body").boundingBox();
+  const firstLine = await bubble
+    .locator(".mdmark-comment-body")
+    .evaluate((body) => {
+      const range = document.createRange();
+      range.selectNodeContents(body);
+      const rect = range.getClientRects()[0] ?? body.getBoundingClientRect();
+      return { x: rect.x, top: rect.top, bottom: rect.bottom };
+    });
   const editBox = await edit.boundingBox();
-  expect(editBox && bodyBox && editBox.x > bodyBox.x).toBe(true);
+  if (!editBox) {
+    throw new Error("「編集」のボタンの位置が無い");
+  }
+  // 右上: ボタンが本文より右にあり、縦の中ほどが本文の先頭の行の範囲にある
+  const editMiddle = editBox.y + editBox.height / 2;
+  expect(editBox.x).toBeGreaterThan(firstLine.x);
+  expect(editMiddle).toBeGreaterThanOrEqual(firstLine.top);
+  expect(editMiddle).toBeLessThanOrEqual(firstLine.bottom);
   // 実行
   await edit.click();
   // 検証
