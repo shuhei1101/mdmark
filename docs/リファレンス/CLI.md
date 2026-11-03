@@ -172,7 +172,7 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file` → `diagram_` で始まる種類（いずれも文書のパスの順、同じ文書の中は行の順）。
+並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `missing_file` → `unknown_mark` → `diagram_` で始まる種類（いずれも文書のパスの順、同じ文書の中は行の順）。
 内容は、何が合わないかと直し方の日本語の 1 文。
 
 ```text
