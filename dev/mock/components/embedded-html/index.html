@@ -30,6 +30,8 @@
   <script src="../../refs/42/assets/diagram.js" defer></script>
   <!-- 埋め込んだ HTML の横のスクロールと data-hint のスクリプト（#45 で共有するアセット） -->
   <script src="../../refs/45/assets/embed.js" defer></script>
+  <!-- 範囲の ts・js の既定のエクスポートの関数に当たる動き（#303。モックだけの仕組み） -->
+  <script src="../../refs/303/assets/embedded.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -139,6 +141,88 @@
           </div>
         </article>
       </section>
+      <!-- #241 機能がオン: 範囲の css を範囲の根の要素の属性を前に付けて当て、ts の既定のエクスポートの関数を範囲の根の要素で呼ぶ。css・ts のコードブロックはコードとして出さない -->
+      <section aria-labelledby="state-303-scripts">
+        <h2 class="catalog-label" id="state-303-scripts">範囲のスクリプトと CSS（features.html-scripts がオン。範囲の css は範囲の HTML にだけ当たる。箱を押すと開く）</h2>
+        <article class="mdmark">
+          <style>
+            [data-mdmark-html-root="r1"] .panel, [data-mdmark-html-root="r2"] .panel, [data-mdmark-html-root="r5"] .panel { padding: 12px 16px; border-radius: 8px; background: color-mix(in srgb, var(--mdmark-color-series-2) 18%, transparent); cursor: pointer; }
+            [data-mdmark-html-root="r1"].is-open .panel, [data-mdmark-html-root="r2"].is-open .panel { box-shadow: inset 4px 0 0 var(--mdmark-color-series-2); }
+          </style>
+          <div class="mdmark-html" data-mdmark-html-root="r1" data-mock-range-script>
+            <div class="panel"><strong>範囲の箱</strong><span class="state"> を押すと開く・閉じる</span></div>
+          </div>
+          <div class="panel" style="padding: 12px 16px;"><strong>範囲の外の箱</strong>（同じ class だが範囲の css は当たらない）</div>
+        </article>
+      </section>
+
+      <!-- #241 押した後: 範囲の関数が付け外しした class の見た目 -->
+      <section aria-labelledby="state-303-scripts-open">
+        <h2 class="catalog-label" id="state-303-scripts-open">範囲の箱を押した後（根の要素に class is-open が付く）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html" data-mdmark-html-root="r2" data-mock-range-script class="is-open">
+            <div class="panel"><strong>範囲の箱</strong><span class="state"> を押すと開く・閉じる</span></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- #241 機能がオフ: 今のとおり html だけを描く -->
+      <section aria-labelledby="state-303-scripts-off">
+        <h2 class="catalog-label" id="state-303-scripts-off">範囲のスクリプトの機能がオフ（既定。html だけを描き、css・ts はコードのまま出す）</h2>
+        <article class="mdmark">
+          <div class="mdmark-html">
+            <div style="padding: 12px 16px; border: 1px solid var(--mdmark-color-border); border-radius: 8px;"><strong>範囲の箱</strong> を押しても何も起きない</div>
+          </div>
+<pre tabindex="0" aria-label="コード: css"><code>.panel { padding: 12px 16px; border-radius: 8px; background: …; }
+.is-open .panel { box-shadow: inset 4px 0 0 …; }</code></pre>
+<pre tabindex="0" aria-label="コード: ts"><code>export default function setup(root: HTMLElement): () =&gt; void {
+  const onClick = (): void =&gt; { root.classList.toggle("is-open"); };
+  root.addEventListener("click", onClick);
+  return () =&gt; root.removeEventListener("click", onClick);
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #241 異常: 範囲ごとに書き方の警告を出し、範囲の HTML と本文は描く -->
+      <section aria-labelledby="state-303-scripts-invalid">
+        <h2 class="catalog-label" id="state-303-scripts-invalid">範囲のスクリプトを動かせない（既定のエクスポートが関数でない・例外を投げた・ts と js を両方置いた。異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>範囲の <code>ts</code> の既定のエクスポートが関数ではありません。範囲の根の要素を受け取る関数を <code>export default</code> にしてください。この範囲のスクリプトは動かしていません。</p>
+</div>
+          <div class="mdmark-html"><div style="padding: 12px 16px;">既定のエクスポートが関数でない範囲の HTML</div></div>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>範囲の <code>js</code> が例外を投げました（<code>TypeError: root.querySelector(...) is null</code>）。範囲の HTML は描いています。</p>
+</div>
+          <div class="mdmark-html"><div style="padding: 12px 16px;">例外を投げた範囲の HTML</div></div>
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>範囲に <code>ts</code> と <code>js</code> のコードブロックが両方あります。どちらか 1 つにしてください。この範囲のスクリプトは動かしていません。</p>
+</div>
+          <div class="mdmark-html"><div style="padding: 12px 16px;">ts と js を両方置いた範囲の HTML</div></div>
+          <p>範囲の後ろの段落は描かれます。</p>
+        </article>
+      </section>
+
+      <!-- #241 異常: 変換のライブラリを読めない ts の範囲に知らせの枠を出し、範囲の html と css は描く -->
+      <section aria-labelledby="state-303-scripts-transpiler">
+        <h2 class="catalog-label" id="state-303-scripts-transpiler">型を外す変換のライブラリを読めない（ts の範囲に知らせの枠。範囲の html と css は当てる。異常シナリオ）</h2>
+        <article class="mdmark">
+          <div class="mdmark-notice" role="status">
+            <strong class="mdmark-notice-title">この範囲のスクリプトを動かせません</strong>
+            <p>TypeScript を変換するライブラリを読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+          </div>
+          <style>
+            [data-mdmark-html-root="r1"] .panel, [data-mdmark-html-root="r2"] .panel, [data-mdmark-html-root="r5"] .panel { padding: 12px 16px; border-radius: 8px; background: color-mix(in srgb, var(--mdmark-color-series-2) 18%, transparent); cursor: pointer; }
+            [data-mdmark-html-root="r1"].is-open .panel, [data-mdmark-html-root="r2"].is-open .panel { box-shadow: inset 4px 0 0 var(--mdmark-color-series-2); }
+          </style>
+          <div class="mdmark-html" data-mdmark-html-root="r5"><div class="panel"><strong>ts の範囲の箱</strong>（css は当たり、押しても開かない）</div></div>
+          <p>js の範囲と、範囲の後ろの段落は描かれます。</p>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>
