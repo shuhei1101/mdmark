@@ -83,13 +83,20 @@ test("test_attach_er_folds", async () => {
   await userEvent.click(button);
   const folded = endY(figure);
   const foldedRows = otherRows(orders).map((row) => row.hidden);
+  const foldedDisplays = otherRows(orders).map(
+    (row) => getComputedStyle(row).display,
+  );
   const foldedExpanded = button.getAttribute("aria-expanded");
   await userEvent.click(button);
   // 検証
   expect(foldedRows.every(Boolean)).toBe(true);
+  expect(foldedDisplays.every((display) => display === "none")).toBe(true);
   expect(foldedExpanded).toBe("false");
   expect(folded).not.toBe(before);
   expect(otherRows(orders).some((row) => row.hidden)).toBe(false);
+  expect(
+    otherRows(orders).every((row) => getComputedStyle(row).display !== "none"),
+  ).toBe(true);
   expect(button.getAttribute("aria-expanded")).toBe("true");
   expect(endY(figure)).toBe(before);
   expect(document.activeElement).toBe(button);
@@ -109,7 +116,8 @@ test("test_set_er_table_folded", async () => {
   const openedRest = orders.querySelector<HTMLElement>(
     ".mdmark-diagram-er-rest",
   );
-  const openedRestShown = openedRest !== null && !openedRest.hidden;
+  const openedRestShown =
+    openedRest !== null && getComputedStyle(openedRest).display !== "none";
   setErTableFolded({ table: orders, folded: true });
   // 検証
   expect(openedHidden).toBe(false);
