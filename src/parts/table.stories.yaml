@@ -94,6 +94,7 @@ stories:
       columns: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
       rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
       overflow: true
+      pinned: 1
   - name: Pinned
     parameters:
       server:
@@ -104,6 +105,37 @@ stories:
       rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
       overflow: true
       pinned: 2
+  - name: NoPin
+    parameters:
+      server:
+        id: table
+    args:
+      features: '[]'
+      columns: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      overflow: true
+  - name: PinAndWide
+    parameters:
+      server:
+        id: table
+    args:
+      features: '["pin"]'
+      columns: '["ID","担当","概要","状態","期限"]'
+      rows: '[["#245","表","はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする","未着手","2026-11-21"],["#249","コード","tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける","未着手","2026-11-28"]]'
+      overflow: true
+      pin: 1
+      pinned: 2
+      wide: '[2]'
+  - name: Check
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["キー","型","必須","既定"]'
+      rows: '[["version","string","true","-"],["features","object","false","全てオン"],["libraries","object","false","jsDelivr"],["build","array","true","-"]]'
+      check: '[2]'
   - name: DefaultFits
     parameters:
       server:

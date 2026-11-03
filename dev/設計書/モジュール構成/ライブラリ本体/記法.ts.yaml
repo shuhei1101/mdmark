@@ -55,6 +55,15 @@ data_models:
       - name: title
         type: string | undefined
         description: 折り畳みの見出し（`title=` の値）。`collapse` が `none` の表と、値の無い `title=` では入れない
+      - name: pin
+        type: number | undefined
+        description: '`pin=` で留める最後の列の位置。`pin` の無い表・表に無い列名では入れない'
+      - name: wide
+        type: number[]
+        description: '`wide=` で広く取る列の位置。表に無い列名は入れない'
+      - name: check
+        type: number[]
+        description: '`check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない'
   - name: TreeNode
     title: ツリーの項目
     container: src/parts/tree.ts
@@ -397,7 +406,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。`closed`・`open`・`title=` は `readCollapse` で読み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total` を付けた表でだけ読み、機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする
+    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。`closed`・`open`・`title=` は `readCollapse` で読み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読み、`wide=`・`check=` はどの表でも読む。機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする
     args:
       - name: args
         type: MdmarkMarkArgs | undefined
@@ -441,6 +450,18 @@ functions:
         condition: 見出し `名前` で、`data closed title=リリースの一覧` と `data title=一覧` をそれぞれ読む
         mock: なし
         expected: 1 つ目は `collapse` が `closed`、`title` が `リリースの一覧`、`warnings` が空。2 つ目は `collapse` が `none`、`title` が無く、`warnings` に `title=` の項目
+      - name: test_read_table_spec_when_columns
+        case: 正常
+        summary: pin=・wide=・check= の列名を列の位置に読み替える
+        condition: '`data pin=物理名 wide=説明 check=必須,既定` と見出し `No`・`物理名`・`説明`・`必須`・`既定`'
+        mock: なし
+        expected: '`pin` が `1`、`wide` が `[2]`、`check` が `[3, 4]`、`warnings` が空'
+      - name: test_read_table_spec_when_column_keys_invalid
+        case: 正常
+        summary: 表に無い列名と pin の無い表の pin= を警告にして当てない
+        condition: 見出し `名前`・`説明` で、`data pin=無い列 wide=説明 check=無い列` と `data -pin pin=名前` をそれぞれ読む
+        mock: なし
+        expected: 1 つ目は `pin` が無く、`wide` が `[1]`、`check` が空、`warnings` に `無い列` の項目が 2 つ。2 つ目は `pin` が無く、`warnings` に `pin=`（`+pin` が要る）の項目
     callees:
       - '#functions[readCollapse]'
   - name: decorateTables
@@ -448,7 +469,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、当てる表の印の範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表の印の指定は当てない）。表の範囲の中の表の印のトークンは、外の表と一緒に移さず使い切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読めない色の指定を表の囲みの頭の警告の項目に入れる
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、当てる表の印の範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表の印の指定は当てない）。表の範囲の中の表の印のトークンは、外の表と一緒に移さず使い切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は囲みの `data-pin`、`check` は囲みの `data-check` に写す。`wide` の列の `th`・`td` のトークンに class `mdmark-wide`、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -461,6 +482,8 @@ functions:
       - '#functions[pushWarning]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTable]
       - '#functions[readTableColors]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCheckCell]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
     unit_tests:
       - name: test_decorate_tables
         case: 正常
@@ -522,6 +545,12 @@ functions:
         condition: '`<!-- table: data highlight=金額 row-color=状態:完了=green row-at=2=red -->` 〜 `<!-- /table -->` の表（列 `名前`・`状態`・`金額`、状態 `完了`・`保留`）'
         mock: なし
         expected: 金額の列の `th` と 2 つの `td` が class `mdmark-col-highlight` と `data-color="blue"` を持ち、本文の `tr` が上から `data-color="green"`・`data-color="red"`、書き方の警告が無い
+      - name: test_decorate_tables_when_columns_specified
+        case: 正常
+        summary: pin=・check= を属性に写し、広く取る列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする
+        condition: '`<!-- table: data pin=物理名 wide=説明 check=必須 -->` 〜 `<!-- /table -->` の表（列 `No`・`物理名`・`説明`・`必須`、必須 `true`・`false`・`未定`）'
+        mock: なし
+        expected: 囲みが `data-pin="1"`・`data-check="3"` を持ち、説明の列の `th`・`td` が class `mdmark-wide`、必須の列の `th`・`td` が class `mdmark-align-center` を持つ。必須の 1 行目の `td` が `data-value="true"` と `mdmark-check` の要素、2 行目が `data-value="false"` と `いいえ` の `mdmark-visually-hidden` だけを持ち、3 行目は `data-value` を持たず文字 `未定` のまま
     refs:
       - '#functions[readTableSpec]'
       - '#functions[rowIdOf]'

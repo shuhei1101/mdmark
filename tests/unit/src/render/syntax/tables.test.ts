@@ -1,5 +1,10 @@
 import { expect, test } from "vitest";
-import { findTags, matches, outerHtml } from "../../../helpers/html.ts";
+import {
+  findTags,
+  matches,
+  outerHtml,
+  plainText,
+} from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** 表の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -27,6 +32,8 @@ test("test_read_table_spec", async () => {
     warnings: [],
     hide: [],
     totals: [],
+    wide: [],
+    check: [],
   });
 });
 
@@ -121,6 +128,51 @@ test("test_read_table_spec_when_feature_keys_invalid", async () => {
   const secondLabels = second.warnings.map((warning) => warning.label);
   expect(secondLabels).toHaveLength(2);
   expect(secondLabels).toEqual(expect.arrayContaining(["total=", "hide="]));
+});
+
+// pin=・wide=・check= の列名を列の位置に読み替える（正常系）
+test("test_read_table_spec_when_columns", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const args = {
+    args: ["data"],
+    keys: { pin: "物理名", wide: "説明", check: "必須,既定" },
+  };
+  // 実行
+  const spec = readTableSpec(args, ["No", "物理名", "説明", "必須", "既定"]);
+  // 検証
+  expect(spec.pin).toBe(1);
+  expect(spec.wide).toEqual([2]);
+  expect(spec.check).toEqual([3, 4]);
+  expect(spec.warnings).toEqual([]);
+});
+
+// 表に無い列名と pin の無い表の pin= を警告にして当てない（正常系）
+test("test_read_table_spec_when_column_keys_invalid", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const headers = ["名前", "説明"];
+  const unknownColumns = {
+    args: ["data"],
+    keys: { pin: "無い列", wide: "説明", check: "無い列" },
+  };
+  const withoutPin = { args: ["data", "-pin"], keys: { pin: "名前" } };
+  // 実行
+  const first = readTableSpec(unknownColumns, headers);
+  const second = readTableSpec(withoutPin, headers);
+  // 検証: 表に無い列名
+  expect(first.pin).toBeUndefined();
+  expect(first.wide).toEqual([1]);
+  expect(first.check).toEqual([]);
+  expect(first.warnings.map((warning) => warning.label)).toEqual([
+    "無い列",
+    "無い列",
+  ]);
+  // 検証: pin の無い表の pin=
+  expect(second.pin).toBeUndefined();
+  expect(second.warnings).toHaveLength(1);
+  expect(second.warnings[0]?.label).toBe("pin=");
+  expect(second.warnings[0]?.message).toContain("`+pin`");
 });
 
 // 見出しと前の行に重ならない ID を作る（正常系）
@@ -508,6 +560,52 @@ test("test_decorate_tables_when_colors", () => {
     "green",
     "red",
   ]);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// pin=・check= を属性に写し、広く取る列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする（正常系）
+test("test_decorate_tables_when_columns_specified", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data pin=物理名 wide=説明 check=必須 -->",
+    "",
+    "| No | 物理名 | 説明 | 必須 |",
+    "| --- | --- | --- | --- |",
+    "| 1 | id | 行の ID | true |",
+    "| 2 | name | 表示する名前 | false |",
+    "| 3 | note | 備考 | 未定 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 囲みの属性
+  const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+  expect(wrapper).toContain('data-pin="1"');
+  expect(wrapper).toContain('data-check="3"');
+  // 検証: 広く取る列と真偽値の列の class
+  const wide = findTags(html, "mdmark-wide");
+  expect(wide.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(wide.filter((tag) => tag.startsWith("<td"))).toHaveLength(3);
+  const centered = findTags(html, "mdmark-align-center");
+  expect(centered.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(centered.filter((tag) => tag.startsWith("<td"))).toHaveLength(3);
+  // 検証: 真偽値のセル
+  const checkCells = matches(
+    html,
+    /<td\b[^>]*mdmark-align-center[^>]*>[\s\S]*?<\/td>/g,
+  );
+  expect(checkCells).toHaveLength(3);
+  const [yes = "", no = "", other = ""] = checkCells;
+  expect(yes).toContain('data-value="true"');
+  expect(yes).toContain('class="mdmark-check"');
+  expect(no).toContain('data-value="false"');
+  expect(no).toContain('class="mdmark-visually-hidden"');
+  expect(no).not.toContain("mdmark-check");
+  expect(plainText(no)).toBe("いいえ");
+  expect(other).not.toContain("data-value");
+  expect(plainText(other)).toBe("未定");
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 

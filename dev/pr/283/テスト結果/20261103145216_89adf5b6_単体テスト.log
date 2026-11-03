@@ -1,0 +1,13 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-table-default-pin-wide-check
+
+
+ Test Files  179 passed (179)
+      Tests  1260 passed (1260)
+   Start at  14:52:20
+   Duration  66.38s (worker 43%, tests 38%, import 17%, transform 2%)
+

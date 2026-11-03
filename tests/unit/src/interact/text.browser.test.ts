@@ -23,3 +23,19 @@ test("test_visible_text", async () => {
   expect(text).toBe("本文の印");
   expect(cell?.innerHTML).toBe(before);
 });
+
+// data-value を優先し、無ければ見える文字を読む（正常系）
+test("test_cell_value", async () => {
+  // 準備
+  const { cellValue } = await loadText();
+  const root = createRootFromHtml(
+    '<table><tbody><tr><td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td><td>未定</td></tr></tbody></table>',
+  );
+  const [checked, plain] = [...root.querySelectorAll("td")];
+  // 実行
+  const values = [checked, plain].map((cell) =>
+    cell ? cellValue(cell) : undefined,
+  );
+  // 検証
+  expect(values).toEqual(["false", "未定"]);
+});

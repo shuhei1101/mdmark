@@ -1,0 +1,26 @@
+$ (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+Checked 593 files in 3s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/interact/text.browser.test.ts(30,11): error TS2339: Property 'cellValue' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-table-default-pin-wide-check/src/interact/text")'.
+tests/unit/src/parts/table.test.ts(748,5): error TS2353: Object literal may only specify known properties, and 'pin' does not exist in type 'TableOptions'.
+tests/unit/src/parts/table.test.ts(762,5): error TS2353: Object literal may only specify known properties, and 'check' does not exist in type 'TableOptions'.
+tests/unit/src/parts/table.test.ts(802,11): error TS2339: Property 'renderCheckCell' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-table-default-pin-wide-check/src/parts/table")'.
+tests/unit/src/render/syntax/tables.test.ts(144,15): error TS2339: Property 'pin' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(145,15): error TS2339: Property 'wide' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(146,15): error TS2339: Property 'check' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(164,16): error TS2339: Property 'pin' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(165,16): error TS2339: Property 'wide' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(166,16): error TS2339: Property 'check' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(172,17): error TS2339: Property 'pin' does not exist on type 'TableSpec'.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+（型検査の違反は、単体テストが呼ぶ実装がまだ無いことによるもの）

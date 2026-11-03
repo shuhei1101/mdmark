@@ -1,0 +1,219 @@
+$ npx vitest run --project 'unit*' tests/unit/src/render/syntax/tables.test.ts tests/unit/src/parts/table.test.ts tests/unit/src/interact/tables.browser.test.ts tests/unit/src/interact/text.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-table-default-pin-wide-check
+
+ ❯ |unit| tests/unit/src/parts/table.test.ts (26 tests | 2 failed) 1733ms
+   × test_render_table_when_columns_specified 7ms
+   × test_render_check_cell 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/text.browser.test.ts (2 tests | 1 failed) 197ms
+   × test_cell_value 168ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (42 tests | 2 failed) 4764ms
+   × test_attach_tables_when_pinned 154ms
+   × test_attach_tables_when_pin_specified 1182ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (24 tests | 4 failed) 63ms
+   × test_read_table_spec 9ms
+   × test_read_table_spec_when_columns 1ms
+   × test_read_table_spec_when_column_keys_invalid 1ms
+   × test_decorate_tables_when_columns_specified 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned
+AssertionError: expected [ false, false, false ] to deeply equal [ true, false, false ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned.png
+
+- Expected
++ Received
+
+  [
+-   true,
++   false,
+    false,
+    false,
+  ]
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:591:43
+    589|     expect(pin.hasAttribute("hidden")).toBe(true);
+    590|   }
+    591|   expect(stickyColumns(wide).slice(0, 3)).toEqual([true, false, false]…
+       |                                           ^
+    592|   expect(widePins[0].getAttribute("aria-pressed")).toBe("true");
+    593|   expect(stickyColumns(narrow)).toEqual([false, false]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=409989be:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pin_specified
+AssertionError: expected [ false, false, false ] to deeply equal [ true, true, false ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pin_specified.png
+
+- Expected
++ Received
+
+  [
+-   true,
+-   true,
++   false,
++   false,
+    false,
+  ]
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:621:47
+    619|   // 検証: data-pin の列までが留まる
+    620|   await vi.waitFor(() => {
+    621|     expect(stickyColumns(pinned).slice(0, 3)).toEqual([true, true, fal…
+       |                                               ^
+    622|   });
+    623|   expect(pins[1].getAttribute("aria-pressed")).toBe("true");
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=409989be:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/text.browser.test.ts > test_cell_value
+TypeError: cellValue is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/text.browser.test.ts/test_cell_value.png
+
+ ❯ tests/unit/src/interact/text.browser.test.ts:37:12
+     35|   // 実行
+     36|   const values = [checked, plain].map((cell) =>
+     37|     cell ? cellValue(cell) : undefined,
+       |            ^
+     38|   );
+     39|   // 検証
+ ❯ tests/unit/src/interact/text.browser.test.ts:36:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=409989be:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_columns_specified
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-pin="1"'
+
+Expected: "data-pin="1""
+Received: "<div class="mdmark-table" data-kind="default" data-features="pin">"
+
+ ❯ tests/unit/src/parts/table.test.ts:765:54
+    763|   });
+    764|   // 検証: 留める列と広く取る列
+    765|   expect(findTag(pinAndWide, 'class="mdmark-table')).toContain('data-p…
+       |                                                      ^
+    766|   const wide = findTags(pinAndWide, "mdmark-wide");
+    767|   expect(wide.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_check_cell
+TypeError: renderCheckCell is not a function
+ ❯ tests/unit/src/parts/table.test.ts:804:15
+    802|   const { renderCheckCell } = await loadTable();
+    803|   // 実行
+    804|   const yes = renderCheckCell("true");
+       |               ^
+    805|   const no = renderCheckCell("false");
+    806|   // 検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec
+AssertionError: expected { kind: 'data', …(7) } to deeply equal { kind: 'data', …(8) }
+
+- Expected
++ Received
+
+@@ -1,7 +1,6 @@
+  {
+-   "check": [],
+    "collapse": "closed",
+    "features": [
+      "pin",
+      "filter",
+    ],
+@@ -15,9 +14,9 @@
+        "kind": "date",
+      },
+    ],
+    "hide": [],
+    "kind": "data",
++   "title": undefined,
+    "totals": [],
+    "warnings": [],
+-   "wide": [],
+  }
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:24:16
+     22|   const spec = readTableSpec(args, ["名前", "値", "更新日"]);
+     23|   // 検証
+     24|   expect(spec).toEqual({
+       |                ^
+     25|     kind: "data",
+     26|     features: ["pin", "filter"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_columns
+AssertionError: expected undefined to be 1 // Object.is equality
+
+- Expected:
+1
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:144:20
+    142|   const spec = readTableSpec(args, ["No", "物理名", "説明", "必須", "既定"]);
+    143|   // 検証
+    144|   expect(spec.pin).toBe(1);
+       |                    ^
+    145|   expect(spec.wide).toEqual([2]);
+    146|   expect(spec.check).toEqual([3, 4]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_column_keys_invalid
+AssertionError: expected undefined to deeply equal [ 1 ]
+
+- Expected:
+[
+  1,
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:165:22
+    163|   // 検証: 表に無い列名
+    164|   expect(first.pin).toBeUndefined();
+    165|   expect(first.wide).toEqual([1]);
+       |                      ^
+    166|   expect(first.check).toEqual([]);
+    167|   expect(first.warnings.map((warning) => warning.label)).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_columns_specified
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-pin="1"'
+
+Expected: "data-pin="1""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter">"
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:585:19
+    583|   // 検証: 囲みの属性
+    584|   const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+    585|   expect(wrapper).toContain('data-pin="1"');
+       |                   ^
+    586|   expect(wrapper).toContain('data-check="3"');
+    587|   // 検証: 広く取る列と真偽値の列の class
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  9 failed | 85 passed (94)
+   Start at  12:54:56
+   Duration  12.30s (import 46%, tests 27%, transform 24%, worker 3%)
+
