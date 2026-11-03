@@ -255,7 +255,7 @@ scenarios:
         M->>S: コメントを読み込む
         S-->>M: コメント 1 件
         M-->>P: テーマの変数に印を付けた文書
-        U->>P: 表の名前の列の見出しを押して昇順に並べ替える
+        U->>P: 表の名前の列の見出しを押して降順に並べ替える
         P->>M: reloadComments()
         M->>S: コメントを読み込む
         S-->>M: コメント 2 件
@@ -263,7 +263,7 @@ scenarios:
     expected:
       - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` の両方に印が付いている'
       - 読み込みが 2 回呼ばれる
-      - '`reloadComments()` の後も、表の行が並べ替えた順（`a`・`b`・`c`）のまま'
+      - '`reloadComments()` の後も、表の行が並べ替えた順（`c`・`b`・`a`）のまま'
     test: test_normal_when_reloaded
   - name: 正常シナリオ（コメントの箇所へ移る）
     setup:

@@ -50,7 +50,7 @@ function head(page: Page, name: string) {
   return page.locator("#doc th", { hasText: name });
 }
 
-// 数値の列の見出しを押すたびに、昇順・降順・元の並びで並べ替える（正常シナリオ）
+// 数値の列の見出しを押すたびに、降順・昇順・元の並びで並べ替え、`+機能` を書かない表にはボタン・集計・行へのリンクを付けない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -61,11 +61,11 @@ test("test_normal", async ({ page }) => {
   const sort = head(page, "数").locator("button.mdmark-sort");
   // 実行・検証
   await sort.click();
-  await expect(head(page, "数")).toHaveAttribute("aria-sort", "ascending");
-  expect(await visibleColumn(page, 2)).toEqual(["2", "10", "33"]);
-  await sort.click();
   await expect(head(page, "数")).toHaveAttribute("aria-sort", "descending");
   expect(await visibleColumn(page, 2)).toEqual(["33", "10", "2"]);
+  await sort.click();
+  await expect(head(page, "数")).toHaveAttribute("aria-sort", "ascending");
+  expect(await visibleColumn(page, 2)).toEqual(["2", "10", "33"]);
   await sort.click();
   expect(await visibleColumn(page, 2)).toEqual(["10", "2", "33"]);
   // 元の並びでは `aria-sort` を持たない（持たないことが `none`）
@@ -73,6 +73,16 @@ test("test_normal", async ({ page }) => {
   const html = await page.locator("#doc").innerHTML();
   expect(html).not.toContain("<!--");
   await expect(page.locator("#doc")).not.toContainText("table:");
+  // `+機能` を書いた表にだけ付くボタン・集計の行・行へのリンクが無い
+  for (const selector of [
+    ".mdmark-table-count",
+    ".mdmark-columns-toggle",
+    "button.mdmark-copy",
+    "tfoot",
+    ".mdmark-row-anchor",
+  ]) {
+    await expect(page.locator(`#doc ${selector}`), selector).toHaveCount(0);
+  }
 });
 
 // 列の値をチェックボックスで選び、候補を検索して絞り込み、絞り込みを外す（正常シナリオ（列の値を選んで絞り込む））
@@ -115,7 +125,7 @@ test("test_normal_when_filtered_by_values", async ({ page }) => {
   ]);
   // 実行・検証: 選び直して絞り込みを外す
   await drawer.getByLabel("りんご", { exact: true }).check();
-  await drawer.getByRole("button", { name: "絞り込みを外す" }).click();
+  await drawer.getByRole("button", { name: "絞り込みを解除" }).click();
   await expect(search).toHaveValue("");
   await expect(drawer.locator('input[type="checkbox"]:checked')).toHaveCount(0);
   expect(await visibleColumn(page, 1)).toEqual([
@@ -416,19 +426,19 @@ test("test_normal_when_counting_rows", async ({ page }) => {
   // 実行・検証: 絞り込みを外す
   await page
     .locator("#doc .mdmark-filter-drawer")
-    .getByRole("button", { name: "絞り込みを外す" })
+    .getByRole("button", { name: "絞り込みを解除" })
     .click();
   await expect(count).toContainText("3 / 3 件");
 });
 
-// 列の表示のメニューで列を隠し・出し、既定に戻し、Esc で閉じる（正常シナリオ（列を隠す・出す））
+// 列設定のメニューで列を隠し・出し、リセットし、Esc で閉じる（正常シナリオ（列を隠す・出す））
 test("test_normal_when_columns_toggled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: fruitTable("data +columns hide=説明"),
   });
-  const toggle = page.getByRole("button", { name: "列の表示" });
+  const toggle = page.getByRole("button", { name: "列設定" });
   const menu = page.locator("#doc .mdmark-columns-menu");
   const boxes = menu.locator('input[type="checkbox"]');
   // 検証: 描いた直後は説明の列だけが隠れている
@@ -450,8 +460,8 @@ test("test_normal_when_columns_toggled", async ({ page }) => {
   const order = await page.locator("#doc thead th").allTextContents();
   expect(order[0]).toContain("名前");
   expect(order[1]).toContain("説明");
-  // 実行・検証: 既定に戻す
-  await menu.getByRole("button", { name: "既定に戻す" }).click();
+  // 実行・検証: リセットする
+  await menu.getByRole("button", { name: "リセット" }).click();
   await expect(head(page, "説明")).toBeHidden();
   await expect(head(page, "更新日")).toBeVisible();
   // 実行・検証: Esc で閉じてフォーカスが戻る
@@ -485,7 +495,7 @@ test("test_normal_when_columns_change_notified", async ({ page }) => {
     markdown: COLUMNS_NOTIFY_MARKDOWN,
     recordColumns: true,
   });
-  const toggles = page.getByRole("button", { name: "列の表示" });
+  const toggles = page.getByRole("button", { name: "列設定" });
   await expect(toggles).toHaveCount(2);
   const menus = page.locator("#doc .mdmark-columns-menu");
   const first = menus.nth(0).locator('input[type="checkbox"]');
@@ -507,14 +517,14 @@ test("test_normal_when_columns_change_notified", async ({ page }) => {
     hidden: ["説明", "更新日"],
   });
   await page.keyboard.press("Escape");
-  // 実行・検証: 2 つ目の表で備考を入れ、既定に戻す
+  // 実行・検証: 2 つ目の表で備考を入れ、リセットする
   await toggles.nth(1).click();
   await second.nth(1).check();
   expect((await readColumnsCalls(page)).at(-1)).toEqual({
     tableIndex: 1,
     hidden: [],
   });
-  await menus.nth(1).getByRole("button", { name: "既定に戻す" }).click();
+  await menus.nth(1).getByRole("button", { name: "リセット" }).click();
   expect((await readColumnsCalls(page)).at(-1)).toEqual({
     tableIndex: 1,
     hidden: ["備考"],
@@ -595,7 +605,7 @@ test("test_normal_when_table_copied_as_markdown", async ({ page }) => {
   await mountDocument(page, {
     markdown: fruitTable("data +copy +columns hide=説明 filter=名前:text"),
   });
-  const toggle = page.getByRole("button", { name: "列の表示" });
+  const toggle = page.getByRole("button", { name: "列設定" });
   const boxes = page.locator(
     '#doc .mdmark-columns-menu input[type="checkbox"]',
   );
@@ -775,7 +785,7 @@ test("test_error_when_clipboard_denied", async ({ page }) => {
   await expect(button).toHaveAttribute("data-state", "failed");
   const status = page.locator("#doc .mdmark-table-status");
   await expect(status).toContainText("コピーできませんでした");
-  await expect(status).toContainText("手でコピー");
+  await expect(status).toContainText("手動でコピー");
   // 検証: コピーする中身が全て選択された状態でパネルに出ている
   await expect(panel).toBeVisible();
   await expect(textarea).toHaveValue(
@@ -808,7 +818,7 @@ test("test_error_when_clipboard_denied", async ({ page }) => {
   await expect(button).toBeFocused();
   // 検証: 表はそのまま操作できる
   await head(page, "名前").locator("button.mdmark-sort").click();
-  await expect(head(page, "名前")).toHaveAttribute("aria-sort", "ascending");
+  await expect(head(page, "名前")).toHaveAttribute("aria-sort", "descending");
 });
 
 /** 長い段落を 40 個並べた Markdown の行 */
@@ -933,8 +943,12 @@ test("test_normal_when_header_stuck", async ({ page }) => {
   ).toBeLessThanOrEqual(1);
   // 実行・検証: 留めた見出し行の数量の並べ替えを押す
   await head(page, "数量").locator("button.mdmark-sort").click();
-  await expect(head(page, "数量")).toHaveAttribute("aria-sort", "ascending");
-  expect((await visibleColumn(page, 2)).slice(0, 3)).toEqual(["1", "2", "3"]);
+  await expect(head(page, "数量")).toHaveAttribute("aria-sort", "descending");
+  expect((await visibleColumn(page, 2)).slice(0, 3)).toEqual([
+    "60",
+    "59",
+    "58",
+  ]);
   // 検証: 見出し行は 1 組で、Tab で見出し行の各ボタンへ 1 回ずつ移る
   await expect(page.locator("#doc thead")).toHaveCount(1);
   const buttons = page.locator("#doc thead button:not([hidden])");
@@ -1101,7 +1115,7 @@ test("test_error_when_total_cell_not_number", async ({ page }) => {
   await expect(warning).toContainText("合計");
   // 検証: 表の並べ替えはそのまま操作できる
   await head(page, "名前").locator("button.mdmark-sort").click();
-  await expect(head(page, "名前")).toHaveAttribute("aria-sort", "ascending");
+  await expect(head(page, "名前")).toHaveAttribute("aria-sort", "descending");
 });
 
 // 行のアンカーを押すと、行の絶対 URL をコピーして知らせ、行へ移ってその行を強調する（正常シナリオ（行の URL をコピーする））
@@ -1322,7 +1336,7 @@ test("test_normal_when_check_column", async ({ page }) => {
   await expect(
     page.locator("#doc tbody tr:not([hidden]) td:nth-child(2) .mdmark-check"),
   ).toHaveCount(2);
-  await drawer.getByRole("button", { name: "絞り込みを外す" }).click();
+  await drawer.getByRole("button", { name: "絞り込みを解除" }).click();
   // 実行・検証: コピーした中身は true・false の値を持つ
   await page.locator("#doc button.mdmark-copy").click();
   await page
@@ -1357,4 +1371,245 @@ test("test_error_when_unknown_column", async ({ page }) => {
   await expect(head(page, "説明").locator("button.mdmark-filter")).toHaveCount(
     1,
   );
+});
+
+/** 本文の行（空の行の知らせを除く）の、1 列目のセルの文字・`rowspan`・表示の有無 */
+async function firstCells(
+  page: Page,
+  tableIndex = 0,
+): Promise<{ text: string; rowspan: string | null; shown: boolean }[]> {
+  return page
+    .locator("#doc table")
+    .nth(tableIndex)
+    .locator("tbody tr:not(.mdmark-table-empty):not([hidden])")
+    .evaluateAll((rows) =>
+      rows.map((row) => {
+        const cell = (row as HTMLTableRowElement).cells[0] as HTMLElement;
+        return {
+          text: cell.textContent?.trim() ?? "",
+          rowspan: cell.getAttribute("rowspan"),
+          shown: !cell.hidden && cell.getBoundingClientRect().height > 0,
+        };
+      }),
+    );
+}
+
+// 見出しを 2 段にして横に結合し、行見出しの列を縦に結合し、コピーでは結合したセルの値を埋める（正常シナリオ（多段の見出しと行見出し））
+test("test_normal_when_cells_merged", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data +copy header-rows=2 row-header=1 -->",
+      "",
+      "| 区分 | 値 | << | 備考 |",
+      "| --- | --- | --- | --- |",
+      "| 分類 | 件数 | 時間 | メモ |",
+      "| A | 1 | 2 | x |",
+      "| ^^ | 3 | 4 | y |",
+      "| ^^ | 5 | 6 | z |",
+      "",
+      "<!-- /table -->",
+      "",
+      "| 列A | 列B |",
+      "| --- | --- |",
+      "| ^^ | << |",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 見出しが 2 段で、1 段目の 2 列目が 2 列にまたがる
+  const merged = page.locator("#doc table").nth(0);
+  const headRows = merged.locator("thead tr");
+  await expect(headRows).toHaveCount(2);
+  const spanning = headRows.nth(0).locator("th", { hasText: "値" });
+  await expect(spanning).toHaveAttribute("colspan", "2");
+  const valueBox = await spanning.boundingBox();
+  const countBox = await headRows
+    .nth(1)
+    .locator("th", { hasText: "件数" })
+    .boundingBox();
+  const timeBox = await headRows
+    .nth(1)
+    .locator("th", { hasText: "時間" })
+    .boundingBox();
+  expect(valueBox?.width ?? 0).toBeCloseTo(
+    (countBox?.width ?? 0) + (timeBox?.width ?? 0),
+    0,
+  );
+  await expect(headRows.nth(0)).not.toContainText("<<");
+  // 検証: 各行の 1 列目が行見出しで、A が 3 行にまたがる 1 つのセル
+  const rowHeads = merged.locator('tbody th[scope="row"]');
+  await expect(rowHeads).toHaveCount(3);
+  expect(await firstCells(page)).toEqual([
+    { text: "A", rowspan: "3", shown: true },
+    { text: "A", rowspan: null, shown: false },
+    { text: "A", rowspan: null, shown: false },
+  ]);
+  // 検証: 並べ替え・絞り込み・ピン止めのボタンが、見出しの 2 段目の各列にだけある
+  await expect(headRows.nth(0).locator("button")).toHaveCount(0);
+  for (const selector of [
+    "button.mdmark-sort",
+    "button.mdmark-filter",
+    "button.mdmark-pin",
+  ]) {
+    await expect(headRows.nth(1).locator(selector)).toHaveCount(4);
+  }
+  // 実行: TSV でコピーする
+  await page.locator("#doc button.mdmark-copy").click();
+  await page
+    .locator('#doc button.mdmark-copy-format[data-format="tsv"]')
+    .click();
+  // 検証: `^^` のセルが上のセルの値を持ち、結合の記号が入らない
+  await expect.poll(() => writtenTexts(page)).toHaveLength(1);
+  const [copied = ""] = await writtenTexts(page);
+  const lines = copied.split("\n");
+  for (const line of lines.slice(-3)) {
+    expect(line.split("\t")[0]).toBe("A");
+  }
+  expect(copied).not.toContain("^^");
+  expect(copied).not.toContain("<<");
+  // 検証: マーカーで囲まない表の `^^` と `<<` は書いたとおりの文字
+  const plain = page.locator("#doc table").nth(1);
+  await expect(plain.locator("tbody td")).toHaveText(["^^", "<<"]);
+});
+
+// 並べ替え・絞り込みの後に、隣り合う同じ値のセルだけを結合し直す（正常シナリオ（並べ替えの後に結合し直す））
+test("test_normal_when_merged_after_sort", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data -->",
+      "",
+      "| 分類 | 数値 |",
+      "| --- | ---: |",
+      "| A | 3 |",
+      "| ^^ | 1 |",
+      "| B | 4 |",
+      "| ^^ | 2 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 描いた直後は A と B が 2 行ずつ結合している
+  expect(await firstCells(page)).toEqual([
+    { text: "A", rowspan: "2", shown: true },
+    { text: "A", rowspan: null, shown: false },
+    { text: "B", rowspan: "2", shown: true },
+    { text: "B", rowspan: null, shown: false },
+  ]);
+  // 実行: 数値の列を降順に並べ替える
+  await head(page, "数値").locator("button.mdmark-sort").click();
+  // 検証: 隣り合う同じ値が無いため結合しない
+  await expect(head(page, "数値")).toHaveAttribute("aria-sort", "descending");
+  expect(await visibleColumn(page, 2)).toEqual(["4", "3", "2", "1"]);
+  expect(await firstCells(page)).toEqual(
+    ["B", "A", "B", "A"].map((text) => ({ text, rowspan: null, shown: true })),
+  );
+  // 実行: 分類で A に絞り込む
+  await head(page, "分類").locator("button.mdmark-filter").click();
+  await page
+    .locator("#doc .mdmark-filter-drawer")
+    .getByLabel("A", { exact: true })
+    .check();
+  // 検証: A の 2 行だけが出て、分類のセルが縦に結合している
+  expect(await visibleColumn(page, 2)).toHaveLength(2);
+  expect(await firstCells(page)).toEqual([
+    { text: "A", rowspan: "2", shown: true },
+    { text: "A", rowspan: null, shown: false },
+  ]);
+});
+
+// 読めない `header-rows=` と、結合する相手の無い `^^`・`<<` を書き方の警告にし、文字のまま出す（異常シナリオ（読めないセルの結合））
+test("test_error_when_merge_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data header-rows=5 -->",
+      "",
+      "| << | 列B |",
+      "| --- | --- |",
+      "| x | ^^ |",
+      "| y | z |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  for (const text of ["header-rows=", "^^", "<<"]) {
+    await expect(warning).toContainText(text);
+  }
+  const table = page.locator("#doc table");
+  await expect(table).toBeVisible();
+  await expect(table.locator("thead tr")).toHaveCount(1);
+  await expect(table.locator("thead th").nth(0)).toContainText("<<");
+  await expect(
+    table.locator("tbody tr").nth(0).locator("td").nth(1),
+  ).toHaveText("^^");
+  await expect(table.locator("thead button.mdmark-sort")).toHaveCount(2);
+  await expect(table.locator("thead button.mdmark-filter")).toHaveCount(2);
+});
+
+// はみ出す表で、行見出しの列までを描いた直後から左端に留める（正常シナリオ（はみ出す表で行見出しの列までを留める））
+test("test_normal_when_row_header_pinned", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
+  const headers = [
+    "分類",
+    "記法",
+    ...Array.from({ length: 8 }, (_, i) => `とても長い列の名前${i + 3}`),
+  ];
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data row-header=2 -->",
+      "",
+      `| ${headers.join(" | ")} |`,
+      `| ${headers.map(() => "---").join(" | ")} |`,
+      ...Array.from(
+        { length: 5 },
+        (_, row) =>
+          `| ${headers.map((_, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+      ),
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const pins = page.locator("#doc button.mdmark-pin");
+  await expect(pins.nth(1)).toHaveAttribute("aria-pressed", "true");
+  // 実行: 表を横に端までスクロールする
+  const scroller = await page.evaluate(() => {
+    const table = document.querySelector<HTMLElement>("#doc table");
+    const target =
+      table && table.scrollWidth > table.clientWidth
+        ? table
+        : document.querySelector<HTMLElement>("#doc .mdmark-table");
+    if (target) target.scrollLeft = target.scrollWidth;
+    return target === table ? "#doc table" : "#doc .mdmark-table";
+  });
+  // 検証: 1・2 列目が左端に見えている
+  const left = (await page.locator(scroller).boundingBox())?.x ?? 0;
+  const cells = page.locator("#doc tbody tr").nth(0).locator("th, td");
+  await expect
+    .poll(async () => {
+      const first = await cells.nth(0).boundingBox();
+      return Math.abs((first?.x ?? 0) - left);
+    })
+    .toBeLessThanOrEqual(2);
+  const first = await cells.nth(0).boundingBox();
+  const second = await cells.nth(1).boundingBox();
+  expect(
+    Math.abs((second?.x ?? 0) - ((first?.x ?? 0) + (first?.width ?? 0))),
+  ).toBeLessThanOrEqual(1);
+  await expect(cells.nth(0)).toBeInViewport();
+  await expect(cells.nth(1)).toBeInViewport();
 });
