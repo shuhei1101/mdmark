@@ -13,6 +13,7 @@ import {
   draftFromRange,
   locateComments,
 } from "./anchor.ts";
+import { attachMarginMarkers } from "./margin.ts";
 import {
   isComment,
   type MdmarkComment,
@@ -26,6 +27,7 @@ export type CommentsPartModule = {
     root: HTMLElement;
     store: MdmarkCommentStore;
     docId: string;
+    margin?: boolean;
   }) => Promise<() => void>;
 };
 
@@ -127,8 +129,10 @@ export async function attachComments(options: {
   store: MdmarkCommentStore;
   /** 対象の ID */
   docId: string;
+  /** 余白のマーカーを置くか（既定 `false`） */
+  margin?: boolean;
 }): Promise<() => void> {
-  const { root, store, docId } = options;
+  const { root, store, docId, margin = false } = options;
   let destroyed = false;
   let comments: MdmarkComment[] = [];
   // 印 → その印に付いたコメント
@@ -511,6 +515,10 @@ export async function attachComments(options: {
   document.addEventListener("pointerdown", onPointerDown);
   document.addEventListener("scroll", onFollow, true);
   window.addEventListener("resize", onFollow);
+  const detachMargin =
+    margin && root.matches("div.mdmark-content")
+      ? attachMarginMarkers({ content: root })
+      : undefined;
 
   return () => {
     if (destroyed) {
@@ -525,6 +533,7 @@ export async function attachComments(options: {
     document.removeEventListener("pointerdown", onPointerDown);
     document.removeEventListener("scroll", onFollow, true);
     window.removeEventListener("resize", onFollow);
+    detachMargin?.();
     open?.element.remove();
     open = undefined;
     if ("highlights" in CSS) {
