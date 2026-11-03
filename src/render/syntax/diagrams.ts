@@ -4,6 +4,7 @@ import {
   type DiagramDirective,
   definitionWarning,
   type MdmarkChartDefinition,
+  type MdmarkErDefinition,
   type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
   type MdmarkSequenceDefinition,
@@ -106,7 +107,8 @@ export function buildDiagrams(state: StateCore): void {
           definition: definition as
             | MdmarkFlowDefinition
             | MdmarkSequenceDefinition
-            | MdmarkChartDefinition,
+            | MdmarkChartDefinition
+            | MdmarkErDefinition,
           id: `${DIAGRAM_ID_PREFIX}-${count}`,
           lookup,
           hints,

@@ -92,9 +92,11 @@ export function attachDiagramTips(options: {
     if (!box) {
       return;
     }
-    // 箱の印は、印でなく箱に付けて置く
+    // 箱の印と ER 図のテーブルの説明のボタンは、印でなく箱・テーブルに付けて置く
     const target = anchor.classList.contains("mdmark-diagram-info")
-      ? (anchor.closest<HTMLElement>(".mdmark-diagram-node") ?? anchor)
+      ? (anchor.closest<HTMLElement>(
+          ".mdmark-diagram-node, .mdmark-diagram-er-table",
+        ) ?? anchor)
       : anchor;
     const a = target.getBoundingClientRect();
     const b = box.getBoundingClientRect();

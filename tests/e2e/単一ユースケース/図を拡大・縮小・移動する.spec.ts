@@ -7,6 +7,7 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import { ER_DEFINITION, erMarkdown, FOLD_DEFINITION } from "../er.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -308,4 +309,103 @@ test("test_normal_when_embedded_chart", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-html button[data-tool]")).toHaveCount(
     await figure.locator("button[data-tool]").count(),
   );
+});
+
+/** ER 図を描いたページを開く */
+async function openEr(page: Page, definition: unknown = ER_DEFINITION) {
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: erMarkdown(definition) });
+  const figure = page.locator('#doc figure.mdmark-diagram[data-diagram="er"]');
+  await expect(figure).toHaveCount(1);
+  return figure;
+}
+
+// ER 図を全体が収まる倍率で開き、拡大・ドラッグ・全画面・0 で戻すを、フロー図と同じボタンで操作する（正常シナリオ（ER 図））
+test("test_normal_when_er_diagram", async ({ page }) => {
+  // 準備・実行
+  await openEr(page);
+  // 検証: 開いたとき、ER 図の全体が表示する枠の中に収まっている
+  const viewport = viewportOf(page);
+  const fit = await zoomPercent(page);
+  expect(fit).toBe(100);
+  const frameWidth = await viewport.evaluate((element) => element.clientWidth);
+  const sizerWidth = await page
+    .locator("#doc .mdmark-diagram-sizer")
+    .evaluate((element) => element.getBoundingClientRect().width);
+  expect(sizerWidth).toBeLessThanOrEqual(frameWidth + 1);
+  // 右上のボタンは、フロー図と同じ並びと読み上げの名前を持つ
+  const names = await page
+    .locator("#doc .mdmark-diagram-tools button:visible")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute("aria-label")),
+    );
+  expect(names).toEqual([
+    "縮小",
+    `倍率 ${fit}%。全体が収まる倍率に戻す`,
+    "拡大",
+    "全画面で開く",
+  ]);
+  // 拡大のボタンで倍率が上がり、ドラッグで図が動く
+  await zoomIn(page);
+  expect(await zoomPercent(page)).toBeGreaterThan(fit);
+  await viewport.evaluate((element) => {
+    element.scrollTop = 0;
+    element.scrollLeft = 0;
+  });
+  const box = await viewport.boundingBox();
+  if (!box) {
+    throw new Error("表示する枠の範囲を取れない");
+  }
+  const margin = { x: box.x + box.width / 2, y: box.y + 4 };
+  await page.mouse.move(margin.x, margin.y);
+  await page.mouse.down();
+  await page.mouse.move(margin.x - 100, margin.y, { steps: 5 });
+  await page.mouse.up();
+  expect(
+    await viewport.evaluate((element) => element.scrollLeft),
+  ).toBeGreaterThan(0);
+  // 0 で開いたときの倍率と位置に戻る
+  await viewport.focus();
+  await page.keyboard.press("0");
+  expect(await zoomPercent(page)).toBe(fit);
+  expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(0);
+  // 全画面のボタンで ER 図を全画面で表示する
+  await page.getByRole("button", { name: "全画面で開く" }).click();
+  const dialog = page.locator("dialog.mdmark-diagram-dialog[open]");
+  await expect(dialog).toHaveCount(1);
+  await expect(dialog.locator(".mdmark-diagram-er-table")).toHaveCount(3);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+});
+
+// 列の多いテーブルを開閉のボタンで畳み、キーボードで開き直し、関係の線を結び直す（正常シナリオ（列の多いテーブルを畳む））
+test("test_normal_when_er_columns_folded", async ({ page }) => {
+  // 準備
+  const figure = await openEr(page, FOLD_DEFINITION);
+  const orders = figure.locator('.mdmark-diagram-er-table[data-node="orders"]');
+  const rows = orders.locator(".mdmark-diagram-er-column:visible");
+  const button = orders.getByRole("button", {
+    name: "「注文」の主キーと外部キー以外の列",
+  });
+  const line = figure.locator('g[data-er-to="orders"] path[data-line="er"]');
+  // 検証: 開いたとき、12 個の列が全て出ている
+  await expect(rows).toHaveCount(12);
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  const before = await line.getAttribute("d");
+  // 実行
+  await button.click();
+  // 検証: 主キーと外部キーの 2 つの列だけが出て、畳んだ列があることが示されている
+  await expect(rows).toHaveCount(2);
+  await expect(orders.locator(".mdmark-diagram-er-rest")).toHaveText(
+    "非表示 10 列",
+  );
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  expect(await line.getAttribute("d")).not.toBe(before);
+  // 実行: キーボードで開き直す
+  await button.focus();
+  await page.keyboard.press("Enter");
+  // 検証
+  await expect(rows).toHaveCount(12);
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  expect(await line.getAttribute("d")).toBe(before);
 });

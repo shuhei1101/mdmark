@@ -10,6 +10,7 @@ import {
   type DiagramDirective,
   definitionWarning,
   type MdmarkChartDefinition,
+  type MdmarkErDefinition,
   type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
   type MdmarkSequenceDefinition,
@@ -357,6 +358,48 @@ function mockChart(name: string): MdmarkChartDefinition {
   }
   const { kind: _kind, ...definition } = found;
   return JSON.parse(JSON.stringify(definition)) as MdmarkChartDefinition;
+}
+
+// #298 の ER 図の見本（モックと同じ定義）
+const ER_SAMPLES_FILE = join(
+  REPO_ROOT,
+  "dev",
+  "mock",
+  "refs",
+  "298",
+  "assets",
+  "er-samples.js",
+);
+
+/** モックの ER 図の見本のスクリプトから、名前 `name` の定義を取り出す（モックの表の `kind` は定義に含めない） */
+function mockEr(name: string): MdmarkErDefinition {
+  const window: { mdmarkMockDiagrams: Record<string, unknown> } = {
+    mdmarkMockDiagrams: {},
+  };
+  runInNewContext(readFileSync(ER_SAMPLES_FILE, "utf8"), { window });
+  const found = window.mdmarkMockDiagrams[name] as
+    | (MdmarkErDefinition & { kind?: string })
+    | undefined;
+  if (found === undefined) {
+    throw new Error(`モックの見本の定義が無い: ${name}`);
+  }
+  const { kind: _kind, ...definition } = found;
+  return JSON.parse(JSON.stringify(definition)) as MdmarkErDefinition;
+}
+
+/** 関係が無い列を指す ER 図の書き方の警告 */
+function invalidErDefinition(): string {
+  const definition = mockEr("shop-er");
+  definition.relations = definition.relations.map((relation) =>
+    relation.label === "注文する"
+      ? { ...relation, toColumn: "customer" }
+      : relation,
+  );
+  const { message, items } = definitionWarning(
+    "er",
+    readDefinition("er", [JSON.stringify(definition)]).problems,
+  );
+  return renderSyntaxWarning({ message, items });
 }
 
 /** 系列が上限より多いストーリーの書き方の警告: 見本の 6 つの系列に 1 つ足して読ませる */
@@ -1095,6 +1138,21 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       args,
     );
   },
+  "er-diagram": (args) => {
+    if (args.invalid === true) {
+      return invalidErDefinition();
+    }
+    const name =
+      args.sample === "colors"
+        ? "shop-er-colors"
+        : args.sample === "folded"
+          ? "shop-er-folded"
+          : "shop-er";
+    return fitted(
+      renderDiagram({ kind: "er", definition: mockEr(name), id: "story-er" }),
+      args,
+    );
+  },
   "sequence-diagram": (args) =>
     args.invalid === true
       ? invalidDefinition("sequence", "inquiry-seq")
@@ -1141,6 +1199,21 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   },
   "diagram-tooltip": (args) => {
     const open = args.open === true;
+    if (args.kind === "table") {
+      // ER 図の注文のテーブルの説明のボタンで開いた状態: テーブルの上に出す
+      const orders = mockEr("shop-er").tables.find((t) => t.id === "orders");
+      const table = renderDiagramTip({
+        id: "story-tip",
+        kind: "table",
+        label: orders?.label ?? "",
+        ...(orders ? { table: orders } : {}),
+        open,
+      }).replace(
+        'role="tooltip"',
+        'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
+      );
+      return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
+    }
     const kind =
       args.kind === "io" ? "io" : args.kind === "hint" ? "hint" : "wire";
     const tip =

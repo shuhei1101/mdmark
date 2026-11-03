@@ -1,0 +1,24 @@
+title: Parts/ErDiagram
+stories:
+  - name: Default
+    parameters:
+      server:
+        id: er-diagram
+  - name: Colors
+    parameters:
+      server:
+        id: er-diagram
+    args:
+      sample: colors
+  - name: Folded
+    parameters:
+      server:
+        id: er-diagram
+    args:
+      sample: folded
+  - name: Invalid
+    parameters:
+      server:
+        id: er-diagram
+    args:
+      invalid: true

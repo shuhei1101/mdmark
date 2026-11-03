@@ -44,6 +44,7 @@ import {
   Server,
   Sigma,
   Split,
+  Table,
   TriangleAlert,
   Wrench,
   X,
@@ -98,6 +99,7 @@ const ICONS = {
   "maximize-2": Maximize2,
   pause: Pause,
   play: Play,
+  table: Table,
 } satisfies Record<string, IconNode>;
 
 /** 図と記法で使う lucide のアイコンの名前 */

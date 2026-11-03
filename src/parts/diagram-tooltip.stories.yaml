@@ -32,3 +32,10 @@ stories:
     args:
       kind: hint
       open: true
+  - name: Table
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      kind: table
+      open: true

@@ -18,6 +18,12 @@ import {
   REPLY_TIME_TEXT,
   STRENGTH_TEXT,
 } from "../../helpers/diagrams.ts";
+import {
+  erText,
+  shopEr,
+  shopErColors,
+  shopErFolded,
+} from "../../helpers/er.ts";
 
 /** 定義の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDefinition = () => import("../../../../src/diagram/definition.ts");
@@ -302,4 +308,91 @@ test("test_read_definition_when_bubble_point", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toContain("[x, y, size]");
+});
+
+// ER 図のモックの見本を読める（正常系）
+test("test_read_definition_when_er", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  // 実行
+  const results = [shopEr(), shopErColors(), shopErFolded()].map((d) =>
+    readDefinition("er", [erText(d)]),
+  );
+  // 検証
+  for (const result of results) {
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+  }
+});
+
+// 関係がテーブルに無い列を指す（異常系）
+test("test_read_definition_when_er_column_missing", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const definition = shopEr();
+  definition.relations = definition.relations.map((r) =>
+    r.label === "注文する" ? { ...r, toColumn: "customer" } : r,
+  );
+  // 実行
+  const result = readDefinition("er", [erText(definition)]);
+  // 検証
+  expect(result.ok).toBe(false);
+  expect(result.problems[0]).toBe(
+    "関係「注文する」の先の列 orders.customer がテーブル orders にありません",
+  );
+});
+
+// テーブルの id・列の名前の重なりと、使えない種類・色・多重度（異常系）
+test("test_read_definition_when_er_invalid_values", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const withTables = (map: (d: ReturnType<typeof shopEr>) => void) => {
+    const d = shopEr();
+    map(d);
+    return erText(d);
+  };
+  const cases: Array<[string, string[]]> = [
+    [
+      withTables((d) => {
+        const products = d.tables[3];
+        if (products) {
+          products.id = "orders";
+        }
+      }),
+      ["orders"],
+    ],
+    [
+      withTables((d) => {
+        d.tables[0]?.columns.push({ name: "email", type: "text" });
+      }),
+      ["email"],
+    ],
+    [
+      withTables((d) => {
+        Object.assign(d.tables[0] ?? {}, { kind: "view" });
+      }),
+      ["master・transaction"],
+    ],
+    [
+      withTables((d) => {
+        Object.assign(d.tables[0] ?? {}, { color: "pink" });
+      }),
+      ["blue・red・green・yellow・orange・purple・gray"],
+    ],
+    [
+      withTables((d) => {
+        Object.assign(d.relations[0] ?? {}, { toCard: "many" });
+      }),
+      ["1・0..1・1..n・0..n"],
+    ],
+  ];
+  // 実行
+  const results = cases.map(([text]) => readDefinition("er", [text]));
+  // 検証
+  results.forEach((result, i) => {
+    expect(result.ok, String(i)).toBe(false);
+    for (const word of cases[i]?.[1] ?? []) {
+      expect(result.problems[0], String(i)).toContain(word);
+    }
+  });
 });

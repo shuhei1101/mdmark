@@ -8,6 +8,7 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import { ER_DEFINITION, erMarkdown } from "../er.ts";
 import {
   expectAbove,
   expectBelow,
@@ -407,4 +408,59 @@ test.describe("タッチの端末", () => {
     await page.touchscreen.tap(1, 1);
     await expect(wireTip).toBeHidden();
   });
+});
+
+// ER 図のテーブルの説明のボタンで、概要と列の説明をテーブルの上に出し、上に乗っても消えず Esc で消え、キーボードでも出る（正常シナリオ（ER 図のテーブル））
+test("test_normal_when_er_table", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot, { hostCss: ROOM_CSS });
+  await mountDocument(page, {
+    markdown: erMarkdown({
+      ...ER_DEFINITION,
+      tables: ER_DEFINITION.tables.map((table) => ({ ...table, y: 160 })),
+    }),
+  });
+  const table = page.locator(
+    '#doc .mdmark-diagram-er-table[data-node="customers"]',
+  );
+  const info = page.getByRole("button", { name: "「顧客」の説明" });
+  const tipId = await info.getAttribute("aria-describedby");
+  const tip = page.locator(`[role="tooltip"][id="${tipId}"]`);
+  // 実行
+  await info.hover();
+  // 検証
+  await expect(tip).toBeVisible();
+  for (const text of [
+    "注文する人",
+    "email",
+    "ログインに使う",
+    "name",
+    "表示に使う名前",
+  ]) {
+    await expect(tip).toContainText(text);
+  }
+  await expectAbove({ tip, owner: table });
+  // 実行: ツールチップの上へ動かす
+  await tip.hover();
+  await page.waitForTimeout(CLOSE_WAIT_MS);
+  // 検証
+  await expect(tip).toBeVisible();
+  // 実行
+  await page.keyboard.press("Escape");
+  // 検証
+  await expect(tip).toBeHidden();
+  // 実行: キーボードで説明のボタンにフォーカスする
+  await page.mouse.move(0, 0);
+  await page.locator("#doc").evaluate(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+  for (let count = 0; count < 40; count += 1) {
+    await page.keyboard.press("Tab");
+    if (await info.evaluate((element) => element === document.activeElement)) {
+      break;
+    }
+  }
+  // 検証
+  await expect(info).toBeFocused();
+  await expect(tip).toBeVisible();
 });

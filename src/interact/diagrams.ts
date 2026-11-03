@@ -2,6 +2,7 @@ import type { TooltipPlacement } from "../config.ts";
 import { ZOOM } from "../diagram/geometry.ts";
 import { iconSvg } from "../parts/icons.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
+import { attachErFolds } from "./er-folds.ts";
 import { attachZoom } from "./zoom.ts";
 
 export { ZOOM };
@@ -11,7 +12,7 @@ const ZOOM_EPSILON = 0.001;
 
 // 文字を選べる所（ここではドラッグを始めない）
 const TEXT_SELECTOR =
-  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
+  ".mdmark-diagram-er-head, .mdmark-diagram-er-columns, .mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
 
 // 操作を付けた回数の通し番号。`id` を重ならせないために使う
 let attachCounter = 0;
@@ -170,6 +171,8 @@ export function openDiagramDialog(options: {
   dialog.showModal();
   const detachView = attachView(modalFigure, { modal: true });
   const tips = attachDiagramTips({ figure: modalFigure, placement });
+  // 写した ER 図は、開いたときの列の開閉の状態のまま開閉できる
+  const detachFolds = attachErFolds(modalFigure);
   const heading = modalFigure.querySelector(".mdmark-diagram-head");
   if (heading) {
     dialog.setAttribute("aria-labelledby", heading.id);
@@ -189,6 +192,7 @@ export function openDiagramDialog(options: {
     "close",
     () => {
       tips.detach();
+      detachFolds();
       detachView();
       dialog.remove();
       opener.focus();
@@ -226,6 +230,9 @@ export function attachDiagrams(options: {
     detachers.push(attachView(figure, { modal: false }));
     const tips = attachDiagramTips({ figure, placement });
     detachers.push(tips.detach);
+    if (figure.dataset.diagram === "er") {
+      detachers.push(attachErFolds(figure));
+    }
     const opener = figure.querySelector<HTMLButtonElement>(
       '[data-tool="fullscreen"]',
     );
