@@ -31,7 +31,7 @@ import {
   tableToTsv,
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
-import { visibleText } from "./text.ts";
+import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
 
@@ -212,10 +212,10 @@ function attachTable(
     : [];
   const shownCalcs = new Set<TotalCalc>(totalSpecs.map((total) => total.calc));
   const cleanups: Array<() => void> = [];
-  /** 行の指定した列のセルの文字 */
+  /** 行の指定した列のセルの値（`data-value` があればその値） */
   const cellText = (row: HTMLTableRowElement, column: number): string => {
     const cell = row.cells[column];
-    return cell ? visibleText(cell) : "";
+    return cell ? cellValue(cell) : "";
   };
   // 結合する列のセルの、描いたときの結合（外すときに戻す）
   const originalMerges = originalRows.flatMap((row) =>
@@ -587,10 +587,24 @@ function attachTable(
   };
 
   // ─── ピン止め ───
-  let pinned = 0;
-  /** 先頭から `count` 列までを表の左端に留める（0 で外す） */
+  // 留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。表がはみ出す間だけ当てる
+  const pinAt = Number.parseInt(wrapper.dataset.pin ?? "", 10);
+  const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
+    (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
+  );
+  let pinned = features.includes("pin")
+    ? Number.isNaN(pinAt)
+      ? Math.max(1, rowHeadCount)
+      : pinAt + 1
+    : 0;
+  /** 表が横にはみ出しているか */
+  const isOverflowing = (): boolean =>
+    table.scrollWidth > table.clientWidth ||
+    table.scrollWidth > wrapper.clientWidth;
+  /** 先頭から `count` 列までを、表がはみ出す間だけ表の左端に留める（0 で外す） */
   const pinColumns = (count: number): void => {
     pinned = count;
+    const applied = isOverflowing() ? count : 0;
     // 留める列の左の位置: 前の列までの幅の合計
     const lefts: number[] = [];
     let left = 0;
@@ -610,9 +624,12 @@ function attachTable(
         // 見出しのセルは格子の列で数え、またぐ列が全て留める範囲のときだけ留める
         const start = headColumns.get(cell) ?? index;
         const end = start + (headColumns.has(cell) ? cell.colSpan : 1) - 1;
-        const isPinned = end < count;
+        const isPinned = end < applied;
         cell.classList.toggle("is-pinned-col", isPinned);
-        cell.classList.toggle("is-pinned-edge", isPinned && end === count - 1);
+        cell.classList.toggle(
+          "is-pinned-edge",
+          isPinned && end === applied - 1,
+        );
         cell.style.left = isPinned ? `${lefts[start]}px` : "";
       });
     }
@@ -622,21 +639,9 @@ function attachTable(
         ?.setAttribute("aria-pressed", String(index === count - 1));
     });
   };
-  // 行見出しの列の数。はみ出す表は、初めてはみ出したときにこの列まで留める
-  const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
-    (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
-  );
-  let rowHeadsPinned = false;
-  /** 表が横にはみ出すときだけピン止めのボタンを出す（留めている間は戻せるよう出したまま） */
+  /** 表が横にはみ出すときだけピン止めのボタンを出す */
   const updatePinVisibility = (): void => {
-    const overflowing =
-      table.scrollWidth > table.clientWidth ||
-      table.scrollWidth > wrapper.clientWidth;
-    if (overflowing && !rowHeadsPinned && rowHeadCount > 0) {
-      rowHeadsPinned = true;
-      pinColumns(rowHeadCount);
-    }
-    const overflow = overflowing || pinned > 0;
+    const overflow = isOverflowing();
     for (const pin of ownElements<HTMLElement>(wrapper, ".mdmark-pin")) {
       pin.hidden = !overflow;
     }
@@ -735,7 +740,8 @@ function attachTable(
     toggle?.classList.toggle("is-active", hiding > 0);
     const spoken = toggle?.querySelector(".mdmark-visually-hidden");
     if (spoken) {
-      spoken.textContent = hiding > 0 ? `（${hiding} 件を非表示にしています）` : "";
+      spoken.textContent =
+        hiding > 0 ? `（${hiding} 件を非表示にしています）` : "";
     }
     announce(
       `${TOTAL_LABELS[calc]}の行を${shown ? "出しました" : "隠しました"}`,
@@ -1205,6 +1211,9 @@ function attachTable(
   foldObserver.observe(root);
   updateFold();
   updatePinVisibility();
+  if (pinned > 0) {
+    pinColumns(pinned);
+  }
   updateVisibleWidth();
   if (features.includes("rowlink")) {
     revealRow();
@@ -1249,7 +1258,7 @@ function attachTable(
   };
 }
 
-/** 各 `mdmark-table` の `data-features`・`data-filter` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
+/** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
 export function attachTables(root: HTMLElement): () => void {
   const detachers: Array<() => void> = [];
   for (const wrapper of root.querySelectorAll<HTMLElement>(".mdmark-table")) {

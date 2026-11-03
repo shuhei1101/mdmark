@@ -702,6 +702,97 @@ scenarios:
       - 表は描かれ、読めなかった `^^` と `<<` は書いたとおりの文字で出ている
       - 並べ替えと絞り込みのボタンが見出しにある
     test: test_error_when_merge_invalid
+  - name: 正常シナリオ（はみ出す表で先頭の列を留める）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は、表が横にスクロールする幅
+      - name: はみ出す表を持つ Markdown
+        description: 'マーカーで囲まない 10 列 30 行の表と、`<!-- table: -pin -->` で囲んだ 10 列の表を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: はみ出す表の先頭の列を留めて描く
+        U->>P: 2 つの表を横にスクロールする
+        P-->>U: 留めた列が左端に残った表
+    expected:
+      - 囲まない表は、ボタンを押さなくても 1 列目が左端に見えていて、1 列目のピン止めのボタンの `aria-pressed` が `true`
+      - '`-pin` の表には、ピン止めのボタンが無く、横にスクロールすると 1 列目が見えなくなる'
+      - 囲まない表の 1 列目のピン止めのボタンを押すと、留めた列が外れる
+    test: test_normal_when_pinned_by_default
+  - name: 正常シナリオ（留める列と広く取る列を指定する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は、表が横にスクロールする幅
+      - name: 列を指定した表を持つ Markdown
+        description: '`<!-- table: data pin=物理名 wide=説明 -->` で、1 列目 `No`・2 列目 `物理名`・長い文の `説明` の列を含む 8 列の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 物理名の列までを留め、説明の列を広く取った表を描く
+        U->>P: 表を横にスクロールする
+        P-->>U: No と物理名の列が左端に残った表
+    expected:
+      - 横にスクロールした後、`No` と `物理名` の列が左端に見えている
+      - '`説明` の列のセルが折り返されず 1 行で出て、`説明` の列の幅がほかの列より広い'
+      - 表が横にスクロールでき、ページ全体は横にスクロールしない
+    test: test_normal_when_pin_and_wide
+  - name: 正常シナリオ（真偽値を ✓ で出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 真偽値の列を持つ Markdown
+        description: '`<!-- table: data check=必須 -->` で、`必須` と `既定` の 2 つの列のセルが `true` か `false` の 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 必須の列の真偽値を ✓ と空欄にした表を描く
+        U->>P: 必須の列で true に絞り込む
+        P-->>U: 絞り込んだ表
+    expected:
+      - '`必須` の列の `true` のセルに ✓ が出て、読み上げで「はい」に当たる名前を持ち、`false` のセルは空欄'
+      - '`check=` で指定しない `既定` の列は、`true`・`false` の文字のまま出ている'
+      - '`必須` の列の絞り込みの選択肢と並べ替えは `true`・`false` の値で動き、絞り込んだ後は ✓ の行だけが出る'
+      - 表をコピーした中身では、`必須` の列が `true`・`false` の値を持つ
+    test: test_normal_when_check_column
+  - name: 異常シナリオ（知らない列名）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 知らない列名を指定した Markdown
+        description: '`<!-- table: data pin=無い列 wide=説明 check=無い列 -->` で、`説明` の列を持つ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 見出しに無い列名の指定を読み飛ばす
+        M-->>P: 書き方の警告と、読めた指定だけを当てた表を描く
+        P-->>U: 文書を表示
+    expected:
+      - 表の上に書き方の警告があり、`pin=` と `check=` の列名 `無い列` が見出しに無いことが記載されている
+      - '`説明` の列は広く取られている'
+      - 表は描かれ、並べ替えと絞り込みのボタンが見出しにある
+    test: test_error_when_unknown_column
   - name: 正常シナリオ（はみ出す表で行見出しの列までを留める）
     setup:
       - name: mdmark を読むページ

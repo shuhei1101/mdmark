@@ -539,26 +539,38 @@ test("test_attach_tables_when_escape", async () => {
   expect(document.activeElement).toBe(button);
 });
 
-// はみ出す表だけピン止めのボタンを出し、押した列までを留める（正常系）
+/** 表の本文の最初の行のセルが `position: sticky` かを、列の順に返す */
+function stickyColumns(table: HTMLElement): boolean[] {
+  const row = table.querySelector<HTMLTableRowElement>("tbody tr");
+  return [...(row?.cells ?? [])].map(
+    (cell) => getComputedStyle(cell).position === "sticky",
+  );
+}
+
+/** `count` 列の表の Markdown。`mark` を渡すと表の印で囲む */
+function wideTable(count: number, mark?: string): string[] {
+  const headers = Array.from(
+    { length: count },
+    (_, i) => `とても長い列の名前${i + 1}`,
+  );
+  const table = [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    `| ${headers.map((_, i) => `値${i + 1}`).join(" | ")} |`,
+    "",
+  ];
+  return mark ? [mark, "", ...table, "<!-- /table -->", ""] : table;
+}
+
+// はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列までを留める（正常系）
 test("test_attach_tables_when_pinned", async () => {
   // 準備
   addStyles();
   const { attachTables } = await loadTables();
-  const wideHeaders = Array.from(
-    { length: 10 },
-    (_, i) => `とても長い列の名前${i + 1}`,
-  );
   const { root } = createRoot(
-    [
-      `| ${wideHeaders.join(" | ")} |`,
-      `| ${wideHeaders.map(() => "---").join(" | ")} |`,
-      `| ${wideHeaders.map((_, i) => `値${i + 1}`).join(" | ")} |`,
-      "",
-      "| 列A | 列B |",
-      "| --- | --- |",
-      "| 1 | 2 |",
-      "",
-    ].join("\n"),
+    [...wideTable(10), "| 列A | 列B |", "| --- | --- |", "| 1 | 2 |", ""].join(
+      "\n",
+    ),
   );
   root.style.width = "320px";
   detachers.push(attachTables(root));
@@ -569,19 +581,101 @@ test("test_attach_tables_when_pinned", async () => {
     wide.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
   const narrowPins =
     narrow.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
-  // 実行・検証: はみ出す表にだけボタンが出る
+  // 検証: はみ出す表にだけボタンが出て、先頭の列が留まる
   await vi.waitFor(() => {
     expect(widePins[1].hasAttribute("hidden")).toBe(false);
   });
   for (const pin of narrowPins) {
     expect(pin.hasAttribute("hidden")).toBe(true);
   }
+  expect(stickyColumns(wide).slice(0, 3)).toEqual([true, false, false]);
+  expect(widePins[0].getAttribute("aria-pressed")).toBe("true");
+  expect(stickyColumns(narrow)).toEqual([false, false]);
   // 実行・検証: 2 列目のボタンで 2 列目までを留める
   widePins[1].click();
-  const cells = wide.querySelectorAll<HTMLTableCellElement>("tbody tr td");
-  expect(getComputedStyle(cells[0]).position).toBe("sticky");
-  expect(getComputedStyle(cells[1]).position).toBe("sticky");
-  expect(getComputedStyle(cells[2]).position).not.toBe("sticky");
+  expect(stickyColumns(wide).slice(0, 3)).toEqual([true, true, false]);
+  // 実行・検証: もう一度押すと外す
+  widePins[1].click();
+  expect(stickyColumns(wide).some(Boolean)).toBe(false);
+});
+
+// data-pin の列までを留め、pin の無い表は留めず、幅が広がると留めを外す（正常系）
+test("test_attach_tables_when_pin_specified", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      ...wideTable(8, "<!-- table: data pin=とても長い列の名前2 -->"),
+      ...wideTable(10, "<!-- table: plain -->"),
+    ].join("\n"),
+  );
+  root.style.width = "320px";
+  detachers.push(attachTables(root));
+  const [pinned, plain] = [
+    ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ];
+  const pins = pinned.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  // 検証: data-pin の列までが留まる
+  await vi.waitFor(() => {
+    expect(stickyColumns(pinned).slice(0, 3)).toEqual([true, true, false]);
+  });
+  expect(pins[1].getAttribute("aria-pressed")).toBe("true");
+  expect(plain.querySelector("button.mdmark-pin")).toBeNull();
+  expect(stickyColumns(plain).some(Boolean)).toBe(false);
+  // 実行・検証: 幅が広がると留めを外す
+  root.style.width = "2000px";
+  await vi.waitFor(() => {
+    expect(stickyColumns(pinned).some(Boolean)).toBe(false);
+  });
+});
+
+// 真偽値の列を data-value の値で並べ替え・絞り込み・コピーする（正常系）
+test("test_attach_tables_when_check_column", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      "<!-- table: data +copy check=必須 filter=必須 -->",
+      "",
+      "| 名前 | 必須 |",
+      "| --- | --- |",
+      "| a | true |",
+      "| b | false |",
+      "| c | true |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachTables(root));
+  // 実行・検証: 必須の列を降順に並べる
+  root
+    .querySelectorAll("thead th")[1]
+    ?.querySelector<HTMLButtonElement>("button.mdmark-sort")
+    ?.click();
+  expect(columnTexts(root, 0)).toEqual(["a", "c", "b"]);
+  // 実行・検証: 絞り込みの候補と、true に絞る
+  const { drawer } = openDrawer(root);
+  const candidates = [...drawer.querySelectorAll<HTMLInputElement>("li input")];
+  expect(candidates.map((input) => input.value).sort()).toEqual([
+    "false",
+    "true",
+  ]);
+  findCheckbox(drawer, "true").click();
+  const shown = bodyRows(root).filter((row) => !row.hidden);
+  expect(shown.map((row) => row.cells[0]?.textContent)).toEqual(["a", "c"]);
+  // 実行・検証: TSV でコピーする
+  findButton(root, "button.mdmark-copy").click();
+  findButton(root, 'button.mdmark-copy-format[data-format="tsv"]').click();
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  expect(writeText).toHaveBeenCalledWith("名前\t必須\na\ttrue\nc\ttrue");
 });
 
 // 外すと document の受け取りが残らない（正常系）

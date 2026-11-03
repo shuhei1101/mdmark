@@ -10,7 +10,7 @@ directory: |-
   ├── embed.ts                     # 読み込み中の枠の renderEmbed
   ├── embed.stories.yaml           # 読み込み中の枠のストーリー（Loading）
   ├── syntax-warning.ts            # 書き方の警告の renderSyntaxWarning
-  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn
+  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
   ├── callout.ts                   # 注意書きの renderCallout
   ├── tabs.ts                      # タブの renderTabs
   ├── steps.ts                     # ステップの renderSteps
@@ -236,12 +236,12 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の見た目にだけ使う）。`headRows` を渡すと `thead` を段ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを置く。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の数を留める
+    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の見た目にだけ使う）。`headRows` を渡すと `thead` を段ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを置く。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の数を留める。囲みには `pin`・`check` を `data-pin`・`data-check` で持たせる。`rows` を渡したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
     args:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を渡すと囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を渡すと囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -254,6 +254,7 @@ functions:
       - '#functions[renderFoldedColumn]'
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[bottomHeadCells]
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[mergeSpans]
+      - '#functions[renderCheckCell]'
     unit_tests:
       - name: test_render_table
         case: 正常
@@ -339,6 +340,33 @@ functions:
         condition: 部品設計『表』の `MergedSorted` の引数
         mock: なし
         expected: 地域の列の結合が、並べ替えた順で隣り合う同じ値の行だけに付いている
+      - name: test_render_table_when_columns_specified
+        case: 正常
+        summary: 留める列と真偽値の列を属性に持たせ、広く取る列と真偽値のセルを描く
+        condition: 部品設計の `PinAndWide` と `Check`
+        mock: なし
+        expected: 1 つ目の囲みが `data-pin="1"` を持ち、概要の列の見出しと各セルが class `mdmark-wide` を持ち、2 列目までのセルが `is-pinned-col`。2 つ目の囲みが `data-check="2"` を持ち、必須の列の `true` のセルが `data-value="true"` と `mdmark-check`、`false` のセルが `data-value="false"` と `いいえ`、既定の列は文字のまま
+  - name: renderCheckCell
+    title: 真偽値のセルの中身を描く
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: '`true` は `<span class="mdmark-check" role="img" aria-label="はい">` に lucide の `check` の SVG を入れた HTML、`false` は `<span class="mdmark-visually-hidden">いいえ</span>` を返す'
+    args:
+      - name: value
+        type: '"true" | "false"'
+        required: true
+        description: セルの文字
+    returns:
+      type: string
+      description: セルの中身の HTML
+    unit_tests:
+      - name: test_render_check_cell
+        case: 正常
+        summary: true を ✓、false を読み上げだけのいいえにする
+        condition: '`true` と `false` をそれぞれ渡す'
+        mock: なし
+        expected: 1 つ目が `role="img"`・`aria-label="はい"` の `mdmark-check` で `<svg` を持ち、2 つ目が `いいえ` だけを持つ `mdmark-visually-hidden`
   - name: renderTableTools
     title: 表の見出しのボタンとドロワーを描く
     container: src/parts/table.ts

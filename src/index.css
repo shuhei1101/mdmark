@@ -1782,33 +1782,12 @@
         var(--mdmark-color-surface);
     }
 
-    /* 横スクロールする表: 地の色を敷き、続きがある側の端に影を出す（コードブロックと同じ重ね合わせを地の色で覆う） */
+    /* 表: 地の色を敷く（横スクロールの端の影は出さない） */
     table {
-      background:
-        linear-gradient(
-          to right,
-          var(--mdmark-color-bg-opaque) 30%,
-          transparent
-        )
-        left / 2.5em 100% no-repeat local,
-        linear-gradient(to left, var(--mdmark-color-bg-opaque) 30%, transparent)
-        right / 2.5em 100% no-repeat local,
-        radial-gradient(
-          farthest-side at 0 50%,
-          var(--mdmark-color-scroll-shadow),
-          transparent
-        )
-        left / 0.9em 100% no-repeat scroll,
-        radial-gradient(
-          farthest-side at 100% 50%,
-          var(--mdmark-color-scroll-shadow),
-          transparent
-        )
-        right / 0.9em 100% no-repeat scroll,
-        var(--mdmark-color-bg-opaque);
+      background: var(--mdmark-color-bg-opaque);
     }
 
-    /* 表のセル: 横スクロールの影が透けるよう、地を透明にする（見出し行の面の色より前に当てる） */
+    /* 表のセル: 表の地が見えるよう、地を透明にする（見出し行の面の色より前に当てる） */
     :is(th, td) {
       background: transparent;
     }
@@ -1918,6 +1897,30 @@
     /* 表のセルの揃え（実装の CSS と同じ class。refs/16 の土台が持たないのでここで当てる） */
     :is(th, td).mdmark-align-center {
       text-align: center;
+
+      /* 中央揃えの見出し: 列名と並べ替えのアイコンを中央へ寄せる */
+      .mdmark-th {
+        justify-content: center;
+      }
+    }
+
+    /* wide= の列: 折り返さず、値の長さの幅を取る（はみ出した分は表の中で横にスクロールする） */
+    .mdmark-table :is(th, td).mdmark-wide {
+      white-space: nowrap;
+    }
+
+    /* check= の列の ✓: 本文の色の太い線のアイコン */
+    .mdmark-check {
+      display: inline-flex;
+      vertical-align: middle;
+
+      svg {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 3;
+      }
     }
 
     /* 右揃えのセル: 数値の列 */
