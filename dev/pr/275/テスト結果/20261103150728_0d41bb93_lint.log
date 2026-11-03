@@ -1,0 +1,91 @@
+$ npm run lint
+
+> lint
+> biome check .
+
+Checked 602 files in 6s. No fixes applied.
+exit=0
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/cli/check.test.ts(638,26): error TS2345: Argument of type '"diagram_invalid"' is not assignable to parameter of type '"alias_field_missing" | "alias_no_files" | "alias_records_missing" | "alias_required_empty" | "alias_unknown_type" | "alias_unreadable" | "avoided_term" | "broken_ref" | ... 18 more ... | "untyped_related"'.
+tests/unit/src/cli/check.test.ts(647,11): error TS2339: Property 'checkDiagrams' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/cli/check")'.
+tests/unit/src/cli/check.test.ts(679,11): error TS2339: Property 'checkDiagrams' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/cli/check")'.
+tests/unit/src/code-fold-logic.test.ts(5,17): error TS2307: Cannot find module '../../../src/code-fold-logic.ts' or its corresponding type declarations.
+tests/unit/src/diagram/check.test.ts(6,32): error TS2307: Cannot find module '../../../../src/diagram/check.ts' or its corresponding type declarations.
+tests/unit/src/diagram/check.test.ts(86,20): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/diagram/check.test.ts(88,41): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/diagram/check.test.ts(90,47): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/diagram/check.test.ts(94,46): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/diagram/check.test.ts(96,48): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/diagram/geometry.test.ts(110,11): error TS2339: Property 'stackSeries' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/diagram/geometry")'.
+tests/unit/src/interact/code-blocks.browser.test.ts(148,17): error TS2307: Cannot find module '../../../../src/interact/code-folds.ts' or its corresponding type declarations.
+tests/unit/src/interact/code-folds.browser.test.ts(6,17): error TS2307: Cannot find module '../../../../src/interact/code-folds.ts' or its corresponding type declarations.
+tests/unit/src/interact/tables.browser.test.ts(1549,49): error TS2339: Property 'cells' does not exist on type 'Element'.
+tests/unit/src/interact/tables.browser.test.ts(1561,11): error TS2339: Property 'bottomHeadCells' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/table-logic")'.
+tests/unit/src/interact/tables.browser.test.ts(1585,11): error TS2339: Property 'bottomHeadCells' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/table-logic")'.
+tests/unit/src/interact/tables.browser.test.ts(1601,11): error TS2339: Property 'mergeSpans' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/table-logic")'.
+tests/unit/src/interact/tables.browser.test.ts(1614,11): error TS2339: Property 'mergeSpans' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/table-logic")'.
+tests/unit/src/parts/callout.test.ts(41,5): error TS2353: Object literal may only specify known properties, and 'title' does not exist in type '{ kind: CalloutKind; collapsed?: boolean | undefined; open?: boolean | undefined; body: string; }'.
+tests/unit/src/parts/chart.test.ts(7,32): error TS2307: Cannot find module '../../../../src/parts/chart.ts' or its corresponding type declarations.
+tests/unit/src/parts/chart.test.ts(69,5): error TS2322: Type '"stacked-bar"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(97,5): error TS2322: Type '"stacked-bar"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(129,38): error TS2322: Type '"area"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(131,15): error TS2322: Type '"stacked-area"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(172,5): error TS2322: Type '"horizontal-bar"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(192,5): error TS2322: Type '"donut"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(220,5): error TS2322: Type '"radar"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(250,5): error TS2322: Type '"bubble"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(258,18): error TS2322: Type 'number' is not assignable to type 'undefined'.
+tests/unit/src/parts/chart.test.ts(259,18): error TS2322: Type 'number' is not assignable to type 'undefined'.
+tests/unit/src/parts/chart.test.ts(279,5): error TS2322: Type '"combo"' is not assignable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/chart.test.ts(284,43): error TS2353: Object literal may only specify known properties, and 'as' does not exist in type '{ name: string; points: number[] | [number, number][]; }'.
+tests/unit/src/parts/chart.test.ts(285,40): error TS2353: Object literal may only specify known properties, and 'as' does not exist in type '{ name: string; points: number[] | [number, number][]; }'.
+tests/unit/src/parts/code-block.test.ts(275,23): error TS2322: Type '"focus"' is not assignable to type '"add" | "del" | "highlight" | undefined'.
+tests/unit/src/parts/code-block.test.ts(276,23): error TS2322: Type '"error"' is not assignable to type '"add" | "del" | "highlight" | undefined'.
+tests/unit/src/parts/code-block.test.ts(277,23): error TS2322: Type '"warning"' is not assignable to type '"add" | "del" | "highlight" | undefined'.
+tests/unit/src/parts/code-block.test.ts(324,5): error TS2353: Object literal may only specify known properties, and 'foldButtons' does not exist in type '{ language: string; fileName?: string | undefined; title: string; lineNumbers: boolean; lines: CodeLine[]; syntax?: string | undefined; bar?: boolean | undefined; copyState?: CodeCopyState | undefined; }'.
+tests/unit/src/parts/code-block.test.ts(354,11): error TS2339: Property 'renderCodeFoldToggle' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/parts/code-block")'.
+tests/unit/src/parts/code-block.test.ts(376,11): error TS2339: Property 'renderCodeFoldMore' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/parts/code-block")'.
+tests/unit/src/parts/diagram.test.ts(466,17): error TS2352: Conversion of type '{ title: string; scope: string; updated: string; type: "combo"; x: { label: string; ticks: string[]; }; y: { label: string; }; y2: { label: string; }; series: ({ name: string; points: number[]; as: string; } | { name: string; points: number[]; as: string; axis: string; })[]; }' to type 'MdmarkChartDefinition' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'type' are incompatible.
+    Type '"combo"' is not comparable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/diagram.test.ts(477,18): error TS2352: Conversion of type '{ title: string; scope: string; updated: string; type: "bubble"; x: { label: string; }; y: { label: string; }; size: { label: string; }; series: { name: string; points: [number, number, number][]; }[]; }' to type 'MdmarkChartDefinition' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'type' are incompatible.
+    Type '"bubble"' is not comparable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/diagram.test.ts(485,17): error TS2352: Conversion of type '{ title: string; scope: string; updated: string; type: "donut"; unit: string; items: { name: string; value: number; }[]; }' to type 'MdmarkChartDefinition' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'type' are incompatible.
+    Type '"donut"' is not comparable to type 'MdmarkChartType | undefined'.
+tests/unit/src/parts/table.test.ts(768,28): error TS2345: Argument of type '{ kind: "data"; features: readonly ["sort", "pin", "filter"]; columns: readonly ["地域", "支店", "売上（万円）", "件数", "売上（万円）", "件数"]; rows: readonly [readonly ["東日本", "札幌", "120", "14", "135", "16"], readonly ["東日本", "仙台", "98", "11", "102", "12"], readonly ["東�...' is not assignable to parameter of type 'TableOptions'.
+  Types of property 'features' are incompatible.
+    The type 'readonly ["sort", "pin", "filter"]' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+tests/unit/src/parts/table.test.ts(793,28): error TS2345: Argument of type '{ kind: "data"; features: readonly ["sort", "pin", "filter"]; columns: readonly ["地域", "支店", "売上（万円）", "件数", "売上（万円）", "件数"]; rows: readonly [readonly ["東日本", "札幌", "120", "14", "135", "16"], readonly ["東日本", "仙台", "98", "11", "102", "12"], readonly ["東�...' is not assignable to parameter of type 'TableOptions'.
+  Types of property 'features' are incompatible.
+    The type 'readonly ["sort", "pin", "filter"]' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+tests/unit/src/render/syntax/callouts.test.ts(106,11): error TS2339: Property 'readCallout' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/callouts")'.
+tests/unit/src/render/syntax/callouts.test.ts(150,11): error TS2339: Property 'readCallout' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/callouts")'.
+tests/unit/src/render/syntax/code-blocks.test.ts(448,19): error TS2339: Property 'folds' does not exist on type '{ title: string; lineNumbers: boolean; highlights: Set<number>; warnings: WarningItem[]; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(475,11): error TS2339: Property 'readFolds' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/code-blocks")'.
+tests/unit/src/render/syntax/code-blocks.test.ts(485,26): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/render/syntax/code-blocks.test.ts(486,26): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/render/syntax/code-blocks.test.ts(492,26): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/render/syntax/code-blocks.test.ts(504,11): error TS2339: Property 'readFolds' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/code-blocks")'.
+tests/unit/src/render/syntax/code-blocks.test.ts(509,27): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/render/syntax/diagrams.test.ts(96,11): error TS2339: Property 'findDiagramBlocks' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/diagrams")'.
+tests/unit/src/render/syntax/table-cells.test.ts(5,10): error TS2307: Cannot find module '../../../../../src/render/syntax/table-cells.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/table-cells.test.ts(62,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/render/syntax/table-cells.test.ts(78,30): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/render/syntax/tables.test.ts(601,58): error TS2554: Expected 2 arguments, but got 3.
+tests/unit/src/render/syntax/tables.test.ts(603,15): error TS2339: Property 'headRows' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(604,15): error TS2339: Property 'rowHeader' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(615,57): error TS2554: Expected 2 arguments, but got 3.
+tests/unit/src/render/syntax/tables.test.ts(616,55): error TS2554: Expected 2 arguments, but got 3.
+tests/unit/src/render/syntax/tables.test.ts(618,16): error TS2339: Property 'headRows' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(619,16): error TS2339: Property 'rowHeader' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(627,17): error TS2339: Property 'rowHeader' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tabs.test.ts(313,11): error TS2339: Property 'findTabsClose' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/tabs")'.
+tests/unit/src/render/syntax/tabs.test.ts(327,11): error TS2339: Property 'findTabsClose' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/render/syntax/tabs")'.
+exit=1
