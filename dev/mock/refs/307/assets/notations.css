@@ -113,3 +113,6 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 .demo-with-toc .demo-host > .mdmark { max-width: none; }
 .demo-with-toc .mdmark > p { max-width: 360px; margin-inline: auto; }
 .demo-with-toc .mdmark-wide { width: auto; max-width: none; margin-inline-start: 0; transform: none; }
+
+/* RAW のボタンを押した状態: 濃さだけでなく、面の色と太字でも押していない状態と分ける */
+.mdmark-table-tool.mdmark-raw-toggle[aria-pressed="true"] { background: var(--mdmark-color-current-bg); font-weight: 700; }
