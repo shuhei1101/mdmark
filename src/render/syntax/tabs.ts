@@ -4,12 +4,7 @@ import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
 import type { Mark } from "../marks.ts";
 import { type CollapseMode, readCollapse } from "./collapse.ts";
-import {
-  envOf,
-  featureOn,
-  markOf,
-  tabBoundaryBlock,
-} from "./tokens.ts";
+import { envOf, featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import {
   type SyntaxWarning,
   unclosedWarning,
