@@ -7,6 +7,7 @@ export type {
 export type { MdmarkConfig } from "./config.ts";
 export type {
   MdmarkChartDefinition,
+  MdmarkErDefinition,
   MdmarkFlowDefinition,
   MdmarkParamDefinition,
   MdmarkSequenceDefinition,

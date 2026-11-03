@@ -4,11 +4,24 @@ import type {
   MdmarkDiagramKind,
   MdmarkDiagramLine,
   MdmarkDiagramNode,
+  MdmarkErCardinality,
+  MdmarkErDefinition,
+  MdmarkErTable,
+  MdmarkErTableKind,
   MdmarkFlowDefinition,
   MdmarkSequenceDefinition,
 } from "../diagram/definition.ts";
+import {
+  ER_CARDINALITIES,
+  ER_COLUMN_KEYS,
+  ER_METRICS,
+  ER_TABLE_KINDS,
+  erRelationRoute,
+  erTableHeight,
+} from "../diagram/er.ts";
 import { jumpPaths, polylinePath, ZOOM } from "../diagram/geometry.ts";
 import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
+import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
 import { type IconName, iconSvg } from "./icons.ts";
 
@@ -95,7 +108,7 @@ export type DiagramLegendItem = {
 /** 図の枠の引数 */
 export type DiagramFrame = {
   /** 中の図の種類 */
-  kind: "flow" | "sequence" | "chart";
+  kind: "flow" | "sequence" | "chart" | "er";
   /** 題名 */
   title: string;
   /** 範囲 */
@@ -142,7 +155,7 @@ export type DiagramTip = {
   /** ツールチップの `id` */
   id: string;
   /** 線の詳細か、ノードの入力・処理・出力か、文だけか（ノードの `hint`・埋め込んだ HTML の `data-hint`） */
-  kind: "wire" | "io" | "hint";
+  kind: "wire" | "io" | "hint" | "table";
   /** 持ち主の名前。ツールチップの題に出す */
   label: string;
   /** 線の詳細 */
@@ -151,6 +164,8 @@ export type DiagramTip = {
   io?: MdmarkDiagramIo;
   /** ノードの `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す */
   hint?: string;
+  /** ER 図のテーブル。題を `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる */
+  table?: MdmarkErTable;
   /** 持ち主を引く名前（線の `id`・`node:{ノードの id}`・`term:{語}`）。省くと題 */
   owner?: string;
   /** 開いているか */
@@ -167,6 +182,24 @@ export function renderDiagramTip(tip: DiagramTip): string {
   const hidden = tip.open ? "" : ' hidden="hidden"';
   if (tip.kind === "hint") {
     return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section">${hint}</span></span>`;
+  }
+  if (tip.kind === "table" && tip.table) {
+    const table = tip.table;
+    const desc =
+      table.desc === undefined
+        ? ""
+        : `<span class="mdmark-term-tip-meaning">${escapeHtml(table.desc)}</span>`;
+    const rows = table.columns
+      .filter((column) => column.desc)
+      .map(
+        (column) =>
+          `<dt><code>${escapeHtml(column.name)}</code></dt><dd>${escapeHtml(column.desc ?? "")}</dd>`,
+      )
+      .join("");
+    const columns = rows
+      ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>`
+      : "";
+    return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(plainDefinitionText(table.label))}（${escapeHtml(plainDefinitionText(table.name))}）</span>${desc}${columns}</span></div>`;
   }
   const body =
     tip.kind === "io" && tip.io
@@ -563,17 +596,149 @@ export function renderSequence(
   };
 }
 
+/** ER 図を描く: テーブルを置き、関係の線と両端の多重度の記号を svg に描き、ラベルを縦の線の中ほどに置く */
+export function renderEr(
+  definition: MdmarkErDefinition,
+  id: string,
+  hints: boolean,
+  lookup?: TermLookup,
+): DiagramPart {
+  const tips = createTips(id);
+  const found = { terms: false };
+  const text = (value: string): string =>
+    renderText(value, tips, lookup, found);
+  const tables = new Map(definition.tables.map((table) => [table.id, table]));
+  const folded = (tableId: string): boolean =>
+    tables.get(tableId)?.folded === true;
+  const svg: string[] = [];
+  const labels: string[] = [];
+  definition.relations.forEach((relation, index) => {
+    const from = tables.get(relation.from);
+    const to = tables.get(relation.to);
+    if (!from || !to) {
+      return;
+    }
+    const route = erRelationRoute({ relation, from, to, folded });
+    const mid =
+      relation.midX === undefined ? "" : ` data-er-mid-x="${relation.midX}"`;
+    svg.push(
+      `<g data-er-relation="${index}" data-er-from="${escapeHtml(relation.from)}" data-er-from-column="${escapeHtml(relation.fromColumn)}" data-er-from-card="${relation.fromCard}" data-er-to="${escapeHtml(relation.to)}" data-er-to-column="${escapeHtml(relation.toColumn)}" data-er-to-card="${relation.toCard}"${mid}><path class="mdmark-diagram-wire" data-line="er" d="${route.d}"></path><g class="mdmark-diagram-er-ends">${erEndSvg({ ...route.start, card: relation.fromCard })}${erEndSvg({ ...route.end, card: relation.toCard })}</g></g>`,
+    );
+    if (relation.label) {
+      labels.push(
+        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route.label.x}px;top:${route.label.y}px">${text(relation.label)}</span>`,
+      );
+    }
+  });
+  const height =
+    Math.max(
+      0,
+      ...definition.tables.map(
+        (table) =>
+          table.y + erTableHeight({ table, folded: table.folded === true }),
+      ),
+    ) + ER_METRICS.bottom;
+  const parts = [
+    `<svg class="mdmark-diagram-wires" width="${num(definition.width)}" height="${num(height)}" aria-hidden="true">${svg.join("")}</svg>`,
+  ];
+  for (const table of definition.tables) {
+    const described =
+      table.desc !== undefined || table.columns.some((column) => column.desc);
+    const tipId =
+      hints && described
+        ? tips.add({
+            kind: "table",
+            label: plainDefinitionText(table.label),
+            table,
+            owner: `table:${table.id}`,
+          })
+        : undefined;
+    parts.push(renderErTable({ table, tipId, text }));
+  }
+  parts.push(...labels);
+  return {
+    html: parts.join(""),
+    width: definition.width,
+    height,
+    tips: tips.html(),
+    jumps: false,
+    terms: found.terms,
+  };
+}
+
 /** 図の定義 */
 type LegendDefinition =
   | MdmarkFlowDefinition
   | MdmarkSequenceDefinition
-  | MdmarkChartDefinition;
+  | MdmarkChartDefinition
+  | MdmarkErDefinition;
 
-/** グラフの定義か（フロー図は `wires`、シーケンス図は `participants` を持つ） */
+/** ER 図の定義か（`tables` を持つ） */
+function isErDefinition(
+  definition: LegendDefinition,
+): definition is MdmarkErDefinition {
+  return "tables" in definition;
+}
+
+/** グラフの定義か（フロー図は `wires`、シーケンス図は `participants`、ER 図は `tables` を持つ） */
 function isChartDefinition(
   definition: LegendDefinition,
 ): definition is MdmarkChartDefinition {
-  return !("wires" in definition) && !("participants" in definition);
+  return (
+    !("wires" in definition) &&
+    !("participants" in definition) &&
+    !("tables" in definition)
+  );
+}
+
+/** ER 図の凡例の項目: 図にあるテーブルの種類の札・列のマーカー・多重度の記号だけを並べる */
+function erLegend(definition: MdmarkErDefinition): DiagramLegendItem[] {
+  const items: DiagramLegendItem[] = [];
+  for (const kind of Object.keys(ER_TABLE_KINDS) as MdmarkErTableKind[]) {
+    if (definition.tables.some((table) => table.kind === kind)) {
+      items.push({
+        sample: `er-kind-${kind}`,
+        label: `${ER_TABLE_KINDS[kind].label}のテーブル`,
+      });
+    }
+  }
+  for (const key of Object.keys(ER_COLUMN_KEYS) as Array<
+    keyof typeof ER_COLUMN_KEYS
+  >) {
+    if (definition.tables.some((table) => table.columns.some((c) => c[key]))) {
+      items.push({ sample: `er-key-${key}`, label: ER_COLUMN_KEYS[key].title });
+    }
+  }
+  const used = new Set(
+    definition.relations.flatMap((relation) => [
+      relation.fromCard,
+      relation.toCard,
+    ]),
+  );
+  for (const card of Object.keys(ER_CARDINALITIES) as MdmarkErCardinality[]) {
+    if (used.has(card)) {
+      items.push({ sample: `er-card-${card}`, label: ER_CARDINALITIES[card] });
+    }
+  }
+  return items;
+}
+
+/** ER 図の凡例の見本（テーブルの種類の札・列のマーカー・多重度の記号）。ER 図の見本でなければ `undefined` */
+function erLegendSample(sample: string): string | undefined {
+  if (sample.startsWith("er-kind-")) {
+    const kind = sample.slice("er-kind-".length) as MdmarkErTableKind;
+    const style = ER_TABLE_KINDS[kind];
+    return `<span class="mdmark-diagram-er-kind mdmark-diagram-er-kind-sample" data-color="${style.color}" aria-hidden="true">${style.label}</span>`;
+  }
+  if (sample.startsWith("er-key-")) {
+    const key = sample.slice("er-key-".length) as keyof typeof ER_COLUMN_KEYS;
+    return `<span class="mdmark-diagram-er-key" data-key="${key}" aria-hidden="true">${ER_COLUMN_KEYS[key].text}</span>`;
+  }
+  if (sample.startsWith("er-card-")) {
+    const card = sample.slice("er-card-".length) as MdmarkErCardinality;
+    return `<svg class="mdmark-diagram-legend-sample mdmark-diagram-er-sample" width="34" height="16" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="er" d="M8,8 H34"></path>${erEndSvg({ x: 4, y: 8, dir: 1, card })}</svg>`;
+  }
+  return undefined;
 }
 
 /** 系列を塗りの模様の見本で示すグラフの種類 */
@@ -636,6 +801,9 @@ export function legendFor(
   definition: LegendDefinition,
   drawn: { jumps: boolean; terms: boolean; hints?: boolean },
 ): DiagramLegendItem[] {
+  if (isErDefinition(definition)) {
+    return erLegend(definition);
+  }
   if (isChartDefinition(definition)) {
     return chartLegend(definition);
   }
@@ -714,6 +882,10 @@ export function legendFor(
 function legendSample(id: string, sample: string): string {
   if (sample === "underline") {
     return "";
+  }
+  const er = erLegendSample(sample);
+  if (er !== undefined) {
+    return er;
   }
   if (sample in KIND_STYLES) {
     const shape =
@@ -846,6 +1018,8 @@ export function renderDiagram(options: {
       lookup,
       hints,
     );
+  } else if (kind === "er") {
+    part = renderEr(definition as MdmarkErDefinition, id, hints, lookup);
   } else {
     part = renderChart(definition as MdmarkChartDefinition, id);
   }

@@ -1,0 +1,284 @@
+$ npx vitest run --project 'unit*' tests/unit/src/diagram/er.test.ts tests/unit/src/parts/er.test.ts tests/unit/src/parts/diagram.test.ts tests/unit/src/diagram/definition.test.ts tests/unit/src/interact/er-folds.browser.test.ts tests/unit/src/print.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram
+
+12:44:27 AM [vite] Internal server error: Failed to resolve import "../../../../src/interact/er-folds.ts" from "tests/unit/src/interact/er-folds.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/interact/er-folds.browser.test.ts:8:31
+  5  |  import { erText, foldEr, shopErFolded } from "../../helpers/er.ts";
+  6  |  /** ER 図の列の開閉を読み込む（実装が無い間は各テストが個別に失敗する） */
+  7  |  const loadFolds = () => import("../../../../src/interact/er-folds.ts");
+     |                                 ^
+  8  |  const detachers = [];
+  9  |  beforeAll(() => {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 5)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/node_modules/vite/dist/node/chunks/node.js:20404:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/diagram/er.test.ts (4 tests | 4 failed) 1122ms
+   × test_er_table_height 172ms
+   × test_er_relation_route 52ms
+   × test_er_relation_route_when_stacked 664ms
+   × test_er_relation_route_when_folded 232ms
+ ❯ |unit| tests/unit/src/parts/er.test.ts (4 tests | 4 failed) 1181ms
+   × test_render_er_table 129ms
+   × test_render_er_table_when_folded 93ms
+   × test_render_er_table_when_no_kind 793ms
+   × test_er_end_svg 165ms
+ ❯ |unit| tests/unit/src/diagram/definition.test.ts (17 tests | 3 failed) 323ms
+   × test_read_definition_when_er 7ms
+   × test_read_definition_when_er_column_missing 1ms
+   × test_read_definition_when_er_invalid_values 1ms
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (21 tests | 4 failed) 465ms
+   × test_render_er 3ms
+   × test_render_er_when_hints_off 0ms
+   × test_legend_for_when_er 5ms
+   × test_render_diagram_tip_when_table 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/print.browser.test.ts (7 tests | 1 failed) 607ms
+   × test_attach_print_when_er_folded 150ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts [ tests/unit/src/interact/er-folds.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/interact/er-folds.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=523f1fef:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=523f1fef:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=523f1fef:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/interact/er-folds.browser.test.ts?import&browserv=1793720666467
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_er
+TypeError: CHECKERS[directive] is not a function
+ ❯ readDefinition src/diagram/definition.ts:1129:24
+    1127|   const source = asObject(parsed.value, "定義", problems);
+    1128|   if (source) {
+    1129|     CHECKERS[directive](source, problems);
+       |                        ^
+    1130|   }
+    1131|   if (problems.list.length > 0) {
+ ❯ tests/unit/src/diagram/definition.test.ts:319:5
+ ❯ tests/unit/src/diagram/definition.test.ts:318:62
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_er_column_missing
+TypeError: CHECKERS[directive] is not a function
+ ❯ readDefinition src/diagram/definition.ts:1129:24
+    1127|   const source = asObject(parsed.value, "定義", problems);
+    1128|   if (source) {
+    1129|     CHECKERS[directive](source, problems);
+       |                        ^
+    1130|   }
+    1131|   if (problems.list.length > 0) {
+ ❯ tests/unit/src/diagram/definition.test.ts:337:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_er_invalid_values
+TypeError: CHECKERS[directive] is not a function
+ ❯ readDefinition src/diagram/definition.ts:1129:24
+    1127|   const source = asObject(parsed.value, "定義", problems);
+    1128|   if (source) {
+    1129|     CHECKERS[directive](source, problems);
+       |                        ^
+    1130|   }
+    1131|   if (problems.list.length > 0) {
+ ❯ tests/unit/src/diagram/definition.test.ts:390:41
+ ❯ tests/unit/src/diagram/definition.test.ts:390:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/er.test.ts > test_er_table_height
+Error: Cannot find module '/src/diagram/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/diagram/er.test.ts
+ ❯ tests/unit/src/diagram/er.test.ts:45:29
+     43| test("test_er_table_height", async () => {
+     44|   // 準備
+     45|   const { erTableHeight } = await loadEr();
+       |                             ^
+     46|   const t = table("a", 0, 0, 200, [
+     47|     { name: "id", pk: true },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/er.test.ts > test_er_relation_route
+Error: Cannot find module '/src/diagram/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/diagram/er.test.ts
+ ❯ tests/unit/src/diagram/er.test.ts:64:31
+     62| test("test_er_relation_route", async () => {
+     63|   // 準備
+     64|   const { erRelationRoute } = await loadEr();
+       |                               ^
+     65|   const from = table("a", 40, 20, 200, [{ name: "id", pk: true }]);
+     66|   const to = table("b", 400, 100, 200, [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/er.test.ts > test_er_relation_route_when_stacked
+Error: Cannot find module '/src/diagram/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/diagram/er.test.ts
+ ❯ tests/unit/src/diagram/er.test.ts:89:31
+     87| test("test_er_relation_route_when_stacked", async () => {
+     88|   // 準備
+     89|   const { erRelationRoute } = await loadEr();
+       |                               ^
+     90|   const from = table("a", 40, 20, 200, [{ name: "id", pk: true }]);
+     91|   const to = table("b", 40, 200, 200, [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/er.test.ts > test_er_relation_route_when_folded
+Error: Cannot find module '/src/diagram/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/diagram/er.test.ts
+ ❯ tests/unit/src/diagram/er.test.ts:113:31
+    111| test("test_er_relation_route_when_folded", async () => {
+    112|   // 準備
+    113|   const { erRelationRoute } = await loadEr();
+       |                               ^
+    114|   const from = table("a", 40, 20, 200, [{ name: "id", pk: true }]);
+    115|   const to = table("b", 400, 100, 200, [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_er
+TypeError: renderEr is not a function
+ ❯ tests/unit/src/parts/diagram.test.ts:518:41
+    516|   const definition = shopEr();
+    517|   // 実行
+    518|   const { html, tips, width, height } = renderEr(definition, "d1", tru…
+       |                                         ^
+    519|   // 検証
+    520|   expect(matches(html, /class="mdmark-diagram-er-table/g)).toHaveLengt…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_er_when_hints_off
+TypeError: renderEr is not a function
+ ❯ tests/unit/src/parts/diagram.test.ts:545:26
+    543|   const { renderEr } = await loadDiagram();
+    544|   // 実行
+    545|   const { html, tips } = renderEr(shopEr(), "d1", false);
+       |                          ^
+    546|   // 検証
+    547|   expect(html).not.toContain("mdmark-diagram-info");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for_when_er
+AssertionError: expected [] to deeply equal [ Array(5) ]
+
+- Expected
++ Received
+
+- [
+-   "マスターのテーブル",
+-   "主キー",
+-   "NOT NULL",
+-   "1 つ",
+-   "0 以上",
+- ]
++ []
+
+ ❯ tests/unit/src/parts/diagram.test.ts:597:43
+    595|   const items = legendFor(definition, { jumps: false, terms: false });
+    596|   // 検証
+    597|   expect(items.map((item) => item.label)).toEqual([
+       |                                           ^
+    598|     "マスターのテーブル",
+    599|     "主キー",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_tip_when_table
+AssertionError: expected '注文' to contain '注文（orders）'
+
+Expected: "注文（orders）"
+Received: "注文"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:632:16
+    630|   // 検証
+    631|   const text = plainText(html);
+    632|   expect(text).toContain("注文（orders）");
+       |                ^
+    633|   expect(text.indexOf("1 回の注文")).toBeLessThan(text.indexOf("status"));
+    634|   expect(text.indexOf("status")).toBeLessThan(text.indexOf("状態"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/er.test.ts > test_render_er_table
+Error: Cannot find module '/src/parts/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/parts/er.test.ts
+ ❯ tests/unit/src/parts/er.test.ts:21:29
+     19| test("test_render_er_table", async () => {
+     20|   // 準備
+     21|   const { renderErTable } = await loadEr();
+       |                             ^
+     22|   const orders = tableOf(shopEr().tables, "orders");
+     23|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/er.test.ts > test_render_er_table_when_folded
+Error: Cannot find module '/src/parts/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/parts/er.test.ts
+ ❯ tests/unit/src/parts/er.test.ts:45:29
+     43| test("test_render_er_table_when_folded", async () => {
+     44|   // 準備
+     45|   const { renderErTable } = await loadEr();
+       |                             ^
+     46|   const orders = tableOf(shopErFolded().tables, "orders");
+     47|   const hiddenCount = orders.columns.filter((c) => !c.pk && !c.fk).len…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/er.test.ts > test_render_er_table_when_no_kind
+Error: Cannot find module '/src/parts/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/parts/er.test.ts
+ ❯ tests/unit/src/parts/er.test.ts:68:29
+     66| test("test_render_er_table_when_no_kind", async () => {
+     67|   // 準備
+     68|   const { renderErTable } = await loadEr();
+       |                             ^
+     69|   const table: MdmarkErTable = {
+     70|     id: "links",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/er.test.ts > test_er_end_svg
+Error: Cannot find module '/src/parts/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-er-diagram/tests/unit/src/parts/er.test.ts
+ ❯ tests/unit/src/parts/er.test.ts:92:24
+     90| test("test_er_end_svg", async () => {
+     91|   // 準備
+     92|   const { erEndSvg } = await loadEr();
+       |                        ^
+     93|   const draw = (card: "1" | "0..1" | "1..n" | "0..n") =>
+     94|     erEndSvg({ x: 100, y: 50, dir: 1, card });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/print.browser.test.ts > test_attach_print_when_er_folded
+AssertionError: expected 0 to be greater than 0
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/print.browser.test.ts/test_attach_print_when_er_folded.png
+
+ ❯ tests/unit/src/print.browser.test.ts:254:25
+    252|   window.dispatchEvent(new Event("beforeprint"));
+    253|   // 検証
+    254|   expect(others.length).toBeGreaterThan(0);
+       |                         ^
+    255|   expect(rows.some((row) => row.hidden)).toBe(false);
+    256|   expect(button?.getAttribute("aria-expanded")).toBe("true");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=523f1fef:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  16 failed | 37 passed (53)
+   Start at  00:44:25
+   Duration  4.33s (transform 38%, tests 29%, import 27%, worker 6%)
+

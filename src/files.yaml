@@ -162,6 +162,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
         type: implements
+  - path: diagram/er.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図のテーブルの種類・多重度・寸法と、テーブルの高さ・関係の線の経路」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
   - path: diagram/geometry.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「収まる倍率・line jump・重なる線のずらし・軸の刻み」を受け持つ。図の部品の描き方や操作を変えるときに読む。
     tags: [topic:図, tool:svg]
@@ -261,6 +267,12 @@ files:
         type: implements
   - path: interact/diagrams.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「拡大・縮小・移動・全画面」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: interact/er-folds.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図の列の開閉」を受け持つ。図の部品の描き方や操作を変えるときに読む。
     tags: [topic:図, tool:svg]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
@@ -580,7 +592,7 @@ files:
       - to: dev/設計書/部品設計/図のツールチップ.ts
         type: implements
   - path: parts/diagram.ts
-    description: モジュール構成『ライブラリ本体 / 図』のうち「図の枠・フロー図・シーケンス図・グラフ・図のツールチップ・凡例」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / 図』のうち「図の枠・フロー図・シーケンス図・グラフ・ER 図・図のツールチップ・凡例」を受け持つ。図の部品の描き方や操作を変えるときに読む。
     tags: [topic:図, tool:svg]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
@@ -590,6 +602,8 @@ files:
       - to: dev/設計書/部品設計/シーケンス図.ts
         type: implements
       - to: dev/設計書/部品設計/フロー図.ts
+        type: implements
+      - to: dev/設計書/部品設計/ER図.ts
         type: implements
       - to: dev/設計書/部品設計/図のツールチップ.ts
         type: implements
@@ -740,6 +754,20 @@ files:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
       - to: dev/設計書/部品設計/図表の番号.ts
+        type: implements
+  - path: parts/er-diagram.stories.yaml
+    description: 部品設計『ER 図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/ER図.ts
+        type: implements
+  - path: parts/er.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図のテーブルと多重度の記号」を受け持つ。図の部品の描き方や操作を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+      - to: dev/設計書/部品設計/ER図.ts
         type: implements
   - path: parts/flow-diagram.stories.yaml
     description: 部品設計『フロー図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。

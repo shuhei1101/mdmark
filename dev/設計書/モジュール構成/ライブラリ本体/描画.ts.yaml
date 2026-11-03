@@ -148,6 +148,8 @@ constants:
         value: diagrams
       - key: param
         value: diagrams
+      - key: er
+        value: diagrams
       - key: html
         value: html
       - key: view

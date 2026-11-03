@@ -89,3 +89,22 @@ test("test_hint", async () => {
   expect(rects.tipBottom).toBeLessThanOrEqual(rects.ownerTop);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// ER 図のテーブルを開いた状態は、論理名と物理名の題・概要・列の説明を出し、横にはみ出さない（Table）
+test("test_table", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-diagramtooltip--table");
+  // 検証
+  const tip = page.locator('[role="tooltip"]');
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect(
+    tip.locator(".mdmark-term-tip-heading").innerText(),
+  ).resolves.toBe("注文（orders）");
+  await expect(tip.innerText()).resolves.toContain("1 回の注文");
+  await expect(tip.locator("dt").allInnerTexts()).resolves.toEqual([
+    "customer_id",
+    "status",
+    "total",
+  ]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

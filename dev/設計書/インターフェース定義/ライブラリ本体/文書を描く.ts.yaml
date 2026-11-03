@@ -469,7 +469,7 @@ flows:
       - name: 配布物を読んだページ
         description: 正常系と同じ
       - name: 記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、`app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ言語 `tree` のコードブロックを持つ文書'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、`folded` が `true` のテーブルを持つ ER 図、`app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ言語 `tree` のコードブロックを持つ文書'
         notes: '`opts.config` は渡さない。印刷の前に 2 つ目のタブを選んでおく。ツリーは既定の開き方（ルートだけ開く）で、`src/`・`parts/` が閉じている'
       - name: Mock
         description: 印刷は `window` へ `beforeprint`・`afterprint` のイベントを送ることで代える
@@ -487,7 +487,8 @@ flows:
       - '`beforeprint` の後、節の中身・行の詳細の行が `hidden` を持たず、表と注意書きの `details` が `open` を持つ'
       - '`beforeprint` の後、閉じたタブとステップの `details.mdmark-collapsible` が `open` を持つ'
       - '`beforeprint` の後、ツリーの `src/`・`parts/` の開閉のボタンの `aria-expanded` がともに `true` で `tree.ts` が表示され、印刷の媒体ではツリーのコピーボタンが表示されていない'
-      - '`afterprint` の後、選んでいた 2 つ目のタブの中身だけが出ていて、節・行の詳細・表・注意書き・閉じたタブとステップ・ツリーの `src/`・`parts/` が閉じている'
+      - '`beforeprint` の後、ER 図の畳んだテーブルが全ての列の行を持ち、列の開閉のボタンの `aria-expanded` が `true`'
+      - '`afterprint` の後、選んでいた 2 つ目のタブの中身だけが出ていて、節・行の詳細・表・注意書き・閉じたタブとステップ・ツリーの `src/`・`parts/`・ER 図の畳んだテーブルが閉じている'
     test: test_normal_when_printed_with_syntax
   - name: 正常系（本文を差し替えて操作を付け直す）
     summary: '`update` の後も記法の操作が働き、`destroy` の後は `document` の受け取りが外れている'
@@ -710,6 +711,58 @@ flows:
       - 図の外の段落の `pointerdown` の後、ツールチップが `hidden` を持つ
       - '`pointerType` が `mouse` の `pointerdown` を開いている印に発火しても、ツールチップは `hidden` を持たない'
     test: test_normal_when_diagram_tooltip_touch
+  - name: 正常系（ER 図の列を開閉する）
+    summary: ER 図のテーブルの列の開閉のボタンで、主キーと外部キーの列だけにし、全ての列に戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: ER 図を持つ Markdown
+        description: 主キー 1 つ・外部キー 1 つ・ほかの列 10 個を持つテーブル `orders` と、`orders` の外部キーの列へ関係を持つテーブル `customers` の ER 図の定義を `<!-- er -->` 〜 `<!-- /er -->` に置いた文書
+        notes: '`folded` は書かない。`orders` の外部キーの列は、ほかの列 10 個の後ろ（12 番目）に配置する'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 全ての列を出したテーブル
+        P->>M: orders の列の開閉のボタンを押す
+        M->>P: 主キーと外部キーの列だけを出し、線を結び直す
+        P->>M: 同じボタンにフォーカスして Enter を押す
+        M->>P: 全ての列を出し、線を結び直す
+    expected:
+      - 描いた直後、`orders` に列の行が 12 あり、列の開閉のボタンの `aria-expanded` が `true`
+      - 押した後、`orders` の列の行が主キーと外部キーの 2 つと `非表示 10 列` の行になり、`aria-expanded` が `false` で、フォーカスがボタンにある
+      - 押した後、関係の線の `orders` の端の縦の位置が外部キーの列の行の縦の中ほどにあり、押す前の縦の位置と異なる。倍率のボタンの文字は押す前と同じ
+      - Enter の後、`orders` の列の行が 12 に戻り、`aria-expanded` が `true`
+    test: test_normal_when_er_columns_folded
+  - name: 正常系（ER 図のテーブルのツールチップ）
+    summary: テーブルの見出しの説明のボタンに、ポインターとフォーカスで概要と列の説明のツールチップを出し、Esc で消す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: ER 図を持つ Markdown
+        description: 概要 `注文する人` を持ち、列 `email`・`name` が説明を持つテーブル `customers`（論理名 `顧客`）1 つの ER 図の定義を置いた文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 説明のボタンにポインターを乗せ、ツールチップの上へ動かす
+        M->>P: 概要と列の説明を出したままにする
+        P->>M: Esc を押す
+        M->>P: ツールチップを消す
+        P->>M: Tab で説明のボタンにフォーカスする
+        M->>P: 概要と列の説明を出す
+    expected:
+      - 説明のボタンの上で、ボタンの `aria-describedby` が指す `role="tooltip"` の要素が `hidden` を持たず、`顧客（customers）`・`注文する人`・`email` と `name` の名前と説明を持つ
+      - ツールチップの下端がテーブルの上端より上にある
+      - ツールチップの上へ動かした後も `hidden` を持たず、Esc の後に `hidden` を持ち、フォーカスがボタンにある
+      - Tab で説明のボタンにフォーカスしたときも、同じツールチップが `hidden` を持たない
+    test: test_normal_when_er_table_tooltip
   - name: 正常系（操作できる部品）
     summary: スライダーの値でグラフを描き直し、今の値を JSON でクリップボードへ写す
     setup:
@@ -4522,7 +4575,7 @@ constraints:
   - item: 節と行の詳細の開閉
     constraint: 節は見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じた節の `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じた節の中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じた節の中に当たったときは、その節を開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを置き、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く
-    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じた節・行の詳細・閉じたツリーのフォルダ・畳んだコードの行を開き、タブの全ての中身をタブ名を題にして縦に並べる。`afterprint` で、開いたものだけを閉じ直し、印刷の前に選んでいたタブだけを出す'
+    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じた節・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線を結び直す）を開き、タブの全ての中身をタブ名を題にして縦に並べる。`afterprint` で、開いたものだけを閉じ直し、印刷の前に選んでいたタブだけを出す'
   - item: 拡張の印
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
@@ -4549,8 +4602,11 @@ constraints:
     constraint: 全画面のボタンで、題・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を置く。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を外す
     notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
   - item: 図のツールチップ
-    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は制約の「ツールチップの操作」と同じく `opts.config.tooltips.placement` に従い、箱の印のツールチップは箱の上（下）に置く。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印と、ER 図のテーブルの見出しの説明のボタンを、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は制約の「ツールチップの操作」と同じく `opts.config.tooltips.placement` に従い、箱の印のツールチップは箱の上（下）、テーブルの説明のボタンのツールチップはテーブルの上（下）に置く。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
+  - item: ER 図の列の開閉
+    constraint: ER 図のテーブルの列の開閉のボタンを押すと（Enter・Space を含む）、全ての列を出しているテーブルは主キーと外部キーの列だけを出して `非表示 {数} 列` の行を置き、畳んでいるテーブルは全ての列を出す。ボタンの `aria-expanded` とアイコン（lucide の `chevrons-down-up`・`chevrons-up-down`）を切り替え、関係の線・多重度の記号・ラベルを今の列の行の位置へ結び直し、図の倍率を保ち、フォーカスをボタンに残す。全画面のモーダルは開いたときの開閉の状態で描く。`update` では定義の `folded` の状態で描き直す
+    notes: 列の行と線の結び方は dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts の制約『ER 図』。モックの「列を畳んだ」（確認ログ）
   - item: 操作できる部品の操作
     constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは、アイコンの後ろに `opts.config.labels.paramCopy` の文言（既定は `今の値を写す`）を描き、`aria-label` を付けずにその文字を読み上げの名前にする。押すと `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
     notes: 知らせの文言は画面設計『文書』
