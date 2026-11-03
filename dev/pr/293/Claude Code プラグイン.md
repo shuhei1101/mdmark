@@ -89,3 +89,18 @@
 | `tests/integration/lib/build.test.ts` | `test_normal` | 修正 | ✅ | `plugin/scripts/pre-tool-use.js` があり、`plugin/scripts/session-start.js`・`plugin/guide` が無い |
 | `tests/integration/lib/build.test.ts` | `test_error_when_guide_index_too_long` | 削除 | - | インターフェース定義で異常系を削除したため |
 | `tests/integration/ClaudeCodeプラグイン/read-guide.test.ts`・`session-start.test.ts` | 全て | 削除 | - | インターフェース定義を削除したため |
+
+### E2E
+
+E2E は tester が release ブランチで流すため、ここでは実行しない（lint・型検査: `テスト結果/20261103220634_37f61e92_lint.log`）。
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/e2e/単一ユースケース/使い方集を読む.spec.ts` | `test_normal`・`test_error_when_dev_docs_missing` | 修正 | 未実行 | instructions の動線と、dev-docs の `search_docs` の一覧・本文。dev-docs が無いときの文と端末の設定を作らないこと |
+| `tests/e2e/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する.spec.ts` | `test_normal`・`test_error_when_dev_docs_missing` | 追加 | 未実行 | 使い方集の参照と `check` のずれの 1 件から 0 件 |
+| `tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts` | `test_normal` | 修正 | 未実行 | `scripts/session-start.js`・`guide`・`node_modules` が無く、3 つのツールで、`hooks.json` に SessionStart が無い |
+| `tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts` | `test_normal_when_start`・`test_normal_when_port_overridden` | 修正 | 未実行 | 3 つのツール |
+| `tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts` | `test_normal` | 修正 | 未実行 | `plugin/` に `scripts/pre-tool-use.js` があり、`scripts/session-start.js`・`guide` が無い |
+| `tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts` | `test_error_when_guide_index_too_long` | 削除 | - | 使い方集の索引の文字数の上限を削除したため |
+| `tests/e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts` | 全て | 削除 | - | 単一ユースケースを削除したため |
+| `tests/e2e/dev-docs.ts` | - | 追加 | - | このリポジトリを配信元に登録した dev-docs を空きポートで起動し、`search_docs` を呼ぶ |

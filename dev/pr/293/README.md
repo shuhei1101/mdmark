@@ -39,4 +39,4 @@ Claude Code で mdmark の文書を書く人が、dev-docs の `search_docs` で
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成
-- [ ] E2E テスト作成
+- [x] E2E テスト作成
