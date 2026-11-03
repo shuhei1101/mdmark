@@ -272,7 +272,7 @@ flows:
     summary: '起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ねて埋め、blob: と動的 import を許さない環境でも描く'
     setup:
       - name: 埋めるモジュールを使うフォルダ
-        description: '`extensions`（印 `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュールと、`missing-lib` に無いファイル）・`syntax.url`（手元の `vendor/highlightjs/es/`）を書いた設定と、`greet` の印・ビューの印・`test-lib` の印・`missing-lib` の印・言語 `ts` のコードブロックを持つ文書'
+        description: '`extensions`（印 `greet` の拡張と、最上位で例外を投げる拡張 `broken`）・`libraries`（`test-lib` に相対パスの手元のモジュールと、`missing-lib` に無いファイル）・`syntax.url`（手元の `vendor/highlightjs/es/`）を書いた設定と、`greet` の印・ビューの印・`test-lib` の印・`missing-lib` の印・言語 `ts` のコードブロックを持つ文書'
         notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読む'
       - name: Mock
         description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
@@ -286,7 +286,7 @@ flows:
         C->>H: 束ねたスクリプトを script 要素に入れて書く
         C-->>W: missing-lib の警告・終了コード 0
         W->>H: blob: と動的 import を許さない環境で開く
-        H-->>W: 印・ビュー・色分けを描き、missing-lib の印の場所に知らせの枠を出す
+        H-->>W: broken を飛ばして印・ビュー・色分けを描き、missing-lib の印の場所に知らせの枠を出す
     expected:
       - 終了コードが 0 で、標準エラーに `missing-lib` の警告の行が出る
       - HTML の中の `script` 要素が `src` を持たない
@@ -294,6 +294,7 @@ flows:
       - ビューが描かれ、`test-lib` の印が描かれて知らせの枠が出ない
       - '`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
       - '`missing-lib` の印の場所に知らせの枠が出る'
+      - '`broken` の例外がコンソールのエラーに出て、`greet` の登録と文書の描画は続いている'
       - 描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
@@ -363,7 +364,7 @@ constraints:
     constraint: 開いてから描き終えるまでに、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
   - item: 束ねるスクリプト
-    constraint: 起動の処理を入口にし、埋める外部ライブラリ・ビューの部品・色分けの本体と言語・拡張のモジュールを静的な `import` で取り込み、分割せずに 1 つの ES モジュールに束ね、`src` を持たない `<script type="module">` に入れる。文書に印が無い部品・外部ライブラリと、届かない・束ねられないモジュールは取り込まず、開いたときその印の場所に知らせの枠を出す
+    constraint: 起動の処理を入口にし、ビューの部品・色分けの本体と言語は静的な `import` で、拡張と外部ライブラリのモジュールはリテラルの動的 `import()` を返す関数で取り込み、分割せずに 1 つの ES モジュールに束ね（束ねた後に `import(` は残らない）、`src` を持たない `<script type="module">` に入れる。文書に印が無い部品・外部ライブラリと、届かない・束ねられないモジュールは取り込まず、開いたときその印の場所に知らせの枠を出す。起動の処理は拡張と外部ライブラリを 1 つずつ `try` で囲んで評価し、評価で例外を投げたものは飛ばして、ほかの拡張の登録と描画を続ける
   - item: 埋める外部ライブラリ
     constraint: 文書に印がある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読む。そのモジュールが import する先も含めて、制約「束ねるスクリプト」の 1 つのスクリプトに束ねる。相対パスの URL は設定ファイルのあるフォルダを基準に読む。届かない・束ねられないものは埋めず警告に出し、開いたときその印の場所に知らせの枠を出す
   - item: 埋める拡張
