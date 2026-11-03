@@ -1,0 +1,7 @@
+csp(vscode): default-src 'none'; script-src 'nonce-cG9jLW5vbmNlLTEyMzQ1Ng' http://127.0.0.1:57602 http://127.0.0.1:57440; style-src http://127.0.0.1:57602 http://127.0.0.1:57440 'unsafe-inline'; img-src http://127.0.0.1:57440 https: data:; media-src http://127.0.0.1:57440 https: data:; font-src http://127.0.0.1:57602 http://127.0.0.1:57440; connect-src http://127.0.0.1:57602
+compiled range code bytes: 1438
+{"browser":"chromium","route":"export","ran":true,"callsBeforeRerender":1,"clickWorks":true,"destroyedOnRerender":1,"callsAfterRerender":2,"blobOrDataRequests":0,"violations":0,"nonceRead":null,"errors":[],"ok":true}
+{"browser":"chromium","route":"vscode","ran":true,"callsBeforeRerender":1,"clickWorks":true,"destroyedOnRerender":1,"callsAfterRerender":2,"blobOrDataRequests":0,"violations":0,"nonceRead":true,"errors":[],"ok":true}
+{"browser":"firefox","route":"export","ran":true,"callsBeforeRerender":1,"clickWorks":true,"destroyedOnRerender":1,"callsAfterRerender":2,"blobOrDataRequests":0,"violations":0,"nonceRead":null,"errors":[],"ok":true}
+{"browser":"firefox","route":"vscode","ran":true,"callsBeforeRerender":1,"clickWorks":true,"destroyedOnRerender":1,"callsAfterRerender":2,"blobOrDataRequests":0,"violations":0,"nonceRead":true,"errors":[],"ok":true}
+RESULT: PASS
