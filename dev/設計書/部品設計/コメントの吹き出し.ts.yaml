@@ -84,8 +84,6 @@ states:
         value: 'true'
       - name: editIndex
         value: '0'
-      - name: draft
-        value: ''
       - name: editState
         value: empty
   - name: UpdateFailed
@@ -174,7 +172,7 @@ args:
   - name: draft
     type: 文字列
     required: false
-    default: なし（そのコメントの本文）
+    default: なし（`editState` が `empty` なら空、それ以外はそのコメントの本文）
     enabled_when: '`editIndex` を渡したとき'
     description: 本文の欄に入っている文字
   - name: editState
