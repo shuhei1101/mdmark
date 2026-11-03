@@ -151,9 +151,9 @@ events:
     value: '`dialog` の `open`'
     description: '`mount` がダイアログを閉じて消し、フォーカスを押した画像の拡大のボタンへ戻す'
 css_properties:
-  - name: --mdmark-color-bg
+  - name: --mdmark-color-bg-opaque
     syntax: <color>
-    default: '#ffffff（ダーク #111113）'
+    default: var(--mdmark-color-bg)
     description: 帯とキャプションの地の色
   - name: --mdmark-color-border
     syntax: <color>

@@ -236,6 +236,26 @@ test("test_normal_when_flowchart", async ({ page }) => {
   ).toEqual(["開始", "質問", "アクション", "結果"]);
   // ノードの名前はノードの中に収まる（Firefox は文字ごとに折り返す）
   expect(nodes.every((node) => node.inside)).toBe(true);
+  // 全ての種類のノードを定義の x・y の位置に描く（質問・開始のノードも左上に重ならない）
+  const definition = JSON.parse(
+    /```json\n([\s\S]*?)\n```/.exec(await judgementMarkdown())?.[1] ?? "{}",
+  ) as { nodes: Array<{ id: string; x: number; y: number }> };
+  const placed = await figure
+    .locator(".mdmark-diagram-node")
+    .evaluateAll((elements) =>
+      elements.map((node) => ({
+        id: node.getAttribute("data-node") ?? "",
+        left: (node as HTMLElement).style.left,
+        top: (node as HTMLElement).style.top,
+      })),
+    );
+  expect(placed).toEqual(
+    definition.nodes.map((node) => ({
+      id: node.id,
+      left: `${node.x}px`,
+      top: `${node.y}px`,
+    })),
+  );
   const labels = await figure.locator(".mdmark-diagram-label").allInnerTexts();
   expect([...new Set(labels)].sort()).toEqual(["NO", "YES"]);
   const legend = await figure

@@ -2877,6 +2877,72 @@ test("test_normal_when_diagram_tooltip", async () => {
   expect(getComputedStyle(outside).textDecorationStyle).toBe("dashed");
 });
 
+/** `pointerType` の種類を持つポインターの操作を発火する */
+function firePointer(
+  target: Element,
+  type: string,
+  pointerType: "touch" | "mouse",
+): void {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      pointerType,
+      bubbles: type === "pointerdown" || type === "pointerup",
+    }),
+  );
+}
+
+/** 持ち主をタッチでタップする（既にフォーカスを持つ持ち主では `focus` は発火しない） */
+function tapOwner(owner: HTMLElement): void {
+  for (const type of [
+    "pointerenter",
+    "pointerdown",
+    "pointerup",
+    "pointerleave",
+  ]) {
+    firePointer(owner, type, "touch");
+  }
+  owner.focus();
+}
+
+// タッチでは持ち主のタップで開閉を切り替え、ツールチップと持ち主の外の pointerdown で閉じる（正常系）
+test("test_normal_when_diagram_tooltip_touch", async () => {
+  // 準備
+  await userEvent.unhover(document.body);
+  const markdown = [
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapHtml(
+      '<div data-hint="返信の種類を 1 つ選ぶ" style="display: inline-block; padding: 1rem 2rem">自動返信</div>',
+    ),
+    "図の外の段落。",
+  ].join("\n\n");
+  const el = await mountEmbedded(markdown);
+  const info = buttonOf(el, "「分類」の入力・処理・出力");
+  const ioTip = tipOf(info);
+  const mark = find<HTMLElement>(el, ".mdmark-hint-block .mdmark-hint-mark");
+  const hintTip = tipOf(mark);
+  const outside = find<HTMLElement>(el, ":scope > p");
+  // 実行・検証: 閉じた印へのタップで開く
+  tapOwner(info);
+  expect(ioTip.hidden).toBe(false);
+  // 開いている印へのタップで閉じる
+  tapOwner(info);
+  expect(ioTip.hidden).toBe(true);
+  // div の印へのタップで data-hint の文を出す
+  tapOwner(mark);
+  expect(hintTip.hidden).toBe(false);
+  expect(hintTip.textContent).toBe("返信の種類を 1 つ選ぶ");
+  // mouse の pointerdown では切り替えない
+  firePointer(mark, "pointerdown", "mouse");
+  expect(hintTip.hidden).toBe(false);
+  // ツールチップの中の pointerdown では閉じない
+  firePointer(hintTip, "pointerdown", "touch");
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(hintTip.hidden).toBe(false);
+  // 図の外の段落の pointerdown だけで閉じる
+  firePointer(outside, "pointerdown", "touch");
+  expect(hintTip.hidden).toBe(true);
+});
+
 /** 操作できる部品を描いた要素と、その要素の部品の要素 */
 async function mountParam(): Promise<{ el: HTMLElement; param: HTMLElement }> {
   const el = createElement();
@@ -5149,6 +5215,147 @@ test("test_normal_when_color_theme_unknown", async () => {
     }
     expect(find(el, "a").textContent).toBe("リンク");
     expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+/** 周りの面の色（地を透明にした使う側が `--mdmark-color-bg-opaque` に指定する色） */
+const SURROUNDING_BG = "rgb(240, 240, 240)";
+
+/** 本文の幅に収まる 3 列 3 行の表を持つ Markdown */
+const SMALL_TABLE =
+  "| a | b | c |\n| --- | --- | --- |\n| 1 | 2 | 3 |\n| 4 | 5 | 6 |\n| 7 | 8 | 9 |\n";
+
+/** 層の外の CSS を足し、後始末のために控える */
+function addOuterStyle(text: string): void {
+  const style = document.createElement("style");
+  style.textContent = text;
+  document.head.append(style);
+  addedStyles.push(style);
+}
+
+/** 要素の範囲を撮った PNG の、要素の左上からの CSS の px の位置の画素の色 */
+async function pixelAt(
+  element: HTMLElement,
+  x: number,
+  y: number,
+): Promise<string> {
+  const png = await page.screenshot({ element, save: false });
+  const image = new Image();
+  image.src = `data:image/png;base64,${png}`;
+  await image.decode();
+  const scale = image.width / element.getBoundingClientRect().width;
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d");
+  context?.drawImage(image, 0, 0);
+  const data = context?.getImageData(
+    Math.round(x * scale),
+    Math.round(y * scale),
+    1,
+    1,
+  ).data;
+  return `rgb(${data?.[0]}, ${data?.[1]}, ${data?.[2]})`;
+}
+
+/** 線のラベルにポインターを乗せて開いた、図のツールチップ */
+async function openDiagramTip(figure: Element): Promise<HTMLElement> {
+  const label = tipLabels(figure)[0];
+  if (!label) {
+    throw new Error("tip を持つ線のラベルが無い");
+  }
+  await userEvent.hover(label);
+  const tip = tipOf(label);
+  expect(tip.hidden).toBe(false);
+  return tip;
+}
+
+// 地を透明にし `--mdmark-color-bg-opaque` に周りの面の色を指定すると、本文の地は透け、表の覆い・図のツールチップ・全画面の図はその色で描く（正常系）
+test("test_normal_when_bg_transparent_with_opaque", async () => {
+  // 準備
+  document.body.style.backgroundColor = SURROUNDING_BG;
+  addOuterStyle(
+    `.mdmark { --mdmark-color-bg: transparent; --mdmark-color-bg-opaque: ${SURROUNDING_BG} }`,
+  );
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    const { el, figure } = await mountFlow({ extra: `\n${SMALL_TABLE}` });
+    // 検証: 本文の地は透ける
+    expect(getComputedStyle(el).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    // 検証: 表の本文の行の高さの真ん中で、左右の枠の内側は周りの面の色（端の影が出ない）
+    const table = find<HTMLElement>(el, "table");
+    const box = table.getBoundingClientRect();
+    const row = find<HTMLElement>(table, "tbody tr").getBoundingClientRect();
+    const middle = row.top - box.top + row.height / 2;
+    expect(await pixelAt(table, 2, middle)).toBe(SURROUNDING_BG);
+    expect(await pixelAt(table, box.width - 3, middle)).toBe(SURROUNDING_BG);
+    // 実行・検証: 図のツールチップ
+    const tip = await openDiagramTip(figure);
+    expect(getComputedStyle(tip).backgroundColor).toBe(SURROUNDING_BG);
+    await userEvent.unhover(document.body);
+    // 実行・検証: 全画面の図
+    buttonOf(figure, "全画面で開く").click();
+    const dialog = find<HTMLDialogElement>(el, "dialog[open]");
+    expect(getComputedStyle(dialog).backgroundColor).toBe(SURROUNDING_BG);
+    dialog.close();
+  } finally {
+    document.body.style.backgroundColor = "";
+    await resetThemed();
+  }
+});
+
+// `--mdmark-color-bg` だけを不透明な色で上書きすると、`--mdmark-color-bg-opaque` もその色になり、浮く部品の色が変わらない（正常系）
+test("test_normal_when_bg_overridden", async () => {
+  // 準備
+  addOuterStyle(".mdmark { --mdmark-color-bg: rgb(34, 34, 34) }");
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    const { el, figure } = await mountFlow({ extra: `\n${SMALL_TABLE}` });
+    const tip = await openDiagramTip(figure);
+    // 検証
+    expect(getComputedStyle(el).backgroundColor).toBe("rgb(34, 34, 34)");
+    expect(
+      getComputedStyle(el).getPropertyValue("--mdmark-color-bg-opaque").trim(),
+    ).toBe("rgb(34, 34, 34)");
+    expect(getComputedStyle(tip).backgroundColor).toBe("rgb(34, 34, 34)");
+    await userEvent.unhover(document.body);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// body の直下に置くコメントの入力欄は、`--mdmark-color-bg-opaque` を `:root` と配色の class から継承し、透けない（正常系）
+test("test_normal_when_outside_mdmark", async () => {
+  // 準備
+  const el = createElement();
+  const store = createCommentStore();
+  await emulateColorScheme("light");
+  try {
+    await mountTracked(el, {
+      markdown: `${COMMENT_TEXT}\n`,
+      config: { features: { comments: true } },
+      docId: "guide",
+      commentStore: store,
+    });
+    await vi.waitFor(() => expect(store.load).toHaveBeenCalledTimes(1));
+    // 実行: 段落の文字を選び「コメント」を押す
+    selectText(find(el, "p"), 10, 16);
+    await vi.waitFor(() => expect(visibleCommentButton()).toBeDefined());
+    visibleCommentButton()?.click();
+    const popover = find<HTMLElement>(document.body, ".mdmark-comment-popover");
+    // 検証: body の直下にあり、明るい配色の地
+    expect(el.contains(popover)).toBe(false);
+    expect(getComputedStyle(popover).backgroundColor).toBe(
+      "rgb(255, 255, 255)",
+    );
+    // 実行・検証: body に mdmark-theme-dark を付けるとダークの地
+    document.body.classList.add("mdmark-theme-dark");
+    expect(getComputedStyle(popover).backgroundColor).toBe("rgb(19, 19, 22)");
+    await userEvent.keyboard("{Escape}");
   } finally {
     await resetThemed();
   }

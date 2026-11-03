@@ -1,0 +1,35 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-render-diagram-node-padding
+
+ ❯ |unit| tests/unit/src/render/sanitize.test.ts (20 tests | 1 failed) 1676ms
+   × test_sanitize_when_diagram_node_padding 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_diagram_node_padding
+AssertionError: expected '<div class="mdmark-diagram-node" styl…' to contain 'style="left:10px;top:20px;width:280px…'
+
+Expected: "style="left:10px;top:20px;width:280px;height:136px;padding:34px 70px""
+Received: "<div class="mdmark-diagram-node" style="width:280px;height:136px;padding:34px 70px">質問</div><div class="mdmark-diagram-node" style="width:56px;height:56px;padding:14.6px">開始</div><div class="mdmark-diagram-node">負の余白</div>"
+
+ ❯ tests/unit/src/render/sanitize.test.ts:224:21
+    222|   const sanitized = sanitize(html);
+    223|   // 検証
+    224|   expect(sanitized).toContain(`style="${question}"`);
+       |                     ^
+    225|   expect(sanitized).toContain(`style="${start}"`);
+    226|   const negative = sanitized.slice(sanitized.indexOf("開始</div>"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 176 passed (177)
+      Tests  1 failed | 1235 passed (1236)
+   Start at  02:14:58
+   Duration  74.50s (worker 70%, tests 18%, import 9%, transform 4%)
+

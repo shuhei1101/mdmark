@@ -13,6 +13,8 @@ let builtRoot = "";
 
 // 拡大のボタンを押す回数
 const ZOOM_CLICKS = 2;
+// 横にはみ出すまで拡大するときに、拡大のボタンを押す回数の上限（上限の 300% に届く回数）
+const ZOOM_MAX_CLICKS = 6;
 
 // 文書を縦にスクロールできるようにする、末尾の段落の数
 const TAIL_PARAGRAPHS = 40;
@@ -253,8 +255,23 @@ test("test_normal_when_embedded_chart", async ({ page }) => {
   await page.keyboard.press("0");
   expect(await zoomPercent(page)).toBe(fit);
   expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(0);
-  // 実行・検証: 拡大してからドラッグすると、チャートの位置が動く
+  // 実行・検証: 横にはみ出すまで拡大してからドラッグすると、チャートの位置が動く
   await zoomIn(page);
+  for (let count = 0; count < ZOOM_MAX_CLICKS; count += 1) {
+    if (
+      await viewport.evaluate(
+        (element) => element.scrollWidth > element.clientWidth,
+      )
+    ) {
+      break;
+    }
+    await page.getByRole("button", { name: "拡大" }).click();
+  }
+  expect(
+    await viewport.evaluate(
+      (element) => element.scrollWidth > element.clientWidth,
+    ),
+  ).toBe(true);
   await viewport.evaluate((element) => {
     element.scrollLeft = 0;
     element.scrollTop = 0;
