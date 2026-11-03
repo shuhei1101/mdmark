@@ -378,7 +378,7 @@ functions:
       - name: test_attach_tables_when_columns_notified
         case: 正常
         summary: 列の表示を切り替えるたびに、表の番号と隠している列の見出しで知らせる
-        condition: '`data-features="columns"` の表を 3 つ（1 つ目は `div.mdmark-diff-block[data-kind="del"]` の中、2 つ目は `data-hide="2"`、3 つ目は列 `名前`・`状態`・`説明`）付け、3 つ目の表で `状態` のチェックを外してから「既定に戻す」を押す'
+        condition: '`data-features="columns"` の表を 3 つ（1 つ目は `div.mdmark-diff-block[data-kind="del"]` の中、2 つ目は `data-hide="2"`、3 つ目は列 `名前`・`状態`・`説明`）付け、3 つ目の表で `状態` のチェックを外してから「リセット」を押す'
         mock: '`onColumnsChange` は引数を控える関数'
         expected: '付けた時点では呼ばれない。外した後に `{ tableIndex: 1, hidden: ["状態"] }`、戻した後に `{ tableIndex: 1, hidden: [] }` で、合わせて 2 回呼ばれる'
       - name: test_attach_tables_when_columns_callback_throws

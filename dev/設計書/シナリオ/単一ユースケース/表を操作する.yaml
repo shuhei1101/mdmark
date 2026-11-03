@@ -306,14 +306,14 @@ scenarios:
         P-->>U: 列名のチェックボックスを並べたメニュー
         U->>P: 説明にチェックを入れ、更新日のチェックを外す
         P-->>U: 名前と説明の列を出した表
-        U->>P: 「既定に戻す」を押す
+        U->>P: 「リセット」を押す
         P-->>U: 説明の列を隠した表
     expected:
       - 描いた直後、説明の列の見出しとセルが表示されておらず、名前と更新日の列が表示されている
       - メニューに名前・説明・更新日のチェックボックスが並び、説明だけチェックが外れている
       - 先頭の列（名前）のチェックボックスは外せず（`disabled`）、メニューに `先頭の列は隠せません` が出ている
       - 説明にチェックを入れ、更新日のチェックを外した後、名前と説明の列が元の位置（1 列目・2 列目）に表示され、更新日の列が表示されていない
-      - 「既定に戻す」を押した後、`hide=` のとおり説明の列だけが隠れ、名前と更新日の列が表示されている
+      - 「リセット」を押した後、`hide=` のとおり説明の列だけが隠れ、名前と更新日の列が表示されている
       - Esc でメニューが閉じ、フォーカスが列の表示の切り替えのボタンへ戻る
     test: test_normal_when_columns_toggled
   - name: 正常シナリオ（列の表示の切り替えを受け取る）
@@ -338,13 +338,13 @@ scenarios:
         M->>P: onColumnsChange({tableIndex: 0, hidden: [説明, 更新日]})
         U->>P: 2 つ目の +columns の表のメニューで備考にチェックを入れる
         M->>P: onColumnsChange({tableIndex: 1, hidden: []})
-        U->>P: 2 つ目の表の「既定に戻す」を押す
+        U->>P: 2 つ目の表の「リセット」を押す
         M->>P: onColumnsChange({tableIndex: 1, hidden: [備考]})
     expected:
       - 描いた直後には `onColumnsChange` が呼ばれていない
       - '説明のチェックを外した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて呼ばれる'
       - '備考にチェックを入れた後、`onColumnsChange` が `{tableIndex: 1, hidden: []}` を受けて呼ばれる'
-      - '「既定に戻す」を押した後、`onColumnsChange` が `{tableIndex: 1, hidden: ["備考"]}` を受けて呼ばれる'
+      - '「リセット」を押した後、`onColumnsChange` が `{tableIndex: 1, hidden: ["備考"]}` を受けて呼ばれる'
       - '更新日・説明の順にチェックを外した後の最後の通知が `{tableIndex: 0, hidden: ["説明", "更新日"]}`（操作の順ではなく表の列の並びの順）'
     test: test_normal_when_columns_change_notified
   - name: 正常シナリオ（集計の行を読む）

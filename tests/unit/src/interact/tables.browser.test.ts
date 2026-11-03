@@ -1777,7 +1777,7 @@ test("test_attach_tables_when_columns_notified", async () => {
     tableIndex: 1,
     hidden: ["状態"],
   });
-  // 実行・検証: 既定に戻す
+  // 実行・検証: リセット
   findButton(third, "button.mdmark-columns-reset").click();
   expect(onColumnsChange).toHaveBeenLastCalledWith({
     tableIndex: 1,
