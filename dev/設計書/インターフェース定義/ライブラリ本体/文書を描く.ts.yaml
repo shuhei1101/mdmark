@@ -623,6 +623,41 @@ flows:
       - 箱の中の `意思決定モデル` と図の外の段落の `意思決定モデル` がどちらも class `mdmark-term` の要素で、箱の中の語のツールチップに索引の意味が出る
       - 箱の中の語の `text-decoration-style` の計算値が、図の外の語と同じ `dashed`
     test: test_normal_when_diagram_tooltip
+  - name: 正常系（図のツールチップをタッチで開閉する）
+    summary: '`pointerType` が `touch` のとき、持ち主のタップで開閉を切り替え、ツールチップと持ち主の外の `pointerdown` で閉じる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: ツールチップを持つ Markdown
+        description: '`io` を持つ LLM の箱 1 つのフロー図と、`<!-- html -->` の範囲に `data-hint` を持つ `div` を置いた文書'
+      - name: Mock
+        description: 差し替える依存は無い。タップは、持ち主に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に発火し、持ち主の `focus()` を呼んで起こす（既にフォーカスを持つ持ち主へのタップでは `focus` は発火しない）
+        notes: iOS の Safari のタップの後に `:hover` が残る状態を、外のタップで `pointerleave`・`blur` を発火させず、`pointerdown` だけを発火して起こす
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: LLM の箱の印をタップする
+        M->>P: 入力・処理・出力を出す
+        P->>M: 同じ印をタップする
+        M->>P: ツールチップを消す
+        P->>M: div の印をタップする
+        M->>P: data-hint の文を出す
+        P->>M: 開いている div の印に mouse の pointerdown を発火する
+        M->>P: 出したままにする
+        P->>M: ツールチップの中に pointerdown を発火する
+        M->>P: 出したままにする
+        P->>M: 図の外の段落に pointerdown だけを発火する
+        M->>P: ツールチップを消す
+    expected:
+      - 閉じた印への 1 回のタップの後、印の `aria-describedby` が指すツールチップが `hidden` を持たない
+      - 開いている印へのタップの後、そのツールチップが `hidden` を持つ
+      - '`div` の印へのタップの後、`data-hint` の文のツールチップが `hidden` を持たない'
+      - ツールチップの中の `pointerdown` の後も、ツールチップが `hidden` を持たない
+      - 図の外の段落の `pointerdown` の後、ツールチップが `hidden` を持つ
+      - '`pointerType` が `mouse` の `pointerdown` を開いている印に発火しても、ツールチップは `hidden` を持たない'
+    test: test_normal_when_diagram_tooltip_touch
   - name: 正常系（操作できる部品）
     summary: スライダーの値でグラフを描き直し、今の値を JSON でクリップボードへ写す
     setup:
@@ -3377,7 +3412,7 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（色のプリセットを上書きする）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -3641,7 +3676,7 @@ constraints:
     constraint: 全画面のボタンで、題・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を置く。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を外す
     notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
   - item: 図のツールチップ
-    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。同時に出すのは 1 つだけ。出す場所は制約の「ツールチップの操作」と同じく `opts.config.tooltips.placement` に従い、箱の印のツールチップは箱の上（下）に置く。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つ箱の右上の印を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は制約の「ツールチップの操作」と同じく `opts.config.tooltips.placement` に従い、箱の印のツールチップは箱の上（下）に置く。箱の印の外では開かず、線のラベルと印の上でポインターの形を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。箱の中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 操作できる部品の操作
     constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を描き直す（題・凡例・倍率は保つ）。今の値を写すボタンは、アイコンの後ろに `opts.config.labels.paramCopy` の文言（既定は `今の値を写す`）を描き、`aria-label` を付けずにその文字を読み上げの名前にする。押すと `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で書き、ボタンのそばの `role="status"` に写したことを出す。書き込みが拒まれたときは、書けなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
@@ -3650,7 +3685,7 @@ constraints:
     constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびに判定し直す）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線・やめた言い方のマーカーとツールチップを付ける（下線は範囲ごとに語の最初の 1 回だけで、本文の節とは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
     notes: 文書に書いたスクリプトは動かさず、動くのは mdmark が付ける操作だけ（D-22）
   - item: ヒントの操作
-    constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・出す場所・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
+    constraint: '`data-hint` のブロックの要素は右上の `mdmark-hint-mark` のボタンだけ、行内の要素は要素そのものが、ポインターとフォーカスを受けてツールチップを開く。ブロックの要素の印の外では開かず、要素にフォーカスも移さない。開き方・タッチでの開閉・出す場所・開いたままにする条件・同時に 1 つだけ・スクロールで付いて動く・`beforeprint` で閉じる・Esc で消してフォーカスを持ち主に残すのは、制約の「図のツールチップ」と同じ。ポインターの形は変えない。`hints` がオフのときは `render` が印と中身を出さないため、何も付けない。`update` で付け直し、`destroy` で外す。ツールチップの `id` は制約の「用語と関連文書の一覧の id」と同じくページの中で一意な値に振り直す'
     notes: 印だけで開くのとポインターの形は確認ログの決定
   - item: 差分の取り出し元
     constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返す。`revisions` が配列でない・`id` か `at` が無いか形が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
