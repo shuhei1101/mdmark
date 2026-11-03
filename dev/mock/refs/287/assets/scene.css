@@ -1,0 +1,185 @@
+/* 先頭へ戻るボタンを見る場面の、使う側のページの見た目（mdmark の層の外） */
+
+body {
+  margin: 0;
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-text);
+  font-family: var(--mdmark-font-body);
+}
+
+/* モック専用の操作列: 実画面に無い帯。未確定の論点ごとに案のリンクを並べる */
+.mock-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 8px 16px;
+  background: #2d2a3d;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* 1 つの論点の案のまとまり */
+.mock-bar-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/* 論点の名前 */
+.mock-bar-label {
+  color: #c9c5dc;
+}
+
+/* 操作列のリンク: 高さを揃え、今の案は背景を反転して示す */
+.mock-bar-item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #8f8aa8;
+  border-radius: 6px;
+  color: #ffffff;
+  text-decoration: none;
+
+  &:hover {
+    background: #45415c;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  &[aria-current="page"] {
+    border-color: #ffffff;
+    background: #ffffff;
+    color: #2d2a3d;
+  }
+}
+
+/* 使う側のページのトップバー */
+.host-bar {
+  padding: 12px 24px;
+  background: var(--mdmark-color-bg);
+  border-block-end: 1px solid var(--mdmark-color-border);
+  font-weight: 700;
+}
+
+/* パンくず */
+.crumbs {
+  margin: 0;
+  padding: 12px 24px 0;
+  font-size: 13px;
+
+  a {
+    color: var(--mdmark-color-link);
+  }
+}
+
+/* 文書を描く面: 使う側の地の上に、文書の地の面を置く。狭い幅でも本文を画面の端から離す */
+.host {
+  max-width: 64rem;
+  margin: 16px auto 48px;
+  padding-inline: 16px;
+}
+
+#doc {
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 8px;
+  background: var(--mdmark-color-bg);
+}
+
+/* スクロールする祖先の要素の中に描く場面: 高さ 600px で縦にスクロールする要素。画面全体はスクロールしない */
+body[data-host="box"] {
+  height: 100dvh;
+  overflow: hidden;
+
+  .scroll-box {
+    height: 600px;
+    overflow-y: auto;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 8px;
+  }
+}
+
+/* 部品のカタログ: 状態ごとの見本を縦に並べる */
+.catalog {
+  display: grid;
+  gap: 24px;
+
+  > section {
+    display: grid;
+    gap: 8px;
+  }
+}
+
+.catalog-title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.catalog-note {
+  margin: 0;
+  color: var(--mdmark-color-muted);
+  font-size: 14px;
+}
+
+.catalog-label {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* カタログの状態の並び: 状態ごとの見本を横に並べ、狭い幅では折り返す */
+.catalog-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 1 つの状態: 見本と状態の名前を縦に並べる */
+.catalog-state {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  color: var(--mdmark-color-muted);
+  font-size: 13px;
+}
+
+/* カタログの見本の先頭へ戻るボタン: 画面に留めず、並びの中に置く。is-hover・is-focus・is-active で状態の見た目を固定する */
+.catalog-stage .mdmark-back-to-top {
+  position: static;
+
+  &.is-hover {
+    background: var(--mdmark-color-surface);
+    color: var(--mdmark-color-text);
+  }
+
+  &.is-focus {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+
+  &.is-active {
+    background: var(--mdmark-color-current-bg);
+    color: var(--mdmark-color-link);
+  }
+}
+
+/* 置き場所の見本: スクロールする場所に見立てた枠の右下に、ボタンを留める */
+.catalog-frame {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 8px;
+  background: var(--mdmark-color-bg);
+
+  .mdmark-back-to-top {
+    position: absolute;
+  }
+}

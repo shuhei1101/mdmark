@@ -18,6 +18,7 @@ import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
+import { renderBackToTop } from "../src/parts/back-to-top.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
@@ -918,6 +919,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       : html;
   },
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
+  "back-to-top": (args) =>
+    renderBackToTop({ hidden: args.hidden as boolean | undefined }),
   "side-toc": (args) =>
     // 本文の列を左に置き、右側の目次を描く先の要素の右端に寄せる（`mount` が描く並びと同じ）
     `<div class="mdmark-content">${SAMPLE_BODY}</div>${renderSideToc({

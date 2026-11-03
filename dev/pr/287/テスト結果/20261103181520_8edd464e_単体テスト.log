@@ -1,0 +1,319 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top
+
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (26 tests | 2 failed) 3234ms
+   × test_mount_when_side_toc 332ms
+   × test_mount_when_back_to_top 232ms
+6:14:17 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/back-to-top.ts" from "tests/unit/src/interact/back-to-top.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/interact/back-to-top.browser.test.ts:6:35
+  3  |  import { addStyles } from "../../helpers/dom.ts";
+  4  |  /** 先頭へ戻るボタンの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  5  |  const loadBackToTop = () => import("../../../../src/interact/back-to-top.ts");
+     |                                     ^
+  6  |  /** 画面の幅と高さ */
+  7  |  const VIEWPORT = {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 3)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:20184:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/back-to-top.browser.test.ts (0 test)
+6:14:19 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/scroller.ts" from "tests/unit/src/interact/scroller.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/interact/scroller.browser.test.ts:4:34
+  1  |  import { afterEach, expect, test } from "vitest";
+  2  |  /** スクロールする場所を見つける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  3  |  const loadScroller = () => import("../../../../src/interact/scroller.ts");
+     |                                    ^
+  4  |  const elements = [];
+  5  |  /** 高さ 600px の縦にスクロールする枠の中に、指定した高さの中身を入れてページに置き、中身を返す */
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 1)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/node_modules/vite/dist/node/chunks/node.js:20184:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/scroller.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/config.test.ts (9 tests | 3 failed) 34ms
+   × test_resolve_config 28ms
+   × test_resolve_config_when_features_given 1ms
+   × test_resolve_config_when_side_toc_mode_given 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (10 tests | 1 failed) 15325ms
+   × test_open_diagram_dialog_when_tip_open 15059ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts (7 tests | 1 failed) 15269ms
+   × test_attach_lightbox_when_closed 15043ms
+ ❯ |unit| tests/unit/src/parts/back-to-top.test.ts (2 tests | 2 failed) 44ms
+   × test_render_back_to_top 40ms
+   × test_render_back_to_top_when_hidden 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/back-to-top.browser.test.ts [ tests/unit/src/interact/back-to-top.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/interact/back-to-top.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/interact/back-to-top.browser.test.ts?import&browserv=1793697256568
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/scroller.browser.test.ts [ tests/unit/src/interact/scroller.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/interact/scroller.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/interact/scroller.browser.test.ts?import&browserv=1793697259667
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_side_toc
+AssertionError: expected …(2) to have a length of 3 but got 2
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_side_toc.png
+
+- Expected
++ Received
+
+- 3
++ 2
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=9e58e5e1:2639:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=9e58e5e1:2439:14
+ ❯ tests/unit/src/mount.browser.test.ts:508:23
+    506|   });
+    507|   // 検証
+    508|   expect(el.children).toHaveLength(3);
+       |                       ^
+    509|   expect(el.children[0]?.matches("div.mdmark-content")).toBe(true);
+    510|   expect(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_back_to_top
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_back_to_top.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/mount.browser.test.ts:566:68
+    564|   handle.destroy();
+    565|   // 検証
+    566|   expect(afterMount?.matches("button.mdmark-back-to-top[hidden]")).toB…
+       |                                                                    ^
+    567|   expect(afterUpdate?.matches("button.mdmark-back-to-top[hidden]")).to…
+    568|   expect(countAfterUpdate).toBe(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+TimeoutError: locator.hover: Timeout 14851ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('dialog').getByLabel('問い合わせへの自動返信の構成範囲: メールを受け取ってから返信するまで・更新日: 2026-10-').getByText('メール', { exact: true })
+    - locator resolved to <span tabindex="0" data-line="flow" data-tip-owner="w-mail" class="mdmark-diagram-label has-tip" aria-describedby="mdmark-diagram-10-0-modal-tip-5">メール</span>
+  - attempting hover action
+    2 × waiting for element to be visible and stable
+      - element is visible and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying hover action
+    - waiting 20ms
+    2 × waiting for element to be visible and stable
+      - element is visible and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying hover action
+      - waiting 100ms
+    27 × waiting for element to be visible and stable
+       - element is visible and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying hover action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:279:21
+    277|   // 実行・検証
+    278|   for (const owner of owners.slice(0, 2)) {
+    279|     await userEvent.hover(owner);
+       |                     ^
+    280|     const tip = document.getElementById(
+    281|       owner.getAttribute("aria-describedby") ?? "",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts > test_attach_lightbox_when_closed
+TimeoutError: locator.click: Timeout 14871ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('拡大した画像。ドラッグか矢印キーで動かす')
+    - locator resolved to <div tabindex="0" class="mdmark-lightbox-stage" aria-label="拡大した画像。ドラッグか矢印キーで動かす">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    28 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/lightbox.browser.test.ts/test_attach_lightbox_when_closed.png
+
+ ❯ tests/unit/src/interact/lightbox.browser.test.ts:198:19
+    196|     throw new Error("画像の場所が無い");
+    197|   }
+    198|   await userEvent.click(stage, { position: { x: 2, y: 2 } });
+       |                   ^
+    199|   // 検証
+    200|   await vi.waitFor(() => {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=9e58e5e1:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(7) } to deeply equal { …(7) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,9 @@
+  {
+    "colorTheme": "dev-swiss",
+    "features": {
+      "anchors": true,
+-     "back-to-top": true,
+      "backlinks": true,
+      "badge": true,
+      "callout": true,
+      "cards": true,
+      "code": true,
+
+ ❯ tests/unit/src/config.test.ts:52:20
+     50|   const resolved = resolveConfig({});
+     51|   // 検証
+     52|   expect(resolved).toEqual({
+       |                    ^
+     53|     features: DEFAULT_FEATURES,
+     54|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_features_given
+AssertionError: expected { print: false, table: true, …(27) } to deeply equal { print: false, table: true, …(28) }
+
+- Expected
++ Received
+
+@@ -1,8 +1,7 @@
+  {
+    "anchors": true,
+-   "back-to-top": true,
+    "backlinks": true,
+    "badge": true,
+    "callout": true,
+    "cards": true,
+    "code": true,
+
+ ❯ tests/unit/src/config.test.ts:73:29
+     71|   const resolved = resolveConfig({ config });
+     72|   // 検証
+     73|   expect(resolved.features).toEqual({ ...DEFAULT_FEATURES, print: fals…
+       |                             ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_side_toc_mode_given
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/config.test.ts:154:49
+    152|   expect(resolvedEmpty.sideToc.mode).toBe("hover");
+    153|   expect(resolvedEmpty.features["side-toc"]).toBe(true);
+    154|   expect(resolvedEmpty.features["back-to-top"]).toBe(true);
+       |                                                 ^
+    155| });
+    156|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |unit| tests/unit/src/parts/back-to-top.test.ts > test_render_back_to_top
+Error: Cannot find module '/src/parts/back-to-top.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/parts/back-to-top.test.ts
+ ❯ tests/unit/src/parts/back-to-top.test.ts:13:31
+     11| test("test_render_back_to_top", async () => {
+     12|   // 準備
+     13|   const { renderBackToTop } = await loadBackToTop();
+       |                               ^
+     14|   // 実行
+     15|   const html = renderBackToTop();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |unit| tests/unit/src/parts/back-to-top.test.ts > test_render_back_to_top_when_hidden
+Error: Cannot find module '/src/parts/back-to-top.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top/tests/unit/src/parts/back-to-top.test.ts
+ ❯ tests/unit/src/parts/back-to-top.test.ts:30:31
+     28| test("test_render_back_to_top_when_hidden", async () => {
+     29|   // 準備
+     30|   const { renderBackToTop } = await loadBackToTop();
+       |                               ^
+     31|   // 実行
+     32|   const html = renderBackToTop({ hidden: true });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  7 failed | 175 passed (182)
+      Tests  9 failed | 1255 passed (1264)
+   Start at  18:13:46
+   Duration  87.05s (worker 71%, tests 19%, import 7%, transform 3%)
+

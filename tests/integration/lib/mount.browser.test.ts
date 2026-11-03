@@ -2697,7 +2697,12 @@ test("test_normal_when_backlinks", async () => {
     };
   };
   // 検証（描いた直後）
-  expect(el.lastElementChild?.matches("nav.mdmark-backlinks")).toBe(true);
+  expect(
+    find(el, "button.mdmark-back-to-top").previousElementSibling?.matches(
+      "nav.mdmark-backlinks",
+    ),
+  ).toBe(true);
+  expect(el.lastElementChild?.matches("button.mdmark-back-to-top")).toBe(true);
   expect(readList()).toEqual({
     title: "関連文書",
     links: ["API:../api.md", "使い方:../使い方/guide.md"],
@@ -5750,7 +5755,11 @@ test("test_normal_when_side_toc_hovered_and_pinned", async () => {
     await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
     const { aside, content, panel, toggle, pin, rail, linkOf } = sideTocOf(el);
     // 検証: 描いた直後
-    expect([...el.children]).toEqual([content, aside]);
+    expect([...el.children]).toEqual([
+      content,
+      aside,
+      find(el, ":scope > button.mdmark-back-to-top"),
+    ]);
     expect(panelOpacity(panel)).toBe("0");
     expect(getComputedStyle(panel).pointerEvents).toBe("none");
     const items = [...panel.querySelectorAll(".mdmark-side-toc-list a")];
@@ -6247,6 +6256,422 @@ test("test_error_when_unknown_side_toc_mode", async () => {
     await vi.waitFor(() => {
       expect(panelOpacity(panel)).toBe("1");
     });
+  });
+});
+
+// ─── 先頭へ戻るボタン ───
+
+/** 先頭へ戻るボタンの文書の見出し（`## 導入` から `## 付録` までの 10 個） */
+const BACK_TO_TOP_HEADINGS = [
+  "導入",
+  "前提",
+  "準備",
+  "設定",
+  "使い方",
+  "応用",
+  "運用",
+  "確認",
+  "参考",
+  "付録",
+];
+
+/** 先頭へ戻るボタンの文書の、見出しごとの段落の数（文書を画面の高さの 3 倍より長くする） */
+const BACK_TO_TOP_PARAGRAPHS = 10;
+
+/** `## 導入` の段落のリンクの URL */
+const BACK_TO_TOP_LINK = "https://example.com/config";
+
+/** 10 個の見出しと画面の高さの 3 倍を超える段落を持ち、`## 導入` の段落にリンクを 1 つ持つ文書 */
+const BACK_TO_TOP_MARKDOWN = BACK_TO_TOP_HEADINGS.flatMap((heading, index) => [
+  `## ${heading}`,
+  "",
+  ...(index === 0
+    ? [`[設定のリファレンス](${BACK_TO_TOP_LINK}) を先に読む。`, ""]
+    : []),
+  ...Array.from({ length: BACK_TO_TOP_PARAGRAPHS }, (_, i) => [
+    `${heading}の段落 ${i + 1} は、画面の高さの 3 倍を超えるまで並べる本文。`,
+    "",
+  ]).flat(),
+]).join("\n");
+
+/** ボタンとスクロールする場所の右端・下端の間の既定（px） */
+const BACK_TO_TOP_GAP_PX = 16;
+
+/** ボタンが避ける部品の左端からボタンの右端までの間（px） */
+const BACK_TO_TOP_AVOID_GAP_PX = 8;
+
+/** 描く先の要素の子の先頭へ戻るボタン */
+function backToTopOf(el: HTMLElement): HTMLButtonElement {
+  return find<HTMLButtonElement>(el, ":scope > button.mdmark-back-to-top");
+}
+
+/** 画面全体を末尾までスクロールし、置き直しのフレームを待つ */
+async function scrollPageToEnd(): Promise<void> {
+  const scroller = document.scrollingElement as HTMLElement;
+  await scrollPageTo(scroller.scrollHeight - scroller.clientHeight);
+}
+
+/** 描く先の要素の上端の、画面全体の先頭からの位置 */
+function pageTopOf(el: HTMLElement): number {
+  return el.getBoundingClientRect().top + window.scrollY;
+}
+
+/** `window.scrollTo` に渡した引数を、オブジェクトの形で並べて返す */
+function scrollToCalls(spy: {
+  mock: { calls: unknown[][] };
+}): ScrollToOptions[] {
+  return spy.mock.calls.map((call) => call[0] as ScrollToOptions);
+}
+
+/** 本文の列の中で最初にフォーカスできる要素 */
+function firstFocusableIn(content: HTMLElement): HTMLElement {
+  return find<HTMLElement>(
+    content,
+    'a[href], button:not([hidden]), [tabindex]:not([tabindex="-1"])',
+  );
+}
+
+// 画面の高さ分スクロールすると右下に先頭へ戻るボタンを出し、押すと文書の先頭へ戻ってフォーカスを本文の列へ移す（正常系（先頭へ戻るボタンを出して押す））
+test("test_normal_when_back_to_top_pressed", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: BACK_TO_TOP_MARKDOWN });
+    const button = backToTopOf(el);
+    const { clientWidth, clientHeight } = document.documentElement;
+    const elTop = pageTopOf(el);
+    // 検証: 描いた直後
+    expect(el.lastElementChild).toBe(button);
+    expect({
+      type: button.getAttribute("type"),
+      label: button.getAttribute("aria-label"),
+      title: button.getAttribute("title"),
+      hidden: button.hidden,
+    }).toEqual({
+      type: "button",
+      label: "先頭へ戻る",
+      title: "先頭へ戻る",
+      hidden: true,
+    });
+    // 実行・検証: 画面の高さより 1px 少なくスクロールする
+    await scrollPageTo(elTop + clientHeight - 1);
+    expect(button.hidden).toBe(true);
+    // 実行・検証: 画面の高さ分スクロールする
+    await scrollPageTo(elTop + clientHeight);
+    await vi.waitFor(() => expect(button.hidden).toBe(false));
+    const rect = button.getBoundingClientRect();
+    expect(
+      Math.abs(clientWidth - rect.right - BACK_TO_TOP_GAP_PX),
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.abs(clientHeight - rect.bottom - BACK_TO_TOP_GAP_PX),
+    ).toBeLessThanOrEqual(1);
+    expect(rect.width).toBeGreaterThanOrEqual(44);
+    expect(rect.height).toBeGreaterThanOrEqual(44);
+    // 実行: ボタンを押す
+    const scrollTo = vi.spyOn(window, "scrollTo");
+    await userEvent.click(button);
+    // 検証
+    const calls = scrollToCalls(scrollTo);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.behavior).toBe("smooth");
+    expect(Math.abs((calls[0]?.top ?? Number.NaN) - elTop)).toBeLessThanOrEqual(
+      1,
+    );
+    await vi.waitFor(
+      () => {
+        expect(Math.abs(el.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
+        expect(button.hidden).toBe(true);
+      },
+      { timeout: 5000 },
+    );
+    const content = find<HTMLElement>(el, ":scope > div.mdmark-content");
+    expect(document.activeElement).toBe(content);
+    expect(content.getAttribute("tabindex")).toBe("-1");
+    // 実行・検証: 続けて Tab を押す
+    const link = find<HTMLAnchorElement>(
+      content,
+      `a[href="${BACK_TO_TOP_LINK}"]`,
+    );
+    const first = firstFocusableIn(content);
+    await userEvent.tab();
+    expect(document.activeElement).toBe(first);
+    expect(
+      first === link ||
+        (first.compareDocumentPosition(link) &
+          Node.DOCUMENT_POSITION_FOLLOWING) !==
+          0,
+    ).toBe(true);
+  });
+});
+
+// 描く先の要素の祖先の要素がスクロールするとき、その要素の右下にボタンを出し、その要素を先頭へスクロールする（正常系（スクロールする祖先の要素の中で先頭へ戻る））
+test("test_normal_when_back_to_top_in_scroll_container", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    /** 高さ 600px の縦にスクロールする祖先の要素の中に描く先の要素を入れ、下に高さ 400px の要素を置く */
+    const createBox = () => {
+      const box = document.createElement("div");
+      box.style.height = "600px";
+      box.style.overflowY = "auto";
+      const target = document.createElement("div");
+      box.append(target);
+      const below = document.createElement("div");
+      below.style.height = "400px";
+      document.body.append(box, below);
+      elements.push(box, below);
+      return { box, target };
+    };
+    /** 祖先の要素の、スクロールバーを除く右端と下端（画面からはみ出す分は画面の端） */
+    const innerEdges = (box: HTMLElement) => {
+      const rect = box.getBoundingClientRect();
+      const { clientWidth, clientHeight } = document.documentElement;
+      return {
+        right: Math.min(
+          rect.left + box.clientLeft + box.clientWidth,
+          clientWidth,
+        ),
+        bottom: Math.min(
+          rect.top + box.clientTop + box.clientHeight,
+          clientHeight,
+        ),
+      };
+    };
+    /** ボタンの右端と下端が、祖先の要素の右端と下端から 16px にあることを確かめる */
+    const expectAtCorner = (button: HTMLButtonElement, box: HTMLElement) => {
+      const rect = button.getBoundingClientRect();
+      const edges = innerEdges(box);
+      expect(
+        Math.abs(edges.right - rect.right - BACK_TO_TOP_GAP_PX),
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(edges.bottom - rect.bottom - BACK_TO_TOP_GAP_PX),
+      ).toBeLessThanOrEqual(1);
+    };
+    const { box, target: el } = createBox();
+    await mountTracked(el, { markdown: BACK_TO_TOP_MARKDOWN });
+    const button = backToTopOf(el);
+    // 実行・検証: 祖先の要素を 599px・600px スクロールする
+    box.scrollTop = 599;
+    await nextFrames();
+    await nextFrames();
+    expect(button.hidden).toBe(true);
+    box.scrollTop = 600;
+    await vi.waitFor(() => expect(button.hidden).toBe(false));
+    expectAtCorner(button, box);
+    // 実行・検証: 画面全体を 100px スクロールする
+    await scrollPageTo(100);
+    await vi.waitFor(() => expectAtCorner(button, box));
+    // 実行: ボタンを押す
+    const pageScroll = window.scrollY;
+    const expectedTop =
+      box.scrollTop +
+      el.getBoundingClientRect().top -
+      (box.getBoundingClientRect().top + box.clientTop);
+    await userEvent.click(button);
+    // 検証
+    await vi.waitFor(
+      () =>
+        expect(Math.abs(box.scrollTop - expectedTop)).toBeLessThanOrEqual(1),
+      { timeout: 5000 },
+    );
+    expect(window.scrollY).toBe(pageScroll);
+    // 実行: 短い文書を描いてから、update で長い文書に差し替える
+    const { box: box2, target: el2 } = createBox();
+    const handle = await mountTracked(el2, { markdown: "短い段落。\n" });
+    handle.update(BACK_TO_TOP_MARKDOWN);
+    box2.scrollTop = 600;
+    // 検証
+    await vi.waitFor(() => expect(backToTopOf(el2).hidden).toBe(false));
+    expectAtCorner(backToTopOf(el2), box2);
+  });
+});
+
+// ボタンをミニマップと余白の列の左へずらし、右側の目次のパネルをボタンの上で終わらせる（正常系（先頭へ戻るボタンが右側の部品を避ける））
+test("test_normal_when_back_to_top_avoids_side_parts", async () => {
+  // 準備: 差分を開いて描いたページ
+  const changed = BACK_TO_TOP_MARKDOWN.replace(
+    "付録の段落 9 は",
+    "付録の段落 9 を書き換えた本文は",
+  );
+  await withViewport(1280, async () => {
+    const source = createDiffSource({}, DIFF_REVISIONS.slice(1), {
+      r1: BACK_TO_TOP_MARKDOWN,
+      r2: changed,
+    });
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: changed,
+      docId: "guide",
+      diffSource: source,
+      diffMode: "open",
+    });
+    await waitForDiffLines(el);
+    await vi.waitFor(() => expect(minimapBands()).toHaveLength(1));
+    // 実行: 差分の末尾までスクロールする
+    await scrollPageToEnd();
+    // 検証
+    const button = backToTopOf(el);
+    await vi.waitFor(() => {
+      expect(button.hidden).toBe(false);
+      const band = (minimapBands()[0] as HTMLElement).getBoundingClientRect();
+      expect(
+        Math.abs(
+          band.left -
+            BACK_TO_TOP_AVOID_GAP_PX -
+            button.getBoundingClientRect().right,
+        ),
+      ).toBeLessThanOrEqual(1);
+    });
+  });
+  // 準備: コメントの機能をオンにして描いたページ
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(390, 844);
+  try {
+    const el = createElement();
+    const store = createCommentStore([quoteComment("c1", "付録の段落 3 は")]);
+    await mountTracked(el, {
+      markdown: BACK_TO_TOP_MARKDOWN,
+      config: { features: { comments: true } },
+      docId: "guide",
+      commentStore: store,
+    });
+    await vi.waitFor(() => expect(marginMarkers(el)).toHaveLength(1));
+    const button = backToTopOf(el);
+    const margin = find<HTMLElement>(el, ":scope > div.mdmark-comment-margin");
+    /** ボタンの右端が余白の列の左端より 8px 左にあり、どの余白のマーカーとも重ならないことを確かめる */
+    const expectBesideMargin = () => {
+      const rect = button.getBoundingClientRect();
+      expect(
+        Math.abs(
+          margin.getBoundingClientRect().left -
+            BACK_TO_TOP_AVOID_GAP_PX -
+            rect.right,
+        ),
+      ).toBeLessThanOrEqual(1);
+      for (const marker of marginMarkers(el)) {
+        const box = marker.getBoundingClientRect();
+        const overlaps =
+          box.left < rect.right &&
+          rect.left < box.right &&
+          box.top < rect.bottom &&
+          rect.top < box.bottom;
+        expect(overlaps).toBe(false);
+      }
+    };
+    // 実行: 文書の末尾までスクロールする
+    await scrollPageToEnd();
+    // 検証
+    await vi.waitFor(() => {
+      expect(button.hidden).toBe(false);
+      expectBesideMargin();
+    });
+    const leftAtEnd = button.getBoundingClientRect().left;
+    // 実行: 1 画面分戻る
+    await scrollPageTo(window.scrollY - document.documentElement.clientHeight);
+    // 検証
+    expect(button.hidden).toBe(false);
+    expectBesideMargin();
+    expect(button.getBoundingClientRect().left).toBe(leftAtEnd);
+  } finally {
+    window.scrollTo(0, 0);
+    await page.viewport(original.width, original.height);
+  }
+  // 準備: 右側の目次を出し続けて描いたページ
+  await withViewport(1280, async () => {
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: BACK_TO_TOP_MARKDOWN,
+      config: { "side-toc": { mode: "fixed" } },
+    });
+    const { panel, toggle, linkOf } = sideTocOf(el);
+    await userEvent.click(toggle);
+    // 実行: 文書の末尾までスクロールする
+    await scrollPageToEnd();
+    // 検証
+    const button = backToTopOf(el);
+    await vi.waitFor(() => expect(button.hidden).toBe(false));
+    expect(panel.getBoundingClientRect().bottom).toBeLessThan(
+      button.getBoundingClientRect().top,
+    );
+    // 実行: パネルの最後の項目を押す
+    await userEvent.click(linkOf("付録"));
+    // 検証
+    await vi.waitFor(() => {
+      expect(decodeURIComponent(location.hash)).toBe("#付録");
+    });
+  });
+});
+
+// 利用者の環境が動きを減らす設定のとき、押すと一度に先頭へ移る（正常系（動きを減らす設定で先頭へ戻る））
+test("test_normal_when_back_to_top_with_reduced_motion", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const originalMatchMedia = window.matchMedia.bind(window);
+    vi.spyOn(window, "matchMedia").mockImplementation((query: string) =>
+      query === "(prefers-reduced-motion: reduce)"
+        ? ({
+            matches: true,
+            media: query,
+            onchange: null,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+            addListener: () => {},
+            removeListener: () => {},
+            dispatchEvent: () => false,
+          } satisfies MediaQueryList)
+        : originalMatchMedia(query),
+    );
+    const el = createElement();
+    await mountTracked(el, { markdown: BACK_TO_TOP_MARKDOWN });
+    await scrollPageToEnd();
+    const button = backToTopOf(el);
+    await vi.waitFor(() => expect(button.hidden).toBe(false));
+    const scrollTo = vi.spyOn(window, "scrollTo");
+    // 実行
+    await userEvent.click(button);
+    // 検証
+    expect(scrollToCalls(scrollTo).map((call) => call.behavior)).toEqual([
+      "auto",
+    ]);
+    expect(Math.abs(el.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
+  });
+});
+
+// `back-to-top` がオフの文書ではボタンを置かず、`update` ではボタンを保ち、`destroy` でボタンと受け取りを外す（正常系（先頭へ戻るボタンを置かない・片付ける））
+test("test_normal_when_back_to_top_not_placed", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el1 = createElement();
+    const el2 = createElement();
+    const el3 = createElement();
+    // 実行
+    await mountTracked(el1, {
+      markdown: `<!-- features: -back-to-top -->\n\n${BACK_TO_TOP_MARKDOWN}`,
+    });
+    await mountTracked(el2, {
+      markdown: BACK_TO_TOP_MARKDOWN,
+      config: { features: { "back-to-top": false } },
+    });
+    const handle = await mountTracked(el3, { markdown: BACK_TO_TOP_MARKDOWN });
+    // 検証
+    for (const el of [el1, el2]) {
+      expect(el.querySelector("button.mdmark-back-to-top")).toBeNull();
+      expect(el.textContent).not.toContain("features:");
+    }
+    // 実行: 文書の末尾までスクロールしてから、本文を描き直す
+    await scrollPageToEnd();
+    await vi.waitFor(() => expect(backToTopOf(el3).hidden).toBe(false));
+    handle.update(BACK_TO_TOP_MARKDOWN);
+    // 検証
+    expect(el3.querySelectorAll("button.mdmark-back-to-top")).toHaveLength(1);
+    expect(backToTopOf(el3).hidden).toBe(false);
+    // 実行: 片付けてからスクロールする
+    handle.destroy();
+    await scrollPageTo(0);
+    await scrollPageToEnd();
+    // 検証
+    expect(el3.innerHTML).toBe("");
   });
 });
 
@@ -7643,6 +8068,7 @@ test("test_normal_when_jumped_from_margin_marker", async () => {
       "DIV.mdmark-content",
       "DIV.mdmark-comment-margin",
       expect.stringMatching(/^ASIDE\.mdmark-side-toc/),
+      "BUTTON.mdmark-back-to-top",
     ]);
     expect(
       marginMarkers(el).some((marker) =>
@@ -7782,9 +8208,10 @@ test("test_normal_when_margin_marker_in_closed", async () => {
   await vi.waitFor(() => expect(marginMarkers(el)).toHaveLength(3));
   const content = el.children[0] as HTMLElement;
   const margin = el.children[1] as HTMLElement;
-  expect(el.children).toHaveLength(2);
+  expect(el.children).toHaveLength(3);
   expect(content.matches("div.mdmark-content")).toBe(true);
   expect(margin.matches("div.mdmark-comment-margin")).toBe(true);
+  expect(el.children[2]?.matches("button.mdmark-back-to-top")).toBe(true);
   const contentRect = content.getBoundingClientRect();
   const marginRect = margin.getBoundingClientRect();
   expect(Math.abs(marginRect.top - contentRect.top)).toBeLessThanOrEqual(1);

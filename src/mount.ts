@@ -16,6 +16,7 @@ import {
   normalizeDiffMode,
 } from "./diff/source.ts";
 import { highlightCodeBlocks } from "./highlight.ts";
+import { attachBackToTop } from "./interact/back-to-top.ts";
 import { attachInteractions } from "./interact/index.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
@@ -212,6 +213,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let parts: PartsHandle | undefined;
   // 今の文書に付けた右側の目次を外す関数
   let detachSideToc: (() => void) | undefined;
+  // 今の文書に付けた先頭へ戻るボタンを外す関数
+  let detachBackToTop: (() => void) | undefined;
   // 右側の目次を付けずにコメントの余白の列のために包んだ本文の列を、包む前に戻す関数
   let detachContent: (() => void) | undefined;
   // 右側の目次の状態（`mount` ごとに 1 つ。描き直しでも保つ）
@@ -225,6 +228,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const draw = (markdown: string, coloredFrom?: string): void => {
     generation += 1;
     const current = generation;
+    detachBackToTop?.();
+    detachBackToTop = undefined;
     detachInteractions?.();
     detachSideToc?.();
     detachSideToc = undefined;
@@ -351,6 +356,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         });
       }
     }
+    // 描くたびに付け直し、スクロールする場所を決め直す
+    if (features["back-to-top"] === true) {
+      detachBackToTop = attachBackToTop({ el, content: body });
+    }
   };
 
   draw(opts.markdown);
@@ -376,6 +385,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         return;
       }
       destroyed = true;
+      detachBackToTop?.();
       detachInteractions?.();
       detachSideToc?.();
       detachContent?.();

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える（配色は OS の設定に従う） -->
+  <meta name="color-scheme" content="light dark">
+  <title>back-to-top | mdmark の部品のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- この PR で追加する先頭へ戻るボタンの規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/back-to-top.css">
+  <!-- 使う側のページの見た目と、カタログの並べ方 -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+</head>
+<body>
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">先頭へ戻るボタン</h1>
+      <p class="catalog-note">描いた文書を出し始める量までスクロールすると、スクロールする場所の右下に出るボタン。押すと描いた文書の先頭へ戻り、フォーカスを文書の先頭へ移す。先頭の近くにいる間と印刷では出さない。</p>
+
+      <!-- 状態: 通常・ホバー・キーボードのフォーカス・押下。is-hover・is-focus・is-active: カタログで状態の見た目を固定するクラス -->
+      <section aria-labelledby="states">
+        <h2 class="catalog-label" id="states">状態</h2>
+        <ul class="catalog-states mdmark catalog-stage">
+          <li class="catalog-state">
+            <button class="mdmark-back-to-top" type="button" aria-label="先頭へ戻る" title="先頭へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14"/><path d="m18 13-6-6-6 6"/><path d="M12 7v14"/></svg></button>
+            通常
+          </li>
+          <li class="catalog-state">
+            <button class="mdmark-back-to-top is-hover" type="button" aria-label="先頭へ戻る" title="先頭へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14"/><path d="m18 13-6-6-6 6"/><path d="M12 7v14"/></svg></button>
+            ホバー
+          </li>
+          <li class="catalog-state">
+            <button class="mdmark-back-to-top is-focus" type="button" aria-label="先頭へ戻る" title="先頭へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14"/><path d="m18 13-6-6-6 6"/><path d="M12 7v14"/></svg></button>
+            キーボードのフォーカス
+          </li>
+          <li class="catalog-state">
+            <button class="mdmark-back-to-top is-active" type="button" aria-label="先頭へ戻る" title="先頭へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14"/><path d="m18 13-6-6-6 6"/><path d="M12 7v14"/></svg></button>
+            押下
+          </li>
+        </ul>
+      </section>
+
+      <!-- 置き場所: スクロールする場所の右下から 16px 空けて留める。大きさは幅によらず 44×44px -->
+      <section aria-labelledby="place">
+        <h2 class="catalog-label" id="place">置き場所（スクロールする場所の右下）</h2>
+        <p class="catalog-note">スクロールする場所の右端と下端から 16px 空ける。差分のミニマップ・コメントの余白の列と重なるときは、その左へずらす。大きさは幅によらず 44×44px。</p>
+        <div class="catalog-frame mdmark">
+          <button class="mdmark-back-to-top" type="button" aria-label="先頭へ戻る" title="先頭へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14"/><path d="m18 13-6-6-6 6"/><path d="M12 7v14"/></svg></button>
+        </div>
+      </section>
+
+      <!-- 出さない場面: 要素を置かず、文で示す -->
+      <section aria-labelledby="hidden">
+        <h2 class="catalog-label" id="hidden">出さない場面</h2>
+        <p class="catalog-note">先頭から出し始める量に届かない間は hidden にし、Tab でも届かない。ライトボックスと図の全画面を開いている間は、その後ろに隠れる。印刷・PDF には出さない。</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
