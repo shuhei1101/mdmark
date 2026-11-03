@@ -147,6 +147,12 @@
           "type": "boolean",
           "default": true
         },
+        "back-to-top": {
+          "title": "先頭へ戻るボタンの機能",
+          "description": "描いた文書をスクロールする場所の高さ分スクロールすると、スクロールする場所の右下に先頭へ戻るボタンを出す。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
+          "type": "boolean",
+          "default": true
+        },
         "text-color": {
           "title": "本文の文字の色の機能",
           "description": "`[文字]{color=色}` の文字に名前の色を付ける。オフのときは書いた文字のまま描く。",
@@ -216,6 +222,7 @@
         "views": true,
         "comments": false,
         "side-toc": true,
+        "back-to-top": true,
         "text-color": true,
         "images": true,
         "gallery": true,

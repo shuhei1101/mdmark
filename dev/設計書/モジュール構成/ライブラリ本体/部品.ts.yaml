@@ -21,6 +21,7 @@ directory: |-
   ├── toc.ts                       # 目次の renderToc
   ├── section.ts                   # 節の renderSection
   ├── side-toc.ts                  # 右側の目次の renderSideToc
+  ├── back-to-top.ts               # 先頭へ戻るボタンの renderBackToTop
   ├── row-detail.ts                # 行の詳細の renderRowDetail
   ├── figure.ts                    # 図表の番号の renderFigure
   ├── doc-list.ts                  # 文書の一覧の renderDocList
@@ -971,6 +972,38 @@ functions:
     status: planned
     introduced:
       pr: 151
+  - name: renderBackToTop
+    title: 先頭へ戻るボタンを描く
+    container: src/parts/back-to-top.ts
+    summary: 部品設計『先頭へ戻るボタン』の HTML を返す。アイコンは lucide の arrow-up-to-line（`src/parts/icons.ts` に ArrowUpToLine を追加する）
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ hidden?: boolean }'
+        required: false
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<button class="mdmark-back-to-top" type="button">` の HTML'
+    unit_tests:
+      - name: test_render_back_to_top
+        case: 正常
+        summary: 読み上げの名前とアイコンを持つボタンを返す
+        condition: 引数を渡さない
+        mock: なし
+        expected: '`type="button"`・`aria-label="先頭へ戻る"`・`title="先頭へ戻る"` を持ち、`hidden` を持たない。中の `svg` が `aria-hidden="true"`'
+      - name: test_render_back_to_top_when_hidden
+        case: 正常
+        summary: hidden を属性に写す
+        condition: '`hidden: true`'
+        mock: なし
+        expected: ボタンが `hidden` 属性を持つ
+    refs:
+      - dev/設計書/部品設計/先頭へ戻るボタン.ts#
+    status: planned
+    introduced:
+      pr: 287
   - name: renderSideToc
     title: 右側の目次を描く
     container: src/parts/side-toc.ts
@@ -1565,6 +1598,7 @@ test_files:
   - tests/unit/src/parts/toc.test.ts
   - tests/unit/src/parts/section.test.ts
   - tests/unit/src/parts/side-toc.test.ts
+  - tests/unit/src/parts/back-to-top.test.ts
   - tests/unit/src/parts/row-detail.test.ts
   - tests/unit/src/parts/figure.test.ts
   - tests/unit/src/parts/doc-list.test.ts

@@ -991,6 +991,25 @@ elements:
     status: planned
     introduced:
       pr: 166
+  - name: 先頭へ戻るボタン
+    id: back-to-top
+    kind: button
+    component: dev/設計書/部品設計/先頭へ戻るボタン.ts#
+    args:
+      - name: hidden
+        value: スクロールする場所の上端から描く先の要素の上端までのスクロールの量が、スクロールする場所の高さ未満か
+    position: 描く先の要素 > 末尾（画面に固定し、スクロールする場所の右下に出す）
+    description: 上向きの矢印と線のアイコンだけのボタン。スクロールする場所の右端と下端から 16px の位置に出し、差分のミニマップか余白の列と横の範囲が重なるときは、その左端から 8px 左へずらす。ボタンを出している間は、右側の目次のパネルをボタンの上で終わらせる。印刷では出さない
+    label: 先頭へ戻る（`aria-label`・`title`）
+    visible_when: '`back-to-top` がオンで、スクロールする場所の高さ分以上スクロールしたとき。ライトボックスと図の全画面を開いている間は、その後ろに隠れる'
+    initial_value: '`hidden`'
+    action: 押すとスクロールする場所を描いた文書の先頭へスクロールし（動きを減らす設定では一度に移る）、本文の列へフォーカスを移す
+    reason: 出し始める量・避けるときの位置・既定でオンにするのは確認ログの決定
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+    status: planned
+    introduced:
+      pr: 287
   - name: エイリアスのコマンドのコピーのボタン
     id: alias-copy
     kind: button

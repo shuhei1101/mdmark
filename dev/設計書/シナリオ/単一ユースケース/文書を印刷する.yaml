@@ -197,6 +197,32 @@ scenarios:
       - 印刷の前のイベントの後、`付録` の段落が表示されている
       - 印刷の後のイベントの後、右側の目次が表示され、`付録` の節が閉じている
     test: test_normal_when_side_toc_hidden_in_print
+  - name: 正常シナリオ（先頭へ戻るボタンを印刷に出さない）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        notes: 描いた後に文書の末尾までスクロールし、先頭へ戻るボタンを出しておく
+      - name: 長い Markdown
+        description: 『文書の先頭へ戻る』の正常シナリオと同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 先頭へ戻るボタンの無い印刷の出力
+        B->>M: 印刷の後のイベント
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、先頭へ戻るボタンが出ていない
+      - 印刷の後のイベントの後、先頭へ戻るボタンが画面の右下に表示されている
+    test: test_normal_when_back_to_top_hidden_in_print
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
   - name: 正常シナリオ（テーマを選んだ文書）
     setup:
       - name: テーマを選んで描いたページ

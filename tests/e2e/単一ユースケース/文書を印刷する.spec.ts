@@ -558,3 +558,56 @@ test("test_normal_when_colors_and_media_printed", async ({ page }) => {
     await expect(text).toHaveText(url ?? "");
   }
 });
+
+/** 画面の高さの 3 倍を超える段落を持つ文書（『文書の先頭へ戻る』の正常シナリオと同じ） */
+const LONG_MARKDOWN = [
+  "導入",
+  "前提",
+  "準備",
+  "設定",
+  "使い方",
+  "応用",
+  "運用",
+  "確認",
+  "参考",
+  "付録",
+]
+  .flatMap((heading) => [
+    `## ${heading}`,
+    "",
+    ...Array.from({ length: 10 }, (_, i) => [
+      `${heading}の段落 ${i + 1} は、画面の高さの 3 倍を超えるまで並べる本文。`,
+      "",
+    ]).flat(),
+  ])
+  .join("\n");
+
+// 印刷では先頭へ戻るボタンを出さず、印刷が終わると画面の右下に戻す（正常シナリオ（先頭へ戻るボタンを印刷に出さない））
+test("test_normal_when_back_to_top_hidden_in_print", async ({ page }) => {
+  // 準備: 文書の末尾までスクロールし、先頭へ戻るボタンを出しておく
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: LONG_MARKDOWN });
+  await page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight),
+  );
+  const button = page.getByRole("button", { name: "先頭へ戻る" });
+  await expect(button).toBeVisible();
+  // 実行: 印刷を始める
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  await expect(page.locator("#doc > button.mdmark-back-to-top")).toHaveCSS(
+    "display",
+    "none",
+  );
+  // 実行: 印刷を終える
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
+  expect(box).not.toBeNull();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeGreaterThan(1280 / 2);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(800 / 2);
+});

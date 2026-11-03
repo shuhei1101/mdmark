@@ -497,6 +497,20 @@ settings:
     status: planned
     introduced:
       pr: 166
+  - key: features.back-to-top
+    title: 先頭へ戻るボタンの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 描いた文書をスクロールする場所の高さ分スクロールしたら、スクロールする場所の右下に先頭へ戻るボタンを出す。文書の `features` の印でその文書だけオン・オフできる
+    reload: reload
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+    implementation: src/config.ts#DEFAULT_FEATURES
+    status: planned
+    introduced:
+      pr: 287
   - key: side-toc.mode
     title: 右側の目次の出し方
     file: mdmark.config.yaml

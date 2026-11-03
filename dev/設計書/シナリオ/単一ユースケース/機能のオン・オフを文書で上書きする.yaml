@@ -214,6 +214,32 @@ scenarios:
     expected:
       - 右端にポインターを置いた後、`導入`・`使い方` の項目を持つ右側の目次が表示されている
     test: test_normal_when_side_toc_enabled_by_mark
+  - name: 正常シナリオ（先頭へ戻るボタンの機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は先頭へ戻るボタンの機能を書かない。画面の大きさは 1280×800px
+      - name: 先頭へ戻るボタンを外す Markdown
+        description: '先頭に先頭へ戻るボタンの機能を外す `<!-- features: ... -->` を持ち、画面の高さの 3 倍を超える段落を持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 先頭へ戻るボタンを置かずに本文を描く
+        U->>P: 文書の末尾までスクロールする
+        P-->>U: 先頭へ戻るボタンを出さない
+    expected:
+      - 末尾までスクロールした後も、先頭へ戻るボタンが無い
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_back_to_top_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
   - name: 正常シナリオ（色・画像・カードの機能を外す）
     setup:
       - name: mdmark を読むページ
