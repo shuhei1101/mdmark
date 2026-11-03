@@ -395,7 +395,7 @@ functions:
       - name: test_mount_when_base_markdown
         case: 正常
         summary: 比較元を渡すと、取り出し元なしで変えたブロックを色分けして描く
-        condition: '`markdown` は段落 `A`・`B`・`C`、`baseMarkdown` は段落 `A`・`C`・`D`'
+        condition: '`markdown` は段落 `A`・`B`・`C`、`baseMarkdown` は段落 `A`・`C`・`D`。段落 `C` は 2 行（空行どうしで合わないようにする）'
         mock: なし
         expected: '`B` の段落が `div.mdmark-diff-block[data-kind="add"]` に、`D` の段落が `div.mdmark-diff-block[data-kind="del"]` に包まれ、`mdmark-diff-toggle` が無い'
       - name: test_mount_when_base_markdown_same
