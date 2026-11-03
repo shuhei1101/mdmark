@@ -561,7 +561,7 @@ flows:
         P->>M: update(markdown)
         M->>P: 差し替えた本文と末尾の関連文書の一覧を描く
     expected:
-      - '`el` の最後の子が、題 `関連文書` の一覧で、`API`（`href` が `../api.md`）と `使い方`（`href` が `../使い方/guide.md`）がこの順で並ぶ'
+      - '`el` の子のうち先頭へ戻るボタン（`button.mdmark-back-to-top`）を除く最後の子が、題 `関連文書` の一覧で、`API`（`href` が `../api.md`）と `使い方`（`href` が `../使い方/guide.md`）がこの順で並ぶ'
       - '`update` の後も一覧が 1 つだけあり、中身が変わらない'
     test: test_normal_when_backlinks
   - name: 正常系（図を拡大・縮小する）
@@ -1530,7 +1530,7 @@ flows:
         P->>P: 描く先の要素の幅を 360px にする
         M->>P: 余白のマーカーを置き直す
     expected:
-      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`aside.mdmark-side-toc` の順に並ぶ'
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`aside.mdmark-side-toc`・`button.mdmark-back-to-top` の順に並ぶ'
       - 余白の列の `button.mdmark-comment-marker` が 2 つで、`無い文字` のマーカーが無い
       - 先頭の段落の行のマーカーは 1 つで、文字 `2` と `aria-label` `コメント 2 件、「担当者」` を持ち、縦の中ほどが `担当者` の印の行の縦の中ほどと 1px 以内
       - '`テーマの変数` のマーカーを押すと、`テーマの変数` の印が画面に入り、印の `aria-expanded` が `true` で、マーカーが `data-current` を持つ'
@@ -1565,7 +1565,7 @@ flows:
         P->>M: 2 つ目のタブを選ぶ
         M->>P: タブの中の印の行へ余白のマーカーを置き直す
     expected:
-      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin` の順に並び、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右'
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`button.mdmark-back-to-top` の順に並び、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右'
       - '`閉じた箇所` のマーカーが `data-closed="section"` と `aria-label` `コメント 「閉じた箇所」（閉じたセクションの中）` を持ち、縦の中ほどが `補足` の開閉のボタンの縦の中ほどと 1px 以内'
       - '`タブの箇所` のマーカーが `data-closed="tab"` を持ち 2 つ目のタブの行にあり、`行の箇所` のマーカーが `data-closed="row"` を持ち 1 行目の行の詳細の開閉のボタンの行にある'
       - '`補足` の行のマーカーを押すと、`補足` の開閉のボタンの `aria-expanded` が `true` になり、`閉じた箇所` の印が画面に入ってその吹き出しが開き、マーカーが `data-closed` を持たずに印の行へ移る'
@@ -2371,7 +2371,7 @@ flows:
         P->>M: ピン止めのボタンを押し直し、ポインターを本文へ動かす
         M->>P: 右側の目次を隠す
     expected:
-      - 描いた直後、`el` の子が `mdmark-content` と `mdmark-side-toc` で、右側の目次のパネルが透明でポインターを受けない
+      - 描いた直後、`el` の子が `mdmark-content`・`mdmark-side-toc`・`mdmark-back-to-top` で、右側の目次のパネルが透明でポインターを受けない
       - パネルの `nav` が、`手引き` の下に `導入`（その下に `前提`）と `使い方` を入れ子にした項目を持ち、項目のリンクが `#手引き`・`#導入`・`#前提`・`#使い方` を指す
       - 目次を出すボタンが表示されていない
       - 右端の線にポインターを乗せた後、パネルが不透明で、上部にすべて展開・すべて折りたたむのボタンがある
@@ -2670,7 +2670,7 @@ flows:
       - 画面の高さ分スクロールした後、ボタンが `hidden` を持たず、ボタンの右端と下端が画面の右端と下端から 16px で、幅と高さが 44px 以上
       - '押した後、`window.scrollTo` が `behavior: "smooth"` と、`el` の上端が画面の上端に来る `top` で呼ばれている'
       - スクロールが終わった後、`el` の上端が画面の上端から 1px 以内で、ボタンが `hidden` を持つ
-      - 押した後、`document.activeElement` が `div.mdmark-content` で `tabindex="-1"` を持ち、続けて Tab を押すと `## 導入` の段落のリンクへ移る
+      - 押した後、`document.activeElement` が `div.mdmark-content` で `tabindex="-1"` を持ち、続けて Tab を押すと、本文の列の中で最初にフォーカスできる要素（`## 導入` の段落のリンクか、それより前の `## 導入` の見出しの要素）へ移る
     test: test_normal_when_back_to_top_pressed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
