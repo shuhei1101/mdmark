@@ -823,6 +823,9 @@ handle.destroy();
 | `--mdmark-diagram-box-shadow` | `inset 0 0 0 1px var(--mdmark-color-border)` | 図の表示する箱（右上のボタンの帯と表示する枠をまとめた箱）の線（`box-shadow` の値）。枠を持つ面に文書を描く使う側は、面で `none` を指定して線を外す。操作できる部品の中の図は線を引かず、全画面のモーダルの中の図はこの値を受け継がず既定の線で描く |
 | `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |
 | `--mdmark-diff-minimap-z-index` | `10` | 差分のミニマップの帯の重なり順。使う側のページの固定のヘッダーなどに隠れるときに上げる |
+| `--mdmark-code-fold-width` | `2.75ch` | 畳める行を持つコードブロックで、行番号の右に取る開閉のボタンの列の幅 |
+| `--mdmark-tab-strong-weight` | `700` | タブ名の強調（`**`）の太さ |
+| `--mdmark-tab-strong-color` | `var(--mdmark-color-heading)` | タブ名の強調（`**`）の色。選んでいないタブでもこの色にする |
 | `--mdmark-view-column-width` | `12rem` | ビューのボードの列の最小の幅。描く先の幅に収まらない列はボードの中で横にスクロールする |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
@@ -852,7 +855,7 @@ handle.destroy();
 | `--mdmark-color-callout-note` | `#1d4ed8` | `#7aa2ff` | 補足の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-tip` | `#15803d` | `#4ade80` | ヒントの注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-important` | `#6d28d9` | `#c4a7ff` | 重要の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
-| `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色。コードブロックの警告の行の左端の線と行頭の `!` の色 |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いる節の項目と、目次を出しているときの目次を出すボタンの背景 |
 | `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM のノードと LLM の層の色 |
@@ -870,6 +873,8 @@ handle.destroy();
 | `--mdmark-color-series-2` | `#b45309` | `#fbbf24` | グラフの 2 つ目の系列の色 |
 | `--mdmark-color-series-3` | `#6d28d9` | `#c4a7ff` | グラフの 3 つ目の系列の色 |
 | `--mdmark-color-series-4` | `#1d4ed8` | `#7aa2ff` | グラフの 4 つ目の系列の色 |
+| `--mdmark-color-series-5` | `#be185d` | `#f472b6` | グラフの 5 つ目の系列の色（一点鎖線・逆三角の点・縦線の塗りの模様） |
+| `--mdmark-color-series-6` | `#4d7c0f` | `#a3e635` | グラフの 6 つ目の系列の色（細かい破線・十字の点・横線の塗りの模様） |
 | `--mdmark-color-code-highlight-bg` | `#fef3c7` | `#5c4a12` | コードブロックの強調した行の背景 |
 | `--mdmark-color-code-highlight-line` | `#b45309` | `#fbbf24` | コードブロックの強調した行の左端の線 |
 | `--mdmark-color-file-text` | `#1d4ed8` | `#7aa2ff` | ファイルツリーの文書（`md`・`txt` など）のファイルのアイコンの色 |
@@ -893,7 +898,7 @@ handle.destroy();
 | `--mdmark-color-diff-add-sign` | `#15803d` | `#4ade80` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色。コードの行の印の足した行の行頭の `+` と左端の線にも使う |
 | `--mdmark-color-comment-bg` | `#f2effe` | `#25222d` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
 | `--mdmark-color-comment-line` | `#6d28d9` | `#c4a7ff` | コメントの印の下線の色 |
-| `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |
+| `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色。コードブロックのエラーの行の左端の線と行頭の `×` の色 |
 | `--mdmark-color-accent-blue-bg` | `#cce2fe` | `#1a314e` | 色の名前 `blue` の面の薄い色。強調した列・色を付けた行・バッジの地 |
 | `--mdmark-color-accent-blue-text` | `#1d4ed8` | `#7aa2ff` | 色の名前 `blue` の文字の色。バッジと本文の文字の色 |
 | `--mdmark-color-accent-red-bg` | `#ffd4d1` | `#472020` | 色の名前 `red` の面の薄い色。強調した列・色を付けた行・バッジの地 |
@@ -1005,6 +1010,8 @@ handle.destroy();
 | `--mdmark-color-series-2` | `#1e4f8c` | `#8fb4e8` |
 | `--mdmark-color-series-3` | `#3f6b2a` | `#a3c98a` |
 | `--mdmark-color-series-4` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-series-5` | `#8a3577` | `#d9a6e0` |
+| `--mdmark-color-series-6` | `#1f6b66` | `#7fd1c7` |
 | `--mdmark-color-code-highlight-bg` | `#f7ecc8` | `#4d3d16` |
 | `--mdmark-color-code-highlight-line` | `#94540a` | `#e8b04a` |
 | `--mdmark-color-diff-del-bg` | `#f6e1dc` | `#33211e` |
@@ -1065,6 +1072,8 @@ handle.destroy();
 | `--mdmark-color-series-2` | `#047857` | `#6ee7b7` |
 | `--mdmark-color-series-3` | `#6d28d9` | `#c4b5fd` |
 | `--mdmark-color-series-4` | `#a24a06` | `#fdba74` |
+| `--mdmark-color-series-5` | `#be185d` | `#f9a8d4` |
+| `--mdmark-color-series-6` | `#0e7490` | `#bef264` |
 | `--mdmark-color-code-highlight-bg` | `#fdf2c4` | `#4d3f12` |
 | `--mdmark-color-code-highlight-line` | `#a24a06` | `#fbbf24` |
 | `--mdmark-color-diff-del-bg` | `#fbe4e4` | `#2e1c24` |
@@ -1125,6 +1134,8 @@ handle.destroy();
 | `--mdmark-color-series-2` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-series-3` | `#5b21b6` | `#d0b3ff` |
 | `--mdmark-color-series-4` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-series-5` | `#a3003c` | `#ff8fb8` |
+| `--mdmark-color-series-6` | `#005f6b` | `#5fe0e0` |
 | `--mdmark-color-code-highlight-bg` | `#fff1b8` | `#4a3d00` |
 | `--mdmark-color-code-highlight-line` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-diff-del-bg` | `#ffe0e0` | `#3a0d0d` |
