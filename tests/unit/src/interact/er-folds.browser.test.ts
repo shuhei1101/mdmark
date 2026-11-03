@@ -106,10 +106,13 @@ test("test_set_er_table_folded", async () => {
   // 実行
   setErTableFolded({ table: orders, folded: false });
   const openedHidden = otherRows(orders).some((row) => row.hidden);
-  const openedRest = orders.querySelector(".mdmark-diagram-er-rest");
+  const openedRest = orders.querySelector<HTMLElement>(
+    ".mdmark-diagram-er-rest",
+  );
+  const openedRestShown = openedRest !== null && !openedRest.hidden;
   setErTableFolded({ table: orders, folded: true });
   // 検証
   expect(openedHidden).toBe(false);
-  expect(openedRest === null || (openedRest as HTMLElement).hidden).toBe(true);
+  expect(openedRestShown).toBe(false);
   expect(figure.innerHTML).toBe(initial);
 });
