@@ -131,7 +131,8 @@ test("test_read_footnote_definition_when_case_and_duplicate", () => {
   expect(html).toContain('id="mdmark-fnref-1-1"');
   expect(html).not.toContain('id="mdmark-fnref-2-0"');
   expect(plainText(byId(html, "mdmark-fn-tip-1-0"))).toBe("脚注 11 つ目");
-  expect(html).not.toContain("2 つ目");
+  // 戻るリンクの読み上げの名前（`2 つ目の参照`）は文字に含めず、画面に出る文字で確かめる
+  expect(plainText(html)).not.toContain("2 つ目");
   expect(html).not.toContain("使わない");
   expect(html).toContain("[^missing]");
   expect(html).toContain('<a href="https://example.com">^x</a>');
@@ -294,7 +295,7 @@ test("test_footnote_bodies_when_list", () => {
   expect(bodies[1]).toContain("a");
   expect(bodies[1]).toContain("b");
   const item = byId(html, "mdmark-fn-1");
-  expect(item).toContain("<p>1 段落目</p>");
+  expect(item).toMatch(/^<p>1 段落目 <a class="mdmark-fn-back"/);
   expect(item).toContain("<ul>");
 });
 
