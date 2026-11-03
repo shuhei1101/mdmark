@@ -214,6 +214,7 @@ export function attachParts(options: {
             store: commentStore,
             docId,
             reveal: openEnclosing,
+            margin: true,
           });
           // 待つ間に外したら、得た外す関数をすぐ呼ぶ
           if (!active()) {

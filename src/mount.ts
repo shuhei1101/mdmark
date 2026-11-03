@@ -167,6 +167,15 @@ function drawColoredBlocks(options: {
   return afterTemplate.content;
 }
 
+/** 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、本文の列を返す */
+function wrapContent(el: HTMLElement): HTMLElement {
+  const content = document.createElement("div");
+  content.className = "mdmark-content";
+  content.append(...el.childNodes);
+  el.append(content);
+  return content;
+}
+
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const { diffSource, commentStore, docId, onColumnsChange } = opts;
@@ -203,6 +212,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let parts: PartsHandle | undefined;
   // 今の文書に付けた右側の目次を外す関数
   let detachSideToc: (() => void) | undefined;
+  // 右側の目次を付けずにコメントの余白の列のために包んだ本文の列を、包む前に戻す関数
+  let detachContent: (() => void) | undefined;
   // 右側の目次の状態（`mount` ごとに 1 つ。描き直しでも保つ）
   const sideTocState: SideTocState = { open: false, pinned: false };
   // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
@@ -217,6 +228,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     detachInteractions?.();
     detachSideToc?.();
     detachSideToc = undefined;
+    detachContent?.();
+    detachContent = undefined;
     detachDiff?.();
     detachDiff = undefined;
     parts?.detach();
@@ -269,6 +282,17 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       body = sideToc.content;
       aside = sideToc.aside;
       detachSideToc = sideToc.detach;
+    }
+    // コメントの余白の列を本文の列の右に置くため、右側の目次が包んでいなければ本文の列に包む
+    if (
+      features.comments === true &&
+      commentStore !== undefined &&
+      docId !== undefined &&
+      body === el
+    ) {
+      body = wrapContent(el);
+      const content = body;
+      detachContent = () => content.replaceWith(...content.childNodes);
     }
     detachInteractions = attachInteractions({
       root: body,
@@ -354,6 +378,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       destroyed = true;
       detachInteractions?.();
       detachSideToc?.();
+      detachContent?.();
       detachDiff?.();
       parts?.detach();
       detachPrint();

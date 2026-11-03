@@ -66,13 +66,19 @@ elements:
         value: 印の `highlight=列名[:色],…`（列名を列の位置に読み替える。色を省いた列は `blue`）
       - name: rowColors
         value: 印の `row-color=` の値と `row-at=` の位置から決めた本文の行ごとの色（両方が当たる行は `row-at=` の色）
+      - name: pinned
+        value: '`pin` の表で幅からはみ出す間は、印の `pin=列名` の列までの数（無ければ 1）。押したピン止めのボタンで変わる'
+      - name: wide
+        value: 印の `wide=列名,…`（列名を列の位置に読み替える）
+      - name: check
+        value: 印の `check=列名,…`（列名を列の位置に読み替える）
     action: '`+columns` の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を渡す'
     action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の知らせ]
   - name: 表のセル
     id: table-cell
     kind: label
     position: 描く先の要素 > 表
-    description: '`td` は同じ列の見出しの文字を `data-label` に持ち、狭い紙の印刷で列名として出す。列の揃えは Markdown の `:--`・`:-:`・`--:` に従い、class `mdmark-align-{left,center,right}` で当てる'
+    description: '`td` は同じ列の見出しの文字を `data-label` に持ち、狭い紙の印刷で列名として出す。列の揃えは Markdown の `:--`・`:-:`・`--:` に従い、class `mdmark-align-{left,center,right}` で当てる。`check=` の列の `true`・`false` のセルは ✓ と空欄で出す'
     visible_when: 常時
   - name: 折り畳み
     id: details
@@ -738,6 +744,28 @@ elements:
     visible_when: 箇所が見つからないコメントが 1 つ以上あるとき
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
+    status: planned
+  - name: 余白のマーカー
+    id: comment-marker
+    kind: button
+    component: dev/設計書/部品設計/余白のマーカー.ts#
+    args:
+      - name: quote
+        value: 行の最初の印の文字
+      - name: count
+        value: 行の上端の差が 4px 以内の印の数
+      - name: current
+        value: 行の印のどれかの吹き出しを開いているか
+      - name: closed
+        value: 印を包むいちばん外側の閉じた要素の種類（閉じた節は section・選ばれていないタブは tab・閉じた行の詳細は row）
+    position: 描く先の要素 > 本文の列の右の余白の列（右側の目次があるときはその左）
+    description: 印のある行の縦の中ほどに置くボタン。閉じた中の印は、その閉じた要素を開くボタンの行に置く。上のマーカーと重なるときは重ならない位置まで下げる
+    io: 表示
+    visible_when: '`comments` がオンで `opts.commentStore` を渡し、箇所が見つかった印が 1 つ以上あるとき。印刷では出さない'
+    action: 押下・Enter・Space で、印を包む閉じた要素を開き、印までスクロールして吹き出しを開く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
     status: planned
   - name: 表の集計のボタン
     id: table-totals-toggle

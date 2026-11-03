@@ -14,6 +14,7 @@ import {
   locateComments,
 } from "./anchor.ts";
 import { attachCommentActions } from "./bubble.ts";
+import { attachMarginMarkers } from "./margin.ts";
 import {
   isComment,
   type MdmarkComment,
@@ -38,6 +39,7 @@ export type CommentsPartModule = {
     store: MdmarkCommentStore;
     docId: string;
     reveal?: (element: HTMLElement) => void;
+    margin?: boolean;
   }) => Promise<CommentsController>;
 };
 
@@ -141,8 +143,10 @@ export async function attachComments(options: {
   docId: string;
   /** 印を囲む閉じた節と行の詳細を開く */
   reveal?: (element: HTMLElement) => void;
+  /** 余白のマーカーを置くか（既定 `false`） */
+  margin?: boolean;
 }): Promise<CommentsController> {
-  const { root, store, docId, reveal } = options;
+  const { root, store, docId, reveal, margin = false } = options;
   let destroyed = false;
   let comments: MdmarkComment[] = [];
   // 印 → その印に付いたコメント
@@ -586,6 +590,10 @@ export async function attachComments(options: {
   document.addEventListener("pointerdown", onPointerDown);
   document.addEventListener("scroll", onFollow, true);
   window.addEventListener("resize", onFollow);
+  const detachMargin =
+    margin && root.matches("div.mdmark-content")
+      ? attachMarginMarkers({ content: root })
+      : undefined;
 
   // ─── 読み直しと印へ移る ───
   /** `load` を呼び直し、読めたら印と一覧を付け直す。読めなければ印を残して reject する */
@@ -650,6 +658,7 @@ export async function attachComments(options: {
     document.removeEventListener("pointerdown", onPointerDown);
     document.removeEventListener("scroll", onFollow, true);
     window.removeEventListener("resize", onFollow);
+    detachMargin?.();
     open?.element.remove();
     open = undefined;
     if ("highlights" in CSS) {

@@ -1,0 +1,20 @@
+$ (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+Checked 595 files in 3s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/comments/margin.browser.test.ts(8,36): error TS2307: Cannot find module '../../../../src/comments/margin.ts' or its corresponding type declarations.
+tests/unit/src/comments/margin.test.ts(7,36): error TS2307: Cannot find module '../../../../src/comments/margin.ts' or its corresponding type declarations.
+tests/unit/src/parts/comment.test.ts(118,11): error TS2339: Property 'renderCommentMarker' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-comments-margin-markers/src/parts/comment")'.
+tests/unit/src/parts/comment.test.ts(134,11): error TS2339: Property 'renderCommentMarker' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-comments-margin-markers/src/parts/comment")'.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+
+# 型検査の違反は、実装の無い src/comments/margin.ts と renderCommentMarker によるものだけ（単体テスト作成の工程で残してよい違反）

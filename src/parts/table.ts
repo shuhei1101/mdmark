@@ -113,6 +113,12 @@ export type TableOptions = {
   highlight?: Array<{ column: number; color: ColorName }>;
   /** 本文の行ごとの色（色を付けない行は `null`） */
   rowColors?: Array<ColorName | null>;
+  /** `pin=` で留める最後の列の位置（`data-pin`） */
+  pin?: number | undefined;
+  /** 折り返さずに広く取る列の位置 */
+  wide?: number[];
+  /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
+  check?: number[];
 };
 
 /** 見出しのボタンとドロワーを作る引数 */
@@ -471,6 +477,18 @@ export function renderRowLink(
   return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の行へのリンク">${iconSvg("link")}</a><span class="mdmark-row-link-notice" role="status"${state}>${message}</span></span>`;
 }
 
+/** 真偽値のセルの中身の HTML を返す。`true` は ✓ のアイコン、`false` は読み上げだけの `いいえ` */
+export function renderCheckCell(value: "true" | "false"): string {
+  return value === "true"
+    ? `<span class="mdmark-check" role="img" aria-label="はい">${iconSvg("check")}</span>`
+    : '<span class="mdmark-visually-hidden">いいえ</span>';
+}
+
+/** セルの文字が真偽値か */
+export function isCheckValue(text: string): text is "true" | "false" {
+  return text === "true" || text === "false";
+}
+
 /** 列と行から表の HTML を作る（Storybook 用。操作を付けた後の見た目になる） */
 function renderTableBody(options: TableOptions, id: string): string {
   const columns = options.columns ?? [];
@@ -492,7 +510,9 @@ function renderTableBody(options: TableOptions, id: string): string {
   /** 強調する列の色 */
   const highlightOf = (column: number): ColorName | undefined =>
     options.highlight?.find((item) => item.column === column)?.color;
-  /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列）と色 */
+  const wideColumns = new Set(options.wide ?? []);
+  const checkColumns = new Set(options.check ?? []);
+  /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列・広く取る列・真偽値の列）と色 */
   const cellClass = (column: number): string => {
     const names = [
       ...(column < pinned
@@ -502,6 +522,8 @@ function renderTableBody(options: TableOptions, id: string): string {
         : []),
       ...(folded && column === lastColumn ? ["mdmark-fold-col"] : []),
       ...(highlightOf(column) ? ["mdmark-col-highlight"] : []),
+      ...(wideColumns.has(column) ? ["mdmark-wide"] : []),
+      ...(checkColumns.has(column) ? ["mdmark-align-center"] : []),
     ];
     const color = highlightOf(column);
     const colorAttribute = color ? ` data-color="${color}"` : "";
@@ -573,7 +595,13 @@ function renderTableBody(options: TableOptions, id: string): string {
           })
         : undefined;
       const cells = row
-        .map((cell, index) => {
+        .map((text, index) => {
+          const checkValue =
+            checkColumns.has(index) && isCheckValue(text) ? text : undefined;
+          const cell = checkValue ? renderCheckCell(checkValue) : text;
+          const valueAttribute = checkValue
+            ? ` data-value="${checkValue}"`
+            : "";
           const linked =
             index === 0 && rowId !== undefined
               ? renderRowLink(
@@ -587,7 +615,7 @@ function renderTableBody(options: TableOptions, id: string): string {
             index === 0 && fold
               ? `<span class="mdmark-row-head">${fold.toggle}${linked}</span>`
               : linked;
-          return `<td${cellClass(index)} data-label="${escapeHtml(labels[index] ?? "")}"${hiddenAttribute(index)}>${content}</td>`;
+          return `<td${cellClass(index)}${valueAttribute} data-label="${escapeHtml(labels[index] ?? "")}"${hiddenAttribute(index)}>${content}</td>`;
         })
         .join("");
       const idAttribute =
@@ -671,6 +699,12 @@ export function renderTable(options: TableOptions): string {
   const totalAttribute = totals.length
     ? ` data-total="${totals.map((total) => `${total.column}:${total.calc}`).join(" ")}"`
     : "";
+  const pinAttribute =
+    options.pin !== undefined && options.features.includes("pin")
+      ? ` data-pin="${options.pin}"`
+      : "";
+  const check = options.check ?? [];
+  const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";
   const content =
     options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
   const collapse = options.collapse ?? "none";
@@ -690,5 +724,5 @@ export function renderTable(options: TableOptions): string {
     options.body === undefined && isFolded(options, hiddenColumns)
       ? " is-folded"
       : "";
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}>${inner}</div>`;
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}>${inner}</div>`;
 }

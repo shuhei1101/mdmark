@@ -1,4 +1,11 @@
-import { CircleAlert, MessageSquarePlus, Pencil, Trash2, X } from "lucide";
+import {
+  CircleAlert,
+  MessageSquare,
+  MessageSquarePlus,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide";
 import { escapeHtml } from "./escape.ts";
 import { iconNodeBody, iconSvgOf } from "./icon-node.ts";
 
@@ -16,6 +23,16 @@ export const COMMENT_MESSAGES = {
 
 /** コメントの印を指す読み上げの説明の `id` */
 export const COMMENT_HINT_ID = "mdmark-comment-hint";
+
+/** 余白のマーカーの読み上げ名に添える、閉じた中の種類ごとの文言 */
+export const CLOSED_LABELS = {
+  section: "閉じたセクションの中",
+  tab: "選ばれていないタブの中",
+  row: "閉じた行の詳細の中",
+} as const satisfies Record<string, string>;
+
+/** 箇所を包む、いちばん外側の閉じた要素の種類 */
+export type CommentClosedKind = keyof typeof CLOSED_LABELS;
 
 /** 入力欄の状態 */
 export type CommentFormState = "idle" | "saving" | "empty" | "failed";
@@ -205,4 +222,26 @@ export function renderCommentOrphans(props: {
     .join("");
   const label = escapeHtml(id);
   return `<section class="mdmark-comment-orphans" aria-labelledby="${label}"><h2 id="${label}">箇所が見つからないコメント</h2><p class="mdmark-comment-orphans-lead">本文が書き換わり、コメントを付けた文字が見つかりません。</p><ul>${items}</ul></section>`;
+}
+
+/** 本文の右の余白の列に、コメントの箇所の行の高さで置くボタンの HTML を返す */
+export function renderCommentMarker(props: {
+  /** 行の最初の箇所の選んだ文字 */
+  quote: string;
+  /** 同じ行の箇所の数（既定 1） */
+  count?: number;
+  /** 箇所のうち吹き出しを開いているものがあるか（既定 `false`） */
+  current?: boolean;
+  /** 箇所を包む、いちばん外側の閉じた要素の種類 */
+  closed?: CommentClosedKind;
+}): string {
+  const { quote, count = 1, current = false, closed } = props;
+  const merged = count > 1;
+  const where = closed === undefined ? "" : `（${CLOSED_LABELS[closed]}）`;
+  const label = escapeHtml(
+    `コメント ${merged ? `${count} 件、` : ""}「${quote}」${where}`,
+  );
+  const icon = iconSvgOf(iconNodeBody(MessageSquare));
+  const attributes = `${closed === undefined ? "" : ` data-closed="${closed}"`}${current ? " data-current" : ""}`;
+  return `<button class="mdmark-comment-marker" type="button" aria-label="${label}" title="${label}"${attributes}>${icon}${merged ? `<span>${count}</span>` : ""}</button>`;
 }

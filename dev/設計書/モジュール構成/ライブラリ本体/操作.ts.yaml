@@ -186,8 +186,8 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
-    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
+    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
+    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の数（付けたときは `data-pin` の位置 + 1、無ければ 1。ボタンを押すとその列まで、押し直すと 0）までのセルに、表がはみ出す間だけ `position: sticky` と左端からの位置を当てる（はみ出さない間は留めず、留める列の数は控えたまま）。セルの値は `cellValue` で読む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
 
       件数と集計の行は、絞り込みを当てるたびに、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から作り直す（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読めないセルを持つ列と計算を控え、そのセルは作り直しても空にする。`集計` のボタンのメニュー（`出す集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` と読み上げの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。列の表示のメニュー・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使う（同時に開くのはドロワーとメニューを合わせて 1 つ）。列の表示はチェックボックスに合わせて列の見出し・セル・集計のセルの `hidden` を切り替え、「既定に戻す」で `data-hide` の状態に戻し、切り替えるたびに最終列を畳むかを決め直す。ピン止めの左端からの位置は隠した列を除いて測り直す。`onColumnsChange` を渡したときは、チェックボックスか「既定に戻す」で列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた新しい配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
@@ -218,6 +218,7 @@ functions:
       - '#functions[matchesFilter]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableTools]
       - '#functions[visibleText]'
+      - '#functions[cellValue]'
       - '#functions[findUnreadableTotals]'
       - '#functions[tableToMarkdown]'
       - '#functions[shouldFold]'
@@ -245,10 +246,22 @@ functions:
         expected: ドロワーが `hidden`、ボタンにフォーカス
       - name: test_attach_tables_when_pinned
         case: 正常
-        summary: はみ出す表だけピン止めのボタンを出し、押した列までを留める
-        condition: 幅 320px の要素に 10 列の表と 2 列の表、2 列目のピン止めを押す
+        summary: はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列までを留める
+        condition: 幅 320px の要素に 10 列の表と 2 列の表、2 列目のピン止めを押し、もう一度押す
         mock: なし
-        expected: 10 列の表だけボタンが `hidden` を持たず、1・2 列目のセルが `sticky`
+        expected: 10 列の表だけボタンが `hidden` を持たない。付けた直後は 10 列の表の 1 列目のセルだけが `sticky` で 1 列目のボタンが `aria-pressed="true"`、2 列の表はどのセルも `sticky` でない。押した後は 1・2 列目のセルが `sticky`、もう一度押した後はどのセルも `sticky` でない
+      - name: test_attach_tables_when_pin_specified
+        case: 正常
+        summary: data-pin の列までを留め、pin の無い表は留めず、幅が広がると留めを外す
+        condition: '幅 320px の要素に、`data-features="pin"`・`data-pin="1"` の 8 列の表と `data-features=""` の 10 列の表を付け、要素の幅を 2000px にする'
+        mock: なし
+        expected: 付けた直後は 1 つ目の表の 1・2 列目のセルが `sticky` で 2 列目のボタンが `aria-pressed="true"`、2 つ目の表はピン止めのボタンが無くどのセルも `sticky` でない。2000px にした後は 1 つ目の表のどのセルも `sticky` でない
+      - name: test_attach_tables_when_check_column
+        case: 正常
+        summary: 真偽値の列を data-value の値で並べ替え・絞り込み・コピーする
+        condition: '`data-features="sort filter copy"`・`data-filter="1:select"`・`data-check="1"` の表（名前 `a`・`b`・`c`、必須の `td` が `data-value` の `true`・`false`・`true` と ✓ か `いいえ` の中身）で、必須の列を昇順に並べ、`true` に絞り、TSV でコピーする'
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に差し替える'
+        expected: '並べた後の名前が `b`・`a`・`c`、絞り込みの候補が `true`・`false`、絞った後は `a`・`c` の 2 行、`名前\t必須\na\ttrue\nc\ttrue` で 1 回呼ばれる'
       - name: test_attach_tables_when_detached
         case: 正常
         summary: 外すと document の受け取りが残らない
@@ -533,6 +546,30 @@ functions:
         condition: '`<td>本文の<span class="mdmark-term-wrap"><span class="mdmark-term">印</span><span class="mdmark-term-tip">用語HTML コメントで書く指定</span></span></td>`'
         mock: なし（Chromium）
         expected: '`本文の印`、`td` の中身が変わらない'
+  - name: cellValue
+    title: 表のセルの値を読む
+    container: src/interact/text.ts
+    kind: 関数
+    scope: internal
+    summary: セルが `data-value` を持てばその値を、持たなければ `visibleText` の文字を返す
+    description: 表の並べ替え・絞り込み（候補を含む）・コピー・集計のセルの値は、この関数で読む
+    args:
+      - name: cell
+        type: HTMLTableCellElement
+        required: true
+        description: 読むセル
+    returns:
+      type: string
+      description: セルの値
+    callees:
+      - '#functions[visibleText]'
+    unit_tests:
+      - name: test_cell_value
+        case: 正常
+        summary: data-value を優先し、無ければ見える文字を読む
+        condition: '`<td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>` と `<td>未定</td>`'
+        mock: なし（Chromium）
+        expected: '`false` と `未定`'
   - name: attachEmbeddedHtml
     title: 埋め込んだ HTML の幅を見る
     container: src/interact/embedded-html.ts

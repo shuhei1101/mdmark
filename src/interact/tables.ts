@@ -30,7 +30,7 @@ import {
   tableToTsv,
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
-import { visibleText } from "./text.ts";
+import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
 
@@ -162,10 +162,10 @@ function attachTable(
     : [];
   const shownCalcs = new Set<TotalCalc>(totalSpecs.map((total) => total.calc));
   const cleanups: Array<() => void> = [];
-  /** 行の指定した列のセルの文字 */
+  /** 行の指定した列のセルの値（`data-value` があればその値） */
   const cellText = (row: HTMLTableRowElement, column: number): string => {
     const cell = row.cells[column];
-    return cell ? visibleText(cell) : "";
+    return cell ? cellValue(cell) : "";
   };
 
   // ─── 見出しのボタンとドロワー ───
@@ -484,10 +484,21 @@ function attachTable(
   };
 
   // ─── ピン止め ───
-  let pinned = 0;
-  /** 先頭から `count` 列までを表の左端に留める（0 で外す） */
+  // 留める列の数: `data-pin` の位置 + 1、無ければ先頭の列。表がはみ出す間だけ当てる
+  const pinAt = Number.parseInt(wrapper.dataset.pin ?? "", 10);
+  let pinned = features.includes("pin")
+    ? Number.isNaN(pinAt)
+      ? 1
+      : pinAt + 1
+    : 0;
+  /** 表が横にはみ出しているか */
+  const isOverflowing = (): boolean =>
+    table.scrollWidth > table.clientWidth ||
+    table.scrollWidth > wrapper.clientWidth;
+  /** 先頭から `count` 列までを、表がはみ出す間だけ表の左端に留める（0 で外す） */
   const pinColumns = (count: number): void => {
     pinned = count;
+    const applied = isOverflowing() ? count : 0;
     // 留める列の左の位置: 前の列までの幅の合計
     const lefts: number[] = [];
     let left = 0;
@@ -504,11 +515,11 @@ function attachTable(
         continue;
       }
       [...row.cells].forEach((cell, index) => {
-        const isPinned = index < count;
+        const isPinned = index < applied;
         cell.classList.toggle("is-pinned-col", isPinned);
         cell.classList.toggle(
           "is-pinned-edge",
-          isPinned && index === count - 1,
+          isPinned && index === applied - 1,
         );
         cell.style.left = isPinned ? `${lefts[index]}px` : "";
       });
@@ -519,12 +530,9 @@ function attachTable(
         ?.setAttribute("aria-pressed", String(index === count - 1));
     });
   };
-  /** 表が横にはみ出すときだけピン止めのボタンを出す（留めている間は戻せるよう出したまま） */
+  /** 表が横にはみ出すときだけピン止めのボタンを出す */
   const updatePinVisibility = (): void => {
-    const overflow =
-      table.scrollWidth > table.clientWidth ||
-      table.scrollWidth > wrapper.clientWidth ||
-      pinned > 0;
+    const overflow = isOverflowing();
     for (const pin of ownElements<HTMLElement>(wrapper, ".mdmark-pin")) {
       pin.hidden = !overflow;
     }
@@ -1102,6 +1110,9 @@ function attachTable(
   foldObserver.observe(root);
   updateFold();
   updatePinVisibility();
+  if (pinned > 0) {
+    pinColumns(pinned);
+  }
   updateVisibleWidth();
   if (features.includes("rowlink")) {
     revealRow();
@@ -1137,7 +1148,7 @@ function attachTable(
   };
 }
 
-/** 各 `mdmark-table` の `data-features`・`data-filter` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を渡したときは列の表示を切り替えるたびに知らせる。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
+/** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を渡したときは列の表示を切り替えるたびに知らせる。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
 export function attachTables(
   root: HTMLElement,
   options: {

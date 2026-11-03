@@ -127,6 +127,8 @@ function readView(options: {
       // ビューの表には件数・列の表示の切り替え・集計を付けない
       hide: [],
       totals: [],
+      wide: [],
+      check: [],
       collapse: "none",
       warnings: [],
     },
