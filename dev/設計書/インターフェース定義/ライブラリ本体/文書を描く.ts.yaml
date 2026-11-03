@@ -1478,7 +1478,7 @@ flows:
         P->>M: 2 つ目のタブを選ぶ
         M->>P: タブの中の印の行へ余白のマーカーを置き直す
     expected:
-      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin` の順に並ぶ'
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin` の順に並び、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右'
       - '`閉じた箇所` のマーカーが `data-closed="section"` と `aria-label` `コメント 「閉じた箇所」（閉じたセクションの中）` を持ち、縦の中ほどが `補足` の開閉のボタンの縦の中ほどと 1px 以内'
       - '`タブの箇所` のマーカーが `data-closed="tab"` を持ち 2 つ目のタブの行にあり、`行の箇所` のマーカーが `data-closed="row"` を持ち 1 行目の行の詳細の開閉のボタンの行にある'
       - '`補足` の行のマーカーを押すと、`補足` の開閉のボタンの `aria-expanded` が `true` になり、`閉じた箇所` の印が画面に入ってその吹き出しが開き、マーカーが `data-closed` を持たずに印の行へ移る'

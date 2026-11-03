@@ -324,7 +324,7 @@ functions:
         summary: 右側の目次が無くても、コメントの機能では本文を列に包む
         condition: '`config.features` が `{ comments: true }`、`commentStore`・`docId` を渡し、見出しの無い段落だけを描く'
         mock: '`setPartModuleUrl` で `comments` を、`attachComments` が受けた `root` を控えるモジュールの URL に差し替える'
-        expected: '`el` の子の先頭が `div.mdmark-content` で、`attachComments` の `root` がその要素。`destroy` の後に `el` の中が空'
+        expected: '`el` の子の先頭が `div.mdmark-content` で、`attachComments` の `root` がその要素。余白の列（`div.mdmark-comment-margin`）を置いた後、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右。`destroy` の後に `el` の中が空'
       - name: test_mount_when_aliases_updated
         case: 正常
         summary: update で描き直しても、最初に渡したエイリアスで下線を付ける
