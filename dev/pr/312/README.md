@@ -1,0 +1,1 @@
+# PoC: markdown-it-footnote の出力を部品の HTML に組み替え、機能のオフで文字のまま残せるか
