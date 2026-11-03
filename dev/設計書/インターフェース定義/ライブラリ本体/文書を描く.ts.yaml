@@ -561,7 +561,7 @@ flows:
         P->>M: update(markdown)
         M->>P: 差し替えた本文と末尾の関連文書の一覧を描く
     expected:
-      - '`el` の最後の子が、題 `関連文書` の一覧で、`API`（`href` が `../api.md`）と `使い方`（`href` が `../使い方/guide.md`）がこの順で並ぶ'
+      - '`el` の子のうち先頭へ戻るボタン（`button.mdmark-back-to-top`）を除く最後の子が、題 `関連文書` の一覧で、`API`（`href` が `../api.md`）と `使い方`（`href` が `../使い方/guide.md`）がこの順で並ぶ'
       - '`update` の後も一覧が 1 つだけあり、中身が変わらない'
     test: test_normal_when_backlinks
   - name: 正常系（図を拡大・縮小する）
@@ -1530,7 +1530,7 @@ flows:
         P->>P: 描く先の要素の幅を 360px にする
         M->>P: 余白のマーカーを置き直す
     expected:
-      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`aside.mdmark-side-toc` の順に並ぶ'
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`aside.mdmark-side-toc`・`button.mdmark-back-to-top` の順に並ぶ'
       - 余白の列の `button.mdmark-comment-marker` が 2 つで、`無い文字` のマーカーが無い
       - 先頭の段落の行のマーカーは 1 つで、文字 `2` と `aria-label` `コメント 2 件、「担当者」` を持ち、縦の中ほどが `担当者` の印の行の縦の中ほどと 1px 以内
       - '`テーマの変数` のマーカーを押すと、`テーマの変数` の印が画面に入り、印の `aria-expanded` が `true` で、マーカーが `data-current` を持つ'
@@ -1565,7 +1565,7 @@ flows:
         P->>M: 2 つ目のタブを選ぶ
         M->>P: タブの中の印の行へ余白のマーカーを置き直す
     expected:
-      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin` の順に並び、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右'
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`button.mdmark-back-to-top` の順に並び、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右'
       - '`閉じた箇所` のマーカーが `data-closed="section"` と `aria-label` `コメント 「閉じた箇所」（閉じたセクションの中）` を持ち、縦の中ほどが `補足` の開閉のボタンの縦の中ほどと 1px 以内'
       - '`タブの箇所` のマーカーが `data-closed="tab"` を持ち 2 つ目のタブの行にあり、`行の箇所` のマーカーが `data-closed="row"` を持ち 1 行目の行の詳細の開閉のボタンの行にある'
       - '`補足` の行のマーカーを押すと、`補足` の開閉のボタンの `aria-expanded` が `true` になり、`閉じた箇所` の印が画面に入ってその吹き出しが開き、マーカーが `data-closed` を持たずに印の行へ移る'
@@ -2371,7 +2371,7 @@ flows:
         P->>M: ピン止めのボタンを押し直し、ポインターを本文へ動かす
         M->>P: 右側の目次を隠す
     expected:
-      - 描いた直後、`el` の子が `mdmark-content` と `mdmark-side-toc` で、右側の目次のパネルが透明でポインターを受けない
+      - 描いた直後、`el` の子が `mdmark-content`・`mdmark-side-toc`・`mdmark-back-to-top` で、右側の目次のパネルが透明でポインターを受けない
       - パネルの `nav` が、`手引き` の下に `導入`（その下に `前提`）と `使い方` を入れ子にした項目を持ち、項目のリンクが `#手引き`・`#導入`・`#前提`・`#使い方` を指す
       - 目次を出すボタンが表示されていない
       - 右端の線にポインターを乗せた後、パネルが不透明で、上部にすべて展開・すべて折りたたむのボタンがある
@@ -2640,6 +2640,167 @@ flows:
       - 描いた直後、パネルが透明で、目次を出すボタンが表示されていない
       - 右端の線にポインターを乗せた後、パネルが不透明
     test: test_error_when_unknown_side_toc_mode
+  - name: 正常系（先頭へ戻るボタンを出して押す）
+    summary: 画面の高さ分スクロールすると右下に先頭へ戻るボタンを出し、押すと文書の先頭へ戻ってフォーカスを本文の列へ移す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 画面の大きさは 1280×800px。画面全体がスクロールする。`opts.config` は渡さない（`back-to-top`・`side-toc` はオン）
+      - name: 長い Markdown
+        description: '`## 導入` から `## 付録` まで 10 個の見出しと、画面の高さの 3 倍を超える段落を持ち、`## 導入` の段落にリンクを 1 つ持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い。`window.scrollTo` は呼び出しの引数を記録してから元の処理を呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 隠した先頭へ戻るボタンを置く
+        P->>P: 画面の高さより 1px 少なくスクロールする
+        M-->>P: ボタンを隠したまま
+        P->>P: 画面の高さ分スクロールする
+        M->>P: 画面の右下にボタンを出す
+        P->>M: ボタンを押す
+        M->>P: 描いた文書の先頭へスクロールする
+        M->>P: 本文の列へフォーカスを移す
+        M->>P: ボタンを隠す
+    expected:
+      - 描いた直後、`el` の子の末尾に `button.mdmark-back-to-top` があり、`type="button"`・`aria-label="先頭へ戻る"`・`title="先頭へ戻る"` と `hidden` を持つ
+      - 画面の高さより 1px 少なくスクロールした後も、ボタンが `hidden` を持つ
+      - 画面の高さ分スクロールした後、ボタンが `hidden` を持たず、ボタンの右端と下端が画面の右端と下端から 16px で、幅と高さが 44px 以上
+      - '押した後、`window.scrollTo` が `behavior: "smooth"` と、`el` の上端が画面の上端に来る `top` で呼ばれている'
+      - スクロールが終わった後、`el` の上端が画面の上端から 1px 以内で、ボタンが `hidden` を持つ
+      - 押した後、`document.activeElement` が `div.mdmark-content` で `tabindex="-1"` を持ち、続けて Tab を押すと、本文の列の中で最初にフォーカスできる要素（`## 導入` の段落のリンクか、それより前の `## 導入` の見出しの要素）へ移る
+    test: test_normal_when_back_to_top_pressed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（先頭の近くでは出さない）]
+  - name: 正常系（スクロールする祖先の要素の中で先頭へ戻る）
+    summary: 描く先の要素の祖先の要素がスクロールするとき、その要素の右下にボタンを出し、その要素を先頭へスクロールする
+    setup:
+      - name: 祖先の要素の中に文書を描いたページ
+        description: '配布物を読み、高さ 600px・`overflow-y: auto` の `div` の中の描く先の要素に文書を描いた HTML'
+        notes: 画面の大きさは 1280×800px。祖先の要素の下に高さ 400px の要素を置き、画面全体も 200px スクロールできる
+      - name: 長い Markdown
+        description: 正常系（先頭へ戻るボタンを出して押す）と同じ
+      - name: 短い Markdown
+        description: 段落を 1 つだけ持つ文書。別の祖先の要素の中の描く先の要素に描き、`update` で長い Markdown に差し替える
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>P: 祖先の要素を 600px スクロールする
+        M->>P: 祖先の要素の右下にボタンを出す
+        P->>P: 画面全体を 100px スクロールする
+        M->>P: 動いた祖先の要素の右下にボタンを置き直す
+        P->>M: ボタンを押す
+        M->>P: 祖先の要素を描いた文書の先頭へスクロールする
+        P->>M: mount(el2, { markdown: 短い文書 })
+        P->>M: update(長い文書)
+        P->>P: el2 の祖先の要素を 600px スクロールする
+        M->>P: el2 の祖先の要素の右下にボタンを出す
+    expected:
+      - 祖先の要素を 599px スクロールした後はボタンが `hidden` を持ち、600px スクロールした後は持たない
+      - 出したボタンの右端と下端が、祖先の要素の右端と下端（スクロールバーを除く）から 16px
+      - 画面全体を 100px スクロールした後も、ボタンの右端と下端が祖先の要素の右端と下端から 16px
+      - 短い文書を描いてから `update` で長い文書に差し替えた要素でも、祖先の要素を 600px スクロールした後にボタンが `hidden` を持たない
+      - 押してスクロールが終わった後、祖先の要素の `scrollTop` が描いた文書の上端の位置で、`window.scrollY` が押す前と同じ
+    test: test_normal_when_back_to_top_in_scroll_container
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（スクロールする祖先の要素の中に描いた文書）]
+  - name: 正常系（先頭へ戻るボタンが右側の部品を避ける）
+    summary: ボタンをミニマップと余白の列の左へずらし、右側の目次のパネルをボタンの上で終わらせる
+    setup:
+      - name: 差分を開いて描いたページ
+        description: '正常系（先頭へ戻るボタンを出して押す）と同じ画面に、`opts.diffSource`（長い Markdown の末尾の近くの段落を書き換えた 2 つのリビジョンを返す）と `opts.diffMode: "open"` を渡して描いた HTML'
+      - name: コメントの機能をオンにして描いたページ
+        description: '画面の大きさは 390×844px。`opts.config` は `{ features: { comments: true } }`、`opts.commentStore` の `load` が `## 付録` の段落の箇所のコメントを 1 件返す'
+      - name: 右側の目次を出し続けて描いたページ
+        description: '正常系（先頭へ戻るボタンを出して押す）と同じ画面に、`opts.config` を `{ "side-toc": { "mode": "fixed" } }` にして描き、目次を出すボタンを押した HTML'
+      - name: 長い Markdown
+        description: 正常系（先頭へ戻るボタンを出して押す）と同じ
+      - name: Mock
+        description: 差し替える依存は無い。コメントの読み書きの関数はページの中の配列を読み書きする
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, diffSource, diffMode })
+        P->>P: 差分の末尾までスクロールする
+        M->>P: ミニマップの左にボタンを出す
+        P->>M: mount(el, { markdown, config, commentStore })
+        P->>P: 文書の末尾までスクロールしてから 1 画面分戻る
+        M->>P: 余白の列の左にボタンを出し、位置を変えない
+        P->>M: mount(el, { markdown, config })
+        P->>P: 文書の末尾までスクロールする
+        M->>P: 右側の目次のパネルの下にボタンを出す
+    expected:
+      - 差分のページで、ボタンの右端がミニマップの帯の左端より 8px 左にある
+      - コメントのページで、ボタンの右端が余白の列（`div.mdmark-comment-margin`）の左端より 8px 左にあり、末尾と 1 画面分戻った位置でボタンの左端が同じ
+      - コメントのページで、どの余白のマーカーの矩形もボタンの矩形と重なっていない
+      - 右側の目次のページで、パネルの下端がボタンの上端より上にあり、パネルの最後の項目を押せる
+    test: test_normal_when_back_to_top_avoids_side_parts
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（右側の目次と重ならない）]
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（差分のミニマップと重ならない）]
+      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（余白のマーカーと重ならない）]
+  - name: 正常系（動きを減らす設定で先頭へ戻る）
+    summary: 利用者の環境が動きを減らす設定のとき、押すと一度に先頭へ移る
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（先頭へ戻るボタンを出して押す）と同じ
+      - name: 長い Markdown
+        description: 正常系（先頭へ戻るボタンを出して押す）と同じ
+      - name: Mock
+        description: '`window.matchMedia` を、`(prefers-reduced-motion: reduce)` に `matches: true` を返す関数に差し替える。`window.scrollTo` は正常系（先頭へ戻るボタンを出して押す）と同じ'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>P: 文書の末尾までスクロールする
+        P->>M: ボタンを押す
+        M->>P: 一度に描いた文書の先頭へ移る
+    expected:
+      - '`window.scrollTo` が `behavior: "auto"` で呼ばれ、呼んだ直後に `el` の上端が画面の上端から 1px 以内'
+    test: test_normal_when_back_to_top_with_reduced_motion
+  - name: 正常系（先頭へ戻るボタンを置かない・片付ける）
+    summary: '`back-to-top` がオフの文書ではボタンを置かず、`update` ではボタンを保ち、`destroy` でボタンと受け取りを外す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。文書ごとに別の要素へ描く
+      - name: ボタンを外す Markdown
+        description: '先頭に `<!-- features: -back-to-top -->` を持つ、正常系（先頭へ戻るボタンを出して押す）と同じ文書'
+      - name: 設定でオフにした文書
+        description: '正常系（先頭へ戻るボタンを出して押す）と同じ文書。`opts.config` は `{ features: { "back-to-top": false } }`'
+      - name: 長い Markdown
+        description: 正常系（先頭へ戻るボタンを出して押す）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el1, { markdown: -back-to-top の文書 })
+        M->>P: ボタンを置かずに描く
+        P->>M: mount(el2, { markdown, config })
+        M->>P: ボタンを置かずに描く
+        P->>M: mount(el3, { markdown })
+        P->>P: 文書の末尾までスクロールする
+        P->>M: update(markdown)
+        M->>P: ボタンを出したまま本文を描き直す
+        P->>M: destroy()
+        M->>M: ボタンとスクロールの受け取りを外す
+    expected:
+      - '`-back-to-top` の文書と設定でオフにした文書の要素に `button.mdmark-back-to-top` が無く、本文にマーカーの文字が出ていない'
+      - '`update` の後、`el3` の `button.mdmark-back-to-top` が 1 つだけで `hidden` を持たない'
+      - '`destroy` の後、`el3` の中が空で、`window` をスクロールしても例外が出ない'
+    test: test_normal_when_back_to_top_not_placed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
   - name: 正常系（エイリアス）
     summary: 渡したエイリアスの名前と別名に下線を引き、種類ごとのツールチップを出す。env は照合しない
     setup:
@@ -3872,7 +4033,7 @@ flows:
     test: test_normal_when_comment_focused
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -3899,6 +4060,7 @@ callers:
   - dev/設計書/シナリオ/単一ユースケース/ビューで項目を見る#
   - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#
   - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#
+  - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -3923,7 +4085,7 @@ request:
     default: '`comments` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -4353,4 +4515,7 @@ constraints:
     notes: 止め方は PoC 検証の案 A（止めると最初のフレームに戻る）
   - item: 印刷の画像と動画
     constraint: 印刷では、拡大のアイコンと GIF のボタンを出さず、`mdmark-only-light` の画像を出して `mdmark-only-dark` の画像を隠す。`video` と `audio` を出さず、`mdmark-media-print` の画像とキャプションを出す。リンクと添付のカードは、リンク先の URL を文字で出す
+  - item: 先頭へ戻るボタン
+    constraint: '`back-to-top` がオンのとき、`el` の子の末尾に `button.mdmark-back-to-top`（`type="button"`・`aria-label` と `title` は `先頭へ戻る`・lucide の `arrow-up-to-line` のアイコン）を置き、`update` で本文を描き直しても残す。スクロールする場所は、`el` に最も近い、`overflow-y` が `auto` か `scroll` でスクロールできる祖先の要素とし、無ければ画面全体にする。スクロールする場所の上端から `el` の上端までのスクロールの量が、スクロールする場所の高さ（`clientHeight`）未満の間はボタンを `hidden` にする。出している間は、スクロールする場所の右端と下端（スクロールバーを除き、画面からはみ出す分は画面の端）から `--mdmark-back-to-top-gap`（既定 16px）の位置に固定する。差分のミニマップの帯か余白の列（`div.mdmark-comment-margin`）とボタンの横の範囲が重なるときは、ボタンの右端をその部品の左端から 8px 左へずらす（縦の位置とスクロールの位置では動かさない）。右側の目次のパネルは、ボタンを出している間はボタンの上端より上で終わるよう高さを縮める。押すと、スクロールする場所を `el` の上端（画面全体なら `--mdmark-sticky-top` を引いた位置）へスクロールし（`prefers-reduced-motion: reduce` なら `behavior: "auto"`、ほかは `smooth`）、`div.mdmark-content`（無ければ `el`）に `tabindex="-1"` を付けて `preventScroll` でフォーカスを移す。スクロールする場所は、本文を描いた後と `update` の後に決め直す。画面全体なら `window` の `scroll` を、祖先の要素なら `document` の `scroll` を捕捉の段で受け（祖先の要素の外の画面や祖先の枠のスクロールでも位置が変わるため）、`window` の `resize`、`document.body` の子の追加・削除（ミニマップの帯）と `el` の子の追加・削除（余白の列）とあわせて 1 フレームに 1 回置き直す。ライトボックスと図の全画面のモーダルは top layer に出るため、開いている間はボタンがその後ろに隠れて操作できない。印刷では出さない。`destroy` でボタンと受け取りを外す'
+    notes: 出し始める量・避けるときの位置・祖先の要素の扱いはモックへの合意（dev/pr/287/確認ログ.md）。ボタンの見た目と状態は部品設計
 test_file: tests/integration/lib/mount.browser.test.ts

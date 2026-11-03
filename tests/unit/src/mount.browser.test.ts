@@ -505,11 +505,12 @@ test("test_mount_when_side_toc", async () => {
     markdown: `# 手引き\n\n## 導入\n\n${TABLE_MARKDOWN}`,
   });
   // 検証
-  expect(el.children).toHaveLength(2);
+  expect(el.children).toHaveLength(3);
   expect(el.children[0]?.matches("div.mdmark-content")).toBe(true);
   expect(
     el.children[1]?.matches('aside.mdmark-side-toc[data-mode="hover"]'),
   ).toBe(true);
+  expect(el.children[2]?.matches("button.mdmark-back-to-top")).toBe(true);
   const content = el.querySelector(".mdmark-content");
   expect(content?.querySelector("th button")).not.toBeNull();
   expect(content?.querySelector(".mdmark-section-toggle")).not.toBeNull();
@@ -548,6 +549,36 @@ test("test_mount_when_side_toc_off", async () => {
   expect(el.querySelector("aside.mdmark-side-toc")).toBeNull();
   expect(el.querySelector("div.mdmark-content")).toBeNull();
   expect(el.querySelector(":scope > h1")).not.toBeNull();
+});
+
+// 先頭へ戻るボタンを描く先の要素の子の末尾に置き、描き直しても 1 つだけ置く（正常系）
+test("test_mount_when_back_to_top", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: "# 手引き\n\n## 導入\n" });
+  const afterMount = el.lastElementChild;
+  // 実行
+  handle.update("# B");
+  const afterUpdate = el.lastElementChild;
+  const countAfterUpdate = el.querySelectorAll(".mdmark-back-to-top").length;
+  handle.destroy();
+  // 検証
+  expect(afterMount?.matches("button.mdmark-back-to-top[hidden]")).toBe(true);
+  expect(afterUpdate?.matches("button.mdmark-back-to-top[hidden]")).toBe(true);
+  expect(countAfterUpdate).toBe(1);
+  expect(el.querySelector(".mdmark-back-to-top")).toBeNull();
+});
+
+// 機能をオフにすると先頭へ戻るボタンを置かない（正常系）
+test("test_mount_when_back_to_top_off", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: "<!-- features: -back-to-top -->\n\n# 手引き\n",
+  });
+  // 検証
+  expect(el.querySelector("button.mdmark-back-to-top")).toBeNull();
 });
 
 /** 知らせの枠の処理を読み込む（blocks で本文を取り出せない知らせの枠を期待値にする） */

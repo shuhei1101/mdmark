@@ -1,0 +1,13 @@
+title: Parts/BackToTop
+stories:
+  - name: Shown
+    parameters:
+      server:
+        id: back-to-top
+    args: {}
+  - name: Hidden
+    parameters:
+      server:
+        id: back-to-top
+    args:
+      hidden: true

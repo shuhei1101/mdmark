@@ -97,6 +97,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   views: true,
   comments: false,
   "side-toc": true,
+  "back-to-top": true,
   "text-color": true,
   images: true,
   gallery: true,

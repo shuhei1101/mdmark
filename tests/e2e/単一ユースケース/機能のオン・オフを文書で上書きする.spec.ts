@@ -323,3 +323,25 @@ test("test_normal_when_media_features_disabled", async ({ page }) => {
   // 検証: 機能のマーカーを本文に出さない
   expect(await page.locator("#doc").innerText()).not.toContain("features");
 });
+
+// 文書のマーカーで先頭へ戻るボタンの機能を外すと、末尾までスクロールしてもボタンを置かない（正常シナリオ（先頭へ戻るボタンの機能を外す））
+test("test_normal_when_back_to_top_disabled", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const paragraphs = Array.from(
+    { length: 100 },
+    (_, i) => `段落 ${i + 1} は、画面の高さの 3 倍を超えるまで並べる本文。\n`,
+  ).join("\n");
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: `<!-- features: -back-to-top -->\n\n${paragraphs}`,
+  });
+  // 実行: 文書の末尾までスクロールする
+  await page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight),
+  );
+  // 検証
+  await expect(page.locator("#doc p").last()).toBeInViewport();
+  await expect(page.locator("#doc button.mdmark-back-to-top")).toHaveCount(0);
+  expect(await page.locator("#doc").innerText()).not.toContain("features");
+});

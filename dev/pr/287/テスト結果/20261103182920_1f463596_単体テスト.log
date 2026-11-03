@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-back-to-top
+
+
+ Test Files  182 passed (182)
+      Tests  1271 passed (1271)
+   Start at  18:26:57
+   Duration  68.97s (worker 40%, tests 39%, import 19%, transform 3%)
+
