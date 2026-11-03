@@ -213,6 +213,12 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す
         type: see_also
+  - path: e2e/単一ユースケース/比較元のMarkdownを渡して変更を強調する.spec.ts
+    description: シナリオ『比較元のMarkdownを渡して変更を強調する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/比較元のMarkdownを渡して変更を強調する
+        type: see_also
   - path: e2e/単一ユースケース/差分ビューの変更をプレビューで見る.spec.ts
     description: シナリオ『差分ビューの変更をプレビューで見る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]

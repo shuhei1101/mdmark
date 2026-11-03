@@ -1,10 +1,12 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   buildDistRoot,
+  focusComment,
   installCommentStore,
   mountDocument,
   openPage,
   readCommentCalls,
+  reloadComments,
   removeDistRoot,
   selectText,
   updateDocument,
@@ -147,6 +149,11 @@ test("test_normal_when_loaded", async ({ page }) => {
   await expect(
     page.locator(".mdmark-comment-bubble .mdmark-comment-body"),
   ).toHaveText("保存したコメント");
+  await expect(
+    page.locator(".mdmark-comment-bubble").getByRole("button", {
+      name: /^(編集|削除)$/,
+    }),
+  ).toHaveCount(0);
 });
 
 // 描き直した後も同じ文字に印を付け直し、文字が無いコメントは末尾の一覧に並べる（正常シナリオ（描き直した後に付き直す））
@@ -433,4 +440,286 @@ test("test_normal_when_jumped_from_margin", async ({ page }) => {
   await expect
     .poll(() => middleGap(page, "タブの箇所", { mark: "タブの箇所" }))
     .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
+});
+
+// 修正と削除を試す段落の文字
+const EDIT_PARAGRAPH =
+  "描いた文書の見た目はテーマの変数で変える。CSS を書いて上書きする。";
+
+// `テーマの変数` と `CSS` に付いた、保存済みのコメント
+const EDIT_COMMENTS = [
+  {
+    id: "c1",
+    quote: "テーマの変数",
+    prefix: "描いた文書の見た目は",
+    suffix: "で変える。",
+    body: "テーマのコメント",
+  },
+  {
+    id: "c2",
+    quote: "CSS",
+    prefix: "で変える。",
+    suffix: " を書いて上書きする。",
+    body: "CSS のコメント",
+  },
+];
+
+// 書き換えた本文
+const EDITED_BODY = "書き換えたコメント";
+
+/** 選んだ文字の印 */
+function commentMark(page: Page, quote: string) {
+  return page.locator("#doc mark.mdmark-comment-mark", { hasText: quote });
+}
+
+/** 修正と削除の段落を描き、2 つの印が付くのを待つ */
+async function mountEditable(page: Page): Promise<void> {
+  await mountDocument(page, {
+    markdown: `${EDIT_PARAGRAPH}\n`,
+    config: COMMENTS_ON,
+    docId: DOC_ID,
+    useCommentStore: true,
+  });
+  await expect(page.locator("#doc mark.mdmark-comment-mark")).toHaveCount(2);
+}
+
+/** 印を押して吹き出しを開き、「編集」から本文を書き換えて保存する */
+async function editAndSave(page: Page, quote: string) {
+  await commentMark(page, quote).click();
+  const bubble = page.locator(".mdmark-comment-bubble");
+  await bubble.getByRole("button", { name: "編集", exact: true }).click();
+  const field = bubble.locator("textarea");
+  await field.fill(EDITED_BODY);
+  await bubble.getByRole("button", { name: "保存", exact: true }).click();
+  return { bubble, field };
+}
+
+// 吹き出しの「編集」で本文を修正し、「削除」から確認を経て削除する（正常シナリオ（コメントを修正・削除する））
+test("test_normal_when_edited_and_removed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await installCommentStore(page, { loaded: EDIT_COMMENTS, editable: true });
+  await mountEditable(page);
+  const bubble = page.locator(".mdmark-comment-bubble");
+  // 実行
+  await commentMark(page, "テーマの変数").click();
+  // 検証: 本文の右上に「編集」「削除」のアイコンのボタン
+  const edit = bubble.getByRole("button", { name: "編集", exact: true });
+  const remove = bubble.getByRole("button", { name: "削除", exact: true });
+  await expect(edit).toHaveAttribute("title", "編集");
+  await expect(remove).toHaveAttribute("title", "削除");
+  const bodyBox = await bubble.locator(".mdmark-comment-body").boundingBox();
+  const editBox = await edit.boundingBox();
+  expect(editBox && bodyBox && editBox.x > bodyBox.x).toBe(true);
+  // 実行
+  await edit.click();
+  // 検証
+  const field = bubble.locator("textarea");
+  await expect(field).toHaveValue("テーマのコメント");
+  // 実行
+  await field.fill(EDITED_BODY);
+  await bubble.getByRole("button", { name: "保存", exact: true }).click();
+  // 検証
+  await expect(bubble.locator(".mdmark-comment-body")).toHaveText(EDITED_BODY);
+  expect((await readCommentCalls(page)).update).toEqual([
+    { docId: DOC_ID, id: "c1", body: EDITED_BODY },
+  ]);
+  await expect(commentMark(page, "テーマの変数")).toHaveCount(1);
+  // 実行
+  await page.keyboard.press("Escape");
+  await commentMark(page, "CSS").click();
+  await bubble.getByRole("button", { name: "削除", exact: true }).click();
+  // 検証
+  await expect(bubble).toContainText(
+    "このコメントを削除しますか? 削除すると元に戻せません。",
+  );
+  await expect(
+    bubble.getByRole("button", { name: "キャンセル", exact: true }),
+  ).toBeFocused();
+  expect((await readCommentCalls(page)).remove).toEqual([]);
+  // 実行
+  const scrollY = await page.evaluate(() => window.scrollY);
+  await bubble.locator('[data-action="confirm-remove"]').click();
+  // 検証
+  await expect(commentMark(page, "CSS")).toHaveCount(0);
+  expect((await readCommentCalls(page)).remove).toEqual([
+    { docId: DOC_ID, id: "c2" },
+  ]);
+  const paragraph = page.locator("#doc p");
+  await expect(paragraph).toHaveText(EDIT_PARAGRAPH);
+  await expect(paragraph).toHaveAttribute("tabindex", "-1");
+  await expect(paragraph).toBeFocused();
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
+});
+
+// reloadComments で読み直し、本文を描き直さずに印を付け直す（正常シナリオ（読み直す））
+test("test_normal_when_reloaded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loadedByCall: [[EDIT_COMMENTS[0]], EDIT_COMMENTS],
+  });
+  await mountDocument(page, {
+    markdown: [
+      EDIT_PARAGRAPH,
+      "",
+      "<!-- table: data +sort -->",
+      "",
+      "| 名前 |",
+      "| --- |",
+      "| b |",
+      "| a |",
+      "| c |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+    config: COMMENTS_ON,
+    docId: DOC_ID,
+    useCommentStore: true,
+  });
+  await expect(page.locator("#doc mark.mdmark-comment-mark")).toHaveCount(1);
+  await page.locator("#doc th button.mdmark-sort").click();
+  const rows = page.locator("#doc tbody td");
+  await expect(rows).toHaveText(["a", "b", "c"]);
+  // 実行
+  const result = await reloadComments(page);
+  // 検証
+  expect(result).toEqual({ resolved: null });
+  await expect(page.locator("#doc mark.mdmark-comment-mark")).toHaveText([
+    "テーマの変数",
+    "CSS",
+  ]);
+  expect((await readCommentCalls(page)).load).toHaveLength(2);
+  await expect(rows).toHaveText(["a", "b", "c"]);
+});
+
+// focusComment で印を画面に入れてフォーカスを移し、強調する（正常シナリオ（コメントの箇所へ移る））
+test("test_normal_when_focused", async ({ page }) => {
+  // 準備
+  const errors = collectConsoleErrors(page);
+  const paragraphs = Array.from(
+    { length: 30 },
+    (_, i) => `${i + 1} 番目の段落は、画面の高さを超えるまで並べる本文。`,
+  );
+  paragraphs[0] = "先頭の語を含む段落。";
+  paragraphs[29] = "末尾の語を含む段落。";
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loaded: [quoteComment("c1", "先頭の語"), quoteComment("c9", "末尾の語")],
+  });
+  await mountDocument(page, {
+    markdown: `${paragraphs.join("\n\n")}\n`,
+    config: COMMENTS_ON,
+    docId: DOC_ID,
+    useCommentStore: true,
+  });
+  const head = commentMark(page, "先頭の語");
+  const tail = commentMark(page, "末尾の語");
+  await expect(tail).toHaveCount(1);
+  await expect(tail).not.toBeInViewport();
+  // 実行
+  await focusComment(page, "c1");
+  // 検証
+  await expect(head).toHaveAttribute("data-focused", "");
+  await expect(head).toBeFocused();
+  // 実行
+  await focusComment(page, "c9");
+  // 検証
+  await expect(tail).toBeInViewport();
+  await expect(tail).toHaveAttribute("data-focused", "");
+  await expect(head).not.toHaveAttribute("data-focused");
+  await expect(tail).toBeFocused();
+  await expect(page.locator(".mdmark-comment-bubble")).toHaveCount(0);
+  // 実行
+  const scrollY = await page.evaluate(() => window.scrollY);
+  await focusComment(page, "none");
+  // 検証
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
+  await expect(tail).toHaveAttribute("data-focused", "");
+  await expect(page.locator("#doc [data-focused]")).toHaveCount(1);
+  expect(await errors()).toEqual([]);
+});
+
+// update が失敗すると、入力欄と書き換えた本文を残して知らせる（異常シナリオ（修正できない））
+test("test_error_when_update_failed", async ({ page }) => {
+  // 準備
+  const errors = collectConsoleErrors(page);
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loaded: EDIT_COMMENTS,
+    editable: true,
+    failUpdate: true,
+  });
+  await mountEditable(page);
+  // 実行
+  const { bubble, field } = await editAndSave(page, "テーマの変数");
+  // 検証
+  await expect(bubble.getByRole("alert")).toHaveText(
+    "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。",
+  );
+  await expect(field).toHaveValue(EDITED_BODY);
+  await bubble.getByRole("button", { name: "キャンセル", exact: true }).click();
+  await expect(bubble.locator(".mdmark-comment-body")).toHaveText(
+    "テーマのコメント",
+  );
+  const logged = await errors();
+  expect(logged).toHaveLength(1);
+  expect(logged[0]).toContain("network");
+});
+
+// remove が失敗すると、印とコメントを残し、削除の確認を開いたまま知らせる（異常シナリオ（削除できない））
+test("test_error_when_remove_failed", async ({ page }) => {
+  // 準備
+  const errors = collectConsoleErrors(page);
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loaded: EDIT_COMMENTS,
+    editable: true,
+    failRemove: true,
+  });
+  await mountEditable(page);
+  const bubble = page.locator(".mdmark-comment-bubble");
+  await commentMark(page, "CSS").click();
+  await bubble.getByRole("button", { name: "削除", exact: true }).click();
+  // 実行
+  await bubble.locator('[data-action="confirm-remove"]').click();
+  // 検証
+  await expect(bubble.getByRole("alert")).toHaveText(
+    "コメントを削除できませんでした。もう一度「削除」を押してください。",
+  );
+  await expect(commentMark(page, "CSS")).toHaveCount(1);
+  await expect(bubble.locator(".mdmark-comment-body")).toHaveText(
+    "CSS のコメント",
+  );
+  await expect(bubble.locator(".mdmark-comment-confirm")).toBeVisible();
+  const logged = await errors();
+  expect(logged).toHaveLength(1);
+  expect(logged[0]).toContain("network");
+});
+
+// 読み直しの load が失敗すると、今の印を残して reloadComments を reject する（異常シナリオ（読み直せない））
+test("test_error_when_reload_failed", async ({ page }) => {
+  // 準備
+  const errors = collectConsoleErrors(page);
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loaded: [EDIT_COMMENTS[0]],
+    failReload: true,
+  });
+  await mountDocument(page, {
+    markdown: `${EDIT_PARAGRAPH}\n`,
+    config: COMMENTS_ON,
+    docId: DOC_ID,
+    useCommentStore: true,
+  });
+  await expect(commentMark(page, "テーマの変数")).toHaveCount(1);
+  // 実行
+  const result = await reloadComments(page);
+  // 検証
+  expect(result).toEqual({ rejected: "network" });
+  await expect(commentMark(page, "テーマの変数")).toHaveCount(1);
+  const logged = await errors();
+  expect(logged).toHaveLength(1);
+  expect(logged[0]).toContain("network");
 });
