@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { MdmarkErTable } from "../../../../src/diagram/definition.ts";
+import { escapeHtml } from "../../../../src/parts/escape.ts";
 import { shopEr, shopErFolded } from "../../helpers/er.ts";
 import { findTag, findTags, matches, plainText } from "../../helpers/html.ts";
 
@@ -21,7 +22,11 @@ test("test_render_er_table", async () => {
   const { renderErTable } = await loadEr();
   const orders = tableOf(shopEr().tables, "orders");
   // 実行
-  const html = renderErTable({ table: orders, tipId: "d1-tip-1" });
+  const html = renderErTable({
+    table: orders,
+    tipId: "d1-tip-1",
+    text: escapeHtml,
+  });
   // 検証
   const root = findTag(html, "mdmark-diagram-er-table");
   expect(root).toContain('data-color="orange"');
@@ -46,7 +51,11 @@ test("test_render_er_table_when_folded", async () => {
   const orders = tableOf(shopErFolded().tables, "orders");
   const hiddenCount = orders.columns.filter((c) => !c.pk && !c.fk).length;
   // 実行
-  const html = renderErTable({ table: orders, tipId: undefined });
+  const html = renderErTable({
+    table: orders,
+    tipId: undefined,
+    text: escapeHtml,
+  });
   // 検証
   const rows = findTags(html, "data-column=");
   for (const column of orders.columns) {
@@ -79,7 +88,7 @@ test("test_render_er_table_when_no_kind", async () => {
     ],
   };
   // 実行
-  const html = renderErTable({ table, tipId: undefined });
+  const html = renderErTable({ table, tipId: undefined, text: escapeHtml });
   // 検証
   expect(html).not.toContain("mdmark-diagram-er-kind");
   expect(html).not.toContain("data-color");

@@ -637,3 +637,38 @@ test("test_render_diagram_tip_when_table", async () => {
   expect(html).toContain('role="tooltip"');
   expect(html).toMatch(/\bhidden\b/);
 });
+
+// 定義の文字の {{語}} を用語の下線にする（正常系）
+test("test_render_er_when_terms", async () => {
+  // 準備
+  const { renderEr } = await loadDiagram();
+  const definition = shopEr();
+  const customers = definition.tables.find((t) => t.id === "customers");
+  if (customers) {
+    customers.label = "{{顧客}}";
+    customers.columns.push({ name: "rank", type: "text" });
+  }
+  definition.relations = definition.relations.map((r) =>
+    r.label === "注文する" ? { ...r, label: "{{注文}}する" } : r,
+  );
+  const meanings: Record<string, string> = {
+    顧客: "注文する人",
+    注文: "1 回の買い物",
+  };
+  // 実行
+  const { html, tips, terms } = renderEr(
+    definition,
+    "d1",
+    true,
+    (word) => meanings[word],
+  );
+  // 検証
+  expect(matches(html, /class="mdmark-term"/g)).toHaveLength(2);
+  expect(plainText(html)).not.toContain("{{");
+  expect(plainText(html)).not.toContain("}}");
+  expect(plainText(tips)).toContain("注文する人");
+  expect(plainText(tips)).not.toContain("{{");
+  expect(terms).toBe(true);
+  expect(html).toContain('aria-label="「顧客」の説明"');
+  expect(html).toContain('aria-label="「顧客」の主キーと外部キー以外の列"');
+});
