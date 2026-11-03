@@ -69,6 +69,30 @@ files:
   - path: components/er-diagram/index.html
     description: '部品『er-diagram』のモック: テーブル・テーブルの種類（マスター・トランザクション）と色・列の PK・FK・NN のマーカー・多重度とラベルを持つ関係の線の ER 図と、列を畳んだテーブル・テーブルのツールチップ・定義を読めない書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:図]
+  - path: components/columns/index.html
+    description: '部品『columns』のモック: 本文を横に 2〜3 列で並べる段組みと、狭い画面で縦に積む・列の数が 2〜3 でない・入れ子の書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/csv-table/index.html
+    description: '部品『csv-table』のモック: 言語 `csv` のコードブロックを描いた表と、右端の RAW のボタンで元の CSV に切り替えた状態・マーカーの無い csv・列の数がそろわない書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/details-range/index.html
+    description: '部品『details-range』のモック: `details` のマーカーで囲んだ範囲の折りたたみ（閉じた・開いた・長いタイトル）と、閉じのマーカーが無い書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/highlighter/index.html
+    description: '部品『highlighter』のモック: `==text==` の蛍光ペンの既定の色と色の名前ごとの色、コメントのマーカーとの区別、知らない色の名前の書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/icon/index.html
+    description: '部品『icon』のモック: `icon:名前` の見出しと本文のアイコン、束ねていない名前・書き方の誤り・Lucide に無い名前・Lucide を読めない知らせの枠。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/include/index.html
+    description: '部品『include』のモック: `include` のマーカーで取り込んだ中身（本文と同じに描く案と取り込み元を出す案）・コードの行の範囲・取り込み先が無い・循環する書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/kbd/index.html
+    description: '部品『kbd』のモック: `kbd:` のキーと組み合わせ・表の中のキー・文書の HTML のルビ。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
+  - path: components/wide/index.html
+    description: '部品『wide』のモック: `wide` のマーカーで本文の幅を越えて広げた表と、右の目次と並ぶ・狭い画面・閉じのマーカーが無い書き方の警告。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:記法]
   - path: components/figure/index.html
     description: '部品『figure』のモック: 図と表に付ける通し番号と、番号にした参照のリンク、画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
@@ -700,6 +724,15 @@ files:
     tags: [topic:モック, tool:javascript]
   - path: refs/298/index.md
     description: '#298（ER 図の部品を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/307/assets/notations.css
+    description: '#307 のモックが共通で読む素材: アイコン・キー・蛍光ペン・段組み・取り込み・wide・CSV の表の RAW のボタンの規則。複数のモックに効く見た目を変えるときに読む。'
+    tags: [topic:モック, topic:記法, tool:css]
+  - path: refs/307/assets/notations.js
+    description: '#307 のモックが共通で読む素材: CSV の表の RAW のボタンで元の CSV と表を切り替える操作。複数のモックに効く動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/307/index.md
+    description: '#307（記法の新設 8 件）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/32/assets/bundle.css
     description: '#32 のモックが共通で読む素材: まとめた HTML の画面（bundle）と文書の一覧の部品（doc-list）の規則。複数のモックに効く見た目や動きを変えるときに読む。'
