@@ -1534,7 +1534,7 @@ functions:
       mock: なし
       expected: '`[{0, 0}, undefined, undefined]`'
     status: planned
-    introduced: &id001
+    introduced:
       pr: 275
   - name: mergeSpans
     title: 隣り合う同じ値の結合を決める
@@ -1564,7 +1564,8 @@ functions:
       mock: なし
       expected: '`[[2, 2], [0, 0], [1, 1]]`'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
   - name: measureIndents
     title: 行のインデントのレベルを決める
     container: src/code-fold-logic.ts
@@ -1593,7 +1594,8 @@ functions:
       mock: なし
       expected: '`[0, 1, 2, 0]`'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
   - name: foldLinesOf
     title: 畳む行の数を決める
     container: src/code-fold-logic.ts
@@ -1622,7 +1624,8 @@ functions:
       mock: なし
       expected: '`[1, undefined, undefined, undefined]`'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
   - name: hiddenLinesOf
     title: 隠す行を決める
     container: src/code-fold-logic.ts
@@ -1651,7 +1654,8 @@ functions:
       mock: なし
       expected: '`{1, 2, 3}`'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
   - name: guideRangeOf
     title: 縦線を濃くする範囲を決める
     container: src/code-fold-logic.ts
@@ -1680,7 +1684,8 @@ functions:
       mock: なし
       expected: '`undefined`'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
   - name: attachCodeFolds
     title: コードの行に畳む・開くを付ける
     container: src/interact/code-folds.ts
@@ -1727,7 +1732,8 @@ functions:
       mock: なし
       expected: '`pointerover` の後に 3 行目だけが `data-guide-active` を持ち、`pointerout` の後は持つ行が無い'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
   - name: setCodeFoldOpen
     title: コードの行の開閉を切り替える
     container: src/interact/code-folds.ts
@@ -1754,7 +1760,8 @@ functions:
       mock: なし
       expected: '`true` の後に後ろの行が `hidden` を持たず `⋯` が無い。`false` の後に `hidden` と `⋯` が戻る'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts

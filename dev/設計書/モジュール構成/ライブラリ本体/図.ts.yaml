@@ -5,14 +5,16 @@ directory: |-
   src/
   ├── diagram/
   │   ├── definition.ts   # 定義の型・JSON の読み取り・形の確かめ
-  │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし・軸の刻み
+  │   ├── check.ts        # フロー図の定義の配置の点検（重なり・はみ出し・線の横切り・ラベルの長さ）
+  │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし・軸の刻み・積み上げ
   ├── parts/
   │   ├── icons.ts        # lucide のアイコンの svg
-  │   ├── diagram.ts      # 図の枠・フロー図・シーケンス図・グラフ・図のツールチップ・凡例
+  │   ├── diagram.ts      # 図の枠・フロー図・シーケンス図・図のツールチップ・凡例
+  │   ├── chart.ts        # グラフの種類ごとの描き方と系列の見た目の組
   │   ├── param.ts        # 操作できる部品
   │   └── hint.ts         # 埋め込んだ HTML のヒントの印と中身
   ├── render/syntax/
-  │   └── diagrams.ts     # 図の部品の印の範囲を部品の HTML にするコアルール
+  │   └── diagrams.ts     # 図の部品の印の範囲を部品の HTML にするコアルールと、点検が読む図の部品の範囲
   └── interact/
       ├── diagrams.ts     # 拡大・縮小・移動・全画面
       ├── zoom.ts         # 図とライトボックスが共有する拡大・縮小・移動
@@ -84,7 +86,7 @@ data_models:
     summary: '`<!-- chart -->` の範囲に書く定義'
     properties:
       - name: type
-        type: '"line" | "bar" | "pie" | "scatter" | undefined'
+        type: '"line" | "bar" | "pie" | "scatter" | "area" | "stacked-bar" | "stacked-area" | "horizontal-bar" | "donut" | "radar" | "bubble" | "combo" | undefined'
         description: グラフの種類。省くと `line`
       - name: title
         type: string
@@ -97,19 +99,25 @@ data_models:
         description: 更新日
       - name: x
         type: '{ label: string; ticks?: string[] } | undefined'
-        description: 横の軸。`line`・`bar` は `ticks` が必須、`scatter` は数値の軸で `ticks` を持たない。`pie` は持たない
+        description: 横の軸。`line`・`bar`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`combo` は `ticks` が必須（`horizontal-bar` は縦に並ぶ項目）、`radar` は `ticks` を軸の名前にし、`scatter`・`bubble` は数値の軸で `ticks` を持たない。`pie`・`donut` は持たない
       - name: y
         type: '{ label: string; min?: number; max?: number; step?: number } | undefined'
-        description: 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くと `niceTicks` で切る。`pie` は持たない
+        description: 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くと `niceTicks` で切る。`pie`・`donut` は持たない
       - name: series
-        type: '{ name: string; points: number[] | [number, number][] }[] | undefined'
-        description: 系列。`pie` 以外で 1〜4 つ。`line`・`bar` の `points` の数は `x.ticks` と同じ、`scatter` は `[x, y]` の組
+        type: '{ name: string; points: number[] | [number, number][] | [number, number, number][]; as?: "line" | "bar"; axis?: "y" | "y2" }[] | undefined'
+        description: 系列。`pie`・`donut` 以外で 1〜6 つ。`points` の数は `x.ticks` と同じ、`scatter` は `[x, y]`、`bubble` は `[x, y, size]` の組。`as`・`axis` は `combo` だけが読み、`as` は系列の描き方（省くと `line`）、`axis` は使う縦の軸（省くと `y`）
       - name: items
         type: '{ name: string; value: number }[] | undefined'
-        description: '`pie` の項目。1〜4 つで、`value` は 0 より大きい'
+        description: '`pie`・`donut` の項目。1〜6 つで、`value` は 0 より大きい'
       - name: unit
         type: string | undefined
-        description: '`pie` の凡例の値に付ける単位（例 ` 件`）'
+        description: '`pie`・`donut` の凡例の値と `donut` の中央の合計に付ける単位（例 ` 件`）'
+      - name: y2
+        type: '{ label: string; min?: number; max?: number; step?: number } | undefined'
+        description: '`combo` の右の縦の軸。書き方は `y` と同じ'
+      - name: size
+        type: '{ label: string } | undefined'
+        description: '`bubble` の円の面積が表す値の名前'
   - name: MdmarkParamDefinition
     title: 操作できる部品の定義
     container: src/diagram/definition.ts
@@ -226,6 +234,22 @@ constants:
     container: src/parts/diagram.ts
     summary: 開始のノードの直径に対する、名前を置く内接の正方形の外の余白の割合（`(1 - 1/√2) / 2`）
     value: '0.1464'
+  - name: SERIES_STYLES
+    title: 系列の見た目の組
+    container: src/parts/chart.ts
+    summary: 系列と項目の位置ごとの、色・線の模様・点の形・塗りの模様の組。5・6 つ目を追加する
+    value: 6 つの組。5 つ目は `stroke-dasharray` `9 3 1 3 1 3`・逆三角形・縦線の模様、6 つ目は `3 2`・十字・横線の模様
+    status: planned
+    introduced:
+      pr: 275
+  - name: LABEL_METRICS
+    title: ラベルの長さの目安
+    container: src/diagram/check.ts
+    summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。CSS を修正したときは合わせて修正する
+    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px
+    status: planned
+    introduced:
+      pr: 275
 functions:
   - name: parseDefinitionJson
     title: 定義の JSON を読む
@@ -259,7 +283,7 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・`table` の値の漏れ）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
     args:
       - name: directive
         type: '"flow" | "sequence" | "chart" | "param"'
@@ -327,6 +351,24 @@ functions:
         condition: '`type` が `pie` で `items` が無い定義と、`type` が `scatter` で点が数値 1 つの定義と、`y` に `min` だけを書いた定義'
         mock: なし
         expected: どれも `ok` が `false` で、`problems[0]` がそれぞれ `items`・点の形 `[x, y]`・`min`・`max`・`step` を揃えて書くことを含む
+      - name: test_read_definition_when_chart_types_added
+        case: 正常
+        summary: 追加したグラフの種類の定義を読める
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（追加したグラフの種類）」の 9 つの定義
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_chart_series_too_many
+        case: 異常
+        summary: 系列と項目の 7 つ以上を読めない箇所にする
+        condition: 系列 7 つの `line` と、項目 7 つの `donut` の定義
+        mock: なし
+        expected: どちらも `ok` が `false` で、`problems[0]` が系列（`donut` は項目）の数 7 と上限の 6 つを含む
+      - name: test_read_definition_when_bubble_point
+        case: 異常
+        summary: バブルの点の形を確かめる
+        condition: '`type` が `bubble` で、点が `[x, y]` の定義'
+        mock: なし
+        expected: '`ok` が `false` で、`problems[0]` が点の形 `[x, y, size]` を含む'
   - name: fitScale
     title: 全体が収まる倍率
     container: src/diagram/geometry.ts
@@ -521,10 +563,10 @@ functions:
         expected: 相手の箱の x が定義の順に増え、メッセージの y が順に増え、`reply` の線と戻りの線が破線で、戻り先のラベルがある
   - name: renderChart
     title: グラフを描く
-    container: src/parts/diagram.ts
+    container: src/parts/chart.ts
     kind: 関数
     scope: internal
-    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を置き、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を置く。系列と円の項目は位置で色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（塗りつぶし・斜線・点・格子の svg の `pattern`）・点の形の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る'
+    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を置き、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を置く。`area` は折れ線の下を系列の塗りで塗り、`stacked-bar`・`stacked-area` は `stackSeries` で積み上げ（負の値は 0 から下へ積み、`stacked-bar` は棒の上に合計を置く）、`horizontal-bar` は項目を縦に並べて値を横の長さにし、`donut` は `pie` の中を空けて中央に合計と `合計{unit}` を置き、`radar` は `x.ticks` の軸を放射状に並べて系列を多角形にし、`bubble` は `size` の値を円の面積にし、`combo` は系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の軸で描く。系列と円の項目は位置で `SERIES_STYLES` の色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（svg の `pattern`）・点の形の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る'
     args:
       - name: definition
         type: MdmarkChartDefinition
@@ -562,12 +604,69 @@ functions:
         condition: '`length-time` の定義'
         mock: なし
         expected: 系列 1 の点が `circle` 6 つ、系列 2 の点が四角の `rect` 6 つで、横の軸も数値の目盛りを持つ
+      - name: test_render_chart_when_stacked_bar
+        case: 正常
+        summary: 系列を積み上げ、棒の上に合計を置く
+        condition: 項目 2 つで、系列の値が 1 つ目の項目で `3`・`4` の `stacked-bar`
+        mock: なし
+        expected: 1 つ目の項目で、系列 2 の `rect` の下端が系列 1 の `rect` の上端と同じ高さで、2 つの高さの和が値 `7` の高さ。棒の上に `7` の文字がある
+      - name: test_render_chart_when_stacked_negative
+        case: 正常
+        summary: 負の値を 0 から下へ積む
+        condition: 1 つ目の項目の系列の値が `3`・`-2` の `stacked-bar`
+        mock: なし
+        expected: 系列 2 の `rect` の上端が 0 の高さで、系列 1 の `rect` の下端も 0 の高さ
+      - name: test_render_chart_when_area
+        case: 正常
+        summary: 面と積み上げの面を塗る
+        condition: 系列 2 つの `area` と `stacked-area`
+        mock: なし
+        expected: どちらも系列ごとに塗りの `path` があり、`stacked-area` の系列 2 の面の下端が系列 1 の面の上端
+      - name: test_render_chart_when_horizontal_bar
+        case: 正常
+        summary: 項目を縦に並べて値を横の長さにする
+        condition: 系列 1 つで値が `2`・`5` の `horizontal-bar`
+        mock: なし
+        expected: 2 つの `rect` の `y` が違い、値 `5` の `rect` の幅が値 `2` の幅より広い
+      - name: test_render_chart_when_donut
+        case: 正常
+        summary: 中を空けた扇形と中央の合計を描く
+        condition: 項目が `186`・`92`・`22`、`unit` が ` 件` の `donut`
+        mock: なし
+        expected: 扇形の `path` が外と内の 2 つの弧を持ち、中央に `300` と `合計 件` の文字がある
+      - name: test_render_chart_when_radar
+        case: 正常
+        summary: 軸を放射状に並べて系列を多角形にする
+        condition: '`x.ticks` が 5 つ、系列 2 つの `radar`'
+        mock: なし
+        expected: 軸の `line` が 5 本、系列ごとに頂点 5 つの多角形の `path` がある
+      - name: test_render_chart_when_bubble
+        case: 正常
+        summary: size の値を円の面積にする
+        condition: 点が `[1, 2, 4]`・`[3, 4, 16]` の `bubble`
+        mock: なし
+        expected: 2 つ目の `circle` の `r` が 1 つ目の 2 倍
+      - name: test_render_chart_when_combo
+        case: 正常
+        summary: 系列を as の描き方で重ね、y2 の系列を右の軸で描く
+        condition: 1 つ目の系列の `as` が `bar`、2 つ目が `line` で `axis` が `y2` の `combo`
+        mock: なし
+        expected: 1 つ目の系列が `rect`、2 つ目が折れ線の `path` で、右の縦の軸の目盛りがある
+      - name: test_render_chart_when_six_series
+        case: 正常
+        summary: 6 つの系列を色・線の模様・点の形の組で分ける
+        condition: 系列 6 つの `line`
+        mock: なし
+        expected: '`data-series` が `1`〜`6` の線があり、系列 5 の線の `stroke-dasharray` が `9 3 1 3 1 3`、系列 6 が `3 2`、系列 5 の点が逆三角形、系列 6 の点が十字'
+    callees:
+      - '#functions[stackSeries]'
+      - '#constants[SERIES_STYLES]'
   - name: legendFor
     title: 凡例の項目
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義に出るノードの種類（名前は `KIND_STYLES` の `legend`）・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。層と印の項目の名前は `層の背景（層のノードの色）`・`説明や入力・処理・出力が出るノード`・`入力・処理・出力が出るノード`・`説明が出るノード`
+    summary: '定義に出るノードの種類（名前は `KIND_STYLES` の `legend`）・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。層と印の項目の名前は `層の背景（層のノードの色）`・`説明や入力・処理・出力が出るノード`・`入力・処理・出力が出るノード`・`説明が出るノード`'
     args:
       - name: definition
         type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition
@@ -593,6 +692,12 @@ functions:
         condition: モックの `judgement` の定義
         mock: なし
         expected: 種類の項目が `開始`・`質問`・`アクション`・`結果` の 4 つで、`意思決定モデル`・`データ（下の角が丸いノード）` が無い
+      - name: test_legend_for_when_chart_types_added
+        case: 正常
+        summary: 組み合わせ・バブル・ドーナツの凡例を出す
+        condition: '`y2` を持つ `combo`、`size.label` が `件数` の `bubble`、`unit` が ` 件` の `donut`'
+        mock: なし
+        expected: '`combo` の項目が `{系列名}（左の軸）`・`{系列名}（右の軸）`、`bubble` に `円の面積: 件数` の項目、`donut` の項目が `{名前}: {値} 件`'
   - name: renderDiagramTip
     title: 図のツールチップを描く
     container: src/parts/diagram.ts
@@ -1041,6 +1146,110 @@ functions:
     status: planned
     introduced:
       pr: 263
+  - name: stackSeries
+    title: 系列を積み上げる
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返す
+    args:
+    - name: series
+      type: number[][]
+      required: true
+      description: 系列ごとの目盛りごとの値
+    returns:
+      type: 'Array<Array<{ from: number; to: number }>>'
+      description: 系列と目盛りごとの下端と上端の値
+    unit_tests:
+    - name: test_stack_series
+      case: 正常
+      summary: 正の値を上へ、負の値を下へ積む
+      condition: '`[[3, 1], [4, -2], [-1, 2]]`'
+      mock: なし
+      expected: '`[[{0, 3}, {0, 1}], [{3, 7}, {0, -2}], [{0, -1}, {1, 3}]]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: findDiagramBlocks
+    title: 図の部品の範囲を探す
+    container: src/render/syntax/diagrams.ts
+    kind: 関数
+    scope: internal
+    summary: Markdown を markdown-it で解析し、`flow`・`sequence`・`chart`・`param` の印の範囲ごとに、印の名前・開きの印の行の番号・範囲の `json` のコードブロックの中身を返す（`buildDiagrams` と同じ範囲の読み方。埋め込んだ HTML の中の custom element は返さない）
+    args:
+    - name: markdown
+      type: string
+      required: true
+      description: 文書の本文
+    returns:
+      type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param"; line: number; blocks: string[] }>'
+      description: 範囲ごとの印の名前・行の番号（1 から）・`json` のコードブロック
+    unit_tests:
+    - name: test_find_diagram_blocks
+      case: 正常
+      summary: 図の部品の範囲だけを返す
+      condition: '`<!-- flow -->` の範囲（3 行目）と `<!-- chart -->` の範囲と、`<!-- html -->` の中の `<mdmark-chart>`'
+      mock: なし
+      expected: 2 つの範囲を返し、1 つ目が `flow`・行 3・`json` 1 つ
+    status: planned
+    introduced:
+      pr: 275
+  - name: checkFlowLayout
+    title: フロー図の配置を点検する
+    container: src/diagram/check.ts
+    kind: 関数
+    scope: internal
+    summary: 読めたフロー図の定義の、ノードの矩形の重なり（辺が接するだけは除く）・`width`・`height` の外へのはみ出しと `frame` の縁をまたぐノード・線の各線分（`points` を含む）と `from`・`to` でないノードの矩形の交わり・`labelLineCount` で折り返した高さが収まらないラベルを、ずれ 1 つにつき 1 件にして返す（同じノードの組・ノードと線の組は 1 件）
+    args:
+    - name: definition
+      type: MdmarkFlowDefinition
+      required: true
+      description: 読めたフロー図の定義
+    returns:
+      type: 'Array<{ kind: "diagram_node_overlap" | "diagram_node_overflow" | "diagram_wire_crosses_node" | "diagram_label_too_long"; ids: string[] }>'
+      description: ずれの種類と、対象のノードか線の `id`
+    callees:
+    - '#functions[labelLineCount]'
+    unit_tests:
+    - name: test_check_flow_layout
+      case: 正常
+      summary: 整った配置はずれを返さない
+      condition: モックの `inquiry` の定義と、辺が接するだけの 2 つのノード
+      mock: なし
+      expected: 空の配列
+    - name: test_check_flow_layout_when_broken
+      case: 異常
+      summary: 重なり・はみ出し・横切り・ラベルの長さを返す
+      condition: インターフェース定義『設定と索引を点検する』の「正常系（図の定義のずれ）」のフロー図の定義
+      mock: なし
+      expected: '`diagram_node_overlap`（2 つのノードの `id`）・`diagram_node_overflow`・`diagram_wire_crosses_node`（線とノードの `id`）・`diagram_label_too_long` を 1 件ずつ返す'
+    status: planned
+    introduced:
+      pr: 275
+  - name: labelLineCount
+    title: ラベルの折り返した行の数を数える
+    container: src/diagram/check.ts
+    kind: 関数
+    scope: internal
+    summary: '`LABEL_METRICS` の文字の大きさで、全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行の数を返す'
+    args:
+    - name: options
+      type: '{ text: string; fontSize: number; width: number }'
+      required: true
+      description: ラベルの文字・文字の大きさ・折り返す幅
+    returns:
+      type: number
+      description: 行の数（空の文字は 0）
+    unit_tests:
+    - name: test_label_line_count
+      case: 正常
+      summary: 全角と半角の幅で折り返す
+      condition: '`fontSize` 14・`width` 70 で、`あいうえおか` と `abcdefgh`'
+      mock: なし
+      expected: '`2` と `1`'
+    status: planned
+    introduced:
+      pr: 275
 test_files:
   - tests/unit/src/diagram/definition.test.ts
   - tests/unit/src/diagram/geometry.test.ts

@@ -1484,7 +1484,7 @@ functions:
       type: string
       description: '`<button class="mdmark-code-fold"` で始まる HTML'
     callees:
-    - '#functions[iconSvg]'
+    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
     unit_tests:
     - name: test_render_code_fold_toggle
       case: 正常
@@ -1493,7 +1493,7 @@ functions:
       mock: なし
       expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
     status: planned
-    introduced: &id001
+    introduced:
       pr: 275
   - name: renderCodeFoldMore
     title: 畳んだ行の ⋯ のボタンを描く
@@ -1517,7 +1517,8 @@ functions:
       mock: なし
       expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
     status: planned
-    introduced: *id001
+    introduced:
+      pr: 275
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
