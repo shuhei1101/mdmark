@@ -9664,3 +9664,111 @@ test("test_normal_when_er_table_tooltip", async () => {
   expect(document.activeElement).toBe(info);
   expect(tip.hidden).toBe(false);
 });
+
+/** 脚注 1 はリンクを持ち、脚注 2 は持たない文書（インターフェース定義『文書をHTML文字列にする』の正常系（脚注）と同じ） */
+const FOOTNOTES_MARKDOWN = [
+  "出典がある[^src]。",
+  "",
+  "[^src]: 出典の説明",
+  "",
+  "    [詳しく](https://example.com)",
+  "",
+  "行内にも書ける^[行内の補足]。",
+  "",
+].join("\n");
+
+/** 描いた要素の中の、`n` 番目（1 から）の脚注の番号の組 */
+function footnoteRef(el: Element, n: number): HTMLElement {
+  const ref = el.querySelectorAll<HTMLElement>(".mdmark-fn-ref")[n - 1];
+  if (!ref) {
+    throw new Error(`脚注の番号が無い: ${n}`);
+  }
+  return ref;
+}
+
+// 脚注の番号にポインター・フォーカスでツールチップを出し、中のリンクへ Tab で移り、Esc で消す（正常系）
+test("test_normal_when_footnote_tooltip", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown: FOOTNOTES_MARKDOWN });
+  // 検証
+  const first = footnoteRef(el, 1);
+  const second = footnoteRef(el, 2);
+  const secondTip = find<HTMLElement>(second, ".mdmark-fn-tip");
+  // 番号 2: ポインターを乗せると出て、ツールチップの上へ移っても出たまま
+  await userEvent.hover(find(second, ".mdmark-fn-link"));
+  expect(isOpen(secondTip)).toBe(true);
+  expect(secondTip.textContent).toContain("行内の補足");
+  await userEvent.hover(secondTip);
+  expect(isOpen(secondTip)).toBe(true);
+  await userEvent.unhover(secondTip);
+  // 番号 1: フォーカスで出て、Tab で中のリンクへ移り、その間も出たまま
+  const firstLink = find<HTMLElement>(first, ".mdmark-fn-link");
+  const firstTip = find<HTMLElement>(first, ".mdmark-fn-tip");
+  firstLink.focus();
+  expect(isOpen(firstTip)).toBe(true);
+  expect(find(firstTip, ".mdmark-fn-tip-title").textContent).toBe("脚注 1");
+  await userEvent.keyboard("{Tab}");
+  expect(document.activeElement?.textContent).toBe("詳しく");
+  expect(isOpen(firstTip)).toBe(true);
+  // Esc: ツールチップが消え、フォーカスが番号 1 に戻る
+  await userEvent.keyboard("{Escape}");
+  expect(isOpen(firstTip)).toBe(false);
+  expect(document.activeElement).toBe(firstLink);
+  // id はページの中で一意に振り直され、属性がそれを指す
+  const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  for (const ref of [first, second]) {
+    const link = find<HTMLElement>(ref, ".mdmark-fn-link");
+    const tip = find<HTMLElement>(ref, ".mdmark-fn-tip");
+    const pointer =
+      link.getAttribute("aria-details") ??
+      link.getAttribute("aria-describedby");
+    expect(pointer).toBe(tip.id);
+    expect(tip.id).not.toMatch(/^mdmark-fn-tip-\d+-\d+$/);
+    const item = el.querySelector(
+      `[id="${link.getAttribute("href")?.slice(1)}"]`,
+    );
+    expect(item?.classList.contains("mdmark-fn-item")).toBe(true);
+  }
+});
+
+// 番号を押すと閉じた一覧を開いて項目へ移り、戻るリンクで番号へ戻る（正常系）
+test("test_normal_when_footnote_jump", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: FOOTNOTES_MARKDOWN });
+  const hash = location.hash;
+  const second = footnoteRef(el, 2);
+  const secondLink = find<HTMLElement>(second, ".mdmark-fn-link");
+  const list = find<HTMLDetailsElement>(el, "details.mdmark-footnotes");
+  expect(list.open).toBe(false);
+  // 実行
+  await userEvent.click(secondLink);
+  // 検証
+  expect(list.open).toBe(true);
+  const item = el.querySelectorAll<HTMLElement>(".mdmark-fn-item")[1];
+  expect(document.activeElement).toBe(item);
+  expect(item?.getAttribute("tabindex")).toBe("-1");
+  expect(isOpen(find(second, ".mdmark-fn-tip"))).toBe(false);
+  expect(location.hash).toBe(hash);
+  // 実行
+  await userEvent.click(find(item as HTMLElement, ".mdmark-fn-back"));
+  // 検証
+  expect(document.activeElement).toBe(secondLink);
+  expect(location.hash).toBe(hash);
+});
+
+// 印刷の前に閉じた脚注の一覧を開き、印刷の後に閉じ直す（正常系）
+test("test_normal_when_footnotes_printed", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: FOOTNOTES_MARKDOWN });
+  const list = find<HTMLDetailsElement>(el, "details.mdmark-footnotes");
+  // 実行・検証
+  sendPrintEvent("beforeprint");
+  expect(list.open).toBe(true);
+  sendPrintEvent("afterprint");
+  expect(list.open).toBe(false);
+});
