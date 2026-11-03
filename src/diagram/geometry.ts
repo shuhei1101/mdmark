@@ -194,3 +194,20 @@ export function niceTicks(values: number[]): {
   // 全て同じ値のときも、幅を 1 刻み持たせる
   return { min, max: max > min ? max : tidy(min + step), step: tidy(step) };
 }
+
+/** 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返す */
+export function stackSeries(
+  series: number[][],
+): Array<Array<{ from: number; to: number }>> {
+  const positive: number[] = [];
+  const negative: number[] = [];
+  return series.map((points) =>
+    points.map((value, index) => {
+      const totals = value >= 0 ? positive : negative;
+      const from = totals[index] ?? 0;
+      const to = tidy(from + value);
+      totals[index] = to;
+      return { from, to };
+    }),
+  );
+}

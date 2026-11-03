@@ -125,7 +125,29 @@ export type MdmarkSequenceDefinition = {
 };
 
 /** グラフの種類 */
-export type MdmarkChartType = "line" | "bar" | "pie" | "scatter";
+export type MdmarkChartType =
+  | "line"
+  | "bar"
+  | "pie"
+  | "scatter"
+  | "area"
+  | "stacked-bar"
+  | "stacked-area"
+  | "horizontal-bar"
+  | "donut"
+  | "radar"
+  | "bubble"
+  | "combo";
+
+/** グラフの系列 */
+export type MdmarkChartSeries = {
+  name: string;
+  points: number[] | Array<[number, number]> | Array<[number, number, number]>;
+  /** `combo` の系列の描き方。省くと `line` */
+  as?: "line" | "bar";
+  /** `combo` の系列が使う縦の軸。省くと `y` */
+  axis?: "y" | "y2";
+};
 
 /** 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くとデータから切る */
 export type MdmarkChartYAxis = {
@@ -145,15 +167,19 @@ export type MdmarkChartDefinition = {
   scope: string;
   /** 更新日 */
   updated: string;
-  /** 横の軸。`line`・`bar` は `ticks` が必須、`scatter` は数値の軸で `ticks` を持たない。`pie` は持たない */
+  /** 横の軸。`scatter`・`bubble` は数値の軸で `ticks` を持たず、`radar` は `ticks` を軸の名前にする。それ以外は `ticks` が必須（`horizontal-bar` は縦に並ぶ項目）。`pie`・`donut` は持たない */
   x?: { label: string; ticks?: string[] };
-  /** 縦の軸。`pie` は持たない */
+  /** 縦の軸。`pie`・`donut` は持たない */
   y?: MdmarkChartYAxis;
-  /** 系列。`pie` 以外で 1〜4 つ。`line`・`bar` の `points` の数は `x.ticks` と同じ、`scatter` は `[x, y]` の組 */
-  series?: Array<{ name: string; points: number[] | Array<[number, number]> }>;
-  /** `pie` の項目。1〜4 つで、`value` は 0 より大きい */
+  /** `combo` の右の縦の軸 */
+  y2?: MdmarkChartYAxis;
+  /** `bubble` の円の面積が表す値の名前 */
+  size?: { label: string };
+  /** 系列。`pie`・`donut` 以外で 1〜6 つ。`points` の数は `x.ticks` と同じ、`scatter` は `[x, y]`、`bubble` は `[x, y, size]` の組 */
+  series?: MdmarkChartSeries[];
+  /** `pie`・`donut` の項目。1〜6 つで、`value` は 0 より大きい */
   items?: Array<{ name: string; value: number }>;
-  /** `pie` の凡例の値に付ける単位 */
+  /** `pie`・`donut` の凡例の値と `donut` の中央の合計に付ける単位 */
   unit?: string;
 };
 
@@ -239,7 +265,7 @@ const LINE_KINDS: readonly MdmarkDiagramLine[] = [
 ];
 
 /** 系列の数の下限と上限（円の項目の数も同じ） */
-const SERIES_RANGE = { min: 1, max: 4 };
+const SERIES_RANGE = { min: 1, max: 6 };
 
 /** グラフの種類 */
 const CHART_TYPES: readonly MdmarkChartType[] = [
@@ -247,7 +273,29 @@ const CHART_TYPES: readonly MdmarkChartType[] = [
   "bar",
   "pie",
   "scatter",
+  "area",
+  "stacked-bar",
+  "stacked-area",
+  "horizontal-bar",
+  "donut",
+  "radar",
+  "bubble",
+  "combo",
 ];
+
+/** 項目を持つ（軸を持たない）グラフの種類 */
+const ITEM_CHART_TYPES: readonly string[] = ["pie", "donut"];
+
+/** 横の軸が数値のグラフの種類 */
+const NUMERIC_X_CHART_TYPES: readonly string[] = ["scatter", "bubble"];
+
+/** 横の目盛りの数の下限（書いていない種類は 1） */
+const MIN_TICKS: Readonly<Record<string, number>> = {
+  line: 2,
+  area: 2,
+  "stacked-area": 2,
+  radar: 3,
+};
 
 /** 小数のスライダーの値を揃える桁 */
 const KNOB_DIGITS = 10;
@@ -782,56 +830,85 @@ function checkNumericXAxis(
   }
 }
 
-/** 縦の軸を確かめる。`min`・`max`・`step` は 3 つとも書くか 3 つとも省く */
-function checkYAxis(source: Record<string, unknown>, problems: Problems): void {
-  const y = asObject(source.y, "y", problems);
+/** 縦の軸（`y`・`y2`）を確かめる。`min`・`max`・`step` は 3 つとも書くか 3 つとも省く */
+function checkYAxis(
+  source: Record<string, unknown>,
+  problems: Problems,
+  key: "y" | "y2" = "y",
+): void {
+  const y = asObject(source[key], key, problems);
   if (!y) {
     return;
   }
-  problems.expect(y.label, "文字", "y.label");
-  const given = ["min", "max", "step"].filter((key) => y[key] !== undefined);
+  problems.expect(y.label, "文字", `${key}.label`);
+  const given = ["min", "max", "step"].filter((name) => y[name] !== undefined);
   if (given.length === 0) {
     return;
   }
   if (given.length < 3) {
     problems.add(
-      "y の min・max・step は 3 つとも書くか、3 つとも省いてください。省くとデータから切ります",
+      `${key} の min・max・step は 3 つとも書くか、3 つとも省いてください。省くとデータから切ります`,
     );
     return;
   }
-  const numbers = ["min", "max", "step"].map((key) =>
-    problems.expect(y[key], "数", `y.${key}`),
+  const numbers = ["min", "max", "step"].map((name) =>
+    problems.expect(y[name], "数", `${key}.${name}`),
   );
   if (numbers.every(Boolean)) {
     if ((y.min as number) >= (y.max as number)) {
       problems.add(
-        "y.min が y.max 以上です。min は max より小さくしてください",
+        `${key}.min が ${key}.max 以上です。min は max より小さくしてください`,
       );
     }
     if ((y.step as number) <= 0) {
-      problems.add("y.step が 0 以下です。step は正の数にしてください");
+      problems.add(`${key}.step が 0 以下です。step は正の数にしてください`);
     }
   }
 }
 
-/** 散布図の点が `[x, y]` の数の組だけかを確かめる */
-function checkPairList(
+/** 散布図の点が `[x, y]`、バブルの点が `[x, y, size]` の数の組だけかを確かめる */
+function checkTupleList(
   points: unknown,
   label: string,
+  bubble: boolean,
   problems: Problems,
 ): void {
   const list = asArray(points, `${label}の points`, problems);
+  const shape = bubble ? "[x, y, size]" : "[x, y]";
   if (
     list &&
     !list.every(
       (point) =>
         Array.isArray(point) &&
-        point.length === 2 &&
+        point.length === (bubble ? 3 : 2) &&
         point.every((value) => isType(value, "数")),
     )
   ) {
     problems.add(
-      `${label}の points に [x, y] でない点があります。点は [x, y] の数の組で書いてください`,
+      `${label}の points に ${shape} でない点があります。点は ${shape} の数の組で書いてください`,
+    );
+  }
+}
+
+/** 組み合わせのグラフの系列の `as`・`axis` を確かめる */
+function checkComboSeries(
+  entry: Record<string, unknown>,
+  label: string,
+  hasY2: boolean,
+  problems: Problems,
+): void {
+  if (entry.as !== undefined && entry.as !== "line" && entry.as !== "bar") {
+    problems.add(
+      `${label}の as ${String(entry.as)} は使えません。as は line・bar のどちらかで書いてください`,
+    );
+  }
+  if (entry.axis !== undefined && entry.axis !== "y" && entry.axis !== "y2") {
+    problems.add(
+      `${label}の axis ${String(entry.axis)} は使えません。axis は y・y2 のどちらかで書いてください`,
+    );
+  } else if (entry.axis === "y2" && !hasY2) {
+    problems.add(
+      `${label}の axis が y2 ですが、y2 がありません。右の縦の軸を y2 に書いてください`,
     );
   }
 }
@@ -883,17 +960,26 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
     );
     return;
   }
-  if (type === "pie") {
+  if (ITEM_CHART_TYPES.includes(type)) {
     checkPieItems(source, problems);
     return;
   }
   let tickCount: number | undefined;
-  if (type === "scatter") {
+  if (NUMERIC_X_CHART_TYPES.includes(type)) {
     checkNumericXAxis(source, problems);
   } else {
-    tickCount = checkTickAxis(source, type === "line" ? 2 : 1, problems);
+    tickCount = checkTickAxis(source, MIN_TICKS[type] ?? 1, problems);
   }
   checkYAxis(source, problems);
+  if (type === "combo" && source.y2 !== undefined) {
+    checkYAxis(source, problems, "y2");
+  }
+  if (type === "bubble") {
+    const size = asObject(source.size, "size", problems);
+    if (size) {
+      problems.expect(size.label, "文字", "size.label");
+    }
+  }
   const series = asArray(source.series, "series", problems);
   if (!series) {
     return;
@@ -911,10 +997,23 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
     const name =
       typeof entry.name === "string" ? entry.name : `${index + 1} つ目`;
     problems.expect(entry.name, "文字", `series[${index}].name`);
-    if (type === "scatter") {
-      checkPairList(entry.points, `系列「${name}」`, problems);
+    if (NUMERIC_X_CHART_TYPES.includes(type)) {
+      checkTupleList(
+        entry.points,
+        `系列「${name}」`,
+        type === "bubble",
+        problems,
+      );
     } else {
       checkPointList(entry.points, `系列「${name}」`, tickCount, problems);
+    }
+    if (type === "combo") {
+      checkComboSeries(
+        entry,
+        `系列「${name}」`,
+        source.y2 !== undefined,
+        problems,
+      );
     }
   });
 }

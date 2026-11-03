@@ -62,6 +62,8 @@
     --mdmark-color-series-2: #b45309;
     --mdmark-color-series-3: #6d28d9;
     --mdmark-color-series-4: #1d4ed8;
+    --mdmark-color-series-5: #be185d;
+    --mdmark-color-series-6: #4d7c0f;
     --mdmark-color-code-highlight-bg: #fef3c7;
     --mdmark-color-code-highlight-line: #b45309;
     --mdmark-color-syntax-keyword: #6d28d9;
@@ -144,6 +146,8 @@
       --mdmark-color-series-2: #fbbf24;
       --mdmark-color-series-3: #c4a7ff;
       --mdmark-color-series-4: #7aa2ff;
+      --mdmark-color-series-5: #f472b6;
+      --mdmark-color-series-6: #a3e635;
       --mdmark-color-code-highlight-bg: #5c4a12;
       --mdmark-color-code-highlight-line: #fbbf24;
       --mdmark-color-syntax-keyword: #d6c2ff;
@@ -266,6 +270,8 @@
       --mdmark-color-series-2: #fbbf24;
       --mdmark-color-series-3: #c4a7ff;
       --mdmark-color-series-4: #7aa2ff;
+      --mdmark-color-series-5: #f472b6;
+      --mdmark-color-series-6: #a3e635;
       --mdmark-color-code-highlight-bg: #5c4a12;
       --mdmark-color-code-highlight-line: #fbbf24;
       --mdmark-color-syntax-keyword: #d6c2ff;
@@ -378,6 +384,8 @@
       --mdmark-color-series-2: #b45309;
       --mdmark-color-series-3: #6d28d9;
       --mdmark-color-series-4: #1d4ed8;
+      --mdmark-color-series-5: #be185d;
+      --mdmark-color-series-6: #4d7c0f;
       --mdmark-color-code-highlight-bg: #fef3c7;
       --mdmark-color-code-highlight-line: #b45309;
       --mdmark-color-syntax-keyword: #6d28d9;
@@ -459,6 +467,8 @@
     --mdmark-color-series-2: #1e4f8c;
     --mdmark-color-series-3: #3f6b2a;
     --mdmark-color-series-4: #94540a;
+    --mdmark-color-series-5: #8a3577;
+    --mdmark-color-series-6: #1f6b66;
     --mdmark-color-code-highlight-bg: #f7ecc8;
     --mdmark-color-code-highlight-line: #94540a;
     --mdmark-color-diff-del-bg: #f6e1dc;
@@ -530,6 +540,8 @@
     --mdmark-color-series-2: #047857;
     --mdmark-color-series-3: #6d28d9;
     --mdmark-color-series-4: #a24a06;
+    --mdmark-color-series-5: #be185d;
+    --mdmark-color-series-6: #0e7490;
     --mdmark-color-code-highlight-bg: #fdf2c4;
     --mdmark-color-code-highlight-line: #a24a06;
     --mdmark-color-diff-del-bg: #fbe4e4;
@@ -601,6 +613,8 @@
     --mdmark-color-series-2: #8a4b00;
     --mdmark-color-series-3: #5b21b6;
     --mdmark-color-series-4: #1a5e1a;
+    --mdmark-color-series-5: #a3003c;
+    --mdmark-color-series-6: #005f6b;
     --mdmark-color-code-highlight-bg: #fff1b8;
     --mdmark-color-code-highlight-line: #8a4b00;
     --mdmark-color-diff-del-bg: #ffe0e0;
@@ -674,6 +688,8 @@
       --mdmark-color-series-2: #8fb4e8;
       --mdmark-color-series-3: #a3c98a;
       --mdmark-color-series-4: #e8b04a;
+      --mdmark-color-series-5: #d9a6e0;
+      --mdmark-color-series-6: #7fd1c7;
       --mdmark-color-code-highlight-bg: #4d3d16;
       --mdmark-color-code-highlight-line: #e8b04a;
       --mdmark-color-diff-del-bg: #33211e;
@@ -745,6 +761,8 @@
       --mdmark-color-series-2: #6ee7b7;
       --mdmark-color-series-3: #c4b5fd;
       --mdmark-color-series-4: #fdba74;
+      --mdmark-color-series-5: #f9a8d4;
+      --mdmark-color-series-6: #bef264;
       --mdmark-color-code-highlight-bg: #4d3f12;
       --mdmark-color-code-highlight-line: #fbbf24;
       --mdmark-color-diff-del-bg: #2e1c24;
@@ -816,6 +834,8 @@
       --mdmark-color-series-2: #ffd23f;
       --mdmark-color-series-3: #d0b3ff;
       --mdmark-color-series-4: #7ee07e;
+      --mdmark-color-series-5: #ff8fb8;
+      --mdmark-color-series-6: #5fe0e0;
       --mdmark-color-code-highlight-bg: #4a3d00;
       --mdmark-color-code-highlight-line: #ffd23f;
       --mdmark-color-diff-del-bg: #3a0d0d;
@@ -935,6 +955,8 @@
       --mdmark-color-series-2: #8fb4e8;
       --mdmark-color-series-3: #a3c98a;
       --mdmark-color-series-4: #e8b04a;
+      --mdmark-color-series-5: #d9a6e0;
+      --mdmark-color-series-6: #7fd1c7;
       --mdmark-color-code-highlight-bg: #4d3d16;
       --mdmark-color-code-highlight-line: #e8b04a;
       --mdmark-color-diff-del-bg: #33211e;
@@ -1044,6 +1066,8 @@
       --mdmark-color-series-2: #1e4f8c;
       --mdmark-color-series-3: #3f6b2a;
       --mdmark-color-series-4: #94540a;
+      --mdmark-color-series-5: #8a3577;
+      --mdmark-color-series-6: #1f6b66;
       --mdmark-color-code-highlight-bg: #f7ecc8;
       --mdmark-color-code-highlight-line: #94540a;
       --mdmark-color-diff-del-bg: #f6e1dc;
@@ -1160,6 +1184,8 @@
       --mdmark-color-series-2: #6ee7b7;
       --mdmark-color-series-3: #c4b5fd;
       --mdmark-color-series-4: #fdba74;
+      --mdmark-color-series-5: #f9a8d4;
+      --mdmark-color-series-6: #bef264;
       --mdmark-color-code-highlight-bg: #4d3f12;
       --mdmark-color-code-highlight-line: #fbbf24;
       --mdmark-color-diff-del-bg: #2e1c24;
@@ -1269,6 +1295,8 @@
       --mdmark-color-series-2: #047857;
       --mdmark-color-series-3: #6d28d9;
       --mdmark-color-series-4: #a24a06;
+      --mdmark-color-series-5: #be185d;
+      --mdmark-color-series-6: #0e7490;
       --mdmark-color-code-highlight-bg: #fdf2c4;
       --mdmark-color-code-highlight-line: #a24a06;
       --mdmark-color-diff-del-bg: #fbe4e4;
@@ -1385,6 +1413,8 @@
       --mdmark-color-series-2: #ffd23f;
       --mdmark-color-series-3: #d0b3ff;
       --mdmark-color-series-4: #7ee07e;
+      --mdmark-color-series-5: #ff8fb8;
+      --mdmark-color-series-6: #5fe0e0;
       --mdmark-color-code-highlight-bg: #4a3d00;
       --mdmark-color-code-highlight-line: #ffd23f;
       --mdmark-color-diff-del-bg: #3a0d0d;
@@ -1494,6 +1524,8 @@
       --mdmark-color-series-2: #8a4b00;
       --mdmark-color-series-3: #5b21b6;
       --mdmark-color-series-4: #1a5e1a;
+      --mdmark-color-series-5: #a3003c;
+      --mdmark-color-series-6: #005f6b;
       --mdmark-color-code-highlight-bg: #fff1b8;
       --mdmark-color-code-highlight-line: #8a4b00;
       --mdmark-color-diff-del-bg: #ffe0e0;
@@ -5146,7 +5178,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 系列の線: 色と線の模様の組で分ける（1 実線・2 破線・3 点線・4 一点鎖線） */
+    /* 系列の線: 色と線の模様の組で分ける（1 実線・2 破線・3 点線・4 一点鎖線・5 二点鎖線・6 細かい破線） */
     .mdmark-diagram-series {
       fill: none;
       stroke: var(--series-color);
@@ -5172,6 +5204,57 @@
         --series-color: var(--mdmark-color-series-4);
         stroke-dasharray: 9 3 1 3;
       }
+
+      &[data-series="5"] {
+        --series-color: var(--mdmark-color-series-5);
+        stroke-dasharray: 9 3 1 3 1 3;
+      }
+
+      &[data-series="6"] {
+        --series-color: var(--mdmark-color-series-6);
+        stroke-dasharray: 3 2;
+      }
+    }
+
+    /* 面とレーダーの系列の薄い塗り: 系列の色を 14% にした面。color-mix() の効かないブラウザでは系列の色を透かす */
+    .mdmark-diagram-area {
+      fill: var(--series-color);
+      fill-opacity: 0.14;
+      stroke: none;
+    }
+
+    @supports (color: color-mix(in srgb, red, blue)) {
+      .mdmark-diagram-area {
+        fill: color-mix(
+          in srgb,
+          var(--series-color) 14%,
+          var(--mdmark-color-bg-opaque)
+        );
+        fill-opacity: 1;
+      }
+    }
+
+    /* 積み上げの面: 系列の塗りの模様で塗り、系列の色の線で上端を縁取る */
+    .mdmark-diagram-stacked-area {
+      stroke: var(--series-color);
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+    }
+
+    /* レーダーの放射状の軸の補助の多角形 */
+    .mdmark-diagram-radar-grid {
+      fill: none;
+      stroke: var(--mdmark-color-border);
+      stroke-width: 1;
+    }
+
+    /* ドーナツの中央の合計: 大きい等幅数字と、控えめの色の `合計{unit}` */
+    .mdmark-diagram-total-text {
+      fill: var(--mdmark-color-heading);
+      font-family: var(--mdmark-font-body);
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
     }
 
     /* 系列の点の印: 系列ごとの形（1 丸・2 四角・3 三角・4 菱形）を系列の色で塗る */
@@ -5220,12 +5303,28 @@
       --series-color: var(--mdmark-color-series-4);
     }
 
+    pattern[data-series="5"] {
+      --series-color: var(--mdmark-color-series-5);
+    }
+
+    pattern[data-series="6"] {
+      --series-color: var(--mdmark-color-series-6);
+    }
+
     .mdmark-diagram-pattern-tint {
-      fill: color-mix(
-        in srgb,
-        var(--series-color) 22%,
-        var(--mdmark-color-bg-opaque)
-      );
+      fill: var(--series-color);
+      fill-opacity: 0.22;
+    }
+
+    @supports (color: color-mix(in srgb, red, blue)) {
+      .mdmark-diagram-pattern-tint {
+        fill: color-mix(
+          in srgb,
+          var(--series-color) 22%,
+          var(--mdmark-color-bg-opaque)
+        );
+        fill-opacity: 1;
+      }
     }
 
     :is(.mdmark-diagram-pattern-solid, .mdmark-diagram-pattern-dot) {
@@ -5261,6 +5360,16 @@
     /* 系列 4 の点の色 */
     g[data-series="4"] {
       --series-color: var(--mdmark-color-series-4);
+    }
+
+    /* 系列 5 の点の色 */
+    g[data-series="5"] {
+      --series-color: var(--mdmark-color-series-5);
+    }
+
+    /* 系列 6 の点の色 */
+    g[data-series="6"] {
+      --series-color: var(--mdmark-color-series-6);
     }
 
     /* ---------- 図のツールチップ ---------- */
