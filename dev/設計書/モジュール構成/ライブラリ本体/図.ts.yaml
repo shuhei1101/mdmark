@@ -1262,3 +1262,5 @@ test_files:
   - tests/unit/src/interact/diagram-tips.browser.test.ts
   - tests/unit/src/interact/params.browser.test.ts
   - tests/unit/src/interact/zoom.browser.test.ts
+  - tests/unit/src/parts/chart.test.ts
+  - tests/unit/src/diagram/check.test.ts

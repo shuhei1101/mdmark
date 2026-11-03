@@ -2150,3 +2150,4 @@ test_files:
   - tests/unit/src/render/syntax/images.test.ts
   - tests/unit/src/render/syntax/gallery.test.ts
   - tests/unit/src/render/syntax/cards.test.ts
+  - tests/unit/src/render/syntax/table-cells.test.ts

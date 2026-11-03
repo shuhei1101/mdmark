@@ -1783,6 +1783,8 @@ test_files:
   - tests/unit/src/interact/trees.browser.test.ts
   - tests/unit/src/interact/lightbox.browser.test.ts
   - tests/unit/src/interact/gif.browser.test.ts
+  - tests/unit/src/interact/code-folds.browser.test.ts
+  - tests/unit/src/code-fold-logic.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭
