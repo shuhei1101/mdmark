@@ -85,7 +85,7 @@ states:
       - name: editIndex
         value: '0'
       - name: draft
-        value: "''"
+        value: ''
       - name: editState
         value: empty
   - name: UpdateFailed
