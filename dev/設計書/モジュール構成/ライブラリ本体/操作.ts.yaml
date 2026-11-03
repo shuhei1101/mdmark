@@ -1661,26 +1661,32 @@ functions:
     container: src/code-fold-logic.ts
     kind: 関数
     scope: internal
-    summary: 行を含む最も内側の畳める範囲（畳める行の後ろの畳む行の数の行）を返す
+    summary: 行を含む最も内側の畳める範囲（畳める行の後ろの畳む行の数の行）を返す。深さは範囲の畳める行の `indents` のレベルに 1 を足した値
     args:
     - name: options
-      type: '{ foldLines: Array<number | undefined>; index: number }'
+      type: '{ indents: Array<number | undefined>; foldLines: Array<number | undefined>; index: number }'
       required: true
-      description: 行ごとの畳む行の数と、ポインターを乗せた行の位置（0 から）
+      description: 行ごとの `measureIndents` のレベルと畳む行の数、ポインターを乗せた行の位置（0 から）
     returns:
       type: '{ from: number; to: number; depth: number } | undefined'
-      description: 範囲の最初と最後の行の位置と、範囲の畳める行のレベルに 1 を足した深さ。含む範囲が無ければ `undefined`
+      description: 範囲の最初と最後の行の位置と深さ。含む範囲が無ければ `undefined`
     unit_tests:
     - name: test_guide_range_of
       case: 正常
       summary: 最も内側の範囲を返す
-      condition: '`foldLines` が `[3, 1, undefined, undefined]` で `index` が 2'
+      condition: '`indents` が `[0, 1, 2, 1]`、`foldLines` が `[3, 1, undefined, undefined]` で `index` が 2'
       mock: なし
       expected: '`{ from: 2, to: 2, depth: 2 }`'
+    - name: test_guide_range_of_when_level_skipped
+      case: 正常
+      summary: レベルを飛ばしたインデントでも深さをレベルから決める
+      condition: '`indents` が `[0, 2, 2]`、`foldLines` が `[2, undefined, undefined]` で `index` が 1'
+      mock: なし
+      expected: '`{ from: 1, to: 2, depth: 1 }`'
     - name: test_guide_range_of_when_outside
       case: 正常
       summary: 範囲の外の行は undefined
-      condition: 同じ `foldLines` で `index` が 0
+      condition: 同じ `indents`・`foldLines` で `index` が 0
       mock: なし
       expected: '`undefined`'
     status: planned

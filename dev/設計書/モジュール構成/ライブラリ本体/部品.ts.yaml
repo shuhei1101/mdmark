@@ -332,7 +332,7 @@ functions:
         summary: 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に置く
         condition: 部品設計『表』の `Merged` の引数
         mock: なし
-        expected: '`thead` の `tr` が 2 つで、`上期` の `th` が `colspan="2"`・`scope="colgroup"` を持ちボタンを持たない。2 段目の `th` が並べ替えのボタンを持つ。本文の 1 列目が `<th scope="row">` で、`東日本` の始まりのセルが `rowspan="3"`・`is-merged`、続く 2 つが `hidden`。2 列目までのピン止めの状態'
+        expected: '`thead` の `tr` が 2 つで、`上期` の `th` が `colspan="2"`・`scope="colgroup"` を持ちボタンを持たない。2 段目の `th` が並べ替えのボタンを持つ。本文の 1 列目が `<th scope="row">` で、`東日本` の始まりのセルが `rowspan="3"`・`is-merged`、続く 2 つが `hidden`'
       - name: test_render_table_when_merged_sorted
         case: 正常
         summary: 並べ替えた順で隣り合う同じ値だけを結合する
@@ -703,7 +703,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`count`・`columns`・`total`・`copy` のうち付けた機能の帯（件数・`列設定`・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、列設定のメニュー（列名のチェックボックス、先頭の列は `disabled`、`先頭の列は隠せません`、`既定に戻す`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。`表をコピー` のボタンは文言の後ろに `chevron-down` を持つ。アイコンは lucide の `columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
+    summary: '`count`・`columns`・`total`・`copy` のうち付けた機能の帯（件数・`列設定`・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、列設定のメニュー（列名のチェックボックス、先頭の列は `disabled`、`先頭の列は隠せません`、`リセット`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。`表をコピー` のボタンは文言の後ろに `chevron-down` を持つ。アイコンは lucide の `columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
     args:
       - name: options
         type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
@@ -718,7 +718,7 @@ functions:
         summary: 件数と列設定とコピーの帯を返す
         condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
         mock: なし
-        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` の `列設定`、`data-state="idle"` で `chevron-down` を持つ `表をコピー`、`role="status"` の `mdmark-table-status`。`menus` の列設定のメニューが `hidden` で、名前のチェックボックスが `checked disabled`、説明のチェックが外れ、`先頭の列は隠せません` と `既定に戻す` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
+        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` の `列設定`、`data-state="idle"` で `chevron-down` を持つ `表をコピー`、`role="status"` の `mdmark-table-status`。`menus` の列設定のメニューが `hidden` で、名前のチェックボックスが `checked disabled`、説明のチェックが外れ、`先頭の列は隠せません` と `リセット` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
       - name: test_render_table_bar_when_copy_failed
         case: 正常
         summary: コピーできなかったボタンを返す
