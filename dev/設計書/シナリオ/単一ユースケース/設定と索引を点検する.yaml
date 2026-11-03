@@ -1,4 +1,4 @@
-title: "設定と索引を点検する"
+title: 設定と索引を点検する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -232,6 +232,43 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_diagram_drift
+  - name: 正常シナリオ（図のツールチップの位置に誤った値がある）
+    setup:
+      - name: 誤った値を書いたフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` の `tooltips.diagramPlacement` に `left` を書く
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 設定の Schema を確認する
+        C-->>W: tooltips.diagramPlacement を指すずれの行・終了コード 0 以外
+    expected:
+      - '`mdmark.config.yaml` の `tooltips.diagramPlacement` を指す `schema` の行が 1 つだけあり、内容に書ける値 `top`・`bottom` が記載されている'
+      - 終了コードが 0 以外
+      - '`tooltips.diagramPlacement` に `top` か `bottom` を書いた設定と、書かない設定では、このずれの行が出ない'
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_diagram_placement_invalid
+  - name: 正常シナリオ（グループの項目に誤った値がある）
+    setup:
+      - name: 誤った値を持つ図の文書のフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、`frame.hint` が数で、`stickyTitles` が文字 `no` のフロー図の部品の定義を記載したもの
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 文書の図の部品の定義を読み、定義を点検する
+        C-->>W: 定義の誤りの行・終了コード 0 以外
+    expected:
+      - その図の定義の場所を指す定義の誤りの行が 2 つあり、内容に `frame.hint` は文字、`stickyTitles` は真偽値で書くことが記載されている
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_group_options_invalid
 lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印・図の部品の定義のずれを、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人
