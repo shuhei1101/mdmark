@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { parse } from "yaml";
 import { expect, runCli, test, writeFiles } from "../cli.ts";
 import {
   GUIDE_FILTER,
@@ -45,6 +46,14 @@ async function createProject(
   return dir;
 }
 
+/** このリポジトリの `guide/index.yaml` の使い方集の `page` を並べる */
+async function readGuidePages(): Promise<string[]> {
+  const index = parse(
+    await readFile(join(REPO_ROOT, "guide", "index.yaml"), "utf8"),
+  ) as { guides: { page: string }[] };
+  return index.guides.map((guide) => guide.page);
+}
+
 /** `check` の結果のずれの一覧 */
 function issuesOf(texts: string[]): Issue[] {
   return JSON.parse(texts[0] ?? "").issues;
@@ -79,7 +88,10 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   expect(mdmark.instructions).toContain("search_docs");
   expect(mdmark.instructions).toContain("topic:使い方集");
   expect(mdmark.instructions).toContain("check");
-  expect(found.list.map((item) => item.id)).toContain(WRITING_PAGE);
+  const ids = found.list.map((item) => item.id);
+  for (const page of await readGuidePages()) {
+    expect(ids).toContain(page);
+  }
   expect(found.page[0]?.values.body).toBe(
     await readFile(join(REPO_ROOT, WRITING_PAGE), "utf8"),
   );
