@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="../../assets/themes/theme-contrast.css" data-theme-css="theme-contrast" disabled>
   <!-- 色のプリセットと、列の強調・行の色の規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <!-- 本文の行の地・wide=・check= の規則（#283 の追加分） -->
+  <link rel="stylesheet" href="../../refs/283/assets/table.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
@@ -44,6 +46,9 @@
   <script src="../../refs/19/assets/syntax.js" defer></script>
   <!-- 表の機能の追加分の操作（件数・列の表示・集計・コピー・行へのリンク・見出し行と集計の行の留め方・最終列の畳み方） -->
   <script src="../../refs/151/assets/table.js" defer></script>
+  <!-- 既定のピン止め・-pin・pin=・wide=・check= の見本の定義と操作（#283。syntax.js の後に読む） -->
+  <script src="../../refs/283/assets/table-samples.js" defer></script>
+  <script src="../../refs/283/assets/table-pin.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/151/assets/preview.js" defer></script>
   <!-- モック専用の操作列のテーマの切り替え（#263 で共有するアセット） -->
@@ -1161,6 +1166,51 @@
     </tbody>
   </table>
 </div>
+        </article>
+      </section>
+
+      <!-- #283 既定のピン止め: 表が幅からはみ出すとき、先頭の列を最初から留める。ボタンを押し直すと外す -->
+      <section aria-labelledby="state-283-default-pin">
+        <h2 class="catalog-label" id="state-283-default-pin">はみ出す表は先頭の列を既定でピン止めする</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table283="default-pin"></div>
+        </article>
+      </section>
+
+      <!-- #283 -pin: 既定のピン止めとピン止めのボタンを外す -->
+      <section aria-labelledby="state-283-no-pin">
+        <h2 class="catalog-label" id="state-283-no-pin">-pin でピン止めを外した表（留めず、ピン止めのボタンも出さない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table283="no-pin"></div>
+        </article>
+      </section>
+
+      <!-- #283 pin= と wide=: pin= の列までを留め、wide= の列は折り返さず広く取り、はみ出した分は表の中で横にスクロールする -->
+      <section aria-labelledby="state-283-pin-wide">
+        <h2 class="catalog-label" id="state-283-pin-wide">pin=担当 wide=概要（担当の列までを留め、概要を折り返さない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table283="pin-wide"></div>
+        </article>
+      </section>
+
+      <!-- #283 check=: 列の true を ✓、false を空欄で出す。並べ替え・絞り込み・コピーは true / false の値で動く -->
+      <section aria-labelledby="state-283-check">
+        <h2 class="catalog-label" id="state-283-check">check=必須（true を ✓、false を空欄で出す）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table283="check"></div>
+        </article>
+      </section>
+
+      <!-- #283 知らない列名: 書き方の警告を出し、その指定を外して描く -->
+      <section aria-labelledby="state-283-unknown-column">
+        <h2 class="catalog-label" id="state-283-unknown-column">知らない列名（check=必要 wide=説明。異常シナリオ）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table283="unknown-column"></div>
         </article>
       </section>
     </div>

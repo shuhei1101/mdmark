@@ -127,7 +127,7 @@ files:
     description: '部品『syntax-warning』のモック: 読めない指定とその直し方を書く人へ知らせる書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:構文]
   - path: components/table/index.html
-    description: '部品『table』のモック: 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色。部品の見た目や状態を決めるときに読む。'
+    description: '部品『table』のモック: 表の種類ごとの見た目と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色、はみ出す表の既定のピン止めと `-pin`・`pin=`・`wide=`・`check=` の ✓。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:テーブル]
   - path: components/tabs/index.html
     description: '部品『tabs』のモック: 見出しの文字をタブ名にしたタブと、URL の ID が指す見出しを持つタブを選ぶ処理、閉じたタブ・`title=` のタイトル。部品の見た目や状態を決めるときに読む。'
@@ -620,6 +620,18 @@ files:
     tags: [topic:モック, topic:用語, tool:javascript]
   - path: refs/27/index.md
     description: '#27（文書の索引・用語のツールチップ・被参照を表示する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/283/assets/table-pin.js
+    description: '#283 のモックが共通で読む素材: 表を組み、はみ出すときだけ既定のピン止めとピン止めのボタンを出す処理と、`pin=`・`wide=`・`check=` の ✓。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/283/assets/table-samples.js
+    description: '#283 のモックが共通で読む素材: 既定のピン止め・`-pin`・`pin=`・`wide=`・`check=`・知らない列名の表の定義の見本。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/283/assets/table.css
+    description: '#283 のモックが共通で読む素材: 表の本文の行の地・`wide=` の列・`check=` の ✓ の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/283/index.md
+    description: '#283（はみ出す表は既定で先頭の列をピン止めし、pin=・wide= と真偽値の ✓ 表示を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/32/assets/bundle.css
     description: '#32 のモックが共通で読む素材: まとめた HTML の画面（bundle）と文書の一覧の部品（doc-list）の規則。複数のモックに効く見た目や動きを変えるときに読む。'
