@@ -2680,9 +2680,11 @@ flows:
     setup:
       - name: 祖先の要素の中に文書を描いたページ
         description: '配布物を読み、高さ 600px・`overflow-y: auto` の `div` の中の描く先の要素に文書を描いた HTML'
-        notes: 画面の大きさは 1280×800px。画面全体はスクロールしない
+        notes: 画面の大きさは 1280×800px。祖先の要素の下に高さ 400px の要素を置き、画面全体も 200px スクロールできる
       - name: 長い Markdown
         description: 正常系（先頭へ戻るボタンを出して押す）と同じ
+      - name: 短い Markdown
+        description: 段落を 1 つだけ持つ文書。別の祖先の要素の中の描く先の要素に描き、`update` で長い Markdown に差し替える
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -2692,11 +2694,19 @@ flows:
         P->>M: mount(el, { markdown })
         P->>P: 祖先の要素を 600px スクロールする
         M->>P: 祖先の要素の右下にボタンを出す
+        P->>P: 画面全体を 100px スクロールする
+        M->>P: 動いた祖先の要素の右下にボタンを置き直す
         P->>M: ボタンを押す
         M->>P: 祖先の要素を描いた文書の先頭へスクロールする
+        P->>M: mount(el2, { markdown: 短い文書 })
+        P->>M: update(長い文書)
+        P->>P: el2 の祖先の要素を 600px スクロールする
+        M->>P: el2 の祖先の要素の右下にボタンを出す
     expected:
       - 祖先の要素を 599px スクロールした後はボタンが `hidden` を持ち、600px スクロールした後は持たない
       - 出したボタンの右端と下端が、祖先の要素の右端と下端（スクロールバーを除く）から 16px
+      - 画面全体を 100px スクロールした後も、ボタンの右端と下端が祖先の要素の右端と下端から 16px
+      - 短い文書を描いてから `update` で長い文書に差し替えた要素でも、祖先の要素を 600px スクロールした後にボタンが `hidden` を持たない
       - 押してスクロールが終わった後、祖先の要素の `scrollTop` が描いた文書の上端の位置で、`window.scrollY` が 0 のまま
     test: test_normal_when_back_to_top_in_scroll_container
     refs:
@@ -3683,7 +3693,7 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（色のプリセットを上書きする）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所（`el` に最も近いスクロールする祖先の要素か `window`）の `scroll` と `window` の `resize` を受け取る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -4112,6 +4122,6 @@ constraints:
   - item: 印刷の画像と動画
     constraint: 印刷では、拡大のアイコンと GIF のボタンを出さず、`mdmark-only-light` の画像を出して `mdmark-only-dark` の画像を隠す。`video` と `audio` を出さず、`mdmark-media-print` の画像とキャプションを出す。リンクと添付のカードは、リンク先の URL を文字で出す
   - item: 先頭へ戻るボタン
-    constraint: '`back-to-top` がオンのとき、`el` の子の末尾に `button.mdmark-back-to-top`（`type="button"`・`aria-label` と `title` は `先頭へ戻る`・lucide の `arrow-up-to-line` のアイコン）を置き、`update` で本文を描き直しても残す。スクロールする場所は、`el` に最も近い、`overflow-y` が `auto` か `scroll` でスクロールできる祖先の要素とし、無ければ画面全体にする。スクロールする場所の上端から `el` の上端までのスクロールの量が、スクロールする場所の高さ（`clientHeight`）未満の間はボタンを `hidden` にする。出している間は、スクロールする場所の右端と下端（スクロールバーを除き、画面からはみ出す分は画面の端）から `--mdmark-back-to-top-gap`（既定 16px）の位置に固定する。差分のミニマップの帯か余白の列（`div.mdmark-comment-margin`）とボタンの横の範囲が重なるときは、ボタンの右端をその部品の左端から 8px 左へずらす（縦の位置とスクロールの位置では動かさない）。右側の目次のパネルは、ボタンを出している間はボタンの上端より上で終わるよう高さを縮める。押すと、スクロールする場所を `el` の上端（画面全体なら `--mdmark-sticky-top` を引いた位置）へスクロールし（`prefers-reduced-motion: reduce` なら `behavior: "auto"`、ほかは `smooth`）、`div.mdmark-content`（無ければ `el`）に `tabindex="-1"` を付けて `preventScroll` でフォーカスを移す。スクロールする場所の `scroll` と `window` の `resize` を受け取り、1 フレームに 1 回置き直す。ライトボックスと図の全画面のモーダルは top layer に出るため、開いている間はボタンがその後ろに隠れて操作できない。印刷では出さない。`destroy` でボタンと受け取りを外す'
+    constraint: '`back-to-top` がオンのとき、`el` の子の末尾に `button.mdmark-back-to-top`（`type="button"`・`aria-label` と `title` は `先頭へ戻る`・lucide の `arrow-up-to-line` のアイコン）を置き、`update` で本文を描き直しても残す。スクロールする場所は、`el` に最も近い、`overflow-y` が `auto` か `scroll` でスクロールできる祖先の要素とし、無ければ画面全体にする。スクロールする場所の上端から `el` の上端までのスクロールの量が、スクロールする場所の高さ（`clientHeight`）未満の間はボタンを `hidden` にする。出している間は、スクロールする場所の右端と下端（スクロールバーを除き、画面からはみ出す分は画面の端）から `--mdmark-back-to-top-gap`（既定 16px）の位置に固定する。差分のミニマップの帯か余白の列（`div.mdmark-comment-margin`）とボタンの横の範囲が重なるときは、ボタンの右端をその部品の左端から 8px 左へずらす（縦の位置とスクロールの位置では動かさない）。右側の目次のパネルは、ボタンを出している間はボタンの上端より上で終わるよう高さを縮める。押すと、スクロールする場所を `el` の上端（画面全体なら `--mdmark-sticky-top` を引いた位置）へスクロールし（`prefers-reduced-motion: reduce` なら `behavior: "auto"`、ほかは `smooth`）、`div.mdmark-content`（無ければ `el`）に `tabindex="-1"` を付けて `preventScroll` でフォーカスを移す。スクロールする場所は、本文を描いた後と `update` の後に決め直す。画面全体なら `window` の `scroll` を、祖先の要素なら `document` の `scroll` を捕捉の段で受け（祖先の要素の外の画面や祖先の枠のスクロールでも位置が変わるため）、`window` の `resize` とあわせて 1 フレームに 1 回置き直す。ライトボックスと図の全画面のモーダルは top layer に出るため、開いている間はボタンがその後ろに隠れて操作できない。印刷では出さない。`destroy` でボタンと受け取りを外す'
     notes: 出し始める量・避けるときの位置・祖先の要素の扱いはモックへの合意（dev/pr/287/確認ログ.md）。ボタンの見た目と状態は部品設計
 test_file: tests/integration/lib/mount.browser.test.ts
