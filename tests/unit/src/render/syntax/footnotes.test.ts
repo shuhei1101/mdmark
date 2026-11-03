@@ -72,8 +72,8 @@ test("test_use_footnotes", () => {
 
 // リンクと重なる参照はリンクを優先する（正常系）
 test("test_use_footnotes_when_link_label", () => {
-  // 準備
-  const markdown = "[^x](https://example.com)\n\n[^x]: 補足\n";
+  // 準備（リンクだけの段落はカードになるため、前後に文字を置く）
+  const markdown = "前 [^x](https://example.com) 後\n\n[^x]: 補足\n";
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
