@@ -888,7 +888,7 @@ functions:
       - name: tip
         type: '{ id: string; kind: "wire" | "io" | "hint" | "table"; label: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string; table?: MdmarkErTable }'
         required: true
-        description: 部品設計の引数。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す。`table` は題を `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる
+        description: 部品設計の引数。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す。`table` は題を `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
     returns:
       type: string
       description: ツールチップの HTML
@@ -1608,7 +1608,7 @@ functions:
         summary: 定義の文字の `{{語}}` を用語の下線にする
         condition: テーブルの論理名が `{{顧客}}`、関係のラベルが `{{注文}}する` の定義と、`顧客`・`注文` の意味を返す `lookup`。`hints` がオン
         mock: なし
-        expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`terms` が `true`。説明のボタン・開閉のボタンの読み上げの名前が `「顧客」の…`
+        expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`tips` に `{{` が残らず、`terms` が `true`。説明のボタン・開閉のボタンの読み上げの名前が `「顧客」の…`
     status: planned
     introduced:
       pr: 298
