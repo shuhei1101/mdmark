@@ -29,12 +29,21 @@ states:
         value: hint
       - name: open
         value: 'true'
+  - name: Table
+    description: ER 図のテーブルの説明のボタンで開いた。テーブルの下に、論理名と物理名・概要・`desc` を持つ列の名前と説明を出す
+    args:
+      - name: kind
+        value: table
+      - name: open
+        value: 'true'
+    notes:
+      定義: モックの `shop-er` の注文のテーブル（`dev/mock/components/er-diagram/` の「テーブルのツールチップ」）
 lead: 図の線のラベルと箱の印に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどの箱は入力・処理・出力を出す。箱の中の用語は用語のツールチップを使う。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力と `hint`）・`hint`（箱の `hint` か埋め込んだ HTML の `data-hint` の文だけ）'
+    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力と `hint`）・`hint`（箱の `hint` か埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）'
     description: ツールチップの種類
   - name: label
     type: 文字列
@@ -57,6 +66,10 @@ args:
     required: false
     enabled_when: '`kind` が `hint` か `io` のとき'
     description: 箱の `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す
+  - name: table
+    type: オブジェクト
+    enabled_when: '`kind` が `table` のとき'
+    description: ER 図のテーブルの `{ name, label, desc, columns }`。題を `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる
 events:
   - name: 開く・閉じる
     when: 持ち主にポインターを乗せるかフォーカスする。外すか Esc を押す。タッチの端末では持ち主をタップする。もう一度タップするか、ツールチップと持ち主の外をタップする
@@ -68,6 +81,7 @@ uses:
 accessibility:
   - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・箱の右上の印のボタン）は `aria-describedby` でそれを指す。箱の印の外では開かない
   - 箱の印のボタンは、`io` を持つとき `aria-label="「{箱の名前}」の入力・処理・出力"`、`hint` だけを持つとき `aria-label="「{箱の名前}」の説明"` を持つ
+  - ER 図のテーブルの説明のボタンは `aria-label="「{論理名}」の説明"` を持ち、ツールチップをテーブルの下（下に収まらないときは上）に出す
   - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。ポインターの形は変えない
   - 理解に必須のことは入れず、線と箱の要約だけで図を読めるようにする。印刷では出さない
 status: planned
