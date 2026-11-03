@@ -78,7 +78,10 @@ function attachTabGroup(tabs: HTMLElement): () => void {
     button.id = `${base}-tab-${index}`;
     button.setAttribute("role", "tab");
     button.setAttribute("aria-controls", `${base}-panel-${index}`);
-    button.textContent = title?.textContent ?? "";
+    // タブ名の強調（`strong`）を残すよう、タブ名の要素の子のノードのコピーを入れる
+    button.append(
+      ...[...(title?.childNodes ?? [])].map((node) => node.cloneNode(true)),
+    );
     panel.id = `${base}-panel-${index}`;
     panel.setAttribute("role", "tabpanel");
     panel.setAttribute("aria-labelledby", button.id);
