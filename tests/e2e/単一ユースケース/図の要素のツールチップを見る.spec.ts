@@ -373,3 +373,38 @@ test("test_normal_when_term_width_and_case_differ", async ({ page }) => {
   await expect(tip).toBeVisible();
   await expect(tip).toContainText("Model Context Protocol");
 });
+
+test.describe("タッチの端末", () => {
+  test.use({ hasTouch: true });
+
+  // タップで出し、同じ持ち主のもう一度のタップと、ツールチップと持ち主の外のタップで消え、ツールチップの中のタップでは消えない（正常シナリオ（タッチ））
+  test("test_normal_when_touch", async ({ page }) => {
+    // 準備
+    await openFlow(page, false, ROOM_CSS);
+    const info = page.locator('[data-node="draft"] .mdmark-diagram-info');
+    const ioTip = ioTipOf(page);
+    // 実行・検証: LLM の箱の印のタップで、入力・処理・出力が出る
+    await info.tap();
+    await expect(ioTip).toBeVisible();
+    await expect(ioTip.locator("dt")).toHaveText(["入力", "処理", "出力"]);
+    // 実行・検証: 同じ印をもう一度タップすると消える
+    await info.tap();
+    await expect(ioTip).toBeHidden();
+    // 実行・検証: 矢印のラベルのタップで、入力の詳細が出る
+    const label = page.locator(".mdmark-diagram-label.has-tip", {
+      hasText: "メール",
+    });
+    const wireTip = page.locator('[role="tooltip"]', {
+      hasText: "件名・本文・送り主のアドレス",
+    });
+    await label.tap();
+    await expect(wireTip).toBeVisible();
+    // 実行・検証: ツールチップの中のタップでは消えない
+    await wireTip.tap();
+    await page.waitForTimeout(CLOSE_WAIT_MS);
+    await expect(wireTip).toBeVisible();
+    // 実行・検証: ツールチップと持ち主の外（ページの左上の端）のタップで消える
+    await page.touchscreen.tap(1, 1);
+    await expect(wireTip).toBeHidden();
+  });
+});

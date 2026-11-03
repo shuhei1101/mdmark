@@ -39,6 +39,9 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await expect(term).toHaveText("印");
   await term.hover();
   await expect(page.locator("article .mdmark-term-tip").first()).toBeVisible();
+  // ポインターを本文の外へ動かして、リンクを覆うことがあるツールチップを閉じる
+  await page.mouse.move(0, 0);
+  await expect(page.locator("article .mdmark-term-tip").first()).toBeHidden();
   // 入口からリンクされた文書の末尾に、入口が関連文書として出る
   await page.locator('article p a[href="#/使い方/guide.md"]').click();
   await expect(page.locator("article.mdmark h1")).toContainText("使い方");
@@ -161,6 +164,9 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   const tip = page.locator("article .mdmark-term-tip");
   await expect(tip.locator("code")).toHaveText("npm run test:unit");
   await expect(tip.locator("button.mdmark-term-tip-copy")).toBeVisible();
+  // ポインターを本文の外へ動かして、リンクを覆うことがあるツールチップを閉じる
+  await page.mouse.move(0, 0);
+  await expect(tip).toBeHidden();
   // 一覧から開いたほかの文書: 同じエイリアスで下線が付く
   await page.locator('article p a[href="#/使い方/guide.md"]').click();
   await expect(page.locator("article.mdmark h1")).toContainText("使い方");

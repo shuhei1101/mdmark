@@ -259,3 +259,157 @@ test("test_attach_diagram_tips_when_placed", async () => {
     }
   }
 });
+
+/** 入力・処理・出力を持つ箱の右上の印 */
+function infoMark(figure: ParentNode): HTMLElement {
+  const info = figure.querySelector<HTMLElement>(".mdmark-diagram-info");
+  if (!info) {
+    throw new Error("入力・処理・出力を持つ箱の印が無い");
+  }
+  return info;
+}
+
+/** ブロックのヒントの印 */
+function hintMark(embedded: ParentNode): HTMLElement {
+  const mark = embedded.querySelector<HTMLElement>(".mdmark-hint-mark");
+  if (!mark) {
+    throw new Error("ヒントの印が描かれていない");
+  }
+  return mark;
+}
+
+/** ポインターの種類を指定したポインターのイベント */
+function pointer(type: string, pointerType: string): PointerEvent {
+  return new PointerEvent(type, {
+    pointerType,
+    bubbles: type === "pointerdown" || type === "pointerup",
+  });
+}
+
+/**
+ * タッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカス）で起こす。
+ * `focus()` は既にフォーカスを持つ持ち主では `focus` を発火しない
+ */
+function tap(owner: HTMLElement): void {
+  for (const type of [
+    "pointerenter",
+    "pointerdown",
+    "pointerup",
+    "pointerleave",
+  ]) {
+    owner.dispatchEvent(pointer(type, "touch"));
+  }
+  owner.focus();
+}
+
+// タッチの 1 回のタップで開き、もう一度のタップで閉じる（正常系）
+test("test_attach_diagram_tips_when_touch_tapped", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachDiagramTips } = await loadTips();
+  const figure = createFigure();
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
+  detachers.push(detach);
+  const mark = infoMark(figure);
+  const tip = tipOf(mark);
+  // 実行
+  tap(mark);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(tip.hidden).toBe(false);
+  // 実行
+  tap(mark);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(tip.hidden).toBe(true);
+});
+
+// タッチで開いた後、外の pointerdown だけで閉じ、ツールチップの中では閉じない（正常系）
+test("test_attach_diagram_tips_when_touch_outside", async () => {
+  // 準備
+  const { attachDiagramTips } = await loadTips();
+  const figure = createFigure();
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
+  detachers.push(detach);
+  const mark = infoMark(figure);
+  const tip = tipOf(mark);
+  const outside = document.createElement("p");
+  document.body.append(outside);
+  detachers.push(() => outside.remove());
+  tap(mark);
+  // 実行: ツールチップの中
+  tip.dispatchEvent(pointer("pointerdown", "touch"));
+  // 検証
+  expect(tip.hidden).toBe(false);
+  // 実行: 図の外（pointerleave・blur は送らない）
+  outside.dispatchEvent(pointer("pointerdown", "touch"));
+  // 検証
+  expect(tip.hidden).toBe(true);
+});
+
+// 埋め込んだ HTML のヒントもタッチで開閉する（正常系）
+test("test_attach_diagram_tips_when_touch_embedded_hint", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachDiagramTips } = await loadTips();
+  const embedded = createEmbedded();
+  const { detach } = attachDiagramTips({ figure: embedded, placement: "top" });
+  detachers.push(detach);
+  const mark = hintMark(embedded);
+  const tip = tipOf(mark);
+  const outside = document.createElement("p");
+  document.body.append(outside);
+  detachers.push(() => outside.remove());
+  // 実行
+  tap(mark);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(tip.hidden).toBe(false);
+  // 実行
+  tap(mark);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(tip.hidden).toBe(true);
+  // 実行
+  tap(mark);
+  outside.dispatchEvent(pointer("pointerdown", "touch"));
+  // 検証
+  expect(tip.hidden).toBe(true);
+});
+
+// マウスの pointerdown では開閉を切り替えない（正常系）
+test("test_attach_diagram_tips_when_mouse_pressed", async () => {
+  // 準備
+  const { attachDiagramTips } = await loadTips();
+  const figure = createFigure();
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
+  detachers.push(detach);
+  const mark = infoMark(figure);
+  const tip = tipOf(mark);
+  mark.dispatchEvent(pointer("pointerenter", "mouse"));
+  // 実行
+  mark.dispatchEvent(pointer("pointerdown", "mouse"));
+  // 検証
+  expect(tip.hidden).toBe(false);
+});
+
+// タッチで開いた後、ツールチップの中のタップでは閉じない（正常系）
+test("test_attach_diagram_tips_when_touch_tip_tapped", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachDiagramTips } = await loadTips();
+  const figure = createFigure();
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
+  detachers.push(detach);
+  const mark = infoMark(figure);
+  const tip = tipOf(mark);
+  tap(mark);
+  // 実行: ツールチップの中のタップ（フォーカスできない所なので、持ち主のフォーカスが外れる）
+  for (const type of ["pointerdown", "pointerup", "pointerleave"]) {
+    tip.dispatchEvent(pointer(type, "touch"));
+  }
+  mark.blur();
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(tip.hidden).toBe(false);
+});
