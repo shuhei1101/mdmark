@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / 部品の描画"
+title: ライブラリ本体 / 部品の描画
 lead: Storybook のストーリーに部品の HTML を出す仕組み。部品の HTML を返す描画の口（Node の HTTP サーバー）と、Storybook の設定・描画の口への中継を持つ。配布物には入らない。
 directory: |-
   ```tree
@@ -33,7 +33,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `preview-status`・`config-band`・`media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `preview-status`・`config-band`・`media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -66,6 +66,8 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCard]
       - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#functions[renderMediaError]
       - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[highlightLines]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnoteRef]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnotes]
     unit_tests:
       - name: test_render_part_when_notice
         case: 正常
@@ -209,7 +211,7 @@ functions:
         description: Storybook の開発サーバーのルーター
 notes:
   ストーリーの場所: '`src/parts/*.stories.yaml`（部品『部品』）。`preview-head.html` は `<link rel="stylesheet" href="/render/index.css">` を持ち、ストーリーに本文の CSS を当てる。CSS の入れ子はビルドを通さずに読むため、入れ子を解するブラウザで見る。`preview.js` は、描いた直後のストーリーの `.mdmark` に、`data-story-fit` の印を持つ図なら `/render/diagram.js` の `attachDiagrams` を、表の部品（`.mdmark-table`）を持つなら `/render/sticky.js` の `attachStickyRows` を付ける（`mount` が全ての表に付けるのと同じ）'
-  起動: '描画の口を `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で立て、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で立てる'
+  起動: 描画の口を `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で立て、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画の口のポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で立てる
   依存: '`storybook`・`@storybook/server-webpack5`・`@storybook/server` を `10.6.2` で開発の依存に足す。`package.json` の `overrides` で `webpack-dev-middleware` を `^7.4.6` にする（Storybook の開発サーバーが引く版の脆弱性 GHSA-g84c-rxfj-3j2c を避ける）。ストーリーの色分けに npm の `highlight.js` を `11.12.0` で開発の依存に足す（`src/` は型だけを `import type` で使う）。どれも配布物には入らない'
   単体テストの場所: '`renderPart`・`createRenderServer`・`main` は `tests/unit/scripts/storybook-render.test.ts`（`unit` プロジェクト）。`.storybook/` の中は Storybook を立てて確かめる'
 test_files:
