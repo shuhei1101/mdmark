@@ -1318,7 +1318,7 @@ functions:
     summary: '`renderBackToTop({ hidden: true })` のボタンを `el` の子の末尾に置き、スクロールする場所を `findScrollContainer(el)` で決めて、出し分け・置く位置・押したときの移動を付ける'
     kind: 関数
     scope: internal
-    side_effects: '`el` にボタンを追加する。スクロールする場所が画面全体なら `window` の `scroll`、そうでなければ `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取る'
+    side_effects: '`el` にボタンを追加する。スクロールする場所が画面全体なら `window` の `scroll`、そうでなければ `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取る。`document.body` と `el` の子の追加・削除を `MutationObserver` で監視する'
     args:
       - name: options
         type: '{ el: HTMLElement; content: HTMLElement }'
@@ -1329,10 +1329,10 @@ functions:
       description: ボタンと受け取りを外す関数
     process: |-
       1. ボタンを置き、スクロールする場所を決める
-      2. 置き直す処理: スクロールする場所の矩形（スクロールバーを除き、右端と下端は画面の中に収める）の上端から `el` の上端までの量が、スクロールする場所の `clientHeight` 未満ならボタンに `hidden` を付けて終える。そうでなければ `hidden` を外し、`--mdmark-back-to-top-right` に `calc({画面の右端からスクロールする場所の右端までの px} + var(--mdmark-back-to-top-gap))`、`--mdmark-back-to-top-bottom` に同じく下端の値を入れる。続けて、ページの差分のミニマップの帯（`document.body` の `.mdmark-diff-minimap`）と `el` の子の余白の列（`div.mdmark-comment-margin`）の順に、ボタンの矩形と横の範囲（部品の左端から `BACK_TO_TOP_AVOID_GAP_PX` 左までを含む）が重なれば、`--mdmark-back-to-top-right` を `{画面の右端から部品の左端までの px + BACK_TO_TOP_AVOID_GAP_PX}px` にする。縦の位置は比べない
-      3. 手順 2 を、スクロールと `resize` のたびに `requestAnimationFrame` で 1 フレームに 1 回だけ行い、付けた直後にも 1 回行う
+      2. 置き直す処理: スクロールする場所の矩形（スクロールバーを除き、右端と下端は画面の中に収める）の上端から `el` の上端までの量が、スクロールする場所の `clientHeight` 未満ならボタンに `hidden` を付けて終える。そうでなければ `hidden` を外し、`--mdmark-back-to-top-right` に `calc({画面の右端からスクロールする場所の右端までの px} + var(--mdmark-back-to-top-gap))`、`--mdmark-back-to-top-bottom` に同じく下端の値を入れる。続けて、ページの差分のミニマップの帯（`document.body` の全ての `.mdmark-diff-minimap`）と `el` の子の余白の列（`div.mdmark-comment-margin`）の順に、ボタンの矩形と横の範囲（部品の左端から `BACK_TO_TOP_AVOID_GAP_PX` 左までを含む）が重なれば、`--mdmark-back-to-top-right` を `{画面の右端から部品の左端までの px + BACK_TO_TOP_AVOID_GAP_PX}px` にする。縦の位置は比べない
+      3. 手順 2 を、スクロールと `resize`、`document.body` の子の追加・削除（ミニマップの帯）と `el` の子の追加・削除（余白の列）のたびに `requestAnimationFrame` で 1 フレームに 1 回だけ行い、付けた直後にも 1 回行う
       4. ボタンを押すと、`matchMedia("(prefers-reduced-motion: reduce)")` が当たれば `behavior: "auto"`、ほかは `smooth` で、スクロールする場所を `el` の上端へ `scrollTo` する（画面全体なら `window.scrollTo` で、`el` の `--mdmark-sticky-top` の px を引く）。続けて `content` に `tabindex="-1"` を付け、`focus({ preventScroll: true })` する
-      5. 外す関数は、受け取りと予約したフレームを外し、ボタンを取り除き、付けた `tabindex` を外す
+      5. 外す関数は、受け取り・`MutationObserver` の監視・予約したフレームを外し、ボタンを取り除き、付けた `tabindex` を外す
     callees:
       - '#functions[findScrollContainer]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderBackToTop]
@@ -1351,6 +1351,12 @@ functions:
         condition: '`el` の右端に幅 40px の `div.mdmark-comment-margin` を置いて付け、800px スクロールする'
         mock: なし
         expected: '`--mdmark-back-to-top-right` が `{画面の右端から余白の列の左端までの px + 8}px`'
+      - name: test_attach_back_to_top_when_minimap_added
+        case: 正常
+        summary: ミニマップの帯が後から配置されると、スクロールせずに帯の左へずらす
+        condition: 800px スクロールしてボタンを出した後、`document.body` に画面の右端に接する幅 12px の `div.mdmark-diff-minimap` を配置し、次のフレームを待つ
+        mock: なし
+        expected: '`--mdmark-back-to-top-right` が `{画面の右端から帯の左端までの px + 8}px`'
       - name: test_attach_back_to_top_when_pressed
         case: 正常
         summary: 押すと先頭へスクロールして本文の列へフォーカスを移す
