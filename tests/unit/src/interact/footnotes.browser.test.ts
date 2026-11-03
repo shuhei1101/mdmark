@@ -1,12 +1,16 @@
 import { afterEach, beforeAll, expect, test } from "vitest";
 import {
   addStyles,
+  createRoot,
   createRootFromHtml,
   removeRoots,
 } from "../../helpers/dom.ts";
 
 /** 脚注の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadFootnotes = () => import("../../../../src/interact/footnotes.ts");
+
+/** 節と行の詳細の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadSections = () => import("../../../../src/interact/sections.ts");
 
 /** 脚注の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadFootnotePart = () => import("../../../../src/parts/footnote.ts");
@@ -119,4 +123,30 @@ test("test_attach_footnotes_unique_ids", async () => {
       document.getElementById(back?.getAttribute("href")?.slice(1) ?? ""),
     ).toBe(link);
   }
+});
+
+// 閉じた節の中の番号へ、戻るリンクで節を開いて移る（正常系）
+test("test_attach_footnotes_when_back_into_closed_section", async () => {
+  // 準備
+  const { attachFootnotes } = await loadFootnotes();
+  const { attachSections } = await loadSections();
+  const { root } = createRoot(
+    "## 節\n\n<!-- section: closed -->\n\n本文[^a]。\n\n[^a]: 補足\n",
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: false }));
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const body = root.querySelector<HTMLElement>(".mdmark-section-body");
+  const link = root.querySelector<HTMLElement>(".mdmark-fn-link");
+  const list = root.querySelector<HTMLDetailsElement>(
+    "details.mdmark-footnotes",
+  );
+  if (list) {
+    list.open = true;
+  }
+  expect(body?.hidden).toBeTruthy();
+  // 実行
+  root.querySelector<HTMLElement>(".mdmark-fn-back")?.click();
+  // 検証
+  expect(body?.hidden).toBeFalsy();
+  expect(document.activeElement).toBe(link);
 });

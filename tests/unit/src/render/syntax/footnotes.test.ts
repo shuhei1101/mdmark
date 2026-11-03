@@ -322,3 +322,44 @@ test("test_build_footnote_list", () => {
   expect(list).toContain('id="mdmark-fn-1"');
   expect(list).toContain('href="#mdmark-fnref-1-0"');
 });
+
+// 定義と行内の脚注の中身にも、本文と同じ記法とリンクの扱いを当てる（正常系）
+test("test_take_footnote_definitions_when_syntax", () => {
+  // 準備
+  const markdown = [
+    "本文で README.md と example.com と `badge:新規` を書く[^a]。行内も `badge:新規` ^[行内で README.md と `badge:新規`]。",
+    "",
+    "[^a]: 脚注で README.md と example.com と `badge:新規` を書く。",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const [body = ""] = html.split("</p>");
+  for (const part of [
+    body,
+    byId(html, "mdmark-fn-tip-1-0"),
+    byId(html, "mdmark-fn-tip-2-0"),
+    byId(html, "mdmark-fn-1"),
+    byId(html, "mdmark-fn-2"),
+  ]) {
+    expect(part).toContain("README.md");
+    expect(part).not.toContain("http://README.md");
+    expect(part).toContain('class="mdmark-badge"');
+  }
+  expect(byId(html, "mdmark-fn-1")).not.toContain("http://example.com");
+});
+
+// 定義の中の見出しで節を作らず、一覧は節の外に置く（正常系）
+test("test_take_footnote_definitions_when_heading", () => {
+  // 準備
+  const markdown = "## 節\n\n本文[^a]。\n\n[^a]: ## 定義の見出し\n";
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(matches(html, /<section\b/g)).toHaveLength(1);
+  expect(matches(html, /<\/section>/g)).toHaveLength(1);
+  const listAt = html.indexOf('<details class="mdmark-footnotes"');
+  expect(html.lastIndexOf("</section>")).toBeLessThan(listAt);
+  expect(byId(html, "mdmark-fn-1")).toContain("定義の見出し");
+});
