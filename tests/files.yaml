@@ -6,6 +6,9 @@ files:
   - path: e2e/cli.ts
     description: E2E テストで CLI を子プロセスで流し、終了コードと出力を受け取る処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, topic:cli]
+  - path: e2e/dev-docs.ts
+    description: E2E テストでこのリポジトリを配信元に登録した dev-docs を空きポートで起動し、search_docs で文書を受け取る処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, tool:mcp, topic:使い方集]
   - path: e2e/diagram.ts
     description: E2E テストが使う図の見本の文書・固有の部品の代役・型の点検の実行と、図の倍率の読み取りを受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, topic:図]
@@ -104,12 +107,6 @@ files:
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む
-        type: see_also
-  - path: e2e/単一ユースケース/セッションの開始で使い方集の索引を受け取る.spec.ts
-    description: シナリオ『セッションの開始で使い方集の索引を受け取る』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
-    tags: [topic:e2e, topic:シナリオ, tool:playwright]
-    related:
-      - to: dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集の索引を受け取る
         type: see_also
   - path: e2e/単一ユースケース/タブを切り替える.spec.ts
     description: シナリオ『タブを切り替える』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
@@ -398,6 +395,12 @@ files:
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/雛形を置く
+        type: see_also
+  - path: e2e/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する.spec.ts
+    description: シナリオ『ClaudeCodeで使い方集を参照して書き点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
+    related:
+      - to: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する
         type: see_also
   - path: e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
     description: シナリオ『MCPサーバーを起動してプラグインからつなぐ』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
