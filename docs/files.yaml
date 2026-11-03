@@ -22,7 +22,7 @@ files:
     description: 文書を集めて参照の表を作り、配布物・CSS・外部ライブラリ・画像と一緒に 1 枚に埋める流れ。mdmark の仕組みを理解するときに読む。
     tags: [topic:仕組み, topic:書き出し]
   - path: はじめに/コアコンセプト/ClaudeCodeに使い方を渡す仕組み.md
-    description: 索引だけを入れ、本文を必要な分だけ読ませ、CLI と同じ処理をツールで呼ぶ流れ。mdmark の仕組みを理解するときに読む。
+    description: 使い方集を dev-docs で必要な分だけ参照させ、CLI と同じ処理をツールで呼ぶ流れ。mdmark の仕組みを理解するときに読む。
     tags: [topic:仕組み, tool:claude-code]
   - path: はじめに/コアコンセプト/共通の定義と固有の定義.md
     description: 基盤の部品と CSS、使う側の固有の部品と CSS の層と、当たる範囲。mdmark の仕組みを理解するときに読む。
@@ -50,7 +50,7 @@ files:
     tags: [topic:リファレンス, topic:cli]
   - path: リファレンス/HTMLの書き方.md
     description: AI が HTML を作るときの書き方の決まり。名前から引いて確かめるときに読む。
-    tags: [topic:リファレンス, tool:html]
+    tags: [topic:リファレンス, tool:html, topic:使い方集]
   - path: リファレンス/MCP.md
     description: MCP のツールの名前・引数・戻り値・エラーの一覧。名前から引いて確かめるときに読む。
     tags: [topic:リファレンス, tool:mcp]
@@ -59,30 +59,30 @@ files:
     tags: [topic:リファレンス, topic:拡張, tool:vscode]
   - path: リファレンス/フローチャートの決まり.md
     description: 処理の順番を描くフローチャートの見た目の決まり（時系列・ループの帯・分岐）。名前から引いて確かめるときに読む。
-    tags: [topic:リファレンス, topic:フローチャート]
+    tags: [topic:リファレンス, topic:フローチャート, topic:使い方集]
   - path: リファレンス/構成図の決まり.md
     description: 構成図の見た目の決まり（枠・3 層・タイトルと凡例・線・交差・ツールチップ・操作）。名前から引いて確かめるときに読む。
-    tags: [topic:リファレンス, topic:図]
+    tags: [topic:リファレンス, topic:図, topic:使い方集]
   - path: リファレンス/用語集.md
     description: マーカー・記法・テーマ・機能・知らせの枠・書き方の警告・行の強調・コードの行のマーカー・索引・被参照・本文の一致・参照先・点検・やめた言い方・タグの語彙・主題のタグ・関係の種類・逆向きの関連・書き出し・まとめた HTML・雛形・移行の手順・手元のバージョン・壊す手順・図の部品・埋め込んだ HTML・ヒント・差分・リビジョン・取り出し元・差分の出し方・差分のブロック・比較元の Markdown・ビュー・ボード表示・コメント・共通の定義・固有の定義・使い方集・プラグイン・MCP のツール・常駐サーバー・VS Code 拡張機能・プレビュー・描けない理由・差分ビュー・差分のパネル・元の行番号の用語の意味。名前から引いて確かめるときに読む。
     tags: [topic:リファレンス, topic:用語]
   - path: リファレンス/索引.md
     description: 索引のキー・型・必須・既定と、点検が返すずれの種類の一覧。名前から引いて確かめるときに読む。
-    tags: [topic:リファレンス, topic:索引]
+    tags: [topic:リファレンス, topic:索引, topic:使い方集]
   - path: リファレンス/記法.md
     description: マーカーと記法の一覧（書き方・引数・マーカーに対応しない表示での見え方）。名前から引いて確かめるときに読む。
-    tags: [topic:リファレンス, topic:構文]
+    tags: [topic:リファレンス, topic:構文, topic:使い方集]
   - path: リファレンス/設定.md
     description: 設定のキーと既定の一覧。名前から引いて確かめるときに読む。
     tags: [topic:リファレンス, topic:設定]
   - path: 使い方/ClaudeCodeで使う/MCPのツールを使う.md
-    description: 使い方集を読み、文書の書き出し・まとめ・点検を Claude Code から呼ぶ手順。Claude Code から mdmark を使うときに読む。
+    description: 使い方集を dev-docs で参照させ、文書の書き出し・まとめ・点検を Claude Code から呼ぶ手順。Claude Code から mdmark を使うときに読む。
     tags: [tool:claude-code, tool:mcp]
   - path: 使い方/ClaudeCodeで使う/MCPサーバーを起動する.md
     description: MCP の常駐サーバーを起動・停止し、待ち受けているポートを確かめる手順。Claude Code から mdmark を使うときに読む。
     tags: [tool:claude-code, tool:mcp]
   - path: 使い方/ClaudeCodeで使う/プラグインを入れる.md
-    description: マーケットプレイスを追加してプラグインを入れ、次のセッションから使い方の索引とツールを受け取る手順。Claude Code から mdmark を使うときに読む。
+    description: マーケットプレイスを追加してプラグインを入れ、次のセッションからツールと使い方集への動線を受け取る手順。Claude Code から mdmark を使うときに読む。
     tags: [tool:claude-code, tool:mcp, topic:プラグイン]
   - path: 使い方/VSCodeで見る/HTMLとPDFにする.md
     description: 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順。VS Code の拡張機能を使うときに読む。
@@ -101,7 +101,7 @@ files:
     tags: [topic:テーマ, topic:拡張, topic:印刷]
   - path: 使い方/カスタマイズ/拡張を登録する.md
     description: '`registerExtension` でマーカーを追加する手順。TypeScript を推奨し、配る前に JavaScript へ変換する。見た目や機能を使う側で変えるときに読む。'
-    tags: [topic:テーマ, topic:拡張]
+    tags: [topic:テーマ, topic:拡張, topic:使い方集]
   - path: 使い方/カスタマイズ/機能をオン・オフする.md
     description: 設定の `features` と文書のマーカーで、機能のオン・オフを切り替える。見た目や機能を使う側で変えるときに読む。
     tags: [topic:テーマ, topic:拡張]
@@ -110,22 +110,22 @@ files:
     tags: [topic:テーマ, topic:拡張]
   - path: 使い方/図を描く/コードブロックのHTMLを描く.md
     description: コードブロックの HTML を描かせるマーカー・チャートの custom element の置き方・`data-hint` の書き方の手順。文書に図や部品を描くときに読む。
-    tags: [topic:図, tool:html]
+    tags: [topic:図, tool:html, topic:使い方集]
   - path: 使い方/図を描く/図を描く.md
     description: HTML の使いどころと、文書に部品の定義を書いてフロー図・シーケンス図・グラフを描く手順。文書に図や部品を描くときに読む。
-    tags: [topic:図]
+    tags: [topic:図, topic:使い方集]
   - path: 使い方/図を描く/固有の部品とCSSを当てる.md
     description: 使う側に固有の部品と CSS を、その場所の文書にだけ当てる手順。文書に図や部品を描くときに読む。
-    tags: [topic:図]
+    tags: [topic:図, topic:使い方集]
   - path: 使い方/図を描く/描いた図を確かめる.md
     description: 置いた部品を Playwright で動かし、スクリーンショットを撮って見る手順。文書に図や部品を描くときに読む。
-    tags: [topic:図]
+    tags: [topic:図, topic:使い方集]
   - path: 使い方/図を描く/操作できる部品を作る.md
     description: スライダー・グラフ・今の値をコピーするボタンの部品の定義を書く手順。文書に図や部品を描くときに読む。
-    tags: [topic:図]
+    tags: [topic:図, topic:使い方集]
   - path: 使い方/図を描く/見本.md
     description: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書。文書に図や部品を描くときに読む。
-    tags: [topic:図]
+    tags: [topic:図, topic:使い方集]
   - path: 使い方/導入/差分を表示する.md
     description: '`mount` の `diffSource` に取り出し元を渡し、文書の 2 つのリビジョンの差分を出す。使う側のページへ組み込むときに読む。'
     tags: [topic:セットアップ手順, topic:差分]
@@ -152,16 +152,25 @@ files:
     tags: [topic:cli, topic:書き出し, topic:テンプレート]
   - path: 使い方/書く/ビューとコメントを使う.md
     description: ビューのマーカーの書き方・ボードと表形式の切り替え・列の絞り込み・コメントを付ける手順。文書に記法を書くときに読む。
-    tags: [topic:markdown, topic:構文, topic:ビュー, topic:コメント]
+    tags: [topic:markdown, topic:構文, topic:ビュー, topic:コメント, topic:使い方集]
   - path: 使い方/書く/図と表に番号を付ける.md
     description: '`fig` のマーカーと、番号を出すリンクの書き方。文書に記法を書くときに読む。'
-    tags: [topic:markdown, topic:構文, topic:テーブル, topic:図]
+    tags: [topic:markdown, topic:構文, topic:テーブル, topic:図, topic:使い方集]
+  - path: 使い方/書く/文書の書き方.md
+    description: 人が読む資料を書く前に読む、表し方と文の決まり。人が読む資料を mdmark で書くときに読む。
+    tags: [topic:markdown, topic:文章, topic:使い方集]
   - path: 使い方/書く/本文を部品で組む.md
     description: 注意書き・タブ・ステップ・ファイルツリー・バッジ・コードブロックの飾り・目次・セクションの開閉・行の詳細を書く手順。文書に記法を書くときに読む。
-    tags: [topic:markdown, topic:構文]
+    tags: [topic:markdown, topic:構文, topic:使い方集]
+  - path: 使い方/書く/画像と動画を置く.md
+    description: 画像の属性・キャプション・ライトボックス・ギャラリー・テーマごとの切り替え・動画・GIF・音声・アセットの置き場所の手順。画像・動画・GIF・音声を文書に置くときに読む。
+    tags: [topic:markdown, topic:構文, topic:画像, topic:動画, topic:使い方集]
   - path: 使い方/書く/索引と用語集を書く.md
     description: 索引に文書と用語を書き、表から用語集に用語を入れる手順。文書に記法を書くときに読む。
-    tags: [topic:markdown, topic:構文, topic:索引, topic:用語]
+    tags: [topic:markdown, topic:構文, topic:索引, topic:用語, topic:使い方集]
+  - path: 使い方/書く/色で強調する.md
+    description: 色の名前の一覧と、決め手の 1 文だけに色を付ける色の使い方のガイド。表・バッジ・本文の文字に色を付けるときに読む。
+    tags: [topic:markdown, topic:構文, topic:色, topic:使い方集]
   - path: 使い方/書く/表に機能を付ける.md
     description: 表をマーカーで囲み、種類と機能を選ぶ手順。文書に記法を書くときに読む。
-    tags: [topic:markdown, topic:構文, topic:テーブル]
+    tags: [topic:markdown, topic:構文, topic:テーブル, topic:使い方集]
