@@ -30,13 +30,14 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   sequence: "diagrams",
   chart: "diagrams",
   param: "diagrams",
+  er: "diagrams",
   html: "html",
   code: "code",
   gallery: "gallery",
 };
 
 /** 図の部品の印の名前。同じ名前の拡張と対応表が先に使われる */
-const DIAGRAM_MARKS = ["flow", "sequence", "chart", "param"];
+const DIAGRAM_MARKS = ["flow", "sequence", "chart", "param", "er"];
 
 /** 印のトークンの type */
 export const MARK_TOKEN = "mdmark_mark";

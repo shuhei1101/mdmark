@@ -1,0 +1,202 @@
+import type {
+  MdmarkErCardinality,
+  MdmarkErRelation,
+  MdmarkErTable,
+} from "../diagram/definition.ts";
+import { ER_METRICS, erRelationRoute, erTableHeight } from "../diagram/er.ts";
+import { erEndSvg, erFoldIcon } from "../parts/er.ts";
+
+/** テーブルの開閉のボタン */
+function foldButton(table: HTMLElement): HTMLButtonElement | null {
+  return table.querySelector<HTMLButtonElement>(
+    "button.mdmark-diagram-er-fold",
+  );
+}
+
+/** テーブルを今畳んでいるか（開閉のボタンが無いテーブルは畳まない） */
+function isFolded(table: HTMLElement): boolean {
+  return foldButton(table)?.getAttribute("aria-expanded") === "false";
+}
+
+/** 列の行が主キーか外部キーの列か */
+function isKeyRow(row: HTMLElement): boolean {
+  return row.querySelector('[data-key="pk"], [data-key="fk"]') !== null;
+}
+
+/** 属性 `hidden` を、描いたときと同じ値で付け外しする */
+function setHidden(element: HTMLElement, hidden: boolean): void {
+  if (hidden) {
+    element.setAttribute("hidden", "hidden");
+  } else {
+    element.removeAttribute("hidden");
+  }
+}
+
+/** 描いたテーブルの位置と大きさ・列の並びから、経路を求めるテーブルの定義を作る */
+function tableFromElement(element: HTMLElement): MdmarkErTable {
+  const columns = [
+    ...element.querySelectorAll<HTMLElement>(".mdmark-diagram-er-column"),
+  ].map((row) => ({
+    name: row.dataset.column ?? "",
+    type: "",
+    pk: row.querySelector('[data-key="pk"]') !== null,
+    fk: row.querySelector('[data-key="fk"]') !== null,
+  }));
+  return {
+    id: element.dataset.node ?? "",
+    name: "",
+    label: "",
+    x: Number.parseFloat(element.style.left),
+    y: Number.parseFloat(element.style.top),
+    w: Number.parseFloat(element.style.width),
+    columns,
+  };
+}
+
+/** 関係の `g` の属性から関係の定義を作る */
+function relationFromElement(group: SVGGElement): MdmarkErRelation {
+  const data = group.dataset;
+  const midX = data.erMidX === undefined ? undefined : Number(data.erMidX);
+  return {
+    from: data.erFrom ?? "",
+    fromColumn: data.erFromColumn ?? "",
+    fromCard: (data.erFromCard ?? "1") as MdmarkErCardinality,
+    to: data.erTo ?? "",
+    toColumn: data.erToColumn ?? "",
+    toCard: (data.erToCard ?? "1") as MdmarkErCardinality,
+    ...(midX === undefined ? {} : { midX }),
+  };
+}
+
+/** 値が変わったときだけ `style` の位置を書き換える（変わらないときは描いた文字のまま残す） */
+function setPx(
+  element: HTMLElement,
+  name: "left" | "top" | "height",
+  value: number,
+): void {
+  if (Number.parseFloat(element.style[name]) !== value) {
+    element.style[name] = `${value}px`;
+  }
+}
+
+/** 図の関係の線・両端の記号・ラベルを、今の列の行の位置へ結び直し、図の高さを求め直す */
+function relayout(figure: HTMLElement): void {
+  const elements = [
+    ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-er-table"),
+  ];
+  const tables = new Map(
+    elements.map((element) => [
+      element.dataset.node ?? "",
+      tableFromElement(element),
+    ]),
+  );
+  const folded = new Map(
+    elements.map((element) => [element.dataset.node ?? "", isFolded(element)]),
+  );
+  const isTableFolded = (id: string): boolean => folded.get(id) === true;
+  for (const group of figure.querySelectorAll<SVGGElement>(
+    "g[data-er-relation]",
+  )) {
+    const relation = relationFromElement(group);
+    const from = tables.get(relation.from);
+    const to = tables.get(relation.to);
+    if (!from || !to) {
+      continue;
+    }
+    const route = erRelationRoute({
+      relation,
+      from,
+      to,
+      folded: isTableFolded,
+    });
+    group.querySelector("path")?.setAttribute("d", route.d);
+    const ends = group.querySelector(".mdmark-diagram-er-ends");
+    const svg =
+      erEndSvg({ ...route.start, card: relation.fromCard }) +
+      erEndSvg({ ...route.end, card: relation.toCard });
+    if (ends && ends.innerHTML !== svg) {
+      ends.innerHTML = svg;
+    }
+    const label = figure.querySelector<HTMLElement>(
+      `.mdmark-diagram-label[data-er-relation="${group.dataset.erRelation ?? ""}"]`,
+    );
+    if (label) {
+      setPx(label, "left", route.label.x);
+      setPx(label, "top", route.label.y);
+    }
+  }
+  // 図の高さ: テーブルの下端の最大に下の余白を足す。倍率を掛けた大きさの箱も同じ割合で合わせる
+  const height =
+    Math.max(
+      0,
+      ...[...tables.values()].map(
+        (table) =>
+          table.y + erTableHeight({ table, folded: isTableFolded(table.id) }),
+      ),
+    ) + ER_METRICS.bottom;
+  const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
+  const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+  const wires = figure.querySelector<SVGSVGElement>(".mdmark-diagram-wires");
+  if (!stage || Number.parseFloat(stage.style.height) === height) {
+    return;
+  }
+  const ratio = sizer
+    ? Number.parseFloat(sizer.style.height) /
+      Number.parseFloat(stage.style.height)
+    : 1;
+  setPx(stage, "height", height);
+  if (sizer) {
+    setPx(sizer, "height", height * ratio);
+  }
+  wires?.setAttribute("height", String(height));
+}
+
+/** ER 図のテーブルの列を畳む・開く: 主キーと外部キー以外の列の行・非表示の行・開閉のボタンを切り替え、関係の線を結び直す */
+export function setErTableFolded(options: {
+  table: HTMLElement;
+  folded: boolean;
+}): void {
+  const { table, folded } = options;
+  const button = foldButton(table);
+  if (!button) {
+    return;
+  }
+  for (const row of table.querySelectorAll<HTMLElement>(
+    ".mdmark-diagram-er-column",
+  )) {
+    if (!isKeyRow(row)) {
+      setHidden(row, folded);
+    }
+  }
+  const rest = table.querySelector<HTMLElement>(".mdmark-diagram-er-rest");
+  if (rest) {
+    setHidden(rest, !folded);
+  }
+  button.setAttribute("aria-expanded", folded ? "false" : "true");
+  button.innerHTML = erFoldIcon(folded);
+  const figure = table.closest<HTMLElement>("figure.mdmark-diagram");
+  if (figure) {
+    relayout(figure);
+  }
+}
+
+/** ER 図の開閉のボタンを押したら（Enter・Space を含む）列を畳む・開く。フォーカスはボタンに残す。付けた受け取りを外す関数を返す */
+export function attachErFolds(figure: HTMLElement): () => void {
+  const controller = new AbortController();
+  figure.addEventListener(
+    "click",
+    (event) => {
+      const button = (
+        event.target as Element | null
+      )?.closest<HTMLButtonElement>("button.mdmark-diagram-er-fold");
+      const table = button?.closest<HTMLElement>(".mdmark-diagram-er-table");
+      if (!button || !table || !figure.contains(button)) {
+        return;
+      }
+      setErTableFolded({ table, folded: !isFolded(table) });
+      button.focus();
+    },
+    { signal: controller.signal },
+  );
+  return () => controller.abort();
+}
