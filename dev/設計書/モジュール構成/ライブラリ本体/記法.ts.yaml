@@ -211,7 +211,7 @@ data_models:
         description: 正規化したラベルごとの定義のブロックのトークン。block の工程でキーだけを `null` で入れ、`collectFootnotes` が最初の定義のトークンを入れる
       - name: notes
         type: 'Array<{ key: string | null; inline: Token[] | null; refCount: number }>'
-        description: 参照した順の脚注。位置 + 1 が番号。行内の脚注は `key` が `null` で `inline` に中身のトークンを持つ
+        description: 参照した順の脚注。位置 + 1 が番号。行内の脚注は `collectFootnotes` が定義の囲みにするまで `key` が `null` で `inline` に中身のトークンを持つ
       - name: numbers
         type: Map<string, number>
         description: ラベルごとの `notes` の位置
@@ -1998,7 +1998,7 @@ functions:
     container: src/render/syntax/cards.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える
+    summary: コアルール。`cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える。脚注の定義の囲み（`mdmark_footnote_def_open`〜`close`）の中の段落は、ツールチップでリンクのまま読めるようカードにしない
     args:
       - name: state
         type: StateCore
@@ -2176,7 +2176,7 @@ functions:
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: 解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）を登録し、`mdmark_footnote_ref` のトークンの描き方を `renderer.rules` に置く。コアルールの `collectFootnotes`（文書の機能の後）と `buildFootnoteList`（関連文書の一覧の前）は `createParser` が登録する
+    summary: 解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）を登録し、`mdmark_footnote_ref`（番号とツールチップ）と `mdmark_footnote_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に置く。どちらも全てのコアルールの後に、`footnoteBodies` で描いた中身の外にだけ `markOwn` を掛けて描く。コアルールの `collectFootnotes`（文書の機能の後）・`buildFootnoteList`（関連文書の一覧の前）・`takeFootnoteDefinitions`（最後）は `createParser` が登録する
     args:
       - name: parser
         type: MarkdownIt
@@ -2312,7 +2312,7 @@ functions:
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: コアルール（文書の機能 `resolveDocumentFeatures` の直後、見出し `assignHeadingIds` の前）。`env.features.footnotes` で脚注の機能を判定し、印は読まない。オンなら、`mdmark_footnote_def_open`〜`close` のトークンを本文から取り除き、`meta.first` の定義だけを `definitions` に入れる（取り除いた定義は用語の下線など後のコアルールに渡らない）。オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを外して最初の段落の頭に `meta.source` を戻し、書いた位置に残し、`env.mdmarkFootnotes` を消す
+    summary: コアルール（文書の機能 `resolveDocumentFeatures` の直後、見出し `assignHeadingIds` の前）。`env.features.footnotes` で脚注の機能を判定し、印は読まない。オンなら、定義は本文に残したまま後のコアルールを本文と同じく通し、行内の脚注の中身を 1 段落の定義の囲み（キーは制御文字で始める `\u0000inline:{位置}`）にして文書の末尾に足し、脚注の `key` をそのキーにする。オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを外して最初の段落の頭に `meta.source` を戻し、書いた位置に残し、`env.mdmarkFootnotes` を消す
     args:
       - name: state
         type: StateCore
@@ -2349,7 +2349,7 @@ functions:
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: 脚注 1 つの中身を、部品『脚注の番号』のツールチップに入れる段落ごとの行内の HTML（`p` を外したもの）と、一覧に入れるブロックの HTML にして返す。段落の `inline` は `renderer.renderInline`、段落でないブロックはその文字をエスケープした 1 段落にする。行内の脚注は中身のトークンを 1 段落にする
+    summary: 脚注 1 つの中身を、部品『脚注の番号』のツールチップに入れる段落ごとの行内の HTML（`p` を外したもの）と、一覧に入れるブロックの HTML にして返す。段落の `inline` は `renderer.renderInline`、段落でないブロックは描いた HTML から要素を除いた文字を 1 段落にする。中身は `takeFootnoteDefinitions` が控えた定義のトークン（行内の脚注も同じ）
     args:
       - name: options
         type: '{ md: MarkdownIt; env: RenderEnv; note: FootnoteState["notes"][number] }'
@@ -2372,7 +2372,7 @@ functions:
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: コアルール（節・目次の後、関連文書の一覧の前）。`env.mdmarkFootnotes` の `notes` が 1 つ以上あれば、部品『脚注の一覧』の HTML に `markOwn` を掛けた `html_block` を末尾に足す（節の外に置かれ、関連文書の一覧はその後ろに足される）
+    summary: コアルール（節・目次の後、関連文書の一覧の前）。`env.mdmarkFootnotes` の `notes` が 1 つ以上あれば、`mdmark_footnote_list` のトークンを末尾に足す（節の外に置かれ、関連文書の一覧はその後ろに足される）。中身は描くときに、部品『脚注の一覧』に中身を差し込み口（`SLOT_MARKER`。最後の段落の閉じの前後）で渡して描く
     args:
       - name: state
         type: StateCore
@@ -2390,6 +2390,45 @@ functions:
         condition: '`## 節` の段落に `[^1]`、定義 `[^1]: 補足`、参照の表で被参照を持つ文書'
         mock: なし
         expected: '`details.mdmark-footnotes` が `section` の外、`nav.mdmark-backlinks` の前にあり、`summary` が `脚注（1 件）`。`data-mdmark-own` は sanitize の後に残らず、`id`・`href` が残る'
+  - name: takeFootnoteDefinitions
+    title: 脚注の定義を取り出す
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（全てのコアルールの後）。本文と同じコアルールを通した `mdmark_footnote_def_open`〜`close` を本文から取り除き、`meta.first` の定義の中身だけを `definitions` に入れる
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` と `env.mdmarkFootnotes.definitions` を書き換える'
+    unit_tests:
+      - name: test_take_footnote_definitions_when_syntax
+        case: 正常
+        summary: 定義と行内の脚注の中身にも、本文と同じ記法とリンクの扱いを当てる
+        condition: 本文・定義・行内の脚注のそれぞれに `README.md`・`example.com`・バッジ `badge:新規` を持つ文書
+        mock: なし
+        expected: 本文・ツールチップ・一覧のどれでも `README.md` がリンクにならず、バッジが `span.mdmark-badge` になる
+      - name: test_take_footnote_definitions_when_heading
+        case: 正常
+        summary: 定義の中の見出しで節を作らず、一覧は節の外に置く
+        condition: '`## 節` の段落に `[^a]` と、定義 `[^a]: ## 定義の見出し`'
+        mock: なし
+        expected: '`div.mdmark-section-body` が 1 つだけで、一覧がその後ろにあり、一覧の項目に `定義の見出し` がある'
+  - name: outsideFootnoteDefinitions
+    title: 脚注の定義の外のトークンを返す
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: '`mdmark_footnote_def_open`〜`close` の囲みを除いたトークンの並びを返す（用語の下線を脚注の中身に付けないために `termsRule` が使う）'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: トークンの並び
+    returns:
+      type: Token[]
+      description: 定義の囲みの外のトークン（同じトークンを指す）
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
