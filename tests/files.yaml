@@ -1693,7 +1693,7 @@ files:
       - to: src/plugin/arguments
         type: tests
   - path: unit/src/plugin/guide.test.ts
-    description: src/plugin/guide.ts（「使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前」）を確かめる単体テスト。guide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    description: src/plugin/guide.ts（「使い方集の索引の検査」）を確かめる単体テスト。guide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:使い方集, tool:claude-code]
     related:
       - to: src/plugin/guide
@@ -1715,12 +1715,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
     related:
       - to: src/plugin/pre-tool-use
-        type: tests
-  - path: unit/src/plugin/session-start.test.ts
-    description: src/plugin/session-start.ts（「SessionStart のフックの入口」）を確かめる単体テスト。session-start.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
-    related:
-      - to: src/plugin/session-start
         type: tests
   - path: unit/src/plugin/tools.test.ts
     description: src/plugin/tools.ts（「7 つのツールの定義と処理・ツールの結果への変換」）を確かめる単体テスト。tools.ts を変えたときに、合わせて見修正するケースを探すときに読む。

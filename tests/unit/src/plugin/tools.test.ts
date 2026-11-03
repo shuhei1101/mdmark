@@ -20,11 +20,8 @@ function textsOf(result: { content: unknown[] }): string[] {
   );
 }
 
-/** 引数を持たないツールを作る（`run` はテストごとに渡す。作業のフォルダを使うかは既定で使わない） */
-function createTool(
-  run: ToolDefinition["run"],
-  usesProjectDir = false,
-): ToolDefinition {
+/** 引数を持たないツールを作る（`run` はテストごとに渡す） */
+function createTool(run: ToolDefinition["run"]): ToolDefinition {
   return {
     name: "check",
     description: "テスト用のツール",
@@ -35,29 +32,22 @@ function createTool(
       additionalProperties: false,
     },
     run,
-    usesProjectDir,
   };
 }
 
-/** サーバーの読む場所（使い方集と配布物のフォルダ）を作る。配布物のフォルダの親は `packageDir` */
+/** サーバーの読む場所（配布物のフォルダ）を作る。配布物のフォルダの親は `packageDir` */
 async function createRoots(): Promise<{
   packageDir: string;
-  guideDir: string;
   distDir: string;
 }> {
   const packageDir = await createTempDir();
-  return {
-    packageDir,
-    guideDir: join(packageDir, "plugin", "guide"),
-    distDir: join(packageDir, "dist"),
-  };
+  return { packageDir, distDir: join(packageDir, "dist") };
 }
 
 /** 作業のフォルダと、サーバーの読む場所を一時フォルダに作る */
 async function createContext(): Promise<{
   projectDir: string;
   packageDir: string;
-  guideDir: string;
   distDir: string;
 }> {
   return { projectDir: await createTempDir(), ...(await createRoots()) };
@@ -72,7 +62,7 @@ test("test_call_tool", async () => {
   // 実行
   const result = await callTool({
     tool,
-    args: {},
+    args: { project_dir: await createTempDir() },
     roots,
     stderr: () => {},
   });
@@ -81,24 +71,6 @@ test("test_call_tool", async () => {
   expect(texts).toHaveLength(1);
   expect(JSON.parse(texts[0] ?? "")).toEqual({ out: "/a.html" });
   expect(result.isError).toBeFalsy();
-});
-
-// texts をそのままの文字で並べる（正常系）
-test("test_call_tool_when_texts", async () => {
-  // 準備
-  const { callTool } = await loadTools();
-  const expected = ["# a\n\n本文", "# b\n\n本文"];
-  const tool = createTool(async () => ({ texts: expected }));
-  const roots = await createRoots();
-  // 実行
-  const result = await callTool({
-    tool,
-    args: {},
-    roots,
-    stderr: () => {},
-  });
-  // 検証
-  expect(textsOf(result)).toEqual(expected);
 });
 
 // 合わない引数は処理を呼ばない（正常系）
@@ -119,7 +91,7 @@ test("test_call_tool_when_arguments_invalid", async () => {
   // 実行
   const result = await callTool({
     tool,
-    args: {},
+    args: { project_dir: await createTempDir() },
     roots,
     stderr: () => {},
   });
@@ -141,7 +113,7 @@ test("test_call_tool_when_cli_error", async () => {
   // 実行
   const result = await callTool({
     tool,
-    args: {},
+    args: { project_dir: await createTempDir() },
     roots,
     stderr: (line) => stderr.push(line),
   });
@@ -163,7 +135,7 @@ test("test_call_tool_when_unexpected_error", async () => {
   // 実行
   const result = await callTool({
     tool,
-    args: {},
+    args: { project_dir: await createTempDir() },
     roots,
     stderr: (line) => stderr.push(line),
   });
@@ -177,9 +149,9 @@ test("test_call_tool_when_unexpected_error", async () => {
   expect(logged).toContain("tools.test.ts");
 });
 
-/** `config` を受けられ、作業のフォルダを使うツールを作る */
+/** `config` を受けられるツールを作る */
 function createProjectDirTool(run: ToolDefinition["run"]): ToolDefinition {
-  const base = createTool(run, true);
+  const base = createTool(run);
   return {
     ...base,
     inputSchema: {
@@ -258,52 +230,6 @@ test("test_call_tool_when_project_dir_invalid", async () => {
     expect(textsOf(result)).toEqual([PROJECT_DIR_ERROR_MESSAGE]);
   }
   expect(run).not.toHaveBeenCalled();
-});
-
-// 作業のフォルダを使わないツールは project_dir を知らない引数として拒む（異常系）
-test("test_call_tool_when_project_dir_given_to_read_guide", async () => {
-  // 準備
-  const { callTool } = await loadTools();
-  const run = vi.fn(async () => ({ json: {} }));
-  const tool = createTool(run, false);
-  const roots = await createRoots();
-  // 実行
-  const result = await callTool({
-    tool,
-    args: { project_dir: await createTempDir() },
-    roots,
-    stderr: () => {},
-  });
-  // 検証
-  expect(result.isError).toBe(true);
-  expect(textsOf(result).join("\n")).toContain("project_dir");
-  expect(run).not.toHaveBeenCalled();
-});
-
-// 名前の順に本文を返す（正常系）
-test("test_run_read_guide", async () => {
-  // 準備
-  const { runReadGuide } = await loadTools();
-  const context = await createContext();
-  const entry = (name: string) => ({
-    name,
-    when: `${name} を書くとき`,
-    summary: `${name} の概要`,
-    page: `docs/${name}.md`,
-  });
-  await writeFiles(context.guideDir, {
-    "index.json": JSON.stringify({
-      schema: 1,
-      guides: [entry("a"), entry("b")],
-    }),
-    "docs/a.md": "# ページ A\n",
-    "docs/b.md": "# ページ B\n",
-  });
-  // 実行
-  const result = await runReadGuide({ names: ["b", "a"] }, context);
-  // 検証
-  expect(result.texts).toHaveLength(2);
-  expect(result.texts?.[0]?.startsWith("# b")).toBe(true);
 });
 
 // 作業のフォルダからの相対パスで書き出す（正常系）

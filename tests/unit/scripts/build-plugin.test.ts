@@ -57,7 +57,7 @@ test("test_check_guide_source", async () => {
     "docs/b.md": "# B\n",
   });
   // 実行
-  const result = await checkGuideSource({ root, contextLimit: 10_000 });
+  const result = await checkGuideSource({ root });
   // 検証
   expect(result.entries).toEqual(entries);
   expect(result.problems).toEqual([]);
@@ -73,26 +73,9 @@ test("test_check_guide_source_when_page_missing", async () => {
     "docs/a.md": "# A\n",
   });
   // 実行
-  const result = await checkGuideSource({ root, contextLimit: 10_000 });
+  const result = await checkGuideSource({ root });
   // 検証
   expect(result.problems.some((line) => line.includes("guides[1].page"))).toBe(
-    true,
-  );
-});
-
-// 索引の文が上限を超える（正常系）
-test("test_check_guide_source_when_too_long", async () => {
-  // 準備
-  const { checkGuideSource } = await loadBuildPlugin();
-  const root = await createTempDir();
-  await writeFiles(root, {
-    "guide/index.yaml": guideYaml([createEntry("a")]),
-    "docs/a.md": "# A\n",
-  });
-  // 実行
-  const result = await checkGuideSource({ root, contextLimit: 1 });
-  // 検証
-  expect(result.problems.some((line) => line.includes("上限 1 文字"))).toBe(
     true,
   );
 });
@@ -114,7 +97,7 @@ test("test_check_guide_source_when_invalid", async () => {
     "docs/a.md": "# A\n",
   });
   // 実行
-  const result = await checkGuideSource({ root, contextLimit: 10_000 });
+  const result = await checkGuideSource({ root });
   // 検証
   expect(
     result.problems.some((line) =>
@@ -129,7 +112,7 @@ test("test_check_guide_source_when_unreadable", async () => {
   const { checkGuideSource } = await loadBuildPlugin();
   const root = await createTempDir();
   // 実行
-  const result = await checkGuideSource({ root, contextLimit: 10_000 });
+  const result = await checkGuideSource({ root });
   // 検証
   expect(
     result.problems.some((line) => line.includes("guide/index.yaml")),
@@ -252,36 +235,13 @@ test("test_write_plugin_manifest", async () => {
   expect(Object.keys(JSON.parse(text))).toEqual(Object.keys(before));
 });
 
-// 索引の JSON とリンクを書き換えたページを書く（正常系）
-test("test_write_plugin_guide", async () => {
-  // 準備
-  const { writePluginGuide } = await loadBuildPlugin();
-  const root = await createTempDir();
-  const entries = [createEntry("a")];
-  await writeFiles(root, { "docs/a.md": "[C](./c.md)\n" });
-  // 実行
-  await writePluginGuide({ root, entries, version: "v0.0.0" });
-  // 検証
-  const index = JSON.parse(
-    await readFile(join(root, "plugin", "guide", "index.json"), "utf8"),
-  );
-  expect(index.guides).toHaveLength(1);
-  const page = await readFile(
-    join(root, "plugin", "guide", "docs", "a.md"),
-    "utf8",
-  );
-  expect(page).toContain(
-    "https://github.com/shuhei1101/mdmark/blob/v0.0.0/docs/c.md",
-  );
-});
-
 // 生成物だけを消す（正常系）
 test("test_remove_plugin_outputs", async () => {
   // 準備
   const { removePluginOutputs } = await loadBuildPlugin();
   const root = await createTempDir();
   await writeFiles(root, {
-    "plugin/scripts/session-start.js": "export {};\n",
+    "plugin/scripts/pre-tool-use.js": "export {};\n",
     "plugin/.mcp.json": "{}\n",
   });
   // 実行
@@ -300,7 +260,6 @@ test("test_build_plugin_when_source_missing", async () => {
   const problems = await buildPlugin({
     version: "v0.0.0",
     root,
-    contextLimit: 10_000,
   });
   // 検証
   expect(problems).toEqual([]);
@@ -313,76 +272,15 @@ test("test_build_plugin_when_guide_invalid", async () => {
   const { buildPlugin } = await loadBuildPlugin();
   const root = await createTempDir();
   await writeFiles(root, {
-    "src/plugin/session-start.ts": "export {};\n",
+    "src/plugin/pre-tool-use.ts": "export {};\n",
     "guide/index.yaml": guideYaml([createEntry("a")]),
   });
   // 実行
   const problems = await buildPlugin({
     version: "v0.0.0",
     root,
-    contextLimit: 10_000,
   });
   // 検証
   expect(problems.some((line) => line.includes("guides[0].page"))).toBe(true);
   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
-});
-
-// 索引にあるページへのリンクを名前にする（正常系）
-test("test_rewrite_guide_links", async () => {
-  // 準備
-  const { rewriteGuideLinks } = await loadBuildPlugin();
-  const entries = [createEntry("tables", "docs/使い方/b.md")];
-  // 実行
-  const result = rewriteGuideLinks({
-    markdown: "[表](./b.md)",
-    page: "docs/使い方/a.md",
-    entries,
-    version: "v0.7.0",
-  });
-  // 検証
-  expect(result).toBe("表（read_guide の tables）");
-});
-
-// 索引に無いページへのリンクをタグの URL にする（正常系）
-test("test_rewrite_guide_links_when_outside_index", async () => {
-  // 準備
-  const { rewriteGuideLinks } = await loadBuildPlugin();
-  // 実行
-  const result = rewriteGuideLinks({
-    markdown: "[設定](../リファレンス/設定.md#features)",
-    page: "docs/使い方/a.md",
-    entries: [],
-    version: "v0.7.0",
-  });
-  // 検証
-  expect(result).toContain(
-    "(https://github.com/shuhei1101/mdmark/blob/v0.7.0/docs/リファレンス/設定.md#features)",
-  );
-});
-
-// コードの中と絶対 URL・ページ内のリンクはそのまま（正常系）
-test("test_rewrite_guide_links_when_in_code", async () => {
-  // 準備
-  const { rewriteGuideLinks } = await loadBuildPlugin();
-  const markdown = [
-    "```md",
-    "[a](./b.md)",
-    "```",
-    "",
-    "`[a](./b.md)`",
-    "",
-    "[x](https://example.com)",
-    "",
-    "[y](#一覧)",
-    "",
-  ].join("\n");
-  // 実行
-  const result = rewriteGuideLinks({
-    markdown,
-    page: "docs/使い方/a.md",
-    entries: [createEntry("tables", "docs/使い方/b.md")],
-    version: "v0.7.0",
-  });
-  // 検証
-  expect(result).toBe(markdown);
 });
