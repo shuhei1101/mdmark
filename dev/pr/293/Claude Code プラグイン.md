@@ -14,9 +14,9 @@
 | ドキュメント | [dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E6%A7%8B%E6%88%90/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/%E4%BD%BF%E3%81%84%E6%96%B9%E9%9B%86.ts.yaml) | 使い方集の索引の検査と読み取り・索引の文・本文の読み取り | 本文の読み取りと SessionStart に渡す索引の文を削除し、ビルドの索引の検査だけを残す |
 | ドキュメント | [dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E6%A7%8B%E6%88%90/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/%E3%83%95%E3%83%83%E3%82%AF.ts.yaml) | SessionStart のフック | SessionStart のフックを削除 |
 | ドキュメント | [dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E6%A7%8B%E6%88%90/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%AE%E3%83%93%E3%83%AB%E3%83%89.ts.yaml) | 使い方集を `plugin/guide/` に書くビルド | `plugin/guide/` への使い方集の書き出しと SessionStart のフックの束ねを削除 |
-| ドキュメント | [dev/設計書/ER図/使い方集.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/ER%E5%9B%B3/%E4%BD%BF%E3%81%84%E6%96%B9%E9%9B%86.yaml) | 使い方集の索引 `guide/index.yaml` | 配信元の文書のメタデータとして持つ形に変更 |
+| ドキュメント | [dev/設計書/ER図/使い方集.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/ER%E5%9B%B3/%E4%BD%BF%E3%81%84%E6%96%B9%E9%9B%86.yaml) | 使い方集の索引 `guide/index.yaml` | 指すページに `docs/files.yaml` でタグ `topic:使い方集` を付ける形に変更し、プラグインへの写しの記述を削除 |
 | ドキュメント | [dev/設計書/外部ライブラリ/ClaudeCode.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E5%A4%96%E9%83%A8%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA/ClaudeCode.yaml) | プラグインの導入・SessionStart のフック | SessionStart のフックの記述を削除 |
-| ドキュメント | `dev/設計書/外部ライブラリ/dev-docs.yaml`（新規） | dev-docs の端末の設定・配信元の設定・`search_docs` | 使い方集を参照する先として採用する |
+| ドキュメント | [dev/設計書/外部ライブラリ/dev-docs.yaml](https://github.com/shuhei1101/mdmark/blob/chore/plugin/guide-dev-docs-source/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E5%A4%96%E9%83%A8%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA/dev-docs.yaml)（新規） | dev-docs の端末の設定・配信元の設定・`search_docs` | 使い方集を参照する先として採用する |
 | 実装 | [src/plugin/guide.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/guide.ts) | 使い方集の索引の検査と読み取り・本文の読み取り・近い名前 | 本文の読み取りと近い名前を削除 |
 | 実装 | [src/plugin/tools.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/tools.ts) | `read_guide`・`export_html`・`build_site`・`check` の定義と処理 | `read_guide` を削除 |
 | 実装 | [src/plugin/mcp.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/mcp.ts) | MCP サーバーの組み立てと `INSTRUCTIONS` | instructions を書き換え |
@@ -57,6 +57,7 @@
 | 複合ユースケース設計 | `b0599a4d..c01be231` | 使い方集の参照先と SessionStart の削除の確認事項の回答を反映 |
 | 複合ユースケース設計 | `c01be231..e944c524` | レビューの指摘の修正 |
 | 単一ユースケース設計 | `e944c524..c34f67b8` | - |
+| インターフェース定義設計 | `c34f67b8..b3f44101` | - |
 
 ## テスト結果
 
