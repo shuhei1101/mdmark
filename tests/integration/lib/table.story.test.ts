@@ -31,6 +31,19 @@ function columnTexts(page: Page, column: number): Promise<string[]> {
   }, column);
 }
 
+/** 表の本文の最初の行のうち、`position` の計算値が `sticky` のセルの列の位置を返す */
+function pinnedColumns(page: Page): Promise<number[]> {
+  return page.evaluate(() =>
+    [
+      ...(document
+        .querySelector("#storybook-root tbody tr")
+        ?.querySelectorAll("td") ?? []),
+    ].flatMap((cell, index) =>
+      getComputedStyle(cell).position === "sticky" ? [index] : [],
+    ),
+  );
+}
+
 /** 表の本文の行のうち、隠れていない行の数 */
 function visibleRows(page: Page): Promise<number> {
   return page.evaluate(
@@ -279,6 +292,107 @@ test("test_default_overflow", async () => {
     .locator(".mdmark-table table")
     .evaluate((el) => el.scrollWidth > el.clientWidth);
   expect(scrolls).toBe(true);
+  // 先頭の列を既定で留める
+  await expect(
+    page.locator("button.mdmark-pin").first().getAttribute("aria-pressed"),
+  ).resolves.toBe("true");
+  await expect(pinnedColumns(page)).resolves.toEqual([0]);
+});
+
+// -pin ではみ出す表は、ピン止めのボタンを出さず、どの列も留めない（NoPin）
+test("test_no_pin", async () => {
+  // 準備・実行
+  const page = await open("no-pin");
+  // 検証
+  await expect(page.locator("button.mdmark-pin").count()).resolves.toBe(0);
+  await expect(pinnedColumns(page)).resolves.toEqual([]);
+  await expect(
+    page
+      .locator(".mdmark-table table")
+      .evaluate((el) => el.scrollWidth > el.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// pin=担当 wide=概要 は、担当の列までを留め、概要の列を折り返さずに広く取る（PinAndWide）
+test("test_pin_and_wide", async () => {
+  // 準備・実行
+  const page = await open("pin-and-wide");
+  // 検証: 留める列
+  await expect(
+    page.locator(".mdmark-table").getAttribute("data-pin"),
+  ).resolves.toBe("1");
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 1]);
+  // 検証: 概要の列は折り返さず、1 行の高さに収まる
+  const summary = page
+    .locator("#storybook-root tbody tr")
+    .first()
+    .locator("td")
+    .nth(2);
+  await expect(
+    summary.evaluate((el) => getComputedStyle(el).whiteSpace),
+  ).resolves.toBe("nowrap");
+  await expect(
+    summary.evaluate((el) => el.scrollWidth <= el.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// check=必須 は、true を ✓、false を空欄で出し、既定の列は文字のまま（Check）
+test("test_check", async () => {
+  // 準備・実行
+  const page = await open("check");
+  // 検証: 必須の列の ✓ と空欄
+  const cells = await page.evaluate(() =>
+    [
+      ...document.querySelectorAll(
+        "#storybook-root tbody tr:not(.mdmark-table-empty)",
+      ),
+    ].map((row) => {
+      const cell = row.querySelectorAll("td")[2];
+      const mark = cell?.querySelector(".mdmark-check");
+      return {
+        value: cell?.getAttribute("data-value"),
+        label: mark?.getAttribute("aria-label") ?? null,
+        role: mark?.getAttribute("role") ?? null,
+        spoken:
+          cell?.querySelector(".mdmark-visually-hidden")?.textContent ?? null,
+        align: cell ? getComputedStyle(cell).textAlign : "",
+      };
+    }),
+  );
+  expect(cells.map((cell) => cell.value)).toEqual([
+    "true",
+    "false",
+    "false",
+    "true",
+  ]);
+  expect(cells[0]).toMatchObject({
+    label: "はい",
+    role: "img",
+    spoken: null,
+    align: "center",
+  });
+  expect(cells[1]).toMatchObject({
+    label: null,
+    spoken: "いいえ",
+    align: "center",
+  });
+  // 検証: 空欄のセルは見た目に文字が無い（いいえは読み上げだけで、大きさを持たない）
+  const spokenBox = await page
+    .locator("#storybook-root tbody tr")
+    .nth(1)
+    .locator("td .mdmark-visually-hidden")
+    .evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return Math.max(rect.width, rect.height);
+    });
+  expect(spokenBox).toBeLessThanOrEqual(1);
+  // 検証: 既定の列は文字のまま
+  await expect(columnTexts(page, 3)).resolves.toEqual([
+    "-",
+    "全てオン",
+    "jsDelivr",
+    "-",
+  ]);
 });
 
 // 2 列目までピン止めすると、留めた最後の列の右に境目の線がある（Pinned）

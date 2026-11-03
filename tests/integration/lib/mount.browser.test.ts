@@ -1240,6 +1240,13 @@ test("test_normal_when_table_pinned", async () => {
     [...firstRow.querySelectorAll("td")].map(
       (cell) => getComputedStyle(cell).position,
     );
+  const narrowRow = narrow.querySelector("tbody tr") as HTMLTableRowElement;
+  expect(getComputedStyle(narrowRow.cells[0] as HTMLElement).position).not.toBe(
+    "sticky",
+  );
+  // 検証: 描いた直後は 1 列目だけを留める
+  expect(widePins[0]?.getAttribute("aria-pressed")).toBe("true");
+  expect(positions().slice(0, 2)).toEqual(["sticky", "static"]);
   // 実行・検証: 2 列目のピン止めを押す
   const second = widePins[1] as HTMLButtonElement;
   second.click();
@@ -1247,11 +1254,170 @@ test("test_normal_when_table_pinned", async () => {
   expect(positions().slice(0, 3)).toEqual(["sticky", "sticky", "static"]);
   // 実行・検証: もう一度押す
   second.click();
-  expect(second.getAttribute("aria-pressed")).toBe("false");
+  for (const pin of widePins) {
+    expect(pin.getAttribute("aria-pressed")).toBe("false");
+  }
   expect(positions().slice(0, 2)).toEqual(["static", "static"]);
   // 検証: 表は高さを抑えず、表の中で縦にスクロールしない
   expect(getComputedStyle(wide).maxHeight).toBe("none");
   expect(wide.scrollHeight).toBe(wide.clientHeight);
+});
+
+// -pin の表は留めず、pin= の表はその列までを留め、wide= の列を折り返さずに広く取る（正常系）
+test("test_normal_when_table_pin_and_wide", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "320px";
+  const headers = Array.from({ length: 10 }, (_, i) => `列の名前${i + 1}`);
+  const columns = [
+    "No",
+    "物理名",
+    "説明",
+    "型",
+    "必須",
+    "既定",
+    "単位",
+    "備考",
+  ];
+  const markdown = [
+    "<!-- table: -pin -->",
+    "",
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...Array.from(
+      { length: 30 },
+      (_, row) =>
+        `| ${headers.map((_h, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+    ),
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- table: data pin=物理名 wide=説明 -->",
+    "",
+    `| ${columns.join(" | ")} |`,
+    `| ${columns.map(() => "---").join(" | ")} |`,
+    ...[1, 2, 3].map(
+      (row) =>
+        `| ${row} | name${row} | 表の行を識別するための値で、文書の中で重ならないように付ける長い説明の文 | string | true | - | 文字 | なし |`,
+    ),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const [noPin, pinned] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ] as [HTMLElement, HTMLElement];
+  const table = pinned.querySelector("table") as HTMLTableElement;
+  const firstRow = table.tBodies[0]?.rows[0] as HTMLTableRowElement;
+  const positions = () =>
+    [...firstRow.cells].map((cell) => getComputedStyle(cell).position);
+  // 検証: -pin の表は留めない
+  expect(noPin.querySelector("button.mdmark-pin")).toBeNull();
+  const noPinCell = noPin.querySelector("tbody td") as HTMLElement;
+  expect(getComputedStyle(noPinCell).position).not.toBe("sticky");
+  // 検証: pin= の表は物理名の列までを留める
+  await vi.waitFor(() => {
+    expect(positions().slice(0, 3)).toEqual(["sticky", "sticky", "static"]);
+  });
+  const pins = pinned.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  expect(pins[1]?.getAttribute("aria-pressed")).toBe("true");
+  // 実行・検証: 横に最後までスクロールしても、No と物理名の見出しが左端に並ぶ
+  table.scrollLeft = table.scrollWidth;
+  await vi.waitFor(() => {
+    const left = table.getBoundingClientRect().left;
+    const [no, name] = [...(table.tHead?.rows[0]?.cells ?? [])];
+    expect(Math.round((no as HTMLElement).getBoundingClientRect().left)).toBe(
+      Math.round(left + table.clientLeft),
+    );
+    expect(Math.round((name as HTMLElement).getBoundingClientRect().left)).toBe(
+      Math.round((no as HTMLElement).getBoundingClientRect().right),
+    );
+  });
+  // 検証: 説明の列は折り返さず、ほかのどの列より広い
+  const description = firstRow.cells[2] as HTMLElement;
+  expect(getComputedStyle(description).whiteSpace).toBe("nowrap");
+  const widths = [...firstRow.cells].map((cell) => cell.offsetWidth);
+  const descriptionWidth = widths[2] ?? 0;
+  for (const [index, width] of widths.entries()) {
+    if (index !== 2) {
+      expect(descriptionWidth).toBeGreaterThan(width);
+    }
+  }
+  // 検証: 表の中で横にスクロールし、ページははみ出さない
+  expect(table.scrollWidth).toBeGreaterThan(table.clientWidth);
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+    document.documentElement.clientWidth,
+  );
+});
+
+// check= の列を、出している ✓ と空欄ではなく true・false の値で並べ替え・絞り込み・コピーする（正常系）
+test("test_normal_when_table_check_column", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  const markdown = [
+    "<!-- table: data +copy check=必須 filter=必須 -->",
+    "",
+    "| 名前 | 必須 | 既定 |",
+    "| --- | --- | --- |",
+    "| a | true | true |",
+    "| b | false | false |",
+    "| c | true | false |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const rows = () =>
+    [
+      ...el.querySelectorAll<HTMLTableRowElement>(
+        ".mdmark-table tbody tr:not(.mdmark-table-empty)",
+      ),
+    ].filter((row) => !row.hidden);
+  // 実行・検証: 必須の列の見出しを押して並べ替える
+  const header = el.querySelectorAll(".mdmark-table thead th")[1];
+  find<HTMLButtonElement>(header as HTMLElement, "button.mdmark-sort").click();
+  expect(rows().map((row) => row.cells[0]?.textContent)).toEqual([
+    "b",
+    "a",
+    "c",
+  ]);
+  // 実行・検証: 絞り込みの候補と、true に絞る
+  find<HTMLButtonElement>(
+    header as HTMLElement,
+    "button.mdmark-filter",
+  ).click();
+  const drawer = find<HTMLElement>(el, ".mdmark-filter-drawer:not([hidden])");
+  const candidates = [
+    ...drawer.querySelectorAll<HTMLInputElement>(
+      ".mdmark-filter-options input",
+    ),
+  ];
+  expect(candidates.map((input) => input.value).sort()).toEqual([
+    "false",
+    "true",
+  ]);
+  candidates.find((input) => input.value === "true")?.click();
+  expect(rows().map((row) => row.cells[0]?.textContent)).toEqual(["a", "c"]);
+  for (const row of rows()) {
+    expect(row.cells[1]?.querySelector(".mdmark-check")).not.toBeNull();
+  }
+  // 実行・検証: TSV でコピーする
+  find<HTMLButtonElement>(el, "button.mdmark-copy").click();
+  find<HTMLButtonElement>(
+    el,
+    'button.mdmark-copy-format[data-format="tsv"]',
+  ).click();
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  expect(writeText).toHaveBeenCalledWith(
+    "名前\t必須\t既定\na\ttrue\ttrue\nc\ttrue\tfalse",
+  );
 });
 
 /** 次の描画を 2 回待つ */
