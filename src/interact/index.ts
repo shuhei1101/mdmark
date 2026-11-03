@@ -1,6 +1,7 @@
 import type { TooltipPlacement } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import { attachCodeCopy } from "./code-blocks.ts";
+import { attachCodeFolds } from "./code-folds.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagrams } from "./diagrams.ts";
 import { attachEmbeddedHtml } from "./embedded-html.ts";
@@ -42,6 +43,7 @@ export function attachInteractions(options: {
   }
   if (features.code === true) {
     detachers.push(attachCodeCopy(root));
+    detachers.push(attachCodeFolds(root));
   }
   if (features.tree === true) {
     detachers.push(attachFileTrees(root));

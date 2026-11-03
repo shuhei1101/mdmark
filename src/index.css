@@ -22,6 +22,9 @@
     --mdmark-color-bg-opaque: var(--mdmark-color-bg);
     --mdmark-color-text: #18181b;
     --mdmark-color-heading: #18181b;
+    /* タブ名の強調（見出しの太字）の太さと色 */
+    --mdmark-tab-strong-weight: 700;
+    --mdmark-tab-strong-color: var(--mdmark-color-heading);
     --mdmark-color-muted: #52525b;
     --mdmark-color-link: #0f766e;
     --mdmark-color-border: #e4e4e7;
@@ -1923,10 +1926,15 @@
     /* 多段の見出しで複数の列をまたぐセル: またぐ列の中央に寄せる */
     .mdmark-table thead th[scope="colgroup"] {
       text-align: center;
+
+      .mdmark-th {
+        justify-content: center;
+      }
     }
 
     /* 行見出しのセル: 見出しと同じ太さで左に寄せ、本文の地のまま折り返す */
     .mdmark-table tbody th[scope="row"] {
+      font-weight: 600;
       text-align: start;
       white-space: normal;
     }
@@ -3001,6 +3009,17 @@
 
     [role="tabpanel"] > .mdmark-tab-title {
       display: none;
+    }
+
+    /* タブ名の太字: 選んでいないタブでも見出しの色と太さで強調する */
+    [role="tab"] strong {
+      color: var(--mdmark-tab-strong-color);
+      font-weight: var(--mdmark-tab-strong-weight);
+    }
+
+    /* 入れ子のタブ: 外側のタブの中身の中に、同じ見た目で置く */
+    [role="tabpanel"] .mdmark-tabs {
+      margin-block-start: var(--mdmark-space);
     }
 
     /* ---------- ステップ ---------- */
@@ -7004,6 +7023,273 @@
           /* biome-ignore lint/suspicious/noDuplicateProperties: 対応しないブラウザの代わりに、先に書いた値を残す */
           content: "-" / "消した行";
         }
+      }
+    }
+  }
+
+  /* コードブロックの行のマーカー（注目・エラー・警告）と行の開閉・インデントの縦線: `dev/mock/refs/275/assets/code-block.css` から取る */
+  .mdmark {
+    /* 帯の言語のラベル: 後ろのファイルのアイコンとタイトルとの間を空ける */
+    .mdmark-code-bar > .mdmark-code-lang {
+      margin-inline-end: 0.6em;
+    }
+
+    /* 畳める行を持つコードブロック: 行番号の右に開閉のボタンの列を取る */
+    pre.mdmark-code-foldable code {
+      --mdmark-code-fold-width: 2.75ch;
+    }
+
+    /* 行に分けたコードの 1 行: インデントのレベルごとに縦線を引く（読み上げと選んで写す中身に入れない） */
+    pre.mdmark-code-lines .mdmark-code-line {
+      --mdmark-code-level: 0;
+      --mdmark-code-indent-width: 2ch;
+      --mdmark-code-text-start: calc(
+        var(--mdmark-space) -
+        2px +
+        var(--mdmark-code-number-width) +
+        var(--mdmark-code-fold-width, 0px) +
+        var(--mdmark-code-sign-width)
+      );
+      padding-inline-start: var(--mdmark-code-text-start);
+      background-image: repeating-linear-gradient(
+        to right,
+        var(--mdmark-color-border) 0 1px,
+        transparent 1px var(--mdmark-code-indent-width)
+      );
+      background-position: calc(var(--mdmark-code-text-start) + 0.3ch) 0;
+      background-size: calc(
+          var(--mdmark-code-level) *
+          var(--mdmark-code-indent-width)
+        )
+        100%;
+      background-repeat: no-repeat;
+
+      &[data-indent="1"] {
+        --mdmark-code-level: 1;
+      }
+
+      &[data-indent="2"] {
+        --mdmark-code-level: 2;
+      }
+
+      &[data-indent="3"] {
+        --mdmark-code-level: 3;
+      }
+
+      &[data-indent="4"] {
+        --mdmark-code-level: 4;
+      }
+
+      &[data-indent="5"] {
+        --mdmark-code-level: 5;
+      }
+
+      &[data-indent="6"] {
+        --mdmark-code-level: 6;
+      }
+
+      &[data-indent="7"] {
+        --mdmark-code-level: 7;
+      }
+
+      &[data-indent="8"] {
+        --mdmark-code-level: 8;
+      }
+
+      /* ポインターを乗せた行を含む最も内側の範囲: その深さの縦線を濃くする（深さは描く処理が変数に入れる） */
+      &[data-guide-active] {
+        background-image:
+          linear-gradient(var(--mdmark-color-muted), var(--mdmark-color-muted)),
+          repeating-linear-gradient(
+            to right,
+            var(--mdmark-color-border) 0 1px,
+            transparent 1px var(--mdmark-code-indent-width)
+          );
+        background-position:
+          calc(
+            var(--mdmark-code-text-start) +
+            0.3ch +
+            var(--mdmark-code-guide-depth, 0) *
+            var(--mdmark-code-indent-width)
+          )
+          0,
+          calc(var(--mdmark-code-text-start) + 0.3ch) 0;
+        background-size:
+          1px 100%,
+          calc(var(--mdmark-code-level) * var(--mdmark-code-indent-width)) 100%;
+      }
+
+      /* 行頭のマーカー: 開閉のボタンの列の右に置く */
+      &::after {
+        inset-inline-start: calc(
+          var(--mdmark-space) -
+          2px +
+          var(--mdmark-code-number-width) +
+          var(--mdmark-code-fold-width, 0px)
+        );
+      }
+
+      /* 畳んで隠した行と、その行の後ろの改行 */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    .mdmark-code-break[hidden] {
+      display: none;
+    }
+
+    /* 開閉のボタン: 行番号の右に置く。開いた行はポインターを乗せたときとフォーカスのときだけ出し、畳んだ行は常に出す */
+    .mdmark-code-fold {
+      position: absolute;
+      inset-block-start: 0.1em;
+      inset-inline-start: calc(
+        var(--mdmark-space) -
+        2px +
+        var(--mdmark-code-number-width) -
+        0.25ch
+      );
+      display: grid;
+      place-items: center;
+      width: 1.35em;
+      height: 1.35em;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--mdmark-color-muted);
+      cursor: pointer;
+      opacity: 0;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+        /* biome-ignore lint/suspicious/noDuplicateProperties: 対応しないブラウザの代わりに、先に書いた値を残す */
+        background: color-mix(
+          in srgb,
+          var(--mdmark-color-muted) 16%,
+          transparent
+        );
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 0;
+        opacity: 1;
+      }
+
+      &[aria-expanded="false"] {
+        opacity: 1;
+      }
+
+      svg {
+        width: 1em;
+        height: 1em;
+      }
+    }
+
+    .mdmark-code-line:hover > .mdmark-code-fold {
+      opacity: 1;
+    }
+
+    /* ポインターで乗せられない端末: 開閉のボタンを常に出す */
+    @media (hover: none) {
+      .mdmark-code-fold {
+        opacity: 1;
+      }
+    }
+
+    /* 開閉のボタンのアイコンの包み */
+    .mdmark-code-fold-icon {
+      display: contents;
+    }
+
+    /* 畳んだ行の後ろの ⋯: 押すと開くボタン */
+    .mdmark-code-fold-more {
+      margin-inline-start: 0.5ch;
+      padding: 0 0.6ch;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-muted);
+      font: inherit;
+      line-height: 1.3;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 0;
+      }
+    }
+
+    /* 注目する行を持つコードブロック: ほかの行を薄くし、ポインターを乗せるかフォーカスがあるときは全ての行を戻す */
+    pre.mdmark-code-has-focus .mdmark-code-line:not([data-kind="focus"]) {
+      opacity: 0.45;
+      transition: opacity 0.15s;
+    }
+
+    pre.mdmark-code-has-focus:is(:hover, :focus-within) .mdmark-code-line {
+      opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      pre.mdmark-code-has-focus .mdmark-code-line {
+        transition: none;
+      }
+    }
+
+    /* エラーの行: エラーの色の地と左の線、行頭の × */
+    .mdmark-code-line[data-kind="error"] {
+      border-inline-start-color: var(--mdmark-color-error);
+      background-color: var(--mdmark-color-surface);
+      /* biome-ignore lint/suspicious/noDuplicateProperties: 対応しないブラウザの代わりに、先に書いた値を残す */
+      background-color: color-mix(
+        in srgb,
+        var(--mdmark-color-error) 12%,
+        var(--mdmark-color-bg)
+      );
+
+      &::after {
+        color: var(--mdmark-color-error);
+        content: "×";
+        /* biome-ignore lint/suspicious/noDuplicateProperties: 対応しないブラウザの代わりに、先に書いた値を残す */
+        content: "×" / "エラーの行";
+      }
+    }
+
+    /* 警告の行: 警告の色の地と左の線、行頭の ! */
+    .mdmark-code-line[data-kind="warning"] {
+      border-inline-start-color: var(--mdmark-color-callout-warning);
+      background-color: var(--mdmark-color-surface);
+      /* biome-ignore lint/suspicious/noDuplicateProperties: 対応しないブラウザの代わりに、先に書いた値を残す */
+      background-color: color-mix(
+        in srgb,
+        var(--mdmark-color-callout-warning) 14%,
+        var(--mdmark-color-bg)
+      );
+
+      &::after {
+        color: var(--mdmark-color-callout-warning);
+        content: "!";
+        /* biome-ignore lint/suspicious/noDuplicateProperties: 対応しないブラウザの代わりに、先に書いた値を残す */
+        content: "!" / "警告の行";
+      }
+    }
+  }
+
+  /* 印刷のとき（コードブロックの行の開閉と注目する行）: 畳んだ行を開いて出し、開閉のボタン・⋯ を出さず、注目する行のほかの行も薄くしない */
+  @media print {
+    .mdmark {
+      :is(.mdmark-code-fold, .mdmark-code-fold-more) {
+        display: none;
+      }
+
+      pre.mdmark-code-has-focus .mdmark-code-line {
+        opacity: 1;
       }
     }
   }

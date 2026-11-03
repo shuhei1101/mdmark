@@ -120,6 +120,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
         type: implements
+  - path: code-fold-logic.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行のインデントのレベル・畳む行の数・隠す行・縦線の範囲の計算（記法と操作が使う）」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: comments/anchor.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
     tags: [topic:ビュー, topic:コメント]
@@ -231,6 +237,12 @@ files:
         type: implements
   - path: interact/code-blocks.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「コードブロックのコピー」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/code-folds.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行の開閉とインデントの縦線の範囲」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
     tags: [topic:dom, topic:イベント]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
