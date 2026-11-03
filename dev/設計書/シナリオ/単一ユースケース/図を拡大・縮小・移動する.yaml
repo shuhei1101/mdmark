@@ -182,7 +182,7 @@ scenarios:
     expected:
       - 処理の層の途中を見せたとき、システムの枠のタイトルと処理の層のタイトルが、表示する枠の上端に見えている
       - 処理の層が表示する枠の上へ出た後、処理の層のタイトルは留まらず、データの層のタイトルが上端に見えている
-      - 留めたタイトルは、下のノードと線に重なっても読める
+      - 留めたタイトルは不透明な背景を持ち、タイトルの真ん中の位置で `elementFromPoint` がタイトルの要素を返す（下のノードと線より前に描かれる）
       - 留めたタイトルの `hint` の印にポインターを乗せると、ツールチップが出る
     test: test_normal_when_group_titles_stuck
   - name: 正常シナリオ（グループのタイトルを留めない）
@@ -202,8 +202,9 @@ scenarios:
     test: test_normal_when_sticky_titles_off
   - name: 正常シナリオ（リサイズハンドルで高さを変える）
     setup:
-      - name: 図を描いたページ
-        description: 正常シナリオと同じ
+      - name: 縦に長い図を描いたページ
+        description: 幅が表示する枠に収まり、全体が収まる高さが `--mdmark-diagram-max-height` を超える縦に長いフロー図を描いたページ
+        notes: 開いたとき、表示する枠の高さが `--mdmark-diagram-max-height` で切られ、図の全体が収まる倍率はその高さで決まる。下へドラッグして高くできる状態を決定的に起こす
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
