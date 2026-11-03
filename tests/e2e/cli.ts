@@ -1,5 +1,14 @@
 import { execFile } from "node:child_process";
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -209,6 +218,94 @@ export const CHART_SOURCE = `export function draw(slot, args) {
   slot.replaceChildren(canvas);
 }
 `;
+
+/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み、印の場所の文字を `greet:` と読んだ文字と引数にする */
+export const GREET_WITH_IMPORT_SOURCE = `export default {
+  name: "greet",
+  directive: "greet",
+  load: async () => {
+    const { TEXT } = await import("./greet-text.js");
+    return {
+      draw(slot, value) {
+        slot.textContent = "greet:" + TEXT + ":" + value.args.join(",");
+      },
+    };
+  },
+};
+`;
+
+/** `GREET_WITH_IMPORT_SOURCE` が動的 `import()` で読むモジュール */
+export const GREET_TEXT_SOURCE = 'export const TEXT = "読んだ";\n';
+
+/** 項目の表をビューの印で囲んだ本文 */
+export const VIEW_SOURCE = [
+  "<!-- view: group=状態 -->",
+  "",
+  "| 題 | 状態 |",
+  "| --- | --- |",
+  "| a | 未着手 |",
+  "| b | 完了 |",
+  "",
+  "<!-- /view -->",
+].join("\n");
+
+/** `blob:` と `data:` のスクリプトを許さない CSP。動的 `import()` で読むスクリプトも、ページ自身のほかは許さない */
+export const STRICT_SCRIPT_CSP = "script-src 'unsafe-inline'";
+
+/** CSP のヘッダーを付けて開いた結果 */
+export type CspOpenedHtml = {
+  /** 開いてから今までの CSP の違反（`securitypolicyviolation`）の、違反したディレクティブと URL */
+  violations: () => Promise<string[]>;
+  /** 開いてから今までの `blob:` の URL への要求 */
+  blobRequests: () => string[];
+  /** 手元のサーバーを閉じる */
+  close: () => Promise<void>;
+};
+
+/** HTML を `STRICT_SCRIPT_CSP` のヘッダーを付けて返す手元のサーバーを起動し、開く */
+export async function openWithCsp(
+  page: Page,
+  htmlFile: string,
+): Promise<CspOpenedHtml> {
+  const html = await readFile(htmlFile);
+  const server = createServer((_request, response) => {
+    response.writeHead(200, {
+      "content-type": "text/html; charset=utf-8",
+      "content-security-policy": STRICT_SCRIPT_CSP,
+    });
+    response.end(html);
+  });
+  await new Promise<void>((resolve) => {
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const { port } = server.address() as AddressInfo;
+  await page.addInitScript(() => {
+    const store = globalThis as unknown as { __violations: string[] };
+    store.__violations = [];
+    document.addEventListener("securitypolicyviolation", (event) => {
+      store.__violations.push(`${event.violatedDirective} ${event.blockedURI}`);
+    });
+  });
+  const blobs: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("blob:")) {
+      blobs.push(request.url());
+    }
+  });
+  await page.goto(`http://127.0.0.1:${port}/`);
+  return {
+    violations: () =>
+      page.evaluate(
+        () =>
+          (globalThis as unknown as { __violations: string[] }).__violations,
+      ),
+    blobRequests: () => blobs,
+    close: () =>
+      new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      }),
+  };
+}
 
 /** 使う側の CSS の見本: 角丸の変数を上書きする */
 export const THEME_SOURCE = ".mdmark { --mdmark-radius: 0px; }\n";

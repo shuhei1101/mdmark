@@ -954,7 +954,7 @@ test("test_mount_when_comments_delegated", async () => {
   // 準備
   const recorder = { reload: 0, focus: [] as string[] };
   globalThis.__mdmarkMountCommentsTest = recorder;
-  const { partModules, partModuleUrls, setPartModuleUrl } =
+  const { partModules, partModuleLoaders, setPartModuleLoader } =
     await loadPartModules();
   partModules.clear();
   const url = URL.createObjectURL(
@@ -972,7 +972,7 @@ export async function attachComments() {
       { type: "text/javascript" },
     ),
   );
-  setPartModuleUrl("comments", url);
+  setPartModuleLoader("comments", () => import(/* @vite-ignore */ url));
   try {
     const el = createElement();
     const handle = await mountTracked(el, {
@@ -992,7 +992,7 @@ export async function attachComments() {
     expect(recorder.focus).toEqual(["c1"]);
   } finally {
     partModules.clear();
-    partModuleUrls.clear();
+    partModuleLoaders.clear();
     URL.revokeObjectURL(url);
     globalThis.__mdmarkMountCommentsTest = undefined;
   }

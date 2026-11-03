@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-inline-embedded-modules
+
+
+ Test Files  188 passed (188)
+      Tests  1399 passed (1399)
+   Start at  23:14:15
+   Duration  78.55s (worker 39%, tests 39%, import 19%, transform 2%)
+

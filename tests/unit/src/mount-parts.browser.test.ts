@@ -84,9 +84,9 @@ async function resetParts(): Promise<Recorder> {
     focus: [],
   };
   globalThis.__mdmarkPartTest = recorder;
-  const { partModules, partModuleUrls } = await loadPartModules();
+  const { partModules, partModuleLoaders } = await loadPartModules();
   partModules.clear();
-  partModuleUrls.clear();
+  partModuleLoaders.clear();
   return recorder;
 }
 
@@ -101,22 +101,22 @@ function moduleUrl(code: string): string {
 
 /** 部品のモジュールを代役のモジュールに差し替える */
 async function useFakeModule(name: "view" | "comments"): Promise<string> {
-  const { setPartModuleUrl } = await loadPartModules();
+  const { setPartModuleLoader } = await loadPartModules();
   const url = moduleUrl(
     name === "view" ? VIEW_MODULE_CODE : COMMENTS_MODULE_CODE,
   );
-  setPartModuleUrl(name, url);
+  setPartModuleLoader(name, () => import(/* @vite-ignore */ url));
   return url;
 }
 
 /** 読み込みが必ず失敗する URL に差し替える */
 async function useBrokenModule(name: "view" | "comments"): Promise<string> {
-  const { setPartModuleUrl } = await loadPartModules();
+  const { setPartModuleLoader } = await loadPartModules();
   const url = URL.createObjectURL(
     new Blob(["export {};"], { type: "text/javascript" }),
   );
   URL.revokeObjectURL(url);
-  setPartModuleUrl(name, url);
+  setPartModuleLoader(name, () => import(/* @vite-ignore */ url));
   return url;
 }
 
