@@ -96,3 +96,14 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 .mdmark-table-tool.mdmark-raw-toggle[aria-pressed="false"]:is(:hover, :focus-visible) { opacity: 1; }
 .mdmark-table-tool.mdmark-raw-toggle { font-family: var(--mdmark-font-mono); letter-spacing: 0.04em; }
 .mdmark-table-bar { display: flex; justify-content: flex-end; }
+/* RAW の切り替えで隠す側は、表と元の CSV の既存の display より優先して隠す */
+.mdmark-table :is(table, .mdmark-raw)[hidden] { display: none !important; }
+/* RAW のボタンを道具の帯の右端に寄せる */
+.mdmark-table-bar .mdmark-table-tools:has(.mdmark-raw-toggle) { margin-inline-start: auto; }
+
+/* 狭い画面: wide の範囲は本文の幅のまま、目次の見本は本文の下に回す */
+@media (max-width: 640px) {
+  .mdmark-wide { width: auto; max-width: none; margin-inline-start: 0; transform: none; }
+  .demo-with-toc { grid-template-columns: minmax(0, 1fr); }
+  .demo-with-toc .demo-host { max-width: none; }
+}
