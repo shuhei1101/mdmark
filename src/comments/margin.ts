@@ -168,7 +168,14 @@ export function attachMarginMarkers(options: {
       button.addEventListener("click", () => jump(first.mark));
       return button;
     });
+    // 作り直してもフォーカスを失わないよう、フォーカスのあったマーカーの順番を控えて戻す
+    const focused = [...margin.children].indexOf(
+      document.activeElement as Element,
+    );
     margin.replaceChildren(...markers);
+    if (focused >= 0) {
+      markers[Math.min(focused, markers.length - 1)]?.focus();
+    }
     const markerSize = markers[0]?.offsetHeight ?? 0;
     layoutMarkers({ lines, markerSize }).forEach(({ center }, index) => {
       const marker = markers[index];

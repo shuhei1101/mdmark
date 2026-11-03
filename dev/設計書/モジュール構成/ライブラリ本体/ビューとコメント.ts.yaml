@@ -980,7 +980,7 @@ functions:
     process: |-
       1. `renderCommentMarker` を入れる `div.mdmark-comment-margin` を `content` の直後に置く
       2. 置き直しは、`content` の中の `mark.mdmark-comment-mark` ごとに、祖先のうち `hidden` を持ついちばん外側の要素を探す。無ければ印、あれば `aria-controls` でその要素の ID を指す開くボタンを基準の要素にし、閉じた中の種類（`[role="tabpanel"]` は `tab`・`.mdmark-row-detail` は `row`・それ以外は `section`）を控える。開くボタンが無い印は除く
-      3. 基準の要素の最初の行の矩形（`getClientRects()[0]`）から、余白の列の上端からの上端と高さを測り、`layoutMarkers` で行ごとにまとめた縦の中ほどを得る。まとめた行ごとに、行の最初の印の文字・箇所の数・`aria-expanded="true"` の印を含むか・閉じた中の種類で `renderCommentMarker` を描き、`top` に縦の中ほどを入れて余白の列の中身を置き換える
+      3. 基準の要素の最初の行の矩形（`getClientRects()[0]`）から、余白の列の上端からの上端と高さを測り、`layoutMarkers` で行ごとにまとめた縦の中ほどを得る。まとめた行ごとに、行の最初の印の文字・箇所の数・`aria-expanded="true"` の印を含むか・閉じた中の種類で `renderCommentMarker` を描き、`top` に縦の中ほどを入れて余白の列の中身を置き換える。置き換える前に余白のマーカーにフォーカスがあれば、同じ順番のマーカー（数が減ったときは最後のマーカー）へフォーカスを戻す
       4. マーカーの押下（Enter・Space を含む）で、行の最初の印について、祖先の `hidden` のいちばん外側の要素の開くボタンを押すことを `MAX_OPEN_DEPTH` 回まで繰り返し、印を `scrollIntoView({ block: "center" })` してから印の `click()` を呼ぶ
       5. `content` の中の子の増減と、`hidden`・`aria-expanded`・`class` の属性の変化（余白の列の中を除く）と、`content` の親の大きさの変化で、`requestAnimationFrame` で 1 フレームに 1 回にまとめて手順 2〜3 を行う
       6. 外す関数は、受け取りと予約したフレームを外し、余白の列を取り除く
