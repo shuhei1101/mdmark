@@ -94,3 +94,51 @@ test("test_render_tabs_when_collapsed", async () => {
     ),
   ).toBe(true);
 });
+
+// タブ名の strong をそのまま置く（正常系）
+test("test_render_tabs_when_strong_title", async () => {
+  // 準備
+  const { renderTabs } = await loadTabs();
+  // 実行
+  const html = renderTabs({
+    id: "t",
+    titles: ["<strong>案 A</strong> SVG のまま", "案 B"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    selected: 0,
+    collapse: "closed",
+  });
+  // 検証
+  const firstTab = html.slice(
+    html.indexOf('id="t-tab-0"'),
+    html.indexOf("</button>"),
+  );
+  expect(firstTab).toContain("<strong>案 A</strong>");
+  expect(html).toContain(
+    '<p class="mdmark-tab-title"><strong>案 A</strong> SVG のまま</p>',
+  );
+  expect(html).toContain("<summary>タブ（案 A SVG のまま・案 B）</summary>");
+  expect(html).not.toContain("&lt;strong&gt;");
+});
+
+// タブ名のリンクはボタンでは文字にし、中身のタブ名には残す（正常系）
+test("test_render_tabs_when_link_title", async () => {
+  // 準備
+  const { renderTabs } = await loadTabs();
+  // 実行
+  const html = renderTabs({
+    id: "t",
+    titles: ['<a href="https://example.com">設定</a>', "案 B"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    selected: 0,
+  });
+  // 検証
+  const firstTab = html.slice(
+    html.indexOf('id="t-tab-0"'),
+    html.indexOf("</button>"),
+  );
+  expect(firstTab).not.toContain("<a");
+  expect(firstTab).toContain("設定");
+  expect(html).toContain(
+    '<p class="mdmark-tab-title"><a href="https://example.com">設定</a></p>',
+  );
+});

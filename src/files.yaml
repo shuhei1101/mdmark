@@ -120,6 +120,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
         type: implements
+  - path: code-fold-logic.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行のインデントのレベル・畳む行の数・隠す行・縦線の範囲の計算（記法と操作が使う）」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: comments/anchor.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
     tags: [topic:ビュー, topic:コメント]
@@ -237,6 +243,12 @@ files:
         type: implements
   - path: interact/code-blocks.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「コードブロックのコピー」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/code-folds.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行の開閉とインデントの縦線の範囲」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
     tags: [topic:dom, topic:イベント]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
@@ -1060,7 +1072,7 @@ files:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
         type: implements
   - path: plugin/guide.ts
-    description: モジュール構成『ClaudeCodeプラグイン / 使い方集』のうち「使い方集の索引の検査と読み取り・索引の文・本文の読み取り・近い名前」を受け持つ。使い方集の索引や本文の読み方を変えるときに読む。
+    description: モジュール構成『ClaudeCodeプラグイン / 使い方集』のうち「使い方集の索引の検査」を受け持つ。使い方集の索引の形を変えるときに読む。
     tags: [topic:使い方集, tool:claude-code]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts
@@ -1083,14 +1095,8 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
         type: implements
-  - path: plugin/session-start.ts
-    description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「SessionStart のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに読む。
-    tags: [topic:フック, tool:claude-code]
-    related:
-      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/フック.ts
-        type: implements
   - path: plugin/tools.ts
-    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「4 つのツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「ツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。
     tags: [tool:mcp, tool:claude-code]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
@@ -1224,6 +1230,12 @@ files:
   - path: render/syntax/tables.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「表の種類・機能・絞り込みと、表の属性」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/table-cells.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「表のセルの `^^`・`<<` の結合の計画」を受け持つ。セルの結合の決め方や警告を変えるときに読む。
+    tags: [topic:markdown, topic:構文, topic:テーブル]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements

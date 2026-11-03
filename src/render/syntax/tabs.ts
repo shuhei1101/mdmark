@@ -4,14 +4,7 @@ import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
 import type { Mark } from "../marks.ts";
 import { type CollapseMode, readCollapse } from "./collapse.ts";
-import {
-  envOf,
-  featureOn,
-  findClose,
-  markOf,
-  tabBoundaryBlock,
-  textOf,
-} from "./tokens.ts";
+import { envOf, featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import {
   type SyntaxWarning,
   unclosedWarning,
@@ -76,13 +69,41 @@ export function readTabsOptions(mark: Mark): {
   };
 }
 
-/** `tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、タブの部品にする。印の引数の `group` は部品へ渡し、読めない指定は警告を差し込む。見出しが無ければ警告を差し込み、中身をそのまま残す */
+/** `openIndex` のタブのマーカーと同じ階層のタブの開きと閉じを数え、対応する閉じの位置（無ければ `-1`）と、範囲に別のタブの開きを持つかを返す */
+export function findTabsClose(
+  tokens: Token[],
+  openIndex: number,
+): { close: number; nested: boolean } {
+  let depth = 0;
+  let nested = false;
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const mark = markOf(tokens[index]);
+    if (mark?.name !== "tabs") {
+      continue;
+    }
+    if (!mark.closing) {
+      depth += 1;
+      nested = true;
+    } else if (depth === 0) {
+      return { close: index, nested };
+    } else {
+      depth -= 1;
+    }
+  }
+  return { close: -1, nested };
+}
+
+/** `tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、タブの部品にする。中身の中のタブの範囲も同じ処理でタブにする。印の引数の `group` は部品へ渡し、読めない指定は警告を差し込む。見出しが無ければ警告を差し込み、中身をそのまま残す */
 export function buildTabs(state: StateCore): void {
   if (!featureOn(state, "tabs")) {
     return;
   }
+  state.tokens = buildTabsIn(state, state.tokens);
+}
+
+/** トークンの並びの中のタブの範囲をタブの部品にした並びを返す */
+function buildTabsIn(state: StateCore, tokens: Token[]): Token[] {
   const env = envOf(state);
-  const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -97,12 +118,22 @@ export function buildTabs(state: StateCore): void {
     if (warning) {
       out.push(warningBlock(state, warning));
     }
-    const closeIndex = findClose(tokens, index, "tabs");
-    const end = closeIndex < 0 ? tokens.length : closeIndex;
-    const content = tokens.slice(index + 1, end);
+    const { close: closeIndex, nested } = findTabsClose(tokens, index);
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark)));
+      if (nested) {
+        // 閉じの足りない入れ子は、終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま残す
+        out.push(
+          ...tokens
+            .slice(index + 1)
+            .filter((candidate) => markOf(candidate)?.name !== "tabs"),
+        );
+        break;
+      }
     }
+    const end = closeIndex < 0 ? tokens.length : closeIndex;
+    // 内側のタブを先に部品にしてから、外側を区切る
+    const content = buildTabsIn(state, tokens.slice(index + 1, end));
     const first = content.find(
       (candidate) => candidate.type === "heading_open",
     );
@@ -126,9 +157,22 @@ export function buildTabs(state: StateCore): void {
           candidate.tag === first.tag &&
           candidate.level === first.level,
       );
-    const titles = separators.map(({ position }) =>
-      textOf(content[position + 1] as Token),
-    );
+    // タブ名は見出しの行内のトークンを HTML にしたもの（強調を残す）
+    const titles = separators.map(({ position }) => {
+      const inline = content[position + 1];
+      return inline
+        ? state.md.renderer.renderInline(
+            // 見出しのアンカーはタブ名に入れない
+            (inline.children ?? []).filter(
+              (child) =>
+                (child.meta as { role?: string } | null)?.role !==
+                "heading-anchor",
+            ),
+            state.md.options,
+            state.env,
+          )
+        : "";
+    });
     const ids = new Set(
       separators.map(({ candidate }) => candidate.attrGet("id")),
     );
@@ -167,5 +211,5 @@ export function buildTabs(state: StateCore): void {
     );
     index = end;
   }
-  state.tokens = out;
+  return out;
 }

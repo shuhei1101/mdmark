@@ -175,3 +175,51 @@ test("test_attach_print_when_tree", async () => {
   expect(list?.getAttribute("hidden")).toBe("until-found");
   expect(button?.getAttribute("aria-expanded")).toBe("false");
 });
+
+// 2 行目を畳んだコードブロックと、入れ子の注意書きを閉じた文書
+const FOLDED_MARKDOWN = [
+  "<!-- code: fold=2 -->",
+  "",
+  "```yaml",
+  "a:",
+  "  b:",
+  "    c: 1",
+  "    d: 2",
+  "  e: 3",
+  "```",
+  "",
+  "> [!NOTE]-",
+  "> 外の本文",
+  ">",
+  "> > [!TIP]-",
+  "> > 内の本文",
+  "",
+].join("\n");
+
+// 印刷の前にコードブロックの畳んだ行を開き、後に畳み直す（正常系）
+test("test_attach_print_when_code_folded", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createDocumentRoot(FOLDED_MARKDOWN);
+  detachers.push(attachInteractions({ root, features, placement: "top" }));
+  await attachTracked(root, () => true);
+  const lines = [...root.querySelectorAll<HTMLElement>(".mdmark-code-line")];
+  const inner = root.querySelector<HTMLDetailsElement>(
+    "details.markdown-alert-note details.markdown-alert-tip",
+  );
+  // 実行
+  window.dispatchEvent(new Event("beforeprint"));
+  // 検証
+  for (const line of lines.slice(2)) {
+    expect(line.hasAttribute("hidden")).toBe(false);
+  }
+  expect(inner?.open).toBe(true);
+  // 実行
+  window.dispatchEvent(new Event("afterprint"));
+  // 検証
+  const toggle = lines[1]?.querySelector<HTMLElement>(".mdmark-code-fold");
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  expect(lines[2]?.hasAttribute("hidden")).toBe(true);
+  expect(lines[3]?.hasAttribute("hidden")).toBe(true);
+  expect(inner?.open).toBe(false);
+});

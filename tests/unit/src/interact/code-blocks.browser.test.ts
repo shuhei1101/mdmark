@@ -142,3 +142,48 @@ test("test_attach_code_copy_when_detached", async () => {
   expect(root.querySelector(".mdmark-code-meta")).toBeNull();
   await vi.advanceTimersByTimeAsync(2000);
 });
+
+/** コードの行の畳みの操作を読み込む（ファイルが無い間は URL を組んで読む） */
+const loadCodeFolds = (): Promise<
+  typeof import("../../../../src/interact/code-folds.ts")
+> =>
+  import(
+    /* @vite-ignore */ new URL(
+      "../../../../src/interact/code-folds.ts",
+      import.meta.url,
+    ).href
+  );
+
+// 畳んだ行もコピーに含める（正常系）
+test("test_attach_code_copy_when_folded", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachCodeCopy } = await loadCodeBlocks();
+  const { attachCodeFolds } = await loadCodeFolds();
+  const lines = [
+    "a:",
+    "  b:",
+    "    c: 1",
+    "  d: 2",
+    "e:",
+    "  f:",
+    "    g: 3",
+    "  h: 4",
+  ];
+  const { root } = createRoot(
+    ["<!-- code: fold=2,6 -->", "", "```yaml", ...lines, "```", ""].join("\n"),
+  );
+  detachers.push(attachCodeFolds(root));
+  detachers.push(attachCodeCopy(root));
+  // 実行
+  copyButton(root).click();
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  // 検証: 8 行全てを持ち、⋯ を含まない
+  expect(writeText).toHaveBeenCalledWith(lines.join("\n"));
+  expect(writeText.mock.calls[0]?.[0]).not.toContain("⋯");
+});

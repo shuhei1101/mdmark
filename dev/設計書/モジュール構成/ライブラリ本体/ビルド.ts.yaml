@@ -17,8 +17,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（480KB）
-    value: 480 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（512KB）
+    value: 512 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -88,10 +88,10 @@ functions:
         required: false
         description: コマンドの引数（`--version v{版}` を持てる）
       - name: options
-        type: '{ root: string; maxBytes: number; guideContextLimit?: number }'
+        type: '{ root: string; maxBytes: number }'
         required: false
-        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`。`guideContextLimit` は省くと `GUIDE_CONTEXT_LIMIT`
-        description: 作業ツリーの場所、配布ファイルの上限、使い方集の索引の文の文字数の上限（テストで差し替える）
+        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`
+        description: 作業ツリーの場所と配布ファイルの上限（テストで差し替える）
     returns:
       type: Promise<0 | 1>
       description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API は 1
@@ -138,12 +138,12 @@ functions:
         condition: '`migrations/next/steps.yaml` の手順が `op` を持たない'
         mock: 一時フォルダに `src/` と `version.ini` と `migrations/` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーに `migrations/next/steps.yaml` が出る
-      - name: test_main_when_guide_index_too_long
+      - name: test_main_when_guide_index_invalid
         case: 異常
-        summary: 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる
-        condition: '`guideContextLimit` が 1'
-        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml` と指すページ・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
-        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに索引の文字数と上限が出る
+        summary: 使い方集の索引が無いページを指すと dist/ とプラグインの生成物を残さずに終わる
+        condition: '`guide/index.yaml` の行が無いページを指す'
+        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml`・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに `guide/index.yaml:guides[0].page` が出る
       - name: test_main_when_api_missing_in_baseline_browser
         case: 異常
         summary: 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる

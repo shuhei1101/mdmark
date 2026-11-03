@@ -1,0 +1,17 @@
+$ npm run lint
+
+> lint
+> biome check .
+
+Checked 607 files in 4s. No fixes applied.
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+$ npm --prefix vscode run typecheck
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0

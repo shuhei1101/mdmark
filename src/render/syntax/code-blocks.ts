@@ -1,4 +1,5 @@
 import type { StateCore, Token } from "markdown-it";
+import { foldLinesOf, measureIndents } from "../../code-fold-logic.ts";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
 import { type CodeLine, renderCodeBlock } from "../../parts/code-block.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
@@ -6,7 +7,14 @@ import { warningBlock } from "./warnings.ts";
 
 /** コードの行の印の名前から、行の種類を引く */
 const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
-  { "++": "add", "--": "del", highlight: "highlight" };
+  {
+    "++": "add",
+    "--": "del",
+    highlight: "highlight",
+    focus: "focus",
+    error: "error",
+    warning: "warning",
+  };
 
 /** 行末の印と、印を閉じるコメントの終わり（`-->` か星とスラッシュ）。打ち消した印（`[\!code`）は当たらない */
 const LINE_MARK_PATTERN = /\[!code\s+([^\]]*?)\s*\](?:\s*(?:-->|\*\/))?\s*$/;
@@ -28,13 +36,14 @@ export const LINE_COMMENT_HEADS: readonly string[] = [
 const ANYWHERE_COMMENT_HEADS: readonly string[] = ["<!--", "//", "/*"];
 
 /** コードブロックの印に書ける指定の並び（警告に書く） */
-const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`";
+const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`・`fold=`";
 
 /** 使えるコードの行の印の並び（警告に書く） */
-const LINE_MARK_LIST = "`[!code ++]`・`[!code --]`・`[!code highlight]`";
+const LINE_MARK_LIST =
+  "`[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]`";
 
 /** コードブロックの印に書けるキー */
-const CODE_KEYS = ["title", "highlight"];
+const CODE_KEYS = ["title", "highlight", "fold"];
 
 /** コードブロックの印に書ける、キーの無い指定 */
 const CODE_FLAGS = ["lines"];
@@ -54,7 +63,47 @@ function readRange(part: string): [number, number] | undefined {
   return from <= to ? [from, to] : undefined;
 }
 
-/** `code` の印の引数を、題・行番号の有無・強調する行に読む。知らないキー・指定、読めない `highlight=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする */
+/** `highlight=`・`fold=` の値（`2,4-6`）を行の番号に読む。読めない番号と、コードブロックの行の数を超える番号は、当てずに警告にする */
+function readLineNumbers(options: {
+  key: string;
+  value: string | undefined;
+  lineCount: number;
+  warnings: WarningItem[];
+}): Set<number> {
+  const { key, value, lineCount, warnings } = options;
+  const numbers = new Set<number>();
+  if (value === undefined) {
+    return numbers;
+  }
+  for (const part of value.split(",")) {
+    const range = readRange(part);
+    if (range === undefined) {
+      warnings.push({
+        label: part || `${key}=`,
+        message:
+          "読めない行の指定です。`2`・`4-6` のように、行の番号と範囲をコンマで並べてください。",
+      });
+      continue;
+    }
+    const [from, to] = range;
+    if (from < 1 || to > lineCount) {
+      warnings.push({
+        label: part,
+        message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。行の番号を 1〜${lineCount} で書いてください。`,
+      });
+    }
+    for (
+      let line = Math.max(from, 1);
+      line <= Math.min(to, lineCount);
+      line++
+    ) {
+      numbers.add(line);
+    }
+  }
+  return numbers;
+}
+
+/** `code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする */
 export function readCodeSpec(options: {
   args: MdmarkMarkArgs;
   lineCount: number;
@@ -62,6 +111,7 @@ export function readCodeSpec(options: {
   title: string;
   lineNumbers: boolean;
   highlights: Set<number>;
+  folds: Set<number>;
   warnings: WarningItem[];
 } {
   const { args, lineCount } = options;
@@ -89,39 +139,23 @@ export function readCodeSpec(options: {
       message: "題がありません。`title=app.ts` のように書いてください。",
     });
   }
-  const highlights = new Set<number>();
-  const highlight = args.keys.highlight;
-  if (highlight !== undefined) {
-    for (const part of highlight.split(",")) {
-      const range = readRange(part);
-      if (range === undefined) {
-        warnings.push({
-          label: part || "highlight=",
-          message:
-            "読めない行の指定です。`2`・`4-6` のように、行の番号と範囲をコンマで並べてください。",
-        });
-        continue;
-      }
-      const [from, to] = range;
-      if (from < 1 || to > lineCount) {
-        warnings.push({
-          label: part,
-          message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。行の番号を 1〜${lineCount} で書いてください。`,
-        });
-      }
-      for (
-        let line = Math.max(from, 1);
-        line <= Math.min(to, lineCount);
-        line++
-      ) {
-        highlights.add(line);
-      }
-    }
-  }
+  const highlights = readLineNumbers({
+    key: "highlight",
+    value: args.keys.highlight,
+    lineCount,
+    warnings,
+  });
+  const folds = readLineNumbers({
+    key: "fold",
+    value: args.keys.fold,
+    lineCount,
+    warnings,
+  });
   return {
     title,
     lineNumbers: args.args.includes("lines"),
     highlights,
+    folds,
     warnings,
   };
 }
@@ -150,7 +184,41 @@ function dropCommentHead(text: string): string {
   return trimmed;
 }
 
-/** コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code focus]` など）はその行に当てず書いた文字のままにし、警告にする */
+/** 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行は当てずに警告にする */
+export function readFolds(options: { lines: CodeLine[]; folds: Set<number> }): {
+  lines: CodeLine[];
+  warnings: WarningItem[];
+} {
+  const { lines, folds } = options;
+  const indents = measureIndents(lines.map((line) => line.text));
+  const foldLines = foldLinesOf(indents);
+  const warnings: WarningItem[] = [];
+  for (const number of [...folds].sort((a, b) => a - b)) {
+    if (foldLines[number - 1] === undefined) {
+      warnings.push({
+        label: String(number),
+        message: `${number} 行目は、次の行がより深いインデントでないため畳めません。`,
+      });
+    }
+  }
+  return {
+    lines: lines.map((line, index): CodeLine => {
+      const indent = indents[index];
+      const count = foldLines[index];
+      return {
+        ...line,
+        ...(indent ? { indent } : {}),
+        ...(count === undefined ? {} : { foldLines: count }),
+        ...(count !== undefined && folds.has(index + 1)
+          ? { folded: true }
+          : {}),
+      };
+    }),
+    warnings,
+  };
+}
+
+/** コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code blink]` など）はその行に当てず書いた文字のままにし、警告にする */
 export function readLineMarks(source: string): {
   lines: CodeLine[];
   warnings: WarningItem[];
@@ -314,16 +382,19 @@ export function buildCodeBlocks(state: StateCore): void {
     const options = code
       ? readCodeSpec({ args: code.args, lineCount: read.length })
       : undefined;
-    const lines = read.map(
+    const marked = read.map(
       (line, position): CodeLine =>
         line.kind === undefined && options?.highlights.has(position + 1)
           ? { ...line, kind: "highlight" }
           : line,
     );
+    const { lines, warnings: foldWarnings } = codeOn
+      ? readFolds({ lines: marked, folds: options?.folds ?? new Set() })
+      : { lines: marked, warnings: [] };
     pushWarnings(out, state, {
       mark: code?.raw,
       message: "の読めない指定を当てずに描いています。",
-      items: options?.warnings ?? [],
+      items: [...(options?.warnings ?? []), ...foldWarnings],
     });
     // 知らない印は 1 つにつき 1 つの警告にする
     for (const warning of lineWarnings) {

@@ -408,3 +408,26 @@ test("test_filter_embedded_style_when_tricky", async () => {
   // 検証
   expect(filtered).toBe("padding:4px");
 });
+
+// セルの結合と見出しの範囲は記法が出したセルにだけ残す（正常系）
+test("test_sanitize_when_cell_span", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const html = [
+    "<table><thead><tr>",
+    '<th data-mdmark-own="test-nonce" rowspan="2" colspan="2" scope="colgroup">見出し</th>',
+    "</tr></thead><tbody><tr>",
+    '<td rowspan="9" scope="row">本文</td>',
+    "</tr></tbody></table>",
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  const own = /<th\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+  expect(own).toContain('rowspan="2"');
+  expect(own).toContain('colspan="2"');
+  expect(own).toContain('scope="colgroup"');
+  const written = /<td\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+  expect(written).not.toContain("rowspan");
+  expect(written).not.toContain("scope");
+});

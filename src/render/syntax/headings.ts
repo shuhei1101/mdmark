@@ -46,6 +46,7 @@ export function assignHeadingIds(state: StateCore): void {
         `<a class="mdmark-anchor" href="#${escapeHtml(id)}" aria-label="「${escapeHtml(text)}」へのリンク"></a>`,
         env.nonce,
       );
+      anchor.meta = { role: "heading-anchor" };
       inline.children?.push(anchor);
     }
   }

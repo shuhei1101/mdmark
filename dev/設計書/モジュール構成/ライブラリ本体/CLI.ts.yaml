@@ -74,7 +74,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark'"
+        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long'"
         description: ずれの種類
       - name: message
         type: string
@@ -1160,7 +1160,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -1224,6 +1224,12 @@ functions:
         condition: '`assets.root: none` の設定、文書 `a.md` の 2 行目に `![図](x.png)` と 4 行目に `<!-- tabz -->`'
         mock: 一時フォルダ
         expected: '`kind` が `schema`（`where` が `assets.root`）・`missing_file`（`where` が `2`）・`unknown_mark` の順'
+      - name: test_collect_check_issues_when_diagram
+        case: 正常
+        summary: 図の点検のずれを最後に返し、upgrade の呼び方でも点検する
+        condition: 索引の無い設定で、`docs/a.md` の 3 行目に読めない `<!-- flow -->` の定義と、見つからない画像。`unknownMarks` が `true` と `false`
+        mock: なし
+        expected: 'どちらも `missing_file` の後に `{ file: "docs/a.md", where: "3", kind: "diagram_invalid" }` の 1 件がある'
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
@@ -1234,6 +1240,7 @@ functions:
       pr: 39
     callees:
       - '#functions[checkMissingFiles]'
+      - '#functions[checkDiagrams]'
   - name: loadExtensionDirectives
     title: 拡張の印の名前を読む
     container: src/cli/check.ts
@@ -1883,6 +1890,44 @@ functions:
     status: planned
     introduced:
       pr: 263
+  - name: checkDiagrams
+    title: 図の定義を点検する
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    kind: 関数
+    scope: internal
+    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み、`readDefinition` で読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする
+    description: ずれの `file` は文書のパス、`where` は開きの印の行の番号の文字、`message` は `diagram_invalid` なら書き方の警告と同じ文、ほかは図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。並びは文書の順、同じ文書の中は行の順
+    args:
+    - name: documents
+      type: '{ path: string; markdown: string }[]'
+      required: true
+      description: '`collectCheckDocuments` の文書'
+    returns:
+      type: CheckIssue[]
+      description: '`diagram_*` のずれ（無ければ空）'
+    callees:
+    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[findDiagramBlocks]
+    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
+    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[checkFlowLayout]
+    unit_tests:
+    - name: test_check_diagrams
+      case: 正常
+      summary: 読めない定義と配置のずれを返す
+      condition: '`a.md` の 3 行目に読めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（題 `受付`）'
+      mock: なし
+      expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
+    - name: test_check_diagrams_when_clean
+      case: 正常
+      summary: 整った図と図の無い文書はずれを返さない
+      condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
+      mock: なし
+      expected: 空の配列
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[図の定義の点検]
+    status: planned
+    introduced:
+      pr: 275
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧

@@ -178,7 +178,6 @@ export async function runServe(options: {
   const { env, packageDir, version, signal, stdout, stderr } = options;
   const port = readPort({ env });
   const roots: ServerRoots = {
-    guideDir: join(packageDir, "plugin", "guide"),
     distDir: join(packageDir, "dist"),
   };
   // 要求ごとに MCP サーバーを作る（セッションの状態を持たない）

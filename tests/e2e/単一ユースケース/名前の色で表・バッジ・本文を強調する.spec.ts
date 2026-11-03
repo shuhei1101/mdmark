@@ -184,14 +184,14 @@ test("test_normal", async ({ page }) => {
   // 検証
   await expectColored(page);
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
-  // 実行: 金額の列の見出しで並べ替える（昇順）
+  // 実行: 金額の列の見出しで並べ替える（降順）
   const amount = page.locator("#doc table thead th").nth(2);
   await amount.locator("button.mdmark-sort").click();
-  await expect(amount).toHaveAttribute("aria-sort", "ascending");
+  await expect(amount).toHaveAttribute("aria-sort", "descending");
   // 検証: 行の並びが変わり、色と線がその行に付いたまま
   const sorted = await readRows(page);
-  expect(sorted.map((row) => row.name)).toEqual(["請求", "契約", "見積もり"]);
-  expect(sorted.map((row) => row.color)).toEqual([null, "yellow", "green"]);
+  expect(sorted.map((row) => row.name)).toEqual(["見積もり", "契約", "請求"]);
+  expect(sorted.map((row) => row.color)).toEqual(["green", "yellow", null]);
   await expectColored(page);
 });
 

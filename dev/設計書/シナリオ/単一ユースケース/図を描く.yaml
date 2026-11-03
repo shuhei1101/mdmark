@@ -184,6 +184,52 @@ scenarios:
       - 質問のノードから出る線に `YES`・`NO` のラベルがある
       - 凡例のノードの種類の項目が開始・質問・アクション・結果の 4 つだけで、「意思決定モデル」「データ」が出ていない
     test: test_normal_when_flowchart
+  - name: 正常シナリオ（追加したグラフの種類）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 追加した種類のグラフの定義を持つ Markdown
+        description: 面・積み上げの棒・積み上げの面・横棒・ドーナツ・レーダー・バブル・折れ線と棒の組み合わせの 8 つのグラフの部品の定義を、系列 2 つずつで記載した文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: グラフの部品が種類ごとに系列を描く
+        M-->>P: タイトルと凡例つきの 8 つのグラフと本文
+        P-->>U: 文書を表示
+    expected:
+      - 8 つの定義の場所に、それぞれの種類のグラフが図の枠に載って描かれている
+      - 積み上げの棒と面は、同じ項目の系列の値を積み上げた高さで描かれている
+      - 折れ線と棒の組み合わせは、系列ごとに指定した折れ線と棒で同じ軸に描かれている
+      - 各グラフにタイトルと、系列の名前を載せた凡例がある
+      - 書き方の警告が無い
+    test: test_normal_when_more_chart_types
+  - name: 正常シナリオ（5 つ以上の系列）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 系列の多いグラフの定義を持つ Markdown
+        description: 系列 6 つ・点 5 つずつの折れ線のグラフと、系列 6 つの棒のグラフの部品の定義を記載した文書
+      - name: Mock
+        description: 正常シナリオと同じ。ライトとダークの両方の配色で描く
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 系列ごとに色・点のマーカー・塗りの模様の組を当てる
+        M-->>P: タイトルと凡例つきのグラフと本文
+        P-->>U: 文書を表示
+    expected:
+      - 6 つの系列が全て描かれ、凡例に 6 つの系列の名前がある
+      - 6 つの系列の色・点のマーカー・塗りの模様の組が互いに異なる
+      - ライトとダークのどちらの配色でも、系列の色が背景と見分けられる
+    test: test_normal_when_many_series
   - name: 正常シナリオ（ER 図）
     setup:
       - name: 図を描くページ
@@ -229,7 +275,7 @@ scenarios:
       - 正しい定義の ER 図が描かれている
       - 段落が描かれている
     test: test_error_when_er_definition_invalid
-lead: 文書を書く人が、文書に部品の定義（JSON）だけを書き、mdmark の共通の図の部品にフロー図・シーケンス図・グラフ（折れ線・棒・円・散布図）・ER 図を描かせる。部品は図の見た目の決まり（枠と 3 層・時系列とループ・題と凡例・線の交差）のとおりに描く。
+lead: 文書を書く人が、文書に部品の定義（JSON）だけを書き、mdmark の共通の図の部品にフロー図・シーケンス図・グラフ・ER 図を描かせる。部品は図の見た目の決まり（枠と 3 層・時系列とループ・題と凡例・線の交差）のとおりに描く。
 issue: 21
 primary_actor: 文書を書く人（AI を含む）
 stakeholders:

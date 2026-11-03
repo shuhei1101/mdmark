@@ -479,3 +479,64 @@ stories:
       highlight: '[{"column":2,"color":"blue"}]'
       rowColors: '["green","yellow",null,"green"]'
       scheme: dark
+  - name: Merged
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["地域","支店","売上（万円）","件数","売上（万円）","件数"]'
+      rows: '[["東日本","札幌","120","14","135","16"],["東日本","仙台","98","11","102","12"],["東日本","東京","310","40","342","45"],["西日本","大阪","260","31","248","29"],["西日本","福岡","140","17","151","19"]]'
+      headRows: '[[{"html":"地域","column":0,"rowspan":2},{"html":"支店","column":1,"rowspan":2},{"html":"上期","column":2,"colspan":2},{"html":"下期","column":4,"colspan":2}],[{"html":"売上（万円）","column":2},{"html":"件数","column":3},{"html":"売上（万円）","column":4},{"html":"件数","column":5}]]'
+      rowHeader: 1
+      mergeColumns: '[0]'
+  - name: MergedSorted
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["地域","支店","売上（万円）","件数","売上（万円）","件数"]'
+      rows: '[["東日本","札幌","120","14","135","16"],["東日本","仙台","98","11","102","12"],["東日本","東京","310","40","342","45"],["西日本","大阪","260","31","248","29"],["西日本","福岡","140","17","151","19"]]'
+      headRows: '[[{"html":"地域","column":0,"rowspan":2},{"html":"支店","column":1,"rowspan":2},{"html":"上期","column":2,"colspan":2},{"html":"下期","column":4,"colspan":2}],[{"html":"売上（万円）","column":2},{"html":"件数","column":3},{"html":"売上（万円）","column":4},{"html":"件数","column":5}]]'
+      rowHeader: 1
+      mergeColumns: '[0]'
+      sort: '{"column":4,"direction":"descending"}'
+  - name: MergedFiltered
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["地域","支店","売上（万円）","件数","売上（万円）","件数"]'
+      rows: '[["東日本","札幌","120","14","135","16"],["東日本","仙台","98","11","102","12"],["東日本","東京","310","40","342","45"],["西日本","大阪","260","31","248","29"],["西日本","福岡","140","17","151","19"]]'
+      headRows: '[[{"html":"地域","column":0,"rowspan":2},{"html":"支店","column":1,"rowspan":2},{"html":"上期","column":2,"colspan":2},{"html":"下期","column":4,"colspan":2}],[{"html":"売上（万円）","column":2},{"html":"件数","column":3},{"html":"売上（万円）","column":4},{"html":"件数","column":5}]]'
+      rowHeader: 1
+      mergeColumns: '[0]'
+      filters: '[{"column":0,"kind":"select"}]'
+      filterValues: '[{"column":0,"values":["東日本"]}]'
+  - name: RowHeaderPinned
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["分類","記法","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome","VS Code","書き出した HTML"]'
+      rows: '[["表","セルの結合","124","124","128","17.4","17.4","124","1.95","対応"],["表","多段の見出し","124","124","128","17.4","17.4","124","1.95","対応"],["表","行見出し","124","124","128","17.4","17.4","124","1.95","対応"],["コード","折りたたみ","124","124","128","17.4","17.4","124","1.95","対応"],["コード","インデントの縦線","124","124","128","17.4","17.4","124","1.95","対応"]]'
+      rowHeader: 2
+      mergeColumns: '[0]'
+      overflow: true
+      pinned: 2
+  - name: MergeInvalid
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["地域","支店","売上（万円）"]'
+      rows: '[["^^","札幌","120"],["<<","仙台","98"],["東日本","東京","310"]]'

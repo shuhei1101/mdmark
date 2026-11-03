@@ -816,3 +816,326 @@ test("test_normal_when_language_and_file_name_label_shown", async ({
   );
   await expect(blocks.nth(1).locator(".mdmark-code-file")).toHaveCount(0);
 });
+
+/** 行の不透明度 */
+async function opacityOf(line: ReturnType<Page["locator"]>): Promise<number> {
+  return Number(
+    await line.evaluate((element) => getComputedStyle(element).opacity),
+  );
+}
+
+/** 行の `::after` の `content`（代替テキストを含む） */
+async function afterContent(
+  line: ReturnType<Page["locator"]>,
+): Promise<string> {
+  return line.evaluate(
+    (element) => getComputedStyle(element, "::after").content,
+  );
+}
+
+// focus の行のほかを薄くし、error と warning の行を色と読み上げで分け、マーカーを除いた全ての行をコピーする（正常シナリオ（focus・error・warning の行））
+test("test_normal_when_focus_error_warning", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "```ts",
+      "foo(); // [!code focus]",
+      "bar(); // [!code error]",
+      "baz(); // [!code warning]",
+      "qux();",
+      "```",
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  await page.mouse.move(0, 0);
+  // 検証: focus の行のほかが薄い
+  const lines = page.locator("#doc .mdmark-code-line");
+  await expect(lines).toHaveCount(4);
+  await expect.poll(() => opacityOf(lines.nth(0))).toBe(1);
+  for (const index of [1, 2, 3]) {
+    await expect.poll(() => opacityOf(lines.nth(index))).toBeLessThan(1);
+  }
+  // 検証: error と warning の行の背景色が互いに異なり、色以外に読み上げの文字を持つ
+  const backgrounds = await Promise.all(
+    [1, 2, 3].map((index) =>
+      lines
+        .nth(index)
+        .evaluate((element) => getComputedStyle(element).backgroundColor),
+    ),
+  );
+  expect(new Set(backgrounds).size).toBe(3);
+  await expect(lines.nth(1)).toHaveAttribute("data-kind", "error");
+  await expect(lines.nth(2)).toHaveAttribute("data-kind", "warning");
+  expect(await afterContent(lines.nth(1))).toContain("エラーの行");
+  expect(await afterContent(lines.nth(2))).toContain("警告の行");
+  // 検証: マーカーの文字と行コメントの頭が出ていない
+  const code = page.locator("#doc pre code");
+  await expect(code).not.toContainText("[!code");
+  await expect(code).not.toContainText("//");
+  // 実行: コピーボタンを押す
+  await page.locator("#doc button.mdmark-code-copy").click();
+  // 検証
+  await expect
+    .poll(() => writtenTexts(page))
+    .toEqual(["foo();\nbar();\nbaz();\nqux();"]);
+});
+
+/** 3 段の入れ子のキーを持つ yaml・閉じ括弧の行で終わる json・tree のコードブロックを持つ文書 */
+const FOLD_MARKDOWN = [
+  "```yaml",
+  "a:",
+  "  b:",
+  "    c: 1",
+  "  d: 2",
+  "e: 3",
+  "```",
+  "",
+  "```json",
+  "{",
+  '  "outer": {',
+  '    "inner": 1',
+  "  }",
+  "}",
+  "```",
+  "",
+  "```tree",
+  "src/",
+  "  index.ts",
+  "```",
+  "",
+].join("\n");
+
+/** `block` 番目のコードブロックの行 */
+function blockLines(page: Page, block: number): ReturnType<Page["locator"]> {
+  return page
+    .locator("#doc pre:has(.mdmark-code-line)")
+    .nth(block)
+    .locator(".mdmark-code-line");
+}
+
+/** 行の開閉のボタン */
+function foldButton(
+  line: ReturnType<Page["locator"]>,
+): ReturnType<Page["locator"]> {
+  return line.locator(":scope > .mdmark-code-fold");
+}
+
+/** 行ごとに表示しているかを並べて返す */
+async function visibleLines(
+  lines: ReturnType<Page["locator"]>,
+): Promise<boolean[]> {
+  return lines.evaluateAll((elements) =>
+    elements.map((element) => !(element as HTMLElement).hidden),
+  );
+}
+
+// インデントの深い行を ▾ で畳み、⋯ で開き、Shift で入れ子をまとめて開閉し、json は閉じ括弧の行を残す（正常シナリオ（インデントで畳む・開く））
+test("test_normal_when_folded_by_indent", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: FOLD_MARKDOWN,
+    config: { features: { syntax: false } },
+  });
+  const yaml = blockLines(page, 0);
+  const first = foldButton(yaml.nth(0));
+  const second = foldButton(yaml.nth(1));
+  // 検証: 描いた直後は全ての行が出ていて、▾ は行番号の右にあり、ポインターを乗せた行にだけ出る
+  await page.mouse.move(0, 0);
+  expect(await visibleLines(yaml)).toEqual([true, true, true, true, true]);
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  await expect(first).toHaveCSS("opacity", "0");
+  const buttonBox = await first.boundingBox();
+  const textBox = await yaml.nth(0).locator(".mdmark-code-text").boundingBox();
+  expect(buttonBox?.x ?? 0).toBeGreaterThan(
+    (await yaml.nth(0).boundingBox())?.x ?? 0,
+  );
+  expect((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0)).toBeLessThanOrEqual(
+    (textBox?.x ?? 0) + 1,
+  );
+  await yaml.nth(0).locator(".mdmark-code-text").hover();
+  await expect(first).toHaveCSS("opacity", "1");
+  // 実行: 1 行目の ▾ を押す
+  await first.click();
+  // 検証: 次の同じ深さの行の手前まで隠れ、▸ と行数を持たない ⋯ が出る
+  await expect(first).toHaveAttribute("aria-expanded", "false");
+  expect(await visibleLines(yaml)).toEqual([true, false, false, false, true]);
+  await page.mouse.move(0, 0);
+  await expect(first).toHaveCSS("opacity", "1");
+  const more = yaml.nth(0).locator(".mdmark-code-fold-more");
+  await expect(more).toHaveText("⋯");
+  // 実行: ⋯ を押す
+  await more.click();
+  // 検証
+  expect(await visibleLines(yaml)).toEqual([true, true, true, true, true]);
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  // 実行: Shift を押しながら畳み、Shift を押しながら開く
+  await first.click({ modifiers: ["Shift"] });
+  await expect(first).toHaveAttribute("aria-expanded", "false");
+  await expect(second).toHaveAttribute("aria-expanded", "false");
+  await first.click({ modifiers: ["Shift"] });
+  // 検証: 内側も畳んだまま残らない
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  await expect(second).toHaveAttribute("aria-expanded", "true");
+  expect(await visibleLines(yaml)).toEqual([true, true, true, true, true]);
+  // 実行・検証: キーボードで操作する
+  await first.focus();
+  await page.keyboard.press("Enter");
+  await expect(first).toHaveAttribute("aria-expanded", "false");
+  await page.keyboard.press("Enter");
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  // 実行: json のオブジェクトの行を畳む
+  const json = blockLines(page, 1);
+  await foldButton(json.nth(1)).click();
+  // 検証: 閉じ括弧の行は出ている
+  expect(await visibleLines(json)).toEqual([true, true, false, true, true]);
+  await expect(json.nth(3)).toContainText("}");
+  // 検証: tree のコードブロックには開閉のボタンが無い
+  await expect(page.locator("#doc .mdmark-tree .mdmark-code-fold")).toHaveCount(
+    0,
+  );
+});
+
+// インデントの 1 レベルごとに縦線を引き、ポインターを乗せた行のブロックの縦線だけを濃くする（正常シナリオ（インデントの縦線））
+test("test_normal_when_indent_guides", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: FOLD_MARKDOWN,
+    config: { features: { syntax: false } },
+  });
+  const yaml = blockLines(page, 0);
+  // 検証: インデントのレベルの数の縦線
+  for (const index of [1, 2, 3]) {
+    const line = yaml.nth(index);
+    const level = await line.evaluate((element) =>
+      getComputedStyle(element).getPropertyValue("--mdmark-code-level").trim(),
+    );
+    expect(level).toBe(await line.getAttribute("data-indent"));
+    expect(Number(level)).toBeGreaterThan(0);
+  }
+  // 実行: 2 段目のブロックの行にポインターを乗せる
+  await yaml.nth(2).locator(".mdmark-code-text").hover();
+  // 検証: そのブロックの縦線だけが濃い
+  const active = await yaml.evaluateAll((elements) =>
+    elements.map((element) => element.hasAttribute("data-guide-active")),
+  );
+  expect(active).toEqual([false, false, true, false, false]);
+  // 実行: コードブロックの文字を全て選ぶ
+  const selected = await selectedCode(page);
+  // 検証
+  expect(selected).toContain("    c: 1");
+  expect(selected).not.toMatch(/[│┃]/);
+});
+
+/** 2 行目と 6 行目が畳める行の 8 行の yaml を、`fold=2,6` で畳んで描く文書 */
+const FOLD_OPTION_MARKDOWN = [
+  "<!-- code: lines fold=2,6 -->",
+  "",
+  "```yaml",
+  "root:",
+  "  a:",
+  "    b: 1",
+  "  c: 2",
+  "other:",
+  "  d:",
+  "    e: 3",
+  "  f: 4",
+  "```",
+  "",
+].join("\n");
+
+// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、読み直すと `fold=` のとおりに畳む（正常シナリオ（最初から畳む行を指定する））
+test("test_normal_when_fold_option", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  const mount = () =>
+    mountDocument(page, {
+      markdown: FOLD_OPTION_MARKDOWN,
+      config: { features: { syntax: false } },
+    });
+  await mount();
+  const lines = blockLines(page, 0);
+  // 検証: 2 行目と 6 行目を畳んで描く
+  const expectFolded = async () => {
+    expect(await visibleLines(lines)).toEqual([
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+    ]);
+    for (const index of [1, 5]) {
+      await expect(foldButton(lines.nth(index))).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      await expect(
+        lines.nth(index).locator(".mdmark-code-fold-more"),
+      ).toHaveText("⋯");
+    }
+  };
+  await expectFolded();
+  // 実行: コピーボタンを押す
+  await page.locator("#doc button.mdmark-code-copy").click();
+  // 検証: 畳んだ行を含む全ての行
+  await expect
+    .poll(() => writtenTexts(page))
+    .toEqual(["root:\n  a:\n    b: 1\n  c: 2\nother:\n  d:\n    e: 3\n  f: 4"]);
+  // 実行: 2 行目を開き、ページを読み直す
+  await foldButton(lines.nth(1)).click();
+  await expect(foldButton(lines.nth(1))).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await page.reload();
+  await page.waitForFunction(() => "mdmark" in window);
+  await mount();
+  // 検証: 開閉の状態は覚えておらず、`fold=` のとおりに畳む
+  await expectFolded();
+});
+
+// 畳めない行とコードブロックに無い行の `fold=` は書き方の警告にし、畳める行だけを畳む（異常シナリオ（畳めない行の fold=））
+test("test_error_when_fold_line_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- code: fold=1,3,99 -->",
+      "",
+      "```yaml",
+      "a:",
+      "  b: 1",
+      "c: 2",
+      "d: 3",
+      "e: 4",
+      "```",
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("3 行目");
+  await expect(warning).toContainText("99");
+  const lines = blockLines(page, 0);
+  await expect(foldButton(lines.nth(0))).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  expect(await visibleLines(lines)).toEqual([true, false, true, true, true]);
+  for (const text of ["a:", "c: 2", "d: 3", "e: 4"]) {
+    await expect(page.locator("#doc pre code")).toContainText(text);
+  }
+  await expect(page.locator("#doc pre code")).toContainText("b: 1");
+});

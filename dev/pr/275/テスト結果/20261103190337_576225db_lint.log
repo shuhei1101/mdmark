@@ -1,0 +1,100 @@
+$ npm run lint
+
+> lint
+> biome check .
+
+tmp/rev/shot.mjs:2:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    1 │ import { chromium } from "playwright";
+  > 2 │ const browser = await chromium.launch();
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ for (const id of ["parts-table--merged", "parts-table--row-header-pinned"]) {
+    4 │   for (const [w, h] of [[1280, 800], [390, 844]]) {
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1  1 │   import { chromium } from "playwright";
+        2 │ + 
+     2  3 │   const browser = await chromium.launch();
+     3  4 │   for (const id of ["parts-table--merged", "parts-table--row-header-pinned"]) {
+  
+
+tmp/rev/shot.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     2  2 │   const browser = await chromium.launch();
+     3  3 │   for (const id of ["parts-table--merged", "parts-table--row-header-pinned"]) {
+     4    │ - ··for·(const·[w,·h]·of·[[1280,·800],·[390,·844]])·{
+        4 │ + ··for·(const·[w,·h]·of·[
+        5 │ + ····[1280,·800],
+        6 │ + ····[390,·844],
+        7 │ + ··])·{
+     5  8 │       const page = await browser.newPage({ viewport: { width: w, height: h } });
+     6    │ - ····await·page.goto(`http://127.0.0.1:39122/iframe.html?id=${id}&viewMode=story`,·{·waitUntil:·"domcontentloaded"·});
+        9 │ + ····await·page.goto(
+       10 │ + ······`http://127.0.0.1:39122/iframe.html?id=${id}&viewMode=story`,
+       11 │ + ······{·waitUntil:·"domcontentloaded"·},
+       12 │ + ····);
+     7 13 │       await page.waitForSelector(".mdmark-table table", { timeout: 30000 });
+     8 14 │       await page.waitForTimeout(800);
+  
+
+tmp/rev/tab.ts:2:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    1 │ import { render } from "../../src/index.ts";
+  > 2 │ const md = "<!-- tabs -->\n\n### [設定](https://example.com)\n\n中身\n\n### B\n\n中身\n\n<!-- /tabs -->\n";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ const out = await render(md);
+    4 │ const html = typeof out === "string" ? out : (out as { html: string }).html;
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+    1 1 │   import { render } from "../../src/index.ts";
+      2 │ + 
+    2 3 │   const md = "<!-- tabs -->\n\n### [設定](https://example.com)\n\n中身\n\n### B\n\n中身\n\n<!-- /tabs -->\n";
+    3 4 │   const out = await render(md);
+  
+
+tmp/rev/tab.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1  1 │   import { render } from "../../src/index.ts";
+    2    │ - const·md·=·"<!--·tabs·-->\n\n###·[設定](https://example.com)\n\n中身\n\n###·B\n\n中身\n\n<!--·/tabs·-->\n";
+       2 │ + const·md·=
+       3 │ + ··"<!--·tabs·-->\n\n###·[設定](https://example.com)\n\n中身\n\n###·B\n\n中身\n\n<!--·/tabs·-->\n";
+    3  4 │   const out = await render(md);
+    4  5 │   const html = typeof out === "string" ? out : (out as { html: string }).html;
+    5    │ - console.log(html.match(/<div·class="mdmark-tablist"[\s\S]*?<\/div>/)?.[0]·??·html.slice(0,·1500));
+       6 │ + console.log(
+       7 │ + ··html.match(/<div·class="mdmark-tablist"[\s\S]*?<\/div>/)?.[0]·??
+       8 │ + ····html.slice(0,·1500),
+       9 │ + );
+    6 10 │   
+  
+
+Checked 609 files in 4s. No fixes applied.
+Found 4 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+$ npm --prefix vscode run typecheck
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=1
+
+# 残る違反は tmp/rev/ の追跡していないファイル（reviewer の作業用の一時ファイル）だけで、作業 PR の変更ファイル（git diff --name-only origin/develop...HEAD）には無い

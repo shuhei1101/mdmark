@@ -1,0 +1,109 @@
+title: "dev-docs"
+kind: "CLI"
+version:
+  current: d16dd9eb（バージョンのタグが無い。develop の commit）
+  checked_on: '2026-11-03'
+  source: 文書を書く人の端末の dev-docs のクローン（端末の設定の `clone`）
+  pinning: 固定しない。mdmark は dev-docs のコードに依存せず、配信元の設定 `dev-docs.yaml` の `$schema` のタグだけを指す
+catalogs:
+  - name: コマンド
+    version: d16dd9eb
+    entries:
+      - name: dev-docs serve
+        kind: コマンド
+        purpose: 端末の設定の配信元を読み、文書の MCP を 127.0.0.1 の Streamable HTTP で待ち受ける
+        params:
+          - name: DEV_DOCS_CONFIG
+            type: string
+            required: false
+            default: '`~/.config/dev-docs/settings.yaml`'
+            description: 端末の設定のパス（環境変数）
+          - name: DEV_DOCS_PORT
+            type: number
+            required: false
+            default: 端末の設定の `port`（既定 `8781`）
+            description: 待ち受けのポート（環境変数）。設定の `port` より優先する
+        params_example: |-
+          ```bash
+          DEV_DOCS_CONFIG=/tmp/x/settings.yaml DEV_DOCS_PORT=18781 dev-docs serve
+          ```
+        returns:
+          - name: '-'
+            type: 終了コード
+            description: '`3` はポートが使用中'
+  - name: 設定
+    version: d16dd9eb
+    entries:
+      - name: sources[]
+        kind: 端末の設定のキー
+        purpose: 配信元の設定ファイル（`dev-docs.yaml`）と、読める・書ける作業場所を登録する
+        params:
+          - name: sources[].id
+            type: string
+            required: false
+            description: 配信元の ID。MCP の引数 `source` で指す
+          - name: sources[].config
+            type: string
+            required: true
+            description: 配信元の `dev-docs.yaml` の絶対パス
+          - name: sources[].scope.read
+            type: string[]
+            required: false
+            description: この配信元を読める作業場所の glob
+          - name: sources[].outside_read
+            type: boolean
+            required: false
+            default: 'true'
+            description: '`scope` に当たらない作業場所からも、MCP の引数 `outside_scope: true` で作業範囲の外（参考）として読めるか'
+      - name: instructions
+        kind: 配信元の設定のキー
+        purpose: '`describe(source)` で返す、その配信元に固有の使い方'
+        params:
+          - name: instructions
+            type: string
+            required: false
+            default: 空
+            description: 配信元の `dev-docs.yaml` の最上位のキー
+  - name: 文書の MCP
+    version: d16dd9eb
+    entries:
+      - name: search_docs
+        kind: MCP のツール
+        purpose: 配信元の文書を、タグ・種類・名前・本文の語の条件で検索・取得する
+        params:
+          - name: source
+            type: string
+            required: false
+            description: 配信元の ID
+          - name: filter
+            type: Condition | Group
+            required: false
+            description: 'メタデータの条件。`docs` の行の文書をタグで絞るときは `{"and": [{"field": "tags", "op": "eq", "values": ["topic:使い方集"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]}`'
+          - name: view
+            type: "'ids' | 'summary' | 'full' | 'count'"
+            required: false
+            default: summary
+            description: '`full` で本文を返す'
+          - name: outside_scope
+            type: boolean
+            required: false
+            default: 'false'
+            description: '`true` のとき、作業場所が `scope` に当たらない配信元も `outside_read` が真なら読む。`source` に ID を 1 つ渡したときだけ効く'
+        returns:
+          - name: '-'
+            type: string
+            description: '`markdown` は一覧の表か、`<document path="..." scope="...">` で包んだ本文'
+lead: 配信元に登録したリポジトリの規約・設計書・ドキュメントを、メタデータと本文で検索・参照・書き込みする MCP サーバー。端末の設定に配信元を登録し、Claude Code から MCP でつなぐ。
+supplier: shuhei1101
+dependency_scope: 任意
+adoption: 採用
+upstream: shuhei1101/dev-docs
+verification:
+  state: 未確認
+  detail: mdmark の配信元の `docs` の行をタグ `topic:使い方集` で絞った `search_docs` が使い方集のページを返すことは、E2E の作成のときに確かめる
+license: 未確認（リポジトリにライセンスのファイルが無い）。mdmark は dev-docs を配布物に含めない
+official_url: https://github.com/shuhei1101/dev-docs
+docs_url: https://github.com/shuhei1101/dev-docs/blob/develop/docs/リファレンス/文書のMCP.md
+limitations:
+  - item: 作業範囲の外の読み取り
+    content: '作業場所が配信元の `scope.read` に当たらないときは、`search_docs` に `source` の ID を 1 つと `outside_scope: true` を渡したときだけ読める。`source` に配列・`*` を渡すと読めない'

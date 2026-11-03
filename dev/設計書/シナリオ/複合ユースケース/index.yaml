@@ -15,3 +15,5 @@ items:
     summary: 文書を書く人が VS Code で書きながら mdmark のプレビューで確かめ、HTML に書き出してブラウザの印刷で PDF にする
   - page: MCPサーバーを起動してプラグインからつなぐ.yaml
     summary: 文書を書く人が MCP の常駐サーバーを起動し、プラグインを入れた 2 つのセッションから同じプロセスのツールを呼び、使い終えたら止める
+  - page: ClaudeCodeで使い方集を参照して書き点検する.yaml
+    summary: 文書を書く人がプラグインを入れ、Claude Code が書く前に dev-docs で使い方集を参照し、書いた後に check で点検する
