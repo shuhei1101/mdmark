@@ -5554,9 +5554,10 @@
     }
 
     /* 列の行の並び */
+    /* 列の並び: 上下の余白は、枠（1.5px × 2）と合わせて ER_METRICS の「枠と余白」4px になる値。関係の線の端を列の行の縦の中ほどに合わせる */
     .mdmark-diagram-er-columns {
       margin: 0;
-      padding: 2px 0;
+      padding: 0.5px 0;
       list-style: none;
     }
 
@@ -5567,6 +5568,7 @@
       align-items: center;
       gap: 6px;
       height: 26px;
+      margin: 0;
       padding: 0 10px;
 
       /* 畳んだ列の行 */
@@ -5627,7 +5629,9 @@
 
     /* 畳んだテーブルの残りの列の数 */
     .mdmark-diagram-er-rest {
+      box-sizing: border-box;
       height: 24px;
+      margin: 0;
       padding: 0 10px;
       border-block-start: 1px dashed var(--mdmark-color-border);
       color: var(--mdmark-color-muted);
