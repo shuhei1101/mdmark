@@ -21,6 +21,9 @@ files:
   - path: e2e/dist-page.ts
     description: E2E テストで、手元の配布物を jsDelivr の URL で返して使う側のページを開き、文書を描く・差分やコメントの取り出し元を渡す処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, topic:cdn, topic:差分, topic:コメント]
+  - path: e2e/er.ts
+    description: E2E テストが使う ER 図の部品の定義の見本（テーブル 3 つと関係 2 本の定義、列の開閉を確かめる定義）を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
+    tags: [topic:e2e, tool:playwright, topic:図]
   - path: e2e/global-setup.ts
     description: E2E テストのワーカーが並ぶ前に VS Code を 1 回だけ取得する処理を受け持つ。E2E テストの準備や操作の仕方を変えるときに読む。
     tags: [topic:e2e, tool:playwright, tool:vscode]
