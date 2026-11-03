@@ -350,6 +350,10 @@ const SECOND: StoredComment = {
 /** 2 つの段落の HTML（`導入の手順` と `手順の数` を別の段落に持つ） */
 const TWO_PARAGRAPHS = "<p>導入の手順を整える。</p><p>手順の数を確かめる。</p>";
 
+/** 次の描画のタイミングまで待つ */
+const nextFrame = (): Promise<void> =>
+  new Promise((resolve) => requestAnimationFrame(() => resolve()));
+
 /** 範囲の中の印の文字を、並んだ順に返す */
 function markTexts(root: HTMLElement): string[] {
   return [...root.querySelectorAll("mark.mdmark-comment-mark")].map(
@@ -445,6 +449,39 @@ test("test_attach_comments_when_reloaded", async () => {
   // 検証
   expect(markTexts(root)).toEqual(["手順の数"]);
   expect(document.querySelector(".mdmark-comment-bubble")).toBeNull();
+});
+
+// 余白のマーカーを置いたとき、読み直すと付け直した印の数に余白のマーカーを置き直す（正常系）
+test("test_attach_comments_when_reloaded_with_margin", async () => {
+  // 準備
+  const { attachComments } = await loadComments();
+  const root = createRoot(TWO_PARAGRAPHS);
+  root.className = "mdmark-content";
+  const store = createStore();
+  store.load
+    .mockResolvedValueOnce([LOADED])
+    .mockResolvedValueOnce([LOADED, SECOND]);
+  const controller = await attachComments({
+    root,
+    store,
+    docId: DOC_ID,
+    margin: true,
+  });
+  detachers.push(controller.detach);
+  await nextFrame();
+  await nextFrame();
+  const before = document.querySelectorAll(
+    ".mdmark-comment-margin .mdmark-comment-marker",
+  ).length;
+  // 実行
+  await controller.reload();
+  await nextFrame();
+  await nextFrame();
+  // 検証
+  expect(before).toBe(1);
+  expect(
+    document.querySelectorAll(".mdmark-comment-margin .mdmark-comment-marker"),
+  ).toHaveLength(2);
 });
 
 // 読み直しても書いている入力欄は残す（正常系）
