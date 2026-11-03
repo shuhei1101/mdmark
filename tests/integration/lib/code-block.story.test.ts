@@ -317,3 +317,189 @@ test("test_copy_failed", async () => {
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+/** コードの行の不透明度を、上から並べて返す */
+function lineOpacities(lines: Locator): Promise<number[]> {
+  return lines.evaluateAll((elements) =>
+    elements.map((element) => Number(getComputedStyle(element).opacity)),
+  );
+}
+
+// focus の 3〜4 行目のほかを薄くし、ポインターを乗せると全ての行を戻す（Focus）
+test("test_focus", async () => {
+  // 準備
+  const page = await holder.openStory("parts-codeblock--focus");
+  const lines = page.locator(".mdmark-code-line");
+  // 検証: focus の行だけが薄くない
+  const opacities = await lineOpacities(lines);
+  opacities.forEach((opacity, index) => {
+    if (index === 2 || index === 3) {
+      expect(opacity).toBe(1);
+    } else {
+      expect(opacity).toBeLessThan(1);
+    }
+  });
+  // 実行: コードブロックにポインターを乗せる
+  await page.locator("#storybook-root pre").hover();
+  // 検証: 全ての行を戻す
+  await expect.poll(() => lineOpacities(lines)).toEqual(opacities.map(() => 1));
+});
+
+// warning の 2 行目と error の 5 行目を、地と左の線の色と行頭の `!`・`×` で分ける（ErrorWarning）
+test("test_error_warning", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--error-warning");
+  // 検証
+  const styles = await page
+    .locator(".mdmark-code-line")
+    .evaluateAll((elements) =>
+      elements.map((element) => ({
+        background: getComputedStyle(element).backgroundColor,
+        border: getComputedStyle(element).borderInlineStartColor,
+        mark: getComputedStyle(element, "::after").content,
+      })),
+    );
+  const [plain, warning, , , error] = styles;
+  expect(warning?.mark).toContain("!");
+  expect(error?.mark).toContain("×");
+  expect(new Set([plain, warning, error].map((s) => s?.background)).size).toBe(
+    3,
+  );
+  expect(new Set([plain, warning, error].map((s) => s?.border)).size).toBe(3);
+});
+
+// 全て開いた畳める行は、インデントの縦線を引き、ポインターを乗せた行だけに開閉のボタンを出す（Foldable）
+test("test_foldable", async () => {
+  // 準備
+  const page = await holder.openStory("parts-codeblock--foldable");
+  const lines = page.locator(".mdmark-code-line");
+  const toggles = page.locator(".mdmark-code-fold");
+  // 検証: 畳める 4 行に開いた状態のボタンがあり、隠れた行が無い
+  await expect(toggles.count()).resolves.toBe(4);
+  await expect(
+    toggles.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("aria-expanded")),
+    ),
+  ).resolves.toEqual(["true", "true", "true", "true"]);
+  await expect(page.locator(".mdmark-code-line[hidden]").count()).resolves.toBe(
+    0,
+  );
+  // 検証: インデントのレベルの数の縦線
+  const levels = await lines.evaluateAll((elements) =>
+    elements.map((element) => ({
+      indent: element.getAttribute("data-indent") ?? "0",
+      level: getComputedStyle(element)
+        .getPropertyValue("--mdmark-code-level")
+        .trim(),
+    })),
+  );
+  for (const { indent, level } of levels) {
+    expect(level).toBe(indent);
+  }
+  // 検証: ポインターを乗せる前はボタンを出さず、乗せた行だけに出す
+  const opacity = (index: number) =>
+    toggles
+      .nth(index)
+      .evaluate((element) => Number(getComputedStyle(element).opacity));
+  await expect(opacity(0)).resolves.toBe(0);
+  await lines.nth(2).hover();
+  await expect.poll(() => opacity(1)).toBe(1);
+  await expect(opacity(0)).resolves.toBe(0);
+});
+
+// `fold=3` の 3 行目は、開閉のボタンを常に出して `⋯` を置き、閉じ括弧の 8 行目を残す（Folded）
+test("test_folded", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--folded");
+  // 検証
+  const hidden = await page
+    .locator(".mdmark-code-line")
+    .evaluateAll((elements) =>
+      elements.map((element) => element.hasAttribute("hidden")),
+    );
+  expect(hidden).toEqual([
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  const third = page.locator(".mdmark-code-line").nth(2);
+  const toggle = third.locator(":scope > .mdmark-code-fold");
+  await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
+  await expect(
+    toggle.evaluate((element) => Number(getComputedStyle(element).opacity)),
+  ).resolves.toBe(1);
+  const more = third.locator(":scope > .mdmark-code-fold-more");
+  await expect(more.innerText()).resolves.toBe("⋯");
+  await expect(more.isVisible()).resolves.toBe(true);
+  await expect(
+    page.locator(".mdmark-code-line").nth(7).innerText(),
+  ).resolves.toContain("}");
+});
+
+// Shift で畳んでから 1 行目だけを開いた状態は、内側の 3・4・9 行目を畳んだまま出す（FoldNested）
+test("test_fold_nested", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--fold-nested");
+  // 検証
+  const states = await page
+    .locator(".mdmark-code-line")
+    .evaluateAll((elements) =>
+      elements.map((element) =>
+        element
+          .querySelector(":scope > .mdmark-code-fold")
+          ?.getAttribute("aria-expanded"),
+      ),
+    );
+  expect(states[0]).toBe("true");
+  for (const index of [2, 3, 8]) {
+    expect(states[index]).toBe("false");
+  }
+  const hidden = await page
+    .locator(".mdmark-code-line")
+    .evaluateAll((elements) =>
+      elements.map((element) => element.hasAttribute("hidden")),
+    );
+  expect(hidden.slice(3, 7)).toEqual([true, true, true, true]);
+  expect(hidden[9]).toBe(true);
+  expect(hidden[1]).toBe(false);
+  // ⋯ は畳んだ 3・4・9 行目に置き、隠れた 4 行目の分は見えない
+  const more = page.locator(".mdmark-code-line > .mdmark-code-fold-more");
+  await expect(more.count()).resolves.toBe(3);
+  await expect(
+    more.evaluateAll(
+      (buttons) =>
+        buttons.filter((button) => button.getClientRects().length > 0).length,
+    ),
+  ).resolves.toBe(2);
+});
+
+// 行番号の無いコードブロックでは、開閉のボタンを行の頭の余白に置き、文字に重ねない（FoldNoLineNumbers）
+test("test_fold_no_line_numbers", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--fold-no-line-numbers");
+  // 検証
+  const boxes = await page
+    .locator(".mdmark-code-line[data-folded]")
+    .evaluate((line) => {
+      const button = line.querySelector(":scope > .mdmark-code-fold");
+      const text = line.querySelector(".mdmark-code-text");
+      const pre = line.closest("pre");
+      return {
+        button: button?.getBoundingClientRect().toJSON(),
+        text: text?.getBoundingClientRect().toJSON(),
+        pre: pre?.getBoundingClientRect().toJSON(),
+      };
+    });
+  expect(boxes.button.right).toBeLessThanOrEqual(boxes.text.left);
+  expect(boxes.button.left).toBeGreaterThanOrEqual(boxes.pre.left);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
