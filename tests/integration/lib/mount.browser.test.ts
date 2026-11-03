@@ -2877,6 +2877,72 @@ test("test_normal_when_diagram_tooltip", async () => {
   expect(getComputedStyle(outside).textDecorationStyle).toBe("dashed");
 });
 
+/** `pointerType` の種類を持つポインターの操作を発火する */
+function firePointer(
+  target: Element,
+  type: string,
+  pointerType: "touch" | "mouse",
+): void {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      pointerType,
+      bubbles: type === "pointerdown" || type === "pointerup",
+    }),
+  );
+}
+
+/** 持ち主をタッチでタップする（既にフォーカスを持つ持ち主では `focus` は発火しない） */
+function tapOwner(owner: HTMLElement): void {
+  for (const type of [
+    "pointerenter",
+    "pointerdown",
+    "pointerup",
+    "pointerleave",
+  ]) {
+    firePointer(owner, type, "touch");
+  }
+  owner.focus();
+}
+
+// タッチでは持ち主のタップで開閉を切り替え、ツールチップと持ち主の外の pointerdown で閉じる（正常系）
+test("test_normal_when_diagram_tooltip_touch", async () => {
+  // 準備
+  await userEvent.unhover(document.body);
+  const markdown = [
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapHtml(
+      '<div data-hint="返信の種類を 1 つ選ぶ" style="display: inline-block; padding: 1rem 2rem">自動返信</div>',
+    ),
+    "図の外の段落。",
+  ].join("\n\n");
+  const el = await mountEmbedded(markdown);
+  const info = buttonOf(el, "「分類」の入力・処理・出力");
+  const ioTip = tipOf(info);
+  const mark = find<HTMLElement>(el, ".mdmark-hint-block .mdmark-hint-mark");
+  const hintTip = tipOf(mark);
+  const outside = find<HTMLElement>(el, ":scope > p");
+  // 実行・検証: 閉じた印へのタップで開く
+  tapOwner(info);
+  expect(ioTip.hidden).toBe(false);
+  // 開いている印へのタップで閉じる
+  tapOwner(info);
+  expect(ioTip.hidden).toBe(true);
+  // div の印へのタップで data-hint の文を出す
+  tapOwner(mark);
+  expect(hintTip.hidden).toBe(false);
+  expect(hintTip.textContent).toBe("返信の種類を 1 つ選ぶ");
+  // mouse の pointerdown では切り替えない
+  firePointer(mark, "pointerdown", "mouse");
+  expect(hintTip.hidden).toBe(false);
+  // ツールチップの中の pointerdown では閉じない
+  firePointer(hintTip, "pointerdown", "touch");
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(hintTip.hidden).toBe(false);
+  // 図の外の段落の pointerdown だけで閉じる
+  firePointer(outside, "pointerdown", "touch");
+  expect(hintTip.hidden).toBe(true);
+});
+
 /** 操作できる部品を描いた要素と、その要素の部品の要素 */
 async function mountParam(): Promise<{ el: HTMLElement; param: HTMLElement }> {
   const el = createElement();
