@@ -298,8 +298,8 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: アイコン・キー・ルビを持つ Markdown
-        description: 見出し ``## `icon:rocket` はじめに``、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
-        notes: '`rocket`・`check` は配布物に束ねたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
+        description: 見出し ``## `icon:flag` はじめに``、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
+        notes: '`flag`・`check` は配布物に束ねたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
       - name: Mock
         description: 正常シナリオと同じ。Lucide のアイコンへの要求を数える
     flow: |-
@@ -311,7 +311,7 @@ scenarios:
         M-->>P: アイコン・キー・ルビを描く
         P-->>U: 文書を表示
     expected:
-      - 見出しの `はじめに` の前と段落に、`rocket`・`check` のアイコンが描かれ、`icon:` の文字は出ていない
+      - 見出しの `はじめに` の前と段落に、`flag`・`check` のアイコンが描かれ、`icon:` の文字は出ていない
       - アイコンは読み上げの対象から外れ、見出しの読み上げ名が `はじめに` になっている
       - '`Ctrl+C` が `Ctrl` と `C` のキーの見た目で描かれ、`kbd:` の文字は出ていない'
       - '`漢字` の上に `かんじ` のルビが描かれている'

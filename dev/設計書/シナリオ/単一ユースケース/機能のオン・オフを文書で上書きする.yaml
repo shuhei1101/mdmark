@@ -292,6 +292,7 @@ scenarios:
       - include のマーカーの場所に、取り込む文書の中身が出ていない
       - 言語 `csv` のコードブロックが、表にならずコードブロックで出ている
       - マーカーの文字と書き方の警告が出ていない
+      - '`pagebreak` の場所に改ページの要素が無く、印刷の前のイベントの後も改ページの指定（`break-before: page`）が当たった要素が無い'
     test: test_normal_when_new_syntax_disabled
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
