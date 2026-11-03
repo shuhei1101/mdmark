@@ -34,7 +34,7 @@ files:
     description: '部品『comment-margin-marker』のモック: 本文の右の余白に、コメントの箇所の行の高さで置く余白のマーカー（箇所が 1 つ・同じ行に 2 つをまとめる案と横に並べる案・吹き出しを開いている箇所・閉じたセクションの見出しの行・本文の列の右端の内側に置く案）。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:コメント]
   - path: components/comment/index.html
-    description: '部品『comment』のモック: 選んだ箇所のマーカー・文字を選んだときのコメントのボタン・入力欄と保存できない知らせ・吹き出しと、箇所が見つからないコメントの一覧。部品の見た目や状態を決めるときに読む。'
+    description: '部品『comment』のモック: 選んだ箇所のマーカー・文字を選んだときのコメントのボタン・入力欄と保存できない知らせ・吹き出しと吹き出しの編集・削除・削除の確認、箇所へ移ったマーカー、箇所が見つからないコメントの一覧。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:コメント]
   - path: components/diagram-frame/index.html
     description: '部品『diagram-frame』のモック: 図のタイトル・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン。部品の見た目や状態を決めるときに読む。'
@@ -644,6 +644,15 @@ files:
     tags: [topic:モック, topic:コメント, tool:javascript]
   - path: refs/277/index.md
     description: '#277（本文の右の余白に、コメントのある箇所のマーカーを出す）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/280/assets/comment-edit.css
+    description: 'モック『comment』の見た目: 吹き出しのコメントの編集・削除のアイコンのボタン・削除の確認と、箇所へ移ったマーカーの強調。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/280/assets/comment-edit.js
+    description: 'モック『comment』の動き: 吹き出しの「編集」で入力欄、「削除」で削除の確認に切り替え、保存・削除の成功と失敗を見せる。このモックの動きを変えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/280/index.md
+    description: '#280 のモックのリンク集: コメントの吹き出しの編集・削除と、箇所へ移ったマーカー。この PR のモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/283/assets/table-pin.js
     description: '#283 のモックが共通で読む素材: 表を組み、はみ出すときだけ既定のピン止めとピン止めのボタンを出す処理と、`pin=`・`wide=`・`check=` の ✓。複数のモックに効く見た目や動きを変えるときに読む。'

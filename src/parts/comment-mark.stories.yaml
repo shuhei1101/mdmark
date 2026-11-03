@@ -13,3 +13,10 @@ stories:
     args:
       text: テーマの変数
       expanded: 'true'
+  - name: Focused
+    parameters:
+      server:
+        id: comment-mark
+    args:
+      text: テーマの変数
+      focused: 'true'

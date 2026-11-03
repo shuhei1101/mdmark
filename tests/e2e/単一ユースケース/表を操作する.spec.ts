@@ -4,6 +4,7 @@ import {
   buildDistRoot,
   mountDocument,
   openPage,
+  readColumnsCalls,
   removeDistRoot,
 } from "../dist-page.ts";
 
@@ -457,6 +458,67 @@ test("test_normal_when_columns_toggled", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(menu).toBeHidden();
   await expect(toggle).toBeFocused();
+});
+
+// 表の印で囲まない表に続けて、列の表示を持つ 3 列の表と、備考を隠した 2 列の表を置いた文書
+const COLUMNS_NOTIFY_MARKDOWN = [
+  "| 項目 | 値 |",
+  "| --- | --- |",
+  "| x | 1 |",
+  "",
+  fruitTable("data +columns"),
+  "<!-- table: data +columns hide=備考 -->",
+  "",
+  "| 名前 | 備考 |",
+  "| --- | --- |",
+  "| みかん | 季節の果物 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+// 列の表示を切り替えるたびに、+columns の表の番号と隠している列を onColumnsChange に渡す（正常シナリオ（列の表示の切り替えを受け取る））
+test("test_normal_when_columns_change_notified", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: COLUMNS_NOTIFY_MARKDOWN,
+    recordColumns: true,
+  });
+  const toggles = page.getByRole("button", { name: "列の表示" });
+  await expect(toggles).toHaveCount(2);
+  const menus = page.locator("#doc .mdmark-columns-menu");
+  const first = menus.nth(0).locator('input[type="checkbox"]');
+  const second = menus.nth(1).locator('input[type="checkbox"]');
+  // 検証: 描いた直後は呼ばない
+  expect(await readColumnsCalls(page)).toEqual([]);
+  // 実行・検証: 1 つ目の表で説明を外す
+  await toggles.nth(0).click();
+  await first.nth(1).uncheck();
+  expect(await readColumnsCalls(page)).toEqual([
+    { tableIndex: 0, hidden: ["説明"] },
+  ]);
+  // 実行・検証: 説明を入れ、更新日・説明の順に外す
+  await first.nth(1).check();
+  await first.nth(2).uncheck();
+  await first.nth(1).uncheck();
+  expect((await readColumnsCalls(page)).at(-1)).toEqual({
+    tableIndex: 0,
+    hidden: ["説明", "更新日"],
+  });
+  await page.keyboard.press("Escape");
+  // 実行・検証: 2 つ目の表で備考を入れ、既定に戻す
+  await toggles.nth(1).click();
+  await second.nth(1).check();
+  expect((await readColumnsCalls(page)).at(-1)).toEqual({
+    tableIndex: 1,
+    hidden: [],
+  });
+  await menus.nth(1).getByRole("button", { name: "既定に戻す" }).click();
+  expect((await readColumnsCalls(page)).at(-1)).toEqual({
+    tableIndex: 1,
+    hidden: ["備考"],
+  });
 });
 
 // 表の末尾に計算ごとの集計の行を置き、絞り込みで計算し直し、並べ替えても末尾に残す（正常シナリオ（集計の行を読む））

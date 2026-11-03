@@ -126,6 +126,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
         type: implements
+  - path: comments/bubble.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「吹き出しのコメントの修正と削除の操作（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
   - path: comments/index.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「dist/comments.js の入口。attachComments」を受け持つ。ビューやコメントの部品を変えるときに読む。
     tags: [topic:ビュー, topic:コメント]

@@ -99,8 +99,8 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
   };
 }
 
-/** 要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使う */
-export function revealTarget(target: HTMLElement): void {
+/** 要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選ぶ */
+function openSectionsAndTabs(target: HTMLElement): void {
   const bodies: HTMLElement[] = [];
   for (
     let body = target.closest<HTMLElement>(".mdmark-section-body");
@@ -115,9 +115,40 @@ export function revealTarget(target: HTMLElement): void {
   }
   // 選ばれていないタブの中にあれば、そのタブも選ぶ
   revealTabTarget(target);
+}
+
+/** 要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使う */
+export function revealTarget(target: HTMLElement): void {
+  openSectionsAndTabs(target);
   // 表の行へは、`attachTables` が絞り込みを外してから送る
   if (target.tagName !== "TR") {
     target.scrollIntoView();
+  }
+}
+
+/** 要素を囲む閉じた節とタブを開き、閉じた行の詳細の中なら、その行の開閉のボタンを押した状態にして詳細の行を出す。スクロールしない。コメントの印へ移るときに使う */
+export function openEnclosing(target: HTMLElement): void {
+  openSectionsAndTabs(target);
+  const detail = target.closest<HTMLTableRowElement>("tr.mdmark-row-detail");
+  if (!detail) {
+    return;
+  }
+  let owner = detail.previousElementSibling;
+  while (owner?.classList.contains("mdmark-row-detail")) {
+    owner = owner.previousElementSibling;
+  }
+  const button = owner?.querySelector<HTMLButtonElement>(
+    "button.mdmark-row-toggle",
+  );
+  if (!button) {
+    return;
+  }
+  button.setAttribute("aria-expanded", "true");
+  for (const id of (button.getAttribute("aria-controls") ?? "").split(" ")) {
+    const row = id === "" ? null : document.getElementById(id);
+    if (row) {
+      row.hidden = false;
+    }
   }
 }
 

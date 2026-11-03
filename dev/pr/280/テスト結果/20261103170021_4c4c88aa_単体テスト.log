@@ -1,0 +1,13 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-mount-base-markdown-columns-comments
+
+
+ Test Files  180 passed (180)
+      Tests  1300 passed (1300)
+   Start at  17:00:26
+   Duration  53.87s (worker 44%, tests 36%, import 18%, transform 2%)
+

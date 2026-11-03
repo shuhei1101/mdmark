@@ -28,6 +28,7 @@ import type { ColorName } from "../src/parts/colors.ts";
 import {
   type CommentClosedKind,
   type CommentFormState,
+  type CommentRemoveState,
   renderCommentBubble,
   renderCommentButton,
   renderCommentForm,
@@ -774,12 +775,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     `<p>本文の<span>${renderCommentMark({
       text: String(args.text ?? ""),
       expanded: args.expanded === true,
+      focused: args.focused === true,
     })}</span>を読む。</p>`,
   "comment-bubble": (args) =>
     STATIC_POPOVER_STYLE +
     renderCommentBubble({
       quote: String(args.quote ?? ""),
       bodies: args.bodies as string[],
+      canEdit: args.canEdit === true,
+      canRemove: args.canRemove === true,
+      editIndex:
+        typeof args.editIndex === "number" ? args.editIndex : undefined,
+      draft: typeof args.draft === "string" ? args.draft : undefined,
+      editState: args.editState as CommentFormState | undefined,
+      confirmIndex:
+        typeof args.confirmIndex === "number" ? args.confirmIndex : undefined,
+      removeState: args.removeState as CommentRemoveState | undefined,
     }),
   // 余白のマーカーは余白の列に重ねて置くため、余白の列の縦の中ほどに置く
   "comment-marker": (args) =>

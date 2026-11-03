@@ -59,3 +59,37 @@ test("test_is_comment", async () => {
   // 検証
   expect(results).toEqual([true, false, false]);
 });
+
+// update・remove を持たないか関数で持てば通す（正常系）
+test("test_check_comment_store", async () => {
+  // 準備
+  const { checkCommentStore } = await loadSpec();
+  const minimal = { load: async () => [], save: async () => ({}) };
+  const editable = {
+    ...minimal,
+    update: async () => {},
+    remove: async () => {},
+  };
+  // 実行・検証
+  expect(() => checkCommentStore(minimal, "commentStore")).not.toThrow();
+  expect(() => checkCommentStore(editable, "commentStore")).not.toThrow();
+});
+
+// 合わない関数ごとに名前を含めて投げる（異常系）
+test("test_check_comment_store_when_invalid", async () => {
+  // 準備
+  const { checkCommentStore } = await loadSpec();
+  const minimal = { load: async () => [], save: async () => ({}) };
+  const cases: unknown[] = [
+    { load: async () => [] },
+    { ...minimal, update: 1 },
+    { ...minimal, remove: "x" },
+  ];
+  // 実行・検証
+  for (const store of cases) {
+    expect(() => checkCommentStore(store, "commentStore")).toThrow(TypeError);
+    expect(() => checkCommentStore(store, "commentStore")).toThrow(
+      "commentStore",
+    );
+  }
+});

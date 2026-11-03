@@ -1,0 +1,1023 @@
+$ npx vitest run --project 'unit*' tests/unit/src/comments tests/unit/src/parts/comment.test.ts tests/unit/src/interact/tables.browser.test.ts tests/unit/src/interact/sections.browser.test.ts tests/unit/src/mount-parts.browser.test.ts tests/unit/src/mount.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-mount-base-markdown-columns-comments
+
+ ❯ |unit| tests/unit/src/comments/spec.test.ts (4 tests | 2 failed) 1505ms
+   × test_check_comment_store 4ms
+   × test_check_comment_store_when_invalid 2ms
+ ❯ |unit| tests/unit/src/parts/comment.test.ts (12 tests | 5 failed) 1181ms
+   × test_render_comment_mark_when_focused 3ms
+   × test_render_comment_bubble_when_editable 2ms
+   × test_render_comment_item_when_editing 1ms
+   × test_render_comment_item_when_confirming 0ms
+   × test_render_comment_item_when_remove_only 0ms
+ ❯ |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts (8 tests | 8 failed) 889ms
+   × test_attach_comment_actions_when_edited 176ms
+   × test_attach_comment_actions_when_edit_empty 79ms
+   × test_attach_comment_actions_when_update_rejected 85ms
+   × test_attach_comment_actions_when_edit_cancelled 216ms
+   × test_attach_comment_actions_when_removed 85ms
+   × test_attach_comment_actions_when_remove_cancelled 74ms
+   × test_attach_comment_actions_when_remove_rejected 92ms
+   × test_attach_comment_actions_when_inactive 81ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts (15 tests | 7 failed) 2468ms
+   × test_mount_comments 191ms
+   × test_attach_parts 207ms
+   × test_attach_parts_when_detached_while_loading 90ms
+   × test_attach_parts_when_parts_mounted_inside 131ms
+   × test_attach_parts_when_comments_reloaded 103ms
+   × test_attach_parts_when_comments_reload_disabled 108ms
+   × test_attach_parts_when_comments_reload_after_detach 132ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts (15 tests | 1 failed) 841ms
+   × test_open_enclosing 154ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (42 tests | 2 failed) 1273ms
+   × test_attach_tables_when_columns_notified 145ms
+   × test_attach_tables_when_columns_callback_throws 92ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (35 tests | 10 failed) 1984ms
+   × test_mount_when_base_markdown 132ms
+   × test_mount_when_base_replaced 85ms
+   × test_mount_when_base_with_diff_source 119ms
+   × test_mount_when_base_not_string 83ms
+   × test_mount_when_columns_callback_not_function 83ms
+   × test_mount_when_columns_changed 102ms
+   × test_mount_when_comment_store_edit_invalid 86ms
+   × test_mount_when_comments_delegated 76ms
+   × test_check_base_markdown 70ms
+   × test_check_base_markdown_when_invalid 68ms
+ ❯ |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts (16 tests | 15 failed) 6996ms
+   × test_attach_comments_when_loaded 521ms
+   × test_attach_comments_when_saved 112ms
+   × test_attach_comments_when_empty_body 1152ms
+   × test_attach_comments_when_save_rejected 1104ms
+   × test_attach_comments_when_load_rejected 1074ms
+   × test_attach_comments_when_discarding 1075ms
+   × test_attach_comments_when_excluded 53ms
+   × test_attach_comments_when_detached 88ms
+   × test_attach_comments_when_store_without_edit 95ms
+   × test_attach_comments_when_removed_last 1137ms
+   × test_attach_comments_when_reloaded 118ms
+   × test_attach_comments_when_reloaded_with_form 149ms
+   × test_attach_comments_when_reload_rejected 97ms
+   × test_attach_comments_when_reload_superseded 101ms
+   × test_attach_comments_when_focused 117ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 50 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/comments/spec.test.ts > test_check_comment_store
+AssertionError: expected [Function] to not throw an error but 'TypeError: checkCommentStore is not a…' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"TypeError: checkCommentStore is not a function"
+
+ ❯ tests/unit/src/comments/spec.test.ts:74:64
+     72|   };
+     73|   // 実行・検証
+     74|   expect(() => checkCommentStore(minimal, "commentStore")).not.toThrow…
+       |                                                                ^
+     75|   expect(() => checkCommentStore(editable, "commentStore")).not.toThro…
+     76| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/62]⎯
+
+ FAIL  |unit| tests/unit/src/comments/spec.test.ts > test_check_comment_store_when_invalid
+AssertionError: expected [Function] to throw error including 'commentStore' but got 'checkCommentStore is not a function'
+
+Expected: "commentStore"
+Received: "checkCommentStore is not a function"
+
+ ❯ tests/unit/src/comments/spec.test.ts:91:60
+     89|   for (const store of cases) {
+     90|     expect(() => checkCommentStore(store, "commentStore")).toThrow(Typ…
+     91|     expect(() => checkCommentStore(store, "commentStore")).toThrow(
+       |                                                            ^
+     92|       "commentStore",
+     93|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/62]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_mark_when_focused
+AssertionError: expected '<mark class="mdmark-comment-mark" tab…' to match /\sdata-focused\b/
+
+- Expected:
+/\sdata-focused\b/
+
++ Received:
+"<mark class=\"mdmark-comment-mark\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-describedby=\"mdmark-comment-hint\">"
+
+ ❯ tests/unit/src/parts/comment.test.ts:101:48
+     99|   const html = renderCommentMark({ text: "手順", focused: true });
+    100|   // 検証
+    101|   expect(findTag(html, "mdmark-comment-mark")).toMatch(/\sdata-focused…
+       |                                                ^
+    102| });
+    103|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/62]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_bubble_when_editable
+AssertionError: expected '<li>' to contain 'class="mdmark-comment-item is-icon-ac…'
+
+Expected: "class="mdmark-comment-item is-icon-actions""
+Received: "<li>"
+
+ ❯ tests/unit/src/parts/comment.test.ts:137:16
+    135|   // 検証
+    136|   const item = findTag(html, "<li");
+    137|   expect(item).toContain('class="mdmark-comment-item is-icon-actions"'…
+       |                ^
+    138|   expect(item).toContain('data-comment-id="c1"');
+    139|   const buttons = findTags(html, "mdmark-comment-icon-button");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/62]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_item_when_editing
+TypeError: renderCommentItem is not a function
+ ❯ render tests/unit/src/parts/comment.test.ts:155:5
+    153|   /** 状態を変えて入力欄の `li` を返す */
+    154|   const render = (state: "idle" | "saving" | "empty" | "failed"): stri…
+    155|     renderCommentItem({
+       |     ^
+    156|       body: "元の本文",
+    157|       id: "c1",
+ ❯ tests/unit/src/parts/comment.test.ts:163:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/62]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_item_when_confirming
+TypeError: renderCommentItem is not a function
+ ❯ render tests/unit/src/parts/comment.test.ts:189:5
+    187|   /** 状態を変えて削除の確認の `li` を返す */
+    188|   const render = (state: "idle" | "removing" | "failed"): string =>
+    189|     renderCommentItem({
+       |     ^
+    190|       body: "元の本文",
+    191|       id: "c1",
+ ❯ tests/unit/src/parts/comment.test.ts:198:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/62]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_item_when_remove_only
+TypeError: renderCommentItem is not a function
+ ❯ tests/unit/src/parts/comment.test.ts:222:16
+    220|   const { renderCommentItem } = await loadComment();
+    221|   // 実行
+    222|   const html = renderCommentItem({ body: "本文", id: "c1", canRemove: tr…
+       |                ^
+    223|   // 検証
+    224|   const buttons = findTags(html, "mdmark-comment-icon-button");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_comments
+TypeError: detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_comments.png
+
+ ❯ src/mount-parts.ts:33:7
+     31|     if (!done) {
+     32|       done = true;
+     33|       detach();
+       |       ^
+     34|     }
+     35|   };
+ ❯ Object.destroy src/mount-parts.ts:101:7
+ ❯ tests/unit/src/mount-parts.browser.test.ts:229:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts
+TypeError: detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts.png
+
+ ❯ tests/unit/src/mount-parts.browser.test.ts:288:3
+    286|   });
+    287|   await vi.waitFor(() => expect(recorder.attachView).toHaveLength(2));
+    288|   detach();
+       |   ^
+    289|   // 検証
+    290|   expect(recorder.attachView).toEqual([
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_detached_while_loading
+TypeError: detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_detached_while_loading.png
+
+ ❯ tests/unit/src/mount-parts.browser.test.ts:358:3
+    356|     warned: { missingStore: false },
+    357|   });
+    358|   detach();
+       |   ^
+    359|   release();
+    360|   await settle();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_parts_mounted_inside
+TypeError: detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_parts_mounted_inside.png
+
+ ❯ tests/unit/src/mount-parts.browser.test.ts:414:3
+    412|   });
+    413|   // 実行
+    414|   detach();
+       |   ^
+    415|   // 検証
+    416|   expect(recorder.attachCommentsDetached).toBe(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_reloaded
+TypeError: handle.reloadComments is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_reloaded.png
+
+ ❯ tests/unit/src/mount-parts.browser.test.ts:445:16
+    443|   });
+    444|   // 実行
+    445|   await handle.reloadComments();
+       |                ^
+    446|   handle.focusComment("c1");
+    447|   // 検証
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_reload_disabled
+TypeError: off.reloadComments is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_reload_disabled.png
+
+ ❯ tests/unit/src/mount-parts.browser.test.ts:473:20
+    471|   });
+    472|   // 実行・検証: コメントの機能がオフ
+    473|   await expect(off.reloadComments()).resolves.toBeUndefined();
+       |                    ^
+    474|   expect(recorder.imports).toEqual([]);
+    475|   off.detach();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_reload_after_detach
+TypeError: handle.detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_reload_after_detach.png
+
+ ❯ tests/unit/src/mount-parts.browser.test.ts:513:10
+    511|   await vi.waitFor(() => expect(recorder.attachComments).toHaveLength(…
+    512|   // 実行: attachComments の解決の前に外し、その後に読み直す
+    513|   handle.detach();
+       |          ^
+    514|   release();
+    515|   // 検証
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_base_markdown
+AssertionError: expected [] to deeply equal [ 'B' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_base_markdown.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "B",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/src/mount.browser.test.ts:743:38
+    741|   });
+    742|   // 検証
+    743|   expect(blockParagraphs(el, "add")).toEqual(["B"]);
+       |                                      ^
+    744|   expect(blockParagraphs(el, "del")).toEqual(["D"]);
+    745|   expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_base_replaced
+AssertionError: expected [] to deeply equal [ 'C' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_base_replaced.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "C",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/src/mount.browser.test.ts:768:38
+    766|   // 実行・検証: 比較元を差し替える
+    767|   handle.update("A\n\nC\n", { baseMarkdown: "A\n" });
+    768|   expect(blockParagraphs(el, "add")).toEqual(["C"]);
+       |                                      ^
+    769|   // 実行・検証: 省くと前の比較元のまま
+    770|   handle.update("A\n\nD\n");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_base_with_diff_source
+AssertionError: expected [] to deeply equal [ 'B' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_base_with_diff_source.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "B",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/src/mount.browser.test.ts:804:44
+    802|   await new Promise((resolve) => setTimeout(resolve, 50));
+    803|   // 検証
+    804|   expect(blockParagraphs(blocksEl, "add")).toEqual(["B"]);
+       |                                            ^
+    805|   expect(blockParagraphs(buttonEl, "add")).toEqual(["B"]);
+    806|   expect(buttonEl.querySelector(".mdmark-diff-toggle")).not.toBeNull();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_base_not_string
+AssertionError: expected function to throw an error, but it didn't
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_base_not_string.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:821:5
+    819|   expect(() =>
+    820|     mount(el, { markdown: "# A", baseMarkdown: 1 as unknown as string …
+    821|   ).toThrow(TypeError);
+       |     ^
+    822|   expect(() =>
+    823|     mount(el, { markdown: "# A", baseMarkdown: 1 as unknown as string …
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_columns_callback_not_function
+AssertionError: expected function to throw an error, but it didn't
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_columns_callback_not_function.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:847:33
+    845|   };
+    846|   // 実行・検証
+    847|   expect(() => mount(el, opts)).toThrow(TypeError);
+       |                                 ^
+    848|   expect(() => mount(el, opts)).toThrow("onColumnsChange");
+    849|   expect(el.innerHTML).toBe("<p>前の中身</p>");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_columns_changed
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_columns_changed.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:877:27
+    875|   )[1]?.click();
+    876|   // 検証
+    877|   expect(onColumnsChange).toHaveBeenCalledTimes(1);
+       |                           ^
+    878|   expect(onColumnsChange).toHaveBeenCalledWith({
+    879|     tableIndex: 0,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_comment_store_edit_invalid
+AssertionError: expected function to throw an error, but it didn't
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_comment_store_edit_invalid.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:904:5
+    902|   expect(() =>
+    903|     mount(el, { markdown: "# A", docId: "guide", commentStore }),
+    904|   ).toThrow(TypeError);
+       |     ^
+    905|   expect(() =>
+    906|     mount(el, { markdown: "# A", docId: "guide", commentStore }),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_comments_delegated
+TypeError: handle.reloadComments is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_comments_delegated.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:954:18
+    952|     });
+    953|     // 実行
+    954|     await handle.reloadComments();
+       |                  ^
+    955|     handle.focusComment("c1");
+    956|     handle.destroy();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_comments_delegated
+TypeError: detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_comments_delegated.png
+
+ ❯ src/mount-parts.ts:217:7
+    215|     detached = true;
+    216|     for (const detach of detachers.splice(0).reverse()) {
+    217|       detach();
+       |       ^
+    218|     }
+    219|     // 拡張の `draw` から呼んだ `mountView`・`mountComments` も片付ける
+ ❯ Object.destroy src/mount.ts:319:7
+ ❯ tests/unit/src/mount.browser.test.ts:81:12
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ wrapper node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4481:37
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+ ❯ runWithTimeout node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5674:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5981:52
+ ❯ run node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:3862:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_check_base_markdown
+AssertionError: expected [Function] to not throw an error but 'TypeError: checkBaseMarkdown is not a…' was thrown
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_check_base_markdown.png
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+"TypeError: checkBaseMarkdown is not a function"
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:2776:114
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:2439:14
+ ❯ tests/unit/src/mount.browser.test.ts:976:48
+    974|   // 実行・検証
+    975|   for (const value of ["# A", "", null, undefined]) {
+    976|     expect(() => checkBaseMarkdown(value)).not.toThrow();
+       |                                                ^
+    977|   }
+    978| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_check_base_markdown_when_invalid
+AssertionError: expected [Function] to throw error including 'baseMarkdown' but got 'checkBaseMarkdown is not a function'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_check_base_markdown_when_invalid.png
+
+Expected: [32m"[7mb[27maseMarkdown"[39m
+Received: [31m"[7mcheckB[27maseMarkdown[7m is not a function[27m"[39m
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:2776:114
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:2439:14
+ ❯ tests/unit/src/mount.browser.test.ts:987:44
+    985|   for (const value of [1, {}]) {
+    986|     expect(() => checkBaseMarkdown(value)).toThrow(TypeError);
+    987|     expect(() => checkBaseMarkdown(value)).toThrow("baseMarkdown");
+       |                                            ^
+    988|   }
+    989| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_edited
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_edited.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:118:46
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_edit_empty
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_edit_empty.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:142:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_update_rejected
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_update_rejected.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:162:39
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_edit_cancelled
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_edit_cancelled.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:186:37
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_removed
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_removed.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:214:46
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_remove_cancelled
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_remove_cancelled.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:239:44
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_remove_rejected
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_remove_rejected.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:263:39
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_inactive
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_inactive.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadBubble tests/unit/src/comments/bubble.browser.test.ts:6:3
+ ❯ setup tests/unit/src/comments/bubble.browser.test.ts:38:42
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:288:39
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_loaded
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_saved
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_empty_body
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_save_rejected
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_load_rejected
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_discarding
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_excluded
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_store_without_edit
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_removed_last
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reloaded
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reloaded_with_form
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reload_rejected
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reload_superseded
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_focused
+TypeError: detach is not a function
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_empty_body.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_save_rejected.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_load_rejected.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_discarding.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_store_without_edit.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_removed_last.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reloaded.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reloaded_with_form.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reload_rejected.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reload_superseded.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_focused.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:134:5
+    132| afterEach(() => {
+    133|   for (const detach of detachers.splice(0)) {
+    134|     detach();
+       |     ^
+    135|   }
+    136|   for (const root of roots.splice(0)) {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4125:35
+ ❯ wrapper node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:4481:37
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5710:20
+ ❯ runWithTimeout node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5674:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5981:52
+ ❯ run node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:3862:20
+ ❯ limiterFn node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:3872:59
+ ❯ runHook node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5980:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_empty_body
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_save_rejected
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_discarding
+AssertionError: expected undefined to be defined
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_empty_body.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_save_rejected.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_discarding.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:100:50
+     98|   }
+     99|   select(paragraph, 0, 5);
+    100|   await vi.waitFor(() => expect(visibleButton()).toBeDefined());
+       |                                                  ^
+    101|   visibleButton()?.click();
+    102|   const form = document.querySelector<HTMLElement>(".mdmark-comment-fo…
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_load_rejected
+AssertionError: expected undefined to be defined
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_load_rejected.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:258:50
+    256|     select(paragraph, 0, 5);
+    257|   }
+    258|   await vi.waitFor(() => expect(visibleButton()).toBeDefined());
+       |                                                  ^
+    259| });
+    260|
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_detached
+TypeError: detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_detached.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:318:3
+    316|   expect(root.querySelector("mark.mdmark-comment-mark")).not.toBeNull(…
+    317|   // 実行
+    318|   detach();
+       |   ^
+    319|   // 検証
+    320|   expect(root.innerHTML).toBe(before);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_store_without_edit
+TypeError: plain.detach is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_store_without_edit.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:394:9
+    392|   const plainBubble = openBubble(plainRoot);
+    393|   expect(plainBubble.querySelector(".mdmark-comment-icon-button")).toB…
+    394|   plain.detach();
+       |         ^
+    395|   // 実行・検証: remove も持つ
+    396|   const removable = await attachComments({
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_removed_last
+AssertionError: expected <mark …(6)></mark> to be null
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_removed_last.png
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<mark
+  aria-describedby="mdmark-comment-hint"
+  aria-expanded="true"
+  aria-haspopup="dialog"
+  class="mdmark-comment-mark"
+  role="button"
+  tabindex="0"
+>
+  導入の手順
+</mark>
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:423:60
+    421|   // 検証
+    422|   await vi.waitFor(() =>
+    423|     expect(root.querySelector("mark.mdmark-comment-mark")).toBeNull(),
+       |                                                            ^
+    424|   );
+    425|   expect(remove).toHaveBeenCalledTimes(1);
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=201a7f70:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reloaded
+TypeError: controller.reload is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reloaded.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:444:20
+    442|   openBubble(root);
+    443|   // 実行
+    444|   await controller.reload();
+       |                    ^
+    445|   // 検証
+    446|   expect(markTexts(root)).toEqual(["手順の数"]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reloaded_with_form
+TypeError: controller.reload is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reloaded_with_form.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:464:20
+    462|   type(form, BODY);
+    463|   // 実行
+    464|   await controller.reload();
+       |                    ^
+    465|   // 検証
+    466|   expect(document.querySelector(".mdmark-comment-form")).toBe(form);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reload_rejected
+TypeError: controller.reload is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reload_rejected.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:482:27
+    480|   store.load.mockRejectedValueOnce(error);
+    481|   // 実行・検証
+    482|   await expect(controller.reload()).rejects.toBe(error);
+       |                           ^
+    483|   expect(markTexts(root)).toEqual(["導入の手順"]);
+    484|   expect(loggedText(spy)).toContain("load");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_reload_superseded
+TypeError: controller.reload is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_reload_superseded.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:502:35
+    500|     .mockReturnValueOnce(third.promise);
+    501|   // 実行: 2 回目を待たせたまま 3 回目を呼び、3 回目を先に返してから 2 回目を返す
+    502|   const secondReload = controller.reload();
+       |                                   ^
+    503|   const thirdReload = controller.reload();
+    504|   third.resolve([LOADED]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_focused
+TypeError: controller.focus is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_focused.png
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:549:14
+    547|   );
+    548|   // 実行・検証: c1 へ移る
+    549|   controller.focus("c1");
+       |              ^
+    550|   expect(document.activeElement).toBe(first);
+    551|   expect(first?.hasAttribute("data-focused")).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_open_enclosing
+TypeError: openEnclosing is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_open_enclosing.png
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:521:3
+    519|   expect(detail.hasAttribute("hidden")).toBe(true);
+    520|   // 実行
+    521|   openEnclosing(target);
+       |   ^
+    522|   // 検証
+    523|   expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(false);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_notified
+AssertionError: expected last "vi.fn()" call to have been called with [ { tableIndex: 1, hidden: [ '状態' ] } ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_notified.png
+
+[32m- Expected:[39m
+[
+  {
+    "hidden": [
+      "状態",
+    ],
+    "tableIndex": 1,
+  },
+]
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1503:27
+    1501|   // 実行・検証: 3 つ目の表で `状態` のチェックを外す
+    1502|   columnCheckboxes(third)[1]?.click();
+    1503|   expect(onColumnsChange).toHaveBeenLastCalledWith({
+       |                           ^
+    1504|     tableIndex: 1,
+    1505|     hidden: ["状態"],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/62]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_callback_throws
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_callback_throws.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1533:27
+    1531|     expect(cell.hasAttribute("hidden")).toBe(true);
+    1532|   }
+    1533|   expect(onColumnsChange).toHaveBeenCalledTimes(1);
+       |                           ^
+    1534|   expect(consoleError).toHaveBeenCalledWith(
+    1535|     expect.any(String),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=201a7f70:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/62]⎯
+
+
+ Test Files  8 failed | 2 passed (10)
+      Tests  50 failed | 105 passed (155)
+   Start at  13:16:13
+   Duration  23.29s (worker 79%, tests 14%, import 5%, transform 2%)
+

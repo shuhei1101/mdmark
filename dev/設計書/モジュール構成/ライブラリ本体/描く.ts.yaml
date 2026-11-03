@@ -64,6 +64,12 @@ data_models:
       - name: diffMode
         type: DiffMode | undefined
         description: 差分の出し方。`button`（既定）・`open`・`blocks`。`diffSource` を渡さないときは使わない。知らない値は `button` にする
+      - name: baseMarkdown
+        type: string | null | undefined
+        description: 比較元の Markdown。文字列なら、本文の中で比較元から変えたブロックを `diffMode` の `blocks` と同じ色で塗り分ける。`null` は省いたのと同じ
+      - name: onColumnsChange
+        type: '((event: MdmarkColumnsChange) => void) | undefined'
+        description: '`+columns` の表で列の表示を切り替えるたびに呼ぶ関数'
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -71,11 +77,33 @@ data_models:
     summary: '`mount` の戻り値（公開の型）'
     properties:
       - name: update
-        type: '(markdown: string) => void'
-        description: 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない
+        type: '(markdown: string, options?: { baseMarkdown?: string | null }) => void'
+        description: 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` で比較元を差し替え（`null` で外し）、省くと前の比較元のまま描く。`destroy` の後は何もしない
+      - name: reloadComments
+        type: () => Promise<void>
+        description: 本文を描き直さずにコメントを読み直し、印を付け直す。コメントを付けていないときと `destroy` の後は `load` を呼ばずに解決する
+      - name: focusComment
+        type: '(id: string) => void'
+        description: その `id` のコメントの印を画面に入れてフォーカスを移し、強調する。印が無い `id` と `destroy` の後は何もしない
       - name: destroy
         type: () => void
         description: 要素の中を空にして class `mdmark` を外し、印刷の受け取りを外す。2 回目以降は何もしない
+  - name: MdmarkColumnsChange
+    title: 列の表示の知らせ
+    container: src/mount.ts
+    usecase: 使う側のページが文書を描く
+    role: DTO
+    summary: '`onColumnsChange` に渡す値（公開の型）'
+    properties:
+      - name: tableIndex
+        type: number
+        description: 本文の中の `+columns` の表の出現順の番号（0 から。削除したブロックの中の表は数えない）
+      - name: hidden
+        type: string[]
+        description: 隠している列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列
+    status: planned
+    introduced:
+      pr: 280
   - name: LibraryModule
     title: 外部ライブラリのモジュール
     container: src/libraries.ts
@@ -167,7 +195,7 @@ functions:
     kind: 関数
     scope: public
     summary: 公開関数。要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、印刷の受け取りを付けて `MountHandle` を返す
-    side_effects: '`el` の中身と class を書き換え、`window` に `beforeprint`・`afterprint` の受け取りを付ける。`mounted` に `el` を控える'
+    side_effects: '`el` の中身と class を書き換え、`window` に `beforeprint`・`afterprint` の受け取りを付ける。`mounted` に `el` を控える。`onColumnsChange` を呼ぶ'
     args:
       - name: el
         type: HTMLElement
@@ -187,7 +215,7 @@ functions:
       type: MountHandle
       description: 描き直しと片付けの関数
     process: |-
-      1. `diffSource` か `commentStore` を渡して `docId` が無ければ `TypeError` を投げる。`commentStore` が `load`・`save` の関数を持たなければ `TypeError` を投げる（コメントの引数を検める）。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
+      1. `diffSource` か `commentStore` を渡して `docId` が無ければ `TypeError` を投げる。`commentStore` を `checkCommentStore(commentStore, "commentStore")` で確かめる（コメントの読み書きの関数を検める）。`baseMarkdown` を `checkBaseMarkdown` で確かめ、`onColumnsChange` を渡して関数でなければ `onColumnsChange` を含む `TypeError` を投げる。比較元（`baseMarkdown` が文字列ならその値、それ以外は無し）を控える。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
       2. 設定に既定を当てる（設定に既定を当てる）
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数・右側の目次を外す関数・先頭へ戻るボタンを外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
       4. 文書を描く。描くたびに次を行う
@@ -195,18 +223,20 @@ functions:
          - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` に既定を当てた設定の `colorTheme` を付ける
          - 機能のオン・オフを控える
          - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。既定を当てた設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
+         - 比較元があって本文と違うときは、本文の HTML を `el` に置く前に、本文と比較元の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し、本文の中身を `el` に置く（下の `blocks` の色分けと同じ）
          - 機能の `comments` がオンで `commentStore` と `docId` を渡し、右側の目次が本文の列に包んでいない（戻りの `content` が `el`）ときは、`el` の子を `div.mdmark-content` に包み、以降の描いた要素をその本文の列にする。外す関数は、包む前の子の並びへ戻す（余白の列を本文の列の右に置くため。インターフェース定義『文書を描く』の制約「余白のマーカー」）
-         - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す）、外す関数を控える
+         - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す。`onColumnsChange` を渡したときはそれも渡す）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
-         - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、外す関数を控える。前の外す関数は描き直す前に呼ぶ
+         - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、戻りの `PartsHandle` を控える。前の `PartsHandle` の `detach` は描き直す前に呼ぶ
          - `diffSource` を渡し、差分の出し方が `button` か `open` なら、前の差分を外す関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` かを渡す。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
-         - `diffSource` を渡し、差分の出し方が `blocks` で、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で描き直す。そのときは本文の HTML を `el` に置く前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に置く。色分けして描いたときは取り出し元を呼び直さない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の知らせの枠を置く
+         - `diffSource` を渡し、差分の出し方が `blocks` で、比較元が無く、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で描き直す。そのときは本文の HTML を `el` に置く前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に置く。色分けして描いたときは取り出し元を呼び直さない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の知らせの枠を置く
          - 機能の `back-to-top` がオンなら先頭へ戻るボタンを付け（先頭へ戻るボタンを付ける。`el` と、ここまでで決まった本文の列を渡す）、外す関数を控える。描くたびに付け直し、スクロールする場所を `update` の後にも決め直す
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
-      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
-      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` と `COLOR_THEME_ATTRIBUTE` を外し、`mounted` の `el` が自分なら消す
-      8. `mounted` に `el` と戻り値を控えて返す
+      6. `update` は、片付けた後なら何もしない。`options.baseMarkdown` を渡したときは `checkBaseMarkdown` で確かめ（投げたら描き直さずにそのまま投げる）、比較元を文字列ならその値、`null` なら無しに差し替える。手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
+      7. `reloadComments` は、片付けた後なら解決した Promise を返し、そうでなければ控えた `PartsHandle` の `reloadComments()` を返す。`focusComment(id)` は、片付けた後なら何もせず、そうでなければ控えた `PartsHandle` の `focusComment(id)` を呼ぶ
+      8. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` と `COLOR_THEME_ATTRIBUTE` を外し、`mounted` の `el` が自分なら消す
+      9. `mounted` に `el` と戻り値を控えて返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
@@ -219,6 +249,8 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[colorDiffBlocks]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
       - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#functions[attachParts]
+      - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#functions[checkCommentStore]
+      - '#functions[checkBaseMarkdown]'
       - '#functions[highlightCodeBlocks]'
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachSideToc]
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachBackToTop]
@@ -381,6 +413,92 @@ functions:
         condition: '`diffMode: "blocks"`。`content` が拒否する'
         mock: '`console.error` を控える関数で包む'
         expected: '例外を投げず、本文の列の最初の子が `renderNotice({ name: "guide", source: "diff-blocks" })` の知らせの枠で、`mdmark-diff-block` が無い'
+      - name: test_mount_when_base_markdown
+        case: 正常
+        summary: 比較元を渡すと、取り出し元なしで変えたブロックを色分けして描く
+        condition: '`markdown` は段落 `A`・`B`・`C`、`baseMarkdown` は段落 `A`・`C`・`D`。段落 `C` は 2 行（空行どうしで合わないようにする）'
+        mock: なし
+        expected: '`B` の段落が `div.mdmark-diff-block[data-kind="add"]` に、`D` の段落が `div.mdmark-diff-block[data-kind="del"]` に包まれ、`mdmark-diff-toggle` が無い'
+      - name: test_mount_when_base_markdown_same
+        case: 正常
+        summary: 比較元が本文と同じなら色分けしない
+        condition: '`markdown` と `baseMarkdown` が同じ `# A`'
+        mock: なし
+        expected: '`mdmark-diff-block` が無い'
+      - name: test_mount_when_base_replaced
+        case: 正常
+        summary: update で比較元を差し替え、省くと前の比較元のまま、null で外す
+        condition: '段落 `A` を比較元 `A`・`B` で描いた後、`update("A\n\nC", { baseMarkdown: "A" })`、`update("A\n\nD")`、`update("A\n\nD", { baseMarkdown: null })`'
+        mock: なし
+        expected: 1 回目の `update` の後は `C` が `add`、2 回目の後は `D` が `add`、3 回目の後は `mdmark-diff-block` が無い
+      - name: test_mount_when_base_with_diff_source
+        case: 正常
+        summary: 比較元と取り出し元を両方渡すと、色分けに比較元を使い、取り出し元は差分を開く UI にだけ使う
+        condition: '比較元を渡し、`diffMode: "blocks"` で描く要素と、`diffMode: "button"` で描く要素'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: '`blocks` の要素は比較元の色分けがあり、`revisions`・`content` が呼ばれない。`button` の要素は比較元の色分けと `mdmark-diff-toggle` の両方がある'
+      - name: test_mount_when_base_not_string
+        case: 異常
+        summary: 比較元が文字列でも null でもないと投げる
+        condition: '`baseMarkdown: 1` で `mount` する。別の要素で `# A` を描いた後に `update("# B", { baseMarkdown: 1 })`'
+        mock: なし
+        expected: どちらも `baseMarkdown` を含む `TypeError` を投げる。`mount` の要素の中は変わらず、`update` の要素は `A` の見出しのまま
+      - name: test_mount_when_columns_callback_not_function
+        case: 異常
+        summary: 列の表示の知らせが関数でないと投げる
+        condition: '`onColumnsChange: "x"`'
+        mock: なし
+        expected: '`onColumnsChange` を含む `TypeError` を投げ、`el` の中は変わらない'
+      - name: test_mount_when_columns_changed
+        case: 正常
+        summary: 列の表示を切り替えると知らせ、描いたときと update では知らせない
+        condition: '`<!-- table: data +columns hide=説明 -->` の表（列 `名前`・`状態`・`説明`）を描き、`update` で同じ本文を描き直してから、列の表示で `状態` のチェックを外す'
+        mock: '`onColumnsChange` は引数を控える関数'
+        expected: '`update` の後まで呼ばれず、外した後に `{ tableIndex: 0, hidden: ["状態", "説明"] }` で 1 回呼ばれる'
+      - name: test_mount_when_comment_store_edit_invalid
+        case: 異常
+        summary: 読み書きの関数の update・remove が関数でないと投げる
+        condition: '`commentStore` に `update: 1` を持たせる'
+        mock: なし
+        expected: '`commentStore` を含む `TypeError` を投げ、`el` の中は変わらない'
+      - name: test_mount_when_comments_delegated
+        case: 正常
+        summary: reloadComments・focusComment を今の描画の部品に任せ、destroy の後は呼ばない
+        condition: '`comments` をオンにし、`commentStore` と `docId` を渡して描き、`reloadComments()` と `focusComment("c1")` を呼び、`destroy` の後にもう一度ずつ呼ぶ'
+        mock: '`setPartModuleUrl` で `comments` を、`reload`・`focus` の呼び出しを控える `CommentsController` を返すモジュールの URL に差し替える'
+        expected: '`destroy` の前は `reload` が 1 回、`focus` が `c1` で 1 回呼ばれる。`destroy` の後の `reloadComments()` は解決し、どちらも呼ばれない'
+  - name: checkBaseMarkdown
+    title: 比較元を検める
+    container: src/mount.ts
+    kind: 関数
+    scope: internal
+    summary: '`mount` の `opts.baseMarkdown` と `update` の `options.baseMarkdown` が、文字列か `null` か `undefined` かを確かめ、違えば `baseMarkdown` を含む `TypeError` を投げる'
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 渡された比較元
+    returns:
+      type: 'asserts value is string | null | undefined'
+      description: 合えば何も返さない
+    unit_tests:
+      - name: test_check_base_markdown
+        case: 正常
+        summary: 文字列・null・undefined は通す
+        condition: '`"# A"`・`""`・`null`・`undefined` を渡す'
+        mock: なし
+        expected: どれも投げない
+      - name: test_check_base_markdown_when_invalid
+        case: 異常
+        summary: それ以外は投げる
+        condition: '`1`・`{}` を渡す'
+        mock: なし
+        expected: どちらも `baseMarkdown` を含む `TypeError`
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[TypeError（比較元）]
+    status: planned
+    introduced:
+      pr: 280
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts
