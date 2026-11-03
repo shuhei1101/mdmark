@@ -50,9 +50,9 @@ import {
 import { renderDiffToggle } from "../src/parts/diff-toggle.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
-import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
 import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
 import { renderFigure } from "../src/parts/figure.ts";
+import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
 import { renderGallery } from "../src/parts/gallery.ts";
 import { renderGif } from "../src/parts/gif.ts";
 import { type HintPlacement, renderHint } from "../src/parts/hint.ts";

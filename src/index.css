@@ -4635,13 +4635,8 @@
   @media print {
     .mdmark {
       /* 番号のツールチップ: 開いていても紙に出さない */
-      .mdmark-fn-ref .mdmark-fn-tip {
-        display: none !important;
-      }
-
-      /* 番号のリンク: 紙では押せないので、リンクの URL を併記しない */
-      .mdmark-fn-link::after {
-        content: "]" !important;
+      .mdmark-fn-ref:is(:hover, :focus-within, .is-open) .mdmark-fn-tip {
+        display: none;
       }
 
       /* 戻るリンク: 紙では押せないので出さない */

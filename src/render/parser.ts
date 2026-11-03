@@ -26,6 +26,12 @@ import { buildCards } from "./syntax/cards.ts";
 import { buildCodeBlocks } from "./syntax/code-blocks.ts";
 import { buildDiagrams } from "./syntax/diagrams.ts";
 import { numberFigures } from "./syntax/figures.ts";
+import {
+  buildFootnoteList,
+  collectFootnotes,
+  type FootnoteState,
+  useFootnotes,
+} from "./syntax/footnotes.ts";
 import { buildGallery } from "./syntax/gallery.ts";
 import { glossaryRule } from "./syntax/glossary.ts";
 import { assignHeadingIds } from "./syntax/headings.ts";
@@ -39,12 +45,6 @@ import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
 import { buildTextColors } from "./syntax/text-color.ts";
 import { buildToc } from "./syntax/toc.ts";
-import {
-  buildFootnoteList,
-  collectFootnotes,
-  type FootnoteState,
-  useFootnotes,
-} from "./syntax/footnotes.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
 import { buildViews } from "./syntax/views.ts";
 

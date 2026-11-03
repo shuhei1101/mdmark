@@ -169,11 +169,7 @@ export function readFootnoteDefinition(
 }
 
 /** 本文の参照のトークンを足し、脚注の参照の数を増やす */
-function pushReference(
-  state: StateInline,
-  id: number,
-  source: string,
-): void {
+function pushReference(state: StateInline, id: number, source: string): void {
   const footnotes = footnoteStateOf(state.env as RenderEnv);
   const note = footnotes.notes[id];
   if (note === undefined) {
@@ -369,8 +365,9 @@ export function footnoteBodies(options: {
     return { bodies: [body], html: `<p>${body}</p>` };
   }
   const tokens =
-    (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ??
-    [];
+    (note.key === null
+      ? null
+      : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [];
   const bodies: string[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -409,7 +406,8 @@ function markOwnAroundBodies(
   let cursor = 0;
   let out = "";
   for (const fill of fills) {
-    const at = html.indexOf(FOOTNOTE_BODY_OPEN, cursor) + FOOTNOTE_BODY_OPEN.length;
+    const at =
+      html.indexOf(FOOTNOTE_BODY_OPEN, cursor) + FOOTNOTE_BODY_OPEN.length;
     out += markOwn(html.slice(cursor, at), nonce) + fill;
     cursor = at + fill.length;
   }
@@ -461,10 +459,19 @@ export function buildFootnoteList(state: StateCore): void {
 
 /** 解析器に、脚注の定義・参照・行内の脚注のルールと、参照の描き方を登録する */
 export function useFootnotes(parser: MarkdownIt): void {
-  parser.block.ruler.before("reference", "mdmark_footnote_def", readFootnoteDefinition, {
-    alt: ["paragraph", "reference"],
-  });
-  parser.inline.ruler.after("image", "mdmark_footnote_inline", readInlineFootnote);
+  parser.block.ruler.before(
+    "reference",
+    "mdmark_footnote_def",
+    readFootnoteDefinition,
+    {
+      alt: ["paragraph", "reference"],
+    },
+  );
+  parser.inline.ruler.after(
+    "image",
+    "mdmark_footnote_inline",
+    readInlineFootnote,
+  );
   parser.inline.ruler.after(
     "mdmark_footnote_inline",
     "mdmark_footnote_ref",
