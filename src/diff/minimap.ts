@@ -1,3 +1,4 @@
+import { findScrollContainer } from "../interact/scroller.ts";
 import {
   type DiffMinimapMark,
   renderDiffMinimap,
@@ -36,29 +37,6 @@ type Entry = {
 /** 送り先のスクロールの要素から、そこに置いた帯と印を出している差分の行の集まりを引く */
 const minimaps = new WeakMap<Element, Entry>();
 
-/** 差分の行の祖先をたどり、縦にスクロールして中身がはみ出す一番近い要素を返す。無ければ画面をスクロールする要素 */
-function findScroller(lines: HTMLElement): HTMLElement {
-  for (
-    let element = lines.parentElement;
-    element !== null && element !== document.body;
-    element = element.parentElement
-  ) {
-    const { overflowY } = getComputedStyle(element);
-    if (
-      (overflowY === "auto" || overflowY === "scroll") &&
-      element.scrollHeight > element.clientHeight
-    ) {
-      return element;
-    }
-  }
-  return (document.scrollingElement ?? document.documentElement) as HTMLElement;
-}
-
-/** 送り先が画面をスクロールする要素か */
-function isPage(target: HTMLElement): boolean {
-  return target === (document.scrollingElement ?? document.documentElement);
-}
-
 /** HTML 文字列から要素を作る */
 function parseElement(html: string): HTMLElement {
   const template = document.createElement("template");
@@ -71,14 +49,13 @@ function clamp(ratio: number): number {
   return Math.min(Math.max(ratio, 0), 1);
 }
 
-/** 送り先のスクロールの要素に、帯を 1 本だけ作る */
-function createEntry(target: HTMLElement): Entry {
+/** 送り先のスクロールの要素に、帯を 1 本だけ作る。page は送り先が画面全体か */
+function createEntry(target: HTMLElement, page: boolean): Entry {
   const band = parseElement(
     renderDiffMinimap({ marks: [], view: { top: 0, height: 1 } }),
   );
   const lines = new Set<HTMLElement>();
   document.body.append(band);
-  const page = isPage(target);
 
   /** 帯を送り先の右端に、送り先の高さで置く。画面のときは CSS が右端に画面の高さいっぱいで貼り付ける */
   const placeBand = (): void => {
@@ -254,8 +231,8 @@ function createEntry(target: HTMLElement): Entry {
 
 /** 差分の行の並びの送り先（一番近いスクロールする祖先、無ければ画面）の右端に、帯を 1 本だけ置いて印と今見えている範囲の枠を並べ、押す・押したまま動かすで送る。同じ送り先の 2 つ目以降の差分は同じ帯に印を足す。返す関数でこの行を帯から外し、行が無くなったら帯と受け取りを外す */
 export function attachMinimap(lines: HTMLElement): () => void {
-  const target = findScroller(lines);
-  const entry = minimaps.get(target) ?? createEntry(target);
+  const { target, page } = findScrollContainer(lines);
+  const entry = minimaps.get(target) ?? createEntry(target, page);
   minimaps.set(target, entry);
   entry.lines.add(lines);
   entry.sync();
