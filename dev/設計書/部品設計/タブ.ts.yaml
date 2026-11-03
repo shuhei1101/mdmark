@@ -80,7 +80,7 @@ args:
   - name: titles
     type: 配列
     required: true
-    description: タブ名（区切りの見出しの行内の HTML。`**` の強調は `strong` のまま）を並んだ順に
+    description: タブ名（区切りの見出しの行内の HTML。`**` の強調は `strong` のまま。リンク（`a`）はタブのボタンでは中身の文字にし、中身のタブ名には残す）を並んだ順に
   - name: selected
     type: 整数
     required: false

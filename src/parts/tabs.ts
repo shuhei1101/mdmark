@@ -12,6 +12,11 @@ function plainText(html: string): string {
     .replaceAll("&amp;", "&");
 }
 
+/** タブ名の行内の HTML から、リンク（`a`）のタグを外して中身だけを残す。ボタンの中に対話的な要素を置かない */
+function withoutLinks(html: string): string {
+  return html.replace(/<\/?a\b[^>]*>/gi, "");
+}
+
 /** タブを描く。`group` を渡すと `data-group` に写す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、折り畳みに入れる */
 export function renderTabs(options: {
   /** タブの id の頭 */
@@ -43,7 +48,7 @@ export function renderTabs(options: {
     ? `<div class="mdmark-tablist" role="tablist">${titles
         .map(
           (title, index) =>
-            `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml(id)}-tab-${index}" aria-controls="${escapeHtml(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${title}</button>`,
+            `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml(id)}-tab-${index}" aria-controls="${escapeHtml(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${withoutLinks(title)}</button>`,
         )
         .join("")}</div>`
     : "";
