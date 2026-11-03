@@ -19,6 +19,7 @@ import {
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
+import { erText, foldEr, shopErFolded } from "../../unit/helpers/er.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   ALIAS_EXPECTED_HTML,
@@ -2215,6 +2216,7 @@ test("test_normal_when_printed_with_syntax", async () => {
     "        └── tree.ts",
     "```",
     "",
+    wrapDirective("er", erText(shopErFolded())),
     "## 閉じた節",
     "",
     "<!-- section: closed -->",
@@ -2223,6 +2225,15 @@ test("test_normal_when_printed_with_syntax", async () => {
     "",
   ].join("\n");
   await mountTracked(el, { markdown });
+  const erOrders = find<HTMLElement>(
+    el,
+    '.mdmark-diagram-er-table[data-node="orders"]',
+  );
+  const erRows = [
+    ...erOrders.querySelectorAll<HTMLElement>(".mdmark-diagram-er-column"),
+  ];
+  const erFold = find<HTMLElement>(erOrders, ".mdmark-diagram-er-fold");
+  expect(erRows.filter((row) => isShown(row))).toHaveLength(2);
   const firstTabs = find<HTMLElement>(el, ".mdmark-tabs");
   const tabs = [...firstTabs.querySelectorAll<HTMLElement>('[role="tab"]')];
   tabs[1]?.click();
@@ -2270,6 +2281,8 @@ test("test_normal_when_printed_with_syntax", async () => {
   expect(isShown(find(el, ".mdmark-tree .mdmark-tree-list ul ul li"))).toBe(
     true,
   );
+  expect(erRows.every((row) => isShown(row))).toBe(true);
+  expect(erFold.getAttribute("aria-expanded")).toBe("true");
   // 印刷の媒体では、ツリーのコピーのボタンを出さない
   await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
   try {
@@ -2294,6 +2307,8 @@ test("test_normal_when_printed_with_syntax", async () => {
     "false",
     "false",
   ]);
+  expect(erRows.filter((row) => isShown(row))).toHaveLength(2);
+  expect(erFold.getAttribute("aria-expanded")).toBe("false");
 });
 
 // update の後も記法の操作が働き、destroy の後は document の受け取りが外れている（正常系）
@@ -9498,4 +9513,154 @@ test("test_normal_when_code_folds_printed", async () => {
   } finally {
     await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
   }
+});
+
+/** ER 図を描いた図と、`id` のテーブル */
+async function mountEr(markdown: string): Promise<{
+  figure: HTMLElement;
+  table: (id: string) => HTMLElement;
+}> {
+  const el = createElement();
+  el.style.width = "800px";
+  await mountTracked(el, { markdown });
+  const figure = find<HTMLElement>(
+    el,
+    'figure.mdmark-diagram[data-diagram="er"]',
+  );
+  return {
+    figure,
+    table: (id) =>
+      find<HTMLElement>(figure, `.mdmark-diagram-er-table[data-node="${id}"]`),
+  };
+}
+
+/** 関係の線の、先の端の縦の位置（`d` の最後の縦の線の終わり） */
+function erEndY(figure: Element): number {
+  const d =
+    figure
+      .querySelector('[data-er-to="orders"] path[data-line="er"]')
+      ?.getAttribute("d") ?? "";
+  return Number(/V([\d.]+) H[\d.]+$/.exec(d)?.[1]);
+}
+
+// ER 図の列の開閉のボタンで、主キーと外部キー以外の列を畳み、関係の線を結び直す（正常系）
+test("test_normal_when_er_columns_folded", async () => {
+  // 準備
+  const { figure, table } = await mountEr(
+    wrapDirective("er", erText(foldEr())),
+  );
+  const orders = table("orders");
+  const rows = () =>
+    [
+      ...orders.querySelectorAll<HTMLElement>(".mdmark-diagram-er-column"),
+    ].filter((row) => isShown(row));
+  const button = find<HTMLButtonElement>(orders, ".mdmark-diagram-er-fold");
+  expect(rows()).toHaveLength(12);
+  expect(button.getAttribute("aria-expanded")).toBe("true");
+  const before = erEndY(figure);
+  const zoom = zoomText(figure);
+  // 実行
+  await userEvent.click(button);
+  // 検証
+  expect(rows()).toHaveLength(2);
+  expect(isShown(find(orders, ".mdmark-diagram-er-rest"))).toBe(true);
+  expect(find(orders, ".mdmark-diagram-er-rest").textContent).toBe(
+    "非表示 10 列",
+  );
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(button);
+  const fkRow = find<HTMLElement>(orders, '[data-column="customer_id"]');
+  const stage = find<HTMLElement>(figure, ".mdmark-diagram-stage");
+  const scale = stage.getBoundingClientRect().height / stage.offsetHeight;
+  const rowMiddle =
+    (fkRow.getBoundingClientRect().top +
+      fkRow.getBoundingClientRect().height / 2 -
+      stage.getBoundingClientRect().top) /
+    scale;
+  expect(Math.abs(erEndY(figure) - rowMiddle)).toBeLessThanOrEqual(2);
+  expect(erEndY(figure)).not.toBe(before);
+  expect(zoomText(figure)).toBe(zoom);
+  // 実行
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  expect(rows()).toHaveLength(12);
+  expect(button.getAttribute("aria-expanded")).toBe("true");
+});
+
+// ER 図のテーブルの説明のボタンで、概要と列の説明をテーブルの上に出す（正常系）
+test("test_normal_when_er_table_tooltip", async () => {
+  // 準備
+  const definition = {
+    title: "顧客",
+    scope: "確かめ",
+    updated: "2026-11-03",
+    width: 400,
+    tables: [
+      {
+        id: "customers",
+        name: "customers",
+        label: "顧客",
+        desc: "注文する人",
+        x: 24,
+        y: 180,
+        w: 260,
+        columns: [
+          { name: "id", type: "bigint", pk: true },
+          { name: "email", type: "text", desc: "ログインに使う" },
+          { name: "name", type: "text", desc: "表示に使う名前" },
+        ],
+      },
+    ],
+    relations: [],
+  };
+  const { figure, table } = await mountEr(
+    wrapDirective("er", JSON.stringify(definition)),
+  );
+  const customers = table("customers");
+  const info = buttonOf(figure, "「顧客」の説明");
+  const tip = tipOf(info);
+  // 実行
+  await userEvent.hover(info);
+  // 検証
+  expect(tip.getAttribute("role")).toBe("tooltip");
+  expect(tip.hidden).toBe(false);
+  const text = tip.textContent ?? "";
+  for (const word of [
+    "顧客（customers）",
+    "注文する人",
+    "email",
+    "ログインに使う",
+    "name",
+    "表示に使う名前",
+  ]) {
+    expect(text).toContain(word);
+  }
+  expect(tip.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    customers.getBoundingClientRect().top,
+  );
+  // 実行
+  await userEvent.hover(tip);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  // 検証
+  expect(tip.hidden).toBe(false);
+  // 実行
+  info.focus();
+  await userEvent.keyboard("{Escape}");
+  // 検証
+  expect(tip.hidden).toBe(true);
+  expect(document.activeElement).toBe(info);
+  // 実行
+  info.blur();
+  await userEvent.unhover(tip);
+  find<HTMLElement>(figure, ".mdmark-diagram-viewport").focus();
+  await userEvent.tab();
+  while (
+    document.activeElement !== info &&
+    figure.contains(document.activeElement)
+  ) {
+    await userEvent.tab();
+  }
+  // 検証
+  expect(document.activeElement).toBe(info);
+  expect(tip.hidden).toBe(false);
 });
