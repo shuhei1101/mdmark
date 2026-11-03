@@ -1,0 +1,73 @@
+/* 先頭へ戻るボタン: この PR で src/index.css の mdmark の層へ追加する規則 */
+@layer mdmark {
+  .mdmark {
+    --mdmark-back-to-top-size: 2.75rem;
+    --mdmark-back-to-top-gap: 1rem;
+
+    /* 先頭へ戻るボタン: スクロールする場所（画面か、スクロールする祖先の要素）の右下に留める。right・bottom は描く処理がスクロールする場所の端と、ミニマップ・余白の列を避けた位置で入れる */
+    .mdmark-back-to-top {
+      position: fixed;
+      inset-inline-end: var(--mdmark-back-to-top-right, var(--mdmark-back-to-top-gap));
+      inset-block-end: var(--mdmark-back-to-top-bottom, var(--mdmark-back-to-top-gap));
+      z-index: 5;
+      display: inline-grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: var(--mdmark-back-to-top-size);
+      height: var(--mdmark-back-to-top-size);
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque);
+      color: var(--mdmark-color-muted);
+      font-size: 1.125rem;
+      cursor: pointer;
+      touch-action: manipulation;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      &:active {
+        background: var(--mdmark-color-current-bg);
+        color: var(--mdmark-color-link);
+      }
+
+      /* 先頭の近くにいる間: 出さず、Tab でも届かない */
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* 押した後にフォーカスを受ける本文の列: 枠を出さない（フォーカスできる要素ではない） */
+    .mdmark-content[tabindex="-1"]:focus {
+      outline: none;
+    }
+
+    /* ボタンを出している間の右側の目次の枠: ボタンの高さの分だけ短くし、下端をボタンの上で止める */
+    &:has(> .mdmark-back-to-top:not([hidden])) .mdmark-side-toc-panel {
+      max-height: calc(
+        100dvh -
+        var(--mdmark-sticky-top, 0px) -
+        var(--mdmark-space) *
+        2 -
+        var(--mdmark-back-to-top-size) -
+        var(--mdmark-back-to-top-gap)
+      );
+    }
+  }
+
+  /* 印刷のとき: 先頭へ戻るボタンを出さない */
+  @media print {
+    .mdmark .mdmark-back-to-top {
+      display: none;
+    }
+  }
+}

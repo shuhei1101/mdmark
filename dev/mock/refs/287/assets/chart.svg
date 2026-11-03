@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" width="480" height="240" role="img" aria-label="返信までの時間のグラフ">
+  <rect width="480" height="240" fill="#f4f4f5"/>
+  <g fill="#0f766e">
+    <rect x="60" y="150" width="60" height="60"/>
+    <rect x="160" y="130" width="60" height="80"/>
+    <rect x="260" y="190" width="60" height="20"/>
+    <rect x="360" y="40" width="60" height="170"/>
+  </g>
+  <line x1="40" y1="210" x2="450" y2="210" stroke="#52525b"/>
+</svg>
