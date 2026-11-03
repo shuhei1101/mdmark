@@ -937,6 +937,9 @@ files:
   - path: unit/helpers/diagrams.ts
     description: 単体テストが使う、見本の文書に書いた図の部品の定義を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/helpers/er.ts
+    description: 単体テストが使う、ER 図の部品の定義の見本（モックの shop-er と、列の開閉を確かめる定義）を受け持つ。単体テストの準備や比べ方を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
   - path: unit/helpers/dom.ts
     description: 単体テストで、描いた文書の CSS と描く先の要素をページに置く処理を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:フィクスチャ]
@@ -1153,6 +1156,12 @@ files:
     related:
       - to: src/diagram/definition
         type: tests
+  - path: unit/src/diagram/er.test.ts
+    description: src/diagram/er.ts（「ER 図のテーブルの高さ・関係の線の経路」）を確かめる単体テスト。er.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/diagram/er
+        type: tests
   - path: unit/src/diagram/geometry.test.ts
     description: src/diagram/geometry.ts（「収まる倍率・line jump・重なる線のずらし・軸の刻み」）を確かめる単体テスト。geometry.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
@@ -1248,6 +1257,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:html]
     related:
       - to: src/interact/embedded-html
+        type: tests
+  - path: unit/src/interact/er-folds.browser.test.ts
+    description: src/interact/er-folds.ts（「ER 図の列の開閉」）を確かめるブラウザで流す単体テスト。er-folds.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/interact/er-folds
         type: tests
   - path: unit/src/interact/gif.browser.test.ts
     description: src/interact/gif.ts（「GIF を止める・再生するボタンを付ける」）を確かめるブラウザで流す単体テスト。gif.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1526,6 +1541,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
     related:
       - to: src/parts/embed
+        type: tests
+  - path: unit/src/parts/er.test.ts
+    description: src/parts/er.ts（「ER 図のテーブルと多重度の記号」）を確かめる単体テスト。er.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/parts/er
         type: tests
   - path: unit/src/parts/escape.test.ts
     description: src/parts/escape.ts（「HTML の特別な文字をエスケープする escapeHtml」）を確かめる単体テスト。escape.ts を変えたときに、合わせて見修正するケースを探すときに読む。
