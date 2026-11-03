@@ -1,108 +1,114 @@
 /* 表の列の並べ替え（+reorder）と、キーの列の階層（tree=）・YAML の見本（example=）の規則 */
 @layer mdmark {
-  /* ---- 列の並べ替え ---- */
+  /* ---- テーブル設定（列の表示・非表示と並べ替え） ---- */
 
-  /* 見出しのつまみ: ボタンと分けたドラッグを始める場所。ポインターを乗せた見出しでだけ濃く出す */
-  .mdmark-table .mdmark-col-grip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 1.25rem;
-    block-size: 1.5rem;
-    margin-inline-end: calc(var(--mdmark-space) * 0.25);
-    padding: 0;
-    border: 0;
-    border-radius: var(--mdmark-radius);
-    background: transparent;
-    color: var(--mdmark-color-muted);
-    cursor: grab;
-    opacity: 0.45;
-  }
-  .mdmark-table th:hover .mdmark-col-grip,
-  .mdmark-table .mdmark-col-grip:focus-visible {
-    opacity: 1;
-  }
-  .mdmark-table .mdmark-col-grip:focus-visible {
-    outline: 2px solid var(--mdmark-color-link);
-    outline-offset: 1px;
-  }
-
-  /* ドラッグ中の列: 見出しと全ての行のセルを薄くする */
-  .mdmark-table :is(th, td).is-dragging {
-    opacity: 0.4;
-  }
-
-  /* ドロップできる位置の線: 見出しの左右の境に太い線を出す */
-  .mdmark-table th.is-drop-before {
-    box-shadow: inset 3px 0 0 var(--mdmark-color-link);
-  }
-  .mdmark-table th.is-drop-after {
-    box-shadow: inset -3px 0 0 var(--mdmark-color-link);
-  }
-
-  /* ドロップできない位置: 線を出さず、つまみの手の形を禁止にする */
-  .mdmark-table.is-drop-blocked .mdmark-col-grip {
-    cursor: not-allowed;
-  }
-
-  /* 列のメニュー: 見出しの ⋯ のボタンから開く。左へ移動・右へ移動を並べる */
-  .mdmark-col-menu {
+  /* テーブル設定のパネル: 表の上の帯のボタンで開く。列の一覧を縦に並べる */
+  .mdmark-table-settings {
     position: absolute;
     inset-block-start: 100%;
-    inset-inline-end: 0;
+    inset-inline-start: 0;
     z-index: 20;
-    min-inline-size: 10rem;
-    margin: 0;
-    padding: calc(var(--mdmark-space) * 0.25) 0;
+    box-sizing: border-box;
+    inline-size: min(16rem, calc(100vw - 32px));
+    margin-block-start: 0.25rem;
+    padding: calc(var(--mdmark-space) * 0.5);
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
     background: var(--mdmark-color-bg);
     box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
-    list-style: none;
-    font-weight: normal;
   }
-  .mdmark-col-menu button {
+  .mdmark-table-bar {
+    position: relative;
+  }
+  .mdmark-table-settings-title {
+    margin: 0 0 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .mdmark-table-settings-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* 列の一覧の 1 行: つまみ・列名・目のアイコン */
+  .mdmark-table-settings-item {
     display: flex;
     align-items: center;
-    gap: calc(var(--mdmark-space) * 0.5);
-    inline-size: 100%;
+    gap: 0.25rem;
     min-block-size: 2rem;
-    padding: 0 var(--mdmark-space);
-    border: 0;
-    background: transparent;
-    color: var(--mdmark-color-text);
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
+    padding-inline: 0.25rem;
+    border-radius: var(--mdmark-radius);
   }
-  .mdmark-col-menu button:hover:not(:disabled),
-  .mdmark-col-menu button:focus-visible {
+  .mdmark-table-settings-item:hover {
     background: var(--mdmark-color-surface);
   }
-  .mdmark-col-menu button:disabled {
-    color: var(--mdmark-color-muted);
-    cursor: not-allowed;
+  .mdmark-table-settings-item .mdmark-table-settings-name {
+    flex: 1;
   }
-  .mdmark-table .mdmark-col-menu-toggle {
+  .mdmark-table-settings-item.is-hidden-column .mdmark-table-settings-name {
+    color: var(--mdmark-color-muted);
+    text-decoration: line-through;
+  }
+
+  /* 結合した見出しの範囲とピン止めの側の見出し: 範囲の中の列を字下げする */
+  .mdmark-table-settings-group {
+    margin: 0.25rem 0 0;
+    padding-inline: 0.25rem;
+    color: var(--mdmark-color-muted);
+    font-size: 0.75rem;
+  }
+  .mdmark-table-settings-item.in-group {
+    padding-inline-start: 1rem;
+  }
+
+  /* つまみと目のアイコンのボタン */
+  .mdmark-table-settings-grip,
+  .mdmark-table-settings-eye {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
     padding: 0;
     border: 0;
     border-radius: var(--mdmark-radius);
     background: transparent;
     color: var(--mdmark-color-muted);
+  }
+  .mdmark-table-settings-grip {
+    cursor: grab;
+  }
+  .mdmark-table-settings-eye {
     cursor: pointer;
   }
-  .mdmark-table .mdmark-col-menu-toggle[aria-expanded="true"] {
-    background: var(--mdmark-color-surface);
-    color: var(--mdmark-color-text);
+  .mdmark-table-settings-grip:disabled,
+  .mdmark-table-settings-eye:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
   }
-  /* メニューを開いた見出しを、隣の見出しと本文の行より前に出す */
-  .mdmark-table th:has(.mdmark-col-menu-toggle[aria-expanded="true"]) {
-    z-index: 20;
+  .mdmark-table-settings-grip:focus-visible,
+  .mdmark-table-settings-eye:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 1px;
+  }
+
+  /* ドラッグ中の行と、ドロップできる位置の線 */
+  .mdmark-table-settings-item.is-dragging {
+    opacity: 0.4;
+  }
+  .mdmark-table-settings-item.is-drop-before {
+    box-shadow: inset 0 3px 0 var(--mdmark-color-link);
+  }
+  .mdmark-table-settings-item.is-drop-after {
+    box-shadow: inset 0 -3px 0 var(--mdmark-color-link);
+  }
+
+  /* キーボードでの並べ替えの案内 */
+  .mdmark-table-settings-note {
+    margin: 0.25rem 0 0;
+    color: var(--mdmark-color-muted);
+    font-size: 0.75rem;
   }
 
   /* ---- キーの列の階層 ---- */
@@ -334,8 +340,7 @@
 
   /* 印刷: 操作のボタンを出さず、畳んだ行と隠した見本を開く */
   @media print {
-    .mdmark-col-grip,
-    .mdmark-col-menu-toggle,
+    .mdmark-table-settings,
     .mdmark-tree-toggle,
     .mdmark-tree-copy,
     .mdmark-tree-example-toggle {

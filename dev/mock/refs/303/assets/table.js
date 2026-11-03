@@ -1,123 +1,119 @@
 // 表の列の並べ替え（+reorder）と、キーの列の階層（tree=）・YAML の見本（example=）のモックの操作
 (() => {
-  /** ドラッグ中とメニューで動かす列の見出しの位置を表の中で数える */
-  function columnIndexOf(th) {
-    return Array.from(th.parentElement.children).indexOf(th);
-  }
-
   /** 列を入れ替えてよいか: 同じ結合の範囲（data-group）とピン止めの側（data-pinned）の中だけで動かす */
-  function canMove(fromTh, toTh) {
+  function canMove(from, to) {
     return (
-      fromTh.dataset.group === toTh.dataset.group &&
-      (fromTh.dataset.pinned === "true") === (toTh.dataset.pinned === "true")
+      (from.dataset.group ?? "") === (to.dataset.group ?? "") &&
+      (from.dataset.pinned === "true") === (to.dataset.pinned === "true")
     );
   }
 
-  /** 表の最下段の見出しの from 列を to 列の前か後ろへ動かし、全ての本文の行のセルも同じ順に動かす */
-  function moveColumn(table, from, to, after) {
+  /** 列の一覧の並びのとおりに、見出しと全ての本文の行のセルを並べ直す */
+  function applyOrder(table, list) {
+    const order = Array.from(list.querySelectorAll("[data-column]")).map((item) => item.dataset.column);
     const rows = [table.tHead.rows[table.tHead.rows.length - 1], ...table.tBodies[0].rows];
     for (const row of rows) {
-      const cells = row.children;
-      const moving = cells[from];
-      const target = cells[to];
-      if (after) {
-        target.after(moving);
-      } else {
-        target.before(moving);
-      }
+      const byColumn = new Map(Array.from(row.children).map((cell) => [cell.dataset.col, cell]));
+      for (const column of order) row.append(byColumn.get(column));
     }
-    refreshMenus(table);
   }
 
-  /** 列のメニューの左へ移動・右へ移動を、動かせない向きだけ disabled にする */
-  function refreshMenus(table) {
-    const head = table.tHead.rows[table.tHead.rows.length - 1];
-    const ths = Array.from(head.children);
-    ths.forEach((th, index) => {
-      const left = th.querySelector("[data-move='left']");
-      const right = th.querySelector("[data-move='right']");
-      if (left) left.disabled = index === 0 || !canMove(th, ths[index - 1]);
-      if (right) right.disabled = index === ths.length - 1 || !canMove(th, ths[index + 1]);
+  /** 先頭・末尾と、範囲とピン止めの境に当たるつまみを、キーボードで動かせない向きの分だけ案内に出す */
+  function refreshGrips(list) {
+    const items = Array.from(list.querySelectorAll("[data-column]"));
+    items.forEach((item, index) => {
+      const grip = item.querySelector(".mdmark-table-settings-grip");
+      if (!grip) return;
+      const up = index > 0 && canMove(item, items[index - 1]);
+      const down = index < items.length - 1 && canMove(item, items[index + 1]);
+      grip.disabled = !up && !down;
     });
   }
 
-  /** +reorder の表にドラッグ＆ドロップと列のメニューを付ける */
-  function setupReorder(table) {
-    const head = table.tHead.rows[table.tHead.rows.length - 1];
-    let dragged = null;
-    for (const th of head.children) {
-      const grip = th.querySelector(".mdmark-col-grip");
-      if (!grip) continue;
-      grip.draggable = true;
-      grip.addEventListener("dragstart", (event) => {
-        dragged = th;
-        event.dataTransfer.effectAllowed = "move";
-        const index = columnIndexOf(th);
-        for (const row of table.rows) row.children[index]?.classList.add("is-dragging");
-      });
-      grip.addEventListener("dragend", () => {
-        for (const cell of table.querySelectorAll(".is-dragging, .is-drop-before, .is-drop-after")) {
-          cell.classList.remove("is-dragging", "is-drop-before", "is-drop-after");
-        }
-        table.closest(".mdmark-table").classList.remove("is-drop-blocked");
-        dragged = null;
-      });
-      th.addEventListener("dragover", (event) => {
-        if (!dragged || dragged === th) return;
-        const wrapper = table.closest(".mdmark-table");
-        th.classList.remove("is-drop-before", "is-drop-after");
-        // 結合の範囲の外とピン止めの境の向こうには線を出さない
-        if (!canMove(dragged, th)) {
-          wrapper.classList.add("is-drop-blocked");
-          return;
-        }
-        wrapper.classList.remove("is-drop-blocked");
-        event.preventDefault();
-        const rect = th.getBoundingClientRect();
-        th.classList.add(event.clientX < rect.left + rect.width / 2 ? "is-drop-before" : "is-drop-after");
-      });
-      th.addEventListener("dragleave", () => th.classList.remove("is-drop-before", "is-drop-after"));
-      th.addEventListener("drop", (event) => {
-        if (!dragged || !canMove(dragged, th)) return;
-        event.preventDefault();
-        moveColumn(table, columnIndexOf(dragged), columnIndexOf(th), th.classList.contains("is-drop-after"));
-      });
-
-      const toggle = th.querySelector(".mdmark-col-menu-toggle");
-      const menu = th.querySelector(".mdmark-col-menu");
-      if (!toggle || !menu) continue;
-      for (const button of menu.querySelectorAll("[data-move]")) {
-        button.addEventListener("click", () => {
-          const index = columnIndexOf(th);
-          const toRight = button.dataset.move === "right";
-          moveColumn(table, index, toRight ? index + 1 : index - 1, toRight);
-          toggle.setAttribute("aria-expanded", "false");
-          menu.hidden = true;
-          // 動かした列の見出しにフォーカスを残す
-          toggle.focus();
+  /** テーブル設定: 帯のボタンでパネルを開閉し、列の一覧で並べ替えと表示の切り替えをする */
+  function setupSettings(wrapper) {
+    const table = wrapper.querySelector("table");
+    const toggle = wrapper.querySelector(".mdmark-table-settings-toggle");
+    const panel = wrapper.querySelector(".mdmark-table-settings");
+    const list = panel?.querySelector(".mdmark-table-settings-list");
+    if (!toggle || !panel || !list) return;
+    // 単段の見出しの表だけ、セルに元の列の位置を持たせて並べ直す
+    const reorderable = table.tHead.rows.length === 1;
+    if (reorderable) {
+      for (const row of [table.tHead.rows[0], ...table.tBodies[0].rows]) {
+        Array.from(row.children).forEach((cell, index) => {
+          cell.dataset.col ??= String(index);
         });
       }
     }
-    // 列のメニュー: ⋯ で開閉し、Esc で閉じる（多段の見出しの上の段の列も含む）
-    for (const th of table.tHead.querySelectorAll("th")) {
-      const toggle = th.querySelector(".mdmark-col-menu-toggle");
-      const menu = th.querySelector(".mdmark-col-menu");
-      if (!toggle || !menu) continue;
-      toggle.addEventListener("click", () => {
-        const open = toggle.getAttribute("aria-expanded") !== "true";
-        toggle.setAttribute("aria-expanded", String(open));
-        menu.hidden = !open;
-        if (open) (menu.querySelector("button:not(:disabled)") ?? menu.querySelector("button"))?.focus();
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      panel.hidden = !open;
+    });
+    panel.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        toggle.setAttribute("aria-expanded", "false");
+        panel.hidden = true;
+        toggle.focus();
+      }
+    });
+    let dragged = null;
+    for (const item of list.querySelectorAll("[data-column]")) {
+      const grip = item.querySelector(".mdmark-table-settings-grip");
+      const eye = item.querySelector(".mdmark-table-settings-eye");
+      eye?.addEventListener("click", () => {
+        const hidden = eye.getAttribute("aria-pressed") !== "true";
+        eye.setAttribute("aria-pressed", String(hidden));
+        eye.setAttribute("aria-label", `「${item.dataset.name}」を${hidden ? "表示" : "隠す"}`);
+        item.classList.toggle("is-hidden-column", hidden);
+        for (const cell of table.querySelectorAll(`[data-col="${item.dataset.column}"]`)) cell.hidden = hidden;
       });
-      menu.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          toggle.setAttribute("aria-expanded", "false");
-          menu.hidden = true;
-          toggle.focus();
+      if (!grip) continue;
+      grip.draggable = true;
+      grip.addEventListener("dragstart", (event) => {
+        dragged = item;
+        event.dataTransfer.effectAllowed = "move";
+        item.classList.add("is-dragging");
+      });
+      grip.addEventListener("dragend", () => {
+        for (const other of list.querySelectorAll(".is-dragging, .is-drop-before, .is-drop-after")) {
+          other.classList.remove("is-dragging", "is-drop-before", "is-drop-after");
         }
+        dragged = null;
+      });
+      item.addEventListener("dragover", (event) => {
+        if (!dragged || dragged === item) return;
+        item.classList.remove("is-drop-before", "is-drop-after");
+        // 結合の範囲の外とピン止めの境の向こうには線を出さない
+        if (!canMove(dragged, item)) return;
+        event.preventDefault();
+        const rect = item.getBoundingClientRect();
+        item.classList.add(event.clientY < rect.top + rect.height / 2 ? "is-drop-before" : "is-drop-after");
+      });
+      item.addEventListener("dragleave", () => item.classList.remove("is-drop-before", "is-drop-after"));
+      item.addEventListener("drop", (event) => {
+        if (!dragged || !canMove(dragged, item)) return;
+        event.preventDefault();
+        if (item.classList.contains("is-drop-after")) item.after(dragged);
+        else item.before(dragged);
+        if (reorderable) applyOrder(table, list);
+        refreshGrips(list);
+      });
+      // キーボード: つまみにフォーカスして ↑・↓ で 1 つずつ動かす
+      grip.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+        event.preventDefault();
+        const target = event.key === "ArrowUp" ? item.previousElementSibling : item.nextElementSibling;
+        if (!target?.dataset.column || !canMove(item, target)) return;
+        if (event.key === "ArrowUp") target.before(item);
+        else target.after(item);
+        if (reorderable) applyOrder(table, list);
+        refreshGrips(list);
+        grip.focus();
       });
     }
-    refreshMenus(table);
+    refreshGrips(list);
   }
 
   /** 階層の行の子孫の行を返す（data-path が自分のパスで始まる行） */
@@ -265,7 +261,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    for (const table of document.querySelectorAll(".mdmark-table[data-reorder] table")) setupReorder(table);
+    for (const wrapper of document.querySelectorAll(".mdmark-table[data-settings]")) setupSettings(wrapper);
     for (const table of document.querySelectorAll(".mdmark-table[data-tree] table")) setupTree(table);
   });
 })();
