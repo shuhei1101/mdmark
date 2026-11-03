@@ -25,11 +25,13 @@ import { type AttachmentKind, renderCard } from "../src/parts/card.ts";
 import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
 import type { ColorName } from "../src/parts/colors.ts";
 import {
+  type CommentClosedKind,
   type CommentFormState,
   renderCommentBubble,
   renderCommentButton,
   renderCommentForm,
   renderCommentMark,
+  renderCommentMarker,
   renderCommentOrphans,
 } from "../src/parts/comment.ts";
 import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
@@ -778,6 +780,18 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       quote: String(args.quote ?? ""),
       bodies: args.bodies as string[],
     }),
+  // 余白のマーカーは余白の列に重ねて置くため、余白の列の縦の中ほどに置く
+  "comment-marker": (args) =>
+    `<div class="mdmark-comment-margin" style="block-size: 3rem">${renderCommentMarker(
+      {
+        quote: String(args.quote ?? ""),
+        count: args.count === undefined ? 1 : Number(args.count),
+        current: args.current === true,
+        ...(args.closed === undefined
+          ? {}
+          : { closed: args.closed as CommentClosedKind }),
+      },
+    ).replace("<button ", '<button style="top: 50%" ')}</div>`,
   "comment-orphans": (args) =>
     renderCommentOrphans({
       comments: args.comments as Array<{ quote: string; body: string }>,

@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-comments-margin-markers
+
+
+ Test Files  179 passed (179)
+      Tests  1252 passed (1252)
+   Start at  13:12:27
+   Duration  78.94s (tests 41%, worker 36%, import 20%, transform 3%)
+

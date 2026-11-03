@@ -195,6 +195,7 @@ functions:
          - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` に既定を当てた設定の `colorTheme` を付ける
          - 機能のオン・オフを控える
          - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。既定を当てた設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
+         - 機能の `comments` がオンで `commentStore` と `docId` を渡し、右側の目次が本文の列に包んでいない（戻りの `content` が `el`）ときは、`el` の子を `div.mdmark-content` に包み、以降の描いた要素をその本文の列にする。外す関数は、包む前の子の並びへ戻す（余白の列を本文の列の右に置くため。インターフェース定義『文書を描く』の制約「余白のマーカー」）
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
@@ -318,6 +319,12 @@ functions:
         condition: '先頭に `<!-- features: -side-toc -->` を持つ `# 手引き`・`## 導入`'
         mock: なし
         expected: '`aside.mdmark-side-toc` と `div.mdmark-content` が無く、`el` の直下に `h1` がある'
+      - name: test_mount_when_comments_without_side_toc
+        case: 正常
+        summary: 右側の目次が無くても、コメントの機能では本文を列に包む
+        condition: '`config.features` が `{ comments: true }`、`commentStore`・`docId` を渡し、見出しの無い段落だけを描く。位置関係は、テストの中で高さを持つ `div.mdmark-comment-margin` を `div.mdmark-content` の後ろに置いてから測る'
+        mock: '`setPartModuleUrl` で `comments` を、`attachComments` が受けた `root` を控えるモジュールの URL に差し替える'
+        expected: '`el` の子の先頭が `div.mdmark-content` で、`attachComments` の `root` がその要素。余白の列（`div.mdmark-comment-margin`）を置いた後、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右。`destroy` の後に `el` の中が空'
       - name: test_mount_when_aliases_updated
         case: 正常
         summary: update で描き直しても、最初に渡したエイリアスで下線を付ける

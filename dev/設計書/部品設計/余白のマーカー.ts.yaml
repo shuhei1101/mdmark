@@ -1,0 +1,88 @@
+title: "余白のマーカー"
+implementation: "src/parts/comment.ts#renderCommentMarker"
+story: "Parts/CommentMarginMarker"
+states:
+  - name: Default
+    description: 箇所が 1 つの行
+    args:
+      - name: quote
+        value: テーマの変数
+  - name: Merged
+    description: 同じ行の 2 か所を 1 つにまとめ、箇所の数を添える
+    args:
+      - name: quote
+        value: 担当者
+      - name: count
+        value: '2'
+  - name: Current
+    description: 吹き出しを開いている箇所
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: current
+        value: 'true'
+  - name: ClosedSection
+    description: 閉じたセクションの中の箇所。見出しの行に置く
+    args:
+      - name: quote
+        value: 閉じた箇所
+      - name: closed
+        value: section
+  - name: ClosedTab
+    description: 選ばれていないタブの中の箇所。タブの行に置く
+    args:
+      - name: quote
+        value: タブの箇所
+      - name: closed
+        value: tab
+  - name: ClosedRow
+    description: 閉じた行の詳細の中の箇所。行の詳細の開閉の行に置く
+    args:
+      - name: quote
+        value: 行の箇所
+      - name: closed
+        value: row
+lead: 本文の右の余白の列に、コメントの箇所の行の高さで置くボタン。押すと箇所までスクロールし、その箇所の吹き出しを開く。HTML 文字列を返す。
+args:
+  - name: quote
+    type: 文字列
+    required: true
+    description: 行の最初の箇所の選んだ文字。読み上げ名に入れ、文字として出し、HTML として解釈しない
+  - name: count
+    type: 整数
+    default: '1'
+    choices: 1 以上
+    description: 同じ行の箇所の数。2 以上のときアイコンの後ろに数を出す
+  - name: current
+    type: 真偽値
+    default: 'false'
+    description: 箇所のうち吹き出しを開いているものがあるか。`data-current` に入れる
+  - name: closed
+    type: 列挙
+    default: なし（閉じた中の箇所でない）
+    choices: section・tab・row
+    description: 箇所を包む、いちばん外側の閉じた要素の種類。`data-closed` に入れ、線を破線にする
+events:
+  - name: 箇所へ移る
+    when: マーカーを押すか、フォーカスして Enter・Space を押す
+    value: なし
+    description: '`mount` が箇所を包む閉じた要素を開き、箇所までスクロールして吹き出しを開く'
+css_properties:
+  - name: --mdmark-comment-margin-width
+    syntax: <length>
+    default: 2.25rem
+    description: 本文の列の右に置く余白の列の幅
+accessibility:
+  - '`button`（`type="button"`）で、`aria-label` と `title` に `コメント {count が 2 以上なら「{count} 件、」}「{quote}」{closed があれば（閉じたセクションの中・選ばれていないタブの中・閉じた行の詳細の中）}` を入れる'
+  - アイコンの `svg` は `aria-hidden="true"` にする
+  - 開いている箇所は地と文字の色の反転、閉じた中の箇所は破線で示し、色だけに頼らない
+  - 押せる範囲は見た目の 1.5rem の四方から 0.375rem ずつ広げる。`:focus-visible` でリンクの色の輪郭を出す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
+status: planned
+notes:
+  HTML: '`<button class="mdmark-comment-marker" type="button" aria-label="…" title="…" data-closed="…" data-current>{アイコン}<span>{count}</span></button>`。縦の位置（`style` の `top`）は `mount` が入れる。モックは `dev/mock/components/comment-margin-marker/`'
+  色: 線・地・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使い、新しい色の変数を持たない
+  印刷: 余白の列ごと出さない
+test_file: tests/integration/lib/comment-marker.story.test.ts

@@ -111,3 +111,40 @@ test("test_render_comment_orphans_when_empty", async () => {
   // 検証
   expect(html).toBe("");
 });
+
+// 読み上げ名に選んだ文字をエスケープして入れる（正常系）
+test("test_render_comment_marker", async () => {
+  // 準備
+  const { renderCommentMarker } = await loadComment();
+  // 実行
+  const html = renderCommentMarker({ quote: "<b>x</b>" });
+  // 検証
+  const tag = findTag(html, "mdmark-comment-marker");
+  expect(tag).toContain('type="button"');
+  expect(tag).toContain('aria-label="コメント 「&lt;b&gt;x&lt;/b&gt;」"');
+  expect(html).not.toContain("<b>");
+  expect(html).not.toContain("<span");
+  expect(tag).not.toMatch(/\sdata-current\b/);
+  expect(tag).not.toMatch(/\sdata-closed\b/);
+});
+
+// 数と閉じた中の種類を出す（正常系）
+test("test_render_comment_marker_when_merged_and_closed", async () => {
+  // 準備
+  const { renderCommentMarker } = await loadComment();
+  // 実行
+  const html = renderCommentMarker({
+    quote: "担当者",
+    count: 2,
+    closed: "tab",
+    current: true,
+  });
+  // 検証
+  const tag = findTag(html, "mdmark-comment-marker");
+  expect(tag).toContain(
+    'aria-label="コメント 2 件、「担当者」（選ばれていないタブの中）"',
+  );
+  expect(plainText(html)).toBe("2");
+  expect(tag).toContain('data-closed="tab"');
+  expect(tag).toMatch(/\sdata-current\b/);
+});
