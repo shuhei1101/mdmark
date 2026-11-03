@@ -96,7 +96,7 @@ functions:
       - name: test_build_extension
         case: 正常
         summary: 拡張機能と Webview のスクリプトを束ね、vscode を束ねない
-        condition: 作業ツリーの `vscode/` を一時フォルダに複製して `tests` が `false` で呼ぶ
+        condition: 作業ツリーの `vscode/` を、`node_modules/`・`.vscode-test/`・`out/`・`dist/`・`media/preview.js`・`media/preview.css` を除外して一時フォルダに複製し、`tests` が `false` で呼ぶ
         mock: なし（一時フォルダ）
         expected: '`dist/extension.cjs` が `require("vscode")` を含み、`media/preview.js` と `media/preview.css` があり、`out/` が無い'
     refs:
