@@ -1,0 +1,74 @@
+title: "ClaudeCodeで使い方集を参照して書き点検する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 作業のフォルダ
+        description: 雛形を置いた後の設定・索引と、索引に載った文書 1 つ
+        notes: 文書に知らないマーカーを 1 つ書いておき、`check` がずれを 1 件返す状態にする
+      - name: 起動した dev-docs
+        description: 一時フォルダの端末の設定（`DEV_DOCS_CONFIG`）で、空きポートで待ち受ける dev-docs
+      - name: Mock
+        description: Claude Code の代わりに、プラグインのフックを子プロセスで流し、dev-docs と mdmark の常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。モデルは使わない
+    flow: |-
+      flowchart TD
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で使い方集を配信元に登録する:正常シナリオ]
+        B --> C[使い方集を読む:正常シナリオ]
+        C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
+        D --> E[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
+        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
+        click B "../単一ユースケース/セッションの開始で使い方集を配信元に登録する.yaml#正常シナリオ"
+        click C "../単一ユースケース/使い方集を読む.yaml#正常シナリオ"
+        click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
+        click E "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
+    expected:
+      - 端末の設定の `sources[]` に使い方集の配信元の行が 1 つだけあり、`scope.read` が `["/**"]`
+      - dev-docs の `search_docs` で使い方集の配信元を引くと、`guide/index.yaml` の全ての名前のページが返り、`writing` のページの本文がビルドした `plugin/` のそのページと一致する
+      - 知らないマーカーを書いた文書で `check` がずれを 1 件返し、マーカーを修正した後の `check` が空のずれの一覧を返す
+      - mdmark の MCP のツールの一覧に `read_guide` が無い
+    test: test_normal
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集を配信元に登録する#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/使い方集を読む#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
+  - name: 異常シナリオ（dev-docs が無い）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: dev-docs の無い環境
+        description: '`DEV_DOCS_CONFIG` が無いファイルを指し、dev-docs が待ち受けていない'
+      - name: Mock
+        description: Claude Code の代わりに、プラグインのフックを子プロセスで流し、mdmark の常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。モデルは使わない
+    flow: |-
+      flowchart TD
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で使い方集を配信元に登録する:異常シナリオ（dev-docs が無い）]
+        B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
+        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
+        click B "../単一ユースケース/セッションの開始で使い方集を配信元に登録する.yaml#異常シナリオdev-docs-が無い"
+        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
+    expected:
+      - SessionStart の `additionalContext` に「dev-docs が無いので見つかりません」が出て、フックの終了コードが 0
+      - 使い方集のコピー先のフォルダと、dev-docs の端末の設定のファイルが作られていない
+      - 知らないマーカーを書いた文書で `check` がずれを 1 件返す
+    test: test_error_when_dev_docs_missing
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/セッションの開始で使い方集を配信元に登録する#scenarios[異常シナリオ（dev-docs が無い）]
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
+lead: 文書を書く人が mdmark のプラグインを入れ、Claude Code が書く前に dev-docs で使い方集を参照し、書いた後に mdmark の `check` で点検する。
+issue: 186
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: mdmark で書いた文書に、描画で「書き方の警告」が出る箇所を残さない
+  - name: Claude Code
+    interest: 入れている mdmark のバージョンの使い方集を、書く前に必要なページだけ参照できる
+trigger: 文書を書く人が、Claude Code に mdmark で文書を書くよう指定する
+preconditions:
+  - 文書を書く人の手元に Claude Code と Node 24 以降がある
+  - mdmark の常駐サーバーが起動している
+  - 作業のフォルダに mdmark の設定（`mdmark.config.yaml`）と索引がある
+success_guarantee: 使い方集が dev-docs の配信元として登録され、入れている mdmark のバージョンのページを `search_docs` で参照できる。書いた文書は `check` のずれが 0 件になる。
+minimal_guarantee: dev-docs が無いときもセッションは開き、「dev-docs が無いので見つかりません」と分かる。使い方集を参照しなくても、書いた後の `check` でずれを見つけられる。
+test_file: tests/e2e/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する.spec.ts
