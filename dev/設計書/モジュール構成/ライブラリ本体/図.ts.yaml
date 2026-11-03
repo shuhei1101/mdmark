@@ -182,8 +182,8 @@ data_models:
         type: '"master" | "transaction" | undefined'
         description: 種類。見出しの札と既定の色を決める
       - name: color
-        type: MdmarkColorName | undefined
-        description: 色の名前。`kind` の既定の色より優先する
+        type: ColorName | undefined
+        description: 色の名前（分類『部品』の `ColorName`。`dist/index.d.ts` は `src/index.ts` から辿れる型を書くため、`src/parts/colors.d.ts` の `ColorName` も型の解決に含まれる）。`kind` の既定の色より優先する
       - name: desc
         type: string | undefined
         description: 概要。テーブルのツールチップに出す
@@ -437,7 +437,7 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`・多重度の値）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。書き方の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
     args:
       - name: directive
         type: '"flow" | "sequence" | "chart" | "param" | "er"'
@@ -450,6 +450,8 @@ functions:
     returns:
       type: DefinitionResult
       description: 読めた定義か、読めない箇所の文
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[isColorName]
     unit_tests:
       - name: test_read_definition
         case: 正常
@@ -1620,9 +1622,9 @@ functions:
       - name: test_attach_er_folds
         case: 正常
         summary: 開閉のボタンで列を畳み、関係の線を結び直す
-        condition: モックの `shop-er` を描いた図で、注文のテーブルの開閉のボタンを押し、もう一度押す
+        condition: 主キー 1 つ・ほかの列 10 個・12 番目に外部キーを持つ `orders` と、その外部キーへ関係を持つ `customers` の ER 図（インターフェース定義『文書を描く』のフロー `正常系（ER 図の列を開閉する）` と同じ定義）で、`orders` の開閉のボタンを押し、もう一度押す
         mock: なし（Chromium）
-        expected: 1 回目の後に主キーと外部キー以外の列の行が `hidden` を持ち、ボタンが `aria-expanded="false"`、12 行目の外部キーの列へ結ぶ線の端の y が変わる。2 回目の後に全ての列が出て、線の端の y が初めと同じ。フォーカスがボタンに残る
+        expected: 1 回目の後に主キーと外部キー以外の列の行が `hidden` を持ち、ボタンが `aria-expanded="false"`、12 番目の外部キーの列へ結ぶ線の端の y が変わる。2 回目の後に全ての列が出て、線の端の y が初めと同じ。フォーカスがボタンに残る
     status: planned
     introduced:
       pr: 298
