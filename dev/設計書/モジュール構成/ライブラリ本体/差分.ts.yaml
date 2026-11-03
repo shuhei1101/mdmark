@@ -436,7 +436,7 @@ functions:
       type: () => void
       description: この行を帯から外す関数。帯に残る行が無くなったら帯と受け取りを外す
     process: |-
-      1. 送り先を決める。`lines` の祖先をたどり、`overflow-y` が `auto`・`scroll` で中身がはみ出す一番近い要素、無ければ `document.scrollingElement`
+      1. 送り先を決める。`lines` の祖先をたどり、`overflow-y` が `auto`・`scroll` で中身がはみ出す一番近い要素、無ければ `document.scrollingElement`（`操作.ts#functions[findScrollContainer]`）
       2. `minimaps` に送り先が無ければ、`renderDiffMinimap` の帯を `document.body` に置き、送り先の `scroll` と `window` の `resize` を受け取って帯の位置と枠を置き直す。帯は `position: fixed` で、送り先が画面なら右端に画面の高さいっぱい、そうでなければ送り先の `getBoundingClientRect` の右端にその高さで置く。送り先が画面でないときは、送り先の外（画面や祖先の枠）がスクロールしても送り先の位置が変わるため、`document` の `scroll` を捕捉の段で受け取って帯の位置を置き直す。`document.body` に置くのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯を置き直すたびと配色が切り替わったとき（`prefers-color-scheme` の `change` と、配色を決める祖先の `class` の変更）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み、帯の `style` に写す
       3. 送り先の行の集まりに `lines` を足し、集まりの全ての行から `del`・`add` の行の位置を送り先の `scrollHeight` に対する割合にし、続いた同じ種類の行を 1 つの印にまとめて置き直す。隠れた見方の行は、埋め込んだ HTML の差分の塊の位置で示す。差分の行の大きさが変わったら置き直す
       4. 帯の `pointerdown` でポインターを捕まえ、押した位置の割合の場所が送り先の中ほどに来るよう `scrollTo` で送る。捕まえている間の `pointermove` も同じに送る
@@ -486,6 +486,7 @@ functions:
         expected: 帯の `style` の `--mdmark-color-diff-del-sign` が、替える前は `#d1242f`、替えた後はダークの値 `#f85149`
     callees:
       - '#functions[renderDiffMinimap]'
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[findScrollContainer]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ミニマップ]
       - dev/設計書/部品設計/ミニマップ.ts#

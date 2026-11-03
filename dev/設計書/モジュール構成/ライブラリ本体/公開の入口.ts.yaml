@@ -118,6 +118,9 @@ styles:
       - class_name: '@media print（右側の目次）'
         target: 右側の目次の印刷
         value: '右側の目次を隠し、描く先の要素を `display: block`、本文の列を `max-width: none` にして紙の幅いっぱいに並べる（`dev/mock/refs/166/assets/side-toc-print.css`）'
+      - class_name: .mdmark-back-to-top と .mdmark:has(> .mdmark-back-to-top:not([hidden]))
+        target: 先頭へ戻るボタン
+        value: '部品設計『先頭へ戻るボタン』の HTML に当てる規則。`dev/mock/refs/287/assets/back-to-top.css` から取る。`.mdmark` に `--mdmark-back-to-top-size`（`2.75rem`）・`--mdmark-back-to-top-gap`（`1rem`）を置く。ボタンは `position: fixed` で、`inset-inline-end`・`inset-block-end` を `var(--mdmark-back-to-top-right, var(--mdmark-back-to-top-gap))`・`var(--mdmark-back-to-top-bottom, var(--mdmark-back-to-top-gap))` にし、`z-index: 5`。ポインターを乗せている間・キーボードのフォーカス・押している間の色は部品設計の CSS カスタムプロパティのとおり。`[hidden]` は `display: none`。押した後にフォーカスを受ける本文の列（`.mdmark-content[tabindex="-1"]` と、本文の列を持たないときの `.mdmark[tabindex="-1"]`）は `:focus` で輪郭を出さない。ボタンを出している間は、右側の目次の枠（`.mdmark-side-toc-panel`）の `max-height` をボタンの高さと間の分だけ短くする。`@media print` ではボタンを出さない'
       - class_name: .mdmark [data-mdmark-diff-hidden]
         target: 差分を開いている間に隠す要素
         value: '`display: none !important`（`DIFF_HIDDEN_ATTRIBUTE`）'

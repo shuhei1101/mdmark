@@ -15,6 +15,8 @@ directory: |-
       ├── tabs.ts        # タブの切り替えと、URL の #ID の指すタブを選ぶ処理
       ├── sections.ts    # 節と行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く
       ├── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
+      ├── back-to-top.ts # 先頭へ戻るボタンを置き、出し分け・置く位置・押したときの移動を付ける
+      ├── scroller.ts    # 要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使う）
       ├── lightbox.ts    # 画像を拡大のボタンで包み、ライトボックスで開いて送り・拡大・縮小・移動を付ける
       └── gif.ts         # GIF を止める・再生するボタンを付ける
   ```
@@ -1280,6 +1282,90 @@ functions:
     status: planned
     introduced:
       pr: 166
+  - name: findScrollContainer
+    title: スクロールする場所を見つける
+    container: src/interact/scroller.ts
+    summary: 要素の祖先を `document.body` の手前までたどり、`overflow-y` が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい一番近い要素を返す。無ければ `document.scrollingElement`（無ければ `document.documentElement`）を返し、`page` を `true` にする
+    kind: 関数
+    scope: internal
+    args:
+      - name: from
+        type: HTMLElement
+        required: true
+        description: たどり始める要素（この要素自身は見ない）
+    returns:
+      type: '{ target: HTMLElement; page: boolean }'
+      description: スクロールする要素と、それが画面全体か
+    unit_tests:
+      - name: test_find_scroll_container
+        case: 正常
+        summary: 中身がはみ出す一番近いスクロールする祖先の要素を返す
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 2000px の要素を入れ、その中の要素から探す'
+        mock: なし
+        expected: '`target` が `div`、`page` が `false`'
+      - name: test_find_scroll_container_when_not_overflowing
+        case: 正常
+        summary: 中身がはみ出さない祖先の要素は飛ばして画面全体を返す
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 100px の要素を入れ、その中の要素から探す'
+        mock: なし
+        expected: '`target` が `document.scrollingElement`、`page` が `true`'
+    status: planned
+    introduced:
+      pr: 287
+  - name: attachBackToTop
+    title: 先頭へ戻るボタンを付ける
+    container: src/interact/back-to-top.ts
+    summary: '`renderBackToTop({ hidden: true })` のボタンを `el` の子の末尾に置き、スクロールする場所を `findScrollContainer(el)` で決めて、出し分け・置く位置・押したときの移動を付ける'
+    kind: 関数
+    scope: internal
+    side_effects: '`el` にボタンを追加する。スクロールする場所が画面全体なら `window` の `scroll`、そうでなければ `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取る'
+    args:
+      - name: options
+        type: '{ el: HTMLElement; content: HTMLElement }'
+        required: true
+        description: 描く先の要素と、押した後にフォーカスを移す本文の列（右側の目次も余白の列も置かないときは `el`）
+    returns:
+      type: () => void
+      description: ボタンと受け取りを外す関数
+    process: |-
+      1. ボタンを置き、スクロールする場所を決める
+      2. 置き直す処理: スクロールする場所の矩形（スクロールバーを除き、右端と下端は画面の中に収める）の上端から `el` の上端までの量が、スクロールする場所の `clientHeight` 未満ならボタンに `hidden` を付けて終える。そうでなければ `hidden` を外し、`--mdmark-back-to-top-right` に `calc({画面の右端からスクロールする場所の右端までの px} + var(--mdmark-back-to-top-gap))`、`--mdmark-back-to-top-bottom` に同じく下端の値を入れる。続けて、ページの差分のミニマップの帯（`document.body` の `.mdmark-diff-minimap`）と `el` の子の余白の列（`div.mdmark-comment-margin`）の順に、ボタンの矩形と横の範囲（部品の左端から `BACK_TO_TOP_AVOID_GAP_PX` 左までを含む）が重なれば、`--mdmark-back-to-top-right` を `{画面の右端から部品の左端までの px + BACK_TO_TOP_AVOID_GAP_PX}px` にする。縦の位置は比べない
+      3. 手順 2 を、スクロールと `resize` のたびに `requestAnimationFrame` で 1 フレームに 1 回だけ行い、付けた直後にも 1 回行う
+      4. ボタンを押すと、`matchMedia("(prefers-reduced-motion: reduce)")` が当たれば `behavior: "auto"`、ほかは `smooth` で、スクロールする場所を `el` の上端へ `scrollTo` する（画面全体なら `window.scrollTo` で、`el` の `--mdmark-sticky-top` の px を引く）。続けて `content` に `tabindex="-1"` を付け、`focus({ preventScroll: true })` する
+      5. 外す関数は、受け取りと予約したフレームを外し、ボタンを取り除き、付けた `tabindex` を外す
+    callees:
+      - '#functions[findScrollContainer]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderBackToTop]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+    unit_tests:
+      - name: test_attach_back_to_top
+        case: 正常
+        summary: 画面の高さ分スクロールするまで隠し、届いたら右下に出す
+        condition: 高さ 800px の画面で、高さ 3000px の段落を描いた要素に付け、799px と 800px スクロールする
+        mock: なし
+        expected: 799px の後はボタンが `hidden` を持ち、800px の後は持たず、`--mdmark-back-to-top-right` と `--mdmark-back-to-top-bottom` が `calc(0px + var(--mdmark-back-to-top-gap))`
+      - name: test_attach_back_to_top_when_obstacle
+        case: 正常
+        summary: 余白の列と横の範囲が重なれば、その左から間を空けて置く
+        condition: '`el` の右端に幅 40px の `div.mdmark-comment-margin` を置いて付け、800px スクロールする'
+        mock: なし
+        expected: '`--mdmark-back-to-top-right` が `{画面の右端から余白の列の左端までの px + 8}px`'
+      - name: test_attach_back_to_top_when_pressed
+        case: 正常
+        summary: 押すと先頭へスクロールして本文の列へフォーカスを移す
+        condition: 800px スクロールしてからボタンを押す
+        mock: '`window.scrollTo` を引数を記録する関数に差し替え、`matchMedia` を `(prefers-reduced-motion: reduce)` に当たる関数とそうでない関数で差し替える'
+        expected: '動きを減らす設定では `behavior: "auto"`、そうでなければ `smooth` で、`top` が `el` の上端の位置。`content` が `tabindex="-1"` を持ち `document.activeElement`'
+      - name: test_attach_back_to_top_when_detached
+        case: 正常
+        summary: 外す関数でボタンと受け取りを外す
+        condition: 付けて外した後にスクロールする
+        mock: なし
+        expected: '`el` にボタンが無く、`content` が `tabindex` を持たず、例外が出ない'
+    status: planned
+    introduced:
+      pr: 287
   - name: attachFileTrees
     title: ファイルツリーに開閉とコピーを付ける
     container: src/interact/trees.ts
@@ -1520,6 +1606,8 @@ test_files:
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
   - tests/unit/src/interact/side-toc.browser.test.ts
+  - tests/unit/src/interact/back-to-top.browser.test.ts
+  - tests/unit/src/interact/scroller.browser.test.ts
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
   - tests/unit/src/interact/placement.test.ts
@@ -1592,6 +1680,16 @@ constants:
     status: planned
     introduced:
       pr: 166
+  - name: BACK_TO_TOP_AVOID_GAP_PX
+    title: 避ける部品と先頭へ戻るボタンの間
+    container: src/interact/back-to-top.ts
+    summary: 差分のミニマップか余白の列と横の範囲が重なるとき、その部品の左端からボタンの右端までに空ける幅（px）
+    value: '8'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+    status: planned
+    introduced:
+      pr: 287
   - name: SIDE_TOC_HEADING_SELECTOR
     title: 右側の目次に並べる見出し
     container: src/interact/side-toc.ts
