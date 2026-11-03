@@ -6,14 +6,17 @@ import { expect, test } from "vitest";
 import { STRENGTH_TEXT, wrapDirective } from "../../unit/helpers/diagrams.ts";
 import {
   GREET_SOURCE,
+  GREET_WITH_IMPORT_SOURCE,
   linesOf,
   PNG_BYTES,
+  readHighlightVendor,
   readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
   THEME_SOURCE,
   useBrowser,
   useTempDirs,
+  VIEW_SOURCE,
   writeFiles,
 } from "../cli.ts";
 
@@ -572,4 +575,78 @@ test("test_error_when_media_copy_unwritable", async () => {
   expect(result.stderr).toContain("確かめて");
   expect(await readFile(join(dir, "guide_files"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
+});
+
+/** 最上位で例外を投げる拡張の代役 */
+const BROKEN_SOURCE =
+  'throw new Error("broken の評価で失敗");\nexport default {};\n';
+
+// 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境でも描く（正常系（blob: と動的 import を許さない環境で開く））
+test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "extensions: [extensions/broken.js, extensions/greet.js]",
+      "libraries:",
+      "  test-lib: lib/test-lib.js",
+      "  missing-lib: lib/missing-lib.js",
+      "syntax:",
+      "  url: vendor/highlightjs/es/",
+      "",
+    ].join("\n"),
+    "extensions/greet.js": GREET_WITH_IMPORT_SOURCE,
+    "extensions/greet-text.js": 'export const TEXT = "読んだ";\n',
+    "extensions/broken.js": BROKEN_SOURCE,
+    "lib/test-lib.js": TEST_LIB_SOURCE,
+    "guide.md": [
+      "# ガイド",
+      "",
+      "<!-- greet: 世界 -->",
+      "",
+      VIEW_SOURCE,
+      "",
+      "<!-- test-lib: a -->",
+      "",
+      "<!-- missing-lib: b -->",
+      "",
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+    ].join("\n"),
+    ...(await readHighlightVendor()),
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(result.stderr).toContain("missing-lib");
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  expect(html).not.toMatch(/<script[^>]*\ssrc=/);
+  const opened = await browser.openWithCsp(join(dir, "guide.html"));
+  const { page } = opened;
+  await page.waitForSelector("article.mdmark h1");
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("article [data-mdmark-slot]")].some((slot) =>
+      slot.textContent?.startsWith("greet:"),
+    ),
+  );
+  await page.waitForSelector("article .mdmark-view");
+  await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
+  await page.waitForSelector("article .mdmark-notice");
+  await expect(
+    page.locator("article [data-mdmark-slot]").allTextContents(),
+  ).resolves.toContain("greet:読んだ:世界");
+  await expect(
+    page.locator("article [data-mdmark-slot]").allTextContents(),
+  ).resolves.toContain("drawn:a");
+  await expect(page.locator("article .mdmark-notice").count()).resolves.toBe(1);
+  await expect(
+    page.locator("article .mdmark-notice").textContent(),
+  ).resolves.toContain("missing-lib");
+  expect(opened.consoleErrors().join("\n")).toContain("broken の評価で失敗");
+  await expect(opened.violations()).resolves.toEqual([]);
+  expect(opened.inlineUrlScripts()).toEqual([]);
+  await opened.close();
 });
