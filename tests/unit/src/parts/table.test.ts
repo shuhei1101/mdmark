@@ -719,3 +719,95 @@ test("test_render_table_when_colors", async () => {
     undefined,
   ]);
 });
+
+// 留める列と真偽値の列を属性に持たせ、広く取る列と真偽値のセルを描く（正常系）
+test("test_render_table_when_columns_specified", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行（部品設計の PinAndWide と Check）
+  const pinAndWide = renderTable({
+    features: ["pin"],
+    columns: ["ID", "担当", "概要", "状態", "期限"],
+    rows: [
+      [
+        "#245",
+        "表",
+        "はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする",
+        "未着手",
+        "2026-11-21",
+      ],
+      [
+        "#249",
+        "コード",
+        "tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける",
+        "未着手",
+        "2026-11-28",
+      ],
+    ],
+    overflow: true,
+    pin: 1,
+    pinned: 2,
+    wide: [2],
+  });
+  const check = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["キー", "型", "必須", "既定"],
+    rows: [
+      ["version", "string", "true", "-"],
+      ["features", "object", "false", "全てオン"],
+      ["libraries", "object", "false", "jsDelivr"],
+      ["build", "array", "true", "-"],
+    ],
+    check: [2],
+  });
+  // 検証: 留める列と広く取る列
+  expect(findTag(pinAndWide, 'class="mdmark-table')).toContain('data-pin="1"');
+  const wide = findTags(pinAndWide, "mdmark-wide");
+  expect(wide.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(wide.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
+  for (const row of rowsOf(pinAndWide).filter((tr) => tr.includes("<td"))) {
+    const cells = row.match(/<td\b[^>]*>/g) ?? [];
+    if (cells.length < 5) {
+      continue;
+    }
+    expect(cells[0]).toContain("is-pinned-col");
+    expect(cells[1]).toContain("is-pinned-col");
+    expect(cells[2]).not.toContain("is-pinned-col");
+  }
+  // 検証: 真偽値の列
+  expect(findTag(check, 'class="mdmark-table')).toContain('data-check="2"');
+  const body = innerHtml(check, "<tbody");
+  const checkCells =
+    body.match(/<td\b[^>]*mdmark-align-center[^>]*>[\s\S]*?<\/td>/g) ?? [];
+  expect(checkCells).toHaveLength(4);
+  const [yes = "", no = ""] = checkCells;
+  expect(yes).toContain('data-value="true"');
+  expect(yes).toContain('class="mdmark-check"');
+  expect(no).toContain('data-value="false"');
+  expect(plainText(no)).toBe("いいえ");
+  // 検証: 既定の列は文字のまま
+  const defaults = body.match(/<td\b[^>]*data-label="既定"[^>]*>[^<]*/g) ?? [];
+  expect(defaults.map((cell) => cell.replace(/^<td\b[^>]*>/, ""))).toEqual([
+    "-",
+    "全てオン",
+    "jsDelivr",
+    "-",
+  ]);
+});
+
+// true を ✓、false を読み上げだけのいいえにする（正常系）
+test("test_render_check_cell", async () => {
+  // 準備
+  const { renderCheckCell } = await loadTable();
+  // 実行
+  const yes = renderCheckCell("true");
+  const no = renderCheckCell("false");
+  // 検証
+  const mark = findTag(yes, "mdmark-check");
+  expect(mark).toContain('role="img"');
+  expect(mark).toContain('aria-label="はい"');
+  expect(yes).toContain("<svg");
+  expect(findTag(no, "<span")).toContain('class="mdmark-visually-hidden"');
+  expect(plainText(no)).toBe("いいえ");
+});
